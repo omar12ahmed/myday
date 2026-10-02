@@ -685,6 +685,20 @@
   .st-seg { flex-wrap: wrap; }
   .st-seg button { min-width: 7.5em; min-height: 48px; }
   .st-pick.on, .seg button.on { background: var(--primary-container); color: var(--on-primary-container); border-color: var(--primary-outline); }
+  .st-prompt { font-size: 21px; line-height: 1.4; margin: 6px 0 14px; }
+  .st-choice { display: block; width: 100%; text-align: left; min-height: 56px; padding: 12px 16px; border-radius: var(--radius); background: var(--surface-2); color: var(--text); border: 1px solid var(--outline-strong); font-weight: 500; }
+  .st-choice.right { border: 2px solid var(--primary); background: var(--primary-container); color: var(--on-primary-container); font-weight: 650; }
+  .st-choice.wrong { border-style: dashed; }
+  .st-answer, .st-yours { background: var(--surface-2); border-radius: 14px; padding: 10px 14px; margin: 10px 0; }
+  .st-answer p, .st-yours p { margin: 4px 0 0; white-space: pre-wrap; }
+  .st-verdict { font-weight: 650; margin: 12px 0 4px; }
+  .st-hint { background: var(--warn-c); color: var(--on-warn-c); border-radius: 10px; padding: 8px 12px; }
+  .st-rate { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .st-rate button { display: grid; gap: 2px; padding: 10px 6px; }
+  .st-rate .meta { font-size: 12px; color: inherit; opacity: .85; margin: 0; }
+  fieldset.st-choices { border: 0; padding: 0; margin: 0 0 12px; min-width: 0; }
+  .st-choice-edit { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+  .st-choice-edit input[type=radio] { width: 24px; height: 24px; accent-color: var(--primary); flex: none; }
   .st-setup-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 12em); gap: 4px 10px; align-items: center; padding: 6px 0; border-top: 1px solid var(--outline); }
   @media (max-width: 480px) { .st-setup-row { grid-template-columns: 1fr; } }
 
@@ -5749,10 +5763,17 @@
       //   checkin: { conceptIds, clarity, takeaway, question, note } | null, taskDone: true|false|null (your answer), todayUid }
       sessions: [],
       activeId: null,      // the session in progress, if any
+      // One record per answered revision question (kept even if the concept is later removed).
+      // { id, conceptId, title, date, at, kind, outcome: 'right'|'partly'|'wrong'|'notsure'|null, graded: 'auto'|'self'|null,
+      //   chosen, support: 'own'|'hint'|'notes', rating: 'again'|'hard'|'good', gap, due }
+      reviews: [],
       settings: { vault: '', showClock: true }
     };
   }
   const CLARITY = { understand: 'Understand', partly: 'Partly understand', notyet: 'Not yet' };
+  const OUTCOME = { right: 'Right', partly: 'Partly right', wrong: 'Not right', notsure: 'Not sure' };
+  const SUPPORT = { own: 'On my own', hint: 'Used a hint', notes: 'Checked notes' };
+  const RATING = { again: 'Again', hard: 'Hard', good: 'Good' };
 
   function normalizeStudy(raw, report) {
     const st = emptyStudy();
@@ -5825,6 +5846,17 @@
         activeMs: Number.isFinite(x.activeMs) && x.activeMs >= 0 ? x.activeMs : 0, endedAt: typeof x.endedAt === 'string' ? x.endedAt : null,
         checkin: ci ? { conceptIds: listOf(ci.conceptIds).filter(c => conceptIds.has(c)), clarity: CLARITY[ci.clarity] ? ci.clarity : null, takeaway: str(ci.takeaway, 500), question: str(ci.question, 500), note: str(ci.note, 300) } : null,
         taskDone: x.taskDone === true ? true : x.taskDone === false ? false : null, todayUid: typeof x.todayUid === 'string' ? x.todayUid : null
+      });
+    }
+    for (const x of listOf(raw.reviews)) {
+      if (!isObj(x) || typeof x.conceptId !== 'string' || !isDateKey(x.date) || !RATING[x.rating]) { report.dropped++; continue; }
+      const id = typeof x.id === 'string' && x.id && !seen.has(x.id) ? x.id : 'rv' + uid();
+      seen.add(id);
+      st.reviews.push({
+        id, conceptId: x.conceptId, title: str(x.title, 120), date: x.date, at: str(x.at, 20), kind: x.kind === 'choice' ? 'choice' : 'written',
+        outcome: OUTCOME[x.outcome] ? x.outcome : null, graded: x.graded === 'auto' || x.graded === 'self' ? x.graded : null,
+        chosen: Number.isInteger(x.chosen) ? x.chosen : null, support: SUPPORT[x.support] ? x.support : 'own', rating: x.rating,
+        gap: intIn(x.gap, 1, 180, 1), due: isDateKey(x.due) ? x.due : null
       });
     }
     // Only one session can be in progress.
@@ -5923,7 +5955,16 @@
   };
   function removeStudyItem(e) {
     e.list.splice(e.list.indexOf(e.node), 1);
-    if (!stIndex().course.has(ST().focusCourseId)) ST().focusCourseId = null;
+    const ix = stIndex();
+    if (!ix.course.has(ST().focusCourseId)) ST().focusCourseId = null;
+    for (const c of ST().concepts) c.taskIds = c.taskIds.filter(id => ix.task.has(id)); // concepts stay; only the links go
+  }
+  // Add a concept by name to a task (or reuse one with the same name).
+  function conceptNamed(title, taskId) {
+    let c = ST().concepts.find(x => x.title.toLowerCase() === title.toLowerCase());
+    if (!c) { c = newConcept(title, taskId); ST().concepts.push(c); }
+    else if (taskId && !c.taskIds.includes(taskId)) c.taskIds.push(taskId);
+    return c;
   }
 
   // ---------- Learning sessions ----------
@@ -6001,6 +6042,87 @@
     return d.tasks.find(t => t.category === 'learning' && t.taskId === c.node.listId) || null;
   }
 
+  // ---------- Concepts and revision ----------
+  const ROUND_SIZE = 5; // questions per revision round — you can always do another round
+  // A concept can come up in revision once it has a question and something to check the answer against.
+  function questionReady(c) {
+    if (!c.prompt) return false;
+    if (c.kind === 'choice') return c.choices.filter(Boolean).length >= 2 && c.correct !== null && !!c.choices[c.correct];
+    return !!(c.answer || c.explanation);
+  }
+  // Ready to revise: anything due today or earlier (oldest first), then ones never revised.
+  // Missed days don't pile up — you only ever see one round at a time.
+  function dueConcepts(k) {
+    const ready = ST().concepts.filter(questionReady);
+    const due = ready.filter(c => c.review.due && c.review.due <= k).sort((a, b) => (a.review.due < b.review.due ? -1 : a.review.due > b.review.due ? 1 : 0));
+    return due.concat(ready.filter(c => !c.review.due));
+  }
+  const nextReviewDate = k => ST().concepts.filter(questionReady).map(c => c.review.due).filter(d => d && d > k).sort()[0] || null;
+
+  // How revision is scheduled (also explained in the app). Kept simple and predictable:
+  //   First review:  Again → tomorrow · Hard → in 2 days · Good → in 4 days
+  //   After that:    Again → tomorrow (the gap starts over) · Hard → gap × 1.2 · Good → gap × 2.5
+  //   A gap always grows by at least a day and never goes past 180 days. Dates are local calendar days.
+  function nextGap(prev, rating) {
+    if (rating === 'again') return 1;
+    if (!prev) return rating === 'hard' ? 2 : 4;
+    return Math.min(180, Math.max(prev + 1, Math.round(prev * (rating === 'hard' ? 1.2 : 2.5))));
+  }
+
+  // Cautious labels from the evidence there is. One good answer is never called mastery.
+  function conceptEvidence(c) {
+    const revs = ST().reviews.filter(r => r.conceptId === c.id);
+    const checks = ST().sessions.filter(s => s.checkin && s.checkin.conceptIds.includes(c.id) && s.checkin.clarity);
+    const clarity = checks.length ? checks[checks.length - 1].checkin.clarity : null;
+    const last = revs[revs.length - 1];
+    const own = revs.filter(r => r.outcome === 'right' && r.support === 'own').length;
+    let status;
+    if (!last) status = clarity === 'notyet' ? 'practice' : 'introduced';
+    else if (last.outcome === 'wrong' || last.outcome === 'notsure' || last.rating === 'again') status = 'practice';
+    else if (last.outcome === 'right' && last.support === 'own') status = 'recalled';
+    else status = 'practising';
+    return { status, revs, last, own, clarity };
+  }
+  const STATUS_TEXT = { introduced: 'Introduced', practice: 'Needs practice', practising: 'Practising', recalled: 'Recalled independently' };
+  function evidenceText(ev) {
+    if (!ev.last) return ev.clarity ? `Not revised yet · after learning you said “${CLARITY[ev.clarity]}”` : 'Not revised yet';
+    const bits = [`${ev.revs.length} review${ev.revs.length === 1 ? '' : 's'}`, `last ${shortDate(ev.last.date)}: ${ev.last.outcome ? OUTCOME[ev.last.outcome] : 'not assessed'}${ev.last.support !== 'own' ? ` (${SUPPORT[ev.last.support].toLowerCase()})` : ''}`];
+    if (ev.own) bits.push(`recalled on your own ${ev.own} time${ev.own === 1 ? '' : 's'}`);
+    return bits.join(' · ') + (ev.revs.length < 3 ? ' · not enough evidence yet to say more' : '');
+  }
+
+  // Obsidian opens the note itself. MyDay can't read or change anything in your vault.
+  const obsidianUrl = path => (ST().settings.vault && path ? `obsidian://open?vault=${encodeURIComponent(ST().settings.vault)}&file=${encodeURIComponent(path)}` : '');
+  function noteLink(path, attrs) {
+    if (!path) return '';
+    const url = obsidianUrl(path);
+    return url ? `<a class="btn-link" href="${esc(url)}" ${attrs || ''}>Open “${esc(path)}” in Obsidian</a>`
+      : `<p class="small muted">Note: ${esc(path)} — add your vault name in <a href="#study/settings">Study settings</a> to open it from here.</p>`;
+  }
+
+  // A revision round, kept in memory: answers are only saved when you choose Again / Hard / Good.
+  let revRound = null; // { day, ids, i, phase: 'ask'|'shown', typed, chosen, hint, support, outcome, results: [] }
+  const freshQuestion = () => ({ phase: 'ask', typed: '', chosen: null, hint: false, support: 'own', outcome: null });
+  function startRound() {
+    const k = todayKey(), ids = dueConcepts(k).slice(0, ROUND_SIZE).map(c => c.id);
+    revRound = ids.length ? Object.assign({ day: k, ids, i: 0, results: [] }, freshQuestion()) : null;
+  }
+  function rateConcept(rating) {
+    const r = revRound, c = conceptById(r.ids[r.i]), k = todayKey();
+    if (!c) return;
+    const gap = nextGap(c.review.interval, rating);
+    c.review = { reps: c.review.reps + 1, interval: gap, lapses: c.review.lapses + (rating === 'again' && c.review.reps ? 1 : 0), due: shift(k, gap) };
+    ST().reviews.push({
+      id: 'rv' + uid(), conceptId: c.id, title: c.title, date: k, at: localStamp(), kind: c.kind, outcome: r.outcome,
+      graded: !r.outcome || r.outcome === 'notsure' ? null : c.kind === 'choice' ? 'auto' : 'self', chosen: r.chosen,
+      support: r.support, rating, gap, due: c.review.due
+    });
+    r.results.push({ id: c.id, outcome: r.outcome, support: r.support, rating });
+    r.i++;
+    Object.assign(r, freshQuestion());
+    persist();
+  }
+
   // The session clock ticks without redrawing the screen.
   function studyTick() {
     const s = state && state.study && activeStudy();
@@ -6021,6 +6143,10 @@
     if (v === 'task') return studyTaskView(r[1]);
     if (v === 'session') return studySessionView();
     if (v === 'checkin') return checkinView(r[1]);
+    if (v === 'revise') return reviseView();
+    if (v === 'concepts') return conceptsView();
+    if (v === 'concept') return conceptView(r[1]);
+    if (v === 'settings') return studySettingsView();
     return studyHome();
   }
   function studySide() { return ''; }
@@ -6105,11 +6231,26 @@
         ${barHtml(comp)}
         <p class="small muted" style="margin:6px 0 0">Counts tasks you've marked complete — not how well you know them.</p>
       </section>
+      ${revisionCard()}
       <section class="card">
-        <div class="st-links"><a class="btn-link" href="#study/roadmap">Roadmap</a></div>
+        <div class="st-links"><a class="btn-link" href="#study/roadmap">Roadmap</a><a class="btn-link" href="#study/concepts">Concepts</a><a class="btn-link" href="#study/settings">Settings</a></div>
         ${others.length ? `<details><summary>Other courses (${others.length})</summary>
           ${others.map(o => `<div class="c-row"><div><strong>${esc(o.title)}</strong><div class="meta">${completionText(completion(ix.courseTasks.get(o.id)))}</div></div><div class="c-actions"><button class="inline" data-action="s-focus" data-id="${esc(o.id)}">Focus on this</button></div></div>`).join('')}
         </details>` : ''}
+      </section>`;
+  }
+
+  // A small preview: concept names only (never answers), and a separate button to start.
+  function revisionCard() {
+    const k = todayKey(), due = dueConcepts(k), needQ = ST().concepts.filter(c => !questionReady(c)).length, nextDate = nextReviewDate(k);
+    if (!ST().concepts.length) return '';
+    return `
+      <section class="card" id="stRevision">
+        <h3>Revision</h3>
+        ${due.length ? `<p class="small">Ready to revise: ${due.slice(0, 3).map(c => esc(c.title)).join(', ')}${due.length > 3 ? ' and more' : ''}.</p>
+          <button data-action="s-rev-start">Start revision</button>`
+          : `<p class="small muted" style="margin:0">Nothing to revise right now${nextDate ? ` — next on ${esc(shortDate(nextDate))}` : ''}.</p>`}
+        ${needQ ? `<p class="small muted" style="margin:10px 0 0">${needQ} concept${needQ === 1 ? ' needs' : 's need'} a revision question. <a href="#study/concepts">Add questions</a></p>` : ''}
       </section>`;
   }
 
@@ -6247,6 +6388,144 @@
       </section>`;
   }
 
+  // ---------- Revision: one question at a time; the answer isn't on the page until you ask for it ----------
+  function reviseView() {
+    const k = todayKey();
+    if (revRound && revRound.day !== k) revRound = null;
+    const r = revRound;
+    if (!r || r.i >= r.ids.length) {
+      const due = dueConcepts(k), nextDate = nextReviewDate(k), needQ = ST().concepts.filter(c => !questionReady(c)).length;
+      const done = r && r.results.length ? `
+        <section class="card next-card">
+          <span class="eyebrow">Round finished</span>
+          <h2>${r.results.length} reviewed</h2>
+          <p class="small">Recalled on your own: ${r.results.filter(x => x.outcome === 'right' && x.support === 'own').length}. Each one is scheduled to come back when it's due.</p>
+        </section>` : '';
+      return `
+        <section class="card"><a class="btn-link" href="#study">‹ Study</a><h2>Revision</h2>
+          <p class="small muted" style="margin:0">Retrieving what you've learned, one question at a time. Rounds of ${ROUND_SIZE} — stop whenever you like; nothing piles up.</p></section>
+        ${done}
+        <section class="card">
+          ${due.length ? `<p class="small">${due.length > ROUND_SIZE ? `A round of ${ROUND_SIZE} is ready.` : `${due.length} ready to revise.`}</p>
+            <button class="primary" data-action="s-rev-start">${r && r.results.length ? 'Do another round' : 'Start revision'}</button>`
+            : `<p class="small">Nothing to revise right now.${nextDate ? ` The next review is on ${esc(shortDate(nextDate))}.` : ''}</p>`}
+          ${needQ ? `<p class="small muted" style="margin:10px 0 0">${needQ} concept${needQ === 1 ? ' needs' : 's need'} a revision question before ${needQ === 1 ? 'it' : 'they'} can come up. <a href="#study/concepts">Add questions</a></p>` : ''}
+        </section>
+        <section class="card"><details><summary>How revision is scheduled</summary>
+          <p class="small">First review: <strong>Again</strong> → tomorrow · <strong>Hard</strong> → in 2 days · <strong>Good</strong> → in 4 days.</p>
+          <p class="small">After that: Again → tomorrow (the gap starts over) · Hard → the last gap × 1.2 · Good → the last gap × 2.5. Gaps always grow by at least a day and stop at 180 days.</p>
+          <p class="small muted" style="margin:0">Dates are saved on this device. Concepts never revised come after any that are due.</p>
+        </details></section>`;
+    }
+    const c = conceptById(r.ids[r.i]);
+    if (!c) { r.i++; return reviseView(); }
+    const shown = r.phase === 'shown', notes = obsidianUrl(c.note);
+    const choiceBtn = (text, i) => {
+      if (!shown) return `<button class="st-choice" data-action="s-rev-choose" data-i="${i}">${esc(text)}</button>`;
+      const right = i === c.correct, mine = i === r.chosen;
+      return `<div class="st-choice shown${right ? ' right' : ''}${mine && !right ? ' wrong' : ''}">${right ? '✓ ' : mine ? '✗ ' : ''}${esc(text)}${mine ? ' <span class="meta">(your choice)</span>' : ''}</div>`;
+    };
+    const gapLabel = rating => { const g = nextGap(c.review.interval, rating); return g === 1 ? 'tomorrow' : `in ${g} days`; };
+    return `
+      <section class="card next-card st-q">
+        <div class="card-head"><span class="eyebrow">Question ${r.i + 1} of ${r.ids.length}</span><a class="btn-link" href="#study">Stop for now</a></div>
+        <div class="st-path">${esc(c.title)}</div>
+        <h2 class="st-prompt">${esc(c.prompt)}</h2>
+        ${c.kind === 'choice' ? `<div class="stack">${c.choices.map((t, i) => (t ? choiceBtn(t, i) : '')).join('')}</div>`
+          : shown ? (r.typed ? `<div class="st-yours"><span class="lbl">Your answer</span><p>${esc(r.typed)}</p></div>` : '')
+          : `<label class="lbl" for="revTyped">Your answer (optional — you can just think it)</label><textarea id="revTyped" rows="3" data-s="rev-typed">${esc(r.typed)}</textarea>`}
+        ${!shown && c.hint ? (r.hint ? `<p class="small st-hint">Hint: ${esc(c.hint)}</p>` : '<button class="link-btn" data-action="s-rev-hint">Show a hint</button>') : ''}
+        ${!shown ? `
+          <div class="stack" style="margin-top:12px">
+            ${c.kind === 'written' ? '<button class="primary" data-action="s-rev-show">Show the answer</button>' : ''}
+            <button class="ghost" data-action="s-rev-notsure">Not sure</button>
+          </div>
+          ${notes ? `<a class="btn-link" href="${esc(notes)}" data-rev-notes="1">Check my notes in Obsidian</a>` : ''}` : `
+          ${c.kind === 'choice' ? `<p class="st-verdict">${r.outcome === 'right' ? 'Correct — matches the stored answer.' : r.outcome === 'wrong' ? 'Not this time — the stored answer is marked ✓.' : 'Not sure — the stored answer is marked ✓.'}</p>`
+            : `<div class="st-answer"><span class="lbl">Answer</span><p>${esc(c.answer || '—')}</p></div>`}
+          ${c.explanation ? `<div class="st-answer"><span class="lbl">Explanation</span><p>${esc(c.explanation)}</p></div>` : ''}
+          ${c.source ? `<p class="small muted">Source: ${safeUrl(c.source) ? `<a href="${esc(c.source)}" target="_blank" rel="noopener">${esc(c.source)}</a>` : esc(c.source)}</p>` : ''}
+          ${noteLink(c.note)}
+          ${c.kind === 'written' && r.outcome !== 'notsure' ? `
+            <h3>How did your answer compare?</h3>
+            <div class="seg st-seg">${['right', 'partly', 'wrong'].map(o => `<button class="${r.outcome === o ? 'on' : ''}" data-action="s-rev-self" data-v="${o}" aria-pressed="${r.outcome === o}">${OUTCOME[o]}</button>`).join('')}</div>
+            <p class="small muted">Self-assessed — MyDay doesn't mark written answers.</p>` : ''}
+          <h3>How did you answer?</h3>
+          <div class="seg st-seg">${Object.keys(SUPPORT).map(o => `<button class="${r.support === o ? 'on' : ''}" data-action="s-rev-support" data-v="${o}" aria-pressed="${r.support === o}">${SUPPORT[o]}</button>`).join('')}</div>
+          <h3>When should it come back?</h3>
+          <div class="st-rate">${Object.keys(RATING).map(o => `<button class="${o === 'good' ? 'primary' : ''}" data-action="s-rev-rate" data-v="${o}">${RATING[o]}<span class="meta">${gapLabel(o)}</span></button>`).join('')}</div>`}
+      </section>`;
+  }
+
+  function conceptsView() {
+    const list = ST().concepts, needQ = list.filter(c => !questionReady(c));
+    const row = c => { const ev = conceptEvidence(c); return `<div class="c-row"><div><a href="#study/concept/${esc(c.id)}"><strong>${esc(c.title)}</strong></a><div class="meta">${STATUS_TEXT[ev.status]}${questionReady(c) && c.review.due ? ` · next review ${esc(shortDate(c.review.due))}` : ''}</div></div></div>`; };
+    return `
+      <section class="card">
+        <a class="btn-link" href="#study">‹ Study</a>
+        <div class="card-head"><h2>Concepts</h2><button class="inline" data-action="s-concept-new">+ New</button></div>
+        <p class="small muted" style="margin:6px 0 0">Shared by learning and revision. Labels are cautious — one good answer isn't mastery.</p>
+      </section>
+      ${needQ.length ? `<section class="card"><h3>Need a revision question (${needQ.length})</h3><p class="small muted">Add a question and an answer or explanation, and they'll come up in revision. Nothing is written for you.</p>${needQ.map(row).join('')}</section>` : ''}
+      <section class="card"><h3>All concepts (${list.length})</h3>${list.length ? list.map(row).join('') : '<p class="small muted" style="margin:0">Concepts you add after a session, or here, appear in this list.</p>'}</section>`;
+  }
+
+  function conceptView(id) {
+    const c = conceptById(id);
+    if (!c) return '<section class="card"><h2>Concept not found</h2><a class="btn" href="#study/concepts">Back to concepts</a></section>';
+    const ix = stIndex(), ev = conceptEvidence(c), ready = questionReady(c);
+    const linked = c.taskIds.map(t => ix.task.get(t)).filter(Boolean), others = [...ix.task.values()].filter(e => !c.taskIds.includes(e.node.id));
+    const field = (key, label, value, rows, ph) => `<div class="field"><label class="lbl" for="cp-${key}">${label}</label>${rows
+      ? `<textarea id="cp-${key}" rows="${rows}" data-s="cp-${key}" data-id="${esc(c.id)}" ${ph ? `placeholder="${esc(ph)}"` : ''}>${esc(value)}</textarea>`
+      : `<input id="cp-${key}" type="text" maxlength="400" data-s="cp-${key}" data-id="${esc(c.id)}" value="${esc(value)}" ${ph ? `placeholder="${esc(ph)}"` : ''}>`}</div>`;
+    const checks = ST().sessions.filter(s => s.checkin && s.checkin.conceptIds.includes(c.id));
+    return `
+      <section class="card">
+        <a class="btn-link" href="#study/concepts">‹ Concepts</a>
+        <h2>${esc(c.title)}</h2>
+        <p class="small"><span class="chip">${STATUS_TEXT[ev.status]}</span> ${esc(evidenceText(ev))}</p>
+        ${ready ? '' : '<p class="stale small">Needs a revision question: add a question, plus an answer or explanation (or the choices for multiple choice). MyDay won\'t write these for you.</p>'}
+        ${field('title', 'Name', c.title)}
+        <div class="field"><label class="lbl" for="cp-kind">Question type</label><select id="cp-kind" data-s="cp-kind" data-id="${esc(c.id)}"><option value="written" ${c.kind === 'written' ? 'selected' : ''}>Written answer (you check it yourself)</option><option value="choice" ${c.kind === 'choice' ? 'selected' : ''}>Multiple choice (checked against the answer you mark)</option></select></div>
+        ${field('prompt', 'Revision question', c.prompt, 2)}
+        ${c.kind === 'written' ? field('answer', 'Answer', c.answer, 3) : `
+          <fieldset class="st-choices"><legend class="lbl">Choices — mark the correct one</legend>
+            ${[0, 1, 2, 3].map(i => `<div class="st-choice-edit"><input type="radio" name="cpCorrect" data-s="cp-correct" data-id="${esc(c.id)}" value="${i}" ${c.correct === i ? 'checked' : ''} aria-label="Choice ${i + 1} is correct"><input type="text" maxlength="200" data-s="cp-choice" data-i="${i}" data-id="${esc(c.id)}" value="${esc(c.choices[i] || '')}" aria-label="Choice ${i + 1}"></div>`).join('')}
+          </fieldset>`}
+        ${field('explanation', 'Explanation', c.explanation, 3)}
+        <details ${c.hint || c.source || c.note ? 'open' : ''}><summary>Hint, source and notes</summary>
+          ${field('hint', 'Hint (optional)', c.hint)}
+          ${field('source', 'Source (optional — a link or a book/course name)', c.source)}
+          ${field('note', 'Obsidian note (path in your vault)', c.note, 0, 'e.g. Networking/DNS')}
+          ${noteLink(c.note)}
+        </details>
+      </section>
+      <section class="card">
+        <h3>Linked learning tasks</h3>
+        ${linked.length ? linked.map(e => `<div class="c-row"><div>${esc(e.node.title)}<div class="meta">${esc(e.course.title)}</div></div><div class="c-actions"><button class="inline" data-action="s-cp-unlink" data-id="${esc(c.id)}" data-task="${esc(e.node.id)}" aria-label="Unlink ${esc(e.node.title)}">✕</button></div></div>`).join('') : '<p class="small muted" style="margin:0">Not linked to a task.</p>'}
+        ${others.length ? `<div class="inline-add"><select id="cpLink" aria-label="Task to link">${others.map(e => `<option value="${esc(e.node.id)}">${esc(`${e.course.title} › ${e.node.title}`)}</option>`).join('')}</select><button class="inline" data-action="s-cp-link" data-id="${esc(c.id)}">Link</button></div>` : ''}
+      </section>
+      <section class="card">
+        <h3>History</h3>
+        ${ev.revs.length ? `<ul class="plain-list">${ev.revs.slice().reverse().map(x => `<li>${esc(shortDate(x.date))} · ${x.outcome ? OUTCOME[x.outcome] : 'Not assessed'}${x.graded === 'self' ? ' (self-assessed)' : ''} · ${SUPPORT[x.support]} · ${RATING[x.rating]}</li>`).join('')}</ul>` : '<p class="small muted">No revision yet.</p>'}
+        ${checks.length ? `<p class="small muted" style="margin:8px 0 0">After learning: ${checks.map(s => `${esc(shortDate(s.date))}${s.checkin.clarity ? ` — ${CLARITY[s.checkin.clarity]}` : ''}`).join(' · ')}</p>` : ''}
+      </section>
+      <section class="card"><button class="ghost" data-action="s-cp-del" data-id="${esc(c.id)}">Remove this concept</button>
+        <p class="small muted" style="margin:8px 0 0">Its past reviews stay in your study history.</p></section>`;
+  }
+
+  function studySettingsView() {
+    const st = ST().settings;
+    return `
+      <section class="card">
+        <a class="btn-link" href="#study">‹ Study</a>
+        <h2>Study settings</h2>
+        <div class="field"><label class="lbl" for="stVault">Obsidian vault name (optional)</label><input id="stVault" type="text" maxlength="100" data-s="vault" value="${esc(st.vault)}" placeholder="e.g. Notes"></div>
+        <p class="small muted">With a vault name, note paths on tasks, concepts and check-ins get an “Open in Obsidian” link. Obsidian opens the note itself — MyDay can't read or change anything in your vault, and Study works fine without it.</p>
+        <label class="check"><input type="checkbox" data-s="show-clock" ${st.showClock ? 'checked' : ''}> Show the clock during learning sessions</label>
+      </section>`;
+  }
+
   function courseView(id) {
     const ix = stIndex(), e = ix.course.get(id);
     if (!e) return '<section class="card"><h2>Course not found</h2><a class="btn" href="#study/roadmap">Back to the roadmap</a></section>';
@@ -6274,7 +6553,7 @@
   function studyTaskView(id) {
     const ix = stIndex(), e = ix.task.get(id);
     if (!e) return '<section class="card"><h2>Task not found</h2><a class="btn" href="#study/roadmap">Back to the roadmap</a></section>';
-    const t = e.node;
+    const t = e.node, concepts = ST().concepts.filter(c => c.taskIds.includes(t.id));
     const sections = [...ix.section.values()];
     return `
       <section class="card">
@@ -6291,6 +6570,11 @@
         ${t.url ? `<a class="btn-link" href="${esc(t.url)}" target="_blank" rel="noopener">Open the resource ↗</a>` : ''}
         <div class="field"><label class="lbl" for="tkSec">Section</label><select id="tkSec" data-s="task-section" data-id="${esc(t.id)}">${sections.map(x => `<option value="${esc(x.node.id)}" ${x.node === e.section ? 'selected' : ''}>${esc(`${x.course.title} › ${x.module.title} › ${x.node.title}`)}</option>`).join('')}</select></div>
         <button class="ghost" data-action="s-del" data-id="${esc(t.id)}" style="margin-top:8px">Remove this task</button>
+      </section>
+      <section class="card">
+        <h3>Linked concepts</h3>
+        ${concepts.length ? `<ul class="plain-list">${concepts.map(c => `<li><a href="#study/concept/${esc(c.id)}">${esc(c.title)}</a><div class="meta">${questionReady(c) ? STATUS_TEXT[conceptEvidence(c).status] : 'Needs a revision question'}</div></li>`).join('')}</ul>` : '<p class="small muted" style="margin:0">None yet.</p>'}
+        <div class="inline-add"><label class="sr-only" for="tkConcept">Add a concept</label><input id="tkConcept" type="text" maxlength="120" placeholder="Add a concept" enterkeyhint="done"><button class="inline" data-action="s-task-concept" data-id="${esc(t.id)}">Add</button></div>
       </section>`;
   }
 
@@ -6378,10 +6662,7 @@
         } else {
           const title = ($('ciNew') ? $('ciNew').value : '').trim();
           if (!title) return 'none';
-          // Reuse a concept with the same name rather than making a duplicate.
-          let c = ST().concepts.find(x => x.title.toLowerCase() === title.toLowerCase());
-          if (!c) { c = newConcept(title, s.taskId); ST().concepts.push(c); }
-          else if (s.taskId && !c.taskIds.includes(s.taskId)) c.taskIds.push(s.taskId);
+          const c = conceptNamed(title, s.taskId); // reuses one with the same name rather than making a duplicate
           const ci = ensureCheckin(s);
           if (!ci.conceptIds.includes(c.id)) ci.conceptIds.push(c.id);
           persist(); render();
@@ -6400,6 +6681,55 @@
         toast("Ticked on today's plan.");
         return;
       }
+      case 's-task-concept': {
+        const title = ($('tkConcept') ? $('tkConcept').value : '').trim();
+        if (!title || !ix.task.has(d.id)) return 'none';
+        conceptNamed(title, d.id);
+        persist(); render();
+        if ($('tkConcept')) $('tkConcept').focus();
+        return 'none';
+      }
+
+      // ----- Revision -----
+      case 's-rev-start': startRound(); go('study/revise'); return 'none';
+      case 's-rev-choose': case 's-rev-show': case 's-rev-notsure': case 's-rev-hint': case 's-rev-self': case 's-rev-support': case 's-rev-rate': {
+        const r = revRound, c = r && conceptById(r.ids[r.i]);
+        if (!c) return;
+        if (r.phase === 'ask') {
+          if (a === 's-rev-hint') { r.hint = true; r.support = 'hint'; }
+          else if (a === 's-rev-choose') { r.chosen = Number(d.i); r.outcome = r.chosen === c.correct ? 'right' : 'wrong'; r.phase = 'shown'; }
+          else if (a === 's-rev-show') r.phase = 'shown';
+          else if (a === 's-rev-notsure') { r.outcome = 'notsure'; r.phase = 'shown'; }
+          return;
+        }
+        if (a === 's-rev-self' && OUTCOME[d.v]) r.outcome = d.v;
+        else if (a === 's-rev-support' && SUPPORT[d.v]) r.support = d.v;
+        else if (a === 's-rev-rate' && RATING[d.v]) { rateConcept(d.v); window.scrollTo(0, 0); }
+        return;
+      }
+
+      // ----- Concepts -----
+      case 's-concept-new': {
+        const c = newConcept('New concept', null);
+        ST().concepts.push(c);
+        persist();
+        go('study/concept/' + c.id);
+        setTimeout(() => { if ($('cp-title')) { $('cp-title').focus(); $('cp-title').select(); } }, 50);
+        return 'none';
+      }
+      case 's-cp-link': { const c = conceptById(d.id), t = $('cpLink') ? $('cpLink').value : ''; if (c && ix.task.has(t) && !c.taskIds.includes(t)) { c.taskIds.push(t); persist(); } return; }
+      case 's-cp-unlink': { const c = conceptById(d.id); if (c) { c.taskIds = c.taskIds.filter(x => x !== d.task); persist(); } return; }
+      case 's-cp-del': {
+        const c = conceptById(d.id);
+        if (!c || !confirm(`Remove “${c.title}”? Its past reviews stay in your study history.`)) return 'none';
+        ST().concepts = ST().concepts.filter(x => x !== c);
+        for (const s of ST().sessions) if (s.checkin) s.checkin.conceptIds = s.checkin.conceptIds.filter(x => x !== c.id);
+        revRound = null;
+        persist();
+        go('study/concepts');
+        return 'none';
+      }
+
       case 's-ci-done': case 's-ci-skip': {
         const s = ST().sessions.find(x => x.id === d.id);
         if (a === 's-ci-done' && s && s.checkin) toast('Check-in saved.');
@@ -6410,8 +6740,25 @@
   }
 
   function studyInput(el, type) {
-    if (type !== 'change') return;
     const d = el.dataset, key = d.s, ix = stIndex();
+    if (key === 'rev-typed') { if (revRound) revRound.typed = el.value.slice(0, 2000); return; } // kept in memory only
+    if (type !== 'change') return;
+    if (key === 'vault') { ST().settings.vault = el.value.trim().slice(0, 100); persist(); return; }
+    if (key.startsWith('cp-')) {
+      const c = conceptById(d.id), f = key.slice(3);
+      if (!c) return;
+      if (f === 'title') { const v = el.value.trim(); if (v) c.title = v.slice(0, 120); else el.value = c.title; }
+      else if (f === 'kind') c.kind = el.value === 'choice' ? 'choice' : 'written';
+      else if (f === 'choice') {
+        while (c.choices.length < 4) c.choices.push('');
+        c.choices[Number(d.i)] = el.value.trim().slice(0, 200);
+        if (c.correct !== null && !c.choices[c.correct]) c.correct = null;
+      } else if (f === 'correct') c.correct = c.choices[Number(el.value)] ? Number(el.value) : null; // only a filled-in choice can be the answer
+      else c[f] = el.value.trim().slice(0, { prompt: 1000, answer: 2000, explanation: 4000, hint: 500, source: 400, note: 300 }[f] || 400);
+      persist();
+      if (f === 'kind' || f === 'correct' || f === 'title') render();
+      return;
+    }
     if (key === 'show-clock') { ST().settings.showClock = el.checked; persist(); render(); return; }
     if (key.startsWith('ci-')) {
       const s = ST().sessions.find(x => x.id === d.id);
@@ -6533,6 +6880,7 @@
 
   document.addEventListener('input', e => {
     if (e.target.id === 'foodQ') { onFoodTyping(e.target.value); return; }
+    if (e.target.dataset && e.target.dataset.s) { studyInput(e.target, 'input'); return; }
     if (e.target.dataset && e.target.dataset.h) { healthInput(e.target, 'input'); return; }
     if (e.target.id === 'energy') {
       const v = Number(e.target.value);
@@ -7047,6 +7395,11 @@
     if (e.target.id === 'foodQ') { e.preventDefault(); healthAction('h-food-search', e.target); }
     if (e.target.id === 'shopAdd') { e.preventDefault(); healthAction('h-shop-add', e.target); }
     if (e.target.id === 'ciNew') { e.preventDefault(); studyAction('s-ci-add', e.target); }
+    if (e.target.id === 'tkConcept') { e.preventDefault(); studyAction('s-task-concept', document.querySelector('[data-action=s-task-concept]')); }
+  });
+  // Opening your notes during a revision question is recorded as "Checked notes".
+  document.addEventListener('click', e => {
+    if (revRound && e.target.closest && e.target.closest('a[data-rev-notes]')) { revRound.support = 'notes'; }
   });
   // Search suggestions: arrow keys move through them, Escape closes them.
   document.addEventListener('keydown', e => {
