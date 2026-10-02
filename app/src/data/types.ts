@@ -102,9 +102,11 @@ export interface MyDayData {
   pay: PaySettings;
   bankHolidays: BankHolidays;
 
-  // Not described yet: kept exactly as saved until their screens move to the new app.
+  // Study (added in schemaVersion 4).
+  study: StudyData;
+
+  // Not described yet: kept exactly as saved until its screens move to the new app.
   health?: unknown;
-  study?: unknown;
 
   // Anything else (e.g. a section added by a newer MyDay) is kept as it was, never dropped.
   [other: string]: unknown;
@@ -170,4 +172,48 @@ export interface BankHolidays {
   region: BankHolidayRegion;
   fetchedAt: DateTime | null;
   divisions: Record<BankHolidayRegion, { date: DateKey; title: string }[]> | null;
+}
+
+// ---------- Study ----------
+// The roadmap is a nested outline: Stage → Course → Module → Section → Task.
+// Completion only counts tasks you've marked complete — it isn't mastery.
+export interface StudyTask { id: string; title: string; minutes: number; url: string; kind: 'learn' | 'practical'; note: string; done: boolean; doneOn: DateKey | null }
+export interface StudySection { id: string; title: string; tasks: StudyTask[] }
+export interface StudyModule { id: string; title: string; sections: StudySection[] }
+export interface StudyCourse { id: string; title: string; url: string; minutes: number; listId: string | null; archived: boolean; modules: StudyModule[] }
+export interface StudyStage { id: string; title: string; courses: StudyCourse[] }
+
+// Concepts are shared by learning (check-ins) and revision.
+export interface Concept {
+  id: string; title: string; taskIds: string[]; createdOn: DateKey;
+  kind: 'written' | 'choice'; prompt: string; answer: string; explanation: string; choices: string[]; correct: number | null;
+  hint: string; source: string; note: string; // note = a path in your Obsidian vault (never read by MyDay)
+  review: { reps: number; interval: number; lapses: number; due: DateKey | null };
+}
+export type Clarity = 'understand' | 'partly' | 'notyet';
+export interface Checkin { conceptIds: string[]; clarity: Clarity | null; takeaway: string; question: string; note: string }
+// A learning session. Time is by the clock, so it keeps counting while the phone sleeps.
+export interface StudySession {
+  id: string; courseId: string | null; taskId: string | null; title: string; date: DateKey; startedAt: string;
+  plannedMin: number; short: boolean; status: 'active' | 'done'; runningSince: number | null; activeMs: number; endedAt: string | null;
+  checkin: Checkin | null;
+  taskDone: boolean | null; // your answer to "is the task complete?" (separate from how clear it felt)
+  todayUid: string | null;  // the Today learning task ticked from this session, if any
+}
+export type Outcome = 'right' | 'partly' | 'wrong' | 'notsure';
+export type Support = 'own' | 'hint' | 'notes';
+export type Rating = 'again' | 'hard' | 'good';
+// One answered revision question (kept even if the concept is later removed).
+export interface Review {
+  id: string; conceptId: string; title: string; date: DateKey; at: string; kind: 'written' | 'choice';
+  outcome: Outcome | null; graded: 'auto' | 'self' | null; chosen: number | null; support: Support; rating: Rating; gap: number; due: DateKey | null;
+}
+export interface StudyData {
+  stages: StudyStage[];
+  focusCourseId: string | null; // the course on the dashboard (otherwise the first one with work left)
+  concepts: Concept[];
+  sessions: StudySession[];
+  activeId: string | null;      // the session in progress, if any (only ever one)
+  reviews: Review[];
+  settings: { vault: string; showClock: boolean };
 }

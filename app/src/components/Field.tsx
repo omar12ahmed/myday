@@ -29,7 +29,8 @@ export function Select({ className = '', children, ...rest }: ComponentProps<'se
 // pick from a time picker (the browser's "change" event) — not on every keystroke, so a half-typed
 // value is never checked or saved. Give it a `defaultValue`, and a `key` that changes when the saved
 // value changes, so it shows the new value.
-export function CommitInput({ onCommit, ...rest }: ComponentProps<'input'> & { onCommit: (el: HTMLInputElement) => void }) {
+// A `ref` passed in also receives the input (e.g. to put the cursor in it).
+export function CommitInput({ onCommit, ref: outer, ...rest }: ComponentProps<'input'> & { onCommit: (el: HTMLInputElement) => void }) {
   const ref = useRef<HTMLInputElement>(null);
   const latest = useRef(onCommit);
   useEffect(() => { latest.current = onCommit; });
@@ -40,5 +41,30 @@ export function CommitInput({ onCommit, ...rest }: ComponentProps<'input'> & { o
     el.addEventListener('change', done);
     return () => el.removeEventListener('change', done);
   }, []);
-  return <TextInput ref={ref} {...rest} />;
+  const both = (el: HTMLInputElement | null) => {
+    ref.current = el;
+    if (typeof outer === 'function') outer(el);
+    else if (outer) outer.current = el;
+  };
+  return <TextInput ref={both} {...rest} />;
 }
+
+export function TextArea({ className = '', ...rest }: ComponentProps<'textarea'>) {
+  return <textarea className={`${CONTROL} resize-y ${className}`} {...rest} />;
+}
+
+// CommitInput's partner for longer text: used when you leave the box, not on every keystroke.
+export function CommitTextarea({ onCommit, ...rest }: ComponentProps<'textarea'> & { onCommit: (el: HTMLTextAreaElement) => void }) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  const latest = useRef(onCommit);
+  useEffect(() => { latest.current = onCommit; });
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const done = () => latest.current(el);
+    el.addEventListener('change', done);
+    return () => el.removeEventListener('change', done);
+  }, []);
+  return <TextArea ref={ref} {...rest} />;
+}
+

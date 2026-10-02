@@ -3,10 +3,9 @@ import { Card } from '../components/Card';
 import { CURRENT_MYDAY_URL } from '../links';
 import { SECTIONS, type SectionId } from './sections';
 
-export type NotMovedId = Exclude<SectionId, 'today' | 'calendar' | 'pay'>;
+export type NotMovedId = Exclude<SectionId, 'today' | 'calendar' | 'pay' | 'study'>;
 const WHAT: Record<NotMovedId, string> = {
   health: 'workouts, recipes, cooking history and shopping list',
-  study: 'roadmap, study sessions, concepts and revision',
 };
 
 // A section that hasn't moved to the new app yet. It says so plainly rather than showing an empty screen.

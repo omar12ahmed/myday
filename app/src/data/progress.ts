@@ -3,7 +3,7 @@
 // missed days and rest days simply slide out of the 7-day window.
 import { dtToMin, minToDt, shift, todayKey } from './dates';
 import { learningDoneOn, learningForToday, limitFor, releaseTask, shrinkTask } from './plan';
-import { studyOnlySessions } from './studySessions';
+import { studyOnlySessions } from './study/sessions';
 import type { DateKey, MyDayData, Task } from './types';
 
 // Learning done (true/false) for the 6 days before today and today, oldest first.

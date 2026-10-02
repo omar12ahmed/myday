@@ -12,6 +12,7 @@ import { Nav } from './shell/Nav';
 import { sectionFromHash, type SectionId } from './shell/sections';
 import { CalendarScreen } from './calendar/CalendarScreen';
 import { PayScreen } from './pay/PayScreen';
+import { StudyScreen } from './study/StudyScreen';
 import { NotMovedYet } from './shell/NotMovedYet';
 import { DamagedView, OlderView } from './shell/StatusScreens';
 import { ThemeButton } from './shell/ThemeButton';
@@ -37,7 +38,8 @@ const reduceQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-moti
 function Shell() {
   const { data, status, generation } = useMyDay();
   const confirm = useConfirm();
-  const section: SectionId = sectionFromHash(useSyncExternalStore(subscribeHash, getHash));
+  const hash = useSyncExternalStore(subscribeHash, getHash);
+  const section: SectionId = sectionFromHash(hash);
   const [k, setK] = useState(todayKey);
   const fileInput = useRef<HTMLInputElement>(null);
   const theme: Theme = data.settings.theme;
@@ -115,6 +117,7 @@ function Shell() {
       onExport={exportData} onImport={() => fileInput.current?.click()} />;
   } else if (section === 'calendar') content = <CalendarScreen data={data} canSave={status.kind === 'ok'} motionAllowed={motionAllowed} />;
   else if (section === 'pay') content = <PayScreen data={data} canSave={status.kind === 'ok'} />;
+  else if (section === 'study') content = <StudyScreen data={data} hash={hash} />;
   else content = <NotMovedYet section={section} />;
 
   return (

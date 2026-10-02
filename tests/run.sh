@@ -5,13 +5,13 @@
 # Usage:  tests/run.sh                 run every suite
 #         tests/run.sh storage today   run only the suites named
 # Suites for the current MyDay (index.html): storage, today, calendar-pay, health, study
-# Suites for the new app (app/, built first): app-storage, app-today, app-calendar-pay
+# Suites for the new app (app/, built first): app-storage, app-today, app-calendar-pay, app-study
 set -u
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(dirname "$HERE")"
 SUITES=("$@")
-[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study app-storage app-today app-calendar-pay)
+[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study app-storage app-today app-calendar-pay app-study)
 
 # ---- What's needed ----
 CHROME="${CHROME:-}"

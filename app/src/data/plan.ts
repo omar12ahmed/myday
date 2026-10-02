@@ -3,7 +3,7 @@
 // saves afterwards (see store.ts) — and change it in place, exactly like the current MyDay does.
 import { localStamp, shift } from './dates';
 import { CATS, uid } from './normalize';
-import { studiedOn } from './studySessions';
+import { studiedOn } from './study/sessions';
 import type { Category, DateKey, Day, Energy, ListItem, MyDayData, QueueItem, Task } from './types';
 
 // ---------- How much fits in a day ----------

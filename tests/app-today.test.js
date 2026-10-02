@@ -554,8 +554,8 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
 
   console.log('\n[20] Sections that have not moved yet');
   const navLabels = await ev(`[...document.querySelectorAll('#nav a')].map(a => a.getAttribute('aria-label'))`);
-  check('the navigation keeps all five sections, and says which are not in the new app yet', eq(navLabels, ['Today', 'Calendar', 'Pay', 'Health (not in the new app yet)', 'Study (not in the new app yet)']), navLabels);
-  for (const s of ['health', 'study']) {
+  check('the navigation keeps all five sections, and says which are not in the new app yet', eq(navLabels, ['Today', 'Calendar', 'Pay', 'Health (not in the new app yet)', 'Study']), navLabels);
+  for (const s of ['health']) {
     await ev(`location.hash = '#${s}'`); await sleep(200);
     const h = await text('#app h2');
     check(`#${s}: says plainly it hasn't moved yet, with a link to the current MyDay`, h.endsWith("hasn't moved to the new MyDay yet") && (await ev(`(document.querySelector('#app a[href$="#${s}"]') || {}).getAttribute?.('href') || ''`)) === `../../index.html#${s}`, h);

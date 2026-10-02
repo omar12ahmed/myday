@@ -60,8 +60,8 @@ const go = async (hash, y, m, d, h = 9, mi = 0, url = APP) => { T.setUrl(url + '
   await go('today', 2026, 11, 2); await reset(); await go('today', 2026, 11, 2);
   const navLabels = await ev(`[...document.querySelectorAll('#nav .nav-item')].map(a => a.textContent.trim())`);
   check('navigation shows Today, Calendar, Pay, Health and Study', eq(navLabels, ['Today', 'Calendar', 'Pay', 'Health', 'Study']), navLabels);
-  check('Calendar and Pay are no longer marked "not in the new app yet"; Health and Study still are',
-    eq(await ev(`[...document.querySelectorAll('#nav a')].map(a => a.getAttribute('aria-label'))`), ['Today', 'Calendar', 'Pay', 'Health (not in the new app yet)', 'Study (not in the new app yet)']));
+  check('Calendar and Pay are no longer marked "not in the new app yet"; Health still is',
+    eq(await ev(`[...document.querySelectorAll('#nav a')].map(a => a.getAttribute('aria-label'))`), ['Today', 'Calendar', 'Pay', 'Health (not in the new app yet)', 'Study']));
   check('unfinished sections (Ideas) are not shown as controls', !(await ev(`/Ideas/.test(document.getElementById('nav').textContent)`)) && !(await exists('a[href="#ideas"]')));
   check('Today is marked as the current page', (await text('#nav [aria-current=page]')).trim() === 'Today');
   await click('a.nav-item[href="#calendar"]'); await sleep(300);
@@ -355,7 +355,7 @@ const go = async (hash, y, m, d, h = 9, mi = 0, url = APP) => { T.setUrl(url + '
   const m4 = await data();
   check('a version-3 backup imports, and the new sections start with their defaults', m4.schemaVersion === 4 && m4.days['2026-11-02'].tasks[0].done === true && m4.rota.patterns.length === 0 && m4.pay.hourlyRate === null && m4.bankHolidays.divisions === null);
   await editStorage(`s => { s.rota.patterns = [${PATTERN}]; s.rota.overrides = { '2026-11-03': { planned: { type: 'off' }, actual: { status: 'sick' } } }; s.rota.entries = [{ id: 'o9', kind: 'overtime', start: '2026-11-07T10:00', end: '2026-11-07T14:00', note: 'x' }]; s.pay.hourlyRate = 15;
-    s.health = { workout: { templates: [{ id: 't1', name: 'Legs', minutes: 45 }] } }; s.study = { stages: [{ id: 'st1', title: 'Networking' }] }; s.futureSection = { kept: true }; }`);
+    s.health = { workout: { templates: [{ id: 't1', name: 'Legs', minutes: 45 }] } }; s.study = { stages: [{ id: 'st1', title: 'Networking', courses: [] }], focusCourseId: null, concepts: [], sessions: [], activeId: null, reviews: [], settings: { vault: '', showClock: true } }; s.futureSection = { kept: true }; }`); // Study as both apps save it, so the comparison below can be exact
   await openAt(2026, 11, 2, 12);
   for (const f of fs.readdirSync(S + '/dl')) fs.unlinkSync(S + '/dl/' + f);
   await click('[data-action=export]'); await sleep(1500);

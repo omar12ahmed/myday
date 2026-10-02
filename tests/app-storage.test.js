@@ -122,10 +122,12 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   await click('#themeBtn'); await sleep(300);
   await click('[data-action=edit]'); await click('[data-action=add][data-cat=admin]'); await sleep(150); await click('[data-action=back]'); await sleep(150);
   s = await D();
-  check('health and study (not in the new app yet) are byte-for-byte unchanged after many saves',
-    ['health', 'study'].every(k => JSON.stringify(s[k]) === JSON.stringify(before[k])), ['health', 'study'].filter(k => JSON.stringify(s[k]) !== JSON.stringify(before[k])));
-  // Rota, pay and bank holidays are now handled by the new app: checked on load exactly as the current
-  // MyDay does (app-calendar-pay [26] compares the two side by side), so every valid record is kept.
+  check('health (not in the new app yet) is byte-for-byte unchanged after many saves', JSON.stringify(s.health) === JSON.stringify(before.health));
+  // Rota, pay, bank holidays and Study are now handled by the new app: checked on load exactly as the
+  // current MyDay does (app-calendar-pay [26] and app-study [52] compare the two side by side), so every
+  // valid record is kept.
+  check('study: the stage and the finished session are kept (filled out with the usual empty parts)',
+    s.study.stages.length === 1 && s.study.stages[0].id === 'st1' && s.study.stages[0].title === 'Networking' && s.study.sessions.length === 1 && s.study.sessions[0].id === 'x1' && s.study.sessions[0].date === '2026-11-01' && s.study.sessions[0].status === 'done', s.study);
   check('rota: pattern, one-date change and colour kept exactly', JSON.stringify(s.rota.patterns) === JSON.stringify(before.rota.patterns) && JSON.stringify(s.rota.overrides) === JSON.stringify(before.rota.overrides) && s.rota.colours.day === '#2f8f4e');
   check('pay and bank holidays: every setting kept (rate, tax code, region, saved date)', s.pay.hourlyRate === 12.21 && s.pay.taxCode === '1257L' && s.bankHolidays.region === 'scotland' && s.bankHolidays.fetchedAt === null);
   check('an unknown top-level section is kept exactly too', JSON.stringify(s.futureSection) === JSON.stringify({ notes: ['kept'] }));

@@ -8,7 +8,7 @@ export const SECTIONS: { id: SectionId; label: string; icon: LucideIcon; moved: 
   { id: 'calendar', label: 'Calendar', icon: CalendarDays, moved: true },
   { id: 'pay', label: 'Pay', icon: PoundSterling, moved: true },
   { id: 'health', label: 'Health', icon: Heart, moved: false },
-  { id: 'study', label: 'Study', icon: BookOpen, moved: false },
+  { id: 'study', label: 'Study', icon: BookOpen, moved: true },
 ];
 
 export function sectionFromHash(hash: string): SectionId {

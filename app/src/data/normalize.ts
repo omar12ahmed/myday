@@ -1,10 +1,12 @@
 // Checks saved data and fills in anything missing, the same way as normalize() in the current MyDay.
 // Bad entries are dropped and counted rather than crashing the app. Sections not described in types.ts
-// yet (health, study…) and anything unknown are kept exactly as they were.
+// yet (health) and anything unknown are kept exactly as they were.
 import { normalizeBankHolidays } from './bankHolidays';
 import { isDateKey, isDateTime, isTime, todayKey } from './dates';
 import { normalizePay, defaultPay } from './pay';
 import { emptyRota, normalizeRota } from './rota';
+import { emptyStudy } from './study/common';
+import { normalizeStudy } from './study/normalize';
 import type { Category, Commitment, DayContext, Energy, ListItem, MyDayData, QueueItem, Settings, Task, Theme } from './types';
 import { clone, intIn, isObj, listOf, uid, cleanMinutes } from './util';
 
@@ -59,6 +61,7 @@ export function freshState(): MyDayData {
     rota: emptyRota(),
     pay: defaultPay(),
     bankHolidays: { region: 'england-and-wales', fetchedAt: null, divisions: null },
+    study: emptyStudy(),
     saves: { seq: 0, log: [] },
   };
 }
@@ -227,11 +230,12 @@ export function normalize(raw: unknown, report = { dropped: 0 }): MyDayData {
   s.rota = normalizeRota(raw.rota, report);
   s.pay = normalizePay(raw.pay);
   s.bankHolidays = normalizeBankHolidays(raw.bankHolidays);
+  s.study = normalizeStudy(raw.study, report); // absent in older data → empty Study
   if (isObj(raw.saves)) {
     s.saves = { seq: intIn(raw.saves.seq, 0, 1e12, 0), log: listOf(raw.saves.log).filter(x => typeof x === 'string').slice(-SAVE_LOG) };
   }
-  // Keep everything else exactly as it was: the sections not described in types.ts yet (health,
-  // study) and anything added by a newer MyDay.
+  // Keep everything else exactly as it was: the section not described in types.ts yet (health) and
+  // anything added by a newer MyDay.
   for (const key of Object.keys(raw)) {
     if (!(key in s) && !['__proto__', 'constructor', 'prototype'].includes(key)) s[key] = raw[key];
   }

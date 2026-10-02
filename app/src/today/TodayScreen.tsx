@@ -24,6 +24,9 @@ import { GardenCard, StreakCard } from './ProgressCards';
 import { ProposalCard, type ProposalActions } from './ProposalCard';
 import { TimerCard, type TimerAction } from './TimerCard';
 import { TodayFooter } from './TodayFooter';
+import { dueConcepts } from '../data/study/revision';
+import { activeStudy } from '../data/study/sessions';
+import { StudyTodayCard } from '../study/StudyTodayCard';
 
 // The Today section. Saved data comes in as `data`; everything else here (an open proposal, the
 // evening check-in, the commitment form…) is kept only while the screen is open, as in the current
@@ -239,12 +242,14 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
   );
   const yd = data.days[shift(k, -1)];
   const yesterdayOpen = !!yd && !yd.rest && !yd.checkedIn && yd.tasks.some(t => !t.done && !t.rolledQid);
-  const notMoved = (data.health !== undefined || data.study !== undefined) && (
+  const notMoved = data.health !== undefined && (
     <Banner icon={<Info size={18} />}>
-      Not in the new app yet: the workout, cooking and study reminders the current MyDay shows on Today.
-      Your Health and Study records are kept exactly as they are.
+      Not in the new app yet: the workout, cooking and shopping reminders the current MyDay shows on Today.
+      Your Health records are kept exactly as they are.
     </Banner>
   );
+  // Study: only what's waiting (a session in progress, or revision ready). Nothing goes on the task list.
+  const studyCard = (!!activeStudy(data.study) || dueConcepts(data.study, k).length > 0) && <StudyTodayCard data={data} k={k} />;
 
   // Phones: one column, in this order (as in the current MyDay) — so the timeline comes straight after
   // the plan. Wide screens: the timeline, count and garden move to a second column on the right.
@@ -268,6 +273,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
         {slot('order-1', <PlanCard data={data} k={k} justDoneUid={justDoneUid} onToggle={(t, done) => toggle(k, t, done)} onTimer={timer}
           onEvening={() => { setView('evening'); setEveningKey(k); }} onReview={review} onSwapRest={swapRest} onRestart={restart} />)}
         {slot('order-1', notMoved)}
+        {slot('order-1', studyCard, 'slot-study')}
         {slot('order-3', context, 'slot-context')}
         {slot('order-4', proposalCard)}
       </>
@@ -281,6 +287,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
         {slot('order-1', proposalCard)}
         {slot('order-2', context, 'slot-context')}
         {slot('order-3', notMoved)}
+        {slot('order-3', studyCard, 'slot-study')}
         {slot('order-4', yesterdayOpen && <YesterdayCard onOpen={() => { setView('evening'); setEveningKey(shift(k, -1)); }} />)}
       </>
     );
