@@ -12,6 +12,13 @@ export default function App() {
   const [backupName, setBackupName] = useState<string | null>(null); // set while showing a backup file
   const fileInput = useRef<HTMLInputElement>(null);
 
+  // Redraw once a minute, so "Up next" moves on when a task's time is over (and the date changes at midnight).
+  const [, setMinute] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setMinute(m => m + 1), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
   // Use the theme from the data being shown (dark is the default, as in the current MyDay).
   const theme = loaded.status === 'ok' ? loaded.data.settings.theme : 'dark';
   useEffect(() => {

@@ -5,13 +5,23 @@ import { CategoryChip } from './CategoryChip';
 
 // One task on a day's plan: its time (if it has one), title, category and length.
 // Whether it's done is shown by the marker beside it (see TaskTimeline).
+// `next` marks the task to do next with an "Up next" label and a green border.
 // For now it only shows the task; ticking it off comes when the new app can save.
 
-export function TaskCard({ task }: { task: Task }) {
+export function TaskCard({ task, next = false }: { task: Task; next?: boolean }) {
   const time = taskTime(task);
   return (
-    <div className="flex-1 min-w-0 bg-surface border border-outline rounded-tile px-4 py-3.5">
-      {time && <p className="m-0 mb-0.5 text-sm font-semibold text-fg-2 tabular-nums">{time}</p>}
+    <div className={`flex-1 min-w-0 bg-surface border rounded-tile px-4 py-3.5 ${next ? 'border-primary shadow-card' : 'border-outline'}`}>
+      {(next || time) && (
+        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 m-0 mb-1 text-sm font-semibold text-fg-2 tabular-nums">
+          {next && (
+            <span className="text-xs font-bold tracking-[.06em] uppercase px-2 py-0.5 rounded-full bg-primary-container text-on-primary-container">
+              Up next
+            </span>
+          )}
+          {time}
+        </p>
+      )}
       <p className={`m-0 font-medium leading-snug ${task.done ? 'text-fg-2' : ''}`}>
         <span className="sr-only">{task.done ? 'Done: ' : 'Not done yet: '}</span>
         {task.title}

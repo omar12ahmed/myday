@@ -41,6 +41,11 @@ Other commands: `npm run build` (checks types and builds into `dist/`) and `npm 
 - **A day's plan** is a timeline: tasks with a time are joined by a line in time order, with "any time today" tasks below.
   The round marker beside each task shows a tick once it's done. Each fact appears once: the time on top, then the title,
   then the category and length.
+- **Up next:** one task is marked "Up next", so there's always an obvious place to start. It uses the current MyDay's
+  rule (`nextTask()` in `today.ts`): the first unfinished timed task whose time isn't over, else the earliest unfinished
+  timed task, else any unfinished task. The screen redraws once a minute so this moves on as the day goes.
+- **Progress note:** nothing until the first task is done, so an untouched list doesn't feel like a score; then
+  "1 done so far", and "That's the whole plan — lovely." once everything is done.
 - **Cards** hold content with a heading; **banners** hold a one-line message (a preview note, a backup being shown).
 - **Motion** stays small (button presses only) and switches off if the device asks for reduced motion.
 

@@ -1,5 +1,6 @@
 // Small helpers for showing a day's plan, ported from the current MyDay (same wording).
-import type { Day, Task } from './types';
+import { dtToMin, nowMin } from './dates';
+import type { DateKey, Day, Task } from './types';
 
 export function energyLine(d: Day): string {
   if (d.rest) return 'Rest day. Nothing is required, and nothing is lost.';
@@ -34,3 +35,21 @@ export function sortedTasks(d: Day): { timed: Task[]; untimed: Task[] } {
   return { timed, untimed: d.tasks.filter(t => !t.scheduledStart) };
 }
 
+// The task to show as "Up next" on day k: the first open timed task that isn't over yet, else the
+// earliest open timed task, else any open task. Same rule as nextTask() in the current MyDay.
+export function nextTask(k: DateKey, d: Day): Task | null {
+  const open = d.tasks.filter(t => !t.done);
+  const timed = sortedTasks(d).timed.filter(t => !t.done);
+  const now = nowMin(k);
+  const notOver = timed.find(t => t.scheduledStart !== null && dtToMin(t.scheduledStart, k) + t.minutes > now);
+  return notOver ?? timed[0] ?? open[0] ?? null;
+}
+
+// A gentle note on how the day is going. Nothing until the first tick, so an untouched list doesn't feel like a score.
+// `all` is true once everything is done (the wording is the current MyDay's "whole plan done" message).
+export function progressNote(d: Day): { text: string; all: boolean } | null {
+  const done = d.tasks.filter(t => t.done).length;
+  if (d.rest || done === 0) return null;
+  if (done === d.tasks.length) return { text: "That's the whole plan — lovely.", all: true };
+  return { text: `${done} done so far`, all: false };
+}
