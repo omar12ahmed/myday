@@ -600,7 +600,7 @@
   .ch-pt:focus-visible .ch-dot { stroke: var(--text); }
   .ch-tip { position: absolute; transform: translate(-50%, calc(-100% - 10px)); background: var(--inverse); color: var(--on-inverse); font-size: 13px; padding: 4px 8px; border-radius: 8px; pointer-events: none; opacity: 0; white-space: nowrap; }
   .ch-tip.show { opacity: 1; }
-  /* Food: cards for discovering, checklists for shopping */
+  /* Food: cards for discovering, checklists for shopping, a focused view for cooking */
   .search-row { display: flex; gap: 8px; }
   .search-row input { flex: 1; min-width: 0; }
   input[type=search], input[type=url], textarea { font: inherit; color: var(--text); background: var(--surface-3); border: 1px solid var(--outline-strong); border-radius: 12px; padding: 10px 12px; min-height: 48px; width: 100%; }
@@ -642,8 +642,12 @@
   .shop-qty { font-variant-numeric: tabular-nums; color: var(--text-2); }
   .undo-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; padding: 8px 12px; border-radius: 12px; background: var(--inverse); color: var(--on-inverse); }
   .undo-bar button { background: transparent; color: var(--on-inverse); border-color: var(--on-inverse); }
+  .cook-view { border-color: var(--primary-outline); }
   .btn-link + .eyebrow { display: block; margin-top: 4px; }
   .hist-table a, ul.plain-list a { color: var(--primary); }
+  .cook-step { font-size: 22px; line-height: 1.5; margin: 10px 0 16px; }
+  .cook-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .cook-nav button { min-height: 64px; font-size: 18px; }
 
   /* ---------- Focus timer ---------- */
   .timer-card { border-color: var(--primary-outline); text-align: center; }
@@ -3829,7 +3833,9 @@
         recipes: {},      // id → recipe (your own, plus TheMealDB recipes you saved, favourited, planned or cooked)
         favourites: [],   // recipe ids
         want: [],         // { id, recipeId, servings, addedOn }
-        shopping: []      // { id, name, family, amount, unit, text, category, checked, recipes, manual }
+        cooked: [],       // { id, recipeId, title, date, servings } — cooking history only, never food eaten
+        shopping: [],     // { id, name, family, amount, unit, text, category, checked, recipes, manual }
+        cooking: null     // { recipeId, step, servings, startedAt, timer }
       }
     };
   }
@@ -3930,10 +3936,16 @@
     if (isObj(f.recipes)) for (const id of Object.keys(f.recipes)) { const r = cleanRecipe(f.recipes[id]); if (r && r.id === id) hf.recipes[id] = r; else report.dropped++; }
     if (Array.isArray(f.favourites)) hf.favourites = [...new Set(f.favourites.filter(id => typeof id === 'string' && hf.recipes[id]))];
     if (Array.isArray(f.want)) for (const x of f.want) if (isObj(x) && typeof x.recipeId === 'string' && hf.recipes[x.recipeId]) hf.want.push({ id: typeof x.id === 'string' ? x.id : 'w' + uid(), recipeId: x.recipeId, servings: optNum(x.servings, 1, 100), addedOn: isDateKey(x.addedOn) ? x.addedOn : todayKey() });
+    if (Array.isArray(f.cooked)) for (const x of f.cooked) if (isObj(x) && typeof x.recipeId === 'string' && isDateKey(x.date)) hf.cooked.push({ id: typeof x.id === 'string' ? x.id : 'c' + uid(), recipeId: x.recipeId, title: str(x.title, 120), date: x.date, servings: optNum(x.servings, 1, 100) });
     if (Array.isArray(f.shopping)) for (const x of f.shopping) {
       if (!isObj(x) || !str(x.name)) { report.dropped++; continue; }
       const family = UNIT_FAMILIES[x.family] && optNum(x.amount, 0, 1e6) !== null ? x.family : null;
       hf.shopping.push({ id: typeof x.id === 'string' && x.id ? x.id : 's' + uid(), name: str(x.name, 80), family, amount: family ? optNum(x.amount, 0, 1e6) : null, unit: family === 'count' ? str(x.unit, 30) : '', text: family ? '' : str(x.text, 60), category: SHOP_CATEGORIES.includes(x.category) ? x.category : 'Other', checked: x.checked === true, recipes: Array.isArray(x.recipes) ? x.recipes.filter(t => typeof t === 'string').slice(0, 10) : [], manual: x.manual === true });
+    }
+    if (isObj(f.cooking) && typeof f.cooking.recipeId === 'string' && hf.recipes[f.cooking.recipeId]) {
+      const c = f.cooking, t = isObj(c.timer) ? c.timer : null;
+      hf.cooking = { recipeId: c.recipeId, step: intIn(c.step, 0, 500, 0), servings: optNum(c.servings, 1, 100), startedAt: str(c.startedAt, 20),
+        timer: t && Number.isInteger(t.durationSec) && Number.isFinite(t.accumulatedMs) ? { label: str(t.label, 40), durationSec: t.durationSec, startedAt: Number.isFinite(t.startedAt) ? t.startedAt : null, accumulatedMs: t.accumulatedMs, finished: t.finished === true } : null };
     }
     return h;
   }
@@ -4482,6 +4494,7 @@
       const p = sessionPlanFor(k);
       if (p && !completedOn(k)) { const t = tplById(p.templateId); items.push(`<div class="c-row"><div><strong>Workout: ${esc(t.name)}</strong><div class="meta">About ${t.minutes} min${p.time ? ' · ' + p.time : ''}</div></div><a class="btn-link" href="#health/workout">Open</a></div>`); }
     }
+    if (food.cooking && food.recipes[food.cooking.recipeId]) { const rr = food.recipes[food.cooking.recipeId]; items.push(`<div class="c-row"><div><strong>Cooking: ${esc(rr.title)}</strong><div class="meta">Step ${food.cooking.step + 1} of ${Math.max(1, recipeSteps(rr.instructions).length)}</div></div><a class="btn-link" href="#health/food/cook">Resume</a></div>`); }
     const toBuy = food.shopping.filter(x => !x.checked).length;
     if (toBuy) items.push(`<div class="c-row"><div><strong>Shopping list</strong><div class="meta">${toBuy} item${toBuy === 1 ? '' : 's'} to get</div></div><a class="btn-link" href="#health/food/shopping">Open</a></div>`);
     return items.length ? `<section class="card"><h2>Health</h2>${items.join('')}</section>` : '';
@@ -4514,6 +4527,7 @@
   let wantDraft = null;                  // { recipeId, servings, have: [] }
   let shopUndo = null;                   // { item, index }
   let shopEdit = null;                   // id of the item being edited
+  let cookTimerDone = false;
 
   // ---------- Ingredient words (used for exclusions and shopping categories) ----------
   const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -4684,7 +4698,7 @@
   function tidyRecipe(id) {
     const f = F(), r = f.recipes[id];
     if (!r || r.source !== 'themealdb') return;
-    const used = f.favourites.includes(id) || f.want.some(x => x.recipeId === id) || r.servingsSource === 'user' || r.nutritionSource === 'user';
+    const used = f.favourites.includes(id) || f.want.some(x => x.recipeId === id) || f.cooked.some(x => x.recipeId === id) || (f.cooking && f.cooking.recipeId === id) || r.servingsSource === 'user' || r.nutritionSource === 'user';
     if (!used) { mdbCache.set(id, r); delete f.recipes[id]; }
   }
   // Split the original method on its own line breaks only. Lines that are just "STEP 1" headings are dropped; no sentence is ever split.
@@ -4697,6 +4711,18 @@
     }
     return out;
   }
+  // Durations written in a step, e.g. "simmer for 10 minutes" → 10 min.
+  function stepTimers(text) {
+    const out = [], re = /(\d+(?:\.\d+)?)(?:\s*(?:-|–|to)\s*(\d+(?:\.\d+)?))?\s*(hours?|hrs?|minutes?|mins?|seconds?|secs?)\b/gi;
+    let m;
+    while ((m = re.exec(text)) && out.length < 3) {
+      const n = +m[1], u = m[3].toLowerCase();
+      const sec = Math.round(u.startsWith('h') ? n * 3600 : u.startsWith('s') ? n : n * 60);
+      if (sec >= 10 && sec <= 6 * 3600) out.push({ sec, label: m[0].trim() });
+    }
+    return out;
+  }
+
   async function mdbGet(path) {
     const res = await fetch(MDB + path);
     if (!res.ok) throw new Error(`TheMealDB replied with an error (${res.status}).`);
@@ -4783,6 +4809,7 @@
     if (v === 'recipe') return recipeView(r[1]);
     if (v === 'want') return wantView(r[1]);
     if (v === 'shopping') return shoppingView();
+    if (v === 'cook') return cookView();
     if (v === 'search') return searchView();
     if (v === 'prefs') return prefsView();
     if (v === 'new' || v === 'edit') return recipeFormView(v === 'edit' ? r[1] : null);
@@ -4832,13 +4859,17 @@
     const f = F(), toBuy = f.shopping.filter(x => !x.checked).length;
     if (!foodSuggest.loaded && !foodSuggest.loading && !foodSuggest.error) setTimeout(loadSuggestions, 0);
     let next;
-    if (toBuy) {
+    if (f.cooking && f.recipes[f.cooking.recipeId]) {
+      const r = f.recipes[f.cooking.recipeId];
+      next = `<section class="card next-card"><span class="eyebrow">Cooking</span><h2>${esc(r.title)}</h2><p class="small muted">Step ${f.cooking.step + 1} of ${Math.max(1, recipeSteps(r.instructions).length)}</p><a class="btn primary" href="#health/food/cook">Resume cooking</a></section>`;
+    } else if (toBuy) {
       next = `<section class="card next-card"><span class="eyebrow">Next step</span><h2>Shopping list</h2><p class="small muted">${toBuy} item${toBuy === 1 ? '' : 's'} to get${f.want.length ? ` for ${f.want.length} recipe${f.want.length === 1 ? '' : 's'}` : ''}.</p><a class="btn primary" href="#health/food/shopping">Open shopping list</a></section>`;
     } else if (f.want.length) {
       const r = getRecipe(f.want[0].recipeId);
-      next = `<section class="card next-card"><span class="eyebrow">Want to cook</span><h2>${esc(r.title)}</h2><a class="btn primary" href="#health/food/recipe/${encodeURIComponent(r.id)}">Open recipe</a></section>`;
+      next = `<section class="card next-card"><span class="eyebrow">Want to cook</span><h2>${esc(r.title)}</h2><button class="primary" data-action="h-cook-start" data-id="${esc(r.id)}">Start cooking</button></section>`;
     } else next = '';
     const shown = foodSuggest.items.slice(0, foodSuggest.shown);
+    const seenCooked = new Set(), cooked = f.cooked.slice().reverse().filter(c => !seenCooked.has(c.recipeId) && seenCooked.add(c.recipeId)).slice(0, 5);
     const mine = Object.values(f.recipes).filter(r => r.source === 'manual');
     return next + `
       <section class="card">
@@ -4858,6 +4889,7 @@
         ${foodSuggest.loaded && !foodSuggest.loading && !foodSuggest.error ? '<button class="inline" data-action="h-suggest-more">Show more</button>' : ''}
       </section>
       ${f.want.length ? `<section class="card"><h2>Want to cook</h2>${miniList(f.want.map(x => x.recipeId))}<a class="btn-link" href="#health/food/shopping">Shopping list</a></section>` : ''}
+      ${cooked.length ? `<section class="card"><h2>Recently cooked</h2><ul class="plain-list">${cooked.map(c => { const r = getRecipe(c.recipeId); return `<li>${r ? `<a href="#health/food/recipe/${encodeURIComponent(r.id)}">${esc(r.title)}</a>` : esc(c.title)}<div class="meta">${esc(shortDate(c.date))}</div></li>`; }).join('')}</ul></section>` : ''}
       ${f.favourites.length ? `<section class="card"><h2>Favourites</h2><div class="rgrid">${f.favourites.map(getRecipe).filter(Boolean).map(recipeCard).join('')}</div></section>` : ''}
       ${mine.length ? `<section class="card"><h2>My recipes</h2><div class="rgrid">${mine.map(recipeCard).join('')}</div></section>` : ''}
       <p class="small muted attribution">Recipe ideas and photos: <a href="https://www.themealdb.com" target="_blank" rel="noopener">TheMealDB</a>.</p>`;
@@ -4904,6 +4936,7 @@
         <div class="action-row">
           <button class="${fav ? 'on' : ''}" data-action="h-fav" data-id="${esc(r.id)}" aria-pressed="${fav}">${fav ? '★ Favourite' : '☆ Favourite'}</button>
           <a class="btn" href="#health/food/want/${encodeURIComponent(r.id)}">${want ? 'Want to cook ✓' : 'Want to cook'}</a>
+          <button class="primary" data-action="h-cook-start" data-id="${esc(r.id)}">Start cooking</button>
         </div>
       </section>
       ${hits.length ? `<section class="card notice"><p class="small" style="margin:0">Heads up: ${esc(hits.map(h => `${h.what} (${h.why.toLowerCase()})`).join('; '))}.</p></section>` : ''}
@@ -4993,6 +5026,39 @@
       ${f.want.length ? `<section class="card"><h3>Recipes on this list</h3>${f.want.map(w => { const r = getRecipe(w.recipeId); return r ? `<div class="c-row"><a href="#health/food/recipe/${encodeURIComponent(r.id)}">${esc(r.title)}</a><div class="c-actions"><button class="inline" data-action="h-want-remove" data-id="${esc(w.id)}" aria-label="Remove ${esc(r.title)} from Want to cook">✕</button></div></div>` : ''; }).join('')}<p class="small muted">Removing a recipe here keeps its shopping items — tidy those yourself if you like.</p></section>` : ''}`;
   }
 
+  function cookTimerHtml() {
+    const c = F().cooking, t = c && c.timer;
+    if (!t) return cookTimerDone ? '<div class="rest-bar done" role="status">Timer done.</div>' : '';
+    const rem = Math.max(0, t.durationSec * 1000 - (t.accumulatedMs + (t.startedAt ? Date.now() - t.startedAt : 0)));
+    return `<div class="rest-bar" role="status"><span>${esc(t.label)}</span><strong id="cookTime" role="timer">${fmtClock(rem)}</strong>
+      <button class="inline" data-action="${t.startedAt ? 'h-ctimer-pause' : 'h-ctimer-resume'}">${t.startedAt ? 'Pause' : 'Resume'}</button><button class="inline ghost" data-action="h-ctimer-stop">Stop</button></div>`;
+  }
+  function cookView() {
+    const c = F().cooking, r = c && getRecipe(c.recipeId);
+    if (!r) return '<section class="card"><h2>Nothing cooking right now</h2><a class="btn" href="#health/food">Back to Food</a></section>';
+    const steps = recipeSteps(r.instructions), n = steps.length;
+    const i = Math.min(c.step, Math.max(0, n - 1)), step = steps[i] || '';
+    const factor = r.servings && c.servings ? c.servings / r.servings : 1;
+    const timers = stepTimers(step);
+    return `
+      <section class="card cook-view">
+        <a class="btn-link" href="#health/food/recipe/${encodeURIComponent(r.id)}">‹ ${esc(r.title)}</a>
+        <span class="eyebrow">${n ? `Step ${i + 1} of ${n}` : 'Cooking'}</span>
+        <p class="cook-step" id="cookStep">${n ? esc(step) : 'This recipe has no method text — use the ingredients below.'}</p>
+        ${timers.length ? `<div class="chip-row">${timers.map(t => `<button class="inline" data-action="h-ctimer" data-sec="${t.sec}" data-label="${esc(t.label)}">Start timer · ${esc(t.label)}</button>`).join('')}</div>` : ''}
+        <div id="cookTimer">${cookTimerHtml()}</div>
+        <div class="cook-nav">
+          <button data-action="h-cook-step" data-d="-1" ${i === 0 ? 'disabled' : ''}>‹ Previous</button>
+          ${i < n - 1 ? '<button class="primary" data-action="h-cook-step" data-d="1">Next ›</button>' : '<button class="primary" data-action="h-cook-finish">Finished cooking</button>'}
+        </div>
+      </section>
+      <section class="card">
+        <details><summary>Ingredients${factor !== 1 ? ` (for ${c.servings} servings)` : ''}</summary><ul class="ing-list">${r.ingredients.map(x => `<li><span class="ing-qty">${esc(scaledMeasure(x.measure, factor).text)}</span> ${esc(x.name)}</li>`).join('')}</ul></details>
+        <details><summary>Full method</summary><ol class="steps">${steps.map((s, k) => `<li class="${k === i ? 'current' : ''}">${esc(s)}</li>`).join('')}</ol></details>
+      </section>
+      <section class="card"><div class="stack"><a class="btn" href="#health/food">Leave — I'll come back to this step</a><button class="ghost" data-action="h-cook-stop">Stop cooking</button></div></section>`;
+  }
+
   function prefsView() {
     const p = F().prefs;
     return `
@@ -5069,7 +5135,7 @@
     return rec;
   }
 
-  // ---------- Timers that tick every second (rest timer) ----------
+  // ---------- Timers that tick every second (rest + cooking) ----------
   function healthTick() {
     if (!state || !state.health) return;
     const w = W();
@@ -5079,6 +5145,15 @@
         try { if (navigator.vibrate) navigator.vibrate(120); } catch (e) { /* not supported */ }
         setHTML('restBar', restBarHtml());
       } else if ($('restTime')) $('restTime').textContent = fmtClock(restRemaining());
+    }
+    const c = F().cooking, t = c && c.timer;
+    if (t && t.startedAt) {
+      const rem = t.durationSec * 1000 - (t.accumulatedMs + Date.now() - t.startedAt);
+      if (rem <= 0) {
+        c.timer = null; cookTimerDone = true; persist();
+        try { if (navigator.vibrate) navigator.vibrate(120); } catch (e) { /* not supported */ }
+        setHTML('cookTimer', cookTimerHtml());
+      } else if ($('cookTime')) $('cookTime').textContent = fmtClock(rem);
     }
   }
 
@@ -5315,10 +5390,11 @@
       }
       case 'h-recipe-delete': {
         const r = f.recipes[d.id];
-        if (!r || !confirm(`Delete "${r.title}"?`)) return 'none';
+        if (!r || !confirm(`Delete "${r.title}"? Your cooking history keeps its name.`)) return 'none';
         delete f.recipes[d.id];
         f.favourites = f.favourites.filter(x => x !== d.id);
         f.want = f.want.filter(x => x.recipeId !== d.id);
+        if (f.cooking && f.cooking.recipeId === d.id) f.cooking = null;
         persist();
         go('health/food');
         return 'none';
@@ -5382,6 +5458,51 @@
         return;
       }
 
+      // ----- Cooking -----
+      case 'h-cook-start': {
+        const r = getRecipe(d.id);
+        if (!r) return;
+        const cur = f.cooking && getRecipe(f.cooking.recipeId);
+        if (cur && cur.id !== r.id && !confirm(`Stop cooking ${cur.title} and start this instead?`)) return 'none';
+        if (!cur || cur.id !== r.id) {
+          const kept = keepRecipe(r), wanted = f.want.find(x => x.recipeId === kept.id);
+          f.cooking = { recipeId: kept.id, step: 0, servings: kept.servings ? recipeServings[kept.id] || (wanted && wanted.servings) || kept.servings : null, startedAt: localStamp(), timer: null };
+          cookTimerDone = false; persist();
+        }
+        go('health/food/cook');
+        return 'none';
+      }
+      case 'h-cook-step': {
+        const c = f.cooking, r = c && getRecipe(c.recipeId);
+        if (!r) return;
+        c.step = Math.max(0, Math.min(recipeSteps(r.instructions).length - 1, c.step + Number(d.d)));
+        cookTimerDone = false; persist();
+        return;
+      }
+      case 'h-cook-finish': {
+        const c = f.cooking, r = c && getRecipe(c.recipeId);
+        if (!r) return;
+        f.cooked.push({ id: 'c' + uid(), recipeId: r.id, title: r.title, date: k, servings: c.servings });
+        f.cooking = null;
+        f.want = f.want.filter(x => x.recipeId !== r.id);
+        cookTimerDone = false; persist();
+        toast('Cooked — saved to your cooking history.');
+        go('health/food');
+        return 'none';
+      }
+      case 'h-cook-stop': {
+        if (!confirm("Stop cooking? Your place in the recipe won't be kept.")) return 'none';
+        const id = f.cooking && f.cooking.recipeId;
+        f.cooking = null;
+        if (id) tidyRecipe(id);
+        persist();
+        go('health/food');
+        return 'none';
+      }
+      case 'h-ctimer': if (f.cooking) { f.cooking.timer = { label: String(d.label).slice(0, 40), durationSec: +d.sec, startedAt: Date.now(), accumulatedMs: 0, finished: false }; cookTimerDone = false; persist(); } return;
+      case 'h-ctimer-pause': { const t = f.cooking && f.cooking.timer; if (t && t.startedAt) { t.accumulatedMs += Date.now() - t.startedAt; t.startedAt = null; persist(); } return; }
+      case 'h-ctimer-resume': { const t = f.cooking && f.cooking.timer; if (t && !t.startedAt) { t.startedAt = Date.now(); persist(); } return; }
+      case 'h-ctimer-stop': if (f.cooking) { f.cooking.timer = null; persist(); } return;
     }
   }
 
