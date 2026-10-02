@@ -4,13 +4,14 @@
 #
 # Usage:  tests/run.sh                 run every suite
 #         tests/run.sh storage today   run only the suites named
-# Suites: storage, today, calendar-pay, health, study
+# Suites for the current MyDay (index.html): storage, today, calendar-pay, health, study
+# Suites for the new app (app/, built first): app-storage, app-today
 set -u
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(dirname "$HERE")"
 SUITES=("$@")
-[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study)
+[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study app-storage app-today)
 
 # ---- What's needed ----
 CHROME="${CHROME:-}"
@@ -30,6 +31,13 @@ WORK="$(mktemp -d "${TMPDIR:-/tmp}/myday-tests.XXXXXX")"
 mkdir -p "$WORK/srv" "$WORK/dl"
 cp "$ROOT/index.html" "$WORK/srv/index.html"
 cp -R "$ROOT/fonts" "$WORK/srv/fonts" # so text is measured in the real font (layout checks)
+# The new app is built and served beside the current MyDay (srv/app/dist/), as with Live Server,
+# so both share saved data the way they do for real.
+if printf '%s\n' "${SUITES[@]}" | grep -q '^app-'; then
+  [ -d "$ROOT/app/node_modules" ] || { echo "The new app's packages aren't installed yet. Run: cd app && npm install"; exit 2; }
+  (cd "$ROOT/app" && npm run build >"$WORK/app-build.log" 2>&1) || { echo "The new app didn't build:"; tail -20 "$WORK/app-build.log"; exit 1; }
+  mkdir -p "$WORK/srv/app" && cp -R "$ROOT/app/dist" "$WORK/srv/app/dist"
+fi
 cp "$HERE/fixtures/myday-v2.html.fixture" "$WORK/srv/v2.html"
 cp "$HERE/fixtures/myday-v3.html.fixture" "$WORK/srv/v3.html"
 cp "$HERE/cdp.js" "$HERE"/*.test.js "$WORK/"

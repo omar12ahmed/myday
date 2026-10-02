@@ -1,104 +1,143 @@
-import { Eye, FileText, FolderOpen, Info } from 'lucide-react';
-import { useEffect, useRef, useState, type ChangeEvent } from 'react';
-import { Banner } from './components/Banner';
-import { Button } from './components/Button';
-import { Card } from './components/Card';
+import { useEffect, useRef, useState, useSyncExternalStore, type ChangeEvent } from 'react';
+import { useConfirm } from './components/confirm';
+import { ConfirmProvider } from './components/Dialog';
+import { Toast } from './components/Toast';
 import { prettyDate, todayKey } from './data/dates';
-import { loadSaved, readBackup, type Loaded } from './data/storage';
-import { TodayScreen } from './screens/TodayScreen';
+import { freshState } from './data/normalize';
+import { exportText, parseImport, replaceAll, takeBootNotice, update } from './data/storage';
+import { toast } from './data/toast';
+import type { Theme } from './data/types';
+import { useMyDay } from './data/useMyDay';
+import { Nav } from './shell/Nav';
+import { sectionFromHash, type SectionId } from './shell/sections';
+import { NotMovedYet } from './shell/NotMovedYet';
+import { DamagedView, OlderView } from './shell/StatusScreens';
+import { ThemeButton } from './shell/ThemeButton';
+import { TodayScreen } from './today/TodayScreen';
 
-export default function App() {
-  const [loaded, setLoaded] = useState<Loaded>(loadSaved);
-  const [backupName, setBackupName] = useState<string | null>(null); // set while showing a backup file
+// Saves text as a file the browser downloads (backups and the unreadable-data copy).
+function download(filename: string, text: string) {
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+}
+
+// The section in the address (#today, #calendar…), kept in step with the browser's back button.
+const subscribeHash = (fn: () => void) => { window.addEventListener('hashchange', fn); return () => window.removeEventListener('hashchange', fn); };
+const getHash = () => window.location.hash;
+
+const reduceQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+
+function Shell() {
+  const { data, status, generation } = useMyDay();
+  const confirm = useConfirm();
+  const section: SectionId = sectionFromHash(useSyncExternalStore(subscribeHash, getHash));
+  const [k, setK] = useState(todayKey);
   const fileInput = useRef<HTMLInputElement>(null);
+  const theme: Theme = data.settings.theme;
+  const motionAllowed = data.settings.motion !== 'off' && !reduceQuery?.matches;
 
-  // Redraw once a minute, so "Up next" moves on when a task's time is over (and the date changes at midnight).
-  const [, setMinute] = useState(0);
+  // Keep the date honest: check every 30 seconds (covers midnight) and when the app comes back into view.
   useEffect(() => {
-    const id = setInterval(() => setMinute(m => m + 1), 60_000);
-    return () => clearInterval(id);
+    const check = () => setK(todayKey());
+    const id = setInterval(check, 30000);
+    document.addEventListener('visibilitychange', check);
+    return () => { clearInterval(id); document.removeEventListener('visibilitychange', check); };
   }, []);
 
-  // Use the theme from the data being shown (dark is the default, as in the current MyDay).
-  const theme = loaded.status === 'ok' ? loaded.data.settings.theme : 'dark';
-  useEffect(() => {
-    if (theme === 'dark') document.documentElement.removeAttribute('data-theme');
-    else document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
+  // A message from start-up (e.g. storage is blocked), shown once.
+  useEffect(() => { const m = takeBootNotice(); if (m) toast(m); }, []);
 
-  async function openBackup(e: ChangeEvent<HTMLInputElement>) {
+  // Theme and animations: set on the page so the colours and motion follow straight away.
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.setAttribute('data-motion', data.settings.motion === 'off' ? 'off' : 'auto');
+    const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+    if (bg) document.querySelector('meta[name="theme-color"]')?.setAttribute('content', bg);
+  }, [theme, data.settings.motion]);
+
+  // Moving between sections starts at the top of the page.
+  useEffect(() => { window.scrollTo(0, 0); }, [section]);
+
+  function exportData() {
+    const { filename, text } = exportText();
+    download(filename, text);
+    toast('Exported.');
+  }
+
+  async function importFile(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = ''; // so choosing the same file again still works
     if (!file) return;
-    const result = readBackup(await file.text());
-    setLoaded(result);
-    setBackupName(result.status === 'ok' ? file.name : null);
+    let text: string;
+    try { text = await file.text(); } catch { toast("Couldn't open that file."); return; }
+    let result: ReturnType<typeof parseImport>;
+    try { result = parseImport(text); } catch (err) { toast((err as Error).message + ' Nothing was changed.'); return; }
+    const yes = await confirm({
+      title: 'Replace your saved MyDay data with this file?',
+      body: (
+        <>
+          <p>{result.summary}</p>
+          {result.dropped > 0 && <p>{result.dropped} unreadable entr{result.dropped === 1 ? 'y' : 'ies'} will be skipped.</p>}
+          <p>Your current data on this device will be overwritten. You might want to export it first.</p>
+        </>
+      ),
+      confirmLabel: 'Replace my data',
+      cancelLabel: 'Cancel',
+    });
+    if (!yes) { toast('Import cancelled. Nothing was changed.'); return; }
+    if (replaceAll(result.data)) toast('Imported.');
   }
+
+  async function startFresh() {
+    const yes = await confirm({
+      title: 'Start fresh?',
+      body: 'The unreadable saved data will be replaced. Download it first if you might want it later.',
+      confirmLabel: 'Start fresh',
+    });
+    if (yes) replaceAll(freshState());
+  }
+
+  const blocked = status.kind === 'damaged' || status.kind === 'older';
+  let content;
+  if (status.kind === 'damaged') {
+    content = <DamagedView reason={status.reason} onImport={() => fileInput.current?.click()} onStartFresh={startFresh}
+      onDownload={() => download(`myday-unreadable-${todayKey()}.json`, status.raw)} />;
+  } else if (status.kind === 'older') content = <OlderView />;
+  else if (section === 'today') {
+    content = <TodayScreen key={k} data={data} generation={generation} k={k} canSave={status.kind === 'ok'} motionAllowed={motionAllowed}
+      onExport={exportData} onImport={() => fileInput.current?.click()} />;
+  } else content = <NotMovedYet section={section} />;
 
   return (
     <>
-      <header className="sticky top-0 z-20 bg-glass backdrop-blur-[18px] backdrop-saturate-[140%] border-b border-outline">
-        <div className="max-w-[640px] mx-auto px-4 py-3 pt-[max(12px,env(safe-area-inset-top))]">
-          <p className="text-xs font-bold tracking-[.14em] uppercase text-primary m-0">MyDay</p>
-          <h1 className="text-[26px] font-bold tracking-[-.02em] leading-tight m-0">{prettyDate(todayKey())}</h1>
+      <header className="appbar sticky top-0 z-20 bg-glass backdrop-blur-[18px] backdrop-saturate-[140%] border-b border-outline">
+        <div className="max-w-[640px] lg:max-w-[1120px] mx-auto px-4 lg:px-6 py-3 pt-[max(12px,env(safe-area-inset-top))] flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold tracking-[.14em] uppercase text-primary m-0">MyDay</p>
+            <h1 id="date" className="text-[26px] lg:text-[28px] font-bold tracking-[-.02em] leading-tight m-0">{prettyDate(k)}</h1>
+          </div>
+          <ThemeButton theme={theme} motionAllowed={motionAllowed} onChange={next => update(d => { d.settings.theme = next; })} />
         </div>
       </header>
-
-      <main className="max-w-[640px] mx-auto px-4 pt-5 pb-10">
-        <Banner icon={<Eye size={18} />}>
-          <strong className="font-semibold">A preview of the new MyDay.</strong> It shows your saved plan but can't change
-          anything yet. Keep using the current MyDay to plan and tick things off.
-        </Banner>
-
-        {backupName && (
-          <Banner tone="notice" icon={<FileText size={18} />}>
-            Showing the backup file “{backupName}”. Nothing from it is saved.
-          </Banner>
-        )}
-
-        {loaded.status === 'ok' && (
-          <>
-            {loaded.dropped > 0 && (
-              <Banner tone="notice" icon={<Info size={18} />}>
-                {loaded.dropped === 1 ? '1 entry' : `${loaded.dropped} entries`} couldn't be read, so {loaded.dropped === 1 ? "it isn't" : "they aren't"} shown here.
-              </Banner>
-            )}
-            <TodayScreen data={loaded.data} />
-          </>
-        )}
-
-        {loaded.status === 'empty' && (
-          <Card>
-            <h2>Nothing saved here yet</h2>
-            <p className="text-[15px] text-fg-2 mb-0">
-              There's no MyDay data in this browser at this address. To look at your own plan, choose “Export my data” in the
-              current MyDay, then open that file here.
-            </p>
-          </Card>
-        )}
-
-        {loaded.status === 'older' && (
-          <Card>
-            <h2>Your data needs a quick update first</h2>
-            <p className="text-[15px] text-fg-2 mb-0">
-              It was saved by an older version of MyDay. Open the current MyDay once and it will update it, then come back here.
-            </p>
-          </Card>
-        )}
-
-        {loaded.status === 'problem' && (
-          <Card tone="notice">
-            <h2>This can't be shown</h2>
-            <p className="text-[15px] mb-0">{loaded.message} Nothing has been changed.</p>
-          </Card>
-        )}
-
-        <input ref={fileInput} type="file" accept="application/json,.json" hidden onChange={openBackup} />
-        <Button variant="ghost" inline onClick={() => fileInput.current?.click()}>
-          <FolderOpen size={18} aria-hidden="true" />
-          Open a backup file
-        </Button>
+      {!blocked && <Nav current={section} />}
+      <main id="app" className="max-w-[640px] lg:max-w-[1120px] mx-auto px-4 lg:px-6 pt-4 lg:pt-6">
+        {content}
       </main>
+      <input ref={fileInput} id="importFile" type="file" accept="application/json,.json" hidden onChange={importFile} />
+      <Toast />
     </>
+  );
+}
+
+export default function App() {
+  return (
+    <ConfirmProvider>
+      <Shell />
+    </ConfirmProvider>
   );
 }

@@ -12,9 +12,10 @@ afterwards. They also set the page's clock to fixed dates, so results don't depe
 From the `myday-site` folder:
 
 ```sh
-tests/run.sh                  # everything (about 3–5 minutes)
+tests/run.sh                  # everything (about 6–8 minutes)
 tests/run.sh storage          # one suite (under a minute)
 tests/run.sh storage today    # several suites
+tests/run.sh app-storage app-today   # the new app only (builds it first)
 ```
 
 You need Google Chrome, Node.js 22 or newer, and Python 3. If Chrome is somewhere unusual, set
@@ -34,6 +35,12 @@ few will fail and the rest still run.
 | `calendar-pay` | The shift pattern and pattern changes, per-date changes, overtime and absence, bank holidays (cached; offline), pay estimates (tax, NI, student loans, SSP), daylight-saving changes and navigation. |
 | `health` | Workout templates, logging, scheduling and charts; recipe ideas and search (with suggestions as you type); preferences; the shopping list; the cooking view. |
 | `study` | The roadmap and completion, learning sessions and check-ins, concepts and revision (answers stay hidden until revealed, spaced reviews), progress and history, the Today card, and export/import. |
+| `app-storage` | The new app (`app/`): nothing is saved before the data is checked; never saving over another tab's newer data; saves at the same moment are reported, not silent; sections it doesn't handle yet (rota, pay, health, study) and unknown fields stay byte-for-byte the same; and the new app and the current MyDay reading and updating each other's saves. |
+| `app-today` | The new app's Today: the `today` checks adapted (energy limits, the queue, rest days, the rolling count, the nudge, export/import, damaged data, context and timeline, proposals and review, themes, layout and tap sizes, animations, the timer), plus the sections that haven't moved yet. |
+
+The `app-*` suites build the new app (`npm run build` in `app/`, so run `npm install` there once first) and serve it
+beside the current MyDay, the way Live Server does, so the two share saved data as they do for real.
+If Live Server is running, use `MYDAY_LS_PORT=5599 tests/run.sh …` so the `today` suite's Live Server check doesn't clash with it.
 
 `fixtures/` holds two earlier versions of MyDay (as `.fixture` files, so the website doesn't serve
 them as pages). The migration checks load them to make sure older saved data still comes across.

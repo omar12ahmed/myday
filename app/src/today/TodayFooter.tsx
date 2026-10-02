@@ -1,0 +1,34 @@
+import { Download, FolderOpen, ListTodo } from 'lucide-react';
+import { useSyncExternalStore } from 'react';
+import { Button } from '../components/Button';
+import { update } from '../data/storage';
+import { toast } from '../data/toast';
+import type { MyDayData } from '../data/types';
+
+const reduceQuery = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+const deviceReducesMotion = () => !!reduceQuery?.matches;
+const subscribeReduce = (fn: () => void) => { reduceQuery?.addEventListener('change', fn); return () => reduceQuery?.removeEventListener('change', fn); };
+
+// The buttons at the bottom of Today: task lists, backups and animations.
+export function TodayFooter({ data, canSave, onEdit, onExport, onImport }: {
+  data: MyDayData; canSave: boolean; onEdit: () => void; onExport: () => void; onImport: () => void;
+}) {
+  const reduces = useSyncExternalStore(subscribeReduce, deviceReducesMotion);
+  const off = data.settings.motion === 'off';
+  return (
+    <footer id="footer" className="pb-10">
+      <div className="grid grid-cols-2 gap-2.5">
+        <Button inline variant="ghost" className="w-full col-span-2" data-action="edit" onClick={onEdit}><ListTodo size={18} aria-hidden="true" /> Edit task lists</Button>
+        <Button inline variant="ghost" className="w-full" data-action="export" onClick={onExport}><Download size={18} aria-hidden="true" /> Export my data</Button>
+        <Button inline variant="ghost" className="w-full" data-action="import" onClick={onImport}><FolderOpen size={18} aria-hidden="true" /> Import my data</Button>
+        <Button inline variant="ghost" className="w-full col-span-2" data-action="motion" aria-pressed={!off} onClick={() => {
+          update(d => { d.settings.motion = d.settings.motion === 'off' ? 'auto' : 'off'; });
+          toast(!off ? 'Animations off.' : reduces ? 'Animations on — but your device asks for less motion, so they stay off.' : 'Animations on.');
+        }}>
+          {off ? 'Animations: Off' : reduces ? 'Animations: Off (your device asks for less motion)' : 'Animations: On'}
+        </Button>
+      </div>
+      <p className="storage-note text-center text-fg-3 text-[13px] mt-3.5">{canSave ? 'Saved only in this browser.' : 'Saving is unavailable in this browser.'}</p>
+    </footer>
+  );
+}

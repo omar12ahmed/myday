@@ -1,6 +1,8 @@
 // Small helpers for showing a day's plan, ported from the current MyDay (same wording).
-import { dtToMin, nowMin } from './dates';
-import type { DateKey, Day, Task } from './types';
+import { dtToMin, nowMin, todayKey } from './dates';
+import { minutesLabel } from './plan';
+import { conflictsFor } from './schedule';
+import type { DateKey, Day, MyDayData, Task } from './types';
 
 export function energyLine(d: Day): string {
   if (d.rest) return 'Rest day. Nothing is required, and nothing is lost.';
@@ -8,12 +10,6 @@ export function energyLine(d: Day): string {
   if (energy <= 2) return 'Low-energy day — one small thing is plenty.';
   if (energy === 3) return 'Medium energy — two things, no rush.';
   return 'Good energy — three things, and stopping early is still fine.';
-}
-
-function minutesLabel(t: Task): string {
-  if (t.shrunk) return 'just 15 min';
-  if (t.baseMinutes && t.minutes < t.baseMinutes) return `${t.minutes} min (shortened from ${t.baseMinutes})`;
-  return `${t.minutes} min`;
 }
 
 // A task's time, e.g. "09:00–09:30", or null for an "any time today" task.
@@ -24,7 +20,8 @@ export function taskTime(t: Task): string | null {
 // The grey line under a task's title, e.g. "30 min · carried over".
 // (The current MyDay puts the time at the start of this line; here it sits above the title.)
 export function taskDetails(t: Task): string {
-  return t.fromQueue ? `${minutesLabel(t)} · carried over` : minutesLabel(t);
+  const m = minutesLabel(t.minutes, t.baseMinutes, t.shrunk);
+  return t.fromQueue ? `${m} · carried over` : m;
 }
 
 // Tasks with a time first (in time order), then the "any time today" ones.
@@ -52,4 +49,28 @@ export function progressNote(d: Day): { text: string; all: boolean } | null {
   if (d.rest || done === 0) return null;
   if (done === d.tasks.length) return { text: "That's the whole plan — lovely.", all: true };
   return { text: `${done} done so far`, all: false };
+}
+
+// The evening check-in's summary line (same wording as the current MyDay).
+export function eveningSummary(d: Day): string {
+  if (d.rest) return 'Rest day — resting was the plan, and that counts.';
+  const n = d.tasks.length, done = d.tasks.filter(t => t.done).length;
+  if (!n) return 'Nothing was planned.';
+  if (done === n) return n === 1
+    ? '1 of 1 done — that was the whole plan, and you did it.'
+    : `${done} of ${n} done — that's the whole plan. Go easy on yourself tonight.`;
+  if (done === 0) return `0 of ${n} done — some days are like that. Rolling it forward is exactly how this is supposed to work.`;
+  return `${done} of ${n} done — rolling the rest forward is exactly how this is supposed to work.`;
+}
+
+// "Overlaps …" warnings for today's open timed tasks.
+export function planWarnings(data: MyDayData, k: string, d: Day): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (k !== todayKey()) return out;
+  for (const t of d.tasks) {
+    if (t.done || !t.scheduledStart) continue;
+    const c = conflictsFor(data, k, dtToMin(t.scheduledStart, k), t.minutes, [], false);
+    if (c.length) out[t.uid] = `${c[0]} — “Review my plan” can find a new time.`;
+  }
+  return out;
 }

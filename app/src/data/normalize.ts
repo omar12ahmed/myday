@@ -5,13 +5,13 @@ import { isDateKey, isDateTime, isTime, todayKey } from './dates';
 import type { Category, Commitment, DayContext, Energy, ListItem, MyDayData, QueueItem, Settings, Task, Theme } from './types';
 
 export const SCHEMA_VERSION = 4;
-const SAVE_LOG = 20;
+export const SAVE_LOG = 20; // how many recent save signatures travel with the data (see storage.ts)
 export const CATS: Category[] = ['learning', 'admin', 'health'];
 const THEMES: Theme[] = ['dark', 'light', 'auto'];
-const DEFAULT_SETTINGS: Settings = { bufferMinutes: 30, earliestTime: '08:00', latestTime: '21:00', gapMinutes: 10, theme: 'dark', motion: 'auto' };
+export const DEFAULT_SETTINGS: Settings = { bufferMinutes: 30, earliestTime: '08:00', latestTime: '21:00', gapMinutes: 10, theme: 'dark', motion: 'auto' };
 
 // The starter task lists, used when a list is missing.
-const SEED: Record<Category, ListItem[]> = {
+export const SEED: Record<Category, ListItem[]> = {
   learning: [
     { id: 'l1', title: 'TryHackMe: Pre-Security path — one section', minutes: 30 },
     { id: 'l2', title: 'OverTheWire Bandit — one level', minutes: 20 },
@@ -33,15 +33,15 @@ const SEED: Record<Category, ListItem[]> = {
 
 type Raw = Record<string, unknown>;
 export const isObj = (o: unknown): o is Raw => !!o && typeof o === 'object' && !Array.isArray(o);
-const listOf = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
-const clone = <T,>(o: T): T => JSON.parse(JSON.stringify(o));
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+export const listOf = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
+export const clone = <T,>(o: T): T => JSON.parse(JSON.stringify(o));
+export const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 const isCategory = (v: unknown): v is Category => CATS.includes(v as Category);
 const isEnergy = (v: unknown): v is Energy => Number.isInteger(v) && (v as number) >= 1 && (v as number) <= 5;
 const idOr = (v: unknown, fallback: () => string) => (typeof v === 'string' && v ? v : fallback());
 const stringOrNull = (v: unknown) => (typeof v === 'string' ? v : null);
 
-function freshState(): MyDayData {
+export function freshState(): MyDayData {
   return {
     schemaVersion: SCHEMA_VERSION,
     createdOn: todayKey(),
@@ -58,12 +58,14 @@ function freshState(): MyDayData {
   };
 }
 
-function cleanMinutes(v: unknown, fallback: number): number {
+// A whole number of minutes from 1 to 600, or the fallback (which may be null, meaning "not valid").
+export function cleanMinutes<F extends number | null>(v: unknown, fallback: F): number | F {
   const m = Math.round(Number(v));
   return m > 0 && m <= 600 ? m : fallback;
 }
 
-function intIn(v: unknown, lo: number, hi: number, fallback: number): number {
+// A whole number from lo to hi, or the fallback (which may be null, meaning "not valid").
+export function intIn<F extends number | null>(v: unknown, lo: number, hi: number, fallback: F): number | F {
   if (v === null || v === undefined || v === '') return fallback;
   const n = Math.round(Number(v));
   return Number.isFinite(n) && n >= lo && n <= hi ? n : fallback;
