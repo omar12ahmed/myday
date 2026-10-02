@@ -1,16 +1,10 @@
 import { Card } from '../components/Card';
-import { RestDayCard, TaskCard } from '../components/TaskCard';
+import { EnergyMeter } from '../components/EnergyMeter';
+import { RestDayCard } from '../components/TaskCard';
+import { TaskTimeline } from '../components/TaskTimeline';
 import { todayKey } from '../data/dates';
 import { energyLine, sortedTasks } from '../data/today';
-import type { MyDayData, Task } from '../data/types';
-
-function TaskList({ tasks }: { tasks: Task[] }) {
-  return (
-    <ul className="mt-3.5 space-y-2.5">
-      {tasks.map(t => <li key={t.uid}><TaskCard task={t} /></li>)}
-    </ul>
-  );
-}
+import type { MyDayData } from '../data/types';
 
 export function TodayScreen({ data }: { data: MyDayData }) {
   const day = data.days[todayKey()];
@@ -26,24 +20,27 @@ export function TodayScreen({ data }: { data: MyDayData }) {
 
   const { timed, untimed } = sortedTasks(day);
   return (
-    <Card>
-      <h2>{day.rest ? 'Today is a rest day' : "Here's your day"}</h2>
-      <p className="text-[15px] text-fg-2">{energyLine(day)}</p>
+    <section aria-labelledby="today-heading" className="mb-8">
+      <h2 id="today-heading">{day.rest ? 'Today is a rest day' : "Here's your day"}</h2>
+      <p className="flex items-start gap-2.5 text-[15px] text-fg-2 mb-5">
+        {!day.rest && day.energy !== null && <EnergyMeter level={day.energy} />}
+        {energyLine(day)}
+      </p>
       {day.rest ? (
-        <div className="mt-3.5"><RestDayCard /></div>
+        <RestDayCard />
       ) : day.tasks.length === 0 ? (
         <p className="text-[15px] text-fg-2">Nothing on today's list — everything is waiting in your queue.</p>
       ) : (
         <>
-          {timed.length > 0 && <TaskList tasks={timed} />}
+          {timed.length > 0 && <TaskTimeline tasks={timed} joined />}
           {untimed.length > 0 && (
             <>
-              {timed.length > 0 && <h4>Any time today</h4>}
-              <TaskList tasks={untimed} />
+              {timed.length > 0 && <h3 className="mt-7">Any time today</h3>}
+              <TaskTimeline tasks={untimed} />
             </>
           )}
         </>
       )}
-    </Card>
+    </section>
   );
 }

@@ -15,13 +15,15 @@ function minutesLabel(t: Task): string {
   return `${t.minutes} min`;
 }
 
-// The grey line under a task's title, e.g. "09:00–09:30 · 30 min · carried over".
-export function taskMeta(t: Task): string {
-  const bits: string[] = [];
-  if (t.scheduledStart && t.scheduledEnd) bits.push(`${t.scheduledStart.slice(11)}–${t.scheduledEnd.slice(11)}`);
-  bits.push(minutesLabel(t));
-  if (t.fromQueue) bits.push('carried over');
-  return bits.join(' · ');
+// A task's time, e.g. "09:00–09:30", or null for an "any time today" task.
+export function taskTime(t: Task): string | null {
+  return t.scheduledStart && t.scheduledEnd ? `${t.scheduledStart.slice(11)}–${t.scheduledEnd.slice(11)}` : null;
+}
+
+// The grey line under a task's title, e.g. "30 min · carried over".
+// (The current MyDay puts the time at the start of this line; here it sits above the title.)
+export function taskDetails(t: Task): string {
+  return t.fromQueue ? `${minutesLabel(t)} · carried over` : minutesLabel(t);
 }
 
 // Tasks with a time first (in time order), then the "any time today" ones.
@@ -31,3 +33,4 @@ export function sortedTasks(d: Day): { timed: Task[]; untimed: Task[] } {
     .sort((a, b) => ((a.scheduledStart ?? '') < (b.scheduledStart ?? '') ? -1 : 1));
   return { timed, untimed: d.tasks.filter(t => !t.scheduledStart) };
 }
+

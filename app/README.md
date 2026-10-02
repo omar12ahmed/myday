@@ -27,10 +27,25 @@ Other commands: `npm run build` (checks types and builds into `dist/`) and `npm 
 | `src/data/normalize.ts` | Checks saved data and fills in anything missing (a copy of `normalize()` in the current MyDay). |
 | `src/data/storage.ts` | Reads saved data and backup files. Read-only for now. |
 | `src/data/dates.ts`, `today.ts` | Date helpers and the wording for a day's plan. |
-| `src/components/` | Shared pieces with their styling in one place: `Button`, `Card`, `CategoryChip`, `TaskCard`. |
+| `src/components/` | Shared pieces with their styling in one place: `Button`, `Card`, `Banner`, `CategoryChip`, `TaskCard`, `TaskTimeline`, `EnergyMeter`. |
 | `src/screens/` | Whole screens built from those pieces: `TodayScreen`. |
 | `src/styles/tokens.css` | Colours for dark and light themes (copied from the current MyDay). |
-| `src/index.css` | Gives the colours Tailwind names, e.g. `bg-surface`, `text-fg-2`, `bg-learning-c`. |
+| `src/index.css` | Gives the colours Tailwind names, e.g. `bg-surface`, `text-fg-2`, `bg-learning-c`, and sets the font. |
+
+## Design
+
+- **Colours** are the current MyDay's calm sage palette, unchanged. Every text colour pair meets WCAG AA contrast in both themes.
+- **Font:** Plus Jakarta Sans, a friendly, rounded sans-serif. It's bundled with the app (`@fontsource-variable/plus-jakarta-sans`),
+  so it works offline. Times use `tabular-nums` so their digits line up.
+- **Icons:** [Lucide](https://lucide.dev) (`lucide-react`), always with a text label beside them, never emoji.
+- **A day's plan** is a timeline: tasks with a time are joined by a line in time order, with "any time today" tasks below.
+  The round marker beside each task shows a tick once it's done. Each fact appears once: the time on top, then the title,
+  then the category and length.
+- **Cards** hold content with a heading; **banners** hold a one-line message (a preview note, a backup being shown).
+- **Motion** stays small (button presses only) and switches off if the device asks for reduced motion.
+
+The direction came from the ui-ux-pro-max design skill (minimal style, Plus Jakarta Sans, subtle motion), and the
+timeline layout is adapted from the "Process Timeline" component on [21st.dev](https://21st.dev).
 
 ## Rules for this rebuild
 

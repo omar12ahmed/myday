@@ -1,4 +1,6 @@
+import { Eye, FileText, FolderOpen, Info } from 'lucide-react';
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { Banner } from './components/Banner';
 import { Button } from './components/Button';
 import { Card } from './components/Card';
 import { prettyDate, todayKey } from './data/dates';
@@ -29,34 +31,30 @@ export default function App() {
   return (
     <>
       <header className="sticky top-0 z-20 bg-glass backdrop-blur-[18px] backdrop-saturate-[140%] border-b border-outline">
-        <div className="max-w-[640px] mx-auto px-4 py-2.5 pt-[max(10px,env(safe-area-inset-top))]">
-          <p className="text-xs font-bold tracking-[.12em] uppercase text-primary m-0">MyDay</p>
-          <p className="text-[22px] font-[650] tracking-[-.01em] leading-tight m-0">{prettyDate(todayKey())}</p>
+        <div className="max-w-[640px] mx-auto px-4 py-3 pt-[max(12px,env(safe-area-inset-top))]">
+          <p className="text-xs font-bold tracking-[.14em] uppercase text-primary m-0">MyDay</p>
+          <h1 className="text-[26px] font-bold tracking-[-.02em] leading-tight m-0">{prettyDate(todayKey())}</h1>
         </div>
       </header>
 
-      <main className="max-w-[640px] mx-auto px-4 pt-4 pb-8">
-        <Card tone="nudge">
-          <h2>A preview of the new MyDay</h2>
-          <p className="text-[15px] mb-0">
-            This shows your saved plan but can't change anything yet. Keep using the current MyDay to plan and tick things off.
-          </p>
-        </Card>
+      <main className="max-w-[640px] mx-auto px-4 pt-5 pb-10">
+        <Banner icon={<Eye size={18} />}>
+          <strong className="font-semibold">A preview of the new MyDay.</strong> It shows your saved plan but can't change
+          anything yet. Keep using the current MyDay to plan and tick things off.
+        </Banner>
 
         {backupName && (
-          <Card tone="notice">
-            <p className="text-[15px] mb-0">Showing the backup file “{backupName}”. Nothing from it is saved.</p>
-          </Card>
+          <Banner tone="notice" icon={<FileText size={18} />}>
+            Showing the backup file “{backupName}”. Nothing from it is saved.
+          </Banner>
         )}
 
         {loaded.status === 'ok' && (
           <>
             {loaded.dropped > 0 && (
-              <Card tone="notice">
-                <p className="text-[15px] mb-0">
-                  {loaded.dropped === 1 ? '1 entry' : `${loaded.dropped} entries`} couldn't be read, so {loaded.dropped === 1 ? "it isn't" : "they aren't"} shown here.
-                </p>
-              </Card>
+              <Banner tone="notice" icon={<Info size={18} />}>
+                {loaded.dropped === 1 ? '1 entry' : `${loaded.dropped} entries`} couldn't be read, so {loaded.dropped === 1 ? "it isn't" : "they aren't"} shown here.
+              </Banner>
             )}
             <TodayScreen data={loaded.data} />
           </>
@@ -90,6 +88,7 @@ export default function App() {
 
         <input ref={fileInput} type="file" accept="application/json,.json" hidden onChange={openBackup} />
         <Button variant="ghost" inline onClick={() => fileInput.current?.click()}>
+          <FolderOpen size={18} aria-hidden="true" />
           Open a backup file
         </Button>
       </main>

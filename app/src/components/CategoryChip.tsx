@@ -1,6 +1,6 @@
 import type { Category } from '../data/types';
 
-// The small coloured label above a task, e.g. LEARNING.
+// The small coloured label on a task, e.g. LEARNING.
 export type ChipKind = Category | 'rest';
 
 // Written out in full so Tailwind can find every class name.
@@ -15,7 +15,7 @@ const LABEL: Record<ChipKind, string> = { learning: 'Learning', admin: 'Admin', 
 
 export function CategoryChip({ kind }: { kind: ChipKind }) {
   return (
-    <span className={`inline-flex items-center text-xs font-bold tracking-[.04em] uppercase px-[9px] py-0.5 rounded-full mb-1 ${COLOURS[kind]}`}>
+    <span className={`inline-flex items-center text-xs font-bold tracking-[.04em] uppercase px-[9px] py-0.5 rounded-full ${COLOURS[kind]}`}>
       {LABEL[kind]}
     </span>
   );

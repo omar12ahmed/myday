@@ -6,8 +6,9 @@ import type { ButtonHTMLAttributes } from 'react';
 //   ghost   – a quieter, outlined choice
 type Variant = 'tonal' | 'primary' | 'ghost';
 
+// inline-flex + gap lines up an icon placed before the label, e.g. <Button><FolderOpen size={18} /> Open</Button>
 const BASE =
-  'border rounded-btn text-center cursor-pointer transition-[background-color,box-shadow,transform] duration-150 ' +
+  'inline-flex items-center justify-center gap-2 border rounded-btn text-center cursor-pointer transition-[background-color,box-shadow,transform] duration-150 ' +
   'enabled:active:scale-[.985] enabled:hover:shadow-raised disabled:opacity-40 disabled:cursor-default';
 
 const VARIANT: Record<Variant, string> = {
