@@ -1,0 +1,110 @@
+/* ======================================================================
+   Design tokens, copied from the current MyDay (../index.html) so both
+   versions look the same. Dark is the default; [data-theme="light"] and
+   [data-theme="auto"] (follows the device) switch to the light palette.
+   All text pairs below meet WCAG AA contrast.
+
+   Sizes that don't change with the theme (corner radius, tap height) live
+   in index.css instead, as Tailwind theme values.
+   ====================================================================== */
+:root {
+  color-scheme: dark;
+  --bg: #101315;
+  --glow-1: rgba(147, 197, 176, .08);
+  --glow-2: rgba(166, 189, 221, .06);
+  --glass: rgba(16, 19, 21, .72);
+  --surface: #171b1e;
+  --surface-2: #1e2327;
+  --surface-3: #252b2f;
+  --outline: #2b3135;
+  --outline-strong: #737c82;
+  --text: #e2e5e7;
+  --text-2: #b3babf;
+  --text-3: #929aa0;
+  --primary: #93c5b0;
+  --on-primary: #0d2a20;
+  --primary-container: #1f3a31;
+  --on-primary-container: #c4e8d8;
+  --primary-outline: #3d6a5a;
+  --tonal: #26302d;
+  --on-tonal: #d7e6df;
+  --track: #343a3e;
+  --learning: #a6bddd; --learning-c: #1f2b3b;
+  --admin: #d8c29c;    --admin-c: #33291a;
+  --health: #a6cbae;   --health-c: #1c2f22;
+  --rest: #c3b2d6;     --rest-c: #2b2436;
+  --work: #ddae9f;     --work-c: #3a2520;
+  --appt: #b3b9de;     --appt-c: #25283a;
+  --warn-c: #3a2f1a;   --on-warn-c: #f0d4a4;
+  --inverse: #e2e5e7;  --on-inverse: #1b1f21;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 6px 20px rgba(0, 0, 0, .18);
+  --shadow-btn: 0 1px 3px rgba(0, 0, 0, .35);
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f6f4;
+  --glow-1: rgba(44, 106, 85, .08);
+  --glow-2: rgba(52, 89, 139, .06);
+  --glass: rgba(244, 246, 244, .78);
+  --surface: #ffffff;
+  --surface-2: #f0f3f1;
+  --surface-3: #ffffff;
+  --outline: #e0e5e2;
+  --outline-strong: #7b8580;
+  --text: #191d1b;
+  --text-2: #454e49;
+  --text-3: #5f6863;
+  --primary: #2c6a55;
+  --on-primary: #ffffff;
+  --primary-container: #d3ebe0;
+  --on-primary-container: #0d2a20;
+  --primary-outline: #9cc8b6;
+  --tonal: #e2ebe7;
+  --on-tonal: #1d3a30;
+  --track: #d4dbd7;
+  --learning: #34598b; --learning-c: #e0e9f6;
+  --admin: #70521a;    --admin-c: #f4ead6;
+  --health: #30663f;   --health-c: #ddf0e2;
+  --rest: #604a85;     --rest-c: #ece5f6;
+  --work: #87432f;     --work-c: #f7e3dd;
+  --appt: #434a8c;     --appt-c: #e3e5f7;
+  --warn-c: #fbedd5;   --on-warn-c: #5b3a00;
+  --inverse: #2b302d;  --on-inverse: #eef1ef;
+  --shadow: 0 1px 2px rgba(20, 35, 28, .06), 0 6px 20px rgba(20, 35, 28, .06);
+  --shadow-btn: 0 1px 3px rgba(20, 35, 28, .18);
+}
+@media (prefers-color-scheme: light) {
+  :root[data-theme="auto"] {
+    color-scheme: light;
+    --bg: #f4f6f4;
+    --glow-1: rgba(44, 106, 85, .08);
+    --glow-2: rgba(52, 89, 139, .06);
+    --glass: rgba(244, 246, 244, .78);
+    --surface: #ffffff;
+    --surface-2: #f0f3f1;
+    --surface-3: #ffffff;
+    --outline: #e0e5e2;
+    --outline-strong: #7b8580;
+    --text: #191d1b;
+    --text-2: #454e49;
+    --text-3: #5f6863;
+    --primary: #2c6a55;
+    --on-primary: #ffffff;
+    --primary-container: #d3ebe0;
+    --on-primary-container: #0d2a20;
+    --primary-outline: #9cc8b6;
+    --tonal: #e2ebe7;
+    --on-tonal: #1d3a30;
+    --track: #d4dbd7;
+    --learning: #34598b; --learning-c: #e0e9f6;
+    --admin: #70521a;    --admin-c: #f4ead6;
+    --health: #30663f;   --health-c: #ddf0e2;
+    --rest: #604a85;     --rest-c: #ece5f6;
+    --work: #87432f;     --work-c: #f7e3dd;
+    --appt: #434a8c;     --appt-c: #e3e5f7;
+    --warn-c: #fbedd5;   --on-warn-c: #5b3a00;
+    --inverse: #2b302d;  --on-inverse: #eef1ef;
+    --shadow: 0 1px 2px rgba(20, 35, 28, .06), 0 6px 20px rgba(20, 35, 28, .06);
+    --shadow-btn: 0 1px 3px rgba(20, 35, 28, .18);
+  }
+}
