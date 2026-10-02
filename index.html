@@ -794,6 +794,9 @@
   // Constants
   // ======================================================================
   const STORAGE_KEY = 'myday.data.v4';   // the only localStorage key this app writes
+  // Raise SCHEMA_VERSION in any release that adds or changes saved fields (with a migration, per CLAUDE.md).
+  // Older copies of MyDay refuse to save data from a newer version instead of dropping the parts they
+  // don't know — that protection only works if new fields always come with a new version number.
   const SCHEMA_VERSION = 4;
   const PREVIOUS_KEYS = [['myday.data.v3', 3], ['myday.data.v2', 2]]; // earlier single-key versions, migrated once
   const EXPORT_FORMAT = 'myday-export';
@@ -901,7 +904,8 @@
       pay: defaultPay(),  // the user's own pay rules and deductions setup
       bankHolidays: { region: 'england-and-wales', fetchedAt: null, divisions: null }, // cached gov.uk data
       health: emptyHealth(), // Workout and Food (added alongside existing data; nothing existing changes)
-      study: emptyStudy()    // Study roadmap, sessions and revision (added the same way)
+      study: emptyStudy(),   // Study roadmap, sessions and revision (added the same way)
+      saves: { seq: 0, log: [] } // numbered save signatures, to notice a save lost to another tab (see persist)
     };
   }
 
@@ -1079,6 +1083,12 @@
     s.bankHolidays = normalizeBankHolidays(raw.bankHolidays);
     s.health = normalizeHealth(raw.health, report); // absent in older data → empty Health
     s.study = normalizeStudy(raw.study, report);    // absent in older data → empty Study
+    if (isObj(raw.saves)) s.saves = { seq: intIn(raw.saves.seq, 0, 1e12, 0), log: listOf(raw.saves.log).filter(x => typeof x === 'string').slice(-SAVE_LOG) };
+    // Keep anything at the top level this version doesn't know about (e.g. a section added by a newer
+    // MyDay) exactly as it was, rather than dropping it on the next save.
+    for (const key of Object.keys(raw)) {
+      if (!(key in s) && !['__proto__', 'constructor', 'prototype'].includes(key)) s[key] = raw[key];
+    }
     return s;
   }
 
@@ -1137,6 +1147,22 @@
   // The exact text this copy of MyDay last read or saved. If the saved text changes without us,
   // another tab or window saved it — and this copy must never overwrite that with older data.
   let lastSaved = null;
+  // localStorage has no locking: two tabs that save within moments of each other can both pass the
+  // check above, and the later write replaces the earlier one. That can't be prevented here, so it is
+  // detected instead: every save is numbered and signed by the tab that made it, the last few
+  // signatures travel with the data, and a tab whose signature is missing from newer data says so.
+  const TAB_ID = uid();
+  const SAVE_LOG = 20;
+  let mySave = null; // { seq, id } of this tab's last save, until it's seen to be kept
+  // Was this tab's last save replaced by another tab's save? (Unknowable after SAVE_LOG later saves.)
+  function lostMySave(saved) {
+    if (!mySave) return false;
+    const log = isObj(saved) && isObj(saved.saves) && Array.isArray(saved.saves.log) ? saved.saves.log : [];
+    const later = isObj(saved) && isObj(saved.saves) ? Number(saved.saves.seq) - mySave.seq : 0;
+    const lost = !log.includes(mySave.id) && !(later >= SAVE_LOG);
+    mySave = null;
+    return lost;
+  }
   function savedElsewhere() {
     try { const now = localStorage.getItem(STORAGE_KEY); return now !== null && lastSaved !== null && now !== lastSaved; }
     catch (e) { return false; }
@@ -1146,9 +1172,13 @@
     if (!storageAvailable || saveBlocked) return false;
     if (savedElsewhere()) { reloadFromStorage(true); return false; } // keep the newer save; this change is not written
     try {
+      const prev = isObj(state.saves) ? state.saves : { seq: 0, log: [] };
+      const seq = prev.seq + 1, id = seq + '.' + TAB_ID;
+      state.saves = { seq, log: prev.log.concat(id).slice(-SAVE_LOG) };
       const text = JSON.stringify(state);
       localStorage.setItem(STORAGE_KEY, text);
       lastSaved = text;
+      mySave = { seq, id };
       return true;
     } catch (e) { toast("Couldn't save just now — storage may be full or blocked."); return false; }
   }
@@ -1161,6 +1191,7 @@
     lastSaved = raw;
     let parsed = null;
     try { parsed = JSON.parse(raw); } catch (e) { /* handled below */ }
+    const lost = lostMySave(parsed);
     if (!isObj(parsed) || ![2, 3, SCHEMA_VERSION].includes(parsed.schemaVersion)) {
       markDamaged(raw, STORAGE_KEY, isObj(parsed) && parsed.schemaVersion > SCHEMA_VERSION
         ? 'It was saved by a newer version of MyDay in another tab. Reload this page to use it.'
@@ -1171,8 +1202,10 @@
     // Drafts kept in memory belonged to the older copy.
     proposal = null; commitForm = null; calForm = null; wsProposal = null; wantDraft = null; shopEdit = null; revRound = null; stSetup = null;
     render();
-    setTimeout(() => toast(dropped
-      ? "MyDay was changed in another tab, so that last change wasn't saved. Showing the latest — please try it again."
+    setTimeout(() => toast(dropped && lost
+      ? "Another tab replaced your recent changes here, and this last one wasn't saved. Showing the latest — please check and redo them."
+      : dropped ? "MyDay was changed in another tab, so that last change wasn't saved. Showing the latest — please try it again."
+      : lost ? 'Another tab replaced your last change here. Showing the latest — please check it and redo it if needed.'
       : 'Updated with changes from another tab.'), 0);
   }
   function removeKey(k) { try { localStorage.removeItem(k); } catch (e) { /* ignore */ } }
