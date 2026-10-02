@@ -4,7 +4,7 @@
 import { dtToMin, fmtDuration, nowMin, rangeMin, shift, timeToMin, todayKey } from './dates';
 import { rotaWorkBlocks } from './rota';
 import type { Commitment, DateKey, DayContext, MyDayData } from './types';
-import { workoutBlocks } from './workouts';
+import { workoutBlocks } from './workout/plans';
 
 export interface Block { type: 'sleep' | 'buffer' | 'work' | 'appointment' | 'workout'; start: number; end: number; label: string; c?: TimedThing }
 export interface TimedThing { kind: 'work' | 'appointment' | 'workout'; title: string; start: string; end: string; rota?: boolean; id?: string }

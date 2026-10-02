@@ -3,7 +3,8 @@
 // thresholds for employers"); tax-year keys are the year the tax year starts (6 April).
 // Everything here is an ESTIMATE, labelled as such on screen with the tax year used.
 import { dayDiff, isDateKey, keyOf, pad, parseKey, shift, shortDate, todayKey } from './dates';
-import { isObj } from './util';
+import { isObj, numIn } from './util';
+export { numIn };
 import { bankHolidayOn } from './bankHolidays';
 import { actualFor, dtToDate, msBetween, overlapMs, plannedFor, type Planned } from './rota';
 import type { DateKey, LoanPlan, MyDayData, PayFrequency, PaySettings } from './types';
@@ -42,12 +43,6 @@ export function defaultPay(): PaySettings {
     frequency: 'monthly', periodAnchor: todayKey().slice(0, 8) + '01',
     taxCode: '1257L', niCategory: 'A', studentLoans: { plan1: false, plan2: false, plan4: false, plan5: false, postgrad: false },
   };
-}
-// A number from lo to hi, or the fallback.
-export function numIn<F extends number | null>(v: unknown, lo: number, hi: number, fallback: F): number | F {
-  if (v === null || v === undefined || v === '') return fallback;
-  const n = Number(v);
-  return Number.isFinite(n) && n >= lo && n <= hi ? n : fallback;
 }
 // Checks saved pay settings exactly as normalizePay() in the current MyDay does.
 export function normalizePay(raw: unknown): PaySettings {

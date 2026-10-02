@@ -17,3 +17,10 @@ export function intIn<F extends number | null>(v: unknown, lo: number, hi: numbe
   const n = Math.round(Number(v));
   return Number.isFinite(n) && n >= lo && n <= hi ? n : fallback;
 }
+
+// A number (decimals allowed) from lo to hi, or the fallback.
+export function numIn<F extends number | null>(v: unknown, lo: number, hi: number, fallback: F): number | F {
+  if (v === null || v === undefined || v === '') return fallback;
+  const n = Number(v);
+  return Number.isFinite(n) && n >= lo && n <= hi ? n : fallback;
+}

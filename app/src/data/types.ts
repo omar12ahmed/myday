@@ -105,8 +105,8 @@ export interface MyDayData {
   // Study (added in schemaVersion 4).
   study: StudyData;
 
-  // Not described yet: kept exactly as saved until its screens move to the new app.
-  health?: unknown;
+  // Health: Workout (described below) and Food (kept exactly as saved until its screens move).
+  health: HealthData;
 
   // Anything else (e.g. a section added by a newer MyDay) is kept as it was, never dropped.
   [other: string]: unknown;
@@ -216,4 +216,74 @@ export interface StudyData {
   activeId: string | null;      // the session in progress, if any (only ever one)
   reviews: Review[];
   settings: { vault: string; showClock: boolean };
+}
+
+// ---------- Health: Workout ----------
+// Same shape as the current MyDay saves it. Food hasn't moved to the new app yet: it is kept exactly
+// as saved, so it isn't described here.
+export type ExType = 'strength' | 'bodyweight' | 'cardio';
+// Bodyweight exercises: just your body, with weight added (e.g. a belt), or with assistance (e.g. a band).
+export type LoadMode = 'none' | 'added' | 'assisted';
+export interface Exercise { id: string; name: string; type: ExType; archived: boolean }
+// The numbers for one set. Which ones are used depends on the exercise type:
+// strength: reps and weight (kg) · bodyweight: reps, plus load (kg) when added or assisted · cardio: minutes and km.
+export interface SetValues {
+  reps: number | null;
+  weight: number | null;
+  loadMode: LoadMode;
+  load: number | null;
+  durationMin: number | null;
+  distanceKm: number | null;
+}
+// One exercise in a workout template, with its planned values.
+export interface TemplateItem extends SetValues { id: string; exerciseId: string; sets: number; restSec: number }
+export interface WorkoutTemplate { id: string; name: string; minutes: number; archived: boolean; items: TemplateItem[] }
+export type ScheduleMode = 'off' | 'weekdays' | 'sequence';
+export interface WorkoutSchedule {
+  mode: ScheduleMode;
+  weekdays: Record<number, string>; // 0 = Sunday … 6 = Saturday → template id
+  sequence: string[];               // template ids, done in order on whichever days suit you
+  next: number;                     // position in the sequence
+  restDays: number;                 // rest days between proposed sessions
+  since: DateKey | null;            // when the weekday schedule started (earlier days are never "missed")
+}
+// One date's workout: planned, or what became of a missed one (skipped / moved / continued).
+export interface WorkoutPlan { templateId: string; time: string | null; status: 'planned' | 'skipped' | 'moved' | 'continued'; source: 'proposal' | 'manual' }
+export interface LoggedSet extends SetValues { done: boolean }
+// An exercise inside a logged session: a snapshot of the plan at the time, kept apart from what you did.
+export interface SessionExercise {
+  key: string;
+  exerciseId: string | null;
+  name: string;
+  type: ExType;
+  plan: { sets: number; restSec: number } & SetValues;
+  prefill: 'last' | 'plan';
+  sets: LoggedSet[];
+}
+export interface WorkoutSession {
+  id: string;
+  date: DateKey;
+  templateId: string | null;
+  templateName: string;
+  startedAt: string;
+  finishedAt: string | null;
+  status: 'active' | 'done' | 'short'; // short = finished with some sets not done
+  plannedDate: DateKey | null;
+  editedAt: string | null;             // when a logged result was last corrected
+  exercises: SessionExercise[];
+}
+export interface WorkoutData {
+  exercises: Exercise[];
+  templates: WorkoutTemplate[];
+  schedule: WorkoutSchedule;
+  planned: Record<DateKey, WorkoutPlan>;
+  sessions: WorkoutSession[];
+  activeId: string | null;
+  restTimer: { enabled: boolean; seconds: number };
+  rest: { startedAt: number; durationSec: number } | null; // a running rest countdown
+}
+export interface HealthData {
+  workout: WorkoutData;
+  food: unknown; // not in the new app yet: kept exactly as saved
+  [other: string]: unknown;
 }

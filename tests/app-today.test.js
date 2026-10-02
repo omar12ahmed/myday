@@ -554,15 +554,13 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
 
   console.log('\n[20] Sections that have not moved yet');
   const navLabels = await ev(`[...document.querySelectorAll('#nav a')].map(a => a.getAttribute('aria-label'))`);
-  check('the navigation keeps all five sections, and says which are not in the new app yet', eq(navLabels, ['Today', 'Calendar', 'Pay', 'Health (not in the new app yet)', 'Study']), navLabels);
-  for (const s of ['health']) {
-    await ev(`location.hash = '#${s}'`); await sleep(200);
-    const h = await text('#app h2');
-    check(`#${s}: says plainly it hasn't moved yet, with a link to the current MyDay`, h.endsWith("hasn't moved to the new MyDay yet") && (await ev(`(document.querySelector('#app a[href$="#${s}"]') || {}).getAttribute?.('href') || ''`)) === `../../index.html#${s}`, h);
-  }
+  check('the navigation keeps all five sections, and says which part is not in the new app yet', eq(navLabels, ['Today', 'Calendar', 'Pay', 'Health (Food not in the new app yet)', 'Study']), navLabels);
+  await ev(`location.hash = '#health/food'`); await sleep(200);
+  const hf = await text('#app h2');
+  check('#health/food: says plainly Food hasn\'t moved yet, with a link to the current MyDay', hf.endsWith("hasn't moved to the new MyDay yet") && (await ev(`(document.querySelector('#app a[href$="index.html#health/food"]') || {}).getAttribute?.('href') || ''`)) === '../../index.html#health/food', hf);
   await ev(`location.hash = '#today'`); await sleep(200);
   check('back to Today from the navigation (the morning screen: nothing built for 7 May)', await exists('#slot-energy'));
-  await editStorage(`s => { s.rota = { patterns: [{ anchor: '2027-05-01', cycle: ['day', 'off'], times: { day: { start: '09:00', end: '17:00' } } }] }; s.health = { workout: {} }; }`);
+  await editStorage(`s => { s.rota = { patterns: [{ anchor: '2027-05-01', cycle: ['day', 'off'], times: { day: { start: '09:00', end: '17:00' } } }] }; s.health = { workout: {}, food: { shopping: [{ id: 'sh1', name: 'Oats', checked: false }] } }; }`);
   await openAt(2027, 5, 7, 7);
   check('a day shift from the rota shows on Today (read-only) and blocks task times', (await glance()).some(g => g.startsWith('09:00–17:00 | Day shift')), await glance());
   check('Today says which reminders aren\'t in the new app yet', (await text('#app')).includes('Not in the new app yet'));

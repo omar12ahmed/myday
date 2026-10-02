@@ -13,7 +13,7 @@ import { sectionFromHash, type SectionId } from './shell/sections';
 import { CalendarScreen } from './calendar/CalendarScreen';
 import { PayScreen } from './pay/PayScreen';
 import { StudyScreen } from './study/StudyScreen';
-import { NotMovedYet } from './shell/NotMovedYet';
+import { HealthScreen } from './health/HealthScreen';
 import { DamagedView, OlderView } from './shell/StatusScreens';
 import { ThemeButton } from './shell/ThemeButton';
 import { TodayScreen } from './today/TodayScreen';
@@ -118,7 +118,7 @@ function Shell() {
   } else if (section === 'calendar') content = <CalendarScreen data={data} canSave={status.kind === 'ok'} motionAllowed={motionAllowed} />;
   else if (section === 'pay') content = <PayScreen data={data} canSave={status.kind === 'ok'} />;
   else if (section === 'study') content = <StudyScreen data={data} hash={hash} />;
-  else content = <NotMovedYet section={section} />;
+  else content = <HealthScreen data={data} hash={hash} />;
 
   return (
     <>

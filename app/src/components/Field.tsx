@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ComponentProps, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react';
 
 // Form fields with their styling in one place. Every field has a visible label (or an aria-label
 // when the label is the text beside it), a 48px tap height and a clear focus ring.
@@ -68,3 +68,18 @@ export function CommitTextarea({ onCommit, ...rest }: ComponentProps<'textarea'>
   return <TextArea ref={ref} {...rest} />;
 }
 
+// A field saved as you type (every keystroke), for things you'd lose by leaving mid-way, like a set's reps
+// during a workout. While you type it shows exactly what you typed; otherwise it shows the saved value.
+// `asSaved` says how typed text would be saved, as text (e.g. "42.50" → "42.5"), so the field knows
+// whether the saved value has since changed elsewhere (then it shows that instead).
+export function LiveInput({ value, onSave, asSaved, onBlur, ...rest }: Omit<ComponentProps<'input'>, 'value' | 'onChange'> & {
+  value: string; onSave: (text: string) => void; asSaved: (text: string) => string;
+}) {
+  const [draft, setDraft] = useState<{ text: string; saved: string } | null>(null);
+  const shown = draft && draft.saved === value ? draft.text : value;
+  return (
+    <TextInput {...rest} value={shown}
+      onChange={e => { const text = e.target.value; setDraft({ text, saved: asSaved(text) }); onSave(text); }}
+      onBlur={e => { setDraft(null); onBlur?.(e); }} />
+  );
+}
