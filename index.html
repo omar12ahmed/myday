@@ -530,6 +530,79 @@
   ul.pay-notes li + li { margin-top: 4px; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
+  /* ---------- Health (Workout) ---------- */
+  .layout[data-mode="morning"] #slot-health { order: 3; }
+  .health-tabs { padding: 10px; }
+  .health-tabs .seg { margin: 0; }
+  .seg-link {
+    flex: 1; display: grid; place-items: center; min-height: 48px; border-radius: 999px; text-decoration: none; font-weight: 650;
+    color: var(--text-2); border: 1px solid var(--outline);
+  }
+  .seg-link.on { background: var(--primary-container); color: var(--on-primary-container); border-color: var(--primary-outline); }
+  a.btn, .btn {
+    display: grid; place-items: center; min-height: var(--tap); padding: 12px 20px; border-radius: var(--btn-radius);
+    background: var(--tonal); color: var(--on-tonal); text-decoration: none; font-weight: 550; text-align: center; border: 1px solid transparent;
+  }
+  a.btn.primary { background: var(--primary); color: var(--on-primary); font-weight: 650; box-shadow: var(--shadow-btn); }
+  a.btn.ghost { background: transparent; color: var(--text-2); border-color: var(--outline); }
+  .btn-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--primary); font-weight: 600; text-decoration: none; }
+  .link-btn { width: auto; min-height: 0; padding: 0; background: none; border: 0; color: var(--primary); font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .card-head h2, .card-head h3 { margin: 0; }
+  .next-card { border-color: var(--primary-outline); }
+  .next-card h2 { font-size: 22px; }
+  .next-card .btn, .next-card button { margin-top: 6px; }
+  ul.plain-list { list-style: none; padding: 0; margin: 8px 0; }
+  ul.plain-list li { padding: 8px 0; border-top: 1px solid var(--outline); }
+  ul.plain-list li:first-child { border-top: 0; }
+  ul.plain-list a { color: var(--text); font-weight: 600; }
+  .tpl-list { list-style: none; padding: 0; margin: 8px 0 0; }
+  .tpl-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--outline); }
+  .tpl-row:first-child { border-top: 0; }
+  .tpl-item { padding: 12px 0; border-top: 1px solid var(--outline); }
+  .tpl-item:first-of-type { border-top: 0; }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+  .inline-add { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
+  .inline-add input, .inline-add select { flex: 1; min-width: 0; }
+  .seq-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--outline); }
+  .seq-row .title { flex: 1; }
+  .wd-row { align-items: center; margin-bottom: 8px; }
+  .prop-check { align-items: flex-start; padding: 6px 0; }
+  .prop-check input { margin-top: 3px; }
+  /* Workout logging: compact rows with a big Done control */
+  .ex-name { font-size: 18px; text-transform: none; letter-spacing: 0; color: var(--text); }
+  .set-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) 64px; gap: 8px; align-items: end; padding: 8px 0; border-top: 1px solid var(--outline); }
+  .set-row.done .set-fields input, .set-row.done .set-fields select { opacity: .75; }
+  .set-num { font-weight: 800; color: var(--text-3); text-align: center; padding-bottom: 14px; }
+  .set-fields { display: flex; flex-wrap: wrap; gap: 8px; }
+  .set-field { display: grid; gap: 2px; flex: 1 1 72px; min-width: 64px; }
+  .set-field .lbl { font-size: 12px; }
+  .set-field input, .set-field select { min-height: 48px; padding: 8px; }
+  .set-done { width: 64px; min-height: 56px; padding: 0; border-radius: 16px; font-weight: 700; background: var(--surface-2); color: var(--text); border: 2px solid var(--outline-strong); }
+  .set-done.on { background: var(--primary); color: var(--on-primary); border-color: var(--primary); font-size: 22px; }
+  .rest-bar { display: flex; align-items: center; gap: 12px; margin-top: 10px; padding: 10px 14px; border-radius: 14px; background: var(--primary-container); color: var(--on-primary-container); }
+  .rest-bar strong { font-size: 22px; font-variant-numeric: tabular-nums; flex: 1; }
+  .rest-bar.done { display: block; }
+  .session-head { position: sticky; top: 76px; z-index: 5; }
+  @media (max-width: 959.98px) { .session-head { position: static; } }
+  table.hist-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  .hist-table th, .hist-table td { text-align: left; padding: 8px 4px; border-bottom: 1px solid var(--outline); vertical-align: top; }
+  .hist-table thead th { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-3); }
+  /* Progress chart: one series, thin line, recessive axes */
+  figure.chart { position: relative; margin: 12px 0; }
+  figure.chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .ch-grid { stroke: var(--outline); stroke-width: 1; }
+  .ch-axis { fill: var(--text-3); font-size: 10px; font-variant-numeric: tabular-nums; }
+  .ch-line { fill: none; stroke: var(--primary); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .ch-dot { fill: var(--primary); stroke: var(--surface); stroke-width: 2; }
+  .ch-hit { fill: transparent; }
+  .ch-pt { cursor: pointer; outline: none; }
+  .ch-pt:focus-visible .ch-dot { stroke: var(--text); }
+  .ch-tip { position: absolute; transform: translate(-50%, calc(-100% - 10px)); background: var(--inverse); color: var(--on-inverse); font-size: 13px; padding: 4px 8px; border-radius: 8px; pointer-events: none; opacity: 0; white-space: nowrap; }
+  .ch-tip.show { opacity: 1; }
+  .btn-link + .eyebrow { display: block; margin-top: 4px; }
+  .hist-table a, ul.plain-list a { color: var(--primary); }
+
   /* ---------- Focus timer ---------- */
   .timer-card { border-color: var(--primary-outline); text-align: center; }
   .timer-wrap { position: relative; width: 200px; max-width: 70%; margin: 8px auto 12px; aspect-ratio: 1; }
@@ -623,7 +696,7 @@
 
   const CATS = ['learning', 'admin', 'health'];
   const CAT_LABEL = { learning: 'Learning', admin: 'Admin', health: 'Health', rest: 'Rest' };
-  const KIND_LABEL = { work: 'Work shift', appointment: 'Appointment' };
+  const KIND_LABEL = { work: 'Work shift', appointment: 'Appointment', workout: 'Workout' };
   const ENERGY_LABEL = { 1: 'Running on empty', 2: 'Low', 3: 'Okay', 4: 'Good', 5: 'Great' };
   const DEFAULT_SETTINGS = { bufferMinutes: 30, earliestTime: '08:00', latestTime: '21:00', gapMinutes: 10, theme: 'dark', motion: 'auto' };
   const THEMES = ['dark', 'light', 'auto'];
@@ -721,7 +794,8 @@
       celebratedOn: null, // last date the "whole plan done" moment played (once a day)
       rota: emptyRota(),  // shift pattern versions, per-date overrides, overtime/absence entries, colours
       pay: defaultPay(),  // the user's own pay rules and deductions setup
-      bankHolidays: { region: 'england-and-wales', fetchedAt: null, divisions: null } // cached gov.uk data
+      bankHolidays: { region: 'england-and-wales', fetchedAt: null, divisions: null }, // cached gov.uk data
+      health: emptyHealth() // Workout and Food (added alongside existing data; nothing existing changes)
     };
   }
 
@@ -897,6 +971,7 @@
     s.rota = normalizeRota(raw.rota, report);
     s.pay = normalizePay(raw.pay);
     s.bankHolidays = normalizeBankHolidays(raw.bankHolidays);
+    s.health = normalizeHealth(raw.health, report); // absent in older data → empty Health
     return s;
   }
 
@@ -1262,7 +1337,7 @@
       const s = dtToMin(sl.start, k), e = dtToMin(sl.end, k);
       if (e > 0 && s < 1440 && !out.some(x => x.type === 'sleep' && x.start === s)) out.push({ type: 'sleep', start: s, end: e, label: 'Sleep' });
     }
-    for (const c of state.commitments.concat(rotaWorkBlocks(k))) {
+    for (const c of state.commitments.concat(rotaWorkBlocks(k), workoutBlocks(k))) {
       const s = dtToMin(c.start, k), e = dtToMin(c.end, k);
       if (e + b <= 0 || s - b >= 1440) continue;
       out.push({ type: c.kind, start: s, end: e, label: c.title, c });
@@ -1697,8 +1772,8 @@
     if (section !== 'today') {
       layout.dataset.mode = 'other';
       for (const id of ['nudge', 'slot-glance', 'streak', 'garden']) $(id).innerHTML = '';
-      $('app').innerHTML = section === 'calendar' ? calendarMain() : payMain();
-      $('side-section').innerHTML = section === 'calendar' ? calendarSide() : paySide();
+      $('app').innerHTML = section === 'calendar' ? calendarMain() : section === 'pay' ? payMain() : healthMain();
+      $('side-section').innerHTML = section === 'calendar' ? calendarSide() : section === 'pay' ? paySide() : healthSide();
       renderFooter();
       finishRender(layout);
       return;
@@ -1711,8 +1786,8 @@
       view = 'auto';
       layout.dataset.mode = state.days[k] ? 'plan' : 'morning';
       $('app').innerHTML = state.days[k]
-        ? `<div id="slot-timer"></div><div id="slot-plan"></div><div id="slot-context">${contextCard(k)}</div><div id="slot-actions"></div>`
-        : `<div id="slot-context">${contextCard(k)}</div><div id="slot-actions"></div><div id="slot-yesterday"></div>`;
+        ? `<div id="slot-timer"></div><div id="slot-plan"></div><div id="slot-health"></div><div id="slot-context">${contextCard(k)}</div><div id="slot-actions"></div>`
+        : `<div id="slot-context">${contextCard(k)}</div><div id="slot-actions"></div><div id="slot-health"></div><div id="slot-yesterday"></div>`;
       fillDerived();
     }
     renderStreak();
@@ -1762,6 +1837,7 @@
     setHTML('slot-actions', proposal ? proposalCard(animateProposal) : d ? '' : buildActions(k));
     if (proposal) proposal.animated = true;
     setHTML('slot-yesterday', d ? '' : yesterdayCard(k));
+    setHTML('slot-health', healthTodayCard(k));
     setHTML('sleepSummary', sleepSummary(k));
     setHTML('reviewHint', reviewHint(k));
   }
@@ -2518,14 +2594,14 @@
     { id: 'today', label: 'Today', ready: true, icon: navSvg('<circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>') },
     { id: 'calendar', label: 'Calendar', ready: true, icon: navSvg('<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>') },
     { id: 'pay', label: 'Pay', ready: true, icon: navSvg('<path d="M15.5 6.5A4 4 0 0 0 8.5 9v3.5c0 2.5-1 4.5-2.5 5.5h12M6.5 12.5h7"/>') },
+    { id: 'health', label: 'Health', ready: true, icon: navSvg('<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>') },
     // Planned sections. They stay out of the navigation until they're built,
     // so nothing unfinished ever looks like a working control.
     { id: 'learn', label: 'Learn', ready: false },
-    { id: 'ideas', label: 'Ideas', ready: false },
-    { id: 'health', label: 'Health', ready: false }
+    { id: 'ideas', label: 'Ideas', ready: false }
   ];
   function sectionFromHash() {
-    const id = (location.hash || '').replace('#', '');
+    const id = (location.hash || '').replace('#', '').split('/')[0];
     const s = SECTIONS.find(x => x.id === id && x.ready);
     return s ? s.id : 'today';
   }
@@ -3681,6 +3757,903 @@
   }
 
   // ======================================================================
+  // Health: Workout. Stored under state.health (added alongside the
+  // existing data — no existing record is changed, so no migration is needed).
+  // ======================================================================
+  const EX_TYPES = ['strength', 'bodyweight', 'cardio'];
+  const EX_TYPE_LABEL = { strength: 'Strength', bodyweight: 'Bodyweight', cardio: 'Cardio' };
+  const LOAD_MODES = ['none', 'added', 'assisted'];
+  const COMMON_EXERCISES = [
+    { name: 'Push-ups', type: 'bodyweight' }, { name: 'Pull-ups', type: 'bodyweight' }, { name: 'Kettlebell swings', type: 'strength' },
+    { name: 'Squats', type: 'bodyweight' }, { name: 'Bench press', type: 'strength' }, { name: 'Running', type: 'cardio' }
+  ];
+  const WEEKDAYS = [1, 2, 3, 4, 5, 6, 0]; // Monday first
+  const weekdayName = (dow, style) => parseKey(shift('2026-10-05', mod(dow - 1, 7))).toLocaleDateString(undefined, { weekday: style || 'long' }); // 5 Oct 2026 is a Monday
+
+  function emptyHealth() {
+    return {
+      workout: {
+        exercises: [],    // { id, name, type, archived }
+        templates: [],    // { id, name, minutes, archived, items: [{ id, exerciseId, sets, reps, weight, loadMode, load, durationMin, distanceKm, restSec }] }
+        schedule: { mode: 'off', weekdays: {}, sequence: [], next: 0, restDays: 1, since: null }, // since: when the weekday schedule started
+        planned: {},      // date → { templateId, time, status: 'planned'|'skipped'|'moved', source }
+        sessions: [],     // completed and in-progress session snapshots
+        activeId: null,
+        restTimer: { enabled: false, seconds: 90 },
+        rest: null        // running rest countdown { startedAt, durationSec }
+      }
+    };
+  }
+
+  const str = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max || 200) : '');
+  const optNum = (v, lo, hi) => numIn(v, lo, hi, null);
+
+  function cleanSetValues(o) {
+    o = isObj(o) ? o : {};
+    return {
+      reps: optNum(o.reps, 0, 1000), weight: optNum(o.weight, 0, 1000),
+      loadMode: LOAD_MODES.includes(o.loadMode) ? o.loadMode : 'none', load: optNum(o.load, 0, 1000),
+      durationMin: optNum(o.durationMin, 0, 1440), distanceKm: optNum(o.distanceKm, 0, 1000)
+    };
+  }
+  function cleanTemplateItem(o) {
+    if (!isObj(o) || typeof o.exerciseId !== 'string') return null;
+    return Object.assign({ id: typeof o.id === 'string' && o.id ? o.id : 'ti' + uid(), exerciseId: o.exerciseId, sets: intIn(o.sets, 1, 20, 3), restSec: intIn(o.restSec, 0, 900, 90) }, cleanSetValues(o));
+  }
+  function cleanSession(o, report) {
+    if (!isObj(o) || typeof o.id !== 'string' || !isDateKey(o.date) || !Array.isArray(o.exercises)) { report.dropped++; return null; }
+    const exercises = [];
+    for (const e of o.exercises) {
+      if (!isObj(e) || !EX_TYPES.includes(e.type) || typeof e.name !== 'string') continue;
+      exercises.push({
+        key: typeof e.key === 'string' && e.key ? e.key : 'se' + uid(),
+        exerciseId: typeof e.exerciseId === 'string' ? e.exerciseId : null,
+        name: str(e.name, 80), type: e.type,
+        plan: Object.assign({ sets: intIn(isObj(e.plan) ? e.plan.sets : 0, 0, 20, 0), restSec: intIn(isObj(e.plan) ? e.plan.restSec : 90, 0, 900, 90) }, cleanSetValues(e.plan)),
+        prefill: e.prefill === 'last' ? 'last' : 'plan',
+        sets: (Array.isArray(e.sets) ? e.sets : []).slice(0, 30).map(x => Object.assign(cleanSetValues(x), { done: isObj(x) && x.done === true }))
+      });
+    }
+    return {
+      id: o.id, date: o.date, templateId: typeof o.templateId === 'string' ? o.templateId : null, templateName: str(o.templateName, 80) || 'Workout',
+      startedAt: str(o.startedAt, 20), finishedAt: typeof o.finishedAt === 'string' ? o.finishedAt : null,
+      status: ['active', 'done', 'short'].includes(o.status) ? o.status : 'done', plannedDate: isDateKey(o.plannedDate) ? o.plannedDate : null,
+      editedAt: typeof o.editedAt === 'string' ? o.editedAt : null, exercises
+    };
+  }
+  function normalizeHealth(raw, report) {
+    const h = emptyHealth();
+    if (!isObj(raw)) return h;
+    const w = isObj(raw.workout) ? raw.workout : {}, hw = h.workout;
+    if (Array.isArray(w.exercises)) for (const e of w.exercises) {
+      if (isObj(e) && typeof e.id === 'string' && e.id && str(e.name) && EX_TYPES.includes(e.type)) hw.exercises.push({ id: e.id, name: str(e.name, 80), type: e.type, archived: e.archived === true });
+      else report.dropped++;
+    }
+    if (Array.isArray(w.templates)) for (const t of w.templates) {
+      if (!isObj(t) || typeof t.id !== 'string' || !t.id || !str(t.name)) { report.dropped++; continue; }
+      hw.templates.push({ id: t.id, name: str(t.name, 80), minutes: intIn(t.minutes, 5, 300, 45), archived: t.archived === true, items: (Array.isArray(t.items) ? t.items : []).map(cleanTemplateItem).filter(Boolean) });
+    }
+    if (isObj(w.schedule)) {
+      const s = w.schedule;
+      hw.schedule.mode = ['off', 'weekdays', 'sequence'].includes(s.mode) ? s.mode : 'off';
+      if (isObj(s.weekdays)) for (const d of WEEKDAYS) if (typeof s.weekdays[d] === 'string') hw.schedule.weekdays[d] = s.weekdays[d];
+      if (Array.isArray(s.sequence)) hw.schedule.sequence = s.sequence.filter(x => typeof x === 'string').slice(0, 20);
+      hw.schedule.next = intIn(s.next, 0, 19, 0);
+      hw.schedule.restDays = intIn(s.restDays, 0, 6, 1);
+      hw.schedule.since = isDateKey(s.since) ? s.since : null;
+    }
+    if (isObj(w.planned)) for (const d of Object.keys(w.planned)) {
+      const p = w.planned[d];
+      if (isDateKey(d) && isObj(p) && typeof p.templateId === 'string') hw.planned[d] = { templateId: p.templateId, time: isTime(p.time) ? p.time : null, status: ['planned', 'skipped', 'moved', 'continued'].includes(p.status) ? p.status : 'planned', source: p.source === 'proposal' ? 'proposal' : 'manual' };
+      else report.dropped++;
+    }
+    if (Array.isArray(w.sessions)) for (const s of w.sessions) { const c = cleanSession(s, report); if (c) hw.sessions.push(c); }
+    hw.sessions.sort((a, b) => (a.date + a.startedAt < b.date + b.startedAt ? -1 : 1));
+    if (typeof w.activeId === 'string' && hw.sessions.some(s => s.id === w.activeId && s.status === 'active')) hw.activeId = w.activeId;
+    if (isObj(w.restTimer)) hw.restTimer = { enabled: w.restTimer.enabled === true, seconds: intIn(w.restTimer.seconds, 10, 900, 90) };
+    if (isObj(w.rest) && Number.isFinite(w.rest.startedAt) && Number.isInteger(w.rest.durationSec)) hw.rest = { startedAt: w.rest.startedAt, durationSec: w.rest.durationSec };
+    return h;
+  }
+
+  // ---------- Health routing: #health/workout/… ----------
+  const route = () => (location.hash || '').replace('#', '').split('/').map(decodeURIComponent);
+  const go = hash => { if (location.hash !== '#' + hash) location.hash = hash; else render(); };
+  function healthMain() { return workoutMain(route().slice(2)); }
+  function healthSide() { return workoutSide(route().slice(2)); }
+
+  // ======================================================================
+  // Workout
+  // ======================================================================
+  const W = () => state.health.workout;
+  const exById = id => W().exercises.find(e => e.id === id) || null;
+  const tplById = id => W().templates.find(t => t.id === id) || null;
+  const activeSession = () => (W().activeId ? W().sessions.find(s => s.id === W().activeId) || null : null);
+  const finishedSessions = () => W().sessions.filter(s => s.status !== 'active');
+  let wsProposal = null;   // proposed dates, kept in memory until confirmed
+  let wsMoveFor = null;    // date whose missed session is being moved
+  let restDone = false;    // show "rest done" once
+
+  const n1 = v => (v === null || v === undefined ? '' : String(Math.round(v * 100) / 100));
+  function fmtSet(type, s) {
+    if (type === 'cardio') return [s.durationMin !== null ? `${n1(s.durationMin)} min` : '', s.distanceKm !== null ? `${n1(s.distanceKm)} km` : ''].filter(Boolean).join(' · ') || '—';
+    const reps = s.reps !== null ? `${n1(s.reps)} reps` : '— reps';
+    if (type === 'strength') return s.weight !== null ? `${n1(s.reps)} × ${n1(s.weight)} kg` : reps;
+    if (s.loadMode === 'added' && s.load) return `${reps} +${n1(s.load)} kg`;
+    if (s.loadMode === 'assisted' && s.load) return `${reps} (${n1(s.load)} kg assist)`;
+    return reps;
+  }
+  function planText(type, p) {
+    const sets = p.sets ? `${p.sets} × ` : '';
+    if (type === 'cardio') return [p.durationMin !== null ? `${n1(p.durationMin)} min` : '', p.distanceKm !== null ? `${n1(p.distanceKm)} km` : ''].filter(Boolean).join(' · ') || 'No target set';
+    const reps = p.reps !== null ? `${n1(p.reps)}` : '?';
+    if (type === 'strength') return `${sets}${reps}${p.weight !== null ? ` @ ${n1(p.weight)} kg` : ''}`;
+    return `${sets}${reps}${p.loadMode === 'added' && p.load ? ` +${n1(p.load)} kg` : p.loadMode === 'assisted' && p.load ? ` (${n1(p.load)} kg assist)` : ''}`;
+  }
+  // Most recent finished session that has done sets for this exercise.
+  function lastResultFor(exerciseId, excludeId) {
+    const list = finishedSessions();
+    for (let i = list.length - 1; i >= 0; i--) {
+      const s = list[i];
+      if (s.id === excludeId) continue;
+      const e = s.exercises.find(x => x.exerciseId === exerciseId && x.sets.some(y => y.done));
+      if (e) return { session: s, ex: e };
+    }
+    return null;
+  }
+  const setsDone = s => s.exercises.reduce((a, e) => a + e.sets.filter(x => x.done).length, 0);
+  const setsTotal = s => s.exercises.reduce((a, e) => a + e.sets.length, 0);
+
+  // ---------- Scheduling ----------
+  function completedOn(d) { return finishedSessions().some(s => s.date === d || s.plannedDate === d); }
+  // The session planned for a date: an explicit plan, or the weekday schedule.
+  function sessionPlanFor(d) {
+    const w = W(), p = w.planned[d];
+    if (p) return p.status === 'planned' && tplById(p.templateId) ? { templateId: p.templateId, time: p.time, explicit: true } : null;
+    if (w.schedule.mode === 'weekdays' && (!w.schedule.since || d >= w.schedule.since)) {
+      const t = tplById(w.schedule.weekdays[parseKey(d).getDay()]);
+      if (t && !t.archived) return { templateId: t.id, time: null, explicit: false };
+    }
+    return null;
+  }
+  // Only the most recent missed session (last 7 days) is offered. Older ones quietly lapse — no backlog.
+  function missedSession() {
+    const k = todayKey();
+    for (let i = 1; i <= 7; i++) {
+      const d = shift(k, -i), handled = W().planned[d];
+      if (handled && handled.status !== 'planned') return null; // already moved/skipped: nothing older is brought back
+      const p = sessionPlanFor(d);
+      if (p) return completedOn(d) ? null : Object.assign({ date: d }, p);
+      if (completedOn(d)) return null;
+    }
+    return null;
+  }
+  const nextInSequence = () => { const s = W().schedule; return s.sequence.length ? tplById(s.sequence[s.next % s.sequence.length]) : null; };
+  function advanceSequence(templateId) {
+    const s = W().schedule;
+    if (s.mode === 'sequence' && s.sequence.length && s.sequence[s.next % s.sequence.length] === templateId) s.next = (s.next + 1) % s.sequence.length;
+  }
+  function upcomingPlans(days) {
+    const out = [], k = todayKey();
+    for (let i = 0; i < days; i++) { const d = shift(k, i), p = sessionPlanFor(d); if (p && !completedOn(d)) out.push(Object.assign({ date: d }, p)); }
+    return out;
+  }
+  // Free time on a date that fits a session of `minutes` (uses shifts, appointments, sleep and your task window).
+  function slotFor(d, minutes) {
+    const seg = freeSegments(d, []).find(g => g.end - g.start >= minutes);
+    return seg ? minToTime(seg.start) : null;
+  }
+  function proposeSessions() {
+    const w = W(), s = w.schedule, k = todayKey(), out = [];
+    const busy = new Set(Object.keys(w.planned).filter(d => w.planned[d].status === 'planned'));
+    finishedSessions().forEach(x => busy.add(x.date));
+    const farEnough = d => [...busy].every(b => Math.abs(dayDiff(d, b)) > s.restDays);
+    if (s.mode === 'sequence') {
+      let idx = s.next;
+      for (let i = 0; i < 21 && out.length < 4; i++) {
+        const d = shift(k, i), t = tplById(s.sequence[idx % s.sequence.length]);
+        if (!t || busy.has(d) || !farEnough(d)) continue;
+        const time = slotFor(d, t.minutes);
+        if (!time) continue;
+        out.push({ date: d, templateId: t.id, time, kind: 'new', pick: true });
+        busy.add(d);
+        idx++;
+      }
+    } else if (s.mode === 'weekdays') {
+      for (let i = 0; i < 14; i++) {
+        const d = shift(k, i), p = sessionPlanFor(d);
+        if (!p || p.explicit || completedOn(d)) continue;
+        const t = tplById(p.templateId), time = slotFor(d, t.minutes);
+        if (time) { out.push({ date: d, templateId: t.id, time, kind: 'fits', pick: true }); continue; }
+        let alt = null;
+        for (const off of [1, -1, 2, -2]) {
+          const a = shift(d, off);
+          if (a < k || sessionPlanFor(a) || completedOn(a)) continue;
+          const at = slotFor(a, t.minutes);
+          if (at) { alt = { date: a, time: at }; break; }
+        }
+        out.push(alt ? { date: alt.date, from: d, templateId: t.id, time: alt.time, kind: 'move', pick: true } : { date: d, templateId: t.id, time: null, kind: 'nofit', pick: false });
+      }
+    }
+    return out;
+  }
+  function applyWorkoutProposal() {
+    const w = W();
+    for (const p of wsProposal.items) {
+      if (!p.pick || p.kind === 'nofit') continue;
+      if (p.kind === 'move') w.planned[p.from] = { templateId: p.templateId, time: null, status: 'moved', source: 'proposal' };
+      w.planned[p.date] = { templateId: p.templateId, time: p.time, status: 'planned', source: 'proposal' };
+    }
+    wsProposal = null;
+    persist();
+  }
+
+  // ---------- Sessions ----------
+  function startSession(templateId, plannedDate) {
+    const cur = activeSession();
+    if (cur) return cur;
+    const t = tplById(templateId);
+    if (!t) return null;
+    const s = { id: 'ws' + uid(), date: todayKey(), templateId: t.id, templateName: t.name, startedAt: localStamp(), finishedAt: null, status: 'active', plannedDate: plannedDate || null, editedAt: null, exercises: [] };
+    for (const it of t.items) {
+      const ex = exById(it.exerciseId);
+      if (!ex) continue;
+      const plan = Object.assign({ sets: it.sets, restSec: it.restSec }, cleanSetValues(it));
+      const last = lastResultFor(ex.id, null);
+      const lastDone = last ? last.ex.sets.filter(x => x.done) : [];
+      const sets = [];
+      for (let i = 0; i < it.sets; i++) sets.push(Object.assign(cleanSetValues(lastDone.length ? lastDone[Math.min(i, lastDone.length - 1)] : plan), { done: false }));
+      s.exercises.push({ key: 'se' + uid(), exerciseId: ex.id, name: ex.name, type: ex.type, plan, prefill: lastDone.length ? 'last' : 'plan', sets });
+    }
+    W().sessions.push(s);
+    W().activeId = s.id;
+    persist();
+    return s;
+  }
+  function finishSession(s) {
+    const done = setsDone(s), total = setsTotal(s);
+    s.status = done >= total && total > 0 ? 'done' : 'short';
+    s.finishedAt = localStamp();
+    W().activeId = null;
+    W().rest = null;
+    advanceSequence(s.templateId);
+    persist();
+    return s.status;
+  }
+  function sessionById(id) { return W().sessions.find(s => s.id === id) || null; }
+
+  // ---------- Rest timer (optional, wall-clock based) ----------
+  function restRemaining() { const r = W().rest; return r ? Math.max(0, r.durationSec * 1000 - (Date.now() - r.startedAt)) : 0; }
+  function restBarHtml() {
+    const r = W().rest;
+    if (r) return `<div class="rest-bar" role="status"><span>Rest</span><strong id="restTime" role="timer">${fmtClock(restRemaining())}</strong><button class="inline" data-action="h-rest-skip">Skip rest</button></div>`;
+    if (restDone) return '<div class="rest-bar done" role="status">Rest done — go when you\'re ready.</div>';
+    return '';
+  }
+
+  // ---------- Views ----------
+  function workoutMain(r) {
+    const view = r[0] || 'home';
+    if (view === 'session') return sessionView(activeSession(), true);
+    if (view === 'log') return sessionView(sessionById(r[1]), false);
+    if (view === 'template') return templateEditor(tplById(r[1]));
+    if (view === 'history') return historyView();
+    if (view === 'exercise') return exerciseHistoryView(exById(r[1]));
+    if (view === 'exercises') return exercisesView();
+    if (view === 'schedule') return scheduleView();
+    return workoutHome();
+  }
+  function workoutSide(r) {
+    if ((r[0] || 'home') !== 'home') return '';
+    const recent = finishedSessions().slice(-3).reverse();
+    return `
+      <section class="card">
+        <h2>Recent workouts</h2>
+        ${recent.length ? `<ul class="plain-list">${recent.map(s => `<li><a href="#health/workout/log/${esc(s.id)}">${esc(s.templateName)}</a><div class="meta">${esc(shortDate(s.date))} · ${setsDone(s)} sets${s.status === 'short' ? ' · shorter session' : ''}</div></li>`).join('')}</ul>` : '<p class="small muted">Nothing logged yet.</p>'}
+        <div class="row2"><a class="btn-link" href="#health/workout/history">All history</a><a class="btn-link" href="#health/workout/exercises">Exercises</a></div>
+      </section>`;
+  }
+
+  function nextActionCard() {
+    const w = W(), k = todayKey(), cur = activeSession();
+    if (cur) {
+      return `<section class="card next-card"><span class="eyebrow">In progress</span><h2>${esc(cur.templateName)}</h2>
+        <p class="small muted">${setsDone(cur)} of ${setsTotal(cur)} sets done · started ${esc(cur.startedAt.slice(11))}</p>
+        <a class="btn primary" href="#health/workout/session">Resume workout</a></section>`;
+    }
+    if (!w.templates.some(t => !t.archived)) {
+      return `<section class="card next-card"><span class="eyebrow">Next step</span><h2>Create your first workout</h2>
+        <p class="small muted">A workout is a list of exercises you do together, like "Chest" or "Home workout".</p>
+        <button class="primary" data-action="h-tpl-new">Create a workout</button></section>`;
+    }
+    const missed = missedSession();
+    if (missed) {
+      const t = tplById(missed.templateId), seq = w.schedule.mode === 'sequence';
+      return `<section class="card next-card"><span class="eyebrow">From ${esc(shortDate(missed.date))}</span>
+        <h2>${esc(t.name)} didn't happen — that's okay</h2>
+        <p class="small muted">What would you like to do with it?</p>
+        ${wsMoveFor === missed.date ? `
+          <div class="field"><label class="lbl" for="wsMoveDate">Move it to</label><input id="wsMoveDate" type="date" min="${k}" value="${k}"></div>
+          <div class="row2"><button class="primary" data-action="h-missed-move-save">Move</button><button class="ghost" data-action="h-missed-move-cancel">Cancel</button></div>` : `
+          <div class="stack">
+            <button data-action="h-missed-move">Move to another day</button>
+            <button data-action="h-missed-skip">Skip it</button>
+            ${seq ? '<button data-action="h-missed-continue">Continue with next session</button>' : ''}
+          </div>
+          <p class="small muted" style="margin:10px 0 0">${seq ? 'Skip keeps it next in your sequence. Continue moves on to the following session.' : 'Skipping just lets it go — nothing piles up.'}</p>`}
+      </section>`;
+    }
+    const today = sessionPlanFor(k);
+    if (today && !completedOn(k)) {
+      const t = tplById(today.templateId);
+      return `<section class="card next-card"><span class="eyebrow">Today</span><h2>${esc(t.name)}</h2>
+        <p class="small muted">About ${t.minutes} min${today.time ? ` · planned for ${today.time}` : ''} · ${t.items.length} exercise${t.items.length === 1 ? '' : 's'}</p>
+        <button class="primary" data-action="h-ws-start" data-tpl="${esc(t.id)}" data-planned="${k}">Start workout</button></section>`;
+    }
+    const up = upcomingPlans(21)[0];
+    const seqNext = w.schedule.mode === 'sequence' ? nextInSequence() : null;
+    const t = up ? tplById(up.templateId) : seqNext;
+    return `<section class="card next-card"><span class="eyebrow">${up ? 'Next planned' : seqNext ? 'Next in your sequence' : 'Whenever you like'}</span>
+      <h2>${t ? esc(t.name) : 'No workout planned'}</h2>
+      <p class="small muted">${up ? `${esc(shortDate(up.date))}${up.time ? ' at ' + up.time : ''}` : completedOn(k) ? 'Already moved today — nice.' : 'Rest days count too.'}</p>
+      ${t ? `<button data-action="h-ws-start" data-tpl="${esc(t.id)}">Start ${esc(t.name)} now</button>` : ''}</section>`;
+  }
+
+  function workoutHome() {
+    const w = W(), live = w.templates.filter(t => !t.archived), archived = w.templates.filter(t => t.archived);
+    const up = upcomingPlans(14).slice(0, 5);
+    return nextActionCard() + `
+      <section class="card">
+        <div class="card-head"><h2>Your workouts</h2><button class="inline" data-action="h-tpl-new">+ New</button></div>
+        ${live.length ? `<ul class="tpl-list">${live.map(t => `
+          <li class="tpl-row">
+            <div><div class="title">${esc(t.name)}</div><div class="meta">${t.items.length} exercise${t.items.length === 1 ? '' : 's'} · about ${t.minutes} min</div></div>
+            <div class="c-actions"><a class="btn-link" href="#health/workout/template/${esc(t.id)}">Edit</a><button class="inline" data-action="h-ws-start" data-tpl="${esc(t.id)}" ${activeSession() ? 'disabled' : ''}>Start</button></div>
+          </li>`).join('')}</ul>` : '<p class="small muted">No workouts yet.</p>'}
+        ${archived.length ? `<details><summary>Archived (${archived.length})</summary><ul class="tpl-list">${archived.map(t => `<li class="tpl-row"><div class="title">${esc(t.name)}</div><div class="c-actions"><button class="inline" data-action="h-tpl-archive" data-tpl="${esc(t.id)}">Restore</button></div></li>`).join('')}</ul></details>` : ''}
+      </section>
+      <section class="card">
+        <div class="card-head"><h2>Schedule</h2><a class="btn-link" href="#health/workout/schedule">Change</a></div>
+        <p class="small">${w.schedule.mode === 'weekdays' ? 'By weekday.' : w.schedule.mode === 'sequence' ? `A repeating sequence — next up: ${esc((nextInSequence() || {}).name || '—')}.` : 'No schedule — start whenever you like.'}</p>
+        ${up.length ? `<ul class="plain-list">${up.map(p => `<li>${esc(shortDate(p.date))}${p.time ? ' · ' + p.time : ''} — ${esc(tplById(p.templateId).name)}</li>`).join('')}</ul>` : ''}
+      </section>`;
+  }
+
+  function setRowHtml(e, i, x, active) {
+    const id = `${e.key}-${i}`;
+    const num = (field, label, val, step) => `<label class="set-field"><span class="lbl">${label}</span><input type="number" inputmode="decimal" min="0" step="${step}" data-h="set" data-ex="${e.key}" data-set="${i}" data-field="${field}" value="${n1(val)}" aria-label="Set ${i + 1} ${label}"></label>`;
+    let fields = '';
+    if (e.type === 'strength') fields = num('reps', 'Reps', x.reps, 1) + num('weight', 'kg', x.weight, 0.5);
+    else if (e.type === 'bodyweight') {
+      fields = num('reps', 'Reps', x.reps, 1) + `
+        <label class="set-field"><span class="lbl">Load</span><select data-h="set" data-ex="${e.key}" data-set="${i}" data-field="loadMode" aria-label="Set ${i + 1} load type">
+          <option value="none" ${x.loadMode === 'none' ? 'selected' : ''}>Bodyweight</option><option value="added" ${x.loadMode === 'added' ? 'selected' : ''}>+ Added</option><option value="assisted" ${x.loadMode === 'assisted' ? 'selected' : ''}>Assisted</option></select></label>
+        ${x.loadMode !== 'none' ? num('load', 'kg', x.load, 0.5) : ''}`;
+    } else fields = num('durationMin', 'Min', x.durationMin, 1) + num('distanceKm', 'km', x.distanceKm, 0.1);
+    return `
+      <div class="set-row${x.done ? ' done' : ''}" id="set-${id}">
+        <span class="set-num">${i + 1}</span>
+        <div class="set-fields">${fields}</div>
+        <button class="set-done${x.done ? ' on' : ''}" data-action="h-set-done" data-ex="${e.key}" data-set="${i}" aria-pressed="${x.done}" aria-label="Set ${i + 1} ${x.done ? 'done — tap to undo' : 'mark done'}">${x.done ? '✓' : 'Done'}</button>
+      </div>`;
+  }
+  function sessionView(s, isActive) {
+    if (!s) {
+      return `<section class="card"><h2>${isActive ? 'No workout in progress' : 'Workout not found'}</h2><p class="small muted">${isActive ? 'Start one from your workouts.' : 'It may have been deleted.'}</p><a class="btn" href="#health/workout">Back to Workout</a></section>`;
+    }
+    const w = W(), done = setsDone(s), total = setsTotal(s);
+    const blocks = s.exercises.map(e => {
+      const last = lastResultFor(e.exerciseId, s.id);
+      return `
+        <section class="card ex-block">
+          <div class="card-head"><h3 class="ex-name">${esc(e.name)}</h3><span class="chip">${EX_TYPE_LABEL[e.type]}</span></div>
+          <p class="small muted" style="margin:0 0 4px">Plan: ${esc(planText(e.type, e.plan))}</p>
+          <p class="small muted" style="margin:0 0 8px">${last ? `Last time (${esc(shortDate(last.session.date))}): ${esc(last.ex.sets.filter(x => x.done).map(x => fmtSet(e.type, x)).join(', '))}` : 'No previous result yet.'}</p>
+          ${isActive ? `<p class="small muted" style="margin:0 0 8px">Prefilled from ${e.prefill === 'last' ? 'last time' : 'your plan'} — change anything. ${e.prefill === 'last' ? `<button class="link-btn" data-action="h-prefill" data-ex="${e.key}" data-from="plan">Use plan values</button>` : last ? `<button class="link-btn" data-action="h-prefill" data-ex="${e.key}" data-from="last">Use last time's values</button>` : ''}</p>` : ''}
+          ${e.sets.map((x, i) => setRowHtml(e, i, x, isActive)).join('')}
+          <div class="row2"><button class="inline" data-action="h-set-add" data-ex="${e.key}">+ Add set</button><button class="inline ghost" data-action="h-set-remove" data-ex="${e.key}" ${e.sets.length ? '' : 'disabled'}>Remove last set</button></div>
+        </section>`;
+    }).join('');
+    if (isActive) {
+      return `
+        <section class="card session-head">
+          <span class="eyebrow">Workout in progress</span>
+          <h2>${esc(s.templateName)}</h2>
+          <p class="small muted" id="wsProgress">${done} of ${total} sets done · saved as you go</p>
+          <label class="check"><input type="checkbox" data-h="rest-enabled" ${w.restTimer.enabled ? 'checked' : ''}> Rest timer after each set</label>
+          <div id="restBar">${restBarHtml()}</div>
+        </section>
+        ${blocks || '<section class="card"><p class="small muted">This workout has no exercises.</p></section>'}
+        <section class="card">
+          <div class="stack">
+            <button class="primary" data-action="h-ws-finish">Finish workout</button>
+            <a class="btn" href="#health/workout">Leave for now — I'll come back</a>
+            ${done === 0 ? '<button class="ghost" data-action="h-ws-discard">Cancel this workout</button>' : ''}
+          </div>
+        </section>`;
+    }
+    return `
+      <section class="card">
+        <a class="btn-link" href="#health/workout/history">‹ All history</a>
+        <h2>${esc(s.templateName)}</h2>
+        <p class="small muted">${esc(longDate(s.date))} · ${done} of ${total} sets · ${s.status === 'short' ? 'shorter session' : 'full session'}${s.editedAt ? ` · corrected ${esc(shortDate(s.editedAt.slice(0, 10)))}` : ''}</p>
+        <p class="small muted" style="margin:0">Fix anything that was logged wrongly — changes save as you go. Your workout templates aren't affected.</p>
+      </section>
+      ${blocks}
+      <section class="card"><button class="ghost" data-action="h-ws-delete" data-id="${esc(s.id)}">Delete this workout from history</button></section>`;
+  }
+
+  function templateEditor(t) {
+    if (!t) return '<section class="card"><h2>Workout not found</h2><a class="btn" href="#health/workout">Back</a></section>';
+    const usable = W().exercises.filter(e => !e.archived);
+    const f = (it, field, label, val, step, extra) => `<label class="set-field"><span class="lbl">${label}</span><input type="number" inputmode="decimal" min="0" step="${step}" data-h="tpl-item" data-tpl="${esc(t.id)}" data-item="${esc(it.id)}" data-field="${field}" value="${n1(val)}" ${extra || ''}></label>`;
+    const rows = t.items.map((it, i) => {
+      const ex = exById(it.exerciseId);
+      if (!ex) return '';
+      let fields = f(it, 'sets', 'Sets', it.sets, 1, 'min="1" max="20"');
+      if (ex.type === 'strength') fields += f(it, 'reps', 'Reps', it.reps, 1) + f(it, 'weight', 'kg', it.weight, 0.5);
+      else if (ex.type === 'bodyweight') {
+        fields += f(it, 'reps', 'Reps', it.reps, 1) + `<label class="set-field"><span class="lbl">Load</span><select data-h="tpl-item" data-tpl="${esc(t.id)}" data-item="${esc(it.id)}" data-field="loadMode">
+          <option value="none" ${it.loadMode === 'none' ? 'selected' : ''}>Bodyweight</option><option value="added" ${it.loadMode === 'added' ? 'selected' : ''}>+ Added</option><option value="assisted" ${it.loadMode === 'assisted' ? 'selected' : ''}>Assisted</option></select></label>`
+          + (it.loadMode !== 'none' ? f(it, 'load', 'kg', it.load, 0.5) : '');
+      } else fields += f(it, 'durationMin', 'Min', it.durationMin, 1) + f(it, 'distanceKm', 'km', it.distanceKm, 0.1);
+      fields += f(it, 'restSec', 'Rest s', it.restSec, 15);
+      return `
+        <div class="tpl-item">
+          <div class="card-head"><div><strong>${esc(ex.name)}</strong> <span class="chip">${EX_TYPE_LABEL[ex.type]}</span></div>
+            <div class="c-actions">
+              <button class="inline" data-action="h-item-move" data-tpl="${esc(t.id)}" data-item="${esc(it.id)}" data-dir="-1" aria-label="Move ${esc(ex.name)} up" ${i === 0 ? 'disabled' : ''}>↑</button>
+              <button class="inline" data-action="h-item-move" data-tpl="${esc(t.id)}" data-item="${esc(it.id)}" data-dir="1" aria-label="Move ${esc(ex.name)} down" ${i === t.items.length - 1 ? 'disabled' : ''}>↓</button>
+              <button class="inline" data-action="h-item-remove" data-tpl="${esc(t.id)}" data-item="${esc(it.id)}" aria-label="Remove ${esc(ex.name)}">✕</button>
+            </div></div>
+          <div class="set-fields">${fields}</div>
+        </div>`;
+    }).join('');
+    const used = new Set(t.items.map(i => i.exerciseId));
+    return `
+      <section class="card">
+        <a class="btn-link" href="#health/workout">‹ Workout</a>
+        <h2>Edit workout</h2>
+        <p class="small muted">Changes save automatically. Past workouts keep exactly what you did.</p>
+        <div class="field"><label class="lbl" for="tplName">Name</label><input id="tplName" type="text" maxlength="80" data-h="tpl-name" data-tpl="${esc(t.id)}" value="${esc(t.name)}"></div>
+        <div class="field"><label class="lbl" for="tplMin">Usual length (minutes)</label><input id="tplMin" type="number" inputmode="numeric" min="5" max="300" data-h="tpl-minutes" data-tpl="${esc(t.id)}" value="${t.minutes}"></div>
+      </section>
+      <section class="card">
+        <h2>Exercises</h2>
+        ${rows || '<p class="small muted">No exercises yet — add one below.</p>'}
+        <h4>Add an exercise</h4>
+        ${usable.filter(e => !used.has(e.id)).length ? `
+          <div class="inline-add"><select id="tplAddEx" aria-label="Exercise to add">${usable.filter(e => !used.has(e.id)).map(e => `<option value="${esc(e.id)}">${esc(e.name)} (${EX_TYPE_LABEL[e.type]})</option>`).join('')}</select>
+          <button class="inline" data-action="h-item-add" data-tpl="${esc(t.id)}">Add</button></div>` : ''}
+        <details ${usable.length ? '' : 'open'}><summary>Create a new exercise</summary>
+          <div class="field"><label class="lbl" for="newExName">Name</label><input id="newExName" type="text" maxlength="80" placeholder="e.g. Kettlebell swings"></div>
+          <div class="field"><label class="lbl" for="newExType">How you track it</label><select id="newExType">${EX_TYPES.map(x => `<option value="${x}">${EX_TYPE_LABEL[x]} — ${x === 'strength' ? 'sets, reps, weight' : x === 'bodyweight' ? 'sets, reps, optional added weight or assistance' : 'time and optional distance'}</option>`).join('')}</select></div>
+          <p class="warn" id="newExError" role="alert"></p>
+          <button class="inline" data-action="h-ex-create" data-tpl="${esc(t.id)}">Create and add</button>
+          <p class="lbl" style="margin:12px 0 6px">Or quick-add a common one</p>
+          <div class="chip-row">${COMMON_EXERCISES.filter(c => !W().exercises.some(e => e.name.toLowerCase() === c.name.toLowerCase())).map(c => `<button class="inline" data-action="h-ex-common" data-tpl="${esc(t.id)}" data-name="${esc(c.name)}" data-type="${c.type}">${esc(c.name)}</button>`).join('')}</div>
+        </details>
+      </section>
+      <section class="card"><button class="ghost" data-action="h-tpl-archive" data-tpl="${esc(t.id)}">${t.archived ? 'Restore this workout' : 'Archive this workout'}</button>
+        <p class="small muted" style="margin:8px 0 0">Archiving hides it from your lists and schedule. Its history stays.</p></section>`;
+  }
+
+  function historyView() {
+    const list = finishedSessions().slice().reverse();
+    return `
+      <section class="card">
+        <a class="btn-link" href="#health/workout">‹ Workout</a>
+        <h2>Workout history</h2>
+        ${list.length ? `<ul class="plain-list">${list.map(s => `<li><a href="#health/workout/log/${esc(s.id)}">${esc(s.templateName)}</a><div class="meta">${esc(shortDate(s.date))} · ${setsDone(s)} of ${setsTotal(s)} sets · ${s.status === 'short' ? 'shorter session' : 'full session'}${s.editedAt ? ' · corrected' : ''}</div></li>`).join('')}</ul>` : '<p class="small muted">Nothing logged yet.</p>'}
+      </section>`;
+  }
+
+  function exercisesView() {
+    const list = W().exercises;
+    const hasHistory = id => W().sessions.some(s => s.exercises.some(e => e.exerciseId === id));
+    return `
+      <section class="card">
+        <a class="btn-link" href="#health/workout">‹ Workout</a>
+        <h2>Exercises</h2>
+        ${list.length ? list.map(e => `
+          <div class="tpl-item">
+            <div class="field"><label class="lbl" for="exn-${esc(e.id)}">Name</label><input id="exn-${esc(e.id)}" type="text" maxlength="80" data-h="ex-name" data-id="${esc(e.id)}" value="${esc(e.name)}"></div>
+            <div class="card-head"><span class="small">${EX_TYPE_LABEL[e.type]}${hasHistory(e.id) ? ' · tracking type fixed once logged' : ''}${e.archived ? ' · archived' : ''}</span>
+              <div class="c-actions"><a class="btn-link" href="#health/workout/exercise/${esc(e.id)}">History</a><button class="inline" data-action="h-ex-archive" data-id="${esc(e.id)}">${e.archived ? 'Restore' : 'Archive'}</button></div></div>
+          </div>`).join('') : '<p class="small muted">Exercises you create appear here.</p>'}
+      </section>`;
+  }
+
+  // ---------- Exercise history + chart ----------
+  function exerciseRecords(id) {
+    return finishedSessions().map(s => ({ s, e: s.exercises.find(x => x.exerciseId === id) })).filter(x => x.e && x.e.sets.some(y => y.done));
+  }
+  // One measure per chart; added weight and assistance are never mixed.
+  function exerciseSeries(type, records) {
+    const out = [];
+    const pts = (label, unit, pick, lowerIsBetter) => {
+      const p = records.map(({ s, e }) => { const v = pick(e.sets.filter(x => x.done)); return v === null ? null : { date: s.date, v }; }).filter(Boolean);
+      if (p.length) out.push({ label, unit, points: p, lowerIsBetter: !!lowerIsBetter });
+    };
+    const maxOf = (sets, f) => { const v = sets.map(f).filter(x => x !== null && x !== undefined); return v.length ? Math.max(...v) : null; };
+    const minOf = (sets, f) => { const v = sets.map(f).filter(x => x !== null && x !== undefined); return v.length ? Math.min(...v) : null; };
+    if (type === 'strength') pts('Heaviest set', 'kg', sets => maxOf(sets, x => x.weight));
+    if (type === 'bodyweight') {
+      pts('Most reps in a set (bodyweight only)', 'reps', sets => maxOf(sets.filter(x => x.loadMode === 'none'), x => x.reps));
+      pts('Heaviest added weight', 'kg', sets => maxOf(sets.filter(x => x.loadMode === 'added'), x => x.load));
+      pts('Least assistance used', 'kg', sets => minOf(sets.filter(x => x.loadMode === 'assisted'), x => x.load), true);
+    }
+    if (type === 'cardio') {
+      pts('Longest distance', 'km', sets => maxOf(sets, x => x.distanceKm));
+      pts('Longest duration', 'min', sets => maxOf(sets, x => x.durationMin));
+    }
+    return out;
+  }
+  function chartSvg(series) {
+    const W2 = 320, H = 150, L = 40, R = 12, T = 14, B = 26;
+    const p = series.points, vs = p.map(x => x.v);
+    let lo = Math.min(...vs), hi = Math.max(...vs);
+    if (lo === hi) { lo = lo - 1; hi = hi + 1; }
+    const pad = (hi - lo) * 0.1; lo = Math.max(0, Math.floor(lo - pad)); hi = Math.ceil(hi + pad); // whole-number axis ends
+    const x = i => L + (p.length === 1 ? 0 : (i * (W2 - L - R)) / (p.length - 1));
+    const y = v => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
+    const line = p.map((pt, i) => `${x(i).toFixed(1)},${y(pt.v).toFixed(1)}`).join(' ');
+    const last = p[p.length - 1];
+    return `
+      <figure class="chart">
+        <svg viewBox="0 0 ${W2} ${H}" role="img" aria-label="${esc(series.label)}: ${p.map(pt => `${shortDate(pt.date)} ${n1(pt.v)} ${series.unit}`).join(', ')}">
+          <line class="ch-grid" x1="${L}" x2="${W2 - R}" y1="${y(hi)}" y2="${y(hi)}"/><line class="ch-grid" x1="${L}" x2="${W2 - R}" y1="${y(lo)}" y2="${y(lo)}"/>
+          <text class="ch-axis" x="${L - 6}" y="${y(hi) + 4}" text-anchor="end">${n1(Math.round(hi * 10) / 10)}</text>
+          <text class="ch-axis" x="${L - 6}" y="${y(lo) + 4}" text-anchor="end">${n1(Math.round(lo * 10) / 10)}</text>
+          <text class="ch-axis" x="${L}" y="${H - 6}">${esc(shortDate(p[0].date))}</text>
+          <text class="ch-axis" x="${W2 - R}" y="${H - 6}" text-anchor="end">${esc(shortDate(last.date))}</text>
+          <polyline class="ch-line" points="${line}"/>
+          ${p.map((pt, i) => `<g class="ch-pt" tabindex="0" data-tip="${esc(`${shortDate(pt.date)}: ${n1(pt.v)} ${series.unit}`)}"><circle class="ch-hit" cx="${x(i)}" cy="${y(pt.v)}" r="14"/><circle class="ch-dot" cx="${x(i)}" cy="${y(pt.v)}" r="4.5"/></g>`).join('')}
+        </svg>
+        <figcaption class="small muted">${esc(series.label)} (${series.unit})${series.lowerIsBetter ? ' — lower means less help needed' : ''}. Latest: ${n1(last.v)} ${series.unit}.</figcaption>
+        <div class="ch-tip" aria-hidden="true"></div>
+      </figure>`;
+  }
+  function exerciseHistoryView(ex) {
+    if (!ex) return '<section class="card"><h2>Exercise not found</h2><a class="btn" href="#health/workout/exercises">Back</a></section>';
+    const recs = exerciseRecords(ex.id);
+    const series = exerciseSeries(ex.type, recs);
+    const charts = series.filter(s => s.points.length >= 3);
+    return `
+      <section class="card">
+        <a class="btn-link" href="#health/workout/exercises">‹ Exercises</a>
+        <h2>${esc(ex.name)}</h2>
+        <p class="small muted">${EX_TYPE_LABEL[ex.type]} · ${recs.length} logged session${recs.length === 1 ? '' : 's'}. MyDay never changes your targets for you.</p>
+        ${charts.length ? charts.map(chartSvg).join('') : `<p class="small muted">A progress chart appears once there are at least 3 comparable sessions${series.length > 1 ? ' of the same kind (bodyweight, added weight and assistance are kept apart)' : ''}.</p>`}
+      </section>
+      <section class="card">
+        <h3>Every session</h3>
+        ${recs.length ? `<table class="hist-table"><thead><tr><th scope="col">Date</th><th scope="col">Sets done</th></tr></thead><tbody>${recs.slice().reverse().map(({ s, e }) => `<tr><td><a href="#health/workout/log/${esc(s.id)}">${esc(shortDate(s.date))}</a></td><td>${esc(e.sets.filter(x => x.done).map(x => fmtSet(e.type, x)).join(', '))}</td></tr>`).join('')}</tbody></table>` : '<p class="small muted">Nothing logged yet.</p>'}
+      </section>`;
+  }
+
+  function scheduleView() {
+    const w = W(), s = w.schedule, live = w.templates.filter(t => !t.archived);
+    const opt = (v, l, sel) => `<option value="${esc(v)}" ${v === sel ? 'selected' : ''}>${esc(l)}</option>`;
+    const tplOpts = sel => opt('', 'Rest day', sel || '') + live.map(t => opt(t.id, t.name, sel)).join('');
+    const planned = Object.keys(w.planned).filter(d => d >= todayKey() && w.planned[d].status === 'planned').sort();
+    const prop = wsProposal ? `
+      <section class="card proposal" id="wsProposal">
+        <span class="eyebrow">Not saved yet</span>
+        <h2>Proposed workout dates</h2>
+        <p class="small muted">Fitted around your shifts, appointments and task window. Untick anything you don't want.</p>
+        ${wsProposal.items.length ? wsProposal.items.map((p, i) => `
+          <label class="check prop-check">
+            <input type="checkbox" data-h="prop-pick" data-i="${i}" ${p.pick ? 'checked' : ''} ${p.kind === 'nofit' ? 'disabled' : ''}>
+            <span><strong>${esc(shortDate(p.date))}</strong>${p.time ? ' · ' + p.time : ''} — ${esc(tplById(p.templateId).name)}
+            <span class="meta">${p.kind === 'move' ? ` (moved from ${esc(shortDate(p.from))} — no room that day)` : p.kind === 'nofit' ? ' — no free slot that day or nearby; leave it or move it yourself' : ''}</span></span>
+          </label>`).join('') : '<p class="small">No free slots found in the next few weeks with your current rest-day setting.</p>'}
+        <div class="row2"><button class="primary" data-action="h-prop-apply" ${wsProposal.items.some(p => p.pick && p.kind !== 'nofit') ? '' : 'disabled'}>Add to my plan</button><button class="ghost" data-action="h-prop-cancel">Cancel</button></div>
+      </section>` : '';
+    return `
+      <section class="card">
+        <a class="btn-link" href="#health/workout">‹ Workout</a>
+        <h2>Schedule</h2>
+        <div class="field"><label class="lbl" for="schMode">How you schedule</label>
+          <select id="schMode" data-h="sch-mode">${opt('off', 'No schedule', s.mode)}${opt('weekdays', 'By weekday', s.mode)}${opt('sequence', 'Repeating sequence (fits rotating shifts)', s.mode)}</select></div>
+        ${s.mode === 'weekdays' ? WEEKDAYS.map(d => `<div class="field-row wd-row"><span class="small">${esc(weekdayName(d))}</span><select data-h="sch-weekday" data-dow="${d}" aria-label="${esc(weekdayName(d))}">${tplOpts(s.weekdays[d])}</select></div>`).join('') : ''}
+        ${s.mode === 'sequence' ? `
+          <p class="small muted">Do these in order, on whichever days suit you — it doesn't follow weekdays.</p>
+          ${s.sequence.map((id, i) => `<div class="seq-row"><span class="set-num">${i + 1}</span><span class="title">${esc((tplById(id) || {}).name || 'Removed workout')}</span>${i === s.next % Math.max(1, s.sequence.length) ? '<span class="chip">Next</span>' : `<button class="link-btn" data-action="h-seq-next" data-i="${i}">Make next</button>`}<button class="inline" data-action="h-seq-remove" data-i="${i}" aria-label="Remove from sequence">✕</button></div>`).join('')}
+          ${live.length ? `<div class="inline-add"><select id="seqAdd" aria-label="Workout to add">${live.map(t => opt(t.id, t.name, '')).join('')}</select><button class="inline" data-action="h-seq-add">Add to sequence</button></div>` : '<p class="small muted">Create a workout first.</p>'}` : ''}
+        ${s.mode !== 'off' ? `<div class="field"><label class="lbl" for="schRest">Rest days between proposed sessions</label><input id="schRest" type="number" inputmode="numeric" min="0" max="6" data-h="sch-rest" value="${s.restDays}"></div>
+          <button data-action="h-propose" ${(s.mode === 'sequence' ? s.sequence.length : live.length) ? '' : 'disabled'}>Propose dates around my shifts</button>` : ''}
+      </section>
+      ${prop}
+      <section class="card">
+        <h2>Planned sessions</h2>
+        ${planned.length ? planned.map(d => `<div class="c-row"><div><strong>${esc(shortDate(d))}</strong>${w.planned[d].time ? ' · ' + w.planned[d].time : ''}<div class="meta">${esc((tplById(w.planned[d].templateId) || {}).name || '')}</div></div><div class="c-actions"><button class="inline" data-action="h-plan-remove" data-date="${d}" aria-label="Remove plan for ${esc(shortDate(d))}">✕</button></div></div>`).join('') : '<p class="small muted">Nothing planned on specific dates.</p>'}
+        ${live.length ? `<details><summary>Plan a session on a date</summary>
+          <div class="field-row"><div class="field"><label class="lbl" for="planDate">Date</label><input id="planDate" type="date" min="${todayKey()}" value="${todayKey()}"></div>
+          <div class="field"><label class="lbl" for="planTime">Time (optional)</label><input id="planTime" type="time"></div></div>
+          <div class="field"><label class="lbl" for="planTpl">Workout</label><select id="planTpl">${live.map(t => opt(t.id, t.name, '')).join('')}</select></div>
+          <button class="inline" data-action="h-plan-add">Add</button></details>` : ''}
+      </section>`;
+  }
+
+  // ---------- Today card (shown on Today; nothing is added to the task list) ----------
+  function healthTodayCard(k) {
+    if (!state.health) return '';
+    const items = [], cur = activeSession();
+    if (cur) items.push(`<div class="c-row"><div><strong>Workout in progress</strong><div class="meta">${esc(cur.templateName)} · ${setsDone(cur)} of ${setsTotal(cur)} sets</div></div><a class="btn-link" href="#health/workout/session">Resume</a></div>`);
+    else {
+      const missed = missedSession();
+      if (missed) items.push(`<div class="c-row"><div><strong>${esc(tplById(missed.templateId).name)}</strong><div class="meta">From ${esc(shortDate(missed.date))} — move, skip or carry on?</div></div><a class="btn-link" href="#health/workout">Decide</a></div>`);
+      const p = sessionPlanFor(k);
+      if (p && !completedOn(k)) { const t = tplById(p.templateId); items.push(`<div class="c-row"><div><strong>Workout: ${esc(t.name)}</strong><div class="meta">About ${t.minutes} min${p.time ? ' · ' + p.time : ''}</div></div><a class="btn-link" href="#health/workout">Open</a></div>`); }
+    }
+    return items.length ? `<section class="card"><h2>Health</h2>${items.join('')}</section>` : '';
+  }
+  // Planned workouts with a time block that time on Today.
+  function workoutBlocks(k) {
+    const out = [];
+    for (const d of [shift(k, -1), k]) {
+      const p = sessionPlanFor(d);
+      if (!p || !p.time || completedOn(d)) continue;
+      const t = tplById(p.templateId), s = `${d}T${p.time}`;
+      out.push({ kind: 'workout', title: `Workout: ${t.name}`, start: s, end: minToDt(dtToMin(s, d) + t.minutes, d) });
+    }
+    return out;
+  }
+
+  // ---------- Timers that tick every second (rest timer) ----------
+  function healthTick() {
+    if (!state || !state.health) return;
+    const w = W();
+    if (w.rest) {
+      if (restRemaining() <= 0) {
+        w.rest = null; restDone = true; persist();
+        try { if (navigator.vibrate) navigator.vibrate(120); } catch (e) { /* not supported */ }
+        setHTML('restBar', restBarHtml());
+      } else if ($('restTime')) $('restTime').textContent = fmtClock(restRemaining());
+    }
+  }
+
+  // ======================================================================
+  // Health: actions and inputs (all saved automatically)
+  // ======================================================================
+  function newItem(ex) {
+    const base = { id: 'ti' + uid(), exerciseId: ex.id, sets: 3, restSec: 90, reps: null, weight: null, loadMode: 'none', load: null, durationMin: null, distanceKm: null };
+    if (ex.type === 'cardio') return Object.assign(base, { sets: 1, durationMin: 20 });
+    return Object.assign(base, { reps: 10 });
+  }
+  const ctxSession = () => (route()[2] === 'log' ? sessionById(route()[3]) : activeSession());
+
+  // Returns 'none' when it has already navigated or re-rendered.
+  function healthAction(a, btn) {
+    const w = W(), k = todayKey(), d = btn.dataset;
+    switch (a) {
+      // ----- Workout templates and exercises -----
+      case 'h-tpl-new': {
+        const t = { id: 't' + uid(), name: 'New workout', minutes: 45, archived: false, items: [] };
+        w.templates.push(t); persist();
+        go('health/workout/template/' + t.id);
+        setTimeout(() => { if ($('tplName')) { $('tplName').focus(); $('tplName').select(); } }, 50);
+        return 'none';
+      }
+      case 'h-tpl-archive': {
+        const t = tplById(d.tpl);
+        if (!t) return;
+        t.archived = !t.archived; persist();
+        toast(t.archived ? 'Archived — its history is kept.' : 'Restored.');
+        if (t.archived) { go('health/workout'); return 'none'; }
+        return;
+      }
+      case 'h-item-add': {
+        const t = tplById(d.tpl), ex = $('tplAddEx') && exById($('tplAddEx').value);
+        if (t && ex) { t.items.push(newItem(ex)); persist(); }
+        return;
+      }
+      case 'h-ex-create': {
+        const name = ($('newExName') ? $('newExName').value : '').trim(), type = $('newExType') ? $('newExType').value : 'strength';
+        if (!name) { setHTML('newExError', 'Please give the exercise a name.'); return 'none'; }
+        if (w.exercises.some(e => e.name.toLowerCase() === name.toLowerCase())) { setHTML('newExError', 'You already have an exercise with that name — pick it from the list above.'); return 'none'; }
+        const ex = { id: 'x' + uid(), name: name.slice(0, 80), type: EX_TYPES.includes(type) ? type : 'strength', archived: false };
+        w.exercises.push(ex);
+        const t = tplById(d.tpl);
+        if (t) t.items.push(newItem(ex));
+        persist();
+        return;
+      }
+      case 'h-ex-common': {
+        let ex = w.exercises.find(e => e.name.toLowerCase() === String(d.name).toLowerCase());
+        if (!ex) { ex = { id: 'x' + uid(), name: d.name, type: EX_TYPES.includes(d.type) ? d.type : 'bodyweight', archived: false }; w.exercises.push(ex); }
+        const t = tplById(d.tpl);
+        if (t) t.items.push(newItem(ex));
+        persist();
+        return;
+      }
+      case 'h-item-move': {
+        const t = tplById(d.tpl), i = t ? t.items.findIndex(x => x.id === d.item) : -1, j = i + Number(d.dir);
+        if (i < 0 || j < 0 || j >= t.items.length) return 'none';
+        [t.items[i], t.items[j]] = [t.items[j], t.items[i]]; persist();
+        return;
+      }
+      case 'h-item-remove': { const t = tplById(d.tpl); if (t) { t.items = t.items.filter(x => x.id !== d.item); persist(); } return; }
+      case 'h-ex-archive': { const ex = exById(d.id); if (ex) { ex.archived = !ex.archived; persist(); } return; }
+
+      // ----- Logging a workout -----
+      case 'h-ws-start': {
+        if (!activeSession() && !startSession(d.tpl, d.planned || null)) return;
+        go('health/workout/session');
+        return 'none';
+      }
+      case 'h-set-done': {
+        const s = ctxSession(), e = s && s.exercises.find(x => x.key === d.ex), x = e && e.sets[+d.set];
+        if (!x) return 'none';
+        x.done = !x.done;
+        if (s.status !== 'active') s.editedAt = localStamp();
+        else if (x.done && w.restTimer.enabled) { w.rest = { startedAt: Date.now(), durationSec: e.plan.restSec || w.restTimer.seconds }; restDone = false; }
+        persist();
+        return;
+      }
+      case 'h-set-add': {
+        const s = ctxSession(), e = s && s.exercises.find(x => x.key === d.ex);
+        if (!e) return 'none';
+        e.sets.push(Object.assign(cleanSetValues(e.sets[e.sets.length - 1] || e.plan), { done: false }));
+        if (s.status !== 'active') s.editedAt = localStamp();
+        persist();
+        return;
+      }
+      case 'h-set-remove': {
+        const s = ctxSession(), e = s && s.exercises.find(x => x.key === d.ex), last = e && e.sets[e.sets.length - 1];
+        if (!last || (last.done && !confirm('Remove the last set? It was marked done.'))) return 'none';
+        e.sets.pop();
+        if (s.status !== 'active') s.editedAt = localStamp();
+        persist();
+        return;
+      }
+      case 'h-prefill': {
+        const s = activeSession(), e = s && s.exercises.find(x => x.key === d.ex);
+        if (!e) return 'none';
+        const last = d.from === 'last' ? lastResultFor(e.exerciseId, s.id) : null, lastDone = last ? last.ex.sets.filter(x => x.done) : [];
+        e.sets.forEach((x, i) => { if (!x.done) Object.assign(x, cleanSetValues(d.from === 'last' && lastDone.length ? lastDone[Math.min(i, lastDone.length - 1)] : e.plan)); });
+        e.prefill = d.from === 'last' && lastDone.length ? 'last' : 'plan';
+        persist();
+        return;
+      }
+      case 'h-rest-skip': w.rest = null; restDone = false; persist(); return;
+      case 'h-ws-finish': {
+        const s = activeSession();
+        if (!s) return;
+        const done = setsDone(s), total = setsTotal(s);
+        if (done < total && !confirm(`Finish now? You've done ${done} of ${total} sets — a shorter session still counts.`)) return 'none';
+        toast(finishSession(s) === 'done' ? 'Workout saved — nice work.' : 'Shorter session saved — every bit counts.');
+        go('health/workout');
+        return 'none';
+      }
+      case 'h-ws-discard': {
+        const s = activeSession();
+        if (!s || setsDone(s) > 0 || !confirm('Cancel this workout? Nothing has been logged yet.')) return 'none';
+        w.sessions = w.sessions.filter(x => x !== s); w.activeId = null; w.rest = null; persist();
+        go('health/workout');
+        return 'none';
+      }
+      case 'h-ws-delete': {
+        const s = sessionById(d.id);
+        if (!s || !confirm("Delete this workout from your history? This can't be undone.")) return 'none';
+        w.sessions = w.sessions.filter(x => x !== s); persist();
+        go('health/workout/history');
+        return 'none';
+      }
+
+      // ----- Missed sessions: Move, Skip or Continue (no backlog) -----
+      case 'h-missed-move': wsMoveFor = (missedSession() || {}).date || null; return;
+      case 'h-missed-move-cancel': wsMoveFor = null; return;
+      case 'h-missed-move-save': {
+        const m = missedSession(), nd = $('wsMoveDate') ? $('wsMoveDate').value : '';
+        if (!m || !isDateKey(nd) || nd < k) { toast('Please choose today or a later date.'); return 'none'; }
+        w.planned[m.date] = { templateId: m.templateId, time: null, status: 'moved', source: 'manual' };
+        w.planned[nd] = { templateId: m.templateId, time: null, status: 'planned', source: 'manual' };
+        wsMoveFor = null; persist();
+        toast(`Moved to ${shortDate(nd)}.`);
+        return;
+      }
+      case 'h-missed-skip': {
+        const m = missedSession();
+        if (!m) return;
+        w.planned[m.date] = { templateId: m.templateId, time: null, status: 'skipped', source: 'manual' };
+        persist(); toast('Skipped — no catching up needed.');
+        return;
+      }
+      case 'h-missed-continue': {
+        const m = missedSession();
+        if (!m) return;
+        w.planned[m.date] = { templateId: m.templateId, time: null, status: 'continued', source: 'manual' };
+        advanceSequence(m.templateId);
+        persist(); toast('Carrying on with the next session.');
+        return;
+      }
+
+      // ----- Schedule -----
+      case 'h-propose': wsProposal = { items: proposeSessions() }; return;
+      case 'h-prop-apply': {
+        if (!wsProposal) return;
+        const n = wsProposal.items.filter(p => p.pick && p.kind !== 'nofit').length;
+        applyWorkoutProposal();
+        toast(`Added ${n} session${n === 1 ? '' : 's'} to your plan.`);
+        return;
+      }
+      case 'h-prop-cancel': wsProposal = null; return;
+      case 'h-seq-add': { const id = $('seqAdd') && $('seqAdd').value; if (tplById(id)) { w.schedule.sequence.push(id); persist(); } return; }
+      case 'h-seq-remove': {
+        const i = +d.i, s = w.schedule;
+        s.sequence.splice(i, 1);
+        if (s.next >= s.sequence.length) s.next = 0; else if (i < s.next) s.next--;
+        persist();
+        return;
+      }
+      case 'h-seq-next': w.schedule.next = +d.i; persist(); return;
+      case 'h-plan-remove': delete w.planned[d.date]; persist(); return;
+      case 'h-plan-add': {
+        const dt = $('planDate') ? $('planDate').value : '', tm = ($('planTime') ? $('planTime').value : '').slice(0, 5), tpl = $('planTpl') ? $('planTpl').value : '';
+        if (!isDateKey(dt) || !tplById(tpl)) return 'none';
+        w.planned[dt] = { templateId: tpl, time: isTime(tm) ? tm : null, status: 'planned', source: 'manual' };
+        persist(); toast(`Planned for ${shortDate(dt)}.`);
+        return;
+      }
+    }
+  }
+
+  function healthInput(el, type) {
+    if (el.type === 'checkbox' && type !== 'change') return;
+    const w = W(), d = el.dataset, key = d.h;
+    if (key === 'set') {
+      const s = ctxSession(), e = s && s.exercises.find(x => x.key === d.ex), x = e && e.sets[+d.set];
+      if (!x) return;
+      if (d.field === 'loadMode') {
+        if (type !== 'change') return;
+        x.loadMode = LOAD_MODES.includes(el.value) ? el.value : 'none';
+        if (x.loadMode === 'none') x.load = null;
+      } else x[d.field] = optNum(el.value, 0, d.field === 'durationMin' ? 1440 : 1000);
+      if (s.status !== 'active') s.editedAt = localStamp();
+      persist();
+      if (d.field === 'loadMode') render();
+      return;
+    }
+    if (key === 'rest-enabled') { w.restTimer.enabled = el.checked; if (!el.checked) w.rest = null; persist(); render(); return; }
+    if (key === 'tpl-name') { const t = tplById(d.tpl); if (t && el.value.trim()) { t.name = el.value.trim().slice(0, 80); persist(); } return; }
+    if (key === 'tpl-minutes') { if (type !== 'change') return; const t = tplById(d.tpl); if (t) { t.minutes = intIn(el.value, 5, 300, t.minutes); el.value = t.minutes; persist(); } return; }
+    if (key === 'tpl-item') {
+      const t = tplById(d.tpl), it = t && t.items.find(x => x.id === d.item);
+      if (!it || type !== 'change') return;
+      if (d.field === 'loadMode') { it.loadMode = LOAD_MODES.includes(el.value) ? el.value : 'none'; if (it.loadMode === 'none') it.load = null; persist(); render(); return; }
+      if (d.field === 'sets') it.sets = intIn(el.value, 1, 20, it.sets);
+      else if (d.field === 'restSec') it.restSec = intIn(el.value, 0, 900, it.restSec);
+      else it[d.field] = optNum(el.value, 0, 1440);
+      persist();
+      return;
+    }
+    if (key === 'ex-name') { const ex = exById(d.id); if (ex && el.value.trim()) { ex.name = el.value.trim().slice(0, 80); persist(); } return; }
+    if (key === 'sch-mode') {
+      if (type !== 'change') return;
+      w.schedule.mode = ['off', 'weekdays', 'sequence'].includes(el.value) ? el.value : 'off';
+      if (w.schedule.mode === 'weekdays') w.schedule.since = todayKey(); // never treat earlier days as missed
+      wsProposal = null; persist(); render();
+      return;
+    }
+    if (key === 'sch-weekday') { if (type !== 'change') return; if (tplById(el.value)) w.schedule.weekdays[d.dow] = el.value; else delete w.schedule.weekdays[d.dow]; persist(); render(); return; }
+    if (key === 'sch-rest') { if (type !== 'change') return; w.schedule.restDays = intIn(el.value, 0, 6, 1); persist(); return; }
+    if (key === 'prop-pick') { if (wsProposal && wsProposal.items[+d.i]) wsProposal.items[+d.i].pick = el.checked; render(); return; }
+  }
+
+  // Chart tooltips on hover, focus or tap.
+  function chartTip(e) {
+    const g = e.target && e.target.closest ? e.target.closest('.ch-pt') : null;
+    document.querySelectorAll('.ch-tip.show').forEach(t => { if (!g || !t.parentNode.contains(g)) t.classList.remove('show'); });
+    if (!g) return;
+    const fig = g.closest('.chart'), tip = fig.querySelector('.ch-tip'), fr = fig.getBoundingClientRect(), gr = g.querySelector('.ch-dot').getBoundingClientRect();
+    tip.textContent = g.dataset.tip;
+    tip.style.left = (gr.left - fr.left + gr.width / 2) + 'px';
+    tip.style.top = (gr.top - fr.top) + 'px';
+    tip.classList.add('show');
+  }
+
+  // ======================================================================
   // Toast
   // ======================================================================
   let toastTimer;
@@ -3769,6 +4742,7 @@
   }
 
   document.addEventListener('input', e => {
+    if (e.target.dataset && e.target.dataset.h) { healthInput(e.target, 'input'); return; }
     if (e.target.id === 'energy') {
       const v = Number(e.target.value);
       $('energyLabel').textContent = `${v} · ${ENERGY_LABEL[v]}`;
@@ -3789,6 +4763,7 @@
       if (file) importFile(file);
       return;
     }
+    if (el.dataset.h) { healthInput(el, 'change'); return; }
     if (el.dataset.cal) { handleCalChange(el); return; }
     if (el.dataset.pf) { handlePatternInput(el); return; }
     if (el.dataset.colour) {
@@ -3856,6 +4831,7 @@
     if (!btn) return;
     const a = btn.dataset.action;
     const k = todayKey();
+    if (a.startsWith('h-')) { if (healthAction(a, btn) !== 'none') render(); return; }
 
     switch (a) {
       case 'cal-prev':
@@ -4268,12 +5244,16 @@
     if (document.visibilityState === 'visible') { checkNudge(); render(); tickTimer(); }
   });
   setInterval(onClock, 30000);
+  setInterval(healthTick, 1000);
+  document.addEventListener('pointerover', chartTip);
+  document.addEventListener('focusin', chartTip);
   window.addEventListener('hashchange', () => {
     const next = sectionFromHash();
     if (next !== section) { section = next; view = 'auto'; eveningKey = null; commitForm = null; calForm = null; }
+    wsMoveFor = null;
     render();
     window.scrollTo(0, 0);
-    if (section !== 'today') maybeFetchBankHolidays();
+    if (section === 'calendar' || section === 'pay') maybeFetchBankHolidays();
   });
   if (reduceQuery && reduceQuery.addEventListener) reduceQuery.addEventListener('change', () => renderFooter());
 
@@ -4281,7 +5261,7 @@
   ensureTicking();
   checkNudge();
   render();
-  if (section !== 'today') maybeFetchBankHolidays();
+  if (section === 'calendar' || section === 'pay') maybeFetchBankHolidays();
   if (bootNotice) toast(bootNotice);
 })();
 </script>
