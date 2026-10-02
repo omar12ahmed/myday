@@ -656,6 +656,31 @@
   .cook-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
   .cook-nav button { min-height: 64px; font-size: 18px; }
 
+  /* ---------- Study: a dashboard to start, an outline to plan ---------- */
+  .st-course-title { font-size: 22px; }
+  .st-next { font-size: 19px; font-weight: 650; margin: 6px 0 2px; }
+  .st-path { font-size: 13px; color: var(--text-3); margin-top: 4px; }
+  .st-bar { height: 8px; border-radius: 999px; background: var(--track); overflow: hidden; margin: 8px 0 4px; }
+  .st-bar > span { display: block; height: 100%; background: var(--primary); border-radius: 999px; }
+  .st-links { display: flex; flex-wrap: wrap; gap: 0 18px; }
+  details.st-node { border-top: 1px solid var(--outline); margin-top: 8px; }
+  details.st-node > summary { color: var(--text); min-height: 52px; padding: 6px 0; align-items: flex-start; }
+  details.st-node > summary::before { margin-top: 4px; }
+  .st-sum { display: block; }
+  .st-body { padding: 0 0 8px 14px; border-left: 2px solid var(--outline); margin-left: 4px; }
+  .st-section h4 { margin: 12px 0 2px; }
+  ul.st-tasks { list-style: none; padding: 0; margin: 0; }
+  .st-task { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--outline); }
+  .st-task:first-child { border-top: 0; }
+  .st-task > .check { flex: 1; min-width: 0; min-height: 52px; }
+  .st-task.done .title { color: var(--text-2); }
+  .st-edit { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 6px 0; width: 100%; }
+  .st-edit input { flex: 1 1 160px; min-width: 0; }
+  .st-actions { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; margin: 4px 0; }
+  .st-add { margin-top: 8px; }
+  .st-setup-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 12em); gap: 4px 10px; align-items: center; padding: 6px 0; border-top: 1px solid var(--outline); }
+  @media (max-width: 480px) { .st-setup-row { grid-template-columns: 1fr; } }
+
   /* ---------- Focus timer ---------- */
   .timer-card { border-color: var(--primary-outline); text-align: center; }
   .timer-wrap { position: relative; width: 200px; max-width: 70%; margin: 8px auto 12px; aspect-ratio: 1; }
@@ -848,7 +873,8 @@
       rota: emptyRota(),  // shift pattern versions, per-date overrides, overtime/absence entries, colours
       pay: defaultPay(),  // the user's own pay rules and deductions setup
       bankHolidays: { region: 'england-and-wales', fetchedAt: null, divisions: null }, // cached gov.uk data
-      health: emptyHealth() // Workout and Food (added alongside existing data; nothing existing changes)
+      health: emptyHealth(), // Workout and Food (added alongside existing data; nothing existing changes)
+      study: emptyStudy()    // Study roadmap, sessions and revision (added the same way)
     };
   }
 
@@ -1025,6 +1051,7 @@
     s.pay = normalizePay(raw.pay);
     s.bankHolidays = normalizeBankHolidays(raw.bankHolidays);
     s.health = normalizeHealth(raw.health, report); // absent in older data → empty Health
+    s.study = normalizeStudy(raw.study, report);    // absent in older data → empty Study
     return s;
   }
 
@@ -1825,8 +1852,9 @@
     if (section !== 'today') {
       layout.dataset.mode = 'other';
       for (const id of ['nudge', 'slot-glance', 'streak', 'garden']) $(id).innerHTML = '';
-      $('app').innerHTML = section === 'calendar' ? calendarMain() : section === 'pay' ? payMain() : healthMain();
-      $('side-section').innerHTML = section === 'calendar' ? calendarSide() : section === 'pay' ? paySide() : healthSide();
+      const [main, side] = { calendar: [calendarMain, calendarSide], pay: [payMain, paySide], health: [healthMain, healthSide], study: [studyMain, studySide] }[section];
+      $('app').innerHTML = main();
+      $('side-section').innerHTML = side();
       renderFooter();
       finishRender(layout);
       return;
@@ -2648,9 +2676,9 @@
     { id: 'calendar', label: 'Calendar', ready: true, icon: navSvg('<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>') },
     { id: 'pay', label: 'Pay', ready: true, icon: navSvg('<path d="M15.5 6.5A4 4 0 0 0 8.5 9v3.5c0 2.5-1 4.5-2.5 5.5h12M6.5 12.5h7"/>') },
     { id: 'health', label: 'Health', ready: true, icon: navSvg('<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>') },
+    { id: 'study', label: 'Study', ready: true, icon: navSvg('<path d="M3 5.5c2.7-1.6 5.7-1.6 9 .6 3.3-2.2 6.3-2.2 9-.6V19c-2.7-1.6-5.7-1.6-9 .6-3.3-2.2-6.3-2.2-9-.6z"/><path d="M12 6.1v13.5"/>') },
     // Planned sections. They stay out of the navigation until they're built,
     // so nothing unfinished ever looks like a working control.
-    { id: 'learn', label: 'Learn', ready: false },
     { id: 'ideas', label: 'Ideas', ready: false }
   ];
   function sectionFromHash() {
@@ -5686,6 +5714,435 @@
   }
 
   // ======================================================================
+  // Study: "What should I study or revise today, given my time, energy and progress?"
+  // Stored under state.study, added alongside the existing data (no existing record
+  // changes, so no migration). The roadmap is a nested outline:
+  //   Stage → Course → Module → Section → Task
+  // Completion only ever counts tasks you've marked complete — it isn't mastery.
+  // ======================================================================
+  const ST = () => state.study;
+  const STARTER_STAGES = ['Foundations', 'Web', 'Security Fundamentals', 'Practical Development'];
+  const STUDY_LEVELS = ['stage', 'course', 'module', 'section', 'task'];
+  const listOf = v => (Array.isArray(v) ? v : []);
+
+  function emptyStudy() {
+    return {
+      // [{ id, title, courses: [{ id, title, url, minutes, listId, archived, modules: [{ id, title, sections: [{ id, title, tasks: [task] }] }] }] }]
+      // task: { id, title, minutes, url, kind: 'learn'|'practical', note, done, doneOn }
+      stages: [],
+      focusCourseId: null, // the course on the dashboard (otherwise the first one with work left)
+      settings: { vault: '', showClock: true }
+    };
+  }
+
+  function normalizeStudy(raw, report) {
+    const st = emptyStudy();
+    if (!isObj(raw)) return st;
+    const seen = new Set();
+    // Every item needs a title, and ids must be unique across the whole outline.
+    const item = (o, prefix) => {
+      if (!isObj(o) || !str(o.title)) { report.dropped++; return null; }
+      const id = typeof o.id === 'string' && o.id && !seen.has(o.id) ? o.id : prefix + uid();
+      seen.add(id);
+      return { id, title: str(o.title, 120) };
+    };
+    for (const sgRaw of listOf(raw.stages)) {
+      const sg = item(sgRaw, 'sg');
+      if (!sg) continue;
+      sg.courses = [];
+      for (const cRaw of listOf(sgRaw.courses)) {
+        const c = item(cRaw, 'co');
+        if (!c) continue;
+        Object.assign(c, { url: safeUrl(str(cRaw.url, 400)), minutes: intIn(cRaw.minutes, 5, 600, 30), listId: typeof cRaw.listId === 'string' ? cRaw.listId : null, archived: cRaw.archived === true, modules: [] });
+        for (const mRaw of listOf(cRaw.modules)) {
+          const m = item(mRaw, 'md');
+          if (!m) continue;
+          m.sections = [];
+          for (const sRaw of listOf(mRaw.sections)) {
+            const s = item(sRaw, 'sc');
+            if (!s) continue;
+            s.tasks = [];
+            for (const tRaw of listOf(sRaw.tasks)) {
+              const t = item(tRaw, 'tk');
+              if (!t) continue;
+              const done = tRaw.done === true;
+              Object.assign(t, { minutes: intIn(tRaw.minutes, 5, 600, 30), url: safeUrl(str(tRaw.url, 400)), kind: tRaw.kind === 'practical' ? 'practical' : 'learn', note: str(tRaw.note, 300), done, doneOn: done && isDateKey(tRaw.doneOn) ? tRaw.doneOn : null });
+              s.tasks.push(t);
+            }
+            m.sections.push(s);
+          }
+          c.modules.push(m);
+        }
+        sg.courses.push(c);
+      }
+      st.stages.push(sg);
+    }
+    if (st.stages.some(sg => sg.courses.some(c => c.id === raw.focusCourseId))) st.focusCourseId = raw.focusCourseId;
+    if (isObj(raw.settings)) { st.settings.vault = str(raw.settings.vault, 100); st.settings.showClock = raw.settings.showClock !== false; }
+    return st;
+  }
+
+  // ---------- Finding things in the outline ----------
+  // Every item with where it sits. Rebuilt when needed — the outline is small.
+  function stIndex() {
+    const ix = { stage: new Map(), course: new Map(), module: new Map(), section: new Map(), task: new Map(), courseTasks: new Map() };
+    for (const sg of ST().stages) {
+      ix.stage.set(sg.id, { node: sg, list: ST().stages });
+      for (const c of sg.courses) {
+        const tasks = [];
+        ix.course.set(c.id, { node: c, stage: sg, list: sg.courses });
+        for (const m of c.modules) {
+          ix.module.set(m.id, { node: m, course: c, stage: sg, list: c.modules });
+          for (const s of m.sections) {
+            ix.section.set(s.id, { node: s, module: m, course: c, stage: sg, list: m.sections });
+            for (const t of s.tasks) { ix.task.set(t.id, { node: t, section: s, module: m, course: c, stage: sg, list: s.tasks }); tasks.push(t); }
+          }
+        }
+        ix.courseTasks.set(c.id, tasks);
+      }
+    }
+    return ix;
+  }
+  function stFind(ix, id) {
+    for (const level of STUDY_LEVELS) { const e = ix[level].get(id); if (e) return Object.assign({ level }, e); }
+    return null;
+  }
+  const stChildren = { stage: 'courses', course: 'modules', module: 'sections', section: 'tasks' };
+  const tasksUnder = (level, n) => (level === 'task' ? [n] : level === 'section' ? n.tasks : n[stChildren[level]].flatMap(x => tasksUnder(STUDY_LEVELS[STUDY_LEVELS.indexOf(level) + 1], x)));
+
+  // Completion = tasks marked complete ÷ tasks added. Rounded down, so 100% only when every task is done.
+  function completion(tasks) {
+    const total = tasks.length, done = tasks.filter(t => t.done).length;
+    return { total, done, pct: total ? Math.floor((done / total) * 100) : null };
+  }
+  const completionText = c => (c.total ? `${c.done} of ${c.total} task${c.total === 1 ? '' : 's'} complete (${c.pct}%)` : 'No tasks added yet');
+  const barHtml = c => (c.total ? `<div class="st-bar" aria-hidden="true"><span style="width:${c.pct}%"></span></div>` : '');
+
+  // The course on the dashboard: the one you chose, otherwise the first with work left.
+  function focusCourse(ix) {
+    const chosen = ix.course.get(ST().focusCourseId);
+    if (chosen && !chosen.node.archived) return chosen.node;
+    const live = [...ix.course.values()].map(e => e.node).filter(c => !c.archived);
+    return live.find(c => ix.courseTasks.get(c.id).some(t => !t.done)) || live[0] || null;
+  }
+  const stNextTask = (ix, c) => ix.courseTasks.get(c.id).find(t => !t.done) || null;
+  const taskPath = (ix, id) => { const e = ix.task.get(id); return e ? `${e.stage.title} › ${e.module.title} › ${e.section.title}` : ''; };
+
+  // ---------- First-time setup (a proposal: nothing is saved until you choose) ----------
+  let stSetup = null; // [{ listId, title, minutes, stage, keep }]
+  // A first guess at a stage from the item's own title. You can change each one before saving.
+  function stageGuess(title) {
+    if (/pre-security|network|linux|basics|fundamental|intro/i.test(title)) return 'Foundations';
+    if (/\bweb\b/i.test(title)) return 'Web';
+    if (/bandit|wargame|ctf|project|lab\b|practical/i.test(title)) return 'Practical Development';
+    if (/security/i.test(title)) return 'Security Fundamentals';
+    return 'Foundations';
+  }
+  // "TryHackMe: Pre-Security path — one section" → "TryHackMe: Pre-Security path"
+  const courseTitleFrom = t => t.replace(/\s+[—–-]\s+one\s+\w+$/i, '').trim() || t;
+  function proposeSetup() {
+    stSetup = state.lists.learning.map(l => ({ listId: l.id, title: courseTitleFrom(l.title), minutes: l.minutes, stage: stageGuess(l.title), keep: true }));
+  }
+  function applySetup(withCourses) {
+    if (ST().stages.length) return; // never replace a roadmap that already exists
+    const stages = STARTER_STAGES.map(title => ({ id: 'sg' + uid(), title, courses: [] }));
+    if (withCourses && stSetup) {
+      for (const r of stSetup) {
+        if (!r.keep) continue;
+        (stages.find(s => s.title === r.stage) || stages[0]).courses.push({ id: 'co' + uid(), title: r.title, url: '', minutes: r.minutes, listId: r.listId, archived: false, modules: [] });
+      }
+    }
+    ST().stages = stages;
+    stSetup = null;
+    persist();
+  }
+
+  // ---------- Editing the outline ----------
+  let stEdit = false;           // roadmap edit mode
+  const stOpen = new Map();     // roadmap items you opened or closed (this visit)
+  const newStudyItem = (level, parent) => {
+    const base = { id: { stage: 'sg', course: 'co', module: 'md', section: 'sc', task: 'tk' }[level] + uid(), title: `New ${level}` };
+    if (level === 'stage') return Object.assign(base, { courses: [] });
+    if (level === 'course') return Object.assign(base, { url: '', minutes: 30, listId: null, archived: false, modules: [] });
+    if (level === 'module') return Object.assign(base, { sections: [] });
+    if (level === 'section') return Object.assign(base, { tasks: [] });
+    return Object.assign(base, { minutes: parent && parent.minutes ? parent.minutes : 30, url: '', kind: 'learn', note: '', done: false, doneOn: null });
+  };
+  function removeStudyItem(e) {
+    e.list.splice(e.list.indexOf(e.node), 1);
+    if (!stIndex().course.has(ST().focusCourseId)) ST().focusCourseId = null;
+  }
+
+  // ---------- Views ----------
+  function studyMain() {
+    const r = route().slice(1), v = r[0] || 'home';
+    if (v === 'roadmap') return roadmapView();
+    if (v === 'course') return courseView(r[1]);
+    if (v === 'task') return studyTaskView(r[1]);
+    return studyHome();
+  }
+  function studySide() { return ''; }
+
+  function setupView() {
+    if (!stSetup) proposeSetup();
+    const opts = sel => STARTER_STAGES.map(s => `<option value="${esc(s)}" ${s === sel ? 'selected' : ''}>${esc(s)}</option>`).join('');
+    return `
+      <section class="card next-card">
+        <span class="eyebrow">Getting started</span>
+        <h2>Set up your study roadmap</h2>
+        <p class="small">It's a simple outline: stages, then courses, modules, sections and tasks. MyDay doesn't fill in course contents — you add modules and sections as you reach them.</p>
+        ${stSetup.length ? `
+          <h3>From your learning list</h3>
+          <p class="small muted">Each one becomes a course. The stages are a first guess from the titles — change any before saving.</p>
+          ${stSetup.map((r, i) => `
+            <div class="st-setup-row">
+              <label class="check"><input type="checkbox" data-s="setup-keep" data-i="${i}" ${r.keep ? 'checked' : ''}> <span>${esc(r.title)}</span></label>
+              <select data-s="setup-stage" data-i="${i}" aria-label="Stage for ${esc(r.title)}">${opts(r.stage)}</select>
+            </div>`).join('')}` : ''}
+        <p class="small muted">Starter stages: ${esc(STARTER_STAGES.join(', '))}. Rename, reorder or remove them any time.</p>
+        <div class="stack">
+          ${stSetup.length ? '<button class="primary" data-action="s-setup" data-with="1">Create my roadmap</button>' : ''}
+          <button ${stSetup.length ? '' : 'class="primary"'} data-action="s-setup" data-with="0">Start with empty stages</button>
+        </div>
+      </section>`;
+  }
+
+  function studyHome() {
+    if (!ST().stages.length) return setupView();
+    const ix = stIndex(), c = focusCourse(ix);
+    if (!c) {
+      return `<section class="card next-card"><span class="eyebrow">Current focus</span><h2>No courses yet</h2>
+        <p class="small muted">Add a course to one of your stages to get started.</p><a class="btn primary" href="#study/roadmap">Open the roadmap</a></section>`;
+    }
+    const t = stNextTask(ix, c), comp = completion(ix.courseTasks.get(c.id));
+    const link = (t && t.url) || c.url;
+    let body;
+    if (t) {
+      body = `<div class="st-path">${esc(taskPath(ix, t.id))}</div>
+        <p class="st-next">${esc(t.title)}</p>
+        <p class="small muted">About ${fmtDuration(t.minutes)}${t.kind === 'practical' ? ' · Practical' : ''}</p>`;
+    } else if (!comp.total) {
+      body = `<p class="small">This course has no sections or tasks yet.</p>
+        <a class="btn" href="#study/roadmap">Add its modules and sections</a>`;
+    } else {
+      body = `<p class="small">Every task in this course is marked complete.</p>`;
+    }
+    const others = [...ix.course.values()].map(e => e.node).filter(x => x !== c && !x.archived);
+    return `
+      <section class="card next-card" id="stFocus">
+        <span class="eyebrow">Current focus</span>
+        <h2 class="st-course-title">${esc(c.title)}</h2>
+        ${body}
+        ${link ? `<a class="btn-link" href="${esc(link)}" target="_blank" rel="noopener">Open the course link ↗</a>` : ''}
+      </section>
+      <section class="card">
+        <h3>Course completion</h3>
+        <p class="small" style="margin:0">${completionText(comp)}</p>
+        ${barHtml(comp)}
+        <p class="small muted" style="margin:6px 0 0">Counts tasks you've marked complete — not how well you know them.</p>
+      </section>
+      <section class="card">
+        <div class="st-links"><a class="btn-link" href="#study/roadmap">Roadmap</a></div>
+        ${others.length ? `<details><summary>Other courses (${others.length})</summary>
+          ${others.map(o => `<div class="c-row"><div><strong>${esc(o.title)}</strong><div class="meta">${completionText(completion(ix.courseTasks.get(o.id)))}</div></div><div class="c-actions"><button class="inline" data-action="s-focus" data-id="${esc(o.id)}">Focus on this</button></div></div>`).join('')}
+        </details>` : ''}
+      </section>`;
+  }
+
+  // In edit mode every item gets a name box and move/remove buttons.
+  function editBits(level, n, i, len) {
+    return `<div class="st-edit">
+        <input type="text" maxlength="120" data-s="title" data-id="${esc(n.id)}" value="${esc(n.title)}" aria-label="${level} name">
+        <div class="c-actions">
+          <button class="inline" data-action="s-move" data-id="${esc(n.id)}" data-d="-1" aria-label="Move ${esc(n.title)} up" ${i === 0 ? 'disabled' : ''}>↑</button>
+          <button class="inline" data-action="s-move" data-id="${esc(n.id)}" data-d="1" aria-label="Move ${esc(n.title)} down" ${i === len - 1 ? 'disabled' : ''}>↓</button>
+          <button class="inline" data-action="s-del" data-id="${esc(n.id)}" aria-label="Remove ${esc(n.title)}">✕</button>
+        </div>
+      </div>`;
+  }
+  const addBtn = (level, parentId) => `<button class="inline st-add" data-action="s-add" data-level="${level}" data-parent="${esc(parentId || '')}">+ Add a ${level}</button>`;
+  const isOpen = (id, byDefault) => (stOpen.has(id) ? stOpen.get(id) : byDefault);
+
+  function roadmapView() {
+    const head = `
+      <section class="card">
+        <div class="card-head"><h2>Roadmap</h2><button class="inline${stEdit ? ' primary' : ''}" data-action="s-edit" aria-pressed="${stEdit}">${stEdit ? 'Done editing' : 'Edit'}</button></div>
+        <p class="small muted" style="margin:6px 0 0">Stage → course → module → section → task. Completion counts tasks marked complete; it isn't a measure of mastery.</p>
+      </section>`;
+    if (!ST().stages.length) return head + setupView();
+    const ix = stIndex(), fc = focusCourse(ix), next = fc ? stNextTask(ix, fc) : null, nextE = next && ix.task.get(next.id);
+    const taskRow = (t, i, s) => stEdit
+      ? `<li class="st-task">${editBits('task', t, i, s.tasks.length)}<a class="btn-link" href="#study/task/${esc(t.id)}">Details</a></li>`
+      : `<li class="st-task${t.done ? ' done' : ''}">
+          <label class="check"><input type="checkbox" data-s="task-done" data-id="${esc(t.id)}" ${t.done ? 'checked' : ''}><span><span class="title">${esc(t.title)}</span><span class="meta"> · ${t.minutes} min${t.kind === 'practical' ? ' · Practical' : ''}</span></span></label>
+          <a class="btn-link" href="#study/task/${esc(t.id)}" aria-label="Details for ${esc(t.title)}">Details</a>
+        </li>`;
+    const sectionHtml = (s, i, m) => `
+      <div class="st-section">
+        ${stEdit ? editBits('section', s, i, m.sections.length) : `<h4>${esc(s.title)}</h4>`}
+        <ul class="st-tasks">${s.tasks.map((t, j) => taskRow(t, j, s)).join('')}</ul>
+        ${!s.tasks.length && !stEdit ? '<p class="small muted" style="margin:0">No tasks yet.</p>' : ''}
+        ${stEdit ? addBtn('task', s.id) : ''}
+      </div>`;
+    const moduleHtml = (m, i, c) => {
+      const comp = completion(tasksUnder('module', m));
+      return `
+        <details class="st-node" data-node="${esc(m.id)}" ${isOpen(m.id, !!(nextE && nextE.module === m)) ? 'open' : ''}>
+          <summary><span>${esc(m.title)}<span class="meta st-sum">${completionText(comp)}</span></span></summary>
+          <div class="st-body">
+            ${stEdit ? editBits('module', m, i, c.modules.length) : ''}
+            ${m.sections.map((s, j) => sectionHtml(s, j, m)).join('') || '<p class="small muted" style="margin:0">No sections yet.</p>'}
+            ${stEdit ? addBtn('section', m.id) : ''}
+          </div>
+        </details>`;
+    };
+    const courseHtml = (c, i, sg) => {
+      const comp = completion(ix.courseTasks.get(c.id)), isFocus = fc && c.id === fc.id;
+      return `
+        <details class="st-node" data-node="${esc(c.id)}" ${isOpen(c.id, isFocus) ? 'open' : ''}>
+          <summary><span><strong>${esc(c.title)}</strong>${isFocus ? ' <span class="chip">Current focus</span>' : ''}${c.archived ? ' <span class="chip">Archived</span>' : ''}<span class="meta st-sum">${completionText(comp)}</span></span></summary>
+          <div class="st-body">
+            ${stEdit ? editBits('course', c, i, sg.courses.length) : ''}
+            ${barHtml(comp)}
+            <div class="st-actions">
+              ${!isFocus && !c.archived && !stEdit ? `<button class="inline" data-action="s-focus" data-id="${esc(c.id)}">Make this my focus</button>` : ''}
+              ${c.url && !stEdit ? `<a class="btn-link" href="${esc(c.url)}" target="_blank" rel="noopener">Course link ↗</a>` : ''}
+              <a class="btn-link" href="#study/course/${esc(c.id)}">Course details</a>
+            </div>
+            ${c.modules.map((m, j) => moduleHtml(m, j, c)).join('') || '<p class="small muted" style="margin:0">No modules yet. Add the course\'s own modules and sections as you reach them.</p>'}
+            ${stEdit ? addBtn('module', c.id) : ''}
+          </div>
+        </details>`;
+    };
+    return head + ST().stages.map((sg, i) => {
+      const comp = completion(tasksUnder('stage', sg));
+      return `
+        <section class="card">
+          ${stEdit ? editBits('stage', sg, i, ST().stages.length) : `<h2>${esc(sg.title)}</h2>`}
+          ${comp.total ? `<p class="small muted" style="margin:0">${completionText(comp)}</p>` : ''}
+          ${sg.courses.map((c, j) => courseHtml(c, j, sg)).join('') || '<p class="small muted" style="margin:6px 0 0">No courses in this stage yet.</p>'}
+          ${stEdit ? addBtn('course', sg.id) : ''}
+        </section>`;
+    }).join('') + (stEdit ? `<section class="card">${addBtn('stage', '')}</section>` : '');
+  }
+
+  function courseView(id) {
+    const ix = stIndex(), e = ix.course.get(id);
+    if (!e) return '<section class="card"><h2>Course not found</h2><a class="btn" href="#study/roadmap">Back to the roadmap</a></section>';
+    const c = e.node, comp = completion(ix.courseTasks.get(id)), fc = focusCourse(ix);
+    const listItem = c.listId ? state.lists.learning.find(l => l.id === c.listId) : null;
+    return `
+      <section class="card">
+        <a class="btn-link" href="#study/roadmap">‹ Roadmap</a>
+        <h2>${esc(c.title)}</h2>
+        <p class="small" style="margin:0">${completionText(comp)}</p>
+        ${barHtml(comp)}
+        <div class="field"><label class="lbl" for="coTitle">Name</label><input id="coTitle" type="text" maxlength="120" data-s="title" data-id="${esc(c.id)}" value="${esc(c.title)}"></div>
+        <div class="field"><label class="lbl" for="coUrl">Course link (optional)</label><input id="coUrl" type="url" maxlength="400" data-s="url" data-id="${esc(c.id)}" value="${esc(c.url)}" placeholder="https://"></div>
+        <div class="field"><label class="lbl" for="coMin">Usual session length (minutes)</label><input id="coMin" type="number" inputmode="numeric" min="5" max="600" data-s="minutes" data-id="${esc(c.id)}" value="${c.minutes}"></div>
+        <div class="field"><label class="lbl" for="coStage">Stage</label><select id="coStage" data-s="course-stage" data-id="${esc(c.id)}">${ST().stages.map(sg => `<option value="${esc(sg.id)}" ${sg === e.stage ? 'selected' : ''}>${esc(sg.title)}</option>`).join('')}</select></div>
+        <label class="check"><input type="checkbox" data-s="archived" data-id="${esc(c.id)}" ${c.archived ? 'checked' : ''}> Archived — keep it, but leave it off the dashboard</label>
+        ${listItem ? `<p class="small muted">Made from “${esc(listItem.title)}” in your Today learning list. That list is unchanged.</p>` : ''}
+        <div class="stack" style="margin-top:12px">
+          ${fc && fc.id === c.id ? '<p class="small" style="margin:0">This is your current focus.</p>' : c.archived ? '' : `<button data-action="s-focus" data-id="${esc(c.id)}">Make this my focus</button>`}
+          <button class="ghost" data-action="s-del" data-id="${esc(c.id)}">Remove this course</button>
+        </div>
+      </section>`;
+  }
+
+  function studyTaskView(id) {
+    const ix = stIndex(), e = ix.task.get(id);
+    if (!e) return '<section class="card"><h2>Task not found</h2><a class="btn" href="#study/roadmap">Back to the roadmap</a></section>';
+    const t = e.node;
+    const sections = [...ix.section.values()];
+    return `
+      <section class="card">
+        <a class="btn-link" href="#study/roadmap">‹ Roadmap</a>
+        <div class="st-path">${esc(e.course.title)} › ${esc(e.module.title)} › ${esc(e.section.title)}</div>
+        <h2>${esc(t.title)}</h2>
+        <label class="check"><input type="checkbox" data-s="task-done" data-id="${esc(t.id)}" ${t.done ? 'checked' : ''}> Complete${t.done && t.doneOn ? ` <span class="meta">(${esc(shortDate(t.doneOn))})</span>` : ''}</label>
+        <div class="field"><label class="lbl" for="tkTitle">Name</label><input id="tkTitle" type="text" maxlength="120" data-s="title" data-id="${esc(t.id)}" value="${esc(t.title)}"></div>
+        <div class="field-row">
+          <div class="field"><label class="lbl" for="tkMin">Estimated minutes</label><input id="tkMin" type="number" inputmode="numeric" min="5" max="600" data-s="minutes" data-id="${esc(t.id)}" value="${t.minutes}"></div>
+          <div class="field"><label class="lbl" for="tkKind">Type</label><select id="tkKind" data-s="kind" data-id="${esc(t.id)}"><option value="learn" ${t.kind === 'learn' ? 'selected' : ''}>Learning</option><option value="practical" ${t.kind === 'practical' ? 'selected' : ''}>Practical</option></select></div>
+        </div>
+        <div class="field"><label class="lbl" for="tkUrl">Resource link (optional)</label><input id="tkUrl" type="url" maxlength="400" data-s="url" data-id="${esc(t.id)}" value="${esc(t.url)}" placeholder="https://"></div>
+        ${t.url ? `<a class="btn-link" href="${esc(t.url)}" target="_blank" rel="noopener">Open the resource ↗</a>` : ''}
+        <div class="field"><label class="lbl" for="tkSec">Section</label><select id="tkSec" data-s="task-section" data-id="${esc(t.id)}">${sections.map(x => `<option value="${esc(x.node.id)}" ${x.node === e.section ? 'selected' : ''}>${esc(`${x.course.title} › ${x.module.title} › ${x.node.title}`)}</option>`).join('')}</select></div>
+        <button class="ghost" data-action="s-del" data-id="${esc(t.id)}" style="margin-top:8px">Remove this task</button>
+      </section>`;
+  }
+
+  // ======================================================================
+  // Study: actions and inputs (all saved automatically)
+  // ======================================================================
+  // Returns 'none' when it has already navigated or re-rendered.
+  function studyAction(a, btn) {
+    const d = btn.dataset, ix = stIndex();
+    switch (a) {
+      case 's-setup': applySetup(d.with === '1'); toast('Your roadmap is ready — add modules and sections whenever you like.'); return;
+      case 's-edit': stEdit = !stEdit; return;
+      case 's-focus': if (ix.course.has(d.id)) { ST().focusCourseId = d.id; persist(); toast('Focus updated.'); } go('study'); return 'none';
+      case 's-add': {
+        const level = d.level, parent = level === 'stage' ? null : stFind(ix, d.parent);
+        if (level !== 'stage' && !parent) return 'none';
+        const n = newStudyItem(level, parent && parent.level === 'section' ? parent.course : null);
+        (parent ? parent.node[stChildren[parent.level]] : ST().stages).push(n);
+        for (const p of [n, parent && parent.node, parent && parent.module, parent && parent.course]) if (p) stOpen.set(p.id, true); // so the new name box is visible
+        persist(); render();
+        const input = document.querySelector(`input[data-s="title"][data-id="${n.id}"]`);
+        if (input) { input.focus(); input.select(); }
+        return 'none';
+      }
+      case 's-move': {
+        const e = stFind(ix, d.id), i = e ? e.list.indexOf(e.node) : -1, j = i + Number(d.d);
+        if (i < 0 || j < 0 || j >= e.list.length) return 'none';
+        [e.list[i], e.list[j]] = [e.list[j], e.list[i]];
+        persist();
+        return;
+      }
+      case 's-del': {
+        const e = stFind(ix, d.id);
+        if (!e) return 'none';
+        const n = e.level === 'task' ? 0 : tasksUnder(e.level, e.node).length;
+        if (!confirm(`Remove “${e.node.title}”${n ? ` and the ${n} task${n === 1 ? '' : 's'} in it` : ''}?`)) return 'none';
+        removeStudyItem(e);
+        persist();
+        if (route()[1] === 'course' || route()[1] === 'task') { go('study/roadmap'); return 'none'; }
+        return;
+      }
+    }
+  }
+
+  function studyInput(el, type) {
+    if (type !== 'change') return;
+    const d = el.dataset, key = d.s, ix = stIndex();
+    if (key === 'setup-keep' || key === 'setup-stage') {
+      const r = stSetup && stSetup[+d.i];
+      if (r) { if (key === 'setup-keep') r.keep = el.checked; else if (STARTER_STAGES.includes(el.value)) r.stage = el.value; }
+      return;
+    }
+    const e = stFind(ix, d.id);
+    if (!e) return;
+    const n = e.node;
+    if (key === 'title') { const v = el.value.trim(); if (v) { n.title = v.slice(0, 120); persist(); } else el.value = n.title; return; }
+    if (key === 'url') { const v = safeUrl(el.value.trim()); if (el.value.trim() && !v) toast('Links need to start with http:// or https://'); n.url = v.slice(0, 400); persist(); render(); return; }
+    if (key === 'minutes') { n.minutes = intIn(el.value, 5, 600, n.minutes); el.value = n.minutes; persist(); return; }
+    if (key === 'kind') { n.kind = el.value === 'practical' ? 'practical' : 'learn'; persist(); return; }
+    if (key === 'archived') { n.archived = el.checked; persist(); render(); return; }
+    if (key === 'task-done') { n.done = el.checked; n.doneOn = el.checked ? todayKey() : null; persist(); render(); return; }
+    if (key === 'course-stage') {
+      const to = ix.stage.get(el.value);
+      if (to && to.node !== e.stage) { e.list.splice(e.list.indexOf(n), 1); to.node.courses.push(n); persist(); render(); }
+      return;
+    }
+    if (key === 'task-section') {
+      const to = ix.section.get(el.value);
+      if (to && to.node !== e.section) { e.list.splice(e.list.indexOf(n), 1); to.node.tasks.push(n); persist(); render(); }
+    }
+  }
+
+  // ======================================================================
   // Toast
   // ======================================================================
   let toastTimer;
@@ -5785,6 +6242,7 @@
 
   document.addEventListener('toggle', e => {
     if (e.target.id === 'ctxDetails') contextOpen = e.target.open;
+    if (e.target.dataset && e.target.dataset.node) stOpen.set(e.target.dataset.node, e.target.open); // roadmap items
   }, true);
 
   document.addEventListener('change', e => {
@@ -5797,6 +6255,7 @@
       return;
     }
     if (el.dataset.h) { healthInput(el, 'change'); return; }
+    if (el.dataset.s) { studyInput(el, 'change'); return; }
     if (el.dataset.cal) { handleCalChange(el); return; }
     if (el.dataset.pf) { handlePatternInput(el); return; }
     if (el.dataset.colour) {
@@ -5865,6 +6324,7 @@
     const a = btn.dataset.action;
     const k = todayKey();
     if (a.startsWith('h-')) { if (healthAction(a, btn) !== 'none') render(); return; }
+    if (a.startsWith('s-')) { if (studyAction(a, btn) !== 'none') render(); return; }
 
     switch (a) {
       case 'cal-prev':
