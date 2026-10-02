@@ -29,6 +29,7 @@ export MYDAY_CDP_PORT="${MYDAY_CDP_PORT:-9333}" MYDAY_HTTP_PORT="${MYDAY_HTTP_PO
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/myday-tests.XXXXXX")"
 mkdir -p "$WORK/srv" "$WORK/dl"
 cp "$ROOT/index.html" "$WORK/srv/index.html"
+cp -R "$ROOT/fonts" "$WORK/srv/fonts" # so text is measured in the real font (layout checks)
 cp "$HERE/fixtures/myday-v2.html.fixture" "$WORK/srv/v2.html"
 cp "$HERE/fixtures/myday-v3.html.fixture" "$WORK/srv/v3.html"
 cp "$HERE/cdp.js" "$HERE"/*.test.js "$WORK/"

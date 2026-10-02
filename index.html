@@ -127,6 +127,20 @@
     }
   }
 
+  /* ---------- Font ----------
+     Plus Jakarta Sans (fonts/, SIL Open Font License), the same font as the new app.
+     If the files can't load, the device's own font is used instead. */
+  @font-face {
+    font-family: "Plus Jakarta Sans"; font-style: normal; font-display: swap; font-weight: 200 800;
+    src: url(fonts/plus-jakarta-sans-latin-ext-wght-normal.woff2) format("woff2-variations");
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  }
+  @font-face {
+    font-family: "Plus Jakarta Sans"; font-style: normal; font-display: swap; font-weight: 200 800;
+    src: url(fonts/plus-jakarta-sans-latin-wght-normal.woff2) format("woff2-variations");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  }
+
   /* ---------- Base ---------- */
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
@@ -134,7 +148,7 @@
   body {
     background: var(--bg);
     color: var(--text);
-    font: 17px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    font: 17px/1.5 "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
     min-height: 100vh;
@@ -146,7 +160,7 @@
       radial-gradient(48rem 32rem at 0% -10%, var(--glow-1), transparent 70%),
       radial-gradient(40rem 32rem at 100% 0%, var(--glow-2), transparent 70%);
   }
-  h2 { font-size: 20px; font-weight: 650; margin: 0 0 6px; letter-spacing: -.005em; }
+  h2 { font-size: 22px; font-weight: 700; margin: 0 0 6px; letter-spacing: -.015em; line-height: 1.25; }
   h3 { font-size: 13px; font-weight: 700; margin: 0 0 10px; color: var(--text-2); text-transform: uppercase; letter-spacing: .08em; }
   h4 { font-size: 15px; font-weight: 650; margin: 16px 0 6px; color: var(--text-2); }
   p { margin: 0 0 12px; }
@@ -170,8 +184,8 @@
     padding: 10px 16px; padding-top: max(10px, env(safe-area-inset-top));
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
   }
-  .brand { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--primary); margin: 0; }
-  .date { font-size: 22px; font-weight: 650; margin: 0; letter-spacing: -.01em; line-height: 1.25; }
+  .brand { font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--primary); margin: 0; }
+  .date { font-size: 26px; font-weight: 700; margin: 0; letter-spacing: -.02em; line-height: 1.2; }
   .icon-btn {
     flex: none; width: 48px; height: 48px; min-height: 48px; padding: 0; border-radius: 999px;
     display: grid; place-items: center;
@@ -198,7 +212,7 @@
   @media (min-width: 960px) {
     .appbar-inner, .layout { max-width: 1120px; }
     .appbar-inner { padding-left: 24px; padding-right: 24px; }
-    .date { font-size: 24px; }
+    .date { font-size: 28px; }
     .layout {
       display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
       gap: 24px; align-items: start; padding: 24px 24px 0;
@@ -310,31 +324,58 @@
     background: var(--cat-c, var(--surface-3)); color: var(--cat, var(--text-2));
   }
 
-  /* ---------- Tasks ---------- */
+  /* ---------- Tasks ----------
+     A timeline: a round marker beside each task's card (it shows a tick once the task is done).
+     The time sits on top of the card, then the title, then the category and length. */
   ul.tasks { list-style: none; padding: 0; margin: 14px 0 0; }
-  ul.tasks li { margin-bottom: 10px; }
-  .task {
-    display: flex; gap: 14px; align-items: flex-start;
-    background: var(--surface-2); border: 1px solid var(--outline);
-    border-left: 4px solid var(--cat, var(--outline-strong));
-    border-radius: var(--radius); padding: 14px 14px 14px 12px;
-    cursor: pointer; min-height: 64px; transition: background-color .15s;
+  ul.tasks li { margin-bottom: 12px; position: relative; }
+  /* Timed tasks are joined by a line from just below one marker to just above the next. */
+  ul.tasks.joined > li:not(:last-child)::before {
+    content: ""; position: absolute; left: 15px; top: 44px; bottom: -16px;
+    width: 2px; border-radius: 2px; background: var(--track);
   }
-  @media (hover: hover) { .task:not(.static):hover { background: var(--surface-3); } }
-  .task.static { cursor: default; }
+  .task { display: flex; gap: 14px; align-items: flex-start; cursor: pointer; border-radius: var(--radius); }
+  .task > div {
+    flex: 1; min-width: 0;
+    background: var(--surface-2); border: 1px solid transparent; border-radius: var(--radius);
+    padding: 12px 14px; transition: border-color .15s;
+  }
+  @media (hover: hover) { .task:hover > div { border-color: var(--outline-strong); } }
   .task input { position: absolute; opacity: 0; width: 1px; height: 1px; }
   .box {
-    flex: none; width: 30px; height: 30px; border-radius: 10px; border: 2px solid var(--outline-strong);
-    display: grid; place-items: center; margin-top: 2px; transition: background-color .15s, border-color .15s;
+    flex: none; width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--outline-strong);
+    background: var(--surface); display: grid; place-items: center; margin-top: 8px;
+    transition: background-color .15s, border-color .15s;
   }
   .task input:checked + .box { background: var(--primary); border-color: var(--primary); }
   .task input:checked + .box::after { content: ""; width: 8px; height: 14px; border: solid var(--on-primary); border-width: 0 3px 3px 0; transform: rotate(45deg) translate(-1px, -2px); }
   .task input:focus-visible + .box { outline: 3px solid var(--primary); outline-offset: 2px; }
   .task.done .title { color: var(--text-2); }
-  .rest-icon { flex: none; width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--rest); background: var(--rest-c); margin-top: 2px; }
-  .title { font-size: 17px; }
+  .when { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 14px; font-weight: 600; color: var(--text-2); font-variant-numeric: tabular-nums; margin-bottom: 4px; }
+  .task-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 8px; }
+  .task-meta .chip, .task-meta .meta { margin: 0; }
+  h3.anytime { margin-top: 24px; }
+  /* The task to do next: a green ring with a dot, a green border and an "Up next" label. */
+  .task.next > div { border-color: var(--primary); background: var(--surface); box-shadow: var(--shadow); }
+  .task.next input:not(:checked) + .box { border-color: var(--primary); }
+  .task.next input:not(:checked) + .box::after { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--primary); }
+  .up-next {
+    font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 999px; background: var(--primary-container); color: var(--on-primary-container);
+  }
+  .rest-card { display: flex; gap: 14px; align-items: flex-start; background: var(--rest-c); border-radius: var(--radius); padding: 16px; margin-top: 14px; }
+  .rest-card .meta { color: var(--text-2); }
+  .rest-icon { flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--surface); color: var(--rest); display: grid; place-items: center; }
+  .title { font-size: 17px; font-weight: 550; line-height: 1.35; }
   .meta { font-size: 14px; color: var(--text-3); margin-top: 2px; font-variant-numeric: tabular-nums; }
-  .roll { margin: 8px 0 0 48px; }
+  .roll { margin: 8px 0 0 46px; }
+  /* Energy: five small bars beside the sentence (decoration only: the sentence says the same). */
+  .energy-line { display: flex; align-items: flex-start; gap: 10px; }
+  .meter { flex: none; display: inline-flex; align-items: flex-end; gap: 3px; height: 18px; margin-top: 2px; }
+  .meter span { width: 6px; border-radius: 3px; background: var(--track); }
+  .meter span.on { background: var(--primary); }
+  .meter span:nth-child(1) { height: 6px; } .meter span:nth-child(2) { height: 9px; } .meter span:nth-child(3) { height: 12px; }
+  .meter span:nth-child(4) { height: 15px; } .meter span:nth-child(5) { height: 18px; }
   .roll button.on { background: var(--primary-container); color: var(--on-primary-container); border-color: var(--primary-outline); }
   .warn { display: inline-block; background: var(--warn-c); color: var(--on-warn-c); border-radius: 8px; padding: 3px 9px; font-size: 14px; margin-top: 6px; }
   .warn:empty { display: none; }
@@ -353,11 +394,10 @@
 
   /* ---------- Proposal ---------- */
   .prop-item {
-    background: var(--surface-2); border: 1px solid var(--outline);
-    border-left: 4px solid var(--cat, var(--outline-strong));
+    background: var(--surface-2); border: 1px solid transparent;
     border-radius: var(--radius); padding: 14px;
   }
-  .prop-item.later { background: transparent; border-style: dashed; }
+  .prop-item.later { background: transparent; border-color: var(--outline); border-style: dashed; }
   .prop-when { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; margin-bottom: 6px; }
   .edit-ctl { margin-top: 12px; border-top: 1px solid var(--outline); padding-top: 12px; }
   .stale { background: var(--warn-c); color: var(--on-warn-c); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; }
@@ -720,7 +760,7 @@
   .ring-sub { font-size: 14px; color: var(--text-2); }
   .timer-card .title { font-weight: 600; }
   .timer-msg { background: var(--primary-container); color: var(--on-primary-container); border-radius: 14px; padding: 12px 14px; margin: 10px 0 0; }
-  .task-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 0 48px; }
+  .task-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 0 46px; }
 
   /* ---------- Learning garden ---------- */
   .garden svg { width: 100%; height: auto; display: block; margin: 6px 0 8px; }
@@ -765,7 +805,7 @@
   <div class="appbar-inner">
     <div>
       <p class="brand">MyDay</p>
-      <p class="date" id="date"></p>
+      <h1 class="date" id="date"></h1>
     </div>
     <button class="icon-btn" id="themeBtn" data-action="theme" aria-label="Change theme"></button>
   </div>
@@ -2369,9 +2409,11 @@
     return `
       <li class="prop-item cat-${t.category}${it.status === 'later' ? ' later' : ''}${staggerIndex >= 0 ? ' stagger" style="--i:' + staggerIndex : ''}">
         <div class="prop-when">${esc(when)}</div>
-        <span class="chip ${t.category}">${CAT_LABEL[t.category]}</span>
         <div class="title">${esc(t.title)}</div>
-        <div class="meta">${esc(bits.join(' · '))}</div>
+        <div class="task-meta">
+          <span class="chip ${t.category}">${CAT_LABEL[t.category]}</span>
+          <span class="meta">${esc(bits.join(' · '))}</span>
+        </div>
         ${change ? `<div class="change">${esc(change)}</div>` : ''}
         ${warns.map(w => `<div class="warn">⚠ ${esc(w)}</div>`).join('')}
         ${unplaced ? `
@@ -2406,24 +2448,30 @@
     return 'Good energy — three things, and stopping early is still fine.';
   }
 
+  // The moon icon (Lucide "moon") for the rest-day card.
+  const MOON_ICON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg>';
+
   function restCard() {
     return `
-      <ul class="tasks"><li>
-        <div class="task static cat-rest">
-          <span class="rest-icon" aria-hidden="true"></span>
-          <div>
-            <span class="chip rest">Rest</span>
-            <div class="title">Rest. That's the whole plan.</div>
-            <div class="meta">Nothing to tick off today.</div>
-          </div>
+      <div class="rest-card">
+        <span class="rest-icon" aria-hidden="true">${MOON_ICON}</span>
+        <div>
+          <div class="title">Rest. That's the whole plan.</div>
+          <div class="meta">Nothing to tick off today.</div>
         </div>
-      </li></ul>`;
+      </div>`;
+  }
+
+  // Five small bars for the day's energy (1–5). Decoration only: the sentence beside them says the same.
+  function energyMeter(d) {
+    if (d.rest || !d.energy) return '';
+    return `<span class="meter" aria-hidden="true">${[1, 2, 3, 4, 5].map(n => `<span${n <= d.energy ? ' class="on"' : ''}></span>`).join('')}</span>`;
   }
 
   function taskRow(t, dayKey, withRoll, nextUid) {
-    const bits = [];
-    if (t.scheduledStart) bits.push(`${t.scheduledStart.slice(11)}–${t.scheduledEnd.slice(11)}`);
-    bits.push(minutesLabel(t.minutes, t.baseMinutes, t.shrunk));
+    const isNext = t.uid === nextUid;
+    const when = t.scheduledStart ? `${t.scheduledStart.slice(11)}–${t.scheduledEnd.slice(11)}` : '';
+    const bits = [minutesLabel(t.minutes, t.baseMinutes, t.shrunk)];
     if (t.fromQueue) bits.push('carried over');
     let warn = '';
     if (!t.done && t.scheduledStart && dayKey === todayKey()) {
@@ -2432,13 +2480,16 @@
     }
     return `
       <li>
-        <label class="task cat-${t.category}${t.done ? ' done' : ''}${t.uid === justDoneUid ? ' just-done' : ''}">
+        <label class="task cat-${t.category}${t.done ? ' done' : ''}${isNext ? ' next' : ''}${t.uid === justDoneUid ? ' just-done' : ''}">
           <input type="checkbox" data-action="toggle" data-uid="${t.uid}" data-day="${dayKey}" ${t.done ? 'checked' : ''}>
           <span class="box"></span>
           <div>
-            <span class="chip ${t.category}">${CAT_LABEL[t.category]}</span>
+            ${isNext || when ? `<div class="when">${isNext ? '<span class="up-next">Up next</span>' : ''}${when}</div>` : ''}
             <div class="title">${esc(t.title)}</div>
-            <div class="meta">${esc(bits.join(' · '))}</div>
+            <div class="task-meta">
+              <span class="chip ${t.category}">${CAT_LABEL[t.category]}</span>
+              <span class="meta">${esc(bits.join(' · '))}</span>
+            </div>
             ${warn}
           </div>
         </label>
@@ -2465,8 +2516,8 @@
     const { timed, untimed } = sortedTasks(d);
     const next = withRoll ? null : nextTask(k, d);
     const nextUid = next ? next.uid : null;
-    return `<ul class="tasks">${timed.map(t => taskRow(t, k, withRoll, nextUid)).join('')}</ul>
-      ${untimed.length ? `${timed.length ? '<h4>Any time today</h4>' : ''}<ul class="tasks"${timed.length ? ' style="margin-top:0"' : ''}>${untimed.map(t => taskRow(t, k, withRoll, nextUid)).join('')}</ul>` : ''}`;
+    return `<ul class="tasks joined">${timed.map(t => taskRow(t, k, withRoll, nextUid)).join('')}</ul>
+      ${untimed.length ? `${timed.length ? '<h3 class="anytime">Any time today</h3>' : ''}<ul class="tasks"${timed.length ? ' style="margin-top:0"' : ''}>${untimed.map(t => taskRow(t, k, withRoll, nextUid)).join('')}</ul>` : ''}`;
   }
 
   const compactDuration = m => { const h = Math.floor(m / 60), r = m % 60; return h ? (r ? `${h}h ${r}m` : `${h}h`) : `${r}m`; };
@@ -2506,7 +2557,7 @@
     return `
       <section class="card">
         <h2>${d.rest ? 'Today is a rest day' : "Here's your day"}</h2>
-        <p class="muted small">${energyLine(d)}</p>
+        <p class="muted small energy-line">${energyMeter(d)}${energyLine(d)}</p>
         ${!d.rest && d.tasks.length ? planStats(k, d) : ''}
         ${d.rest ? restCard() : d.tasks.length ? tasksHtml(d, k, false) : '<p class="small muted">Nothing on today\'s list — everything is waiting in your queue.</p>'}
         ${d.rest ? '' : `

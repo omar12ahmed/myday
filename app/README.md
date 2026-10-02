@@ -34,6 +34,9 @@ Other commands: `npm run build` (checks types and builds into `dist/`) and `npm 
 
 ## Design
 
+The current MyDay (`../index.html`) has the same look: the same colours, font and task timeline (its font files are in
+`../fonts/`). A visual change belongs in both.
+
 - **Colours** are the current MyDay's calm sage palette, unchanged. Every text colour pair meets WCAG AA contrast in both themes.
 - **Font:** Plus Jakarta Sans, a friendly, rounded sans-serif. It's bundled with the app (`@fontsource-variable/plus-jakarta-sans`),
   so it works offline. Times use `tabular-nums` so their digits line up.
