@@ -603,6 +603,13 @@
   /* Food: cards for discovering, checklists for shopping, a focused view for cooking */
   .search-row { display: flex; gap: 8px; }
   .search-row input { flex: 1; min-width: 0; }
+  .ta-list { list-style: none; padding: 0; margin: 8px 0 0; background: var(--surface-2); border: 1px solid var(--outline); border-radius: var(--radius); overflow: hidden; }
+  .ta-list li + li { border-top: 1px solid var(--outline); }
+  .ta-item { display: grid; gap: 2px; align-content: center; min-height: 52px; padding: 8px 14px; color: var(--text); text-decoration: none; }
+  .ta-item strong { color: var(--primary); font-weight: 700; }
+  .ta-item:focus-visible { outline-offset: -3px; }
+  @media (hover: hover) { .ta-item:hover { background: var(--surface-3); } }
+  .ta-note { margin: 8px 0 0; }
   input[type=search], input[type=url], textarea { font: inherit; color: var(--text); background: var(--surface-3); border: 1px solid var(--outline-strong); border-radius: 12px; padding: 10px 12px; min-height: 48px; width: 100%; }
   textarea { line-height: 1.45; resize: vertical; }
   .rgrid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 10px; }
@@ -4522,6 +4529,9 @@
   const mdbCache = new Map();            // recipes fetched this session (only saved when you use them)
   const foodSuggest = { items: [], shown: 3, loading: false, error: null, loaded: false, hidden: 0 };
   const foodSearch = { q: '', items: [], loading: false, error: null, done: false, hidden: 0 };
+  // Suggestions under the search box while you type (kept in memory only, never saved).
+  const typeahead = { text: '', q: '', open: false, local: [], remote: [], loading: false, error: null, seq: 0, timer: null };
+  const mdbSearchCache = new Map();      // lower-case search → TheMealDB results (this visit)
   const recipeLoad = { id: null, loading: false, error: null };
   const recipeServings = {};             // servings chosen on a recipe page (this visit)
   let wantDraft = null;                  // { recipeId, servings, have: [] }
@@ -4733,7 +4743,17 @@
   }
   const fetchError = e => (e instanceof TypeError ? "Couldn't reach TheMealDB — you may be offline." : (e && e.message) || 'Something went wrong.');
   const foodOpen = () => section === 'health' && route()[1] === 'food';
-  const rerenderFood = () => { if (foodOpen()) render(); };
+  // Re-render when a reply arrives — keeping your place if you're typing in the search box.
+  function rerenderFood() {
+    if (!foodOpen()) return;
+    const typing = document.activeElement && document.activeElement.id === 'foodQ';
+    const caret = typing ? $('foodQ').selectionStart : null;
+    render();
+    if (typing && $('foodQ')) {
+      $('foodQ').focus();
+      try { $('foodQ').setSelectionRange(caret, caret); } catch (e) { /* not supported: caret goes to the end */ }
+    }
+  }
 
   async function loadSuggestions() {
     if (foodSuggest.loading) return;
@@ -4765,15 +4785,34 @@
   }
   function resetSuggestions() { Object.assign(foodSuggest, { items: [], shown: 3, loading: false, error: null, loaded: false, hidden: 0 }); }
 
+  // Your saved recipes whose name or ingredients contain the text.
+  function localMatches(q) {
+    const ql = q.toLowerCase();
+    return Object.values(F().recipes).filter(r => r.title.toLowerCase().includes(ql) || r.ingredients.some(i => i.name.toLowerCase().includes(ql)));
+  }
+  // TheMealDB recipes whose name contains the text. Remembered for this visit, so typing
+  // back and forth, or pressing Search after seeing suggestions, doesn't ask again.
+  function mdbSearch(q) {
+    const key = q.toLowerCase();
+    if (!mdbSearchCache.has(key)) {
+      const req = mdbGet('search.php?s=' + encodeURIComponent(q)).then(j => {
+        const list = (Array.isArray(j.meals) ? j.meals : []).map(fromMealDb).filter(Boolean);
+        list.forEach(r => mdbCache.set(r.id, F().recipes[r.id] || r));
+        return list;
+      });
+      req.catch(() => mdbSearchCache.delete(key)); // a failed request can be tried again
+      mdbSearchCache.set(key, req);
+      if (mdbSearchCache.size > 30) mdbSearchCache.delete(mdbSearchCache.keys().next().value); // keep memory small
+    }
+    return mdbSearchCache.get(key);
+  }
+
   async function runSearch(q) {
     foodSearch.q = q; foodSearch.items = []; foodSearch.error = null; foodSearch.done = false; foodSearch.hidden = 0; foodSearch.loading = true;
     rerenderFood();
-    const ql = q.toLowerCase();
-    const local = Object.values(F().recipes).filter(r => r.title.toLowerCase().includes(ql) || r.ingredients.some(i => i.name.toLowerCase().includes(ql)));
+    const local = localMatches(q);
     try {
-      const j = await mdbGet('search.php?s=' + encodeURIComponent(q));
-      const remote = (Array.isArray(j.meals) ? j.meals : []).map(fromMealDb).filter(Boolean);
-      remote.forEach(r => mdbCache.set(r.id, F().recipes[r.id] || r));
+      const remote = await mdbSearch(q);
       const all = local.concat(remote.filter(r => !F().recipes[r.id]));
       foodSearch.items = all.filter(passesPrefs);
       foodSearch.hidden = all.length - foodSearch.items.length;
@@ -4786,6 +4825,86 @@
       rerenderFood();
     }
   }
+
+  // ---------- Suggestions while typing ----------
+  // Your saved recipes show straight away; TheMealDB is asked once you pause typing.
+  const TYPEAHEAD_MIN = 2, TYPEAHEAD_MAX = 6, TYPEAHEAD_PAUSE = 300;
+  function onFoodTyping(text) {
+    const t = typeahead, q = text.trim();
+    t.text = text;
+    clearTimeout(t.timer);
+    t.seq++; // replies for anything typed earlier are ignored
+    if (q.length < TYPEAHEAD_MIN) { t.open = false; showTypeahead(); return; }
+    Object.assign(t, { q, open: true, local: localMatches(q), remote: [], loading: true, error: null });
+    showTypeahead();
+    const seq = t.seq;
+    t.timer = setTimeout(async () => {
+      try {
+        const remote = await mdbSearch(q);
+        if (seq !== t.seq) return;
+        t.remote = remote.filter(r => !F().recipes[r.id]);
+      } catch (e) {
+        if (seq !== t.seq) return;
+        t.error = fetchError(e);
+      }
+      t.loading = false;
+      showTypeahead();
+    }, mdbSearchCache.has(q.toLowerCase()) ? 0 : TYPEAHEAD_PAUSE);
+  }
+  function closeTypeahead() {
+    clearTimeout(typeahead.timer);
+    typeahead.seq++;
+    if (!typeahead.open) return;
+    typeahead.open = false;
+    showTypeahead();
+  }
+  function typeaheadList() {
+    const t = typeahead, all = t.local.concat(t.remote), ok = all.filter(passesPrefs);
+    return { list: ok.slice(0, TYPEAHEAD_MAX), more: ok.length > TYPEAHEAD_MAX, hidden: all.length - ok.length };
+  }
+  // Only the suggestions are redrawn, so the search box keeps its focus and keyboard.
+  function showTypeahead() {
+    setHTML('foodSuggest', typeaheadHtml());
+    const n = typeahead.open ? typeaheadList().list.length : 0;
+    setHTML('foodSuggestCount', !typeahead.open || (typeahead.loading && !n) ? '' : n ? `${n} suggestion${n === 1 ? '' : 's'}` : 'No suggestions');
+  }
+  // Bold the part of a title that matches what you typed.
+  function markMatch(text, q) {
+    const i = text.toLowerCase().indexOf(q.toLowerCase());
+    return i < 0 ? esc(text) : esc(text.slice(0, i)) + '<strong>' + esc(text.slice(i, i + q.length)) + '</strong>' + esc(text.slice(i + q.length));
+  }
+  function typeaheadHtml() {
+    const t = typeahead;
+    if (!t.open) return '';
+    const { list, more, hidden } = typeaheadList(), ql = t.q.toLowerCase();
+    const row = r => {
+      const own = !!F().recipes[r.id];
+      const ing = r.title.toLowerCase().includes(ql) ? null : r.ingredients.find(i => i.name.toLowerCase().includes(ql));
+      const meta = [own ? (r.source === 'manual' ? 'Your recipe' : 'Saved') : [r.category, r.area].filter(Boolean).join(' · '), ing ? `has ${ing.name}` : ''].filter(Boolean).join(' · ');
+      return `<li><a class="ta-item" href="#health/food/recipe/${encodeURIComponent(r.id)}"><span class="ta-title">${markMatch(r.title, t.q)}</span>${meta ? `<span class="meta">${esc(meta)}</span>` : ''}</a></li>`;
+    };
+    const notes = [];
+    if (t.loading) notes.push('Looking on TheMealDB…');
+    if (t.error) notes.push(`${t.error} Showing your saved recipes only.`);
+    if (!t.loading && !list.length) notes.push(`No suggestions for “${t.q}”.`);
+    if (hidden) notes.push(`${hidden} left out because of your preferences.`);
+    if (more) notes.push('Press Search to see them all.');
+    return `${list.length ? `<ul class="ta-list" aria-label="Suggestions">${list.map(row).join('')}</ul>` : ''}${notes.length ? `<p class="small muted ta-note">${esc(notes.join(' '))}</p>` : ''}`;
+  }
+  // The search box, with suggestions underneath while you type.
+  function searchBoxHtml() {
+    return `
+      <div class="food-search">
+        <div class="search-row">
+          <label class="sr-only" for="foodQ">Search recipes</label>
+          <input id="foodQ" type="search" placeholder="Search recipes" value="${esc(typeahead.text)}" enterkeyhint="search" autocomplete="off" aria-controls="foodSuggest">
+          <button class="inline" data-action="h-food-search">Search</button>
+        </div>
+        <div id="foodSuggest">${typeaheadHtml()}</div>
+        <p class="sr-only" id="foodSuggestCount" role="status"></p>
+      </div>`;
+  }
+
   async function loadRecipe(id) {
     if (recipeLoad.loading && recipeLoad.id === id) return;
     Object.assign(recipeLoad, { id, loading: true, error: null });
@@ -4873,11 +4992,7 @@
     const mine = Object.values(f.recipes).filter(r => r.source === 'manual');
     return next + `
       <section class="card">
-        <div class="search-row">
-          <label class="sr-only" for="foodQ">Search recipes</label>
-          <input id="foodQ" type="search" placeholder="Search recipes" value="${esc(foodSearch.q)}" enterkeyhint="search">
-          <button class="inline" data-action="h-food-search">Search</button>
-        </div>
+        ${searchBoxHtml()}
         <div class="row2"><a class="btn-link" href="#health/food/new">+ Add my own recipe</a><a class="btn-link" href="#health/food/prefs">Preferences</a></div>
       </section>
       <section class="card">
@@ -4899,11 +5014,7 @@
     return `
       <section class="card">
         <a class="btn-link" href="#health/food">‹ Food</a>
-        <div class="search-row">
-          <label class="sr-only" for="foodQ">Search recipes</label>
-          <input id="foodQ" type="search" value="${esc(s.q)}" enterkeyhint="search">
-          <button class="inline" data-action="h-food-search">Search</button>
-        </div>
+        ${searchBoxHtml()}
         ${s.loading ? '<p class="small muted" role="status">Searching…</p>' : ''}
         ${s.error ? `<p class="warn">${esc(s.error)} Showing matches from your saved recipes only.</p>` : ''}
         ${s.done && !s.items.length ? `<p class="small">No recipes found for "${esc(s.q)}".</p>` : ''}
@@ -5345,6 +5456,8 @@
       case 'h-food-search': {
         const q = ($('foodQ') ? $('foodQ').value : '').trim();
         if (!q) return 'none';
+        closeTypeahead();
+        typeahead.text = q;
         go('health/food/search');
         runSearch(q);
         return 'none';
@@ -5661,6 +5774,7 @@
   }
 
   document.addEventListener('input', e => {
+    if (e.target.id === 'foodQ') { onFoodTyping(e.target.value); return; }
     if (e.target.dataset && e.target.dataset.h) { healthInput(e.target, 'input'); return; }
     if (e.target.id === 'energy') {
       const v = Number(e.target.value);
@@ -6171,10 +6285,19 @@
     if (e.target.id === 'foodQ') { e.preventDefault(); healthAction('h-food-search', e.target); }
     if (e.target.id === 'shopAdd') { e.preventDefault(); healthAction('h-shop-add', e.target); }
   });
+  // Search suggestions: arrow keys move through them, Escape closes them.
+  document.addEventListener('keydown', e => {
+    if (!typeahead.open || !e.target || !e.target.closest || !e.target.closest('.food-search')) return;
+    const items = [...document.querySelectorAll('#foodSuggest .ta-item')], i = items.indexOf(e.target);
+    if (e.key === 'Escape') { e.preventDefault(); closeTypeahead(); $('foodQ').focus(); }
+    else if (e.key === 'ArrowDown' && items.length) { e.preventDefault(); items[Math.min(i + 1, items.length - 1)].focus(); }
+    else if (e.key === 'ArrowUp' && i >= 0) { e.preventDefault(); (i === 0 ? $('foodQ') : items[i - 1]).focus(); }
+  });
   window.addEventListener('hashchange', () => {
     const next = sectionFromHash();
     if (next !== section) { section = next; view = 'auto'; eveningKey = null; commitForm = null; calForm = null; }
     shopEdit = null; wsMoveFor = null;
+    closeTypeahead();
     render();
     window.scrollTo(0, 0);
     if (section === 'calendar' || section === 'pay') maybeFetchBankHolidays();
