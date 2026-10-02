@@ -1134,10 +1134,46 @@
   let damagedReason = '';
   let bootNotice = '';
 
+  // The exact text this copy of MyDay last read or saved. If the saved text changes without us,
+  // another tab or window saved it — and this copy must never overwrite that with older data.
+  let lastSaved = null;
+  function savedElsewhere() {
+    try { const now = localStorage.getItem(STORAGE_KEY); return now !== null && lastSaved !== null && now !== lastSaved; }
+    catch (e) { return false; }
+  }
+
   function persist() {
     if (!storageAvailable || saveBlocked) return false;
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); return true; }
-    catch (e) { toast("Couldn't save just now — storage may be full or blocked."); return false; }
+    if (savedElsewhere()) { reloadFromStorage(true); return false; } // keep the newer save; this change is not written
+    try {
+      const text = JSON.stringify(state);
+      localStorage.setItem(STORAGE_KEY, text);
+      lastSaved = text;
+      return true;
+    } catch (e) { toast("Couldn't save just now — storage may be full or blocked."); return false; }
+  }
+
+  // Show what another tab saved instead of this copy's older data. `dropped` = a change here wasn't saved.
+  function reloadFromStorage(dropped) {
+    let raw = null;
+    try { raw = localStorage.getItem(STORAGE_KEY); } catch (e) { return; }
+    if (raw === null || raw === lastSaved) return;
+    lastSaved = raw;
+    let parsed = null;
+    try { parsed = JSON.parse(raw); } catch (e) { /* handled below */ }
+    if (!isObj(parsed) || ![2, 3, SCHEMA_VERSION].includes(parsed.schemaVersion)) {
+      markDamaged(raw, STORAGE_KEY, isObj(parsed) && parsed.schemaVersion > SCHEMA_VERSION
+        ? 'It was saved by a newer version of MyDay in another tab. Reload this page to use it.'
+        : "It was changed in another tab and can't be read here.");
+    } else {
+      try { state = normalize(parsed); } catch (e) { markDamaged(raw, STORAGE_KEY); }
+    }
+    // Drafts kept in memory belonged to the older copy.
+    proposal = null; commitForm = null; calForm = null; wsProposal = null; wantDraft = null; shopEdit = null; revRound = null; stSetup = null;
+    render();
+    setTimeout(() => toast(dropped
+      ? "MyDay was changed in another tab, so that last change wasn't saved. Showing the latest — please try it again."
+      : 'Updated with changes from another tab.'), 0);
   }
   function removeKey(k) { try { localStorage.removeItem(k); } catch (e) { /* ignore */ } }
 
@@ -1174,6 +1210,7 @@
 
     // 1. Current version.
     if (raw !== null) {
+      lastSaved = raw;
       let parsed;
       try { parsed = JSON.parse(raw); } catch (e) { return markDamaged(raw, STORAGE_KEY); }
       if (!isObj(parsed)) return markDamaged(raw, STORAGE_KEY);
@@ -7470,8 +7507,13 @@
     if (todayKey() !== renderedDay) { checkNudge(); render(); }
   }
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') { checkNudge(); render(); tickTimer(); }
+    if (document.visibilityState !== 'visible') return;
+    if (savedElsewhere()) reloadFromStorage(false); // e.g. an older tab coming back to the front
+    checkNudge(); render(); tickTimer();
   });
+  // Another tab saved: show its data here too, so this copy never saves over it.
+  window.addEventListener('storage', e => { if (e.key === STORAGE_KEY && savedElsewhere()) reloadFromStorage(false); });
+  window.addEventListener('pageshow', e => { if (e.persisted && savedElsewhere()) reloadFromStorage(false); });
   setInterval(onClock, 30000);
   setInterval(healthTick, 1000);
   setInterval(studyTick, 1000);
