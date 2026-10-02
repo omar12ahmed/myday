@@ -678,6 +678,13 @@
   .st-edit input { flex: 1 1 160px; min-width: 0; }
   .st-actions { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; margin: 4px 0; }
   .st-add { margin-top: 8px; }
+  .st-len { display: flex; align-items: center; justify-content: center; gap: 18px; margin: 14px 0 6px; }
+  .st-len span { font-size: 18px; min-width: 4.5em; text-align: center; }
+  .st-len strong { font-size: 26px; font-variant-numeric: tabular-nums; }
+  .st-clock { font-size: 52px; font-weight: 700; text-align: center; font-variant-numeric: tabular-nums; letter-spacing: -.02em; margin: 14px 0 0; }
+  .st-seg { flex-wrap: wrap; }
+  .st-seg button { min-width: 7.5em; min-height: 48px; }
+  .st-pick.on, .seg button.on { background: var(--primary-container); color: var(--on-primary-container); border-color: var(--primary-outline); }
   .st-setup-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 12em); gap: 4px 10px; align-items: center; padding: 6px 0; border-top: 1px solid var(--outline); }
   @media (max-width: 480px) { .st-setup-row { grid-template-columns: 1fr; } }
 
@@ -1202,9 +1209,10 @@
     const d = state.days[k];
     return new Set(d ? d.tasks.filter(t => t.done && t.taskId).map(t => t.taskId) : []);
   }
+  // A learning day: a learning task ticked on Today, or a finished Study session. Each day counts once.
   function learningDoneOn(k) {
     const d = state.days[k];
-    return !!d && d.tasks.some(t => t.category === 'learning' && t.done);
+    return (!!d && d.tasks.some(t => t.category === 'learning' && t.done)) || studiedOn(k);
   }
   function sessionCounts() {
     const c = {};
@@ -2617,10 +2625,11 @@
   }
 
   // ---------- Learning garden: one leaf per session, five leaves make a flower. It never shrinks. ----------
+  // Ticked learning tasks plus finished Study sessions. A session that also ticked a Today task counts once.
   function learningSessions() {
     let n = 0;
     for (const d of Object.values(state.days)) for (const t of d.tasks) if (t.category === 'learning' && t.done) n++;
-    return n;
+    return n + state.study.sessions.filter(s => s.status === 'done' && !s.todayUid).length;
   }
   function gardenCard() {
     const n = learningSessions(), flowers = Math.floor(n / 5), leaves = n % 5;
@@ -5731,9 +5740,19 @@
       // task: { id, title, minutes, url, kind: 'learn'|'practical', note, done, doneOn }
       stages: [],
       focusCourseId: null, // the course on the dashboard (otherwise the first one with work left)
+      // Concepts are shared by learning (check-ins) and revision.
+      // { id, title, taskIds, createdOn, kind: 'written'|'choice', prompt, answer, explanation, choices, correct, hint, source, note,
+      //   review: { reps, interval, lapses, due } }
+      concepts: [],
+      // Learning sessions. Time is wall-clock based, so it keeps counting while the phone sleeps.
+      // { id, courseId, taskId, title, date, startedAt, plannedMin, short, status: 'active'|'done', runningSince, activeMs, endedAt,
+      //   checkin: { conceptIds, clarity, takeaway, question, note } | null, taskDone: true|false|null (your answer), todayUid }
+      sessions: [],
+      activeId: null,      // the session in progress, if any
       settings: { vault: '', showClock: true }
     };
   }
+  const CLARITY = { understand: 'Understand', partly: 'Partly understand', notyet: 'Not yet' };
 
   function normalizeStudy(raw, report) {
     const st = emptyStudy();
@@ -5779,6 +5798,40 @@
     }
     if (st.stages.some(sg => sg.courses.some(c => c.id === raw.focusCourseId))) st.focusCourseId = raw.focusCourseId;
     if (isObj(raw.settings)) { st.settings.vault = str(raw.settings.vault, 100); st.settings.showClock = raw.settings.showClock !== false; }
+
+    const taskIds = new Set(st.stages.flatMap(sg => sg.courses.flatMap(c => tasksUnder('course', c).map(t => t.id))));
+    for (const x of listOf(raw.concepts)) {
+      if (!isObj(x) || !str(x.title)) { report.dropped++; continue; }
+      const id = typeof x.id === 'string' && x.id && !seen.has(x.id) ? x.id : 'cp' + uid();
+      seen.add(id);
+      const choices = listOf(x.choices).slice(0, 6).map(c => (typeof c === 'string' ? c.trim().slice(0, 200) : ''));
+      const rv = isObj(x.review) ? x.review : {};
+      st.concepts.push({
+        id, title: str(x.title, 120), taskIds: [...new Set(listOf(x.taskIds).filter(t => taskIds.has(t)))], createdOn: isDateKey(x.createdOn) ? x.createdOn : todayKey(),
+        kind: x.kind === 'choice' ? 'choice' : 'written', prompt: str(x.prompt, 1000), answer: str(x.answer, 2000), explanation: str(x.explanation, 4000),
+        choices, correct: Number.isInteger(x.correct) && choices[x.correct] ? x.correct : null, hint: str(x.hint, 500), source: str(x.source, 400), note: str(x.note, 300),
+        review: { reps: intIn(rv.reps, 0, 100000, 0), interval: intIn(rv.interval, 0, 365, 0), lapses: intIn(rv.lapses, 0, 100000, 0), due: isDateKey(rv.due) ? rv.due : null }
+      });
+    }
+    const conceptIds = new Set(st.concepts.map(c => c.id));
+    for (const x of listOf(raw.sessions)) {
+      if (!isObj(x) || typeof x.id !== 'string' || !x.id || seen.has(x.id) || !isDateKey(x.date)) { report.dropped++; continue; }
+      seen.add(x.id);
+      const ci = isObj(x.checkin) ? x.checkin : null;
+      st.sessions.push({
+        id: x.id, courseId: typeof x.courseId === 'string' ? x.courseId : null, taskId: typeof x.taskId === 'string' ? x.taskId : null,
+        title: str(x.title, 250) || 'Study session', date: x.date, startedAt: str(x.startedAt, 20), plannedMin: intIn(x.plannedMin, 1, 600, 30), short: x.short === true,
+        status: x.status === 'active' ? 'active' : 'done', runningSince: Number.isFinite(x.runningSince) ? x.runningSince : null,
+        activeMs: Number.isFinite(x.activeMs) && x.activeMs >= 0 ? x.activeMs : 0, endedAt: typeof x.endedAt === 'string' ? x.endedAt : null,
+        checkin: ci ? { conceptIds: listOf(ci.conceptIds).filter(c => conceptIds.has(c)), clarity: CLARITY[ci.clarity] ? ci.clarity : null, takeaway: str(ci.takeaway, 500), question: str(ci.question, 500), note: str(ci.note, 300) } : null,
+        taskDone: x.taskDone === true ? true : x.taskDone === false ? false : null, todayUid: typeof x.todayUid === 'string' ? x.todayUid : null
+      });
+    }
+    // Only one session can be in progress.
+    const active = st.sessions.filter(x => x.status === 'active');
+    const keep = active.find(x => x.id === raw.activeId) || active[0] || null;
+    for (const x of active) if (x !== keep) { x.status = 'done'; x.runningSince = null; }
+    st.activeId = keep ? keep.id : null;
     return st;
   }
 
@@ -5873,12 +5926,101 @@
     if (!stIndex().course.has(ST().focusCourseId)) ST().focusCourseId = null;
   }
 
+  // ---------- Learning sessions ----------
+  const activeStudy = () => (ST().activeId ? ST().sessions.find(s => s.id === ST().activeId) || null : null);
+  const sessionMs = s => s.activeMs + (s.runningSince ? Date.now() - s.runningSince : 0);
+  const fmtElapsed = ms => { const t = Math.floor(ms / 1000), h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60); return (h ? h + ':' + pad(m) : pad(m)) + ':' + pad(t % 60); };
+  const sessionMinutes = s => Math.round(sessionMs(s) / 60000);
+  let stLength = {};  // minutes you chose for a task on the dashboard (this visit)
+
+  // A suggested length for right now: the estimate, trimmed for low energy and to fit the free
+  // time before your next shift, appointment or planned task. Always yours to change.
+  function suggestLength(base) {
+    const k = todayKey(), why = [];
+    let m = base;
+    const energy = contextFor(k).energy || (state.days[k] && state.days[k].energy) || null;
+    const cap = energy ? { 1: 15, 2: 20, 3: 30 }[energy] : null;
+    if (cap && m > cap) { m = cap; why.push(`energy ${energy} today`); }
+    const d = state.days[k], now = nowMin(k);
+    const busy = d ? d.tasks.filter(t => t.scheduledStart && !t.done).map(t => { const s = dtToMin(t.scheduledStart, k); return { start: s, end: s + t.minutes }; }) : [];
+    const seg = freeSegments(k, busy).find(g => g.start <= now + 5 && g.end > now);
+    if (seg) {
+      const free = seg.end - Math.max(now, seg.start);
+      const next = blocksFor(k).find(b => b.start === seg.end);
+      const before = next ? next.label.replace(/^Prep\/travel for /, '') : seg.end === timeToMin(state.settings.latestTime) ? `${state.settings.latestTime}, your usual finish time` : 'your next plan';
+      if (free < m) { m = Math.max(10, Math.floor(free / 5) * 5); why.push(`${fmtDuration(free)} free before ${before}`); }
+    }
+    return { minutes: Math.max(5, Math.round(m / 5) * 5 || 5), why };
+  }
+
+  function startStudySession(courseId, taskId, minutes, short) {
+    if (activeStudy()) return activeStudy();
+    const ix = stIndex(), c = ix.course.get(courseId), t = taskId ? ix.task.get(taskId) : null;
+    if (!c) return null;
+    const s = {
+      id: 'ss' + uid(), courseId, taskId: t ? taskId : null, title: t ? `${c.node.title} · ${t.node.title}` : c.node.title,
+      date: todayKey(), startedAt: localStamp(), plannedMin: minutes, short: !!short, status: 'active', runningSince: Date.now(), activeMs: 0,
+      endedAt: null, checkin: null, taskDone: null, todayUid: null
+    };
+    ST().sessions.push(s);
+    ST().activeId = s.id;
+    persist();
+    return s;
+  }
+  function pauseStudy(s) { if (s.runningSince) { s.activeMs += Date.now() - s.runningSince; s.runningSince = null; persist(); } }
+  function resumeStudy(s) { if (!s.runningSince) { s.runningSince = Date.now(); persist(); } }
+  function finishStudy(s) {
+    pauseStudy(s);
+    s.status = 'done';
+    s.endedAt = localStamp();
+    ST().activeId = null;
+    persist();
+  }
+  // A finished session makes that day a learning day. Days are counted once, however many sessions.
+  const studiedOn = k => ST().sessions.some(s => s.status === 'done' && s.date === k);
+
+  // ---------- Check-in after a session (every part optional) ----------
+  const conceptById = id => ST().concepts.find(c => c.id === id) || null;
+  function ensureCheckin(s) {
+    if (!s.checkin) s.checkin = { conceptIds: [], clarity: null, takeaway: '', question: '', note: '' };
+    return s.checkin;
+  }
+  // Concepts offered in a check-in: the ones linked to this task (or this course), plus any already picked.
+  function checkinConcepts(s) {
+    const ix = stIndex(), ids = s.taskId ? [s.taskId] : (ix.courseTasks.get(s.courseId) || []).map(t => t.id);
+    const picked = s.checkin ? s.checkin.conceptIds : [];
+    return ST().concepts.filter(c => picked.includes(c.id) || c.taskIds.some(t => ids.includes(t)));
+  }
+  function newConcept(title, taskId) {
+    return { id: 'cp' + uid(), title: title.slice(0, 120), taskIds: taskId ? [taskId] : [], createdOn: todayKey(), kind: 'written', prompt: '', answer: '', explanation: '', choices: [], correct: null, hint: '', source: '', note: '', review: { reps: 0, interval: 0, lapses: 0, due: null } };
+  }
+  // The learning task on today's plan that matches this course (via your learning list), if any.
+  function todayTaskFor(s) {
+    const c = stIndex().course.get(s.courseId), d = state.days[s.date];
+    if (!c || !c.node.listId || !d || d.rest || s.date !== todayKey()) return null;
+    return d.tasks.find(t => t.category === 'learning' && t.taskId === c.node.listId) || null;
+  }
+
+  // The session clock ticks without redrawing the screen.
+  function studyTick() {
+    const s = state && state.study && activeStudy();
+    if (!s || !s.runningSince) return;
+    const ms = sessionMs(s);
+    if ($('stClock')) $('stClock').textContent = fmtElapsed(ms);
+    if ($('stClockBar')) $('stClockBar').style.width = Math.min(100, ms / (s.plannedMin * 600)).toFixed(1) + '%';
+    if ($('stReached') && !$('stReached').textContent && ms >= s.plannedMin * 60000) {
+      setHTML('stReached', `<p class="timer-msg">That's the ${s.plannedMin} minutes you planned. Finish here, or keep going — either is fine.</p>`);
+    }
+  }
+
   // ---------- Views ----------
   function studyMain() {
     const r = route().slice(1), v = r[0] || 'home';
     if (v === 'roadmap') return roadmapView();
     if (v === 'course') return courseView(r[1]);
     if (v === 'task') return studyTaskView(r[1]);
+    if (v === 'session') return studySessionView();
+    if (v === 'checkin') return checkinView(r[1]);
     return studyHome();
   }
   function studySide() { return ''; }
@@ -5915,20 +6057,42 @@
         <p class="small muted">Add a course to one of your stages to get started.</p><a class="btn primary" href="#study/roadmap">Open the roadmap</a></section>`;
     }
     const t = stNextTask(ix, c), comp = completion(ix.courseTasks.get(c.id));
-    const link = (t && t.url) || c.url;
+    const link = (t && t.url) || c.url, cur = activeStudy();
+    // What a session would be: the next task, or the whole course while it has no tasks yet.
+    const lengthFor = base => { const sug = suggestLength(base), key = t ? t.id : c.id; return { sug, m: stLength[key] || sug.minutes, key }; };
+    const startBlock = base => {
+      const { sug, m, key } = lengthFor(base);
+      return `
+        <div class="st-len" role="group" aria-label="Session length">
+          <button class="icon-btn" data-action="s-len" data-key="${esc(key)}" data-m="${m}" data-d="-5" aria-label="5 minutes shorter" ${m <= 5 ? 'disabled' : ''}>−</button>
+          <span><strong id="stLen">${m}</strong> min</span>
+          <button class="icon-btn" data-action="s-len" data-key="${esc(key)}" data-m="${m}" data-d="5" aria-label="5 minutes longer" ${m >= 240 ? 'disabled' : ''}>+</button>
+        </div>
+        <p class="small muted" style="margin:0 0 10px">${stLength[key] ? 'Your choice.' : sug.why.length ? `Suggested: ${esc(sug.why.join(' · '))}.` : `The ${t ? 'task' : 'course'}'s usual length.`} Change it if you like.</p>
+        <div class="stack">
+          <button class="primary" data-action="s-start" data-course="${esc(c.id)}" data-task="${t ? esc(t.id) : ''}" data-m="${m}">Start learning · ${m} min</button>
+          ${m > 15 ? `<button data-action="s-start" data-course="${esc(c.id)}" data-task="${t ? esc(t.id) : ''}" data-m="15" data-short="1">Just 15 minutes</button>` : ''}
+        </div>`;
+    };
     let body;
-    if (t) {
+    if (cur) {
+      body = `<p class="small">A session is in progress — finish or resume it before starting another.</p>`;
+    } else if (t) {
       body = `<div class="st-path">${esc(taskPath(ix, t.id))}</div>
         <p class="st-next">${esc(t.title)}</p>
-        <p class="small muted">About ${fmtDuration(t.minutes)}${t.kind === 'practical' ? ' · Practical' : ''}</p>`;
+        <p class="small muted">About ${fmtDuration(t.minutes)}${t.kind === 'practical' ? ' · Practical' : ''}</p>
+        ${startBlock(t.minutes)}`;
     } else if (!comp.total) {
-      body = `<p class="small">This course has no sections or tasks yet.</p>
-        <a class="btn" href="#study/roadmap">Add its modules and sections</a>`;
+      body = `<p class="small">This course has no sections or tasks yet. You can still start a session and add them later.</p>
+        ${startBlock(c.minutes)}
+        <a class="btn-link" href="#study/roadmap">Add its modules and sections</a>`;
     } else {
       body = `<p class="small">Every task in this course is marked complete.</p>`;
     }
     const others = [...ix.course.values()].map(e => e.node).filter(x => x !== c && !x.archived);
     return `
+      ${cur ? `<section class="card next-card"><span class="eyebrow">In progress${cur.runningSince ? '' : ' · paused'}</span><h2>${esc(cur.title)}</h2>
+        <p class="small muted">${sessionMinutes(cur)} min so far</p><a class="btn primary" href="#study/session">${cur.runningSince ? 'Back to the session' : 'Resume'}</a></section>` : ''}
       <section class="card next-card" id="stFocus">
         <span class="eyebrow">Current focus</span>
         <h2 class="st-course-title">${esc(c.title)}</h2>
@@ -5975,7 +6139,10 @@
       ? `<li class="st-task">${editBits('task', t, i, s.tasks.length)}<a class="btn-link" href="#study/task/${esc(t.id)}">Details</a></li>`
       : `<li class="st-task${t.done ? ' done' : ''}">
           <label class="check"><input type="checkbox" data-s="task-done" data-id="${esc(t.id)}" ${t.done ? 'checked' : ''}><span><span class="title">${esc(t.title)}</span><span class="meta"> · ${t.minutes} min${t.kind === 'practical' ? ' · Practical' : ''}</span></span></label>
-          <a class="btn-link" href="#study/task/${esc(t.id)}" aria-label="Details for ${esc(t.title)}">Details</a>
+          <span class="c-actions">
+            ${!t.done && !activeStudy() ? `<button class="inline" data-action="s-start" data-course="${esc(ix.task.get(t.id).course.id)}" data-task="${esc(t.id)}" data-m="${suggestLength(t.minutes).minutes}" aria-label="Start ${esc(t.title)}">Start</button>` : ''}
+            <a class="btn-link" href="#study/task/${esc(t.id)}" aria-label="Details for ${esc(t.title)}">Details</a>
+          </span>
         </li>`;
     const sectionHtml = (s, i, m) => `
       <div class="st-section">
@@ -6024,6 +6191,60 @@
           ${stEdit ? addBtn('course', sg.id) : ''}
         </section>`;
     }).join('') + (stEdit ? `<section class="card">${addBtn('stage', '')}</section>` : '');
+  }
+
+  // One focused screen while you learn: what you're on, the time, and Pause / Finish.
+  function studySessionView() {
+    const s = activeStudy();
+    if (!s) return '<section class="card"><h2>No session in progress</h2><p class="small muted">Start one from your Study dashboard.</p><a class="btn" href="#study">Back to Study</a></section>';
+    const ix = stIndex(), t = s.taskId ? ix.task.get(s.taskId) : null, c = ix.course.get(s.courseId);
+    const link = (t && t.node.url) || (c && c.node.url), ms = sessionMs(s), clock = ST().settings.showClock;
+    return `
+      <section class="card next-card st-session">
+        <span class="eyebrow">Learning${s.runningSince ? '' : ' · paused'}${s.date !== todayKey() ? ` · started ${esc(shortDate(s.date))}` : ''}</span>
+        ${t ? `<div class="st-path">${esc(c.node.title)} › ${esc(t.section.title)}</div><h2>${esc(t.node.title)}</h2>` : `<h2>${esc(c ? c.node.title : s.title)}</h2>`}
+        ${link ? `<a class="btn-link" href="${esc(link)}" target="_blank" rel="noopener">Open the resource ↗</a>` : ''}
+        ${clock ? `<div class="st-clock" id="stClock" role="timer" aria-live="off">${fmtElapsed(ms)}</div>
+          <p class="small muted" style="text-align:center;margin:0">${s.short ? 'Short session' : 'Planned'}: ${s.plannedMin} min</p>
+          <div class="st-bar" aria-hidden="true"><span id="stClockBar" style="width:${Math.min(100, (ms / (s.plannedMin * 60000)) * 100).toFixed(1)}%"></span></div>` : ''}
+        <div id="stReached">${ms >= s.plannedMin * 60000 ? `<p class="timer-msg">That's the ${s.plannedMin} minutes you planned. Finish here, or keep going — either is fine.</p>` : ''}</div>
+        <div class="stack" style="margin-top:12px">
+          <button class="primary" data-action="${s.runningSince ? 's-pause' : 's-resume'}">${s.runningSince ? 'Pause' : 'Resume'}</button>
+          <button data-action="s-finish">Finish session</button>
+        </div>
+        <label class="check"><input type="checkbox" data-s="show-clock" ${clock ? 'checked' : ''}> Show the clock</label>
+        <div class="st-actions"><a class="btn-link" href="#study">Back to Study — it keeps ${s.runningSince ? 'running' : 'your place'}</a><button class="link-btn" data-action="s-discard">Discard this session</button></div>
+      </section>`;
+  }
+
+  function checkinView(id) {
+    const s = ST().sessions.find(x => x.id === id);
+    if (!s || s.status !== 'done') return '<section class="card"><h2>Session not found</h2><a class="btn" href="#study">Back to Study</a></section>';
+    const ix = stIndex(), t = s.taskId ? ix.task.get(s.taskId) : null, ci = s.checkin || { conceptIds: [], clarity: null, takeaway: '', question: '', note: '' };
+    const offered = checkinConcepts(s), todayT = todayTaskFor(s);
+    const choice = (action, value, label, on) => `<button class="${on ? 'on' : ''}" data-action="${action}" data-v="${value}" aria-pressed="${on}">${label}</button>`;
+    return `
+      <section class="card">
+        <span class="eyebrow">Session finished · ${fmtDuration(Math.max(1, sessionMinutes(s)))}</span>
+        <h2>Quick check-in</h2>
+        <p class="small muted">Everything here is optional, and it saves as you go. Skip it whenever you like.</p>
+        ${t ? `
+          <h3>Is “${esc(t.node.title)}” complete?</h3>
+          <div class="seg st-seg">${choice('s-ci-task', 1, 'Yes, it\'s complete', s.taskDone === true)}${choice('s-ci-task', 0, 'Not yet', s.taskDone === false)}</div>` : ''}
+        <h3>What did you cover?</h3>
+        ${offered.length ? `<div class="chip-row">${offered.map(c => `<button class="inline st-pick${ci.conceptIds.includes(c.id) ? ' on' : ''}" data-action="s-ci-concept" data-id="${esc(c.id)}" aria-pressed="${ci.conceptIds.includes(c.id)}">${esc(c.title)}</button>`).join('')}</div>` : '<p class="small muted">No concepts linked to this yet.</p>'}
+        <div class="inline-add"><label class="sr-only" for="ciNew">Add a concept</label><input id="ciNew" type="text" maxlength="120" placeholder="Add a concept, e.g. DNS records" enterkeyhint="done"><button class="inline" data-action="s-ci-add">Add</button></div>
+        <p class="small muted">Picking a concept just records that you covered it. Its revision question and answer are added separately — nothing is filled in for you.</p>
+        <h3>How clear does it feel?</h3>
+        <div class="seg st-seg">${Object.keys(CLARITY).map(k => choice('s-ci-clarity', k, CLARITY[k], ci.clarity === k)).join('')}</div>
+        <details ${ci.takeaway || ci.question || ci.note ? 'open' : ''}><summary>Add a takeaway, a question or a note link</summary>
+          <div class="field"><label class="lbl" for="ciTake">One-line takeaway</label><input id="ciTake" type="text" maxlength="500" data-s="ci-takeaway" data-id="${esc(s.id)}" value="${esc(ci.takeaway)}"></div>
+          <div class="field"><label class="lbl" for="ciQ">Something still unclear</label><input id="ciQ" type="text" maxlength="500" data-s="ci-question" data-id="${esc(s.id)}" value="${esc(ci.question)}"></div>
+          <div class="field"><label class="lbl" for="ciNote">Obsidian note (path in your vault)</label><input id="ciNote" type="text" maxlength="300" data-s="ci-note" data-id="${esc(s.id)}" value="${esc(ci.note)}" placeholder="e.g. Networking/DNS"></div>
+        </details>
+        ${todayT ? (todayT.done || s.todayUid ? `<p class="small">“${esc(todayT.title)}” is ticked on today's plan.</p>` : `<button data-action="s-tick-today" data-id="${esc(s.id)}">Also tick “${esc(todayT.title)}” on today's plan</button>`) : ''}
+        <div class="row2"><button class="primary" data-action="s-ci-done" data-id="${esc(s.id)}">Done</button><button class="ghost" data-action="s-ci-skip" data-id="${esc(s.id)}">Skip</button></div>
+      </section>`;
   }
 
   function courseView(id) {
@@ -6111,12 +6332,92 @@
         if (route()[1] === 'course' || route()[1] === 'task') { go('study/roadmap'); return 'none'; }
         return;
       }
+
+      // ----- Learning sessions -----
+      case 's-len': stLength[d.key] = Math.max(5, Math.min(240, Number(d.m) + Number(d.d))); return;
+      case 's-start': {
+        if (!activeStudy() && !startStudySession(d.course, d.task || null, intIn(d.m, 1, 600, 30), d.short === '1')) return 'none';
+        go('study/session');
+        return 'none';
+      }
+      case 's-pause': { const s = activeStudy(); if (s) pauseStudy(s); return; }
+      case 's-resume': { const s = activeStudy(); if (s) resumeStudy(s); return; }
+      case 's-finish': {
+        const s = activeStudy();
+        if (!s) return;
+        finishStudy(s);
+        go('study/checkin/' + s.id);
+        return 'none';
+      }
+      case 's-discard': {
+        const s = activeStudy();
+        if (!s || !confirm("Discard this session? It won't be saved or counted.")) return 'none';
+        ST().sessions = ST().sessions.filter(x => x !== s);
+        ST().activeId = null;
+        persist();
+        go('study');
+        return 'none';
+      }
+
+      // ----- Check-in (all optional) -----
+      case 's-ci-task': case 's-ci-concept': case 's-ci-add': case 's-ci-clarity': {
+        const s = ST().sessions.find(x => x.id === route()[2]);
+        if (!s) return 'none';
+        if (a === 's-ci-task') {
+          const t = s.taskId && ix.task.get(s.taskId);
+          if (!t) return 'none';
+          s.taskDone = d.v === '1';
+          t.node.done = s.taskDone;
+          t.node.doneOn = s.taskDone ? t.node.doneOn || todayKey() : null;
+        } else if (a === 's-ci-concept') {
+          const ci = ensureCheckin(s);
+          ci.conceptIds = ci.conceptIds.includes(d.id) ? ci.conceptIds.filter(x => x !== d.id) : ci.conceptIds.concat(d.id);
+        } else if (a === 's-ci-clarity') {
+          const ci = ensureCheckin(s);
+          ci.clarity = ci.clarity === d.v ? null : d.v;
+        } else {
+          const title = ($('ciNew') ? $('ciNew').value : '').trim();
+          if (!title) return 'none';
+          // Reuse a concept with the same name rather than making a duplicate.
+          let c = ST().concepts.find(x => x.title.toLowerCase() === title.toLowerCase());
+          if (!c) { c = newConcept(title, s.taskId); ST().concepts.push(c); }
+          else if (s.taskId && !c.taskIds.includes(s.taskId)) c.taskIds.push(s.taskId);
+          const ci = ensureCheckin(s);
+          if (!ci.conceptIds.includes(c.id)) ci.conceptIds.push(c.id);
+          persist(); render();
+          if ($('ciNew')) $('ciNew').focus();
+          return 'none';
+        }
+        persist();
+        return;
+      }
+      case 's-tick-today': {
+        const s = ST().sessions.find(x => x.id === d.id), t = s && todayTaskFor(s);
+        if (!t || t.done) return;
+        setDone(t, true);
+        s.todayUid = t.uid;
+        persist();
+        toast("Ticked on today's plan.");
+        return;
+      }
+      case 's-ci-done': case 's-ci-skip': {
+        const s = ST().sessions.find(x => x.id === d.id);
+        if (a === 's-ci-done' && s && s.checkin) toast('Check-in saved.');
+        go('study');
+        return 'none';
+      }
     }
   }
 
   function studyInput(el, type) {
     if (type !== 'change') return;
     const d = el.dataset, key = d.s, ix = stIndex();
+    if (key === 'show-clock') { ST().settings.showClock = el.checked; persist(); render(); return; }
+    if (key.startsWith('ci-')) {
+      const s = ST().sessions.find(x => x.id === d.id);
+      if (s) { ensureCheckin(s)[key.slice(3)] = el.value.trim().slice(0, key === 'ci-note' ? 300 : 500); persist(); }
+      return;
+    }
     if (key === 'setup-keep' || key === 'setup-stage') {
       const r = stSetup && stSetup[+d.i];
       if (r) { if (key === 'setup-keep') r.keep = el.checked; else if (STARTER_STAGES.includes(el.value)) r.stage = el.value; }
@@ -6738,12 +7039,14 @@
   });
   setInterval(onClock, 30000);
   setInterval(healthTick, 1000);
+  setInterval(studyTick, 1000);
   document.addEventListener('pointerover', chartTip);
   document.addEventListener('focusin', chartTip);
   document.addEventListener('keydown', e => {
     if (e.key !== 'Enter' || !e.target) return;
     if (e.target.id === 'foodQ') { e.preventDefault(); healthAction('h-food-search', e.target); }
     if (e.target.id === 'shopAdd') { e.preventDefault(); healthAction('h-shop-add', e.target); }
+    if (e.target.id === 'ciNew') { e.preventDefault(); studyAction('s-ci-add', e.target); }
   });
   // Search suggestions: arrow keys move through them, Escape closes them.
   document.addEventListener('keydown', e => {
