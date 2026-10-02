@@ -3,15 +3,14 @@ import { Card } from '../components/Card';
 import { CURRENT_MYDAY_URL } from '../links';
 import { SECTIONS, type SectionId } from './sections';
 
-const WHAT: Record<Exclude<SectionId, 'today'>, string> = {
-  calendar: 'shift rota, pattern changes, overtime, absences and appointments',
-  pay: 'pay settings and estimates',
+export type NotMovedId = Exclude<SectionId, 'today' | 'calendar' | 'pay'>;
+const WHAT: Record<NotMovedId, string> = {
   health: 'workouts, recipes, cooking history and shopping list',
   study: 'roadmap, study sessions, concepts and revision',
 };
 
 // A section that hasn't moved to the new app yet. It says so plainly rather than showing an empty screen.
-export function NotMovedYet({ section }: { section: Exclude<SectionId, 'today'> }) {
+export function NotMovedYet({ section }: { section: NotMovedId }) {
   const label = SECTIONS.find(s => s.id === section)!.label;
   return (
     <Card aria-labelledby="not-moved-h">

@@ -1,8 +1,15 @@
 // Checks saved data and fills in anything missing, the same way as normalize() in the current MyDay.
 // Bad entries are dropped and counted rather than crashing the app. Sections not described in types.ts
-// yet (rota, pay, health, study…) and anything unknown are kept exactly as they were.
+// yet (health, study…) and anything unknown are kept exactly as they were.
+import { normalizeBankHolidays } from './bankHolidays';
 import { isDateKey, isDateTime, isTime, todayKey } from './dates';
+import { normalizePay, defaultPay } from './pay';
+import { emptyRota, normalizeRota } from './rota';
 import type { Category, Commitment, DayContext, Energy, ListItem, MyDayData, QueueItem, Settings, Task, Theme } from './types';
+import { clone, intIn, isObj, listOf, uid, cleanMinutes } from './util';
+
+// The small helpers live in util.ts; they're re-exported here for the files that already use them.
+export { clone, intIn, isObj, listOf, uid, cleanMinutes };
 
 export const SCHEMA_VERSION = 4;
 export const SAVE_LOG = 20; // how many recent save signatures travel with the data (see storage.ts)
@@ -31,11 +38,6 @@ export const SEED: Record<Category, ListItem[]> = {
   ],
 };
 
-type Raw = Record<string, unknown>;
-export const isObj = (o: unknown): o is Raw => !!o && typeof o === 'object' && !Array.isArray(o);
-export const listOf = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
-export const clone = <T,>(o: T): T => JSON.parse(JSON.stringify(o));
-export const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 const isCategory = (v: unknown): v is Category => CATS.includes(v as Category);
 const isEnergy = (v: unknown): v is Energy => Number.isInteger(v) && (v as number) >= 1 && (v as number) <= 5;
 const idOr = (v: unknown, fallback: () => string) => (typeof v === 'string' && v ? v : fallback());
@@ -54,21 +56,11 @@ export function freshState(): MyDayData {
     context: {},
     timer: null,
     celebratedOn: null,
+    rota: emptyRota(),
+    pay: defaultPay(),
+    bankHolidays: { region: 'england-and-wales', fetchedAt: null, divisions: null },
     saves: { seq: 0, log: [] },
   };
-}
-
-// A whole number of minutes from 1 to 600, or the fallback (which may be null, meaning "not valid").
-export function cleanMinutes<F extends number | null>(v: unknown, fallback: F): number | F {
-  const m = Math.round(Number(v));
-  return m > 0 && m <= 600 ? m : fallback;
-}
-
-// A whole number from lo to hi, or the fallback (which may be null, meaning "not valid").
-export function intIn<F extends number | null>(v: unknown, lo: number, hi: number, fallback: F): number | F {
-  if (v === null || v === undefined || v === '') return fallback;
-  const n = Math.round(Number(v));
-  return Number.isFinite(n) && n >= lo && n <= hi ? n : fallback;
 }
 
 function cleanListItem(o: unknown): ListItem | null {
@@ -232,11 +224,14 @@ export function normalize(raw: unknown, report = { dropped: 0 }): MyDayData {
   }
 
   // ---- Added in version 4 ----
+  s.rota = normalizeRota(raw.rota, report);
+  s.pay = normalizePay(raw.pay);
+  s.bankHolidays = normalizeBankHolidays(raw.bankHolidays);
   if (isObj(raw.saves)) {
     s.saves = { seq: intIn(raw.saves.seq, 0, 1e12, 0), log: listOf(raw.saves.log).filter(x => typeof x === 'string').slice(-SAVE_LOG) };
   }
-  // Keep everything else exactly as it was: the sections not described in types.ts yet (rota, pay,
-  // bankHolidays, health, study) and anything added by a newer MyDay.
+  // Keep everything else exactly as it was: the sections not described in types.ts yet (health,
+  // study) and anything added by a newer MyDay.
   for (const key of Object.keys(raw)) {
     if (!(key in s) && !['__proto__', 'constructor', 'prototype'].includes(key)) s[key] = raw[key];
   }

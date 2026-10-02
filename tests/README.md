@@ -12,10 +12,10 @@ afterwards. They also set the page's clock to fixed dates, so results don't depe
 From the `myday-site` folder:
 
 ```sh
-tests/run.sh                  # everything (about 6–8 minutes)
+tests/run.sh                  # everything (about 9–11 minutes)
 tests/run.sh storage          # one suite (under a minute)
 tests/run.sh storage today    # several suites
-tests/run.sh app-storage app-today   # the new app only (builds it first)
+tests/run.sh app-storage app-today app-calendar-pay   # the new app only (builds it first)
 ```
 
 You need Google Chrome, Node.js 22 or newer, and Python 3. If Chrome is somewhere unusual, set
@@ -36,6 +36,7 @@ few will fail and the rest still run.
 | `health` | Workout templates, logging, scheduling and charts; recipe ideas and search (with suggestions as you type); preferences; the shopping list; the cooking view. |
 | `study` | The roadmap and completion, learning sessions and check-ins, concepts and revision (answers stay hidden until revealed, spaced reviews), progress and history, the Today card, and export/import. |
 | `app-storage` | The new app (`app/`): nothing is saved before the data is checked; never saving over another tab's newer data; saves at the same moment are reported, not silent; sections it doesn't handle yet (rota, pay, health, study) and unknown fields stay byte-for-byte the same; and the new app and the current MyDay reading and updating each other's saves. |
+| `app-calendar-pay` | The new app's Calendar and Pay: the `calendar-pay` checks adapted (the shift pattern across months and years, pattern changes from a date, one-date changes, statuses, overtime and absence, colours, appointments and overlaps, bank holidays from gov.uk including offline, pay periods, sick pay, bank holiday pay, daylight-saving nights, tax codes), plus side-by-side checks that the new app and the current MyDay save the same rota/pay data and show the same calendar and pay figures, export/import with every section, phone layout, focus and all three themes. |
 | `app-today` | The new app's Today: the `today` checks adapted (energy limits, the queue, rest days, the rolling count, the nudge, export/import, damaged data, context and timeline, proposals and review, themes, layout and tap sizes, animations, the timer), plus the sections that haven't moved yet. |
 
 The `app-*` suites build the new app (`npm run build` in `app/`, so run `npm install` there once first) and serve it

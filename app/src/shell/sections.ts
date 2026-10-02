@@ -5,8 +5,8 @@ import { BookOpen, CalendarDays, CircleCheck, Heart, PoundSterling, type LucideI
 export type SectionId = 'today' | 'calendar' | 'pay' | 'health' | 'study';
 export const SECTIONS: { id: SectionId; label: string; icon: LucideIcon; moved: boolean }[] = [
   { id: 'today', label: 'Today', icon: CircleCheck, moved: true },
-  { id: 'calendar', label: 'Calendar', icon: CalendarDays, moved: false },
-  { id: 'pay', label: 'Pay', icon: PoundSterling, moved: false },
+  { id: 'calendar', label: 'Calendar', icon: CalendarDays, moved: true },
+  { id: 'pay', label: 'Pay', icon: PoundSterling, moved: true },
   { id: 'health', label: 'Health', icon: Heart, moved: false },
   { id: 'study', label: 'Study', icon: BookOpen, moved: false },
 ];

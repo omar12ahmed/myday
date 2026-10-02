@@ -3,8 +3,8 @@
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
 
-**Milestone 1 is done: Today works fully and saves.** The app shell, navigation, themes and the shared storage
-layer are in place. Calendar, Pay, Health and Study have **not** moved yet (see [What has moved](#what-has-moved)).
+**Milestones 1 and 2 are done: Today, Calendar and Pay work fully and save.** The app shell, navigation, themes and
+the shared storage layer are in place. Health and Study have **not** moved yet (see [What has moved](#what-has-moved)).
 
 > This version saves to the **same data** as the current MyDay when both are opened at the same address (for
 > example with Live Server). A change made in one shows in the other. To try things out, use disposable data or
@@ -21,7 +21,7 @@ npm run dev          # live-editing server, usually http://localhost:5173 (its s
 npm run build        # checks the types and builds into app/dist/
 npm run lint         # checks the code for common mistakes
 cd ..
-tests/run.sh app-storage app-today   # builds the app, then runs its checks in a throwaway Chrome profile
+tests/run.sh app-storage app-today app-calendar-pay   # builds the app, then runs its checks in a throwaway Chrome profile
 ```
 
 To use the built app beside the current MyDay (sharing its saved data), run `npm run build`, then open
@@ -33,13 +33,26 @@ itself: build again after a change. While Live Server is running, run the checks
 | Section | In the new app |
 |---|---|
 | **Today** | Everything: energy (1–5) with its task limits, Build my day with a proposal you confirm (edit, shorten, leave for later), rest days, the queue and Roll to tomorrow, the evening check-in (including yesterday's), Review my plan, Swap for a rest day, Start today over, the nudge, the focus timer, the rolling 7-day learning count, the learning garden, sleep / work / appointments / prep-time context, Today at a glance, editing task lists, export and import, animations on/off. |
+| **Calendar** | Everything: your repeating pattern (e.g. 4 days → 4 off → 4 nights → 4 off) with versions that start from a chosen date (earlier dates never change), one-date changes stored apart from the pattern, what actually happened (worked different hours, sick, annual leave, cancelled, off instead, custom), overtime and unauthorised absence as separate entries, appointments, overlap warnings, bank holidays from gov.uk with the region choice, configurable colours with text labels, month and agenda views. |
+| **Pay** | Everything: scheduled vs actual hours and pay for each pay period (weekly, fortnightly, 4-weekly or monthly), night/overtime/bank-holiday rates, annual leave, cancelled shifts, sick pay (SSP before and after the April 2026 reform, company sick pay), and estimated Income Tax, National Insurance and student loans, labelled as estimates with the tax year used. |
 | App shell | Header with the date, the five-section navigation, Light / Dark / Match device themes. |
-| Calendar, Pay, Health, Study | **Not yet.** The navigation marks them; each opens a page that says so and links to the current MyDay. Their saved records are kept exactly as they are. |
+| Health, Study | **Not yet.** The navigation marks them; each opens a page that says so and links to the current MyDay. Their saved records are kept exactly as they are. |
 
-Today *reads* (never changes) three things from sections that haven't moved, so it behaves exactly as before:
-shifts from the rota (tasks aren't suggested during work), planned workouts with a time, and finished Study
-sessions (they count as learning days and grow the garden). What the new Today doesn't show yet: the workout,
-cooking and shopping reminders and the Study card that the current MyDay shows on Today. It says so on the screen.
+Today *reads* (never changes) two things from sections that haven't moved, so it behaves exactly as before:
+planned workouts with a time (tasks aren't suggested then), and finished Study sessions (they count as learning
+days and grow the garden). What the new Today doesn't show yet: the workout, cooking and shopping reminders and
+the Study card that the current MyDay shows on Today. It says so on the screen.
+
+### Calendar and Pay: differences from the current MyDay
+
+- Same rules, records and calculations. The checks compare the two apps side by side with the same data: the
+  saved rota, pay settings and bank holidays, every calendar day, and every pay figure and note.
+- The selected day's details sit beside the month on wide screens, and directly below it on phones (choosing a date
+  moves focus there). Adding an appointment, overtime or an absence are three separate buttons; changing one date
+  ("This date only") and changing the repeating pattern are separate, clearly named places.
+- "Are you sure?" questions are asked in the page rather than with the browser's pop-up.
+- The new app doesn't run when opened as a local file (`file://`): browsers block its JavaScript modules there. Use
+  Live Server or `npm run dev`. (The current MyDay still works as a local file.)
 
 ## Saved data
 
@@ -47,8 +60,10 @@ cooking and shopping reminders and the Study card that the current MyDay shows o
 - `src/data/storage.ts` is the only code that reads or writes it. It loads and checks the data before anything can be saved.
   If the data can't be read, or came from a newer MyDay, saving stops and the saved copy is left exactly as it was
   (you can download it, import a backup, or start fresh).
-- Sections the new app doesn't handle yet (rota, pay, bank holidays, health, study) and any unknown fields are kept
-  exactly as saved, and included in exports.
+- Rota, pay and bank holidays are checked when loaded exactly as the current MyDay checks them: every valid record is
+  kept, and anything damaged is dropped the same way (the checks prove both apps save identical results).
+- Sections the new app doesn't handle yet (health, study) and any unknown top-level sections are kept exactly as
+  saved, and included in exports.
 - **Another tab:** before every save it checks whether another tab (or the current MyDay) saved since; if so, it shows
   that newer data and says your last change wasn't saved, rather than overwriting it. Tabs also update each other.
 - **Saving at the same moment:** localStorage has no locking, so if two tabs save within the same instant, the later
@@ -71,9 +86,16 @@ cooking and shopping reminders and the Study card that the current MyDay shows o
 | `src/data/proposal.ts` | Build my day / Review my plan proposals, saved only when applied. |
 | `src/data/progress.ts` | The rolling learning count, the nudge and the garden's numbers. |
 | `src/data/timer.ts`, `dates.ts`, `today.ts` | The focus timer, date helpers, and the wording for a day's plan. |
-| `src/data/rota.ts`, `workouts.ts`, `studySessions.ts` | Read-only views of sections that haven't moved, for Today's planning. |
+| `src/data/rota.ts` | The shift rota: pattern versions, one-date changes, what happened, overtime/absence, overlaps, colours. |
+| `src/data/pay.ts` | Pay periods and the pay estimate: hours, rates, bank holidays, sick pay (SSP), tax, NI and student loans. |
+| `src/data/bankHolidays.ts`, `bankHolidayFetch.ts` | Bank holidays (checking, looking up a date) and loading them from gov.uk. |
+| `src/data/util.ts` | Small shared helpers (number checks, ids, copying). |
+| `src/data/workouts.ts`, `studySessions.ts` | Read-only views of Health and Study, for Today's planning. |
 | `src/components/` | Shared pieces with their styling in one place: `Button`, `Card`, `Banner`, `Field` (inputs), `Dialog` (confirmations), `Toast`, `CategoryChip`, `EnergyMeter`. |
 | `src/today/` | The Today section's cards and `TodayScreen`, which puts them together. |
+| `src/calendar/` | The Calendar: `CalendarScreen`, the month grid, agenda, selected-day panel, pattern editor and side cards. |
+| `src/pay/` | The Pay screen and its settings card. |
+| `src/commitments/` | Work shifts and appointments: the form and list used by both Today and Calendar. |
 | `src/shell/` | Navigation, the theme button, the "not moved yet" page and the screens for unreadable or older data. |
 | `src/styles/tokens.css` | Colours for dark and light themes (the same as the current MyDay). |
 | `src/index.css` | Gives the colours Tailwind names (e.g. `bg-surface`, `text-fg-2`), sets the font, the navigation bar and the animations. |
@@ -108,6 +130,7 @@ timeline layout is adapted from the "Process Timeline" component on [21st.dev](h
 ## Milestones
 
 1. **Done:** project set-up, design, shell and navigation, themes, the shared storage layer, and a fully working Today.
-2. **Calendar & Pay**, then **Health**, then **Study**, one at a time (each with its checks), plus the Today reminders that come with them.
-3. **Ideas** (planned in the current MyDay but not built yet).
-4. **Switch over:** publish this version at the main address, keeping the current one as a fallback.
+2. **Done:** Calendar and Pay.
+3. **Health**, then **Study**, one at a time (each with its checks), plus the Today reminders that come with them.
+4. **Ideas** (planned in the current MyDay but not built yet).
+5. **Switch over:** publish this version at the main address, keeping the current one as a fallback.

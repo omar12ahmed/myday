@@ -12,7 +12,7 @@ import { startTimer, timerIsStale, timerTask } from '../data/timer';
 import { toast } from '../data/toast';
 import type { Commitment, Energy, MyDayData, Task } from '../data/types';
 import { celebrate } from './celebrate';
-import type { CommitForm } from './commitForm';
+import type { CommitForm } from '../commitments/commitForm';
 import { ContextCard } from './ContextCard';
 import { EditListsView } from './EditListsView';
 import { EveningView, YesterdayCard } from './EveningView';

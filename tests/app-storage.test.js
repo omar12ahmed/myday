@@ -122,8 +122,12 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   await click('#themeBtn'); await sleep(300);
   await click('[data-action=edit]'); await click('[data-action=add][data-cat=admin]'); await sleep(150); await click('[data-action=back]'); await sleep(150);
   s = await D();
-  check('rota, pay, bank holidays, health and study are byte-for-byte unchanged after many saves',
-    ['rota', 'pay', 'bankHolidays', 'health', 'study'].every(k => JSON.stringify(s[k]) === JSON.stringify(before[k])), ['rota', 'pay', 'bankHolidays', 'health', 'study'].filter(k => JSON.stringify(s[k]) !== JSON.stringify(before[k])));
+  check('health and study (not in the new app yet) are byte-for-byte unchanged after many saves',
+    ['health', 'study'].every(k => JSON.stringify(s[k]) === JSON.stringify(before[k])), ['health', 'study'].filter(k => JSON.stringify(s[k]) !== JSON.stringify(before[k])));
+  // Rota, pay and bank holidays are now handled by the new app: checked on load exactly as the current
+  // MyDay does (app-calendar-pay [26] compares the two side by side), so every valid record is kept.
+  check('rota: pattern, one-date change and colour kept exactly', JSON.stringify(s.rota.patterns) === JSON.stringify(before.rota.patterns) && JSON.stringify(s.rota.overrides) === JSON.stringify(before.rota.overrides) && s.rota.colours.day === '#2f8f4e');
+  check('pay and bank holidays: every setting kept (rate, tax code, region, saved date)', s.pay.hourlyRate === 12.21 && s.pay.taxCode === '1257L' && s.bankHolidays.region === 'scotland' && s.bankHolidays.fetchedAt === null);
   check('an unknown top-level section is kept exactly too', JSON.stringify(s.futureSection) === JSON.stringify({ notes: ['kept'] }));
   check('a finished Study session counts towards the learning days (read, not changed)', (await text('#streak h2')).endsWith(': 2'), await text('#streak h2'));
   for (const f of require('fs').readdirSync(T.S + '/dl')) require('fs').unlinkSync(T.S + '/dl/' + f);

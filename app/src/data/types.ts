@@ -97,13 +97,77 @@ export interface MyDayData {
   celebratedOn: DateKey | null;
   saves: { seq: number; log: string[] }; // signatures that let a tab notice its save was replaced by another tab's
 
+  // Calendar and Pay (added in schemaVersion 4).
+  rota: Rota;
+  pay: PaySettings;
+  bankHolidays: BankHolidays;
+
   // Not described yet: kept exactly as saved until their screens move to the new app.
-  rota?: unknown;
-  pay?: unknown;
-  bankHolidays?: unknown;
   health?: unknown;
   study?: unknown;
 
   // Anything else (e.g. a section added by a newer MyDay) is kept as it was, never dropped.
   [other: string]: unknown;
+}
+
+// ---------- Calendar: the shift rota ----------
+export type ShiftType = 'day' | 'night' | 'off';
+export type PlannedType = ShiftType | 'custom';
+export type ActualStatus = 'worked' | 'sick' | 'annual_leave' | 'cancelled' | 'off' | 'custom';
+export type EntryKind = 'overtime' | 'unauthorised';
+export type ColourKey = 'day' | 'night' | 'off' | 'sick' | 'unauthorised' | 'annual_leave' | 'cancelled' | 'custom' | 'overtime' | 'appointment';
+
+// One version of the repeating pattern. A change "from a date" adds a new version; earlier ones are kept.
+export interface PatternVersion {
+  id: string;
+  effectiveFrom: DateKey | null;  // null = from the start
+  anchor: DateKey;                // a date that is day 1 of the cycle
+  cycle: ShiftType[];             // e.g. 4 × day, 4 × off, 4 × night, 4 × off
+  times: Record<'day' | 'night', { start: string; end: string }>; // "HH:MM"; an end before the start = next day
+  breaks: Record<'day' | 'night', number>;                         // unpaid break, minutes
+}
+
+// A change for one date only, stored apart from the pattern (the pattern itself never moves).
+export interface DateOverride {
+  planned?: { type: PlannedType; start?: string; end?: string; label?: string; breakMin?: number };
+  actual?: { status: ActualStatus; start?: string; end?: string; label?: string; paid?: boolean };
+}
+
+// Overtime or unauthorised absence: its own start and end, separate from shifts.
+export interface RotaEntry { id: string; kind: EntryKind; start: DateTime; end: DateTime; note: string }
+
+export interface Rota {
+  patterns: PatternVersion[];
+  overrides: Record<DateKey, DateOverride>;
+  entries: RotaEntry[];
+  colours: Record<ColourKey, string>; // "#rrggbb"
+}
+
+// ---------- Pay ----------
+export type PayFrequency = 'weekly' | 'fortnightly' | 'four_weekly' | 'monthly';
+export type LoanPlan = 'plan1' | 'plan2' | 'plan4' | 'plan5' | 'postgrad';
+export interface PaySettings {
+  hourlyRate: number | null;
+  nightMultiplier: number;
+  overtimeMultiplier: number;
+  bankHolidayMultiplier: number;
+  bankHolidayHours: 'clock' | 'shift'; // hours falling on the day, or the whole shift starting that day
+  annualLeavePaid: boolean;
+  cancelledPaid: boolean;
+  sickPay: 'ssp' | 'full' | 'percent';
+  sickPercent: number;
+  averageWeeklyEarnings: number | null;
+  frequency: PayFrequency;
+  periodAnchor: DateKey;
+  taxCode: string;
+  niCategory: 'A' | 'X';
+  studentLoans: Record<LoanPlan, boolean>;
+}
+
+// ---------- Bank holidays (cached from gov.uk) ----------
+export type BankHolidayRegion = 'england-and-wales' | 'scotland' | 'northern-ireland';
+export interface BankHolidays {
+  region: BankHolidayRegion;
+  fetchedAt: DateTime | null;
+  divisions: Record<BankHolidayRegion, { date: DateKey; title: string }[]> | null;
 }

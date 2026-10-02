@@ -10,6 +10,8 @@ import type { Theme } from './data/types';
 import { useMyDay } from './data/useMyDay';
 import { Nav } from './shell/Nav';
 import { sectionFromHash, type SectionId } from './shell/sections';
+import { CalendarScreen } from './calendar/CalendarScreen';
+import { PayScreen } from './pay/PayScreen';
 import { NotMovedYet } from './shell/NotMovedYet';
 import { DamagedView, OlderView } from './shell/StatusScreens';
 import { ThemeButton } from './shell/ThemeButton';
@@ -111,7 +113,9 @@ function Shell() {
   else if (section === 'today') {
     content = <TodayScreen key={k} data={data} generation={generation} k={k} canSave={status.kind === 'ok'} motionAllowed={motionAllowed}
       onExport={exportData} onImport={() => fileInput.current?.click()} />;
-  } else content = <NotMovedYet section={section} />;
+  } else if (section === 'calendar') content = <CalendarScreen data={data} canSave={status.kind === 'ok'} motionAllowed={motionAllowed} />;
+  else if (section === 'pay') content = <PayScreen data={data} canSave={status.kind === 'ok'} />;
+  else content = <NotMovedYet section={section} />;
 
   return (
     <>

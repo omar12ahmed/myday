@@ -5,13 +5,13 @@
 # Usage:  tests/run.sh                 run every suite
 #         tests/run.sh storage today   run only the suites named
 # Suites for the current MyDay (index.html): storage, today, calendar-pay, health, study
-# Suites for the new app (app/, built first): app-storage, app-today
+# Suites for the new app (app/, built first): app-storage, app-today, app-calendar-pay
 set -u
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(dirname "$HERE")"
 SUITES=("$@")
-[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study app-storage app-today)
+[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study app-storage app-today app-calendar-pay)
 
 # ---- What's needed ----
 CHROME="${CHROME:-}"
@@ -62,7 +62,7 @@ for s in "${SUITES[@]}"; do
   (cd "$WORK" && node "$s.test.js" > "$WORK/$s.log" 2>&1)
   code=$?
   result="$(grep -E 'passed, [0-9]+ failed' "$WORK/$s.log" | tail -1)"
-  printf '%-13s %s\n' "$s" "${result:-stopped early (exit $code)}"
+  printf '%-17s %s\n' "$s" "${result:-stopped early (exit $code)}"
   if [ $code -ne 0 ]; then
     FAILED=1
     grep -E '^\s+FAIL|HARNESS' "$WORK/$s.log" | head -20
