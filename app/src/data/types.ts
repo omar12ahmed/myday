@@ -105,7 +105,7 @@ export interface MyDayData {
   // Study (added in schemaVersion 4).
   study: StudyData;
 
-  // Health: Workout (described below) and Food (kept exactly as saved until its screens move).
+  // Health: Workout and Food (described below).
   health: HealthData;
 
   // Anything else (e.g. a section added by a newer MyDay) is kept as it was, never dropped.
@@ -219,8 +219,7 @@ export interface StudyData {
 }
 
 // ---------- Health: Workout ----------
-// Same shape as the current MyDay saves it. Food hasn't moved to the new app yet: it is kept exactly
-// as saved, so it isn't described here.
+// Same shape as the current MyDay saves it.
 export type ExType = 'strength' | 'bodyweight' | 'cardio';
 // Bodyweight exercises: just your body, with weight added (e.g. a belt), or with assistance (e.g. a band).
 export type LoadMode = 'none' | 'added' | 'assisted';
@@ -284,6 +283,67 @@ export interface WorkoutData {
 }
 export interface HealthData {
   workout: WorkoutData;
-  food: unknown; // not in the new app yet: kept exactly as saved
+  food: FoodData;
   [other: string]: unknown;
+}
+
+// ---------- Health: Food ----------
+// Same shape as the current MyDay saves it. Recipe ideas come from TheMealDB, which lists no servings,
+// times or nutrition: those stay null ("not listed") unless you enter them yourself.
+export interface Nutrition { kcal: number | null; protein: number | null; carbs: number | null; fat: number | null } // per serving
+export interface Recipe {
+  id: string;                          // "mdb-<TheMealDB id>" or "r…" for your own
+  source: 'themealdb' | 'manual';
+  title: string;
+  sourceUrl: string;                   // the original recipe's web page (or your own link)
+  sourceName: string;                  // your recipe: where it's from
+  mealDbUrl: string;                   // TheMealDB's page for it
+  video: string;
+  thumb: string;                       // photo address (TheMealDB); only the address is saved, never the image
+  category: string;
+  area: string;
+  tags: string[];
+  ingredients: { name: string; measure: string }[];
+  instructions: string;                // the original method, kept exactly
+  servings: number | null;
+  servingsSource: 'user' | 'recipe' | null; // "user": you entered it for a TheMealDB recipe
+  prepMin: number | null;
+  cookMin: number | null;
+  effort: 'easy' | 'medium' | 'hard' | null;
+  batch: boolean | null;               // null = not known
+  nutrition: Nutrition | null;
+  nutritionSource: 'user' | null;      // only ever entered by you; MyDay never estimates nutrition
+  savedAt: string;
+}
+export interface FoodPrefs { exclude: string[]; dislikes: string[]; maxMinutes: number | null; batchOnly: boolean }
+export interface WantItem { id: string; recipeId: string; servings: number | null; addedOn: DateKey }
+// Cooking history: a recipe you finished cooking. It is never a record of food eaten.
+export interface CookedItem { id: string; recipeId: string; title: string; date: DateKey; servings: number | null }
+export type UnitFamily = 'g' | 'ml' | 'tsp' | 'cup' | 'oz' | 'count';
+// A shopping-list item. With a unit family, `amount` is in its base unit (g, ml, tsp, cup, oz, or a count
+// of `unit`) and items with the same family, unit and name combine. Otherwise `text` keeps the quantity
+// exactly as written (e.g. "pinch", "1-2"), and it's never combined.
+export interface ShoppingItem {
+  id: string;
+  name: string;
+  family: UnitFamily | null;
+  amount: number | null;
+  unit: string;
+  text: string;
+  category: string;
+  checked: boolean;
+  recipes: string[];                   // titles of the recipes it's for
+  manual: boolean;
+}
+export interface CookTimer { label: string; durationSec: number; startedAt: number | null; accumulatedMs: number; finished: boolean }
+// The recipe being cooked, and where you are in it.
+export interface Cooking { recipeId: string; step: number; servings: number | null; startedAt: string; timer: CookTimer | null }
+export interface FoodData {
+  prefs: FoodPrefs;
+  recipes: Record<string, Recipe>;     // your own recipes, plus TheMealDB recipes you saved, favourited, planned or cooked
+  favourites: string[];
+  want: WantItem[];
+  cooked: CookedItem[];
+  shopping: ShoppingItem[];
+  cooking: Cooking | null;
 }

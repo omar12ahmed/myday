@@ -1,11 +1,11 @@
 // Workout (Health) in the NEW app (app/, built into app/dist): the workout checks from health.test.js,
 // adapted, plus what the move asked for: units and assistance kept apart, one planned session changed
 // without touching templates or history (with overlap warnings), no duplicate sessions, sets or plans after
-// double taps, reloads and redraws, Food kept exactly as saved, export/import with every section, phone
-// layout and all three themes, and side-by-side checks that the new app saves workout data and shows the
-// same results as the current MyDay (index.html, served beside it).
+// double taps, reloads and redraws, Food's records kept through workout saves, export/import with every
+// section, phone layout and all three themes, and side-by-side checks that the new app saves workout data
+// and shows the same results as the current MyDay (index.html, served beside it).
 // Differences these checks expect: confirmations are asked in the page; checkboxes are clicked (React
-// only notices a real click); Export is on Today; Food is not in the new app yet.
+// only notices a real click); Export is on Today.
 const fs = require('fs');
 const T = require('./cdp.js');
 // Saved data compared without the save signatures, which change on every save by design.
@@ -76,10 +76,9 @@ const sessionOf = (id, date, exs) => ({ id, date, templateId: 'tP', templateName
   const before = await D();
   await go('health');
   check('Health opens with Workout and Food tabs', eq(await texts('.health-tabs .seg-link'), ['Workout', 'Food']) && (await text('#nav [aria-current=page]')).trim() === 'Health');
-  check('the navigation marks Health as partly moved (Food not yet)', (await ev(`document.querySelector('#nav a[href="#health"]').getAttribute('aria-label')`)) === 'Health (Food not in the new app yet)');
+  check('the navigation shows Health as moved', (await ev(`document.querySelector('#nav a[href="#health"]').getAttribute('aria-label')`)) === 'Health');
   await nav('health/food');
-  const foodH = await text('#app h2'), foodLink = await ev(`(document.querySelector('#app a[href$="index.html#health/food"]') || {}).getAttribute?.('href') || ''`);
-  check('Food says plainly it hasn\'t moved, with a link to the current MyDay', foodH === "Food hasn't moved to the new MyDay yet" && foodLink === '../../index.html#health/food', [foodH, foodLink]);
+  check('the Food tab opens Food (app-food checks it in full)', await exists('#foodQ'));
   await nav('health/workout'); await click('[data-action=h-tpl-new]'); await sleep(250);
   const after = await D();
   const others = o => { const c = JSON.parse(JSON.stringify(o)); delete c.health; delete c.saves; return c; };
@@ -347,17 +346,19 @@ const sessionOf = (id, date, exs) => ({ id, date, templateId: 'tP', templateName
   const seeded = await D();
   await go('health/workout', 2026, 11, 2, 9);
   await click('[data-action=h-ws-start][data-tpl=tA]'); await sleep(250);
+  const foodFirst = (await H()).food; // Food as first saved by the new app (checked the way the current MyDay checks it)
   await click('[data-action=h-set-done]'); await sleep(100);
   await click('[data-action=h-ws-finish]'); await answer(true);
   await go('health/workout/schedule', 2026, 11, 2, 10);
   await setVal('#schMode', 'weekdays'); await sleep(100);
   h = await H();
-  check('Food is byte-for-byte unchanged after many workout saves (recipes, shopping, unknown fields)', JSON.stringify(h.food) === JSON.stringify(seeded.health.food));
+  check('Food\'s records are all kept (recipe, favourite, cooking history, shopping, preferences)', h.food.recipes.r1.title === 'Porridge' && eq(h.food.favourites, ['r1']) && h.food.cooked.length === 1 && h.food.shopping[0].name === 'Oats' && eq(h.food.prefs.dislikes, ['olives']));
+  check('…and unchanged by many workout saves', JSON.stringify(h.food) === JSON.stringify(foodFirst));
   check('…and so is an unknown part of Health', eq(h.futureHealthPart, { kept: [1, 2] }));
   await go('today', 2026, 11, 2, 11);
-  check('Today says the shopping-list reminder isn\'t in the new app yet', (await text('#app')).includes('Not in the new app yet: the cooking and shopping-list reminders'));
+  check('Today shows the shopping list reminder', (await text('#slot-health')).includes('Shopping list') && (await text('#slot-health')).includes('1 item to get'));
   const ex = await exportNow();
-  check('export includes Workout, Food and every other section', ex.data.health.workout.sessions.length === 1 && JSON.stringify(ex.data.health.food) === JSON.stringify(seeded.health.food) && ex.data.futureSection.kept === true && 'study' in ex.data && 'rota' in ex.data);
+  check('export includes Workout, Food and every other section', ex.data.health.workout.sessions.length === 1 && JSON.stringify(ex.data.health.food) === JSON.stringify(h.food) && ex.data.futureSection.kept === true && 'study' in ex.data && 'rota' in ex.data);
   const snap = await ev(`localStorage.getItem('${KEY}')`);
   await reset(); await go('health/workout', 2026, 11, 2, 12);
   await setFile(S + '/dl/myday-export-2026-11-02.json'); await sleep(200); await answer(true);
@@ -430,7 +431,7 @@ const sessionOf = (id, date, exs) => ({ id, date, templateId: 'tP', templateName
     const w2 = JSON.parse(JSON.stringify(mw)); w2.sessions = w2.sessions.slice(0, 2); w2.activeId = null; w2.planned['2026-11-02'] = { templateId: 'tP', time: '20:00', status: 'planned', source: 'manual' };
     await editStorage(`s => { s.health = { workout: ${JSON.stringify(w2)}, food: ${JSON.stringify(FOOD)} }; s.rota.patterns = [${ROTA.replace("'2026-11-23'", "'2026-11-02'")}]; }`);
     await go('today', 2026, 11, 2, 9, 0, url);
-    out.todayCard = flat(await text('#slot-health')).replace(/Cooking.*|Shoppinglist.*/, '');
+    out.todayCard = flat(await text('#slot-health'));
     out.glance = await glance();
     await go('health/workout', 2026, 11, 2, 9, 0, url);
     out.next = flat(await text('.next-card'));

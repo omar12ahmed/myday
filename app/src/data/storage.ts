@@ -189,7 +189,7 @@ export function listenForOtherTabs() {
 }
 
 // ---------- Export and import ----------
-// The whole of the saved data (every section, including ones not in the new app yet) as a backup file.
+// The whole of the saved data (every section, including any this version doesn't know) as a backup file.
 export function exportText(): { filename: string; text: string } {
   const payload = { format: EXPORT_FORMAT, schemaVersion: SCHEMA_VERSION, exportedAt: localStamp(), data: snapshot.data };
   return { filename: `myday-export-${todayKey()}.json`, text: JSON.stringify(payload, null, 2) };

@@ -1,10 +1,10 @@
-// Checks saved Health data. Workout is checked exactly as normalizeHealth() in the current MyDay checks
-// it. Food hasn't moved to the new app yet, so it is kept exactly as saved (never checked or changed
-// here), and so is anything else stored under Health.
+// Checks saved Health data exactly as normalizeHealth() in the current MyDay checks it: Workout here,
+// Food in food/normalize.ts. Anything else stored under Health is kept exactly as it was.
 import { isDateKey, isTime } from '../dates';
 import { intIn, isObj, uid } from '../util';
 import type { HealthData, SessionExercise, TemplateItem, WorkoutSession } from '../types';
-import { cleanSetValues, emptyFood, emptyWorkout, EX_TYPES, WEEKDAYS } from './common';
+import { emptyFood, normalizeFood } from '../food/normalize';
+import { cleanSetValues, emptyWorkout, EX_TYPES, WEEKDAYS } from './common';
 
 const str = (v: unknown, max = 200) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 
@@ -71,7 +71,7 @@ export function normalizeHealth(raw: unknown, report: { dropped: number }): Heal
   if (typeof w.activeId === 'string' && hw.sessions.some(s => s.id === w.activeId && s.status === 'active')) hw.activeId = w.activeId;
   if (isObj(w.restTimer)) hw.restTimer = { enabled: w.restTimer.enabled === true, seconds: intIn(w.restTimer.seconds, 10, 900, 90) };
   if (isObj(w.rest) && Number.isFinite(w.rest.startedAt) && Number.isInteger(w.rest.durationSec)) hw.rest = { startedAt: w.rest.startedAt as number, durationSec: w.rest.durationSec as number };
-  // Everything else under Health (Food, and anything unknown) stays exactly as it was, in its place.
-  const h: HealthData = { ...raw, workout: hw, food: 'food' in raw ? raw.food : emptyFood() };
+  // Anything else under Health stays exactly as it was, in its place.
+  const h: HealthData = { ...raw, workout: hw, food: normalizeFood(raw.food, report) };
   return h;
 }

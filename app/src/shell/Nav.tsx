@@ -4,13 +4,13 @@ import { SECTIONS, type SectionId } from './sections';
 export function Nav({ current }: { current: SectionId }) {
   return (
     <nav id="nav" aria-label="Sections" className="nav">
-      {SECTIONS.map(({ id, label, icon: Icon, moved, partly }) => (
+      {SECTIONS.map(({ id, label, icon: Icon, moved }) => (
         <a key={id} href={`#${id}`} aria-current={id === current ? 'page' : undefined} className="nav-item"
-          aria-label={!moved ? `${label} (not in the new app yet)` : partly ? `${label} (${partly})` : label}>
+          aria-label={moved ? label : `${label} (not in the new app yet)`}>
           <span className="nav-icon relative">
             <Icon size={22} aria-hidden="true" />
-            {/* A small dot marks sections that still live (at least partly) in the current MyDay. */}
-            {(!moved || partly) && <span aria-hidden="true" className="absolute top-0.5 right-3 size-2 rounded-full border-2 border-fg-3" />}
+            {/* A small dot marks sections that still live in the current MyDay. */}
+            {!moved && <span aria-hidden="true" className="absolute top-0.5 right-3 size-2 rounded-full border-2 border-fg-3" />}
           </span>
           <span className={`nav-label ${moved ? '' : 'text-fg-3'}`}>{label}</span>
         </a>

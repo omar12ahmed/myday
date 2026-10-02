@@ -552,18 +552,17 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   await openAt(2027, 5, 7, 7); await sleep(200);
   check("a timer left running from yesterday is quietly cleared", !(await exists('#timerCard')) && (await data()).timer === null);
 
-  console.log('\n[20] Sections that have not moved yet');
+  console.log('\n[20] Every section is in the new app');
   const navLabels = await ev(`[...document.querySelectorAll('#nav a')].map(a => a.getAttribute('aria-label'))`);
-  check('the navigation keeps all five sections, and says which part is not in the new app yet', eq(navLabels, ['Today', 'Calendar', 'Pay', 'Health (Food not in the new app yet)', 'Study']), navLabels);
+  check('the navigation keeps all five sections, none marked "not in the new app yet"', eq(navLabels, ['Today', 'Calendar', 'Pay', 'Health', 'Study']), navLabels);
   await ev(`location.hash = '#health/food'`); await sleep(200);
-  const hf = await text('#app h2');
-  check('#health/food: says plainly Food hasn\'t moved yet, with a link to the current MyDay', hf.endsWith("hasn't moved to the new MyDay yet") && (await ev(`(document.querySelector('#app a[href$="index.html#health/food"]') || {}).getAttribute?.('href') || ''`)) === '../../index.html#health/food', hf);
+  check('#health/food opens Food in the new app (search box, recipe ideas)', (await exists('#foodQ')) && (await text('#app')).includes('Ideas for you'));
   await ev(`location.hash = '#today'`); await sleep(200);
   check('back to Today from the navigation (the morning screen: nothing built for 7 May)', await exists('#slot-energy'));
   await editStorage(`s => { s.rota = { patterns: [{ anchor: '2027-05-01', cycle: ['day', 'off'], times: { day: { start: '09:00', end: '17:00' } } }] }; s.health = { workout: {}, food: { shopping: [{ id: 'sh1', name: 'Oats', checked: false }] } }; }`);
   await openAt(2027, 5, 7, 7);
   check('a day shift from the rota shows on Today (read-only) and blocks task times', (await glance()).some(g => g.startsWith('09:00–17:00 | Day shift')), await glance());
-  check('Today says which reminders aren\'t in the new app yet', (await text('#app')).includes('Not in the new app yet'));
+  check('Today shows the shopping list reminder (nothing added to the task list)', (await text('#slot-health')).includes('Shopping list') && (await text('#slot-health')).includes('1 item to get'));
 
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));

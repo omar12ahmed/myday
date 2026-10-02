@@ -1,12 +1,12 @@
 // Checks saved data and fills in anything missing, the same way as normalize() in the current MyDay.
-// Bad entries are dropped and counted rather than crashing the app. The part not described in types.ts
-// yet (Health's Food) and anything unknown are kept exactly as they were.
+// Bad entries are dropped and counted rather than crashing the app. Anything unknown is kept exactly as it was.
 import { normalizeBankHolidays } from './bankHolidays';
 import { isDateKey, isDateTime, isTime, todayKey } from './dates';
 import { normalizePay, defaultPay } from './pay';
 import { emptyRota, normalizeRota } from './rota';
 import { emptyStudy } from './study/common';
-import { emptyFood, emptyWorkout } from './workout/common';
+import { emptyFood } from './food/normalize';
+import { emptyWorkout } from './workout/common';
 import { normalizeHealth } from './workout/normalize';
 import { normalizeStudy } from './study/normalize';
 import type { Category, Commitment, DayContext, Energy, ListItem, MyDayData, QueueItem, Settings, Task, Theme } from './types';

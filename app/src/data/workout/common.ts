@@ -30,14 +30,6 @@ export function emptyWorkout(): WorkoutData {
     rest: null,
   };
 }
-// Food's empty shape, used only when there's no Food data at all (as the current MyDay does).
-export function emptyFood() {
-  return {
-    prefs: { exclude: [], dislikes: [], maxMinutes: null, batchOnly: false },
-    recipes: {}, favourites: [], want: [], cooked: [], shopping: [], cooking: null,
-  };
-}
-
 const optNum = (v: unknown, lo: number, hi: number) => numIn(v, lo, hi, null);
 // The numbers for one set, checked. Planned values and logged results use the same shape.
 export function cleanSetValues(o: unknown): SetValues {

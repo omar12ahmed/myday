@@ -3,9 +3,8 @@
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
 
-**Milestones 1–4 are done: Today, Calendar, Pay, Study and Workout work fully and save.** The app shell, navigation,
-themes and the shared storage layer are in place. Food (the other half of Health) has **not** moved yet (see
-[What has moved](#what-has-moved)).
+**Milestones 1–5 are done: every section of the current MyDay — Today, Calendar, Pay, Health (Workout and Food) and
+Study — works fully in the new app and saves.** What's left is switching over (see [Milestones](#milestones)).
 
 > This version saves to the **same data** as the current MyDay when both are opened at the same address (for
 > example with Live Server). A change made in one shows in the other. To try things out, use disposable data or
@@ -22,7 +21,7 @@ npm run dev          # live-editing server, usually http://localhost:5173 (its s
 npm run build        # checks the types and builds into app/dist/
 npm run lint         # checks the code for common mistakes
 cd ..
-tests/run.sh app-storage app-today app-calendar-pay app-study app-workout   # builds the app, then runs its checks in a throwaway Chrome profile
+tests/run.sh app-storage app-today app-calendar-pay app-study app-workout app-food   # builds the app, then runs its checks in a throwaway Chrome profile
 ```
 
 To use the built app beside the current MyDay (sharing its saved data), run `npm run build`, then open
@@ -39,10 +38,10 @@ itself: build again after a change. While Live Server is running, run the checks
 | **Study** | Everything: a dashboard focused on starting (current focus and course, the next task with its path and estimate, a suggested length that fits your energy and free time, Start learning, "Just 15 minutes", course completion, a revision preview with its own Start revision button); the editable roadmap (stage → course → module → section → task, resource links, archive, focus); learning sessions you can pause, resume, finish or discard, with an optional clock that survives a reload; the optional check-in (task complete, concepts covered, how clear it felt, takeaway, question, Obsidian note); concepts with written or multiple-choice revision questions; revision one question at a time with the answer hidden until you ask, self-assessment, hints, notes, and spaced review dates; progress and history (learning days, completion, practical work, clarity, recall by week, what might need practice); Study settings; and the Study card on Today. |
 | **Health → Workout** | Everything: workout templates (create, rename, reorder, archive and restore) with your own or common exercises; strength (reps and kg), bodyweight (reps, with added weight or assistance in kg, kept apart) and cardio (minutes and km); planned sets, reps, weights, durations, distances and rest; scheduling by weekday or as a repeating sequence; proposed dates fitted around shifts and appointments, saved only when you confirm; one-off plans on a date; the latest missed session to Move, Skip or Continue (no backlog); logging a workout with the plan and last time's result beside each exercise, big Done buttons, values prefilled from last time or the plan, the optional rest timer, leave-and-resume, and a kindly named shorter session; history with corrections; exercise history with charts per measure; and the Health card on Today. |
 | App shell | Header with the date, the five-section navigation, Light / Dark / Match device themes. |
-| Health → Food | **Not yet.** The navigation marks Health as partly moved; the Food tab says so and links to the current MyDay. Food's saved records are kept exactly as they are. |
+| **Health → Food** | Everything: recipe ideas from TheMealDB (three at a time, "Show more"), search with suggestions while you type (your saved recipes at once, TheMealDB after a pause), favourites, recently cooked and your own recipes; preferences (leave out, dislikes, time, batch cooking) with a plain allergen caution; recipe pages with ingredients, servings that scale the quantities (or "as written" when they can't), the method split only on its own lines with the original text kept, nutrition (only your own figures, labelled as yours — never estimated) and the source and links; Want to cook (servings, tick what you have, add the rest); the shopping list grouped by aisle, combining only compatible items, with editing, manual items, Undo and ticking off; the step-by-step cooking view with timers named in a step, saved position and resume; and the cooking and shopping reminders on Today. |
 
-What the new Today doesn't show yet: the cooking and shopping-list reminders the current MyDay shows on Today. When
-there is one to show, Today says so.
+Today's Health card shows a workout to resume, decide about or start, a recipe being cooked, and the shopping list.
+Nothing from Health is added to the day's task list.
 
 ### Calendar and Pay: differences from the current MyDay
 
@@ -89,18 +88,36 @@ there is one to show, Today says so.
   says "Rest done" when you come back (the current MyDay notices it on any screen).
 - Export and import are on Today (the current MyDay shows them at the bottom of every section).
 
+### Food: differences from the current MyDay
+
+- Same provider (TheMealDB with its free test key), records, rules and wording. The checks compare the two apps side by
+  side: the saved Food data (including messy data), Today's Health card, a recipe's ingredients and scaled
+  quantities, the method, the shopping list and its aisles, what Want to cook adds, and the cooking view.
+- **Search replies in order:** each search (and each round of suggestions while typing) is numbered, and a reply for
+  an older one is ignored, so a slow answer can never replace newer results. (The current MyDay already does this for
+  suggestions, but not for a full search.)
+- **Your own recipe's ranges:** an ingredient line like "1-2 cloves garlic" keeps "1-2" together as the quantity, so
+  the shopping list keeps it as written. (The current MyDay reads it as "1" of "-2 cloves garlic".)
+- Each recipe being loaded has its own "loading" or "couldn't load" state, so one recipe's error never shows on another.
+- The recipe page says what Favourite, Want to cook and Start cooking each do, and that none of them records what you
+  eat. The cooking view shows the step number large, in a circle, beside "Step 2 of 4".
+- A recipe without a photo shows a pot icon (the current MyDay shows an emoji).
+- "Are you sure?" questions (delete a recipe, stop cooking, start another recipe while cooking, clear ticked items)
+  are asked in the page.
+- Export and import are on Today (the current MyDay shows them at the bottom of every section).
+
 ## Saved data
 
 - Same key and format as the current MyDay: `myday.data.v4`, `schemaVersion` 4. No migration is needed.
 - `src/data/storage.ts` is the only code that reads or writes it. It loads and checks the data before anything can be saved.
   If the data can't be read, or came from a newer MyDay, saving stops and the saved copy is left exactly as it was
   (you can download it, import a backup, or start fresh).
-- Rota, pay, bank holidays, Study and Workout are checked when loaded exactly as the current MyDay checks them: every
+- Rota, pay, bank holidays, Study, Workout and Food are checked when loaded exactly as the current MyDay checks them: every
   valid record is kept, and anything damaged is dropped the same way (the checks prove both apps save identical
   results). As in the current MyDay, Study keeps only one session in progress (any other is marked finished), and
-  neither Study nor Workout keeps unknown fields *inside* their records.
-- Food (not in the new app yet), anything else stored under Health, and any unknown top-level sections are kept
-  exactly as saved, and included in exports. With no Food data at all, Food starts empty, as in the current MyDay.
+  Study, Workout and Food don't keep unknown fields *inside* their records.
+- Anything else stored under Health, and any unknown top-level sections, are kept exactly as saved and included in
+  exports.
 - **Another tab:** before every save it checks whether another tab (or the current MyDay) saved since; if so, it shows
   that newer data and says your last change wasn't saved, rather than overwriting it. Tabs also update each other.
 - **Saving at the same moment:** localStorage has no locking, so if two tabs save within the same instant, the later
@@ -127,12 +144,14 @@ there is one to show, Today says so.
 | `src/data/pay.ts` | Pay periods and the pay estimate: hours, rates, bank holidays, sick pay (SSP), tax, NI and student loans. |
 | `src/data/bankHolidays.ts`, `bankHolidayFetch.ts` | Bank holidays (checking, looking up a date) and loading them from gov.uk. |
 | `src/data/util.ts` | Small shared helpers (number checks, ids, copying). |
-| `src/data/workout/` | Workout's data and rules, ported from the current MyDay: `normalize.ts` (checking saved Health data; Food is kept as saved), `common.ts` (labels, units and wording), `plans.ts` (which workout is planned when, missed sessions, the sequence, Today's blocks), `propose.ts` (proposed dates around shifts), `sessions.ts` (logging, finishing, prefilling, the rest timer), `history.ts` (exercise history and chart measures). |
+| `src/data/food/` | Food's data and rules, ported from the current MyDay: `normalize.ts` (checking saved Food data), `words.ts` (ingredient words for preferences and shopping aisles), `quantities.ts` (reading and scaling quantities), `shopping.ts` (making and combining shopping items), `recipes.ts` (preferences, steps, timers, what's listed), `mealdb.ts` (TheMealDB requests, kept in memory for the visit). |
+| `src/data/workout/` | Workout's data and rules, ported from the current MyDay: `normalize.ts` (checking saved Health data), `common.ts` (labels, units and wording), `plans.ts` (which workout is planned when, missed sessions, the sequence, Today's blocks), `propose.ts` (proposed dates around shifts), `sessions.ts` (logging, finishing, prefilling, the rest timer), `history.ts` (exercise history and chart measures). |
 | `src/data/study/` | Study's data and rules, ported from the current MyDay: `normalize.ts` (checking saved Study data), `roadmap.ts` (the outline, completion, setup, editing), `sessions.ts` (sessions, suggested length, check-ins, learning days), `revision.ts` (due concepts, review scheduling, cautious labels), `progress.ts` (progress and history), `common.ts` (labels, limits, Obsidian links). |
 | `src/components/` | Shared pieces with their styling in one place: `Button`, `Card`, `Banner`, `Field` (inputs, including ones saved as you type), `Dialog` (confirmations), `Toast`, `CategoryChip`, `EnergyMeter`, and `parts` (links, rows, chips and labels used by the section screens). |
 | `src/today/` | The Today section's cards and `TodayScreen`, which puts them together. |
 | `src/calendar/` | The Calendar: `CalendarScreen`, the month grid, agenda, selected-day panel, pattern editor and side cards. |
 | `src/pay/` | The Pay screen and its settings card. |
+| `src/health/food/` | The Food screens: `FoodScreen` (picks the screen from the address, e.g. `#health/food/shopping`), `FoodHome`, `RecipeCard`, `SearchBox` (with suggestions), `SearchView`, `RecipeView`, `WantView`, `ShoppingView`, `CookView`, `PrefsView`, `RecipeForm`; `actions.ts` (what each button saves) and `visit.ts` (what's kept in memory for the visit: ideas, search results, suggestions, drafts). |
 | `src/health/` | The Health screens: `HealthScreen` (the Workout and Food tabs; picks the screen from the address, e.g. `#health/workout/schedule`), `WorkoutHome`, `TemplateEditor`, `SessionView` (a workout in progress, and correcting a logged one), `SetFields` (the number boxes for a set), `HistoryViews` (history, exercises, exercise history), `Chart`, `ScheduleView` and `HealthTodayCard`; `actions.ts` (what each button saves). |
 | `src/study/` | The Study screens: `StudyScreen` (picks the screen from the address, e.g. `#study/roadmap`), `Dashboard`, `Roadmap`, `CourseDetails`, `TaskDetails`, `SessionView`, `CheckinView`, `RevisionView`, `ConceptsView`, `ConceptView`, `ProgressView`, `StudySettings` and `StudyTodayCard`; `actions.ts` (what each button saves), `round.ts` (the revision round, kept in memory), `parts.tsx` (small shared pieces). |
 | `src/commitments/` | Work shifts and appointments: the form and list used by both Today and Calendar. |
@@ -173,6 +192,6 @@ timeline layout is adapted from the "Process Timeline" component on [21st.dev](h
 2. **Done:** Calendar and Pay.
 3. **Done:** Study, with its card on Today.
 4. **Done:** Workout (the first half of Health), with its card on Today.
-5. **Food** (the rest of Health, with its checks), plus the cooking and shopping reminders on Today.
+5. **Done:** Food (the rest of Health), with the cooking and shopping reminders on Today.
 6. **Ideas** (planned in the current MyDay but not built yet).
 7. **Switch over:** publish this version at the main address, keeping the current one as a fallback.

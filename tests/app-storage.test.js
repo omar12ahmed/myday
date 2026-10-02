@@ -110,7 +110,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     rota: { patterns: [{ id: 'p1', effectiveFrom: null, anchor: '2026-10-01', cycle: ['day', 'off'], times: { day: { start: '07:00', end: '19:00' }, night: { start: '19:00', end: '07:00' } }, breaks: { day: 30, night: 0 } }], overrides: { '2026-11-05': { planned: { type: 'off' } } }, entries: [], colours: { day: '#2f8f4e' } },
     pay: { hourlyRate: 12.21, taxCode: '1257L', pension: { percent: 5 } },
     bankHolidays: { region: 'scotland', fetchedAt: '2026-10-01T09:00', divisions: null },
-    health: { workout: { templates: [{ id: 't1', name: 'Legs', minutes: 45 }], sessions: [], planned: {}, schedule: { mode: 'off' } }, food: { shopping: [{ id: 's1', text: 'Oats', checked: false }] } },
+    health: { workout: { templates: [{ id: 't1', name: 'Legs', minutes: 45 }], sessions: [], planned: {}, schedule: { mode: 'off' } }, food: { shopping: [{ id: 's1', name: 'Oats', checked: false }] } },
     study: { stages: [{ id: 'st1', title: 'Networking' }], sessions: [{ id: 'x1', date: '2026-11-01', status: 'done', todayUid: null }] },
     futureSection: { notes: ['kept'] },
   };
@@ -122,11 +122,11 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   await click('#themeBtn'); await sleep(300);
   await click('[data-action=edit]'); await click('[data-action=add][data-cat=admin]'); await sleep(150); await click('[data-action=back]'); await sleep(150);
   s = await D();
-  check('Food (not in the new app yet) is byte-for-byte unchanged after many saves', JSON.stringify(s.health.food) === JSON.stringify(before.health.food));
+  check('food: the shopping item is kept (filled out with the usual parts, as the current MyDay does)', s.health.food.shopping.length === 1 && s.health.food.shopping[0].id === 's1' && s.health.food.shopping[0].name === 'Oats' && s.health.food.shopping[0].checked === false, s.health.food);
   check('workout: the template is kept (filled out with the usual empty parts, as the current MyDay does)', s.health.workout.templates.length === 1 && s.health.workout.templates[0].id === 't1' && s.health.workout.templates[0].name === 'Legs' && s.health.workout.templates[0].minutes === 45, s.health.workout);
-  // Rota, pay, bank holidays, Study and Workout are now handled by the new app: checked on load exactly as
-  // the current MyDay does (app-calendar-pay [26], app-study [52] and app-workout [41] compare the two side
-  // by side), so every valid record is kept.
+  // Every section is now handled by the new app: checked on load exactly as the current MyDay does
+  // (app-calendar-pay [26], app-study [52], app-workout [41] and app-food [48] compare the two side by
+  // side), so every valid record is kept.
   check('study: the stage and the finished session are kept (filled out with the usual empty parts)',
     s.study.stages.length === 1 && s.study.stages[0].id === 'st1' && s.study.stages[0].title === 'Networking' && s.study.sessions.length === 1 && s.study.sessions[0].id === 'x1' && s.study.sessions[0].date === '2026-11-01' && s.study.sessions[0].status === 'done', s.study);
   check('rota: pattern, one-date change and colour kept exactly', JSON.stringify(s.rota.patterns) === JSON.stringify(before.rota.patterns) && JSON.stringify(s.rota.overrides) === JSON.stringify(before.rota.overrides) && s.rota.colours.day === '#2f8f4e');

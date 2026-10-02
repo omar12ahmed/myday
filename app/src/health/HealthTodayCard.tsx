@@ -1,11 +1,12 @@
 import { Card } from '../components/Card';
 import { Meta, Row, TextLink } from '../components/parts';
 import type { DateKey, MyDayData } from '../data/types';
-import { workoutReminders } from './reminders';
+import { healthReminders } from './reminders';
 
-// Health on Today: only what's waiting from Workout. Nothing is added to the day's task list.
+// Health on Today: only what's waiting — a workout, a recipe being cooked, the shopping list. Nothing is
+// added to the day's task list.
 export function HealthTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
-  const items = workoutReminders(data, k);
+  const items = healthReminders(data, k);
   if (!items.length) return null;
   return (
     <Card aria-labelledby="health-card-h">
