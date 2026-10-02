@@ -531,7 +531,7 @@
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
   /* ---------- Health (Workout + Food) ---------- */
-  .layout[data-mode="morning"] #slot-health { order: 3; }
+  .layout[data-mode="morning"] #slot-health, .layout[data-mode="morning"] #slot-study { order: 3; }
   .health-tabs { padding: 10px; }
   .health-tabs .seg { margin: 0; }
   .seg-link {
@@ -672,7 +672,8 @@
   ul.st-tasks { list-style: none; padding: 0; margin: 0; }
   .st-task { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--outline); }
   .st-task:first-child { border-top: 0; }
-  .st-task > .check { flex: 1; min-width: 0; min-height: 52px; }
+  .st-task > .check { flex: 1 1 13em; min-width: 0; min-height: 52px; }
+  .st-task > .c-actions { margin-left: auto; align-items: center; }
   .st-task.done .title { color: var(--text-2); }
   .st-edit { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 6px 0; width: 100%; }
   .st-edit input { flex: 1 1 160px; min-width: 0; }
@@ -682,7 +683,8 @@
   .st-len span { font-size: 18px; min-width: 4.5em; text-align: center; }
   .st-len strong { font-size: 26px; font-variant-numeric: tabular-nums; }
   .st-clock { font-size: 52px; font-weight: 700; text-align: center; font-variant-numeric: tabular-nums; letter-spacing: -.02em; margin: 14px 0 0; }
-  .st-seg { flex-wrap: wrap; }
+  .st-seg { flex-wrap: wrap; margin-bottom: 16px; }
+  .st-view a:not(.btn):not(.btn-link) { color: var(--primary); font-weight: 600; }
   .st-seg button { min-width: 7.5em; min-height: 48px; }
   .st-pick.on, .seg button.on { background: var(--primary-container); color: var(--on-primary-container); border-color: var(--primary-outline); }
   .st-prompt { font-size: 21px; line-height: 1.4; margin: 6px 0 14px; }
@@ -699,6 +701,10 @@
   fieldset.st-choices { border: 0; padding: 0; margin: 0 0 12px; min-width: 0; }
   .st-choice-edit { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
   .st-choice-edit input[type=radio] { width: 24px; height: 24px; accent-color: var(--primary); flex: none; }
+  .st-prog { padding: 8px 0; border-top: 1px solid var(--outline); }
+  .st-prog:first-of-type { border-top: 0; }
+  table.st-recall th, table.st-recall td { text-align: right; white-space: nowrap; }
+  table.st-recall th:first-child, table.st-recall td:first-child { text-align: left; }
   .st-setup-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 12em); gap: 4px 10px; align-items: center; padding: 6px 0; border-top: 1px solid var(--outline); }
   @media (max-width: 480px) { .st-setup-row { grid-template-columns: 1fr; } }
 
@@ -1889,8 +1895,8 @@
       view = 'auto';
       layout.dataset.mode = state.days[k] ? 'plan' : 'morning';
       $('app').innerHTML = state.days[k]
-        ? `<div id="slot-timer"></div><div id="slot-plan"></div><div id="slot-health"></div><div id="slot-context">${contextCard(k)}</div><div id="slot-actions"></div>`
-        : `<div id="slot-context">${contextCard(k)}</div><div id="slot-actions"></div><div id="slot-health"></div><div id="slot-yesterday"></div>`;
+        ? `<div id="slot-timer"></div><div id="slot-plan"></div><div id="slot-health"></div><div id="slot-study"></div><div id="slot-context">${contextCard(k)}</div><div id="slot-actions"></div>`
+        : `<div id="slot-context">${contextCard(k)}</div><div id="slot-actions"></div><div id="slot-health"></div><div id="slot-study"></div><div id="slot-yesterday"></div>`;
       fillDerived();
     }
     renderStreak();
@@ -1941,6 +1947,7 @@
     if (proposal) proposal.animated = true;
     setHTML('slot-yesterday', d ? '' : yesterdayCard(k));
     setHTML('slot-health', healthTodayCard(k));
+    setHTML('slot-study', studyTodayCard(k));
     setHTML('sleepSummary', sleepSummary(k));
     setHTML('reviewHint', reviewHint(k));
   }
@@ -6136,7 +6143,8 @@
   }
 
   // ---------- Views ----------
-  function studyMain() {
+  function studyMain() { return `<div class="st-view">${studyScreen()}</div>`; }
+  function studyScreen() {
     const r = route().slice(1), v = r[0] || 'home';
     if (v === 'roadmap') return roadmapView();
     if (v === 'course') return courseView(r[1]);
@@ -6147,6 +6155,7 @@
     if (v === 'concepts') return conceptsView();
     if (v === 'concept') return conceptView(r[1]);
     if (v === 'settings') return studySettingsView();
+    if (v === 'progress') return progressView();
     return studyHome();
   }
   function studySide() { return ''; }
@@ -6233,7 +6242,7 @@
       </section>
       ${revisionCard()}
       <section class="card">
-        <div class="st-links"><a class="btn-link" href="#study/roadmap">Roadmap</a><a class="btn-link" href="#study/concepts">Concepts</a><a class="btn-link" href="#study/settings">Settings</a></div>
+        <div class="st-links"><a class="btn-link" href="#study/roadmap">Roadmap</a><a class="btn-link" href="#study/concepts">Concepts</a><a class="btn-link" href="#study/progress">Progress &amp; history</a><a class="btn-link" href="#study/settings">Settings</a></div>
         ${others.length ? `<details><summary>Other courses (${others.length})</summary>
           ${others.map(o => `<div class="c-row"><div><strong>${esc(o.title)}</strong><div class="meta">${completionText(completion(ix.courseTasks.get(o.id)))}</div></div><div class="c-actions"><button class="inline" data-action="s-focus" data-id="${esc(o.id)}">Focus on this</button></div></div>`).join('')}
         </details>` : ''}
@@ -6514,6 +6523,83 @@
         <p class="small muted" style="margin:8px 0 0">Its past reviews stay in your study history.</p></section>`;
   }
 
+  // ---------- Progress and history: what happened, in cautious words ----------
+  const weekStart = k => shift(k, -((parseKey(k).getDay() + 6) % 7)); // Monday
+  let historyAll = false; // show the whole history (this visit)
+  function progressView() {
+    const k = todayKey(), st = ST(), ix = stIndex();
+    const days = windowDays(), n = days.filter(Boolean).length;
+    // Completion by course (tasks marked complete)
+    const courses = [...ix.course.values()].map(e => ({ c: e.node, stage: e.stage, comp: completion(ix.courseTasks.get(e.node.id)) }));
+    // Practical work
+    const practical = [...ix.task.values()].filter(e => e.node.kind === 'practical' && e.node.done).sort((a, b) => ((a.node.doneOn || '') < (b.node.doneOn || '') ? 1 : -1));
+    // After-learning check-ins (your own report)
+    const recent = st.sessions.filter(s => s.status === 'done' && s.checkin && s.checkin.clarity && dayDiff(k, s.date) < 30);
+    const clarityCount = Object.keys(CLARITY).map(c => `${CLARITY[c]}: ${recent.filter(s => s.checkin.clarity === c).length}`).join(' · ');
+    // Recall over time: the last 8 weeks
+    const weeks = [];
+    for (let i = 7; i >= 0; i--) {
+      const from = shift(weekStart(k), -7 * i), to = shift(from, 6), rs = st.reviews.filter(r => r.date >= from && r.date <= to);
+      weeks.push({ from, total: rs.length, own: rs.filter(r => r.outcome === 'right' && r.support === 'own').length,
+        help: rs.filter(r => (r.outcome === 'right' && r.support !== 'own') || r.outcome === 'partly').length,
+        notyet: rs.filter(r => r.outcome === 'wrong' || r.outcome === 'notsure').length });
+    }
+    const practice = st.concepts.map(c => ({ c, ev: conceptEvidence(c) })).filter(x => x.ev.status === 'practice');
+    // History: sessions and revision days, newest first
+    const revDays = {};
+    for (const r of st.reviews) revDays[r.date] = (revDays[r.date] || 0) + 1;
+    const items = st.sessions.filter(s => s.status === 'done').map(s => ({ date: s.date, at: s.startedAt, html: `<li><strong>${esc(shortDate(s.date))}</strong> · ${esc(s.title)}<div class="meta">${fmtDuration(Math.max(1, sessionMinutes(s)))}${s.short ? ' · short session' : ''}${s.checkin && s.checkin.clarity ? ` · felt: ${CLARITY[s.checkin.clarity]}` : ''}${s.taskDone ? ' · task completed' : ''} · <a href="#study/checkin/${esc(s.id)}">check-in</a></div></li>` }))
+      .concat(Object.keys(revDays).map(d => ({ date: d, at: d + 'T99', html: `<li><strong>${esc(shortDate(d))}</strong> · Revision<div class="meta">${revDays[d]} question${revDays[d] === 1 ? '' : 's'} reviewed</div></li>` })))
+      .sort((a, b) => (a.at < b.at ? 1 : -1));
+    return `
+      <section class="card"><a class="btn-link" href="#study">‹ Study</a><h2>Progress &amp; history</h2>
+        <p class="small muted" style="margin:0">What you've done and how it went, in cautious terms. Time spent isn't treated as proof of understanding, and nothing here is ever taken away by a quieter day.</p></section>
+      <section class="card">
+        <h3>Learning days in the last 7: ${n}</h3>
+        <div class="week" aria-hidden="true">${days.map((on, i) => `<div class="wd${on ? ' on' : ''}${i === 6 ? ' today' : ''}"><span class="pip">${on ? '✓' : ''}</span><span class="dl">${esc(parseKey(shift(k, i - 6)).toLocaleDateString(undefined, { weekday: 'narrow' }))}</span></div>`).join('')}</div>
+        <p class="small muted" style="margin:0">A day counts once if you finished a Study session or ticked a learning task on Today. The same count as on Today.</p>
+      </section>
+      <section class="card">
+        <h3>Completion</h3>
+        ${courses.length ? courses.map(x => `<div class="st-prog"><div><strong>${esc(x.c.title)}</strong><span class="meta"> · ${esc(x.stage.title)}</span></div><div class="small">${completionText(x.comp)}</div>${barHtml(x.comp)}</div>`).join('') : '<p class="small muted" style="margin:0">No courses yet.</p>'}
+        <p class="small muted" style="margin:8px 0 0">Tasks marked complete, out of the tasks you've added. Not a measure of how well you know them.</p>
+      </section>
+      <section class="card">
+        <h3>Practical work completed (${practical.length})</h3>
+        ${practical.length ? `<ul class="plain-list">${practical.map(e => `<li>${esc(e.node.title)}<div class="meta">${esc(e.course.title)}${e.node.doneOn ? ` · ${esc(shortDate(e.node.doneOn))}` : ''}</div></li>`).join('')}</ul>` : '<p class="small muted" style="margin:0">None marked complete yet. Tasks set to “Practical” appear here when done.</p>'}
+      </section>
+      <section class="card">
+        <h3>How clear it felt after learning</h3>
+        ${recent.length ? `<p class="small" style="margin:0">Last 30 days — ${clarityCount}</p>` : '<p class="small muted" style="margin:0">No check-ins with a rating in the last 30 days.</p>'}
+        <p class="small muted" style="margin:6px 0 0">Your own report after a session — separate from how revision went.</p>
+      </section>
+      <section class="card">
+        <h3>Recall over time</h3>
+        ${st.reviews.length ? `<div class="table-wrap"><table class="hist-table st-recall">
+          <thead><tr><th scope="col">Week of</th><th scope="col">Reviewed</th><th scope="col">On your own</th><th scope="col">With help</th><th scope="col">Not yet</th></tr></thead>
+          <tbody>${weeks.map(w => `<tr><td>${esc(shortDate(w.from))}</td><td>${w.total || '—'}</td><td>${w.total ? w.own : '—'}</td><td>${w.total ? w.help : '—'}</td><td>${w.total ? w.notyet : '—'}</td></tr>`).join('')}</tbody></table></div>
+          <p class="small muted" style="margin:6px 0 0">“On your own”: right without a hint or notes. Written answers are self-assessed; multiple choice is checked against the answer you stored.</p>`
+          : '<p class="small muted" style="margin:0">No revision yet, so there isn\'t enough evidence to show recall.</p>'}
+      </section>
+      <section class="card">
+        <h3>Might benefit from more practice (${practice.length})</h3>
+        ${practice.length ? practice.map(x => `<div class="c-row"><div><a href="#study/concept/${esc(x.c.id)}">${esc(x.c.title)}</a><div class="meta">${esc(evidenceText(x.ev))}</div></div></div>`).join('') : '<p class="small muted" style="margin:0">Nothing flagged right now.</p>'}
+      </section>
+      <section class="card">
+        <h3>Study history</h3>
+        ${items.length ? `<ul class="plain-list">${items.slice(0, historyAll ? items.length : 12).map(x => x.html).join('')}</ul>${items.length > 12 && !historyAll ? `<button class="inline" data-action="s-history-all">Show all ${items.length}</button>` : ''}` : '<p class="small muted" style="margin:0">Finished sessions and revision days appear here.</p>'}
+      </section>`;
+  }
+
+  // ---------- On Today: only what's waiting for you (nothing is added to the task list) ----------
+  function studyTodayCard(k) {
+    if (!state.study) return '';
+    const cur = activeStudy(), due = dueConcepts(k).length, items = [];
+    if (cur) items.push(`<div class="c-row"><div><strong>Study session ${cur.runningSince ? 'in progress' : 'paused'}</strong><div class="meta">${esc(cur.title)} · ${sessionMinutes(cur)} min so far</div></div><a class="btn-link" href="#study/session">Resume</a></div>`);
+    if (due) items.push(`<div class="c-row"><div><strong>Revision ready</strong><div class="meta">${due > ROUND_SIZE ? `A round of ${ROUND_SIZE}` : `${due} question${due === 1 ? '' : 's'}`} — whenever suits you</div></div><button class="inline" data-action="s-rev-start">Revise</button></div>`);
+    return items.length ? `<section class="card"><h2>Study</h2>${items.join('')}</section>` : '';
+  }
+
   function studySettingsView() {
     const st = ST().settings;
     return `
@@ -6730,6 +6816,7 @@
         return 'none';
       }
 
+      case 's-history-all': historyAll = true; return;
       case 's-ci-done': case 's-ci-skip': {
         const s = ST().sessions.find(x => x.id === d.id);
         if (a === 's-ci-done' && s && s.checkin) toast('Check-in saved.');
