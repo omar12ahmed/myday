@@ -4,6 +4,7 @@ import { Button } from '../components/Button';
 import { update } from '../data/storage';
 import { toast } from '../data/toast';
 import type { MyDayData } from '../data/types';
+import { useSync } from '../sync/engine';
 import { RELEASE } from '../version';
 
 const reduceQuery = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
@@ -15,6 +16,7 @@ export function AppFooter({ data, canSave, onEdit, onExport, onImport }: {
   data: MyDayData; canSave: boolean; onEdit: () => void; onExport: () => void; onImport: () => void;
 }) {
   const reduces = useSyncExternalStore(subscribeReduce, deviceReducesMotion);
+  const sync = useSync();
   const off = data.settings.motion === 'off';
   return (
     <footer id="footer" className="pb-10">
@@ -29,7 +31,9 @@ export function AppFooter({ data, canSave, onEdit, onExport, onImport }: {
           {off ? 'Animations: Off' : reduces ? 'Animations: Off (your device asks for less motion)' : 'Animations: On'}
         </Button>
       </div>
-      <p className="storage-note text-center text-fg-3 text-[13px] mt-3.5">{canSave ? 'Saved only in this browser.' : 'Saving is unavailable in this browser.'}</p>
+      <p className="storage-note text-center text-fg-3 text-[13px] mt-3.5">{!canSave ? 'Saving is unavailable in this browser.'
+        : sync.phase === 'linked' ? 'Saved in this browser. Task lists, the queue and daily plans also sync with your account.'
+        : 'Saved only in this browser.'}</p>
       {/* Which release is loaded, to check after publishing. */}
       <p id="appVersion" className="app-version text-center text-fg-3 text-[13px] mt-1 tabular-nums">{RELEASE}</p>
     </footer>

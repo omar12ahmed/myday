@@ -12,10 +12,11 @@ afterwards. They also set the page's clock to fixed dates, so results don't depe
 From the `myday-site` folder:
 
 ```sh
-tests/run.sh                  # everything (about 9–11 minutes)
+tests/run.sh                  # everything (about 12–15 minutes)
 tests/run.sh storage          # one suite (under a minute)
 tests/run.sh storage today    # several suites
 tests/run.sh app-storage app-today app-calendar-pay app-study app-workout app-food app-final app-site   # the new app only (builds it first)
+tests/run.sh sync-db app-sync # cloud sync only
 ```
 
 You need Google Chrome, Node.js 22 or newer, and Python 3. If Chrome is somewhere unusual, set
@@ -42,11 +43,21 @@ few will fail and the rest still run.
 | `app-food` | The new app's Food: the food checks from `health` adapted (ideas, preferences, recipes and scaling, favourites and your own recipes, failed requests, search and suggestions while typing, Want to cook and the shopping list, the cooking view and timers, Today's card, export/import), plus an older search reply never replacing a newer one, failed requests leaving saved data untouched, items combining only when compatible (ranges and sized amounts kept as written and editable), no duplicates after double taps, reloads and redraws, phone layout and tap sizes, all three themes, and side-by-side checks against the current MyDay (saved Food data, recipes, quantities, the shopping list and the cooking view). TheMealDB is replaced by a fake for repeatable checks. |
 | `app-final` | The whole new app together: the shared controls on every section; a representative backup with records from every section through import → export → import, opened and saved by the current MyDay and reopened; both apps saving the same messy, every-section data identically; unreadable data reported with a copy to download, never left out silently; blocked storage; Ideas and unknown sections kept; navigation, Back and deep links; keyboard (Tab order, Enter, space, Escape, focus outline); a small phone; all three themes on every section; a change in every section kept after a reload. |
 | `app-site` | The website as GitHub Pages will publish it (`deploy/build-site.sh`), served from a sub-folder like `/myday/`: in both layouts every file loads, `#addresses` and deep links work, both apps share saved data, and data from an older MyDay links to the current MyDay. |
+| `sync-db` | The cloud-sync database (`supabase/migrations/`), run in real PostgreSQL (PGlite, PostgreSQL compiled to WebAssembly) on top of `fixtures/supabase-stub.sql`, a stand-in for the parts of Supabase it relies on. No browser. Row Level Security on every table; grants (signed-out visitors get nothing, signed-in users may only read their own rows and call the two sync functions); accounts can't read, change or save into each other's records, even by naming the other account; version checks (a change based on an older version is a conflict, never written); retries never applied twice, even after another device's newer change; deletions kept as markers so old copies can't bring records back; invalid changes refused without stopping the valid ones; change numbering and paging; clean-up after 90 days; deleting an account deletes its records. |
+| `app-sync` | Cloud sync end to end: two devices (a "Mac" and a "phone", each its own browser profile) using a copy of the new app built with sync switched on, against `supabase-standin.js`: the real migrations in PGlite behind an imitation of Supabase's sign-in and data API, used by the real Supabase library. Nothing sent before signing in, and nothing until a review is confirmed; the review (what's saved here, what's sent, differences to choose; the device's own versions kept); records created on one device appearing on the other; today's plan and its deletion ("Start today over"), which doesn't come back; edits on both devices at once as conflicts, decided either way; failed requests, a lost reply and a browser's own resend (same change id, applied once); pending changes kept through a reload; another account seeing and receiving nothing; export complete; restoring a backup (or a big change) reviewed first; switching a device to another account warned about; the usual build showing no sync; a secret key refused at build time. **Not** a test against a real Supabase project. |
 | `app-today` | The new app's Today: the `today` checks adapted (energy limits, the queue, rest days, the rolling count, the nudge, export/import, damaged data, context and timeline, proposals and review, themes, layout and tap sizes, animations, the timer), plus the sections that haven't moved yet. |
 
 The `app-*` suites build the new app (`npm run build` in `app/`, so run `npm install` there once first) and serve it
 beside the current MyDay, the way Live Server does, so the two share saved data as they do for real.
 If Live Server is running, use `MYDAY_LS_PORT=5599 tests/run.sh …` so the `today` suite's Live Server check doesn't clash with it.
+
+The sync suites use `@electric-sql/pglite`, a development package of the new app (so `npm install` in `app/` first).
+`app-sync` builds a copy of the app with `VITE_SUPABASE_URL` pointing at the stand-in; every other app suite is built
+without sync settings, even if `app/.env.production` has them. The stand-in can also run on its own:
+`node tests/supabase-standin.js 54329`.
+
+**A real Supabase project** is checked with `tests/sync-live-check.js` (two disposable test accounts; see
+`supabase/README.md`, step 5). It isn't part of `run.sh`, because it needs your project and test accounts.
 
 `fixtures/` holds two earlier versions of MyDay (as `.fixture` files, so the website doesn't serve
 them as pages). The migration checks load them to make sure older saved data still comes across.

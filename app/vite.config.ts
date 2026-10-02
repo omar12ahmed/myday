@@ -2,7 +2,7 @@ import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 
 // The release identifier shown at the bottom of every screen: the version in package.json, the Git commit
 // the app was built from (marked "+changes" if there were uncommitted changes), and the build date.
@@ -13,14 +13,36 @@ const version = JSON.parse(readFileSync(new URL('./package.json', import.meta.ur
 const commit = git('git rev-parse --short HEAD') || 'unknown'
 const changed = git('git status --porcelain') !== ''
 
+// Cloud sync settings (see ../supabase/README.md). Every VITE_ variable ends up in the app that browsers
+// download, so it must never hold a secret: a Supabase secret or service_role key would give anyone full
+// access to the database. Refuse to build rather than publish one.
+function isSecretKey(value: string): boolean {
+  const v = value.trim()
+  if (v.startsWith('sb_secret_')) return true
+  const parts = v.split('.')
+  if (parts.length !== 3) return false
+  try { return JSON.parse(Buffer.from(parts[1], 'base64url').toString()).role === 'service_role' } catch { return false }
+}
+function checkNoSecrets(mode: string) {
+  const env = { ...loadEnv(mode, process.cwd(), 'VITE_'), ...Object.fromEntries(Object.entries(process.env).filter(([k]) => k.startsWith('VITE_'))) }
+  for (const [name, value] of Object.entries(env)) {
+    if (value && isSecretKey(value)) {
+      throw new Error(`${name} holds a Supabase secret (or service_role) key. VITE_ variables are included in the app that browsers download, so it would be public. Use the publishable key (sb_publishable_…) instead, and keep secret keys out of this project.`)
+    }
+  }
+}
+
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  // Relative paths, so the built app works from any folder of the site (e.g. /myday/next/).
-  base: './',
-  define: {
-    __APP_VERSION__: JSON.stringify(version),
-    __APP_COMMIT__: JSON.stringify(commit + (changed ? '+changes' : '')),
-    __APP_BUILT__: JSON.stringify(new Date().toISOString().slice(0, 10)),
-  },
+export default defineConfig(({ mode }) => {
+  checkNoSecrets(mode)
+  return {
+    plugins: [react(), tailwindcss()],
+    // Relative paths, so the built app works from any folder of the site (e.g. /myday/next/).
+    base: './',
+    define: {
+      __APP_VERSION__: JSON.stringify(version),
+      __APP_COMMIT__: JSON.stringify(commit + (changed ? '+changes' : '')),
+      __APP_BUILT__: JSON.stringify(new Date().toISOString().slice(0, 10)),
+    },
+  }
 })

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useSyncExternalStore, type ChangeEvent } from 'react';
+import { Card } from './components/Card';
 import { useConfirm } from './components/confirm';
 import { ConfirmProvider } from './components/Dialog';
 import { Toast } from './components/Toast';
@@ -19,6 +20,10 @@ import { LoadIssue } from './shell/LoadIssue';
 import { DamagedView, OlderView } from './shell/StatusScreens';
 import { ThemeButton } from './shell/ThemeButton';
 import { TodayScreen } from './today/TodayScreen';
+import { SYNC } from './sync/config';
+import { noteImported } from './sync/engine';
+import { SyncBadge } from './sync/SyncBadge';
+import { SyncScreen } from './sync/SyncScreen';
 
 // Saves text as a file the browser downloads (backups and the unreadable-data copy).
 function download(filename: string, text: string) {
@@ -97,7 +102,10 @@ function Shell() {
       cancelLabel: 'Cancel',
     });
     if (!yes) { toast('Import cancelled. Nothing was changed.'); return; }
-    if (replaceAll(result.data)) toast('Imported.');
+    if (replaceAll(result.data)) {
+      toast('Imported.');
+      void noteImported(); // if this device syncs: nothing is sent until you've checked what the backup would change
+    }
   }
 
   async function startFresh() {
@@ -115,7 +123,13 @@ function Shell() {
     content = <DamagedView reason={status.reason} onImport={() => fileInput.current?.click()} onStartFresh={startFresh}
       onDownload={() => download(`myday-unreadable-${todayKey()}.json`, status.raw)} />;
   } else if (status.kind === 'older') content = <OlderView />;
-  else if (section === 'today') {
+  else if (hash.startsWith('#sync')) {
+    content = SYNC.configured ? <SyncScreen onExport={exportData} /> : (
+      <div className="max-w-[720px] mx-auto"><Card>
+        <h2>Sync between devices</h2><p className="text-[15px] text-fg-2">Sync isn't set up in this copy of MyDay. Everything is saved only in this browser.</p>
+      </Card></div>
+    );
+  } else if (section === 'today') {
     content = <TodayScreen key={k} data={data} generation={generation} k={k} canSave={status.kind === 'ok'} motionAllowed={motionAllowed}
       onExport={exportData} onImport={() => fileInput.current?.click()} />;
   } else if (section === 'calendar') content = <CalendarScreen data={data} canSave={status.kind === 'ok'} motionAllowed={motionAllowed} />;
@@ -128,7 +142,10 @@ function Shell() {
       <header className="appbar sticky top-0 z-20 bg-glass backdrop-blur-[18px] backdrop-saturate-[140%] border-b border-outline">
         <div className="max-w-[640px] lg:max-w-[1120px] mx-auto px-4 lg:px-6 py-3 pt-[max(12px,env(safe-area-inset-top))] flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-bold tracking-[.14em] uppercase text-primary m-0">MyDay</p>
+            <div className="flex items-center gap-2">
+              <p className="text-xs font-bold tracking-[.14em] uppercase text-primary m-0">MyDay</p>
+              {!blocked && <SyncBadge />}
+            </div>
             <h1 id="date" className="text-[26px] lg:text-[28px] font-bold tracking-[-.02em] leading-tight m-0">{prettyDate(k)}</h1>
           </div>
           <ThemeButton theme={theme} motionAllowed={motionAllowed} onChange={next => update(d => { d.settings.theme = next; })} />
@@ -143,7 +160,7 @@ function Shell() {
         )}
         {content}
         {/* Today has these at the bottom of its own layout; every other section gets them here. */}
-        {!blocked && section !== 'today' && (
+        {!blocked && section !== 'today' && !hash.startsWith('#sync') && (
           <div className="max-w-[720px] mx-auto mt-6">
             <AppFooter data={data} canSave={status.kind === 'ok'} onEdit={() => { location.hash = 'today/edit'; }} onExport={exportData} onImport={() => fileInput.current?.click()} />
           </div>

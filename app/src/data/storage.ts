@@ -158,6 +158,21 @@ export function update(change: (draft: MyDayData) => void | false): boolean {
   return true;
 }
 
+// Like update(), for cloud sync: says whether the change was actually written to this browser's storage
+// (not just shown), because sync must only note a change as done once it's really saved. `outside` = the
+// change came from another device, so open drafts based on the older data are dropped (as for another tab).
+// `outside` may be a function, asked after the change is made.
+export function updateSaved(change: (draft: MyDayData) => void | false, outside: boolean | (() => boolean) = false): 'saved' | 'unchanged' | 'not-saved' {
+  if (snapshot.status.kind !== 'ok') return 'not-saved';
+  if (savedElsewhere()) { reloadFromStorage(false); return 'not-saved'; }
+  const draft = structuredClone(snapshot.data);
+  if (change(draft) === false) return 'unchanged';
+  if (!persist(draft)) return 'not-saved';
+  const fromOutside = typeof outside === 'function' ? outside() : outside;
+  set(fromOutside ? { data: draft, generation: snapshot.generation + 1 } : { data: draft });
+  return 'saved';
+}
+
 // Replace everything (an import, or starting fresh after unreadable data). Saving starts again.
 export function replaceAll(data: MyDayData): boolean {
   set({ data, status: snapshot.status.kind === 'unavailable' ? snapshot.status : { kind: 'ok' }, generation: snapshot.generation + 1 });
@@ -187,6 +202,12 @@ function reloadFromStorage(dropped: boolean) {
     : dropped ? "MyDay was changed in another tab, so that last change wasn't saved. Showing the latest — please try it again."
     : lost ? 'Another tab replaced your last change here. Showing the latest — please check it and redo it if needed.'
     : 'Updated with changes from another tab.'), 0);
+}
+
+// Makes sure this tab shows the latest saved data (another tab may have saved a moment ago, before its
+// "storage" event arrived). Sync calls this before comparing anything, so it never works from older data.
+export function catchUp() {
+  if (savedElsewhere()) reloadFromStorage(false);
 }
 
 // Keeps this tab up to date with other tabs. Called once, when the app starts.

@@ -41,6 +41,13 @@ folder, and its screens are `#addresses` (e.g. `#study/roadmap`), so a link or a
 server for a page that doesn't exist. Data from a much older MyDay (`myday.data.v3` or earlier) is still moved
 by the classic app; the new app links there (set when building, with `VITE_CLASSIC_URL`).
 
+## Publishing with cloud sync
+
+The published app includes sync only if it's built with the Supabase project's URL and publishable key, in
+`app/.env.production` (see [`../supabase/README.md`](../supabase/README.md), step 4). Without that file, it's built
+exactly as before. Sync's notes (`myday.sync.v1`) and the sign-in session (`myday.sync.auth`) live beside the saved
+data in each browser. Going back to a release without sync leaves them unused; it doesn't affect your MyDay data.
+
 ## Going back
 
 The release before the new app is tagged **`live-before-1.0.0`**. To publish it again:

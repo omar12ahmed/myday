@@ -13,6 +13,10 @@ to go back: [`../deploy/README.md`](../deploy/README.md).
 > example with Live Server). A change made in one shows in the other. To try things out, use disposable data or
 > a backup, not your real plan.
 
+**Optional cloud sync (first part, on the `cloud-sync` branch):** task lists, the queue, daily plans and each day's
+context can sync between devices through your own Supabase project. It's off unless the app is built with a Supabase
+URL and publishable key. Setting it up: [`../supabase/README.md`](../supabase/README.md). How it works: "Cloud sync" below.
+
 ## Commands
 
 You need Node.js 20.19+ or 22.12+ (checked with Node 24). From the `myday-site` folder:
@@ -26,6 +30,7 @@ npm run preview      # serves app/dist at http://localhost:4173, as it will be p
 npm run lint         # checks the code for common mistakes
 cd ..
 tests/run.sh app-storage app-today app-calendar-pay app-study app-workout app-food app-final app-site   # builds, then checks in a throwaway Chrome profile
+tests/run.sh sync-db app-sync   # cloud sync: the database (PGlite) and two devices end to end (a local Supabase stand-in)
 deploy/preview-site.sh trial    # the website as GitHub Pages will publish it, at http://localhost:8080/myday/
 ```
 
@@ -141,6 +146,10 @@ contains an `ideas` section, both apps keep it exactly as it is.
 - Data from older MyDay versions (`myday.data.v3`, `v2`, version 1) is moved to the current format by the current
   MyDay. Until that has happened, the new app explains this and saves nothing.
 - If the browser blocks storage, the app still works but says changes won't be kept after closing.
+- **Cloud sync doesn't change the saved data's shape.** Its own notes are kept apart, in `myday.sync.v1` (read and
+  written only by `src/sync/state.ts`), and the sign-in session in `myday.sync.auth` (kept by the Supabase library).
+  Records arriving from the cloud are saved through `storage.ts` (`updateSaved`) after the same checks as a backup
+  (`normalize`). Neither key is part of an export, which still holds all of the MyDay data.
 - **Nothing unreadable is left out silently.** Like the current MyDay, entries that can't be read (and whole sections
   damaged into the wrong kind of value) are left out when the app starts, and they'd be gone after the next save.
   The new app says so on every screen, with how many, and offers "Download a copy" of the saved data exactly as it
@@ -177,6 +186,8 @@ contains an `ideas` section, both apps keep it exactly as it is.
 | `src/shell/` | Navigation, the theme button, the shared footer (`AppFooter`), the "couldn't be read" notice (`LoadIssue`) and the screens for unreadable or older data. |
 | `public/icon.svg` | The tab icon. |
 | `src/version.ts` | The release identifier (version, commit, build date), filled in when building (`vite.config.ts`). |
+| `src/sync/` | Optional cloud sync (see "Cloud sync"): `config.ts` (is it set up?), `records.ts` (which parts of the saved data are records, fingerprints, descriptions), `state.ts` (sync's notes, `myday.sync.v1`), `client.ts` (Supabase: sign-in and the two sync functions), `engine.ts` (sending, receiving, conflicts, reviews, the status), and the screens: `SyncBadge` (the status at the top), `SyncScreen` (`#sync`), `ReviewPanel` (what would change), `Compare` (two versions side by side). |
+| `../supabase/` | The database changes for sync (`migrations/`, version-controlled SQL) and the set-up guide. |
 | `../deploy/` | Publishing: building the website (`build-site.sh`), previewing it (`preview-site.sh`), committing it to `main` (`publish-main.sh`) and the guide. |
 | `src/styles/tokens.css` | Colours for dark and light themes (the same as the current MyDay). |
 | `src/index.css` | Gives the colours Tailwind names (e.g. `bg-surface`, `text-fg-2`), sets the font, the navigation bar and the animations. |
@@ -208,6 +219,45 @@ The current MyDay (`../index.html`) has the same look: the same colours, font an
 The direction came from the ui-ux-pro-max design skill (minimal style, Plus Jakarta Sans, subtle motion), and the
 timeline layout is adapted from the "Process Timeline" component on [21st.dev](https://21st.dev).
 
+## Cloud sync
+
+Optional, and off unless the app is built with `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` (set-up:
+[`../supabase/README.md`](../supabase/README.md)). Without them, nothing about sync is shown and the Supabase library
+is never downloaded.
+
+**What syncs (this first part):** the three task lists (one record each, in order), the queue (one record), each
+day's plan (one record per date) and each day's context, energy and sleep (one per date). These go together because
+building a day's plan picks tasks from the lists and moves tasks to and from the queue in the same step.
+**Stays on the device:** Calendar and Pay, Health (Workout and Food), Study, appointments, settings, the timer, and
+anything else. Study's links to a learning task or a day's task are just references, and MyDay already copes when
+the item they point to isn't there.
+
+**How it works** (details at the top of `src/sync/engine.ts`):
+- Local first: every change is saved on the device as before; sync never makes you wait.
+- Sync remembers each record's cloud version and a fingerprint of its content. Anything that differs was changed on
+  this device (here, in another tab or in the classic MyDay), so changes waiting to be sent survive reloads and
+  being offline without a separate queue.
+- Each change is sent with the version it was based on and its own id. The database (`sync_push`) applies it only
+  if that's still the latest version. Otherwise it's a **conflict**: nothing is overwritten, and the sync screen shows
+  both versions for you to choose. A retried change (same id) is never applied twice.
+- Then it fetches what changed since the last time, by the account's own change numbers (never device clocks).
+  Deleted day plans arrive as deletions (the database keeps a marker), so they don't come back.
+- Before a device first syncs with an account, after restoring a backup, or when more than 30 records change at once,
+  sync pauses for a **review**: what would be saved here, what would be sent, and what's different on each (you
+  choose). Nothing changes until you confirm. Any version of this device's that gets replaced is kept and can be
+  downloaded.
+- The status at the top of every screen: **Saved locally**, **Syncing**, **Synced** or **Needs attention**.
+  Tap it for the sync screen (`#sync`).
+- One account per device. Another account signed in sends and fetches nothing, and the database refuses requests
+  naming a different account from the one signed in. Each account can read only its own rows (Row Level Security),
+  and nobody can write to the tables directly.
+
+**Limitations:** a list (or the queue) changed on two devices before they sync is a conflict, even if different tasks
+changed. No live updates: the other device's changes arrive when you come back to MyDay, every 5 minutes while
+it's open, or with "Sync now". Changes made in the classic MyDay are sent the next time the new app is open.
+Checked against a local stand-in for Supabase (the real migrations in PostgreSQL), **not yet against a real Supabase
+project** until one is set up (`node tests/sync-live-check.js` then checks it with two disposable accounts).
+
 ## Milestones
 
 1. **Done:** project set-up, design, shell and navigation, themes, the shared storage layer, and a fully working Today.
@@ -221,3 +271,6 @@ timeline layout is adapted from the "Process Timeline" component on [21st.dev](h
 7. **Release 1.0.0:** published with GitHub Pages — the new app at the main address, the classic MyDay kept at
    `/myday/classic/`. The release identifier ("MyDay 1.0.0 · commit · build date") is at the bottom of every screen.
    See [`../deploy/README.md`](../deploy/README.md).
+8. **Cloud sync, first part (on the `cloud-sync` branch, not published):** sign-in, and syncing task lists, the
+   queue, daily plans and day context through Supabase, with reviews, conflicts and deletions handled. Checked with
+   a local stand-in; to be checked against a real Supabase project once it's set up.

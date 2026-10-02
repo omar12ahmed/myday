@@ -7,12 +7,14 @@
 # Suites for the current MyDay (index.html): storage, today, calendar-pay, health, study
 # Suites for the new app (app/, built first): app-storage, app-today, app-calendar-pay, app-study, app-workout, app-food,
 #   app-final (every section together), app-site (the website layouts from deploy/build-site.sh)
+# Cloud sync: sync-db (the database migrations, in PostgreSQL via PGlite — no browser), app-sync (two devices end to
+#   end, against a local stand-in for Supabase; see supabase-standin.js). Neither uses a real Supabase project.
 set -u
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(dirname "$HERE")"
 SUITES=("$@")
-[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study app-storage app-today app-calendar-pay app-study app-workout app-food app-final app-site)
+[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study app-storage app-today app-calendar-pay app-study app-workout app-food app-final app-site sync-db app-sync)
 
 # ---- What's needed ----
 CHROME="${CHROME:-}"
@@ -26,6 +28,7 @@ node -e 'process.exit(typeof WebSocket === "function" ? 0 : 1)' 2>/dev/null || {
 command -v python3 >/dev/null || { echo "Python 3 is needed (for a small local web server)."; exit 2; }
 
 export MYDAY_CDP_PORT="${MYDAY_CDP_PORT:-9333}" MYDAY_HTTP_PORT="${MYDAY_HTTP_PORT:-8765}" MYDAY_LS_PORT="${MYDAY_LS_PORT:-5500}"
+export MYDAY_SUPA_PORT="${MYDAY_SUPA_PORT:-54329}" MYDAY_ROOT="$ROOT"
 
 # ---- A temporary copy: the app, two older versions (for migration checks) and the tests ----
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/myday-tests.XXXXXX")"
@@ -36,8 +39,15 @@ cp -R "$ROOT/fonts" "$WORK/srv/fonts" # so text is measured in the real font (la
 # so both share saved data the way they do for real.
 if printf '%s\n' "${SUITES[@]}" | grep -q '^app-'; then
   [ -d "$ROOT/app/node_modules" ] || { echo "The new app's packages aren't installed yet. Run: cd app && npm install"; exit 2; }
-  (cd "$ROOT/app" && npm run build >"$WORK/app-build.log" 2>&1) || { echo "The new app didn't build:"; tail -20 "$WORK/app-build.log"; exit 1; }
+  # Built without cloud sync, even if app/.env.production sets it up for publishing (settings already in the
+  # environment win over .env files), so these suites always check MyDay as it works without sync.
+  (cd "$ROOT/app" && VITE_SUPABASE_URL= VITE_SUPABASE_PUBLISHABLE_KEY= npm run build >"$WORK/app-build.log" 2>&1) || { echo "The new app didn't build:"; tail -20 "$WORK/app-build.log"; exit 1; }
   mkdir -p "$WORK/srv/app" && cp -R "$ROOT/app/dist" "$WORK/srv/app/dist"
+fi
+# A copy of the new app with cloud sync switched on, pointing at the local Supabase stand-in (app-sync).
+if printf '%s\n' "${SUITES[@]}" | grep -q '^app-sync$'; then
+  (cd "$ROOT/app" && VITE_SUPABASE_URL="http://127.0.0.1:$MYDAY_SUPA_PORT" VITE_SUPABASE_PUBLISHABLE_KEY="sb_publishable_standin_test_key_0000000000" \
+    npx vite build --outDir "$WORK/srv/sync" --emptyOutDir >"$WORK/sync-build.log" 2>&1) || { echo "The sync test copy of the app didn't build:"; tail -20 "$WORK/sync-build.log"; exit 1; }
 fi
 # The website layouts, built as GitHub Pages will publish them, under a sub-folder like /myday/.
 if printf '%s\n' "${SUITES[@]}" | grep -q '^app-site$'; then
@@ -48,7 +58,7 @@ fi
 cp "$HERE/fixtures/myday-v2.html.fixture" "$WORK/srv/v2.html"
 cp "$HERE/fixtures/myday-v3.html.fixture" "$WORK/srv/v3.html"
 cp "$HERE/fixtures/myday-release-2026-10-02.html.fixture" "$WORK/srv/prev.html" # the release published before the new app
-cp "$HERE/cdp.js" "$HERE"/*.test.js "$WORK/"
+cp "$HERE"/*.js "$WORK/" # the tests and their helpers (cdp.js, cdp-devices.js, supabase-standin.js)
 
 python3 -m http.server "$MYDAY_HTTP_PORT" --bind 127.0.0.1 --directory "$WORK/srv" >/dev/null 2>&1 &
 SERVER=$!
