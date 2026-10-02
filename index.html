@@ -48,7 +48,7 @@
   .muted { color: var(--muted); }
   .small { font-size: 15px; }
 
-  button, .btn {
+  button {
     font: inherit;
     min-height: 52px;
     padding: 12px 20px;
@@ -60,12 +60,14 @@
     width: 100%;
     text-align: center;
   }
+  button:disabled { opacity: .4; cursor: default; }
   button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
   button.ghost { background: transparent; color: var(--muted); }
   button.inline { width: auto; min-height: 44px; padding: 8px 14px; font-size: 15px; }
   .stack > * + * { margin-top: 10px; }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .row2 > .full { grid-column: 1 / -1; }
 
   /* Energy slider */
   .energy-value { font-size: 20px; font-weight: 600; margin: 14px 0 4px; text-align: center; }
@@ -84,6 +86,7 @@
     background: var(--surface2); border: 1px solid var(--line); border-radius: 14px;
     padding: 14px; cursor: pointer; min-height: 64px;
   }
+  .task.static { cursor: default; }
   .task input { position: absolute; opacity: 0; width: 1px; height: 1px; }
   .box {
     flex: none; width: 30px; height: 30px; border-radius: 9px; border: 2px solid var(--faint);
@@ -93,6 +96,7 @@
   .task input:checked + .box::after { content: ""; width: 9px; height: 15px; border: solid var(--accent-ink); border-width: 0 3px 3px 0; transform: rotate(45deg) translate(-1px, -2px); }
   .task input:focus-visible + .box { outline: 2px solid var(--accent); outline-offset: 2px; }
   .task.done .title { color: var(--muted); }
+  .rest-icon { flex: none; width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--rest); margin-top: 2px; }
   .title { font-size: 17px; }
   .meta { font-size: 14px; color: var(--faint); margin-top: 2px; }
   .chip { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 2px; }
@@ -103,26 +107,30 @@
   .roll { margin: 8px 0 0 44px; }
   .roll button.on { border-color: var(--accent); color: var(--accent); }
 
-  .summary { background: var(--surface2); border-radius: 12px; padding: 14px 16px; margin: 14px 0; color: var(--text); }
+  .summary { background: var(--surface2); border-radius: 12px; padding: 14px 16px; margin: 14px 0; }
+  .queue-list { margin: 6px 0 0; padding-left: 20px; color: var(--muted); font-size: 15px; }
 
-  /* Streak */
+  /* Rolling count */
   .streak { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .streak strong { font-size: 18px; font-weight: 600; }
   .dots { display: flex; gap: 6px; flex: none; }
   .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--line); }
   .dot.on { background: var(--learning); }
 
-  /* Nudge */
   .nudge { border-color: #3b4a44; background: #1b2420; }
+  .notice { border-color: #4a4336; background: #221f19; }
 
   /* Edit lists */
   .edit-row { display: grid; grid-template-columns: 1fr auto auto auto auto; gap: 8px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
   .edit-row:first-of-type { border-top: 0; }
   .edit-row .t { grid-column: 1 / -1; }
+  .edit-row .count { grid-column: 1 / -1; font-size: 14px; color: var(--faint); margin-top: -4px; }
   .edit-row input { font: inherit; color: var(--text); background: var(--surface2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; min-height: 48px; width: 100%; }
   .edit-row .m { width: 84px; }
   .edit-row button { width: 48px; min-height: 48px; padding: 0; }
   .minlabel { color: var(--faint); font-size: 14px; }
+  .q-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); }
+  .q-row:first-of-type { border-top: 0; }
 
   .toast {
     position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px);
@@ -132,6 +140,7 @@
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   footer { margin-top: 28px; }
+  .storage-note { text-align: center; color: var(--faint); font-size: 13px; margin-top: 14px; }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
@@ -146,19 +155,21 @@
   <div id="streak"></div>
   <footer id="footer"></footer>
 </div>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 (function () {
   'use strict';
 
-  // ---------- Storage ----------
-  const KEYS = {
-    tasks: 'myday.tasks',   // editable task lists per category
-    days:  'myday.days',    // one record per date: energy + planned tasks + done/rolled state
-    nudge: 'myday.nudge',   // when the learning nudge was last shown / accepted
-    meta:  'myday.meta'     // schema version + first-used date
-  };
+  // ======================================================================
+  // Constants
+  // ======================================================================
+  const STORAGE_KEY = 'myday.data.v2';   // the only localStorage key this app writes
+  const SCHEMA_VERSION = 2;
+  const EXPORT_FORMAT = 'myday-export';
+  const LEGACY_KEYS = ['myday.tasks', 'myday.days', 'myday.nudge', 'myday.meta']; // version 1, migrated once
+
   const CATS = ['learning', 'admin', 'health'];
   const CAT_LABEL = { learning: 'Learning', admin: 'Admin', health: 'Health', rest: 'Rest' };
   const ENERGY_LABEL = { 1: 'Running on empty', 2: 'Low', 3: 'Okay', 4: 'Good', 5: 'Great' };
@@ -183,60 +194,288 @@
     ]
   };
 
-  function load(key, fallback) {
-    try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
-    catch (e) { return fallback; }
-  }
-  function save(key, value) {
-    try { localStorage.setItem(key, JSON.stringify(value)); }
-    catch (e) { toast("Couldn't save — your browser may be blocking storage."); }
-  }
-
-  let tasks = load(KEYS.tasks, null);
-  if (!tasks) { tasks = JSON.parse(JSON.stringify(SEED)); save(KEYS.tasks, tasks); }
-  let days = load(KEYS.days, {});
-  let nudge = load(KEYS.nudge, {});
-  let meta = load(KEYS.meta, null);
-  if (!meta) { meta = { version: 1, firstUsed: todayKey() }; save(KEYS.meta, meta); }
-
-  const saveDays = () => save(KEYS.days, days);
-  const saveTasks = () => save(KEYS.tasks, tasks);
-  const saveNudge = () => save(KEYS.nudge, nudge);
-
-  // ---------- Dates (local time, YYYY-MM-DD) ----------
-  function keyOf(d) {
-    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-  }
-  function todayKey() { return keyOf(new Date()); }
-  function parseKey(k) { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); }
-  function shift(k, n) { const d = parseKey(k); d.setDate(d.getDate() + n); return keyOf(d); }
-  function prettyDate(k) {
-    return parseKey(k).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
-  }
-
-  // ---------- Helpers ----------
-  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  const clone = o => JSON.parse(JSON.stringify(o));
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const keysDesc = () => Object.keys(days).sort().reverse();
+  const isObj = o => !!o && typeof o === 'object' && !Array.isArray(o);
 
-  function learningDoneOn(k) {
-    const d = days[k];
-    return !!d && d.tasks.some(t => t.category === 'learning' && t.done);
+  // ======================================================================
+  // Local calendar dates. Every date is "YYYY-MM-DD" built from the device's
+  // local clock (getFullYear/getMonth/getDate) — never from a UTC ISO string.
+  // ======================================================================
+  const pad = n => String(n).padStart(2, '0');
+  function keyOf(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function todayKey() { return keyOf(new Date()); }
+  // Noon avoids daylight-saving edge cases where local midnight doesn't exist.
+  function parseKey(k) { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d, 12); }
+  function shift(k, n) { const d = parseKey(k); d.setDate(d.getDate() + n); return keyOf(d); }
+  function isDateKey(s) { return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && keyOf(parseKey(s)) === s; }
+  function localStamp(d) { d = d || new Date(); return keyOf(d) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+  function prettyDate(k) { return parseKey(k).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' }); }
+
+  // ======================================================================
+  // Data shape, validation and migration
+  // ======================================================================
+  function freshState() {
+    return {
+      schemaVersion: SCHEMA_VERSION,
+      createdOn: todayKey(),
+      lists: clone(SEED),
+      queue: [],
+      days: {},
+      nudge: { lastShownOn: null, shrinkOn: null }
+    };
   }
+
+  function cleanMinutes(v, fallback) {
+    const m = Math.round(Number(v));
+    return m > 0 && m <= 600 ? m : fallback;
+  }
+  function cleanListItem(o) {
+    if (!isObj(o) || typeof o.title !== 'string' || !o.title.trim()) return null;
+    return { id: typeof o.id === 'string' && o.id ? o.id : 'x' + uid(), title: o.title.trim(), minutes: cleanMinutes(o.minutes, 20) };
+  }
+  function cleanQueueItem(o) {
+    if (!isObj(o) || !CATS.includes(o.category) || typeof o.title !== 'string' || !o.title.trim()) return null;
+    return {
+      qid: typeof o.qid === 'string' && o.qid ? o.qid : uid(),
+      taskId: typeof o.taskId === 'string' ? o.taskId : null,
+      category: o.category,
+      title: o.title.trim(),
+      minutes: cleanMinutes(o.minutes, 20),
+      queuedOn: isDateKey(o.queuedOn) ? o.queuedOn : todayKey(),
+      sourceUid: typeof o.sourceUid === 'string' ? o.sourceUid : null
+    };
+  }
+  function cleanTask(o) {
+    if (!isObj(o) || !CATS.includes(o.category) || typeof o.title !== 'string' || !o.title.trim()) return null;
+    const base = cleanMinutes(o.baseMinutes, cleanMinutes(o.minutes, 20));
+    return {
+      uid: typeof o.uid === 'string' && o.uid ? o.uid : uid(),
+      taskId: typeof o.taskId === 'string' ? o.taskId : null,
+      category: o.category,
+      title: o.title.trim(),
+      minutes: cleanMinutes(o.minutes, base),
+      baseMinutes: base,
+      done: o.done === true,
+      shrunk: o.shrunk === true,
+      fromQueue: o.fromQueue ? cleanQueueItem(o.fromQueue) : null,
+      rolledQid: typeof o.rolledQid === 'string' ? o.rolledQid : null
+    };
+  }
+
+  // Turns anything roughly the right shape into a valid state.
+  // Throws only if the input isn't an object at all; otherwise drops bad entries and counts them.
+  function normalize(raw, report) {
+    report = report || { dropped: 0 };
+    if (!isObj(raw)) throw new Error('Not a MyDay data object.');
+    const s = freshState();
+
+    if (isObj(raw.lists)) {
+      for (const cat of CATS) {
+        if (!Array.isArray(raw.lists[cat])) { s.lists[cat] = clone(SEED[cat]); continue; }
+        const seen = new Set();
+        s.lists[cat] = [];
+        for (const item of raw.lists[cat]) {
+          const c = cleanListItem(item);
+          if (!c) { report.dropped++; continue; }
+          if (seen.has(c.id)) c.id = cat[0] + uid();
+          seen.add(c.id);
+          s.lists[cat].push(c);
+        }
+      }
+    }
+
+    if (isObj(raw.days)) {
+      for (const k of Object.keys(raw.days)) {
+        const d = raw.days[k];
+        if (!isDateKey(k) || !isObj(d)) { report.dropped++; continue; }
+        const tasks = [];
+        if (Array.isArray(d.tasks)) {
+          for (const t of d.tasks) { const c = cleanTask(t); if (c) tasks.push(c); else report.dropped++; }
+        }
+        const energy = Number.isInteger(d.energy) && d.energy >= 1 && d.energy <= 5 ? d.energy : null;
+        const rest = d.rest === true || (!tasks.length && energy === null);
+        s.days[k] = {
+          energy,
+          rest,
+          builtAt: typeof d.builtAt === 'string' ? d.builtAt : '',
+          checkedIn: d.checkedIn === true,
+          tasks: rest ? [] : tasks
+        };
+      }
+    }
+
+    if (Array.isArray(raw.queue)) {
+      const seenQ = new Set(), seenTask = new Set();
+      for (const q of raw.queue) {
+        const c = cleanQueueItem(q);
+        if (!c) { report.dropped++; continue; }
+        if (seenQ.has(c.qid) || (c.taskId && seenTask.has(c.taskId))) continue; // never keep duplicates
+        seenQ.add(c.qid);
+        if (c.taskId) seenTask.add(c.taskId);
+        s.queue.push(c);
+      }
+      sortQueue(s.queue);
+    }
+
+    if (isDateKey(raw.createdOn)) s.createdOn = raw.createdOn;
+    else { const first = Object.keys(s.days).sort()[0]; if (first) s.createdOn = first; }
+
+    if (isObj(raw.nudge)) {
+      if (isDateKey(raw.nudge.lastShownOn)) s.nudge.lastShownOn = raw.nudge.lastShownOn;
+      if (isDateKey(raw.nudge.shrinkOn)) s.nudge.shrinkOn = raw.nudge.shrinkOn;
+    }
+    return s;
+  }
+
+  // Converts version-1 data (four separate keys, or an old export) into the version-2 shape.
+  function migrateV1(o) {
+    const oldDays = isObj(o['myday.days']) ? o['myday.days'] : {};
+    const oldNudge = isObj(o['myday.nudge']) ? o['myday.nudge'] : {};
+    const oldMeta = isObj(o['myday.meta']) ? o['myday.meta'] : {};
+    const days = {};
+    const keys = Object.keys(oldDays).filter(isDateKey).sort();
+    for (const k of keys) {
+      const d = oldDays[k];
+      if (!isObj(d)) continue;
+      const tasks = Array.isArray(d.tasks) ? d.tasks.filter(t => isObj(t) && t.category !== 'rest') : [];
+      days[k] = {
+        energy: d.energy, rest: !!d.skipped, builtAt: '', checkedIn: !!d.checkedIn,
+        tasks: d.skipped ? [] : tasks.map(t => Object.assign({}, t, { fromQueue: null, rolledQid: null }))
+      };
+    }
+    // Rebuild the queue from the most recent non-rest day before today, unless today already took those tasks.
+    const queue = [];
+    const today = todayKey();
+    const prev = keys.slice().reverse().find(k => k < today && days[k] && !days[k].rest);
+    const todayTookThem = isObj(oldDays[today]) && Array.isArray(oldDays[today].tasks) &&
+      oldDays[today].tasks.some(t => isObj(t) && t.rolledFrom === prev);
+    if (prev && !todayTookThem) {
+      for (const t of days[prev].tasks) {
+        if (t.rolled && !t.done && !queue.some(q => q.taskId === t.taskId)) {
+          const q = { qid: uid(), taskId: t.taskId, category: t.category, title: t.title, minutes: t.baseMinutes || t.minutes, queuedOn: prev, sourceUid: t.uid };
+          queue.push(q);
+          t.rolledQid = q.qid;
+        }
+      }
+    }
+    return {
+      schemaVersion: SCHEMA_VERSION,
+      createdOn: oldMeta.firstUsed,
+      lists: o['myday.tasks'],
+      days,
+      queue,
+      nudge: { lastShownOn: oldNudge.lastShown || null, shrinkOn: oldNudge.shrinkFor || null }
+    };
+  }
+
+  function sortQueue(q) { q.sort((a, b) => (a.queuedOn < b.queuedOn ? -1 : a.queuedOn > b.queuedOn ? 1 : 0)); }
+
+  // ======================================================================
+  // Storage
+  // ======================================================================
+  let state;
+  let storageAvailable = true;
+  let saveBlocked = false;   // true while unreadable saved data is waiting for the user's decision
+  let damagedRaw = null;
+  let damagedReason = '';
+  let bootNotice = '';
+
+  function persist() {
+    if (!storageAvailable || saveBlocked) return false;
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); return true; }
+    catch (e) { toast("Couldn't save just now — storage may be full or blocked."); return false; }
+  }
+
+  function readLegacy() {
+    const o = {};
+    let found = false;
+    for (const k of LEGACY_KEYS) {
+      try {
+        const v = localStorage.getItem(k);
+        if (v !== null) { o[k] = JSON.parse(v); found = true; }
+      } catch (e) { /* skip an unreadable legacy key */ }
+    }
+    return found ? o : null;
+  }
+
+  function boot() {
+    let raw = null;
+    try { raw = localStorage.getItem(STORAGE_KEY); }
+    catch (e) { storageAvailable = false; }
+
+    if (!storageAvailable) {
+      state = freshState();
+      bootNotice = "This browser isn't letting MyDay save, so changes won't be kept after closing.";
+      return;
+    }
+
+    if (raw === null) {
+      const legacy = readLegacy();
+      if (legacy) {
+        try {
+          state = normalize(migrateV1(legacy));
+          if (persist()) {
+            LEGACY_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+            bootNotice = 'Your earlier MyDay data has been moved to the new format.';
+          }
+          return;
+        } catch (e) { /* fall through to a fresh start; legacy keys are left untouched */ }
+      }
+      state = freshState();
+      persist();
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(raw);
+      if (!isObj(parsed)) throw new Error('not an object');
+      if (parsed.schemaVersion !== SCHEMA_VERSION) {
+        damagedReason = parsed.schemaVersion > SCHEMA_VERSION
+          ? 'It was saved by a newer version of MyDay.'
+          : "It's in a format this version doesn't recognise.";
+        throw new Error('version');
+      }
+      state = normalize(parsed);
+    } catch (e) {
+      // Don't overwrite anything: keep the raw text so it can be downloaded, and wait for a decision.
+      damagedRaw = raw;
+      if (!damagedReason) damagedReason = "It looks damaged and can't be read.";
+      saveBlocked = true;
+      state = freshState();
+    }
+  }
+
+  // ======================================================================
+  // History helpers
+  // ======================================================================
+  const keysDesc = () => Object.keys(state.days).sort().reverse();
+
   function doneIdsOn(k) {
-    const d = days[k];
+    const d = state.days[k];
     return new Set(d ? d.tasks.filter(t => t.done && t.taskId).map(t => t.taskId) : []);
   }
-  // Most recent taskId in a category (before a given date) matching a condition.
-  function lastId(cat, pred, beforeKey) {
+  function learningDoneOn(k) {
+    const d = state.days[k];
+    return !!d && d.tasks.some(t => t.category === 'learning' && t.done);
+  }
+  function sessionCounts() {
+    const c = {};
+    for (const d of Object.values(state.days)) {
+      for (const t of d.tasks) if (t.done && t.taskId) c[t.taskId] = (c[t.taskId] || 0) + 1;
+    }
+    return c;
+  }
+  function lastTaskId(cat, pred, beforeKey) {
     for (const k of keysDesc()) {
       if (k >= beforeKey) continue;
-      const t = days[k].tasks.find(x => x.category === cat && pred(x));
+      const t = state.days[k].tasks.find(x => x.category === cat && pred(x));
       if (t) return t.taskId;
     }
     return null;
   }
-  // Next item in a list after `afterId` (wrapping), skipping anything in `exclude`.
+  // Next item after `afterId`, wrapping round to the start, skipping anything in `exclude`.
   function nextFrom(list, afterId, exclude) {
     if (!list || !list.length) return null;
     let i = list.findIndex(t => t.id === afterId);
@@ -247,178 +486,391 @@
     }
     return null;
   }
+  // Learning follows the roadmap: the session after the last *completed* one (cycling after the last).
+  // Admin and health rotate: the one after the last *planned* one.
+  function freshPick(cat, k, exclude) {
+    const after = cat === 'learning' ? lastTaskId('learning', t => t.done, k) : lastTaskId(cat, () => true, k);
+    return nextFrom(state.lists[cat], after, exclude);
+  }
+  const limitFor = energy => (energy <= 2 ? 1 : energy === 3 ? 2 : 3);
 
-  function planItem(t, category, rolledFrom) {
+  function makeTask(src, cat, fromQueue) {
     return {
-      uid: uid(), taskId: t.id, category, title: t.title,
-      minutes: t.minutes, baseMinutes: t.minutes,
-      done: false, rolled: false, rolledFrom: rolledFrom || null, shrunk: false
+      uid: uid(), taskId: src.id || null, category: cat, title: src.title,
+      minutes: src.minutes, baseMinutes: src.minutes,
+      done: false, shrunk: false, fromQueue: fromQueue ? Object.assign({}, fromQueue) : null, rolledQid: null
     };
   }
-  function restItem() {
-    return {
-      uid: uid(), taskId: null, category: 'rest', title: "Rest. That's the whole plan.",
-      minutes: 0, baseMinutes: 0, done: false, rolled: false, rolledFrom: null, shrunk: false
-    };
-  }
-  function shrinkItem(t) { t.minutes = Math.min(t.baseMinutes || 15, 15); t.shrunk = true; }
+  const taskFromQueue = q => makeTask({ id: q.taskId, title: q.title, minutes: q.minutes }, q.category, q);
+  function shrinkTask(t) { t.minutes = Math.min(t.baseMinutes || 15, 15); t.shrunk = true; }
 
-  // Tasks marked "Roll to tomorrow" on the most recent non-rest-day plan.
-  function rolledIn(k) {
-    for (const p of keysDesc()) {
-      if (p >= k) continue;
-      if (days[p].skipped) continue; // rest days carry rolled tasks through untouched
-      return { from: p, list: days[p].tasks.filter(t => t.rolled && !t.done && t.category !== 'rest') };
-    }
-    return { from: null, list: [] };
-  }
-
-  function nextLearning(k) {
-    return nextFrom(tasks.learning, lastId('learning', t => t.done, k), doneIdsOn(shift(k, -1)));
-  }
-
-  // ---------- Day generation ----------
+  // ======================================================================
+  // Building a day (never replaces an existing plan for the date)
+  // ======================================================================
   function buildDay(energy) {
     const k = todayKey();
+    if (state.days[k]) return false;
     const doneYesterday = doneIdsOn(shift(k, -1));
-    const rolled = rolledIn(k);
-
-    const pick = cat => {
-      const r = rolled.list.find(t => t.category === cat);
-      if (r) return planItem({ id: r.taskId, title: r.title, minutes: r.baseMinutes || r.minutes }, cat, rolled.from);
-      // Learning follows the roadmap: next one after the last *completed* item.
-      // Admin & health rotate: next one after the last *planned* item.
-      const after = cat === 'learning' ? lastId(cat, t => t.done, k) : lastId(cat, () => true, k);
-      const t = nextFrom(tasks[cat], after, doneYesterday);
-      return t ? planItem(t, cat, null) : null;
+    const usedQ = new Set();
+    const chosen = new Set();
+    const blocked = () => new Set([...doneYesterday, ...chosen]);
+    const queued = cats => state.queue.find(q => cats.includes(q.category) && !usedQ.has(q.qid) && !blocked().has(q.taskId));
+    const take = t => {
+      if (!t) return null;
+      if (t.fromQueue) usedQ.add(t.fromQueue.qid);
+      if (t.taskId) chosen.add(t.taskId);
+      return t;
+    };
+    // Oldest eligible queued task in this category first, otherwise a fresh one.
+    const slot = cat => {
+      const q = queued([cat]);
+      if (q) return take(taskFromQueue(q));
+      const f = freshPick(cat, k, blocked());
+      return take(f ? makeTask(f, cat, null) : null);
     };
 
-    const shrink = nudge.shrinkFor === k;
-    const candidates = CATS.map(pick).filter(Boolean);
-    let list;
-    if (energy <= 2) {
-      let chosen = shrink ? candidates.find(t => t.category === 'learning') : null;
-      if (!chosen && candidates.length) chosen = candidates.reduce((a, b) => (b.minutes < a.minutes ? b : a));
-      list = chosen ? [chosen] : [restItem()];
+    const shrink = state.nudge.shrinkOn === k;
+    const n = limitFor(energy);
+    let tasks = [];
+
+    if (n === 1) {
+      let one = shrink ? slot('learning') : null;
+      if (!one) {
+        const cands = [];
+        state.queue.forEach(q => { if (!doneYesterday.has(q.taskId)) cands.push({ q, minutes: q.minutes }); });
+        CATS.forEach(cat => { const f = freshPick(cat, k, doneYesterday); if (f) cands.push({ f, cat, minutes: f.minutes }); });
+        if (cands.length) {
+          const best = cands.reduce((a, b) => (b.minutes < a.minutes ? b : a)); // ties keep the older queued task
+          one = take(best.q ? taskFromQueue(best.q) : makeTask(best.f, best.cat, null));
+        }
+      }
+      tasks = [one];
     } else {
-      list = candidates.slice(0, energy === 3 ? 2 : 3);
-      if (!list.length) list = [restItem()];
+      tasks.push(slot('learning'));
+      if (n === 2) {
+        // Second slot: a carried-over admin/health task if one is waiting, otherwise admin.
+        const q = queued(['admin', 'health']);
+        tasks.push(q ? take(taskFromQueue(q)) : slot('admin'));
+      } else {
+        tasks.push(slot('admin'), slot('health'));
+      }
+      // If a list was empty, fill the gap from the other categories without exceeding the limit.
+      for (const cat of CATS) {
+        if (tasks.filter(Boolean).length >= n) break;
+        if (!tasks.some(t => t && t.category === cat)) tasks.push(slot(cat));
+      }
     }
-    if (shrink) list.forEach(t => { if (t.category === 'learning') shrinkItem(t); });
 
-    days[k] = { energy, skipped: false, createdAt: new Date().toISOString(), tasks: list };
-    saveDays();
+    tasks = tasks.filter(Boolean).slice(0, n);
+    if (shrink) tasks.forEach(t => { if (t.category === 'learning') shrinkTask(t); });
+    state.queue = state.queue.filter(q => !usedQ.has(q.qid));
+    state.days[k] = tasks.length
+      ? { energy, rest: false, builtAt: localStamp(), checkedIn: false, tasks }
+      : { energy, rest: true, builtAt: localStamp(), checkedIn: false, tasks: [] };
+    persist();
+    return true;
   }
 
-  function restDay() {
-    const k = todayKey();
-    days[k] = { energy: days[k] ? days[k].energy : null, skipped: true, createdAt: new Date().toISOString(), tasks: [restItem()] };
-    saveDays();
+  // Undo a task's effect on the queue: drop the entry it created, and return the entry it came from.
+  function releaseTask(t) {
+    if (t.rolledQid) {
+      state.queue = state.queue.filter(q => !(q.qid === t.rolledQid && q.sourceUid === t.uid));
+      t.rolledQid = null;
+    }
+    if (t.fromQueue && !state.queue.some(q => q.qid === t.fromQueue.qid || (q.taskId && q.taskId === t.fromQueue.taskId))) {
+      state.queue.push(Object.assign({}, t.fromQueue));
+      sortQueue(state.queue);
+    }
   }
 
-  // ---------- Streak & nudge ----------
-  function streakDays() {
+  function makeRestDay(k, energy) {
+    const d = state.days[k];
+    if (d) d.tasks.forEach(releaseTask);
+    state.days[k] = { energy: energy || null, rest: true, builtAt: localStamp(), checkedIn: false, tasks: [] };
+    persist();
+  }
+
+  function toggleRoll(dayKey, t) {
+    if (t.done) return;
+    if (t.rolledQid) {
+      state.queue = state.queue.filter(q => !(q.qid === t.rolledQid && q.sourceUid === t.uid));
+      t.rolledQid = null;
+    } else {
+      // Queue it once. If the same activity is already waiting, point at that entry instead of duplicating.
+      const existing = state.queue.find(q => q.taskId && q.taskId === t.taskId);
+      if (existing) t.rolledQid = existing.qid;
+      else {
+        const q = { qid: uid(), taskId: t.taskId, category: t.category, title: t.title, minutes: t.baseMinutes, queuedOn: dayKey, sourceUid: t.uid };
+        state.queue.push(q);
+        sortQueue(state.queue);
+        t.rolledQid = q.qid;
+      }
+    }
+    persist();
+  }
+
+  function setDone(t, done) {
+    t.done = done;
+    if (done && t.rolledQid) {
+      state.queue = state.queue.filter(q => !(q.qid === t.rolledQid && q.sourceUid === t.uid));
+      t.rolledQid = null;
+    }
+    persist();
+  }
+
+  // ======================================================================
+  // Rolling count & nudge
+  // ======================================================================
+  function windowDays() {
     const k = todayKey(), out = [];
     for (let i = 6; i >= 0; i--) out.push(learningDoneOn(shift(k, -i)));
     return out;
   }
 
   let nudgeVisible = false;
+  let nudgeChoosing = false;
+
+  function nudgeEligible(k) {
+    if (!state.lists.learning.length) return false;
+    if (state.createdOn > shift(k, -3)) return false;            // needs three full days of history
+    const d = state.days[k];
+    if (d && d.rest) return false;                                // never on a rest day
+    if (learningDoneOn(k)) return false;
+    if (d && d.tasks.some(t => t.category === 'learning' && t.shrunk)) return false;
+    for (let i = 1; i <= 3; i++) if (learningDoneOn(shift(k, -i))) return false;
+    return true;
+  }
   function checkNudge() {
     const k = todayKey();
-    if (nudge.lastShown === k) return;
-    if (!tasks.learning || !tasks.learning.length) return;
-    if (!meta.firstUsed || meta.firstUsed > shift(k, -3)) return; // give new users a few days first
-    for (let i = 0; i <= 3; i++) if (learningDoneOn(shift(k, -i))) return;
+    if (saveBlocked || state.nudge.lastShownOn === k || !nudgeEligible(k)) return;
     nudgeVisible = true;
-    nudge.lastShown = k;
-    saveNudge();
+    nudgeChoosing = false;
+    state.nudge.lastShownOn = k;
+    persist();
   }
 
   function acceptShrink() {
-    const k = todayKey();
-    nudge.shrinkFor = k;
-    saveNudge();
-    nudgeVisible = false;
-    const d = days[k];
-    if (!d) { toast("Got it — today's learning will be just 15 minutes."); return render(); }
-    let l = d.tasks.find(t => t.category === 'learning' && !t.done);
-    if (!l) {
-      const lt = nextLearning(k);
-      if (lt) {
-        l = planItem(lt, 'learning', null);
-        const ri = d.tasks.findIndex(t => t.category === 'rest');
-        if (ri >= 0) d.tasks.splice(ri, 1, l);
-        else if (d.tasks.length < 3) d.tasks.unshift(l);
-        else {
-          const j = d.tasks.findIndex(t => !t.done);
-          if (j >= 0) d.tasks.splice(j, 1, l); else d.tasks.unshift(l);
-        }
-        d.skipped = false;
-      }
+    const k = todayKey(), d = state.days[k];
+    if (!d) {
+      state.nudge.shrinkOn = k;
+      persist();
+      nudgeVisible = false;
+      toast("Got it — when you build today's plan, learning will be just 15 minutes.");
+      return;
     }
-    if (l) shrinkItem(l);
-    saveDays();
-    toast("Done — today's learning is just 15 minutes.");
+    const l = d.tasks.find(t => t.category === 'learning' && !t.done);
+    if (l) {
+      shrinkTask(l);
+      persist();
+      nudgeVisible = false;
+      toast("Done — today's learning is just 15 minutes.");
+      return;
+    }
+    nudgeChoosing = true; // no learning in today's plan: offer a swap
+  }
+
+  function learningForToday(k, d) {
+    const doneY = doneIdsOn(shift(k, -1));
+    const inPlan = new Set(d.tasks.map(t => t.taskId));
+    const q = state.queue.find(x => x.category === 'learning' && !doneY.has(x.taskId) && !inPlan.has(x.taskId));
+    if (q) { state.queue = state.queue.filter(x => x.qid !== q.qid); return taskFromQueue(q); }
+    const f = freshPick('learning', k, new Set([...doneY, ...inPlan]));
+    return f ? makeTask(f, 'learning', null) : null;
+  }
+
+  function swapInLearning(replaceUid) {
+    const k = todayKey(), d = state.days[k];
+    if (!d || d.rest) return;
+    const i = replaceUid ? d.tasks.findIndex(t => t.uid === replaceUid && !t.done) : -1;
+    if (replaceUid && i < 0) return;
+    if (!replaceUid && d.tasks.length >= limitFor(d.energy)) return;
+    const lt = learningForToday(k, d);
+    if (!lt) { toast("There isn't a learning task available right now."); return; }
+    shrinkTask(lt);
+    if (i >= 0) { releaseTask(d.tasks[i]); d.tasks.splice(i, 1, lt); }
+    else d.tasks.unshift(lt);
+    nudgeVisible = false;
+    nudgeChoosing = false;
+    persist();
+    toast('Swapped in: 15 minutes of learning.');
+  }
+
+  // ======================================================================
+  // Export / import
+  // ======================================================================
+  function download(filename, text) {
+    const blob = new Blob([text], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+  }
+  function exportData() {
+    const payload = { format: EXPORT_FORMAT, schemaVersion: SCHEMA_VERSION, exportedAt: localStamp(), data: state };
+    download(`myday-export-${todayKey()}.json`, JSON.stringify(payload, null, 2));
+    toast('Exported.');
+  }
+
+  // Returns { state, report } or throws an Error with a friendly message.
+  function parseImport(text) {
+    let obj;
+    try { obj = JSON.parse(text); } catch (e) { throw new Error("That file isn't readable JSON."); }
+    if (!isObj(obj)) throw new Error("That file isn't a MyDay export.");
+    let data;
+    if (obj.format === EXPORT_FORMAT) {
+      if (obj.schemaVersion !== SCHEMA_VERSION) {
+        throw new Error(obj.schemaVersion > SCHEMA_VERSION
+          ? 'That file came from a newer version of MyDay.'
+          : "That file's version isn't supported.");
+      }
+      if (!isObj(obj.data) || obj.data.schemaVersion !== SCHEMA_VERSION || !isObj(obj.data.lists) || !isObj(obj.data.days)) {
+        throw new Error("That file is missing parts MyDay needs.");
+      }
+      data = obj.data;
+    } else if (LEGACY_KEYS.some(k => k in obj)) {
+      data = migrateV1(obj); // export from the first version of MyDay
+    } else {
+      throw new Error("That file isn't a MyDay export.");
+    }
+    const report = { dropped: 0 };
+    const s = normalize(data, report);
+    return { state: s, report };
+  }
+
+  async function importFile(file) {
+    let text;
+    try { text = await file.text(); } catch (e) { toast("Couldn't open that file."); return; }
+    let result;
+    try { result = parseImport(text); } catch (e) { toast(e.message + ' Nothing was changed.'); return; }
+    const s = result.state;
+    const dayCount = Object.keys(s.days).length;
+    const lines = [
+      'Replace your saved MyDay data with this file?',
+      '',
+      `It has ${dayCount} day${dayCount === 1 ? '' : 's'} of history, ${s.queue.length} queued task${s.queue.length === 1 ? '' : 's'}, and ${CATS.reduce((n, c) => n + s.lists[c].length, 0)} tasks in your lists.`
+    ];
+    if (result.report.dropped) lines.push(`${result.report.dropped} unreadable entr${result.report.dropped === 1 ? 'y' : 'ies'} will be skipped.`);
+    lines.push('', 'Your current data on this device will be overwritten. You might want to export it first.');
+    if (!confirm(lines.join('\n'))) { toast('Import cancelled. Nothing was changed.'); return; }
+    state = s;
+    saveBlocked = false;
+    damagedRaw = null;
+    view = 'auto';
+    eveningKey = null;
+    nudgeVisible = false;
+    if (persist()) toast('Imported.');
+    checkNudge();
     render();
   }
 
-  // ---------- Rendering ----------
+  // ======================================================================
+  // Rendering
+  // ======================================================================
   let view = 'auto';      // 'auto' | 'evening' | 'edit'
-  let eveningKey = null;  // which day the check-in is for
+  let eveningKey = null;
   let energy = 3;
+  let renderedDay = null;
 
   const $ = id => document.getElementById(id);
 
   function render() {
     const k = todayKey();
+    renderedDay = k;
     $('date').textContent = prettyDate(k);
-    renderNudge();
-    if (view === 'edit') { $('app').innerHTML = editView(); }
-    else if (view === 'evening' && eveningKey && days[eveningKey]) { $('app').innerHTML = eveningView(eveningKey); }
-    else if (days[k]) { view = 'auto'; $('app').innerHTML = planView(k); }
+    if (saveBlocked) {
+      $('nudge').innerHTML = '';
+      $('app').innerHTML = damagedView();
+      $('streak').innerHTML = '';
+      $('footer').innerHTML = '';
+      return;
+    }
+    renderNudge(k);
+    if (view === 'edit') $('app').innerHTML = editView();
+    else if (view === 'evening' && eveningKey && state.days[eveningKey]) $('app').innerHTML = eveningView(eveningKey);
+    else if (state.days[k]) { view = 'auto'; $('app').innerHTML = planView(k); }
     else { view = 'auto'; $('app').innerHTML = morningView(k); }
     renderStreak();
     renderFooter();
   }
 
-  function renderNudge() {
-    $('nudge').innerHTML = !nudgeVisible ? '' : `
-      <section class="card nudge">
-        <p>No learning in a few days — want to shrink today's task to just 15 minutes?</p>
-        <div class="row2">
-          <button class="primary" data-action="shrink">Yes, shrink it</button>
-          <button class="ghost" data-action="dismiss-nudge">Not today</button>
+  function damagedView() {
+    return `
+      <section class="card notice">
+        <h2>Your saved data couldn't be opened</h2>
+        <p class="small">${esc(damagedReason)} Nothing has been deleted — it's still saved exactly as it was.</p>
+        <p class="small muted">You can download that copy to keep it safe, load a backup you exported earlier, or start fresh.</p>
+        <div class="stack">
+          <button data-action="download-damaged">Download the saved copy</button>
+          <button data-action="import">Import a backup</button>
+          <button class="ghost" data-action="start-fresh">Start fresh</button>
         </div>
+      </section>`;
+  }
+
+  function renderNudge(k) {
+    if (!nudgeVisible || !nudgeEligible(k)) { $('nudge').innerHTML = ''; return; }
+    const d = state.days[k];
+    if (!nudgeChoosing) {
+      $('nudge').innerHTML = `
+        <section class="card nudge">
+          <p>No learning in a few days — want to shrink today's task to just 15 minutes?</p>
+          <div class="row2">
+            <button class="primary" data-action="shrink">Yes, shrink it</button>
+            <button class="ghost" data-action="dismiss-nudge">Not today</button>
+          </div>
+        </section>`;
+      return;
+    }
+    const open = d ? d.tasks.filter(t => !t.done) : [];
+    const room = d && d.tasks.length < limitFor(d.energy);
+    $('nudge').innerHTML = `
+      <section class="card nudge">
+        <p>Today's plan doesn't have a learning task. Want to swap one optional task for a 15-minute learning session?</p>
+        ${open.length || room ? '' : '<p class="small muted">Everything on today\'s plan is already done — learning can happily wait for another day.</p>'}
+        <div class="stack">
+          ${open.map(t => `<button data-action="swap-learning" data-uid="${t.uid}">Swap out “${esc(t.title)}”</button>`).join('')}
+          ${room ? '<button data-action="add-learning">Add it — there\'s room in today\'s plan</button>' : ''}
+          <button class="ghost" data-action="dismiss-nudge">Never mind</button>
+        </div>
+        ${open.some(t => t.fromQueue) ? '<p class="small muted" style="margin:10px 0 0">Anything that was carried over goes back to your queue.</p>' : ''}
       </section>`;
   }
 
   function renderStreak() {
     if (view === 'edit') { $('streak').innerHTML = ''; return; }
-    const s = streakDays(), n = s.filter(Boolean).length;
+    const s = windowDays(), n = s.filter(Boolean).length;
     $('streak').innerHTML = `
       <section class="card">
         <div class="streak">
           <strong>Learning days in the last 7: ${n}</strong>
           <div class="dots" aria-hidden="true">${s.map(on => `<span class="dot${on ? ' on' : ''}"></span>`).join('')}</div>
         </div>
-        <p class="muted small" style="margin:8px 0 0">This is a rolling 7-day count. A missed day never resets it to zero — it just gently slides along.</p>
+        <p class="muted small" style="margin:8px 0 0">A rolling count of today and the 6 days before. Missed days and rest days never reset it to zero — older days simply slide out of the window.</p>
       </section>`;
   }
 
   function renderFooter() {
     $('footer').innerHTML = view === 'edit' ? '' : `
       <div class="row2">
-        <button class="ghost inline" style="width:100%" data-action="edit">Edit task lists</button>
+        <button class="ghost inline full" style="width:100%" data-action="edit">Edit task lists</button>
         <button class="ghost inline" style="width:100%" data-action="export">Export my data</button>
-      </div>`;
+        <button class="ghost inline" style="width:100%" data-action="import">Import my data</button>
+      </div>
+      <p class="storage-note">${storageAvailable ? 'Saved only in this browser.' : 'Saving is unavailable in this browser.'}</p>`;
+  }
+
+  function queueNote(prefix) {
+    if (!state.queue.length) return '';
+    return `<p class="muted small" style="margin-top:12px">${prefix}</p>
+      <ul class="queue-list">${state.queue.map(q => `<li>${esc(q.title)}</li>`).join('')}</ul>`;
   }
 
   function morningView(k) {
-    const y = shift(k, -1), yd = days[y];
-    const openYesterday = yd && !yd.skipped && !yd.checkedIn &&
-      yd.tasks.some(t => t.category !== 'rest' && !t.done && !t.rolled);
-    const rolled = rolledIn(k).list;
+    const y = shift(k, -1), yd = state.days[y];
+    const openYesterday = yd && !yd.rest && !yd.checkedIn && yd.tasks.some(t => !t.done && !t.rolledQid);
     return `
       <section class="card">
         <h2>How's your energy today?</h2>
@@ -426,12 +878,12 @@
         <div class="energy-value" id="energyLabel">${energy} · ${ENERGY_LABEL[energy]}</div>
         <input type="range" min="1" max="5" step="1" value="${energy}" id="energy" aria-label="Energy from 1 to 5">
         <div class="ticks"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
-        ${rolled.length ? `<p class="muted small">Carrying forward: ${rolled.map(t => esc(t.title)).join(', ')}.</p>` : ''}
         <div class="stack">
           <button class="primary" data-action="build">Build my day</button>
           <button data-action="skip">Skip today — make it a rest day</button>
         </div>
-        <p class="muted small" style="margin:12px 0 0">Skipping never affects your learning count.</p>
+        <p class="muted small" style="margin:12px 0 0">A rest day never resets your learning count.</p>
+        ${queueNote('Waiting in your queue (picked first, within today\'s limit):')}
       </section>
       ${openYesterday ? `
       <section class="card">
@@ -441,57 +893,74 @@
   }
 
   function energyLine(d) {
-    if (d.skipped) return 'Rest day. Nothing to catch up on, nothing lost.';
+    if (d.rest) return 'Rest day. Nothing is required, and nothing is lost.';
     if (d.energy <= 2) return 'Low-energy day — one small thing is plenty.';
     if (d.energy === 3) return 'Medium energy — two things, no rush.';
     return 'Good energy — three things, and stopping early is still fine.';
   }
 
-  function taskRow(t, opts) {
-    const metaBits = [];
-    if (t.minutes) metaBits.push(t.shrunk ? 'just 15 min' : `${t.minutes} min`);
-    if (t.rolledFrom) metaBits.push('carried forward');
+  function restCard() {
+    return `
+      <ul class="tasks"><li>
+        <div class="task static">
+          <span class="rest-icon" aria-hidden="true"></span>
+          <div>
+            <span class="chip rest">Rest</span>
+            <div class="title">Rest. That's the whole plan.</div>
+            <div class="meta">Nothing to tick off today.</div>
+          </div>
+        </div>
+      </li></ul>`;
+  }
+
+  function taskRow(t, dayKey, withRoll) {
+    const bits = [];
+    bits.push(t.shrunk ? 'just 15 min' : `${t.minutes} min`);
+    if (t.fromQueue) bits.push('carried over');
     return `
       <li>
         <label class="task${t.done ? ' done' : ''}">
-          <input type="checkbox" data-action="toggle" data-uid="${t.uid}" data-day="${opts.day}" ${t.done ? 'checked' : ''}>
+          <input type="checkbox" data-action="toggle" data-uid="${t.uid}" data-day="${dayKey}" ${t.done ? 'checked' : ''}>
           <span class="box"></span>
           <div>
             <span class="chip ${t.category}">${CAT_LABEL[t.category]}</span>
             <div class="title">${esc(t.title)}</div>
-            ${metaBits.length ? `<div class="meta">${metaBits.join(' · ')}</div>` : ''}
+            <div class="meta">${bits.join(' · ')}</div>
           </div>
         </label>
-        ${opts.roll && !t.done && t.category !== 'rest' ? `
+        ${withRoll && !t.done ? `
         <div class="roll">
-          <button class="inline${t.rolled ? ' on' : ''}" data-action="roll" data-uid="${t.uid}" data-day="${opts.day}">
-            ${t.rolled ? '✓ Rolling to tomorrow' : 'Roll to tomorrow'}
+          <button class="inline${t.rolledQid ? ' on' : ''}" data-action="roll" data-uid="${t.uid}" data-day="${dayKey}">
+            ${t.rolledQid ? '✓ Rolling to tomorrow' : 'Roll to tomorrow'}
           </button>
         </div>` : ''}
       </li>`;
   }
 
   function planView(k) {
-    const d = days[k];
+    const d = state.days[k];
+    const anyDone = d.tasks.some(t => t.done);
     return `
       <section class="card">
-        <h2>${d.skipped ? 'Today is a rest day' : "Here's your day"}</h2>
+        <h2>${d.rest ? 'Today is a rest day' : "Here's your day"}</h2>
         <p class="muted small">${energyLine(d)}</p>
-        <ul class="tasks">${d.tasks.map(t => taskRow(t, { day: k, roll: false })).join('')}</ul>
+        ${d.rest ? restCard() : `<ul class="tasks">${d.tasks.map(t => taskRow(t, k, false)).join('')}</ul>`}
+        ${d.rest ? '' : `
         <div class="stack" style="margin-top:14px">
           <button class="primary" data-action="evening">Evening check-in</button>
-        </div>
+        </div>`}
         <div class="row2">
-          ${d.skipped ? '' : '<button class="ghost inline" style="width:100%" data-action="swap-rest">Swap for a rest day</button>'}
-          <button class="ghost inline" style="width:100%${d.skipped ? ';grid-column:1/-1' : ''}" data-action="restart">Start today over</button>
+          ${d.rest || anyDone ? '' : '<button class="ghost inline" style="width:100%" data-action="swap-rest">Swap for a rest day</button>'}
+          <button class="ghost inline${d.rest || anyDone ? ' full' : ''}" style="width:100%" data-action="restart">Start today over</button>
         </div>
+        ${queueNote(d.rest ? 'Your queue is waiting safely for another day:' : 'Still waiting in your queue for a later day:')}
       </section>`;
   }
 
-  function summary(list) {
-    const real = list.filter(t => t.category !== 'rest');
-    if (!real.length) return 'Rest day — resting was the plan, and that counts.';
-    const done = real.filter(t => t.done).length, n = real.length;
+  function summary(d) {
+    if (d.rest) return 'Rest day — resting was the plan, and that counts.';
+    const n = d.tasks.length, done = d.tasks.filter(t => t.done).length;
+    if (!n) return 'Nothing was planned.';
     if (done === n) return n === 1
       ? '1 of 1 done — that was the whole plan, and you did it.'
       : `${done} of ${n} done — that's the whole plan. Go easy on yourself tonight.`;
@@ -500,30 +969,30 @@
   }
 
   function eveningView(k) {
-    const d = days[k], isToday = k === todayKey();
+    const d = state.days[k], isToday = k === todayKey();
     return `
       <section class="card">
         <h2>${isToday ? 'Evening check-in' : "Yesterday's check-in"}</h2>
         <p class="muted small">Tick what got done. Anything else can simply roll forward.</p>
-        <ul class="tasks">${d.tasks.map(t => taskRow(t, { day: k, roll: true })).join('')}</ul>
-        <div class="summary">${summary(d.tasks)}</div>
-        <div class="stack">
-          <button class="primary" data-action="finish-evening">All set</button>
-        </div>
+        ${d.rest ? restCard() : `<ul class="tasks">${d.tasks.map(t => taskRow(t, k, true)).join('')}</ul>`}
+        <div class="summary">${summary(d)}</div>
+        <button class="primary" data-action="finish-evening">All set</button>
       </section>`;
   }
 
   function editView() {
+    const counts = sessionCounts();
     const section = cat => `
       <section class="card">
-        <h3>${CAT_LABEL[cat]}${cat === 'learning' ? ' — in roadmap order' : ''}</h3>
-        ${(tasks[cat] || []).map((t, i) => `
-          <div class="edit-row" data-cat="${cat}" data-id="${t.id}">
+        <h3>${CAT_LABEL[cat]}${cat === 'learning' ? ' — roadmap order, repeats after the last' : ''}</h3>
+        ${state.lists[cat].map((t, i) => `
+          <div class="edit-row" data-cat="${cat}" data-id="${esc(t.id)}">
             <input class="t" data-field="title" value="${esc(t.title)}" aria-label="Task name">
+            <div class="count">${cat === 'learning' ? 'Sessions completed' : 'Times done'}: ${counts[t.id] || 0}</div>
             <input class="m" data-field="minutes" type="number" inputmode="numeric" min="1" max="600" value="${t.minutes}" aria-label="Minutes">
             <span class="minlabel">min</span>
             <button data-action="up" aria-label="Move up" ${i === 0 ? 'disabled' : ''}>↑</button>
-            <button data-action="down" aria-label="Move down" ${i === tasks[cat].length - 1 ? 'disabled' : ''}>↓</button>
+            <button data-action="down" aria-label="Move down" ${i === state.lists[cat].length - 1 ? 'disabled' : ''}>↓</button>
             <button data-action="del" aria-label="Remove">✕</button>
           </div>`).join('')}
         <button class="inline" style="margin-top:10px" data-action="add" data-cat="${cat}">+ Add a ${CAT_LABEL[cat].toLowerCase()} task</button>
@@ -535,22 +1004,34 @@
         <button class="primary" data-action="back">Done</button>
       </section>
       ${CATS.map(section).join('')}
+      <section class="card">
+        <h3>Queue</h3>
+        ${state.queue.length ? state.queue.map(q => `
+          <div class="q-row">
+            <span>${esc(q.title)} <span class="muted small">· from ${esc(prettyDate(q.queuedOn))}</span></span>
+            <button class="inline" data-action="unqueue" data-qid="${esc(q.qid)}">Remove</button>
+          </div>`).join('') : '<p class="muted small" style="margin:0">Nothing waiting.</p>'}
+      </section>
       <button class="ghost" data-action="reset-lists">Reset to the starter lists</button>`;
   }
 
-  // ---------- Toast ----------
+  // ======================================================================
+  // Toast
+  // ======================================================================
   let toastTimer;
   function toast(msg) {
     const el = $('toast');
     el.textContent = msg;
     el.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
   }
 
-  // ---------- Events ----------
+  // ======================================================================
+  // Events
+  // ======================================================================
   function findTask(dayKey, id) {
-    const d = days[dayKey];
+    const d = state.days[dayKey];
     return d ? d.tasks.find(t => t.uid === id) : null;
   }
 
@@ -563,28 +1044,32 @@
 
   document.addEventListener('change', e => {
     const el = e.target;
+    if (el.id === 'importFile') {
+      const file = el.files && el.files[0];
+      el.value = '';
+      if (file) importFile(file);
+      return;
+    }
     if (el.dataset.action === 'toggle') {
       const t = findTask(el.dataset.day, el.dataset.uid);
       if (!t) return;
-      t.done = el.checked;
-      if (t.done) t.rolled = false;
-      saveDays();
-      if (t.done) toast(t.category === 'rest' ? 'Rested. Well done.' : 'Nice. That counts.');
+      setDone(t, el.checked);
+      if (t.done) toast('Nice. That counts.');
       render();
       return;
     }
     const row = el.closest('.edit-row');
     if (row && el.dataset.field) {
-      const item = tasks[row.dataset.cat].find(t => t.id === row.dataset.id);
+      const item = state.lists[row.dataset.cat].find(t => t.id === row.dataset.id);
       if (!item) return;
       if (el.dataset.field === 'title') {
         const v = el.value.trim();
         if (v) item.title = v; else el.value = item.title;
       } else {
-        const m = Math.round(Number(el.value));
-        if (m > 0) item.minutes = m; else el.value = item.minutes;
+        const m = cleanMinutes(el.value, null);
+        if (m) item.minutes = m; else el.value = item.minutes;
       }
-      saveTasks();
+      persist();
       toast('Saved.');
     }
   });
@@ -597,19 +1082,30 @@
 
     switch (a) {
       case 'build':
-        buildDay(energy);
-        toast('Your day is ready.');
+        if (buildDay(energy)) toast('Your day is ready.');
         break;
       case 'skip':
-      case 'swap-rest':
-        restDay();
-        toast('Rest day it is. Your learning count is untouched.');
+        if (!state.days[k]) { makeRestDay(k, null); toast('Rest day it is. Your learning count is untouched.'); }
         break;
-      case 'restart':
-        if (!confirm('Start today over? Your plan for today will be cleared so you can pick your energy again.')) return;
-        delete days[k];
-        saveDays();
+      case 'swap-rest': {
+        const d = state.days[k];
+        if (!d || d.tasks.some(t => t.done)) return;
+        makeRestDay(k, d.energy);
+        toast('Rest day it is. Anything carried over is back in your queue.');
         break;
+      }
+      case 'restart': {
+        const d = state.days[k];
+        if (!d) break;
+        const msg = d.tasks.some(t => t.done)
+          ? "Start today over? Today's plan and its ticks will be cleared so you can choose your energy again."
+          : "Start today over? Today's plan will be cleared so you can choose your energy again.";
+        if (!confirm(msg)) return;
+        d.tasks.forEach(releaseTask);
+        delete state.days[k];
+        persist();
+        break;
+      }
       case 'evening':
         view = 'evening'; eveningKey = k;
         break;
@@ -617,21 +1113,26 @@
         view = 'evening'; eveningKey = shift(k, -1);
         break;
       case 'finish-evening': {
-        const d = days[eveningKey];
-        if (d) { d.checkedIn = true; saveDays(); }
+        const d = state.days[eveningKey];
+        if (d) { d.checkedIn = true; persist(); }
         view = 'auto'; eveningKey = null;
         toast('All saved. See you tomorrow.');
         break;
       }
       case 'roll': {
         const t = findTask(btn.dataset.day, btn.dataset.uid);
-        if (!t) return;
-        t.rolled = !t.rolled;
-        saveDays();
+        if (t) toggleRoll(btn.dataset.day, t);
         break;
       }
       case 'shrink':
-        return acceptShrink();
+        acceptShrink();
+        break;
+      case 'swap-learning':
+        swapInLearning(btn.dataset.uid);
+        break;
+      case 'add-learning':
+        swapInLearning(null);
+        break;
       case 'dismiss-nudge':
         nudgeVisible = false;
         break;
@@ -644,11 +1145,11 @@
         break;
       case 'add': {
         const cat = btn.dataset.cat;
-        tasks[cat].push({ id: cat[0] + uid(), title: 'New task', minutes: 20 });
-        saveTasks();
+        state.lists[cat].push({ id: cat[0] + uid(), title: 'New task', minutes: 20 });
+        persist();
         render();
-        const rows = document.querySelectorAll(`.edit-row[data-cat="${cat}"] input.t`);
-        const last = rows[rows.length - 1];
+        const inputs = document.querySelectorAll(`.edit-row[data-cat="${cat}"] input.t`);
+        const last = inputs[inputs.length - 1];
         if (last) { last.focus(); last.select(); }
         return;
       }
@@ -656,7 +1157,7 @@
       case 'down':
       case 'del': {
         const row = btn.closest('.edit-row');
-        const list = tasks[row.dataset.cat];
+        const list = state.lists[row.dataset.cat];
         const i = list.findIndex(t => t.id === row.dataset.id);
         if (i < 0) return;
         if (a === 'del') {
@@ -667,40 +1168,53 @@
           if (j < 0 || j >= list.length) return;
           [list[i], list[j]] = [list[j], list[i]];
         }
-        saveTasks();
+        persist();
         break;
       }
+      case 'unqueue':
+        state.queue = state.queue.filter(q => q.qid !== btn.dataset.qid);
+        persist();
+        break;
       case 'reset-lists':
-        if (!confirm('Reset all three lists to the starter tasks? Your day history stays as it is.')) return;
-        tasks = JSON.parse(JSON.stringify(SEED));
-        saveTasks();
+        if (!confirm('Reset all three lists to the starter tasks? Your history and queue stay as they are.')) return;
+        state.lists = clone(SEED);
+        persist();
         toast('Lists reset.');
         break;
-      case 'export': {
-        const data = {};
-        Object.values(KEYS).forEach(key => { data[key] = load(key, null); });
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `myday-export-${k}.json`;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-        toast('Exported.');
+      case 'export':
+        exportData();
         return;
-      }
+      case 'import':
+        $('importFile').click();
+        return;
+      case 'download-damaged':
+        download(`myday-unreadable-${todayKey()}.json`, damagedRaw || '');
+        return;
+      case 'start-fresh':
+        if (!confirm('Start fresh? The unreadable saved data will be replaced. Download it first if you might want it later.')) return;
+        saveBlocked = false;
+        damagedRaw = null;
+        state = freshState();
+        persist();
+        checkNudge();
+        break;
     }
     render();
   });
 
-  // Re-check when the app is brought back (e.g. opened the next morning from a tab left open).
+  // Keep the date honest: re-check when the app comes back into view and every 30 seconds (covers midnight).
+  function onClock() {
+    if (todayKey() !== renderedDay) { checkNudge(); render(); }
+  }
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') { checkNudge(); render(); }
   });
+  setInterval(onClock, 30000);
 
+  boot();
   checkNudge();
   render();
+  if (bootNotice) toast(bootNotice);
 })();
 </script>
 </body>
