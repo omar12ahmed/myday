@@ -600,7 +600,7 @@
   .ch-pt:focus-visible .ch-dot { stroke: var(--text); }
   .ch-tip { position: absolute; transform: translate(-50%, calc(-100% - 10px)); background: var(--inverse); color: var(--on-inverse); font-size: 13px; padding: 4px 8px; border-radius: 8px; pointer-events: none; opacity: 0; white-space: nowrap; }
   .ch-tip.show { opacity: 1; }
-  /* Food: cards for discovering recipes */
+  /* Food: cards for discovering, checklists for shopping */
   .search-row { display: flex; gap: 8px; }
   .search-row input { flex: 1; min-width: 0; }
   input[type=search], input[type=url], textarea { font: inherit; color: var(--text); background: var(--surface-3); border: 1px solid var(--outline-strong); border-radius: 12px; padding: 10px 12px; min-height: 48px; width: 100%; }
@@ -632,6 +632,16 @@
   ol.steps li { margin-bottom: 10px; line-height: 1.55; }
   ol.steps li.current { font-weight: 650; }
   .orig { white-space: pre-wrap; font-size: 14px; color: var(--text-2); }
+  ul.have-list, ul.shop-list { list-style: none; padding: 0; margin: 6px 0 0; }
+  .shop-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; border-top: 1px solid var(--outline); padding: 4px 0; }
+  .shop-row:first-child { border-top: 0; }
+  .shop-row.editing { display: block; padding: 10px 0; }
+  .shop-check { flex: 1; min-width: 0; min-height: 52px; }
+  .shop-check input { width: 26px; height: 26px; }
+  .shop-row.done strong { text-decoration: line-through; color: var(--text-2); }
+  .shop-qty { font-variant-numeric: tabular-nums; color: var(--text-2); }
+  .undo-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; padding: 8px 12px; border-radius: 12px; background: var(--inverse); color: var(--on-inverse); }
+  .undo-bar button { background: transparent; color: var(--on-inverse); border-color: var(--on-inverse); }
   .btn-link + .eyebrow { display: block; margin-top: 4px; }
   .hist-table a, ul.plain-list a { color: var(--primary); }
 
@@ -3817,7 +3827,9 @@
       food: {
         prefs: { exclude: [], dislikes: [], maxMinutes: null, batchOnly: false },
         recipes: {},      // id → recipe (your own, plus TheMealDB recipes you saved, favourited, planned or cooked)
-        favourites: []    // recipe ids
+        favourites: [],   // recipe ids
+        want: [],         // { id, recipeId, servings, addedOn }
+        shopping: []      // { id, name, family, amount, unit, text, category, checked, recipes, manual }
       }
     };
   }
@@ -3917,6 +3929,12 @@
     }
     if (isObj(f.recipes)) for (const id of Object.keys(f.recipes)) { const r = cleanRecipe(f.recipes[id]); if (r && r.id === id) hf.recipes[id] = r; else report.dropped++; }
     if (Array.isArray(f.favourites)) hf.favourites = [...new Set(f.favourites.filter(id => typeof id === 'string' && hf.recipes[id]))];
+    if (Array.isArray(f.want)) for (const x of f.want) if (isObj(x) && typeof x.recipeId === 'string' && hf.recipes[x.recipeId]) hf.want.push({ id: typeof x.id === 'string' ? x.id : 'w' + uid(), recipeId: x.recipeId, servings: optNum(x.servings, 1, 100), addedOn: isDateKey(x.addedOn) ? x.addedOn : todayKey() });
+    if (Array.isArray(f.shopping)) for (const x of f.shopping) {
+      if (!isObj(x) || !str(x.name)) { report.dropped++; continue; }
+      const family = UNIT_FAMILIES[x.family] && optNum(x.amount, 0, 1e6) !== null ? x.family : null;
+      hf.shopping.push({ id: typeof x.id === 'string' && x.id ? x.id : 's' + uid(), name: str(x.name, 80), family, amount: family ? optNum(x.amount, 0, 1e6) : null, unit: family === 'count' ? str(x.unit, 30) : '', text: family ? '' : str(x.text, 60), category: SHOP_CATEGORIES.includes(x.category) ? x.category : 'Other', checked: x.checked === true, recipes: Array.isArray(x.recipes) ? x.recipes.filter(t => typeof t === 'string').slice(0, 10) : [], manual: x.manual === true });
+    }
     return h;
   }
 
@@ -4456,7 +4474,7 @@
   // ---------- Today card (shown on Today; nothing is added to the task list) ----------
   function healthTodayCard(k) {
     if (!state.health) return '';
-    const items = [], cur = activeSession();
+    const items = [], cur = activeSession(), food = state.health.food;
     if (cur) items.push(`<div class="c-row"><div><strong>Workout in progress</strong><div class="meta">${esc(cur.templateName)} · ${setsDone(cur)} of ${setsTotal(cur)} sets</div></div><a class="btn-link" href="#health/workout/session">Resume</a></div>`);
     else {
       const missed = missedSession();
@@ -4464,6 +4482,8 @@
       const p = sessionPlanFor(k);
       if (p && !completedOn(k)) { const t = tplById(p.templateId); items.push(`<div class="c-row"><div><strong>Workout: ${esc(t.name)}</strong><div class="meta">About ${t.minutes} min${p.time ? ' · ' + p.time : ''}</div></div><a class="btn-link" href="#health/workout">Open</a></div>`); }
     }
+    const toBuy = food.shopping.filter(x => !x.checked).length;
+    if (toBuy) items.push(`<div class="c-row"><div><strong>Shopping list</strong><div class="meta">${toBuy} item${toBuy === 1 ? '' : 's'} to get</div></div><a class="btn-link" href="#health/food/shopping">Open</a></div>`);
     return items.length ? `<section class="card"><h2>Health</h2>${items.join('')}</section>` : '';
   }
   // Planned workouts with a time block that time on Today.
@@ -4491,6 +4511,9 @@
   const foodSearch = { q: '', items: [], loading: false, error: null, done: false, hidden: 0 };
   const recipeLoad = { id: null, loading: false, error: null };
   const recipeServings = {};             // servings chosen on a recipe page (this visit)
+  let wantDraft = null;                  // { recipeId, servings, have: [] }
+  let shopUndo = null;                   // { item, index }
+  let shopEdit = null;                   // id of the item being edited
 
   // ---------- Ingredient words (used for exclusions and shopping categories) ----------
   const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -4552,6 +4575,9 @@
     tsp: 'tsp', tsps: 'tsp', teaspoon: 'tsp', teaspoons: 'tsp', tbsp: 'tbsp', tbsps: 'tbsp', tbs: 'tbsp', tblsp: 'tbsp', tablespoon: 'tbsp', tablespoons: 'tbsp',
     cup: 'cup', cups: 'cup', oz: 'oz', ounce: 'oz', ounces: 'oz', lb: 'lb', lbs: 'lb', pound: 'lb', pounds: 'lb'
   };
+  // Units only combine within a family (never e.g. grams with cups).
+  const UNIT_FAMILIES = { g: { g: 1, kg: 1000 }, ml: { ml: 1, l: 1000 }, tsp: { tsp: 1, tbsp: 3 }, cup: { cup: 1 }, oz: { oz: 1, lb: 16 }, count: { '': 1 } };
+  const familyOf = unit => Object.keys(UNIT_FAMILIES).find(f => unit in UNIT_FAMILIES[f]) || null;
   const NUM_RE = /^(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?\s*[½¼¾⅓⅔⅛]|\d+(?:\.\d+)?|[½¼¾⅓⅔⅛])/;
   function numVal(s) {
     s = s.trim();
@@ -4581,6 +4607,61 @@
     if (!p || p.range) return { text: measure, scaled: false };
     return { text: [fmtQty(p.qty * factor), p.unitText, p.extra].filter(Boolean).join(' '), scaled: true };
   }
+  function fmtAmount(family, amount, unit) {
+    if (family === 'g') return amount >= 1000 ? `${fmtQty(amount / 1000)} kg` : `${fmtQty(amount)} g`;
+    if (family === 'ml') return amount >= 1000 ? `${fmtQty(amount / 1000)} l` : `${fmtQty(amount)} ml`;
+    if (family === 'tsp') return amount >= 3 && Math.abs(amount / 3 - Math.round(amount / 3)) < 1e-9 ? `${fmtQty(amount / 3)} tbsp` : `${fmtQty(amount)} tsp`;
+    if (family === 'cup') return `${fmtQty(amount)} cup${amount === 1 ? '' : 's'}`;
+    if (family === 'oz') return amount >= 16 ? `${fmtQty(amount / 16)} lb` : `${fmtQty(amount)} oz`;
+    return `${fmtQty(amount)}${unit ? ' ' + unit : ''}`;
+  }
+
+  // ---------- Shopping ----------
+  const SHOP_CATEGORIES = ['Fruit & veg', 'Meat & fish', 'Dairy & eggs', 'Bakery', 'Cupboard', 'Herbs & spices', 'Frozen', 'Other'];
+  const CATEGORY_RULES = [
+    ['Frozen', ['frozen']],
+    ['Cupboard', ['coconut milk', 'coconut cream', 'peanut butter', 'soy sauce', 'fish sauce', 'tomato paste', 'tomato puree', 'tomato purée', 'stock', 'stock cube', 'bouillon', 'cornflour', 'corn flour', 'breadcrumb', 'egg noodle', 'chopped tomatoes', 'tinned tomatoes', 'canned tomatoes']],
+    ['Herbs & spices', ['salt', 'black pepper', 'white pepper', 'pepper flakes', 'peppercorn', 'cumin', 'paprika', 'cinnamon', 'oregano', 'thyme', 'rosemary', 'turmeric', 'garam masala', 'curry powder', 'chilli powder', 'chili powder', 'nutmeg', 'clove', 'bay leaf', 'bay leaves', 'cardamom', 'coriander seed', 'ground ginger', 'ground coriander', 'mixed spice', 'allspice', 'cayenne', 'five spice', 'saffron', 'vanilla', 'sage', 'dried']],
+    ['Meat & fish', MEAT.concat(FISH)],
+    ['Dairy & eggs', DAIRY.concat(['egg', 'eggs'])],
+    ['Bakery', ['bread', 'tortilla', 'wrap', 'bun', 'pitta', 'naan', 'bagel', 'roll', 'croissant', 'baguette', 'brioche']],
+    ['Fruit & veg', ['onion', 'garlic', 'tomato', 'potato', 'carrot', 'pepper', 'lettuce', 'spinach', 'lemon', 'lime', 'apple', 'banana', 'ginger', 'parsley', 'coriander', 'basil', 'mint', 'mushroom', 'broccoli', 'courgette', 'zucchini', 'aubergine', 'eggplant', 'cucumber', 'celery', 'leek', 'chilli', 'chili', 'avocado', 'cabbage', 'kale', 'pea', 'spring onion', 'shallot', 'sweet potato', 'squash', 'pumpkin', 'orange', 'berry', 'berries', 'strawberry', 'blueberry', 'beansprout', 'cauliflower', 'asparagus', 'beetroot', 'radish', 'fennel', 'rocket', 'vegetable', 'fruit', 'pear', 'mango', 'pineapple', 'grape', 'cherry', 'dill', 'chive', 'scallion', 'herbs']],
+    ['Cupboard', ['rice', 'pasta', 'spaghetti', 'noodle', 'flour', 'sugar', 'oil', 'vinegar', 'honey', 'oat', 'lentil', 'chickpea', 'bean', 'tin', 'tinned', 'canned', 'sauce', 'paste', 'ketchup', 'mustard', 'mayonnaise', 'jam', 'syrup', 'cornstarch', 'baking powder', 'baking soda', 'bicarbonate', 'yeast', 'cocoa', 'chocolate', 'couscous', 'quinoa', 'nut', 'almond', 'raisin', 'wine', 'gelatin', 'polenta']]
+  ].map(([cat, words]) => [cat, wordsRe(words)]);
+  function categoryFor(name) { for (const [cat, re] of CATEGORY_RULES) if (re.test(name)) return cat; return 'Other'; }
+  const nameKey = s => { const k = s.toLowerCase().replace(/\s+/g, ' ').trim(); return k.length > 4 ? k.replace(/(es|s)$/, '') : k; };
+
+  function shoppingFrom(name, measure, factor, recipeTitle) {
+    const p = parseMeasure(measure);
+    const item = { id: 's' + uid(), name: str(name, 80), family: null, amount: null, unit: '', text: '', category: categoryFor(name), checked: false, recipes: recipeTitle ? [recipeTitle] : [], manual: !recipeTitle };
+    if (p && !p.range) {
+      const fam = familyOf(p.unit);
+      if (fam && (fam !== 'count' || !/\(|\d/.test(p.extra))) {
+        item.family = fam;
+        item.amount = p.qty * factor * UNIT_FAMILIES[fam][p.unit];
+        item.unit = fam === 'count' ? p.extra.toLowerCase() : '';
+        return item;
+      }
+    }
+    item.text = scaledMeasure(measure, factor).text; // kept as written: can't be combined safely
+    return item;
+  }
+  // Combine with an unticked item only when the units are compatible; otherwise keep it separate.
+  function addToShopping(entry) {
+    const list = F().shopping;
+    if (entry.family) {
+      const match = list.find(x => !x.checked && x.family === entry.family && x.unit === entry.unit && nameKey(x.name) === nameKey(entry.name));
+      if (match) {
+        match.amount += entry.amount;
+        for (const t of entry.recipes) if (!match.recipes.includes(t)) match.recipes.push(t);
+        return match;
+      }
+    }
+    list.push(entry);
+    return entry;
+  }
+  const shopQty = x => (x.family ? fmtAmount(x.family, x.amount, x.unit) : x.text);
+
   // ---------- Recipes ----------
   const getRecipe = id => F().recipes[id] || mdbCache.get(id) || null;
   const safeUrl = u => (/^https?:\/\//i.test(u || '') ? u : '');
@@ -4603,7 +4684,7 @@
   function tidyRecipe(id) {
     const f = F(), r = f.recipes[id];
     if (!r || r.source !== 'themealdb') return;
-    const used = f.favourites.includes(id) || r.servingsSource === 'user' || r.nutritionSource === 'user';
+    const used = f.favourites.includes(id) || f.want.some(x => x.recipeId === id) || r.servingsSource === 'user' || r.nutritionSource === 'user';
     if (!used) { mdbCache.set(id, r); delete f.recipes[id]; }
   }
   // Split the original method on its own line breaks only. Lines that are just "STEP 1" headings are dropped; no sentence is ever split.
@@ -4700,6 +4781,8 @@
   function foodMain(r) {
     const v = r[0] || 'home';
     if (v === 'recipe') return recipeView(r[1]);
+    if (v === 'want') return wantView(r[1]);
+    if (v === 'shopping') return shoppingView();
     if (v === 'search') return searchView();
     if (v === 'prefs') return prefsView();
     if (v === 'new' || v === 'edit') return recipeFormView(v === 'edit' ? r[1] : null);
@@ -4742,12 +4825,22 @@
         </a>
       </article>`;
   }
+  function miniList(ids) {
+    return `<ul class="plain-list">${ids.map(id => { const r = getRecipe(id); return r ? `<li><a href="#health/food/recipe/${encodeURIComponent(id)}">${esc(r.title)}</a></li>` : ''; }).join('')}</ul>`;
+  }
   function foodHome() {
-    const f = F();
+    const f = F(), toBuy = f.shopping.filter(x => !x.checked).length;
     if (!foodSuggest.loaded && !foodSuggest.loading && !foodSuggest.error) setTimeout(loadSuggestions, 0);
+    let next;
+    if (toBuy) {
+      next = `<section class="card next-card"><span class="eyebrow">Next step</span><h2>Shopping list</h2><p class="small muted">${toBuy} item${toBuy === 1 ? '' : 's'} to get${f.want.length ? ` for ${f.want.length} recipe${f.want.length === 1 ? '' : 's'}` : ''}.</p><a class="btn primary" href="#health/food/shopping">Open shopping list</a></section>`;
+    } else if (f.want.length) {
+      const r = getRecipe(f.want[0].recipeId);
+      next = `<section class="card next-card"><span class="eyebrow">Want to cook</span><h2>${esc(r.title)}</h2><a class="btn primary" href="#health/food/recipe/${encodeURIComponent(r.id)}">Open recipe</a></section>`;
+    } else next = '';
     const shown = foodSuggest.items.slice(0, foodSuggest.shown);
     const mine = Object.values(f.recipes).filter(r => r.source === 'manual');
-    return `
+    return next + `
       <section class="card">
         <div class="search-row">
           <label class="sr-only" for="foodQ">Search recipes</label>
@@ -4764,6 +4857,7 @@
         ${foodSuggest.hidden ? `<p class="small muted">${foodSuggest.hidden} idea${foodSuggest.hidden === 1 ? '' : 's'} left out because of your preferences.</p>` : ''}
         ${foodSuggest.loaded && !foodSuggest.loading && !foodSuggest.error ? '<button class="inline" data-action="h-suggest-more">Show more</button>' : ''}
       </section>
+      ${f.want.length ? `<section class="card"><h2>Want to cook</h2>${miniList(f.want.map(x => x.recipeId))}<a class="btn-link" href="#health/food/shopping">Shopping list</a></section>` : ''}
       ${f.favourites.length ? `<section class="card"><h2>Favourites</h2><div class="rgrid">${f.favourites.map(getRecipe).filter(Boolean).map(recipeCard).join('')}</div></section>` : ''}
       ${mine.length ? `<section class="card"><h2>My recipes</h2><div class="rgrid">${mine.map(recipeCard).join('')}</div></section>` : ''}
       <p class="small muted attribution">Recipe ideas and photos: <a href="https://www.themealdb.com" target="_blank" rel="noopener">TheMealDB</a>.</p>`;
@@ -4795,7 +4889,7 @@
         <h2>${failed ? "Couldn't load this recipe" : /^mdb-/.test(id || '') ? 'Loading recipe…' : 'Recipe not found'}</h2>
         ${failed ? `<p class="warn">${esc(recipeLoad.error)}</p><button class="inline" data-action="h-recipe-retry" data-id="${esc(id)}">Try again</button>` : ''}</section>`;
     }
-    const f = F(), fav = f.favourites.includes(r.id);
+    const f = F(), fav = f.favourites.includes(r.id), want = f.want.some(x => x.recipeId === r.id);
     const base = r.servings, cur = base ? (recipeServings[r.id] || base) : null, factor = base ? cur / base : 1;
     const steps = recipeSteps(r.instructions), hits = prefHits(r);
     const ing = r.ingredients.map(i => { const m = scaledMeasure(i.measure, factor); return `<li><span class="ing-qty">${esc(m.text || '')}${!m.scaled ? ' <span class="meta">(as written)</span>' : ''}</span> <span>${esc(i.name)}</span></li>`; }).join('');
@@ -4809,6 +4903,7 @@
         ${factsLine(r)}
         <div class="action-row">
           <button class="${fav ? 'on' : ''}" data-action="h-fav" data-id="${esc(r.id)}" aria-pressed="${fav}">${fav ? '★ Favourite' : '☆ Favourite'}</button>
+          <a class="btn" href="#health/food/want/${encodeURIComponent(r.id)}">${want ? 'Want to cook ✓' : 'Want to cook'}</a>
         </div>
       </section>
       ${hits.length ? `<section class="card notice"><p class="small" style="margin:0">Heads up: ${esc(hits.map(h => `${h.what} (${h.why.toLowerCase()})`).join('; '))}.</p></section>` : ''}
@@ -4840,6 +4935,62 @@
           : `<p class="small">Your recipe${r.sourceName ? ` · from ${esc(r.sourceName)}` : ''}${safeUrl(r.sourceUrl) ? ` · <a href="${esc(r.sourceUrl)}" target="_blank" rel="noopener">link</a>` : ''}.</p>
              <div class="row2"><a class="btn" href="#health/food/edit/${encodeURIComponent(r.id)}">Edit</a><button class="ghost" data-action="h-recipe-delete" data-id="${esc(r.id)}">Delete</button></div>`}
       </section>`;
+  }
+
+  function wantView(id) {
+    const r = getRecipe(id);
+    if (!r) return recipeView(id);
+    if (!wantDraft || wantDraft.recipeId !== id) {
+      const existing = F().want.find(x => x.recipeId === id);
+      wantDraft = { recipeId: id, servings: r.servings ? (existing && existing.servings) || recipeServings[id] || r.servings : null, have: [] };
+    }
+    const factor = r.servings && wantDraft.servings ? wantDraft.servings / r.servings : 1;
+    const need = r.ingredients.filter((_, i) => !wantDraft.have.includes(i)).length;
+    return `
+      <section class="card">
+        <a class="btn-link" href="#health/food/recipe/${encodeURIComponent(id)}">‹ ${esc(r.title)}</a>
+        <span class="eyebrow">Want to cook</span>
+        <h2>${esc(r.title)}</h2>
+        <h3>1 · Servings</h3>
+        ${r.servings ? `<div class="serv-stepper"><button class="icon-btn" data-action="h-want-serv" data-d="-1" aria-label="Fewer servings" ${wantDraft.servings <= 1 ? 'disabled' : ''}>−</button><span><strong>${wantDraft.servings}</strong> serving${wantDraft.servings === 1 ? '' : 's'}</span><button class="icon-btn" data-action="h-want-serv" data-d="1" aria-label="More servings">+</button></div>`
+          : '<p class="small muted">Servings aren\'t listed, so quantities stay as written.</p>'}
+        <h3>2 · Tick what you already have</h3>
+        <ul class="have-list">${r.ingredients.map((ing, i) => { const m = scaledMeasure(ing.measure, factor); return `<li><label class="check"><input type="checkbox" data-h="want-have" data-i="${i}" ${wantDraft.have.includes(i) ? 'checked' : ''}> <span><strong>${esc(ing.name)}</strong> <span class="meta">${esc(m.text)}</span></span></label></li>`; }).join('')}</ul>
+        <h3>3 · Add the rest to your list</h3>
+        <div class="stack">
+          <button class="primary" data-action="h-want-add">${need ? `Add ${need} item${need === 1 ? '' : 's'} to my shopping list` : 'Save — I have everything'}</button>
+        </div>
+      </section>`;
+  }
+
+  function shoppingView() {
+    const f = F(), open = f.shopping.filter(x => !x.checked), got = f.shopping.filter(x => x.checked);
+    const row = x => shopEdit === x.id ? `
+      <li class="shop-row editing">
+        <div class="field-row"><div class="field"><label class="lbl" for="seName">Item</label><input id="seName" type="text" maxlength="80" value="${esc(x.name)}"></div>
+        <div class="field"><label class="lbl" for="seQty">Quantity</label><input id="seQty" type="text" maxlength="40" value="${esc(shopQty(x))}"></div></div>
+        <div class="row2"><button class="inline primary" data-action="h-shop-edit-save" data-id="${esc(x.id)}">Save</button><button class="inline ghost" data-action="h-shop-edit-cancel">Cancel</button></div>
+      </li>` : `
+      <li class="shop-row${x.checked ? ' done' : ''}">
+        <label class="check shop-check"><input type="checkbox" data-h="shop-check" data-id="${esc(x.id)}" ${x.checked ? 'checked' : ''}>
+          <span><strong>${esc(x.name)}</strong>${shopQty(x) ? ` <span class="shop-qty">${esc(shopQty(x))}</span>` : ''}${x.recipes.length ? `<span class="meta"> · for ${esc(x.recipes.join(', '))}</span>` : ''}</span></label>
+        <div class="c-actions"><button class="inline" data-action="h-shop-edit" data-id="${esc(x.id)}" aria-label="Edit ${esc(x.name)}">Edit</button><button class="inline" data-action="h-shop-remove" data-id="${esc(x.id)}" aria-label="Remove ${esc(x.name)}">✕</button></div>
+      </li>`;
+    const groups = SHOP_CATEGORIES.map(c => [c, open.filter(x => x.category === c)]).filter(([, l]) => l.length);
+    return `
+      <section class="card">
+        <a class="btn-link" href="#health/food">‹ Food</a>
+        <h2>Shopping list</h2>
+        <p class="small muted">${open.length} to get${got.length ? ` · ${got.length} ticked` : ''}. Saved as you go.</p>
+        <div class="inline-add">
+          <label class="sr-only" for="shopAdd">Add an item</label><input id="shopAdd" type="text" maxlength="80" placeholder="Add an item, e.g. 2 lemons" enterkeyhint="done">
+          <button class="inline" data-action="h-shop-add">Add</button>
+        </div>
+        ${shopUndo ? `<div class="undo-bar" role="status">Removed ${esc(shopUndo.item.name)}. <button class="inline" data-action="h-shop-undo">Undo</button></div>` : ''}
+      </section>
+      ${groups.length ? groups.map(([c, l]) => `<section class="card"><h3>${esc(c)}</h3><ul class="shop-list">${l.map(row).join('')}</ul></section>`).join('') : '<section class="card"><p class="small muted">Nothing to get right now.</p></section>'}
+      ${got.length ? `<section class="card"><details><summary>Ticked (${got.length})</summary><ul class="shop-list">${got.map(row).join('')}</ul></details><button class="inline ghost" data-action="h-shop-clear">Clear ticked items</button></section>` : ''}
+      ${f.want.length ? `<section class="card"><h3>Recipes on this list</h3>${f.want.map(w => { const r = getRecipe(w.recipeId); return r ? `<div class="c-row"><a href="#health/food/recipe/${encodeURIComponent(r.id)}">${esc(r.title)}</a><div class="c-actions"><button class="inline" data-action="h-want-remove" data-id="${esc(w.id)}" aria-label="Remove ${esc(r.title)} from Want to cook">✕</button></div></div>` : ''; }).join('')}<p class="small muted">Removing a recipe here keeps its shopping items — tidy those yourself if you like.</p></section>` : ''}`;
   }
 
   function prefsView() {
@@ -5167,10 +5318,70 @@
         if (!r || !confirm(`Delete "${r.title}"?`)) return 'none';
         delete f.recipes[d.id];
         f.favourites = f.favourites.filter(x => x !== d.id);
+        f.want = f.want.filter(x => x.recipeId !== d.id);
         persist();
         go('health/food');
         return 'none';
       }
+
+      // ----- Want to cook → shopping list -----
+      case 'h-want-serv': if (wantDraft && wantDraft.servings) wantDraft.servings = Math.max(1, Math.min(100, wantDraft.servings + Number(d.d))); return;
+      case 'h-want-add': {
+        const r = wantDraft && getRecipe(wantDraft.recipeId);
+        if (!r) return;
+        keepRecipe(r);
+        const factor = r.servings && wantDraft.servings ? wantDraft.servings / r.servings : 1;
+        let n = 0;
+        r.ingredients.forEach((ing, i) => { if (!wantDraft.have.includes(i)) { addToShopping(shoppingFrom(ing.name, ing.measure, factor, r.title)); n++; } });
+        const ex = f.want.find(x => x.recipeId === r.id);
+        if (ex) ex.servings = wantDraft.servings; else f.want.push({ id: 'w' + uid(), recipeId: r.id, servings: wantDraft.servings, addedOn: k });
+        wantDraft = null; persist();
+        toast(n ? `Added ${n} item${n === 1 ? '' : 's'} to your shopping list.` : 'Saved to Want to cook.');
+        go(n ? 'health/food/shopping' : 'health/food');
+        return 'none';
+      }
+      case 'h-want-remove': {
+        const x = f.want.find(y => y.id === d.id);
+        f.want = f.want.filter(y => y !== x);
+        if (x) tidyRecipe(x.recipeId);
+        persist();
+        return;
+      }
+      case 'h-shop-add': {
+        const raw = ($('shopAdd') ? $('shopAdd').value : '').trim();
+        if (!raw) return 'none';
+        const p = parseIngredientLine(raw);
+        addToShopping(shoppingFrom(p.name, p.measure, 1, null));
+        shopUndo = null; persist(); render();
+        if ($('shopAdd')) $('shopAdd').focus();
+        return 'none';
+      }
+      case 'h-shop-remove': {
+        const i = f.shopping.findIndex(x => x.id === d.id);
+        if (i < 0) return;
+        shopUndo = { item: f.shopping[i], index: i };
+        f.shopping.splice(i, 1); persist();
+        return;
+      }
+      case 'h-shop-undo': if (shopUndo) { f.shopping.splice(Math.min(shopUndo.index, f.shopping.length), 0, shopUndo.item); shopUndo = null; persist(); } return;
+      case 'h-shop-edit': shopEdit = d.id; return;
+      case 'h-shop-edit-cancel': shopEdit = null; return;
+      case 'h-shop-edit-save': {
+        const x = f.shopping.find(y => y.id === d.id);
+        if (!x) return;
+        const name = ($('seName') ? $('seName').value : '').trim() || x.name, q = ($('seQty') ? $('seQty').value : '').trim();
+        const p = shoppingFrom(name, q, 1, null);
+        Object.assign(x, { name: name.slice(0, 80), family: p.family, amount: p.amount, unit: p.unit, text: p.text, category: categoryFor(name) });
+        shopEdit = null; persist();
+        return;
+      }
+      case 'h-shop-clear': {
+        const ticked = f.shopping.filter(x => x.checked).length;
+        if (!ticked || !confirm(`Clear ${ticked} ticked item${ticked === 1 ? '' : 's'}?`)) return 'none';
+        f.shopping = f.shopping.filter(x => !x.checked); shopUndo = null; persist();
+        return;
+      }
+
     }
   }
 
@@ -5224,6 +5435,8 @@
     if (key === 'pref-dislikes') { if (type !== 'change') return; f.prefs.dislikes = el.value.split(',').map(x => x.trim().toLowerCase()).filter(Boolean).slice(0, 30); persist(); resetSuggestions(); return; }
     if (key === 'pref-max') { if (type !== 'change') return; f.prefs.maxMinutes = optNum(el.value, 5, 600); persist(); resetSuggestions(); return; }
     if (key === 'pref-batch') { f.prefs.batchOnly = el.checked; persist(); resetSuggestions(); return; }
+    if (key === 'want-have' && wantDraft) { const i = +d.i; wantDraft.have = el.checked ? [...new Set(wantDraft.have.concat(i))] : wantDraft.have.filter(x => x !== i); render(); return; }
+    if (key === 'shop-check') { const x = f.shopping.find(y => y.id === d.id); if (x) { x.checked = el.checked; persist(); render(); } return; }
   }
 
   // Chart tooltips on hover, focus or tap.
@@ -5835,11 +6048,12 @@
   document.addEventListener('keydown', e => {
     if (e.key !== 'Enter' || !e.target) return;
     if (e.target.id === 'foodQ') { e.preventDefault(); healthAction('h-food-search', e.target); }
+    if (e.target.id === 'shopAdd') { e.preventDefault(); healthAction('h-shop-add', e.target); }
   });
   window.addEventListener('hashchange', () => {
     const next = sectionFromHash();
     if (next !== section) { section = next; view = 'auto'; eveningKey = null; commitForm = null; calForm = null; }
-    wsMoveFor = null;
+    shopEdit = null; wsMoveFor = null;
     render();
     window.scrollTo(0, 0);
     if (section === 'calendar' || section === 'pay') maybeFetchBankHolidays();
