@@ -191,7 +191,8 @@
     #footer { order: 9; }
     .layout[data-mode="plan"] #slot-context { order: 3; }
     .layout[data-mode="plan"] #slot-actions { order: 4; }
-    .layout[data-mode="morning"] #slot-actions { order: 3; }
+    /* Morning: energy and "Build my day" first; the optional context and the timeline follow. */
+    .layout[data-mode="morning"] #slot-context { order: 2; }
     .layout[data-mode="morning"] #slot-yesterday { order: 4; }
   }
   @media (min-width: 960px) {
@@ -1966,7 +1967,7 @@
       layout.dataset.mode = state.days[k] ? 'plan' : 'morning';
       $('app').innerHTML = state.days[k]
         ? `<div id="slot-timer"></div><div id="slot-plan"></div><div id="slot-health"></div><div id="slot-study"></div><div id="slot-context">${contextCard(k)}</div><div id="slot-actions"></div>`
-        : `<div id="slot-context">${contextCard(k)}</div><div id="slot-actions"></div><div id="slot-health"></div><div id="slot-study"></div><div id="slot-yesterday"></div>`;
+        : `<div id="slot-energy">${energyCard(k)}</div><div id="slot-actions"></div><div id="slot-context">${contextCard(k)}</div><div id="slot-health"></div><div id="slot-study"></div><div id="slot-yesterday"></div>`;
       fillDerived();
     }
     renderStreak();
@@ -2178,7 +2179,6 @@
       if (sel && !opts.includes(sel)) opts.unshift(sel);
       return opts.map(x => `<option value="${x}" ${x === sel ? 'selected' : ''}>${x === y ? 'Yesterday' : x === k ? 'Today' : shortDate(x)}</option>`).join('');
     };
-    const energy = ctx.energy || (d && d.energy) || 3;
     const todays = commitmentsOn(k);
     const rotaToday = rotaWorkBlocks(k).filter(c => dtToMin(c.end, k) > 0 && dtToMin(c.start, k) < 1440);
     const upcoming = state.commitments.filter(c => !todays.includes(c) && c.start.slice(0, 10) > k);
@@ -2197,13 +2197,7 @@
           <input id="sest" type="number" inputmode="decimal" min="0" max="24" step="0.25" data-ctx="sleep" value="${sl.estimatedHours ?? ''}"></div>
         <p class="small muted" id="sleepSummary" style="margin:0"></p>
       </div>
-      <div class="ctx-block">
-        <h3>Energy</h3>
-        <div class="energy-value" id="energyLabel">${energy} · ${ENERGY_LABEL[energy]}</div>
-        <input type="range" min="1" max="5" step="1" value="${energy}" id="energy" aria-label="Energy from 1 to 5" style="--fill:${(energy - 1) * 25}%">
-        <div class="ticks"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
-        <p class="small muted" style="margin:0">Your rating is always yours — MyDay never changes it based on sleep or anything else.</p>
-      </div>
+      ${d ? `<div class="ctx-block"><h3>Energy</h3>${energyBlock(k)}</div>` : ''}
       <div class="ctx-block">
         <h3>Work &amp; appointments today</h3>
         ${todays.length ? commitmentRows(todays, k) : rotaToday.length ? '' : '<p class="small muted" style="margin:0">Nothing booked today.</p>'}
@@ -2241,8 +2235,24 @@
     if (d) {
       return `<details class="card" id="ctxDetails" ${contextOpen || commitForm ? 'open' : ''}><summary><h2>My day's context</h2></summary>${inner}</details>`;
     }
-    return `<section class="card"><h2>My day's context</h2><p class="muted small">Fill in whatever helps — all of it is optional.</p>${inner}</section>`;
+    // Morning: folded away below "Build my day", with a one-line summary of what's in it.
+    const booked = todays.length + rotaToday.length;
+    const brief = [booked ? `${booked} booked today` : 'Nothing booked today', sl.start && sl.end ? 'sleep recorded' : '', `${st.bufferMinutes} min prep/travel`].filter(Boolean).join(' · ');
+    return `<details class="card" id="ctxDetails" ${contextOpen || commitForm ? 'open' : ''}>
+        <summary><span><h2>My day's context</h2><span class="meta">${esc(brief)}</span></span></summary>
+        <p class="muted small">Optional: sleep, shifts, appointments and prep time. Building your day plans around whatever is here.</p>${inner}</details>`;
   }
+
+  // Energy, asked first on the morning screen, right above "Build my day".
+  function energyBlock(k) {
+    const d = state.days[k], energy = contextFor(k).energy || (d && d.energy) || 3;
+    return `
+        <div class="energy-value" id="energyLabel">${energy} · ${ENERGY_LABEL[energy]}</div>
+        <input type="range" min="1" max="5" step="1" value="${energy}" id="energy" aria-label="Energy from 1 to 5" style="--fill:${(energy - 1) * 25}%">
+        <div class="ticks"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+        <p class="small muted" style="margin:0">Your rating is always yours — MyDay never changes it based on sleep or anything else.</p>`;
+  }
+  const energyCard = k => `<section class="card"><h2>How's your energy today?</h2>${energyBlock(k)}</section>`;
 
   // ---------- At a glance ----------
   function glanceCard(k) {
