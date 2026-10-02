@@ -9,7 +9,7 @@
   // Apply the saved theme before the first paint, so there's no flash of the wrong colours.
   (function () {
     try {
-      var s = JSON.parse(localStorage.getItem('myday.data.v3'));
+      var s = JSON.parse(localStorage.getItem('myday.data.v4') || localStorage.getItem('myday.data.v3'));
       var t = s && s.settings && s.settings.theme;
       if (t === 'light' || t === 'auto') document.documentElement.setAttribute('data-theme', t);
     } catch (e) { /* fall back to the default dark theme */ }
@@ -419,6 +419,117 @@
   #footer { padding-bottom: max(40px, env(safe-area-inset-bottom)); }
   .storage-note { text-align: center; color: var(--text-3); font-size: 13px; margin-top: 14px; }
 
+  /* ---------- Section navigation: bottom bar on phones, tabs in the app bar on wide screens ---------- */
+  .nav {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 25;
+    display: flex; justify-content: center; gap: 4px;
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    backdrop-filter: blur(18px) saturate(140%);
+    border-top: 1px solid var(--outline);
+    padding: 6px 8px; padding-bottom: max(6px, env(safe-area-inset-bottom));
+  }
+  .nav:empty { display: none; }
+  .nav-item {
+    flex: 1; max-width: 160px; min-height: 56px; padding: 4px;
+    display: grid; justify-items: center; align-content: center; gap: 2px;
+    color: var(--text-2); text-decoration: none; font-size: 12px; font-weight: 650; border-radius: 16px;
+  }
+  .nav-icon { display: grid; place-items: center; width: 56px; height: 30px; border-radius: 999px; transition: background-color .15s; }
+  .nav-item[aria-current="page"] { color: var(--text); }
+  .nav-item[aria-current="page"] .nav-icon { background: var(--primary-container); color: var(--on-primary-container); }
+  body { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+  .toast { bottom: calc(88px + env(safe-area-inset-bottom)) !important; }
+  @media (min-width: 960px) {
+    .nav {
+      top: 0; bottom: auto; left: 50%; right: auto; transform: translateX(-50%); height: 69px; align-items: center;
+      background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; border: 0; padding: 0;
+    }
+    .nav-item { display: flex; align-items: center; gap: 4px; min-height: 44px; padding: 4px 16px 4px 6px; font-size: 15px; max-width: none; }
+    .nav-icon { width: 34px; height: 30px; }
+    .nav-item[aria-current="page"] { background: var(--primary-container); color: var(--on-primary-container); }
+    .nav-item[aria-current="page"] .nav-icon { background: transparent; }
+    body { padding-bottom: 0; }
+    .toast { bottom: 24px !important; }
+  }
+  #side-section { order: 2; }
+
+  /* ---------- Calendar ---------- */
+  .cal-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .cal-title { margin: 0; text-align: center; font-size: 19px; }
+  .cal-head .icon-btn { font-size: 26px; line-height: 1; }
+  .seg { display: flex; gap: 6px; margin-top: 12px; }
+  .seg button {
+    flex: 1; width: auto; min-height: 44px; padding: 8px 12px; font-size: 15px; border-radius: 999px;
+    background: transparent; color: var(--text-2); border: 1px solid var(--outline);
+  }
+  .seg button.on { background: var(--primary-container); color: var(--on-primary-container); border-color: var(--primary-outline); }
+  .cal-card { padding: 10px 6px; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
+  .cal-dow { text-align: center; font-size: 12px; font-weight: 700; color: var(--text-3); padding: 4px 0; }
+  .cal-cell {
+    width: 100%; min-width: 0; min-height: 70px; padding: 4px 2px; border-radius: 12px;
+    background: var(--surface-2); border: 1px solid transparent; color: var(--text);
+    display: flex; flex-direction: column; align-items: stretch; gap: 3px; text-align: left; font-weight: 500;
+  }
+  .cal-cell.out { opacity: .5; }
+  .cal-cell.today { border-color: var(--primary); }
+  .cal-cell.sel { box-shadow: inset 0 0 0 2px var(--primary); background: var(--surface-3); }
+  .cal-num { font-size: 13px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; gap: 2px; padding: 0 2px; }
+  .cal-off { font-size: 11px; color: var(--text-3); padding: 0 2px; }
+  .cal-marks { display: flex; flex-wrap: wrap; gap: 2px; margin-top: auto; }
+  .cal-bh { display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: .02em; color: var(--on-warn-c); background: var(--warn-c); border-radius: 6px; padding: 0 4px; }
+  .mark-warn { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; background: var(--warn-c); color: var(--on-warn-c); font-size: 11px; font-weight: 800; }
+  .rchip {
+    display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;
+    background: var(--c); color: var(--t); font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+    box-shadow: inset 0 0 0 1px rgba(128, 128, 128, .5);
+  }
+  .rchip.cell { font-size: 11px; padding: 1px 2px; border-radius: 6px; text-align: center; letter-spacing: -.01em; }
+  .rchip.mini { font-size: 10px; padding: 0 4px; border-radius: 5px; }
+  @media (min-width: 600px) { .cal-card { padding: 10px; } .cal-grid { gap: 4px; } .cal-cell { min-height: 84px; padding: 6px; } .rchip.cell { font-size: 12px; padding: 1px 4px; } }
+  ul.agenda { list-style: none; margin: 0; padding: 0; }
+  .ag-row + .ag-row { border-top: 1px solid var(--outline); }
+  .ag-btn {
+    display: grid; grid-template-columns: 5.4em minmax(0, 1fr); gap: 10px; text-align: left; align-items: center;
+    background: transparent; color: var(--text); border: 0; border-radius: 12px; padding: 10px 6px; min-height: 56px; font-weight: 400;
+  }
+  .ag-row.sel .ag-btn { background: var(--surface-2); }
+  .ag-date { font-size: 15px; }
+  .ag-items { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-width: 0; }
+  .ag-time { font-size: 14px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .ag-details .card { margin: 8px 0 12px; box-shadow: none; }
+  ul.legend { list-style: none; padding: 0; margin: 8px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+  ul.legend li { display: flex; align-items: center; gap: 8px; font-size: 14px; min-width: 0; }
+  ul.legend .rchip { min-width: 54px; text-align: center; flex: none; }
+  ul.versions { list-style: none; padding: 0; margin: 8px 0 12px; }
+  ul.versions li { padding: 10px 0; border-top: 1px solid var(--outline); }
+  ul.versions li:first-child { border-top: 0; }
+  .seg-row { display: grid; grid-template-columns: minmax(0, 1fr) 76px auto 48px; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .seg-row button { width: 48px; min-height: 48px; padding: 0; }
+  .pv-strip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+  .pv { background: var(--surface-2); border-radius: 8px; padding: 4px 2px; display: grid; gap: 2px; text-align: center; font-size: 12px; min-width: 0; }
+  .pv-d { color: var(--text-3); font-weight: 700; }
+  .colours { display: grid; gap: 8px; margin-top: 8px; }
+  .colour-row { display: flex; align-items: center; gap: 10px; font-size: 14px; min-height: 44px; }
+  .colour-row input[type=color] { width: 48px; height: 40px; padding: 2px; border: 1px solid var(--outline-strong); border-radius: 10px; background: var(--surface-3); flex: none; }
+  .check { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 15px; }
+  .check input { width: 22px; height: 22px; accent-color: var(--primary); flex: none; }
+  .loans { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+  .details h2 { font-size: 18px; }
+
+  /* ---------- Pay ---------- */
+  .table-wrap { overflow-x: auto; }
+  table.pay-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  .pay-table th, .pay-table td { padding: 8px 4px; text-align: right; font-size: 15px; border-bottom: 1px solid var(--outline); }
+  .pay-table th[scope=row] { text-align: left; font-weight: 500; color: var(--text-2); }
+  .pay-table thead th { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-3); }
+  .pay-table tr.strong th, .pay-table tr.strong td { font-weight: 700; color: var(--text); font-size: 16px; }
+  .pay-table tr.gap td { border: 0; padding: 4px; }
+  ul.pay-notes { margin: 14px 0 0; padding-left: 18px; color: var(--text-2); font-size: 14px; }
+  ul.pay-notes li + li { margin-top: 4px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
   /* ---------- Focus timer ---------- */
   .timer-card { border-color: var(--primary-outline); text-align: center; }
   .timer-wrap { position: relative; width: 200px; max-width: 70%; margin: 8px auto 12px; aspect-ratio: 1; }
@@ -480,13 +591,15 @@
     <button class="icon-btn" id="themeBtn" data-action="theme" aria-label="Change theme"></button>
   </div>
 </header>
+<nav class="nav" id="nav" aria-label="Sections"></nav>
 <div class="layout" id="layout" data-mode="morning">
   <div class="col-main">
     <div id="nudge"></div>
     <main id="app"></main>
     <footer id="footer"></footer>
   </div>
-  <aside class="col-side" aria-label="Today at a glance and learning days">
+  <aside class="col-side" aria-label="More for this section">
+    <div id="side-section"></div>
     <div id="slot-glance"></div>
     <div id="streak"></div>
     <div id="garden"></div>
@@ -502,9 +615,9 @@
   // ======================================================================
   // Constants
   // ======================================================================
-  const STORAGE_KEY = 'myday.data.v3';   // the only localStorage key this app writes
-  const SCHEMA_VERSION = 3;
-  const PREVIOUS_KEY = 'myday.data.v2';  // version 2, migrated once
+  const STORAGE_KEY = 'myday.data.v4';   // the only localStorage key this app writes
+  const SCHEMA_VERSION = 4;
+  const PREVIOUS_KEYS = [['myday.data.v3', 3], ['myday.data.v2', 2]]; // earlier single-key versions, migrated once
   const EXPORT_FORMAT = 'myday-export';
   const LEGACY_KEYS = ['myday.tasks', 'myday.days', 'myday.nudge', 'myday.meta']; // version 1, migrated once
 
@@ -605,7 +718,10 @@
       commitments: [],
       context: {},
       timer: null,        // the running focus timer, if any
-      celebratedOn: null  // last date the "whole plan done" moment played (once a day)
+      celebratedOn: null, // last date the "whole plan done" moment played (once a day)
+      rota: emptyRota(),  // shift pattern versions, per-date overrides, overtime/absence entries, colours
+      pay: defaultPay(),  // the user's own pay rules and deductions setup
+      bankHolidays: { region: 'england-and-wales', fetchedAt: null, divisions: null } // cached gov.uk data
     };
   }
 
@@ -777,6 +893,10 @@
         if (c) s.context[k] = c; else report.dropped++;
       }
     }
+    // ---- Added in version 4 (absent before, so defaults apply) ----
+    s.rota = normalizeRota(raw.rota, report);
+    s.pay = normalizePay(raw.pay);
+    s.bankHolidays = normalizeBankHolidays(raw.bankHolidays);
     return s;
   }
 
@@ -875,7 +995,7 @@
       let parsed;
       try { parsed = JSON.parse(raw); } catch (e) { return markDamaged(raw, STORAGE_KEY); }
       if (!isObj(parsed)) return markDamaged(raw, STORAGE_KEY);
-      if (parsed.schemaVersion !== SCHEMA_VERSION && parsed.schemaVersion !== 2) {
+      if (![2, 3, SCHEMA_VERSION].includes(parsed.schemaVersion)) {
         return markDamaged(raw, STORAGE_KEY, parsed.schemaVersion > SCHEMA_VERSION
           ? 'It was saved by a newer version of MyDay.'
           : "It's in a format this version doesn't recognise.");
@@ -884,16 +1004,17 @@
       return;
     }
 
-    // 2. Version 2 (single key "myday.data.v2") → migrate, then remove the old key.
-    let prev = null;
-    try { prev = localStorage.getItem(PREVIOUS_KEY); } catch (e) { /* ignore */ }
-    if (prev !== null) {
+    // 2. Earlier single-key versions (v3, then v2) → migrate, then remove the old key.
+    for (const [key, version] of PREVIOUS_KEYS) {
+      let prev = null;
+      try { prev = localStorage.getItem(key); } catch (e) { /* ignore */ }
+      if (prev === null) continue;
       let parsed;
-      try { parsed = JSON.parse(prev); } catch (e) { return markDamaged(prev, PREVIOUS_KEY); }
-      if (!isObj(parsed) || parsed.schemaVersion !== 2) return markDamaged(prev, PREVIOUS_KEY, "It's in a format this version doesn't recognise.");
-      try { state = normalize(parsed); } catch (e) { return markDamaged(prev, PREVIOUS_KEY); }
+      try { parsed = JSON.parse(prev); } catch (e) { return markDamaged(prev, key); }
+      if (!isObj(parsed) || parsed.schemaVersion !== version) return markDamaged(prev, key, "It's in a format this version doesn't recognise.");
+      try { state = normalize(parsed); } catch (e) { return markDamaged(prev, key); }
       if (persist()) {
-        removeKey(PREVIOUS_KEY);
+        PREVIOUS_KEYS.forEach(([k2]) => removeKey(k2));
         bootNotice = 'MyDay has been updated — your plans and history came with you.';
       }
       return;
@@ -1141,7 +1262,7 @@
       const s = dtToMin(sl.start, k), e = dtToMin(sl.end, k);
       if (e > 0 && s < 1440 && !out.some(x => x.type === 'sleep' && x.start === s)) out.push({ type: 'sleep', start: s, end: e, label: 'Sleep' });
     }
-    for (const c of state.commitments) {
+    for (const c of state.commitments.concat(rotaWorkBlocks(k))) {
       const s = dtToMin(c.start, k), e = dtToMin(c.end, k);
       if (e + b <= 0 || s - b >= 1440) continue;
       out.push({ type: c.kind, start: s, end: e, label: c.title, c });
@@ -1493,11 +1614,11 @@
     let data;
     if (obj.format === EXPORT_FORMAT) {
       if (obj.schemaVersion > SCHEMA_VERSION) throw new Error('That file came from a newer version of MyDay.');
-      if (obj.schemaVersion !== 2 && obj.schemaVersion !== 3) throw new Error("That file's version isn't supported.");
+      if (![2, 3, 4].includes(obj.schemaVersion)) throw new Error("That file's version isn't supported.");
       if (!isObj(obj.data) || obj.data.schemaVersion !== obj.schemaVersion || !isObj(obj.data.lists) || !isObj(obj.data.days)) {
         throw new Error('That file is missing parts MyDay needs.');
       }
-      data = obj.data; // version 2 files are upgraded by normalize()
+      data = obj.data; // version 2 and 3 files are upgraded by normalize()
     } else if (LEGACY_KEYS.some(k => k in obj)) {
       data = migrateV1(obj); // export from the first version of MyDay
     } else {
@@ -1526,7 +1647,7 @@
     lines.push('', 'Your current data on this device will be overwritten. You might want to export it first.');
     if (!confirm(lines.join('\n'))) { toast('Import cancelled. Nothing was changed.'); return; }
     state = s;
-    if (saveBlocked && damagedKey === PREVIOUS_KEY) removeKey(PREVIOUS_KEY);
+    if (saveBlocked && damagedKey && damagedKey !== STORAGE_KEY) removeKey(damagedKey);
     saveBlocked = false;
     damagedRaw = null;
     view = 'auto';
@@ -1558,9 +1679,11 @@
     if (proposal && proposal.dayKey !== k) proposal = null;
     snapshotCommitForm();
     applyTheme();
+    renderNav();
     $('date').textContent = prettyDate(k);
     const layout = $('layout');
     if (saveBlocked) {
+      $('side-section').innerHTML = '';
       layout.dataset.mode = 'other';
       $('nudge').innerHTML = '';
       $('app').innerHTML = damagedView();
@@ -1571,6 +1694,16 @@
       return;
     }
     activeTimer(); // drops a timer left over from another day or for a task that's gone or done
+    if (section !== 'today') {
+      layout.dataset.mode = 'other';
+      for (const id of ['nudge', 'slot-glance', 'streak', 'garden']) $(id).innerHTML = '';
+      $('app').innerHTML = section === 'calendar' ? calendarMain() : payMain();
+      $('side-section').innerHTML = section === 'calendar' ? calendarSide() : paySide();
+      renderFooter();
+      finishRender(layout);
+      return;
+    }
+    $('side-section').innerHTML = '';
     renderNudge(k);
     if (view === 'edit') { layout.dataset.mode = 'other'; $('app').innerHTML = editView(); $('slot-glance').innerHTML = ''; }
     else if (view === 'evening' && eveningKey && state.days[eveningKey]) { layout.dataset.mode = 'other'; $('app').innerHTML = eveningView(eveningKey); $('slot-glance').innerHTML = ''; }
@@ -1585,8 +1718,12 @@
     renderStreak();
     renderGarden();
     renderFooter();
-    // A gentle fade when moving between screens (not on first load).
-    const screen = view === 'auto' ? layout.dataset.mode : view;
+    finishRender(layout);
+  }
+
+  // A gentle fade when moving between screens (not on first load), and clearing one-off animation flags.
+  function finishRender(layout) {
+    const screen = section + ':' + (view === 'auto' ? layout.dataset.mode : view);
     if (lastScreen !== null && screen !== lastScreen && motionAllowed()) {
       document.querySelectorAll('#app .card').forEach(c => c.classList.add('enter'));
     }
@@ -1616,7 +1753,7 @@
 
   // Re-renders everything that depends on the context, without touching the context inputs themselves.
   function fillDerived() {
-    if (view !== 'auto' || saveBlocked) return;
+    if (view !== 'auto' || saveBlocked || section !== 'today') return;
     const k = todayKey(), d = state.days[k];
     setHTML('slot-timer', d ? timerCard() : '');
     setHTML('slot-plan', d ? planCard(k) : '');
@@ -1628,7 +1765,7 @@
     setHTML('sleepSummary', sleepSummary(k));
     setHTML('reviewHint', reviewHint(k));
   }
-  function refresh() { renderNudge(todayKey()); fillDerived(); renderStreak(); }
+  function refresh() { if (section !== 'today') { render(); return; } renderNudge(todayKey()); fillDerived(); renderStreak(); }
 
   function damagedView() {
     return `
@@ -1787,6 +1924,7 @@
     };
     const energy = ctx.energy || (d && d.energy) || 3;
     const todays = commitmentsOn(k);
+    const rotaToday = rotaWorkBlocks(k).filter(c => dtToMin(c.end, k) > 0 && dtToMin(c.start, k) < 1440);
     const upcoming = state.commitments.filter(c => !todays.includes(c) && c.start.slice(0, 10) > k);
     const inner = `
       <div class="ctx-block">
@@ -1812,7 +1950,8 @@
       </div>
       <div class="ctx-block">
         <h3>Work &amp; appointments today</h3>
-        ${todays.length ? commitmentRows(todays, k) : '<p class="small muted" style="margin:0">Nothing booked today.</p>'}
+        ${todays.length ? commitmentRows(todays, k) : rotaToday.length ? '' : '<p class="small muted" style="margin:0">Nothing booked today.</p>'}
+        ${rotaToday.length ? `<p class="small" style="margin:8px 0 0">From your rota: ${rotaToday.map(c => `${esc(c.title)} ${esc(fmtRange(c.start, c.end, k))}`).join(', ')} · <a href="#calendar">change it in Calendar</a></p>` : ''}
         ${commitForm ? commitFormHtml() : `
         <div class="row2">
           <button class="inline" data-action="commit-new" data-kind="work">+ Work shift</button>
@@ -1873,7 +2012,7 @@
       const c = bl.c;
       rows.push({
         at: Math.max(bl.start, 0), time: fmtRange(c.start, c.end, k), label: c.title,
-        sub: (c.title === KIND_LABEL[c.kind] ? '' : KIND_LABEL[c.kind] + ' · ') + (st.bufferMinutes ? `${st.bufferMinutes} min prep/travel before and after` : 'No prep/travel time'), cls: `g-commit kind-${c.kind}`
+        sub: (c.rota ? 'From your rota · ' : c.title === KIND_LABEL[c.kind] ? '' : KIND_LABEL[c.kind] + ' · ') + (st.bufferMinutes ? `${st.bufferMinutes} min prep/travel before and after` : 'No prep/travel time'), cls: `g-commit kind-${c.kind}`
       });
     }
     for (const t of tasks) rows.push({ at: t.start, time: rangeMin(t.start, t.end), label: t.title, sub: t.sub, cls: t.cls });
@@ -2372,6 +2511,1176 @@
   function renderGarden() { $('garden').innerHTML = view === 'edit' ? '' : gardenCard(); }
 
   // ======================================================================
+  // Navigation
+  // ======================================================================
+  const navSvg = body => `<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
+  const SECTIONS = [
+    { id: 'today', label: 'Today', ready: true, icon: navSvg('<circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>') },
+    { id: 'calendar', label: 'Calendar', ready: true, icon: navSvg('<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>') },
+    { id: 'pay', label: 'Pay', ready: true, icon: navSvg('<path d="M15.5 6.5A4 4 0 0 0 8.5 9v3.5c0 2.5-1 4.5-2.5 5.5h12M6.5 12.5h7"/>') },
+    // Planned sections. They stay out of the navigation until they're built,
+    // so nothing unfinished ever looks like a working control.
+    { id: 'learn', label: 'Learn', ready: false },
+    { id: 'ideas', label: 'Ideas', ready: false },
+    { id: 'health', label: 'Health', ready: false }
+  ];
+  function sectionFromHash() {
+    const id = (location.hash || '').replace('#', '');
+    const s = SECTIONS.find(x => x.id === id && x.ready);
+    return s ? s.id : 'today';
+  }
+  let section = sectionFromHash();
+  function renderNav() {
+    $('nav').innerHTML = saveBlocked ? '' : SECTIONS.filter(s => s.ready).map(s => `
+      <a class="nav-item" href="#${s.id}" ${s.id === section ? 'aria-current="page"' : ''}>
+        <span class="nav-icon">${s.icon}</span><span class="nav-label">${s.label}</span>
+      </a>`).join('');
+  }
+
+  // ======================================================================
+  // Shift rota: pattern versions + per-date overrides + separate entries
+  // ======================================================================
+  const SHIFT_TYPES = ['day', 'night', 'off'];
+  const PLANNED_TYPES = ['day', 'night', 'off', 'custom'];
+  const ACTUAL_STATUSES = ['worked', 'sick', 'annual_leave', 'cancelled', 'off', 'custom'];
+  const ENTRY_KINDS = ['overtime', 'unauthorised'];
+  const STATUS_LABEL = {
+    day: 'Day shift', night: 'Night shift', off: 'Off', custom: 'Custom', sick: 'Sick', annual_leave: 'Annual leave',
+    cancelled: 'Cancelled', unauthorised: 'Unauthorised absence', overtime: 'Overtime', appointment: 'Appointment', worked: 'Worked'
+  };
+  const SHORT_LABEL = { day: 'Day', night: 'Night', off: 'Off', custom: 'Custom', sick: 'Sick', annual_leave: 'Leave', cancelled: 'Cancel', unauthorised: 'Absent', overtime: '+OT', appointment: 'Appt' };
+  const DEFAULT_COLOURS = {
+    day: '#2f8f4e', night: '#a8d5f7', off: '#c9d1cc', sick: '#f5a3a3', unauthorised: '#111111',
+    annual_leave: '#c9b5ec', cancelled: '#a7a7a7', custom: '#f1c66a', overtime: '#f0a05a', appointment: '#a9b0e0'
+  };
+  const DEFAULT_TIMES = { day: { start: '07:00', end: '19:00' }, night: { start: '19:00', end: '07:00' } };
+  const DEFAULT_CYCLE = ['day', 'day', 'day', 'day', 'off', 'off', 'off', 'off', 'night', 'night', 'night', 'night', 'off', 'off', 'off', 'off'];
+  const isHex = s => typeof s === 'string' && /^#[0-9a-f]{6}$/i.test(s);
+  const mod = (a, n) => ((a % n) + n) % n;
+
+  function emptyRota() { return { patterns: [], overrides: {}, entries: [], colours: Object.assign({}, DEFAULT_COLOURS) }; }
+
+  function normalizeRota(raw, report) {
+    const r = emptyRota();
+    if (!isObj(raw)) return r;
+    if (Array.isArray(raw.patterns)) {
+      const byFrom = new Map();
+      for (const v of raw.patterns) {
+        if (!isObj(v) || !isDateKey(v.anchor) || !Array.isArray(v.cycle) || !v.cycle.length || v.cycle.length > 56 || !v.cycle.every(t => SHIFT_TYPES.includes(t))) { report.dropped++; continue; }
+        const times = {};
+        for (const t of ['day', 'night']) {
+          const tv = isObj(v.times) && isObj(v.times[t]) ? v.times[t] : {};
+          times[t] = { start: isTime(tv.start) ? tv.start : DEFAULT_TIMES[t].start, end: isTime(tv.end) ? tv.end : DEFAULT_TIMES[t].end };
+        }
+        const breaks = { day: intIn(isObj(v.breaks) ? v.breaks.day : 0, 0, 240, 0), night: intIn(isObj(v.breaks) ? v.breaks.night : 0, 0, 240, 0) };
+        const from = isDateKey(v.effectiveFrom) ? v.effectiveFrom : null;
+        byFrom.set(from || '', { id: typeof v.id === 'string' && v.id ? v.id : 'p' + uid(), effectiveFrom: from, anchor: v.anchor, cycle: v.cycle.slice(), times, breaks });
+      }
+      r.patterns = [...byFrom.values()].sort((a, b) => ((a.effectiveFrom || '') < (b.effectiveFrom || '') ? -1 : 1));
+    }
+    if (isObj(raw.overrides)) {
+      for (const d of Object.keys(raw.overrides)) {
+        const o = raw.overrides[d];
+        if (!isDateKey(d) || !isObj(o)) { report.dropped++; continue; }
+        const out = {};
+        if (isObj(o.planned) && PLANNED_TYPES.includes(o.planned.type)) {
+          const p = { type: o.planned.type };
+          if (isTime(o.planned.start) && isTime(o.planned.end)) { p.start = o.planned.start; p.end = o.planned.end; }
+          if (typeof o.planned.label === 'string' && o.planned.label.trim()) p.label = o.planned.label.trim().slice(0, 40);
+          if (o.planned.breakMin !== undefined) p.breakMin = intIn(o.planned.breakMin, 0, 240, 0);
+          out.planned = p;
+        }
+        if (isObj(o.actual) && ACTUAL_STATUSES.includes(o.actual.status)) {
+          const a = { status: o.actual.status };
+          if (isTime(o.actual.start) && isTime(o.actual.end)) { a.start = o.actual.start; a.end = o.actual.end; }
+          if (typeof o.actual.label === 'string' && o.actual.label.trim()) a.label = o.actual.label.trim().slice(0, 40);
+          if (a.status === 'custom') a.paid = o.actual.paid === true;
+          out.actual = a;
+        }
+        if (out.planned || out.actual) r.overrides[d] = out; else report.dropped++;
+      }
+    }
+    if (Array.isArray(raw.entries)) {
+      for (const e of raw.entries) {
+        if (!isObj(e) || !ENTRY_KINDS.includes(e.kind) || !isDateTime(e.start) || !isDateTime(e.end) || e.end <= e.start) { report.dropped++; continue; }
+        r.entries.push({ id: typeof e.id === 'string' && e.id ? e.id : 'e' + uid(), kind: e.kind, start: e.start, end: e.end, note: typeof e.note === 'string' ? e.note.slice(0, 80) : '' });
+      }
+      r.entries.sort((a, b) => (a.start < b.start ? -1 : 1));
+    }
+    if (isObj(raw.colours)) for (const k of Object.keys(DEFAULT_COLOURS)) if (isHex(raw.colours[k])) r.colours[k] = raw.colours[k].toLowerCase();
+    return r;
+  }
+
+  // Times for a shift shown on its own date: "19:00–07:00 (next day)".
+  function fmtShiftRange(s, e, d) {
+    const tag = x => (x === d ? '' : dayDiff(x, d) === 1 ? ' (next day)' : dayDiff(x, d) === -1 ? ' (day before)' : ` (${shortDate(x)})`);
+    return `${s.slice(11)}${tag(s.slice(0, 10))}–${e.slice(11)}${tag(e.slice(0, 10))}`;
+  }
+
+  // The pattern version in force on a date: the latest one whose effective date has arrived.
+  function patternFor(d) {
+    let best = null;
+    for (const v of state.rota.patterns) {
+      if (v.effectiveFrom && v.effectiveFrom > d) continue;
+      if (!best || (v.effectiveFrom || '') >= (best.effectiveFrom || '')) best = v;
+    }
+    return best;
+  }
+  // End time on or before the start time means the shift ends the next day (e.g. 19:00–07:00).
+  const endDateFor = (d, start, end) => (end <= start ? shift(d, 1) : d);
+
+  // What the rota says for a date (pattern, unless this one date was changed).
+  function plannedFor(d) {
+    const v = patternFor(d), ov = state.rota.overrides[d], po = ov && ov.planned;
+    let type = v ? v.cycle[mod(dayDiff(d, v.anchor), v.cycle.length)] : null;
+    let source = v ? 'rota' : 'none';
+    if (po) { type = po.type; source = 'changed'; }
+    if (!type) return null;
+    let start = null, end = null, breakMin = 0, label = null;
+    if (type === 'day' || type === 'night') {
+      const tv = v ? v.times[type] : DEFAULT_TIMES[type];
+      start = po && po.start ? po.start : tv.start;
+      end = po && po.start ? po.end : tv.end;
+      breakMin = po && po.breakMin !== undefined ? po.breakMin : v ? v.breaks[type] : 0;
+    } else if (type === 'custom') {
+      label = (po && po.label) || 'Custom';
+      if (po && po.start) { start = po.start; end = po.end; breakMin = po.breakMin || 0; }
+    }
+    const startDt = start ? `${d}T${start}` : null;
+    const endDt = start ? `${endDateFor(d, start, end)}T${end}` : null;
+    return { date: d, type, label, start, end, startDt, endDt, breakMin, source, works: !!startDt };
+  }
+
+  // What actually happened. Nothing recorded = assumed to go as planned (shown as "assumed").
+  function actualFor(d) {
+    const p = plannedFor(d), ov = state.rota.overrides[d], a = ov && ov.actual;
+    if (!a) {
+      return p && p.works
+        ? { status: 'worked', assumed: true, startDt: p.startDt, endDt: p.endDt, breakMin: p.breakMin, works: true, paidCustom: false }
+        : { status: 'off', assumed: true, works: false };
+    }
+    if (a.status === 'worked') {
+      const s = a.start || (p && p.start), e = a.start ? a.end : (p && p.end);
+      if (!s) return { status: 'worked', assumed: false, works: false };
+      return { status: 'worked', assumed: false, startDt: `${d}T${s}`, endDt: `${endDateFor(d, s, e)}T${e}`, breakMin: p ? p.breakMin : 0, works: true, edited: !!a.start };
+    }
+    if (a.status === 'custom') {
+      const works = !!a.start;
+      return { status: 'custom', assumed: false, label: a.label || 'Custom', paidCustom: !!a.paid, works,
+        startDt: works ? `${d}T${a.start}` : null, endDt: works ? `${endDateFor(d, a.start, a.end)}T${a.end}` : null, breakMin: 0 };
+    }
+    return { status: a.status, assumed: false, works: false };
+  }
+
+  function setOverride(d, part, value) {
+    const o = Object.assign({}, state.rota.overrides[d] || {});
+    if (value) o[part] = value; else delete o[part];
+    if (o.planned || o.actual) state.rota.overrides[d] = o; else delete state.rota.overrides[d];
+    persist();
+  }
+
+  // Real elapsed time between two local wall-clock times (so DST nights are 11 or 13 hours).
+  function dtToDate(dt) { return new Date(+dt.slice(0, 4), +dt.slice(5, 7) - 1, +dt.slice(8, 10), +dt.slice(11, 13), +dt.slice(14, 16)); }
+  const msBetween = (a, b) => dtToDate(b) - dtToDate(a);
+  function overlapMs(a1, a2, b1, b2) { return Math.max(0, Math.min(a2, b2) - Math.max(a1, b1)); }
+
+  function entriesOn(d) { return state.rota.entries.filter(e => e.start.slice(0, 10) === d); }
+  function entriesTouching(d) { return state.rota.entries.filter(e => e.start.slice(0, 10) <= d && e.end.slice(0, 10) >= d && e.end > d + 'T00:00'); }
+
+  // Unauthorised absence that overlaps the shift starting on date d (ms), and whether it covers it all.
+  function absenceOn(d) {
+    const a = actualFor(d);
+    if (!a.works) return { ms: 0, whole: false, any: entriesOn(d).some(e => e.kind === 'unauthorised') };
+    const s = +dtToDate(a.startDt), e = +dtToDate(a.endDt);
+    let ms = 0;
+    for (const x of state.rota.entries) if (x.kind === 'unauthorised') ms += overlapMs(s, e, +dtToDate(x.start), +dtToDate(x.end));
+    ms = Math.min(ms, e - s);
+    return { ms, whole: ms > 0 && ms >= e - s, any: ms > 0 };
+  }
+
+  // The status shown in the calendar for a date, with its colour key and label.
+  function displayStatus(d) {
+    const p = plannedFor(d), a = actualFor(d), ua = absenceOn(d);
+    if (ua.whole) return { key: 'unauthorised', label: STATUS_LABEL.unauthorised, short: SHORT_LABEL.unauthorised, p, a };
+    if (!a.assumed && a.status !== 'worked') {
+      if (a.status === 'custom') return { key: 'custom', label: a.label, short: a.label, p, a };
+      return { key: a.status, label: STATUS_LABEL[a.status], short: SHORT_LABEL[a.status], p, a };
+    }
+    if (!p) return { key: null, label: '', short: '', p, a };
+    if (p.type === 'custom') return { key: 'custom', label: p.label, short: p.label, p, a };
+    return { key: p.type, label: STATUS_LABEL[p.type], short: SHORT_LABEL[p.type], p, a };
+  }
+
+  // Readable text on any background colour: black or white, whichever contrasts more.
+  function lum(hex) {
+    const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  const textOn = hex => ((1.05) / (lum(hex) + 0.05) >= (lum(hex) + 0.05) / 0.05 ? '#ffffff' : '#000000');
+  function chip(key, text, extraClass) {
+    const c = state.rota.colours[key] || '#888888';
+    return `<span class="rchip${extraClass ? ' ' + extraClass : ''}" style="--c:${c};--t:${textOn(c)}">${esc(text)}</span>`;
+  }
+
+  // Work time from the rota for Today's planning: actual shifts (or planned, if not yet recorded) and overtime.
+  function rotaWorkBlocks(k) {
+    const out = [];
+    for (const d of [shift(k, -1), k, shift(k, 1)]) {
+      const a = actualFor(d);
+      if (!a.works || (a.status === 'custom' && !a.paidCustom && !a.startDt)) continue;
+      const p = plannedFor(d);
+      const title = a.status === 'custom' ? a.label : p && p.type === 'night' ? 'Night shift' : p && p.type === 'day' ? 'Day shift' : 'Shift';
+      out.push({ kind: 'work', rota: true, title, start: a.startDt, end: a.endDt });
+    }
+    for (const e of state.rota.entries) {
+      if (e.kind !== 'overtime') continue;
+      if (e.end.slice(0, 10) < shift(k, -1) || e.start.slice(0, 10) > shift(k, 1)) continue;
+      out.push({ kind: 'work', rota: true, title: 'Overtime', start: e.start, end: e.end });
+    }
+    return out;
+  }
+
+  // Everything with a time on a date, for overlap checks.
+  function timedItemsOn(d) {
+    const items = [];
+    const dayStart = +dtToDate(d + 'T00:00'), dayEnd = +dtToDate(shift(d, 1) + 'T00:00');
+    const add = (label, s, e, kind) => {
+      const a = +dtToDate(s), b = +dtToDate(e);
+      if (overlapMs(a, b, dayStart, dayEnd) > 0) items.push({ label, s: a, e: b, kind, startDt: s, endDt: e });
+    };
+    for (const x of [shift(d, -1), d]) {
+      const a = actualFor(x), p = plannedFor(x);
+      if (a.works) add(a.status === 'custom' ? a.label : `${p && p.type === 'night' ? 'Night' : p && p.type === 'day' ? 'Day' : 'Planned'} shift`, a.startDt, a.endDt, 'shift');
+    }
+    for (const e of state.rota.entries) if (e.kind === 'overtime') add('Overtime', e.start, e.end, 'overtime');
+    for (const c of state.commitments) add(c.title, c.start, c.end, c.kind);
+    return items;
+  }
+  function overlapsOn(d) {
+    const items = timedItemsOn(d), out = [];
+    for (let i = 0; i < items.length; i++) {
+      for (let j = i + 1; j < items.length; j++) {
+        const A = items[i], B = items[j];
+        if (A.s < B.e && B.s < A.e) out.push(`${A.label} (${fmtShiftRange(A.startDt, A.endDt, d)}) overlaps ${B.label} (${fmtShiftRange(B.startDt, B.endDt, d)})`);
+      }
+    }
+    return out;
+  }
+
+  // ======================================================================
+  // Bank holidays (gov.uk). Cached; never invented; never change shifts or rates.
+  // ======================================================================
+  const BH_URL = 'https://www.gov.uk/bank-holidays.json';
+  const BH_REGIONS = { 'england-and-wales': 'England and Wales', scotland: 'Scotland', 'northern-ireland': 'Northern Ireland' };
+  const bhStatus = { loading: false, error: null, tried: false };
+  let bhIndex = null;
+
+  function normalizeBankHolidays(raw) {
+    const b = { region: 'england-and-wales', fetchedAt: null, divisions: null };
+    if (!isObj(raw)) return b;
+    if (BH_REGIONS[raw.region]) b.region = raw.region;
+    if (isObj(raw.divisions) && Object.keys(BH_REGIONS).every(k => Array.isArray(raw.divisions[k]))) {
+      b.divisions = {};
+      for (const k of Object.keys(BH_REGIONS)) b.divisions[k] = raw.divisions[k].filter(e => isObj(e) && isDateKey(e.date) && typeof e.title === 'string').map(e => ({ date: e.date, title: e.title }));
+      if (typeof raw.fetchedAt === 'string') b.fetchedAt = raw.fetchedAt;
+    }
+    return b;
+  }
+  function parseBankHolidayFeed(json) {
+    if (!isObj(json)) throw new Error('gov.uk sent something unexpected.');
+    const out = {};
+    for (const k of Object.keys(BH_REGIONS)) {
+      if (!isObj(json[k]) || !Array.isArray(json[k].events)) throw new Error('gov.uk sent something unexpected.');
+      out[k] = json[k].events.filter(e => isObj(e) && isDateKey(e.date) && typeof e.title === 'string').map(e => ({ date: e.date, title: e.title }));
+    }
+    return out;
+  }
+  function bankHolidayOn(d) {
+    const b = state.bankHolidays;
+    if (!b.divisions) return null;
+    const key = b.region + '|' + b.fetchedAt;
+    if (!bhIndex || bhIndex.key !== key) bhIndex = { key, map: new Map((b.divisions[b.region] || []).map(e => [e.date, e.title])) };
+    return bhIndex.map.get(d) || null;
+  }
+  async function fetchBankHolidays(manual) {
+    if (bhStatus.loading) return;
+    bhStatus.loading = true;
+    bhStatus.error = null;
+    bhStatus.tried = true;
+    if (section !== 'today') render();
+    try {
+      const res = await fetch(BH_URL);
+      if (!res.ok) throw new Error(`gov.uk replied with an error (${res.status}).`);
+      let json;
+      try { json = await res.json(); } catch (e) { throw new Error('gov.uk sent something that isn\'t valid JSON.'); }
+      state.bankHolidays.divisions = parseBankHolidayFeed(json);
+      state.bankHolidays.fetchedAt = localStamp();
+      bhIndex = null;
+      persist();
+      if (manual) toast('Bank holidays updated from gov.uk.');
+    } catch (e) {
+      bhStatus.error = e instanceof TypeError
+        ? "Couldn't reach gov.uk — you may be offline, or this browser blocked the request."
+        : (e && e.message) || 'Something went wrong.';
+    } finally {
+      bhStatus.loading = false;
+      if (section !== 'today') render();
+    }
+  }
+  function maybeFetchBankHolidays() {
+    const b = state.bankHolidays;
+    const stale = !b.divisions || !b.fetchedAt || dayDiff(todayKey(), b.fetchedAt.slice(0, 10)) >= 7;
+    if (stale && !bhStatus.tried && !saveBlocked) fetchBankHolidays(false);
+  }
+
+  // ======================================================================
+  // Pay: rates verified on gov.uk (see "Rates and thresholds for employers").
+  // Tax-year keys are the year the tax year starts (6 April).
+  // ======================================================================
+  const TAX_YEARS = {
+    2025: {
+      label: '2025/26',
+      ruk: [[37700, 0.20], [125140, 0.40], [Infinity, 0.45]],
+      scot: [[2827, 0.19], [14921, 0.20], [31092, 0.21], [62430, 0.42], [125140, 0.45], [Infinity, 0.48]],
+      ni: { ptW: 242, uelW: 967, ptM: 1048, uelM: 4189 },
+      sl: { plan1: 26065, plan2: 28470, plan4: 32745, plan5: null, postgrad: 21000 },
+      ssp: { weekly: 118.75, lel: 125 }
+    },
+    2026: {
+      label: '2026/27',
+      ruk: [[37700, 0.20], [125140, 0.40], [Infinity, 0.45]],
+      scot: [[3967, 0.19], [16956, 0.20], [31092, 0.21], [62430, 0.42], [125140, 0.45], [Infinity, 0.48]],
+      ni: { ptW: 242, uelW: 967, ptM: 1048, uelM: 4189 },
+      sl: { plan1: 26900, plan2: 29385, plan4: 33795, plan5: 25000, postgrad: 21000 },
+      ssp: { weekly: 123.25, lel: null }
+    }
+  };
+  const SSP_REFORM = '2026-04-06'; // from this date: paid from the first full day, no lower earnings limit, lower of flat rate or 80% of AWE
+  const LOAN_LABEL = { plan1: 'Plan 1', plan2: 'Plan 2', plan4: 'Plan 4', plan5: 'Plan 5', postgrad: 'Postgraduate' };
+  const FREQ_LABEL = { weekly: 'Weekly', fortnightly: 'Fortnightly', four_weekly: 'Every 4 weeks', monthly: 'Monthly' };
+  const FREQ_DAYS = { weekly: 7, fortnightly: 14, four_weekly: 28 };
+
+  function defaultPay() {
+    return {
+      hourlyRate: null, nightMultiplier: 1, overtimeMultiplier: 1.5, bankHolidayMultiplier: 2, bankHolidayHours: 'clock',
+      annualLeavePaid: true, cancelledPaid: false, sickPay: 'ssp', sickPercent: 50, averageWeeklyEarnings: null,
+      frequency: 'monthly', periodAnchor: todayKey().slice(0, 8) + '01',
+      taxCode: '1257L', niCategory: 'A', studentLoans: { plan1: false, plan2: false, plan4: false, plan5: false, postgrad: false }
+    };
+  }
+  function numIn(v, lo, hi, fallback) {
+    if (v === null || v === undefined || v === '') return fallback;
+    const n = Number(v);
+    return Number.isFinite(n) && n >= lo && n <= hi ? n : fallback;
+  }
+  function normalizePay(raw) {
+    const p = defaultPay();
+    if (!isObj(raw)) return p;
+    p.hourlyRate = numIn(raw.hourlyRate, 0, 1000, null);
+    p.nightMultiplier = numIn(raw.nightMultiplier, 1, 5, 1);
+    p.overtimeMultiplier = numIn(raw.overtimeMultiplier, 1, 5, 1.5);
+    p.bankHolidayMultiplier = numIn(raw.bankHolidayMultiplier, 1, 5, 2);
+    p.bankHolidayHours = raw.bankHolidayHours === 'shift' ? 'shift' : 'clock';
+    p.annualLeavePaid = raw.annualLeavePaid !== false;
+    p.cancelledPaid = raw.cancelledPaid === true;
+    p.sickPay = ['ssp', 'full', 'percent'].includes(raw.sickPay) ? raw.sickPay : 'ssp';
+    p.sickPercent = numIn(raw.sickPercent, 0, 100, 50);
+    p.averageWeeklyEarnings = numIn(raw.averageWeeklyEarnings, 0, 100000, null);
+    p.frequency = FREQ_LABEL[raw.frequency] ? raw.frequency : 'monthly';
+    if (isDateKey(raw.periodAnchor)) p.periodAnchor = raw.periodAnchor;
+    if (typeof raw.taxCode === 'string' && raw.taxCode.trim()) p.taxCode = raw.taxCode.trim().toUpperCase().slice(0, 12);
+    p.niCategory = raw.niCategory === 'X' ? 'X' : 'A';
+    if (isObj(raw.studentLoans)) for (const k of Object.keys(p.studentLoans)) p.studentLoans[k] = raw.studentLoans[k] === true;
+    return p;
+  }
+
+  function shiftMonth(k, n) { const [y, m, d] = k.split('-').map(Number); return keyOf(new Date(y, m - 1 + n, d, 12)); }
+  function periodContaining(x) {
+    const p = state.pay;
+    if (p.frequency === 'monthly') {
+      const day = Math.min(28, Number(p.periodAnchor.slice(8, 10)));
+      let start = x.slice(0, 8) + pad(day);
+      if (start > x) start = shiftMonth(start, -1);
+      return { start, end: shift(shiftMonth(start, 1), -1) };
+    }
+    const len = FREQ_DAYS[p.frequency];
+    const n = Math.floor(dayDiff(x, p.periodAnchor) / len);
+    const start = shift(p.periodAnchor, n * len);
+    return { start, end: shift(start, len - 1) };
+  }
+  function periodAt(offset) {
+    const cur = periodContaining(todayKey());
+    if (state.pay.frequency === 'monthly') return periodContaining(shiftMonth(cur.start, offset));
+    return periodContaining(shift(cur.start, offset * FREQ_DAYS[state.pay.frequency]));
+  }
+  function taxYearOf(d) { const y = +d.slice(0, 4); return d >= `${y}-04-06` ? y : y - 1; }
+
+  function parseTaxCode(raw) {
+    let c = String(raw || '').toUpperCase().replace(/\s+/g, '').replace(/(W1|M1|X)$/, '');
+    let scottish = false;
+    if (c.startsWith('S')) { scottish = true; c = c.slice(1); } else if (c.startsWith('C')) c = c.slice(1);
+    if (c === 'NT') return { scottish, noTax: true };
+    if (c === 'BR') return { scottish, flatRate: 0.20 };
+    if (scottish && /^D[0-3]$/.test(c)) return { scottish, flatRate: [0.21, 0.42, 0.45, 0.48][+c[1]] };
+    if (!scottish && /^D[01]$/.test(c)) return { scottish, flatRate: [0.40, 0.45][+c[1]] };
+    const m = c.match(/^(\d{1,5})[LMNT]$/);
+    if (m) return { scottish, allowance: Number(m[1]) === 0 ? 0 : Number(m[1]) * 10 + 9 };
+    if (/^K\d+$/.test(c)) return { error: "K tax codes aren't supported yet, so tax isn't estimated." };
+    return { error: "That tax code isn't recognised, so tax isn't estimated." };
+  }
+
+  const floor2 = n => Math.floor(n * 100 + 1e-9) / 100;
+  const round2 = n => Math.round(n * 100) / 100;
+
+  // Estimated deductions for one pay period (non-cumulative, like a "Week 1/Month 1" code).
+  function deductionsFor(gross, freq, taxYear) {
+    const R = TAX_YEARS[taxYear], out = { tax: 0, ni: 0, sl: 0, pgl: 0, notes: [], ok: !!R };
+    if (!R) { out.notes.push(`No tax rates are stored for the ${taxYear}/${String(taxYear + 1).slice(2)} tax year, so deductions aren't estimated.`); return out; }
+    const per = freq === 'monthly' ? null : FREQ_DAYS[freq] / 7;
+    const frac = freq === 'monthly' ? 1 / 12 : per / 52;
+    const code = parseTaxCode(state.pay.taxCode);
+    if (code.error) out.notes.push(code.error);
+    else if (code.noTax) out.tax = 0;
+    else if (code.flatRate) out.tax = floor2(gross * code.flatRate);
+    else {
+      const taxable = Math.floor(Math.max(0, gross - code.allowance * frac));
+      let tax = 0, prev = 0;
+      for (const [limit, rate] of (code.scottish ? R.scot : R.ruk)) {
+        const lim = limit * frac;
+        const part = Math.min(taxable, lim) - prev;
+        if (part > 0) tax += part * rate;
+        prev = lim;
+        if (taxable <= lim) break;
+      }
+      out.tax = floor2(tax);
+    }
+    if (state.pay.niCategory === 'A') {
+      const pt = freq === 'monthly' ? R.ni.ptM : R.ni.ptW * per, uel = freq === 'monthly' ? R.ni.uelM : R.ni.uelW * per;
+      out.ni = round2(Math.max(0, Math.min(gross, uel) - pt) * 0.08 + Math.max(0, gross - uel) * 0.02);
+    }
+    const perThreshold = annual => (freq === 'monthly' ? floor2(annual / 12) : floor2(annual / 52) * per);
+    const ug = ['plan1', 'plan2', 'plan4', 'plan5'].filter(k => state.pay.studentLoans[k]);
+    const usable = ug.filter(k => R.sl[k] !== null);
+    if (ug.length > usable.length) out.notes.push(`${ug.filter(k => R.sl[k] === null).map(k => LOAN_LABEL[k]).join(', ')} repayments don't apply in ${R.label}.`);
+    if (usable.length) {
+      const th = Math.min(...usable.map(k => R.sl[k]));
+      out.sl = Math.floor(Math.max(0, gross - perThreshold(th)) * 0.09);
+      if (usable.length > 1) out.notes.push('With more than one undergraduate loan, this uses the lowest threshold — your employer splits it between plans.');
+    }
+    if (state.pay.studentLoans.postgrad) out.pgl = Math.floor(Math.max(0, gross - perThreshold(R.sl.postgrad)) * 0.06);
+    return out;
+  }
+
+  // ---------- Hours and money for one working interval ----------
+  // Splits paid hours into normal and bank-holiday hours. Unpaid break is taken proportionally.
+  function bankHolidayMs(sMs, eMs, startDate) {
+    if (state.pay.bankHolidayHours === 'shift') return bankHolidayOn(startDate) ? eMs - sMs : 0;
+    let ms = 0;
+    for (let d = shift(startDate, -1); d <= keyOf(new Date(eMs)); d = shift(d, 1)) {
+      if (!bankHolidayOn(d)) continue;
+      ms += overlapMs(sMs, eMs, +dtToDate(d + 'T00:00'), +dtToDate(shift(d, 1) + 'T00:00'));
+    }
+    return ms;
+  }
+  function payInterval(acc, segs, breakMin, startDate, typeMult, kind) {
+    const rate = state.pay.hourlyRate || 0, bhMult = state.pay.bankHolidayMultiplier;
+    const totalMs = segs.reduce((a, s) => a + (s[1] - s[0]), 0);
+    if (totalMs <= 0) return 0;
+    const shiftMs = segs.fullMs || totalMs;
+    const ratio = Math.max(0, shiftMs - breakMin * 60000) / shiftMs;
+    const hours = (totalMs / 3600000) * ratio;
+    const bhHours = (segs.reduce((a, s) => a + bankHolidayMs(s[0], s[1], startDate), 0) / 3600000) * ratio;
+    const bhPremium = bhHours * rate * Math.max(0, Math.max(bhMult, typeMult) - typeMult);
+    acc.bhHours += bhHours;
+    acc.bhPremium += bhPremium;
+    if (kind === 'overtime') { acc.overtimeHours += hours; acc.overtimePay += hours * rate * typeMult; }
+    else {
+      acc.paidHours += hours;
+      acc.basic += hours * rate;
+      if (kind === 'night') { acc.nightHours += hours; acc.nightPremium += hours * rate * (typeMult - 1); }
+    }
+    return hours * rate * typeMult + bhPremium;
+  }
+  // What a planned shift would normally pay (used for leave, cancelled-but-paid, and company sick pay).
+  function plannedValue(p) {
+    if (!p || !p.works) return { hours: 0, pay: 0 };
+    const ms = msBetween(p.startDt, p.endDt);
+    const hours = Math.max(0, ms - p.breakMin * 60000) / 3600000;
+    const mult = p.type === 'night' ? state.pay.nightMultiplier : 1;
+    return { hours, pay: hours * (state.pay.hourlyRate || 0) * mult };
+  }
+
+  // ---------- Statutory Sick Pay ----------
+  const isQualifyingDay = d => { const p = plannedFor(d); return !!(p && p.works); };
+  function qualifyingDaysInWeek(d) {
+    const sunday = shift(d, -parseKey(d).getDay());
+    let n = 0;
+    for (let i = 0; i < 7; i++) if (isQualifyingDay(shift(sunday, i))) n++;
+    return n;
+  }
+  function estimatedAWE(before) {
+    if (state.pay.averageWeeklyEarnings !== null) return { value: state.pay.averageWeeklyEarnings, source: 'entered' };
+    if (!state.pay.hourlyRate) return { value: null, source: 'unknown' };
+    let sum = 0;
+    for (let i = 1; i <= 56; i++) sum += plannedValue(plannedFor(shift(before, -i))).pay;
+    return { value: round2(sum / 8), source: 'estimated' };
+  }
+  // SSP for every sick qualifying day: { date: { amount, note, weekly, qds } }.
+  function sspSchedule() {
+    const sick = Object.keys(state.rota.overrides).filter(d => state.rota.overrides[d].actual && state.rota.overrides[d].actual.status === 'sick').sort();
+    const runs = [];
+    for (const d of sick) {
+      const last = runs[runs.length - 1];
+      if (last && shift(last[last.length - 1], 1) === d) last.push(d); else runs.push([d]);
+    }
+    // Days that count as part of a period of incapacity for work (PIW).
+    const piwDays = runs.map(run => run.filter(d => d >= SSP_REFORM || run.length >= 4)).filter(r => r.length);
+    // Link PIWs that are 8 weeks (56 days) or less apart.
+    const chains = [];
+    for (const r of piwDays) {
+      const last = chains[chains.length - 1];
+      if (last && dayDiff(r[0], last[last.length - 1]) <= 57) last.push(...r); else chains.push(r.slice());
+    }
+    const out = {};
+    for (const chain of chains) {
+      let waiting = 3, weeksPaid = 0;
+      const awe = estimatedAWE(chain[0]);
+      for (const d of chain) {
+        if (!isQualifyingDay(d)) continue;
+        const R = TAX_YEARS[taxYearOf(d)];
+        if (!R) { out[d] = { amount: 0, note: 'no SSP rate stored for this tax year' }; continue; }
+        const qds = qualifyingDaysInWeek(d);
+        if (d < SSP_REFORM) {
+          if (waiting > 0) { waiting--; out[d] = { amount: 0, note: 'waiting day (rules before 6 April 2026)' }; continue; }
+          if (awe.value !== null && R.ssp.lel && awe.value < R.ssp.lel) { out[d] = { amount: 0, note: 'earnings below the lower earnings limit (before 6 April 2026)' }; continue; }
+        }
+        let weekly = R.ssp.weekly, basis = 'flat rate';
+        if (d >= SSP_REFORM && awe.value !== null && awe.value * 0.8 < weekly) { weekly = round2(awe.value * 0.8); basis = '80% of average weekly earnings'; }
+        if (weeksPaid + 1 / qds > 28 + 1e-9) { out[d] = { amount: 0, note: '28-week limit reached' }; continue; }
+        weeksPaid += 1 / qds;
+        out[d] = { amount: weekly / qds, weekly, qds, basis, awe };
+      }
+    }
+    return out;
+  }
+
+  // ---------- One pay period: scheduled (rota only) vs actual (what happened) ----------
+  function blankTotals() {
+    return { shifts: 0, paidHours: 0, nightHours: 0, overtimeHours: 0, bhHours: 0, leaveHours: 0, sickDays: 0, sspDays: 0,
+      basic: 0, nightPremium: 0, overtimePay: 0, bhPremium: 0, leavePay: 0, sickPay: 0, otherPay: 0, gross: 0 };
+  }
+  function computePeriod(per) {
+    const pay = state.pay, sched = blankTotals(), act = blankTotals();
+    const notes = { assumedPast: 0, assumedFuture: 0, ssp: [] };
+    const ssp = sspSchedule();
+    const today = todayKey();
+    for (let d = per.start; d <= per.end; d = shift(d, 1)) {
+      const p = plannedFor(d);
+      if (p && p.works) {
+        sched.shifts++;
+        const segs = [[+dtToDate(p.startDt), +dtToDate(p.endDt)]];
+        payInterval(sched, segs, p.breakMin, d, p.type === 'night' ? pay.nightMultiplier : 1, p.type === 'night' ? 'night' : 'day');
+      }
+      const a = actualFor(d);
+      if (a.works && (a.status === 'worked' || (a.status === 'custom' && a.paidCustom))) {
+        if (a.assumed) { if (d > today) notes.assumedFuture++; else notes.assumedPast++; }
+        act.shifts++;
+        const s = +dtToDate(a.startDt), e = +dtToDate(a.endDt);
+        // Take unauthorised absence out of the worked time.
+        let segs = [[s, e]];
+        for (const x of state.rota.entries) {
+          if (x.kind !== 'unauthorised') continue;
+          const xs = +dtToDate(x.start), xe = +dtToDate(x.end), next = [];
+          for (const [a1, a2] of segs) {
+            if (xe <= a1 || xs >= a2) { next.push([a1, a2]); continue; }
+            if (xs > a1) next.push([a1, xs]);
+            if (xe < a2) next.push([xe, a2]);
+          }
+          segs = next;
+        }
+        segs.fullMs = e - s;
+        const isNight = a.status === 'worked' && p && p.type === 'night';
+        payInterval(act, segs, a.breakMin || 0, d, isNight ? pay.nightMultiplier : 1, isNight ? 'night' : 'day');
+      } else if (a.status === 'sick' && !a.assumed) {
+        act.sickDays++;
+        const v = plannedValue(p), s = ssp[d];
+        const sspAmt = s ? s.amount : 0;
+        if (s && s.amount > 0) act.sspDays++;
+        if (s && s.note) notes.ssp.push(`${shortDate(d)}: ${s.note}`);
+        act.sickPay += pay.sickPay === 'full' ? Math.max(v.pay, sspAmt) : pay.sickPay === 'percent' ? Math.max(v.pay * pay.sickPercent / 100, sspAmt) : sspAmt;
+      } else if (a.status === 'annual_leave' && !a.assumed) {
+        const v = plannedValue(p);
+        if (pay.annualLeavePaid) { act.leaveHours += v.hours; act.leavePay += v.pay; }
+      } else if (a.status === 'cancelled' && !a.assumed) {
+        if (pay.cancelledPaid) act.otherPay += plannedValue(p).pay;
+      }
+    }
+    for (const x of state.rota.entries) {
+      if (x.kind !== 'overtime' || x.start.slice(0, 10) < per.start || x.start.slice(0, 10) > per.end) continue;
+      payInterval(act, [[+dtToDate(x.start), +dtToDate(x.end)]], 0, x.start.slice(0, 10), pay.overtimeMultiplier, 'overtime');
+    }
+    for (const t of [sched, act]) {
+      for (const k of ['basic', 'nightPremium', 'overtimePay', 'bhPremium', 'leavePay', 'sickPay', 'otherPay']) t[k] = round2(t[k]);
+      t.gross = round2(t.basic + t.nightPremium + t.overtimePay + t.bhPremium + t.leavePay + t.sickPay + t.otherPay);
+      const ty = taxYearOf(per.end);
+      t.ded = deductionsFor(t.gross, pay.frequency, ty);
+      t.net = round2(t.gross - t.ded.tax - t.ded.ni - t.ded.sl - t.ded.pgl);
+    }
+    const firstSick = Object.values(ssp).find(v => v.weekly);
+    return { sched, act, notes, sspInfo: firstSick || null };
+  }
+
+  // ======================================================================
+  // Calendar view
+  // ======================================================================
+  let calMonth = null;     // 'YYYY-MM' being shown
+  let calSelected = null;  // selected date
+  let calView = 'month';   // 'month' | 'agenda'
+  let calForm = null;      // open form: pattern editor or an overtime/absence entry
+  let payOffset = 0;       // pay period relative to the current one
+  let agendaStart = null;  // first day shown in the agenda
+  const monthLabel = ym => parseKey(ym + '-01').toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  const longDate = d => parseKey(d).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+  function calendarMain() {
+    const k = todayKey();
+    if (!calMonth) calMonth = k.slice(0, 7);
+    if (!calSelected) calSelected = k;
+    const hasRota = state.rota.patterns.length > 0;
+    const head = `
+      <section class="card">
+        <div class="cal-head">
+          <button class="icon-btn" data-action="cal-prev" aria-label="Previous ${calView === 'month' ? 'month' : 'four weeks'}">‹</button>
+          <h2 class="cal-title">${calView === 'month' ? monthLabel(calMonth) : esc(shortDate(agendaStart || k)) + ' – ' + esc(shortDate(shift(agendaStart || k, 27)))}</h2>
+          <button class="icon-btn" data-action="cal-next" aria-label="Next ${calView === 'month' ? 'month' : 'four weeks'}">›</button>
+        </div>
+        <div class="seg" role="group" aria-label="Calendar view">
+          <button class="${calView === 'month' ? 'on' : ''}" data-action="cal-view" data-v="month" aria-pressed="${calView === 'month'}">Month</button>
+          <button class="${calView === 'agenda' ? 'on' : ''}" data-action="cal-view" data-v="agenda" aria-pressed="${calView === 'agenda'}">Agenda</button>
+          <button data-action="cal-today">Today</button>
+        </div>
+        ${hasRota ? '' : '<p class="small muted" style="margin:12px 0 0">No shift pattern yet — set one up below to fill the calendar.</p>'}
+      </section>`;
+    const setup = !hasRota && !calForm ? `
+      <section class="card">
+        <h2>Set up your shift pattern</h2>
+        <p class="small muted">Tell MyDay how your rota repeats. You can change it later from any date without rewriting the past.</p>
+        <button class="primary" data-action="pattern-new">Set up my pattern</button>
+      </section>` : '';
+    const form = calForm && calForm.kind === 'pattern' ? `<section class="card" id="patternCard">${patternFormHtml()}</section>` : '';
+    const body = calView === 'month' ? monthGridHtml() + `<div id="calDetails">${detailsCard(calSelected)}</div>` : agendaHtml();
+    return head + form + setup + body;
+  }
+
+  function cellMarks(d) {
+    const marks = [];
+    const ents = entriesOn(d);
+    if (ents.some(e => e.kind === 'overtime')) marks.push(chip('overtime', '+OT', 'mini'));
+    const ua = absenceOn(d);
+    if (ua.any && !ua.whole) marks.push(chip('unauthorised', 'UA', 'mini'));
+    const appts = state.commitments.filter(c => c.start.slice(0, 10) <= d && c.end.slice(0, 10) >= d && c.end > d + 'T00:00').length;
+    if (appts) marks.push(chip('appointment', String(appts), 'mini'));
+    if (overlapsOn(d).length) marks.push('<span class="mark-warn" title="Overlapping entries">!</span>');
+    return marks.join('');
+  }
+  function describeDay(d) {
+    const s = displayStatus(d), bh = bankHolidayOn(d), parts = [longDate(d)];
+    if (s.key) parts.push(s.label + (s.p && s.p.works && s.key !== 'off' && s.key === s.p.type ? ` ${s.p.start}–${s.p.end}` : ''));
+    if (s.a && !s.a.assumed && s.p && s.key !== s.p.type && s.p.type !== 'off') parts.push(`planned ${STATUS_LABEL[s.p.type] || s.p.label}`);
+    if (bh) parts.push(`bank holiday: ${bh}`);
+    if (entriesOn(d).some(e => e.kind === 'overtime')) parts.push('overtime');
+    if (absenceOn(d).any) parts.push('unauthorised absence');
+    const o = overlapsOn(d).length;
+    if (o) parts.push(`${o} overlap${o === 1 ? '' : 's'}`);
+    return parts.join(', ');
+  }
+
+  function monthGridHtml() {
+    const first = calMonth + '-01', k = todayKey();
+    const gridStart = shift(first, -mod(parseKey(first).getDay() - 1, 7)); // Monday
+    const names = [];
+    for (let i = 0; i < 7; i++) names.push(parseKey(shift(gridStart, i)).toLocaleDateString(undefined, { weekday: 'narrow' }));
+    let cells = '';
+    for (let i = 0; i < 42; i++) {
+      const d = shift(gridStart, i);
+      const s = displayStatus(d), bh = bankHolidayOn(d);
+      const cls = ['cal-cell', d.slice(0, 7) !== calMonth ? 'out' : '', d === k ? 'today' : '', d === calSelected ? 'sel' : ''].filter(Boolean).join(' ');
+      cells += `
+        <button class="${cls}" data-action="cal-select" data-date="${d}" aria-label="${esc(describeDay(d))}" ${d === calSelected ? 'aria-pressed="true"' : ''}>
+          <span class="cal-num">${+d.slice(8)}${bh ? '<span class="cal-bh" title="' + esc(bh) + '">BH</span>' : ''}</span>
+          ${s.key && s.key !== 'off' ? chip(s.key, s.short, 'cell') : s.key === 'off' ? '<span class="cal-off">Off</span>' : ''}
+          <span class="cal-marks">${cellMarks(d)}</span>
+        </button>`;
+    }
+    return `
+      <section class="card cal-card">
+        <div class="cal-grid" role="grid" aria-label="${esc(monthLabel(calMonth))}">
+          ${names.map(n => `<div class="cal-dow" aria-hidden="true">${esc(n)}</div>`).join('')}
+          ${cells}
+        </div>
+      </section>`;
+  }
+
+  function agendaHtml() {
+    const from = agendaStart || todayKey();
+    let rows = '';
+    for (let i = 0; i < 28; i++) {
+      const d = shift(from, i);
+      const s = displayStatus(d), bh = bankHolidayOn(d);
+      const ents = entriesOn(d), appts = state.commitments.filter(c => c.start.slice(0, 10) === d);
+      const ov = overlapsOn(d);
+      const bits = [];
+      if (s.key) bits.push(chip(s.key, s.label) + (s.p && s.p.works && (s.key === s.p.type || s.key === 'custom') && s.p.start ? ` <span class="ag-time">${s.p.start}–${s.p.end}</span>` : ''));
+      if (s.a && !s.a.assumed && s.p && s.p.works && s.key !== s.p.type) bits.push(`<span class="ag-time">planned ${esc(s.p.type === 'custom' ? s.p.label : STATUS_LABEL[s.p.type])} ${s.p.start}–${s.p.end}</span>`);
+      for (const e of ents) bits.push(chip(e.kind, STATUS_LABEL[e.kind]) + ` <span class="ag-time">${esc(fmtShiftRange(e.start, e.end, d))}</span>`);
+      for (const c of appts) bits.push(chip('appointment', c.title) + ` <span class="ag-time">${esc(fmtShiftRange(c.start, c.end, d))}</span>`);
+      rows += `
+        <li class="ag-row${d === calSelected ? ' sel' : ''}">
+          <button class="ag-btn" data-action="cal-select" data-date="${d}" aria-label="${esc(describeDay(d))}">
+            <span class="ag-date"><strong>${esc(parseKey(d).toLocaleDateString(undefined, { weekday: 'short' }))}</strong> ${+d.slice(8)} ${esc(parseKey(d).toLocaleDateString(undefined, { month: 'short' }))}</span>
+            <span class="ag-items">${bh ? `<span class="cal-bh">BH</span> <span class="ag-time">${esc(bh)}</span> ` : ''}${bits.join(' ') || '<span class="ag-time">Nothing planned</span>'}${ov.length ? ' <span class="mark-warn">!</span>' : ''}</span>
+          </button>
+          ${d === calSelected ? `<div class="ag-details">${detailsCard(d, true)}</div>` : ''}
+        </li>`;
+    }
+    return `<section class="card"><ul class="agenda">${rows}</ul></section>`;
+  }
+
+  function timeField(id, label, value, attr) {
+    return `<div class="field"><label class="lbl" for="${id}">${label}</label><input id="${id}" type="time" ${attr} value="${value || ''}"></div>`;
+  }
+
+  function detailsCard(d, inline) {
+    const p = plannedFor(d), a = actualFor(d), ov = state.rota.overrides[d] || {}, bh = bankHolidayOn(d);
+    const s = displayStatus(d);
+    const plannedSel = ov.planned ? ov.planned.type : 'rota';
+    const rotaType = (() => { const v = patternFor(d); return v ? v.cycle[mod(dayDiff(d, v.anchor), v.cycle.length)] : null; })();
+    const actualSel = ov.actual ? ov.actual.status : 'planned';
+    const plannedText = p
+      ? (p.works ? `${p.type === 'custom' ? esc(p.label) : STATUS_LABEL[p.type]} · ${fmtShiftRange(p.startDt, p.endDt, d)}` : p.type === 'custom' ? `${esc(p.label)} (no times)` : 'Off')
+      + (p.source === 'changed' ? ' · changed for this date' : ' · from your rota')
+      : 'No rota for this date';
+    const ents = entriesTouching(d);
+    const appts = state.commitments.filter(c => c.start.slice(0, 10) <= d && c.end.slice(0, 10) >= d && c.end > d + 'T00:00');
+    const overlaps = overlapsOn(d);
+    const isFuture = d > todayKey();
+    const opt = (v, label, sel) => `<option value="${v}" ${v === sel ? 'selected' : ''}>${label}</option>`;
+    const entryForm = calForm && calForm.kind === 'entry' && calForm.date === d ? `
+      <div class="c-form" id="entryForm">
+        <h4 style="margin-top:0">${calForm.type === 'overtime' ? 'Add overtime' : 'Add unauthorised absence'}</h4>
+        <div class="field"><label class="lbl" for="efStart">Starts</label><input id="efStart" type="datetime-local" value="${calForm.start}"></div>
+        <div class="field"><label class="lbl" for="efEnd">Ends</label><input id="efEnd" type="datetime-local" value="${calForm.end}"></div>
+        <div class="field"><label class="lbl" for="efNote">Note (optional)</label><input id="efNote" type="text" maxlength="80" value=""></div>
+        <p class="warn" id="efError" role="alert"></p>
+        <div class="row2"><button class="primary" data-action="entry-save">Save</button><button class="ghost" data-action="entry-cancel">Cancel</button></div>
+      </div>` : '';
+    const apptForm = commitForm && section === 'calendar' ? commitFormHtml() : '';
+    return `
+      <section class="card details" id="detailsCard">
+        <h2>${esc(longDate(d))}</h2>
+        ${bh ? `<p class="small"><span class="cal-bh">BH</span> Bank holiday: ${esc(bh)}</p>` : ''}
+        <div class="ctx-block">
+          <h3>Planned</h3>
+          <p class="small" style="margin-bottom:8px">${s.p && s.p.type ? chip(s.p.type === 'custom' ? 'custom' : s.p.type, s.p.type === 'custom' ? s.p.label : STATUS_LABEL[s.p.type]) : ''} ${plannedText}</p>
+          <div class="field"><label class="lbl" for="calPlanned">Planned shift for this date</label>
+            <select id="calPlanned" data-cal="planned">
+              ${opt('rota', `Follow the rota${rotaType ? ' (' + STATUS_LABEL[rotaType] + ')' : ''}`, plannedSel)}
+              ${opt('day', 'Day shift', plannedSel)}${opt('night', 'Night shift', plannedSel)}${opt('off', 'Off', plannedSel)}${opt('custom', 'Custom', plannedSel)}
+            </select></div>
+          ${plannedSel === 'custom' ? `
+            <div class="field"><label class="lbl" for="calPLabel">Label</label><input id="calPLabel" type="text" maxlength="40" data-cal="planned-label" value="${esc(ov.planned.label || 'Custom')}"></div>
+            <div class="field-row">${timeField('calPStart', 'Starts', ov.planned.start, 'data-cal="planned-start"')}${timeField('calPEnd', 'Ends', ov.planned.end, 'data-cal="planned-end"')}</div>` : ''}
+          ${plannedSel === 'day' || plannedSel === 'night' ? `
+            <div class="field-row">${timeField('calPStart', 'Starts', p && p.start, 'data-cal="planned-start"')}${timeField('calPEnd', 'Ends', p && p.end, 'data-cal="planned-end"')}</div>` : ''}
+          <p class="small muted" style="margin:0">Changing one date never moves the rest of your rota.</p>
+        </div>
+        <div class="ctx-block">
+          <h3>What happened</h3>
+          <div class="field"><label class="lbl" for="calActual">Status</label>
+            <select id="calActual" data-cal="actual">
+              ${opt('planned', isFuture ? 'As planned' : 'As planned (not marked)', actualSel)}
+              ${opt('worked', 'Worked — different hours', actualSel)}${opt('sick', 'Sick', actualSel)}${opt('annual_leave', 'Annual leave', actualSel)}
+              ${opt('cancelled', 'Cancelled', actualSel)}${opt('off', 'Off instead', actualSel)}${opt('custom', 'Custom', actualSel)}
+            </select></div>
+          ${actualSel === 'worked' ? `<div class="field-row">${timeField('calAStart', 'Actually started', (ov.actual && ov.actual.start) || (p && p.start), 'data-cal="actual-start"')}${timeField('calAEnd', 'Actually finished', (ov.actual && ov.actual.end) || (p && p.end), 'data-cal="actual-end"')}</div>` : ''}
+          ${actualSel === 'custom' ? `
+            <div class="field"><label class="lbl" for="calALabel">Label</label><input id="calALabel" type="text" maxlength="40" data-cal="actual-label" value="${esc(ov.actual.label || 'Custom')}"></div>
+            <div class="field-row">${timeField('calAStart', 'Starts (optional)', ov.actual.start, 'data-cal="actual-start"')}${timeField('calAEnd', 'Ends', ov.actual.end, 'data-cal="actual-end"')}</div>
+            <label class="check"><input type="checkbox" data-cal="actual-paid" ${ov.actual.paid ? 'checked' : ''}> Paid</label>` : ''}
+          ${actualSel === 'sick' ? `<p class="small muted" style="margin:0">Your planned ${p && p.works ? esc(p.type === 'custom' ? p.label : STATUS_LABEL[p.type]) : 'day'} is kept. For sick pay, mark every full day you were too unwell to work.</p>` : ''}
+          ${a.assumed && p && p.works && !isFuture ? '<p class="small muted" style="margin:0">Not marked yet — pay treats it as worked as planned.</p>' : ''}
+        </div>
+        <div class="ctx-block">
+          <h3>Overtime &amp; absence</h3>
+          ${ents.length ? ents.map(e => `<div class="c-row"><div>${chip(e.kind, STATUS_LABEL[e.kind])}<div class="meta">${esc(fmtShiftRange(e.start, e.end, d))}${e.note ? ' · ' + esc(e.note) : ''}</div></div><div class="c-actions"><button class="inline" data-action="entry-del" data-id="${esc(e.id)}" aria-label="Remove ${esc(STATUS_LABEL[e.kind])}">✕</button></div></div>`).join('') : '<p class="small muted" style="margin:0">None.</p>'}
+          ${entryForm || `<div class="row2"><button class="inline" data-action="entry-new" data-kind="overtime">+ Overtime</button><button class="inline" data-action="entry-new" data-kind="unauthorised">+ Unauthorised absence</button></div>`}
+        </div>
+        <div class="ctx-block">
+          <h3>Appointments</h3>
+          ${appts.length ? commitmentRows(appts, d) : '<p class="small muted" style="margin:0">None.</p>'}
+          ${apptForm || `<div class="row2"><button class="inline full" data-action="cal-appt" data-date="${d}">+ Appointment</button></div>`}
+        </div>
+        ${overlaps.length ? `<div class="ctx-block"><h3>Overlaps</h3>${overlaps.map(o => `<div class="warn">⚠ ${esc(o)}</div>`).join('<br>')}</div>` : ''}
+        ${state.rota.overrides[d] ? `<div class="ctx-block"><button class="ghost" data-action="cal-reset-date">Clear changes for this date</button></div>` : ''}
+      </section>`;
+  }
+
+  function handleCalChange(el) {
+    const d = calSelected, ov = state.rota.overrides[d] || {}, p = plannedFor(d);
+    const v = el.value, key = el.dataset.cal;
+    if (key === 'planned') {
+      if (v === 'rota') setOverride(d, 'planned', null);
+      else if (v === 'custom') setOverride(d, 'planned', { type: 'custom', label: 'Custom', start: '09:00', end: '17:00' });
+      else setOverride(d, 'planned', { type: v });
+    } else if (key === 'planned-start' || key === 'planned-end' || key === 'planned-label') {
+      const po = Object.assign({}, ov.planned || { type: 'custom' });
+      if (key === 'planned-label') po.label = v.trim() || 'Custom';
+      else {
+        const t = v.slice(0, 5);
+        if (!isTime(t)) return;
+        po.start = key === 'planned-start' ? t : (po.start || (p && p.start) || '09:00');
+        po.end = key === 'planned-end' ? t : (po.end || (p && p.end) || '17:00');
+        if (po.start === po.end) { toast('Start and end need to be different.'); render(); return; }
+      }
+      setOverride(d, 'planned', po);
+    } else if (key === 'actual') {
+      if (v === 'planned') setOverride(d, 'actual', null);
+      else if (v === 'custom') setOverride(d, 'actual', { status: 'custom', label: 'Custom', paid: false });
+      else setOverride(d, 'actual', { status: v });
+    } else if (key === 'actual-start' || key === 'actual-end' || key === 'actual-label' || key === 'actual-paid') {
+      const ao = Object.assign({}, ov.actual || { status: 'worked' });
+      if (key === 'actual-label') ao.label = v.trim() || 'Custom';
+      else if (key === 'actual-paid') ao.paid = el.checked;
+      else {
+        const t = v.slice(0, 5);
+        if (!isTime(t)) return;
+        ao.start = key === 'actual-start' ? t : (ao.start || (p && p.start) || '09:00');
+        ao.end = key === 'actual-end' ? t : (ao.end || (p && p.end) || '17:00');
+        if (ao.start === ao.end) { toast('Start and end need to be different.'); render(); return; }
+      }
+      setOverride(d, 'actual', ao);
+    }
+    render();
+  }
+
+  // ---------- Pattern editor ----------
+  function segmentsOf(cycle) {
+    const segs = [];
+    for (const t of cycle) {
+      const last = segs[segs.length - 1];
+      if (last && last.type === t) last.count++; else segs.push({ type: t, count: 1 });
+    }
+    return segs;
+  }
+  const cycleOf = segs => segs.flatMap(s => Array(s.count).fill(s.type));
+  function openPatternForm() {
+    const cur = patternFor(todayKey()) || state.rota.patterns[state.rota.patterns.length - 1];
+    calForm = {
+      kind: 'pattern',
+      first: !state.rota.patterns.length,
+      effectiveFrom: todayKey(),
+      anchor: cur ? cur.anchor : todayKey(),
+      segments: segmentsOf(cur ? cur.cycle : DEFAULT_CYCLE),
+      times: clone(cur ? cur.times : DEFAULT_TIMES),
+      breaks: clone(cur ? cur.breaks : { day: 0, night: 0 })
+    };
+  }
+  function patternSummary(v) {
+    return segmentsOf(v.cycle).map(s => `${s.count} ${STATUS_LABEL[s.type].replace(' shift', '')}`).join(' · ');
+  }
+  function patternPreview(f) {
+    const cycle = cycleOf(f.segments);
+    if (!cycle.length || !isDateKey(f.anchor)) return '';
+    const from = f.first ? f.anchor : f.effectiveFrom;
+    let out = '';
+    for (let i = 0; i < Math.min(cycle.length, 28); i++) {
+      const d = shift(from, i), t = cycle[mod(dayDiff(d, f.anchor), cycle.length)];
+      out += `<div class="pv"><span class="pv-d">${+d.slice(8)}</span>${t === 'off' ? '<span class="cal-off">Off</span>' : chip(t, SHORT_LABEL[t], 'cell')}</div>`;
+    }
+    return `<p class="lbl" style="margin:12px 0 6px">Preview from ${esc(shortDate(from))}</p><div class="pv-strip">${out}</div>`;
+  }
+  function patternFormHtml() {
+    const f = calForm;
+    const typeOpts = sel => SHIFT_TYPES.map(t => `<option value="${t}" ${t === sel ? 'selected' : ''}>${STATUS_LABEL[t]}</option>`).join('');
+    return `
+      <h2>${f.first ? 'Set up your shift pattern' : 'Change your shift pattern'}</h2>
+      <p class="small muted">${f.first ? 'Pick a date that was (or will be) the first day of your cycle.' : 'The change starts on the date you choose. Earlier dates, and anything you\'ve recorded, stay as they are.'}</p>
+      ${f.first ? '' : `<div class="field"><label class="lbl" for="pfFrom">Change starts on</label><input id="pfFrom" type="date" data-pf="effectiveFrom" value="${f.effectiveFrom}"></div>`}
+      <div class="field"><label class="lbl" for="pfAnchor">First day of the cycle (anchor date)</label><input id="pfAnchor" type="date" data-pf="anchor" value="${f.anchor}"></div>
+      <h4>Repeating blocks</h4>
+      ${f.segments.map((s, i) => `
+        <div class="seg-row">
+          <select data-pf="seg-type" data-i="${i}" aria-label="Block ${i + 1} type">${typeOpts(s.type)}</select>
+          <input type="number" min="1" max="28" inputmode="numeric" data-pf="seg-count" data-i="${i}" value="${s.count}" aria-label="Block ${i + 1} days">
+          <span class="minlabel">days</span>
+          <button class="inline" data-action="seg-remove" data-i="${i}" aria-label="Remove block ${i + 1}" ${f.segments.length === 1 ? 'disabled' : ''}>✕</button>
+        </div>`).join('')}
+      <button class="inline" data-action="seg-add" style="margin-top:6px">+ Add a block</button>
+      <p class="small muted" id="pfCycle" style="margin:8px 0 0">Cycle length: ${cycleOf(f.segments).length} days</p>
+      <h4>Shift times</h4>
+      <div class="field-row">${timeField('pfDayS', 'Day starts', f.times.day.start, 'data-pf="day-start"')}${timeField('pfDayE', 'Day ends', f.times.day.end, 'data-pf="day-end"')}</div>
+      <div class="field-row">${timeField('pfNightS', 'Night starts', f.times.night.start, 'data-pf="night-start"')}${timeField('pfNightE', 'Night ends', f.times.night.end, 'data-pf="night-end"')}</div>
+      <p class="small muted" style="margin-top:-4px">An end time earlier than the start means the shift finishes the next morning.</p>
+      <div class="field-row">
+        <div class="field"><label class="lbl" for="pfBD">Unpaid break, day (min)</label><input id="pfBD" type="number" min="0" max="240" inputmode="numeric" data-pf="break-day" value="${f.breaks.day}"></div>
+        <div class="field"><label class="lbl" for="pfBN">Unpaid break, night (min)</label><input id="pfBN" type="number" min="0" max="240" inputmode="numeric" data-pf="break-night" value="${f.breaks.night}"></div>
+      </div>
+      <div id="pfPreview">${patternPreview(f)}</div>
+      <p class="warn" id="pfError" role="alert"></p>
+      <div class="row2"><button class="primary" data-action="pattern-save">Save pattern</button><button class="ghost" data-action="pattern-cancel">Cancel</button></div>`;
+  }
+  function handlePatternInput(el) {
+    const f = calForm, key = el.dataset.pf, v = el.value;
+    if (key === 'effectiveFrom' || key === 'anchor') f[key] = v;
+    else if (key === 'seg-type') f.segments[+el.dataset.i].type = v;
+    else if (key === 'seg-count') f.segments[+el.dataset.i].count = intIn(v, 1, 28, f.segments[+el.dataset.i].count);
+    else if (key.endsWith('-start') || key.endsWith('-end')) { const [t, which] = key.split('-'); if (isTime(v.slice(0, 5))) f.times[t][which] = v.slice(0, 5); }
+    else if (key.startsWith('break-')) f.breaks[key.slice(6)] = intIn(v, 0, 240, 0);
+    setHTML('pfPreview', patternPreview(f));
+    setHTML('pfCycle', `Cycle length: ${cycleOf(f.segments).length} days`);
+  }
+  function savePattern() {
+    const f = calForm, err = m => { setHTML('pfError', esc(m)); return false; };
+    const cycle = cycleOf(f.segments);
+    if (!isDateKey(f.anchor)) return err('Please choose the first day of the cycle.');
+    if (!cycle.length || cycle.length > 56) return err('The cycle needs between 1 and 56 days.');
+    for (const t of ['day', 'night']) if (f.times[t].start === f.times[t].end) return err(`The ${t} shift needs different start and end times.`);
+    const version = { id: 'p' + uid(), effectiveFrom: f.first ? null : f.effectiveFrom, anchor: f.anchor, cycle, times: clone(f.times), breaks: clone(f.breaks) };
+    if (!f.first) {
+      if (!isDateKey(f.effectiveFrom)) return err('Please choose when the change starts.');
+      if (f.effectiveFrom < todayKey() && !confirm(`This changes planned shifts from ${shortDate(f.effectiveFrom)}, which is in the past. Anything you've recorded (sickness, leave, overtime, actual hours) stays as it is. Continue?`)) return false;
+    }
+    state.rota.patterns = state.rota.patterns.filter(v => (v.effectiveFrom || '') !== (version.effectiveFrom || ''));
+    state.rota.patterns.push(version);
+    state.rota.patterns.sort((a, b) => ((a.effectiveFrom || '') < (b.effectiveFrom || '') ? -1 : 1));
+    persist();
+    calForm = null;
+    onContextChanged();
+    toast(f.first ? 'Pattern saved — your calendar is filled in.' : `Pattern changes from ${shortDate(f.effectiveFrom)}.`);
+    return true;
+  }
+
+  // ---------- Side cards: legend, pattern, bank holidays, colours ----------
+  function legendCard() {
+    const keys = ['day', 'night', 'off', 'sick', 'annual_leave', 'cancelled', 'custom', 'unauthorised', 'overtime', 'appointment'];
+    return `
+      <section class="card">
+        <h2>Legend</h2>
+        <ul class="legend">
+          ${keys.map(k => `<li>${chip(k, SHORT_LABEL[k] === '+OT' ? '+OT' : SHORT_LABEL[k])}<span>${STATUS_LABEL[k]}</span></li>`).join('')}
+          <li><span class="cal-bh">BH</span><span>Bank holiday</span></li>
+          <li><span class="mark-warn">!</span><span>Overlapping entries</span></li>
+        </ul>
+        <p class="small muted" style="margin:10px 0 0">Every colour also has a text label, so nothing depends on colour alone.</p>
+      </section>`;
+  }
+  function patternCard() {
+    const vs = state.rota.patterns;
+    return `
+      <section class="card">
+        <h2>Shift pattern</h2>
+        ${vs.length ? `<ul class="versions">${vs.map(v => `
+          <li>
+            <strong>${v.effectiveFrom ? 'From ' + esc(shortDate(v.effectiveFrom)) : 'From the start'}</strong>
+            <div class="small">${esc(patternSummary(v))} (${v.cycle.length}-day cycle)</div>
+            <div class="small muted">Day 1 on ${esc(shortDate(v.anchor))} · Day ${v.times.day.start}–${v.times.day.end} · Night ${v.times.night.start}–${v.times.night.end}${v.breaks.day || v.breaks.night ? ` · breaks ${v.breaks.day}/${v.breaks.night} min` : ''}</div>
+            ${v.effectiveFrom && v.effectiveFrom > todayKey() ? `<button class="inline ghost" data-action="pattern-remove" data-id="${esc(v.id)}">Remove this future change</button>` : ''}
+          </li>`).join('')}</ul>` : '<p class="small muted">Not set up yet.</p>'}
+        <button ${vs.length ? '' : 'class="primary"'} data-action="pattern-new">${vs.length ? 'Change pattern from a date' : 'Set up my pattern'}</button>
+      </section>`;
+  }
+  function bankHolidayCard() {
+    const b = state.bankHolidays;
+    const status = bhStatus.loading ? 'Checking gov.uk…'
+      : b.divisions && b.fetchedAt ? `Last updated from gov.uk on ${esc(shortDate(b.fetchedAt.slice(0, 10)))} at ${esc(b.fetchedAt.slice(11))}.`
+      : 'Not loaded yet.';
+    return `
+      <section class="card">
+        <h2>Bank holidays</h2>
+        <div class="field"><label class="lbl" for="bhRegion">Region</label>
+          <select id="bhRegion" data-bh-region>${Object.keys(BH_REGIONS).map(k => `<option value="${k}" ${k === b.region ? 'selected' : ''}>${BH_REGIONS[k]}</option>`).join('')}</select></div>
+        <p class="small" id="bhStatus">${status}</p>
+        ${bhStatus.error ? `<p class="warn">${esc(bhStatus.error)}${b.divisions ? ' Showing the saved copy.' : ' No bank holidays are shown until it loads.'}</p>` : ''}
+        <button data-action="bh-refresh" ${bhStatus.loading ? 'disabled' : ''}>Update from gov.uk</button>
+        <p class="small muted" style="margin:10px 0 0">Bank holidays are only marked on the calendar. They never change your shifts or your pay rate — the pay view applies your bank holiday multiplier.</p>
+      </section>`;
+  }
+  function coloursCard() {
+    const keys = Object.keys(DEFAULT_COLOURS);
+    return `
+      <section class="card">
+        <details>
+          <summary>Colours</summary>
+          <div class="colours">
+            ${keys.map(k => `<label class="colour-row"><input type="color" data-colour="${k}" value="${state.rota.colours[k]}"> ${chip(k, SHORT_LABEL[k])} <span>${STATUS_LABEL[k]}</span></label>`).join('')}
+          </div>
+          <button class="inline ghost" data-action="colours-reset" style="margin-top:8px">Reset colours</button>
+        </details>
+      </section>`;
+  }
+  function calendarSide() { return legendCard() + patternCard() + bankHolidayCard() + coloursCard(); }
+
+  // ======================================================================
+  // Pay view
+  // ======================================================================
+  const money = n => n.toLocaleString('en-GB', { style: 'currency', currency: 'GBP' });
+  const hrs = h => `${(Math.round(h * 100) / 100).toLocaleString('en-GB')} h`;
+  function payMain() {
+    const per = periodAt(payOffset), P = state.pay;
+    const r = computePeriod(per), S = r.sched, A = r.act;
+    const hasRate = P.hourlyRate !== null;
+    const row = (key, label, sv, av, opts) => `
+      <tr data-row="${key}" class="${opts && opts.strong ? 'strong' : ''}${opts && opts.minus ? ' minus' : ''}">
+        <th scope="row">${label}</th><td class="sched">${sv}</td><td class="act">${av}</td></tr>`;
+    const m = (t, k) => (hasRate ? money(t[k]) : '—');
+    const d = (t, k) => (hasRate && t.ded.ok ? money(-t.ded[k]).replace('-£', '−£') : '—');
+    const showIf = (k) => S[k] || A[k];
+    const bh = state.bankHolidays;
+    const notes = [];
+    if (!state.rota.patterns.length) notes.push('No shift pattern yet — set one up in Calendar to see scheduled hours.');
+    if (!hasRate) notes.push('Add your hourly rate in Pay settings to see money as well as hours.');
+    if (r.notes.assumedPast) notes.push(`${r.notes.assumedPast} past shift${r.notes.assumedPast === 1 ? '' : 's'} not marked yet — counted as worked as planned.`);
+    if (r.notes.assumedFuture) notes.push(`${r.notes.assumedFuture} upcoming shift${r.notes.assumedFuture === 1 ? '' : 's'} included as planned, so "actual" will change as the period goes on.`);
+    notes.push(bh.divisions
+      ? `Bank holidays: ${BH_REGIONS[bh.region]}, from gov.uk (updated ${bh.fetchedAt ? shortDate(bh.fetchedAt.slice(0, 10)) : 'date unknown'}). Hours on them are paid at ×${P.bankHolidayMultiplier}${P.bankHolidayHours === 'clock' ? ' (hours falling on the day)' : ' (whole shift starting on the day)'}.`
+      : 'Bank holidays aren\'t loaded, so no bank holiday pay is included. Update them in Calendar.');
+    if (A.sickDays) {
+      notes.push(P.sickPay === 'ssp'
+        ? 'Sick days are paid Statutory Sick Pay: from 6 April 2026 it\'s paid from the first full day off sick, at £123.25 a week or 80% of average weekly earnings if that\'s lower, split across the days you normally work that week.'
+        : P.sickPay === 'full' ? 'Sick days are paid at full normal pay (company sick pay), never less than SSP.' : `Sick days are paid at ${P.sickPercent}% of normal pay, never less than SSP.`);
+      if (r.sspInfo) notes.push(`SSP used: ${money(r.sspInfo.weekly)} a week (${r.sspInfo.basis}${r.sspInfo.awe && r.sspInfo.awe.value !== null ? `; average weekly earnings ${money(r.sspInfo.awe.value)}, ${r.sspInfo.awe.source}` : '; average weekly earnings unknown, so the flat rate is used'}).`);
+      for (const n of r.notes.ssp) notes.push('SSP — ' + n);
+    }
+    const ty = TAX_YEARS[taxYearOf(per.end)];
+    for (const n of A.ded.notes) if (!notes.includes(n)) notes.push(n);
+    if (ty) notes.push(`Deductions are estimates using ${ty.label} rates from gov.uk and your tax code ${P.taxCode}, worked out for this period on its own. Your payslip may differ slightly.`);
+    return `
+      <section class="card">
+        <div class="cal-head">
+          <button class="icon-btn" data-action="pay-prev" aria-label="Previous pay period">‹</button>
+          <div style="text-align:center">
+            <h2 class="cal-title" id="payPeriod">${esc(shortDate(per.start))} – ${esc(shortDate(per.end))}</h2>
+            <div class="small muted">${FREQ_LABEL[P.frequency]} pay period${payOffset === 0 ? ' · this period' : ''}</div>
+          </div>
+          <button class="icon-btn" data-action="pay-next" aria-label="Next pay period">›</button>
+        </div>
+        ${payOffset ? '<div class="row2"><button class="inline full" data-action="pay-now">Back to this period</button></div>' : ''}
+      </section>
+      <section class="card">
+        <h2>Hours and pay</h2>
+        <p class="small muted"><strong>Scheduled</strong> is what your rota says. <strong>Actual</strong> is what happened: sickness, leave, absence, overtime and changed hours.</p>
+        <div class="table-wrap">
+          <table class="pay-table">
+            <thead><tr><th scope="col"><span class="sr-only">Item</span></th><th scope="col">Scheduled</th><th scope="col">Actual</th></tr></thead>
+            <tbody>
+              ${row('shifts', 'Shifts', S.shifts, A.shifts)}
+              ${row('hours', 'Paid hours', hrs(S.paidHours), hrs(A.paidHours))}
+              ${showIf('nightHours') ? row('nightHours', 'of which night', hrs(S.nightHours), hrs(A.nightHours)) : ''}
+              ${row('overtimeHours', 'Overtime hours', hrs(S.overtimeHours), hrs(A.overtimeHours))}
+              ${row('bhHours', 'Bank holiday hours', hrs(S.bhHours), hrs(A.bhHours))}
+              ${showIf('leaveHours') ? row('leaveHours', 'Annual leave hours', hrs(S.leaveHours), hrs(A.leaveHours)) : ''}
+              ${showIf('sickDays') ? row('sickDays', 'Sick days (SSP days)', S.sickDays, `${A.sickDays} (${A.sspDays})`) : ''}
+              <tr class="gap"><td colspan="3"></td></tr>
+              ${row('basic', 'Basic pay', m(S, 'basic'), m(A, 'basic'))}
+              ${showIf('nightPremium') ? row('nightPremium', 'Night premium', m(S, 'nightPremium'), m(A, 'nightPremium')) : ''}
+              ${row('overtimePay', 'Overtime', m(S, 'overtimePay'), m(A, 'overtimePay'))}
+              ${row('bhPremium', 'Bank holiday extra', m(S, 'bhPremium'), m(A, 'bhPremium'))}
+              ${showIf('leavePay') ? row('leavePay', 'Annual leave pay', m(S, 'leavePay'), m(A, 'leavePay')) : ''}
+              ${showIf('sickPay') ? row('sickPay', P.sickPay === 'ssp' ? 'Statutory Sick Pay' : 'Sick pay', m(S, 'sickPay'), m(A, 'sickPay')) : ''}
+              ${showIf('otherPay') ? row('otherPay', 'Other paid time', m(S, 'otherPay'), m(A, 'otherPay')) : ''}
+              ${row('gross', 'Gross pay', m(S, 'gross'), m(A, 'gross'), { strong: true })}
+              ${row('tax', 'Income Tax (est.)', d(S, 'tax'), d(A, 'tax'), { minus: true })}
+              ${row('ni', 'National Insurance (est.)', d(S, 'ni'), d(A, 'ni'), { minus: true })}
+              ${Object.keys(P.studentLoans).some(k => k !== 'postgrad' && P.studentLoans[k]) ? row('sl', 'Student loan (est.)', d(S, 'sl'), d(A, 'sl'), { minus: true }) : ''}
+              ${P.studentLoans.postgrad ? row('pgl', 'Postgraduate loan (est.)', d(S, 'pgl'), d(A, 'pgl'), { minus: true }) : ''}
+              ${row('net', 'Take-home (est.)', hasRate && A.ded.ok ? money(S.net) : '—', hasRate && A.ded.ok ? money(A.net) : '—', { strong: true })}
+            </tbody>
+          </table>
+        </div>
+        <ul class="pay-notes">${notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul>
+      </section>`;
+  }
+
+  function paySettingsCard() {
+    const P = state.pay;
+    const num = (key, label, val, attrs) => `<div class="field"><label class="lbl" for="pay-${key}">${label}</label><input id="pay-${key}" type="number" inputmode="decimal" data-pay="${key}" value="${val ?? ''}" ${attrs}></div>`;
+    const sel = (key, label, opts, val) => `<div class="field"><label class="lbl" for="pay-${key}">${label}</label><select id="pay-${key}" data-pay="${key}">${opts.map(([v, l]) => `<option value="${v}" ${String(v) === String(val) ? 'selected' : ''}>${l}</option>`).join('')}</select></div>`;
+    const check = (key, label, val) => `<label class="check"><input type="checkbox" data-pay="${key}" ${val ? 'checked' : ''}> ${label}</label>`;
+    return `
+      <section class="card">
+        <h2>Pay settings</h2>
+        <p class="small muted">These are your own pay rules. Nothing here changes automatically.</p>
+        ${num('hourlyRate', 'Hourly rate (£)', P.hourlyRate, 'min="0" max="1000" step="0.01" placeholder="e.g. 12.60"')}
+        <div class="field-row">
+          ${num('nightMultiplier', 'Night shift ×', P.nightMultiplier, 'min="1" max="5" step="0.05"')}
+          ${num('overtimeMultiplier', 'Overtime ×', P.overtimeMultiplier, 'min="1" max="5" step="0.05"')}
+        </div>
+        <div class="field-row">
+          ${num('bankHolidayMultiplier', 'Bank holiday ×', P.bankHolidayMultiplier, 'min="1" max="5" step="0.05"')}
+          ${sel('bankHolidayHours', 'Bank holiday hours', [['clock', 'On the day'], ['shift', 'Whole shift']], P.bankHolidayHours)}
+        </div>
+        <p class="small muted" style="margin-top:-4px">Where premiums overlap (e.g. overtime on a bank holiday), the higher rate applies — they don't stack.</p>
+        ${check('annualLeavePaid', 'Annual leave is paid (normal pay for the planned shift)', P.annualLeavePaid)}
+        ${check('cancelledPaid', 'Cancelled shifts are still paid', P.cancelledPaid)}
+        ${sel('sickPay', 'Sick pay', [['ssp', 'Statutory Sick Pay only'], ['full', 'Full pay (company sick pay)'], ['percent', 'Percentage of normal pay']], P.sickPay)}
+        ${P.sickPay === 'percent' ? num('sickPercent', 'Percentage of normal pay', P.sickPercent, 'min="0" max="100" step="1"') : ''}
+        ${num('averageWeeklyEarnings', 'Average weekly earnings for SSP (£, optional)', P.averageWeeklyEarnings, 'min="0" step="0.01" placeholder="Estimated from your rota if blank"')}
+        <h4>Pay period</h4>
+        <div class="field-row">
+          ${sel('frequency', 'Paid', Object.entries(FREQ_LABEL), P.frequency)}
+          <div class="field"><label class="lbl" for="pay-periodAnchor">${P.frequency === 'monthly' ? 'A period starts on (day used)' : 'A period starts on'}</label><input id="pay-periodAnchor" type="date" data-pay="periodAnchor" value="${P.periodAnchor}"></div>
+        </div>
+        <h4>Deductions</h4>
+        <div class="field-row">
+          <div class="field"><label class="lbl" for="pay-taxCode">Tax code</label><input id="pay-taxCode" type="text" data-pay="taxCode" value="${esc(P.taxCode)}" autocapitalize="characters"></div>
+          ${sel('niCategory', 'National Insurance', [['A', 'Category A (standard)'], ['X', 'None (e.g. over State Pension age)']], P.niCategory)}
+        </div>
+        <p class="lbl" style="margin:4px 0 6px">Student loans</p>
+        <div class="loans">${Object.keys(P.studentLoans).map(k => check('sl-' + k, LOAN_LABEL[k], P.studentLoans[k])).join('')}</div>
+      </section>`;
+  }
+  function savePaySetting(el) {
+    const P = state.pay, key = el.dataset.pay;
+    if (key.startsWith('sl-')) { P.studentLoans[key.slice(3)] = el.checked; persist(); return true; }
+    if (key === 'annualLeavePaid' || key === 'cancelledPaid') { P[key] = el.checked; persist(); return true; }
+    if (key === 'bankHolidayHours' || key === 'sickPay' || key === 'niCategory') { P[key] = el.value; persist(); return true; }
+    if (key === 'frequency') { P[key] = el.value; payOffset = 0; persist(); return true; } // the periods themselves change
+    if (key === 'periodAnchor') { if (!isDateKey(el.value)) { el.value = P.periodAnchor; return false; } P.periodAnchor = el.value; payOffset = 0; persist(); return true; }
+    if (key === 'taxCode') {
+      const v = el.value.trim().toUpperCase();
+      if (!v || parseTaxCode(v).error) { toast(v ? parseTaxCode(v).error : 'Please enter a tax code.'); }
+      P.taxCode = v || '1257L';
+      persist();
+      return true;
+    }
+    const limits = { hourlyRate: [0, 1000], nightMultiplier: [1, 5], overtimeMultiplier: [1, 5], bankHolidayMultiplier: [1, 5], sickPercent: [0, 100], averageWeeklyEarnings: [0, 100000] };
+    const [lo, hi] = limits[key] || [0, 0];
+    if (el.value === '' && (key === 'hourlyRate' || key === 'averageWeeklyEarnings')) { P[key] = null; persist(); return true; }
+    const n = numIn(el.value, lo, hi, null);
+    if (n === null) { el.value = P[key] ?? ''; toast(`Please use a number from ${lo} to ${hi}.`); return false; }
+    P[key] = n;
+    persist();
+    return true;
+  }
+  function paySide() { return paySettingsCard(); }
+
+  function saveEntry() {
+    const f = calForm, v = id => ($(id) ? $(id).value : '');
+    const s = v('efStart').slice(0, 16), e = v('efEnd').slice(0, 16), note = v('efNote').trim();
+    const err = m => { setHTML('efError', esc(m)); return false; };
+    if (!isDateTime(s) || !isDateTime(e)) return err('Please add a start and an end, each with a date and time.');
+    if (e <= s) return err('The end needs to be after the start. For overnight, set the end to the next day.');
+    if (msBetween(s, e) > 24 * 3600000) return err("That's longer than 24 hours — please check the dates.");
+    state.rota.entries.push({ id: 'e' + uid(), kind: f.type, start: s, end: e, note: note.slice(0, 80) });
+    state.rota.entries.sort((a, b) => (a.start < b.start ? -1 : 1));
+    persist();
+    calForm = null;
+    onContextChanged();
+    toast(f.type === 'overtime' ? 'Overtime added.' : 'Absence recorded.');
+    return true;
+  }
+
+  // ======================================================================
   // Toast
   // ======================================================================
   let toastTimer;
@@ -2480,6 +3789,21 @@
       if (file) importFile(file);
       return;
     }
+    if (el.dataset.cal) { handleCalChange(el); return; }
+    if (el.dataset.pf) { handlePatternInput(el); return; }
+    if (el.dataset.colour) {
+      if (isHex(el.value)) { state.rota.colours[el.dataset.colour] = el.value.toLowerCase(); persist(); render(); }
+      return;
+    }
+    if (el.dataset.pay) {
+      if (!savePaySetting(el)) return;
+      if (['sickPay', 'frequency'].includes(el.dataset.pay)) render(); else $('app').innerHTML = payMain();
+      return;
+    }
+    if (el.hasAttribute('data-bh-region')) {
+      if (BH_REGIONS[el.value]) { state.bankHolidays.region = el.value; bhIndex = null; persist(); render(); }
+      return;
+    }
     if (el.id === 'energy') {
       ensureContext(k).energy = Number(el.value);
       persist();
@@ -2534,6 +3858,100 @@
     const k = todayKey();
 
     switch (a) {
+      case 'cal-prev':
+      case 'cal-next': {
+        const dir = a === 'cal-next' ? 1 : -1;
+        if (calView === 'month') calMonth = shiftMonth(calMonth + '-01', dir).slice(0, 7);
+        else agendaStart = shift(agendaStart || k, dir * 28);
+        break;
+      }
+      case 'cal-today':
+        calMonth = k.slice(0, 7); calSelected = k; agendaStart = k;
+        break;
+      case 'cal-view':
+        calView = btn.dataset.v === 'agenda' ? 'agenda' : 'month';
+        if (calView === 'agenda') agendaStart = calMonth === k.slice(0, 7) ? k : calMonth + '-01';
+        break;
+      case 'cal-select': {
+        calSelected = btn.dataset.date;
+        if (calForm && calForm.kind === 'entry') calForm = null;
+        commitForm = null;
+        if (calView === 'month' && calSelected.slice(0, 7) !== calMonth) calMonth = calSelected.slice(0, 7);
+        render();
+        const det = $('detailsCard');
+        if (det && det.scrollIntoView) det.scrollIntoView({ block: 'start', behavior: motionAllowed() ? 'smooth' : 'auto' });
+        return;
+      }
+      case 'pattern-new': {
+        openPatternForm();
+        render();
+        const pc = $('patternCard');
+        if (pc && pc.scrollIntoView) pc.scrollIntoView({ block: 'start', behavior: motionAllowed() ? 'smooth' : 'auto' });
+        return;
+      }
+      case 'pattern-cancel':
+        calForm = null;
+        break;
+      case 'pattern-save':
+        if (!savePattern()) return;
+        break;
+      case 'seg-add':
+        if (calForm && calForm.segments.length < 12) calForm.segments.push({ type: 'off', count: 1 });
+        break;
+      case 'seg-remove':
+        if (calForm && calForm.segments.length > 1) calForm.segments.splice(+btn.dataset.i, 1);
+        break;
+      case 'pattern-remove': {
+        const v = state.rota.patterns.find(x => x.id === btn.dataset.id);
+        if (!v || !confirm(`Remove the pattern change starting ${shortDate(v.effectiveFrom)}?`)) return;
+        state.rota.patterns = state.rota.patterns.filter(x => x !== v);
+        persist();
+        onContextChanged();
+        break;
+      }
+      case 'entry-new': {
+        const d = calSelected, p = plannedFor(d), ot = btn.dataset.kind === 'overtime';
+        const base = p && p.works ? (ot ? p.endDt : p.startDt) : d + 'T09:00';
+        calForm = { kind: 'entry', type: ot ? 'overtime' : 'unauthorised', date: d, start: base, end: minToDt(dtToMin(base, d) + 120, d) };
+        break;
+      }
+      case 'entry-cancel':
+        calForm = null;
+        break;
+      case 'entry-save':
+        if (!saveEntry()) return;
+        break;
+      case 'entry-del': {
+        const e = state.rota.entries.find(x => x.id === btn.dataset.id);
+        if (!e || !confirm(`Remove this ${STATUS_LABEL[e.kind].toLowerCase()}?`)) return;
+        state.rota.entries = state.rota.entries.filter(x => x !== e);
+        persist();
+        onContextChanged();
+        break;
+      }
+      case 'cal-appt': {
+        const d = btn.dataset.date;
+        commitForm = { key: uid(), id: null, kind: 'appointment', title: '', start: d + 'T09:00', end: d + 'T10:00' };
+        render();
+        if ($('cfTitle')) $('cfTitle').focus();
+        return;
+      }
+      case 'cal-reset-date':
+        if (!confirm('Clear the changes for this date? Overtime, absences and appointments stay.')) return;
+        delete state.rota.overrides[calSelected];
+        persist();
+        onContextChanged();
+        break;
+      case 'colours-reset':
+        state.rota.colours = Object.assign({}, DEFAULT_COLOURS);
+        persist();
+        break;
+      case 'bh-refresh':
+        fetchBankHolidays(true);
+        return;
+      case 'pay-prev': payOffset--; break;
+      case 'pay-next': payOffset++; break;
+      case 'pay-now': payOffset = 0; break;
       case 'theme': {
         state.settings.theme = THEMES[(THEMES.indexOf(state.settings.theme) + 1) % THEMES.length];
         persist();
@@ -2831,7 +4249,7 @@
         return;
       case 'start-fresh':
         if (!confirm('Start fresh? The unreadable saved data will be replaced. Download it first if you might want it later.')) return;
-        if (damagedKey === PREVIOUS_KEY) removeKey(PREVIOUS_KEY);
+        if (damagedKey && damagedKey !== STORAGE_KEY) removeKey(damagedKey);
         saveBlocked = false;
         damagedRaw = null;
         state = freshState();
@@ -2850,12 +4268,20 @@
     if (document.visibilityState === 'visible') { checkNudge(); render(); tickTimer(); }
   });
   setInterval(onClock, 30000);
+  window.addEventListener('hashchange', () => {
+    const next = sectionFromHash();
+    if (next !== section) { section = next; view = 'auto'; eveningKey = null; commitForm = null; calForm = null; }
+    render();
+    window.scrollTo(0, 0);
+    if (section !== 'today') maybeFetchBankHolidays();
+  });
   if (reduceQuery && reduceQuery.addEventListener) reduceQuery.addEventListener('change', () => renderFooter());
 
   boot();
   ensureTicking();
   checkNudge();
   render();
+  if (section !== 'today') maybeFetchBankHolidays();
   if (bootNotice) toast(bootNotice);
 })();
 </script>
