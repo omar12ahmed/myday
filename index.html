@@ -530,7 +530,7 @@
   ul.pay-notes li + li { margin-top: 4px; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-  /* ---------- Health (Workout) ---------- */
+  /* ---------- Health (Workout + Food) ---------- */
   .layout[data-mode="morning"] #slot-health { order: 3; }
   .health-tabs { padding: 10px; }
   .health-tabs .seg { margin: 0; }
@@ -600,6 +600,38 @@
   .ch-pt:focus-visible .ch-dot { stroke: var(--text); }
   .ch-tip { position: absolute; transform: translate(-50%, calc(-100% - 10px)); background: var(--inverse); color: var(--on-inverse); font-size: 13px; padding: 4px 8px; border-radius: 8px; pointer-events: none; opacity: 0; white-space: nowrap; }
   .ch-tip.show { opacity: 1; }
+  /* Food: cards for discovering recipes */
+  .search-row { display: flex; gap: 8px; }
+  .search-row input { flex: 1; min-width: 0; }
+  input[type=search], input[type=url], textarea { font: inherit; color: var(--text); background: var(--surface-3); border: 1px solid var(--outline-strong); border-radius: 12px; padding: 10px 12px; min-height: 48px; width: 100%; }
+  textarea { line-height: 1.45; resize: vertical; }
+  .rgrid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 10px; }
+  @media (min-width: 600px) { .rgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1200px) { .rgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .rcard { background: var(--surface-2); border: 1px solid var(--outline); border-radius: var(--radius); overflow: hidden; min-height: 120px; }
+  .rcard-link { display: grid; grid-template-columns: 112px minmax(0, 1fr); color: inherit; text-decoration: none; height: 100%; }
+  .rcard img, .rcard-noimg { width: 112px; height: 100%; min-height: 112px; object-fit: cover; display: block; background: var(--surface-3); }
+  .rcard-noimg { display: grid; place-items: center; font-size: 34px; }
+  .rcard-body { padding: 10px 12px; min-width: 0; }
+  .rcard-body h3 { font-size: 16px; text-transform: none; letter-spacing: 0; color: var(--text); margin: 0 0 4px; }
+  .rfacts { font-size: 13px; color: var(--text-2); margin-top: 4px; }
+  .skeleton { min-height: 112px; background: linear-gradient(90deg, var(--surface-2), var(--surface-3), var(--surface-2)); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+  .attribution { text-align: center; margin: 4px 0 16px; }
+  .recipe-img { width: 100%; max-height: 260px; object-fit: cover; border-radius: var(--radius); margin: 6px 0 12px; display: block; }
+  .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .action-row .primary { grid-column: 1 / -1; }
+  .action-row button.on { background: var(--primary-container); color: var(--on-primary-container); }
+  .serv-stepper { display: flex; align-items: center; gap: 14px; margin: 6px 0 10px; }
+  .serv-stepper .icon-btn { font-size: 24px; }
+  ul.ing-list { list-style: none; padding: 0; margin: 8px 0 0; }
+  ul.ing-list li { padding: 7px 0; border-top: 1px solid var(--outline); }
+  ul.ing-list li:first-child { border-top: 0; }
+  .ing-qty { font-weight: 650; font-variant-numeric: tabular-nums; }
+  ol.steps { padding-left: 24px; margin: 8px 0; }
+  ol.steps li { margin-bottom: 10px; line-height: 1.55; }
+  ol.steps li.current { font-weight: 650; }
+  .orig { white-space: pre-wrap; font-size: 14px; color: var(--text-2); }
   .btn-link + .eyebrow { display: block; margin-top: 4px; }
   .hist-table a, ul.plain-list a { color: var(--primary); }
 
@@ -3757,7 +3789,7 @@
   }
 
   // ======================================================================
-  // Health: Workout. Stored under state.health (added alongside the
+  // Health: Workout + Food. Stored under state.health (added alongside the
   // existing data — no existing record is changed, so no migration is needed).
   // ======================================================================
   const EX_TYPES = ['strength', 'bodyweight', 'cardio'];
@@ -3781,6 +3813,11 @@
         activeId: null,
         restTimer: { enabled: false, seconds: 90 },
         rest: null        // running rest countdown { startedAt, durationSec }
+      },
+      food: {
+        prefs: { exclude: [], dislikes: [], maxMinutes: null, batchOnly: false },
+        recipes: {},      // id → recipe (your own, plus TheMealDB recipes you saved, favourited, planned or cooked)
+        favourites: []    // recipe ids
       }
     };
   }
@@ -3821,6 +3858,24 @@
       editedAt: typeof o.editedAt === 'string' ? o.editedAt : null, exercises
     };
   }
+  function cleanRecipe(o) {
+    if (!isObj(o) || typeof o.id !== 'string' || !o.id || typeof o.title !== 'string' || !o.title.trim()) return null;
+    const n = isObj(o.nutrition) ? o.nutrition : null;
+    return {
+      id: o.id, source: o.source === 'themealdb' ? 'themealdb' : 'manual', title: str(o.title, 120),
+      sourceUrl: str(o.sourceUrl, 400), sourceName: str(o.sourceName, 80), mealDbUrl: str(o.mealDbUrl, 200), video: str(o.video, 300),
+      thumb: /^https:\/\//.test(o.thumb || '') ? str(o.thumb, 300) : '',
+      category: str(o.category, 40), area: str(o.area, 40), tags: Array.isArray(o.tags) ? o.tags.filter(t => typeof t === 'string').slice(0, 10).map(t => t.slice(0, 30)) : [],
+      ingredients: (Array.isArray(o.ingredients) ? o.ingredients : []).filter(i => isObj(i) && typeof i.name === 'string' && i.name.trim()).slice(0, 60).map(i => ({ name: str(i.name, 80), measure: str(i.measure, 60) })),
+      instructions: typeof o.instructions === 'string' ? o.instructions.slice(0, 20000) : '',
+      servings: optNum(o.servings, 1, 100), servingsSource: o.servingsSource === 'user' ? 'user' : o.servingsSource === 'recipe' ? 'recipe' : null,
+      prepMin: optNum(o.prepMin, 0, 1440), cookMin: optNum(o.cookMin, 0, 1440),
+      effort: ['easy', 'medium', 'hard'].includes(o.effort) ? o.effort : null, batch: o.batch === true ? true : o.batch === false ? false : null, // null = not known
+      nutrition: n ? { kcal: optNum(n.kcal, 0, 10000), protein: optNum(n.protein, 0, 1000), carbs: optNum(n.carbs, 0, 1000), fat: optNum(n.fat, 0, 1000) } : null,
+      nutritionSource: o.nutritionSource === 'user' ? 'user' : null,
+      savedAt: str(o.savedAt, 20)
+    };
+  }
   function normalizeHealth(raw, report) {
     const h = emptyHealth();
     if (!isObj(raw)) return h;
@@ -3852,14 +3907,37 @@
     if (typeof w.activeId === 'string' && hw.sessions.some(s => s.id === w.activeId && s.status === 'active')) hw.activeId = w.activeId;
     if (isObj(w.restTimer)) hw.restTimer = { enabled: w.restTimer.enabled === true, seconds: intIn(w.restTimer.seconds, 10, 900, 90) };
     if (isObj(w.rest) && Number.isFinite(w.rest.startedAt) && Number.isInteger(w.rest.durationSec)) hw.rest = { startedAt: w.rest.startedAt, durationSec: w.rest.durationSec };
+
+    const f = isObj(raw.food) ? raw.food : {}, hf = h.food;
+    if (isObj(f.prefs)) {
+      hf.prefs.exclude = Array.isArray(f.prefs.exclude) ? f.prefs.exclude.filter(x => EXCLUSIONS[x]) : [];
+      hf.prefs.dislikes = Array.isArray(f.prefs.dislikes) ? f.prefs.dislikes.map(x => str(x, 40).toLowerCase()).filter(Boolean).slice(0, 30) : [];
+      hf.prefs.maxMinutes = optNum(f.prefs.maxMinutes, 5, 600);
+      hf.prefs.batchOnly = f.prefs.batchOnly === true;
+    }
+    if (isObj(f.recipes)) for (const id of Object.keys(f.recipes)) { const r = cleanRecipe(f.recipes[id]); if (r && r.id === id) hf.recipes[id] = r; else report.dropped++; }
+    if (Array.isArray(f.favourites)) hf.favourites = [...new Set(f.favourites.filter(id => typeof id === 'string' && hf.recipes[id]))];
     return h;
   }
 
-  // ---------- Health routing: #health/workout/… ----------
+  // ---------- Health routing: #health/workout/…, #health/food/… ----------
   const route = () => (location.hash || '').replace('#', '').split('/').map(decodeURIComponent);
   const go = hash => { if (location.hash !== '#' + hash) location.hash = hash; else render(); };
-  function healthMain() { return workoutMain(route().slice(2)); }
-  function healthSide() { return workoutSide(route().slice(2)); }
+  function healthMain() {
+    const r = route(), sub = r[1] === 'food' ? 'food' : 'workout';
+    const tabs = `
+      <section class="card health-tabs">
+        <div class="seg" role="tablist" aria-label="Health sections">
+          <a class="seg-link${sub === 'workout' ? ' on' : ''}" href="#health/workout" role="tab" aria-selected="${sub === 'workout'}">Workout</a>
+          <a class="seg-link${sub === 'food' ? ' on' : ''}" href="#health/food" role="tab" aria-selected="${sub === 'food'}">Food</a>
+        </div>
+      </section>`;
+    return tabs + (sub === 'food' ? foodMain(r.slice(2)) : workoutMain(r.slice(2)));
+  }
+  function healthSide() {
+    const r = route();
+    return r[1] === 'food' ? foodSide(r.slice(2)) : workoutSide(r.slice(2));
+  }
 
   // ======================================================================
   // Workout
@@ -4400,6 +4478,446 @@
     return out;
   }
 
+  // ======================================================================
+  // Food
+  // Recipe ideas come from TheMealDB's free test key "1" (documented for
+  // development and educational use). Their data has no servings, times or
+  // nutrition, so those are shown as "not listed" — never guessed.
+  // ======================================================================
+  const F = () => state.health.food;
+  const MDB = 'https://www.themealdb.com/api/json/v1/1/';
+  const mdbCache = new Map();            // recipes fetched this session (only saved when you use them)
+  const foodSuggest = { items: [], shown: 3, loading: false, error: null, loaded: false, hidden: 0 };
+  const foodSearch = { q: '', items: [], loading: false, error: null, done: false, hidden: 0 };
+  const recipeLoad = { id: null, loading: false, error: null };
+  const recipeServings = {};             // servings chosen on a recipe page (this visit)
+
+  // ---------- Ingredient words (used for exclusions and shopping categories) ----------
+  const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const wordsRe = words => new RegExp('\\b(?:' + words.map(escRe).join('|') + ')(?:s|es)?\\b', 'i');
+  const MEAT = ['pork', 'bacon', 'ham', 'sausage', 'chorizo', 'prosciutto', 'pancetta', 'salami', 'gammon', 'lard', 'pepperoni', 'beef', 'steak', 'brisket', 'oxtail', 'veal', 'lamb', 'mutton', 'goat', 'chicken', 'turkey', 'duck', 'goose', 'venison', 'mince', 'meatball', 'gelatin', 'gelatine'];
+  const FISH = ['fish', 'salmon', 'tuna', 'cod', 'haddock', 'pollock', 'prawn', 'shrimp', 'crab', 'lobster', 'anchovy', 'anchovies', 'sardine', 'mackerel', 'mussel', 'clam', 'oyster', 'squid', 'scallop', 'octopus', 'trout', 'tilapia', 'sea bass', 'monkfish', 'kipper', 'fish sauce'];
+  const DAIRY = ['milk', 'butter', 'cheese', 'cream', 'yogurt', 'yoghurt', 'parmesan', 'mozzarella', 'cheddar', 'ghee', 'creme fraiche', 'crème fraîche', 'ricotta', 'feta', 'mascarpone', 'paneer', 'buttermilk', 'custard', 'halloumi', 'brie', 'gruyere', 'gouda', 'whey', 'quark'];
+  const NOT_DAIRY = /\b(coconut|almond|oat|soy|soya|rice|peanut|cocoa|nut|cashew)\s+(milk|butter|cream|yogh?urt)\b/i;
+  const EXCLUSIONS = {
+    vegetarian: { label: 'Vegetarian (no meat or fish)', words: MEAT.concat(FISH), cats: ['Beef', 'Chicken', 'Lamb', 'Pork', 'Seafood', 'Goat'] },
+    vegan: { label: 'Vegan (no animal products)', words: MEAT.concat(FISH, DAIRY, ['egg', 'eggs', 'honey', 'mayonnaise']), cats: ['Beef', 'Chicken', 'Lamb', 'Pork', 'Seafood', 'Goat'], dairy: true },
+    pork: { label: 'No pork', words: ['pork', 'bacon', 'ham', 'sausage', 'chorizo', 'prosciutto', 'pancetta', 'salami', 'gammon', 'lard', 'pepperoni'], cats: ['Pork'] },
+    beef: { label: 'No beef', words: ['beef', 'steak', 'brisket', 'oxtail', 'veal'], cats: ['Beef'] },
+    lamb: { label: 'No lamb or goat', words: ['lamb', 'mutton', 'goat'], cats: ['Lamb', 'Goat'] },
+    poultry: { label: 'No poultry', words: ['chicken', 'turkey', 'duck', 'goose'], cats: ['Chicken'] },
+    seafood: { label: 'No fish or seafood', words: FISH, cats: ['Seafood'] },
+    dairy: { label: 'No dairy', words: DAIRY, cats: [], dairy: true },
+    eggs: { label: 'No eggs', words: ['egg', 'eggs', 'egg yolk', 'egg white', 'mayonnaise', 'meringue'], cats: [] },
+    nuts: { label: 'No nuts', words: ['nut', 'nuts', 'almond', 'cashew', 'walnut', 'pecan', 'hazelnut', 'pistachio', 'peanut', 'macadamia', 'brazil nut', 'pine nut', 'marzipan', 'praline', 'nutella'], cats: [] },
+    gluten: { label: 'No gluten (wheat, barley, rye…)', words: ['flour', 'bread', 'breadcrumb', 'pasta', 'spaghetti', 'penne', 'macaroni', 'lasagne', 'lasagna', 'noodle', 'wheat', 'barley', 'rye', 'couscous', 'bulgur', 'semolina', 'soy sauce', 'pastry', 'tortilla', 'pitta', 'naan', 'biscuit', 'cracker', 'beer', 'seitan', 'udon', 'cake', 'digestive'], cats: ['Pasta'] }
+  };
+  for (const k of Object.keys(EXCLUSIONS)) EXCLUSIONS[k].re = wordsRe(EXCLUSIONS[k].words);
+
+  // Which of your exclusions/dislikes a recipe's ingredient names or category trip.
+  function prefHits(r) {
+    const p = F().prefs, hits = [];
+    for (const key of p.exclude) {
+      const x = EXCLUSIONS[key];
+      if (r.category && x.cats.includes(r.category)) hits.push({ why: x.label, what: `category: ${r.category}` });
+      for (const ing of r.ingredients) {
+        if (x.dairy && NOT_DAIRY.test(ing.name)) continue; // e.g. coconut milk, peanut butter
+        if (x.re.test(ing.name)) { hits.push({ why: x.label, what: ing.name }); break; }
+      }
+    }
+    for (const d of p.dislikes) {
+      const re = wordsRe([d]);
+      const ing = r.ingredients.find(i => re.test(i.name));
+      if (ing) hits.push({ why: `You don't like ${d}`, what: ing.name });
+    }
+    return hits;
+  }
+  const totalMinutes = r => (r.prepMin !== null || r.cookMin !== null ? (r.prepMin || 0) + (r.cookMin || 0) : null);
+  // Only filters the data can support: ingredient names/category for everything; time and batch only where a recipe lists them.
+  function passesPrefs(r) {
+    const p = F().prefs;
+    if (prefHits(r).length) return false;
+    if ((p.exclude.length || p.dislikes.length) && !r.ingredients.length) return false;
+    const t = totalMinutes(r);
+    if (p.maxMinutes && t !== null && t > p.maxMinutes) return false;
+    if (p.batchOnly && r.source === 'manual' && !r.batch) return false;
+    return true;
+  }
+
+  // ---------- Quantities ----------
+  const FRACTIONS = { '½': 0.5, '¼': 0.25, '¾': 0.75, '⅓': 1 / 3, '⅔': 2 / 3, '⅛': 0.125 };
+  const UNIT_ALIASES = {
+    g: 'g', gr: 'g', gram: 'g', grams: 'g', kg: 'kg', kilo: 'kg', kilos: 'kg', kilogram: 'kg', kilograms: 'kg',
+    ml: 'ml', millilitre: 'ml', millilitres: 'ml', milliliter: 'ml', milliliters: 'ml', l: 'l', litre: 'l', litres: 'l', liter: 'l', liters: 'l',
+    tsp: 'tsp', tsps: 'tsp', teaspoon: 'tsp', teaspoons: 'tsp', tbsp: 'tbsp', tbsps: 'tbsp', tbs: 'tbsp', tblsp: 'tbsp', tablespoon: 'tbsp', tablespoons: 'tbsp',
+    cup: 'cup', cups: 'cup', oz: 'oz', ounce: 'oz', ounces: 'oz', lb: 'lb', lbs: 'lb', pound: 'lb', pounds: 'lb'
+  };
+  const NUM_RE = /^(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?\s*[½¼¾⅓⅔⅛]|\d+(?:\.\d+)?|[½¼¾⅓⅔⅛])/;
+  function numVal(s) {
+    s = s.trim();
+    let m = s.match(/^(\d+)\s+(\d+)\/(\d+)$/); if (m) return +m[1] + m[2] / m[3];
+    m = s.match(/^(\d+)\/(\d+)$/); if (m) return m[1] / m[2];
+    m = s.match(/^(\d+(?:\.\d+)?)?\s*([½¼¾⅓⅔⅛])$/); if (m) return (m[1] ? +m[1] : 0) + FRACTIONS[m[2]];
+    return +s;
+  }
+  // "1 1/2 cups" → { qty: 1.5, unit: 'cup', unitText: 'cups', extra: '' }. Ranges and words like "pinch" can't be scaled.
+  function parseMeasure(text) {
+    const t = String(text || '').trim();
+    const m = t.match(NUM_RE);
+    if (!m) return null;
+    const rest = t.slice(m[0].length).trim();
+    if (/^(-|–|to\b)\s*\d/i.test(rest)) return { range: true };
+    const qty = numVal(m[0]);
+    if (!Number.isFinite(qty) || qty <= 0) return null;
+    const um = rest.match(/^([A-Za-z]+)\.?(?=\s|$|[^A-Za-z])/);
+    const unit = um && UNIT_ALIASES[um[1].toLowerCase()] ? UNIT_ALIASES[um[1].toLowerCase()] : '';
+    const after = unit ? rest.slice(um[0].length).trim() : rest;
+    return { qty, unit, unitText: unit ? um[1] : '', extra: after.replace(/^of\s+/i, '') };
+  }
+  const fmtQty = n => String(Math.round(n * 100) / 100);
+  function scaledMeasure(measure, factor) {
+    if (factor === 1) return { text: measure, scaled: true };
+    const p = parseMeasure(measure);
+    if (!p || p.range) return { text: measure, scaled: false };
+    return { text: [fmtQty(p.qty * factor), p.unitText, p.extra].filter(Boolean).join(' '), scaled: true };
+  }
+  // ---------- Recipes ----------
+  const getRecipe = id => F().recipes[id] || mdbCache.get(id) || null;
+  const safeUrl = u => (/^https?:\/\//i.test(u || '') ? u : '');
+  function fromMealDb(m) {
+    if (!isObj(m) || !/^\d+$/.test(String(m.idMeal || '')) || typeof m.strMeal !== 'string') return null;
+    const ingredients = [];
+    for (let i = 1; i <= 20; i++) {
+      const name = String(m['strIngredient' + i] || '').trim();
+      if (name) ingredients.push({ name, measure: String(m['strMeasure' + i] || '').trim() });
+    }
+    return cleanRecipe({
+      id: 'mdb-' + m.idMeal, source: 'themealdb', title: m.strMeal, category: m.strCategory || '', area: m.strArea || '',
+      tags: String(m.strTags || '').split(',').map(t => t.trim()).filter(Boolean), thumb: m.strMealThumb || '',
+      instructions: m.strInstructions || '', sourceUrl: safeUrl(m.strSource), video: safeUrl(m.strYoutube),
+      mealDbUrl: `https://www.themealdb.com/meal/${m.idMeal}`, ingredients, servings: null, prepMin: null, cookMin: null, effort: null, batch: null, nutrition: null
+    });
+  }
+  function keepRecipe(r) { if (!F().recipes[r.id]) F().recipes[r.id] = Object.assign({}, r, { savedAt: localStamp() }); return F().recipes[r.id]; }
+  // Drop a saved TheMealDB recipe once nothing refers to it any more (keeps storage small).
+  function tidyRecipe(id) {
+    const f = F(), r = f.recipes[id];
+    if (!r || r.source !== 'themealdb') return;
+    const used = f.favourites.includes(id) || r.servingsSource === 'user' || r.nutritionSource === 'user';
+    if (!used) { mdbCache.set(id, r); delete f.recipes[id]; }
+  }
+  // Split the original method on its own line breaks only. Lines that are just "STEP 1" headings are dropped; no sentence is ever split.
+  function recipeSteps(text) {
+    const out = [];
+    for (const raw of String(text || '').split(/\r?\n/)) {
+      const l = raw.trim();
+      if (!l || /^(step\s*)?\d+[.:)]?$/i.test(l)) continue;
+      out.push(l.replace(/^(step\s*\d+\s*[:.)-]?\s*|\d+\s*[.)]\s+)/i, ''));
+    }
+    return out;
+  }
+  async function mdbGet(path) {
+    const res = await fetch(MDB + path);
+    if (!res.ok) throw new Error(`TheMealDB replied with an error (${res.status}).`);
+    let j;
+    try { j = await res.json(); } catch (e) { throw new Error("TheMealDB sent something that isn't valid data."); }
+    if (!isObj(j)) throw new Error('TheMealDB sent something unexpected.');
+    return j;
+  }
+  const fetchError = e => (e instanceof TypeError ? "Couldn't reach TheMealDB — you may be offline." : (e && e.message) || 'Something went wrong.');
+  const foodOpen = () => section === 'health' && route()[1] === 'food';
+  const rerenderFood = () => { if (foodOpen()) render(); };
+
+  async function loadSuggestions() {
+    if (foodSuggest.loading) return;
+    foodSuggest.loading = true;
+    foodSuggest.error = null;
+    rerenderFood();
+    try {
+      const seen = new Set(foodSuggest.items.map(r => r.id));
+      let tries = 0;
+      while (foodSuggest.items.length < foodSuggest.shown && tries < foodSuggest.shown * 4) {
+        const n = Math.min(3, foodSuggest.shown - foodSuggest.items.length);
+        tries += n;
+        const batch = await Promise.all(Array.from({ length: n }, () => mdbGet('random.php')));
+        for (const j of batch) {
+          const r = Array.isArray(j.meals) ? fromMealDb(j.meals[0]) : null;
+          if (!r || seen.has(r.id)) continue;
+          seen.add(r.id);
+          mdbCache.set(r.id, r);
+          if (passesPrefs(r)) foodSuggest.items.push(r); else foodSuggest.hidden++;
+        }
+      }
+      foodSuggest.loaded = true;
+    } catch (e) {
+      foodSuggest.error = fetchError(e);
+    } finally {
+      foodSuggest.loading = false;
+      rerenderFood();
+    }
+  }
+  function resetSuggestions() { Object.assign(foodSuggest, { items: [], shown: 3, loading: false, error: null, loaded: false, hidden: 0 }); }
+
+  async function runSearch(q) {
+    foodSearch.q = q; foodSearch.items = []; foodSearch.error = null; foodSearch.done = false; foodSearch.hidden = 0; foodSearch.loading = true;
+    rerenderFood();
+    const ql = q.toLowerCase();
+    const local = Object.values(F().recipes).filter(r => r.title.toLowerCase().includes(ql) || r.ingredients.some(i => i.name.toLowerCase().includes(ql)));
+    try {
+      const j = await mdbGet('search.php?s=' + encodeURIComponent(q));
+      const remote = (Array.isArray(j.meals) ? j.meals : []).map(fromMealDb).filter(Boolean);
+      remote.forEach(r => mdbCache.set(r.id, F().recipes[r.id] || r));
+      const all = local.concat(remote.filter(r => !F().recipes[r.id]));
+      foodSearch.items = all.filter(passesPrefs);
+      foodSearch.hidden = all.length - foodSearch.items.length;
+    } catch (e) {
+      foodSearch.error = fetchError(e);
+      foodSearch.items = local.filter(passesPrefs);
+      foodSearch.hidden = local.length - foodSearch.items.length;
+    } finally {
+      foodSearch.loading = false; foodSearch.done = true;
+      rerenderFood();
+    }
+  }
+  async function loadRecipe(id) {
+    if (recipeLoad.loading && recipeLoad.id === id) return;
+    Object.assign(recipeLoad, { id, loading: true, error: null });
+    rerenderFood();
+    try {
+      const j = await mdbGet('lookup.php?i=' + encodeURIComponent(id.replace(/^mdb-/, '')));
+      const r = Array.isArray(j.meals) ? fromMealDb(j.meals[0]) : null;
+      if (!r) throw new Error("TheMealDB doesn't have that recipe any more.");
+      mdbCache.set(r.id, r);
+    } catch (e) {
+      recipeLoad.error = fetchError(e);
+    } finally {
+      recipeLoad.loading = false;
+      rerenderFood();
+    }
+  }
+
+  // ---------- Views ----------
+  function foodMain(r) {
+    const v = r[0] || 'home';
+    if (v === 'recipe') return recipeView(r[1]);
+    if (v === 'search') return searchView();
+    if (v === 'prefs') return prefsView();
+    if (v === 'new' || v === 'edit') return recipeFormView(v === 'edit' ? r[1] : null);
+    return foodHome();
+  }
+  function foodSide(r) {
+    if ((r[0] || 'home') !== 'home') return '';
+    const p = F().prefs, active = p.exclude.map(k => EXCLUSIONS[k].label).concat(p.dislikes.map(d => `not ${d}`));
+    return `
+      <section class="card">
+        <h2>Your preferences</h2>
+        <p class="small">${active.length ? esc(active.join(' · ')) : 'No filters set.'}${p.maxMinutes ? ` · up to ${p.maxMinutes} min` : ''}${p.batchOnly ? ' · batch cooking' : ''}</p>
+        <a class="btn" href="#health/food/prefs">Change preferences</a>
+      </section>
+      <section class="card">
+        <h2>About recipe ideas</h2>
+        <p class="small muted">Ideas and photos come from <a href="https://www.themealdb.com" target="_blank" rel="noopener">TheMealDB</a>, using its free test key for personal and educational use. TheMealDB doesn't list servings, times or nutrition, so MyDay shows those as "not listed" rather than guessing.</p>
+      </section>`;
+  }
+  function factsLine(r) {
+    const bits = [], t = totalMinutes(r);
+    if (t !== null) bits.push(`${t} min`);
+    if (r.servings) bits.push(`Serves ${r.servings}${r.servingsSource === 'user' ? ' (your entry)' : ''}`);
+    if (r.effort) bits.push(`${r.effort[0].toUpperCase()}${r.effort.slice(1)} effort`);
+    if (r.nutrition && r.nutrition.kcal !== null) bits.push(`${n1(r.nutrition.kcal)} kcal per serving (your entry)`);
+    if (r.batch) bits.push('Good for batch cooking');
+    const missing = [t === null ? 'time' : '', !r.servings ? 'servings' : '', !r.nutrition ? 'nutrition' : ''].filter(Boolean);
+    return `${bits.length ? `<div class="rfacts">${esc(bits.join(' · '))}</div>` : ''}${missing.length ? `<div class="meta">${esc(missing.join(', ').replace(/^./, c => c.toUpperCase()))} not listed</div>` : ''}`;
+  }
+  function recipeCard(r) {
+    return `
+      <article class="rcard">
+        <a class="rcard-link" href="#health/food/recipe/${encodeURIComponent(r.id)}">
+          ${r.thumb ? `<img src="${esc(r.thumb)}/small" alt="" loading="lazy" decoding="async">` : '<div class="rcard-noimg" aria-hidden="true">🍲</div>'}
+          <div class="rcard-body">
+            <h3>${esc(r.title)}</h3>
+            <div class="meta">${esc([r.category, r.area].filter(Boolean).join(' · ') || (r.source === 'manual' ? 'Your recipe' : ''))}</div>
+            ${factsLine(r)}
+          </div>
+        </a>
+      </article>`;
+  }
+  function foodHome() {
+    const f = F();
+    if (!foodSuggest.loaded && !foodSuggest.loading && !foodSuggest.error) setTimeout(loadSuggestions, 0);
+    const shown = foodSuggest.items.slice(0, foodSuggest.shown);
+    const mine = Object.values(f.recipes).filter(r => r.source === 'manual');
+    return `
+      <section class="card">
+        <div class="search-row">
+          <label class="sr-only" for="foodQ">Search recipes</label>
+          <input id="foodQ" type="search" placeholder="Search recipes" value="${esc(foodSearch.q)}" enterkeyhint="search">
+          <button class="inline" data-action="h-food-search">Search</button>
+        </div>
+        <div class="row2"><a class="btn-link" href="#health/food/new">+ Add my own recipe</a><a class="btn-link" href="#health/food/prefs">Preferences</a></div>
+      </section>
+      <section class="card">
+        <h2>Ideas for you</h2>
+        ${foodSuggest.error ? `<p class="warn">${esc(foodSuggest.error)} Your saved recipes below still work.</p><button class="inline" data-action="h-suggest-retry">Try again</button>` : ''}
+        <div class="rgrid">${shown.map(recipeCard).join('')}${foodSuggest.loading ? '<div class="rcard skeleton" aria-hidden="true"></div>'.repeat(Math.max(1, foodSuggest.shown - shown.length)) : ''}</div>
+        ${foodSuggest.loading ? '<p class="small muted" role="status">Finding ideas…</p>' : ''}
+        ${foodSuggest.hidden ? `<p class="small muted">${foodSuggest.hidden} idea${foodSuggest.hidden === 1 ? '' : 's'} left out because of your preferences.</p>` : ''}
+        ${foodSuggest.loaded && !foodSuggest.loading && !foodSuggest.error ? '<button class="inline" data-action="h-suggest-more">Show more</button>' : ''}
+      </section>
+      ${f.favourites.length ? `<section class="card"><h2>Favourites</h2><div class="rgrid">${f.favourites.map(getRecipe).filter(Boolean).map(recipeCard).join('')}</div></section>` : ''}
+      ${mine.length ? `<section class="card"><h2>My recipes</h2><div class="rgrid">${mine.map(recipeCard).join('')}</div></section>` : ''}
+      <p class="small muted attribution">Recipe ideas and photos: <a href="https://www.themealdb.com" target="_blank" rel="noopener">TheMealDB</a>.</p>`;
+  }
+  function searchView() {
+    const s = foodSearch;
+    return `
+      <section class="card">
+        <a class="btn-link" href="#health/food">‹ Food</a>
+        <div class="search-row">
+          <label class="sr-only" for="foodQ">Search recipes</label>
+          <input id="foodQ" type="search" value="${esc(s.q)}" enterkeyhint="search">
+          <button class="inline" data-action="h-food-search">Search</button>
+        </div>
+        ${s.loading ? '<p class="small muted" role="status">Searching…</p>' : ''}
+        ${s.error ? `<p class="warn">${esc(s.error)} Showing matches from your saved recipes only.</p>` : ''}
+        ${s.done && !s.items.length ? `<p class="small">No recipes found for "${esc(s.q)}".</p>` : ''}
+        ${s.hidden ? `<p class="small muted">${s.hidden} result${s.hidden === 1 ? '' : 's'} left out because of your preferences.</p>` : ''}
+      </section>
+      ${s.items.length ? `<section class="card"><div class="rgrid">${s.items.map(recipeCard).join('')}</div></section>` : ''}`;
+  }
+
+  function recipeView(id) {
+    const r = getRecipe(id);
+    if (!r) {
+      if (/^mdb-\d+$/.test(id || '') && !recipeLoad.loading && recipeLoad.id !== id) setTimeout(() => loadRecipe(id), 0);
+      const failed = recipeLoad.id === id && recipeLoad.error;
+      return `<section class="card"><a class="btn-link" href="#health/food">‹ Food</a>
+        <h2>${failed ? "Couldn't load this recipe" : /^mdb-/.test(id || '') ? 'Loading recipe…' : 'Recipe not found'}</h2>
+        ${failed ? `<p class="warn">${esc(recipeLoad.error)}</p><button class="inline" data-action="h-recipe-retry" data-id="${esc(id)}">Try again</button>` : ''}</section>`;
+    }
+    const f = F(), fav = f.favourites.includes(r.id);
+    const base = r.servings, cur = base ? (recipeServings[r.id] || base) : null, factor = base ? cur / base : 1;
+    const steps = recipeSteps(r.instructions), hits = prefHits(r);
+    const ing = r.ingredients.map(i => { const m = scaledMeasure(i.measure, factor); return `<li><span class="ing-qty">${esc(m.text || '')}${!m.scaled ? ' <span class="meta">(as written)</span>' : ''}</span> <span>${esc(i.name)}</span></li>`; }).join('');
+    const nut = r.nutrition;
+    return `
+      <section class="card recipe-head">
+        <a class="btn-link" href="#health/food">‹ Food</a>
+        ${r.thumb ? `<img class="recipe-img" src="${esc(r.thumb)}/medium" alt="Photo of ${esc(r.title)}" loading="lazy">` : ''}
+        <h2>${esc(r.title)}</h2>
+        <div class="meta">${esc([r.category, r.area].concat(r.tags).filter(Boolean).join(' · '))}</div>
+        ${factsLine(r)}
+        <div class="action-row">
+          <button class="${fav ? 'on' : ''}" data-action="h-fav" data-id="${esc(r.id)}" aria-pressed="${fav}">${fav ? '★ Favourite' : '☆ Favourite'}</button>
+        </div>
+      </section>
+      ${hits.length ? `<section class="card notice"><p class="small" style="margin:0">Heads up: ${esc(hits.map(h => `${h.what} (${h.why.toLowerCase()})`).join('; '))}.</p></section>` : ''}
+      <section class="card">
+        <h2>Ingredients</h2>
+        ${base ? `<div class="serv-stepper"><button class="icon-btn" data-action="h-serv" data-id="${esc(r.id)}" data-d="-1" aria-label="Fewer servings" ${cur <= 1 ? 'disabled' : ''}>−</button><span><strong id="servNow">${cur}</strong> serving${cur === 1 ? '' : 's'}${r.servingsSource === 'user' ? ' <span class="meta">(base set by you)</span>' : ''}</span><button class="icon-btn" data-action="h-serv" data-id="${esc(r.id)}" data-d="1" aria-label="More servings">+</button></div>`
+          : `<p class="small muted">The source doesn't say how many this serves, so quantities are shown as written.</p>
+             <details><summary>I know how many it serves</summary><div class="inline-add"><input id="servBase" type="number" inputmode="numeric" min="1" max="100" placeholder="e.g. 4" aria-label="Servings"><button class="inline" data-action="h-serv-base" data-id="${esc(r.id)}">Save</button></div><p class="small muted">Saved as your own entry, then you can scale the quantities.</p></details>`}
+        <ul class="ing-list">${ing || '<li class="muted">No ingredients listed.</li>'}</ul>
+        <p class="small muted" style="margin:10px 0 0">MyDay only reads ingredient names — it can't confirm a recipe is free from any allergen. Check the original recipe and packaging.</p>
+      </section>
+      <section class="card">
+        <h2>Method</h2>
+        ${steps.length ? `<ol class="steps">${steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>` : '<p class="small muted">No method text.</p>'}
+        ${r.instructions ? `<details><summary>Original text</summary><p class="orig">${esc(r.instructions)}</p></details>` : ''}
+      </section>
+      <section class="card">
+        <h2>Nutrition per serving</h2>
+        ${nut ? `<p class="small">${esc([nut.kcal !== null ? `${n1(nut.kcal)} kcal` : '', nut.protein !== null ? `protein ${n1(nut.protein)} g` : '', nut.carbs !== null ? `carbs ${n1(nut.carbs)} g` : '', nut.fat !== null ? `fat ${n1(nut.fat)} g` : ''].filter(Boolean).join(' · '))}</p><p class="small muted">Entered by you — not from the recipe source.</p>` : '<p class="small muted">Not available from the source.</p>'}
+        <details><summary>${nut ? 'Change your figures' : 'Add your own figures'}</summary>
+          <div class="field-row"><div class="field"><label class="lbl" for="nKcal">kcal</label><input id="nKcal" type="number" inputmode="decimal" min="0" value="${nut ? n1(nut.kcal) : ''}"></div><div class="field"><label class="lbl" for="nPro">Protein (g)</label><input id="nPro" type="number" inputmode="decimal" min="0" value="${nut ? n1(nut.protein) : ''}"></div></div>
+          <div class="field-row"><div class="field"><label class="lbl" for="nCarb">Carbs (g)</label><input id="nCarb" type="number" inputmode="decimal" min="0" value="${nut ? n1(nut.carbs) : ''}"></div><div class="field"><label class="lbl" for="nFat">Fat (g)</label><input id="nFat" type="number" inputmode="decimal" min="0" value="${nut ? n1(nut.fat) : ''}"></div></div>
+          <div class="row2"><button class="inline" data-action="h-nutr-save" data-id="${esc(r.id)}">Save</button>${nut ? `<button class="inline ghost" data-action="h-nutr-clear" data-id="${esc(r.id)}">Remove</button>` : ''}</div>
+        </details>
+      </section>
+      <section class="card">
+        <h2>Source</h2>
+        ${r.source === 'themealdb' ? `<p class="small">From <a href="${esc(r.mealDbUrl)}" target="_blank" rel="noopener">TheMealDB</a>${r.sourceUrl ? ` · <a href="${esc(r.sourceUrl)}" target="_blank" rel="noopener">original recipe</a>` : ''}${r.video ? ` · <a href="${esc(r.video)}" target="_blank" rel="noopener">video</a>` : ''}. Photo: TheMealDB.</p>`
+          : `<p class="small">Your recipe${r.sourceName ? ` · from ${esc(r.sourceName)}` : ''}${safeUrl(r.sourceUrl) ? ` · <a href="${esc(r.sourceUrl)}" target="_blank" rel="noopener">link</a>` : ''}.</p>
+             <div class="row2"><a class="btn" href="#health/food/edit/${encodeURIComponent(r.id)}">Edit</a><button class="ghost" data-action="h-recipe-delete" data-id="${esc(r.id)}">Delete</button></div>`}
+      </section>`;
+  }
+
+  function prefsView() {
+    const p = F().prefs;
+    return `
+      <section class="card">
+        <a class="btn-link" href="#health/food">‹ Food</a>
+        <h2>Food preferences</h2>
+        <p class="small muted">Used to leave out recipe ideas and search results. Saved as you change them.</p>
+        <h3>Leave out</h3>
+        <div class="loans">${Object.keys(EXCLUSIONS).map(k => `<label class="check"><input type="checkbox" data-h="pref-ex" data-key="${k}" ${p.exclude.includes(k) ? 'checked' : ''}> ${esc(EXCLUSIONS[k].label)}</label>`).join('')}</div>
+        <p class="small muted">These check ingredient names and the recipe's category only. They can't guarantee a recipe is free from an allergen — always check the original recipe and packaging.</p>
+        <div class="field"><label class="lbl" for="prefDis">Ingredients you don't like (comma-separated)</label><input id="prefDis" type="text" data-h="pref-dislikes" value="${esc(p.dislikes.join(', '))}" placeholder="e.g. olives, coriander"></div>
+        <div class="field"><label class="lbl" for="prefMax">Most time you want to spend (minutes)</label><input id="prefMax" type="number" inputmode="numeric" min="5" max="600" data-h="pref-max" value="${p.maxMinutes ?? ''}" placeholder="No limit"></div>
+        <p class="small muted" style="margin-top:-4px">Only applies to recipes that list a time — TheMealDB's don't, so they're never hidden by this.</p>
+        <label class="check"><input type="checkbox" data-h="pref-batch" ${p.batchOnly ? 'checked' : ''}> Only show my recipes marked good for batch cooking</label>
+        <p class="small muted">Batch-cooking info only exists for recipes you add yourself.</p>
+      </section>`;
+  }
+
+  function recipeFormView(id) {
+    const r = id ? F().recipes[id] : null;
+    if (id && (!r || r.source !== 'manual')) return '<section class="card"><h2>Recipe not found</h2><a class="btn" href="#health/food">Back</a></section>';
+    const v = (k, d) => (r && r[k] !== null && r[k] !== undefined ? r[k] : d);
+    const nut = r && r.nutrition;
+    return `
+      <section class="card">
+        <a class="btn-link" href="#health/food">‹ Food</a>
+        <h2>${r ? 'Edit recipe' : 'Add your own recipe'}</h2>
+        <div class="field"><label class="lbl" for="rfTitle">Name</label><input id="rfTitle" type="text" maxlength="120" value="${esc(v('title', ''))}"></div>
+        <div class="field-row"><div class="field"><label class="lbl" for="rfServ">Serves (optional)</label><input id="rfServ" type="number" inputmode="numeric" min="1" max="100" value="${v('servings', '')}"></div>
+          <div class="field"><label class="lbl" for="rfEffort">Effort (optional)</label><select id="rfEffort">${['', 'easy', 'medium', 'hard'].map(e => `<option value="${e}" ${v('effort', '') === e ? 'selected' : ''}>${e ? e[0].toUpperCase() + e.slice(1) : 'Not set'}</option>`).join('')}</select></div></div>
+        <div class="field-row"><div class="field"><label class="lbl" for="rfPrep">Prep minutes (optional)</label><input id="rfPrep" type="number" inputmode="numeric" min="0" value="${v('prepMin', '')}"></div>
+          <div class="field"><label class="lbl" for="rfCook">Cooking minutes (optional)</label><input id="rfCook" type="number" inputmode="numeric" min="0" value="${v('cookMin', '')}"></div></div>
+        <label class="check"><input id="rfBatch" type="checkbox" ${r && r.batch ? 'checked' : ''}> Good for batch cooking</label>
+        <div class="field"><label class="lbl" for="rfIng">Ingredients — one per line, e.g. "200 g pasta"</label><textarea id="rfIng" rows="7">${esc(r ? r.ingredients.map(i => [i.measure, i.name].filter(Boolean).join(' ')).join('\n') : '')}</textarea></div>
+        <div class="field"><label class="lbl" for="rfMethod">Method — one step per line</label><textarea id="rfMethod" rows="7">${esc(v('instructions', ''))}</textarea></div>
+        <details ${nut ? 'open' : ''}><summary>Nutrition per serving (optional, your own figures)</summary>
+          <div class="field-row"><div class="field"><label class="lbl" for="rfKcal">kcal</label><input id="rfKcal" type="number" inputmode="decimal" min="0" value="${nut ? n1(nut.kcal) : ''}"></div><div class="field"><label class="lbl" for="rfPro">Protein (g)</label><input id="rfPro" type="number" inputmode="decimal" min="0" value="${nut ? n1(nut.protein) : ''}"></div></div>
+          <div class="field-row"><div class="field"><label class="lbl" for="rfCarb">Carbs (g)</label><input id="rfCarb" type="number" inputmode="decimal" min="0" value="${nut ? n1(nut.carbs) : ''}"></div><div class="field"><label class="lbl" for="rfFat">Fat (g)</label><input id="rfFat" type="number" inputmode="decimal" min="0" value="${nut ? n1(nut.fat) : ''}"></div></div>
+        </details>
+        <div class="field-row"><div class="field"><label class="lbl" for="rfSrc">Where it's from (optional)</label><input id="rfSrc" type="text" maxlength="80" value="${esc(v('sourceName', ''))}"></div>
+          <div class="field"><label class="lbl" for="rfUrl">Link (optional)</label><input id="rfUrl" type="url" maxlength="400" value="${esc(v('sourceUrl', ''))}"></div></div>
+        <p class="warn" id="rfError" role="alert"></p>
+        <div class="row2"><button class="primary" data-action="h-recipe-save" data-id="${esc(id || '')}">Save recipe</button><a class="btn ghost" href="#health/food">Cancel</a></div>
+      </section>`;
+  }
+  // "200 g pasta" → { measure: '200 g', name: 'pasta' }; anything without a leading number stays as the name.
+  function parseIngredientLine(line) {
+    const t = line.trim();
+    const m = t.match(NUM_RE);
+    if (!m) return { measure: '', name: t };
+    let rest = t.slice(m[0].length).trim(), measure = m[0].trim();
+    const um = rest.match(/^([A-Za-z]+)\.?(?=\s)/);
+    if (um && UNIT_ALIASES[um[1].toLowerCase()]) { measure += ' ' + um[1]; rest = rest.slice(um[0].length).trim(); }
+    rest = rest.replace(/^of\s+/i, '');
+    return rest ? { measure, name: rest } : { measure: '', name: t };
+  }
+  function saveRecipeForm(id) {
+    const v = x => ($(x) ? $(x).value : '');
+    const title = v('rfTitle').trim();
+    if (!title) { setHTML('rfError', 'Please give the recipe a name.'); return null; }
+    const num = (x, lo, hi) => optNum(v(x), lo, hi);
+    const nut = { kcal: num('rfKcal', 0, 10000), protein: num('rfPro', 0, 1000), carbs: num('rfCarb', 0, 1000), fat: num('rfFat', 0, 1000) };
+    const hasNut = Object.values(nut).some(x => x !== null);
+    const rec = cleanRecipe({
+      id: id || 'r' + uid(), source: 'manual', title,
+      servings: num('rfServ', 1, 100), servingsSource: num('rfServ', 1, 100) ? 'recipe' : null,
+      prepMin: num('rfPrep', 0, 1440), cookMin: num('rfCook', 0, 1440), effort: v('rfEffort') || null, batch: $('rfBatch') ? $('rfBatch').checked : false,
+      ingredients: v('rfIng').split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(parseIngredientLine),
+      instructions: v('rfMethod'), sourceName: v('rfSrc'), sourceUrl: safeUrl(v('rfUrl').trim()),
+      nutrition: hasNut ? nut : null, nutritionSource: hasNut ? 'user' : null, savedAt: localStamp()
+    });
+    F().recipes[rec.id] = rec;
+    persist();
+    return rec;
+  }
+
   // ---------- Timers that tick every second (rest timer) ----------
   function healthTick() {
     if (!state || !state.health) return;
@@ -4425,7 +4943,7 @@
 
   // Returns 'none' when it has already navigated or re-rendered.
   function healthAction(a, btn) {
-    const w = W(), k = todayKey(), d = btn.dataset;
+    const w = W(), f = F(), k = todayKey(), d = btn.dataset;
     switch (a) {
       // ----- Workout templates and exercises -----
       case 'h-tpl-new': {
@@ -4596,12 +5114,69 @@
         persist(); toast(`Planned for ${shortDate(dt)}.`);
         return;
       }
+
+      // ----- Food: discovery and recipes -----
+      case 'h-food-search': {
+        const q = ($('foodQ') ? $('foodQ').value : '').trim();
+        if (!q) return 'none';
+        go('health/food/search');
+        runSearch(q);
+        return 'none';
+      }
+      case 'h-suggest-more': foodSuggest.shown += 3; loadSuggestions(); return 'none';
+      case 'h-suggest-retry': foodSuggest.error = null; loadSuggestions(); return 'none';
+      case 'h-recipe-retry': Object.assign(recipeLoad, { id: null, error: null }); loadRecipe(d.id); return 'none';
+      case 'h-fav': {
+        const r = getRecipe(d.id);
+        if (!r) return;
+        if (f.favourites.includes(r.id)) { f.favourites = f.favourites.filter(x => x !== r.id); tidyRecipe(r.id); toast('Removed from favourites.'); }
+        else { keepRecipe(r); f.favourites.push(r.id); toast('Saved to favourites.'); }
+        persist();
+        return;
+      }
+      case 'h-serv': {
+        const r = getRecipe(d.id);
+        if (r && r.servings) recipeServings[r.id] = Math.max(1, Math.min(100, (recipeServings[r.id] || r.servings) + Number(d.d)));
+        return;
+      }
+      case 'h-serv-base': {
+        const r = getRecipe(d.id), n = optNum($('servBase') ? $('servBase').value : '', 1, 100);
+        if (!r || !n) { toast('Please enter how many it serves.'); return 'none'; }
+        const kept = keepRecipe(r); kept.servings = Math.round(n); kept.servingsSource = 'user'; persist();
+        toast('Saved as your own entry.');
+        return;
+      }
+      case 'h-nutr-save': {
+        const r = getRecipe(d.id), v = id => optNum($(id) ? $(id).value : '', 0, 10000);
+        const nut = { kcal: v('nKcal'), protein: v('nPro'), carbs: v('nCarb'), fat: v('nFat') };
+        if (!r || !Object.values(nut).some(x => x !== null)) { toast('Enter at least one figure.'); return 'none'; }
+        const kept = keepRecipe(r); kept.nutrition = nut; kept.nutritionSource = 'user'; persist();
+        toast('Saved — shown as your own figures.');
+        return;
+      }
+      case 'h-nutr-clear': { const r = f.recipes[d.id]; if (r) { r.nutrition = null; r.nutritionSource = null; tidyRecipe(r.id); persist(); } return; }
+      case 'h-recipe-save': {
+        const rec = saveRecipeForm(d.id || null);
+        if (!rec) return 'none';
+        toast('Recipe saved.');
+        go('health/food/recipe/' + encodeURIComponent(rec.id));
+        return 'none';
+      }
+      case 'h-recipe-delete': {
+        const r = f.recipes[d.id];
+        if (!r || !confirm(`Delete "${r.title}"?`)) return 'none';
+        delete f.recipes[d.id];
+        f.favourites = f.favourites.filter(x => x !== d.id);
+        persist();
+        go('health/food');
+        return 'none';
+      }
     }
   }
 
   function healthInput(el, type) {
     if (el.type === 'checkbox' && type !== 'change') return;
-    const w = W(), d = el.dataset, key = d.h;
+    const w = W(), f = F(), d = el.dataset, key = d.h;
     if (key === 'set') {
       const s = ctxSession(), e = s && s.exercises.find(x => x.key === d.ex), x = e && e.sets[+d.set];
       if (!x) return;
@@ -4639,6 +5214,16 @@
     if (key === 'sch-weekday') { if (type !== 'change') return; if (tplById(el.value)) w.schedule.weekdays[d.dow] = el.value; else delete w.schedule.weekdays[d.dow]; persist(); render(); return; }
     if (key === 'sch-rest') { if (type !== 'change') return; w.schedule.restDays = intIn(el.value, 0, 6, 1); persist(); return; }
     if (key === 'prop-pick') { if (wsProposal && wsProposal.items[+d.i]) wsProposal.items[+d.i].pick = el.checked; render(); return; }
+    if (key === 'pref-ex') {
+      const set = new Set(f.prefs.exclude);
+      if (el.checked) set.add(d.key); else set.delete(d.key);
+      f.prefs.exclude = Object.keys(EXCLUSIONS).filter(x => set.has(x));
+      persist(); resetSuggestions();
+      return;
+    }
+    if (key === 'pref-dislikes') { if (type !== 'change') return; f.prefs.dislikes = el.value.split(',').map(x => x.trim().toLowerCase()).filter(Boolean).slice(0, 30); persist(); resetSuggestions(); return; }
+    if (key === 'pref-max') { if (type !== 'change') return; f.prefs.maxMinutes = optNum(el.value, 5, 600); persist(); resetSuggestions(); return; }
+    if (key === 'pref-batch') { f.prefs.batchOnly = el.checked; persist(); resetSuggestions(); return; }
   }
 
   // Chart tooltips on hover, focus or tap.
@@ -5247,6 +5832,10 @@
   setInterval(healthTick, 1000);
   document.addEventListener('pointerover', chartTip);
   document.addEventListener('focusin', chartTip);
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' || !e.target) return;
+    if (e.target.id === 'foodQ') { e.preventDefault(); healthAction('h-food-search', e.target); }
+  });
   window.addEventListener('hashchange', () => {
     const next = sectionFromHash();
     if (next !== section) { section = next; view = 'auto'; eveningKey = null; commitForm = null; calForm = null; }
