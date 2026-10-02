@@ -3,8 +3,11 @@
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
 
-**Milestones 1–5 are done: every section of the current MyDay — Today, Calendar, Pay, Health (Workout and Food) and
-Study — works fully in the new app and saves.** What's left is switching over (see [Milestones](#milestones)).
+**The migration is complete: every section of the current MyDay — Today, Calendar, Pay, Health (Workout and Food)
+and Study — works fully in the new app and saves, along with the shared controls (task lists, export/import,
+animations, theme).** Ideas was only a placeholder in the current MyDay (never shown, nothing saved), so there's
+nothing to move. Release 1.0.0 is published with GitHub Pages — how, how to check which release is loaded, and how
+to go back: [`../deploy/README.md`](../deploy/README.md).
 
 > This version saves to the **same data** as the current MyDay when both are opened at the same address (for
 > example with Live Server). A change made in one shows in the other. To try things out, use disposable data or
@@ -18,10 +21,12 @@ You need Node.js 20.19+ or 22.12+ (checked with Node 24). From the `myday-site` 
 cd app
 npm install          # first time only (installs into app/node_modules)
 npm run dev          # live-editing server, usually http://localhost:5173 (its saved data starts empty)
-npm run build        # checks the types and builds into app/dist/
+npm run build        # checks the types (tsc -b) and builds into app/dist/
+npm run preview      # serves app/dist at http://localhost:4173, as it will be published (build first)
 npm run lint         # checks the code for common mistakes
 cd ..
-tests/run.sh app-storage app-today app-calendar-pay app-study app-workout app-food   # builds the app, then runs its checks in a throwaway Chrome profile
+tests/run.sh app-storage app-today app-calendar-pay app-study app-workout app-food app-final app-site   # builds, then checks in a throwaway Chrome profile
+deploy/preview-site.sh trial    # the website as GitHub Pages will publish it, at http://localhost:8080/myday/
 ```
 
 To use the built app beside the current MyDay (sharing its saved data), run `npm run build`, then open
@@ -42,6 +47,16 @@ itself: build again after a change. While Live Server is running, run the checks
 
 Today's Health card shows a workout to resume, decide about or start, a recipe being cooked, and the shopping list.
 Nothing from Health is added to the day's task list.
+
+Every section ends with the shared controls, as in the current MyDay: Edit task lists (it opens Today's list
+editor), Export my data, Import my data, Animations on/off, and whether saving works in this browser. The theme
+button (Dark → Light → Match device) is in the header on every screen.
+
+### Ideas
+
+The current MyDay lists Ideas only as a planned section (`ready: false`): it's never shown, has no screen and saves
+nothing. So nothing was migrated, and the new app doesn't show it either (`#ideas` opens Today). If saved data ever
+contains an `ideas` section, both apps keep it exactly as it is.
 
 ### Calendar and Pay: differences from the current MyDay
 
@@ -126,6 +141,10 @@ Nothing from Health is added to the day's task list.
 - Data from older MyDay versions (`myday.data.v3`, `v2`, version 1) is moved to the current format by the current
   MyDay. Until that has happened, the new app explains this and saves nothing.
 - If the browser blocks storage, the app still works but says changes won't be kept after closing.
+- **Nothing unreadable is left out silently.** Like the current MyDay, entries that can't be read (and whole sections
+  damaged into the wrong kind of value) are left out when the app starts, and they'd be gone after the next save.
+  The new app says so on every screen, with how many, and offers "Download a copy" of the saved data exactly as it
+  was before anything is saved over it. (The current MyDay leaves them out without saying.)
 
 ## Where things are
 
@@ -155,7 +174,10 @@ Nothing from Health is added to the day's task list.
 | `src/health/` | The Health screens: `HealthScreen` (the Workout and Food tabs; picks the screen from the address, e.g. `#health/workout/schedule`), `WorkoutHome`, `TemplateEditor`, `SessionView` (a workout in progress, and correcting a logged one), `SetFields` (the number boxes for a set), `HistoryViews` (history, exercises, exercise history), `Chart`, `ScheduleView` and `HealthTodayCard`; `actions.ts` (what each button saves). |
 | `src/study/` | The Study screens: `StudyScreen` (picks the screen from the address, e.g. `#study/roadmap`), `Dashboard`, `Roadmap`, `CourseDetails`, `TaskDetails`, `SessionView`, `CheckinView`, `RevisionView`, `ConceptsView`, `ConceptView`, `ProgressView`, `StudySettings` and `StudyTodayCard`; `actions.ts` (what each button saves), `round.ts` (the revision round, kept in memory), `parts.tsx` (small shared pieces). |
 | `src/commitments/` | Work shifts and appointments: the form and list used by both Today and Calendar. |
-| `src/shell/` | Navigation, the theme button and the screens for unreadable or older data. |
+| `src/shell/` | Navigation, the theme button, the shared footer (`AppFooter`), the "couldn't be read" notice (`LoadIssue`) and the screens for unreadable or older data. |
+| `public/icon.svg` | The tab icon. |
+| `src/version.ts` | The release identifier (version, commit, build date), filled in when building (`vite.config.ts`). |
+| `../deploy/` | Publishing: building the website (`build-site.sh`), previewing it (`preview-site.sh`), committing it to `main` (`publish-main.sh`) and the guide. |
 | `src/styles/tokens.css` | Colours for dark and light themes (the same as the current MyDay). |
 | `src/index.css` | Gives the colours Tailwind names (e.g. `bg-surface`, `text-fg-2`), sets the font, the navigation bar and the animations. |
 | `../tests/app-*.test.js` | The checks for this app (adapted from the current MyDay's checks). |
@@ -193,5 +215,9 @@ timeline layout is adapted from the "Process Timeline" component on [21st.dev](h
 3. **Done:** Study, with its card on Today.
 4. **Done:** Workout (the first half of Health), with its card on Today.
 5. **Done:** Food (the rest of Health), with the cooking and shopping reminders on Today.
-6. **Ideas** (planned in the current MyDay but not built yet).
-7. **Switch over:** publish this version at the main address, keeping the current one as a fallback.
+6. **Done:** final checks: the shared controls on every section, a whole-app comparison with the current MyDay,
+   representative backups, unreadable data never left out silently, keyboard, phones, themes, development mode and the
+   production preview. Ideas was only a placeholder, so there was nothing to move.
+7. **Release 1.0.0:** published with GitHub Pages — the new app at the main address, the classic MyDay kept at
+   `/myday/classic/`. The release identifier ("MyDay 1.0.0 · commit · build date") is at the bottom of every screen.
+   See [`../deploy/README.md`](../deploy/README.md).

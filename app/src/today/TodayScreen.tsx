@@ -21,7 +21,7 @@ import { PlanCard } from './PlanCard';
 import { GardenCard, StreakCard } from './ProgressCards';
 import { ProposalCard, type ProposalActions } from './ProposalCard';
 import { TimerCard, type TimerAction } from './TimerCard';
-import { TodayFooter } from './TodayFooter';
+import { AppFooter } from '../shell/AppFooter';
 import { dueConcepts } from '../data/study/revision';
 import { activeStudy } from '../data/study/sessions';
 import { StudyTodayCard } from '../study/StudyTodayCard';
@@ -39,7 +39,9 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
   data: MyDayData; generation: number; k: string; canSave: boolean; motionAllowed: boolean; onExport: () => void; onImport: () => void;
 }) {
   const confirm = useConfirm();
-  const [view, setView] = useState<'auto' | 'evening' | 'edit'>('auto');
+  // "Edit task lists" from another section opens Today at #today/edit.
+  const [view, setView] = useState<'auto' | 'evening' | 'edit'>(() => (location.hash === '#today/edit' ? 'edit' : 'auto'));
+  useEffect(() => { if (location.hash === '#today/edit') history.replaceState(null, '', '#today'); }, []);
   const [eveningKey, setEveningKey] = useState<string | null>(null);
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [animateProposal, setAnimateProposal] = useState(false);
@@ -306,7 +308,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
       )}
       {view !== 'edit' && (
         <div className="min-w-0 order-9 lg:order-none lg:[grid-area:foot]">
-          <TodayFooter data={data} canSave={canSave} onEdit={() => { setView('edit'); window.scrollTo(0, 0); }} onExport={onExport} onImport={onImport} />
+          <AppFooter data={data} canSave={canSave} onEdit={() => { setView('edit'); window.scrollTo(0, 0); }} onExport={onExport} onImport={onImport} />
         </div>
       )}
     </div>

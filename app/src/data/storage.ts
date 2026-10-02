@@ -57,15 +57,22 @@ function readKey(key: string): string | null {
 }
 
 // Turns saved text into data, or explains why it can't be used.
-function parseSaved(raw: string, newerReason: string): { data: MyDayData } | { reason: string } {
+function parseSaved(raw: string, newerReason: string): { data: MyDayData; dropped: number } | { reason: string } {
   let parsed: unknown;
   try { parsed = JSON.parse(raw); } catch { return { reason: "It looks damaged and can't be read." }; }
   if (!isObj(parsed)) return { reason: "It looks damaged and can't be read." };
   const v = parsed.schemaVersion;
   if (typeof v === 'number' && v > SCHEMA_VERSION) return { reason: newerReason };
   if (![2, 3, SCHEMA_VERSION].includes(v as number)) return { reason: "It's in a format this version doesn't recognise." };
-  try { return { data: normalize(parsed) }; } catch { return { reason: "It looks damaged and can't be read." }; }
+  const report = { dropped: 0 };
+  try { return { data: normalize(parsed, report), dropped: report.dropped }; } catch { return { reason: "It looks damaged and can't be read." }; }
 }
+
+// Saved entries that couldn't be read when MyDay started (left out, and gone after the next save), with the
+// saved text exactly as it was, so you can download a copy first. See LoadIssue.tsx.
+let loadIssue: { dropped: number; raw: string } | null = null;
+export const getLoadIssue = () => loadIssue;
+export const dismissLoadIssue = () => { loadIssue = null; };
 
 // Loads the saved data. Called once, when the app starts.
 export function boot() {
@@ -79,6 +86,7 @@ export function boot() {
     lastSaved = raw;
     const r = parseSaved(raw, 'It was saved by a newer version of MyDay.');
     set('data' in r ? { data: r.data, status: { kind: 'ok' } } : { data: freshState(), status: { kind: 'damaged', raw, reason: r.reason } });
+    if ('data' in r && r.dropped) loadIssue = { dropped: r.dropped, raw };
     return;
   }
   let older = false;

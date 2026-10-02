@@ -4,13 +4,14 @@ import { Button } from '../components/Button';
 import { update } from '../data/storage';
 import { toast } from '../data/toast';
 import type { MyDayData } from '../data/types';
+import { RELEASE } from '../version';
 
 const reduceQuery = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
 const deviceReducesMotion = () => !!reduceQuery?.matches;
 const subscribeReduce = (fn: () => void) => { reduceQuery?.addEventListener('change', fn); return () => reduceQuery?.removeEventListener('change', fn); };
 
-// The buttons at the bottom of Today: task lists, backups and animations.
-export function TodayFooter({ data, canSave, onEdit, onExport, onImport }: {
+// The buttons at the bottom of every section, as in the current MyDay: task lists, backups and animations.
+export function AppFooter({ data, canSave, onEdit, onExport, onImport }: {
   data: MyDayData; canSave: boolean; onEdit: () => void; onExport: () => void; onImport: () => void;
 }) {
   const reduces = useSyncExternalStore(subscribeReduce, deviceReducesMotion);
@@ -29,6 +30,8 @@ export function TodayFooter({ data, canSave, onEdit, onExport, onImport }: {
         </Button>
       </div>
       <p className="storage-note text-center text-fg-3 text-[13px] mt-3.5">{canSave ? 'Saved only in this browser.' : 'Saving is unavailable in this browser.'}</p>
+      {/* Which release is loaded, to check after publishing. */}
+      <p id="appVersion" className="app-version text-center text-fg-3 text-[13px] mt-1 tabular-nums">{RELEASE}</p>
     </footer>
   );
 }

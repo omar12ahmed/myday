@@ -1,0 +1,7 @@
+# The website built by deploy/build-site.sh (published, never committed here)
+site/
+# Personal backups and copies of saved data: never commit these
+myday-export-*.json
+myday-saved-copy-*.json
+myday-unreadable-*.json
+*backup*.json

@@ -4,7 +4,7 @@ import { ConfirmProvider } from './components/Dialog';
 import { Toast } from './components/Toast';
 import { prettyDate, todayKey } from './data/dates';
 import { freshState } from './data/normalize';
-import { exportText, parseImport, replaceAll, takeBootNotice, update } from './data/storage';
+import { dismissLoadIssue, exportText, getLoadIssue, parseImport, replaceAll, takeBootNotice, update } from './data/storage';
 import { toast } from './data/toast';
 import type { Theme } from './data/types';
 import { useMyDay } from './data/useMyDay';
@@ -14,6 +14,8 @@ import { CalendarScreen } from './calendar/CalendarScreen';
 import { PayScreen } from './pay/PayScreen';
 import { StudyScreen } from './study/StudyScreen';
 import { HealthScreen } from './health/HealthScreen';
+import { AppFooter } from './shell/AppFooter';
+import { LoadIssue } from './shell/LoadIssue';
 import { DamagedView, OlderView } from './shell/StatusScreens';
 import { ThemeButton } from './shell/ThemeButton';
 import { TodayScreen } from './today/TodayScreen';
@@ -42,6 +44,7 @@ function Shell() {
   const section: SectionId = sectionFromHash(hash);
   const [k, setK] = useState(todayKey);
   const fileInput = useRef<HTMLInputElement>(null);
+  const [loadIssue, setLoadIssue] = useState(getLoadIssue);
   const theme: Theme = data.settings.theme;
   const motionAllowed = data.settings.motion !== 'off' && !reduceQuery?.matches;
 
@@ -133,7 +136,18 @@ function Shell() {
       </header>
       {!blocked && <Nav current={section} />}
       <main id="app" className="max-w-[640px] lg:max-w-[1120px] mx-auto px-4 lg:px-6 pt-4 lg:pt-6">
+        {loadIssue && !blocked && (
+          <LoadIssue dropped={loadIssue.dropped}
+            onDownload={() => download(`myday-saved-copy-${todayKey()}.json`, loadIssue.raw)}
+            onDismiss={() => { dismissLoadIssue(); setLoadIssue(null); }} />
+        )}
         {content}
+        {/* Today has these at the bottom of its own layout; every other section gets them here. */}
+        {!blocked && section !== 'today' && (
+          <div className="max-w-[720px] mx-auto mt-6">
+            <AppFooter data={data} canSave={status.kind === 'ok'} onEdit={() => { location.hash = 'today/edit'; }} onExport={exportData} onImport={() => fileInput.current?.click()} />
+          </div>
+        )}
       </main>
       <input ref={fileInput} id="importFile" type="file" accept="application/json,.json" hidden onChange={importFile} />
       <Toast />

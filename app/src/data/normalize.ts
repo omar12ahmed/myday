@@ -238,6 +238,13 @@ export function normalize(raw: unknown, report = { dropped: 0 }): MyDayData {
   if (isObj(raw.saves)) {
     s.saves = { seq: intIn(raw.saves.seq, 0, 1e12, 0), log: listOf(raw.saves.log).filter(x => typeof x === 'string').slice(-SAVE_LOG) };
   }
+  // A whole section of the wrong kind (e.g. damaged into text) can't be read. Like the current MyDay, its
+  // empty default is used — but it's counted, so it's never left out silently (see storage.ts).
+  const wrong = (v: unknown, kind: 'object' | 'array') => v !== null && v !== undefined && (kind === 'array' ? !Array.isArray(v) : !isObj(v));
+  for (const k of ['lists', 'days', 'nudge', 'settings', 'context', 'rota', 'pay', 'bankHolidays', 'health', 'study']) if (wrong(raw[k], 'object')) report.dropped++;
+  for (const k of ['queue', 'commitments']) if (wrong(raw[k], 'array')) report.dropped++;
+  if (isObj(raw.lists)) for (const cat of CATS) if (cat in raw.lists && wrong(raw.lists[cat], 'array')) report.dropped++;
+  if (isObj(raw.health)) for (const k of ['workout', 'food']) if (wrong(raw.health[k], 'object')) report.dropped++;
   // Keep everything else exactly as it was: anything added by a newer MyDay.
   for (const key of Object.keys(raw)) {
     if (!(key in s) && !['__proto__', 'constructor', 'prototype'].includes(key)) s[key] = raw[key];

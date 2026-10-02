@@ -1,0 +1,51 @@
+# AN EXAMPLE, NOT IN USE. MyDay is published from the main branch (see deploy/README.md).
+# This is the alternative: publishing from GitHub Actions. To use it, copy it to .github/workflows/ (pushing
+# that needs a GitHub sign-in with the "workflow" permission), then set Settings → Pages → Source: "GitHub
+# Actions". It only runs when you start it (Actions → "Publish MyDay" → Run workflow).
+name: Publish MyDay
+
+on:
+  workflow_dispatch:
+    inputs:
+      layout:
+        description: "trial = new app at /myday/next/ (current MyDay stays at the main address); switch = new app at the main address (current MyDay at /myday/classic/)"
+        type: choice
+        options: [trial, switch]
+        default: trial
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - name: Install the new app's packages
+        run: npm ci
+        working-directory: app
+      - name: Check the code
+        run: npm run lint
+        working-directory: app
+      - name: Build the website
+        run: deploy/build-site.sh "${{ inputs.layout }}" site
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4
