@@ -8,6 +8,7 @@
 //            --total-budget-usd 0.50   a ceiling across all live runs, kept in ai-eval/results/ledger.json
 //            --stop-on-failure         after an unsuccessful generation, call that model no more in this run
 //            --estimate                print the most the run could cost (no calls, no keys needed)
+//            --report <results folder> write that run's reports again from its runs.json (no calls)
 //
 // Keys come only from environment variables (or ai-eval/.env.local, which Git ignores); they're never written out.
 // No call is retried.
@@ -39,13 +40,18 @@ const outRoot = path.resolve(opt('--out', path.join(here, 'results')));
 // each call, so it's right even if a run is stopped half-way. (It's in results/, which Git ignores.)
 const ledgerFile = path.join(outRoot, 'ledger.json');
 const ledger = fs.existsSync(ledgerFile) ? JSON.parse(fs.readFileSync(ledgerFile, 'utf8')) : { calls: [] };
+for (const c of ledger.calls) if (c.counted === 'actual') c.counted = 'usage'; // the earlier name for the same thing
 const spentBefore = ledger.calls.reduce((a, c) => a + c.countedUsd, 0);
+const reservedBefore = ledger.calls.filter(c => c.counted === 'reserved').reduce((a, c) => a + c.countedUsd, 0);
+const ledgerLine = () => `Counted so far in the ledger: US$${spentBefore.toFixed(4)} = US$${(spentBefore - reservedBefore).toFixed(4)} estimated cost from reported token usage`
+  + ` + US$${reservedBefore.toFixed(4)} reserved for ${ledger.calls.filter(c => c.counted === 'reserved').length} call(s) that reported no usage (kept until provider billing resolves them); ${ledger.calls.length} live calls.`;
 const options = {
   live, modelIds,
   repeats: Math.max(1, Math.min(10, Number(opt('--repeats', '3')) || 3)),
   budgetUsd: budget === null ? null : Number(budget),
   totalBudgetUsd: totalBudget === null ? null : Number(totalBudget),
   spentBeforeUsd: spentBefore,
+  reservedBeforeUsd: reservedBefore,
   stopOnFailure: args.includes('--stop-on-failure'),
   scenarioIds: opt('--scenarios', null) ? opt('--scenarios').split(',') : null,
   env, models,
@@ -57,7 +63,18 @@ const built = await bundle(path.join(here, 'run.ts'), path.join(here, '.build'))
 const run = await import(pathToFileURL(built).href);
 if (args.includes('--estimate')) {
   try { console.log(run.estimate({ ...options, live: true })); } catch (e) { console.log('Not estimated: ' + e.message); process.exit(2); }
-  console.log(`Counted so far in the ledger: US$${spentBefore.toFixed(4)} (${ledger.calls.length} live calls).`);
+  console.log(ledgerLine());
+  process.exit(0);
+}
+if (opt('--report', null)) {
+  // Reports again from a saved run (e.g. after the wording changed). Older runs lack some fields: filled as unknown.
+  const dir = path.resolve(opt('--report'));
+  const saved = JSON.parse(fs.readFileSync(path.join(dir, 'runs.json'), 'utf8'));
+  for (const x of saved.runs) if (!('originalReply' in x)) x.originalReply = null;
+  fs.writeFileSync(path.join(dir, 'summary.md'), run.summary(saved));
+  fs.writeFileSync(path.join(dir, 'calls.md'), run.calls(saved));
+  fs.writeFileSync(path.join(dir, 'review.md'), run.review(saved));
+  console.log(`Reports written again (no calls made): ${dir}`);
   process.exit(0);
 }
 let result;

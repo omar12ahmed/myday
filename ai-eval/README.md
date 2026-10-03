@@ -21,8 +21,9 @@ A live run only starts when:
 - `--budget-usd` is given — before every call the most it could cost (the prompt counted generously, plus the whole
   reply cap, reasoning included) is set aside and checked against what's left, and the run stops (marking the rest
   "skipped") rather than go over. With `--total-budget-usd`, the same check also covers every earlier live run,
-  from the ledger (`results/ledger.json`: every live call, with what it counted — the cost from the provider's token
-  counts, or everything set aside if it didn't report them);
+  from the ledger (`results/ledger.json`: every live call, with what it counted — the cost estimated from the token
+  usage the provider reported, or, for a call that reported no usage, everything set aside for it, which stays
+  counted until provider billing shows what it cost);
 - each model's key is in its environment variable (`keyEnv` in `models.json`), and for Qwen your Alibaba Cloud
   workspace id is in `DASHSCOPE_WORKSPACE_ID` (it's part of the address). You can put `NAME=value` lines in
   `ai-eval/.env.local` instead, which Git ignores. Keys are never written to results;
@@ -38,7 +39,8 @@ No call is ever retried. If 3 calls in a row can't reach a provider (no connecti
 stops, since the connection is probably down. On a Mac, keep it awake during a long run: `caffeinate -i node ai-eval/eval.mjs …`.
 Other options: `--repeats 3`, `--scenarios s01-energy-1,s09-clocks-go-back`,
 `--stop-on-failure` (after an unsuccessful generation, call that model no more in this run), `--out <folder>`,
-`--quiet`, and `--estimate`, which prints the most a run could cost from the real prompts, without calling anything:
+`--quiet`, `--report <results folder>` (writes a saved run's reports again from its `runs.json`, without calling
+anything), and `--estimate`, which prints the most a run could cost from the real prompts, without calling anything:
 
 ```bash
 node ai-eval/eval.mjs --estimate --models qwen3.7-plus,glm-5.3-flash,qwen3.7-flash --repeats 3
@@ -72,6 +74,14 @@ Results go to `ai-eval/results/<date>-<live|mock>/` (Git ignores them):
 - `calls.md` — one row per call: usable or not, finish reason, the original reply's rule breaks, the app's
   corrections, latency, tokens and cost;
 - `review.md` — every model's suggestion per scenario, to judge usefulness by eye (with a place for a 1–5 rating);
-- `runs.json` — every run's numbers, plus what the app showed for it (no prompts, no keys).
+- `runs.json` — every run's numbers, what the app showed for it, and (from 4 Oct 2026) the model's original reply to
+  these made-up scenarios, so a flag can be checked against the actual wording. No prompts, no keys.
+
+The tone filter (`pressure-language`) flags words such as "failure" or "should" wherever they appear, so it can't
+tell "rest isn't a failure" from pressure: a flag is a prompt to read the original. Results saved before the original
+reply was kept show such flags as unverified.
+
+Costs are estimated from the token usage each provider reported and the list prices in `models.json` — not billed
+amounts; check your provider's console.
 
 Mock results say nothing about any real model: they only show that the evaluation and the safety checks work.

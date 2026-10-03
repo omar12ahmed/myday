@@ -93,7 +93,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   const fetchImpl = async (url, init) => { sent = { url, init }; return new Response(JSON.stringify({ choices: [{ message: { content: '{"rest":true,"priorities":[],"explanation":"Rest is fine.","missing":[]}' } }], usage: { prompt_tokens: 1000, completion_tokens: 30 } }), { status: 200 }); };
   res = await call({ context: ctx }, {}, { fetchImpl });
   body = await res.json();
-  check('a real (here: fake) provider: one bounded request with the key from the server\'s secrets, never from the app', res.status === 200 && sent.init.headers.Authorization === 'Bearer sk-test' && JSON.parse(sent.init.body).max_tokens <= 2000);
+  check('a real (here: fake) provider: one bounded request with the key from the server\'s secrets, never from the app', res.status === 200 && sent.init.headers.Authorization === 'Bearer sk-test' && JSON.parse(sent.init.body).max_tokens <= 2048);
   check('…the cost reported from the prices', Math.abs(body.usage.costUsd - (1000 * 0.5 + 30 * 2) / 1e6) < 1e-12);
   const reserved = (await sql('select reserved_usd from public.ai_usage where user_id = $1', [C]))[0].reserved_usd;
   check('…and the worst-case cost was reserved against the monthly budget before calling', Number(reserved) > 0, reserved);
@@ -140,6 +140,38 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   const qcfg = configFromEnv(n => ({ ...env, AI_MAX_TOKENS_FIELD: 'max_completion_tokens', AI_EXTRA_BODY: '{"enable_thinking": false}' })[n]);
   const gcfg = configFromEnv(n => ({ ...env, AI_JSON_MODE: 'false', AI_EXTRA_BODY: '{"thinking": {"type": "enabled"}, "reasoning_effort": "low"}' })[n]);
   check('model-specific settings come from the secrets (reply-length field, JSON mode, thinking fields)', qcfg.maxTokensField === 'max_completion_tokens' && qcfg.extraBody.enable_thinking === false && gcfg.jsonMode === false && gcfg.extraBody.reasoning_effort === 'low' && gcfg.maxTokensField === 'max_tokens');
+
+  console.log('\n[4] Ready for a GLM development trial: the settings are the evaluated ones, and the function\'s entry type-checks');
+  const fsx = require('fs'), os = require('os'), { execFileSync, spawnSync } = require('child_process');
+  const { MAX_OUTPUT_TOKENS_CAP } = await import(path.join(ROOT, 'supabase/functions/_shared/ai/providers.ts'));
+  const active = template.split('\n').filter(l => /^[A-Z0-9_]+=/.test(l)).map(l => l.split('=')[0]);
+  check('the template: GLM-5.3-Flash on Z.ai\'s general API is the active model, each setting appears once, the key and public key are left empty',
+    /^AI_MODEL=glm-5\.3-flash$/m.test(template) && /^AI_BASE_URL=https:\/\/api\.z\.ai\/api\/paas\/v4$/m.test(template) && active.length === new Set(active).size && /^AI_API_KEY=$/m.test(template) && !/^MYDAY_PUBLISHABLE_KEY=\S/m.test(template), active);
+  check('the function\'s reply cap allows the evaluated 2048 tokens (and no more)', MAX_OUTPUT_TOKENS_CAP === 2048 && configFromEnv(n => ({ ...env, AI_MAX_OUTPUT_TOKENS: '5000' })[n]).maxOutputTokens === 2048);
+  const tmp = fsx.mkdtempSync(path.join(os.tmpdir(), 'myday-secrets-'));
+  const FAKE = 'zz-made-up-key-for-tests-only';
+  const checkFile = (name, text) => { const f = path.join(tmp, name); fsx.writeFileSync(f, text); const r = spawnSync(process.execPath, [path.join(ROOT, 'supabase/check-ai-secrets.mjs'), f], { encoding: 'utf8' }); return { code: r.status, out: r.stdout + r.stderr }; };
+  let r = checkFile('filled.env', template.replace(/^AI_API_KEY=$/m, `AI_API_KEY=${FAKE}`));
+  check('the check script: the template with a key filled in is ready, with exactly the evaluated request settings — and the key is never printed', r.code === 0 && /Same request settings as evaluated \("glm-5\.3-flash"/.test(r.out) && /key\s+set \(not shown\)/.test(r.out) && !r.out.includes(FAKE), r.out);
+  r = checkFile('empty.env', template);
+  check('…an empty key: not ready (exit 1), still comparing the settings', r.code === 1 && /AI_API_KEY is empty/.test(r.out) && /Same request settings as evaluated/.test(r.out), r.out);
+  r = checkFile('dupes.env', template.replace(/^AI_API_KEY=$/m, `AI_API_KEY=${FAKE}`) + '\nAI_MAX_OUTPUT_TOKENS=600\nAI_TIMEOUT_MS=25000\n');
+  check('…a setting given twice (as the old template did for the reply cap): caught, along with the cap that would differ from the evaluation', r.code === 1 && /AI_MAX_OUTPUT_TOKENS is set twice/.test(r.out) && /reply cap: 600 here, but 2048 was evaluated/.test(r.out), r.out);
+  r = checkFile('slow.env', template.replace(/^AI_API_KEY=$/m, `AI_API_KEY=${FAKE}`).replace(/^AI_TIMEOUT_MS=.*$/m, 'AI_TIMEOUT_MS=45000'));
+  check('…a time limit as long as the app\'s own (40 s) or longer: caught', r.code === 1 && /keep it under the app's 40000 ms/.test(r.out), r.out);
+  r = checkFile('coding.env', template.replace(/^AI_API_KEY=$/m, `AI_API_KEY=${FAKE}`).replace('https://api.z.ai/api/paas/v4', 'https://api.z.ai/api/coding/paas/v4'));
+  check('…Z.ai\'s Coding Plan address: caught (Z.ai limits the Coding Plan to its coding tools)', r.code === 1 && /Coding Plan address/.test(r.out), r.out);
+  fsx.rmSync(tmp, { recursive: true, force: true });
+  // The Deno entry (index.ts) can't run here (no Deno), but it can be type-checked against supabase-js's own types,
+  // with Deno's two globals it uses declared.
+  const dc = fsx.mkdtempSync(path.join(os.tmpdir(), 'myday-deno-'));
+  fsx.writeFileSync(path.join(dc, 'deno.d.ts'), 'declare const Deno: { env: { get(name: string): string | undefined }; serve(handler: (req: Request) => Response | Promise<Response>): unknown };\n');
+  fsx.writeFileSync(path.join(dc, 'tsconfig.json'), JSON.stringify({ compilerOptions: { strict: true, noEmit: true, target: 'ES2022', module: 'ESNext', moduleResolution: 'Bundler', allowImportingTsExtensions: true, skipLibCheck: true, types: [], lib: ['ES2022', 'DOM'], paths: { 'npm:@supabase/supabase-js@2': [path.join(ROOT, 'app/node_modules/@supabase/supabase-js')] } }, files: [path.join(ROOT, 'supabase/functions/ai-plan/index.ts'), 'deno.d.ts'] }));
+  let tsc = '';
+  try { execFileSync(process.execPath, [path.join(ROOT, 'app/node_modules/typescript/bin/tsc'), '-p', path.join(dc, 'tsconfig.json')], { encoding: 'utf8' }); } catch (e) { tsc = (e.stdout || '') + (e.stderr || ''); }
+  fsx.rmSync(dc, { recursive: true, force: true });
+  check('the Edge Function\'s entry (index.ts) type-checks against supabase-js (not run under Deno here)', tsc === '', tsc.slice(0, 400));
+  check('…and an empty public-key setting falls back to the one Supabase provides (|| rather than ??)', /MYDAY_PUBLISHABLE_KEY'\) \|\| Deno\.env\.get\('SUPABASE_ANON_KEY'\) \|\|/.test(fsx.readFileSync(path.join(ROOT, 'supabase/functions/ai-plan/index.ts'), 'utf8')));
 
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);

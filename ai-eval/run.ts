@@ -32,7 +32,8 @@ export interface Options {
   repeats: number;
   budgetUsd: number | null;        // this run's limit
   totalBudgetUsd?: number | null;  // the ceiling across all live runs (with spentBeforeUsd, from the ledger)
-  spentBeforeUsd?: number;         // what earlier live runs used (ai-eval/results/ledger.json)
+  spentBeforeUsd?: number;         // what earlier live runs count against it (ai-eval/results/ledger.json)
+  reservedBeforeUsd?: number;      // …of which reservations kept for calls that reported no token usage
   stopOnFailure?: boolean;         // after an unsuccessful generation, call that model no more in this run
   scenarioIds: string[] | null;
   env: Record<string, string | undefined>;
@@ -40,9 +41,9 @@ export interface Options {
   log: (line: string) => void;
   onCall?: (c: LedgerEntry) => void; // each live call as soon as it's made (for the ledger)
 }
-// One live call, for the ledger: what was set aside before calling and what is counted after it (the cost from the
+// One live call, for the ledger: what was set aside before calling and what is counted after it (the cost estimated
 // provider's token counts, or — if it didn't report them — everything that was set aside).
-export interface LedgerEntry { at: string; model: string; scenario: string; rep: number; reservedUsd: number; countedUsd: number; counted: 'actual' | 'reserved'; outcome: string }
+export interface LedgerEntry { at: string; model: string; scenario: string; rep: number; reservedUsd: number; countedUsd: number; counted: 'usage' | 'reserved'; outcome: string }
 // What a scenario expects of a suggestion; each one checked twice: on the model's own reply, and on the proposal
 // the app would show after its corrections.
 export type Expectations = Record<string, boolean>;
@@ -54,6 +55,7 @@ export interface RunRecord {
   finishReason: string | null;
   latencyMs: number | null; inputTokens: number | null; outputTokens: number | null; reasoningTokens: number | null;
   reservedUsd: number | null; costUsd: number | null;
+  originalReply: string | null;    // the model's reply as received (made-up scenarios only), to check flags against
   violations: string[];            // rules the model's own reply broke (codes)
   violationDetails: string[];      // …with what, e.g. 'too-long: "Gym session": 60 of 30 min'
   adjusted: string[];              // what the app changed, as shown to you
@@ -69,7 +71,11 @@ export interface Result {
   meta: {
     date: string; mode: 'live' | 'mock'; promptVersion: string; models: { id: string; label: string; model: string; maxOutputTokens: number }[];
     repeats: number; scenarios: number; retries: 0;
-    budgetUsd: number | null; totalBudgetUsd: number | null; spentBeforeUsd: number; spentUsd: number; stoppedForBudget: boolean;
+    budgetUsd: number | null; totalBudgetUsd: number | null; spentBeforeUsd: number; reservedBeforeUsd?: number;
+    spentUsd: number;      // counted against the budget by this run: usageUsd + reservedUsd
+    usageUsd?: number;     // estimated cost from reported token usage (results saved before 4 Oct 2026 lack it)
+    reservedUsd?: number;  // reservations kept for calls that reported no usage (until provider billing resolves them)
+    stoppedForBudget: boolean;
     stoppedForConnection: boolean;
   };
   runs: RunRecord[];
@@ -144,7 +150,7 @@ export async function evaluate(o: Options): Promise<Result> {
 
   const runs: RunRecord[] = [];
   const failed = new Set<string>();
-  let spent = 0, stopped = false;
+  let spent = 0, usage = 0, reservedKept = 0, stopped = false;
   // Calls in a row that couldn't reach any provider (no connection, or no answer in time). After a few, the run
   // stops: the connection is probably down (or the computer went to sleep), and each such call would still be
   // counted against the budget at the most it could have cost.
@@ -156,7 +162,7 @@ export async function evaluate(o: Options): Promise<Result> {
     for (const sc of scenarios) {
       for (const { id, cfg } of configs) {
         const rec: RunRecord = { model: id, scenario: sc.id, rep, outcome: 'error', finishReason: null, latencyMs: null, inputTokens: null, outputTokens: null, reasoningTokens: null, reservedUsd: null, costUsd: null,
-          violations: [], violationDetails: [], adjusted: [], expectRaw: {}, expectFinal: {}, explanationWords: 0, priorities: 0, rest: false, savedSafely: null, shown: null };
+          originalReply: null, violations: [], violationDetails: [], adjusted: [], expectRaw: {}, expectFinal: {}, explanationWords: 0, priorities: 0, rest: false, savedSafely: null, shown: null };
         if (lostConnection) { rec.outcome = 'skipped-connection'; runs.push(rec); continue; }
         if (o.stopOnFailure && failed.has(id)) { rec.outcome = 'skipped-failure'; runs.push(rec); continue; }
         const { data, k } = setUp(sc);
@@ -178,7 +184,8 @@ export async function evaluate(o: Options): Promise<Result> {
           // Counted: the cost from the provider's token counts; without them (an error, a time-out), all that was set aside.
           const counted = rec.costUsd ?? (rec.reservedUsd as number);
           spent += counted;
-          o.onCall?.({ at: new Date().toISOString(), model: id, scenario: sc.id, rep, reservedUsd: rec.reservedUsd as number, countedUsd: counted, counted: rec.costUsd === null ? 'reserved' : 'actual', outcome: res.ok ? 'reply' : res.error });
+          if (rec.costUsd === null) reservedKept += counted; else usage += counted;
+          o.onCall?.({ at: new Date().toISOString(), model: id, scenario: sc.id, rep, reservedUsd: rec.reservedUsd as number, countedUsd: counted, counted: rec.costUsd === null ? 'reserved' : 'usage', outcome: res.ok ? 'reply' : res.error });
         }
         if (real) unreachable = !res.ok && (res.error === 'network' || res.error === 'timeout') ? unreachable + 1 : 0;
         if (unreachable >= CONNECTION_FAILURES_TO_STOP) lostConnection = true;
@@ -188,6 +195,7 @@ export async function evaluate(o: Options): Promise<Result> {
           failed.add(id);
           runs.push(rec); o.log(`${id} ${sc.id} #${rep}: unsuccessful — ${rec.error}${rec.errorDetail ? `: ${rec.errorDetail}` : ''}`); continue;
         }
+        rec.originalReply = res.text.slice(0, 4000);
         const raw = K.parseReply(res.text);
         const checked = K.checkProposal(res.text, data, k);
         const p = checked.proposal;
@@ -218,7 +226,8 @@ export async function evaluate(o: Options): Promise<Result> {
     meta: {
       date: startedAt, mode: o.live ? 'live' : 'mock', promptVersion: K.PROMPT_VERSION,
       models: configs.map(c => ({ id: c.id, label: c.cfg.label, model: c.cfg.model, maxOutputTokens: c.cfg.maxOutputTokens })), repeats: o.repeats, scenarios: scenarios.length, retries: 0,
-      budgetUsd: o.budgetUsd, totalBudgetUsd: total, spentBeforeUsd: before, spentUsd: Math.round(spent * 1e6) / 1e6, stoppedForBudget: stopped,
+      budgetUsd: o.budgetUsd, totalBudgetUsd: total, spentBeforeUsd: before, reservedBeforeUsd: o.reservedBeforeUsd ?? 0,
+      spentUsd: Math.round(spent * 1e6) / 1e6, usageUsd: Math.round(usage * 1e6) / 1e6, reservedUsd: Math.round(reservedKept * 1e6) / 1e6, stoppedForBudget: stopped,
       stoppedForConnection: lostConnection,
     },
     runs,
@@ -275,8 +284,16 @@ export function summary(r: Result): string {
   lines.push(`# MyDay AI planner evaluation — ${m.mode === 'live' ? 'LIVE model calls' : 'MOCK (no AI)'}`, '');
   lines.push(`${m.date.slice(0, 16).replace('T', ' ')} UTC · instructions ${m.promptVersion} · ${m.scenarios} synthetic scenario${m.scenarios === 1 ? '' : 's'} × ${m.repeats} repeat${m.repeats === 1 ? '' : 's'} · no automatic retries`, '');
   if (m.mode === 'live') {
-    lines.push(`Spending (estimates from the providers' token counts and the list prices in models.json): this run ${usd(m.spentUsd)} of its ${usd(m.budgetUsd as number)} limit`
-      + (m.totalBudgetUsd !== null ? ` · all live runs ${usd(m.spentBeforeUsd + m.spentUsd)} of the ${usd(m.totalBudgetUsd)} ceiling (${usd(Math.max(0, m.totalBudgetUsd - m.spentBeforeUsd - m.spentUsd))} left)` : '')
+    // Results saved before usage and reservations were kept apart: this run's split is worked out from its calls,
+    // and the earlier runs' split, which wasn't recorded, is left out rather than shown as zero.
+    const sum = (xs: number[]) => Math.round(xs.reduce((a, b) => a + b, 0) * 1e6) / 1e6;
+    const usageUsd = m.usageUsd ?? sum(r.runs.map(x => x.costUsd ?? 0));
+    const reservedUsd = m.reservedUsd ?? sum(r.runs.filter(x => x.costUsd === null && x.reservedUsd !== null).map(x => x.reservedUsd as number));
+    const reservedBefore = m.reservedBeforeUsd;
+    lines.push(`Estimated cost from reported token usage (the providers' token counts × the list prices in models.json): this run ${usd(usageUsd)}.`
+      + (reservedUsd ? ` Reserved for ${r.runs.filter(x => x.reservedUsd !== null && x.costUsd === null).length} call(s) that reported no usage, and kept until provider billing shows what they cost: ${usd(reservedUsd)}.` : '')
+      + ` Counted against this run's ${usd(m.budgetUsd as number)} limit: ${usd(m.spentUsd)}`
+      + (m.totalBudgetUsd !== null ? ` · against the ${usd(m.totalBudgetUsd)} ceiling, all live runs: ${usd(m.spentBeforeUsd + m.spentUsd)}${reservedBefore === undefined ? '' : ` (of which reserved for calls without usage: ${usd(reservedBefore + reservedUsd)})`}, ${usd(Math.max(0, m.totalBudgetUsd - m.spentBeforeUsd - m.spentUsd))} left` : '')
       + (m.stoppedForBudget ? ' · **stopped: the next call\'s reserved cost was more than was left**' : '')
       + (m.stoppedForConnection ? ' · **stopped: 3 calls in a row couldn\'t reach a provider — check the connection (or whether the computer slept) and run again**' : ''), '');
   }
@@ -304,10 +321,16 @@ export function summary(r: Result): string {
   lines.push('', '## Rules broken by the original replies (before the app corrected them)', '');
   if (!codes.length) lines.push('None.');
   else {
-    lines.push(`| Model | ${codes.join(' | ')} | unsuccessful |`, `|---|${codes.map(() => '---|').join('')}---|`);
+    lines.push(`| Model | ${codes.map(c => (c === 'pressure-language' ? 'pressure-language (tone flag)' : c)).join(' | ')} | unsuccessful |`, `|---|${codes.map(() => '---|').join('')}---|`);
     for (const mm of m.models) {
       const rs = r.runs.filter(x => x.model === mm.id);
       lines.push(`| ${mm.label} | ${codes.map(c => rs.reduce((a, x) => a + x.violations.filter(v => v === c).length, 0)).join(' | ')} | ${rs.filter(x => x.outcome === 'error' || x.outcome === 'invalid').length} |`);
+    }
+    if (codes.includes('pressure-language')) {
+      const flagged = r.runs.filter(x => x.violations.includes('pressure-language'));
+      const unverified = flagged.filter(x => !x.originalReply).length;
+      lines.push('', `pressure-language is the tone filter flagging a word (e.g. "failure", "should") wherever it appears — it can't tell "rest isn't a failure" from pressure. `
+        + (unverified ? `${unverified} of these ${flagged.length} flag(s) are unverified: the original wording wasn't kept (results from before 4 Oct 2026 didn't keep it).` : 'The original wording is in runs.json (originalReply) to check each one.'));
     }
   }
   lines.push('', '## By scenario (rule breaks · expectations met by the original reply · after corrections, over all repeats)', '');
@@ -325,7 +348,7 @@ export function summary(r: Result): string {
     '- **Expectations met**: what a useful answer would do in that scenario (e.g. stay within 20 minutes, say that sleep isn\'t recorded, suggest rest when there\'s no time left), checked twice — on the model\'s original reply, and on the proposal after the app\'s corrections. The gap between them is the app\'s work, not the model\'s. A rough guide; read review.md to judge usefulness yourself.',
     '- **Saved safely**: using the suggestion changed only today\'s plan — never the task lists, other days or the energy rating.',
     '- **Tokens**: as the provider reported them. Reasoning ("thinking") tokens are part of the output tokens and are billed as output.',
-    '- **Cost**: from the token counts the provider reported and the prices in models.json (estimates; check your provider\'s bill). A call without token counts is counted at the most it could have cost.');
+    '- **Cost**: estimated from reported token usage (the provider\'s token counts × the prices in models.json); check your provider\'s bill. A call that reported no usage keeps its reservation (the most it could have cost) in the budget until provider billing shows what it cost.');
   return lines.join('\n') + '\n';
 }
 
@@ -334,7 +357,8 @@ export function calls(r: Result): string {
   const lines = ['| Model | Scenario | # | Usable final proposal | Finish | Original rule breaks | App corrections | Latency (ms) | Tokens in / out (reasoning) | Cost (est.) |', '|---|---|---|---|---|---|---|---|---|---|'];
   for (const x of r.runs) {
     const usable = x.outcome === 'ok' ? 'yes' : skipped(x) ? `not called (${x.outcome === 'skipped-budget' ? 'budget' : x.outcome === 'skipped-connection' ? 'no connection' : 'after a failure'})` : `no — ${x.outcome === 'invalid' ? 'not usable JSON' : x.error}${x.errorDetail ? ` (${x.errorDetail.replace(/\|/g, '/')})` : ''}`;
-    lines.push(`| ${x.model} | ${x.scenario} | ${x.rep} | ${usable} | ${x.finishReason ?? '—'} | ${x.violationDetails.length ? x.violationDetails.join('; ').replace(/\|/g, '/') : 'none'} | ${x.adjusted.length ? x.adjusted.join(' ').replace(/\|/g, '/') : '—'} | ${fmt(x.latencyMs)} | ${fmt(x.inputTokens)} / ${fmt(x.outputTokens)} (${fmt(x.reasoningTokens)}) | ${x.costUsd === null ? '—' : '$' + x.costUsd.toFixed(5)} |`);
+    const breaks = x.violationDetails.map(d => (d.startsWith('pressure-language: ') ? `tone flag: "${d.slice(19)}" (${x.originalReply ? 'original kept in runs.json' : 'unverified: original wording not kept'})` : d));
+    lines.push(`| ${x.model} | ${x.scenario} | ${x.rep} | ${usable} | ${x.finishReason ?? '—'} | ${breaks.length ? breaks.join('; ').replace(/\|/g, '/') : 'none'} | ${x.adjusted.length ? x.adjusted.join(' ').replace(/\|/g, '/') : '—'} | ${fmt(x.latencyMs)} | ${fmt(x.inputTokens)} / ${fmt(x.outputTokens)} (${fmt(x.reasoningTokens)}) | ${x.costUsd === null ? '—' : '$' + x.costUsd.toFixed(5)} |`);
   }
   return lines.join('\n') + '\n';
 }
@@ -349,7 +373,7 @@ export function review(r: Result): string {
       if (!x) continue;
       if (!x.shown) { lines.push(`- **${mm.label}**: ${x.outcome}${x.error ? ` (${x.error})` : ''}`); continue; }
       const what = x.shown.rest ? 'Rest' : x.shown.priorities.length ? x.shown.priorities.join('; ') : 'Nothing more today';
-      lines.push(`- **${mm.label}**: ${what}. “${x.shown.explanation}”${x.shown.missing.length ? ` Missing: ${x.shown.missing.join('; ')}.` : ''}${x.violations.length ? ` _(corrected: ${x.violations.join(', ')})_` : ''} — rating: __`);
+      lines.push(`- **${mm.label}**: ${what}. “${x.shown.explanation}”${x.shown.missing.length ? ` Missing: ${x.shown.missing.join('; ').replace(/\.$/, '')}.` : ''}${x.violations.length ? ` _(corrected: ${x.violations.map(v => (v === 'pressure-language' ? `tone flag${x.originalReply ? '' : ', unverified'}` : v)).join(', ')})_` : ''} — rating: __`);
     }
     lines.push('');
   }

@@ -168,43 +168,67 @@ The model never writes anything: it only replies, and the app decides what's all
 Put `VITE_AI=mock` in `app/.env.development.local` and run `npm run dev` in `app/` (http://localhost:5173). Suggestions
 then come from simple rules on your Mac — no account, no key, nothing sent. This is what to review first.
 
-## Set it up with a real model (when you're ready)
+## Development trial with GLM-5.3-Flash (prepared, not applied yet)
 
-1. **Apply the second migration**, as before: SQL Editor → New query → paste
-   `migrations/20261003120000_ai_usage.sql` → Run (or `npx supabase db push`).
-2. **Choose a model**, ideally after running the evaluation (`../ai-eval/README.md`). Create an API key in that
-   provider's console, and **set a spending cap there too** (a second safety net). For Qwen on Alibaba Cloud Model
-   Studio, note your workspace id and region: the address is your workspace's own, and it must be in the same region
-   as the key.
-3. **Fill in the settings** — in a copy, never in the template: copy `ai-secrets.example.env` to
-   `supabase/.ai-secrets.env` (Git ignores it, like every `.env` file under `supabase/`), fill in the key and your
-   workspace's address there, then:
+The app only *suggests* through this path; every reply is still checked by the app's rules, shown for you to confirm,
+saved through "Review my plan"'s save path (refused if the plan changed meanwhile), with one step of Undo. The
+published website is unaffected: `app/.env.production` has no `VITE_AI`, so AI help stays off there.
+
+**Before**: export a backup on every device. Replace the Z.ai key if it was ever shared, and set a spending limit in
+Z.ai's console (top up small amounts). Consider trying it first with one of the disposable test accounts.
+
+**What a request sends to Z.ai**: today's tasks (titles, minutes, times, done or not), your energy rating, sleep
+times, busy times (no appointment names), free time, the number of Study items due and your optional note — see
+"What's sent, and what isn't" below. Using a
+suggestion changes today's plan, which then syncs to your other devices like any other change.
+
+### What changes in Supabase (four steps, all additions)
+
+1. **Database: `migrations/20261003120000_ai_usage.sql`.** Adds one table, `ai_usage` (counts only: requests, money
+   reserved, tokens — no content; Row Level Security on; no direct access), and two functions, `ai_begin` and
+   `ai_finish`, that signed-in accounts can call for their own counts only. Existing tables and data are not touched.
+   Apply it the way you applied the first migration — SQL Editor → New query → paste the file → Run — or
+   `npx supabase db push` if you use the CLI. Its locking has been tested with simultaneous requests in a real
+   PostgreSQL (`tests/run.sh ai-concurrency`).
+2. **The function's settings ("secrets").** `supabase/.ai-secrets.env` (Git ignores it) is prepared from
+   `ai-secrets.example.env` with GLM-5.3-Flash's evaluated settings and your public key; only the Z.ai key is
+   missing. Add the new key there, then:
    ```bash
+   node supabase/check-ai-secrets.mjs      # must say "Same request settings as evaluated" and "Ready"; never prints the key
    npx supabase login
-   npx supabase link --project-ref nkslcgnbmxuhznvldfnz
-   npx supabase secrets set --env-file supabase/.ai-secrets.env
-   npx supabase secrets list            # names only; values aren't shown
+   npx supabase secrets set --env-file supabase/.ai-secrets.env --project-ref nkslcgnbmxuhznvldfnz
+   npx supabase secrets list --project-ref nkslcgnbmxuhznvldfnz    # names only; values aren't shown
    ```
-   The template keeps placeholders only (an empty key, `YOUR-WORKSPACE-ID`); the model ids, settings and list prices
-   in it are public and were checked against the providers' documentation (3 Oct 2026).
-4. **Deploy the function** (no Docker needed with `--use-api`):
+   The settings: Z.ai's general API (`https://api.z.ai/api/paas/v4`, not the Coding Plan address), `glm-5.3-flash`,
+   thinking on at the lowest effort, `max_tokens` 2048, JSON output, 30-second time limit (under the app's 40),
+   prices 0.15 / 0.5 US$ per million tokens; limits 20 requests a day, US$1 a month, 5 seconds apart; only
+   `http://localhost:5173` (the dev server) allowed to call it.
+3. **Deploy the function** (no Docker needed with `--use-api`):
    ```bash
-   npx supabase functions deploy ai-plan --use-api
+   npx supabase functions deploy ai-plan --use-api --project-ref nkslcgnbmxuhznvldfnz
    ```
-   This keeps Supabase's platform check (`verify_jwt`) **on**: the platform validates the sign-in token on every
-   request before the function runs (both the older and the new signing keys). The function then checks again
-   itself — see "Who can use it" below. If the browser's pre-flight check (CORS) were ever refused in your project,
-   deploying with `--no-verify-jwt` would switch the platform check off; only do that knowing the function's own
-   check is then the only one (it is a real check, not just reading the token — see below).
-   If the function can't read the project's public key, also set `MYDAY_PUBLISHABLE_KEY` (your `sb_publishable_…`
-   key) as a secret.
-5. **Switch it on in the app**: `VITE_AI=edge` in `app/.env.development.local` to try it locally (signed in), and only
-   later in `app/.env.production` for the website.
+   This keeps Supabase's platform check (`verify_jwt`) **on**. The function then checks the caller itself — see "Who
+   can use it" below. Don't add `--no-verify-jwt`.
+4. **On your computer only**: `VITE_AI=edge` in `app/.env.development.local`, then `npm run dev` in `app/`, open
+   http://localhost:5173, sign in (sync on), and use "Help me adjust today" on Today. `VITE_AI=mock` goes back to
+   practice mode (no AI, nothing sent) at any time.
+
+**To check it**: a request shows a suggestion to review (or a kind message if something's off); the function's logs
+in the dashboard hold only an outcome and a time; SQL Editor → `select * from ai_usage;` shows the counts.
+
+**To turn it off or remove it**: `VITE_AI=mock` (or delete the line) in `app/.env.development.local`. To remove it
+from Supabase too: `npx supabase functions delete ai-plan --project-ref nkslcgnbmxuhznvldfnz`, then
+`npx supabase secrets unset AI_API_KEY --project-ref nkslcgnbmxuhznvldfnz` (and the other `AI_…` names), and in the
+SQL Editor: `drop function public.ai_finish(integer, integer); drop function public.ai_begin(integer, numeric,
+numeric, integer); drop table public.ai_usage;` — this removes only the AI counts, nothing else.
+
+To use another model later (e.g. Qwen), replace the GLM block in the settings copy with the commented one in the
+template; `check-ai-secrets.mjs` compares any model in `ai-eval/models.json` with its evaluated settings.
 
 The limits (per account): `AI_DAILY_LIMIT` requests a day (default 20), `AI_MONTHLY_BUDGET_USD` (default US$1; each
-request reserves the most it could cost before the model is called), `AI_MIN_SECONDS_BETWEEN` (default 5),
-`AI_MAX_OUTPUT_TOKENS` (default 600) and `AI_TIMEOUT_MS` (default 25 s). Without prices for a real model, the function
-refuses to call it.
+request reserves the most it could cost before the model is called, and that reservation is never refunded, so real
+spending is lower), `AI_MIN_SECONDS_BETWEEN` (default 5), `AI_MAX_OUTPUT_TOKENS` (default 600, at most 2048) and
+`AI_TIMEOUT_MS` (default 25 s). Without prices for a real model, the function refuses to call it.
 
 ## Who can use it
 

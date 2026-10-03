@@ -16,3 +16,5 @@ supabase/.ai-secrets.env
 supabase/**/.env
 supabase/**/.env.*
 supabase/**/*.secret.env
+# A disposable PostgreSQL for tests/ai-concurrency.test.js (see that file)
+tests/.pgtools/

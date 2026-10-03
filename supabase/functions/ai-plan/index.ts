@@ -9,7 +9,8 @@ import { handle } from './handler.ts';
 
 const url = Deno.env.get('SUPABASE_URL') ?? '';
 // The project's public (publishable/anon) key: provided to Edge Functions by Supabase, or set MYDAY_PUBLISHABLE_KEY.
-const publicKey = Deno.env.get('MYDAY_PUBLISHABLE_KEY') ?? Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+// (|| rather than ??, so a setting left empty falls back too.)
+const publicKey = Deno.env.get('MYDAY_PUBLISHABLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY') || '';
 const asUser = (token: string) => createClient(url, publicKey, {
   global: { headers: { Authorization: `Bearer ${token}` } },
   auth: { persistSession: false, autoRefreshToken: false },

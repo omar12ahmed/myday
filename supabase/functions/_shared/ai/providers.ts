@@ -135,6 +135,9 @@ export async function callModel(cfg: ProviderConfig, ctx: PlanContext, fetchImpl
   }
 }
 
+// The most any reply may use, whatever the settings say (2048: GLM-5.3-Flash's evaluated cap, reasoning included).
+export const MAX_OUTPUT_TOKENS_CAP = 2048;
+
 // The Edge Function's model, from its secrets (environment variables). Returns why not, if it isn't usable.
 export function configFromEnv(env: (name: string) => string | undefined): ProviderConfig | { error: string } {
   const num = (name: string, fallback: number | null) => { const v = env(name); if (v === undefined || v === '') return fallback; const n = Number(v); return Number.isFinite(n) ? n : fallback; };
@@ -150,7 +153,7 @@ export function configFromEnv(env: (name: string) => string | undefined): Provid
     baseUrl: env('AI_BASE_URL'),
     apiKey: env('AI_API_KEY'),
     temperature: num('AI_TEMPERATURE', 0.2) as number,
-    maxOutputTokens: Math.min(num('AI_MAX_OUTPUT_TOKENS', 600) as number, 2000),
+    maxOutputTokens: Math.min(num('AI_MAX_OUTPUT_TOKENS', 600) as number, MAX_OUTPUT_TOKENS_CAP),
     timeoutMs: Math.min(num('AI_TIMEOUT_MS', 25000) as number, 60000),
     extraBody,
     maxTokensField: env('AI_MAX_TOKENS_FIELD') === 'max_completion_tokens' ? 'max_completion_tokens' : 'max_tokens',
