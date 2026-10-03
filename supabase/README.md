@@ -168,7 +168,7 @@ The model never writes anything: it only replies, and the app decides what's all
 Put `VITE_AI=mock` in `app/.env.development.local` and run `npm run dev` in `app/` (http://localhost:5173). Suggestions
 then come from simple rules on your Mac — no account, no key, nothing sent. This is what to review first.
 
-## Development trial with GLM-5.3-Flash (prepared, not applied yet)
+## Development trial with GLM-5.3-Flash (set up in the project on 3 Oct 2026)
 
 The app only *suggests* through this path; every reply is still checked by the app's rules, shown for you to confirm,
 saved through "Review my plan"'s save path (refused if the plan changed meanwhile), with one step of Undo. The
@@ -182,7 +182,15 @@ times, busy times (no appointment names), free time, the number of Study items d
 "What's sent, and what isn't" below. Using a
 suggestion changes today's plan, which then syncs to your other devices like any other change.
 
-### What changes in Supabase (four steps, all additions)
+### What changes in Supabase (four steps, all additions — done on 3 Oct 2026)
+
+All four were done on 3 Oct 2026 with a token limited to the Myday project (Database, Edge Functions and Edge
+Function Secrets, read-write): the migration applied in one transaction (sync tables' row counts unchanged), the 16
+settings stored (checked against the file by SHA-256 fingerprint), `ai-plan` version 1 deployed with `verify_jwt` on,
+and `VITE_AI=edge` on the dev server. Checked without a model call: the pre-flight is answered for
+http://localhost:5173 only, and no sign-in, the publishable key as a sign-in, or a made-up token are refused (the
+first two by the function's own check — Supabase's platform check let them through). The migration is now applied:
+never edit it; add a new one for any change.
 
 1. **Database: `migrations/20261003120000_ai_usage.sql`.** Adds one table, `ai_usage` (counts only: requests, money
    reserved, tokens — no content; Row Level Security on; no direct access), and two functions, `ai_begin` and
