@@ -58,7 +58,9 @@ MyDay signs in with email and password only, so no email links or redirect addre
 
 ## 4. Tell MyDay about the project
 
-**To try it on this Mac first** (recommended), create `app/.env.local` (it's ignored by Git):
+**To try it on this Mac first** (recommended), create `app/.env.development.local` (it's ignored by Git, and only
+`npm run dev` reads it, so builds for Live Server and for publishing stay without sync. Not `app/.env.local`:
+Vite reads that one for every build, including the published one):
 
 ```
 VITE_SUPABASE_URL=https://<your-project-ref>.supabase.co
