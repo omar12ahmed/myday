@@ -108,6 +108,9 @@ export interface MyDayData {
   // Health: Workout and Food (described below).
   health: HealthData;
 
+  // Finance: money owed, monthly expenses (added by the new app; the classic MyDay keeps it as it is, unread).
+  finance: FinanceData;
+
   // Anything else (e.g. a section added by a newer MyDay) is kept as it was, never dropped.
   [other: string]: unknown;
 }
@@ -281,6 +284,29 @@ export interface WorkoutData {
   restTimer: { enabled: boolean; seconds: number };
   rest: { startedAt: number; durationSec: number } | null; // a running rest countdown
 }
+// ---------- Finance ----------
+// Money you owe someone, or someone owes you. Amounts are in pounds (2 decimal places).
+export interface Debt {
+  id: string;
+  direction: 'owe' | 'owed';  // owe = you owe them; owed = they owe you
+  person: string;
+  amount: number;
+  note: string;
+  since: DateKey;
+}
+// Something you pay every month (rent, phone, subscriptions…).
+export interface Expense {
+  id: string;
+  name: string;
+  amount: number;              // per month
+}
+export interface FinanceData {
+  ratesSetOn: DateKey | null;  // when your pay rates were first set from Finance (done once; see data/finance.ts)
+  debts: Debt[];
+  expenses: Expense[];
+  [other: string]: unknown;    // anything a newer MyDay adds here is kept
+}
+
 export interface HealthData {
   workout: WorkoutData;
   food: FoodData;

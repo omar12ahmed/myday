@@ -43,7 +43,9 @@ const details = () => text('#detailsCard');
 const glance = () => ev(`[...document.querySelectorAll('.glance li')].map(li => li.querySelector('.g-time').textContent + ' | ' + li.querySelector('.g-label').textContent)`);
 const props = () => ev(`[...document.querySelectorAll('.prop-item')].map(li => li.querySelector('.prop-when').textContent + ' | ' + li.querySelector('.title').textContent)`);
 const payCell = (row, col) => text(`tr[data-row="${row}"] .${col}`);
-const payTable = () => ev(`[...document.querySelectorAll('.pay-table tr[data-row]')].map(r => [r.dataset.row, r.querySelector('.sched').textContent, r.querySelector('.act').textContent])`);
+// Finance's work-pay figures by row (shifts, gross, tax, ni, sl, pgl, net), as shown.
+const finRows = () => ev(`Object.fromEntries([...document.querySelectorAll('#workPay [data-row]')].map(r => [r.dataset.row, (r.lastElementChild || r).textContent]))`);
+const MONEY = ['gross', 'tax', 'ni', 'sl', 'pgl', 'net'];
 async function waitFor(expr, ms = 15000) { const t0 = Date.now(); while (Date.now() - t0 < ms) { if (await ev(expr)) return true; await sleep(200); } return false; }
 const setTZ = async tz => { await T.send('Emulation.setTimezoneOverride', { timezoneId: '' }).catch(() => {}); await T.send('Emulation.setTimezoneOverride', { timezoneId: tz }); };
 const lumHex = h => { const c = [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255).map(v => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
@@ -59,9 +61,9 @@ const go = async (hash, y, m, d, h = 9, mi = 0, url = APP) => { T.setUrl(url + '
   console.log('\n[20] Navigation');
   await go('today', 2026, 11, 2); await reset(); await go('today', 2026, 11, 2);
   const navLabels = await ev(`[...document.querySelectorAll('#nav .nav-item')].map(a => a.textContent.trim())`);
-  check('navigation shows Today, Calendar, Pay, Health and Study', eq(navLabels, ['Today', 'Calendar', 'Pay', 'Health', 'Study']), navLabels);
+  check('navigation shows Today, Calendar, Finance, Health and Study', eq(navLabels, ['Today', 'Calendar', 'Finance', 'Health', 'Study']), navLabels);
   check('no section is marked "not in the new app yet" any more',
-    eq(await ev(`[...document.querySelectorAll('#nav a')].map(a => a.getAttribute('aria-label'))`), ['Today', 'Calendar', 'Pay', 'Health', 'Study']));
+    eq(await ev(`[...document.querySelectorAll('#nav a')].map(a => a.getAttribute('aria-label'))`), ['Today', 'Calendar', 'Finance', 'Health', 'Study']));
   check('unfinished sections (Ideas) are not shown as controls', !(await ev(`/Ideas/.test(document.getElementById('nav').textContent)`)) && !(await exists('a[href="#ideas"]')));
   check('Today is marked as the current page', (await text('#nav [aria-current=page]')).trim() === 'Today');
   await click('a.nav-item[href="#calendar"]'); await sleep(300);
@@ -71,7 +73,8 @@ const go = async (hash, y, m, d, h = 9, mi = 0, url = APP) => { T.setUrl(url + '
   await go('ideas', 2026, 11, 2);
   check('an unfinished section in the address falls back to Today', (await text('#nav [aria-current=page]')).trim() === 'Today' && !(await exists('.cal-grid')));
   await go('pay', 2026, 11, 2);
-  check('Pay opens and asks for a pattern/rate gently', (await exists('.pay-table')) && (await text('.pay-notes')).includes('No shift pattern yet'));
+  check('the old Pay address opens Finance, which replaced it', (await exists('#workPay')) && (await text('#nav [aria-current=page]')).trim() === 'Finance');
+  check('…and it asks for a shift pattern gently', (await text('.fin-notes')).includes('Add your shift pattern in Calendar'));
 
   console.log('\n[21] Shift pattern: setup, many cycles, month/year boundaries, overrides, versions');
   await go('calendar', 2026, 11, 2);
@@ -243,76 +246,64 @@ const go = async (hash, y, m, d, h = 9, mi = 0, url = APP) => { T.setUrl(url + '
   check('unexpected data from gov.uk is rejected, not stored', (await text('#bhCard')).includes('gov.uk sent something unexpected') && (await data()).bankHolidays.divisions === null);
   T.setHandler(null); await T.send('Fetch.disable');
 
-  console.log('\n[25] Pay');
-  await reset(); await go('pay', 2026, 11, 9);
-  await editStorage(`s => { s.rota.patterns = [${PATTERN}]; s.rota.overrides = { '2026-11-03': { actual: { status: 'sick' } } };
-    s.rota.entries = [{ id: 'o1', kind: 'overtime', start: '2026-11-07T10:00', end: '2026-11-07T14:00', note: '' }, { id: 'u1', kind: 'unauthorised', start: '2026-11-05T07:00', end: '2026-11-05T09:00', note: '' }]; }`);
-  await go('pay', 2026, 11, 9, 9, 1);
-  await setVal('#pay-hourlyRate', '15'); await setVal('#pay-frequency', 'weekly'); await setVal('#pay-periodAnchor', ANCHOR);
-  await setVal('#pay-averageWeeklyEarnings', '600');
-  await ev(`document.querySelector('[data-pay="sl-plan2"]').click()`);
-  await click('[data-action=pay-prev]');
-  check('weekly period 2–8 Nov selected', (await text('#payPeriod')).includes('2 Nov') && (await text('#payPeriod')).includes('8 Nov'), await text('#payPeriod'));
-  check('scheduled vs actual are labelled and explained, as estimates', (await text('.pay-table thead')).includes('Scheduled') && (await text('.pay-table thead')).includes('Actual') && (await text('#app')).includes('Scheduled is what your rota says') && (await text('#app')).includes('estimates'));
-  const got = {};
-  for (const r of ['shifts', 'hours', 'overtimeHours', 'sickDays', 'basic', 'overtimePay', 'sickPay', 'gross', 'tax', 'ni', 'sl', 'net']) got[r] = [await payCell(r, 'sched'), await payCell(r, 'act')];
-  const want = { shifts: ['4', '3'], hours: ['48 h', '34 h'], overtimeHours: ['0 h', '4 h'], sickDays: ['0', '1 (1)'], basic: ['£720.00', '£510.00'], overtimePay: ['£0.00', '£90.00'],
-    sickPay: ['£0.00', '£30.81'], gross: ['£720.00', '£630.81'], tax: ['−£95.60', '−£77.60'], ni: ['−£38.24', '−£31.10'], sl: ['−£13.00', '−£5.00'], net: ['£573.16', '£517.11'] };
-  for (const k of Object.keys(want)) check(`week 2–8 Nov — ${k}: scheduled ${want[k][0]}, actual ${want[k][1]}`, eq(got[k], want[k]), got[k]);
-  check('unmarked past shifts are flagged as assumed', (await text('.pay-notes')).includes('3 past shifts not marked yet'));
-  check('SSP explained (first day, flat rate vs 80% AWE)', (await text('.pay-notes')).includes('SSP used: £123.25 a week (flat rate; average weekly earnings £600.00, entered)'));
-  await setVal('#pay-averageWeeklyEarnings', '100');
-  check('SSP uses 80% of AWE when lower (£80 ÷ 4 days = £20.00)', (await payCell('sickPay', 'act')) === '£20.00');
-  await setVal('#pay-averageWeeklyEarnings', '600');
-  await go('pay', 2026, 11, 9, 9, 2); await click('[data-action=pay-prev]');
-  check('pay settings survive a reload', (await payCell('net', 'act')) === '£517.11' && (await ev(`document.getElementById('pay-hourlyRate').value`)) === '15');
-  await editStorage(`s => { s.rota.overrides['2026-11-04'] = { actual: { status: 'annual_leave' } }; }`);
-  await go('pay', 2026, 11, 9, 9, 3); await click('[data-action=pay-prev]');
-  check('annual leave paid as normal pay for the planned shift (12 h, £180)', (await payCell('leaveHours', 'act')) === '12 h' && (await payCell('leavePay', 'act')) === '£180.00' && (await payCell('basic', 'act')) === '£330.00');
-  await ev(`document.querySelector('[data-pay="annualLeavePaid"]').click()`); await sleep(50);
-  check('…or unpaid if you say so', !(await exists('tr[data-row="leavePay"]')) || (await payCell('leavePay', 'act')) === '£0.00');
-  await ev(`document.querySelector('[data-pay="annualLeavePaid"]').click()`); await sleep(50);
-  // Bank holidays: double pay, clock vs whole-shift, overtime on a bank holiday (real gov.uk data).
-  await editStorage(`s => { s.rota.overrides = { '2026-12-31': { planned: { type: 'off' } } }; s.rota.entries = [{ id: 'o2', kind: 'overtime', start: '2026-12-28T10:00', end: '2026-12-28T12:00', note: '' }]; }`);
-  await go('pay', 2027, 1, 4);
-  const bhOk = await waitFor(`(() => { const s = JSON.parse(localStorage.getItem('${KEY}')).bankHolidays; return !!s.divisions; })()`);
-  await go('pay', 2027, 1, 4, 9, 1);
-  await click('[data-action=pay-prev]');
-  check('week 28 Dec – 3 Jan selected', bhOk && (await text('#payPeriod')).includes('28 Dec'), await text('#payPeriod'));
-  const bhRows = { bhHours: [await payCell('bhHours', 'sched'), await payCell('bhHours', 'act')], bhPremium: [await payCell('bhPremium', 'sched'), await payCell('bhPremium', 'act')], gross: [await payCell('gross', 'sched'), await payCell('gross', 'act')], overtimePay: await payCell('overtimePay', 'act') };
-  check('bank holiday hours "on the day": 5 h of the 28 Dec night (19:00–24:00) at double pay; overtime that day topped up to double', eq(bhRows, { bhHours: ['5 h', '7 h'], bhPremium: ['£75.00', '£90.00'], gross: ['£615.00', '£675.00'], overtimePay: '£45.00' }), bhRows);
-  await setVal('#pay-bankHolidayHours', 'shift');
-  const bhShift = [await payCell('bhHours', 'sched'), await payCell('bhPremium', 'sched'), await payCell('gross', 'sched')];
-  check('"whole shift" treatment: all 12 h of the 28 Dec night doubled', eq(bhShift, ['12 h', '£180.00', '£720.00']), bhShift);
-  await setVal('#pay-bankHolidayHours', 'clock');
-  // Daylight saving: clocks go back (25 Oct 2026) and forward (28 Mar 2027).
-  await editStorage(`s => { s.rota.overrides = { '2026-10-24': { planned: { type: 'night' } }, '2027-03-27': { planned: { type: 'night' } } }; s.rota.entries = []; }`);
-  await go('pay', 2026, 11, 9);
-  for (let i = 0; i < 3; i++) await click('[data-action=pay-prev]');
-  check('week 19–25 Oct: night across the clocks going back is 13 h (12 + 12 + 13 + 12 = 49 h)', (await text('#payPeriod')).includes('19 Oct') && (await payCell('hours', 'sched')) === '49 h', [await text('#payPeriod'), await payCell('hours', 'sched')]);
-  for (let i = 0; i < 22; i++) await click('[data-action=pay-next]');
-  check('week 22–28 Mar: night across the clocks going forward is 11 h (12 + 11 + 12 = 35 h)', (await text('#payPeriod')).includes('22 Mar') && (await payCell('hours', 'sched')) === '35 h', [await text('#payPeriod'), await payCell('hours', 'sched')]);
-  await setVal('#pay-frequency', 'monthly'); await setVal('#pay-periodAnchor', '2026-11-01');
-  await click('[data-action=pay-next]');
+  console.log('\n[25] Finance (was Pay): work pay from the Calendar, with the same figures as the current MyDay\'s Pay');
+  // The pay rules (data/pay.ts) are unchanged; Finance just shows fewer figures. Each case saves the same data in
+  // both apps, then compares Finance with the current MyDay's "Actual" column (and with hand-checked amounts).
+  // `ratesSetOn` is set so Finance keeps these test settings instead of saving your own rates.
+  const FIN = `s.finance = { ratesSetOn: '2026-01-01', debts: [], expenses: [] };`;
+  const BH = `s.bankHolidays = { region: 'england-and-wales', fetchedAt: 'WHEN', divisions: { 'england-and-wales': [{ date: '2026-12-25', title: 'Christmas Day' }, { date: '2026-12-28', title: 'Boxing Day (substitute day)' }, { date: '2027-01-01', title: "New Year's Day" }], scotland: [], 'northern-ireland': [] } };`;
+  async function both(setup, y, m, d, moves = 0) {
+    const out = {};
+    for (const [who, url, hash, move] of [['live', 'index.html', 'pay', moves < 0 ? 'pay-prev' : 'pay-next'], ['fin', APP, 'finance', moves < 0 ? 'fin-prev' : 'fin-next']]) {
+      await reset(); T.setUrl(url + '#today'); await openAt(y, m, d, 9); // set up first, then open the section
+      await editStorage(`s => { ${FIN} ${BH.replace('WHEN', `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}T08:00`)} ${setup} }`);
+      T.setUrl(url + '#' + hash); await openAt(y, m, d, 9, 1);
+      for (let i = 0; i < Math.abs(moves); i++) await click(`[data-action=${move}]`);
+      if (who === 'live') { out.live = { period: await text('#payPeriod') }; for (const r of MONEY) out.live[r] = (await exists(`tr[data-row="${r}"] .act`)) ? await payCell(r, 'act') : null; }
+      else { const rows = await finRows(); out.fin = { period: await text('#finPeriod'), notes: await text('.fin-notes'), shifts: rows.shifts, toCome: rows.toCome || '', overtime: rows.overtime || '' }; for (const r of MONEY) out.fin[r] = rows[r] ?? null; }
+    }
+    return out;
+  }
+  // (The current MyDay writes a zero deduction as "−£0.00"; Finance as "£0.00".)
+  const zero = v => (v === '−£0.00' ? '£0.00' : v);
+  const same = (r, keys = MONEY) => keys.every(k => zero(r.live[k]) === zero(r.fin[k])) && r.live.period === r.fin.period;
+  const diff = r => ({ live: r.live, fin: r.fin });
+  const WEEKLY = `s.rota.patterns = [${PATTERN}]; s.rota.overrides = { '2026-11-03': { actual: { status: 'sick' } } };
+    s.rota.entries = [{ id: 'o1', kind: 'overtime', start: '2026-11-07T10:00', end: '2026-11-07T14:00', note: '' }, { id: 'u1', kind: 'unauthorised', start: '2026-11-05T07:00', end: '2026-11-05T09:00', note: '' }];
+    Object.assign(s.pay, { hourlyRate: 15, frequency: 'weekly', periodAnchor: '${ANCHOR}', averageWeeklyEarnings: 600 }); s.pay.studentLoans.plan2 = true;`;
+  let r = await both(WEEKLY, 2026, 11, 9, -1);
+  check('week 2–8 Nov: Finance shows the same pay period and figures as the current MyDay', same(r), diff(r));
+  check('…gross £630.81, Income Tax −£77.60, NI −£31.10, student loan −£5.00, take-home £517.11 (sick day, overtime, 2 h absence)',
+    r.fin.gross === '£630.81' && r.fin.tax === '−£77.60' && r.fin.ni === '−£31.10' && r.fin.sl === '−£5.00' && r.fin.net === '£517.11', r.fin);
+  check('…shifts worked: 3 of the 4 planned (one sick) plus the overtime shift', r.fin.shifts === '4' && /including 1 overtime/.test(r.fin.overtime), r.fin);
+  r = await both(WEEKLY + ` s.pay.averageWeeklyEarnings = 100;`, 2026, 11, 9, -1);
+  check('Statutory Sick Pay at 80% of low average earnings (£20.00 instead of £30.81): gross £620.00, as the current MyDay', same(r) && r.fin.gross === '£620.00', diff(r));
+  r = await both(WEEKLY + ` s.rota.overrides['2026-11-04'] = { actual: { status: 'annual_leave' } };`, 2026, 11, 9, -1);
+  check('annual leave paid as normal pay for the planned shift, as the current MyDay', same(r), diff(r));
+  r = await both(`s.rota.patterns = [${PATTERN}]; s.rota.overrides = { '2026-12-31': { planned: { type: 'off' } } }; s.rota.entries = [{ id: 'o2', kind: 'overtime', start: '2026-12-28T10:00', end: '2026-12-28T12:00', note: '' }];
+    Object.assign(s.pay, { hourlyRate: 15, frequency: 'weekly', periodAnchor: '${ANCHOR}' });`, 2027, 1, 4, -1);
+  check('week 28 Dec – 3 Jan: bank holidays at double pay (overtime on one topped up to double): gross £675.00, as the current MyDay', same(r) && r.fin.gross === '£675.00', diff(r));
+  r = await both(`s.rota.patterns = [${PATTERN}]; s.rota.overrides = { '2026-10-24': { planned: { type: 'night' } } }; Object.assign(s.pay, { hourlyRate: 15, frequency: 'weekly', periodAnchor: '${ANCHOR}' });`, 2026, 11, 9, -3);
+  check('week 19–25 Oct: the night when the clocks go back is 13 h (49 h × £15 = £735.00), as the current MyDay', same(r) && r.fin.gross === '£735.00', diff(r));
+  r = await both(`s.rota.patterns = [${PATTERN}]; s.rota.overrides = { '2027-03-27': { planned: { type: 'night' } } }; Object.assign(s.pay, { hourlyRate: 15, frequency: 'weekly', periodAnchor: '${ANCHOR}' });`, 2027, 3, 29, -1);
+  check('week 22–28 Mar: the night when the clocks go forward is 11 h (35 h × £15 = £525.00), as the current MyDay', same(r) && r.fin.gross === '£525.00', diff(r));
   let shiftsDec = 0; for (let d = '2026-12-01'; d <= '2026-12-31'; d = addD(d, 1)) if (expectType(d) !== 'off') shiftsDec++;
-  check(`monthly December period: ${shiftsDec} shifts, ${shiftsDec * 12} h (no overrides that month)`, (await text('#payPeriod')).includes('1 Dec') && (await payCell('shifts', 'sched')) === String(shiftsDec) && (await payCell('hours', 'sched')) === `${shiftsDec * 12} h`, [await text('#payPeriod'), await payCell('shifts', 'sched')]);
-  check('tax year shown for the period (2026/27)', (await text('.pay-notes')).includes('2026/27 rates'));
-  // SSP before the April 2026 reform: 4-day period of incapacity, 3 waiting days, £118.75.
-  await editStorage(`s => { s.rota.patterns = [{ id: 'p2', effectiveFrom: null, anchor: '2026-03-02', cycle: ${JSON.stringify(CYC)}, times: { day: { start: '07:00', end: '19:00' }, night: { start: '19:00', end: '07:00' } }, breaks: { day: 0, night: 0 } }];
+  r = await both(`s.rota.patterns = [${PATTERN}]; Object.assign(s.pay, { hourlyRate: 15, frequency: 'monthly', periodAnchor: '2026-11-01' });`, 2026, 11, 9, 1);
+  check(`the December pay month: "December 2026", ${shiftsDec} shifts planned, the same money as the current MyDay`, same({ live: r.live, fin: { ...r.fin, period: r.live.period } }) && r.fin.period === 'December 2026' && r.fin.shifts === String(shiftsDec), diff(r));
+  check('…labelled as an estimate with the tax year (2026/27) and where the rules come from (gov.uk)', /Estimate.*2026\/27 tax rules from gov\.uk/.test(r.fin.notes), r.fin.notes);
+  const SSP = `s.rota.patterns = [{ id: 'p2', effectiveFrom: null, anchor: '2026-03-02', cycle: ${JSON.stringify(CYC)}, times: { day: { start: '07:00', end: '19:00' }, night: { start: '19:00', end: '07:00' } }, breaks: { day: 0, night: 0 } }];
     s.rota.overrides = { '2026-03-02': { actual: { status: 'sick' } }, '2026-03-03': { actual: { status: 'sick' } }, '2026-03-04': { actual: { status: 'sick' } }, '2026-03-05': { actual: { status: 'sick' } }, '2026-04-06': { actual: { status: 'sick' } } };
-    s.pay.frequency = 'weekly'; s.pay.periodAnchor = '2026-03-02'; s.pay.averageWeeklyEarnings = 600; }`);
-  await go('pay', 2026, 3, 9);
-  await click('[data-action=pay-prev]');
-  check('before 6 April 2026: 4 sick days, first 3 are waiting days, 1 paid at £118.75 ÷ 4 = £29.69', (await payCell('sickDays', 'act')) === '4 (1)' && (await payCell('sickPay', 'act')) === '£29.69', [await payCell('sickDays', 'act'), await payCell('sickPay', 'act')]);
-  check('waiting days explained', (await text('.pay-notes')).includes('waiting day (rules before 6 April 2026)'));
-  await go('pay', 2026, 4, 13); await click('[data-action=pay-prev]');
-  check('from 6 April 2026: a single sick day is paid from day one — £123.25 ÷ 3 qualifying days = £41.08', (await text('#payPeriod')).includes('6 Apr') && (await payCell('sickPay', 'act')) === '£41.08', [await text('#payPeriod'), await payCell('sickPay', 'act')]);
-  await go('pay', 2026, 3, 9, 9, 1); await click('[data-action=pay-prev]');
-  check('…March 2026 period uses 2025/26 rates', (await text('.pay-notes')).includes('2025/26 rates'));
-  await setVal('#pay-taxCode', 'K100');
-  check('unsupported tax codes are explained, not guessed', (await text('.pay-notes')).includes("K tax codes aren't supported"));
-  await setVal('#pay-taxCode', 'S1257L');
-  check('Scottish tax codes use Scottish bands (no error)', !(await text('.pay-notes')).includes("isn't recognised"));
+    Object.assign(s.pay, { hourlyRate: 15, frequency: 'weekly', periodAnchor: '2026-03-02', averageWeeklyEarnings: 600 });`;
+  r = await both(SSP, 2026, 3, 9, -1);
+  check('before 6 April 2026: 3 waiting days, then 1 day of SSP (£118.75 ÷ 4 = £29.69), as the current MyDay', same(r) && r.fin.gross === '£29.69', diff(r));
+  check('…using 2025/26 rates', /2025\/26 tax rules/.test(r.fin.notes), r.fin.notes);
+  r = await both(SSP, 2026, 4, 13, -1);
+  check('from 6 April 2026: SSP from the first day off sick, as the current MyDay', same(r), diff(r));
+  r = await both(WEEKLY + ` s.pay.taxCode = 'K100';`, 2026, 11, 9, -1);
+  check('a tax code that isn\'t supported is explained, and tax and take-home aren\'t guessed (the current MyDay leaves tax out instead)',
+    /K tax codes aren't supported/.test(r.fin.notes) && r.fin.tax === '—' && r.fin.net === '—' && same(r, ['gross', 'ni', 'sl']), diff(r));
+  r = await both(WEEKLY + ` s.pay.taxCode = 'S1257L';`, 2026, 11, 9, -1);
+  check('Scottish tax codes use the Scottish bands, as the current MyDay', same(r) && !/isn't recognised/.test(r.fin.notes), diff(r));
 
   console.log('\n[26] Same data, same results as the current MyDay');
   // Messy saved rota/pay/bank holidays: both apps must keep exactly the same records and drop the same bad ones.
@@ -322,6 +313,7 @@ const go = async (hash, y, m, d, h = 9, mi = 0, url = APP) => { T.setUrl(url + '
       entries: [{ id: 'o1', kind: 'overtime', start: '2026-11-07T10:00', end: '2026-11-07T14:00', note: 'x'.repeat(100) }, { id: 'bad', kind: 'overtime', start: '2026-11-07T10:00', end: '2026-11-07T09:00' }, { id: 'u1', kind: 'unauthorised', start: '2026-11-13T19:00', end: '2026-11-13T21:00' }],
       colours: { day: '#ABCDEF', night: 'blue' } },
     pay: { hourlyRate: 15, nightMultiplier: 1.25, overtimeMultiplier: 9, bankHolidayMultiplier: 2, bankHolidayHours: 'shift', sickPay: 'percent', sickPercent: 60, frequency: 'weekly', periodAnchor: '${ANCHOR}', taxCode: ' s1257l ', studentLoans: { plan2: true, postgrad: true, nope: true }, unknownSetting: 1 },
+    finance: { ratesSetOn: '2026-11-01', debts: [], expenses: [] },
     bankHolidays: { region: 'scotland', fetchedAt: '2026-11-08T09:00', divisions: { 'england-and-wales': [{ date: '2026-12-25', title: 'Christmas Day' }, { date: 'bad' }], scotland: [{ date: '2026-11-30', title: "St Andrew's Day" }, { date: '2026-12-25', title: 'Christmas Day' }], 'northern-ireland': [] } } }`;
   const seedAndSave = async url => {
     T.setUrl(url + '#calendar'); await openAt(2026, 11, 9, 9);
@@ -337,10 +329,17 @@ const go = async (hash, y, m, d, h = 9, mi = 0, url = APP) => { T.setUrl(url + '
   const months = ['2026-11', '2026-12', '2027-02'];
   const liveGrid = await gridIn('index.html', months), newGrid = await gridIn(APP, months);
   for (const ym of months) check(`${ym}: every day shows the same shift, bank holiday and marks as the current MyDay`, eq(liveGrid[ym], newGrid[ym]), liveGrid[ym].filter((c, i) => c !== newGrid[ym][i]).slice(0, 3));
-  const payIn = async (url, prevs) => { T.setUrl(url + '#pay'); await openAt(2026, 11, 9, 9, 3); // the saved bank holidays are a day old, so neither app reloads them mid-check
-    const out = []; for (let i = 0; i < prevs; i++) { out.push([await text('#payPeriod'), await payTable(), (await text('.pay-notes')).replace(/updated [^)]*\)/, '')]); await click('[data-action=pay-prev]'); } return out; };
+  const payIn = async (url, prevs) => { const fin = url === APP; T.setUrl(url + (fin ? '#finance' : '#pay')); await openAt(2026, 11, 9, 9, 3); // the saved bank holidays are a day old, so neither app reloads them mid-check
+    const out = [];
+    for (let i = 0; i < prevs; i++) {
+      const z = v => (v === '−£0.00' ? '£0.00' : v);
+      if (fin) { const rows = await finRows(); out.push([await text('#finPeriod'), MONEY.map(k => z(rows[k] ?? null))]); }
+      else out.push([await text('#payPeriod'), await Promise.all(MONEY.map(async k => ((await exists(`tr[data-row="${k}"] .act`)) ? z(await payCell(k, 'act')) : null)))]);
+      await click(fin ? '[data-action=fin-prev]' : '[data-action=pay-prev]');
+    }
+    return out; };
   const livePay = await payIn('index.html', 3), newPay = await payIn(APP, 3);
-  for (let i = 0; i < 3; i++) check(`pay period ${livePay[i][0]}: every figure and note matches the current MyDay`, eq(livePay[i], newPay[i]), [livePay[i][1].filter((r, j) => JSON.stringify(r) !== JSON.stringify(newPay[i][1][j])).slice(0, 3)]);
+  for (let i = 0; i < 3; i++) check(`pay period ${livePay[i][0]}: Finance's gross, deductions and take-home match the current MyDay`, eq(livePay[i], newPay[i]), [livePay[i], newPay[i]]);
 
   console.log('\n[27] Saved data: backups and export/import with every section');
   await reset();
@@ -372,7 +371,7 @@ const go = async (hash, y, m, d, h = 9, mi = 0, url = APP) => { T.setUrl(url + '
 
   console.log('\n[28] Layout and themes');
   await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
-  for (const h of ['calendar', 'pay', 'today']) {
+  for (const h of ['calendar', 'finance', 'today']) {
     await go(h, 2026, 11, 2);
     check(`phone: no sideways scrolling (${h})`, !(await ev('document.documentElement.scrollWidth > innerWidth')));
   }
@@ -390,7 +389,7 @@ const go = async (hash, y, m, d, h = 9, mi = 0, url = APP) => { T.setUrl(url + '
   check('phone: each day in the month is a large tap target (≥ 44 px wide, ≥ 70 px tall)', cellSize[0] >= 44 && cellSize[1] >= 70, cellSize);
   for (const theme of ['light', 'auto', 'dark']) {
     await editStorage(`s => { s.settings.theme = '${theme}'; }`);
-    for (const h of ['calendar', 'pay']) {
+    for (const h of ['calendar', 'finance']) {
       await go(h, 2026, 11, 2, 9, 30);
       check(`theme "${theme}" on ${h}: applied, readable chips, no sideways scrolling`, (await ev('document.documentElement.dataset.theme')) === theme && !(await ev('document.documentElement.scrollWidth > innerWidth')));
     }

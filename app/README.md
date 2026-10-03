@@ -45,10 +45,10 @@ itself: build again after a change. While Live Server is running, run the checks
 |---|---|
 | **Today** | Everything: energy (1–5) with its task limits, Build my day with a proposal you confirm (edit, shorten, leave for later), rest days, the queue and Roll to tomorrow, the evening check-in (including yesterday's), Review my plan, Swap for a rest day, Start today over, the nudge, the focus timer, the rolling 7-day learning count, the learning garden, sleep / work / appointments / prep-time context, Today at a glance, editing task lists, export and import, animations on/off. |
 | **Calendar** | Everything: your repeating pattern (e.g. 4 days → 4 off → 4 nights → 4 off) with versions that start from a chosen date (earlier dates never change), one-date changes stored apart from the pattern, what actually happened (worked different hours, sick, annual leave, cancelled, off instead, custom), overtime and unauthorised absence as separate entries, appointments, overlap warnings, bank holidays from gov.uk with the region choice, configurable colours with text labels, month and agenda views. |
-| **Pay** | Everything: scheduled vs actual hours and pay for each pay period (weekly, fortnightly, 4-weekly or monthly), night/overtime/bank-holiday rates, annual leave, cancelled shifts, sick pay (SSP before and after the April 2026 reform, company sick pay), and estimated Income Tax, National Insurance and student loans, labelled as estimates with the tax year used. |
+| **Finance** (was Pay) | Work pay for each pay month: shifts worked (and still planned), gross pay, Income Tax, National Insurance and student loan, and take-home, all estimates labelled with the tax year and gov.uk as the source. Worked out from the Calendar with the same rules as the current MyDay's Pay (overtime, cancelled shifts, bank holidays, annual leave, sick pay, the clock changes), so it changes by itself when the Calendar does. Plus money owed (both ways, with "Settled"), monthly expenses, and what's left over (take-home minus expenses). Your rates are folded away under "Rates". See "Finance" below. |
 | **Study** | Everything: a dashboard focused on starting (current focus and course, the next task with its path and estimate, a suggested length that fits your energy and free time, Start learning, "Just 15 minutes", course completion, a revision preview with its own Start revision button); the editable roadmap (stage → course → module → section → task, resource links, archive, focus); learning sessions you can pause, resume, finish or discard, with an optional clock that survives a reload; the optional check-in (task complete, concepts covered, how clear it felt, takeaway, question, Obsidian note); concepts with written or multiple-choice revision questions; revision one question at a time with the answer hidden until you ask, self-assessment, hints, notes, and spaced review dates; progress and history (learning days, completion, practical work, clarity, recall by week, what might need practice); Study settings; and the Study card on Today. |
 | **Health → Workout** | Everything: workout templates (create, rename, reorder, archive and restore) with your own or common exercises; strength (reps and kg), bodyweight (reps, with added weight or assistance in kg, kept apart) and cardio (minutes and km); planned sets, reps, weights, durations, distances and rest; scheduling by weekday or as a repeating sequence; proposed dates fitted around shifts and appointments, saved only when you confirm; one-off plans on a date; the latest missed session to Move, Skip or Continue (no backlog); logging a workout with the plan and last time's result beside each exercise, big Done buttons, values prefilled from last time or the plan, the optional rest timer, leave-and-resume, and a kindly named shorter session; history with corrections; exercise history with charts per measure; and the Health card on Today. |
-| App shell | Header with the date, the five-section navigation, Light / Dark / Match device themes. |
+| App shell | Header with the date, the five-section navigation (on wide screens, beside the theme button), Light / Dark / Match device themes. |
 | **Health → Food** | Everything: recipe ideas from TheMealDB (three at a time, "Show more"), search with suggestions while you type (your saved recipes at once, TheMealDB after a pause), favourites, recently cooked and your own recipes; preferences (leave out, dislikes, time, batch cooking) with a plain allergen caution; recipe pages with ingredients, servings that scale the quantities (or "as written" when they can't), the method split only on its own lines with the original text kept, nutrition (only your own figures, labelled as yours — never estimated) and the source and links; Want to cook (servings, tick what you have, add the rest); the shopping list grouped by aisle, combining only compatible items, with editing, manual items, Undo and ticking off; the step-by-step cooking view with timers named in a step, saved position and resume; and the cooking and shopping reminders on Today. |
 
 Today's Health card shows a workout to resume, decide about or start, a recipe being cooked, and the shopping list.
@@ -64,10 +64,31 @@ The current MyDay lists Ideas only as a planned section (`ready: false`): it's n
 nothing. So nothing was migrated, and the new app doesn't show it either (`#ideas` opens Today). If saved data ever
 contains an `ideas` section, both apps keep it exactly as it is.
 
+### Finance (it replaced Pay)
+
+Finance shows only what's needed day to day: the pay month, shifts worked, gross pay with Income Tax, National
+Insurance and student loan, take-home, then **Left over** (take-home minus monthly expenses), **Monthly expenses**,
+**Money owed** (I owe / owed to me) and, folded away, **Rates**. Pay's other figures (scheduled hours, premiums, sick
+pay rules) and its settings card are gone from the screen; the rules behind them haven't changed (`src/data/pay.ts`).
+
+- **Your rates** (£13.85 an hour, overtime at the normal rate, bank holidays ×2, tax code 1241T, NI category A,
+  Plan 2, calendar months) are saved into the pay settings the first time Finance opens, replacing what was there
+  (`setYourRates` in `src/data/finance.ts`; `finance.ratesSetOn` makes sure it happens once). Change them under
+  "Rates": hourly rate, overtime, bank holidays, tax code, NI, student loan and the day a pay month starts.
+- **Saved data:** a new `finance` section in `myday.data.v4` (money owed and expenses), checked when loaded like every
+  other section (bad entries are counted and reported, unknown fields kept). The current MyDay doesn't show it, and
+  keeps it exactly as it is (checked by `tests/app-finance.test.js`). No change to the saved data's shape was needed
+  in the current MyDay: it keeps sections it doesn't know.
+- **The current MyDay** keeps its full Pay screen, using the same pay settings.
+- If the tax code is one MyDay can't work out (e.g. a K code), Finance shows "—" for Income Tax and take-home rather
+  than a figure without tax (the current MyDay leaves tax out instead).
+- Finance stays on each device for now (it isn't synced yet).
+
 ### Calendar and Pay: differences from the current MyDay
 
 - Same rules, records and calculations. The checks compare the two apps side by side with the same data: the
-  saved rota, pay settings and bank holidays, every calendar day, and every pay figure and note.
+  saved rota, pay settings and bank holidays, every calendar day, and Finance's gross pay, deductions and
+  take-home against the current MyDay's Pay.
 - The selected day's details sit beside the month on wide screens, and directly below it on phones (choosing a date
   moves focus there). Adding an appointment, overtime or an absence are three separate buttons; changing one date
   ("This date only") and changing the repeating pattern are separate, clearly named places.
@@ -171,6 +192,7 @@ contains an `ideas` section, both apps keep it exactly as it is.
 | `src/data/timer.ts`, `dates.ts`, `today.ts` | The focus timer, date helpers, and the wording for a day's plan. |
 | `src/data/rota.ts` | The shift rota: pattern versions, one-date changes, what happened, overtime/absence, overlaps, colours. |
 | `src/data/pay.ts` | Pay periods and the pay estimate: hours, rates, bank holidays, sick pay (SSP), tax, NI and student loans. |
+| `src/data/finance.ts` | Finance: a month's work pay (from `pay.ts`), your rates (set once), checking saved money-owed and expense entries, totals. |
 | `src/data/bankHolidays.ts`, `bankHolidayFetch.ts` | Bank holidays (checking, looking up a date) and loading them from gov.uk. |
 | `src/data/util.ts` | Small shared helpers (number checks, ids, copying). |
 | `src/data/food/` | Food's data and rules, ported from the current MyDay: `normalize.ts` (checking saved Food data), `words.ts` (ingredient words for preferences and shopping aisles), `quantities.ts` (reading and scaling quantities), `shopping.ts` (making and combining shopping items), `recipes.ts` (preferences, steps, timers, what's listed), `mealdb.ts` (TheMealDB requests, kept in memory for the visit). |
@@ -179,7 +201,7 @@ contains an `ideas` section, both apps keep it exactly as it is.
 | `src/components/` | Shared pieces with their styling in one place: `Button`, `Card`, `Banner`, `Field` (inputs, including ones saved as you type), `Dialog` (confirmations), `Toast`, `CategoryChip`, `EnergyMeter`, and `parts` (links, rows, chips and labels used by the section screens). |
 | `src/today/` | The Today section's cards and `TodayScreen`, which puts them together. |
 | `src/calendar/` | The Calendar: `CalendarScreen`, the month grid, agenda, selected-day panel, pattern editor and side cards. |
-| `src/pay/` | The Pay screen and its settings card. |
+| `src/finance/` | The Finance screen: `FinanceScreen` (with Left over), `WorkPayCard`, `ExpensesCard`, `OwedCard`, `RatesCard` (folded away), and `actions.ts` (what each button saves). |
 | `src/health/food/` | The Food screens: `FoodScreen` (picks the screen from the address, e.g. `#health/food/shopping`), `FoodHome`, `RecipeCard`, `SearchBox` (with suggestions), `SearchView`, `RecipeView`, `WantView`, `ShoppingView`, `CookView`, `PrefsView`, `RecipeForm`; `actions.ts` (what each button saves) and `visit.ts` (what's kept in memory for the visit: ideas, search results, suggestions, drafts). |
 | `src/health/` | The Health screens: `HealthScreen` (the Workout and Food tabs; picks the screen from the address, e.g. `#health/workout/schedule`), `WorkoutHome`, `TemplateEditor`, `SessionView` (a workout in progress, and correcting a logged one), `SetFields` (the number boxes for a set), `HistoryViews` (history, exercises, exercise history), `Chart`, `ScheduleView` and `HealthTodayCard`; `actions.ts` (what each button saves). |
 | `src/study/` | The Study screens: `StudyScreen` (picks the screen from the address, e.g. `#study/roadmap`), `Dashboard`, `Roadmap`, `CourseDetails`, `TaskDetails`, `SessionView`, `CheckinView`, `RevisionView`, `ConceptsView`, `ConceptView`, `ProgressView`, `StudySettings` and `StudyTodayCard`; `actions.ts` (what each button saves), `round.ts` (the revision round, kept in memory), `parts.tsx` (small shared pieces). |
@@ -229,7 +251,7 @@ is never downloaded.
 **What syncs (this first part):** the three task lists (one record each, in order), the queue (one record), each
 day's plan (one record per date) and each day's context, energy and sleep (one per date). These go together because
 building a day's plan picks tasks from the lists and moves tasks to and from the queue in the same step.
-**Stays on the device:** Calendar and Pay, Health (Workout and Food), Study, appointments, settings, the timer, and
+**Stays on the device:** Calendar and Finance, Health (Workout and Food), Study, appointments, settings, the timer, and
 anything else. Study's links to a learning task or a day's task are just references, and MyDay already copes when
 the item they point to isn't there.
 
@@ -263,7 +285,7 @@ profiles: 16/16, 3 Oct 2026). Not yet checked in Safari or on a real phone befor
 ## Milestones
 
 1. **Done:** project set-up, design, shell and navigation, themes, the shared storage layer, and a fully working Today.
-2. **Done:** Calendar and Pay.
+2. **Done:** Calendar and Pay (Pay became Finance after release 1.1.0).
 3. **Done:** Study, with its card on Today.
 4. **Done:** Workout (the first half of Health), with its card on Today.
 5. **Done:** Food (the rest of Health), with the cooking and shopping reminders on Today.

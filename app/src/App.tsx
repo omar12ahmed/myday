@@ -12,7 +12,7 @@ import { useMyDay } from './data/useMyDay';
 import { Nav } from './shell/Nav';
 import { sectionFromHash, type SectionId } from './shell/sections';
 import { CalendarScreen } from './calendar/CalendarScreen';
-import { PayScreen } from './pay/PayScreen';
+import { FinanceScreen } from './finance/FinanceScreen';
 import { StudyScreen } from './study/StudyScreen';
 import { HealthScreen } from './health/HealthScreen';
 import { AppFooter } from './shell/AppFooter';
@@ -133,7 +133,7 @@ function Shell() {
     content = <TodayScreen key={k} data={data} generation={generation} k={k} canSave={status.kind === 'ok'} motionAllowed={motionAllowed}
       onExport={exportData} onImport={() => fileInput.current?.click()} />;
   } else if (section === 'calendar') content = <CalendarScreen data={data} canSave={status.kind === 'ok'} motionAllowed={motionAllowed} />;
-  else if (section === 'pay') content = <PayScreen data={data} canSave={status.kind === 'ok'} />;
+  else if (section === 'finance') content = <FinanceScreen data={data} canSave={status.kind === 'ok'} />;
   else if (section === 'study') content = <StudyScreen data={data} hash={hash} />;
   else content = <HealthScreen data={data} hash={hash} />;
 

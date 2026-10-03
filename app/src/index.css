@@ -121,11 +121,13 @@
   body:has(.nav) .toast { bottom: calc(88px + env(safe-area-inset-bottom)); }
   @media (min-width: 64rem) {
     .nav {
-      top: 0; bottom: auto; left: 50%; right: auto; transform: translateX(-50%); height: 72px; align-items: center;
+      /* Beside the theme button (the header's content is 1120px wide with 24px sides; the button is 48px plus a gap),
+         so it never runs into a long date such as "Wednesday 30 September". */
+      top: 0; bottom: auto; left: auto; right: calc(max(24px, (100vw - 1120px) / 2 + 24px) + 64px); height: 72px; align-items: center;
       background: transparent; backdrop-filter: none; border: 0; padding: 0;
     }
-    .nav-item { display: flex; align-items: center; gap: 4px; min-height: 44px; padding: 4px 16px 4px 6px; font-size: 15px; max-width: none; }
-    .nav-icon { width: 34px; height: 30px; }
+    .nav-item { display: flex; align-items: center; gap: 2px; min-height: 44px; padding: 4px 12px 4px 4px; font-size: 15px; max-width: none; }
+    .nav-icon { width: 30px; height: 30px; }
     .nav-item[aria-current="page"] { background: var(--primary-container); color: var(--on-primary-container); }
     .nav-item[aria-current="page"] .nav-icon { background: transparent; }
     body:has(.nav) { padding-bottom: 0; }

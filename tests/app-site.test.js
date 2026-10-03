@@ -28,7 +28,7 @@ const finish = () => {
     await open(base + appPath + '#today'); await ev('localStorage.clear()'); await open(base + appPath + '#today');
     check(`${layout}: the new app loads at ${appPath || 'the main address'} (navigation and footer drawn)`, (await exists('#nav .nav-item')) && (await exists('#footer [data-action=export]')) && (await ev(`!!document.querySelector('script[type=module]')`)));
     check(`${layout}: its scripts, styles and fonts are found from the sub-folder (relative paths)`, (await ev(`[...document.querySelectorAll('script[src], link[rel=stylesheet]')].every(e => (e.src || e.href).startsWith(${JSON.stringify(base + appPath)}))`)) && (await ev(`document.fonts.ready.then(() => [...document.fonts].some(f => f.family.includes('Plus Jakarta') && f.status === 'loaded'))`)));
-    for (const h of ['calendar', 'pay', 'health/food', 'study/roadmap', 'health/workout/schedule']) {
+    for (const h of ['calendar', 'finance', 'health/food', 'study/roadmap', 'health/workout/schedule']) {
       await ev(`location.hash = '${h}'`); await sleep(250);
     }
     check(`${layout}: #addresses navigate without leaving the page (no server routes needed)`, (await ev('location.pathname')).endsWith('/myday/' + appPath) && (await exists('#schMode')));

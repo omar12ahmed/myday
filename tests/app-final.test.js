@@ -85,6 +85,7 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   s.settings.earliestTime = '07:30'; s.settings.motion = 'off'; s.celebratedOn = '2026-11-01';
   s.rota = ${JSON.stringify(ROTA)}; s.pay.hourlyRate = 15.5; s.pay.taxCode = '1257L'; s.bankHolidays.region = 'scotland';
   s.study = ${JSON.stringify(STUDY)}; s.health = { workout: ${JSON.stringify(WORKOUT)}, food: ${JSON.stringify(FOOD)}, futureHealthPart: { kept: true } };
+  s.finance = { ratesSetOn: '2026-10-01', debts: [{ id: 'd1', direction: 'owe', person: 'Sam', amount: 40, note: 'tickets', since: '2026-10-20' }], expenses: [{ id: 'e1', name: 'Rent', amount: 650 }] };
   s.ideas = { items: [{ id: 'i1', text: 'An idea saved by a future MyDay' }] }; s.futureSection = { notes: ['kept'] };`;
 
 (async () => {
@@ -94,7 +95,7 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   // ------------------------------------------------------------------
   console.log('\n[60] Shared controls on every section');
   await go('today'); await reset(); await go('today');
-  for (const sec of ['today', 'calendar', 'pay', 'health', 'study']) {
+  for (const sec of ['today', 'calendar', 'finance', 'health', 'study']) {
     await nav(sec);
     const ok = (await exists('#footer [data-action=export]')) && (await exists('#footer [data-action=import]')) && (await exists('#footer [data-action=edit]')) && (await exists('#footer [data-action=motion]')) && (await text('#footer .storage-note')) === 'Saved only in this browser.';
     check(`#${sec}: Edit task lists, Export, Import, Animations and the storage note are at the bottom`, ok);
@@ -119,7 +120,7 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   await click('#themeBtn'); await sleep(150); await click('#themeBtn'); await sleep(150); await click('#themeBtn'); await sleep(150); // saved once by the new app
   const B = await exportNow();
   fs.writeFileSync(S + '/representative.json', JSON.stringify(B));
-  const secs = ['lists', 'queue', 'days', 'nudge', 'settings', 'commitments', 'context', 'rota', 'pay', 'bankHolidays', 'health', 'study', 'ideas', 'futureSection'];
+  const secs = ['lists', 'queue', 'days', 'nudge', 'settings', 'commitments', 'context', 'rota', 'pay', 'bankHolidays', 'health', 'study', 'finance', 'ideas', 'futureSection'];
   check('the backup has every section, with its records', secs.every(k => k in B.data) && B.data.days['2026-11-01'].tasks.length === 1 && B.data.queue.length === 1 && B.data.commitments.length === 1 && B.data.rota.entries.length === 1 && B.data.study.reviews.length === 1 && B.data.health.workout.sessions.length === 1 && B.data.health.food.shopping.length === 2 && B.data.ideas.items.length === 1, secs.filter(k => !(k in B.data)));
   check('…including unknown parts (ideas, a future section, an unknown part of Health)', eq(B.data.ideas, { items: [{ id: 'i1', text: 'An idea saved by a future MyDay' }] }) && eq(B.data.futureSection, { notes: ['kept'] }) && eq(B.data.health.futureHealthPart, { kept: true }));
   await reset(); await go('today', 2026, 11, 2, 10);
@@ -131,11 +132,11 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   check('importing over existing data replaces it exactly (asked first)', noSaves(await D()) === noSaves(B.data));
   // Every section shows its records in the new app…
   await go('calendar', 2026, 11, 2, 10, 5); const calOk = (await text('#app')).includes('Day');
-  await go('pay', 2026, 11, 2, 10, 5); const payOk = (await ev(`document.getElementById('pay-hourlyRate').value`)) === '15.5';
+  await go('finance', 2026, 11, 2, 10, 5); const payOk = (await text('#rates summary')).includes('£15.50 an hour') && (await text('#owedCard')).includes('Sam') && (await text('#expensesCard')).includes('£650.00 a month');
   await go('study', 2026, 11, 2, 10, 5); const studyOk = (await text('#app')).includes('Pre-Security');
   await go('health/workout', 2026, 11, 2, 10, 5); const wOk = (await text('#app')).includes('Upper body');
   await go('health/food', 2026, 11, 2, 10, 5); const fOk = (await text('.next-card')).includes('Lentil soup');
-  check('…and every section shows them (Calendar, Pay, Study, Workout, Food)', calOk && payOk && studyOk && wOk && fOk, [calOk, payOk, studyOk, wOk, fOk]);
+  check('…and every section shows them (Calendar, Finance, Study, Workout, Food)', calOk && payOk && studyOk && wOk && fOk, [calOk, payOk, studyOk, wOk, fOk]);
   // …and the current MyDay opens the same saved data, saves it, and the new app reopens it.
   // (Opening Calendar and Pay may have added the bank holiday list from gov.uk, so compare with the data as it is now.)
   const beforeLive = await D();
@@ -213,13 +214,13 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   await go('today'); await reset(); await go('today');
   await editStorage(`s => { ${TODAY_PARTS} }`);
   await go('today', 2026, 11, 2, 9, 1);
-  for (const sec of ['calendar', 'pay', 'health', 'study', 'today']) {
+  for (const sec of ['calendar', 'finance', 'health', 'study', 'today']) {
     await click(`#nav a[href="#${sec}"]`); await sleep(250);
     check(`the navigation opens ${sec}, marked as the current page`, (await ev('location.hash')) === '#' + sec && (await text('#nav [aria-current=page]')).trim().toLowerCase() === sec);
   }
   await ev('history.back()'); await sleep(300);
   check('the browser\'s Back button returns to the previous section', (await ev('location.hash')) === '#study' && (await text('#nav [aria-current=page]')).trim() === 'Study');
-  const deep = { 'calendar': '.cal-grid', 'pay': '.pay-table', 'health/workout/schedule': '#schMode', 'health/food/shopping': '#shopAdd', 'health/food/cook': '#cookStep', 'study/roadmap': '[data-action=s-edit]', 'study/concepts': '[data-action=s-concept-new]', 'study/progress': '.week' };
+  const deep = { 'calendar': '.cal-grid', 'finance': '#workPay', 'health/workout/schedule': '#schMode', 'health/food/shopping': '#shopAdd', 'health/food/cook': '#cookStep', 'study/roadmap': '[data-action=s-edit]', 'study/concepts': '[data-action=s-concept-new]', 'study/progress': '.week' };
   for (const [h, sel] of Object.entries(deep)) {
     await go(h, 2026, 11, 2, 9, 2);
     check(`a link straight to #${h} opens it after a reload`, await exists(sel));
@@ -231,10 +232,10 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   await ev('document.activeElement && document.activeElement.blur(); window.scrollTo(0, 0)');
   const order = [];
   for (let i = 0; i < 7; i++) { await press('Tab'); order.push(await focused()); }
-  check('Tab reaches the theme button and then each section in the navigation', order[0] === 'themeBtn' && eq(order.slice(1, 6), ['#today', '#calendar', '#pay', '#health', '#study']), order);
+  check('Tab reaches the theme button and then each section in the navigation', order[0] === 'themeBtn' && eq(order.slice(1, 6), ['#today', '#calendar', '#finance', '#health', '#study']), order);
   check('…with a visible focus outline', (await ev(`getComputedStyle(document.activeElement).outlineStyle`)) !== 'none');
-  await ev(`document.querySelector('#nav a[href="#pay"]').focus()`); await press('Enter'); await sleep(250);
-  check('Enter on a navigation link opens that section', (await ev('location.hash')) === '#pay');
+  await ev(`document.querySelector('#nav a[href="#finance"]').focus()`); await press('Enter'); await sleep(250);
+  check('Enter on a navigation link opens that section', (await ev('location.hash')) === '#finance');
   await ev(`document.getElementById('themeBtn').focus()`); const th0 = (await D()).settings.theme; await press('Enter'); await sleep(150);
   check('the theme button works from the keyboard', (await D()).settings.theme !== th0);
   await nav('health/food/recipe/rOwn'); await ev(`document.querySelector('[data-action=h-cook-start]').focus()`); await press(' '); await sleep(300);
@@ -250,7 +251,7 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   // ------------------------------------------------------------------
   console.log('\n[67] Phone layout across every section');
   await send('Emulation.setDeviceMetricsOverride', { width: 360, height: 740, deviceScaleFactor: 2, mobile: true });
-  const routes = ['today', 'calendar', 'pay', 'health/workout', 'health/workout/schedule', 'health/food', 'health/food/recipe/rOwn', 'health/food/shopping', 'health/food/cook', 'study', 'study/roadmap', 'study/progress'];
+  const routes = ['today', 'calendar', 'finance', 'health/workout', 'health/workout/schedule', 'health/food', 'health/food/recipe/rOwn', 'health/food/shopping', 'health/food/cook', 'study', 'study/roadmap', 'study/progress'];
   const tooWide = [], tooSmall = [];
   for (const r of routes) {
     await go(r, 2026, 11, 2, 15);
@@ -267,7 +268,7 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   for (const theme of ['light', 'auto', 'dark']) {
     await editStorage(`s => { s.settings.theme = '${theme}'; }`);
     const bad = [];
-    for (const r of ['today', 'calendar', 'pay', 'health/workout', 'health/food', 'study']) {
+    for (const r of ['today', 'calendar', 'finance', 'health/workout', 'health/food', 'study']) {
       await go(r, 2026, 11, 2, 15);
       const ok = (await ev('document.documentElement.dataset.theme')) === theme && (await contrastOf('#app h2')) >= 4.5 && (await contrastOf('#footer [data-action=export]')) >= 4.5;
       if (!ok) bad.push(r);
@@ -284,15 +285,15 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   await go('today', 2026, 11, 2, 16);
   await setVal('#energy', '2'); await sleep(150); // saved when you let go of the slider
   await nav('calendar'); await setVal('#bhRegion', 'northern-ireland'); await sleep(150);
-  await nav('pay'); await setVal('#pay-hourlyRate', '16.25'); await sleep(150);
+  await nav('finance'); await setVal('#rate-hourly', '16.25'); await sleep(150);
   await nav('health/workout/schedule'); await setVal('#schMode', 'sequence'); await sleep(150);
   await nav('health/food/prefs'); await setVal('#prefDis', 'olives, coriander'); await sleep(150);
   await nav('study/settings'); await setVal('#stVault', 'My Vault'); await sleep(150);
   await go('today', 2026, 11, 2, 16, 10);
   const s9 = await D();
-  check('Today (energy), Calendar (bank holiday region), Pay (rate), Workout (schedule), Food (preferences) and Study (vault) all kept', s9.context['2026-11-02'].energy === 2 && s9.bankHolidays.region === 'northern-ireland' && s9.pay.hourlyRate === 16.25 && s9.health.workout.schedule.mode === 'sequence' && eq(s9.health.food.prefs.dislikes, ['olives', 'coriander']) && s9.study.settings.vault === 'My Vault',
+  check('Today (energy), Calendar (bank holiday region), Finance (rate), Workout (schedule), Food (preferences) and Study (vault) all kept', s9.context['2026-11-02'].energy === 2 && s9.bankHolidays.region === 'northern-ireland' && s9.pay.hourlyRate === 16.25 && s9.health.workout.schedule.mode === 'sequence' && eq(s9.health.food.prefs.dislikes, ['olives', 'coriander']) && s9.study.settings.vault === 'My Vault',
     [s9.context['2026-11-02'] && s9.context['2026-11-02'].energy, s9.bankHolidays.region, s9.pay.hourlyRate, s9.health.workout.schedule.mode, s9.health.food.prefs.dislikes, s9.study.settings.vault]);
-  await nav('pay'); const payShown = await ev(`document.getElementById('pay-hourlyRate').value`);
+  await nav('finance'); const payShown = await ev(`document.getElementById('rate-hourly').value`);
   await nav('study/settings'); const vaultShown = await ev(`document.getElementById('stVault').value`);
   check('…and shown on their screens', payShown === '16.25' && vaultShown === 'My Vault');
 
@@ -300,7 +301,7 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   console.log('\n[70] Data saved by the previously published release');
   const PREV = 'prev.html';
   await go('today', 2026, 11, 2, 9, 0, PREV); await reset(); await go('today', 2026, 11, 2, 9, 0, PREV);
-  await editStorage(`s => { ${TODAY_PARTS} delete s.study; delete s.ideas; delete s.futureSection; delete s.health.futureHealthPart; }`);
+  await editStorage(`s => { ${TODAY_PARTS} delete s.study; delete s.finance; delete s.ideas; delete s.futureSection; delete s.health.futureHealthPart; }`);
   await go('today', 2026, 11, 2, 9, 1, PREV);
   for (let i = 0; i < 3; i++) { await click('#themeBtn'); await sleep(250); } // saved in that release's own way
   const P = await D();
@@ -309,16 +310,21 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   check('the new app opens it with nothing unreadable (no notice)', !(await exists('.load-issue')) && (await exists('#energy')));
   await go('health/food', 2026, 11, 2, 9, 3); const pf = (await text('.next-card')).includes('Lentil soup');
   await go('health/workout', 2026, 11, 2, 9, 3); const pw = (await text('#app')).includes('Upper body');
-  await go('pay', 2026, 11, 2, 9, 3); const pp = (await ev(`document.getElementById('pay-hourlyRate').value`)) === '15.5';
+  await go('finance', 2026, 11, 2, 9, 3); const pp = (await text('#rates summary')).includes('£13.85 an hour') && (await D()).pay.hourlyRate === 13.85; // first visit to Finance: your rates are saved
   await go('study', 2026, 11, 2, 9, 3); const ps = (await exists('.st-setup-row')) || (await text('#app')).includes('Set up your study roadmap');
-  check('…and shows its records (Food, Workout, Pay); Study starts at set-up, as that release had no Study', pf && pw && pp && ps, [pf, pw, pp, ps]);
+  check('…and shows its records (Food, Workout); Finance saves your rates on its first visit; Study starts at set-up, as that release had no Study', pf && pw && pp && ps, [pf, pw, pp, ps]);
   await go('today', 2026, 11, 2, 9, 4);
   for (let i = 0; i < 3; i++) { await click('#themeBtn'); await sleep(250); }
   const N = await D();
   // (Opening Pay may have added the bank holiday list from gov.uk; that downloaded copy isn't a record of yours.)
   const without = (o, keys) => { const c = JSON.parse(noSaves(o)); for (const k of keys) delete c[k]; delete c.bankHolidays.divisions; delete c.bankHolidays.fetchedAt; return canon(c); };
   const d70 = (a, b, path = '') => { if (JSON.stringify(a) === JSON.stringify(b)) return []; if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return [path]; return [...new Set(Object.keys(a).concat(Object.keys(b)))].flatMap(k => d70(a[k], b[k], path + '.' + k)); };
-  check('the new app saves every record exactly as that release had it (it only adds an empty Study)', without(N, ['study']) === without(P, ['study']) && N.study.stages.length === 0, d70(JSON.parse(without(N, ['study'])), JSON.parse(without(P, ['study']))).slice(0, 6));
+  // Opening Finance the first time saved your rates into the pay settings; everything else must be exactly as that release saved it.
+  const RATES = ['hourlyRate', 'overtimeMultiplier', 'bankHolidayMultiplier', 'nightMultiplier', 'taxCode', 'niCategory', 'studentLoans', 'frequency', 'periodAnchor', 'annualLeavePaid', 'cancelledPaid', 'sickPay'];
+  const payRest = o => { const c = { ...o.pay }; for (const k of RATES) delete c[k]; return JSON.stringify(c); };
+  check('the new app saves every record exactly as that release had it (it adds an empty Study and Finance; Finance\'s first visit saves your rates)',
+    without(N, ['study', 'finance', 'pay']) === without(P, ['study', 'finance', 'pay']) && payRest(N) === payRest(P) && N.pay.taxCode === '1241T' && N.study.stages.length === 0 && N.finance.debts.length === 0 && N.finance.ratesSetOn === '2026-11-02',
+    d70(JSON.parse(without(N, ['study', 'finance', 'pay'])), JSON.parse(without(P, ['study', 'finance', 'pay']))).slice(0, 6));
   await go('health/workout', 2026, 11, 2, 9, 5, PREV);
   check('going back: the previous release still opens what the new app saved', (await text('#app')).includes('Upper body'));
   await editStorage(`s => { s.study = { stages: [{ id: 'sg1', title: 'Foundations', courses: [] }] }; }`);

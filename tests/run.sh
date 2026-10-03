@@ -5,7 +5,7 @@
 # Usage:  tests/run.sh                 run every suite
 #         tests/run.sh storage today   run only the suites named
 # Suites for the current MyDay (index.html): storage, today, calendar-pay, health, study
-# Suites for the new app (app/, built first): app-storage, app-today, app-calendar-pay, app-study, app-workout, app-food,
+# Suites for the new app (app/, built first): app-storage, app-today, app-calendar-pay, app-finance, app-study, app-workout, app-food,
 #   app-final (every section together), app-site (the website layouts from deploy/build-site.sh)
 # Cloud sync: sync-db (the database migrations, in PostgreSQL via PGlite — no browser), app-sync (two devices end to
 #   end, against a local stand-in for Supabase; see supabase-standin.js). Neither uses a real Supabase project.
@@ -14,7 +14,7 @@ set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(dirname "$HERE")"
 SUITES=("$@")
-[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study app-storage app-today app-calendar-pay app-study app-workout app-food app-final app-site sync-db app-sync)
+[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study app-storage app-today app-calendar-pay app-finance app-study app-workout app-food app-final app-site sync-db app-sync)
 
 # ---- What's needed ----
 CHROME="${CHROME:-}"

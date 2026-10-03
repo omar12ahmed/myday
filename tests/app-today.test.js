@@ -554,7 +554,7 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
 
   console.log('\n[20] Every section is in the new app');
   const navLabels = await ev(`[...document.querySelectorAll('#nav a')].map(a => a.getAttribute('aria-label'))`);
-  check('the navigation keeps all five sections, none marked "not in the new app yet"', eq(navLabels, ['Today', 'Calendar', 'Pay', 'Health', 'Study']), navLabels);
+  check('the navigation keeps all five sections, none marked "not in the new app yet"', eq(navLabels, ['Today', 'Calendar', 'Finance', 'Health', 'Study']), navLabels);
   await ev(`location.hash = '#health/food'`); await sleep(200);
   check('#health/food opens Food in the new app (search box, recipe ideas)', (await exists('#foodQ')) && (await text('#app')).includes('Ideas for you'));
   await ev(`location.hash = '#today'`); await sleep(200);

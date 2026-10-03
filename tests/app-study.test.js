@@ -93,7 +93,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   await editStorage(`s => { s.lists.admin.push({ id: 'a9', title: 'Post office', minutes: 15 }); delete s.study; }`);
   const before = await D();
   await go('study');
-  check('navigation shows Study as moved to the new app (no "not in the new app yet")', eq(await texts('#nav .nav-item'), ['Today', 'Calendar', 'Pay', 'Health', 'Study']) && (await text('#nav [aria-current=page]')).trim() === 'Study' && (await ev(`document.querySelector('#nav a[href="#study"]').getAttribute('aria-label')`)) === 'Study');
+  check('navigation shows Study as moved to the new app (no "not in the new app yet")', eq(await texts('#nav .nav-item'), ['Today', 'Calendar', 'Finance', 'Health', 'Study']) && (await text('#nav [aria-current=page]')).trim() === 'Study' && (await ev(`document.querySelector('#nav a[href="#study"]').getAttribute('aria-label')`)) === 'Study');
   const rows = await texts('.st-setup-row .check span');
   check('setup proposes your learning-list items as courses (suffix like "— one section" dropped)', eq(rows, ['TryHackMe: Pre-Security path', 'OverTheWire Bandit', 'HTB Academy: Networking module', 'HTB Academy: Web Requests module']), rows);
   const guesses = await ev(`[...document.querySelectorAll('select[data-s=setup-stage]')].map(s => s.value)`);
