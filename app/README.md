@@ -13,9 +13,10 @@ to go back: [`../deploy/README.md`](../deploy/README.md).
 > example with Live Server). A change made in one shows in the other. To try things out, use disposable data or
 > a backup, not your real plan.
 
-**Optional cloud sync (first part, on the `cloud-sync` branch):** task lists, the queue, daily plans and each day's
-context can sync between devices through your own Supabase project. It's off unless the app is built with a Supabase
-URL and publishable key. Setting it up: [`../supabase/README.md`](../supabase/README.md). How it works: "Cloud sync" below.
+**Cloud sync (from release 1.1.0):** task lists, the queue, daily plans and each day's context can sync between
+devices through your own Supabase project. It's off unless the app is built with a Supabase URL and publishable key;
+the published build has them (`app/.env.production`). Setting it up: [`../supabase/README.md`](../supabase/README.md).
+How it works: "Cloud sync" below.
 
 ## Commands
 
@@ -255,8 +256,9 @@ the item they point to isn't there.
 **Limitations:** a list (or the queue) changed on two devices before they sync is a conflict, even if different tasks
 changed. No live updates: the other device's changes arrive when you come back to MyDay, every 5 minutes while
 it's open, or with "Sync now". Changes made in the classic MyDay are sent the next time the new app is open.
-Checked against a local stand-in for Supabase (the real migrations in PostgreSQL), **not yet against a real Supabase
-project** until one is set up (`node tests/sync-live-check.js` then checks it with two disposable accounts).
+Checked against a local stand-in for Supabase (the real migrations in PostgreSQL, `tests/run.sh sync-db app-sync`), and
+against the real project with two disposable test accounts (`tests/sync-live-check.js`: 21/21; the app on two browser
+profiles: 16/16, 3 Oct 2026). Not yet checked in Safari or on a real phone before release 1.1.0.
 
 ## Milestones
 
@@ -271,6 +273,6 @@ project** until one is set up (`node tests/sync-live-check.js` then checks it wi
 7. **Release 1.0.0:** published with GitHub Pages — the new app at the main address, the classic MyDay kept at
    `/myday/classic/`. The release identifier ("MyDay 1.0.0 · commit · build date") is at the bottom of every screen.
    See [`../deploy/README.md`](../deploy/README.md).
-8. **Cloud sync, first part (on the `cloud-sync` branch, not published):** sign-in, and syncing task lists, the
-   queue, daily plans and day context through Supabase, with reviews, conflicts and deletions handled. Checked with
-   a local stand-in; to be checked against a real Supabase project once it's set up.
+8. **Cloud sync, first part — release 1.1.0:** sign-in, and syncing task lists, the queue, daily plans and day
+   context through Supabase, with reviews, conflicts and deletions handled. Checked with a local stand-in and against
+   the real project with disposable test accounts.
