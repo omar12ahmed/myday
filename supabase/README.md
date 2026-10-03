@@ -208,7 +208,8 @@ suggestion changes today's plan, which then syncs to your other devices like any
    npx supabase functions deploy ai-plan --use-api --project-ref nkslcgnbmxuhznvldfnz
    ```
    This keeps Supabase's platform check (`verify_jwt`) **on**. The function then checks the caller itself — see "Who
-   can use it" below. Don't add `--no-verify-jwt`.
+   can use it" below. Don't add `--no-verify-jwt`. Before deploying, its entry has been run under Deno with mocked
+   requests (`tests/run.sh ai-deno`) — plain Deno, not Supabase's own runtime, which is built on it.
 4. **On your computer only**: `VITE_AI=edge` in `app/.env.development.local`, then `npm run dev` in `app/`, open
    http://localhost:5173, sign in (sync on), and use "Help me adjust today" on Today. `VITE_AI=mock` goes back to
    practice mode (no AI, nothing sent) at any time.

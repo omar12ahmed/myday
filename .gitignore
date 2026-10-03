@@ -18,3 +18,7 @@ supabase/**/.env.*
 supabase/**/*.secret.env
 # A disposable PostgreSQL for tests/ai-concurrency.test.js (see that file)
 tests/.pgtools/
+# Deno for tests/ai-deno.test.js (see that file)
+tests/.denotools/
+# The Supabase CLI's own cache (project ref, versions)
+supabase/.temp/

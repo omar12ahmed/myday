@@ -227,6 +227,15 @@ function start(db, port = 0) {
           const r = await as(db, who, q => q('select * from public.sync_pull(account => $1::uuid, since => $2::bigint, max_rows => $3::integer)', [body.account ?? null, body.since ?? 0, body.max_rows ?? 500]));
           return reply(200, r.rows.map(x => ({ ...x, seq: Number(x.seq) })));
         }
+        // The AI limits, as the Edge Function's entry (index.ts) calls them through supabase-js: named arguments.
+        if (rpc[1] === 'ai_begin') {
+          const r = await as(db, who, q => q('select public.ai_begin(per_day => $1::integer, monthly_usd => $2::numeric, reserve_usd => $3::numeric, min_seconds => $4::integer) as r', [body.per_day ?? null, body.monthly_usd ?? null, body.reserve_usd ?? null, body.min_seconds ?? null]));
+          return reply(200, r.rows[0].r);
+        }
+        if (rpc[1] === 'ai_finish') {
+          await as(db, who, q => q('select public.ai_finish(input_tokens => $1::integer, output_tokens => $2::integer)', [body.input_tokens ?? null, body.output_tokens ?? null]));
+          return reply(204);
+        }
         return reply(404, { code: 'PGRST202', message: `Could not find the function public.${rpc[1]}` });
       } catch (e) { entry.status = 'error'; return pgError(res, e, who); }
     }

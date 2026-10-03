@@ -12,7 +12,8 @@
 # AI planner: ai-rules (the rules, on the app's own code — no browser), ai-server (the Edge Function and its limits),
 #   app-ai (in the browser: practice mode, and an account against the stand-in). No real model is called.
 #   Opt-in (not run by default): ai-concurrency — the AI limits under simultaneous requests, in a real PostgreSQL
-#   (needs one; see the top of tests/ai-concurrency.test.js).
+#   (needs one; see the top of tests/ai-concurrency.test.js); ai-deno — the Edge Function's real entry (index.ts)
+#   under Deno with mocked requests (needs Deno; see the top of tests/ai-deno.test.js).
 set -u
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
