@@ -201,6 +201,8 @@ pay rules) and its settings card are gone from the screen; the rules behind them
 | `src/components/` | Shared pieces with their styling in one place: `Button`, `Card`, `Banner`, `Field` (inputs, including ones saved as you type), `Dialog` (confirmations), `Toast`, `CategoryChip`, `EnergyMeter`, and `parts` (links, rows, chips and labels used by the section screens). |
 | `src/today/` | The Today section's cards and `TodayScreen`, which puts them together. |
 | `src/calendar/` | The Calendar: `CalendarScreen`, the month grid, agenda, selected-day panel, pattern editor and side cards. |
+| `src/ai/` | "Help me adjust today": `context.ts` (what's sent), `validate.ts` (the rules), `apply.ts` (saving, stale check, undo), `request.ts` (the Edge Function or practice mode) and `AdjustCard.tsx` (the card on Today). |
+| `../ai-eval/` | The evaluation of AI models on 20 synthetic days (see its README). |
 | `src/finance/` | The Finance screen: `FinanceScreen` (with Left over), `WorkPayCard`, `ExpensesCard`, `OwedCard`, `RatesCard` (folded away), and `actions.ts` (what each button saves). |
 | `src/health/food/` | The Food screens: `FoodScreen` (picks the screen from the address, e.g. `#health/food/shopping`), `FoodHome`, `RecipeCard`, `SearchBox` (with suggestions), `SearchView`, `RecipeView`, `WantView`, `ShoppingView`, `CookView`, `PrefsView`, `RecipeForm`; `actions.ts` (what each button saves) and `visit.ts` (what's kept in memory for the visit: ideas, search results, suggestions, drafts). |
 | `src/health/` | The Health screens: `HealthScreen` (the Workout and Food tabs; picks the screen from the address, e.g. `#health/workout/schedule`), `WorkoutHome`, `TemplateEditor`, `SessionView` (a workout in progress, and correcting a logged one), `SetFields` (the number boxes for a set), `HistoryViews` (history, exercises, exercise history), `Chart`, `ScheduleView` and `HealthTodayCard`; `actions.ts` (what each button saves). |
@@ -281,6 +283,28 @@ it's open, or with "Sync now". Changes made in the classic MyDay are sent the ne
 Checked against a local stand-in for Supabase (the real migrations in PostgreSQL, `tests/run.sh sync-db app-sync`), and
 against the real project with two disposable test accounts (`tests/sync-live-check.js`: 21/21; the app on two browser
 profiles: 16/16, 3 Oct 2026). Not yet checked in Safari or on a real phone before release 1.1.0.
+
+## AI help: "Help me adjust today" (prototype)
+
+Off unless the app is built with `VITE_AI` (`mock` = practice mode, rules not AI, nothing sent; `edge` = the
+`ai-plan` Supabase Edge Function, for signed-in accounts). Set-up: [`../supabase/README.md`](../supabase/README.md),
+"AI planning prototype". Evaluation: [`../ai-eval/README.md`](../ai-eval/README.md).
+
+- A secondary button on Today's plan opens a card: an optional short note, then **one** request.
+- `src/ai/context.ts` gathers what's sent, with MyDay's own rules (the energy limit counting what's done, the
+  calendar's busy blocks and free time — overnight shifts and clock changes included). Appointment names, Finance,
+  Health records and Study notes are not sent.
+- `src/ai/validate.ts` checks every reply before you see it: only today's open tasks by id, energy 1–2 (or not
+  recorded) one small task (≤ 20 min), 3 two, 4–5 three (minus what's done), never longer than the task's usual
+  length, times only inside free time, rest always allowed, missing information named (energy, sleep), short and
+  gentle wording (pushy or guilt-tripping explanations are replaced). Anything else is dropped or reduced to fit,
+  and listed under "Adjusted to fit MyDay's rules".
+- `src/ai/apply.ts` saves only after **Use this plan**, through "Review my plan"'s save path: only today's copy of
+  each task changes (minutes and time); task lists, other days, finished tasks and the energy rating never change;
+  tasks left out wait in the queue. A suggestion made before the plan, energy, sleep, shifts, appointments or settings
+  changed is refused. One step of **Undo** right after (until the plan changes, or you leave).
+- `src/ai/request.ts` talks only to the Edge Function (or the practice planner). The app never holds an AI key.
+- No saved-data changes: suggestions live in memory; the server keeps only counts (requests, tokens, budget).
 
 ## Milestones
 

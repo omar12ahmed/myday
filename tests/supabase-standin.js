@@ -15,6 +15,10 @@
 //
 // Test controls (not part of Supabase), under /__standin/:
 //   POST users {email, password} → {id}      POST fault {path, mode: 'drop' | 'error' | 'delay', times, ms}
+//   POST ai-env {NAME: value…}               settings for the AI Edge Function (e.g. AI_MODEL: 'mock:sloppy'); GET ai-log
+//
+// The AI planner's Edge Function (POST /functions/v1/ai-plan) runs its real code (supabase/functions/ai-plan/handler.ts)
+// with the stand-in's sign-in check, the real limit functions in the database, and a mock model by default.
 //   GET log, POST log/clear                  POST sql {sql, params} (runs as the database owner)
 //
 // Usage from a test:  const S = require('./supabase-standin.js'); const db = await S.createDb(); const srv = await S.start(db, port);
@@ -97,6 +101,10 @@ const userJson = u => ({ id: u.id, aud: 'authenticated', role: 'authenticated', 
 function start(db, port = 0) {
   const log = [];
   const faults = [];
+  // The AI Edge Function's settings (its "secrets"): a mock model, generous limits.
+  const aiEnv = { AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_LABEL: 'Mock planner', AI_MOCK_DELAY_MS: '150', AI_DAILY_LIMIT: '50', AI_MIN_SECONDS_BETWEEN: '0', AI_ALLOWED_ORIGINS: 'http://127.0.0.1:' + (process.env.MYDAY_HTTP_PORT || 8765) };
+  const aiLog = [];
+  let aiHandler = null;
   const server = http.createServer((req, res) => {
     let raw = '';
     req.on('data', c => { raw += c; });
@@ -140,6 +148,8 @@ function start(db, port = 0) {
       if (what === 'log') return send(res, 200, log);
       if (what === 'log/clear') { log.length = 0; return send(res, 200, { ok: true }); }
       if (what === 'sql') { try { return send(res, 200, (await owner(db, body.sql, body.params || [])).rows); } catch (e) { return send(res, 400, { message: e.message }); } }
+      if (what === 'ai-env') { Object.assign(aiEnv, body); for (const k of Object.keys(body)) if (body[k] === null) delete aiEnv[k]; return send(res, 200, aiEnv); }
+      if (what === 'ai-log') return send(res, 200, aiLog);
       return send(res, 404, { message: 'Unknown control' });
     }
 
@@ -183,6 +193,26 @@ function start(db, port = 0) {
     }
     if (p === '/auth/v1/logout') return reply(204);
 
+    // ----- The AI Edge Function (real handler code) -----
+    if (p === '/functions/v1/ai-plan') {
+      if (!aiHandler) aiHandler = (await import(path.join(ROOT, 'supabase/functions/ai-plan/handler.ts'))).handle;
+      const headers = new Headers();
+      for (const [k, v] of Object.entries(req.headers)) if (typeof v === 'string') headers.set(k, v);
+      const request = new Request('http://standin' + req.url, { method: req.method, headers, body: req.method === 'POST' ? raw : undefined });
+      const response = await aiHandler(request, {
+        env: name => aiEnv[name],
+        verifyUser: async token => { const c = verify(token); return c && !c.expired ? c.sub : null; },
+        begin: async (token, l) => { const c = verify(token); const r = await as(db, c.sub, q => q('select public.ai_begin($1, $2, $3, $4) as r', [l.perDay, l.monthlyUsd, l.reserveUsd, l.minSeconds])); return r.rows[0].r; },
+        finish: async (token, i, o) => { const c = verify(token); await as(db, c.sub, q => q('select public.ai_finish($1, $2)', [i, o])); },
+        log: line => aiLog.push(line),
+      });
+      entry.status = response.status;
+      if (fault && fault.mode === 'drop') { res.destroy(); return; }
+      const out = {}; response.headers.forEach((v, k) => { out[k] = v; });
+      res.writeHead(response.status, out);
+      return res.end(await response.text());
+    }
+
     // ----- Data -----
     if (claims && claims.expired) return reply(401, { code: 'PGRST303', message: 'JWT expired' });
     if (bearer && bearer !== PUBLISHABLE_KEY && !claims) return reply(401, { code: 'PGRST301', message: 'Invalid JWT' });
@@ -223,7 +253,7 @@ function start(db, port = 0) {
     return reply(404, { message: 'Not found' });
   }
 
-  return new Promise(resolve => server.listen(port, '127.0.0.1', () => resolve({ server, port: server.address().port, log, faults, close: () => new Promise(r => server.close(r)) })));
+  return new Promise(resolve => server.listen(port, '127.0.0.1', () => resolve({ server, port: server.address().port, log, faults, aiEnv, aiLog, close: () => new Promise(r => server.close(r)) })));
 }
 
 module.exports = { createDb, start, as, owner, addUser, PUBLISHABLE_KEY };

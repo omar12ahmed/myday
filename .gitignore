@@ -5,3 +5,14 @@ myday-export-*.json
 myday-saved-copy-*.json
 myday-unreadable-*.json
 *backup*.json
+
+# AI evaluation: build output, results and local keys
+ai-eval/.build/
+ai-eval/results/
+ai-eval/.env.local
+
+# Supabase secrets: never in Git (the committed template is supabase/ai-secrets.example.env)
+supabase/.ai-secrets.env
+supabase/**/.env
+supabase/**/.env.*
+supabase/**/*.secret.env

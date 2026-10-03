@@ -1,4 +1,4 @@
-import { Check, Moon, Sparkles } from 'lucide-react';
+import { Check, Moon, Sparkles, WandSparkles } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { EnergyMeter } from '../components/EnergyMeter';
@@ -42,10 +42,11 @@ export function DayTasks({ data, k, d, mode, justDoneUid, onToggle, onTimer, onR
   );
 }
 
-export function PlanCard({ data, k, justDoneUid, onToggle, onTimer, onEvening, onReview, onSwapRest, onRestart }: {
+export function PlanCard({ data, k, justDoneUid, onToggle, onTimer, onEvening, onReview, onSwapRest, onRestart, onAdjust }: {
   data: MyDayData; k: string; justDoneUid: string | null;
   onToggle: (t: Task, done: boolean) => void; onTimer: (t: Task, kind: 'start' | 'focus') => void;
   onEvening: () => void; onReview: () => void; onSwapRest: () => void; onRestart: () => void;
+  onAdjust?: () => void; // "Help me adjust today" (only when AI help is set up)
 }) {
   const d = data.days[k];
   const progress = progressNote(d);
@@ -69,6 +70,7 @@ export function PlanCard({ data, k, justDoneUid, onToggle, onTimer, onEvening, o
         : d.tasks.length ? <DayTasks data={data} k={k} d={d} mode="plan" justDoneUid={justDoneUid} onToggle={onToggle} onTimer={onTimer} />
         : <p className="text-[15px] text-fg-2 mt-3">Nothing on today's list — everything is waiting in your queue.</p>}
       {!d.rest && <Button variant="primary" className="mt-5" data-action="evening" onClick={onEvening}>Evening check-in</Button>}
+      {onAdjust && <Button inline className="w-full mt-2.5" data-action="ai-open" onClick={onAdjust}><WandSparkles size={18} aria-hidden="true" /> Help me adjust today</Button>}
       <div className="grid grid-cols-2 gap-2.5 mt-2.5">
         {!d.rest && <Button inline variant="ghost" className="w-full" data-action="review" onClick={onReview}>Review my plan</Button>}
         {!d.rest && !anyDone && <Button inline variant="ghost" className="w-full" data-action="swap-rest" onClick={onSwapRest}>Swap for a rest day</Button>}

@@ -39,6 +39,8 @@ export default defineConfig(({ mode }) => {
     plugins: [react(), tailwindcss()],
     // Relative paths, so the built app works from any folder of the site (e.g. /myday/next/).
     base: './',
+    // The AI planner's contract and practice planner are shared with the Edge Function (../supabase/functions/_shared).
+    server: { fs: { allow: ['..'] } },
     define: {
       __APP_VERSION__: JSON.stringify(version),
       __APP_COMMIT__: JSON.stringify(commit + (changed ? '+changes' : '')),

@@ -9,12 +9,14 @@
 #   app-final (every section together), app-site (the website layouts from deploy/build-site.sh)
 # Cloud sync: sync-db (the database migrations, in PostgreSQL via PGlite — no browser), app-sync (two devices end to
 #   end, against a local stand-in for Supabase; see supabase-standin.js). Neither uses a real Supabase project.
+# AI planner: ai-rules (the rules, on the app's own code — no browser), ai-server (the Edge Function and its limits),
+#   app-ai (in the browser: practice mode, and an account against the stand-in). No real model is called.
 set -u
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(dirname "$HERE")"
 SUITES=("$@")
-[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study app-storage app-today app-calendar-pay app-finance app-study app-workout app-food app-final app-site sync-db app-sync)
+[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study app-storage app-today app-calendar-pay app-finance app-study app-workout app-food app-final app-site sync-db app-sync ai-rules ai-server app-ai)
 
 # ---- What's needed ----
 CHROME="${CHROME:-}"
@@ -41,13 +43,17 @@ if printf '%s\n' "${SUITES[@]}" | grep -q '^app-'; then
   [ -d "$ROOT/app/node_modules" ] || { echo "The new app's packages aren't installed yet. Run: cd app && npm install"; exit 2; }
   # Built without cloud sync, even if app/.env.production sets it up for publishing (settings already in the
   # environment win over .env files), so these suites always check MyDay as it works without sync.
-  (cd "$ROOT/app" && VITE_SUPABASE_URL= VITE_SUPABASE_PUBLISHABLE_KEY= npm run build >"$WORK/app-build.log" 2>&1) || { echo "The new app didn't build:"; tail -20 "$WORK/app-build.log"; exit 1; }
+  (cd "$ROOT/app" && VITE_SUPABASE_URL= VITE_SUPABASE_PUBLISHABLE_KEY= VITE_AI= npm run build >"$WORK/app-build.log" 2>&1) || { echo "The new app didn't build:"; tail -20 "$WORK/app-build.log"; exit 1; }
   mkdir -p "$WORK/srv/app" && cp -R "$ROOT/app/dist" "$WORK/srv/app/dist"
 fi
-# A copy of the new app with cloud sync switched on, pointing at the local Supabase stand-in (app-sync).
-if printf '%s\n' "${SUITES[@]}" | grep -q '^app-sync$'; then
-  (cd "$ROOT/app" && VITE_SUPABASE_URL="http://127.0.0.1:$MYDAY_SUPA_PORT" VITE_SUPABASE_PUBLISHABLE_KEY="sb_publishable_standin_test_key_0000000000" \
+# A copy of the new app with cloud sync and AI help switched on, pointing at the local Supabase stand-in (app-sync, app-ai).
+if printf '%s\n' "${SUITES[@]}" | grep -qE '^app-(sync|ai)$'; then
+  (cd "$ROOT/app" && VITE_SUPABASE_URL="http://127.0.0.1:$MYDAY_SUPA_PORT" VITE_SUPABASE_PUBLISHABLE_KEY="sb_publishable_standin_test_key_0000000000" VITE_AI=edge \
     npx vite build --outDir "$WORK/srv/sync" --emptyOutDir >"$WORK/sync-build.log" 2>&1) || { echo "The sync test copy of the app didn't build:"; tail -20 "$WORK/sync-build.log"; exit 1; }
+fi
+# A copy in AI practice mode (rules instead of AI, no account), for app-ai.
+if printf '%s\n' "${SUITES[@]}" | grep -q '^app-ai$'; then
+  (cd "$ROOT/app" && VITE_SUPABASE_URL= VITE_SUPABASE_PUBLISHABLE_KEY= VITE_AI=mock npx vite build --outDir "$WORK/srv/aimock" --emptyOutDir >"$WORK/aimock-build.log" 2>&1) || { echo "The AI practice copy of the app didn't build:"; tail -20 "$WORK/aimock-build.log"; exit 1; }
 fi
 # The website layouts, built as GitHub Pages will publish them, under a sub-folder like /myday/.
 if printf '%s\n' "${SUITES[@]}" | grep -q '^app-site$'; then

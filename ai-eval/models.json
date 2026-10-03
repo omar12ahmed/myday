@@ -1,0 +1,83 @@
+{
+  "_read_me": [
+    "Models for the evaluation. Model ids, addresses, request settings and list prices were checked against the providers'",
+    "official documentation on 3 Oct 2026 (sources below). Prices are US$ per million tokens, for MyDay's short prompts",
+    "(the lowest tier) and for the region stated: which configuration applies depends on YOUR account — its region,",
+    "workspace and key. Keys are never stored here: keyEnv names the environment variable holding each key, and urlVars",
+    "the ones that fill in the address (e.g. your Alibaba Cloud workspace id). Prices change; check them before big runs."
+  ],
+  "_sources": {
+    "alibaba_prices": "https://www.alibabacloud.com/help/en/model-studio/model-pricing (page updated 3 Oct 2026)",
+    "alibaba_api": "https://www.alibabacloud.com/help/en/model-studio/qwen-api-via-openai-chat-completions",
+    "zai_prices": "https://docs.z.ai/guides/overview/pricing",
+    "zai_model": "https://docs.z.ai/guides/vlm/glm-5.3-flash",
+    "zai_params": "https://docs.z.ai/guides/overview/concept-param"
+  },
+  "models": {
+    "qwen3.7-plus": {
+      "label": "Qwen3.7 Plus",
+      "provider": "openai-compatible",
+      "region": "Singapore (International). Beijing workspaces: use https://{WorkspaceId}.cn-beijing.maas.aliyuncs.com/compatible-mode/v1 and prices 0.276 / 1.101.",
+      "baseUrl": "https://{WorkspaceId}.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1",
+      "urlVars": { "WorkspaceId": "DASHSCOPE_WORKSPACE_ID" },
+      "model": "qwen3.7-plus",
+      "keyEnv": "DASHSCOPE_API_KEY",
+      "temperature": 0.2,
+      "maxOutputTokens": 600,
+      "maxTokensField": "max_completion_tokens",
+      "timeoutMs": 30000,
+      "extraBody": { "enable_thinking": false },
+      "_note": "Non-thinking mode (thinking is switched off; thinking mode costs more). JSON mode needs the prompt to mention JSON, which it does.",
+      "priceInPerMTok": 0.4,
+      "priceOutPerMTok": 1.6,
+      "priceTierMaxInputTokens": 256000
+    },
+    "qwen3.7-flash": {
+      "label": "Qwen3.7 Flash (cheaper baseline)",
+      "provider": "openai-compatible",
+      "region": "Singapore (International). Beijing: prices 0.028 / 0.110.",
+      "baseUrl": "https://{WorkspaceId}.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1",
+      "urlVars": { "WorkspaceId": "DASHSCOPE_WORKSPACE_ID" },
+      "model": "qwen3.7-flash",
+      "keyEnv": "DASHSCOPE_API_KEY",
+      "temperature": 0.2,
+      "maxOutputTokens": 600,
+      "maxTokensField": "max_completion_tokens",
+      "timeoutMs": 30000,
+      "extraBody": { "enable_thinking": false },
+      "priceInPerMTok": 0.03,
+      "priceOutPerMTok": 0.13,
+      "priceTierMaxInputTokens": 32000
+    },
+    "glm-5.3-flash": {
+      "label": "GLM-5.3-Flash",
+      "provider": "openai-compatible",
+      "region": "Z.ai (international platform).",
+      "baseUrl": "https://api.z.ai/api/paas/v4",
+      "model": "glm-5.3-flash",
+      "keyEnv": "ZAI_API_KEY",
+      "temperature": 0.2,
+      "maxOutputTokens": 2048,
+      "maxTokensField": "max_tokens",
+      "timeoutMs": 45000,
+      "extraBody": { "thinking": { "type": "enabled" }, "reasoning_effort": "low" },
+      "_note": "Thinking can't be switched off for GLM-5.3-Flash (a request that tries is an error), so it runs with the lowest reasoning effort. Reasoning counts as output tokens, hence the larger reply cap (Z.ai recommends at least 1024).",
+      "priceInPerMTok": 0.15,
+      "priceOutPerMTok": 0.5
+    },
+    "mock-good": {
+      "label": "Mock planner (rules, not AI)",
+      "provider": "mock",
+      "model": "mock:good",
+      "priceInPerMTok": 0,
+      "priceOutPerMTok": 0
+    },
+    "mock-sloppy": {
+      "label": "Mock that breaks rules (checks the checks)",
+      "provider": "mock",
+      "model": "mock:sloppy",
+      "priceInPerMTok": 0,
+      "priceOutPerMTok": 0
+    }
+  }
+}

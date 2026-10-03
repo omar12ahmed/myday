@@ -27,6 +27,11 @@ import { activeStudy } from '../data/study/sessions';
 import { StudyTodayCard } from '../study/StudyTodayCard';
 import { HealthTodayCard } from '../health/HealthTodayCard';
 import { healthReminders } from '../health/reminders';
+import { AdjustCard } from '../ai/AdjustCard';
+import { canUndo, undoAi, type Undo } from '../ai/apply';
+import { AI_MODE } from '../ai/request';
+import { Card } from '../components/Card';
+import { Button } from '../components/Button';
 
 // The Today section. Saved data comes in as `data`; everything else here (an open proposal, the
 // evening check-in, the commitment form…) is kept only while the screen is open, as in the current
@@ -44,6 +49,8 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
   useEffect(() => { if (location.hash === '#today/edit') history.replaceState(null, '', '#today'); }, []);
   const [eveningKey, setEveningKey] = useState<string | null>(null);
   const [proposal, setProposal] = useState<Proposal | null>(null);
+  const [aiOpen, setAiOpen] = useState(false);          // "Help me adjust today" is open
+  const [aiUndo, setAiUndo] = useState<Undo | null>(null); // the last AI suggestion used (one step of Undo)
   const [animateProposal, setAnimateProposal] = useState(false);
   // The gentle nudge: at most once a day, when it applies. Decided when the screen opens.
   const [nudge, setNudge] = useState(() => {
@@ -269,7 +276,21 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
       <>
         {slot('order-1', data.timer && !timerIsStale(data) && <TimerCard data={data} onAction={timerAction} />)}
         {slot('order-1', <PlanCard data={data} k={k} justDoneUid={justDoneUid} onToggle={(t, done) => toggle(k, t, done)} onTimer={timer}
-          onEvening={() => { setView('evening'); setEveningKey(k); }} onReview={review} onSwapRest={swapRest} onRestart={restart} />)}
+          onEvening={() => { setView('evening'); setEveningKey(k); }} onReview={review} onSwapRest={swapRest} onRestart={restart}
+          onAdjust={AI_MODE !== 'off' && !d.rest ? () => { setProposal(null); setAiOpen(true); scrollTo('aiCard'); } : undefined} />)}
+        {slot('order-1', aiOpen && <AdjustCard data={data} k={k} onClose={() => setAiOpen(false)} onApplied={u => { setAiOpen(false); setAiUndo(u); }} />)}
+        {slot('order-1', canUndo(data, aiUndo) && (
+          <Card id="aiUndo" className="!py-3">
+            <div className="flex items-center justify-between gap-3">
+              <p className="m-0 text-[15px]">Plan adjusted with AI help.</p>
+              <Button inline variant="ghost" data-action="ai-undo" onClick={() => {
+                const r = undoAi(aiUndo!);
+                setAiUndo(null);
+                toast(r === 'undone' ? 'Put back as it was.' : r === 'changed' ? "Your plan has changed since, so it can't be undone." : "Couldn't save just now.");
+              }}>Undo</Button>
+            </div>
+          </Card>
+        ))}
         {slot('order-1', healthCard, 'slot-health')}
         {slot('order-1', studyCard, 'slot-study')}
         {slot('order-3', context, 'slot-context')}
