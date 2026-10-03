@@ -204,6 +204,7 @@ pay rules) and its settings card are gone from the screen; the rules behind them
 | `src/ai/` | "Help me adjust today": `context.ts` (what's sent), `validate.ts` (the rules), `apply.ts` (saving, stale check, undo) and `AdjustCard.tsx` (the card on Today). "Add what's on my mind": `mind.ts` (what's sent, the checks, adding and undo) and `MindCard.tsx`. Both: `request.ts` (the Edge Function or practice mode). |
 | `../ai-eval/` | The evaluation of AI models on 20 synthetic days and 12 synthetic brain dumps (see its README). |
 | `src/finance/` | The Finance screen: `FinanceScreen` (with Left over), `WorkPayCard`, `ExpensesCard`, `OwedCard`, `RatesCard` (folded away), and `actions.ts` (what each button saves). |
+| `src/notes/` | Notes, reached from Today: `NotesScreen` (the list: categories, search, pinned first), `NoteEditor` (one note, saved as you type), `CategoriesView`, and `route.ts` (`#notes`, `#notes/<id>`, `#notes/categories`). The data and every change to it: `src/data/notes.ts`; the card on Today: `src/today/NotesCard.tsx`. |
 | `src/health/food/` | The Food screens: `FoodScreen` (picks the screen from the address, e.g. `#health/food/shopping`), `FoodHome`, `RecipeCard`, `SearchBox` (with suggestions), `SearchView`, `RecipeView`, `WantView`, `ShoppingView`, `CookView`, `PrefsView`, `RecipeForm`; `actions.ts` (what each button saves) and `visit.ts` (what's kept in memory for the visit: ideas, search results, suggestions, drafts). |
 | `src/health/` | The Health screens: `HealthScreen` (the Workout and Food tabs; picks the screen from the address, e.g. `#health/workout/schedule`), `WorkoutHome`, `TemplateEditor`, `SessionView` (a workout in progress, and correcting a logged one), `SetFields` (the number boxes for a set), `HistoryViews` (history, exercises, exercise history), `Chart`, `ScheduleView` and `HealthTodayCard`; `actions.ts` (what each button saves). |
 | `src/study/` | The Study screens: `StudyScreen` (picks the screen from the address, e.g. `#study/roadmap`), `Dashboard`, `Roadmap`, `CourseDetails`, `TaskDetails`, `SessionView`, `CheckinView`, `RevisionView`, `ConceptsView`, `ConceptView`, `ProgressView`, `StudySettings` and `StudyTodayCard`; `actions.ts` (what each button saves), `round.ts` (the revision round, kept in memory), `parts.tsx` (small shared pieces). |
@@ -283,6 +284,20 @@ it's open, or with "Sync now". Changes made in the classic MyDay are sent the ne
 Checked against a local stand-in for Supabase (the real migrations in PostgreSQL, `tests/run.sh sync-db app-sync`), and
 against the real project with two disposable test accounts (`tests/sync-live-check.js`: 21/21; the app on two browser
 profiles: 16/16, 3 Oct 2026). Not yet checked in Safari or on a real phone before release 1.1.0.
+
+## Notes
+
+Somewhere to keep notes, sorted into your own categories (starting with Lifestyle, Business ideas, Health & fitness,
+Money, Study & career and Personal; rename, reorder, add or remove them). Reached from a card on Today — "New note"
+or "All notes" — so the bar keeps its five sections.
+- A note has a category, an optional title and its text. It's saved as you type (after a short pause), when you leave
+  a box, and when you switch away from MyDay; a new note left empty is removed when you leave it.
+- Pinned notes come first, then the most recently changed. Search looks in titles and text.
+- Removing a category never removes notes: they move to "Other". Deleting a note asks first.
+- Saved in `myday.data.v4` as a new `notes` section (`{ categories, items }`), added by the new app in 1.3.0, the way
+  Finance was: the classic MyDay keeps any section it doesn't know exactly as it is, so the two stay compatible.
+  Older data without it opens with the starter categories. Notes are in "Export my data"; they aren't synced between
+  devices yet (that's a separate step: new tables in the Supabase project).
 
 ## AI help: "Help me adjust today" (prototype)
 

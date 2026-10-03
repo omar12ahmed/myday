@@ -29,6 +29,7 @@ import { HealthTodayCard } from '../health/HealthTodayCard';
 import { healthReminders } from '../health/reminders';
 import { AdjustCard } from '../ai/AdjustCard';
 import { MindCard } from '../ai/MindCard';
+import { NotesCard } from './NotesCard';
 import { undoMind, type MindUndo } from '../ai/mind';
 import { canUndo, undoAi, type Undo } from '../ai/apply';
 import { AI_MODE } from '../ai/request';
@@ -351,6 +352,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
       {view !== 'edit' && (
         <aside className="contents lg:block lg:min-w-0 lg:[grid-area:side] lg:sticky lg:top-24" aria-label="More for today">
           {view === 'auto' && slot('order-2', <GlanceCard data={data} k={k} proposal={d ? null : proposal} />)}
+          {view === 'auto' && slot('order-5', <NotesCard data={data} />)}
           {slot('order-8', <StreakCard data={data} justLearned={justLearned} />)}
           {slot('order-8', <GardenCard data={data} justLearned={justLearned} />)}
         </aside>

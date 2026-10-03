@@ -111,6 +111,9 @@ export interface MyDayData {
   // Finance: money owed, monthly expenses (added by the new app; the classic MyDay keeps it as it is, unread).
   finance: FinanceData;
 
+  // Notes, grouped by category (added by the new app in 1.3.0; the classic MyDay keeps them as they are, unread).
+  notes: NotesData;
+
   // Anything else (e.g. a section added by a newer MyDay) is kept as it was, never dropped.
   [other: string]: unknown;
 }
@@ -284,6 +287,24 @@ export interface WorkoutData {
   restTimer: { enabled: boolean; seconds: number };
   rest: { startedAt: number; durationSec: number } | null; // a running rest countdown
 }
+// ---------- Notes ----------
+// Your own categories (Lifestyle, Business ideas…), renamed, added or removed as you like.
+export interface NoteCategory { id: string; name: string }
+export interface Note {
+  id: string;
+  categoryId: string;   // one of the categories (a note whose category has gone shows under "Other")
+  title: string;
+  text: string;
+  pinned: boolean;
+  createdAt: DateTime;  // "YYYY-MM-DDTHH:MM" on this device
+  updatedAt: DateTime;
+}
+export interface NotesData {
+  categories: NoteCategory[];
+  items: Note[];
+  [other: string]: unknown;    // anything a newer MyDay adds here is kept
+}
+
 // ---------- Finance ----------
 // Money you owe someone, or someone owes you. Amounts are in pounds (2 decimal places).
 export interface Debt {
