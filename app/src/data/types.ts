@@ -187,7 +187,10 @@ export interface StudyTask { id: string; title: string; minutes: number; url: st
 export interface StudySection { id: string; title: string; tasks: StudyTask[] }
 export interface StudyModule { id: string; title: string; sections: StudySection[] }
 export interface StudyCourse { id: string; title: string; url: string; minutes: number; listId: string | null; archived: boolean; modules: StudyModule[] }
-export interface StudyStage { id: string; title: string; courses: StudyCourse[] }
+export interface StudyStage { id: string; title: string; topicId?: string; courses: StudyCourse[] } // topicId: its Study topic (none = the first)
+// A subject you study (e.g. Cybersecurity, Spanish), each with its own stages. Added in 1.3.0; data without topics is
+// one roadmap, and the classic MyDay keeps topics as they are (it shows every stage).
+export interface StudyTopic { id: string; title: string }
 
 // Concepts are shared by learning (check-ins) and revision.
 export interface Concept {
@@ -216,6 +219,7 @@ export interface Review {
 }
 export interface StudyData {
   stages: StudyStage[];
+  topics?: StudyTopic[];        // absent until you add a topic (see data/study/topics.ts)
   focusCourseId: string | null; // the course on the dashboard (otherwise the first one with work left)
   concepts: Concept[];
   sessions: StudySession[];

@@ -285,6 +285,23 @@ Checked against a local stand-in for Supabase (the real migrations in PostgreSQL
 against the real project with two disposable test accounts (`tests/sync-live-check.js`: 21/21; the app on two browser
 profiles: 16/16, 3 Oct 2026). Not yet checked in Safari or on a real phone before release 1.1.0.
 
+## Study topics
+
+Study holds more than one subject: **Topic → stage → course → module → section → task**. A bar of topics sits above
+the roadmap (always visible, with "Add a topic"); choosing one shows its stages. Data without topics is one roadmap,
+shown as one topic ("Cybersecurity" when it's built from the starter stages) — nothing is saved until you add a topic.
+- Adding the first topic makes your roadmap the first topic: its stages get that topic's id; their contents are
+  untouched. A new topic starts with a stage, "Start here", so you can add a course straight away.
+- "Add a course" asks for its name, a usual session and **Also suggest it on Today** (ticked): then it's also added
+  to the end of your Learning list ("<course> — one section"), linked to the course like the ones you set up first.
+- In Edit: rename, move or remove the chosen topic (removing says what goes with it, and the only topic can't be
+  removed; its Learning list entries stay); "Add a stage" adds to the chosen topic; moving a stage stays within its
+  topic.
+- Saved as `study.topics` (`[{ id, title }]`) and a `topicId` on each stage — additions only, in **both** versions'
+  `normalizeStudy` (the classic MyDay keeps them and shows every stage, whatever its topic). A stage without a topic
+  (e.g. added in the classic MyDay) shows under the first. Code: `src/data/study/topics.ts`, `src/study/TopicsBar.tsx`,
+  `src/study/CourseForm.tsx`.
+
 ## Notes
 
 Somewhere to keep notes, sorted into your own categories (starting with Lifestyle, Business ideas, Health & fitness,

@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowUp, ChevronRight, Plus, X } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { CommitInput } from '../components/Field';
@@ -7,11 +7,14 @@ import { getSnapshot, update } from '../data/storage';
 import type { Level } from '../data/study/common';
 import { addStudyItem, completion, completionText, focusCourse, moveStudyItem, nextTaskIn, stFind, stIndex, tasksUnder, type StudyIndex } from '../data/study/roadmap';
 import { activeStudy, suggestLength } from '../data/study/sessions';
+import { addStageToTopic, moveStageInTopic, stagesOf, topicOfStage, topicsOf } from '../data/study/topics';
 import type { MyDayData, StudyCourse, StudyModule, StudySection, StudyStage, StudyTask } from '../data/types';
 import { saveItemText, setDoneFor, setFocus, startLearning } from './actions';
 import { focusIfWaiting, focusSoon } from './focus';
 import { useRemove } from './useRemove';
 import { SetupCard } from './Dashboard';
+import { CourseForm } from './CourseForm';
+import { TopicsBar } from './TopicsBar';
 import { Bar, Chip, ExternalLink, Meta, Note, TextLink } from './parts';
 
 export interface RoadmapState {
@@ -19,10 +22,11 @@ export interface RoadmapState {
   open: Record<string, boolean>; setOpen: (fn: (o: Record<string, boolean>) => Record<string, boolean>) => void;
 }
 
-// The whole outline: Stage → Course → Module → Section → Task, with an Edit mode for names and order.
+// The whole outline: Topic → Stage → Course → Module → Section → Task, with an Edit mode for names and order.
 export function Roadmap({ data, state }: { data: MyDayData; state: RoadmapState }) {
   const { edit, setEdit, open, setOpen } = state;
   const remove = useRemove();
+  const [topicSel, setTopicSel] = useState<string | null>(null); // the topic you chose (otherwise your focus course's)
   const st = data.study;
   const head = (
     <Card>
@@ -30,13 +34,18 @@ export function Roadmap({ data, state }: { data: MyDayData; state: RoadmapState 
         <h2 className="m-0">Roadmap</h2>
         <Button inline variant={edit ? 'primary' : 'tonal'} data-action="s-edit" aria-pressed={edit} onClick={() => setEdit(!edit)}>{edit ? 'Done editing' : 'Edit'}</Button>
       </div>
-      <Note className="mt-1.5 mb-0">Stage → course → module → section → task. Completion counts tasks marked complete; it isn't a measure of mastery.</Note>
+      <Note className="mt-1.5 mb-0">Topic → stage → course → module → section → task. Completion counts tasks marked complete; it isn't a measure of mastery.</Note>
     </Card>
   );
   if (!st.stages.length) return <>{head}<SetupCard data={data} /></>;
 
   const ix = stIndex(st), fc = focusCourse(st, ix), next = fc ? nextTaskIn(ix, fc) : null, nextE = next ? ix.task.get(next.id) : null;
   const busy = !!activeStudy(st);
+  // Topics: the one you chose, otherwise the one your focus course is in.
+  const ts = topicsOf(st);
+  const fcStage = fc ? ix.course.get(fc.id)?.stage : undefined;
+  const topic = topicSel !== null && ts.some(t => t.id === topicSel) ? topicSel : fcStage ? topicOfStage(st, fcStage) : ts[0].id;
+  const stages = stagesOf(st, topic);
   const isOpen = (id: string, byDefault: boolean) => (id in open ? open[id] : byDefault);
   // Remember only what you opened or closed yourself.
   const onToggle = (id: string, byDefault: boolean) => (e: React.SyntheticEvent<HTMLDetailsElement>) => {
@@ -66,8 +75,8 @@ export function Roadmap({ data, state }: { data: MyDayData; state: RoadmapState 
         ref={focusIfWaiting(n.id)}
         onCommit={el => saveItemText(n.id, 'title', el)} />
       <div className="c-actions flex gap-1.5">
-        <Button inline variant="ghost" className="!px-0 !w-11" data-action="s-move" data-id={n.id} data-d="-1" aria-label={`Move ${n.title} up`} disabled={i === 0} onClick={() => update(d => { if (!moveStudyItem(d.study, n.id, -1)) return false; })}><ArrowUp size={18} aria-hidden="true" /></Button>
-        <Button inline variant="ghost" className="!px-0 !w-11" data-action="s-move" data-id={n.id} data-d="1" aria-label={`Move ${n.title} down`} disabled={i === len - 1} onClick={() => update(d => { if (!moveStudyItem(d.study, n.id, 1)) return false; })}><ArrowDown size={18} aria-hidden="true" /></Button>
+        <Button inline variant="ghost" className="!px-0 !w-11" data-action="s-move" data-id={n.id} data-d="-1" aria-label={`Move ${n.title} up`} disabled={i === 0} onClick={() => update(d => { if (!(level === 'stage' ? moveStageInTopic : moveStudyItem)(d.study, n.id, -1)) return false; })}><ArrowUp size={18} aria-hidden="true" /></Button>
+        <Button inline variant="ghost" className="!px-0 !w-11" data-action="s-move" data-id={n.id} data-d="1" aria-label={`Move ${n.title} down`} disabled={i === len - 1} onClick={() => update(d => { if (!(level === 'stage' ? moveStageInTopic : moveStudyItem)(d.study, n.id, 1)) return false; })}><ArrowDown size={18} aria-hidden="true" /></Button>
         <Button inline variant="ghost" className="!px-0 !w-11" data-action="s-del" data-id={n.id} aria-label={`Remove ${n.title}`} onClick={() => remove(n.id)}><X size={18} aria-hidden="true" /></Button>
       </div>
     </div>
@@ -141,21 +150,35 @@ export function Roadmap({ data, state }: { data: MyDayData; state: RoadmapState 
     );
   };
 
+  function addStage() {
+    let id = null as string | null;
+    update(d => { id = addStageToTopic(d.study, topic); if (!id) return false; });
+    if (id) focusSoon(id);
+  }
+
   return (
     <>
       {head}
-      {st.stages.map((sg, i) => {
+      <TopicsBar data={data} selected={topic} onSelect={setTopicSel} edit={edit} onAdded={id => setTopicSel(id)} />
+      {stages.map((sg, i) => {
         const comp = completion(tasksUnder('stage', sg));
         return (
-          <Card key={sg.id}>
-            {edit ? editBits('stage', sg, i, st.stages.length) : <h2>{sg.title}</h2>}
+          <Card key={sg.id} data-stage={sg.id}>
+            {edit ? editBits('stage', sg, i, stages.length) : <h2>{sg.title}</h2>}
             {comp.total > 0 && <Note className="m-0">{completionText(comp)}</Note>}
             {sg.courses.length ? sg.courses.map((c, j) => courseHtml(c, j, sg, ix)) : <Note className="mt-1.5 mb-0">No courses in this stage yet.</Note>}
-            {edit && addBtn('course', sg.id)}
+            {(edit || !sg.courses.length) && <CourseForm key={sg.id} stageId={sg.id} onAdded={id => setOpen(o => ({ ...o, [id]: true }))} />}
           </Card>
         );
       })}
-      {edit && <Card>{addBtn('stage', '')}</Card>}
+      {(edit || !stages.length) && (
+        <Card>
+          {!stages.length && <Note className="mt-0">No stages in this topic yet.</Note>}
+          <Button inline variant="ghost" className="st-add mt-2" data-action="s-add" data-level="stage" data-parent="" onClick={addStage}>
+            <Plus size={16} aria-hidden="true" /> Add a stage
+          </Button>
+        </Card>
+      )}
     </>
   );
 }

@@ -19,7 +19,8 @@ export function normalizeStudy(raw: unknown, report = { dropped: 0 }): StudyData
   for (const sgRaw of listOf(raw.stages)) {
     const sgBase = item(sgRaw, 'sg');
     if (!sgBase) continue;
-    const sg: StudyStage = { ...sgBase, courses: [] };
+    const tid = (sgRaw as Record<string, unknown>).topicId; // its Study topic (in the same place as the current MyDay keeps it)
+    const sg: StudyStage = { ...sgBase, ...(typeof tid === 'string' && tid ? { topicId: tid.slice(0, 64) } : {}), courses: [] };
     for (const cRaw of listOf((sgRaw as Record<string, unknown>).courses)) {
       const cBase = item(cRaw, 'co');
       if (!cBase) continue;
@@ -50,6 +51,16 @@ export function normalizeStudy(raw: unknown, report = { dropped: 0 }): StudyData
     st.stages.push(sg);
   }
   if (st.stages.some(sg => sg.courses.some(c => c.id === raw.focusCourseId))) st.focusCourseId = raw.focusCourseId as string;
+  // Study topics (as the current MyDay keeps them): each with an id and a title.
+  if (Array.isArray(raw.topics)) {
+    const seenT = new Set<string>();
+    st.topics = [];
+    for (const t of raw.topics) {
+      if (!isObj(t) || typeof t.id !== 'string' || !t.id || seenT.has(t.id) || !str(t.title)) { report.dropped++; continue; }
+      seenT.add(t.id);
+      st.topics.push({ id: t.id.slice(0, 64), title: str(t.title, 60) });
+    }
+  }
   if (isObj(raw.settings)) { st.settings.vault = str(raw.settings.vault, 100); st.settings.showClock = raw.settings.showClock !== false; }
 
   const taskIds = new Set(st.stages.flatMap(sg => sg.courses.flatMap(c => c.modules.flatMap(m => m.sections.flatMap(s => s.tasks.map(t => t.id))))));
