@@ -5888,7 +5888,8 @@
 
   function emptyStudy() {
     return {
-      // [{ id, title, courses: [{ id, title, url, minutes, listId, archived, modules: [{ id, title, sections: [{ id, title, tasks: [task] }] }] }] }]
+      // [{ id, title, topicId?, courses: [{ id, title, url, minutes, listId, archived, modules: [{ id, title, sections: [{ id, title, tasks: [task] }] }] }] }]
+      // (topics: [{ id, title }] and a stage's topicId are used by the new app's Study topics; kept here as they are)
       // task: { id, title, minutes, url, kind: 'learn'|'practical', note, done, doneOn }
       stages: [],
       focusCourseId: null, // the course on the dashboard (otherwise the first one with work left)
@@ -5927,6 +5928,7 @@
     for (const sgRaw of listOf(raw.stages)) {
       const sg = item(sgRaw, 'sg');
       if (!sg) continue;
+      if (typeof sgRaw.topicId === 'string' && sgRaw.topicId) sg.topicId = sgRaw.topicId.slice(0, 64); // the new app's Study topics
       sg.courses = [];
       for (const cRaw of listOf(sgRaw.courses)) {
         const c = item(cRaw, 'co');
@@ -5956,6 +5958,16 @@
       st.stages.push(sg);
     }
     if (st.stages.some(sg => sg.courses.some(c => c.id === raw.focusCourseId))) st.focusCourseId = raw.focusCourseId;
+    // The new app's Study topics: kept as they are (this version shows every stage, whatever its topic).
+    if (Array.isArray(raw.topics)) {
+      const seenT = new Set();
+      st.topics = [];
+      for (const t of raw.topics) {
+        if (!isObj(t) || typeof t.id !== 'string' || !t.id || seenT.has(t.id) || !str(t.title)) { report.dropped++; continue; }
+        seenT.add(t.id);
+        st.topics.push({ id: t.id.slice(0, 64), title: str(t.title, 60) });
+      }
+    }
     if (isObj(raw.settings)) { st.settings.vault = str(raw.settings.vault, 100); st.settings.showClock = raw.settings.showClock !== false; }
 
     const taskIds = new Set(st.stages.flatMap(sg => sg.courses.flatMap(c => tasksUnder('course', c).map(t => t.id))));
