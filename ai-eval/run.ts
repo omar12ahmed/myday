@@ -48,7 +48,7 @@ export interface LedgerEntry { at: string; model: string; scenario: string; rep:
 export type Expectations = Record<string, boolean>;
 export interface RunRecord {
   model: string; scenario: string; rep: number;
-  outcome: 'ok' | 'invalid' | 'error' | 'skipped-budget' | 'skipped-failure';
+  outcome: 'ok' | 'invalid' | 'error' | 'skipped-budget' | 'skipped-failure' | 'skipped-connection';
   error?: string;                  // e.g. "truncated", "http 400"
   errorDetail?: string;            // the provider's message, shortened, with any key blanked out
   finishReason: string | null;
@@ -70,6 +70,7 @@ export interface Result {
     date: string; mode: 'live' | 'mock'; promptVersion: string; models: { id: string; label: string; model: string; maxOutputTokens: number }[];
     repeats: number; scenarios: number; retries: 0;
     budgetUsd: number | null; totalBudgetUsd: number | null; spentBeforeUsd: number; spentUsd: number; stoppedForBudget: boolean;
+    stoppedForConnection: boolean;
   };
   runs: RunRecord[];
 }
@@ -144,6 +145,11 @@ export async function evaluate(o: Options): Promise<Result> {
   const runs: RunRecord[] = [];
   const failed = new Set<string>();
   let spent = 0, stopped = false;
+  // Calls in a row that couldn't reach any provider (no connection, or no answer in time). After a few, the run
+  // stops: the connection is probably down (or the computer went to sleep), and each such call would still be
+  // counted against the budget at the most it could have cost.
+  const CONNECTION_FAILURES_TO_STOP = 3;
+  let unreachable = 0, lostConnection = false;
   // Models take turns on each scenario, so a slow moment at the provider doesn't fall on one model only.
   // No call is ever retried: one request per scenario, model and repeat.
   for (let rep = 1; rep <= o.repeats; rep++) {
@@ -151,6 +157,7 @@ export async function evaluate(o: Options): Promise<Result> {
       for (const { id, cfg } of configs) {
         const rec: RunRecord = { model: id, scenario: sc.id, rep, outcome: 'error', finishReason: null, latencyMs: null, inputTokens: null, outputTokens: null, reasoningTokens: null, reservedUsd: null, costUsd: null,
           violations: [], violationDetails: [], adjusted: [], expectRaw: {}, expectFinal: {}, explanationWords: 0, priorities: 0, rest: false, savedSafely: null, shown: null };
+        if (lostConnection) { rec.outcome = 'skipped-connection'; runs.push(rec); continue; }
         if (o.stopOnFailure && failed.has(id)) { rec.outcome = 'skipped-failure'; runs.push(rec); continue; }
         const { data, k } = setUp(sc);
         const ctx = K.buildContext(data, k, sc.note);
@@ -173,6 +180,8 @@ export async function evaluate(o: Options): Promise<Result> {
           spent += counted;
           o.onCall?.({ at: new Date().toISOString(), model: id, scenario: sc.id, rep, reservedUsd: rec.reservedUsd as number, countedUsd: counted, counted: rec.costUsd === null ? 'reserved' : 'actual', outcome: res.ok ? 'reply' : res.error });
         }
+        if (real) unreachable = !res.ok && (res.error === 'network' || res.error === 'timeout') ? unreachable + 1 : 0;
+        if (unreachable >= CONNECTION_FAILURES_TO_STOP) lostConnection = true;
         if (!res.ok) {
           rec.error = res.error + (res.status ? ` ${res.status}` : '') + (res.finishReason && res.error !== 'http' ? ` (finish_reason ${res.finishReason})` : '');
           if (res.detail) rec.errorDetail = res.detail;
@@ -210,6 +219,7 @@ export async function evaluate(o: Options): Promise<Result> {
       date: startedAt, mode: o.live ? 'live' : 'mock', promptVersion: K.PROMPT_VERSION,
       models: configs.map(c => ({ id: c.id, label: c.cfg.label, model: c.cfg.model, maxOutputTokens: c.cfg.maxOutputTokens })), repeats: o.repeats, scenarios: scenarios.length, retries: 0,
       budgetUsd: o.budgetUsd, totalBudgetUsd: total, spentBeforeUsd: before, spentUsd: Math.round(spent * 1e6) / 1e6, stoppedForBudget: stopped,
+      stoppedForConnection: lostConnection,
     },
     runs,
   };
@@ -257,7 +267,7 @@ const fmt = (n: number | null, d = 0) => (n === null ? '—' : n.toFixed(d));
 const nums = (xs: (number | null)[]) => xs.filter((x): x is number => x !== null);
 const met = (xs: Expectations[]) => { const v = xs.flatMap(x => Object.values(x)); return v.length ? `${v.filter(Boolean).length}/${v.length}` : '—'; };
 const usd = (n: number) => `US$${n.toFixed(4)}`;
-const skipped = (x: RunRecord) => x.outcome === 'skipped-budget' || x.outcome === 'skipped-failure';
+const skipped = (x: RunRecord) => x.outcome === 'skipped-budget' || x.outcome === 'skipped-failure' || x.outcome === 'skipped-connection';
 
 export function summary(r: Result): string {
   const m = r.meta;
@@ -267,7 +277,8 @@ export function summary(r: Result): string {
   if (m.mode === 'live') {
     lines.push(`Spending (estimates from the providers' token counts and the list prices in models.json): this run ${usd(m.spentUsd)} of its ${usd(m.budgetUsd as number)} limit`
       + (m.totalBudgetUsd !== null ? ` · all live runs ${usd(m.spentBeforeUsd + m.spentUsd)} of the ${usd(m.totalBudgetUsd)} ceiling (${usd(Math.max(0, m.totalBudgetUsd - m.spentBeforeUsd - m.spentUsd))} left)` : '')
-      + (m.stoppedForBudget ? ' · **stopped: the next call\'s reserved cost was more than was left**' : ''), '');
+      + (m.stoppedForBudget ? ' · **stopped: the next call\'s reserved cost was more than was left**' : '')
+      + (m.stoppedForConnection ? ' · **stopped: 3 calls in a row couldn\'t reach a provider — check the connection (or whether the computer slept) and run again**' : ''), '');
   }
   if (m.mode === 'mock') lines.push('> These results come from the mock planner (simple rules, not AI). They check the evaluation, the rules and the safe save path — they say nothing about any real model.', '');
   lines.push('## Summary', '');
@@ -283,7 +294,7 @@ export function summary(r: Result): string {
     lines.push(`| ${mm.label} (${mm.model}) | ${rs.length} | ${pct(okRuns.length, rs.length)} | ${pct(replied.filter(x => x.violations.length).length, replied.length)} | ${met(rs.map(x => x.expectRaw))} | ${met(rs.map(x => x.expectFinal))} | ${pct(okRuns.filter(x => x.savedSafely).length, okRuns.length)} | ${fmt(mean(okRuns.map(x => x.explanationWords)), 1)} | ${fmt(quantile(lat, 0.5))} / ${fmt(quantile(lat, 0.95))} | ${fmt(mean(nums(rs.map(x => x.inputTokens))))} / ${fmt(mean(nums(rs.map(x => x.outputTokens))))} (${reason.length ? fmt(mean(reason)) : '—'}) | ${cost.length ? '$' + cost.reduce((a, b) => a + b, 0).toFixed(4) : '—'} |`);
   }
   const notRun = r.runs.filter(skipped);
-  if (notRun.length) lines.push('', `Not called: ${notRun.filter(x => x.outcome === 'skipped-budget').length} (budget), ${notRun.filter(x => x.outcome === 'skipped-failure').length} (stopped after a failure with that model).`);
+  if (notRun.length) lines.push('', `Not called: ${notRun.filter(x => x.outcome === 'skipped-budget').length} (budget), ${notRun.filter(x => x.outcome === 'skipped-failure').length} (stopped after a failure with that model), ${notRun.filter(x => x.outcome === 'skipped-connection').length} (stopped: no connection).`);
   const failures = r.runs.filter(x => x.outcome === 'error' || x.outcome === 'invalid');
   if (failures.length) {
     lines.push('', '## Unsuccessful generations', '', '| Model | Scenario | # | What happened | Provider\'s message |', '|---|---|---|---|---|');
@@ -322,7 +333,7 @@ export function summary(r: Result): string {
 export function calls(r: Result): string {
   const lines = ['| Model | Scenario | # | Usable final proposal | Finish | Original rule breaks | App corrections | Latency (ms) | Tokens in / out (reasoning) | Cost (est.) |', '|---|---|---|---|---|---|---|---|---|---|'];
   for (const x of r.runs) {
-    const usable = x.outcome === 'ok' ? 'yes' : skipped(x) ? `not called (${x.outcome === 'skipped-budget' ? 'budget' : 'after a failure'})` : `no — ${x.outcome === 'invalid' ? 'not usable JSON' : x.error}`;
+    const usable = x.outcome === 'ok' ? 'yes' : skipped(x) ? `not called (${x.outcome === 'skipped-budget' ? 'budget' : x.outcome === 'skipped-connection' ? 'no connection' : 'after a failure'})` : `no — ${x.outcome === 'invalid' ? 'not usable JSON' : x.error}${x.errorDetail ? ` (${x.errorDetail.replace(/\|/g, '/')})` : ''}`;
     lines.push(`| ${x.model} | ${x.scenario} | ${x.rep} | ${usable} | ${x.finishReason ?? '—'} | ${x.violationDetails.length ? x.violationDetails.join('; ').replace(/\|/g, '/') : 'none'} | ${x.adjusted.length ? x.adjusted.join(' ').replace(/\|/g, '/') : '—'} | ${fmt(x.latencyMs)} | ${fmt(x.inputTokens)} / ${fmt(x.outputTokens)} (${fmt(x.reasoningTokens)}) | ${x.costUsd === null ? '—' : '$' + x.costUsd.toFixed(5)} |`);
   }
   return lines.join('\n') + '\n';

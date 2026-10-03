@@ -124,8 +124,12 @@ export async function callModel(cfg: ProviderConfig, ctx: PlanContext, fetchImpl
     if (typeof text !== 'string' || !text.trim()) return { ok: false, error: 'empty', ...counts, latencyMs };
     return { ok: true, text, ...counts, latencyMs };
   } catch (e) {
-    const aborted = (e as { name?: string }).name === 'AbortError';
-    return { ok: false, error: aborted ? 'timeout' : 'network', latencyMs: Date.now() - t0 };
+    const err = e as { name?: string; cause?: { code?: string; message?: string } };
+    const aborted = err.name === 'AbortError';
+    // Why the connection failed, e.g. ENOTFOUND (no address lookup) or UND_ERR_CONNECT_TIMEOUT, to tell a network
+    // problem on this side from the provider's.
+    const cause = err.cause && (err.cause.code || err.cause.message);
+    return { ok: false, error: aborted ? 'timeout' : 'network', ...(cause ? { detail: errorDetail(String(cause), cfg.apiKey) } : {}), latencyMs: Date.now() - t0 };
   } finally {
     clearTimeout(timer);
   }

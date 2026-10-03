@@ -34,7 +34,9 @@ address and prices depend on your workspace's region (Singapore / International 
 and GLM-5.3-Flash is used through Z.ai, where thinking can't be switched off (it runs at the lowest reasoning effort,
 which costs more output tokens and time than Qwen with thinking off — the evaluation shows how much).
 
-No call is ever retried. Other options: `--repeats 3`, `--scenarios s01-energy-1,s09-clocks-go-back`,
+No call is ever retried. If 3 calls in a row can't reach a provider (no connection, or no answer in time), the run
+stops, since the connection is probably down. On a Mac, keep it awake during a long run: `caffeinate -i node ai-eval/eval.mjs …`.
+Other options: `--repeats 3`, `--scenarios s01-energy-1,s09-clocks-go-back`,
 `--stop-on-failure` (after an unsuccessful generation, call that model no more in this run), `--out <folder>`,
 `--quiet`, and `--estimate`, which prints the most a run could cost from the real prompts, without calling anything:
 

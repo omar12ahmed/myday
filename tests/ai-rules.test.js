@@ -321,6 +321,11 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   const report = run.summary(tr) + run.calls(tr);
   check('the report lists unsuccessful generations and every call (finish reason, tokens incl. reasoning)', /## Unsuccessful generations/.test(report) && /truncated/.test(report) && /\| length \|/.test(report) && /not called \(after a failure\)/.test(report));
   sloppyProvider.close();
+  // No connection: a closed port (nothing listening), so every call fails to connect.
+  const closed = require('http').createServer(); await new Promise(r => closed.listen(0, '127.0.0.1', r)); const deadPort = closed.address().port; await new Promise(r => closed.close(r));
+  tr = await run.evaluate({ ...base, live: true, repeats: 1, scenarioIds: ['s01-energy-1', 's02-energy-2-20min', 's03-poor-sleep', 's04-good-day', 's05-day-shift-morning'], budgetUsd: 0.05, models: { fake: { ...cheap, baseUrl: `http://127.0.0.1:${deadPort}` } } });
+  check('no connection: the run stops after 3 calls in a row that couldn\'t reach a provider (the rest aren\'t called or counted)', tr.meta.stoppedForConnection && tr.runs.filter(x => x.outcome === 'error').length === 3 && tr.runs.filter(x => x.outcome === 'skipped-connection').length === 2 && Math.abs(tr.meta.spentUsd - tr.runs.reduce((a, x) => a + (x.reservedUsd || 0), 0)) < 1e-6, tr.meta);
+  check('…and says why each failed (e.g. ECONNREFUSED), to tell this side\'s network from the provider\'s', tr.runs[0].error === 'network' && /ECONNREFUSED/.test(tr.runs[0].errorDetail || ''), tr.runs[0]);
   const est = run.estimate({ ...base, repeats: 3, scenarioIds: null, models: { q: { ...cheap, priceTierMaxInputTokens: 256000 }, g: { ...cheap, maxOutputTokens: 2048, priceInPerMTok: 0.15, priceOutPerMTok: 0.5 } }, modelIds: ['q', 'g'] });
   check('the estimate: from the real prompts, each model\'s reply cap (reasoning included), with a margin on top — and says it\'s not a guarantee', /\| 60 \|/.test(est) && /2048/.test(est) && /further 25%/.test(est) && /not a guarantee/.test(est), est);
   const mockRun = await run.evaluate({ ...base, live: false, budgetUsd: null, modelIds: ['m'], models: { m: { label: 'Mock', provider: 'mock', model: 'mock:good', priceInPerMTok: 0, priceOutPerMTok: 0 } } });
