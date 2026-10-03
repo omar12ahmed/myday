@@ -13,6 +13,7 @@ export interface ModelEntry {
   model: string;
   baseUrl?: string;              // may contain {Name} placeholders, filled from the environment variables in urlVars
   urlVars?: Record<string, string>; // e.g. { "WorkspaceId": "DASHSCOPE_WORKSPACE_ID" }
+  baseUrlEnv?: string;           // an environment variable that, if set, gives the whole address instead (no placeholders needed)
   keyEnv?: string;               // the environment variable holding the key (never the key itself)
   maxTokensField?: 'max_tokens' | 'max_completion_tokens';
   jsonMode?: boolean;
@@ -127,8 +128,9 @@ export async function evaluate(o: Options): Promise<Result> {
     const apiKey = m.keyEnv ? o.env[m.keyEnv] : undefined;
     if (m.provider !== 'mock' && !apiKey) throw new Error(`"${id}" needs its key in the environment variable ${m.keyEnv}.`);
     if (m.provider !== 'mock' && (m.priceInPerMTok === null || m.priceOutPerMTok === null)) throw new Error(`"${id}" needs its prices in ai-eval/models.json, so the budget can be enforced.`);
-    let baseUrl = m.baseUrl;
-    for (const [name, envName] of Object.entries(m.urlVars || {})) {
+    const override = m.baseUrlEnv ? o.env[m.baseUrlEnv] : undefined;
+    let baseUrl = override || m.baseUrl;
+    for (const [name, envName] of Object.entries(override ? {} : m.urlVars || {})) {
       const v = o.env[envName];
       if (m.provider !== 'mock' && !v) throw new Error(`"${id}" needs ${envName} (your ${name}, from the provider's console) for its address.`);
       if (baseUrl && v) baseUrl = baseUrl.replace(`{${name}}`, encodeURIComponent(v));

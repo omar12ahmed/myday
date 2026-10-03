@@ -276,6 +276,8 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   fakeProvider.on('request', req => { lastPath = req.url; });
   await run.evaluate({ ...base, live: true, budgetUsd: 0.2, repeats: 1, scenarioIds: ['s01-energy-1'], models: { fake: ws }, env: { FAKE_KEY: 'secret-key-123', FAKE_WS: 'ws-123' } });
   check('the workspace id fills in the address', lastPath === '/ws-123/chat/completions', lastPath);
+  await run.evaluate({ ...base, live: true, budgetUsd: 0.2, repeats: 1, scenarioIds: ['s01-energy-1'], models: { fake: { ...ws, baseUrlEnv: 'FAKE_BASE' } }, env: { FAKE_KEY: 'secret-key-123', FAKE_BASE: fakeModel.baseUrl + '/shared' } });
+  check('…or a whole address from the environment replaces it (then no workspace id is needed)', lastPath === '/shared/chat/completions', lastPath);
   calls = 0;
   const live = await run.evaluate({ ...base, live: true, budgetUsd: 0.5 });
   check('an expensive (fake) model: the run stops before going over its budget', live.meta.stoppedForBudget && live.meta.spentUsd <= 0.5 && live.runs.some(r => r.outcome === 'skipped-budget') && calls === live.runs.filter(r => r.outcome !== 'skipped-budget').length, live.meta);

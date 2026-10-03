@@ -4,7 +4,8 @@
     "official documentation on 3 Oct 2026 (sources below). Prices are US$ per million tokens, for MyDay's short prompts",
     "(the lowest tier) and for the region stated: which configuration applies depends on YOUR account — its region,",
     "workspace and key. Keys are never stored here: keyEnv names the environment variable holding each key, and urlVars",
-    "the ones that fill in the address (e.g. your Alibaba Cloud workspace id). Prices change; check them before big runs."
+    "the ones that fill in the address (e.g. your Alibaba Cloud workspace id). Prices change; check them before big runs.",
+    "Qwen: DASHSCOPE_BASE_URL, if set, replaces the address (e.g. Singapore's shared https://dashscope-intl.aliyuncs.com/compatible-mode/v1, which Alibaba says remains fully functional, though it recommends the workspace address)."
   ],
   "_sources": {
     "alibaba_prices": "https://www.alibabacloud.com/help/en/model-studio/model-pricing (page updated 3 Oct 2026)",
@@ -20,6 +21,7 @@
       "region": "Singapore (International). Beijing workspaces: use https://{WorkspaceId}.cn-beijing.maas.aliyuncs.com/compatible-mode/v1 and prices 0.276 / 1.101.",
       "baseUrl": "https://{WorkspaceId}.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1",
       "urlVars": { "WorkspaceId": "DASHSCOPE_WORKSPACE_ID" },
+      "baseUrlEnv": "DASHSCOPE_BASE_URL",
       "model": "qwen3.7-plus",
       "keyEnv": "DASHSCOPE_API_KEY",
       "temperature": 0.2,
@@ -38,6 +40,7 @@
       "region": "Singapore (International). Beijing: prices 0.028 / 0.110.",
       "baseUrl": "https://{WorkspaceId}.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1",
       "urlVars": { "WorkspaceId": "DASHSCOPE_WORKSPACE_ID" },
+      "baseUrlEnv": "DASHSCOPE_BASE_URL",
       "model": "qwen3.7-flash",
       "keyEnv": "DASHSCOPE_API_KEY",
       "temperature": 0.2,
