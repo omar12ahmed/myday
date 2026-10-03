@@ -302,6 +302,30 @@ shown as one topic ("Cybersecurity" when it's built from the starter stages) —
   (e.g. added in the classic MyDay) shows under the first. Code: `src/data/study/topics.ts`, `src/study/TopicsBar.tsx`,
   `src/study/CourseForm.tsx`.
 
+## Health → Goal
+
+A third Health tab: choose a goal (lose weight, build muscle, both at once, maintain, or get fitter and healthier),
+answer a few questions one at a time (about you — in kg/cm or stone/feet —, how active your days are with shift
+examples, training experience, days and equipment, pace, and a few health questions), and get a plan:
+- **Calories** (a range): Mifflin–St Jeor × an activity factor; losing about 300 (gentle) or 550 (steady) kcal a day
+  under that (NHS: 0.5–1 kg a week from about 600 kcal less), never starting below your body's own needs or
+  1,200 kcal (women) / 1,500 (men); building muscle 200 or 350 over; both at once 250 under; maintain about level.
+- **Protein**: 1.2–2.2 g/kg depending on the goal (ISSN 2017; Morton et al. 2018), using a healthy weight for your
+  height above a BMI of 30. **Fats** 25–35% of calories; **carbs** the rest ("carbs aren't the enemy").
+- **Training**: strength sessions a week (never more than the days you have; full-body for beginners, upper/lower
+  for more), cardio (NHS: 150 minutes of moderate activity a week), progress, checking in, and tips for shifts.
+- **Safety**: no calorie or protein targets when pregnant or breastfeeding, after an eating disorder (or if you'd
+  rather not say), or with diabetes, a kidney or heart condition — kind words and where to turn (midwife, GP, BEAT,
+  a dietitian) instead; under-18s are stopped with the NHS's advice for young people; it never suggests losing
+  weight below a healthy BMI.
+- **Connected**: "Suggest a workout schedule" sets Workout's in-order schedule to about that many sessions a week
+  (you confirm); recipes with your own nutrition figures show how they fit the goal (e.g. "High in protein — good for
+  your goal", "Higher in calories for your goal — try a smaller portion" — never "good" or "bad"); Today's Health card
+  shows "This week: 1 of 3 workouts".
+- Labelled as estimates from public guidance, not medical advice, with the sources. Saved as a top-level `fitness`
+  section (added by the new app, like Finance and Notes; the classic MyDay keeps it unread), on this device only.
+  Code: `src/data/goals.ts` (the figures), `src/health/GoalView.tsx`.
+
 ## Notes
 
 Somewhere to keep notes, sorted into your own categories (starting with Lifestyle, Business ideas, Health & fitness,

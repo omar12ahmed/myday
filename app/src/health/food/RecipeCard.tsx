@@ -1,5 +1,7 @@
 import { CookingPot } from 'lucide-react';
 import { recipeFacts } from '../../data/food/recipes';
+import { goalAndPlan, recipeFitShort } from '../../data/goals';
+import { getSnapshot } from '../../data/storage';
 import type { Recipe } from '../../data/types';
 
 // What a recipe lists — and, plainly, what it doesn't (nothing is guessed).
@@ -15,6 +17,9 @@ export function Facts({ r }: { r: Recipe }) {
 
 // A recipe as a card: photo (from TheMealDB, never saved as an image), name, where it's from, and what's listed.
 export function RecipeCard({ r }: { r: Recipe }) {
+  // How it fits your goal, if you've set one and the recipe lists its nutrition (the list redraws when data changes).
+  const gp = goalAndPlan(getSnapshot().data);
+  const fit = gp && r.nutrition ? recipeFitShort(gp.a, gp.p, r.nutrition) : null;
   return (
     <article className="rcard bg-surface-2 border border-outline rounded-tile overflow-hidden min-h-28">
       <a className="rcard-link grid grid-cols-[112px_minmax(0,1fr)] h-full text-inherit no-underline hover:bg-surface-3 transition-colors" href={`#health/food/recipe/${encodeURIComponent(r.id)}`}>
@@ -25,6 +30,7 @@ export function RecipeCard({ r }: { r: Recipe }) {
           <h3 className="!text-base !normal-case !tracking-normal !text-fg !m-0 !mb-1 font-bold">{r.title}</h3>
           <div className="meta text-[13px] text-fg-3">{[r.category, r.area].filter(Boolean).join(' · ') || (r.source === 'manual' ? 'Your recipe' : '')}</div>
           <Facts r={r} />
+          {fit && <div className="rfit text-[13px] text-primary font-semibold mt-1" data-s="goal-fit-short">{fit}</div>}
         </div>
       </a>
     </article>

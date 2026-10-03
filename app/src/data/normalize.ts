@@ -11,6 +11,7 @@ import { normalizeHealth } from './workout/normalize';
 import { normalizeStudy } from './study/normalize';
 import { emptyFinance, normalizeFinance } from './finance';
 import { emptyNotes, normalizeNotes } from './notes';
+import { emptyFitness, normalizeFitness } from './goals';
 import type { Category, Commitment, DayContext, Energy, ListItem, MyDayData, QueueItem, Settings, Task, Theme } from './types';
 import { clone, intIn, isObj, listOf, uid, cleanMinutes } from './util';
 
@@ -69,6 +70,7 @@ export function freshState(): MyDayData {
     study: emptyStudy(),
     finance: emptyFinance(),
     notes: emptyNotes(),
+    fitness: emptyFitness(),
     saves: { seq: 0, log: [] },
   };
 }
@@ -241,13 +243,14 @@ export function normalize(raw: unknown, report = { dropped: 0 }): MyDayData {
   s.study = normalizeStudy(raw.study, report); // absent in older data → empty Study
   s.finance = normalizeFinance(raw.finance, report); // added by the new app; absent before → empty Finance
   s.notes = normalizeNotes(raw.notes, report);       // added by the new app in 1.3.0; absent before → the starter categories
+  s.fitness = normalizeFitness(raw.fitness, report); // added by the new app in 1.3.0; absent before → no goal yet
   if (isObj(raw.saves)) {
     s.saves = { seq: intIn(raw.saves.seq, 0, 1e12, 0), log: listOf(raw.saves.log).filter(x => typeof x === 'string').slice(-SAVE_LOG) };
   }
   // A whole section of the wrong kind (e.g. damaged into text) can't be read. Like the current MyDay, its
   // empty default is used — but it's counted, so it's never left out silently (see storage.ts).
   const wrong = (v: unknown, kind: 'object' | 'array') => v !== null && v !== undefined && (kind === 'array' ? !Array.isArray(v) : !isObj(v));
-  for (const k of ['lists', 'days', 'nudge', 'settings', 'context', 'rota', 'pay', 'bankHolidays', 'health', 'study', 'finance', 'notes']) if (wrong(raw[k], 'object')) report.dropped++;
+  for (const k of ['lists', 'days', 'nudge', 'settings', 'context', 'rota', 'pay', 'bankHolidays', 'health', 'study', 'finance', 'notes', 'fitness']) if (wrong(raw[k], 'object')) report.dropped++;
   for (const k of ['queue', 'commitments']) if (wrong(raw[k], 'array')) report.dropped++;
   if (isObj(raw.lists)) for (const cat of CATS) if (cat in raw.lists && wrong(raw.lists[cat], 'array')) report.dropped++;
   if (isObj(raw.health)) for (const k of ['workout', 'food']) if (wrong(raw.health[k], 'object')) report.dropped++;

@@ -3,6 +3,7 @@ import { Card } from '../components/Card';
 import type { MyDayData } from '../data/types';
 import type { ProposedSession } from '../data/workout/propose';
 import { FoodScreen } from './food/FoodScreen';
+import { GoalView } from './GoalView';
 import { leftScreen } from './food/visit';
 import { ExerciseHistory, ExercisesView, HistoryView } from './HistoryViews';
 import { healthRoute } from './route';
@@ -11,7 +12,7 @@ import { ActiveSession, LoggedSession } from './SessionView';
 import { TemplateEditor } from './TemplateEditor';
 import { WorkoutHome } from './WorkoutHome';
 
-// Health: Workout and Food, as two tabs. Choices that only matter for this visit (a workout proposal not
+// Health: Workout, Food and Goal, as three tabs. Choices that only matter for this visit (a workout proposal not
 // yet confirmed, a missed session being moved) live here; Food's are in food/visit.ts. None are saved.
 export function HealthScreen({ data, hash }: { data: MyDayData; hash: string }) {
   const { tab, view, id } = healthRoute(hash);
@@ -22,6 +23,7 @@ export function HealthScreen({ data, hash }: { data: MyDayData; hash: string }) 
 
   let screen;
   if (tab === 'food') screen = <FoodScreen data={data} view={view} id={id} />;
+  else if (tab === 'goal') screen = <GoalView data={data} />;
   else if (view === 'session') screen = <ActiveSession data={data} />;
   else if (view === 'log') screen = <LoggedSession key={id} data={data} id={id} />;
   else if (view === 'template') screen = <TemplateEditor key={id} data={data} id={id} />;
@@ -38,9 +40,10 @@ export function HealthScreen({ data, hash }: { data: MyDayData; hash: string }) 
         <div className="seg flex gap-1.5" role="tablist" aria-label="Health sections">
           <a className={tabClass(tab === 'workout')} href="#health/workout" role="tab" aria-selected={tab === 'workout'}>Workout</a>
           <a className={tabClass(tab === 'food')} href="#health/food" role="tab" aria-selected={tab === 'food'}>Food</a>
+          <a className={tabClass(tab === 'goal')} href="#health/goal" role="tab" aria-selected={tab === 'goal'}>Goal</a>
         </div>
       </Card>
-      {view === 'home' ? screen : <div className="max-w-[720px] mx-auto">{screen}</div>}
+      {view === 'home' && tab !== 'goal' ? screen : <div className="max-w-[720px] mx-auto">{screen}</div>}
     </div>
   );
 }

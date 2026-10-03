@@ -114,6 +114,9 @@ export interface MyDayData {
   // Notes, grouped by category (added by the new app in 1.3.0; the classic MyDay keeps them as they are, unread).
   notes: NotesData;
 
+  // Health → Goal: your fitness goal and answers (added by the new app in 1.3.0; the classic MyDay keeps it, unread).
+  fitness: FitnessData;
+
   // Anything else (e.g. a section added by a newer MyDay) is kept as it was, never dropped.
   [other: string]: unknown;
 }
@@ -291,6 +294,37 @@ export interface WorkoutData {
   restTimer: { enabled: boolean; seconds: number };
   rest: { startedAt: number; durationSec: number } | null; // a running rest countdown
 }
+// ---------- Health → Goal (see data/goals.ts) ----------
+export type GoalKind = 'lose' | 'gain' | 'recomp' | 'maintain' | 'health';
+export type Sex = 'female' | 'male' | 'unsaid';
+export type Activity = 'sitting' | 'some' | 'onFeet' | 'hard';
+export type Experience = 'new' | 'some' | 'experienced';
+export type Equipment = 'gym' | 'home' | 'none';
+export type Pace = 'gentle' | 'steady';
+export type Condition = 'diabetes' | 'kidney' | 'heart' | 'other';
+
+export interface GoalAnswers {
+  goal: GoalKind;
+  age: number;          // years
+  sex: Sex;             // only used in the calorie formula
+  heightCm: number;
+  weightKg: number;
+  activity: Activity;
+  experience: Experience;
+  days: number;         // days a week you could train (1–7)
+  equipment: Equipment;
+  pace: Pace;           // for losing or gaining
+  pregnant: boolean;    // pregnant or breastfeeding
+  eatingDisorder: 'no' | 'yes' | 'unsaid';
+  conditions: Condition[];
+}
+export interface FitnessData {
+  units: 'metric' | 'imperial';
+  answers: GoalAnswers | null;
+  setOn: DateKey | null;
+  [other: string]: unknown; // anything a newer MyDay adds here is kept
+}
+
 // ---------- Notes ----------
 // Your own categories (Lifestyle, Business ideas…), renamed, added or removed as you like.
 export interface NoteCategory { id: string; name: string }

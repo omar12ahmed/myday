@@ -1,3 +1,4 @@
+import { GOAL_LABEL, goalAndPlan, recipeFit } from '../../data/goals';
 import { ChefHat, ListPlus, Minus, Plus, RotateCw, Star } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { Button } from '../../components/Button';
@@ -37,7 +38,9 @@ function NotLoaded({ id }: { id: string }) {
 }
 
 // Nutrition per serving: only ever your own figures (TheMealDB lists none, and MyDay never estimates).
-function NutritionCard({ r }: { r: Recipe }) {
+function NutritionCard({ r, data }: { r: Recipe; data: MyDayData }) {
+  const gp = goalAndPlan(data);
+  const fitNote = gp && r.nutrition ? recipeFit(gp.a, gp.p, r.nutrition) : null;
   const refs = { kcal: useRef<HTMLInputElement>(null), protein: useRef<HTMLInputElement>(null), carbs: useRef<HTMLInputElement>(null), fat: useRef<HTMLInputElement>(null) };
   const nut = r.nutrition;
   const box = (k: keyof typeof refs, id: string, label: string) => (
@@ -50,9 +53,10 @@ function NutritionCard({ r }: { r: Recipe }) {
       {nut ? (
         <>
           <p className="text-[15px] tabular-nums">{[nut.kcal !== null ? `${n1(nut.kcal)} kcal` : '', nut.protein !== null ? `protein ${n1(nut.protein)} g` : '', nut.carbs !== null ? `carbs ${n1(nut.carbs)} g` : '', nut.fat !== null ? `fat ${n1(nut.fat)} g` : ''].filter(Boolean).join(' · ')}</p>
+          {fitNote && <p className="text-[15px] bg-primary-container text-on-primary-container rounded-tile px-3 py-2" data-s="goal-fit"><strong>Your goal ({GOAL_LABEL[gp!.a.goal].toLowerCase()}):</strong> {fitNote}</p>}
           <Note>Entered by you — not from the recipe source.</Note>
         </>
-      ) : <Note>Not available from the source.</Note>}
+      ) : <Note>Not available from the source.{gp && gp.p.calories ? ' Add calories and protein per serving to see how it fits your goal.' : ''}</Note>}
       <details className="group">
         <Summary>{nut ? 'Change your figures' : 'Add your own figures'}</Summary>
         <div className="grid grid-cols-2 gap-3">{box('kcal', 'nKcal', 'kcal')}{box('protein', 'nPro', 'Protein (g)')}{box('carbs', 'nCarb', 'Carbs (g)')}{box('fat', 'nFat', 'Fat (g)')}</div>
@@ -139,7 +143,7 @@ export function RecipeView({ data, id }: { data: MyDayData; id: string }) {
           </details>
         )}
       </Card>
-      <NutritionCard r={r} />
+      <NutritionCard r={r} data={data} />
       <Card aria-labelledby="src-h">
         <h2 id="src-h">Source</h2>
         {r.source === 'themealdb'
