@@ -210,7 +210,8 @@ never edit it; add a new one for any change.
    The settings: Z.ai's general API (`https://api.z.ai/api/paas/v4`, not the Coding Plan address), `glm-5.3-flash`,
    thinking on at the lowest effort, `max_tokens` 2048, JSON output, 30-second time limit (under the app's 40),
    prices 0.15 / 0.5 US$ per million tokens; limits 20 requests a day, US$1 a month, 5 seconds apart; only
-   `http://localhost:5173` (the dev server) allowed to call it.
+   `http://localhost:5173` (the dev server) allowed to call it — and, from release 1.2.0, the website
+   (`https://omar12ahmed.github.io`).
 3. **Deploy the function** (no Docker needed with `--use-api`):
    ```bash
    npx supabase functions deploy ai-plan --use-api --project-ref nkslcgnbmxuhznvldfnz

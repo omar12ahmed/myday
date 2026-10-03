@@ -48,6 +48,18 @@ from `app/.env.production` (public values; see [`../supabase/README.md`](../supa
 file, it would be built without sync, as 1.0.0 was. The release before 1.1.0 is tagged `live-before-1.1.0`. Sync's notes (`myday.sync.v1`) and the sign-in session (`myday.sync.auth`) live beside the saved
 data in each browser. Going back to a release without sync leaves them unused; it doesn't affect your MyDay data.
 
+## Publishing with AI help
+
+From release 1.2.0 the published app is built with `VITE_AI=edge` (`app/.env.production`), so signed-in accounts see
+AI help on Today. It needs, in the Supabase project: the AI migration, the `ai-plan` function deployed with the same
+shared code as the release, and the website's address in its `AI_ALLOWED_ORIGINS` setting (see
+[`../supabase/README.md`](../supabase/README.md)). Signed-out visitors see the buttons but get "Sign in to use AI
+help"; nothing is sent. The release before 1.2.0 is tagged `live-before-1.2.0`.
+
+To switch AI help off quickly, without a release: `npx supabase secrets set AI_PROVIDER=off --project-ref
+nkslcgnbmxuhznvldfnz` (any value other than a known provider) — the cards then say it isn't set up, and nothing is
+sent. Set it back to `openai-compatible` to switch it on again. To remove the buttons too: delete `VITE_AI=edge` from `app/.env.production` and publish again.
+
 ## Going back
 
 The release before the new app is tagged **`live-before-1.0.0`**. To publish it again:

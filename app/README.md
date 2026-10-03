@@ -340,3 +340,7 @@ returns up to 8 small tasks; you tick the ones to add.
 8. **Cloud sync, first part — release 1.1.0:** sign-in, and syncing task lists, the queue, daily plans and day
    context through Supabase, with reviews, conflicts and deletions handled. Checked with a local stand-in and against
    the real project with disposable test accounts.
+9. **Release 1.2.0:** Finance replaces Pay (work pay from the Calendar, money owed, monthly expenses, what's left
+   over), and AI help on Today for signed-in accounts — "Help me adjust today" and "Add what's on my mind" — through
+   the `ai-plan` Edge Function (GLM-5.3-Flash, after evaluations on synthetic days and brain dumps; see
+   [`../ai-eval/README.md`](../ai-eval/README.md)). Built with `VITE_AI=edge` in `.env.production`.
