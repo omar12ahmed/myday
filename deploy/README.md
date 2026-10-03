@@ -54,7 +54,11 @@ From release 1.2.0 the published app is built with `VITE_AI=edge` (`app/.env.pro
 AI help on Today. It needs, in the Supabase project: the AI migration, the `ai-plan` function deployed with the same
 shared code as the release, and the website's address in its `AI_ALLOWED_ORIGINS` setting (see
 [`../supabase/README.md`](../supabase/README.md)). Signed-out visitors see the buttons but get "Sign in to use AI
-help"; nothing is sent. The release before 1.2.0 is tagged `live-before-1.2.0`.
+help"; nothing is sent. The release before 1.2.0 is tagged `live-before-1.2.0`; the one before 1.3.0,
+`live-before-1.3.0`. Going back from 1.3.0 keeps Notes and Goal in your saved data (1.2.0 keeps whole sections it doesn't
+know, so they're there again when you return). Study topics don't survive it: 1.2.0 shows every stage as one roadmap
+and, the first time it saves, drops the topic grouping (your stages, courses and tasks stay). Export a backup before
+going back, and import it after returning.
 
 To switch AI help off quickly, without a release: `npx supabase secrets set AI_PROVIDER=off --project-ref
 nkslcgnbmxuhznvldfnz` (any value other than a known provider) — the cards then say it isn't set up, and nothing is

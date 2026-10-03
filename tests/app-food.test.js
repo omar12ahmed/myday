@@ -101,7 +101,7 @@ T.setHandler(d => {
   await editStorage(`s => { delete s.health; }`);
   randomQueue = [M.bake, M.pork, M.curry, M.soup, M.salad, M.stew, M.tart];
   await go('health/food', 2026, 11, 2, 9);
-  check('Food opens in the new app, with Workout and Food tabs', eq(await texts('.health-tabs .seg-link'), ['Workout', 'Food']) && (await ev(`document.querySelector('#nav a[href="#health"]').getAttribute('aria-label')`)) === 'Health');
+  check('Food opens in the new app, with Workout, Food and Goal tabs (Goal is new in 1.3.0)', eq(await texts('.health-tabs .seg-link'), ['Workout', 'Food', 'Goal']) && (await ev(`document.querySelector('#nav a[href="#health"]').getAttribute('aria-label')`)) === 'Health');
   await waitFor(`document.querySelectorAll('.rcard:not(.skeleton)').length >= 3`);
   check('about three suggestion cards to start with', (await ev(`document.querySelectorAll('.rgrid .rcard:not(.skeleton)').length`)) === 3);
   check('cards show what is known and say what is not listed (nothing invented)', (await text('.rcard')).includes('Pasta · Italian') && (await text('.rcard')).includes('Time, servings, nutrition not listed'));

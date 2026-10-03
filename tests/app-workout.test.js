@@ -75,7 +75,7 @@ const sessionOf = (id, date, exs) => ({ id, date, templateId: 'tP', templateName
   await editStorage(`s => { s.lists.admin.push({ id: 'a9', title: 'Post office', minutes: 15 }); s.commitments = [{ id: 'c1', kind: 'appointment', title: 'GP', start: '2026-11-03T10:00', end: '2026-11-03T10:30' }]; delete s.health; }`);
   const before = await D();
   await go('health');
-  check('Health opens with Workout and Food tabs', eq(await texts('.health-tabs .seg-link'), ['Workout', 'Food']) && (await text('#nav [aria-current=page]')).trim() === 'Health');
+  check('Health opens with Workout, Food and Goal tabs (Goal is new in 1.3.0)', eq(await texts('.health-tabs .seg-link'), ['Workout', 'Food', 'Goal']) && (await text('#nav [aria-current=page]')).trim() === 'Health');
   check('the navigation shows Health as moved', (await ev(`document.querySelector('#nav a[href="#health"]').getAttribute('aria-label')`)) === 'Health');
   await nav('health/food');
   check('the Food tab opens Food (app-food checks it in full)', await exists('#foodQ'));

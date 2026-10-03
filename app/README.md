@@ -400,3 +400,7 @@ returns up to 8 small tasks; you tick the ones to add.
    over), and AI help on Today for signed-in accounts — "Help me adjust today" and "Add what's on my mind" — through
    the `ai-plan` Edge Function (GLM-5.3-Flash, after evaluations on synthetic days and brain dumps; see
    [`../ai-eval/README.md`](../ai-eval/README.md)). Built with `VITE_AI=edge` in `.env.production`.
+10. **Release 1.3.0:** Notes (your own categories, from a card on Today), Study topics (more than one subject, each
+    with its own roadmap; new courses can be suggested on Today), and Health → Goal (a goal, a few questions and a plan
+    from public guidance, connected to Workout, recipes and Today). Notes and Goal are new sections the classic MyDay
+    keeps unread; Study topics are kept by both versions.
