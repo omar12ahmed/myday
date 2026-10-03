@@ -6,6 +6,22 @@
 // if someone pointed this at real records).
 import * as K from './kit';
 import { SCENARIOS, type Scenario } from './scenarios';
+import { TASK_SCENARIOS, type TasksScenario } from './tasks-scenarios';
+
+// Both kinds of request: "Help me adjust today" (scenarios.ts) and "Add what's on my mind" (tasks-scenarios.ts).
+type AnyScenario = Scenario | TasksScenario;
+const ALL_SCENARIOS: AnyScenario[] = [...SCENARIOS, ...TASK_SCENARIOS];
+const isTasksScenario = (sc: AnyScenario): sc is TasksScenario => (sc as TasksScenario).kind === 'tasks';
+export type Action = 'adjust' | 'tasks' | 'all';
+// The scenarios a run uses: the ones named, or all of one action ("adjust" unless said otherwise).
+function pickScenarios(ids: string[] | null, action: Action = 'adjust'): AnyScenario[] {
+  if (ids) {
+    const unknown = ids.filter(id => !ALL_SCENARIOS.some(s => s.id === id));
+    if (unknown.length) throw new Error(`Unknown scenario ${unknown.map(x => `"${x}"`).join(', ')} (see ai-eval/scenarios.ts and tasks-scenarios.ts).`);
+    return ALL_SCENARIOS.filter(s => ids.includes(s.id));
+  }
+  return ALL_SCENARIOS.filter(s => action === 'all' || (action === 'tasks') === isTasksScenario(s));
+}
 
 export interface ModelEntry {
   label: string;
@@ -36,6 +52,7 @@ export interface Options {
   reservedBeforeUsd?: number;      // …of which reservations kept for calls that reported no token usage
   stopOnFailure?: boolean;         // after an unsuccessful generation, call that model no more in this run
   scenarioIds: string[] | null;
+  action?: Action;                 // which scenarios, when none are named: "adjust" (the default), "tasks" or "all"
   env: Record<string, string | undefined>;
   models: Record<string, ModelEntry>;
   log: (line: string) => void;
@@ -85,11 +102,11 @@ const words = (s: unknown) => (typeof s === 'string' && s.trim() ? s.trim().spli
 const clockMin = (c: string) => Number(c.slice(0, 2)) * 60 + Number(c.slice(3, 5));
 const clockOf = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
 
-function setUp(sc: Scenario) {
+function setUp(sc: AnyScenario) {
   K.useMemoryStorage();
   K.setClock(sc.now);
   const s = K.freshState();
-  sc.build(s);
+  sc.build?.(s);
   localStorage.setItem('myday.data.v4', JSON.stringify(s));
   K.boot();
   return { data: K.getSnapshot().data, k: K.todayKey() };
@@ -122,11 +139,100 @@ function expectations(sc: Scenario, v: View | null): Expectations {
   return out;
 }
 
+// ---------- "Add what's on my mind": what a useful answer does ----------
+interface TasksView { items: { title: string; category: string; minutes: number; repeat: boolean }[]; notTasks: string }
+function rawTasksView(raw: unknown): TasksView | null {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const r = raw as Record<string, unknown>;
+  if (!Array.isArray(r.items)) return null;
+  const items = r.items.filter(x => x && typeof x === 'object').map(x => {
+    const i = x as Record<string, unknown>;
+    return { title: String(i.title ?? ''), category: String(i.category ?? ''), minutes: Number(i.minutes) || 0, repeat: i.repeat === true };
+  });
+  return { items, notTasks: Array.isArray(r.notTasks) ? r.notTasks.filter(n => typeof n === 'string').join(' | ') : '' };
+}
+const finalTasksView = (p: K.CheckedMind | null): TasksView | null => (p ? { items: p.items, notTasks: p.notTasks.join(' | ') } : null);
+const STOP = new Set(['the', 'a', 'an', 'to', 'for', 'of', 'and', 'my', 'your', 'on', 'in', 'at', 'with', 'up', 'out', 'it', 'is', 'about', 'from', 'some', 'this', 'that']);
+const wordsOf = (s: string) => s.toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length >= 2 && !STOP.has(w));
+function tasksExpectations(sc: TasksScenario, v: TasksView | null, text: string): Expectations {
+  const e = sc.expect, out: Expectations = {};
+  const titles = v ? v.items.map(i => i.title) : [];
+  const matching = (re: RegExp) => (v ? v.items.filter(i => re.test(i.title)) : []);
+  if (e.count) out.count = !!v && v.items.length >= e.count[0] && v.items.length <= e.count[1];
+  if (e.include) out.include = !!v && e.include.every(re => titles.some(t => re.test(t)));
+  if (e.exclude) out.exclude = !!v && !e.exclude.some(re => titles.some(t => re.test(t)));
+  if (e.categories) out.categories = !!v && e.categories.every(([re, cat]) => matching(re).length > 0 && matching(re).every(i => i.category === cat));
+  if (e.repeating) out.repeating = !!v && e.repeating.every(re => matching(re).length > 0 && matching(re).every(i => i.repeat));
+  if (e.oneOff) out.oneOff = !!v && e.oneOff.every(re => matching(re).every(i => !i.repeat));
+  if (e.notTasks) out.notTasks = !!v && e.notTasks.every(re => re.test(v.notTasks));
+  out.small = !!v && v.items.every(i => i.minutes > 0 && i.minutes <= (e.maxMinutes ?? 60));
+  // Nothing invented: every task shares a word (by its first four letters) with what was written. A rough guide.
+  const said = wordsOf(text);
+  out.fromText = !!v && v.items.every(i => wordsOf(i.title).some(w => said.some(t => t.startsWith(w.slice(0, 4)) || w.startsWith(t.slice(0, 4)))));
+  return out;
+}
+
+// One scenario ready to send: its context, and how to score a reply (filling in the run record).
+interface Prepared { ctx: Parameters<typeof K.callModel>[1]; score: (rec: RunRecord, text: string) => void }
+function prepare(sc: AnyScenario): Prepared {
+  const { data, k } = setUp(sc);
+  if (isTasksScenario(sc)) {
+    return {
+      ctx: K.buildTasksContext(sc.text),
+      score(rec, text) {
+        const raw = K.parseReply(text);
+        const checked = K.checkTasksReply(text, data);
+        const p = checked.proposal;
+        rec.violations = checked.violations.map(v => v.code);
+        rec.violationDetails = checked.violations.map(v => `${v.code}: ${v.detail}`);
+        rec.outcome = p ? 'ok' : 'invalid';
+        rec.explanationWords = raw && typeof raw === 'object' ? words((raw as Record<string, unknown>).explanation) : 0;
+        rec.expectRaw = tasksExpectations(sc, rawTasksView(raw), sc.text);
+        rec.expectFinal = tasksExpectations(sc, finalTasksView(p), sc.text);
+        if (!p) return;
+        rec.priorities = p.items.length; rec.adjusted = p.adjusted;
+        rec.shown = { rest: false, priorities: p.items.map(i => `${i.title} · ${i.category} · ${i.minutes} min${i.repeat ? ' · repeating' : ''}${i.already ? ` (already on ${i.already})` : ''}`), explanation: p.explanation, missing: p.notTasks.map(n => `not a task: ${n}`) };
+        // Adding them all (as if all ticked, except those already there) must change only the lists and the queue,
+        // and only by adding.
+        const was = JSON.parse(JSON.stringify(K.getSnapshot().data));
+        const r = K.applyMind(p.items.filter(i => !i.already).map(i => ({ title: i.title, category: i.category, minutes: i.minutes, repeat: i.repeat })));
+        const now = K.getSnapshot().data;
+        const rest = (d: typeof now) => JSON.stringify({ ...d, lists: null, queue: null, saves: null });
+        const onlyAdded = (['learning', 'admin', 'health'] as const).every(c => JSON.stringify(now.lists[c].slice(0, was.lists[c].length)) === JSON.stringify(was.lists[c]))
+          && was.queue.every((q: { qid: string }) => now.queue.some(x => x.qid === q.qid));
+        rec.savedSafely = (r.ok || (r.reason === 'nothing' && !p.items.some(i => !i.already))) && rest(now) === rest(was) && onlyAdded;
+      },
+    };
+  }
+  return {
+    ctx: K.buildContext(data, k, sc.note),
+    score(rec, text) {
+      const raw = K.parseReply(text);
+      const checked = K.checkProposal(text, data, k);
+      const p = checked.proposal;
+      rec.violations = checked.violations.map(v => v.code);
+      rec.violationDetails = checked.violations.map(v => `${v.code}: ${v.detail}`);
+      rec.outcome = p ? 'ok' : 'invalid';
+      rec.explanationWords = raw && typeof raw === 'object' ? words((raw as Record<string, unknown>).explanation) : 0;
+      rec.expectRaw = expectations(sc, rawView(raw));
+      rec.expectFinal = expectations(sc, finalView(p));
+      if (!p) return;
+      rec.priorities = p.priorities.length; rec.rest = p.rest; rec.adjusted = p.adjusted;
+      rec.shown = { rest: p.rest, priorities: p.priorities.map(x => `${x.title} · ${x.minutes} min${x.start !== null ? ` · ${clockOf(x.start)}` : ''}`), explanation: p.explanation, missing: p.missing };
+      // Saving it through the app's own path must change today's plan only.
+      const was = JSON.parse(JSON.stringify(K.getSnapshot().data));
+      const r = K.applyAi(k, K.planStamp(K.getSnapshot().data, k), p);
+      const after = K.getSnapshot().data;
+      const otherDays = (d: typeof after) => JSON.stringify(Object.fromEntries(Object.entries(d.days).filter(([dk]) => dk !== k)));
+      rec.savedSafely = r.ok && JSON.stringify(after.lists) === JSON.stringify(was.lists) && otherDays(after) === otherDays(was)
+        && (after.days[k] ? after.days[k].energy : null) === (was.days[k] ? was.days[k].energy : null);
+    },
+  };
+}
+
 export async function evaluate(o: Options): Promise<Result> {
   const startedAt = new Date().toISOString(); // the real time (scenarios set their own clock after this)
-  const scenarios = SCENARIOS.filter(s => !o.scenarioIds || o.scenarioIds.includes(s.id));
-  const unknown = (o.scenarioIds || []).filter(id => !SCENARIOS.some(s => s.id === id));
-  if (unknown.length) throw new Error(`Unknown scenario ${unknown.map(x => `"${x}"`).join(', ')} (see ai-eval/scenarios.ts).`);
+  const scenarios = pickScenarios(o.scenarioIds, o.action);
   const configs: { id: string; cfg: K.ProviderConfig }[] = [];
   for (const id of o.modelIds) {
     const m = o.models[id];
@@ -165,8 +271,7 @@ export async function evaluate(o: Options): Promise<Result> {
           originalReply: null, violations: [], violationDetails: [], adjusted: [], expectRaw: {}, expectFinal: {}, explanationWords: 0, priorities: 0, rest: false, savedSafely: null, shown: null };
         if (lostConnection) { rec.outcome = 'skipped-connection'; runs.push(rec); continue; }
         if (o.stopOnFailure && failed.has(id)) { rec.outcome = 'skipped-failure'; runs.push(rec); continue; }
-        const { data, k } = setUp(sc);
-        const ctx = K.buildContext(data, k, sc.note);
+        const { ctx, score } = prepare(sc);
         const real = cfg.provider !== 'mock';
         if (real) {
           // Set aside the most this call could cost; don't make it if that's more than is left (this run, or overall).
@@ -196,27 +301,8 @@ export async function evaluate(o: Options): Promise<Result> {
           runs.push(rec); o.log(`${id} ${sc.id} #${rep}: unsuccessful — ${rec.error}${rec.errorDetail ? `: ${rec.errorDetail}` : ''}`); continue;
         }
         rec.originalReply = res.text.slice(0, 4000);
-        const raw = K.parseReply(res.text);
-        const checked = K.checkProposal(res.text, data, k);
-        const p = checked.proposal;
-        rec.violations = checked.violations.map(v => v.code);
-        rec.violationDetails = checked.violations.map(v => `${v.code}: ${v.detail}`);
-        rec.outcome = p ? 'ok' : 'invalid';
-        if (!p) failed.add(id);
-        rec.explanationWords = raw && typeof raw === 'object' ? words((raw as Record<string, unknown>).explanation) : 0;
-        rec.expectRaw = expectations(sc, rawView(raw));
-        rec.expectFinal = expectations(sc, finalView(p));
-        if (p) {
-          rec.priorities = p.priorities.length; rec.rest = p.rest; rec.adjusted = p.adjusted;
-          rec.shown = { rest: p.rest, priorities: p.priorities.map(x => `${x.title} · ${x.minutes} min${x.start !== null ? ` · ${clockOf(x.start)}` : ''}`), explanation: p.explanation, missing: p.missing };
-          // Saving it through the app's own path must change today's plan only.
-          const was = JSON.parse(JSON.stringify(K.getSnapshot().data));
-          const r = K.applyAi(k, K.planStamp(K.getSnapshot().data, k), p);
-          const after = K.getSnapshot().data;
-          const otherDays = (d: typeof after) => JSON.stringify(Object.fromEntries(Object.entries(d.days).filter(([dk]) => dk !== k)));
-          rec.savedSafely = r.ok && JSON.stringify(after.lists) === JSON.stringify(was.lists) && otherDays(after) === otherDays(was)
-            && (after.days[k] ? after.days[k].energy : null) === (was.days[k] ? was.days[k].energy : null);
-        }
+        score(rec, res.text);
+        if (rec.outcome !== 'ok') failed.add(id);
         runs.push(rec);
         o.log(`${id} ${sc.id} #${rep}: ${rec.outcome}${rec.violations.length ? ' (' + rec.violations.join(', ') + ')' : ''}`);
       }
@@ -224,7 +310,8 @@ export async function evaluate(o: Options): Promise<Result> {
   }
   return {
     meta: {
-      date: startedAt, mode: o.live ? 'live' : 'mock', promptVersion: K.PROMPT_VERSION,
+      date: startedAt, mode: o.live ? 'live' : 'mock',
+      promptVersion: [scenarios.some(s => !isTasksScenario(s)) && K.PROMPT_VERSION, scenarios.some(isTasksScenario) && K.TASKS_PROMPT_VERSION].filter(Boolean).join(' + '),
       models: configs.map(c => ({ id: c.id, label: c.cfg.label, model: c.cfg.model, maxOutputTokens: c.cfg.maxOutputTokens })), repeats: o.repeats, scenarios: scenarios.length, retries: 0,
       budgetUsd: o.budgetUsd, totalBudgetUsd: total, spentBeforeUsd: before, reservedBeforeUsd: o.reservedBeforeUsd ?? 0,
       spentUsd: Math.round(spent * 1e6) / 1e6, usageUsd: Math.round(usage * 1e6) / 1e6, reservedUsd: Math.round(reservedKept * 1e6) / 1e6, stoppedForBudget: stopped,
@@ -240,7 +327,7 @@ export async function evaluate(o: Options): Promise<Result> {
 // is billed as output). Then a further quarter on top of the lot, for anything these assumptions miss.
 export const CONTINGENCY = 1.25;
 export function estimate(o: Options): string {
-  const scenarios = SCENARIOS.filter(s => !o.scenarioIds || o.scenarioIds.includes(s.id));
+  const scenarios = pickScenarios(o.scenarioIds, o.action);
   const lines = ['| Model | Calls | Prompt (characters, largest) | Input reserved per call (tokens) | Reply cap incl. reasoning (tokens) | Price in / out (US$ per M) | Most per call | Most for all calls |', '|---|---|---|---|---|---|---|---|'];
   let sum = 0;
   const notes: string[] = [];
@@ -252,9 +339,8 @@ export function estimate(o: Options): string {
     const cfg: K.ProviderConfig = { provider: m.provider, label: m.label, model: m.model, temperature: 0.2, maxOutputTokens: m.maxOutputTokens ?? 600, timeoutMs: 0, priceInPerMTok: m.priceInPerMTok, priceOutPerMTok: m.priceOutPerMTok };
     let chars = 0, inTok = 0, per = 0, all = 0;
     for (const sc of scenarios) {
-      const { data, k } = setUp(sc);
-      const ctx = K.buildContext(data, k, sc.note);
-      chars = Math.max(chars, K.buildMessages(ctx).map(x => x.content).join('\n').length);
+      const { ctx } = prepare(sc);
+      chars = Math.max(chars, K.messagesFor(ctx).map(x => x.content).join('\n').length);
       inTok = Math.max(inTok, K.reserveInputTokens(ctx));
       const w = K.worstCaseCostUsd(cfg, ctx) as number;
       per = Math.max(per, w); all += w * o.repeats;
@@ -366,8 +452,8 @@ export function calls(r: Result): string {
 // The suggestions themselves, for judging usefulness by eye (first repeat of each).
 export function review(r: Result): string {
   const lines = ['# Suggestions to judge by eye', '', 'For each scenario: what each model suggested (first repeat), after the app\'s checks. Rate each 1–5 for usefulness if you like.', ''];
-  for (const sc of SCENARIOS.filter(s => r.runs.some(x => x.scenario === s.id))) {
-    lines.push(`## ${sc.id}: ${sc.title}`, '', `Note: ${sc.note ? `“${sc.note}”` : '(none)'} · ${sc.tags.join(', ')}`, '');
+  for (const sc of ALL_SCENARIOS.filter(s => r.runs.some(x => x.scenario === s.id))) {
+    lines.push(`## ${sc.id}: ${sc.title}`, '', isTasksScenario(sc) ? `Written: “${sc.text}” · ${sc.tags.join(', ')}` : `Note: ${sc.note ? `“${sc.note}”` : '(none)'} · ${sc.tags.join(', ')}`, '');
     for (const mm of r.meta.models) {
       const x = r.runs.find(y => y.model === mm.id && y.scenario === sc.id && y.rep === 1);
       if (!x) continue;

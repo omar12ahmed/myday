@@ -14,6 +14,11 @@ export { mockPlanner } from '../supabase/functions/_shared/ai/mock.ts';
 export { buildMessages, PROMPT_VERSION, SYSTEM_PROMPT } from '../supabase/functions/_shared/ai/prompt.ts';
 export { callModel, costUsd, estimateTokens, reserveInputTokens, worstCaseCostUsd, type ProviderConfig } from '../supabase/functions/_shared/ai/providers.ts';
 export type { PlanContext } from '../supabase/functions/_shared/ai/schema.ts';
+// "Add what's on my mind" (the brain-dump action).
+export { applyMind, buildTasksContext, checkTasksReply, sameTask, undoMind, type CheckedMind, type MindUndo } from '../app/src/ai/mind';
+export { buildTaskMessages, checkTasksContext, mockTasks, TASKS_LIMITS, TASKS_PROMPT_VERSION, TASKS_SYSTEM_PROMPT, type TasksContext } from '../supabase/functions/_shared/ai/tasks.ts';
+export { messagesFor } from '../supabase/functions/_shared/ai/prompt.ts';
+export { chooseTasks } from '../app/src/data/plan';
 
 // ---------- Memory-only storage ----------
 export function useMemoryStorage() {

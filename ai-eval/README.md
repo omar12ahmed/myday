@@ -1,4 +1,4 @@
-# Evaluating "Help me adjust today"
+# Evaluating "Help me adjust today" and "Add what's on my mind"
 
 20 synthetic MyDay days (`scenarios.ts`: low energy, poor sleep, day and night shifts — one across a clock change —,
 appointments, too little time, revision due, rest days, missing information) are sent to each model with **identical
@@ -34,6 +34,13 @@ documentation (3 Oct 2026; the sources are listed in the file). Which of them ap
 address and prices depend on your workspace's region (Singapore / International is filled in; Beijing's are noted),
 and GLM-5.3-Flash is used through Z.ai, where thinking can't be switched off (it runs at the lowest reasoning effort,
 which costs more output tokens and time than Qwen with thinking off — the evaluation shows how much).
+
+Brain dumps: 12 synthetic ones in `tasks-scenarios.ts` (errands; study, health and admin mixed; feelings mixed in;
+regular habits; big vague worries; an instruction hidden in the text; twelve things at once; nothing to do; something
+already on the lists; deadlines; a health worry; a study list), each saying what a useful answer does (how many
+tasks, which must or mustn't appear, lists, repeating or one-off, what's listed back, small enough, nothing invented
+— checked on the model's own reply and after the app's corrections). Run them with `--action tasks` (or `all` for
+both kinds); scenario names of either kind can be given with `--scenarios`.
 
 No call is ever retried. If 3 calls in a row can't reach a provider (no connection, or no answer in time), the run
 stops, since the connection is probably down. On a Mac, keep it awake during a long run: `caffeinate -i node ai-eval/eval.mjs …`.

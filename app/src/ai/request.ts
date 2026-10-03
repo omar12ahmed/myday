@@ -3,7 +3,7 @@
 //   mock  the practice planner (rules, not AI), for working on MyDay without any credentials
 //   off   no AI help (the button isn't shown) — the default, unless the app is built with VITE_AI
 // Whatever happens here, nothing is saved: the reply is only checked and shown (see validate.ts and apply.ts).
-import type { PlanContext } from '../../../supabase/functions/_shared/ai/schema.ts';
+import type { AiContext } from '../../../supabase/functions/_shared/ai/prompt.ts';
 import { currentSession } from '../sync/client';
 import { SYNC } from '../sync/config';
 
@@ -16,24 +16,31 @@ export type AiReply =
   | { ok: true; text: string; model: string }
   | { ok: false; reason: 'signed-out' | 'daily' | 'budget' | 'too-fast' | 'not-set-up' | 'unavailable' | 'offline'; message: string };
 
-const SAME = " Your plan hasn't changed, and Review my plan still works.";
-const MESSAGES: Record<Exclude<AiReply, { ok: true }>['reason'], string> = {
-  'signed-out': 'Sign in to use AI help (tap the status at the top).' + SAME,
-  daily: "That's all the AI suggestions for today." + SAME,
-  budget: "This month's AI budget is used up." + SAME,
+type Reason = Exclude<AiReply, { ok: true }>['reason'];
+const MESSAGES: Record<Reason, string> = {
+  'signed-out': 'Sign in to use AI help (tap the status at the top).',
+  daily: "That's all the AI suggestions for today.",
+  budget: "This month's AI budget is used up.",
   'too-fast': 'Just a moment between requests — try again in a few seconds.',
-  'not-set-up': "AI help isn't set up on the server yet." + SAME,
-  unavailable: "Couldn't get a suggestion just now." + SAME,
-  offline: "Couldn't reach the AI — check your connection." + SAME,
+  'not-set-up': "AI help isn't set up on the server yet.",
+  unavailable: "Couldn't get a suggestion just now.",
+  offline: "Couldn't reach the AI — check your connection.",
 };
-const fail = (reason: keyof typeof MESSAGES): AiReply => ({ ok: false, reason, message: MESSAGES[reason] });
+// What stays as it was, said after each message (except "just a moment").
+const SAME = { adjust: " Your plan hasn't changed, and Review my plan still works.", tasks: ' Nothing was added.' };
 
-export async function askModel(ctx: PlanContext, signal?: AbortSignal): Promise<AiReply> {
+export async function askModel(ctx: AiContext, signal?: AbortSignal): Promise<AiReply> {
+  const tasks = (ctx as { action?: string }).action === 'tasks';
+  const fail = (reason: Reason): AiReply => ({ ok: false, reason, message: MESSAGES[reason] + (reason === 'too-fast' ? '' : SAME[tasks ? 'tasks' : 'adjust']) });
   if (AI_MODE === 'mock') {
-    const { mockPlanner } = await import('../../../supabase/functions/_shared/ai/mock.ts');
     await new Promise(r => setTimeout(r, 600));
     if (MOCK_VARIANT === 'error') return fail('unavailable');
-    return { ok: true, text: mockPlanner(ctx, MOCK_VARIANT as 'good'), model: 'practice planner (no AI)' };
+    if (tasks) {
+      const { mockTasks } = await import('../../../supabase/functions/_shared/ai/tasks.ts');
+      return { ok: true, text: mockTasks(ctx as Parameters<typeof mockTasks>[0], MOCK_VARIANT as 'good'), model: 'practice helper (no AI)' };
+    }
+    const { mockPlanner } = await import('../../../supabase/functions/_shared/ai/mock.ts');
+    return { ok: true, text: mockPlanner(ctx as Parameters<typeof mockPlanner>[0], MOCK_VARIANT as 'good'), model: 'practice planner (no AI)' };
   }
   if (AI_MODE !== 'edge') return fail('not-set-up');
   const { session, offline } = await currentSession();

@@ -98,6 +98,22 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   const reserved = (await sql('select reserved_usd from public.ai_usage where user_id = $1', [C]))[0].reserved_usd;
   check('…and the worst-case cost was reserved against the monthly budget before calling', Number(reserved) > 0, reserved);
 
+  console.log('\n[2b] "Add what\'s on my mind" through the same function and limits');
+  const tctx = { version: 1, action: 'tasks', date: '2026-11-10', weekday: 'Tuesday', text: 'car insurance renewal, call the GP, Secret project notes', maxItems: 8 };
+  env = { ...env, AI_PROVIDER: 'mock', AI_MODEL: 'mock:good' };
+  res = await call({ context: tctx });
+  body = await res.json();
+  check('a brain dump: 200, the reply passed back for the app to check', res.status === 200 && body.ok && Array.isArray(JSON.parse(body.output).items) && JSON.parse(body.output).items.length === 3, body);
+  check('…refused if malformed (extra fields, empty or too-long text, too many tasks asked for) — 400', (await call({ context: { ...tctx, lists: ['x'] } })).status === 400 && (await call({ context: { ...tctx, text: '' } })).status === 400
+    && (await call({ context: { ...tctx, text: 'x'.repeat(1501) } })).status === 400 && (await call({ context: { ...tctx, maxItems: 50 } })).status === 400);
+  let tsent = null;
+  env = { ...env, AI_PROVIDER: 'openai-compatible', AI_BASE_URL: 'https://provider.example/v1', AI_MODEL: 'm', AI_API_KEY: 'sk-test', AI_PRICE_IN_PER_MTOK: '0.5', AI_PRICE_OUT_PER_MTOK: '2' };
+  res = await call({ context: tctx }, {}, { fetchImpl: async (url, init) => { tsent = JSON.parse(init.body); return new Response(JSON.stringify({ choices: [{ message: { content: '{"items":[],"notTasks":[],"explanation":"Ok."}' }, finish_reason: 'stop' }], usage: { prompt_tokens: 500, completion_tokens: 20 } }), { status: 200 }); } });
+  check('…the model gets the brain-dump instructions (not the day-planning ones), with what you wrote as content', res.status === 200 && /small tasks/.test(tsent.messages[0].content) && !/adjust today's plan/.test(tsent.messages[0].content) && tsent.messages[1].content.includes('call the GP'));
+  check('…and it counts towards the same daily limit and budget', Number((await sql('select requests from public.ai_usage where user_id = $1 order by day desc limit 1', [C]))[0].requests) > 0);
+  check('the logs still hold only an outcome and a time (nothing you wrote)', lines.every(l => /^ai-plan \S+ \d{3} \d+ms$/.test(l)) && !lines.join(' ').includes('insurance'));
+  env = { ...env, AI_PROVIDER: 'mock', AI_MODEL: 'mock:good' };
+
   console.log('\n[3] A caller is verified before anything else, and secrets stay out of Git');
   let begun = 0, provided = 0;
   const spyDeps = { begin: async () => { begun++; return { ok: true }; }, fetchImpl: async () => { provided++; return new Response('{}'); } };

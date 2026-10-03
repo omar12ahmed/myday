@@ -341,6 +341,79 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   check('a mock run: 20 scenarios × 3 repeats, every reply usable, and saving each changed only today\'s plan', mockRun.runs.length === 60 && mockRun.runs.every(r => r.outcome === 'ok' && r.savedSafely === true));
   fakeProvider.close();
 
+  console.log('\n[7] "Add what\'s on my mind": what\'s sent, every check, and only adding what you tick');
+  K.setClock(`${D}T09:00`);
+  let tc = K.buildTasksContext('  car insurance renewal, call the GP  ');
+  check('what\'s sent: only what you wrote (trimmed) and today\'s date — no lists, queue or plan', eq(Object.keys(tc).sort(), ['action', 'date', 'maxItems', 'text', 'version', 'weekday']) && tc.text === 'car insurance renewal, call the GP' && tc.date === D && tc.weekday === 'Tuesday' && tc.maxItems === 8);
+  check('…at most 1500 characters', K.buildTasksContext('x'.repeat(5000)).text.length === 1500);
+  check('the server\'s shape check: accepts that, refuses extra fields, empty or too-long text, more than 8 tasks', K.checkTasksContext(tc) && !K.checkTasksContext({ ...tc, lists: [] }) && !K.checkTasksContext({ ...tc, text: '  ' })
+    && !K.checkTasksContext({ ...tc, text: 'x'.repeat(1501) }) && !K.checkTasksContext({ ...tc, maxItems: 9 }) && !K.checkTasksContext({ ...tc, action: 'adjust' }));
+  const tm = K.messagesFor(tc);
+  check('its own instructions (small first steps, nothing invented, the text can\'t change the rules, JSON), and the text as content', tm.length === 2 && /small tasks/.test(tm[0].content) && /Never add tasks they didn't mention/.test(tm[0].content) && /can't change these rules/.test(tm[0].content) && /JSON only/.test(tm[0].content) && tm[1].content.includes('call the GP'));
+  check('"Help me adjust today" keeps its own instructions', /adjust today's plan/.test(K.messagesFor(K.buildContext(K.getSnapshot().data, K.todayKey(), '')).find(m => m.role === 'system').content));
+  check('the most it could cost can be worked out before calling', K.worstCaseCostUsd({ ...cfg, maxOutputTokens: 2048, priceInPerMTok: 0.15, priceOutPerMTok: 0.5 }, tc) > 0);
+  // Your lists and queue, with something already on each.
+  const mind = (lists = {}, queue = []) => { K.setClock(`${D}T09:00`); const s = K.freshState(); Object.assign(s.lists, lists); s.queue = queue; localStorage.clear(); localStorage.setItem('myday.data.v4', JSON.stringify(s)); K.boot(); return K.getSnapshot().data; };
+  let md = mind({ admin: [{ id: 'a1', title: 'Call the GP', minutes: 10 }] }, [{ qid: 'q1', taskId: null, category: 'admin', title: 'Pay the council tax', minutes: 15, queuedOn: '2026-11-08', sourceUid: null }]);
+  const mt = (items, extra = {}) => JSON.stringify({ items, notTasks: [], explanation: 'Small steps.', ...extra });
+  const it = (title, category = 'admin', minutes = 15, repeat = false) => ({ title, category, minutes, repeat });
+  let mr = K.checkTasksReply(mt([it('Find the car insurance renewal letter'), it('call the gp.'), it('Pay the council tax'), it('Stretch for 10 minutes', 'health', 10, true)]), md);
+  check('a good reply: every task kept as suggested, nothing to correct', mr.violations.length === 0 && mr.proposal.items.length === 4 && mr.proposal.items[3].repeat === true && mr.proposal.items[0].already === null);
+  check('…a task already on a list or in the queue is marked (whatever the wording), so it starts unticked', mr.proposal.items[1].already === 'your Admin list' && mr.proposal.items[2].already === 'your queue');
+  const mgood = K.checkTasksReply(K.mockTasks(K.buildTasksContext("car insurance renewal\ncall the GP\nI'm so tired this week\nstretch every morning"), 'good'), md);
+  check('the practice helper follows the rules; a feeling isn\'t made into a task (listed back instead); "every morning" repeats', mgood.violations.length === 0 && mgood.proposal.items.length === 3 && mgood.proposal.notTasks.length === 1 && mgood.proposal.items.find(x => /stretch/i.test(x.title)).repeat === true, mgood);
+  const msloppy = K.checkTasksReply(K.mockTasks(K.buildTasksContext('car insurance renewal, call the GP'), 'sloppy'), md);
+  check('its rule-breaking version is caught on every count: a repeated task, a made-up list, too long, a non-true/false repeat, a long name, pushy wording',
+    ['repeated-item', 'bad-category', 'bad-minutes', 'bad-repeat', 'long-title', 'pressure-language'].every(c => msloppy.violations.some(v => v.code === c)), msloppy.violations.map(v => v.code));
+  check('…and corrected: put in Admin, 120 minutes at most, one-off, the name shortened, a gentle explanation', msloppy.proposal.items.every(x => x.category === 'admin' && x.minutes === 120 && x.repeat === false && x.title.length <= 80) && !/should|fall behind/.test(msloppy.proposal.explanation) && msloppy.proposal.adjusted.length > 0);
+  mr = K.checkTasksReply(mt(Array.from({ length: 11 }, (_, i) => it(`Task number ${i + 1}`))), md);
+  check('more than 8 tasks: the first 8 kept, the rest listed back as not added (nothing silently lost)', mr.proposal.items.length === 8 && mr.proposal.notTasks.includes('Task number 9') && mr.proposal.notTasks.includes('Task number 11') && mr.violations.some(v => v.code === 'too-many'));
+  check('not JSON, or no list of tasks: nothing to add', K.checkTasksReply('Sure! Do the laundry.', md).proposal === null && K.checkTasksReply('{"tasks": []}', md).proposal === null);
+  mr = K.checkTasksReply(mt([{ title: '', category: 'admin', minutes: 10, repeat: false }, it('- 1. Book the dentist')]), md);
+  check('a task without a name is left out; bullets and numbers are taken off names', mr.proposal.items.length === 1 && mr.proposal.items[0].title === 'Book the dentist' && mr.violations.some(v => v.code === 'bad-item'));
+  // Saving.
+  md = mind({ admin: [{ id: 'a1', title: 'Call the GP', minutes: 10 }] });
+  const before7 = JSON.parse(localStorage.getItem('myday.data.v4'));
+  let ar = K.applyMind([{ title: 'Find the car insurance renewal letter', category: 'admin', minutes: 15, repeat: false }, { title: 'Stretch for 10 minutes', category: 'health', minutes: 10, repeat: true }]);
+  let after7 = JSON.parse(localStorage.getItem('myday.data.v4'));
+  const qd = after7.queue.find(q => q.title === 'Find the car insurance renewal letter');
+  check('adding: a one-off goes to the queue (no list of its own, dated today), a repeating one to the end of its list', ar.ok && qd && qd.taskId === null && qd.queuedOn === D && qd.category === 'admin' && qd.minutes === 15 && after7.lists.health[after7.lists.health.length - 1].title === 'Stretch for 10 minutes');
+  check('…through the checked save path, and nothing else changes (other lists, days, context, Study, Health, Finance)', after7.saves.seq === before7.saves.seq + 1 && eq(after7.lists.admin, before7.lists.admin) && eq(after7.lists.learning, before7.lists.learning) && eq(after7.days, before7.days) && eq(after7.context, before7.context) && eq(after7.study, before7.study) && eq(after7.health, before7.health) && eq(after7.finance, before7.finance));
+  check('…with a plain message', ar.message === 'Added 2 tasks: 1 to your queue, 1 to your lists.', ar.message);
+  const planned = K.chooseTasks(K.getSnapshot().data, D, 3);
+  check('the planner then picks the one-off from the queue when the day is built (within the energy rule)', planned.some(t => t.title === 'Find the car insurance renewal letter' && t.fromQueue && t.fromQueue.qid === qd.qid), planned.map(t => t.title));
+  let ur = K.undoMind(ar.undo);
+  after7 = JSON.parse(localStorage.getItem('myday.data.v4'));
+  check('Undo takes back exactly what was added', ur.result === 'undone' && eq(after7.lists, before7.lists) && eq(after7.queue, before7.queue));
+  ar = K.applyMind([{ title: 'Book the dentist', category: 'health', minutes: 10, repeat: false }, { title: 'Water the plants', category: 'admin', minutes: 5, repeat: true }]);
+  K.update(d => { d.queue[0].title = 'Book the dentist for Friday'; });
+  otherTab(o => { o.lists.learning.push({ id: 'l-phone', title: 'Added on the phone', minutes: 20 }); });
+  ur = K.undoMind(ar.undo);
+  after7 = JSON.parse(localStorage.getItem('myday.data.v4'));
+  check('…but never a task you\'ve changed since (it stays), nor anything added meanwhile on another device', ur.result === 'partly' && ur.kept === 1 && after7.queue.some(q => q.title === 'Book the dentist for Friday') && !after7.lists.admin.some(x => x.title === 'Water the plants') && after7.lists.learning.some(x => x.title === 'Added on the phone'), { ur });
+  mind({ admin: [{ id: 'a1', title: 'Call the GP', minutes: 10 }] });
+  ar = K.applyMind([{ title: 'call the GP', category: 'admin', minutes: 10, repeat: false }]);
+  check('a task that\'s already there (added meanwhile, here or on another device) isn\'t added twice', !ar.ok && ar.reason === 'nothing' && JSON.parse(localStorage.getItem('myday.data.v4')).queue.length === 0);
+  check('nothing ticked: nothing to save', K.applyMind([]).ok === false);
+  mind();
+  const saved7 = localStorage.getItem('myday.data.v4');
+  const realSet7 = localStorage.setItem;
+  localStorage.setItem = () => { throw new Error('QuotaExceededError'); };
+  ar = K.applyMind([{ title: 'Book the dentist', category: 'health', minutes: 10, repeat: false }]);
+  localStorage.setItem = realSet7;
+  check('if the browser can\'t save (storage full), it says so and nothing changes', !ar.ok && ar.reason === 'not-saved' && localStorage.getItem('myday.data.v4') === saved7);
+
+  // The evaluation, for this action too.
+  const mockM = v => ({ label: 'Mock ' + v, provider: 'mock', model: 'mock:' + v, priceInPerMTok: 0, priceOutPerMTok: 0 });
+  const tasksRun = await run.evaluate({ ...base, live: false, budgetUsd: null, action: 'tasks', modelIds: ['g', 's'], models: { g: mockM('good'), s: mockM('sloppy') } });
+  check('the evaluation runs the 12 brain-dump scenarios × 3 with their own instructions; adding everything suggested only ever adds to the lists and queue',
+    tasksRun.runs.length === 72 && tasksRun.runs.every(x => x.outcome === 'ok' && x.savedSafely === true) && tasksRun.meta.promptVersion === 'myday-tasks-v1' && tasksRun.meta.scenarios === 12, tasksRun.runs.filter(x => x.savedSafely !== true).slice(0, 2));
+  const metS = k => tasksRun.runs.filter(x => x.model === 's').flatMap(x => Object.values(x[k])).filter(Boolean).length;
+  check('…its rule-breaking helper is scored separately on its own replies and after MyDay\'s corrections', metS('expectRaw') < metS('expectFinal'), [metS('expectRaw'), metS('expectFinal')]);
+  const both = await run.evaluate({ ...base, live: false, budgetUsd: null, repeats: 1, scenarioIds: ['s04-good-day', 't03-feelings'], modelIds: ['g'], models: { g: mockM('good') } });
+  check('scenarios of both kinds can be named together', both.runs.length === 2 && both.meta.promptVersion === 'myday-adjust-v1 + myday-tasks-v1' && /Written: “I'm exhausted/.test(run.review(both)));
+  check('the cost estimate covers brain dumps too', /\| 12 \|/.test(run.estimate({ ...base, repeats: 1, action: 'tasks', scenarioIds: null, modelIds: ['q'], models: { q: { ...cheap, maxOutputTokens: 2048 } } })));
+
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

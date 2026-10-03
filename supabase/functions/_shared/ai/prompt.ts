@@ -2,6 +2,7 @@
 // model is used (so the evaluation compares like with like). The app checks every rule again afterwards and
 // discards anything that breaks one, so the model can never put an unsafe plan in front of you.
 import { OUTPUT_SCHEMA, type PlanContext } from './schema.ts';
+import { buildTaskMessages, type TasksContext } from './tasks.ts';
 
 export const PROMPT_VERSION = 'myday-adjust-v1';
 
@@ -25,6 +26,15 @@ Rules (the app checks every one and discards anything that breaks them):
 ${JSON.stringify(OUTPUT_SCHEMA)}`;
 
 export interface ChatMessage { role: 'system' | 'user'; content: string }
+
+// Any request MyDay can make: "Help me adjust today" (a PlanContext) or "Add what's on my mind" (a TasksContext).
+export type AiContext = PlanContext | TasksContext;
+export const isTasks = (ctx: AiContext): ctx is TasksContext => (ctx as TasksContext).action === 'tasks';
+
+// The messages for whichever kind of request it is.
+export function messagesFor(ctx: AiContext): ChatMessage[] {
+  return isTasks(ctx) ? buildTaskMessages(ctx) : buildMessages(ctx);
+}
 
 export function buildMessages(ctx: PlanContext): ChatMessage[] {
   return [

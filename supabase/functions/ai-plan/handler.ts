@@ -1,7 +1,8 @@
 // The ai-plan Edge Function's logic: one bounded model request for "Help me adjust today".
 //
 //   1. Only signed-in MyDay accounts (the user's own sign-in token is checked).
-//   2. The request is small and of the right shape (PlanContext, from ../_shared/ai/schema.ts).
+//   2. The request is small and of the right shape: "Help me adjust today" (PlanContext, ../_shared/ai/schema.ts) or
+//      "Add what's on my mind" (TasksContext, ../_shared/ai/tasks.ts). Both share the same limits.
 //   3. Request, spending and pace limits are checked (and the worst-case cost reserved) before the model is called.
 //   4. One model call, with a time limit and a cap on the reply's length. The model can't write anything anywhere:
 //      the reply goes back to the app, which checks every rule and only saves after you confirm.
@@ -10,6 +11,7 @@
 // Everything specific to Deno or Supabase is passed in (Deps), so the same code runs in tests. index.ts wires it up.
 import { callModel, configFromEnv, costUsd, worstCaseCostUsd } from '../_shared/ai/providers.ts';
 import { CONTRACT_VERSION, LIMITS, type PlanContext } from '../_shared/ai/schema.ts';
+import { checkTasksContext } from '../_shared/ai/tasks.ts';
 
 export interface Deps {
   env: (name: string) => string | undefined;
@@ -85,7 +87,7 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
   if (raw.length > LIMITS.bodyBytes) return reply(413, { ok: false, error: 'bad-request' }, 'too-large');
   let body: { context?: unknown };
   try { body = JSON.parse(raw); } catch { return reply(400, { ok: false, error: 'bad-request' }, 'not-json'); }
-  if (!body || !checkContext(body.context)) return reply(400, { ok: false, error: 'bad-request' }, 'bad-context');
+  if (!body || !(checkContext(body.context) || checkTasksContext(body.context))) return reply(400, { ok: false, error: 'bad-request' }, 'bad-context');
   const ctx = body.context;
 
   // 3. The model, and the limits.

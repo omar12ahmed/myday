@@ -28,6 +28,8 @@ import { StudyTodayCard } from '../study/StudyTodayCard';
 import { HealthTodayCard } from '../health/HealthTodayCard';
 import { healthReminders } from '../health/reminders';
 import { AdjustCard } from '../ai/AdjustCard';
+import { MindCard } from '../ai/MindCard';
+import { undoMind, type MindUndo } from '../ai/mind';
 import { canUndo, undoAi, type Undo } from '../ai/apply';
 import { AI_MODE } from '../ai/request';
 import { Card } from '../components/Card';
@@ -51,6 +53,8 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [aiOpen, setAiOpen] = useState(false);          // "Help me adjust today" is open
   const [aiUndo, setAiUndo] = useState<Undo | null>(null); // the last AI suggestion used (one step of Undo)
+  const [mindOpen, setMindOpen] = useState(false);            // "Add what's on my mind" is open
+  const [mindUndo, setMindUndo] = useState<MindUndo | null>(null); // the tasks it last added (one step of Undo)
   const [animateProposal, setAnimateProposal] = useState(false);
   // The gentle nudge: at most once a day, when it applies. Decided when the screen opens.
   const [nudge, setNudge] = useState(() => {
@@ -262,6 +266,26 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
   const slot = (order: string, node: React.ReactNode, id?: string) =>
     node ? <div id={id} className={`min-w-0 ${order} lg:order-none${entering ? ' enter' : ''}`}>{node}</div> : null;
 
+  // "Add what's on my mind": the card, then (after adding) one step of Undo.
+  function openMind() { setMindOpen(true); scrollTo('mindCard'); }
+  const mindSlots = (
+    <>
+      {slot('order-1', mindOpen && <MindCard onClose={() => setMindOpen(false)} onAdded={(u, message) => { setMindOpen(false); setMindUndo(u); toast(message); }} />)}
+      {slot('order-1', mindUndo && (
+        <Card id="mindUndo" className="!py-3">
+          <div className="flex items-center justify-between gap-3">
+            <p className="m-0 text-[15px]">Tasks added from what's on your mind.</p>
+            <Button inline variant="ghost" data-action="mind-undo" onClick={() => {
+              const r = undoMind(mindUndo!);
+              setMindUndo(null);
+              toast(r.result === 'undone' ? 'Taken back.' : r.result === 'partly' ? `Taken back, except ${r.kept} you've changed or that's already on a day's plan.` : "Couldn't save just now.");
+            }}>Undo</Button>
+          </div>
+        </Card>
+      ))}
+    </>
+  );
+
   let main;
   if (view === 'edit') main = slot('order-1', <EditListsView data={data} onBack={() => setView('auto')} />);
   else if (view === 'evening' && eveningKey && data.days[eveningKey]) {
@@ -277,7 +301,8 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
         {slot('order-1', data.timer && !timerIsStale(data) && <TimerCard data={data} onAction={timerAction} />)}
         {slot('order-1', <PlanCard data={data} k={k} justDoneUid={justDoneUid} onToggle={(t, done) => toggle(k, t, done)} onTimer={timer}
           onEvening={() => { setView('evening'); setEveningKey(k); }} onReview={review} onSwapRest={swapRest} onRestart={restart}
-          onAdjust={AI_MODE !== 'off' && !d.rest ? () => { setProposal(null); setAiOpen(true); scrollTo('aiCard'); } : undefined} />)}
+          onAdjust={AI_MODE !== 'off' && !d.rest ? () => { setProposal(null); setAiOpen(true); scrollTo('aiCard'); } : undefined}
+          onMind={AI_MODE !== 'off' ? openMind : undefined} />)}
         {slot('order-1', aiOpen && <AdjustCard data={data} k={k} onClose={() => setAiOpen(false)} onApplied={u => { setAiOpen(false); setAiUndo(u); }} />)}
         {slot('order-1', canUndo(data, aiUndo) && (
           <Card id="aiUndo" className="!py-3">
@@ -291,6 +316,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
             </div>
           </Card>
         ))}
+        {mindSlots}
         {slot('order-1', healthCard, 'slot-health')}
         {slot('order-1', studyCard, 'slot-study')}
         {slot('order-3', context, 'slot-context')}
@@ -302,7 +328,9 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
     main = (
       <>
         {slot('order-1', <MorningCard key={energy} energy={energy} queue={data.queue}
-          onEnergy={v => { update(dr => { ensureContext(dr, k).energy = v; }); contextChanged(); }} onBuild={build} onSkip={skip} />)}
+          onEnergy={v => { update(dr => { ensureContext(dr, k).energy = v; }); contextChanged(); }} onBuild={build} onSkip={skip}
+          onMind={AI_MODE !== 'off' ? openMind : undefined} />)}
+        {mindSlots}
         {slot('order-1', proposalCard)}
         {slot('order-2', context, 'slot-context')}
         {slot('order-3', healthCard, 'slot-health')}

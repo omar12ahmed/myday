@@ -6,8 +6,8 @@
 //                      JSON mode) are settings, see ai-eval/models.json.
 //   mock               the rule-based stand-in in mock.ts (no key, no network)
 import { mockPlanner, type MockVariant } from './mock.ts';
-import { buildMessages } from './prompt.ts';
-import type { PlanContext } from './schema.ts';
+import { isTasks, messagesFor, type AiContext } from './prompt.ts';
+import { mockTasks, type TasksMockVariant } from './tasks.ts';
 
 export interface ProviderConfig {
   provider: 'openai-compatible' | 'mock';
@@ -39,11 +39,11 @@ export const estimateTokens = (s: string) => Math.ceil(s.length / 3.5);
 // For budgets, deliberately on the high side: 3 characters a token, plus a quarter.
 export const RESERVE_CHARS_PER_TOKEN = 3;
 export const RESERVE_MARGIN = 1.25;
-export const reserveInputTokens = (ctx: PlanContext) => Math.ceil((buildMessages(ctx).map(m => m.content).join('\n').length / RESERVE_CHARS_PER_TOKEN) * RESERVE_MARGIN);
+export const reserveInputTokens = (ctx: AiContext) => Math.ceil((messagesFor(ctx).map(m => m.content).join('\n').length / RESERVE_CHARS_PER_TOKEN) * RESERVE_MARGIN);
 
 // The most one request could cost: the whole input (counted generously), plus the longest reply allowed — which
 // includes any reasoning, since providers count reasoning as output. null = prices not known.
-export function worstCaseCostUsd(cfg: ProviderConfig, ctx: PlanContext): number | null {
+export function worstCaseCostUsd(cfg: ProviderConfig, ctx: AiContext): number | null {
   if (cfg.provider === 'mock') return 0;
   if (cfg.priceInPerMTok === null || cfg.priceOutPerMTok === null) return null;
   return (reserveInputTokens(ctx) * cfg.priceInPerMTok + cfg.maxOutputTokens * cfg.priceOutPerMTok) / 1e6;
@@ -68,7 +68,7 @@ export function costUsd(cfg: ProviderConfig, inputTokens: number | null, outputT
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
-export async function callModel(cfg: ProviderConfig, ctx: PlanContext, fetchImpl: typeof fetch = fetch): Promise<ModelResult> {
+export async function callModel(cfg: ProviderConfig, ctx: AiContext, fetchImpl: typeof fetch = fetch): Promise<ModelResult> {
   const t0 = Date.now();
   if (cfg.provider === 'mock') {
     const variant = cfg.model.replace(/^mock:/, '');
@@ -76,9 +76,11 @@ export async function callModel(cfg: ProviderConfig, ctx: PlanContext, fetchImpl
     if (variant === 'truncated') return { ok: false, error: 'truncated', finishReason: 'length', inputTokens: 900, outputTokens: cfg.maxOutputTokens, latencyMs: Date.now() - t0 };
     await sleep(variant === 'slow' ? cfg.timeoutMs + 50 : cfg.mockDelayMs ?? 0);
     if (variant === 'slow') return { ok: false, error: 'timeout', latencyMs: Date.now() - t0 };
-    const full = mockPlanner(ctx, (['good', 'sloppy', 'invalid', 'rest'].includes(variant) ? variant : 'good') as MockVariant);
+    const full = isTasks(ctx)
+      ? mockTasks(ctx, (['good', 'sloppy', 'invalid'].includes(variant) ? variant : 'good') as TasksMockVariant)
+      : mockPlanner(ctx, (['good', 'sloppy', 'invalid', 'rest'].includes(variant) ? variant : 'good') as MockVariant);
     const text = variant === 'partial' ? full.slice(0, Math.floor(full.length / 2)) : full; // JSON that stops half-way
-    return { ok: true, text, inputTokens: estimateTokens(buildMessages(ctx).map(m => m.content).join('\n')), outputTokens: estimateTokens(text), reasoningTokens: null, finishReason: 'stop', latencyMs: Date.now() - t0 };
+    return { ok: true, text, inputTokens: estimateTokens(messagesFor(ctx).map(m => m.content).join('\n')), outputTokens: estimateTokens(text), reasoningTokens: null, finishReason: 'stop', latencyMs: Date.now() - t0 };
   }
   if (!cfg.baseUrl || !cfg.apiKey || !cfg.model) return { ok: false, error: 'config', latencyMs: 0 };
   const ctrl = new AbortController();
@@ -89,7 +91,7 @@ export async function callModel(cfg: ProviderConfig, ctx: PlanContext, fetchImpl
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${cfg.apiKey}` },
       body: JSON.stringify({
         model: cfg.model,
-        messages: buildMessages(ctx),
+        messages: messagesFor(ctx),
         temperature: cfg.temperature,
         [cfg.maxTokensField || 'max_tokens']: cfg.maxOutputTokens,
         ...(cfg.jsonMode === false ? {} : { response_format: { type: 'json_object' } }),

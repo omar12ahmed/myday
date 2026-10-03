@@ -261,8 +261,14 @@ Every request goes through these, in this order, and stops at the first that fai
 
 ## What's sent, and what isn't
 
-Sent for each suggestion: today's date, time and time zone (your device's — MyDay has no time zone setting), energy,
+**"Help me adjust today"** — sent for each suggestion: today's date, time and time zone (your device's — MyDay has no time zone setting), energy,
 last night's and tonight's sleep if recorded, today's tasks (titles, minutes, times, done or not), busy blocks as
 kinds and times (work, appointment, workout, sleep, prep/travel — **no appointment names**), free time, the number of
 Study items due, and your note. Nothing from Finance, Health records or Study notes. Nothing is stored on the server
 except counts (requests, tokens, the budget used); the function's logs hold only an outcome and a time.
+
+**"Add what's on my mind"** — sent: only what you write (up to 1,500 characters) and today's date and weekday. Not
+your lists, queue, plan or anything else (the app finds duplicates itself). It goes through the same function, sign-in
+check and limits (it counts towards the same daily requests and monthly budget). The deployed `ai-plan` version 1
+predates it: the function must be deployed again (step 3 above) before it works with a real model; until then the
+app shows "Couldn't get a suggestion just now. Nothing was added." Practice mode works without it.

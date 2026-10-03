@@ -201,8 +201,8 @@ pay rules) and its settings card are gone from the screen; the rules behind them
 | `src/components/` | Shared pieces with their styling in one place: `Button`, `Card`, `Banner`, `Field` (inputs, including ones saved as you type), `Dialog` (confirmations), `Toast`, `CategoryChip`, `EnergyMeter`, and `parts` (links, rows, chips and labels used by the section screens). |
 | `src/today/` | The Today section's cards and `TodayScreen`, which puts them together. |
 | `src/calendar/` | The Calendar: `CalendarScreen`, the month grid, agenda, selected-day panel, pattern editor and side cards. |
-| `src/ai/` | "Help me adjust today": `context.ts` (what's sent), `validate.ts` (the rules), `apply.ts` (saving, stale check, undo), `request.ts` (the Edge Function or practice mode) and `AdjustCard.tsx` (the card on Today). |
-| `../ai-eval/` | The evaluation of AI models on 20 synthetic days (see its README). |
+| `src/ai/` | "Help me adjust today": `context.ts` (what's sent), `validate.ts` (the rules), `apply.ts` (saving, stale check, undo) and `AdjustCard.tsx` (the card on Today). "Add what's on my mind": `mind.ts` (what's sent, the checks, adding and undo) and `MindCard.tsx`. Both: `request.ts` (the Edge Function or practice mode). |
+| `../ai-eval/` | The evaluation of AI models on 20 synthetic days and 12 synthetic brain dumps (see its README). |
 | `src/finance/` | The Finance screen: `FinanceScreen` (with Left over), `WorkPayCard`, `ExpensesCard`, `OwedCard`, `RatesCard` (folded away), and `actions.ts` (what each button saves). |
 | `src/health/food/` | The Food screens: `FoodScreen` (picks the screen from the address, e.g. `#health/food/shopping`), `FoodHome`, `RecipeCard`, `SearchBox` (with suggestions), `SearchView`, `RecipeView`, `WantView`, `ShoppingView`, `CookView`, `PrefsView`, `RecipeForm`; `actions.ts` (what each button saves) and `visit.ts` (what's kept in memory for the visit: ideas, search results, suggestions, drafts). |
 | `src/health/` | The Health screens: `HealthScreen` (the Workout and Food tabs; picks the screen from the address, e.g. `#health/workout/schedule`), `WorkoutHome`, `TemplateEditor`, `SessionView` (a workout in progress, and correcting a logged one), `SetFields` (the number boxes for a set), `HistoryViews` (history, exercises, exercise history), `Chart`, `ScheduleView` and `HealthTodayCard`; `actions.ts` (what each button saves). |
@@ -305,6 +305,24 @@ Off unless the app is built with `VITE_AI` (`mock` = practice mode, rules not AI
   changed is refused. One step of **Undo** right after (until the plan changes, or you leave).
 - `src/ai/request.ts` talks only to the Edge Function (or the practice planner). The app never holds an AI key.
 - No saved-data changes: suggestions live in memory; the server keeps only counts (requests, tokens, budget).
+
+### "Add what's on my mind"
+
+A second secondary button, on Today before and after the day is built. You write whatever is on your mind; one request
+returns up to 8 small tasks; you tick the ones to add.
+- **Sent**: only what you write and today's date — not your lists, queue or plan (`src/ai/mind.ts`,
+  `buildTasksContext`). The shared contract, instructions and practice version are in
+  `supabase/functions/_shared/ai/tasks.ts`.
+- **Checked** (`checkTasksReply`): at most 8 tasks (more are listed back, not dropped), names cleaned and at most 80
+  characters, a list MyDay has (otherwise Admin), 5–120 minutes, one-off unless said otherwise, the same task twice
+  kept once, gentle wording; anything not turned into a task is listed back under "Not turned into tasks". Tasks
+  already on a list or in the queue (in any wording) are marked and start unticked.
+- **Added** (`applyMind`) only after **Add**: a one-off to the **queue** (no list of its own — MyDay fits it into a
+  coming day, oldest first, within the day's energy rule, and once done it's gone); a repeating one to the end of its
+  **list**. Only additions; nothing else changes. One step of **Undo** takes back exactly what was added, except a
+  task you've changed since or one already on a day's plan.
+- Saved data keeps its shape (a queue item with no list, `taskId: null`, as the classic MyDay already allows), so
+  both versions and sync read it as they are.
 
 ## Milestones
 

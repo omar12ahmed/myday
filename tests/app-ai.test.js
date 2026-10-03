@@ -82,6 +82,34 @@ const SEED = `s => {
   check('Undo puts the plan and the queue back exactly', eq(after.days[TODAY], before.days[TODAY]) && eq(after.queue, before.queue) && (await mock.text('#toast')).includes('Put back'));
   check('practice mode contacted no server', srv.log.length === logBefore);
 
+  console.log('\n[2b] "Add what\'s on my mind" (practice mode)');
+  const MIND_SEED = SEED.replace(/}$/, `  s.lists.admin.push({ id: 'a-gp', title: 'Call the GP', minutes: 10 });\n}`);
+  await open(mock, MOCK); await mock.setData(MIND_SEED); await mock.until(`document.querySelector('[data-action=evening]')`);
+  check('"Add what\'s on my mind" is on the plan, as a secondary action', await mock.ev(`(() => { const b = document.querySelector('[data-action=mind-open]'); return !!b && b.dataset.variant !== 'primary'; })()`));
+  await mock.click('[data-action=mind-open]'); await mock.until(`document.getElementById('mindText')`);
+  check('it says what\'s sent (here: nothing — practice mode)', (await mock.text('#mindCard')).includes('Practice mode') && (await mock.text('#mindCard')).includes('Nothing is sent anywhere'));
+  const beforeMind = await mock.data();
+  await mock.type('#mindText', "car insurance renewal\ncall the GP\nI'm so tired this week\nstretch every morning");
+  await mock.click('[data-action=mind-ask]'); await mock.until(`document.getElementById('mindCard')?.dataset.phase === 'review'`);
+  const items = await mock.ev(`[...document.querySelectorAll('#mindItems .mind-item')].map(li => ({ t: li.querySelector('.font-medium').textContent, on: li.querySelector('input').checked, already: li.querySelector('.mind-already')?.textContent || '' }))`);
+  check('three small tasks suggested; "Call the GP" is already on the Admin list, so it starts unticked', items.length === 3 && items.find(i => /GP/i.test(i.t)).on === false && /Admin list/.test(items.find(i => /GP/i.test(i.t)).already) && items.filter(i => i.on).length === 2, items);
+  check('the feeling isn\'t made a task — it\'s listed back under "Not turned into tasks"', (await mock.text('#mindNotTasks')).includes("so tired"));
+  check('nothing is saved before "Add"', eq((await mock.data()).lists, beforeMind.lists) && eq((await mock.data()).queue, beforeMind.queue));
+  check('"stretch every morning" is suggested as repeating; the others one-off', await mock.ev(`(() => { const li = [...document.querySelectorAll('#mindItems .mind-item')].find(l => /stretch/i.test(l.textContent)); return li.querySelector('[data-s=mind-repeat]').getAttribute('aria-pressed') === 'true'; })()`));
+  check('the button says how many will be added', (await mock.text('[data-action=mind-add]')).includes('Add 2 tasks'));
+  await mock.click('[data-action=mind-add]'); await sleep(300);
+  let afterMind = await mock.data();
+  const qMind = afterMind.queue.find(q => /insurance/i.test(q.title));
+  check('"Add": the one-off goes to the queue (no list of its own), the repeating one to the end of the Health list', qMind && qMind.taskId === null && qMind.queuedOn === TODAY && /stretch/i.test(afterMind.lists.health[afterMind.lists.health.length - 1].title), { queue: afterMind.queue, health: afterMind.lists.health.slice(-1) });
+  check('…"Call the GP" isn\'t added twice; today\'s plan, energy and the other lists are untouched', afterMind.lists.admin.filter(x => /GP/i.test(x.title)).length === 1 && eq(afterMind.days, beforeMind.days) && eq(afterMind.context, beforeMind.context) && eq(afterMind.lists.learning, beforeMind.lists.learning));
+  check('…and it says so, with Undo', (await mock.text('#toast')).includes('Added 2 tasks') && (await mock.exists('[data-action=mind-undo]')));
+  await mock.click('[data-action=mind-undo]'); await sleep(300);
+  afterMind = await mock.data();
+  check('Undo takes back exactly what was added', eq(afterMind.lists, beforeMind.lists) && eq(afterMind.queue, beforeMind.queue) && (await mock.text('#toast')).includes('Taken back'));
+  await mock.setData(`s => { delete s.days['${TODAY}']; }`); await mock.until(`document.querySelector('[data-action=build]')`);
+  check('before the day is built it\'s there too (queued tasks are picked first when you build)', await mock.exists('#slot-energy [data-action=mind-open]'));
+  check('practice mode still contacted no server', srv.log.length === logBefore);
+
   console.log('\n[3] With an account: the ai-plan Edge Function (its real code, a mock model)');
   const D = await device('edge');
   await seeded(D, EDGE);
@@ -157,6 +185,17 @@ const SEED = `s => {
   check('the adjusted plan is saved like any other change', eq(await plan(D), saved) && saved.tasks.some(t => t.done));
   check('…(Undo is for straight after: it isn\'t offered after a reload)', !(await D.exists('[data-action=ai-undo]')));
 
+  console.log('\n[8b] "Add what\'s on my mind" with an account (the Edge Function\'s real code, a mock model)');
+  await D.ev(`location.hash = 'today'`); await sleep(200);
+  setAi({ AI_PROVIDER: 'mock', AI_MODEL: 'mock:good' });
+  const callsBefore = aiCalls().length;
+  await D.click('[data-action=mind-open]'); await D.until(`document.getElementById('mindText')`);
+  check('it says exactly what\'s sent: what you write and today\'s date — not your lists or plan', (await D.text('#mindCard')).includes("what you write here and today's date"));
+  await D.type('#mindText', 'book the dentist, revise subnetting');
+  await D.click('[data-action=mind-ask]'); await D.until(`['review', 'error'].includes(document.getElementById('mindCard')?.dataset.phase)`);
+  check('a suggestion comes back through the function, for review', (await D.ev(`document.getElementById('mindCard').dataset.phase`)) === 'review' && (await D.ev(`document.querySelectorAll('#mindItems .mind-item').length`)) === 2 && aiCalls().length === callsBefore + 1);
+  await D.click('[data-action=mind-cancel]'); await sleep(150);
+
   console.log('\n[9] Layout');
   await D.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await D.ev(`location.hash = 'today'`);
@@ -166,6 +205,13 @@ const SEED = `s => {
   check('phone: the suggestion fits (nothing scrolls sideways)', !(await mock.ev('document.documentElement.scrollWidth > innerWidth')));
   const small = await mock.ev(`[...document.querySelectorAll('#aiCard button, #aiCard textarea, #aiCard summary')].filter(b => b.offsetParent !== null).map(b => { const r = b.getBoundingClientRect(); return { t: b.textContent.trim().slice(0, 20), h: Math.round(r.height) }; }).filter(x => x.h < 44)`);
   check('phone: its buttons are easy to tap (44 px or more)', small.length === 0, small);
+  await mock.ev(`document.querySelector('[data-action=ai-cancel]')?.click()`); await sleep(150);
+  await mock.click('[data-action=mind-open]'); await mock.until(`document.getElementById('mindText')`);
+  await mock.type('#mindText', 'car insurance renewal, call the dentist about the appointment next week, revise subnetting and VLANs for the exam, stretch every morning');
+  await mock.click('[data-action=mind-ask]'); await mock.until(`document.getElementById('mindCard')?.dataset.phase === 'review'`);
+  check('phone: "Add what\'s on my mind" fits too (nothing scrolls sideways)', !(await mock.ev('document.documentElement.scrollWidth > innerWidth')));
+  const smallM = await mock.ev(`[...document.querySelectorAll('#mindCard button, #mindCard textarea, #mindCard summary, #mindCard label')].filter(b => b.offsetParent !== null).map(b => { const r = b.getBoundingClientRect(); return { t: b.textContent.trim().slice(0, 20), h: Math.round(r.height) }; }).filter(x => x.h < 44)`);
+  check('phone: its ticks and buttons are easy to tap (44 px or more)', smallM.length === 0, smallM);
 
   const errs = [plain, mock, D].flatMap(x => x.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.text));
   check('no JavaScript errors', errs.length === 0, errs.slice(0, 3));

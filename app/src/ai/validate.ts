@@ -42,9 +42,9 @@ export interface CheckedProposal {
 export interface Checked { proposal: CheckedProposal | null; violations: Violation[] }
 
 const CLOCK = /^([01]\d|2[0-3]):[0-5]\d$/;
-const MAX_WORDS = 45;
+export const MAX_WORDS = 45;
 // Pressure, guilt or blame have no place in MyDay. A model that slips into it gets a plain explanation instead.
-const PRESSURE = /\b(you (really )?(should|must|have to|need to)|push (yourself|through)|fall(ing)? behind|no excuses?|lazy|failure|failing|wasted?|disappoint\w*|be more productive)\b/i;
+export const PRESSURE = /\b(you (really )?(should|must|have to|need to)|push (yourself|through)|fall(ing)? behind|no excuses?|lazy|failure|failing|wasted?|disappoint\w*|be more productive)\b/i;
 const toMin = (c: string) => Number(c.slice(0, 2)) * 60 + Number(c.slice(3, 5));
 
 // The JSON object in a reply (also if a model wraps it in ```json fences or adds a sentence around it).
@@ -60,7 +60,7 @@ export function parseReply(text: string): unknown {
 
 // Text cut to at most `max` characters: at the end of a sentence if there's one in the second half, otherwise at a
 // word, with "…". `wasCut` = it has already been cut short (e.g. to a number of words).
-function shorten(s: string, max: number, wasCut = false): string {
+export function shorten(s: string, max: number, wasCut = false): string {
   if (s.length <= max && !wasCut) return s;
   const cut = s.slice(0, max);
   const end = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('! '), /[.!]$/.test(cut) ? cut.length - 1 : -1);

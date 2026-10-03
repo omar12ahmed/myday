@@ -126,11 +126,17 @@ const FAKE_KEY = 'zai-made-up-key-for-deno-test';
     res = await fn.call({ context: ctx, user_id: B, account: B, userId: B }, { token: tokA });
     check('another account named in the request body: ignored — only the caller is counted', res.status === 200 && (await usage(A)).requests === 2 && (await usage(B)).requests === 0);
 
+    const tctx = { version: 1, action: 'tasks', date: '2026-11-10', weekday: 'Tuesday', text: 'car insurance renewal, call the GP', maxItems: 8 };
+    res = await fn.call({ context: tctx }, { token: tokA }); body = await res.json();
+    const tsent = provider.calls[provider.calls.length - 1];
+    check('"Add what\'s on my mind" through the same entry: 200, with the brain-dump instructions and what was written as content', res.status === 200 && body.ok === true && /small tasks/.test(tsent.body.messages?.[0]?.content || '') && (tsent.body.messages?.[1]?.content || '').includes('call the GP') && (await usage(A)).requests === 3, body);
+    check('…a malformed brain dump (extra fields): 400, and the model isn\'t called', (await fn.call({ context: { ...tctx, lists: ['x'] } }, { token: tokA })).status === 400 && provider.calls[provider.calls.length - 1] === tsent);
+
     console.log('\n[3] Unusable replies and failures: refused, nothing for the app to save');
     provider.mode = 'length';
     res = await fn.call({ context: ctx }, { token: tokA }); body = await res.json();
     u = await usage(A);
-    check('a reply cut off at the length limit: 502 "truncated" — its billed tokens still recorded', res.status === 502 && body.ok === false && body.detail === 'truncated' && u.output === 120 * 2 + 2048, { body, u });
+    check('a reply cut off at the length limit: 502 "truncated" — its billed tokens still recorded', res.status === 502 && body.ok === false && body.detail === 'truncated' && u.output === 120 * 3 + 2048, { body, u });
     provider.mode = 'refused';
     res = await fn.call({ context: ctx }, { token: tokA }); body = await res.json();
     check('the provider refusing the request: 502, and its message (which repeats the key) isn\'t passed on', res.status === 502 && body.detail === 'http' && !JSON.stringify(body).includes(FAKE_KEY), body);
