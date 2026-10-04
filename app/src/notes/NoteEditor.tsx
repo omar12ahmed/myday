@@ -6,7 +6,7 @@ import { useConfirm } from '../components/confirm';
 import { Field, Select, TextArea, TextInput } from '../components/Field';
 import { BackLink, Note } from '../components/parts';
 import { shortDate } from '../data/dates';
-import { editNote, isBlank, NOTE_LIMITS, OTHER, removeNote } from '../data/notes';
+import { editNote, INBOX, isBlank, NOTE_LIMITS, removeNote } from '../data/notes';
 import { getSnapshot, update, updateSaved } from '../data/storage';
 import { toast } from '../data/toast';
 import type { MyDayData } from '../data/types';
@@ -49,7 +49,7 @@ export function NoteEditor({ data, id }: { data: MyDayData; id: string }) {
       window.removeEventListener('pagehide', flush);
       flush();
       // Only once you've really left the note (React's development mode also takes a screen down and up again).
-      if (location.hash === `#notes/${id}`) return;
+      if (location.hash === `#inbox/notes/${id}` || location.hash === `#notes/${id}`) return;
       const n = getSnapshot().data.notes.items.find(x => x.id === id);
       if (n && isBlank(n)) update(d => (removeNote(d.notes, id) ? undefined : false));
     };
@@ -60,7 +60,7 @@ export function NoteEditor({ data, id }: { data: MyDayData; id: string }) {
   if (!note) {
     return (
       <>
-        <BackLink to="notes" label="Notes" />
+        <BackLink to="inbox" label="Notes" />
         <Card><h2>This note isn't here</h2><Note className="m-0">It may have been deleted, here or in another tab.</Note></Card>
       </>
     );
@@ -72,17 +72,17 @@ export function NoteEditor({ data, id }: { data: MyDayData; id: string }) {
     window.clearTimeout(timer.current);
     pending.current = false;
     if (update(d => (removeNote(d.notes, id) ? undefined : false))) toast('Note deleted.');
-    location.hash = 'notes';
+    location.hash = 'inbox';
   }
 
   return (
     <>
-      <BackLink to="notes" label="Notes" />
+      <BackLink to="inbox" label="Notes" />
       <Card aria-label="Note" id="noteEditor">
         <div className="grid gap-3">
-          <Field label="Category" htmlFor="noteCat">
+          <Field label="Where it's kept" htmlFor="noteCat">
             <Select id="noteCat" value={known ? note.categoryId : ''} onChange={e => { flush(); update(d => (editNote(d.notes, id, { categoryId: e.target.value }) ? undefined : false)); }}>
-              {!known && <option value="">{OTHER}</option>}
+              <option value="">{INBOX}</option>
               {data.notes.categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </Select>
           </Field>

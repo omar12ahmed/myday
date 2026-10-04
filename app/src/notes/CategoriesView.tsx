@@ -5,12 +5,12 @@ import { Card } from '../components/Card';
 import { useConfirm } from '../components/confirm';
 import { CommitInput, Field, TextInput } from '../components/Field';
 import { BackLink, Note } from '../components/parts';
-import { addCategory, moveCategory, NOTE_LIMITS, OTHER, removeCategory, renameCategory } from '../data/notes';
+import { addCategory, moveCategory, NOTE_LIMITS, removeCategory, renameCategory } from '../data/notes';
 import { update } from '../data/storage';
 import { toast } from '../data/toast';
 import type { MyDayData } from '../data/types';
 
-// Your note categories: rename, reorder, add and remove. Removing one never removes notes — they move to "Other".
+// Your note collections: rename, reorder, add and remove. Removing one never removes notes — they go back to the Inbox.
 export function CategoriesView({ data }: { data: MyDayData }) {
   const confirm = useConfirm();
   const [name, setName] = useState('');
@@ -19,11 +19,11 @@ export function CategoriesView({ data }: { data: MyDayData }) {
 
   async function remove(id: string, label: string) {
     const n = notesIn(id);
-    const ok = await confirm({ title: `Remove “${label}”?`, body: n ? `${n === 1 ? 'Its note moves' : `Its ${n} notes move`} to “${OTHER}”. No notes are deleted.` : 'It has no notes.', confirmLabel: 'Remove', cancelLabel: 'Keep it' });
+    const ok = await confirm({ title: `Remove “${label}”?`, body: n ? `${n === 1 ? 'Its note goes' : `Its ${n} notes go`} back to your Inbox. No notes are deleted.` : 'It has no notes.', confirmLabel: 'Remove', cancelLabel: 'Keep it' });
     if (!ok) return;
     let moved = 0;
     update(d => { const r = removeCategory(d.notes, id); moved = r.moved; if (!r.removed) return false; });
-    toast(moved ? `Removed. ${moved} note${moved === 1 ? '' : 's'} moved to “${OTHER}”.` : 'Removed.');
+    toast(moved ? `Removed. ${moved} note${moved === 1 ? '' : 's'} back in your Inbox.` : 'Removed.');
   }
   function add() {
     let ok = false;
@@ -34,10 +34,10 @@ export function CategoriesView({ data }: { data: MyDayData }) {
 
   return (
     <>
-      <BackLink to="notes" label="Notes" />
+      <BackLink to="inbox" label="Notes" />
       <Card aria-labelledby="ncat-h">
-        <h2 id="ncat-h">Note categories</h2>
-        <Note className="mt-0">Rename, reorder, add or remove. Removing a category moves its notes to “{OTHER}”; nothing is deleted.</Note>
+        <h2 id="ncat-h">Collections</h2>
+        <Note className="mt-0">Optional places to file notes. Rename, reorder, add or remove them; removing one puts its notes back in your Inbox — nothing is deleted.</Note>
         <ul className="list-none p-0 m-0" id="noteCats">
           {cats.map((c, i) => (
             <li key={c.id} className="ncat-row grid grid-cols-[minmax(0,1fr)_auto] gap-2 items-center py-2.5 border-t border-outline first:border-t-0" data-id={c.id}>
@@ -53,7 +53,7 @@ export function CategoriesView({ data }: { data: MyDayData }) {
           ))}
         </ul>
         <form className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 items-end mt-3" onSubmit={e => { e.preventDefault(); add(); }}>
-          <Field label="New category" htmlFor="ncatNew">
+          <Field label="New collection" htmlFor="ncatNew">
             <TextInput id="ncatNew" value={name} maxLength={NOTE_LIMITS.categoryName} onChange={e => setName(e.target.value)} placeholder="e.g. Travel" />
           </Field>
           <Button inline type="submit" data-action="ncat-add" disabled={!name.trim()}>Add</Button>

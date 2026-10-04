@@ -236,7 +236,7 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   await ev('document.activeElement && document.activeElement.blur(); window.scrollTo(0, 0)');
   const order = [];
   for (let i = 0; i < 7; i++) { await press('Tab'); order.push(await focused()); }
-  check('Tab reaches the theme button and then each section in the navigation', order[0] === 'themeBtn' && eq(order.slice(1, 6), ['#today', '#calendar', '#finance', '#health', '#study']), order);
+  check('Tab reaches the theme button and then each section in the navigation', order[0] === 'themeBtn' && eq(order.slice(1, 7), ['#today', '#calendar', '#inbox', '#finance', '#health', '#study']), order);
   check('…with a visible focus outline', (await ev(`getComputedStyle(document.activeElement).outlineStyle`)) !== 'none');
   await ev(`document.querySelector('#nav a[href="#finance"]').focus()`); await press('Enter'); await sleep(250);
   check('Enter on a navigation link opens that section', (await ev('location.hash')) === '#finance');

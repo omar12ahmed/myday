@@ -204,7 +204,7 @@ pay rules) and its settings card are gone from the screen; the rules behind them
 | `src/ai/` | "Help me adjust today": `context.ts` (what's sent), `validate.ts` (the rules), `apply.ts` (saving, stale check, undo) and `AdjustCard.tsx` (the card on Today). "Add what's on my mind": `mind.ts` (what's sent, the checks, adding and undo) and `MindCard.tsx`. Both: `request.ts` (the Edge Function or practice mode). |
 | `../ai-eval/` | The evaluation of AI models on 20 synthetic days and 12 synthetic brain dumps (see its README). |
 | `src/finance/` | The Finance screen: `FinanceScreen` (with Left over), `WorkPayCard`, `ExpensesCard`, `OwedCard`, `RatesCard` (folded away), and `actions.ts` (what each button saves). |
-| `src/notes/` | Notes, reached from Today: `NotesScreen` (the list: categories, search, pinned first), `NoteEditor` (one note, saved as you type), `CategoriesView`, and `route.ts` (`#notes`, `#notes/<id>`, `#notes/categories`). The data and every change to it: `src/data/notes.ts`; the card on Today: `src/today/NotesCard.tsx`. |
+| `src/inbox/`, `src/notes/`, `src/capture/` | The Inbox section (`InboxScreen`), Notes (`NotesScreen`: search, Inbox, collections; `NoteEditor`; `CategoriesView`; `route.ts` — `#inbox`, `#inbox/notes/<id>`, `#inbox/notes/in/<id>`, `#inbox/notes/collections`, and older `#notes…` links), and Capture (`parse.ts`, `save.ts`, `CaptureSheet.tsx`). The notes data: `src/data/notes.ts`. |
 | `src/health/food/` | The Food screens: `FoodScreen` (picks the screen from the address, e.g. `#health/food/shopping`), `FoodHome`, `RecipeCard`, `SearchBox` (with suggestions), `SearchView`, `RecipeView`, `WantView`, `ShoppingView`, `CookView`, `PrefsView`, `RecipeForm`; `actions.ts` (what each button saves) and `visit.ts` (what's kept in memory for the visit: ideas, search results, suggestions, drafts). |
 | `src/health/` | The Health screens: `HealthScreen` (the Workout and Food tabs; picks the screen from the address, e.g. `#health/workout/schedule`), `WorkoutHome`, `TemplateEditor`, `SessionView` (a workout in progress, and correcting a logged one), `SetFields` (the number boxes for a set), `HistoryViews` (history, exercises, exercise history), `Chart`, `ScheduleView` and `HealthTodayCard`; `actions.ts` (what each button saves). |
 | `src/study/` | The Study screens: `StudyScreen` (picks the screen from the address, e.g. `#study/roadmap`), `Dashboard`, `Roadmap`, `CourseDetails`, `TaskDetails`, `SessionView`, `CheckinView`, `RevisionView`, `ConceptsView`, `ConceptView`, `ProgressView`, `StudySettings` and `StudyTodayCard`; `actions.ts` (what each button saves), `round.ts` (the revision round, kept in memory), `parts.tsx` (small shared pieces). |
@@ -326,19 +326,34 @@ examples, training experience, days and equipment, pace, and a few health questi
   section (added by the new app, like Finance and Notes; the classic MyDay keeps it unread), on this device only.
   Code: `src/data/goals.ts` (the figures), `src/health/GoalView.tsx`.
 
-## Notes
+## Inbox and Capture
 
-Somewhere to keep notes, sorted into your own categories (starting with Lifestyle, Business ideas, Health & fitness,
-Money, Study & career and Personal; rename, reorder, add or remove them). Reached from a card on Today — "New note"
-or "All notes" — so the bar keeps its five sections.
-- A note has a category, an optional title and its text. It's saved as you type (after a short pause), when you leave
-  a box, and when you switch away from MyDay; a new note left empty is removed when you leave it.
-- Pinned notes come first, then the most recently changed. Search looks in titles and text.
-- Removing a category never removes notes: they move to "Other". Deleting a note asks first.
-- Saved in `myday.data.v4` as a new `notes` section (`{ categories, items }`), added by the new app in 1.3.0, the way
-  Finance was: the classic MyDay keeps any section it doesn't know exactly as it is, so the two stay compatible.
-  Older data without it opens with the starter categories. Notes are in "Export my data"; they aren't synced between
-  devices yet (that's a separate step: new tables in the Supabase project).
+**Inbox** is the sixth section in the bar (Today, Calendar, Inbox, Finance, Health, Study). For now it holds **Notes**;
+Tasks and Ideas get their own tabs there when they're ready (they aren't shown before).
+- **Notes** is an Inbox you can dump anything into — nothing has to be filed. Each note in the Inbox shows a one-tap
+  suggestion from its words ("File in Business ideas") and a "File it…" menu; **collections** (Lifestyle, Business
+  ideas, Health & fitness, Money, Study & career, Personal — rename, reorder, add or remove) each have their own list;
+  **search** looks in every note. Removing a collection puts its notes back in the Inbox; nothing is deleted. A note
+  is saved as you type (after a short pause), when you leave a box and when you switch away; a new note left empty
+  isn't kept; deleting asks first.
+- Saved as the `notes` section (`{ categories, items }`; a note with no collection, or one whose collection has gone,
+  is in the Inbox). Notes filed in 1.3.0 stay filed. The classic MyDay keeps the section unread. Notes stay on this
+  device (not synced) and are in "Export my data".
+
+**Capture** (the **+** button: bottom-right above the bar on phones, beside the theme button on wide screens, on every
+screen): type anything and MyDay suggests what it looks like — and does only what you tap.
+- A time ("call GP tomorrow at 10am", "meeting with Jo next Tuesday 2-3pm") → **Add to Calendar** (an appointment,
+  30 minutes unless an end is given). An action ("renew passport", "need to email the landlord") → **Add as a task**
+  (to your queue, on the list you pick; a date without a time stays in the task's name until Tasks has dates). An
+  idea ("app idea: …", "what if…") → **Save in Business ideas**. Anything else → **Save to Notes inbox**. The other
+  choices are always there too.
+- Worked out on the device, nothing sent: dates and times with [chrono-node](https://github.com/wanasit/chrono)
+  (MIT; UK date order, and "the 14th" read as this month or the next), grammar and people's names with
+  [compromise](https://github.com/spencermountain/compromise) (MIT), and plain rules for action words, appointment
+  words, ideas, lists and collections (`src/capture/parse.ts`). Both libraries load only when Capture first opens.
+  Saving: `src/capture/save.ts`; the sheet: `src/capture/CaptureSheet.tsx`.
+- Wide screens: below 1440 px the bar shows icons only (with names for screen readers and on hover), so six
+  sections, Capture and the theme button never run into a long date.
 
 ## AI help: "Help me adjust today" (prototype)
 
@@ -404,3 +419,6 @@ returns up to 8 small tasks; you tick the ones to add.
     with its own roadmap; new courses can be suggested on Today), and Health → Goal (a goal, a few questions and a plan
     from public guidance, connected to Workout, recipes and Today). Notes and Goal are new sections the classic MyDay
     keeps unread; Study topics are kept by both versions.
+11. **Release 1.4.0:** Inbox (a sixth section) with Notes as an Inbox, optional collections and search, and Capture
+    on every screen — suggestions from what you type (Calendar, a task, an idea, a note), worked out on the device.
+    Part 1 of 3: Tasks and Ideas follow.

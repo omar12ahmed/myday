@@ -11,7 +11,8 @@ import type { Theme } from './data/types';
 import { useMyDay } from './data/useMyDay';
 import { Nav } from './shell/Nav';
 import { barSection, sectionFromHash, type SectionId } from './shell/sections';
-import { NotesScreen } from './notes/NotesScreen';
+import { InboxScreen } from './inbox/InboxScreen';
+import { CaptureButton } from './capture/CaptureSheet';
 import { CalendarScreen } from './calendar/CalendarScreen';
 import { FinanceScreen } from './finance/FinanceScreen';
 import { StudyScreen } from './study/StudyScreen';
@@ -136,7 +137,7 @@ function Shell() {
   } else if (section === 'calendar') content = <CalendarScreen data={data} canSave={status.kind === 'ok'} motionAllowed={motionAllowed} />;
   else if (section === 'finance') content = <FinanceScreen data={data} canSave={status.kind === 'ok'} />;
   else if (section === 'study') content = <StudyScreen data={data} hash={hash} />;
-  else if (section === 'notes') content = <NotesScreen data={data} hash={hash} />;
+  else if (section === 'inbox') content = <InboxScreen data={data} hash={hash} />;
   else content = <HealthScreen data={data} hash={hash} />;
 
   return (
@@ -154,6 +155,7 @@ function Shell() {
         </div>
       </header>
       {!blocked && <Nav current={barSection(section)} />}
+      {!blocked && status.kind === 'ok' && <CaptureButton data={data} />}
       <main id="app" className="max-w-[640px] lg:max-w-[1120px] mx-auto px-4 lg:px-6 pt-4 lg:pt-6">
         {loadIssue && !blocked && (
           <LoadIssue dropped={loadIssue.dropped}

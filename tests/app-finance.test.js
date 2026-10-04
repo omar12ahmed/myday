@@ -33,7 +33,7 @@ const BH = `{ region: 'england-and-wales', fetchedAt: 'WHEN', divisions: { 'engl
   await editStorage(`s => { s.rota.patterns = [${PATTERN}]; s.bankHolidays = ${BH.replace('WHEN', '2026-10-15T08:00')};
     s.pay.averageWeeklyEarnings = 321; s.pay.bankHolidayHours = 'clock'; s.pay.taxCode = '1257L'; s.pay.hourlyRate = 11; }`);
   await go('today', 2026, 10, 15, 9, 1);
-  check('the navigation says Finance where it said Pay', eq(await ev(`[...document.querySelectorAll('#nav .nav-item')].map(a => a.textContent.trim())`), ['Today', 'Calendar', 'Finance', 'Health', 'Study']));
+  check('the navigation says Finance where it said Pay', eq(await ev(`[...document.querySelectorAll('#nav .nav-item')].map(a => a.textContent.trim())`), ['Today', 'Calendar', 'Inbox', 'Finance', 'Health', 'Study']));
   check('nothing is changed before Finance is opened', (await data()).pay.hourlyRate === 11 && (await fin()).ratesSetOn === null);
   await click('#nav a[href="#finance"]'); await sleep(400);
   const p = (await data()).pay;

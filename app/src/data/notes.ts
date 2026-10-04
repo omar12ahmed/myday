@@ -1,13 +1,16 @@
 // Notes: what's in them, how they're read from saved data, and every change to them. Only the new app shows Notes;
 // the classic MyDay keeps this section exactly as it is (it keeps any section it doesn't know). Notes stay on this
 // device (they aren't part of sync) and are included in "Export my data".
+//
+// A note without a collection is in the Inbox: you never have to file anything. Collections ("categories" in the
+// saved data) are optional places to file notes later; a note whose collection has gone is back in the Inbox.
 import { isDateTime, localStamp } from './dates';
 import type { Note, NoteCategory, NotesData } from './types';
 import { isObj, listOf, uid } from './util';
 
 export const NOTE_LIMITS = { categories: 30, categoryName: 40, title: 120, text: 20000 };
 export const DEFAULT_CATEGORIES = ['Lifestyle', 'Business ideas', 'Health & fitness', 'Money', 'Study & career', 'Personal'];
-export const OTHER = 'Other'; // where notes go when their category is removed
+export const INBOX = 'Inbox'; // notes with no collection (or one that's gone)
 
 export function emptyNotes(): NotesData {
   return { categories: DEFAULT_CATEGORIES.map(name => ({ id: 'nc' + uid(), name })), items: [] };
@@ -48,25 +51,34 @@ export function normalizeNotes(raw: unknown, report: { dropped: number }): Notes
 export const isBlank = (n: Note) => !n.title.trim() && !n.text.trim();
 // A note's name in lists: its title, otherwise its first line.
 export const noteName = (n: Note) => n.title.trim() || n.text.trim().split('\n')[0].slice(0, 80) || 'Untitled note';
-export const categoryName = (d: NotesData, id: string) => d.categories.find(c => c.id === id)?.name ?? OTHER;
+export const categoryName = (d: NotesData, id: string) => d.categories.find(c => c.id === id)?.name ?? INBOX;
+export const inInbox = (d: NotesData, n: Note) => !d.categories.some(c => c.id === n.categoryId);
 
-// The notes to show: in one category (or all), matching a search (title or text, any case), pinned first, then the
-// most recently changed.
+// The notes to show: in one collection, the Inbox ('') or all (null), matching a search (title or text, any case),
+// pinned first, then the most recently changed.
 export function notesView(d: NotesData, categoryId: string | null, query: string): Note[] {
   const q = query.trim().toLowerCase();
   const known = new Set(d.categories.map(c => c.id));
   return d.items
-    .filter(n => categoryId === null || n.categoryId === categoryId || (categoryId === '' && !known.has(n.categoryId)))
+    .filter(n => categoryId === null || (categoryId === '' ? !known.has(n.categoryId) : n.categoryId === categoryId))
     .filter(n => !q || n.title.toLowerCase().includes(q) || n.text.toLowerCase().includes(q))
     .sort((a, b) => Number(b.pinned) - Number(a.pinned) || (a.updatedAt < b.updatedAt ? 1 : a.updatedAt > b.updatedAt ? -1 : 0));
 }
-export const strayCount = (d: NotesData) => { const known = new Set(d.categories.map(c => c.id)); return d.items.filter(n => !known.has(n.categoryId)).length; };
+export const inboxCount = (d: NotesData) => { const known = new Set(d.categories.map(c => c.id)); return d.items.filter(n => !known.has(n.categoryId)).length; };
 
 // ---------- Changes (each used inside update(), so it goes through the checked save path) ----------
-export function addNote(d: NotesData, categoryId: string): string {
+// A new note — in the Inbox unless a collection is given.
+export function addNote(d: NotesData, categoryId = '', text = ''): string {
   const id = 'nt' + uid(), now = localStamp();
-  d.items.push({ id, categoryId, title: '', text: '', pinned: false, createdAt: now, updatedAt: now });
+  d.items.push({ id, categoryId, title: '', text: text.slice(0, NOTE_LIMITS.text), pinned: false, createdAt: now, updatedAt: now });
   return id;
+}
+// Filing a note in a collection (or back to the Inbox, '') — not counted as changing the note.
+export function fileNote(d: NotesData, id: string, categoryId: string): boolean {
+  const n = d.items.find(x => x.id === id);
+  if (!n || n.categoryId === categoryId) return false;
+  n.categoryId = categoryId;
+  return true;
 }
 // Returns false if nothing changed (so nothing is saved).
 export function editNote(d: NotesData, id: string, patch: Partial<Pick<Note, 'title' | 'text' | 'categoryId' | 'pinned'>>): boolean {
@@ -79,9 +91,9 @@ export function editNote(d: NotesData, id: string, patch: Partial<Pick<Note, 'ti
     pinned: patch.pinned ?? n.pinned,
   };
   if (next.title === n.title && next.text === n.text && next.categoryId === n.categoryId && next.pinned === n.pinned) return false;
-  const pinOnly = next.title === n.title && next.text === n.text && next.categoryId === n.categoryId;
+  const wordsSame = next.title === n.title && next.text === n.text;
   Object.assign(n, next);
-  if (!pinOnly) n.updatedAt = localStamp(); // pinning doesn't count as changing the note
+  if (!wordsSame) n.updatedAt = localStamp(); // pinning or filing doesn't count as changing the note
   return true;
 }
 export function removeNote(d: NotesData, id: string): boolean {
@@ -112,16 +124,12 @@ export function moveCategory(d: NotesData, id: string, dir: -1 | 1): boolean {
   [d.categories[i], d.categories[j]] = [d.categories[j], d.categories[i]];
   return true;
 }
-// Removing a category never removes notes: its notes move to "Other" (made if it isn't there yet).
+// Removing a collection never removes notes: its notes go back to the Inbox.
 export function removeCategory(d: NotesData, id: string): { removed: boolean; moved: number } {
   const i = d.categories.findIndex(c => c.id === id);
   if (i < 0) return { removed: false, moved: 0 };
   const notes = d.items.filter(n => n.categoryId === id);
   d.categories.splice(i, 1);
-  if (notes.length) {
-    let other = d.categories.find(c => c.name === OTHER);
-    if (!other) { other = { id: 'nc' + uid(), name: OTHER }; d.categories.push(other); }
-    for (const n of notes) n.categoryId = other.id;
-  }
+  for (const n of notes) n.categoryId = '';
   return { removed: true, moved: notes.length };
 }
