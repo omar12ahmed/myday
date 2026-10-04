@@ -110,11 +110,11 @@ function NotesHome({ data }: { data: MyDayData }) {
 
 function CollectionView({ data, id }: { data: MyDayData; id: string }) {
   const d = data.notes, c = d.categories.find(x => x.id === id);
-  if (!c) return <><BackLink to="inbox" label="Notes" /><Card><h2>This collection isn't here</h2><Note className="m-0">It may have been removed; its notes are in your Inbox.</Note></Card></>;
+  if (!c) return <><BackLink to="inbox/notes" label="Notes" /><Card><h2>This collection isn't here</h2><Note className="m-0">It may have been removed; its notes are in your Inbox.</Note></Card></>;
   const list = notesView(d, id, '');
   return (
     <>
-      <BackLink to="inbox" label="Notes" />
+      <BackLink to="inbox/notes" label="Notes" />
       <Card aria-labelledby="col-h" id="noteCollection">
         <div className="flex flex-wrap justify-between items-center gap-3">
           <h2 id="col-h" className="m-0">{c.name}</h2>

@@ -29,6 +29,7 @@ import { HealthTodayCard } from '../health/HealthTodayCard';
 import { healthReminders } from '../health/reminders';
 import { AdjustCard } from '../ai/AdjustCard';
 import { MindCard } from '../ai/MindCard';
+import { DueTodayCard } from './DueTodayCard';
 import { undoMind, type MindUndo } from '../ai/mind';
 import { canUndo, undoAi, type Undo } from '../ai/apply';
 import { AI_MODE } from '../ai/request';
@@ -317,6 +318,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
           </Card>
         ))}
         {mindSlots}
+        {slot('order-1', <DueTodayCard data={data} k={k} />, 'slot-due')}
         {slot('order-1', healthCard, 'slot-health')}
         {slot('order-1', studyCard, 'slot-study')}
         {slot('order-3', context, 'slot-context')}
@@ -332,6 +334,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
           onMind={AI_MODE !== 'off' ? openMind : undefined} />)}
         {mindSlots}
         {slot('order-1', proposalCard)}
+        {slot('order-1', <DueTodayCard data={data} k={k} />, 'slot-due')}
         {slot('order-2', context, 'slot-context')}
         {slot('order-3', healthCard, 'slot-health')}
         {slot('order-3', studyCard, 'slot-study')}

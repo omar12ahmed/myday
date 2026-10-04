@@ -10,7 +10,7 @@ import { CAT_LABEL } from '../data/plan';
 import { toast } from '../data/toast';
 import type { Category, MyDayData } from '../data/types';
 import { loadLibs, parseCapture, type Capture, type CaptureLibs } from './parse';
-import { addAppointment, addQueueTask, appointmentEnd, saveNote, taskName } from './save';
+import { addAppointment, addCapturedTask, appointmentEnd, saveNote } from './save';
 
 // "+ Capture", on every screen: phones get a round button above the bar (easy to reach), wide screens one beside
 // the theme button.
@@ -49,13 +49,14 @@ export function CaptureSheet({ data, onClose }: { data: MyDayData; onClose: () =
   const note = () => done(saveNote(text, c?.kind === 'idea' || c?.kind === 'note' ? c?.collection ?? '' : ''), c?.collection && (c.kind === 'idea' || c.kind === 'note') ? `Saved in “${categoryName(data.notes, c.collection)}”.` : 'Saved to your Notes inbox.');
   const inboxNote = () => done(saveNote(text, ''), 'Saved to your Notes inbox.');
   const calendar = () => c && c.date && c.time && done(addAppointment(c.title, c.date, c.time, c.endTime), `Added to your Calendar: ${c.title}, ${prettyDate(c.date)} at ${c.time}.`);
-  const task = () => c && done(addQueueTask(c.title, taskCat, 15, c.date), `Added to your queue: ${taskName(c.title, c.date)}. MyDay will fit it into a coming day.`);
+  const when = c && c.date ? `${prettyDate(c.date)}${c.time ? `, ${c.time}` : ''}` : '';
+  const task = () => c && done(addCapturedTask(c.title, taskCat, c.date, c.time), `Added to your tasks: ${c.title}${when ? ` — ${when}` : ''}.`);
 
   // The suggestion first (primary), then the other choices.
   const end = c && c.date && c.time ? appointmentEnd(c.date, c.time, c.endTime) : null;
   const options: { key: string; label: string; icon: React.ReactNode; run: () => void }[] = [];
   if (c && c.date && c.time) options.push({ key: 'calendar', label: `Add to Calendar — ${prettyDate(c.date)}, ${c.time}–${end!.time}`, icon: <CalendarPlus size={18} aria-hidden="true" />, run: calendar });
-  if (c) options.push({ key: 'task', label: `Add as a task — ${CAT_LABEL[taskCat]}`, icon: <ListPlus size={18} aria-hidden="true" />, run: task });
+  if (c) options.push({ key: 'task', label: `Add as a task — ${when ? `${when} · ` : ''}${CAT_LABEL[taskCat]}`, icon: <ListPlus size={18} aria-hidden="true" />, run: task });
   if (c && c.collection && (c.kind === 'note' || c.kind === 'idea')) options.push({ key: 'collection', label: `Save in ${categoryName(data.notes, c.collection)}`, icon: <Sparkles size={18} aria-hidden="true" />, run: note });
   options.push({ key: 'note', label: 'Save to Notes inbox', icon: <NotebookPen size={18} aria-hidden="true" />, run: inboxNote });
   const first = !c ? 'note' : c.kind === 'appointment' ? 'calendar' : c.kind === 'task' ? 'task' : c.collection ? 'collection' : 'note';
@@ -94,7 +95,7 @@ export function CaptureSheet({ data, onClose }: { data: MyDayData; onClose: () =
           ))}
           <Button variant="ghost" data-action="capture-cancel" onClick={close}>Cancel</Button>
         </div>
-        <Note className="mt-3 mb-0 text-sm">{c?.kind === 'task' && c.date ? 'Tasks with their own dates arrive with the Tasks tab; until then the date is kept in the task\'s name.' : 'Everything is worked out on this device — nothing you type is sent anywhere.'}</Note>
+        <Note className="mt-3 mb-0 text-sm">Everything is worked out on this device — nothing you type is sent anywhere.</Note>
       </form>
     </dialog>
   );

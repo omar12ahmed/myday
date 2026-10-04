@@ -204,7 +204,8 @@ pay rules) and its settings card are gone from the screen; the rules behind them
 | `src/ai/` | "Help me adjust today": `context.ts` (what's sent), `validate.ts` (the rules), `apply.ts` (saving, stale check, undo) and `AdjustCard.tsx` (the card on Today). "Add what's on my mind": `mind.ts` (what's sent, the checks, adding and undo) and `MindCard.tsx`. Both: `request.ts` (the Edge Function or practice mode). |
 | `../ai-eval/` | The evaluation of AI models on 20 synthetic days and 12 synthetic brain dumps (see its README). |
 | `src/finance/` | The Finance screen: `FinanceScreen` (with Left over), `WorkPayCard`, `ExpensesCard`, `OwedCard`, `RatesCard` (folded away), and `actions.ts` (what each button saves). |
-| `src/inbox/`, `src/notes/`, `src/capture/` | The Inbox section (`InboxScreen`), Notes (`NotesScreen`: search, Inbox, collections; `NoteEditor`; `CategoriesView`; `route.ts` — `#inbox`, `#inbox/notes/<id>`, `#inbox/notes/in/<id>`, `#inbox/notes/collections`, and older `#notes…` links), and Capture (`parse.ts`, `save.ts`, `CaptureSheet.tsx`). The notes data: `src/data/notes.ts`. |
+| `src/tasks/`, `src/data/tasks.ts` | Inbox → Tasks: `TasksScreen` (adding, the groups, lists as chips, search), `TaskEditor`, `ListsView`, `route.ts` (`#inbox/tasks`, `#inbox/tasks/<id>`, `#inbox/tasks/list/<id>`, `#inbox/tasks/lists`); the data and rules (groups, due today, room on today's plan, the link to the plan) in `src/data/tasks.ts`. Today's "Due today" card: `src/today/DueTodayCard.tsx`. |
+| `src/inbox/`, `src/notes/`, `src/capture/` | The Inbox section (`InboxScreen`, with the Tasks and Notes tabs), Notes (`NotesScreen`: search, Inbox, collections; `NoteEditor`; `CategoriesView`; `route.ts` — `#inbox/notes`, `#inbox/notes/<id>`, `#inbox/notes/in/<id>`, `#inbox/notes/collections`, and older `#notes…` links), and Capture (`parse.ts`, `save.ts`, `CaptureSheet.tsx`). The notes data: `src/data/notes.ts`. |
 | `src/health/food/` | The Food screens: `FoodScreen` (picks the screen from the address, e.g. `#health/food/shopping`), `FoodHome`, `RecipeCard`, `SearchBox` (with suggestions), `SearchView`, `RecipeView`, `WantView`, `ShoppingView`, `CookView`, `PrefsView`, `RecipeForm`; `actions.ts` (what each button saves) and `visit.ts` (what's kept in memory for the visit: ideas, search results, suggestions, drafts). |
 | `src/health/` | The Health screens: `HealthScreen` (the Workout and Food tabs; picks the screen from the address, e.g. `#health/workout/schedule`), `WorkoutHome`, `TemplateEditor`, `SessionView` (a workout in progress, and correcting a logged one), `SetFields` (the number boxes for a set), `HistoryViews` (history, exercises, exercise history), `Chart`, `ScheduleView` and `HealthTodayCard`; `actions.ts` (what each button saves). |
 | `src/study/` | The Study screens: `StudyScreen` (picks the screen from the address, e.g. `#study/roadmap`), `Dashboard`, `Roadmap`, `CourseDetails`, `TaskDetails`, `SessionView`, `CheckinView`, `RevisionView`, `ConceptsView`, `ConceptView`, `ProgressView`, `StudySettings` and `StudyTodayCard`; `actions.ts` (what each button saves), `round.ts` (the revision round, kept in memory), `parts.tsx` (small shared pieces). |
@@ -328,8 +329,24 @@ examples, training experience, days and equipment, pace, and a few health questi
 
 ## Inbox and Capture
 
-**Inbox** is the sixth section in the bar (Today, Calendar, Inbox, Finance, Health, Study). For now it holds **Notes**;
-Tasks and Ideas get their own tabs there when they're ready (they aren't shown before).
+**Inbox** is the sixth section in the bar (Today, Calendar, Inbox, Finance, Health, Study), with two tabs: **Tasks**
+(it opens on these) and **Notes**. Ideas gets its own tab when it's ready (it isn't shown before).
+- **Tasks** holds every one-off task in one place, separate from Today's repeating Learning / Admin / Health lists
+  (which stay as they are). Type a task in your own words and its date and time are read from them, as in Capture
+  ("pay rent by Friday" is due Friday; "call GP tomorrow at 10am" is due tomorrow at 10:00). Tasks are grouped
+  **From earlier** (said gently: no rush), **Today**, **Coming up**, **Any time** and **Done** (folded away), earliest
+  first. Each task has its words, an optional date and time, a length, a kind (Learning, Admin or Health — what it
+  counts as on Today's plan), notes, and an optional **list** of your own ("Moving house", "Car": add, rename,
+  reorder; removing a list keeps its tasks). Search appears once there are more than four tasks. Rolling a task to
+  tomorrow in the evening check-in sends it to the queue like any plan task; it then shows under "Also on your plate".
+- **Due today on Today:** tasks due today, or still to do from before, are listed on Today with **Add to plan** — one
+  tap adds the task to today's plan (at its time, if it has one), but only while there's room for your energy (1, 2
+  or 3 tasks, the same limit as Build my day). Nothing is added by itself. Before the day is built, and on a rest day,
+  the card says so instead. A task on the plan is linked, not copied: ticking it off on the plan ticks it off in
+  Tasks, and the other way round.
+- Saved as the `tasks` section (`{ lists, items }`; a task points at its plan copy with `plannedOn` and `planUid`).
+  Added in 1.5.0; the classic MyDay keeps it unread (a task added to today's plan is an ordinary plan task there).
+  Tasks stay on this device (not synced) and are in "Export my data".
 - **Notes** is an Inbox you can dump anything into — nothing has to be filed. Each note in the Inbox shows a one-tap
   suggestion from its words ("File in Business ideas") and a "File it…" menu; **collections** (Lifestyle, Business
   ideas, Health & fitness, Money, Study & career, Personal — rename, reorder, add or remove) each have their own list;
@@ -344,7 +361,7 @@ Tasks and Ideas get their own tabs there when they're ready (they aren't shown b
 screen): type anything and MyDay suggests what it looks like — and does only what you tap.
 - A time ("call GP tomorrow at 10am", "meeting with Jo next Tuesday 2-3pm") → **Add to Calendar** (an appointment,
   30 minutes unless an end is given). An action ("renew passport", "need to email the landlord") → **Add as a task**
-  (to your queue, on the list you pick; a date without a time stays in the task's name until Tasks has dates). An
+  (to Tasks, with the date and time it mentions, as the kind of task you pick; a task due today then shows on Today). An
   idea ("app idea: …", "what if…") → **Save in Business ideas**. Anything else → **Save to Notes inbox**. The other
   choices are always there too.
 - Worked out on the device, nothing sent: dates and times with [chrono-node](https://github.com/wanasit/chrono)
@@ -422,3 +439,6 @@ returns up to 8 small tasks; you tick the ones to add.
 11. **Release 1.4.0:** Inbox (a sixth section) with Notes as an Inbox, optional collections and search, and Capture
     on every screen — suggestions from what you type (Calendar, a task, an idea, a note), worked out on the device.
     Part 1 of 3: Tasks and Ideas follow.
+12. **Release 1.5.0:** Tasks in the Inbox (part 2 of 3): every task in one place with dates and times, your own lists,
+    "Due today" on Today with one tap to add a task to the plan (within your energy's limit), and Capture's tasks
+    going there with their dates. Ideas (part 3) follows.

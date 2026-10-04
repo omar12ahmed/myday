@@ -1,12 +1,11 @@
 // What Capture can do with something you've typed — each only when you choose it, through the normal save path:
 //   a note        to the Notes Inbox (or a collection)
 //   an appointment on the Calendar, like one added there (30 minutes unless an end time was given)
-//   a task        to your queue: a one-off task MyDay fits into a coming day (a date it mentions is kept in its name;
-//                 tasks with their own dates arrive with the Tasks tab)
-import { keyOf, pad, shortDate, todayKey } from '../data/dates';
+//   a task        to Inbox → Tasks, with the date and time it mentions (a task due today then shows on Today)
+import { keyOf, pad } from '../data/dates';
 import { addNote } from '../data/notes';
-import { sortQueue } from '../data/plan';
 import { updateSaved } from '../data/storage';
+import { addTask } from '../data/tasks';
 import type { Category, DateKey } from '../data/types';
 import { uid } from '../data/util';
 
@@ -29,12 +28,8 @@ export function addAppointment(title: string, date: DateKey, time: string, endTi
   return updateSaved(d => { d.commitments.push({ id: 'c' + uid(), kind: 'appointment', title: title.trim().slice(0, 120) || 'Appointment', start: `${date}T${time}`, end: `${end.date}T${end.time}` }); }) === 'saved';
 }
 
-export const taskName = (title: string, date: DateKey | null) => (date ? `${title} — ${date === todayKey() ? 'today' : shortDate(date)}` : title);
-export function addQueueTask(title: string, category: Category, minutes: number, date: DateKey | null): boolean {
-  const name = taskName(title.trim(), date).slice(0, 120);
-  if (!name) return false;
-  return updateSaved(d => {
-    d.queue.push({ qid: uid(), taskId: null, category, title: name, minutes: Math.max(5, Math.min(600, Math.round(minutes))), queuedOn: todayKey(), sourceUid: null });
-    sortQueue(d.queue);
-  }) === 'saved';
+export function addCapturedTask(title: string, category: Category, date: DateKey | null, time: string | null): boolean {
+  let ok = false;
+  const r = updateSaved(d => { ok = addTask(d.tasks, { title, category, due: date, time }) !== null; if (!ok) return false; });
+  return ok && r === 'saved';
 }

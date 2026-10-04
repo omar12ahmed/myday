@@ -117,6 +117,10 @@ export interface MyDayData {
   // Health → Goal: your fitness goal and answers (added by the new app in 1.3.0; the classic MyDay keeps it, unread).
   fitness: FitnessData;
 
+  // Inbox → Tasks: one-off tasks with dates and your own lists (added by the new app in 1.5.0; the classic MyDay
+  // keeps it unread). Today's repeating lists are `lists` above.
+  tasks: TasksData;
+
   // Anything else (e.g. a section added by a newer MyDay) is kept as it was, never dropped.
   [other: string]: unknown;
 }
@@ -294,6 +298,25 @@ export interface WorkoutData {
   restTimer: { enabled: boolean; seconds: number };
   rest: { startedAt: number; durationSec: number } | null; // a running rest countdown
 }
+// ---------- Inbox → Tasks (see data/tasks.ts) ----------
+export interface TaskList { id: string; name: string }
+export interface TaskItem {
+  id: string;
+  title: string;
+  listId: string;             // one of your lists, or '' for none
+  category: Category;         // Learning / Admin / Health (for Today's plan)
+  minutes: number;            // roughly how long
+  due: DateKey | null;        // a date, if it has one
+  time: string | null;        // "HH:MM" on that date, if it has one
+  notes: string;
+  done: boolean;
+  doneOn: DateKey | null;
+  plannedOn: DateKey | null;  // the day it was added to that day's plan…
+  planUid: string | null;     // …as this task there (ticking either one off ticks both)
+  createdAt: DateTime;
+}
+export interface TasksData { lists: TaskList[]; items: TaskItem[]; [other: string]: unknown }
+
 // ---------- Health → Goal (see data/goals.ts) ----------
 export type GoalKind = 'lose' | 'gain' | 'recomp' | 'maintain' | 'health';
 export type Sex = 'female' | 'male' | 'unsaid';

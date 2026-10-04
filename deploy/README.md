@@ -63,7 +63,9 @@ know, so they're there again when you return). Study topics don't survive it: 1.
 and, the first time it saves, drops the topic grouping (your stages, courses and tasks stay). Export a backup before
 going back, and import it after returning. The release before 1.4.0 is tagged `live-before-1.4.0`; going back from
 1.4.0 is safe: notes with no collection show under "Other" in 1.3.0, and what Capture added is ordinary Calendar and
-queue data.
+queue data. The release before 1.5.0 is tagged `live-before-1.5.0`; going back from 1.5.0 is safe too: 1.4.0 keeps the
+`tasks` section unread (your tasks are there again when you return), and a task added to today's plan is an ordinary
+plan task there.
 
 To switch AI help off quickly, without a release: `npx supabase secrets set AI_PROVIDER=off --project-ref
 nkslcgnbmxuhznvldfnz` (any value other than a known provider) — the cards then say it isn't set up, and nothing is

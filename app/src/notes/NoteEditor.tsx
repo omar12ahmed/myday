@@ -60,7 +60,7 @@ export function NoteEditor({ data, id }: { data: MyDayData; id: string }) {
   if (!note) {
     return (
       <>
-        <BackLink to="inbox" label="Notes" />
+        <BackLink to="inbox/notes" label="Notes" />
         <Card><h2>This note isn't here</h2><Note className="m-0">It may have been deleted, here or in another tab.</Note></Card>
       </>
     );
@@ -72,12 +72,12 @@ export function NoteEditor({ data, id }: { data: MyDayData; id: string }) {
     window.clearTimeout(timer.current);
     pending.current = false;
     if (update(d => (removeNote(d.notes, id) ? undefined : false))) toast('Note deleted.');
-    location.hash = 'inbox';
+    location.hash = 'inbox/notes';
   }
 
   return (
     <>
-      <BackLink to="inbox" label="Notes" />
+      <BackLink to="inbox/notes" label="Notes" />
       <Card aria-label="Note" id="noteEditor">
         <div className="grid gap-3">
           <Field label="Where it's kept" htmlFor="noteCat">
