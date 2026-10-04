@@ -5,7 +5,7 @@
 # Usage:  tests/run.sh                 run every suite
 #         tests/run.sh storage today   run only the suites named
 # Suites for the current MyDay (index.html): storage, today, calendar-pay, health, study
-# Suites for the new app (app/, built first): app-storage, app-today, app-calendar-pay, app-finance, app-inbox, app-tasks (Inbox → Tasks and Today's "Due today"), app-study, app-topics, app-workout, app-food, app-goals, goals-rules (Goal's figures, no browser), capture-rules (what Capture spots, no browser), patterns-rules (What MyDay has noticed: the pattern engine, no browser), sync-records (what syncs and how, every record's round trip, no browser), app-patterns (its screen, Build my day's "Why?", tasks that keep moving),
+# Suites for the new app (app/, built first): app-storage, app-today, app-calendar-pay, app-finance, app-inbox, app-tasks (Inbox → Tasks and Today's "Due today"), app-study, app-topics, app-workout, app-food, app-goals, goals-rules (Goal's figures, no browser), capture-rules (what Capture spots, no browser), patterns-rules (What MyDay has noticed: the pattern engine, no browser), sync-records (what syncs and how, every record's round trip, no browser), app-install (installable as an app: manifest, icons, offline cache), sw-rules (the service worker's rules, no browser), app-patterns (its screen, Build my day's "Why?", tasks that keep moving),
 #   app-final (every section together), app-site (the website layouts from deploy/build-site.sh)
 # Cloud sync: sync-db (the database migrations, in PostgreSQL via PGlite — no browser), app-sync (two devices end to
 #   end, against a local stand-in for Supabase; see supabase-standin.js). Neither uses a real Supabase project.
@@ -19,7 +19,7 @@ set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(dirname "$HERE")"
 SUITES=("$@")
-[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study app-storage app-today app-calendar-pay app-finance app-inbox app-tasks app-study app-topics app-workout app-food app-goals goals-rules capture-rules patterns-rules app-patterns app-final app-site sync-db sync-records app-sync ai-rules ai-server app-ai)
+[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study app-storage app-today app-calendar-pay app-finance app-inbox app-tasks app-study app-topics app-workout app-food app-goals goals-rules capture-rules patterns-rules app-patterns app-final app-site app-install sw-rules sync-db sync-records app-sync ai-rules ai-server app-ai)
 
 # ---- What's needed ----
 CHROME="${CHROME:-}"

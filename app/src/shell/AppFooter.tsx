@@ -1,4 +1,4 @@
-import { Download, FolderOpen, Lightbulb, ListTodo } from 'lucide-react';
+import { Download, FolderOpen, Lightbulb, ListTodo, Smartphone } from 'lucide-react';
 import { useSyncExternalStore } from 'react';
 import { Button } from '../components/Button';
 import { update } from '../data/storage';
@@ -6,6 +6,7 @@ import { toast } from '../data/toast';
 import type { MyDayData } from '../data/types';
 import { useSync } from '../sync/engine';
 import { RELEASE } from '../version';
+import { install, useInstallOffer } from './install';
 
 const reduceQuery = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
 const deviceReducesMotion = () => !!reduceQuery?.matches;
@@ -16,12 +17,14 @@ export function AppFooter({ data, canSave, onEdit, onExport, onImport }: {
   data: MyDayData; canSave: boolean; onEdit: () => void; onExport: () => void; onImport: () => void;
 }) {
   const reduces = useSyncExternalStore(subscribeReduce, deviceReducesMotion);
+  const canInstall = useInstallOffer();
   const sync = useSync();
   const off = data.settings.motion === 'off';
   return (
     <footer id="footer" className="pb-10">
       <div className="grid grid-cols-2 gap-2.5">
         <Button inline variant="ghost" className="w-full col-span-2" data-action="edit" onClick={onEdit}><ListTodo size={18} aria-hidden="true" /> Edit task lists</Button>
+        {canInstall && <Button inline variant="ghost" className="w-full col-span-2" data-action="install" onClick={async () => { if (await install()) toast('MyDay is installed — open it from your apps.'); }}><Smartphone size={18} aria-hidden="true" /> Install MyDay as an app</Button>}
         <Button inline variant="ghost" className="w-full col-span-2" data-action="noticed" onClick={() => { location.hash = 'noticed'; window.scrollTo(0, 0); }}><Lightbulb size={18} aria-hidden="true" /> What MyDay has noticed</Button>
         <Button inline variant="ghost" className="w-full" data-action="export" onClick={onExport}><Download size={18} aria-hidden="true" /> Export my data</Button>
         <Button inline variant="ghost" className="w-full" data-action="import" onClick={onImport}><FolderOpen size={18} aria-hidden="true" /> Import my data</Button>

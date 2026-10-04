@@ -1,8 +1,10 @@
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { execSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
-import { defineConfig, loadEnv } from 'vite'
+import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { join, relative } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { defineConfig, loadEnv, type Plugin } from 'vite'
 
 // The release identifier shown at the bottom of every screen: the version in package.json, the Git commit
 // the app was built from (marked "+changes" if there were uncommitted changes), and the build date.
@@ -32,11 +34,36 @@ function checkNoSecrets(mode: string) {
   }
 }
 
+// The service worker (sw/sw.js), so MyDay opens without a connection and can be installed as an app: built with this
+// release's identifier and the list of every file it's made of (the built ones and the ones in public/), so each
+// release is cached whole and replaces the one before. Only in the built app — never on the dev server.
+function serviceWorker(): Plugin {
+  const publicFiles = (dir: string): string[] => readdirSync(dir).flatMap(f => {
+    const p = join(dir, f)
+    return statSync(p).isDirectory() ? publicFiles(p) : [relative(fileURLToPath(new URL('./public', import.meta.url)), p)]
+  })
+  return {
+    name: 'myday-service-worker',
+    apply: 'build',
+    enforce: 'post',
+    generateBundle(_options, bundle) {
+      const files = [...new Set(['index.html', ...Object.keys(bundle), ...publicFiles(fileURLToPath(new URL('./public', import.meta.url)))])]
+        .filter(f => f !== 'sw.js' && !f.endsWith('.map'))
+        .map(f => './' + f.split('\\').join('/'))
+        .sort()
+      const source = readFileSync(new URL('./sw/sw.js', import.meta.url), 'utf8')
+        .replace('__VERSION__', JSON.stringify(`${version}-${commit}${changed ? '-changes' : ''}-${Date.now().toString(36)}`))
+        .replace('__FILES__', JSON.stringify(files))
+      this.emitFile({ type: 'asset', fileName: 'sw.js', source })
+    },
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   checkNoSecrets(mode)
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), serviceWorker()],
     // Relative paths, so the built app works from any folder of the site (e.g. /myday/next/).
     base: './',
     // The AI planner's contract and practice planner are shared with the Edge Function (../supabase/functions/_shared).

@@ -320,6 +320,24 @@ the second migration was applied to the project on 4 Oct 2026 in one transaction
 checked by fingerprints), and the live check with two disposable accounts passed 27/27, including the new table's
 Row Level Security; the app's handling of every record is checked against the stand-in (`sync-records`, `app-sync`).
 
+## Installable as an app (Android, and the Mac if you like)
+
+From 1.10.0 MyDay can be installed like an app. On **Android**: open the website in Chrome → menu → **Install app**
+(or "Install MyDay as an app" at the bottom of any screen): Chrome builds an app for it (a WebAPK), with its own icon
+in the app drawer, opening full screen. On a **Mac**: use the website as usual, or Chrome → Install, or Safari → File
+→ Add to Dock. It's always the latest release — there's nothing to reinstall.
+- `public/manifest.webmanifest`: the name, start page (Today), full-screen display, colours and icons
+  (`public/icons/`, made from `public/icon.svg` and `public/icon-maskable.svg` by `scripts/make-icons.mjs` with
+  headless Chrome; the maskable icon fills the square so Android can crop it to its own shape).
+- `sw/sw.js`, a service worker written by hand (no library), built with each release by the `serviceWorker` plugin
+  in `vite.config.ts`, which fills in the release and the list of its files. It caches the whole release, so MyDay
+  opens offline; opening MyDay online always gets the latest page; a new release replaces the old cache. It never
+  touches your account, AI help, recipes, bank holidays or other sites, nor your MyDay data. Only in the built app
+  (not `npm run dev`).
+- `src/shell/install.ts`: the footer's "Install MyDay as an app", shown only when the browser offers to install.
+- The status bar follows the theme (the page's `theme-color`).
+- Next: an APK file to install yourself (Bubblewrap, a Trusted Web Activity that opens the website).
+
 ## Study topics
 
 Study holds more than one subject: **Topic → stage → course → module → section → task**. A bar of topics sits above
@@ -543,3 +561,5 @@ returns up to 8 small tasks; you tick the ones to add.
     signed in), signing in combines the device with your account by itself (your account wins where they differ; the
     device's version kept aside), every change saved to your account automatically, and signing out clears the
     device once everything is saved. Wording: "Saved to your account", "Your account", "Update now".
+17. **Release 1.10.0:** installable as an app — a manifest, icons and a hand-written service worker (offline, always
+    the latest release); "Install MyDay as an app" in the footer when the browser offers it.

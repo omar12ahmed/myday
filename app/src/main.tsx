@@ -12,6 +12,11 @@ boot()
 listenForOtherTabs()
 startSync()
 
+// Offline, and installable as an app: the service worker (sw/sw.js, built with each release). Only in the built app.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => { /* MyDay works without it */ }); });
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
