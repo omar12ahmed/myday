@@ -9,6 +9,7 @@
 // MyDay records, so it can never touch a real plan. It leaves a few made-up records in the two test accounts:
 // delete the two test users afterwards (Authentication → Users), which deletes their records too.
 // (`npm test`-style runs use tests/run.sh with a local stand-in instead; this script is for a real project.)
+// `--projects-only`: only the projects check (1.12.0), for test accounts that already have records from an earlier run.
 const { randomUUID } = require('crypto');
 
 const URL_ = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
@@ -42,6 +43,18 @@ const change = (kind, record_id, base_version, data, extra = {}) => ({ change_id
 const day = title => ({ energy: 3, rest: false, builtAt: '2000-01-01T08:00', checkedIn: false, tasks: [{ uid: 'live-check', taskId: null, category: 'admin', title, minutes: 10, baseMinutes: 10, done: false, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null }] });
 const DAY = '2000-01-01'; // a date far from any real plan
 
+// Projects (third migration, 20261006120000_sync_projects.sql): A saves one, B can't see it, A deletes it.
+async function projectsCheck(a, b, id) {
+  console.log('\nProjects (third migration: 20261006120000_sync_projects.sql)');
+  const proj = { id, title: 'Live check project', summary: '', stage: 'capture', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-06T09:00', updatedAt: '2026-10-06T09:00' };
+  let r = await push(a, [change('project', id, 0, proj)]);
+  check('A can save a project — so the third migration is applied', Array.isArray(r) && r[0].status === 'applied' && r[0].version === 1, r);
+  check('A reads it back', (await pull(a)).some(x => x.kind === 'project' && x.record_id === id && x.data.title === 'Live check project'));
+  check('B sees none of it', (await pull(b)).every(x => x.kind !== 'project' || x.record_id !== id));
+  r = await push(a, [change('project', id, 1, null, { deleted: true })]);
+  check('the project can be deleted (a deletion marker for other devices)', Array.isArray(r) && r[0].status === 'applied' && r[0].version === 2, r);
+}
+
 (async () => {
   console.log(`\nChecking ${URL_} with two disposable test accounts\n`);
   const a = await signIn(A), b = await signIn(B);
@@ -50,6 +63,18 @@ const DAY = '2000-01-01'; // a date far from any real plan
   if (!Array.isArray(aRows) || !Array.isArray(bRows)) {
     console.log('  FAIL sync_pull isn\'t available — has the migration been applied? →', JSON.stringify(Array.isArray(aRows) ? bRows : aRows));
     process.exit(1);
+  }
+  // --projects-only (1.12.0): just the third migration's check, on test accounts that already have records from an
+  // earlier run. Its safeguard instead of "the accounts are empty": both are disposable @example.com addresses, and it
+  // only touches a project record with a new id (saved, checked, then deleted).
+  if (process.argv.includes('--projects-only')) {
+    if (![A.email, B.email].every(e => /@example\.com$/i.test(e || '')) || A.email === B.email) {
+      console.log('  STOP --projects-only runs only with two different disposable @example.com test accounts.');
+      process.exit(2);
+    }
+    await projectsCheck(a, b, `live-check-pj-${Date.now()}`);
+    console.log(`\n${pass} passed, ${fail} failed`);
+    process.exit(fail ? 1 : 0);
   }
   if (aRows.length || bRows.length) {
     console.log('  STOP One of the test accounts already has MyDay records. Use two new, disposable test accounts — never your own.');
@@ -117,13 +142,7 @@ const DAY = '2000-01-01'; // a date far from any real plan
   r = await push(a, [change('note', 'live-check', 1, null, { deleted: true }), change('finance', 'finance', 1, null, { deleted: true })]);
   check('the note can be deleted; Finance (a one-record part) can\'t', r[0].status === 'applied' && r[1].status === 'rejected', r);
 
-  console.log('\nProjects (third migration: 20261006120000_sync_projects.sql)');
-  const proj = { id: 'live-check-pj', title: 'Live check project', summary: '', stage: 'capture', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-06T09:00', updatedAt: '2026-10-06T09:00' };
-  r = await push(a, [change('project', 'live-check-pj', 0, proj)]);
-  check('A can save a project — so the third migration is applied', Array.isArray(r) && r[0].status === 'applied' && r[0].version === 1, r);
-  check('B sees none of it', (await pull(b)).every(x => x.kind !== 'project'));
-  r = await push(a, [change('project', 'live-check-pj', 1, null, { deleted: true })]);
-  check('the project can be deleted (a deletion marker for other devices)', r[0].status === 'applied' && r[0].version === 2, r);
+  await projectsCheck(a, b, 'live-check-pj');
 
   console.log(`\n${pass} passed, ${fail} failed`);
   console.log('\nNow delete the two test users (Authentication → Users → … → Delete user). That deletes their test records too.');

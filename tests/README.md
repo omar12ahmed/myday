@@ -76,7 +76,9 @@ without sync settings, even if `app/.env.production` has them. The stand-in can 
 `node tests/supabase-standin.js 54329`.
 
 **A real Supabase project** is checked with `tests/sync-live-check.js` (two disposable test accounts; see
-`supabase/README.md`, step 5). It isn't part of `run.sh`, because it needs your project and test accounts.
+`supabase/README.md`, step 5). It isn't part of `run.sh`, because it needs your project and test accounts. With
+`--projects-only` it checks just projects (1.12.0's migration), on test accounts that already have records from an
+earlier run — only if both are disposable `@example.com` addresses, and it touches only a new project record of its own.
 
 `fixtures/` holds two earlier versions of MyDay (as `.fixture` files, so the website doesn't serve
 them as pages). The migration checks load them to make sure older saved data still comes across.
