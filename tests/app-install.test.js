@@ -29,6 +29,17 @@ const editStorage = fn => ev(`(() => { const s = JSON.parse(localStorage.getItem
   const icons = await ev(`Promise.all(${JSON.stringify(m.icons)}.map(i => new Promise(res => { const im = new Image(); im.onload = () => res({ ...i, w: im.naturalWidth, h: im.naturalHeight }); im.onerror = () => res({ ...i, w: 0 }); im.src = new URL(i.src, ${JSON.stringify(base)}).href; })))`);
   check('icons at 192 and 512 px load, at the sizes they say', icons.filter(i => i.purpose === 'any').map(i => `${i.w}x${i.h}`).join() === '192x192,512x512' && icons.every(i => i.sizes === `${i.w}x${i.h}`), icons);
   check('…and a maskable one (512 px, filling the square, for Android\'s own icon shapes)', icons.some(i => i.purpose === 'maskable' && i.w === 512));
+  // What's drawn, not just the size: each icon's middle is MyDay's green (#2f6f57); the maskable one also fills its
+  // corners (Android crops it to its own shape), while the usual one has rounded, see-through corners.
+  await ev(`window.__px = (src, fx, fy) => new Promise(res => { const im = new Image(); im.onload = () => { const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight; const g = c.getContext('2d'); g.drawImage(im, 0, 0); res([...g.getImageData(Math.floor(fx * (im.naturalWidth - 1)), Math.floor(fy * (im.naturalHeight - 1)), 1, 1).data]); }; im.onerror = () => res([0, 0, 0, 0]); im.src = src; })`);
+  const green = c => Math.abs(c[0] - 47) < 14 && Math.abs(c[1] - 111) < 14 && Math.abs(c[2] - 87) < 14 && c[3] > 240;
+  const iconUrls = [...m.icons.map(i => new URL(i.src, base).href), await ev(`document.querySelector('link[rel=apple-touch-icon]').href`)];
+  const middles = await ev(`Promise.all(${JSON.stringify(iconUrls)}.map(u => window.__px(u, 0.5, 0.42)))`);
+  check('every icon shows MyDay\'s icon (its middle is MyDay\'s green), not a blank or cut-off picture', middles.every(green), middles);
+  const corner = async u => ev(`window.__px(${JSON.stringify(u)}, 0, 0)`);
+  check('…the maskable and Apple icons fill their corners; the usual ones have see-through rounded corners', green(await corner(new URL('icons/icon-maskable-512.png', base).href)) && green(await corner(iconUrls[iconUrls.length - 1]))
+    && (await corner(new URL('icons/icon-512.png', base).href))[3] === 0 && (await corner(new URL('icons/icon-192.png', base).href))[3] === 0);
+
   check('an Apple touch icon (180 px) for "Add to Home Screen" / "Add to Dock"', (await ev(`new Promise(res => { const im = new Image(); im.onload = () => res(im.naturalWidth); im.onerror = () => res(0); im.src = document.querySelector('link[rel=apple-touch-icon]').href; })`)) === 180);
 
   console.log('\n[2] The service worker');
