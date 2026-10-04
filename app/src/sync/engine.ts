@@ -1,4 +1,4 @@
-// Cloud sync: keeps this device's task lists, queue, daily plans and day context in step with your account.
+// Cloud sync: keeps this device's MyDay data in step with your account (records.ts says which parts, and how).
 // Local first: MyDay never waits for the cloud, and everything is saved on this device before it's sent.
 //
 // 1. Noticing changes. Sync keeps a fingerprint of each record as it was when last in step with the cloud
@@ -20,10 +20,10 @@ import { catchUp, getSnapshot, subscribe as onData, updateSaved } from '../data/
 import { toast } from '../data/toast';
 import { accountOf, call, client, currentSession, hadSession, signIn, signOut, type Account } from './client';
 import { SYNC } from './config';
-import { cleanRecord, fingerprint, isStarter, keyOf, localRecords, putRecord, recordLabel, sortKeys, splitKey, type Content, type Kind } from './records';
+import { ALL_KINDS, cleanRecord, fingerprint, isStarter, keyOf, localRecords, putRecord, recordLabel, sortKeys, splitKey, type Content, type Kind } from './records';
 import { freshState, newId, newLink, readState, SYNC_KEY, writeState, type Conflict, type Link, type SyncState } from './state';
 
-const KINDS: Kind[] = ['list', 'queue', 'day', 'context'];
+const KINDS: Kind[] = ALL_KINDS;
 const BATCH = 100;           // changes per request (the cloud accepts up to 100)
 const PAGE = 500;            // records per "what changed" request
 const BULK = 30;             // this many changed records at once (e.g. after restoring a backup) are reviewed first
@@ -562,7 +562,7 @@ export async function prepareReview(): Promise<{ ok: true; review: Review } | { 
       else {
         item.action = 'differ';
         item.why = row.deleted ? 'Deleted in your account, still on this device' : 'Different on this device and in your account';
-        if (isStarter(key, here) && !row.deleted) { item.suggest = 'cloud'; item.why += splitKey(key).kind === 'list' ? ' (this device still has the starter list)' : ' (nothing waiting on this device)'; }
+        if (isStarter(key, here) && !row.deleted) { const kind = splitKey(key).kind; item.suggest = 'cloud'; item.why += kind === 'list' ? ' (this device still has the starter list)' : kind === 'queue' ? ' (nothing waiting on this device)' : " (this device still has a new MyDay's)"; }
       }
     }
     items.push(item);

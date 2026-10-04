@@ -6,7 +6,7 @@
 // copied twice).
 //
 // Saved as a top-level `tasks` section (added by the new app in 1.5.0, like Notes; the classic MyDay keeps it unread).
-// On this device only for now (not synced), and in "Export my data".
+// In "Export my data", and synced with your account (one record per task; see sync/records.ts).
 //
 // A task that keeps moving (its date moved later 3 times, or a week overdue) is "stuck": MyDay asks what's getting in
 // the way — not to push harder, but to change the task so it's easier to start (see unstick). Your answers are kept

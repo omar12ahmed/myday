@@ -95,8 +95,9 @@ export function SyncScreen({ onExport }: { onExport: () => void }) {
         <details className="group mt-2">
           <Summary>What syncs, and what stays on this device</Summary>
           <div className="text-[15px] text-fg-2 grid gap-2 pb-1">
-            <p className="m-0"><strong className="text-fg">Syncs:</strong> your three task lists, the queue, each day's plan (tasks, ticks, energy, rest days, evening check-in) and each day's context (energy and sleep).</p>
-            <p className="m-0"><strong className="text-fg">Stays on this device:</strong> Calendar and Pay, Health (Workout and Food), Study, appointments, settings and the focus timer.</p>
+            <p className="m-0"><strong className="text-fg">Syncs:</strong> everything you enter — Today (your task lists, the queue, each day's plan and context), the Calendar (your work pattern, shifts, appointments, pay rates and bank-holiday region), Finance, Inbox (tasks and notes), Study, Health (workouts, food, the shopping list and your goal), What MyDay has noticed, and your planning settings.</p>
+            <p className="m-0">Notes, tasks, appointments, sessions, workouts and recipes sync one by one, so something added on each device is simply kept on both. If the same thing was changed on two devices before they synced, you choose which to keep.</p>
+            <p className="m-0"><strong className="text-fg">Stays on this device:</strong> the theme and animations, a running focus timer or rest countdown, and the bank holidays downloaded from gov.uk.</p>
             <p className="m-0">Everything is saved on this device first, so MyDay works just the same offline. Changes are sent when it can reach your account, and fetched whenever you come back to MyDay.</p>
           </div>
         </details>
@@ -217,7 +218,7 @@ function LinkedCards({ v, onReview, reviewOpen, busy }: { v: View; onReview: () 
           <h3 id="needs-review-h">{v.review === 'import' ? 'You restored a backup' : 'A lot changed on this device at once'}</h3>
           <p className="text-[15px]">{v.review === 'import'
             ? 'Before your account gets any of it, check what it would change there.'
-            : 'That can happen after restoring a backup or a long time offline. Before your account gets any of it, check what it would change there.'} Sync is paused until then; everything stays saved on this device.</p>
+            : 'That can happen after restoring a backup, a long time offline, or the first time MyDay syncs more of your data (Calendar, Finance, Study, Health, Inbox…). Before your account gets any of it, check what it would change there.'} Sync is paused until then; everything stays saved on this device.</p>
           <Button data-action="sync-review" disabled={busy === 'review'} onClick={onReview}>{busy === 'review' ? 'Comparing…' : 'See what would change'}</Button>
         </Card>
       )}

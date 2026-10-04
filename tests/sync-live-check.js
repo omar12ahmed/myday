@@ -1,5 +1,6 @@
 // Checks a REAL Supabase project after setting it up for MyDay sync (supabase/README.md, step 5): sign-in,
-// Row Level Security, version checks, retries and deletions — using two DISPOSABLE test accounts only.
+// Row Level Security, version checks, retries and deletions — for both sync migrations (day plans and the like, and
+// sync_records for everything else) — using two DISPOSABLE test accounts only.
 //
 //   SUPABASE_URL=https://<project-ref>.supabase.co SUPABASE_PUBLISHABLE_KEY=sb_publishable_… \
 //   TEST_A_EMAIL=… TEST_A_PASSWORD=… TEST_B_EMAIL=… TEST_B_PASSWORD=… node tests/sync-live-check.js
@@ -101,6 +102,20 @@ const DAY = '2000-01-01'; // a date far from any real plan
   check('other devices are told about the deletion', after.some(x => x.record_id === DAY && x.deleted && x.data === null), after);
   r = await push(a, [change('day', DAY, 2, day('Old copy'))]);
   check('an old copy can\'t bring it back (conflict: deleted)', r[0].status === 'conflict' && r[0].deleted === true, r);
+
+  console.log('\nEverything else (second migration: sync_records)');
+  const note = { id: 'live-check', categoryId: '', title: '', text: 'Live check note', pinned: false, createdAt: '2000-01-01T09:00', updatedAt: '2000-01-01T09:00' };
+  r = await push(a, [change('note', 'live-check', 0, note), change('finance', 'finance', 0, { ratesSetOn: null, debts: [], expenses: [] })]);
+  check('A can save an item (a note) and a one-record part (Finance) — so the second migration is applied', Array.isArray(r) && r.every(x => x.status === 'applied' && x.version === 1), r);
+  check('B sees none of them', (await pull(b)).every(x => x.kind !== 'note' && x.kind !== 'finance'));
+  const bRec = await (await fetch(`${URL_}/rest/v1/sync_records?select=*`, { headers: headers(b.token) })).json();
+  check('B reading sync_records directly gets no rows of A\'s', Array.isArray(bRec) && bRec.every(x => x.user_id === b.id), bRec);
+  s = (await fetch(`${URL_}/rest/v1/sync_records`, { method: 'POST', headers: headers(b.token), body: JSON.stringify({ user_id: a.id, kind: 'note', id: 'x', data: {}, version: 1, seq: 1 }) })).status;
+  check('B can\'t insert into sync_records for A', s === 401 || s === 403, s);
+  r = await push(a, [change('note', 'live-check', 0, { ...note, text: 'Stale' })]);
+  check('a stale change to the note is a conflict, unsaved', r[0].status === 'conflict' && r[0].version === 1 && r[0].data.text === 'Live check note', r);
+  r = await push(a, [change('note', 'live-check', 1, null, { deleted: true }), change('finance', 'finance', 1, null, { deleted: true })]);
+  check('the note can be deleted; Finance (a one-record part) can\'t', r[0].status === 'applied' && r[1].status === 'rejected', r);
 
   console.log(`\n${pass} passed, ${fail} failed`);
   console.log('\nNow delete the two test users (Authentication → Users → … → Delete user). That deletes their test records too.');

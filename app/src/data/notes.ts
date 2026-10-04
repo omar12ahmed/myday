@@ -1,6 +1,6 @@
 // Notes: what's in them, how they're read from saved data, and every change to them. Only the new app shows Notes;
-// the classic MyDay keeps this section exactly as it is (it keeps any section it doesn't know). Notes stay on this
-// device (they aren't part of sync) and are included in "Export my data".
+// the classic MyDay keeps this section exactly as it is (it keeps any section it doesn't know). Notes sync with
+// your account one by one (see sync/records.ts) and are included in "Export my data".
 //
 // A note without a collection is in the Inbox: you never have to file anything. Collections ("categories" in the
 // saved data) are optional places to file notes later; a note whose collection has gone is back in the Inbox.

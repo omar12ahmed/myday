@@ -20,7 +20,7 @@ type Step = 'goal' | 'you' | 'days' | 'training' | 'pace' | 'health';
 const stepsFor = (a: GoalAnswers): Step[] => ['goal', 'you', 'days', 'training', ...(['lose', 'gain', 'recomp'].includes(a.goal) ? ['pace' as const] : []), 'health'];
 
 // Health → Goal: choose a goal, answer a few questions (one at a time), and get a plan. Nothing is saved until
-// "See my plan"; your answers stay on this device.
+// "See my plan"; your answers are saved on this device, and in your own account if you use sync (only you can see them).
 export function GoalView({ data }: { data: MyDayData }) {
   const fit = fitnessOf(data);
   const [draft, setDraft] = useState<GoalAnswers | null>(null); // answers being changed (null: show the plan, or the start)
@@ -47,7 +47,7 @@ export function GoalView({ data }: { data: MyDayData }) {
             </Button>
           ))}
         </div>
-        <Note className="mt-3 mb-0 text-sm">Your answers stay on this device — they aren't synced or sent anywhere.</Note>
+        <Note className="mt-3 mb-0 text-sm">Your answers are saved on this device and, if you use sync, in your own account — only you can see them. They're never sent anywhere else.</Note>
       </Card>
     );
   }
@@ -132,7 +132,7 @@ export function GoalView({ data }: { data: MyDayData }) {
         </Q>
       )}
       {cur === 'health' && (
-        <Q id="goalq-h" title="A few health questions" note="So the plan is safe for you. Answering is private — it stays on this device.">
+        <Q id="goalq-h" title="A few health questions" note="So the plan is safe for you. Answering is private — only you can see it, on your devices.">
           <p className="text-sm font-semibold m-0 mb-1.5">Are you pregnant or breastfeeding?</p>
           <Choices label="Pregnant or breastfeeding">{[false, true].map(v => <Choice key={String(v)} on={draft.pregnant === v} data-s="pregnant" data-id={String(v)} onClick={() => set({ pregnant: v })}>{v ? 'Yes' : 'No'}</Choice>)}</Choices>
           <p className="text-sm font-semibold m-0 mb-1.5">Have you ever had an eating disorder?</p>

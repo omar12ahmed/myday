@@ -253,12 +253,25 @@ Optional, and off unless the app is built with `VITE_SUPABASE_URL` and `VITE_SUP
 [`../supabase/README.md`](../supabase/README.md)). Without them, nothing about sync is shown and the Supabase library
 is never downloaded.
 
-**What syncs (this first part):** the three task lists (one record each, in order), the queue (one record), each
-day's plan (one record per date) and each day's context, energy and sleep (one per date). These go together because
-building a day's plan picks tasks from the lists and moves tasks to and from the queue in the same step.
-**Stays on the device:** Calendar and Finance, Health (Workout and Food), Study, appointments, settings, the timer, and
-anything else. Study's links to a learning task or a day's task are just references, and MyDay already copes when
-the item they point to isn't there.
+**What syncs** — everything you enter, so your data follows your account on every device (`src/sync/records.ts`):
+- *First part (1.1.0):* the three task lists (one record each, in order), the queue (one record), each day's plan (one
+  record per date) and each day's context, energy and sleep (one per date). These go together because building a
+  day's plan picks tasks from the lists and moves tasks to and from the queue in the same step.
+- *Everything else (1.8.0):* **one record each** for the planning settings (task times and breathing room), the rota
+  (patterns, one-date changes, overtime and absence, colours), pay rates, the bank-holiday region, Finance, the Study
+  roadmap (topics, stages, courses, tasks, focus, settings, concepts), Workout set-up (exercises, templates,
+  schedule, planned dates), Food (preferences, favourites, want-to-cook, cooked, cooking), the shopping list, Goal,
+  note collections, your Tasks lists and What MyDay has noticed; and **one record per item** for appointments and
+  work commitments, notes, tasks, study sessions, revision answers, workouts and saved recipes — so something added
+  on each device is simply kept on both, and only the same item changed on both is a conflict.
+- Links between records are kept however they arrive: a favourite or want-to-cook keeps its recipe, a check-in its
+  concepts, and the session or workout in progress is the one that says so. Taking the account's Tasks lists or note
+  collections keeps your filing (an item moves to the account's list of the same name).
+- **Stays on each device:** the theme and animations, a running focus timer or rest countdown, the bank holidays
+  downloaded from gov.uk (re-downloaded as needed), and MyDay's own notes (nudges, celebrations, save signatures).
+- The first time a device that already syncs gets 1.8.0, its other parts are new to the account: a device's version
+  is sent if the account doesn't have one yet; if another device's is already there and differs, it's a conflict for
+  you to decide (identical ones simply match). More than 30 at once goes through the review first.
 
 **How it works** (details at the top of `src/sync/engine.ts`):
 - Local first: every change is saved on the device as before; sync never makes you wait.
@@ -280,8 +293,8 @@ the item they point to isn't there.
   naming a different account from the one signed in. Each account can read only its own rows (Row Level Security),
   and nobody can write to the tables directly.
 
-**Limitations:** a list (or the queue) changed on two devices before they sync is a conflict, even if different tasks
-changed. No live updates: the other device's changes arrive when you come back to MyDay, every 5 minutes while
+**Limitations:** a one-record part (a list, the queue, the rota, Finance, the Study roadmap, the shopping list…)
+changed on two devices before they sync is a conflict, even if different things in it changed. No live updates: the other device's changes arrive when you come back to MyDay, every 5 minutes while
 it's open, or with "Sync now". Changes made in the classic MyDay are sent the next time the new app is open.
 Checked against a local stand-in for Supabase (the real migrations in PostgreSQL, `tests/run.sh sync-db app-sync`), and
 against the real project with two disposable test accounts (`tests/sync-live-check.js`: 21/21; the app on two browser

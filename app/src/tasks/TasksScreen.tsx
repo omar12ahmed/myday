@@ -120,7 +120,7 @@ function TasksHome({ data, listId }: { data: MyDayData; listId: string | null })
           <Note className="mb-0">Your repeating tasks (the Learning, Admin and Health lists Today picks from) are in <a href="#today/edit" className="text-primary font-semibold">Your task lists</a>.</Note>
         </Card>
       )}
-      <Note className="text-sm">Tasks are kept on this device and included in "Export my data". They aren't synced between devices yet.</Note>
+      <Note className="text-sm">Tasks are saved on this device and in "Export my data" — and with your account on every device, if you use sync.</Note>
     </>
   );
 }

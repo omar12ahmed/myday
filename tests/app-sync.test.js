@@ -64,6 +64,10 @@ async function editList(D, cat, id, title) {
 const listTitle = (d, cat, id) => { const x = d.lists[cat].find(i => i.id === id); return x ? x.title : null; };
 const cloudList = async (cat, user) => (await sql(`select data, version from public.task_lists where user_id = $1 and id = $2`, [user, cat]))[0];
 
+// The parts of MyDay that are one record each (from 1.8.0), as every device has them.
+const ONE_KEYS = ['settings:planning', 'rota:rota', 'pay:pay', 'holidays:region', 'finance:finance', 'study:roadmap', 'workout:setup', 'food:kitchen', 'food:shopping', 'fitness:goal', 'notes:collections', 'tasks:lists', 'patterns:patterns'];
+const cloudRecord = async (user, kind, id) => (await sql(`select data, version, deleted from public.sync_records where user_id = $1 and kind = $2 and id = $3`, [user, kind, id]))[0];
+
 function task(uid, taskId, category, title, minutes, done = false) {
   return { uid, taskId, category, title, minutes, baseMinutes: minutes, done, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null };
 }
@@ -108,7 +112,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
 
   console.log('\n[3] First device: the review before syncing, then the upload');
   await openReview(mac);
-  check('the review lists everything this device would send (3 lists, the queue, a plan, a context)', eq(await reviewKeys(mac, 'rv-up'), ['context:' + Y, 'day:' + Y, 'list:admin', 'list:health', 'list:learning', 'queue:queue'].sort()), await reviewKeys(mac, 'rv-up'));
+  check('the review lists everything this device would send (3 lists, the queue, a plan, a context, and the one-record parts: settings, Calendar, Finance, Study, Health, Inbox…)', eq(await reviewKeys(mac, 'rv-up'), ['context:' + Y, 'day:' + Y, 'list:admin', 'list:health', 'list:learning', 'queue:queue', ...ONE_KEYS].sort()), await reviewKeys(mac, 'rv-up'));
   check('…nothing to download or choose (the account is empty)', (await reviewKeys(mac, 'rv-down')).length === 0 && (await differKeys(mac)).length === 0);
   check('nothing has been sent before confirming', rpcLog().every(e => e.path.endsWith('sync_pull')) && (await sql('select count(*)::int as n from public.task_lists'))[0].n === 0);
   await mac.click('[data-action=review-start]');
@@ -116,11 +120,12 @@ function task(uid, taskId, category, title, minutes, done = false) {
   const rowsA = await sql(`select 'list' k, id from public.task_lists where user_id = $1 union all select 'queue', id from public.task_queue where user_id = $1
     union all select 'day', id from public.day_plans where user_id = $1 union all select 'context', id from public.day_context where user_id = $1`, [userA]);
   check('the account now has exactly those 6 records', rowsA.length === 6, rowsA);
+  check('…and the 13 one-record parts', eq((await sql(`select kind || ':' || id as k from public.sync_records where user_id = $1 order by 1`, [userA])).map(r => r.k), [...ONE_KEYS].sort()));
   check('…with this device\'s content', (await cloudList('learning', userA)).data.items[0].title === 'Mac: Networking basics');
   check('this device\'s data is unchanged by syncing', eq(withoutSaves(await mac.data()), macBefore));
   await goToday(mac);
   await mac.until(`document.querySelector('.storage-note')`);
-  check('the footer says what syncs', (await mac.text('.storage-note')).includes('also sync with your account'), await mac.text('.storage-note'));
+  check('the footer says what syncs', (await mac.text('.storage-note')).includes('everything you enter syncs with your account'), await mac.text('.storage-note'));
 
   console.log('\n[4] Second device with different records: a preview, conflicts named, nothing changed until confirmed');
   await phone.open(APP + '#today');
@@ -135,9 +140,10 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await openReview(phone);
   check('to save here: the Mac\'s plan', eq(await reviewKeys(phone, 'rv-down'), ['day:' + Y]), await reviewKeys(phone, 'rv-down'));
   check('to send: the phone\'s own plan', eq(await reviewKeys(phone, 'rv-up'), ['day:' + Y2]), await reviewKeys(phone, 'rv-up'));
-  check('different on each, to choose: learning and admin lists, the queue, and the shared day\'s context', eq(await differKeys(phone), ['context:' + Y, 'list:admin', 'list:learning', 'queue:queue']), await differKeys(phone));
-  check('a starter list and an empty queue on this device suggest the account\'s version (pre-chosen)',
-    await phone.ev(`['list:learning','queue:queue'].every(k => document.querySelector('[data-action=review-cloud][data-key="' + k + '"]').getAttribute('aria-pressed') === 'true')`));
+  check('different on each, to choose: learning and admin lists, the queue, the shared day\'s context, and the note collections (same names, made separately)', eq(await differKeys(phone), ['context:' + Y, 'list:admin', 'list:learning', 'notes:collections', 'queue:queue']), await differKeys(phone));
+  check('a starter list, an empty queue and the starter note collections on this device suggest the account\'s version (pre-chosen)',
+    await phone.ev(`['list:learning','queue:queue','notes:collections'].every(k => document.querySelector('[data-action=review-cloud][data-key="' + k + '"]').getAttribute('aria-pressed') === 'true')`));
+  check('the parts that are the same on both (settings, Calendar, Finance, Study, Health…) aren\'t asked about', (await reviewKeys(phone, 'rv-up')).every(k => !ONE_KEYS.includes(k)) && !(await differKeys(phone)).some(k => ONE_KEYS.includes(k) && k !== 'notes:collections'));
   check('Start is blocked until every difference has a choice', await phone.ev(`document.querySelector('[data-action=review-start]').disabled && document.querySelector('[data-action=review-start]').textContent.includes('2 more')`), await phone.text('[data-action=review-start]'));
   check('nothing on the phone or in the account has changed yet', eq(withoutSaves(await phone.data()), phoneBefore) && (await cloudList('admin', userA)).version === 1);
   await phone.click('[data-action=review-here][data-key="list:admin"]');
@@ -150,9 +156,9 @@ function task(uid, taskId, category, title, minutes, done = false) {
   check('the phone has the Mac\'s learning list and queue (as chosen)', listTitle(pd, 'learning', 'l1') === 'Mac: Networking basics' && pd.queue.some(q => q.qid === 'q-mac-1'));
   check('…keeps its own admin list (as chosen) and its own plan', listTitle(pd, 'admin', 'aphone1') === 'Phone: Renew passport' && !!pd.days[Y2]);
   check('…gets the Mac\'s plan, and the account\'s context for that day (as chosen)', !!pd.days[Y] && pd.days[Y].tasks[0].uid === 't-mac-1' && pd.context[Y].energy === 4);
-  check('everything outside sync (e.g. settings, Study, Health) is untouched', eq(pd.settings, phoneBefore.settings) && eq(pd.study, phoneBefore.study) && eq(pd.health, phoneBefore.health));
+  check('parts that were already the same on both (e.g. settings, Study, Health) are untouched', eq(pd.settings, phoneBefore.settings) && eq(pd.study, phoneBefore.study) && eq(pd.health, phoneBefore.health));
   let pn = await phone.notes();
-  check('the phone\'s replaced versions are kept on the phone (learning list, queue, context)', eq(pn.kept.map(k => k.key).sort(), ['context:' + Y, 'list:learning', 'queue:queue']) && pn.kept.find(k => k.key === 'context:' + Y).content.energy === 2, pn.kept.map(k => k.key));
+  check('the phone\'s replaced versions are kept on the phone (learning list, queue, context, note collections)', eq(pn.kept.map(k => k.key).sort(), ['context:' + Y, 'list:learning', 'notes:collections', 'queue:queue']) && pn.kept.find(k => k.key === 'context:' + Y).content.energy === 2, pn.kept.map(k => k.key));
   await goSync(phone);
   check('…and can be downloaded', await phone.exists('[data-action=kept-download]'));
   check('the account has the phone\'s admin list and plan', (await cloudList('admin', userA)).data.items.some(i => i.id === 'aphone1') && (await sql(`select 1 from public.day_plans where user_id = $1 and id = $2`, [userA, Y2])).length === 1);
@@ -171,6 +177,69 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await synced(mac);
   await phone.returnToApp();
   check('…and appears on the phone when it comes back to MyDay', await phone.until(`JSON.parse(localStorage.getItem('myday.data.v4')).lists.learning.some(i => i.title === 'Mac: Web security')`));
+
+  console.log('\n[5b] Everything else syncs too: Calendar, Finance, Inbox, Study, Health, settings');
+  await synced(mac); await synced(phone);
+  const T0 = shiftKey(1);
+  await mac.setData(`s => {
+    s.settings.earliestTime = '07:30'; s.settings.theme = 'light';
+    s.commitments.push({ id: 'cmGP', kind: 'appointment', title: 'GP', start: '${T0}T10:00', end: '${T0}T10:30' });
+    s.finance.expenses.push({ id: 'exRent', name: 'Rent', amount: 650, note: '' });
+    s.notes.items.push({ id: 'ntMac', categoryId: '', title: '', text: 'Mac note: coffee van idea', pinned: false, createdAt: '${Y}T09:00', updatedAt: '${Y}T09:00' });
+    s.tasks.items.push({ id: 'tkMac', title: 'Pay rent', listId: '', category: 'admin', minutes: 15, due: '${T0}', time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '${Y}T09:00', postponed: 0, blockers: [], letGoOn: null });
+    s.study.topics = [{ id: 'tpAr', title: 'Arabic' }];
+    s.study.stages = [{ id: 'sgAr', title: 'Start here', topicId: 'tpAr', courses: [{ id: 'coAr', title: 'Madinah book 1', url: '', minutes: 20, listId: null, archived: false, modules: [] }] }];
+    s.study.sessions.push({ id: 'ssMac', courseId: 'coAr', taskId: null, title: 'Madinah book 1', date: '${Y}', startedAt: '${Y}T19:00', plannedMin: 20, short: false, status: 'done', runningSince: null, activeMs: 1200000, endedAt: '${Y}T19:20', checkin: null, taskDone: null, todayUid: null });
+    s.health.food.recipes.rOwn = { id: 'rOwn', source: 'manual', title: 'Lentil soup', sourceUrl: '', sourceName: '', mealDbUrl: '', video: '', thumb: '', category: '', area: '', tags: [], ingredients: [{ name: 'lentils', measure: '200 g' }], instructions: 'Simmer.', servings: 4, servingsSource: 'user', prepMin: null, cookMin: null, effort: null, batch: null, nutrition: null, nutritionSource: null, savedAt: '${Y}T09:00' };
+    s.health.food.favourites = ['rOwn'];
+    s.health.food.shopping = [{ id: 'shMilk', name: 'milk', family: null, amount: null, unit: '', text: '', category: 'Dairy', checked: false, recipes: [], manual: true }];
+  }`);
+  await synced(mac);
+  check('the Mac sends them: each item on its own, each part as one record', !!(await cloudRecord(userA, 'commitment', 'cmGP')) && !!(await cloudRecord(userA, 'note', 'ntMac')) && !!(await cloudRecord(userA, 'task', 'tkMac'))
+    && !!(await cloudRecord(userA, 'session', 'ssMac')) && !!(await cloudRecord(userA, 'recipe', 'rOwn')) && (await cloudRecord(userA, 'finance', 'finance')).data.expenses[0].name === 'Rent' && (await cloudRecord(userA, 'settings', 'planning')).data.earliestTime === '07:30');
+  check('…but not its theme (that stays per device)', !JSON.stringify((await cloudRecord(userA, 'settings', 'planning')).data).includes('theme'));
+  const phoneTheme = (await phone.data()).settings.theme;
+  await phone.returnToApp();
+  await phone.until(`JSON.parse(localStorage.getItem('myday.data.v4')).notes.items.some(n => n.id === 'ntMac')`);
+  pd = await phone.data();
+  check('the phone gets the appointment, the expense, the note and the task', pd.commitments.some(c => c.id === 'cmGP' && c.title === 'GP') && pd.finance.expenses.some(e => e.name === 'Rent') && pd.notes.items.some(n => n.text.startsWith('Mac note')) && pd.tasks.items.some(t => t.id === 'tkMac' && t.due === T0));
+  check('…Study (the Arabic topic, its course, the session)', pd.study.topics?.[0]?.title === 'Arabic' && pd.study.stages.some(sg => sg.courses.some(c => c.id === 'coAr')) && pd.study.sessions.some(x => x.id === 'ssMac'));
+  check('…Food (the recipe, still a favourite, and the shopping list)', pd.health.food.recipes.rOwn?.title === 'Lentil soup' && eq(pd.health.food.favourites, ['rOwn']) && pd.health.food.shopping.some(x => x.name === 'milk'));
+  check('…and the planning settings, keeping its own theme', pd.settings.earliestTime === '07:30' && pd.settings.theme === phoneTheme);
+  await phone.setData(`s => { s.notes.items.push({ id: 'ntPhone', categoryId: '', title: '', text: 'Phone note: call the bank', pinned: false, createdAt: '${Y}T10:00', updatedAt: '${Y}T10:00' }); }`);
+  await mac.setData(`s => { s.notes.items.push({ id: 'ntMac2', categoryId: '', title: '', text: 'Mac note 2', pinned: false, createdAt: '${Y}T10:05', updatedAt: '${Y}T10:05' }); }`);
+  await synced(phone); await synced(mac);
+  await phone.returnToApp(); await mac.returnToApp();
+  await phone.until(`JSON.parse(localStorage.getItem('myday.data.v4')).notes.items.some(n => n.id === 'ntMac2')`);
+  await mac.until(`JSON.parse(localStorage.getItem('myday.data.v4')).notes.items.some(n => n.id === 'ntPhone')`);
+  const noteIds = async D => (await D.data()).notes.items.map(n => n.id);
+  check('a note added on each device at the same time: both kept on both, nothing to choose', (await noteIds(phone)).filter(id => ['ntMac', 'ntMac2', 'ntPhone'].includes(id)).length === 3
+    && (await noteIds(mac)).filter(id => ['ntMac', 'ntMac2', 'ntPhone'].includes(id)).length === 3 && Object.keys((await phone.notes()).link.conflicts).length === 0 && Object.keys((await mac.notes()).link.conflicts).length === 0);
+  await mac.setData(`s => { s.notes.items = s.notes.items.filter(n => n.id !== 'ntMac'); }`);
+  await synced(mac);
+  await phone.returnToApp();
+  check('deleting a note on the Mac deletes it on the phone (and in the account, as a tombstone)', await phone.until(`!JSON.parse(localStorage.getItem('myday.data.v4')).notes.items.some(n => n.id === 'ntMac')`) && (await cloudRecord(userA, 'note', 'ntMac')).deleted === true);
+  await synced(phone);
+  // The same part changed on both: the phone (offline) renames a note collection; the Mac renames it too.
+  await phone.offline(true);
+  await phone.ev(`location.hash = 'inbox/notes/collections'`);
+  await phone.until(`document.querySelector('#noteCats .ncat-row input')`);
+  await phone.type('#noteCats .ncat-row input', 'Phone: Life');
+  await phone.ev(`document.querySelector('#noteCats .ncat-row input').dispatchEvent(new FocusEvent('focusout', { bubbles: true }))`);
+  await sleep(300);
+  await mac.setData(`s => { s.notes.categories[0].name = 'Mac: Life'; }`);
+  await synced(mac);
+  await phone.offline(false); await phone.returnToApp();
+  check('a part changed on both devices is a conflict to decide (nothing overwritten)', await statusIs(phone, 'attention') && (await phone.data()).notes.categories[0].name === 'Phone: Life' && (await cloudRecord(userA, 'notes', 'collections')).data.categories[0].name === 'Mac: Life', await diag(phone));
+  await goSync(phone);
+  await phone.until(`document.querySelector('[data-action=conflict-here][data-key="notes:collections"]')`);
+  check('…named in words ("Note collections")', (await phone.text('#syncConflicts')).includes('Note collections'));
+  await phone.click('[data-action=conflict-here][data-key="notes:collections"]');
+  await cloudUntil(async () => (await cloudRecord(userA, 'notes', 'collections')).data.categories[0].name === 'Phone: Life');
+  await synced(phone);
+  await mac.returnToApp();
+  check('…choosing the phone\'s sends it, and the Mac gets it', await mac.until(`JSON.parse(localStorage.getItem('myday.data.v4')).notes.categories[0].name === 'Phone: Life'`));
+  await synced(mac);
 
   console.log('\n[6] Today\'s plan, and deleting it ("Start today over") — the deletion syncs and doesn\'t come back');
   await goToday(mac);

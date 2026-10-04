@@ -27,8 +27,10 @@ publishable key. It must never be a secret key, so `app/vite.config.ts` refuses 
 
 ## 2. Create MyDay's tables (the migration)
 
-The database changes are in `supabase/migrations/20261002120000_sync_lists_and_days.sql`. Apply them **one** of
-these two ways (not both):
+The database changes are in `supabase/migrations/`, applied in order: `20261002120000_sync_lists_and_days.sql` (the
+first part of sync), `20261003120000_ai_usage.sql` (AI help's limits) and `20261005120000_sync_everything.sql`
+(everything else syncs, from 1.8.0 — apply it **before** publishing 1.8.0; older versions of the app keep working with
+it). Apply them **one** of these two ways (not both):
 
 **A. With the Supabase CLI (recommended: it records which migrations have run).** From the `myday-site` folder:
 
@@ -42,8 +44,10 @@ npx supabase db push                             # shows the migration it will a
 **B. In the dashboard.** SQL Editor → New query → paste the whole migration file → Run. (If you later switch to
 the CLI, first run `npx supabase migration repair --status applied 20261002120000`, so it isn't applied twice.)
 
-This creates four record tables (`task_lists`, `task_queue`, `day_plans`, `day_context`), two bookkeeping
-tables, and two functions (`sync_push`, `sync_pull`). Row Level Security is switched on for all six tables.
+The first creates four record tables (`task_lists`, `task_queue`, `day_plans`, `day_context`), two bookkeeping
+tables, and two functions (`sync_push`, `sync_pull`). The third adds one more record table, `sync_records` (every
+other part of MyDay, by kind and id), and replaces the two functions so they handle it too (same names and
+arguments). Row Level Security is on for every table; nobody can write to them directly.
 
 ## 3. Accounts: only the ones you create
 
@@ -161,6 +165,7 @@ The model never writes anything: it only replies, and the app decides what's all
 | `functions/ai-plan/index.ts` | Connects that to Supabase (Auth and the limit functions run as the signed-in user; no secret key needed). |
 | `functions/_shared/ai/` | Shared by the function, the app and the evaluation: `schema.ts` (what's sent and returned), `prompt.ts` (the instructions), `providers.ts` (the model adapter), `mock.ts` (the practice planner). |
 | `migrations/20261003120000_ai_usage.sql` | Request, token and spending limits per account (counts only, never content). |
+| `migrations/20261005120000_sync_everything.sql` | Sync for everything else: the `sync_records` table, and `sync_push` / `sync_pull` handling it. |
 | `ai-secrets.example.env` | The settings, as a template with placeholders only (fill in a copy that Git ignores; the key ends up only in Supabase). |
 
 ## Try it without any AI (practice mode)

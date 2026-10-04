@@ -103,7 +103,7 @@ function NotesHome({ data }: { data: MyDayData }) {
           </Card>
         </>
       )}
-      <Note className="text-sm">Notes are kept on this device and included in "Export my data". They aren't synced between devices yet.</Note>
+      <Note className="text-sm">Notes are saved on this device and in "Export my data" — and with your account on every device, if you use sync.</Note>
     </>
   );
 }

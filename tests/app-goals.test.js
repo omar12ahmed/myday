@@ -37,7 +37,7 @@ const SEED = `s => {
   await go('health/goal', 2026, 10, 15, 9, 1);
   check('Health has three tabs: Workout, Food, Goal', eq(await ev(`[...document.querySelectorAll('.health-tabs [role=tab]')].map(a => a.textContent.trim())`), ['Workout', 'Food', 'Goal']));
   check('the five goals to choose from', eq(await ev(`[...document.querySelectorAll('#goalIntro [data-s=goal]')].map(b => b.dataset.id)`), ['lose', 'gain', 'recomp', 'maintain', 'health']));
-  check('…saying the answers stay on this device; nothing is saved yet', (await text('#goalIntro')).includes('stay on this device') && (await fit()).answers === null);
+  check('…saying where the answers are kept (this device, and your own account if you use sync — only you can see them); nothing is saved yet', (await text('#goalIntro')).includes('only you can see them') && (await fit()).answers === null);
   check('without a goal, a recipe shows no goal note', !(await (async () => { await go('health/food/recipe/rLean', 2026, 10, 15, 9, 2); return exists('[data-s=goal-fit]'); })()));
 
   console.log('\n[2] The questions, one at a time');
