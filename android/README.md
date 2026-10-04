@@ -12,7 +12,7 @@ The other way to get MyDay on Android needs no APK at all: open the website in C
 | File | What it is |
 |---|---|
 | `twa-manifest.json` | The app's settings: id `io.github.omar12ahmed.myday`, the site and start page (Today), icons and colours (taken from the website's own manifest), version, and where the signing key is. |
-| `make-twa-manifest.mjs` | Makes `twa-manifest.json` from the live website's manifest (`node make-twa-manifest.mjs 1.10.0`). |
+| `make-twa-manifest.mjs` | Makes `twa-manifest.json` from the live website's manifest (`node make-twa-manifest.mjs 1.11.0`), with the status and navigation bars in MyDay's colours (peach in light mode, deep brown in dark mode, following the phone). |
 | `app/`, `build.gradle`, `gradle/`, `gradlew` … | The Android project Bubblewrap generates from `twa-manifest.json` (`npm run update`). |
 | `package.json` | Bubblewrap, pinned (installed into `node_modules/`, not system-wide). |
 
@@ -40,7 +40,7 @@ From this folder:
 
 ```bash
 npm ci                                   # Bubblewrap (first time only)
-node make-twa-manifest.mjs 1.10.0        # only if the app's settings changed; the version must go up for an update
+node make-twa-manifest.mjs 1.11.0        # only if the app's settings changed; the version must go up for an update
 npm run update                           # regenerates the Android project from twa-manifest.json
 set -a; . ../../android-signing/signing.secret.env; set +a
 BUBBLEWRAP_KEYSTORE_PASSWORD="$KEYSTORE_PASSWORD" BUBBLEWRAP_KEY_PASSWORD="$KEYSTORE_PASSWORD" npm run build

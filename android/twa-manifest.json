@@ -4,13 +4,13 @@
   "name": "MyDay",
   "launcherName": "MyDay",
   "display": "standalone",
-  "themeColor": "#101315",
-  "themeColorDark": "#000000",
-  "navigationColor": "#000000",
-  "navigationColorDark": "#000000",
-  "navigationDividerColor": "#000000",
-  "navigationDividerColorDark": "#000000",
-  "backgroundColor": "#101315",
+  "themeColor": "#FFF5EC",
+  "themeColorDark": "#1A1411",
+  "navigationColor": "#FFF5EC",
+  "navigationColorDark": "#1A1411",
+  "navigationDividerColor": "#F3E3D6",
+  "navigationDividerColorDark": "#3A2E27",
+  "backgroundColor": "#FFF5EC",
   "enableNotifications": false,
   "startUrl": "/myday/#today",
   "iconUrl": "https://omar12ahmed.github.io/myday/icons/icon-512.png",
@@ -20,8 +20,8 @@
     "path": "/Users/nrt/Documents/Myday/android-signing/myday.keystore",
     "alias": "myday"
   },
-  "appVersionName": "1.10.0",
-  "appVersionCode": 1010000,
+  "appVersionName": "1.11.0",
+  "appVersionCode": 1011000,
   "shortcuts": [],
   "generatorApp": "unknown",
   "webManifestUrl": "https://omar12ahmed.github.io/myday/manifest.webmanifest",
@@ -43,5 +43,5 @@
   "fileHandlers": [],
   "launchHandlerClientMode": "",
   "displayOverride": [],
-  "appVersion": "1.10.0"
+  "appVersion": "1.11.0"
 }

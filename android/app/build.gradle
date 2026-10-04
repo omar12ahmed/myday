@@ -26,13 +26,13 @@ def twaManifest = [
     launchUrl: '/myday/#today', // The start path for the TWA. Must be relative to the domain.
     name: 'MyDay', // The application name.
     launcherName: 'MyDay', // The name shown on the Android Launcher.
-    themeColor: '#101315', // The color used for the status bar.
-    themeColorDark: '#000000', // The color used for the dark status bar.
-    navigationColor: '#000000', // The color used for the navigation bar.
-    navigationColorDark: '#000000', // The color used for the dark navbar.
-    navigationDividerColor: '#000000', // The navbar divider color.
-    navigationDividerColorDark: '#000000', // The dark navbar divider color.
-    backgroundColor: '#101315', // The color used for the splash screen background.
+    themeColor: '#FFF5EC', // The color used for the status bar.
+    themeColorDark: '#1A1411', // The color used for the dark status bar.
+    navigationColor: '#FFF5EC', // The color used for the navigation bar.
+    navigationColorDark: '#1A1411', // The color used for the dark navbar.
+    navigationDividerColor: '#F3E3D6', // The navbar divider color.
+    navigationDividerColorDark: '#3A2E27', // The dark navbar divider color.
+    backgroundColor: '#FFF5EC', // The color used for the splash screen background.
     enableNotifications: false, // Set to true to enable notification delegation.
     // Every shortcut must include the following fields:
     // - name: String that will show up in the shortcut.
@@ -57,8 +57,8 @@ android {
         applicationId "io.github.omar12ahmed.myday"
         minSdkVersion 21
         targetSdkVersion 36
-        versionCode 1010000
-        versionName "1.10.0"
+        versionCode 1011000
+        versionName "1.11.0"
 
         // The name for the application
         resValue "string", "appName", twaManifest.name
