@@ -20,12 +20,19 @@
   --color-fg-3: var(--text-3);   /* quietest text, e.g. times and durations */
   --color-primary: var(--primary);
   --color-on-primary: var(--on-primary);
+  --color-primary-2: var(--primary-2);  /* the lower end of the main button's gradient */
   --color-primary-container: var(--primary-container);
   --color-on-primary-container: var(--on-primary-container);
   --color-primary-outline: var(--primary-outline);
   --color-tonal: var(--tonal);
   --color-on-tonal: var(--on-tonal);
   --color-track: var(--track);
+  --color-done: var(--done);           /* things that are done: ticks, progress */
+  --color-on-done: var(--on-done);
+  --color-done-c: var(--done-c);
+  --color-on-done-c: var(--on-done-c);
+  --color-rail: var(--rail);           /* the side menu on wide screens */
+  --color-on-rail: var(--on-rail);
   --color-learning: var(--learning);
   --color-learning-c: var(--learning-c);
   --color-admin: var(--admin);
@@ -45,13 +52,14 @@
 
   --shadow-card: var(--shadow);       /* shadow-card */
   --shadow-raised: var(--shadow-btn); /* shadow-raised: buttons */
+  --shadow-cta: var(--shadow-cta);     /* shadow-cta: the main button (a soft glow and a top highlight) */
 }
 
 /* Sizes and the font: the same in every theme. */
 @theme {
   /* Plus Jakarta Sans (imported in main.tsx), with the device's own font while it loads. */
   --font-sans: "Plus Jakarta Sans Variable", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  --radius-card: 22px; /* rounded-card: cards */
+  --radius-card: 24px; /* rounded-card: cards */
   --radius-tile: 16px; /* rounded-tile: task rows */
   --radius-btn: 18px;  /* rounded-btn: buttons */
   --spacing-tap: 52px; /* min-h-tap: comfortable height for anything you tap */
@@ -66,18 +74,26 @@
     -webkit-tap-highlight-color: transparent;
     min-height: 100vh;
   }
-  /* Soft, fixed background glow so the glass app bar has something gentle to blur. */
+  /* The warm page: soft peach-to-pink glows behind the white cards (fixed, so the glass app bar has something gentle
+     to blur). Quiet on purpose: colour for warmth, not for attention. */
   body::before {
     content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
     background:
-      radial-gradient(48rem 32rem at 0% -10%, var(--glow-1), transparent 70%),
-      radial-gradient(40rem 32rem at 100% 0%, var(--glow-2), transparent 70%);
+      radial-gradient(52rem 36rem at 0% -10%, var(--glow-1), transparent 70%),
+      radial-gradient(44rem 34rem at 100% 0%, var(--glow-2), transparent 70%),
+      radial-gradient(60rem 30rem at 50% 110%, var(--glow-3), transparent 70%);
   }
   h2 { font-size: 22px; font-weight: 700; margin: 0 0 6px; letter-spacing: -.015em; line-height: 1.25; }
   h3 { font-size: 13px; font-weight: 700; margin: 0 0 10px; color: var(--text-2); text-transform: uppercase; letter-spacing: .08em; }
   h4 { font-size: 15px; font-weight: 650; margin: 16px 0 6px; color: var(--text-2); }
   p { margin: 0 0 12px; }
   :focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+  /* Boxes you type in: the border turns orange with a soft glow around it (still clearly visible). */
+  input:not([type="checkbox"], [type="radio"], [type="range"]):focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 0; border-color: var(--primary); box-shadow: 0 0 0 4px var(--focus-glow);
+  }
+  input, select, textarea { transition: border-color .15s, box-shadow .15s; }
+  ::selection { background: var(--primary-container); color: var(--on-primary-container); }
 
   summary { cursor: pointer; }
 
@@ -100,70 +116,75 @@
   .cat-health { --cat: var(--health); }
   .ring-fill { stroke: var(--cat, var(--primary)); transition: stroke-dashoffset 1s linear; }
 
-  /* Navigation: a frosted bar along the bottom on phones; across the top on wide screens. */
+  /* Navigation: a frosted bar floating just above the bottom edge on phones; on wide screens, a rounded orange rail
+     down the left side with every section's icon and name (the page moves over to make room). */
   .nav {
-    position: fixed; left: 0; right: 0; bottom: 0; z-index: 25;
-    display: flex; justify-content: center; gap: 4px;
-    background: var(--glass); backdrop-filter: blur(18px) saturate(140%);
-    border-top: 1px solid var(--outline);
-    padding: 6px 8px; padding-bottom: max(6px, env(safe-area-inset-bottom));
+    position: fixed; left: 10px; right: 10px; bottom: max(10px, env(safe-area-inset-bottom)); z-index: 25;
+    display: flex; justify-content: center; gap: 2px;
+    background: var(--glass); backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid var(--outline); border-radius: 26px; box-shadow: var(--shadow);
+    padding: 5px;
   }
   .nav-item {
-    flex: 1; max-width: 160px; min-height: 56px; padding: 4px;
+    flex: 1; min-width: 0; max-width: 160px; min-height: 56px; padding: 4px;
     display: grid; justify-items: center; align-content: center; gap: 2px;
     color: var(--text-2); text-decoration: none; font-size: 12px; font-weight: 650; border-radius: 16px;
   }
-  .nav-icon { display: grid; place-items: center; width: 56px; height: 30px; border-radius: 999px; transition: background-color .15s; }
+  .nav-logo { display: none; }
+  .nav-icon { display: grid; place-items: center; width: min(56px, 100%); height: 30px; border-radius: 999px; transition: background-color .15s; }
   .nav-item[aria-current="page"] { color: var(--text); }
   .nav-item[aria-current="page"] .nav-icon { background: var(--primary-container); color: var(--on-primary-container); }
-  body:has(.nav) { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+  body:has(.nav) { padding-bottom: calc(86px + env(safe-area-inset-bottom)); }
   .toast { bottom: max(24px, env(safe-area-inset-bottom)); }
-  body:has(.nav) .toast { bottom: calc(88px + env(safe-area-inset-bottom)); }
+  body:has(.nav) .toast { bottom: calc(96px + env(safe-area-inset-bottom)); }
   @media (min-width: 64rem) {
     .nav {
-      /* Beside the theme button (the header's content is 1120px wide with 24px sides; the button is 48px plus a gap),
-         so it never runs into a long date such as "Wednesday 30 September". */
-      top: 0; bottom: auto; left: auto; right: calc(max(24px, (100vw - 1120px) / 2 + 24px) + 64px); height: 72px; align-items: center;
-      background: transparent; backdrop-filter: none; border: 0; padding: 0;
+      top: 16px; bottom: 16px; left: 16px; right: auto; width: 96px;
+      flex-direction: column; justify-content: flex-start; gap: 6px;
+      padding: 18px 10px; border: 0; border-radius: 28px;
+      background: linear-gradient(180deg, var(--rail), var(--rail-2)); backdrop-filter: none;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), inset 0 0 0 1px rgba(255, 255, 255, .06), var(--shadow);
     }
-    .nav-item { display: flex; align-items: center; gap: 2px; min-height: 44px; padding: 4px 12px 4px 4px; font-size: 15px; max-width: none; }
-    .nav-icon { width: 30px; height: 30px; }
-    .nav-item[aria-current="page"] { background: var(--primary-container); color: var(--on-primary-container); }
-    .nav-item[aria-current="page"] .nav-icon { background: transparent; }
-    body:has(.nav) { padding-bottom: 0; }
+    .nav-item { flex: none; max-width: none; min-height: 68px; padding: 8px 4px; gap: 4px; color: var(--on-rail); font-size: 13px; border-radius: 18px; }
+    .nav-item { transition: background-color .15s, color .15s; }
+    .nav-item:hover { background: rgba(255, 255, 255, .18); }
+    .nav-icon { width: 40px; height: 30px; background: transparent; }
+    .nav-item[aria-current="page"] { background: var(--surface); color: var(--primary); box-shadow: var(--shadow-btn); }
+    .nav-item[aria-current="page"] .nav-icon { background: transparent; color: var(--primary); }
+    .nav-item:focus-visible { outline: 3px solid var(--on-rail); outline-offset: 2px; }
+    .nav-logo { display: grid; justify-items: center; gap: 4px; margin-bottom: 14px; color: var(--on-rail); text-decoration: none; font-weight: 800; font-size: 13px; letter-spacing: .02em; }
+    .nav-logo img { width: 40px; height: 40px; border-radius: 12px; box-shadow: var(--shadow-btn); }
+    body:has(.nav) { padding-bottom: 0; padding-left: 128px; }
     body:has(.nav) .toast { bottom: 24px; }
   }
 
   /* "+ Capture": phones — a round button above the bar, within reach of a thumb (toasts and the page's end move up so
      nothing hides behind it); wide screens — beside the theme button, with the bar moved over to make room. */
   .capture-btn {
-    position: fixed; right: 16px; bottom: calc(84px + env(safe-area-inset-bottom)); z-index: 26;
+    position: fixed; right: 16px; bottom: calc(92px + env(safe-area-inset-bottom)); z-index: 26;
     display: inline-flex; align-items: center; justify-content: center; gap: 6px;
     width: 56px; height: 56px; border: 0; border-radius: 18px; cursor: pointer;
-    background: var(--primary); color: var(--on-primary); box-shadow: var(--shadow-btn), var(--shadow);
+    background: linear-gradient(180deg, var(--primary), var(--primary-2)); color: var(--on-primary); box-shadow: var(--shadow-cta);
+    transition: transform .15s, filter .15s;
     font: inherit; font-weight: 700; font-size: 15px;
   }
+  .capture-btn:hover { filter: brightness(1.05); }
+  .capture-btn:active { transform: scale(.96); }
   .capture-btn:focus-visible { outline: 3px solid var(--primary-outline); outline-offset: 2px; }
   .capture-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-  body:has(.capture-btn) { padding-bottom: calc(148px + env(safe-area-inset-bottom)); }
-  body:has(.capture-btn) .toast { bottom: calc(152px + env(safe-area-inset-bottom)); }
+  body:has(.capture-btn) { padding-bottom: calc(156px + env(safe-area-inset-bottom)); }
+  body:has(.capture-btn) .toast { bottom: calc(160px + env(safe-area-inset-bottom)); }
   @media (min-width: 64rem) {
     /* Wide screens: a round button like the theme button, just to its left (its name is for screen readers). */
-    .capture-btn { top: 12px; bottom: auto; right: calc(max(24px, (100vw - 1120px) / 2 + 24px) + 64px); width: 48px; height: 48px; border-radius: 999px; }
-    body:has(.capture-btn) .nav { right: calc(max(24px, (100vw - 1120px) / 2 + 24px) + 64px + 60px); }
+    /* The top bar's card lines up with the page (1072px wide at most, beside the 128px side menu, 24px sides); + Capture
+       sits inside it, left of the theme button (20px padding, 48px button, 12px gap). */
+    .capture-btn { top: 30px; bottom: auto; right: calc(max(0px, (100vw - 1248px) / 2) + 104px); width: 48px; height: 48px; border-radius: 999px; }
     body:has(.capture-btn) { padding-bottom: 0; }
     body:has(.capture-btn) .toast { bottom: 24px; }
-    .nav-item { font-size: 14px; padding: 4px 10px 4px 2px; }
-  }
-  /* Six sections: below 1440 px the bar shows icons only (each still has its name for screen readers and on hover),
-     so it never runs into a long date such as "Wednesday 30 September". */
-  @media (min-width: 64rem) and (max-width: 89.99rem) {
-    .nav-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-    .nav-item { padding: 4px; }
   }
 
   /* Today on wide screens: the side cards beside the main ones (phones use one ordered column). */
-  @media (min-width: 64rem) { .today-layout { grid-template-areas: "main side" "foot side"; } }
+  @media (min-width: 64rem) { .today-layout { grid-template-areas: "hero hero" "main side" "foot side"; } }
 
   /* The energy slider: a filled track up to the thumb (--fill is set by the component). */
   .energy-range { --fill: 50%; -webkit-appearance: none; appearance: none; width: 100%; height: 48px; background: transparent; margin: 0; cursor: pointer; }

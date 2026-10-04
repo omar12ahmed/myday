@@ -36,6 +36,12 @@ import { canUndo, undoAi, type Undo } from '../ai/apply';
 import { AI_MODE } from '../ai/request';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
+import { GreetingCard } from './GreetingCard';
+import { FocusCard } from './FocusCard';
+import { QuickAdd } from './QuickAdd';
+import { TodayRing, WeekCard } from './DashboardCards';
+import { FocusView } from './FocusView';
+import { setFocusMode, useFocusMode } from '../shell/focusMode';
 
 // The Today section. Saved data comes in as `data`; everything else here (an open proposal, the
 // evening check-in, the commitment form…) is kept only while the screen is open, as in the current
@@ -174,9 +180,9 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
   }
 
   // ---------- Focus timer ----------
-  function timer(t: Task, kind: 'start' | 'focus') {
+  function timer(t: Task, kind: 'start' | 'focus', minutes?: number) {
     const switching = !!data.timer && data.timer.uid !== t.uid;
-    if (!update(dr => { const task = findTask(dr, k, t.uid); if (!task || task.done) return false; startTimer(dr, t.uid, kind, kind === 'start' ? 2 : task.minutes); })) return;
+    if (!update(dr => { const task = findTask(dr, k, t.uid); if (!task || task.done) return false; startTimer(dr, t.uid, kind, kind === 'start' ? 2 : minutes ?? task.minutes); })) return;
     if (switching) toast('Switched the timer to this task.');
     scrollTo('timerCard');
   }
@@ -319,6 +325,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
           </Card>
         ))}
         {mindSlots}
+        {slot('order-1', <QuickAdd k={k} />, 'slot-quick')}
         {slot('order-1', <DueTodayCard data={data} k={k} />, 'slot-due')}
         {slot('order-1', healthCard, 'slot-health')}
         {slot('order-1', studyCard, 'slot-study')}
@@ -336,6 +343,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
           onMind={AI_MODE !== 'off' ? openMind : undefined} />)}
         {mindSlots}
         {slot('order-1', proposalCard)}
+        {slot('order-1', <QuickAdd k={k} />, 'slot-quick')}
         {slot('order-1', <DueTodayCard data={data} k={k} />, 'slot-due')}
         {slot('order-2', context, 'slot-context')}
         {slot('order-3', healthCard, 'slot-health')}
@@ -346,8 +354,27 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
     );
   }
 
+  // Focus mode (the switch in the top bar): only what's next — the task to do now and the focus timer.
+  const focusMode = useFocusMode();
+  if (focusMode && view === 'auto') {
+    return (
+      <FocusView data={data} k={k} onToggle={(t, done) => toggle(k, t, done)} onTimer={(t, kind) => timer(t, kind)} onShowAll={() => setFocusMode(false)}
+        timerCard={data.timer && !timerIsStale(data) ? <TimerCard data={data} onAction={timerAction} /> : null}
+        morning={!d ? <MorningCard key={(contextFor(data, k).energy || 3) as Energy} energy={(contextFor(data, k).energy || 3) as Energy} queue={data.queue}
+          onEnergy={v => { update(dr => { ensureContext(dr, k).energy = v; }); contextChanged(); }} onBuild={build} onSkip={skip} /> : null}
+        proposal={proposalCard || null} />
+    );
+  }
+
+  // Wide screens: a dashboard — the greeting across the top, your day on the left, the focus timer, today and this
+  // week, the timeline and your progress on the right. Phones: one column, in a sensible order.
   return (
     <div className="today-layout flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(320px,380px)] lg:gap-x-6 lg:items-start">
+      {view === 'auto' && (
+        <div className="contents lg:block lg:min-w-0 lg:[grid-area:hero]">
+          {slot('order-0', <GreetingCard data={data} k={k} onGo={() => scrollTo(d ? 'slot-plan' : 'slot-energy')} />, 'slot-greeting')}
+        </div>
+      )}
       <div className="contents lg:block lg:min-w-0 lg:[grid-area:main]">
         {slot('order-0', showNudge && view !== 'edit' && (
           <NudgeCard day={d} choosing={nudge.choosing} onShrink={shrink} onSwap={uid => swapLearning(uid)} onAdd={() => swapLearning(null)} onDismiss={hideNudge} />
@@ -355,7 +382,9 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
         {main}
       </div>
       {view !== 'edit' && (
-        <aside className="contents lg:block lg:min-w-0 lg:[grid-area:side] lg:sticky lg:top-24" aria-label="More for today">
+        <aside className="contents lg:block lg:min-w-0 lg:[grid-area:side]" aria-label="More for today">
+          {view === 'auto' && slot('order-1', !(data.timer && !timerIsStale(data)) && <FocusCard data={data} k={k} onStart={(t, m) => timer(t, 'focus', m)} />, 'slot-focus')}
+          {view === 'auto' && slot('order-2', <div className="grid grid-cols-2 gap-4 mb-4 [&>.card]:mb-0"><TodayRing data={data} k={k} /><WeekCard data={data} k={k} /></div>, 'slot-week')}
           {view === 'auto' && slot('order-2', <GlanceCard data={data} k={k} proposal={d ? null : proposal} />)}
           {slot('order-8', <StreakCard data={data} justLearned={justLearned} />)}
           {slot('order-8', <GardenCard data={data} justLearned={justLearned} />)}

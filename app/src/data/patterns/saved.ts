@@ -14,6 +14,7 @@ import { intIn, isObj } from '../util';
 export const CATEGORIES: Category[] = ['learning', 'admin', 'health'];
 export const MINUTE_CHOICES = [15, 20, 25, 30, 45, 60];
 export const YOUR_CHOICE = 'You chose this in What MyDay has noticed.';
+export const NAME_MAX = 40;
 
 export const emptyPatterns = (): PatternsData => ({ prefs: { maxMinutes: { learning: null, admin: null, health: null }, maxTasks: null }, answers: {} });
 
@@ -36,7 +37,7 @@ export function normalizePatterns(raw: unknown, report: { dropped: number }): Pa
       answers[id] = { ...a, said: a.said, on: a.on, examples: intIn(a.examples, 0, 100000, 0), title: typeof a.title === 'string' ? a.title.slice(0, 200) : '' };
     }
   }
-  return {
+  const out: PatternsData = {
     ...raw,
     prefs: {
       ...prefs,
@@ -45,6 +46,10 @@ export function normalizePatterns(raw: unknown, report: { dropped: number }): Pa
     },
     answers,
   };
+  // What MyDay calls you (the greeting on Today): optional, up to 40 characters.
+  const name = typeof prefs.name === 'string' ? prefs.name.trim().slice(0, NAME_MAX) : '';
+  if (name) out.prefs.name = name; else delete out.prefs.name;
+  return out;
 }
 
 // ---------- Changes (each used inside update()) ----------
@@ -59,6 +64,13 @@ export function setMaxMinutes(d: PatternsData, cat: Category, value: number | nu
 export function setMaxTasks(d: PatternsData, value: number | null, from: string | null = null, why = YOUR_CHOICE): boolean {
   if ((d.prefs.maxTasks?.value ?? null) === value) return false;
   d.prefs.maxTasks = value === null ? null : pref(value, from, why);
+  return true;
+}
+// What MyDay calls you ("Good morning, Sam!"). Empty removes it.
+export function setName(d: PatternsData, name: string): boolean {
+  const clean = name.trim().slice(0, NAME_MAX);
+  if ((d.prefs.name ?? '') === clean) return false;
+  if (clean) d.prefs.name = clean; else delete d.prefs.name;
   return true;
 }
 // "That's right" / "Not really": kept with how many examples it was based on, so a pattern you said no to only comes

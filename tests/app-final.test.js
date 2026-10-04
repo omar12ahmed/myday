@@ -169,8 +169,10 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   JSON.stringify(liveAll).replace(/"(id|uid|qid|key)":"([^"]*)"/g, (m, k, v) => { seedIds.add(v); return m; });
   const mask = o => { const c = JSON.parse(noSaves(o)); delete c.health.futureHealthPart; return canon(JSON.parse(JSON.stringify(c, (k, v) => (['id', 'uid', 'qid', 'key'].includes(k) && typeof v === 'string' && /^[a-z]{1,3}[0-9a-z]{10,}$/.test(v) ? 'NEW' : v)))); };
   // The new app adds Notes and Goal (1.3.0), which the current MyDay keeps unread: compared on their own, below.
-  const newCmp = { ...newAll }; delete newCmp.notes; delete newCmp.fitness; delete newCmp.tasks; delete newCmp.patterns;
+  // …and (from 1.11.0) its default theme is light, where the current MyDay's is dark: compared on its own too.
+  const newCmp = { ...newAll, settings: { ...newAll.settings, theme: liveAll.settings.theme } }; delete newCmp.notes; delete newCmp.fitness; delete newCmp.tasks; delete newCmp.patterns;
   check('the whole saved file matches the current MyDay\'s, section by section', !('notes' in liveAll) && !('fitness' in liveAll) && !('tasks' in liveAll) && !('patterns' in liveAll) && mask(liveAll) === mask(newCmp), (() => { const a = JSON.parse(mask(liveAll)), b = JSON.parse(mask(newCmp)); return [...new Set([...Object.keys(a), ...Object.keys(b)])].filter(k => JSON.stringify(a[k]) !== JSON.stringify(b[k])); })());
+  check('…except the default theme, on purpose: light in the new app (its warm look), dark in the current MyDay', newAll.settings.theme === 'light' && liveAll.settings.theme === 'dark', [newAll.settings.theme, liveAll.settings.theme]);
   check('…the new app adds Notes: the starter categories and no notes', newAll.notes.items.length === 0 && newAll.notes.categories.map(c => c.name).join() === 'Lifestyle,Business ideas,Health & fitness,Money,Study & career,Personal');
   check('…and Goal: no goal yet, kg and cm', eq(newAll.fitness, { units: 'metric', answers: null, setOn: null }));
   check('…and Tasks: no lists and no tasks', eq(newAll.tasks, { lists: [], items: [] }));
@@ -237,8 +239,8 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   await go('today', 2026, 11, 2, 9, 3);
   await ev('document.activeElement && document.activeElement.blur(); window.scrollTo(0, 0)');
   const order = [];
-  for (let i = 0; i < 7; i++) { await press('Tab'); order.push(await focused()); }
-  check('Tab reaches the theme button and then each section in the navigation', order[0] === 'themeBtn' && eq(order.slice(1, 7), ['#today', '#calendar', '#inbox', '#finance', '#health', '#study']), order);
+  for (let i = 0; i < 8; i++) { await press('Tab'); order.push(await focused()); }
+  check('Tab reaches the Focus mode switch, the theme button and then each section in the navigation', order[0] === 'focus-mode' && order[1] === 'themeBtn' && eq(order.slice(2, 8), ['#today', '#calendar', '#inbox', '#finance', '#health', '#study']), order);
   check('…with a visible focus outline', (await ev(`getComputedStyle(document.activeElement).outlineStyle`)) !== 'none');
   await ev(`document.querySelector('#nav a[href="#finance"]').focus()`); await press('Enter'); await sleep(250);
   check('Enter on a navigation link opens that section', (await ev('location.hash')) === '#finance');
@@ -262,7 +264,7 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   for (const r of routes) {
     await go(r, 2026, 11, 2, 15);
     if (await ev('document.documentElement.scrollWidth > innerWidth')) tooWide.push(r);
-    const small = await ev(`[...document.querySelectorAll('#footer button, #nav a')].filter(b => b.getBoundingClientRect().height < 44).length`);
+    const small = await ev(`[...document.querySelectorAll('#footer button, #nav a')].filter(b => b.getClientRects().length && b.getBoundingClientRect().height < 44).length`);
     if (small) tooSmall.push(r);
   }
   check('a small phone (360 px wide): nothing scrolls sideways on any section', tooWide.length === 0, tooWide);

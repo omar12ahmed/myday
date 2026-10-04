@@ -229,7 +229,7 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   const fx = await data();
   check('…lists repaired (learning reseeded, bad admin dropped, minutes defaulted)', fx.lists.learning.length === 4 && fx.lists.admin.length === 1 && fx.lists.admin[0].minutes === 20);
   check('…days repaired (bad date and bad task dropped, bad time cleared)', !fx.days['2026-13-45'] && fx.days['2026-12-08'].tasks.length === 1 && fx.days['2026-12-08'].tasks[0].scheduledStart === null);
-  check('…settings fall back to defaults', eq(fx.settings, { bufferMinutes: 30, earliestTime: '08:00', latestTime: '21:00', gapMinutes: 10, theme: 'dark', motion: 'auto' }), fx.settings);
+  check('…settings fall back to defaults', eq(fx.settings, { bufferMinutes: 30, earliestTime: '08:00', latestTime: '21:00', gapMinutes: 10, theme: 'light', motion: 'auto' }), fx.settings);
   check('…invalid commitments dropped, the valid night shift kept', fx.commitments.length === 1 && fx.commitments[0].title === 'Night');
   check('…context cleaned (bad energy/estimate removed, valid wake time kept)', fx.context['2026-12-09'].sleep.end === '2026-12-09T07:00' && fx.context['2026-12-09'].sleep.estimatedHours === null && !fx.context.junk);
   await reset();
@@ -407,21 +407,23 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   console.log('\n[17] Themes');
   const bgOf = () => ev(`getComputedStyle(document.body).backgroundColor`);
   await openAt(2027, 2, 7, 7);
-  check('dark by default', (await ev(`document.documentElement.dataset.theme`)) === 'dark' && (await bgOf()) === 'rgb(16, 19, 21)', await bgOf());
-  check('theme button labelled for screen readers', (await ev(`document.getElementById('themeBtn').getAttribute('aria-label')`)) === 'Theme: Dark. Tap to change.');
+  // From 1.11.0 the new app is warm and light by default (the classic MyDay's default stays dark).
+  check('light by default (the warm peach page)', (await ev(`document.documentElement.dataset.theme`)) === 'light' && (await bgOf()) === 'rgb(255, 245, 236)', await bgOf());
+  check('theme button labelled for screen readers', (await ev(`document.getElementById('themeBtn').getAttribute('aria-label')`)) === 'Theme: Light. Tap to change.');
   await click('#themeBtn'); await sleep(400);
-  check('tap → Light: light colours applied and saved', (await ev(`document.documentElement.dataset.theme`)) === 'light' && (await bgOf()) === 'rgb(244, 246, 244)' && (await data()).settings.theme === 'light');
-  check('browser bar colour follows the theme', (await ev(`document.querySelector('meta[name=theme-color]').content`)) === '#f4f6f4');
+  check('tap → Dark: the warm dark colours applied and saved', (await ev(`document.documentElement.dataset.theme`)) === 'dark' && (await bgOf()) === 'rgb(26, 20, 17)' && (await data()).settings.theme === 'dark');
+  check('browser bar colour follows the theme', (await ev(`document.querySelector('meta[name=theme-color]').content`)) === '#1a1411');
   await T.send('Page.addScriptToEvaluateOnNewDocument', { source: `new MutationObserver((m, o) => { if (document.body) { window.__themeAtBody = document.documentElement.getAttribute('data-theme'); o.disconnect(); } }).observe(document, { childList: true, subtree: true });` });
   await openAt(2027, 2, 7, 8);
-  check('saved theme is applied before the page body appears (no flash)', (await ev('window.__themeAtBody')) === 'light', await ev('window.__themeAtBody'));
+  check('saved theme is applied before the page body appears (no flash)', (await ev('window.__themeAtBody')) === 'dark', await ev('window.__themeAtBody'));
   await click('#themeBtn'); await sleep(400);
   await T.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'dark' }] });
-  check('tap → Match device (device dark) → dark colours', (await ev(`document.documentElement.dataset.theme`)) === 'auto' && (await bgOf()) === 'rgb(16, 19, 21)', await bgOf());
+  check('tap → Match device (device dark) → dark colours', (await ev(`document.documentElement.dataset.theme`)) === 'auto' && (await bgOf()) === 'rgb(26, 20, 17)', await bgOf());
   await T.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'light' }] });
-  check('…device switches to light → light colours', (await bgOf()) === 'rgb(244, 246, 244)', await bgOf());
+  check('…device switches to light → light colours', (await bgOf()) === 'rgb(255, 245, 236)', await bgOf());
+  await T.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'dark' }] });
   await click('#themeBtn'); await sleep(400);
-  check('tap → back to Dark (even when the device is light)', (await ev(`document.documentElement.dataset.theme`)) === 'dark' && (await bgOf()) === 'rgb(16, 19, 21)');
+  check('tap → back to Light (even when the device is dark)', (await ev(`document.documentElement.dataset.theme`)) === 'light' && (await bgOf()) === 'rgb(255, 245, 236)', await bgOf());
   await T.send('Emulation.setEmulatedMedia', { features: [] });
   const contrastIn = async theme => ev(`(() => {
     document.documentElement.dataset.theme = ${JSON.stringify(theme)};
@@ -431,7 +433,8 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
     const L = hx => { const h = full(hx); const c = [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255).map(x => x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
     const cr = (a, b) => { const [x, y] = [L(v(a)), L(v(b))].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
     const pairs = [['text','surface'],['text-2','surface'],['text-3','surface'],['text-3','surface-2'],['primary','surface'],['on-primary','primary'],['on-primary-container','primary-container'],['on-tonal','tonal'],
-      ['learning','learning-c'],['admin','admin-c'],['health','health-c'],['rest','rest-c'],['work','work-c'],['appt','appt-c'],['on-warn-c','warn-c'],['on-inverse','inverse']];
+      ['learning','learning-c'],['admin','admin-c'],['health','health-c'],['rest','rest-c'],['work','work-c'],['appt','appt-c'],['on-warn-c','warn-c'],['on-inverse','inverse'],
+      ['on-done','done'],['on-done-c','done-c'],['on-rail','rail'],['text','bg'],['text-2','surface-2'],['primary','bg'],['on-primary','primary-2']];
     return Math.min(...pairs.map(([a, b]) => cr(a, b)));
   })()`);
   const cDark = await contrastIn('dark'), cLight = await contrastIn('light');
@@ -441,8 +444,10 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   console.log('\n[18] Layout');
   await T.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
   await openAt(2027, 2, 6, 9);
-  const rects = await ev(`(() => { const r = id => { const b = document.getElementById(id).getBoundingClientRect(); return { left: b.left, right: b.right, top: b.top }; }; return { plan: r('slot-plan'), glance: r('slot-glance'), streak: r('streak') }; })()`);
-  check('desktop: dashboard with timeline and count in a side column', rects.glance.left > rects.plan.right && rects.streak.left === rects.glance.left && rects.glance.top < 200, rects);
+  const rects = await ev(`(() => { const r = id => { const b = document.getElementById(id).getBoundingClientRect(); return { left: b.left, right: b.right, top: b.top, bottom: b.bottom }; }; return { greeting: r('greeting'), plan: r('slot-plan'), focus: r('slot-focus'), glance: r('slot-glance'), streak: r('streak') }; })()`);
+  check('desktop: the greeting across the top, then the plan with a side column (focus timer, then timeline and count)',
+    rects.greeting.bottom <= rects.plan.top && rects.greeting.top < 200 && rects.glance.left > rects.plan.right && rects.focus.left === rects.glance.left && rects.streak.left === rects.glance.left
+    && rects.focus.top <= rects.plan.top + 1 && rects.focus.top < rects.glance.top, rects);
   check('desktop: no sideways scrolling', !(await ev('document.documentElement.scrollWidth > innerWidth')));
   await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await openAt(2027, 2, 6, 9);
@@ -458,7 +463,9 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   check('no sideways scrolling at phone width (morning)', !(await ev('document.documentElement.scrollWidth > innerWidth')));
   const mtops = await ev(`['slot-energy', 'slot-actions', 'slot-context', 'slot-glance'].map(id => { const el = document.getElementById(id); return el ? Math.round(el.getBoundingClientRect().top + scrollY) : null; })`);
   check('phone morning: energy → Build my day → context (folded) → timeline', mtops.every((t, i) => t !== null && (i === 0 || t > mtops[i - 1])) && (await ev(`(document.getElementById('ctxDetails') || {}).open === false`)), mtops);
-  check('phone morning: Build my day is fully visible without scrolling', await ev(`document.querySelector('[data-action=build]').getBoundingClientRect().bottom <= document.getElementById('nav').getBoundingClientRect().top`));
+  check('phone morning: Build my day is fully visible without scrolling', await ev(`document.querySelector('[data-action=build]').getBoundingClientRect().bottom <= document.getElementById('nav').getBoundingClientRect().top`),
+    await ev(`(() => { const r = e => e && Math.round(e.getBoundingClientRect().bottom); return { build: r(document.querySelector('[data-action=build]')), nav: Math.round(document.getElementById('nav').getBoundingClientRect().top), header: r(document.querySelector('header')),
+      blocks: [...document.querySelectorAll('#app section, #app .card')].filter(e => e.getBoundingClientRect().top < 900).map(e => (e.id || e.className.slice(0, 24)) + ':' + Math.round(e.getBoundingClientRect().top) + '-' + Math.round(e.getBoundingClientRect().bottom)) }; })()`));
   check('phone morning: the folded context says what is in it', (await text('#slot-context details summary')).includes('Nothing booked today') && (await text('#slot-context details summary')).includes('min prep/travel'));
   await click('[data-action=build]');
   check('no sideways scrolling at phone width (proposal)', !(await ev('document.documentElement.scrollWidth > innerWidth')));
@@ -553,7 +560,7 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   check("a timer left running from yesterday is quietly cleared", !(await exists('#timerCard')) && (await data()).timer === null);
 
   console.log('\n[20] Every section is in the new app');
-  const navLabels = await ev(`[...document.querySelectorAll('#nav a')].map(a => a.getAttribute('aria-label'))`);
+  const navLabels = await ev(`[...document.querySelectorAll('#nav a.nav-item')].map(a => a.getAttribute('aria-label'))`);
   check('the navigation keeps all six sections, none marked "not in the new app yet"', eq(navLabels, ['Today', 'Calendar', 'Inbox', 'Finance', 'Health', 'Study']), navLabels);
   await ev(`location.hash = '#health/food'`); await sleep(200);
   check('#health/food opens Food in the new app (search box, recipe ideas)', (await exists('#foodQ')) && (await text('#app')).includes('Ideas for you'));
@@ -563,6 +570,101 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   await openAt(2027, 5, 7, 7);
   check('a day shift from the rota shows on Today (read-only) and blocks task times', (await glance()).some(g => g.startsWith('09:00–17:00 | Day shift')), await glance());
   check('Today shows the shopping list reminder (nothing added to the task list)', (await text('#slot-health')).includes('Shopping list') && (await text('#slot-health')).includes('1 item to get'));
+
+  console.log("\n[21] Today's dashboard: greeting, progress, quick add, focus timer, Focus mode");
+  const K = '2027-05-07';  // a Friday; the rota above puts a day shift on 1, 3, 5, 7, 9… May
+  const clock = m => (m >= 60 ? `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}` : String(m).padStart(2, '0')) + ':00';
+  const weekDone = async () => { const w = await text('#weekCard [data-s=week-words]'); const m = w.match(/^(\d+) things? done/); return m ? Number(m[1]) : 0; };
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await ev(`localStorage.removeItem('myday.focus')`);
+  await openAt(2027, 5, 7, 7);
+  check('greeting: "Good morning!" for the time of day, and quietly asks what to call you (a link, not a form)', (await text('#greeting-h')) === 'Good morning!' && (await exists('[data-action=name-ask]')) && !(await exists('#nameInput')), await text('#greeting-h'));
+  check('phone: before the plan, no extra line in the greeting ("Build my day" is right below)', !(await ev(`document.querySelector('[data-s=greeting-line]').getClientRects().length`)));
+  const strip = await ev(`[...document.querySelectorAll('[data-s=week-strip] > span')].map(s => s.getAttribute('aria-label'))`);
+  check('phone: this week under the greeting, today marked, a dot on each day with a shift (3, 5, 7 and 9 May)', strip.length === 7 && strip[4].startsWith('Today, ') && strip.filter(l => l.includes('something on')).length === 4, strip);
+  check('phone: the month calendar is kept for wide screens', !(await ev(`document.querySelector('[data-s=month]').getClientRects().length`)));
+  check('phone: Build my day is still fully visible without scrolling (greeting and name question included)', await ev(`document.querySelector('[data-action=build]').getBoundingClientRect().bottom <= document.getElementById('nav').getBoundingClientRect().top`));
+  await click('[data-action=name-ask]'); await sleep(150);
+  check('the link opens the name field, ready to type in', (await exists('#nameInput')) && (await ev(`document.activeElement.id`)) === 'nameInput');
+  await click('[data-action=name-later]'); await sleep(150);
+  check('"Not now" puts the question away and saves nothing', !(await exists('#nameInput')) && (await exists('[data-action=name-ask]')) && (await data()).patterns.prefs.name === undefined);
+  await click('[data-action=name-ask]'); await sleep(150);
+  await setVal('#nameInput', '  Sam  ', 'input'); await click('[data-action=name-save]'); await sleep(200);
+  check('saving the name: kept (trimmed) with your preferences, and the greeting uses it', (await data()).patterns.prefs.name === 'Sam' && (await text('#greeting-h')) === 'Good morning, Sam!' && !(await exists('#nameInput')) && !(await exists('[data-action=name-ask]')), (await data()).patterns.prefs);
+  check('…with a friendly note', (await toast()).includes('Nice to meet you, Sam.'));
+  for (const [h, hello] of [[13, 'Good afternoon, Sam!'], [18, 'Good evening, Sam!'], [23, 'Hello, Sam!']]) {
+    await openAt(2027, 5, 7, h);
+    check(`greeting at ${h}:00: "${hello}"`, (await text('#greeting-h')) === hello, await text('#greeting-h'));
+  }
+  await editStorage(`s => { s.patterns.prefs.name = '   '; }`); await openAt(2027, 5, 7, 7);
+  check('a blank saved name is read as no name (asks again)', (await exists('[data-action=name-ask]')) && (await text('#greeting-h')) === 'Good morning!');
+  await editStorage(`s => { s.patterns.prefs.name = 'x'.repeat(60); }`); await openAt(2027, 5, 7, 7);
+  check('a saved name longer than 40 characters is shortened, not lost', (await text('#greeting-h')) === `Good morning, ${'x'.repeat(40)}!`);
+  await editStorage(`s => { s.patterns.prefs.name = 'Sam'; }`); await openAt(2027, 5, 7, 7);
+  await ev(`location.hash = '#noticed'`); await sleep(250);
+  check('the name can be changed under Your preferences', (await ev(`document.getElementById('prefName').value`)) === 'Sam');
+  await setVal('#prefName', 'Sami'); await sleep(200);
+  check('…changing it there saves it', (await data()).patterns.prefs.name === 'Sami');
+  await setVal('#prefName', '  '); await sleep(200);
+  check('…and emptying it removes it (the greeting just says hello)', (await data()).patterns.prefs.name === undefined && (await toast()).includes('Name removed'));
+  await setVal('#prefName', 'Sam'); await sleep(200);
+  await ev(`location.hash = '#today'`); await sleep(250);
+  check('top bar: the section name above the date', (await text('#screenName')) === 'Today');
+  check('progress before the plan: "Not planned yet"', (await text('#todayRing [data-s=ring-words]')) === 'Not planned yet');
+  check('focus timer before the plan: a gentle pointer, no timer yet', (await text('#focusCard')).includes('Build your day, then focus on one task at a time.') && !(await exists('#focusTask')));
+
+  await setVal('#quickText', 'Call the dentist', 'input'); await setVal('#quickCat', 'admin'); await click('[data-action=quick-add]'); await sleep(200);
+  const qa = (await data()).tasks.items.find(t => t.title === 'Call the dentist');
+  check('quick add (no plan yet): saved as a task due today, under Due today', !!qa && qa.due === K && qa.category === 'admin' && (await text('#dueToday')).includes('Call the dentist') && (await ev(`document.getElementById('quickText').value`)) === '', qa);
+  check('…and says where it went', (await toast()).includes('Build your day to add it to the plan'));
+  check('quick add: nothing happens for an empty box', await ev(`document.querySelector('[data-action=quick-add]').disabled`));
+
+  await build(3); await sleep(250);
+  let day = (await data()).days[K];
+  const open = day.tasks.filter(t => !t.done);
+  check('progress after building: "0 of N done" (a plan was built)', day.tasks.length > 0 && (await text('#todayRing [data-s=ring-words]')) === `0 of ${day.tasks.length} done`, [day.tasks.length, await text('#todayRing [data-s=ring-words]')]);
+  check('greeting: says how many tasks are left', (await text('[data-s=greeting-line]')) === `You have ${open.length} task${open.length === 1 ? '' : 's'} left for today.`);
+  const opts = await ev(`[...document.querySelectorAll('#focusTask option')].map(o => o.textContent)`);
+  check("focus timer: a choice of today's open tasks", eq(opts, open.map(t => t.title)), opts);
+  const stUid = await ev(`document.getElementById('focusTask').value`), st = open.find(t => t.uid === stUid);
+  check("…starting with one of them, at that task's own length", !!st && Number(await text('#focusMin')) === st.minutes, st);
+  await click('[data-action=focus-more]');
+  check('+ makes it 5 minutes longer', Number(await text('#focusMin')) === st.minutes + 5);
+  await click('[data-action=focus-start]'); await sleep(250);
+  check("Start opens MyDay's focus timer for that task and length", (await exists('#timerCard')) && (await text('#timerCard .title')) === st.title && (await text('#timerTime')) === clock(st.minutes + 5) && !(await exists('#focusCard')), [await text('#timerTime'), clock(st.minutes + 5)]);
+  await click('[data-action=timer-stop]'); await sleep(250);
+  check('…and once the timer stops, the focus card is back', (await exists('#focusCard')) && !(await exists('#timerCard')));
+
+  const w0 = await weekDone(), rawBefore = noSaves(await raw());
+  await click('[data-action=focus-mode]'); await sleep(200);
+  check("Focus mode: just what's next — no greeting, timeline or other cards", (await exists('#focusView')) && (await exists('#focusNext')) && !(await exists('#greeting')) && !(await exists('#slot-glance')) && !(await exists('#quickAdd'))
+    && (await ev(`document.querySelector('[data-action=focus-mode]').getAttribute('aria-checked')`)) === 'true');
+  check('…a choice for this device only: not part of your saved MyDay data', (await ev(`localStorage.getItem('myday.focus')`)) === '1' && noSaves(await raw()) === rawBefore);
+  await openAt(2027, 5, 7, 7);
+  check('…and it stays on after a reload', await exists('#focusView'));
+  const nextT = await text('#focus-next-h');
+  await click('[data-action=focus-next-done]'); await sleep(300);
+  day = (await data()).days[K];
+  check('"Tick it off" ticks the task up next and moves on', day.tasks.find(t => t.title === nextT).done && (open.length < 2 ? (await text('#focusView')).includes("That's everything for today") : (await text('#focus-next-h')) !== nextT));
+  await ev(`location.hash = '#calendar'`); await sleep(250);
+  check('the Focus mode switch is only on Today; Calendar is unchanged', !(await exists('[data-action=focus-mode]')) && (await exists('.cal-grid')) && (await text('#screenName')) === 'Calendar');
+  await ev(`location.hash = '#today'`); await sleep(250);
+  await click('[data-action=focus-show-all]'); await sleep(200);
+  check('"Show everything" turns Focus mode off', !(await exists('#focusView')) && (await exists('#greeting')) && (await ev(`localStorage.getItem('myday.focus')`)) === null);
+  const done1 = day.tasks.filter(t => t.done).length;
+  check('progress follows what you tick', (await text('#todayRing [data-s=ring-words]')) === (done1 === day.tasks.length ? 'All done — lovely' : `${done1} of ${day.tasks.length} done`));
+  check('this week counts it too', (await weekDone()) === w0 + 1, [w0, await weekDone()]);
+
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
+  await openAt(2027, 5, 7, 9);
+  const month = await ev(`(() => { const m = document.querySelector('[data-s=month]'); return { visible: m.getClientRects().length > 0, title: m.querySelector('p').textContent,
+    today: m.querySelector('[data-day="${K}"]').getAttribute('aria-label'), busy: [...m.querySelectorAll('[role=cell]')].filter(c => c.getAttribute('aria-label').includes('something on')).length }; })()`);
+  check('wide screens: this month beside the greeting, today marked, a dot on each day with a shift (16 in May)', month.visible && month.title === 'May 2027' && month.today === '7, today, something on' && month.busy === 16, month);
+  check('wide screens: the greeting has a button to today\'s plan', (await text('[data-action=greeting-go]')).includes("Today's plan"));
+  check('wide screens: the greeting says what is left today', /^You have \d+ tasks? left for today\.$|^Everything on today's plan is done — lovely\.$/.test(await text('[data-s=greeting-line]')), await text('[data-s=greeting-line]'));
+  check('wide screens: the side menu has the MyDay logo, which goes to Today', (await ev(`(() => { const a = document.querySelector('#nav .nav-logo'); return !!a && a.getClientRects().length > 0 && a.getAttribute('href') === '#today'; })()`)));
+  check('wide screens: "Focus mode" is written next to its switch', (await text('[data-action=focus-mode]')).includes('Focus mode'));
+  await T.send('Emulation.clearDeviceMetricsOverride');
 
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));

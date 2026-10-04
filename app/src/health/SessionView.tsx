@@ -57,7 +57,7 @@ function SetRow({ s, e, i, onTicked }: { s: WorkoutSession; e: SessionExercise; 
       </div>
       <button type="button" data-action="h-set-done" data-ex={e.key} data-set={i} aria-pressed={x.done}
         aria-label={`Set ${i + 1} ${x.done ? 'done — tap to undo' : 'mark done'}`}
-        className={`set-done w-16 min-h-14 rounded-tile font-bold border-2 cursor-pointer grid place-items-center transition-colors ${x.done ? 'on bg-primary text-on-primary border-primary' : 'bg-surface-2 text-fg border-outline-strong'}`}
+        className={`set-done w-16 min-h-14 rounded-tile font-bold border-2 cursor-pointer grid place-items-center transition-colors ${x.done ? 'on bg-done text-on-done border-done' : 'bg-surface-2 text-fg border-outline-strong'}`}
         onClick={() => onTicked(toggleSet(s.id, e.key, i))}>
         {x.done ? <Check size={26} strokeWidth={3} aria-hidden="true" /> : 'Done'}
       </button>

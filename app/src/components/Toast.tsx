@@ -23,7 +23,7 @@ export function Toast() {
       id="toast"
       role="status"
       aria-live="polite"
-      className={`toast fixed left-1/2 z-30 max-w-[calc(100%-32px)] px-[18px] py-3 rounded-xl bg-inverse text-on-inverse text-[15px] shadow-raised pointer-events-none transition-[opacity,translate] duration-200 -translate-x-1/2 ${shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}
+      className={`toast fixed left-1/2 z-30 max-w-[calc(100%-32px)] px-5 py-3 rounded-2xl bg-inverse text-on-inverse text-[15px] font-medium shadow-card pointer-events-none transition-[opacity,translate] duration-200 -translate-x-1/2 ${shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}
     >
       {message}
     </div>

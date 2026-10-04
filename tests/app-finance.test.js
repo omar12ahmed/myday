@@ -201,8 +201,8 @@ const BH = `{ region: 'england-and-wales', fetchedAt: 'WHEN', divisions: { 'engl
   check('phone: every button and field is at least 44 px', small.length === 0, small.slice(0, 5));
   await T.send('Emulation.setDeviceMetricsOverride', { width: 1024, height: 800, deviceScaleFactor: 1, mobile: false });
   await go('finance', 2026, 9, 30, 15); // "Wednesday 30 September", a long date
-  const hdr = await ev(`(() => { const d = document.getElementById('date').getBoundingClientRect(), n = document.getElementById('nav').getBoundingClientRect(), t = document.getElementById('themeBtn').getBoundingClientRect(); return { d: d.right, n: n.left, nr: n.right, t: t.left }; })()`);
-  check('wide screens: the sections bar never runs into a long date, or the theme button', hdr.n > hdr.d + 8 && hdr.nr < hdr.t, hdr);
+  const hdr = await ev(`(() => { const d = document.getElementById('date').getBoundingClientRect(), n = document.getElementById('nav').getBoundingClientRect(), t = document.getElementById('themeBtn').getBoundingClientRect(), a = document.getElementById('app').getBoundingClientRect(); return { dl: d.left, dr: d.right, nr: n.right, t: t.left, a: a.left }; })()`);
+  check('wide screens: the side menu sits beside the page — never over a long date, the cards or the theme button', hdr.nr < hdr.dl && hdr.nr < hdr.a && hdr.dr < hdr.t, hdr);
   check('wide screens: two columns, nothing scrolls sideways', !(await ev('document.documentElement.scrollWidth > innerWidth')) && (await ev(`document.getElementById('expensesCard').getBoundingClientRect().left > document.getElementById('workPay').getBoundingClientRect().right`)));
   await T.send('Emulation.clearDeviceMetricsOverride');
 

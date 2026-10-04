@@ -33,7 +33,7 @@ function ItemRow({ x }: { x: ShoppingItem }) {
   return (
     <li className={`shop-row flex justify-between items-center gap-2 py-1 border-t border-outline first:border-t-0${x.checked ? ' done' : ''}`}>
       <label className="check shop-check flex items-center gap-3 flex-1 min-w-0 min-h-[52px] cursor-pointer">
-        <input type="checkbox" data-h="shop-check" data-id={x.id} className="size-[26px] accent-primary flex-none" checked={x.checked} onChange={e => tickItem(x.id, e.target.checked)} />
+        <input type="checkbox" data-h="shop-check" data-id={x.id} className="size-[26px] accent-done flex-none" checked={x.checked} onChange={e => tickItem(x.id, e.target.checked)} />
         <span className="min-w-0">
           <strong className={x.checked ? 'line-through text-fg-2' : ''}>{x.name}</strong>
           {q && <> <span className="shop-qty tabular-nums text-fg-2">{q}</span></>}

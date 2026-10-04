@@ -10,7 +10,8 @@ import { toast } from './data/toast';
 import type { Theme } from './data/types';
 import { useMyDay } from './data/useMyDay';
 import { Nav } from './shell/Nav';
-import { barSection, sectionFromHash, type SectionId } from './shell/sections';
+import { AccountChip, CaptureRoom, FocusSwitch } from './shell/TopBar';
+import { barSection, SECTIONS, sectionFromHash, type SectionId } from './shell/sections';
 import { NoticedScreen } from './patterns/NoticedScreen';
 import { InboxScreen } from './inbox/InboxScreen';
 import { CaptureButton } from './capture/CaptureSheet';
@@ -126,6 +127,8 @@ function Shell() {
   }
 
   const blocked = status.kind === 'damaged' || status.kind === 'older';
+  // The screen's name, above the date (on wide screens MyDay's own name is at the top of the side menu).
+  const screenName = hash.startsWith('#sync') ? 'Your account' : hash.startsWith('#noticed') ? 'What MyDay has noticed' : SECTIONS.find(x => x.id === section)?.label ?? 'MyDay';
   // Sign in first (when sync is set up): see sync/SignInGate.tsx.
   const gate = !blocked && signInRequired(sync) && !useHere;
   let content;
@@ -152,16 +155,23 @@ function Shell() {
 
   return (
     <>
-      <header className="appbar sticky top-0 z-20 bg-glass backdrop-blur-[18px] backdrop-saturate-[140%] border-b border-outline">
-        <div className="max-w-[640px] lg:max-w-[1120px] mx-auto px-4 lg:px-6 py-3 pt-[max(12px,env(safe-area-inset-top))] flex items-center justify-between gap-3">
-          <div>
+      {/* The top bar: the screen's name and the date; on the right Focus mode (Today), your account, + Capture and the
+          theme. Phones: a frosted bar across the top. Wide screens: a white card above the page, beside the side menu. */}
+      <header className="appbar sticky top-0 z-20 bg-glass backdrop-blur-[18px] backdrop-saturate-[140%] border-b border-outline lg:bg-transparent lg:backdrop-blur-none lg:border-0 lg:pt-4 lg:px-6">
+        <div className="appbar-card max-w-[640px] lg:max-w-[1072px] mx-auto px-4 lg:px-5 py-3 pt-[max(12px,env(safe-area-inset-top))] lg:pt-3 flex items-center justify-between gap-3 lg:bg-surface lg:rounded-card lg:shadow-card lg:border lg:border-outline">
+          <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <p className="text-xs font-bold tracking-[.14em] uppercase text-primary m-0">MyDay</p>
+              <p className="text-xs font-bold tracking-[.14em] uppercase text-primary m-0" id="screenName">{blocked || gate ? 'MyDay' : screenName}</p>
               {!blocked && !gate && <SyncBadge />}
             </div>
-            <h1 id="date" className="text-[26px] lg:text-[28px] font-bold tracking-[-.02em] leading-tight m-0">{prettyDate(k)}</h1>
+            <h1 id="date" className="text-[24px] sm:text-[26px] lg:text-[28px] font-bold tracking-[-.02em] leading-tight m-0">{prettyDate(k)}</h1>
           </div>
-          <ThemeButton theme={theme} motionAllowed={motionAllowed} onChange={next => update(d => { d.settings.theme = next; })} />
+          <div className="flex items-center gap-2 lg:gap-3 flex-none">
+            {!blocked && !gate && section === 'today' && !hash.startsWith('#noticed') && !hash.startsWith('#sync') && <FocusSwitch />}
+            {!blocked && !gate && <AccountChip data={data} sync={sync} />}
+            {!blocked && !gate && status.kind === 'ok' && <CaptureRoom />}
+            <ThemeButton theme={theme} motionAllowed={motionAllowed} onChange={next => update(d => { d.settings.theme = next; })} />
+          </div>
         </div>
       </header>
       {!blocked && !gate && <Nav current={barSection(section)} />}

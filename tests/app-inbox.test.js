@@ -169,9 +169,9 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('phone: every button, row and field is at least 44 px high', small.length === 0, small.slice(0, 5));
   for (const width of [1024, 1280, 1440, 1600, 1920]) {
     await T.send('Emulation.setDeviceMetricsOverride', { width, height: 800, deviceScaleFactor: 1, mobile: false });
-    await go('inbox', 2026, 9, 30, 15); // "Wednesday 30 September", a long date
-    const h = await ev(`(() => { const d = document.getElementById('date').getBoundingClientRect(), n = document.getElementById('nav').getBoundingClientRect(), c = document.querySelector('.capture-btn').getBoundingClientRect(), t = document.getElementById('themeBtn').getBoundingClientRect(); return { d: d.right, n: n.left, nr: n.right, c: c.left, cr: c.right, t: t.left, labels: getComputedStyle(document.querySelector('.nav-label')).position }; })()`);
-    check(`wide (${width} px): the date, the six sections, Capture and the theme button never overlap${width < 1280 ? ' (icons only here)' : ' (with labels)'}`, h.n > h.d + 8 && h.nr <= h.c && h.cr <= h.t && (width < 1440 ? h.labels === 'absolute' : h.labels !== 'absolute'), h);
+    await go('inbox', 2026, 9, 30, 15); // "Wednesday 30 September", a long date (wide screens: the side menu, from 1.11.0)
+    const h = await ev(`(() => { const d = document.getElementById('date').getBoundingClientRect(), n = document.getElementById('nav').getBoundingClientRect(), c = document.querySelector('.capture-btn').getBoundingClientRect(), t = document.getElementById('themeBtn').getBoundingClientRect(), a = document.getElementById('app').getBoundingClientRect(); return { dl: d.left, dr: d.right, nl: n.left, nr: n.right, nh: n.height, c: c.left, cr: c.right, t: t.left, a: a.left, labels: [...document.querySelectorAll('.nav-label')].every(l => getComputedStyle(l).position !== 'absolute' && l.getBoundingClientRect().width > 0) }; })()`);
+    check(`wide (${width} px): the side menu down the left, beside the date and the page; Capture and the theme button never overlap the date; every section shows its name`, h.nl <= 24 && h.nr < h.dl && h.nr < h.a && h.dr + 8 < h.c && h.cr <= h.t && h.labels, h);
   }
   await T.send('Emulation.clearDeviceMetricsOverride');
 

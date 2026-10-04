@@ -1,67 +1,43 @@
 /* ======================================================================
-   Design tokens, copied from the current MyDay (../index.html) so both
-   versions look the same. Dark is the default; [data-theme="light"] and
-   [data-theme="auto"] (follows the device) switch to the light palette.
-   All text pairs below meet WCAG AA contrast.
+   Design tokens: MyDay's warm look (from 1.11.0) — a soft peach page,
+   white cards, orange for buttons, highlights and the side menu, and
+   green for things that are done. Light is the default; [data-theme="dark"]
+   switches to the warm dark palette, and [data-theme="auto"] follows the
+   device. (The classic MyDay, ../index.html, keeps its own green look.)
+   Every text pair below meets WCAG AA contrast (4.5:1; 3:1 for large
+   shapes and outlines) in both palettes — checked by tests/app-final and
+   app-study's contrast checks.
 
    Sizes that don't change with the theme (corner radius, tap height) live
    in index.css instead, as Tailwind theme values.
    ====================================================================== */
 :root {
-  color-scheme: dark;
-  --bg: #101315;
-  --glow-1: rgba(147, 197, 176, .08);
-  --glow-2: rgba(166, 189, 221, .06);
-  --glass: rgba(16, 19, 21, .72);
-  --surface: #171b1e;
-  --surface-2: #1e2327;
-  --surface-3: #252b2f;
-  --outline: #2b3135;
-  --outline-strong: #737c82;
-  --text: #e2e5e7;
-  --text-2: #b3babf;
-  --text-3: #929aa0;
-  --primary: #93c5b0;
-  --on-primary: #0d2a20;
-  --primary-container: #1f3a31;
-  --on-primary-container: #c4e8d8;
-  --primary-outline: #3d6a5a;
-  --tonal: #26302d;
-  --on-tonal: #d7e6df;
-  --track: #343a3e;
-  --learning: #a6bddd; --learning-c: #1f2b3b;
-  --admin: #d8c29c;    --admin-c: #33291a;
-  --health: #a6cbae;   --health-c: #1c2f22;
-  --rest: #c3b2d6;     --rest-c: #2b2436;
-  --work: #ddae9f;     --work-c: #3a2520;
-  --appt: #b3b9de;     --appt-c: #25283a;
-  --warn-c: #3a2f1a;   --on-warn-c: #f0d4a4;
-  --inverse: #e2e5e7;  --on-inverse: #1b1f21;
-  --shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 6px 20px rgba(0, 0, 0, .18);
-  --shadow-btn: 0 1px 3px rgba(0, 0, 0, .35);
-}
-:root[data-theme="light"] {
   color-scheme: light;
-  --bg: #f4f6f4;
-  --glow-1: rgba(44, 106, 85, .08);
-  --glow-2: rgba(52, 89, 139, .06);
-  --glass: rgba(244, 246, 244, .78);
+  --bg: #fff5ec;
+  --glow-1: rgba(251, 146, 60, .20);  /* peach-orange, top left */
+  --glow-2: rgba(244, 114, 182, .12); /* soft pink, top right */
+  --glow-3: rgba(253, 186, 116, .18); /* warm, bottom */
+  --glass: rgba(255, 245, 236, .78);
   --surface: #ffffff;
-  --surface-2: #f0f3f1;
+  --surface-2: #fff6ee;
   --surface-3: #ffffff;
-  --outline: #e0e5e2;
-  --outline-strong: #7b8580;
-  --text: #191d1b;
-  --text-2: #454e49;
-  --text-3: #5f6863;
-  --primary: #2c6a55;
+  --outline: #f3e3d6;
+  --outline-strong: #8f7a6b;
+  --text: #2a1f1a;
+  --text-2: #5c4a40;
+  --text-3: #6b5649;
+  --primary: #c2410c;
   --on-primary: #ffffff;
-  --primary-container: #d3ebe0;
-  --on-primary-container: #0d2a20;
-  --primary-outline: #9cc8b6;
-  --tonal: #e2ebe7;
-  --on-tonal: #1d3a30;
-  --track: #d4dbd7;
+  --primary-container: #ffe6d2;
+  --on-primary-container: #7a2e0a;
+  --primary-outline: #f6b489;
+  --tonal: #fcebdd;
+  --on-tonal: #5a2a10;
+  --track: #f2ded0;
+  --scene-filter: none; /* Today's drawn scene: as drawn in light, dimmed (but still warm) in dark */
+  --done: #2f7a4f;     --on-done: #ffffff;
+  --done-c: #ddf2e4;   --on-done-c: #1d5133;
+  --rail: #fb923c;     --rail-2: #f97316;   --on-rail: #3b1a06;
   --learning: #34598b; --learning-c: #e0e9f6;
   --admin: #70521a;    --admin-c: #f4ead6;
   --health: #30663f;   --health-c: #ddf0e2;
@@ -69,42 +45,95 @@
   --work: #87432f;     --work-c: #f7e3dd;
   --appt: #434a8c;     --appt-c: #e3e5f7;
   --warn-c: #fbedd5;   --on-warn-c: #5b3a00;
-  --inverse: #2b302d;  --on-inverse: #eef1ef;
-  --shadow: 0 1px 2px rgba(20, 35, 28, .06), 0 6px 20px rgba(20, 35, 28, .06);
-  --shadow-btn: 0 1px 3px rgba(20, 35, 28, .18);
+  --inverse: #2b2420;  --on-inverse: #fbefe6;
+  --primary-2: #a93709;  /* the lower end of the main button's gradient (darker, so its text stays AA) */
+  --focus-glow: rgba(194, 65, 12, .22);
+  /* Depth: soft, layered and warm-tinted — a hairline close shadow and a wide, faint one. */
+  --shadow: 0 1px 2px rgba(120, 60, 20, .05), 0 4px 12px -2px rgba(120, 60, 20, .06), 0 18px 40px -14px rgba(120, 60, 20, .16);
+  --shadow-btn: 0 1px 2px rgba(120, 60, 20, .12), 0 3px 8px -2px rgba(120, 60, 20, .12);
+  --shadow-cta: inset 0 1px 0 rgba(255, 255, 255, .22), 0 1px 2px rgba(122, 46, 10, .30), 0 10px 22px -10px rgba(194, 65, 12, .65);
 }
-@media (prefers-color-scheme: light) {
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #1a1411;
+  --glow-1: rgba(251, 146, 60, .10);
+  --glow-2: rgba(244, 114, 182, .06);
+  --glow-3: rgba(253, 186, 116, .06);
+  --glass: rgba(26, 20, 17, .74);
+  --surface: #231b17;
+  --surface-2: #2b221d;
+  --surface-3: #33281f;
+  --outline: #3a2e27;
+  --outline-strong: #8c7b70;
+  --text: #f5eae2;
+  --text-2: #d3c2b7;
+  --text-3: #b4a396;
+  --primary: #fdba74;
+  --on-primary: #3b1a06;
+  --primary-container: #4a2a17;
+  --on-primary-container: #ffd9bf;
+  --primary-outline: #9a5a2e;
+  --tonal: #3a2a20;
+  --on-tonal: #f6dcc8;
+  --track: #44362d;
+  --scene-filter: brightness(.62) saturate(1.3);
+  --done: #8fd3a8;     --on-done: #0e2a1a;
+  --done-c: #1d3326;   --on-done-c: #c6ecd3;
+  --rail: #7c3a14;     --rail-2: #6a3010;   --on-rail: #ffe8d6;
+  --learning: #a6bddd; --learning-c: #1f2b3b;
+  --admin: #d8c29c;    --admin-c: #33291a;
+  --health: #a6cbae;   --health-c: #1c2f22;
+  --rest: #c3b2d6;     --rest-c: #2b2436;
+  --work: #ddae9f;     --work-c: #3a2520;
+  --appt: #b3b9de;     --appt-c: #25283a;
+  --warn-c: #3a2f1a;   --on-warn-c: #f0d4a4;
+  --inverse: #f5eae2;  --on-inverse: #231b17;
+  --primary-2: #f7a35c;
+  --focus-glow: rgba(253, 186, 116, .25);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 4px 12px -2px rgba(0, 0, 0, .25), 0 18px 40px -14px rgba(0, 0, 0, .45);
+  --shadow-btn: 0 1px 3px rgba(0, 0, 0, .35);
+  --shadow-cta: inset 0 1px 0 rgba(255, 255, 255, .35), 0 1px 2px rgba(0, 0, 0, .40), 0 10px 24px -12px rgba(253, 186, 116, .45);
+}
+@media (prefers-color-scheme: dark) {
   :root[data-theme="auto"] {
-    color-scheme: light;
-    --bg: #f4f6f4;
-    --glow-1: rgba(44, 106, 85, .08);
-    --glow-2: rgba(52, 89, 139, .06);
-    --glass: rgba(244, 246, 244, .78);
-    --surface: #ffffff;
-    --surface-2: #f0f3f1;
-    --surface-3: #ffffff;
-    --outline: #e0e5e2;
-    --outline-strong: #7b8580;
-    --text: #191d1b;
-    --text-2: #454e49;
-    --text-3: #5f6863;
-    --primary: #2c6a55;
-    --on-primary: #ffffff;
-    --primary-container: #d3ebe0;
-    --on-primary-container: #0d2a20;
-    --primary-outline: #9cc8b6;
-    --tonal: #e2ebe7;
-    --on-tonal: #1d3a30;
-    --track: #d4dbd7;
-    --learning: #34598b; --learning-c: #e0e9f6;
-    --admin: #70521a;    --admin-c: #f4ead6;
-    --health: #30663f;   --health-c: #ddf0e2;
-    --rest: #604a85;     --rest-c: #ece5f6;
-    --work: #87432f;     --work-c: #f7e3dd;
-    --appt: #434a8c;     --appt-c: #e3e5f7;
-    --warn-c: #fbedd5;   --on-warn-c: #5b3a00;
-    --inverse: #2b302d;  --on-inverse: #eef1ef;
-    --shadow: 0 1px 2px rgba(20, 35, 28, .06), 0 6px 20px rgba(20, 35, 28, .06);
-    --shadow-btn: 0 1px 3px rgba(20, 35, 28, .18);
+    color-scheme: dark;
+    --bg: #1a1411;
+    --glow-1: rgba(251, 146, 60, .10);
+    --glow-2: rgba(244, 114, 182, .06);
+    --glow-3: rgba(253, 186, 116, .06);
+    --glass: rgba(26, 20, 17, .74);
+    --surface: #231b17;
+    --surface-2: #2b221d;
+    --surface-3: #33281f;
+    --outline: #3a2e27;
+    --outline-strong: #8c7b70;
+    --text: #f5eae2;
+    --text-2: #d3c2b7;
+    --text-3: #b4a396;
+    --primary: #fdba74;
+    --on-primary: #3b1a06;
+    --primary-container: #4a2a17;
+    --on-primary-container: #ffd9bf;
+    --primary-outline: #9a5a2e;
+    --tonal: #3a2a20;
+    --on-tonal: #f6dcc8;
+    --track: #44362d;
+  --scene-filter: brightness(.62) saturate(1.3);
+    --done: #8fd3a8;     --on-done: #0e2a1a;
+    --done-c: #1d3326;   --on-done-c: #c6ecd3;
+    --rail: #7c3a14;     --rail-2: #6a3010;   --on-rail: #ffe8d6;
+    --learning: #a6bddd; --learning-c: #1f2b3b;
+    --admin: #d8c29c;    --admin-c: #33291a;
+    --health: #a6cbae;   --health-c: #1c2f22;
+    --rest: #c3b2d6;     --rest-c: #2b2436;
+    --work: #ddae9f;     --work-c: #3a2520;
+    --appt: #b3b9de;     --appt-c: #25283a;
+    --warn-c: #3a2f1a;   --on-warn-c: #f0d4a4;
+    --inverse: #f5eae2;  --on-inverse: #231b17;
+    --primary-2: #f7a35c;
+    --focus-glow: rgba(253, 186, 116, .25);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 4px 12px -2px rgba(0, 0, 0, .25), 0 18px 40px -14px rgba(0, 0, 0, .45);
+    --shadow-btn: 0 1px 3px rgba(0, 0, 0, .35);
+    --shadow-cta: inset 0 1px 0 rgba(255, 255, 255, .35), 0 1px 2px rgba(0, 0, 0, .40), 0 10px 24px -12px rgba(253, 186, 116, .45);
   }
 }

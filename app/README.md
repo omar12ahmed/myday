@@ -172,6 +172,8 @@ pay rules) and its settings card are gone from the screen; the rules behind them
   written only by `src/sync/state.ts`), and the sign-in session in `myday.sync.auth` (kept by the Supabase library).
   Records arriving from the cloud are saved through `storage.ts` (`updateSaved`) after the same checks as a backup
   (`normalize`). Neither key is part of an export, which still holds all of the MyDay data.
+- **Focus mode** (1.11.0) is a choice for one device, kept in `myday.focus` ("1" when on, read and written only by
+  `src/shell/focusMode.ts`): not part of the MyDay data, not synced, not exported.
 - **Nothing unreadable is left out silently.** Like the current MyDay, entries that can't be read (and whole sections
   damaged into the wrong kind of value) are left out when the app starts, and they'd be gone after the next save.
   The new app says so on every screen, with how many, and offers "Download a copy" of the saved data exactly as it
@@ -199,7 +201,7 @@ pay rules) and its settings card are gone from the screen; the rules behind them
 | `src/data/workout/` | Workout's data and rules, ported from the current MyDay: `normalize.ts` (checking saved Health data), `common.ts` (labels, units and wording), `plans.ts` (which workout is planned when, missed sessions, the sequence, Today's blocks), `propose.ts` (proposed dates around shifts), `sessions.ts` (logging, finishing, prefilling, the rest timer), `history.ts` (exercise history and chart measures). |
 | `src/data/study/` | Study's data and rules, ported from the current MyDay: `normalize.ts` (checking saved Study data), `roadmap.ts` (the outline, completion, setup, editing), `sessions.ts` (sessions, suggested length, check-ins, learning days), `revision.ts` (due concepts, review scheduling, cautious labels), `progress.ts` (progress and history), `common.ts` (labels, limits, Obsidian links). |
 | `src/components/` | Shared pieces with their styling in one place: `Button`, `Card`, `Banner`, `Field` (inputs, including ones saved as you type), `Dialog` (confirmations), `Toast`, `CategoryChip`, `EnergyMeter`, and `parts` (links, rows, chips and labels used by the section screens). |
-| `src/today/` | The Today section's cards and `TodayScreen`, which puts them together. |
+| `src/today/` | The Today section's cards and `TodayScreen`, which puts them together — including the dashboard's `GreetingCard` (greeting, scene, calendar), `DashboardCards` (the ring and this week's bars, counted by `src/data/dashboard.ts`), `QuickAdd`, `FocusCard` and `FocusView` (Focus mode). |
 | `src/calendar/` | The Calendar: `CalendarScreen`, the month grid, agenda, selected-day panel, pattern editor and side cards. |
 | `src/ai/` | "Help me adjust today": `context.ts` (what's sent), `validate.ts` (the rules), `apply.ts` (saving, stale check, undo) and `AdjustCard.tsx` (the card on Today). "Add what's on my mind": `mind.ts` (what's sent, the checks, adding and undo) and `MindCard.tsx`. Both: `request.ts` (the Edge Function or practice mode). |
 | `../ai-eval/` | The evaluation of AI models on 20 synthetic days and 12 synthetic brain dumps (see its README). |
@@ -211,7 +213,7 @@ pay rules) and its settings card are gone from the screen; the rules behind them
 | `src/health/` | The Health screens: `HealthScreen` (the Workout and Food tabs; picks the screen from the address, e.g. `#health/workout/schedule`), `WorkoutHome`, `TemplateEditor`, `SessionView` (a workout in progress, and correcting a logged one), `SetFields` (the number boxes for a set), `HistoryViews` (history, exercises, exercise history), `Chart`, `ScheduleView` and `HealthTodayCard`; `actions.ts` (what each button saves). |
 | `src/study/` | The Study screens: `StudyScreen` (picks the screen from the address, e.g. `#study/roadmap`), `Dashboard`, `Roadmap`, `CourseDetails`, `TaskDetails`, `SessionView`, `CheckinView`, `RevisionView`, `ConceptsView`, `ConceptView`, `ProgressView`, `StudySettings` and `StudyTodayCard`; `actions.ts` (what each button saves), `round.ts` (the revision round, kept in memory), `parts.tsx` (small shared pieces). |
 | `src/commitments/` | Work shifts and appointments: the form and list used by both Today and Calendar. |
-| `src/shell/` | Navigation, the theme button, the shared footer (`AppFooter`), the "couldn't be read" notice (`LoadIssue`) and the screens for unreadable or older data. |
+| `src/shell/` | Navigation, the top bar's parts (`TopBar`: the Focus mode switch and your account; `focusMode.ts`, the device-only `myday.focus`), the theme button, the shared footer (`AppFooter`), the "couldn't be read" notice (`LoadIssue`) and the screens for unreadable or older data. |
 | `public/icon.svg` | The tab icon. |
 | `src/version.ts` | The release identifier (version, commit, build date), filled in when building (`vite.config.ts`). |
 | `src/sync/` | Optional cloud sync (see "Cloud sync"): `config.ts` (is it set up?), `records.ts` (which parts of the saved data are records, fingerprints, descriptions), `state.ts` (sync's notes, `myday.sync.v1`), `client.ts` (Supabase: sign-in and the two sync functions), `engine.ts` (sending, receiving, conflicts, reviews, the status), and the screens: `SyncBadge` (the status at the top), `SyncScreen` (`#sync`), `ReviewPanel` (what would change), `Compare` (two versions side by side). |
@@ -223,10 +225,29 @@ pay rules) and its settings card are gone from the screen; the rules behind them
 
 ## Design
 
-The current MyDay (`../index.html`) has the same look: the same colours, font and task timeline (its font files are in
-`../fonts/`). A visual change belongs in both.
+From 1.11.0 the new app has its own **warm look** (chosen from a reference design, 4 Oct 2026, and asked to "feel
+expensive across the app"); the classic MyDay (`../index.html`) keeps its calm green look, because it's the fallback and
+stays unchanged unless asked. They still share the font and the task timeline (font files in `../fonts/`), and saved
+data — only the look differs.
 
-- **Colours** are the current MyDay's calm sage palette, unchanged. Every text colour pair meets WCAG AA contrast in both themes.
+- **Colours** (`src/styles/tokens.css`): a soft peach page with gentle orange and pink glows, white cards, orange
+  (`primary`, #c2410c light / #fdba74 dark) for buttons, highlights and links, **green** (`done`) for things that are
+  done — ticks, finished workout sets, progress bars — and the category colours as before. Light by default
+  (`settings.theme` defaults to `light` in the new app); the warm dark palette is a deep brown. Every text colour pair
+  meets WCAG AA contrast in both themes (the lowest is 4.8:1 in light, 5.9:1 in dark).
+- **Feeling expensive** comes from restraint, not decoration: soft, layered, warm-tinted shadows (`--shadow`); the one
+  main button on a card in a deeper orange gradient with a soft glow beneath it (`primary` → `primary-2`,
+  `--shadow-cta`), lifting slightly under the pointer; every button giving a small press when tapped; fields that glow
+  softly in orange when you type in them; roomier cards on wide screens; and the tools at the bottom of every screen
+  (task lists, backups, animations) as small quiet pills instead of five full-width bars.
+- **Navigation:** on phones, a frosted bar floating just above the bottom edge; on wide screens (64rem and up), a
+  rounded orange rail down the left side with the MyDay logo at the top (a link to Today) and every section's icon
+  and name (the current one on a white pill), and the page beside it.
+- **Top bar:** the section's name above the date; on Today, the Focus mode switch (a round icon button on phones);
+  your account (initials, and on wide screens your name and email) when signed in; + Capture; the theme button. On
+  wide screens it's a white card above the page.
+- **App icon:** the circle-and-tick on an orange gradient (`public/icon.svg`, `public/icon-maskable.svg`; sizes made by
+  `scripts/make-icons.mjs`).
 - **Font:** Plus Jakarta Sans, a friendly, rounded sans-serif. It's bundled with the app (`@fontsource-variable/plus-jakarta-sans`),
   so it works offline. Times use `tabular-nums` so their digits line up.
 - **Icons:** [Lucide](https://lucide.dev) (`lucide-react`), always with a text label beside them, never emoji.
@@ -238,13 +259,24 @@ The current MyDay (`../index.html`) has the same look: the same colours, font an
   rule (`nextTask()` in `today.ts`).
 - **Progress note:** nothing until the first task is done, so an untouched list doesn't feel like a score; then
   "1 done so far", and "That's the whole plan — lovely." once everything is done.
-- **Morning:** energy and Build my day share the top card, so building your day is the first thing you see.
+- **Morning:** energy and Build my day share a card, just under the greeting; on phones the greeting stays compact so
+  Build my day is visible without scrolling (checked by `tests/app-today`).
+- **Today's dashboard** (1.11.0): a greeting across the top ("Good morning, Sam!" — your name is asked for quietly,
+  with a link, and can be changed under Your preferences) over a calm drawn scene that follows the time of day, with
+  this month's calendar on wide screens (this week on phones) and a dot on days with a shift or appointment. Then the
+  plan, with "Add a task for today" under it (a task due today, added to the plan if it has room for your energy —
+  the same rules as Due today), and beside it the focus timer (pick a task and a length, then MyDay's own timer runs),
+  today's progress as a ring ("2 of 3 done") and this week as green bars — plain counts, never scores or percentages.
+- **Focus mode** (the switch in the top bar, on Today): shows only what's next — the task up next with Start focus,
+  Just start and Tick it off, or the running timer — and nothing else. "Show everything" (or the switch) brings the
+  rest back. It's remembered on this device only (`myday.focus`).
 - **Confirmations** ("Start today over?", "Replace your saved data?") are asked in the page with a dialog, never the
   browser's pop-up.
 - **Motion** stays small (a tick, a soft burst when the whole plan is done, a gentle fade between screens) and switches
   off with the Animations button or when the device asks for reduced motion.
 
-The direction came from the ui-ux-pro-max design skill (minimal style, Plus Jakarta Sans, subtle motion), and the
+The direction came from the ui-ux-pro-max design skill (minimal style, Plus Jakarta Sans, subtle motion; the warm
+palette from its planner palettes: orange actions with readable text, cream background, white cards), and the
 timeline layout is adapted from the "Process Timeline" component on [21st.dev](https://21st.dev).
 
 ## Cloud sync
@@ -477,7 +509,9 @@ sound right?".
   go** (under Done, and unticking brings it back); something else → noted. Answers are kept on the task and looked at
   for a pattern.
 - Saved: the `patterns` section (`{ prefs, answers }`, new in 1.6.0) and three fields on each task (`postponed`,
-  `blockers`, `letGoOn`). The classic MyDay keeps them unread. On this device only, and in "Export my data".
+  `blockers`, `letGoOn`). The classic MyDay keeps them unread. In "Export my data", and synced with your account.
+  From 1.11.0 `prefs` may also hold `name` (what Today's greeting calls you: trimmed, at most 40 characters, left out
+  when empty) — an addition only, set from the greeting or under Your preferences.
 - Not yet: using patterns to suggest times (e.g. studying in the evening), and giving AI help your confirmed patterns
   and preferences (both planned as later steps, the second only if you choose to).
 
@@ -565,3 +599,8 @@ returns up to 8 small tasks; you tick the ones to add.
     device once everything is saved. Wording: "Saved to your account", "Your account", "Update now".
 17. **Release 1.10.0:** installable as an app — a manifest, icons and a hand-written service worker (offline, always
     the latest release); "Install MyDay as an app" in the footer when the browser offers it.
+18. **Release 1.11.0:** a new, warm look across the app — peach page, white cards, orange actions, green for done,
+    light by default, an orange side menu on wide screens, a floating bar on phones and an orange app icon, with
+    softer depth and quieter tools so it feels calm and expensive — and Today as a dashboard: a greeting with your
+    name, a drawn scene and a calendar, quick add, a focus timer card, a "2 of 3 done" ring and this week's bars, and
+    Focus mode (just what's next).

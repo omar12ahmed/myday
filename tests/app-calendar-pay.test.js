@@ -63,7 +63,7 @@ const go = async (hash, y, m, d, h = 9, mi = 0, url = APP) => { T.setUrl(url + '
   const navLabels = await ev(`[...document.querySelectorAll('#nav .nav-item')].map(a => a.textContent.trim())`);
   check('navigation shows Today, Calendar, Inbox, Finance, Health and Study', eq(navLabels, ['Today', 'Calendar', 'Inbox', 'Finance', 'Health', 'Study']), navLabels);
   check('no section is marked "not in the new app yet" any more',
-    eq(await ev(`[...document.querySelectorAll('#nav a')].map(a => a.getAttribute('aria-label'))`), ['Today', 'Calendar', 'Inbox', 'Finance', 'Health', 'Study']));
+    eq(await ev(`[...document.querySelectorAll('#nav a.nav-item')].map(a => a.getAttribute('aria-label'))`), ['Today', 'Calendar', 'Inbox', 'Finance', 'Health', 'Study']));
   check('unfinished sections (Ideas) are not shown as controls', !(await ev(`/Ideas/.test(document.getElementById('nav').textContent)`)) && !(await exists('a[href="#ideas"]')));
   check('Today is marked as the current page', (await text('#nav [aria-current=page]')).trim() === 'Today');
   await click('a.nav-item[href="#calendar"]'); await sleep(300);
@@ -375,7 +375,7 @@ const go = async (hash, y, m, d, h = 9, mi = 0, url = APP) => { T.setUrl(url + '
     await go(h, 2026, 11, 2);
     check(`phone: no sideways scrolling (${h})`, !(await ev('document.documentElement.scrollWidth > innerWidth')));
   }
-  check('phone: navigation is a bottom bar', (await ev(`(() => { const r = document.getElementById('nav').getBoundingClientRect(); return r.bottom >= innerHeight - 1 && r.height >= 56; })()`)));
+  check('phone: navigation is a bar floating along the bottom (from 1.11.0)', (await ev(`(() => { const r = document.getElementById('nav').getBoundingClientRect(); return r.bottom <= innerHeight && r.bottom >= innerHeight - 24 && r.left <= 16 && r.right >= innerWidth - 16 && r.height >= 56; })()`)));
   await go('calendar', 2026, 11, 2);
   const pTops = await ev(`(() => { const t = s => Math.round(document.querySelector(s).getBoundingClientRect().top + scrollY); return [t('.cal-grid'), t('#detailsCard'), t('ul.legend'), t('#bhCard')]; })()`);
   check('phone: the selected day is directly below the month, then the legend and settings', pTops.every((t, i) => i === 0 || t > pTops[i - 1]), pTops);
@@ -396,7 +396,7 @@ const go = async (hash, y, m, d, h = 9, mi = 0, url = APP) => { T.setUrl(url + '
   }
   await T.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
   await go('calendar', 2026, 11, 2);
-  check('desktop: navigation sits in the top bar', (await ev(`document.getElementById('nav').getBoundingClientRect().top`)) === 0);
+  check('desktop: navigation is the side menu down the left, beside the page (from 1.11.0)', await ev(`(() => { const n = document.getElementById('nav').getBoundingClientRect(), a = document.getElementById('app').getBoundingClientRect(); return n.left <= 24 && n.height > 400 && n.right < a.left; })()`));
   check('desktop: the selected day sits beside the month', await ev(`document.getElementById('detailsCard').getBoundingClientRect().left > document.querySelector('.cal-grid').getBoundingClientRect().right`));
   check('desktop: no sideways scrolling', !(await ev('document.documentElement.scrollWidth > innerWidth')));
   await T.send('Emulation.clearDeviceMetricsOverride');

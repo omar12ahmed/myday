@@ -28,7 +28,7 @@ export function TaskRow({ data, t }: { data: MyDayData; t: TaskItem }) {
   return (
     <li className="task-li flex items-start gap-1 border-t border-outline first:border-t-0 py-2" data-id={t.id}>
       <label className="tick flex-none grid place-items-center size-11 -ml-2.5 mt-0.5 cursor-pointer">
-        <input type="checkbox" className="size-[22px] accent-primary m-0 cursor-pointer" data-s="task-done" data-id={t.id} checked={done} aria-label={`Done: ${t.title}`}
+        <input type="checkbox" className="size-[22px] accent-done m-0 cursor-pointer" data-s="task-done" data-id={t.id} checked={done} aria-label={`Done: ${t.title}`}
           onChange={e => { const v = e.target.checked; if (update(d => (setTaskDone(d, t.id, v) ? undefined : false)) && v) toast('Done — nice.'); }} />
       </label>
       <a href={`#inbox/tasks/${t.id}`} className="task-row flex-1 min-w-0 block py-1.5 min-h-11 text-fg no-underline hover:bg-surface-2 rounded-tile -mx-1 px-1" data-id={t.id}>

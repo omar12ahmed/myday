@@ -193,7 +193,7 @@ function SignInCard({ linkedEmail, onUnreachable }: { linkedEmail: string | null
         {error && <p role="alert" id="signinError" className="warn text-[15px] bg-warn-c text-on-warn-c rounded-tile px-3 py-2 m-0">{error}</p>}
         <Button type="submit" variant="primary" data-action="sync-signin" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</Button>
       </form>
-      <Note className="mt-3 mb-0">Use the account set up in your Supabase project. Signing in doesn't send or change anything: you'll see what would change first.</Note>
+      <Note className="mt-3 mb-0">Signing in brings your MyDay to this device and adds anything that's only here to your account — nothing is lost: if the same thing differs, your account's version is used and this device's copy is kept aside.</Note>
     </Card>
   );
 }

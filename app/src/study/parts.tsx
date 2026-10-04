@@ -18,6 +18,6 @@ export function NoteLink({ study, path, onOpen }: { study: StudyData; path: stri
 // The thin completion bar (decoration: the text beside it gives the numbers).
 export function Bar({ c }: { c: ReturnType<typeof completion> }) {
   if (!c.total) return null;
-  return <div className="st-bar h-2 rounded-full bg-track overflow-hidden mt-2 mb-1" aria-hidden="true"><span className="block h-full bg-primary rounded-full" style={{ width: `${c.pct}%` }} /></div>;
+  return <div className="st-bar h-2 rounded-full bg-track overflow-hidden mt-2 mb-1" aria-hidden="true"><span className="block h-full bg-done rounded-full" style={{ width: `${c.pct}%` }} /></div>;
 }
 

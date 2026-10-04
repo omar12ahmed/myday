@@ -331,7 +331,7 @@ export interface TasksData { lists: TaskList[]; items: TaskItem[]; [other: strin
 export interface Pref { value: number; on: DateKey; from: string | null; why: string }
 export interface PatternAnswer { said: 'yes' | 'no'; on: DateKey; examples: number; title: string }
 export interface PatternsData {
-  prefs: { maxMinutes: Record<Category, Pref | null>; maxTasks: Pref | null; [other: string]: unknown };
+  prefs: { maxMinutes: Record<Category, Pref | null>; maxTasks: Pref | null; name?: string; [other: string]: unknown }; // name: what MyDay calls you (from 1.11.0)
   answers: Record<string, PatternAnswer>; // by pattern id, e.g. "size:learning"
   [other: string]: unknown;
 }

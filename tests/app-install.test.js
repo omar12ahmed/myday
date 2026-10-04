@@ -25,19 +25,19 @@ const editStorage = fn => ev(`(() => { const s = JSON.parse(localStorage.getItem
   const base = await ev(`new URL('./', document.querySelector('link[rel=manifest]').href).href`);
   check('it\'s linked from the page, named MyDay, opening full screen (no browser bar)', m.name === 'MyDay' && m.short_name === 'MyDay' && m.display === 'standalone');
   check('…starting at Today, inside its own folder (so it works under /myday/ on the website)', new URL(m.start_url, base).href === base + '#today' && new URL(m.scope, base).href === base);
-  check('…with the app\'s colours for its splash screen and status bar', m.background_color === '#101315' && m.theme_color === '#101315');
+  check('…with the app\'s colours for its splash screen and status bar (the warm light page)', m.background_color === '#fff5ec' && m.theme_color === '#fff5ec');
   const icons = await ev(`Promise.all(${JSON.stringify(m.icons)}.map(i => new Promise(res => { const im = new Image(); im.onload = () => res({ ...i, w: im.naturalWidth, h: im.naturalHeight }); im.onerror = () => res({ ...i, w: 0 }); im.src = new URL(i.src, ${JSON.stringify(base)}).href; })))`);
   check('icons at 192 and 512 px load, at the sizes they say', icons.filter(i => i.purpose === 'any').map(i => `${i.w}x${i.h}`).join() === '192x192,512x512' && icons.every(i => i.sizes === `${i.w}x${i.h}`), icons);
   check('…and a maskable one (512 px, filling the square, for Android\'s own icon shapes)', icons.some(i => i.purpose === 'maskable' && i.w === 512));
-  // What's drawn, not just the size: each icon's middle is MyDay's green (#2f6f57); the maskable one also fills its
+  // What's drawn, not just the size: each icon's middle is MyDay's orange (from 1.11.0); the maskable one also fills its
   // corners (Android crops it to its own shape), while the usual one has rounded, see-through corners.
   await ev(`window.__px = (src, fx, fy) => new Promise(res => { const im = new Image(); im.onload = () => { const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight; const g = c.getContext('2d'); g.drawImage(im, 0, 0); res([...g.getImageData(Math.floor(fx * (im.naturalWidth - 1)), Math.floor(fy * (im.naturalHeight - 1)), 1, 1).data]); }; im.onerror = () => res([0, 0, 0, 0]); im.src = src; })`);
-  const green = c => Math.abs(c[0] - 47) < 14 && Math.abs(c[1] - 111) < 14 && Math.abs(c[2] - 87) < 14 && c[3] > 240;
+  const orange = c => c[0] > 180 && c[1] > 60 && c[1] < 160 && c[2] < 90 && c[3] > 240;
   const iconUrls = [...m.icons.map(i => new URL(i.src, base).href), await ev(`document.querySelector('link[rel=apple-touch-icon]').href`)];
   const middles = await ev(`Promise.all(${JSON.stringify(iconUrls)}.map(u => window.__px(u, 0.5, 0.42)))`);
-  check('every icon shows MyDay\'s icon (its middle is MyDay\'s green), not a blank or cut-off picture', middles.every(green), middles);
+  check('every icon shows MyDay\'s icon (its middle is MyDay\'s orange), not a blank or cut-off picture', middles.every(orange), middles);
   const corner = async u => ev(`window.__px(${JSON.stringify(u)}, 0, 0)`);
-  check('…the maskable and Apple icons fill their corners; the usual ones have see-through rounded corners', green(await corner(new URL('icons/icon-maskable-512.png', base).href)) && green(await corner(iconUrls[iconUrls.length - 1]))
+  check('…the maskable and Apple icons fill their corners; the usual ones have see-through rounded corners', orange(await corner(new URL('icons/icon-maskable-512.png', base).href)) && orange(await corner(iconUrls[iconUrls.length - 1]))
     && (await corner(new URL('icons/icon-512.png', base).href))[3] === 0 && (await corner(new URL('icons/icon-192.png', base).href))[3] === 0);
 
   check('an Apple touch icon (180 px) for "Add to Home Screen" / "Add to Dock"', (await ev(`new Promise(res => { const im = new Image(); im.onload = () => res(im.naturalWidth); im.onerror = () => res(0); im.src = document.querySelector('link[rel=apple-touch-icon]').href; })`)) === 180);
@@ -75,9 +75,9 @@ const editStorage = fn => ev(`(() => { const s = JSON.parse(localStorage.getItem
 
   console.log('\n[5] The phone\'s status bar follows the theme');
   await editStorage(`s => { s.settings.theme = 'light'; }`); await open(9, 3);
-  check('light theme → a light status bar', (await ev(`document.querySelector('meta[name=theme-color]').content`)) === '#f4f6f4');
+  check('light theme → a light status bar', (await ev(`document.querySelector('meta[name=theme-color]').content`)) === '#fff5ec');
   await editStorage(`s => { s.settings.theme = 'dark'; }`); await open(9, 4);
-  check('dark theme → a dark one', (await ev(`document.querySelector('meta[name=theme-color]').content`)) === '#101315');
+  check('dark theme → a dark one', (await ev(`document.querySelector('meta[name=theme-color]').content`)) === '#1a1411');
 
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));

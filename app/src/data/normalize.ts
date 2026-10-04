@@ -24,7 +24,7 @@ export const SCHEMA_VERSION = 4;
 export const SAVE_LOG = 20; // how many recent save signatures travel with the data (see storage.ts)
 export const CATS: Category[] = ['learning', 'admin', 'health'];
 const THEMES: Theme[] = ['dark', 'light', 'auto'];
-export const DEFAULT_SETTINGS: Settings = { bufferMinutes: 30, earliestTime: '08:00', latestTime: '21:00', gapMinutes: 10, theme: 'dark', motion: 'auto' };
+export const DEFAULT_SETTINGS: Settings = { bufferMinutes: 30, earliestTime: '08:00', latestTime: '21:00', gapMinutes: 10, theme: 'light', motion: 'auto' }; // light by default in the new app (from 1.11.0); the classic MyDay's default stays dark
 
 // The starter task lists, used when a list is missing.
 export const SEED: Record<Category, ListItem[]> = {

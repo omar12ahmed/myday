@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#101315" />
+    <meta name="theme-color" content="#fff5ec" />
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
     <!-- Installable as an app (Android: Chrome → Install app; Mac: Chrome → Install, or Safari → Add to Dock). -->
     <link rel="manifest" href="./manifest.webmanifest" />
@@ -17,8 +17,8 @@
         try {
           var s = JSON.parse(localStorage.getItem('myday.data.v4') || localStorage.getItem('myday.data.v3'));
           var t = s && s.settings && s.settings.theme;
-          if (t === 'light' || t === 'auto') document.documentElement.setAttribute('data-theme', t);
-        } catch (e) { /* fall back to the default dark theme */ }
+          if (t === 'dark' || t === 'light' || t === 'auto') document.documentElement.setAttribute('data-theme', t);
+        } catch (e) { /* fall back to the default light theme */ }
       })();
     </script>
   </head>

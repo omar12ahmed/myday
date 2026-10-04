@@ -1,12 +1,12 @@
 import { Lightbulb } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
-import { Field, Select } from '../components/Field';
+import { CommitInput, Field, Select } from '../components/Field';
 import { BackLink, Eyebrow, Note } from '../components/parts';
 import { Why } from '../components/Why';
 import { shortDate, todayKey } from '../data/dates';
 import { noticed, type Pattern, type Shown } from '../data/patterns/notice';
-import { answerPattern, CATEGORIES, forgetAnswer, MINUTE_CHOICES, setMaxMinutes, setMaxTasks } from '../data/patterns/saved';
+import { answerPattern, CATEGORIES, forgetAnswer, MINUTE_CHOICES, NAME_MAX, setMaxMinutes, setMaxTasks, setName } from '../data/patterns/saved';
 import { CAT_LABEL } from '../data/plan';
 import { update } from '../data/storage';
 import { toast } from '../data/toast';
@@ -97,6 +97,11 @@ function PrefsCard({ data }: { data: MyDayData }) {
     <Card aria-labelledby="prefs-h" id="prefsCard">
       <h3 id="prefs-h">Your preferences</h3>
       <Note className="mt-0">These always come first. Build my day uses them and says so, with a "Why?".</Note>
+      {/* The name Today's greeting uses (saved with your preferences, so it's on every device you sign in on). */}
+      <Field label="What MyDay calls you" htmlFor="prefName" className="mb-4">
+        <CommitInput key={prefs.name ?? ''} id="prefName" defaultValue={prefs.name ?? ''} maxLength={NAME_MAX} autoComplete="given-name" placeholder="Optional"
+          onCommit={el => { if (update(d => (setName(d.patterns, el.value) ? undefined : false))) toast(el.value.trim() ? 'Saved.' : 'Name removed — the greeting just says hello.'); }} />
+      </Field>
       <p className="text-[15px] font-semibold m-0 mb-1">Longest task when building my day</p>
       <div className="grid gap-1">
         {CATEGORIES.map(c => (

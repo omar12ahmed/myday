@@ -21,21 +21,22 @@ export function AppFooter({ data, canSave, onEdit, onExport, onImport }: {
   const sync = useSync();
   const off = data.settings.motion === 'off';
   return (
-    <footer id="footer" className="pb-10">
-      <div className="grid grid-cols-2 gap-2.5">
-        <Button inline variant="ghost" className="w-full col-span-2" data-action="edit" onClick={onEdit}><ListTodo size={18} aria-hidden="true" /> Edit task lists</Button>
-        {canInstall && <Button inline variant="ghost" className="w-full col-span-2" data-action="install" onClick={async () => { if (await install()) toast('MyDay is installed — open it from your apps.'); }}><Smartphone size={18} aria-hidden="true" /> Install MyDay as an app</Button>}
-        <Button inline variant="ghost" className="w-full col-span-2" data-action="noticed" onClick={() => { location.hash = 'noticed'; window.scrollTo(0, 0); }}><Lightbulb size={18} aria-hidden="true" /> What MyDay has noticed</Button>
-        <Button inline variant="ghost" className="w-full" data-action="export" onClick={onExport}><Download size={18} aria-hidden="true" /> Export my data</Button>
-        <Button inline variant="ghost" className="w-full" data-action="import" onClick={onImport}><FolderOpen size={18} aria-hidden="true" /> Import my data</Button>
-        <Button inline variant="ghost" className="w-full col-span-2" data-action="motion" aria-pressed={!off} onClick={() => {
+    <footer id="footer" className="pb-10 mt-8">
+      {/* Quiet tools, in small pills that wrap — present on every screen without competing with it. */}
+      <div className="flex flex-wrap justify-center gap-2">
+        <Button inline variant="quiet" className="!text-[14px]" data-action="edit" onClick={onEdit}><ListTodo size={16} aria-hidden="true" /> Edit task lists</Button>
+        {canInstall && <Button inline variant="quiet" className="!text-[14px]" data-action="install" onClick={async () => { if (await install()) toast('MyDay is installed — open it from your apps.'); }}><Smartphone size={16} aria-hidden="true" /> Install MyDay as an app</Button>}
+        <Button inline variant="quiet" className="!text-[14px]" data-action="noticed" onClick={() => { location.hash = 'noticed'; window.scrollTo(0, 0); }}><Lightbulb size={16} aria-hidden="true" /> What MyDay has noticed</Button>
+        <Button inline variant="quiet" className="!text-[14px]" data-action="export" onClick={onExport}><Download size={16} aria-hidden="true" /> Export my data</Button>
+        <Button inline variant="quiet" className="!text-[14px]" data-action="import" onClick={onImport}><FolderOpen size={16} aria-hidden="true" /> Import my data</Button>
+        <Button inline variant="quiet" className="!text-[14px]" data-action="motion" aria-pressed={!off} onClick={() => {
           update(d => { d.settings.motion = d.settings.motion === 'off' ? 'auto' : 'off'; });
           toast(!off ? 'Animations off.' : reduces ? 'Animations on — but your device asks for less motion, so they stay off.' : 'Animations on.');
         }}>
           {off ? 'Animations: Off' : reduces ? 'Animations: Off (your device asks for less motion)' : 'Animations: On'}
         </Button>
       </div>
-      <p className="storage-note text-center text-fg-3 text-[13px] mt-3.5">{!canSave ? 'Saving is unavailable in this browser.'
+      <p className="storage-note text-center text-fg-3 text-[13px] mt-5">{!canSave ? 'Saving is unavailable in this browser.'
         : sync.phase === 'linked' ? `Saved to your account${sync.linkedEmail ? ` (${sync.linkedEmail})` : ''}.`
         : 'Saved only in this browser.'}</p>
       {/* Which release is loaded, to check after publishing. */}

@@ -31,9 +31,10 @@ export function SignInGate({ onExport, onUseHere }: { onExport: () => void; onUs
     : ['Welcome to MyDay', 'Your MyDay is kept with your account, so it\'s the same on your Mac and your phone — and only you can see it. Sign in to continue.'];
   return (
     <div className="max-w-[720px] mx-auto" id="signInGate" data-phase={v.phase}>
-      <Card aria-labelledby="gate-h">
-        <h2 id="gate-h" className="m-0">{title}</h2>
-        {line && <p className="text-[15px] text-fg-2 m-0 mt-2">{line}</p>}
+      <Card aria-labelledby="gate-h" className="!pt-6">
+        <img src="./icon.svg" alt="" width="56" height="56" className="block size-14 rounded-2xl shadow-cta mb-4" />
+        <h2 id="gate-h" className="m-0 text-[26px] tracking-[-.02em]">{title}</h2>
+        {line && <p className="text-[15px] text-fg-2 m-0 mt-2 max-w-[34rem]">{line}</p>}
       </Card>
       <SyncScreen onExport={onExport} gate onUnreachable={() => setUnreachable(true)} />
       {(!online || unreachable) && (

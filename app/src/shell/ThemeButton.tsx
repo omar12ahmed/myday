@@ -3,11 +3,11 @@ import { flushSync } from 'react-dom';
 import { toast } from '../data/toast';
 import type { Theme } from '../data/types';
 
-const ORDER: Theme[] = ['dark', 'light', 'auto'];
+const ORDER: Theme[] = ['light', 'dark', 'auto'];
 const LABEL: Record<Theme, string> = { dark: 'Dark', light: 'Light', auto: 'Match device' };
 const ICON = { dark: Moon, light: Sun, auto: SunMoon };
 
-// The round button in the header: Dark → Light → Match device → Dark…
+// The round button in the header: Light → Dark → Match device → Light…
 export function ThemeButton({ theme, motionAllowed, onChange }: { theme: Theme; motionAllowed: boolean; onChange: (t: Theme) => void }) {
   const Icon = ICON[theme];
   const label = `Theme: ${LABEL[theme]}. Tap to change.`;

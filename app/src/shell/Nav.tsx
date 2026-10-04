@@ -1,9 +1,11 @@
 import { SECTIONS, type SectionId } from './sections';
 
-// Phones: a bar along the bottom. Wide screens: across the top, beside the date.
+// Phones: a bar along the bottom. Wide screens: a rail down the left side, with MyDay's name at the top.
 export function Nav({ current }: { current: SectionId }) {
   return (
     <nav id="nav" aria-label="Sections" className="nav">
+      {/* Wide screens: MyDay's name and icon at the top of the side menu. */}
+      <a href="#today" className="nav-logo" aria-label="MyDay — Today"><img src="./icon.svg" alt="" width="40" height="40" /><span>MyDay</span></a>
       {SECTIONS.map(({ id, label, icon: Icon, moved }) => (
         <a key={id} href={`#${id}`} aria-current={id === current ? 'page' : undefined} className="nav-item" title={label}
           aria-label={moved ? label : `${label} (not in the new app yet)`}>

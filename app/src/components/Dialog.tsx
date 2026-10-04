@@ -31,10 +31,10 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
         ref={ref}
         aria-labelledby="dialog-title"
         onCancel={e => { e.preventDefault(); close(false); }}
-        className="m-auto w-[min(440px,calc(100%-32px))] p-0 rounded-card border border-outline bg-surface text-fg shadow-card backdrop:bg-black/50"
+        className="m-auto w-[min(440px,calc(100%-32px))] p-0 rounded-card border border-outline bg-surface text-fg shadow-card backdrop:bg-[rgba(42,31,26,.45)] backdrop:backdrop-blur-[3px]"
       >
         {question && (
-          <div className="p-5">
+          <div className="p-5 sm:p-6">
             <h2 id="dialog-title">{question.title}</h2>
             {question.body && <div className="text-[15px] text-fg-2 mb-4 [&_p]:mb-2">{question.body}</div>}
             <div className="grid gap-2.5">

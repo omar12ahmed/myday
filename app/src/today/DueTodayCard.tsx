@@ -26,7 +26,7 @@ export function DueTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
         {due.map(t => (
           <li key={t.id} className="due-li flex items-center gap-1 border-t border-outline first:border-t-0 py-2" data-id={t.id}>
             <label className="tick flex-none grid place-items-center size-11 -ml-2.5 cursor-pointer">
-              <input type="checkbox" className="size-[22px] accent-primary m-0 cursor-pointer" data-s="due-done" data-id={t.id} checked={false} aria-label={`Done: ${t.title}`}
+              <input type="checkbox" className="size-[22px] accent-done m-0 cursor-pointer" data-s="due-done" data-id={t.id} checked={false} aria-label={`Done: ${t.title}`}
                 onChange={() => { if (update(d => (setTaskDone(d, t.id, true) ? undefined : false))) toast('Done — nice.'); }} />
             </label>
             <a href={`#inbox/tasks/${t.id}`} className="flex-1 min-w-0 min-h-11 py-1 text-fg no-underline">

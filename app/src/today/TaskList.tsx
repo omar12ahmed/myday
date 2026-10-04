@@ -23,7 +23,7 @@ export interface TaskListProps {
 }
 
 function Marker({ done, next }: { done: boolean; next: boolean }) {
-  const look = done ? 'bg-primary border-primary text-on-primary' : next ? 'bg-surface border-primary' : 'bg-surface border-outline-strong';
+  const look = done ? 'bg-done border-done text-on-done' : next ? 'bg-surface border-primary' : 'bg-surface border-outline-strong';
   return (
     <span aria-hidden="true" className={`box flex-none grid place-items-center size-8 mt-2 rounded-full border-2 transition-colors peer-focus-visible:outline-3 peer-focus-visible:outline-primary peer-focus-visible:outline-offset-2 ${look}`}>
       {done && <Check size={18} strokeWidth={3} />}
