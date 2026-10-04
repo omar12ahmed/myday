@@ -30,6 +30,7 @@ import { healthReminders } from '../health/reminders';
 import { AdjustCard } from '../ai/AdjustCard';
 import { MindCard } from '../ai/MindCard';
 import { DueTodayCard } from './DueTodayCard';
+import { ProjectStepsCard, TasksLink } from './ProjectCards';
 import { NoticedLink } from '../patterns/NoticedScreen';
 import { undoMind, type MindUndo } from '../ai/mind';
 import { canUndo, undoAi, type Undo } from '../ai/apply';
@@ -327,6 +328,8 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
         {mindSlots}
         {slot('order-1', <QuickAdd k={k} />, 'slot-quick')}
         {slot('order-1', <DueTodayCard data={data} k={k} />, 'slot-due')}
+        {slot('order-1', <ProjectStepsCard data={data} k={k} />, 'slot-steps')}
+        {slot('order-1', <TasksLink data={data} />, 'slot-tasks')}
         {slot('order-1', healthCard, 'slot-health')}
         {slot('order-1', studyCard, 'slot-study')}
         {slot('order-3', context, 'slot-context')}
@@ -345,6 +348,8 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
         {slot('order-1', proposalCard)}
         {slot('order-1', <QuickAdd k={k} />, 'slot-quick')}
         {slot('order-1', <DueTodayCard data={data} k={k} />, 'slot-due')}
+        {slot('order-1', <ProjectStepsCard data={data} k={k} />, 'slot-steps')}
+        {slot('order-1', <TasksLink data={data} />, 'slot-tasks')}
         {slot('order-2', context, 'slot-context')}
         {slot('order-3', healthCard, 'slot-health')}
         {slot('order-3', studyCard, 'slot-study')}

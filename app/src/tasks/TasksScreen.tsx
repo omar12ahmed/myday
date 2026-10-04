@@ -1,4 +1,4 @@
-import { CalendarDays, Plus } from 'lucide-react';
+import { CalendarDays, FolderKanban, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../components/Button';
 import { CategoryChip } from '../components/CategoryChip';
@@ -7,6 +7,7 @@ import { Field, TextInput } from '../components/Field';
 import { BackLink, Note } from '../components/parts';
 import { prettyDate } from '../data/dates';
 import { CAT_LABEL } from '../data/plan';
+import { projectById } from '../data/projects';
 import { update } from '../data/storage';
 import { addTask, GROUP_LABEL, isDone, isStuck, listName, onTodaysPlan, setTaskDone, tasksView, type Group } from '../data/tasks';
 import { toast } from '../data/toast';
@@ -23,18 +24,20 @@ export function TasksScreen({ data, hash }: { data: MyDayData; hash: string }) {
   return <TasksHome data={data} listId={r.view === 'list' ? r.id : null} />;
 }
 
-export function TaskRow({ data, t }: { data: MyDayData; t: TaskItem }) {
-  const done = isDone(data, t) || !!t.letGoOn, list = listName(data.tasks, t.listId);
+// One task in a list. Its project is named (unless the list is that project's own).
+export function TaskRow({ data, t, hideProject = false }: { data: MyDayData; t: TaskItem; hideProject?: boolean }) {
+  const done = isDone(data, t) || !!t.letGoOn, list = listName(data.tasks, t.listId), project = hideProject ? null : projectById(data, t.projectId);
   return (
     <li className="task-li flex items-start gap-1 border-t border-outline first:border-t-0 py-2" data-id={t.id}>
       <label className="tick flex-none grid place-items-center size-11 -ml-2.5 mt-0.5 cursor-pointer">
         <input type="checkbox" className="size-[22px] accent-done m-0 cursor-pointer" data-s="task-done" data-id={t.id} checked={done} aria-label={`Done: ${t.title}`}
           onChange={e => { const v = e.target.checked; if (update(d => (setTaskDone(d, t.id, v) ? undefined : false)) && v) toast('Done — nice.'); }} />
       </label>
-      <a href={`#inbox/tasks/${t.id}`} className="task-row flex-1 min-w-0 block py-1.5 min-h-11 text-fg no-underline hover:bg-surface-2 rounded-tile -mx-1 px-1" data-id={t.id}>
+      <a href={`#today/tasks/${t.id}`} className="task-row flex-1 min-w-0 block py-1.5 min-h-11 text-fg no-underline hover:bg-surface-2 rounded-tile -mx-1 px-1" data-id={t.id}>
         <span className={`block font-medium leading-snug break-words ${done ? 'line-through text-fg-3' : ''}`}>{t.title}</span>
         <span className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-sm text-fg-3 tabular-nums">
           {t.due && <span className="inline-flex items-center gap-1" data-s="task-due"><CalendarDays size={14} aria-hidden="true" /> {dueText(t)}</span>}
+          {project && <span className="inline-flex items-center gap-1 text-fg-2" data-s="task-project"><FolderKanban size={14} aria-hidden="true" /> {project.title}</span>}
           {list && <span>{list}</span>}
           <span>{t.minutes} min</span>
           <CategoryChip kind={t.category} />
@@ -78,7 +81,7 @@ function TasksHome({ data, listId }: { data: MyDayData; listId: string | null })
   const open = groups.earlier.length + groups.today.length + groups.upcoming.length + groups.anytime.length;
   return (
     <>
-      {list && <BackLink to="inbox/tasks" label="All tasks" />}
+      {list ? <BackLink to="today/tasks" label="All tasks" /> : <BackLink to="today" label="Today" />}
       <Card aria-labelledby="tasks-h">
         <h2 id="tasks-h" className="m-0">{list ? list.name : 'Tasks'}</h2>
         <form className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 items-end mt-3" onSubmit={e => { e.preventDefault(); add(); }}>
@@ -90,8 +93,8 @@ function TasksHome({ data, listId }: { data: MyDayData; listId: string | null })
         {!list && (
           <div className="flex flex-wrap gap-2 mt-3" role="group" aria-label="Lists">
             <Button inline variant="selected" aria-pressed className="!min-h-11" data-s="task-list" data-id="all">All</Button>
-            {d.lists.map(l => <Button key={l.id} inline variant="ghost" className="!min-h-11" data-s="task-list" data-id={l.id} onClick={() => { location.hash = `inbox/tasks/list/${l.id}`; }}>{l.name}</Button>)}
-            <a href="#inbox/tasks/lists" className="inline-flex items-center min-h-11 px-2 text-primary font-semibold text-[15px]" data-action="task-lists">{d.lists.length ? 'Edit lists' : '+ Make a list'}</a>
+            {d.lists.map(l => <Button key={l.id} inline variant="ghost" className="!min-h-11" data-s="task-list" data-id={l.id} onClick={() => { location.hash = `today/tasks/list/${l.id}`; }}>{l.name}</Button>)}
+            <a href="#today/tasks/lists" className="inline-flex items-center min-h-11 px-2 text-primary font-semibold text-[15px]" data-action="task-lists">{d.lists.length ? 'Edit lists' : '+ Make a list'}</a>
           </div>
         )}
         {d.items.length > 4 && (

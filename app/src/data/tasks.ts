@@ -55,6 +55,7 @@ export function normalizeTasks(raw: unknown, report: { dropped: number }): Tasks
         .map(b => ({ ...b, reason: b.reason, on: b.on })).slice(-TASK_LIMITS.blockers),
       letGoOn: isDateKey(t.letGoOn) ? t.letGoOn : null,
     };
+    if (typeof item.projectId !== 'string' || !item.projectId) delete item.projectId; // a project link (1.12.0), or none
     seenT.add(item.id);
     out.items.push(item);
   }

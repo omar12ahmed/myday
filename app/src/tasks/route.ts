@@ -1,8 +1,10 @@
 import { shift, shortDate, todayKey } from '../data/dates';
 import type { TaskItem } from '../data/types';
 
-// Inbox → Tasks: #inbox (or #inbox/tasks), #inbox/tasks/list/<id>, #inbox/tasks/lists, #inbox/tasks/<id>.
+// Tasks live under Today (from 1.12.0; before, in the Inbox — older links are rewritten, see shell/legacyLinks.ts):
+// #today/tasks, #today/tasks/list/<id>, #today/tasks/lists, #today/tasks/<id>.
 export type TasksView = { view: 'home' } | { view: 'list'; id: string } | { view: 'lists' } | { view: 'task'; id: string };
+export const TASKS = 'today/tasks';
 export function tasksRoute(hash: string): TasksView {
   const p = hash.replace('#', '').split('/').map(decodeURIComponent);
   if (p[1] !== 'tasks') return { view: 'home' };

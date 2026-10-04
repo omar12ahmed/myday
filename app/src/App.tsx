@@ -13,7 +13,9 @@ import { Nav } from './shell/Nav';
 import { AccountChip, CaptureRoom, FocusSwitch } from './shell/TopBar';
 import { barSection, SECTIONS, sectionFromHash, type SectionId } from './shell/sections';
 import { NoticedScreen } from './patterns/NoticedScreen';
-import { InboxScreen } from './inbox/InboxScreen';
+import { ProjectsScreen } from './projects/ProjectsScreen';
+import { fixLegacyHash } from './shell/legacyLinks';
+import { TasksScreen } from './tasks/TasksScreen';
 import { CaptureButton } from './capture/CaptureSheet';
 import { CalendarScreen } from './calendar/CalendarScreen';
 import { FinanceScreen } from './finance/FinanceScreen';
@@ -44,7 +46,12 @@ function download(filename: string, text: string) {
 }
 
 // The section in the address (#today, #calendar…), kept in step with the browser's back button.
-const subscribeHash = (fn: () => void) => { window.addEventListener('hashchange', fn); return () => window.removeEventListener('hashchange', fn); };
+// Older links (#inbox…, #notes…) are rewritten to where those screens are now, before anything reads the address.
+fixLegacyHash();
+const subscribeHash = (fn: () => void) => {
+  const on = () => { fixLegacyHash(); fn(); };
+  window.addEventListener('hashchange', on); return () => window.removeEventListener('hashchange', on);
+};
 const getHash = () => window.location.hash;
 
 const reduceQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
@@ -128,7 +135,7 @@ function Shell() {
 
   const blocked = status.kind === 'damaged' || status.kind === 'older';
   // The screen's name, above the date (on wide screens MyDay's own name is at the top of the side menu).
-  const screenName = hash.startsWith('#sync') ? 'Your account' : hash.startsWith('#noticed') ? 'What MyDay has noticed' : SECTIONS.find(x => x.id === section)?.label ?? 'MyDay';
+  const screenName = hash.startsWith('#sync') ? 'Your account' : hash.startsWith('#noticed') ? 'What MyDay has noticed' : hash.startsWith('#today/tasks') ? 'Tasks' : SECTIONS.find(x => x.id === section)?.label ?? 'MyDay';
   // Sign in first (when sync is set up): see sync/SignInGate.tsx.
   const gate = !blocked && signInRequired(sync) && !useHere;
   let content;
@@ -143,13 +150,16 @@ function Shell() {
         <h2>Your account</h2><p className="text-[15px] text-fg-2">Sync isn't set up in this copy of MyDay. Everything is saved only in this browser.</p>
       </Card></div>
     );
+  } else if (section === 'today' && hash.startsWith('#today/tasks')) {
+    // Tasks (moved here from the Inbox in 1.12.0): every one-off task, by date and in your own lists.
+    content = <div className="max-w-[720px] mx-auto"><TasksScreen data={data} hash={hash} /></div>;
   } else if (section === 'today') {
     content = <TodayScreen key={k} data={data} generation={generation} k={k} canSave={status.kind === 'ok'} motionAllowed={motionAllowed}
       onExport={exportData} onImport={() => fileInput.current?.click()} />;
   } else if (section === 'calendar') content = <CalendarScreen data={data} canSave={status.kind === 'ok'} motionAllowed={motionAllowed} />;
   else if (section === 'finance') content = <FinanceScreen data={data} canSave={status.kind === 'ok'} />;
   else if (section === 'study') content = <StudyScreen data={data} hash={hash} />;
-  else if (section === 'inbox') content = <InboxScreen data={data} hash={hash} />;
+  else if (section === 'projects') content = <ProjectsScreen data={data} hash={hash} />;
   else content = <HealthScreen data={data} hash={hash} />;
   if (gate) content = <SignInGate onExport={exportData} onUseHere={() => { setUseHere(true); toast('Using what\'s on this device. Sign in next time to sync.'); }} />;
 
@@ -167,7 +177,7 @@ function Shell() {
             <h1 id="date" className="text-[24px] sm:text-[26px] lg:text-[28px] font-bold tracking-[-.02em] leading-tight m-0">{prettyDate(k)}</h1>
           </div>
           <div className="flex items-center gap-2 lg:gap-3 flex-none">
-            {!blocked && !gate && section === 'today' && !hash.startsWith('#noticed') && !hash.startsWith('#sync') && <FocusSwitch />}
+            {!blocked && !gate && section === 'today' && !hash.startsWith('#today/tasks') && !hash.startsWith('#noticed') && !hash.startsWith('#sync') && <FocusSwitch />}
             {!blocked && !gate && <AccountChip data={data} sync={sync} />}
             {!blocked && !gate && status.kind === 'ok' && <CaptureRoom />}
             <ThemeButton theme={theme} motionAllowed={motionAllowed} onChange={next => update(d => { d.settings.theme = next; })} />
@@ -183,8 +193,8 @@ function Shell() {
             onDismiss={() => { dismissLoadIssue(); setLoadIssue(null); }} />
         )}
         {content}
-        {/* Today has these at the bottom of its own layout; every other section gets them here. */}
-        {!blocked && !gate && (section !== 'today' || hash.startsWith('#noticed')) && !hash.startsWith('#sync') && (
+        {/* Today has these at the bottom of its own layout; every other screen (Tasks under Today too) gets them here. */}
+        {!blocked && !gate && (section !== 'today' || hash.startsWith('#noticed') || hash.startsWith('#today/tasks')) && !hash.startsWith('#sync') && (
           <div className="max-w-[720px] mx-auto mt-6">
             <AppFooter data={data} canSave={status.kind === 'ok'} onEdit={() => { location.hash = 'today/edit'; }} onExport={exportData} onImport={() => fileInput.current?.click()} />
           </div>

@@ -21,13 +21,14 @@
 import { prettyDate, shortDate } from '../data/dates';
 import { CATS, freshState, normalize, SCHEMA_VERSION, SEED } from '../data/normalize';
 import { DEFAULT_CATEGORIES } from '../data/notes';
+import { STAGES, STATUS_LABEL } from '../data/projects';
 import { CAT_LABEL, ENERGY_LABEL } from '../data/plan';
-import type { Category, Commitment, Day, DayContext, ListItem, MyDayData, Note, QueueItem, Recipe, StudySession, TaskItem, WorkoutSession, Review as StudyReview } from '../data/types';
+import type { Category, Commitment, Day, DayContext, ListItem, MyDayData, Note, Project, QueueItem, Recipe, StudySession, TaskItem, WorkoutSession, Review as StudyReview } from '../data/types';
 import { isObj } from '../data/util';
 
 export type Kind = 'list' | 'queue' | 'day' | 'context'
   | 'settings' | 'rota' | 'pay' | 'holidays' | 'finance' | 'study' | 'workout' | 'food' | 'fitness' | 'notes' | 'tasks' | 'patterns'
-  | 'commitment' | 'note' | 'task' | 'session' | 'review' | 'wsession' | 'recipe';
+  | 'commitment' | 'note' | 'task' | 'session' | 'review' | 'wsession' | 'recipe' | 'project';
 export type Content = Record<string, unknown>;
 
 // A record's key on this device: "list:learning", "day:2026-10-02", "note:nt8f…"…
@@ -205,6 +206,11 @@ const MANY: Many[] = [
     put: (dr, id, c) => { if (c) dr.health.food.recipes[id] = c as unknown as Recipe; else delete dr.health.food.recipes[id]; },
     clean: (id, raw) => same(id, via({ health: { food: { recipes: { [id]: raw } } } }).health.food.recipes[id]),
     summary: c => String(c.title) },
+  // Projects (1.12.0; the database accepts them from migration 20261006120000_sync_projects.sql).
+  { kind: 'project', label: 'Project',
+    items: d => d.projects.items, put: (dr, id, c) => putItem(dr.projects.items, id, c),
+    clean: (id, raw) => same(id, via({ projects: { items: [raw] } }).projects.items[0]),
+    summary: c => { const p = c as unknown as Project; return `${p.title} · ${STAGES.find(x => x.id === p.stage)?.label ?? p.stage}${p.status === 'active' ? '' : ` · ${STATUS_LABEL[p.status].toLowerCase()}`}`; } },
 ];
 const oneOf = (kind: Kind, id: string) => ONE.find(o => o.kind === kind && o.id === id);
 const manyOf = (kind: Kind) => MANY.find(m => m.kind === kind);

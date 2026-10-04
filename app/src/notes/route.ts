@@ -1,5 +1,6 @@
-// Notes live in the Inbox section: #inbox (the Notes home: search, Inbox, collections), #inbox/notes/<id> (one
-// note), #inbox/notes/in/<collection id>, #inbox/notes/collections. Older #notes… links still open the same screens.
+// Notes live in the Projects section (called the Inbox until 1.12.0): #projects/notes (the Notes home: search, Inbox,
+// collections), #projects/notes/<id> (one note), #projects/notes/in/<collection id>, #projects/notes/collections.
+// Older #inbox/notes… and #notes… links are rewritten to these (see shell/legacyLinks.ts).
 import { addNote } from '../data/notes';
 import { update } from '../data/storage';
 
@@ -16,5 +17,5 @@ export function notesRoute(hash: string): NotesView {
 export function newNote(categoryId = '') {
   let id = '';
   update(d => { id = addNote(d.notes, categoryId); });
-  if (id) location.hash = `inbox/notes/${id}`;
+  if (id) location.hash = `projects/notes/${id}`;
 }

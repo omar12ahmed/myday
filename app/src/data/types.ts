@@ -125,9 +125,31 @@ export interface MyDayData {
   // 1.6.0; the classic MyDay keeps it unread). The patterns themselves aren't saved: they're worked out from history.
   patterns: PatternsData;
 
+  // Projects: everything about one intention in one place (added by the new app in 1.12.0; the classic MyDay keeps it
+  // unread). Notes and tasks say which project they belong to (`projectId`); appointments are listed on the project.
+  projects: ProjectsData;
+
   // Anything else (e.g. a section added by a newer MyDay) is kept as it was, never dropped.
   [other: string]: unknown;
 }
+
+// ---------- Projects (see data/projects.ts) ----------
+// Where a project is on MyDay's progression: capture → understand → organise → explore → decide → act → reflect.
+export type ProjectStage = 'capture' | 'understand' | 'organise' | 'explore' | 'decide' | 'act' | 'reflect';
+export type ProjectStatus = 'active' | 'paused' | 'done';
+export interface Project {
+  id: string;
+  title: string;
+  summary: string;            // what it is and why it matters, in your words
+  stage: ProjectStage;
+  status: ProjectStatus;
+  nextTaskId: string | null;  // the one next step (a task); none chosen → the first task still to do
+  commitmentIds: string[];    // Calendar appointments that belong to it (listed here, so the Calendar's own records —
+                              // shared with the classic MyDay — don't change)
+  createdAt: DateTime;
+  updatedAt: DateTime;
+}
+export interface ProjectsData { items: Project[]; [other: string]: unknown }
 
 // ---------- Calendar: the shift rota ----------
 export type ShiftType = 'day' | 'night' | 'off';
@@ -322,6 +344,7 @@ export interface TaskItem {
   postponed: number;          // times you moved its date later ("Tomorrow", or a later date)
   blockers: { reason: Blocker; on: DateKey }[]; // your answers to "What's getting in the way?"
   letGoOn: DateKey | null;    // you decided it doesn't matter any more ("Let it go")
+  projectId?: string;         // the project it belongs to (1.12.0; absent → none)
 }
 export type Blocker = 'big' | 'start' | 'boring' | 'tired' | 'info' | 'notneeded' | 'other';
 export interface TasksData { lists: TaskList[]; items: TaskItem[]; [other: string]: unknown }
@@ -378,6 +401,7 @@ export interface Note {
   pinned: boolean;
   createdAt: DateTime;  // "YYYY-MM-DDTHH:MM" on this device
   updatedAt: DateTime;
+  projectId?: string;   // the project it belongs to (1.12.0; absent → none)
 }
 export interface NotesData {
   categories: NoteCategory[];

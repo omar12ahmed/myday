@@ -28,7 +28,7 @@ export function ListsView({ data }: { data: MyDayData }) {
   }
   return (
     <>
-      <BackLink to="inbox/tasks" label="Tasks" />
+      <BackLink to="today/tasks" label="Tasks" />
       <Card aria-labelledby="tl-h">
         <h2 id="tl-h">Your lists</h2>
         <Note className="mt-0">Group tasks however you like — "Moving house", "Car", "Work". Removing a list keeps its tasks. (Today's repeating Learning, Admin and Health lists are separate, in Your task lists on Today.)</Note>
@@ -43,7 +43,7 @@ export function ListsView({ data }: { data: MyDayData }) {
                   <Button inline className="!px-3" aria-label={`Move ${l.name} down`} disabled={i === lists.length - 1} data-action="tl-down" onClick={() => update(d => (moveList(d.tasks, l.id, 1) ? undefined : false))}><ArrowDown size={18} aria-hidden="true" /></Button>
                   <Button inline className="!px-3" aria-label={`Remove ${l.name}`} data-action="tl-remove" onClick={() => remove(l.id, l.name)}><X size={18} aria-hidden="true" /></Button>
                 </span>
-                <span className="col-span-2 text-sm text-fg-3 -mt-1">{count(l.id)} task{count(l.id) === 1 ? '' : 's'} · <a href={`#inbox/tasks/list/${l.id}`} className="text-primary font-semibold">Open</a></span>
+                <span className="col-span-2 text-sm text-fg-3 -mt-1">{count(l.id)} task{count(l.id) === 1 ? '' : 's'} · <a href={`#today/tasks/list/${l.id}`} className="text-primary font-semibold">Open</a></span>
               </li>
             ))}
           </ul>

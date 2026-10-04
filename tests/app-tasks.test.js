@@ -39,7 +39,7 @@ const day = (energy, rest = false) => `s => { s.days['${K}'] = { energy: ${energ
   await T.send('Emulation.setLocaleOverride', { locale: 'en-GB' });
 
   console.log('\n[1] Adding tasks in your own words');
-  await go('inbox', 2026, 10, 15); await reset(); await go('inbox', 2026, 10, 15);
+  await go('today/tasks', 2026, 10, 15); await reset(); await go('today/tasks', 2026, 10, 15);
   check('Tasks starts empty, and says how to add one', (await text('#tasksEmpty')).includes('Add a task above') && eq(await tasks(), { lists: [], items: [] }));
   check('the Add button waits for some words', await ev(`document.querySelector('[data-action=task-add]').disabled`));
   await add('pay rent by Friday');
@@ -56,7 +56,7 @@ const day = (energy, rest = false) => `s => { s.days['${K}'] = { energy: ${energ
   check('"Coming up": earliest first, timed before untimed on the same day, with "tomorrow 10:00"', eq(await rows('#tasks-upcoming'), ['Call GP', 'Pay rent'])
     && (await text('#tasks-upcoming [data-s=task-due]')).includes('tomorrow 10:00'));
   await editStorage(`s => { s.tasks.items.push({ id: 'tkOld', title: 'Renew car tax', listId: '', category: 'admin', minutes: 20, due: '2026-10-12', time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-10-10T10:00' }); }`);
-  await go('inbox/tasks', 2026, 10, 15, 9, 5);
+  await go('today/tasks', 2026, 10, 15, 9, 5);
   check('a date that has passed → "From earlier", gently ("no rush")', eq(await rows('#tasks-earlier'), ['Renew car tax']) && (await text('#tasks-earlier')).includes('no rush'));
   check('search appears with more than four tasks, and looks in titles and notes', await exists('#taskSearch'));
   await type('#taskSearch', 'RENT');
@@ -68,7 +68,7 @@ const day = (energy, rest = false) => `s => { s.days['${K}'] = { energy: ${energ
   console.log('\n[2] Editing a task');
   const stamps = (await byTitle('Buy stamps')).id;
   await click(`.task-row[data-id="${stamps}"]`); await sleep(300);
-  check('tapping a task opens it', (await hash()) === `#inbox/tasks/${stamps}` && (await exists('#taskEditor')));
+  check('tapping a task opens it', (await hash()) === `#today/tasks/${stamps}` && (await exists('#taskEditor')));
   check('the time waits for a date', await ev(`document.getElementById('tTime').disabled`));
   await commit('#tDue', '2026-10-20');
   await commit('#tTime', '18:30');
@@ -93,11 +93,11 @@ const day = (energy, rest = false) => `s => { s.days['${K}'] = { energy: ${energ
   check('…and back', !(await tasks()).items.find(x => x.id === stamps).done);
   await click('[data-action=task-delete]'); await answer(false);
   check('deleting asks first ("Keep it" keeps it)', (await tasks()).items.some(x => x.id === stamps));
-  await go('inbox/tasks/nope', 2026, 10, 15, 9, 10);
+  await go('today/tasks/nope', 2026, 10, 15, 9, 10);
   check('a task that isn\'t there says so, kindly', (await text('#app')).includes("This task isn't here"));
 
   console.log('\n[3] Your own lists');
-  await go('inbox/tasks', 2026, 10, 15, 9, 15);
+  await go('today/tasks', 2026, 10, 15, 9, 15);
   check('"+ Make a list" when there are none', (await text('[data-action=task-lists]')) === '+ Make a list');
   await click('[data-action=task-lists]'); await sleep(300);
   await type('#tlNew', 'Moving house'); await click('[data-action=tl-add]'); await sleep(250);
@@ -107,14 +107,14 @@ const day = (energy, rest = false) => `s => { s.days['${K}'] = { energy: ${energ
   await click('#taskLists .tl-row:nth-child(2) [data-action=tl-up]'); await sleep(250);
   check('…and can be reordered', eq((await tasks()).lists.map(l => l.name), ['Car', 'Moving house']));
   const moving = (await tasks()).lists.find(l => l.name === 'Moving house').id;
-  await go(`inbox/tasks/list/${moving}`, 2026, 10, 15, 9, 20);
+  await go(`today/tasks/list/${moving}`, 2026, 10, 15, 9, 20);
   check('a list has its own page', (await text('#tasks-h')) === 'Moving house' && (await text('#tasksEmpty')).includes('Nothing in this list yet'));
   await add('book a removal van on Saturday');
   t = await byTitle('Book a removal van');
   check('adding from a list puts the task in it (with its date)', t && t.listId === moving && t.due === '2026-10-17', t || (await tasks()).items.map(x => x.title));
-  await go('inbox/tasks', 2026, 10, 15, 9, 25);
+  await go('today/tasks', 2026, 10, 15, 9, 25);
   check('all tasks show the list\'s name, and the lists are chips at the top', (await text(`.task-row[data-id="${t.id}"]`)).includes('Moving house') && eq(await ev(`[...document.querySelectorAll('[data-s=task-list]')].map(b => b.textContent)`), ['All', 'Car', 'Moving house']));
-  await go('inbox/tasks/lists', 2026, 10, 15, 9, 30);
+  await go('today/tasks/lists', 2026, 10, 15, 9, 30);
   await commit('#taskLists .tl-row:nth-child(2) input', 'Moving flat');
   check('a list can be renamed', (await tasks()).lists.find(l => l.id === moving).name === 'Moving flat');
   await click('#taskLists .tl-row:nth-child(2) [data-action=tl-remove]');
@@ -141,15 +141,15 @@ const day = (energy, rest = false) => `s => { s.days['${K}'] = { energy: ${energ
   const sendForm = (await tasks()).items.find(x => x.due === K && x.id !== 'tkTimed').id;
   await click(`[data-action=due-plan][data-id="${sendForm}"]`); await sleep(300);
   check('a second one fills the plan (2 for energy 3): no more "Add to plan", and it says why, kindly', (await data()).days[K].tasks.length === 2 && !(await exists('[data-action=due-plan]')) && (await text('[data-s=due-note]')).includes("Today's plan is full for your energy (2 tasks)"));
-  await go('inbox/tasks/tkOld', 2026, 10, 15, 9, 45);
+  await go('today/tasks/tkOld', 2026, 10, 15, 9, 45);
   check('the task\'s own "Add to today\'s plan" waits too, and offers "Tomorrow"', (await ev(`document.querySelector('[data-action=task-plan]').disabled`)) && (await text('[data-s=plan-note]')).includes('"Tomorrow" moves it on'));
-  await go('inbox/tasks', 2026, 10, 15, 9, 50);
+  await go('today/tasks', 2026, 10, 15, 9, 50);
   check('Tasks shows "On today\'s plan" on the two', (await text('.task-row[data-id=tkTimed]')).includes("On today's plan") && (await text(`.task-row[data-id="${sendForm}"]`)).includes("On today's plan"));
   await go('today', 2026, 10, 15, 15);
   await click(`[data-action=toggle][data-uid="${pt.uid}"]`); await sleep(300);
   dd = await data();
   check('ticking it off on the plan…', dd.days[K].tasks.find(x => x.uid === pt.uid).done);
-  await ev(`location.hash = 'inbox/tasks'`); await sleep(300);
+  await ev(`location.hash = 'today/tasks'`); await sleep(300);
   check('…ticks it off in Tasks too (one task, not two): it\'s under Done there', (await text('#tasks-done')).includes('1') && !(await exists('.task-row[data-id=tkTimed]')));
   await click('[data-action=tasks-done-toggle]'); await sleep(200);
   await click('[data-s=task-done][data-id=tkTimed]'); await sleep(300);
@@ -168,7 +168,7 @@ const day = (energy, rest = false) => `s => { s.days['${K}'] = { energy: ${energ
 
   console.log('\n[6] Saved data');
   await editStorage(`s => { s.tasks.futurePart = { kept: true }; s.tasks.items.push({ id: 'bad1' }, { id: 'bad2', title: '   ' }, 'nonsense', { id: 'tkOld', title: 'A second task with the same id', due: 'not a date', time: '25:99', category: 'gardening', minutes: 9999, done: 'yes' }); s.tasks.lists.push({ id: 'tlBad' }); }`);
-  await go('inbox/tasks', 2026, 10, 15, 16);
+  await go('today/tasks', 2026, 10, 15, 16);
   check('the screen opens and shows the good tasks (it tidies saved data at its next save)', (await exists('#tasks-earlier')) && !(await text('#app')).includes('25:99'));
   await click('#themeBtn'); await sleep(300); // any change saves
   const td = await tasks();
@@ -186,26 +186,26 @@ const day = (energy, rest = false) => `s => { s.days['${K}'] = { energy: ${energ
   await click('#themeBtn'); await sleep(300); // one change, so it saves
   check('the current MyDay keeps Tasks exactly when it saves (a theme change, saved)', eq(JSON.parse(await ev(`localStorage.getItem('${KEY}')`)).tasks, JSON.parse(savedNew).tasks) && JSON.parse(await ev(`localStorage.getItem('${KEY}')`)).settings.theme !== JSON.parse(savedNew).settings.theme);
   await editStorage(`s => { delete s.tasks; }`);
-  await go('inbox/tasks', 2026, 10, 15, 16, 15);
+  await go('today/tasks', 2026, 10, 15, 16, 15);
   check('saved data from before Tasks opens with no tasks (nothing else changes)', (await text('#tasksEmpty')).includes('Add a task above'));
 
   console.log('\n[7] Layout');
-  await go('inbox/tasks', 2026, 10, 15, 17); await reset(); await go('inbox/tasks', 2026, 10, 15, 17);
+  await go('today/tasks', 2026, 10, 15, 17); await reset(); await go('today/tasks', 2026, 10, 15, 17);
   await add('call the council about the bins tomorrow at 9am');
   await add('a much longer task with a lot of words in it so that it has to wrap onto a second line on a phone');
   await add('submit expenses today');
   await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   for (const theme of ['dark', 'light']) {
     await editStorage(`s => { s.settings.theme = '${theme}'; }`);
-    for (const h of ['inbox/tasks', 'inbox/tasks/lists', `inbox/tasks/${(await tasks()).items[0].id}`, 'today']) {
+    for (const h of ['today/tasks', 'today/tasks/lists', `today/tasks/${(await tasks()).items[0].id}`, 'today']) {
       await go(h, 2026, 10, 15, 17, 5);
       check(`phone (${theme}), #${h.split('/').slice(0, 3).join('/').replace(/tk\w+$/, '<task>')}: nothing scrolls sideways`, !(await ev('document.documentElement.scrollWidth > innerWidth')));
     }
   }
-  await go(`inbox/tasks/${(await tasks()).items[0].id}`, 2026, 10, 15, 17, 8);
+  await go(`today/tasks/${(await tasks()).items[0].id}`, 2026, 10, 15, 17, 8);
   const dt = await ev(`(() => { const a = document.getElementById('tDue').getBoundingClientRect(), b = document.getElementById('tTime').getBoundingClientRect(), c = document.getElementById('taskEditor').getBoundingClientRect(); return { dueRight: a.right, timeLeft: b.left, timeRight: b.right, card: c.right }; })()`);
   check('phone: a task\'s date and time boxes sit side by side without overlapping', dt.dueRight <= dt.timeLeft && dt.timeRight <= dt.card, dt);
-  await go('inbox/tasks', 2026, 10, 15, 17, 10);
+  await go('today/tasks', 2026, 10, 15, 17, 10);
   const small = await ev(`[...document.querySelectorAll('#app button, #app input:not([type=checkbox]), #app select, #app .task-row, #app label.tick')].filter(b => b.offsetParent !== null).map(b => { const r = b.getBoundingClientRect(); return { t: (b.textContent || b.id || b.className).trim().slice(0, 24), w: Math.round(r.width), h: Math.round(r.height) }; }).filter(x => x.h < 44 || x.w < 44)`);
   check('phone: every button, row, field and tick box is at least 44 × 44 px', small.length === 0, small.slice(0, 5));
   await go('today', 2026, 10, 15, 17, 15);

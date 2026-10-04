@@ -28,9 +28,10 @@ publishable key. It must never be a secret key, so `app/vite.config.ts` refuses 
 ## 2. Create MyDay's tables (the migration)
 
 The database changes are in `supabase/migrations/`, applied in order: `20261002120000_sync_lists_and_days.sql` (the
-first part of sync), `20261003120000_ai_usage.sql` (AI help's limits) and `20261005120000_sync_everything.sql`
+first part of sync), `20261003120000_ai_usage.sql` (AI help's limits), `20261005120000_sync_everything.sql`
 (everything else syncs, from 1.8.0 — apply it **before** publishing 1.8.0; older versions of the app keep working with
-it). Apply them **one** of these two ways (not both):
+it) and `20261006120000_sync_projects.sql` (projects sync, from 1.12.0: the record table accepts one more kind,
+`project`; nothing else changes — apply it **before** publishing 1.12.0; older versions keep working with it). Apply them **one** of these two ways (not both):
 
 **A. With the Supabase CLI (recommended: it records which migrations have run).** From the `myday-site` folder:
 
@@ -166,6 +167,7 @@ The model never writes anything: it only replies, and the app decides what's all
 | `functions/_shared/ai/` | Shared by the function, the app and the evaluation: `schema.ts` (what's sent and returned), `prompt.ts` (the instructions), `providers.ts` (the model adapter), `mock.ts` (the practice planner). |
 | `migrations/20261003120000_ai_usage.sql` | Request, token and spending limits per account (counts only, never content). |
 | `migrations/20261005120000_sync_everything.sql` | Sync for everything else: the `sync_records` table, and `sync_push` / `sync_pull` handling it. |
+| `migrations/20261006120000_sync_projects.sql` | Projects sync (1.12.0): `sync_records` accepts `project` records (its two kind checks replaced by named ones; nothing else touched). |
 | `ai-secrets.example.env` | The settings, as a template with placeholders only (fill in a copy that Git ignores; the key ends up only in Supabase). |
 
 ## Try it without any AI (practice mode)

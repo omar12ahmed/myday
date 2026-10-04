@@ -48,13 +48,17 @@ const clone = o => JSON.parse(JSON.stringify(o));
   raw.tasks.lists = [{ id: 'tl1', name: 'Moving house' }];
   raw.tasks.items = [{ id: 'tk1', title: 'Book a van', listId: 'tl1', category: 'admin', minutes: 15, due: '2026-10-10', time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-10-01T09:00', postponed: 1, blockers: [], letGoOn: null }];
   raw.patterns.prefs.maxTasks = { value: 2, on: '2026-10-01', from: null, why: 'You chose this.' };
+  // A project (1.12.0) with a task and a note in it and an appointment listed on it.
+  raw.projects = { items: [{ id: 'pj1', title: 'Coffee subscription', summary: 'For offices', stage: 'explore', status: 'active', nextTaskId: 'tk1', commitmentIds: ['c1'], createdAt: '2026-10-01T09:00', updatedAt: '2026-10-02T09:00' }] };
+  raw.tasks.items[0].projectId = 'pj1';
+  raw.notes.items[0].projectId = 'pj1';
   raw.timer = { uid: 'x', dayKey: '2026-10-04', kind: 'focus', durationSec: 1500, startedAt: 1, accumulatedMs: 0, finished: false };
   const data = R.normalize(raw);
 
   console.log('\n[1] Every record survives the trip unchanged');
   const recs = R.localRecords(data);
   const kinds = [...new Set([...recs.keys()].map(k => R.splitKey(k).kind))].sort();
-  check('every kind of record is there', eq(kinds, ['commitment', 'context', 'day', 'finance', 'fitness', 'food', 'holidays', 'list', 'note', 'notes', 'pay', 'patterns', 'queue', 'recipe', 'review', 'rota', 'session', 'settings', 'study', 'task', 'tasks', 'workout', 'wsession'].filter(k => k !== 'context' && k !== 'day').sort()), kinds);
+  check('every kind of record is there', eq(kinds, ['commitment', 'context', 'day', 'finance', 'fitness', 'food', 'holidays', 'list', 'note', 'notes', 'pay', 'patterns', 'project', 'queue', 'recipe', 'review', 'rota', 'session', 'settings', 'study', 'task', 'tasks', 'workout', 'wsession'].filter(k => k !== 'context' && k !== 'day').sort()), kinds);
   const changedOnTheWay = [...recs].filter(([key, c]) => R.fingerprint(R.cleanRecord(key, clone(c))) !== R.fingerprint(c)).map(([k]) => k);
   check('checked as it arrives on another device, every record is exactly the same (so devices never drift apart)', changedOnTheWay.length === 0, changedOnTheWay);
   const putBack = clone(R.freshState());
@@ -83,6 +87,10 @@ const clone = o => JSON.parse(JSON.stringify(o));
   R.putRecord(d, 'recipe:rNew', { id: 'rNew', title: 'Dal' });
   R.putRecord(d, 'recipe:rOwn', null);
   check('recipes are added and removed by id', !!d.health.food.recipes.rNew && !d.health.food.recipes.rOwn);
+  R.putRecord(d, 'project:pjNew', { ...d.projects.items[0], id: 'pjNew', title: 'Podcast' });
+  R.putRecord(d, 'project:pj1', null);
+  check('projects are added and removed by id (the tasks and notes that pointed at one are left as they are)', eq(d.projects.items.map(p => p.id), ['pjNew']) && d.tasks.items[0].projectId === 'pj1');
+  check('a project arriving with a wrong stage is read like a saved one (Capture), not refused', R.cleanRecord('project:pjX', { id: 'pjX', title: 'X', stage: 'nowhere' }).stage === 'capture');
   check('the one-record parts can\'t be removed (a deletion is ignored)', (R.putRecord(d, 'finance:finance', null), d.finance.expenses.length === 1));
   check('an item whose id doesn\'t match the record is refused', R.cleanRecord('note:ntX', { id: 'ntOther', text: 'x', categoryId: '' }) === null && R.cleanRecord('nope:x', {}) === null);
 

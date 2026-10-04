@@ -37,19 +37,19 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await T.send('Emulation.setTimezoneOverride', { timezoneId: 'Europe/London' });
   await T.send('Emulation.setLocaleOverride', { locale: 'en-GB' });
 
-  console.log('\n[1] Six sections, and Tasks and Notes in the Inbox');
+  console.log('\n[1] Six sections; Projects and Notes together (the Inbox until 1.12.0), Tasks on Today');
   await go('today', 2026, 10, 15); await reset(); await go('today', 2026, 10, 15);
-  check('the bar: Today, Calendar, Inbox, Finance, Health, Study', eq(await ev(`[...document.querySelectorAll('#nav .nav-item')].map(a => a.textContent.trim())`), ['Today', 'Calendar', 'Inbox', 'Finance', 'Health', 'Study']));
+  check('the bar: Today, Calendar, Projects, Finance, Health, Study', eq(await ev(`[...document.querySelectorAll('#nav .nav-item')].map(a => a.textContent.trim())`), ['Today', 'Calendar', 'Projects', 'Finance', 'Health', 'Study']));
   check('Today no longer has its own Notes card (Capture is on every screen instead)', !(await exists('#notesCard')) && (await exists('[data-action=capture-open]')));
-  await click('#nav a[href="#inbox"]'); await sleep(300);
-  check('Inbox opens on Tasks, with a Notes tab', (await exists('#taskNew')) && eq(await ev(`[...document.querySelectorAll('.inbox-tabs [role=tab]')].map(a => a.textContent + (a.getAttribute('aria-selected') === 'true' ? '*' : ''))`), ['Tasks*', 'Notes']));
-  await click('.inbox-tabs a[href="#inbox/notes"]'); await sleep(300);
+  await click('#nav a[href="#projects"]'); await sleep(300);
+  check('Projects opens on your projects, with a Notes tab', (await exists('#projectNew')) && eq(await ev(`[...document.querySelectorAll('.section-tabs [role=tab]')].map(a => a.textContent + (a.getAttribute('aria-selected') === 'true' ? '*' : ''))`), ['Projects*', 'Notes']));
+  await click('.section-tabs a[href="#projects/notes"]'); await sleep(300);
   check('the Notes tab: a search, an empty Inbox that says what it\'s for, and the starter collections', (await exists('#noteSearch')) && (await text('#noteInbox')).includes('no need to file it')
     && eq(await ev(`[...document.querySelectorAll('#noteCollections .ncol-row span:first-child')].map(s => s.textContent)`), ['Lifestyle', 'Business ideas', 'Health & fitness', 'Money', 'Study & career', 'Personal']));
 
   console.log('\n[2] Dumping a note: it goes to the Inbox, no filing needed');
   await click('[data-action=note-new]'); await sleep(300);
-  check('"New note" opens a note in the Inbox', /^#inbox\/notes\/nt/.test(await hash()) && (await ev(`document.getElementById('noteCat').selectedOptions[0].textContent`)) === 'Inbox');
+  check('"New note" opens a note in the Inbox', /^#projects\/notes\/nt/.test(await hash()) && (await ev(`document.getElementById('noteCat').selectedOptions[0].textContent`)) === 'Inbox');
   await type('#noteText', 'Weekend coffee van at the market — could be a side hustle');
   await sleep(900);
   let n = (await notes()).items[0];
@@ -58,36 +58,36 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await blur('#noteText'); await sleep(100);
   check('leaving the box saves straight away', (await notes()).items[0].text.endsWith('licence.'));
   const id = n.id;
-  await ev(`location.hash = 'inbox/notes'`); await sleep(300);
+  await ev(`location.hash = 'projects/notes'`); await sleep(300);
   check('it\'s in the Inbox (1), with a one-tap suggestion from its words: "File in Business ideas"', (await text('#inbox-h')).includes('1') && (await text(`#noteInbox [data-action=note-file][data-id="${id}"]`)) === 'File in Business ideas');
   await click(`#noteInbox [data-action=note-file][data-id="${id}"]`); await sleep(300);
   n = (await notes()).items[0];
   check('…one tap files it — without counting as a change to the note', n.categoryId === (await catId('Business ideas')) && n.updatedAt === '2026-10-15T09:00' && (await text('#noteInbox')).includes('Your Inbox is clear'));
-  await click(`#noteCollections a[href="#inbox/notes/in/${await catId('Business ideas')}"]`); await sleep(300);
+  await click(`#noteCollections a[href="#projects/notes/in/${await catId('Business ideas')}"]`); await sleep(300);
   check('the collection shows its notes', (await text('#noteCollection')).includes('Weekend coffee van'));
   await type(`[data-s=note-move][data-id="${id}"]`, '-'); await sleep(300);
   check('"Back to the Inbox" from a collection', (await notes()).items[0].categoryId === '');
   await go('notes', 2026, 10, 15, 9, 10);
-  check('an old #notes link still opens Notes (in the Inbox)', (await exists('#noteInbox')) && (await ev(`document.querySelector('#nav [aria-current=page]').textContent.trim()`)) === 'Inbox');
+  check('an old #notes link still opens Notes (in Projects since 1.12.0)', (await exists('#noteInbox')) && (await ev(`document.querySelector('#nav [aria-current=page]').textContent.trim()`)) === 'Projects' && (await hash()) === '#projects/notes');
   await type(`[data-s=note-move][data-id="${id}"]`, await catId('Money')); await sleep(300);
   check('"File it…" puts it in any collection', (await notes()).items[0].categoryId === (await catId('Money')));
 
   console.log('\n[3] Search, an empty note, deleting');
   await click('[data-action=note-new]'); await sleep(300);
   const emptyId = (await hash()).split('/')[2];
-  await ev(`location.hash = 'inbox/notes'`); await sleep(300);
+  await ev(`location.hash = 'projects/notes'`); await sleep(300);
   check('a new note left empty isn\'t kept', !(await notes()).items.some(x => x.id === emptyId));
   await type('#noteSearch', 'LICENCE');
   check('search looks in every note, in any case, and says where each is', (await ev(`document.querySelectorAll('#noteResults .note-row').length`)) === 1 && (await text('#noteResults')).includes('Money ·'));
   await type('#noteSearch', 'nothing like this');
   check('…and says when nothing matches', (await text('#noteResults')).includes('No notes match'));
   await type('#noteSearch', '');
-  await go(`inbox/notes/${id}`, 2026, 10, 15, 9, 20);
+  await go(`projects/notes/${id}`, 2026, 10, 15, 9, 20);
   await click('[data-action=note-delete]'); await answer(false);
   check('deleting asks first ("Keep it" keeps it)', (await notes()).items.some(x => x.id === id));
 
   console.log('\n[4] Collections: removing one puts its notes back in the Inbox');
-  await go('inbox/notes/collections', 2026, 10, 15, 9, 25);
+  await go('projects/notes/collections', 2026, 10, 15, 9, 25);
   const moneyRow = await ev(`[...document.querySelectorAll('#noteCats .ncat-row')].findIndex(r => r.querySelector('input').value === 'Money') + 1`);
   await click(`#noteCats .ncat-row:nth-child(${moneyRow}) [data-action=ncat-remove]`);
   check('the question says its note goes back to the Inbox', (await ev(`document.querySelector('dialog[open]')?.textContent || ''`)).includes('Its note goes back to your Inbox. No notes are deleted.'));
@@ -97,7 +97,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
 
   console.log('\n[5] Notes filed in 1.3.0 stay filed');
   await editStorage(`s => { s.notes.categories.push({ id: 'ncOther', name: 'Other' }); s.notes.items.push({ id: 'old1', categoryId: 'ncOther', title: 'Kept from 1.3.0', text: 'x', pinned: false, createdAt: '2026-10-04T10:00', updatedAt: '2026-10-04T10:00' }, { id: 'old2', categoryId: 'gone', title: 'Its collection is gone', text: 'y', pinned: false, createdAt: '2026-10-04T10:00', updatedAt: '2026-10-04T10:00' }); }`);
-  await go('inbox/notes', 2026, 10, 15, 9, 30);
+  await go('projects/notes', 2026, 10, 15, 9, 30);
   check('a note in a collection stays there; one whose collection has gone shows in the Inbox (nothing lost)', !(await text('#noteInbox')).includes('Kept from 1.3.0') && (await text('#noteInbox')).includes('Its collection is gone') && (await text('#noteCollections')).includes('Other'));
 
   console.log('\n[6] Capture, from any screen');
@@ -126,12 +126,12 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await click('[data-action=capture-task]'); await sleep(400);
   check('a time, as a task: it has the date and the time', (await data()).tasks.items.some(t => t.title === 'Call the bank' && t.due === '2026-10-16' && t.time === '09:00'), (await data()).tasks.items.map(t => [t.title, t.due, t.time]));
   await capture('app idea: shift-swap finder for nurses');
-  check('an idea → "Save in Business ideas" first', (await choices())[0] === 'collection*' && (await text('[data-action=capture-collection]')).includes('Business ideas'));
+  check('an idea → "Start a project from this" first (from 1.12.0), with "Save in Business ideas" as another choice', eq(await choices(), ['project*', 'task', 'collection', 'note']) && (await text('[data-action=capture-collection]')).includes('Business ideas'), await choices());
   await click('[data-action=capture-collection]'); await sleep(400);
   const idea = (await notes()).items.find(x => x.text === 'app idea: shift-swap finder for nurses');
   check('…in Business ideas', idea && idea.categoryId === (await catId('Business ideas')));
   await capture('wifi password is in the drawer');
-  check('anything else → "Save to Notes inbox"', eq(await choices(), ['note*', 'task']));
+  check('anything else → "Save to Notes inbox" (or start a project from it)', eq(await choices(), ['note*', 'task', 'project']), await choices());
   await click('[data-action=capture-note]'); await sleep(400);
   check('…saved to the Inbox', (await notes()).items.some(x => x.text === 'wifi password is in the drawer' && x.categoryId === ''));
   await capture('dentist on the 14th at 3pm');
@@ -140,7 +140,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
 
   console.log('\n[7] Saved data: export and import, and the current MyDay keeping Notes');
   for (const x of fs.readdirSync(S + '/dl')) fs.unlinkSync(S + '/dl/' + x);
-  await go('inbox', 2026, 10, 15, 11);
+  await go('projects', 2026, 10, 15, 11);
   await click('[data-action=export]'); await sleep(1200);
   const exported = JSON.parse(fs.readFileSync(S + '/dl/myday-export-2026-10-15.json', 'utf8'));
   check('"Export my data" includes Notes', eq(exported.data.notes, await notes()));
@@ -157,7 +157,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   for (const theme of ['dark', 'light']) {
     await editStorage(`s => { s.settings.theme = '${theme}'; }`);
-    await go('inbox/notes', 2026, 10, 15, 14);
+    await go('projects/notes', 2026, 10, 15, 14);
     check(`phone (${theme}): nothing scrolls sideways`, !(await ev('document.documentElement.scrollWidth > innerWidth')));
   }
   const pos = await ev(`(() => { const b = document.querySelector('.capture-btn').getBoundingClientRect(), n = document.getElementById('nav').getBoundingClientRect(), items = [...document.querySelectorAll('#nav .nav-item')].map(a => a.getBoundingClientRect()); return { b: [b.right, b.bottom, b.width, b.height], navTop: n.top, w: innerWidth, minItem: Math.min(...items.map(r => r.width)) }; })()`);
@@ -169,7 +169,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('phone: every button, row and field is at least 44 px high', small.length === 0, small.slice(0, 5));
   for (const width of [1024, 1280, 1440, 1600, 1920]) {
     await T.send('Emulation.setDeviceMetricsOverride', { width, height: 800, deviceScaleFactor: 1, mobile: false });
-    await go('inbox', 2026, 9, 30, 15); // "Wednesday 30 September", a long date (wide screens: the side menu, from 1.11.0)
+    await go('projects', 2026, 9, 30, 15); // "Wednesday 30 September", a long date (wide screens: the side menu, from 1.11.0)
     const h = await ev(`(() => { const d = document.getElementById('date').getBoundingClientRect(), n = document.getElementById('nav').getBoundingClientRect(), c = document.querySelector('.capture-btn').getBoundingClientRect(), t = document.getElementById('themeBtn').getBoundingClientRect(), a = document.getElementById('app').getBoundingClientRect(); return { dl: d.left, dr: d.right, nl: n.left, nr: n.right, nh: n.height, c: c.left, cr: c.right, t: t.left, a: a.left, labels: [...document.querySelectorAll('.nav-label')].every(l => getComputedStyle(l).position !== 'absolute' && l.getBoundingClientRect().width > 0) }; })()`);
     check(`wide (${width} px): the side menu down the left, beside the date and the page; Capture and the theme button never overlap the date; every section shows its name`, h.nl <= 24 && h.nr < h.dl && h.nr < h.a && h.dr + 8 < h.c && h.cr <= h.t && h.labels, h);
   }

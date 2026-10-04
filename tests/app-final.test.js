@@ -168,10 +168,11 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   const seedIds = new Set();
   JSON.stringify(liveAll).replace(/"(id|uid|qid|key)":"([^"]*)"/g, (m, k, v) => { seedIds.add(v); return m; });
   const mask = o => { const c = JSON.parse(noSaves(o)); delete c.health.futureHealthPart; return canon(JSON.parse(JSON.stringify(c, (k, v) => (['id', 'uid', 'qid', 'key'].includes(k) && typeof v === 'string' && /^[a-z]{1,3}[0-9a-z]{10,}$/.test(v) ? 'NEW' : v)))); };
-  // The new app adds Notes and Goal (1.3.0), which the current MyDay keeps unread: compared on their own, below.
+  // The new app adds Notes and Goal (1.3.0), Tasks, What MyDay has noticed and Projects (1.12.0), which the current MyDay
+  // keeps unread: compared on their own, below.
   // …and (from 1.11.0) its default theme is light, where the current MyDay's is dark: compared on its own too.
-  const newCmp = { ...newAll, settings: { ...newAll.settings, theme: liveAll.settings.theme } }; delete newCmp.notes; delete newCmp.fitness; delete newCmp.tasks; delete newCmp.patterns;
-  check('the whole saved file matches the current MyDay\'s, section by section', !('notes' in liveAll) && !('fitness' in liveAll) && !('tasks' in liveAll) && !('patterns' in liveAll) && mask(liveAll) === mask(newCmp), (() => { const a = JSON.parse(mask(liveAll)), b = JSON.parse(mask(newCmp)); return [...new Set([...Object.keys(a), ...Object.keys(b)])].filter(k => JSON.stringify(a[k]) !== JSON.stringify(b[k])); })());
+  const newCmp = { ...newAll, settings: { ...newAll.settings, theme: liveAll.settings.theme } }; delete newCmp.notes; delete newCmp.fitness; delete newCmp.tasks; delete newCmp.patterns; delete newCmp.projects;
+  check('the whole saved file matches the current MyDay\'s, section by section', !('notes' in liveAll) && !('fitness' in liveAll) && !('tasks' in liveAll) && !('patterns' in liveAll) && !('projects' in liveAll) && mask(liveAll) === mask(newCmp), (() => { const a = JSON.parse(mask(liveAll)), b = JSON.parse(mask(newCmp)); return [...new Set([...Object.keys(a), ...Object.keys(b)])].filter(k => JSON.stringify(a[k]) !== JSON.stringify(b[k])); })());
   check('…except the default theme, on purpose: light in the new app (its warm look), dark in the current MyDay', newAll.settings.theme === 'light' && liveAll.settings.theme === 'dark', [newAll.settings.theme, liveAll.settings.theme]);
   check('…the new app adds Notes: the starter categories and no notes', newAll.notes.items.length === 0 && newAll.notes.categories.map(c => c.name).join() === 'Lifestyle,Business ideas,Health & fitness,Money,Study & career,Personal');
   check('…and Goal: no goal yet, kg and cm', eq(newAll.fitness, { units: 'metric', answers: null, setOn: null }));
@@ -240,7 +241,7 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   await ev('document.activeElement && document.activeElement.blur(); window.scrollTo(0, 0)');
   const order = [];
   for (let i = 0; i < 8; i++) { await press('Tab'); order.push(await focused()); }
-  check('Tab reaches the Focus mode switch, the theme button and then each section in the navigation', order[0] === 'focus-mode' && order[1] === 'themeBtn' && eq(order.slice(2, 8), ['#today', '#calendar', '#inbox', '#finance', '#health', '#study']), order);
+  check('Tab reaches the Focus mode switch, the theme button and then each section in the navigation', order[0] === 'focus-mode' && order[1] === 'themeBtn' && eq(order.slice(2, 8), ['#today', '#calendar', '#projects', '#finance', '#health', '#study']), order);
   check('…with a visible focus outline', (await ev(`getComputedStyle(document.activeElement).outlineStyle`)) !== 'none');
   await ev(`document.querySelector('#nav a[href="#finance"]').focus()`); await press('Enter'); await sleep(250);
   check('Enter on a navigation link opens that section', (await ev('location.hash')) === '#finance');
@@ -330,9 +331,9 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   // Opening Finance the first time saved your rates into the pay settings; everything else must be exactly as that release saved it.
   const RATES = ['hourlyRate', 'overtimeMultiplier', 'bankHolidayMultiplier', 'nightMultiplier', 'taxCode', 'niCategory', 'studentLoans', 'frequency', 'periodAnchor', 'annualLeavePaid', 'cancelledPaid', 'sickPay'];
   const payRest = o => { const c = { ...o.pay }; for (const k of RATES) delete c[k]; return JSON.stringify(c); };
-  check('the new app saves every record exactly as that release had it (it adds an empty Study, Finance, Notes, Goal, Tasks and What MyDay has noticed; Finance\'s first visit saves your rates)',
-    without(N, ['study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'pay']) === without(P, ['study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'pay']) && payRest(N) === payRest(P) && N.pay.taxCode === '1241T' && N.study.stages.length === 0 && N.finance.debts.length === 0 && N.finance.ratesSetOn === '2026-11-02' && N.notes.items.length === 0 && N.fitness.answers === null && eq(N.tasks, { lists: [], items: [] }) && eq(N.patterns.answers, {}),
-    d70(JSON.parse(without(N, ['study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'pay'])), JSON.parse(without(P, ['study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'pay']))).slice(0, 6));
+  check('the new app saves every record exactly as that release had it (it adds an empty Study, Finance, Notes, Goal, Tasks, What MyDay has noticed and Projects; Finance\'s first visit saves your rates)',
+    without(N, ['study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'projects', 'pay']) === without(P, ['study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'projects', 'pay']) && payRest(N) === payRest(P) && N.pay.taxCode === '1241T' && N.study.stages.length === 0 && N.finance.debts.length === 0 && N.finance.ratesSetOn === '2026-11-02' && N.notes.items.length === 0 && N.fitness.answers === null && eq(N.tasks, { lists: [], items: [] }) && eq(N.patterns.answers, {}),
+    d70(JSON.parse(without(N, ['study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'projects', 'pay'])), JSON.parse(without(P, ['study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'projects', 'pay']))).slice(0, 6));
   await go('health/workout', 2026, 11, 2, 9, 5, PREV);
   check('going back: the previous release still opens what the new app saved', (await text('#app')).includes('Upper body'));
   await editStorage(`s => { s.study = { stages: [{ id: 'sg1', title: 'Foundations', courses: [] }] }; }`);

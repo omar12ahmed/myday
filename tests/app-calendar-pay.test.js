@@ -61,9 +61,9 @@ const go = async (hash, y, m, d, h = 9, mi = 0, url = APP) => { T.setUrl(url + '
   console.log('\n[20] Navigation');
   await go('today', 2026, 11, 2); await reset(); await go('today', 2026, 11, 2);
   const navLabels = await ev(`[...document.querySelectorAll('#nav .nav-item')].map(a => a.textContent.trim())`);
-  check('navigation shows Today, Calendar, Inbox, Finance, Health and Study', eq(navLabels, ['Today', 'Calendar', 'Inbox', 'Finance', 'Health', 'Study']), navLabels);
+  check('navigation shows Today, Calendar, Projects, Finance, Health and Study', eq(navLabels, ['Today', 'Calendar', 'Projects', 'Finance', 'Health', 'Study']), navLabels);
   check('no section is marked "not in the new app yet" any more',
-    eq(await ev(`[...document.querySelectorAll('#nav a.nav-item')].map(a => a.getAttribute('aria-label'))`), ['Today', 'Calendar', 'Inbox', 'Finance', 'Health', 'Study']));
+    eq(await ev(`[...document.querySelectorAll('#nav a.nav-item')].map(a => a.getAttribute('aria-label'))`), ['Today', 'Calendar', 'Projects', 'Finance', 'Health', 'Study']));
   check('unfinished sections (Ideas) are not shown as controls', !(await ev(`/Ideas/.test(document.getElementById('nav').textContent)`)) && !(await exists('a[href="#ideas"]')));
   check('Today is marked as the current page', (await text('#nav [aria-current=page]')).trim() === 'Today');
   await click('a.nav-item[href="#calendar"]'); await sleep(300);

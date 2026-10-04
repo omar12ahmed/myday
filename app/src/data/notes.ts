@@ -41,6 +41,7 @@ export function normalizeNotes(raw: unknown, report: { dropped: number }): Notes
       createdAt: isDateTime(n.createdAt) ? n.createdAt : now,
       updatedAt: isDateTime(n.updatedAt) ? n.updatedAt : isDateTime(n.createdAt) ? n.createdAt : now,
     };
+    if (typeof note.projectId !== 'string' || !note.projectId) delete note.projectId; // a project link (1.12.0), or none
     seenN.add(note.id);
     out.items.push(note);
   }

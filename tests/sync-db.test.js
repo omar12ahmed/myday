@@ -158,6 +158,18 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   check('B can\'t write to the table directly', /permission denied/.test(await fails(() => S.as(db, B, q => q(`insert into public.sync_records (user_id, kind, id, data, version, seq) values ($1, 'note', 'x', '{}', 1, 99)`, [A])))));
   check('…nor A', /permission denied/.test(await fails(() => S.as(db, A, q => q(`update public.sync_records set version = 9 where user_id = $1`, [A])))));
 
+  console.log('\n[9b] Projects (third migration, 20261006120000_sync_projects.sql)');
+  const pj = { id: 'pj1', title: 'Coffee subscription', summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-06T09:00', updatedAt: '2026-10-06T09:00' };
+  r = await push(A, [change('project', 'pj1', 0, pj)]);
+  check('a project can be saved (version 1)', r[0].status === 'applied' && r[0].version === 1, r);
+  r = await push(A, [change('project', 'pj1', 1, null, { deleted: true })]);
+  check('…and deleted, kept as a tombstone like a note or a task', r[0].status === 'applied' && (await pull(A)).some(x => x.kind === 'project' && x.record_id === 'pj1' && x.deleted && x.data === null));
+  r = await push(A, [change('projects', 'all', 0, { items: [] })]);
+  check('kinds outside the list are still refused', r[0].status === 'rejected', r);
+  const named = (await sql(`select conname from pg_constraint where conrelid = 'public.sync_records'::regclass and contype = 'c' order by conname`)).map(x => x.conname);
+  check('the kind checks were replaced, not added twice (named ones only, no old unnamed copies)', named.includes('sync_records_known_kind') && named.includes('sync_records_deletable_kind')
+    && named.filter(n => /^sync_records_(kind_check|check\d*)$/.test(n)).length === 1, named);
+
   console.log('\n[10] Housekeeping');
   await sql(`update public.sync_changes set applied_at = now() - interval '91 days' where user_id = $1 and change_id = $2`, [A, mac.change_id]);
   await push(A, [change('context', '2026-10-07', 0, {})]);
@@ -165,7 +177,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   await sql('delete from auth.users where id = $1', [B]);
   check('deleting an account deletes its records', (await sql('select count(*)::int as n from public.task_lists where user_id = $1', [B]))[0].n === 0);
   check('…and nobody else\'s', (await sql('select count(*)::int as n from public.task_lists where user_id = $1', [A]))[0].n === 1);
-  check('…in the second migration\'s table too', (await sql('select count(*)::int as n from public.sync_records where user_id = $1', [B]))[0].n === 0 && (await sql('select count(*)::int as n from public.sync_records where user_id = $1', [A]))[0].n === 3);
+  check('…in the second migration\'s table too', (await sql('select count(*)::int as n from public.sync_records where user_id = $1', [B]))[0].n === 0 && (await sql('select count(*)::int as n from public.sync_records where user_id = $1', [A]))[0].n === 4); // note, finance, roadmap, the project's tombstone
 
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);

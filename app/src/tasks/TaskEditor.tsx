@@ -6,6 +6,8 @@ import { useConfirm } from '../components/confirm';
 import { CommitInput, CommitTextarea, Field, Select } from '../components/Field';
 import { BackLink, Choice, Choices, Note } from '../components/parts';
 import { CAT_LABEL } from '../data/plan';
+import { linkTask, projectById } from '../data/projects';
+import { ProjectPicker } from '../projects/parts';
 import { update } from '../data/storage';
 import { addToTodaysPlan, editTask, isDone, isStuck, moveToTomorrow, onTodaysPlan, planRoom, removeTask, setTaskDone, TASK_LIMITS } from '../data/tasks';
 import { toast } from '../data/toast';
@@ -18,13 +20,13 @@ export function TaskEditor({ data, id }: { data: MyDayData; id: string }) {
   const confirm = useConfirm();
   const [ask, setAsk] = useState(false);
   const t = data.tasks.items.find(x => x.id === id);
-  if (!t) return <><BackLink to="inbox/tasks" label="Tasks" /><Card><h2>This task isn't here</h2><Note className="m-0">It may have been deleted, here or in another tab.</Note></Card></>;
+  if (!t) return <><BackLink to="today/tasks" label="Tasks" /><Card><h2>This task isn't here</h2><Note className="m-0">It may have been deleted, here or in another tab.</Note></Card></>;
   const save = (patch: Parameters<typeof editTask>[2]) => { if (update(d => (editTask(d.tasks, id, patch) ? undefined : false))) toast('Saved.'); };
-  const done = isDone(data, t) || !!t.letGoOn, planned = onTodaysPlan(data, t), room = planRoom(data), stuck = isStuck(data, t);
+  const done = isDone(data, t) || !!t.letGoOn, planned = onTodaysPlan(data, t), room = planRoom(data), stuck = isStuck(data, t), project = projectById(data, t.projectId);
   async function remove() {
     if (!(await confirm({ title: `Delete “${t!.title}”?`, body: planned ? 'It stays on today\'s plan; only this task goes.' : undefined, confirmLabel: 'Delete', cancelLabel: 'Keep it' }))) return;
     if (update(d => (removeTask(d.tasks, id) ? undefined : false))) toast('Task deleted.');
-    location.hash = 'inbox/tasks';
+    location.hash = project ? `projects/p/${project.id}` : 'today/tasks';
   }
   function plan() {
     let r = '' as ReturnType<typeof addToTodaysPlan> | '';
@@ -33,11 +35,12 @@ export function TaskEditor({ data, id }: { data: MyDayData; id: string }) {
   }
   return (
     <>
-      <BackLink to="inbox/tasks" label="Tasks" />
+      {project ? <BackLink to={`projects/p/${project.id}`} label={project.title} /> : <BackLink to="today/tasks" label="Tasks" />}
       {stuck && <StuckCard data={data} t={t} stuck />}
       <Card aria-label="Task" id="taskEditor">
         <div className="grid gap-3">
           <Field label="Task" htmlFor="tTitle"><CommitInput id="tTitle" type="text" key={t.title} defaultValue={t.title} maxLength={TASK_LIMITS.title} onCommit={el => { if (!el.value.trim()) { el.value = t.title; return; } save({ title: el.value }); }} /></Field>
+          <ProjectPicker data={data} id="tProject" value={t.projectId} onPick={v => { if (update(d => (linkTask(d, id, v) ? undefined : false))) toast(v ? 'Added to the project.' : 'No longer in a project.'); }} />
           <Field label="List" htmlFor="tList">
             <Select id="tList" value={data.tasks.lists.some(l => l.id === t.listId) ? t.listId : ''} onChange={e => save({ listId: e.target.value })}>
               <option value="">No list</option>

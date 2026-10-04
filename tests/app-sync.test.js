@@ -224,7 +224,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await synced(phone);
   // The same part changed on both: the phone (offline) renames a note collection; the Mac renames it too.
   await phone.offline(true);
-  await phone.ev(`location.hash = 'inbox/notes/collections'`);
+  await phone.ev(`location.hash = 'projects/notes/collections'`);
   await phone.until(`document.querySelector('#noteCats .ncat-row input')`);
   await phone.type('#noteCats .ncat-row input', 'Phone: Life');
   await phone.ev(`document.querySelector('#noteCats .ncat-row input').dispatchEvent(new FocusEvent('focusout', { bubbles: true }))`);

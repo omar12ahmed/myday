@@ -34,7 +34,7 @@ export function CategoriesView({ data }: { data: MyDayData }) {
 
   return (
     <>
-      <BackLink to="inbox/notes" label="Notes" />
+      <BackLink to="projects/notes" label="Notes" />
       <Card aria-labelledby="ncat-h">
         <h2 id="ncat-h">Collections</h2>
         <Note className="mt-0">Optional places to file notes. Rename, reorder, add or remove them; removing one puts its notes back in your Inbox — nothing is deleted.</Note>

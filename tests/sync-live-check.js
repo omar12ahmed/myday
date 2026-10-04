@@ -117,6 +117,14 @@ const DAY = '2000-01-01'; // a date far from any real plan
   r = await push(a, [change('note', 'live-check', 1, null, { deleted: true }), change('finance', 'finance', 1, null, { deleted: true })]);
   check('the note can be deleted; Finance (a one-record part) can\'t', r[0].status === 'applied' && r[1].status === 'rejected', r);
 
+  console.log('\nProjects (third migration: 20261006120000_sync_projects.sql)');
+  const proj = { id: 'live-check-pj', title: 'Live check project', summary: '', stage: 'capture', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-06T09:00', updatedAt: '2026-10-06T09:00' };
+  r = await push(a, [change('project', 'live-check-pj', 0, proj)]);
+  check('A can save a project — so the third migration is applied', Array.isArray(r) && r[0].status === 'applied' && r[0].version === 1, r);
+  check('B sees none of it', (await pull(b)).every(x => x.kind !== 'project'));
+  r = await push(a, [change('project', 'live-check-pj', 1, null, { deleted: true })]);
+  check('the project can be deleted (a deletion marker for other devices)', r[0].status === 'applied' && r[0].version === 2, r);
+
   console.log(`\n${pass} passed, ${fail} failed`);
   console.log('\nNow delete the two test users (Authentication → Users → … → Delete user). That deletes their test records too.');
   process.exit(fail ? 1 : 0);

@@ -8,7 +8,7 @@ import { addToTodaysPlan, dueForToday, isStuck, planRoom, setTaskDone } from '..
 import { toast } from '../data/toast';
 import type { DateKey, MyDayData } from '../data/types';
 
-// Tasks due today (or still to do from before), from Inbox → Tasks: tick one off, or add it to today's plan in one
+// Tasks due today (or still to do from before), from Tasks: tick one off, or add it to today's plan in one
 // tap while there's room for your energy. Nothing is added by itself.
 export function DueTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
   const due = dueForToday(data, k);
@@ -29,7 +29,7 @@ export function DueTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
               <input type="checkbox" className="size-[22px] accent-done m-0 cursor-pointer" data-s="due-done" data-id={t.id} checked={false} aria-label={`Done: ${t.title}`}
                 onChange={() => { if (update(d => (setTaskDone(d, t.id, true) ? undefined : false))) toast('Done — nice.'); }} />
             </label>
-            <a href={`#inbox/tasks/${t.id}`} className="flex-1 min-w-0 min-h-11 py-1 text-fg no-underline">
+            <a href={`#today/tasks/${t.id}`} className="flex-1 min-w-0 min-h-11 py-1 text-fg no-underline">
               <span className="block font-medium leading-snug break-words">{t.title}</span>
               <span className="flex flex-wrap items-center gap-2 mt-0.5 text-sm text-fg-3 tabular-nums">
                 {t.due! < k ? <span>from {shortDate(t.due!)}</span> : t.time ? <span>{t.time}</span> : null}
@@ -45,7 +45,7 @@ export function DueTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
         {!room.built ? 'Build your day, then add any of these to it.'
           : room.rest ? "It's a rest day — these can wait. Open a task to give it another day."
           : room.room <= 0 ? `Today's plan is full for your energy (${room.limit} task${room.limit === 1 ? '' : 's'}). Open a task to move it to another day.`
-          : `Room for ${room.room} more on today's plan.`}{' '}<a href="#inbox/tasks" className="text-primary font-semibold">All tasks</a>
+          : `Room for ${room.room} more on today's plan.`}{' '}<a href="#today/tasks" className="text-primary font-semibold">All tasks</a>
       </p>
     </Card>
   );

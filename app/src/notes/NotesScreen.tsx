@@ -35,7 +35,7 @@ function NoteRow({ d, n, where, filing }: { d: NotesData; n: NoteT; where: boole
   const hint = filing ? suggestCollection(`${n.title} ${n.text}`, d.categories) : null;
   return (
     <li className="note-li border-t border-outline first:border-t-0 py-2" data-id={n.id}>
-      <a href={`#inbox/notes/${n.id}`} className="note-row block py-1 min-h-11 text-fg no-underline hover:bg-surface-2 rounded-tile -mx-2 px-2" data-id={n.id}>
+      <a href={`#projects/notes/${n.id}`} className="note-row block py-1 min-h-11 text-fg no-underline hover:bg-surface-2 rounded-tile -mx-2 px-2" data-id={n.id}>
         <span className="flex items-center gap-1.5 font-semibold leading-snug">
           {n.pinned && <Pin size={15} aria-label="Pinned" className="text-primary flex-none" />}
           <span className="min-w-0 break-words">{noteName(n)}</span>
@@ -92,14 +92,14 @@ function NotesHome({ data }: { data: MyDayData }) {
               <ul className="list-none p-0 m-0">
                 {d.categories.map(c => (
                   <li key={c.id} className="border-t border-outline first:border-t-0">
-                    <a href={`#inbox/notes/in/${c.id}`} className="ncol-row flex justify-between items-center min-h-11 py-2 text-fg no-underline" data-id={c.id}>
+                    <a href={`#projects/notes/in/${c.id}`} className="ncol-row flex justify-between items-center min-h-11 py-2 text-fg no-underline" data-id={c.id}>
                       <span className="font-medium">{c.name}</span><span className="text-fg-3 tabular-nums">{notesView(d, c.id, '').length}</span>
                     </a>
                   </li>
                 ))}
               </ul>
             ) : <Note className="m-0">No collections yet.</Note>}
-            <a href="#inbox/notes/collections" className="inline-flex items-center min-h-11 text-primary font-semibold text-[15px] mt-1" data-action="note-categories">Edit collections</a>
+            <a href="#projects/notes/collections" className="inline-flex items-center min-h-11 text-primary font-semibold text-[15px] mt-1" data-action="note-categories">Edit collections</a>
           </Card>
         </>
       )}
@@ -110,11 +110,11 @@ function NotesHome({ data }: { data: MyDayData }) {
 
 function CollectionView({ data, id }: { data: MyDayData; id: string }) {
   const d = data.notes, c = d.categories.find(x => x.id === id);
-  if (!c) return <><BackLink to="inbox/notes" label="Notes" /><Card><h2>This collection isn't here</h2><Note className="m-0">It may have been removed; its notes are in your Inbox.</Note></Card></>;
+  if (!c) return <><BackLink to="projects/notes" label="Notes" /><Card><h2>This collection isn't here</h2><Note className="m-0">It may have been removed; its notes are in your Inbox.</Note></Card></>;
   const list = notesView(d, id, '');
   return (
     <>
-      <BackLink to="inbox/notes" label="Notes" />
+      <BackLink to="projects/notes" label="Notes" />
       <Card aria-labelledby="col-h" id="noteCollection">
         <div className="flex flex-wrap justify-between items-center gap-3">
           <h2 id="col-h" className="m-0">{c.name}</h2>

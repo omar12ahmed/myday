@@ -101,11 +101,11 @@ const seed = `s => { const h = ${JSON.stringify(history)}; Object.assign(s.days,
   console.log('\n[5] A task that keeps moving');
   await editStorage(`s => { const base = { listId: '', category: 'admin', minutes: 30, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-10-01T10:00', blockers: [], letGoOn: null };
     s.tasks.items.push({ ...base, id: 'tkStuck', title: 'Sort out the bills', due: '2026-10-16', postponed: 3 }, { ...base, id: 'tkFine', title: 'Return the parcel', due: '2026-10-18', postponed: 0 }); }`);
-  await go('inbox/tasks', 2026, 10, 16, 9);
+  await go('today/tasks', 2026, 10, 16, 9);
   check('in Tasks, a task moved 3 times says "Something in the way?"; others don\'t', (await text('.task-row[data-id=tkStuck] [data-s=stuck]')) === 'Something in the way?' && !(await exists('.task-row[data-id=tkFine] [data-s=stuck]')));
   await go('today', 2026, 10, 16, 9, 5);
   check('…on Today too ("Due today")', (await text('#dueToday .due-li[data-id=tkStuck] [data-s=stuck]')) === 'Something in the way?');
-  await go('inbox/tasks/tkStuck', 2026, 10, 16, 9, 10);
+  await go('today/tasks/tkStuck', 2026, 10, 16, 9, 10);
   check('opening it asks "What\'s getting in the way?", kindly', (await exists('#stuckCard')) && (await text('[data-s=stuck-intro]')) === "This one has moved 3 times. That's useful to know, not a problem — let's change the task, not push harder.");
   check('…with seven answers', eq(await ev(`[...document.querySelectorAll('[data-s=blocker]')].map(b => b.textContent)`), ["It's too big", "I don't know where to start", "It's boring", "I'm too tired for it", "I'm missing something I need", "It doesn't matter any more", 'Something else']));
   await click('[data-s=blocker][data-id=start]'); await sleep(150);
@@ -116,7 +116,7 @@ const seed = `s => { const h = ${JSON.stringify(history)}; Object.assign(s.days,
   t = items.find(x => x.id === 'tkStuck');
   check('…that step becomes a 10-minute task for today; the whole task waits under Any time; the answer is kept', step && step.minutes === 10 && step.due === '2026-10-16' && t.due === null && t.postponed === 0 && eq(t.blockers, [{ reason: 'start', on: '2026-10-16' }]), [step, t]);
   check('…it says so, and the question has gone', (await text('#toast')).includes('Added “find the latest bill” for today (10 min). “Sort out the bills” waits under Any time.') && !(await exists('#stuckCard')));
-  await go('inbox/tasks/tkFine', 2026, 10, 16, 9, 15);
+  await go('today/tasks/tkFine', 2026, 10, 16, 9, 15);
   check('a task that isn\'t stuck doesn\'t ask — but "Something in the way?" is there', !(await exists('#stuckCard')) && (await exists('[data-action=task-stuck]')));
   await click('[data-action=task-stuck]'); await sleep(200);
   await click('[data-s=blocker][data-id=tired]'); await sleep(150);
@@ -125,7 +125,7 @@ const seed = `s => { const h = ${JSON.stringify(history)}; Object.assign(s.days,
   await click('[data-action=unstick]'); await sleep(300);
   t = (await data()).tasks.items.find(x => x.id === 'tkFine');
   check('"It doesn\'t matter any more" → let go, said kindly', t.letGoOn === '2026-10-16' && (await text('#toast')).includes("Deciding something doesn't matter any more is useful too.") && (await text('[data-action=task-toggle]')) === 'Let go — bring it back');
-  await go('inbox/tasks', 2026, 10, 16, 9, 20);
+  await go('today/tasks', 2026, 10, 16, 9, 20);
   await click('[data-action=tasks-done-toggle]'); await sleep(200);
   check('…it\'s under Done, marked "Let go"', (await text('#tasks-done .task-row[data-id=tkFine] [data-s=let-go]')) === 'Let go');
   await click('[data-s=task-done][data-id=tkFine]'); await sleep(300);
@@ -147,7 +147,7 @@ const seed = `s => { const h = ${JSON.stringify(history)}; Object.assign(s.days,
   await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   for (const theme of ['dark', 'light']) {
     await editStorage(`s => { s.settings.theme = '${theme}'; }`);
-    for (const h of ['noticed', 'inbox/tasks/tkFine']) {
+    for (const h of ['noticed', 'today/tasks/tkFine']) {
       await go(h, 2026, 10, 16, 11);
       if (h !== 'noticed') { await click('[data-action=task-stuck]'); await sleep(200); }
       check(`phone (${theme}), #${h}: nothing scrolls sideways`, !(await ev('document.documentElement.scrollWidth > innerWidth')));

@@ -7,6 +7,8 @@ import { Field, Select, TextArea, TextInput } from '../components/Field';
 import { BackLink, Note } from '../components/parts';
 import { shortDate } from '../data/dates';
 import { editNote, INBOX, isBlank, NOTE_LIMITS, removeNote } from '../data/notes';
+import { linkNote, projectById } from '../data/projects';
+import { ProjectPicker } from '../projects/parts';
 import { getSnapshot, update, updateSaved } from '../data/storage';
 import { toast } from '../data/toast';
 import type { MyDayData } from '../data/types';
@@ -49,7 +51,7 @@ export function NoteEditor({ data, id }: { data: MyDayData; id: string }) {
       window.removeEventListener('pagehide', flush);
       flush();
       // Only once you've really left the note (React's development mode also takes a screen down and up again).
-      if (location.hash === `#inbox/notes/${id}` || location.hash === `#notes/${id}`) return;
+      if (location.hash === `#projects/notes/${id}` || location.hash === `#notes/${id}`) return;
       const n = getSnapshot().data.notes.items.find(x => x.id === id);
       if (n && isBlank(n)) update(d => (removeNote(d.notes, id) ? undefined : false));
     };
@@ -60,32 +62,35 @@ export function NoteEditor({ data, id }: { data: MyDayData; id: string }) {
   if (!note) {
     return (
       <>
-        <BackLink to="inbox/notes" label="Notes" />
+        <BackLink to="projects/notes" label="Notes" />
         <Card><h2>This note isn't here</h2><Note className="m-0">It may have been deleted, here or in another tab.</Note></Card>
       </>
     );
   }
-  const known = data.notes.categories.some(c => c.id === note.categoryId);
+  const known = data.notes.categories.some(c => c.id === note.categoryId), project = projectById(data, note.projectId);
 
   async function remove() {
     if (!(await confirm({ title: 'Delete this note?', body: 'This can\'t be undone (a backup made with "Export my data" still has it).', confirmLabel: 'Delete', cancelLabel: 'Keep it' }))) return;
     window.clearTimeout(timer.current);
     pending.current = false;
     if (update(d => (removeNote(d.notes, id) ? undefined : false))) toast('Note deleted.');
-    location.hash = 'inbox/notes';
+    location.hash = project ? `projects/p/${project.id}` : 'projects/notes';
   }
 
   return (
     <>
-      <BackLink to="inbox/notes" label="Notes" />
+      {project ? <BackLink to={`projects/p/${project.id}`} label={project.title} /> : <BackLink to="projects/notes" label="Notes" />}
       <Card aria-label="Note" id="noteEditor">
         <div className="grid gap-3">
-          <Field label="Where it's kept" htmlFor="noteCat">
-            <Select id="noteCat" value={known ? note.categoryId : ''} onChange={e => { flush(); update(d => (editNote(d.notes, id, { categoryId: e.target.value }) ? undefined : false)); }}>
-              <option value="">{INBOX}</option>
-              {data.notes.categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </Select>
-          </Field>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="Where it's kept" htmlFor="noteCat">
+              <Select id="noteCat" value={known ? note.categoryId : ''} onChange={e => { flush(); update(d => (editNote(d.notes, id, { categoryId: e.target.value }) ? undefined : false)); }}>
+                <option value="">{INBOX}</option>
+                {data.notes.categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </Select>
+            </Field>
+            <ProjectPicker data={data} id="noteProject" value={note.projectId} onPick={v => { flush(); if (update(d => (linkNote(d, id, v) ? undefined : false))) toast(v ? 'Added to the project.' : 'No longer in a project.'); }} />
+          </div>
           <Field label="Title (optional)" htmlFor="noteTitle">
             <TextInput id="noteTitle" value={draft.title} maxLength={NOTE_LIMITS.title} onChange={e => change({ title: e.target.value })} onBlur={flush} />
           </Field>

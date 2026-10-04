@@ -207,8 +207,9 @@ pay rules) and its settings card are gone from the screen; the rules behind them
 | `../ai-eval/` | The evaluation of AI models on 20 synthetic days and 12 synthetic brain dumps (see its README). |
 | `src/finance/` | The Finance screen: `FinanceScreen` (with Left over), `WorkPayCard`, `ExpensesCard`, `OwedCard`, `RatesCard` (folded away), and `actions.ts` (what each button saves). |
 | `src/data/patterns/`, `src/patterns/` | What MyDay has noticed: `notice.ts` (finding patterns in your history), `saved.ts` (your preferences and answers, the `patterns` section), `adapt.ts` (using preferences in Build my day and the room on today's plan); the screen `NoticedScreen.tsx` (`#noticed`, and the quiet line on Today). `src/components/Why.tsx`: a note with a "Why?". `src/tasks/StuckCard.tsx`: "What's getting in the way?". |
-| `src/tasks/`, `src/data/tasks.ts` | Inbox → Tasks: `TasksScreen` (adding, the groups, lists as chips, search), `TaskEditor`, `ListsView`, `route.ts` (`#inbox/tasks`, `#inbox/tasks/<id>`, `#inbox/tasks/list/<id>`, `#inbox/tasks/lists`); the data and rules (groups, due today, room on today's plan, the link to the plan) in `src/data/tasks.ts`. Today's "Due today" card: `src/today/DueTodayCard.tsx`. |
-| `src/inbox/`, `src/notes/`, `src/capture/` | The Inbox section (`InboxScreen`, with the Tasks and Notes tabs), Notes (`NotesScreen`: search, Inbox, collections; `NoteEditor`; `CategoriesView`; `route.ts` — `#inbox/notes`, `#inbox/notes/<id>`, `#inbox/notes/in/<id>`, `#inbox/notes/collections`, and older `#notes…` links), and Capture (`parse.ts`, `save.ts`, `CaptureSheet.tsx`). The notes data: `src/data/notes.ts`. |
+| `src/projects/`, `src/data/projects.ts` | Projects (1.12.0): `ProjectsScreen` (the Projects and Notes tabs, "Start a project", project cards), `ProjectView` (one project: what it is, the progression, the next step, tasks, notes, coming up, how it's going, pause / done / delete), `parts.tsx` (the progression steps, the project picker used by notes and tasks); the data, the next step and what's coming up in `src/data/projects.ts`. Today's "From your projects" and "Your tasks": `src/today/ProjectCards.tsx`. Older `#inbox…`/`#notes…` links: `src/shell/legacyLinks.ts`. |
+| `src/tasks/`, `src/data/tasks.ts` | Tasks (under Today since 1.12.0): `TasksScreen` (adding, the groups, lists as chips, search), `TaskEditor`, `ListsView`, `route.ts` (`#today/tasks`, `#today/tasks/<id>`, `#today/tasks/list/<id>`, `#today/tasks/lists`); the data and rules (groups, due today, room on today's plan, the link to the plan) in `src/data/tasks.ts`. Today's "Due today" card: `src/today/DueTodayCard.tsx`. |
+| `src/notes/`, `src/capture/` | Notes, in the Projects section (`NotesScreen`: search, Inbox, collections; `NoteEditor`; `CategoriesView`; `route.ts` — `#projects/notes`, `#projects/notes/<id>`, `#projects/notes/in/<id>`, `#projects/notes/collections`), and Capture (`parse.ts`, `save.ts`, `CaptureSheet.tsx`). The notes data: `src/data/notes.ts`. |
 | `src/health/food/` | The Food screens: `FoodScreen` (picks the screen from the address, e.g. `#health/food/shopping`), `FoodHome`, `RecipeCard`, `SearchBox` (with suggestions), `SearchView`, `RecipeView`, `WantView`, `ShoppingView`, `CookView`, `PrefsView`, `RecipeForm`; `actions.ts` (what each button saves) and `visit.ts` (what's kept in memory for the visit: ideas, search results, suggestions, drafts). |
 | `src/health/` | The Health screens: `HealthScreen` (the Workout and Food tabs; picks the screen from the address, e.g. `#health/workout/schedule`), `WorkoutHome`, `TemplateEditor`, `SessionView` (a workout in progress, and correcting a logged one), `SetFields` (the number boxes for a set), `HistoryViews` (history, exercises, exercise history), `Chart`, `ScheduleView` and `HealthTodayCard`; `actions.ts` (what each button saves). |
 | `src/study/` | The Study screens: `StudyScreen` (picks the screen from the address, e.g. `#study/roadmap`), `Dashboard`, `Roadmap`, `CourseDetails`, `TaskDetails`, `SessionView`, `CheckinView`, `RevisionView`, `ConceptsView`, `ConceptView`, `ProgressView`, `StudySettings` and `StudyTodayCard`; `actions.ts` (what each button saves), `round.ts` (the revision round, kept in memory), `parts.tsx` (small shared pieces). |
@@ -294,7 +295,7 @@ is never downloaded.
   roadmap (topics, stages, courses, tasks, focus, settings, concepts), Workout set-up (exercises, templates,
   schedule, planned dates), Food (preferences, favourites, want-to-cook, cooked, cooking), the shopping list, Goal,
   note collections, your Tasks lists and What MyDay has noticed; and **one record per item** for appointments and
-  work commitments, notes, tasks, study sessions, revision answers, workouts and saved recipes — so something added
+  work commitments, notes, tasks, study sessions, revision answers, workouts, saved recipes and (from 1.12.0) projects — so something added
   on each device is simply kept on both, and only the same item changed on both is a conflict.
 - Links between records are kept however they arrive: a favourite or want-to-cook keeps its recipe, a check-in its
   concepts, and the session or workout in progress is the one that says so. Taking the account's Tasks lists or note
@@ -427,10 +428,32 @@ examples, training experience, days and equipment, pace, and a few health questi
   section (added by the new app, like Finance and Notes; the classic MyDay keeps it unread), on this device only.
   Code: `src/data/goals.ts` (the figures), `src/health/GoalView.tsx`.
 
-## Inbox and Capture
+## Projects, Notes, Tasks and Capture
 
-**Inbox** is the sixth section in the bar (Today, Calendar, Inbox, Finance, Health, Study), with two tabs: **Tasks**
-(it opens on these) and **Notes**. Ideas gets its own tab when it's ready (it isn't shown before).
+From 1.12.0 MyDay follows one progression — **capture → understand → organise → explore → decide → act → reflect** —
+and **Projects** are its spine (milestone 1 of the direction in `CLAUDE.md`). The Inbox became **Projects** (the third
+section in the bar), with two tabs, **Projects** and **Notes**; **Tasks** moved to **Today** (`#today/tasks`, and "Your
+tasks" on Today). Older `#inbox…` and `#notes…` links are rewritten to where those screens are now.
+- **A project** gathers everything about one intention: what it is and why it matters (in your words), where it is on
+  the progression (seven steps; tap one to move it there), its **one next step**, its tasks (dates and times read from
+  your words), its notes (new ones, or ones you already have), what's **coming up** (its dated tasks and
+  appointments; an appointment added here is on the Calendar too) and **how it's going** (done and to-go counts with
+  small squares — never a percentage). Projects can be paused, marked done or deleted; deleting one never deletes its
+  notes, tasks or appointments — they just aren't linked any more. Start one from the Projects page, or from an idea
+  in Capture ("Start a project from this", the first choice for an idea: the first line is its name, the rest what
+  it's about).
+- **The next step reaches Today:** "From your projects" on Today lists each active project's next step (not already on
+  today's plan or due today) with **Add to plan** — one tap, only while there's room for your energy, the same rule as
+  Due today. Nothing is added by itself. A project's own page has "Add to today" too.
+- A task or a note can be put in a project (or taken out) from its own screen ("Project"); its way back then leads to
+  the project. In Tasks, a task in a project shows the project's name.
+- Saved as the `projects` section (`{ items }`; each with `title`, `summary`, `stage`, `status`, `nextTaskId`,
+  `commitmentIds`, `createdAt`, `updatedAt`). Notes and tasks gain an optional `projectId` (left out when there isn't
+  one, so nothing else changes); appointments are listed on the project (`commitmentIds`) so the Calendar's own records,
+  shared with the classic MyDay, never change. Added in 1.12.0; the classic MyDay keeps all of it unread. Synced with
+  your account (one record per project; database migration `20261006120000_sync_projects.sql`) and in "Export my data".
+- **Next** (in order): capture that understands and connects by itself (with Undo), the project workspace for
+  exploring and deciding with AI, the knowledge graph, Study by subject, and a weekly review.
 - **Tasks** holds every one-off task in one place, separate from Today's repeating Learning / Admin / Health lists
   (which stay as they are). Type a task in your own words and its date and time are read from them, as in Capture
   ("pay rent by Friday" is due Friday; "call GP tomorrow at 10am" is due tomorrow at 10:00). Tasks are grouped
@@ -446,7 +469,7 @@ examples, training experience, days and equipment, pace, and a few health questi
   Tasks, and the other way round.
 - Saved as the `tasks` section (`{ lists, items }`; a task points at its plan copy with `plannedOn` and `planUid`).
   Added in 1.5.0; the classic MyDay keeps it unread (a task added to today's plan is an ordinary plan task there).
-  Tasks stay on this device (not synced) and are in "Export my data".
+  Tasks are synced with your account (from 1.8.0) and are in "Export my data".
 - **Notes** is an Inbox you can dump anything into — nothing has to be filed. Each note in the Inbox shows a one-tap
   suggestion from its words ("File in Business ideas") and a "File it…" menu; **collections** (Lifestyle, Business
   ideas, Health & fitness, Money, Study & career, Personal — rename, reorder, add or remove) each have their own list;
@@ -604,3 +627,7 @@ returns up to 8 small tasks; you tick the ones to add.
     softer depth and quieter tools so it feels calm and expensive — and Today as a dashboard: a greeting with your
     name, a drawn scene and a calendar, quick add, a focus timer card, a "2 of 3 done" ring and this week's bars, and
     Focus mode (just what's next).
+19. **Release 1.12.0:** Projects — the spine of MyDay's progression (capture → understand → organise → explore →
+    decide → act → reflect). The Inbox became Projects (Projects and Notes); Tasks moved to Today. A project gathers
+    its notes, tasks, appointments and progress, and its one next step reaches Today ("From your projects"). Capture
+    can start a project from an idea. Synced (database migration `20261006120000_sync_projects.sql`, applied first).
