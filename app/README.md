@@ -336,7 +336,9 @@ in the app drawer, opening full screen. On a **Mac**: use the website as usual, 
   (not `npm run dev`).
 - `src/shell/install.ts`: the footer's "Install MyDay as an app", shown only when the browser offers to install.
 - The status bar follows the theme (the page's `theme-color`).
-- Next: an APK file to install yourself (Bubblewrap, a Trusted Web Activity that opens the website).
+- **An APK file** too (`../android/`, see its README): a Trusted Web Activity made with Bubblewrap that opens the
+  website full screen (verified by `https://omar12ahmed.github.io/.well-known/assetlinks.json`), so it always runs
+  the latest release; it's only rebuilt if the app's own settings change. Its signing key is outside the repository.
 
 ## Study topics
 

@@ -1,0 +1,13 @@
+# Build outputs and downloaded tools (made again by npm install / npm run build)
+node_modules/
+.gradle/
+build/
+app/build/
+*.apk
+*.aab
+*.idsig
+local.properties
+# The signing key and its password never go in Git (they live in ../../android-signing/, outside this repository)
+*.keystore
+*.jks
+*.secret.env

@@ -1,0 +1,12 @@
+{
+  "name": "myday-android",
+  "private": true,
+  "description": "MyDay's Android app: a Trusted Web Activity that opens https://omar12ahmed.github.io/myday/ full screen. See README.md.",
+  "scripts": {
+    "build": "bubblewrap build --skipPwaValidation",
+    "update": "bubblewrap update --skipVersionUpgrade"
+  },
+  "devDependencies": {
+    "@bubblewrap/cli": "1.25.0"
+  }
+}
