@@ -298,7 +298,10 @@ changed on two devices before they sync is a conflict, even if different things 
 it's open, or with "Sync now". Changes made in the classic MyDay are sent the next time the new app is open.
 Checked against a local stand-in for Supabase (the real migrations in PostgreSQL, `tests/run.sh sync-db app-sync`), and
 against the real project with two disposable test accounts (`tests/sync-live-check.js`: 21/21; the app on two browser
-profiles: 16/16, 3 Oct 2026). Not yet checked in Safari or on a real phone before release 1.1.0.
+profiles: 16/16, 3 Oct 2026). Not yet checked in Safari or on a real phone before release 1.1.0. Everything else (1.8.0):
+the second migration was applied to the project on 4 Oct 2026 in one transaction (existing sync data unchanged,
+checked by fingerprints), and the live check with two disposable accounts passed 27/27, including the new table's
+Row Level Security; the app's handling of every record is checked against the stand-in (`sync-records`, `app-sync`).
 
 ## Study topics
 
