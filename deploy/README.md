@@ -18,6 +18,9 @@ the `react-rebuild` branch.
 4. Run `git push origin main`. Pages publishes within a few minutes. Browsers may keep the previous page for
    up to about 10 minutes (Pages' normal caching); a reload after that shows the new release. There's no
    service worker or offline cache, so nothing else needs clearing, and saved data is never cleared.
+   If the site hasn't changed after 10 minutes, check that GitHub started a build (`gh run list --limit 2`); if the
+   last one is for the previous commit, ask for one: `gh api -X POST repos/omar12ahmed/myday/pages/builds` (it
+   publishes `main` as it is). This happened once, with 1.4.0.
 5. Check the version at the bottom of any screen (e.g. "MyDay 1.0.0 · a1b2c3d · built 2026-10-02"). The
    commit in it is the `react-rebuild` commit it was built from.
 
