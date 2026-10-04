@@ -23,10 +23,10 @@ export interface RoadmapState {
 }
 
 // The whole outline: Topic → Stage → Course → Module → Section → Task, with an Edit mode for names and order.
-export function Roadmap({ data, state }: { data: MyDayData; state: RoadmapState }) {
+export function Roadmap({ data, state, topic: opened = null }: { data: MyDayData; state: RoadmapState; topic?: string | null }) {
   const { edit, setEdit, open, setOpen } = state;
   const remove = useRemove();
-  const [topicSel, setTopicSel] = useState<string | null>(null); // the topic you chose (otherwise your focus course's)
+  const [topicSel, setTopicSel] = useState<string | null>(opened); // the topic you chose or opened (otherwise your focus course's)
   const st = data.study;
   const head = (
     <Card>

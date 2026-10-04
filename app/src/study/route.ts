@@ -1,5 +1,5 @@
 // Study's screens live under #study/… in the address, as in the current MyDay:
-//   #study · #study/roadmap · #study/course/<id> · #study/task/<id> · #study/session · #study/checkin/<id>
+//   #study · #study/topic/<id> · #study/roadmap(/<topic id>) · #study/course/<id> · #study/task/<id> · #study/session · #study/checkin/<id>
 //   #study/revise · #study/concepts · #study/concept/<id> · #study/progress · #study/settings
 export function studyRoute(hash: string): { view: string; id: string } {
   const parts = hash.replace('#', '').split('/').map(decodeURIComponent);

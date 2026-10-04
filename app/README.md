@@ -304,6 +304,20 @@ shown as one topic ("Cybersecurity" when it's built from the starter stages) —
   (e.g. added in the classic MyDay) shows under the first. Code: `src/data/study/topics.ts`, `src/study/TopicsBar.tsx`,
   `src/study/CourseForm.tsx`.
 
+**Study's home page** (`#study`, from 1.7.0) is organised by topic, so it stays tidy as subjects are added (e.g.
+Cybersecurity, Arabic):
+- First what's in progress and the **current focus** (with its topic: "Current focus · Arabic"), ready to start, with
+  its completion; then **Your topics** as cards — each with its next step ("Next: Lesson 2 · Madinah Arabic book 1"),
+  progress ("1 of 4 tasks · 2 courses") and when you last studied it ("Studied 3 days ago") — and **+ Add a topic**,
+  which opens the new topic's page. Revision, the whole roadmap, Concepts, Progress & history and Settings stay
+  beside them (below on phones). The mixed "Other courses" list moved into each topic's page.
+- **A topic's page** (`#study/topic/<id>`; `main` for a roadmap without topics): its progress, **Up next in <topic>**
+  ready to start (or "Make this my focus"), its courses by stage with "Focus on this", and a link to the roadmap opened
+  on that topic (`#study/roadmap/<id>`), where its outline is edited. A course's page goes back to its topic.
+- Worked out from the roadmap and your sessions (`topicGlance` in `src/data/study/topics.ts`); nothing new is saved,
+  so both versions are unaffected. Code: `src/study/Dashboard.tsx`, `src/study/TopicView.tsx`,
+  `src/study/StartBlock.tsx` (choosing a length and starting, shared by both).
+
 ## Health → Goal
 
 A third Health tab: choose a goal (lose weight, build muscle, both at once, maintain, or get fitter and healthier),
@@ -487,3 +501,5 @@ returns up to 8 small tasks; you tick the ones to add.
 13. **Release 1.6.0:** What MyDay has noticed — patterns in how you actually work, from your own history on the
     device, each with a "Why?" and only used once you say so; your preferences (task length, most tasks a day) used by
     Build my day in the open; and "What's getting in the way?" for tasks that keep moving.
+14. **Release 1.7.0:** Study's home page organised by topic — your topics as cards with their next step, progress
+    and when you last studied them, and a page for each topic (up next, its courses, its roadmap).

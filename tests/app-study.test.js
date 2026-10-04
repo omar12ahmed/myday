@@ -172,10 +172,9 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   await setVal('#tkSec', wsec.id); await sleep(120);
   st = await SD();
   check('a task can move to another section (and its course\'s completion follows it)', course(st, 'HTB Academy: Web Requests module').modules[0].sections[0].tasks.length === 2 && course(st, 'TryHackMe: Pre-Security path').modules[0].sections[0].tasks.length === 2);
-  await nav('study');
-  await clickText('details summary', 'Other courses'); await sleep(80);
-  await click(`[data-action=s-focus][data-id="${web.id}"]`); await sleep(250);
-  check('switching focus puts the other course on the dashboard', (await SD()).focusCourseId === web.id && (await text('#stFocus')).includes('HTB Academy: Web Requests module') && (await text('#stFocus')).includes('New task'));
+  await nav('study/topic/main'); // the topic's page lists its courses (the roadmap has no topics yet: "main")
+  await click(`#topicCourses [data-action=s-focus][data-id="${web.id}"]`); await sleep(250);
+  check('switching focus (from the topic\'s page) puts the other course on the dashboard', (await SD()).focusCourseId === web.id && (await text('#stFocus')).includes('HTB Academy: Web Requests module') && (await text('#stFocus')).includes('New task'));
   await nav('study/course/' + web.id);
   await click('input[data-s=archived]'); await sleep(120);
   await nav('study');
@@ -375,7 +374,9 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   check('one good answer is not overstated: "not enough evidence yet"', (await text('#app')).includes('recalled on your own 1 time') && (await text('#app')).includes('not enough evidence yet to say more') && !/master/i.test(await text('#app')));
   // Missed days: no backlog
   await go('study/revise', 2026, 12, 20, 9);
-  check('after weeks away: still just one round of 5 — no backlog count', (await text('#app')).includes('A round of 5 is ready.') && !/\b[6-9] ready|\b7\b/.test(await text('#app')));
+  // (The footer is left out: its release number, e.g. "MyDay 1.7.0", isn't a count.)
+  const revText = await ev(`(() => { const c = document.getElementById('app').cloneNode(true); c.querySelector('#footer')?.remove(); return c.textContent; })()`);
+  check('after weeks away: still just one round of 5 — no backlog count', revText.includes('A round of 5 is ready.') && !/\b[6-9] ready|\b7\b/.test(revText));
   // Concept editor
   await nav('study/concepts'); await click('[data-action=s-concept-new]'); await sleep(300);
   check('+ New opens the new concept with its name ready to type', (await ev('document.activeElement && document.activeElement.id')) === 'cp-title' && (await text('#app')).includes('Needs a revision question'));

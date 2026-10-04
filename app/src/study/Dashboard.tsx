@@ -1,18 +1,20 @@
-import { Minus, Play, Plus, RotateCcw } from 'lucide-react';
+import { Plus, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
-import { Select } from '../components/Field';
+import { Field, Select, TextInput } from '../components/Field';
 import { fmtDuration, shortDate, todayKey } from '../data/dates';
 import { update } from '../data/storage';
 import { STARTER_STAGES } from '../data/study/common';
 import { dueConcepts, nextReviewDate, questionReady } from '../data/study/revision';
 import { applySetup, completion, completionText, focusCourse, nextTaskIn, proposeSetup, stIndex, taskPath, type SetupRow } from '../data/study/roadmap';
-import { activeStudy, sessionMinutes, suggestLength } from '../data/study/sessions';
+import { addTopic, studiedText, TOPIC_LIMITS, topicGlance, topicPath, topicsOf, type TopicGlance } from '../data/study/topics';
+import { activeStudy, sessionMinutes } from '../data/study/sessions';
 import { toast } from '../data/toast';
 import type { MyDayData } from '../data/types';
-import { setFocus, startLearning, startRevision } from './actions';
-import { Bar, Eyebrow, ExternalLink, InlineLink, Summary, TextLink } from './parts';
+import { startRevision } from './actions';
+import { Bar, Eyebrow, ExternalLink, InlineLink, TextLink } from './parts';
+import { StartBlock } from './StartBlock';
 
 // ---------- First-time setup: a proposal from your learning list; nothing is saved until you choose ----------
 export function SetupCard({ data }: { data: MyDayData }) {
@@ -70,40 +72,17 @@ function RevisionCard({ data }: { data: MyDayData }) {
   );
 }
 
-// The opening screen: what to do next, ready to start. Everything else is one tap away.
+// The opening screen, like a home page: what's in progress, what's up next (ready to start), and your topics
+// (e.g. Cybersecurity, Arabic) — each with its next step and progress, one tap from its own page.
 export function Dashboard({ data, lengths, setLength }: { data: MyDayData; lengths: Record<string, number>; setLength: (key: string, m: number) => void }) {
   const st = data.study;
   if (!st.stages.length) return <SetupCard data={data} />;
-  const ix = stIndex(st), c = focusCourse(st, ix);
-  if (!c) {
-    return (
-      <Card tone="accent" className="next-card"><Eyebrow>Current focus</Eyebrow><h2>No courses yet</h2>
-        <p className="text-[15px] text-fg-2">Add a course to one of your stages to get started.</p>
-        <TextLink href="#study/roadmap">Open the roadmap</TextLink></Card>
-    );
-  }
-  const t = nextTaskIn(ix, c), comp = completion(ix.courseTasks.get(c.id)!);
-  const link = (t && t.url) || c.url, cur = activeStudy(st);
-  const others = [...ix.course.values()].map(e => e.node).filter(x => x !== c && !x.archived);
-
-  // The length for a session: your choice this visit, or the suggestion (energy, free time).
-  const startBlock = (base: number) => {
-    const sug = suggestLength(data, base), key = t ? t.id : c.id, m = lengths[key] || sug.minutes;
-    return (
-      <>
-        <div className="st-len flex items-center justify-center gap-4 mt-3.5 mb-1.5" role="group" aria-label="Session length">
-          <button type="button" className="size-12 rounded-full grid place-items-center bg-surface-2 border border-outline cursor-pointer disabled:opacity-40" data-action="s-len" data-d="-5" aria-label="5 minutes shorter" disabled={m <= 5} onClick={() => setLength(key, Math.max(5, m - 5))}><Minus size={20} aria-hidden="true" /></button>
-          <span className="text-lg min-w-[4.5em] text-center"><strong id="stLen" className="text-[26px] tabular-nums">{m}</strong> min</span>
-          <button type="button" className="size-12 rounded-full grid place-items-center bg-surface-2 border border-outline cursor-pointer disabled:opacity-40" data-action="s-len" data-d="5" aria-label="5 minutes longer" disabled={m >= 240} onClick={() => setLength(key, Math.min(240, m + 5))}><Plus size={20} aria-hidden="true" /></button>
-        </div>
-        <p className="text-[15px] text-fg-2 text-center mb-2.5">{lengths[key] ? 'Your choice.' : sug.why.length ? `Suggested: ${sug.why.join(' · ')}.` : `The ${t ? 'task' : 'course'}'s usual length.`} Change it if you like.</p>
-        <div className="grid gap-2.5">
-          <Button variant="primary" data-action="s-start" onClick={() => startLearning(c.id, t ? t.id : null, m, false)}><Play size={18} aria-hidden="true" /> Start learning · {m} min</Button>
-          {m > 15 && <Button data-action="s-start" data-short="1" onClick={() => startLearning(c.id, t ? t.id : null, 15, true)}>Just 15 minutes</Button>}
-        </div>
-      </>
-    );
-  };
+  const ix = stIndex(st), c = focusCourse(st, ix), cur = activeStudy(st), k = todayKey();
+  const glances = topicsOf(st).map(t => topicGlance(st, ix, t.id)!).filter(Boolean);
+  const named = !!st.topics?.length;
+  const focusTopic = c ? glances.find(g => g.isFocus) : undefined;
+  const t = c ? nextTaskIn(ix, c) : null, comp = c ? completion(ix.courseTasks.get(c.id)!) : null;
+  const link = c ? (t && t.url) || c.url : '';
 
   return (
     <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(300px,360px)] lg:gap-x-6 lg:items-start">
@@ -116,53 +95,106 @@ export function Dashboard({ data, lengths, setLength }: { data: MyDayData; lengt
             <a className="inline-flex items-center justify-center min-h-tap w-full rounded-btn bg-primary text-on-primary font-[650] shadow-raised" href="#study/session">{cur.runningSince ? 'Back to the session' : 'Resume'}</a>
           </Card>
         )}
-        <Card tone="accent" id="stFocus" className="next-card" aria-labelledby="focus-h">
-          <Eyebrow>Current focus</Eyebrow>
-          <h2 id="focus-h" className="st-course-title">{c.title}</h2>
-          {cur ? <p className="text-[15px]">A session is in progress — finish or resume it before starting another.</p>
-            : t ? (
-              <>
-                <p className="st-path text-[13px] text-fg-3 m-0 mt-1">{taskPath(ix, t.id)}</p>
-                <p className="st-next text-[19px] font-[650] mt-1.5 mb-0.5">{t.title}</p>
-                <p className="text-[15px] text-fg-2 m-0">About {fmtDuration(t.minutes)}{t.kind === 'practical' ? ' · Practical' : ''}</p>
-                {startBlock(t.minutes)}
-              </>
-            ) : !comp.total ? (
-              <>
-                <p className="text-[15px]">This course has no sections or tasks yet. You can still start a session and add them later.</p>
-                {startBlock(c.minutes)}
-                <TextLink href="#study/roadmap">Add its modules and sections</TextLink>
-              </>
-            ) : <p className="text-[15px]">Every task in this course is marked complete.</p>}
-          {link && <div className="mt-1"><ExternalLink href={link}>Open the course link</ExternalLink></div>}
-        </Card>
-        <Card aria-labelledby="comp-h">
-          <h3 id="comp-h">Course completion</h3>
-          <p className="text-[15px] m-0">{completionText(comp)}</p>
-          <Bar c={comp} />
-          <p className="text-[15px] text-fg-2 mt-1.5 mb-0">Counts tasks you've marked complete — not how well you know them.</p>
-        </Card>
+        {c ? (
+          <Card tone="accent" id="stFocus" className="next-card" aria-labelledby="focus-h">
+            <Eyebrow>Current focus{named && focusTopic ? ` · ${focusTopic.topic.title}` : ''}</Eyebrow>
+            <h2 id="focus-h" className="st-course-title">{c.title}</h2>
+            {cur ? <p className="text-[15px]">A session is in progress — finish or resume it before starting another.</p>
+              : t ? (
+                <>
+                  <p className="st-path text-[13px] text-fg-3 m-0 mt-1">{taskPath(ix, t.id)}</p>
+                  <p className="st-next text-[19px] font-[650] mt-1.5 mb-0.5">{t.title}</p>
+                  <p className="text-[15px] text-fg-2 m-0">About {fmtDuration(t.minutes)}{t.kind === 'practical' ? ' · Practical' : ''}</p>
+                  <StartBlock data={data} course={c} task={t} lengths={lengths} setLength={setLength} />
+                </>
+              ) : !comp!.total ? (
+                <>
+                  <p className="text-[15px]">This course has no sections or tasks yet. You can still start a session and add them later.</p>
+                  <StartBlock data={data} course={c} task={null} lengths={lengths} setLength={setLength} />
+                  <TextLink href="#study/roadmap">Add its modules and sections</TextLink>
+                </>
+              ) : <p className="text-[15px]">Every task in this course is marked complete.</p>}
+            {link && <div className="mt-1"><ExternalLink href={link}>Open the course link</ExternalLink></div>}
+            {comp!.total > 0 && (
+              <div className="mt-3 pt-3 border-t border-outline" data-s="focus-completion">
+                <p className="text-[15px] m-0">{completionText(comp!)}</p>
+                <Bar c={comp!} />
+                <p className="text-sm text-fg-3 m-0 mt-1">Counts tasks you've marked complete — not how well you know them.</p>
+              </div>
+            )}
+          </Card>
+        ) : (
+          <Card tone="accent" className="next-card"><Eyebrow>Current focus</Eyebrow><h2>No courses yet</h2>
+            <p className="text-[15px] text-fg-2">Add a course to one of your topics to get started.</p></Card>
+        )}
+        <section aria-labelledby="topics-home-h" id="studyHome" className="mb-4">
+          <h3 id="topics-home-h" className="px-1 mt-5">Your topics</h3>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {glances.map(g => <TopicCard key={g.topic.id || 'main'} g={g} k={k} />)}
+            <AddTopicCard data={data} />
+          </div>
+        </section>
       </div>
       <div className="min-w-0">
         <RevisionCard data={data} />
         <Card aria-label="More in Study">
           <nav className="st-links flex flex-wrap gap-x-5" aria-label="Study">
-            <TextLink href="#study/roadmap">Roadmap</TextLink><TextLink href="#study/concepts">Concepts</TextLink>
+            <TextLink href="#study/roadmap">Whole roadmap</TextLink><TextLink href="#study/concepts">Concepts</TextLink>
             <TextLink href="#study/progress">Progress &amp; history</TextLink><TextLink href="#study/settings">Settings</TextLink>
           </nav>
-          {others.length > 0 && (
-            <details className="group mt-1">
-              <Summary>Other courses ({others.length})</Summary>
-              {others.map(o => (
-                <div key={o.id} className="c-row flex justify-between items-center gap-2.5 py-2.5 border-t border-outline">
-                  <div className="min-w-0"><strong>{o.title}</strong><div className="text-sm text-fg-3">{completionText(completion(ix.courseTasks.get(o.id)!))}</div></div>
-                  <Button inline className="flex-none" data-action="s-focus" data-id={o.id} onClick={() => setFocus(o.id)}>Focus on this</Button>
-                </div>
-              ))}
-            </details>
-          )}
         </Card>
       </div>
     </div>
+  );
+}
+
+// One topic on the home page: its next step, progress and when you last studied it. The whole card opens its page.
+function TopicCard({ g, k }: { g: TopicGlance; k: string }) {
+  return (
+    <a href={'#' + topicPath(g.topic.id)} className="topic-card block bg-surface border border-outline rounded-card shadow-card p-4 text-fg no-underline hover:border-outline-strong focus-visible:outline-2 focus-visible:outline-primary" data-id={g.topic.id}>
+      <span className="flex items-start justify-between gap-2">
+        <span className="topic-title text-[18px] font-semibold leading-snug min-w-0 break-words">{g.topic.title}</span>
+        {g.isFocus && <span className="flex-none text-xs font-bold tracking-[.06em] uppercase px-2 py-0.5 rounded-full bg-primary-container text-on-primary-container" data-s="topic-focus">Focus</span>}
+      </span>
+      <span className="block text-[15px] mt-1.5 text-fg-2" data-s="topic-next">
+        {!g.next ? 'No courses yet — add the first one.' : g.nextTask ? <>Next: <span className="text-fg font-medium">{g.nextTask.title}</span> <span className="text-fg-3">· {g.next.title}</span></> : <>{g.next.title}{g.comp.total && g.comp.done === g.comp.total ? ' — all tasks complete' : ''}</>}
+      </span>
+      {g.comp.total > 0 && <Bar c={g.comp} />}
+      {g.courses.length > 0 && <span className="flex flex-wrap justify-between gap-x-3 text-sm text-fg-3 mt-1 tabular-nums">
+        <span data-s="topic-comp">{g.comp.total ? `${g.comp.done} of ${g.comp.total} tasks · ${g.courses.length} course${g.courses.length === 1 ? '' : 's'}` : `No tasks added yet · ${g.courses.length} course${g.courses.length === 1 ? '' : 's'}`}</span>
+        <span data-s="topic-last">{studiedText(g.lastStudied, k)}</span>
+      </span>}
+    </a>
+  );
+}
+
+// "+ Add a topic" at the end of the topics: a name, then straight to its page to add its first course.
+function AddTopicCard({ data }: { data: MyDayData }) {
+  const [adding, setAdding] = useState(false);
+  const [name, setName] = useState('');
+  function add() {
+    let id: string | null = null;
+    update(d => { id = addTopic(d.study, name); if (!id) return false; });
+    if (!id) { toast((data.study.topics?.length ?? 0) >= TOPIC_LIMITS.topics ? `That's the most topics (${TOPIC_LIMITS.topics}).` : 'That name is empty or already used.'); return; }
+    toast(`Added “${name.trim()}”.`);
+    location.hash = topicPath(id);
+  }
+  if (!adding) {
+    return (
+      <button type="button" className="topic-add flex items-center justify-center gap-2 min-h-[88px] rounded-card border border-dashed border-outline-strong bg-transparent text-primary font-semibold text-[15px] cursor-pointer hover:bg-surface-2"
+        data-action="topic-add" onClick={() => setAdding(true)}><Plus size={18} aria-hidden="true" /> Add a topic</button>
+    );
+  }
+  return (
+    <form className="topic-add rounded-card border border-outline bg-surface p-4" onSubmit={e => { e.preventDefault(); add(); }}>
+      <Field label="New topic" htmlFor="topicNew">
+        <TextInput id="topicNew" value={name} maxLength={TOPIC_LIMITS.title} autoFocus onChange={e => setName(e.target.value)} placeholder="e.g. Arabic, Business, Cooking" />
+      </Field>
+      <span className="flex gap-2 mt-2.5">
+        <Button inline type="submit" variant="primary" data-action="topic-save" disabled={!name.trim()}>Add</Button>
+        <Button inline variant="ghost" data-action="topic-cancel" onClick={() => { setAdding(false); setName(''); }}>Cancel</Button>
+      </span>
+      {!data.study.topics?.length && <p className="text-sm text-fg-2 m-0 mt-2">Your roadmap so far becomes the first topic; nothing in it changes.</p>}
+    </form>
   );
 }

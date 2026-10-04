@@ -12,9 +12,11 @@ import { studyRoute } from './route';
 import { SessionView } from './SessionView';
 import { StudySettings } from './StudySettings';
 import { TaskDetails } from './TaskDetails';
+import { TopicView } from './TopicView';
+import { topicFromPath } from '../data/study/topics';
 
-// Study: the dashboard first (what to do next, ready to start), and everything else one tap away under
-// #study/… — the roadmap, a session, the check-in, revision, concepts, progress and settings.
+// Study: the home page first (what to do next, ready to start, and your topics), and everything else one tap away
+// under #study/… — a topic's page, the roadmap, a session, the check-in, revision, concepts, progress and settings.
 // Choices that only matter for this visit (edit mode, which parts of the roadmap are open, a session
 // length you picked, showing all history) live here and aren't saved.
 export function StudyScreen({ data, hash }: { data: MyDayData; hash: string }) {
@@ -29,7 +31,8 @@ export function StudyScreen({ data, hash }: { data: MyDayData; hash: string }) {
   useEffect(() => { window.scrollTo(0, 0); }, [hash]);
 
   let screen;
-  if (view === 'roadmap') screen = <Roadmap data={data} state={{ edit, setEdit, open, setOpen }} />;
+  if (view === 'roadmap') screen = <Roadmap key={id} data={data} state={{ edit, setEdit, open, setOpen }} topic={id ? topicFromPath(id) : null} />;
+  else if (view === 'topic') screen = <TopicView data={data} id={topicFromPath(id)} lengths={lengths} setLength={setLength} />;
   else if (view === 'course') screen = <CourseDetails data={data} id={id} />;
   else if (view === 'task') screen = <TaskDetails data={data} id={id} />;
   else if (view === 'session') screen = <SessionView data={data} />;

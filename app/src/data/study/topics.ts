@@ -4,10 +4,11 @@
 // Saved as study.topics ([{ id, title }]) and a topicId on each stage — additions only. The first time you add a
 // topic, your existing roadmap becomes the first topic: its stages get that topic's id (their contents are
 // untouched). The classic MyDay keeps both as they are and shows every stage, whatever its topic.
+import { dayDiff, shortDate } from '../dates';
 import { uid } from '../util';
-import type { MyDayData, StudyData, StudyStage, StudyTopic } from '../types';
+import type { DateKey, MyDayData, StudyCourse, StudyData, StudyStage, StudyTask, StudyTopic } from '../types';
 import { STARTER_STAGES } from './common';
-import { addStudyItem, removeStudyItem } from './roadmap';
+import { addStudyItem, completion, focusCourse, nextTaskIn, removeStudyItem, type StudyIndex } from './roadmap';
 
 export const TOPIC_LIMITS = { topics: 20, title: 60 };
 export const FIRST_STAGE = 'Start here'; // a new topic's first stage, so a course can be added straight away
@@ -116,3 +117,40 @@ export function addCourse(d: MyDayData, stageId: string, title: string, minutes:
   sg.courses.push({ id, title: clean, url: '', minutes: mins, listId, archived: false, modules: [] });
   return id;
 }
+
+// ---------- A topic at a glance (Study's home, and the topic's own page) ----------
+// Worked out from the roadmap and your sessions; nothing extra is saved.
+export interface TopicGlance {
+  topic: StudyTopic;
+  courses: { course: StudyCourse; stage: StudyStage; comp: ReturnType<typeof completion> }[]; // in roadmap order (not set aside)
+  setAside: number;                 // archived courses (still in the roadmap)
+  comp: ReturnType<typeof completion>;
+  next: StudyCourse | null;         // what to carry on with: your focus if it's in this topic, else the first with work left
+  nextTask: StudyTask | null;
+  isFocus: boolean;                 // your focus course is in this topic
+  lastStudied: DateKey | null;      // the last finished session in one of its courses
+}
+export function topicGlance(st: StudyData, ix: StudyIndex, topicId: string): TopicGlance | null {
+  const topic = topicsOf(st).find(t => t.id === topicId);
+  if (!topic) return null;
+  const all = stagesOf(st, topicId).flatMap(stage => stage.courses.map(course => ({ course, stage })));
+  const courses = all.filter(x => !x.course.archived).map(x => ({ ...x, comp: completion(ix.courseTasks.get(x.course.id) ?? []) }));
+  const fc = focusCourse(st, ix), isFocus = !!fc && courses.some(x => x.course === fc);
+  const next = isFocus ? fc : courses.find(x => x.comp.done < x.comp.total)?.course ?? courses[0]?.course ?? null;
+  const ids = new Set(all.map(x => x.course.id));
+  const last = st.sessions.filter(s => s.status === 'done' && s.courseId && ids.has(s.courseId)).map(s => s.date).sort().pop() ?? null;
+  return {
+    topic, courses, setAside: all.length - courses.length,
+    comp: completion(courses.flatMap(x => ix.courseTasks.get(x.course.id) ?? [])),
+    next, nextTask: next ? nextTaskIn(ix, next) : null, isFocus, lastStudied: last,
+  };
+}
+// "Studied today", "Studied yesterday", "Studied 3 days ago", "Last studied Fri 2 Oct", or not yet.
+export function studiedText(last: DateKey | null, k: DateKey): string {
+  if (!last) return 'Not studied yet';
+  const n = dayDiff(k, last);
+  return n <= 0 ? 'Studied today' : n === 1 ? 'Studied yesterday' : n < 7 ? `Studied ${n} days ago` : `Last studied ${shortDate(last)}`;
+}
+// A topic's page in the address. The one unnamed roadmap (no topics yet) is "main".
+export const topicPath = (id: string) => `study/topic/${id || 'main'}`;
+export const topicFromPath = (part: string) => (part === 'main' ? '' : part);

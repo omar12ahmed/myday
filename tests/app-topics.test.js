@@ -1,7 +1,8 @@
 // Study topics in the new app: your roadmap shown as one topic (nothing saved until you add one), adding a topic
 // (your roadmap becomes the first, its contents untouched), adding a course (and, if you leave it ticked, to your
 // Learning list so Today can suggest it), switching, renaming, moving and removing topics, moving a stage within
-// its topic, a stage without a topic, the current MyDay keeping topics when it saves, and layout.
+// its topic, a stage without a topic, the current MyDay keeping topics when it saves, layout, and Study's home page
+// (your topics as cards) and each topic's own page.
 const T = require('./cdp.js');
 const { openAt, ev, click, exists, text, data, check, sleep } = T;
 const KEY = 'myday.data.v4';
@@ -141,6 +142,62 @@ const SEED = `s => {
   check('phone: the topics and the course form fit (nothing scrolls sideways)', !(await ev('document.documentElement.scrollWidth > innerWidth')));
   const small = await ev(`[...document.querySelectorAll('#studyTopics button, #studyTopics input, .course-form button, .course-form input:not([type=checkbox]), .course-form label:has(input[type=checkbox])')].filter(b => b.offsetParent !== null).map(b => { const r = b.getBoundingClientRect(); return { t: (b.textContent || b.id).trim().slice(0, 24), h: Math.round(r.height) }; }).filter(x => x.h < 44)`);
   check('phone: every topic button, field and tick row (what you tap) is at least 44 px high', small.length === 0, small.slice(0, 5));
+  await T.send('Emulation.clearDeviceMetricsOverride');
+
+  console.log('\n[10] Study\'s home page: your topics, and each topic\'s page');
+  const task = (id, title, done) => ({ id, title, minutes: 20, url: '', kind: 'learn', note: '', done, doneOn: done ? '2026-10-10' : null });
+  const course = (id, title, tasks) => ({ id, title, url: '', minutes: 20, listId: null, archived: false, modules: [{ id: 'm' + id, title: 'Module 1', sections: [{ id: 's' + id, title: 'Section 1', tasks }] }] });
+  await go('today', 2026, 10, 15, 13); await reset(); await go('today', 2026, 10, 15, 13);
+  await click('#themeBtn'); await sleep(250);
+  await editStorage(`s => { s.study.topics = [{ id: 'tpCy', title: 'Cybersecurity' }, { id: 'tpAr', title: 'Arabic' }, { id: 'tpBiz', title: 'Business' }];
+    s.study.stages = [{ id: 'g1', title: 'Foundations', topicId: 'tpCy', courses: [${JSON.stringify(course('coC', 'TryHackMe', [task('t1', 'How the web works', true), task('t2', 'Linux 1', false)]))}] },
+      { id: 'g2', title: 'Start here', topicId: 'tpAr', courses: [${JSON.stringify(course('coA', 'Madinah Arabic book 1', [task('a1', 'Lesson 1', true), task('a2', 'Lesson 2', false), task('a3', 'Lesson 3', false)]))},
+        ${JSON.stringify(course('coB', 'Alphabet app', [task('b1', 'Letters 1', false)]))}] },
+      { id: 'g3', title: 'Start here', topicId: 'tpBiz', courses: [] }];
+    s.study.focusCourseId = 'coC';
+    s.study.sessions = [{ id: 'ss1', courseId: 'coA', taskId: 'a1', title: 'x', date: '2026-10-12', startedAt: '2026-10-12T19:00', plannedMin: 20, short: false, status: 'done', runningSince: null, activeMs: 1200000, endedAt: '2026-10-12T19:20', checkin: null, taskDone: true, todayUid: null }]; }`);
+  await go('study', 2026, 10, 15, 13, 5);
+  const savedBefore = await ev(`localStorage.getItem('${KEY}')`);
+  const cards = () => ev(`[...document.querySelectorAll('#studyHome .topic-card')].map(a => ({ t: a.querySelector('.topic-title').textContent, focus: !!a.querySelector('[data-s=topic-focus]'), next: a.querySelector('[data-s=topic-next]').textContent, comp: a.querySelector('[data-s=topic-comp]')?.textContent ?? null, last: a.querySelector('[data-s=topic-last]')?.textContent ?? null, href: a.getAttribute('href') }))`);
+  let cs = await cards();
+  check('the home page: the current focus, with its topic ("Current focus · Cybersecurity")', (await text('#stFocus .eyebrow')) === 'Current focus · Cybersecurity' && (await text('#stFocus')).includes('Linux 1'));
+  check('…then your topics as cards, in order, each opening its page', eq(cs.map(c => c.t), ['Cybersecurity', 'Arabic', 'Business']) && eq(cs.map(c => c.href), ['#study/topic/tpCy', '#study/topic/tpAr', '#study/topic/tpBiz']));
+  check('…each with its next step, progress and when you last studied it', cs[0].focus && cs[1].next === 'Next: Lesson 2 · Madinah Arabic book 1' && cs[1].comp === '1 of 4 tasks · 2 courses' && cs[1].last === 'Studied 3 days ago' && cs[0].last === 'Not studied yet' && !cs[1].focus, cs);
+  check('…a topic with no courses says so, simply', cs[2].next === 'No courses yet — add the first one.' && cs[2].comp === null && cs[2].last === null);
+  check('…and "+ Add a topic" at the end', await exists('#studyHome [data-action=topic-add]'));
+  await click('#studyHome .topic-card[data-id=tpAr]'); await sleep(300);
+  check('a topic\'s page: its name, progress and when you last studied it', (await ev('location.hash')) === '#study/topic/tpAr' && (await text('#topic-h')) === 'Arabic' && (await text('#topicHead [data-s=topic-comp]')) === '1 of 4 tasks complete (25%)' && (await text('#topicHead [data-s=topic-last]')) === 'Studied 3 days ago · 2 courses');
+  check('…what\'s up next in it, ready to start', (await text('#topicNext .eyebrow')) === 'Up next in Arabic' && (await text('#topicNext')).includes('Madinah Arabic book 1') && (await text('#topicNext .st-next')) === 'Lesson 2' && (await exists('#topicNext [data-action=s-start]')));
+  check('…its courses, with "Focus on this"', eq(await ev(`[...document.querySelectorAll('#topicCourses .tc-row a > span:first-child')].map(s => s.textContent)`), ['Madinah Arabic book 1', 'Alphabet app']) && (await ev(`document.querySelectorAll('#topicCourses [data-action=s-focus]').length`)) === 2);
+  check('…and looking around saves nothing', (await ev(`localStorage.getItem('${KEY}')`)) === savedBefore);
+  await click('#topicNext [data-action=s-start]:not([data-short])'); await sleep(300);
+  let sd = await study();
+  check('"Start learning" there starts a session on that topic\'s course', (await ev('location.hash')) === '#study/session' && sd.sessions.some(x => x.status === 'active' && x.courseId === 'coA' && x.taskId === 'a2'));
+  await editStorage(`s => { s.study.sessions = s.study.sessions.filter(x => x.status !== 'active'); s.study.activeId = null; }`);
+  await go('study/topic/tpAr', 2026, 10, 15, 13, 10);
+  await click('#topicNext [data-action=s-focus]'); await sleep(300);
+  check('"Make this my focus" → it\'s on the home page, with its topic', (await study()).focusCourseId === 'coA' && (await ev('location.hash')) === '#study' && (await text('#stFocus .eyebrow')) === 'Current focus · Arabic' && (await cards())[1].focus);
+  await go('study/course/coB', 2026, 10, 15, 13, 15);
+  check('a course\'s page goes back to its topic', (await ev(`document.querySelector('#app a[href="#study/topic/tpAr"]')?.textContent || ''`)).includes('Arabic'));
+  await go('study/topic/tpBiz', 2026, 10, 15, 13, 20);
+  check('a topic with no courses: "Add the first course" opens the roadmap on that topic', (await text('#topicNext h2')) === 'No courses in Business yet' && (await ev(`document.querySelector('[data-action=topic-first-course]').getAttribute('href')`)) === '#study/roadmap/tpBiz');
+  await click('[data-action=topic-first-course]'); await sleep(300);
+  check('…the roadmap shows Business', (await chips()).includes('Business ✓'));
+  await go('study/topic/nope', 2026, 10, 15, 13, 25);
+  check('a topic that isn\'t there says so, kindly', (await text('#app')).includes("This topic isn't here"));
+  await go('study', 2026, 10, 15, 13, 30);
+  await click('#studyHome [data-action=topic-add]'); await sleep(150);
+  await type('#topicNew', 'Spanish'); await click('#studyHome [data-action=topic-save]'); await sleep(300);
+  sd = await study();
+  const spanish = sd.topics.find(t => t.title === 'Spanish');
+  check('"+ Add a topic" on the home page adds it and opens its page', spanish && (await ev('location.hash')) === `#study/topic/${spanish.id}` && (await text('#topicNext h2')) === 'No courses in Spanish yet');
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  for (const h of ['study', 'study/topic/tpAr']) {
+    await go(h, 2026, 10, 15, 14);
+    check(`phone, #${h}: nothing scrolls sideways`, !(await ev('document.documentElement.scrollWidth > innerWidth')));
+    const tiny = await ev(`[...document.querySelectorAll('#app button, #app .topic-card, #app .tc-row a')].filter(b => b.offsetParent !== null).map(b => { const r = b.getBoundingClientRect(); return { t: b.textContent.trim().slice(0, 24), h: Math.round(r.height) }; }).filter(x => x.h < 44)`);
+    check(`phone, #${h}: every card, row and button is at least 44 px high`, tiny.length === 0, tiny.slice(0, 5));
+  }
   await T.send('Emulation.clearDeviceMetricsOverride');
 
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);

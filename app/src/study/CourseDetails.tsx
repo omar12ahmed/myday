@@ -2,6 +2,7 @@ import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { CommitInput, Field, Select } from '../components/Field';
 import { completion, completionText, focusCourse, stIndex } from '../data/study/roadmap';
+import { topicOfStage, topicPath, topicsOf } from '../data/study/topics';
 import type { MyDayData } from '../data/types';
 import { moveCourseTo, saveItemText, setArchived, setFocus } from './actions';
 import { go } from './route';
@@ -17,7 +18,7 @@ export function CourseDetails({ data, id }: { data: MyDayData; id: string }) {
   const listItem = c.listId ? data.lists.learning.find(l => l.id === c.listId) : null;
   return (
     <Card aria-labelledby="co-h">
-      <BackLink to="study/roadmap" label="Roadmap" />
+      <BackLink to={topicPath(topicOfStage(st, e.stage))} label={topicsOf(st).find(t => t.id === topicOfStage(st, e.stage))?.title ?? 'Study'} />
       <h2 id="co-h">{c.title}</h2>
       <p className="text-[15px] m-0">{completionText(comp)}</p>
       <Bar c={comp} />
