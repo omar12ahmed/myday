@@ -12,11 +12,20 @@
 // 3. Receiving. Then it asks what changed since last time, by the account's change numbers (never device clocks),
 //    and saves those records here — unless the record was also changed here, which is a conflict for you to decide.
 //    Deletions arrive as deletions, so deleted plans don't come back.
-// Everything sync notes is kept per account; a device syncs with one account at a time, and nothing is sent or
-// fetched while a different account is signed in. The cloud checks that too.
+// Your MyDay follows the account you're signed in with (from 1.9.0), not the device:
+// - Signing in combines this device with your account by itself (joinAccount): what's only in your account comes
+//   here, what's only here goes to your account, and where the same part differs your account's version is used —
+//   this device's is kept aside (downloadable from Your account), so nothing is lost. No review, no set-up step.
+// - Every change is sent as it's saved; restoring a backup or changing a lot at once is sent the same way.
+// - Signing out (signOutHere) first makes sure everything is saved to your account, then removes MyDay's data from
+//   this device, so the next person to sign in here sees only their own.
+// - Changed on two devices before either was saved: still a conflict for you to decide (nothing overwritten).
+// Sync's notes are kept per account; nothing is sent or fetched while a different account is signed in, and the
+// cloud checks that too.
 import { useSyncExternalStore } from 'react';
 import { todayKey } from '../data/dates';
-import { catchUp, getSnapshot, subscribe as onData, updateSaved } from '../data/storage';
+import { freshState as freshData } from '../data/normalize';
+import { catchUp, getSnapshot, replaceAll, subscribe as onData, updateSaved } from '../data/storage';
 import { toast } from '../data/toast';
 import { accountOf, call, client, currentSession, hadSession, signIn, signOut, type Account } from './client';
 import { SYNC } from './config';
@@ -26,7 +35,6 @@ import { freshState, newId, newLink, readState, SYNC_KEY, writeState, type Confl
 const KINDS: Kind[] = ALL_KINDS;
 const BATCH = 100;           // changes per request (the cloud accepts up to 100)
 const PAGE = 500;            // records per "what changed" request
-const BULK = 30;             // this many changed records at once (e.g. after restoring a backup) are reviewed first
 const RETRY = [5, 15, 30, 60, 120, 300]; // seconds to wait after a failed try, then every 5 minutes
 const REFRESH_MS = 5 * 60 * 1000;          // check the cloud this often while MyDay is open
 
@@ -41,7 +49,9 @@ export type Phase =
   | 'unavailable'    // this browser doesn't allow storage
   | 'notes-damaged'; // sync's notes on this device can't be read
 export type Status = 'local' | 'syncing' | 'synced' | 'attention';
-export const STATUS_LABEL: Record<Status, string> = { local: 'Saved locally', syncing: 'Syncing', synced: 'Synced', attention: 'Needs attention' };
+// In words about where your changes are (not how sync works): saved to your account, saving, or only on this device
+// so far (offline, or still waiting to go).
+export const STATUS_LABEL: Record<Status, string> = { local: 'Saved on this device', syncing: 'Saving…', synced: 'Saved to your account', attention: 'Needs attention' };
 export type Problem = null | 'offline' | 'server' | 'auth' | 'storage' | 'paused' | 'not-ready';
 export interface View {
   phase: Phase;
@@ -52,7 +62,9 @@ export interface View {
   pending: number;              // records changed here that aren't in the cloud yet
   conflicts: string[];
   rejected: { key: string; reason: string }[];
-  review: null | 'import' | 'bulk';
+  review: null | 'import' | 'bulk'; // (before 1.9.0 sync could pause for a review; it no longer does)
+  joining: boolean;             // combining this device with your account, just after signing in
+  joinProblem: string;          // why that didn't work (it's tried again), if it didn't
   problem: Problem;
   message: string;              // more about the problem, if any
   retryAt: number | null;
@@ -63,7 +75,7 @@ export interface View {
 
 let view: View = {
   phase: SYNC.configured ? 'starting' : 'off', status: 'local', settled: 'local', account: null, linkedEmail: null, pending: 0, conflicts: [], rejected: [],
-  review: null, problem: null, message: '', retryAt: null, lastSynced: null, kept: 0, before: null,
+  review: null, problem: null, message: '', retryAt: null, lastSynced: null, kept: 0, before: null, joining: false, joinProblem: '',
 };
 const listeners = new Set<() => void>();
 const subscribeView = (fn: () => void) => { listeners.add(fn); return () => { listeners.delete(fn); }; };
@@ -122,6 +134,7 @@ function publish(phaseOverride?: Phase) {
     phase, status, settled: status === 'syncing' ? view.settled : status, account, linkedEmail: link ? link.email : null, pending, conflicts, rejected, review,
     problem: phase === 'linked' ? p : null, message: phase === 'linked' ? message : '', retryAt: phase === 'linked' ? retryAt : null,
     lastSynced: link ? link.lastSynced : null, kept: st ? st.kept.length : 0, before: st && st.before ? st.before.email : null,
+    joining, joinProblem,
   };
   for (const fn of listeners) fn();
 }
@@ -140,7 +153,8 @@ function withLock<T>(fn: () => Promise<T>): Promise<T> {
 // cloud was checked recently, there's nothing to do (so typing a Study note doesn't keep asking the cloud).
 type Reason = 'change' | 'check';
 let timer: ReturnType<typeof setTimeout> | undefined, timerReason: Reason = 'change';
-let running = false, again: Reason | null = null, applying = false;
+let running = false, again: Reason | null = null, applying = false, needJoin = false;
+let joining = false, joinProblem = '';
 function schedule(ms: number, reason: Reason = 'check') {
   if (timer !== undefined && timerReason === 'check') reason = 'check'; // a waiting full check isn't downgraded
   clearTimeout(timer);
@@ -160,6 +174,7 @@ export async function run(reason: Reason = 'check'): Promise<void> {
   const show = setTimeout(() => { showSyncing = true; if (syncing) publish(); }, 600);
   try {
     await withLock(() => runLocked(reason));
+    if (needJoin) { needJoin = false; await joinAccount(); }
   } catch (e) {
     problem = 'server'; message = String(e);
   } finally {
@@ -206,19 +221,14 @@ async function runLocked(reason: Reason) {
   authKnown = true;
   if (!account || !session) return;
   const link = st.link;
-  if (!link || link.user !== account.id) return; // set up, or a different account: nothing is sent or fetched
+  if (!link) { needJoin = true; return; }          // just signed in here: combined with your account (after this)
+  if (link.user !== account.id) return;          // a different account: nothing is sent or fetched
   if (getSnapshot().status.kind !== 'ok') return;  // saving is paused on this device: sync waits too
-  if (link.review) return;                         // waiting for you to review the changes first
+  if (link.review) { link.review = null; writeState(st); } // a pause for a review (before 1.9.0) just carries on
 
-  // 1. Note the changes made here (before sending anything). A lot at once (e.g. a backup restored in the
-  // classic MyDay) is reviewed first, so one device's whole copy is never sent over the account's by surprise.
+  // 1. Note the changes made here (before sending anything), however many: they're yours, so they go to your account.
   const local = localRecords(getSnapshot().data);
   const changed = changedKeys(link, local).filter(k => !link.out[k]);
-  if (changed.length > BULK) {
-    link.review = 'bulk';
-    writeState(st);
-    return;
-  }
   noteOutgoing(link, local, changed);
   if (reason === 'change' && !Object.keys(link.out).length && Date.now() - lastPullAt < 2 * 60 * 1000) return;
   syncing = true;
@@ -389,8 +399,78 @@ export async function doSignIn(email: string, password: string): Promise<string 
   authKnown = true;
   succeeded();
   publish();
-  void run();
+  void run(); // a device that hasn't joined your account yet is combined with it straight away
   return null;
+}
+
+// ---------- Joining your account on this device ----------
+// Combines this device with your account, with no questions: what's only in your account comes here, what's only
+// here is sent, and where the same part differs your account's version is used and this device's is kept aside (a
+// new MyDay's starter versions aren't worth keeping). Nothing is lost. A device that still has another account's
+// MyDay on it (from before 1.9.0, when signing out kept it) isn't combined: that would mix two people's data.
+export async function joinAccount(): Promise<boolean> {
+  if (joining) return false;
+  joining = true; joinProblem = ''; publish();
+  try {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const r = await prepareReview();
+      if (!r.ok) { joinProblem = r.message; return false; }
+      if (r.review.before) { joinProblem = `This device still has the MyDay of ${r.review.before}. Sign out, then sign in as ${r.review.before} to keep it — or download a backup and clear this device first.`; return false; }
+      const choices: Record<string, 'here' | 'cloud'> = {};
+      for (const i of r.review.items) if (i.action === 'differ') choices[i.key] = 'cloud';
+      const a = await applyReview(r.review, choices, true);
+      if (a.ok) return true;
+      if (!a.stale) { joinProblem = a.message; return false; }
+    }
+    joinProblem = 'Things kept changing while MyDay was combining this device with your account. Try again in a moment.';
+    return false;
+  } finally {
+    joining = false;
+    publish();
+  }
+}
+
+// Clears another account's MyDay from this device (after you've downloaded a backup), so yours can come here.
+export async function clearThisDevice() {
+  await withLock(async () => {
+    replaceAll(freshData());
+    const read = readState();
+    const st = read.ok ? read.state : freshState();
+    st.link = null; st.before = null; st.kept = [];
+    writeState(st);
+  });
+  joinProblem = '';
+  publish();
+  void run();
+}
+
+// ---------- Signing out ----------
+// Signing out here: first everything is sent and checked; only when your account has all of it is MyDay's data
+// removed from this device ('done'). Something not saved yet (offline, a choice to make, a problem): 'unsaved', and
+// nothing changes — unless `anyway` (after you've downloaded a backup). Signed in without this device joining your
+// account (or as a different account from its MyDay's): just signs out, leaving the device's data as it is.
+export async function signOutHere(anyway = false): Promise<'done' | 'unsaved' | 'failed'> {
+  const read = readState();
+  const mine = read.ok && !!read.state.link && !!account && read.state.link.user === account.id;
+  if (mine && !anyway) {
+    await run('check');
+    const v = getView();
+    if (v.pending || v.conflicts.length || v.rejected.length || v.problem) return 'unsaved';
+  }
+  if (!(await signOut())) return 'failed';
+  account = null;
+  if (mine) {
+    await withLock(async () => {
+      replaceAll(freshData());
+      const st = readState();
+      const fresh = freshState();
+      if (st.ok) fresh.device = st.state.device;
+      writeState(fresh);
+    });
+  }
+  succeeded();
+  publish('signed-out');
+  return 'done';
 }
 
 export async function doSignOut(): Promise<boolean> {
@@ -414,16 +494,9 @@ export async function stopSyncing() {
   publish();
 }
 
-// After importing a backup: sync waits until you've reviewed what it would change in your account.
+// After importing a backup: it's your MyDay now, so it goes to your account like any change.
 export async function noteImported() {
-  if (!SYNC.configured) return;
-  await withLock(async () => {
-    const read = readState();
-    if (!read.ok || !read.state.link) return;
-    read.state.link.review = 'import';
-    writeState(read.state);
-  });
-  publish();
+  if (SYNC.configured) void run('check');
 }
 
 // A conflict: keep this device's version (sent to the cloud) or use the cloud's (this device's is kept aside).
@@ -574,7 +647,7 @@ export async function prepareReview(): Promise<{ ok: true; review: Review } | { 
 }
 
 // Applies a review once you've confirmed it. `choices` says which version to keep for each 'differ' item.
-export async function applyReview(review: Review, choices: Record<string, 'here' | 'cloud'>): Promise<{ ok: true } | { ok: false; message: string; stale?: boolean }> {
+export async function applyReview(review: Review, choices: Record<string, 'here' | 'cloud'>, joiningNow = false): Promise<{ ok: true } | { ok: false; message: string; stale?: boolean }> {
   if (review.items.some(i => i.action === 'differ' && !choices[i.key])) return { ok: false, message: 'Choose a version for each record that differs.' };
   const out = await withLock(async (): Promise<{ ok: true } | { ok: false; message: string; stale?: boolean }> => {
     const { session } = await currentSession();
@@ -597,7 +670,7 @@ export async function applyReview(review: Review, choices: Record<string, 'here'
     const take = review.items.filter(i => i.action === 'download' || (i.action === 'differ' && choices[i.key] === 'cloud'));
     // 1. This device's versions that are about to be replaced are kept first.
     const at = new Date().toISOString();
-    const keep = take.filter(i => i.here && i.action === 'differ');
+    const keep = take.filter(i => i.here && i.action === 'differ' && !(joiningNow && isStarter(i.key, i.here)));
     for (const i of keep) st.kept.push({ key: i.key, label: i.label, content: i.here, at, why: 'setup' });
     if (keep.length && !writeState(st)) return { ok: false, message: "This device's storage is full, so nothing was changed." };
     // 2. The account's versions are saved here.

@@ -49,9 +49,6 @@ const diag = D => D.ev(`(() => { const n = JSON.parse(localStorage.getItem('myda
 async function syncNowWhenReady(D) { await goSync(D); await D.until(`document.querySelector('[data-action=sync-now]') && !document.querySelector('[data-action=sync-now]').disabled`); await D.click('[data-action=sync-now]'); }
 async function cloudUntil(fn, ms = 10000) { const t0 = Date.now(); while (Date.now() - t0 < ms) { if (await fn()) return true; await sleep(150); } return false; }
 const statusIs = (D, s, ms = 12000) => D.until(`document.getElementById('syncBadge') && document.getElementById('syncBadge').dataset.status === '${s}'`, ms);
-async function openReview(D) { await D.click('[data-action=sync-review]'); return D.until(`document.getElementById('syncReview')`, 12000); }
-const reviewKeys = (D, group) => D.ev(`[...document.querySelectorAll('[data-group=${group}] li[data-key]')].map(e => e.dataset.key).sort()`);
-const differKeys = D => D.ev(`[...document.querySelectorAll('#syncReview .review-item')].map(e => e.dataset.key).sort()`);
 // Today's screen opens the list editor when it's opened at #today/edit, so come from another screen.
 async function openEditor(D) { await D.ev(`location.hash = 'sync'`); await sleep(150); await D.ev(`location.hash = 'today/edit'`); return D.until(`document.querySelector('.edit-row')`); }
 async function goToday(D) { await D.ev(`location.hash = 'sync'`); await sleep(150); await D.ev(`location.hash = 'today'`); return D.until(`document.querySelector('#app')`); }
@@ -81,7 +78,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
   const dl = path.join(os.tmpdir(), `myday-sync-dl-${process.pid}`);
   const mac = await T.device('mac', path.join(dl, 'mac')), phone = await T.device('phone', path.join(dl, 'phone'));
 
-  console.log('\n[1] Before signing in, MyDay works as before: everything saved on this device, nothing sent');
+  console.log('\n[1] Before signing in: the sign-in screen (from 1.9.0); the data on this device stays as it is, nothing sent');
   await mac.open(APP + '#today');
   const today = await mac.today();
   const shiftKey = n => { const d = new Date(today + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
@@ -93,11 +90,37 @@ function task(uid, taskId, category, title, minutes, done = false) {
     s.context['${Y}'] = { energy: 4, sleep: { start: null, end: null, estimatedHours: 7.5 } };
     s.queue = [{ qid: 'q-mac-1', taskId: 'a2', category: 'admin', title: 'Bulk cook 2 meals', minutes: 60, queuedOn: '${Y}', sourceUid: null }];
   }`);
-  check('the status shows "Saved locally" at the top of the screen', (await mac.status()) === 'local' && (await mac.text('#syncBadge')) === 'Saved locally', await mac.text('#syncBadge'));
-  check('…and the footer says everything is saved only in this browser', (await mac.text('.storage-note')) === 'Saved only in this browser.');
+  check('MyDay asks you to sign in first (from 1.9.0): the sign-in screen, not Today — no sections, no Capture', (await mac.exists('#signInGate')) && (await mac.text('#gate-h')) === 'Welcome to MyDay' && (await mac.exists('#syncEmailInput')) && !(await mac.exists('#nav')) && !(await mac.exists('.capture-btn')) && !(await mac.exists('#syncBadge')));
+  check('…and it explains why: your MyDay is kept with your account, the same on every device, and only you can see it', /same on your Mac and your phone/.test(await mac.text('#signInGate')) && /only you can see it/.test(await mac.text('#signInGate')));
+  check('…while the data already on this device stays exactly as it is', (await mac.data()).lists.learning[0].title === 'Mac: Networking basics' && !!(await mac.data()).days[Y]);
+  await mac.ev(`location.hash = 'calendar'`); await sleep(300);
+  check('…an address like #calendar still shows the sign-in screen', (await mac.exists('#signInGate')) && !(await mac.exists('.cal-grid')));
+  await mac.ev(`location.hash = 'today'`); await sleep(200);
   check('nothing was sent anywhere (no requests to the cloud)', srv.log.length === 0, srv.log.map(e => e.path));
   check('the sign-in library isn\'t even downloaded until it\'s needed', !(await mac.ev(`performance.getEntriesByType('resource').some(e => /assets\\/dist-/.test(e.name))`)));
   const macBefore = withoutSaves(await mac.data());
+
+  console.log('\n[1b] The sign-in screen when your account can\'t be reached: you can still use what\'s on the device');
+  const tab = await T.device('tablet', path.join(dl, 'tablet'));
+  await tab.open(APP + '#today');
+  await tab.setData(`s => { s.lists.admin[0].title = 'Tablet: water the plants'; }`);
+  check('a new device shows the sign-in screen, with no way round it while your account can be reached', (await tab.exists('#signInGate')) && !(await tab.exists('#gateOffline')));
+  await tab.offline(true);
+  await tab.until(`document.getElementById('gateOffline')`, 5000);
+  check('offline: "Use MyDay on this device for now" is offered', (await tab.text('#gateOffline')).includes("Can't reach your account right now?"));
+  await tab.click('[data-action=gate-use-here]'); await sleep(300);
+  check('…and opens MyDay with what\'s on this device', !(await tab.exists('#signInGate')) && (await tab.exists('#nav')) && (await tab.data()).lists.admin[0].title === 'Tablet: water the plants');
+  await tab.offline(false);
+  await tab.open(APP + '#today');
+  check('…only until MyDay is next opened: then it asks again', await tab.exists('#signInGate'));
+  srv.faults.push({ path: '/auth/v1/token', mode: 'error', times: 1 });
+  await tab.type('#syncEmailInput', A.email); await tab.type('#syncPassword', A.password); await tab.click('[data-action=sync-signin]');
+  await tab.until(`document.getElementById('signinError')`);
+  check('if the account service doesn\'t answer when you sign in, the same way out is offered', (await tab.text('#signinError')).includes("Couldn't reach your account") && (await tab.exists('#gateOffline')));
+  check('…and nothing was saved or sent', (await sql('select count(*)::int as n from public.task_lists'))[0].n === 0);
+  await tab.type('#syncEmailInput', A.email); await tab.type('#syncPassword', 'wrong-password'); await tab.click('[data-action=sync-signin]');
+  await sleep(800);
+  srv.log.length = 0;
 
   console.log('\n[2] Signing in');
   await signIn(mac, { email: A.email, password: 'wrong-password' });
@@ -106,28 +129,23 @@ function task(uid, taskId, category, title, minutes, done = false) {
   check('the password field allows password managers (autocomplete) and can be shown', (await mac.ev(`document.getElementById('syncPassword').autocomplete`)) === 'current-password' && (await mac.exists('[data-action=sync-show-password]')));
   await mac.type('#syncPassword', A.password);
   await mac.click('[data-action=sync-signin]');
-  check('signed in: the device asks before syncing anything', await phaseIs(mac, 'setup'), await mac.phase());
-  check('…offering a backup download first', await mac.exists('#syncScreen [data-action=export]'));
-  check('signing in sent and fetched no records', rpcLog().length === 0 && (await sql('select count(*)::int as n from public.task_lists'))[0].n === 0);
 
-  console.log('\n[3] First device: the review before syncing, then the upload');
-  await openReview(mac);
-  check('the review lists everything this device would send (3 lists, the queue, a plan, a context, and the one-record parts: settings, Calendar, Finance, Study, Health, Inbox…)', eq(await reviewKeys(mac, 'rv-up'), ['context:' + Y, 'day:' + Y, 'list:admin', 'list:health', 'list:learning', 'queue:queue', ...ONE_KEYS].sort()), await reviewKeys(mac, 'rv-up'));
-  check('…nothing to download or choose (the account is empty)', (await reviewKeys(mac, 'rv-down')).length === 0 && (await differKeys(mac)).length === 0);
-  check('nothing has been sent before confirming', rpcLog().every(e => e.path.endsWith('sync_pull')) && (await sql('select count(*)::int as n from public.task_lists'))[0].n === 0);
-  await mac.click('[data-action=review-start]');
-  check('after "Start syncing", the device is synced', await statusIs(mac, 'synced'), await mac.status());
+  console.log('\n[3] First device: signing in combines it with your account by itself — no review, no set-up step');
+  check('signed in: MyDay opens (the sign-in screen goes) with nothing to confirm', await mac.until(`!document.getElementById('signInGate') && document.getElementById('nav')`, 15000), await diag(mac));
+  check('…and everything is saved to your account', await statusIs(mac, 'synced'), await mac.status());
   const rowsA = await sql(`select 'list' k, id from public.task_lists where user_id = $1 union all select 'queue', id from public.task_queue where user_id = $1
     union all select 'day', id from public.day_plans where user_id = $1 union all select 'context', id from public.day_context where user_id = $1`, [userA]);
-  check('the account now has exactly those 6 records', rowsA.length === 6, rowsA);
+  check('what was only on this device went to your (empty) account: 3 lists, the queue, a plan, a context', rowsA.length === 6, rowsA);
   check('…and the 13 one-record parts', eq((await sql(`select kind || ':' || id as k from public.sync_records where user_id = $1 order by 1`, [userA])).map(r => r.k), [...ONE_KEYS].sort()));
   check('…with this device\'s content', (await cloudList('learning', userA)).data.items[0].title === 'Mac: Networking basics');
-  check('this device\'s data is unchanged by syncing', eq(withoutSaves(await mac.data()), macBefore));
+  check('this device\'s data is unchanged by it', eq(withoutSaves(await mac.data()), macBefore));
+  check('nothing was kept aside (nothing differed)', (await mac.notes()).kept.length === 0);
   await goToday(mac);
   await mac.until(`document.querySelector('.storage-note')`);
-  check('the footer says what syncs', (await mac.text('.storage-note')).includes('everything you enter syncs with your account'), await mac.text('.storage-note'));
+  check('the footer says where your changes are: "Saved to your account (your email)"', (await mac.text('.storage-note')) === `Saved to your account (${A.email}).`, await mac.text('.storage-note'));
+  check('…and so does the badge at the top ("Saved to your account")', (await mac.text('#syncBadge')).includes('Saved to your account'));
 
-  console.log('\n[4] Second device with different records: a preview, conflicts named, nothing changed until confirmed');
+  console.log('\n[4] Second device, with some of its own records: combined by itself — your account wins where they differ, and nothing is lost');
   await phone.open(APP + '#today');
   await phone.setData(`s => {
     s.lists.admin.push({ id: 'aphone1', title: 'Phone: Renew passport', minutes: 20 });
@@ -136,38 +154,22 @@ function task(uid, taskId, category, title, minutes, done = false) {
   }`);
   const phoneBefore = withoutSaves(await phone.data());
   await signIn(phone, A);
-  await phaseIs(phone, 'setup');
-  await openReview(phone);
-  check('to save here: the Mac\'s plan', eq(await reviewKeys(phone, 'rv-down'), ['day:' + Y]), await reviewKeys(phone, 'rv-down'));
-  check('to send: the phone\'s own plan', eq(await reviewKeys(phone, 'rv-up'), ['day:' + Y2]), await reviewKeys(phone, 'rv-up'));
-  check('different on each, to choose: learning and admin lists, the queue, the shared day\'s context, and the note collections (same names, made separately)', eq(await differKeys(phone), ['context:' + Y, 'list:admin', 'list:learning', 'notes:collections', 'queue:queue']), await differKeys(phone));
-  check('a starter list, an empty queue and the starter note collections on this device suggest the account\'s version (pre-chosen)',
-    await phone.ev(`['list:learning','queue:queue','notes:collections'].every(k => document.querySelector('[data-action=review-cloud][data-key="' + k + '"]').getAttribute('aria-pressed') === 'true')`));
-  check('the parts that are the same on both (settings, Calendar, Finance, Study, Health…) aren\'t asked about', (await reviewKeys(phone, 'rv-up')).every(k => !ONE_KEYS.includes(k)) && !(await differKeys(phone)).some(k => ONE_KEYS.includes(k) && k !== 'notes:collections'));
-  check('Start is blocked until every difference has a choice', await phone.ev(`document.querySelector('[data-action=review-start]').disabled && document.querySelector('[data-action=review-start]').textContent.includes('2 more')`), await phone.text('[data-action=review-start]'));
-  check('nothing on the phone or in the account has changed yet', eq(withoutSaves(await phone.data()), phoneBefore) && (await cloudList('admin', userA)).version === 1);
-  await phone.click('[data-action=review-here][data-key="list:admin"]');
-  await sleep(100);
-  await phone.click(`[data-action=review-cloud][data-key="context:${Y}"]`);
-  await sleep(100);
-  await phone.click('[data-action=review-start]');
-  check('after confirming, the phone is synced', await statusIs(phone, 'synced'), await phone.status());
+  check('signing in on the phone: no questions — MyDay opens with your account\'s MyDay', await phone.until(`!document.getElementById('signInGate') && document.getElementById('nav')`, 15000) && (await statusIs(phone, 'synced')), await diag(phone));
   let pd = await phone.data();
-  check('the phone has the Mac\'s learning list and queue (as chosen)', listTitle(pd, 'learning', 'l1') === 'Mac: Networking basics' && pd.queue.some(q => q.qid === 'q-mac-1'));
-  check('…keeps its own admin list (as chosen) and its own plan', listTitle(pd, 'admin', 'aphone1') === 'Phone: Renew passport' && !!pd.days[Y2]);
-  check('…gets the Mac\'s plan, and the account\'s context for that day (as chosen)', !!pd.days[Y] && pd.days[Y].tasks[0].uid === 't-mac-1' && pd.context[Y].energy === 4);
-  check('parts that were already the same on both (e.g. settings, Study, Health) are untouched', eq(pd.settings, phoneBefore.settings) && eq(pd.study, phoneBefore.study) && eq(pd.health, phoneBefore.health));
+  check('what was only in your account came here: the Mac\'s plan, learning list and queue', !!pd.days[Y] && pd.days[Y].tasks[0].uid === 't-mac-1' && listTitle(pd, 'learning', 'l1') === 'Mac: Networking basics' && pd.queue.some(q => q.qid === 'q-mac-1'));
+  check('what was only on the phone went to your account: its own plan', !!pd.days[Y2] && (await sql(`select 1 from public.day_plans where user_id = $1 and id = $2`, [userA, Y2])).length === 1);
+  check('where the same part differed, your account\'s version is used (the admin list, that day\'s context)', !listTitle(pd, 'admin', 'aphone1') && pd.context[Y].energy === 4 && !(await cloudList('admin', userA)).data.items.some(i => i.id === 'aphone1'));
   let pn = await phone.notes();
-  check('the phone\'s replaced versions are kept on the phone (learning list, queue, context, note collections)', eq(pn.kept.map(k => k.key).sort(), ['context:' + Y, 'list:learning', 'notes:collections', 'queue:queue']) && pn.kept.find(k => k.key === 'context:' + Y).content.energy === 2, pn.kept.map(k => k.key));
+  check('…and the phone\'s versions of those are kept aside on the phone (nothing lost); a new MyDay\'s starter versions (its learning list, empty queue, note collections) aren\'t worth keeping', eq(pn.kept.map(k => k.key).sort(), ['context:' + Y, 'list:admin']) && pn.kept.find(k => k.key === 'list:admin').content.items.some(i => i.id === 'aphone1') && pn.kept.find(k => k.key === 'context:' + Y).content.energy === 2, pn.kept.map(k => k.key));
   await goSync(phone);
-  check('…and can be downloaded', await phone.exists('[data-action=kept-download]'));
-  check('the account has the phone\'s admin list and plan', (await cloudList('admin', userA)).data.items.some(i => i.id === 'aphone1') && (await sql(`select 1 from public.day_plans where user_id = $1 and id = $2`, [userA, Y2])).length === 1);
+  check('…to download from Your account', await phone.exists('[data-action=kept-download]'));
+  check('parts that were already the same on both (e.g. settings, Study, Health) are untouched', eq(pd.settings, phoneBefore.settings) && eq(pd.study, phoneBefore.study) && eq(pd.health, phoneBefore.health));
 
   console.log('\n[5] Records created on one device appear on the other');
   await mac.returnToApp();
   await mac.until(`JSON.parse(localStorage.getItem('myday.data.v4')).days['${Y2}']`);
   let md = await mac.data();
-  check('coming back to MyDay on the Mac fetches the phone\'s plan and admin list', !!md.days[Y2] && listTitle(md, 'admin', 'aphone1') === 'Phone: Renew passport');
+  check('coming back to MyDay on the Mac fetches the phone\'s plan', !!md.days[Y2] && !listTitle(md, 'admin', 'aphone1'));
   await openEditor(mac);
   await mac.click('[data-action=add][data-cat=learning]');
   await sleep(300);
@@ -281,7 +283,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await mac.offline(true); await phone.offline(true);
   await editList(mac, 'learning', 'l2', 'Mac title');
   await editList(phone, 'learning', 'l2', 'Phone title');
-  check('offline, each device keeps its own change ("Saved locally")', listTitle(await mac.data(), 'learning', 'l2') === 'Mac title' && listTitle(await phone.data(), 'learning', 'l2') === 'Phone title' && (await statusIs(phone, 'local', 8000)));
+  check('offline, each device keeps its own change ("Saved on this device")', listTitle(await mac.data(), 'learning', 'l2') === 'Mac title' && listTitle(await phone.data(), 'learning', 'l2') === 'Phone title' && (await statusIs(phone, 'local', 8000)));
   await mac.offline(false);
   await mac.returnToApp();
   await cloudUntil(async () => (await cloudList('learning', userA)).data.items.find(i => i.id === 'l2').title === 'Mac title');
@@ -320,7 +322,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
   let v0 = (await cloudList('health', userA)).version;
   await editList(mac, 'health', 'h1', 'Gym (after a failed send)');
   const firstId = (await sent(mac, 'list:health')) && (await mac.notes()).link.out['list:health'].id;
-  check('a request the cloud fails: the change stays on the device, shown as "Saved locally"', await statusIs(mac, 'local', 8000) && listTitle(await mac.data(), 'health', 'h1') === 'Gym (after a failed send)');
+  check('a request the cloud fails: the change stays on the device, shown as "Saved on this device"', await statusIs(mac, 'local', 8000) && listTitle(await mac.data(), 'health', 'h1') === 'Gym (after a failed send)');
   check('…noted as on its way, ready to send again with the same id', !!firstId && (await cloudList('health', userA)).version === v0);
   await goSync(mac);
   check('…and the sync screen says it will try again', /saved on this device and will be sent when it can/.test(await mac.text('#syncLine')), await mac.text('#syncLine'));
@@ -363,38 +365,58 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await mac.returnToApp(); await synced(mac); // the Mac catches up with the phone's changes first
   srv.faults.push({ path: '/rest/v1/rpc/sync_push', mode: 'delay', ms: 2000, times: 1 });
   await editList(mac, 'learning', 'l3', 'HTB Academy (slow connection)');
-  check('on a slow connection the status shows "Syncing" while it works', await statusIs(mac, 'syncing', 8000) && (await mac.text('#syncBadge')) === 'Syncing', await mac.status());
+  check('on a slow connection the status shows "Saving…" while it works', await statusIs(mac, 'syncing', 8000) && (await mac.text('#syncBadge')) === 'Saving…', await mac.text('#syncBadge'));
   check('…then "Synced"', await synced(mac));
 
-  console.log('\n[9] Accounts: another account never sees or receives this one\'s records');
+  console.log('\n[9] Your MyDay follows your account: signing out clears the device; another account never sees yours');
   await mac.returnToApp(); await synced(mac);
+  // Signing out with a change that isn't saved to your account yet (offline): it says so, and nothing is lost.
+  await mac.offline(true);
+  await editList(mac, 'admin', 'a3', 'Clean room (offline)');
   await goSync(mac);
   await mac.click('#syncScreen [data-action=sync-signout]');
-  check('signing out: "Saved locally", and this device\'s data stays', await statusIs(mac, 'local') && !!(await mac.data()).days[Y]);
-  await editList(mac, 'admin', 'a3', 'Clean room (while signed out)');
+  await mac.until(`document.querySelector('dialog[open]')`);
+  check('signing out says what happens: everything is saved to your account first, then MyDay\'s data is removed from this device', /saved to your account first/.test(await mac.text('dialog[open]')) && /removed from this device/.test(await mac.text('dialog[open]')), await mac.text('dialog[open]'));
+  await mac.answer(true);
+  check('offline, with a change not saved yet: it says so, and offers a backup first (nothing is removed)', await mac.until(`(document.querySelector('dialog[open]')?.textContent || '').includes("aren't saved to your account yet")`, 15000)
+    && /Download a backup and sign out/.test(await mac.text('dialog[open]')));
+  await mac.answer(false);
+  await sleep(300);
+  check('…"Stay signed in" keeps everything as it was', listTitle(await mac.data(), 'admin', 'a3') === 'Clean room (offline)' && !(await mac.exists('#signInGate')));
+  await mac.offline(false); await mac.returnToApp(); await synced(mac);
+  check('…and once online, the change is saved to your account', (await cloudList('admin', userA)).data.items.find(i => i.id === 'a3').title === 'Clean room (offline)');
+  // Everything saved: signing out clears the device.
   await goSync(mac);
+  await mac.click('#syncScreen [data-action=sync-signout]');
+  await mac.until(`document.querySelector('dialog[open]')`); await mac.answer(true);
+  check('with everything saved: signed out — back to "Welcome to MyDay"', await mac.until(`document.getElementById('signInGate') && document.getElementById('gate-h').textContent === 'Welcome to MyDay'`, 15000), await diag(mac));
+  const cleared = await mac.data();
+  check('…and MyDay\'s data is gone from this device (a new MyDay\'s, nothing of yours)', !cleared.days[Y] && listTitle(cleared, 'learning', 'l1') !== 'Mac: Networking basics' && !cleared.notes.items.length && (await mac.notes()).link === null);
   srv.log.length = 0;
   await signIn(mac, C);
-  check('signing in to a different account: "Needs attention", explained', await phaseIs(mac, 'other-account') && (await mac.status()) === 'attention');
-  await sleep(1500);
-  check('…nothing is sent to or fetched from the other account', !srv.log.some(e => e.path.startsWith('/rest/v1/') && e.user === userC) && (await sql('select count(*)::int as n from public.task_lists where user_id = $1', [userC]))[0].n === 0, srv.log.filter(e => e.user === userC).map(e => e.path));
-  check('…and this device\'s records are untouched', listTitle(await mac.data(), 'admin', 'a3') === 'Clean room (while signed out)');
+  check('another account signing in on the same device sees its own MyDay (empty), nothing of yours', await mac.until(`!document.getElementById('signInGate') && document.getElementById('nav')`, 15000) && !(await mac.data()).days[Y] && listTitle(await mac.data(), 'learning', 'l1') !== 'Mac: Networking basics');
+  await synced(mac);
+  check('…and nothing of yours reached that account', (await sql(`select data from public.task_lists where user_id = $1`, [userC])).every(r => !JSON.stringify(r.data).includes('Mac:')) && (await sql(`select count(*)::int as n from public.day_plans where user_id = $1`, [userC]))[0].n === 0
+    && (await sql(`select count(*)::int as n from public.sync_records where user_id = $1 and kind = 'note'`, [userC]))[0].n === 0);
   const tA = await token(A), tC = await token(C);
-  check('the account\'s own token reads only its own rows', (await (await rest('/rest/v1/task_lists?select=*', tA)).json()).every(r => r.user_id === userA));
-  check('another account\'s token reads none of them', (await (await rest('/rest/v1/task_lists?select=*', tC)).json()).length === 0 && (await (await rest('/rest/v1/day_plans?select=*', tC)).json()).length === 0);
+  check('the account\'s own token reads only its own rows', (await (await rest('/rest/v1/task_lists?select=*', tA)).json()).every(r => r.user_id === userA) && (await (await rest('/rest/v1/sync_records?select=*', tA)).json()).every(r => r.user_id === userA));
+  check('another account\'s token reads none of them', (await (await rest('/rest/v1/task_lists?select=*', tC)).json()).every(r => r.user_id === userC) && (await (await rest('/rest/v1/sync_records?select=*', tC)).json()).every(r => r.user_id === userC));
   check('another account can\'t change them directly', (await rest(`/rest/v1/task_lists?user_id=eq.${userA}`, tC, { method: 'PATCH', body: JSON.stringify({ data: { items: [] } }) })).status === 403);
   check('…or through sync_pull/sync_push by naming that account', (await rest('/rest/v1/rpc/sync_pull', tC, { method: 'POST', body: JSON.stringify({ account: userA, since: 0 }) })).status === 403 &&
     (await rest('/rest/v1/rpc/sync_push', tC, { method: 'POST', body: JSON.stringify({ account: userA, changes: [] }) })).status === 403);
   check('signed-out visitors (publishable key only) get nothing', (await rest('/rest/v1/task_lists?select=*', null)).status === 401 && (await rest('/rest/v1/rpc/sync_pull', null, { method: 'POST', body: JSON.stringify({ account: userA }) })).status === 401);
-  await mac.click('[data-action=sync-signout]');
-  await phaseIs(mac, 'signed-out');
+  await goSync(mac);
+  await mac.click('#syncScreen [data-action=sync-signout]');
+  await mac.until(`document.querySelector('dialog[open]')`); await mac.answer(true);
+  await mac.until(`document.getElementById('signInGate')`, 15000);
   await signIn(mac, A);
-  check('signing back in to the right account carries on syncing', await synced(mac), await diag(mac));
-  check('…and the change made while signed out is sent', (await cloudList('admin', userA)).data.items.find(i => i.id === 'a3').title === 'Clean room (while signed out)');
+  check('signing back in as you brings your MyDay back from your account', await mac.until(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); return d.days['${Y}'] && d.lists.learning[0].title === 'Mac: Networking basics' && d.lists.admin.find(i => i.id === 'a3').title === 'Clean room (offline)'; })()`, 15000));
+  check('…your Study, notes and Finance too', await mac.until(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); return d.study.topics?.[0]?.title === 'Arabic' && d.notes.items.some(n => n.id === 'ntPhone') && d.finance.expenses.some(e => e.name === 'Rent'); })()`, 15000));
+  await synced(mac);
 
-  console.log('\n[10] Backups: export stays complete; restoring one is reviewed before anything is sent');
+  console.log('\n[10] Backups: export stays complete; restoring one is saved to your account like any change');
   await phone.returnToApp();
-  await phone.until(`JSON.parse(localStorage.getItem('myday.data.v4')).lists.admin.find(i => i.id === 'a3').title === 'Clean room (while signed out)'`);
+  await phone.until(`JSON.parse(localStorage.getItem('myday.data.v4')).lists.admin.find(i => i.id === 'a3').title === 'Clean room (offline)'`);
   await synced(phone);
   await goToday(phone);
   await phone.until(`document.querySelector('[data-action=export]')`);
@@ -404,49 +426,35 @@ function task(uid, taskId, category, title, minutes, done = false) {
   const exported = JSON.parse(phone.lastDownload() || '{}');
   pd = await phone.data();
   check('the export holds the whole of the saved data, synced records included', exported.format === 'myday-export' && eq(withoutSaves(exported.data), withoutSaves(pd)));
-  check('…every section is there', ['lists', 'queue', 'days', 'context', 'settings', 'rota', 'pay', 'health', 'study'].every(k => k in exported.data));
+  check('…every section is there', ['lists', 'queue', 'days', 'context', 'settings', 'rota', 'pay', 'health', 'study', 'notes', 'tasks', 'finance'].every(k => k in exported.data));
   exported.data.lists.admin.find(i => i.id === 'a4').title = 'Groceries (from the backup)';
   const file = path.join(phone.dir, 'restore.json');
   fs.writeFileSync(file, JSON.stringify(exported));
   const doc = await phone.send('DOM.getDocument', { depth: -1 });
   const { nodeId } = await phone.send('DOM.querySelector', { nodeId: doc.root.nodeId, selector: '#importFile' });
-  srv.log.length = 0;
   await phone.send('DOM.setFileInputFiles', { nodeId, files: [file] });
   await phone.until(`document.querySelector('[data-action=dialog-confirm]')`);
+  check('restoring a backup says it replaces your MyDay in your account too (so on all your devices)', /in your account, so on all your devices/.test(await phone.text('dialog[open]')), await phone.text('dialog[open]'));
   await phone.answer(true);
   await phone.until(`JSON.parse(localStorage.getItem('myday.data.v4')).lists.admin.some(i => i.title === 'Groceries (from the backup)')`);
-  check('after restoring a backup, sync waits ("Needs attention") instead of sending it', await statusIs(phone, 'attention') && (await phone.notes()).link.review === 'import');
-  await sleep(2500);
-  check('…nothing was sent', !srv.log.some(e => e.path === '/rest/v1/rpc/sync_push'));
-  await goSync(phone);
-  await openReview(phone);
-  check('the review shows exactly what the backup changes (the admin list, to send)', eq(await reviewKeys(phone, 'rv-up'), ['list:admin']) && (await differKeys(phone)).length === 0 && (await reviewKeys(phone, 'rv-down')).length === 0, { up: await reviewKeys(phone, 'rv-up'), down: await reviewKeys(phone, 'rv-down'), differ: await differKeys(phone) });
-  await phone.click('[data-action=review-start]');
+  check('…and it\'s saved to your account straight away, with no extra step', await cloudUntil(async () => (await cloudList('admin', userA)).data.items.some(i => i.title === 'Groceries (from the backup)'), 15000));
   await synced(phone);
-  check('confirming sends it', (await cloudList('admin', userA)).data.items.some(i => i.title === 'Groceries (from the backup)'));
-  srv.log.length = 0;
   await mac.setData(`s => { for (let i = 1; i <= 20; i++) { const d = String(i).padStart(2, '0'); s.context['2025-01-' + d] = { energy: 3, sleep: { start: null, end: null, estimatedHours: 7 } }; s.days['2025-02-' + d] = { energy: 3, rest: true, builtAt: '', checkedIn: false, tasks: [] }; } }`);
-  check('a lot changed at once (e.g. a backup restored in the classic MyDay): reviewed first, not sent', await statusIs(mac, 'attention') && (await mac.notes()).link.review === 'bulk' && !srv.log.some(e => e.path === '/rest/v1/rpc/sync_push'));
+  check('a lot changed at once (e.g. a backup restored in the classic MyDay) is saved to your account too', await cloudUntil(async () => (await sql(`select count(*)::int as n from public.day_plans where user_id = $1 and id like '2025-02-%'`, [userA]))[0].n === 20, 20000) && (await synced(mac)));
 
-  console.log('\n[11] Moving a device to another account is deliberate, and warned about');
-  await goSync(phone);
-  await phone.click('[data-action=sync-signout]');
-  await phaseIs(phone, 'signed-out');
-  await signIn(phone, C);
-  await phaseIs(phone, 'other-account');
+  console.log('\n[11] A device that still has another account\'s MyDay (signed out before 1.9.0): never mixed');
+  await phone.ev(`localStorage.removeItem('myday.sync.auth')`);
+  await phone.open(APP + '#today');
+  check('it asks that account to sign in again ("Sign in to carry on", the email filled in)', (await phone.until(`document.getElementById('signInGate')`)) && (await phone.text('#gate-h')) === 'Sign in to carry on' && (await phone.ev(`document.getElementById('syncEmailInput').value`)) === A.email);
   srv.log.length = 0;
-  await phone.click('[data-action=sync-stop]');
-  await phone.until(`document.querySelector('[data-action=dialog-confirm]')`);
-  check('stopping syncing explains that nothing is deleted', (await phone.text('[role=dialog], dialog')).includes('nothing is deleted from your account'), await phone.text('[role=dialog], dialog'));
-  const phoneData = withoutSaves(await phone.data());
-  await phone.answer(true);
-  check('after stopping, the phone can be set up for the other account — with its data unchanged', await phaseIs(phone, 'setup') && eq(withoutSaves(await phone.data()), phoneData));
-  await openReview(phone);
-  check('the review warns that this device\'s records include the previous account\'s', (await phone.text('[data-note=before]')).includes(A.email), await phone.text('[data-note=before]'));
-  await phone.click('[data-action=review-cancel]');
-  await sleep(500);
-  check('choosing "Not now" sends nothing to the other account', !srv.log.some(e => e.path === '/rest/v1/rpc/sync_push') && (await sql('select count(*)::int as n from public.task_lists where user_id = $1', [userC]))[0].n === 0);
+  const phoneHad = withoutSaves(await phone.data());
+  await signIn(phone, C);
+  check('signing in as another account: explained ("A different account"), MyDay stays closed', await phaseIs(phone, 'other-account') && (await phone.text('#gate-h')) === 'A different account');
+  await sleep(1500);
+  check('…nothing is sent to that account, and this device\'s MyDay is unchanged', !srv.log.some(e => e.path === '/rest/v1/rpc/sync_push') && eq(withoutSaves(await phone.data()), phoneHad));
   check('…and the first account\'s records in the cloud are untouched', (await cloudList('admin', userA)).data.items.some(i => i.title === 'Groceries (from the backup)'));
+  await phone.click('#syncScreen [data-action=sync-signout]');
+  check('signing out of the other account leaves this device\'s MyDay (the first account\'s) as it is', await phaseIs(phone, 'signed-out') && eq(withoutSaves(await phone.data()), phoneHad));
 
   console.log('\n[12] Without sync set up, nothing changes');
   srv.log.length = 0;

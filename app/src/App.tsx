@@ -27,6 +27,9 @@ import { SYNC } from './sync/config';
 import { noteImported } from './sync/engine';
 import { SyncBadge } from './sync/SyncBadge';
 import { SyncScreen } from './sync/SyncScreen';
+import { signInRequired } from './sync/gate';
+import { SignInGate } from './sync/SignInGate';
+import { useSync } from './sync/engine';
 
 // Saves text as a file the browser downloads (backups and the unreadable-data copy).
 function download(filename: string, text: string) {
@@ -53,6 +56,8 @@ function Shell() {
   const [k, setK] = useState(todayKey);
   const fileInput = useRef<HTMLInputElement>(null);
   const [loadIssue, setLoadIssue] = useState(getLoadIssue);
+  const sync = useSync();
+  const [useHere, setUseHere] = useState(false); // "Use MyDay on this device for now" (until it's next opened)
   const theme: Theme = data.settings.theme;
   const motionAllowed = data.settings.motion !== 'off' && !reduceQuery?.matches;
 
@@ -98,7 +103,7 @@ function Shell() {
         <>
           <p>{result.summary}</p>
           {result.dropped > 0 && <p>{result.dropped} unreadable entr{result.dropped === 1 ? 'y' : 'ies'} will be skipped.</p>}
-          <p>Your current data on this device will be overwritten. You might want to export it first.</p>
+          <p>{sync.phase === 'linked' ? 'Your current MyDay will be replaced — on this device and in your account, so on all your devices.' : 'Your current data on this device will be overwritten.'} You might want to export it first.</p>
         </>
       ),
       confirmLabel: 'Replace my data',
@@ -107,7 +112,7 @@ function Shell() {
     if (!yes) { toast('Import cancelled. Nothing was changed.'); return; }
     if (replaceAll(result.data)) {
       toast('Imported.');
-      void noteImported(); // if this device syncs: nothing is sent until you've checked what the backup would change
+      void noteImported(); // signed in: it's saved to your account, like any change
     }
   }
 
@@ -121,6 +126,8 @@ function Shell() {
   }
 
   const blocked = status.kind === 'damaged' || status.kind === 'older';
+  // Sign in first (when sync is set up): see sync/SignInGate.tsx.
+  const gate = !blocked && signInRequired(sync) && !useHere;
   let content;
   if (status.kind === 'damaged') {
     content = <DamagedView reason={status.reason} onImport={() => fileInput.current?.click()} onStartFresh={startFresh}
@@ -130,7 +137,7 @@ function Shell() {
   else if (hash.startsWith('#sync')) {
     content = SYNC.configured ? <SyncScreen onExport={exportData} /> : (
       <div className="max-w-[720px] mx-auto"><Card>
-        <h2>Sync between devices</h2><p className="text-[15px] text-fg-2">Sync isn't set up in this copy of MyDay. Everything is saved only in this browser.</p>
+        <h2>Your account</h2><p className="text-[15px] text-fg-2">Sync isn't set up in this copy of MyDay. Everything is saved only in this browser.</p>
       </Card></div>
     );
   } else if (section === 'today') {
@@ -141,6 +148,7 @@ function Shell() {
   else if (section === 'study') content = <StudyScreen data={data} hash={hash} />;
   else if (section === 'inbox') content = <InboxScreen data={data} hash={hash} />;
   else content = <HealthScreen data={data} hash={hash} />;
+  if (gate) content = <SignInGate onExport={exportData} onUseHere={() => { setUseHere(true); toast('Using what\'s on this device. Sign in next time to sync.'); }} />;
 
   return (
     <>
@@ -149,15 +157,15 @@ function Shell() {
           <div>
             <div className="flex items-center gap-2">
               <p className="text-xs font-bold tracking-[.14em] uppercase text-primary m-0">MyDay</p>
-              {!blocked && <SyncBadge />}
+              {!blocked && !gate && <SyncBadge />}
             </div>
             <h1 id="date" className="text-[26px] lg:text-[28px] font-bold tracking-[-.02em] leading-tight m-0">{prettyDate(k)}</h1>
           </div>
           <ThemeButton theme={theme} motionAllowed={motionAllowed} onChange={next => update(d => { d.settings.theme = next; })} />
         </div>
       </header>
-      {!blocked && <Nav current={barSection(section)} />}
-      {!blocked && status.kind === 'ok' && <CaptureButton data={data} />}
+      {!blocked && !gate && <Nav current={barSection(section)} />}
+      {!blocked && !gate && status.kind === 'ok' && <CaptureButton data={data} />}
       <main id="app" className="max-w-[640px] lg:max-w-[1120px] mx-auto px-4 lg:px-6 pt-4 lg:pt-6">
         {loadIssue && !blocked && (
           <LoadIssue dropped={loadIssue.dropped}
@@ -166,7 +174,7 @@ function Shell() {
         )}
         {content}
         {/* Today has these at the bottom of its own layout; every other section gets them here. */}
-        {!blocked && (section !== 'today' || hash.startsWith('#noticed')) && !hash.startsWith('#sync') && (
+        {!blocked && !gate && (section !== 'today' || hash.startsWith('#noticed')) && !hash.startsWith('#sync') && (
           <div className="max-w-[720px] mx-auto mt-6">
             <AppFooter data={data} canSave={status.kind === 'ok'} onEdit={() => { location.hash = 'today/edit'; }} onExport={exportData} onImport={() => fileInput.current?.click()} />
           </div>

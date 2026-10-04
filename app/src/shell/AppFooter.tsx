@@ -33,7 +33,7 @@ export function AppFooter({ data, canSave, onEdit, onExport, onImport }: {
         </Button>
       </div>
       <p className="storage-note text-center text-fg-3 text-[13px] mt-3.5">{!canSave ? 'Saving is unavailable in this browser.'
-        : sync.phase === 'linked' ? 'Saved in this browser — and everything you enter syncs with your account.'
+        : sync.phase === 'linked' ? `Saved to your account${sync.linkedEmail ? ` (${sync.linkedEmail})` : ''}.`
         : 'Saved only in this browser.'}</p>
       {/* Which release is loaded, to check after publishing. */}
       <p id="appVersion" className="app-version text-center text-fg-3 text-[13px] mt-1 tabular-nums">{RELEASE}</p>

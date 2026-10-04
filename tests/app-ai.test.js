@@ -112,12 +112,11 @@ const SEED = `s => {
 
   console.log('\n[3] With an account: the ai-plan Edge Function (its real code, a mock model)');
   const D = await device('edge');
-  await seeded(D, EDGE);
-  check('signed out: it asks you to sign in, and nothing is sent', (await ask(D)) === 'error' && (await D.text('#aiCard')).includes('Sign in to use AI help') && aiCalls().length === 0);
-  await close(D);
-  await D.ev(`location.hash = 'sync'`); await D.until(`document.getElementById('syncEmailInput')`);
+  await open(D, EDGE); await D.setData(SEED);
+  check('signed out: MyDay asks you to sign in first (from 1.9.0), so AI help can\'t be reached, and nothing is sent', (await D.until(`document.getElementById('signInGate')`)) && !(await D.exists('[data-action=ai-open]')) && aiCalls().length === 0);
+  await D.until(`document.getElementById('syncEmailInput')`);
   await D.type('#syncEmailInput', A.email); await D.type('#syncPassword', A.password); await D.click('[data-action=sync-signin]');
-  await D.until(`document.getElementById('syncScreen').dataset.phase === 'setup'`);
+  await D.until(`!document.getElementById('signInGate')`, 15000); // combined with the account by itself, then MyDay opens
   await D.ev(`location.hash = 'today'`); await D.until(`document.querySelector('[data-action=ai-open]')`);
   const before3 = await D.data();
   check('signed in: a suggestion comes back from the server', (await ask(D, 'only 20 minutes please')) === 'review' && (await D.text('#aiCard')).includes('Mock planner'));

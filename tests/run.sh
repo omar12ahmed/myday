@@ -58,10 +58,11 @@ fi
 if printf '%s\n' "${SUITES[@]}" | grep -q '^app-ai$'; then
   (cd "$ROOT/app" && VITE_SUPABASE_URL= VITE_SUPABASE_PUBLISHABLE_KEY= VITE_AI=mock npx vite build --outDir "$WORK/srv/aimock" --emptyOutDir >"$WORK/aimock-build.log" 2>&1) || { echo "The AI practice copy of the app didn't build:"; tail -20 "$WORK/aimock-build.log"; exit 1; }
 fi
-# The website layouts, built as GitHub Pages will publish them, under a sub-folder like /myday/.
+# The website layouts, built as GitHub Pages will publish them, under a sub-folder like /myday/ (without the real
+# project's sync and AI settings, like every test copy: nothing here may reach the real project).
 if printf '%s\n' "${SUITES[@]}" | grep -q '^app-site$'; then
   for L in trial switch; do
-    "$ROOT/deploy/build-site.sh" "$L" "$WORK/srv/pages-$L/myday" >"$WORK/site-$L.log" 2>&1 || { echo "The '$L' website didn't build:"; tail -20 "$WORK/site-$L.log"; exit 1; }
+    VITE_SUPABASE_URL= VITE_SUPABASE_PUBLISHABLE_KEY= VITE_AI= "$ROOT/deploy/build-site.sh" "$L" "$WORK/srv/pages-$L/myday" >"$WORK/site-$L.log" 2>&1 || { echo "The '$L' website didn't build:"; tail -20 "$WORK/site-$L.log"; exit 1; }
   done
 fi
 cp "$HERE/fixtures/myday-v2.html.fixture" "$WORK/srv/v2.html"

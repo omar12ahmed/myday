@@ -8,9 +8,9 @@ import { BackLink, LinkButton, Note, Summary } from '../components/parts';
 import { getSnapshot } from '../data/storage';
 import { toast } from '../data/toast';
 import { Compare } from './Compare';
-import { clearKept, dismissRejected, doSignIn, doSignOut, keptFile, prepareReview, resolveConflicts, STATUS_LABEL, stopSyncing, syncNow, useSync, type Review, type View } from './engine';
+import { clearKept, clearThisDevice, dismissRejected, doSignIn, doSignOut, getView, joinAccount, keptFile, resolveConflicts, signOutHere, STATUS_LABEL, stopSyncing, syncNow, useSync, type View } from './engine';
+import { UNREACHABLE } from './client';
 import { localRecords, recordLabel } from './records';
-import { ReviewPanel } from './ReviewPanel';
 import { readState } from './state';
 
 // When something last synced, e.g. "today at 10:42" or "Fri 2 Oct at 10:42".
@@ -25,62 +25,63 @@ const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one :
 function statusLine(v: View): string {
   if (v.phase === 'signed-out') return v.linkedEmail ? `Signed out. Changes stay on this device and are sent when you sign in to ${v.linkedEmail} again.` : 'Everything is saved on this device. Sign in to sync it with your other devices.';
   if (v.phase === 'starting') return 'Getting ready…';
-  if (v.phase === 'setup') return "Signed in. This device hasn't started syncing yet.";
+  if (v.phase === 'setup') return v.joinProblem || 'Signed in. Getting your MyDay from your account…';
   if (v.phase === 'other-account') return 'Signed in to a different account from the one this device syncs with.';
   if (v.phase === 'unavailable') return "This browser isn't letting MyDay save, so sync can't keep track of changes here.";
   if (v.phase === 'notes-damaged') return "Sync's notes on this device couldn't be read. Your MyDay data is fine.";
-  if (v.status === 'syncing') return 'Sending and fetching changes…';
+  if (v.status === 'syncing') return 'Saving to your account and checking for changes from your other devices…';
   if (v.problem === 'paused') return "Sync is paused until MyDay can read this device's saved data (see Today).";
-  if (v.review) return 'Sync is paused until you check what it would change.';
   if (v.problem === 'auth' || v.problem === 'not-ready' || v.problem === 'storage') return v.message;
   if (v.conflicts.length) return `${plural(v.conflicts.length, 'record was', 'records were')} changed here and on another device. Nothing has been overwritten — choose which to keep.`;
   const retry = v.retryAt ? ` Trying again at ${new Date(v.retryAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}.` : '';
   if (v.problem) return `${v.message} ${v.pending ? `${plural(v.pending, 'change is', 'changes are')} saved on this device and will be sent when it can.` : 'Everything here is saved on this device.'}${retry}`;
   if (v.pending) return `${plural(v.pending, 'change is', 'changes are')} saved on this device, waiting to be sent.`;
-  return v.lastSynced ? `Everything here is in your account. Last synced ${when(v.lastSynced)}.` : 'Ready to sync.';
+  return v.lastSynced ? `Everything here is saved to your account. Last updated ${when(v.lastSynced)}.` : 'Ready.';
 }
 
-export function SyncScreen({ onExport }: { onExport: () => void }) {
+// `gate`: shown as part of the sign-in screen (SignInGate), so without the way back to Today and the overview.
+export function SyncScreen({ onExport, gate = false, onUnreachable }: { onExport: () => void; gate?: boolean; onUnreachable?: () => void }) {
   const v = useSync();
   const confirm = useConfirm();
-  const [reviewState, setReview] = useState<Review | null>(null);
   const [busy, setBusy] = useState('');
-  const [error, setError] = useState('');
-  // A review belongs to the account it was made for (it's dropped if you sign out or switch account).
-  const review = reviewState && v.account && v.account.id === reviewState.account.id ? reviewState : null;
 
-  async function openReview() {
-    setBusy('review'); setError('');
-    const r = await prepareReview();
-    setBusy('');
-    if (r.ok) setReview(r.review); else setError(r.message);
-  }
+  // Signing out: everything is saved to your account first, then MyDay's data is removed from this device. (Signed
+  // in without this device's MyDay being yours — another account, or not combined yet — it just signs out.)
   async function signOut() {
+    if (v.phase !== 'linked') {
+      setBusy('signout');
+      const ok = await doSignOut();
+      setBusy('');
+      if (!ok) toast("Couldn't sign out just now. Check your connection and try again.");
+      return;
+    }
+    const kept = v.kept ? ` The ${plural(v.kept, 'copy', 'copies')} kept aside on this device will go too — download ${v.kept === 1 ? 'it' : 'them'} first (below) if you want ${v.kept === 1 ? 'it' : 'them'}.` : '';
+    if (!(await confirm({ title: 'Sign out on this device?', body: `Everything you've changed is saved to your account first. Then MyDay's data is removed from this device — sign in again, here or on any device, to see it.${kept}`, confirmLabel: 'Sign out', cancelLabel: 'Stay signed in' }))) return;
     setBusy('signout');
-    const ok = await doSignOut();
+    let r = await signOutHere();
     setBusy('');
-    if (!ok) { toast("Couldn't sign out just now. Check your connection and try again."); return; }
-    setReview(null);
-    toast('Signed out on this device. Your data here stays as it is.');
-  }
-  async function stop() {
-    const pendingNote = v.pending ? ` ${plural(v.pending, 'change made here hasn\'t', 'changes made here haven\'t')} been sent yet: ${v.pending === 1 ? 'it stays' : 'they stay'} on this device, but won't be sent.` : '';
-    const yes = await confirm({
-      title: `Stop syncing with ${v.linkedEmail} on this device?`,
-      body: `Everything on this device stays exactly as it is, and nothing is deleted from your account. This device just stops sending and fetching changes.${pendingNote} You can start again later (you'll see what would change first).`,
-      confirmLabel: 'Stop syncing here',
-      cancelLabel: 'Keep syncing',
-    });
-    if (!yes) return;
-    await stopSyncing();
-    toast('This device has stopped syncing. Your data here is unchanged.');
+    if (r === 'unsaved') {
+      const now = getView();
+      const why = now.problem === 'offline' ? "You're offline, so " : now.conflicts.length ? 'Something needs your choice first (above), so ' : '';
+      const n = Math.max(now.pending, 1);
+      if (!(await confirm({ title: "Some changes aren't saved to your account yet",
+        body: `${why}${plural(n, 'change is', 'changes are')} only on this device. Signing out now would remove ${n === 1 ? 'it' : 'them'} from here. Stay signed in until ${n === 1 ? 'it\'s' : 'they\'re'} saved — or download a backup of this device first, then sign out.`,
+        confirmLabel: 'Download a backup and sign out', cancelLabel: 'Stay signed in' }))) return;
+      onExport();
+      setBusy('signout');
+      r = await signOutHere(true);
+      setBusy('');
+    }
+    if (r === 'failed') toast("Couldn't sign out just now. Check your connection and try again.");
+    else if (r === 'done') toast("Signed out. MyDay's data has been removed from this device.");
   }
 
   return (
     <div className="max-w-[720px] mx-auto" id="syncScreen" data-phase={v.phase}>
-      <Card aria-labelledby="sync-h">
+      {!gate && <Card aria-labelledby="sync-h">
         <BackLink to="today" label="Today" />
-        <h2 id="sync-h">Sync between devices</h2>
+        <h2 id="sync-h">Your account</h2>
+        <p className="text-[15px] text-fg-2 mt-0">Everything you change is saved to your account automatically, so MyDay is the same on all your devices.</p>
         <p className="flex items-center gap-2 m-0">
           <span id="syncStatus" data-status={v.status} className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold border ${v.status === 'attention' ? 'bg-warn-c text-on-warn-c border-transparent' : v.status === 'synced' ? 'text-primary border-primary-outline' : 'text-fg-2 border-outline-strong'}`}>
             {STATUS_LABEL[v.status]}
@@ -88,53 +89,53 @@ export function SyncScreen({ onExport }: { onExport: () => void }) {
         </p>
         <p id="syncLine" className="text-[15px] text-fg-2 mt-2">{statusLine(v)}</p>
         {v.phase === 'linked' && (
-          <Button inline data-action="sync-now" disabled={v.status === 'syncing' || !!v.review || v.problem === 'paused'} onClick={() => { void syncNow(); }}>
-            <RefreshCw size={16} aria-hidden="true" /> Sync now
+          <Button inline data-action="sync-now" disabled={v.status === 'syncing' || v.problem === 'paused'} onClick={() => { void syncNow(); }}>
+            <RefreshCw size={16} aria-hidden="true" /> Update now
           </Button>
         )}
         <details className="group mt-2">
-          <Summary>What syncs, and what stays on this device</Summary>
+          <Summary>What's saved to your account, and what stays on this device</Summary>
           <div className="text-[15px] text-fg-2 grid gap-2 pb-1">
-            <p className="m-0"><strong className="text-fg">Syncs:</strong> everything you enter — Today (your task lists, the queue, each day's plan and context), the Calendar (your work pattern, shifts, appointments, pay rates and bank-holiday region), Finance, Inbox (tasks and notes), Study, Health (workouts, food, the shopping list and your goal), What MyDay has noticed, and your planning settings.</p>
+            <p className="m-0"><strong className="text-fg">Saved to your account:</strong> everything you enter — Today (your task lists, the queue, each day's plan and context), the Calendar (your work pattern, shifts, appointments, pay rates and bank-holiday region), Finance, Inbox (tasks and notes), Study, Health (workouts, food, the shopping list and your goal), What MyDay has noticed, and your planning settings.</p>
             <p className="m-0">Notes, tasks, appointments, sessions, workouts and recipes sync one by one, so something added on each device is simply kept on both. If the same thing was changed on two devices before they synced, you choose which to keep.</p>
             <p className="m-0"><strong className="text-fg">Stays on this device:</strong> the theme and animations, a running focus timer or rest countdown, and the bank holidays downloaded from gov.uk.</p>
-            <p className="m-0">Everything is saved on this device first, so MyDay works just the same offline. Changes are sent when it can reach your account, and fetched whenever you come back to MyDay.</p>
+            <p className="m-0">Each change is saved on this device first (so MyDay works just the same offline), then to your account straight away. Changes from your other devices arrive when you open MyDay, every few minutes while it's open, or with "Update now".</p>
           </div>
         </details>
-      </Card>
+      </Card>}
 
-      {error && <Card tone="notice"><p role="alert" className="m-0 text-[15px]">{error}</p></Card>}
 
-      {v.phase === 'signed-out' && <SignInCard linkedEmail={v.linkedEmail} />}
+      {v.phase === 'signed-out' && <SignInCard linkedEmail={v.linkedEmail} onUnreachable={onUnreachable} />}
+      {gate && v.phase === 'starting' && <Card><p className="m-0 text-[15px] text-fg-2" id="gateStarting">Getting ready…</p></Card>}
 
-      {v.phase === 'setup' && v.account && !review && (
-        <Card aria-labelledby="setup-h">
-          <h3 id="setup-h">Start syncing on this device</h3>
-          <p className="text-[15px] text-fg-2">Signed in as <strong className="text-fg">{v.account.email}</strong>.</p>
-          <ol className="grid gap-3 pl-5 my-3 text-[15px]">
-            <li><strong>Download a backup of this device first.</strong> It's a copy of everything here, just in case.
-              <div className="mt-2"><Button inline data-action="export" onClick={onExport}>Download a backup</Button></div></li>
-            <li><strong>See what would change.</strong> MyDay compares this device with your account and shows you everything before anything is saved or sent.
-              <div className="mt-2"><Button inline variant="primary" data-action="sync-review" disabled={busy === 'review'} onClick={openReview}>{busy === 'review' ? 'Comparing…' : 'See what would change'}</Button></div></li>
-          </ol>
+      {v.phase === 'setup' && v.account && (
+        <Card aria-labelledby="setup-h" id="joinCard" data-joining={v.joining ? '1' : '0'}>
+          <h3 id="setup-h">{v.joinProblem ? "Couldn't get your MyDay just now" : 'Getting your MyDay from your account…'}</h3>
+          <p className="text-[15px] text-fg-2">Signed in as <strong className="text-fg">{v.account.email}</strong>. {v.joinProblem
+            || 'What\'s only in your account comes here, and anything only on this device is added to your account.'}</p>
+          {v.joinProblem && !v.joining && (
+            <div className="grid gap-2.5">
+              {v.before ? <>
+                <Button data-action="export" onClick={onExport}>Download a backup of this device</Button>
+                <Button data-action="join-clear" onClick={async () => { if (await confirm({ title: 'Clear this device?', body: `${v.before}'s MyDay on this device is removed (download a backup first if it isn't saved in that account), and yours comes here from your account.`, confirmLabel: 'Clear and continue', cancelLabel: 'Not now' })) await clearThisDevice(); }}>Clear this device and continue</Button>
+              </> : <Button variant="primary" data-action="join-retry" onClick={() => { void joinAccount(); }}>Try again</Button>}
+            </div>
+          )}
           <LinkButton data-action="sync-signout" onClick={signOut}>Sign out</LinkButton>
         </Card>
       )}
 
-      {review && <ReviewPanel review={review} onDone={() => setReview(null)} onCancel={() => setReview(null)} onReplace={setReview} />}
-
       {v.phase === 'other-account' && v.account && (
         <Card tone="notice" aria-labelledby="other-h">
           <h3 id="other-h">This device syncs with another account</h3>
-          <p className="text-[15px]">This device syncs with <strong>{v.linkedEmail}</strong>, but you're signed in as <strong>{v.account.email}</strong>. Nothing is sent to or fetched from {v.account.email}'s account, and this device's records stay as they are.</p>
+          <p className="text-[15px]">This device has the MyDay of <strong>{v.linkedEmail}</strong>, but you're signed in as <strong>{v.account.email}</strong>. Nothing is sent to or fetched from {v.account.email}'s account, and nothing here changes. Sign out, then sign in as {v.linkedEmail} (that saves anything waiting and clears this device when you sign out again).</p>
           <div className="grid gap-2.5">
             <Button data-action="sync-signout" onClick={signOut}>Sign out</Button>
-            <Button variant="ghost" data-action="sync-stop" onClick={stop}>Stop syncing with {v.linkedEmail} here</Button>
           </div>
         </Card>
       )}
 
-      {v.phase === 'linked' && <LinkedCards v={v} onReview={openReview} reviewOpen={!!review} busy={busy} />}
+      {v.phase === 'linked' && <LinkedCards v={v} />}
 
       {v.phase === 'notes-damaged' && (
         <Card tone="notice">
@@ -147,12 +148,11 @@ export function SyncScreen({ onExport }: { onExport: () => void }) {
       {(v.phase === 'linked' || v.phase === 'setup' || v.phase === 'other-account') && v.account && (
         <Card aria-labelledby="acct-h">
           <h3 id="acct-h">Account</h3>
-          <p className="text-[15px] text-fg-2">Signed in as <strong className="text-fg" id="syncEmail">{v.account.email}</strong>{v.phase === 'linked' ? ' · this device syncs with this account' : ''}.</p>
+          <p className="text-[15px] text-fg-2">Signed in as <strong className="text-fg" id="syncEmail">{v.account.email}</strong>.</p>
           <div className="grid gap-2.5">
-            {v.phase === 'linked' && <Button variant="ghost" data-action="sync-signout" disabled={busy === 'signout'} onClick={signOut}>Sign out on this device</Button>}
-            {v.phase === 'linked' && <Button variant="ghost" data-action="sync-stop" onClick={stop}>Stop syncing on this device</Button>}
+            {v.phase === 'linked' && <Button variant="ghost" data-action="sync-signout" disabled={busy === 'signout'} onClick={signOut}>{busy === 'signout' ? 'Saving, then signing out…' : 'Sign out on this device'}</Button>}
           </div>
-          <Note className="mt-3 mb-0">Signing out keeps everything on this device. Changes made while signed out are sent when you sign back in to the same account.</Note>
+          <Note className="mt-3 mb-0">Signing out saves everything to your account, then removes MyDay's data from this device. Sign in again — here or on any device — to see it.</Note>
         </Card>
       )}
       {v.kept > 0 && <KeptCard count={v.kept} />}
@@ -160,7 +160,7 @@ export function SyncScreen({ onExport }: { onExport: () => void }) {
   );
 }
 
-function SignInCard({ linkedEmail }: { linkedEmail: string | null }) {
+function SignInCard({ linkedEmail, onUnreachable }: { linkedEmail: string | null; onUnreachable?: () => void }) {
   const [email, setEmail] = useState(linkedEmail || '');
   const [password, setPassword] = useState('');
   const [show, setShow] = useState(false);
@@ -172,7 +172,7 @@ function SignInCard({ linkedEmail }: { linkedEmail: string | null }) {
     setBusy(true); setError('');
     const msg = await doSignIn(email, password);
     setBusy(false);
-    if (msg) setError(msg);
+    if (msg) { setError(msg); if (msg === UNREACHABLE) onUnreachable?.(); }
     else { setPassword(''); toast('Signed in.'); }
   }
   return (
@@ -198,7 +198,7 @@ function SignInCard({ linkedEmail }: { linkedEmail: string | null }) {
   );
 }
 
-function LinkedCards({ v, onReview, reviewOpen, busy }: { v: View; onReview: () => void; reviewOpen: boolean; busy: string }) {
+function LinkedCards({ v }: { v: View }) {
   const [working, setWorking] = useState(false);
   // The cloud's versions of the records in conflict, as noted on this device.
   const read = readState();
@@ -213,15 +213,6 @@ function LinkedCards({ v, onReview, reviewOpen, busy }: { v: View; onReview: () 
   }
   return (
     <>
-      {v.review && !reviewOpen && (
-        <Card tone="notice" aria-labelledby="needs-review-h">
-          <h3 id="needs-review-h">{v.review === 'import' ? 'You restored a backup' : 'A lot changed on this device at once'}</h3>
-          <p className="text-[15px]">{v.review === 'import'
-            ? 'Before your account gets any of it, check what it would change there.'
-            : 'That can happen after restoring a backup, a long time offline, or the first time MyDay syncs more of your data (Calendar, Finance, Study, Health, Inbox…). Before your account gets any of it, check what it would change there.'} Sync is paused until then; everything stays saved on this device.</p>
-          <Button data-action="sync-review" disabled={busy === 'review'} onClick={onReview}>{busy === 'review' ? 'Comparing…' : 'See what would change'}</Button>
-        </Card>
-      )}
       {v.problem === 'auth' && (
         <Card tone="notice"><p className="text-[15px] m-0 mb-3">Your sign-in has run out. Sign in again to carry on syncing — your changes are safe on this device.</p>
           <Button data-action="sync-signout" onClick={async () => { if (!(await doSignOut())) toast("Couldn't sign out just now. Check your connection and try again."); }}>Sign in again</Button></Card>

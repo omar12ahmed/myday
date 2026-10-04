@@ -35,12 +35,13 @@ export async function signIn(email: string, password: string): Promise<{ ok: tru
     const status = error ? error.status : 0;
     if (error && (error.code === 'invalid_credentials' || status === 400)) return { ok: false, message: "That email and password don't match an account. Check them and try again." };
     if (error && status === 429) return { ok: false, message: 'Too many tries just now. Wait a minute, then try again.' };
-    if (!status || status >= 500) return { ok: false, message: "Couldn't reach your account. Check your connection and try again." };
+    if (!status || status >= 500) return { ok: false, message: UNREACHABLE };
     return { ok: false, message: error ? error.message : "Couldn't sign in." };
   } catch {
-    return { ok: false, message: "Couldn't reach your account. Check your connection and try again." };
+    return { ok: false, message: UNREACHABLE };
   }
 }
+export const UNREACHABLE = "Couldn't reach your account. Check your connection and try again.";
 
 // Signing out on this device only (other devices stay signed in). false = it didn't work (e.g. offline).
 export async function signOut(): Promise<boolean> {

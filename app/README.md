@@ -273,6 +273,26 @@ is never downloaded.
   is sent if the account doesn't have one yet; if another device's is already there and differs, it's a conflict for
   you to decide (identical ones simply match). More than 30 at once goes through the review first.
 
+**Your MyDay follows your account** (from 1.9.0; `src/sync/gate.ts`, `src/sync/SignInGate.tsx`, and the top of
+`src/sync/engine.ts`) — not a device. When sync is set up (the published app):
+- **Sign in first.** A device that isn't signed in shows a sign-in screen instead of MyDay, so what you see is always
+  your own account's MyDay and another account never sees it. A device stays signed in, and a signed-in device opens
+  straight away (offline too). If your account can't be reached (offline, or no answer when you sign in), "Use MyDay
+  on this device for now" opens it with what's on the device until it's next opened, so you're never locked out.
+- **Signing in combines the device with your account by itself** — no review, no set-up step: what's only in your
+  account comes to the device, what's only on the device goes to your account, and where the same part differs,
+  **your account's version is used** and the device's is kept aside (downloadable from Your account; a new MyDay's
+  starter versions aren't kept). Nothing is lost. Then MyDay opens.
+- **Every change is saved to your account automatically** as it's made — including restoring a backup (the
+  question says it replaces your MyDay in your account too) or changing a lot at once.
+- **Signing out** first makes sure everything is saved to your account, then **removes MyDay's data from the
+  device**; signing in again (as you, anywhere) brings it all back. If something isn't saved yet (offline, a choice to
+  make), it says so and offers "Download a backup and sign out" or "Stay signed in".
+- A device that still has another account's MyDay (signed out before 1.9.0, when signing out kept it) is never mixed
+  with a different account: signing in as someone else explains it and sends nothing.
+- Without sync set up (test copies, `npm run dev` without the settings) there's no sign-in screen. The classic MyDay
+  (`/classic/`) has no sign-in and uses the device's data as before.
+
 **How it works** (details at the top of `src/sync/engine.ts`):
 - Local first: every change is saved on the device as before; sync never makes you wait.
 - Sync remembers each record's cloud version and a fingerprint of its content. Anything that differs was changed on
@@ -283,13 +303,10 @@ is never downloaded.
   both versions for you to choose. A retried change (same id) is never applied twice.
 - Then it fetches what changed since the last time, by the account's own change numbers (never device clocks).
   Deleted day plans arrive as deletions (the database keeps a marker), so they don't come back.
-- Before a device first syncs with an account, after restoring a backup, or when more than 30 records change at once,
-  sync pauses for a **review**: what would be saved here, what would be sent, and what's different on each (you
-  choose). Nothing changes until you confirm. Any version of this device's that gets replaced is kept and can be
-  downloaded.
-- The status at the top of every screen: **Saved locally**, **Syncing**, **Synced** or **Needs attention**.
-  Tap it for the sync screen (`#sync`).
-- One account per device. Another account signed in sends and fetches nothing, and the database refuses requests
+- The status at the top of every screen: **Saved to your account**, **Saving…**, **Saved on this device** (offline,
+  or still waiting to go) or **Needs attention**. Tap it for **Your account** (`#sync`): who's signed in, "Update now",
+  anything to choose, copies kept aside, and signing out.
+- Another account signed in on a device that has someone's MyDay sends and fetches nothing, and the database refuses requests
   naming a different account from the one signed in. Each account can read only its own rows (Row Level Security),
   and nobody can write to the tables directly.
 
@@ -519,3 +536,10 @@ returns up to 8 small tasks; you tick the ones to add.
     Build my day in the open; and "What's getting in the way?" for tasks that keep moving.
 14. **Release 1.7.0:** Study's home page organised by topic — your topics as cards with their next step, progress
     and when you last studied them, and a page for each topic (up next, its courses, its roadmap).
+15. **Release 1.8.0:** everything you enter syncs with your account — Calendar, Finance, Inbox, Study, Health, Goal,
+    What MyDay has noticed and planning settings, besides Today — items one by one, other parts as one record each
+    (a second database migration, `sync_records`).
+16. **Release 1.9.0:** your MyDay follows your account — sign in first (a sign-in screen on a device that isn't
+    signed in), signing in combines the device with your account by itself (your account wins where they differ; the
+    device's version kept aside), every change saved to your account automatically, and signing out clears the
+    device once everything is saved. Wording: "Saved to your account", "Your account", "Update now".

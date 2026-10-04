@@ -9,7 +9,9 @@ const HOST = `http://localhost:${process.env.MYDAY_HTTP_PORT || 8765}`;
 const KEY = 'myday.data.v4';
 const failed = [];
 T.setHandler(d => {
-  if (d.method === 'Network.responseReceived' && d.params.response.url.startsWith(HOST) && d.params.response.status >= 400) failed.push(d.params.response.status + ' ' + d.params.response.url);
+  // (The browser's own request for the server's root /favicon.ico — made for the classic MyDay, which names no icon —
+  // is outside the website's folder, so it isn't a missing file of the site.)
+  if (d.method === 'Network.responseReceived' && d.params.response.url.startsWith(HOST) && d.params.response.status >= 400 && d.params.response.url !== HOST + '/favicon.ico') failed.push(d.params.response.status + ' ' + d.params.response.url);
   if (d.method === 'Network.loadingFailed' && (d.params.type === 'Script' || d.params.type === 'Stylesheet' || d.params.type === 'Font' || d.params.type === 'Document')) failed.push('failed ' + d.params.type);
 });
 const open = async url => { T.setUrl(url); await openAt(2026, 11, 2, 9); await sleep(300); };
