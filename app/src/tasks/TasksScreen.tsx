@@ -8,7 +8,7 @@ import { BackLink, Note } from '../components/parts';
 import { prettyDate } from '../data/dates';
 import { CAT_LABEL } from '../data/plan';
 import { update } from '../data/storage';
-import { addTask, GROUP_LABEL, isDone, listName, onTodaysPlan, setTaskDone, tasksView, type Group } from '../data/tasks';
+import { addTask, GROUP_LABEL, isDone, isStuck, listName, onTodaysPlan, setTaskDone, tasksView, type Group } from '../data/tasks';
 import { toast } from '../data/toast';
 import type { MyDayData, TaskItem } from '../data/types';
 import { loadLibs, parseCapture, type CaptureLibs } from '../capture/parse';
@@ -24,7 +24,7 @@ export function TasksScreen({ data, hash }: { data: MyDayData; hash: string }) {
 }
 
 export function TaskRow({ data, t }: { data: MyDayData; t: TaskItem }) {
-  const done = isDone(data, t), list = listName(data.tasks, t.listId);
+  const done = isDone(data, t) || !!t.letGoOn, list = listName(data.tasks, t.listId);
   return (
     <li className="task-li flex items-start gap-1 border-t border-outline first:border-t-0 py-2" data-id={t.id}>
       <label className="tick flex-none grid place-items-center size-11 -ml-2.5 mt-0.5 cursor-pointer">
@@ -39,6 +39,8 @@ export function TaskRow({ data, t }: { data: MyDayData; t: TaskItem }) {
           <span>{t.minutes} min</span>
           <CategoryChip kind={t.category} />
           {onTodaysPlan(data, t) && !done && <span className="text-primary font-semibold">On today's plan</span>}
+          {t.letGoOn && <span data-s="let-go">Let go</span>}
+          {!done && isStuck(data, t) && <span className="text-primary font-semibold" data-s="stuck">Something in the way?</span>}
         </span>
       </a>
     </li>

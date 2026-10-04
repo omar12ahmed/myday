@@ -4,7 +4,7 @@ import { Card } from '../components/Card';
 import { CategoryChip } from '../components/CategoryChip';
 import { shortDate } from '../data/dates';
 import { update } from '../data/storage';
-import { addToTodaysPlan, dueForToday, planRoom, setTaskDone } from '../data/tasks';
+import { addToTodaysPlan, dueForToday, isStuck, planRoom, setTaskDone } from '../data/tasks';
 import { toast } from '../data/toast';
 import type { DateKey, MyDayData } from '../data/types';
 
@@ -34,6 +34,7 @@ export function DueTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
               <span className="flex flex-wrap items-center gap-2 mt-0.5 text-sm text-fg-3 tabular-nums">
                 {t.due! < k ? <span>from {shortDate(t.due!)}</span> : t.time ? <span>{t.time}</span> : null}
                 <span>{t.minutes} min</span><CategoryChip kind={t.category} />
+                {isStuck(data, t, k) && <span className="text-primary font-semibold" data-s="stuck">Something in the way?</span>}
               </span>
             </a>
             {room.built && room.room > 0 && <Button inline data-action="due-plan" data-id={t.id} onClick={() => plan(t.id)}>Add to plan</Button>}

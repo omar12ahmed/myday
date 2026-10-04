@@ -30,6 +30,7 @@ import { healthReminders } from '../health/reminders';
 import { AdjustCard } from '../ai/AdjustCard';
 import { MindCard } from '../ai/MindCard';
 import { DueTodayCard } from './DueTodayCard';
+import { NoticedLink } from '../patterns/NoticedScreen';
 import { undoMind, type MindUndo } from '../ai/mind';
 import { canUndo, undoAi, type Undo } from '../ai/apply';
 import { AI_MODE } from '../ai/request';
@@ -323,6 +324,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
         {slot('order-1', studyCard, 'slot-study')}
         {slot('order-3', context, 'slot-context')}
         {slot('order-4', proposalCard)}
+        {slot('order-4', <NoticedLink data={data} k={k} />, 'slot-noticed')}
       </>
     );
   } else {
@@ -339,6 +341,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
         {slot('order-3', healthCard, 'slot-health')}
         {slot('order-3', studyCard, 'slot-study')}
         {slot('order-4', yesterdayOpen && <YesterdayCard onOpen={() => { setView('evening'); setEveningKey(shift(k, -1)); }} />)}
+        {slot('order-4', <NoticedLink data={data} k={k} />, 'slot-noticed')}
       </>
     );
   }

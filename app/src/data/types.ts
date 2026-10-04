@@ -121,6 +121,10 @@ export interface MyDayData {
   // keeps it unread). Today's repeating lists are `lists` above.
   tasks: TasksData;
 
+  // What MyDay has noticed: your preferences and your answers to the patterns it found (added by the new app in
+  // 1.6.0; the classic MyDay keeps it unread). The patterns themselves aren't saved: they're worked out from history.
+  patterns: PatternsData;
+
   // Anything else (e.g. a section added by a newer MyDay) is kept as it was, never dropped.
   [other: string]: unknown;
 }
@@ -314,8 +318,23 @@ export interface TaskItem {
   plannedOn: DateKey | null;  // the day it was added to that day's plan…
   planUid: string | null;     // …as this task there (ticking either one off ticks both)
   createdAt: DateTime;
+  // Added in 1.6.0 (absent before → 0, none, null):
+  postponed: number;          // times you moved its date later ("Tomorrow", or a later date)
+  blockers: { reason: Blocker; on: DateKey }[]; // your answers to "What's getting in the way?"
+  letGoOn: DateKey | null;    // you decided it doesn't matter any more ("Let it go")
 }
+export type Blocker = 'big' | 'start' | 'boring' | 'tired' | 'info' | 'notneeded' | 'other';
 export interface TasksData { lists: TaskList[]; items: TaskItem[]; [other: string]: unknown }
+
+// ---------- What MyDay has noticed (see data/patterns/) ----------
+// A preference: something you chose, or a pattern you said was right and asked MyDay to use.
+export interface Pref { value: number; on: DateKey; from: string | null; why: string }
+export interface PatternAnswer { said: 'yes' | 'no'; on: DateKey; examples: number; title: string }
+export interface PatternsData {
+  prefs: { maxMinutes: Record<Category, Pref | null>; maxTasks: Pref | null; [other: string]: unknown };
+  answers: Record<string, PatternAnswer>; // by pattern id, e.g. "size:learning"
+  [other: string]: unknown;
+}
 
 // ---------- Health → Goal (see data/goals.ts) ----------
 export type GoalKind = 'lose' | 'gain' | 'recomp' | 'maintain' | 'health';

@@ -7,12 +7,19 @@
 //
 // Saved as a top-level `tasks` section (added by the new app in 1.5.0, like Notes; the classic MyDay keeps it unread).
 // On this device only for now (not synced), and in "Export my data".
-import { isDateKey, isDateTime, isTime, localStamp, shift, todayKey } from './dates';
-import { limitFor, makeTask } from './plan';
-import type { Category, DateKey, MyDayData, TaskItem, TasksData } from './types';
+//
+// A task that keeps moving (its date moved later 3 times, or a week overdue) is "stuck": MyDay asks what's getting in
+// the way — not to push harder, but to change the task so it's easier to start (see unstick). Your answers are kept
+// on the task (`blockers`), and What MyDay has noticed looks for a pattern in them.
+import { isDateKey, isDateTime, isTime, localStamp, parseKey, shift, todayKey } from './dates';
+import { isWorkDay } from './patterns/notice';
+import { taskLimit } from './patterns/adapt';
+import { makeTask } from './plan';
+import type { Blocker, Category, DateKey, MyDayData, TaskItem, TasksData } from './types';
 import { intIn, isObj, listOf, uid } from './util';
 
-export const TASK_LIMITS = { lists: 30, listName: 40, title: 120, notes: 2000 };
+export const TASK_LIMITS = { lists: 30, listName: 40, title: 120, notes: 2000, blockers: 20 };
+const BLOCKERS: Blocker[] = ['big', 'start', 'boring', 'tired', 'info', 'notneeded', 'other'];
 export const emptyTasks = (): TasksData => ({ lists: [], items: [] });
 
 export function normalizeTasks(raw: unknown, report: { dropped: number }): TasksData {
@@ -43,6 +50,10 @@ export function normalizeTasks(raw: unknown, report: { dropped: number }): Tasks
       plannedOn: isDateKey(t.plannedOn) && typeof t.planUid === 'string' ? t.plannedOn : null,
       planUid: isDateKey(t.plannedOn) && typeof t.planUid === 'string' ? t.planUid : null,
       createdAt: isDateTime(t.createdAt) ? t.createdAt : now,
+      postponed: intIn(t.postponed, 0, 999, 0),
+      blockers: listOf(t.blockers).filter((b): b is { reason: Blocker; on: DateKey } => isObj(b) && BLOCKERS.includes(b.reason as Blocker) && isDateKey(b.on))
+        .map(b => ({ ...b, reason: b.reason, on: b.on })).slice(-TASK_LIMITS.blockers),
+      letGoOn: isDateKey(t.letGoOn) ? t.letGoOn : null,
     };
     seenT.add(item.id);
     out.items.push(item);
@@ -63,7 +74,7 @@ export const inQueue = (data: MyDayData, t: TaskItem) => !!planCopy(data, t)?.ro
 export type Group = 'earlier' | 'today' | 'upcoming' | 'anytime' | 'done';
 export const GROUP_LABEL: Record<Group, string> = { earlier: 'From earlier', today: 'Today', upcoming: 'Coming up', anytime: 'Any time', done: 'Done' };
 export function groupOf(data: MyDayData, t: TaskItem, k: DateKey = todayKey()): Group {
-  if (isDone(data, t)) return 'done';
+  if (isDone(data, t) || t.letGoOn) return 'done';
   if (!t.due) return 'anytime';
   return t.due < k ? 'earlier' : t.due === k ? 'today' : 'upcoming';
 }
@@ -79,12 +90,12 @@ export function tasksView(data: MyDayData, listId: string | null, query = '', k:
     if (inQueue(data, t)) continue;
     out[groupOf(data, t, k)].push(t);
   }
-  out.done.sort((a, b) => (b.doneOn ?? '').localeCompare(a.doneOn ?? ''));
+  out.done.sort((a, b) => (b.doneOn ?? b.letGoOn ?? '').localeCompare(a.doneOn ?? a.letGoOn ?? ''));
   return out;
 }
 // Due today or earlier, not done, not already on today's plan: what Today offers to add.
 export const dueForToday = (data: MyDayData, k: DateKey = todayKey()) =>
-  data.tasks.items.filter(t => t.due && t.due <= k && !isDone(data, t) && !onTodaysPlan(data, t, k) && !inQueue(data, t)).sort(order);
+  data.tasks.items.filter(t => t.due && t.due <= k && !isDone(data, t) && !t.letGoOn && !onTodaysPlan(data, t, k) && !inQueue(data, t)).sort(order);
 export const listName = (d: TasksData, id: string) => d.lists.find(l => l.id === id)?.name ?? '';
 
 // ---------- Changes (each used inside update()) ----------
@@ -95,7 +106,8 @@ export function addTask(d: TasksData, n: NewTask): string | null {
   const id = 'tk' + uid();
   const due = n.due && isDateKey(n.due) ? n.due : null;
   d.items.push({ id, title, listId: n.listId ?? '', category: n.category ?? 'admin', minutes: Math.max(5, Math.min(600, Math.round(n.minutes ?? 15))),
-    due, time: due && n.time && isTime(n.time) ? n.time : null, notes: (n.notes ?? '').slice(0, TASK_LIMITS.notes), done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: localStamp() });
+    due, time: due && n.time && isTime(n.time) ? n.time : null, notes: (n.notes ?? '').slice(0, TASK_LIMITS.notes), done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: localStamp(),
+    postponed: 0, blockers: [], letGoOn: null });
   return id;
 }
 export function editTask(d: TasksData, id: string, patch: Partial<Pick<TaskItem, 'title' | 'listId' | 'category' | 'minutes' | 'due' | 'time' | 'notes'>>): boolean {
@@ -107,7 +119,12 @@ export function editTask(d: TasksData, id: string, patch: Partial<Pick<TaskItem,
   if (patch.category !== undefined) t.category = patch.category;
   if (patch.minutes !== undefined && Number.isFinite(patch.minutes)) t.minutes = Math.max(5, Math.min(600, Math.round(patch.minutes)));
   if (patch.notes !== undefined) t.notes = patch.notes.slice(0, TASK_LIMITS.notes);
-  if (patch.due !== undefined) { t.due = patch.due && isDateKey(patch.due) ? patch.due : null; if (!t.due) t.time = null; }
+  if (patch.due !== undefined) {
+    const was = t.due;
+    t.due = patch.due && isDateKey(patch.due) ? patch.due : null;
+    if (!t.due) t.time = null;
+    if (was && t.due && t.due > was) t.postponed++; // moved later: counted, so a task that keeps moving can be noticed
+  }
   if (patch.time !== undefined) t.time = t.due && patch.time && isTime(patch.time) ? patch.time : null;
   return JSON.stringify(t) !== before;
 }
@@ -117,9 +134,10 @@ export function setTaskDone(data: MyDayData, id: string, done: boolean): boolean
   if (!t) return false;
   const copy = planCopy(data, t);
   if (copy) copy.done = done;
-  if (t.done === done && (!copy || copy.done === done)) return !!copy;
+  if (t.done === done && !(!done && t.letGoOn) && (!copy || copy.done === done)) return !!copy;
   t.done = done;
   t.doneOn = done ? todayKey() : null;
+  if (!done) t.letGoOn = null;
   return true;
 }
 export function removeTask(d: TasksData, id: string): boolean {
@@ -134,7 +152,7 @@ export function moveToTomorrow(d: TasksData, id: string): boolean { return editT
 export function planRoom(data: MyDayData, k: DateKey = todayKey()): { built: boolean; rest: boolean; room: number; limit: number } {
   const day = data.days[k];
   if (!day || day.rest) return { built: !!day, rest: !!day?.rest, room: 0, limit: 0 };
-  const limit = limitFor(day.energy);
+  const limit = taskLimit(data, day.energy);
   return { built: true, rest: false, room: Math.max(0, limit - day.tasks.length), limit };
 }
 export function addToTodaysPlan(data: MyDayData, id: string, k: DateKey = todayKey()): 'added' | 'full' | 'no-plan' | 'missing' {
@@ -152,6 +170,62 @@ export function addToTodaysPlan(data: MyDayData, id: string, k: DateKey = todayK
   data.days[k].tasks.push(pt);
   t.plannedOn = k; t.planUid = pt.uid;
   return 'added';
+}
+
+// ---------- A task that keeps moving ----------
+// Stuck: moved later 3 times or more, or a week past its date — unless you said what's in the way in the last week.
+export function isStuck(data: MyDayData, t: TaskItem, k: DateKey = todayKey()): boolean {
+  if (isDone(data, t) || t.letGoOn || inQueue(data, t)) return false;
+  if (t.blockers.some(b => b.on > shift(k, -7))) return false;
+  return t.postponed >= 3 || (!!t.due && t.due <= shift(k, -7));
+}
+// Your next day without work (from the Calendar), or the coming weekend if there's no rota.
+export function nextDayOff(data: MyDayData, k: DateKey = todayKey()): { date: DateKey; label: string } {
+  const rota = data.rota.patterns.length > 0;
+  for (let i = 1; i <= 21; i++) {
+    const d = shift(k, i), wd = parseKey(d).getDay();
+    if (rota ? !isWorkDay(data, d) : wd === 0 || wd === 6) return { date: d, label: rota ? 'your next day off' : 'the weekend' };
+  }
+  return { date: shift(k, 1), label: 'tomorrow' };
+}
+export type Unstuck = { reason: Blocker; step?: string; need?: string };
+// What each answer does — it changes the task so it's easier to start, never just "try again":
+//   too big / don't know where to start → the first step (you write it) becomes its own 10-minute task for today,
+//     and the whole task waits under Any time;
+//   boring → a 10-minute version, today;  too tired → your next day off;  missing something → noted, Any time;
+//   doesn't matter any more → let go (a decision, not a failure);  something else → just noted.
+// Each answer is kept on the task (for What MyDay has noticed), and its count of moves starts again.
+export function unstick(data: MyDayData, id: string, u: Unstuck, k: DateKey = todayKey()): string | null {
+  const t = data.tasks.items.find(x => x.id === id);
+  if (!t) return null;
+  const step = (u.step ?? '').trim(), need = (u.need ?? '').trim();
+  if ((u.reason === 'big' || u.reason === 'start') && !step) return null;
+  t.blockers = [...t.blockers, { reason: u.reason, on: k }].slice(-TASK_LIMITS.blockers);
+  t.postponed = 0;
+  switch (u.reason) {
+    case 'big': case 'start': {
+      addTask(data.tasks, { title: step, listId: t.listId, category: t.category, minutes: 10, due: k });
+      t.due = null; t.time = null;
+      return `Added “${step.slice(0, TASK_LIMITS.title)}” for today (10 min). “${t.title}” waits under Any time.`;
+    }
+    case 'boring':
+      t.minutes = 10; t.due = k; t.time = null;
+      return 'Now 10 minutes, for today. Stopping after 10 minutes is fine.';
+    case 'tired': {
+      const off = nextDayOff(data, k);
+      t.due = off.date; t.time = null;
+      return `Moved to ${off.label}.`;
+    }
+    case 'info':
+      if (need) t.notes = `Needs: ${need}\n${t.notes}`.slice(0, TASK_LIMITS.notes);
+      t.due = null; t.time = null;
+      return 'Noted. It waits under Any time until you have what you need.';
+    case 'notneeded':
+      t.letGoOn = k;
+      return 'Let go. Deciding something doesn\'t matter any more is useful too.';
+    default:
+      return 'Thanks — noted. Change its date whenever it suits.';
+  }
 }
 
 // ---------- Lists ----------

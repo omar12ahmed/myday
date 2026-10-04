@@ -34,7 +34,7 @@ export function toReview(data: MyDayData, k: DateKey, p: CheckedProposal): Propo
   const chosen = new Map(p.rest ? [] : p.priorities.map(x => [x.uid, x] as const));
   const items: ProposalItem[] = d.tasks.map(t => {
     const was = t.scheduledStart ? dtToMin(t.scheduledStart, k) : null;
-    const base: ProposalItem = { uid: t.uid, task: structuredClone(t), isNew: false, done: t.done, status: 'today', start: was, minutes: t.minutes, anytime: false, reason: null, maxFit: null, note: null, orig: { start: was, minutes: t.minutes } };
+    const base: ProposalItem = { uid: t.uid, task: structuredClone(t), isNew: false, done: t.done, status: 'today', start: was, minutes: t.minutes, anytime: false, reason: null, maxFit: null, note: null, why: null, orig: { start: was, minutes: t.minutes } };
     if (t.done) return base;
     const x = chosen.get(t.uid);
     if (x) return { ...base, start: x.start, minutes: x.minutes, anytime: x.start === null };

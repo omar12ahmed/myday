@@ -204,6 +204,7 @@ pay rules) and its settings card are gone from the screen; the rules behind them
 | `src/ai/` | "Help me adjust today": `context.ts` (what's sent), `validate.ts` (the rules), `apply.ts` (saving, stale check, undo) and `AdjustCard.tsx` (the card on Today). "Add what's on my mind": `mind.ts` (what's sent, the checks, adding and undo) and `MindCard.tsx`. Both: `request.ts` (the Edge Function or practice mode). |
 | `../ai-eval/` | The evaluation of AI models on 20 synthetic days and 12 synthetic brain dumps (see its README). |
 | `src/finance/` | The Finance screen: `FinanceScreen` (with Left over), `WorkPayCard`, `ExpensesCard`, `OwedCard`, `RatesCard` (folded away), and `actions.ts` (what each button saves). |
+| `src/data/patterns/`, `src/patterns/` | What MyDay has noticed: `notice.ts` (finding patterns in your history), `saved.ts` (your preferences and answers, the `patterns` section), `adapt.ts` (using preferences in Build my day and the room on today's plan); the screen `NoticedScreen.tsx` (`#noticed`, and the quiet line on Today). `src/components/Why.tsx`: a note with a "Why?". `src/tasks/StuckCard.tsx`: "What's getting in the way?". |
 | `src/tasks/`, `src/data/tasks.ts` | Inbox → Tasks: `TasksScreen` (adding, the groups, lists as chips, search), `TaskEditor`, `ListsView`, `route.ts` (`#inbox/tasks`, `#inbox/tasks/<id>`, `#inbox/tasks/list/<id>`, `#inbox/tasks/lists`); the data and rules (groups, due today, room on today's plan, the link to the plan) in `src/data/tasks.ts`. Today's "Due today" card: `src/today/DueTodayCard.tsx`. |
 | `src/inbox/`, `src/notes/`, `src/capture/` | The Inbox section (`InboxScreen`, with the Tasks and Notes tabs), Notes (`NotesScreen`: search, Inbox, collections; `NoteEditor`; `CategoriesView`; `route.ts` — `#inbox/notes`, `#inbox/notes/<id>`, `#inbox/notes/in/<id>`, `#inbox/notes/collections`, and older `#notes…` links), and Capture (`parse.ts`, `save.ts`, `CaptureSheet.tsx`). The notes data: `src/data/notes.ts`. |
 | `src/health/food/` | The Food screens: `FoodScreen` (picks the screen from the address, e.g. `#health/food/shopping`), `FoodHome`, `RecipeCard`, `SearchBox` (with suggestions), `SearchView`, `RecipeView`, `WantView`, `ShoppingView`, `CookView`, `PrefsView`, `RecipeForm`; `actions.ts` (what each button saves) and `visit.ts` (what's kept in memory for the visit: ideas, search results, suggestions, drafts). |
@@ -372,6 +373,47 @@ screen): type anything and MyDay suggests what it looks like — and does only w
 - Wide screens: below 1440 px the bar shows icons only (with names for screen readers and on hover), so six
   sections, Capture and the theme button never run into a long date.
 
+## What MyDay has noticed (learning your patterns)
+
+MyDay learns how you actually work — patterns, not judgements — so it can fit itself to you rather than the other
+way round. **What MyDay has noticed** (`#noticed`, from the footer on every screen; Today shows one quiet line only
+when there's something new) lists what it found, each with a **Why?** (the evidence, in numbers), and asks "Does this
+sound right?".
+
+- **Worked out on the device, from what's already saved** — no new log of what you do, no AI, nothing sent anywhere:
+  day plans (what was planned, how long, what got ticked off), Study sessions (planned and actual length, when they
+  started), energy and sleep, and work days from the Calendar. Patterns aren't saved; they're worked out afresh each
+  time from the last 8 weeks, so they follow how you work now. `src/data/patterns/notice.ts`.
+- **Careful with small numbers:** a pattern needs a minimum of examples before it's shown (an "early sign", or a
+  "clear pattern" from 20), only days you used MyDay count (something ticked off, or the evening check-in — a task you
+  did but didn't tick off would otherwise count as not done), and the evidence is given as counts ("7 of 9"), not
+  percentages.
+- **What it looks for:** shorter tasks of a kind getting done more often (comparing lengths of 15–45 min); study
+  sessions ending much sooner (or running much longer) than planned; when you usually study; energy after short
+  nights and on work days; finishing everything more often with fewer tasks; one kind of task being left for another
+  day much more often; and what usually gets in the way of stuck tasks.
+- **Your answers:** "Yes — do that" (for a pattern MyDay can use: it becomes one of your preferences, with its evidence
+  kept as the "Why?"), "Yes, but change nothing" / "That's right", or "Not really" (hidden until there's clearly more
+  evidence: half as many examples again, at least 5). "Forget my answer" undoes one. A pattern you agreed with that
+  fades is shown as "less clear lately", not hidden.
+- **Your preferences come first** (`src/data/patterns/saved.ts`): the longest task of each kind when building your
+  day, and the most tasks in a day (never more than your energy allows). Build my day applies them in the open — "25
+  min (shortened from 60)" with "Shortened to 25 min — your length for learning tasks." and a **Why?**; "1 task today,
+  as you chose (your energy allows 3)." — and nothing is saved until you apply the plan, as before. "Review my plan"
+  and "Due today" keep to the same most. Without preferences, plans are exactly as before (`src/data/patterns/adapt.ts`).
+  Your energy rating is never changed by a pattern.
+- **Tasks that keep moving** (Inbox → Tasks): a task moved later 3 times, or a week past its date, asks **What's
+  getting in the way?** (also on any task, from "Something in the way?"). Each answer changes the task so it's easier
+  to start, rather than "try again": too big / don't know where to start → you write the first step, which becomes a
+  10-minute task for today (the whole task waits under Any time); boring → a 10-minute version today; too tired → your
+  next day off from the Calendar (or the weekend); missing something → noted, Any time; doesn't matter any more → **let
+  go** (under Done, and unticking brings it back); something else → noted. Answers are kept on the task and looked at
+  for a pattern.
+- Saved: the `patterns` section (`{ prefs, answers }`, new in 1.6.0) and three fields on each task (`postponed`,
+  `blockers`, `letGoOn`). The classic MyDay keeps them unread. On this device only, and in "Export my data".
+- Not yet: using patterns to suggest times (e.g. studying in the evening), and giving AI help your confirmed patterns
+  and preferences (both planned as later steps, the second only if you choose to).
+
 ## AI help: "Help me adjust today" (prototype)
 
 Off unless the app is built with `VITE_AI` (`mock` = practice mode, rules not AI, nothing sent; `edge` = the
@@ -442,3 +484,6 @@ returns up to 8 small tasks; you tick the ones to add.
 12. **Release 1.5.0:** Tasks in the Inbox (part 2 of 3): every task in one place with dates and times, your own lists,
     "Due today" on Today with one tap to add a task to the plan (within your energy's limit), and Capture's tasks
     going there with their dates. Ideas (part 3) follows.
+13. **Release 1.6.0:** What MyDay has noticed — patterns in how you actually work, from your own history on the
+    device, each with a "Why?" and only used once you say so; your preferences (task length, most tasks a day) used by
+    Build my day in the open; and "What's getting in the way?" for tasks that keep moving.

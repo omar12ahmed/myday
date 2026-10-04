@@ -3,9 +3,11 @@ import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { CategoryChip } from '../components/CategoryChip';
 import { CommitInput, Field } from '../components/Field';
+import { Why } from '../components/Why';
 import { isTime, minToTime, rangeMin, timeToMin } from '../data/dates';
 import { intIn } from '../data/normalize';
-import { limitFor, minutesLabel } from '../data/plan';
+import { taskLimit } from '../data/patterns/adapt';
+import { minutesLabel } from '../data/plan';
 import { propChanges, type Proposal, type ProposalItem } from '../data/proposal';
 import { conflictsFor } from '../data/schedule';
 import { toast } from '../data/toast';
@@ -56,6 +58,7 @@ function Row({ it, p, data, placed, index, animate, act }: { it: ProposalItem; p
         <span className="meta">{bits.join(' · ')}</span>
       </div>
       {change && <p className="change m-0 mt-1 text-sm font-semibold text-primary">{change}</p>}
+      {p.mode === 'build' && it.why && it.status === 'today' && <Why className="mt-2" note={it.note} why={it.why} />}
       {warns.map(w => (
         <p key={w} className="warn flex gap-1.5 items-start m-0 mt-2 px-2.5 py-1 rounded-lg bg-warn-c text-on-warn-c text-sm w-fit">
           <TriangleAlert size={16} className="flex-none mt-0.5" aria-hidden="true" />{w}
@@ -107,7 +110,7 @@ function Row({ it, p, data, placed, index, animate, act }: { it: ProposalItem; p
 }
 
 export function ProposalCard({ p, data, animate, act }: { p: Proposal; data: MyDayData; animate: boolean; act: ProposalActions }) {
-  const isReview = p.mode === 'review', limit = limitFor(p.energy);
+  const isReview = p.mode === 'review', limit = taskLimit(data, p.energy);
   const order = (it: ProposalItem) => (it.status !== 'today' ? 3e6 : it.start !== null ? it.start : it.done ? -1 : 2e6);
   const items = p.items.slice().sort((a, b) => order(a) - order(b));
   const placed = p.items.filter(i => i.status === 'today' && i.start !== null);
@@ -117,6 +120,7 @@ export function ProposalCard({ p, data, animate, act }: { p: Proposal; data: MyD
       <span className="eyebrow block text-xs font-bold tracking-[.08em] uppercase text-primary mb-0.5">Not saved yet</span>
       <h2 id="proposal-h">{isReview ? 'Proposed changes' : 'Proposed plan'}</h2>
       <p className="text-[15px] text-fg-2">Energy {p.energy} · room for {limit} task{limit === 1 ? '' : 's'}. Nothing is saved until you {isReview ? 'apply the changes' : 'apply it'}.</p>
+      {p.fewer && <Why className="mb-3" note={p.fewer.note} why={p.fewer.why} />}
       {p.stale && (
         <div className="stale bg-warn-c text-on-warn-c rounded-tile px-3.5 py-3 mb-3">
           <p className="text-[15px] mb-2">Your context changed after you edited this proposal.</p>

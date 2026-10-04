@@ -2,7 +2,8 @@
 // A proposal lives in the Today screen's memory; nothing here touches saved data except applyProposal,
 // which changes the draft passed to it.
 import { dtToMin, localStamp, minToDt, todayKey } from './dates';
-import { chooseAdditional, chooseTasks, limitFor, queueTask, sendToQueue } from './plan';
+import { fitToPrefs, limitIsYours, taskLimit } from './patterns/adapt';
+import { chooseAdditional, chooseTasks, queueTask, sendToQueue } from './plan';
 import { contextFor, ensureContext, explainNoFit, freeSegments, subtract, type Segment } from './schedule';
 import type { DateKey, MyDayData, Task } from './types';
 
@@ -18,6 +19,7 @@ export interface ProposalItem {
   reason: string | null;     // why it couldn't be given a time
   maxFit: number | null;     // the longest it could be and still fit
   note: string | null;
+  why: string | null;        // when your preferences changed it: what they're based on ("Why?")
   orig: { start: number | null; minutes: number } | null; // for a review: how it was
 }
 
@@ -29,10 +31,11 @@ export interface Proposal {
   editing: boolean;
   touched: boolean; // edited by hand
   stale: boolean;   // the day's context changed after it was edited
+  fewer?: { note: string; why: string } | null; // fewer tasks than your energy allows, because you chose so
 }
 
 function itemFromTask(t: Task, isNew: boolean): ProposalItem {
-  return { uid: t.uid, task: t, isNew, done: !!t.done, status: 'today', start: null, minutes: t.minutes, anytime: false, reason: null, maxFit: null, note: null, orig: null };
+  return { uid: t.uid, task: t, isNew, done: !!t.done, status: 'today', start: null, minutes: t.minutes, anytime: false, reason: null, maxFit: null, note: null, why: null, orig: null };
 }
 
 // Fill in times for items that don't have one yet, first-fit, in plan order.
@@ -62,8 +65,10 @@ export function placeItems(data: MyDayData, p: Proposal) {
 
 // "Build my day": tasks for this energy, with suggested times.
 export function proposeBuild(data: MyDayData, k: DateKey, energy: number): Proposal {
-  const tasks = chooseTasks(data, k, energy);
-  const p: Proposal = { mode: 'build', dayKey: k, energy, items: tasks.map(t => itemFromTask(t, true)), editing: false, touched: false, stale: false };
+  // Your preferences (a shorter length, fewer tasks) are applied here, in the open; without any it's unchanged.
+  const fit = fitToPrefs(data, chooseTasks(data, k, energy), energy);
+  const items = fit.tasks.map(t => { const it = itemFromTask(t, true); const n = fit.notes[t.uid]; if (n) { it.note = n.note; it.why = n.why; } return it; });
+  const p: Proposal = { mode: 'build', dayKey: k, energy, items, editing: false, touched: false, stale: false, fewer: fit.fewer };
   placeItems(data, p);
   return p;
 }
@@ -72,7 +77,7 @@ export function proposeBuild(data: MyDayData, k: DateKey, energy: number): Propo
 export function proposeReview(data: MyDayData, k: DateKey): Proposal {
   const d = data.days[k];
   const energy = contextFor(data, k).energy || d.energy || 3;
-  const limit = limitFor(energy);
+  const limit = taskLimit(data, energy);
   const gap = data.settings.gapMinutes;
   const items = d.tasks.map(t => {
     const it = itemFromTask(structuredClone(t), false);
@@ -87,7 +92,7 @@ export function proposeReview(data: MyDayData, k: DateKey): Proposal {
     if (room > 0) { room--; continue; }
     it.status = 'later';
     it.start = null;
-    it.note = `Your energy is ${energy} now, so today has room for ${limit} task${limit === 1 ? '' : 's'}.`;
+    it.note = limitIsYours(data, energy) ? `Today has room for ${limit} task${limit === 1 ? '' : 's'}, as you chose.` : `Your energy is ${energy} now, so today has room for ${limit} task${limit === 1 ? '' : 's'}.`;
   }
   if (room > 0) {
     for (const t of chooseAdditional(data, k, d.tasks, room)) {

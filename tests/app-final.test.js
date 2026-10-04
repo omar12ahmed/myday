@@ -169,11 +169,12 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   JSON.stringify(liveAll).replace(/"(id|uid|qid|key)":"([^"]*)"/g, (m, k, v) => { seedIds.add(v); return m; });
   const mask = o => { const c = JSON.parse(noSaves(o)); delete c.health.futureHealthPart; return canon(JSON.parse(JSON.stringify(c, (k, v) => (['id', 'uid', 'qid', 'key'].includes(k) && typeof v === 'string' && /^[a-z]{1,3}[0-9a-z]{10,}$/.test(v) ? 'NEW' : v)))); };
   // The new app adds Notes and Goal (1.3.0), which the current MyDay keeps unread: compared on their own, below.
-  const newCmp = { ...newAll }; delete newCmp.notes; delete newCmp.fitness; delete newCmp.tasks;
-  check('the whole saved file matches the current MyDay\'s, section by section', !('notes' in liveAll) && !('fitness' in liveAll) && !('tasks' in liveAll) && mask(liveAll) === mask(newCmp), (() => { const a = JSON.parse(mask(liveAll)), b = JSON.parse(mask(newCmp)); return [...new Set([...Object.keys(a), ...Object.keys(b)])].filter(k => JSON.stringify(a[k]) !== JSON.stringify(b[k])); })());
+  const newCmp = { ...newAll }; delete newCmp.notes; delete newCmp.fitness; delete newCmp.tasks; delete newCmp.patterns;
+  check('the whole saved file matches the current MyDay\'s, section by section', !('notes' in liveAll) && !('fitness' in liveAll) && !('tasks' in liveAll) && !('patterns' in liveAll) && mask(liveAll) === mask(newCmp), (() => { const a = JSON.parse(mask(liveAll)), b = JSON.parse(mask(newCmp)); return [...new Set([...Object.keys(a), ...Object.keys(b)])].filter(k => JSON.stringify(a[k]) !== JSON.stringify(b[k])); })());
   check('…the new app adds Notes: the starter categories and no notes', newAll.notes.items.length === 0 && newAll.notes.categories.map(c => c.name).join() === 'Lifestyle,Business ideas,Health & fitness,Money,Study & career,Personal');
   check('…and Goal: no goal yet, kg and cm', eq(newAll.fitness, { units: 'metric', answers: null, setOn: null }));
   check('…and Tasks: no lists and no tasks', eq(newAll.tasks, { lists: [], items: [] }));
+  check('…and What MyDay has noticed: no preferences and no answers', eq(newAll.patterns, { prefs: { maxMinutes: { learning: null, admin: null, health: null }, maxTasks: null }, answers: {} }));
   check('…while the new app also keeps the unknown part of Health', eq(newAll.health.futureHealthPart, { kept: true }));
 
   // ------------------------------------------------------------------
@@ -327,9 +328,9 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   // Opening Finance the first time saved your rates into the pay settings; everything else must be exactly as that release saved it.
   const RATES = ['hourlyRate', 'overtimeMultiplier', 'bankHolidayMultiplier', 'nightMultiplier', 'taxCode', 'niCategory', 'studentLoans', 'frequency', 'periodAnchor', 'annualLeavePaid', 'cancelledPaid', 'sickPay'];
   const payRest = o => { const c = { ...o.pay }; for (const k of RATES) delete c[k]; return JSON.stringify(c); };
-  check('the new app saves every record exactly as that release had it (it adds an empty Study, Finance, Notes, Goal and Tasks; Finance\'s first visit saves your rates)',
-    without(N, ['study', 'finance', 'notes', 'fitness', 'tasks', 'pay']) === without(P, ['study', 'finance', 'notes', 'fitness', 'tasks', 'pay']) && payRest(N) === payRest(P) && N.pay.taxCode === '1241T' && N.study.stages.length === 0 && N.finance.debts.length === 0 && N.finance.ratesSetOn === '2026-11-02' && N.notes.items.length === 0 && N.fitness.answers === null && eq(N.tasks, { lists: [], items: [] }),
-    d70(JSON.parse(without(N, ['study', 'finance', 'notes', 'fitness', 'tasks', 'pay'])), JSON.parse(without(P, ['study', 'finance', 'notes', 'fitness', 'tasks', 'pay']))).slice(0, 6));
+  check('the new app saves every record exactly as that release had it (it adds an empty Study, Finance, Notes, Goal, Tasks and What MyDay has noticed; Finance\'s first visit saves your rates)',
+    without(N, ['study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'pay']) === without(P, ['study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'pay']) && payRest(N) === payRest(P) && N.pay.taxCode === '1241T' && N.study.stages.length === 0 && N.finance.debts.length === 0 && N.finance.ratesSetOn === '2026-11-02' && N.notes.items.length === 0 && N.fitness.answers === null && eq(N.tasks, { lists: [], items: [] }) && eq(N.patterns.answers, {}),
+    d70(JSON.parse(without(N, ['study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'pay'])), JSON.parse(without(P, ['study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'pay']))).slice(0, 6));
   await go('health/workout', 2026, 11, 2, 9, 5, PREV);
   check('going back: the previous release still opens what the new app saved', (await text('#app')).includes('Upper body'));
   await editStorage(`s => { s.study = { stages: [{ id: 'sg1', title: 'Foundations', courses: [] }] }; }`);

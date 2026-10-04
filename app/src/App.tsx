@@ -11,6 +11,7 @@ import type { Theme } from './data/types';
 import { useMyDay } from './data/useMyDay';
 import { Nav } from './shell/Nav';
 import { barSection, sectionFromHash, type SectionId } from './shell/sections';
+import { NoticedScreen } from './patterns/NoticedScreen';
 import { InboxScreen } from './inbox/InboxScreen';
 import { CaptureButton } from './capture/CaptureSheet';
 import { CalendarScreen } from './calendar/CalendarScreen';
@@ -125,6 +126,7 @@ function Shell() {
     content = <DamagedView reason={status.reason} onImport={() => fileInput.current?.click()} onStartFresh={startFresh}
       onDownload={() => download(`myday-unreadable-${todayKey()}.json`, status.raw)} />;
   } else if (status.kind === 'older') content = <OlderView />;
+  else if (hash.startsWith('#noticed')) content = <NoticedScreen data={data} />;
   else if (hash.startsWith('#sync')) {
     content = SYNC.configured ? <SyncScreen onExport={exportData} /> : (
       <div className="max-w-[720px] mx-auto"><Card>
@@ -164,7 +166,7 @@ function Shell() {
         )}
         {content}
         {/* Today has these at the bottom of its own layout; every other section gets them here. */}
-        {!blocked && section !== 'today' && !hash.startsWith('#sync') && (
+        {!blocked && (section !== 'today' || hash.startsWith('#noticed')) && !hash.startsWith('#sync') && (
           <div className="max-w-[720px] mx-auto mt-6">
             <AppFooter data={data} canSave={status.kind === 'ok'} onEdit={() => { location.hash = 'today/edit'; }} onExport={exportData} onImport={() => fileInput.current?.click()} />
           </div>

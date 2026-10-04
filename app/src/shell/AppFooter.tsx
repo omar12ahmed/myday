@@ -1,4 +1,4 @@
-import { Download, FolderOpen, ListTodo } from 'lucide-react';
+import { Download, FolderOpen, Lightbulb, ListTodo } from 'lucide-react';
 import { useSyncExternalStore } from 'react';
 import { Button } from '../components/Button';
 import { update } from '../data/storage';
@@ -22,6 +22,7 @@ export function AppFooter({ data, canSave, onEdit, onExport, onImport }: {
     <footer id="footer" className="pb-10">
       <div className="grid grid-cols-2 gap-2.5">
         <Button inline variant="ghost" className="w-full col-span-2" data-action="edit" onClick={onEdit}><ListTodo size={18} aria-hidden="true" /> Edit task lists</Button>
+        <Button inline variant="ghost" className="w-full col-span-2" data-action="noticed" onClick={() => { location.hash = 'noticed'; window.scrollTo(0, 0); }}><Lightbulb size={18} aria-hidden="true" /> What MyDay has noticed</Button>
         <Button inline variant="ghost" className="w-full" data-action="export" onClick={onExport}><Download size={18} aria-hidden="true" /> Export my data</Button>
         <Button inline variant="ghost" className="w-full" data-action="import" onClick={onImport}><FolderOpen size={18} aria-hidden="true" /> Import my data</Button>
         <Button inline variant="ghost" className="w-full col-span-2" data-action="motion" aria-pressed={!off} onClick={() => {
