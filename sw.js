@@ -11,8 +11,8 @@
 // - Everything else — your account (Supabase), AI help, recipes, bank holidays, other sites, the classic MyDay —
 //   isn't touched: it goes to the network as if this weren't here. Nothing about your data is stored by this (your
 //   MyDay data stays in the browser's own storage, which this never reads or changes).
-const VERSION = "1.13.0-1047f4a-muupioil";
-const FILES = ["./assets/dist-DvjAMUvs.js","./assets/esm-BZUpr5Uv.js","./assets/index-ATG1XGjH.js","./assets/index-DGa46jLr.css","./assets/mock-B_02qmgp.js","./assets/plus-jakarta-sans-latin-ext-wght-normal-DmpS2jIq.woff2","./assets/plus-jakarta-sans-latin-wght-normal-eXO_dkmS.woff2","./assets/plus-jakarta-sans-vietnamese-wght-normal-qRpaaN48.woff2","./assets/three-CECukPHQ.js","./icon-maskable.svg","./icon.svg","./icons/apple-touch-icon.png","./icons/icon-192.png","./icons/icon-512.png","./icons/icon-maskable-512.png","./index.html","./manifest.webmanifest"];
+const VERSION = "1.14.0-b1b3fcd-muvbocry";
+const FILES = ["./assets/CyberScreen-DEtLro2I.js","./assets/answers-B8n1WGMn.js","./assets/dist-DvjAMUvs.js","./assets/esm-CCmcOyJ8.js","./assets/index-CjszCVXa.css","./assets/index-xVUSAUPn.js","./assets/mock-m9g4BAn0.js","./assets/plus-jakarta-sans-latin-ext-wght-normal-DmpS2jIq.woff2","./assets/plus-jakarta-sans-latin-wght-normal-eXO_dkmS.woff2","./assets/plus-jakarta-sans-vietnamese-wght-normal-qRpaaN48.woff2","./assets/rolldown-runtime-BpQH8Ho1.js","./assets/three-CECukPHQ.js","./assets/tutor-C05n2bid.js","./cybersecurity/README.md","./cybersecurity/synthetic_auth.csv","./cybersecurity/synthetic_host_events.json","./cybersecurity/synthetic_web.jsonl","./icon-maskable.svg","./icon.svg","./icons/apple-touch-icon.png","./icons/icon-192.png","./icons/icon-512.png","./icons/icon-maskable-512.png","./index.html","./manifest.webmanifest"];
 const CACHE = 'myday-' + VERSION;
 const scopeUrl = () => new URL(self.registration.scope);
 const INDEX = () => new URL('index.html', scopeUrl()).href;
