@@ -15,6 +15,7 @@ import type { MyDayData } from '../data/types';
 import { startRevision } from './actions';
 import { Bar, Eyebrow, ExternalLink, InlineLink, TextLink } from './parts';
 import { StartBlock } from './StartBlock';
+import { CyberCard } from './cybersecurity/CyberCard';
 
 // ---------- First-time setup: a proposal from your learning list; nothing is saved until you choose ----------
 export function SetupCard({ data }: { data: MyDayData }) {
@@ -76,7 +77,7 @@ function RevisionCard({ data }: { data: MyDayData }) {
 // (e.g. Cybersecurity, Arabic) — each with its next step and progress, one tap from its own page.
 export function Dashboard({ data, lengths, setLength }: { data: MyDayData; lengths: Record<string, number>; setLength: (key: string, m: number) => void }) {
   const st = data.study;
-  if (!st.stages.length) return <SetupCard data={data} />;
+  if (!st.stages.length) return <><CyberCard /><SetupCard data={data} /></>;
   const ix = stIndex(st), c = focusCourse(st, ix), cur = activeStudy(st), k = todayKey();
   const glances = topicsOf(st).map(t => topicGlance(st, ix, t.id)!).filter(Boolean);
   const named = !!st.topics?.length;
@@ -137,6 +138,7 @@ export function Dashboard({ data, lengths, setLength }: { data: MyDayData; lengt
       </div>
       <div className="min-w-0">
         <RevisionCard data={data} />
+        <CyberCard />
         <Card aria-label="More in Study">
           <nav className="st-links flex flex-wrap gap-x-5" aria-label="Study">
             <TextLink href="#study/roadmap">Whole roadmap</TextLink><TextLink href="#study/concepts">Concepts</TextLink>

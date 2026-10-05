@@ -1,0 +1,73 @@
+// Validate the canonical package before producing the self-study catalogue. Answer guides live in a
+// separate chunk and are only displayed after submission. This is not an exam-security boundary.
+import { execFileSync } from 'node:child_process';
+import { readFileSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+const source = fileURLToPath(new URL('../../content/cybersecurity/', import.meta.url));
+execFileSync('python3', [source + 'validate_curriculum.py', source], { stdio: 'inherit' });
+const catalogue = JSON.parse(readFileSync(source + 'MyDay_Cybersecurity_Curriculum.json', 'utf8'));
+const answers = {};
+for (const assessment of catalogue.assessments) {
+  for (const question of assessment.questions || []) {
+    answers[question.id] = question.expected_answer;
+    delete question.expected_answer;
+  }
+}
+const target = new URL('../src/study/cybersecurity/', import.meta.url);
+// Provider assignments are authored separately so updates never rewrite the supplied curriculum.
+const practice = JSON.parse(readFileSync(source + 'MyDay_Practice_Activities.json', 'utf8'));
+const assert = (ok, message) => { if (!ok) throw new Error('Practice package: ' + message); };
+assert(practice.curriculumVersion === catalogue.curriculum_version, 'curriculum version mismatch');
+assert(/^\d+\.\d+\.\d+$/.test(practice.version), 'invalid version');
+assert(/^\d{4}-\d\d-\d\d$/.test(practice.checkedOn), 'missing review date');
+const lessonIds = new Set(catalogue.lessons.map(l => l.id));
+const canonicalIds = new Set(['exercises', 'assessments', 'labs', 'projects'].flatMap(k => catalogue[k].map(a => a.id)));
+const practiceIds = new Set(practice.activities.map(a => a.id));
+assert(practiceIds.size === practice.activities.length, 'duplicate activity ID');
+const allowedHosts = new Set(['tryhackme.com', 'overthewire.org', 'portswigger.net', 'ubuntu.com', 'docs.python.org', 'git-scm.com', 'developer.mozilla.org', 'learn.microsoft.com']);
+for (const a of practice.activities) {
+  assert(/^(assignment|interactive)\.[a-z0-9-]+$/.test(a.id) && !canonicalIds.has(a.id), 'invalid ID ' + a.id);
+  assert(['external', 'scope', 'network', 'logs'].includes(a.kind), 'unknown activity kind');
+  assert(a.lessonIds.length && a.lessonIds.every(id => lessonIds.has(id)), 'unknown lesson in ' + a.id);
+  assert(a.relatedActivityIds.every(id => canonicalIds.has(id)), 'unknown related activity in ' + a.id);
+  assert(['title', 'provider', 'instruction', 'accessNote', 'boundary'].every(k => typeof a[k] === 'string' && a[k].trim()), 'missing text in ' + a.id);
+  assert(['steps', 'evidence'].every(k => Array.isArray(a[k]) && a[k].length && a[k].every(s => typeof s === 'string' && s.trim())), 'missing instructions in ' + a.id);
+  assert(Number.isInteger(a.minutes) && a.minutes > 0 && a.minutes <= 120, 'invalid duration');
+  if (a.kind === 'external') {
+    const url = new URL(a.url);
+    assert(url.protocol === 'https:' && !url.username && !url.password && allowedHosts.has(url.hostname), 'unapproved provider URL');
+    assert(['no_account', 'free_account', 'free_account_limits'].includes(a.access), 'invalid external access');
+    assert(a.fallbackId !== a.id && (practiceIds.has(a.fallbackId) || canonicalIds.has(a.fallbackId)), 'missing fallback in ' + a.id);
+  } else assert(a.access === 'in_app' && !a.url, 'in-app practice must stay local');
+}
+for (const a of practice.activities) {
+  const visited = new Set([a.id]);
+  let next = a.fallbackId;
+  while (practiceIds.has(next)) {
+    assert(!visited.has(next), 'fallback cycle'); visited.add(next);
+    next = practice.activities.find(p => p.id === next).fallbackId;
+  }
+}
+writeFileSync(new URL('practice.json', target), JSON.stringify(practice));
+// This fixture has a fixed, unquoted six-column CSV format. Fail instead of silently misparsing a new format.
+const authLines = readFileSync(source + 'starter-data/synthetic_auth.csv', 'utf8').trim().split(/\r?\n/);
+assert(authLines.shift() === 'event_id,timestamp,user,source,result,host', 'unexpected log columns');
+const authRows = authLines.map(line => line.split(','));
+assert(authRows.every(row => row.length === 6 && row.every(cell => !cell.includes('"'))), 'unsupported CSV format');
+writeFileSync(new URL('auth-fixture.json', target), JSON.stringify(authRows));
+console.log(`Practice package: ${practice.activities.length} activities, all references valid.`);
+writeFileSync(new URL('catalogue.json', target), JSON.stringify(catalogue));
+writeFileSync(new URL('answers.json', target), JSON.stringify(answers));
+const tutorLessons = Object.fromEntries(catalogue.lessons.map(l => [l.id, {
+  title: l.title, objectives: l.learning_objectives, concepts: l.key_concepts,
+  task: catalogue.exercises.find(e => e.id === l.practical_task_id).instruction,
+}]));
+writeFileSync(new URL('../../supabase/functions/_shared/ai/tutor-lessons.ts', import.meta.url),
+  '// Generated by app/scripts/prepare-curriculum.mjs. No learner data or answer keys.\n' +
+  'export const tutorLessons: Record<string, { title: string; objectives: string[]; concepts: string[]; task: string }> = ' + JSON.stringify(tutorLessons) + ';\n');
+const publicDir = new URL('../public/cybersecurity/', import.meta.url);
+mkdirSync(publicDir, { recursive: true });
+for (const name of ['synthetic_auth.csv', 'synthetic_web.jsonl', 'synthetic_host_events.json', 'README.md']) {
+  copyFileSync(source + 'starter-data/' + name, new URL(name, publicDir));
+}

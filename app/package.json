@@ -7,6 +7,8 @@
     "node": "^20.19.0 || >=22.12.0"
   },
   "scripts": {
+    "curriculum:prepare": "node scripts/prepare-curriculum.mjs",
+    "prebuild": "npm run curriculum:prepare",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",

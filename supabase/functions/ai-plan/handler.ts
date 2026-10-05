@@ -12,6 +12,7 @@
 import { callModel, configFromEnv, costUsd, worstCaseCostUsd } from '../_shared/ai/providers.ts';
 import { CONTRACT_VERSION, LIMITS, type PlanContext } from '../_shared/ai/schema.ts';
 import { checkTasksContext } from '../_shared/ai/tasks.ts';
+import { checkTutorContext } from '../_shared/ai/tutor.ts';
 
 export interface Deps {
   env: (name: string) => string | undefined;
@@ -45,6 +46,7 @@ const isLocal = (v: unknown) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T([0
 export function checkContext(c: unknown): c is PlanContext {
   if (!c || typeof c !== 'object') return false;
   const x = c as Record<string, unknown>;
+  if ('action' in x) return false; // Named actions have their own strict validators; never dispatch them as plans.
   if (x.version !== CONTRACT_VERSION || typeof x.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(x.date) || !isClock(x.now)) return false;
   if (typeof x.timezone !== 'string' || x.timezone.length > 64 || typeof x.weekday !== 'string' || x.weekday.length > 12) return false;
   if (!(x.energy === null || (Number.isInteger(x.energy) && (x.energy as number) >= 1 && (x.energy as number) <= 5))) return false;
@@ -87,7 +89,7 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
   if (raw.length > LIMITS.bodyBytes) return reply(413, { ok: false, error: 'bad-request' }, 'too-large');
   let body: { context?: unknown };
   try { body = JSON.parse(raw); } catch { return reply(400, { ok: false, error: 'bad-request' }, 'not-json'); }
-  if (!body || !(checkContext(body.context) || checkTasksContext(body.context))) return reply(400, { ok: false, error: 'bad-request' }, 'bad-context');
+  if (!body || !(checkContext(body.context) || checkTasksContext(body.context) || checkTutorContext(body.context))) return reply(400, { ok: false, error: 'bad-request' }, 'bad-context');
   const ctx = body.context;
 
   // 3. The model, and the limits.

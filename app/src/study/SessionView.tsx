@@ -9,6 +9,7 @@ import { activeStudy, fmtElapsed, sessionMs } from '../data/study/sessions';
 import type { MyDayData } from '../data/types';
 import { discardLearning, finishLearning, pauseLearning, resumeLearning, setShowClock } from './actions';
 import { Eyebrow, ExternalLink, LinkButton, TextLink } from './parts';
+import { lessonFromTask, lessonHref } from '../data/cybersecurity/types';
 
 // One focused screen while you learn: what you're on, the time, and Pause / Finish.
 // The time comes from the clock (when it started, plus time banked before a pause), so a refresh, or
@@ -45,6 +46,7 @@ export function SessionView({ data }: { data: MyDayData }) {
       {t ? <><p className="st-path text-[13px] text-fg-3 m-0 mt-1">{c ? c.node.title : ''} › {t.section.title}</p><h2 id="ses-h">{t.node.title}</h2></>
         : <h2 id="ses-h">{c ? c.node.title : s.title}</h2>}
       {link && <ExternalLink href={link}>Open the resource</ExternalLink>}
+      {lessonFromTask(s.taskId) && <TextLink href={lessonHref(lessonFromTask(s.taskId)!)}>Open curriculum lesson and activities</TextLink>}
       {clock && (
         <>
           <div id="stClock" className="st-clock text-[52px] font-bold text-center tabular-nums tracking-[-.02em] mt-3.5 leading-tight" role="timer" aria-live="off">{fmtElapsed(ms)}</div>

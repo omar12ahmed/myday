@@ -27,14 +27,19 @@ const MESSAGES: Record<Reason, string> = {
   offline: "Couldn't reach the AI — check your connection.",
 };
 // What stays as it was, said after each message (except "just a moment").
-const SAME = { adjust: " Your plan hasn't changed, and Review my plan still works.", tasks: ' Nothing was added.' };
+const SAME = { adjust: " Your plan hasn't changed, and Review my plan still works.", tasks: ' Nothing was added.', tutor: ' Your learning work is saved separately; the lesson still works.' };
 
 export async function askModel(ctx: AiContext, signal?: AbortSignal): Promise<AiReply> {
   const tasks = (ctx as { action?: string }).action === 'tasks';
-  const fail = (reason: Reason): AiReply => ({ ok: false, reason, message: MESSAGES[reason] + (reason === 'too-fast' ? '' : SAME[tasks ? 'tasks' : 'adjust']) });
+  const tutor = (ctx as { action?: string }).action === 'tutor';
+  const fail = (reason: Reason): AiReply => ({ ok: false, reason, message: MESSAGES[reason] + (reason === 'too-fast' ? '' : SAME[tutor ? 'tutor' : tasks ? 'tasks' : 'adjust']) });
   if (AI_MODE === 'mock') {
     await new Promise(r => setTimeout(r, 600));
     if (MOCK_VARIANT === 'error') return fail('unavailable');
+    if (tutor) {
+      const { mockTutor } = await import('../../../supabase/functions/_shared/ai/tutor.ts');
+      return { ok: true, text: mockTutor(ctx as Parameters<typeof mockTutor>[0]), model: 'practice helper (no AI)' };
+    }
     if (tasks) {
       const { mockTasks } = await import('../../../supabase/functions/_shared/ai/tasks.ts');
       return { ok: true, text: mockTasks(ctx as Parameters<typeof mockTasks>[0], MOCK_VARIANT as 'good'), model: 'practice helper (no AI)' };
@@ -43,12 +48,15 @@ export async function askModel(ctx: AiContext, signal?: AbortSignal): Promise<Ai
     return { ok: true, text: mockPlanner(ctx as Parameters<typeof mockPlanner>[0], MOCK_VARIANT as 'good'), model: 'practice planner (no AI)' };
   }
   if (AI_MODE !== 'edge') return fail('not-set-up');
+  if (signal?.aborted) return fail('unavailable');
   const { session, offline } = await currentSession();
   if (offline) return fail('offline');
   if (!session) return fail('signed-out');
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 40000);
-  signal?.addEventListener('abort', () => ctrl.abort());
+  const abort = () => ctrl.abort();
+  signal?.addEventListener('abort', abort, { once: true });
+  if (signal?.aborted) ctrl.abort();
   try {
     const res = await fetch(`${SYNC.url}/functions/v1/ai-plan`, {
       method: 'POST',
@@ -67,5 +75,6 @@ export async function askModel(ctx: AiContext, signal?: AbortSignal): Promise<Ai
     return fail(ctrl.signal.aborted && !(signal && signal.aborted) ? 'unavailable' : 'offline');
   } finally {
     clearTimeout(timer);
+    signal?.removeEventListener('abort', abort);
   }
 }

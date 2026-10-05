@@ -62,7 +62,7 @@ const listTitle = (d, cat, id) => { const x = d.lists[cat].find(i => i.id === id
 const cloudList = async (cat, user) => (await sql(`select data, version from public.task_lists where user_id = $1 and id = $2`, [user, cat]))[0];
 
 // The parts of MyDay that are one record each (from 1.8.0), as every device has them.
-const ONE_KEYS = ['settings:planning', 'rota:rota', 'pay:pay', 'holidays:region', 'finance:finance', 'study:roadmap', 'workout:setup', 'food:kitchen', 'food:shopping', 'fitness:goal', 'notes:collections', 'tasks:lists', 'patterns:patterns'];
+const ONE_KEYS = ['cybersecurity:preferences', 'settings:planning', 'rota:rota', 'pay:pay', 'holidays:region', 'finance:finance', 'study:roadmap', 'workout:setup', 'food:kitchen', 'food:shopping', 'fitness:goal', 'notes:collections', 'tasks:lists', 'patterns:patterns'];
 const cloudRecord = async (user, kind, id) => (await sql(`select data, version, deleted from public.sync_records where user_id = $1 and kind = $2 and id = $3`, [user, kind, id]))[0];
 
 function task(uid, taskId, category, title, minutes, done = false) {
@@ -136,7 +136,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
   const rowsA = await sql(`select 'list' k, id from public.task_lists where user_id = $1 union all select 'queue', id from public.task_queue where user_id = $1
     union all select 'day', id from public.day_plans where user_id = $1 union all select 'context', id from public.day_context where user_id = $1`, [userA]);
   check('what was only on this device went to your (empty) account: 3 lists, the queue, a plan, a context', rowsA.length === 6, rowsA);
-  check('…and the 13 one-record parts', eq((await sql(`select kind || ':' || id as k from public.sync_records where user_id = $1 order by 1`, [userA])).map(r => r.k), [...ONE_KEYS].sort()));
+  check('…and the 14 one-record parts including the cybersecurity path', eq((await sql(`select kind || ':' || id as k from public.sync_records where user_id = $1 order by 1`, [userA])).map(r => r.k), [...ONE_KEYS].sort()));
   check('…with this device\'s content', (await cloudList('learning', userA)).data.items[0].title === 'Mac: Networking basics');
   check('this device\'s data is unchanged by it', eq(withoutSaves(await mac.data()), macBefore));
   check('nothing was kept aside (nothing differed)', (await mac.notes()).kept.length === 0);

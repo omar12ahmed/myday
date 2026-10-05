@@ -1,5 +1,14 @@
 # MyDay checks
 
+Cybersecurity: `tests/run.sh cybersecurity-rules app-cybersecurity sync-db sync-records` checks the package
+import, notebook, answer release, tutor boundaries, mobile layouts and account record contracts.
+`app-cybersecurity` also builds a rules-only AI preview; no live model is called. Application builds validate
+the canonical curriculum using Python 3 before generating its learner and server catalogues.
+These suites also exercise external-assignment outcomes, activity-version changes, the scope/network/log
+checkers, fixture validation and deduplication, free-first filters, blocked-access alternatives, draft reloads,
+phone layouts, local practice without network access, and preservation through classic and account records.
+Provider pages are linked, not launched by the browser tests; logged-in third-party access is not tested.
+
 Automated checks that open MyDay in a headless Chrome and use it the way you would: tapping
 buttons, filling in fields, reloading, exporting and importing. Each check prints `PASS` or `FAIL`
 with a plain description.

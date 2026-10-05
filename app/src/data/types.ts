@@ -2,6 +2,8 @@
 // It must match the current MyDay (../index.html) exactly, because both versions use the same saved data.
 // If a field is added or changed, the current MyDay needs the same change and a new schemaVersion (see CLAUDE.md).
 
+import type { CyberData } from './cybersecurity/types';
+
 export type DateKey = string;  // "YYYY-MM-DD" in the device's local time
 export type DateTime = string; // "YYYY-MM-DDTHH:MM" in the device's local time (never a UTC ISO string)
 
@@ -104,6 +106,7 @@ export interface MyDayData {
 
   // Study (added in schemaVersion 4).
   study: StudyData;
+  cybersecurity: CyberData; // learner evidence only; classic MyDay preserves this top-level section unread
 
   // Health: Workout and Food (described below).
   health: HealthData;

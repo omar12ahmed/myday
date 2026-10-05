@@ -11,6 +11,7 @@ import { addTaskConcept, moveTaskTo, saveItemText, setDoneFor, setTaskKind } fro
 import { go } from './route';
 import { BackLink, ExternalLink, InlineLink, Meta, Note } from './parts';
 import { useRemove } from './useRemove';
+import { lessonFromTask, lessonHref } from '../data/cybersecurity/types';
 
 // One task: complete or not, its estimate, type, resource link and section, plus the concepts it covers.
 export function TaskDetails({ data, id }: { data: MyDayData; id: string }) {
@@ -29,6 +30,7 @@ export function TaskDetails({ data, id }: { data: MyDayData; id: string }) {
         <BackLink to="study/roadmap" label="Roadmap" />
         <p className="st-path text-[13px] text-fg-3 m-0">{e.course.title} › {e.module.title} › {e.section.title}</p>
         <h2 id="tk-h">{t.title}</h2>
+        {lessonFromTask(t.id) && <p><InlineLink href={lessonHref(lessonFromTask(t.id)!)}>Open curriculum lesson and lab notebook</InlineLink></p>}
         <label className="check flex items-center gap-2.5 min-h-11 text-[15px] cursor-pointer">
           <input type="checkbox" data-s="task-done" data-id={t.id} className="size-[22px] accent-primary flex-none" checked={t.done} onChange={ev => setDoneFor(t.id, ev.target.checked)} />
           Complete{t.done && t.doneOn && <Meta> ({shortDate(t.doneOn)})</Meta>}

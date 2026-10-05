@@ -2,7 +2,9 @@
 //   #study · #study/topic/<id> · #study/roadmap(/<topic id>) · #study/course/<id> · #study/task/<id> · #study/session · #study/checkin/<id>
 //   #study/revise · #study/concepts · #study/concept/<id> · #study/progress · #study/settings
 export function studyRoute(hash: string): { view: string; id: string } {
-  const parts = hash.replace('#', '').split('/').map(decodeURIComponent);
+  const parts = hash.replace('#', '').split('/').map(part => {
+    try { return decodeURIComponent(part); } catch { return ''; }
+  });
   return { view: parts[1] || 'home', id: parts[2] || '' };
 }
 

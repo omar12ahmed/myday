@@ -1,5 +1,15 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+Cybersecurity curriculum integration (local development): Study now includes the supplied 27-module package,
+path import, lesson/lab/project pages, evidence notebook and optional AI explanations. See
+[`../CYBERSECURITY_INTEGRATION.md`](../CYBERSECURITY_INTEGRATION.md) for the architecture review, scope,
+data model, validation and required backend deployment order. Builds validate the canonical package with
+Python 3 before generating the catalogue. This does not implement verified mastery or automatic advancement.
+The Practice shelf adds 12 free-first external assignments (including specific TryHackMe rooms and Academy
+labs) and three local interactives. Each records resumable attempts through the existing notebook; no API
+keys or MCP connection are required. Provider completion is self-reported. The separate activities JSON
+is validated at build time, including lesson mappings, allowed provider URLs and free alternatives.
+
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
 

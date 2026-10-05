@@ -1,0 +1,56 @@
+{
+  "data_class": "synthetic training fixtures; no real people, systems or incident",
+  "auth": {
+    "raw_rows": 33,
+    "valid_unique_rows": 30,
+    "duplicate_rows": 1,
+    "invalid_rows": 2,
+    "valid_failures": 6,
+    "valid_successes": 24,
+    "invalid_ids": [
+      "auth-031",
+      "auth-032"
+    ],
+    "duplicate_id": "auth-025",
+    "labels": {
+      "auth-001": "routine",
+      "auth-002": "routine",
+      "auth-003": "routine",
+      "auth-004": "routine",
+      "auth-005": "routine",
+      "auth-006": "routine",
+      "auth-007": "routine",
+      "auth-008": "routine",
+      "auth-009": "routine",
+      "auth-010": "routine",
+      "auth-011": "routine",
+      "auth-012": "routine",
+      "auth-013": "routine",
+      "auth-014": "routine",
+      "auth-015": "routine",
+      "auth-016": "routine",
+      "auth-017": "routine",
+      "auth-018": "routine",
+      "auth-019": "routine",
+      "auth-020": "routine",
+      "auth-021": "benign_typo",
+      "auth-022": "routine",
+      "auth-023": "simulated_suspicious_sequence",
+      "auth-024": "simulated_suspicious_sequence",
+      "auth-025": "simulated_suspicious_sequence",
+      "auth-026": "simulated_suspicious_sequence",
+      "auth-027": "simulated_suspicious_sequence",
+      "auth-028": "simulated_suspicious_sequence",
+      "auth-029": "scheduled_job",
+      "auth-030": "scheduled_job"
+    },
+    "timestamp_equivalence": "2026-01-15T11:01:00+01:00 equals 2026-01-15T10:01:00+00:00"
+  },
+  "web": {
+    "rows": 12,
+    "forbidden_response_count": 1,
+    "data_access_claim": "403 shows a denied request here; it does not prove every route or resource is secure"
+  },
+  "scenario": "A five-failure burst followed by a success merits investigation; synthetic labels define the exercise, not a real-world maliciousness inference.",
+  "limitation": "This is a tiny smoke-test fixture. Create a larger distinct development/holdout dataset for the detection project; do not report generalised precision or recall from these records."
+}

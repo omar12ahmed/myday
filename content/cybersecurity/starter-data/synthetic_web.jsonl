@@ -1,0 +1,12 @@
+{"event_id": "web-001", "timestamp": "2026-01-15T10:03:00+00:00", "request_id": "req-001", "user": "demo-alice", "method": "GET", "path": "/notes", "status": 200, "host": "lab-app-1"}
+{"event_id": "web-002", "timestamp": "2026-01-15T10:04:00+00:00", "request_id": "req-002", "user": "demo-alice", "method": "GET", "path": "/notes", "status": 200, "host": "lab-app-1"}
+{"event_id": "web-003", "timestamp": "2026-01-15T10:05:00+00:00", "request_id": "req-003", "user": "demo-alice", "method": "GET", "path": "/notes", "status": 200, "host": "lab-app-1"}
+{"event_id": "web-004", "timestamp": "2026-01-15T10:06:00+00:00", "request_id": "req-004", "user": "demo-alice", "method": "GET", "path": "/notes", "status": 200, "host": "lab-app-1"}
+{"event_id": "web-005", "timestamp": "2026-01-15T10:07:00+00:00", "request_id": "req-005", "user": "demo-alice", "method": "GET", "path": "/notes", "status": 200, "host": "lab-app-1"}
+{"event_id": "web-006", "timestamp": "2026-01-15T10:08:00+00:00", "request_id": "req-006", "user": "demo-alice", "method": "GET", "path": "/notes", "status": 200, "host": "lab-app-1"}
+{"event_id": "web-007", "timestamp": "2026-01-15T10:09:00+00:00", "request_id": "req-007", "user": "demo-alice", "method": "GET", "path": "/notes", "status": 200, "host": "lab-app-1"}
+{"event_id": "web-008", "timestamp": "2026-01-15T10:10:00+00:00", "request_id": "req-008", "user": "demo-alice", "method": "GET", "path": "/notes", "status": 200, "host": "lab-app-1"}
+{"event_id": "web-009", "timestamp": "2026-01-15T10:11:00+00:00", "request_id": "req-009", "user": "demo-alice", "method": "GET", "path": "/notes", "status": 200, "host": "lab-app-1"}
+{"event_id": "web-010", "timestamp": "2026-01-15T10:12:00+00:00", "request_id": "req-010", "user": "demo-alice", "method": "GET", "path": "/notes", "status": 200, "host": "lab-app-1"}
+{"event_id": "web-011", "timestamp": "2026-01-15T10:36:00+00:00", "request_id": "req-011", "user": "demo-target", "method": "GET", "path": "/notes/demo-alice", "status": 403, "host": "lab-app-1"}
+{"event_id": "web-012", "timestamp": "2026-01-15T10:37:00+00:00", "request_id": "req-012", "user": "demo-target", "method": "GET", "path": "/notes/demo-target", "status": 200, "host": "lab-app-1"}

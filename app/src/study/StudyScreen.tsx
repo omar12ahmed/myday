@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import type { MyDayData } from '../data/types';
 import { CheckinView } from './CheckinView';
 import { ConceptsView } from './ConceptsView';
@@ -14,6 +14,7 @@ import { StudySettings } from './StudySettings';
 import { TaskDetails } from './TaskDetails';
 import { TopicView } from './TopicView';
 import { topicFromPath } from '../data/study/topics';
+const CyberScreen = lazy(() => import('./cybersecurity/CyberScreen'));
 
 // Study: the home page first (what to do next, ready to start, and your topics), and everything else one tap away
 // under #study/… — a topic's page, the roadmap, a session, the check-in, revision, concepts, progress and settings.
@@ -31,7 +32,8 @@ export function StudyScreen({ data, hash }: { data: MyDayData; hash: string }) {
   useEffect(() => { window.scrollTo(0, 0); }, [hash]);
 
   let screen;
-  if (view === 'roadmap') screen = <Roadmap key={id} data={data} state={{ edit, setEdit, open, setOpen }} topic={id ? topicFromPath(id) : null} />;
+  if (view === 'cybersecurity') screen = <Suspense fallback={<p role="status">Opening your cybersecurity workshop…</p>}><CyberScreen key={id} data={data} id={id} /></Suspense>;
+  else if (view === 'roadmap') screen = <Roadmap key={id} data={data} state={{ edit, setEdit, open, setOpen }} topic={id ? topicFromPath(id) : null} />;
   else if (view === 'topic') screen = <TopicView data={data} id={topicFromPath(id)} lengths={lengths} setLength={setLength} />;
   else if (view === 'course') screen = <CourseDetails data={data} id={id} />;
   else if (view === 'task') screen = <TaskDetails data={data} id={id} />;

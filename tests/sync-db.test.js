@@ -179,6 +179,19 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   check('…and nobody else\'s', (await sql('select count(*)::int as n from public.task_lists where user_id = $1', [A]))[0].n === 1);
   check('…in the second migration\'s table too', (await sql('select count(*)::int as n from public.sync_records where user_id = $1', [B]))[0].n === 0 && (await sql('select count(*)::int as n from public.sync_records where user_id = $1', [A]))[0].n === 4); // note, finance, roadmap, the project's tombstone
 
+  console.log('\n[11] Cybersecurity learner records');
+  const learner = await S.addUser(db, 'cyber-isolation@example.test', 'x');
+  const attempt = { id: 'ca1', activityId: 'exercise.learning-evidence', curriculumVersion: '1.0.0', evidence: 'Disposable test observation' };
+  r = await push(A, [change('cybersecurity', 'preferences', 0, { pathId: 'path.core' }), change('cyber_attempt', 'ca1', 0, attempt)]);
+  check('curriculum preferences and individual attempts save through sync_push', r.every(x => x.status === 'applied' && x.version === 1), r);
+  check('another learner cannot read the evidence', !(await pull(learner)).some(x => x.kind === 'cyber_attempt'));
+  r = await push(A, [change('cyber_attempt', 'ca1', 0, { ...attempt, evidence: 'stale' })]);
+  check('a stale device cannot overwrite an attempt', r[0].status === 'conflict', r);
+  r = await push(A, [change('cyber_attempt', 'ca1', 1, null, { deleted: true })]);
+  check('attempt removal propagates as a tombstone', r[0].status === 'applied' && (await pull(A)).some(x => x.kind === 'cyber_attempt' && x.deleted));
+  r = await push(A, [change('cybersecurity', 'preferences', 1, null, { deleted: true })]);
+  check('the preferences singleton cannot be deleted', r[0].status === 'rejected', r);
+
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

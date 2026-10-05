@@ -19,7 +19,7 @@ set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(dirname "$HERE")"
 SUITES=("$@")
-[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study app-storage app-today app-calendar-pay app-finance app-inbox app-tasks app-projects app-study app-topics app-workout app-food app-goals goals-rules capture-rules patterns-rules app-patterns app-final app-site app-install sw-rules sync-db sync-records app-sync ai-rules ai-server app-ai)
+[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study app-storage app-today app-calendar-pay app-finance app-inbox app-tasks app-projects app-study app-topics app-workout app-food app-goals goals-rules capture-rules patterns-rules app-patterns app-final app-site app-install sw-rules sync-db sync-records app-sync ai-rules ai-server app-ai cybersecurity-rules app-cybersecurity)
 
 # ---- What's needed ----
 CHROME="${CHROME:-}"
@@ -55,7 +55,7 @@ if printf '%s\n' "${SUITES[@]}" | grep -qE '^app-(sync|ai)$'; then
     npx vite build --outDir "$WORK/srv/sync" --emptyOutDir >"$WORK/sync-build.log" 2>&1) || { echo "The sync test copy of the app didn't build:"; tail -20 "$WORK/sync-build.log"; exit 1; }
 fi
 # A copy in AI practice mode (rules instead of AI, no account), for app-ai.
-if printf '%s\n' "${SUITES[@]}" | grep -q '^app-ai$'; then
+if printf '%s\n' "${SUITES[@]}" | grep -qE '^app-(ai|cybersecurity)$'; then
   (cd "$ROOT/app" && VITE_SUPABASE_URL= VITE_SUPABASE_PUBLISHABLE_KEY= VITE_AI=mock npx vite build --outDir "$WORK/srv/aimock" --emptyOutDir >"$WORK/aimock-build.log" 2>&1) || { echo "The AI practice copy of the app didn't build:"; tail -20 "$WORK/aimock-build.log"; exit 1; }
 fi
 # The website layouts, built as GitHub Pages will publish them, under a sub-folder like /myday/ (without the real

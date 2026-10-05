@@ -1,0 +1,27 @@
+[
+  {
+    "record_id": "win-001",
+    "timestamp": "2026-01-15T10:20:00+00:00",
+    "provider": "Synthetic Windows-like training record",
+    "event_code": "account-login-failed",
+    "user": "demo-admin",
+    "host": "lab-workstation-1"
+  },
+  {
+    "record_id": "win-002",
+    "timestamp": "2026-01-15T10:22:00+00:00",
+    "provider": "Synthetic Windows-like training record",
+    "event_code": "account-login-success",
+    "user": "demo-admin",
+    "host": "lab-workstation-1"
+  },
+  {
+    "record_id": "win-003",
+    "timestamp": "2026-01-15T10:23:00+00:00",
+    "provider": "Synthetic Windows-like training record",
+    "event_code": "process-start",
+    "user": "demo-admin",
+    "process": "approved-inventory-tool",
+    "host": "lab-workstation-1"
+  }
+]

@@ -5,6 +5,8 @@ import { isDateKey, isDateTime, isTime, todayKey } from './dates';
 import { normalizePay, defaultPay } from './pay';
 import { emptyRota, normalizeRota } from './rota';
 import { emptyStudy } from './study/common';
+import { emptyCyber } from './cybersecurity/types';
+import { normalizeCyber } from './cybersecurity/normalize';
 import { emptyFood } from './food/normalize';
 import { emptyWorkout } from './workout/common';
 import { normalizeHealth } from './workout/normalize';
@@ -71,6 +73,7 @@ export function freshState(): MyDayData {
     bankHolidays: { region: 'england-and-wales', fetchedAt: null, divisions: null },
     health: { workout: emptyWorkout(), food: emptyFood() },
     study: emptyStudy(),
+    cybersecurity: emptyCyber(),
     finance: emptyFinance(),
     notes: emptyNotes(),
     fitness: emptyFitness(),
@@ -247,6 +250,7 @@ export function normalize(raw: unknown, report = { dropped: 0 }): MyDayData {
   s.bankHolidays = normalizeBankHolidays(raw.bankHolidays);
   s.health = normalizeHealth(raw.health, report); // absent in older data → empty Health (Food kept exactly as saved)
   s.study = normalizeStudy(raw.study, report); // absent in older data → empty Study
+  s.cybersecurity = normalizeCyber(raw.cybersecurity, report);
   s.finance = normalizeFinance(raw.finance, report); // added by the new app; absent before → empty Finance
   s.notes = normalizeNotes(raw.notes, report);       // added by the new app in 1.3.0; absent before → the starter categories
   s.fitness = normalizeFitness(raw.fitness, report); // added by the new app in 1.3.0; absent before → no goal yet

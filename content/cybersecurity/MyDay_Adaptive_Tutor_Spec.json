@@ -1,0 +1,276 @@
+{
+  "policy_id": "policy.myday-cybersecurity-learning",
+  "version": "1.0.0",
+  "status": "proposed_default; calibrate with learner evidence",
+  "separate_from_curriculum": true,
+  "model_dependency": null,
+  "mastery": {
+    "score_range": [
+      0,
+      100
+    ],
+    "unassessed": {
+      "score": 0,
+      "evidence_status": "unassessed",
+      "interpretation": "No demonstrated evidence; not proof of inability"
+    },
+    "bands": [
+      {
+        "minimum": 0,
+        "maximum": 20,
+        "label": "Not yet evidenced",
+        "meaning": "Unassessed or fragmented recognition; needs a guided introduction"
+      },
+      {
+        "minimum": 21,
+        "maximum": 40,
+        "label": "Emerging understanding",
+        "meaning": "Can explain parts with prompts; performance is inconsistent"
+      },
+      {
+        "minimum": 41,
+        "maximum": 60,
+        "label": "Guided competence",
+        "meaning": "Completes familiar tasks with support; transfer or recall is weak"
+      },
+      {
+        "minimum": 61,
+        "maximum": 80,
+        "label": "Independent familiar-task competence",
+        "meaning": "Usually explains and performs familiar tasks independently; durability still developing"
+      },
+      {
+        "minimum": 81,
+        "maximum": 100,
+        "label": "Durable transfer at this skill level",
+        "meaning": "Independent success on varied tasks plus delayed recall and current evidence; not universal expertise"
+      }
+    ],
+    "dimensions": {
+      "understanding": 0.25,
+      "recall": 0.2,
+      "practical": 0.4,
+      "integrated_assessment": 0.15
+    },
+    "dimension_scoring": "Weighted mean of latest up to 3 eligible, distinct-context evidence scores: newest 0.5, next 0.3, next 0.2; renormalise available weights.",
+    "missing_dimension_score": 0,
+    "evidence_rules": [
+      "Reading, elapsed time, streaks and badges do not directly increase mastery",
+      "Use rubric-scored outputs; self-rating alone is insufficient",
+      "One evidence segment contributes to only one dimension; split a multi-part assessment into separately identified segments",
+      "Same task replay is practice, not an additional distinct context",
+      "Keep unsuccessful eligible attempts as evidence; do not cherry-pick only passes",
+      "Guided or hinted work may support learning but its scored practical contribution is capped at 60",
+      "Unverified AI judgement creates provisional evidence requiring observable output or review",
+      "Record artefact, input variant, assistance, date, content version and which skill was actually observed"
+    ],
+    "historical_score": "sum(dimension_score * dimension_weight)",
+    "freshness": {
+      "days_since_evidence": "max(days_since_independent_recall, days_since_independent_practical)",
+      "missing_evidence_freshness": 0,
+      "half_life_days_by_distinct_delayed_passes": [
+        14,
+        30,
+        60
+      ],
+      "half_life_selection": "0 delayed passes -> 14; 1 -> 30; 2 or more -> 60",
+      "factor": "2 ** (-days_since_evidence / half_life_days)",
+      "readiness_score": "historical_score * (0.70 + 0.30 * freshness_factor); round for display only",
+      "preserve_historical_evidence": true,
+      "note": "A scheduling heuristic, not a validated estimate of human forgetting; no penalty to completed-work history."
+    },
+    "caps": [
+      {
+        "condition": "No practical evidence",
+        "maximum": 40
+      },
+      {
+        "condition": "No independent practical pass",
+        "maximum": 60
+      },
+      {
+        "condition": "No fresh transfer task or no delayed independent recall at least 7 days later",
+        "maximum": 80
+      },
+      {
+        "condition": "Any critical scope or evidence-integrity failure unresolved",
+        "progression_blocked": true
+      }
+    ],
+    "durable_mastery_requirements": {
+      "readiness_score_minimum": 81,
+      "each_dimension_minimum": 70,
+      "practical_minimum": 80,
+      "independent_contexts_minimum": 2,
+      "novel_transfer_required": true,
+      "delayed_recall_gap_days_minimum": 7
+    },
+    "progression": {
+      "normal_prerequisite_score": 70,
+      "advanced_prerequisite_score": 75,
+      "respect_static_edge_threshold": true,
+      "practical_minimum": 70,
+      "understanding_minimum": 60,
+      "recall_minimum": 60,
+      "scope_gate_non_compensatory": true,
+      "stale_required_skill_action": "Offer a brief independent check; do not repeat the whole module automatically"
+    },
+    "rounding": "Compute with full precision; round displayed scores only. Compare gates against unrounded scores."
+  },
+  "adaptation": {
+    "inputs": [
+      "available_minutes",
+      "self_reported_energy",
+      "chosen_path",
+      "accessibility_preferences",
+      "environment_available",
+      "due_reviews",
+      "skill_evidence",
+      "previous_attempts"
+    ],
+    "candidate_order": [
+      "Required skill with expired or weak evidence",
+      "Due review relevant to the chosen path",
+      "Ready next core or branch lesson",
+      "Ready project checkpoint"
+    ],
+    "session_templates": [
+      {
+        "minutes": 15,
+        "recall": 3,
+        "main_task": 10,
+        "record_next_step": 2,
+        "full_lesson_completion": false
+      },
+      {
+        "minutes": 30,
+        "recall": 5,
+        "main_task": 20,
+        "record_next_step": 5,
+        "full_lesson_completion": "Only if remaining criteria actually met"
+      },
+      {
+        "minutes": 60,
+        "recall": 10,
+        "main_task": 40,
+        "record_next_step": 10,
+        "full_lesson_completion": "Evidence-dependent"
+      },
+      {
+        "minutes": 90,
+        "recall": 10,
+        "main_task": 65,
+        "record_next_step": 15,
+        "full_lesson_completion": "Evidence-dependent"
+      }
+    ],
+    "low_energy": "One bounded task or retrieval check; preserve a clear resume point; do not lower the mastery standard",
+    "skip": "Offer diagnostic questions plus a fresh practical task; map verified evidence to exact skills; never skip from confidence alone",
+    "repeat": "Identify the failed prerequisite or misconception; change explanation and task; reduce scaffolding gradually",
+    "expand": "Offer an extra edge case, alternative environment or design tradeoff after required work",
+    "revision": "Use retrieval, correction and a changed practical example, not rereading alone",
+    "initial_review_intervals_days": [
+      1,
+      3,
+      7,
+      14,
+      30,
+      60
+    ],
+    "review_success": "Lengthen the next interval when recall and performance are independent; use current weakness and relevance",
+    "review_failure": "Give feedback and a smaller relearning task; schedule another retrieval in 1–3 days",
+    "review_backlog": "Normally allocate at most 25 percent of a week to review; prioritise important prerequisites and distribute the rest",
+    "missed_days": "Resume from evidence and current capacity; no streak penalty or automatic catch-up workload",
+    "scheduling_rule": "Select at most one main new skill per short session; split long labs into resumable checkpoints",
+    "ctf_rule": "Use as optional practice or rubric-matched replacement, never as a flag-count mastery shortcut",
+    "environment_rule": "Offer a legitimate alternative; label offline-only skills as analysis evidence until live performance is demonstrated",
+    "human_control": [
+      "Learner chooses role focus and workload",
+      "Paid labs and live cloud provisioning require a deliberate user choice",
+      "No automatic action against real targets",
+      "Assessment disputes can be reviewed and corrected"
+    ]
+  },
+  "learner_data_model": {
+    "separate_storage": true,
+    "entities": {
+      "skill_state": [
+        "learner_id",
+        "skill_id",
+        "curriculum_version",
+        "historical_score",
+        "readiness_score",
+        "dimension_scores",
+        "evidence_status",
+        "last_independent_recall_at",
+        "last_independent_practical_at",
+        "next_review_at",
+        "confidence"
+      ],
+      "attempt": [
+        "attempt_id",
+        "learner_id",
+        "activity_id",
+        "curriculum_version",
+        "started_at",
+        "completed_at",
+        "input_variant_id",
+        "assistance_level",
+        "environment_id",
+        "outcome",
+        "resume_point"
+      ],
+      "evidence": [
+        "evidence_id",
+        "attempt_id",
+        "skill_id",
+        "dimension",
+        "rubric_version",
+        "score",
+        "critical_checks",
+        "artefact_reference",
+        "assessor_type",
+        "verified",
+        "observed_at"
+      ],
+      "daily_plan": [
+        "plan_id",
+        "learner_id",
+        "created_at",
+        "available_minutes",
+        "energy",
+        "activity_ids",
+        "reason_codes",
+        "user_override"
+      ],
+      "review_event": [
+        "review_id",
+        "learner_id",
+        "skill_id",
+        "due_at",
+        "performed_at",
+        "outcome",
+        "next_due_at"
+      ]
+    },
+    "security": [
+      "Per-learner access control",
+      "Keep sensitive lab artefacts outside public curriculum tables",
+      "Restrict unreleased answer keys",
+      "Minimise stored personal data",
+      "Version and audit score corrections"
+    ]
+  },
+  "calibration": {
+    "review_after": "4–6 weeks of actual use",
+    "inspect": [
+      "Overly easy diagnostics",
+      "Repeated failure at the same dependency",
+      "Time estimate errors",
+      "Excessive review load",
+      "False mastery from repeated tasks"
+    ],
+    "change_policy_not_history": true,
+    "claim": "Weights, thresholds and review intervals are explicit design defaults, not scientifically validated measurements or employment guarantees."
+  }
+}

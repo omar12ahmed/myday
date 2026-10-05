@@ -25,10 +25,12 @@ import { STAGES, STATUS_LABEL } from '../data/projects';
 import { CAT_LABEL, ENERGY_LABEL } from '../data/plan';
 import type { Category, Commitment, Day, DayContext, ListItem, MyDayData, Note, Project, QueueItem, Recipe, StudySession, TaskItem, WorkoutSession, Review as StudyReview } from '../data/types';
 import { isObj } from '../data/util';
+import { cleanAttempt, normalizeCyber } from '../data/cybersecurity/normalize';
+import type { CyberAttempt } from '../data/cybersecurity/types';
 
 export type Kind = 'list' | 'queue' | 'day' | 'context'
   | 'settings' | 'rota' | 'pay' | 'holidays' | 'finance' | 'study' | 'workout' | 'food' | 'fitness' | 'notes' | 'tasks' | 'patterns'
-  | 'commitment' | 'note' | 'task' | 'session' | 'review' | 'wsession' | 'recipe' | 'project';
+  | 'commitment' | 'note' | 'task' | 'session' | 'review' | 'wsession' | 'recipe' | 'project' | 'cybersecurity' | 'cyber_attempt';
 export type Content = Record<string, unknown>;
 
 // A record's key on this device: "list:learning", "day:2026-10-02", "note:nt8f…"…
@@ -144,6 +146,9 @@ const ONE: One[] = [
     get: d => d.patterns as unknown as Content, put: (dr, c) => { dr.patterns = c as unknown as MyDayData['patterns']; },
     clean: raw => via({ patterns: raw }).patterns as unknown as Content,
     summary: c => plural(Object.keys(obj(c.answers)).length, 'answer'), starter: c => sameAsNew(() => ONE[12], c) },
+  { kind: 'cybersecurity', id: 'preferences', label: 'Cybersecurity learning path',
+    get: d => ({ pathId: d.cybersecurity.pathId }), put: (d, c) => { d.cybersecurity.pathId = String(c.pathId); },
+    clean: raw => ({ pathId: normalizeCyber(raw).pathId }), summary: c => String(c.pathId), starter: c => c.pathId === 'path.core' },
 ];
 
 // ---------- One record per item ----------
@@ -172,6 +177,10 @@ const byStart = (a: { date: string; startedAt: string }, b: { date: string; star
 const same = (id: string, c: { id?: unknown } | undefined | null): Content | null => (c && c.id === id ? (c as Content) : null);
 
 const MANY: Many[] = [
+  { kind: 'cyber_attempt', label: 'Cybersecurity notebook attempt',
+    items: d => d.cybersecurity.attempts, put: (d, id, c) => putItem(d.cybersecurity.attempts, id, c, (a, b) => a.startedAt.localeCompare(b.startedAt)),
+    clean: (id, raw) => same(id, cleanAttempt(raw) ?? undefined),
+    summary: c => { const a = c as unknown as CyberAttempt; return `${a.activityId} · ${a.submittedAt ? 'submitted' : 'in progress'}`; } },
   { kind: 'commitment', label: 'Appointment or work',
     items: d => d.commitments, put: (dr, id, c) => putItem(dr.commitments, id, c, (a, b) => a.start.localeCompare(b.start)),
     clean: (id, raw) => same(id, via({ commitments: [raw] }).commitments[0]),
