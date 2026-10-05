@@ -209,6 +209,7 @@ pay rules) and its settings card are gone from the screen; the rules behind them
 | `src/data/patterns/`, `src/patterns/` | What MyDay has noticed: `notice.ts` (finding patterns in your history), `saved.ts` (your preferences and answers, the `patterns` section), `adapt.ts` (using preferences in Build my day and the room on today's plan); the screen `NoticedScreen.tsx` (`#noticed`, and the quiet line on Today). `src/components/Why.tsx`: a note with a "Why?". `src/tasks/StuckCard.tsx`: "What's getting in the way?". |
 | `src/projects/`, `src/data/projects.ts` | Projects (1.12.0): `ProjectsScreen` (the Projects and Notes tabs, "Start a project", project cards), `ProjectView` (one project: what it is, the progression, the next step, tasks, notes, coming up, how it's going, pause / done / delete), `parts.tsx` (the progression steps, the project picker used by notes and tasks); the data, the next step and what's coming up in `src/data/projects.ts`. Today's "From your projects" and "Your tasks": `src/today/ProjectCards.tsx`. Older `#inbox…`/`#notes…` links: `src/shell/legacyLinks.ts`. |
 | `src/tasks/`, `src/data/tasks.ts` | Tasks (under Today since 1.12.0): `TasksScreen` (adding, the groups, lists as chips, search), `TaskEditor`, `ListsView`, `route.ts` (`#today/tasks`, `#today/tasks/<id>`, `#today/tasks/list/<id>`, `#today/tasks/lists`); the data and rules (groups, due today, room on today's plan, the link to the plan) in `src/data/tasks.ts`. Today's "Due today" card: `src/today/DueTodayCard.tsx`. |
+| `src/data/understand.ts`, `src/shell/autoConnect.ts`, `src/notes/ConnectedCard.tsx` | Understanding notes on the device (1.13.0): the words that count, which project a note clearly belongs to, related notes, Undo / Keep (`understand.ts`); connecting a moment after changes (`autoConnect.ts`); "MyDay connected these" (`ConnectedCard.tsx`). |
 | `src/notes/`, `src/capture/` | Notes, in the Projects section (`NotesScreen`: search, Inbox, collections; `NoteEditor`; `CategoriesView`; `route.ts` — `#projects/notes`, `#projects/notes/<id>`, `#projects/notes/in/<id>`, `#projects/notes/collections`), and Capture (`parse.ts`, `save.ts`, `CaptureSheet.tsx`). The notes data: `src/data/notes.ts`. |
 | `src/health/food/` | The Food screens: `FoodScreen` (picks the screen from the address, e.g. `#health/food/shopping`), `FoodHome`, `RecipeCard`, `SearchBox` (with suggestions), `SearchView`, `RecipeView`, `WantView`, `ShoppingView`, `CookView`, `PrefsView`, `RecipeForm`; `actions.ts` (what each button saves) and `visit.ts` (what's kept in memory for the visit: ideas, search results, suggestions, drafts). |
 | `src/health/` | The Health screens: `HealthScreen` (the Workout and Food tabs; picks the screen from the address, e.g. `#health/workout/schedule`), `WorkoutHome`, `TemplateEditor`, `SessionView` (a workout in progress, and correcting a logged one), `SetFields` (the number boxes for a set), `HistoryViews` (history, exercises, exercise history), `Chart`, `ScheduleView` and `HealthTodayCard`; `actions.ts` (what each button saves). |
@@ -449,11 +450,28 @@ tasks" on Today). Older `#inbox…` and `#notes…` links are rewritten to where
   the project. In Tasks, a task in a project shows the project's name.
 - Saved as the `projects` section (`{ items }`; each with `title`, `summary`, `stage`, `status`, `nextTaskId`,
   `commitmentIds`, `createdAt`, `updatedAt`). Notes and tasks gain an optional `projectId` (left out when there isn't
-  one, so nothing else changes); appointments are listed on the project (`commitmentIds`) so the Calendar's own records,
+  one, so nothing else changes; from 1.13.0 a note can also have `linkedBy` 'rules' | 'ai', `linkWhy`, `notProjects` and
+  `private`, each left out when not set); appointments are listed on the project (`commitmentIds`) so the Calendar's own records,
   shared with the classic MyDay, never change. Added in 1.12.0; the classic MyDay keeps all of it unread. Synced with
   your account (one record per project; database migration `20261006120000_sync_projects.sql`) and in "Export my data".
-- **Next** (in order): capture that understands and connects by itself (with Undo), the project workspace for
-  exploring and deciding with AI, the knowledge graph, Study by subject, and a weekly review.
+- **Understanding and connecting, on the device (1.13.0):** MyDay puts a note into the project it clearly belongs to
+  by itself — only a link: nothing you wrote changes, and nothing is added to your days or Calendar. It compares the
+  meaningful words notes and projects share (`src/data/understand.ts`: common and everyday words like "work", "call"
+  or "Friday" don't count; rarer words count more), and links only when it's clear: at least two meaningful words in
+  common, a strong enough match, and half as strong again as the next project. Weaker matches are only offered
+  ("Might belong in…" on the note, "Might belong here" on the project). It looks a moment after anything changes —
+  never at the note you have open (that one says where it looks like it belongs) — and straight away for a note
+  saved from Capture, whose message says where it went. Each link is listed under **MyDay connected these** on
+  Notes, with why ("both mention “coffee” and “offices”"), **Keep** (the link becomes yours) and **Undo** (out of
+  that project, and MyDay never puts it back in that one); the note and the project page say "connected by MyDay"
+  too. Choosing a note's project yourself always wins. A note in a project has been put somewhere, so it leaves the
+  Notes Inbox. A note also shows its **related notes** (sharing two meaningful words, or one strong one), and can be
+  marked **private**: AI help will never read it (it still syncs with your own account, like every note). Honest
+  limit: matching words isn't understanding meaning — a link can be wrong, which is what Undo is for; AI help (part
+  2, once you switch it on) will place the notes word-matching can't.
+- **Next** (in order): AI help that understands and connects notes (part 2, once switched on; private notes never
+  sent), the project workspace for exploring and deciding with AI, the knowledge graph, Study by subject, and a
+  weekly review.
 - **Tasks** holds every one-off task in one place, separate from Today's repeating Learning / Admin / Health lists
   (which stay as they are). Type a task in your own words and its date and time are read from them, as in Capture
   ("pay rent by Friday" is due Friday; "call GP tomorrow at 10am" is due tomorrow at 10:00). Tasks are grouped
@@ -631,3 +649,6 @@ returns up to 8 small tasks; you tick the ones to add.
     decide → act → reflect). The Inbox became Projects (Projects and Notes); Tasks moved to Today. A project gathers
     its notes, tasks, appointments and progress, and its one next step reaches Today ("From your projects"). Capture
     can start a project from an idea. Synced (database migration `20261006120000_sync_projects.sql`, applied first).
+20. **Release 1.13.0:** Understand & connect, part 1 (on the device, no AI) — MyDay puts notes that clearly belong to
+    a project into it by itself, with why, Keep and Undo ("MyDay connected these"); related notes; "Might belong
+    here"; private notes; notes in a project leave the Inbox. No database change (the link details are on each note).
