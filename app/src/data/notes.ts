@@ -2,7 +2,7 @@
 // the classic MyDay keeps this section exactly as it is (it keeps any section it doesn't know). Notes sync with
 // your account one by one (see sync/records.ts) and are included in "Export my data".
 //
-// A note without a collection is in the Inbox: you never have to file anything. Collections ("categories" in the
+// A note in no collection and no project is in the Inbox: you never have to file anything. Collections ("categories" in the
 // saved data) are optional places to file notes later; a note whose collection has gone is back in the Inbox.
 import { isDateTime, localStamp } from './dates';
 import type { Note, NoteCategory, NotesData } from './types';
@@ -42,6 +42,12 @@ export function normalizeNotes(raw: unknown, report: { dropped: number }): Notes
       updatedAt: isDateTime(n.updatedAt) ? n.updatedAt : isDateTime(n.createdAt) ? n.createdAt : now,
     };
     if (typeof note.projectId !== 'string' || !note.projectId) delete note.projectId; // a project link (1.12.0), or none
+    // How it was linked, and the projects you took it out of (1.13.0); each left out when there's nothing to say.
+    if (!note.projectId || (note.linkedBy !== 'rules' && note.linkedBy !== 'ai')) { delete note.linkedBy; delete note.linkWhy; }
+    else if (typeof note.linkWhy !== 'string' || !note.linkWhy) delete note.linkWhy; else note.linkWhy = note.linkWhy.slice(0, 120);
+    const not = listOf(note.notProjects).filter((x): x is string => typeof x === 'string' && !!x);
+    if (not.length) note.notProjects = [...new Set(not)].slice(-50); else delete note.notProjects;
+    if (note.private === true) note.private = true; else delete note.private;
     seenN.add(note.id);
     out.items.push(note);
   }
@@ -53,7 +59,8 @@ export const isBlank = (n: Note) => !n.title.trim() && !n.text.trim();
 // A note's name in lists: its title, otherwise its first line.
 export const noteName = (n: Note) => n.title.trim() || n.text.trim().split('\n')[0].slice(0, 80) || 'Untitled note';
 export const categoryName = (d: NotesData, id: string) => d.categories.find(c => c.id === id)?.name ?? INBOX;
-export const inInbox = (d: NotesData, n: Note) => !d.categories.some(c => c.id === n.categoryId);
+// The Inbox: notes not put anywhere yet — in no collection, and (from 1.13.0) in no project either.
+export const inInbox = (d: NotesData, n: Note) => !n.projectId && !d.categories.some(c => c.id === n.categoryId);
 
 // The notes to show: in one collection, the Inbox ('') or all (null), matching a search (title or text, any case),
 // pinned first, then the most recently changed.
@@ -61,11 +68,11 @@ export function notesView(d: NotesData, categoryId: string | null, query: string
   const q = query.trim().toLowerCase();
   const known = new Set(d.categories.map(c => c.id));
   return d.items
-    .filter(n => categoryId === null || (categoryId === '' ? !known.has(n.categoryId) : n.categoryId === categoryId))
+    .filter(n => categoryId === null || (categoryId === '' ? !known.has(n.categoryId) && !n.projectId : n.categoryId === categoryId))
     .filter(n => !q || n.title.toLowerCase().includes(q) || n.text.toLowerCase().includes(q))
     .sort((a, b) => Number(b.pinned) - Number(a.pinned) || (a.updatedAt < b.updatedAt ? 1 : a.updatedAt > b.updatedAt ? -1 : 0));
 }
-export const inboxCount = (d: NotesData) => { const known = new Set(d.categories.map(c => c.id)); return d.items.filter(n => !known.has(n.categoryId)).length; };
+export const inboxCount = (d: NotesData) => { const known = new Set(d.categories.map(c => c.id)); return d.items.filter(n => !known.has(n.categoryId) && !n.projectId).length; };
 
 // ---------- Changes (each used inside update(), so it goes through the checked save path) ----------
 // A new note — in the Inbox unless a collection is given.
@@ -82,6 +89,13 @@ export function fileNote(d: NotesData, id: string, categoryId: string): boolean 
   return true;
 }
 // Returns false if nothing changed (so nothing is saved).
+// Private (1.13.0): AI help never reads the note. Not counted as changing it. Returns false when nothing changed.
+export function setPrivate(d: NotesData, id: string, on: boolean): boolean {
+  const n = d.items.find(x => x.id === id);
+  if (!n || !!n.private === on) return false;
+  if (on) n.private = true; else delete n.private;
+  return true;
+}
 export function editNote(d: NotesData, id: string, patch: Partial<Pick<Note, 'title' | 'text' | 'categoryId' | 'pinned'>>): boolean {
   const n = d.items.find(x => x.id === id);
   if (!n) return false;

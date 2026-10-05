@@ -19,7 +19,7 @@ set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(dirname "$HERE")"
 SUITES=("$@")
-[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study app-storage app-today app-calendar-pay app-finance app-inbox app-tasks app-projects app-study app-topics app-workout app-food app-goals goals-rules capture-rules patterns-rules app-patterns app-final app-site app-install sw-rules sync-db sync-records app-sync ai-rules ai-server app-ai)
+[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study app-storage app-today app-calendar-pay app-finance app-inbox app-tasks app-projects app-connect app-study app-topics app-workout app-food app-goals goals-rules capture-rules patterns-rules understand-rules app-patterns app-final app-site app-install sw-rules sync-db sync-records app-sync ai-rules ai-server app-ai)
 
 # ---- What's needed ----
 CHROME="${CHROME:-}"

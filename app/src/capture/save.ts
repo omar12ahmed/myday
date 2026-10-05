@@ -1,18 +1,28 @@
 // What Capture can do with something you've typed — each only when you choose it, through the normal save path:
-//   a note        to the Notes Inbox (or a collection)
+//   a note        to the Notes Inbox (or a collection) — and to a project, when it clearly belongs to one (with Undo)
 //   an appointment on the Calendar, like one added there (30 minutes unless an end time was given)
 //   a task        to Tasks (on Today), with the date and time it mentions (a task due today then shows on Today)
 //   a project     from an idea (see CaptureSheet)
 import { keyOf, pad } from '../data/dates';
 import { addNote } from '../data/notes';
 import { addProject, linkAppointment, projectFromText } from '../data/projects';
+import { connect } from '../data/understand';
 import { updateSaved } from '../data/storage';
 import { addTask } from '../data/tasks';
 import type { Category, DateKey } from '../data/types';
 import { uid } from '../data/util';
 
-export function saveNote(text: string, collectionId = ''): boolean {
-  return updateSaved(d => { addNote(d.notes, collectionId, text.trim()); }) === 'saved';
+// Returns false if it couldn't be saved; otherwise the project it was connected to straight away (when it clearly
+// belongs to one — see data/understand.ts), or null.
+export function saveNote(text: string, collectionId = ''): false | string | null {
+  let project: string | null = null;
+  const r = updateSaved(d => {
+    const id = addNote(d.notes, collectionId, text.trim());
+    connect(d);
+    const n = d.notes.items.find(x => x.id === id);
+    project = n?.projectId ? d.projects.items.find(p => p.id === n.projectId)?.title ?? null : null;
+  });
+  return r === 'saved' ? project : false;
 }
 
 // "HH:MM" plus some minutes, as a date and a time (may run past midnight).
