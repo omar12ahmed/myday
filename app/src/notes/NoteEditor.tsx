@@ -6,6 +6,7 @@ import { useConfirm } from '../components/confirm';
 import { Field, Select, TextArea, TextInput } from '../components/Field';
 import { BackLink, Note } from '../components/parts';
 import { shortDate } from '../data/dates';
+import { addTask } from '../data/tasks';
 import { editNote, INBOX, isBlank, NOTE_LIMITS, noteName, removeNote, setPrivate } from '../data/notes';
 import { linkNote, projectById } from '../data/projects';
 import { ProjectPicker } from '../projects/parts';
@@ -14,6 +15,8 @@ import { getSnapshot, update, updateSaved } from '../data/storage';
 import { toast } from '../data/toast';
 import type { MyDayData } from '../data/types';
 
+// What AI help said a note is (1.15.0), in words.
+const KIND_WORDS = { idea: 'an idea', task: 'something to do', question: 'a question to find out', reference: 'something to keep for reference', journal: 'a reflection', other: 'a note' } as const;
 const PAUSE_MS = 600; // saved this long after you stop typing (and straight away when you leave the box or the app)
 
 // One note. It's saved as you type (after a short pause), when you leave a box, and when you switch away from
@@ -72,6 +75,8 @@ export function NoteEditor({ data, id }: { data: MyDayData; id: string }) {
   // Understanding it (data/understand.ts): a project it might belong in (when it isn't in one), and related notes.
   const maybe = !project ? projectMatches(data, note)[0] ?? null : null;
   const related = relatedNotes(data, note);
+  // A note AI help saw as something to do can become a task (its title, or its first line), in the same project.
+  const asTask = (note.title.trim() || note.text.trim().split('\n')[0]).slice(0, 120);
 
   async function remove() {
     if (!(await confirm({ title: 'Delete this note?', body: 'This can\'t be undone (a backup made with "Export my data" still has it).', confirmLabel: 'Delete', cancelLabel: 'Keep it' }))) return;
@@ -98,7 +103,7 @@ export function NoteEditor({ data, id }: { data: MyDayData; id: string }) {
           {project && note.linkedBy && (
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-tile bg-primary-container text-on-primary-container pl-3 pr-1 py-1" data-s="note-linked">
               <Sparkles size={16} aria-hidden="true" className="flex-none" />
-              <span className="flex-1 min-w-[12rem] text-[15px] py-1.5">MyDay connected this to “{project.title}”{note.linkWhy ? ` — ${bothMention(note.linkWhy)}` : ''}.</span>
+              <span className="flex-1 min-w-[12rem] text-[15px] py-1.5">{note.linkedBy === 'ai' ? 'AI help' : 'MyDay'} connected this to “{project.title}”{note.linkWhy ? ` — ${note.linkedBy === 'ai' ? note.linkWhy : bothMention(note.linkWhy)}` : ''}.</span>
               <span className="flex">
                 <Button inline variant="ghost" className="!border-transparent !text-on-primary-container" data-action="note-link-keep" onClick={() => { if (update(d => (keepLink(d, id) ? undefined : false))) toast('Kept.'); }}>Keep</Button>
                 <Button inline variant="ghost" className="!border-transparent !text-on-primary-container" data-action="note-link-undo" onClick={() => { flush(); if (update(d => (unlink(d, id) ? undefined : false))) toast('Taken out — MyDay won\'t put it back in that project.'); }}>Undo</Button>
@@ -137,6 +142,14 @@ export function NoteEditor({ data, id }: { data: MyDayData; id: string }) {
           <Button inline variant="ghost" data-action="note-delete" onClick={remove}><Trash2 size={18} aria-hidden="true" /> Delete</Button>
           {status === 'failed' && <Button inline data-action="note-retry" onClick={() => { pending.current = true; flush(); }}>Try saving again</Button>}
         </div>
+        {note.aiKind && (
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-fg-2 m-0 mt-3" data-s="note-kind">
+            <span><Sparkles size={14} aria-hidden="true" className="inline text-primary align-[-2px]" /> AI help sees this as {KIND_WORDS[note.aiKind]}.</span>
+            {note.aiKind === 'task' && (asTask && data.tasks.items.some(t => t.title === asTask)
+              ? <span className="text-fg-3">It's in your tasks.</span>
+              : <Button inline variant="ghost" data-action="note-as-task" onClick={() => { flush(); if (update(d => { const tid = addTask(d.tasks, { title: asTask }); if (!tid) return false; if (note.projectId) d.tasks.items.find(t => t.id === tid)!.projectId = note.projectId; })) toast(`Added to your tasks${project ? ` in “${project.title}”` : ''}.`); }}>Add as a task</Button>)}
+          </p>
+        )}
         {note.private && <Note className="mb-0 mt-3">Private: AI help never reads this note. It's still saved to your account, like all your notes, so it's on your other devices.</Note>}
       </Card>
       {related.length > 0 && (

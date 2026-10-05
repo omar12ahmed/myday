@@ -11,6 +11,7 @@ import { toast } from '../data/toast';
 import type { MyDayData, Note as NoteT, NotesData } from '../data/types';
 import { suggestCollection } from '../capture/parse';
 import { CategoriesView } from './CategoriesView';
+import { AiNotesCard } from './AiNotesCard';
 import { ConnectedCard } from './ConnectedCard';
 import { NoteEditor } from './NoteEditor';
 import { newNote, notesRoute } from './route';
@@ -83,6 +84,7 @@ function NotesHome({ data }: { data: MyDayData }) {
       ) : (
         <>
           <ConnectedCard data={data} />
+          <AiNotesCard data={data} />
           <Card aria-labelledby="inbox-h" id="noteInbox">
             <h3 id="inbox-h" className="flex items-center gap-2">{INBOX} <span className="text-fg-3 font-normal tabular-nums">{inbox.length}</span></h3>
             {inbox.length ? <ul className="list-none p-0 m-0" id="noteList">{inbox.map(n => <NoteRow key={n.id} d={d} n={n} where={false} filing />)}</ul>

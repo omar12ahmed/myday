@@ -7,20 +7,24 @@
 import * as K from './kit';
 import { SCENARIOS, type Scenario } from './scenarios';
 import { TASK_SCENARIOS, type TasksScenario } from './tasks-scenarios';
+import { CONNECT_SCENARIOS, type ConnectScenario } from './connect-scenarios';
 
-// Both kinds of request: "Help me adjust today" (scenarios.ts) and "Add what's on my mind" (tasks-scenarios.ts).
-type AnyScenario = Scenario | TasksScenario;
-const ALL_SCENARIOS: AnyScenario[] = [...SCENARIOS, ...TASK_SCENARIOS];
+// Every kind of request: "Help me adjust today" (scenarios.ts), "Add what's on my mind" (tasks-scenarios.ts) and AI
+// help with notes (connect-scenarios.ts).
+type AnyScenario = Scenario | TasksScenario | ConnectScenario;
+const ALL_SCENARIOS: AnyScenario[] = [...SCENARIOS, ...TASK_SCENARIOS, ...CONNECT_SCENARIOS];
 const isTasksScenario = (sc: AnyScenario): sc is TasksScenario => (sc as TasksScenario).kind === 'tasks';
-export type Action = 'adjust' | 'tasks' | 'all';
+const isConnectScenario = (sc: AnyScenario): sc is ConnectScenario => (sc as ConnectScenario).kind === 'connect';
+const actionOf = (sc: AnyScenario) => (isTasksScenario(sc) ? 'tasks' : isConnectScenario(sc) ? 'connect' : 'adjust');
+export type Action = 'adjust' | 'tasks' | 'connect' | 'all';
 // The scenarios a run uses: the ones named, or all of one action ("adjust" unless said otherwise).
 function pickScenarios(ids: string[] | null, action: Action = 'adjust'): AnyScenario[] {
   if (ids) {
     const unknown = ids.filter(id => !ALL_SCENARIOS.some(s => s.id === id));
-    if (unknown.length) throw new Error(`Unknown scenario ${unknown.map(x => `"${x}"`).join(', ')} (see ai-eval/scenarios.ts and tasks-scenarios.ts).`);
+    if (unknown.length) throw new Error(`Unknown scenario ${unknown.map(x => `"${x}"`).join(', ')} (see ai-eval/scenarios.ts, tasks-scenarios.ts and connect-scenarios.ts).`);
     return ALL_SCENARIOS.filter(s => ids.includes(s.id));
   }
-  return ALL_SCENARIOS.filter(s => action === 'all' || (action === 'tasks') === isTasksScenario(s));
+  return ALL_SCENARIOS.filter(s => action === 'all' || actionOf(s) === action);
 }
 
 export interface ModelEntry {
@@ -172,10 +176,56 @@ function tasksExpectations(sc: TasksScenario, v: TasksView | null, text: string)
   return out;
 }
 
+// AI help with notes: which notes went where, against what the scenario says is right.
+type Links = Record<string, { projectId: string | null; kind: string }>;
+function rawLinks(text: string): Links | null {
+  const raw = K.parseReply(text);
+  const list = raw && typeof raw === 'object' && Array.isArray((raw as { notes?: unknown }).notes) ? (raw as { notes: Record<string, unknown>[] }).notes : null;
+  if (!list) return null;
+  return Object.fromEntries(list.filter(x => x && typeof x.id === 'string').map(x => [x.id as string, { projectId: typeof x.projectId === 'string' ? x.projectId : null, kind: String(x.kind ?? '') }]));
+}
+function connectExpectations(sc: ConnectScenario, sent: string[], links: Links | null): Expectations {
+  const out: Expectations = { sentAll: Object.keys(sc.expect.links).every(id => sent.includes(id)) };
+  const ok = (id: string, got: string | null) => { const want = sc.expect.links[id]; return Array.isArray(want) ? want.includes(got) : want === got; };
+  // The one that matters most: nothing put in a project it doesn't belong in.
+  out.noWrongLinks = !!links && Object.keys(sc.expect.links).every(id => { const got = links[id]?.projectId ?? null; return got === null || ok(id, got); });
+  out.rightLinks = !!links && Object.keys(sc.expect.links).every(id => ok(id, links[id]?.projectId ?? null));
+  if (sc.expect.kinds) out.kinds = !!links && Object.entries(sc.expect.kinds).every(([id, ks]) => ks.includes(links[id]?.kind as never));
+  return out;
+}
+
 // One scenario ready to send: its context, and how to score a reply (filling in the run record).
 interface Prepared { ctx: Parameters<typeof K.callModel>[1]; score: (rec: RunRecord, text: string) => void }
 function prepare(sc: AnyScenario): Prepared {
   const { data, k } = setUp(sc);
+  if (isConnectScenario(sc)) {
+    const plan = K.connectContext(data);
+    if (!plan) throw new Error(`Scenario ${sc.id} has nothing to send (no open projects, or the device places every note).`);
+    const sent = plan.ctx.notes.map(n => n.id);
+    return {
+      ctx: plan.ctx,
+      score(rec, text) {
+        const checked = K.readConnectReply(text, plan.ctx);
+        rec.violations = checked.leftOut ? [`left-out x${checked.leftOut}`] : [];
+        rec.violationDetails = rec.violations.slice();
+        rec.outcome = checked.answers.length ? 'ok' : 'invalid';
+        rec.expectRaw = connectExpectations(sc, sent, rawLinks(text));
+        // What you'd see: the checked answers, as the app would link them.
+        const was = JSON.parse(JSON.stringify(K.getSnapshot().data));
+        K.update(d => { K.applyConnect(d, plan.seen, checked.answers); });
+        const now = K.getSnapshot().data;
+        const final: Links = Object.fromEntries(now.notes.items.filter(n => sent.includes(n.id)).map(n => [n.id, { projectId: n.projectId ?? null, kind: n.aiKind ?? '' }]));
+        rec.expectFinal = connectExpectations(sc, sent, final); // a reply the app couldn't use links nothing: safe, just not useful
+        rec.priorities = Object.values(final).filter(x => x.projectId).length;
+        const title = (id: string | null) => (id ? now.projects.items.find(p => p.id === id)?.title ?? id : 'no project');
+        rec.shown = { rest: false, priorities: now.notes.items.filter(n => sent.includes(n.id)).map(n => `“${(n.title || n.text).slice(0, 50)}” → ${title(n.projectId ?? null)} (${n.aiKind ?? '?'})${n.linkWhy ? `: ${n.linkWhy}` : ''}`), explanation: '', missing: [] };
+        // Using the answers must change only notes, and only their link and AI fields — never their words.
+        const rest = (x: typeof now) => JSON.stringify({ ...x, notes: null, saves: null });
+        const words = (x: typeof now) => JSON.stringify(x.notes.items.map(n => [n.id, n.title, n.text, n.categoryId, n.updatedAt]));
+        rec.savedSafely = rest(now) === rest(was) && words(now) === words(was);
+      },
+    };
+  }
   if (isTasksScenario(sc)) {
     return {
       ctx: K.buildTasksContext(sc.text),
@@ -311,7 +361,7 @@ export async function evaluate(o: Options): Promise<Result> {
   return {
     meta: {
       date: startedAt, mode: o.live ? 'live' : 'mock',
-      promptVersion: [scenarios.some(s => !isTasksScenario(s)) && K.PROMPT_VERSION, scenarios.some(isTasksScenario) && K.TASKS_PROMPT_VERSION].filter(Boolean).join(' + '),
+      promptVersion: [scenarios.some(s => actionOf(s) === 'adjust') && K.PROMPT_VERSION, scenarios.some(isTasksScenario) && K.TASKS_PROMPT_VERSION, scenarios.some(isConnectScenario) && K.CONNECT_PROMPT_VERSION].filter(Boolean).join(' + '),
       models: configs.map(c => ({ id: c.id, label: c.cfg.label, model: c.cfg.model, maxOutputTokens: c.cfg.maxOutputTokens })), repeats: o.repeats, scenarios: scenarios.length, retries: 0,
       budgetUsd: o.budgetUsd, totalBudgetUsd: total, spentBeforeUsd: before, reservedBeforeUsd: o.reservedBeforeUsd ?? 0,
       spentUsd: Math.round(spent * 1e6) / 1e6, usageUsd: Math.round(usage * 1e6) / 1e6, reservedUsd: Math.round(reservedKept * 1e6) / 1e6, stoppedForBudget: stopped,
@@ -453,7 +503,7 @@ export function calls(r: Result): string {
 export function review(r: Result): string {
   const lines = ['# Suggestions to judge by eye', '', 'For each scenario: what each model suggested (first repeat), after the app\'s checks. Rate each 1–5 for usefulness if you like.', ''];
   for (const sc of ALL_SCENARIOS.filter(s => r.runs.some(x => x.scenario === s.id))) {
-    lines.push(`## ${sc.id}: ${sc.title}`, '', isTasksScenario(sc) ? `Written: “${sc.text}” · ${sc.tags.join(', ')}` : `Note: ${sc.note ? `“${sc.note}”` : '(none)'} · ${sc.tags.join(', ')}`, '');
+    lines.push(`## ${sc.id}: ${sc.title}`, '', isTasksScenario(sc) ? `Written: “${sc.text}” · ${sc.tags.join(', ')}` : isConnectScenario(sc) ? `Right answers: ${Object.entries(sc.expect.links).map(([id, p]) => `${id} → ${Array.isArray(p) ? p.map(x => x ?? 'none').join(' or ') : p ?? 'none'}`).join('; ')} · ${sc.tags.join(', ')}` : `Note: ${sc.note ? `“${sc.note}”` : '(none)'} · ${sc.tags.join(', ')}`, '');
     for (const mm of r.meta.models) {
       const x = r.runs.find(y => y.model === mm.id && y.scenario === sc.id && y.rep === 1);
       if (!x) continue;

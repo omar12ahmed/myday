@@ -27,15 +27,20 @@ const MESSAGES: Record<Reason, string> = {
   offline: "Couldn't reach the AI — check your connection.",
 };
 // What stays as it was, said after each message (except "just a moment").
-const SAME = { adjust: " Your plan hasn't changed, and Review my plan still works.", tasks: ' Nothing was added.', tutor: ' Your learning work is saved separately; the lesson still works.' };
+const SAME = { adjust: " Your plan hasn't changed, and Review my plan still works.", tasks: ' Nothing was added.', tutor: ' Your learning work is saved separately; the lesson still works.', connect: ' Your notes are as they were.' };
 
 export async function askModel(ctx: AiContext, signal?: AbortSignal): Promise<AiReply> {
   const tasks = (ctx as { action?: string }).action === 'tasks';
   const tutor = (ctx as { action?: string }).action === 'tutor';
-  const fail = (reason: Reason): AiReply => ({ ok: false, reason, message: MESSAGES[reason] + (reason === 'too-fast' ? '' : SAME[tutor ? 'tutor' : tasks ? 'tasks' : 'adjust']) });
+  const connect = (ctx as { action?: string }).action === 'connect';
+  const fail = (reason: Reason): AiReply => ({ ok: false, reason, message: MESSAGES[reason] + (reason === 'too-fast' ? '' : SAME[connect ? 'connect' : tutor ? 'tutor' : tasks ? 'tasks' : 'adjust']) });
   if (AI_MODE === 'mock') {
     await new Promise(r => setTimeout(r, 600));
     if (MOCK_VARIANT === 'error') return fail('unavailable');
+    if (connect) {
+      const { mockConnect } = await import('../../../supabase/functions/_shared/ai/connect.ts');
+      return { ok: true, text: mockConnect(ctx as Parameters<typeof mockConnect>[0], MOCK_VARIANT as 'good'), model: 'practice helper (no AI)' };
+    }
     if (tutor) {
       const { mockTutor } = await import('../../../supabase/functions/_shared/ai/tutor.ts');
       return { ok: true, text: mockTutor(ctx as Parameters<typeof mockTutor>[0]), model: 'practice helper (no AI)' };

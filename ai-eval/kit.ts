@@ -18,6 +18,9 @@ export type { PlanContext } from '../supabase/functions/_shared/ai/schema.ts';
 export { applyMind, buildTasksContext, checkTasksReply, sameTask, undoMind, type CheckedMind, type MindUndo } from '../app/src/ai/mind';
 export { buildTaskMessages, checkTasksContext, mockTasks, TASKS_LIMITS, TASKS_PROMPT_VERSION, TASKS_SYSTEM_PROMPT, type TasksContext } from '../supabase/functions/_shared/ai/tasks.ts';
 export { messagesFor } from '../supabase/functions/_shared/ai/prompt.ts';
+// AI help with notes (understand & connect, part 2).
+export { applyConnect, connectContext, fingerprintNote, notesForAi, readConnectReply } from '../app/src/ai/connect';
+export { buildConnectMessages, checkConnectContext, CONNECT_LIMITS, CONNECT_PROMPT_VERSION, CONNECT_SYSTEM_PROMPT, mockConnect, type ConnectContext } from '../supabase/functions/_shared/ai/connect.ts';
 export { chooseTasks } from '../app/src/data/plan';
 
 // ---------- Memory-only storage ----------

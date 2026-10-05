@@ -114,6 +114,22 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   check('the logs still hold only an outcome and a time (nothing you wrote)', lines.every(l => /^ai-plan \S+ \d{3} \d+ms$/.test(l)) && !lines.join(' ').includes('insurance'));
   env = { ...env, AI_PROVIDER: 'mock', AI_MODEL: 'mock:good' };
 
+  console.log('\n[2c] AI help with notes through the same function and limits');
+  const cctx = { version: 1, action: 'connect', notes: [{ id: 'nA', title: '', text: 'Friday meeting with Sam about the podcast' }, { id: 'nB', title: 'Secret note title', text: 'Wifi password is in the drawer' }],
+    projects: [{ id: 'pjPod', title: 'Start a podcast about nursing', summary: 'Short episodes with nurses about shift work.' }] };
+  res = await call({ context: cctx }); body = await res.json();
+  check('placing notes: 200, the reply passed back for the app to check', res.status === 200 && body.ok && JSON.parse(body.output).notes.length === 2 && JSON.parse(body.output).notes[0].projectId === 'pjPod', body);
+  check('…refused if malformed (extra fields, a private flag, no projects, too many notes, over-long text) — 400, before any model call', (await call({ context: { ...cctx, date: '2026-11-10' } })).status === 400
+    && (await call({ context: { ...cctx, notes: [{ ...cctx.notes[0], private: true }] } })).status === 400 && (await call({ context: { ...cctx, projects: [] } })).status === 400
+    && (await call({ context: { ...cctx, notes: Array.from({ length: 9 }, (_, i) => ({ id: 'n' + i, title: '', text: 'x' })) } })).status === 400
+    && (await call({ context: { ...cctx, notes: [{ ...cctx.notes[0], text: 'x'.repeat(601) }] } })).status === 400);
+  let csent = null;
+  env = { ...env, AI_PROVIDER: 'openai-compatible', AI_BASE_URL: 'https://provider.example/v1', AI_MODEL: 'm', AI_API_KEY: 'sk-test', AI_PRICE_IN_PER_MTOK: '0.5', AI_PRICE_OUT_PER_MTOK: '2' };
+  res = await call({ context: cctx }, {}, { fetchImpl: async (url, init) => { csent = JSON.parse(init.body); return new Response(JSON.stringify({ choices: [{ message: { content: '{"notes":[]}' }, finish_reason: 'stop' }], usage: { prompt_tokens: 500, completion_tokens: 10 } }), { status: 200 }); } });
+  check('…the model gets the note-placing instructions (not the day-planning ones), with the notes and projects as content', res.status === 200 && /clearly belongs to/.test(csent.messages[0].content) && !/adjust today's plan/.test(csent.messages[0].content) && csent.messages[1].content.includes('Friday meeting with Sam'));
+  check('the logs still hold only an outcome and a time (no notes)', lines.every(l => /^ai-plan \S+ \d{3} \d+ms$/.test(l)) && !lines.join(' ').includes('Secret note') && !lines.join(' ').includes('podcast'));
+  env = { ...env, AI_PROVIDER: 'mock', AI_MODEL: 'mock:good' };
+
   console.log('\n[3] A caller is verified before anything else, and secrets stay out of Git');
   let begun = 0, provided = 0;
   const spyDeps = { begin: async () => { begun++; return { ok: true }; }, fetchImpl: async () => { provided++; return new Response('{}'); } };

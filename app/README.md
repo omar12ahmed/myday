@@ -461,7 +461,7 @@ tasks" on Today). Older `#inbox…` and `#notes…` links are rewritten to where
 - Saved as the `projects` section (`{ items }`; each with `title`, `summary`, `stage`, `status`, `nextTaskId`,
   `commitmentIds`, `createdAt`, `updatedAt`). Notes and tasks gain an optional `projectId` (left out when there isn't
   one, so nothing else changes; from 1.13.0 a note can also have `linkedBy` 'rules' | 'ai', `linkWhy`, `notProjects` and
-  `private`, each left out when not set); appointments are listed on the project (`commitmentIds`) so the Calendar's own records,
+  `private`, and from 1.15.0 `aiKind` and `aiSeen`, each left out when not set; `patterns.prefs.aiNotes` is the switch); appointments are listed on the project (`commitmentIds`) so the Calendar's own records,
   shared with the classic MyDay, never change. Added in 1.12.0; the classic MyDay keeps all of it unread. Synced with
   your account (one record per project; database migration `20261006120000_sync_projects.sql`) and in "Export my data".
 - **Understanding and connecting, on the device (1.13.0):** MyDay puts a note into the project it clearly belongs to
@@ -479,9 +479,19 @@ tasks" on Today). Older `#inbox…` and `#notes…` links are rewritten to where
   marked **private**: AI help will never read it (it still syncs with your own account, like every note). Honest
   limit: matching words isn't understanding meaning — a link can be wrong, which is what Undo is for; AI help (part
   2, once you switch it on) will place the notes word-matching can't.
-- **Next** (in order): AI help that understands and connects notes (part 2, once switched on; private notes never
-  sent), the project workspace for exploring and deciding with AI, the knowledge graph, Study by subject, and a
-  weekly review.
+- **AI help with notes (1.15.0, part 2):** off until you switch it on (Notes → "AI help with notes", saved with your
+  preferences so it follows your account). Then, a few seconds after things settle, MyDay sends the notes it couldn't
+  place by itself — never private ones, never ones already in a project — with your open projects' names and summaries
+  (`src/ai/connect.ts`; the shared instructions and checks in `../supabase/functions/_shared/ai/connect.ts`). The model
+  says which project each clearly belongs to (or none) and what kind of note it is (idea, task, question, reference,
+  reflection). Every answer is checked; a note is linked only if it's still unplaced, not private and unchanged since
+  it was sent — as "connected by AI", with its reason, Keep and Undo, like MyDay's own links. A note is sent again only
+  if you change its words (a fingerprint, `aiSeen`); at most twice a day on each device (`src/shell/aiConnect.ts`,
+  device-only `myday.ai.connect`), so the day's AI requests stay free for what you ask yourself. A note AI help saw as
+  something to do offers "Add as a task" (in the same project). Evaluated on synthetic notes with GLM-5.3-Flash: no
+  wrong links, every note placed right (see `../ai-eval/README.md`).
+- **Next** (in order): the project workspace for exploring and deciding with AI, the knowledge graph, Study by subject,
+  and a weekly review.
 - **Tasks** holds every one-off task in one place, separate from Today's repeating Learning / Admin / Health lists
   (which stay as they are). Type a task in your own words and its date and time are read from them, as in Capture
   ("pay rent by Friday" is due Friday; "call GP tomorrow at 10am" is due tomorrow at 10:00). Tasks are grouped
@@ -667,3 +677,6 @@ returns up to 8 small tasks; you tick the ones to add.
     notebook with provisional rubric scores, and optional AI explanations from the tutor (only the lesson id and your
     question are sent). Needs database migration `20261007120000_sync_cybersecurity.sql` and the updated `ai-plan`
     function, both before publishing (see `../CYBERSECURITY_INTEGRATION.md`).
+22. **Release 1.15.0:** Understand & connect, part 2 — AI help with notes, once you switch it on: it places the notes
+    MyDay can't (never private ones), says what kind each is, with Keep and Undo; "Add as a task" for notes that are
+    things to do. Needs the updated `ai-plan` function (the `connect` action) deployed before publishing.

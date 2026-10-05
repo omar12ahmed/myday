@@ -195,6 +195,54 @@ const SEED = `s => {
   check('a suggestion comes back through the function, for review', (await D.ev(`document.getElementById('mindCard').dataset.phase`)) === 'review' && (await D.ev(`document.querySelectorAll('#mindItems .mind-item').length`)) === 2 && aiCalls().length === callsBefore + 1);
   await D.click('[data-action=mind-cancel]'); await sleep(150);
 
+  console.log('\n[8b] AI help with notes (understand & connect, part 2)');
+  setAi({ AI_MODEL: 'mock:good', AI_MIN_SECONDS_BETWEEN: '0' });
+  const NP = (id, title, summary) => ({ id, title, summary, stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: TODAY + 'T08:00', updatedAt: TODAY + 'T08:00' });
+  const NN = (id, text, x = {}) => ({ id, categoryId: '', title: '', text, pinned: false, createdAt: TODAY + 'T08:00', updatedAt: TODAY + 'T08:00', ...x });
+  await D.ev(`localStorage.removeItem('myday.ai.connect')`);
+  await D.setData(`s => { s.projects = { items: [${JSON.stringify(NP('pjPod', 'Start a podcast about nursing', 'Short episodes with nurses about shift work.'))}] };
+    s.notes.items = [${[NN('nA', 'Friday meeting with Sam about the podcast'), NN('nPriv', 'Friday meeting with Sam about the podcast budget', { private: true }),
+      NN('nPlaced', 'Podcast episode ideas: interview nurses about night shifts'), NN('nWifi', 'Wifi password is in the kitchen drawer')].map(x => JSON.stringify(x)).join(',')}];
+    delete s.patterns.prefs.aiNotes; }`);
+  const c0 = aiCalls().length;
+  await D.ev(`location.hash = 'projects/notes'`); await D.until(`document.getElementById('aiNotes')`); await sleep(6500);
+  check('off until you switch it on: nothing is sent (MyDay still places what it can by itself)', aiCalls().length === c0 && (await D.text('#aiNotes')).includes('Off')
+    && (await D.data()).notes.items.find(n => n.id === 'nPlaced').linkedBy === 'rules');
+  check('the card says exactly what would be sent, and how often', (await D.text('#aiNotes')).includes("never ones you've marked private") && (await D.text('#aiNotes')).includes('At most 2 times a day'));
+  await D.click('[data-action=ai-notes]'); await sleep(200);
+  check('switching it on is saved with your preferences (so it follows your account)', (await D.data()).patterns.prefs.aiNotes === true);
+  const sawIt = await D.until(`(JSON.parse(localStorage.getItem('myday.data.v4')).notes.items.find(n => n.id === 'nA') || {}).aiSeen`, 15000);
+  const toastC = await D.text('#toast');
+  const sentC = aiCalls().slice(c0);
+  const ctxC = sentC[0] && sentC[0].body.context;
+  check('a moment later, one request through the function, signed in as you', sawIt && sentC.length === 1 && sentC[0].user === userA && ctxC.action === 'connect', sentC.length);
+  check('what was sent: only the notes MyDay couldn\'t place — not the private one, not the one it placed itself — and the project\'s name and summary',
+    eq(ctxC.notes.map(n => n.id).sort(), ['nA', 'nWifi']) && !JSON.stringify(ctxC).includes('budget') && !JSON.stringify(ctxC).includes('interview') && eq(ctxC.projects.map(p => p.title), ['Start a podcast about nursing']), ctxC);
+  let dn = await D.data(), na = dn.notes.items.find(n => n.id === 'nA');
+  check('"Friday meeting with Sam about the podcast" is placed in the podcast project, as AI help\'s link, with why and what kind of note it is',
+    na.projectId === 'pjPod' && na.linkedBy === 'ai' && !!na.linkWhy && ['idea', 'task', 'question', 'reference', 'journal', 'other'].includes(na.aiKind), na);
+  check('…the wifi note: looked at, no project; the private one: never sent, untouched', !dn.notes.items.find(n => n.id === 'nWifi').projectId && !!dn.notes.items.find(n => n.id === 'nWifi').aiSeen
+    && !('aiSeen' in dn.notes.items.find(n => n.id === 'nPriv')) && !dn.notes.items.find(n => n.id === 'nPriv').projectId);
+  check('…only links and labels: every note\'s words are as they were', dn.notes.items.find(n => n.id === 'nA').text === 'Friday meeting with Sam about the podcast');
+  check('…a message says so', toastC.includes('AI help put 1 note in your projects'), toastC);
+  check('"MyDay connected these" lists it with AI help\'s reason, and Undo', (await D.text('#noteConnected')).includes('AI help:'));
+  await D.click('#noteConnected [data-action=connected-undo][data-id=nA]'); await sleep(300);
+  dn = await D.data(); na = dn.notes.items.find(n => n.id === 'nA');
+  check('Undo works the same: out, and never put back in that project', !na.projectId && na.notProjects.includes('pjPod'));
+  await sleep(6000);
+  check('…and it isn\'t sent again (its words haven\'t changed)', aiCalls().length === c0 + 1);
+  await D.setData(`s => { s.notes.items.find(n => n.id === 'nWifi').text = 'Wifi password is in the kitchen drawer, and the podcast mic is in the loft'; }`);
+  await D.ev(`location.hash = 'projects/notes'`); await sleep(7000);
+  check('a note you change is looked at again (the second request today)', aiCalls().length === c0 + 2);
+  await D.setData(`s => { s.notes.items.push(${JSON.stringify(NN('nLate', 'Another thought about the podcast guests list'))}); }`);
+  await D.ev(`location.hash = 'projects/notes'`); await sleep(7000);
+  check('at most twice a day on a device: the third waits until tomorrow', aiCalls().length === c0 + 2 && !(await D.data()).notes.items.find(n => n.id === 'nLate').aiSeen);
+  await D.click('[data-action=ai-notes]'); await sleep(200);
+  check('switching it off: saved, and said plainly', !('aiNotes' in (await D.data()).patterns.prefs) && (await D.text('#toast')).includes('nothing more will be sent'));
+  await D.ev(`localStorage.removeItem('myday.ai.connect')`); await D.ev(`location.hash = 'projects/notes'`); await sleep(6000);
+  check('…and nothing more is sent', aiCalls().length === c0 + 2);
+  await D.ev(`location.hash = 'today'`);
+
   console.log('\n[9] Layout');
   await D.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await D.ev(`location.hash = 'today'`);

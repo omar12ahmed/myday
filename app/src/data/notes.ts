@@ -48,6 +48,9 @@ export function normalizeNotes(raw: unknown, report: { dropped: number }): Notes
     const not = listOf(note.notProjects).filter((x): x is string => typeof x === 'string' && !!x);
     if (not.length) note.notProjects = [...new Set(not)].slice(-50); else delete note.notProjects;
     if (note.private === true) note.private = true; else delete note.private;
+    // What AI help made of it (1.15.0): a kind from the list, and the fingerprint of the words it saw.
+    if (!['idea', 'task', 'question', 'reference', 'journal', 'other'].includes(note.aiKind as string)) delete note.aiKind;
+    if (typeof note.aiSeen !== 'string' || !/^[0-9a-f]{8}$/.test(note.aiSeen)) delete note.aiSeen;
     seenN.add(note.id);
     out.items.push(note);
   }

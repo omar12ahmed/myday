@@ -1,4 +1,4 @@
-# Evaluating "Help me adjust today" and "Add what's on my mind"
+# Evaluating "Help me adjust today", "Add what's on my mind" and AI help with notes
 
 20 synthetic MyDay days (`scenarios.ts`: low energy, poor sleep, day and night shifts — one across a clock change —,
 appointments, too little time, revision due, rest days, missing information) are sent to each model with **identical
@@ -92,3 +92,20 @@ Costs are estimated from the token usage each provider reported and the list pri
 amounts; check your provider's console.
 
 Mock results say nothing about any real model: they only show that the evaluation and the safety checks work.
+
+
+## AI help with notes (understand & connect, part 2)
+
+8 synthetic note collections in `connect-scenarios.ts` (`--action connect`): notes in your own words for three
+projects, decoys that share a word with a project ("Coffee with Sam", a tired night shift), a note that fits two
+projects, an instruction hidden in a note, a note in Arabic, tasks and questions, notes that belong nowhere, and eight
+notes across six projects. Each scenario says which project every note belongs in (or none, or a list of acceptable
+answers), and the notes are ones the device can't place by itself — what would really be sent (`sentAll`). Every reply
+is checked by the app's own code (`app/src/ai/connect.ts`) and linked through it, in memory. The scores:
+`noWrongLinks` (nothing put in a project it doesn't belong in — the one that matters most), `rightLinks`, `kinds`,
+and "saved safely" (only link and AI fields change, never a note's words).
+
+Live run, 5 Oct 2026 (`results/2026-10-05-14-20-38-live`), GLM-5.3-Flash (the model MyDay uses), 8 scenarios × 3: 22 of 24 calls
+answered (2 network errors after about 10 seconds, both on the first scenario); of those 22, **no wrong links**,
+every note placed right (22/22), kinds right 7/7, saved safely 22/22. US$0.0035 estimated from reported usage (plus
+US$0.0024 reserved for the two calls that reported none). Synthetic notes only: real notes may be harder.

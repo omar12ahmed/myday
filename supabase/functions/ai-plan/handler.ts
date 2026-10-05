@@ -13,6 +13,7 @@ import { callModel, configFromEnv, costUsd, worstCaseCostUsd } from '../_shared/
 import { CONTRACT_VERSION, LIMITS, type PlanContext } from '../_shared/ai/schema.ts';
 import { checkTasksContext } from '../_shared/ai/tasks.ts';
 import { checkTutorContext } from '../_shared/ai/tutor.ts';
+import { checkConnectContext } from '../_shared/ai/connect.ts';
 
 export interface Deps {
   env: (name: string) => string | undefined;
@@ -89,7 +90,7 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
   if (raw.length > LIMITS.bodyBytes) return reply(413, { ok: false, error: 'bad-request' }, 'too-large');
   let body: { context?: unknown };
   try { body = JSON.parse(raw); } catch { return reply(400, { ok: false, error: 'bad-request' }, 'not-json'); }
-  if (!body || !(checkContext(body.context) || checkTasksContext(body.context) || checkTutorContext(body.context))) return reply(400, { ok: false, error: 'bad-request' }, 'bad-context');
+  if (!body || !(checkContext(body.context) || checkTasksContext(body.context) || checkTutorContext(body.context) || checkConnectContext(body.context))) return reply(400, { ok: false, error: 'bad-request' }, 'bad-context');
   const ctx = body.context;
 
   // 3. The model, and the limits.

@@ -10,7 +10,7 @@ import { bothMention, keepLink, madeByMyDay, unlink } from '../data/understand';
 
 const SHOWN = 8;
 
-// "MyDay connected these": the notes MyDay put in a project by itself, each with why, and Keep (it's yours now) or
+// "MyDay connected these": the notes MyDay (or, once you've switched it on, AI help) put in a project, each with why, and Keep (it's yours now) or
 // Undo (out of that project, and never put back in it). Nothing MyDay links is hidden from you.
 export function ConnectedCard({ data }: { data: MyDayData }) {
   const made = madeByMyDay(data);
@@ -26,7 +26,7 @@ export function ConnectedCard({ data }: { data: MyDayData }) {
             <li key={n.id} className="flex flex-wrap items-center gap-x-2 border-t border-outline first:border-t-0 py-1.5" data-id={n.id} data-s="connected">
               <a href={`#projects/notes/${n.id}`} className="flex-1 min-w-[12rem] min-h-11 py-1 text-fg no-underline">
                 <span className="block font-medium break-words">{noteName(n)}</span>
-                <span className="block text-sm text-fg-2">→ {p?.title ?? 'a project'}{n.linkWhy ? <span className="text-fg-3"> · {bothMention(n.linkWhy)}</span> : null}</span>
+                <span className="block text-sm text-fg-2">→ {p?.title ?? 'a project'}{n.linkWhy ? <span className="text-fg-3"> · {n.linkedBy === 'ai' ? `AI help: ${n.linkWhy}` : bothMention(n.linkWhy)}</span> : null}</span>
               </a>
               <span className="flex">
                 <Button inline variant="ghost" className="!border-transparent" data-action="connected-keep" data-id={n.id} onClick={() => { if (update(d => (keepLink(d, n.id) ? undefined : false))) toast('Kept.'); }}>Keep</Button>

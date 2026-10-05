@@ -14,6 +14,7 @@ import { AccountChip, CaptureRoom, FocusSwitch } from './shell/TopBar';
 import { barSection, SECTIONS, sectionFromHash, type SectionId } from './shell/sections';
 import { NoticedScreen } from './patterns/NoticedScreen';
 import { ProjectsScreen } from './projects/ProjectsScreen';
+import { useAiConnect } from './shell/aiConnect';
 import { useAutoConnect } from './shell/autoConnect';
 import { fixLegacyHash } from './shell/legacyLinks';
 import { TasksScreen } from './tasks/TasksScreen';
@@ -141,6 +142,8 @@ function Shell() {
   const gate = !blocked && signInRequired(sync) && !useHere;
   // Notes that clearly belong to a project are connected to it by themselves (with Undo): see shell/autoConnect.ts.
   useAutoConnect(data, status.kind === 'ok' && !gate, hash);
+  // …and, once you've switched it on, AI help places the ones the device can't (shell/aiConnect.ts).
+  useAiConnect(data, status.kind === 'ok' && !gate);
   let content;
   if (status.kind === 'damaged') {
     content = <DamagedView reason={status.reason} onImport={() => fileInput.current?.click()} onStartFresh={startFresh}

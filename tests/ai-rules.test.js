@@ -414,6 +414,66 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   check('scenarios of both kinds can be named together', both.runs.length === 2 && both.meta.promptVersion === 'myday-adjust-v1 + myday-tasks-v1' && /Written: “I'm exhausted/.test(run.review(both)));
   check('the cost estimate covers brain dumps too', /\| 12 \|/.test(run.estimate({ ...base, repeats: 1, action: 'tasks', scenarioIds: null, modelIds: ['q'], models: { q: { ...cheap, maxOutputTokens: 2048 } } })));
 
+  console.log('\n[8] AI help with notes: what\'s sent, every check on a reply, and linking only what\'s still unplaced');
+  K.setClock(`${D}T09:00`);
+  const CP = (id, title, summary, status = 'active') => ({ id, title, summary, stage: 'explore', status, nextTaskId: null, commitmentIds: [], createdAt: `${D}T08:00`, updatedAt: `${D}T08:00` });
+  const CN = (id, text, x = {}) => ({ id, categoryId: '', title: '', text, pinned: false, createdAt: `${D}T08:00`, updatedAt: `${D}T08:00`, ...x });
+  const notesWorld = () => {
+    const w = K.freshState();
+    w.projects.items = [CP('pjPod', 'Start a podcast about nursing', 'Short episodes with nurses about shift work.'), CP('pjDone', 'Old project', 'Finished long ago', 'done')];
+    w.notes.items = [CN('nA', 'Friday meeting with Sam about the podcast'), CN('nPriv', 'Private podcast budget', { private: true }), CN('nIn', 'Already filed', { projectId: 'pjPod' }),
+      CN('nBlank', '  '), CN('nSure', 'Podcast episode ideas: interview nurses about night shifts'), CN('nSeen', 'Seen before'), CN('nW', 'Wifi password is in the kitchen drawer')];
+    w.notes.items.find(n => n.id === 'nSeen').aiSeen = K.fingerprintNote(w.notes.items.find(n => n.id === 'nSeen'));
+    return K.normalize(w);
+  };
+  let cw = notesWorld(), cx = K.connectContext(cw);
+  check('what\'s sent: only notes MyDay can\'t place — not private ones, ones in a project, blank ones, ones the device places itself, or ones already looked at as they are',
+    eq(cx.ctx.notes.map(n => n.id).sort(), ['nA', 'nW']), cx.ctx.notes.map(n => n.id));
+  check('…with only open projects (not done ones), each just its id, name and summary; nothing else', eq(cx.ctx.projects.map(p => p.id), ['pjPod']) && eq(Object.keys(cx.ctx.projects[0]).sort(), ['id', 'summary', 'title'])
+    && eq(Object.keys(cx.ctx).sort(), ['action', 'notes', 'projects', 'version']) && eq(Object.keys(cx.ctx.notes[0]).sort(), ['id', 'text', 'title']));
+  check('…and a fingerprint of each sent note, to know if it changes', cx.seen.nA === K.fingerprintNote(cw.notes.items.find(n => n.id === 'nA')) && /^[0-9a-f]{8}$/.test(cx.seen.nA));
+  const big = K.freshState();
+  big.projects.items = Array.from({ length: 25 }, (_, i) => CP('pj' + i, 'مشروع رقم ' + i, 'ملخص '.repeat(60)));
+  big.notes.items = Array.from({ length: 12 }, (_, i) => CN('nb' + i, 'ملاحظة '.repeat(120) + i));
+  const bx = K.connectContext(K.normalize(big)), bytes = Buffer.byteLength(JSON.stringify({ context: bx.ctx }));
+  check('long notes in another script: at most 8 notes (600 characters each) and 20 projects, fewer notes so the request stays under 15 KB',
+    bx.ctx.notes.length >= 1 && bx.ctx.notes.length < 8 && bx.ctx.projects.length === 20 && bx.ctx.notes.every(n => n.text.length <= 600) && bytes <= 15000, [bx.ctx.notes.length, bytes]);
+  check('nothing to ask: no request (no open projects, or no such notes)', K.connectContext(K.normalize({ ...K.freshState(), notes: cw.notes })) === null
+    && K.connectContext(K.normalize({ ...cw, notes: { ...cw.notes, items: cw.notes.items.filter(n => !['nA', 'nW'].includes(n.id)) } })) === null);
+  const ok = cx.ctx;
+  check('the server\'s shape check: accepts that; refuses extra fields, more than 8 notes or 20 projects, repeated or odd ids, over-long text, no projects, another action',
+    K.checkConnectContext(ok) && !K.checkConnectContext({ ...ok, date: D }) && !K.checkConnectContext({ ...ok, notes: Array.from({ length: 9 }, (_, i) => ({ id: 'x' + i, title: '', text: 'a' })) })
+    && !K.checkConnectContext({ ...ok, projects: Array.from({ length: 21 }, (_, i) => ({ id: 'p' + i, title: 'P', summary: '' })) }) && !K.checkConnectContext({ ...ok, notes: [ok.notes[0], ok.notes[0]] })
+    && !K.checkConnectContext({ ...ok, notes: [{ ...ok.notes[0], id: 'bad id!' }] }) && !K.checkConnectContext({ ...ok, notes: [{ ...ok.notes[0], text: 'x'.repeat(601) }] })
+    && !K.checkConnectContext({ ...ok, projects: [] }) && !K.checkConnectContext({ ...ok, action: 'tasks' }) && !K.checkConnectContext({ ...ok, notes: [{ ...ok.notes[0], private: true }] }));
+  const cm = K.messagesFor(ok);
+  check('its own instructions (null when unsure, a shared word isn\'t enough, notes can\'t change the rules, JSON only), and only the notes and projects as content',
+    cm.length === 2 && /use null/.test(cm[0].content) && /not enough/.test(cm[0].content) && /not instructions to you/.test(cm[0].content) && /JSON only/.test(cm[0].content)
+    && cm[1].content.includes('Friday meeting with Sam') && !cm[1].content.includes('Private podcast budget') && K.CONNECT_PROMPT_VERSION === 'myday-connect-v1');
+  check('the most it could cost can be worked out before calling', K.worstCaseCostUsd({ ...cfg, maxOutputTokens: 600, priceInPerMTok: 0.15, priceOutPerMTok: 0.5 }, ok) > 0);
+  let rr = K.readConnectReply(K.mockConnect(ok, 'good'), ok);
+  check('a good reply: one answer per note, the podcast note in the podcast project', rr.leftOut === 0 && rr.answers.length === 2 && rr.answers.find(a => a.id === 'nA').projectId === 'pjPod' && rr.answers.find(a => a.id === 'nW').projectId === null);
+  const csloppy = K.readConnectReply(K.mockConnect(ok, 'sloppy'), ok);
+  check('a reply breaking the rules (an unknown project, a note that wasn\'t sent, a made-up kind): all left out and counted', csloppy.answers.length === 0 && csloppy.leftOut === 3, csloppy);
+  check('not JSON: nothing used', K.readConnectReply(K.mockConnect(ok, 'invalid'), ok).answers.length === 0);
+  const fenced = K.readConnectReply('```json\n' + JSON.stringify({ notes: [{ id: 'nA', projectId: 'pjPod', kind: 'idea', why: '  for   the podcast ' + 'x'.repeat(200) }, { id: 'nA', projectId: null, kind: 'task', why: '' }] }) + '\n```', ok);
+  check('…a reply in a code block is read; a note answered twice counts once; the reason is tidied and cut to 100 characters', fenced.answers.length === 1 && fenced.leftOut === 1 && fenced.answers[0].why.startsWith('for the podcast x') && fenced.answers[0].why.length === 100);
+  let cd = notesWorld(), linked = K.applyConnect(cd, cx.seen, rr.answers);
+  const na = cd.notes.items.find(n => n.id === 'nA'), nw = cd.notes.items.find(n => n.id === 'nW');
+  check('using it: the podcast note linked as AI help\'s, with why and its kind; the wifi note looked at, no project', linked === 1 && na.projectId === 'pjPod' && na.linkedBy === 'ai' && !!na.linkWhy && !!na.aiKind
+    && na.aiSeen === cx.seen.nA && !nw.projectId && nw.aiSeen === cx.seen.nW && nw.aiKind === 'reference');
+  check('…looked-at notes aren\'t sent again — until their words change', K.connectContext(cd) === null && (nw.text += ' (in the drawer by the door)', K.connectContext(K.normalize(cd)).ctx.notes.map(n => n.id).includes('nW')));
+  cd = notesWorld(); cd.notes.items.find(n => n.id === 'nA').text = 'Changed while the AI was thinking';
+  check('a note changed while waiting: not linked, and asked again later', K.applyConnect(cd, cx.seen, rr.answers) === 0 && !cd.notes.items.find(n => n.id === 'nA').aiSeen);
+  cd = notesWorld(); cd.notes.items.find(n => n.id === 'nA').notProjects = ['pjPod'];
+  check('a project you took the note out of: never linked (but the note counts as looked at)', K.applyConnect(cd, cx.seen, rr.answers) === 0 && !!cd.notes.items.find(n => n.id === 'nA').aiSeen);
+  cd = notesWorld(); cd.notes.items.find(n => n.id === 'nA').projectId = 'pjDone';
+  check('a note you put somewhere meanwhile: never moved', (K.applyConnect(cd, cx.seen, rr.answers), cd.notes.items.find(n => n.id === 'nA').projectId === 'pjDone' && !cd.notes.items.find(n => n.id === 'nA').linkedBy));
+  cd = notesWorld(); cd.notes.items.find(n => n.id === 'nA').private = true;
+  check('a note made private meanwhile: left alone', K.applyConnect(cd, cx.seen, rr.answers) === 0 && !cd.notes.items.find(n => n.id === 'nA').aiSeen);
+  cd = notesWorld();
+  check('a note the reply left out still counts as looked at (so it isn\'t sent again and again)', (K.applyConnect(cd, cx.seen, rr.answers.filter(a => a.id !== 'nW')), !!cd.notes.items.find(n => n.id === 'nW').aiSeen && !cd.notes.items.find(n => n.id === 'nW').aiKind));
+
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

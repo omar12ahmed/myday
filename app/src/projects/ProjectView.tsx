@@ -179,7 +179,7 @@ function NotesCard({ data, p }: { data: MyDayData; p: Project }) {
           {notes.map(n => (
             <li key={n.id} className="border-t border-outline first:border-t-0">
               <a href={`#projects/notes/${n.id}`} className="flex justify-between gap-3 items-baseline min-h-11 py-2 text-fg no-underline hover:bg-surface-2 rounded-tile -mx-2 px-2" data-id={n.id} data-s="project-note">
-                <span className="min-w-0 break-words font-medium">{noteName(n)}{n.linkedBy && <span className="ml-2 inline-flex items-center gap-1 text-xs font-semibold text-primary align-middle" data-s="by-myday"><Sparkles size={12} aria-hidden="true" /> connected by MyDay</span>}</span><span className="flex-none text-sm text-fg-3 tabular-nums">{shortDate(n.updatedAt.slice(0, 10))}</span>
+                <span className="min-w-0 break-words font-medium">{noteName(n)}{n.linkedBy && <span className="ml-2 inline-flex items-center gap-1 text-xs font-semibold text-primary align-middle" data-s="by-myday"><Sparkles size={12} aria-hidden="true" /> {n.linkedBy === 'ai' ? 'connected by AI' : 'connected by MyDay'}</span>}</span><span className="flex-none text-sm text-fg-3 tabular-nums">{shortDate(n.updatedAt.slice(0, 10))}</span>
               </a>
             </li>
           ))}

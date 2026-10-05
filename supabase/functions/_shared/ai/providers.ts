@@ -6,7 +6,8 @@
 //                      JSON mode) are settings, see ai-eval/models.json.
 //   mock               the rule-based stand-in in mock.ts (no key, no network)
 import { mockPlanner, type MockVariant } from './mock.ts';
-import { isTasks, isTutor, messagesFor, type AiContext } from './prompt.ts';
+import { isConnect, isTasks, isTutor, messagesFor, type AiContext } from './prompt.ts';
+import { mockConnect, type ConnectMockVariant } from './connect.ts';
 import { mockTutor } from './tutor.ts';
 import { mockTasks, type TasksMockVariant } from './tasks.ts';
 
@@ -77,7 +78,7 @@ export async function callModel(cfg: ProviderConfig, ctx: AiContext, fetchImpl: 
     if (variant === 'truncated') return { ok: false, error: 'truncated', finishReason: 'length', inputTokens: 900, outputTokens: cfg.maxOutputTokens, latencyMs: Date.now() - t0 };
     await sleep(variant === 'slow' ? cfg.timeoutMs + 50 : cfg.mockDelayMs ?? 0);
     if (variant === 'slow') return { ok: false, error: 'timeout', latencyMs: Date.now() - t0 };
-    const full = isTutor(ctx) ? mockTutor(ctx) : isTasks(ctx)
+    const full = isConnect(ctx) ? mockConnect(ctx, (['good', 'sloppy', 'invalid'].includes(variant) ? variant : 'good') as ConnectMockVariant) : isTutor(ctx) ? mockTutor(ctx) : isTasks(ctx)
       ? mockTasks(ctx, (['good', 'sloppy', 'invalid'].includes(variant) ? variant : 'good') as TasksMockVariant)
       : mockPlanner(ctx, (['good', 'sloppy', 'invalid', 'rest'].includes(variant) ? variant : 'good') as MockVariant);
     const text = variant === 'partial' ? full.slice(0, Math.floor(full.length / 2)) : full; // JSON that stops half-way

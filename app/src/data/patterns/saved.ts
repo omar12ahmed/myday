@@ -49,6 +49,7 @@ export function normalizePatterns(raw: unknown, report: { dropped: number }): Pa
   // What MyDay calls you (the greeting on Today): optional, up to 40 characters.
   const name = typeof prefs.name === 'string' ? prefs.name.trim().slice(0, NAME_MAX) : '';
   if (name) out.prefs.name = name; else delete out.prefs.name;
+  if (prefs.aiNotes === true) out.prefs.aiNotes = true; else delete out.prefs.aiNotes; // AI help with notes (1.15.0)
   return out;
 }
 
@@ -67,6 +68,12 @@ export function setMaxTasks(d: PatternsData, value: number | null, from: string 
   return true;
 }
 // What MyDay calls you ("Good morning, Sam!"). Empty removes it.
+// Let AI help place notes in projects (or stop it). Returns false when nothing changed.
+export function setAiNotes(d: PatternsData, on: boolean): boolean {
+  if (!!d.prefs.aiNotes === on) return false;
+  if (on) d.prefs.aiNotes = true; else delete d.prefs.aiNotes;
+  return true;
+}
 export function setName(d: PatternsData, name: string): boolean {
   const clean = name.trim().slice(0, NAME_MAX);
   if ((d.prefs.name ?? '') === clean) return false;

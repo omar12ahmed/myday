@@ -357,7 +357,8 @@ export interface TasksData { lists: TaskList[]; items: TaskItem[]; [other: strin
 export interface Pref { value: number; on: DateKey; from: string | null; why: string }
 export interface PatternAnswer { said: 'yes' | 'no'; on: DateKey; examples: number; title: string }
 export interface PatternsData {
-  prefs: { maxMinutes: Record<Category, Pref | null>; maxTasks: Pref | null; name?: string; [other: string]: unknown }; // name: what MyDay calls you (from 1.11.0)
+  // name: what MyDay calls you (from 1.11.0); aiNotes: you let AI help place notes in projects (1.15.0; absent = off)
+  prefs: { maxMinutes: Record<Category, Pref | null>; maxTasks: Pref | null; name?: string; aiNotes?: true; [other: string]: unknown };
   answers: Record<string, PatternAnswer>; // by pattern id, e.g. "size:learning"
   [other: string]: unknown;
 }
@@ -410,6 +411,9 @@ export interface Note {
   linkWhy?: string;          // why, in a few words ("coffee · offices")
   notProjects?: string[];    // projects you took it out of: MyDay never puts it back in those
   private?: true;            // never sent to AI help (it still syncs with your own account)
+  // Added in 1.15.0, when AI help has looked at the note (each absent until then):
+  aiKind?: 'idea' | 'task' | 'question' | 'reference' | 'journal' | 'other'; // what kind of note it seemed to be
+  aiSeen?: string;           // a fingerprint of the words it saw, so it's asked again only if you change them
 }
 export interface NotesData {
   categories: NoteCategory[];
