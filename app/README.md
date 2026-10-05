@@ -1,6 +1,6 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
-Cybersecurity curriculum integration (local development): Study now includes the supplied 27-module package,
+Cybersecurity in Study (1.14.0): Study now includes the supplied 27-module package,
 path import, lesson/lab/project pages, evidence notebook and optional AI explanations. See
 [`../CYBERSECURITY_INTEGRATION.md`](../CYBERSECURITY_INTEGRATION.md) for the architecture review, scope,
 data model, validation and required backend deployment order. Builds validate the canonical package with
@@ -662,3 +662,8 @@ returns up to 8 small tasks; you tick the ones to add.
 20. **Release 1.13.0:** Understand & connect, part 1 (on the device, no AI) — MyDay puts notes that clearly belong to
     a project into it by itself, with why, Keep and Undo ("MyDay connected these"); related notes; "Might belong
     here"; private notes; notes in a project leave the Inbox. No database change (the link details are on each note).
+21. **Release 1.14.0:** Study → Cybersecurity (built in another session, reviewed and merged): the 27-module curriculum
+    with a learning map, paths you can add to your Study roadmap, lessons, labs and projects, a Practice shelf, a lab
+    notebook with provisional rubric scores, and optional AI explanations from the tutor (only the lesson id and your
+    question are sent). Needs database migration `20261007120000_sync_cybersecurity.sql` and the updated `ai-plan`
+    function, both before publishing (see `../CYBERSECURITY_INTEGRATION.md`).
