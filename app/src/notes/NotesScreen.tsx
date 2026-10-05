@@ -5,12 +5,13 @@ import { Card } from '../components/Card';
 import { Field, Select, TextInput } from '../components/Field';
 import { BackLink, Note } from '../components/parts';
 import { localStamp, shortDate } from '../data/dates';
-import { categoryName, fileNote, INBOX, inInbox, noteName, notesView } from '../data/notes';
+import { categoryName, fileNote, INBOX, noteName, notesView } from '../data/notes';
 import { update } from '../data/storage';
 import { toast } from '../data/toast';
 import type { MyDayData, Note as NoteT, NotesData } from '../data/types';
 import { suggestCollection } from '../capture/parse';
 import { CategoriesView } from './CategoriesView';
+import { ConnectedCard } from './ConnectedCard';
 import { NoteEditor } from './NoteEditor';
 import { newNote, notesRoute } from './route';
 
@@ -48,7 +49,7 @@ function NoteRow({ d, n, where, filing }: { d: NotesData; n: NoteT; where: boole
           {hint && <Button inline data-action="note-file" data-id={n.id} data-to={hint} onClick={() => move(d, n, hint)}>File in {categoryName(d, hint)}</Button>}
           <Select aria-label={`Move “${noteName(n)}” to`} data-s="note-move" data-id={n.id} value="" className="!w-auto" onChange={e => e.target.value !== '' && move(d, n, e.target.value === '-' ? '' : e.target.value)}>
             <option value="">{hint ? 'Somewhere else…' : 'File it…'}</option>
-            {!inInbox(d, n) && <option value="-">Back to the Inbox</option>}
+            {d.categories.some(c => c.id === n.categoryId) && <option value="-">Back to the Inbox</option>}
             {d.categories.filter(c => c.id !== n.categoryId).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </Select>
         </div>
@@ -81,6 +82,7 @@ function NotesHome({ data }: { data: MyDayData }) {
         </Card>
       ) : (
         <>
+          <ConnectedCard data={data} />
           <Card aria-labelledby="inbox-h" id="noteInbox">
             <h3 id="inbox-h" className="flex items-center gap-2">{INBOX} <span className="text-fg-3 font-normal tabular-nums">{inbox.length}</span></h3>
             {inbox.length ? <ul className="list-none p-0 m-0" id="noteList">{inbox.map(n => <NoteRow key={n.id} d={d} n={n} where={false} filing />)}</ul>

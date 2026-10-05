@@ -405,6 +405,11 @@ export interface Note {
   createdAt: DateTime;  // "YYYY-MM-DDTHH:MM" on this device
   updatedAt: DateTime;
   projectId?: string;   // the project it belongs to (1.12.0; absent → none)
+  // Added in 1.13.0 (each absent unless set):
+  linkedBy?: 'rules' | 'ai'; // MyDay put it in that project by itself (absent: you did) — listed with Undo / Keep
+  linkWhy?: string;          // why, in a few words ("coffee · offices")
+  notProjects?: string[];    // projects you took it out of: MyDay never puts it back in those
+  private?: true;            // never sent to AI help (it still syncs with your own account)
 }
 export interface NotesData {
   categories: NoteCategory[];

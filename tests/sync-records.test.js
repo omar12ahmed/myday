@@ -52,6 +52,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   raw.projects = { items: [{ id: 'pj1', title: 'Coffee subscription', summary: 'For offices', stage: 'explore', status: 'active', nextTaskId: 'tk1', commitmentIds: ['c1'], createdAt: '2026-10-01T09:00', updatedAt: '2026-10-02T09:00' }] };
   raw.tasks.items[0].projectId = 'pj1';
   raw.notes.items[0].projectId = 'pj1';
+  Object.assign(raw.notes.items[0], { linkedBy: 'rules', linkWhy: 'van · budget', notProjects: ['pjOld'], private: true }); // 1.13.0
   raw.timer = { uid: 'x', dayKey: '2026-10-04', kind: 'focus', durationSec: 1500, startedAt: 1, accumulatedMs: 0, finished: false };
   const data = R.normalize(raw);
 

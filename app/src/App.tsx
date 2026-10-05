@@ -14,6 +14,7 @@ import { AccountChip, CaptureRoom, FocusSwitch } from './shell/TopBar';
 import { barSection, SECTIONS, sectionFromHash, type SectionId } from './shell/sections';
 import { NoticedScreen } from './patterns/NoticedScreen';
 import { ProjectsScreen } from './projects/ProjectsScreen';
+import { useAutoConnect } from './shell/autoConnect';
 import { fixLegacyHash } from './shell/legacyLinks';
 import { TasksScreen } from './tasks/TasksScreen';
 import { CaptureButton } from './capture/CaptureSheet';
@@ -138,6 +139,8 @@ function Shell() {
   const screenName = hash.startsWith('#sync') ? 'Your account' : hash.startsWith('#noticed') ? 'What MyDay has noticed' : hash.startsWith('#today/tasks') ? 'Tasks' : SECTIONS.find(x => x.id === section)?.label ?? 'MyDay';
   // Sign in first (when sync is set up): see sync/SignInGate.tsx.
   const gate = !blocked && signInRequired(sync) && !useHere;
+  // Notes that clearly belong to a project are connected to it by themselves (with Undo): see shell/autoConnect.ts.
+  useAutoConnect(data, status.kind === 'ok' && !gate, hash);
   let content;
   if (status.kind === 'damaged') {
     content = <DamagedView reason={status.reason} onImport={() => fileInput.current?.click()} onStartFresh={startFresh}

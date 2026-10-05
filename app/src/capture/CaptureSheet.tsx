@@ -47,8 +47,10 @@ export function CaptureSheet({ data, onClose }: { data: MyDayData; onClose: () =
   const done = (ok: boolean, message: string) => { if (ok) { toast(message); close(); } else toast("Couldn't save just now — your text is still here."); };
   const taskCat = cat ?? c?.category ?? 'admin';
 
-  const note = () => done(saveNote(text, c?.kind === 'idea' || c?.kind === 'note' ? c?.collection ?? '' : ''), c?.collection && (c.kind === 'idea' || c.kind === 'note') ? `Saved in “${categoryName(data.notes, c.collection)}”.` : 'Saved to your Notes inbox.');
-  const inboxNote = () => done(saveNote(text, ''), 'Saved to your Notes inbox.');
+  // A note that clearly belongs to one of your projects is connected to it straight away (and the message says so).
+  const noted = (r: false | string | null, saved: string) => done(r !== false, r ? `${saved.slice(0, -1)} — and connected to “${r}”.` : saved);
+  const note = () => noted(saveNote(text, c?.kind === 'idea' || c?.kind === 'note' ? c?.collection ?? '' : ''), c?.collection && (c.kind === 'idea' || c.kind === 'note') ? `Saved in “${categoryName(data.notes, c.collection)}”.` : 'Saved to your Notes inbox.');
+  const inboxNote = () => noted(saveNote(text, ''), 'Saved to your Notes inbox.');
   const calendar = () => c && c.date && c.time && done(addAppointment(c.title, c.date, c.time, c.endTime), `Added to your Calendar: ${c.title}, ${prettyDate(c.date)} at ${c.time}.`);
   const when = c && c.date ? `${prettyDate(c.date)}${c.time ? `, ${c.time}` : ''}` : '';
   const task = () => c && done(addCapturedTask(c.title, taskCat, c.date, c.time), `Added to your tasks: ${c.title}${when ? ` — ${when}` : ''}.`);

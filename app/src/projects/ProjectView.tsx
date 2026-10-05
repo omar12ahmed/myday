@@ -1,4 +1,4 @@
-import { CalendarPlus, Check, NotebookPen, Pause, Pencil, Play, Plus, Trash2 } from 'lucide-react';
+import { CalendarPlus, Check, NotebookPen, Pause, Pencil, Play, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { addAppointment } from '../capture/save';
 import { loadLibs, parseCapture, type CaptureLibs } from '../capture/parse';
@@ -15,6 +15,7 @@ import { update } from '../data/storage';
 import { addTask, addToTodaysPlan, onTodaysPlan, planRoom, setTaskDone } from '../data/tasks';
 import { toast } from '../data/toast';
 import type { MyDayData, Project, TaskItem } from '../data/types';
+import { bothMention, mightBelong } from '../data/understand';
 import { dueText } from '../tasks/route';
 import { TaskRow } from '../tasks/TasksScreen';
 import { Progression } from './parts';
@@ -163,7 +164,7 @@ function TasksCard({ data, p }: { data: MyDayData; p: Project }) {
 }
 
 function NotesCard({ data, p }: { data: MyDayData; p: Project }) {
-  const notes = projectNotes(data, p);
+  const notes = projectNotes(data, p), maybe = mightBelong(data, p);
   const others = data.notes.items.filter(n => !n.projectId && (n.title.trim() || n.text.trim())).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 40);
   function newNote() {
     let id = '';
@@ -178,12 +179,25 @@ function NotesCard({ data, p }: { data: MyDayData; p: Project }) {
           {notes.map(n => (
             <li key={n.id} className="border-t border-outline first:border-t-0">
               <a href={`#projects/notes/${n.id}`} className="flex justify-between gap-3 items-baseline min-h-11 py-2 text-fg no-underline hover:bg-surface-2 rounded-tile -mx-2 px-2" data-id={n.id} data-s="project-note">
-                <span className="min-w-0 break-words font-medium">{noteName(n)}</span><span className="flex-none text-sm text-fg-3 tabular-nums">{shortDate(n.updatedAt.slice(0, 10))}</span>
+                <span className="min-w-0 break-words font-medium">{noteName(n)}{n.linkedBy && <span className="ml-2 inline-flex items-center gap-1 text-xs font-semibold text-primary align-middle" data-s="by-myday"><Sparkles size={12} aria-hidden="true" /> connected by MyDay</span>}</span><span className="flex-none text-sm text-fg-3 tabular-nums">{shortDate(n.updatedAt.slice(0, 10))}</span>
               </a>
             </li>
           ))}
         </ul>
-      ) : <Note className="mt-0">Thoughts, research and anything you find out can live here.</Note>}
+      ) : <Note className="mt-0">Thoughts, research and anything you find out can live here. Notes that clearly belong here are added by themselves.</Note>}
+      {maybe.length > 0 && (
+        <div className="mt-3 rounded-tile bg-surface-2 border border-outline px-3 py-2" id="projectMaybe">
+          <p className="text-sm font-semibold text-fg-2 m-0">Might belong here</p>
+          <ul className="list-none p-0 m-0">
+            {maybe.map(m => (
+              <li key={m.note.id} className="flex flex-wrap items-center gap-x-2 border-t border-outline first:border-t-0" data-id={m.note.id} data-s="maybe">
+                <a href={`#projects/notes/${m.note.id}`} className="flex-1 min-w-[10rem] min-h-11 py-1.5 text-fg no-underline"><span className="block break-words">{noteName(m.note)}</span><span className="block text-sm text-fg-3">{bothMention(m.why)}</span></a>
+                <Button inline variant="ghost" className="!border-transparent !text-primary" data-action="maybe-add" data-id={m.note.id} onClick={() => { if (update(d => (linkNote(d, m.note.id, p.id) ? undefined : false))) toast('Note added to this project.'); }}>Add</Button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div className="flex flex-wrap gap-2.5 mt-3">
         <Button inline data-action="project-note-new" onClick={newNote}><NotebookPen size={18} aria-hidden="true" /> New note</Button>
       </div>

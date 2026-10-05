@@ -1,4 +1,4 @@
-import { Pin, Trash2 } from 'lucide-react';
+import { Lock, Pin, Sparkles, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
@@ -6,9 +6,10 @@ import { useConfirm } from '../components/confirm';
 import { Field, Select, TextArea, TextInput } from '../components/Field';
 import { BackLink, Note } from '../components/parts';
 import { shortDate } from '../data/dates';
-import { editNote, INBOX, isBlank, NOTE_LIMITS, removeNote } from '../data/notes';
+import { editNote, INBOX, isBlank, NOTE_LIMITS, noteName, removeNote, setPrivate } from '../data/notes';
 import { linkNote, projectById } from '../data/projects';
 import { ProjectPicker } from '../projects/parts';
+import { bothMention, keepLink, projectMatches, relatedNotes, unlink } from '../data/understand';
 import { getSnapshot, update, updateSaved } from '../data/storage';
 import { toast } from '../data/toast';
 import type { MyDayData } from '../data/types';
@@ -68,6 +69,9 @@ export function NoteEditor({ data, id }: { data: MyDayData; id: string }) {
     );
   }
   const known = data.notes.categories.some(c => c.id === note.categoryId), project = projectById(data, note.projectId);
+  // Understanding it (data/understand.ts): a project it might belong in (when it isn't in one), and related notes.
+  const maybe = !project ? projectMatches(data, note)[0] ?? null : null;
+  const related = relatedNotes(data, note);
 
   async function remove() {
     if (!(await confirm({ title: 'Delete this note?', body: 'This can\'t be undone (a backup made with "Export my data" still has it).', confirmLabel: 'Delete', cancelLabel: 'Keep it' }))) return;
@@ -91,6 +95,22 @@ export function NoteEditor({ data, id }: { data: MyDayData; id: string }) {
             </Field>
             <ProjectPicker data={data} id="noteProject" value={note.projectId} onPick={v => { flush(); if (update(d => (linkNote(d, id, v) ? undefined : false))) toast(v ? 'Added to the project.' : 'No longer in a project.'); }} />
           </div>
+          {project && note.linkedBy && (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-tile bg-primary-container text-on-primary-container pl-3 pr-1 py-1" data-s="note-linked">
+              <Sparkles size={16} aria-hidden="true" className="flex-none" />
+              <span className="flex-1 min-w-[12rem] text-[15px] py-1.5">MyDay connected this to “{project.title}”{note.linkWhy ? ` — ${bothMention(note.linkWhy)}` : ''}.</span>
+              <span className="flex">
+                <Button inline variant="ghost" className="!border-transparent !text-on-primary-container" data-action="note-link-keep" onClick={() => { if (update(d => (keepLink(d, id) ? undefined : false))) toast('Kept.'); }}>Keep</Button>
+                <Button inline variant="ghost" className="!border-transparent !text-on-primary-container" data-action="note-link-undo" onClick={() => { flush(); if (update(d => (unlink(d, id) ? undefined : false))) toast('Taken out — MyDay won\'t put it back in that project.'); }}>Undo</Button>
+              </span>
+            </div>
+          )}
+          {maybe && (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-tile bg-surface-2 border border-outline pl-3 pr-1 py-1" data-s="note-maybe">
+              <span className="flex-1 min-w-[12rem] text-[15px] text-fg-2 py-1.5">{maybe.sure ? 'Looks like it belongs in' : 'Might belong in'} “{maybe.project.title}” — {bothMention(maybe.why)}.{maybe.sure ? ' MyDay will add it there once you leave this note.' : ''}</span>
+              <Button inline variant="ghost" className="!border-transparent !text-primary" data-action="note-maybe-add" onClick={() => { flush(); if (update(d => (linkNote(d, id, maybe.project.id) ? undefined : false))) toast('Added to the project.'); }}>Add to it</Button>
+            </div>
+          )}
           <Field label="Title (optional)" htmlFor="noteTitle">
             <TextInput id="noteTitle" value={draft.title} maxLength={NOTE_LIMITS.title} onChange={e => change({ title: e.target.value })} onBlur={flush} />
           </Field>
@@ -110,10 +130,30 @@ export function NoteEditor({ data, id }: { data: MyDayData; id: string }) {
             onClick={() => update(d => (editNote(d.notes, id, { pinned: !note.pinned }) ? undefined : false))}>
             <Pin size={18} aria-hidden="true" /> {note.pinned ? 'Pinned' : 'Pin to the top'}
           </Button>
+          <Button inline variant={note.private ? 'selected' : 'tonal'} aria-pressed={!!note.private} data-action="note-private"
+            onClick={() => { flush(); if (update(d => (setPrivate(d.notes, id, !note.private) ? undefined : false))) toast(note.private ? 'No longer private.' : 'Private — AI help will never read this note.'); }}>
+            <Lock size={18} aria-hidden="true" /> {note.private ? 'Private' : 'Keep private'}
+          </Button>
           <Button inline variant="ghost" data-action="note-delete" onClick={remove}><Trash2 size={18} aria-hidden="true" /> Delete</Button>
           {status === 'failed' && <Button inline data-action="note-retry" onClick={() => { pending.current = true; flush(); }}>Try saving again</Button>}
         </div>
+        {note.private && <Note className="mb-0 mt-3">Private: AI help never reads this note. It's still saved to your account, like all your notes, so it's on your other devices.</Note>}
       </Card>
+      {related.length > 0 && (
+        <Card aria-labelledby="noteRelatedH" id="noteRelated">
+          <h3 id="noteRelatedH">Related notes</h3>
+          <ul className="list-none p-0 m-0">
+            {related.map(r => (
+              <li key={r.note.id} className="border-t border-outline first:border-t-0">
+                <a href={`#projects/notes/${r.note.id}`} className="block min-h-11 py-2 text-fg no-underline hover:bg-surface-2 rounded-tile -mx-2 px-2" data-s="related-note" data-id={r.note.id}>
+                  <span className="block font-medium break-words">{noteName(r.note)}</span>
+                  <span className="block text-sm text-fg-3">{bothMention(r.why)}{projectById(data, r.note.projectId) ? ` · in “${projectById(data, r.note.projectId)!.title}”` : ''}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
     </>
   );
 }

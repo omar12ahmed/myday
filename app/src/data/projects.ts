@@ -102,10 +102,17 @@ export function linkTask(d: MyDayData, taskId: string, projectId: string | null)
   for (const id of [was, projectId]) { const p = id ? find(d, id) : null; if (p) { if (p.nextTaskId === taskId && id === was) p.nextTaskId = null; touch(p); } }
   return true;
 }
+// For a note it's your choice: a project you take it out of is one MyDay won't put it back in, one you put it in is
+// fine again, and the link is yours (not "connected by MyDay" any more).
 export function linkNote(d: MyDayData, noteId: string, projectId: string | null): boolean {
   const n = d.notes.items.find(x => x.id === noteId);
   if (!n || (n.projectId ?? null) === projectId || (projectId && !find(d, projectId))) return false;
   const was = n.projectId;
+  const not = new Set(n.notProjects ?? []);
+  if (was) not.add(was);
+  if (projectId) not.delete(projectId);
+  if (not.size) n.notProjects = [...not].slice(-50); else delete n.notProjects;
+  delete n.linkedBy; delete n.linkWhy;
   if (projectId) n.projectId = projectId; else delete n.projectId;
   for (const id of [was, projectId]) { const p = id ? find(d, id) : null; if (p) touch(p); }
   return true;
