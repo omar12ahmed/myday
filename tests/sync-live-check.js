@@ -10,6 +10,7 @@
 // delete the two test users afterwards (Authentication → Users), which deletes their records too.
 // (`npm test`-style runs use tests/run.sh with a local stand-in instead; this script is for a real project.)
 // `--projects-only`: only the projects check (1.12.0), for test accounts that already have records from an earlier run.
+// `--cyber-only`: the same for the Cybersecurity kinds (1.14.0).
 const { randomUUID } = require('crypto');
 
 const URL_ = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
@@ -43,6 +44,23 @@ const change = (kind, record_id, base_version, data, extra = {}) => ({ change_id
 const day = title => ({ energy: 3, rest: false, builtAt: '2000-01-01T08:00', checkedIn: false, tasks: [{ uid: 'live-check', taskId: null, category: 'admin', title, minutes: 10, baseMinutes: 10, done: false, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null }] });
 const DAY = '2000-01-01'; // a date far from any real plan
 
+// Cybersecurity (fourth migration, 20261007120000_sync_cybersecurity.sql): A saves its path preference (one record)
+// and a notebook attempt (an item), B sees neither, and A deletes the attempt.
+async function cyberCheck(a, b, id) {
+  console.log('\nCybersecurity (fourth migration: 20261007120000_sync_cybersecurity.sql)');
+  const mine = await pull(a), pref = mine.find(x => x.kind === 'cybersecurity' && x.record_id === 'preferences');
+  let r = await push(a, [change('cybersecurity', 'preferences', pref ? pref.version : 0, { pathId: 'path.core' })]);
+  check('A can save its Cybersecurity path — so the fourth migration is applied', Array.isArray(r) && r[0].status === 'applied', r);
+  r = await push(a, [change('cyber_attempt', id, 0, { id, note: 'Live check attempt (synthetic)' })]);
+  check('A can save a notebook attempt (version 1)', Array.isArray(r) && r[0].status === 'applied' && r[0].version === 1, r);
+  const theirs = await pull(b);
+  check('B sees neither', theirs.every(x => x.kind !== 'cybersecurity' && x.kind !== 'cyber_attempt'));
+  r = await push(a, [change('cyber_attempt', id, 1, null, { deleted: true })]);
+  check('the attempt can be deleted (a deletion marker for other devices)', Array.isArray(r) && r[0].status === 'applied' && r[0].version === 2, r);
+  r = await push(a, [change('cybersecurity', 'preferences', (await pull(a)).find(x => x.kind === 'cybersecurity').version, null, { deleted: true })]);
+  check('the path preference (a one-record part) can\'t be deleted', Array.isArray(r) && r[0].status === 'rejected', r);
+}
+
 // Projects (third migration, 20261006120000_sync_projects.sql): A saves one, B can't see it, A deletes it.
 async function projectsCheck(a, b, id) {
   console.log('\nProjects (third migration: 20261006120000_sync_projects.sql)');
@@ -67,6 +85,16 @@ async function projectsCheck(a, b, id) {
   // --projects-only (1.12.0): just the third migration's check, on test accounts that already have records from an
   // earlier run. Its safeguard instead of "the accounts are empty": both are disposable @example.com addresses, and it
   // only touches a project record with a new id (saved, checked, then deleted).
+  // --cyber-only (1.14.0): the same, for the fourth migration's kinds (Cybersecurity preferences and attempts).
+  if (process.argv.includes('--cyber-only')) {
+    if (![A.email, B.email].every(e => /@example\.com$/i.test(e || '')) || A.email === B.email) {
+      console.log('  STOP --cyber-only runs only with two different disposable @example.com test accounts.');
+      process.exit(2);
+    }
+    await cyberCheck(a, b, `live-check-attempt-${Date.now()}`);
+    console.log(`\n${pass} passed, ${fail} failed`);
+    process.exit(fail ? 1 : 0);
+  }
   if (process.argv.includes('--projects-only')) {
     if (![A.email, B.email].every(e => /@example\.com$/i.test(e || '')) || A.email === B.email) {
       console.log('  STOP --projects-only runs only with two different disposable @example.com test accounts.');
