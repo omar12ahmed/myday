@@ -1,0 +1,1730 @@
+{
+  "type": "object",
+  "properties": {
+    "assessments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "answer_keys_file": {
+            "type": "string"
+          },
+          "conditions": {
+            "type": "object",
+            "properties": {
+              "accessibility": {
+                "type": "string"
+              },
+              "grammar_explanations_may_use_english": {
+                "type": "boolean"
+              },
+              "ordinary_speaking_endings": {
+                "type": "string"
+              },
+              "target_register": {
+                "type": "string"
+              },
+              "transcript_before_listening_attempt": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "accessibility",
+              "grammar_explanations_may_use_english",
+              "ordinary_speaking_endings",
+              "target_register",
+              "transcript_before_listening_attempt"
+            ],
+            "additionalProperties": false
+          },
+          "delayed_check_minutes": {
+            "type": "integer"
+          },
+          "estimated_minutes": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^assessment\\.arabic-[a-z0-9-]+$"
+          },
+          "included_in_lesson_time": {
+            "type": "boolean"
+          },
+          "lesson_id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "mastery_note": {
+            "type": "string"
+          },
+          "modalities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "module_id": {
+            "type": "string"
+          },
+          "pass_criteria": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "answer_key_id": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "prompt": {
+                  "type": "string"
+                },
+                "response_type": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "answer_key_id",
+                "id",
+                "prompt",
+                "response_type"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "retake_rule": {
+            "type": "string"
+          },
+          "rubric": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "criterion": {
+                  "type": "string"
+                },
+                "weight": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "criterion",
+                "weight"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "skill_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "task": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "estimated_minutes",
+          "id",
+          "included_in_lesson_time",
+          "lesson_id",
+          "modalities",
+          "module_id",
+          "pass_criteria",
+          "questions",
+          "rubric",
+          "skill_ids",
+          "task",
+          "type"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "audio_provision": {
+            "type": "string"
+          },
+          "audio_status": {
+            "type": "string"
+          },
+          "comprehension_questions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "answer_key_id": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "prompt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "answer_key_id",
+                "id",
+                "prompt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "editorial_status": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^asset\\.arabic-[a-z0-9-]+$"
+          },
+          "module_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "pairs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "a": {
+                  "type": "string"
+                },
+                "b": {
+                  "type": "string"
+                },
+                "meaning_a": {
+                  "type": "string"
+                },
+                "meaning_b": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "a",
+                "b",
+                "meaning_a",
+                "meaning_b"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "activity_ar": {
+                  "type": "string"
+                },
+                "day_ar": {
+                  "type": "string"
+                },
+                "place_ar": {
+                  "type": "string"
+                },
+                "time": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "activity_ar",
+                "day_ar",
+                "place_ar",
+                "time"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "source": {
+            "type": "string"
+          },
+          "stage_target": {
+            "type": "string"
+          },
+          "task": {
+            "type": "string"
+          },
+          "text_ar": {
+            "type": "string"
+          },
+          "text_unvowelled": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "use_note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "audio_status",
+          "id",
+          "module_ids",
+          "source",
+          "stage_target",
+          "title",
+          "type"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "course": {
+      "type": "object",
+      "properties": {
+        "adaptive_boundary": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "answer_keys_file": {
+          "type": "string"
+        },
+        "audience": {
+          "type": "string"
+        },
+        "audio_status": {
+          "type": "string"
+        },
+        "content_status": {
+          "type": "object",
+          "properties": {
+            "automation": {
+              "type": "string"
+            },
+            "language_review": {
+              "type": "string"
+            },
+            "stage": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "automation",
+            "language_review",
+            "stage"
+          ],
+          "additionalProperties": false
+        },
+        "core_path_id": {
+          "type": "string"
+        },
+        "default_direction": {
+          "type": "string"
+        },
+        "design_principles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "difficulty_scale": {
+          "type": "object",
+          "properties": {
+            "1": {
+              "type": "string"
+            },
+            "2": {
+              "type": "string"
+            },
+            "3": {
+              "type": "string"
+            },
+            "4": {
+              "type": "string"
+            },
+            "5": {
+              "type": "string"
+            },
+            "6": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6"
+          ],
+          "additionalProperties": false
+        },
+        "explanation_language": {
+          "type": "string"
+        },
+        "governance": {
+          "type": "object",
+          "properties": {
+            "migration": {
+              "type": "string"
+            },
+            "resource_review_days": {
+              "type": "integer"
+            },
+            "retain_attempt_curriculum_version": {
+              "type": "boolean"
+            },
+            "versioning": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "migration",
+            "resource_review_days",
+            "retain_attempt_curriculum_version",
+            "versioning"
+          ],
+          "additionalProperties": false
+        },
+        "id": {
+          "const": "course.arabic-fusha",
+          "type": "string"
+        },
+        "language_tag": {
+          "type": "string"
+        },
+        "level_claim": {
+          "type": "string"
+        },
+        "module_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "name": {
+          "type": "string"
+        },
+        "not_required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "policy_file": {
+          "type": "string"
+        },
+        "session_minutes": {
+          "type": "object",
+          "properties": {
+            "minimum_useful": {
+              "type": "integer"
+            },
+            "usual_maximum": {
+              "type": "integer"
+            },
+            "usual_minimum": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "minimum_useful",
+            "usual_maximum",
+            "usual_minimum"
+          ],
+          "additionalProperties": false
+        },
+        "static_boundary": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "target_variety": {
+          "type": "string"
+        },
+        "time_estimate_note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "adaptive_boundary",
+        "answer_keys_file",
+        "audience",
+        "audio_status",
+        "content_status",
+        "core_path_id",
+        "default_direction",
+        "design_principles",
+        "difficulty_scale",
+        "explanation_language",
+        "governance",
+        "id",
+        "language_tag",
+        "level_claim",
+        "module_ids",
+        "name",
+        "not_required",
+        "policy_file",
+        "session_minutes",
+        "static_boundary",
+        "target_variety",
+        "time_estimate_note"
+      ],
+      "additionalProperties": false
+    },
+    "created_on": {
+      "type": "string"
+    },
+    "curriculum_version": {
+      "type": "string"
+    },
+    "exercises": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "estimated_minutes": {
+            "type": "integer"
+          },
+          "evidence_conditions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "expected_evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^exercise\\.arabic-[a-z0-9-]+$"
+          },
+          "included_in_lesson_time": {
+            "type": "boolean"
+          },
+          "instruction": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "lesson_id": {
+            "type": "string"
+          },
+          "material_selection": {
+            "type": "object",
+            "properties": {
+              "external_resource_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "rule": {
+                "type": "string"
+              },
+              "starter_asset_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "external_resource_ids",
+              "rule",
+              "starter_asset_ids"
+            ],
+            "additionalProperties": false
+          },
+          "modalities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "module_id": {
+            "type": "string"
+          },
+          "rubric": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "criterion": {
+                  "type": "string"
+                },
+                "pass_evidence": {
+                  "type": "string"
+                },
+                "weight": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "criterion",
+                "pass_evidence",
+                "weight"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "skill_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "estimated_minutes",
+          "evidence_conditions",
+          "expected_evidence",
+          "id",
+          "included_in_lesson_time",
+          "instruction",
+          "kind",
+          "lesson_id",
+          "material_selection",
+          "modalities",
+          "module_id",
+          "rubric",
+          "skill_ids"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "labs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "conditions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "deliverables": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "estimated_minutes": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^lab\\.arabic-[a-z0-9-]+$"
+          },
+          "modalities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "module_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "pass_score": {
+            "type": "integer"
+          },
+          "resource_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "rubric": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "criterion": {
+                  "type": "string"
+                },
+                "weight": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "criterion",
+                "weight"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "skill_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "split_into_sessions": {
+            "type": "boolean"
+          },
+          "starter_asset_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "task": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "conditions",
+          "deliverables",
+          "estimated_minutes",
+          "id",
+          "modalities",
+          "module_id",
+          "name",
+          "pass_score",
+          "resource_ids",
+          "rubric",
+          "skill_ids",
+          "split_into_sessions",
+          "starter_asset_ids",
+          "task",
+          "type"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "lessons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "completion_criteria": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "difficulty": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 6
+          },
+          "estimated_duration_minutes": {
+            "type": "object",
+            "properties": {
+              "extended": {
+                "type": "integer"
+              },
+              "minimum_full": {
+                "type": "integer"
+              },
+              "short": {
+                "type": "integer"
+              },
+              "standard": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "extended",
+              "minimum_full",
+              "short",
+              "standard"
+            ],
+            "additionalProperties": false
+          },
+          "example": {
+            "type": "object",
+            "properties": {
+              "diacritics": {
+                "type": "string"
+              },
+              "meaning_en": {
+                "type": "string"
+              },
+              "register": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              },
+              "text_ar": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "diacritics",
+              "meaning_en",
+              "register",
+              "source",
+              "text_ar"
+            ],
+            "additionalProperties": false
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^lesson\\.arabic-[a-z0-9-]+$"
+          },
+          "input_requirements": {
+            "type": "object",
+            "properties": {
+              "audio_not_supplied": {
+                "type": "boolean"
+              },
+              "audio_required": {
+                "type": "boolean"
+              },
+              "fresh_input_for_transfer": {
+                "type": "boolean"
+              },
+              "modalities": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "speaking_evidence_required": {
+                "type": "boolean"
+              },
+              "text_support": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "audio_not_supplied",
+              "audio_required",
+              "fresh_input_for_transfer",
+              "modalities",
+              "speaking_evidence_required",
+              "text_support"
+            ],
+            "additionalProperties": false
+          },
+          "key_concepts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "knowledge_check_id": {
+            "type": "string"
+          },
+          "learning_objectives": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "mini_challenge_id": {
+            "type": "string"
+          },
+          "module_id": {
+            "type": "string"
+          },
+          "optional": {
+            "type": "boolean"
+          },
+          "practical_task_id": {
+            "type": "string"
+          },
+          "prerequisites": {
+            "type": "object",
+            "properties": {
+              "all": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "any": {
+                "type": "array",
+                "items": {}
+              }
+            },
+            "required": [
+              "all",
+              "any"
+            ],
+            "additionalProperties": false
+          },
+          "resource_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sequence_in_module": {
+            "type": "integer"
+          },
+          "skill_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stage_target": {
+            "type": "string"
+          },
+          "starter_asset_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "suggested_resource_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "title": {
+            "type": "string"
+          },
+          "topic_id": {
+            "type": "string"
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "activity": {
+                  "type": "string"
+                },
+                "evidence_scope": {
+                  "type": "string"
+                },
+                "minutes": {
+                  "type": "integer"
+                },
+                "mode": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "activity",
+                "evidence_scope",
+                "minutes",
+                "mode"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "completion_criteria",
+          "difficulty",
+          "estimated_duration_minutes",
+          "example",
+          "id",
+          "input_requirements",
+          "key_concepts",
+          "knowledge_check_id",
+          "learning_objectives",
+          "mini_challenge_id",
+          "module_id",
+          "optional",
+          "practical_task_id",
+          "prerequisites",
+          "resource_ids",
+          "sequence_in_module",
+          "skill_ids",
+          "stage_target",
+          "starter_asset_ids",
+          "suggested_resource_types",
+          "title",
+          "topic_id",
+          "variants"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "lexicon_seed": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "audio_status": {
+            "type": "string"
+          },
+          "evidence_channels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "example_ar": {
+            "type": "string"
+          },
+          "example_meaning_en": {
+            "type": "string"
+          },
+          "form_ar": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^lexeme\\.arabic-[a-z0-9-]+$"
+          },
+          "meaning_en": {
+            "type": "string"
+          },
+          "part_of_speech": {
+            "type": "string"
+          },
+          "register": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "audio_status",
+          "evidence_channels",
+          "example_ar",
+          "example_meaning_en",
+          "form_ar",
+          "id",
+          "meaning_en",
+          "part_of_speech",
+          "register",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "milestones": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "assessment_id": {
+            "type": "string"
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^milestone\\.arabic-[a-z0-9-]+$"
+          },
+          "interpretation": {
+            "type": "string"
+          },
+          "language_scope": {
+            "type": "string"
+          },
+          "path_id": {
+            "type": "string"
+          },
+          "sample_tasks": {
+            "type": "object",
+            "properties": {
+              "listening": {
+                "type": "string"
+              },
+              "reading": {
+                "type": "string"
+              },
+              "speaking": {
+                "type": "string"
+              },
+              "writing": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "listening",
+              "reading",
+              "speaking",
+              "writing"
+            ],
+            "additionalProperties": false
+          },
+          "stage_target": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assessment_id",
+          "conditions",
+          "id",
+          "interpretation",
+          "language_scope",
+          "path_id",
+          "sample_tasks",
+          "stage_target"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "assessment_id": {
+            "type": "string"
+          },
+          "common_mistakes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "completion_capabilities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "difficulty": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 6
+          },
+          "estimated_hours": {
+            "type": "object",
+            "properties": {
+              "assessment_and_delayed_check": {
+                "type": "number"
+              },
+              "distributed_practice_maximum": {
+                "type": "number"
+              },
+              "distributed_practice_minimum": {
+                "type": "number"
+              },
+              "labs": {
+                "type": "number"
+              },
+              "lessons_standard": {
+                "type": "number"
+              },
+              "project_share_maximum": {
+                "type": "integer"
+              },
+              "project_share_minimum": {
+                "type": "integer"
+              },
+              "total_maximum": {
+                "type": "integer"
+              },
+              "total_minimum": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "assessment_and_delayed_check",
+              "distributed_practice_maximum",
+              "distributed_practice_minimum",
+              "labs",
+              "lessons_standard",
+              "project_share_maximum",
+              "project_share_minimum",
+              "total_maximum",
+              "total_minimum"
+            ],
+            "additionalProperties": false
+          },
+          "exercise_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^module\\.arabic-[a-z0-9-]+$"
+          },
+          "lab_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "learning_objectives": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "lesson_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "name": {
+            "type": "string"
+          },
+          "path_class": {
+            "type": "string"
+          },
+          "practice_menu": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "mode": {
+                  "type": "string"
+                },
+                "session_minutes": {
+                  "type": "integer"
+                },
+                "task": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "mode",
+                "session_minutes",
+                "task"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "prerequisites": {
+            "type": "object",
+            "properties": {
+              "entry_skill_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "external_skill_ids_used": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "interpretation": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "entry_skill_ids",
+              "external_skill_ids_used",
+              "interpretation"
+            ],
+            "additionalProperties": false
+          },
+          "project_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "resource_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sequence": {
+            "type": "integer"
+          },
+          "skill_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stage_target": {
+            "type": "string"
+          },
+          "starter_asset_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "time_note": {
+            "type": "string"
+          },
+          "topic_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "understanding_before_entry": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "understanding_before_progression": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "assessment_id",
+          "common_mistakes",
+          "completion_capabilities",
+          "difficulty",
+          "estimated_hours",
+          "exercise_ids",
+          "id",
+          "lab_ids",
+          "learning_objectives",
+          "lesson_ids",
+          "name",
+          "path_class",
+          "practice_menu",
+          "prerequisites",
+          "project_ids",
+          "purpose",
+          "resource_ids",
+          "sequence",
+          "skill_ids",
+          "stage_target",
+          "starter_asset_ids",
+          "time_note",
+          "topic_ids",
+          "understanding_before_entry",
+          "understanding_before_progression"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "package_type": {
+      "type": "string"
+    },
+    "paths": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "completion_rule": {
+            "type": "string"
+          },
+          "estimated_hours": {
+            "type": "object",
+            "properties": {
+              "maximum": {
+                "type": "integer"
+              },
+              "minimum": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "maximum",
+              "minimum"
+            ],
+            "additionalProperties": false
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^path\\.arabic-[a-z0-9-]+$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "required_module_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "required_project_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "completion_rule",
+          "estimated_hours",
+          "id",
+          "name",
+          "note",
+          "required_module_ids",
+          "required_project_ids",
+          "type"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "projects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "assessment_criteria": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "criterion": {
+                  "type": "string"
+                },
+                "weight": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "criterion",
+                "weight"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "deliverables": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "estimated_hours": {
+            "type": "object",
+            "properties": {
+              "maximum": {
+                "type": "integer"
+              },
+              "minimum": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "maximum",
+              "minimum"
+            ],
+            "additionalProperties": false
+          },
+          "evidence_conditions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "goal": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^project\\.arabic-[a-z0-9-]+$"
+          },
+          "module_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "name": {
+            "type": "string"
+          },
+          "pass_score": {
+            "type": "integer"
+          },
+          "portfolio_value": {
+            "type": "string"
+          },
+          "required_skill_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "retake_rule": {
+            "type": "string"
+          },
+          "time_owner_module_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assessment_criteria",
+          "deliverables",
+          "estimated_hours",
+          "evidence_conditions",
+          "goal",
+          "id",
+          "module_ids",
+          "name",
+          "pass_score",
+          "portfolio_value",
+          "required_skill_ids",
+          "retake_rule",
+          "time_owner_module_id"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "access_note": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^resource\\.arabic-[a-z0-9-]+$"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "replacement_rule": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "reuse_rule": {
+            "type": "string"
+          },
+          "stage_fit": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "use_note": {
+            "type": "string"
+          },
+          "verification": {
+            "type": "string"
+          },
+          "verified_on": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "access_note",
+          "id",
+          "provider",
+          "replacement_rule",
+          "required",
+          "reuse_rule",
+          "stage_fit",
+          "title",
+          "type",
+          "url",
+          "use_note",
+          "verification",
+          "verified_on"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "schema_version": {
+      "const": "1.0.0",
+      "type": "string"
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "assessment_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "difficulty": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 6
+          },
+          "evidence_exercise_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^skill\\.arabic-[a-z0-9-]+$"
+          },
+          "module_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "optional_branch": {
+            "type": "boolean"
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "prerequisites": {
+            "type": "object",
+            "properties": {
+              "all": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "any": {
+                "type": "array",
+                "items": {}
+              }
+            },
+            "required": [
+              "all",
+              "any"
+            ],
+            "additionalProperties": false
+          },
+          "required_evidence_modalities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stage_target": {
+            "type": "string"
+          },
+          "taught_by_lesson_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "transfer_expectation": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assessment_ids",
+          "difficulty",
+          "evidence_exercise_ids",
+          "id",
+          "module_id",
+          "name",
+          "optional_branch",
+          "outcome",
+          "prerequisites",
+          "required_evidence_modalities",
+          "stage_target",
+          "taught_by_lesson_ids",
+          "transfer_expectation"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "topics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^topic\\.arabic-[a-z0-9-]+$"
+          },
+          "lesson_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "module_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "lesson_ids",
+          "module_id",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "assessments",
+    "assets",
+    "course",
+    "created_on",
+    "curriculum_version",
+    "exercises",
+    "labs",
+    "lessons",
+    "lexicon_seed",
+    "milestones",
+    "modules",
+    "package_type",
+    "paths",
+    "projects",
+    "resources",
+    "schema_version",
+    "skills",
+    "topics"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MyDay Arabic Fuṣḥā static curriculum 1.0",
+  "description": "Structural schema. Run the accompanying validator for references, prerequisite graphs, hour accounting and policy separation."
+}

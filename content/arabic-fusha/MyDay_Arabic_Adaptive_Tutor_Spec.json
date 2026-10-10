@@ -1,0 +1,520 @@
+{
+  "policy_id": "policy.arabic-adaptation",
+  "version": "1.1.0",
+  "course_id": "course.arabic-fusha",
+  "status": "Proposed configurable policy; not a validated psychometric model.",
+  "separate_from_curriculum": true,
+  "model_dependency": null,
+  "mastery": {
+    "unit": "skill_id × assessed modality; keep a separate profile for listening, speaking, reading and writing",
+    "modality_definition": "The assessed construct, not merely the response medium: a typed answer to previously unseen audio can demonstrate listening comprehension if no transcript was seen. Log input and response modalities separately.",
+    "bands": [
+      {
+        "minimum": 0,
+        "maximum": 20,
+        "meaning": "Little demonstrated control; may recognise a model but cannot reliably retrieve or apply it."
+      },
+      {
+        "minimum": 21,
+        "maximum": 40,
+        "meaning": "Emerging understanding; succeeds mainly with cues, slow input or worked examples."
+      },
+      {
+        "minimum": 41,
+        "maximum": 60,
+        "meaning": "Can handle familiar controlled tasks; performance is inconsistent on changed input."
+      },
+      {
+        "minimum": 61,
+        "maximum": 80,
+        "meaning": "Increasingly independent and reliable within the defined skill and task scope; some support or review remains."
+      },
+      {
+        "minimum": 81,
+        "maximum": 100,
+        "meaning": "Repeated independent success, retained after delay and transferred across inputs or contexts; not global fluency."
+      }
+    ],
+    "untested": "Store null and status=unknown, not a numerical failure. A learner-facing 0 may mean no evidence only if explicitly labelled.",
+    "dimensions": {
+      "understanding": 0.15,
+      "recall": 0.2,
+      "practical_performance": 0.45,
+      "transfer_assessment": 0.2
+    },
+    "dimension_meanings": {
+      "understanding": "Explain meaning, contrast or error; English or another familiar explanation language is acceptable.",
+      "recall": "Retrieve meaning or a form without seeing the answer; recognition and production are tagged separately.",
+      "practical_performance": "Perform the actual listening, speaking, reading, writing or study-method task under logged conditions.",
+      "transfer_assessment": "Use the skill on fresh input or a changed communicative task; not another viewing of the same model."
+    },
+    "evidence_event_fields": [
+      "event_id",
+      "learner_id",
+      "skill_id",
+      "modality",
+      "dimension",
+      "rubric_score_0_100",
+      "observed_at_utc",
+      "curriculum_version",
+      "activity_id",
+      "prompt_fingerprint",
+      "source_id",
+      "support_level",
+      "answer_seen",
+      "transcript_seen",
+      "replay_count",
+      "playback_speed",
+      "register",
+      "vowel_support",
+      "input_modality",
+      "response_modality",
+      "rater_type",
+      "rater_confidence",
+      "evidence_uri",
+      "consent_status"
+    ],
+    "non_evidence_events": [
+      "page_opened",
+      "lesson_read",
+      "video_started",
+      "time_spent",
+      "streak",
+      "self_report_without_observation"
+    ],
+    "eligible_evidence": [
+      "Score only the explicitly targeted skill and observed modality; do not propagate one score to every prerequisite.",
+      "A general grammar explanation supports conceptual understanding only. A modality-specific understanding event needs relevant input or production evidence; never relabel a text-only grammar check as listening performance.",
+      "Deduplicate the same attempt and prompt. Repetition is practice but not a new independent transfer task.",
+      "Answer-seen attempts can document corrected understanding, not independent recall or transfer.",
+      "Transcript-seen input is reading-assisted listening, not unaided listening.",
+      "Teacher/competent-listener observation can establish speaking evidence; text-only chat cannot establish pronunciation.",
+      "AI ratings remain provisional where uncertainty is material; retain rater identity and confidence.",
+      "Written Arabic application checks remain text-based even when their parent lesson concerns listening or speaking. Do not let the parent lesson label upgrade their modality. Open-ended sample answers are exemplars, not exact-match answer sets."
+    ],
+    "support_credit": {
+      "independent": 1.0,
+      "one_hint": 0.8,
+      "guided": 0.6,
+      "copied_or_repeated_after_model": 0.3
+    },
+    "scoring_algorithm": [
+      "For each skill × modality × dimension, keep the latest three eligible, distinct scored attempts in the rolling evidence window. Include low scores; do not cherry-pick successful attempts.",
+      "Multiply each raw rubric score by its support_credit. For recent, next and third attempts use weights 0.5, 0.3 and 0.2; renormalise if fewer exist.",
+      "Multiply dimension means by 0.15, 0.20, 0.45 and 0.20 and sum. An unobserved dimension contributes zero to this conservative estimate and remains visibly unknown.",
+      "If every dimension is unobserved, return null. Apply all relevant evidence caps below.",
+      "For a skill requiring several modalities, its prerequisite score is the minimum current readiness among those modalities; unknown blocks an independent mastery claim.",
+      "Show historical demonstrated score, current readiness estimate, confidence and review-due status separately."
+    ],
+    "rolling_evidence_window_days": 365,
+    "caps": [
+      {
+        "condition": "No independent recall evidence",
+        "maximum": 20
+      },
+      {
+        "condition": "No independent practical-performance evidence",
+        "maximum": 40
+      },
+      {
+        "condition": "No independent fresh-input transfer evidence",
+        "maximum": 60
+      },
+      {
+        "condition": "Independent successful practice appears on fewer than two calendar dates",
+        "maximum": 70
+      },
+      {
+        "condition": "No successful delayed transfer at least seven days after initial successful independent practice",
+        "maximum": 80
+      },
+      {
+        "condition": "Any condition in score_above_80_requires is missing",
+        "maximum": 80
+      },
+      {
+        "condition": "Evidence does not cover every required modality",
+        "maximum": 80,
+        "note": "Unknown required modality additionally prevents an independent prerequisite pass."
+      }
+    ],
+    "score_above_80_requires": {
+      "independent_practical_attempts": 3,
+      "distinct_dates": 2,
+      "fresh_transfer_attempts": 2,
+      "minimum_delayed_gap_days": 7,
+      "minimum_practical_score": 80,
+      "minimum_transfer_score": 80,
+      "input_variation": "At least two texts, voices, prompts or contexts appropriate to the skill.",
+      "speaking_review": "Competent listener or qualified teacher evidence for pronunciation-sensitive claims; ASR alone is insufficient."
+    },
+    "freshness": {
+      "historical_score_is_not_erased": true,
+      "last_practice_definition": "Latest eligible independent recall, practical or transfer event; reading a lesson does not refresh the date.",
+      "retention_window_days": {
+        "new": 14,
+        "developing": 30,
+        "stable": 60
+      },
+      "stable_definition": "Meets the above-80 evidence conditions, not merely a high immediate quiz score.",
+      "readiness_formula": "max(0, historical_score - min(15, 10 * max(0, days_since_practice - window_days) / window_days))",
+      "review_due": "days_since_practice > window_days; show as an estimate rather than a measured amount forgotten.",
+      "independent_progression": "Require current score >=70 plus an eligible event within 60 days; otherwise offer a short refresh check.",
+      "supported_progression": "Learner may preview or attempt scaffolded work below the gate; do not label prerequisites mastered.",
+      "new_success": "Refresh that skill/modality using actual evidence; never reset all skills because one was practised.",
+      "retention_state_rules": {
+        "new": "An observed score below 41, or no independent practical success yet. Unknown stays unknown.",
+        "developing": "Observed performance that is not new and does not meet the stable evidence conditions.",
+        "stable": "Meets every score_above_80_requires condition for this skill and modality."
+      },
+      "empty_rolling_window": "If no eligible attempts remain in the 365-day scoring window, current estimate is null/unknown and review is due. Preserve the last dated historical snapshot; do not convert an expired window into a measured zero or silently reuse it as current evidence.",
+      "historical_snapshot": "Store each dated estimate with its policy version. Historical score means the last demonstrated estimate at that date, not a cherry-picked all-time maximum."
+    },
+    "confidence": {
+      "low": "Single prompt, one day, self-rating only, or uncertain automated feedback.",
+      "medium": "Several independent attempts with some input variation and consistent rubric judgements.",
+      "high": "Repeated delayed transfer with suitable variety and credible external feedback where needed."
+    },
+    "level_reporting": "Never map 80 mastery points to CEFR B2 or issue CEFR/ACTFL/ILR certification. Report scope, modality and evidence."
+  },
+  "adaptation": {
+    "placement": [
+      "Ask about prior script learning, MSA exposure, dialect experience and recitation separately.",
+      "Use brief fresh tasks for decoding, comprehension, listening, speaking and writing; stop before exhaustion.",
+      "Skip instruction only for demonstrated skills; retain delayed checks. Prior dialect knowledge can help but is not automatic MSA mastery.",
+      "Do not require whole-module repetition when only one prerequisite skill is weak."
+    ],
+    "candidate_selection": [
+      "Read the chosen path and explicit skill dependencies from the static package.",
+      "Prioritise a blocking weak prerequisite, a due review or an eligible new lesson; explain the reason.",
+      "Keep receptive and productive work represented across the week; use goals to weight them transparently.",
+      "Choose a single achievable main task for a low-energy day and record partial completion.",
+      "If audio or a partner is unavailable, choose another available modality and leave the missing modality untested."
+    ],
+    "session_templates_minutes": [
+      {
+        "available": 10,
+        "review": 3,
+        "main_task": 5,
+        "reflection": 2
+      },
+      {
+        "available": 30,
+        "review": 5,
+        "main_task": 15,
+        "output_or_transfer": 7,
+        "reflection": 3
+      },
+      {
+        "available": 60,
+        "review": 8,
+        "input": 15,
+        "focused_practice": 12,
+        "output": 15,
+        "transfer": 5,
+        "reflection": 5
+      },
+      {
+        "available": 90,
+        "review": 10,
+        "input": 20,
+        "focused_practice": 15,
+        "output": 20,
+        "transfer": 15,
+        "reflection": 5,
+        "break": 5
+      }
+    ],
+    "weekly_balance": {
+      "meaningful_input": 25,
+      "meaningful_output": 25,
+      "language_focus": 25,
+      "fluency_reuse": 25,
+      "interpretation": "Starting design heuristic across a week, not rigid daily quotas. Early script learning and individual needs may shift the balance; review can occur within any strand."
+    },
+    "revision_intervals_days": [
+      1,
+      3,
+      7,
+      14,
+      30,
+      60
+    ],
+    "revision_rule": "Suggested starting schedule after success. Shorten after genuine retrieval difficulty, lengthen after retained independent success; do not flood the learner with overdue cards.",
+    "new_vocabulary_guidance": {
+      "initial_daily_new_items": {
+        "minimum": 3,
+        "maximum": 8
+      },
+      "reduce_if": "Review burden or delayed productive recall deteriorates. Zero new items is a valid review day.",
+      "unit": "A useful lemma/sense or phrase in context; not every inflected surface form as a new word.",
+      "separate_channels": [
+        "written_recognition",
+        "audio_recognition",
+        "spoken_retrieval",
+        "written_retrieval"
+      ],
+      "not_a_level_threshold": true
+    },
+    "struggle_response": [
+      "Diagnose whether the issue is sound, script, vocabulary, sentence meaning, grammar, recall or task load.",
+      "Reduce text length or number of new items; add one worked contrast or useful vowel mark.",
+      "Change explanation or sensory route, practise a smaller meaningful unit, then retry a new example.",
+      "After two supported failures, revisit the specific prerequisite and postpone the full challenge.",
+      "If listening is difficult, distinguish sound segmentation, unfamiliar vocabulary, syntax and processing load before adding grammar drills; use a new short recording for the recheck."
+    ],
+    "support_fading": {
+      "transliteration": "Optional temporary pronunciation cue; fade as script recognition develops. Never make transliteration the primary long-term reading channel.",
+      "vowels": "Full or targeted lexical vowels early; then selective disambiguation; then ordinary unvowelled prose. Keep meaningful distinctions and restore support locally when needed.",
+      "translation": "Attempt meaning first when accessible; show a gloss to resolve a block; return to Arabic on a fresh example.",
+      "audio": "Practise with pausing and slower speed if needed; record conditions and return gradually to suitable natural speech."
+    },
+    "speech_feedback": [
+      "Prioritise meaning-bearing contrasts, vowel/consonant length and intelligibility.",
+      "Do not rank cultural accents or require imitation of one nationality.",
+      "Use ASR as an optional clue; do not treat its transcript or confidence as a validated pronunciation score.",
+      "Declare pausal versus fully inflected reading before assessing endings.",
+      "If a synthetic voice is used, verify the exact MSA output and label it; flawed TTS must not become the gold standard."
+    ],
+    "long_break": "Begin with small fresh samples of important skills; preserve history and rebuild only the demonstrated gaps.",
+    "accessibility": "Allow larger Arabic text, spacing, high-contrast display, short blocks, typed or handwritten input and alternative input methods. Explain when an accommodation changes the assessed construct."
+  },
+  "learner_data_model": {
+    "separate_from_static_package": true,
+    "tables": [
+      {
+        "name": "learner_goal",
+        "key": [
+          "learner_id",
+          "course_id"
+        ],
+        "fields": [
+          "chosen_path_ids",
+          "weekly_minutes",
+          "preferred_topics",
+          "accessibility_preferences",
+          "consented_audio_use"
+        ]
+      },
+      {
+        "name": "learning_event",
+        "key": [
+          "event_id"
+        ],
+        "fields": [
+          "learner_id",
+          "activity_id",
+          "skill_id",
+          "modality",
+          "dimension",
+          "score",
+          "support",
+          "observed_at",
+          "prompt_fingerprint",
+          "curriculum_version",
+          "evidence_uri",
+          "rater"
+        ]
+      },
+      {
+        "name": "skill_state",
+        "key": [
+          "learner_id",
+          "skill_id",
+          "modality"
+        ],
+        "fields": [
+          "historical_score",
+          "current_readiness",
+          "dimension_scores",
+          "confidence",
+          "last_independent_practice_at",
+          "review_due_at",
+          "policy_version"
+        ]
+      },
+      {
+        "name": "lesson_attempt",
+        "key": [
+          "attempt_id"
+        ],
+        "fields": [
+          "learner_id",
+          "lesson_id",
+          "variant",
+          "status",
+          "assistance",
+          "started_at",
+          "completed_at",
+          "curriculum_version"
+        ]
+      },
+      {
+        "name": "lexeme_state",
+        "key": [
+          "learner_id",
+          "lexeme_id",
+          "evidence_channel"
+        ],
+        "fields": [
+          "sense_id",
+          "recall_history",
+          "next_review_at",
+          "context_ids"
+        ]
+      },
+      {
+        "name": "project_submission",
+        "key": [
+          "submission_id"
+        ],
+        "fields": [
+          "learner_id",
+          "project_id",
+          "version",
+          "evidence_uris",
+          "rubric_scores",
+          "reviewer",
+          "assistance"
+        ]
+      },
+      {
+        "name": "daily_assignment",
+        "key": [
+          "assignment_id"
+        ],
+        "fields": [
+          "learner_id",
+          "date",
+          "activity_ids",
+          "time_budget",
+          "reason_codes",
+          "policy_version"
+        ]
+      }
+    ],
+    "lesson_states": [
+      "not_started",
+      "in_progress",
+      "completed",
+      "review_due",
+      "skipped_by_diagnostic"
+    ],
+    "evidence_states": [
+      "unknown",
+      "provisional",
+      "observed",
+      "reviewed",
+      "invalidated"
+    ],
+    "privacy": "Private by default. Ask before recording another person or publishing a portfolio; allow export and deletion. Avoid uploading voice to a provider without informed consent."
+  },
+  "implementation_contract": {
+    "input": [
+      "Static course package",
+      "Private answer keys when authorised",
+      "Learner evidence and goals",
+      "Available time/energy",
+      "Available audio, partner and accessibility support"
+    ],
+    "output": [
+      "Selected stable activity IDs",
+      "Variant and time budget",
+      "Reason codes",
+      "Expected evidence",
+      "Explanation adapted to the learner"
+    ],
+    "constraints": [
+      "Return only IDs present in the current package.",
+      "Do not rewrite the static prerequisite graph silently.",
+      "Log policy version and material support changes.",
+      "Validate model output before applying state changes.",
+      "Preserve additive question IDs and attempt versions. A new question in curriculum 1.1.0 must not retroactively turn an earlier completed lesson into a failure."
+    ],
+    "answer_keys": "Serve answer keys after submission or to an authorised tutor. Keeping keys in another file does not secure them if both files are shipped publicly.",
+    "rtl": "Store logical Unicode text in NFC; use lang=ar and dir=rtl on Arabic runs. Isolate embedded Latin text and numbers appropriately.",
+    "normalisation": "For ordinary unvowelled-text comparisons, ignore only declared optional vowel marks. Do not silently merge ة/ه, ى/ي or hamza variants. Preserve verified Qur’anic source text unchanged.",
+    "assessment": "Never infer audible skills from text output. Keep independent first attempts, corrections and generated help distinguishable."
+  },
+  "acceptance_scenarios": [
+    {
+      "case": "Reads every lesson without a task",
+      "expected": "No mastery increase from page views."
+    },
+    {
+      "case": "Can recite but does not understand a fresh sentence",
+      "expected": "Credit observed decoding/recitation only; comprehension remains unproven."
+    },
+    {
+      "case": "Types flawless answers without an audio sample",
+      "expected": "No pronunciation or listening mastery awarded."
+    },
+    {
+      "case": "Uses a visible transcript to understand a clip",
+      "expected": "Store assisted evidence; request a fresh audio-only attempt later."
+    },
+    {
+      "case": "Knows the alphabet and passes a new-word diagnostic",
+      "expected": "Skip mastered script instruction, retain relevant delayed checks."
+    },
+    {
+      "case": "Scores 95 on one rehearsed prompt",
+      "expected": "Caps and low confidence prevent a stable mastery claim."
+    },
+    {
+      "case": "Has only 10 minutes and low energy",
+      "expected": "Assign one small review/practice unit; record partial completion."
+    },
+    {
+      "case": "No recording or competent speaker available",
+      "expected": "Choose another modality; keep listening unknown."
+    },
+    {
+      "case": "Reads well but cannot answer spoken questions",
+      "expected": "Maintain separate reading and listening/speaking scores."
+    },
+    {
+      "case": "After 100 days, learner opens an old lesson",
+      "expected": "No date refresh from opening; offer a fresh check without erasing past evidence."
+    },
+    {
+      "case": "Strong delayed transfer on different prompts and dates",
+      "expected": "Allow score above 80 only when the defined evidence conditions are met."
+    },
+    {
+      "case": "A learner wants only the technology branch after B1",
+      "expected": "Use the closed technology path, not every B2 specialist module."
+    },
+    {
+      "case": "A resource disappears",
+      "expected": "Replace the input provider, preserve outcome, register and assessment conditions."
+    },
+    {
+      "case": "ASR accepts a mispronounced word",
+      "expected": "Do not treat ASR acceptance as conclusive pronunciation evidence."
+    },
+    {
+      "case": "A model produces a skill ID not in the package",
+      "expected": "Reject the assignment and regenerate or use a deterministic valid fallback."
+    },
+    {
+      "case": "Answers a written Arabic application question attached to a listening lesson",
+      "expected": "Credit only the observed written/conceptual evidence, leaving audio comprehension untested."
+    },
+    {
+      "case": "An older lesson gains an additive question in a new curriculum version",
+      "expected": "Preserve the earlier completion and evidence; offer the additional check for the next relevant review."
+    }
+  ],
+  "calibration": {
+    "pilot": "Compare a sample of automated judgements with qualified Arabic teachers and learner outcomes.",
+    "monitor": [
+      "false mastery",
+      "unnecessary remediation",
+      "workload abandonment",
+      "rater disagreement",
+      "performance by modality and support level"
+    ],
+    "change_management": "Version thresholds and heuristics separately from the curriculum; retain prior evidence and explain changed estimates."
+  }
+}

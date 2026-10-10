@@ -1,0 +1,38 @@
+{
+  "status": "pass",
+  "validated_at_utc": "2026-10-10T20:43:45.760804+00:00",
+  "checks_run": 142687,
+  "errors": [],
+  "counts": {
+    "modules": 30,
+    "topics": 89,
+    "skills": 152,
+    "lessons": 152,
+    "exercises": 304,
+    "labs": 60,
+    "assessments": 182,
+    "projects": 18,
+    "resources": 19,
+    "paths": 11,
+    "assets": 16,
+    "lexicon_seed": 48,
+    "milestones": 4
+  },
+  "prerequisite_edges": 614,
+  "core_estimated_hours": {
+    "minimum": 791,
+    "maximum": 1152
+  },
+  "sha256": {
+    "MyDay_Arabic_Fusha_Curriculum.json": "53944d06aaf932f476396f02d10ec2a7fa591d27936073ade0fcebafdedaa1e2",
+    "MyDay_Arabic_Curriculum.schema.json": "3a7cbd79d507182579cff5a63b03f0ac19c651c580a0a992fa3994f2f7be9c4a",
+    "MyDay_Arabic_Adaptive_Tutor_Spec.json": "22bc83fc88b943ca3ced77245e5fc1f4a8fe400d1363baccf4ec0b6e8395d029",
+    "MyDay_Arabic_Assessment_Keys.json": "6da7432eae7b50891e72283d88a56ee8f5274922948c26bec38ca80f8ffde62c",
+    "MyDay_Arabic_Starter_Materials.json": "d2eaeb734b1178f5812622c097b8c93d2049f77e8e84007ba2ad453b8ab5d444"
+  },
+  "limitations": [
+    "Structural and semantic package checks are not independent Arabic-language proofreading.",
+    "External pages were researched separately; no automated live-link or media-playback guarantee.",
+    "Adaptive behaviour is a specification, not a deployed tutor or validated proficiency test."
+  ]
+}

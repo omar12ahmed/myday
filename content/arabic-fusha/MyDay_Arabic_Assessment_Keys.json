@@ -1,0 +1,2342 @@
+{
+  "schema_version": "1.0.0",
+  "course_id": "course.arabic-fusha",
+  "curriculum_version": "1.1.0",
+  "answer_keys": [
+    {
+      "id": "asset.arabic-profile.q1",
+      "expected_answer": "She is a student.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-profile.q2",
+      "expected_answer": "No; it is near the school.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-profile.q3",
+      "expected_answer": "In the evening.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-room.q1",
+      "expected_answer": "On the desk.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-room.q2",
+      "expected_answer": "Three.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-room.q3",
+      "expected_answer": "No; it is open.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-introduction-dialogue.q1",
+      "expected_answer": "Layla.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-introduction-dialogue.q2",
+      "expected_answer": "Yes.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-introduction-dialogue.q3",
+      "expected_answer": "اسْمُكِ / أَنْتِ; accept an explanation without grammatical terminology.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-appointment.q1",
+      "expected_answer": "Tuesday at three o’clock.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-appointment.q2",
+      "expected_answer": "Layla.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-appointment.q3",
+      "expected_answer": "Beside the school.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-routine.q1",
+      "expected_answer": "Half an hour.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-routine.q2",
+      "expected_answer": "The speaker goes to work.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-routine.q3",
+      "expected_answer": "Writing.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-weekend.q1",
+      "expected_answer": "The library was closed.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-weekend.q2",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-weekend.q3",
+      "expected_answer": "The opening time.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-changed-plan.q1",
+      "expected_answer": "She has an appointment.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-changed-plan.q2",
+      "expected_answer": "Wednesday at four.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-changed-plan.q3",
+      "expected_answer": "The address.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-notice.q1",
+      "expected_answer": "No; it is closed.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-notice.q2",
+      "expected_answer": "Three books for two weeks.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-notice.q3",
+      "expected_answer": "From the employee at the entrance.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-study-method.q1",
+      "expected_answer": "Forgetting many newly studied words after a few days.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-study-method.q2",
+      "expected_answer": "He wrote original sentences and used words in conversation.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-study-method.q3",
+      "expected_answer": "No; some still required review.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-community-library.q1",
+      "expected_answer": "Understanding the text and exchanging views, rather than maximising pages.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-community-library.q2",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-community-library.q3",
+      "expected_answer": "Participant number and first meeting date.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-transport-report.q1",
+      "expected_answer": "From 10,000 to 12,000.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-transport-report.q2",
+      "expected_answer": "Two new routes and street closures for maintenance.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-transport-report.q3",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-digital-reading.q1",
+      "expected_answer": "That one format is best in every situation.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-digital-reading.q2",
+      "expected_answer": "Portability and fast text search; either is acceptable.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-digital-reading.q3",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-email.q1",
+      "expected_answer": "She works in the evening.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-email.q2",
+      "expected_answer": "Fuṣḥā/MSA.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-email.q3",
+      "expected_answer": "No; she is requesting information.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-technical-report.q1",
+      "expected_answer": "Five in ten minutes.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-technical-report.q2",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "asset.arabic-technical-report.q3",
+      "expected_answer": "The user’s confirmed last attempt with the logs.",
+      "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
+    },
+    {
+      "id": "assessment.arabic-fusha-register-check.q1",
+      "expected_answer": "No; modern formal Arabic and classical written traditions both fall within the broader term.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-fusha-register-check.q2",
+      "expected_answer": "No; regional varieties and mixed speech need additional listening experience.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-goal-baseline-check.q1",
+      "expected_answer": "Not entirely; decoding unfamiliar words and writing need separate evidence.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-goal-baseline-check.q2",
+      "expected_answer": "Unknown, not inability.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-learning-loop-check.q1",
+      "expected_answer": "No; hide it before retrieving.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-learning-loop-check.q2",
+      "expected_answer": "To check retention beyond immediate familiarity.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-arabic-tools-check.q1",
+      "expected_answer": "No; store logical character order and use RTL rendering.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-arabic-tools-check.q2",
+      "expected_answer": "No; pronunciation requires audible evidence.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-practice-contract-check.q1",
+      "expected_answer": "No; record partial work and continue later.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-practice-contract-check.q2",
+      "expected_answer": "Resume with a small diagnostic review rather than punishment or a reset.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-letter-families-check.q1",
+      "expected_answer": "Dot number and position.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-letter-families-check.q2",
+      "expected_answer": "No; sound-to-symbol matching is a separate check.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-letter-joining-check.q1",
+      "expected_answer": "ا د ذ ر ز و.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-letter-joining-check.q2",
+      "expected_answer": "No; it combines ل and ا.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-vowel-decoding-check.q1",
+      "expected_answer": "No; they can be consonants or parts of diphthongs depending on context.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-vowel-decoding-check.q2",
+      "expected_answer": "No; ordinary Arabic often leaves short vowels unwritten.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-sukun-shadda-check.q1",
+      "expected_answer": "Consonant length or doubling, not a new vowel by itself.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-sukun-shadda-check.q2",
+      "expected_answer": "No; distribution depends on definiteness and grammar.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-special-spellings-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-special-spellings-check.q2",
+      "expected_answer": "No; alif maqṣūra normally represents a long ā.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-script-meaning-check.q1",
+      "expected_answer": "Not always; several readings are possible.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-script-meaning-check.q2",
+      "expected_answer": "No; ordinary prose is commonly unvowelled.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-listening-noticing-check.q1",
+      "expected_answer": "No; disclose it only afterward.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-listening-noticing-check.q2",
+      "expected_answer": "No; it can infer words despite pronunciation problems.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-length-contrast-check.q1",
+      "expected_answer": "Yes, as in studied versus taught.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-length-contrast-check.q2",
+      "expected_answer": "No; relative length contrasts matter, and timing varies.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-throat-sounds-check.q1",
+      "expected_answer": "No; they differ in place and manner of articulation.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-throat-sounds-check.q2",
+      "expected_answer": "No; reduce effort and seek a better model rather than forcing it.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-emphatics-qaf-check.q1",
+      "expected_answer": "No; train the MSA distinction while recognising regional variation.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-emphatics-qaf-check.q2",
+      "expected_answer": "No; intelligibility and meaning-bearing distinctions are the target.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-article-connected-speech-check.q1",
+      "expected_answer": "No; it assimilates before sun letters.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-article-connected-speech-check.q2",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-pause-prosody-check.q1",
+      "expected_answer": "No; the task must declare its register and ending expectations.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-pause-prosody-check.q2",
+      "expected_answer": "No; Qur'anic recitation has its own conventions and instruction.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-greetings-address-check.q1",
+      "expected_answer": "The gender of the singular person addressed.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-greetings-address-check.q2",
+      "expected_answer": "No; adapt politely to the setting.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-nominal-sentences-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-nominal-sentences-check.q2",
+      "expected_answer": "That he is a student.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-simple-questions-check.q1",
+      "expected_answer": "مَن.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-simple-questions-check.q2",
+      "expected_answer": "Yes.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-origin-location-check.q1",
+      "expected_answer": "مِن gives origin; في locates someone or something in a place.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-origin-location-check.q2",
+      "expected_answer": "No; that is trained later.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-repair-phrases-check.q1",
+      "expected_answer": "No; ask or confirm.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-repair-phrases-check.q2",
+      "expected_answer": "Responding meaningfully to a partner's changed input.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-gender-definiteness-check.q1",
+      "expected_answer": "No; pronouns, proper names and other definite constructions are also possible.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-gender-definiteness-check.q2",
+      "expected_answer": "Yes; gender is lexical as well as patterned.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-adjective-agreement-check.q1",
+      "expected_answer": "The big house; it is a noun phrase.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-adjective-agreement-check.q2",
+      "expected_answer": "The house is big; it is a sentence.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-plural-basics-check.q1",
+      "expected_answer": "Feminine singular in ordinary descriptive agreement.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-plural-basics-check.q2",
+      "expected_answer": "No; many broken plurals must be learned with the noun.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-demonstratives-check.q1",
+      "expected_answer": "هذه.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-demonstratives-check.q2",
+      "expected_answer": "No; the first is this house, while the second can mean this is a house.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-idafa-possession-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-idafa-possession-check.q2",
+      "expected_answer": "The student's.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-present-person-check.q1",
+      "expected_answer": "No; context helps distinguish forms such as تدرس.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-present-person-check.q2",
+      "expected_answer": "No; learn lexical forms with examples.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-present-group-check.q1",
+      "expected_answer": "We study.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-present-group-check.q2",
+      "expected_answer": "No; record receptive and productive evidence separately.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-objects-prepositions-check.q1",
+      "expected_answer": "No; learn the verb with its complement pattern.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-objects-prepositions-check.q2",
+      "expected_answer": "The masculine singular object, such as a book.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-preference-existence-check.q1",
+      "expected_answer": "No; constructions such as عندي and لدي are common.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-preference-existence-check.q2",
+      "expected_answer": "No; learn that construction separately later.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-routine-sequence-check.q1",
+      "expected_answer": "No; ثم explicitly signals a following event.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-routine-sequence-check.q2",
+      "expected_answer": "Yes; context contributes to time reference.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-digits-prices-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-digits-prices-check.q2",
+      "expected_answer": "No; number agreement is a later target.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-clock-calendar-check.q1",
+      "expected_answer": "Either detail can be misheard even when the other is correct.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-clock-calendar-check.q2",
+      "expected_answer": "No; learn their conventional forms.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-directions-map-check.q1",
+      "expected_answer": "No; order and spatial relations matter.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-directions-map-check.q2",
+      "expected_answer": "Ask for repetition or confirm the last known landmark.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-food-shopping-check.q1",
+      "expected_answer": "No; you need to understand and respond to the change.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-food-shopping-check.q2",
+      "expected_answer": "The declared register and controlled MSA expressions.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-messages-needs-check.q1",
+      "expected_answer": "No; ask for clarification and use reliable assistance.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-messages-needs-check.q2",
+      "expected_answer": "The people, day, time and place.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-a1-listening-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-a1-listening-check.q2",
+      "expected_answer": "After the independent listening responses are saved.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-a1-reading-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-a1-reading-check.q2",
+      "expected_answer": "Mark it and continue, then revisit if useful.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-a1-speaking-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-a1-speaking-check.q2",
+      "expected_answer": "Yes, when it helps recover meaning.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-a1-writing-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-a1-writing-check.q2",
+      "expected_answer": "Unclear meaning.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-a1-portfolio-check.q1",
+      "expected_answer": "No; keep a separate profile.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-a1-portfolio-check.q2",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-past-suffixes-check.q1",
+      "expected_answer": "I wrote versus you masculine singular wrote.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-past-suffixes-check.q2",
+      "expected_answer": "No; discourse context matters.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-past-questions-check.q1",
+      "expected_answer": "Verb agreement and context.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-past-questions-check.q2",
+      "expected_answer": "No; identify the information being requested.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-kana-background-check.q1",
+      "expected_answer": "A past-state or related temporal interpretation in context.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-kana-background-check.q2",
+      "expected_answer": "No; interpret the full context.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-story-connectors-check.q1",
+      "expected_answer": "No; use clearer sequencing where needed.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-story-connectors-check.q2",
+      "expected_answer": "A reason.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-story-retell-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-story-retell-check.q2",
+      "expected_answer": "An inference is concluded from clues; a fact is explicitly given in the source.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-future-plans-check.q1",
+      "expected_answer": "Yes.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-future-plans-check.q2",
+      "expected_answer": "No; the surrounding language and situation matter.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-negation-system-check.q1",
+      "expected_answer": "لم.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-negation-system-check.q2",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-requests-imperatives-check.q1",
+      "expected_answer": "Not always; prohibitive لا governs the jussive.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-requests-imperatives-check.q2",
+      "expected_answer": "Yes; politeness and context matter.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-modal-complements-check.q1",
+      "expected_answer": "A verb clause, normally with a subjunctive present-form verb.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-modal-complements-check.q2",
+      "expected_answer": "No; choose the Arabic construction for the intended meaning.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-plans-dialogue-check.q1",
+      "expected_answer": "Each response takes account of the other person's information.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-plans-dialogue-check.q2",
+      "expected_answer": "The final agreed plan, time, place and any constraint.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-pronoun-attachment-check.q1",
+      "expected_answer": "No; the host determines possession, object or prepositional role.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-pronoun-attachment-check.q2",
+      "expected_answer": "It appears as ت.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-case-roles-check.q1",
+      "expected_answer": "Genitive.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-case-roles-check.q2",
+      "expected_answer": "No; form and spelling can hide or change the marking.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-idafa-chains-check.q1",
+      "expected_answer": "Its final dependent or a possessive suffix.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-idafa-chains-check.q2",
+      "expected_answer": "Yes.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-dual-sound-plurals-check.q1",
+      "expected_answer": "No; both are dual, with different grammatical case forms.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-dual-sound-plurals-check.q2",
+      "expected_answer": "No; their accusative marking is kasra.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-quantity-comparison-check.q1",
+      "expected_answer": "The gender of the singular counted noun.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-quantity-comparison-check.q2",
+      "expected_answer": "No; meaning and available adjective patterns matter.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-root-pattern-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-root-pattern-check.q2",
+      "expected_answer": "No; use context and a lexical source.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-clitic-segmentation-check.q1",
+      "expected_answer": "No; it may be part of the root or stem.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-clitic-segmentation-check.q2",
+      "expected_answer": "Use sentence context and verify instead of forcing one.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-dictionary-method-check.q1",
+      "expected_answer": "No; lookup organisation varies.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-dictionary-method-check.q2",
+      "expected_answer": "The first sense may not fit the sentence or register.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-participles-masdar-check.q1",
+      "expected_answer": "No; its function depends on construction and context.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-participles-masdar-check.q2",
+      "expected_answer": "Writing, the activity or verbal noun.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-vocabulary-records-check.q1",
+      "expected_answer": "No; productive use needs a separate task.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-vocabulary-records-check.q2",
+      "expected_answer": "No; begin with the sense needed in context.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-a2-listening-check.q1",
+      "expected_answer": "It changes whether the event is asserted.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-a2-listening-check.q2",
+      "expected_answer": "No; record support and distinguish it from an independent checkpoint.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-a2-reading-check.q1",
+      "expected_answer": "No; prioritise useful repeated words.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-a2-reading-check.q2",
+      "expected_answer": "No; label and verify uncertainty.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-a2-interaction-check.q1",
+      "expected_answer": "It creates a real reason to ask and listen.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-a2-interaction-check.q2",
+      "expected_answer": "No; add another verified voice over time.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-a2-composition-check.q1",
+      "expected_answer": "No; clarity and task completion matter.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-a2-composition-check.q2",
+      "expected_answer": "Those that obscure time, participant reference or intended meaning.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-a2-portfolio-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-a2-portfolio-check.q2",
+      "expected_answer": "Advance supported work while scheduling a targeted repair; keep the profile honest.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-derived-forms-check.q1",
+      "expected_answer": "No; patterns suggest tendencies but lexical meanings must be checked.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-derived-forms-check.q2",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-weak-verbs-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-weak-verbs-check.q2",
+      "expected_answer": "Yes; analyse the form and context.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-irregular-families-check.q1",
+      "expected_answer": "No; it may be a root letter, as in وعد.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-irregular-families-check.q2",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-verb-moods-check.q1",
+      "expected_answer": "The final ن is dropped in the subjunctive form يدرسوا.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-verb-moods-check.q2",
+      "expected_answer": "No; weak verbs and the five verbs have other changes.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-passive-voice-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-passive-voice-check.q2",
+      "expected_answer": "Yes; syntax and context help resolve it.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-relative-clauses-check.q1",
+      "expected_answer": "No; the construction differs from a definite antecedent.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-relative-clauses-check.q2",
+      "expected_answer": "The book.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-inna-kana-check.q1",
+      "expected_answer": "Accusative.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-inna-kana-check.q2",
+      "expected_answer": "Accusative.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-reported-information-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-reported-information-check.q2",
+      "expected_answer": "No; learn and verify the construction.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-conditionals-check.q1",
+      "expected_answer": "No; context and construction differ, often including counterfactual meaning for لو.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-conditionals-check.q2",
+      "expected_answer": "No; inspect both clauses and context.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-cause-purpose-contrast-check.q1",
+      "expected_answer": "No; a reason explains why, while a purpose names an intended outcome.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-cause-purpose-contrast-check.q2",
+      "expected_answer": "Yes.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-diacritics-taper-check.q1",
+      "expected_answer": "No; reduce it based on successful new-text comprehension.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-diacritics-taper-check.q2",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-context-ambiguity-check.q1",
+      "expected_answer": "The same spelling can represent different words or senses.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-context-ambiguity-check.q2",
+      "expected_answer": "An explicit unresolved alternative.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-paragraph-mapping-check.q1",
+      "expected_answer": "No; inspect the paragraph's development.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-paragraph-mapping-check.q2",
+      "expected_answer": "Yes; relationships among ideas matter.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-extensive-reading-check.q1",
+      "expected_answer": "No; match actual language difficulty.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-extensive-reading-check.q2",
+      "expected_answer": "No; stop for words essential to meaning and revisit selected items later.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-collocation-growth-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-collocation-growth-check.q2",
+      "expected_answer": "A phrase may fit news, literature or informal speech differently.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-listening-passes-check.q1",
+      "expected_answer": "It can obscure overall meaning and structure.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-listening-passes-check.q2",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-connected-listening-check.q1",
+      "expected_answer": "No; retain the playback condition.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-connected-listening-check.q2",
+      "expected_answer": "No; distinguish acceptable variation from changes to the target register.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-follow-up-questions-check.q1",
+      "expected_answer": "It connects to the speaker's preceding information.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-follow-up-questions-check.q2",
+      "expected_answer": "Not by itself.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-opinion-repair-check.q1",
+      "expected_answer": "No; planning and repair can be effective.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-opinion-repair-check.q2",
+      "expected_answer": "Prefer paraphrase or a clarification request.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-speaker-variety-check.q1",
+      "expected_answer": "No; pronunciation variation need not change the grammatical variety.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-speaker-variety-check.q2",
+      "expected_answer": "No; choose a suitable MSA equivalent.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-paragraph-design-check.q1",
+      "expected_answer": "No; it needs coherent development.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-paragraph-design-check.q2",
+      "expected_answer": "It supports the paragraph's claim rather than introducing an unrelated topic.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-formal-email-check.q1",
+      "expected_answer": "No; clarity and appropriate politeness matter.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-formal-email-check.q2",
+      "expected_answer": "The request, relevant context, deadline or time when needed, and contact context.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-summary-notes-check.q1",
+      "expected_answer": "No; label your inference separately if relevant.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-summary-notes-check.q2",
+      "expected_answer": "No; preserve essential meaning and omit secondary detail.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-orthography-editing-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-orthography-editing-check.q2",
+      "expected_answer": "No; preserve meaningful orthographic distinctions.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-feedback-rewrite-check.q1",
+      "expected_answer": "No; evaluate changes and demonstrate them independently.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-feedback-rewrite-check.q2",
+      "expected_answer": "It preserves evidence of what changed and what assistance was used.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-b1-source-task-check.q1",
+      "expected_answer": "No; it shows agreement, not independent verification.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-b1-source-task-check.q2",
+      "expected_answer": "Yes; record that support or change topics for an independent listening check.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-b1-explainer-check.q1",
+      "expected_answer": "No; label the task honestly.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-b1-explainer-check.q2",
+      "expected_answer": "They make the explanation concrete when they directly support the point.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-b1-unprepared-check.q1",
+      "expected_answer": "No; state limits and clarify when needed.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-b1-unprepared-check.q2",
+      "expected_answer": "It addresses the actual question and remains coherent with prior information.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-b1-independent-cycle-check.q1",
+      "expected_answer": "No; fluent use of familiar language remains valuable.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-b1-independent-cycle-check.q2",
+      "expected_answer": "A small manageable set chosen for impact.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-b1-portfolio-check.q1",
+      "expected_answer": "No; it is an internal target with evidence, not accredited certification.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-b1-portfolio-check.q2",
+      "expected_answer": "No; follow the core or a branch whose prerequisites are met.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-headlines-leads-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-headlines-leads-check.q2",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-news-language-check.q1",
+      "expected_answer": "No; it attributes information to an official.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-news-language-check.q2",
+      "expected_answer": "No; interpret it with the verb and context.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-numbers-data-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-numbers-data-check.q2",
+      "expected_answer": "Yes.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-interview-notes-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-interview-notes-check.q2",
+      "expected_answer": "No; replace or label it separately.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-news-digest-check.q1",
+      "expected_answer": "No; preserve the disagreement.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-news-digest-check.q2",
+      "expected_answer": "Reports may describe different moments or later updates.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-claim-evidence-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-claim-evidence-check.q2",
+      "expected_answer": "Yes.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-stance-hedging-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-stance-hedging-check.q2",
+      "expected_answer": "No; factual accuracy still matters.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-implicit-meaning-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-implicit-meaning-check.q2",
+      "expected_answer": "Specific linguistic and contextual evidence.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-counterargument-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-counterargument-check.q2",
+      "expected_answer": "It accepts a specific point while preserving or refining the broader position.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-supported-debate-check.q1",
+      "expected_answer": "Listening and fair understanding, not necessarily agreement.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-supported-debate-check.q2",
+      "expected_answer": "No; relevance, clarity and responsiveness matter.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-word-order-agreement-check.q1",
+      "expected_answer": "No; the verb is normally singular while agreeing in gender.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-word-order-agreement-check.q2",
+      "expected_answer": "No; normal subject-first agreement differs.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-hal-tamyiz-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-hal-tamyiz-check.q2",
+      "expected_answer": "The student's circumstance/state on returning.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-numbers-exceptions-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-numbers-exceptions-check.q2",
+      "expected_answer": "Yes; those conditions affect its marking.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-negation-exception-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-negation-exception-check.q2",
+      "expected_answer": "No; grammatical conditions matter.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-precision-edit-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-precision-edit-check.q2",
+      "expected_answer": "For a targeted ambiguity or grammar exercise, not automatically every ordinary text.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-essay-architecture-check.q1",
+      "expected_answer": "No; paragraphs should develop the overall purpose.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-essay-architecture-check.q2",
+      "expected_answer": "It should not; synthesise the argument already developed.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-presentation-design-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-presentation-design-check.q2",
+      "expected_answer": "To demonstrate connected production from ideas.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-qa-spontaneity-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-qa-spontaneity-check.q2",
+      "expected_answer": "Yes, if the response is clear and appropriate.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-register-adaptation-check.q1",
+      "expected_answer": "No; simple Fuṣḥā is possible.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-register-adaptation-check.q2",
+      "expected_answer": "It should not; preserve essential meaning.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-b2-output-review-check.q1",
+      "expected_answer": "Yes; retain dimension scores.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-b2-output-review-check.q2",
+      "expected_answer": "No; organisation, audience understanding and response matter.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-b2-listening-reading-check.q1",
+      "expected_answer": "No; separate topics or record the support explicitly.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-b2-listening-reading-check.q2",
+      "expected_answer": "No; judge its impact on meaning and task completion.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-b2-unseen-output-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-b2-unseen-output-check.q2",
+      "expected_answer": "No; responses must address live questions.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-portfolio-audit-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-portfolio-audit-check.q2",
+      "expected_answer": "Specific tasks, dated evidence and honest limits.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-external-assessment-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-external-assessment-check.q2",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-lifelong-plan-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-lifelong-plan-check.q2",
+      "expected_answer": "No; check current performance and refresh selectively.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-academic-reading-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-academic-reading-check.q2",
+      "expected_answer": "No; it may change the conclusion.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-lecture-notes-check.q1",
+      "expected_answer": "No; preserve the structure and important content.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-lecture-notes-check.q2",
+      "expected_answer": "Mark it for verification.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-synthesis-citation-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-synthesis-citation-check.q2",
+      "expected_answer": "It connects the sources around a question or argument.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-professional-brief-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-professional-brief-check.q2",
+      "expected_answer": "A clear action, reasons, limits and relevant alternatives.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-advanced-review-check.q1",
+      "expected_answer": "No; broad independent assessment and further experience may be needed.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-advanced-review-check.q2",
+      "expected_answer": "To test transfer rather than only rehearsal.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-literary-selection-check.q1",
+      "expected_answer": "No; check the licence or link to it.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-literary-selection-check.q2",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-narrator-character-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-narrator-character-check.q2",
+      "expected_answer": "Verb forms, time expressions and narrative context.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-imagery-style-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-imagery-style-check.q2",
+      "expected_answer": "Specific text and context support, with uncertainty acknowledged.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-poetry-entry-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-poetry-entry-check.q2",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-literary-review-check.q1",
+      "expected_answer": "Yes.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-literary-review-check.q2",
+      "expected_answer": "No; examine evidence and scope.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-classical-register-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-classical-register-check.q2",
+      "expected_answer": "No; verify it in an appropriate reference.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-classical-parsing-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-classical-parsing-check.q2",
+      "expected_answer": "Preserve alternatives and consult a reliable commentary or teacher.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-historical-lexicon-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-historical-lexicon-check.q2",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-edition-commentary-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-edition-commentary-check.q2",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-classical-commentary-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-classical-commentary-check.q2",
+      "expected_answer": "Features that affect meaning and genuine uncertainties.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-quranic-scope-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-quranic-scope-check.q2",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-uthmani-script-check.q1",
+      "expected_answer": "No; preserve the verified source and label teaching displays separately.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-uthmani-script-check.q2",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-quranic-morphology-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-quranic-morphology-check.q2",
+      "expected_answer": "Its exact passage reference and the analysis source.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-quranic-context-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-quranic-context-check.q2",
+      "expected_answer": "No; consult qualified sources.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-quranic-reading-project-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-quranic-reading-project-check.q2",
+      "expected_answer": "A reproducible source-based method and explicit limits.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-translation-brief-check.q1",
+      "expected_answer": "No; task requirements differ.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-translation-brief-check.q2",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-translation-choices-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-translation-choices-check.q2",
+      "expected_answer": "Yes.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-translation-qa-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-translation-qa-check.q2",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-oral-mediation-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-oral-mediation-check.q2",
+      "expected_answer": "Names, dates, numbers, negation, obligations and uncertainty relevant to the task.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-translation-portfolio-check.q1",
+      "expected_answer": "It should not; record material assistance.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-translation-portfolio-check.q2",
+      "expected_answer": "When domain or language demands exceed demonstrated competence.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-technical-terminology-check.q1",
+      "expected_answer": "Not necessarily; verify domain usage.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-technical-terminology-check.q2",
+      "expected_answer": "A definition, example and source.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-technical-docs-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-technical-docs-check.q2",
+      "expected_answer": "It may determine whether the instruction applies.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-security-explainer-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-security-explainer-check.q2",
+      "expected_answer": "No; mark technical accuracy separately.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-incident-summary-check.q1",
+      "expected_answer": "No.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-incident-summary-check.q2",
+      "expected_answer": "Fictional or appropriately sanitised material with no secrets.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-technical-demo-check.q1",
+      "expected_answer": "No; it demonstrates communication within the checked subject scope.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-technical-demo-check.q2",
+      "expected_answer": "State the limit and identify how to verify it.",
+      "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
+    },
+    {
+      "id": "assessment.arabic-letter-families-check.q3",
+      "expected_answer": "ب، ت، ث, in that order. The task checks visual identity and writing, not pronunciation.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-letter-joining-check.q3",
+      "expected_answer": "ب + ا + ب. The alif does not join to the following ب; the initial ب joins to the alif.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-vowel-decoding-check.q3",
+      "expected_answer": "كِتَاب contains long ā written with ا; كَتَبَ has three fatḥas. This written question does not test hearing vowel length.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-sukun-shadda-check.q3",
+      "expected_answer": "دَرَسَ means he studied; دَرَّسَ means he taught. Shadda marks the doubled ر in the second form.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-special-spellings-check.q3",
+      "expected_answer": "مدرسة ends in ة; على ends in ى; هو ends in و. Preserve the distinct letters rather than substituting ه or ي.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-script-meaning-check.q3",
+      "expected_answer": "بَيْت = house; بَاب = door. Accept باب in the recall step; comprehension and recall must be recorded separately from copying.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-length-contrast-check.q3",
+      "expected_answer": "مَلِك means king; مَالِك means owner. Long ā changes the word. This is a meaning/form check; audible discrimination is assessed in the practical task.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-throat-sounds-check.q3",
+      "expected_answer": "حَلّ contains ح and shadda on ل; هَلْ contains ه and a single ل with sukūn. These are not a minimal pair differing only in the first consonant.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-emphatics-qaf-check.q3",
+      "expected_answer": "قَلْب = heart; كَلْب = dog. ق versus ك is meaning-bearing. Hearing or production still needs audio evidence.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-article-connected-speech-check.q3",
+      "expected_answer": "The lām is pronounced in القمر; it assimilates to ش in الشمس. The written definite form is القمر.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-pause-prosody-check.q3",
+      "expected_answer": "Not automatically an error. Check the declared pausal/connected convention and intelligibility; fully inflected grammar reading is a different task.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-greetings-address-check.q3",
+      "expected_answer": "مَا اسْمُكِ؟ The feminine singular suffix ends in kasra. Accept ما اسمكِ؟; the targeted final vowel must distinguish it from اسمكَ.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-nominal-sentences-check.q3",
+      "expected_answer": "هِيَ طَالِبَةٌ. Accept هي طالبة. Do not require an added present-tense copula.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-simple-questions-check.q3",
+      "expected_answer": "أين الكتاب؟ الكتاب على المكتب. Accept suitable full vowels or ordinary unvowelled writing.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-origin-location-check.q3",
+      "expected_answer": "The first says I am from Egypt; the second says I am in Egypt. Origin and current location are different.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-repair-phrases-check.q3",
+      "expected_answer": "لم أفهم. Accept a suitable taught request, such as هل يمكنك أن تعيد ذلك، من فضلك؟ Treat the request as a learned chunk; do not require untaught grammatical analysis.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-gender-definiteness-check.q3",
+      "expected_answer": "الكتاب; شمس is feminine despite lacking ة. Lexical gender needs learning with the noun.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-adjective-agreement-check.q3",
+      "expected_answer": "البيت الكبير; البيت كبير. The first is a noun phrase with definite adjective; the second has an indefinite adjectival predicate.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-plural-basics-check.q3",
+      "expected_answer": "كتب جديدة. Accept كُتُبٌ جَدِيدَةٌ; feminine singular agreement is the target.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-demonstratives-check.q3",
+      "expected_answer": "هذه الكتب جديدة؛ هؤلاء الطلاب هنا. Books take the non-human plural pattern; the students are human plural.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-idafa-possession-check.q3",
+      "expected_answer": "كتاب الطالب؛ كتابي. The first noun of this simple iḍāfa has no ال; the suffix marks possession in the second.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-present-person-check.q3",
+      "expected_answer": "أنا أدرس العربية؛ هي تدرس العربية. Accept full vowels أَدْرُسُ / تَدْرُسُ.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-present-group-check.q3",
+      "expected_answer": "نحن ندرس؛ هم يدرسون. Subject pronouns may be omitted if the intended subjects remain clear.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-objects-prepositions-check.q3",
+      "expected_answer": "أذهب إلى المدرسة؛ أقرأه. Distinguish the prepositional complement from an attached direct-object pronoun.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-preference-existence-check.q3",
+      "expected_answer": "عندي كتاب؛ أريد ماءً. Ordinary unvowelled ماء is acceptable outside a targeted case-spelling task.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-routine-sequence-check.q3",
+      "expected_answer": "أقرأ ثم أكتب. ثم explicitly orders the second action after the first.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-digits-prices-check.q3",
+      "expected_answer": "25 and 102. Digit order remains the same within each number.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-clock-calendar-check.q3",
+      "expected_answer": "المحادثة يوم الثلاثاء في الساعة الثالثة بعد الظهر. Accept equivalent clear wording specifying Tuesday and 3 pm.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-directions-map-check.q3",
+      "expected_answer": "المكتبة. Accept المكتبة بجانب المدرسة. This is reading comprehension; the separate route task tests listening.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-food-shopping-check.q3",
+      "expected_answer": "أريد ماءً، من فضلك. Accept أريد ماء، من فضلك in a task where optional vowels are not assessed.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-messages-needs-check.q3",
+      "expected_answer": "يوم الثلاثاء؛ في المكتبة. The message does not state a time; do not invent one.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-a1-reading-check.q3",
+      "expected_answer": "ليلى؛ في الصباح. Equivalent short answers are sufficient; المتحدثة means the female speaker.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-a1-speaking-check.q3",
+      "expected_answer": "هل أنت طالب؟ Accept هل أنتَ طالبٌ؟ This written check provides no independent speaking evidence.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-a1-writing-check.q3",
+      "expected_answer": "For example: أنا طالب. أسكن في لندن. Accept a feminine identity or any coherent fictional identity and place; assess sentence meaning and spelling rather than matching this model exactly.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-past-suffixes-check.q3",
+      "expected_answer": "I wrote; you, feminine singular, wrote. Final ḍamma versus kasra distinguishes the subject.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-past-questions-check.q3",
+      "expected_answer": "ماذا قرأ سامي؟ Accept ما الذي قرأه سامي؟ if independently available. The answer is كتابًا.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-kana-background-check.q3",
+      "expected_answer": "كَانَ الْجَوُّ جَمِيلًا. كان has a nominative noun and an accusative predicate in this construction.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-story-connectors-check.q3",
+      "expected_answer": "زرت المكتبة ثم عدت إلى البيت. Accept بعد ذلك with a clear sentence connection.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-story-retell-check.q3",
+      "expected_answer": "Leila visited the library; she did not find the book. Accept زارت ليلى المكتبة؛ لم تجد الكتاب. Do not infer that the library was closed.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-future-plans-check.q3",
+      "expected_answer": "سأدرس غدًا. Accept سأدرس غدا; keep the hamza in سأدرس.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-negation-system-check.q3",
+      "expected_answer": "لم أدرسْ أمس. Accept لم أدرس أمس in ordinary unvowelled writing; أدرس is a present-form verb in the jussive, with past negative meaning here.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-requests-imperatives-check.q3",
+      "expected_answer": "اُكْتُبْ؛ لَا تَكْتُبْ. Accept اكتب؛ لا تكتب. The negative instruction uses prohibitive لا and a jussive form.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-modal-complements-check.q3",
+      "expected_answer": "أريد أن أَتَعَلَّمَ العربية. The verb after أن is subjunctive here; final fatḥa is targeted.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-plans-dialogue-check.q3",
+      "expected_answer": "For example: لا أستطيع أن أحضر يوم الثلاثاء. هل يناسبك يوم الأربعاء؟ Accept another clear, polite decline plus Wednesday alternative.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-pronoun-attachment-check.q3",
+      "expected_answer": "مدرستها means her school; قرأها means he read it, referring to the letter. ة becomes ت before the possessive suffix.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-case-roles-check.q3",
+      "expected_answer": "الطالب: subject/nominative; الكتاب: direct object/accusative; البيت: noun governed by في/genitive.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-idafa-chains-check.q3",
+      "expected_answer": "The student owns the house; باب denotes the door. The full phrase is the door of the student's house.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-dual-sound-plurals-check.q3",
+      "expected_answer": "كِتَابَانِ؛ رَأَيْتُ كِتَابَيْنِ. Accept كتابان؛ رأيت كتابين. The quantity is the same, but the case form changes.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-quantity-comparison-check.q3",
+      "expected_answer": "ثلاثة كتب. With full case marking as a nominative phrase: ثَلَاثَةُ كُتُبٍ. The singular كتاب is masculine, so the 3–10 number takes the opposite-gender form.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-root-pattern-check.q3",
+      "expected_answer": "ك ت ب. The family shares a lexical relationship, but each word has its own meaning and use; the root is not a complete definition.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-clitic-segmentation-check.q3",
+      "expected_answer": "و + ب + ال + كتاب. The combined expression means and with/by the book, as context determines.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-dictionary-method-check.q3",
+      "expected_answer": "Keep the full sentence and the surrounding topic/referents; inspect the relevant grammatical construction and usage examples. عين has multiple senses, so a bare first-gloss lookup is insufficient.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-participles-masdar-check.q3",
+      "expected_answer": "كاتب = writer; مكتوب = written; كتابة = writing/the activity. Their exact grammatical role still depends on the sentence.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-vocabulary-records-check.q3",
+      "expected_answer": "قَرَأَ / يَقْرَأُ; for example يقرأ كتابًا. Accept another appropriate object and preserve the hamza.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-a2-reading-check.q3",
+      "expected_answer": "Saturday; Sunday. Accept يوم السبت؛ يوم الأحد. Do not assume opening hours that are not stated.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-a2-interaction-check.q3",
+      "expected_answer": "For example: لا أستطيع يوم الثلاثاء. أستطيع يوم الأربعاء. هل تناسبك الساعة الثالثة؟ The reply must reject Tuesday, offer Wednesday and ask a relevant question.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-a2-composition-check.q3",
+      "expected_answer": "For example: قرأت كتابًا أمس، وسأكتب رسالة غدًا. Accept any coherent pair with distinct past and future reference.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-derived-forms-check.q3",
+      "expected_answer": "In the first, Sami taught the student; in the second, Sami learned Arabic. Form II and V have these lexical meanings here; do not infer that every root behaves identically.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-weak-verbs-check.q3",
+      "expected_answer": "قُلْتُ؛ لَمْ يَدْعُ. Accept قلت؛ لم يدع outside a vowel-target task. The final weak letter is removed in the jussive form.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-irregular-families-check.q3",
+      "expected_answer": "و ع د. The initial weak root consonant و is present in the past form and absent on the surface in this present form.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-verb-moods-check.q3",
+      "expected_answer": "هم لن يدرسوا. The ن of يدرسون is dropped in this subjunctive form; retain the written separating alif after the plural wāw.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-passive-voice-check.q3",
+      "expected_answer": "كُتِبَ التَّقْرِيرُ. The writer is not identified. The task deliberately asks for the vowels needed to establish the passive reading.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-relative-clauses-check.q3",
+      "expected_answer": "الكتاب الذي قرأته. The ه is a resumptive object pronoun referring to الكتاب.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-inna-kana-check.q3",
+      "expected_answer": "إِنَّ الطَّالِبَ مُجْتَهِدٌ. The noun after إنّ is accusative; its predicate is nominative here.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-reported-information-check.q3",
+      "expected_answer": "قال إنه متعب. Accept a clearly attributed equivalent. The claim belongs to the reported speaker.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-conditionals-check.q3",
+      "expected_answer": "If/when you study, you will understand. It does not itself assert that the studying has already happened.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-cause-purpose-contrast-check.q3",
+      "expected_answer": "أقرأ لكي أتعلم gives the intended purpose, learning. أقرأ لأن الكتاب مفيد gives a reason, the book being useful.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-diacritics-taper-check.q3",
+      "expected_answer": "كَتَبَ, he wrote. Sami as agent, a letter as object and yesterday as time support the verb reading rather than كُتُب, books.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-context-ambiguity-check.q3",
+      "expected_answer": "عَلَمٌ in the first; عَلِمَ in the second. Syntax and supplied meaning distinguish the readings.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-paragraph-mapping-check.q3",
+      "expected_answer": "ه refers to the book. لذلك introduces a consequence/reasoned result: he bought it because he had not found it in the library.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-extensive-reading-check.q3",
+      "expected_answer": "A source-faithful main event, with its essential participants. Open response: compare with the actual selected passage; do not award accuracy from length or plausible invention.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-collocation-growth-check.q3",
+      "expected_answer": "اتخذ قرارًا. For example: اتخذ سامي قرارًا جديدًا. Accept another semantically appropriate sentence.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-follow-up-questions-check.q3",
+      "expected_answer": "For example: ماذا تحب أن تقرأ؟ Accept a question genuinely about the stated interest or reason, not an unrelated rehearsed line.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-opinion-repair-check.q3",
+      "expected_answer": "For example: مكان نقرأ فيه الكتب أو نستعيرها. Accept a clear description; it need not match the model wording.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-paragraph-design-check.q3",
+      "expected_answer": "For example: القراءة مفيدة. على سبيل المثال، أتعلم كلمات جديدة عندما أقرأ. The example should directly support the statement.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-formal-email-check.q3",
+      "expected_answer": "هل يمكنكم توضيح مواعيد الدروس؟ Accept a clear, polite equivalent preserving the request.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-summary-notes-check.q3",
+      "expected_answer": "تبدأ الدورة يوم الاثنين بمشاركة عشرة طلاب. Accept another concise form; retain Monday and ten students without adding a location or fee.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-orthography-editing-check.q3",
+      "expected_answer": "هذه مدرسة جميلة. The demonstrative ends in ه, not ة; the feminine noun مدرسة correctly retains ة.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-feedback-rewrite-check.q3",
+      "expected_answer": "هذا كتاب جديد; كتاب is masculine. A new sentence could be هذه مدرسة جديدة. Assess the new sentence independently of the copied correction.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-b1-explainer-check.q3",
+      "expected_answer": "أولًا... ثانيًا... Accept appropriate equivalents such as في البداية... بعد ذلك... if they match the intended structure.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-b1-unprepared-check.q3",
+      "expected_answer": "For example: لست متأكدًا من المقصود. هل يمكنك أن توضح السؤال؟ Accept feminine speaker marking and other coherent clarification requests; actual spontaneous speech still needs a live task.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-headlines-leads-check.q3",
+      "expected_answer": "Stated: the opening of a new library. Not supplied: its location and opening date, for example. Do not invent an actor or date.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-news-language-check.q3",
+      "expected_answer": "It attributes the claim of an increase to the report. It does not independently verify the increase or its cause.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-numbers-data-check.q3",
+      "expected_answer": "100, 120 and 20. Accept Arabic or Western digits. A separate percentage calculation would be 20%, but it is not required here.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-interview-notes-check.q3",
+      "expected_answer": "الموعد لم يُحدَّد بعد. Accept لم يحددوا الموعد بعد or an equivalent; do not turn this into a confirmed cancellation.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-news-digest-check.q3",
+      "expected_answer": "For example: يقول المصدر الأول إن المشروع سيبدأ في يناير، بينما يقول المصدر الثاني إن الموعد لم يحدد بعد. Do not silently choose one account as established fact.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-claim-evidence-check.q3",
+      "expected_answer": "The general claim is that daily reading is useful; the example is the speaker's experience of learning new words. The example alone does not prove the claim for everyone.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-stance-hedging-check.q3",
+      "expected_answer": "ربما يبدأ المشروع غدًا. Accept ربما سيبدأ المشروع غدًا if the task is meaning-focused; preserve the difference in commitment.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-implicit-meaning-check.q3",
+      "expected_answer": "Stated: he did not answer and changed the subject. Possible inference: he may be avoiding the question. His motive is not established by this sentence alone.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-counterargument-check.q3",
+      "expected_answer": "For example: الكتب الإلكترونية مريحة، لكن الإشعارات قد تشتت الانتباه. Accept a coherent equivalent preserving both claims.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-supported-debate-check.q3",
+      "expected_answer": "For example: أتفهم هذه الوجهة، ولكنني أرى أن القراءة الورقية أنسب لهذه المهمة. Accept another relevant, fair contrast; it must not distort the other view.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-word-order-agreement-check.q3",
+      "expected_answer": "الطلاب حضروا. Full number agreement is needed in the ordinary subject-first construction.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-hal-tamyiz-check.q3",
+      "expected_answer": "The student was tired; متعبًا describes his state. كتابًا specifies what is being counted by twenty.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-numbers-exceptions-check.q3",
+      "expected_answer": "ثلاثة عشر كتابًا؛ ثلاث عشرة رسالة. With full vowels: ثَلَاثَةَ عَشَرَ كِتَابًا؛ ثَلَاثَ عَشْرَةَ رِسَالَةً.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-negation-exception-check.q3",
+      "expected_answer": "قرأ كتابًا واحدًا فقط. He read only one book; do not translate it as he read no books.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-precision-edit-check.q3",
+      "expected_answer": "الطلاب يدرسون العربية. The verb agrees in number with the preceding plural human subject.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-essay-architecture-check.q3",
+      "expected_answer": "Open response. For example: في الختام، أرى أن اختيار وسيلة القراءة ينبغي أن يعتمد على هدف القارئ. Compare with the learner's actual essay and reject unsupported new claims.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-presentation-design-check.q3",
+      "expected_answer": "سأتناول ثلاث نقاط. Accept سَأَتَنَاوَلُ ثَلَاثَ نِقَاطٍ; نقطة is feminine, so ثلاث is the appropriate 3–10 form.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-qa-spontaneity-check.q3",
+      "expected_answer": "For example: هل تقصد أن الموعد قد تغير؟ Accept a question relevant to the actual preceding statement; a written answer alone is not spontaneous speaking evidence.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-register-adaptation-check.q3",
+      "expected_answer": "For example: يجب أن نتأكد من صحة المعلومات قبل أن ننشرها. Accept an equivalent that preserves checking before publication.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-academic-reading-check.q3",
+      "expected_answer": "The findings are preliminary and the improvement is possible, not definitively established. Preserve both limits in a summary.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-lecture-notes-check.q3",
+      "expected_answer": "١. تعريف المصطلح؛ ٢. مثالان. Accept two clear note entries preserving the order and the fact that there are two examples.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-synthesis-citation-check.q3",
+      "expected_answer": "اتفق الباحثان على النتيجة، لكنهما اختلفا في تفسيرها. Accept a faithful equivalent; agreement on a finding differs from agreement on its explanation.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-professional-brief-check.q3",
+      "expected_answer": "For example: أوصي بتجربة الخطة لمدة أسبوع لأنها تسمح لنا بجمع الملاحظات. Open response; assess the recommendation and its stated reason against the actual brief.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-narrator-character-check.q3",
+      "expected_answer": "Leila expresses the judgement. The text attributes it to a character; it does not automatically establish the author's opinion.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-imagery-style-check.q3",
+      "expected_answer": "Knowledge is described as light. A supported interpretation is that it helps people understand or find a way forward. Other text-supported interpretations are acceptable.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-poetry-entry-check.q3",
+      "expected_answer": "The adjective شعري establishes a poetry context; بيت here means a line of verse. Context selects the relevant lexical sense.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-literary-review-check.q3",
+      "expected_answer": "Open response: it must name a relevant action or event and support the judgement without confusing character, narrator and author. Grade against the selected story, not an invented fixed answer.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-classical-parsing-check.q3",
+      "expected_answer": "قرأ: past verb; الطالب: nominative agent; الكتاب: accusative direct object. The student read the book. This is an original grammar example, not a quotation from a classical source.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-historical-lexicon-check.q3",
+      "expected_answer": "Check the historical dictionary sense or reliable commentary, and inspect the local syntax and passage context. Shared spelling alone does not establish identical meaning.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-edition-commentary-check.q3",
+      "expected_answer": "Preserve the source form as source text and label the vowelled version as an editorial or pedagogical reading, naming its source. Do not present added marks as if visibly present in the original.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-quranic-morphology-check.q3",
+      "expected_answer": "For example, in the original teaching form وكتابها: و is a conjunction, كتاب is the noun stem, and ها is a possessive suffix. This illustrates segmentation only; it is not a Qur'anic quotation or analysis of a specific verse.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-translation-brief-check.q3",
+      "expected_answer": "The project has not started yet. Preserve negation and yet; do not change it into cancellation or a future start date.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-translation-choices-check.q3",
+      "expected_answer": "The appointment/time may change. قد with this present-form verb marks possibility here; do not translate it as certainly will change.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-translation-qa-check.q3",
+      "expected_answer": "عشرون is twenty, not twelve. Correct translation: Twenty students attended.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-oral-mediation-check.q3",
+      "expected_answer": "The meeting is on Wednesday at four. AM/PM and location are unspecified; do not invent them. Actual oral mediation requires new audio and an audible response.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-technical-terminology-check.q3",
+      "expected_answer": "For example: أمن المعلومات هو حماية المعلومات من الوصول أو الاستخدام غير المصرح به. Accept a coherent appropriately scoped definition; verify against reputable domain documentation. Language and technical accuracy are separate ratings.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-technical-docs-check.q3",
+      "expected_answer": "Save the file before closing the window. Reversing the two actions loses the instruction's meaning.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-security-explainer-check.q3",
+      "expected_answer": "For example: تستخدم المصادقة متعددة العوامل أكثر من نوع من الأدلة للتحقق من هوية المستخدم. A fuller answer may contrast something known with something possessed; technical content needs separate verification.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-incident-summary-check.q3",
+      "expected_answer": "سبب الحادثة غير معروف بعد لعدم توفر معلومات كافية. Accept a faithful equivalent; do not identify an attacker or assert a breach.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    },
+    {
+      "id": "assessment.arabic-technical-demo-check.q3",
+      "expected_answer": "For example: أحتاج إلى التحقق من هذه المعلومة قبل أن أجيب. Accept another clear acknowledgement plus a reasonable verification step.",
+      "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
+    }
+  ]
+}
