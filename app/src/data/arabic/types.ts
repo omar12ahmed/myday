@@ -20,6 +20,7 @@ export interface ArabicAttempt {
 export interface ArabicData {
   pathId: string;
   attempts: ArabicAttempt[];
+  [other: string]: unknown; // anything a newer MyDay adds here is kept
 }
 export const ARABIC_VERSION = '1.1.0'; // the package version these screens show (checked against it by arabic-rules)
 export const ARABIC_CORE_PATH = 'path.arabic-core-b2';

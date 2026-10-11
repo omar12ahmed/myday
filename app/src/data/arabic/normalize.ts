@@ -2,7 +2,8 @@ import { isObj } from '../util';
 import { ARABIC_CORE_PATH, emptyArabic, MODALITIES, VARIANTS, type ArabicAttempt, type ArabicData, type Help } from './types';
 
 // Arabic records are checked like everything else MyDay opens: anything malformed is dropped (and counted),
-// never guessed at, and nothing from another course can slip in.
+// never guessed at, and nothing from another course can slip in. Fields a newer MyDay adds to the section are
+// kept as they are, so going back a version never loses them.
 const str = (v: unknown, max: number) => (typeof v === 'string' ? v.slice(0, max) : '');
 const stamp = (v: unknown): v is string => typeof v === 'string' && /^\d{4}-\d\d-\d\dT/.test(v) && Number.isFinite(Date.parse(v));
 const QUESTION = /^(assessment|asset)\.arabic-[a-z0-9.-]{1,140}$/;
@@ -29,9 +30,9 @@ export function cleanArabicAttempt(raw: unknown): ArabicAttempt | null {
 }
 
 export function normalizeArabic(raw: unknown, report = { dropped: 0 }): ArabicData {
-  const out = emptyArabic();
-  if (raw === undefined) return out;
-  if (!isObj(raw)) { report.dropped++; return out; }
+  if (raw === undefined) return emptyArabic();
+  if (!isObj(raw)) { report.dropped++; return emptyArabic(); }
+  const out: ArabicData = { ...raw, ...emptyArabic() };
   out.pathId = typeof raw.pathId === 'string' && /^path\.arabic-[a-z0-9-]{1,100}$/.test(raw.pathId) ? raw.pathId : ARABIC_CORE_PATH;
   if (raw.attempts !== undefined && !Array.isArray(raw.attempts)) report.dropped++;
   const ids = new Set<string>();

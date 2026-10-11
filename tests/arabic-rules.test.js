@@ -62,6 +62,8 @@ check('vowelled and unvowelled versions are both kept where the package has them
   check('only known practice kinds, question ids and fields survive; nothing like a score is kept', JSON.stringify(a.practised) === '["reading"]' && Object.keys(a.answers).join() === 'assessment.arabic-origin-location-check.q1' && a.revealed.join() === 'assessment.arabic-origin-location-check.q1' && !('score' in a) && a.revisit.length === 1000);
   check('an unknown path falls back to the core course', A.normalizeArabic({ pathId: 'path.core' }).pathId === A.ARABIC_CORE_PATH && data.pathId === 'path.arabic-a1');
   check('no Arabic section yet means none of your sessions, not an error', A.normalizeArabic(undefined).attempts.length === 0);
+  const later = A.normalizeArabic({ pathId: 'path.arabic-a1', attempts: [good], cards: [{ id: 'lexeme.arabic-seed-001:recognise' }], laterField: { x: 1 } });
+  check('fields a newer MyDay adds to the section are kept as they are (going back a version never loses them)', JSON.stringify(later.cards) === '[{"id":"lexeme.arabic-seed-001:recognise"}]' && later.laterField.x === 1 && later.attempts.length === 1 && !('score' in later.attempts[0]));
   const d = { arabic: A.emptyArabic() };
   const id = A.beginSession(d, 'lesson.arabic-origin-location', 'standard');
   check('starting a session twice on a lesson keeps the one already open', A.beginSession(d, 'lesson.arabic-origin-location', 'short') === id && d.arabic.attempts.length === 1 && d.arabic.attempts[0].variant === 'standard');
