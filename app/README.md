@@ -705,3 +705,9 @@ returns up to 8 small tasks; you tick the ones to add.
 22. **Release 1.15.0:** Understand & connect, part 2 — AI help with notes, once you switch it on: it places the notes
     MyDay can't (never private ones), says what kind each is, with Keep and Undo; "Add as a task" for notes that are
     things to do. Needs the updated `ai-plan` function (the `connect` action) deployed before publishing.
+23. **Release 1.16.0:** a calmer, neutral design across the app (it replaces the warm peach look); Explore, the
+    Hargeisa Marketplace story (seven scenes, openly licensed photographs, only "Create this task" saves); revision that
+    tells a slip from what hasn't clicked yet, with a gentle stop after ten reviews a day; and Study → Arabic Fuṣḥā,
+    parts 1–2 (the course, read-only, and your lesson sessions, saved and synced). Needs database migration
+    `20261011120000_sync_arabic.sql` before publishing. Going back to 1.15.0 is safe: it keeps the `arabic` section
+    unread.
