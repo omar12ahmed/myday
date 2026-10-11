@@ -21,9 +21,9 @@ export function AppFooter({ data, canSave, onEdit, onExport, onImport }: {
   const sync = useSync();
   const off = data.settings.motion === 'off';
   return (
-    <footer id="footer" className="pb-10 mt-8">
+    <footer id="footer" className="app-tools pb-8 mt-10 pt-4 border-t border-outline">
       {/* Quiet tools, in small pills that wrap — present on every screen without competing with it. */}
-      <div className="flex flex-wrap justify-center gap-2">
+      <div className="flex flex-wrap justify-center gap-x-1 gap-y-0">
         <Button inline variant="quiet" className="!text-[14px]" data-action="edit" onClick={onEdit}><ListTodo size={16} aria-hidden="true" /> Edit task lists</Button>
         {canInstall && <Button inline variant="quiet" className="!text-[14px]" data-action="install" onClick={async () => { if (await install()) toast('MyDay is installed — open it from your apps.'); }}><Smartphone size={16} aria-hidden="true" /> Install MyDay as an app</Button>}
         <Button inline variant="quiet" className="!text-[14px]" data-action="noticed" onClick={() => { location.hash = 'noticed'; window.scrollTo(0, 0); }}><Lightbulb size={16} aria-hidden="true" /> What MyDay has noticed</Button>
@@ -40,7 +40,7 @@ export function AppFooter({ data, canSave, onEdit, onExport, onImport }: {
         : sync.phase === 'linked' ? `Saved to your account${sync.linkedEmail ? ` (${sync.linkedEmail})` : ''}.`
         : 'Saved only in this browser.'}</p>
       {/* Which release is loaded, to check after publishing. */}
-      <p id="appVersion" className="app-version text-center text-fg-3 text-[13px] mt-1 tabular-nums">{RELEASE}</p>
+      <p id="appVersion" className="app-version text-center text-fg-3 text-[11px] mt-1 tabular-nums">{RELEASE}</p>
     </footer>
   );
 }

@@ -16,6 +16,26 @@ with a plain description.
 Your own saved data is never touched. The checks use a temporary Chrome profile, which is deleted
 afterwards. They also set the page's clock to fixed dates, so results don't depend on today's date.
 
+The `app-design` suite checks the shared header, keyboard skip link, Capture, selected cybersecurity tabs,
+360 px phone layouts, navigation targets and preservation of imported learning records. It writes light and
+dark screenshots of synthetic workspaces to `/tmp/myday-design-*.png` for visual review.
+
+The `app-explore` suite checks the seven-scene narrative, routing/history, desktop and mobile layouts,
+local data preservation, task creation/deduplication/storage failures, motion preferences and offline refresh.
+It captures synthetic screenshots to `/tmp/myday-explore-*.png`. `explore-rules` validates the content boundary
+and deterministic economics; neither suite calls an AI service.
+`explore-assets` checks the reviewed local image catalogue, dimensions, provenance, media budgets and
+rejection of unsafe asset references. `app-explore-visual` captures every scene at 390, 768 and 1440 px,
+checks overflow, heading contrast, touch targets, lazy images, repeated entry, motion cleanup, offline
+photos and unchanged saved data. Its screenshots are in `/tmp/myday-explore-phase2/`. `app-architecture`
+checks Architecture's dual-panel construction at 1440/768 px, the 12% scroll lag, small/reverse/fast
+scroll steps, sticky release, short-height animation, stacked 662/390/320 px layouts, visible drawing timing,
+mobile Context/Flow connector progress and cleanup, contrast, pause/resume,
+OS/app motion off, refresh, route cleanup, another project, unchanged storage, offline refresh and
+animation loading/setup failures. It writes synthetic screenshots to `/tmp/myday-architecture-review/`.
+All five Explore
+suites run by default; none reads or changes real user records.
+
 ## Run them
 
 From the `myday-site` folder:
@@ -75,7 +95,7 @@ few will fail and the rest still run.
 | `app-ai` | In the browser: no button without AI set up; practice mode (no account, nothing sent) with review → Use → Undo; with an account against the stand-in (the Edge Function's real code, a mock model): signed-out message, what's sent (no appointment names) and logged (nothing), a rule-breaking model corrected before you see it, unusable replies (not JSON, JSON that stops half-way, cut off at the length limit) and failures leaving the plan alone; "Add what's on my mind" in practice mode (a duplicate starts unticked, a feeling is listed back, repeating vs one-off, Add, Undo, before and after the day is built) and through the function with an account (and Review my plan still working), daily and pace limits, a stale suggestion refused, the saved plan kept after a reload, phone layout. **No real model is called.** From 1.15.0 also AI help with notes: off until switched on (nothing sent), exactly which notes are sent (not private ones, not ones the device placed), the link as "AI help" with Undo, a changed note asked about again, at most twice a day, and switching it off. |
 | `ai-concurrency` (opt-in) | The AI limits under genuinely simultaneous requests, in a **real PostgreSQL** with independent connections (PGlite has only one): with room for one more request (budget, daily limit, pace), exactly one of 10 simultaneous requests is allowed, in 20 rounds each, and the budget is never exceeded; waiting requests wait on the account lock before reading anything, while other accounts go straight through; controls built from the migration's own function show the test does catch the race when the locks are removed (including requests either side of midnight with only the row lock). Not in the default run: it needs a disposable PostgreSQL — `MYDAY_TEST_PG_URL`, or `npm install --prefix tests/.pgtools --foreground-scripts embedded-postgres@17.10.0-beta.17 pg@8` (Git ignores that folder), then `tests/run.sh ai-concurrency`. |
 | `ai-deno` (opt-in) | The `ai-plan` Edge Function's real entry (`supabase/functions/ai-plan/index.ts`, unchanged) running **under Deno** (`--allow-net --allow-env` only), with mocked requests: Supabase is the local stand-in (its sign-in, and the migration's real limit functions in PGlite, reached through supabase-js as `index.ts` calls them), and the model is a fake OpenAI-compatible provider with GLM-5.3-Flash's evaluated settings. Checks: CORS; no sign-in, the publishable key, a secret-style key or a forged token refused before the model; a signed-in request sends exactly the evaluated GLM request with the key only in the provider's header; limits and token counts recorded for that account only (another account named in the body ignored); a reply cut off at the length limit, a refused request and a time-out give 502 without passing on the key; 400/413 for bad requests; logs hold only an outcome, status and time; pace, budget, not-configured and the mock model. Plain Deno, not Supabase's own edge runtime. Needs Deno: on the PATH, `MYDAY_DENO`, or `npm install --prefix tests/.denotools --foreground-scripts deno@2.9.6` (Git ignores that folder); then `tests/run.sh ai-deno`. |
-| `app-today` | The new app's Today: the `today` checks adapted (energy limits, the queue, rest days, the rolling count, the nudge, export/import, damaged data, context and timeline, proposals and review, themes, layout and tap sizes, animations, the timer), plus the sections that haven't moved yet. From 1.11.0 also Today's dashboard: the greeting by time of day and your name (asked with a link, saved trimmed with your preferences, changed or removed under Your preferences), this week's strip on phones and the month on wide screens with a dot on shift days, Build my day visible without scrolling on a phone, quick add, the progress ring and week count, the focus timer card (task, length, Start), Focus mode (just what's next, device-only `myday.focus`, Tick it off, Show everything), and the contrast of every colour pair including the main button's gradient. |
+| `app-today` | The new app's Today: the `today` checks adapted (energy limits, the queue, rest days, the rolling count, the nudge, export/import, damaged data, context and timeline, proposals and review, themes, layout and tap sizes, animations, the timer), plus the sections that haven't moved yet. From 1.11.0 also Today's dashboard: the greeting by time of day and your name (asked with a link, saved trimmed with your preferences, changed or removed under Your preferences), this week's strip on phones and the month on wide screens with a dot on shift days, Build my day visible without scrolling on a phone, quick add, the progress ring and week count, the focus timer card (task, length, Start), Focus mode (just what's next, device-only `myday.focus`, Tick it off, Show everything), and the contrast of every colour pair including primary buttons. |
 
 The `app-*` suites build the new app (`npm run build` in `app/`, so run `npm install` there once first) and serve it
 beside the current MyDay, the way Live Server does, so the two share saved data as they do for real.

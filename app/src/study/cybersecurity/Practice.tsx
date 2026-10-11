@@ -39,7 +39,7 @@ export function PracticeIndex({ data }: { data: MyDayData }) {
   return <>
     <Card tone="accent"><Eyebrow>Practice shelf · free resources first</Eyebrow><h2>Pick something to do</h2>
       <p>Short experiments in MyDay and specific assignments on learning sites. Open an activity, do the work, then save what you found.</p>
-      <p className="text-sm text-fg-2">No API keys or MCP connection needed. Provider accounts stay on their own sites. MyDay records your check-in; it does not read or verify your provider progress.</p>
+      <p className="text-sm text-fg-2">Start here, continue on the learning site, then return with your observations. Your notebook keeps your own progress record.</p>
       <div className="grid sm:grid-cols-2 gap-3"><Field label="Access" htmlFor="practiceAccess"><Select id="practiceAccess" value={filter} onChange={e => setFilter(e.target.value)}><option value="all">All free-first activities</option><option value="local">Inside MyDay</option><option value="no-account">No personal account needed</option></Select></Field>
         <Field label="Find an activity" htmlFor="practiceSearch"><TextInput id="practiceSearch" type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Linux, TryHackMe, logs…" /></Field></div>
     </Card>

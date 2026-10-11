@@ -161,7 +161,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
     check(`phone (${theme}): nothing scrolls sideways`, !(await ev('document.documentElement.scrollWidth > innerWidth')));
   }
   const pos = await ev(`(() => { const b = document.querySelector('.capture-btn').getBoundingClientRect(), n = document.getElementById('nav').getBoundingClientRect(), items = [...document.querySelectorAll('#nav .nav-item')].map(a => a.getBoundingClientRect()); return { b: [b.right, b.bottom, b.width, b.height], navTop: n.top, w: innerWidth, minItem: Math.min(...items.map(r => r.width)) }; })()`);
-  check('phone: Capture is a 56 px button bottom-right, above the bar; each of the six sections is at least 44 px wide', pos.b[2] === 56 && pos.b[3] === 56 && pos.b[1] <= pos.navTop && pos.b[0] <= pos.w && pos.minItem >= 44, pos);
+  check('phone: Capture is a 52 px button bottom-right, above the bar; each of the six sections is at least 44 px wide', pos.b[2] === 52 && pos.b[3] === 52 && pos.b[1] >= pos.b[3] && pos.b[1] <= pos.navTop && pos.b[0] <= pos.w && pos.minItem >= 44, pos);
   await click('[data-action=capture-open]'); await sleep(200);
   check('phone: Capture fits (nothing scrolls sideways)', !(await ev('document.documentElement.scrollWidth > innerWidth')));
   await click('[data-action=capture-cancel]'); await sleep(200);
@@ -171,7 +171,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
     await T.send('Emulation.setDeviceMetricsOverride', { width, height: 800, deviceScaleFactor: 1, mobile: false });
     await go('projects', 2026, 9, 30, 15); // "Wednesday 30 September", a long date (wide screens: the side menu, from 1.11.0)
     const h = await ev(`(() => { const d = document.getElementById('date').getBoundingClientRect(), n = document.getElementById('nav').getBoundingClientRect(), c = document.querySelector('.capture-btn').getBoundingClientRect(), t = document.getElementById('themeBtn').getBoundingClientRect(), a = document.getElementById('app').getBoundingClientRect(); return { dl: d.left, dr: d.right, nl: n.left, nr: n.right, nh: n.height, c: c.left, cr: c.right, t: t.left, a: a.left, labels: [...document.querySelectorAll('.nav-label')].every(l => getComputedStyle(l).position !== 'absolute' && l.getBoundingClientRect().width > 0) }; })()`);
-    check(`wide (${width} px): the side menu down the left, beside the date and the page; Capture and the theme button never overlap the date; every section shows its name`, h.nl <= 24 && h.nr < h.dl && h.nr < h.a && h.dr + 8 < h.c && h.cr <= h.t && h.labels, h);
+    check(`wide (${width} px): the side menu down the left, beside the date and the page; Capture and the theme button never overlap the date; every section shows its name`, h.nl <= 24 && h.nr < h.dl && h.nr <= h.a && h.dr + 8 < h.c && h.cr <= h.t && h.labels, h);
   }
   await T.send('Emulation.clearDeviceMetricsOverride');
 

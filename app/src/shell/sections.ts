@@ -1,15 +1,14 @@
 import { BookOpen, CalendarDays, CircleCheck, FolderKanban, Heart, Wallet, type LucideIcon } from 'lucide-react';
 
-// The sections, in the same order as the current MyDay. `moved` says whether a section works in the new
-// app (a section that hasn't moved is marked in the navigation).
+// All six sections are available. Legacy addresses are kept below for existing links.
 export type SectionId = 'today' | 'calendar' | 'projects' | 'finance' | 'health' | 'study';
-export const SECTIONS: { id: SectionId; label: string; icon: LucideIcon; moved: boolean }[] = [
-  { id: 'today', label: 'Today', icon: CircleCheck, moved: true },
-  { id: 'calendar', label: 'Calendar', icon: CalendarDays, moved: true },
-  { id: 'projects', label: 'Projects', icon: FolderKanban, moved: true }, // Projects and Notes (was the Inbox until 1.12.0)
-  { id: 'finance', label: 'Finance', icon: Wallet, moved: true }, // was Pay (#pay still opens it)
-  { id: 'health', label: 'Health', icon: Heart, moved: true },
-  { id: 'study', label: 'Study', icon: BookOpen, moved: true },
+export const SECTIONS: { id: SectionId; label: string; icon: LucideIcon }[] = [
+  { id: 'today', label: 'Today', icon: CircleCheck },
+  { id: 'calendar', label: 'Calendar', icon: CalendarDays },
+  { id: 'projects', label: 'Projects', icon: FolderKanban },
+  { id: 'finance', label: 'Finance', icon: Wallet },
+  { id: 'health', label: 'Health', icon: Heart },
+  { id: 'study', label: 'Study', icon: BookOpen },
 ];
 
 // The section shown as current in the bar (every section is in it).

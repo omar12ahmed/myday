@@ -1,0 +1,298 @@
+{
+  "schemaVersion": 1,
+  "id": "hargeisa-marketplace-v1",
+  "projectId": "example",
+  "title": "Hargeisa Marketplace",
+  "edition": "curated",
+  "scenes": [
+    {
+      "id": "hero",
+      "type": "hero",
+      "title": "Hargeisa\nMarketplace",
+      "eyebrow": "An idea, made tangible",
+      "basis": "brief",
+      "proposition": "A local marketplace. A connected city. One place to discover goods from retailers and warehouses, place an order, and arrange delivery.",
+      "image": "market-aerial",
+      "caption": "One street, many trades: minibuses, stalls and shoppers share the road. Enugu, Nigeria."
+    },
+    {
+      "id": "context",
+      "type": "context",
+      "title": "Begin with the city.\nBuild around its people.",
+      "eyebrow": "The local context",
+      "basis": "brief",
+      "location": "Hargeisa",
+      "description": "The brief connects customers with local retailers, warehouses and delivery services. The first question is which relationships can support a reliable, small-scale pilot.",
+      "actors": [
+        {
+          "id": "customers",
+          "label": "Customers",
+          "detail": "Discover, order, receive"
+        },
+        {
+          "id": "retailers",
+          "label": "Retailers",
+          "detail": "Confirm stock and price"
+        },
+        {
+          "id": "warehouse",
+          "label": "Warehouse",
+          "detail": "An alternative source of goods"
+        },
+        {
+          "id": "delivery",
+          "label": "Delivery",
+          "detail": "Coordinate a local handover"
+        },
+        {
+          "id": "suppliers",
+          "label": "International suppliers",
+          "detail": "A later option, subject to validation",
+          "optional": true
+        }
+      ],
+      "caption": "Schematic relationships from the brief. Not a geographic map; positions, routes and distances are illustrative. No providers or locations have been verified.",
+      "image": "market-crowd",
+      "connections": [
+        {
+          "from": "customers",
+          "to": "retailers",
+          "kind": "goods",
+          "label": "Request availability"
+        },
+        {
+          "from": "retailers",
+          "to": "delivery",
+          "kind": "goods",
+          "label": "A proposed handover"
+        },
+        {
+          "from": "warehouse",
+          "to": "delivery",
+          "kind": "goods",
+          "label": "An alternative stock source"
+        },
+        {
+          "from": "delivery",
+          "to": "customers",
+          "kind": "goods",
+          "label": "Deliver and confirm"
+        },
+        {
+          "from": "suppliers",
+          "to": "warehouse",
+          "kind": "goods",
+          "label": "Optional later replenishment"
+        }
+      ]
+    },
+    {
+      "id": "problem",
+      "type": "problem",
+      "title": "Where does\nthe journey break?",
+      "eyebrow": "The problem to investigate",
+      "basis": "assumption",
+      "description": "These are hypotheses to investigate with customers and retailers, not findings about the Hargeisa market.",
+      "issues": [
+        {
+          "title": "Can I find what I need?",
+          "body": "A customer may find a product without knowing whether it is available, what it costs, or when it can arrive. Ask how their last purchase actually happened.",
+          "image": "packed-shop"
+        },
+        {
+          "title": "Who owns the handover?",
+          "body": "Retailer, payment and delivery handovers may leave responsibility unclear. Find out who resolves a missing item, a delay or a refund today.",
+          "image": "parcel-handover"
+        },
+        {
+          "title": "What will it really cost?",
+          "body": "Delivery and coordination may cost more than a customer is willing to pay. Test the total price before assuming demand.",
+          "image": "cash-handover"
+        }
+      ]
+    },
+    {
+      "id": "flow",
+      "type": "flow",
+      "title": "One order.\nA clear chain of responsibility.",
+      "eyebrow": "How it could work",
+      "basis": "assumption",
+      "description": "A proposed pilot flow. Confirm availability before collecting payment; keep each handover visible to the customer.",
+      "steps": [
+        {
+          "title": "Customer",
+          "responsibility": "order",
+          "body": "Requests an item and a complete delivered price."
+        },
+        {
+          "title": "Retailer / warehouse",
+          "responsibility": "stock",
+          "body": "Confirms availability and price. A warehouse is an alternative source, not an extra required stop."
+        },
+        {
+          "title": "Marketplace",
+          "responsibility": "payment",
+          "body": "Coordinates payment confirmation after stock and the total price are agreed."
+        },
+        {
+          "title": "Delivery",
+          "responsibility": "fulfilment",
+          "body": "Collects the confirmed order from the retailer or warehouse."
+        },
+        {
+          "title": "Customer",
+          "responsibility": "delivery",
+          "body": "Receives the order, confirms the handover and can report an issue."
+        }
+      ]
+    },
+    {
+      "id": "architecture",
+      "type": "architecture",
+      "title": "One marketplace.\nMany moving parts.",
+      "eyebrow": "The operating architecture",
+      "basis": "assumption",
+      "description": "The platform coordinates an order. Retailers and warehouses hold the goods. Payment and delivery are separate responsibilities. International supply is an optional extension, not a requirement for the first pilot.",
+      "nodes": [
+        {
+          "id": "marketplace",
+          "label": "Marketplace",
+          "detail": "Discovery · order coordination"
+        },
+        {
+          "id": "customer",
+          "label": "Customer",
+          "detail": "Choose · order · receive"
+        },
+        {
+          "id": "retailer",
+          "label": "Retailer",
+          "detail": "Confirm price and availability"
+        },
+        {
+          "id": "warehouse",
+          "label": "Warehouse",
+          "detail": "An alternative stock source"
+        },
+        {
+          "id": "payment",
+          "label": "Payment",
+          "detail": "Collect · reconcile · settle"
+        },
+        {
+          "id": "delivery",
+          "label": "Delivery",
+          "detail": "Collect · deliver · confirm"
+        },
+        {
+          "id": "supplier",
+          "label": "Supplier",
+          "detail": "International replenishment",
+          "optional": true
+        }
+      ],
+      "connections": [
+        {
+          "from": "retailer",
+          "to": "delivery",
+          "kind": "goods",
+          "label": "Retailer hands over goods"
+        },
+        {
+          "from": "warehouse",
+          "to": "delivery",
+          "kind": "goods",
+          "label": "Alternative stock source"
+        },
+        {
+          "from": "delivery",
+          "to": "customer",
+          "kind": "goods",
+          "label": "Deliver the order"
+        },
+        {
+          "from": "supplier",
+          "to": "warehouse",
+          "kind": "goods",
+          "label": "Optional replenishment"
+        },
+        {
+          "from": "customer",
+          "to": "marketplace",
+          "kind": "order",
+          "label": "Order request"
+        },
+        {
+          "from": "retailer",
+          "to": "marketplace",
+          "kind": "order",
+          "label": "Availability and price"
+        },
+        {
+          "from": "customer",
+          "to": "payment",
+          "kind": "payment",
+          "label": "Customer payment"
+        },
+        {
+          "from": "payment",
+          "to": "retailer",
+          "kind": "payment",
+          "label": "Merchant settlement"
+        },
+        {
+          "from": "payment",
+          "to": "marketplace",
+          "kind": "payment",
+          "label": "Platform commission"
+        },
+        {
+          "from": "marketplace",
+          "to": "retailer",
+          "kind": "coordination",
+          "label": "Confirm fulfilment"
+        },
+        {
+          "from": "marketplace",
+          "to": "delivery",
+          "kind": "coordination",
+          "label": "Arrange the handover"
+        }
+      ]
+    },
+    {
+      "id": "economics",
+      "type": "economics",
+      "title": "Follow the money.\nKeep the assumptions visible.",
+      "eyebrow": "The economics of one order",
+      "basis": "example",
+      "description": "A commission marketplace, in USD. The merchant owns the goods. Delivery is collected and passed through at cost. These are placeholder figures, not yet Hargeisa prices: change them below to test what your research finds.",
+      "currency": "USD",
+      "inputs": {
+        "orderValue": 40,
+        "productCost": 28,
+        "logistics": 2,
+        "delivery": 3,
+        "operating": 1.5,
+        "takeRate": 10
+      }
+    },
+    {
+      "id": "action",
+      "type": "action",
+      "title": "What should\nhappen next?",
+      "eyebrow": "From exploration to evidence",
+      "basis": "assumption",
+      "description": "Start with one retailer. Reconstruct real orders before building the platform.",
+      "image": "market-street",
+      "task": {
+        "id": "retailer-interview",
+        "title": "Interview one retailer about their last three deliveries",
+        "minutes": 30,
+        "notes": "For Hargeisa Marketplace: ask one retailer to walk through their last three delivered orders. Record how stock was confirmed, who arranged delivery, the actual fees, payment timing and any failed handover. Success means one documented order journey with costs and one unresolved assumption to test. Ask permission before recording customer details."
+      },
+      "established": "The idea connects discovery, confirmed stock, payment and a named delivery handover. The model sets out each responsibility and separates merchant costs from platform revenue.",
+      "uncertain": "Demand, actual costs, stock accuracy and reliable handovers remain untested. No market validation has been established."
+    }
+  ]
+}

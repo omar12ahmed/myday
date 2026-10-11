@@ -1,5 +1,16 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+Explore (local implementation): projects now offer **Explore this idea**, opening a dedicated narrative at
+`#projects/p/<id>/explore`. The curated Hargeisa Marketplace example has seven scenes, with a typed and validated
+content contract, optional GSAP motion, and an explicit action that creates a normal project task. Other projects
+get a starting brief and can view the labelled example. No AI generation or new saved-data schema.
+See [`EXPLORE.md`](EXPLORE.md) for the architecture, file inventory, calculations and limitations.
+The Phase 2 visual upgrade uses six locally stored photographs, spatial process drawings and layered
+architecture/economics storytelling, with each section arriving as it scrolls into view. See
+[`EXPLORE_PHASE2.md`](EXPLORE_PHASE2.md) for the changes, performance and visual verification. The photographs
+are openly licensed (Pexels and Wikimedia Commons), credited in each caption; their provenance is in
+[`EXPLORE.md`](EXPLORE.md#asset-provenance). Existing routing, storage and calculations are preserved.
+
 Cybersecurity in Study (1.14.0): Study now includes the supplied 27-module package,
 path import, lesson/lab/project pages, evidence notebook and optional AI explanations. See
 [`../CYBERSECURITY_INTEGRATION.md`](../CYBERSECURITY_INTEGRATION.md) for the architecture review, scope,
@@ -211,7 +222,7 @@ pay rules) and its settings card are gone from the screen; the rules behind them
 | `src/data/workout/` | Workout's data and rules, ported from the current MyDay: `normalize.ts` (checking saved Health data), `common.ts` (labels, units and wording), `plans.ts` (which workout is planned when, missed sessions, the sequence, Today's blocks), `propose.ts` (proposed dates around shifts), `sessions.ts` (logging, finishing, prefilling, the rest timer), `history.ts` (exercise history and chart measures). |
 | `src/data/study/` | Study's data and rules, ported from the current MyDay: `normalize.ts` (checking saved Study data), `roadmap.ts` (the outline, completion, setup, editing), `sessions.ts` (sessions, suggested length, check-ins, learning days), `revision.ts` (due concepts, review scheduling, cautious labels), `progress.ts` (progress and history), `common.ts` (labels, limits, Obsidian links). |
 | `src/components/` | Shared pieces with their styling in one place: `Button`, `Card`, `Banner`, `Field` (inputs, including ones saved as you type), `Dialog` (confirmations), `Toast`, `CategoryChip`, `EnergyMeter`, and `parts` (links, rows, chips and labels used by the section screens). |
-| `src/today/` | The Today section's cards and `TodayScreen`, which puts them together — including the dashboard's `GreetingCard` (greeting, scene, calendar), `DashboardCards` (the ring and this week's bars, counted by `src/data/dashboard.ts`), `QuickAdd`, `FocusCard` and `FocusView` (Focus mode). |
+| `src/today/` | The Today section's cards and `TodayScreen`, which puts them together — including the dashboard's `GreetingCard` (greeting, calendar), `DashboardCards` (the ring and this week's bars, counted by `src/data/dashboard.ts`), `QuickAdd`, `FocusCard` and `FocusView` (Focus mode). |
 | `src/calendar/` | The Calendar: `CalendarScreen`, the month grid, agenda, selected-day panel, pattern editor and side cards. |
 | `src/ai/` | "Help me adjust today": `context.ts` (what's sent), `validate.ts` (the rules), `apply.ts` (saving, stale check, undo) and `AdjustCard.tsx` (the card on Today). "Add what's on my mind": `mind.ts` (what's sent, the checks, adding and undo) and `MindCard.tsx`. Both: `request.ts` (the Edge Function or practice mode). |
 | `../ai-eval/` | The evaluation of AI models on 20 synthetic days and 12 synthetic brain dumps (see its README). |
@@ -237,59 +248,56 @@ pay rules) and its settings card are gone from the screen; the rules behind them
 
 ## Design
 
-From 1.11.0 the new app has its own **warm look** (chosen from a reference design, 4 Oct 2026, and asked to "feel
-expensive across the app"); the classic MyDay (`../index.html`) keeps its calm green look, because it's the fallback and
-stays unchanged unless asked. They still share the font and the task timeline (font files in `../fonts/`), and saved
-data — only the look differs.
+The October 2026 refresh uses a quiet, warm workspace with clearer navigation and fewer competing accents.
+It builds on 1.11.0's dashboard and shared components. The classic MyDay (`../index.html`) keeps its green look;
+both versions still share the font, task timeline and saved data. This refresh needs no data migration.
 
-- **Colours** (`src/styles/tokens.css`): a soft peach page with gentle orange and pink glows, white cards, orange
-  (`primary`, #c2410c light / #fdba74 dark) for buttons, highlights and links, **green** (`done`) for things that are
-  done — ticks, finished workout sets, progress bars — and the category colours as before. Light by default
-  (`settings.theme` defaults to `light` in the new app); the warm dark palette is a deep brown. Every text colour pair
-  meets WCAG AA contrast in both themes (the lowest is 4.8:1 in light, 5.9:1 in dark).
-- **Feeling expensive** comes from restraint, not decoration: soft, layered, warm-tinted shadows (`--shadow`); the one
-  main button on a card in a deeper orange gradient with a soft glow beneath it (`primary` → `primary-2`,
-  `--shadow-cta`), lifting slightly under the pointer; every button giving a small press when tapped; fields that glow
-  softly in orange when you type in them; roomier cards on wide screens; and the tools at the bottom of every screen
-  (task lists, backups, animations) as small quiet pills instead of five full-width bars.
-- **Navigation:** on phones, a frosted bar floating just above the bottom edge; on wide screens (64rem and up), a
-  rounded orange rail down the left side with the MyDay logo at the top (a link to Today) and every section's icon
-  and name (the current one on a white pill), and the page beside it.
-- **Top bar:** the section's name above the date; on Today, the Focus mode switch (a round icon button on phones);
-  your account (initials, and on wide screens your name and email) when signed in; + Capture; the theme button. On
-  wide screens it's a white card above the page.
+- **Colours** (`src/styles/tokens.css`): warm ivory (#f6f5f2), white cards and charcoal text, with a clay accent
+  (`primary`, #a84422 light / #ecb38e dark). Dark mode uses a charcoal-green page (#171b19). Green still means done,
+  and category colours retain their meaning. Light remains the default; Match device follows system changes,
+  including the native browser bar. Semantic text pairs are checked for WCAG AA contrast in both themes.
+- **Hierarchy:** solid primary buttons, quiet borders, shallow shadows and generous spacing. Section headings
+  use sentence case. Background glows and the decorative landscape have been removed. Footer tools remain
+  available as small, quiet buttons; form controls and focus states use the same shared tokens throughout.
+- **Navigation:** on phones, a frosted bar floating just above the bottom edge; on wide screens (64rem and up),
+  a 208 px neutral sidebar with the MyDay logo linking to Today, followed by each section's icon and name.
+  The current section has a distinct surface and an accessible current-page label.
+- **Top bar:** the section's name above the date; on Today, the Focus mode switch; your account when signed in;
+  Capture and the theme button. On wide screens Capture sits in the header's normal layout, so it cannot drift
+  over the account or theme controls. A keyboard-only Skip to content link focuses the current workspace
+  without changing the route.
 - **App icon:** the circle-and-tick on an orange gradient (`public/icon.svg`, `public/icon-maskable.svg`; sizes made by
   `scripts/make-icons.mjs`).
-- **Font:** Plus Jakarta Sans, a friendly, rounded sans-serif. It's bundled with the app (`@fontsource-variable/plus-jakarta-sans`),
-  so it works offline. Times use `tabular-nums` so their digits line up.
-- **Icons:** [Lucide](https://lucide.dev) (`lucide-react`), always with a text label beside them, never emoji.
-- **Tap targets:** every button and link is at least 44 × 44 px; main buttons are 52 px tall.
+- **Font:** Plus Jakarta Sans, bundled with the app (`@fontsource-variable/plus-jakarta-sans`) for offline use.
+  Times use `tabular-nums` so their digits line up.
+- **Icons:** [Lucide](https://lucide.dev) (`lucide-react`), with visible or accessible text labels.
+- **Tap targets:** controls are at least 44 × 44 px; main buttons are 48 px tall.
 - **A day's plan** is a timeline: tasks with a time are joined by a line in time order, with "any time today" tasks below.
   The round marker beside each task shows a tick once it's done; tapping anywhere on a task ticks it off. Each fact
   appears once: the time on top, then the title, then the category and length.
-- **Up next:** one task is marked "Up next", so there's always an obvious place to start. It uses the current MyDay's
-  rule (`nextTask()` in `today.ts`).
-- **Progress note:** nothing until the first task is done, so an untouched list doesn't feel like a score; then
-  "1 done so far", and "That's the whole plan — lovely." once everything is done.
+- **Up next:** one task is marked "Up next", using the existing `nextTask()` rule in `today.ts`.
+- **Progress note:** nothing until the first task is done, then "1 done so far", and
+  "That's the whole plan — lovely." once everything is done.
 - **Morning:** energy and Build my day share a card, just under the greeting; on phones the greeting stays compact so
   Build my day is visible without scrolling (checked by `tests/app-today`).
-- **Today's dashboard** (1.11.0): a greeting across the top ("Good morning, Sam!" — your name is asked for quietly,
-  with a link, and can be changed under Your preferences) over a calm drawn scene that follows the time of day, with
-  this month's calendar on wide screens (this week on phones) and a dot on days with a shift or appointment. Then the
-  plan, with "Add a task for today" under it (a task due today, added to the plan if it has room for your energy —
-  the same rules as Due today), and beside it the focus timer (pick a task and a length, then MyDay's own timer runs),
-  today's progress as a ring ("2 of 3 done") and this week as green bars — plain counts, never scores or percentages.
-- **Focus mode** (the switch in the top bar, on Today): shows only what's next — the task up next with Start focus,
-  Just start and Tick it off, or the running timer — and nothing else. "Show everything" (or the switch) brings the
-  rest back. It's remembered on this device only (`myday.focus`).
-- **Confirmations** ("Start today over?", "Replace your saved data?") are asked in the page with a dialog, never the
-  browser's pop-up.
-- **Motion** stays small (a tick, a soft burst when the whole plan is done, a gentle fade between screens) and switches
-  off with the Animations button or when the device asks for reduced motion.
+- **Today's dashboard:** the time-of-day greeting and optional name sit beside this month's calendar on wide
+  screens (this week on phones), with a dot on days with a shift or appointment. The plan keeps quick add,
+  the focus timer, today's progress ring and this week's green bars — plain counts, never scores or percentages.
+  Names can still be changed under Your preferences.
+- **Focus mode:** shows only the next task with Start focus, Just start and Tick it off, or the running timer.
+  Show everything brings the rest back. The choice stays on this device only (`myday.focus`).
+- **Study:** the first visit offers the guided cybersecurity path beside course setup. Suggested courses can be
+  reviewed in a disclosure before creating the roadmap. Existing learning dashboards and records keep their
+  behaviour. Cybersecurity uses a wider catalogue, narrower reading pages and tabs that identify the current
+  destination; the extra Practice promotional card has been removed in favour of a clear next-step action.
+- **Confirmations** ("Start today over?", "Replace your saved data?") use an in-page dialog.
+- **Motion** stays small and switches off with the Animations button or when the device asks for reduced motion.
 
-The direction came from the ui-ux-pro-max design skill (minimal style, Plus Jakarta Sans, subtle motion; the warm
-palette from its planner palettes: orange actions with readable text, cream background, white cards), and the
-timeline layout is adapted from the "Process Timeline" component on [21st.dev](https://21st.dev).
+The original timeline was adapted from the "Process Timeline" component on [21st.dev](https://21st.dev).
+The refresh reviewed [coss ui](https://github.com/cosscom/coss) and [Twenty](https://github.com/twentyhq/twenty)
+as references for restrained action hierarchy and workspace navigation. No third-party component code,
+new UI framework or dependency was added. `tests/app-design.test.js` checks desktop and phone layout,
+Capture, keyboard access and learning-record preservation, and captures both themes using synthetic data.
 
 ## Cloud sync
 

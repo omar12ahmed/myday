@@ -1,0 +1,156 @@
+/* One existing architecture model, read as a drawing and as a coordinated system. */
+.ex-scene-architecture { background:#182d32; color:var(--ex-paper); }
+.ex-scene-architecture .ex-kicker { color:var(--ex-gold); }
+.ex-scene-architecture .ex-basis { color:var(--ex-muted); }
+.ex-scene-architecture .ex-handoff { background:#21373c; color:#d8e0d4; border-color:#596e6b; }
+.ex-architecture-layout { --ex-board-top:92px; margin-top:54px; }
+.ex-architecture-sequence { position:relative; }
+.ex-architecture-board { background:#182d32; }
+.ex-construction-caption { display:flex; justify-content:space-between; gap:20px; padding:0 0 20px; border-bottom:1px solid #58716d; margin-bottom:24px; }
+.ex-construction-caption .ex-mono { color:var(--ex-gold); }
+.ex-construction-caption p { font-size:13px; line-height:1.7; }
+.ex-architecture-panels { display:grid; grid-template-columns:1fr 1fr; align-items:stretch; border:1px solid #58716d; }
+.ex-architecture-panel { min-width:0; display:flex; flex-direction:column; }
+.ex-panel-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding:24px 24px 18px; }
+.ex-panel-heading>div { min-width:0; }
+.ex-panel-heading .ex-mono { font-size:11px; letter-spacing:.16em; }
+.ex-panel-heading h3 { font-size:clamp(24px,2.2vw,32px); line-height:1.15; font-weight:460; letter-spacing:-.045em; margin:12px 0 10px; }
+/* A drawing-set title block: the two panels read as sheets 01 and 02 of one set. */
+.ex-title-block { flex-shrink:0; display:grid; grid-template-columns:auto auto; margin:2px 0 0; border:1px solid #58716d; font:10px/1.3 ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:.08em; text-transform:uppercase; }
+.ex-title-block div { padding:6px 10px; }
+.ex-title-block div+div { border-left:1px solid #58716d; }
+.ex-title-block dt { color:#a9bdb2; }
+.ex-title-block dd { margin:3px 0 0; color:#e8efe9; }
+.ex-proposed-system .ex-title-block,.ex-proposed-system .ex-title-block div+div { border-color:#a7b7a3; }
+.ex-proposed-system .ex-title-block dt { color:#4e6a5c; }
+.ex-proposed-system .ex-title-block dd { color:#223e35; }
+.ex-panel-heading p { font-size:12px; line-height:1.6; }
+.ex-blueprint .ex-panel-heading p { color:var(--ex-muted); }
+/* Line weight sets the hierarchy: grid and construction are hairlines, roles are inked, the hub is heaviest. */
+.ex-diagram-wide { display:block; width:100%; height:clamp(200px,22vw,310px); overflow:hidden; }
+.ex-sheet { color:#a9c2b5; }
+.ex-axes path { fill:none; stroke:#78938a; stroke-width:1; stroke-dasharray:2 10; opacity:.6; }
+.ex-axes circle { fill:#182d32; stroke:#9fb5a9; stroke-width:1.5; }
+.ex-axes text { font:24px ui-monospace,SFMono-Regular,Consolas,monospace; fill:#dbe5de; }
+.ex-construction { stroke:#78938a; stroke-width:1; fill:none; opacity:.45; }
+.ex-construction circle,.ex-construction ellipse { stroke-dasharray:3 9; }
+.ex-registration circle,.ex-registration path { fill:none; stroke:#c5d3bf; stroke-width:1.25; }
+.ex-node rect { fill:#1d3439; stroke:#98afa2; stroke-width:1.5; }
+.ex-node-hub rect { fill:#2a4345; stroke:var(--ex-gold); stroke-width:2.5; }
+.ex-node-plinth { fill:none; stroke:#6f8980; stroke-width:1; }
+.ex-node-corners { fill:none; stroke:#c5d3bf; stroke-width:2; }
+.ex-keynote circle { fill:#182d32; stroke:var(--layer-color); stroke-width:2.5; }
+.ex-keynote text { font:22px ui-monospace,SFMono-Regular,Consolas,monospace; fill:var(--layer-color); }
+.ex-node-hub .ex-node-corners { stroke:var(--ex-gold); }
+.ex-node-name { font:34px var(--font-sans); fill:var(--ex-paper); }
+.ex-node-index { display:none; fill:var(--ex-paper); font:60px ui-monospace,monospace; }
+/* Each layer has one colour family: a light line colour on the dark drawing, an ink and a tint on the light sheet. */
+.ex-layer-goods { --layer-color:#a5c4b0; --layer-ink:#4c7a5e; --layer-tint:#e2ebe2; }
+.ex-layer-order { --layer-color:#a6c3d0; --layer-ink:#4a7385; --layer-tint:#e0e9ec; }
+.ex-layer-payment { --layer-color:#dfc48d; --layer-ink:#94742f; --layer-tint:#eee7d5; }
+.ex-layer-coordination { --layer-color:#d4b6a5; --layer-ink:#946450; --layer-tint:#ece3dc; }
+.ex-connection,.ex-connection-accent { fill:none; stroke:var(--layer-color); color:var(--layer-color); stroke-width:2; }
+.ex-connection { opacity:.5; }
+.ex-connection-goods { stroke-dasharray:6 5; }
+.ex-connection-payment { stroke-dasharray:2 5; }
+.ex-connection-coordination { stroke-dasharray:12 5 2 5; }
+.ex-connection-accent { stroke-width:1.8; vector-effect:non-scaling-stroke; }
+.ex-participant-key { display:grid; grid-template-columns:1fr 1fr; gap:6px 16px; list-style:none; padding:12px 24px; margin:0; }
+.ex-participant-key li { display:flex; align-items:baseline; gap:10px; min-width:0; font-size:13px; line-height:1.6; }
+.ex-participant-key span { font:11px ui-monospace,monospace; color:var(--ex-gold); }
+.ex-participant-key strong { font-weight:450; overflow-wrap:anywhere; }
+.ex-diagram-key,.ex-system-key { margin-top:auto!important; padding:16px 24px; font-size:11px; line-height:1.7; border-top:1px solid #58716d; }
+.ex-diagram-key { color:var(--ex-muted); }
+.ex-proposed-system { background:#e4e8dd; color:#223e35; border-left:1px solid #58716d; }
+.ex-proposed-system .ex-panel-heading { border-bottom:1px solid #a7b7a3; }
+/* The proposed system is spatial: four tinted planes over a receding grid, joined once assembled. */
+.ex-system-assembly { position:relative; isolation:isolate; display:grid; gap:8px; padding:12px 24px 14px; perspective:1400px; perspective-origin:50% 0%; overflow:hidden; }
+.ex-system-perspective { position:absolute; inset:0; width:100%; height:100%; z-index:-1; overflow:visible; -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 38%); mask-image:linear-gradient(to bottom,transparent 0,#000 38%); }
+.ex-system-perspective path { fill:none; stroke:#a3b39f; stroke-width:1; vector-effect:non-scaling-stroke; opacity:.6; }
+.ex-system-layer { position:relative; padding:10px 16px 11px; background:var(--layer-tint); border-left:3px solid var(--layer-ink); box-shadow:5px 5px 0 0 rgba(170,186,166,1),0 14px 24px -18px rgba(20,44,34,.55); }
+.ex-layer-joint { position:absolute; left:22px; right:22px; top:-8px; height:8px; border:solid var(--layer-ink); border-width:0 2px; transform-origin:top; }
+.ex-system-heading { display:flex; align-items:center; gap:12px; }
+.ex-system-heading h4 { font-size:15px; font-weight:560; margin:0; letter-spacing:-.02em; line-height:1.5; color:inherit; }
+.ex-system-number { display:inline-grid; place-items:center; flex-shrink:0; width:24px; height:24px; border:1.5px solid var(--layer-ink); border-radius:50%; font:10px ui-monospace,monospace; }
+.ex-system-count { margin-left:auto; font:10px ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:.08em; text-transform:uppercase; color:#3f5a4c; white-space:nowrap; }
+.ex-system-rule { width:100%; height:2px; display:block; margin:9px 0 10px; overflow:visible; }
+.ex-system-rule path { fill:none; stroke:#b1c0ad; stroke-width:1; }
+.ex-system-rule [data-system-line] { stroke:#37594a; stroke-width:2; }
+.ex-system-layer ul { padding:0; margin:0; list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:10px 16px; }
+.ex-system-layer li { display:flex; align-items:baseline; flex-wrap:wrap; gap:5px; font-size:12px; line-height:1.6; }
+.ex-system-arrow { display:inline-block; color:#466552; transform-origin:left; }
+.ex-system-key { border-color:#a7b7a3; }
+.ex-construction-order { display:grid; grid-template-columns:repeat(4,1fr); gap:24px; list-style:none; padding:20px 0 0; margin:0; }
+.ex-construction-order li { position:relative; padding:0 0 12px; font-size:12px; line-height:1.6; }
+.ex-construction-order span { display:inline-grid; place-items:center; width:22px; height:22px; border:1px solid var(--layer-color); border-radius:50%; font:10px ui-monospace,monospace; margin-right:10px; color:var(--layer-color); }
+.ex-construction-order i,.ex-construction-order b { position:absolute; left:0; bottom:4px; width:100%; height:1px; background:var(--layer-color); transform-origin:left; }
+.ex-construction-order b { bottom:0; height:2px; }
+.ex-construction-foot { font-size:11px; line-height:1.7; color:var(--ex-muted); padding:12px 0; }
+.ex-architecture-reading { display:grid; grid-template-columns:1fr 1fr; gap:7vw; border-top:1px solid #58716d; margin-top:64px; padding-top:44px; }
+.ex-responsibility-schedule>h3 { font-size:28px; font-weight:450; letter-spacing:-.035em; margin:17px 0 28px; }
+.ex-diagram-mobile { display:grid; margin:0; padding:0; list-style:none; }
+.ex-diagram-mobile li { display:grid; grid-template-columns:28px minmax(0,1fr); gap:14px; padding:22px 0; border-top:1px solid var(--ex-line); }
+.ex-diagram-mobile strong { font-size:16px; font-weight:550; }
+.ex-diagram-mobile p { font-size:13px; line-height:1.7; color:var(--ex-muted); margin-top:5px; }
+.ex-diagram-mobile small { display:block; font-size:12px; color:var(--ex-gold); line-height:1.9; margin-top:12px; }
+.ex-layer-note { border-top:1px solid #678279; padding:24px 0 32px; }
+.ex-layer-note>.ex-mono { color:var(--layer-color); }
+.ex-layer-note h3 { font-size:27px; font-weight:500; letter-spacing:-.035em; margin:17px 0 14px; }
+.ex-layer-note>p { font-size:14px; line-height:1.9; color:#cbd7cf; }
+.ex-layer-note ul { list-style:none; padding:0; margin:24px 0 0; }
+.ex-layer-note li { font-size:13px; line-height:1.7; margin-top:15px; }
+.ex-layer-note small { display:block; color:#afc2b8; font-size:12px; margin-top:4px; }
+/* Range and placement stay stable on pause. Static readers see the complete board throughout. */
+@media(min-width:901px) and (min-height:900px), (min-width:680px) and (max-width:900px) and (min-height:980px) {
+ .ex-architecture-sequence::after { content:''; display:block; height:125vh; }
+ .ex-architecture-board { position:sticky; top:var(--ex-board-top); }
+}
+@media(max-width:1100px) {
+ .ex-node-name,.ex-axes text,.ex-keynote text,.ex-title-block,.ex-system-count { display:none; }
+ .ex-keynote circle { fill:var(--layer-color); }
+ .ex-node-index { display:block; }
+ .ex-system-layer ul { grid-template-columns:1fr; gap:4px; }
+ .ex-panel-heading { padding:20px 18px 16px; }
+ .ex-panel-heading p { font-size:11px; }
+ .ex-system-assembly { padding:4px 14px 6px; gap:4px; }
+ .ex-system-layer { padding:4px 10px 5px; }
+ .ex-layer-joint { top:-4px; height:4px; }
+ .ex-system-rule { margin:6px 0; }
+ .ex-participant-key { grid-template-columns:1fr; gap:7px; padding:16px 18px; }
+ .ex-diagram-key,.ex-system-key { padding:14px 18px; }
+ .ex-architecture-reading { gap:40px; }
+}
+@media(max-width:900px) {
+ .ex-architecture-layout { --ex-board-top:132px; margin-top:36px; }
+ .ex-construction-caption { display:block; }
+ .ex-construction-caption p { margin-top:8px; }
+ .ex-construction-order { gap:16px; }
+ .ex-construction-order li { font-size:11px; }
+ .ex-construction-order span { display:grid; margin:0 0 4px; }
+ .ex-construction-caption { padding-bottom:16px; margin-bottom:20px; }
+ .ex-construction-foot { padding:8px 0; }
+}
+@media(max-width:679px) {
+ .ex-architecture-panels { grid-template-columns:1fr; }
+ .ex-architecture-panel { width:100%; }
+ .ex-diagram-wide { height:auto; aspect-ratio:1240/820; }
+ .ex-proposed-system { border:0; border-top:1px solid #58716d; }
+ .ex-panel-heading { padding:24px; }
+ .ex-panel-heading h3 { font-size:28px; }
+ .ex-panel-heading p { font-size:13px; }
+ .ex-participant-key { padding:20px 24px; font-size:14px; gap:12px; }
+ .ex-participant-key li { font-size:15px; }
+ .ex-node-index { font-size:72px; }
+ .ex-system-assembly { padding:18px 24px 22px; gap:14px; }
+ .ex-system-layer { padding:18px 16px; }
+ .ex-layer-joint { top:-14px; height:14px; }
+ .ex-system-heading h4 { font-size:18px; }
+ .ex-system-layer ul { gap:12px; }
+ .ex-system-layer li { font-size:15px; }
+ .ex-diagram-key,.ex-system-key { padding:18px 24px; font-size:12px; }
+ .ex-construction-order { grid-template-columns:1fr 1fr; gap:20px; }
+ .ex-construction-order li { font-size:12px; }
+ .ex-architecture-reading { grid-template-columns:1fr; gap:36px; margin-top:40px; padding-top:32px; }
+ .ex-diagram-mobile strong { font-size:18px; }
+ .ex-layer-note li { font-size:14px; }
+}

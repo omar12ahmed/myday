@@ -20,7 +20,7 @@
   --color-fg-3: var(--text-3);   /* quietest text, e.g. times and durations */
   --color-primary: var(--primary);
   --color-on-primary: var(--on-primary);
-  --color-primary-2: var(--primary-2);  /* the lower end of the main button's gradient */
+  --color-primary-2: var(--primary-2);  /* secondary accent shade */
   --color-primary-container: var(--primary-container);
   --color-on-primary-container: var(--on-primary-container);
   --color-primary-outline: var(--primary-outline);
@@ -52,40 +52,31 @@
 
   --shadow-card: var(--shadow);       /* shadow-card */
   --shadow-raised: var(--shadow-btn); /* shadow-raised: buttons */
-  --shadow-cta: var(--shadow-cta);     /* shadow-cta: the main button (a soft glow and a top highlight) */
+  --shadow-cta: var(--shadow-cta);     /* shadow-cta: subtle depth for primary actions */
 }
 
 /* Sizes and the font: the same in every theme. */
 @theme {
   /* Plus Jakarta Sans (imported in main.tsx), with the device's own font while it loads. */
   --font-sans: "Plus Jakarta Sans Variable", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  --radius-card: 24px; /* rounded-card: cards */
-  --radius-tile: 16px; /* rounded-tile: task rows */
-  --radius-btn: 18px;  /* rounded-btn: buttons */
-  --spacing-tap: 52px; /* min-h-tap: comfortable height for anything you tap */
+  --radius-card: 18px;
+  --radius-tile: 12px;
+  --radius-btn: 10px;
+  --spacing-tap: 48px;
 }
 
 @layer base {
   body {
     background: var(--bg);
     color: var(--text);
-    font: 17px/1.5 var(--font-sans);
+    font: 16px/1.6 var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
     min-height: 100vh;
   }
-  /* The warm page: soft peach-to-pink glows behind the white cards (fixed, so the glass app bar has something gentle
-     to blur). Quiet on purpose: colour for warmth, not for attention. */
-  body::before {
-    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
-    background:
-      radial-gradient(52rem 36rem at 0% -10%, var(--glow-1), transparent 70%),
-      radial-gradient(44rem 34rem at 100% 0%, var(--glow-2), transparent 70%),
-      radial-gradient(60rem 30rem at 50% 110%, var(--glow-3), transparent 70%);
-  }
-  h2 { font-size: 22px; font-weight: 700; margin: 0 0 6px; letter-spacing: -.015em; line-height: 1.25; }
-  h3 { font-size: 13px; font-weight: 700; margin: 0 0 10px; color: var(--text-2); text-transform: uppercase; letter-spacing: .08em; }
-  h4 { font-size: 15px; font-weight: 650; margin: 16px 0 6px; color: var(--text-2); }
+  h2 { font-size: 23px; font-weight: 650; margin: 0 0 10px; letter-spacing: -.035em; line-height: 1.3; }
+  h3 { font-size: 16px; font-weight: 650; margin: 0 0 12px; color: var(--text); letter-spacing: -.02em; line-height: 1.4; }
+  h4 { font-size: 15px; font-weight: 600; margin: 16px 0 6px; color: var(--text); }
   p { margin: 0 0 12px; }
   :focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
   /* Boxes you type in: the border turns orange with a soft glow around it (still clearly visible). */
@@ -96,6 +87,9 @@
   ::selection { background: var(--primary-container); color: var(--on-primary-container); }
 
   summary { cursor: pointer; }
+  button, a, input, select, textarea, summary { touch-action: manipulation; }
+  input::placeholder, textarea::placeholder { color: var(--text-3); opacity: 1; }
+  :target { scroll-margin-top: 100px; }
 
   /* No animations when the device asks for less motion, or when they're switched off in MyDay. */
   @media (prefers-reduced-motion: reduce) {
@@ -116,45 +110,44 @@
   .cat-health { --cat: var(--health); }
   .ring-fill { stroke: var(--cat, var(--primary)); transition: stroke-dashoffset 1s linear; }
 
-  /* Navigation: a frosted bar floating just above the bottom edge on phones; on wide screens, a rounded orange rail
-     down the left side with every section's icon and name (the page moves over to make room). */
+  /* Phone dock; a quiet, labelled sidebar on desktop. */
   .nav {
     position: fixed; left: 10px; right: 10px; bottom: max(10px, env(safe-area-inset-bottom)); z-index: 25;
     display: flex; justify-content: center; gap: 2px;
-    background: var(--glass); backdrop-filter: blur(20px) saturate(160%);
-    border: 1px solid var(--outline); border-radius: 26px; box-shadow: var(--shadow);
+    background: var(--glass); backdrop-filter: blur(20px);
+    border: 1px solid var(--outline); border-radius: 20px; box-shadow: 0 4px 24px rgba(0,0,0,.08);
     padding: 5px;
   }
   .nav-item {
     flex: 1; min-width: 0; max-width: 160px; min-height: 56px; padding: 4px;
     display: grid; justify-items: center; align-content: center; gap: 2px;
-    color: var(--text-2); text-decoration: none; font-size: 12px; font-weight: 650; border-radius: 16px;
+    color: var(--text-2); text-decoration: none; font-size: 11px; font-weight: 600; border-radius: 12px;
   }
-  .nav-logo { display: none; }
-  .nav-icon { display: grid; place-items: center; width: min(56px, 100%); height: 30px; border-radius: 999px; transition: background-color .15s; }
-  .nav-item[aria-current="page"] { color: var(--text); }
-  .nav-item[aria-current="page"] .nav-icon { background: var(--primary-container); color: var(--on-primary-container); }
+  .nav-logo, .nav-caption { display: none; }
+  .nav-icon { display: grid; place-items: center; width: 32px; height: 28px; border-radius: 8px; transition: background-color .15s; }
+  .nav-item[aria-current="page"] { background: var(--primary-container); color: var(--on-primary-container); }
+  .nav-item[aria-current="page"] .nav-icon { color: var(--primary); }
   body:has(.nav) { padding-bottom: calc(86px + env(safe-area-inset-bottom)); }
   .toast { bottom: max(24px, env(safe-area-inset-bottom)); }
   body:has(.nav) .toast { bottom: calc(96px + env(safe-area-inset-bottom)); }
   @media (min-width: 64rem) {
     .nav {
-      top: 16px; bottom: 16px; left: 16px; right: auto; width: 96px;
-      flex-direction: column; justify-content: flex-start; gap: 6px;
-      padding: 18px 10px; border: 0; border-radius: 28px;
-      background: linear-gradient(180deg, var(--rail), var(--rail-2)); backdrop-filter: none;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), inset 0 0 0 1px rgba(255, 255, 255, .06), var(--shadow);
+      top: 0; bottom: 0; left: 0; right: auto; width: 208px;
+      flex-direction: column; justify-content: flex-start; gap: 5px;
+      padding: 28px 16px; border: 0; border-right: 1px solid var(--outline); border-radius: 0;
+      background: var(--rail); backdrop-filter: none; box-shadow: none;
     }
-    .nav-item { flex: none; max-width: none; min-height: 68px; padding: 8px 4px; gap: 4px; color: var(--on-rail); font-size: 13px; border-radius: 18px; }
+    .nav-item { flex: none; max-width: none; min-height: 48px; padding: 8px 12px; gap: 10px; color: var(--on-rail); font-size: 14px; border-radius: 10px; display: flex; }
     .nav-item { transition: background-color .15s, color .15s; }
-    .nav-item:hover { background: rgba(255, 255, 255, .18); }
-    .nav-icon { width: 40px; height: 30px; background: transparent; }
-    .nav-item[aria-current="page"] { background: var(--surface); color: var(--primary); box-shadow: var(--shadow-btn); }
+    .nav-item:hover { background: var(--surface); }
+    .nav-icon { width: 24px; height: 26px; background: transparent; }
+    .nav-item[aria-current="page"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow-btn); }
     .nav-item[aria-current="page"] .nav-icon { background: transparent; color: var(--primary); }
     .nav-item:focus-visible { outline: 3px solid var(--on-rail); outline-offset: 2px; }
-    .nav-logo { display: grid; justify-items: center; gap: 4px; margin-bottom: 14px; color: var(--on-rail); text-decoration: none; font-weight: 800; font-size: 13px; letter-spacing: .02em; }
-    .nav-logo img { width: 40px; height: 40px; border-radius: 12px; box-shadow: var(--shadow-btn); }
-    body:has(.nav) { padding-bottom: 0; padding-left: 128px; }
+    .nav-logo { display: flex; align-items: center; min-height: 48px; gap: 10px; padding: 0 8px; margin-bottom: 28px; color: var(--text); text-decoration: none; font-weight: 750; font-size: 21px; letter-spacing: -.04em; }
+    .nav-logo img { width: 32px; height: 32px; border-radius: 9px; }
+    .nav-caption { display: block; padding: 0 12px; margin-bottom: 6px; color: var(--text-3); font-size: 10px; font-weight: 650; letter-spacing: .12em; text-transform: uppercase; }
+    body:has(.nav) { padding-bottom: 0; padding-left: 208px; }
     body:has(.nav) .toast { bottom: 24px; }
   }
 
@@ -163,8 +156,8 @@
   .capture-btn {
     position: fixed; right: 16px; bottom: calc(92px + env(safe-area-inset-bottom)); z-index: 26;
     display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-    width: 56px; height: 56px; border: 0; border-radius: 18px; cursor: pointer;
-    background: linear-gradient(180deg, var(--primary), var(--primary-2)); color: var(--on-primary); box-shadow: var(--shadow-cta);
+    width: 52px; height: 52px; border: 0; border-radius: 16px; cursor: pointer;
+    background: var(--primary); color: var(--on-primary); box-shadow: var(--shadow-cta);
     transition: transform .15s, filter .15s;
     font: inherit; font-weight: 700; font-size: 15px;
   }
@@ -175,12 +168,31 @@
   body:has(.capture-btn) { padding-bottom: calc(156px + env(safe-area-inset-bottom)); }
   body:has(.capture-btn) .toast { bottom: calc(160px + env(safe-area-inset-bottom)); }
   @media (min-width: 64rem) {
-    /* Wide screens: a round button like the theme button, just to its left (its name is for screen readers). */
-    /* The top bar's card lines up with the page (1072px wide at most, beside the 128px side menu, 24px sides); + Capture
-       sits inside it, left of the theme button (20px padding, 48px button, 12px gap). */
-    .capture-btn { top: 30px; bottom: auto; right: calc(max(0px, (100vw - 1248px) / 2) + 104px); width: 48px; height: 48px; border-radius: 999px; }
+    .capture-btn { position: static; width: auto; height: 44px; padding: 0 14px; border-radius: 10px; font-size: 13px; }
+    .capture-label { position: static; width: auto; height: auto; overflow: visible; clip-path: none; }
     body:has(.capture-btn) { padding-bottom: 0; }
     body:has(.capture-btn) .toast { bottom: 24px; }
+  }
+
+  /* No filter/transform here: phone Capture is fixed to the viewport from inside this header. */
+  .appbar { position: sticky; top: 0; z-index: 20; background: var(--glass); border-bottom: 1px solid var(--outline); }
+  .appbar-card { max-width: 640px; margin: auto; min-height: 80px; padding: max(12px, env(safe-area-inset-top)) 16px 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .screen-name { font-size: 22px; line-height: 1.2; font-weight: 650; letter-spacing: -.035em; margin: 0; }
+  .screen-date { color: var(--text-3); font-size: 12px; line-height: 1.6; margin: 4px 0 0; }
+  .skip-link { position: fixed; top: 8px; left: 16px; z-index: 60; padding: 10px 16px; border-radius: 10px; background: var(--surface); color: var(--primary); transform: translateY(-150%); }
+  .skip-link:focus { transform: none; }
+  .workspace-tabs { display: flex; flex-wrap: wrap; gap: 4px; padding: 5px; margin-bottom: 24px; border: 1px solid var(--outline); border-radius: 12px; background: var(--surface-2); }
+  .workspace-tabs a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 550; color: var(--text-2); text-decoration: none; }
+  .workspace-tabs a:hover { background: var(--surface); }
+  .workspace-tabs a[aria-current="page"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow-btn); font-weight: 650; }
+  .app-tools [data-variant="quiet"] { border-color: transparent; background: transparent; box-shadow: none; border-radius: 8px; padding-inline: 10px; font-size: 12px !important; }
+  .app-tools [data-variant="quiet"]:hover { background: var(--surface-2); }
+  .card > :last-child { margin-bottom: 0; }
+  .topic-card { transition: border-color .15s, box-shadow .15s; }
+  .topic-card:hover { box-shadow: var(--shadow-btn); }
+  @media (min-width: 64rem) {
+    .appbar-card { max-width: 1120px; padding-inline: 28px; }
+    .screen-name { font-size: 23px; }
   }
 
   /* Today on wide screens: the side cards beside the main ones (phones use one ordered column). */

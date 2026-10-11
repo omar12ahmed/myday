@@ -1,12 +1,12 @@
 import type { ButtonHTMLAttributes } from 'react';
 
 // Every button in MyDay.
-//   tonal    – the everyday button (soft peach)
-//   primary  – the one main action on a card: a warm gradient with a soft glow beneath it
+//   tonal    – the everyday button (neutral, quiet)
+//   primary  – the one main action on a card: a restrained clay accent
 //   ghost    – a quieter, outlined choice
 //   quiet    – the smallest voice: the tools at the bottom of every screen
 //   selected – a toggle that's switched on (e.g. "Rolling to tomorrow")
-// Each one answers your touch: a gentle lift on hover and a small press when tapped (still when animations are off).
+// A small press confirms touch; focus remains visible when motion is off.
 type Variant = 'tonal' | 'primary' | 'ghost' | 'quiet' | 'selected';
 
 // inline-flex + gap lines up an icon placed before the label, e.g. <Button><FolderOpen size={18} /> Open</Button>
@@ -16,9 +16,9 @@ const BASE =
 
 const VARIANT: Record<Variant, string> = {
   tonal: 'bg-tonal text-on-tonal border-transparent font-[600] enabled:hover:shadow-raised enabled:hover:brightness-[.98]',
-  primary: 'bg-primary bg-linear-to-b from-primary to-primary-2 text-on-primary border-transparent font-[650] shadow-cta enabled:hover:brightness-[1.05] enabled:hover:-translate-y-px enabled:active:translate-y-0',
+  primary: 'bg-primary text-on-primary border-transparent font-[650] shadow-cta enabled:hover:brightness-[1.08]',
   ghost: 'bg-transparent text-fg-2 border-outline font-[600] enabled:hover:bg-surface-2 enabled:hover:text-fg',
-  quiet: 'bg-surface/60 text-fg-2 border-outline font-[550] backdrop-blur-sm enabled:hover:bg-surface enabled:hover:text-fg enabled:hover:shadow-raised',
+  quiet: 'bg-transparent text-fg-2 border-transparent font-[550] enabled:hover:bg-surface-2 enabled:hover:text-fg',
   selected: 'bg-primary-container text-on-primary-container border-primary-outline font-[600]',
 };
 

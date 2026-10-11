@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState, useSyncExternalStore, type ChangeEvent } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState, useSyncExternalStore, type ChangeEvent } from 'react';
+import { exploreRoute, projectHref } from './explore/route';
+import { ExploreBoundary } from './explore/ExploreBoundary';
 import { Card } from './components/Card';
 import { useConfirm } from './components/confirm';
 import { ConfirmProvider } from './components/Dialog';
@@ -10,7 +12,7 @@ import { toast } from './data/toast';
 import type { Theme } from './data/types';
 import { useMyDay } from './data/useMyDay';
 import { Nav } from './shell/Nav';
-import { AccountChip, CaptureRoom, FocusSwitch } from './shell/TopBar';
+import { AccountChip, FocusSwitch } from './shell/TopBar';
 import { barSection, SECTIONS, sectionFromHash, type SectionId } from './shell/sections';
 import { NoticedScreen } from './patterns/NoticedScreen';
 import { ProjectsScreen } from './projects/ProjectsScreen';
@@ -57,6 +59,7 @@ const subscribeHash = (fn: () => void) => {
 const getHash = () => window.location.hash;
 
 const reduceQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+const ExploreScreen = lazy(() => import('./explore/ExploreScreen'));
 
 function Shell() {
   const { data, status, generation } = useMyDay();
@@ -86,8 +89,15 @@ function Shell() {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     document.documentElement.setAttribute('data-motion', data.settings.motion === 'off' ? 'off' : 'auto');
-    const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
-    if (bg) document.querySelector('meta[name="theme-color"]')?.setAttribute('content', bg);
+    const updateBar = () => {
+      const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+      if (bg) document.querySelector('meta[name="theme-color"]')?.setAttribute('content', bg);
+    };
+    updateBar();
+    // The installed app's status bar must follow an OS theme change while Match device is selected.
+    const device = theme === 'auto' && window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+    device?.addEventListener('change', updateBar);
+    return () => device?.removeEventListener('change', updateBar);
   }, [theme, data.settings.motion]);
 
   // Moving between sections starts at the top of the page.
@@ -140,10 +150,12 @@ function Shell() {
   const screenName = hash.startsWith('#sync') ? 'Your account' : hash.startsWith('#noticed') ? 'What MyDay has noticed' : hash.startsWith('#today/tasks') ? 'Tasks' : SECTIONS.find(x => x.id === section)?.label ?? 'MyDay';
   // Sign in first (when sync is set up): see sync/SignInGate.tsx.
   const gate = !blocked && signInRequired(sync) && !useHere;
+  const explore = exploreRoute(hash);
+  const immersive = !!explore && !blocked && !gate;
   // Notes that clearly belong to a project are connected to it by themselves (with Undo): see shell/autoConnect.ts.
-  useAutoConnect(data, status.kind === 'ok' && !gate, hash);
+  useAutoConnect(data, status.kind === 'ok' && !gate && !immersive, hash);
   // …and, once you've switched it on, AI help places the ones the device can't (shell/aiConnect.ts).
-  useAiConnect(data, status.kind === 'ok' && !gate);
+  useAiConnect(data, status.kind === 'ok' && !gate && !immersive);
   let content;
   if (status.kind === 'damaged') {
     content = <DamagedView reason={status.reason} onImport={() => fileInput.current?.click()} onStartFresh={startFresh}
@@ -165,34 +177,33 @@ function Shell() {
   } else if (section === 'calendar') content = <CalendarScreen data={data} canSave={status.kind === 'ok'} motionAllowed={motionAllowed} />;
   else if (section === 'finance') content = <FinanceScreen data={data} canSave={status.kind === 'ok'} />;
   else if (section === 'study') content = <StudyScreen data={data} hash={hash} />;
+  else if (explore) content = <ExploreBoundary key={hash} fallback={<div className="p-8"><p>Explore could not be loaded. Your project is safe.</p><a href={projectHref(explore.projectId)}>Return to project</a></div>}><Suspense fallback={<div className="p-8"><p>Opening Explore…</p><a href={projectHref(explore.projectId)}>Return to project</a></div>}><ExploreScreen key={`${explore.projectId}:${explore.example}`} data={data} projectId={explore.projectId} example={explore.example} /></Suspense></ExploreBoundary>;
   else if (section === 'projects') content = <ProjectsScreen data={data} hash={hash} />;
   else content = <HealthScreen data={data} hash={hash} />;
   if (gate) content = <SignInGate onExport={exportData} onUseHere={() => { setUseHere(true); toast('Using what\'s on this device. Sign in next time to sync.'); }} />;
 
   return (
     <>
-      {/* The top bar: the screen's name and the date; on the right Focus mode (Today), your account, + Capture and the
-          theme. Phones: a frosted bar across the top. Wide screens: a white card above the page, beside the side menu. */}
-      <header className="appbar sticky top-0 z-20 bg-glass backdrop-blur-[18px] backdrop-saturate-[140%] border-b border-outline lg:bg-transparent lg:backdrop-blur-none lg:border-0 lg:pt-4 lg:px-6">
-        <div className="appbar-card max-w-[640px] lg:max-w-[1072px] mx-auto px-4 lg:px-5 py-3 pt-[max(12px,env(safe-area-inset-top))] lg:pt-3 flex items-center justify-between gap-3 lg:bg-surface lg:rounded-card lg:shadow-card lg:border lg:border-outline">
+      <a className="skip-link" href="#app" onClick={e => { e.preventDefault(); document.getElementById('app')?.focus(); }}>Skip to content</a>
+      {!immersive && <header className="appbar">
+        <div className="appbar-card">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <p className="text-xs font-bold tracking-[.14em] uppercase text-primary m-0" id="screenName">{blocked || gate ? 'MyDay' : screenName}</p>
+              <h1 className="screen-name" id="screenName">{blocked || gate ? 'MyDay' : screenName}</h1>
               {!blocked && !gate && <SyncBadge />}
             </div>
-            <h1 id="date" className="text-[24px] sm:text-[26px] lg:text-[28px] font-bold tracking-[-.02em] leading-tight m-0">{prettyDate(k)}</h1>
+            <p id="date" className="screen-date">{prettyDate(k)}</p>
           </div>
           <div className="flex items-center gap-2 lg:gap-3 flex-none">
             {!blocked && !gate && section === 'today' && !hash.startsWith('#today/tasks') && !hash.startsWith('#noticed') && !hash.startsWith('#sync') && <FocusSwitch />}
             {!blocked && !gate && <AccountChip data={data} sync={sync} />}
-            {!blocked && !gate && status.kind === 'ok' && <CaptureRoom />}
+            {!blocked && !gate && status.kind === 'ok' && <CaptureButton data={data} />}
             <ThemeButton theme={theme} motionAllowed={motionAllowed} onChange={next => update(d => { d.settings.theme = next; })} />
           </div>
         </div>
-      </header>
-      {!blocked && !gate && <Nav current={barSection(section)} />}
-      {!blocked && !gate && status.kind === 'ok' && <CaptureButton data={data} />}
-      <main id="app" className="max-w-[640px] lg:max-w-[1120px] mx-auto px-4 lg:px-6 pt-4 lg:pt-6">
+      </header>}
+      {!immersive && !blocked && !gate && <Nav current={barSection(section)} />}
+      <main id="app" tabIndex={-1} className={immersive ? 'explore-main focus:outline-none' : 'max-w-[640px] lg:max-w-[1120px] mx-auto px-4 lg:px-7 pt-5 lg:pt-8 focus:outline-none'}>
         {loadIssue && !blocked && (
           <LoadIssue dropped={loadIssue.dropped}
             onDownload={() => download(`myday-saved-copy-${todayKey()}.json`, loadIssue.raw)}
@@ -200,7 +211,7 @@ function Shell() {
         )}
         {content}
         {/* Today has these at the bottom of its own layout; every other screen (Tasks under Today too) gets them here. */}
-        {!blocked && !gate && (section !== 'today' || hash.startsWith('#noticed') || hash.startsWith('#today/tasks')) && !hash.startsWith('#sync') && (
+        {!immersive && !blocked && !gate && (section !== 'today' || hash.startsWith('#noticed') || hash.startsWith('#today/tasks')) && !hash.startsWith('#sync') && (
           <div className="max-w-[720px] mx-auto mt-6">
             <AppFooter data={data} canSave={status.kind === 'ok'} onEdit={() => { location.hash = 'today/edit'; }} onExport={exportData} onImport={() => fileInput.current?.click()} />
           </div>

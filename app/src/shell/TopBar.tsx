@@ -1,12 +1,9 @@
 import { Focus } from 'lucide-react';
-import type { ReactNode } from 'react';
 import type { MyDayData } from '../data/types';
 import type { View } from '../sync/engine';
 import { setFocusMode, useFocusMode } from './focusMode';
 
-// The top bar's right side (besides the theme button): Focus mode (on Today) and your account. On wide screens the
-// bar is a white card above the page, like the cards below it; + Capture sits just left of the theme button. On phones
-// the Focus mode switch is a round icon button, like the theme button (green when it's on), so the date fits on one line.
+// Focus mode stays compact on phones and exposes its label and switch on wider screens.
 export function FocusSwitch() {
   const on = useFocusMode();
   return (
@@ -37,6 +34,3 @@ export function AccountChip({ data, sync }: { data: MyDayData; sync: View }) {
     </a>
   );
 }
-
-// Keeps room for + Capture beside the theme button on wide screens (Capture itself is placed by index.css).
-export const CaptureRoom = (): ReactNode => <span aria-hidden="true" className="hidden lg:block w-12 flex-none" />;

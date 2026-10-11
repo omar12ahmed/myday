@@ -396,7 +396,7 @@ const go = async (hash, y, m, d, h = 9, mi = 0, url = APP) => { T.setUrl(url + '
   }
   await T.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
   await go('calendar', 2026, 11, 2);
-  check('desktop: navigation is the side menu down the left, beside the page (from 1.11.0)', await ev(`(() => { const n = document.getElementById('nav').getBoundingClientRect(), a = document.getElementById('app').getBoundingClientRect(); return n.left <= 24 && n.height > 400 && n.right < a.left; })()`));
+  check('desktop: sidebar stays beside the workspace with room before its content', await ev(`(() => { const n = document.getElementById('nav').getBoundingClientRect(), app = document.getElementById('app'), a = app.getBoundingClientRect(); return n.left <= 24 && n.height > 400 && n.right <= a.left && a.left + parseFloat(getComputedStyle(app).paddingLeft) - n.right >= 16; })()`));
   check('desktop: the selected day sits beside the month', await ev(`document.getElementById('detailsCard').getBoundingClientRect().left > document.querySelector('.cal-grid').getBoundingClientRect().right`));
   check('desktop: no sideways scrolling', !(await ev('document.documentElement.scrollWidth > innerWidth')));
   await T.send('Emulation.clearDeviceMetricsOverride');

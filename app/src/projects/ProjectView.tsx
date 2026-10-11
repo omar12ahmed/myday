@@ -1,5 +1,6 @@
-import { CalendarPlus, Check, NotebookPen, Pause, Pencil, Play, Plus, Sparkles, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowUpRight, CalendarPlus, Check, NotebookPen, Pause, Pencil, Play, Plus, Sparkles, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { exploreHref, rememberExploreEntry, restoreExploreEntry } from '../explore/route';
 import { addAppointment } from '../capture/save';
 import { loadLibs, parseCapture, type CaptureLibs } from '../capture/parse';
 import { Button } from '../components/Button';
@@ -24,6 +25,7 @@ import { Progression } from './parts';
 // belongs to it — tasks, notes, what's coming up (dated tasks and appointments) and how far it has come. On wide screens
 // the doing (next step, tasks, notes) is on the left and the overview on the right.
 export function ProjectView({ data, id }: { data: MyDayData; id: string }) {
+  useEffect(() => { restoreExploreEntry(id); }, [id]);
   const p = projectById(data, id);
   if (!p) return <><BackLink to="projects" label="Projects" /><NotFound title="This project isn't here" back="projects" label="Back to your projects" /></>;
   return (
@@ -69,6 +71,7 @@ function ProjectHead({ p }: { p: Project }) {
         <button type="button" className="min-h-11 mt-1 -mb-1 text-[15px] font-semibold text-primary bg-transparent border-0 p-0 cursor-pointer hover:underline underline-offset-4" data-action="project-why" onClick={() => setEditing(true)}>What is it, and why does it matter to you?</button>
       )}
       <div className="mt-5"><Progression stage={p.stage} onPick={stage => save({ stage })} /></div>
+      <a id="projectExplore" href={exploreHref(p.id)} onClick={() => rememberExploreEntry(p.id)} data-action="project-explore" className="inline-flex items-center gap-2 min-h-11 mt-3 text-primary font-semibold text-[15px] no-underline hover:underline underline-offset-4">Explore this idea <ArrowUpRight size={17} aria-hidden="true" /></a>
     </Card>
   );
 }

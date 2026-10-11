@@ -46,5 +46,5 @@ export function StudyScreen({ data, hash }: { data: MyDayData; hash: string }) {
   else if (view === 'progress') screen = <ProgressView data={data} historyAll={historyAll} showAll={() => setHistoryAll(true)} />;
   else return <div className="st-view enter"><Dashboard data={data} lengths={lengths} setLength={setLength} /></div>;
   // The other screens are one column, kept to a comfortable reading width on wide screens.
-  return <div className="st-view enter max-w-[720px] mx-auto">{screen}</div>;
+  return <div className={`st-view enter mx-auto ${view === 'cybersecurity' && (!id || id === 'practice') ? 'max-w-[1000px]' : 'max-w-[720px]'}`}>{screen}</div>;
 }

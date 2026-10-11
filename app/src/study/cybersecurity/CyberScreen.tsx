@@ -27,11 +27,11 @@ export function ResourceLinks({ ids }: { ids: string[] }) {
 }
 export default function CyberScreen({ data, id }: { data: MyDayData; id: string }) {
   const lesson = lessons.get(id), module = modules.get(id), activity = activities.get(id);
+  const activeTab = activity?.practice || id === 'practice' ? 'practice' : id === 'notebook' || id === 'toolkit' ? id : 'map';
   return <div className="cyber-workshop break-words">
-    <nav className="flex flex-wrap gap-x-5 mb-3 [&_a]:inline-flex [&_a]:min-h-11 [&_a]:items-center" aria-label="Cybersecurity">
-      <InlineLink href="#study">Study</InlineLink><InlineLink href="#study/cybersecurity">Learning map</InlineLink>
-      <InlineLink href="#study/cybersecurity/practice">Practice</InlineLink>
-      <InlineLink href="#study/cybersecurity/notebook">Lab notebook</InlineLink><InlineLink href="#study/cybersecurity/toolkit">Toolkit</InlineLink>
+    <nav className="workspace-tabs" aria-label="Cybersecurity">
+      <a href="#study">‹ Study</a>
+      {[['map', 'Learning map', ''], ['practice', 'Practice', '/practice'], ['notebook', 'Lab notebook', '/notebook'], ['toolkit', 'Toolkit', '/toolkit']].map(([key, label, path]) => <a key={key} href={'#study/cybersecurity' + path} aria-current={activeTab === key ? 'page' : undefined}>{label}</a>)}
     </nav>
     {lesson ? <LessonView data={data} lesson={lesson} />
       : module ? <ModuleView data={data} id={id} />
@@ -54,17 +54,16 @@ function MapView({ data }: { data: MyDayData }) {
     if (update(d => { count = importPath(d, path.id); })) toast(count ? `Added ${count} courses to your Study roadmap.` : 'This path is already in your roadmap. Your work is kept.');
   }
   return <>
-    <Card tone="accent" className="next-card">
+    <Card className="next-card cyber-map-intro">
       <Eyebrow><ShieldCheck className="inline mr-1" size={18} aria-hidden="true" /> Cybersecurity workshop</Eyebrow>
-      <h2>A little practice. Something you can show.</h2>
+      <h2 className="text-[28px] lg:text-[34px]">Build skills through practice.</h2>
       <p>Follow the foundations, choose a specialism, and keep the evidence from each attempt. Pick up wherever you left off.</p>
       <p className="text-sm text-fg-2">{submitted ? `${submitted} submitted attempt${submitted === 1 ? '' : 's'} in your notebook` : 'Your notebook is ready for your first discovery'}. Reading and time spent do not award mastery.</p>
       <div className="rounded-tile bg-surface p-4 border border-outline mt-4">
         <Eyebrow>Your next small step</Eyebrow><h3>{next.lesson.title}</h3><p className="text-sm text-fg-2">{next.reason}.</p>
-        <LinkButton to={'study/cybersecurity/' + next.lesson.id} primary>Open lesson</LinkButton>
+        <div className="grid sm:grid-cols-2 gap-3"><LinkButton to={'study/cybersecurity/' + next.lesson.id} primary>Open lesson</LinkButton><LinkButton to="study/cybersecurity/practice">Explore practice activities</LinkButton></div>
       </div>
     </Card>
-    <Card><h3>Something practical to try</h3><p>Free-first assignments on learning sites, plus small experiments that run inside MyDay.</p><LinkButton to="study/cybersecurity/practice">Find a practice activity</LinkButton></Card>
     <Card>
       <Field label="Your learning path" htmlFor="cyberPath"><Select id="cyberPath" value={path.id} onChange={e => update(d => { d.cybersecurity.pathId = e.target.value; })}>
         {curriculum.paths.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}

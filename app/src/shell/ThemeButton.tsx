@@ -20,7 +20,7 @@ export function ThemeButton({ theme, motionAllowed, onChange }: { theme: Theme; 
   }
   return (
     <button type="button" id="themeBtn" data-action="theme" aria-label={label} title={label} onClick={next}
-      className="flex-none size-12 rounded-full grid place-items-center bg-surface-2 text-fg border border-outline cursor-pointer">
+      className="flex-none size-11 rounded-[10px] grid place-items-center bg-transparent text-fg-2 border border-outline cursor-pointer hover:bg-surface">
       <Icon size={22} aria-hidden="true" />
     </button>
   );

@@ -13,7 +13,7 @@ import { activeStudy, sessionMinutes } from '../data/study/sessions';
 import { toast } from '../data/toast';
 import type { MyDayData } from '../data/types';
 import { startRevision } from './actions';
-import { Bar, Eyebrow, ExternalLink, InlineLink, TextLink } from './parts';
+import { Bar, Eyebrow, ExternalLink, InlineLink, Summary, TextLink } from './parts';
 import { StartBlock } from './StartBlock';
 import { CyberCard } from './cybersecurity/CyberCard';
 
@@ -28,10 +28,10 @@ export function SetupCard({ data }: { data: MyDayData }) {
     <Card tone="accent" className="next-card">
       <Eyebrow>Getting started</Eyebrow>
       <h2>Set up your study roadmap</h2>
-      <p className="text-[15px]">It's a simple outline: stages, then courses, modules, sections and tasks. MyDay doesn't fill in course contents — you add modules and sections as you reach them.</p>
+      <p className="text-[15px] text-fg-2">Bring your own courses and organise them into small, manageable steps. Add the details as you learn.</p>
       {rows.length > 0 && (
-        <>
-          <h3>From your learning list</h3>
+        <details className="group my-4 rounded-tile bg-surface-2 px-3">
+          <Summary>Review {rows.length} suggested courses</Summary>
           <p className="text-[15px] text-fg-2">Each one becomes a course. The stages are a first guess from the titles — change any before saving.</p>
           {rows.map((r, i) => (
             <div key={r.listId} className="st-setup-row grid grid-cols-1 min-[480px]:grid-cols-[minmax(0,1fr)_minmax(0,12em)] gap-x-2.5 gap-y-1 items-center py-1.5 border-t border-outline">
@@ -43,9 +43,9 @@ export function SetupCard({ data }: { data: MyDayData }) {
               </Select>
             </div>
           ))}
-        </>
+        </details>
       )}
-      <p className="text-[15px] text-fg-2 mt-3">Starter stages: {STARTER_STAGES.join(', ')}. Rename, reorder or remove them any time.</p>
+      <p className="text-sm text-fg-2 mt-3">Start with your learning list or an empty roadmap. You can rename and organise its stages any time.</p>
       <div className="grid gap-2.5">
         {rows.length > 0 && <Button variant="primary" data-action="s-setup" data-with="1" onClick={() => create(true)}>Create my roadmap</Button>}
         <Button variant={rows.length ? 'tonal' : 'primary'} data-action="s-setup" data-with="0" onClick={() => create(false)}>Start with empty stages</Button>
@@ -77,7 +77,7 @@ function RevisionCard({ data }: { data: MyDayData }) {
 // (e.g. Cybersecurity, Arabic) — each with its next step and progress, one tap from its own page.
 export function Dashboard({ data, lengths, setLength }: { data: MyDayData; lengths: Record<string, number>; setLength: (key: string, m: number) => void }) {
   const st = data.study;
-  if (!st.stages.length) return <><CyberCard /><SetupCard data={data} /></>;
+  if (!st.stages.length) return <div className="study-welcome"><div className="mb-6"><p className="eyebrow">Your learning space</p><h2 className="text-[28px] lg:text-[34px] mb-2">Make room for curiosity.</h2><p className="text-fg-2 text-[15px] max-w-xl">Follow a guided path or bring a subject of your own. Pick a small next step and build from there.</p></div><div className="grid lg:grid-cols-2 gap-5 items-start"><CyberCard /><SetupCard data={data} /></div></div>;
   const ix = stIndex(st), c = focusCourse(st, ix), cur = activeStudy(st), k = todayKey();
   const glances = topicsOf(st).map(t => topicGlance(st, ix, t.id)!).filter(Boolean);
   const named = !!st.topics?.length;
