@@ -4,12 +4,14 @@
 //   2. The request is small and of the right shape: "Help me adjust today" (PlanContext, ../_shared/ai/schema.ts) or
 //      "Add what's on my mind" (TasksContext, ../_shared/ai/tasks.ts). Both share the same limits.
 //   3. Request, spending and pace limits are checked (and the worst-case cost reserved) before the model is called.
-//   4. One model call, with a time limit and a cap on the reply's length. The model can't write anything anywhere:
+//   4. One model call, with a time limit and a cap on the reply's length — to the model set up for that job (the main
+//      one, or the learning one: see routeFor in providers.ts). Only if it can't answer at all does the other model
+//      get one try, inside the same time limit and the same reservation. The model can't write anything anywhere:
 //      the reply goes back to the app, which checks every rule and only saves after you confirm.
 //   5. Nothing about the request's content is logged (no tasks, notes or sleep): only an outcome and timings.
 //
 // Everything specific to Deno or Supabase is passed in (Deps), so the same code runs in tests. index.ts wires it up.
-import { callModel, configFromEnv, costUsd, worstCaseCostUsd } from '../_shared/ai/providers.ts';
+import { callModel, costUsd, fallsBack, routeFor, worstCaseCostUsd, type ProviderConfig } from '../_shared/ai/providers.ts';
 import { CONTRACT_VERSION, LIMITS, type PlanContext } from '../_shared/ai/schema.ts';
 import { checkTasksContext } from '../_shared/ai/tasks.ts';
 import { checkTutorContext } from '../_shared/ai/tutor.ts';
@@ -93,11 +95,13 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
   if (!body || !(checkContext(body.context) || checkTasksContext(body.context) || checkTutorContext(body.context) || checkConnectContext(body.context))) return reply(400, { ok: false, error: 'bad-request' }, 'bad-context');
   const ctx = body.context;
 
-  // 3. The model, and the limits.
-  const cfg = configFromEnv(deps.env);
-  if ('error' in cfg) return reply(503, { ok: false, error: 'not-configured' }, 'not-configured');
-  const reserve = worstCaseCostUsd(cfg, ctx);
-  if (reserve === null) return reply(503, { ok: false, error: 'not-configured' }, 'no-prices');
+  // 3. The model for this job (and the other one, in case it can't answer), and the limits. Both models' worst cases
+  //    are reserved up front, since both could be billed for this one request.
+  const route = routeFor(deps.env, ctx);
+  if ('error' in route) return reply(503, { ok: false, error: 'not-configured' }, 'not-configured');
+  const worst = worstCaseCostUsd(route.primary.cfg, ctx), worstFallback = route.fallback ? worstCaseCostUsd(route.fallback.cfg, ctx) : 0;
+  if (worst === null || worstFallback === null) return reply(503, { ok: false, error: 'not-configured' }, 'no-prices');
+  const reserve = worst + worstFallback;
   const num = (name: string, fallback: number) => { const n = Number(deps.env(name)); return Number.isFinite(n) && deps.env(name) !== undefined && deps.env(name) !== '' ? n : fallback; };
   let gate: { ok: boolean; reason?: string };
   try {
@@ -107,15 +111,31 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
   }
   if (!gate.ok) return reply(429, { ok: false, error: 'limit', reason: gate.reason || 'limit' }, `limit-${gate.reason}`);
 
-  // 4. One model call.
-  const result = await callModel(cfg, ctx, deps.fetchImpl);
+  // 4. The model call — and, only if that model can't answer, the other one, in what's left of the time the app
+  //    waits (40 s; this stays under it, AI_TOTAL_TIMEOUT_MS, 38 s by default).
+  const deadline = t0 + Math.min(num('AI_TOTAL_TIMEOUT_MS', 38000), 39000);
+  const within = (cfg: ProviderConfig): ProviderConfig => ({ ...cfg, timeoutMs: Math.max(1000, Math.min(cfg.timeoutMs, deadline - Date.now())) });
+  let used = route.primary, result = await callModel(within(used.cfg), ctx, deps.fetchImpl);
+  let inputTokens = result.inputTokens ?? 0, outputTokens = result.outputTokens ?? 0, fellBack = false;
+  const firstError = result.ok ? null : result.error;
+  if (fallsBack(result) && route.fallback && deadline - Date.now() >= 5000) {
+    fellBack = true;
+    const second = await callModel(within(route.fallback.cfg), ctx, deps.fetchImpl);
+    inputTokens += second.inputTokens ?? 0; outputTokens += second.outputTokens ?? 0;
+    if (second.ok) used = route.fallback;
+    result = second;
+  }
   // Billed tokens are recorded whether or not the generation was usable.
-  await deps.finish(token, result.inputTokens ?? 0, result.outputTokens ?? 0).catch(() => {});
-  if (!result.ok) return reply(502, { ok: false, error: 'unavailable', detail: result.error }, `model-${result.error}`);
+  await deps.finish(token, inputTokens, outputTokens).catch(() => {});
+  // Logged with the outcome (no content): the job and the model slot, e.g. "tutor/main,after-learn-timeout".
+  const last = fellBack && route.fallback ? route.fallback.slot : route.primary.slot; // the model tried last
+  const via = `${route.job}/${last}${fellBack ? `,after-${route.primary.slot}-${firstError}` : ''}`;
+  if (!result.ok) return reply(502, { ok: false, error: 'unavailable', detail: result.error }, `model-${result.error}:${via}`);
   return reply(200, {
     ok: true,
     output: result.text.slice(0, 8000),
-    model: cfg.label,
-    usage: { inputTokens: result.inputTokens, outputTokens: result.outputTokens, costUsd: costUsd(cfg, result.inputTokens, result.outputTokens), latencyMs: result.latencyMs },
-  }, 'ok');
+    model: used.cfg.label,
+    ...(fellBack ? { fallback: true } : {}),
+    usage: { inputTokens: result.inputTokens, outputTokens: result.outputTokens, costUsd: costUsd(used.cfg, result.inputTokens, result.outputTokens), latencyMs: result.latencyMs },
+  }, fellBack ? `ok:${via}` : 'ok');
 }

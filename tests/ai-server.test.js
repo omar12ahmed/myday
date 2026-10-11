@@ -130,6 +130,67 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   check('the logs still hold only an outcome and a time (no notes)', lines.every(l => /^ai-plan \S+ \d{3} \d+ms$/.test(l)) && !lines.join(' ').includes('Secret note') && !lines.join(' ').includes('podcast'));
   env = { ...env, AI_PROVIDER: 'mock', AI_MODEL: 'mock:good' };
 
+  console.log('\n[2d] Which model does which job (AI roles, step 2): routing and one fallback');
+  const P = await import(path.join(ROOT, 'supabase/functions/_shared/ai/providers.ts'));
+  const rctx = { version: 1, action: 'tutor', curriculumVersion: '1.0.0', lessonId: 'lesson.lab-isolation', question: 'Why does a guest need its own network boundary?' };
+  const tasksCtx = { version: 1, action: 'tasks', date: '2026-11-10', weekday: 'Tuesday', text: 'Book the dentist', maxItems: 8 };
+  const base = { AI_MOCK_DELAY_MS: '0', AI_DAILY_LIMIT: '500', AI_MIN_SECONDS_BETWEEN: '0', AI_MONTHLY_BUDGET_USD: '1' };
+  const MAIN = { AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_LABEL: 'Main model' };
+  const LEARN = (model = 'mock:good') => ({ AI_LEARN_PROVIDER: 'mock', AI_LEARN_MODEL: model, AI_LEARN_LABEL: 'Learning model', AI_LEARN_MOCK_DELAY_MS: '0' });
+  const ask = async (context, over) => { lines.length = 0; const r = await call({ context }, {}, over); return { status: r.status, body: await r.json(), log: lines.slice() }; };
+  env = { ...base, ...MAIN };
+  let a = await ask(rctx);
+  check('with only the main model set up, every job goes to it (as before)', a.status === 200 && a.body.model === 'Main model' && !a.body.fallback && a.log[0].startsWith('ai-plan ok 200'));
+  env = { ...base, ...MAIN, ...LEARN(), AI_ROUTES: '{"tutor": "learn"}' };
+  a = await ask(rctx);
+  check('AI_ROUTES sends the tutor to the learning model', a.status === 200 && a.body.model === 'Learning model' && JSON.parse(a.body.output).lessonId === 'lesson.lab-isolation');
+  check('…and every job it doesn\'t name to the main one', (await ask(tasksCtx)).body.model === 'Main model' && (await ask({ ...ctx })).body.model === 'Main model');
+  env = { ...base, ...MAIN, AI_ROUTES: '{"tutor": "learn"}' };
+  check('a job routed to a learning model that isn\'t set up goes to the main one (no error)', (await ask(rctx)).body.model === 'Main model');
+  env = { ...base, ...MAIN, ...LEARN('mock:error'), AI_ROUTES: '{"tutor": "learn"}' };
+  a = await ask(rctx);
+  check('if the learning model can\'t answer (a provider error), the main one gets one try and answers', a.status === 200 && a.body.model === 'Main model' && a.body.fallback === true);
+  check('…logged as which job and which model, never content', a.log.length === 1 && /^ai-plan ok:tutor\/main,after-learn-http 200 \d+ms$/.test(a.log[0]) && !a.log[0].includes('network boundary'), a.log);
+  env = { ...base, ...MAIN, ...LEARN('mock:error'), AI_ROUTES: '{"tutor": "learn"}', AI_FALLBACK: 'off' };
+  a = await ask(rctx);
+  check('AI_FALLBACK=off: no second try (502)', a.status === 502 && /^ai-plan model-http:tutor\/learn 502/.test(a.log[0]), a.log);
+  env = { ...base, ...MAIN, AI_MODEL: 'mock:error', ...LEARN('mock:error'), AI_ROUTES: '{"tutor": "learn"}' };
+  a = await ask(rctx);
+  check('if neither can answer: 502, after exactly one try each', a.status === 502 && /^ai-plan model-http:tutor\/main,after-learn-http 502/.test(a.log[0]), a.log);
+  env = { ...base, ...MAIN, ...LEARN('mock:truncated'), AI_ROUTES: '{"tutor": "learn"}' };
+  a = await ask(rctx);
+  check('a reply cut short (it cost tokens, and says something about the request) is not passed to the other model', a.status === 502 && a.body.detail === 'truncated' && !a.body.fallback);
+  env = { ...base, ...MAIN, AI_MODEL: 'mock:error', ...LEARN() };
+  check('the fallback works the other way too: the main model failing, the learning one answers', (await ask(tasksCtx)).body.model === 'Learning model');
+  env = { ...base, ...MAIN, ...LEARN('mock:slow'), AI_LEARN_TIMEOUT_MS: '2500', AI_TOTAL_TIMEOUT_MS: '3000', AI_ROUTES: '{"tutor": "learn"}' };
+  a = await ask(rctx);
+  check('all within the app\'s 40 seconds: with too little time left after a time-out, no second try', a.status === 502 && a.body.detail === 'timeout' && !a.body.fallback, a.body);
+  for (const [bad, why] of [[{ AI_ROUTES: '{"cooking": "learn"}' }, 'an unknown job'], [{ AI_ROUTES: '{"tutor": "gemini"}' }, 'an unknown slot'], [{ AI_ROUTES: 'tutor=learn' }, 'not JSON'],
+    [{ AI_LEARN_PROVIDER: 'openai-compatible', AI_LEARN_BASE_URL: 'https://x.example', AI_LEARN_MODEL: 'g' }, 'a learning model without its key or prices']]) {
+    env = { ...base, ...MAIN, ...bad };
+    a = await ask(rctx);
+    check(`settings with ${why} are refused (503, not configured), never guessed`, a.status === 503 && a.body.error === 'not-configured');
+  }
+  // Real-shaped providers (a fake network): both worst cases are rReserved, both calls' tokens recorded.
+  const OPEN = (prefix, host, inP, outP) => ({ [prefix + 'PROVIDER']: 'openai-compatible', [prefix + 'BASE_URL']: `https://${host}/v1`, [prefix + 'MODEL']: host, [prefix + 'API_KEY']: 'sk-' + host,
+    [prefix + 'PRICE_IN_PER_MTOK']: String(inP), [prefix + 'PRICE_OUT_PER_MTOK']: String(outP), [prefix + 'MAX_OUTPUT_TOKENS']: '1000', [prefix + 'LABEL']: host });
+  env = { ...base, ...OPEN('AI_', 'main.example', 0.15, 0.5), ...OPEN('AI_LEARN_', 'learn.example', 0.25, 1.5), AI_ROUTES: '{"tutor": "learn"}' };
+  const route = P.routeFor(n => env[n], rctx);
+  const both = P.worstCaseCostUsd(route.primary.cfg, rctx) + P.worstCaseCostUsd(route.fallback.cfg, rctx);
+  let rReserved = null; const hosts = []; finished = [];
+  a = await ask(rctx, {
+    begin: async (tok, l) => { rReserved = l.reserveUsd; return { ok: true }; },
+    fetchImpl: async (url, init) => {
+      hosts.push(new URL(url).host); const sent = JSON.parse(init.body);
+      if (url.includes('learn.example')) return new Response('{"error":{"message":"overloaded"}}', { status: 503 });
+      return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ lessonId: 'lesson.lab-isolation', explanation: 'x', nextStep: 'y' }) }, finish_reason: 'stop' }], usage: { prompt_tokens: 700, completion_tokens: 120, total_tokens: 820 }, model: sent.model }));
+    },
+  });
+  check('both models\' worst cases are rReserved up front, since both could be billed', Math.abs(rReserved - both) < 1e-12 && both > P.worstCaseCostUsd(route.primary.cfg, rctx), [rReserved, both]);
+  check('the learning model is asked first, then the main one; each request goes to its own address with its own key', hosts.join() === 'learn.example,main.example' && a.body.model === 'main.example' && a.body.fallback === true);
+  check('the tokens of both calls are recorded', finished.length === 1 && finished[0][0] === 700 && finished[0][1] === 120);
+  env = { AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_MOCK_DELAY_MS: '0', AI_DAILY_LIMIT: '50', AI_MIN_SECONDS_BETWEEN: '0', AI_MONTHLY_BUDGET_USD: '1' };
+
   console.log('\n[3] A caller is verified before anything else, and secrets stay out of Git');
   let begun = 0, provided = 0;
   const spyDeps = { begin: async () => { begun++; return { ok: true }; }, fetchImpl: async () => { provided++; return new Response('{}'); } };
@@ -193,6 +254,15 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   check('…a time limit as long as the app\'s own (40 s) or longer: caught', r.code === 1 && /keep it under the app's 40000 ms/.test(r.out), r.out);
   r = checkFile('coding.env', template.replace(/^AI_API_KEY=$/m, `AI_API_KEY=${FAKE}`).replace('https://api.z.ai/api/paas/v4', 'https://api.z.ai/api/coding/paas/v4'));
   check('…Z.ai\'s Coding Plan address: caught (Z.ai limits the Coding Plan to its coding tools)', r.code === 1 && /Coding Plan address/.test(r.out), r.out);
+  // The learning model (AI roles, step 2): the template's commented block switched on.
+  const learnOn = template.replace(/^AI_API_KEY=$/m, `AI_API_KEY=${FAKE}`).replace(/^# (AI_LEARN_|AI_ROUTES=)/gm, '$1').replace(/^AI_LEARN_API_KEY=$/m, 'AI_LEARN_API_KEY=yy-another-made-up-key');
+  r = checkFile('learn.env', learnOn);
+  check('…with the learning model switched on: ready, both models as evaluated, the tutor routed to Gemini with GLM as its fallback, neither key printed',
+    r.code === 0 && /Learning model: same request settings as evaluated \("gemini-3\.1-flash-lite"/.test(r.out) && /the tutor goes to the learning model, with the main one as its fallback/.test(r.out) && !r.out.includes(FAKE) && !r.out.includes('yy-another'), r.out);
+  r = checkFile('learn-nokey.env', learnOn.replace(/^AI_LEARN_API_KEY=.*$/m, 'AI_LEARN_API_KEY='));
+  check('…the learning model without its key: not ready', r.code === 1 && /AI_LEARN_API_KEY is empty/.test(r.out), r.out);
+  r = checkFile('routes-bad.env', learnOn.replace(/^AI_ROUTES=.*$/m, 'AI_ROUTES={"tutr": "learn"}'));
+  check('…a misspelt job in AI_ROUTES: caught', r.code === 1 && /unknown job "tutr"/.test(r.out), r.out);
   fsx.rmSync(tmp, { recursive: true, force: true });
   // The Deno entry (index.ts) can't run here (no Deno), but it can be type-checked against supabase-js's own types,
   // with Deno's two globals it uses declared.

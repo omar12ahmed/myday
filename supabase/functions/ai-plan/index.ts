@@ -3,7 +3,9 @@
 //   - the signed-in user is checked with Supabase Auth, using the token the app sends;
 //   - the limits (ai_begin / ai_finish in ../../migrations/20261003120000_ai_usage.sql) run as that user, so they
 //     only ever touch that account's counts. No secret key is needed for either.
-// The model's key and settings are Edge Function secrets (AI_PROVIDER, AI_BASE_URL, AI_MODEL, AI_API_KEY, prices…).
+// The models' keys and settings are Edge Function secrets: the main model's (AI_PROVIDER, AI_BASE_URL, AI_MODEL,
+// AI_API_KEY, prices…), optionally a learning model's (the same names starting AI_LEARN_) and which jobs go to it
+// (AI_ROUTES, e.g. {"tutor": "learn"}). See providers.ts, routeFor.
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { handle } from './handler.ts';
 

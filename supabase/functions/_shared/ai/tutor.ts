@@ -1,6 +1,9 @@
 import { tutorLessons } from './tutor-lessons.ts';
 import type { ChatMessage } from './prompt.ts';
 
+// Which tutor instructions a reply came from (for evaluation records).
+export const TUTOR_PROMPT_VERSION = 'myday-tutor-v1';
+
 export interface TutorContext {
   version: 1; action: 'tutor'; curriculumVersion: '1.0.0'; lessonId: string; question: string;
 }
@@ -24,7 +27,10 @@ return to its objectives. You have no browsing or tools; acknowledge uncertainty
 not an assessment. Return only JSON: {"lessonId":"${c.lessonId}","explanation":"at most 2400 characters","nextStep":"at most 400 characters"}.` },
   { role: 'user', content: JSON.stringify({ lesson: tutorLessons[c.lessonId], question: c.question }) }];
 }
-export function mockTutor(c: TutorContext): string {
+// The practice tutor (no AI). "sloppy" breaks the rules on purpose (a link, a mark, the question repeated back), so
+// the evaluation can show its checks catch it.
+export function mockTutor(c: TutorContext, variant: 'good' | 'sloppy' = 'good'): string {
   const l = tutorLessons[c.lessonId];
+  if (variant === 'sloppy') return JSON.stringify({ lessonId: c.lessonId, explanation: `You've passed: 9/10. You asked: ${c.question.slice(0, 300)} See https://example.com/answers for more.`, nextStep: 'Read the answer key.' });
   return JSON.stringify({ lessonId: c.lessonId, explanation: `Practice helper (no AI): focus on ${l.concepts.join(', ')}. Write what you understand, then identify one thing you can check.`, nextStep: l.objectives[0].slice(0, 400) });
 }

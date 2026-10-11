@@ -5,14 +5,21 @@
     "(the lowest tier) and for the region stated: which configuration applies depends on YOUR account — its region,",
     "workspace and key. Keys are never stored here: keyEnv names the environment variable holding each key, and urlVars",
     "the ones that fill in the address (e.g. your Alibaba Cloud workspace id). Prices change; check them before big runs.",
-    "Qwen: DASHSCOPE_BASE_URL, if set, replaces the address (e.g. Singapore's shared https://dashscope-intl.aliyuncs.com/compatible-mode/v1, which Alibaba says remains fully functional, though it recommends the workspace address)."
+    "Qwen: DASHSCOPE_BASE_URL, if set, replaces the address (e.g. Singapore's shared https://dashscope-intl.aliyuncs.com/compatible-mode/v1, which Alibaba says remains fully functional, though it recommends the workspace address).",
+    "Gemini (checked 11 Oct 2026; Google's pages updated 9 Oct 2026): the Gemini API through its OpenAI-compatible endpoint, on the PAID tier (a Google Cloud project with billing). Google's terms allow only the paid tier for apps used in the UK; on it Google doesn't use prompts or replies to improve its products (they're logged for a limited time for abuse monitoring). Gemini 3 models can't switch thinking off, so they run at their lowest level. Google strongly recommends temperature 1.0 for Gemini 3 (lower can loop or degrade), so these use 1.0. Thinking is billed as output and counts towards the reply cap."
   ],
   "_sources": {
     "alibaba_prices": "https://www.alibabacloud.com/help/en/model-studio/model-pricing (page updated 3 Oct 2026)",
     "alibaba_api": "https://www.alibabacloud.com/help/en/model-studio/qwen-api-via-openai-chat-completions",
     "zai_prices": "https://docs.z.ai/guides/overview/pricing",
     "zai_model": "https://docs.z.ai/guides/vlm/glm-5.3-flash",
-    "zai_params": "https://docs.z.ai/guides/overview/concept-param"
+    "zai_params": "https://docs.z.ai/guides/overview/concept-param",
+    "gemini_openai": "https://ai.google.dev/gemini-api/docs/openai (updated 2 Sep 2026): base URL, reasoning_effort",
+    "gemini_prices": "https://ai.google.dev/gemini-api/docs/pricing (updated 9 Oct 2026): paid tier, standard",
+    "gemini_models": "https://ai.google.dev/gemini-api/docs/models (updated 9 Oct 2026)",
+    "gemini_thinking": "https://ai.google.dev/gemini-api/docs/generate-content/thinking (updated 9 Oct 2026): levels per model, billing",
+    "gemini_3": "https://ai.google.dev/gemini-api/docs/gemini-3 (updated 9 Oct 2026): temperature 1.0",
+    "gemini_terms": "https://ai.google.dev/gemini-api/terms (updated 28 Apr 2026): paid services only for apps used in the UK"
   },
   "models": {
     "qwen3.7-plus": {
@@ -67,6 +74,54 @@
       "_note": "Thinking can't be switched off for GLM-5.3-Flash (a request that tries is an error), so it runs with the lowest reasoning effort. Reasoning counts as output tokens, hence the larger reply cap (Z.ai recommends at least 1024).",
       "priceInPerMTok": 0.15,
       "priceOutPerMTok": 0.5
+    },
+    "gemini-3.1-flash-lite": {
+      "label": "Gemini 3.1 Flash-Lite",
+      "provider": "openai-compatible",
+      "region": "Gemini Developer API, paid tier (a Google Cloud project with billing; set a monthly spend cap in AI Studio).",
+      "baseUrl": "https://generativelanguage.googleapis.com/v1beta/openai",
+      "model": "gemini-3.1-flash-lite",
+      "keyEnv": "GEMINI_API_KEY",
+      "temperature": 1.0,
+      "maxOutputTokens": 2048,
+      "maxTokensField": "max_tokens",
+      "timeoutMs": 30000,
+      "extraBody": { "reasoning_effort": "minimal" },
+      "_note": "Its lowest thinking level (minimal, also its default). JSON output (response_format json_object) through the compatibility layer is to be confirmed by the first live run.",
+      "priceInPerMTok": 0.25,
+      "priceOutPerMTok": 1.5
+    },
+    "gemini-3.5-flash-lite": {
+      "label": "Gemini 3.5 Flash-Lite",
+      "provider": "openai-compatible",
+      "region": "Gemini Developer API, paid tier (a Google Cloud project with billing; set a monthly spend cap in AI Studio).",
+      "baseUrl": "https://generativelanguage.googleapis.com/v1beta/openai",
+      "model": "gemini-3.5-flash-lite",
+      "keyEnv": "GEMINI_API_KEY",
+      "temperature": 1.0,
+      "maxOutputTokens": 2048,
+      "maxTokensField": "max_tokens",
+      "timeoutMs": 30000,
+      "extraBody": { "reasoning_effort": "minimal" },
+      "_note": "Its lowest thinking level (minimal, also its default).",
+      "priceInPerMTok": 0.3,
+      "priceOutPerMTok": 2.5
+    },
+    "gemini-3.8-flash": {
+      "label": "Gemini 3.8 Flash",
+      "provider": "openai-compatible",
+      "region": "Gemini Developer API, paid tier (a Google Cloud project with billing; set a monthly spend cap in AI Studio).",
+      "baseUrl": "https://generativelanguage.googleapis.com/v1beta/openai",
+      "model": "gemini-3.8-flash",
+      "keyEnv": "GEMINI_API_KEY",
+      "temperature": 1.0,
+      "maxOutputTokens": 2048,
+      "maxTokensField": "max_tokens",
+      "timeoutMs": 30000,
+      "extraBody": { "reasoning_effort": "low" },
+      "_note": "Its lowest thinking level is low (minimal returns an error on 3.8 Flash). This price holds until 31 Dec 2026; from 1 Jan 2027 Google lists 1.50 / 7.50.",
+      "priceInPerMTok": 0.75,
+      "priceOutPerMTok": 3.75
     },
     "mock-good": {
       "label": "Mock planner (rules, not AI)",

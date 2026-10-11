@@ -22,6 +22,10 @@ export { messagesFor } from '../supabase/functions/_shared/ai/prompt.ts';
 export { applyConnect, connectContext, fingerprintNote, notesForAi, readConnectReply } from '../app/src/ai/connect';
 export { buildConnectMessages, checkConnectContext, CONNECT_LIMITS, CONNECT_PROMPT_VERSION, CONNECT_SYSTEM_PROMPT, mockConnect, type ConnectContext } from '../supabase/functions/_shared/ai/connect.ts';
 export { chooseTasks } from '../app/src/data/plan';
+// The Cybersecurity tutor (the learning job: AI roles, step 2).
+export { buildTutorMessages, checkTutorContext, mockTutor, TUTOR_PROMPT_VERSION, type TutorContext } from '../supabase/functions/_shared/ai/tutor.ts';
+export { tutorLessons } from '../supabase/functions/_shared/ai/tutor-lessons.ts';
+export { tutorReply } from '../app/src/study/cybersecurity/tutorReply';
 
 // ---------- Memory-only storage ----------
 export function useMemoryStorage() {

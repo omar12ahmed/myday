@@ -170,7 +170,7 @@ The model never writes anything: it only replies, and the app decides what's all
 |---|---|
 | `functions/ai-plan/handler.ts` | The Edge Function's logic: signed-in accounts only, request checks, limits, one bounded model call, no content in logs. |
 | `functions/ai-plan/index.ts` | Connects that to Supabase (Auth and the limit functions run as the signed-in user; no secret key needed). |
-| `functions/_shared/ai/` | Shared by the function, the app and the evaluation: `schema.ts` (what's sent and returned), `prompt.ts` (the instructions), `providers.ts` (the model adapter), `mock.ts` (the practice planner). |
+| `functions/_shared/ai/` | Shared by the function, the app and the evaluation: `schema.ts` (what's sent and returned), `prompt.ts` (the instructions), `providers.ts` (the model adapter, and which model does which job: `routeFor`), `mock.ts` (the practice planner). |
 | `migrations/20261003120000_ai_usage.sql` | Request, token and spending limits per account (counts only, never content). |
 | `migrations/20261005120000_sync_everything.sql` | Sync for everything else: the `sync_records` table, and `sync_push` / `sync_pull` handling it. |
 | `migrations/20261006120000_sync_projects.sql` | Projects sync (1.12.0): `sync_records` accepts `project` records (its two kind checks replaced by named ones; nothing else touched). |
@@ -178,6 +178,23 @@ The model never writes anything: it only replies, and the app decides what's all
 | `migrations/20261011120000_sync_arabic.sql` | Arabic Fuṣḥā: `sync_records` accepts the chosen path and lesson sessions (`arabic`, `arabic_attempt`; sessions can be deleted, the path can't). Nothing else changes. |
 | `migrations/20261012120000_sync_arabic_cards.sql` | Arabic in revision: `sync_records` accepts revision cards (`arabic_card`: a starter word or lesson check by the course's id, with its schedule; cards can be deleted). Answers use the existing `review` kind. Nothing else changes. |
 | `ai-secrets.example.env` | The settings, as a template with placeholders only (fill in a copy that Git ignores; the key ends up only in Supabase). |
+
+## Two models, one per kind of job (AI roles, step 2)
+
+The function can hold a second, learning model (Gemini) beside the main one (GLM). Its settings are the main ones'
+names starting `AI_LEARN_`, and `AI_ROUTES` says which jobs go to it, e.g. `{"tutor": "learn"}`; any job it doesn't name
+(planning, brain dumps, notes) stays with the main model, and so does any job if no learning model is set up. If the
+chosen model can't answer at all (no connection, no answer in time, a provider error, an empty reply), the other gets
+**one** try, still inside the app's 40 seconds (`AI_TOTAL_TIMEOUT_MS`, 38 s by default); a reply that's cut short or
+filtered isn't passed on. Both models' worst cases are reserved against the monthly budget before the request, since
+both could be billed. Logs stay content-free: an outcome, which job and which model slot, e.g.
+`ai-plan ok:tutor/main,after-learn-http 200 812ms`. The block is in `ai-secrets.example.env` (commented out), and
+`node supabase/check-ai-secrets.mjs` checks it against the evaluated settings like the main one.
+
+Not switched on: the learning model is chosen by the tutor evaluation first (`../ai-eval/README.md`), which needs a
+Gemini API key on the paid tier (a Google Cloud project with billing — Google allows only paid services for apps used in
+the UK — and a monthly spend cap set in AI Studio). Then its settings go into the function's secrets, and `ai-plan` is
+deployed again (with an Edge Functions token), each with your go-ahead.
 
 ## Try it without any AI (practice mode)
 
