@@ -30,22 +30,29 @@ export function nextGap(prev: number, rating: Rating): number {
 }
 
 // Records one answered question and schedules the concept's next review. The attempt is always kept.
-export function rateConcept(st: StudyData, conceptId: string, k: DateKey, a: { outcome: Outcome | null; chosen: number | null; support: Support }, rating: Rating): boolean {
+export type Answered = { outcome: Outcome | null; chosen: number | null; support: Support };
+export function rateConcept(st: StudyData, conceptId: string, k: DateKey, a: Answered, rating: Rating): boolean {
   const c = st.concepts.find(x => x.id === conceptId);
   if (!c) return false;
-  const gap = nextGap(c.review.interval, rating);
-  c.review = { reps: c.review.reps + 1, interval: gap, lapses: c.review.lapses + (rating === 'again' && c.review.reps ? 1 : 0), due: shift(k, gap) };
-  st.reviews.push({
-    id: 'rv' + uid(), conceptId: c.id, title: c.title, date: k, at: localStamp(), kind: c.kind, outcome: a.outcome,
-    graded: !a.outcome || a.outcome === 'notsure' ? null : c.kind === 'choice' ? 'auto' : 'self', chosen: a.chosen,
-    support: a.support, rating, gap, due: c.review.due,
-  });
+  rateItem(st, c, c, k, a, rating);
   return true;
 }
+// The same for anything in revision with a schedule (a concept, or an Arabic card): it's rescheduled, and the answer
+// goes into Study's revision history under the item's id, with a title to show there.
+export function rateItem(st: StudyData, item: { id: string; review: Concept['review'] }, about: { title: string; kind: Concept['kind'] }, k: DateKey, a: Answered, rating: Rating) {
+  const gap = nextGap(item.review.interval, rating);
+  item.review = { reps: item.review.reps + 1, interval: gap, lapses: item.review.lapses + (rating === 'again' && item.review.reps ? 1 : 0), due: shift(k, gap) };
+  st.reviews.push({
+    id: 'rv' + uid(), conceptId: item.id, title: about.title.slice(0, 120), date: k, at: localStamp(), kind: about.kind, outcome: a.outcome,
+    graded: !a.outcome || a.outcome === 'notsure' ? null : about.kind === 'choice' ? 'auto' : 'self', chosen: a.chosen,
+    support: a.support, rating, gap, due: item.review.due,
+  });
+}
 
-// Cautious labels from the evidence there is. One good answer is never called mastery.
+// Cautious labels from the evidence there is. One good answer is never called mastery. (Anything in revision has an
+// id; only concepts have check-ins after learning.)
 export type EvidenceStatus = 'introduced' | 'practice' | 'practising' | 'recalled';
-export function conceptEvidence(st: StudyData, c: Concept) {
+export function conceptEvidence(st: StudyData, c: { id: string }) {
   const revs = st.reviews.filter(r => r.conceptId === c.id);
   const checks = st.sessions.filter(s => s.checkin && s.checkin.conceptIds.includes(c.id) && s.checkin.clarity);
   const clarity = checks.length ? checks[checks.length - 1].checkin!.clarity : null;
@@ -77,7 +84,7 @@ export const UNDERSTANDING: Record<Understanding, { label: string; text: string 
   'getting-there': { label: 'Getting there', text: 'Right last time, with some help or partly. On your own is the next step.' },
   'recalled': { label: 'Recalled on your own', text: 'You recalled this on your own last time.' },
 };
-export function understanding(st: StudyData, c: Concept): Understanding {
+export function understanding(st: StudyData, c: { id: string }): Understanding {
   const ev = conceptEvidence(st, c);
   if (!ev.last) return ev.clarity === 'notyet' ? 'not-yet' : 'new';
   const struggled = ev.last.outcome === 'wrong' || ev.last.outcome === 'notsure' || ev.last.rating === 'again';
@@ -87,7 +94,7 @@ export function understanding(st: StudyData, c: Concept): Understanding {
 
 // How often it slipped: answers that weren't right after you had already recalled it on your own. (The
 // schedule's own lapse count includes every "Again" after a first review, so it can't tell the two apart.)
-export function slips(st: StudyData, c: Concept): number {
+export function slips(st: StudyData, c: { id: string }): number {
   let recalled = false, n = 0;
   for (const r of st.reviews) {
     if (r.conceptId !== c.id) continue;
@@ -99,7 +106,7 @@ export function slips(st: StudyData, c: Concept): number {
 
 // Multiple choice: a wrong option you've picked at least twice — the idea worth untangling. (The answer
 // that's marked correct now; an answer you've since changed isn't counted as wrong.)
-export function repeatedWrongChoice(st: StudyData, c: Concept): { choice: number; times: number } | null {
+export function repeatedWrongChoice(st: StudyData, c: Pick<Concept, 'id' | 'kind' | 'correct' | 'choices'>): { choice: number; times: number } | null {
   if (c.kind !== 'choice' || c.correct === null) return null;
   const times = new Map<number, number>();
   for (const r of st.reviews) if (r.conceptId === c.id && r.chosen !== null && r.chosen !== c.correct && c.choices[r.chosen]) times.set(r.chosen, (times.get(r.chosen) ?? 0) + 1);

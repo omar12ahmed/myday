@@ -27,13 +27,13 @@ import type { Category, Commitment, Day, DayContext, ListItem, MyDayData, Note, 
 import { isObj } from '../data/util';
 import { cleanAttempt, normalizeCyber } from '../data/cybersecurity/normalize';
 import type { CyberAttempt } from '../data/cybersecurity/types';
-import { cleanArabicAttempt, normalizeArabic } from '../data/arabic/normalize';
-import { ARABIC_CORE_PATH, type ArabicAttempt } from '../data/arabic/types';
+import { cleanArabicAttempt, cleanArabicCard, normalizeArabic } from '../data/arabic/normalize';
+import { ARABIC_CORE_PATH, type ArabicAttempt, type ArabicCard } from '../data/arabic/types';
 
 export type Kind = 'list' | 'queue' | 'day' | 'context'
   | 'settings' | 'rota' | 'pay' | 'holidays' | 'finance' | 'study' | 'workout' | 'food' | 'fitness' | 'notes' | 'tasks' | 'patterns'
   | 'commitment' | 'note' | 'task' | 'session' | 'review' | 'wsession' | 'recipe' | 'project' | 'cybersecurity' | 'cyber_attempt'
-  | 'arabic' | 'arabic_attempt';
+  | 'arabic' | 'arabic_attempt' | 'arabic_card';
 export type Content = Record<string, unknown>;
 
 // A record's key on this device: "list:learning", "day:2026-10-02", "note:nt8f…"…
@@ -187,6 +187,11 @@ const MANY: Many[] = [
     items: d => d.arabic.attempts, put: (d, id, c) => putItem(d.arabic.attempts, id, c, (a, b) => a.startedAt.localeCompare(b.startedAt)),
     clean: (id, raw) => same(id, cleanArabicAttempt(raw) ?? undefined),
     summary: c => { const a = c as unknown as ArabicAttempt; return `${a.lessonId} · ${a.finishedAt ? 'finished' : 'in progress'}`; } },
+  // An Arabic revision card: only its id (the course's), the day it was added and its schedule.
+  { kind: 'arabic_card', label: 'Arabic revision card',
+    items: d => d.arabic.cards, put: (d, id, c) => putItem(d.arabic.cards, id, c),
+    clean: (id, raw) => same(id, cleanArabicCard(raw)),
+    summary: c => { const x = c as unknown as ArabicCard; return `${x.id} · ${x.review.due ? `back on ${prettyDate(x.review.due)}` : 'not revised yet'}`; } },
   { kind: 'cyber_attempt', label: 'Cybersecurity notebook attempt',
     items: d => d.cybersecurity.attempts, put: (d, id, c) => putItem(d.cybersecurity.attempts, id, c, (a, b) => a.startedAt.localeCompare(b.startedAt)),
     clean: (id, raw) => same(id, cleanAttempt(raw) ?? undefined),

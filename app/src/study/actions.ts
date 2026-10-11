@@ -11,6 +11,7 @@ import type { Checkin, Clarity, Concept, StudyCourse, StudyData, StudySession, S
 import { intIn } from '../data/util';
 import { go } from './route';
 import { clearRound, startRound } from './round';
+import type { Scope } from '../data/study/queue';
 
 // ---------- Learning sessions ----------
 // Start learning. If a session is already in progress, nothing new is made: it opens that one instead.
@@ -177,8 +178,8 @@ export function removeConcept(id: string) {
 
 // ---------- Revision ----------
 // Start a revision round (from Study or from Today's Study card).
-export function startRevision() {
-  startRound(getSnapshot().data.study);
+export function startRevision(scope: Scope = 'all') {
+  startRound(getSnapshot().data, scope);
   go('study/revise');
 }
 export const setVault = (v: string) => update(d => { const name = v.trim().slice(0, 100); if (d.study.settings.vault === name) return false; d.study.settings.vault = name; });

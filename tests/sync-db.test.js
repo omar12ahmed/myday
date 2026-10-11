@@ -207,6 +207,18 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   r = await push(A, [change('arabic_session', 'x1', 0, { id: 'x1' })]);
   check('an unknown kind is still refused', r[0].status === 'rejected', r);
 
+  console.log('\n[13] Arabic in revision (seventh migration)');
+  const card = { id: 'assessment.arabic-article-connected-speech-check.q1', addedOn: '2026-10-11', review: { reps: 0, interval: 0, lapses: 0, due: '2026-10-12' } };
+  r = await push(A, [change('arabic_card', card.id, 0, card), change('arabic_card', 'lexeme.arabic-seed-001:recognise', 0, { ...card, id: 'lexeme.arabic-seed-001:recognise' })]);
+  check('revision cards save through sync_push, the longest course id included', r.every(x => x.status === 'applied' && x.version === 1), r);
+  check('another learner cannot read them', !(await pull(reader)).some(x => x.kind === 'arabic_card'));
+  r = await push(A, [change('arabic_card', card.id, 0, { ...card, review: { ...card.review, reps: 1 } })]);
+  check('a stale device cannot overwrite a card\'s schedule', r[0].status === 'conflict', r);
+  r = await push(A, [change('arabic_card', card.id, 1, null, { deleted: true })]);
+  check('taking a card out of revision reaches other devices as a tombstone', r[0].status === 'applied' && (await pull(A)).some(x => x.kind === 'arabic_card' && x.deleted));
+  r = await push(A, [change('arabic', 'preferences', 1, null, { deleted: true })]);
+  check('the Arabic preferences record still cannot be deleted', r[0].status === 'rejected', r);
+
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

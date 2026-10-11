@@ -1,6 +1,7 @@
 // Arabic Fuṣḥā: validate the supplied package, then split it for the app. The course map is small and loads
 // with the Arabic screen; each module's lessons and activities are a separate file, loaded when you open it;
-// the reference answers are another file, loaded only when you ask to see one. Self-study, not an exam
+// the reference answers are another file, loaded only when you ask to see one; the lesson checks as revision
+// shows them are one more, loaded only when a revision round reaches one. Self-study, not an exam
 // boundary: anything shipped to the browser can be read.
 import { execFileSync } from 'node:child_process';
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -52,5 +53,11 @@ for (const m of c.modules) {
   }));
 }
 writeFileSync(target + 'texts.json', JSON.stringify({ assets: c.assets, lexicon: c.lexicon_seed }));
+// The lesson checks as revision shows them (loaded only when a round reaches one): the question and its lesson's
+// title, by question id. A check's answer has the question's own id (revision relies on it).
+const lessonTitle = Object.fromEntries(c.lessons.map(l => [l.id, l.title]));
+const checks = c.assessments.filter(a => a.type === 'knowledge_check').flatMap(a => a.questions.map(q => ({ q, lesson: a.lesson_id })));
+if (checks.some(({ q }) => q.answer_key_id !== q.id)) fail('a lesson check whose answer has another id');
+writeFileSync(target + 'checks.json', JSON.stringify(Object.fromEntries(checks.map(({ q, lesson }) => [q.id, { prompt: q.prompt, lesson: lessonTitle[lesson] }]))));
 writeFileSync(target + 'answers.json', JSON.stringify(Object.fromEntries(keys.answer_keys.map(k => [k.id, { answer: k.expected_answer, variation: k.acceptable_variation }]))));
 console.log(`Arabic package ${c.curriculum_version}: ${c.modules.length} modules, ${c.lessons.length} lessons, ${keys.answer_keys.length} reference answers, validated.`);
