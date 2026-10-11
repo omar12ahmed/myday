@@ -734,3 +734,6 @@ returns up to 8 small tasks; you tick the ones to add.
     self-assessed, never marked. Saved as `arabic.cards`, answers in `study.reviews`. Database migration
     `20261012120000_sync_arabic_cards.sql` was applied before 1.16.0 was published, so there's no database step.
     Going back to 1.16.0 is safe: it keeps `arabic.cards` as they are.
+25. **Release 1.17.1:** Arabic curriculum 1.1.1 — the definite article's sukūn restored in six fully vowelled beginner
+    examples (e.g. أَنَا فِي الْبَيْتِ.), matching the starter texts and words. No other change; new sessions record
+    curriculum 1.1.1, earlier ones keep 1.1.0.
