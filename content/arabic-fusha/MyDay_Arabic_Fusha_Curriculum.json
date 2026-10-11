@@ -1,7 +1,7 @@
 {
   "package_type": "myday.language-curriculum",
   "schema_version": "1.0.0",
-  "curriculum_version": "1.1.0",
+  "curriculum_version": "1.1.1",
   "created_on": "2026-10-10",
   "course": {
     "id": "course.arabic-fusha",
@@ -10112,7 +10112,7 @@
         "Transfer task attempted and one error or uncertainty logged"
       ],
       "example": {
-        "text_ar": "العَرَبِيَّةُ الفُصْحَى",
+        "text_ar": "الْعَرَبِيَّةُ الْفُصْحَى",
         "meaning_en": "Formal/literary Arabic",
         "register": "MSA",
         "diacritics": "targeted; examples may be labels or chunks",
@@ -10530,7 +10530,7 @@
         "Transfer task attempted and one error or uncertainty logged"
       ],
       "example": {
-        "text_ar": "أَدْرُسُ العَرَبِيَّةَ.",
+        "text_ar": "أَدْرُسُ الْعَرَبِيَّةَ.",
         "meaning_en": "I study Arabic.",
         "register": "MSA",
         "diacritics": "targeted; examples may be labels or chunks",
@@ -11293,7 +11293,7 @@
         "Transfer task attempted and one error or uncertainty logged"
       ],
       "example": {
-        "text_ar": "صَبَاحُ الخَيْرِ",
+        "text_ar": "صَبَاحُ الْخَيْرِ",
         "meaning_en": "Good morning",
         "register": "MSA",
         "diacritics": "targeted; examples may be labels or chunks",
@@ -12174,7 +12174,7 @@
         "Transfer task attempted and one error or uncertainty logged"
       ],
       "example": {
-        "text_ar": "أَيْنَ البَيْتُ؟",
+        "text_ar": "أَيْنَ الْبَيْتُ؟",
         "meaning_en": "Where is the house?",
         "register": "MSA",
         "diacritics": "targeted; examples may be labels or chunks",
@@ -12284,7 +12284,7 @@
         "Transfer task attempted and one error or uncertainty logged"
       ],
       "example": {
-        "text_ar": "أَنَا فِي البَيْتِ.",
+        "text_ar": "أَنَا فِي الْبَيْتِ.",
         "meaning_en": "I am at home.",
         "register": "MSA",
         "diacritics": "targeted; examples may be labels or chunks",
@@ -13066,7 +13066,7 @@
         "Transfer task attempted and one error or uncertainty logged"
       ],
       "example": {
-        "text_ar": "أَدْرُسُ العَرَبِيَّةَ.",
+        "text_ar": "أَدْرُسُ الْعَرَبِيَّةَ.",
         "meaning_en": "I study Arabic.",
         "register": "MSA",
         "diacritics": "targeted; examples may be labels or chunks",

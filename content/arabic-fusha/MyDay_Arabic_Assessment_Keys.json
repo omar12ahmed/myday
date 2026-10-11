@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "course_id": "course.arabic-fusha",
-  "curriculum_version": "1.1.0",
+  "curriculum_version": "1.1.1",
   "answer_keys": [
     {
       "id": "asset.arabic-profile.q1",

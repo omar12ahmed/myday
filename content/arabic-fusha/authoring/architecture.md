@@ -1,6 +1,6 @@
 # MyDay Arabic Fuṣḥā curriculum
 
-Version 1.1.0 · researched 10 October 2026 · course ID `course.arabic-fusha`
+Version 1.1.1 · researched 10 October 2026, corrected 11 October 2026 · course ID `course.arabic-fusha`
 
 This is a complete curriculum specification for a beginner learning Modern Standard Arabic, with optional specialist extensions. It is designed to support months or years of study in MyDay. It is not a claim that a short list of lessons, a vocabulary streak or a completed textbook produces fluency. The package defines what to learn, how to practise and what evidence would demonstrate progress. An adaptive tutor can choose the next task without changing those underlying outcomes.
 

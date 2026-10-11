@@ -1,6 +1,6 @@
 # MyDay Arabic Fuṣḥā curriculum
 
-Version 1.1.0 · researched 10 October 2026 · course ID `course.arabic-fusha`
+Version 1.1.1 · researched 10 October 2026, corrected 11 October 2026 · course ID `course.arabic-fusha`
 
 This is a complete curriculum specification for a beginner learning Modern Standard Arabic, with optional specialist extensions. It is designed to support months or years of study in MyDay. It is not a claim that a short list of lessons, a vocabulary streak or a completed textbook produces fluency. The package defines what to learn, how to practise and what evidence would demonstrate progress. An adaptive tutor can choose the next task without changing those underlying outcomes.
 
@@ -283,7 +283,7 @@ The following module catalogue is the complete human-readable Output A. The JSON
 
 **Key concepts:** MSA; Classical Arabic; dialect; register.
 
-**Arabic example:** العَرَبِيَّةُ الفُصْحَى — Formal/literary Arabic
+**Arabic example:** الْعَرَبِيَّةُ الْفُصْحَى — Formal/literary Arabic
 
 **Practical exercise** (`exercise.arabic-fusha-register`): Classify six settings: news bulletin, research article, family conversation, classical poem, formal speech and classroom exchange.
 
@@ -561,7 +561,7 @@ The following module catalogue is the complete human-readable Output A. The JSON
 
 **Key concepts:** 10-minute fallback; 30–90 minutes; partial completion.
 
-**Arabic example:** أَدْرُسُ العَرَبِيَّةَ. — I study Arabic.
+**Arabic example:** أَدْرُسُ الْعَرَبِيَّةَ. — I study Arabic.
 
 **Practical exercise** (`exercise.arabic-practice-contract`): Write a five-day plan mixing understanding, listening, speaking, reading and writing, with a short fallback.
 
@@ -1293,7 +1293,7 @@ Allow 45 minutes across short sessions, plus 15 minutes for a changed task on an
 
 **Key concepts:** auditory discrimination; record compare adjust; intelligibility.
 
-**Arabic example:** صَبَاحُ الخَيْرِ — Good morning
+**Arabic example:** صَبَاحُ الْخَيْرِ — Good morning
 
 **Practical exercise** (`exercise.arabic-listening-noticing`): Listen to five short verified greeting clips without text, choose matching meanings, then imitate one after revealing the transcript.
 
@@ -2043,7 +2043,7 @@ Allow 45 minutes across short sessions, plus 15 minutes for a changed task on an
 
 **Key concepts:** مَن ما أين هل; yes/no; question intonation.
 
-**Arabic example:** أَيْنَ البَيْتُ؟ — Where is the house?
+**Arabic example:** أَيْنَ الْبَيْتُ؟ — Where is the house?
 
 **Practical exercise** (`exercise.arabic-simple-questions`): Ask six questions about a profile and room picture; answer without repeating the whole model.
 
@@ -2115,7 +2115,7 @@ Allow 45 minutes across short sessions, plus 15 minutes for a changed task on an
 
 **Key concepts:** مِن في إلى; countries; location phrases.
 
-**Arabic example:** أَنَا فِي البَيْتِ. — I am at home.
+**Arabic example:** أَنَا فِي الْبَيْتِ. — I am at home.
 
 **Practical exercise** (`exercise.arabic-origin-location`): Create fictional identity cards, then say where each person is from and where they are now; model country names as chunks.
 
@@ -2847,7 +2847,7 @@ Allow 45 minutes across short sessions, plus 15 minutes for a changed task on an
 
 **Key concepts:** prefixes; person; gender; lexical stem vowels.
 
-**Arabic example:** أَدْرُسُ العَرَبِيَّةَ. — I study Arabic.
+**Arabic example:** أَدْرُسُ الْعَرَبِيَّةَ. — I study Arabic.
 
 **Practical exercise** (`exercise.arabic-present-person`): Use أدرس، تدرس، يدرس، تدرسين with identity cards; practise five common verbs with a reliable model.
 

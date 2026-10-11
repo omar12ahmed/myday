@@ -1,6 +1,6 @@
 {
   "status": "pass",
-  "validated_at_utc": "2026-10-10T20:43:45.760804+00:00",
+  "validated_at_utc": "2026-10-11T19:46:32.084877+00:00",
   "checks_run": 142687,
   "errors": [],
   "counts": {
@@ -24,10 +24,10 @@
     "maximum": 1152
   },
   "sha256": {
-    "MyDay_Arabic_Fusha_Curriculum.json": "53944d06aaf932f476396f02d10ec2a7fa591d27936073ade0fcebafdedaa1e2",
+    "MyDay_Arabic_Fusha_Curriculum.json": "77470606a606ac6f71517105df0e6499e9c7859a5d39af596a3ec23c5a354af1",
     "MyDay_Arabic_Curriculum.schema.json": "3a7cbd79d507182579cff5a63b03f0ac19c651c580a0a992fa3994f2f7be9c4a",
     "MyDay_Arabic_Adaptive_Tutor_Spec.json": "22bc83fc88b943ca3ced77245e5fc1f4a8fe400d1363baccf4ec0b6e8395d029",
-    "MyDay_Arabic_Assessment_Keys.json": "6da7432eae7b50891e72283d88a56ee8f5274922948c26bec38ca80f8ffde62c",
+    "MyDay_Arabic_Assessment_Keys.json": "a906228ff03024a77860659856002a5e6ae256b33baaf550167a42418191f8ab",
     "MyDay_Arabic_Starter_Materials.json": "d2eaeb734b1178f5812622c097b8c93d2049f77e8e84007ba2ad453b8ab5d444"
   },
   "limitations": [

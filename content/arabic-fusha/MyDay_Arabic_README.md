@@ -1,6 +1,6 @@
 # MyDay Arabic Fuṣḥā package
 
-Version 1.1.0 · 10 October 2026 · `course.arabic-fusha`
+Version 1.1.1 · 11 October 2026 · `course.arabic-fusha`
 
 The target is Modern Standard Arabic (MSA). The common core has 24 modules; six optional modules extend it into academic/professional communication, literature, classical prose, Qur’anic language study, translation and technology communication.
 
@@ -101,6 +101,10 @@ After editing the canonical JSON, run `python3 authoring/render_curriculum.py`. 
 ## Scope of this delivery
 
 This is a curriculum, content seed, assessment specification and import package. It is versioned in the MyDay repository under `content/arabic-fusha`. Application integration is pending; the package does not include a deployed adaptive tutor, audio library or accredited proficiency test. None of the optional branches is required merely to demonstrate the common core.
+
+## Version 1.1.1 correction
+
+Restores the sukūn on the definite article's lām before a moon letter in six fully vowelled beginner examples (Pre-A1 and A1 lessons), so they match the starter texts and words: الْعَرَبِيَّةُ الْفُصْحَى, أَدْرُسُ الْعَرَبِيَّةَ (two lessons), صَبَاحُ الْخَيْرِ, أَيْنَ الْبَيْتُ؟ and أَنَا فِي الْبَيْتِ. B1 and later examples keep their selective vowelling, as the support-fading policy intends. No ID, question, answer or meaning changes; attempts recorded under 1.1.0 keep that version.
 
 ## Version 1.1.0 review
 
