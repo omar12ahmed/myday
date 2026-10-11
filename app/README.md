@@ -728,3 +728,9 @@ returns up to 8 small tasks; you tick the ones to add.
     parts 1–2 (the course, read-only, and your lesson sessions, saved and synced). Needs database migration
     `20261011120000_sync_arabic.sql` before publishing. Going back to 1.15.0 is safe: it keeps the `arabic` section
     unread.
+24. **Release 1.17.0:** Study → Arabic Fuṣḥā, part 3 — starter words and lesson checks in revision, only when you add
+    them: recognising a word first, writing it from memory as a second card you add, a lesson's checks from the lesson
+    or when you finish a session there. The same rounds and rules as your concepts ("Revise Arabic" for Arabic alone),
+    self-assessed, never marked. Saved as `arabic.cards`, answers in `study.reviews`. Database migration
+    `20261012120000_sync_arabic_cards.sql` was applied before 1.16.0 was published, so there's no database step.
+    Going back to 1.16.0 is safe: it keeps `arabic.cards` as they are.
