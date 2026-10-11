@@ -15,6 +15,7 @@ import { TaskDetails } from './TaskDetails';
 import { TopicView } from './TopicView';
 import { topicFromPath } from '../data/study/topics';
 const CyberScreen = lazy(() => import('./cybersecurity/CyberScreen'));
+const ArabicScreen = lazy(() => import('./arabic/ArabicScreen'));
 
 // Study: the home page first (what to do next, ready to start, and your topics), and everything else one tap away
 // under #study/… — a topic's page, the roadmap, a session, the check-in, revision, concepts, progress and settings.
@@ -33,6 +34,7 @@ export function StudyScreen({ data, hash }: { data: MyDayData; hash: string }) {
 
   let screen;
   if (view === 'cybersecurity') screen = <Suspense fallback={<p role="status">Opening your cybersecurity workshop…</p>}><CyberScreen key={id} data={data} id={id} /></Suspense>;
+  else if (view === 'arabic') screen = <Suspense fallback={<p role="status">Opening Arabic…</p>}><ArabicScreen key={id} id={id} /></Suspense>;
   else if (view === 'roadmap') screen = <Roadmap key={id} data={data} state={{ edit, setEdit, open, setOpen }} topic={id ? topicFromPath(id) : null} />;
   else if (view === 'topic') screen = <TopicView data={data} id={topicFromPath(id)} lengths={lengths} setLength={setLength} />;
   else if (view === 'course') screen = <CourseDetails data={data} id={id} />;
@@ -46,5 +48,5 @@ export function StudyScreen({ data, hash }: { data: MyDayData; hash: string }) {
   else if (view === 'progress') screen = <ProgressView data={data} historyAll={historyAll} showAll={() => setHistoryAll(true)} />;
   else return <div className="st-view enter"><Dashboard data={data} lengths={lengths} setLength={setLength} /></div>;
   // The other screens are one column, kept to a comfortable reading width on wide screens.
-  return <div className={`st-view enter mx-auto ${view === 'cybersecurity' && (!id || id === 'practice') ? 'max-w-[1000px]' : 'max-w-[720px]'}`}>{screen}</div>;
+  return <div className={`st-view enter mx-auto ${(view === 'cybersecurity' && (!id || id === 'practice')) || (view === 'arabic' && (!id || id === 'texts')) ? 'max-w-[1000px]' : 'max-w-[720px]'}`}>{screen}</div>;
 }

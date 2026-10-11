@@ -21,6 +21,16 @@ labs) and three local interactives. Each records resumable attempts through the 
 keys or MCP connection are required. Provider completion is self-reported. The separate activities JSON
 is validated at build time, including lesson mappings, allowed provider URLs and free alternatives.
 
+Arabic Fuṣḥā in Study (part 1, reading only): the supplied package in `../content/arabic-fusha` (30 modules,
+152 lessons) is validated with its own Python checker on a temporary copy, so builds never change it, then split by
+`scripts/prepare-arabic.mjs` into a small course map, one file per module (loaded when opened) and the reference
+answers (loaded only when asked for). `#study/arabic` has the learning map by level, module and lesson pages,
+16 original reading texts (with and without vowel marks) and 48 starter words. Arabic is marked `lang="ar"
+dir="rtl"`, in Noto Naskh Arabic (`@fontsource-variable/noto-naskh-arabic`, downloaded only when Arabic shows);
+Arabic inside English sentences is isolated with `<bdi>`. Nothing is saved yet and no level is awarded; no
+recordings are included. Next: saving progress (a new section and sync kind — a database migration), then the
+starter words and lesson checks in revision.
+
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
 

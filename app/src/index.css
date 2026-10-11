@@ -185,6 +185,10 @@
   .workspace-tabs a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 550; color: var(--text-2); text-decoration: none; }
   .workspace-tabs a:hover { background: var(--surface); }
   .workspace-tabs a[aria-current="page"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow-btn); font-weight: 650; }
+  /* Arabic text: right to left, in a typeface whose vowel marks stay legible (loaded only when Arabic shows). */
+  .ar { font-family: 'Noto Naskh Arabic Variable', 'Noto Naskh Arabic', serif; font-size: 1.2em; line-height: 1.95; }
+  .ar-block { display: block; text-align: start; }
+  .ar-inline { font-family: 'Noto Naskh Arabic Variable', 'Noto Naskh Arabic', serif; font-size: 1.12em; }
   .app-tools [data-variant="quiet"] { border-color: transparent; background: transparent; box-shadow: none; border-radius: 8px; padding-inline: 10px; font-size: 12px !important; }
   .app-tools [data-variant="quiet"]:hover { background: var(--surface-2); }
   .card > :last-child { margin-bottom: 0; }
