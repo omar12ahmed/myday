@@ -9,7 +9,7 @@ import { CONTRACT_VERSION, LIMITS, SMALL_MINUTES } from '../../../supabase/funct
 import { dtToMin, minToDt, minToTime, nowMin, parseKey, shift } from '../data/dates';
 import { limitFor } from '../data/plan';
 import { blocksFor, contextFor, freeSegments, type Segment } from '../data/schedule';
-import { dueConcepts } from '../data/study/revision';
+import { dueIds } from '../data/study/queue';
 import type { DateKey, DayContext, MyDayData } from '../data/types';
 
 // Today's energy as rated (null if not recorded). The same order of preference as "Review my plan".
@@ -61,7 +61,7 @@ export function buildContext(data: MyDayData, k: DateKey, note: string): PlanCon
     busy: blocksFor(data, k).slice(0, LIMITS.busy).map(b => ({ kind: kinds[b.type], start: minToDt(b.start, k), end: minToDt(b.end, k) })),
     free: freeSegments(data, k, doneBusy(data, k)).filter(g => g.end - g.start >= 5).slice(0, LIMITS.free).map(g => ({ start: minToTime(g.start), end: minToTime(g.end) })),
     window: { earliest: data.settings.earliestTime, latest: data.settings.latestTime },
-    revisionDue: dueConcepts(data.study, k).length,
+    revisionDue: dueIds(data, k).length, // concepts and Arabic cards
     note: trimmed || null,
   };
 }

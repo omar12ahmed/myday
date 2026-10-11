@@ -35,8 +35,25 @@ to the checks (kept as written once you look at the reference) and a "revisit" n
 Saved as the new-app-only top-level section `arabic` (`src/data/arabic/`: types, cleaning, sessions); the classic
 MyDay keeps it unread. The map shows places (unexplored, exploring, visited) and your next small step along the goal
 you choose; "Your sessions" lists them all. Synced as `arabic` (the goal) and `arabic_attempt` (one per session) —
-migration `../supabase/migrations/20261011120000_sync_arabic.sql`, applied at release with my go-ahead. Next: the
-starter words and lesson checks in revision.
+migration `../supabase/migrations/20261011120000_sync_arabic.sql`, applied at release with my go-ahead. Fields a
+newer MyDay adds to the section are kept as they are, so going back a version never loses them.
+
+Part 3, revision: starter words and lesson checks come back in Study's revision, only when you add them — a word
+from Vocabulary ("Add to revision", or "Add the next 5"; recognising it first, writing it from memory as a second
+card you add; a gentle note after 8 new words in a day, never a block), a lesson's checks from the lesson or when
+you finish a session there. Each first comes back the next day. They're in the same rounds as your concepts
+(Study's revision, Today's Study card; "Revise Arabic" on the map for a round of Arabic alone), scheduled by the
+same rules, with "slipped" / "hasn't clicked yet", help after a wrong answer and the stop after 10 a day counting
+both. You compare your answer yourself, with the reference and the course's "what also counts": MyDay never marks
+Arabic (the course says its answers are examples, never to be exact-matched, and vowel marks are optional unless
+the question is about them). Listening and speaking stay untested. Saved as `arabic.cards` — only the course's id
+(`lexeme.…:recognise` / `:write`, or a check question's id), the day added and the schedule
+(`src/data/arabic/cards.ts`); answers go into `study.reviews` like a concept's (`rateItem` in
+`src/data/study/revision.ts`), which the classic MyDay already keeps. One queue for both: `src/data/study/queue.ts`.
+The revision screen asks either through one description of a question (`Asked` in `src/study/RevisionView.tsx`);
+Arabic cards load their words, checks (`checks.json`, from `scripts/prepare-arabic.mjs`) and answers only when a
+round reaches one (`src/study/arabic/ArabicQuestion.tsx`). Synced as `arabic_card`, one per card — migration
+`../supabase/migrations/20261012120000_sync_arabic_cards.sql`, applied at release with my go-ahead.
 
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.

@@ -12,6 +12,7 @@
 // `--projects-only`: only the projects check (1.12.0), for test accounts that already have records from an earlier run.
 // `--cyber-only`: the same for the Cybersecurity kinds (1.14.0).
 // `--arabic-only`: the same for the Arabic Fuṣḥā kinds (the sixth migration).
+// `--arabic-cards-only`: the same for Arabic revision cards (the seventh migration).
 const { randomUUID } = require('crypto');
 
 const URL_ = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
@@ -78,6 +79,18 @@ async function arabicCheck(a, b, id) {
   check('the path record (a one-record part) can\'t be deleted', Array.isArray(r) && r[0].status === 'rejected', r);
 }
 
+// Arabic in revision (seventh migration, 20261012120000_sync_arabic_cards.sql): A saves a revision card (synthetic,
+// the longest id in the course), B can't see it, A takes it out of revision.
+async function arabicCardsCheck(a, b) {
+  console.log('\nArabic revision cards (seventh migration: 20261012120000_sync_arabic_cards.sql)');
+  const id = 'assessment.arabic-article-connected-speech-check.q1', old = (await pull(a)).find(x => x.kind === 'arabic_card' && x.record_id === id);
+  let r = await push(a, [change('arabic_card', id, old ? old.version : 0, { id, addedOn: '2026-10-12', review: { reps: 0, interval: 0, lapses: 0, due: '2026-10-13' } })]);
+  check('A can save a revision card — so the seventh migration is applied', Array.isArray(r) && r[0].status === 'applied', r);
+  check('B can\'t see it', (await pull(b)).every(x => x.kind !== 'arabic_card'));
+  r = await push(a, [change('arabic_card', id, r[0].version, null, { deleted: true })]);
+  check('the card can be taken out of revision (a deletion marker for other devices)', Array.isArray(r) && r[0].status === 'applied', r);
+}
+
 // Projects (third migration, 20261006120000_sync_projects.sql): A saves one, B can't see it, A deletes it.
 async function projectsCheck(a, b, id) {
   console.log('\nProjects (third migration: 20261006120000_sync_projects.sql)');
@@ -119,6 +132,16 @@ async function projectsCheck(a, b, id) {
       process.exit(2);
     }
     await arabicCheck(a, b, `live-check-session-${Date.now()}`);
+    console.log(`\n${pass} passed, ${fail} failed`);
+    process.exit(fail ? 1 : 0);
+  }
+  // --arabic-cards-only: the same, for the seventh migration's kind (Arabic revision cards).
+  if (process.argv.includes('--arabic-cards-only')) {
+    if (![A.email, B.email].every(e => /@example\.com$/i.test(e || '')) || A.email === B.email) {
+      console.log('  STOP --arabic-cards-only runs only with two different disposable @example.com test accounts.');
+      process.exit(2);
+    }
+    await arabicCardsCheck(a, b);
     console.log(`\n${pass} passed, ${fail} failed`);
     process.exit(fail ? 1 : 0);
   }

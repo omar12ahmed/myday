@@ -100,5 +100,92 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   check('Your sessions lists what you have done, with links back to the lesson', await count('[data-ar-sessions] > li') === 1 && await exists('[data-ar-sessions] a[href="#study/arabic/lesson.arabic-origin-location"]'));
   check('nothing else in your saved MyDay changed', await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')), s = JSON.parse(${JSON.stringify(saved)}); delete d.arabic; delete s.arabic; delete d.saves; delete s.saves; return JSON.stringify(d) === JSON.stringify(s); })()`));
 
+  console.log('\n[8] Starter words and lesson checks in revision (part 3)');
+  const before = await ev(`localStorage.getItem('myday.data.v4')`);
+  const D = () => ev(`JSON.parse(localStorage.getItem('myday.data.v4'))`);
+  const on = async (day, hash) => { T.setUrl('app/dist/index.html#' + hash); await T.openAt(2026, 10, day, 9); await sleep(700); };
+  // Answers the question on screen: show it, say how it compared (written answers are self-assessed), then rate it.
+  const answer = async (self, rating) => { await click('[data-action="s-rev-show"]'); await sleep(120); await click(`[data-action="s-rev-self"][data-v="${self}"]`); await sleep(80); await click(`[data-action="s-rev-rate"][data-v="${rating}"]`); await sleep(250); };
+  await on(11, 'study/arabic'); await wait('[data-ar-revision]');
+  check('before anything is added, the map explains revision and offers no round', await ev(`document.querySelector('[data-ar-revision]').dataset.arRevision === 'none'`) && !(await exists('[data-action="ar-revise"]')));
+  await on(11, 'study/arabic/vocabulary'); await wait('[data-action="ar-words-add"]');
+  check('nothing is in revision until you add it', (await D()).arabic.cards.length === 0 && await count('[data-ar-word][data-in="yes"]') === 0);
+  await click('[data-action="ar-words-add"]'); await sleep(250);
+  let cards = (await D()).arabic.cards;
+  check('"Add the next 5" brings the first five starter words into revision, recognising them first', cards.length === 5 && cards.every(c => c.id.endsWith(':recognise') && c.addedOn === '2026-10-11' && c.review.due === '2026-10-12') && cards[0].id === 'lexeme.arabic-seed-001:recognise');
+  check('…and each word says when it first comes back', await count('[data-ar-word][data-in="yes"]') === 5 && (await T.text('[data-ar-word="lexeme.arabic-seed-001"]')).includes('Not revised yet · first on'));
+  await click('[data-ar-word="lexeme.arabic-seed-001"] [data-action="ar-word-write"]'); await sleep(250);
+  check('writing a word from memory is a second card you add yourself', (await D()).arabic.cards.some(c => c.id === 'lexeme.arabic-seed-001:write') && (await T.text('[data-ar-word="lexeme.arabic-seed-001"]')).includes('Writing it:'));
+  await click('[data-action="ar-words-add"]'); await sleep(250);
+  check('after 8 new words in a day a gentle note says that\'s plenty, and adding still works', await exists('[data-ar-plenty]') && (await D()).arabic.cards.length === 11 && await exists('[data-action="ar-words-add"]'));
+  await click('[data-ar-word="lexeme.arabic-seed-010"] [data-action="ar-word-remove"]'); await sleep(200); await click('[data-action="dialog-confirm"]'); await sleep(250);
+  check('taking a word out asks first, then removes it', (await D()).arabic.cards.length === 10 && !(await D()).arabic.cards.some(c => c.id.startsWith('lexeme.arabic-seed-010')));
+
+  const reg = 'study/arabic/lesson.arabic-fusha-register';
+  await on(11, reg); await wait('[data-ar-session]');
+  check('a lesson\'s checks offer to come back in revision', await exists('[data-ar-checks="out"] [data-action="ar-checks-add"]'));
+  await click('[data-action="ar-begin"]'); await sleep(250); await click('[data-action="ar-finish"]'); await sleep(300);
+  check('finishing a session offers this lesson\'s checks, adding nothing by itself', await exists('[data-ar-finished] [data-action="ar-finished-add"]') && !(await D()).arabic.cards.some(c => c.id.startsWith('assessment.')));
+  await click('[data-action="ar-finished-add"]'); await sleep(250);
+  cards = (await D()).arabic.cards.filter(c => c.id.startsWith('assessment.'));
+  check('one tap adds them, first back tomorrow, and the lesson says so', cards.length === 2 && cards.every(c => c.id.startsWith('assessment.arabic-fusha-register-check.q') && c.review.due === '2026-10-12') && (await T.text('[data-ar-finished]')).includes('are in your revision') && await exists('[data-ar-checks="in"]'));
+  await on(11, 'study/arabic'); await wait('[data-ar-revision]');
+  check('on the day they\'re added nothing is due: the map says when they come back', await ev(`document.querySelector('[data-ar-revision]').dataset.arRevision === 'later'`) && (await T.text('[data-ar-revision]')).includes('9 starter words and 2 lesson checks') && !(await exists('[data-action="ar-revise"]')));
+
+  await on(12, 'today'); await wait('#slot-study');
+  check('the next day, Today\'s Study card says revision is ready', (await T.text('#slot-study')).includes('Revision ready') && (await T.text('#slot-study')).includes('A round of 5'));
+  await on(12, 'study'); await wait('#stRevision');
+  check('Study\'s home counts the Arabic cards without naming them', (await T.text('#stRevision')).includes('Ready to revise: 12 Arabic cards'), await T.text('#stRevision'));
+  await on(12, 'study/arabic'); await wait('[data-action="ar-revise"]');
+  await click('[data-action="ar-revise"]'); await sleep(900);
+  check('"Revise Arabic" starts a round of Arabic cards', (await ev('location.hash')) === '#study/revise' && (await T.text('.st-q')).includes('Question 1 of 5') && (await T.text('.st-path')) === 'Arabic · starter word');
+  check('the word is shown as Arabic, right to left, and its meaning stays hidden', await ev(`(() => { const e = document.querySelector('.st-prompt [lang="ar"]'); return !!e && e.dir === 'rtl' && e.textContent === 'أَنَا'; })()`) && !(await exists('.st-answer')));
+  check('your answer box follows the language you type in', await ev(`document.querySelector('[data-s="rev-typed"]').dir === 'auto'`));
+  await click('[data-action="s-rev-show"]'); await sleep(150);
+  check('showing it gives the meaning and an example sentence', (await T.text('.st-q')).includes('Meaning') && (await T.text('.st-q')).includes('I · pronoun') && (await T.text('.st-q')).includes('I am a student.'));
+  check('you judge your own answer (MyDay never marks Arabic)', await exists('[data-action="s-rev-self"]') && (await T.text('.st-q')).includes('Self-assessed'));
+  await click('[data-action="s-rev-self"][data-v="wrong"]'); await sleep(120);
+  check('a wrong answer on a new word suggests its example, and a way back after the round', await ev(`document.querySelector('[data-s="rev-struggle"]').dataset.v === 'not-yet'`) && (await T.text('[data-s="rev-struggle"]')).includes('starter words'));
+  await click('[data-action="s-rev-rate"][data-v="again"]'); await sleep(250);
+  for (let i = 0; i < 4; i++) await answer('right', 'good');
+  let d = await D();
+  const revs = d.study.reviews.filter(r => r.conceptId.startsWith('lexeme.'));
+  check('each answer goes into Study\'s revision history under the card\'s id, self-assessed', revs.length === 5 && revs[0].conceptId === 'lexeme.arabic-seed-001:recognise' && revs[0].title === 'أَنَا → I' && revs.every(r => r.graded === 'self' && r.kind === 'written'));
+  check('…and each card is rescheduled by Study\'s rules: Again tomorrow, Good in 4 days', d.arabic.cards.find(c => c.id === 'lexeme.arabic-seed-001:recognise').review.due === '2026-10-13' && d.arabic.cards.filter(c => revs.slice(1).some(r => r.conceptId === c.id)).every(c => c.review.due === '2026-10-16'));
+  check('the round\'s summary lists what hasn\'t clicked yet, linking back to the starter words', (await T.text('[data-s="rev-not-yet"]')).includes('أَنَا → I') && await exists('[data-s="rev-not-yet"] a[href="#study/arabic/vocabulary"]') && (await T.text('main h2')).includes('Arabic revision'));
+  // Two more rounds: the word to write and four more words, then the lesson's two checks.
+  let sawCheck = false, sawWrite = false;
+  for (let round = 0; round < 2; round++) {
+  await click('[data-action="s-rev-start"]'); await sleep(900);
+  for (let i = 0; i < 5 && await exists('[data-action="s-rev-show"]'); i++) {
+    const path = await T.text('.st-path');
+    if (path.startsWith('Arabic · What Fuṣḥā')) {
+      sawCheck = (await T.text('.st-prompt')).length > 10 && !(await exists('.st-answer'));
+      await click('[data-action="s-rev-show"]'); await sleep(150);
+      sawCheck &&= (await T.text('.st-q')).includes('Reference answer') && (await T.text('.st-q')).includes('What also counts') && await exists('.st-q a[href="#study/arabic/lesson.arabic-fusha-register"]');
+      await click('[data-action="s-rev-self"][data-v="partly"]'); await sleep(80); await click('[data-action="s-rev-rate"][data-v="hard"]'); await sleep(250);
+    } else {
+      if (path === 'Arabic · write it from memory') sawWrite = (await T.text('.st-prompt')).includes('Write it in Arabic: “I”');
+      await answer('right', 'good');
+    }
+  }
+  }
+  check('"Do another round" stays with Arabic: a lesson check shows its reference answer and what also counts, with its lesson', sawCheck);
+  check('…and a word to write from memory asks for it by its meaning', sawWrite);
+  d = await D();
+  check('every Arabic answer is in Study\'s history, and the gentle stop counts them (12 today)', d.study.reviews.filter(r => r.date === '2026-10-12').length === 12 && !d.arabic.cards.some(c => c.review.due === '2026-10-12'));
+  await on(12, 'study/revise'); await wait('[data-s="rev-enough"], .st-q', 2000);
+  check('so revision says that\'s plenty for today', await exists('[data-s="rev-enough"]') || !(await exists('[data-action="s-rev-start"]')));
+  await on(12, 'study/arabic/vocabulary'); await wait('[data-ar-vocabulary]');
+  check('a word you recalled shows where it is, not a score', (await T.text('[data-ar-word="lexeme.arabic-seed-002"]')).includes('Recalled on your own · back on') && !/%|\/100|score/i.test(await T.text('main')));
+  await click('[data-ar-word="lexeme.arabic-seed-002"] [data-action="ar-word-remove"]'); await sleep(200); await click('[data-action="dialog-confirm"]'); await sleep(250);
+  d = await D();
+  check('taking a word out keeps its past answers in your history', !d.arabic.cards.some(c => c.id.startsWith('lexeme.arabic-seed-002')) && d.study.reviews.some(r => r.conceptId === 'lexeme.arabic-seed-002:recognise'));
+  check('nothing else in your saved MyDay changed', await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')), s = JSON.parse(${JSON.stringify(before)}); for (const x of [d, s]) { delete x.arabic; delete x.saves; x.study.reviews = []; } return JSON.stringify(d) === JSON.stringify(s); })()`));
+  await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
+  await on(12, 'study/arabic/vocabulary'); await sleep(400);
+  check('the starter words with their revision buttons fit a phone', await ev('document.documentElement.scrollWidth === innerWidth'));
+  await send('Emulation.clearDeviceMetricsOverride');
+
   const s = T.summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
 })().catch(e => { console.error('HARNESS', e); process.exit(1); });

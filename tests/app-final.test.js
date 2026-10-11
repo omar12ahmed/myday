@@ -177,7 +177,7 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   check('…the new app adds Notes: the starter categories and no notes', newAll.notes.items.length === 0 && newAll.notes.categories.map(c => c.name).join() === 'Lifestyle,Business ideas,Health & fitness,Money,Study & career,Personal');
   check('…and Goal: no goal yet, kg and cm', eq(newAll.fitness, { units: 'metric', answers: null, setOn: null }));
   check('…and Cybersecurity: a foundation preference and no attempts', eq(newAll.cybersecurity, { pathId: 'path.core', attempts: [] }));
-  check('…and Arabic: the core course as the goal and no sessions', eq(newAll.arabic, { pathId: 'path.arabic-core-b2', attempts: [] }));
+  check('…and Arabic: the core course as the goal, no sessions and nothing in revision', eq(newAll.arabic, { pathId: 'path.arabic-core-b2', attempts: [], cards: [] }));
   check('…and Tasks: no lists and no tasks', eq(newAll.tasks, { lists: [], items: [] }));
   check('…and What MyDay has noticed: no preferences and no answers', eq(newAll.patterns, { prefs: { maxMinutes: { learning: null, admin: null, health: null }, maxTasks: null }, answers: {} }));
   check('…while the new app also keeps the unknown part of Health', eq(newAll.health.futureHealthPart, { kept: true }));

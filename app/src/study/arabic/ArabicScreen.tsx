@@ -1,14 +1,19 @@
 import { useEffect, useState } from 'react';
-import { BookOpen, Check, FlaskConical, Languages, Library, NotebookPen, VolumeOff } from 'lucide-react';
+import { BookOpen, Check, FlaskConical, Languages, Library, NotebookPen, RotateCcw, VolumeOff } from 'lucide-react';
 import '@fontsource-variable/noto-naskh-arabic';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { useConfirm } from '../../components/confirm';
 import { CommitTextarea, Field, Select, TextInput } from '../../components/Field';
+import { shortDate, todayKey } from '../../data/dates';
 import { update } from '../../data/storage';
+import { dueIds, nextDueDate } from '../../data/study/queue';
+import { understanding, UNDERSTANDING } from '../../data/study/revision';
 import type { MyDayData } from '../../data/types';
-import { MODALITIES, type ArabicAttempt, type Help, type Variant } from '../../data/arabic/types';
+import { addCards, cardOf, cardRef, nextWords, removeCards, wordCard, wordInRevision, wordsAddedOn } from '../../data/arabic/cards';
+import { ADD_A_FEW, MODALITIES, NEW_WORDS_A_DAY, type ArabicAttempt, type Help, type Variant } from '../../data/arabic/types';
 import { beginSession, changeSession, discardSession, finishSession, lessonDone, markRevealed, nextStep, openSession, placeOf, sessionsFor, writeFirstAnswer, type Place } from '../../data/arabic/sessions';
+import { startRevision } from '../actions';
 import { BackLink, Choice, Choices, Eyebrow, ExternalLink, InlineLink } from '../parts';
 import { Lines, LinkButton } from '../cybersecurity/parts';
 import { Ar, Mixed } from './Ar';
@@ -19,7 +24,8 @@ import {
 } from './catalogue';
 
 // Arabic Fuṣḥā in Study: the learning map, modules, lessons, the original reading texts, the starter vocabulary
-// and your sessions. What's saved is what you did (sessions); nothing here scores you or awards a level.
+// and your sessions. What's saved is what you did (sessions) and what you chose to revise (starter words and lesson
+// checks, as cards in Study's revision); nothing here scores you or awards a level.
 const href = (id: string) => '#study/arabic/' + id;
 const STAGES = ['Pre-A1', 'A1', 'A2', 'B1', 'B2'] as const;
 type Asset = (typeof texts.assets)[number];
@@ -37,7 +43,7 @@ export default function ArabicScreen({ data, id }: { data: MyDayData; id: string
       : lessonIndex[id] ? <LessonView key={id} data={data} id={id} />
       : assets.has(id) ? <TextView key={id} asset={assets.get(id)!} />
       : id === 'texts' ? <TextsIndex />
-      : id === 'vocabulary' ? <Vocabulary />
+      : id === 'vocabulary' ? <Vocabulary data={data} />
       : id === 'sessions' ? <SessionsView data={data} />
       : id ? <Card><h2>This page isn’t here</h2><BackLink to="study/arabic" label="Back to the learning map" /></Card>
       : <MapView data={data} />}
@@ -73,6 +79,7 @@ function MapView({ data }: { data: MyDayData }) {
         <div className="grid sm:grid-cols-2 gap-3"><LinkButton to={'study/arabic/' + step.lessonId} primary>{step.resume ? 'Continue' : 'Open lesson'}</LinkButton><LinkButton to="study/arabic/texts">Read a short text</LinkButton></div>
       </div>
     </Card>
+    <RevisionGlance data={data} />
     <Card>
       <Field label="Your goal" htmlFor="arPath"><Select id="arPath" data-s="ar-path" value={path.id} onChange={e => update(d => { d.arabic.pathId = e.target.value; })}>
         {[...paths.values()].map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -158,12 +165,13 @@ function ModuleView({ data, id }: { data: MyDayData; id: string }) {
 
 function LessonView({ data, id }: { data: MyDayData; id: string }) {
   const entry = lessonIndex[id], { content, failed } = useModule(entry.module_id);
+  const [finished, setFinished] = useState(false); // just finished a session here: offer its checks for revision
   const l = content?.lessons.find(x => x.id === id);
   if (!content || !l) return <><Card><BackLink to={'study/arabic/' + entry.module_id} label={modules.get(entry.module_id)!.name} /><h2>{entry.title}</h2></Card><Loading failed={failed} /></>;
   const task = content.exercises.find(e => e.id === l.practical_task_id), challenge = content.exercises.find(e => e.id === l.mini_challenge_id);
   const check = content.assessments.find(a => a.id === l.knowledge_check_id);
   const needsVoice = l.input_requirements?.modalities.some(m => m === 'listening' || m === 'speaking');
-  const session = openSession(data, l.id);
+  const session = openSession(data, l.id), checkIds = check?.questions?.map(q => q.id) ?? [];
   return <>
     <Card tone="accent">
       <BackLink to={'study/arabic/' + l.module_id} label={modules.get(l.module_id)!.name} />
@@ -180,7 +188,8 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
         <p className="text-sm text-fg-2">You can still explore this lesson.</p>
       </details>}
     </Card>
-    <SessionCard data={data} lesson={l} />
+    {finished && <FinishedCard data={data} checkIds={checkIds} onClose={() => setFinished(false)} />}
+    <SessionCard data={data} lesson={l} onFinished={() => setFinished(true)} />
     {task && <Card><h3>Practical task · {task.estimated_minutes} min</h3><p><Mixed text={task.instruction} /></p>
       <h4>What to produce</h4><Lines items={task.expected_evidence} />
       <details><summary className="cursor-pointer min-h-11 py-2 text-primary font-semibold">How it’s judged</summary><ul className="list-disc pl-5">{task.rubric.map(r => <li key={r.criterion}>{r.criterion} ({r.weight}): <Mixed text={r.pass_evidence || ''} /></li>)}</ul></details>
@@ -188,6 +197,7 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
     {check?.questions && <Card data-ar-check=""><h3>Check your understanding</h3>
       <p className="text-sm text-fg-2">{session ? 'Write your first answer, then compare. Once you’ve looked, your first answer stays as you wrote it.' : 'Answer first, in your head or on paper, then compare. Start a session to keep your answers.'}</p>
       <ol className="list-decimal pl-5 grid gap-4">{check.questions.map(q => <li key={q.id}>{session ? <SessionQuestion session={session} q={q} /> : <CheckQuestion q={q} />}</li>)}</ol>
+      <ChecksInRevision data={data} ids={checkIds} />
     </Card>}
     {challenge && <Card><h3>Mini challenge · {challenge.estimated_minutes} min</h3><p className="mb-0"><Mixed text={challenge.instruction} /></p></Card>}
     <Card><h3>When the lesson is done</h3><Lines items={l.completion_criteria} /><p className="text-sm text-fg-2 mb-0">One full attempt is a step, not mastery: a fresh task on another day tells you more.</p></Card>
@@ -221,7 +231,7 @@ const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 const HELP: Record<Help, string> = { independent: 'On my own', hint: 'With a hint', guided: 'Guided' };
 const when = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 
-function SessionCard({ data, lesson: l }: { data: MyDayData; lesson: Lesson }) {
+function SessionCard({ data, lesson: l, onFinished }: { data: MyDayData; lesson: Lesson; onFinished: () => void }) {
   const confirm = useConfirm();
   const open = openSession(data, l.id);
   const [variant, setVariant] = useState<Variant>('standard');
@@ -249,7 +259,7 @@ function SessionCard({ data, lesson: l }: { data: MyDayData; lesson: Lesson }) {
     <Choices label="How much help did you use?">{(Object.keys(HELP) as Help[]).map(h => <Choice key={h} on={open.help === h} data-action="ar-help" data-v={h} onClick={() => change(a => { a.help = h; })}>{HELP[h]}</Choice>)}</Choices>
     <Field label="What to revisit next time" htmlFor="arRevisit"><CommitTextarea key={open.id} id="arRevisit" rows={2} dir="auto" className="ar-input" data-s="ar-revisit" defaultValue={open.revisit} placeholder="e.g. when to use مِن and when في" onCommit={el => change(a => { a.revisit = el.value.slice(0, 1000); })} /></Field>
     <div className="grid sm:grid-cols-2 gap-3 mt-3">
-      <Button variant="primary" data-action="ar-finish" onClick={() => update(d => { if (!finishSession(d, open.id)) return false; })}>Finish this session</Button>
+      <Button variant="primary" data-action="ar-finish" onClick={() => { if (update(d => { if (!finishSession(d, open.id)) return false; })) onFinished(); }}>Finish this session</Button>
       <Button variant="ghost" data-action="ar-discard" onClick={discard}>Discard</Button>
     </div>
     <p className="text-sm text-fg-2 mt-3 mb-0">Saved as you go. Finishing records what you did, not a score.</p>
@@ -349,15 +359,103 @@ function TextView({ asset: a }: { asset: Asset }) {
   </>;
 }
 
-function Vocabulary() {
+// ---------- Revision: starter words and lesson checks you bring back (part 3) ----------
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+const addToRevision = (ids: string[]) => update(d => { if (!addCards(d, ids, todayKey())) return false; });
+const outOfRevision = (ids: string[]) => update(d => { if (!removeCards(d, ids)) return false; });
+// When something in revision comes back: "ready now" once it's due, otherwise the day.
+const backOn = (due: string | null, first = false) => (!due ? '' : due <= todayKey() ? 'ready now' : `${first ? 'first' : 'back'} on ${shortDate(due)}`);
+// A card's place in revision, in words: how it went last time and when it comes back. Never a score.
+function cardState(data: MyDayData, id: string): string | null {
+  const c = cardOf(data, id);
+  if (!c) return null;
+  const how = UNDERSTANDING[understanding(data.study, c)].label, when = backOn(c.review.due, !c.review.reps);
+  return when ? `${how} · ${when}` : how;
+}
+
+// On the map: what's in your Arabic revision, and a round of just Arabic when some is ready.
+function RevisionGlance({ data }: { data: MyDayData }) {
+  const k = todayKey(), refs = data.arabic.cards.map(c => cardRef(c.id));
+  const due = dueIds(data, k, 'arabic').length, next = nextDueDate(data, k, 'arabic');
+  const words = new Set(refs.flatMap(r => (r.kind === 'word' ? [r.lexemeId] : []))).size, checks = refs.filter(r => r.kind === 'check').length;
+  return <Card data-ar-revision={due ? 'due' : refs.length ? 'later' : 'none'}>
+    <h3 className="flex items-center gap-2 mt-0"><RotateCcw size={20} aria-hidden="true" />Revision</h3>
+    {refs.length
+      ? <p className="text-[15px]">In your revision: {[words && plural(words, 'starter word'), checks && plural(checks, 'lesson check')].filter(Boolean).join(' and ')}. {due ? `${due} ready now.` : next ? `Next back on ${shortDate(next)}.` : ''}</p>
+      : <p className="text-[15px]">Bring words and lesson checks back at growing gaps, so they stay with you. Add them from <InlineLink href="#study/arabic/vocabulary">Vocabulary</InlineLink> or a lesson’s checks.</p>}
+    {due > 0 && <Button variant="primary" data-action="ar-revise" onClick={() => startRevision('arabic')}>Revise Arabic</Button>}
+  </Card>;
+}
+
+// After finishing a session: an offer to bring the lesson's checks back in revision (nothing is added by itself).
+function FinishedCard({ data, checkIds, onClose }: { data: MyDayData; checkIds: string[]; onClose: () => void }) {
+  const missing = checkIds.filter(id => !cardOf(data, id)), them = checkIds.length === 1 ? 'it' : 'them';
+  return <Card tone="accent" data-ar-finished="">
+    <h3 className="mt-0">Session finished</h3>
+    <p className="text-[15px]">Saved: what you did, not a score.{checkIds.length === 0 ? '' : missing.length
+      ? ` Bring this lesson’s ${checkIds.length === 1 ? 'check' : plural(checkIds.length, 'check')} back in revision? ${them === 'it' ? 'It’d' : 'They’d'} first come back tomorrow, then at growing gaps.`
+      : ` This lesson’s ${checkIds.length === 1 ? 'check is' : 'checks are'} in your revision.`}</p>
+    <div className="grid sm:grid-cols-2 gap-3">
+      {missing.length > 0 && <Button variant="primary" data-action="ar-finished-add" onClick={() => addToRevision(missing)}>Add {them} to revision</Button>}
+      <Button variant="ghost" data-action="ar-finished-close" onClick={onClose}>{missing.length ? 'Not now' : 'Close'}</Button>
+    </div>
+  </Card>;
+}
+
+// Under a lesson's checks: bring them back in revision, or see when they come back (and take them out).
+function ChecksInRevision({ data, ids }: { data: MyDayData; ids: string[] }) {
+  const confirm = useConfirm();
+  if (!ids.length) return null;
+  const inRev = ids.filter(id => cardOf(data, id)), missing = ids.filter(id => !cardOf(data, id));
+  const next = inRev.map(id => cardOf(data, id)!.review.due).filter((d): d is string => !!d).sort()[0];
+  async function takeOut() {
+    if (await confirm({ title: 'Take these checks out of revision?', body: 'Your past answers stay in your history. If you bring them back, they start afresh.', confirmLabel: 'Take them out', cancelLabel: 'Keep them' })) outOfRevision(inRev);
+  }
+  return <div className="border-t border-outline pt-3 mt-4" data-ar-checks={inRev.length ? 'in' : 'out'}>
+    {inRev.length > 0 && <p className="text-sm m-0 mb-2">{missing.length ? `${inRev.length} of these checks are` : 'These checks are'} in your revision{next ? `: ${backOn(next).replace('back on', 'next back on')}` : ''}.</p>}
+    {!inRev.length && <p className="text-sm text-fg-2 m-0 mb-2">Want them to come back? In revision they return tomorrow, then at growing gaps.</p>}
+    <div className="flex flex-wrap gap-2">
+      {missing.length > 0 && <Button inline variant={inRev.length ? 'ghost' : 'tonal'} data-action="ar-checks-add" onClick={() => addToRevision(missing)}>{inRev.length ? 'Add the rest' : 'Bring these checks back in revision'}</Button>}
+      {inRev.length > 0 && <Button inline variant="ghost" data-action="ar-checks-remove" onClick={takeOut}>Take them out of revision</Button>}
+    </div>
+  </div>;
+}
+
+// The starter words, each with its example, and your choice of which come back in revision: recognising a word
+// first (Arabic → meaning), writing it from memory when you want to. Listening and speaking aren't tested: no
+// recordings are included.
+function Vocabulary({ data }: { data: MyDayData }) {
+  const confirm = useConfirm();
+  const k = todayKey(), ids = texts.lexicon.map(w => w.id), next = nextWords(data, ids, ADD_A_FEW), today = wordsAddedOn(data, k);
+  const inRev = ids.filter(id => wordInRevision(data, id)).length, plenty = today >= NEW_WORDS_A_DAY;
+  async function takeOut(w: (typeof texts.lexicon)[number]) {
+    if (await confirm({ title: 'Take this word out of revision?', body: `“${w.meaning_en}”: your past answers stay in your history. If you add it again, it starts afresh.`, confirmLabel: 'Take it out', cancelLabel: 'Keep it' }))
+      outOfRevision([wordCard(w.id, 'recognise'), wordCard(w.id, 'write')]);
+  }
   return <>
     <Card><Eyebrow>Vocabulary</Eyebrow><h2>Starter words</h2>
-      <p className="mb-0">{texts.lexicon.length} first words, each with an example sentence. A seed, not the whole vocabulary: lessons and texts add more as you go.</p>
+      <p>{texts.lexicon.length} first words, each with an example sentence. A seed, not the whole vocabulary: lessons and texts add more as you go.</p>
+      <h3>Bring them back in revision</h3>
+      <p className="text-[15px]" data-ar-words-in={inRev}>{inRev ? `${plural(inRev, 'word')} of ${texts.lexicon.length} in your revision.` : 'None in your revision yet.'} Words you add first come back tomorrow, then at growing gaps. A few new ones a day is plenty: the course suggests 3 to 8, and a day with none is fine.</p>
+      {plenty && <p className="text-[15px]" data-ar-plenty="">That’s {today} new words today, which is plenty. The rest will keep for another day.</p>}
+      {next.length > 0 && <Button variant={plenty ? 'ghost' : 'primary'} data-action="ar-words-add" onClick={() => addToRevision(next.map(id => wordCard(id, 'recognise')))}>Add the next {next.length === 1 ? 'word' : plural(next.length, 'word')} to revision</Button>}
+      <p className="text-sm text-fg-2 flex gap-2 items-start mt-3 mb-0"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />Revision covers reading and writing. Without recordings, listening and speaking stay untested.</p>
     </Card>
-    <Card><ul className="list-none p-0 m-0 divide-y divide-outline" data-ar-vocabulary="">{texts.lexicon.map(w => <li key={w.id} className="py-3 grid gap-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-4 items-baseline">
-      <div><Ar block className="text-[26px] font-medium m-0">{w.form_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.meaning_en} · {w.part_of_speech.replace('_', ' ')}</p></div>
-      <div><Ar block className="text-[20px] m-0">{w.example_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.example_meaning_en}</p></div>
-    </li>)}</ul></Card>
+    <Card><ul className="list-none p-0 m-0 divide-y divide-outline" data-ar-vocabulary="">{texts.lexicon.map(w => {
+      const recognise = cardState(data, wordCard(w.id, 'recognise')), write = cardState(data, wordCard(w.id, 'write'));
+      return <li key={w.id} data-ar-word={w.id} data-in={recognise || write ? 'yes' : 'no'} className="py-3 grid gap-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-4 items-baseline">
+        <div><Ar block className="text-[26px] font-medium m-0">{w.form_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.meaning_en} · {w.part_of_speech.replace('_', ' ')}</p></div>
+        <div><Ar block className="text-[20px] m-0">{w.example_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.example_meaning_en}</p></div>
+        <div className="sm:col-span-2 mt-1">
+          {(recognise || write) && <p className="text-sm m-0 mb-1.5">{recognise && <span className="block">Recognising it: {recognise}</span>}{write && <span className="block">Writing it: {write}</span>}</p>}
+          <div className="flex flex-wrap gap-2">
+            {!recognise && <Button inline variant="ghost" data-action="ar-word-add" onClick={() => addToRevision([wordCard(w.id, 'recognise')])}>Add to revision</Button>}
+            {recognise && !write && <Button inline variant="ghost" data-action="ar-word-write" onClick={() => addToRevision([wordCard(w.id, 'write')])}>Also practise writing it</Button>}
+            {(recognise || write) && <Button inline variant="ghost" data-action="ar-word-remove" onClick={() => takeOut(w)}>Take it out</Button>}
+          </div>
+        </div>
+      </li>;
+    })}</ul></Card>
   </>;
 }
 
