@@ -34,7 +34,7 @@ export function StudyScreen({ data, hash }: { data: MyDayData; hash: string }) {
 
   let screen;
   if (view === 'cybersecurity') screen = <Suspense fallback={<p role="status">Opening your cybersecurity workshop…</p>}><CyberScreen key={id} data={data} id={id} /></Suspense>;
-  else if (view === 'arabic') screen = <Suspense fallback={<p role="status">Opening Arabic…</p>}><ArabicScreen key={id} id={id} /></Suspense>;
+  else if (view === 'arabic') screen = <Suspense fallback={<p role="status">Opening Arabic…</p>}><ArabicScreen key={id} data={data} id={id} /></Suspense>;
   else if (view === 'roadmap') screen = <Roadmap key={id} data={data} state={{ edit, setEdit, open, setOpen }} topic={id ? topicFromPath(id) : null} />;
   else if (view === 'topic') screen = <TopicView data={data} id={topicFromPath(id)} lengths={lengths} setLength={setLength} />;
   else if (view === 'course') screen = <CourseDetails data={data} id={id} />;

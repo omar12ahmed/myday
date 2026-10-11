@@ -27,10 +27,13 @@ import type { Category, Commitment, Day, DayContext, ListItem, MyDayData, Note, 
 import { isObj } from '../data/util';
 import { cleanAttempt, normalizeCyber } from '../data/cybersecurity/normalize';
 import type { CyberAttempt } from '../data/cybersecurity/types';
+import { cleanArabicAttempt, normalizeArabic } from '../data/arabic/normalize';
+import { ARABIC_CORE_PATH, type ArabicAttempt } from '../data/arabic/types';
 
 export type Kind = 'list' | 'queue' | 'day' | 'context'
   | 'settings' | 'rota' | 'pay' | 'holidays' | 'finance' | 'study' | 'workout' | 'food' | 'fitness' | 'notes' | 'tasks' | 'patterns'
-  | 'commitment' | 'note' | 'task' | 'session' | 'review' | 'wsession' | 'recipe' | 'project' | 'cybersecurity' | 'cyber_attempt';
+  | 'commitment' | 'note' | 'task' | 'session' | 'review' | 'wsession' | 'recipe' | 'project' | 'cybersecurity' | 'cyber_attempt'
+  | 'arabic' | 'arabic_attempt';
 export type Content = Record<string, unknown>;
 
 // A record's key on this device: "list:learning", "day:2026-10-02", "note:nt8f…"…
@@ -149,6 +152,9 @@ const ONE: One[] = [
   { kind: 'cybersecurity', id: 'preferences', label: 'Cybersecurity learning path',
     get: d => ({ pathId: d.cybersecurity.pathId }), put: (d, c) => { d.cybersecurity.pathId = String(c.pathId); },
     clean: raw => ({ pathId: normalizeCyber(raw).pathId }), summary: c => String(c.pathId), starter: c => c.pathId === 'path.core' },
+  { kind: 'arabic', id: 'preferences', label: 'Arabic learning path',
+    get: d => ({ pathId: d.arabic.pathId }), put: (d, c) => { d.arabic.pathId = String(c.pathId); },
+    clean: raw => ({ pathId: normalizeArabic(raw).pathId }), summary: c => String(c.pathId), starter: c => c.pathId === ARABIC_CORE_PATH },
 ];
 
 // ---------- One record per item ----------
@@ -177,6 +183,10 @@ const byStart = (a: { date: string; startedAt: string }, b: { date: string; star
 const same = (id: string, c: { id?: unknown } | undefined | null): Content | null => (c && c.id === id ? (c as Content) : null);
 
 const MANY: Many[] = [
+  { kind: 'arabic_attempt', label: 'Arabic lesson session',
+    items: d => d.arabic.attempts, put: (d, id, c) => putItem(d.arabic.attempts, id, c, (a, b) => a.startedAt.localeCompare(b.startedAt)),
+    clean: (id, raw) => same(id, cleanArabicAttempt(raw) ?? undefined),
+    summary: c => { const a = c as unknown as ArabicAttempt; return `${a.lessonId} · ${a.finishedAt ? 'finished' : 'in progress'}`; } },
   { kind: 'cyber_attempt', label: 'Cybersecurity notebook attempt',
     items: d => d.cybersecurity.attempts, put: (d, id, c) => putItem(d.cybersecurity.attempts, id, c, (a, b) => a.startedAt.localeCompare(b.startedAt)),
     clean: (id, raw) => same(id, cleanAttempt(raw) ?? undefined),

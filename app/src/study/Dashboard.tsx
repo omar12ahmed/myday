@@ -78,7 +78,7 @@ function RevisionCard({ data }: { data: MyDayData }) {
 // (e.g. Cybersecurity, Arabic) — each with its next step and progress, one tap from its own page.
 export function Dashboard({ data, lengths, setLength }: { data: MyDayData; lengths: Record<string, number>; setLength: (key: string, m: number) => void }) {
   const st = data.study;
-  if (!st.stages.length) return <div className="study-welcome"><div className="mb-6"><p className="eyebrow">Your learning space</p><h2 className="text-[28px] lg:text-[34px] mb-2">Make room for curiosity.</h2><p className="text-fg-2 text-[15px] max-w-xl">Follow a guided path or bring a subject of your own. Pick a small next step and build from there.</p></div><div className="grid lg:grid-cols-2 gap-5 items-start"><CyberCard /><ArabicCard /><SetupCard data={data} /></div></div>;
+  if (!st.stages.length) return <div className="study-welcome"><div className="mb-6"><p className="eyebrow">Your learning space</p><h2 className="text-[28px] lg:text-[34px] mb-2">Make room for curiosity.</h2><p className="text-fg-2 text-[15px] max-w-xl">Follow a guided path or bring a subject of your own. Pick a small next step and build from there.</p></div><div className="grid lg:grid-cols-2 gap-5 items-start"><CyberCard /><ArabicCard data={data} /><SetupCard data={data} /></div></div>;
   const ix = stIndex(st), c = focusCourse(st, ix), cur = activeStudy(st), k = todayKey();
   const glances = topicsOf(st).map(t => topicGlance(st, ix, t.id)!).filter(Boolean);
   const named = !!st.topics?.length;
@@ -140,7 +140,7 @@ export function Dashboard({ data, lengths, setLength }: { data: MyDayData; lengt
       <div className="min-w-0">
         <RevisionCard data={data} />
         <CyberCard />
-        <ArabicCard />
+        <ArabicCard data={data} />
         <Card aria-label="More in Study">
           <nav className="st-links flex flex-wrap gap-x-5" aria-label="Study">
             <TextLink href="#study/roadmap">Whole roadmap</TextLink><TextLink href="#study/concepts">Concepts</TextLink>

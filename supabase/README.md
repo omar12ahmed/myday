@@ -31,7 +31,11 @@ The database changes are in `supabase/migrations/`, applied in order: `202610021
 first part of sync), `20261003120000_ai_usage.sql` (AI help's limits), `20261005120000_sync_everything.sql`
 (everything else syncs, from 1.8.0 — apply it **before** publishing 1.8.0; older versions of the app keep working with
 it) and `20261006120000_sync_projects.sql` (projects sync, from 1.12.0: the record table accepts one more kind,
-`project`; nothing else changes — apply it **before** publishing 1.12.0; older versions keep working with it). Apply them **one** of these two ways (not both):
+`project`; nothing else changes — apply it **before** publishing 1.12.0; older versions keep working with it),
+`20261007120000_sync_cybersecurity.sql` (Cybersecurity, from 1.14.0: two more kinds, `cybersecurity` and
+`cyber_attempt`) and `20261011120000_sync_arabic.sql` (Arabic Fuṣḥā sessions: two more kinds, `arabic` and
+`arabic_attempt` — apply it **before** publishing the release that saves Arabic sessions; older versions keep working
+with it). Apply them **one** of these two ways (not both):
 
 **A. With the Supabase CLI (recommended: it records which migrations have run).** From the `myday-site` folder:
 
@@ -168,6 +172,8 @@ The model never writes anything: it only replies, and the app decides what's all
 | `migrations/20261003120000_ai_usage.sql` | Request, token and spending limits per account (counts only, never content). |
 | `migrations/20261005120000_sync_everything.sql` | Sync for everything else: the `sync_records` table, and `sync_push` / `sync_pull` handling it. |
 | `migrations/20261006120000_sync_projects.sql` | Projects sync (1.12.0): `sync_records` accepts `project` records (its two kind checks replaced by named ones; nothing else touched). |
+| `migrations/20261007120000_sync_cybersecurity.sql` | Cybersecurity (1.14.0): `sync_records` accepts the learning path and notebook attempts (`cybersecurity`, `cyber_attempt`). |
+| `migrations/20261011120000_sync_arabic.sql` | Arabic Fuṣḥā: `sync_records` accepts the chosen path and lesson sessions (`arabic`, `arabic_attempt`; sessions can be deleted, the path can't). Nothing else changes. |
 | `ai-secrets.example.env` | The settings, as a template with placeholders only (fill in a copy that Git ignores; the key ends up only in Supabase). |
 
 ## Try it without any AI (practice mode)

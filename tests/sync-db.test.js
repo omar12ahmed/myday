@@ -192,6 +192,21 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   r = await push(A, [change('cybersecurity', 'preferences', 1, null, { deleted: true })]);
   check('the preferences singleton cannot be deleted', r[0].status === 'rejected', r);
 
+  console.log('\n[12] Arabic Fuṣḥā learner records (sixth migration)');
+  const reader = await S.addUser(db, 'arabic-isolation@example.test', 'x');
+  const session = { id: 'aa1', lessonId: 'lesson.arabic-origin-location', curriculumVersion: '1.1.0', variant: 'standard', startedAt: '2026-10-11T09:00:00.000Z', finishedAt: null, help: 'independent', practised: ['reading'], answers: { 'assessment.arabic-origin-location-check.q1': 'Disposable test answer' }, revealed: [], revisit: '' };
+  r = await push(A, [change('arabic', 'preferences', 0, { pathId: 'path.arabic-core-b2' }), change('arabic_attempt', 'aa1', 0, session)]);
+  check('the Arabic path and a lesson session save through sync_push', r.every(x => x.status === 'applied' && x.version === 1), r);
+  check('another learner cannot read the sessions', !(await pull(reader)).some(x => x.kind === 'arabic_attempt' || x.kind === 'arabic'));
+  r = await push(A, [change('arabic_attempt', 'aa1', 0, { ...session, revisit: 'stale' })]);
+  check('a stale device cannot overwrite a session', r[0].status === 'conflict', r);
+  r = await push(A, [change('arabic_attempt', 'aa1', 1, null, { deleted: true })]);
+  check('removing a session reaches other devices as a tombstone', r[0].status === 'applied' && (await pull(A)).some(x => x.kind === 'arabic_attempt' && x.deleted));
+  r = await push(A, [change('arabic', 'preferences', 1, null, { deleted: true })]);
+  check('the Arabic preferences record cannot be deleted', r[0].status === 'rejected', r);
+  r = await push(A, [change('arabic_session', 'x1', 0, { id: 'x1' })]);
+  check('an unknown kind is still refused', r[0].status === 'rejected', r);
+
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

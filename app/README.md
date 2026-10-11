@@ -27,8 +27,15 @@ Arabic Fuṣḥā in Study (part 1, reading only): the supplied package in `../c
 answers (loaded only when asked for). `#study/arabic` has the learning map by level, module and lesson pages,
 16 original reading texts (with and without vowel marks) and 48 starter words. Arabic is marked `lang="ar"
 dir="rtl"`, in Noto Naskh Arabic (`@fontsource-variable/noto-naskh-arabic`, downloaded only when Arabic shows);
-Arabic inside English sentences is isolated with `<bdi>`. Nothing is saved yet and no level is awarded; no
-recordings are included. Next: saving progress (a new section and sync kind — a database migration), then the
+Arabic inside English sentences is isolated with `<bdi>`. No level is awarded and no recordings are included.
+
+Part 2, your sessions: a lesson session saves what you did, never a score — the lesson, session length, start and
+finish, help used, what you practised (ticked by you; listening and speaking are never assumed), your first answers
+to the checks (kept as written once you look at the reference) and a "revisit" note, with the curriculum version.
+Saved as the new-app-only top-level section `arabic` (`src/data/arabic/`: types, cleaning, sessions); the classic
+MyDay keeps it unread. The map shows places (unexplored, exploring, visited) and your next small step along the goal
+you choose; "Your sessions" lists them all. Synced as `arabic` (the goal) and `arabic_attempt` (one per session) —
+migration `../supabase/migrations/20261011120000_sync_arabic.sql`, applied at release with my go-ahead. Next: the
 starter words and lesson checks in revision.
 
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live

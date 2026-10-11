@@ -1,48 +1,64 @@
 import { useEffect, useState } from 'react';
-import { BookOpen, FlaskConical, Languages, Library, VolumeOff } from 'lucide-react';
+import { BookOpen, Check, FlaskConical, Languages, Library, NotebookPen, VolumeOff } from 'lucide-react';
 import '@fontsource-variable/noto-naskh-arabic';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
-import { Field, TextInput } from '../../components/Field';
-import { BackLink, Eyebrow, ExternalLink, InlineLink } from '../parts';
+import { useConfirm } from '../../components/confirm';
+import { CommitTextarea, Field, Select, TextInput } from '../../components/Field';
+import { update } from '../../data/storage';
+import type { MyDayData } from '../../data/types';
+import { MODALITIES, type ArabicAttempt, type Help, type Variant } from '../../data/arabic/types';
+import { beginSession, changeSession, discardSession, finishSession, lessonDone, markRevealed, nextStep, openSession, placeOf, sessionsFor, writeFirstAnswer, type Place } from '../../data/arabic/sessions';
+import { BackLink, Choice, Choices, Eyebrow, ExternalLink, InlineLink } from '../parts';
 import { Lines, LinkButton } from '../cybersecurity/parts';
 import { Ar, Mixed } from './Ar';
 import texts from './data/texts.json';
 import {
-  corePath, lessonIndex, loadAnswers, loadModule, moduleList, modules, projects, resources, short, skills, topics, version,
-  type Answers, type ModuleContent, type Question,
+  corePath, lessonIndex, loadAnswers, loadModule, moduleList, modules, paths, projects, resources, short, skills, topics, version,
+  type Answers, type Lesson, type ModuleContent, type Question,
 } from './catalogue';
 
-// Arabic Fuṣḥā in Study: the learning map, modules, lessons, the original reading texts and the starter
-// vocabulary. Reading only for now: nothing here is saved, and nothing awards a level.
+// Arabic Fuṣḥā in Study: the learning map, modules, lessons, the original reading texts, the starter vocabulary
+// and your sessions. What's saved is what you did (sessions); nothing here scores you or awards a level.
 const href = (id: string) => '#study/arabic/' + id;
 const STAGES = ['Pre-A1', 'A1', 'A2', 'B1', 'B2'] as const;
 type Asset = (typeof texts.assets)[number];
 const assets = new Map<string, Asset>(texts.assets.map(a => [a.id, a]));
 
-export default function ArabicScreen({ id }: { id: string }) {
-  const tab = id === 'texts' || id.startsWith('asset.') ? 'texts' : id === 'vocabulary' ? 'vocabulary' : 'map';
+export default function ArabicScreen({ data, id }: { data: MyDayData; id: string }) {
+  const tab = id === 'texts' || id.startsWith('asset.') ? 'texts' : id === 'vocabulary' || id === 'sessions' ? id : 'map';
   return <div className="arabic-study break-words">
     <nav className="workspace-tabs" aria-label="Arabic">
       <a href="#study">‹ Study</a>
-      {([['map', 'Learning map', ''], ['texts', 'Reading texts', '/texts'], ['vocabulary', 'Vocabulary', '/vocabulary']] as const).map(([key, label, path]) =>
+      {([['map', 'Learning map', ''], ['texts', 'Reading texts', '/texts'], ['vocabulary', 'Vocabulary', '/vocabulary'], ['sessions', 'Your sessions', '/sessions']] as const).map(([key, label, path]) =>
         <a key={key} href={'#study/arabic' + path} aria-current={tab === key ? 'page' : undefined}>{label}</a>)}
     </nav>
-    {modules.has(id) ? <ModuleView key={id} id={id} />
-      : lessonIndex[id] ? <LessonView key={id} id={id} />
+    {modules.has(id) ? <ModuleView key={id} data={data} id={id} />
+      : lessonIndex[id] ? <LessonView key={id} data={data} id={id} />
       : assets.has(id) ? <TextView key={id} asset={assets.get(id)!} />
       : id === 'texts' ? <TextsIndex />
       : id === 'vocabulary' ? <Vocabulary />
+      : id === 'sessions' ? <SessionsView data={data} />
       : id ? <Card><h2>This page isn’t here</h2><BackLink to="study/arabic" label="Back to the learning map" /></Card>
-      : <MapView />}
+      : <MapView data={data} />}
   </div>;
 }
 
-function MapView() {
+// Your path's lessons in course order (optional lessons aside): where "the next small step" comes from.
+function pathLessons(pathId: string): string[] {
+  const path = paths.get(pathId) ?? corePath;
+  return moduleList.filter(m => path.required_module_ids.includes(m.id)).flatMap(m => m.lesson_ids.filter(l => !lessonIndex[l].optional));
+}
+const coreLessons = (m: (typeof moduleList)[number]) => m.lesson_ids.filter(l => !lessonIndex[l].optional);
+const PLACE: Record<Place, string> = { unexplored: 'Unexplored', exploring: 'Exploring', visited: 'Visited' };
+
+function MapView({ data }: { data: MyDayData }) {
   const [search, setSearch] = useState('');
-  const first = moduleList[0].lesson_ids[0];
+  const path = paths.get(data.arabic.pathId) ?? corePath;
+  const step = nextStep(data, pathLessons(path.id)), started = data.arabic.attempts.length > 0;
   const match = (m: (typeof moduleList)[number]) => !search || [m.name, m.purpose, ...m.lesson_ids.map(l => lessonIndex[l].title)].join(' ').toLowerCase().includes(search.toLowerCase());
   const core = moduleList.filter(m => m.path_class === 'core' && match(m)), extensions = moduleList.filter(m => m.path_class !== 'core' && match(m));
+  const tile = (m: (typeof moduleList)[number]) => <ModuleTile key={m.id} m={m} place={placeOf(data, m.lesson_ids, coreLessons(m))} inPath={path.required_module_ids.includes(m.id)} />;
   return <>
     <Card className="next-card">
       <Eyebrow><Languages className="inline mr-1" size={18} aria-hidden="true" /> Arabic Fuṣḥā</Eyebrow>
@@ -50,37 +66,41 @@ function MapView() {
       <Ar block className="text-[26px] text-fg-2 mt-0">العربية الفصحى</Ar>
       <p>Modern Standard Arabic, one small session at a time: script and sounds first, then sentences, reading, listening and writing.</p>
       <p className="text-sm text-fg-2 flex gap-2 items-start"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />No recordings are included yet. For listening and speaking, use a verified recording or a fluent speaker; typed work never stands in for them.</p>
-      <div className="rounded-tile bg-surface p-4 border border-outline mt-4">
-        <Eyebrow>Your first small step</Eyebrow>
-        <h3>{lessonIndex[first].title}</h3>
-        <p className="text-sm text-fg-2">The first lesson of the course. Short sessions count: ten focused minutes is a real step.</p>
-        <div className="grid sm:grid-cols-2 gap-3"><LinkButton to={'study/arabic/' + first} primary>Open lesson</LinkButton><LinkButton to="study/arabic/texts">Read a short text</LinkButton></div>
+      <div className="rounded-tile bg-surface p-4 border border-outline mt-4" data-ar-next={step.resume ? 'resume' : 'next'}>
+        <Eyebrow>{step.resume ? 'Pick up where you left off' : started ? 'Your next small step' : 'Your first small step'}</Eyebrow>
+        <h3>{lessonIndex[step.lessonId].title}</h3>
+        <p className="text-sm text-fg-2">{step.resume ? 'A session on this lesson is still open.' : started ? 'The next lesson on your path you haven’t finished yet.' : 'The first lesson of the course.'} Short sessions count: ten focused minutes is a real step.</p>
+        <div className="grid sm:grid-cols-2 gap-3"><LinkButton to={'study/arabic/' + step.lessonId} primary>{step.resume ? 'Continue' : 'Open lesson'}</LinkButton><LinkButton to="study/arabic/texts">Read a short text</LinkButton></div>
       </div>
     </Card>
     <Card>
+      <Field label="Your goal" htmlFor="arPath"><Select id="arPath" data-s="ar-path" value={path.id} onChange={e => update(d => { d.arabic.pathId = e.target.value; })}>
+        {[...paths.values()].map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+      </Select></Field>
+      <p className="text-sm text-fg-2">{path.required_module_ids.length} modules · about {path.estimated_hours.minimum}–{path.estimated_hours.maximum} hours from the start, including revision. Levels are design targets, not certificates.</p>
       <Field label="Find a module or lesson" htmlFor="arSearch"><TextInput id="arSearch" type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="e.g. script, past tense, reading" /></Field>
-      <p className="text-sm text-fg-2 mb-0">The core course has {corePath.required_module_ids.length} modules, about {corePath.estimated_hours.minimum}–{corePath.estimated_hours.maximum} hours including revision. Levels are design targets, not certificates.</p>
     </Card>
     {STAGES.map(stage => {
       const list = core.filter(m => m.stage_target === stage);
       return list.length > 0 && <section key={stage} aria-labelledby={`ar-stage-${stage}`} className="mb-4" data-ar-stage={stage}>
         <h3 id={`ar-stage-${stage}`} className="text-sm font-bold uppercase tracking-wide text-fg-2 mb-2">{stage === 'B2' ? 'B2 target' : stage}</h3>
-        <div className="grid sm:grid-cols-2 gap-3">{list.map(m => <ModuleTile key={m.id} m={m} />)}</div>
+        <div className="grid sm:grid-cols-2 gap-3">{list.map(tile)}</div>
       </section>;
     })}
     {extensions.length > 0 && <section aria-labelledby="ar-extensions" className="mb-4" data-ar-stage="extensions">
       <h3 id="ar-extensions" className="text-sm font-bold uppercase tracking-wide text-fg-2 mb-2">Optional extensions</h3>
-      <div className="grid sm:grid-cols-2 gap-3">{extensions.map(m => <ModuleTile key={m.id} m={m} />)}</div>
+      <div className="grid sm:grid-cols-2 gap-3">{extensions.map(tile)}</div>
     </section>}
     {!core.length && !extensions.length && <Card><p className="m-0">Nothing matches “{search}”.</p></Card>}
     <p className="text-xs text-fg-3">Curriculum {version}. Checked when MyDay is built: structure, references and answer keys. That isn’t an Arabic teacher’s proofreading.</p>
   </>;
 }
 
-function ModuleTile({ m }: { m: (typeof moduleList)[number] }) {
-  return <a href={href(m.id)} data-ar-module={short(m.id)} className="block no-underline text-fg rounded-card border border-outline bg-surface shadow-card p-4 hover:border-outline-strong focus-visible:outline-2 focus-visible:outline-primary">
-    <span className="text-xs font-bold text-primary uppercase tracking-wide">{String(m.sequence).padStart(2, '0')} · {m.stage_target.replace('-extension', ' extension')}</span>
-    <h4 className="mt-2 mb-1 text-[17px]">{m.name}</h4>
+// A module on the map, shown as a place: unexplored (quiet), being explored, or visited.
+function ModuleTile({ m, place, inPath }: { m: (typeof moduleList)[number]; place: Place; inPath: boolean }) {
+  return <a href={href(m.id)} data-ar-module={short(m.id)} data-place={place} className={`block no-underline text-fg rounded-card border bg-surface shadow-card p-4 hover:border-outline-strong focus-visible:outline-2 focus-visible:outline-primary ${place === 'unexplored' ? 'border-outline' : 'border-primary/60'}`}>
+    <span className="text-xs font-bold text-primary uppercase tracking-wide">{String(m.sequence).padStart(2, '0')} · {m.stage_target.replace('-extension', ' extension')} · {PLACE[place]}{inPath ? '' : ' · not on your path'}</span>
+    <h4 className="mt-2 mb-1 text-[17px] flex items-center gap-2">{place === 'visited' && <Check size={18} className="text-done flex-none" aria-hidden="true" />}{m.name}</h4>
     <p className="text-sm text-fg-2 m-0">{m.purpose}</p>
     <p className="text-sm text-fg-3 mb-0 mt-2">{m.lesson_ids.length} lessons · about {m.estimated_hours.total_minimum}–{m.estimated_hours.total_maximum} hours</p>
   </a>;
@@ -100,7 +120,7 @@ function Loading({ failed }: { failed: boolean }) {
   return <Card><p role="status" className="m-0">{failed ? 'This part of the course couldn’t be opened. Check your connection and try again.' : 'Opening…'}</p></Card>;
 }
 
-function ModuleView({ id }: { id: string }) {
+function ModuleView({ data, id }: { data: MyDayData; id: string }) {
   const m = modules.get(id)!, { content, failed } = useModule(id);
   const lab = (labId: string) => content?.labs.find(l => l.id === labId);
   const check = content?.assessments.find(a => a.id === m.assessment_id);
@@ -115,7 +135,7 @@ function ModuleView({ id }: { id: string }) {
         <h4 className="text-sm font-bold text-fg-2 mb-1">{topic.name}</h4>
         <ol className="list-none p-0 m-0 divide-y divide-outline">{topic.lesson_ids.map(l => <li key={l} className="py-2.5">
           <InlineLink href={href(l)}>{lessonIndex[l].title}{lessonIndex[l].optional ? ' (optional)' : ''}</InlineLink>
-          <p className="text-sm text-fg-2 m-0">{lessonIndex[l].minutes} min</p>
+          <p className="text-sm text-fg-2 m-0" data-ar-lesson-state={lessonDone(data, l) ? 'done' : openSession(data, l) ? 'open' : 'new'}>{lessonIndex[l].minutes} min{lessonDone(data, l) ? ' · finished' : openSession(data, l) ? ' · session open' : ''}</p>
         </li>)}</ol>
       </div>; })}
     </Card>
@@ -136,13 +156,14 @@ function ModuleView({ id }: { id: string }) {
   </>;
 }
 
-function LessonView({ id }: { id: string }) {
+function LessonView({ data, id }: { data: MyDayData; id: string }) {
   const entry = lessonIndex[id], { content, failed } = useModule(entry.module_id);
   const l = content?.lessons.find(x => x.id === id);
   if (!content || !l) return <><Card><BackLink to={'study/arabic/' + entry.module_id} label={modules.get(entry.module_id)!.name} /><h2>{entry.title}</h2></Card><Loading failed={failed} /></>;
   const task = content.exercises.find(e => e.id === l.practical_task_id), challenge = content.exercises.find(e => e.id === l.mini_challenge_id);
   const check = content.assessments.find(a => a.id === l.knowledge_check_id);
   const needsVoice = l.input_requirements?.modalities.some(m => m === 'listening' || m === 'speaking');
+  const session = openSession(data, l.id);
   return <>
     <Card tone="accent">
       <BackLink to={'study/arabic/' + l.module_id} label={modules.get(l.module_id)!.name} />
@@ -159,17 +180,18 @@ function LessonView({ id }: { id: string }) {
         <p className="text-sm text-fg-2">You can still explore this lesson.</p>
       </details>}
     </Card>
-    <Card><h3>Choose a manageable session</h3>{l.variants.map(v => <details key={v.mode}><summary className="min-h-11 py-2 cursor-pointer text-primary">{v.mode[0].toUpperCase() + v.mode.slice(1)} · {v.minutes} min</summary><p><Mixed text={v.activity} /></p><p className="text-sm text-fg-2">{v.evidence_scope}</p></details>)}</Card>
+    <SessionCard data={data} lesson={l} />
     {task && <Card><h3>Practical task · {task.estimated_minutes} min</h3><p><Mixed text={task.instruction} /></p>
       <h4>What to produce</h4><Lines items={task.expected_evidence} />
       <details><summary className="cursor-pointer min-h-11 py-2 text-primary font-semibold">How it’s judged</summary><ul className="list-disc pl-5">{task.rubric.map(r => <li key={r.criterion}>{r.criterion} ({r.weight}): <Mixed text={r.pass_evidence || ''} /></li>)}</ul></details>
     </Card>}
     {check?.questions && <Card data-ar-check=""><h3>Check your understanding</h3>
-      <p className="text-sm text-fg-2">Answer first, in your head or on paper, then compare. Note anything you needed help with.</p>
-      <ol className="list-decimal pl-5 grid gap-4">{check.questions.map(q => <li key={q.id}><CheckQuestion q={q} /></li>)}</ol>
+      <p className="text-sm text-fg-2">{session ? 'Write your first answer, then compare. Once you’ve looked, your first answer stays as you wrote it.' : 'Answer first, in your head or on paper, then compare. Start a session to keep your answers.'}</p>
+      <ol className="list-decimal pl-5 grid gap-4">{check.questions.map(q => <li key={q.id}>{session ? <SessionQuestion session={session} q={q} /> : <CheckQuestion q={q} />}</li>)}</ol>
     </Card>}
     {challenge && <Card><h3>Mini challenge · {challenge.estimated_minutes} min</h3><p className="mb-0"><Mixed text={challenge.instruction} /></p></Card>}
     <Card><h3>When the lesson is done</h3><Lines items={l.completion_criteria} /><p className="text-sm text-fg-2 mb-0">One full attempt is a step, not mastery: a fresh task on another day tells you more.</p></Card>
+    <LessonHistory data={data} lesson={l} />
     {l.starter_asset_ids.length > 0 && <Card><h3>Read alongside</h3><div className="grid gap-2">{l.starter_asset_ids.map(a => assets.get(a) && <InlineLink key={a} href={href(a)}>{assets.get(a)!.title}</InlineLink>)}</div></Card>}
     <Card><h3>Read and explore</h3><ResourceLinks ids={l.resource_ids} /></Card>
   </>;
@@ -178,21 +200,100 @@ function LessonView({ id }: { id: string }) {
 // A question with its reference answer behind a button. The answers load on first use; they are for
 // self-study, so anyone with the app could read them — answer first for your own sake.
 function CheckQuestion({ q }: { q: Question | { id: string; prompt: string; answer_key_id: string } }) {
-  const [answers, setAnswers] = useState<Answers | null>(null), [open, setOpen] = useState(false), [failed, setFailed] = useState(false);
-  async function show() {
-    setOpen(true);
-    try { setAnswers(await loadAnswers()); } catch { setFailed(true); }
-  }
-  const a = answers?.[q.answer_key_id];
+  const [open, setOpen] = useState(false);
   return <div data-ar-question={q.id}>
     <p className="mb-1.5"><Mixed text={q.prompt} /></p>
-    {!open ? <Button inline variant="ghost" data-action="ar-reveal" onClick={show}>Show the reference answer</Button>
-      : a ? <div className="bg-surface-2 rounded-tile px-3.5 py-2.5" data-ar-answer="">
-        <span className="text-sm text-fg-2">Reference answer</span><p className="mt-1 mb-1"><Mixed text={a.answer} /></p>
-        <p className="text-sm text-fg-2 m-0">What also counts: <Mixed text={a.variation} /></p>
-      </div>
-      : <p role="status" className="text-sm text-fg-2">{failed ? 'The answers couldn’t be opened. Check your connection and try again.' : 'Opening…'}</p>}
+    {open ? <Reference keyId={q.answer_key_id} /> : <Button inline variant="ghost" data-action="ar-reveal" onClick={() => setOpen(true)}>Show the reference answer</Button>}
   </div>;
+}
+function Reference({ keyId }: { keyId: string }) {
+  const [answers, setAnswers] = useState<Answers | null>(null), [failed, setFailed] = useState(false);
+  useEffect(() => { let live = true; loadAnswers().then(a => { if (live) setAnswers(a); }, () => { if (live) setFailed(true); }); return () => { live = false; }; }, []);
+  const a = answers?.[keyId];
+  return a ? <div className="bg-surface-2 rounded-tile px-3.5 py-2.5" data-ar-answer="">
+    <span className="text-sm text-fg-2">Reference answer</span><p className="mt-1 mb-1"><Mixed text={a.answer} /></p>
+    <p className="text-sm text-fg-2 m-0">What also counts: <Mixed text={a.variation} /></p>
+  </div> : <p role="status" className="text-sm text-fg-2">{failed ? 'The answers couldn’t be opened. Check your connection and try again.' : 'Opening…'}</p>;
+}
+
+// ---------- Sessions: what you did, saved as you go ----------
+const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
+const HELP: Record<Help, string> = { independent: 'On my own', hint: 'With a hint', guided: 'Guided' };
+const when = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+
+function SessionCard({ data, lesson: l }: { data: MyDayData; lesson: Lesson }) {
+  const confirm = useConfirm();
+  const open = openSession(data, l.id);
+  const [variant, setVariant] = useState<Variant>('standard');
+  if (!open) return <Card data-ar-session="none">
+    <h3>Start a session</h3>
+    <p className="text-sm text-fg-2">Choose a length. Any of them counts, and you can finish early.</p>
+    <div className="grid gap-2" role="radiogroup" aria-label="Session length">{l.variants.map(v => <label key={v.mode} className="flex gap-3 items-start rounded-tile border border-outline px-3.5 py-3 cursor-pointer has-[:checked]:border-primary">
+      <input type="radio" name="arVariant" data-s="ar-variant" value={v.mode} className="mt-1 size-5 flex-none accent-primary" checked={variant === v.mode} onChange={() => setVariant(v.mode as Variant)} />
+      <span><strong>{cap(v.mode)} · {v.minutes} min</strong><span className="block text-sm text-fg-2"><Mixed text={v.activity} /></span></span>
+    </label>)}</div>
+    <Button variant="primary" className="mt-3" data-action="ar-begin" onClick={() => update(d => { beginSession(d, l.id, variant); })}>Start a {variant} session</Button>
+  </Card>;
+  const change = (fn: (a: ArabicAttempt) => void) => update(d => { if (!changeSession(d, open.id, fn)) return false; });
+  const v = l.variants.find(x => x.mode === open.variant);
+  async function discard() {
+    if (await confirm({ title: 'Discard this session?', body: 'Its answers and note will be removed. Your other sessions stay as they are.', confirmLabel: 'Discard', cancelLabel: 'Keep it' })) update(d => { if (!discardSession(d, open!.id)) return false; });
+  }
+  return <Card tone="accent" data-ar-session="open">
+    <Eyebrow><NotebookPen className="inline mr-1" size={16} aria-hidden="true" /> Session in progress · {cap(open.variant)}{v ? ` · ${v.minutes} min` : ''} · started {when(open.startedAt)}</Eyebrow>
+    {v && <p className="text-sm text-fg-2"><Mixed text={v.activity} /></p>}
+    <h4 className="mb-1">What did you practise?</h4>
+    <p className="text-sm text-fg-2 mt-0">Tick only what you actually did. Listening and speaking need a recording or a person.</p>
+    <Choices label="What did you practise?">{MODALITIES.map(m => <Choice key={m} on={open.practised.includes(m)} data-action="ar-practised" data-v={m} onClick={() => change(a => { a.practised = a.practised.includes(m) ? a.practised.filter(x => x !== m) : [...a.practised, m]; })}>{cap(m)}</Choice>)}</Choices>
+    <h4 className="mb-1">How much help did you use?</h4>
+    <Choices label="How much help did you use?">{(Object.keys(HELP) as Help[]).map(h => <Choice key={h} on={open.help === h} data-action="ar-help" data-v={h} onClick={() => change(a => { a.help = h; })}>{HELP[h]}</Choice>)}</Choices>
+    <Field label="What to revisit next time" htmlFor="arRevisit"><CommitTextarea key={open.id} id="arRevisit" rows={2} dir="auto" className="ar-input" data-s="ar-revisit" defaultValue={open.revisit} placeholder="e.g. when to use مِن and when في" onCommit={el => change(a => { a.revisit = el.value.slice(0, 1000); })} /></Field>
+    <div className="grid sm:grid-cols-2 gap-3 mt-3">
+      <Button variant="primary" data-action="ar-finish" onClick={() => update(d => { if (!finishSession(d, open.id)) return false; })}>Finish this session</Button>
+      <Button variant="ghost" data-action="ar-discard" onClick={discard}>Discard</Button>
+    </div>
+    <p className="text-sm text-fg-2 mt-3 mb-0">Saved as you go. Finishing records what you did, not a score.</p>
+  </Card>;
+}
+
+// A check question during a session: your first answer is kept; once you look, it stays as you wrote it.
+function SessionQuestion({ session, q }: { session: ArabicAttempt; q: Question }) {
+  const revealed = session.revealed.includes(q.id), first = session.answers[q.id] ?? '';
+  const change = (fn: (a: ArabicAttempt) => void) => update(d => { if (!changeSession(d, session.id, fn)) return false; });
+  return <div data-ar-question={q.id}>
+    <p className="mb-1.5"><Mixed text={q.prompt} /></p>
+    {revealed
+      ? (first ? <div className="rounded-tile border border-outline px-3.5 py-2.5 mb-2" data-ar-first=""><span className="text-sm text-fg-2">Your first answer</span><p dir="auto" className="ar-input mt-1 mb-0 whitespace-pre-wrap">{first}</p></div>
+        : <p className="text-sm text-fg-2 mb-2">You looked before answering. That’s fine, and it’s noted.</p>)
+      : <CommitTextarea key={session.id + q.id} rows={2} dir="auto" className="ar-input mb-2" aria-label="Your first answer" data-s="ar-answer" data-q={q.id} defaultValue={first} placeholder="Your answer, in Arabic or English" onCommit={el => change(a => writeFirstAnswer(a, q.id, el.value))} />}
+    {revealed ? <Reference keyId={q.answer_key_id} /> : <Button inline variant="ghost" data-action="ar-reveal" onClick={() => change(a => markRevealed(a, q.id))}>Show the reference answer</Button>}
+  </div>;
+}
+
+function SessionSummary({ a, withLesson = false }: { a: ArabicAttempt; withLesson?: boolean }) {
+  const written = Object.keys(a.answers).length;
+  return <div>
+    {withLesson && <InlineLink href={href(a.lessonId)}>{lessonIndex[a.lessonId]?.title ?? a.lessonId}</InlineLink>}
+    <p className="text-sm m-0">{a.finishedAt ? when(a.finishedAt) : 'In progress'} · {cap(a.variant)} · {HELP[a.help]}{a.practised.length ? ' · ' + a.practised.map(cap).join(', ') : ''}</p>
+    {(written > 0 || a.revealed.length > 0) && <p className="text-sm text-fg-2 m-0">{written} answer{written === 1 ? '' : 's'} written first · {a.revealed.length} compared</p>}
+    {a.revisit && <p className="text-sm m-0 mt-1">Revisit: <span dir="auto" className="ar-input">{a.revisit}</span></p>}
+  </div>;
+}
+
+function LessonHistory({ data, lesson }: { data: MyDayData; lesson: Lesson }) {
+  const done = sessionsFor(data, lesson.id).filter(a => a.finishedAt).reverse();
+  return done.length > 0 && <Card data-ar-history=""><h3>Your sessions on this lesson</h3>
+    <ul className="list-none p-0 m-0 divide-y divide-outline">{done.map(a => <li key={a.id} className="py-3"><SessionSummary a={a} /></li>)}</ul>
+  </Card>;
+}
+
+function SessionsView({ data }: { data: MyDayData }) {
+  const all = [...data.arabic.attempts].sort((x, y) => (y.finishedAt ?? '9').localeCompare(x.finishedAt ?? '9') || y.startedAt.localeCompare(x.startedAt));
+  return <Card><Eyebrow><NotebookPen className="inline mr-1" size={18} aria-hidden="true" /> Your sessions</Eyebrow><h2>What you’ve done so far</h2>
+    <p>Every session you’ve started, newest first. Short ones count. Nothing here is a score.</p>
+    {!all.length && <p className="mb-0">Open a lesson and start a session to see it here.</p>}
+    <ul className="list-none p-0 m-0 divide-y divide-outline" data-ar-sessions="">{all.map(a => <li key={a.id} className="py-3"><SessionSummary a={a} withLesson /></li>)}</ul>
+  </Card>;
 }
 
 function ResourceLinks({ ids }: { ids: string[] }) {

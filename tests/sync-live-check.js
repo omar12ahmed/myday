@@ -11,6 +11,7 @@
 // (`npm test`-style runs use tests/run.sh with a local stand-in instead; this script is for a real project.)
 // `--projects-only`: only the projects check (1.12.0), for test accounts that already have records from an earlier run.
 // `--cyber-only`: the same for the Cybersecurity kinds (1.14.0).
+// `--arabic-only`: the same for the Arabic Fuṣḥā kinds (the sixth migration).
 const { randomUUID } = require('crypto');
 
 const URL_ = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
@@ -61,6 +62,22 @@ async function cyberCheck(a, b, id) {
   check('the path preference (a one-record part) can\'t be deleted', Array.isArray(r) && r[0].status === 'rejected', r);
 }
 
+// Arabic Fuṣḥā (sixth migration, 20261011120000_sync_arabic.sql): A saves its path and a lesson session (synthetic),
+// B sees neither, A deletes the session, and the path record can't be deleted.
+async function arabicCheck(a, b, id) {
+  console.log('\nArabic Fuṣḥā (sixth migration: 20261011120000_sync_arabic.sql)');
+  const pref = (await pull(a)).find(x => x.kind === 'arabic' && x.record_id === 'preferences');
+  let r = await push(a, [change('arabic', 'preferences', pref ? pref.version : 0, { pathId: 'path.arabic-core-b2' })]);
+  check('A can save its Arabic path — so the sixth migration is applied', Array.isArray(r) && r[0].status === 'applied', r);
+  r = await push(a, [change('arabic_attempt', id, 0, { id, lessonId: 'lesson.arabic-origin-location', curriculumVersion: '1.1.0', variant: 'short', startedAt: new Date().toISOString(), finishedAt: null, help: 'independent', practised: [], answers: {}, revealed: [], revisit: 'Live check session (synthetic)' })]);
+  check('A can save a lesson session (version 1)', Array.isArray(r) && r[0].status === 'applied' && r[0].version === 1, r);
+  check('B sees neither', (await pull(b)).every(x => x.kind !== 'arabic' && x.kind !== 'arabic_attempt'));
+  r = await push(a, [change('arabic_attempt', id, 1, null, { deleted: true })]);
+  check('the session can be deleted (a deletion marker for other devices)', Array.isArray(r) && r[0].status === 'applied' && r[0].version === 2, r);
+  r = await push(a, [change('arabic', 'preferences', (await pull(a)).find(x => x.kind === 'arabic').version, null, { deleted: true })]);
+  check('the path record (a one-record part) can\'t be deleted', Array.isArray(r) && r[0].status === 'rejected', r);
+}
+
 // Projects (third migration, 20261006120000_sync_projects.sql): A saves one, B can't see it, A deletes it.
 async function projectsCheck(a, b, id) {
   console.log('\nProjects (third migration: 20261006120000_sync_projects.sql)');
@@ -92,6 +109,16 @@ async function projectsCheck(a, b, id) {
       process.exit(2);
     }
     await cyberCheck(a, b, `live-check-attempt-${Date.now()}`);
+    console.log(`\n${pass} passed, ${fail} failed`);
+    process.exit(fail ? 1 : 0);
+  }
+  // --arabic-only: the same, for the sixth migration's kinds (the Arabic path and lesson sessions).
+  if (process.argv.includes('--arabic-only')) {
+    if (![A.email, B.email].every(e => /@example\.com$/i.test(e || '')) || A.email === B.email) {
+      console.log('  STOP --arabic-only runs only with two different disposable @example.com test accounts.');
+      process.exit(2);
+    }
+    await arabicCheck(a, b, `live-check-session-${Date.now()}`);
     console.log(`\n${pass} passed, ${fail} failed`);
     process.exit(fail ? 1 : 0);
   }
