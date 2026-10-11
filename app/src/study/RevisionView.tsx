@@ -5,7 +5,7 @@ import { TextArea } from '../components/Field';
 import { shortDate, todayKey } from '../data/dates';
 import { update } from '../data/storage';
 import { obsidianUrl, OUTCOME, RATING, ROUND_SIZE, safeUrl, SUPPORT } from '../data/study/common';
-import { dueConcepts, nextGap, nextReviewDate, questionReady, rateConcept } from '../data/study/revision';
+import { conceptEvidence, DAILY_ENOUGH, dueConcepts, nextGap, nextReviewDate, questionReady, rateConcept, repeatedWrongChoice, reviewedOn } from '../data/study/revision';
 import type { Concept, MyDayData, Outcome, Rating, Support } from '../data/types';
 import { startRevision } from './actions';
 import { BackLink, Choice, Choices, Eyebrow, InlineLink, LinkButton, Note, NoteLink, Summary, TextLink } from './parts';
@@ -29,6 +29,11 @@ function RoundOver({ data, r }: { data: MyDayData; r: Round | null }) {
   const k = todayKey(), st = data.study;
   const due = dueConcepts(st, k), nextDate = nextReviewDate(st, k), needQ = st.concepts.filter(c => !questionReady(c)).length;
   const done = r && r.results.length ? r.results : null;
+  // From this round: answers that weren't right, told apart by whether you'd recalled them on your own before.
+  const struggled = (done || []).filter(x => x.outcome === 'wrong' || x.outcome === 'notsure' || x.rating === 'again')
+    .map(x => st.concepts.find(c => c.id === x.id)).filter((c): c is Concept => !!c);
+  const notYet = struggled.filter(c => !conceptEvidence(st, c).own), slipped = struggled.filter(c => conceptEvidence(st, c).own > 0);
+  const today = reviewedOn(st, k);
   return (
     <>
       <Card>
@@ -43,9 +48,18 @@ function RoundOver({ data, r }: { data: MyDayData; r: Round | null }) {
           <p className="text-[15px] m-0">Recalled on your own: {done.filter(x => x.outcome === 'right' && x.support === 'own').length}. Each one is scheduled to come back when it's due.</p>
         </Card>
       )}
+      {notYet.length > 0 && (
+        <Card data-s="rev-not-yet">
+          <h3 className="mt-0">Hasn’t clicked yet</h3>
+          <p className="text-[15px]">Repeating {notYet.length === 1 ? 'this one' : 'these'} will help less than learning {notYet.length === 1 ? 'it' : 'them'} a different way. Each page has ideas.</p>
+          <ul className="list-none p-0 m-0 grid gap-1.5">{notYet.map(c => <li key={c.id}><InlineLink href={`#study/concept/${c.id}`}>{c.title}</InlineLink></li>)}</ul>
+        </Card>
+      )}
+      {slipped.length > 0 && <p className="text-[15px] text-fg-2" data-s="rev-slipped">Slipped: {slipped.map(c => c.title).join(', ')}. You’ve recalled {slipped.length === 1 ? 'it' : 'them'} on your own before, so {slipped.length === 1 ? 'it’s' : 'they’re'} in there. Seeing {slipped.length === 1 ? 'it' : 'them'} again soon will bring {slipped.length === 1 ? 'it' : 'them'} back.</p>}
       <Card>
         {due.length ? (
           <>
+            {today >= DAILY_ENOUGH && <p className="text-[15px]" data-s="rev-enough">That’s {today} reviewed today, which is plenty. The rest will keep; carry on only if you want to.</p>}
             <p className="text-[15px]">{due.length > ROUND_SIZE ? `A round of ${ROUND_SIZE} is ready.` : `${due.length} ready to revise.`}</p>
             <Button variant="primary" data-action="s-rev-start" onClick={startRevision}><RotateCcw size={18} aria-hidden="true" /> {done ? 'Do another round' : 'Start revision'}</Button>
           </>
@@ -133,6 +147,7 @@ function Question({ data, r, c, at }: { data: MyDayData; r: Round; c: Concept; a
           {c.explanation && <div className="st-answer bg-surface-2 rounded-tile px-3.5 py-2.5 my-2.5"><span className="lbl text-sm text-fg-2">Explanation</span><p className="mt-1 mb-0 whitespace-pre-wrap">{c.explanation}</p></div>}
           {c.source && <Note>Source: {safeUrl(c.source) ? <InlineLink href={c.source} target="_blank" rel="noopener">{c.source}</InlineLink> : c.source}</Note>}
           <NoteLink study={st} path={c.note} />
+          {(r.outcome === 'wrong' || r.outcome === 'notsure') && <Struggle data={data} c={c} chosen={r.chosen} />}
           {c.kind === 'written' && r.outcome !== 'notsure' && (
             <>
               <h3 className="mt-4">How did your answer compare?</h3>
@@ -157,5 +172,20 @@ function Question({ data, r, c, at }: { data: MyDayData; r: Round; c: Concept; a
         </>
       )}
     </Card>
+  );
+}
+
+// After an answer that wasn't right: a slip needs nothing more than coming back sooner; something that
+// hasn't clicked yet is better learned a different way (ideas are on its page after the round).
+function Struggle({ data, c, chosen }: { data: MyDayData; c: Concept; chosen: number | null }) {
+  const st = data.study, before = conceptEvidence(st, c).own > 0, repeat = repeatedWrongChoice(st, c);
+  const again = repeat && chosen === repeat.choice ? repeat.times + 1 : null;
+  return (
+    <div className="bg-surface-2 rounded-tile px-3.5 py-2.5 my-2.5 text-[15px]" data-s="rev-struggle" data-v={before ? 'slipped' : 'not-yet'}>
+      {before
+        ? <>You’ve recalled this on your own before, so it slipped rather than went. <strong>Again</strong> brings it back tomorrow.</>
+        : <>This one hasn’t clicked yet, which is normal for something new. Read the explanation once more, slowly; at the end of the round you’ll find ideas for learning it a different way.</>}
+      {again && <p className="mt-1.5 mb-0">You’ve picked this answer {again} times now. Working out why it seems right is often what makes it click.</p>}
+    </div>
   );
 }

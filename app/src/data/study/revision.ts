@@ -64,3 +64,50 @@ export function evidenceText(ev: ReturnType<typeof conceptEvidence>): string {
   if (ev.own) bits.push(`recalled on your own ${ev.own} time${ev.own === 1 ? '' : 's'}`);
   return bits.join(' · ') + (ev.revs.length < 3 ? ' · not enough evidence yet to say more' : '');
 }
+
+// Why something needs practice — worked out from your answers, so nothing new is saved and the schedule is
+// unchanged. It "slipped" if you've recalled it on your own before; it "hasn't clicked yet" if you never
+// have (or said "not yet" after learning it). The two need different help: a slip just needs to come back
+// sooner, but repeating something that never clicked helps less than learning it a different way.
+export type Understanding = 'new' | 'not-yet' | 'slipped' | 'getting-there' | 'recalled';
+export const UNDERSTANDING: Record<Understanding, { label: string; text: string }> = {
+  'new': { label: 'Not revised yet', text: 'Not revised yet.' },
+  'not-yet': { label: 'Hasn’t clicked yet', text: 'You haven’t recalled this on your own yet. Learning it a different way will help more than repeating it.' },
+  'slipped': { label: 'Slipped', text: 'You’ve recalled this on your own before, so it’s in there. Seeing it again sooner will bring it back.' },
+  'getting-there': { label: 'Getting there', text: 'Right last time, with some help or partly. On your own is the next step.' },
+  'recalled': { label: 'Recalled on your own', text: 'You recalled this on your own last time.' },
+};
+export function understanding(st: StudyData, c: Concept): Understanding {
+  const ev = conceptEvidence(st, c);
+  if (!ev.last) return ev.clarity === 'notyet' ? 'not-yet' : 'new';
+  const struggled = ev.last.outcome === 'wrong' || ev.last.outcome === 'notsure' || ev.last.rating === 'again';
+  if (struggled) return ev.own > 0 ? 'slipped' : 'not-yet';
+  return ev.last.outcome === 'right' && ev.last.support === 'own' ? 'recalled' : 'getting-there';
+}
+
+// How often it slipped: answers that weren't right after you had already recalled it on your own. (The
+// schedule's own lapse count includes every "Again" after a first review, so it can't tell the two apart.)
+export function slips(st: StudyData, c: Concept): number {
+  let recalled = false, n = 0;
+  for (const r of st.reviews) {
+    if (r.conceptId !== c.id) continue;
+    if (recalled && (r.outcome === 'wrong' || r.outcome === 'notsure' || r.rating === 'again')) n++;
+    if (r.outcome === 'right' && r.support === 'own') recalled = true;
+  }
+  return n;
+}
+
+// Multiple choice: a wrong option you've picked at least twice — the idea worth untangling. (The answer
+// that's marked correct now; an answer you've since changed isn't counted as wrong.)
+export function repeatedWrongChoice(st: StudyData, c: Concept): { choice: number; times: number } | null {
+  if (c.kind !== 'choice' || c.correct === null) return null;
+  const times = new Map<number, number>();
+  for (const r of st.reviews) if (r.conceptId === c.id && r.chosen !== null && r.chosen !== c.correct && c.choices[r.chosen]) times.set(r.chosen, (times.get(r.chosen) ?? 0) + 1);
+  let best: { choice: number; times: number } | null = null;
+  for (const [choice, n] of times) if (n >= 2 && (!best || n > best.times)) best = { choice, times: n };
+  return best;
+}
+
+// A gentle stopping point: after this many reviews in a day, revision says that's plenty (you can carry on).
+export const DAILY_ENOUGH = 10;
+export const reviewedOn = (st: StudyData, k: DateKey) => st.reviews.filter(r => r.date === k).length;

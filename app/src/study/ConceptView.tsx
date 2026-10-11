@@ -6,9 +6,9 @@ import { useConfirm } from '../components/confirm';
 import { CommitInput, CommitTextarea, Field, Select } from '../components/Field';
 import { shortDate } from '../data/dates';
 import { CLARITY, OUTCOME, RATING, STATUS_TEXT, SUPPORT } from '../data/study/common';
-import { conceptEvidence, evidenceText, questionReady } from '../data/study/revision';
+import { conceptEvidence, evidenceText, questionReady, repeatedWrongChoice, slips, understanding, UNDERSTANDING } from '../data/study/revision';
 import { stIndex } from '../data/study/roadmap';
-import type { Concept, MyDayData } from '../data/types';
+import type { Concept, MyDayData, Review } from '../data/types';
 import { linkConcept, removeConcept, saveChoice, saveConceptText, saveConceptTitle, setConceptKind, setCorrect, unlinkConcept, type ConceptText } from './actions';
 import { focusIfWaiting } from './focus';
 import { BackLink, Chip, Meta, Note, NoteLink, Row, Summary } from './parts';
@@ -23,6 +23,7 @@ export function ConceptView({ data, id }: { data: MyDayData; id: string }) {
   const ix = stIndex(st), ev = conceptEvidence(st, c), ready = questionReady(c);
   const linked = c.taskIds.map(t => ix.task.get(t)).filter(x => !!x), others = [...ix.task.values()].filter(e => !c.taskIds.includes(e.node.id));
   const checks = st.sessions.filter(s => s.checkin && s.checkin.conceptIds.includes(c.id));
+  const state = understanding(st, c), wrongChoice = repeatedWrongChoice(st, c), slipped = slips(st, c);
 
   // A text field saved when you leave it; `rows` makes it a larger box.
   const field = (key: ConceptText, label: string, rows = 0, placeholder?: string) => (
@@ -99,16 +100,48 @@ export function ConceptView({ data, id }: { data: MyDayData; id: string }) {
         )}
       </Card>
       <Card aria-labelledby="cph-h">
-        <h3 id="cph-h">History</h3>
-        {ev.revs.length ? (
-          <ul className="plain-list list-none p-0 my-2">
-            {ev.revs.slice().reverse().map(x => (
-              <li key={x.id} className="py-2 border-t border-outline first:border-t-0 text-[15px]">
-                {shortDate(x.date)} · {x.outcome ? OUTCOME[x.outcome] : 'Not assessed'}{x.graded === 'self' ? ' (self-assessed)' : ''} · {SUPPORT[x.support]} · {RATING[x.rating]}
-              </li>
-            ))}
-          </ul>
-        ) : <Note>No revision yet.</Note>}
+        <h3 id="cph-h">Learning record</h3>
+        <p className="text-[15px]" data-s="cp-understanding" data-v={state}><strong>{UNDERSTANDING[state].label}.</strong> {UNDERSTANDING[state].text}</p>
+        {state === 'not-yet' && (
+          <div className="bg-surface-2 rounded-tile px-3.5 py-3 mb-3" data-s="cp-another-way">
+            <p className="text-[15px] font-[650] m-0">Try it a different way</p>
+            <ul className="list-disc text-[15px] mt-1.5 mb-0 pl-5 grid gap-1">
+              {(c.source || linked.length > 0) && <li>Go back to {c.source ? 'the source' : 'the lesson'} and look for the step that didn’t make sense.</li>}
+              <li>Rewrite the explanation above in your own words, as if teaching someone.</li>
+              <li>Add a hint that would have helped you get there.</li>
+            </ul>
+          </div>
+        )}
+        {wrongChoice && <p className="text-[15px] text-fg-2" data-s="cp-wrong-choice">You’ve chosen “{c.choices[wrongChoice.choice]}” {wrongChoice.times} times. Working out why it seems right is often what makes it click.</p>}
+        <dl className="grid grid-cols-3 gap-2 my-3 text-[15px]">
+          <div className="bg-surface-2 rounded-tile px-3 py-2.5"><dt className="text-sm text-fg-2">Comes back</dt><dd className="m-0 font-[650]">{c.review.due ? shortDate(c.review.due) : 'Not scheduled'}</dd></div>
+          <div className="bg-surface-2 rounded-tile px-3 py-2.5"><dt className="text-sm text-fg-2">On your own</dt><dd className="m-0 font-[650]">{ev.own} time{ev.own === 1 ? '' : 's'}</dd></div>
+          <div className="bg-surface-2 rounded-tile px-3 py-2.5"><dt className="text-sm text-fg-2">Slipped</dt><dd className="m-0 font-[650]">{slipped} time{slipped === 1 ? '' : 's'}</dd></div>
+        </dl>
+        {ev.revs.length > 0 && (
+          <>
+            <ol className="list-none p-0 m-0 flex flex-wrap gap-1.5 items-center" aria-label="Your answers so far, oldest first" data-s="cp-trail">
+              {ev.revs.map(x => <li key={x.id} className={`size-3.5 ${trailTone(x)}`} title={trailText(x)}><span className="sr-only">{trailText(x)}</span></li>)}
+            </ol>
+            <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-fg-2 mt-2 mb-0">
+              <span className="inline-flex items-center gap-1.5"><span className="size-3 rounded-full bg-done" aria-hidden="true" />on your own</span>
+              <span className="inline-flex items-center gap-1.5"><span className="size-3 rounded-[3px] bg-primary" aria-hidden="true" />with help or partly</span>
+              <span className="inline-flex items-center gap-1.5"><span className="size-3 rounded-full border-2 border-outline-strong" aria-hidden="true" />not yet right</span>
+            </p>
+          </>
+        )}
+        <details className="group mt-2">
+          <Summary>Every answer</Summary>
+          {ev.revs.length ? (
+            <ul className="plain-list list-none p-0 my-2">
+              {ev.revs.slice().reverse().map(x => (
+                <li key={x.id} className="py-2 border-t border-outline first:border-t-0 text-[15px]">
+                  {shortDate(x.date)} · {x.outcome ? OUTCOME[x.outcome] : 'Not assessed'}{x.graded === 'self' ? ' (self-assessed)' : ''} · {SUPPORT[x.support]} · {RATING[x.rating]}
+                </li>
+              ))}
+            </ul>
+          ) : <Note>No revision yet.</Note>}
+        </details>
         {checks.length > 0 && <Note className="mt-2 mb-0">After learning: {checks.map(s => `${shortDate(s.date)}${s.checkin!.clarity ? ` — ${CLARITY[s.checkin!.clarity]}` : ''}`).join(' · ')}</Note>}
       </Card>
       <Card>
@@ -118,3 +151,12 @@ export function ConceptView({ data, id }: { data: MyDayData; id: string }) {
     </>
   );
 }
+
+// One mark per answer, told apart by shape as well as colour: a filled circle when recalled on your own,
+// a square with help or partly right, an outlined ring when not yet right.
+function trailTone(x: Review) {
+  if (x.outcome === 'right' && x.support === 'own') return 'rounded-full bg-done';
+  if (x.outcome === 'right' || x.outcome === 'partly') return 'rounded-[3px] bg-primary';
+  return 'rounded-full border-2 border-outline-strong';
+}
+const trailText = (x: Review) => `${shortDate(x.date)}: ${x.outcome ? OUTCOME[x.outcome] : 'Not assessed'}, ${SUPPORT[x.support].toLowerCase()}`;
