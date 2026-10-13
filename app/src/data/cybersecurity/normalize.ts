@@ -21,10 +21,11 @@ export function cleanAttempt(raw: unknown): CyberAttempt | null {
     answerRevealed: raw.answerRevealed === true, assessor: 'self', verified: false,
   };
 }
+// Fields a newer MyDay adds to the section are kept as they are, so going back a version never loses them.
 export function normalizeCyber(raw: unknown, report = { dropped: 0 }): CyberData {
-  const out = emptyCyber();
-  if (raw === undefined) return out;
-  if (!isObj(raw)) { report.dropped++; return out; }
+  if (raw === undefined) return emptyCyber();
+  if (!isObj(raw)) { report.dropped++; return emptyCyber(); }
+  const out: CyberData = { ...raw, ...emptyCyber() };
   if (typeof raw.pathId === 'string' && /^path\.[a-z0-9-]+$/.test(raw.pathId)) out.pathId = raw.pathId.slice(0, 100);
   const ids = new Set<string>();
   if (raw.attempts !== undefined && !Array.isArray(raw.attempts)) report.dropped++;
