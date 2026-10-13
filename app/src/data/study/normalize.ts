@@ -3,8 +3,15 @@
 // range, links must be web links, and only one session can be in progress.
 import { isDateKey, todayKey } from '../dates';
 import { intIn, isObj, listOf, uid } from '../util';
-import type { Clarity, Concept, Outcome, Rating, Review, StudyCourse, StudyData, StudyModule, StudySection, StudySession, StudyStage, StudyTask, Support } from '../types';
+import type { Clarity, Concept, ConceptOrigin, Outcome, Rating, Review, StudyCourse, StudyData, StudyModule, StudySection, StudySession, StudyStage, StudyTask, Support } from '../types';
 import { CLARITY, emptyStudy, OUTCOME, RATING, safeUrl, str, SUPPORT } from './common';
+
+// Where an AI-written card came from (see ConceptOrigin). Anything unexpected and it's left off: the card stays, as
+// one of your own (its source still says it was AI-written).
+export function cleanOrigin(raw: unknown): ConceptOrigin | null {
+  if (!isObj(raw) || raw.by !== 'ai' || raw.subject !== 'cybersecurity' || typeof raw.lessonId !== 'string' || !/^lesson\.[a-z0-9-]{1,60}$/.test(raw.lessonId)) return null;
+  return { by: 'ai', subject: 'cybersecurity', lessonId: raw.lessonId, writer: str(raw.writer, 60), checker: str(raw.checker, 60), edited: raw.edited === true };
+}
 
 export function normalizeStudy(raw: unknown, report = { dropped: 0 }): StudyData {
   const st = emptyStudy();
@@ -76,6 +83,8 @@ export function normalizeStudy(raw: unknown, report = { dropped: 0 }): StudyData
       choices, correct: Number.isInteger(x.correct) && choices[x.correct as number] ? (x.correct as number) : null, hint: str(x.hint, 500), source: str(x.source, 400), note: str(x.note, 300),
       review: { reps: intIn(rv.reps, 0, 100000, 0), interval: intIn(rv.interval, 0, 365, 0), lapses: intIn(rv.lapses, 0, 100000, 0), due: isDateKey(rv.due) ? rv.due : null },
     };
+    const origin = cleanOrigin(x.origin);
+    if (origin) concept.origin = origin;
     st.concepts.push(concept);
   }
   const conceptIds = new Set(st.concepts.map(c => c.id));

@@ -236,6 +236,14 @@ export interface Concept {
   kind: 'written' | 'choice'; prompt: string; answer: string; explanation: string; choices: string[]; correct: number | null;
   hint: string; source: string; note: string; // note = a path in your Obsidian vault (never read by MyDay)
   review: { reps: number; interval: number; lapses: number; due: DateKey | null };
+  origin?: ConceptOrigin; // absent for concepts you wrote
+}
+// A card an AI wrote and a second AI checked, that you kept (added in 1.19.0; both versions keep it). Its `source`
+// says the same in words, so a version that doesn't know this field still shows where the card came from.
+export interface ConceptOrigin {
+  by: 'ai'; subject: 'cybersecurity'; lessonId: string;
+  writer: string; checker: string; // the models' names, as the server gave them
+  edited: boolean;                 // you changed it before keeping it
 }
 export type Clarity = 'understand' | 'partly' | 'notyet';
 export interface Checkin { conceptIds: string[]; clarity: Clarity | null; takeaway: string; question: string; note: string }

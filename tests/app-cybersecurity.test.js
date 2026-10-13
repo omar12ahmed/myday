@@ -156,5 +156,45 @@ async function fill(sel, value) {
   check('taking them out asks first, then keeps their past answers', !out.cybersecurity.cards.length && out.study.reviews.filter(r => qs.includes(r.conceptId)).length === 2);
   check('nothing else in your saved MyDay changed', JSON.stringify({ ...out, cybersecurity: null, study: null, saves: null }) === others);
 
+  // More practice: cards an AI writes and a second AI checks. Here in practice mode (rules on this device: no AI, nothing sent).
+  await on(7, 'study/cybersecurity/lesson.lab-isolation');
+  check('without AI set up, a lesson has no "More practice" card', !(await exists('#cyAiCards')));
+  const rest = async () => JSON.stringify({ ...(await data()), study: { ...(await data()).study, concepts: null }, saves: null });
+  const restBefore = await rest(), conceptsBefore = (await data()).study.concepts.length;
+  const mockAt = async (day, hash) => { T.setUrl('aimock/index.html#' + hash); await T.openAt(2026, 10, day, 10); await sleep(400); };
+  await mockAt(7, 'study/cybersecurity/lesson.lab-isolation');
+  check('with AI: a "More practice" card that says what happens (practice mode: nothing is sent anywhere)', await exists('#cyAiCards [data-action="cy-cards-ask"]') && (await text('#cyAiCards')).includes('Nothing is sent anywhere'));
+  await click('[data-action="cy-cards-ask"]');
+  check('while waiting it says cards are written, then checked, and offers Cancel', (await text('#cyAiCards')).includes('then checking each one') && await exists('[data-action="cy-cards-cancel"]'));
+  await sleep(1000);
+  check('the checked cards come back for review: ten, each ticked, nothing added yet', await ev(`document.getElementById('cyAiCards').dataset.phase`) === 'review' && await ev(`document.querySelectorAll('[data-s="cy-card"]').length`) === 10
+    && await ev(`[...document.querySelectorAll('[data-s="cy-card-pick"]')].every(x => x.checked)`) && (await text('#cyAiCards')).includes('nothing added yet') && (await data()).study.concepts.length === conceptsBefore);
+  check('…saying who wrote and who checked them, and that a card that looks wrong can be unticked', (await text('#cyAiCards')).includes('Written by practice helper (no AI), checked by practice checker (no AI)') && (await text('#cyAiCards')).includes('untick it'));
+  check('…each with its answer: a multiple-choice card marks the right option', (await text('[data-s="cy-card"]:nth-child(2)')).includes('✓ Yes, it is listed'));
+  check('cards fit a phone: no sideways scrolling, 44-pixel tick boxes', !(await ev('document.documentElement.scrollWidth > innerWidth')) && await ev(`[...document.querySelectorAll('[data-s="cy-card"] label')].every(l => l.getBoundingClientRect().height >= 44)`));
+  await click('[data-s="cy-card-pick"]'); await click('[data-s="cy-card"]:nth-child(3) [data-s="cy-card-pick"]'); await sleep(100);
+  check('unticking two: the button says how many will be added', (await text('[data-action="cy-cards-add"]')) === 'Add 8 to revision');
+  await click('[data-action="cy-cards-add"]'); await sleep(300);
+  let ai = (await data()).study.concepts.filter(c => c.origin);
+  check('Add: the 8 ticked cards become Study concepts, due tomorrow, with where they came from', ai.length === 8 && ai.every(c => c.review.due === '2026-10-08' && c.origin.lessonId === 'lesson.lab-isolation' && c.origin.by === 'ai' && !c.origin.edited && c.source.startsWith('AI-written for the Cybersecurity lesson'))
+    && !ai.some(c => c.prompt.endsWith('(1)') || c.prompt.endsWith('(3)')));
+  check('…a multiple-choice card still marks its right answer, whatever order its options are in', ai.filter(c => c.kind === 'choice').every(c => c.choices[c.correct] === 'Yes, it is listed' && c.choices.length === 3));
+  check('…it says they come back tomorrow, with Undo', (await text('#cyAiCards')).includes('Added 8 cards to your revision') && await exists('[data-action="cy-cards-undo"]'));
+  check('…and nothing else in your saved MyDay changed', (await rest()) === restBefore);
+  await click('[data-action="cy-cards-undo"]'); await sleep(300);
+  check('Undo takes them out again', !(await data()).study.concepts.some(c => c.origin) && (await data()).study.concepts.length === conceptsBefore);
+  await click('[data-action="cy-cards-ask"]'); await sleep(1000); await click('[data-action="cy-cards-add"]'); await sleep(300);
+  check('asking again and adding all ten', (await data()).study.concepts.filter(c => c.origin).length === 10);
+  check('the lesson then says they\'re in your revision, and new ones won\'t repeat them', (await text('#cyAiCards')).length > 0 && (await click('[data-action="cy-cards-more"]'), await sleep(150), (await text('#cyAiCards')).includes('10 AI-written cards for this lesson are in your revision')));
+  await click('[data-action="cy-cards-ask"]'); await sleep(1000);
+  check('…and the same practice cards asked for again are all left out as repeats', (await ev(`document.getElementById('cyAiCards').dataset.phase`)) === 'review' && (await text('#cyAiCardsNone')).includes('No cards came through') && (await text('#cyAiCardsNotes')).includes('10 repeated questions you already have'));
+  await click('[data-action="cy-cards-cancel"]'); await sleep(100);
+  await on(8, 'study/cybersecurity');
+  check('the next day, the map counts them in Cybersecurity\'s revision', (await text('[data-cy-revision]')).includes('10 AI-written cards') && await ev(`document.querySelector('[data-cy-revision]').dataset.cyRevision`) === 'due');
+  await click('[data-action="cy-revise"]'); await sleep(900);
+  check('"Revise Cybersecurity" asks them (a round of 5)', (await ev('location.hash')) === '#study/revise' && (await text('.st-q')).includes('Question 1 of 5') && (await text('.st-prompt')).startsWith('Practice helper (no AI)'));
+  await click('[data-action="s-rev-show"], [data-action="s-rev-choose"][data-i="0"]'); await sleep(250);
+  check('…its answer shows where it came from, with a link to the lesson', (await text('.st-q')).includes('Source: AI-written for the Cybersecurity lesson') && await exists('.st-q a[href="#study/cybersecurity/lesson.lab-isolation"]'));
+
   const s = T.summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
 })().catch(e => { console.error('HARNESS', e); process.exit(1); });

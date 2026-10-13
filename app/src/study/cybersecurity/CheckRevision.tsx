@@ -4,7 +4,7 @@ import { useConfirm } from '../../components/confirm';
 import { addCyberCards, cyberCardOf, removeCyberCards } from '../../data/cybersecurity/cards';
 import { shortDate, todayKey } from '../../data/dates';
 import { update } from '../../data/storage';
-import { dueIds, nextDueDate } from '../../data/study/queue';
+import { aiCyberCards, dueIds, nextDueDate } from '../../data/study/queue';
 import type { MyDayData } from '../../data/types';
 import { startRevision } from '../actions';
 
@@ -33,12 +33,13 @@ export function CheckRevision({ data, ids }: { data: MyDayData; ids: string[] })
 
 // On the learning map: what's in your Cybersecurity revision, and a round of just Cybersecurity when some is ready.
 export function CyberRevisionGlance({ data }: { data: MyDayData }) {
-  const k = todayKey(), cards = data.cybersecurity.cards;
-  if (!cards.length) return null;
+  const k = todayKey(), cards = data.cybersecurity.cards, ai = aiCyberCards(data);
+  if (!cards.length && !ai.length) return null;
   const due = dueIds(data, k, 'cybersecurity').length, next = nextDueDate(data, k, 'cybersecurity');
+  const what = [cards.length && `${cards.length} lesson ${cards.length === 1 ? 'check' : 'checks'}`, ai.length && `${ai.length} AI-written ${ai.length === 1 ? 'card' : 'cards'}`].filter(Boolean).join(' and ');
   return <div className="rounded-tile bg-surface p-4 border border-outline mt-4" data-cy-revision={due ? 'due' : 'later'}>
     <h3 className="flex items-center gap-2 mt-0"><RotateCcw size={20} aria-hidden="true" />Revision</h3>
-    <p className="text-[15px]">In your revision: {cards.length} lesson {cards.length === 1 ? 'check' : 'checks'}. {due ? `${due} ready now.` : next ? `Next back on ${shortDate(next)}.` : ''}</p>
+    <p className="text-[15px]">In your revision: {what}. {due ? `${due} ready now.` : next ? `Next back on ${shortDate(next)}.` : ''}</p>
     {due > 0 && <Button variant="primary" data-action="cy-revise" onClick={() => startRevision('cybersecurity')}>Revise Cybersecurity</Button>}
   </div>;
 }

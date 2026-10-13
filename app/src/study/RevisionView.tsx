@@ -5,6 +5,7 @@ import { Card } from '../components/Card';
 import { TextArea } from '../components/Field';
 import { cardOf, cardRef } from '../data/arabic/cards';
 import { cyberCardOf, lessonOfCheck } from '../data/cybersecurity/cards';
+import { lessonHref } from '../data/cybersecurity/types';
 import { shortDate, todayKey } from '../data/dates';
 import { update } from '../data/storage';
 import { obsidianUrl, OUTCOME, RATING, ROUND_SIZE, safeUrl, SUPPORT } from '../data/study/common';
@@ -51,6 +52,7 @@ function conceptAsked(st: StudyData, c: Concept): Asked {
     answer: c.answer || '—', answerLabel: 'Answer', explanation: c.explanation || null, explanationLabel: 'Explanation',
     after: <>
       {c.source && <Note>Source: {safeUrl(c.source) ? <InlineLink href={c.source} target="_blank" rel="noopener">{c.source}</InlineLink> : c.source}</Note>}
+      {c.origin && <Note><InlineLink href={lessonHref(c.origin.lessonId)}>Open the lesson</InlineLink></Note>}
       <NoteLink study={st} path={c.note} />
     </>,
     notesUrl: obsidianUrl(st, c.note), interval: c.review.interval,

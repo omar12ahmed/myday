@@ -66,6 +66,19 @@ schedule: `src/data/cybersecurity/cards.ts`); answers in `study.reviews`. The qu
 `../supabase/migrations/20261014120000_sync_cyber_cards.sql`, applied at release with my go-ahead. The section keeps
 fields a newer MyDay adds, so going back a version never loses them.
 
+More practice (AI-written cards, AI roles step 3 part B): on a Cybersecurity lesson, "Make practice cards" asks the
+AI server for up to 10 cards on the lesson's key ideas — one model writes them, the other checks each one, and only
+cards the checker keeps come back (`src/study/cybersecurity/AiCards.tsx`, `src/ai/cards.ts`; the server's job in
+`../supabase/functions/_shared/ai/cards.ts`). Sent: the lesson's id and the questions you already have for it (the
+course's, and AI cards you kept), so new ones don't repeat them — nothing else. The app checks every card again (its
+shape, a multiple-choice answer that is the marked option, the checker's "keep", not a repeat), shows them with who
+wrote and who checked them, and adds only the ones you leave ticked, as Study concepts due the next day, options in a
+fresh order, with one step of Undo. Each keeps where it came from: `origin` on the concept (`{ by: 'ai', subject:
+'cybersecurity', lessonId, writer, checker, edited }`, kept by both versions; `edited` once you change its question,
+answer, explanation or options) and the same in words in its `source`. They count in "Revise Cybersecurity" too.
+Which model writes and which checks is the server's configuration, chosen by evaluation
+(`../ai-eval/reviews/2026-10-13-cards-quality.md`). Shown only when the app is built with AI help.
+
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
 

@@ -150,15 +150,27 @@ export function saveConceptTitle(id: string, el: HTMLInputElement) {
   const v = el.value.trim();
   withConcept(id, c => { if (!v) { el.value = c.title; return false; } c.title = v.slice(0, 120); });
 }
-export const saveConceptText = (id: string, key: ConceptText, value: string) => withConcept(id, c => { c[key] = value.trim().slice(0, LIMIT[key]); });
-export const setConceptKind = (id: string, kind: string) => withConcept(id, c => { c.kind = kind === 'choice' ? 'choice' : 'written'; });
+// An AI-written card you change becomes partly yours: its origin says so (the question, answer, explanation or options;
+// not its hint, source or notes link).
+const QUESTION_PARTS = ['prompt', 'answer', 'explanation'];
+const edited = (c: Concept) => { if (c.origin) c.origin.edited = true; };
+export const saveConceptText = (id: string, key: ConceptText, value: string) => withConcept(id, c => {
+  const v = value.trim().slice(0, LIMIT[key]);
+  if (c[key] === v) return false;
+  c[key] = v;
+  if (QUESTION_PARTS.includes(key)) edited(c);
+});
+export const setConceptKind = (id: string, kind: string) => withConcept(id, c => { const k = kind === 'choice' ? 'choice' : 'written'; if (c.kind === k) return false; c.kind = k; edited(c); });
 export const saveChoice = (id: string, i: number, value: string) => withConcept(id, c => {
+  const v = value.trim().slice(0, 200);
+  if ((c.choices[i] ?? '') === v && c.choices.length >= 4) return false;
   while (c.choices.length < 4) c.choices.push('');
-  c.choices[i] = value.trim().slice(0, 200);
+  c.choices[i] = v;
   if (c.correct !== null && !c.choices[c.correct]) c.correct = null;
+  edited(c);
 });
 // Only a filled-in choice can be the answer.
-export const setCorrect = (id: string, i: number) => withConcept(id, c => { c.correct = c.choices[i] ? i : null; });
+export const setCorrect = (id: string, i: number) => withConcept(id, c => { const v = c.choices[i] ? i : null; if (c.correct === v) return false; c.correct = v; edited(c); });
 export const linkConcept = (id: string, taskId: string) => update(d => {
   const c = d.study.concepts.find(x => x.id === id);
   if (!c || !stIndex(d.study).task.has(taskId) || c.taskIds.includes(taskId)) return false;
