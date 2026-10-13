@@ -123,5 +123,38 @@ async function fill(sel, value) {
   await fill('#cyberTutorQuestion', 'What counts as evidence?'); await click('[data-action=cyber-ask]'); await sleep(850);
   check('optional tutor renders a checked explanation in practice mode', (await text('#app')).includes('Rules-only practice response'));
   check('AI explanation does not change attempts or scores', JSON.stringify((await data()).cybersecurity) === beforeAI);
+
+  // The course's own knowledge checks in revision (no AI), over two days.
+  const on = async (day, hash) => { T.setUrl('app/dist/index.html#' + hash); await T.openAt(2026, 10, day, 10); await sleep(400); };
+  const qs = ['assessment.lab-isolation-check.q1', 'assessment.lab-isolation-check.q2'];
+  const others = JSON.stringify({ ...(await data()), cybersecurity: null, study: null, saves: null });
+  await on(5, 'study/cybersecurity/lesson.lab-isolation');
+  check('a lesson offers to bring its checks back in revision, adding nothing by itself', await exists('[data-cy-checks="out"] [data-action="cy-checks-add"]') && !(await data()).cybersecurity.cards.length);
+  await click('[data-cy-checks="out"] [data-action="cy-checks-add"]'); await sleep(250);
+  let cy = (await data()).cybersecurity;
+  check('one tap adds the lesson\'s two checks, by the course\'s ids, first back tomorrow', cy.cards.map(c => c.id).join() === qs.join() && cy.cards.every(c => c.addedOn === '2026-10-05' && c.review.due === '2026-10-06'));
+  check('…and the lesson says so', await exists('[data-cy-checks="in"]') && (await text('[data-cy-checks="in"]')).includes('in your revision'));
+  await on(5, 'study/cybersecurity/assessment.lab-isolation-check');
+  check('the knowledge check itself shows them in revision too', await exists('[data-cy-check-revision] [data-cy-checks="in"]'));
+  await on(5, 'study/cybersecurity');
+  check('on the day they\'re added nothing is due: the map says when they come back', await ev(`document.querySelector('[data-cy-revision]')?.dataset.cyRevision`) === 'later' && !(await exists('[data-action="cy-revise"]')));
+  await on(6, 'study');
+  check('the next day Study\'s home counts them without showing them', (await text('#stRevision')).includes('2 Cybersecurity checks') && !(await text('#stRevision')).includes('different failure modes'));
+  await on(6, 'study/cybersecurity'); await click('[data-action="cy-revise"]'); await sleep(900);
+  check('"Revise Cybersecurity" starts a round of just those checks', (await ev('location.hash')) === '#study/revise' && (await text('.st-q')).includes('Question 1 of 2') && (await text('.st-path')).startsWith('Cybersecurity · '));
+  check('the question is the course\'s own, its answer hidden until asked for', (await text('.st-prompt')).length > 10 && !(await exists('.st-answer')));
+  await click('[data-action="s-rev-show"]'); await sleep(200);
+  check('showing it gives the course\'s reference answer and a link to the lesson', (await text('.st-q')).includes('Reference answer') && await exists('.st-q a[href="#study/cybersecurity/lesson.lab-isolation"]'));
+  await click('[data-action="s-rev-self"][data-v="right"]'); await sleep(80); await click('[data-action="s-rev-rate"][data-v="good"]'); await sleep(300);
+  await click('[data-action="s-rev-show"]'); await sleep(200); await click('[data-action="s-rev-self"][data-v="wrong"]'); await sleep(80); await click('[data-action="s-rev-rate"][data-v="again"]'); await sleep(300);
+  const after = await data(), revs = after.study.reviews.filter(r => qs.includes(r.conceptId));
+  check('both answers are in Study\'s history under the questions\' ids, self-assessed, and rescheduled by Study\'s rules', revs.length === 2 && revs.every(r => r.graded === 'self') && after.cybersecurity.cards.find(c => c.id === qs[0]).review.due === '2026-10-10' && after.cybersecurity.cards.find(c => c.id === qs[1]).review.due === '2026-10-07');
+  check('the round\'s summary is Cybersecurity\'s, linking what hasn\'t clicked back to its lesson', (await text('main h2')).includes('Cybersecurity revision') && await exists('[data-s="rev-not-yet"] a[href="#study/cybersecurity/lesson.lab-isolation"]'));
+  await on(6, 'study/cybersecurity/lesson.lab-isolation');
+  await click('[data-action="cy-checks-remove"]'); await sleep(200); await click('[data-action="dialog-confirm"]'); await sleep(250);
+  const out = await data();
+  check('taking them out asks first, then keeps their past answers', !out.cybersecurity.cards.length && out.study.reviews.filter(r => qs.includes(r.conceptId)).length === 2);
+  check('nothing else in your saved MyDay changed', JSON.stringify({ ...out, cybersecurity: null, study: null, saves: null }) === others);
+
   const s = T.summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
 })().catch(e => { console.error('HARNESS', e); process.exit(1); });

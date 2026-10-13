@@ -12,9 +12,11 @@ import { curriculum, environments, lessons, skills, type Activity } from './cata
 import { attemptScore, beginAttempt, submitAttempt } from './learning';
 import { Lines } from './parts';
 import { RelatedPractice } from './Practice';
+import { CheckRevision } from './CheckRevision';
 
 export function ActivityView({ data, activity }: { data: MyDayData; activity: Activity }) {
   const lesson = [...lessons.values()].find(l => [l.practical_task_id, l.knowledge_check_id, l.mini_challenge_id].includes(activity.id));
+  const isCheck = !!lesson && lesson.knowledge_check_id === activity.id && activity.questions.length > 0; // a lesson's knowledge check
   const lab = curriculum.labs.find(l => l.id === activity.id), project = curriculum.projects.find(p => p.id === activity.id);
   const attempts = data.cybersecurity.attempts.filter(a => a.activityId === activity.id);
   const draft = attempts.find(a => !a.submittedAt && a.curriculumVersion === CYBER_VERSION);
@@ -67,6 +69,7 @@ export function ActivityView({ data, activity }: { data: MyDayData; activity: Ac
         <p className="text-sm text-fg-2 m-0">Incomplete or unsuccessful work can be submitted too. After submission, start another attempt to retry or correct a result.</p>
       </div>
     </Card> : <Card><Button variant="primary" data-action="cyber-begin" onClick={() => { if (update(d => { if (!beginAttempt(d, activity.id)) return false; })) setProblem(''); }}>{attempts.length ? 'Start a fresh attempt' : 'Start an attempt'}</Button></Card>}
+    {isCheck && <Card data-cy-check-revision=""><h3 className="mt-0">Bring these questions back later</h3><CheckRevision data={data} ids={activity.questions.map(q => q.id)} /></Card>}
     {[...attempts].reverse().filter(a => a.submittedAt).map(a => <Result key={a.id} attempt={a} activity={activity} />)}
   </>;
 }

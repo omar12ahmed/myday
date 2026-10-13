@@ -7,7 +7,7 @@ const same = require('node:util').isDeepStrictEqual;
 (async () => {
   const { bundle } = await import(pathToFileURL(path.join(ROOT, 'ai-eval/build.mjs')).href);
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'myday-cyber-rules-'));
-  const files = ['app/src/study/cybersecurity/catalogue', 'app/src/study/cybersecurity/learning', 'app/src/study/cybersecurity/practiceCatalogue', 'app/src/study/cybersecurity/practiceRules', 'app/src/study/cybersecurity/tutorReply', 'app/src/data/cybersecurity/normalize', 'app/src/data/cybersecurity/types', 'app/src/data/normalize', 'app/src/sync/records', 'app/src/study/route', 'supabase/functions/_shared/ai/tutor', 'supabase/functions/_shared/ai/prompt'];
+  const files = ['app/src/study/cybersecurity/catalogue', 'app/src/study/cybersecurity/learning', 'app/src/study/cybersecurity/practiceCatalogue', 'app/src/study/cybersecurity/practiceRules', 'app/src/study/cybersecurity/tutorReply', 'app/src/data/cybersecurity/normalize', 'app/src/data/cybersecurity/types', 'app/src/data/normalize', 'app/src/sync/records', 'app/src/study/route', 'supabase/functions/_shared/ai/tutor', 'supabase/functions/_shared/ai/prompt', 'app/src/data/cybersecurity/cards', 'app/src/data/study/queue'];
   fs.writeFileSync(path.join(dir, 'kit.ts'), files.map(f => `export * from ${JSON.stringify(path.join(ROOT, f))};`).join('\n'));
   const C = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
   const d = C.freshState();
@@ -118,6 +118,25 @@ const same = require('node:util').isDeepStrictEqual;
   const response = await handle(req(ctx), deps), result = await response.json();
   check('server tutor uses the authenticated, budget-limited provider path', response.status === 200 && !!C.tutorReply(result.output, ctx.lessonId) && budgetCalls === 1);
   check('unknown lessons are rejected before budget or provider use', (await handle(req({ ...ctx, lessonId: 'lesson.missing' }), deps)).status === 400 && budgetCalls === 1);
+
+  console.log('\n[Revision] The course\'s own knowledge checks in revision (no AI)');
+  const checks = JSON.parse(fs.readFileSync(path.join(ROOT, 'app/src/study/cybersecurity/checks.json'), 'utf8'));
+  const cyAnswers = JSON.parse(fs.readFileSync(path.join(ROOT, 'app/src/study/cybersecurity/answers.json'), 'utf8'));
+  const kcs = C.curriculum.assessments.filter(a => a.type === 'knowledge_check'), kq = kcs.flatMap(a => a.questions.map(q => ({ q, lesson: a.lesson_id })));
+  check('every knowledge-check question is ready for revision, with its lesson\'s title (292)', kq.length === 292 && Object.keys(checks).length === 292 && kq.every(({ q, lesson }) => checks[q.id]?.prompt === q.prompt && checks[q.id].lesson === C.lessons.get(lesson).title));
+  check('…each with a reference answer, and no answer inside the checks file', Object.keys(checks).every(id => cyAnswers[id]) && !Object.values(cyAnswers).some(a => JSON.stringify(checks).includes(JSON.stringify(a))));
+  check('a question\'s id names its lesson, for every question in the course', kq.every(({ q, lesson }) => C.lessonOfCheck(q.id) === lesson));
+  check('every card id fits a sync record and is read back as it was', kq.every(({ q }) => q.id.length <= 64 && C.cleanCyberCard({ id: q.id, addedOn: '2026-10-14' })?.id === q.id));
+  const rv = { reps: 1, interval: 4, lapses: 0, due: '2026-10-18' }, rep = { dropped: 0 };
+  const readBack = C.normalizeCyber({ pathId: 'path.core', attempts: [], cards: [{ id: 'assessment.lab-isolation-check.q2', addedOn: '2026-10-14', review: rv, score: 9 }, { id: 'assessment.lab-isolation-check.q2', addedOn: '2026-10-14' }, { id: 'lesson.lab-isolation', addedOn: '2026-10-14' }, { id: 'assessment.lab-isolation-check.q1', addedOn: 'today' }] }, rep);
+  check('saved cards are read back with their schedule; duplicates, other ids and bad dates are dropped (and counted)', readBack.cards.length === 1 && same(readBack.cards[0], { id: 'assessment.lab-isolation-check.q2', addedOn: '2026-10-14', review: rv }) && rep.dropped === 3);
+  check('no cards saved yet means nothing in revision, not an error', C.normalizeCyber({ pathId: 'path.core', attempts: [] }).cards.length === 0 && C.emptyCyber().cards.length === 0);
+  const dd = C.freshState(), ids = kcs.find(a => a.lesson_id === 'lesson.lab-isolation').questions.map(q => q.id);
+  check('adding a lesson\'s checks puts each in revision once, first back tomorrow', C.addCyberCards(dd, ids, '2026-10-14') === 2 && C.addCyberCards(dd, ids, '2026-10-14') === 0 && dd.cybersecurity.cards.every(c => c.review.due === '2026-10-15'));
+  check('nothing is due on the day it was added; the next day they are, in the one queue and in "Revise Cybersecurity"', C.dueIds(dd, '2026-10-14').length === 0 && C.dueIds(dd, '2026-10-15').join() === ids.join() && C.dueIds(dd, '2026-10-15', 'cybersecurity').join() === ids.join() && C.dueIds(dd, '2026-10-15', 'arabic').length === 0);
+  check('an answer reschedules the card with Study\'s rules and goes into Study\'s history under its id, self-assessed', C.rateCyberCard(dd, ids[0], 'Choose and isolate · check 1', '2026-10-15', { outcome: 'right', chosen: null, support: 'own' }, 'good') && dd.cybersecurity.cards[0].review.due === '2026-10-19' && dd.study.reviews.at(-1).conceptId === ids[0] && dd.study.reviews.at(-1).graded === 'self');
+  check('taking them out keeps their past answers', C.removeCyberCards(dd, ids) && dd.cybersecurity.cards.length === 0 && dd.study.reviews.length === 1);
+
   fs.rmSync(dir, { recursive: true, force: true });
   const s = summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

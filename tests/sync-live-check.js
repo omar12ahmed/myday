@@ -13,6 +13,7 @@
 // `--cyber-only`: the same for the Cybersecurity kinds (1.14.0).
 // `--arabic-only`: the same for the Arabic Fuṣḥā kinds (the sixth migration).
 // `--arabic-cards-only`: the same for Arabic revision cards (the seventh migration).
+// `--cyber-cards-only`: the same for Cybersecurity revision cards (the eighth migration).
 const { randomUUID } = require('crypto');
 
 const URL_ = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
@@ -91,6 +92,18 @@ async function arabicCardsCheck(a, b) {
   check('the card can be taken out of revision (a deletion marker for other devices)', Array.isArray(r) && r[0].status === 'applied', r);
 }
 
+// Cybersecurity in revision (eighth migration, 20261014120000_sync_cyber_cards.sql): A saves a revision card
+// (synthetic), B can't see it, A takes it out of revision.
+async function cyberCardsCheck(a, b) {
+  console.log('\nCybersecurity revision cards (eighth migration: 20261014120000_sync_cyber_cards.sql)');
+  const id = 'assessment.lab-isolation-check.q2', old = (await pull(a)).find(x => x.kind === 'cyber_card' && x.record_id === id);
+  let r = await push(a, [change('cyber_card', id, old ? old.version : 0, { id, addedOn: '2026-10-14', review: { reps: 0, interval: 0, lapses: 0, due: '2026-10-15' } })]);
+  check('A can save a Cybersecurity revision card — so the eighth migration is applied', Array.isArray(r) && r[0].status === 'applied', r);
+  check('B can\'t see it', (await pull(b)).every(x => x.kind !== 'cyber_card'));
+  r = await push(a, [change('cyber_card', id, r[0].version, null, { deleted: true })]);
+  check('the card can be taken out of revision (a deletion marker for other devices)', Array.isArray(r) && r[0].status === 'applied', r);
+}
+
 // Projects (third migration, 20261006120000_sync_projects.sql): A saves one, B can't see it, A deletes it.
 async function projectsCheck(a, b, id) {
   console.log('\nProjects (third migration: 20261006120000_sync_projects.sql)');
@@ -132,6 +145,16 @@ async function projectsCheck(a, b, id) {
       process.exit(2);
     }
     await arabicCheck(a, b, `live-check-session-${Date.now()}`);
+    console.log(`\n${pass} passed, ${fail} failed`);
+    process.exit(fail ? 1 : 0);
+  }
+  // --cyber-cards-only: the same, for the eighth migration's kind (Cybersecurity revision cards).
+  if (process.argv.includes('--cyber-cards-only')) {
+    if (![A.email, B.email].every(e => /@example\.com$/i.test(e || '')) || A.email === B.email) {
+      console.log('  STOP --cyber-cards-only runs only with two different disposable @example.com test accounts.');
+      process.exit(2);
+    }
+    await cyberCardsCheck(a, b);
     console.log(`\n${pass} passed, ${fail} failed`);
     process.exit(fail ? 1 : 0);
   }

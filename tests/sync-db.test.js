@@ -219,6 +219,18 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   r = await push(A, [change('arabic', 'preferences', 1, null, { deleted: true })]);
   check('the Arabic preferences record still cannot be deleted', r[0].status === 'rejected', r);
 
+  console.log('\n[14] Cybersecurity in revision (eighth migration)');
+  const ccard = { id: 'assessment.lab-isolation-check.q2', addedOn: '2026-10-14', review: { reps: 0, interval: 0, lapses: 0, due: '2026-10-15' } };
+  r = await push(A, [change('cyber_card', ccard.id, 0, ccard)]);
+  check('Cybersecurity revision cards save through sync_push', r[0].status === 'applied' && r[0].version === 1, r);
+  check('another learner cannot read them', !(await pull(reader)).some(x => x.kind === 'cyber_card'));
+  r = await push(A, [change('cyber_card', ccard.id, 0, { ...ccard, review: { ...ccard.review, reps: 1 } })]);
+  check('a stale device cannot overwrite a card\'s schedule', r[0].status === 'conflict', r);
+  r = await push(A, [change('cyber_card', ccard.id, 1, null, { deleted: true })]);
+  check('taking a card out of revision reaches other devices as a tombstone', r[0].status === 'applied' && (await pull(A)).some(x => x.kind === 'cyber_card' && x.deleted));
+  r = await push(A, [change('arabic_card', 'lexeme.arabic-seed-002:recognise', 0, { id: 'lexeme.arabic-seed-002:recognise', addedOn: '2026-10-14', review: ccard.review })]);
+  check('the earlier kinds (Arabic revision cards) are still accepted', r[0].status === 'applied', r);
+
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

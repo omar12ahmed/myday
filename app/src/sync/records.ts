@@ -25,15 +25,15 @@ import { STAGES, STATUS_LABEL } from '../data/projects';
 import { CAT_LABEL, ENERGY_LABEL } from '../data/plan';
 import type { Category, Commitment, Day, DayContext, ListItem, MyDayData, Note, Project, QueueItem, Recipe, StudySession, TaskItem, WorkoutSession, Review as StudyReview } from '../data/types';
 import { isObj } from '../data/util';
-import { cleanAttempt, normalizeCyber } from '../data/cybersecurity/normalize';
-import type { CyberAttempt } from '../data/cybersecurity/types';
+import { cleanAttempt, cleanCyberCard, normalizeCyber } from '../data/cybersecurity/normalize';
+import type { CyberAttempt, CyberCard } from '../data/cybersecurity/types';
 import { cleanArabicAttempt, cleanArabicCard, normalizeArabic } from '../data/arabic/normalize';
 import { ARABIC_CORE_PATH, type ArabicAttempt, type ArabicCard } from '../data/arabic/types';
 
 export type Kind = 'list' | 'queue' | 'day' | 'context'
   | 'settings' | 'rota' | 'pay' | 'holidays' | 'finance' | 'study' | 'workout' | 'food' | 'fitness' | 'notes' | 'tasks' | 'patterns'
   | 'commitment' | 'note' | 'task' | 'session' | 'review' | 'wsession' | 'recipe' | 'project' | 'cybersecurity' | 'cyber_attempt'
-  | 'arabic' | 'arabic_attempt' | 'arabic_card';
+  | 'arabic' | 'arabic_attempt' | 'arabic_card' | 'cyber_card';
 export type Content = Record<string, unknown>;
 
 // A record's key on this device: "list:learning", "day:2026-10-02", "note:nt8f…"…
@@ -192,6 +192,11 @@ const MANY: Many[] = [
     items: d => d.arabic.cards, put: (d, id, c) => putItem(d.arabic.cards, id, c),
     clean: (id, raw) => same(id, cleanArabicCard(raw)),
     summary: c => { const x = c as unknown as ArabicCard; return `${x.id} · ${x.review.due ? `back on ${prettyDate(x.review.due)}` : 'not revised yet'}`; } },
+  // A Cybersecurity revision card: only its question's id (the course's), the day it was added and its schedule.
+  { kind: 'cyber_card', label: 'Cybersecurity revision card',
+    items: d => d.cybersecurity.cards, put: (d, id, c) => putItem(d.cybersecurity.cards, id, c),
+    clean: (id, raw) => same(id, cleanCyberCard(raw)),
+    summary: c => { const x = c as unknown as CyberCard; return `${x.id} · ${x.review.due ? `back on ${prettyDate(x.review.due)}` : 'not revised yet'}`; } },
   { kind: 'cyber_attempt', label: 'Cybersecurity notebook attempt',
     items: d => d.cybersecurity.attempts, put: (d, id, c) => putItem(d.cybersecurity.attempts, id, c, (a, b) => a.startedAt.localeCompare(b.startedAt)),
     clean: (id, raw) => same(id, cleanAttempt(raw) ?? undefined),

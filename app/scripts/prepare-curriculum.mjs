@@ -59,6 +59,11 @@ writeFileSync(new URL('auth-fixture.json', target), JSON.stringify(authRows));
 console.log(`Practice package: ${practice.activities.length} activities, all references valid.`);
 writeFileSync(new URL('catalogue.json', target), JSON.stringify(catalogue));
 writeFileSync(new URL('answers.json', target), JSON.stringify(answers));
+// The knowledge-check questions as revision asks them (loaded only when a round reaches one): the question and its
+// lesson's title, by question id. A question's id names its lesson (checked by cybersecurity-rules).
+const lessonTitles = Object.fromEntries(catalogue.lessons.map(l => [l.id, l.title]));
+writeFileSync(new URL('checks.json', target), JSON.stringify(Object.fromEntries(catalogue.assessments.filter(a => a.type === 'knowledge_check')
+  .flatMap(a => a.questions.map(q => [q.id, { prompt: q.prompt, lesson: lessonTitles[a.lesson_id] }])))));
 const tutorLessons = Object.fromEntries(catalogue.lessons.map(l => [l.id, {
   title: l.title, objectives: l.learning_objectives, concepts: l.key_concepts,
   task: catalogue.exercises.find(e => e.id === l.practical_task_id).instruction,

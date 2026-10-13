@@ -56,18 +56,19 @@ export function SetupCard({ data }: { data: MyDayData }) {
   );
 }
 
-// A small revision preview: concept names only (never answers), Arabic cards counted (their words load with
-// Arabic), and a separate button to start.
+// A small revision preview: concept names only (never answers), Arabic and Cybersecurity cards counted (their
+// questions load with their course), and a separate button to start.
 function RevisionCard({ data }: { data: MyDayData }) {
   const st = data.study, k = todayKey();
-  if (!st.concepts.length && !data.arabic.cards.length) return null;
+  if (!st.concepts.length && !data.arabic.cards.length && !data.cybersecurity.cards.length) return null;
   const due = dueConcepts(st, k), needQ = st.concepts.filter(c => !questionReady(c)).length, nextDate = nextDueDate(data, k);
   const arabic = dueIds(data, k, 'arabic').length, names = due.slice(0, 3).map(c => c.title).join(', ') + (due.length > 3 ? ' and more' : '');
-  const cards = arabic ? `${arabic} Arabic card${arabic === 1 ? '' : 's'}` : '';
+  const cyber = dueIds(data, k, 'cybersecurity').length;
+  const cards = [arabic && `${arabic} Arabic card${arabic === 1 ? '' : 's'}`, cyber && `${cyber} Cybersecurity check${cyber === 1 ? '' : 's'}`].filter(Boolean).join(' and ');
   return (
     <Card id="stRevision" aria-labelledby="rev-h">
       <h3 id="rev-h">Revision</h3>
-      {due.length || arabic ? (
+      {due.length || arabic || cyber ? (
         <>
           <p className="text-[15px]">Ready to revise: {names && cards ? `${names}, plus ${cards}` : names || cards}.</p>
           <Button data-action="s-rev-start" onClick={() => startRevision()}><RotateCcw size={18} aria-hidden="true" /> Start revision</Button>

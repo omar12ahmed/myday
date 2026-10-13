@@ -57,13 +57,15 @@ const clone = o => JSON.parse(JSON.stringify(o));
   // …and, from part 3, a starter word and a lesson check in revision (with an answer in Study's history).
   raw.arabic = { pathId: 'path.arabic-a1', attempts: [{ id: 'aa1', lessonId: 'lesson.arabic-origin-location', curriculumVersion: '1.1.0', variant: 'short', startedAt: '2026-10-11T09:00:00.000Z', finishedAt: '2026-10-11T09:20:00.000Z', help: 'hint', practised: ['reading', 'writing'], answers: { 'assessment.arabic-origin-location-check.q1': 'من = from, في = in' }, revealed: ['assessment.arabic-origin-location-check.q1'], revisit: 'Country adjectives' }] , cards: [{ id: 'lexeme.arabic-seed-001:recognise', addedOn: '2026-10-11', review: { reps: 1, interval: 4, lapses: 0, due: '2026-10-15' } }, { id: 'assessment.arabic-origin-location-check.q1', addedOn: '2026-10-11', review: { reps: 0, interval: 0, lapses: 0, due: '2026-10-12' } }] };
   raw.study.reviews.push({ id: 'rv2', conceptId: 'lexeme.arabic-seed-001:recognise', title: 'أَنَا → I', date: '2026-10-11', at: '2026-10-11T09:30', kind: 'written', outcome: 'right', graded: 'self', chosen: null, support: 'own', rating: 'good', gap: 4, due: '2026-10-15' });
+  // …and a Cybersecurity knowledge check in revision (after 1.17.1).
+  raw.cybersecurity = { pathId: 'path.core', attempts: [], cards: [{ id: 'assessment.lab-isolation-check.q2', addedOn: '2026-10-14', review: { reps: 0, interval: 0, lapses: 0, due: '2026-10-15' } }] };
   raw.timer = { uid: 'x', dayKey: '2026-10-04', kind: 'focus', durationSec: 1500, startedAt: 1, accumulatedMs: 0, finished: false };
   const data = R.normalize(raw);
 
   console.log('\n[1] Every record survives the trip unchanged');
   const recs = R.localRecords(data);
   const kinds = [...new Set([...recs.keys()].map(k => R.splitKey(k).kind))].sort();
-  check('every kind of record is there', eq(kinds, ['arabic', 'arabic_attempt', 'arabic_card', 'commitment', 'context', 'cybersecurity', 'day', 'finance', 'fitness', 'food', 'holidays', 'list', 'note', 'notes', 'pay', 'patterns', 'project', 'queue', 'recipe', 'review', 'rota', 'session', 'settings', 'study', 'task', 'tasks', 'workout', 'wsession'].filter(k => k !== 'context' && k !== 'day').sort()), kinds);
+  check('every kind of record is there', eq(kinds, ['arabic', 'arabic_attempt', 'arabic_card', 'commitment', 'context', 'cyber_card', 'cybersecurity', 'day', 'finance', 'fitness', 'food', 'holidays', 'list', 'note', 'notes', 'pay', 'patterns', 'project', 'queue', 'recipe', 'review', 'rota', 'session', 'settings', 'study', 'task', 'tasks', 'workout', 'wsession'].filter(k => k !== 'context' && k !== 'day').sort()), kinds);
   const changedOnTheWay = [...recs].filter(([key, c]) => R.fingerprint(R.cleanRecord(key, clone(c))) !== R.fingerprint(c)).map(([k]) => k);
   check('checked as it arrives on another device, every record is exactly the same (so devices never drift apart)', changedOnTheWay.length === 0, changedOnTheWay);
   const putBack = clone(R.freshState());
