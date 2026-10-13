@@ -23,6 +23,7 @@ export interface CyberAttempt {
 export interface CyberData {
   pathId: string;
   attempts: CyberAttempt[];
+  [other: string]: unknown; // anything a newer MyDay adds here is kept
 }
 export const emptyCyber = (): CyberData => ({ pathId: 'path.core', attempts: [] });
 export const CYBER_VERSION = '1.0.0';

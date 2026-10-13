@@ -55,6 +55,7 @@ const same = require('node:util').isDeepStrictEqual;
   check('preferences and every attempt survive the account round trip', same(C.normalize(dest).cybersecurity, d.cybersecurity));
   check('mismatched attempt IDs from sync are rejected', C.cleanRecord('cyber_attempt:someone-else', a) === null);
   check('malformed evidence is reported, not silently trusted', (() => { const report = { dropped: 0 }; C.normalizeCyber({ attempts: [{ bad: true }] }, report); return report.dropped === 1; })());
+  check('fields a newer MyDay adds to the section are kept as they are (going back a version never loses them)', (() => { const x = C.normalizeCyber({ pathId: 'path.core', attempts: [{ bad: true }], laterList: [{ id: 'x' }] }); return JSON.stringify(x.laterList) === '[{"id":"x"}]' && x.attempts.length === 0 && x.pathId === 'path.core'; })());
   const practiceData = C.freshState();
   const setAnswer = (a, key, value) => { a.answers[C.answerKey(key)] = value; };
   const start = id => { const aid = C.beginAttempt(practiceData, id); return practiceData.cybersecurity.attempts.find(a => a.id === aid); };
