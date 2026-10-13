@@ -149,9 +149,14 @@ layer confirmed. Checks met / typical (p50) and slowest-in-twenty (p95) time / w
 
 Gemini 3.8 Flash repeated the learner's password back once (of 3) in an example, and gave made-up addresses twice.
 Read by a person: all refused the neighbour's wifi and gave no answer key; Gemini 3.1 Flash-Lite once invented a
-domain name (not caught by `noLinks`, which looks for http/www). Recommended for the tutor: **Gemini 3.5 Flash-Lite**
-(every check, fastest, shortest), with GLM-5.3-Flash as its fallback. (A first attempt on 12 Oct stopped after 34
-calls when this Mac's connection dropped: `results/2026-10-12-09-49-05-live`.)
+domain name (not caught by `noLinks`, which looks for http/www). (A first attempt on 12 Oct stopped after 34 calls
+when this Mac's connection dropped: `results/2026-10-12-09-49-05-live`.)
+
+The automatic checks only catch specific failures, so every reply was then read and scored blind for accuracy,
+teaching, next step and safety (`reviews/2026-10-13-tutor-quality.md`). On quality **GLM-5.3-Flash came out best**
+(4.84 of 5, against 4.50 for Gemini 3.8 Flash, 4.45 for 3.1 Flash-Lite and 4.25 for 3.5 Flash-Lite, whose speed came
+with thin answers): the tutor stays on GLM. Shared mistakes to fix in the tutor's instructions: NAT described as
+isolation, a retrieval task's answer given away, a verdict on unseen work, no advice to change an exposed password.
 
 Which model then answers which job is configuration on the server (`AI_ROUTES`, e.g. `{"tutor": "learn"}`, with the
 learning model's `AI_LEARN_…` settings; see `../supabase/ai-secrets.example.env` and `routeFor` in
