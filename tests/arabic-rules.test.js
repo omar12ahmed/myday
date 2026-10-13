@@ -95,7 +95,7 @@ check('vowelled and unvowelled versions are both kept where the package has them
   check('no cards saved yet means nothing in revision, not an error', A.normalizeArabic({ pathId: 'path.arabic-a1', attempts: [] }).cards.length === 0 && A.emptyArabic().cards.length === 0);
 
   const day = '2026-10-11', tomorrow = '2026-10-12';
-  const dd = { arabic: A.emptyArabic(), study: { concepts: [], sessions: [], reviews: [] } };
+  const dd = { arabic: A.emptyArabic(), cybersecurity: { cards: [] }, study: { concepts: [], sessions: [], reviews: [] } }; // as real data always has both sections
   const first = A.nextWords(dd, wordIds, A.ADD_A_FEW);
   check('"Add the next 5" takes the first five starter words in the course\'s order', first.join() === wordIds.slice(0, 5).join());
   check('adding cards puts each in revision once, first back tomorrow', A.addCards(dd, first.map(w => A.wordCard(w, 'recognise')), day) === 5 && A.addCards(dd, [A.wordCard(first[0], 'recognise')], day) === 0 && dd.arabic.cards.every(c => c.addedOn === day && c.review.due === tomorrow && c.review.reps === 0));
