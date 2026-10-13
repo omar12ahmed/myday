@@ -5,6 +5,7 @@ import { OUTPUT_SCHEMA, type PlanContext } from './schema.ts';
 import { buildTaskMessages, type TasksContext } from './tasks.ts';
 import { buildTutorMessages, type TutorContext } from './tutor.ts';
 import { buildConnectMessages, type ConnectContext } from './connect.ts';
+import { buildCardsMessages, buildCheckMessages, type CardsCheckContext, type CardsContext } from './cards.ts';
 
 export const PROMPT_VERSION = 'myday-adjust-v1';
 
@@ -30,15 +31,19 @@ ${JSON.stringify(OUTPUT_SCHEMA)}`;
 export interface ChatMessage { role: 'system' | 'user'; content: string }
 
 // Any request MyDay can make: "Help me adjust today" (a PlanContext), "Add what's on my mind" (a TasksContext), the
-// Cybersecurity tutor (a TutorContext) or placing notes in projects (a ConnectContext).
-export type AiContext = PlanContext | TasksContext | TutorContext | ConnectContext;
+// Cybersecurity tutor (a TutorContext), placing notes in projects (a ConnectContext) or AI-written revision cards for a
+// lesson (a CardsContext). A CardsCheckContext is the checker's half of that, built on the server only.
+export type AiContext = PlanContext | TasksContext | TutorContext | ConnectContext | CardsContext | CardsCheckContext;
 export const isTasks = (ctx: AiContext): ctx is TasksContext => (ctx as TasksContext).action === 'tasks';
 export const isTutor = (ctx: AiContext): ctx is TutorContext => (ctx as TutorContext).action === 'tutor';
 export const isConnect = (ctx: AiContext): ctx is ConnectContext => (ctx as ConnectContext).action === 'connect';
+export const isCards = (ctx: AiContext): ctx is CardsContext => (ctx as CardsContext).action === 'cards';
+export const isCardsCheck = (ctx: AiContext): ctx is CardsCheckContext => (ctx as CardsCheckContext).action === 'cards-check';
 
 // The messages for whichever kind of request it is.
 export function messagesFor(ctx: AiContext): ChatMessage[] {
-  return isConnect(ctx) ? buildConnectMessages(ctx) : isTutor(ctx) ? buildTutorMessages(ctx) : isTasks(ctx) ? buildTaskMessages(ctx) : buildMessages(ctx);
+  return isCards(ctx) ? buildCardsMessages(ctx) : isCardsCheck(ctx) ? buildCheckMessages(ctx) : isConnect(ctx) ? buildConnectMessages(ctx)
+    : isTutor(ctx) ? buildTutorMessages(ctx) : isTasks(ctx) ? buildTaskMessages(ctx) : buildMessages(ctx);
 }
 
 export function buildMessages(ctx: PlanContext): ChatMessage[] {

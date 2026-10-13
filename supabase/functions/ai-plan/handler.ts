@@ -16,6 +16,8 @@ import { CONTRACT_VERSION, LIMITS, type PlanContext } from '../_shared/ai/schema
 import { checkTasksContext } from '../_shared/ai/tasks.ts';
 import { checkTutorContext } from '../_shared/ai/tutor.ts';
 import { checkConnectContext } from '../_shared/ai/connect.ts';
+import { CARDS_LIMITS, checkCardsContext, readDraft, readVerdicts, type CardsCheckContext, type CardsContext } from '../_shared/ai/cards.ts';
+import { isCards, type AiContext } from '../_shared/ai/prompt.ts';
 
 export interface Deps {
   env: (name: string) => string | undefined;
@@ -92,13 +94,14 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
   if (raw.length > LIMITS.bodyBytes) return reply(413, { ok: false, error: 'bad-request' }, 'too-large');
   let body: { context?: unknown };
   try { body = JSON.parse(raw); } catch { return reply(400, { ok: false, error: 'bad-request' }, 'not-json'); }
-  if (!body || !(checkContext(body.context) || checkTasksContext(body.context) || checkTutorContext(body.context) || checkConnectContext(body.context))) return reply(400, { ok: false, error: 'bad-request' }, 'bad-context');
+  if (!body || !(checkContext(body.context) || checkTasksContext(body.context) || checkTutorContext(body.context) || checkConnectContext(body.context) || checkCardsContext(body.context))) return reply(400, { ok: false, error: 'bad-request' }, 'bad-context');
   const ctx = body.context;
 
   // 3. The model for this job (and the other one, in case it can't answer), and the limits. Both models' worst cases
   //    are reserved up front, since both could be billed for this one request.
   const route = routeFor(deps.env, ctx);
   if ('error' in route) return reply(503, { ok: false, error: 'not-configured' }, 'not-configured');
+  if (isCards(ctx as AiContext)) return cards(ctx as CardsContext, route, token, deps, reply, t0);
   const worst = worstCaseCostUsd(route.primary.cfg, ctx), worstFallback = route.fallback ? worstCaseCostUsd(route.fallback.cfg, ctx) : 0;
   if (worst === null || worstFallback === null) return reply(503, { ok: false, error: 'not-configured' }, 'no-prices');
   const reserve = worst + worstFallback;
@@ -139,3 +142,51 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
     usage: { inputTokens: result.inputTokens, outputTokens: result.outputTokens, costUsd: costUsd(used.cfg, result.inputTokens, result.outputTokens), latencyMs: result.latencyMs },
   }, fellBack ? `ok:${via}` : 'ok');
 }
+
+// ---------- AI-written revision cards: a writer, then a checker (the other model) ----------
+// One request, two model calls, both reserved up front. The writer drafts the cards; the checker judges each one. If
+// there's no second model, or it can't answer, nothing is returned: a card no second model has checked never reaches
+// the learner. The app then keeps only the cards the checker kept, and checks every card again itself.
+const CARD_WRITER_TOKENS = 6000, CARD_CHECKER_TOKENS = 3000; // ten cards don't fit the other jobs' reply cap
+async function cards(ctx: CardsContext, route: Exclude<ReturnType<typeof routeFor>, { error: string }>, token: string, deps: Deps,
+  reply: (status: number, body: Record<string, unknown>, outcome: string) => Response, t0: number): Promise<Response> {
+  const num = (name: string, fallback: number) => { const n = Number(deps.env(name)); return Number.isFinite(n) && deps.env(name) !== undefined && deps.env(name) !== '' ? n : fallback; };
+  if (!route.other) return reply(503, { ok: false, error: 'no-checker' }, 'cards-no-checker');
+  const writer = { ...route.primary.cfg, maxOutputTokens: CARD_WRITER_TOKENS }, checker = { ...route.other.cfg, maxOutputTokens: CARD_CHECKER_TOKENS };
+  // The checker's worst case: the lesson and ten cards of the longest allowed size.
+  const longest: CardsCheckContext = { version: 1, action: 'cards-check', lessonId: ctx.lessonId, cards: Array.from({ length: CARDS_LIMITS.cards }, () => ({
+    kind: 'choice', prompt: 'x'.repeat(CARDS_LIMITS.promptChars), answer: 'x'.repeat(CARDS_LIMITS.answerChars), explanation: 'x'.repeat(CARDS_LIMITS.explanationChars),
+    choices: Array.from({ length: CARDS_LIMITS.maxChoices }, () => 'x'.repeat(CARDS_LIMITS.choiceChars)), correct: 0 })) };
+  const ww = worstCaseCostUsd(writer, ctx), wc = worstCaseCostUsd(checker, longest);
+  if (ww === null || wc === null) return reply(503, { ok: false, error: 'not-configured' }, 'no-prices');
+  let gate: { ok: boolean; reason?: string };
+  try {
+    gate = await deps.begin(token, { perDay: num('AI_DAILY_LIMIT', 20), monthlyUsd: num('AI_MONTHLY_BUDGET_USD', 1), reserveUsd: Math.min(ww + wc, 1), minSeconds: num('AI_MIN_SECONDS_BETWEEN', 5) });
+  } catch {
+    return reply(503, { ok: false, error: 'unavailable' }, 'limits-unavailable');
+  }
+  if (!gate.ok) return reply(429, { ok: false, error: 'limit', reason: gate.reason || 'limit' }, `limit-${gate.reason}`);
+  // Writing ten cards takes longer than other jobs: the app waits up to 95 s for this one.
+  const deadline = t0 + Math.min(num('AI_CARDS_TOTAL_TIMEOUT_MS', 90000), 140000);
+  const within = (cfg: ProviderConfig, longestMs: number): ProviderConfig => ({ ...cfg, timeoutMs: Math.max(1000, Math.min(longestMs, deadline - Date.now())) });
+  let inputTokens = 0, outputTokens = 0;
+  const done = async () => { await deps.finish(token, inputTokens, outputTokens).catch(() => {}); };
+  const w = await callModel(within(writer, num('AI_CARDS_WRITER_TIMEOUT_MS', 60000)), ctx, deps.fetchImpl);
+  inputTokens += w.inputTokens ?? 0; outputTokens += w.outputTokens ?? 0;
+  const draft = w.ok ? readDraft(w.text, ctx.lessonId, ctx.count) : null;
+  if (!w.ok || !draft || !draft.cards.length) { await done(); return reply(502, { ok: false, error: 'unavailable', detail: w.ok ? 'unusable' : w.error }, `cards-writer-${w.ok ? 'unusable' : w.error}:${route.primary.slot}`); }
+  if (deadline - Date.now() < 5000) { await done(); return reply(502, { ok: false, error: 'unavailable', detail: 'unchecked' }, `cards-unchecked-time:${route.other.slot}`); }
+  const check: CardsCheckContext = { version: 1, action: 'cards-check', lessonId: ctx.lessonId, cards: draft.cards };
+  const c = await callModel(within(checker, deadline - Date.now()), check, deps.fetchImpl);
+  inputTokens += c.inputTokens ?? 0; outputTokens += c.outputTokens ?? 0;
+  const verdicts = c.ok ? readVerdicts(c.text, draft.cards.length) : null;
+  await done();
+  if (!c.ok || !verdicts) return reply(502, { ok: false, error: 'unavailable', detail: 'unchecked' }, `cards-unchecked-${c.ok ? 'unusable' : c.error}:${route.other.slot}`);
+  return reply(200, {
+    ok: true,
+    output: JSON.stringify({ lessonId: ctx.lessonId, cards: draft.cards, verdicts, leftOut: draft.leftOut }),
+    model: writer.label, checker: checker.label,
+    usage: { inputTokens, outputTokens, costUsd: (costUsd(writer, w.inputTokens, w.outputTokens) ?? 0) + (costUsd(checker, c.inputTokens, c.outputTokens) ?? 0), latencyMs: Date.now() - t0 },
+  }, `ok:cards/${route.primary.slot}+${route.other.slot}`);
+}
+
