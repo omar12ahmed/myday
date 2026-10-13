@@ -152,7 +152,9 @@ async function cards(ctx: CardsContext, route: Exclude<ReturnType<typeof routeFo
   reply: (status: number, body: Record<string, unknown>, outcome: string) => Response, t0: number): Promise<Response> {
   const num = (name: string, fallback: number) => { const n = Number(deps.env(name)); return Number.isFinite(n) && deps.env(name) !== undefined && deps.env(name) !== '' ? n : fallback; };
   if (!route.other) return reply(503, { ok: false, error: 'no-checker' }, 'cards-no-checker');
-  const writer = { ...route.primary.cfg, maxOutputTokens: CARD_WRITER_TOKENS }, checker = { ...route.other.cfg, maxOutputTokens: CARD_CHECKER_TOKENS };
+  // The checker may think harder than the model does for other jobs (its CHECKER_EXTRA_BODY setting, if any).
+  const { checkerExtraBody, ...otherCfg } = route.other.cfg;
+  const writer = { ...route.primary.cfg, maxOutputTokens: CARD_WRITER_TOKENS }, checker = { ...otherCfg, maxOutputTokens: CARD_CHECKER_TOKENS, ...(checkerExtraBody ? { extraBody: checkerExtraBody } : {}) };
   // The checker's worst case: the lesson and ten cards of the longest allowed size.
   const longest: CardsCheckContext = { version: 1, action: 'cards-check', lessonId: ctx.lessonId, cards: Array.from({ length: CARDS_LIMITS.cards }, () => ({
     kind: 'choice', prompt: 'x'.repeat(CARDS_LIMITS.promptChars), answer: 'x'.repeat(CARDS_LIMITS.answerChars), explanation: 'x'.repeat(CARDS_LIMITS.explanationChars),

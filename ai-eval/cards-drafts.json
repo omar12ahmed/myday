@@ -1,0 +1,2362 @@
+{
+ "about": "Revision cards written by AI models in the live writer run of 13 Oct 2026 (ai-eval/results/2026-10-13-22-08-20-live) on four Cybersecurity lessons, each card labelled sound / slip / wrong by a blind review (ai-eval/reviews/2026-10-13-cards-quality.md). Curriculum material only; no learner data.",
+ "sets": [
+  {
+   "id": "w01-routing-A",
+   "lessonId": "lesson.routing-dns-dhcp",
+   "writtenBy": "gemini-3.8-flash",
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What role does the default gateway play when a host needs to transmit a packet to an IP address outside its local subnet?",
+     "answer": "It serves as the local router to which the host forwards packets destined for remote subnets, using its MAC address as the Layer 2 destination.",
+     "explanation": "Hosts use their subnet mask to determine if a destination IP is local. If it is remote, the host forwards the frame to the default gateway's link-layer address so the gateway can route it onwards.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which protocol does an IPv4 host use to discover the MAC address associated with a known local IP address?",
+     "choices": [
+      "DHCP",
+      "ARP",
+      "DNS",
+      "ICMP"
+     ],
+     "correct": 1,
+     "answer": "ARP",
+     "explanation": "The Address Resolution Protocol (ARP) resolves an IPv4 address to a physical link-layer (MAC) address on the local network segment. IPv6 uses NDP for the equivalent function.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "How does IPv6 perform the local address resolution function handled by ARP in IPv4?",
+     "answer": "It uses Neighbour Discovery Protocol (NDP), specifically Neighbour Solicitation and Neighbour Advertisement messages over ICMPv6.",
+     "explanation": "IPv6 replaces ARP broadcasts with NDP, which relies on ICMPv6 messages sent to solicited-node multicast addresses to discover link-layer addresses.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What critical information does a standard DHCP lease provide to enable a host to communicate with remote networks?",
+     "choices": [
+      "A private cryptographic key and digital certificate",
+      "An IP address, subnet mask, default gateway, and DNS servers",
+      "A list of neighbouring MAC addresses and static routes",
+      "The domain registrar credentials and authoritative DNS records"
+     ],
+     "correct": 1,
+     "answer": "An IP address, subnet mask, default gateway, and DNS servers",
+     "explanation": "DHCP automatically assigns basic IP configuration: an IP address, subnet mask (to identify the local subnet), default gateway (to reach outside subnets), and DNS server addresses (for name resolution).",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "A user cannot load websites by domain name, but pinging a known public IP address succeeds. What is the most likely issue?",
+     "choices": [
+      "The default gateway has failed.",
+      "Network Address Translation (NAT) table exhaustion.",
+      "DNS resolution failure or misconfiguration.",
+      "The local network cable is unplugged."
+     ],
+     "correct": 2,
+     "answer": "DNS resolution failure or misconfiguration.",
+     "explanation": "Because traffic directly addressed to an IP reaches the destination, routing, gateway forwarding, and IP configuration work. The inability to reach hosts via domain name points specifically to DNS.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What primary translation does Source Network Address Translation (Source NAT or NAPT) perform on outbound traffic?",
+     "answer": "It replaces the private source IP address (and often source port) of an outbound packet with a public IP address (and allocated port).",
+     "explanation": "Source NAT maps private, non-routable internal IP addresses to an external routable IP address, tracking state in a translation table so returning traffic can be mapped back to the original host.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "If a host has an incorrect subnet mask that makes remote IP addresses appear to be on the local subnet, what will occur?",
+     "choices": [
+      "The host sends packets to the gateway instead of the destination.",
+      "The host attempts ARP/NDP requests for remote IPs rather than routing via the gateway.",
+      "The host requests a new IP address from the DHCP server immediately.",
+      "DNS queries are automatically redirected to the loopback address."
+     ],
+     "correct": 1,
+     "answer": "The host attempts ARP/NDP requests for remote IPs rather than routing via the gateway.",
+     "explanation": "If the mask is too wide, the host mistakenly assumes remote IPs are local and broadcasts ARP/NDP requests on the local link, which fail to reach the remote target, preventing connection.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "How does a host decide whether to send an outgoing packet directly to a destination host or to its default gateway?",
+     "answer": "It applies its subnet mask to both its own IP address and the destination IP address to determine whether they share the same subnet.",
+     "explanation": "If the network portions of both addresses match, the destination is on the local link. If they differ, the destination is remote, requiring transmission via the configured default gateway.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "A host cannot reach any local or remote IP addresses. 'ip route' shows no default route, and 'ip addr' shows an APIPA (169.254.x.x) address. What failed?",
+     "choices": [
+      "DNS resolution failure",
+      "DHCP lease acquisition failure",
+      "Source NAT translation exhaustion",
+      "Neighbour Discovery Protocol timeout"
+     ],
+     "correct": 1,
+     "answer": "DHCP lease acquisition failure",
+     "explanation": "An automatic private IP address (APIPA) in 169.254.0.0/16 indicates the client failed to receive an answer to its DHCP discover request, leaving it without a valid configuration or gateway.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Why can a host with a functioning default gateway still fail to connect to a remote IP if routing fails further along the path?",
+     "answer": "The gateway only provides the first hop; intermediate routers must also have valid routes towards the target and return routes back.",
+     "explanation": "End-to-end connectivity requires both forward and reverse routing paths across all intermediate transit routers. A functional local gateway only ensures the packet successfully leaves the local segment.",
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "w01-routing-B",
+   "lessonId": "lesson.routing-dns-dhcp",
+   "writtenBy": "gemini-3.8-flash",
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What role does the default gateway serve when a host attempts to transmit an IP packet to a destination outside its local subnet?",
+     "answer": "The default gateway acts as the intermediate router to which the host forwards packets destined for remote subnets, as determined by the host's subnet mask and routing table.",
+     "explanation": "When an IP destination lies outside the local broadcast domain, the host cannot deliver the frame directly at Layer 2. It sends the traffic to its configured default gateway to route onwards.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "How does an IPv4 host map a target IP address to a Layer 2 MAC address on the same local network?",
+     "choices": [
+      "By querying an external DNS root nameserver",
+      "By transmitting an ARP request to the local broadcast address",
+      "By sending a DHCPREQUEST to the gateway",
+      "By looking up the host's default route in its routing table"
+     ],
+     "correct": 1,
+     "answer": "By transmitting an ARP request to the local broadcast address",
+     "explanation": "Address Resolution Protocol (ARP) sends a broadcast request across the local segment to ask which physical MAC address corresponds to the target IPv4 address. NDP performs a similar role in IPv6 using multicast.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "A host cannot reach an external server by hostname, but connecting directly via the destination's IP address succeeds. Which mechanism has failed?",
+     "answer": "DNS resolution has failed.",
+     "explanation": "Because traffic directly addressed to the destination IP address connects successfully, local network routing, gateway forwarding, and IP connectivity are operational; only domain name resolution is impaired.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which essential network configuration parameters does a host standardly request from a DHCP server upon joining a network?",
+     "choices": [
+      "An IP address, subnet mask, default gateway, and DNS server addresses",
+      "A MAC address, public IP address, and ARP cache entries",
+      "An encrypted VPN tunnel, local loopback address, and root certificates",
+      "A dynamic routing protocol configuration and NAT translation table"
+     ],
+     "correct": 0,
+     "answer": "An IP address, subnet mask, default gateway, and DNS server addresses",
+     "explanation": "DHCP automates network configuration, supplying an IP address, the network subnet mask, the default gateway for external traffic, and recursive DNS resolvers to resolve names.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What primary operation does Network Address Translation (specifically NAPT or PAT) perform on outbound packets leaving a private network?",
+     "answer": "It modifies the source private IP address and source port in the packet header to a public IP address and unique allocated port.",
+     "explanation": "Source NAT/PAT tracks outbound connections and translates internal private addresses and ports into a routable public IP and distinct port, returning replies back to the appropriate local host.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "If a host fails to receive an answer to an ARP request for an IP address on its own subnet, what is the immediate result?",
+     "choices": [
+      "The packet is automatically forwarded to the default gateway instead",
+      "The host cannot construct the Layer 2 Ethernet frame, causing delivery to fail",
+      "The host requests a new IP address from the DHCP server",
+      "The host falls back to DNS lookup to resolve the MAC address"
+     ],
+     "correct": 1,
+     "answer": "The host cannot construct the Layer 2 Ethernet frame, causing delivery to fail",
+     "explanation": "To deliver a frame on the local subnet, the sender must encapsulate the IP packet in a Layer 2 frame with the destination MAC address. If ARP fails, framing cannot be completed and transmission fails.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "How does Neighbor Discovery Protocol (NDP) in IPv6 accomplish the primary function that ARP provides in IPv4?",
+     "answer": "NDP uses ICMPv6 Neighbor Solicitation and Neighbor Advertisement messages sent via multicast to resolve IPv6 addresses to link-layer addresses.",
+     "explanation": "IPv6 does not use ARP or broadcast frames; instead, it uses ICMPv6 messages over link-local multicast groups (solicited-node multicast) to discover neighbouring link-layer addresses.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What happens to an outbound IP packet if a host's routing table lacks both an explicit route for the destination and a default gateway?",
+     "choices": [
+      "The packet is broadcast to all hosts on the local link",
+      "The host discards the packet immediately as unreachable",
+      "The host queries DHCP to generate a dynamic route",
+      "The packet is encapsulated in a loopback interface"
+     ],
+     "correct": 1,
+     "answer": "The host discards the packet immediately as unreachable",
+     "explanation": "Without a matching route entry or a default route (gateway of last resort) to forward unknown traffic towards, the operating system drops the packet and reports a routing error.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Why does a host need both a subnet mask and an IP address to determine if a destination requires the default gateway?",
+     "answer": "The subnet mask isolates the network portion of the address, allowing the host to compare its own network ID with the destination IP to check if it is local.",
+     "explanation": "Applying a bitwise AND between the subnet mask and both IP addresses reveals whether both belong to the same subnet. If they differ, the traffic must be directed to the gateway.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which diagnostic symptom indicates an IP configuration failure rather than a remote routing failure when testing connectivity?",
+     "choices": [
+      "The host fails to acquire or assign a valid local IP address and subnet mask",
+      "Traceroute shows packets dropping several hops away at an internet exchange",
+      "The host receives an ICMP Destination Port Unreachable error from the target",
+      "Connections succeed to IP addresses within the subnet but drop past the gateway"
+     ],
+     "correct": 0,
+     "answer": "The host fails to acquire or assign a valid local IP address and subnet mask",
+     "explanation": "Lacking a valid local IP or subnet configuration (or having an APIPA address like 169.254.x.x due to DHCP failure) indicates an initial host configuration failure before routing can even be attempted.",
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "w01-routing-C",
+   "lessonId": "lesson.routing-dns-dhcp",
+   "writtenBy": "glm-5.3-flash",
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "A host wants to send a packet to an IP address on a different subnet. What does it do with the packet, and which device does it hand it to?",
+     "answer": "It cannot deliver directly, so it sends the packet to its default gateway (router), using the gateway's link-layer (MAC) address as the destination while keeping the remote IP as the destination IP.",
+     "explanation": "Routing decisions are per-destination-IP: if no route matches a local subnet, the default route matches and the packet goes to the gateway. ARP/NDP resolves the gateway's MAC address; the IP header still points at the final destination.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What is the primary job of DHCP on a network?",
+     "choices": [
+      "Assigning IP addresses and related configuration (subnet mask, gateway, DNS servers) to hosts",
+      "Translating hostnames into IP addresses for clients",
+      "Routing packets between different networks",
+      "Encrypting traffic between host and gateway"
+     ],
+     "correct": 0,
+     "answer": "Assigning IP addresses and related configuration (subnet mask, gateway, DNS servers) to hosts",
+     "explanation": "DHCP automates host network configuration: address, prefix/netmask, default gateway and resolver addresses. Name resolution is DNS, routing is done by routers, and DHCP does not encrypt anything.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "A lab machine can reach 8.8.8.8 by IP but 'ping example.com' fails with 'name resolution failed'. Name which of configuration, resolution or routing is at fault, and which component?",
+     "answer": "Resolution is at fault: routing and connectivity work (an IP destination is reachable), but DNS — the resolver configuration or DNS service — is failing to turn names into addresses.",
+     "explanation": "Comparing a direct connection to a known IP against a hostname lookup isolates DNS failure from routing failure. If the raw IP works, packets are routed fine; the failure is in name resolution (wrong resolver, dead DNS server, or blocked port 53).",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "In one sentence, what does NAT do?",
+     "choices": [
+      "Rewrites IP addresses (and ports) in packets, typically letting many private addresses share one public address",
+      "Assigns private IP addresses to hosts on a LAN",
+      "Verifies which host is sending a packet before forwarding it",
+      "Resolves public domain names to private IP addresses"
+     ],
+     "correct": 0,
+     "answer": "Rewrites IP addresses (and ports) in packets, typically letting many private addresses share one public address",
+     "explanation": "NAT (e.g. NAPT) translates addresses/ports at a boundary router so multiple internal hosts can share a public IP. It is address rewriting for connectivity and address conservation — not authentication or identity verification.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Why does a host need ARP (or NDP on IPv6) even when it already knows the destination IP address and the correct next hop?",
+     "answer": "IP packets are delivered over the local link using link-layer (MAC) addresses. The host must discover the MAC address matching the next hop's IP address — ARP for IPv4, NDP for IPv6 — before it can frame and send the packet.",
+     "explanation": "Routing picks an IP next hop, but Ethernet/Wi-Fi deliver frames by MAC address. ARP/NDP map the next hop's IP to its MAC, cached briefly so lookups are not needed for every packet.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which symptom most strongly suggests a missing or wrong default gateway rather than a DNS problem?",
+     "choices": [
+      "You can reach hosts on your own subnet by IP, but no remote IP address is reachable at all",
+      "Hostnames fail to resolve but connecting to a known IP works",
+      "A domain name resolves to the wrong IP address",
+      "DHCP keeps handing out the same IP address"
+     ],
+     "correct": 0,
+     "answer": "You can reach hosts on your own subnet by IP, but no remote IP address is reachable at all",
+     "explanation": "Local-subnet traffic needs no gateway; if only local destinations work, routing off-subnet is broken — a missing/wrong default route. DNS failures still allow direct IP connections, and a wrong resolved address is a DNS issue, not routing.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Your DHCP lease includes a DNS server option. What would break, and what would keep working, if that option pointed at a server that was down?",
+     "answer": "Name resolution would break: applications couldn't resolve new hostnames. Everything that doesn't need fresh lookups keeps working — existing connections with cached or pinned IP addresses, and direct connections to numeric IPs.",
+     "explanation": "DHCP only hands out the resolver address; a dead resolver causes resolution failures, not connectivity failures. This is the classic way to separate a resolution failure from a routing or configuration failure.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "A host on 192.168.1.0/24 (mask 255.255.255.0) sends a packet to 192.168.1.50. How is it delivered?",
+     "choices": [
+      "Directly to 192.168.1.50 on the local link, after resolving its MAC address",
+      "Via the default gateway, which forwards it back onto the same subnet",
+      "Via DNS, which returns the destination's MAC address",
+      "It is dropped, because all local traffic must be routed"
+     ],
+     "correct": 0,
+     "answer": "Directly to 192.168.1.50 on the local link, after resolving its MAC address",
+     "explanation": "The destination is inside the host's own subnet, so no gateway is involved: the host ARPs for 192.168.1.50's MAC and sends the frame directly. Gateways are only used when no route matches a directly connected network.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Why does NAT typically keep a translation table of active connections?",
+     "answer": "When several private hosts share one public address, replies from the internet arrive at the same IP; the table records which internal IP:port each translated flow belongs to, so return packets are rewritten and forwarded to the right internal host.",
+     "explanation": "NAT must be stateful: outgoing packets are rewritten to the public address with a chosen source port, and the mapping (internal IP:port ↔ public IP:port, remote endpoint) lets inbound reply packets be matched back to the correct internal host.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Give one realistic symptom that distinguishes a DHCP failure from a DNS failure on an isolated lab machine.",
+     "answer": "DHCP failure: the machine has no usable IPv4 address (e.g. an APIPA 169.254.x.x address or none at all) and can't communicate at all. DNS failure: the machine has a valid address and can reach IP endpoints, but hostnames don't resolve.",
+     "explanation": "DHCP failure breaks configuration, so the host lacks an address/gateway/DNS settings and nothing works. DNS failure leaves configuration and routing intact — only name lookups fail. Checking the assigned address versus testing a numeric-IP connection separates the two.",
+     "label": "slip",
+     "why": "overstated: a DHCP failure \"can't communicate at all\" (a 169.254 address still reaches the local link) — missed by the blind review, caught by a checker"
+    }
+   ]
+  },
+  {
+   "id": "w01-routing-D",
+   "lessonId": "lesson.routing-dns-dhcp",
+   "writtenBy": "gemini-3.5-flash-lite",
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What protocol is used by an IPv4 host to resolve a known destination IP address into a local MAC address on a shared segment?",
+     "answer": "Address Resolution Protocol (ARP)",
+     "explanation": "ARP queries the local network segment by broadcasting an IP address to discover the corresponding Media Access Control (MAC) address needed for layer-2 framing.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which component is primarily responsible for assigning dynamic IP addresses, default gateways, and DNS server settings to hosts on a local network?",
+     "choices": [
+      "DNS server",
+      "DHCP server",
+      "NAT router"
+     ],
+     "correct": 1,
+     "answer": "DHCP server",
+     "explanation": "The Dynamic Host Configuration Protocol (DHCP) automates the allocation of IP addresses, subnet masks, default gateways, and resolver information to network clients.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "When a host needs to communicate with a destination IP address located on a different subnet, where does it forward the outbound packet?",
+     "answer": "Default gateway",
+     "explanation": "Traffic destined for an external subnet cannot be delivered directly via layer-2 broadcast, so it must be sent to the default gateway (router) for layer-3 forwarding.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What is the primary function of the Domain Name System (DNS) in network communications?",
+     "choices": [
+      "Translating human-readable domain names into numerical IP addresses",
+      "Encrypting payload data between client and server",
+      "Mapping physical switch ports to MAC addresses"
+     ],
+     "correct": 0,
+     "answer": "Translating human-readable domain names into numerical IP addresses",
+     "explanation": "DNS operates as a hierarchical distributed database that resolves alphanumeric hostnames into the IP addresses required for network routing.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "If a host can successfully establish a TCP connection to an IP address like '93.184.216.34' but fails to load 'example.com', which core service is most likely misconfigured or failing?",
+     "answer": "DNS (Domain Name System)",
+     "explanation": "Direct IP connectivity proves that routing, gateway, and physical layers are operational. The failure to resolve the hostname points specifically to a DNS lookup issue.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "How does Network Address Translation (NAT) affect inbound unsolicited connections from the public internet towards a private network host?",
+     "choices": [
+      "Inbound connections are automatically allowed if the port is open",
+      "Inbound connections are blocked unless explicit port forwarding or stateful translation rules exist",
+      "Inbound connections bypass NAT entirely using layer-2 bridging"
+     ],
+     "correct": 1,
+     "answer": "Inbound connections are blocked unless explicit port forwarding or stateful translation rules exist",
+     "explanation": "Standard NAT maintains a state table for outbound traffic. Without a pre-existing session or configured port forwarding rule, the router drops unsolicited inbound packets.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What IPv6 protocol performs the neighbour discovery and address resolution functions previously handled by ARP in IPv4?",
+     "answer": "Neighbour Discovery Protocol (NDP)",
+     "explanation": "NDP utilizes ICMPv6 messages to handle address resolution, router discovery, and duplicate address detection on IPv6 networks.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "You observe that a host has a valid local IP address but cannot reach external networks and lacks a default gateway setting. What type of failure is this?",
+     "choices": [
+      "DNS resolution failure",
+      "Routing configuration failure",
+      "DHCP lease renewal failure"
+     ],
+     "correct": 1,
+     "answer": "Routing configuration failure",
+     "explanation": "Without a default gateway, the host does not know where to send packets destined for outside its local subnet, indicating a routing configuration failure.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Does Network Address Translation (NAT) provide cryptographic confidentiality or access control authentication for network traffic?",
+     "answer": "No",
+     "explanation": "NAT only modifies packet header address and port information. It does not encrypt data payload or verify the identity of communicating parties, meaning it is not a security control.",
+     "label": "slip",
+     "why": "NAT \"not a security control\" overstated"
+    },
+    {
+     "kind": "choice",
+     "prompt": "If a DNS resolver returns the correct IP address for a target server, but the application still fails to connect, which failure has most likely occurred?",
+     "choices": [
+      "DNS resolution failure",
+      "Routing or endpoint service failure",
+      "DHCP configuration failure"
+     ],
+     "correct": 1,
+     "answer": "Routing or endpoint service failure",
+     "explanation": "Since DNS resolution succeeded, the failure occurs further down the stack—either in network routing to the IP address or because the target service itself is down.",
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "w01-routing-E",
+   "lessonId": "lesson.routing-dns-dhcp",
+   "writtenBy": "glm-5.3-flash",
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "A host wants to send a packet to an IP address on a different subnet. What does it consult to decide where the next hop is?",
+     "answer": "The routing table — it finds the longest-prefix matching route and uses that route's gateway (next hop) interface.",
+     "explanation": "Hosts don't 'find the destination' themselves; they consult the local routing table. The best-matching (longest prefix) route determines the outgoing interface and, if the destination isn't directly attached, the gateway that should receive the packet.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "A host on 192.168.1.0/24 with no default gateway tries to reach 203.0.113.5. What happens at the routing stage?",
+     "choices": [
+      "The packet is sent to the DNS server instead",
+      "No matching route is found, so the host fails before sending the packet",
+      "ARP is used to resolve 203.0.113.5 directly"
+     ],
+     "correct": 1,
+     "answer": "No matching route is found, so the host fails before sending the packet",
+     "explanation": "Without a route covering the destination (no default gateway), the host has nowhere to send the packet and typically reports 'network unreachable' immediately. The failure is a routing/configuration failure, not a DNS or name resolution problem.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "You can ping 203.0.113.5 by IP but connecting to its hostname fails. Which layer of configuration is broken, and which one is proven working?",
+     "answer": "DNS/name resolution is broken; IP routing and reachability are proven working.",
+     "explanation": "If a direct connection to the known IP succeeds, routing, the gateway and NAT must all be functioning. The failure occurs when translating the name to an address, pointing at the resolver configuration or DNS service rather than at routing or DHCP.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What does DHCP primarily provide to a host on a network?",
+     "choices": [
+      "IP configuration such as address, prefix and gateway",
+      "Translation of private addresses to public ones",
+      "Authoritative name records for the local domain"
+     ],
+     "correct": 0,
+     "answer": "IP configuration such as address, prefix and gateway",
+     "explanation": "DHCP leases hosts an IP address and related configuration — netmask/prefix, default gateway, and usually DNS resolver addresses. NAT is a router function and DNS records come from a name server, neither of which DHCP provides.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Why does a host use ARP (or NDP on IPv6) before sending a frame to its default gateway?",
+     "answer": "To map the gateway's IP address (the next hop) to its link-layer MAC address, so the Ethernet/Wi-Fi frame can be addressed to it.",
+     "explanation": "IP packets are carried inside frames that need a link-layer destination. ARP (IPv4) or NDP (IPv6) resolves 'who has this IP on this link' into a MAC address. Crucially, the MAC resolved is the next hop's (e.g. the gateway's), not the final destination's when that is off-subnet.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "A packet leaves the host and reaches the internet, but replies never come back. Which function on the border is most likely misconfigured, assuming routing out works?",
+     "choices": [
+      "DHCP lease duration",
+      "NAT (e.g. missing or incorrect translation/mapping)",
+      "ARP cache timeout"
+     ],
+     "correct": 1,
+     "answer": "NAT (e.g. missing or incorrect translation/mapping)",
+     "explanation": "If outbound traffic flows but return traffic never arrives, the border device's NAT may not be translating (or tracking) the connection correctly, so replies have no valid return mapping. DHCP only configures hosts locally and ARP operates only on the local link.",
+     "label": "slip",
+     "why": "ambiguous premise: replies never come back → NAT"
+    },
+    {
+     "kind": "written",
+     "prompt": "Classify this failure: DNS lookup of a name returns 'no such host' for an external site, while lookups of internal names still work. Which component is most suspect?",
+     "answer": "The resolver/DNS path for external names — e.g. recursion or forwarding on the resolver (or the upstream link for DNS), not the host's own configuration.",
+     "explanation": "The host's resolver configuration works, since internal names resolve. The failure is specific to resolving external names, suggesting the resolver cannot recurse/forward to the internet, or the DNS path outbound is blocked. Routing to the endpoint by IP would be the next test to separate this from a routing failure.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "When your host sends a packet to a server on the internet, whose MAC address is used as the frame's destination?",
+     "choices": [
+      "The server's own MAC address",
+      "The default gateway's MAC address",
+      "A NAT device's virtual MAC on the far side of the internet"
+     ],
+     "correct": 1,
+     "answer": "The default gateway's MAC address",
+     "explanation": "MAC addresses are only meaningful on the local link. For off-subnet destinations, the frame is delivered to the next hop — the default gateway — so its MAC is used, resolved via ARP/NDP. The server's MAC is never visible to the host and could not be used across routers.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Give one way to distinguish a DHCP/configuration failure from a DNS failure when a host can't reach a website.",
+     "answer": "Check the host's own IP configuration (does it have an address, prefix, gateway, resolver?) versus testing an address directly: if a connection to a known IP works but the hostname fails, configuration is fine and DNS is at fault; no valid address or gateway at all points to DHCP/configuration.",
+     "explanation": "Separating failure types: first confirm the host obtained sensible settings (address, prefix, gateway, resolvers) — a DHCP problem shows up there. Then compare a direct connection by IP with a name lookup: success by IP but failure by name isolates resolution as the broken step.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which statement about NAT is accurate?",
+     "choices": [
+      "NAT lets many private addresses share public address(es) by rewriting addresses/ports on the border",
+      "NAT validates that internal users are authorised to reach the destination",
+      "NAT removes the need for routing tables on internal hosts"
+     ],
+     "correct": 0,
+     "answer": "NAT lets many private addresses share public address(es) by rewriting addresses/ports on the border",
+     "explanation": "NAT (specifically NAPT/PAT in common use) rewrites source IP and port so multiple private hosts can share limited public addresses, keeping state to map replies back. It is an address-translation mechanism, not an authorisation or authentication control, and internal hosts still need routing.",
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "w01-routing-F",
+   "lessonId": "lesson.routing-dns-dhcp",
+   "writtenBy": "gemini-3.5-flash-lite",
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What primary function does a default gateway serve for a host on a local network segment?",
+     "answer": "It forwards packets destined for IP addresses outside the local subnet to other networks.",
+     "explanation": "When a host needs to communicate with an IP address on a different subnet, it cannot deliver the frame directly via local link-layer addressing. Instead, it must send the packet to its default gateway (a router), which handles inter-network routing.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which protocol is primarily responsible for resolving a fully qualified domain name to an IP address?",
+     "choices": [
+      "DHCP",
+      "DNS",
+      "ARP",
+      "NAT"
+     ],
+     "correct": 1,
+     "answer": "DNS",
+     "explanation": "The Domain Name System (DNS) translates human-readable hostnames into numeric IP addresses that network protocols require for communication.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Why might an application fail to connect to a web server via its hostname even when a direct TCP connection to the server's numeric IP address succeeds?",
+     "answer": "A DNS resolution failure is preventing the system from translating the hostname into the required IP address.",
+     "explanation": "If name resolution fails, the host cannot discover the destination IP address from the hostname, even though the underlying network route and target service are fully operational.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What is the main security implication of Network Address Translation (NAT) when used on consumer routers?",
+     "choices": [
+      "It completely encrypts all outgoing payload data",
+      "It hides internal IP addresses from external networks, preventing unsolicited inbound connections",
+      "It replaces the need for firewall rule sets entirely",
+      "It authenticates the identity of external hosts"
+     ],
+     "correct": 1,
+     "answer": "It hides internal IP addresses from external networks, preventing unsolicited inbound connections",
+     "explanation": "NAT rewrites source IP addresses on outgoing packets. By default, stateful NAT drop-tables prevent external hosts from initiating connections to private internal IPs unless explicit port forwarding or state rules are established.",
+     "label": "slip",
+     "why": "presents NAT as a security feature"
+    },
+    {
+     "kind": "written",
+     "prompt": "What is the purpose of the Address Resolution Protocol (ARP) on an IPv4 network?",
+     "answer": "It maps a known IPv4 address to its corresponding physical MAC address on the local link.",
+     "explanation": "To construct an Ethernet frame for transmission on a local area network, a host must know the destination's MAC address. ARP queries the local segment to discover which network interface holds the target IP address.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "If a newly connected host cannot acquire an IP address, subnet mask, and default gateway automatically, which service is most likely misconfigured or offline?",
+     "choices": [
+      "DNS",
+      "DHCP",
+      "NAT",
+      "ARP"
+     ],
+     "correct": 1,
+     "answer": "DHCP",
+     "explanation": "The Dynamic Host Configuration Protocol (DHCP) is responsible for dynamically leasing IP configuration parameters to clients upon connection.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "How does Neighbor Discovery Protocol (NDP) differ from ARP in terms of underlying network protocols?",
+     "answer": "NDP uses ICMPv6 messages over IPv6, whereas ARP operates directly on top of the link-layer for IPv4.",
+     "explanation": "IPv4 relies on ARP (which sits directly above the data link layer), while IPv6 replaces ARP functionality with ICMPv6-based Neighbor Discovery Protocol (NDP).",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "You can ping an external IP address successfully, but web browsing fails by domain name. Where does the failure lie?",
+     "choices": [
+      "Routing",
+      "DNS",
+      "DHCP",
+      "NAT"
+     ],
+     "correct": 1,
+     "answer": "DNS",
+     "explanation": "Successful pings to an IP address prove that routing, NAT, and basic IP connectivity are functional. The failure to resolve names points directly to a DNS configuration or resolution issue.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What failure occurs if a host has a correct IP address and DNS server configured, but lacks a default gateway entry and attempts to reach an external website?",
+     "answer": "The host cannot route packets off the local subnet, resulting in unreachable destination errors.",
+     "explanation": "Without a default gateway, the host does not know where to send packets destined for outside its local subnet, so traffic destined for external IPs is dropped.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which networking component dynamically assigns IP lease times and default gateway details to endpoint devices?",
+     "choices": [
+      "DNS server",
+      "DHCP server",
+      "Default gateway router",
+      "NAT firewall"
+     ],
+     "correct": 1,
+     "answer": "DHCP server",
+     "explanation": "A DHCP server manages an address pool and leases network configuration settings, including gateway and DNS server addresses, to clients for a defined period.",
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "w02-tcp-udp-A",
+   "lessonId": "lesson.tcp-ip-basics",
+   "writtenBy": "glm-5.3-flash",
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "Name the three steps of the TCP three-way handshake in order, and state what each message's purpose is briefly.",
+     "answer": "1) SYN — client proposes initial sequence number. 2) SYN/ACK — server acknowledges and proposes its own initial sequence number. 3) ACK — client acknowledges, connection established.",
+     "explanation": "Both sides must agree on starting sequence numbers before reliable data transfer; SYN and SYN/ACK carry those, and the final ACK confirms both. Only after this is data exchanged.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Why does TCP retransmit segments?",
+     "choices": [
+      "To recover from dropped or corrupted segments that were never acknowledged",
+      "To encrypt the data so it cannot be read in transit",
+      "To restart the connection whenever the network is slow"
+     ],
+     "correct": 0,
+     "answer": "To recover from dropped or corrupted segments that were never acknowledged",
+     "explanation": "TCP is reliable: the receiver acknowledges data, and if an ACK doesn't arrive in time the sender retransmits. This gives reliability but not confidentiality or speed guarantees.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "A remote address and port plus a local address and port together identify what? Name the concept and say why the same local port can appear in many connections.",
+     "answer": "A socket (a connection endpoint identified by the 4-tuple of IPs and ports). The same local port can be reused across connections because each connection is distinguished by the remote address/port too.",
+     "explanation": "On TCP, a connection is uniquely identified by the pair of socket endpoints, so one listening port can serve many simultaneous connections, each with a different remote endpoint.",
+     "label": "slip",
+     "why": "calls the 4-tuple a socket"
+    },
+    {
+     "kind": "choice",
+     "prompt": "A server accepts a TCP connection on port 443. What does the port number tell you, most usefully?",
+     "choices": [
+      "A hypothesis: an HTTPS service is likely listening there",
+      "Proof that the process is a web server",
+      "The encryption algorithm in use"
+     ],
+     "correct": 0,
+     "answer": "A hypothesis: an HTTPS service is likely listening there",
+     "explanation": "Well-known ports map to conventional services, so 443 suggests HTTPS — but any process with privileges could bind it, so it's a reasonable guess to verify, not proof of what is running.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "State one thing TCP guarantees that UDP does not, and one thing UDP avoids as a cost of not providing it.",
+     "answer": "TCP guarantees ordered, reliable delivery (with acknowledgements and retransmission); UDP does not. UDP avoids the latency and overhead of handshakes, acknowledgements and retransmissions.",
+     "explanation": "UDP is a connectionless datagram service: no handshake, no delivery or ordering guarantee. That makes it lighter and faster, which suits applications that can tolerate loss or handle it themselves.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "During a TCP session, a packet is lost on the network. What does the receiving application experience?",
+     "choices": [
+      "Nothing unusual — TCP retransmits and delivers the data in order",
+      "A visible gap in the data stream where the packet was lost",
+      "The connection immediately terminates"
+     ],
+     "correct": 0,
+     "answer": "Nothing unusual — TCP retransmits and delivers the data in order",
+     "explanation": "TCP's reliability means the sender retransmits and the receiver reorders as needed; the application sees a complete, ordered byte stream, possibly with added delay from the retransmission.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What does it mean when a port shows as LISTENING on your own machine?",
+     "answer": "A process is bound to that port and waiting to accept incoming connections; it has not yet established a connection with any peer on that listener.",
+     "explanation": "LISTENING is a server-side state: the socket is open for incoming connection requests. Established connections to that service appear as separate entries in other states.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Draw or list the TCP state transitions a client goes through from opening a connection to closing it cleanly.",
+     "answer": "CLOSED → SYN_SENT (after sending SYN) → ESTABLISHED (after SYN/ACK and sending ACK) → FIN_WAIT_1 (after sending FIN) → FIN_WAIT_2 (after peer's ACK) → TIME_WAIT (after peer's FIN, send ACK) → CLOSED.",
+     "explanation": "This is the standard client-side path. TIME_WAIT lets late packets expire before the 4-tuple is reused. Server side differs (LISTEN, SYN_RCVD, CLOSE_WAIT, LAST_ACK).",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which application is the clearest fit for UDP rather than TCP?",
+     "choices": [
+      "A live voice call that tolerates occasional lost packets",
+      "A file download that must arrive complete and intact",
+      "A web page request over HTTPS"
+     ],
+     "correct": 0,
+     "answer": "A live voice call that tolerates occasional lost packets",
+     "explanation": "Real-time media prefers timeliness over perfect delivery; a retransmitted voice packet arrives too late to be useful. File transfers and web traffic need completeness and order, so they use TCP.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Describe what happens in TCP's four-way connection teardown and why there are two FINs rather than one.",
+     "answer": "Each side independently sends a FIN when it has finished sending, and the other side ACKs it. Two FINs are needed because each direction of the byte stream closes separately.",
+     "explanation": "TCP connections are full duplex: one half may finish while the other still sends. So one side's FIN closes only its direction; the peer sends its own FIN when its data is done.",
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "w02-tcp-udp-B",
+   "lessonId": "lesson.tcp-ip-basics",
+   "writtenBy": "glm-5.3-flash",
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "Name the three steps of the TCP three-way handshake in order, as seen on the wire.",
+     "answer": "SYN, then SYN-ACK, then ACK. The client sends SYN, the server replies SYN-ACK, and the client acknowledges with ACK, completing connection setup.",
+     "explanation": "TCP opens a connection by synchronising sequence numbers in both directions. Each side must agree initial sequence numbers, which is why three messages are needed before data flows.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "A TCP connection is identified on a host by which combination?",
+     "choices": [
+      "Source IP and destination IP only",
+      "A socket: local IP, local port, remote IP, remote port and the protocol",
+      "The destination port alone",
+      "The process ID of the receiving application"
+     ],
+     "correct": 1,
+     "answer": "A socket: local IP, local port, remote IP, remote port and the protocol",
+     "explanation": "Many connections can share one listening port because each is distinguished by the full four-tuple of addresses and ports plus the protocol. The process ID is an OS-level detail, not part of the network identity.",
+     "label": "slip",
+     "why": "calls the 5-tuple a socket"
+    },
+    {
+     "kind": "written",
+     "prompt": "What problem does TCP retransmission solve, and what triggers a retransmission?",
+     "answer": "It recovers lost segments on an unreliable network. A retransmission is triggered when an acknowledgement for a sent segment does not arrive within a timeout (or duplicate ACKs signal loss).",
+     "explanation": "IP can drop packets; TCP adds reliability on top by tracking unacknowledged data and resending it, so the receiving application sees a complete, ordered byte stream.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which property does UDP deliberately give up compared with TCP?",
+     "choices": [
+      "Addressing by IP and port",
+      "Built-in delivery guarantees, ordering and connection state",
+      "The ability to send data at all",
+      "Use of checksums for error detection"
+     ],
+     "correct": 1,
+     "answer": "Built-in delivery guarantees, ordering and connection state",
+     "explanation": "UDP is connectionless: no handshake, no acknowledgements, no retransmission or ordering. It still uses IP addresses and ports and has a checksum, but leaves reliability to the application if it needs it.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "You see a process listening on TCP port 22 on your own machine. What service would you first hypothesise is running, and how would you phrase your confidence?",
+     "answer": "Likely an SSH server, since 22 is the well-known port for SSH. It is a hypothesis, not proof: the port number suggests the intended service, but any process with sufficient privilege could bind that port.",
+     "explanation": "Port numbers are conventions (well-known ports are registered assignments). They strongly suggest a service but the mapping is enforced only by convention and configuration, so confirm by inspecting the process.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "During the handshake, which state does the server's connection sit in after sending SYN-ACK but before receiving the final ACK?",
+     "choices": [
+      "ESTABLISHED",
+      "SYN-SENT",
+      "SYN-RECEIVED",
+      "TIME-WAIT"
+     ],
+     "correct": 2,
+     "answer": "SYN-RECEIVED",
+     "explanation": "The server moves from LISTEN to SYN-RECEIVED when it replies SYN-ACK, and to ESTABLISHED once the client's ACK arrives. SYN-SENT is the client's state while awaiting the SYN-ACK.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Why does one web server on port 443 accept thousands of simultaneous connections, given that only one process can hold that listening port?",
+     "answer": "The listening socket only accepts new connections; each accepted connection gets its own socket with a distinct remote address/port (and possibly local port), so the four-tuples differ and connections don't collide.",
+     "explanation": "Uniqueness comes from the full socket tuple, not the port alone. The listener hands each completed handshake to a per-connection socket, allowing many concurrent sessions on one port.",
+     "label": "slip",
+     "why": "accepted connections \"possibly\" get another local port"
+    },
+    {
+     "kind": "choice",
+     "prompt": "An application sends frequent small status updates where the latest one matters and occasional loss is tolerable. Which transport choice fits best, and why?",
+     "choices": [
+      "TCP, because it guarantees every message arrives",
+      "UDP, because low latency matters more than guaranteed delivery of every old update",
+      "TCP, because it is always faster for small messages",
+      "UDP, because it encrypts the data by default"
+     ],
+     "correct": 1,
+     "answer": "UDP, because low latency matters more than guaranteed delivery of every old update",
+     "explanation": "For real-time-style data, waiting for retransmissions of stale updates is worse than losing them. UDP avoids handshake and retransmission delays. Neither protocol encrypts by default; that is a separate layer.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What is the difference between a port that is 'listening' and an established TCP connection to that port?",
+     "answer": "A listening port is a passive socket awaiting incoming connection attempts (bound to an address and port, no remote endpoint). An established connection is an active socket with a agreed peer, post-handshake, carrying data.",
+     "explanation": "The listener is the doorway; each accepted connection becomes a separate socket in ESTABLISHED state with defined local and remote endpoints. This distinction underlies reading listener and connection listings.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "In a lab you own, you scan one host and see TCP 3389 open but the corresponding UDP 3389 closed. In terms of transport behaviour, why can TCP and UDP probes to the same port number give different results?",
+     "answer": "TCP and UDP are separate protocols with independent port spaces and different probing behaviour: TCP port state is revealed via handshake responses (SYN-ACK, RST), while UDP typically responds only if a service replies; otherwise silence or ICMP unreachable.",
+     "explanation": "A TCP port can be open because a listener completes the handshake, whereas a UDP port only appears open if the application answers the datagram. Port numbers are per-protocol, so state can legitimately differ between TCP and UDP on the same number.",
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "w02-tcp-udp-C",
+   "lessonId": "lesson.tcp-ip-basics",
+   "writtenBy": "gemini-3.8-flash",
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What are the three control flags sent to establish a standard TCP connection, and in what exact sequence?",
+     "answer": "SYN, SYN-ACK, ACK.",
+     "explanation": "A standard TCP three-way handshake begins with the client sending a SYN packet, the server responding with a SYN-ACK packet, and the client acknowledging with an ACK packet to establish the connection.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What constitutes a network socket on a host?",
+     "choices": [
+      "A MAC address combined with an IP address",
+      "An IP address combined with a port number and transport protocol",
+      "A process ID paired with a domain name",
+      "A network interface card's hardware address alone"
+     ],
+     "correct": 1,
+     "answer": "An IP address combined with a port number and transport protocol",
+     "explanation": "A socket uniquely identifies an endpoint for network communication, formed by combining an IP address, a transport-layer port number, and the protocol (such as TCP or UDP).",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "How does TCP ensure reliable delivery when a transmitted segment is lost in transit?",
+     "answer": "The sender uses sequence numbers and retransmits segments when acknowledgements are not received within a timeout period or duplicate ACKs arrive.",
+     "explanation": "TCP tracks transmitted data using sequence numbers. If the receiver does not acknowledge a segment before the sender's retransmission timer expires (or after multiple duplicate ACKs), the sender retransmits the missing segment.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which TCP state indicates that a server process is actively waiting for incoming connection requests?",
+     "choices": [
+      "ESTABLISHED",
+      "TIME_WAIT",
+      "LISTEN",
+      "CLOSE_WAIT"
+     ],
+     "correct": 2,
+     "answer": "LISTEN",
+     "explanation": "The LISTEN state denotes that an application socket has bound to a port and is waiting for incoming SYN packets to begin handshakes with remote clients.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What fundamental trade-off does UDP accept compared to TCP?",
+     "answer": "UDP trades reliability, error recovery, and ordering for lower latency and minimal protocol overhead.",
+     "explanation": "UDP has no handshake, connection state, sequencing, or retransmission mechanisms. This eliminates latency and header overhead at the cost of reliable, ordered delivery.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What is the purpose of the TCP TIME_WAIT state on the host that initiates an active close?",
+     "choices": [
+      "To retransmit payload data that the remote host dropped",
+      "To ensure final ACK delivery and prevent delayed segments from interfering with new connections",
+      "To keep the local port open indefinitely for subsequent requests",
+      "To negotiate new sequence numbers before closing the socket"
+     ],
+     "correct": 1,
+     "answer": "To ensure final ACK delivery and prevent delayed segments from interfering with new connections",
+     "explanation": "TIME_WAIT ensures the remote endpoint has received the final ACK (retransmitting if necessary) and allows lingering packets from the closed connection to expire safely from the network.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Why does an open port found during inspection only provide a hypothesis rather than certainty about the running service?",
+     "answer": "Any application with sufficient privileges can bind to any unused port, regardless of standard or registered port conventions.",
+     "explanation": "Standard port numbers (such as 80 or 443) are conventions defined by IANA, but the operating system allows any software to listen on any unreserved, available port.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "How does a receiver inform the sender that data arrived successfully in TCP?",
+     "choices": [
+      "By returning the sender's payload unchanged",
+      "By sending an acknowledgement containing the next expected sequence number",
+      "By opening a secondary UDP channel to broadcast reception",
+      "By terminating the connection immediately with a FIN flag"
+     ],
+     "correct": 1,
+     "answer": "By sending an acknowledgement containing the next expected sequence number",
+     "explanation": "TCP cumulative acknowledgements indicate the next sequential byte of data that the receiver expects to receive, confirming all prior bytes arrived safely.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What happens if a UDP packet is corrupted or dropped by an intermediate router?",
+     "answer": "The transport layer discards it without requesting a retransmission or notifying the sender.",
+     "explanation": "UDP provides basic checksumming to detect corruption, but it lacks any error recovery mechanism. Dropped or corrupted packets are simply lost unless handled by the application layer.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which flags are typically used to gracefully terminate an established TCP connection in both directions?",
+     "choices": [
+      "RST sent once by each endpoint",
+      "FIN and ACK sent in each direction",
+      "SYN followed by a RST",
+      "URG followed by an ACK"
+     ],
+     "correct": 1,
+     "answer": "FIN and ACK sent in each direction",
+     "explanation": "A clean, graceful TCP close uses FIN packets. Each endpoint sends a FIN when finished sending data and receives an ACK, allowing each half of the full-duplex connection to close independently.",
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "w02-tcp-udp-D",
+   "lessonId": "lesson.tcp-ip-basics",
+   "writtenBy": "gemini-3.8-flash",
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What are the three packets exchanged during a standard TCP three-way handshake, in order?",
+     "answer": "SYN, SYN-ACK, ACK.",
+     "explanation": "The client initiates with a SYN to synchronise sequence numbers, the server replies with a SYN-ACK acknowledging the client and synchronising its own, and the client finishes with an ACK.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "In computer networking, what uniquely defines a network socket?",
+     "choices": [
+      "A MAC address combined with an IP address",
+      "An IP address combined with a port number and a transport protocol",
+      "A process ID combined with an operating system user identifier",
+      "A subnet mask combined with a default gateway"
+     ],
+     "correct": 1,
+     "answer": "An IP address combined with a port number and a transport protocol",
+     "explanation": "A network socket represents an endpoint for communication, determined by the combination of an IP address, a transport protocol (such as TCP or UDP), and a port number.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "How does TCP guarantee reliable data delivery when packets are lost in transit?",
+     "answer": "TCP detects packet loss via acknowledgements and timeouts, triggering retransmission of missing segments.",
+     "explanation": "TCP tracks transmitted data using sequence and acknowledgement numbers. If a segment is not acknowledged before a retransmission timeout or duplicate ACKs occur, the sender retransmits it.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which TCP state indicates that a local process is waiting for incoming connection requests on a bound port?",
+     "choices": [
+      "ESTABLISHED",
+      "LISTEN",
+      "TIME_WAIT",
+      "SYN_SENT"
+     ],
+     "correct": 1,
+     "answer": "LISTEN",
+     "explanation": "The LISTEN state represents a server socket that is open and passively waiting for incoming connection requests from remote clients.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What primary trade-off does UDP accept in exchange for lower overhead and lower latency?",
+     "answer": "UDP discards connection management, ordering, and delivery guarantees (reliability).",
+     "explanation": "Unlike TCP, UDP provides connectionless, best-effort delivery. It does not perform handshakes, acknowledgements, or retransmissions, eliminating latency at the cost of reliability.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "When an analyst identifies a socket listening on TCP port 443, what is the most reasonable initial hypothesis?",
+     "choices": [
+      "It is guaranteed to be an Apache web server serving HTTPS",
+      "It is probably serving HTTPS traffic, though another application could bound to it",
+      "It is an unencrypted SSH administrative listener",
+      "It is a DNS resolver accepting zone transfer requests"
+     ],
+     "correct": 1,
+     "answer": "It is probably serving HTTPS traffic, though another application could bound to it",
+     "explanation": "Port 443 is the standard well-known port for HTTPS, making it the most likely hypothesis. However, port assignments are conventional; any application with suitable privileges can bind to port 443.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What purpose does the TIME_WAIT state serve in a TCP connection closure?",
+     "choices": [
+      "It ensures the remote host has received the final acknowledgement and delays socket reuse to avoid mixing old segments",
+      "It waits for the local application to authenticate before closing the socket",
+      "It forces the sender to retransmit all unacknowledged payload data",
+      "It keeps the connection alive indefinitely until a new SYN arrives"
+     ],
+     "correct": 0,
+     "answer": "It ensures the remote host has received the final acknowledgement and delays socket reuse to avoid mixing old segments",
+     "explanation": "TIME_WAIT ensures the final ACK reaches the remote endpoint (allowing a retransmitted FIN to be handled) and prevents delayed packets from an old connection from corrupting a new one using the same socket pair.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Why can two distinct client applications on the same host connect simultaneously to port 80 on the same remote web server?",
+     "answer": "Each connection uses a distinct ephemeral client port, resulting in a unique four-tuple.",
+     "explanation": "A TCP connection is uniquely identified by a 4-tuple: source IP, source port, destination IP, and destination port. Because the clients use distinct source ports, the server treats them as separate connections.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "How does UDP handle packets that arrive out of order at the destination?",
+     "choices": [
+      "It reassembles them using sequence numbers in the UDP header",
+      "It buffers them until missing packets arrive via retransmission",
+      "It does nothing; sequence ordering is not provided by UDP",
+      "It sends a negative acknowledgement back to the sender"
+     ],
+     "correct": 2,
+     "answer": "It does nothing; sequence ordering is not provided by UDP",
+     "explanation": "UDP has no sequence numbers or ordering mechanism in its header. If ordering is required, the application-layer protocol must implement it itself.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "During TCP connection teardown, what flag is sent by an endpoint to signify it has finished sending data?",
+     "answer": "The FIN (Finish) flag.",
+     "explanation": "The FIN flag signals that the sender has no more data to transmit. Because TCP is full-duplex, each side must send and acknowledge a FIN to close the connection completely.",
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "w03-permissions-A",
+   "lessonId": "lesson.linux-permissions",
+   "writtenBy": "glm-5.3-flash",
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "A file shows permissions -rw-r-----. The owner is alice, the group is editors. Can a user who is not alice and not in the editors group read this file? Why or why not?",
+     "answer": "No. As 'other', they have no permission bits at all (---), so read, write and execute are all denied for them.",
+     "explanation": "Permissions are checked in order: if you are the owner, the owner triplet applies; otherwise if you are in the file's group, the group triplet applies; otherwise the other triplet applies. Here 'other' is ---, so non-owners outside the group get no access.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "On a directory, what does the execute (x) permission allow a user to do?",
+     "choices": [
+      "Run any file inside the directory as a program",
+      "Enter the directory and access files in it, if they know the names",
+      "List the names of the files in the directory",
+      "Change the directory's own permissions"
+     ],
+     "correct": 1,
+     "answer": "Enter the directory and access files in it, if they know the names",
+     "explanation": "On a directory, x (search) means you can traverse into it and reach its inodes. Listing names requires read; executing files depends on the files' own permissions. Without x on a directory, you cannot access files inside even with file-level permission.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "A user has write permission on a file but no write permission on the directory containing it. Can they delete that file? Explain briefly.",
+     "answer": "Yes. Deleting (and creating) entries is controlled by write permission on the directory, not on the file itself; the file's permissions govern reading and modifying its contents.",
+     "explanation": "Directory entries are modified by the directory's permissions: w on a directory lets you add or remove entries, so you can unlink files you cannot even read. This surprises people and is a good illustration of directory vs file permissions.",
+     "label": "wrong",
+     "why": "says a file can be deleted without write permission on its directory (the explanation says the opposite)"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What is a uid?",
+     "choices": [
+      "A user identifier: the numeric value the kernel actually uses to check ownership and permissions",
+      "The username shown in the login prompt",
+      "A unique identifier for each file on the filesystem",
+      "A permission bit that grants temporary administrator rights"
+     ],
+     "correct": 0,
+     "answer": "A user identifier: the numeric value the kernel actually uses to check ownership and permissions",
+     "explanation": "File ownership is stored as numeric uid and gid, not as names. Usernames are a mapping convenience (e.g. via /etc/passwd); the kernel compares numeric ids when enforcing permissions.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "In your disposable lab you created a shared folder for two accounts and set group write permission. One account still cannot create files there. Give the most likely reason relating to group membership.",
+     "answer": "The user is not a member of the folder's group (or wasn't when they logged in — group membership changes typically need a new login session).",
+     "explanation": "Group access only applies if the user's gid or supplementary groups include the folder's group. Membership is evaluated at login, so adding a user to a group usually requires logging out and back in before it takes effect.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What is the main purpose of sudo compared with logging in directly as root?",
+     "choices": [
+      "It encrypts the user's session",
+      "It grants administrator rights for specific commands, with the action logged and attributable to a named user",
+      "It changes the ownership of files to the invoking user",
+      "It bypasses file permission checks entirely"
+     ],
+     "correct": 1,
+     "answer": "It grants administrator rights for specific commands, with the action logged and attributable to a named user",
+     "explanation": "sudo executes a command with elevated privileges under policy, keeping the normal user's identity for accountability and leaving an audit trail. File permissions still apply to the elevated process; it does not encrypt sessions or change ownership.",
+     "label": "slip",
+     "why": "explanation says file permissions still apply to a process elevated to root (root bypasses them) — missed by the blind review, caught by a checker"
+    },
+    {
+     "kind": "written",
+     "prompt": "You want users to collaborate on files in a shared directory, but each new file should belong to the team's group rather than the creator's primary group. How could you achieve this (mechanism, not exact commands)?",
+     "answer": "Set the setgid bit on the directory so new files inherit the directory's group, and add the team members to that group with the group write permission.",
+     "explanation": "The setgid bit on a directory makes new files and subdirectories inherit the directory's group instead of the creator's primary group. Combined with group rwx and members belonging to the group, this gives shared access without 777 or constant chgrp.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "A new file was created and ended up with permissions rw-r--r-- instead of rw-rw-r--. Explain in terms of umask what most likely happened.",
+     "answer": "The umask removed the group write bit. Default file permissions (typically rw-rw-rw-) have the umask bits subtracted; a umask of 002 strips group write, and 022 would give r-- for group and other.",
+     "explanation": "The umask is a set of bits removed from default permissions at creation: files start at rw-rw-rw- and directories at rwxrwxrwx, minus the umask. rw-r--r-- corresponds to a umask of 022, a common default.",
+     "label": "wrong",
+     "why": "\"a umask of 002 strips group write\" (002 removes write for others)"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Applying least privilege to your shared dummy folder, which setup is most appropriate for a directory that a small team must write to but everyone else must not even list?",
+     "choices": [
+      "chmod 777 so nobody is blocked, relying on users' good behaviour",
+      "Give owner and group rwx, and other no permissions at all",
+      "Give everyone read and execute but no write, so files stay safe",
+      "Make the owner root and give other full permissions"
+     ],
+     "correct": 1,
+     "answer": "Give owner and group rwx, and other no permissions at all",
+     "explanation": "Least privilege means granting only the access needed: team members need traverse and write (rwx), everyone else needs nothing (---). 777 grants write to all users, letting anyone delete or replace files; read-only world access is more than required here.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "During your two-account test, one account could read a shared file but got 'permission denied' when trying to modify it. State what this tells you about the permission bits, and which triplet you would inspect to fix it.",
+     "answer": "The read bit is set but the write bit is not set for the triplet that applies to that user (owner, group or other). Check whether the user is owner or in the group, then add write on the relevant triplet for the group if it is shared access.",
+     "explanation": "Read-but-not-write means the w bit is missing in the effective triplet. Which triplet is effective depends on whether the user matches owner first, then group, then other — so fixing it means identifying which triplet governs and granting w there, not blanket chmod.",
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "w03-permissions-B",
+   "lessonId": "lesson.linux-permissions",
+   "writtenBy": "gemini-3.8-flash",
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What does the numeric permission mode 750 represent in standard symbolic notation for owner, group, and others?",
+     "answer": "rwxr-x---",
+     "explanation": "The first digit 7 corresponds to read (4), write (2), and execute (1) for the owner (rwx). The second digit 5 represents read (4) and execute (1) for the group (r-x). The final digit 0 grants no permissions to others (---).",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "In Linux, what distinguishes a user's primary group from their supplementary groups?",
+     "choices": [
+      "The primary group dictates file permissions; supplementary groups only affect network traffic.",
+      "The primary group is automatically assigned as the group owner of newly created files by default.",
+      "A user can belong to multiple primary groups simultaneously, but only one supplementary group.",
+      "Supplementary groups are only evaluated when the root user executes commands."
+     ],
+     "correct": 1,
+     "answer": "The primary group is automatically assigned as the group owner of newly created files by default.",
+     "explanation": "When a user creates a new file or directory, the system sets the file's GID to the user's primary GID by default. Supplementary groups allow access to additional resources shared with other groups.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What specific capability does execute (x) permission grant on a Linux directory?",
+     "answer": "It allows a user to traverse or enter the directory and access files within it (subject to file permissions).",
+     "explanation": "On a directory, read (r) allows listing the contents, write (w) allows creating or deleting files within it, and execute (x) allows the user to traverse (cd into) the directory and access inodes inside it.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "If a system has a default umask of 027, what default permissions will be assigned to a newly created regular file?",
+     "choices": [
+      "640 (rw-r-----)",
+      "750 (rwxr-x---)",
+      "650 (rw-r-x---)",
+      "720 (rwx-w----)"
+     ],
+     "correct": 0,
+     "answer": "640 (rw-r-----)",
+     "explanation": "Standard files are created with base permissions of 666 (no default execute). Applying a umask of 027 masks out group write (2) and all other permissions (7), leaving 640 (rw-r-----).",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "How does the principle of least privilege apply when configuring sudo access for a low-privileged service account?",
+     "choices": [
+      "Grant access to all commands via sudoers to avoid permission denial errors during runtime.",
+      "Grant sudo access only to the specific binaries and arguments strictly required for the service's task.",
+      "Disable passwords entirely for the account across all administrative groups.",
+      "Allow the service account to edit /etc/sudoers directly."
+     ],
+     "correct": 1,
+     "answer": "Grant sudo access only to the specific binaries and arguments strictly required for the service's task.",
+     "explanation": "Least privilege requires granting only the minimum necessary rights. Restricting sudo to explicitly required commands prevents a compromised account from executing arbitrary administrative actions.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "How does the Linux kernel determine which permission set (owner, group, or other) applies to a process attempting to read a file?",
+     "answer": "It checks identity sequentially: if the process UID matches the file UID, owner permissions apply. If not, but GIDs match, group applies. Otherwise, other applies.",
+     "explanation": "The kernel checks permissions in a strict order: owner, then group, then other. Once a match is found, only that specific permission set is evaluated, and subsequent sets are ignored entirely.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What internal identifiers does the Linux kernel actually use to evaluate user and group permissions?",
+     "choices": [
+      "Username strings and group name strings",
+      "Cryptographic hashes of account names",
+      "Numeric User IDs (UID) and Group IDs (GID)",
+      "Process identifiers (PID) and session keys"
+     ],
+     "correct": 2,
+     "answer": "Numeric User IDs (UID) and Group IDs (GID)",
+     "explanation": "Linux manages access control using numeric UIDs and GIDs. Human-readable usernames and group names are mappings maintained by userland tools (such as via /etc/passwd and /etc/group).",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Why does giving write (w) permission on a directory present a security risk, even if individual files inside it are read-only?",
+     "answer": "Directory write permission allows users to delete or rename existing files within that directory, regardless of file ownership.",
+     "explanation": "Directory write permission controls modifications to the directory structure itself, enabling a user to add, rename, or delete directory entries (files), even if the files themselves have read-only permissions.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "In a shared directory, how can you ensure members of a specific project group can edit a shared file while preventing all other standard users from reading it?",
+     "choices": [
+      "Set the file owner to the group, permissions to 770, and add all users to sudoers.",
+      "Set the file group to the project group and assign permissions 660 (rw-rw----).",
+      "Set the umask to 000 and ensure the file is marked executable for everyone.",
+      "Assign the file ownership to root and set permissions to 664 (rw-rw-r--)."
+     ],
+     "correct": 1,
+     "answer": "Set the file group to the project group and assign permissions 660 (rw-rw----).",
+     "explanation": "Assigning group ownership to the project group and setting mode 660 (rw-rw----) allows read and write access to the owner and group members while completely denying access to others, upholding least privilege.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What is the purpose of the umask value in a Linux operating system?",
+     "answer": "It acts as a bitmask that defines which permission bits are automatically stripped from newly created files and directories.",
+     "explanation": "The umask filters out permission bits upon file and directory creation. It subtracts rights from standard base permissions (666 for files, 777 for directories) to enforce baseline system security.",
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "w03-permissions-C",
+   "lessonId": "lesson.linux-permissions",
+   "writtenBy": "gemini-3.5-flash-lite",
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What does a UID represent in a Linux system?",
+     "answer": "A User Identifier, which is a unique numerical integer assigned by the operating system to each user account for internal identification and access control.",
+     "explanation": "Linux kernel manages permissions using numerical IDs rather than usernames. The UID ties processes and files to a specific user identity.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What is the purpose of the GID in Linux access control?",
+     "answer": "A Group Identifier, which is a unique numerical integer used to identify a specific group of users for shared resource access.",
+     "explanation": "Groups allow administrators to manage permissions for multiple users simultaneously. The GID links system resources and files to those collective groups.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What does the 'w' flag represent when applied to a directory in POSIX permissions?",
+     "choices": [
+      "The ability to write new files and delete existing files within that directory",
+      "The ability to read the contents and list files inside the directory",
+      "The ability to execute scripts stored inside the directory"
+     ],
+     "correct": 0,
+     "answer": "The ability to write new files and delete existing files within that directory",
+     "explanation": "For directories, write permission grants control over the directory's contents, meaning users can create, rename, or delete files inside it, regardless of the files' own permissions.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Explain how the principle of least privilege applies to file permissions.",
+     "answer": "Users and processes should be given only the bare minimum permissions necessary to perform their required tasks, and nothing more.",
+     "explanation": "Applying least privilege limits the potential damage caused by compromised accounts or faulty software by restricting unauthorized access to sensitive files.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What is the primary function of the 'sudo' mechanism?",
+     "choices": [
+      "To permanently change the current login shell to the root user",
+      "To execute a command with administrative privileges granted by security policy",
+      "To automatically encrypt sensitive system configuration files at rest"
+     ],
+     "correct": 1,
+     "answer": "To execute a command with administrative privileges granted by security policy",
+     "explanation": "sudo allows a permitted user to execute a command as the superuser or another user, as specified by the security policy configuration, without logging in as root directly.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What is the default function of the umask value in Linux?",
+     "answer": "It determines the bits to be removed (masked out) from the default permission set when a new file or directory is created.",
+     "explanation": "By subtracting the umask value from the maximum possible permissions (666 for files, 777 for directories), it ensures newly created items are not overly permissive.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "If a file has permissions rwxr-x---, who has execute permission?",
+     "choices": [
+      "Only the file owner and members of the file's group",
+      "The owner, the group, and all other system users",
+      "Only the file owner and all other system users"
+     ],
+     "correct": 0,
+     "answer": "Only the file owner and members of the file's group",
+     "explanation": "The permission string is split into three triads: owner (rwx), group (r-x), and others (---). Therefore, both the owner and group members have execute rights, while others have none.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Why is logging into a persistent root shell discouraged for daily operational tasks?",
+     "answer": "It removes safety barriers, increasing the risk of accidental system damage or unmitigated exploitation of a compromised session.",
+     "explanation": "Using least privilege via sudo for specific administrative actions ensures users remain in a restricted context until elevated privileges are explicitly required.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "When calculating umask, if the mask value is set to 027, what are the default permissions for a newly created file?",
+     "choices": [
+      "750",
+      "640",
+      "700"
+     ],
+     "correct": 1,
+     "answer": "640",
+     "explanation": "Default maximum file permissions are 666. Subtracting the umask 027 (in octal) bitwise leaves 640 (rw-r-----), removing write permissions for the group and all permissions for others.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "In a traditional Linux permission model, what are the three distinct classes of users considered for every file?",
+     "answer": "Owner, Group, and Others",
+     "explanation": "Linux file access control divides permissions into three distinct categories: the specific file owner, members of the assigned group, and all other users on the system.",
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "w03-permissions-D",
+   "lessonId": "lesson.linux-permissions",
+   "writtenBy": "gemini-3.5-flash-lite",
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What does the numeric permission value '7' represent in a standard Linux octal permission triplet?",
+     "answer": "Read (4), write (2), and execute (1) permissions combined (4 + 2 + 1 = 7).",
+     "explanation": "Linux octal permissions sum the values assigned to read (4), write (2), and execute (1) for a specific user category (owner, group, or other).",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which user ID (UID) is permanently reserved for the superuser (root) in Linux systems?",
+     "choices": [
+      "0",
+      "1000",
+      "65535"
+     ],
+     "correct": 0,
+     "answer": "0",
+     "explanation": "UID 0 is strictly reserved for the root user, granting unrestricted administrative privileges over the entire operating system.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Explain the security purpose of the Principle of Least Privilege in the context of file permissions.",
+     "answer": "It ensures that users and processes run with only the absolute minimum permissions necessary to perform their intended tasks.",
+     "explanation": "Limiting permissions reduces the potential attack surface and prevents unintended modifications or data exposure if an account is compromised.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What does the umask setting determine when a new file is created?",
+     "choices": [
+      "The exact permissions assigned to the new file",
+      "The permissions that are blocked or stripped from the default permissions",
+      "The maximum file size allowed for the user"
+     ],
+     "correct": 1,
+     "answer": "The permissions that are blocked or stripped from the default permissions",
+     "explanation": "The umask acts as a mask that subtracts permission bits from the default maximum (typically 666 for files and 777 for directories) upon creation.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What is the primary function of the GID (Group ID) associated with a Linux file?",
+     "answer": "It identifies which secondary user group owns the file and determines group-level permission access.",
+     "explanation": "Along with the UID, the GID defines the access control matrix by grouping users together to share access to specific files and directories.",
+     "label": "slip",
+     "why": "GID as a \"secondary user group\""
+    },
+    {
+     "kind": "choice",
+     "prompt": "If a directory has permissions set to rwx------, who can list its contents?",
+     "choices": [
+      "Only the file owner",
+      "Any user in the primary group",
+      "All system users"
+     ],
+     "correct": 0,
+     "answer": "Only the file owner",
+     "explanation": "The rwx permissions apply strictly to the owner position; group and other positions have no permissions (-), blocking access for everyone else.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Why is the 'sudo' mechanism preferred over permanently logging in as the root user for daily tasks?",
+     "answer": "It logs administrative actions and confines high privileges to individual commands rather than an entire persistent session.",
+     "explanation": "Using sudo maintains accountability through audit logs and significantly lowers the risk of executing catastrophic system commands by accident.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What does the 'x' (execute) permission allow when set on a directory rather than a file?",
+     "choices": [
+      "The ability to create new files inside it",
+      "The ability to traverse or enter the directory and access known files",
+      "The ability to delete the directory"
+     ],
+     "correct": 1,
+     "answer": "The ability to traverse or enter the directory and access known files",
+     "explanation": "On directories, execute grants traversal rights (CD permission), whereas read permission alone only allows listing the directory contents.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "How does setting a umask of 027 affect the default permissions of a newly created regular file?",
+     "answer": "It results in default file permissions of 640 (owner has read/write, group has read, others have no permissions).",
+     "explanation": "The default file permission 666 minus the umask 027 results in owner rw-, group r--, and others ---.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "In the standard permission string '-rwxr-x---', what permissions do members of the file's group have?",
+     "choices": [
+      "Read and write",
+      "Read and execute",
+      "Read, write, and execute"
+     ],
+     "correct": 1,
+     "answer": "Read and execute",
+     "explanation": "The second triplet 'r-x' corresponds to the group: read (r), no write (-), and execute (x).",
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "w03-permissions-E",
+   "lessonId": "lesson.linux-permissions",
+   "writtenBy": "gemini-3.8-flash",
+   "cards": [
+    {
+     "kind": "choice",
+     "prompt": "What does a numeric permission mode of 640 represent on a Linux file?",
+     "choices": [
+      "Owner: read/write; Group: read; Others: no access",
+      "Owner: read/write/execute; Group: read; Others: no access",
+      "Owner: read/write; Group: write; Others: execute",
+      "Owner: read; Group: read/write; Others: no access"
+     ],
+     "correct": 0,
+     "answer": "Owner: read/write; Group: read; Others: no access",
+     "explanation": "In octal notation, 6 corresponds to read (4) and write (2). 4 represents read-only. 0 represents no permissions. Therefore, 640 gives the owner read/write, the group read, and others no permissions.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What specific ability does execute permission (x) grant a user on a directory, as opposed to a regular file?",
+     "answer": "It allows the user to enter or traverse the directory and access files within it (metadata and contents), provided file-level permissions also allow it.",
+     "explanation": "On a file, execute permission lets a user run it as a program. On a directory, execute permission is required to enter it (cd) or access inodes within it; without it, you cannot open files inside even if you know their names.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "How does the system distinguish user accounts internally, rather than relying on usernames?",
+     "choices": [
+      "Using a unique User Identifier (UID) integer",
+      "Using a cryptographic hash of the username",
+      "Using the account's primary Group Identifier (GID)",
+      "Using the order of accounts listed in /etc/shadow"
+     ],
+     "correct": 0,
+     "answer": "Using a unique User Identifier (UID) integer",
+     "explanation": "Linux tracks users and ownership internally via a numerical User Identifier (UID). Usernames are human-readable aliases mapped to UIDs (conventionally in /etc/passwd).",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Explain how a umask of 027 affects the default permissions when creating a new regular file with a base mode of 666.",
+     "answer": "It yields permissions of 640 (rw-r-----).",
+     "explanation": "Umask masks out bits from base permissions. Subtracting or unsetting mode 027 (--- -w- rwx) from base 666 (rw- rw- rw-) leaves 6 (rw-) for owner, 4 (r--) for group, and 0 (---) for others.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "If a user belongs to the group owning a file, which permission set determines their access?",
+     "choices": [
+      "The group permissions, unless they are the file owner",
+      "The union of owner, group, and other permissions",
+      "The most permissive set out of group and other",
+      "The other permissions, unless overridden by sudo"
+     ],
+     "correct": 0,
+     "answer": "The group permissions, unless they are the file owner",
+     "explanation": "Linux checks permissions in strict precedence: owner first, then group, then other. If the user matches owner, owner permissions apply. If not, but they match group, group permissions apply exclusively.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "From a security standpoint, why is using sudo preferable to sharing the root user's password among multiple administrators?",
+     "answer": "It provides accountability via individual logging, avoids sharing a single credential, and allows fine-grained command restrictions.",
+     "explanation": "sudo requires administrators to authenticate with their own credentials, creating an audit trail of who executed which privileged command. It also supports granting restricted administrative capabilities rather than full root access.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What permissions does a standard directory have if its mode string is drwxr-x---?",
+     "choices": [
+      "Owner has full access, group can read and traverse, others have no access",
+      "Owner has read and write, group has execute only, others can read",
+      "Owner has full access, group can read only, others have execute access",
+      "Owner has full access, group and others can read and traverse"
+     ],
+     "correct": 0,
+     "answer": "Owner has full access, group can read and traverse, others have no access",
+     "explanation": "The mode breaks down into: directory flag (d), owner (rwx: read, write, execute/traverse), group (r-x: read and execute/traverse), and other (---: no access).",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What is the primary role of a Group Identifier (GID) in Linux access control?",
+     "answer": "It associates multiple users with a shared entity so that file and resource permissions can be granted collectively to that group.",
+     "explanation": "A GID is a numeric identifier representing a user group. Assigning group ownership to files allows any user possessing that GID in their group list to access the resource according to group permissions.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Under the principle of least privilege, what permissions should be given to a shared report that a team must read but only the author may edit?",
+     "choices": [
+      "640 (rw-r-----) with the author as owner and the team as group",
+      "660 (rw-rw----) with the author as owner and the team as group",
+      "755 (rwxr-xr-x) with the author as owner and the team as group",
+      "644 (rw-r--r--) with root as owner and the team as group"
+     ],
+     "correct": 0,
+     "answer": "640 (rw-r-----) with the author as owner and the team as group",
+     "explanation": "Least privilege requires only necessary rights. 640 allows the author to read and write (6), the team to only read (4), and prevents access by anyone outside the team (0). Execute is unnecessary for a document.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Can a user read the names of files inside a directory if they have read (r) permission but lack execute (x) permission on that directory?",
+     "answer": "Yes, they can list file names, but they cannot access file metadata (like size or permissions) or open the files.",
+     "explanation": "Directory read permission allows reading the directory's list of entries (filenames). However, without execute permission, the kernel will not resolve or traverse paths into the directory, preventing stat calls and file opens.",
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "w03-permissions-F",
+   "lessonId": "lesson.linux-permissions",
+   "writtenBy": "glm-5.3-flash",
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "A file shows permissions -rw-r-----. The file's owner is alice and its group is finance. Can bob (a finance member, not the owner) read the file? Can a random user with no finance membership read it?",
+     "answer": "Yes for bob: group permissions r-- allow read to finance members. No for a non-member: 'other' permissions are ---, so no read access.",
+     "explanation": "Permissions are evaluated per file against owner, then group (if the user is in the file's group), then others — only one category applies. Group gives r--, others give none.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which permission set does a user get when they are the file's owner AND also a member of the file's group, and the two sets differ?",
+     "choices": [
+      "The owner permission set only",
+      "The union of owner and group permissions",
+      "The group permission set only",
+      "The stricter (more restrictive) of the two sets"
+     ],
+     "correct": 0,
+     "answer": "The owner permission set only",
+     "explanation": "Exactly one of owner/group/other applies, checked in order: owner match first. Permissions are not combined, so group permissions never add to the owner's set.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "In rwx notation, what does each of the three letters allow for a directory, and how does 'x' on a directory differ from 'x' on a file?",
+     "answer": "r: list/read entries (and read metadata). w: create, delete, rename entries inside. x (file): execute the file. x (directory): enter and traverse it — access files inside and pass through in paths.",
+     "explanation": "On directories x means search/traverse, not execution. Notably, w on a directory without x is ineffective for creating entries, and r without x lists names but not their details.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "A directory has permissions r--r----x. A user who is neither owner nor in the group but knows a file's exact path inside can:",
+     "choices": [
+      "Neither list the directory nor access the file",
+      "List the directory contents but not open the file",
+      "Open the file by exact path if the file's own permissions allow",
+      "Rename files inside the directory"
+     ],
+     "correct": 2,
+     "answer": "Open the file by exact path if the file's own permissions allow",
+     "explanation": "Others have --x: traverse only, no listing (r) and no modifying (w). But traversal lets them open a file by its full path, subject to the file's own permissions.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "In your lab's shared-folder test, one account could list files but not open them, and the other could open files it already knew but not list them. Sketch directory and file permission settings that would produce each outcome.",
+     "answer": "List-but-not-open: directory r (no x or read-only on files), e.g. dr-- or files with no read for that category. Open-but-not-list: directory with x only (e.g. ---x) plus readable files — access by exact path works, ls fails.",
+     "explanation": "Listing needs r on the directory; opening a file needs x on every directory in the path plus appropriate permission on the file itself. Separating r and x on the directory separates the two behaviours.",
+     "label": "slip",
+     "why": "muddled answer (\"no x or read-only on files\")"
+    },
+    {
+     "kind": "written",
+     "prompt": "Your umask is 022. A process creates a new regular file requesting mode 666 and a new directory requesting mode 777. What modes do they actually get, and why does umask remove bits rather than grant them?",
+     "answer": "File: 644 (rw-r--r--). Directory: 755 (rwxr-xr-x). Umask is a mask of permission bits that are stripped from the process's requested default; it can only remove bits, never add them, because it is applied as a bitwise clear.",
+     "explanation": "Files are created without execute by default (666 request); directories need x to be usable (777). Umask 022 removes w for group and others from the requested modes.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "You need to run one administrative command as root in your test lab. Your normal account is not root. Which mechanism is the conventional way to do this, and what does it require?",
+     "choices": [
+      "sudo, requiring your own account's authorisation (and password) under sudo policy",
+      "Logging in as root directly, which is always enabled by default",
+      "chmod u+x on the command to run it with root's permissions",
+      "Setting your uid file to 0 with a text editor"
+     ],
+     "correct": 0,
+     "answer": "sudo, requiring your own account's authorisation (and password) under sudo policy",
+     "explanation": "sudo lets authorised users run commands as another user (typically root) under a configured policy, usually after entering their own password. chmod cannot elevate privileges; uid is a kernel attribute, not a file.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Explain what a uid and a gid are, and why the kernel checks them against numeric ids rather than usernames when enforcing file permissions.",
+     "answer": "A uid is the kernel's numeric identifier for a user; a gid identifies a group. Ownership and permission checks are numeric: the kernel compares the file's stored uid/gid with the process's uid/gids. Usernames are just labels mapped to numbers in /etc/passwd and /etc/group.",
+     "explanation": "Enforcement is on numbers for speed and consistency; the human-readable names are resolved for display only. This also explains why a deleted account's files may show a numeric id instead of a name.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "A shared project folder is owned by the project group with set-group-ID on the directory. What effect does the setgid bit have on files created there?",
+     "choices": [
+      "New files inherit the directory's group instead of the creator's primary group",
+      "New files automatically become executable by everyone",
+      "New files are owned by root regardless of who creates them",
+      "New files can only be deleted by the file's owner"
+     ],
+     "correct": 0,
+     "answer": "New files inherit the directory's group instead of the creator's primary group",
+     "explanation": "Setgid on a directory makes new files and subdirectories take the directory's group, keeping shared content group-owned. Ownership still goes to the creating user, and it grants no execute or delete rights.",
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "w04-passwords-A",
+   "lessonId": "lesson.passwords-mfa",
+   "writtenBy": "gemini-3.8-flash",
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What primary attack does adding a unique, cryptographically random salt to a password hash prevent?",
+     "answer": "It prevents the use of precomputed lookup tables (such as rainbow tables) and stops attackers from detecting identical passwords across different user accounts.",
+     "explanation": "Because salts are unique per user, precomputed tables cannot match multiple accounts at once. An attacker must recompute hashes individually for every distinct salt.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Why are memory-hard password hashing functions preferred over standard general-purpose hash functions?",
+     "choices": [
+      "They allow passwords to be decrypted if an administrator forgets them.",
+      "They dramatically increase the cost of building dedicated ASIC or GPU cracking rigs.",
+      "They compress password hashes into smaller storage footprints in databases.",
+      "They prevent timing attacks by hashing passwords in zero seconds."
+     ],
+     "correct": 1,
+     "answer": "They dramatically increase the cost of building dedicated ASIC or GPU cracking rigs.",
+     "explanation": "Memory-hard algorithms require substantial RAM per thread. This restricts the parallel efficiency of specialised, highly parallel hardware like GPUs and ASICs.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "In the context of password hashing, what does adjusting the 'work factor' achieve?",
+     "answer": "It increases the computational effort (time, memory, or iterations) required to compute a hash, slowing down brute-force and dictionary attacks without heavily impacting legitimate user logins.",
+     "explanation": "A higher work factor ensures the hash function remains sufficiently slow for offline attackers even as computing hardware becomes faster over time.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which authentication method is vulnerable to SIM-swapping and SS7 interception?",
+     "choices": [
+      "FIDO2 WebAuthn security keys",
+      "Time-based One-Time Passwords (TOTP)",
+      "SMS-delivered one-time codes",
+      "Push notifications via authenticator apps"
+     ],
+     "correct": 2,
+     "answer": "SMS-delivered one-time codes",
+     "explanation": "SMS relies on the public mobile telecommunications network, which is vulnerable to protocol-level weaknesses (SS7) and social engineering of mobile operators (SIM swapping).",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Why should a password reset token be single-use and have a short expiry duration?",
+     "answer": "To minimise the window of opportunity for an attacker to intercept, steal, or replay the token if an email account or network link is compromised.",
+     "explanation": "If reset links remain valid indefinitely or across multiple uses, any historical exposure of the token leaves the account permanently vulnerable to takeover.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What is a major security flaw of traditional 'knowledge-based authentication' (KBA) questions used for account recovery?",
+     "choices": [
+      "The answers require specialised hardware tokens that users often lose.",
+      "The answers are often publicly discoverable via open-source intelligence or social media.",
+      "They rely on asymmetric cryptography that expires too quickly.",
+      "They cannot be stored securely using salted hashing algorithms."
+     ],
+     "correct": 1,
+     "answer": "The answers are often publicly discoverable via open-source intelligence or social media.",
+     "explanation": "Answers to questions like mother's maiden name or first pet often leak via public records, data breaches, or social media, rendering them ineffective secrets.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Explain how TOTP (Time-based One-Time Password) generators maintain synchronisation with authentication servers without transmitting their shared secret.",
+     "answer": "Both the device and server derive the temporary code independently by feeding a pre-shared secret and the current unix epoch timestamp interval into an agreed HMAC algorithm.",
+     "explanation": "Since both sides know the secret and the current time step, the code matches without the secret ever needing to be transmitted over the network.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "How does an attacker bypass standard Time-based One-Time Password (TOTP) MFA via an adversary-in-the-middle (AiTM) proxy?",
+     "choices": [
+      "By breaking the underlying HMAC-SHA1 hashing algorithm in real time.",
+      "By stealing the user's hardware device via physical access.",
+      "By relaying the user's valid OTP and capturing the resulting authenticated session cookie.",
+      "By guessing the shared secret through offline brute-force attacks."
+     ],
+     "correct": 2,
+     "answer": "By relaying the user's valid OTP and capturing the resulting authenticated session cookie.",
+     "explanation": "AiTM phishing proxies intercept credentials and the OTP, submit them to the genuine service, and steal the established session cookie, bypassing future MFA prompts.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Why should an application avoid revealing whether an entered email address exists during a password reset request?",
+     "answer": "To prevent user enumeration attacks, where an attacker determines valid usernames or email addresses by observing differing responses or timings.",
+     "explanation": "Returning generic messages (e.g., 'If that account exists, an email has been sent') treats valid and invalid requests identically, stopping attackers from harvesting users.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What property distinguishes FIDO2/WebAuthn hardware keys from standard TOTP codes regarding phishing resistance?",
+     "choices": [
+      "WebAuthn keys cryptographically bind the authentication response to the specific origin URL.",
+      "WebAuthn keys transmit raw private keys securely to the server during authentication.",
+      "WebAuthn keys do not require a registered user account on the server.",
+      "WebAuthn keys use reversible encryption rather than salted hashing."
+     ],
+     "correct": 0,
+     "answer": "WebAuthn keys cryptographically bind the authentication response to the specific origin URL.",
+     "explanation": "Because the browser includes the exact website origin in the cryptographic challenge signature, an AiTM proxy on a spoofed domain cannot use the signed token on the genuine site.",
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "w04-passwords-B",
+   "lessonId": "lesson.passwords-mfa",
+   "writtenBy": "gemini-3.5-flash-lite",
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What specific security problem does adding a unique salt to each password solve before hashing?",
+     "answer": "It prevents the use of precomputed lookup tables such as rainbow tables and ensures identical passwords result in different stored hashes.",
+     "explanation": "Because salts are unique per user, two users with the same password will have completely different hash outputs, neutralising attacks that rely on precomputed hash collisions.",
+     "label": "slip",
+     "why": "\"precomputed hash collisions\""
+    },
+    {
+     "kind": "choice",
+     "prompt": "Why must a password hashing algorithm intentionally have a high work factor or be computationally expensive?",
+     "choices": [
+      "To reduce memory usage on the server",
+      "To slow down brute-force and credential stuffing attacks",
+      "To encrypt the password so it can be decrypted later"
+     ],
+     "correct": 1,
+     "answer": "To slow down brute-force and credential stuffing attacks",
+     "explanation": "A high work factor increases the time and processing power required to compute each hash, making large-scale offline guessing attacks economically unviable for an attacker.",
+     "label": "slip",
+     "why": "work factor slows credential stuffing"
+    },
+    {
+     "kind": "written",
+     "prompt": "Why are fast cryptographic hash functions like SHA-256 unsuitable for direct password storage?",
+     "answer": "They are designed for rapid computation, which allows attackers to brute-force millions of candidate passwords per second using GPUs.",
+     "explanation": "Password storage requires slow hashing functions (like Argon2 or bcrypt) specifically designed to limit the speed of parallelised guessing attempts.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which Multi-Factor Authentication method is inherently most vulnerable to real-time phishing attacks?",
+     "choices": [
+      "FIDO2 hardware security keys",
+      "Time-based One-Time Passwords (TOTP)",
+      "Client-side SSL certificates"
+     ],
+     "correct": 1,
+     "answer": "Time-based One-Time Passwords (TOTP)",
+     "explanation": "TOTP codes can be intercepted in real-time by malicious proxy servers or phishing sites because the code is displayed as text and can be manually retyped by the victim.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "How can a poorly implemented account recovery mechanism completely undermine a strong Multi-Factor Authentication setup?",
+     "answer": "An insecure recovery process (like a weak security question or SMS reset) allows an attacker to bypass MFA entirely and take over the account.",
+     "explanation": "MFA only protects the standard login path. If the recovery workflow relies on weaker verification, an attacker will exploit that backdoor to disable or reset the MFA factors.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What defines a cryptographic salt in the context of secure password storage?",
+     "choices": [
+      "A secret server-side key kept hidden from the database",
+      "A random, unique value appended to a password prior to hashing",
+      "A checksum used to verify data integrity during transmission"
+     ],
+     "correct": 1,
+     "answer": "A random, unique value appended to a password prior to hashing",
+     "explanation": "Salts do not need to be kept secret; they are typically stored alongside the public hash in the database, provided they are unique and randomly generated for every user.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Why should SMS-based verification codes be avoided for high-security MFA implementations?",
+     "answer": "SMS messages are transmitted unencrypted over cellular networks and are vulnerable to interception and SIM-swapping attacks.",
+     "explanation": "Telecom protocols and carrier vulnerabilities allow attackers to intercept or redirect text messages, making SMS a weak second factor compared to cryptographic hardware tokens.",
+     "label": "slip",
+     "why": "SMS \"unencrypted\""
+    },
+    {
+     "kind": "choice",
+     "prompt": "What is the primary security advantage of FIDO2 / WebAuthn hardware tokens over traditional OTP codes?",
+     "choices": [
+      "They are cheaper to manufacture",
+      "They use public-key cryptography tied to the specific origin domain, preventing phishing",
+      "They do not require any user interaction"
+     ],
+     "correct": 1,
+     "answer": "They use public-key cryptography tied to the specific origin domain, preventing phishing",
+     "explanation": "FIDO2 authenticators cryptographically bind the credential to the exact domain being visited, meaning the authentication fails if the user is on a phishing site.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "When designing an account recovery workflow, why is out-of-band identity verification necessary before issuing a reset?",
+     "answer": "To verify that the person requesting access actually owns the account and is not an impostor using social engineering.",
+     "explanation": "Attackers frequently exploit weak recovery steps by impersonating legitimate users; strong out-of-band checks prevent unauthorized password resets.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which factor category does a fingerprint scan fall under in Multi-Factor Authentication?",
+     "choices": [
+      "Something you know",
+      "Something you have",
+      "Something you are"
+     ],
+     "correct": 2,
+     "answer": "Something you are",
+     "explanation": "Biometric characteristics, such as fingerprints, facial features, or iris patterns, represent 'something you are' in the traditional three-factor authentication taxonomy.",
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "w04-passwords-C",
+   "lessonId": "lesson.passwords-mfa",
+   "writtenBy": "gemini-3.8-flash",
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What primary attack does adding a unique, cryptographically random salt to each password before hashing prevent?",
+     "answer": "It prevents the use of precomputed lookup tables, such as rainbow tables, across multiple accounts and ensures identical passwords produce distinct hashes.",
+     "explanation": "A unique salt ensures that two users with the same password have different hashes. This renders precomputed global tables useless and forces an attacker to compute hashes separately for every individual account.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Why are general-purpose cryptographic hashes like SHA-256 unsuitable for storing passwords, even when properly salted?",
+     "choices": [
+      "They are vulnerable to collision attacks that reveal the plaintext.",
+      "They are designed to be fast, making high-speed offline brute-force attacks feasible.",
+      "They produce fixed-length outputs that truncate long passwords.",
+      "They cannot accept an external salt parameter."
+     ],
+     "correct": 1,
+     "answer": "They are designed to be fast, making high-speed offline brute-force attacks feasible.",
+     "explanation": "General-purpose hashing algorithms aim for high throughput. Modern hardware (like GPUs or ASICs) can calculate billions of these hashes per second, making offline dictionary and brute-force attacks trivial once the database is leaked.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "In dedicated password-hashing functions like Argon2, bcrypt, or PBKDF2, what role does a 'work factor' or 'cost parameter' play?",
+     "answer": "It controls the computational resources—such as CPU time, memory, or parallel execution—required to compute a single hash, slowing down attacker guessing.",
+     "explanation": "Work factors allow defenders to tune how expensive a hash computation is. As hardware improves, defenders increase this cost factor so that offline attacks remain prohibitively slow while legitimate single-user logins stay fast enough.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which property makes memory-hard password-hashing functions like Argon2id particularly resistant to custom hardware attacks?",
+     "choices": [
+      "They require large amounts of RAM, raising the cost and complexity of massively parallel ASIC or GPU attacks.",
+      "They store intermediate hashes on disk to prevent RAM exhaustion.",
+      "They dynamically vary the hash length depending on the password complexity.",
+      "They automatically re-hash passwords each time a user logs in."
+     ],
+     "correct": 0,
+     "answer": "They require large amounts of RAM, raising the cost and complexity of massively parallel ASIC or GPU attacks.",
+     "explanation": "ASICs and GPUs achieve extreme throughput by running thousands of lightweight cores concurrently. Memory-hard algorithms demand dedicated memory for each thread, drastically reducing the number of hashes an attacker can compute simultaneously.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Why must a salt be generated using a cryptographically secure pseudo-random number generator rather than predictable values like a username?",
+     "answer": "Predictable salts allow an attacker to precompute targeted hash tables specifically for that user before or during a breach.",
+     "explanation": "If salts are predictable or reused, attackers can construct targeted rainbow tables or reuse precomputed sets across systems. High entropy ensures every salt is globally unique and impossible to anticipate.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What authentication factors must be combined to constitute genuine Multi-Factor Authentication (MFA)?",
+     "choices": [
+      "Two separate passwords stored in different databases.",
+      "A password and a challenge-response secret question.",
+      "At least two distinct categories: something you know, something you have, or something you are.",
+      "A password and an email confirmation sent to the user's registered address."
+     ],
+     "correct": 2,
+     "answer": "At least two distinct categories: something you know, something you have, or something you are.",
+     "explanation": "MFA requires factors from different categories. Combining two items from the same category (such as a password and a security question, both 'something you know') is multi-step authentication, not multi-factor authentication.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Why is SMS-based delivery considered a weaker mechanism for multi-factor authentication codes?",
+     "choices": [
+      "SMS messages are permanently cached on public mobile networks.",
+      "It is susceptible to SIM swapping, SS7 network interception, and social engineering against mobile operators.",
+      "SMS tokens cannot exceed four numerical digits.",
+      "Mobile devices do not support cryptographic hashing."
+     ],
+     "correct": 1,
+     "answer": "It is susceptible to SIM swapping, SS7 network interception, and social engineering against mobile operators.",
+     "explanation": "SMS relies on telecommunications infrastructure that was not built for secure authentication. Attackers can redirect numbers via SIM swapping or exploit SS7 vulnerabilities to intercept one-time codes remotely.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Why are static 'security questions' (e.g., mother's maiden name, first school) generally considered ineffective for account recovery?",
+     "answer": "The answers often have low entropy, can be discovered through public records or social media, and behave essentially as weak, secondary passwords.",
+     "explanation": "Security questions usually rely on facts that are readily accessible via social engineering, data breaches, or public registries, undermining the security of the primary authentication system.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "When implementing an email-based password reset mechanism, how should the reset token be designed and handled?",
+     "choices": [
+      "It should be a short, numeric code valid indefinitely to prevent lockouts.",
+      "It should be cryptographically random, short-lived, single-use, and stored securely as a hash on the server.",
+      "It should contain the user's password hash encrypted with the server's public key.",
+      "It should be derived deterministically from the user's email address and sign-up date."
+     ],
+     "correct": 1,
+     "answer": "It should be cryptographically random, short-lived, single-use, and stored securely as a hash on the server.",
+     "explanation": "Reset tokens act as temporary passwords. They must be unpredictable, expire quickly, become invalid immediately upon use, and be hashed at rest so a database breach does not expose valid reset tokens.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "How does adversary-in-the-middle (AiTM) phishing defeat standard time-based one-time password (TOTP) MFA?",
+     "answer": "The reverse proxy intercepts the user's credentials and TOTP code in real time, immediately relays them to the real service, and steals the resulting session cookie.",
+     "explanation": "Because standard TOTP codes are not cryptographically bound to the specific TLS channel or domain, an attacker proxying the real login page can capture and forward the token within its validity window, establishing a session without needing to crack the secret.",
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "w04-passwords-D",
+   "lessonId": "lesson.passwords-mfa",
+   "writtenBy": "gemini-3.5-flash-lite",
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What primary security problem does adding a unique salt to each password solve before hashing?",
+     "answer": "It defeats precomputed attacks such as rainbow tables and ensures identical passwords result in distinct stored hashes.",
+     "explanation": "A salt is random data concatenated with the password. Because every user gets a unique salt, an attacker cannot use a single precomputed lookup table to crack multiple users' password hashes simultaneously.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Why are fast cryptographic hash functions like SHA-256 unsuitable for direct password storage?",
+     "choices": [
+      "They produce outputs that are too short for secure comparison.",
+      "They compute too quickly, allowing attackers to brute-force guesses rapidly using GPUs.",
+      "They do not accept salts as valid input parameters."
+     ],
+     "correct": 1,
+     "answer": "They compute too quickly, allowing attackers to brute-force guesses rapidly using GPUs.",
+     "explanation": "Fast hashes are designed for speed, which is a flaw for passwords because it enables millions of guesses per second. Password storage requires slow key derivation functions (like Argon2 or bcrypt) to artificially delay cracking attempts.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What security parameter does the 'work factor' (or cost factor) control in secure password hashing algorithms?",
+     "answer": "It controls the computational cost—such as time or memory required—to compute a single hash.",
+     "explanation": "A higher work factor increases the time or memory needed to generate a hash. This slows down legitimate authentication slightly, but severely hampers attackers attempting offline brute-force or dictionary attacks.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which multi-factor authentication method is most vulnerable to real-time interception via adversary-in-the-middle phishing sites?",
+     "choices": [
+      "FIDO2",
+      "WebAuthn cryptographic hardware keys",
+      "Time-based One-Time Passwords (TOTP) entered into a web form",
+      "Push notifications with cryptographically bound number matching"
+     ],
+     "correct": 2,
+     "answer": "Time-based One-Time Passwords (TOTP) entered into a web form",
+     "explanation": "TOTP codes are static for 30 seconds and can be typed into a fake phishing site in real time, allowing the attacker to reuse the code on the genuine service. FIDO2 and number-matching push binds the auth session to the specific origin.",
+     "label": "wrong",
+     "why": "says number-matching push binds the session to the site (it does not; push is phishable through a relay too)"
+    },
+    {
+     "kind": "written",
+     "prompt": "Explain why an insecure account recovery mechanism can completely undermine a strong multi-factor authentication implementation.",
+     "answer": "If an attacker can reset credentials by exploiting a weak recovery flow (like weak security questions), they can bypass MFA entirely and gain full account access.",
+     "explanation": "MFA only protects authentication. If password reset or recovery workflows rely on easily guessed personal data or unverified channels, attackers use recovery as an alternate front door, rendering the primary MFA controls irrelevant.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What is the primary security risk of sending password reset tokens via plain SMS text messages?",
+     "choices": [
+      "SMS messages are always encrypted end-to-end.",
+      "Telecom networks and SS7 protocols are vulnerable to interception and SIM swapping.",
+      "SMS tokens take hours to arrive, breaking usability."
+     ],
+     "correct": 1,
+     "answer": "Telecom networks and SS7 protocols are vulnerable to interception and SIM swapping.",
+     "explanation": "SMS is not a secure out-of-band channel. Attackers can perform SIM swapping attacks or exploit signalling system vulnerabilities to intercept reset tokens, compromising the account recovery process.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Why should password reset links sent via email contain cryptographically secure random tokens that expire quickly?",
+     "answer": "To prevent unauthorized actors from guessing predictable tokens or reusing leaked URLs from historical server logs.",
+     "explanation": "Reset tokens must be unpredictable (high entropy) and short-lived so that even if an adversary intercepts or logs an email link, the window of exploitation is tightly restricted.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "When hashing passwords, what is the purpose of using memory-hard functions like Argon2id?",
+     "choices": [
+      "To compress the password hash into fewer bytes",
+      "To prevent efficient parallel cracking on specialized hardware like ASICs or GPUs",
+      "To eliminate the need for storing individual salts"
+     ],
+     "correct": 1,
+     "answer": "To prevent efficient parallel cracking on specialized hardware like ASICs or GPUs",
+     "explanation": "Memory-hard functions require significant RAM to compute each hash. This drastically limits the number of parallel hashing operations an attacker can run on massive GPU clusters or custom ASICs.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "How does session invalidation relate to a successful password reset or credential change?",
+     "answer": "All existing active sessions and refresh tokens must be revoked immediately upon a password change to prevent continued unauthorized access.",
+     "explanation": "If active sessions persist after a password update, an attacker who previously hijacked a session token retains access despite the legitimate user changing their password.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What characterizes a strong password recovery workflow design?",
+     "choices": [
+      "Using memorable security questions like 'What is your mother's maiden name?'",
+      "Requiring multifactor re-authentication or verified out-of-band checks before issuing a reset",
+      "Displaying the current plain-text password upon successful identity verification"
+     ],
+     "correct": 1,
+     "answer": "Requiring multifactor re-authentication or verified out-of-band checks before issuing a reset",
+     "explanation": "Security questions are easily researched or social-engineered. Secure recovery relies on verified identifiers, out-of-band confirmation, or step-up MFA rather than static knowledge-based questions.",
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "w04-passwords-E",
+   "lessonId": "lesson.passwords-mfa",
+   "writtenBy": "glm-5.3-flash",
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "In one or two sentences, what does a salt add to password hashing, and what attack does it specifically prevent?",
+     "answer": "A salt is a random value unique to each user, hashed together with the password. It ensures identical passwords produce different hashes, preventing precomputed rainbow-table/lookup-table attacks and stopping attackers from cracking many accounts at once with one guess.",
+     "explanation": "Because each hash uses a different random salt, an attacker cannot hash one candidate password once and compare it against a whole database of hashes. Each guess must be tested per-user, and precomputed tables become useless.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Where should the salt be stored?",
+     "choices": [
+      "In a separate secret database the attacker cannot access",
+      "Stored alongside the hash, e.g. in the same user record",
+      "Hard-coded the same for every user in the application config",
+      "Not stored at all; regenerated at every login"
+     ],
+     "correct": 1,
+     "answer": "Stored alongside the hash, e.g. in the same user record",
+     "explanation": "Salts are not secret; their purpose is uniqueness, not confidentiality. They must be available at login to recompute the hash, so storing them next to the hash is normal and safe.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What does 'work factor' mean in a password-hashing function, and why is it set deliberately rather than made as high as possible?",
+     "answer": "The work factor (cost parameter) controls how much computation or memory each hash requires. It is tuned so legitimate logins stay acceptably fast while brute-force guessing becomes expensive; too high a value would overload servers or enable denial of service via the login/reset endpoints.",
+     "explanation": "Work factors trade attacker cost against your own CPU/memory usage. It should be raised over time as hardware improves, balanced against login latency and capacity, since an attacker can also abuse expensive hashing to exhaust resources.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which property makes a memory-hard function (like those in Argon2) attractive for password hashing?",
+     "choices": [
+      "It runs faster than SHA-256 on GPUs",
+      "It resists massively parallel cracking because each guess needs large amounts of memory",
+      "It removes the need for a salt",
+      "It makes hashes shorter and easier to store"
+     ],
+     "correct": 1,
+     "answer": "It resists massively parallel cracking because each guess needs large amounts of memory",
+     "explanation": "Password cracking is cheap when thousands of guesses run in parallel on GPUs or ASICs. Memory-hardness makes each guess require significant RAM, so parallelism becomes limited by memory cost, slowing offline attacks.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Name the three common factors used in MFA and give one example of each.",
+     "answer": "Something you know (password or PIN), something you have (hardware security key, authenticator app/phone), and something you are (fingerprint or face). MFA means using factors from at least two different categories.",
+     "explanation": "Different factor categories fail in different ways, so combining them means a stolen password alone is not enough. Two items from the same category (e.g. password plus a security question) are not true MFA.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which of these is the weakest second factor to rely on?",
+     "choices": [
+      "A FIDO2 hardware security key",
+      "A TOTP code from an authenticator app",
+      "A one-time code sent by SMS",
+      "A push prompt from a mobile app with number matching"
+     ],
+     "correct": 2,
+     "answer": "A one-time code sent by SMS",
+     "explanation": "SMS codes can be intercepted via SIM-swap attacks, ss7 routing weaknesses or compromised handsets, and depend on the phone network. Hardware keys and app-based codes with phishing resistance are significantly stronger.",
+     "label": "slip",
+     "why": "muddled \"app-based codes with phishing resistance\""
+    },
+    {
+     "kind": "written",
+     "prompt": "A user reports being locked out and receives repeated MFA push prompts they did not approve. What is this attack called, and what should the user do?",
+     "answer": "MFA fatigue (push bombing). The attacker already has the password and spams approval requests hoping the user taps 'approve' to stop the noise. The user should deny all prompts, never approve, report it, and change the password immediately.",
+     "explanation": "The prompts themselves prove the password is compromised. Repeated denials can be turned into automatic denial on some systems, but the priority is treating the password as breached and reporting so the account can be secured.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Why are security questions (e.g. 'mother's maiden name') a poor recovery mechanism, even when combined with a password?",
+     "answer": "Answers are often public or researchable from social media and data breaches, rarely change, and have a tiny search space compared to a password. Since they are the same category of factor (something you know), they do not add real MFA strength, so they become the easiest route into the account.",
+     "explanation": "Attackers pick the weakest control. If recovery only needs a guessable answer, cracking the password is pointless. Answers also cannot be rotated after a breach the way a password can.",
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "w04-passwords-F",
+   "lessonId": "lesson.passwords-mfa",
+   "writtenBy": "glm-5.3-flash",
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What is a salt in password hashing, and why must each user's salt be unique?",
+     "answer": "A salt is a random value stored alongside each password and fed into the hash before hashing. Unique salts mean two users with the same password get different hashes, so attackers can't use one precomputed hash across all accounts (and rainbow tables become useless).",
+     "explanation": "Salting forces the attacker to attack each password individually instead of cracking one hash and matching every account with that password. Salts are not secret; they are stored with the hash because their purpose is uniqueness, not confidentiality.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "A database shows two users with identical stored password hashes. What is the most likely cause?",
+     "choices": [
+      "Both users chose the same password and no unique salt was used",
+      "The password hashing library failed silently for one user",
+      "An attacker has already cracked both accounts"
+     ],
+     "correct": 0,
+     "answer": "Both users chose the same password and no unique salt was used",
+     "explanation": "With proper per-user salted hashing, identical passwords still produce different hashes because the salts differ. Identical hashes strongly indicate hashing without unique salts (or no hashing), which enables cross-account cracking with a single precomputed value.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What does 'work factor' mean in a password hashing function, and how should an operator choose it?",
+     "answer": "The work factor controls how much computation (time/memory) each hash costs. Set it so a legitimate login is fast but large-scale offline guessing is expensive, then increase it over time as hardware improves, e.g. rehashing on login.",
+     "explanation": "Deliberately slow, memory-hard hashing (bcrypt, scrypt, Argon2) limits how many guesses an attacker who steals the database can make per second. The right factor balances user-visible login delay against cracking cost and should be revisited as hardware gets faster.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Why is a general-purpose fast hash (like a plain unkeyed fast digest) alone unsuitable for password storage?",
+     "choices": [
+      "It cannot accept passwords longer than a fixed length",
+      "Hardware can compute it extremely fast, enabling billions of guesses per second on stolen hashes",
+      "It does not produce a fixed-size output"
+     ],
+     "correct": 1,
+     "answer": "Hardware can compute it extremely fast, enabling billions of guesses per second on stolen hashes",
+     "explanation": "Fast hashes were designed for speed on large data, so a stolen database lets an attacker try huge numbers of guesses cheaply, especially on GPUs. Password hashing schemes are deliberately slow and often memory-hard to make large-scale guessing impractical. Password length limits and output size are handled differently.",
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "An attacker steals a password database that uses unique salts and a memory-hard function with a solid work factor. Describe what the attacker must still do, and what is protected.",
+     "answer": "The attacker must run an offline dictionary or brute-force attack, computing the slow, memory-hungry hash for every candidate password against each account's salt. Users with strong, unique passwords remain practically protected; weak passwords can still eventually be cracked.",
+     "explanation": "Hashing raises attacker cost but cannot make offline cracking impossible: any guess can be tested offline. It protects strong passwords and prevents instant reuse of one crack across accounts; it cannot rescue weak ones, which is why length/policy and MFA matter too.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which set of stored items is appropriate for one user's password record?",
+     "choices": [
+      "The password encrypted with a server-side key",
+      "A unique random salt plus the output of an established password-hashing function",
+      "The salt and a plain fast hash of the password",
+      "The salt, the hash, and the password in encrypted form for support staff"
+     ],
+     "correct": 1,
+     "answer": "A unique random salt plus the output of an established password-hashing function",
+     "explanation": "Only the salt and slow-hash output are needed to verify a login; storing anything reversible (encrypted passwords, or fast hashes) lets an attacker with the database recover credentials. Established password-hashing libraries handle salting and parameters correctly, so you don't hand-roll it.",
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which recovery design best preserves the security that MFA provides at login?",
+     "choices": [
+      "Account recovery via emailed magic link that also lets the user re-enrol a new MFA device after email verification",
+      "Security questions as the second factor for password reset, since answers are long-lived",
+      "Reset by proving knowledge of the password, then MFA at next login only if still enrolled",
+      "Recovery requires the current MFA code plus a verified out-of-band confirmation before any reset or MFA re-enrolment"
+     ],
+     "correct": 3,
+     "answer": "Recovery requires the current MFA code plus a verified out-of-band confirmation before any reset or MFA re-enrolment",
+     "explanation": "If recovery can be completed with only email access or security answers, those become the effective weakest link and can silently defeat MFA. Requiring the existing MFA factor during recovery, and carefully verifying identity before re-enrolment, keeps the recovery path as strong as the login path.",
+     "label": "slip",
+     "why": "debatable recovery design (needs the current MFA code)"
+    },
+    {
+     "kind": "choice",
+     "prompt": "A one-time recovery code is shown to the user once when MFA is set up. What is the correct handling of these backup codes?",
+     "choices": [
+      "Store them server-side in plaintext so support can read them out on request",
+      "Store them hashed (like passwords), mark each single-use, and never display them again after setup",
+      "Email a copy to the user so they can retrieve them later",
+      "Disable their use once the user enables any authenticator app"
+     ],
+     "correct": 1,
+     "answer": "Store them hashed (like passwords), mark each single-use, and never display them again after setup",
+     "explanation": "Backup codes are bearer secrets equivalent to the MFA factor, so a database leak must not expose them — they need slow hashing. Single-use marking prevents replay, and one-time display prevents them lingering in email or support records. Emailing or plaintext storage recreates the weakness they exist to mitigate.",
+     "label": "sound"
+    }
+   ]
+  }
+ ]
+}

@@ -10,9 +10,10 @@
 //            --estimate                print the most the run could cost (no calls, no keys needed)
 //            --report <results folder> write that run's reports again from its runs.json (no calls)
 //            --rescore <results folder> score that run's saved replies again with the current checks (no calls)
-//            --action adjust|tasks|connect|tutor|cards|cards-check|all  which scenarios when none are named: "Help me adjust
-//                                      today" (the default), "Add what's on my mind", AI help with notes, the tutor, the
-//                                      revision-card writer or checker (ai-eval/cards-scenarios.ts), or every one
+//            --action adjust|tasks|connect|tutor|cards|cards-check|cards-drafts|all  which scenarios when none are named:
+//                                      "Help me adjust today" (the default), "Add what's on my mind", AI help with notes, the
+//                                      tutor, the revision-card writer, the checker on seeded mistakes or on real drafts
+//                                      (ai-eval/cards-scenarios.ts), or every one
 //
 // Keys come only from environment variables (or ai-eval/.env.local, which Git ignores); they're never written out.
 // No call is retried.
@@ -58,7 +59,7 @@ const options = {
   reservedBeforeUsd: reservedBefore,
   stopOnFailure: args.includes('--stop-on-failure'),
   scenarioIds: opt('--scenarios', null) ? opt('--scenarios').split(',') : null,
-  action: ['adjust', 'tasks', 'connect', 'tutor', 'cards', 'cards-check', 'all'].includes(opt('--action', 'adjust')) ? opt('--action', 'adjust') : 'adjust',
+  action: ['adjust', 'tasks', 'connect', 'tutor', 'cards', 'cards-check', 'cards-drafts', 'all'].includes(opt('--action', 'adjust')) ? opt('--action', 'adjust') : 'adjust',
   env, models,
   log: line => { if (!args.includes('--quiet')) console.log('  ' + line); },
   onCall: c => { ledger.calls.push(c); fs.mkdirSync(outRoot, { recursive: true }); fs.writeFileSync(ledgerFile, JSON.stringify(ledger, null, 2)); },

@@ -8,12 +8,17 @@
 // mistakes — a wrong option marked right, a right answer with a wrong explanation, a half-truth stated as fact. A good
 // checker drops all 14 and keeps most of the 26 sound ones. The labels are the evaluation author's judgement, noted
 // with each mistake.
+//
+// Checkers on real drafts ("cards-drafts"): the 215 cards the writers produced in the live run of 13 Oct 2026, each
+// labelled sound, slip (imprecise, overstated or debatable) or wrong by a blind review (cards-drafts.json). Subtler
+// than the seeded mistakes. A slip may be kept or dropped: it counts towards neither tally.
 import checks from '../app/src/study/cybersecurity/checks.json';
+import drafts from './cards-drafts.json';
 import type { DraftCard } from '../supabase/functions/_shared/ai/cards.ts';
 
 export interface CardsScenario { kind: 'cards'; id: string; title: string; tags: string[]; now: string; lessonId: string; count: number; existing: string[] }
-export interface CheckCard extends DraftCard { sound: boolean; why?: string }
-export interface CheckScenario { kind: 'cards-check'; id: string; title: string; tags: string[]; now: string; lessonId: string; cards: CheckCard[] }
+export interface CheckCard extends DraftCard { sound: boolean | null; why?: string } // null: a slip (either verdict is fine)
+export interface CheckScenario { kind: 'cards-check'; id: string; title: string; tags: string[]; now: string; lessonId: string; cards: CheckCard[]; writtenBy?: string }
 
 const T = '2026-10-14T19:00';
 const existingFor = (lessonId: string) => Object.entries(checks as Record<string, { prompt: string; lesson: string }>)
@@ -82,3 +87,11 @@ export const CHECK_SCENARIOS: CheckScenario[] = [
     W('Should a site email you your current password if you forget it?', 'No — it should only let you reset it.', 'If it can send the password, it is stored in a recoverable form rather than hashed.'),
   ]),
 ];
+
+// The real drafts, as the server would pass them to a checker (labels kept apart from what's sent).
+type Labelled = DraftCard & { label: 'sound' | 'slip' | 'wrong'; why?: string };
+export const DRAFT_SCENARIOS: CheckScenario[] = (drafts.sets as { id: string; lessonId: string; writtenBy: string; cards: Labelled[] }[]).map(set => ({
+  kind: 'cards-check', id: `r-${set.id}`, title: `Check real drafts: ${set.id}`, now: T, lessonId: set.lessonId, writtenBy: set.writtenBy,
+  tags: [`written by ${set.writtenBy}`, `${set.cards.filter(c => c.label === 'wrong').length} wrong, ${set.cards.filter(c => c.label === 'slip').length} slips`],
+  cards: set.cards.map(({ label, why, ...card }) => ({ ...card, sound: label === 'sound' ? true : label === 'wrong' ? false : null, ...(why ? { why } : {}) })),
+}));

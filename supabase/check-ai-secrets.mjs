@@ -66,6 +66,12 @@ function checkModel(prefix) {
   const before = problems.length;
   for (const k of Object.keys(want)) if (String(want[k]) !== String(got[k])) problems.push(`${prefix}… ${k}: ${got[k]} here, but ${want[k]} was evaluated (ai-eval/models.json, "${id}").`);
   if (problems.length === before) notes.push(`${prefix === 'AI_' ? 'Same' : 'Learning model: same'} request settings as evaluated ("${id}" in ai-eval/models.json).`);
+  // Its extra fields when it checks revision cards, if set: as evaluated for this model.
+  if (cfg.checkerExtraBody) {
+    const checker = Object.keys(models).find(k => models[k].model === cfg.model && JSON.stringify(models[k].extraBody || {}) === JSON.stringify(cfg.checkerExtraBody));
+    if (checker) notes.push(`${prefix === 'AI_' ? 'As' : 'Learning model, as'} a card checker: extra fields as evaluated ("${checker}" in ai-eval/models.json).`);
+    else problems.push(`${prefix}CHECKER_EXTRA_BODY: ${JSON.stringify(cfg.checkerExtraBody)} wasn't evaluated for ${cfg.model} (see ai-eval/models.json).`);
+  }
   return cfg;
 }
 const cfg = checkModel('AI_');
@@ -77,6 +83,8 @@ if (!('error' in cfg) && !(learn && 'error' in learn)) {
   else {
     if (env.AI_ROUTES && /learn/.test(env.AI_ROUTES) && !learn) problems.push('AI_ROUTES sends a job to the learning model, but no AI_LEARN_PROVIDER is set up (it would go to the main model).');
     notes.push(`the tutor goes to the ${route.primary.slot === 'learn' ? 'learning' : 'main'} model${route.fallback ? `, with the ${route.fallback.slot === 'learn' ? 'learning' : 'main'} one as its fallback` : ', with no fallback'}.`);
+    const cards = routeFor(n => (n.endsWith('API_KEY') ? env[n] || 'not-a-key' : env[n]), { version: 1, action: 'cards', curriculumVersion: '1.0.0', lessonId: 'lesson.lab-isolation', count: 10, existing: [] });
+    if (!('error' in cards)) notes.push(cards.other ? `revision cards: written by the ${cards.primary.slot === 'learn' ? 'learning' : 'main'} model, checked by the ${cards.other.slot === 'learn' ? 'learning' : 'main'} one.` : 'revision cards: off (they need a second model to check them).');
   }
 }
 const total = Number(env.AI_TOTAL_TIMEOUT_MS || 38000);
@@ -85,7 +93,7 @@ if (!(total > 0 && total < APP_TIMEOUT_MS)) problems.push(`AI_TOTAL_TIMEOUT_MS i
 console.log(`Checked ${path.relative(process.cwd(), file) || file}`);
 if (!('error' in cfg)) {
   console.log(`  model      ${cfg.label} (${cfg.model}) at ${cfg.baseUrl || '—'}`);
-  console.log(`  request    ${cfg.maxTokensField || 'max_tokens'}=${cfg.maxOutputTokens}, temperature ${cfg.temperature}, JSON output ${cfg.jsonMode !== false ? 'on' : 'off'}, extra ${JSON.stringify(cfg.extraBody || {})}`);
+  console.log(`  request    ${cfg.maxTokensField || 'max_tokens'}=${cfg.maxOutputTokens}, temperature ${cfg.temperature}, JSON output ${cfg.jsonMode !== false ? 'on' : 'off'}, extra ${JSON.stringify(cfg.extraBody || {})}${cfg.checkerExtraBody ? `, checking cards ${JSON.stringify(cfg.checkerExtraBody)}` : ''}`);
   console.log(`  limits     ${env.AI_DAILY_LIMIT || 20} a day, US$${env.AI_MONTHLY_BUDGET_USD || 1} a month, ${env.AI_MIN_SECONDS_BETWEEN || 5} s apart, ${cfg.timeoutMs} ms time limit`);
   console.log(`  prices     US$${cfg.priceInPerMTok} / US$${cfg.priceOutPerMTok} per million tokens in / out`);
 }

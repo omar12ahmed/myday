@@ -9,26 +9,27 @@ import { SCENARIOS, type Scenario } from './scenarios';
 import { TASK_SCENARIOS, type TasksScenario } from './tasks-scenarios';
 import { CONNECT_SCENARIOS, type ConnectScenario } from './connect-scenarios';
 import { TUTOR_SCENARIOS, type TutorScenario } from './tutor-scenarios';
-import { CARD_SCENARIOS, CHECK_SCENARIOS, type CardsScenario, type CheckScenario } from './cards-scenarios';
+import { CARD_SCENARIOS, CHECK_SCENARIOS, DRAFT_SCENARIOS, type CardsScenario, type CheckScenario } from './cards-scenarios';
 import cyberAnswers from '../app/src/study/cybersecurity/answers.json';
 
 // Every kind of request: "Help me adjust today" (scenarios.ts), "Add what's on my mind" (tasks-scenarios.ts), AI
 // help with notes (connect-scenarios.ts), the Cybersecurity tutor (tutor-scenarios.ts), and AI-written revision cards —
 // the writer ("cards") and the checker ("cards-check"), both in cards-scenarios.ts.
 type AnyScenario = Scenario | TasksScenario | ConnectScenario | TutorScenario | CardsScenario | CheckScenario;
-const ALL_SCENARIOS: AnyScenario[] = [...SCENARIOS, ...TASK_SCENARIOS, ...CONNECT_SCENARIOS, ...TUTOR_SCENARIOS, ...CARD_SCENARIOS, ...CHECK_SCENARIOS];
+const ALL_SCENARIOS: AnyScenario[] = [...SCENARIOS, ...TASK_SCENARIOS, ...CONNECT_SCENARIOS, ...TUTOR_SCENARIOS, ...CARD_SCENARIOS, ...CHECK_SCENARIOS, ...DRAFT_SCENARIOS];
 const isTasksScenario = (sc: AnyScenario): sc is TasksScenario => (sc as TasksScenario).kind === 'tasks';
 const isConnectScenario = (sc: AnyScenario): sc is ConnectScenario => (sc as ConnectScenario).kind === 'connect';
 const isTutorScenario = (sc: AnyScenario): sc is TutorScenario => (sc as TutorScenario).kind === 'tutor';
 const isCardsScenario = (sc: AnyScenario): sc is CardsScenario => (sc as CardsScenario).kind === 'cards';
 const isCheckScenario = (sc: AnyScenario): sc is CheckScenario => (sc as CheckScenario).kind === 'cards-check';
-const actionOf = (sc: AnyScenario) => (isTasksScenario(sc) ? 'tasks' : isConnectScenario(sc) ? 'connect' : isTutorScenario(sc) ? 'tutor' : isCardsScenario(sc) ? 'cards' : isCheckScenario(sc) ? 'cards-check' : 'adjust');
-export type Action = 'adjust' | 'tasks' | 'connect' | 'tutor' | 'cards' | 'cards-check' | 'all';
+const actionOf = (sc: AnyScenario) => (isTasksScenario(sc) ? 'tasks' : isConnectScenario(sc) ? 'connect' : isTutorScenario(sc) ? 'tutor' : isCardsScenario(sc) ? 'cards' : isCheckScenario(sc) ? (sc.writtenBy ? 'cards-drafts' : 'cards-check') : 'adjust');
+export type Action = 'adjust' | 'tasks' | 'connect' | 'tutor' | 'cards' | 'cards-check' | 'cards-drafts' | 'all';
 // The cards job's own reply caps and waits, as the server sets them (ai-plan/handler.ts), whatever models.json says
 // for the other jobs: ten cards don't fit their caps.
 const JOB_LIMITS: Partial<Record<ReturnType<typeof actionOf>, { maxOutputTokens: number; timeoutMs: number }>> = {
   cards: { maxOutputTokens: 6000, timeoutMs: 60000 },
   'cards-check': { maxOutputTokens: 3000, timeoutMs: 60000 },
+  'cards-drafts': { maxOutputTokens: 3000, timeoutMs: 60000 },
 };
 const forJob = (cfg: K.ProviderConfig, sc: AnyScenario): K.ProviderConfig => (cfg.provider === 'mock' ? cfg : { ...cfg, ...(JOB_LIMITS[actionOf(sc)] ?? {}) });
 // The scenarios a run uses: the ones named, or all of one action ("adjust" unless said otherwise).
@@ -103,7 +104,7 @@ export interface RunRecord {
   shown: { rest: boolean; priorities: string[]; explanation: string; missing: string[] } | null;
   // AI-written cards. Writer: how many usable cards came back of how many asked for. Checker: of the seeded set,
   // how many wrong cards it dropped and how many sound ones it kept.
-  cards?: { delivered: number; asked: number } | { caught: number; wrong: number; kept: number; sound: number };
+  cards?: { delivered: number; asked: number } | { caught: number; wrong: number; kept: number; sound: number; slipsDropped?: number; slips?: number };
 }
 export interface Result {
   meta: {
@@ -347,14 +348,15 @@ function prepare(sc: AnyScenario): Prepared {
         rec.outcome = verdicts ? 'ok' : 'invalid';
         rec.violations = !verdicts ? ['not-usable'] : answered ? [] : ['missing-verdicts'];
         rec.violationDetails = !verdicts ? ['not-usable: not the JSON the server accepts'] : answered ? [] : ['missing-verdicts: some cards had no clear verdict (counted as dropped)'];
-        const wrong = sc.cards.map((c, i) => [c, i] as const).filter(([c]) => !c.sound), sound = sc.cards.map((c, i) => [c, i] as const).filter(([c]) => c.sound);
+        const wrong = sc.cards.map((c, i) => [c, i] as const).filter(([c]) => c.sound === false), sound = sc.cards.map((c, i) => [c, i] as const).filter(([c]) => c.sound === true);
         const caught = verdicts ? wrong.filter(([, i]) => verdicts[i].verdict === 'drop').length : 0;
         const kept = verdicts ? sound.filter(([, i]) => verdicts[i].verdict === 'keep').length : 0;
-        rec.expectRaw = verdicts ? { answeredEvery: answered, caughtEveryMistake: caught === wrong.length, keptMostSound: kept >= Math.ceil(sound.length * 0.8) } : { answeredEvery: false };
+        rec.expectRaw = verdicts ? { answeredEvery: answered, ...(wrong.length ? { caughtEveryMistake: caught === wrong.length } : {}), keptMostSound: kept >= Math.ceil(sound.length * 0.8) } : { answeredEvery: false };
         rec.expectFinal = rec.expectRaw;
-        rec.cards = { caught, wrong: wrong.length, kept, sound: sound.length };
+        const slips = sc.cards.map((c, i) => [c, i] as const).filter(([c]) => c.sound === null);
+        rec.cards = { caught, wrong: wrong.length, kept, sound: sound.length, slipsDropped: verdicts ? slips.filter(([, i]) => verdicts[i].verdict === 'drop').length : 0, slips: slips.length };
         rec.priorities = kept;
-        rec.shown = verdicts ? { rest: false, explanation: '', missing: [], priorities: sc.cards.map((c, i) => `${verdicts[i].verdict === 'keep' ? 'KEEP' : 'DROP'}${c.sound ? '' : ' (seeded mistake: ' + c.why + ')'}${(verdicts[i].verdict === 'keep') === c.sound ? '' : ' ← WRONG CALL'} · ${c.prompt} — ${verdicts[i].reason}`) } : null;
+        rec.shown = verdicts ? { rest: false, explanation: '', missing: [], priorities: sc.cards.map((c, i) => `${verdicts[i].verdict === 'keep' ? 'KEEP' : 'DROP'}${c.sound === false ? ` (${sc.writtenBy ? 'wrong' : 'seeded mistake'}: ${c.why})` : c.sound === null ? ` (slip: ${c.why})` : ''}${c.sound === null || (verdicts[i].verdict === 'keep') === c.sound ? '' : ' ← WRONG CALL'} · ${c.prompt} — ${verdicts[i].reason}`) } : null;
         rec.savedSafely = null;
       },
     };
@@ -513,7 +515,7 @@ export async function evaluate(o: Options): Promise<Result> {
           failed.add(id);
           runs.push(rec); o.log(`${id} ${sc.id} #${rep}: unsuccessful — ${rec.error}${rec.errorDetail ? `: ${rec.errorDetail}` : ''}`); continue;
         }
-        rec.originalReply = res.text.slice(0, 4000);
+        rec.originalReply = res.text.slice(0, 16000); // ten revision cards run to about 5,000 characters
         score(rec, res.text);
         if (rec.outcome !== 'ok') failed.add(id);
         runs.push(rec);
@@ -639,11 +641,12 @@ export function summary(r: Result): string {
       lines.push('');
     }
     if (checks.length) {
-      lines.push('Checker, on the labelled set (cards-scenarios.ts): seeded mistakes it dropped, and sound cards it kept. A mistake it keeps could reach a learner; a sound card it drops is only a lost card.', '',
-        '| Model | Calls | Mistakes dropped | Sound cards kept | Calls that caught every mistake |', '|---|---|---|---|---|');
+      lines.push('Checker, on labelled cards (cards-scenarios.ts): mistakes it dropped, and sound cards it kept. A mistake it keeps could reach a learner; a sound card it drops is only a lost card. Slips (real drafts only) may go either way.', '',
+        '| Model | Calls | Mistakes dropped | Sound cards kept | Slips dropped | Calls that caught every mistake |', '|---|---|---|---|---|---|');
       for (const mm of m.models) {
         const rs = checks.filter(x => x.model === mm.id);
-        if (rs.length) lines.push(`| ${mm.label} | ${rs.length} | ${tally(rs, 'caught')}/${tally(rs, 'wrong')} (${pct(tally(rs, 'caught'), tally(rs, 'wrong'))}) | ${tally(rs, 'kept')}/${tally(rs, 'sound')} (${pct(tally(rs, 'kept'), tally(rs, 'sound'))}) | ${rs.filter(x => x.expectRaw.caughtEveryMistake).length}/${rs.length} |`);
+        const withMistakes = rs.filter(x => 'caughtEveryMistake' in x.expectRaw);
+        if (rs.length) lines.push(`| ${mm.label} | ${rs.length} | ${tally(rs, 'caught')}/${tally(rs, 'wrong')} (${pct(tally(rs, 'caught'), tally(rs, 'wrong'))}) | ${tally(rs, 'kept')}/${tally(rs, 'sound')} (${pct(tally(rs, 'kept'), tally(rs, 'sound'))}) | ${tally(rs, 'slips') ? `${tally(rs, 'slipsDropped')}/${tally(rs, 'slips')}` : '—'} | ${withMistakes.filter(x => x.expectRaw.caughtEveryMistake).length}/${withMistakes.length} |`);
       }
       lines.push('');
     }

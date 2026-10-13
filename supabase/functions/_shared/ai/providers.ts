@@ -23,6 +23,7 @@ export interface ProviderConfig {
   maxOutputTokens: number;
   timeoutMs: number;
   extraBody?: Record<string, unknown>; // model-specific request fields (e.g. switching thinking off, or its effort)
+  checkerExtraBody?: Record<string, unknown>; // …used instead when this model checks revision cards (e.g. more reasoning)
   maxTokensField?: 'max_tokens' | 'max_completion_tokens'; // the reply-length field this provider expects (default max_tokens)
   jsonMode?: boolean;            // ask for JSON output (response_format json_object); default true
   priceInPerMTok: number | null;  // US$ per million input tokens (null = not known)
@@ -154,6 +155,9 @@ export function configFromEnv(env: (name: string) => string | undefined, prefix 
   let extraBody: Record<string, unknown> | undefined;
   const extra = get('EXTRA_BODY');
   if (extra) { try { extraBody = JSON.parse(extra); } catch { return { error: `${prefix}EXTRA_BODY is not valid JSON.` }; } }
+  let checkerExtraBody: Record<string, unknown> | undefined;
+  const checkerExtra = get('CHECKER_EXTRA_BODY');
+  if (checkerExtra) { try { checkerExtraBody = JSON.parse(checkerExtra); } catch { return { error: `${prefix}CHECKER_EXTRA_BODY is not valid JSON.` }; } }
   const cfg: ProviderConfig = {
     provider,
     label: get('LABEL') || get('MODEL') || provider,
@@ -164,6 +168,7 @@ export function configFromEnv(env: (name: string) => string | undefined, prefix 
     maxOutputTokens: Math.min(num('MAX_OUTPUT_TOKENS', 600) as number, MAX_OUTPUT_TOKENS_CAP),
     timeoutMs: Math.min(num('TIMEOUT_MS', 25000) as number, 60000),
     extraBody,
+    ...(checkerExtraBody ? { checkerExtraBody } : {}),
     maxTokensField: get('MAX_TOKENS_FIELD') === 'max_completion_tokens' ? 'max_completion_tokens' : 'max_tokens',
     jsonMode: get('JSON_MODE') !== 'false',
     priceInPerMTok: num('PRICE_IN_PER_MTOK', null),
