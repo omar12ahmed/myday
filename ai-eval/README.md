@@ -132,10 +132,26 @@ GEMINI_API_KEY=… ZAI_API_KEY=… node ai-eval/eval.mjs --live --action tutor -
   --models gemini-3.1-flash-lite,gemini-3.5-flash-lite,gemini-3.8-flash,glm-5.3-flash
 ```
 
-The estimate for that (3 repeats): at most US$0.73 with every reply at its cap; real use is usually far less. Not
-yet run live (11 Oct 2026): practice mode only, where the rule-based tutor meets 48 of 49 checks (it doesn't discuss
-passwords) and the deliberately sloppy one 20 of 49 — so the checks catch a link, a mark and a repeated question.
-The first live run also confirms that JSON output (`response_format`) works through Google's compatibility layer.
+The estimate for that (3 repeats): at most US$0.73 with every reply at its cap; real use is usually far less. In
+practice mode the rule-based tutor meets 48 of 49 checks (it doesn't discuss passwords) and the deliberately sloppy
+one 20 of 49 — so the checks catch a link, a mark and a repeated question.
+
+Live run, 13 Oct 2026 (`results/2026-10-13-19-14-41-live`), 11 questions × 3, all four models, paid tier, US$0.088
+estimated from reported usage: every one of the 132 replies usable, JSON output through Google's compatibility
+layer confirmed. Checks met / typical (p50) and slowest-in-twenty (p95) time / words / cost per question:
+
+| Model | Checks | p50 / p95 | Words | Per question |
+|---|---|---|---|---|
+| Gemini 3.1 Flash-Lite | 147/147 | 1.9 s / 2.8 s | 140 | US$0.00045 |
+| Gemini 3.5 Flash-Lite | 147/147 | 1.3 s / 1.8 s | 100 | US$0.00052 |
+| Gemini 3.8 Flash | 144/147 | 5.5 s / 10.1 s | 219 | US$0.0015 |
+| GLM-5.3-Flash | 147/147 | 6.7 s / 9.5 s | 168 | US$0.00019 |
+
+Gemini 3.8 Flash repeated the learner's password back once (of 3) in an example, and gave made-up addresses twice.
+Read by a person: all refused the neighbour's wifi and gave no answer key; Gemini 3.1 Flash-Lite once invented a
+domain name (not caught by `noLinks`, which looks for http/www). Recommended for the tutor: **Gemini 3.5 Flash-Lite**
+(every check, fastest, shortest), with GLM-5.3-Flash as its fallback. (A first attempt on 12 Oct stopped after 34
+calls when this Mac's connection dropped: `results/2026-10-12-09-49-05-live`.)
 
 Which model then answers which job is configuration on the server (`AI_ROUTES`, e.g. `{"tutor": "learn"}`, with the
 learning model's `AI_LEARN_…` settings; see `../supabase/ai-secrets.example.env` and `routeFor` in

@@ -258,7 +258,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   const learnOn = template.replace(/^AI_API_KEY=$/m, `AI_API_KEY=${FAKE}`).replace(/^# (AI_LEARN_|AI_ROUTES=)/gm, '$1').replace(/^AI_LEARN_API_KEY=$/m, 'AI_LEARN_API_KEY=yy-another-made-up-key');
   r = checkFile('learn.env', learnOn);
   check('…with the learning model switched on: ready, both models as evaluated, the tutor routed to Gemini with GLM as its fallback, neither key printed',
-    r.code === 0 && /Learning model: same request settings as evaluated \("gemini-3\.1-flash-lite"/.test(r.out) && /the tutor goes to the learning model, with the main one as its fallback/.test(r.out) && !r.out.includes(FAKE) && !r.out.includes('yy-another'), r.out);
+    r.code === 0 && /Learning model: same request settings as evaluated \("gemini-3\.5-flash-lite"/.test(r.out) && /the tutor goes to the learning model, with the main one as its fallback/.test(r.out) && !r.out.includes(FAKE) && !r.out.includes('yy-another'), r.out);
   r = checkFile('learn-nokey.env', learnOn.replace(/^AI_LEARN_API_KEY=.*$/m, 'AI_LEARN_API_KEY='));
   check('…the learning model without its key: not ready', r.code === 1 && /AI_LEARN_API_KEY is empty/.test(r.out), r.out);
   r = checkFile('routes-bad.env', learnOn.replace(/^AI_ROUTES=.*$/m, 'AI_ROUTES={"tutr": "learn"}'));
