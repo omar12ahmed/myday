@@ -751,3 +751,8 @@ returns up to 8 small tasks; you tick the ones to add.
 26. **Release 1.17.2:** groundwork, nothing new to see. The Cybersecurity section keeps fields a newer MyDay adds (so
     going back from 1.18.0 is safe), and the AI server's code matches what's deployed (`ai-plan` version 6: one model
     per kind of job, Gemini set up but switched off, and the tutor's instructions v2). No saved-data or database change.
+27. **Release 1.18.0:** Study → Cybersecurity's own knowledge checks in revision (no AI): 292 questions with the course's
+    reference answers, brought back only when you choose, in the same rounds as everything else or alone with "Revise
+    Cybersecurity". Saved as `cybersecurity.cards`, answers in `study.reviews`. Database migration
+    `20261014120000_sync_cyber_cards.sql` was applied before publishing. Going back to 1.17.2 is safe: it keeps
+    `cybersecurity.cards` as they are.
