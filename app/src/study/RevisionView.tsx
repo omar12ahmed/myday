@@ -4,6 +4,7 @@ import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { TextArea } from '../components/Field';
 import { cardOf, cardRef } from '../data/arabic/cards';
+import { cyberCardOf, lessonOfCheck } from '../data/cybersecurity/cards';
 import { shortDate, todayKey } from '../data/dates';
 import { update } from '../data/storage';
 import { obsidianUrl, OUTCOME, RATING, ROUND_SIZE, safeUrl, SUPPORT } from '../data/study/common';
@@ -14,8 +15,15 @@ import { startRevision } from './actions';
 import { BackLink, Choice, Choices, Eyebrow, InlineLink, LinkButton, Note, NoteLink, Summary, TextLink } from './parts';
 import { changeRound, nextQuestion, setTyped, useRound, type Round } from './round';
 
-// Arabic cards load their words and questions only when a round reaches one.
+// A course's cards load their questions only when a round reaches one.
 const ArabicQuestion = lazy(() => import('./arabic/ArabicQuestion'));
+const CyberQuestion = lazy(() => import('./cybersecurity/CyberQuestion'));
+// Where a round of one course's cards belongs.
+const SCOPES: Record<Scope, { to: string; label: string; title: string }> = {
+  all: { to: 'study', label: 'Study', title: 'Revision' },
+  arabic: { to: 'study/arabic', label: 'Arabic', title: 'Arabic revision' },
+  cybersecurity: { to: 'study/cybersecurity', label: 'Cybersecurity', title: 'Cybersecurity revision' },
+};
 
 // What a revision question shows. Your concepts and Arabic cards both become one of these, so they're asked,
 // answered and scheduled the same way.
@@ -50,15 +58,17 @@ function conceptAsked(st: StudyData, c: Concept): Asked {
   };
 }
 
-// In your history and the round's summary: a concept goes to its page; an Arabic card to where you met it.
+// In your history and the round's summary: a concept goes to its page; a course's card to where you met it.
 function described(data: MyDayData, id: string): { title: string; href: string; concept: boolean } | null {
   const c = data.study.concepts.find(x => x.id === id);
   if (c) return { title: c.title, href: `#study/concept/${c.id}`, concept: true };
+  const last = data.study.reviews.filter(r => r.conceptId === id).pop();
+  if (cyberCardOf(data, id)) return { title: last?.title || 'Cybersecurity', href: '#study/cybersecurity/' + lessonOfCheck(id), concept: false };
   if (!cardOf(data, id)) return null;
-  const ref = cardRef(id), last = data.study.reviews.filter(r => r.conceptId === id).pop();
+  const ref = cardRef(id);
   return { title: last?.title || 'Arabic', href: ref.kind === 'word' ? '#study/arabic/vocabulary' : '#study/arabic/' + ref.lessonId, concept: false };
 }
-const inRevision = (d: MyDayData, id: string) => d.study.concepts.some(c => c.id === id) || !!cardOf(d, id);
+const inRevision = (d: MyDayData, id: string) => d.study.concepts.some(c => c.id === id) || !!cardOf(d, id) || !!cyberCardOf(d, id);
 const opening = <Card><p role="status" className="m-0">Opening…</p></Card>;
 
 // Revision: one question at a time. The answer, explanation and hint aren't on the page until you ask
@@ -74,6 +84,8 @@ export function RevisionView({ data }: { data: MyDayData }) {
   if (!r || at < 0) return <RoundOver data={data} r={r} />;
   const id = r.ids[at], c = st.concepts.find(x => x.id === id), key = id + ':' + at;
   if (c) return <Question key={key} data={data} r={r} at={at} q={conceptAsked(st, c)} />;
+  const cyber = cyberCardOf(data, id);
+  if (cyber) return <Suspense fallback={opening}><CyberQuestion key={key} data={data} r={r} at={at} card={cyber} /></Suspense>;
   return <Suspense fallback={opening}><ArabicQuestion key={key} data={data} r={r} at={at} card={cardOf(data, id)!} /></Suspense>;
 }
 
@@ -89,8 +101,8 @@ function RoundOver({ data, r }: { data: MyDayData; r: Round | null }) {
   return (
     <>
       <Card>
-        {scope === 'arabic' ? <BackLink to="study/arabic" label="Arabic" /> : <BackLink to="study" label="Study" />}
-        <h2>{scope === 'arabic' ? 'Arabic revision' : 'Revision'}</h2>
+        <BackLink to={SCOPES[scope].to} label={SCOPES[scope].label} />
+        <h2>{SCOPES[scope].title}</h2>
         <Note className="m-0">Retrieving what you've learned, one question at a time. Rounds of {ROUND_SIZE} — stop whenever you like; nothing piles up.</Note>
       </Card>
       {done && (
@@ -123,7 +135,7 @@ function RoundOver({ data, r }: { data: MyDayData; r: Round | null }) {
           <Summary>How revision is scheduled</Summary>
           <p className="text-[15px]">First review: <strong>Again</strong> → tomorrow · <strong>Hard</strong> → in 2 days · <strong>Good</strong> → in 4 days.</p>
           <p className="text-[15px]">After that: Again → tomorrow (the gap starts over) · Hard → the last gap × 1.2 · Good → the last gap × 2.5. Gaps always grow by at least a day and stop at 180 days.</p>
-          <Note className="m-0">Dates are saved on this device. Concepts never revised come after any that are due. Arabic words and checks you add first come back the next day.</Note>
+          <Note className="m-0">Dates are saved on this device. Concepts never revised come after any that are due. Arabic words and checks, and Cybersecurity checks, that you add first come back the next day.</Note>
         </details>
       </Card>
     </>
@@ -153,7 +165,7 @@ export function Question({ data, r, q, at }: { data: MyDayData; r: Round; q: Ask
     <Card tone="accent" className="next-card st-q" aria-labelledby="q-h">
       <div className="card-head flex justify-between items-center gap-3">
         <Eyebrow>Question {at + 1} of {r.ids.length}</Eyebrow>
-        <TextLink href={r.scope === 'arabic' ? '#study/arabic' : '#study'}>Stop for now</TextLink>
+        <TextLink href={'#' + SCOPES[r.scope].to}>Stop for now</TextLink>
       </div>
       <p className="st-path text-[13px] text-fg-3 m-0">{q.path ?? q.title}</p>
       <h2 id="q-h" className="st-prompt text-[21px] leading-snug mt-1.5 mb-3.5 whitespace-pre-wrap">{q.prompt}</h2>

@@ -17,6 +17,7 @@ import { attemptsFor, importPath, nextLesson, prerequisiteGaps } from './learnin
 import { ActivityView } from './Notebook';
 import { TutorCard } from './TutorCard';
 import { PracticeIndex, PracticeView, RelatedPractice } from './Practice';
+import { CheckRevision, CyberRevisionGlance } from './CheckRevision';
 
 export function ResourceLinks({ ids }: { ids: string[] }) {
   return <div className="grid gap-3">{ids.map(id => { const r = resources.get(id); return r && <div key={id}>
@@ -63,6 +64,7 @@ function MapView({ data }: { data: MyDayData }) {
         <Eyebrow>Your next small step</Eyebrow><h3>{next.lesson.title}</h3><p className="text-sm text-fg-2">{next.reason}.</p>
         <div className="grid sm:grid-cols-2 gap-3"><LinkButton to={'study/cybersecurity/' + next.lesson.id} primary>Open lesson</LinkButton><LinkButton to="study/cybersecurity/practice">Explore practice activities</LinkButton></div>
       </div>
+      <CyberRevisionGlance data={data} />
     </Card>
     <Card>
       <Field label="Your learning path" htmlFor="cyberPath"><Select id="cyberPath" value={path.id} onChange={e => update(d => { d.cybersecurity.pathId = e.target.value; })}>
@@ -123,6 +125,7 @@ function LessonView({ data, lesson: l }: { data: MyDayData; lesson: Lesson }) {
     <Card><h3>Choose a manageable session</h3>{l.variants.map(v => <details key={v.mode}><summary className="min-h-11 py-2 cursor-pointer capitalize text-primary">{v.mode} · {v.minutes} min</summary><p>{v.activity}</p><p className="text-sm text-fg-2">{v.evidence_scope}</p></details>)}</Card>
     <Card><h3>Learn by doing</h3><div className="grid gap-3">{[l.practical_task_id, l.knowledge_check_id, l.mini_challenge_id].map(id => <LinkButton key={id} to={'study/cybersecurity/' + id}>{activities.get(id)!.title}</LinkButton>)}</div>
       <h3>Completion criteria</h3><Lines items={l.completion_criteria} /><p className="text-sm text-fg-2">A short session is a checkpoint. Marking a roadmap task complete records your choice, not verified mastery.</p>
+      <CheckRevision data={data} ids={activities.get(l.knowledge_check_id)?.questions.map(q => q.id) ?? []} />
     </Card>
     <RelatedPractice data={data} ids={[l.id]} />
     <TutorCard key={l.id} lesson={l} />

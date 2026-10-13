@@ -1,5 +1,6 @@
-import { isObj } from '../util';
-import { emptyCyber, type CyberAttempt, type CyberData } from './types';
+import { isDateKey } from '../dates';
+import { intIn, isObj } from '../util';
+import { emptyCyber, type CyberAttempt, type CyberCard, type CyberData } from './types';
 
 const str = (v: unknown, max: number) => typeof v === 'string' ? v.slice(0, max) : '';
 const date = (v: unknown): v is string => typeof v === 'string' && /^\d{4}-\d\d-\d\dT/.test(v) && Number.isFinite(Date.parse(v));
@@ -21,6 +22,18 @@ export function cleanAttempt(raw: unknown): CyberAttempt | null {
     answerRevealed: raw.answerRevealed === true, assessor: 'self', verified: false,
   };
 }
+// A revision card: a knowledge-check question by the course's own id (≤ 64 characters, so it fits a sync record's id),
+// with its schedule read the way a concept's is.
+const CARD = /^assessment\.[a-z0-9-]{1,48}-check\.q\d{1,2}$/;
+export function cleanCyberCard(raw: unknown): CyberCard | null {
+  if (!isObj(raw) || typeof raw.id !== 'string' || raw.id.length > 64 || !CARD.test(raw.id) || !isDateKey(raw.addedOn)) return null;
+  const rv = isObj(raw.review) ? raw.review : {};
+  return {
+    id: raw.id, addedOn: raw.addedOn,
+    review: { reps: intIn(rv.reps, 0, 100000, 0), interval: intIn(rv.interval, 0, 365, 0), lapses: intIn(rv.lapses, 0, 100000, 0), due: isDateKey(rv.due) ? rv.due : null },
+  };
+}
+
 // Fields a newer MyDay adds to the section are kept as they are, so going back a version never loses them.
 export function normalizeCyber(raw: unknown, report = { dropped: 0 }): CyberData {
   if (raw === undefined) return emptyCyber();
@@ -33,6 +46,13 @@ export function normalizeCyber(raw: unknown, report = { dropped: 0 }): CyberData
     const a = cleanAttempt(rawAttempt);
     if (!a || ids.has(a.id)) { report.dropped++; continue; }
     ids.add(a.id); out.attempts.push(a);
+  }
+  if (raw.cards !== undefined && !Array.isArray(raw.cards)) report.dropped++;
+  const cardIds = new Set<string>();
+  for (const r of Array.isArray(raw.cards) ? raw.cards.slice(0, 2000) : []) {
+    const c = cleanCyberCard(r);
+    if (!c || cardIds.has(c.id)) { report.dropped++; continue; }
+    cardIds.add(c.id); out.cards.push(c);
   }
   return out;
 }

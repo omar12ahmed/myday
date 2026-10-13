@@ -55,6 +55,17 @@ Arabic cards load their words, checks (`checks.json`, from `scripts/prepare-arab
 round reaches one (`src/study/arabic/ArabicQuestion.tsx`). Synced as `arabic_card`, one per card — migration
 `../supabase/migrations/20261012120000_sync_arabic_cards.sql`, applied at release with my go-ahead.
 
+Cybersecurity in revision (the course's own checks, no AI): every lesson's knowledge-check questions (146 lessons,
+292 questions, each with the course's reference answer) can come back in Study's revision — from the lesson page or
+the knowledge check itself ("Bring these checks back in revision"), never by themselves, first back the next day, then
+by Study's rules, in the same rounds as everything else, or alone with "Revise Cybersecurity" on the map. You compare
+your answer with the reference yourself. Saved as `cybersecurity.cards` (the question's id, the day added, the
+schedule: `src/data/cybersecurity/cards.ts`); answers in `study.reviews`. The questions for revision are a small file
+(`src/study/cybersecurity/checks.json`, from `scripts/prepare-curriculum.mjs`), loaded only when a round reaches one
+(`src/study/cybersecurity/CyberQuestion.tsx`). Synced as `cyber_card` — migration
+`../supabase/migrations/20261014120000_sync_cyber_cards.sql`, applied at release with my go-ahead. The section keeps
+fields a newer MyDay adds, so going back a version never loses them.
+
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
 

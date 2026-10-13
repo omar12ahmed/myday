@@ -114,8 +114,8 @@ without sync settings, even if `app/.env.production` has them. The stand-in can 
 `supabase/README.md`, step 5). It isn't part of `run.sh`, because it needs your project and test accounts. With
 `--projects-only` it checks just projects (1.12.0's migration), on test accounts that already have records from an
 earlier run — only if both are disposable `@example.com` addresses, and it touches only a new project record of its own.
-`--cyber-only`, `--arabic-only` and `--arabic-cards-only` do the same for the Cybersecurity, Arabic session and Arabic
-revision card kinds.
+`--cyber-only`, `--arabic-only`, `--arabic-cards-only` and `--cyber-cards-only` do the same for the Cybersecurity,
+Arabic session, Arabic revision card and Cybersecurity revision card kinds.
 
 `fixtures/` holds two earlier versions of MyDay (as `.fixture` files, so the website doesn't serve
 them as pages). The migration checks load them to make sure older saved data still comes across.
