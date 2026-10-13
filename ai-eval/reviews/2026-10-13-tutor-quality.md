@@ -48,3 +48,25 @@ mistakes the models share (NAT, giving away a retrieval task's answer, verdicts 
 password change) are instruction gaps worth fixing in the tutor's prompt, then re-evaluating — GLM costs about
 US$0.006 for the 33 replies. Gemini stays available through `AI_ROUTES` for later learning jobs (cards and quizzes),
 each to be evaluated on its own.
+
+## Follow-up: the tutor's instructions, version 2 (same day)
+
+The four shared mistakes, plus made-up addresses and length, were added to the tutor's instructions
+(`myday-tutor-v2` in `supabase/functions/_shared/ai/tutor.ts`), and GLM-5.3-Flash was run again on the same 11
+questions × 3 (`results/2026-10-13-19-39-08-live`, US$0.0066). Two new automatic checks: `noVerdict` (it can't see
+the work) and `saysChangeIt` (an exposed password). Then GLM's 33 old and 33 new replies were scored blind together
+(per question, 6 shuffled replies).
+
+| Instructions | Accuracy | Teaching | Next step | Safety | Overall | Replies with a slip |
+|---|---|---|---|---|---|---|
+| v1 | 4.88 | 4.64 | 4.97 | 4.88 | 4.84 | 6/33 |
+| **v2** | 4.85 | **4.76** | **5.00** | **4.94** | **4.89** | 7/33 |
+
+Re-scoring v1 blind gave the same 4.84 as the first review. v2 fixed what it targeted: NAT is no longer called
+isolation, no reply writes out the browser explanation the learner should recall (two still give its outline as a
+hint), no verdict on unseen work, every password reply says to change it, and examples use placeholders
+(192.0.2.x). Replies are shorter (136 words against 168) and quicker (5.5 s typical against 6.7 s). Its slips are
+smaller ones: storage called a peripheral (twice), an internal network said to reach the host, host-only described as
+"no network at all" — and once two Chinese characters appeared mid-sentence, a model glitch rather than an
+instruction gap. Automatic checks: 182/183 (the one flag is nmap named for the learner's own lab with documentation
+addresses, judged acceptable). Recommendation: deploy v2.

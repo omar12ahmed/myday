@@ -9,6 +9,7 @@
 //            --stop-on-failure         after an unsuccessful generation, call that model no more in this run
 //            --estimate                print the most the run could cost (no calls, no keys needed)
 //            --report <results folder> write that run's reports again from its runs.json (no calls)
+//            --rescore <results folder> score that run's saved replies again with the current checks (no calls)
 //            --action adjust|tasks|connect|tutor|all which scenarios when none are named: "Help me adjust today" (the default),
 //                                      "Add what's on my mind" (ai-eval/tasks-scenarios.ts), or both
 //
@@ -67,6 +68,18 @@ const run = await import(pathToFileURL(built).href);
 if (args.includes('--estimate')) {
   try { console.log(run.estimate({ ...options, live: true })); } catch (e) { console.log('Not estimated: ' + e.message); process.exit(2); }
   console.log(ledgerLine());
+  process.exit(0);
+}
+if (opt('--rescore', null)) {
+  // Scores a saved run's replies again with the current checks (e.g. after one was corrected), without calling anything.
+  const dir = path.resolve(opt('--rescore'));
+  const saved = run.rescore(JSON.parse(fs.readFileSync(path.join(dir, 'runs.json'), 'utf8')));
+  fs.writeFileSync(path.join(dir, 'runs.json'), JSON.stringify(saved, null, 2));
+  fs.writeFileSync(path.join(dir, 'summary.md'), run.summary(saved));
+  fs.writeFileSync(path.join(dir, 'calls.md'), run.calls(saved));
+  fs.writeFileSync(path.join(dir, 'review.md'), run.review(saved));
+  console.log(`Scored again with the current checks (no calls made): ${dir}`);
+  console.log(run.summary(saved).split('\n## Rules broken')[0]);
   process.exit(0);
 }
 if (opt('--report', null)) {
