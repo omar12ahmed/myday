@@ -737,3 +737,6 @@ returns up to 8 small tasks; you tick the ones to add.
 25. **Release 1.17.1:** Arabic curriculum 1.1.1 — the definite article's sukūn restored in six fully vowelled beginner
     examples (e.g. أَنَا فِي الْبَيْتِ.), matching the starter texts and words. No other change; new sessions record
     curriculum 1.1.1, earlier ones keep 1.1.0.
+26. **Release 1.17.2:** groundwork, nothing new to see. The Cybersecurity section keeps fields a newer MyDay adds (so
+    going back from 1.18.0 is safe), and the AI server's code matches what's deployed (`ai-plan` version 6: one model
+    per kind of job, Gemini set up but switched off, and the tutor's instructions v2). No saved-data or database change.
