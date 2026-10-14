@@ -165,7 +165,10 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   env = { ...base, ...MAIN, ...LEARN('mock:slow'), AI_LEARN_TIMEOUT_MS: '2500', AI_TOTAL_TIMEOUT_MS: '3000', AI_ROUTES: '{"tutor": "learn"}' };
   a = await ask(rctx);
   check('all within the app\'s 40 seconds: with too little time left after a time-out, no second try', a.status === 502 && a.body.detail === 'timeout' && !a.body.fallback, a.body);
-  for (const [bad, why] of [[{ AI_ROUTES: '{"cooking": "learn"}' }, 'an unknown job'], [{ AI_ROUTES: '{"tutor": "gemini"}' }, 'an unknown slot'], [{ AI_ROUTES: 'tutor=learn' }, 'not JSON'],
+  env = { ...base, ...MAIN, ...LEARN(), AI_ROUTES: '{"cooking": "learn", "tutor": "learn"}' };
+  a = await ask(rctx);
+  check('a job this version doesn\'t know in AI_ROUTES (say, from a newer one) is ignored: the others still work as routed', a.status === 200 && a.body.model === 'Learning model', a.body);
+  for (const [bad, why] of [[{ AI_ROUTES: '{"tutor": "gemini"}' }, 'an unknown slot'], [{ AI_ROUTES: 'tutor=learn' }, 'not JSON'],
     [{ AI_LEARN_PROVIDER: 'openai-compatible', AI_LEARN_BASE_URL: 'https://x.example', AI_LEARN_MODEL: 'g' }, 'a learning model without its key or prices']]) {
     env = { ...base, ...MAIN, ...bad };
     a = await ask(rctx);
@@ -320,6 +323,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   check('…with the learning model switched on: ready, both models as evaluated, cards written by Gemini and checked by GLM (with its evaluated checker setting), the tutor still on GLM, neither key printed',
     r.code === 0 && /Learning model: same request settings as evaluated \("gemini-3\.8-flash"/.test(r.out) && /As a card checker: extra fields as evaluated \("glm-5\.3-flash-high"/.test(r.out)
     && /revision cards: written by the learning model, checked by the main one/.test(r.out) && /the tutor goes to the main model, with the learning one as its fallback/.test(r.out) && !r.out.includes(FAKE) && !r.out.includes('yy-another'), r.out);
+  check('…and cards from notes: the note checked by Gemini, cards written by GLM and checked by Gemini', /cards from notes: the note checked by the learning model, cards written by the main one and checked by the learning one/.test(r.out), r.out);
   r = checkFile('checker-bad.env', learnOn.replace(/^AI_CHECKER_EXTRA_BODY=.*$/m, 'AI_CHECKER_EXTRA_BODY={"reasoning_effort": "max"}'));
   check('…a checker setting that wasn\'t evaluated: caught', r.code === 1 && /AI_CHECKER_EXTRA_BODY: .* wasn't evaluated for glm-5\.3-flash/.test(r.out), r.out);
   r = checkFile('template-cards.env', template.replace(/^AI_API_KEY=$/m, `AI_API_KEY=${FAKE}`));

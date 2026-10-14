@@ -10,26 +10,35 @@ import { TASK_SCENARIOS, type TasksScenario } from './tasks-scenarios';
 import { CONNECT_SCENARIOS, type ConnectScenario } from './connect-scenarios';
 import { TUTOR_SCENARIOS, type TutorScenario } from './tutor-scenarios';
 import { CARD_SCENARIOS, CHECK_SCENARIOS, DRAFT_SCENARIOS, type CardsScenario, type CheckScenario } from './cards-scenarios';
+import { NOTE_CARD_SCENARIOS, NOTE_CHECK_SCENARIOS, NOTE_DRAFT_SCENARIOS, type NoteDraftScenario, type NoteScenario } from './note-scenarios';
+import { NOTE_CARDS_CHECK_PROMPT_VERSION, NOTE_CARDS_PROMPT_VERSION, NOTE_CHECK_PROMPT_VERSION, readFlags, readNoteDraft, type NoteCardsCheckContext, type NoteCardsContext, type NoteCheckContext } from '../supabase/functions/_shared/ai/note-cards.ts';
 import cyberAnswers from '../app/src/study/cybersecurity/answers.json';
 
 // Every kind of request: "Help me adjust today" (scenarios.ts), "Add what's on my mind" (tasks-scenarios.ts), AI
 // help with notes (connect-scenarios.ts), the Cybersecurity tutor (tutor-scenarios.ts), and AI-written revision cards —
 // the writer ("cards") and the checker ("cards-check"), both in cards-scenarios.ts.
-type AnyScenario = Scenario | TasksScenario | ConnectScenario | TutorScenario | CardsScenario | CheckScenario;
-const ALL_SCENARIOS: AnyScenario[] = [...SCENARIOS, ...TASK_SCENARIOS, ...CONNECT_SCENARIOS, ...TUTOR_SCENARIOS, ...CARD_SCENARIOS, ...CHECK_SCENARIOS, ...DRAFT_SCENARIOS];
+// Cards from notes (note-scenarios.ts): the check ("note-check") and the writer ("note-cards").
+type AnyScenario = Scenario | TasksScenario | ConnectScenario | TutorScenario | CardsScenario | CheckScenario | NoteScenario | NoteDraftScenario;
+const ALL_SCENARIOS: AnyScenario[] = [...SCENARIOS, ...TASK_SCENARIOS, ...CONNECT_SCENARIOS, ...TUTOR_SCENARIOS, ...CARD_SCENARIOS, ...CHECK_SCENARIOS, ...DRAFT_SCENARIOS, ...NOTE_CHECK_SCENARIOS, ...NOTE_CARD_SCENARIOS, ...NOTE_DRAFT_SCENARIOS];
 const isTasksScenario = (sc: AnyScenario): sc is TasksScenario => (sc as TasksScenario).kind === 'tasks';
 const isConnectScenario = (sc: AnyScenario): sc is ConnectScenario => (sc as ConnectScenario).kind === 'connect';
 const isTutorScenario = (sc: AnyScenario): sc is TutorScenario => (sc as TutorScenario).kind === 'tutor';
 const isCardsScenario = (sc: AnyScenario): sc is CardsScenario => (sc as CardsScenario).kind === 'cards';
 const isCheckScenario = (sc: AnyScenario): sc is CheckScenario => (sc as CheckScenario).kind === 'cards-check';
-const actionOf = (sc: AnyScenario) => (isTasksScenario(sc) ? 'tasks' : isConnectScenario(sc) ? 'connect' : isTutorScenario(sc) ? 'tutor' : isCardsScenario(sc) ? 'cards' : isCheckScenario(sc) ? (sc.writtenBy ? 'cards-drafts' : 'cards-check') : 'adjust');
-export type Action = 'adjust' | 'tasks' | 'connect' | 'tutor' | 'cards' | 'cards-check' | 'cards-drafts' | 'all';
+const isNoteCheckScenario = (sc: AnyScenario): sc is NoteScenario => (sc as NoteScenario).kind === 'note-check';
+const isNoteCardsScenario = (sc: AnyScenario): sc is NoteScenario => (sc as NoteScenario).kind === 'note-cards';
+const isNoteDraftScenario = (sc: AnyScenario): sc is NoteDraftScenario => (sc as NoteDraftScenario).kind === 'note-cards-check';
+const actionOf = (sc: AnyScenario) => (isTasksScenario(sc) ? 'tasks' : isConnectScenario(sc) ? 'connect' : isTutorScenario(sc) ? 'tutor' : isCardsScenario(sc) ? 'cards' : isCheckScenario(sc) ? (sc.writtenBy ? 'cards-drafts' : 'cards-check') : isNoteCheckScenario(sc) ? 'note-check' : isNoteCardsScenario(sc) ? 'note-cards' : isNoteDraftScenario(sc) ? 'note-cards-drafts' : 'adjust');
+export type Action = 'adjust' | 'tasks' | 'connect' | 'tutor' | 'cards' | 'cards-check' | 'cards-drafts' | 'note-check' | 'note-cards' | 'note-cards-drafts' | 'all';
 // The cards job's own reply caps and waits, as the server sets them (ai-plan/handler.ts), whatever models.json says
 // for the other jobs: ten cards don't fit their caps.
 const JOB_LIMITS: Partial<Record<ReturnType<typeof actionOf>, { maxOutputTokens: number; timeoutMs: number }>> = {
   cards: { maxOutputTokens: 6000, timeoutMs: 60000 },
   'cards-check': { maxOutputTokens: 3000, timeoutMs: 60000 },
   'cards-drafts': { maxOutputTokens: 3000, timeoutMs: 60000 },
+  // (Checking a note is one ordinary call: each model's own reply cap and time limit, as on the server.)
+  'note-cards': { maxOutputTokens: 6000, timeoutMs: 60000 },
+  'note-cards-drafts': { maxOutputTokens: 3000, timeoutMs: 60000 },
 };
 const forJob = (cfg: K.ProviderConfig, sc: AnyScenario): K.ProviderConfig => (cfg.provider === 'mock' ? cfg : { ...cfg, ...(JOB_LIMITS[actionOf(sc)] ?? {}) });
 // The scenarios a run uses: the ones named, or all of one action ("adjust" unless said otherwise).
@@ -105,6 +114,10 @@ export interface RunRecord {
   // AI-written cards. Writer: how many usable cards came back of how many asked for. Checker: of the seeded set,
   // how many wrong cards it dropped and how many sound ones it kept.
   cards?: { delivered: number; asked: number } | { caught: number; wrong: number; kept: number; sound: number; slipsDropped?: number; slips?: number };
+  // Cards from notes. The check: wrong lines flagged, correct and personal lines left alone, slips (and dated lines)
+  // flagged. The writer: cards made from a wrong line, and from a line that isn't a claim.
+  noteCheck?: { caught: number; wrong: number; soundLeft: number; sound: number; personalLeft: number; personal: number; slipsFlagged: number; slips: number };
+  noteCards?: { delivered: number; fromWrong: number; fromPersonal: number };
 }
 export interface Result {
   meta: {
@@ -124,7 +137,7 @@ const words = (s: unknown) => (typeof s === 'string' && s.trim() ? s.trim().spli
 const clockMin = (c: string) => Number(c.slice(0, 2)) * 60 + Number(c.slice(3, 5));
 const clockOf = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
 
-function setUp(sc: Exclude<AnyScenario, TutorScenario | CardsScenario | CheckScenario>) {
+function setUp(sc: Exclude<AnyScenario, TutorScenario | CardsScenario | CheckScenario | NoteScenario | NoteDraftScenario>) {
   K.useMemoryStorage();
   K.setClock(sc.now);
   const s = K.freshState();
@@ -311,6 +324,76 @@ function prepare(sc: AnyScenario): Prepared {
         rec.explanationWords = reply ? words(reply.explanation) : 0;
         rec.shown = reply ? { rest: false, priorities: [`Next step: ${reply.nextStep}`], explanation: reply.explanation, missing: [] } : null;
         rec.savedSafely = null; // nothing is saved: the tutor's answer is only shown
+      },
+    };
+  }
+  if (isNoteDraftScenario(sc)) {
+    const ctx: NoteCardsCheckContext = { version: 1, action: 'note-cards-check', note: sc.note, cards: sc.cards.map(({ label: _l, why: _w, ...card }) => card) };
+    return {
+      ctx: ctx as unknown as Prepared['ctx'],
+      score(rec, text) {
+        const verdicts = K.readVerdicts(text, sc.cards.length);
+        rec.outcome = verdicts ? 'ok' : 'invalid';
+        rec.violations = verdicts ? [] : ['not-usable']; rec.violationDetails = rec.violations.slice();
+        const at = (l: (x: string) => boolean) => sc.cards.map((c, i) => [c, i] as const).filter(([c]) => l(c.label));
+        const wrong = at(l => l === 'wrong'), sound = at(l => l === 'sound'), either = at(l => l !== 'wrong' && l !== 'sound');
+        const drop = (i: number) => !!verdicts && verdicts[i].verdict === 'drop';
+        rec.cards = { caught: wrong.filter(([, i]) => drop(i)).length, wrong: wrong.length, kept: sound.filter(([, i]) => !drop(i)).length, sound: sound.length, slipsDropped: either.filter(([, i]) => drop(i)).length, slips: either.length };
+        rec.expectRaw = verdicts ? { ...(wrong.length ? { caughtEveryMistake: rec.cards.caught === wrong.length } : {}), keptMostSound: rec.cards.kept >= Math.ceil(sound.length * 0.8) } : { answeredEvery: false };
+        rec.expectFinal = rec.expectRaw;
+        rec.shown = verdicts ? { rest: false, explanation: '', missing: [], priorities: sc.cards.map((c, i) => `${drop(i) ? 'DROP' : 'KEEP'}${c.label === 'sound' ? '' : ` (${c.label}: ${c.why})`}${(c.label === 'wrong' && !drop(i)) || (c.label === 'sound' && drop(i)) ? ' ← WRONG CALL' : ''} · ${c.prompt} — ${verdicts[i].reason}`) } : null;
+        rec.savedSafely = null;
+      },
+    };
+  }
+  if (isNoteCheckScenario(sc) || isNoteCardsScenario(sc)) {
+    const lines = sc.note.lines, note = { title: sc.note.title, lines: lines.map(l => l.text) };
+    const labelOf = (n: number) => lines[n - 1]?.label;
+    if (isNoteCheckScenario(sc)) {
+      const ctx: NoteCheckContext = { version: 1, action: 'note-check', note };
+      return {
+        ctx: ctx as unknown as Prepared['ctx'],
+        score(rec, text) {
+          const read = readFlags(text, lines.length);
+          rec.outcome = read ? 'ok' : 'invalid';
+          rec.violations = !read ? ['not-usable'] : read.leftOut ? [`left-out x${read.leftOut}`] : [];
+          rec.violationDetails = rec.violations.slice();
+          const flagged = new Set(read ? read.flags.map(f => f.line) : []);
+          const count = (label: string, wantFlag: boolean) => lines.filter((l, i) => l.label === label && flagged.has(i + 1) === wantFlag).length;
+          const nc = { caught: count('wrong', true), wrong: lines.filter(l => l.label === 'wrong').length, soundLeft: count('sound', false), sound: lines.filter(l => l.label === 'sound').length,
+            personalLeft: count('personal', false), personal: lines.filter(l => l.label === 'personal').length, slipsFlagged: count('slip', true) + count('dated', true), slips: lines.filter(l => l.label === 'slip' || l.label === 'dated').length };
+          rec.noteCheck = nc;
+          rec.expectRaw = read ? { ...(nc.wrong ? { flaggedEveryWrongLine: nc.caught === nc.wrong } : {}), noFalseAlarm: nc.soundLeft === nc.sound, leftPersonalAlone: nc.personalLeft === nc.personal } : { usable: false };
+          rec.expectFinal = rec.expectRaw;
+          rec.priorities = read ? read.flags.length : 0;
+          rec.shown = read ? { rest: false, explanation: '', missing: [], priorities: lines.map((l, i) => {
+            const f = read.flags.find(x => x.line === i + 1);
+            const ok = l.label === 'wrong' ? !!f : l.label === 'sound' || l.label === 'personal' ? !f : true;
+            return `${f ? `FLAG (${f.concern})` : 'ok'} [${l.label}${l.why ? ': ' + l.why : ''}]${ok ? '' : ' ← WRONG CALL'} · ${l.text}${f ? ` — ${f.reason}` : ''}`;
+          }) } : null;
+          rec.savedSafely = null;
+        },
+      };
+    }
+    const ctx: NoteCardsContext = { version: 1, action: 'note-cards', note, count: 8, existing: [] };
+    return {
+      ctx: ctx as unknown as Prepared['ctx'],
+      score(rec, text) {
+        const draft = readNoteDraft(text, ctx.count, lines.length);
+        const usable = !!draft && draft.cards.length > 0;
+        rec.outcome = usable ? 'ok' : 'invalid';
+        rec.violations = !draft ? ['not-usable'] : draft.leftOut ? [`left-out x${draft.leftOut}`] : [];
+        rec.violationDetails = !draft ? ['not-usable: not the JSON the server accepts'] : draft.leftOut ? [`left-out: ${draft.leftOut} card(s) failed the shape check (fields, lengths, options, lines named)`] : [];
+        const cards = draft ? draft.cards : [];
+        const nc = { delivered: cards.length, fromWrong: cards.filter(c => c.from.some(n => labelOf(n) === 'wrong')).length, fromPersonal: cards.filter(c => c.from.some(n => labelOf(n) === 'personal')).length };
+        rec.noteCards = nc;
+        rec.expectRaw = usable ? { noCardFromAWrongLine: nc.fromWrong === 0, noCardFromAPersonalLine: nc.fromPersonal === 0, mixed: cards.some(c => c.kind === 'choice') && cards.some(c => c.kind === 'written'),
+          noLineNumbers: !cards.some(c => /\bline\s*\d/i.test(cardText(c))), // a card must make sense later, away from the note
+          answerIsTheMarkedOption: cards.filter(c => c.kind === 'choice').every(c => squash(c.choices![c.correct!]) === squash(c.answer)) } : { usable: false };
+        rec.expectFinal = rec.expectRaw;
+        rec.priorities = cards.length;
+        rec.shown = draft ? { rest: false, explanation: '', missing: [], priorities: cards.map(c => `${showCard(c)} — from line${c.from.length > 1 ? 's' : ''} ${c.from.join(', ')}`) } : null;
+        rec.savedSafely = null;
       },
     };
   }
@@ -526,7 +609,7 @@ export async function evaluate(o: Options): Promise<Result> {
   return {
     meta: {
       date: startedAt, mode: o.live ? 'live' : 'mock',
-      promptVersion: [scenarios.some(s => actionOf(s) === 'adjust') && K.PROMPT_VERSION, scenarios.some(isTasksScenario) && K.TASKS_PROMPT_VERSION, scenarios.some(isConnectScenario) && K.CONNECT_PROMPT_VERSION, scenarios.some(isTutorScenario) && K.TUTOR_PROMPT_VERSION, scenarios.some(isCardsScenario) && K.CARDS_PROMPT_VERSION, scenarios.some(isCheckScenario) && K.CARDS_CHECK_PROMPT_VERSION].filter(Boolean).join(' + '),
+      promptVersion: [scenarios.some(s => actionOf(s) === 'adjust') && K.PROMPT_VERSION, scenarios.some(isTasksScenario) && K.TASKS_PROMPT_VERSION, scenarios.some(isConnectScenario) && K.CONNECT_PROMPT_VERSION, scenarios.some(isTutorScenario) && K.TUTOR_PROMPT_VERSION, scenarios.some(isCardsScenario) && K.CARDS_PROMPT_VERSION, scenarios.some(isCheckScenario) && K.CARDS_CHECK_PROMPT_VERSION, scenarios.some(isNoteCheckScenario) && NOTE_CHECK_PROMPT_VERSION, scenarios.some(isNoteCardsScenario) && NOTE_CARDS_PROMPT_VERSION, scenarios.some(isNoteDraftScenario) && NOTE_CARDS_CHECK_PROMPT_VERSION].filter(Boolean).join(' + '),
       models: configs.map(c => ({ id: c.id, label: c.cfg.label, model: c.cfg.model, maxOutputTokens: c.cfg.maxOutputTokens })), repeats: o.repeats, scenarios: scenarios.length, retries: 0,
       budgetUsd: o.budgetUsd, totalBudgetUsd: total, spentBeforeUsd: before, reservedBeforeUsd: o.reservedBeforeUsd ?? 0,
       spentUsd: Math.round(spent * 1e6) / 1e6, usageUsd: Math.round(usage * 1e6) / 1e6, reservedUsd: Math.round(reservedKept * 1e6) / 1e6, stoppedForBudget: stopped,
@@ -651,6 +734,25 @@ export function summary(r: Result): string {
       lines.push('');
     }
   }
+  // Cards from notes: the check and the writer.
+  const nsum = (rs: RunRecord[], f: (x: RunRecord) => number) => rs.reduce((a, x) => a + f(x), 0);
+  const noteChecks = r.runs.filter(x => x.noteCheck), noteWrites = r.runs.filter(x => x.noteCards);
+  if (noteChecks.length) {
+    lines.push('', '## Checking notes', '', 'Wrong lines it flagged (no card may teach them), correct and personal lines it left alone (a false alarm only leaves a line out, but too many would be tiresome), and slips or dated lines it flagged (either way is fine).', '',
+      '| Model | Calls | Wrong lines flagged | Correct lines left alone | Personal lines left alone | Slips / dated flagged |', '|---|---|---|---|---|---|');
+    for (const mm of m.models) {
+      const rs = noteChecks.filter(x => x.model === mm.id), g = (k: keyof NonNullable<RunRecord['noteCheck']>) => nsum(rs, x => x.noteCheck![k]);
+      if (rs.length) lines.push(`| ${mm.label} | ${rs.length} | ${g('caught')}/${g('wrong')} (${pct(g('caught'), g('wrong'))}) | ${g('soundLeft')}/${g('sound')} (${pct(g('soundLeft'), g('sound'))}) | ${g('personalLeft')}/${g('personal')} | ${g('slipsFlagged')}/${g('slips')} |`);
+    }
+  }
+  if (noteWrites.length) {
+    lines.push('', '## Writing cards from notes', '', 'Given every line (as if the check had missed everything): cards made, cards based on a wrong line, and cards based on a line that isn\'t a claim. Whether each card is right and faithful to the note is judged by reading them.', '',
+      '| Model | Calls | Cards | From a wrong line | From a personal line |', '|---|---|---|---|---|');
+    for (const mm of m.models) {
+      const rs = noteWrites.filter(x => x.model === mm.id);
+      if (rs.length) lines.push(`| ${mm.label} | ${rs.length} | ${nsum(rs, x => x.noteCards!.delivered)} | ${nsum(rs, x => x.noteCards!.fromWrong)} | ${nsum(rs, x => x.noteCards!.fromPersonal)} |`);
+    }
+  }
   const failures = r.runs.filter(x => x.outcome === 'error' || x.outcome === 'invalid');
   if (failures.length) {
     lines.push('', '## Unsuccessful generations', '', '| Model | Scenario | # | What happened | Provider\'s message |', '|---|---|---|---|---|');
@@ -706,12 +808,12 @@ export function calls(r: Result): string {
 export function review(r: Result): string {
   const lines = ['# Suggestions to judge by eye', '', 'For each scenario: what each model suggested (first repeat), after the app\'s checks. Rate each 1–5 for usefulness if you like.', ''];
   for (const sc of ALL_SCENARIOS.filter(s => r.runs.some(x => x.scenario === s.id))) {
-    lines.push(`## ${sc.id}: ${sc.title}`, '', isTasksScenario(sc) ? `Written: “${sc.text}” · ${sc.tags.join(', ')}` : isTutorScenario(sc) ? `Lesson: ${K.tutorLessons[sc.lessonId].title} · asked: “${sc.question}” · ${sc.tags.join(', ')}` : isCardsScenario(sc) || isCheckScenario(sc) ? `Lesson: ${K.tutorLessons[sc.lessonId].title} · ${sc.tags.join(', ')}` : isConnectScenario(sc) ? `Right answers: ${Object.entries(sc.expect.links).map(([id, p]) => `${id} → ${Array.isArray(p) ? p.map(x => x ?? 'none').join(' or ') : p ?? 'none'}`).join('; ')} · ${sc.tags.join(', ')}` : `Note: ${sc.note ? `“${sc.note}”` : '(none)'} · ${sc.tags.join(', ')}`, '');
+    lines.push(`## ${sc.id}: ${sc.title}`, '', isTasksScenario(sc) ? `Written: “${sc.text}” · ${sc.tags.join(', ')}` : isTutorScenario(sc) ? `Lesson: ${K.tutorLessons[sc.lessonId].title} · asked: “${sc.question}” · ${sc.tags.join(', ')}` : isCardsScenario(sc) || isCheckScenario(sc) ? `Lesson: ${K.tutorLessons[sc.lessonId].title} · ${sc.tags.join(', ')}` : isNoteCheckScenario(sc) || isNoteCardsScenario(sc) ? `Note: “${sc.note.title}” · ${sc.tags.join(', ')}\n\n${sc.note.lines.map((l, i) => `    ${i + 1}. ${l.text}`).join('\n')}` : isNoteDraftScenario(sc) ? `Note: “${sc.note.title}” · ${sc.tags.join(', ')}` : isConnectScenario(sc) ? `Right answers: ${Object.entries(sc.expect.links).map(([id, p]) => `${id} → ${Array.isArray(p) ? p.map(x => x ?? 'none').join(' or ') : p ?? 'none'}`).join('; ')} · ${sc.tags.join(', ')}` : `Note: ${sc.note ? `“${sc.note}”` : '(none)'} · ${sc.tags.join(', ')}`, '');
     for (const mm of r.meta.models) {
       const x = r.runs.find(y => y.model === mm.id && y.scenario === sc.id && y.rep === 1);
       if (!x) continue;
       if (!x.shown) { lines.push(`- **${mm.label}**: ${x.outcome}${x.error ? ` (${x.error})` : ''}`); continue; }
-      if (isCardsScenario(sc) || isCheckScenario(sc)) { lines.push(`- **${mm.label}**${x.violations.length ? ` _(${x.violations.join(', ')})_` : ''}:`, ...x.shown.priorities.map((p, i) => `  ${i + 1}. ${p}`)); continue; }
+      if (isCardsScenario(sc) || isCheckScenario(sc) || isNoteCheckScenario(sc) || isNoteCardsScenario(sc) || isNoteDraftScenario(sc)) { lines.push(`- **${mm.label}**${x.violations.length ? ` _(${x.violations.join(', ')})_` : ''}:`, ...x.shown.priorities.map((p, i) => `  ${i + 1}. ${p}`)); continue; }
       const what = x.shown.rest ? 'Rest' : x.shown.priorities.length ? x.shown.priorities.join('; ') : 'Nothing more today';
       lines.push(`- **${mm.label}**: ${what}. “${x.shown.explanation}”${x.shown.missing.length ? ` Missing: ${x.shown.missing.join('; ').replace(/\.$/, '')}.` : ''}${x.violations.length ? ` _(corrected: ${x.violations.map(v => (v === 'pressure-language' ? `tone flag${x.originalReply ? '' : ', unverified'}` : v)).join(', ')})_` : ''} — rating: __`);
     }

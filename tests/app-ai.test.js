@@ -243,6 +243,53 @@ const SEED = `s => {
   check('…and nothing more is sent', aiCalls().length === c0 + 2);
   await D.ev(`location.hash = 'today'`);
 
+  console.log('\n[8c] Revision cards from a note (practice mode: rules on this device, nothing sent)');
+  {
+    const NOTE = (id, text, x = {}) => ({ id, categoryId: '', title: 'DNS notes', text, pinned: false, createdAt: TODAY + 'T08:00', updatedAt: TODAY + 'T08:00', ...x });
+    const TEXT = 'DNS turns names like example.com into IP addresses.\nDHCP leases are always permanent.\nAsk Sam about the router\nNAT lets many devices share one public IP address.';
+    await mock.setData(`s => { s.notes.items.push(${JSON.stringify([NOTE('ntCards', TEXT), NOTE('ntClean', 'Retrieval practice means recalling from memory.\nSpacing reviews out over days helps memory.', { title: 'Study' }),
+      NOTE('ntPriv', 'A private line that is long enough to be a card.', { private: true }), NOTE('ntLong', Array.from({ length: 61 }, (_, i) => 'Line number ' + i + '.').join('\n'))]).slice(1, -1)}); delete s.patterns.prefs.aiNotes; }`);
+    const openNote = async id => { await mock.ev(`location.hash = 'projects/notes/${id}'`); await mock.until(`document.getElementById('noteEditor')`); await sleep(200); };
+    const phase = () => mock.ev(`document.getElementById('noteCards')?.dataset.phase`);
+    await openNote('ntCards');
+    check('with "AI help with notes" off, a note offers no revision cards', !(await mock.exists('#noteCards')));
+    await mock.setData(`s => { s.patterns.prefs.aiNotes = true; }`); await openNote('ntCards');
+    check('switched on: the note offers "Make revision cards", saying it\'s practice mode and nothing is sent', await mock.exists('#noteCards [data-action="note-cards-ask"]') && (await mock.text('#noteCards')).includes('Nothing is sent anywhere'));
+    await openNote('ntPriv');
+    check('…but never on a private note', !(await mock.exists('#noteCards')));
+    await openNote('ntLong');
+    check('…and a note too long for one check says so instead of offering it', (await mock.text('[data-s="note-cards-problem"]')).includes('longer than one check can take') && !(await mock.exists('[data-action="note-cards-ask"]')));
+    await openNote('ntCards');
+    const before = await mock.data();
+    await mock.click('[data-action="note-cards-ask"]'); await mock.until(`document.getElementById('noteCards')?.dataset.phase === 'flags'`, 8000);
+    check('the check comes first: the doubtful line is shown with its reason, left out unless you say it\'s right', (await mock.ev(`[...document.querySelectorAll('[data-s="note-flag"]')].map(x => x.dataset.line).join()`)) === '2'
+      && (await mock.text('[data-s="note-flag"]')).includes('DHCP leases are always permanent.') && (await mock.text('[data-s="note-flag"]')).includes('“always”') && (await mock.text('[data-action="note-cards-write"]')) === 'Make cards from the other 3 lines');
+    await mock.click('[data-action="note-flag-use"]'); await sleep(100);
+    check('"It\'s right, use it" brings the line back', (await mock.text('[data-action="note-cards-write"]')) === 'Make cards from all 4 lines' && (await mock.ev(`document.querySelector('[data-action="note-flag-use"]').getAttribute('aria-pressed')`)) === 'true');
+    await mock.click('[data-action="note-flag-use"]'); await sleep(100);
+    check('…and you can change your mind', (await mock.text('[data-action="note-cards-write"]')) === 'Make cards from the other 3 lines');
+    check('nothing is saved by the check, and your note isn\'t changed', JSON.stringify((await mock.data()).notes) === JSON.stringify(before.notes) && (await mock.data()).study.concepts.length === before.study.concepts.length);
+    await mock.click('[data-action="note-cards-write"]'); await mock.until(`document.getElementById('noteCards')?.dataset.phase === 'review'`, 8000);
+    const fromLines = await mock.ev(`[...document.querySelectorAll('[data-s="note-card"]')].map(x => x.textContent.match(/From lines? ([\\d, ]+) of your note/)?.[1]).join('|')`);
+    check('cards come only from the lines kept, each saying which line it came from (not the left-out line, not the reminder)', fromLines === '1|4', fromLines);
+    check('…with who wrote and who checked them, and that one doubtful line was left out', (await mock.text('#noteCards')).includes('leaving out one doubtful line') && (await mock.text('#noteCards')).includes('checked by practice checker (no AI)'));
+    await mock.click('[data-action="note-cards-add"]'); await sleep(300);
+    let nc = (await mock.data()).study.concepts.filter(c => c.origin?.subject === 'note');
+    check('Add: the cards become Study concepts due tomorrow, saying they came from this note', nc.length === 2 && nc.every(c => c.origin.noteId === 'ntCards' && c.review.due > TODAY && c.source.startsWith('AI-written from your note “DNS notes” by practice helper (no AI)')));
+    check('…your note is still exactly as you wrote it', JSON.stringify((await mock.data()).notes) === JSON.stringify(before.notes));
+    await mock.click('[data-action="note-cards-undo"]'); await sleep(300);
+    check('Undo takes them out again', !(await mock.data()).study.concepts.some(c => c.origin?.subject === 'note'));
+    await mock.click('[data-action="note-cards-ask"]'); await mock.until(`document.getElementById('noteCards')?.dataset.phase === 'flags'`, 8000);
+    await mock.type('#noteText', ' Edited.'); await sleep(1200);
+    await mock.click('[data-action="note-cards-write"]'); await sleep(300);
+    check('if you change the note after its check, it asks you to check again (nothing is sent)', (await phase()) === 'error' && (await mock.text('#noteCards [role=alert]')).includes('changed since it was checked'));
+    await openNote('ntClean');
+    await mock.click('[data-action="note-cards-ask"]'); await mock.until(`document.getElementById('noteCards')?.dataset.phase === 'review'`, 8000);
+    check('a note with nothing doubtful goes straight on to the cards', (await mock.ev(`document.querySelectorAll('[data-s="note-card"]').length`)) === 2 && !(await mock.exists('[data-s="note-flag"]')));
+    check('no sideways scrolling', !(await mock.ev('document.documentElement.scrollWidth > innerWidth')));
+    await mock.click('[data-action="note-cards-cancel"]'); await mock.ev(`location.hash = 'today'`);
+  }
+
   console.log('\n[9] Layout');
   await D.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await D.ev(`location.hash = 'today'`);

@@ -17,7 +17,8 @@ import { checkTasksContext } from '../_shared/ai/tasks.ts';
 import { checkTutorContext } from '../_shared/ai/tutor.ts';
 import { checkConnectContext } from '../_shared/ai/connect.ts';
 import { CARDS_LIMITS, checkCardsContext, readDraft, readVerdicts, type CardsCheckContext, type CardsContext } from '../_shared/ai/cards.ts';
-import { isCards, type AiContext } from '../_shared/ai/prompt.ts';
+import { checkNoteCardsContext, checkNoteCheckContext, readNoteDraft, type NoteCardsCheckContext, type NoteCardsContext } from '../_shared/ai/note-cards.ts';
+import { isCards, isNoteCards, type AiContext } from '../_shared/ai/prompt.ts';
 
 export interface Deps {
   env: (name: string) => string | undefined;
@@ -94,7 +95,7 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
   if (raw.length > LIMITS.bodyBytes) return reply(413, { ok: false, error: 'bad-request' }, 'too-large');
   let body: { context?: unknown };
   try { body = JSON.parse(raw); } catch { return reply(400, { ok: false, error: 'bad-request' }, 'not-json'); }
-  if (!body || !(checkContext(body.context) || checkTasksContext(body.context) || checkTutorContext(body.context) || checkConnectContext(body.context) || checkCardsContext(body.context))) return reply(400, { ok: false, error: 'bad-request' }, 'bad-context');
+  if (!body || !(checkContext(body.context) || checkTasksContext(body.context) || checkTutorContext(body.context) || checkConnectContext(body.context) || checkCardsContext(body.context) || checkNoteCheckContext(body.context) || checkNoteCardsContext(body.context))) return reply(400, { ok: false, error: 'bad-request' }, 'bad-context');
   const ctx = body.context;
 
   // 3. The model for this job (and the other one, in case it can't answer), and the limits. Both models' worst cases
@@ -102,6 +103,7 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
   const route = routeFor(deps.env, ctx);
   if ('error' in route) return reply(503, { ok: false, error: 'not-configured' }, 'not-configured');
   if (isCards(ctx as AiContext)) return cards(ctx as CardsContext, route, token, deps, reply, t0);
+  if (isNoteCards(ctx as AiContext)) return noteCards(ctx as NoteCardsContext, route, token, deps, reply, t0);
   const worst = worstCaseCostUsd(route.primary.cfg, ctx), worstFallback = route.fallback ? worstCaseCostUsd(route.fallback.cfg, ctx) : 0;
   if (worst === null || worstFallback === null) return reply(503, { ok: false, error: 'not-configured' }, 'no-prices');
   const reserve = worst + worstFallback;
@@ -146,20 +148,28 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
 // ---------- AI-written revision cards: a writer, then a checker (the other model) ----------
 // One request, two model calls, both reserved up front. The writer drafts the cards; the checker judges each one. If
 // there's no second model, or it can't answer, nothing is returned: a card no second model has checked never reaches
-// the learner. The app then keeps only the cards the checker kept, and checks every card again itself.
+// the learner. The app then keeps only the cards the checker kept, and checks every card again itself. Used for a
+// lesson's cards ("cards") and for cards from a note ("note-cards"); only what's read and sent differs.
 const CARD_WRITER_TOKENS = 6000, CARD_CHECKER_TOKENS = 3000; // ten cards don't fit the other jobs' reply cap
-async function cards(ctx: CardsContext, route: Exclude<ReturnType<typeof routeFor>, { error: string }>, token: string, deps: Deps,
-  reply: (status: number, body: Record<string, unknown>, outcome: string) => Response, t0: number): Promise<Response> {
+type Route = Exclude<ReturnType<typeof routeFor>, { error: string }>;
+type Reply = (status: number, body: Record<string, unknown>, outcome: string) => Response;
+const LONGEST_CARD = { kind: 'choice' as const, prompt: 'x'.repeat(CARDS_LIMITS.promptChars), answer: 'x'.repeat(CARDS_LIMITS.answerChars), explanation: 'x'.repeat(CARDS_LIMITS.explanationChars),
+  choices: Array.from({ length: CARDS_LIMITS.maxChoices }, () => 'x'.repeat(CARDS_LIMITS.choiceChars)), correct: 0 };
+interface WriteAndCheck<C> {
+  job: 'cards' | 'note-cards';
+  ctx: AiContext;
+  longestCheck: AiContext;                                   // the checker's worst case: ten cards of the longest allowed size
+  read: (text: string) => { cards: C[]; leftOut: number } | null;
+  checkCtx: (cards: C[]) => AiContext;
+  output: (cards: C[], verdicts: ReturnType<typeof readVerdicts>, leftOut: number) => Record<string, unknown>;
+}
+async function writeAndCheck<C>(w: WriteAndCheck<C>, route: Route, token: string, deps: Deps, reply: Reply, t0: number): Promise<Response> {
   const num = (name: string, fallback: number) => { const n = Number(deps.env(name)); return Number.isFinite(n) && deps.env(name) !== undefined && deps.env(name) !== '' ? n : fallback; };
-  if (!route.other) return reply(503, { ok: false, error: 'no-checker' }, 'cards-no-checker');
+  if (!route.other) return reply(503, { ok: false, error: 'no-checker' }, `${w.job}-no-checker`);
   // The checker may think harder than the model does for other jobs (its CHECKER_EXTRA_BODY setting, if any).
   const { checkerExtraBody, ...otherCfg } = route.other.cfg;
   const writer = { ...route.primary.cfg, maxOutputTokens: CARD_WRITER_TOKENS }, checker = { ...otherCfg, maxOutputTokens: CARD_CHECKER_TOKENS, ...(checkerExtraBody ? { extraBody: checkerExtraBody } : {}) };
-  // The checker's worst case: the lesson and ten cards of the longest allowed size.
-  const longest: CardsCheckContext = { version: 1, action: 'cards-check', lessonId: ctx.lessonId, cards: Array.from({ length: CARDS_LIMITS.cards }, () => ({
-    kind: 'choice', prompt: 'x'.repeat(CARDS_LIMITS.promptChars), answer: 'x'.repeat(CARDS_LIMITS.answerChars), explanation: 'x'.repeat(CARDS_LIMITS.explanationChars),
-    choices: Array.from({ length: CARDS_LIMITS.maxChoices }, () => 'x'.repeat(CARDS_LIMITS.choiceChars)), correct: 0 })) };
-  const ww = worstCaseCostUsd(writer, ctx), wc = worstCaseCostUsd(checker, longest);
+  const ww = worstCaseCostUsd(writer, w.ctx), wc = worstCaseCostUsd(checker, w.longestCheck);
   if (ww === null || wc === null) return reply(503, { ok: false, error: 'not-configured' }, 'no-prices');
   let gate: { ok: boolean; reason?: string };
   try {
@@ -173,22 +183,37 @@ async function cards(ctx: CardsContext, route: Exclude<ReturnType<typeof routeFo
   const within = (cfg: ProviderConfig, longestMs: number): ProviderConfig => ({ ...cfg, timeoutMs: Math.max(1000, Math.min(longestMs, deadline - Date.now())) });
   let inputTokens = 0, outputTokens = 0;
   const done = async () => { await deps.finish(token, inputTokens, outputTokens).catch(() => {}); };
-  const w = await callModel(within(writer, num('AI_CARDS_WRITER_TIMEOUT_MS', 60000)), ctx, deps.fetchImpl);
-  inputTokens += w.inputTokens ?? 0; outputTokens += w.outputTokens ?? 0;
-  const draft = w.ok ? readDraft(w.text, ctx.lessonId, ctx.count) : null;
-  if (!w.ok || !draft || !draft.cards.length) { await done(); return reply(502, { ok: false, error: 'unavailable', detail: w.ok ? 'unusable' : w.error }, `cards-writer-${w.ok ? 'unusable' : w.error}:${route.primary.slot}`); }
-  if (deadline - Date.now() < 5000) { await done(); return reply(502, { ok: false, error: 'unavailable', detail: 'unchecked' }, `cards-unchecked-time:${route.other.slot}`); }
-  const check: CardsCheckContext = { version: 1, action: 'cards-check', lessonId: ctx.lessonId, cards: draft.cards };
-  const c = await callModel(within(checker, deadline - Date.now()), check, deps.fetchImpl);
+  const wr = await callModel(within(writer, num('AI_CARDS_WRITER_TIMEOUT_MS', 60000)), w.ctx, deps.fetchImpl);
+  inputTokens += wr.inputTokens ?? 0; outputTokens += wr.outputTokens ?? 0;
+  const draft = wr.ok ? w.read(wr.text) : null;
+  if (!wr.ok || !draft || !draft.cards.length) { await done(); return reply(502, { ok: false, error: 'unavailable', detail: wr.ok ? 'unusable' : wr.error }, `${w.job}-writer-${wr.ok ? 'unusable' : wr.error}:${route.primary.slot}`); }
+  if (deadline - Date.now() < 5000) { await done(); return reply(502, { ok: false, error: 'unavailable', detail: 'unchecked' }, `${w.job}-unchecked-time:${route.other.slot}`); }
+  const c = await callModel(within(checker, deadline - Date.now()), w.checkCtx(draft.cards), deps.fetchImpl);
   inputTokens += c.inputTokens ?? 0; outputTokens += c.outputTokens ?? 0;
   const verdicts = c.ok ? readVerdicts(c.text, draft.cards.length) : null;
   await done();
-  if (!c.ok || !verdicts) return reply(502, { ok: false, error: 'unavailable', detail: 'unchecked' }, `cards-unchecked-${c.ok ? 'unusable' : c.error}:${route.other.slot}`);
+  if (!c.ok || !verdicts) return reply(502, { ok: false, error: 'unavailable', detail: 'unchecked' }, `${w.job}-unchecked-${c.ok ? 'unusable' : c.error}:${route.other.slot}`);
   return reply(200, {
     ok: true,
-    output: JSON.stringify({ lessonId: ctx.lessonId, cards: draft.cards, verdicts, leftOut: draft.leftOut }),
+    output: JSON.stringify(w.output(draft.cards, verdicts, draft.leftOut)),
     model: writer.label, checker: checker.label,
-    usage: { inputTokens, outputTokens, costUsd: (costUsd(writer, w.inputTokens, w.outputTokens) ?? 0) + (costUsd(checker, c.inputTokens, c.outputTokens) ?? 0), latencyMs: Date.now() - t0 },
-  }, `ok:cards/${route.primary.slot}+${route.other.slot}`);
+    usage: { inputTokens, outputTokens, costUsd: (costUsd(writer, wr.inputTokens, wr.outputTokens) ?? 0) + (costUsd(checker, c.inputTokens, c.outputTokens) ?? 0), latencyMs: Date.now() - t0 },
+  }, `ok:${w.job}/${route.primary.slot}+${route.other.slot}`);
 }
+// A lesson's cards: the server supplies the lesson's outline; the checker gets it with the cards.
+const cards = (ctx: CardsContext, route: Route, token: string, deps: Deps, reply: Reply, t0: number) => writeAndCheck({
+  job: 'cards', ctx,
+  longestCheck: { version: 1, action: 'cards-check', lessonId: ctx.lessonId, cards: Array.from({ length: CARDS_LIMITS.cards }, () => LONGEST_CARD) },
+  read: text => readDraft(text, ctx.lessonId, ctx.count),
+  checkCtx: (c): CardsCheckContext => ({ version: 1, action: 'cards-check', lessonId: ctx.lessonId, cards: c }),
+  output: (c, verdicts, leftOut) => ({ lessonId: ctx.lessonId, cards: c, verdicts, leftOut }),
+}, route, token, deps, reply, t0);
+// Cards from a note: only the lines the person kept are sent; the checker gets the same lines with the cards.
+const noteCards = (ctx: NoteCardsContext, route: Route, token: string, deps: Deps, reply: Reply, t0: number) => writeAndCheck({
+  job: 'note-cards', ctx,
+  longestCheck: { version: 1, action: 'note-cards-check', note: ctx.note, cards: Array.from({ length: CARDS_LIMITS.cards }, () => ({ ...LONGEST_CARD, from: [1, 2, 3] })) },
+  read: text => readNoteDraft(text, ctx.count, ctx.note.lines.length),
+  checkCtx: (c): NoteCardsCheckContext => ({ version: 1, action: 'note-cards-check', note: ctx.note, cards: c }),
+  output: (c, verdicts, leftOut) => ({ cards: c, verdicts, leftOut }),
+}, route, token, deps, reply, t0);
 

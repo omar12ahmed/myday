@@ -5,7 +5,7 @@
 import { CARDS_LIMITS, cleanDraftCard, type CardsContext, type DraftCard } from '../../../supabase/functions/_shared/ai/cards-shape.ts';
 import { shift } from '../data/dates';
 import { newConcept } from '../data/study/common';
-import type { DateKey, MyDayData } from '../data/types';
+import type { Concept, ConceptOrigin, DateKey, MyDayData } from '../data/types';
 
 export interface ProposedCard extends DraftCard { reason: string } // reason: the checker's, for keeping it
 export interface CheckedCards { cards: ProposedCard[]; checkerLeftOut: number; leftOut: number; repeats: number }
@@ -16,7 +16,7 @@ const ASKING = new Set(['the', 'and', 'for', 'what', 'which', 'why', 'how', 'whe
 const aboutWords = (s: string) => new Set(squash(s).split(' ').filter(w => w.length >= 3 && !ASKING.has(w)));
 // Asks the same thing: the same words, or everything one asks about is in the other ("…for a lab VM?" and "…for a lab
 // VM, please?"). Questions that differ in what they ask about ("Which port does HTTPS use?" and "…SSH use?") don't.
-function sameQuestion(a: string, b: string) {
+export function sameQuestion(a: string, b: string) {
   if (squash(a) === squash(b)) return true;
   const x = aboutWords(a), y = aboutWords(b);
   const [small, big] = x.size <= y.size ? [x, y] : [y, x];
@@ -56,38 +56,42 @@ export function readCardsReply(text: string, ctx: CardsContext): CheckedCards | 
   return out;
 }
 // The answer a multiple-choice card gives is the option it marks (written out, or as part of a sentence).
-function sameAnswer(c: DraftCard) {
+export function sameAnswer(c: DraftCard) {
   const marked = squash(c.choices![c.correct!]), answer = squash(c.answer);
   return !!marked && (answer === marked || answer.includes(marked));
 }
 
 // e.g. "14 Oct 2026" (saved words, so the same on every device whatever its language).
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const dayOf = (k: DateKey) => `${Number(k.slice(8, 10))} ${MONTHS[Number(k.slice(5, 7)) - 1]} ${k.slice(0, 4)}`;
+export const dayOf = (k: DateKey) => `${Number(k.slice(8, 10))} ${MONTHS[Number(k.slice(5, 7)) - 1]} ${k.slice(0, 4)}`;
 
-// Adds the cards you kept as concepts, due tomorrow (you've just read their answers), with the options in a fresh order
-// (models tend to put the right one first). Returns their ids, for Undo.
+// One kept card as a concept, due tomorrow (you've just read its answer), with the options in a fresh order (models
+// tend to put the right one first). Shared by a lesson's cards and cards from a note.
+export function cardToConcept(card: DraftCard, source: string, origin: ConceptOrigin, k: DateKey, random = Math.random): Concept {
+  const c = newConcept(card.prompt.length > 120 ? card.prompt.slice(0, 119).trimEnd() + '…' : card.prompt, null);
+  c.kind = card.kind;
+  c.prompt = card.prompt;
+  c.explanation = card.explanation;
+  if (card.kind === 'choice' && card.choices && card.correct !== undefined) {
+    const order = card.choices.map((_, i) => i);
+    for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+    c.choices = order.map(i => card.choices![i]);
+    c.correct = order.indexOf(card.correct);
+    c.answer = card.choices[card.correct];
+  } else c.answer = card.answer;
+  c.source = source.slice(0, 400);
+  c.origin = origin;
+  c.review.due = shift(k, 1);
+  return c;
+}
+// Adds the cards you kept from a lesson. Returns their ids, for Undo.
 export function addAiCards(d: MyDayData, cards: DraftCard[], about: { lessonId: string; lessonTitle: string; writer: string; checker: string }, k: DateKey, random = Math.random): string[] {
-  const ids: string[] = [];
-  for (const card of cards) {
-    const c = newConcept(card.prompt.length > 120 ? card.prompt.slice(0, 119).trimEnd() + '…' : card.prompt, null);
-    c.kind = card.kind;
-    c.prompt = card.prompt;
-    c.explanation = card.explanation;
-    if (card.kind === 'choice' && card.choices && card.correct !== undefined) {
-      const order = card.choices.map((_, i) => i);
-      for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
-      c.choices = order.map(i => card.choices![i]);
-      c.correct = order.indexOf(card.correct);
-      c.answer = card.choices[card.correct];
-    } else c.answer = card.answer;
-    c.source = `AI-written for the Cybersecurity lesson “${about.lessonTitle}” by ${about.writer}, checked by ${about.checker} · ${dayOf(k)}`.slice(0, 400);
-    c.origin = { by: 'ai', subject: 'cybersecurity', lessonId: about.lessonId, writer: about.writer.slice(0, 60), checker: about.checker.slice(0, 60), edited: false };
-    c.review.due = shift(k, 1);
+  return cards.map(card => {
+    const c = cardToConcept(card, `AI-written for the Cybersecurity lesson “${about.lessonTitle}” by ${about.writer}, checked by ${about.checker} · ${dayOf(k)}`,
+      { by: 'ai', subject: 'cybersecurity', lessonId: about.lessonId, writer: about.writer.slice(0, 60), checker: about.checker.slice(0, 60), edited: false }, k, random);
     d.study.concepts.push(c);
-    ids.push(c.id);
-  }
-  return ids;
+    return c.id;
+  });
 }
 // Undo: takes those cards out again (only AI cards, and only these). Any answers already given stay in your history.
 export function removeAiCards(d: MyDayData, ids: string[]): boolean {

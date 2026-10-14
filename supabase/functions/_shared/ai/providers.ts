@@ -7,8 +7,9 @@
 //   mock               the rule-based stand-in in mock.ts (no key, no network)
 // Which model does which job (routeFor, at the end) is configuration too.
 import { mockPlanner, type MockVariant } from './mock.ts';
-import { isCards, isCardsCheck, isConnect, isTasks, isTutor, messagesFor, type AiContext } from './prompt.ts';
+import { isCards, isCardsCheck, isConnect, isNoteCards, isNoteCardsCheck, isNoteCheck, isTasks, isTutor, messagesFor, type AiContext } from './prompt.ts';
 import { mockCards, mockCardsCheck } from './cards.ts';
+import { mockNoteCards, mockNoteCardsCheck, mockNoteCheck } from './note-cards.ts';
 import { mockConnect, type ConnectMockVariant } from './connect.ts';
 import { mockTutor } from './tutor.ts';
 import { mockTasks, type TasksMockVariant } from './tasks.ts';
@@ -81,7 +82,8 @@ export async function callModel(cfg: ProviderConfig, ctx: AiContext, fetchImpl: 
     if (variant === 'truncated') return { ok: false, error: 'truncated', finishReason: 'length', inputTokens: 900, outputTokens: cfg.maxOutputTokens, latencyMs: Date.now() - t0 };
     await sleep(variant === 'slow' ? cfg.timeoutMs + 50 : cfg.mockDelayMs ?? 0);
     if (variant === 'slow') return { ok: false, error: 'timeout', latencyMs: Date.now() - t0 };
-    const full = isCards(ctx) ? mockCards(ctx, variant === 'sloppy' ? 'sloppy' : 'good') : isCardsCheck(ctx) ? mockCardsCheck(ctx) : isConnect(ctx) ? mockConnect(ctx, (['good', 'sloppy', 'invalid'].includes(variant) ? variant : 'good') as ConnectMockVariant) : isTutor(ctx) ? mockTutor(ctx, variant === 'sloppy' ? 'sloppy' : 'good') : isTasks(ctx)
+    const full = isNoteCheck(ctx) ? mockNoteCheck(ctx) : isNoteCards(ctx) ? mockNoteCards(ctx) : isNoteCardsCheck(ctx) ? mockNoteCardsCheck(ctx)
+      : isCards(ctx) ? mockCards(ctx, variant === 'sloppy' ? 'sloppy' : 'good') : isCardsCheck(ctx) ? mockCardsCheck(ctx) : isConnect(ctx) ? mockConnect(ctx, (['good', 'sloppy', 'invalid'].includes(variant) ? variant : 'good') as ConnectMockVariant) : isTutor(ctx) ? mockTutor(ctx, variant === 'sloppy' ? 'sloppy' : 'good') : isTasks(ctx)
       ? mockTasks(ctx, (['good', 'sloppy', 'invalid'].includes(variant) ? variant : 'good') as TasksMockVariant)
       : mockPlanner(ctx, (['good', 'sloppy', 'invalid', 'rest'].includes(variant) ? variant : 'good') as MockVariant);
     const text = variant === 'partial' ? full.slice(0, Math.floor(full.length / 2)) : full; // JSON that stops half-way
@@ -188,10 +190,10 @@ export function configFromEnv(env: (name: string) => string | undefined, prefix 
 // the main one, and so does a job routed to a learning model that isn't set up. If the chosen model can't answer
 // (no connection, no answer in time, a provider error, nothing in its reply), the other gets one try, unless
 // AI_FALLBACK=off. A reply the app then finds unusable isn't retried: the app says so instead.
-export type Job = 'adjust' | 'tasks' | 'connect' | 'tutor' | 'cards';
+export type Job = 'adjust' | 'tasks' | 'connect' | 'tutor' | 'cards' | 'note-check' | 'note-cards';
 export type Slot = 'main' | 'learn';
-export const JOBS: Job[] = ['adjust', 'tasks', 'connect', 'tutor', 'cards'];
-export const jobOf = (ctx: AiContext): Job => (isCards(ctx) || isCardsCheck(ctx) ? 'cards' : isConnect(ctx) ? 'connect' : isTutor(ctx) ? 'tutor' : isTasks(ctx) ? 'tasks' : 'adjust');
+export const JOBS: Job[] = ['adjust', 'tasks', 'connect', 'tutor', 'cards', 'note-check', 'note-cards'];
+export const jobOf = (ctx: AiContext): Job => (isNoteCheck(ctx) ? 'note-check' : isNoteCards(ctx) || isNoteCardsCheck(ctx) ? 'note-cards' : isCards(ctx) || isCardsCheck(ctx) ? 'cards' : isConnect(ctx) ? 'connect' : isTutor(ctx) ? 'tutor' : isTasks(ctx) ? 'tasks' : 'adjust');
 // The model failures worth trying the other model for: it couldn't be reached or gave nothing. (A reply cut short,
 // filtered or unfinished cost tokens and says something about the request, so it isn't passed on.)
 export const fallsBack = (r: ModelResult) => !r.ok && ['timeout', 'network', 'http', 'config', 'empty'].includes(r.error);
@@ -205,7 +207,9 @@ export function routeFor(env: (name: string) => string | undefined, ctx: AiConte
     try { routes = JSON.parse(raw); } catch { return { error: 'AI_ROUTES is not valid JSON.' }; }
     if (!routes || typeof routes !== 'object' || Array.isArray(routes)) return { error: 'AI_ROUTES must be like {"tutor": "learn"}.' };
     for (const [job, slot] of Object.entries(routes)) {
-      if (!JOBS.includes(job as Job)) return { error: `AI_ROUTES names an unknown job "${job}" (known: ${JOBS.join(', ')}).` };
+      // A job this version doesn't know (e.g. one added by a newer version, after going back) is ignored, not an error:
+      // it mustn't stop every other job. The settings check (check-ai-secrets.mjs) still names it.
+      if (!JOBS.includes(job as Job)) continue;
       if (slot !== 'main' && slot !== 'learn') return { error: `AI_ROUTES: "${job}" must go to "main" or "learn".` };
     }
   }

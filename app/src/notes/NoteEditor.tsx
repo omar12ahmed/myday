@@ -14,6 +14,8 @@ import { bothMention, keepLink, projectMatches, relatedNotes, unlink } from '../
 import { getSnapshot, update, updateSaved } from '../data/storage';
 import { toast } from '../data/toast';
 import type { MyDayData } from '../data/types';
+import { AI_MODE } from '../ai/request';
+import { NoteCards } from './NoteCards';
 
 // What AI help said a note is (1.15.0), in words.
 const KIND_WORDS = { idea: 'an idea', task: 'something to do', question: 'a question to find out', reference: 'something to keep for reference', journal: 'a reflection', other: 'a note' } as const;
@@ -152,6 +154,7 @@ export function NoteEditor({ data, id }: { data: MyDayData; id: string }) {
         )}
         {note.private && <Note className="mb-0 mt-3">Private: AI help never reads this note. It's still saved to your account, like all your notes, so it's on your other devices.</Note>}
       </Card>
+      {AI_MODE !== 'off' && data.patterns.prefs.aiNotes && !note.private && <NoteCards key={note.id} data={data} note={note} flush={flush} />}
       {related.length > 0 && (
         <Card aria-labelledby="noteRelatedH" id="noteRelated">
           <h3 id="noteRelatedH">Related notes</h3>

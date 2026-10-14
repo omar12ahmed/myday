@@ -189,3 +189,19 @@ Gemini 3.8 Flash wrote 80 cards with no mistakes and no slips (GLM-5.3-Flash tau
 wrong cards, GLM 1 of 6 at its usual low reasoning and 3 of 6 at high (`glm-5.3-flash-high` in `models.json`).
 Recommendation: Gemini 3.8 Flash writes, GLM checks at high reasoning (`AI_ROUTES={"cards": "learn"}` and
 `AI_CHECKER_EXTRA_BODY` on the server).
+
+## Cards from your notes (AI roles, step 3, part C)
+
+"Make revision cards" on a note: an AI checks the note first (flags doubtful lines), then one model writes cards from
+the lines kept and the other checks them (`../supabase/functions/_shared/ai/note-cards.ts`). Scenarios in
+`note-scenarios.ts`: ten made-up learner notes, every line labelled sound / wrong / slip / dated / personal.
+
+- `--action note-check`: the check on every note (wrong lines flagged, correct and personal lines left alone).
+- `--action note-cards`: the writers, given every line (as if the check had missed everything).
+- `--action note-cards-drafts`: the card checkers on the writers' real cards, labelled by a blind review
+  (`note-drafts.json`).
+
+Live runs of 14 Oct 2026 (US$0.09, `reviews/2026-10-14-note-cards-quality.md`): every model flagged every planted
+mistake; writing from a note, GLM-5.3-Flash made no card from a wrong line (Gemini 3.8 Flash made two); as card
+checker, Gemini caught the wrong cards and the slips best. Recommendation: Gemini checks the note, GLM writes, Gemini
+checks the cards (`AI_ROUTES={"cards": "learn", "note-check": "learn"}`).
