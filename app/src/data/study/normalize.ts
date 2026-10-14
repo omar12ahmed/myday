@@ -6,11 +6,27 @@ import { intIn, isObj, listOf, uid } from '../util';
 import type { Clarity, Concept, ConceptOrigin, Outcome, Rating, Review, StudyCourse, StudyData, StudyModule, StudySection, StudySession, StudyStage, StudyTask, Support } from '../types';
 import { CLARITY, emptyStudy, OUTCOME, RATING, safeUrl, str, SUPPORT } from './common';
 
-// Where an AI-written card came from (see ConceptOrigin). Anything unexpected and it's left off: the card stays, as
-// one of your own (its source still says it was AI-written).
+// Where an AI-written card came from (see ConceptOrigin). A Cybersecurity lesson's is checked strictly. Any other
+// subject (cards from a note, and later ones) is kept as short plain values: a word for its subject and up to 12 named
+// fields of text (cut to 200 characters), numbers or yes/no — so a newer MyDay's origins survive this one. Anything
+// unexpected and it's left off: the card stays, as one of your own (its source still says it was AI-written).
+const ORIGIN_KEY = /^[a-zA-Z][a-zA-Z0-9]{0,23}$/;
 export function cleanOrigin(raw: unknown): ConceptOrigin | null {
-  if (!isObj(raw) || raw.by !== 'ai' || raw.subject !== 'cybersecurity' || typeof raw.lessonId !== 'string' || !/^lesson\.[a-z0-9-]{1,60}$/.test(raw.lessonId)) return null;
-  return { by: 'ai', subject: 'cybersecurity', lessonId: raw.lessonId, writer: str(raw.writer, 60), checker: str(raw.checker, 60), edited: raw.edited === true };
+  if (!isObj(raw) || raw.by !== 'ai' || typeof raw.subject !== 'string') return null;
+  // (Fields in the order they're written, so a card saved before reads back unchanged and isn't sent again.)
+  const tail = { writer: str(raw.writer, 60), checker: str(raw.checker, 60), edited: raw.edited === true };
+  if (raw.subject === 'cybersecurity') {
+    if (typeof raw.lessonId !== 'string' || !/^lesson\.[a-z0-9-]{1,60}$/.test(raw.lessonId)) return null;
+    return { by: 'ai', subject: 'cybersecurity', lessonId: raw.lessonId, ...tail };
+  }
+  if (!/^[a-z][a-z0-9-]{0,23}$/.test(raw.subject)) return null;
+  const more: Record<string, string | number | boolean> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (k in tail || k === 'by' || k === 'subject' || !ORIGIN_KEY.test(k) || Object.keys(more).length >= 12) continue;
+    if (typeof v === 'string') more[k] = v.trim().slice(0, 200);
+    else if (typeof v === 'boolean' || (typeof v === 'number' && Number.isFinite(v))) more[k] = v;
+  }
+  return { by: 'ai', subject: raw.subject, ...more, ...tail };
 }
 
 export function normalizeStudy(raw: unknown, report = { dropped: 0 }): StudyData {

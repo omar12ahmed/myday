@@ -76,6 +76,8 @@ wrote and who checked them, and adds only the ones you leave ticked, as Study co
 fresh order, with one step of Undo. Each keeps where it came from: `origin` on the concept (`{ by: 'ai', subject:
 'cybersecurity', lessonId, writer, checker, edited }`, kept by both versions; `edited` once you change its question,
 answer, explanation or options) and the same in words in its `source`. They count in "Revise Cybersecurity" too.
+From 1.19.1 both versions also keep origins for other subjects (`subject` a plain word, e.g. `note`, with up to 12
+short plain fields), so cards from your notes — and later sources — survive a device or version that predates them.
 Which model writes and which checks is the server's configuration, chosen by evaluation
 (`../ai-eval/reviews/2026-10-13-cards-quality.md`). Shown only when the app is built with AI help.
 
@@ -775,3 +777,6 @@ returns up to 8 small tasks; you tick the ones to add.
     Study concepts with where they came from (`origin`, kept by both versions; also in words in their source). Needs
     `ai-plan` version 7 and its settings (deployed first). No database change. Going back to 1.18.0 keeps the cards as
     ordinary concepts — their source still says AI-written — but drops `origin` when it saves.
+29. **Release 1.19.1:** groundwork, nothing new to see. Both versions keep an AI card's origin for any subject (a
+    note, later a PDF) as short plain values — so going back from the cards-from-notes release, or a device still on
+    this version, never loses where a card came from. No other change; no database change.

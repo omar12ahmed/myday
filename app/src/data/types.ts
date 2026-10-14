@@ -240,10 +240,14 @@ export interface Concept {
 }
 // A card an AI wrote and a second AI checked, that you kept (added in 1.19.0; both versions keep it). Its `source`
 // says the same in words, so a version that doesn't know this field still shows where the card came from.
+// subject 'cybersecurity': from a lesson (lessonId). From 1.19.1 both versions also keep origins for other subjects
+// (e.g. a note), as short plain values, so cards from later sources survive a device or version that predates them.
 export interface ConceptOrigin {
-  by: 'ai'; subject: 'cybersecurity'; lessonId: string;
+  by: 'ai'; subject: string;
+  lessonId?: string;               // subject 'cybersecurity': the lesson
   writer: string; checker: string; // the models' names, as the server gave them
   edited: boolean;                 // you changed it before keeping it
+  [other: string]: string | number | boolean | undefined;
 }
 export type Clarity = 'understand' | 'partly' | 'notyet';
 export interface Checkin { conceptIds: string[]; clarity: Clarity | null; takeaway: string; question: string; note: string }

@@ -34,7 +34,9 @@ const clone = o => JSON.parse(JSON.stringify(o));
   raw.study.focusCourseId = 'co1';
   raw.study.concepts = [{ id: 'cp1', title: 'Ports', taskIds: ['t1'], createdOn: '2026-10-02', kind: 'written', prompt: 'What is a port?', answer: 'A number', explanation: '', choices: [], correct: null, hint: '', source: '', note: '', review: { reps: 1, interval: 2, lapses: 0, due: '2026-10-08' } },
     { id: 'cp2', title: 'Handshake', taskIds: [], createdOn: '2026-10-03', kind: 'choice', prompt: 'Which comes second in the TCP handshake?', answer: 'SYN-ACK', explanation: 'The server answers the SYN.', choices: ['ACK', 'SYN-ACK', 'SYN'], correct: 1, hint: '', source: 'AI-written for the Cybersecurity lesson “TCP, UDP, ports and connection state” by W, checked by C · 3 Oct 2026', note: '', review: { reps: 0, interval: 0, lapses: 0, due: '2026-10-04' },
-      origin: { by: 'ai', subject: 'cybersecurity', lessonId: 'lesson.tcp-ip-basics', writer: 'W', checker: 'C', edited: true } }];
+      origin: { by: 'ai', subject: 'cybersecurity', lessonId: 'lesson.tcp-ip-basics', writer: 'W', checker: 'C', edited: true } },
+    { id: 'cp3', title: 'Spacing', taskIds: [], createdOn: '2026-10-04', kind: 'written', prompt: 'Why space out practice?', answer: 'It strengthens recall.', explanation: '', choices: [], correct: null, hint: '', source: 'AI-written from your note', note: '', review: { reps: 0, interval: 0, lapses: 0, due: null },
+      origin: { by: 'ai', subject: 'note', noteId: 'ntAbc123', writer: 'W', checker: 'C', edited: false } }];
   raw.study.sessions = [
     { id: 'ss1', courseId: 'co1', taskId: 't1', title: 'THM · Linux 1', date: '2026-10-02', startedAt: '2026-10-02T19:00', plannedMin: 30, short: false, status: 'done', runningSince: null, activeMs: 1500000, endedAt: '2026-10-02T19:30', checkin: { conceptIds: ['cp1'], clarity: 'clear', takeaway: 'ok', question: '', note: '' }, taskDone: true, todayUid: null },
   ];
