@@ -23,7 +23,7 @@ const file = path.resolve(process.argv[2] || path.join(here, '.ai-secrets.env'))
 const APP_TIMEOUT_MS = 40000; // app/src/ai/request.ts
 
 if (!fs.existsSync(file)) { console.log(`Not found: ${file}\nCopy supabase/ai-secrets.example.env to supabase/.ai-secrets.env first.`); process.exit(1); }
-const { configFromEnv, routeFor, MAX_OUTPUT_TOKENS_CAP } = await import(pathToFileURL(path.join(root, 'supabase/functions/_shared/ai/providers.ts')).href);
+const { configFromEnv, routeFor, JOBS, MAX_OUTPUT_TOKENS_CAP } = await import(pathToFileURL(path.join(root, 'supabase/functions/_shared/ai/providers.ts')).href);
 
 const env = {}, seen = {}, problems = [], notes = [];
 for (const [i, line] of fs.readFileSync(file, 'utf8').split('\n').entries()) {
@@ -82,6 +82,8 @@ if (!('error' in cfg) && !(learn && 'error' in learn)) {
   if ('error' in route) problems.push(route.error);
   else {
     if (env.AI_ROUTES && /learn/.test(env.AI_ROUTES) && !learn) problems.push('AI_ROUTES sends a job to the learning model, but no AI_LEARN_PROVIDER is set up (it would go to the main model).');
+    // The function ignores jobs it doesn't know (so going back a version never stops the others); here they're named.
+    try { for (const job of Object.keys(JSON.parse(env.AI_ROUTES || '{}'))) if (!JOBS.includes(job)) problems.push(`AI_ROUTES names an unknown job "${job}" (known: ${JOBS.join(', ')}); the function would ignore it.`); } catch { /* reported by routeFor */ }
     notes.push(`the tutor goes to the ${route.primary.slot === 'learn' ? 'learning' : 'main'} model${route.fallback ? `, with the ${route.fallback.slot === 'learn' ? 'learning' : 'main'} one as its fallback` : ', with no fallback'}.`);
     const cards = routeFor(n => (n.endsWith('API_KEY') ? env[n] || 'not-a-key' : env[n]), { version: 1, action: 'cards', curriculumVersion: '1.0.0', lessonId: 'lesson.lab-isolation', count: 10, existing: [] });
     if (!('error' in cards)) notes.push(cards.other ? `revision cards: written by the ${cards.primary.slot === 'learn' ? 'learning' : 'main'} model, checked by the ${cards.other.slot === 'learn' ? 'learning' : 'main'} one.` : 'revision cards: off (they need a second model to check them).');

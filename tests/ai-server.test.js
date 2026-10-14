@@ -165,7 +165,10 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   env = { ...base, ...MAIN, ...LEARN('mock:slow'), AI_LEARN_TIMEOUT_MS: '2500', AI_TOTAL_TIMEOUT_MS: '3000', AI_ROUTES: '{"tutor": "learn"}' };
   a = await ask(rctx);
   check('all within the app\'s 40 seconds: with too little time left after a time-out, no second try', a.status === 502 && a.body.detail === 'timeout' && !a.body.fallback, a.body);
-  for (const [bad, why] of [[{ AI_ROUTES: '{"cooking": "learn"}' }, 'an unknown job'], [{ AI_ROUTES: '{"tutor": "gemini"}' }, 'an unknown slot'], [{ AI_ROUTES: 'tutor=learn' }, 'not JSON'],
+  env = { ...base, ...MAIN, ...LEARN(), AI_ROUTES: '{"cooking": "learn", "tutor": "learn"}' };
+  a = await ask(rctx);
+  check('a job this version doesn\'t know in AI_ROUTES (say, from a newer one) is ignored: the others still work as routed', a.status === 200 && a.body.model === 'Learning model', a.body);
+  for (const [bad, why] of [[{ AI_ROUTES: '{"tutor": "gemini"}' }, 'an unknown slot'], [{ AI_ROUTES: 'tutor=learn' }, 'not JSON'],
     [{ AI_LEARN_PROVIDER: 'openai-compatible', AI_LEARN_BASE_URL: 'https://x.example', AI_LEARN_MODEL: 'g' }, 'a learning model without its key or prices']]) {
     env = { ...base, ...MAIN, ...bad };
     a = await ask(rctx);
