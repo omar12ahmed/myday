@@ -1,4 +1,4 @@
-# Evaluating "Help me adjust today", "Add what's on my mind", AI help with notes and the tutor
+# Evaluating "Help me adjust today", "Add what's on my mind", AI help with notes, the tutor and revision cards
 
 20 synthetic MyDay days (`scenarios.ts`: low energy, poor sleep, day and night shifts — one across a clock change —,
 appointments, too little time, revision due, rest days, missing information) are sent to each model with **identical
@@ -162,3 +162,30 @@ Which model then answers which job is configuration on the server (`AI_ROUTES`, 
 learning model's `AI_LEARN_…` settings; see `../supabase/ai-secrets.example.env` and `routeFor` in
 `../supabase/functions/_shared/ai/providers.ts`). If the chosen model can't answer, the other gets one try.
 
+## Revision cards: a writer and a checker (AI roles, step 3, part B)
+
+"More practice" on a Cybersecurity lesson: one model writes up to 10 cards on the lesson's key ideas, the other
+checks each one (`../supabase/functions/_shared/ai/cards.ts`, the server's `cards` job). Three sets of scenarios in
+`cards-scenarios.ts`, each run with the server's own reply caps and waits for the job (writer 6000 tokens, checker
+3000):
+
+- `--action cards`: the writers, 10 cards on each of four lessons where precision matters, with the course's own
+  questions sent as "existing". Automatic checks are rough guides only (`usable`, `fullSet`, `mixed`,
+  `answerIsTheMarkedOption`, `variedPositions`, `noRepeats`, `noLinks`, `noAttackTools`, `onLesson`); whether a card
+  is right is judged by reading it (`review.md` lists every card).
+- `--action cards-check`: the checkers on 40 cards written for the evaluation, 14 with seeded mistakes.
+- `--action cards-drafts`: the checkers on the 215 cards the writers really produced, labelled sound / slip / wrong by
+  a blind review (`cards-drafts.json`). Subtler than the seeded mistakes — the test that told the checkers apart.
+
+```bash
+node ai-eval/eval.mjs --estimate --action cards --repeats 2 --models glm-5.3-flash,gemini-3.8-flash,gemini-3.5-flash-lite
+node ai-eval/eval.mjs --live --action cards --repeats 2 --budget-usd 0.40 --models glm-5.3-flash,gemini-3.8-flash,gemini-3.5-flash-lite
+node ai-eval/eval.mjs --live --action cards-drafts --repeats 2 --budget-usd 0.25 --models glm-5.3-flash,gemini-3.8-flash
+```
+
+Live runs of 13–14 Oct 2026 (US$0.34 in all), judged on accuracy first (`reviews/2026-10-13-cards-quality.md`):
+Gemini 3.8 Flash wrote 80 cards with no mistakes and no slips (GLM-5.3-Flash taught best but wrote 2 wrong cards and
+9 slips in 75; Gemini 3.5 Flash-Lite was weakest). As checkers on the real drafts, Gemini 3.8 Flash caught 4 of 6
+wrong cards, GLM 1 of 6 at its usual low reasoning and 3 of 6 at high (`glm-5.3-flash-high` in `models.json`).
+Recommendation: Gemini 3.8 Flash writes, GLM checks at high reasoning (`AI_ROUTES={"cards": "learn"}` and
+`AI_CHECKER_EXTRA_BODY` on the server).

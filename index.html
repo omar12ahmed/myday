@@ -5895,7 +5895,9 @@
       focusCourseId: null, // the course on the dashboard (otherwise the first one with work left)
       // Concepts are shared by learning (check-ins) and revision.
       // { id, title, taskIds, createdOn, kind: 'written'|'choice', prompt, answer, explanation, choices, correct, hint, source, note,
-      //   review: { reps, interval, lapses, due } }
+      //   review: { reps, interval, lapses, due }, origin? }
+      // origin (added by the new app in 1.19.0): a card an AI wrote and a second AI checked, that you kept —
+      //   { by: 'ai', subject: 'cybersecurity', lessonId, writer, checker, edited }. Kept as it is here; its source says the same in words.
       concepts: [],
       // Learning sessions. Time is wall-clock based, so it keeps counting while the phone sleeps.
       // { id, courseId, taskId, title, date, startedAt, plannedMin, short, status: 'active'|'done', runningSince, activeMs, endedAt,
@@ -5983,6 +5985,9 @@
         choices, correct: Number.isInteger(x.correct) && choices[x.correct] ? x.correct : null, hint: str(x.hint, 500), source: str(x.source, 400), note: str(x.note, 300),
         review: { reps: intIn(rv.reps, 0, 100000, 0), interval: intIn(rv.interval, 0, 365, 0), lapses: intIn(rv.lapses, 0, 100000, 0), due: isDateKey(rv.due) ? rv.due : null }
       });
+      const o = x.origin; // same rules as the new app's cleanOrigin (app/src/data/study/normalize.ts)
+      if (isObj(o) && o.by === 'ai' && o.subject === 'cybersecurity' && typeof o.lessonId === 'string' && /^lesson\.[a-z0-9-]{1,60}$/.test(o.lessonId))
+        st.concepts[st.concepts.length - 1].origin = { by: 'ai', subject: 'cybersecurity', lessonId: o.lessonId, writer: str(o.writer, 60), checker: str(o.checker, 60), edited: o.edited === true };
     }
     const conceptIds = new Set(st.concepts.map(c => c.id));
     for (const x of listOf(raw.sessions)) {

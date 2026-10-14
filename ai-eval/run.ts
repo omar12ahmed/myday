@@ -9,22 +9,34 @@ import { SCENARIOS, type Scenario } from './scenarios';
 import { TASK_SCENARIOS, type TasksScenario } from './tasks-scenarios';
 import { CONNECT_SCENARIOS, type ConnectScenario } from './connect-scenarios';
 import { TUTOR_SCENARIOS, type TutorScenario } from './tutor-scenarios';
+import { CARD_SCENARIOS, CHECK_SCENARIOS, DRAFT_SCENARIOS, type CardsScenario, type CheckScenario } from './cards-scenarios';
 import cyberAnswers from '../app/src/study/cybersecurity/answers.json';
 
 // Every kind of request: "Help me adjust today" (scenarios.ts), "Add what's on my mind" (tasks-scenarios.ts), AI
-// help with notes (connect-scenarios.ts) and the Cybersecurity tutor (tutor-scenarios.ts).
-type AnyScenario = Scenario | TasksScenario | ConnectScenario | TutorScenario;
-const ALL_SCENARIOS: AnyScenario[] = [...SCENARIOS, ...TASK_SCENARIOS, ...CONNECT_SCENARIOS, ...TUTOR_SCENARIOS];
+// help with notes (connect-scenarios.ts), the Cybersecurity tutor (tutor-scenarios.ts), and AI-written revision cards —
+// the writer ("cards") and the checker ("cards-check"), both in cards-scenarios.ts.
+type AnyScenario = Scenario | TasksScenario | ConnectScenario | TutorScenario | CardsScenario | CheckScenario;
+const ALL_SCENARIOS: AnyScenario[] = [...SCENARIOS, ...TASK_SCENARIOS, ...CONNECT_SCENARIOS, ...TUTOR_SCENARIOS, ...CARD_SCENARIOS, ...CHECK_SCENARIOS, ...DRAFT_SCENARIOS];
 const isTasksScenario = (sc: AnyScenario): sc is TasksScenario => (sc as TasksScenario).kind === 'tasks';
 const isConnectScenario = (sc: AnyScenario): sc is ConnectScenario => (sc as ConnectScenario).kind === 'connect';
 const isTutorScenario = (sc: AnyScenario): sc is TutorScenario => (sc as TutorScenario).kind === 'tutor';
-const actionOf = (sc: AnyScenario) => (isTasksScenario(sc) ? 'tasks' : isConnectScenario(sc) ? 'connect' : isTutorScenario(sc) ? 'tutor' : 'adjust');
-export type Action = 'adjust' | 'tasks' | 'connect' | 'tutor' | 'all';
+const isCardsScenario = (sc: AnyScenario): sc is CardsScenario => (sc as CardsScenario).kind === 'cards';
+const isCheckScenario = (sc: AnyScenario): sc is CheckScenario => (sc as CheckScenario).kind === 'cards-check';
+const actionOf = (sc: AnyScenario) => (isTasksScenario(sc) ? 'tasks' : isConnectScenario(sc) ? 'connect' : isTutorScenario(sc) ? 'tutor' : isCardsScenario(sc) ? 'cards' : isCheckScenario(sc) ? (sc.writtenBy ? 'cards-drafts' : 'cards-check') : 'adjust');
+export type Action = 'adjust' | 'tasks' | 'connect' | 'tutor' | 'cards' | 'cards-check' | 'cards-drafts' | 'all';
+// The cards job's own reply caps and waits, as the server sets them (ai-plan/handler.ts), whatever models.json says
+// for the other jobs: ten cards don't fit their caps.
+const JOB_LIMITS: Partial<Record<ReturnType<typeof actionOf>, { maxOutputTokens: number; timeoutMs: number }>> = {
+  cards: { maxOutputTokens: 6000, timeoutMs: 60000 },
+  'cards-check': { maxOutputTokens: 3000, timeoutMs: 60000 },
+  'cards-drafts': { maxOutputTokens: 3000, timeoutMs: 60000 },
+};
+const forJob = (cfg: K.ProviderConfig, sc: AnyScenario): K.ProviderConfig => (cfg.provider === 'mock' ? cfg : { ...cfg, ...(JOB_LIMITS[actionOf(sc)] ?? {}) });
 // The scenarios a run uses: the ones named, or all of one action ("adjust" unless said otherwise).
 function pickScenarios(ids: string[] | null, action: Action = 'adjust'): AnyScenario[] {
   if (ids) {
     const unknown = ids.filter(id => !ALL_SCENARIOS.some(s => s.id === id));
-    if (unknown.length) throw new Error(`Unknown scenario ${unknown.map(x => `"${x}"`).join(', ')} (see ai-eval/scenarios.ts, tasks-scenarios.ts, connect-scenarios.ts and tutor-scenarios.ts).`);
+    if (unknown.length) throw new Error(`Unknown scenario ${unknown.map(x => `"${x}"`).join(', ')} (see ai-eval/scenarios.ts, tasks-scenarios.ts, connect-scenarios.ts, tutor-scenarios.ts and cards-scenarios.ts).`);
     return ALL_SCENARIOS.filter(s => ids.includes(s.id));
   }
   return ALL_SCENARIOS.filter(s => action === 'all' || actionOf(s) === action);
@@ -90,6 +102,9 @@ export interface RunRecord {
   rest: boolean;
   savedSafely: boolean | null; // applying it changed only today's plan (lists, other days and energy untouched)
   shown: { rest: boolean; priorities: string[]; explanation: string; missing: string[] } | null;
+  // AI-written cards. Writer: how many usable cards came back of how many asked for. Checker: of the seeded set,
+  // how many wrong cards it dropped and how many sound ones it kept.
+  cards?: { delivered: number; asked: number } | { caught: number; wrong: number; kept: number; sound: number; slipsDropped?: number; slips?: number };
 }
 export interface Result {
   meta: {
@@ -109,7 +124,7 @@ const words = (s: unknown) => (typeof s === 'string' && s.trim() ? s.trim().spli
 const clockMin = (c: string) => Number(c.slice(0, 2)) * 60 + Number(c.slice(3, 5));
 const clockOf = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
 
-function setUp(sc: Exclude<AnyScenario, TutorScenario>) {
+function setUp(sc: Exclude<AnyScenario, TutorScenario | CardsScenario | CheckScenario>) {
   K.useMemoryStorage();
   K.setClock(sc.now);
   const s = K.freshState();
@@ -234,6 +249,50 @@ function tutorExpectations(sc: TutorScenario, reply: { explanation: string; next
   return out;
 }
 
+// ---------- AI-written revision cards ----------
+// The writer's cards as written (before the shape check) and as the server keeps them (after it).
+type LooseCard = { kind: string; prompt: string; answer: string; explanation: string; choices?: string[]; correct?: number };
+function rawCards(text: string): LooseCard[] | null {
+  const raw = K.parseReply(text);
+  const list = raw && typeof raw === 'object' && Array.isArray((raw as { cards?: unknown }).cards) ? (raw as { cards: unknown[] }).cards : null;
+  if (!list) return null;
+  const str = (v: unknown) => (typeof v === 'string' ? v : '');
+  return list.filter(x => x && typeof x === 'object').map(x => {
+    const c = x as Record<string, unknown>;
+    return { kind: str(c.kind), prompt: str(c.prompt), answer: str(c.answer), explanation: str(c.explanation), ...(Array.isArray(c.choices) ? { choices: c.choices.map(str) } : {}), ...(typeof c.correct === 'number' ? { correct: c.correct } : {}) };
+  });
+}
+const OUTLINE_STOP = new Set(['explain', 'separate', 'apply', 'evaluate', 'distinguish', 'interpret', 'identify', 'use', 'how', 'its', 'can', 'not', 'are', 'one', 'two', 'own', 'why', 'what', 'which', 'when', 'into', 'than']);
+const cardText = (c: LooseCard) => [c.prompt, c.answer, c.explanation, ...(c.choices ?? [])].join('\n');
+const wordSet = (s: string) => new Set(wordsOf(s));
+const overlap = (a: string, b: string) => { const x = wordSet(a), y = wordSet(b); if (!x.size || !y.size) return 0; let n = 0; for (const w of x) if (y.has(w)) n++; return n / Math.min(x.size, y.size); };
+// What a useful set does. Rough guides only: whether each card is right is judged by reading them (review.md).
+function cardsExpectations(sc: CardsScenario, cards: LooseCard[] | null): Expectations {
+  const out: Expectations = { usable: !!cards && cards.length > 0 };
+  if (!cards) return out;
+  const lesson = K.tutorLessons[sc.lessonId];
+  const choice = cards.filter(c => c.kind === 'choice');
+  out.fullSet = cards.length === sc.count;
+  out.mixed = choice.length > 0 && choice.length < cards.length;
+  out.answerIsTheMarkedOption = choice.every(c => !!c.choices && typeof c.correct === 'number' && squash(c.choices[c.correct] ?? '') === squash(c.answer));
+  // Not always the same position for the right option (a learner would soon notice).
+  out.variedPositions = choice.length < 3 || new Set(choice.map(c => c.correct)).size > 1;
+  // No card asks what another card, or a question already in revision, asks (most of its meaningful words shared).
+  out.noRepeats = cards.every((c, i) => cards.every((d, j) => j <= i || overlap(c.prompt, d.prompt) < 0.8)) && cards.every(c => sc.existing.every(q => overlap(c.prompt, q) < 0.8));
+  out.noLinks = !cards.some(c => /https?:\/\/|www\./i.test(cardText(c)));
+  out.noAttackTools = !cards.some(c => ATTACK_TOOLS.test(cardText(c)));
+  // Each card shares a meaningful word with the lesson's title, objectives or key concepts: the same word for short
+  // ones (DNS, NAT, uid), the same first five letters for longer ones (permission, permissions).
+  const meaningful = (t: string) => wordsOf(t).filter(w => w.length >= 3 && !OUTLINE_STOP.has(w));
+  const near = (a: string, b: string) => (a.length >= 5 && b.length >= 5 ? a.slice(0, 5) === b.slice(0, 5) : a === b);
+  const outline = meaningful([lesson.title, ...lesson.objectives, ...lesson.concepts].join(' '));
+  out.onLesson = cards.every(c => meaningful(cardText(c)).some(w => outline.some(o => near(o, w))));
+  return out;
+}
+const showCard = (c: LooseCard) => (c.kind === 'choice' && c.choices
+  ? `[choice] ${c.prompt} — options: ${c.choices.map((x, i) => (i === c.correct ? `✓ ${x}` : x)).join(' / ')} — why: ${c.explanation}`
+  : `[written] ${c.prompt} — answer: ${c.answer} — why: ${c.explanation}`);
+
 // One scenario ready to send: its context, and how to score a reply (filling in the run record).
 interface Prepared { ctx: Parameters<typeof K.callModel>[1]; score: (rec: RunRecord, text: string) => void }
 function prepare(sc: AnyScenario): Prepared {
@@ -252,6 +311,53 @@ function prepare(sc: AnyScenario): Prepared {
         rec.explanationWords = reply ? words(reply.explanation) : 0;
         rec.shown = reply ? { rest: false, priorities: [`Next step: ${reply.nextStep}`], explanation: reply.explanation, missing: [] } : null;
         rec.savedSafely = null; // nothing is saved: the tutor's answer is only shown
+      },
+    };
+  }
+  if (isCardsScenario(sc)) {
+    const ctx: K.CardsContext = { version: 1, action: 'cards', curriculumVersion: '1.0.0', lessonId: sc.lessonId, count: sc.count, existing: sc.existing };
+    if (!K.checkCardsContext(ctx)) throw new Error(`Scenario ${sc.id}: the server would refuse this request (unknown lesson, count or existing questions).`);
+    return {
+      ctx,
+      score(rec, text) {
+        const draft = K.readDraft(text, sc.lessonId, sc.count); // exactly what the server passes to the checker, or nothing
+        const usable = !!draft && draft.cards.length > 0;
+        rec.outcome = usable ? 'ok' : 'invalid';
+        rec.violations = !draft ? ['not-usable'] : draft.leftOut ? [`left-out x${draft.leftOut}`] : [];
+        rec.violationDetails = !draft ? ['not-usable: not the JSON the server accepts'] : draft.leftOut ? [`left-out: ${draft.leftOut} card(s) failed the shape check (fields, lengths, options) or were past the ${sc.count} asked for`] : [];
+        rec.expectRaw = cardsExpectations(sc, rawCards(text));
+        rec.expectFinal = cardsExpectations(sc, usable ? draft!.cards : null);
+        rec.priorities = draft ? draft.cards.length : 0;
+        rec.cards = { delivered: draft ? draft.cards.length : 0, asked: sc.count };
+        rec.shown = draft ? { rest: false, priorities: draft.cards.map(showCard), explanation: '', missing: [] } : null;
+        rec.savedSafely = null; // nothing is saved here: the checker and then you decide which cards are kept
+      },
+    };
+  }
+  if (isCheckScenario(sc)) {
+    const ctx: K.CardsCheckContext = { version: 1, action: 'cards-check', lessonId: sc.lessonId, cards: sc.cards.map(({ sound: _s, why: _w, ...card }) => card) };
+    if (ctx.cards.some(c => !K.cleanDraftCard(c))) throw new Error(`Scenario ${sc.id}: a card wouldn't pass the shape check, so the server would never send it.`);
+    return {
+      ctx,
+      score(rec, text) {
+        const verdicts = K.readVerdicts(text, sc.cards.length); // missing or unclear verdicts count as "drop"
+        // Whether it answered for every card itself (readVerdicts drops the ones it didn't).
+        const raw = K.parseReply(text);
+        const list = raw && typeof raw === 'object' && Array.isArray((raw as { verdicts?: unknown }).verdicts) ? (raw as { verdicts: Record<string, unknown>[] }).verdicts : [];
+        const answered = sc.cards.every((_, i) => list.some(v => v && v.index === i && (v.verdict === 'keep' || v.verdict === 'drop')));
+        rec.outcome = verdicts ? 'ok' : 'invalid';
+        rec.violations = !verdicts ? ['not-usable'] : answered ? [] : ['missing-verdicts'];
+        rec.violationDetails = !verdicts ? ['not-usable: not the JSON the server accepts'] : answered ? [] : ['missing-verdicts: some cards had no clear verdict (counted as dropped)'];
+        const wrong = sc.cards.map((c, i) => [c, i] as const).filter(([c]) => c.sound === false), sound = sc.cards.map((c, i) => [c, i] as const).filter(([c]) => c.sound === true);
+        const caught = verdicts ? wrong.filter(([, i]) => verdicts[i].verdict === 'drop').length : 0;
+        const kept = verdicts ? sound.filter(([, i]) => verdicts[i].verdict === 'keep').length : 0;
+        rec.expectRaw = verdicts ? { answeredEvery: answered, ...(wrong.length ? { caughtEveryMistake: caught === wrong.length } : {}), keptMostSound: kept >= Math.ceil(sound.length * 0.8) } : { answeredEvery: false };
+        rec.expectFinal = rec.expectRaw;
+        const slips = sc.cards.map((c, i) => [c, i] as const).filter(([c]) => c.sound === null);
+        rec.cards = { caught, wrong: wrong.length, kept, sound: sound.length, slipsDropped: verdicts ? slips.filter(([, i]) => verdicts[i].verdict === 'drop').length : 0, slips: slips.length };
+        rec.priorities = kept;
+        rec.shown = verdicts ? { rest: false, explanation: '', missing: [], priorities: sc.cards.map((c, i) => `${verdicts[i].verdict === 'keep' ? 'KEEP' : 'DROP'}${c.sound === false ? ` (${sc.writtenBy ? 'wrong' : 'seeded mistake'}: ${c.why})` : c.sound === null ? ` (slip: ${c.why})` : ''}${c.sound === null || (verdicts[i].verdict === 'keep') === c.sound ? '' : ' ← WRONG CALL'} · ${c.prompt} — ${verdicts[i].reason}`) } : null;
+        rec.savedSafely = null;
       },
     };
   }
@@ -374,12 +480,13 @@ export async function evaluate(o: Options): Promise<Result> {
   // No call is ever retried: one request per scenario, model and repeat.
   for (let rep = 1; rep <= o.repeats; rep++) {
     for (const sc of scenarios) {
-      for (const { id, cfg } of configs) {
+      for (const { id, cfg: base } of configs) {
         const rec: RunRecord = { model: id, scenario: sc.id, rep, outcome: 'error', finishReason: null, latencyMs: null, inputTokens: null, outputTokens: null, reasoningTokens: null, reservedUsd: null, costUsd: null,
           originalReply: null, violations: [], violationDetails: [], adjusted: [], expectRaw: {}, expectFinal: {}, explanationWords: 0, priorities: 0, rest: false, savedSafely: null, shown: null };
         if (lostConnection) { rec.outcome = 'skipped-connection'; runs.push(rec); continue; }
         if (o.stopOnFailure && failed.has(id)) { rec.outcome = 'skipped-failure'; runs.push(rec); continue; }
         const { ctx, score } = prepare(sc);
+        const cfg = forJob(base, sc);
         const real = cfg.provider !== 'mock';
         if (real) {
           // Set aside the most this call could cost; don't make it if that's more than is left (this run, or overall).
@@ -408,7 +515,7 @@ export async function evaluate(o: Options): Promise<Result> {
           failed.add(id);
           runs.push(rec); o.log(`${id} ${sc.id} #${rep}: unsuccessful — ${rec.error}${rec.errorDetail ? `: ${rec.errorDetail}` : ''}`); continue;
         }
-        rec.originalReply = res.text.slice(0, 4000);
+        rec.originalReply = res.text.slice(0, 16000); // ten revision cards run to about 5,000 characters
         score(rec, res.text);
         if (rec.outcome !== 'ok') failed.add(id);
         runs.push(rec);
@@ -419,7 +526,7 @@ export async function evaluate(o: Options): Promise<Result> {
   return {
     meta: {
       date: startedAt, mode: o.live ? 'live' : 'mock',
-      promptVersion: [scenarios.some(s => actionOf(s) === 'adjust') && K.PROMPT_VERSION, scenarios.some(isTasksScenario) && K.TASKS_PROMPT_VERSION, scenarios.some(isConnectScenario) && K.CONNECT_PROMPT_VERSION, scenarios.some(isTutorScenario) && K.TUTOR_PROMPT_VERSION].filter(Boolean).join(' + '),
+      promptVersion: [scenarios.some(s => actionOf(s) === 'adjust') && K.PROMPT_VERSION, scenarios.some(isTasksScenario) && K.TASKS_PROMPT_VERSION, scenarios.some(isConnectScenario) && K.CONNECT_PROMPT_VERSION, scenarios.some(isTutorScenario) && K.TUTOR_PROMPT_VERSION, scenarios.some(isCardsScenario) && K.CARDS_PROMPT_VERSION, scenarios.some(isCheckScenario) && K.CARDS_CHECK_PROMPT_VERSION].filter(Boolean).join(' + '),
       models: configs.map(c => ({ id: c.id, label: c.cfg.label, model: c.cfg.model, maxOutputTokens: c.cfg.maxOutputTokens })), repeats: o.repeats, scenarios: scenarios.length, retries: 0,
       budgetUsd: o.budgetUsd, totalBudgetUsd: total, spentBeforeUsd: before, reservedBeforeUsd: o.reservedBeforeUsd ?? 0,
       spentUsd: Math.round(spent * 1e6) / 1e6, usageUsd: Math.round(usage * 1e6) / 1e6, reservedUsd: Math.round(reservedKept * 1e6) / 1e6, stoppedForBudget: stopped,
@@ -455,17 +562,18 @@ export function estimate(o: Options): string {
     if (m.provider === 'mock') continue;
     if (m.priceInPerMTok === null || m.priceOutPerMTok === null) throw new Error(`"${id}" needs its prices in ai-eval/models.json.`);
     const cfg: K.ProviderConfig = { provider: m.provider, label: m.label, model: m.model, temperature: 0.2, maxOutputTokens: m.maxOutputTokens ?? 600, timeoutMs: 0, priceInPerMTok: m.priceInPerMTok, priceOutPerMTok: m.priceOutPerMTok };
-    let chars = 0, inTok = 0, per = 0, all = 0;
+    let chars = 0, inTok = 0, per = 0, all = 0, cap = 0;
     for (const sc of scenarios) {
       const { ctx } = prepare(sc);
       chars = Math.max(chars, K.messagesFor(ctx).map(x => x.content).join('\n').length);
       inTok = Math.max(inTok, K.reserveInputTokens(ctx));
-      const w = K.worstCaseCostUsd(cfg, ctx) as number;
+      cap = Math.max(cap, forJob(cfg, sc).maxOutputTokens);
+      const w = K.worstCaseCostUsd(forJob(cfg, sc), ctx) as number;
       per = Math.max(per, w); all += w * o.repeats;
     }
     sum += all;
     if (m.priceTierMaxInputTokens && inTok > m.priceTierMaxInputTokens) notes.push(`${id}: the prompt may be past the first price tier (${m.priceTierMaxInputTokens} tokens) — check the prices.`);
-    lines.push(`| ${m.label} (${m.model}) | ${scenarios.length * o.repeats} | ${chars} | ${inTok} | ${cfg.maxOutputTokens} | ${m.priceInPerMTok} / ${m.priceOutPerMTok}${m.priceTierMaxInputTokens ? ` (inputs up to ${m.priceTierMaxInputTokens / 1000}K tokens)` : ''} | $${per.toFixed(5)} | $${all.toFixed(4)} |`);
+    lines.push(`| ${m.label} (${m.model}) | ${scenarios.length * o.repeats} | ${chars} | ${inTok} | ${cap} | ${m.priceInPerMTok} / ${m.priceOutPerMTok}${m.priceTierMaxInputTokens ? ` (inputs up to ${m.priceTierMaxInputTokens / 1000}K tokens)` : ''} | $${per.toFixed(5)} | $${all.toFixed(4)} |`);
   }
   lines.push('', `Most for every call: US$${sum.toFixed(4)}; with a further ${Math.round((CONTINGENCY - 1) * 100)}% for anything missed: **US$${(sum * CONTINGENCY).toFixed(4)}**.`,
     'An estimate, not a guarantee: it assumes each provider stops at the reply cap (reasoning included) and charges its list prices. The run itself checks before every call and stops before one whose most-it-could-cost is more than what\'s left.');
@@ -518,6 +626,31 @@ export function summary(r: Result): string {
   }
   const notRun = r.runs.filter(skipped);
   if (notRun.length) lines.push('', `Not called: ${notRun.filter(x => x.outcome === 'skipped-budget').length} (budget), ${notRun.filter(x => x.outcome === 'skipped-failure').length} (stopped after a failure with that model), ${notRun.filter(x => x.outcome === 'skipped-connection').length} (stopped: no connection).`);
+  // AI-written cards: the writer's delivery, and the checker's calls on the seeded set (the numbers that matter most).
+  const tally = (rs: RunRecord[], key: string) => rs.reduce((a, x) => a + ((x.cards as Record<string, number> | undefined)?.[key] ?? 0), 0);
+  const writes = r.runs.filter(x => x.cards && 'asked' in x.cards), checks = r.runs.filter(x => x.cards && 'wrong' in x.cards);
+  if (writes.length || checks.length) {
+    lines.push('', '## Revision cards', '');
+    if (writes.length) {
+      lines.push('Writer: usable cards (after the shape check) of those asked for, over every call that replied. Whether they\'re right is judged by reading them (review.md), not here.', '',
+        '| Model | Calls | Cards delivered | Sets with every card usable |', '|---|---|---|---|');
+      for (const mm of m.models) {
+        const rs = writes.filter(x => x.model === mm.id);
+        if (rs.length) lines.push(`| ${mm.label} | ${rs.length} | ${tally(rs, 'delivered')}/${tally(rs, 'asked')} | ${rs.filter(x => !x.violations.length && x.outcome === 'ok').length}/${rs.length} |`);
+      }
+      lines.push('');
+    }
+    if (checks.length) {
+      lines.push('Checker, on labelled cards (cards-scenarios.ts): mistakes it dropped, and sound cards it kept. A mistake it keeps could reach a learner; a sound card it drops is only a lost card. Slips (real drafts only) may go either way.', '',
+        '| Model | Calls | Mistakes dropped | Sound cards kept | Slips dropped | Calls that caught every mistake |', '|---|---|---|---|---|---|');
+      for (const mm of m.models) {
+        const rs = checks.filter(x => x.model === mm.id);
+        const withMistakes = rs.filter(x => 'caughtEveryMistake' in x.expectRaw);
+        if (rs.length) lines.push(`| ${mm.label} | ${rs.length} | ${tally(rs, 'caught')}/${tally(rs, 'wrong')} (${pct(tally(rs, 'caught'), tally(rs, 'wrong'))}) | ${tally(rs, 'kept')}/${tally(rs, 'sound')} (${pct(tally(rs, 'kept'), tally(rs, 'sound'))}) | ${tally(rs, 'slips') ? `${tally(rs, 'slipsDropped')}/${tally(rs, 'slips')}` : '—'} | ${withMistakes.filter(x => x.expectRaw.caughtEveryMistake).length}/${withMistakes.length} |`);
+      }
+      lines.push('');
+    }
+  }
   const failures = r.runs.filter(x => x.outcome === 'error' || x.outcome === 'invalid');
   if (failures.length) {
     lines.push('', '## Unsuccessful generations', '', '| Model | Scenario | # | What happened | Provider\'s message |', '|---|---|---|---|---|');
@@ -573,11 +706,12 @@ export function calls(r: Result): string {
 export function review(r: Result): string {
   const lines = ['# Suggestions to judge by eye', '', 'For each scenario: what each model suggested (first repeat), after the app\'s checks. Rate each 1–5 for usefulness if you like.', ''];
   for (const sc of ALL_SCENARIOS.filter(s => r.runs.some(x => x.scenario === s.id))) {
-    lines.push(`## ${sc.id}: ${sc.title}`, '', isTasksScenario(sc) ? `Written: “${sc.text}” · ${sc.tags.join(', ')}` : isTutorScenario(sc) ? `Lesson: ${K.tutorLessons[sc.lessonId].title} · asked: “${sc.question}” · ${sc.tags.join(', ')}` : isConnectScenario(sc) ? `Right answers: ${Object.entries(sc.expect.links).map(([id, p]) => `${id} → ${Array.isArray(p) ? p.map(x => x ?? 'none').join(' or ') : p ?? 'none'}`).join('; ')} · ${sc.tags.join(', ')}` : `Note: ${sc.note ? `“${sc.note}”` : '(none)'} · ${sc.tags.join(', ')}`, '');
+    lines.push(`## ${sc.id}: ${sc.title}`, '', isTasksScenario(sc) ? `Written: “${sc.text}” · ${sc.tags.join(', ')}` : isTutorScenario(sc) ? `Lesson: ${K.tutorLessons[sc.lessonId].title} · asked: “${sc.question}” · ${sc.tags.join(', ')}` : isCardsScenario(sc) || isCheckScenario(sc) ? `Lesson: ${K.tutorLessons[sc.lessonId].title} · ${sc.tags.join(', ')}` : isConnectScenario(sc) ? `Right answers: ${Object.entries(sc.expect.links).map(([id, p]) => `${id} → ${Array.isArray(p) ? p.map(x => x ?? 'none').join(' or ') : p ?? 'none'}`).join('; ')} · ${sc.tags.join(', ')}` : `Note: ${sc.note ? `“${sc.note}”` : '(none)'} · ${sc.tags.join(', ')}`, '');
     for (const mm of r.meta.models) {
       const x = r.runs.find(y => y.model === mm.id && y.scenario === sc.id && y.rep === 1);
       if (!x) continue;
       if (!x.shown) { lines.push(`- **${mm.label}**: ${x.outcome}${x.error ? ` (${x.error})` : ''}`); continue; }
+      if (isCardsScenario(sc) || isCheckScenario(sc)) { lines.push(`- **${mm.label}**${x.violations.length ? ` _(${x.violations.join(', ')})_` : ''}:`, ...x.shown.priorities.map((p, i) => `  ${i + 1}. ${p}`)); continue; }
       const what = x.shown.rest ? 'Rest' : x.shown.priorities.length ? x.shown.priorities.join('; ') : 'Nothing more today';
       lines.push(`- **${mm.label}**: ${what}. “${x.shown.explanation}”${x.shown.missing.length ? ` Missing: ${x.shown.missing.join('; ').replace(/\.$/, '')}.` : ''}${x.violations.length ? ` _(corrected: ${x.violations.map(v => (v === 'pressure-language' ? `tone flag${x.originalReply ? '' : ', unverified'}` : v)).join(', ')})_` : ''} — rating: __`);
     }

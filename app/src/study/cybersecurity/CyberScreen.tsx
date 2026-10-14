@@ -15,6 +15,7 @@ import { Lines, LinkButton } from './parts';
 import { activities, curriculum, environments, lessons, modules, resources, selectedPath, skills, type Lesson } from './catalogue';
 import { attemptsFor, importPath, nextLesson, prerequisiteGaps } from './learning';
 import { ActivityView } from './Notebook';
+import { AiCards } from './AiCards';
 import { TutorCard } from './TutorCard';
 import { PracticeIndex, PracticeView, RelatedPractice } from './Practice';
 import { CheckRevision, CyberRevisionGlance } from './CheckRevision';
@@ -127,6 +128,7 @@ function LessonView({ data, lesson: l }: { data: MyDayData; lesson: Lesson }) {
       <h3>Completion criteria</h3><Lines items={l.completion_criteria} /><p className="text-sm text-fg-2">A short session is a checkpoint. Marking a roadmap task complete records your choice, not verified mastery.</p>
       <CheckRevision data={data} ids={activities.get(l.knowledge_check_id)?.questions.map(q => q.id) ?? []} />
     </Card>
+    <AiCards key={'cards-' + l.id} data={data} lesson={l} coursePrompts={activities.get(l.knowledge_check_id)?.questions.map(q => q.prompt) ?? []} />
     <RelatedPractice data={data} ids={[l.id]} />
     <TutorCard key={l.id} lesson={l} />
     <Card><h3>Read and explore</h3><ResourceLinks ids={l.resource_ids} /></Card>

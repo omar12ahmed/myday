@@ -26,6 +26,10 @@ export { chooseTasks } from '../app/src/data/plan';
 export { buildTutorMessages, checkTutorContext, mockTutor, TUTOR_PROMPT_VERSION, type TutorContext } from '../supabase/functions/_shared/ai/tutor.ts';
 export { tutorLessons } from '../supabase/functions/_shared/ai/tutor-lessons.ts';
 export { tutorReply } from '../app/src/study/cybersecurity/tutorReply';
+// AI-written revision cards: the writer and the checker (AI roles, step 3), and the app's side (checks, adding, Undo).
+export { addAiCards, cardsContext, readCardsReply, removeAiCards } from '../app/src/ai/cards';
+export { aiCyberCards, dueIds } from '../app/src/data/study/queue';
+export { CARDS_CHECK_PROMPT_VERSION, CARDS_LIMITS, CARDS_PROMPT_VERSION, checkCardsContext, cleanDraftCard, mockCards, mockCardsCheck, readDraft, readVerdicts, type CardsCheckContext, type CardsContext, type DraftCard } from '../supabase/functions/_shared/ai/cards.ts';
 
 // ---------- Memory-only storage ----------
 export function useMemoryStorage() {

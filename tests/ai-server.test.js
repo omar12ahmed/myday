@@ -191,6 +191,66 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   check('the tokens of both calls are recorded', finished.length === 1 && finished[0][0] === 700 && finished[0][1] === 120);
   env = { AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_MOCK_DELAY_MS: '0', AI_DAILY_LIMIT: '50', AI_MIN_SECONDS_BETWEEN: '0', AI_MONTHLY_BUDGET_USD: '1' };
 
+  console.log('\n[2e] AI-written revision cards: a writer, then a checker (AI roles step 3, B)');
+  const kctx = { version: 1, action: 'cards', curriculumVersion: '1.0.0', lessonId: 'lesson.lab-isolation', count: 6, existing: ['Is a VM snapshot a substitute for independent backup?'] };
+  const kbase = { AI_MOCK_DELAY_MS: '0', AI_DAILY_LIMIT: '500', AI_MIN_SECONDS_BETWEEN: '0', AI_MONTHLY_BUDGET_USD: '1' };
+  const kMain = { AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_LABEL: 'Main model' };
+  const kLearn = (model = 'mock:good') => ({ AI_LEARN_PROVIDER: 'mock', AI_LEARN_MODEL: model, AI_LEARN_LABEL: 'Learning model', AI_LEARN_MOCK_DELAY_MS: '0' });
+  const kask = async (context, over) => { lines.length = 0; finished = []; const r = await call({ context }, {}, over); return { status: r.status, body: await r.json(), log: lines.slice() }; };
+  env = { ...kbase, ...kMain, ...kLearn(), AI_ROUTES: '{"cards": "learn"}' };
+  let k = await kask(kctx);
+  const kout = k.status === 200 ? JSON.parse(k.body.output) : null;
+  check('cards: the routed model writes and the other one checks, in one request (200)', k.status === 200 && k.body.model === 'Learning model' && k.body.checker === 'Main model' && kout.lessonId === kctx.lessonId, k.body);
+  check('…as many cards as asked for, each with the checker\'s verdict', kout && kout.cards.length === 6 && kout.verdicts.length === 6 && kout.verdicts.every((v, i) => v.index === i && v.verdict === 'keep'));
+  check('…both calls\' tokens recorded, and the log names the job and both models, no content', finished.length === 1 && finished[0][0] > 0 && /^ai-plan ok:cards\/learn\+main 200 \d+ms$/.test(k.log[0]) && !k.log[0].includes('snapshot'), k.log);
+  env = { ...kbase, ...kMain };
+  k = await kask(kctx);
+  check('with only one model set up, no cards at all: nothing reaches you unchecked (503)', k.status === 503 && k.body.error === 'no-checker');
+  env = { ...kbase, ...kMain, AI_MODEL: 'mock:error', ...kLearn(), AI_ROUTES: '{"cards": "learn"}' };
+  k = await kask(kctx);
+  check('if the checker can\'t answer, no cards (502 "unchecked"), though the writer\'s tokens are recorded', k.status === 502 && k.body.detail === 'unchecked' && finished.length === 1 && finished[0][0] > 0, k.body);
+  env = { ...kbase, ...kMain, ...kLearn('mock:error'), AI_ROUTES: '{"cards": "learn"}' };
+  k = await kask(kctx);
+  check('if the writer can\'t answer, no cards and no checker call (502)', k.status === 502 && /cards-writer-http:learn/.test(k.log[0]), k.log);
+  env = { ...kbase, ...kMain, ...kLearn('mock:sloppy'), AI_ROUTES: '{"cards": "learn"}' };
+  k = await kask(kctx);
+  check('a malformed card from the writer is left out (and counted), never repaired', k.status === 200 && JSON.parse(k.body.output).leftOut === 1 && JSON.parse(k.body.output).cards.length === 6);
+  env = { ...kbase, ...kMain, ...kLearn(), AI_ROUTES: '{"cards": "learn"}' };
+  for (const [bad, why] of [[{ ...kctx, count: 11 }, 'more than 10 cards'], [{ ...kctx, count: 0 }, 'no cards'], [{ ...kctx, lessonId: 'lesson.missing' }, 'an unknown lesson'],
+    [{ ...kctx, existing: Array.from({ length: 41 }, (_, i) => 'Q' + i) }, 'too many existing questions'], [{ ...kctx, notes: 'private' }, 'an extra field'], [{ version: 1, action: 'cards-check', lessonId: 'lesson.lab-isolation', cards: [] }, 'a checker request from outside']]) {
+    k = await kask(bad);
+    check(`cards: ${why} — refused (400) before any model call`, k.status === 400 && finished.length === 0);
+  }
+  // Real-shaped providers (a fake network): both worst cases reserved; the writer's and the checker's addresses and instructions.
+  const kOPEN = (prefix, host, inP, outP) => ({ [prefix + 'PROVIDER']: 'openai-compatible', [prefix + 'BASE_URL']: `https://${host}/v1`, [prefix + 'MODEL']: host, [prefix + 'API_KEY']: 'sk-' + host,
+    [prefix + 'PRICE_IN_PER_MTOK']: String(inP), [prefix + 'PRICE_OUT_PER_MTOK']: String(outP), [prefix + 'LABEL']: host });
+  env = { ...kbase, ...kOPEN('AI_', 'main.example', 0.15, 0.5), ...kOPEN('AI_LEARN_', 'learn.example', 0.75, 3.75), AI_ROUTES: '{"cards": "learn"}' };
+  let kres = null; const ksent = [];
+  const draft = JSON.stringify({ lessonId: 'lesson.lab-isolation', cards: [{ kind: 'written', prompt: 'Why snapshot first?', answer: 'To recover.', explanation: 'A snapshot is a restore point.' }] });
+  k = await kask(kctx, {
+    begin: async (tok, l) => { kres = l.reserveUsd; return { ok: true }; },
+    fetchImpl: async (url, init) => { const body = JSON.parse(init.body); ksent.push({ host: new URL(url).host, system: body.messages[0].content, maxTokens: body.max_tokens });
+      const content = url.includes('learn.example') ? draft : JSON.stringify({ verdicts: [{ index: 0, verdict: 'drop', reason: 'Too vague.' }] });
+      return new Response(JSON.stringify({ choices: [{ message: { content }, finish_reason: 'stop' }], usage: { prompt_tokens: 500, completion_tokens: 200, total_tokens: 700 } })); },
+  });
+  check('the writer gets the writing instructions and the checker the checking ones, each at its own address', ksent.length === 2 && ksent[0].host === 'learn.example' && /You write revision cards/.test(ksent[0].system) && ksent[1].host === 'main.example' && /You check revision cards/.test(ksent[1].system));
+  check('…with a reply cap large enough for ten cards (writer 6000, checker 3000 tokens)', ksent[0].maxTokens === 6000 && ksent[1].maxTokens === 3000, ksent.map(x => x.maxTokens));
+  check('…both models\' worst cases reserved before either call', kres > 0.02 && kres < 0.05, kres);
+  check('…and the checker\'s "drop" comes back with its reason, for the app to act on', k.status === 200 && JSON.parse(k.body.output).verdicts[0].verdict === 'drop' && JSON.parse(k.body.output).verdicts[0].reason === 'Too vague.');
+  // A checker that thinks harder than its model does for other jobs (CHECKER_EXTRA_BODY): only when it checks cards.
+  env = { ...kbase, ...kOPEN('AI_', 'main.example', 0.15, 0.5), AI_EXTRA_BODY: '{"reasoning_effort": "low"}', AI_CHECKER_EXTRA_BODY: '{"reasoning_effort": "high"}',
+    ...kOPEN('AI_LEARN_', 'learn.example', 0.75, 3.75), AI_LEARN_EXTRA_BODY: '{"reasoning_effort": "low"}', AI_ROUTES: '{"cards": "learn"}' };
+  const effort = []; const fakeEffort = { begin: async () => ({ ok: true }), fetchImpl: async (url, init) => { const body = JSON.parse(init.body); effort.push(`${new URL(url).host}:${body.reasoning_effort}`);
+    const content = /You write revision cards/.test(body.messages[0].content) ? draft : /You check revision cards/.test(body.messages[0].content) ? JSON.stringify({ verdicts: [{ index: 0, verdict: 'keep', reason: 'Fine.' }] }) : JSON.stringify({ lessonId: 'lesson.lab-isolation', explanation: 'A snapshot is a restore point.', nextStep: 'Take one.' });
+    return new Response(JSON.stringify({ choices: [{ message: { content }, finish_reason: 'stop' }], usage: { prompt_tokens: 500, completion_tokens: 200, total_tokens: 700 } })); } };
+  k = await kask(kctx, fakeEffort);
+  await kask({ version: 1, action: 'tutor', curriculumVersion: '1.0.0', lessonId: 'lesson.lab-isolation', question: 'Why take a snapshot?' }, fakeEffort);
+  check('a checker setting (CHECKER_EXTRA_BODY) is used only when that model checks cards: not for writing, not for other jobs', k.status === 200 && effort.join() === 'learn.example:low,main.example:high,main.example:low', effort);
+  env = { ...env, AI_CHECKER_EXTRA_BODY: '{reasoning: high' };
+  k = await kask(kctx, fakeEffort);
+  check('…and one that isn\'t valid JSON stops the function as not set up, before any call', k.status === 503 && effort.length === 3, k.body);
+  env = { AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_MOCK_DELAY_MS: '0', AI_DAILY_LIMIT: '50', AI_MIN_SECONDS_BETWEEN: '0', AI_MONTHLY_BUDGET_USD: '1' };
+
   console.log('\n[3] A caller is verified before anything else, and secrets stay out of Git');
   let begun = 0, provided = 0;
   const spyDeps = { begin: async () => { begun++; return { ok: true }; }, fetchImpl: async () => { provided++; return new Response('{}'); } };
@@ -255,10 +315,15 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   r = checkFile('coding.env', template.replace(/^AI_API_KEY=$/m, `AI_API_KEY=${FAKE}`).replace('https://api.z.ai/api/paas/v4', 'https://api.z.ai/api/coding/paas/v4'));
   check('…Z.ai\'s Coding Plan address: caught (Z.ai limits the Coding Plan to its coding tools)', r.code === 1 && /Coding Plan address/.test(r.out), r.out);
   // The learning model (AI roles, step 2): the template's commented block switched on.
-  const learnOn = template.replace(/^AI_API_KEY=$/m, `AI_API_KEY=${FAKE}`).replace(/^# (AI_LEARN_|AI_ROUTES=)/gm, '$1').replace(/^AI_LEARN_API_KEY=$/m, 'AI_LEARN_API_KEY=yy-another-made-up-key');
+  const learnOn = template.replace(/^AI_API_KEY=$/m, `AI_API_KEY=${FAKE}`).replace(/^# (AI_LEARN_|AI_ROUTES=|AI_CHECKER_EXTRA_BODY=)/gm, '$1').replace(/^AI_LEARN_API_KEY=$/m, 'AI_LEARN_API_KEY=yy-another-made-up-key');
   r = checkFile('learn.env', learnOn);
-  check('…with the learning model switched on: ready, both models as evaluated, the tutor routed to Gemini with GLM as its fallback, neither key printed',
-    r.code === 0 && /Learning model: same request settings as evaluated \("gemini-3\.5-flash-lite"/.test(r.out) && /the tutor goes to the learning model, with the main one as its fallback/.test(r.out) && !r.out.includes(FAKE) && !r.out.includes('yy-another'), r.out);
+  check('…with the learning model switched on: ready, both models as evaluated, cards written by Gemini and checked by GLM (with its evaluated checker setting), the tutor still on GLM, neither key printed',
+    r.code === 0 && /Learning model: same request settings as evaluated \("gemini-3\.8-flash"/.test(r.out) && /As a card checker: extra fields as evaluated \("glm-5\.3-flash-high"/.test(r.out)
+    && /revision cards: written by the learning model, checked by the main one/.test(r.out) && /the tutor goes to the main model, with the learning one as its fallback/.test(r.out) && !r.out.includes(FAKE) && !r.out.includes('yy-another'), r.out);
+  r = checkFile('checker-bad.env', learnOn.replace(/^AI_CHECKER_EXTRA_BODY=.*$/m, 'AI_CHECKER_EXTRA_BODY={"reasoning_effort": "max"}'));
+  check('…a checker setting that wasn\'t evaluated: caught', r.code === 1 && /AI_CHECKER_EXTRA_BODY: .* wasn't evaluated for glm-5\.3-flash/.test(r.out), r.out);
+  r = checkFile('template-cards.env', template.replace(/^AI_API_KEY=$/m, `AI_API_KEY=${FAKE}`));
+  check('…the template as it is (one model): revision cards are off', /revision cards: off/.test(r.out), r.out);
   r = checkFile('learn-nokey.env', learnOn.replace(/^AI_LEARN_API_KEY=.*$/m, 'AI_LEARN_API_KEY='));
   check('…the learning model without its key: not ready', r.code === 1 && /AI_LEARN_API_KEY is empty/.test(r.out), r.out);
   r = checkFile('routes-bad.env', learnOn.replace(/^AI_ROUTES=.*$/m, 'AI_ROUTES={"tutr": "learn"}'));

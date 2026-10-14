@@ -1,7 +1,7 @@
 // "Help me adjust today": the rules, checked on the app's own code (bundled for Node from app/src/ai and app/src/data
 // by ai-eval/build.mjs), with made-up data in memory only. No browser, no network, no real records.
 //   [1] what's sent (context)  [2] every rule on a reply  [3] saving: only after confirming, never stale, undo
-//   [4] the instructions and the mock planner  [5] the model adapter (with a fake provider)
+//   [4] the instructions and the mock planner  [5] the model adapter (with a fake provider)  …  [9] AI-written revision cards
 process.env.TZ = 'Europe/London';
 const path = require('path');
 const os = require('os');
@@ -473,6 +473,55 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   check('a note made private meanwhile: left alone', K.applyConnect(cd, cx.seen, rr.answers) === 0 && !cd.notes.items.find(n => n.id === 'nA').aiSeen);
   cd = notesWorld();
   check('a note the reply left out still counts as looked at (so it isn\'t sent again and again)', (K.applyConnect(cd, cx.seen, rr.answers.filter(a => a.id !== 'nW')), !!cd.notes.items.find(n => n.id === 'nW').aiSeen && !cd.notes.items.find(n => n.id === 'nW').aiKind));
+
+  console.log('\n[9] AI-written revision cards: what\'s sent, the checks on a reply, adding and Undo');
+  const LS = 'lesson.lab-isolation';
+  const cardsWorld = () => { K.setClock(`${D}T19:00`); const s = K.freshState(); localStorage.clear(); localStorage.setItem('myday.data.v4', JSON.stringify(s)); K.boot(); return K.getSnapshot().data; };
+  let vw = cardsWorld();
+  vw.study.concepts.push({ ...vw.study.concepts[0], id: 'cpMine', title: 'Mine', prompt: 'Why use a host-only network for a lab VM?', origin: { by: 'ai', subject: 'cybersecurity', lessonId: LS, writer: 'W', checker: 'C', edited: false } },
+    { ...vw.study.concepts[0], id: 'cpOther', title: 'Other', prompt: 'A question about another lesson', origin: { by: 'ai', subject: 'cybersecurity', lessonId: 'lesson.tls-pki', writer: 'W', checker: 'C', edited: false } });
+  let cc = K.cardsContext(vw, LS, ['Course check one?', 'Course check one?  ', 'x'.repeat(300)]);
+  check('what\'s sent: the lesson, ten cards, and the questions you already have for it (the course\'s, then your AI cards for this lesson only), once each, cut to 240 characters',
+    eq(Object.keys(cc).sort(), ['action', 'count', 'curriculumVersion', 'existing', 'lessonId', 'version']) && cc.action === 'cards' && cc.lessonId === LS && cc.count === 10
+    && eq(cc.existing, ['Course check one?', 'x'.repeat(240), 'Why use a host-only network for a lab VM?']) && K.checkCardsContext(cc), cc.existing);
+  check('…at most 40 questions', K.cardsContext(vw, LS, Array.from({ length: 60 }, (_, i) => `Question number ${i}?`)).existing.length === 40);
+  const W1 = { kind: 'written', prompt: 'What does a snapshot let you do before a risky lab exercise?', answer: 'Return the VM to a known good state afterwards.', explanation: 'A snapshot records the VM\'s disk and settings so you can roll back.' };
+  const C1 = { kind: 'choice', prompt: 'Which network mode keeps a VM off the internet?', choices: ['NAT', 'Host-only', 'Bridged'], correct: 1, answer: 'Host-only', explanation: 'NAT and bridged both reach outside.' };
+  const out = (cards, verdicts, x = {}) => JSON.stringify({ lessonId: LS, cards, verdicts, leftOut: 0, ...x });
+  const keep = n => Array.from({ length: n }, (_, index) => ({ index, verdict: 'keep', reason: 'Correct.' }));
+  let rc = K.readCardsReply(out([W1, C1], keep(2)), cc);
+  check('a reply the checker kept: both cards, each with the checker\'s reason', rc.cards.length === 2 && rc.cards[1].reason === 'Correct.' && rc.checkerLeftOut === 0 && rc.leftOut === 0 && rc.repeats === 0);
+  rc = K.readCardsReply(out([W1, C1], [{ index: 0, verdict: 'drop', reason: 'Wrong.' }]), cc);
+  check('only cards the checker kept: one it dropped and one it gave no verdict are both left out', rc.cards.length === 0 && rc.checkerLeftOut === 2);
+  rc = K.readCardsReply(out([{ ...C1, answer: 'NAT' }, { ...C1, prompt: 'Two right options?', choices: ['A', 'a', 'B'] }, { ...W1, explanation: 'x'.repeat(401) }, { ...W1, kind: 'essay' }], keep(4)), cc);
+  check('cards the app can\'t trust are left out even if kept: an answer that isn\'t the marked option, repeated options, too long, unknown kind', rc.cards.length === 0 && rc.leftOut === 4);
+  rc = K.readCardsReply(out([{ ...W1, prompt: 'Why use a host-only network for a lab VM?' }, { ...W1, prompt: 'Why use a host-only network for a lab VM, please?' }, W1, { ...W1, prompt: W1.prompt.toUpperCase() }], keep(4)), cc);
+  check('repeats are left out: of a question you have (exactly or nearly), or of another card in the reply', rc.cards.length === 1 && rc.repeats === 3 && rc.cards[0].prompt === W1.prompt);
+  rc = K.readCardsReply(out([{ ...W1, prompt: 'Which port does HTTPS use by default?' }, { ...W1, prompt: 'Which port does SSH use by default?' }, { ...W1, prompt: 'Why use a host-only network for an isolated lab VM?' }], keep(3)), cc);
+  check('…but questions about different things aren\'t repeats, however alike their wording', rc.cards.length === 2 && rc.repeats === 1 && rc.cards[1].prompt.includes('SSH'));
+  check('a reply for another lesson, not JSON, no verdicts, or more than ten cards: nothing',
+    K.readCardsReply(out([W1], keep(1), { lessonId: 'lesson.tls-pki' }), cc) === null && K.readCardsReply('Here are your cards!', cc) === null
+    && K.readCardsReply(JSON.stringify({ lessonId: LS, cards: [W1] }), cc) === null && K.readCardsReply(out(Array(11).fill(W1), keep(11)), cc) === null);
+  vw = cardsWorld();
+  const before9 = JSON.stringify({ ...vw, study: { ...vw.study, concepts: null } });
+  let seq = [0, 0], ids = K.addAiCards(vw, [W1, C1], { lessonId: LS, lessonTitle: 'Isolate a lab', writer: 'GLM-5.3-Flash', checker: 'Gemini 3.8 Flash' }, D, () => seq.shift() ?? 0.5);
+  const [aw, ac] = ids.map(id => vw.study.concepts.find(c => c.id === id));
+  check('adding: one concept per card, with your words untouched, due tomorrow, never revised yet',
+    ids.length === 2 && aw.kind === 'written' && aw.prompt === W1.prompt && aw.answer === W1.answer && aw.explanation === W1.explanation && aw.review.due === '2026-11-11' && aw.review.reps === 0 && eq(aw.taskIds, []));
+  check('…a multiple-choice card\'s options in a fresh order, still marking the same option', ac.kind === 'choice' && ac.choices.slice().sort().join() === C1.choices.slice().sort().join() && ac.choices[ac.correct] === 'Host-only' && ac.answer === 'Host-only' && ac.choices.join() !== C1.choices.join(), ac.choices);
+  check('…where it came from, as data (origin) and in words (source)', eq(aw.origin, { by: 'ai', subject: 'cybersecurity', lessonId: LS, writer: 'GLM-5.3-Flash', checker: 'Gemini 3.8 Flash', edited: false })
+    && aw.source === 'AI-written for the Cybersecurity lesson “Isolate a lab” by GLM-5.3-Flash, checked by Gemini 3.8 Flash · 10 Nov 2026', aw.source);
+  check('…a long question is shortened for its title only', K.addAiCards(vw, [{ ...W1, prompt: 'Why '.repeat(50) + '?' }], { lessonId: LS, lessonTitle: 'L', writer: 'W', checker: 'C' }, D).length === 1 && vw.study.concepts.at(-1).title.length === 120 && vw.study.concepts.at(-1).title.endsWith('…') && vw.study.concepts.at(-1).prompt.length === 201);
+  check('…and nothing else in MyDay changes', JSON.stringify({ ...vw, study: { ...vw.study, concepts: null } }) === before9);
+  check('they\'re part of Cybersecurity\'s revision as well as all of Study\'s', K.aiCyberCards(vw).length === 3 && K.dueIds(vw, '2026-11-11', 'cybersecurity').includes(aw.id) && K.dueIds(vw, '2026-11-11').includes(ac.id) && !K.dueIds(vw, D, 'cybersecurity').includes(aw.id));
+  const kept = K.normalize(JSON.parse(JSON.stringify(vw))).study.concepts.find(c => c.id === aw.id);
+  check('saving and loading again keeps where each card came from', eq(kept.origin, aw.origin));
+  const bent = JSON.parse(JSON.stringify(vw));
+  bent.study.concepts.find(c => c.id === aw.id).origin = { by: 'someone', lessonId: LS };
+  bent.study.concepts.find(c => c.id === ac.id).origin = { by: 'ai', subject: 'cybersecurity', lessonId: '../../etc', writer: 'W', checker: 'C' };
+  check('…an origin that isn\'t right is left off, keeping the card (its source still says it was AI-written)', K.normalize(bent).study.concepts.filter(c => ids.includes(c.id)).every(c => !('origin' in c) && c.source.startsWith('AI-written')));
+  vw.study.concepts.push({ ...aw, id: 'cpYours', origin: undefined });
+  check('Undo takes out those cards only: not your own concepts, not other AI cards', K.removeAiCards(vw, ids) && !vw.study.concepts.some(c => ids.includes(c.id)) && vw.study.concepts.some(c => c.id === 'cpYours') && K.aiCyberCards(vw).length === 1 && !K.removeAiCards(vw, ids));
 
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);

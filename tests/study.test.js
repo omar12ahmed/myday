@@ -251,11 +251,13 @@ const finish = () => {
   console.log('\n[44] Concepts and revision');
   await go('today', 2026, 11, 2, 9); await reset(); await go('today', 2026, 11, 2, 9);
   const C = (id, title, more) => Object.assign({ id, title, taskIds: [], createdOn: '2026-10-01', kind: 'written', prompt: '', answer: '', explanation: '', choices: [], correct: null, hint: '', source: '', note: '', review: { reps: 0, interval: 0, lapses: 0, due: null } }, more);
+  // cpOld is a card the new app's AI wrote (1.19.0): the classic keeps where it came from when it saves.
+  const AI_ORIGIN = { by: 'ai', subject: 'cybersecurity', lessonId: 'lesson.tcp-ip-basics', writer: 'GLM-5.3-Flash', checker: 'Gemini 3.8 Flash', edited: false };
   const concepts = [
     C('cpW', 'What DNS does', { taskIds: ['tkD'], prompt: 'What does DNS do?', answer: 'Translates names to IP addresses', explanation: 'Resolvers ask name servers on your behalf', hint: 'Think of a phone book', note: 'Networking/DNS basics' }),
     C('cpM', 'HTTPS port', { kind: 'choice', prompt: 'Which port does HTTPS use by default?', choices: ['80', '443', '22', ''], correct: 1, explanation: 'HTTPS uses TCP port 443.' }),
     C('cpN', 'Subnet masks'),
-    C('cpOld', 'Packets', { prompt: 'What is a packet?', answer: 'A small unit of data', review: { reps: 1, interval: 4, lapses: 0, due: '2026-10-20' } }),
+    C('cpOld', 'Packets', { prompt: 'What is a packet?', answer: 'A small unit of data', review: { reps: 1, interval: 4, lapses: 0, due: '2026-10-20' }, origin: AI_ORIGIN }),
     C('cpM2', 'SSH port', { kind: 'choice', prompt: 'Which port does SSH use by default?', choices: ['21', '22', '25', '53'], correct: 1 }),
     C('cpA', 'IP addresses', { prompt: 'What is an IP address?', explanation: 'A number that identifies a device on a network' }),
     C('cpB', 'Routers', { prompt: 'What does a router do?', answer: 'Forwards packets between networks' })
@@ -279,6 +281,7 @@ const finish = () => {
   let sd = await SD();
   const pk = sd.concepts.find(c => c.id === 'cpOld');
   check('Good: next review in 10 days, on a local date', pk.review.due === '2026-11-12' && pk.review.interval === 10 && pk.review.reps === 2);
+  check('…and an AI-written card keeps where it came from (origin, from the new app)', eq(pk.origin, AI_ORIGIN), pk.origin);
   check('…and the answer is recorded as self-assessed, on your own', sd.reviews.length === 1 && sd.reviews[0].outcome === 'right' && sd.reviews[0].graded === 'self' && sd.reviews[0].support === 'own' && sd.reviews[0].rating === 'good' && sd.reviews[0].date === '2026-11-02');
   check('question 2: What does DNS do?', (await text('.st-prompt')) === 'What does DNS do?' && !(await leaks()).length);
   await click('[data-action=s-rev-hint]'); await sleep(100);

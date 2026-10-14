@@ -13,7 +13,7 @@ export const AI_MODE: AiMode = wanted === 'mock' ? 'mock' : wanted === 'edge' &&
 const MOCK_VARIANT = String(import.meta.env.VITE_AI_MOCK || 'good');
 
 export type AiReply =
-  | { ok: true; text: string; model: string }
+  | { ok: true; text: string; model: string; checker?: string } // checker: the second model, for revision cards
   | { ok: false; reason: 'signed-out' | 'daily' | 'budget' | 'too-fast' | 'not-set-up' | 'unavailable' | 'offline'; message: string };
 
 type Reason = Exclude<AiReply, { ok: true }>['reason'];
@@ -27,16 +27,26 @@ const MESSAGES: Record<Reason, string> = {
   offline: "Couldn't reach the AI — check your connection.",
 };
 // What stays as it was, said after each message (except "just a moment").
-const SAME = { adjust: " Your plan hasn't changed, and Review my plan still works.", tasks: ' Nothing was added.', tutor: ' Your learning work is saved separately; the lesson still works.', connect: ' Your notes are as they were.' };
+const SAME = { adjust: " Your plan hasn't changed, and Review my plan still works.", tasks: ' Nothing was added.', tutor: ' Your learning work is saved separately; the lesson still works.', connect: ' Your notes are as they were.', cards: ' Nothing was added to your revision.' };
+// How long to wait for an answer. Revision cards are written and then checked by a second model: up to 90 s on the server.
+const WAIT_MS = { cards: 95000, other: 40000 };
 
 export async function askModel(ctx: AiContext, signal?: AbortSignal): Promise<AiReply> {
   const tasks = (ctx as { action?: string }).action === 'tasks';
   const tutor = (ctx as { action?: string }).action === 'tutor';
   const connect = (ctx as { action?: string }).action === 'connect';
-  const fail = (reason: Reason): AiReply => ({ ok: false, reason, message: MESSAGES[reason] + (reason === 'too-fast' ? '' : SAME[connect ? 'connect' : tutor ? 'tutor' : tasks ? 'tasks' : 'adjust']) });
+  const cards = (ctx as { action?: string }).action === 'cards';
+  const fail = (reason: Reason): AiReply => ({ ok: false, reason, message: MESSAGES[reason] + (reason === 'too-fast' ? '' : SAME[cards ? 'cards' : connect ? 'connect' : tutor ? 'tutor' : tasks ? 'tasks' : 'adjust']) });
   if (AI_MODE === 'mock') {
     await new Promise(r => setTimeout(r, 600));
     if (MOCK_VARIANT === 'error') return fail('unavailable');
+    if (cards) {
+      // The server's answer, made by the practice writer and checker (no AI).
+      const { mockCards, mockCardsCheck, readDraft } = await import('../../../supabase/functions/_shared/ai/cards.ts');
+      const c = ctx as Parameters<typeof mockCards>[0], draft = readDraft(mockCards(c, MOCK_VARIANT === 'sloppy' ? 'sloppy' : 'good'), c.lessonId, c.count)!;
+      const verdicts = JSON.parse(mockCardsCheck({ version: 1, action: 'cards-check', lessonId: c.lessonId, cards: draft.cards })).verdicts;
+      return { ok: true, text: JSON.stringify({ lessonId: c.lessonId, cards: draft.cards, verdicts, leftOut: draft.leftOut }), model: 'practice helper (no AI)', checker: 'practice checker (no AI)' };
+    }
     if (connect) {
       const { mockConnect } = await import('../../../supabase/functions/_shared/ai/connect.ts');
       return { ok: true, text: mockConnect(ctx as Parameters<typeof mockConnect>[0], MOCK_VARIANT as 'good'), model: 'practice helper (no AI)' };
@@ -58,7 +68,7 @@ export async function askModel(ctx: AiContext, signal?: AbortSignal): Promise<Ai
   if (offline) return fail('offline');
   if (!session) return fail('signed-out');
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 40000);
+  const timer = setTimeout(() => ctrl.abort(), cards ? WAIT_MS.cards : WAIT_MS.other);
   const abort = () => ctrl.abort();
   signal?.addEventListener('abort', abort, { once: true });
   if (signal?.aborted) ctrl.abort();
@@ -69,12 +79,12 @@ export async function askModel(ctx: AiContext, signal?: AbortSignal): Promise<Ai
       body: JSON.stringify({ context: ctx }),
       signal: ctrl.signal,
     });
-    let body: { ok?: boolean; output?: string; model?: string; error?: string; reason?: string } = {};
+    let body: { ok?: boolean; output?: string; model?: string; checker?: string; error?: string; reason?: string } = {};
     try { body = await res.json(); } catch { /* handled below */ }
-    if (res.ok && body.ok && typeof body.output === 'string') return { ok: true, text: body.output, model: body.model || 'AI' };
+    if (res.ok && body.ok && typeof body.output === 'string') return { ok: true, text: body.output, model: body.model || 'AI', ...(typeof body.checker === 'string' ? { checker: body.checker } : {}) };
     if (res.status === 401) return fail('signed-out');
     if (res.status === 429) return fail(body.reason === 'daily' ? 'daily' : body.reason === 'budget' ? 'budget' : 'too-fast');
-    if (res.status === 404 || body.error === 'not-configured') return fail('not-set-up');
+    if (res.status === 404 || body.error === 'not-configured' || body.error === 'no-checker') return fail('not-set-up'); // no-checker: revision cards need a second model
     return fail('unavailable');
   } catch {
     return fail(ctrl.signal.aborted && !(signal && signal.aborted) ? 'unavailable' : 'offline');

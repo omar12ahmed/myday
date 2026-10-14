@@ -7,7 +7,8 @@
 //   mock               the rule-based stand-in in mock.ts (no key, no network)
 // Which model does which job (routeFor, at the end) is configuration too.
 import { mockPlanner, type MockVariant } from './mock.ts';
-import { isConnect, isTasks, isTutor, messagesFor, type AiContext } from './prompt.ts';
+import { isCards, isCardsCheck, isConnect, isTasks, isTutor, messagesFor, type AiContext } from './prompt.ts';
+import { mockCards, mockCardsCheck } from './cards.ts';
 import { mockConnect, type ConnectMockVariant } from './connect.ts';
 import { mockTutor } from './tutor.ts';
 import { mockTasks, type TasksMockVariant } from './tasks.ts';
@@ -22,6 +23,7 @@ export interface ProviderConfig {
   maxOutputTokens: number;
   timeoutMs: number;
   extraBody?: Record<string, unknown>; // model-specific request fields (e.g. switching thinking off, or its effort)
+  checkerExtraBody?: Record<string, unknown>; // …used instead when this model checks revision cards (e.g. more reasoning)
   maxTokensField?: 'max_tokens' | 'max_completion_tokens'; // the reply-length field this provider expects (default max_tokens)
   jsonMode?: boolean;            // ask for JSON output (response_format json_object); default true
   priceInPerMTok: number | null;  // US$ per million input tokens (null = not known)
@@ -79,7 +81,7 @@ export async function callModel(cfg: ProviderConfig, ctx: AiContext, fetchImpl: 
     if (variant === 'truncated') return { ok: false, error: 'truncated', finishReason: 'length', inputTokens: 900, outputTokens: cfg.maxOutputTokens, latencyMs: Date.now() - t0 };
     await sleep(variant === 'slow' ? cfg.timeoutMs + 50 : cfg.mockDelayMs ?? 0);
     if (variant === 'slow') return { ok: false, error: 'timeout', latencyMs: Date.now() - t0 };
-    const full = isConnect(ctx) ? mockConnect(ctx, (['good', 'sloppy', 'invalid'].includes(variant) ? variant : 'good') as ConnectMockVariant) : isTutor(ctx) ? mockTutor(ctx, variant === 'sloppy' ? 'sloppy' : 'good') : isTasks(ctx)
+    const full = isCards(ctx) ? mockCards(ctx, variant === 'sloppy' ? 'sloppy' : 'good') : isCardsCheck(ctx) ? mockCardsCheck(ctx) : isConnect(ctx) ? mockConnect(ctx, (['good', 'sloppy', 'invalid'].includes(variant) ? variant : 'good') as ConnectMockVariant) : isTutor(ctx) ? mockTutor(ctx, variant === 'sloppy' ? 'sloppy' : 'good') : isTasks(ctx)
       ? mockTasks(ctx, (['good', 'sloppy', 'invalid'].includes(variant) ? variant : 'good') as TasksMockVariant)
       : mockPlanner(ctx, (['good', 'sloppy', 'invalid', 'rest'].includes(variant) ? variant : 'good') as MockVariant);
     const text = variant === 'partial' ? full.slice(0, Math.floor(full.length / 2)) : full; // JSON that stops half-way
@@ -153,6 +155,9 @@ export function configFromEnv(env: (name: string) => string | undefined, prefix 
   let extraBody: Record<string, unknown> | undefined;
   const extra = get('EXTRA_BODY');
   if (extra) { try { extraBody = JSON.parse(extra); } catch { return { error: `${prefix}EXTRA_BODY is not valid JSON.` }; } }
+  let checkerExtraBody: Record<string, unknown> | undefined;
+  const checkerExtra = get('CHECKER_EXTRA_BODY');
+  if (checkerExtra) { try { checkerExtraBody = JSON.parse(checkerExtra); } catch { return { error: `${prefix}CHECKER_EXTRA_BODY is not valid JSON.` }; } }
   const cfg: ProviderConfig = {
     provider,
     label: get('LABEL') || get('MODEL') || provider,
@@ -163,6 +168,7 @@ export function configFromEnv(env: (name: string) => string | undefined, prefix 
     maxOutputTokens: Math.min(num('MAX_OUTPUT_TOKENS', 600) as number, MAX_OUTPUT_TOKENS_CAP),
     timeoutMs: Math.min(num('TIMEOUT_MS', 25000) as number, 60000),
     extraBody,
+    ...(checkerExtraBody ? { checkerExtraBody } : {}),
     maxTokensField: get('MAX_TOKENS_FIELD') === 'max_completion_tokens' ? 'max_completion_tokens' : 'max_tokens',
     jsonMode: get('JSON_MODE') !== 'false',
     priceInPerMTok: num('PRICE_IN_PER_MTOK', null),
@@ -182,15 +188,16 @@ export function configFromEnv(env: (name: string) => string | undefined, prefix 
 // the main one, and so does a job routed to a learning model that isn't set up. If the chosen model can't answer
 // (no connection, no answer in time, a provider error, nothing in its reply), the other gets one try, unless
 // AI_FALLBACK=off. A reply the app then finds unusable isn't retried: the app says so instead.
-export type Job = 'adjust' | 'tasks' | 'connect' | 'tutor';
+export type Job = 'adjust' | 'tasks' | 'connect' | 'tutor' | 'cards';
 export type Slot = 'main' | 'learn';
-export const JOBS: Job[] = ['adjust', 'tasks', 'connect', 'tutor'];
-export const jobOf = (ctx: AiContext): Job => (isConnect(ctx) ? 'connect' : isTutor(ctx) ? 'tutor' : isTasks(ctx) ? 'tasks' : 'adjust');
+export const JOBS: Job[] = ['adjust', 'tasks', 'connect', 'tutor', 'cards'];
+export const jobOf = (ctx: AiContext): Job => (isCards(ctx) || isCardsCheck(ctx) ? 'cards' : isConnect(ctx) ? 'connect' : isTutor(ctx) ? 'tutor' : isTasks(ctx) ? 'tasks' : 'adjust');
 // The model failures worth trying the other model for: it couldn't be reached or gave nothing. (A reply cut short,
 // filtered or unfinished cost tokens and says something about the request, so it isn't passed on.)
 export const fallsBack = (r: ModelResult) => !r.ok && ['timeout', 'network', 'http', 'config', 'empty'].includes(r.error);
 
-export interface Route { job: Job; primary: { slot: Slot; cfg: ProviderConfig }; fallback: { slot: Slot; cfg: ProviderConfig } | null }
+// `other` is the other model, if one is set up: the fallback (unless AI_FALLBACK=off) — and for AI-written cards, the checker.
+export interface Route { job: Job; primary: { slot: Slot; cfg: ProviderConfig }; fallback: { slot: Slot; cfg: ProviderConfig } | null; other: { slot: Slot; cfg: ProviderConfig } | null }
 export function routeFor(env: (name: string) => string | undefined, ctx: AiContext): Route | { error: string } {
   let routes: Record<string, unknown> = {};
   const raw = env('AI_ROUTES');
@@ -214,5 +221,5 @@ export function routeFor(env: (name: string) => string | undefined, ctx: AiConte
   const slot: Slot = routes[job] === 'learn' && learn ? 'learn' : 'main';
   const primary = { slot, cfg: slot === 'learn' ? learn! : main };
   const other = slot === 'learn' ? { slot: 'main' as Slot, cfg: main } : learn ? { slot: 'learn' as Slot, cfg: learn } : null;
-  return { job, primary, fallback: env('AI_FALLBACK') === 'off' ? null : other };
+  return { job, primary, fallback: env('AI_FALLBACK') === 'off' ? null : other, other };
 }
