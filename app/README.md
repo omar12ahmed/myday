@@ -769,3 +769,9 @@ returns up to 8 small tasks; you tick the ones to add.
     Cybersecurity". Saved as `cybersecurity.cards`, answers in `study.reviews`. Database migration
     `20261014120000_sync_cyber_cards.sql` was applied before publishing. Going back to 1.17.2 is safe: it keeps
     `cybersecurity.cards` as they are.
+28. **Release 1.19.0:** Study → Cybersecurity → More practice: up to 10 cards on a lesson's key ideas, written by
+    Gemini 3.8 Flash and checked by GLM-5.3-Flash (chosen by a live evaluation judged blind on accuracy:
+    `../ai-eval/reviews/2026-10-13-cards-quality.md`), shown only after the check, added only when you keep them, as
+    Study concepts with where they came from (`origin`, kept by both versions; also in words in their source). Needs
+    `ai-plan` version 7 and its settings (deployed first). No database change. Going back to 1.18.0 keeps the cards as
+    ordinary concepts — their source still says AI-written — but drops `origin` when it saves.
