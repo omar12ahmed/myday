@@ -27,7 +27,7 @@ const MESSAGES: Record<Reason, string> = {
   offline: "Couldn't reach the AI — check your connection.",
 };
 // What stays as it was, said after each message (except "just a moment").
-const SAME = { adjust: " Your plan hasn't changed, and Review my plan still works.", tasks: ' Nothing was added.', tutor: ' Your learning work is saved separately; the lesson still works.', connect: ' Your notes are as they were.', cards: ' Nothing was added to your revision.' };
+const SAME = { adjust: " Your plan hasn't changed, and Review my plan still works.", tasks: ' Nothing was added.', tutor: ' Your learning work is saved separately; the lesson still works.', connect: ' Your notes are as they were.', cards: ' Nothing was added to your revision.', note: ' Your note is as it was, and nothing was added to your revision.' };
 // How long to wait for an answer. Revision cards are written and then checked by a second model: up to 90 s on the server.
 const WAIT_MS = { cards: 95000, other: 40000 };
 
@@ -36,10 +36,18 @@ export async function askModel(ctx: AiContext, signal?: AbortSignal): Promise<Ai
   const tutor = (ctx as { action?: string }).action === 'tutor';
   const connect = (ctx as { action?: string }).action === 'connect';
   const cards = (ctx as { action?: string }).action === 'cards';
-  const fail = (reason: Reason): AiReply => ({ ok: false, reason, message: MESSAGES[reason] + (reason === 'too-fast' ? '' : SAME[cards ? 'cards' : connect ? 'connect' : tutor ? 'tutor' : tasks ? 'tasks' : 'adjust']) });
+  const noteCheck = (ctx as { action?: string }).action === 'note-check', noteCards = (ctx as { action?: string }).action === 'note-cards';
+  const fail = (reason: Reason): AiReply => ({ ok: false, reason, message: MESSAGES[reason] + (reason === 'too-fast' ? '' : SAME[noteCheck || noteCards ? 'note' : cards ? 'cards' : connect ? 'connect' : tutor ? 'tutor' : tasks ? 'tasks' : 'adjust']) });
   if (AI_MODE === 'mock') {
     await new Promise(r => setTimeout(r, 600));
     if (MOCK_VARIANT === 'error') return fail('unavailable');
+    if (noteCheck || noteCards) {
+      const N = await import('../../../supabase/functions/_shared/ai/note-cards.ts');
+      if (noteCheck) return { ok: true, text: N.mockNoteCheck(ctx as Parameters<typeof N.mockNoteCheck>[0]), model: 'practice check (no AI)' };
+      const c = ctx as Parameters<typeof N.mockNoteCards>[0], draft = N.readNoteDraft(N.mockNoteCards(c), c.count, c.note.lines.length)!;
+      const verdicts = JSON.parse(N.mockNoteCardsCheck({ version: 1, action: 'note-cards-check', note: c.note, cards: draft.cards })).verdicts;
+      return { ok: true, text: JSON.stringify({ cards: draft.cards, verdicts, leftOut: draft.leftOut }), model: 'practice helper (no AI)', checker: 'practice checker (no AI)' };
+    }
     if (cards) {
       // The server's answer, made by the practice writer and checker (no AI).
       const { mockCards, mockCardsCheck, readDraft } = await import('../../../supabase/functions/_shared/ai/cards.ts');
@@ -68,7 +76,7 @@ export async function askModel(ctx: AiContext, signal?: AbortSignal): Promise<Ai
   if (offline) return fail('offline');
   if (!session) return fail('signed-out');
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), cards ? WAIT_MS.cards : WAIT_MS.other);
+  const timer = setTimeout(() => ctrl.abort(), cards || noteCards ? WAIT_MS.cards : WAIT_MS.other);
   const abort = () => ctrl.abort();
   signal?.addEventListener('abort', abort, { once: true });
   if (signal?.aborted) ctrl.abort();

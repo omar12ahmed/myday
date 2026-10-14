@@ -60,7 +60,7 @@ const options = {
   reservedBeforeUsd: reservedBefore,
   stopOnFailure: args.includes('--stop-on-failure'),
   scenarioIds: opt('--scenarios', null) ? opt('--scenarios').split(',') : null,
-  action: ['adjust', 'tasks', 'connect', 'tutor', 'cards', 'cards-check', 'cards-drafts', 'note-check', 'note-cards', 'all'].includes(opt('--action', 'adjust')) ? opt('--action', 'adjust') : 'adjust',
+  action: ['adjust', 'tasks', 'connect', 'tutor', 'cards', 'cards-check', 'cards-drafts', 'note-check', 'note-cards', 'note-cards-drafts', 'all'].includes(opt('--action', 'adjust')) ? opt('--action', 'adjust') : 'adjust',
   env, models,
   log: line => { if (!args.includes('--quiet')) console.log('  ' + line); },
   onCall: c => { ledger.calls.push(c); fs.mkdirSync(outRoot, { recursive: true }); fs.writeFileSync(ledgerFile, JSON.stringify(ledger, null, 2)); },

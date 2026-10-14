@@ -7,6 +7,9 @@
 //   personal  not a claim — a reminder, a feeling, a plan (never flagged, never a card)
 // Three notes are entirely correct, to count false alarms.
 
+import drafts from './note-drafts.json';
+import type { NoteCard } from '../supabase/functions/_shared/ai/note-cards.ts';
+
 export type LineLabel = 'sound' | 'wrong' | 'slip' | 'dated' | 'personal';
 export interface NoteLine { label: LineLabel; text: string; why?: string }
 export interface NoteScenario { kind: 'note-check' | 'note-cards'; id: string; title: string; tags: string[]; now: string; note: { title: string; lines: NoteLine[] } }
@@ -122,3 +125,13 @@ export const NOTE_CHECK_SCENARIOS: NoteScenario[] = scenario('note-check');
 // The writer, on every note with nothing left out — as if the check had missed everything, so the writer's own care
 // and the card checker are what stand between a wrong line and a card.
 export const NOTE_CARD_SCENARIOS: NoteScenario[] = scenario('note-cards');
+
+// The card checker on the cards the writers really produced from these notes (note-drafts.json), each labelled by a
+// blind review: a wrong card must be dropped; a sound one should be kept; a slip, a dated card or one from a personal
+// line may go either way.
+export type CardLabel = LineLabel;
+export interface NoteDraftScenario { kind: 'note-cards-check'; id: string; title: string; tags: string[]; now: string; writtenBy: string; note: { title: string; lines: string[] }; cards: (NoteCard & { label: CardLabel; why?: string })[] }
+export const NOTE_DRAFT_SCENARIOS: NoteDraftScenario[] = (drafts.sets as { id: string; writtenBy: string; note: { title: string; lines: string[] }; cards: (NoteCard & { label: CardLabel; why?: string })[] }[]).map(d => ({
+  kind: 'note-cards-check', id: `d-${d.id}`, title: `Check real cards: ${d.id}`, now: T, writtenBy: d.writtenBy, note: d.note, cards: d.cards,
+  tags: [`written by ${d.writtenBy}`, `${d.cards.filter(c => c.label === 'wrong').length} wrong, ${d.cards.filter(c => c.label !== 'sound' && c.label !== 'wrong').length} either way`],
+}));

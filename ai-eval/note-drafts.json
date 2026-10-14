@@ -1,0 +1,1606 @@
+{
+ "about": "Revision cards written from the made-up notes in note-scenarios.ts in the live writer run of 14 Oct 2026 (ai-eval/results/2026-10-14-08-59-08-live), given every line, each card labelled sound / wrong / slip / personal / dated by a blind review (ai-eval/reviews/2026-10-14-note-cards-quality.md). No learner data.",
+ "sets": [
+  {
+   "id": "c01-dns-dhcp-A",
+   "writtenBy": "gemini-3.8-flash",
+   "note": {
+    "title": "Networking: DNS, DHCP and NAT",
+    "lines": [
+     "DNS turns names like example.com into IP addresses.",
+     "My laptop gets its IP address, gateway and DNS server from DHCP when it joins the network.",
+     "DHCP leases are permanent unless you restart the router.",
+     "If I can ping 1.1.1.1 but a website fails by name, DNS is the likely problem.",
+     "DNS always uses UDP port 53.",
+     "Ask Sam how the office router is set up.",
+     "The default gateway is where packets go when the destination is outside my subnet.",
+     "ARP finds the IP address that belongs to a known MAC address.",
+     "NAT lets many devices share one public IP address.",
+     "This part took me ages — revisit on Thursday.",
+     "NAT is a firewall, so it keeps my home network safe."
+    ]
+   },
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What role does DNS perform in networking?",
+     "answer": "It converts names such as example.com into IP addresses.",
+     "explanation": "Line 1 states that DNS turns names like example.com into IP addresses.",
+     "from": [
+      1
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What three settings does a laptop obtain from DHCP upon joining the network?",
+     "choices": [
+      "IP address, gateway, and DNS server",
+      "IP address, MAC address, and subnet mask",
+      "Public IP address, default gateway, and firewall rules",
+      "Domain name, port number, and gateway"
+     ],
+     "correct": 0,
+     "answer": "IP address, gateway, and DNS server",
+     "explanation": "Line 2 notes that the laptop gets its IP address, gateway, and DNS server from DHCP when joining the network.",
+     "from": [
+      2
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "According to the notes, when do DHCP leases end?",
+     "answer": "They are permanent unless the router is restarted.",
+     "explanation": "Line 3 states that DHCP leases are permanent unless the router is restarted.",
+     "from": [
+      3
+     ],
+     "label": "wrong",
+     "why": "teaches \"DHCP leases are permanent unless you restart the router\""
+    },
+    {
+     "kind": "choice",
+     "prompt": "If pinging 1.1.1.1 succeeds but accessing a site by name fails, what is the probable issue?",
+     "choices": [
+      "A router hardware failure",
+      "DNS",
+      "DHCP lease expiration",
+      "The default gateway"
+     ],
+     "correct": 1,
+     "answer": "DNS",
+     "explanation": "Line 4 explains that if pinging 1.1.1.1 works but reaching a website by name fails, DNS is the likely problem.",
+     "from": [
+      4
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Where are packets sent if their destination is outside the local subnet?",
+     "answer": "To the default gateway.",
+     "explanation": "Line 7 states that the default gateway is where packets go when the destination is outside the subnet.",
+     "from": [
+      7
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "How does NAT allow multiple local devices to access the internet?",
+     "answer": "It lets many devices share a single public IP address.",
+     "explanation": "Line 9 states that NAT lets many devices share one public IP address.",
+     "from": [
+      9
+     ],
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "c01-dns-dhcp-B",
+   "writtenBy": "glm-5.3-flash",
+   "note": {
+    "title": "Networking: DNS, DHCP and NAT",
+    "lines": [
+     "DNS turns names like example.com into IP addresses.",
+     "My laptop gets its IP address, gateway and DNS server from DHCP when it joins the network.",
+     "DHCP leases are permanent unless you restart the router.",
+     "If I can ping 1.1.1.1 but a website fails by name, DNS is the likely problem.",
+     "DNS always uses UDP port 53.",
+     "Ask Sam how the office router is set up.",
+     "The default gateway is where packets go when the destination is outside my subnet.",
+     "ARP finds the IP address that belongs to a known MAC address.",
+     "NAT lets many devices share one public IP address.",
+     "This part took me ages — revisit on Thursday.",
+     "NAT is a firewall, so it keeps my home network safe."
+    ]
+   },
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What does DNS do?",
+     "answer": "It turns names like example.com into IP addresses.",
+     "explanation": "The note says DNS resolves names such as example.com into IP addresses.",
+     "from": [
+      1
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "When a laptop joins a network, which settings does DHCP provide?",
+     "choices": [
+      "Only its IP address",
+      "IP address, gateway and DNS server",
+      "Only the DNS server",
+      "MAC address and subnet mask"
+     ],
+     "correct": 1,
+     "answer": "IP address, gateway and DNS server",
+     "explanation": "The note lists the IP address, gateway and DNS server as what DHCP hands the laptop when it joins the network.",
+     "from": [
+      2
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "You can ping 1.1.1.1 successfully, but browsing to a website by its name fails. What is the likely problem?",
+     "answer": "DNS",
+     "explanation": "The note says if pinging the IP works but a name fails, DNS is the likely culprit.",
+     "from": [
+      4
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What is the default gateway used for?",
+     "answer": "It's where packets go when the destination is outside my subnet.",
+     "explanation": "The note defines the default gateway as the destination for packets leaving the local subnet.",
+     "from": [
+      7
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What does NAT achieve on a typical home network?",
+     "choices": [
+      "It assigns IP addresses automatically",
+      "It encrypts all traffic",
+      "It lets many devices share one public IP address",
+      "It translates domain names into IPs"
+     ],
+     "correct": 2,
+     "answer": "It lets many devices share one public IP address",
+     "explanation": "The note states NAT allows many devices to share a single public IP address.",
+     "from": [
+      9
+     ],
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "c02-permissions-A",
+   "writtenBy": "gemini-3.8-flash",
+   "note": {
+    "title": "Linux permissions",
+    "lines": [
+     "Every file has an owner, a group, and permissions for the owner, the group and everyone else.",
+     "r = 4, w = 2, x = 1, so 7 means rwx.",
+     "chmod 644 lets the group write to the file.",
+     "On a directory, x means you can enter it.",
+     "Root can't read a file whose permissions are 000.",
+     "A umask of 022 gives new files 644 and new directories 744.",
+     "Practise on the lab VM, not my Mac.",
+     "To delete a file you need write permission on the file itself.",
+     "sudo runs one command as root, and it is logged."
+    ]
+   },
+   "cards": [
+    {
+     "kind": "choice",
+     "prompt": "According to the notes, what permissions correspond to the number 7?",
+     "choices": [
+      "rwx",
+      "rw-",
+      "r-x",
+      "-wx"
+     ],
+     "correct": 0,
+     "answer": "rwx",
+     "explanation": "The note states that r = 4, w = 2, and x = 1, meaning that 7 equals rwx.",
+     "from": [
+      2
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What does the execute permission (x) allow a user to do on a directory?",
+     "answer": "Enter it",
+     "explanation": "The note specifies that on a directory, x means you can enter it.",
+     "from": [
+      4
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Under a umask of 022, what permissions are assigned to newly created files and directories?",
+     "choices": [
+      "New files get 644 and new directories get 744",
+      "New files get 755 and new directories get 644",
+      "New files get 644 and new directories get 755",
+      "New files get 744 and new directories get 644"
+     ],
+     "correct": 0,
+     "answer": "New files get 644 and new directories get 744",
+     "explanation": "Line 6 states that a umask of 022 gives new files 644 and new directories 744.",
+     "from": [
+      6
+     ],
+     "label": "wrong",
+     "why": "marks \"new directories get 744\" right (it is 755)"
+    },
+    {
+     "kind": "written",
+     "prompt": "How does sudo run a command, and what happens to the action?",
+     "answer": "It runs one command as root, and it is logged.",
+     "explanation": "Line 9 notes that sudo runs one command as root, and the action is logged.",
+     "from": [
+      9
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which three categories of permissions does every file have?",
+     "choices": [
+      "Owner, group, and everyone else",
+      "User, root, and administrator",
+      "Read, write, and execute",
+      "Local, network, and remote"
+     ],
+     "correct": 0,
+     "answer": "Owner, group, and everyone else",
+     "explanation": "Line 1 states that every file has permissions for the owner, the group, and everyone else.",
+     "from": [
+      1
+     ],
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "c02-permissions-B",
+   "writtenBy": "glm-5.3-flash",
+   "note": {
+    "title": "Linux permissions",
+    "lines": [
+     "Every file has an owner, a group, and permissions for the owner, the group and everyone else.",
+     "r = 4, w = 2, x = 1, so 7 means rwx.",
+     "chmod 644 lets the group write to the file.",
+     "On a directory, x means you can enter it.",
+     "Root can't read a file whose permissions are 000.",
+     "A umask of 022 gives new files 644 and new directories 744.",
+     "Practise on the lab VM, not my Mac.",
+     "To delete a file you need write permission on the file itself.",
+     "sudo runs one command as root, and it is logged."
+    ]
+   },
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What are the three categories of people a file's permissions apply to?",
+     "answer": "The owner, the group, and everyone else (each file also has an owner and a group).",
+     "explanation": "The note says every file has an owner, a group, and permissions for the owner, the group and everyone else.",
+     "from": [
+      1
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What does the permission number 6 mean in octal notation, and why?",
+     "answer": "rw — read (4) plus write (2) adds up to 6, with no execute bit.",
+     "explanation": "The note gives r=4, w=2, x=1, so 6 = 4+2 = read and write.",
+     "from": [
+      2
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "On a directory, what does the x permission allow you to do?",
+     "choices": [
+      "List the files inside it",
+      "Enter (traverse) the directory",
+      "Rename files inside it"
+     ],
+     "correct": 1,
+     "answer": "Enter (traverse) the directory",
+     "explanation": "The note states that on a directory, x means you can enter it.",
+     "from": [
+      4
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What does sudo do, and what extra benefit does it have for system administrators?",
+     "answer": "It runs one command as root, and the command is logged.",
+     "explanation": "The note says sudo runs a single command as root and that it is logged.",
+     "from": [
+      9
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "A file has permissions 751. What can the group do with it?",
+     "choices": [
+      "Read and execute only",
+      "Read, write and execute",
+      "Write and execute only"
+     ],
+     "correct": 0,
+     "answer": "Read and execute only",
+     "explanation": "The three digits are owner, group, other. The group digit is 5 = 4+1 = read plus execute, no write.",
+     "from": [
+      1,
+      2
+     ],
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "c03-study-A",
+   "writtenBy": "glm-5.3-flash",
+   "note": {
+    "title": "How I study best",
+    "lines": [
+     "Retrieval practice means recalling from memory instead of rereading.",
+     "Spacing reviews out over days helps long-term memory more than cramming.",
+     "You should always review exactly 24 hours later.",
+     "I do better with 20-minute sessions.",
+     "Rereading my notes is the most effective way to remember them.",
+     "Mixing different kinds of problems in one session (interleaving) can help me tell them apart.",
+     "Try Anki again?",
+     "People learn best when teaching matches their learning style (visual, auditory or kinaesthetic)."
+    ]
+   },
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What is retrieval practice, as the note describes it?",
+     "answer": "Recalling information from memory rather than rereading it.",
+     "explanation": "Line 1 defines retrieval practice as recalling from memory instead of rereading.",
+     "from": [
+      1
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "According to the note, which review pattern helps long-term memory more?",
+     "choices": [
+      "Cramming everything in one go",
+      "Spacing reviews out over days",
+      "Reviewing only once, right before a test"
+     ],
+     "correct": 1,
+     "answer": "Spacing reviews out over days",
+     "explanation": "Line 2 says spacing reviews out over days helps long-term memory more than cramming.",
+     "from": [
+      2
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What session length does the note say works better for the writer?",
+     "answer": "20-minute sessions.",
+     "explanation": "Line 4 states the writer does better with 20-minute sessions.",
+     "from": [
+      4
+     ],
+     "label": "personal",
+     "why": "from \"I do better with 20-minute sessions\""
+    },
+    {
+     "kind": "choice",
+     "prompt": "What benefit of interleaving does the note mention?",
+     "choices": [
+      "It makes sessions feel shorter",
+      "It helps you tell different kinds of problems apart",
+      "It removes the need for spacing"
+     ],
+     "correct": 1,
+     "answer": "It helps you tell different kinds of problems apart",
+     "explanation": "Line 6 describes interleaving as mixing different kinds of problems in one session so they can be told apart.",
+     "from": [
+      6
+     ],
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "c03-study-B",
+   "writtenBy": "gemini-3.8-flash",
+   "note": {
+    "title": "How I study best",
+    "lines": [
+     "Retrieval practice means recalling from memory instead of rereading.",
+     "Spacing reviews out over days helps long-term memory more than cramming.",
+     "You should always review exactly 24 hours later.",
+     "I do better with 20-minute sessions.",
+     "Rereading my notes is the most effective way to remember them.",
+     "Mixing different kinds of problems in one session (interleaving) can help me tell them apart.",
+     "Try Anki again?",
+     "People learn best when teaching matches their learning style (visual, auditory or kinaesthetic)."
+    ]
+   },
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What does retrieval practice involve, according to the notes?",
+     "answer": "Recalling from memory instead of rereading.",
+     "explanation": "Line 1 specifies that retrieval practice means recalling information from memory rather than rereading it.",
+     "from": [
+      1
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "How does spacing reviews out over days compare to cramming?",
+     "choices": [
+      "It helps long-term memory more than cramming.",
+      "It produces the same results as cramming.",
+      "It is less effective for long-term memory than cramming."
+     ],
+     "correct": 0,
+     "answer": "It helps long-term memory more than cramming.",
+     "explanation": "Line 2 states that spacing reviews out over days helps long-term memory more than cramming does.",
+     "from": [
+      2
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What study session duration works better for the author?",
+     "answer": "20-minute sessions.",
+     "explanation": "Line 4 states that the author does better with 20-minute sessions.",
+     "from": [
+      4
+     ],
+     "label": "personal",
+     "why": "from \"I do better with 20-minute sessions\""
+    },
+    {
+     "kind": "choice",
+     "prompt": "What benefit does mixing different kinds of problems in one session (interleaving) provide?",
+     "choices": [
+      "It eliminates the need for spacing reviews.",
+      "It helps tell different kinds of problems apart.",
+      "It allows study sessions to be shortened to 20 minutes."
+     ],
+     "correct": 1,
+     "answer": "It helps tell different kinds of problems apart.",
+     "explanation": "Line 6 states that mixing different kinds of problems in one session (interleaving) can help tell them apart.",
+     "from": [
+      6
+     ],
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "c04-cells-A",
+   "writtenBy": "gemini-3.8-flash",
+   "note": {
+    "title": "Biology: cells",
+    "lines": [
+     "Mitochondria release energy from food through respiration.",
+     "Plant cells don't have mitochondria because they have chloroplasts.",
+     "The nucleus contains most of the cell's DNA.",
+     "Ribosomes make proteins.",
+     "Bacteria have no DNA because they have no nucleus.",
+     "Diffusion moves particles from a higher concentration to a lower one.",
+     "Exam on 3 June.",
+     "Osmosis is the diffusion of any substance across a membrane.",
+     "Enzymes are used up in the reactions they speed up."
+    ]
+   },
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "How do mitochondria release energy from food?",
+     "answer": "Through respiration",
+     "explanation": "Line 1 states that mitochondria release energy from food through respiration.",
+     "from": [
+      1
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What does the nucleus contain?",
+     "answer": "Most of the cell's DNA",
+     "explanation": "Line 3 states that the nucleus contains most of the cell's DNA.",
+     "from": [
+      3
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What is the function of ribosomes?",
+     "choices": [
+      "Releasing energy from food",
+      "Making proteins",
+      "Holding the cell's DNA",
+      "Speeding up diffusion"
+     ],
+     "correct": 1,
+     "answer": "Making proteins",
+     "explanation": "Line 4 explains that ribosomes make proteins.",
+     "from": [
+      4
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "In what direction do particles move during diffusion?",
+     "choices": [
+      "From a lower concentration to a higher one",
+      "From a higher concentration to a lower one",
+      "Equally in both directions regardless of concentration"
+     ],
+     "correct": 1,
+     "answer": "From a higher concentration to a lower one",
+     "explanation": "Line 6 states that diffusion moves particles from a higher concentration to a lower one.",
+     "from": [
+      6
+     ],
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "c04-cells-B",
+   "writtenBy": "glm-5.3-flash",
+   "note": {
+    "title": "Biology: cells",
+    "lines": [
+     "Mitochondria release energy from food through respiration.",
+     "Plant cells don't have mitochondria because they have chloroplasts.",
+     "The nucleus contains most of the cell's DNA.",
+     "Ribosomes make proteins.",
+     "Bacteria have no DNA because they have no nucleus.",
+     "Diffusion moves particles from a higher concentration to a lower one.",
+     "Exam on 3 June.",
+     "Osmosis is the diffusion of any substance across a membrane.",
+     "Enzymes are used up in the reactions they speed up."
+    ]
+   },
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What do mitochondria do in a cell?",
+     "answer": "They release energy from food through respiration.",
+     "explanation": "The note states that mitochondria release energy from food through respiration.",
+     "from": [
+      1
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which organelle contains most of a cell's DNA?",
+     "choices": [
+      "Ribosome",
+      "Mitochondrion",
+      "Nucleus",
+      "Cell membrane"
+     ],
+     "correct": 2,
+     "answer": "Nucleus",
+     "explanation": "According to the note, the nucleus contains most of the cell's DNA.",
+     "from": [
+      3
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What is the job of ribosomes in a cell?",
+     "answer": "They make proteins.",
+     "explanation": "The note says ribosomes make proteins.",
+     "from": [
+      4
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "In diffusion, particles move from…",
+     "choices": [
+      "lower to higher concentration",
+      "higher to lower concentration",
+      "a membrane to a solution",
+      "food into energy"
+     ],
+     "correct": 1,
+     "answer": "higher to lower concentration",
+     "explanation": "The note defines diffusion as the movement of particles from a higher concentration to a lower one.",
+     "from": [
+      6
+     ],
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "c05-arabic-article-A",
+   "writtenBy": "gemini-3.8-flash",
+   "note": {
+    "title": "Arabic: the definite article",
+    "lines": [
+     "The definite article is ال (al-), joined to the front of the word.",
+     "With a sun letter the lām isn't pronounced and the next letter is doubled: الشمس is ash-shams.",
+     "ق is a sun letter, so القمر is said aq-qamar.",
+     "With a moon letter the lām is pronounced: القمر is al-qamar.",
+     "Ustadha said to practise reading aloud.",
+     "The sun letters are ت ث د ذ ر ز س ش ص ض ط ظ ل ن.",
+     "A noun with ال can also take tanwīn."
+    ]
+   },
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "How is the definite article written in Arabic, and where does it attach to a word?",
+     "answer": "It is ال (al-) and is attached to the front of the word.",
+     "explanation": "Line 1 states that the Arabic definite article is ال (al-) and is joined to the front of the word.",
+     "from": [
+      1
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What happens to the pronunciation of the definite article when followed by a sun letter?",
+     "choices": [
+      "The lām is pronounced and the next letter is shortened",
+      "The lām is silent and the following letter is doubled",
+      "Both the alif and lām are omitted entirely",
+      "The lām is doubled and the following letter is silent"
+     ],
+     "correct": 1,
+     "answer": "The lām is silent and the following letter is doubled",
+     "explanation": "Line 2 notes that with a sun letter, the lām is not pronounced and the following letter is doubled.",
+     "from": [
+      2
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "According to the note, how is the lām handled when the definite article precedes a moon letter?",
+     "answer": "The lām is pronounced (for example, القمر is pronounced al-qamar).",
+     "explanation": "Line 4 explains that with a moon letter the lām is pronounced, as in القمر (al-qamar).",
+     "from": [
+      4
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which of the following is listed in the note as a sun letter?",
+     "choices": [
+      "ك",
+      "ق",
+      "ن",
+      "م"
+     ],
+     "correct": 2,
+     "answer": "ن",
+     "explanation": "Line 6 lists the sun letters as ت ث د ذ ر ز س ش ص ض ط ظ ل ن.",
+     "from": [
+      6
+     ],
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "c05-arabic-article-B",
+   "writtenBy": "glm-5.3-flash",
+   "note": {
+    "title": "Arabic: the definite article",
+    "lines": [
+     "The definite article is ال (al-), joined to the front of the word.",
+     "With a sun letter the lām isn't pronounced and the next letter is doubled: الشمس is ash-shams.",
+     "ق is a sun letter, so القمر is said aq-qamar.",
+     "With a moon letter the lām is pronounced: القمر is al-qamar.",
+     "Ustadha said to practise reading aloud.",
+     "The sun letters are ت ث د ذ ر ز س ش ص ض ط ظ ل ن.",
+     "A noun with ال can also take tanwīn."
+    ]
+   },
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What is the Arabic definite article, and where does it go in the word?",
+     "answer": "ال (al-), joined to the front of the word.",
+     "explanation": "The note states the definite article is ال (al-) and that it is joined to the front of the word.",
+     "from": [
+      1
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "When ال is added to a word starting with a sun letter, what happens to its pronunciation?",
+     "answer": "The lām isn't pronounced and the next (sun) letter is doubled, e.g. الشمس is read ash-shams.",
+     "explanation": "With a sun letter the lām of ال is not pronounced; instead the following letter is doubled, as in الشمس = ash-shams.",
+     "from": [
+      2
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "الشمس is read as…",
+     "choices": [
+      "al-shams",
+      "ash-shams",
+      "as-shams"
+     ],
+     "correct": 1,
+     "answer": "ash-shams",
+     "explanation": "Because ش is a sun letter, the lām of ال is not pronounced and the ش is doubled, giving ash-shams.",
+     "from": [
+      2,
+      6
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Name as many sun letters as you can from the note.",
+     "answer": "ت ث د ذ ر ز س ش ص ض ط ظ ل ن",
+     "explanation": "The note lists the sun letters as ت ث د ذ ر ز س ش ص ض ط ظ ل ن.",
+     "from": [
+      6
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which of these is a sun letter according to the note?",
+     "choices": [
+      "ش",
+      "ق",
+      "م"
+     ],
+     "correct": 0,
+     "answer": "ش",
+     "explanation": "The note's list of sun letters includes ش; it does not include ق or م in that list.",
+     "from": [
+      6
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which letter below does NOT appear in the note's list of sun letters?",
+     "choices": [
+      "ل",
+      "ر",
+      "ب"
+     ],
+     "correct": 2,
+     "answer": "ب",
+     "explanation": "The listed sun letters are ت ث د ذ ر ز س ش ص ض ط ظ ل ن. ل and ر are on the list; ب is not.",
+     "from": [
+      6
+     ],
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "c06-isa-A",
+   "writtenBy": "glm-5.3-flash",
+   "note": {
+    "title": "Money: ISAs",
+    "lines": [
+     "The ISA allowance is £20,000 a tax year.",
+     "Interest earned inside an ISA isn't taxed.",
+     "If I take money out of a cash ISA, I can never put it back.",
+     "Check what my bank offers.",
+     "The UK tax year runs from 6 April to 5 April."
+    ]
+   },
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "How much is the ISA allowance per tax year?",
+     "answer": "£20,000 a tax year.",
+     "explanation": "The note states the ISA allowance is £20,000 each tax year.",
+     "from": [
+      1
+     ],
+     "label": "dated",
+     "why": "the £20,000 allowance can change"
+    },
+    {
+     "kind": "written",
+     "prompt": "How is interest earned inside an ISA taxed?",
+     "answer": "It isn't taxed — interest inside an ISA is tax-free.",
+     "explanation": "The note says interest earned inside an ISA isn't taxed.",
+     "from": [
+      2
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "When does the UK tax year run?",
+     "choices": [
+      "1 January to 31 December",
+      "6 April to 5 April",
+      "6 May to 5 May"
+     ],
+     "correct": 1,
+     "answer": "6 April to 5 April",
+     "explanation": "The note states the UK tax year runs from 6 April to 5 April.",
+     "from": [
+      5
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "If you deposit £8,000 into an ISA this tax year, how much of the allowance is left to use?",
+     "choices": [
+      "£20,000",
+      "£8,000",
+      "£12,000"
+     ],
+     "correct": 2,
+     "answer": "£12,000",
+     "explanation": "The total ISA allowance is £20,000 per tax year, so using £8,000 leaves £12,000 of that year's allowance.",
+     "from": [
+      1
+     ],
+     "label": "dated",
+     "why": "applies the £20,000 allowance, which can change"
+    }
+   ]
+  },
+  {
+   "id": "c06-isa-B",
+   "writtenBy": "gemini-3.8-flash",
+   "note": {
+    "title": "Money: ISAs",
+    "lines": [
+     "The ISA allowance is £20,000 a tax year.",
+     "Interest earned inside an ISA isn't taxed.",
+     "If I take money out of a cash ISA, I can never put it back.",
+     "Check what my bank offers.",
+     "The UK tax year runs from 6 April to 5 April."
+    ]
+   },
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What is the ISA allowance per tax year?",
+     "answer": "£20,000",
+     "explanation": "The notes state that the ISA allowance is £20,000 a tax year.",
+     "from": [
+      1
+     ],
+     "label": "dated",
+     "why": "the £20,000 allowance can change"
+    },
+    {
+     "kind": "choice",
+     "prompt": "How is interest earned inside an ISA treated for tax purposes?",
+     "choices": [
+      "It is taxed at the basic rate",
+      "It isn't taxed",
+      "It is taxed upon withdrawal",
+      "It is taxed after exceeding £20,000"
+     ],
+     "correct": 1,
+     "answer": "It isn't taxed",
+     "explanation": "According to the note, interest earned inside an ISA is not taxed.",
+     "from": [
+      2
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What happens if money is withdrawn from a cash ISA, according to the note?",
+     "answer": "It can never be put back",
+     "explanation": "The note states that if money is taken out of a cash ISA, you can never put it back.",
+     "from": [
+      3
+     ],
+     "label": "slip",
+     "why": "teaches \"you can never put it back\" (a flexible ISA allows it)"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Between which dates does the UK tax year run?",
+     "choices": [
+      "1 January to 31 December",
+      "1 April to 31 March",
+      "6 April to 5 April",
+      "5 April to 6 April"
+     ],
+     "correct": 2,
+     "answer": "6 April to 5 April",
+     "explanation": "The notes state that the UK tax year runs from 6 April to 5 April.",
+     "from": [
+      5
+     ],
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "c07-ww1-A",
+   "writtenBy": "glm-5.3-flash",
+   "note": {
+    "title": "History: the First World War (all correct)",
+    "lines": [
+     "The First World War began in 1914 and fighting ended with the armistice of 11 November 1918.",
+     "The assassination of Archduke Franz Ferdinand in Sarajevo in June 1914 led to the July Crisis.",
+     "Britain declared war on Germany on 4 August 1914, after Germany invaded Belgium.",
+     "The Battle of the Somme began on 1 July 1916.",
+     "Read the Somme chapter again.",
+     "The Treaty of Versailles was signed in June 1919."
+    ]
+   },
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "When did the First World War begin and what event ended the fighting?",
+     "answer": "It began in 1914 and ended with the armistice of 11 November 1918.",
+     "explanation": "The note states the war began in 1914 and that fighting ended with the armistice of 11 November 1918.",
+     "from": [
+      1
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Whose assassination in Sarajevo in June 1914 led to the July Crisis?",
+     "choices": [
+      "Archduke Franz Ferdinand",
+      "Kaiser Wilhelm II",
+      "King George V",
+      "Tsar Nicholas II"
+     ],
+     "correct": 0,
+     "answer": "Archduke Franz Ferdinand",
+     "explanation": "The note says the assassination of Archduke Franz Ferdinand in Sarajevo in June 1914 led to the July Crisis.",
+     "from": [
+      2
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Why did Britain declare war on Germany on 4 August 1914?",
+     "answer": "Because Germany invaded Belgium.",
+     "explanation": "According to the note, Britain declared war on Germany on 4 August 1914 after Germany invaded Belgium.",
+     "from": [
+      3
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "On what date did the Battle of the Somme begin?",
+     "choices": [
+      "4 August 1914",
+      "11 November 1918",
+      "1 July 1916",
+      "June 1919"
+     ],
+     "correct": 2,
+     "answer": "1 July 1916",
+     "explanation": "The note states the Battle of the Somme began on 1 July 1916.",
+     "from": [
+      4
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "When was the Treaty of Versailles signed?",
+     "answer": "June 1919.",
+     "explanation": "The note says the Treaty of Versailles was signed in June 1919.",
+     "from": [
+      6
+     ],
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "c07-ww1-B",
+   "writtenBy": "gemini-3.8-flash",
+   "note": {
+    "title": "History: the First World War (all correct)",
+    "lines": [
+     "The First World War began in 1914 and fighting ended with the armistice of 11 November 1918.",
+     "The assassination of Archduke Franz Ferdinand in Sarajevo in June 1914 led to the July Crisis.",
+     "Britain declared war on Germany on 4 August 1914, after Germany invaded Belgium.",
+     "The Battle of the Somme began on 1 July 1916.",
+     "Read the Somme chapter again.",
+     "The Treaty of Versailles was signed in June 1919."
+    ]
+   },
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "When did fighting in the First World War end according to the armistice?",
+     "answer": "11 November 1918",
+     "explanation": "Line 1 states that fighting ended with the armistice of 11 November 1918.",
+     "from": [
+      1
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What event in June 1914 triggered the July Crisis?",
+     "choices": [
+      "The invasion of Belgium",
+      "The signing of the Treaty of Versailles",
+      "The assassination of Archduke Franz Ferdinand in Sarajevo",
+      "The start of the Battle of the Somme"
+     ],
+     "correct": 2,
+     "answer": "The assassination of Archduke Franz Ferdinand in Sarajevo",
+     "explanation": "Line 2 notes that the assassination of Archduke Franz Ferdinand in Sarajevo in June 1914 led to the July Crisis.",
+     "from": [
+      2
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Why did Britain declare war on Germany on 4 August 1914?",
+     "answer": "Because Germany invaded Belgium.",
+     "explanation": "Line 3 states Britain declared war on Germany on 4 August 1914, after Germany invaded Belgium.",
+     "from": [
+      3
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "On what date did the Battle of the Somme begin?",
+     "choices": [
+      "1 July 1916",
+      "4 August 1914",
+      "11 November 1918",
+      "28 June 1919"
+     ],
+     "correct": 0,
+     "answer": "1 July 1916",
+     "explanation": "Line 4 specifies that the Battle of the Somme began on 1 July 1916.",
+     "from": [
+      4
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "When was the Treaty of Versailles signed?",
+     "answer": "June 1919",
+     "explanation": "Line 6 confirms that the Treaty of Versailles was signed in June 1919.",
+     "from": [
+      6
+     ],
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "c08-python-A",
+   "writtenBy": "glm-5.3-flash",
+   "note": {
+    "title": "Python basics (all correct)",
+    "lines": [
+     "A list can be changed after it is made; a tuple can't.",
+     "len() gives the number of items.",
+     "Indexes start at 0, so the last item of a five-item list is at index 4.",
+     "A dictionary maps keys to values.",
+     "== compares values; is checks whether two names refer to the same object.",
+     "Do the chapter 3 exercises."
+    ]
+   },
+   "cards": [
+    {
+     "kind": "choice",
+     "prompt": "Which type can be changed after it is created: a list or a tuple?",
+     "choices": [
+      "Only the list",
+      "Only the tuple",
+      "Both can be changed",
+      "Neither can be changed"
+     ],
+     "correct": 0,
+     "answer": "Only the list",
+     "explanation": "The note says a list can be changed after it is made, but a tuple can't.",
+     "from": [
+      1
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What does len() tell you about a collection?",
+     "answer": "It gives the number of items in it.",
+     "explanation": "The note states len() gives the number of items.",
+     "from": [
+      2
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "A list has five items. What index holds the last item, and why?",
+     "answer": "Index 4, because indexes start at 0.",
+     "explanation": "The note says indexes start at 0, so a five-item list has its last item at index 4.",
+     "from": [
+      3
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What does a dictionary do in Python?",
+     "choices": [
+      "Maps keys to values",
+      "Sorts items in order",
+      "Checks if two names are the same object",
+      "Counts the items in a list"
+     ],
+     "correct": 0,
+     "answer": "Maps keys to values",
+     "explanation": "The note says a dictionary maps keys to values.",
+     "from": [
+      4
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "In Python, what is the difference between == and is?",
+     "answer": "== compares values, while is checks whether two names refer to the same object.",
+     "explanation": "The note states == compares values and is checks whether two names refer to the same object.",
+     "from": [
+      5
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Two variables x and y hold lists with the same contents. Which check might be False even though their values are equal?",
+     "choices": [
+      "x == y",
+      "x is y",
+      "len(x) == len(y)",
+      "None of these"
+     ],
+     "correct": 1,
+     "answer": "x is y",
+     "explanation": "== compares values, so it would be True; but is checks whether the names refer to the same object, which may not be the case.",
+     "from": [
+      5
+     ],
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "c08-python-B",
+   "writtenBy": "gemini-3.8-flash",
+   "note": {
+    "title": "Python basics (all correct)",
+    "lines": [
+     "A list can be changed after it is made; a tuple can't.",
+     "len() gives the number of items.",
+     "Indexes start at 0, so the last item of a five-item list is at index 4.",
+     "A dictionary maps keys to values.",
+     "== compares values; is checks whether two names refer to the same object.",
+     "Do the chapter 3 exercises."
+    ]
+   },
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "How does a list differ from a tuple regarding changes after creation?",
+     "answer": "A list can be changed after it is made, whereas a tuple cannot.",
+     "explanation": "The note states that a list can be changed after it is made, but a tuple cannot.",
+     "from": [
+      1
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What does the len() function provide?",
+     "answer": "The number of items.",
+     "explanation": "Line 2 notes that len() gives the number of items.",
+     "from": [
+      2
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "If a list contains five items, at which index is the final item located?",
+     "choices": [
+      "3",
+      "4",
+      "5"
+     ],
+     "correct": 1,
+     "answer": "4",
+     "explanation": "Indexes start at 0, which means the last item of a five-item list is at index 4.",
+     "from": [
+      3
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What is the role of a dictionary in terms of how it structures data?",
+     "answer": "It maps keys to values.",
+     "explanation": "According to line 4, a dictionary maps keys to values.",
+     "from": [
+      4
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What is the difference between the == operator and the is operator?",
+     "choices": [
+      "== compares values, whereas is checks whether two names refer to the same object",
+      "== checks object identity, whereas is compares values",
+      "== assigns values, whereas is checks equivalence"
+     ],
+     "correct": 0,
+     "answer": "== compares values, whereas is checks whether two names refer to the same object",
+     "explanation": "Line 5 explicitly states that == compares values, while is checks whether two names refer to the same object.",
+     "from": [
+      5
+     ],
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "c09-https-A",
+   "writtenBy": "glm-5.3-flash",
+   "note": {
+    "title": "HTTPS and TLS",
+    "lines": [
+     "HTTPS is HTTP sent over TLS.",
+     "The padlock means the connection is encrypted, not that the site can be trusted.",
+     "A TLS certificate proves who owns the website.",
+     "Port 443 is the default for HTTPS.",
+     "With HTTPS, nobody on the network can see which website I visit.",
+     "Look at a certificate in Safari."
+    ]
+   },
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What is HTTPS, in terms of the protocols involved?",
+     "answer": "HTTP sent over TLS.",
+     "explanation": "The note states HTTPS is simply HTTP carried over TLS.",
+     "from": [
+      1
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What does the padlock icon in a browser actually indicate?",
+     "choices": [
+      "The site is safe and trustworthy",
+      "The connection is encrypted",
+      "The site's content has been checked for malware",
+      "The site's owner is a verified company"
+     ],
+     "correct": 1,
+     "answer": "The connection is encrypted",
+     "explanation": "The note says the padlock means the connection is encrypted, and explicitly not that the site can be trusted.",
+     "from": [
+      2
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What does a TLS certificate prove?",
+     "answer": "Who owns the website.",
+     "explanation": "According to the note, a TLS certificate proves who owns the website.",
+     "from": [
+      3
+     ],
+     "label": "slip",
+     "why": "teaches \"a TLS certificate proves who owns the website\""
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which port is the default for HTTPS?",
+     "choices": [
+      "21",
+      "80",
+      "443",
+      "8080"
+     ],
+     "correct": 2,
+     "answer": "443",
+     "explanation": "The note gives port 443 as the default for HTTPS.",
+     "from": [
+      4
+     ],
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "c09-https-B",
+   "writtenBy": "gemini-3.8-flash",
+   "note": {
+    "title": "HTTPS and TLS",
+    "lines": [
+     "HTTPS is HTTP sent over TLS.",
+     "The padlock means the connection is encrypted, not that the site can be trusted.",
+     "A TLS certificate proves who owns the website.",
+     "Port 443 is the default for HTTPS.",
+     "With HTTPS, nobody on the network can see which website I visit.",
+     "Look at a certificate in Safari."
+    ]
+   },
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "What protocol is used to carry HTTP traffic when using HTTPS?",
+     "answer": "TLS",
+     "explanation": "Line 1 states that HTTPS is simply HTTP sent over TLS.",
+     "from": [
+      1
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What does the padlock icon indicate about a website connection?",
+     "choices": [
+      "The website and its owner can be fully trusted",
+      "The connection is encrypted",
+      "The connection is routed through port 80",
+      "Network observers cannot see which domain is being accessed"
+     ],
+     "correct": 1,
+     "answer": "The connection is encrypted",
+     "explanation": "Line 2 notes that the padlock indicates the connection is encrypted, rather than proving the site is trustworthy.",
+     "from": [
+      2
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "According to the notes, what does a TLS certificate establish?",
+     "answer": "Who owns the website",
+     "explanation": "Line 3 states that a TLS certificate proves who owns the website.",
+     "from": [
+      3
+     ],
+     "label": "slip",
+     "why": "teaches \"a TLS certificate proves who owns the website\""
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which port serves as the default for HTTPS?",
+     "choices": [
+      "80",
+      "8080",
+      "443",
+      "22"
+     ],
+     "correct": 2,
+     "answer": "443",
+     "explanation": "Line 4 specifies that port 443 is the default port for HTTPS.",
+     "from": [
+      4
+     ],
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "c10-photosynthesis-A",
+   "writtenBy": "glm-5.3-flash",
+   "note": {
+    "title": "Biology: photosynthesis (all correct)",
+    "lines": [
+     "Photosynthesis takes place in chloroplasts.",
+     "It uses carbon dioxide and water, with energy from light, to make glucose and oxygen.",
+     "Chlorophyll absorbs mostly red and blue light and reflects green.",
+     "Draw the leaf diagram from memory.",
+     "Light intensity, carbon dioxide concentration and temperature can each limit the rate."
+    ]
+   },
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "In which organelle does photosynthesis take place?",
+     "answer": "Chloroplasts.",
+     "explanation": "The note states that photosynthesis takes place in chloroplasts.",
+     "from": [
+      1
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which set of inputs does photosynthesis use, according to the note?",
+     "choices": [
+      "Carbon dioxide, water and light energy",
+      "Glucose, oxygen and light energy",
+      "Carbon dioxide and glucose only"
+     ],
+     "correct": 0,
+     "answer": "Carbon dioxide, water and light energy",
+     "explanation": "The note says it uses carbon dioxide and water, with energy from light, to make glucose and oxygen.",
+     "from": [
+      2
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "What are the two products of photosynthesis?",
+     "answer": "Glucose and oxygen.",
+     "explanation": "The note lists glucose and oxygen as the products made from carbon dioxide, water and light energy.",
+     "from": [
+      2
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which wavelengths of light does chlorophyll mostly absorb?",
+     "choices": [
+      "Red and blue",
+      "Green and yellow",
+      "Green and red"
+     ],
+     "correct": 0,
+     "answer": "Red and blue",
+     "explanation": "The note says chlorophyll absorbs mostly red and blue light and reflects green.",
+     "from": [
+      3
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Why do leaves look green, according to the note?",
+     "answer": "Chlorophyll reflects green light rather than absorbing it.",
+     "explanation": "The note states chlorophyll absorbs mostly red and blue light and reflects green, so leaves appear green.",
+     "from": [
+      3
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Name the three factors that can each limit the rate of photosynthesis.",
+     "answer": "Light intensity, carbon dioxide concentration and temperature.",
+     "explanation": "The note lists these three factors as each able to limit the rate.",
+     "from": [
+      5
+     ],
+     "label": "sound"
+    }
+   ]
+  },
+  {
+   "id": "c10-photosynthesis-B",
+   "writtenBy": "gemini-3.8-flash",
+   "note": {
+    "title": "Biology: photosynthesis (all correct)",
+    "lines": [
+     "Photosynthesis takes place in chloroplasts.",
+     "It uses carbon dioxide and water, with energy from light, to make glucose and oxygen.",
+     "Chlorophyll absorbs mostly red and blue light and reflects green.",
+     "Draw the leaf diagram from memory.",
+     "Light intensity, carbon dioxide concentration and temperature can each limit the rate."
+    ]
+   },
+   "cards": [
+    {
+     "kind": "written",
+     "prompt": "Where does photosynthesis take place?",
+     "answer": "In chloroplasts",
+     "explanation": "Line 1 states that photosynthesis takes place in chloroplasts.",
+     "from": [
+      1
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "What are the reactants and products of photosynthesis?",
+     "choices": [
+      "It uses glucose and oxygen to make carbon dioxide and water",
+      "It uses carbon dioxide and water to make glucose and oxygen",
+      "It uses glucose and water to make carbon dioxide and oxygen",
+      "It uses carbon dioxide and oxygen to make glucose and water"
+     ],
+     "correct": 1,
+     "answer": "It uses carbon dioxide and water to make glucose and oxygen",
+     "explanation": "Line 2 notes that photosynthesis uses carbon dioxide and water, with energy from light, to produce glucose and oxygen.",
+     "from": [
+      2
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "written",
+     "prompt": "Which colours of light does chlorophyll mostly absorb, and which does it reflect?",
+     "answer": "It absorbs mostly red and blue light and reflects green light.",
+     "explanation": "Line 3 states that chlorophyll absorbs mostly red and blue light and reflects green.",
+     "from": [
+      3
+     ],
+     "label": "sound"
+    },
+    {
+     "kind": "choice",
+     "prompt": "Which three factors can limit the rate of photosynthesis?",
+     "choices": [
+      "Light intensity, oxygen concentration, and temperature",
+      "Chlorophyll levels, water availability, and oxygen concentration",
+      "Light intensity, carbon dioxide concentration, and temperature",
+      "Glucose concentration, carbon dioxide concentration, and temperature"
+     ],
+     "correct": 2,
+     "answer": "Light intensity, carbon dioxide concentration, and temperature",
+     "explanation": "Line 5 states that light intensity, carbon dioxide concentration, and temperature can each limit the rate of photosynthesis.",
+     "from": [
+      5
+     ],
+     "label": "sound"
+    }
+   ]
+  }
+ ]
+}

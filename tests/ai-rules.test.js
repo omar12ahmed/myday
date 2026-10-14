@@ -1,7 +1,7 @@
 // "Help me adjust today": the rules, checked on the app's own code (bundled for Node from app/src/ai and app/src/data
 // by ai-eval/build.mjs), with made-up data in memory only. No browser, no network, no real records.
 //   [1] what's sent (context)  [2] every rule on a reply  [3] saving: only after confirming, never stale, undo
-//   [4] the instructions and the mock planner  [5] the model adapter (with a fake provider)  …  [9] AI-written revision cards
+//   [4] the instructions and the mock planner  [5] the model adapter (with a fake provider)  …  [9] AI-written revision cards  [10] cards from your notes
 process.env.TZ = 'Europe/London';
 const path = require('path');
 const os = require('os');
@@ -534,6 +534,42 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   check('…and a note card isn\'t counted in Cybersecurity\'s revision', !K.aiCyberCards(K.normalize(odd)).some(c => c.id === 'cpNote'));
   vw.study.concepts.push({ ...aw, id: 'cpYours', origin: undefined });
   check('Undo takes out those cards only: not your own concepts, not other AI cards', K.removeAiCards(vw, ids) && !vw.study.concepts.some(c => ids.includes(c.id)) && vw.study.concepts.some(c => c.id === 'cpYours') && K.aiCyberCards(vw).length === 1 && !K.removeAiCards(vw, ids));
+
+  console.log('\n[10] Cards from your notes: the note as lines, what\'s sent, the checks on each reply, adding');
+  {
+    const nl = K.noteLines({ title: 'DNS', text: 'DNS turns names into addresses.\n\n   \n- DHCP hands out leases.\n' + 'A long paragraph sentence one. '.repeat(12).trim() });
+    check('a note becomes its non-blank lines, a long paragraph split into its sentences', 'lines' in nl && nl.lines[0] === 'DNS turns names into addresses.' && nl.lines[1] === '- DHCP hands out leases.' && nl.lines.length === 14 && nl.lines.every(l => l.length <= 300), nl);
+    check('…an empty note, one too long for one check, or a sentence too long to number: said, not sent',
+      K.noteLines({ title: 'x', text: ' \n ' }).problem === 'empty' && K.noteLines({ title: '', text: Array.from({ length: 61 }, (_, i) => 'Line ' + i).join('\n') }).problem === 'too-long'
+      && K.noteLines({ title: '', text: 'x'.repeat(5000) + '\n' + 'y'.repeat(1200) }).problem === 'long-sentence');
+    const NLINES = ['DNS turns names into addresses.', 'ARP finds the IP for a MAC address.', 'Ask Sam about the router.', 'NAT lets devices share one public address.'];
+    const nck = K.noteCheckContext({ title: '  DNS notes ' }, NLINES);
+    check('the check sends just the note: its title and numbered lines (the server would accept it)', eq(Object.keys(nck).sort(), ['action', 'note', 'version']) && nck.note.title === 'DNS notes' && eq(nck.note.lines, NLINES) && K.checkNoteCheckContext(nck));
+    const flags = K.readNoteCheck(JSON.stringify({ flags: [{ line: 2, concern: 'wrong', reason: 'ARP finds the MAC address for an IP address.' }, { line: 9, concern: 'wrong', reason: 'no such line' }, { line: 2, concern: 'unclear', reason: 'twice' }, { line: 4, concern: 'odd', reason: 'Fine really.' }, { line: 1, reason: '' }] }), NLINES);
+    check('its reply: flags on real lines only, one per line, with a reason; an unknown concern becomes "unclear"', eq(flags.map(f => [f.line, f.concern]), [[2, 'wrong'], [4, 'unclear']]), flags);
+    check('…not JSON, or no list of flags: nothing', K.readNoteCheck('Line 2 is wrong', NLINES) === null && K.readNoteCheck('{"lines": []}', NLINES) === null);
+    let nw = (() => { K.setClock(`${D}T19:00`); const s0 = K.freshState(); localStorage.clear(); localStorage.setItem('myday.data.v4', JSON.stringify(s0)); K.boot(); return K.getSnapshot().data; })();
+    nw.study.concepts.push({ ...K.normalize(K.freshState()).study.concepts[0], id: 'cpN1', title: 'x', prompt: 'What does NAT let devices share?', origin: { by: 'ai', subject: 'note', noteId: 'ntA', writer: 'W', checker: 'C', edited: false } },
+      { id: 'cpN2', title: 'y', prompt: 'A card from another note?', origin: { by: 'ai', subject: 'note', noteId: 'ntB', writer: 'W', checker: 'C', edited: false } });
+    const { ctx: ncc, kept } = K.noteCardsContext(nw, { id: 'ntA', title: 'DNS notes' }, NLINES, [1, 3, 4]);
+    check('the cards request: only the lines you kept, numbered afresh, and the questions you already have from this note (not others)', eq(ncc.note.lines, [NLINES[0], NLINES[2], NLINES[3]]) && eq(kept, [1, 3, 4])
+      && eq(ncc.existing, ['What does NAT let devices share?']) && ncc.count === 10 && K.checkNoteCardsContext(ncc), ncc);
+    const NC = (prompt, from, x = {}) => ({ kind: 'written', prompt, answer: 'An answer.', explanation: 'Because the note says so.', from, ...x });
+    const nrep = (cards, verdicts) => JSON.stringify({ cards, verdicts, leftOut: 0 });
+    const nkeep = n => Array.from({ length: n }, (_, index) => ({ index, verdict: 'keep', reason: 'Correct and from the note.' }));
+    let nr = K.readNoteCardsReply(nrep([NC('What does DNS turn names into?', [1]), NC('How many public addresses can devices share with NAT?', [3])], nkeep(2)), ncc, kept);
+    check('a checked reply: each card says which of the note\'s lines it came from (in the note\'s own numbering)', nr.cards.length === 2 && eq(nr.cards[0].lines, [1]) && eq(nr.cards[1].lines, [4]) && nr.cards[0].reason === 'Correct and from the note.', nr);
+    nr = K.readNoteCardsReply(nrep([NC('Q one about DNS names?', [1]), NC('Q two about a line that isn\'t there?', [7]), NC('Q three with no lines?', []), NC('Q four naming four lines?', [1, 2, 3, 1]), NC('What does NAT let devices share?', [3]), NC('Q six the checker dropped?', [1])],
+      [...nkeep(5), { index: 5, verdict: 'drop', reason: 'Not in the note.' }]), ncc, kept);
+    check('…cards naming lines that aren\'t there (or none, or too many) left out, a repeat of a card you have left out, the checker\'s "drop" respected', nr.cards.length === 1 && nr.leftOut === 3 && nr.repeats === 1 && nr.checkerLeftOut === 1, nr);
+    const nids = K.addNoteCards(nw, [{ ...NC('What does DNS turn names into?', [1]), reason: 'ok', lines: [1] }], { noteId: 'ntA', noteTitle: 'DNS notes', writer: 'Gemini 3.8 Flash', checker: 'GLM-5.3-Flash' }, D);
+    const nc1 = nw.study.concepts.find(c => c.id === nids[0]);
+    check('adding: a concept due tomorrow, saying it came from your note — in its origin and in words', nc1.review.due === '2026-11-11' && JSON.stringify(nc1.origin) === JSON.stringify({ by: 'ai', subject: 'note', noteId: 'ntA', writer: 'Gemini 3.8 Flash', checker: 'GLM-5.3-Flash', edited: false })
+      && nc1.source === 'AI-written from your note “DNS notes” by Gemini 3.8 Flash, checked by GLM-5.3-Flash · 10 Nov 2026', nc1);
+    check('…kept as it is when saved and loaded again, and not counted as a Cybersecurity card', JSON.stringify(K.normalize(JSON.parse(JSON.stringify(nw))).study.concepts.find(c => c.id === nids[0]).origin) === JSON.stringify(nc1.origin) && !K.aiCyberCards(nw).some(c => c.id === nids[0]));
+    check('…and Undo takes it out again', K.removeAiCards(nw, nids) && !nw.study.concepts.some(c => c.id === nids[0]));
+
+  }
 
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
