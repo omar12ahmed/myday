@@ -78,6 +78,17 @@ fresh order, with one step of Undo. Each keeps where it came from: `origin` on t
 answer, explanation or options) and the same in words in its `source`. They count in "Revise Cybersecurity" too.
 From 1.19.1 both versions also keep origins for other subjects (`subject` a plain word, e.g. `note`, with up to 12
 short plain fields), so cards from your notes — and later sources — survive a device or version that predates them.
+
+Revision cards from a note (AI roles step 3 part C, 1.20.0): with "AI help with notes" on, a note (never a private
+one) offers "Make revision cards" (`src/notes/NoteCards.tsx`, `src/ai/noteCards.ts`; the server's jobs in
+`../supabase/functions/_shared/ai/note-cards.ts`). The note's lines (blank ones dropped, a long paragraph split into
+sentences; at most 60 lines, 6,000 characters) go to a check that flags doubtful ones with a reason — left out unless
+you tap "It's right, use it"; nothing doubtful and it goes straight on. Then only the lines you kept go to the writer,
+each card naming its lines, and the other model checks every card (correct by sound knowledge even where the note
+says otherwise, and supported by its lines). The app checks every card again and adds the ones you keep, due the next
+day, with Undo; origin `{ by: 'ai', subject: 'note', noteId, writer, checker, edited }` and "AI-written from your note"
+in the source. Your note is never changed; if it changes after its check, it asks you to check again. Models chosen by
+evaluation (`../ai-eval/reviews/2026-10-14-note-cards-quality.md`): Gemini checks the note, GLM writes, Gemini checks.
 Which model writes and which checks is the server's configuration, chosen by evaluation
 (`../ai-eval/reviews/2026-10-13-cards-quality.md`). Shown only when the app is built with AI help.
 

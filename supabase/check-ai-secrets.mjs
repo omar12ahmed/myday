@@ -87,6 +87,10 @@ if (!('error' in cfg) && !(learn && 'error' in learn)) {
     notes.push(`the tutor goes to the ${route.primary.slot === 'learn' ? 'learning' : 'main'} model${route.fallback ? `, with the ${route.fallback.slot === 'learn' ? 'learning' : 'main'} one as its fallback` : ', with no fallback'}.`);
     const cards = routeFor(n => (n.endsWith('API_KEY') ? env[n] || 'not-a-key' : env[n]), { version: 1, action: 'cards', curriculumVersion: '1.0.0', lessonId: 'lesson.lab-isolation', count: 10, existing: [] });
     if (!('error' in cards)) notes.push(cards.other ? `revision cards: written by the ${cards.primary.slot === 'learn' ? 'learning' : 'main'} model, checked by the ${cards.other.slot === 'learn' ? 'learning' : 'main'} one.` : 'revision cards: off (they need a second model to check them).');
+    const slot = s => (s === 'learn' ? 'learning' : 'main');
+    const nc = routeFor(n => (n.endsWith('API_KEY') ? env[n] || 'not-a-key' : env[n]), { version: 1, action: 'note-check', note: { title: '', lines: ['x'] } });
+    const nw = routeFor(n => (n.endsWith('API_KEY') ? env[n] || 'not-a-key' : env[n]), { version: 1, action: 'note-cards', note: { title: '', lines: ['x'] }, count: 10, existing: [] });
+    if (!('error' in nc) && !('error' in nw)) notes.push(nw.other ? `cards from notes: the note checked by the ${slot(nc.primary.slot)} model, cards written by the ${slot(nw.primary.slot)} one and checked by the ${slot(nw.other.slot)} one.` : 'cards from notes: off (they need a second model to check them).');
   }
 }
 const total = Number(env.AI_TOTAL_TIMEOUT_MS || 38000);
