@@ -58,5 +58,15 @@ write, and the other model (Gemini) checks them. About US$0.002 per note, 10–2
 check. With every model flagging every planted mistake, the evidence that matters most is the card checks on real
 drafts: two independent layers each caught every wrong card here.
 
+## Follow-up: instructions v2 (same day)
+
+Screenshots showed cards and explanations saying "line 3" — numbers that meant nothing later, in revision, and that
+drifted from the note's own when doubtful lines were left out. Version 2 keeps every line's number (a line you leave
+out is sent as "(left out)") and tells the writer never to mention line numbers. GLM re-run on the ten notes
+(`results/2026-10-14-11-28-15-live`, US$0.003): 49 cards, none mentioning a line number. One card came from a wrong
+line, but corrected it ("does a plant cell with chloroplasts also have mitochondria? — yes, both") — accurate, though
+against the "don't correct, skip it" rule and against its own "according to your note", which the card checker is
+there to catch; in real use the check would have set that line aside first.
+
 Limits: made-up notes, one reviewer, 2 wrong cards among 94 — a small sample. The check is the AI's doubt, not a
 verdict, and the app says so.

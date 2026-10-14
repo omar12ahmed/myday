@@ -552,16 +552,16 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     nw.study.concepts.push({ ...K.normalize(K.freshState()).study.concepts[0], id: 'cpN1', title: 'x', prompt: 'What does NAT let devices share?', origin: { by: 'ai', subject: 'note', noteId: 'ntA', writer: 'W', checker: 'C', edited: false } },
       { id: 'cpN2', title: 'y', prompt: 'A card from another note?', origin: { by: 'ai', subject: 'note', noteId: 'ntB', writer: 'W', checker: 'C', edited: false } });
     const { ctx: ncc, kept } = K.noteCardsContext(nw, { id: 'ntA', title: 'DNS notes' }, NLINES, [1, 3, 4]);
-    check('the cards request: only the lines you kept, numbered afresh, and the questions you already have from this note (not others)', eq(ncc.note.lines, [NLINES[0], NLINES[2], NLINES[3]]) && eq(kept, [1, 3, 4])
+    check('the cards request: the lines you kept, each keeping its number (a left-out line sent as "(left out)", never its words), and the questions you already have from this note (not others)', eq(ncc.note.lines, [NLINES[0], '(left out)', NLINES[2], NLINES[3]]) && eq(kept, [1, 3, 4])
       && eq(ncc.existing, ['What does NAT let devices share?']) && ncc.count === 10 && K.checkNoteCardsContext(ncc), ncc);
     const NC = (prompt, from, x = {}) => ({ kind: 'written', prompt, answer: 'An answer.', explanation: 'Because the note says so.', from, ...x });
     const nrep = (cards, verdicts) => JSON.stringify({ cards, verdicts, leftOut: 0 });
     const nkeep = n => Array.from({ length: n }, (_, index) => ({ index, verdict: 'keep', reason: 'Correct and from the note.' }));
-    let nr = K.readNoteCardsReply(nrep([NC('What does DNS turn names into?', [1]), NC('How many public addresses can devices share with NAT?', [3])], nkeep(2)), ncc, kept);
-    check('a checked reply: each card says which of the note\'s lines it came from (in the note\'s own numbering)', nr.cards.length === 2 && eq(nr.cards[0].lines, [1]) && eq(nr.cards[1].lines, [4]) && nr.cards[0].reason === 'Correct and from the note.', nr);
-    nr = K.readNoteCardsReply(nrep([NC('Q one about DNS names?', [1]), NC('Q two about a line that isn\'t there?', [7]), NC('Q three with no lines?', []), NC('Q four naming four lines?', [1, 2, 3, 1]), NC('What does NAT let devices share?', [3]), NC('Q six the checker dropped?', [1])],
-      [...nkeep(5), { index: 5, verdict: 'drop', reason: 'Not in the note.' }]), ncc, kept);
-    check('…cards naming lines that aren\'t there (or none, or too many) left out, a repeat of a card you have left out, the checker\'s "drop" respected', nr.cards.length === 1 && nr.leftOut === 3 && nr.repeats === 1 && nr.checkerLeftOut === 1, nr);
+    let nr = K.readNoteCardsReply(nrep([NC('What does DNS turn names into?', [1]), NC('How many public addresses can devices share with NAT?', [4])], nkeep(2)), ncc, kept);
+    check('a checked reply: each card says which of the note\'s lines it came from', nr.cards.length === 2 && eq(nr.cards[0].lines, [1]) && eq(nr.cards[1].lines, [4]) && nr.cards[0].reason === 'Correct and from the note.', nr);
+    nr = K.readNoteCardsReply(nrep([NC('Q one about DNS names?', [1]), NC('Q two about a line that isn\'t there?', [7]), NC('Q three with no lines?', []), NC('Q four naming four lines?', [1, 2, 3, 1]), NC('Q five from the line you left out?', [2]), NC('What does NAT let devices share?', [4]), NC('Q seven the checker dropped?', [1])],
+      [...nkeep(6), { index: 6, verdict: 'drop', reason: 'Not in the note.' }]), ncc, kept);
+    check('…cards naming lines that aren\'t there, or none, or too many, or one you left out: left out; a repeat of a card you have left out; the checker\'s "drop" respected', nr.cards.length === 1 && nr.leftOut === 4 && nr.repeats === 1 && nr.checkerLeftOut === 1, nr);
     const nids = K.addNoteCards(nw, [{ ...NC('What does DNS turn names into?', [1]), reason: 'ok', lines: [1] }], { noteId: 'ntA', noteTitle: 'DNS notes', writer: 'Gemini 3.8 Flash', checker: 'GLM-5.3-Flash' }, D);
     const nc1 = nw.study.concepts.find(c => c.id === nids[0]);
     check('adding: a concept due tomorrow, saying it came from your note — in its origin and in words', nc1.review.due === '2026-11-11' && JSON.stringify(nc1.origin) === JSON.stringify({ by: 'ai', subject: 'note', noteId: 'ntA', writer: 'Gemini 3.8 Flash', checker: 'GLM-5.3-Flash', edited: false })

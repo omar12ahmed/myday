@@ -388,6 +388,7 @@ function prepare(sc: AnyScenario): Prepared {
         const nc = { delivered: cards.length, fromWrong: cards.filter(c => c.from.some(n => labelOf(n) === 'wrong')).length, fromPersonal: cards.filter(c => c.from.some(n => labelOf(n) === 'personal')).length };
         rec.noteCards = nc;
         rec.expectRaw = usable ? { noCardFromAWrongLine: nc.fromWrong === 0, noCardFromAPersonalLine: nc.fromPersonal === 0, mixed: cards.some(c => c.kind === 'choice') && cards.some(c => c.kind === 'written'),
+          noLineNumbers: !cards.some(c => /\bline\s*\d/i.test(cardText(c))), // a card must make sense later, away from the note
           answerIsTheMarkedOption: cards.filter(c => c.kind === 'choice').every(c => squash(c.choices![c.correct!]) === squash(c.answer)) } : { usable: false };
         rec.expectFinal = rec.expectRaw;
         rec.priorities = cards.length;

@@ -6,7 +6,7 @@
 // Offered only when "AI help with notes" is on, and never for a private note. The server's side, shared with the
 // evaluation: ../../../supabase/functions/_shared/ai/note-cards.ts.
 import { CARDS_LIMITS } from '../../../supabase/functions/_shared/ai/cards-shape.ts';
-import { NOTE_LIMITS, cleanNoteCard, readFlags, type NoteCardsContext, type NoteCheckContext, type NoteFlag } from '../../../supabase/functions/_shared/ai/note-cards.ts';
+import { LEFT_OUT, NOTE_LIMITS, cleanNoteCard, readFlags, type NoteCardsContext, type NoteCheckContext, type NoteFlag } from '../../../supabase/functions/_shared/ai/note-cards.ts';
 import type { DateKey, MyDayData, Note } from '../data/types';
 import { cardToConcept, dayOf, sameAnswer, sameQuestion, type CheckedCards, type ProposedCard } from './cards';
 
@@ -35,8 +35,9 @@ const titleOf = (note: Pick<Note, 'title'>) => note.title.trim().slice(0, NOTE_L
 export const noteCheckContext = (note: Pick<Note, 'title'>, lines: string[]): NoteCheckContext => ({ version: 1, action: 'note-check', note: { title: titleOf(note), lines } });
 export const readNoteCheck = (text: string, lines: string[]): NoteFlag[] | null => readFlags(text, lines.length)?.flags ?? null;
 
-// Step 2: the cards, from the lines you kept (line numbers as in the whole note, from 1). The writer sees only those,
-// numbered afresh; `kept` maps its numbers back to the note's.
+// Step 2: the cards, from the lines you kept (line numbers as in the whole note, from 1). Every line keeps its number:
+// one you left out is sent as "(left out)" instead of its words, so the writer can't use it and the cards' line numbers
+// are the note's own.
 export function noteCardsContext(d: MyDayData, note: Pick<Note, 'id' | 'title'>, lines: string[], kept: number[]): { ctx: NoteCardsContext; kept: number[] } {
   const existing: string[] = [];
   for (const c of [...d.study.concepts].reverse()) {
@@ -44,11 +45,12 @@ export function noteCardsContext(d: MyDayData, note: Pick<Note, 'id' | 'title'>,
     const q = c.prompt.trim().slice(0, CARDS_LIMITS.promptChars).trim();
     if (q && !existing.some(e => sameQuestion(e, q))) existing.push(q);
   }
-  return { ctx: { version: 1, action: 'note-cards', note: { title: titleOf(note), lines: kept.map(n => lines[n - 1]) }, count: CARDS_LIMITS.cards, existing: existing.slice(0, NOTE_LIMITS.existing) }, kept };
+  return { ctx: { version: 1, action: 'note-cards', note: { title: titleOf(note), lines: lines.map((l, i) => (kept.includes(i + 1) ? l : LEFT_OUT)) }, count: CARDS_LIMITS.cards, existing: existing.slice(0, NOTE_LIMITS.existing) }, kept };
 }
 export interface NoteProposedCard extends ProposedCard { lines: number[] } // the note's lines it came from
-// The server's reply, checked again: each card's shape and the lines it names, a multiple-choice answer that is the
-// marked option, the checker's "keep", and not a repeat of a card you have from this note or of another in the reply.
+// The server's reply, checked again: each card's shape and the lines it names (only lines you kept), a multiple-choice
+// answer that is the marked option, the checker's "keep", and not a repeat of a card you have from this note or of
+// another in the reply.
 export function readNoteCardsReply(text: string, ctx: NoteCardsContext, kept: number[]): (Omit<CheckedCards, 'cards'> & { cards: NoteProposedCard[] }) | null {
   let raw: unknown;
   try { raw = JSON.parse(text); } catch { return null; }
@@ -59,12 +61,12 @@ export function readNoteCardsReply(text: string, ctx: NoteCardsContext, kept: nu
   const out = { cards: [] as NoteProposedCard[], checkerLeftOut: 0, leftOut: 0, repeats: 0 };
   r.cards.forEach((x, i) => {
     const c = cleanNoteCard(x, ctx.note.lines.length);
-    if (!c || (c.kind === 'choice' && !sameAnswer(c))) { out.leftOut++; return; }
+    if (!c || (c.kind === 'choice' && !sameAnswer(c)) || c.from.some(n => !kept.includes(n))) { out.leftOut++; return; }
     const v = verdicts.find(y => y && y.index === i);
     if (!v || v.verdict !== 'keep') { out.checkerLeftOut++; return; }
     if ([...ctx.existing, ...out.cards.map(y => y.prompt)].some(q => sameQuestion(q, c.prompt))) { out.repeats++; return; }
     const { from, ...card } = c;
-    out.cards.push({ ...card, reason: typeof v.reason === 'string' ? v.reason.slice(0, CARDS_LIMITS.reasonChars) : '', lines: from.map(n => kept[n - 1]) });
+    out.cards.push({ ...card, reason: typeof v.reason === 'string' ? v.reason.slice(0, CARDS_LIMITS.reasonChars) : '', lines: from });
   });
   return out;
 }
