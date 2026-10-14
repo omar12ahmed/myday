@@ -520,6 +520,18 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   bent.study.concepts.find(c => c.id === aw.id).origin = { by: 'someone', lessonId: LS };
   bent.study.concepts.find(c => c.id === ac.id).origin = { by: 'ai', subject: 'cybersecurity', lessonId: '../../etc', writer: 'W', checker: 'C' };
   check('…an origin that isn\'t right is left off, keeping the card (its source still says it was AI-written)', K.normalize(bent).study.concepts.filter(c => ids.includes(c.id)).every(c => !('origin' in c) && c.source.startsWith('AI-written')));
+  // From 1.19.1: origins for other subjects (cards from a note, later ones) are kept as short plain values.
+  const NOTE_O = { by: 'ai', subject: 'note', noteId: 'ntAbc123', flaggedKept: 1, fromLines: 'all but 2', writer: 'W', checker: 'C', edited: false };
+  const odd = JSON.parse(JSON.stringify(vw));
+  odd.study.concepts.push({ ...aw, id: 'cpNote', origin: NOTE_O },
+    { ...aw, id: 'cpOdd', origin: { by: 'ai', subject: 'pdf', fileName: 'x'.repeat(300), nested: { a: 1 }, list: [1], 'bad key': 'x', n: Infinity, ...Object.fromEntries(Array.from({ length: 15 }, (_, i) => ['f' + i, i])) } },
+    { ...aw, id: 'cpBad', origin: { by: 'ai', subject: 'Not A Word!', noteId: 'x' } });
+  const on = K.normalize(odd).study.concepts, oo = on.find(c => c.id === 'cpOdd').origin;
+  check('a note card\'s origin is kept exactly as written (fields in the same order)', JSON.stringify(on.find(c => c.id === 'cpNote').origin) === JSON.stringify(NOTE_O), on.find(c => c.id === 'cpNote').origin);
+  check('…another subject\'s: text cut to 200 characters, at most 12 extra fields, only plain values with plain names', oo.subject === 'pdf' && oo.fileName.length === 200 && !('nested' in oo) && !('list' in oo) && !('bad key' in oo) && !('n' in oo)
+    && Object.keys(oo).filter(k => !['by', 'subject', 'writer', 'checker', 'edited'].includes(k)).length === 12 && oo.writer === '' && oo.edited === false, oo);
+  check('…a subject that isn\'t a plain word: origin left off, card kept', !('origin' in on.find(c => c.id === 'cpBad')) && on.some(c => c.id === 'cpBad'));
+  check('…and a note card isn\'t counted in Cybersecurity\'s revision', !K.aiCyberCards(K.normalize(odd)).some(c => c.id === 'cpNote'));
   vw.study.concepts.push({ ...aw, id: 'cpYours', origin: undefined });
   check('Undo takes out those cards only: not your own concepts, not other AI cards', K.removeAiCards(vw, ids) && !vw.study.concepts.some(c => ids.includes(c.id)) && vw.study.concepts.some(c => c.id === 'cpYours') && K.aiCyberCards(vw).length === 1 && !K.removeAiCards(vw, ids));
 

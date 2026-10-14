@@ -52,7 +52,7 @@ function conceptAsked(st: StudyData, c: Concept): Asked {
     answer: c.answer || '—', answerLabel: 'Answer', explanation: c.explanation || null, explanationLabel: 'Explanation',
     after: <>
       {c.source && <Note>Source: {safeUrl(c.source) ? <InlineLink href={c.source} target="_blank" rel="noopener">{c.source}</InlineLink> : c.source}</Note>}
-      {c.origin && <Note><InlineLink href={lessonHref(c.origin.lessonId)}>Open the lesson</InlineLink></Note>}
+      {c.origin?.subject === 'cybersecurity' && c.origin.lessonId && <Note><InlineLink href={lessonHref(c.origin.lessonId)}>Open the lesson</InlineLink></Note>}
       <NoteLink study={st} path={c.note} />
     </>,
     notesUrl: obsidianUrl(st, c.note), interval: c.review.interval,

@@ -25,7 +25,7 @@ export function AiCards({ data, lesson, coursePrompts }: { data: MyDayData; less
   const request = useRef<AbortController | null>(null);
   useEffect(() => () => request.current?.abort(), []);
   if (AI_MODE === 'off') return null;
-  const mine = data.study.concepts.filter(c => c.origin?.lessonId === lesson.id).length;
+  const mine = data.study.concepts.filter(c => c.origin?.subject === 'cybersecurity' && c.origin.lessonId === lesson.id).length;
 
   async function ask() {
     request.current?.abort();

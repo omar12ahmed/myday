@@ -26,7 +26,7 @@ function sameQuestion(a: string, b: string) {
 // The cards you already have for this lesson: the course's own check questions and the AI cards you kept, sent so the
 // writer doesn't repeat them (newest first if there are more than the server takes).
 export function cardsContext(d: MyDayData, lessonId: string, coursePrompts: string[]): CardsContext {
-  const mine = d.study.concepts.filter(c => c.origin?.lessonId === lessonId && c.prompt).map(c => c.prompt).reverse();
+  const mine = d.study.concepts.filter(c => c.origin?.subject === 'cybersecurity' && c.origin.lessonId === lessonId && c.prompt).map(c => c.prompt).reverse();
   const existing: string[] = [];
   for (const q of [...coursePrompts, ...mine]) {
     const t = q.trim().slice(0, CARDS_LIMITS.promptChars).trim();
