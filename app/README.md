@@ -791,3 +791,9 @@ returns up to 8 small tasks; you tick the ones to add.
 29. **Release 1.19.1:** groundwork, nothing new to see. Both versions keep an AI card's origin for any subject (a
     note, later a PDF) as short plain values — so going back from the cards-from-notes release, or a device still on
     this version, never loses where a card came from. No other change; no database change.
+30. **Release 1.20.0:** revision cards from your notes. With "AI help with notes" on, a note (never a private one)
+    offers "Make revision cards": a check flags doubtful lines (left out unless you say they're right), then cards are
+    written from the rest and checked by the other model; you keep the ones you want. Gemini 3.8 Flash checks the note
+    and the cards, GLM-5.3-Flash writes them (`../ai-eval/reviews/2026-10-14-note-cards-quality.md`). Needs `ai-plan`
+    version 8, then `AI_ROUTES` with "note-check" (in that order). No database change. Going back to 1.19.1 is safe: it
+    keeps the cards and their origin.
