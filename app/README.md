@@ -831,4 +831,7 @@ returns up to 8 small tasks; you tick the ones to add.
     real width (names at 14 px, shortened only when they'd touch a neighbour, never overlapping the flag); every colour
     comes from the theme, so dark mode reads properly; the key is drawn with the stations' own shapes; topics are plain
     links; and "Start 15 minutes" goes straight from where you stand — on the map and on Today's learning card — into a
-    short session on the next task. No data change.
+    short session on the next task. And Projects gains a third tab, Connections — the knowledge graph (milestone 4):
+    how your notes and projects connect, drawn by itself from links already there (a note in a project, dashed while
+    MyDay's link isn't kept; related notes, dotted), with a dot's connections and why on a tap, Keep / Undo for MyDay's
+    links, and "What goes together" in words. No data change, nothing sent anywhere.
