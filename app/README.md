@@ -92,6 +92,16 @@ evaluation (`../ai-eval/reviews/2026-10-14-note-cards-quality.md`): Gemini check
 Which model writes and which checks is the server's configuration, chosen by evaluation
 (`../ai-eval/reviews/2026-10-13-cards-quality.md`). Shown only when the app is built with AI help.
 
+Explain it another way (AI roles step 4, 1.22.0): under every revision question once its answer is shown — your
+concepts, Cybersecurity checks and Arabic cards — "Explain it another way" asks the AI server for a fresh explanation
+from a different angle (`src/study/AnotherWay.tsx`; the server's jobs `explain` and `explain-arabic` in
+`../supabase/functions/_shared/ai/explain.ts`). Only on your tap; sent: the question, its answer and explanation (and
+the options, for multiple choice) and your own answer — nothing else. It's shown labelled as AI-written, by which model,
+and not checked by your course. "Keep this explanation" saves it on the card (`anotherWay`: its text, the model, the
+day — kept by both versions since 1.20.2), shown there next time until you remove it; your answer and the schedule are
+untouched. Models chosen by evaluation (`../ai-eval/reviews/2026-10-16-explain-quality.md`): GLM explains Cybersecurity
+and your concepts, Gemini explains Arabic. Shown only when the app is built with AI help.
+
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
 
@@ -835,3 +845,7 @@ returns up to 8 small tasks; you tick the ones to add.
     how your notes and projects connect, drawn by itself from links already there (a note in a project, dashed while
     MyDay's link isn't kept; related notes, dotted), with a dot's connections and why on a tap, Keep / Undo for MyDay's
     links, and "What goes together" in words. No data change, nothing sent anywhere.
+34. **Release 1.22.0:** "Explain it another way" (AI roles step 4): under any revision question once its answer is
+    shown, one tap asks for a fresh explanation from another angle — GLM for Cybersecurity and your concepts, Gemini for
+    Arabic — sent with only the question, its answer and your answer. Shown as AI-written; "Keep this explanation"
+    saves it on the card for next time. The server side was deployed first (16 Oct 2026). No database change.
