@@ -5,6 +5,7 @@ import { isDateKey, todayKey } from '../dates';
 import { intIn, isObj, listOf, uid } from '../util';
 import type { Clarity, Concept, ConceptOrigin, Outcome, Rating, Review, StudyCourse, StudyData, StudyModule, StudySection, StudySession, StudyStage, StudyTask, Support } from '../types';
 import { CLARITY, emptyStudy, OUTCOME, RATING, safeUrl, str, SUPPORT } from './common';
+import { cleanAnotherWay } from './anotherWay';
 
 // Where an AI-written card came from (see ConceptOrigin). A Cybersecurity lesson's is checked strictly. Any other
 // subject (cards from a note, and later ones) is kept as short plain values: a word for its subject and up to 12 named
@@ -101,6 +102,8 @@ export function normalizeStudy(raw: unknown, report = { dropped: 0 }): StudyData
     };
     const origin = cleanOrigin(x.origin);
     if (origin) concept.origin = origin;
+    const another = cleanAnotherWay(x.anotherWay);
+    if (another) concept.anotherWay = another;
     st.concepts.push(concept);
   }
   const conceptIds = new Set(st.concepts.map(c => c.id));

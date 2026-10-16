@@ -61,6 +61,8 @@ check('vowelled and unvowelled versions are both kept where the package has them
   const a = data.attempts[0];
   check('a valid session is kept, a duplicate and malformed ones are dropped (and counted)', data.attempts.length === 1 && report.dropped === 4);
   check('only known practice kinds, question ids and fields survive; nothing like a score is kept', JSON.stringify(a.practised) === '["reading"]' && Object.keys(a.answers).join() === 'assessment.arabic-origin-location-check.q1' && a.revealed.join() === 'assessment.arabic-origin-location-check.q1' && !('score' in a) && a.revisit.length === 1000);
+  const keptA = A.normalizeArabic({ pathId: 'path.arabic-a1', attempts: [], cards: [{ id: 'lexeme.arabic-seed-001:recognise', addedOn: '2026-10-11', anotherWay: { text: 'Picture the word on a door sign.', by: 'GLM-5.3-Flash', on: '2026-10-16' } }, { id: 'lexeme.arabic-seed-002:recognise', addedOn: '2026-10-11', anotherWay: { text: 'x', on: 'someday' } }] }).cards;
+  check('an explanation you kept on an Arabic card (from 1.20.2) is kept; one without a proper day is left off, keeping the card', keptA.length === 2 && keptA[0].anotherWay.text === 'Picture the word on a door sign.' && !('anotherWay' in keptA[1]));
   check('an unknown path falls back to the core course', A.normalizeArabic({ pathId: 'path.core' }).pathId === A.ARABIC_CORE_PATH && data.pathId === 'path.arabic-a1');
   check('no Arabic section yet means none of your sessions, not an error', A.normalizeArabic(undefined).attempts.length === 0);
   const later = A.normalizeArabic({ pathId: 'path.arabic-a1', attempts: [good], laterList: [{ id: 'x' }], laterField: { x: 1 } });

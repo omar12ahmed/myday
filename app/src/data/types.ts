@@ -237,7 +237,11 @@ export interface Concept {
   hint: string; source: string; note: string; // note = a path in your Obsidian vault (never read by MyDay)
   review: { reps: number; interval: number; lapses: number; due: DateKey | null };
   origin?: ConceptOrigin; // absent for concepts you wrote
+  anotherWay?: AnotherWay; // an explanation you kept (from 1.20.2)
 }
+// An explanation "another way" you kept on a revision card: the words, the model that wrote them, the day you kept it
+// (data/study/anotherWay.ts). Concepts, Cybersecurity checks and Arabic cards can each hold one.
+export interface AnotherWay { text: string; by: string; on: DateKey }
 // A card an AI wrote and a second AI checked, that you kept (added in 1.19.0; both versions keep it). Its `source`
 // says the same in words, so a version that doesn't know this field still shows where the card came from.
 // subject 'cybersecurity': from a lesson (lessonId). From 1.19.1 both versions also keep origins for other subjects
