@@ -795,5 +795,10 @@ returns up to 8 small tasks; you tick the ones to add.
     offers "Make revision cards": a check flags doubtful lines (left out unless you say they're right), then cards are
     written from the rest and checked by the other model; you keep the ones you want. Gemini 3.8 Flash checks the note
     and the cards, GLM-5.3-Flash writes them (`../ai-eval/reviews/2026-10-14-note-cards-quality.md`). Needs `ai-plan`
-    version 8, then `AI_ROUTES` with "note-check" (in that order). No database change. Going back to 1.19.1 is safe: it
+    version 9 (Supabase's numbering), then `AI_ROUTES` with "note-check" (in that order). No database change. Going back to 1.19.1 is safe: it
     keeps the cards and their origin.
+31. **Release 1.20.1:** a fix for 1.20.0. Making cards from a note asked for the cards straight after the check, and the
+    server's pause between requests (5 s) refused it — "Just a moment between requests", every time a note had
+    nothing doubtful. The cards request now waits until 6 s after the check began, and tries once more if told it's
+    too soon (such a refusal isn't counted). Found by the live check after publishing; now tested through the
+    server's real code with the pause on. No data or server change.
