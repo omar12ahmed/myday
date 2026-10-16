@@ -808,3 +808,7 @@ returns up to 8 small tasks; you tick the ones to add.
 32. **Release 1.20.2:** groundwork, nothing new to see. Every version keeps an explanation you kept on a revision card
     (`anotherWay`: its text, the model that wrote it, the day) — on your concepts (both versions), Cybersecurity checks
     and Arabic cards — so going back from "Explain it another way" never loses one. No database change.
+33. **Release 1.21.0:** a new look, called Clarity: warm paper instead of white, teal as the one accent, calmer
+    square corners — same app underneath. And the learning garden retires. Today keeps one learning card: the rolling
+    7-day count (nothing ever resets it), now with one quiet line pointing at what's next in your current topic and
+    when you last sat with it. A proper map that lights up as you progress is planned for Study. No data change.
