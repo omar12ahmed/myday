@@ -1,5 +1,6 @@
 import { isDateKey } from '../dates';
 import { intIn, isObj } from '../util';
+import { cleanAnotherWay } from '../study/anotherWay';
 import { ARABIC_CORE_PATH, emptyArabic, MODALITIES, VARIANTS, type ArabicAttempt, type ArabicCard, type ArabicData, type Help } from './types';
 
 // Arabic records are checked like everything else MyDay opens: anything malformed is dropped (and counted),
@@ -36,9 +37,11 @@ const CARD = /^(lexeme\.arabic-[a-z0-9-]{1,40}:(recognise|write)|assessment\.ara
 export function cleanArabicCard(raw: unknown): ArabicCard | null {
   if (!isObj(raw) || typeof raw.id !== 'string' || raw.id.length > 64 || !CARD.test(raw.id) || !isDateKey(raw.addedOn)) return null;
   const rv = isObj(raw.review) ? raw.review : {};
+  const another = cleanAnotherWay(raw.anotherWay);
   return {
     id: raw.id, addedOn: raw.addedOn,
     review: { reps: intIn(rv.reps, 0, 100000, 0), interval: intIn(rv.interval, 0, 365, 0), lapses: intIn(rv.lapses, 0, 100000, 0), due: isDateKey(rv.due) ? rv.due : null },
+    ...(another ? { anotherWay: another } : {}),
   };
 }
 

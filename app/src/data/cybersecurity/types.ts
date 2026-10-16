@@ -1,5 +1,5 @@
 // Learner records only. The versioned curriculum never contains a person's work.
-import type { DateKey } from '../types';
+import type { AnotherWay, DateKey } from '../types';
 export type Assistance = 'independent' | 'hint' | 'guided';
 export interface CyberAttempt {
   id: string;
@@ -28,6 +28,7 @@ export interface CyberCard {
   id: string;        // the question's id, e.g. "assessment.lab-isolation-check.q2"
   addedOn: DateKey;
   review: { reps: number; interval: number; lapses: number; due: DateKey | null };
+  anotherWay?: AnotherWay; // an explanation you kept (from 1.20.2)
 }
 export interface CyberData {
   pathId: string;

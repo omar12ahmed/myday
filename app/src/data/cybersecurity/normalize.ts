@@ -1,5 +1,6 @@
 import { isDateKey } from '../dates';
 import { intIn, isObj } from '../util';
+import { cleanAnotherWay } from '../study/anotherWay';
 import { emptyCyber, type CyberAttempt, type CyberCard, type CyberData } from './types';
 
 const str = (v: unknown, max: number) => typeof v === 'string' ? v.slice(0, max) : '';
@@ -28,9 +29,11 @@ const CARD = /^assessment\.[a-z0-9-]{1,48}-check\.q\d{1,2}$/;
 export function cleanCyberCard(raw: unknown): CyberCard | null {
   if (!isObj(raw) || typeof raw.id !== 'string' || raw.id.length > 64 || !CARD.test(raw.id) || !isDateKey(raw.addedOn)) return null;
   const rv = isObj(raw.review) ? raw.review : {};
+  const another = cleanAnotherWay(raw.anotherWay);
   return {
     id: raw.id, addedOn: raw.addedOn,
     review: { reps: intIn(rv.reps, 0, 100000, 0), interval: intIn(rv.interval, 0, 365, 0), lapses: intIn(rv.lapses, 0, 100000, 0), due: isDateKey(rv.due) ? rv.due : null },
+    ...(another ? { anotherWay: another } : {}),
   };
 }
 

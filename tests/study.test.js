@@ -255,6 +255,8 @@ const finish = () => {
   const AI_ORIGIN = { by: 'ai', subject: 'cybersecurity', lessonId: 'lesson.tcp-ip-basics', writer: 'GLM-5.3-Flash', checker: 'Gemini 3.8 Flash', edited: false };
   // …and from 1.19.1 a card from one of your notes (any other subject, kept as short plain values).
   const NOTE_ORIGIN = { by: 'ai', subject: 'note', noteId: 'ntAbc123', writer: 'Gemini 3.8 Flash', checker: 'GLM-5.3-Flash', edited: true };
+  // …and from 1.20.2 an explanation "another way" you kept on a card.
+  const ANOTHER = { text: 'Like topping up a memory before it fades completely.', by: 'GLM-5.3-Flash', on: '2026-10-16' };
   const concepts = [
     C('cpW', 'What DNS does', { taskIds: ['tkD'], prompt: 'What does DNS do?', answer: 'Translates names to IP addresses', explanation: 'Resolvers ask name servers on your behalf', hint: 'Think of a phone book', note: 'Networking/DNS basics' }),
     C('cpM', 'HTTPS port', { kind: 'choice', prompt: 'Which port does HTTPS use by default?', choices: ['80', '443', '22', ''], correct: 1, explanation: 'HTTPS uses TCP port 443.' }),
@@ -263,7 +265,7 @@ const finish = () => {
     C('cpM2', 'SSH port', { kind: 'choice', prompt: 'Which port does SSH use by default?', choices: ['21', '22', '25', '53'], correct: 1 }),
     C('cpA', 'IP addresses', { prompt: 'What is an IP address?', explanation: 'A number that identifies a device on a network' }),
     C('cpB', 'Routers', { prompt: 'What does a router do?', answer: 'Forwards packets between networks' }),
-    C('cpNoteCard', 'Spaced practice', { prompt: 'Why space out practice?', answer: 'Forgetting a little makes recall stronger', origin: NOTE_ORIGIN, review: { reps: 1, interval: 30, lapses: 0, due: '2027-01-01' } })
+    C('cpNoteCard', 'Spaced practice', { prompt: 'Why space out practice?', answer: 'Forgetting a little makes recall stronger', origin: NOTE_ORIGIN, anotherWay: ANOTHER, review: { reps: 1, interval: 30, lapses: 0, due: '2027-01-01' } })
   ];
   const rm = JSON.parse(JSON.stringify(roadmap)); rm.concepts = concepts;
   await editStorage(`s => { s.study = ${JSON.stringify(rm)}; }`);
@@ -286,6 +288,7 @@ const finish = () => {
   check('Good: next review in 10 days, on a local date', pk.review.due === '2026-11-12' && pk.review.interval === 10 && pk.review.reps === 2);
   check('…and an AI-written card keeps where it came from (origin, from the new app)', eq(pk.origin, AI_ORIGIN), pk.origin);
   check('…as does a card from a note (1.19.1)', eq(sd.concepts.find(c => c.id === 'cpNoteCard').origin, NOTE_ORIGIN), sd.concepts.find(c => c.id === 'cpNoteCard').origin);
+  check('…and an explanation you kept on it (1.20.2)', eq(sd.concepts.find(c => c.id === 'cpNoteCard').anotherWay, ANOTHER), sd.concepts.find(c => c.id === 'cpNoteCard').anotherWay);
   check('…and the answer is recorded as self-assessed, on your own', sd.reviews.length === 1 && sd.reviews[0].outcome === 'right' && sd.reviews[0].graded === 'self' && sd.reviews[0].support === 'own' && sd.reviews[0].rating === 'good' && sd.reviews[0].date === '2026-11-02');
   check('question 2: What does DNS do?', (await text('.st-prompt')) === 'What does DNS do?' && !(await leaks()).length);
   await click('[data-action=s-rev-hint]'); await sleep(100);

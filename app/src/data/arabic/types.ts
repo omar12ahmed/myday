@@ -1,5 +1,5 @@
 // Arabic Fuṣḥā: your records only. The course itself ships with the app and never holds a person's work.
-import type { DateKey } from '../types';
+import type { AnotherWay, DateKey } from '../types';
 export type Variant = 'short' | 'standard' | 'extended' | 'revision' | 'practical';
 export type Help = 'independent' | 'hint' | 'guided';
 export type Modality = 'reading' | 'writing' | 'speaking' | 'listening';
@@ -26,6 +26,7 @@ export interface ArabicCard {
   id: string;        // "lexeme.arabic-seed-007:recognise" (or ":write"), or a check question's id ("assessment.arabic-…-check.q1")
   addedOn: DateKey;
   review: { reps: number; interval: number; lapses: number; due: DateKey | null }; // the same schedule as a concept's
+  anotherWay?: AnotherWay; // an explanation you kept (from 1.20.2)
 }
 export interface ArabicData {
   pathId: string;

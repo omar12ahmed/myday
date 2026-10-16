@@ -151,6 +151,7 @@ async function fill(sel, value) {
   check('both answers are in Study\'s history under the questions\' ids, self-assessed, and rescheduled by Study\'s rules', revs.length === 2 && revs.every(r => r.graded === 'self') && after.cybersecurity.cards.find(c => c.id === qs[0]).review.due === '2026-10-10' && after.cybersecurity.cards.find(c => c.id === qs[1]).review.due === '2026-10-07');
   check('the round\'s summary is Cybersecurity\'s, linking what hasn\'t clicked back to its lesson', (await text('main h2')).includes('Cybersecurity revision') && await exists('[data-s="rev-not-yet"] a[href="#study/cybersecurity/lesson.lab-isolation"]'));
   await on(6, 'study/cybersecurity/lesson.lab-isolation');
+  for (let i = 0; i < 50 && !(await exists('[data-action="cy-checks-remove"]')); i++) await sleep(100); // the lesson page can take a moment
   await click('[data-action="cy-checks-remove"]'); await sleep(200); await click('[data-action="dialog-confirm"]'); await sleep(250);
   const out = await data();
   check('taking them out asks first, then keeps their past answers', !out.cybersecurity.cards.length && out.study.reviews.filter(r => qs.includes(r.conceptId)).length === 2);
