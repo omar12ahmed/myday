@@ -282,6 +282,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   check('Done returns to the dashboard; the next task is now HTTP in detail', (await ev('location.hash')) === '#study' && (await text('#stFocus')).includes('HTTP in detail'));
   await nav('today'); await sleep(150);
   check('a ticked Today task and a Study session on the same day count as one learning day', (await text('#streak')).includes('Learning days in the last 7: 1'));
+  check('…and the card points at what\'s next and when you last sat with it', (await text('#streak-next')) === 'Cybersecurity — up next: TryHackMe: Pre-Security path. Studied today.', [await text('#streak-next')]);
   await nav('study'); await click('#stFocus [data-action=s-start][data-short="1"]'); await sleep(250);
   check('the shorter alternative starts a 15-minute session', (await SD()).sessions[1].plannedMin === 15 && (await SD()).sessions[1].short === true);
   await nav('study/roadmap');
