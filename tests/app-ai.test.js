@@ -290,6 +290,37 @@ const SEED = `s => {
     await mock.click('[data-action="note-cards-cancel"]'); await mock.ev(`location.hash = 'today'`);
   }
 
+  console.log('\n[8d] Revision cards from a note, with an account: the real server, its 5-second pause between requests on');
+  {
+    setAi({ AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_LABEL: 'Main model', AI_LEARN_PROVIDER: 'mock', AI_LEARN_MODEL: 'mock:good', AI_LEARN_LABEL: 'Learning model', AI_LEARN_MOCK_DELAY_MS: '150',
+      AI_ROUTES: '{"note-check": "learn"}', AI_MIN_SECONDS_BETWEEN: '5' });
+    const NOTE = (id, text) => ({ id, categoryId: '', title: 'Study notes', text, pinned: false, createdAt: TODAY + 'T08:00', updatedAt: TODAY + 'T08:00' });
+    await D.setData(`s => { s.patterns.prefs.aiNotes = true; s.notes.items.push(${JSON.stringify([NOTE('ntPace1', 'Retrieval practice means recalling from memory.\nSpacing reviews out over days helps memory.'), NOTE('ntPace2', 'DHCP leases are always permanent.\nNAT lets many devices share one public IP address.')]).slice(1, -1)}); }`);
+    await D.until(`!document.getElementById('signInGate')`, 15000);
+    const run = async (id, tapWrite) => {
+      await D.ev(`location.hash = 'projects/notes/${id}'`); await D.until(`document.querySelector('[data-action="note-cards-ask"]')`, 15000);
+      const c0 = aiCalls().length, t0 = Date.now();
+      await D.click('[data-action="note-cards-ask"]');
+      if (tapWrite) { await D.until(`document.querySelector('[data-action="note-cards-write"]')`, 15000); await D.click('[data-action="note-cards-write"]'); }
+      await D.until(`['review', 'error'].includes(document.getElementById('noteCards')?.dataset.phase)`, 30000);
+      return { phase: await D.ev(`document.getElementById('noteCards')?.dataset.phase`), cards: await D.ev(`document.querySelectorAll('[data-s="note-card"]').length`), calls: aiCalls().slice(c0), ms: Date.now() - t0, text: (await D.text('#noteCards')).slice(0, 160) };
+    };
+    let r = await run('ntPace1', false);
+    check('nothing doubtful, straight on to the cards: they come, without "Just a moment between requests"', r.phase === 'review' && r.cards === 2 && !r.text.includes('Just a moment'), r);
+    // (With AI help with notes on, MyDay's automatic connecting may slip a request in between — which is another reason
+    // the cards request can be told "too soon", and waits and tries again.)
+    const noteCalls = r.calls.filter(c => /^note-/.test(c.body.context.action));
+    check('…the check, then the cards, through the server — the cards after the pause', noteCalls.length === 2 && noteCalls[0].body.context.action === 'note-check' && noteCalls[1].body.context.action === 'note-cards' && r.ms >= 5000, r.calls.map(c => c.body.context.action));
+    check('…written by one model and checked by the other', (await D.text('#noteCards')).includes('Written by Main model') && (await D.text('#noteCards')).includes('checked by Learning model'));
+    await D.click('[data-action="note-cards-cancel"]'); await sleep(6000);
+    r = await run('ntPace2', true);
+    check('a doubtful line, and "Make cards" tapped at once: the cards still come', r.phase === 'review' && r.cards === 1 && !r.text.includes('Just a moment'), r);
+    await D.click('[data-action="note-cards-cancel"]');
+    await D.setData(`s => { s.notes.items = s.notes.items.filter(n => !n.id.startsWith('ntPace')); delete s.patterns.prefs.aiNotes; }`); await D.until(`!document.getElementById('signInGate')`, 15000);
+    setAi({ AI_LEARN_PROVIDER: null, AI_LEARN_MODEL: null, AI_LEARN_LABEL: null, AI_LEARN_MOCK_DELAY_MS: null, AI_ROUTES: null, AI_LABEL: 'Mock planner', AI_MIN_SECONDS_BETWEEN: '0' });
+    await D.ev(`location.hash = 'today'`);
+  }
+
   console.log('\n[9] Layout');
   await D.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await D.ev(`location.hash = 'today'`);

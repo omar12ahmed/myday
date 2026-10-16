@@ -21,6 +21,12 @@ type Phase =
   | { at: 'added'; ids: string[] }
   | { at: 'error'; message: string };
 
+// The AI server asks for a pause between one account's requests (AI_MIN_SECONDS_BETWEEN, 5 s by default). The cards
+// request follows the check, often at once (nothing doubtful), so it waits until this long after the check began, and
+// if the server still says "too soon", waits and tries once more (a refusal like that isn't counted).
+const PACE_MS = 6000;
+const pause = (ms: number, signal: AbortSignal) => new Promise<void>(done => { if (ms <= 0 || signal.aborted) return done(); const t = setTimeout(done, ms); signal.addEventListener('abort', () => { clearTimeout(t); done(); }, { once: true }); });
+
 const CONCERN = { wrong: 'Looks wrong', unclear: 'Might be overstated or unclear', 'may-change': 'May change over time' } as const;
 const PROBLEM = {
   empty: 'Write something in this note first.',
@@ -35,6 +41,7 @@ export function NoteCards({ data, note, flush }: { data: MyDayData; note: Note; 
   const [phase, setPhase] = useState<Phase>({ at: 'start' });
   const [picked, setPicked] = useState<boolean[]>([]);
   const request = useRef<AbortController | null>(null);
+  const checkedAt = useRef(0); // when the check was asked for (see PACE_MS)
   useEffect(() => () => request.current?.abort(), []);
   const fromThisNote = data.study.concepts.filter(c => c.origin?.subject === 'note' && c.origin.noteId === note.id).length;
   const shape = noteLines(note);
@@ -47,6 +54,7 @@ export function NoteCards({ data, note, flush }: { data: MyDayData; note: Note; 
     if (!now || !nl || !('lines' in nl)) return;
     const ctrl = fresh();
     setPhase({ at: 'checking' });
+    checkedAt.current = Date.now();
     const reply = await askModel(noteCheckContext(now, nl.lines), ctrl.signal);
     if (ctrl.signal.aborted) return;
     if (!reply.ok) { setPhase({ at: 'error', message: reply.message }); return; }
@@ -65,8 +73,10 @@ export function NoteCards({ data, note, flush }: { data: MyDayData; note: Note; 
     const { ctx } = noteCardsContext(getSnapshot().data, now, c.lines, kept);
     const ctrl = fresh();
     setPhase({ at: 'writing', c });
-    const reply = await askModel(ctx, ctrl.signal);
-    if (ctrl.signal.aborted) return;
+    if (AI_MODE !== 'mock') await pause(PACE_MS - (Date.now() - checkedAt.current), ctrl.signal); // (practice mode has no server, no pause)
+    let reply = ctrl.signal.aborted ? null : await askModel(ctx, ctrl.signal);
+    if (reply && !reply.ok && reply.reason === 'too-fast' && !ctrl.signal.aborted) { await pause(PACE_MS, ctrl.signal); reply = ctrl.signal.aborted ? null : await askModel(ctx, ctrl.signal); }
+    if (!reply || ctrl.signal.aborted) return;
     if (!reply.ok) { setPhase({ at: 'error', message: reply.message }); return; }
     const read = readNoteCardsReply(reply.text, ctx, kept);
     if (!read) { setPhase({ at: 'error', message: "The cards that came back couldn't be used. Nothing was added to your revision — try again." }); return; }
