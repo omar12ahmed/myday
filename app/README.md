@@ -802,3 +802,6 @@ returns up to 8 small tasks; you tick the ones to add.
     nothing doubtful. The cards request now waits until 6 s after the check began, and tries once more if told it's
     too soon (such a refusal isn't counted). Found by the live check after publishing; now tested through the
     server's real code with the pause on. No data or server change.
+32. **Release 1.20.2:** groundwork, nothing new to see. Every version keeps an explanation you kept on a revision card
+    (`anotherWay`: its text, the model that wrote it, the day) — on your concepts (both versions), Cybersecurity checks
+    and Arabic cards — so going back from "Explain it another way" never loses one. No database change.
