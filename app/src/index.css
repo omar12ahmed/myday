@@ -221,7 +221,6 @@
   .task.just-done { animation: glow .9s ease-out; }
   .task.just-done .box { animation: pop .4s cubic-bezier(.3, 1.6, .5, 1); }
   .wd.just .pip { animation: pop .5s cubic-bezier(.3, 1.6, .5, 1); }
-  .gd-grow { transform-box: fill-box; animation: grow .7s cubic-bezier(.2, 1.4, .4, 1) both; }
   .burst { position: fixed; width: 0; height: 0; pointer-events: none; z-index: 40; }
   .burst span { position: absolute; left: -5px; top: -5px; width: 10px; height: 10px; border-radius: 50%; opacity: 0; animation: burst 1.2s cubic-bezier(.2, .7, .3, 1) forwards; }
   ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .3s; }
@@ -233,7 +232,6 @@
 @keyframes pop { 0% { transform: scale(.6); } 60% { transform: scale(1.18); } 100% { transform: scale(1); } }
 @keyframes glow { from { box-shadow: 0 0 0 0 var(--cat); } to { box-shadow: 0 0 0 14px transparent; } }
 @keyframes shimmer { to { background-position: -200% 0; } }
-@keyframes grow { from { transform: scale(0); } to { transform: scale(1); } }
 @keyframes burst {
   0% { transform: translate(0, 0) scale(.4); opacity: 0; }
   15% { opacity: .9; }

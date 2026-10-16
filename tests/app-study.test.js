@@ -282,7 +282,6 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   check('Done returns to the dashboard; the next task is now HTTP in detail', (await ev('location.hash')) === '#study' && (await text('#stFocus')).includes('HTTP in detail'));
   await nav('today'); await sleep(150);
   check('a ticked Today task and a Study session on the same day count as one learning day', (await text('#streak')).includes('Learning days in the last 7: 1'));
-  check('…and grow one leaf in the garden, not two', (await text('#gardenCaption')).startsWith('1 learning session '));
   await nav('study'); await click('#stFocus [data-action=s-start][data-short="1"]'); await sleep(250);
   check('the shorter alternative starts a 15-minute session', (await SD()).sessions[1].plannedMin === 15 && (await SD()).sessions[1].short === true);
   await nav('study/roadmap');
@@ -294,7 +293,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   st2 = await SD();
   check('Skip leaves no check-in, and the session still counts', st2.sessions[1].status === 'done' && st2.sessions[1].checkin === null && st2.sessions[1].taskDone === null);
   await nav('today'); await sleep(150);
-  check('a second session that day: still one learning day, now two leaves', (await text('#streak')).includes('Learning days in the last 7: 1') && (await text('#gardenCaption')).startsWith('2 learning sessions'));
+  check('a second session that day: still one learning day', (await text('#streak')).includes('Learning days in the last 7: 1'));
   await editStorage(`s => { s.study.focusCourseId = 'coE'; }`);
   await go('study', 2026, 11, 3, 9);
   check('a course with no tasks yet can still have a session', (await text('#stFocus')).includes('You can still start a session'));
@@ -516,7 +515,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   await nav('today'); await sleep(150);
   for (let i = 0; i < 3; i++) { await click('#themeBtn'); await sleep(200); } // redraws everything (and saves) three times
   await go('today', 2026, 11, 2, 18);
-  check('after redraws and a reload: still 1 learning day and 1 leaf (the session and the tick count once)', (await text('#streak')).includes('Learning days in the last 7: 1') && (await text('#gardenCaption')).startsWith('1 learning session '), [await text('#streak h2'), await text('#gardenCaption')]);
+  check('after redraws and a reload: still 1 learning day (the session and the tick count once)', (await text('#streak')).includes('Learning days in the last 7: 1'), [await text('#streak h2')]);
   check('…and still exactly one saved session', (await SD()).sessions.length === 1);
   await go('today', 2026, 11, 4, 9);
   check('two days later the day still counts once in the rolling 7', (await text('#streak')).includes('Learning days in the last 7: 1'));
@@ -572,7 +571,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
     const both = JSON.parse(JSON.stringify(pr)); both.concepts = both.concepts.concat(concepts);
     await editStorage(`s => { s.study = ${JSON.stringify(both)}; s.commitments = [{ id: 'c1', kind: 'appointment', title: 'GP', start: '2026-11-02T10:00', end: '2026-11-02T11:00' }]; s.context = { '2026-11-02': { energy: 2, sleep: { start: null, end: null, estimatedHours: null } } }; s.days['2026-10-31'] = { energy: 3, rest: false, builtAt: '', checkedIn: true, tasks: [${JSON.stringify(Object.assign({}, learnTask, { uid: 'u9', done: true }))}] }; }`);
     await go('today', 2026, 11, 2, 9, 0, url);
-    out.streak = ((await text('#streak')).match(/Learning days in the last 7: \d+/) || [''])[0]; out.garden = flat(await text('#gardenCaption'));
+    out.streak = ((await text('#streak')).match(/Learning days in the last 7: \d+/) || [''])[0];
     await go('study', 2026, 11, 2, 9, 0, url);
     out.focus = [await text('#stFocus h2'), await text('#stFocus .st-path'), await text('#stFocus .st-next'), await text('#stLen')].map(flat);
     out.revision = flat(await text('#stRevision'));

@@ -63,8 +63,6 @@ export function finishStudy(st: StudyData, s: StudySession) {
 
 // A finished session makes that day a learning day. Days are counted once, however many sessions.
 export const studiedOn = (data: MyDayData, k: DateKey) => data.study.sessions.some(s => s.status === 'done' && s.date === k);
-// Finished sessions that didn't also tick a Today task (so the garden counts each once).
-export const studyOnlySessions = (data: MyDayData) => data.study.sessions.filter(s => s.status === 'done' && !s.todayUid).length;
 
 // ---------- Check-in after a session (every part optional) ----------
 export function ensureCheckin(s: StudySession) {
