@@ -1,6 +1,7 @@
-import { useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
+import { FONT, fitText, textWidth, useWidth } from '../components/measure';
 import { todayKey } from '../data/dates';
 import { completion, stIndex, type StudyIndex } from '../data/study/roadmap';
 import { conceptEvidence, evidenceText } from '../data/study/revision';
@@ -58,22 +59,6 @@ function stageStations(sg: StudyStage, ix: StudyIndex, focusId: string | null, p
   return { stations, litTo, fogFrom, left, allDone };
 }
 
-// Names on the line are measured in the app's own font, and shortened only when they would touch a neighbour.
-const FONT = (weight: number, size: number) => `${weight} ${size}px "Plus Jakarta Sans Variable", system-ui, sans-serif`;
-let pen: CanvasRenderingContext2D | null | undefined;
-function textWidth(s: string, font: string) {
-  if (pen === undefined) pen = document.createElement('canvas').getContext('2d');
-  if (!pen) return s.length * 7.6;
-  pen.font = font;
-  return pen.measureText(s).width;
-}
-function fitText(s: string, max: number, font: string) {
-  if (textWidth(s, font) <= max) return s;
-  let t = s;
-  while (t.length > 1 && textWidth(t.trimEnd() + '…', font) > max) t = t.slice(0, -1);
-  return t.trimEnd() + '…';
-}
-
 // Where the stations sit on a line `w` pixels wide: the start dot, the stations, then the finish flag.
 const lineX = (w: number, n: number) => {
   const first = 96, last = w - 104;
@@ -84,22 +69,6 @@ const roomPerName = (w: number, n: number) => (n === 1 ? 220 : Math.min(220, (2 
 // The metro line is drawn only when every stage's names get room to be read (about 18 characters); otherwise —
 // phones, or a stage with many courses — the stations are listed top to bottom instead.
 const MIN_ROOM = 140;
-
-// The map's width, measured before it's painted (and again whenever it changes).
-function useWidth() {
-  const [el, setEl] = useState<HTMLDivElement | null>(null);
-  const [w, setW] = useState(0);
-  useLayoutEffect(() => {
-    if (!el) return;
-    const measure = () => setW(el.clientWidth);
-    measure();
-    if (typeof ResizeObserver === 'undefined') return;
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [el]);
-  return [setEl, w] as const;
-}
 
 function StageLine({ sg, ix, focusId, practice, w }: { sg: StudyStage; ix: StudyIndex; focusId: string | null; practice: Set<string>; w: number | null }) {
   const { stations, litTo, fogFrom, left, allDone } = stageStations(sg, ix, focusId, practice);

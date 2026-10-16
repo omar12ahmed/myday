@@ -299,8 +299,9 @@ pay rules) and its settings card are gone from the screen; the rules behind them
 | `../ai-eval/` | The evaluation of AI models on 20 synthetic days and 12 synthetic brain dumps (see its README). |
 | `src/finance/` | The Finance screen: `FinanceScreen` (with Left over), `WorkPayCard`, `ExpensesCard`, `OwedCard`, `RatesCard` (folded away), and `actions.ts` (what each button saves). |
 | `src/data/patterns/`, `src/patterns/` | What MyDay has noticed: `notice.ts` (finding patterns in your history), `saved.ts` (your preferences and answers, the `patterns` section), `adapt.ts` (using preferences in Build my day and the room on today's plan); the screen `NoticedScreen.tsx` (`#noticed`, and the quiet line on Today). `src/components/Why.tsx`: a note with a "Why?". `src/tasks/StuckCard.tsx`: "What's getting in the way?". |
-| `src/projects/`, `src/data/projects.ts` | Projects (1.12.0): `ProjectsScreen` (the Projects and Notes tabs, "Start a project", project cards), `ProjectView` (one project: what it is, the progression, the next step, tasks, notes, coming up, how it's going, pause / done / delete), `parts.tsx` (the progression steps, the project picker used by notes and tasks); the data, the next step and what's coming up in `src/data/projects.ts`. Today's "From your projects" and "Your tasks": `src/today/ProjectCards.tsx`. Older `#inbox…`/`#notes…` links: `src/shell/legacyLinks.ts`. |
+| `src/projects/`, `src/data/projects.ts` | Projects (1.12.0): `ProjectsScreen` (the Projects, Notes and Connections tabs, "Start a project", project cards), `ProjectView` (one project: what it is, the progression, the next step, tasks, notes, coming up, how it's going, pause / done / delete), `parts.tsx` (the progression steps, the project picker used by notes and tasks); the data, the next step and what's coming up in `src/data/projects.ts`. Today's "From your projects" and "Your tasks": `src/today/ProjectCards.tsx`. Older `#inbox…`/`#notes…` links: `src/shell/legacyLinks.ts`. |
 | `src/tasks/`, `src/data/tasks.ts` | Tasks (under Today since 1.12.0): `TasksScreen` (adding, the groups, lists as chips, search), `TaskEditor`, `ListsView`, `route.ts` (`#today/tasks`, `#today/tasks/<id>`, `#today/tasks/list/<id>`, `#today/tasks/lists`); the data and rules (groups, due today, room on today's plan, the link to the plan) in `src/data/tasks.ts`. Today's "Due today" card: `src/today/DueTodayCard.tsx`. |
+| `src/data/graph.ts`, `src/projects/ConnectionsView.tsx` | Connections, the knowledge graph (milestone 4): which notes and projects connect, the groups that go together and their fixed layout, fitted to a width (`graph.ts`); the screen at `#projects/connections` — the drawing, a dot's details with Keep / Undo, "What goes together" (`ConnectionsView.tsx`). Shared with Your map: `src/components/measure.ts` (drawing at the real width, names measured in the app's font). |
 | `src/data/understand.ts`, `src/shell/autoConnect.ts`, `src/notes/ConnectedCard.tsx` | Understanding notes on the device (1.13.0): the words that count, which project a note clearly belongs to, related notes, Undo / Keep (`understand.ts`); connecting a moment after changes (`autoConnect.ts`); "MyDay connected these" (`ConnectedCard.tsx`). |
 | `src/notes/`, `src/capture/` | Notes, in the Projects section (`NotesScreen`: search, Inbox, collections; `NoteEditor`; `CategoriesView`; `route.ts` — `#projects/notes`, `#projects/notes/<id>`, `#projects/notes/in/<id>`, `#projects/notes/collections`), and Capture (`parse.ts`, `save.ts`, `CaptureSheet.tsx`). The notes data: `src/data/notes.ts`. |
 | `src/health/food/` | The Food screens: `FoodScreen` (picks the screen from the address, e.g. `#health/food/shopping`), `FoodHome`, `RecipeCard`, `SearchBox` (with suggestions), `SearchView`, `RecipeView`, `WantView`, `ShoppingView`, `CookView`, `PrefsView`, `RecipeForm`; `actions.ts` (what each button saves) and `visit.ts` (what's kept in memory for the visit: ideas, search results, suggestions, drafts). |
@@ -572,6 +573,19 @@ tasks" on Today). Older `#inbox…` and `#notes…` links are rewritten to where
   device-only `myday.ai.connect`), so the day's AI requests stay free for what you ask yourself. A note AI help saw as
   something to do offers "Add as a task" (in the same project). Evaluated on synthetic notes with GLM-5.3-Flash: no
   wrong links, every note placed right (see `../ai-eval/README.md`).
+- **Connections — the knowledge graph (milestone 4, branch `knowledge-graph`):** a third tab, **Connections**
+  (`#projects/connections`), draws how your notes and projects connect — by itself, from links that already exist:
+  a note in a project (a plain line; dashed when MyDay put it there and you haven't kept it yet) and related notes
+  (dotted: the same word matching as a note's "Related", its 3 closest; two notes in one project aren't joined again).
+  Things that connect form groups, each laid out by a small fixed simulation that always starts from the same place, so
+  the drawing stays put between visits and only changes when your notes do (`src/data/graph.ts`). It's drawn at the
+  screen's real width with names at 13–14 px, placed so they never overlap (shortened if they'd touch; the full name is
+  in the details). Tap a dot — or Tab to it and press Enter — for what it's connected to and why: a note's project
+  (with **Keep** / **Undo** for MyDay's links, as under "MyDay connected these") and related notes; a project's notes
+  and what might belong in it. **What goes together** says the same in words, and notes that connect to nothing yet are
+  counted, not drawn. At most 150 notes are drawn (the most connected). Nothing is saved by looking and nothing is
+  sent anywhere — no saved-data change. Honest limit: it shows shared words, not meaning (that would need an
+  embedding service — a later decision).
 - **Next** (in order): the project workspace for exploring and deciding with AI, the knowledge graph, Study by subject,
   and a weekly review.
 - **Tasks** holds every one-off task in one place, separate from Today's repeating Learning / Admin / Health lists

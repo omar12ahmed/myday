@@ -9,26 +9,28 @@ import { update } from '../data/storage';
 import { toast } from '../data/toast';
 import type { MyDayData, Project } from '../data/types';
 import { NotesScreen } from '../notes/NotesScreen';
+import { ConnectionsView } from './ConnectionsView';
 import { Progression } from './parts';
 import { ProjectView } from './ProjectView';
 
-// Projects (called the Inbox until 1.12.0): your projects (#projects, one project at #projects/p/<id>) and your notes
-// (#projects/notes…). A project gathers everything about one intention; notes are the raw material, linked to a project
-// or not (yet).
+// Projects (called the Inbox until 1.12.0): your projects (#projects, one project at #projects/p/<id>), your notes
+// (#projects/notes…) and how they connect (#projects/connections, the knowledge graph). A project gathers everything
+// about one intention; notes are the raw material, linked to a project or not (yet).
 export function ProjectsScreen({ data, hash }: { data: MyDayData; hash: string }) {
   const parts = hash.replace('#', '').split('/').map(decodeURIComponent);
   if (parts[1] === 'p' && parts[2]) return <div className="max-w-[1000px] mx-auto"><ProjectView key={parts[2]} data={data} id={parts[2]} /></div>;
-  const tab = parts[1] === 'notes' ? 'notes' : 'projects';
+  const tab = parts[1] === 'notes' ? 'notes' : parts[1] === 'connections' ? 'connections' : 'projects';
   const tabClass = (on: boolean) => `seg-link flex-1 inline-flex items-center justify-center gap-1.5 min-h-11 rounded-xl text-[15px] font-semibold no-underline ${on ? 'on bg-primary-container text-on-primary-container' : 'text-fg-2'}`;
   return (
-    <div className={tab === 'projects' ? 'max-w-[1000px] mx-auto' : 'max-w-[720px] mx-auto'}>
+    <div className={tab === 'notes' ? 'max-w-[720px] mx-auto' : 'max-w-[1000px] mx-auto'}>
       <Card className="section-tabs !p-2.5 max-w-[720px] mx-auto">
-        <div className="seg flex gap-1.5" role="tablist" aria-label="Projects and notes">
+        <div className="seg flex gap-1.5" role="tablist" aria-label="Projects, notes and connections">
           <a className={tabClass(tab === 'projects')} href="#projects" role="tab" aria-selected={tab === 'projects'}>Projects</a>
           <a className={tabClass(tab === 'notes')} href="#projects/notes" role="tab" aria-selected={tab === 'notes'}>Notes</a>
+          <a className={tabClass(tab === 'connections')} href="#projects/connections" role="tab" aria-selected={tab === 'connections'}>Connections</a>
         </div>
       </Card>
-      {tab === 'notes' ? <NotesScreen data={data} hash={hash} /> : <ProjectsHome data={data} />}
+      {tab === 'notes' ? <NotesScreen data={data} hash={hash} /> : tab === 'connections' ? <ConnectionsView data={data} /> : <ProjectsHome data={data} />}
     </div>
   );
 }
