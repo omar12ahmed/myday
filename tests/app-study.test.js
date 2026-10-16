@@ -617,10 +617,75 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
     for (const sg of s.study.stages) sg.topicId = 'tpC';
     s.study.stages.push({ id: 'sgA', title: 'Reading', topicId: 'tpA', courses: [{ id: 'coL', title: 'Letters', url: '', minutes: 20, listId: null, archived: false, modules: [{ id: 'mdL', title: 'Alphabet', sections: [{ id: 'scL', title: 'Part 1', tasks: [{ id: 'tkL1', title: 'First ten letters', minutes: 20, url: '', kind: 'learn', note: '', done: false, doneOn: null }] }] }] }] }); }`);
   await go('study/map', 2026, 11, 2, 9);
-  check('topic pills appear, the current topic selected', eq(await ev(`[...document.querySelectorAll('[data-s=map-topic]')].map(a => a.dataset.id + (a.getAttribute('aria-selected') === 'true' ? '*' : ''))`), ['tpC*', 'tpA']));
+  check('topic links appear, the current topic marked as the page', eq(await ev(`[...document.querySelectorAll('[data-s=map-topic]')].map(a => a.dataset.id + (a.getAttribute('aria-current') === 'page' ? '*' : ''))`), ['tpC*', 'tpA']) && !(await exists('[role=tablist], [role=tab]')));
   await click('[data-s=map-topic][data-id=tpA]'); await sleep(300);
   check('switching to Arabic shows its line and summary', flat(await text('#mapLine')).includes(flat('0 of 1 tasks into Arabic')) && eq(await ev(`[...document.querySelectorAll('[data-s=map-st]')].map(a => a.dataset.id + ':' + a.dataset.st)`), ['coL:now']), [await text('#mapLine')]);
   check('the dashboard links to the map', (await go('study', 2026, 11, 2, 9), await sleep(200), (await text('.st-links')).includes('Your map')) && (await exists('.st-links a[href="#study/map"]')));
+
+  console.log('\n[53b] Your map: fog, reading size, no collisions, dark theme, phones, and straight into a session');
+  await go('today', 2026, 11, 2, 9); await reset(); await go('today', 2026, 11, 2, 9);
+  const fogged = JSON.parse(JSON.stringify(pr));
+  for (const [id, title] of [['coX', 'Networking fundamentals for the complete beginner'], ['coY', 'Linux fundamentals']])
+    fogged.stages[0].courses.push({ id, title, url: '', minutes: 30, listId: null, archived: false, modules: [{ id: 'md' + id, title: 'One', sections: [{ id: 'sc' + id, title: 'Part 1', tasks: [task('tk' + id, 'First part', 30)] }] }] });
+  await editStorage(`s => { s.study = ${JSON.stringify(fogged)}; }`);
+  await go('study/map', 2026, 11, 2, 9);
+  const stations = () => ev(`[...document.querySelectorAll('[data-s=map-st]')].map(a => a.dataset.id + ':' + a.dataset.st + ':' + a.dataset.fog)`);
+  check('fog: the station after "you are here" stays clear, the ones beyond sit in the fog',
+    eq(await stations(), ['coP:now:0', 'coE:ahead:0', 'coX:ahead:1', 'coY:ahead:1']) && (await exists('[data-s=map-fog]')), await stations());
+  check('wide screens: the line is drawn at the map\'s own width (not scaled), names at 14 px',
+    await ev(`(() => { const svg = document.querySelector('[data-s=map-line] svg'); return !!svg && Math.abs(svg.getBoundingClientRect().width - Number(svg.getAttribute('width'))) < 1 && [...svg.querySelectorAll('[data-s=map-st] text')].every(t => getComputedStyle(t).fontSize === '14px' || getComputedStyle(t).fontSize === '12px'); })()`));
+  check('a long name is shortened on the line, its full name kept as the station\'s title',
+    await ev(`(() => { const a = document.querySelector('[data-s=map-st][data-id=coX]'); return a.querySelector('text').textContent.endsWith('…') && a.querySelector('title').textContent === 'Networking fundamentals for the complete beginner' && a.getAttribute('aria-label').startsWith('Networking fundamentals for the complete beginner — ahead, in the fog'); })()`));
+  const collisions = () => ev(`(() => { const svg = document.querySelector('[data-s=map-line] svg'), box = svg.getBoundingClientRect();
+    const rs = [...svg.querySelectorAll('text')].map(t => t.getBoundingClientRect()).concat([svg.querySelector('[data-s=map-term]').getBoundingClientRect()]);
+    const hit = (a, b) => a.left < b.right - 0.5 && b.left < a.right - 0.5 && a.top < b.bottom - 0.5 && b.top < a.bottom - 0.5;
+    const out = rs.filter(r => r.left < box.left - 0.5 || r.right > box.right + 0.5).length;
+    let n = 0; for (let i = 0; i < rs.length; i++) for (let j = i + 1; j < rs.length; j++) if (hit(rs[i], rs[j])) n++;
+    return out + n; })()`);
+  check('nothing on the line overlaps (names, "you are here", the finish flag) or runs off the edge', (await collisions()) === 0, await collisions());
+  check('the flag\'s note is in the stage\'s heading, clear of the names', (await text('[data-s=map-line] h4 + *')).includes('3 tasks to the flag'), await text('[data-s=map-line] h4 + *'));
+  check('the key is drawn with the stations\' own shapes, "Started" half-filled like its station', (await text('[data-s=map-key]')).includes('Started') && (await text('[data-s=map-key]')).includes('In the fog') && (await ev(`document.querySelectorAll('[data-s=map-key] svg').length`)) === 7 && (await exists('[data-s=map-key] svg path[d^="M0 -5.5 A"]')));
+  // Dark theme: every colour comes from the theme (nothing black on charcoal, nothing white-hot).
+  const contrastIn = () => ev(`(() => {
+    const rgb = c => { const m = c.match(/[0-9.]+/g).map(Number); return m.slice(0, 3); };
+    const lum = c => { const [r, g, b] = rgb(c).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+    const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+    const card = getComputedStyle(document.querySelector('[data-s=map-line]').closest('section')).backgroundColor;
+    const texts = [...document.querySelectorAll('[data-s=map-line] svg text')].map(t => ratio(getComputedStyle(t).fill, card));
+    const fills = [...document.querySelectorAll('[data-s=map-line] svg circle, [data-s=map-line] svg rect:not([data-s=map-fog])')].map(c => getComputedStyle(c).fill);
+    return { min: Math.min(...texts), white: fills.filter(f => f === 'rgb(255, 255, 255)').length, black: fills.filter(f => f === 'rgb(0, 0, 0)').length, card }; })()`);
+  const light = await contrastIn();
+  check('light theme: every name on the line passes AA contrast (4.5:1)', light.min >= 4.5, light);
+  await editStorage(`s => { s.settings.theme = 'dark'; }`); await go('study/map', 2026, 11, 2, 9);
+  const dark = await contrastIn();
+  check('dark theme: names pass AA on the dark card, and no station is drawn white or black', dark.min >= 4.5 && dark.white === 0 && dark.black === 0 && dark.card !== light.card, dark);
+  await editStorage(`s => { s.settings.theme = 'light'; }`);
+  // Phones: the same stations listed top to bottom, every name in full.
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await go('study/map', 2026, 11, 2, 9);
+  check('phone: the stations are listed top to bottom (no tiny drawing), with the same stations and fog', (await exists('[data-s=map-list]')) && !(await exists('[data-s=map-line] svg')) && eq(await stations(), ['coP:now:0', 'coE:ahead:0', 'coX:ahead:1', 'coY:ahead:1']));
+  check('phone: every name in full, at a readable size',
+    (await text('[data-s=map-st][data-id=coX]')).includes('Networking fundamentals for the complete beginner') && await ev(`[...document.querySelectorAll('[data-s=map-st] span')].every(s => parseFloat(getComputedStyle(s).fontSize) >= 13)`));
+  check('phone: the finish line says how far there is to go', (await text('[data-s=map-term]')).includes('3 tasks to the flag'));
+  check('phone: no sideways scrolling on the map', !(await ev('document.documentElement.scrollWidth > innerWidth')));
+  check('phone: every station and topic link is at least 44 px tall', await ev(`[...document.querySelectorAll('[data-s=map-st], [data-s=map-topic], [data-action=map-start]')].every(b => b.getBoundingClientRect().height >= 44)`));
+  await T.send('Emulation.clearDeviceMetricsOverride');
+  // Straight into a session: from the map's summary, and from Today's learning card.
+  await go('study/map', 2026, 11, 2, 9);
+  check('the summary offers 15 minutes on the next task', (await text('[data-action=map-start]')) === 'Start 15 minutes');
+  await click('[data-action=map-start]'); await sleep(300);
+  let mapSes = (await SD()).sessions.at(-1);
+  check('…which starts a 15-minute session on it and opens the session', (await ev('location.hash')) === '#study/session' && mapSes.courseId === 'coP' && mapSes.taskId === 'tkH' && mapSes.plannedMin === 15 && mapSes.short === true, [await ev('location.hash'), mapSes]);
+  await go('study/map', 2026, 11, 2, 9);
+  check('while a session runs, the map points back to it instead of starting another', !(await exists('[data-action=map-start]')) && (await ev(`document.querySelector('[data-action=map-session]').getAttribute('href')`)) === '#study/session');
+  await editStorage(`s => { s.study.sessions = s.study.sessions.filter(x => x.status === 'done'); s.study.activeId = null; }`);
+  await go('today', 2026, 11, 2, 9);
+  check('Today: the "up next" line comes with Start 15 minutes', (await text('[data-action=streak-start]')) === 'Start 15 minutes');
+  await click('[data-action=streak-start]'); await sleep(300);
+  mapSes = (await SD()).sessions.at(-1);
+  check('…which goes straight into a 15-minute session on the next task', (await ev('location.hash')) === '#study/session' && mapSes.courseId === 'coP' && mapSes.taskId === 'tkH' && mapSes.plannedMin === 15, [await ev('location.hash'), mapSes]);
+  await go('today', 2026, 11, 2, 9);
+  check('…and while it runs, Today\'s card goes back to it', (await text('[data-action=streak-start]')) === 'Back to your study session');
 
   finish();
 })().catch(e => { console.error('HARNESS ERROR', e); const s = T.summary(); console.log(`${s.pass} passed, ${s.fail} failed before the error`); process.exit(2); });

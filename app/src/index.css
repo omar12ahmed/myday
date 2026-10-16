@@ -199,6 +199,9 @@
   .card > :last-child { margin-bottom: 0; }
   .topic-card { transition: border-color .15s, box-shadow .15s; }
   .topic-card:hover { box-shadow: var(--shadow-btn); }
+  /* Your map on phones: the unexplored stations sit in a soft mist, the rail dotted into it (text keeps full contrast). */
+  .map-fog { background: linear-gradient(90deg, var(--surface-2) 0, var(--surface-2) 40%, transparent); }
+  .map-fog-rail { background: repeating-linear-gradient(to bottom, var(--text-3) 0 3px, transparent 3px 9px); }
   @media (min-width: 64rem) {
     .appbar-card { max-width: 1120px; padding-inline: 28px; }
     .screen-name { font-size: 23px; }

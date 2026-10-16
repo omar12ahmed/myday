@@ -1,13 +1,16 @@
+import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { parseKey, shift, todayKey } from '../data/dates';
 import { windowDays } from '../data/progress';
 import { stIndex } from '../data/study/roadmap';
+import { activeStudy } from '../data/study/sessions';
 import { studiedText, topicGlance, topicsOf } from '../data/study/topics';
 import type { MyDayData } from '../data/types';
+import { startLearning } from '../study/actions';
 
 // Learning at a glance: the rolling count (today and the 6 days before — nothing ever resets it to zero),
 // then one quiet line of orientation from Study (what's next in your current topic, and when you last sat
-// with it). The learning garden was retired (16 Oct 2026): Today is for acting, and a map that lights up
+// with it), with one tap straight into 15 minutes on it. The learning garden was retired (16 Oct 2026): Today is for acting, and a map that lights up
 // (milestone 5) will do the garden's job properly inside Study.
 export function StreakCard({ data, justLearned }: { data: MyDayData; justLearned: boolean }) {
   const k = todayKey(), days = windowDays(data, k), n = days.filter(Boolean).length;
@@ -40,6 +43,9 @@ export function StreakCard({ data, justLearned }: { data: MyDayData; justLearned
           {glance.topic.title} — up next: {glance.next.title}. {studiedText(glance.lastStudied, k)}.
         </p>
       )}
+      {glance?.next && (activeStudy(st)
+        ? <Button inline variant="ghost" className="mt-2" data-action="streak-start" onClick={() => startLearning(glance.next!.id, null, 15, true)}>Back to your study session</Button>
+        : <Button inline variant="tonal" className="mt-2" data-action="streak-start" onClick={() => startLearning(glance.next!.id, glance.nextTask ? glance.nextTask.id : null, 15, true)}>Start 15 minutes</Button>)}
       <p className="text-[15px] text-fg-2 m-0 mt-1">A rolling count of today and the 6 days before. Missed days and rest days never reset it to zero — older days simply slide out of the window.</p>
     </Card>
   );

@@ -811,4 +811,10 @@ returns up to 8 small tasks; you tick the ones to add.
 33. **Release 1.21.0:** a new look, called Clarity: warm paper instead of white, teal as the one accent, calmer
     square corners — same app underneath. And the learning garden retires. Today keeps one learning card: the rolling
     7-day count (nothing ever resets it), now with one quiet line pointing at what's next in your current topic and
-    when you last sat with it. And Study gains your map (milestone 5): each stage is a line, each course a station, lit up to where you stand, with a finish-line flag per stage and a quiet ring on courses whose concepts might benefit from more practice. No data change.
+    when you last sat with it. And Study gains your map (milestone 5): each stage is a line, each course a station, lit up to where you stand, with a finish-line flag per stage and a quiet ring on courses whose concepts might benefit from more practice. Then
+    (branch `map-polish`) the unexplored sits in fog — beyond the station after where you stand, the line runs dotted
+    into a soft mist; phones list the stations top to bottom with every name in full, wide screens draw the line at its
+    real width (names at 14 px, shortened only when they'd touch a neighbour, never overlapping the flag); every colour
+    comes from the theme, so dark mode reads properly; the key is drawn with the stations' own shapes; topics are plain
+    links; and "Start 15 minutes" goes straight from where you stand — on the map and on Today's learning card — into a
+    short session on the next task. No data change.
