@@ -321,6 +321,47 @@ const SEED = `s => {
     await D.ev(`location.hash = 'today'`);
   }
 
+  console.log('\n[8e] "Explain it another way" in revision (practice mode, then through the real server code)');
+  {
+    const CON = (id, x = {}) => ({ id, title: 'Subnet masks', taskIds: [], createdOn: TODAY, kind: 'written', prompt: 'What does a subnet mask do?', answer: 'It shows which part of an address is the network and which the host.',
+      explanation: 'Hosts compare network parts to decide whether a destination is local.', choices: [], correct: null, hint: '', source: '', note: '', review: { reps: 0, interval: 0, lapses: 0, due: null }, ...x });
+    const toAnswer = async (Dv, typed) => {
+      await Dv.ev(`location.hash = 'study/revise'`); await Dv.until(`document.querySelector('[data-action="s-rev-start"]')`, 10000);
+      await Dv.click('[data-action="s-rev-start"]'); await Dv.until(`document.getElementById('revTyped')`, 10000);
+      if (typed) await Dv.type('#revTyped', typed);
+      await Dv.click('[data-action="s-rev-show"]'); await Dv.until(`document.querySelector('[data-s="another-way"]')`, 10000);
+    };
+    await mock.setData(`s => { s.study.concepts = s.study.concepts.filter(c => c.id !== 'cpMask'); s.study.concepts.push(${JSON.stringify(CON('cpMask'))}); }`);
+    await toAnswer(mock, 'It hides your IP address');
+    const before = await mock.data();
+    check('once the answer is shown: "Explain it another way", saying what it sends', await mock.exists('[data-action="aw-ask"]') && (await mock.text('[data-s="another-way"]')).includes('Sends this question, its answer and your answer'));
+    await mock.click('[data-action="aw-ask"]'); await mock.until(`document.querySelector('[data-s="aw-shown"]')`, 8000);
+    check('the explanation comes back labelled (practice helper here), using your answer, with "Keep this explanation"', (await mock.text('[data-s="aw-shown"]')).includes('practice helper (no AI)') && (await mock.text('[data-s="aw-shown"]')).includes('It hides your IP address') && await mock.exists('[data-action="aw-keep"]'));
+    check('…nothing is saved yet, and your answer and the schedule are untouched', JSON.stringify((await mock.data()).study) === JSON.stringify(before.study));
+    await mock.click('[data-action="aw-keep"]'); await sleep(300);
+    let kept = (await mock.data()).study.concepts.find(c => c.id === 'cpMask').anotherWay;
+    check('"Keep": saved on the card with the model\'s name and the day', !!kept && kept.text.startsWith('Practice helper (no AI)') && kept.by === 'practice helper (no AI)' && kept.on === TODAY);
+    check('…and shown on the card straight away, labelled AI-written, with "Remove it"', (await mock.text('[data-s="aw-kept"]')).includes('Your kept explanation · AI-written by practice helper (no AI)') && await mock.exists('[data-action="aw-remove"]'));
+    await mock.click('[data-action="s-rev-rate"][data-v="again"]'); await sleep(300);
+    await mock.setData(`s => { const c = s.study.concepts.find(x => x.id === 'cpMask'); c.review.due = '${TODAY}'; }`);
+    await toAnswer(mock, '');
+    check('next time the card comes up, its kept explanation is there under the answer', (await mock.text('[data-s="aw-kept"]')).includes('Practice helper (no AI)') && (await mock.text('[data-action="aw-ask"]')) === 'Explain it another way again');
+    await mock.click('[data-action="aw-remove"]'); await sleep(300);
+    check('"Remove it" takes it off the card (the card stays)', !('anotherWay' in (await mock.data()).study.concepts.find(c => c.id === 'cpMask')) && !(await mock.exists('[data-s="aw-kept"]')));
+    await mock.ev(`location.hash = 'today'`);
+    // Through the real server code (the stand-in), signed in: the app's request must be one the server accepts.
+    setAi({ AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_LABEL: 'Main model', AI_MIN_SECONDS_BETWEEN: '0' });
+    await D.setData(`s => { s.study.concepts = s.study.concepts.filter(c => c.id !== 'cpMask'); s.study.concepts.push(${JSON.stringify(CON('cpMask'))}); }`); await D.until(`!document.getElementById('signInGate')`, 15000);
+    const c0 = aiCalls().length;
+    await toAnswer(D, 'It hides your IP address');
+    await D.click('[data-action="aw-ask"]'); await D.until(`['shown', 'error'].includes(document.querySelector('[data-s="another-way"]')?.dataset.phase)`, 15000);
+    const sentE = aiCalls().slice(c0).find(c => c.body.context.action === 'explain');
+    check('with an account: the server accepts the app\'s request and answers (by the main model here)', (await D.ev(`document.querySelector('[data-s="another-way"]').dataset.phase`)) === 'shown' && (await D.text('[data-s="aw-shown"]')).includes('AI-written by Main model'), await D.text('[data-s="another-way"]'));
+    check('…it sent the question, its answer and explanation, and your answer — nothing else', !!sentE && JSON.stringify(Object.keys(sentE.body.context).sort()) === JSON.stringify(['action', 'answer', 'explanation', 'outcome', 'question', 'subject', 'version', 'yourAnswer']) && sentE.body.context.yourAnswer === 'It hides your IP address', sentE && sentE.body.context);
+    await D.click('[data-action="aw-close"]'); await D.ev(`location.hash = 'today'`);
+    await D.setData(`s => { s.study.concepts = s.study.concepts.filter(c => c.id !== 'cpMask'); }`); await D.until(`!document.getElementById('signInGate')`, 15000);
+  }
+
   console.log('\n[9] Layout');
   await D.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await D.ev(`location.hash = 'today'`);

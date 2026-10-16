@@ -13,6 +13,8 @@ import { dueIds, nextDueDate, type Scope } from '../data/study/queue';
 import { conceptEvidence, DAILY_ENOUGH, nextGap, questionReady, rateConcept, repeatedWrongChoice, reviewedOn, type Answered } from '../data/study/revision';
 import type { Concept, DateKey, MyDayData, Outcome, Rating, StudyData, Support } from '../data/types';
 import { startRevision } from './actions';
+import { AnotherWay } from './AnotherWay';
+import type { ExplainContext } from '../../../supabase/functions/_shared/ai/explain-shape.ts';
 import { BackLink, Choice, Choices, Eyebrow, InlineLink, LinkButton, Note, NoteLink, Summary, TextLink } from './parts';
 import { changeRound, nextQuestion, setTyped, useRound, type Round } from './round';
 
@@ -43,6 +45,8 @@ export interface Asked {
   notYet?: ReactNode;            // what to do when it hasn't clicked yet (otherwise: ideas at the end of the round)
   arabic?: boolean;              // your typed answer may be Arabic (typed right to left when it is)
   interval: number;              // the last gap in its schedule, for the Again / Hard / Good labels
+  // "Explain it another way" (AnotherWay.tsx): the question in plain words for the AI (your answer is added on the tap).
+  explain?: Pick<ExplainContext, 'subject' | 'lessonId' | 'question' | 'answer' | 'explanation'>;
   save(d: MyDayData, k: DateKey, a: Answered, rating: Rating): boolean;
 }
 
@@ -56,6 +60,9 @@ function conceptAsked(st: StudyData, c: Concept): Asked {
       <NoteLink study={st} path={c.note} />
     </>,
     notesUrl: obsidianUrl(st, c.note), interval: c.review.interval,
+    // An AI-written card from a Cybersecurity lesson is explained as Cybersecurity (with its lesson); others as your own.
+    explain: { ...(c.origin?.subject === 'cybersecurity' && c.origin.lessonId ? { subject: 'cybersecurity', lessonId: c.origin.lessonId } : { subject: 'study' }),
+      question: c.prompt, answer: c.kind === 'choice' && c.correct !== null ? c.choices[c.correct] : c.answer, explanation: c.explanation },
     save: (d, k, a, rating) => rateConcept(d.study, c.id, k, a, rating),
   };
 }
@@ -212,6 +219,7 @@ export function Question({ data, r, q, at }: { data: MyDayData; r: Round; q: Ask
             : <div className="st-answer bg-surface-2 rounded-tile px-3.5 py-2.5 my-2.5"><span className="lbl text-sm text-fg-2">{q.answerLabel}</span><p className="mt-1 mb-0 whitespace-pre-wrap">{q.answer}</p></div>}
           {q.explanation && <div className="st-answer bg-surface-2 rounded-tile px-3.5 py-2.5 my-2.5"><span className="lbl text-sm text-fg-2">{q.explanationLabel}</span><p className="mt-1 mb-0 whitespace-pre-wrap">{q.explanation}</p></div>}
           {q.after}
+          <AnotherWay data={data} q={q} r={r} />
           {(r.outcome === 'wrong' || r.outcome === 'notsure') && <Struggle data={data} q={q} chosen={r.chosen} />}
           {q.kind === 'written' && r.outcome !== 'notsure' && (
             <>

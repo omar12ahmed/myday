@@ -32,6 +32,7 @@ export default function CyberQuestion({ data, r, at, card }: { data: MyDayData; 
     after: <Note><InlineLink href={lessonHref(lessonOfCheck(card.id))}>Open its lesson</InlineLink></Note>,
     notYet: <>This one hasn’t clicked yet, which is normal for something new. Read the reference answer once more, slowly; at the end of the round there’s a link back to its lesson.</>,
     notesUrl: '', interval: card.review.interval,
+    explain: { subject: 'cybersecurity', lessonId: lessonOfCheck(card.id), question: c.prompt, answer: answers[card.id], explanation: '' },
     save: (d, k, a, rating) => rateCyberCard(d, card.id, title, k, a, rating),
   };
   return <Question data={data} r={r} at={at} q={q} />;

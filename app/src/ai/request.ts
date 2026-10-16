@@ -27,7 +27,7 @@ const MESSAGES: Record<Reason, string> = {
   offline: "Couldn't reach the AI — check your connection.",
 };
 // What stays as it was, said after each message (except "just a moment").
-const SAME = { adjust: " Your plan hasn't changed, and Review my plan still works.", tasks: ' Nothing was added.', tutor: ' Your learning work is saved separately; the lesson still works.', connect: ' Your notes are as they were.', cards: ' Nothing was added to your revision.', note: ' Your note is as it was, and nothing was added to your revision.' };
+const SAME = { adjust: " Your plan hasn't changed, and Review my plan still works.", tasks: ' Nothing was added.', tutor: ' Your learning work is saved separately; the lesson still works.', connect: ' Your notes are as they were.', cards: ' Nothing was added to your revision.', note: ' Your note is as it was, and nothing was added to your revision.', explain: ' Your revision is as it was.' };
 // How long to wait for an answer. Revision cards are written and then checked by a second model: up to 90 s on the server.
 const WAIT_MS = { cards: 95000, other: 40000 };
 
@@ -37,10 +37,15 @@ export async function askModel(ctx: AiContext, signal?: AbortSignal): Promise<Ai
   const connect = (ctx as { action?: string }).action === 'connect';
   const cards = (ctx as { action?: string }).action === 'cards';
   const noteCheck = (ctx as { action?: string }).action === 'note-check', noteCards = (ctx as { action?: string }).action === 'note-cards';
-  const fail = (reason: Reason): AiReply => ({ ok: false, reason, message: MESSAGES[reason] + (reason === 'too-fast' ? '' : SAME[noteCheck || noteCards ? 'note' : cards ? 'cards' : connect ? 'connect' : tutor ? 'tutor' : tasks ? 'tasks' : 'adjust']) });
+  const explain = (ctx as { action?: string }).action === 'explain';
+  const fail = (reason: Reason): AiReply => ({ ok: false, reason, message: MESSAGES[reason] + (reason === 'too-fast' ? '' : SAME[explain ? 'explain' : noteCheck || noteCards ? 'note' : cards ? 'cards' : connect ? 'connect' : tutor ? 'tutor' : tasks ? 'tasks' : 'adjust']) });
   if (AI_MODE === 'mock') {
     await new Promise(r => setTimeout(r, 600));
     if (MOCK_VARIANT === 'error') return fail('unavailable');
+    if (explain) {
+      const { mockExplain } = await import('../../../supabase/functions/_shared/ai/explain.ts');
+      return { ok: true, text: mockExplain(ctx as Parameters<typeof mockExplain>[0]), model: 'practice helper (no AI)' };
+    }
     if (noteCheck || noteCards) {
       const N = await import('../../../supabase/functions/_shared/ai/note-cards.ts');
       if (noteCheck) return { ok: true, text: N.mockNoteCheck(ctx as Parameters<typeof N.mockNoteCheck>[0]), model: 'practice check (no AI)' };

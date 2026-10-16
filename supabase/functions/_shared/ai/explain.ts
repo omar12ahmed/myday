@@ -12,25 +12,8 @@ import { tutorLessons } from './tutor-lessons.ts';
 
 export const EXPLAIN_CONTRACT_VERSION = 1;
 export const EXPLAIN_PROMPT_VERSION = 'myday-explain-v2';
-export const EXPLAIN_LIMITS = {
-  questionChars: 600, choiceChars: 200, choices: 6, answerChars: 2000, explanationChars: 2000, yourAnswerChars: 1000,
-  replyChars: 1500,       // the explanation that comes back (the most a kept one may hold)
-};
-export const EXPLAIN_SUBJECTS = ['study', 'cybersecurity', 'arabic'] as const;
-export type ExplainSubject = typeof EXPLAIN_SUBJECTS[number];
-export const EXPLAIN_OUTCOMES = ['right', 'partly', 'wrong', 'notsure'] as const;
-
-export interface ExplainContext {
-  version: 1; action: 'explain';
-  subject: ExplainSubject;
-  lessonId?: string;        // a Cybersecurity check's lesson (the server adds its outline)
-  question: string;
-  choices?: string[];       // a multiple-choice question's options
-  answer: string;           // the right answer (the course's reference answer, the marked option, or your own concept's)
-  explanation: string;      // the explanation you've already seen ('' if none)
-  yourAnswer: string;       // what you typed or chose ('' if nothing)
-  outcome: typeof EXPLAIN_OUTCOMES[number] | null; // how it went, as marked
-}
+export * from './explain-shape.ts';
+import { EXPLAIN_LIMITS, EXPLAIN_OUTCOMES, EXPLAIN_SUBJECTS, type ExplainContext, type ExplainSubject } from './explain-shape.ts';
 
 const text = (v: unknown, max: number, empty = true) => typeof v === 'string' && v.length <= max && (empty || v.trim().length > 0);
 export function checkExplainContext(raw: unknown): raw is ExplainContext {
@@ -44,14 +27,6 @@ export function checkExplainContext(raw: unknown): raw is ExplainContext {
     && (c.choices === undefined || (Array.isArray(c.choices) && c.choices.length >= 2 && c.choices.length <= L.choices && c.choices.every(x => text(x, L.choiceChars, false))))
     && (c.outcome === null || EXPLAIN_OUTCOMES.includes(c.outcome as typeof EXPLAIN_OUTCOMES[number]));
 }
-// The reply: the explanation, if it is one (the app shows nothing otherwise).
-export function readExplain(textIn: string): string | null {
-  let raw: unknown;
-  try { raw = JSON.parse(textIn); } catch { return null; }
-  const e = raw && typeof raw === 'object' && !Array.isArray(raw) ? (raw as { explanation?: unknown }).explanation : null;
-  return typeof e === 'string' && e.trim() && e.trim().length <= EXPLAIN_LIMITS.replyChars ? e.trim() : null;
-}
-
 export function buildExplainMessages(c: ExplainContext): ChatMessage[] {
   return [{ role: 'system', content: `You help one person who is revising understand a question in a different way. You get the question, its right
 answer, the explanation they have already seen, and their own answer (and how they marked it). For a Cybersecurity
