@@ -323,13 +323,16 @@ The October 2026 refresh uses a quiet, warm workspace with clearer navigation an
 It builds on 1.11.0's dashboard and shared components. The classic MyDay (`../index.html`) keeps its green look;
 both versions still share the font, task timeline and saved data. This refresh needs no data migration.
 
-- **Colours** (`src/styles/tokens.css`): warm ivory (#f6f5f2), white cards and charcoal text, with a clay accent
-  (`primary`, #a84422 light / #ecb38e dark). Dark mode uses a charcoal-green page (#171b19). Green still means done,
-  and category colours retain their meaning. Light remains the default; Match device follows system changes,
-  including the native browser bar. Semantic text pairs are checked for WCAG AA contrast in both themes.
-- **Hierarchy:** solid primary buttons, quiet borders, shallow shadows and generous spacing. Section headings
-  use sentence case. Background glows and the decorative landscape have been removed. Footer tools remain
-  available as small, quiet buttons; form controls and focus states use the same shared tokens throughout.
+- **Colours** (`src/styles/tokens.css`): warm paper (#f7f5ef), white cards and charcoal text, with a flat teal
+  accent (`primary`, #0f766e light / #7ed7c6 dark — teal-700 was the lightest teal whose white text passes AA)
+  and one warm orange reserved for Capture (`accent`, #c2410c light / #f0a069 dark). Dark mode uses a warm
+  charcoal page (#141815). Green still means done, and category colours retain their meaning. Light remains
+  the default; Match device follows system changes, including the native browser bar. Semantic text pairs
+  are checked for WCAG AA contrast in both themes.
+- **Hierarchy:** flat surfaces separated by quiet warm borders instead of shadows (cards 12 px, buttons 8 px),
+  solid primary buttons and generous spacing. Section headings use sentence case. Background glows and the
+  decorative landscape have been removed. Footer tools remain available as small, quiet buttons; form controls
+  and focus states use the same shared tokens throughout.
 - **Navigation:** on phones, a frosted bar floating just above the bottom edge; on wide screens (64rem and up),
   a 208 px neutral sidebar with the MyDay logo linking to Today, followed by each section's icon and name.
   The current section has a distinct surface and an accessible current-page label.

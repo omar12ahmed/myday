@@ -408,23 +408,23 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   const bgOf = () => ev(`getComputedStyle(document.body).backgroundColor`);
   await openAt(2027, 2, 7, 7);
   // From 1.11.0 the new app is warm and light by default (the classic MyDay's default stays dark).
-  check('light by default (the warm neutral page)', (await ev(`document.documentElement.dataset.theme`)) === 'light' && (await bgOf()) === 'rgb(246, 245, 242)', await bgOf());
+  check('light by default (the warm neutral page)', (await ev(`document.documentElement.dataset.theme`)) === 'light' && (await bgOf()) === 'rgb(247, 245, 239)', await bgOf());
   check('theme button labelled for screen readers', (await ev(`document.getElementById('themeBtn').getAttribute('aria-label')`)) === 'Theme: Light. Tap to change.');
   await click('#themeBtn'); await sleep(400);
-  check('tap → Dark: the charcoal colours applied and saved', (await ev(`document.documentElement.dataset.theme`)) === 'dark' && (await bgOf()) === 'rgb(23, 27, 25)' && (await data()).settings.theme === 'dark');
-  check('browser bar colour follows the theme', (await ev(`document.querySelector('meta[name=theme-color]').content`)) === '#171b19');
+  check('tap → Dark: the charcoal colours applied and saved', (await ev(`document.documentElement.dataset.theme`)) === 'dark' && (await bgOf()) === 'rgb(20, 24, 21)' && (await data()).settings.theme === 'dark');
+  check('browser bar colour follows the theme', (await ev(`document.querySelector('meta[name=theme-color]').content`)) === '#141815');
   await T.send('Page.addScriptToEvaluateOnNewDocument', { source: `new MutationObserver((m, o) => { if (document.body) { window.__themeAtBody = document.documentElement.getAttribute('data-theme'); o.disconnect(); } }).observe(document, { childList: true, subtree: true });` });
   await openAt(2027, 2, 7, 8);
   check('saved theme is applied before the page body appears (no flash)', (await ev('window.__themeAtBody')) === 'dark', await ev('window.__themeAtBody'));
   await click('#themeBtn'); await sleep(400);
   await T.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'dark' }] });
-  check('tap → Match device (device dark) → dark colours', (await ev(`document.documentElement.dataset.theme`)) === 'auto' && (await bgOf()) === 'rgb(23, 27, 25)', await bgOf());
+  check('tap → Match device (device dark) → dark colours', (await ev(`document.documentElement.dataset.theme`)) === 'auto' && (await bgOf()) === 'rgb(20, 24, 21)', await bgOf());
   await T.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'light' }] });
-  check('…device switches to light → light colours', (await bgOf()) === 'rgb(246, 245, 242)', await bgOf());
-  check('Match device updates the browser bar when the OS theme changes', (await ev(`document.querySelector('meta[name=theme-color]').content`)) === '#f6f5f2');
+  check('…device switches to light → light colours', (await bgOf()) === 'rgb(247, 245, 239)', await bgOf());
+  check('Match device updates the browser bar when the OS theme changes', (await ev(`document.querySelector('meta[name=theme-color]').content`)) === '#f7f5ef');
   await T.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'dark' }] });
   await click('#themeBtn'); await sleep(400);
-  check('tap → back to Light (even when the device is dark)', (await ev(`document.documentElement.dataset.theme`)) === 'light' && (await bgOf()) === 'rgb(246, 245, 242)', await bgOf());
+  check('tap → back to Light (even when the device is dark)', (await ev(`document.documentElement.dataset.theme`)) === 'light' && (await bgOf()) === 'rgb(247, 245, 239)', await bgOf());
   await T.send('Emulation.setEmulatedMedia', { features: [] });
   const contrastIn = async theme => ev(`(() => {
     document.documentElement.dataset.theme = ${JSON.stringify(theme)};

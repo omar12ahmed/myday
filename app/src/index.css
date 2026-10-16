@@ -49,6 +49,9 @@
   --color-on-warn-c: var(--on-warn-c);
   --color-inverse: var(--inverse);
   --color-on-inverse: var(--on-inverse);
+  --color-accent: var(--accent);           /* Capture's warm orange */
+  --color-on-accent: var(--on-accent);
+  --color-accent-outline: var(--accent-outline);
 
   --shadow-card: var(--shadow);       /* shadow-card */
   --shadow-raised: var(--shadow-btn); /* shadow-raised: buttons */
@@ -59,9 +62,9 @@
 @theme {
   /* Plus Jakarta Sans (imported in main.tsx), with the device's own font while it loads. */
   --font-sans: "Plus Jakarta Sans Variable", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  --radius-card: 18px;
-  --radius-tile: 12px;
-  --radius-btn: 10px;
+  --radius-card: 12px;
+  --radius-tile: 10px;
+  --radius-btn: 8px;
   --spacing-tap: 48px;
 }
 
@@ -79,7 +82,7 @@
   h4 { font-size: 15px; font-weight: 600; margin: 16px 0 6px; color: var(--text); }
   p { margin: 0 0 12px; }
   :focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
-  /* Boxes you type in: the border turns orange with a soft glow around it (still clearly visible). */
+  /* Boxes you type in: the border turns teal with a soft glow around it (still clearly visible). */
   input:not([type="checkbox"], [type="radio"], [type="range"]):focus-visible, select:focus-visible, textarea:focus-visible {
     outline: 0; border-color: var(--primary); box-shadow: 0 0 0 4px var(--focus-glow);
   }
@@ -115,13 +118,13 @@
     position: fixed; left: 10px; right: 10px; bottom: max(10px, env(safe-area-inset-bottom)); z-index: 25;
     display: flex; justify-content: center; gap: 2px;
     background: var(--glass); backdrop-filter: blur(20px);
-    border: 1px solid var(--outline); border-radius: 20px; box-shadow: 0 4px 24px rgba(0,0,0,.08);
+    border: 1px solid var(--outline); border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,.06);
     padding: 5px;
   }
   .nav-item {
     flex: 1; min-width: 0; max-width: 160px; min-height: 56px; padding: 4px;
     display: grid; justify-items: center; align-content: center; gap: 2px;
-    color: var(--text-2); text-decoration: none; font-size: 11px; font-weight: 600; border-radius: 12px;
+    color: var(--text-2); text-decoration: none; font-size: 11px; font-weight: 600; border-radius: 9px;
   }
   .nav-logo, .nav-caption { display: none; }
   .nav-icon { display: grid; place-items: center; width: 32px; height: 28px; border-radius: 8px; transition: background-color .15s; }
@@ -151,19 +154,20 @@
     body:has(.nav) .toast { bottom: 24px; }
   }
 
-  /* "+ Capture": phones — a round button above the bar, within reach of a thumb (toasts and the page's end move up so
-     nothing hides behind it); wide screens — beside the theme button, with the bar moved over to make room. */
+  /* "+ Capture": the one warm-orange element in the app. Phones — a round button above the bar, within
+     reach of a thumb (toasts and the page's end move up so nothing hides behind it); wide screens —
+     beside the theme button, with the bar moved over to make room. */
   .capture-btn {
     position: fixed; right: 16px; bottom: calc(92px + env(safe-area-inset-bottom)); z-index: 26;
     display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-    width: 52px; height: 52px; border: 0; border-radius: 16px; cursor: pointer;
-    background: var(--primary); color: var(--on-primary); box-shadow: var(--shadow-cta);
+    width: 52px; height: 52px; border: 0; border-radius: 13px; cursor: pointer;
+    background: var(--accent); color: var(--on-accent); box-shadow: var(--shadow-btn);
     transition: transform .15s, filter .15s;
     font: inherit; font-weight: 700; font-size: 15px;
   }
   .capture-btn:hover { filter: brightness(1.05); }
   .capture-btn:active { transform: scale(.96); }
-  .capture-btn:focus-visible { outline: 3px solid var(--primary-outline); outline-offset: 2px; }
+  .capture-btn:focus-visible { outline: 3px solid var(--accent-outline); outline-offset: 2px; }
   .capture-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   body:has(.capture-btn) { padding-bottom: calc(156px + env(safe-area-inset-bottom)); }
   body:has(.capture-btn) .toast { bottom: calc(160px + env(safe-area-inset-bottom)); }
