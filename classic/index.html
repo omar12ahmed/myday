@@ -5899,6 +5899,7 @@
       // origin (added by the new app in 1.19.0): a card an AI wrote and a second AI checked, that you kept —
       //   { by: 'ai', subject: 'cybersecurity', lessonId, writer, checker, edited }. Kept as it is here; its source says the same in words.
       //   From 1.19.1, origins for other subjects (e.g. a note) are kept too, as short plain values (see cleanOrigin below).
+      //   anotherWay? (from 1.20.2): an AI explanation you kept on the card — { text, by, on }, kept as it is here.
       concepts: [],
       // Learning sessions. Time is wall-clock based, so it keeps counting while the phone sleeps.
       // { id, courseId, taskId, title, date, startedAt, plannedMin, short, status: 'active'|'done', runningSince, activeMs, endedAt,
@@ -6007,6 +6008,11 @@
       });
       const origin = cleanOrigin(x.origin);
       if (origin) st.concepts[st.concepts.length - 1].origin = origin;
+      // anotherWay (added by the new app in 1.20.2): an explanation you kept — { text, by, on } — the same rule as the
+      // new app's cleanAnotherWay (app/src/data/study/anotherWay.ts).
+      const aw = x.anotherWay;
+      if (isObj(aw) && typeof aw.text === 'string' && aw.text.trim() && isDateKey(aw.on))
+        st.concepts[st.concepts.length - 1].anotherWay = { text: aw.text.trim().slice(0, 1500), by: typeof aw.by === 'string' ? aw.by.trim().slice(0, 60) : '', on: aw.on };
     }
     const conceptIds = new Set(st.concepts.map(c => c.id));
     for (const x of listOf(raw.sessions)) {
