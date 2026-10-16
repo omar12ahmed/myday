@@ -5,6 +5,7 @@ import { ConceptsView } from './ConceptsView';
 import { ConceptView } from './ConceptView';
 import { CourseDetails } from './CourseDetails';
 import { Dashboard } from './Dashboard';
+import { MapView } from './MapView';
 import { ProgressView } from './ProgressView';
 import { RevisionView } from './RevisionView';
 import { Roadmap } from './Roadmap';
@@ -36,6 +37,7 @@ export function StudyScreen({ data, hash }: { data: MyDayData; hash: string }) {
   if (view === 'cybersecurity') screen = <Suspense fallback={<p role="status">Opening your cybersecurity workshop…</p>}><CyberScreen key={id} data={data} id={id} /></Suspense>;
   else if (view === 'arabic') screen = <Suspense fallback={<p role="status">Opening Arabic…</p>}><ArabicScreen key={id} data={data} id={id} /></Suspense>;
   else if (view === 'roadmap') screen = <Roadmap key={id} data={data} state={{ edit, setEdit, open, setOpen }} topic={id ? topicFromPath(id) : null} />;
+  else if (view === 'map') screen = <MapView data={data} topicId={topicFromPath(id)} />;
   else if (view === 'topic') screen = <TopicView data={data} id={topicFromPath(id)} lengths={lengths} setLength={setLength} />;
   else if (view === 'course') screen = <CourseDetails data={data} id={id} />;
   else if (view === 'task') screen = <TaskDetails data={data} id={id} />;
@@ -48,5 +50,5 @@ export function StudyScreen({ data, hash }: { data: MyDayData; hash: string }) {
   else if (view === 'progress') screen = <ProgressView data={data} historyAll={historyAll} showAll={() => setHistoryAll(true)} />;
   else return <div className="st-view enter"><Dashboard data={data} lengths={lengths} setLength={setLength} /></div>;
   // The other screens are one column, kept to a comfortable reading width on wide screens.
-  return <div className={`st-view enter mx-auto ${(view === 'cybersecurity' && (!id || id === 'practice')) || (view === 'arabic' && (!id || id === 'texts')) ? 'max-w-[1000px]' : 'max-w-[720px]'}`}>{screen}</div>;
+  return <div className={`st-view enter mx-auto ${(view === 'cybersecurity' && (!id || id === 'practice')) || (view === 'arabic' && (!id || id === 'texts')) || view === 'map' ? 'max-w-[1000px]' : 'max-w-[720px]'}`}>{screen}</div>;
 }

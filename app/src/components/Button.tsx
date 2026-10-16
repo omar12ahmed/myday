@@ -2,7 +2,7 @@ import type { ButtonHTMLAttributes } from 'react';
 
 // Every button in MyDay.
 //   tonal    – the everyday button (neutral, quiet)
-//   primary  – the one main action on a card: a restrained clay accent
+//   primary  – the one main action on a card: a flat teal accent
 //   ghost    – a quieter, outlined choice
 //   quiet    – the smallest voice: the tools at the bottom of every screen
 //   selected – a toggle that's switched on (e.g. "Rolling to tomorrow")

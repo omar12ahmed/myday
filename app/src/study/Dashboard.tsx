@@ -148,7 +148,7 @@ export function Dashboard({ data, lengths, setLength }: { data: MyDayData; lengt
         <ArabicCard data={data} />
         <Card aria-label="More in Study">
           <nav className="st-links flex flex-wrap gap-x-5" aria-label="Study">
-            <TextLink href="#study/roadmap">Whole roadmap</TextLink><TextLink href="#study/concepts">Concepts</TextLink>
+            <TextLink href="#study/map">Your map</TextLink><TextLink href="#study/roadmap">Whole roadmap</TextLink><TextLink href="#study/concepts">Concepts</TextLink>
             <TextLink href="#study/progress">Progress &amp; history</TextLink><TextLink href="#study/settings">Settings</TextLink>
           </nav>
         </Card>

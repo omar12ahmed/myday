@@ -135,10 +135,10 @@ itself: build again after a change. While Live Server is running, run the checks
 
 | Section | In the new app |
 |---|---|
-| **Today** | Everything: energy (1–5) with its task limits, Build my day with a proposal you confirm (edit, shorten, leave for later), rest days, the queue and Roll to tomorrow, the evening check-in (including yesterday's), Review my plan, Swap for a rest day, Start today over, the nudge, the focus timer, the rolling 7-day learning count, the learning garden, sleep / work / appointments / prep-time context, Today at a glance, editing task lists, export and import, animations on/off. |
+| **Today** | Everything: energy (1–5) with its task limits, Build my day with a proposal you confirm (edit, shorten, leave for later), rest days, the queue and Roll to tomorrow, the evening check-in (including yesterday's), Review my plan, Swap for a rest day, Start today over, the nudge, the focus timer, the rolling 7-day learning count with what's up next in your current topic, sleep / work / appointments / prep-time context, Today at a glance, editing task lists, export and import, animations on/off. |
 | **Calendar** | Everything: your repeating pattern (e.g. 4 days → 4 off → 4 nights → 4 off) with versions that start from a chosen date (earlier dates never change), one-date changes stored apart from the pattern, what actually happened (worked different hours, sick, annual leave, cancelled, off instead, custom), overtime and unauthorised absence as separate entries, appointments, overlap warnings, bank holidays from gov.uk with the region choice, configurable colours with text labels, month and agenda views. |
 | **Finance** (was Pay) | Work pay for each pay month: shifts worked (and still planned), gross pay, Income Tax, National Insurance and student loan, and take-home, all estimates labelled with the tax year and gov.uk as the source. Worked out from the Calendar with the same rules as the current MyDay's Pay (overtime, cancelled shifts, bank holidays, annual leave, sick pay, the clock changes), so it changes by itself when the Calendar does. Plus money owed (both ways, with "Settled"), monthly expenses, and what's left over (take-home minus expenses). Your rates are folded away under "Rates". See "Finance" below. |
-| **Study** | Everything: a dashboard focused on starting (current focus and course, the next task with its path and estimate, a suggested length that fits your energy and free time, Start learning, "Just 15 minutes", course completion, a revision preview with its own Start revision button); the editable roadmap (stage → course → module → section → task, resource links, archive, focus); learning sessions you can pause, resume, finish or discard, with an optional clock that survives a reload; the optional check-in (task complete, concepts covered, how clear it felt, takeaway, question, Obsidian note); concepts with written or multiple-choice revision questions; revision one question at a time with the answer hidden until you ask, self-assessment, hints, notes, and spaced review dates; progress and history (learning days, completion, practical work, clarity, recall by week, what might need practice); Study settings; and the Study card on Today. |
+| **Study** | Everything: a dashboard focused on starting (current focus and course, the next task with its path and estimate, a suggested length that fits your energy and free time, Start learning, "Just 15 minutes", course completion, a revision preview with its own Start revision button); the editable roadmap (stage → course → module → section → task, resource links, archive, focus); learning sessions you can pause, resume, finish or discard, with an optional clock that survives a reload; the optional check-in (task complete, concepts covered, how clear it felt, takeaway, question, Obsidian note); concepts with written or multiple-choice revision questions; revision one question at a time with the answer hidden until you ask, self-assessment, hints, notes, and spaced review dates; progress and history (learning days, completion, practical work, clarity, recall by week, what might need practice); your map (each stage a line, each course a station, lit up to where you stand, a finish line per stage, courses whose concepts might need practice ringed); Study settings; and the Study card on Today. |
 | **Health → Workout** | Everything: workout templates (create, rename, reorder, archive and restore) with your own or common exercises; strength (reps and kg), bodyweight (reps, with added weight or assistance in kg, kept apart) and cardio (minutes and km); planned sets, reps, weights, durations, distances and rest; scheduling by weekday or as a repeating sequence; proposed dates fitted around shifts and appointments, saved only when you confirm; one-off plans on a date; the latest missed session to Move, Skip or Continue (no backlog); logging a workout with the plan and last time's result beside each exercise, big Done buttons, values prefilled from last time or the plan, the optional rest timer, leave-and-resume, and a kindly named shorter session; history with corrections; exercise history with charts per measure; and the Health card on Today. |
 | App shell | Header with the date, the five-section navigation (on wide screens, beside the theme button), Light / Dark / Match device themes. |
 | **Health → Food** | Everything: recipe ideas from TheMealDB (three at a time, "Show more"), search with suggestions while you type (your saved recipes at once, TheMealDB after a pause), favourites, recently cooked and your own recipes; preferences (leave out, dislikes, time, batch cooking) with a plain allergen caution; recipe pages with ingredients, servings that scale the quantities (or "as written" when they can't), the method split only on its own lines with the original text kept, nutrition (only your own figures, labelled as yours — never estimated) and the source and links; Want to cook (servings, tick what you have, add the rest); the shopping list grouped by aisle, combining only compatible items, with editing, manual items, Undo and ticking off; the step-by-step cooking view with timers named in a step, saved position and resume; and the cooking and shopping reminders on Today. |
@@ -282,7 +282,7 @@ pay rules) and its settings card are gone from the screen; the rules behind them
 | `src/data/plan.ts` | Choosing tasks within the energy limit, the queue, rest days, ticking off. |
 | `src/data/schedule.ts` | Sleep, commitments, shifts, workouts, prep time and free time; overlap warnings. |
 | `src/data/proposal.ts` | Build my day / Review my plan proposals, saved only when applied. |
-| `src/data/progress.ts` | The rolling learning count, the nudge and the garden's numbers. |
+| `src/data/progress.ts` | The rolling learning count and the nudge. |
 | `src/data/timer.ts`, `dates.ts`, `today.ts` | The focus timer, date helpers, and the wording for a day's plan. |
 | `src/data/rota.ts` | The shift rota: pattern versions, one-date changes, what happened, overtime/absence, overlaps, colours. |
 | `src/data/pay.ts` | Pay periods and the pay estimate: hours, rates, bank holidays, sick pay (SSP), tax, NI and student loans. |
@@ -299,8 +299,9 @@ pay rules) and its settings card are gone from the screen; the rules behind them
 | `../ai-eval/` | The evaluation of AI models on 20 synthetic days and 12 synthetic brain dumps (see its README). |
 | `src/finance/` | The Finance screen: `FinanceScreen` (with Left over), `WorkPayCard`, `ExpensesCard`, `OwedCard`, `RatesCard` (folded away), and `actions.ts` (what each button saves). |
 | `src/data/patterns/`, `src/patterns/` | What MyDay has noticed: `notice.ts` (finding patterns in your history), `saved.ts` (your preferences and answers, the `patterns` section), `adapt.ts` (using preferences in Build my day and the room on today's plan); the screen `NoticedScreen.tsx` (`#noticed`, and the quiet line on Today). `src/components/Why.tsx`: a note with a "Why?". `src/tasks/StuckCard.tsx`: "What's getting in the way?". |
-| `src/projects/`, `src/data/projects.ts` | Projects (1.12.0): `ProjectsScreen` (the Projects and Notes tabs, "Start a project", project cards), `ProjectView` (one project: what it is, the progression, the next step, tasks, notes, coming up, how it's going, pause / done / delete), `parts.tsx` (the progression steps, the project picker used by notes and tasks); the data, the next step and what's coming up in `src/data/projects.ts`. Today's "From your projects" and "Your tasks": `src/today/ProjectCards.tsx`. Older `#inbox…`/`#notes…` links: `src/shell/legacyLinks.ts`. |
+| `src/projects/`, `src/data/projects.ts` | Projects (1.12.0): `ProjectsScreen` (the Projects, Notes and Connections tabs, "Start a project", project cards), `ProjectView` (one project: what it is, the progression, the next step, tasks, notes, coming up, how it's going, pause / done / delete), `parts.tsx` (the progression steps, the project picker used by notes and tasks); the data, the next step and what's coming up in `src/data/projects.ts`. Today's "From your projects" and "Your tasks": `src/today/ProjectCards.tsx`. Older `#inbox…`/`#notes…` links: `src/shell/legacyLinks.ts`. |
 | `src/tasks/`, `src/data/tasks.ts` | Tasks (under Today since 1.12.0): `TasksScreen` (adding, the groups, lists as chips, search), `TaskEditor`, `ListsView`, `route.ts` (`#today/tasks`, `#today/tasks/<id>`, `#today/tasks/list/<id>`, `#today/tasks/lists`); the data and rules (groups, due today, room on today's plan, the link to the plan) in `src/data/tasks.ts`. Today's "Due today" card: `src/today/DueTodayCard.tsx`. |
+| `src/data/graph.ts`, `src/projects/ConnectionsView.tsx` | Connections, the knowledge graph (milestone 4): which notes and projects connect, the groups that go together and their fixed layout, fitted to a width (`graph.ts`); the screen at `#projects/connections` — the drawing, a dot's details with Keep / Undo, "What goes together" (`ConnectionsView.tsx`). Shared with Your map: `src/components/measure.ts` (drawing at the real width, names measured in the app's font). |
 | `src/data/understand.ts`, `src/shell/autoConnect.ts`, `src/notes/ConnectedCard.tsx` | Understanding notes on the device (1.13.0): the words that count, which project a note clearly belongs to, related notes, Undo / Keep (`understand.ts`); connecting a moment after changes (`autoConnect.ts`); "MyDay connected these" (`ConnectedCard.tsx`). |
 | `src/notes/`, `src/capture/` | Notes, in the Projects section (`NotesScreen`: search, Inbox, collections; `NoteEditor`; `CategoriesView`; `route.ts` — `#projects/notes`, `#projects/notes/<id>`, `#projects/notes/in/<id>`, `#projects/notes/collections`), and Capture (`parse.ts`, `save.ts`, `CaptureSheet.tsx`). The notes data: `src/data/notes.ts`. |
 | `src/health/food/` | The Food screens: `FoodScreen` (picks the screen from the address, e.g. `#health/food/shopping`), `FoodHome`, `RecipeCard`, `SearchBox` (with suggestions), `SearchView`, `RecipeView`, `WantView`, `ShoppingView`, `CookView`, `PrefsView`, `RecipeForm`; `actions.ts` (what each button saves) and `visit.ts` (what's kept in memory for the visit: ideas, search results, suggestions, drafts). |
@@ -323,13 +324,16 @@ The October 2026 refresh uses a quiet, warm workspace with clearer navigation an
 It builds on 1.11.0's dashboard and shared components. The classic MyDay (`../index.html`) keeps its green look;
 both versions still share the font, task timeline and saved data. This refresh needs no data migration.
 
-- **Colours** (`src/styles/tokens.css`): warm ivory (#f6f5f2), white cards and charcoal text, with a clay accent
-  (`primary`, #a84422 light / #ecb38e dark). Dark mode uses a charcoal-green page (#171b19). Green still means done,
-  and category colours retain their meaning. Light remains the default; Match device follows system changes,
-  including the native browser bar. Semantic text pairs are checked for WCAG AA contrast in both themes.
-- **Hierarchy:** solid primary buttons, quiet borders, shallow shadows and generous spacing. Section headings
-  use sentence case. Background glows and the decorative landscape have been removed. Footer tools remain
-  available as small, quiet buttons; form controls and focus states use the same shared tokens throughout.
+- **Colours** (`src/styles/tokens.css`): warm paper (#f7f5ef), white cards and charcoal text, with a flat teal
+  accent (`primary`, #0f766e light / #7ed7c6 dark — teal-700 was the lightest teal whose white text passes AA)
+  and one warm orange reserved for Capture (`accent`, #c2410c light / #f0a069 dark). Dark mode uses a warm
+  charcoal page (#141815). Green still means done, and category colours retain their meaning. Light remains
+  the default; Match device follows system changes, including the native browser bar. Semantic text pairs
+  are checked for WCAG AA contrast in both themes.
+- **Hierarchy:** flat surfaces separated by quiet warm borders instead of shadows (cards 12 px, buttons 8 px),
+  solid primary buttons and generous spacing. Section headings use sentence case. Background glows and the
+  decorative landscape have been removed. Footer tools remain available as small, quiet buttons; form controls
+  and focus states use the same shared tokens throughout.
 - **Navigation:** on phones, a frosted bar floating just above the bottom edge; on wide screens (64rem and up),
   a 208 px neutral sidebar with the MyDay logo linking to Today, followed by each section's icon and name.
   The current section has a distinct surface and an accessible current-page label.
@@ -569,6 +573,19 @@ tasks" on Today). Older `#inbox…` and `#notes…` links are rewritten to where
   device-only `myday.ai.connect`), so the day's AI requests stay free for what you ask yourself. A note AI help saw as
   something to do offers "Add as a task" (in the same project). Evaluated on synthetic notes with GLM-5.3-Flash: no
   wrong links, every note placed right (see `../ai-eval/README.md`).
+- **Connections — the knowledge graph (milestone 4, branch `knowledge-graph`):** a third tab, **Connections**
+  (`#projects/connections`), draws how your notes and projects connect — by itself, from links that already exist:
+  a note in a project (a plain line; dashed when MyDay put it there and you haven't kept it yet) and related notes
+  (dotted: the same word matching as a note's "Related", its 3 closest; two notes in one project aren't joined again).
+  Things that connect form groups, each laid out by a small fixed simulation that always starts from the same place, so
+  the drawing stays put between visits and only changes when your notes do (`src/data/graph.ts`). It's drawn at the
+  screen's real width with names at 13–14 px, placed so they never overlap (shortened if they'd touch; the full name is
+  in the details). Tap a dot — or Tab to it and press Enter — for what it's connected to and why: a note's project
+  (with **Keep** / **Undo** for MyDay's links, as under "MyDay connected these") and related notes; a project's notes
+  and what might belong in it. **What goes together** says the same in words, and notes that connect to nothing yet are
+  counted, not drawn. At most 150 notes are drawn (the most connected). Nothing is saved by looking and nothing is
+  sent anywhere — no saved-data change. Honest limit: it shows shared words, not meaning (that would need an
+  embedding service — a later decision).
 - **Next** (in order): the project workspace for exploring and deciding with AI, the knowledge graph, Study by subject,
   and a weekly review.
 - **Tasks** holds every one-off task in one place, separate from Today's repeating Learning / Admin / Health lists
@@ -805,3 +822,16 @@ returns up to 8 small tasks; you tick the ones to add.
 32. **Release 1.20.2:** groundwork, nothing new to see. Every version keeps an explanation you kept on a revision card
     (`anotherWay`: its text, the model that wrote it, the day) — on your concepts (both versions), Cybersecurity checks
     and Arabic cards — so going back from "Explain it another way" never loses one. No database change.
+33. **Release 1.21.0:** a new look, called Clarity: warm paper instead of white, teal as the one accent, calmer
+    square corners — same app underneath. And the learning garden retires. Today keeps one learning card: the rolling
+    7-day count (nothing ever resets it), now with one quiet line pointing at what's next in your current topic and
+    when you last sat with it. And Study gains your map (milestone 5): each stage is a line, each course a station, lit up to where you stand, with a finish-line flag per stage and a quiet ring on courses whose concepts might benefit from more practice. Then
+    (branch `map-polish`) the unexplored sits in fog — beyond the station after where you stand, the line runs dotted
+    into a soft mist; phones list the stations top to bottom with every name in full, wide screens draw the line at its
+    real width (names at 14 px, shortened only when they'd touch a neighbour, never overlapping the flag); every colour
+    comes from the theme, so dark mode reads properly; the key is drawn with the stations' own shapes; topics are plain
+    links; and "Start 15 minutes" goes straight from where you stand — on the map and on Today's learning card — into a
+    short session on the next task. And Projects gains a third tab, Connections — the knowledge graph (milestone 4):
+    how your notes and projects connect, drawn by itself from links already there (a note in a project, dashed while
+    MyDay's link isn't kept; related notes, dotted), with a dot's connections and why on a tap, Keep / Undo for MyDay's
+    links, and "What goes together" in words. No data change, nothing sent anywhere.

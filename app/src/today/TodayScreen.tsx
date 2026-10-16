@@ -18,7 +18,7 @@ import { GlanceCard } from './GlanceCard';
 import { MorningCard } from './MorningCard';
 import { NudgeCard } from './NudgeCard';
 import { PlanCard } from './PlanCard';
-import { GardenCard, StreakCard } from './ProgressCards';
+import { StreakCard } from './ProgressCards';
 import { ProposalCard, type ProposalActions } from './ProposalCard';
 import { TimerCard, type TimerAction } from './TimerCard';
 import { AppFooter } from '../shell/AppFooter';
@@ -270,7 +270,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
   const studyCard = (!!activeStudy(data.study) || dueIds(data, k).length > 0) && <StudyTodayCard data={data} k={k} />;
 
   // Phones: one column, in this order (as in the current MyDay) — so the timeline comes straight after
-  // the plan. Wide screens: the timeline, count and garden move to a second column on the right.
+  // the plan. Wide screens: the timeline and the learning count move to a second column on the right.
   // `order` only matters on phones; `enter` fades the cards in after moving between screens.
   const slot = (order: string, node: React.ReactNode, id?: string) =>
     node ? <div id={id} className={`min-w-0 ${order} lg:order-none${entering ? ' enter' : ''}`}>{node}</div> : null;
@@ -392,7 +392,6 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
           {view === 'auto' && slot('order-2', <div className="grid grid-cols-2 gap-4 mb-4 [&>.card]:mb-0"><TodayRing data={data} k={k} /><WeekCard data={data} k={k} /></div>, 'slot-week')}
           {view === 'auto' && slot('order-2', <GlanceCard data={data} k={k} proposal={d ? null : proposal} />)}
           {slot('order-8', <StreakCard data={data} justLearned={justLearned} />)}
-          {slot('order-8', <GardenCard data={data} justLearned={justLearned} />)}
         </aside>
       )}
       {view !== 'edit' && (
