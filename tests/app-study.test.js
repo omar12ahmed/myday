@@ -587,5 +587,40 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   const liveS = await screensIn('index.html'), newS = await screensIn(APP);
   for (const k of Object.keys(liveS)) check(`${k}: the same as the current MyDay`, eq(liveS[k], newS[k]), [liveS[k], newS[k]]);
 
+  // ------------------------------------------------------------------
+  console.log('\n[53] Your map (Stations): lines, stations, finish line, revisit rings');
+  await go('today', 2026, 11, 2, 9); await reset(); await go('today', 2026, 11, 2, 9);
+  await editStorage(`s => { s.study = ${JSON.stringify(pr)}; }`);
+  await go('study/map', 2026, 11, 2, 9);
+  check('the map opens with the one-line summary (tasks in, next step, last studied)',
+    flat(await text('#mapLine')) === flat('You\'re 2 of 3 tasks into Cybersecurity — next: HTTP in detail · TryHackMe: Pre-Security path. Studied yesterday.'), [await text('#mapLine')]);
+  check('one line for the stage, with its two courses as stations (focus course is "now", the empty one "ahead")',
+    eq(await ev(`[...document.querySelectorAll('[data-s=map-line]')].map(l => l.dataset.stage)`), ['sgF']) &&
+    eq(await ev(`[...document.querySelectorAll('[data-s=map-st]')].map(a => a.dataset.id + ':' + a.dataset.st)`), ['coP:now', 'coE:ahead']));
+  check('the finish line is still out of reach: "1 task to the flag"',
+    (await ev(`document.querySelector('[data-s=map-term]').dataset.done`)) === '0' && (await text('[data-s=map-term]')).includes('1 task to the flag'));
+  check('a station opens its course', (await ev(`document.querySelector('[data-s=map-st][data-id=coP]').getAttribute('href')`)) === '#study/course/coP');
+  // A wobbly concept linked to a course task puts a "worth a revisit" ring on its station.
+  await editStorage(`s => { s.study.concepts.push({ id: 'cpM', title: 'Shaky one', taskIds: ['tkD'], createdOn: '2026-10-01', kind: 'written', prompt: 'q', answer: 'a', explanation: '', choices: [], correct: null, hint: '', source: '', note: '', review: { reps: 1, interval: 1, lapses: 2, due: '2026-11-01' } });
+    s.study.reviews.push({ id: 'rM1', conceptId: 'cpM', title: 'Shaky one', date: '2026-10-31', at: '2026-10-31T12:00', kind: 'written', outcome: 'wrong', graded: 'self', chosen: null, support: 'own', rating: 'again', gap: 1, due: '2026-11-01' }, { id: 'rM2', conceptId: 'cpM', title: 'Shaky one', date: '2026-11-01', at: '2026-11-01T12:00', kind: 'written', outcome: 'wrong', graded: 'self', chosen: null, support: 'own', rating: 'again', gap: 1, due: '2026-11-02' }); }`);
+  await go('study/map', 2026, 11, 2, 9);
+  check('a concept that might benefit from more practice rings its station and is listed under the map',
+    (await text('[data-s=map-st][data-id=coP]')).includes('worth a revisit') && (await text('#map-prac-h')) === 'Might benefit from more practice (1)' && (await text('#app')).includes('Shaky one'));
+  check('unlinked wobbly concepts stay on Progress, off the map', (await text('#map-prac-h')) === 'Might benefit from more practice (1)');
+  // Finish every task: the flag is reached.
+  await editStorage(`s => { for (const sg of s.study.stages) for (const c of sg.courses) for (const m of c.modules) for (const sc of m.sections) for (const t of sc.tasks) if (!t.done) { t.done = true; t.doneOn = '2026-11-02'; } }`);
+  await go('study/map', 2026, 11, 2, 9);
+  check('all tasks complete: the flag is reached (an empty course doesn\'t block it)',
+    eq(await ev(`[...document.querySelectorAll('[data-s=map-st]')].map(a => a.dataset.st)`), ['done', 'ahead']) && (await ev(`document.querySelector('[data-s=map-term]').dataset.done`)) === '1' && (await text('[data-s=map-term]')).includes('Stage complete'));
+  // Two topics: pills appear, switching changes the line.
+  await editStorage(`s => { s.study.topics = [{ id: 'tpC', title: 'Cybersecurity' }, { id: 'tpA', title: 'Arabic' }];
+    for (const sg of s.study.stages) sg.topicId = 'tpC';
+    s.study.stages.push({ id: 'sgA', title: 'Reading', topicId: 'tpA', courses: [{ id: 'coL', title: 'Letters', url: '', minutes: 20, listId: null, archived: false, modules: [{ id: 'mdL', title: 'Alphabet', sections: [{ id: 'scL', title: 'Part 1', tasks: [{ id: 'tkL1', title: 'First ten letters', minutes: 20, url: '', kind: 'learn', note: '', done: false, doneOn: null }] }] }] }] }); }`);
+  await go('study/map', 2026, 11, 2, 9);
+  check('topic pills appear, the current topic selected', eq(await ev(`[...document.querySelectorAll('[data-s=map-topic]')].map(a => a.dataset.id + (a.getAttribute('aria-selected') === 'true' ? '*' : ''))`), ['tpC*', 'tpA']));
+  await click('[data-s=map-topic][data-id=tpA]'); await sleep(300);
+  check('switching to Arabic shows its line and summary', flat(await text('#mapLine')).includes(flat('0 of 1 tasks into Arabic')) && eq(await ev(`[...document.querySelectorAll('[data-s=map-st]')].map(a => a.dataset.id + ':' + a.dataset.st)`), ['coL:now']), [await text('#mapLine')]);
+  check('the dashboard links to the map', (await go('study', 2026, 11, 2, 9), await sleep(200), (await text('.st-links')).includes('Your map')) && (await exists('.st-links a[href="#study/map"]')));
+
   finish();
 })().catch(e => { console.error('HARNESS ERROR', e); const s = T.summary(); console.log(`${s.pass} passed, ${s.fail} failed before the error`); process.exit(2); });
