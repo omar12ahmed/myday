@@ -213,6 +213,21 @@ pay rules) and its settings card are gone from the screen; the rules behind them
   settings text now says note links appear on concepts and check-ins (tasks have no note field in either app).
 - Export and import are on Today (the current MyDay shows them at the bottom of every section).
 
+### Reading (Study → Reading, 1.24.0)
+
+Study has two tabs, **Courses** (the roadmap home) and **Reading** (`#study/reading`): the books you're reading — a
+title is all a book needs; the author and total pages can come later (Edit) — and where you are in each: − / + a page
+at a time, or type the page you're on. With a total, a slim bar shows how far you are (never a percentage: where you
+are is the page). Notes per book, each with an optional page ("p. 42"); removing one asks first. Reaching the last
+page — or "Mark as finished" — shelves the book under **Finished** with the day; "Read again" puts it back. Edit
+changes the title, author or total pages (never below the page you're on or a page a note is about, so nothing loses
+its place) and can remove a book added by mistake (asked first). Kept small on purpose: no shelves, ratings or wish
+lists, nothing on Today, and reading never counts towards the learning streak. Saved as a top-level `reading` section
+(`books`: id, title, author, pages or none, page, notes {id, page or none, text, addedOn}, addedOn, finishedOn) — new
+app only; the classic MyDay keeps it unread. Synced as one record per book (`book`, deletable; migration
+`../supabase/migrations/20261017120000_sync_books.sql`). Started by another tool (Kimi), finished and released after
+review.
+
 ### Daily exercises (Health → Workout, 1.23.0)
 
 Everyday movements with a daily target and a set size — "150 push-ups, in sets of 25". Add them in Health → Workout
@@ -330,6 +345,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/health/food/` | The Food screens: `FoodScreen` (picks the screen from the address, e.g. `#health/food/shopping`), `FoodHome`, `RecipeCard`, `SearchBox` (with suggestions), `SearchView`, `RecipeView`, `WantView`, `ShoppingView`, `CookView`, `PrefsView`, `RecipeForm`; `actions.ts` (what each button saves) and `visit.ts` (what's kept in memory for the visit: ideas, search results, suggestions, drafts). |
 | `src/health/` | The Health screens: `HealthScreen` (the Workout and Food tabs; picks the screen from the address, e.g. `#health/workout/schedule`), `WorkoutHome`, `TemplateEditor`, `SessionView` (a workout in progress, and correcting a logged one), `SetFields` (the number boxes for a set), `HistoryViews` (history, exercises, exercise history), `Chart`, `ScheduleView` and `HealthTodayCard`; `actions.ts` (what each button saves). |
 | `src/data/health/daily.ts`, `src/health/DailyManage.tsx`, `src/health/DailyTodayCard.tsx`, `src/health/dailyActions.ts` | Daily exercises (1.23.0): checking the saved data, what's left today and this week (`daily.ts`); managing them in Health → Workout (`DailyManage`), the countdown on Today (`DailyTodayCard`) and what each button saves (`dailyActions.ts`). |
+| `src/data/reading.ts`, `src/study/ReadingView.tsx`, `src/study/readingActions.ts`, `src/study/StudyTabs.tsx` | Study → Reading (1.24.0): checking saved books (`reading.ts`); the Reading tab — books, the page you're on, notes, Edit, Finished (`ReadingView`); what each button saves (`readingActions.ts`); Study's Courses / Reading tabs (`StudyTabs`). |
 | `src/study/` | The Study screens: `StudyScreen` (picks the screen from the address, e.g. `#study/roadmap`), `Dashboard`, `Roadmap`, `CourseDetails`, `TaskDetails`, `SessionView`, `CheckinView`, `RevisionView`, `ConceptsView`, `ConceptView`, `ProgressView`, `StudySettings` and `StudyTodayCard`; `actions.ts` (what each button saves), `round.ts` (the revision round, kept in memory), `parts.tsx` (small shared pieces). |
 | `src/commitments/` | Work shifts and appointments: the form and list used by both Today and Calendar. |
 | `src/shell/` | Navigation, the top bar's parts (`TopBar`: the Focus mode switch and your account; `focusMode.ts`, the device-only `myday.focus`), the theme button, the shared footer (`AppFooter`), the "couldn't be read" notice (`LoadIssue`) and the screens for unreadable or older data. |
@@ -871,3 +887,7 @@ returns up to 8 small tasks; you tick the ones to add.
     days already logged stay as they were. Saved as `health.daily` (the current MyDay keeps it unread, like Notes),
     synced as one `daily:moves` record — database migration `20261016120000_sync_daily.sql` applied first (17 Oct 2026;
     older versions keep working with it). Undo, Archive and the − / + steppers are full-size tap targets on phones.
+36. **Release 1.24.0:** Study → Reading: the books you're reading, the page you're on (a page at a time, or typed),
+    notes per book with their page, Edit for the details that come later, and a Finished shelf. No percentages, nothing
+    on Today, never in the learning streak. Synced one record per book — database migration
+    `20261017120000_sync_books.sql` applied first (one more kind, `book`); older versions keep working with it.

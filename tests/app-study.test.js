@@ -696,7 +696,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   await click('[data-action=read-add]'); await sleep(150);
   await setVal('#bkTitle', 'Deep Work'); await setVal('#bkAuthor', 'Cal Newport'); await setVal('#bkPages', '296');
   await click('[data-action=read-add-save]'); await sleep(200);
-  check('adding a book lists it with its author and page count, and saves it', (await text('.book-row')).includes('Deep Work') && (await text('.book-row')).includes('Cal Newport') && (await text('.book-row')).includes('0 of 296') && (await D()).reading.books.length === 1);
+  check('adding a book lists it with its author and page count, and saves it', (await text('.book-row')).includes('Deep Work') && (await text('.book-row')).includes('Cal Newport') && (await text('.book-row')).includes('of 296') && (await ev(`document.querySelector('[data-f=read-page-at]').value`)) === '0' && (await D()).reading.books.length === 1);
   await click('[data-action=read-add]'); await sleep(150);
   await setVal('#bkTitle', 'deep work'); await click('[data-action=read-add-save]'); await sleep(200);
   check('a duplicate title is refused with a message (any case)', (await text('[role=alert]')).includes('already on your reading list') && (await D()).reading.books.length === 1);
@@ -708,9 +708,31 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   const bk1 = (await D()).reading.books[0].id;
   await click(`[data-action=read-page][data-id="${bk1}"][data-dir="1"]`); await sleep(150);
   await click(`[data-action=read-page][data-id="${bk1}"][data-dir="1"]`); await sleep(200);
-  check('the page stepper counts up, one page at a time', (await D()).reading.books[0].page === 2 && (await text('.book-row')).includes('2 of 296') && (await text('.book-row')).includes('1%'));
+  const pageAt = id => ev(`document.querySelector('[data-f=read-page-at][data-id="${id}"]').value`);
+  check('the page stepper counts up, one page at a time — the page, never a percentage', (await D()).reading.books[0].page === 2 && (await pageAt(bk1)) === '2' && (await text('.book-row')).includes('of 296') && !(await text('#app')).includes('%'));
   await click(`[data-action=read-page][data-id="${bk1}"][data-dir="-1"]`); await sleep(200);
   check('…and back down', (await D()).reading.books[0].page === 1);
+  // Typing the page you're on (saved when you leave the box), instead of 83 taps.
+  const typePage = (id, v) => ev(`(() => { const el = document.querySelector('[data-f=read-page-at][data-id="${id}"]'); el.focus();
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(el, ${JSON.stringify('${v}')}); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new FocusEvent('focusout', { bubbles: true })); })()`.replace('${v}', v));
+  await typePage(bk1, '84'); await sleep(200);
+  check('typing the page you\'re on jumps straight there', (await D()).reading.books[0].page === 84 && (await pageAt(bk1)) === '84');
+  await typePage(bk1, 'abc'); await sleep(200);
+  check('…something that isn\'t a page is refused gently, and the page stays', (await D()).reading.books[0].page === 84 && (await text('.book-row [role=alert]')).includes('whole number') && (await pageAt(bk1)) === '84');
+  await editStorage(`s => { s.reading.books[0].page = 1; }`); await go('study/reading');
+  // Details can be added later, or fixed.
+  const bk2e = (await D()).reading.books[1].id;
+  await click(`[data-action=read-edit][data-id="${bk2e}"]`); await sleep(150);
+  await setVal(`#bkA-${bk2e}`, 'James Clear'); await setVal(`#bkP-${bk2e}`, '320');
+  await click('[data-action=read-edit-save]'); await sleep(200);
+  check('Edit adds what came later (the author and total pages)', (await D()).reading.books[1].author === 'James Clear' && (await D()).reading.books[1].pages === 320 && !(await exists('[data-s=read-edit]')));
+  await editStorage(`s => { s.reading.books[1].page = 150; }`); await go('study/reading');
+  await click(`[data-action=read-edit][data-id="${bk2e}"]`); await sleep(150);
+  await setVal(`#bkP-${bk2e}`, '100'); await click('[data-action=read-edit-save]'); await sleep(200);
+  check('…but never a total below the page you\'re on (nothing loses its place)', (await D()).reading.books[1].pages === 320 && (await text('[data-s=read-edit] [role=alert]')).includes('at least 150 pages'));
+  await setVal(`#bkP-${bk2e}`, ''); await click('[data-action=read-edit-save]'); await sleep(200);
+  check('…and the total can be taken away again (no bar, just the page)', (await D()).reading.books[1].pages === null && (await D()).reading.books[1].page === 150);
+  await editStorage(`s => { s.reading.books[1].page = 0; }`); await go('study/reading');
   await click(`[data-action=read-notes][data-id="${bk1}"]`); await sleep(150);
   await setVal('[data-f=read-note-page]', '42'); await setVal('[data-f=read-note-text]', 'Depth compounds.');
   await click(`[data-action=read-note-add][data-id="${bk1}"]`); await sleep(200);
@@ -718,7 +740,9 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   await setVal('[data-f=read-note-text]', 'Second note, no page.');
   await click(`[data-action=read-note-add][data-id="${bk1}"]`); await sleep(200);
   check('a note without a page is fine', (await D()).reading.books[0].notes.length === 2 && (await D()).reading.books[0].notes[1].page === null);
-  await click(`[data-action=read-note-del][data-book="${bk1}"]`); await sleep(200);
+  await click(`[data-action=read-note-del][data-book="${bk1}"]`); await answer(false);
+  check('removing a note asks first (Cancel keeps it)', (await D()).reading.books[0].notes.length === 2);
+  await click(`[data-action=read-note-del][data-book="${bk1}"]`); await answer(true);
   check('a note can be removed', (await D()).reading.books[0].notes.length === 1 && (await D()).reading.books[0].notes[0].text === 'Second note, no page.');
   await editStorage(`s => { s.reading.books[0].page = 295; }`);
   await go('study/reading');
@@ -731,6 +755,18 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   check('a book with no page count is finished with "Mark as finished"', (await D()).reading.books[1].finishedOn === '2026-11-02');
   await click(`[data-action=read-remove][data-id="${bk2}"]`); await answer(true);
   check('Remove (asked first) takes a finished book away, notes and all', (await D()).reading.books.length === 1);
+  // A book added by mistake can be removed while you're reading it (asked first).
+  await click('[data-action=read-add]'); await sleep(150); await setVal('#bkTitle', 'Typo book'); await click('[data-action=read-add-save]'); await sleep(200);
+  const typo = (await D()).reading.books.find(b => b.title === 'Typo book').id;
+  await click(`[data-action=read-edit][data-id="${typo}"]`); await sleep(150); await click(`[data-s=read-edit] [data-action=read-remove]`); await answer(true);
+  check('a book you\'re reading can be removed from Edit (asked first)', !(await D()).reading.books.some(b => b.title === 'Typo book') && (await D()).reading.books.length === 1);
+  // Phones: every Reading button is easy to tap, nothing scrolls sideways.
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await go('study/reading');
+  await click(`[data-action=read-notes][data-id="${bk1}"]`); await sleep(150);
+  const smallR = await ev(`[...document.querySelectorAll('#app button, .study-tabs a')].filter(b => b.getBoundingClientRect().height < 44).map(b => b.textContent.trim() || b.getAttribute('aria-label'))`);
+  check('phone: every Reading button is at least 44 px tall, no sideways scrolling', !smallR.length && !(await ev('document.documentElement.scrollWidth > innerWidth')), smallR);
+  await T.send('Emulation.clearDeviceMetricsOverride');
   await editStorage(`s => { s.reading = { books: [{ id: 'ok', title: 'Plankton', author: '', pages: 100, page: 140, notes: [{ id: 'n1', page: 500, text: 'Beyond the book' }, { id: 'n2', page: null, text: '' }, 'junk'], addedOn: '2026-11-01', finishedOn: null }, { id: 'noT', author: 'No title' }, 'nope'], futureReadingField: { kept: true } }; }`);
   await go('study/reading');
   await click('#themeBtn'); await sleep(200); // a save, so the tidied data is what's read back

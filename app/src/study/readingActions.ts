@@ -40,6 +40,42 @@ export function stepPage(id: string, dir: 1 | -1) {
   if (finished) toast(`Finished “${finished}” — nice. It's shelved below.`);
 }
 
+// The page you're on, typed in (0 to the last page). Reaching the last page finishes the book, as the stepper does.
+// Returns a message if it can't.
+export function setPage(id: string, value: string): string | null {
+  const b = bookById(R(), id);
+  if (!b || b.finishedOn) return null;
+  const p = intIn(value, 0, 50000, null);
+  if (value.trim() === '' || p === null) return 'The page should be a whole number.';
+  const next = Math.min(p, b.pages ?? 50000);
+  if (next === b.page) return null;
+  let finished: string | null = null;
+  withBook(id, bb => { bb.page = next; if (bb.pages && bb.page >= bb.pages) { bb.finishedOn = todayKey(); finished = bb.title; } });
+  if (finished) toast(`Finished “${finished}” — nice. It's shelved below.`);
+  return null;
+}
+
+// Changes a book's title, author or total pages (adding them later, or fixing a typo). The total can't go below the
+// page you're on or a page a note is about, so nothing you wrote loses its place. Returns a message if it can't.
+export function editBook(id: string, title: string, author: string, pages: string): string | null {
+  const b = bookById(R(), id);
+  if (!b) return 'That book is no longer here.';
+  const t = title.trim();
+  if (!t) return 'Please give the book a title.';
+  if (R().books.some(x => x.id !== id && x.title.toLowerCase() === t.toLowerCase())) return 'That book is already on your reading list.';
+  const p = intIn(pages, 2, 50000, null);
+  if (pages.trim() && p === null) return 'Total pages should be a whole number (or leave it empty).';
+  const lowest = Math.max(b.page, ...b.notes.map(n => n.page ?? 0));
+  if (p !== null && p < lowest) return `This book needs at least ${lowest} pages — you're on page ${b.page}${lowest > b.page ? ', and a note is about page ' + lowest : ''}.`;
+  if (!withBook(id, bb => {
+    const a = author.trim().slice(0, 120), tt = t.slice(0, 120);
+    if (bb.title === tt && bb.author === a && bb.pages === p) return false;
+    bb.title = tt; bb.author = a; bb.pages = p;
+  })) return null;
+  toast('Saved.');
+  return null;
+}
+
 // Marks a book finished yourself (for a book with no total pages, or one you stopped early — that's fine).
 export function finishBook(id: string) {
   let title = '';
@@ -53,7 +89,7 @@ export function reopenBook(id: string) {
   toast('Back on your reading list.');
 }
 
-// Removes a book and its notes (the screen asks first).
+// Removes a book and its notes — one you're reading (a mis-add) or a finished one (the screen asks first).
 export function removeBook(id: string) {
   let title = '';
   if (!withReading(r => { const b = bookById(r, id); if (!b) return false; title = b.title; r.books = r.books.filter(x => x.id !== id); })) return;

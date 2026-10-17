@@ -1,4 +1,4 @@
--- Books in Study → Reading (1.23.0): one record per book (`book`), with where you are and your notes on it.
+-- Books in Study → Reading (1.24.0): one record per book (`book`), with where you are and your notes on it.
 -- A book can be removed (a mis-add), so it's a deletable kind. Only the two lists of allowed kinds change:
 -- existing rows, the RPC version checks, grants and per-user RLS are unchanged.
 alter table public.sync_records drop constraint sync_records_known_kind;

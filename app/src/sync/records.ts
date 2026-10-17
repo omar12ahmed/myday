@@ -246,7 +246,7 @@ const MANY: Many[] = [
     items: d => d.projects.items, put: (dr, id, c) => putItem(dr.projects.items, id, c),
     clean: (id, raw) => same(id, via({ projects: { items: [raw] } }).projects.items[0]),
     summary: c => { const p = c as unknown as Project; return `${p.title} · ${STAGES.find(x => x.id === p.stage)?.label ?? p.stage}${p.status === 'active' ? '' : ` · ${STATUS_LABEL[p.status].toLowerCase()}`}`; } },
-  // Books in Study → Reading (1.23.0; the database accepts them from migration 20261017120000_sync_books.sql).
+  // Books in Study → Reading (1.24.0; the database accepts them from migration 20261017120000_sync_books.sql).
   { kind: 'book', label: 'Book (Reading)',
     items: d => d.reading.books, put: (dr, id, c) => putItem(dr.reading.books, id, c, (a, b) => a.addedOn.localeCompare(b.addedOn) || a.id.localeCompare(b.id)),
     clean: (id, raw) => same(id, via({ reading: { books: [raw] } }).reading.books[0]),

@@ -134,7 +134,7 @@ export interface MyDayData {
   // unread). Notes and tasks say which project they belong to (`projectId`); appointments are listed on the project.
   projects: ProjectsData;
 
-  // Study → Reading: books you're reading, where you are, and your notes on each (added in 1.23.0; the classic
+  // Study → Reading: books you're reading, where you are, and your notes on each (added in 1.24.0; the classic
   // MyDay keeps it unread). Reading never counts towards the learning streak.
   reading: ReadingData;
 
@@ -288,7 +288,7 @@ export interface StudyData {
 
 // ---------- Study → Reading ----------
 // A book you're reading: where you are (page), and your notes on it. Total pages are optional — without
-// them there's just the page number, no bar and no percentage. Stepping to the last page finishes the book.
+// them there's just the page number and no bar (never a percentage). Reaching the last page finishes the book.
 export interface BookNote {
   id: string;
   page: number | null;   // the page the note is about, if given

@@ -264,7 +264,7 @@ export function normalize(raw: unknown, report = { dropped: 0 }): MyDayData {
   s.tasks = normalizeTasks(raw.tasks, report);       // added by the new app in 1.5.0; absent before → no tasks yet
   s.patterns = normalizePatterns(raw.patterns, report); // added by the new app in 1.6.0; absent before → nothing chosen yet
   s.projects = normalizeProjects(raw.projects, report); // added by the new app in 1.12.0; absent before → no projects yet
-  s.reading = normalizeReading(raw.reading, report);   // added by the new app in 1.23.0; absent before → no books yet
+  s.reading = normalizeReading(raw.reading, report);   // added by the new app in 1.24.0; absent before → no books yet
   if (isObj(raw.saves)) {
     s.saves = { seq: intIn(raw.saves.seq, 0, 1e12, 0), log: listOf(raw.saves.log).filter(x => typeof x === 'string').slice(-SAVE_LOG) };
   }
