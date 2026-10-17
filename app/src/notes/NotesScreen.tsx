@@ -1,4 +1,4 @@
-import { Pin, Plus } from 'lucide-react';
+import { Lock, Pin, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
@@ -41,6 +41,7 @@ function NoteRow({ d, n, where, filing }: { d: NotesData; n: NoteT; where: boole
         <span className="flex items-center gap-1.5 font-semibold leading-snug">
           {n.pinned && <Pin size={15} aria-label="Pinned" className="text-primary flex-none" />}
           <span className="min-w-0 break-words">{noteName(n)}</span>
+          {n.private && <Lock size={14} aria-label="Private" className="text-fg-3 flex-none" data-s="note-row-private" />}
         </span>
         {n.title.trim() && n.text.trim() && <span className="block text-[15px] text-fg-2 mt-0.5 line-clamp-2 break-words">{n.text.trim()}</span>}
         <span className="block text-sm text-fg-3 mt-1">{where ? `${categoryName(d, n.categoryId)} · ` : ''}{n.updatedAt.slice(0, 10) === today ? `today ${n.updatedAt.slice(11)}` : shortDate(n.updatedAt.slice(0, 10))}</span>

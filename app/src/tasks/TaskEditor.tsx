@@ -9,7 +9,7 @@ import { CAT_LABEL } from '../data/plan';
 import { linkTask, projectById } from '../data/projects';
 import { ProjectPicker } from '../projects/parts';
 import { update } from '../data/storage';
-import { addToTodaysPlan, editTask, isDone, isStuck, moveToTomorrow, onTodaysPlan, planRoom, removeTask, setTaskDone, TASK_LIMITS } from '../data/tasks';
+import { addToTodaysPlan, editTask, isDone, isStuck, leaveTodaysPlanIfLater, moveToTomorrow, onTodaysPlan, planRoom, removeTask, setTaskDone, TASK_LIMITS } from '../data/tasks';
 import { toast } from '../data/toast';
 import type { Category, MyDayData } from '../data/types';
 import { StuckCard } from './StuckCard';
@@ -21,7 +21,15 @@ export function TaskEditor({ data, id }: { data: MyDayData; id: string }) {
   const [ask, setAsk] = useState(false);
   const t = data.tasks.items.find(x => x.id === id);
   if (!t) return <><BackLink to="today/tasks" label="Tasks" /><Card><h2>This task isn't here</h2><Note className="m-0">It may have been deleted, here or in another tab.</Note></Card></>;
-  const save = (patch: Parameters<typeof editTask>[2]) => { if (update(d => (editTask(d.tasks, id, patch) ? undefined : false))) toast('Saved.'); };
+  // A new, later date takes it off today's plan too (data/tasks.ts), and says so.
+  const save = (patch: Parameters<typeof editTask>[2]) => {
+    let off = false;
+    if (update(d => { if (!editTask(d.tasks, id, patch)) return false; off = leaveTodaysPlanIfLater(d, id); })) toast(off ? 'Saved — and taken off today\'s plan.' : 'Saved.');
+  };
+  const tomorrow = () => {
+    let off = false;
+    if (update(d => { if (!moveToTomorrow(d.tasks, id)) return false; off = leaveTodaysPlanIfLater(d, id); })) toast(off ? 'Moved to tomorrow, and off today\'s plan.' : 'Moved to tomorrow.');
+  };
   const done = isDone(data, t) || !!t.letGoOn, planned = onTodaysPlan(data, t), room = planRoom(data), stuck = isStuck(data, t), project = projectById(data, t.projectId);
   async function remove() {
     if (!(await confirm({ title: `Delete “${t!.title}”?`, body: planned ? 'It stays on today\'s plan; only this task goes.' : undefined, confirmLabel: 'Delete', cancelLabel: 'Keep it' }))) return;
@@ -59,12 +67,12 @@ export function TaskEditor({ data, id }: { data: MyDayData; id: string }) {
         <div className="flex flex-wrap gap-2.5 mt-4">
           <Button inline variant={done ? 'selected' : 'primary'} aria-pressed={done} data-action="task-toggle" onClick={() => { const v = !done; if (update(d => (setTaskDone(d, id, v) ? undefined : false))) toast(v ? 'Done — nice.' : t.letGoOn ? 'Back on your list.' : 'Not done after all.'); }}>{t.letGoOn ? 'Let go — bring it back' : done ? 'Done ✓' : 'Mark done'}</Button>
           {!done && !planned && <Button inline data-action="task-plan" disabled={!room.built || room.room <= 0} onClick={plan}>Add to today's plan</Button>}
-          {!done && <Button inline variant="ghost" data-action="task-tomorrow" onClick={() => { if (update(d => (moveToTomorrow(d.tasks, id) ? undefined : false))) toast('Moved to tomorrow.'); }}>Tomorrow</Button>}
+          {!done && <Button inline variant="ghost" data-action="task-tomorrow" onClick={tomorrow}>Tomorrow</Button>}
           {!done && !stuck && <Button inline variant="ghost" aria-expanded={ask} data-action="task-stuck" onClick={() => setAsk(!ask)}>Something in the way?</Button>}
           <Button inline variant="ghost" data-action="task-delete" onClick={remove}><Trash2 size={18} aria-hidden="true" /> Delete</Button>
         </div>
         {!done && !planned && (!room.built || room.room <= 0) && <p className="text-[15px] text-fg-2 mb-0 mt-2" data-s="plan-note">{!room.built ? 'To add it to today\'s plan, build your day on Today first.' : room.rest ? 'Today is a rest day — "Tomorrow" moves it on.' : `Today's plan is full for your energy (${room.limit} task${room.limit === 1 ? '' : 's'}) — "Tomorrow" moves it on.`}</p>}
-        {planned && !done && <Note className="mb-0 mt-2">On today's plan — ticking it off there ticks it off here too.</Note>}
+        {planned && !done && <Note className="mb-0 mt-2">On today's plan — ticking it off there ticks it off here too. Moving it to a later day takes it off today's plan.</Note>}
       </Card>
       {ask && !done && !stuck && <StuckCard data={data} t={t} stuck={false} />}
     </>

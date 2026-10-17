@@ -429,6 +429,9 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   let cw = notesWorld(), cx = K.connectContext(cw);
   check('what\'s sent: only notes MyDay can\'t place — not private ones, ones in a project, blank ones, ones the device places itself, or ones already looked at as they are',
     eq(cx.ctx.notes.map(n => n.id).sort(), ['nA', 'nW']), cx.ctx.notes.map(n => n.id));
+  const quiet = notesWorld(); quiet.notes.items.find(n => n.id === 'nW').updatedAt = `${D}T08:57`; quiet.notes.items.find(n => n.id === 'nA').updatedAt = `${D}T08:55`;
+  check('never the note you have open, nor one whose words changed in the last 5 minutes (time to make it private first)',
+    eq(K.connectContext(cw, 'nA').ctx.notes.map(n => n.id), ['nW']) && eq(K.connectContext(quiet).ctx.notes.map(n => n.id), ['nA']), [K.connectContext(cw, 'nA')?.ctx.notes.map(n => n.id), K.connectContext(quiet)?.ctx.notes.map(n => n.id)]);
   check('…with only open projects (not done ones), each just its id, name and summary; nothing else', eq(cx.ctx.projects.map(p => p.id), ['pjPod']) && eq(Object.keys(cx.ctx.projects[0]).sort(), ['id', 'summary', 'title'])
     && eq(Object.keys(cx.ctx).sort(), ['action', 'notes', 'projects', 'version']) && eq(Object.keys(cx.ctx.notes[0]).sort(), ['id', 'text', 'title']));
   check('…and a fingerprint of each sent note, to know if it changes', cx.seen.nA === K.fingerprintNote(cw.notes.items.find(n => n.id === 'nA')) && /^[0-9a-f]{8}$/.test(cx.seen.nA));
@@ -871,6 +874,20 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const untyped = K.readAsk(JSON.stringify({ kind: 'steps', message: 'Steps.', items: [{ title: 'List must-haves', minutes: 5 }, { title: 'Read the intro', section: 'Basics' }], action: null }));
     check('steps with no "type" are still read: tasks (study tasks when they say where in a course)', untyped.items.map(i => i.type).join() === 'task,study-task');
     check('…but an "add" item with no type is not guessed', K.readAsk(JSON.stringify({ kind: 'add', message: 'x', items: [{ title: 'Something' }], action: null })).items.length === 0);
+    // A task on today's plan, moved to a later day: it comes off the plan, and Undo puts that one task back.
+    const sp = K.freshState();
+    sp.tasks.items = [TK('tkP', 'Post the form', { due: D, plannedOn: D, planUid: 'pP' })];
+    sp.days[D] = { energy: 4, rest: false, builtAt: D + 'T08:00', checkedIn: false, tasks: [task('pA', 'Laundry', 'admin', 15), task('pP', 'Post the form', 'admin', 15), task('pC', 'Gym', 'health', 30)] };
+    localStorage.clear(); localStorage.setItem('myday.data.v4', JSON.stringify(sp)); K.boot();
+    let wp = K.getSnapshot().data;
+    c = K.checkAskReply(C([ch('task', 'tkP', { date: plus(2) })]), wp, K.askSlice(wp, '#today', D), D, 'move the form to Monday');
+    check('a task on today\'s plan moved to a later day: the card says it comes off today\'s plan', c.kind === 'change' && c.changes[0].lines.some(l => l.field === 'Today’s plan' && l.after === 'taken off'), c?.changes?.[0]?.lines);
+    const up = K.applyAskChanges(c.changes);
+    wp = K.getSnapshot().data;
+    check('…applied: off the plan (the others untouched), the link cleared', eq(wp.days[D].tasks.map(t => t.uid), ['pA', 'pC']) && wp.tasks.items[0].plannedOn === null && wp.tasks.items[0].due === plus(2));
+    K.update(dd => { dd.days[D].tasks[0].done = true; }); // something ticked meanwhile
+    check('…Undo puts that one task back in its place, keeps what was ticked since, and relinks it', K.undoAskChanges(up) && eq(K.getSnapshot().data.days[D].tasks.map(t => t.uid), ['pA', 'pP', 'pC'])
+      && K.getSnapshot().data.days[D].tasks[0].done && K.getSnapshot().data.tasks.items[0].planUid === 'pP' && K.getSnapshot().data.tasks.items[0].due === D);
     check('a reply with a target the server doesn\'t know is dropped by its reader', K.readAsk(C([ch('project', 'pjC', { title: 'x' }), ch('task', '', { title: 'x' })]))?.items.length === 0);
   }
 

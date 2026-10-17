@@ -4,6 +4,7 @@
 // note is linked only if it's still unplaced and unchanged since it was sent — listed under "MyDay connected these"
 // with Undo, like the device's own links. Nothing you wrote is changed.
 import { CONNECT_LIMITS, NOTE_KINDS, type ConnectContext, type NoteKind } from '../../../supabase/functions/_shared/ai/connect.ts';
+import { localStamp } from '../data/dates';
 import { isBlank } from '../data/notes';
 import type { MyDayData, Note } from '../data/types';
 import { projectMatches } from '../data/understand';
@@ -18,20 +19,24 @@ export function fingerprintNote(n: Pick<Note, 'title' | 'text'>): string {
 
 // The notes AI help may look at, newest first: not private, not in a project, with words in them, not already looked
 // at as they are now, and not ones MyDay places by itself (those are linked on the device, with nothing sent).
-export function notesForAi(data: MyDayData): Note[] {
+// Never the note you have open, and never one whose words changed in the last few minutes — so there's always time
+// to switch a new note to private before AI help could look at it.
+export const QUIET_MINUTES = 5;
+export function notesForAi(data: MyDayData, open: string | null = null, now = new Date()): Note[] {
+  const settled = localStamp(new Date(now.getTime() - QUIET_MINUTES * 60000));
   return data.notes.items
-    .filter(n => !n.private && !n.projectId && !isBlank(n) && n.aiSeen !== fingerprintNote(n) && !projectMatches(data, n)[0]?.sure)
+    .filter(n => !n.private && !n.projectId && !isBlank(n) && n.id !== open && n.updatedAt <= settled && n.aiSeen !== fingerprintNote(n) && !projectMatches(data, n)[0]?.sure)
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
 const bytes = (s: string) => new TextEncoder().encode(s).length;
 // The request: up to 8 of those notes (each cut to 600 characters) and up to 20 open projects (newest first), fewer
 // notes if it would be over the size limit. Null when there's nothing to ask (no such notes, or no open projects).
-export function connectContext(data: MyDayData): { ctx: ConnectContext; seen: Record<string, string> } | null {
+export function connectContext(data: MyDayData, open: string | null = null, now = new Date()): { ctx: ConnectContext; seen: Record<string, string> } | null {
   const L = CONNECT_LIMITS;
   const projects = data.projects.items.filter(p => p.status !== 'done').sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, L.projects)
     .map(p => ({ id: p.id, title: p.title.slice(0, L.projectTitleChars), summary: p.summary.slice(0, L.projectSummaryChars) }));
-  const picked = notesForAi(data).slice(0, L.notes);
+  const picked = notesForAi(data, open, now).slice(0, L.notes);
   if (!picked.length || !projects.length) return null;
   let notes = picked.map(n => ({ id: n.id, title: n.title.slice(0, L.noteTitleChars), text: n.text.slice(0, L.noteChars) }));
   const ctx = (): ConnectContext => ({ version: 1, action: 'connect', notes, projects });

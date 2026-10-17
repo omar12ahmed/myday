@@ -4,7 +4,7 @@ import type { MyDayData } from '../data/types';
 import { connect, connections } from '../data/understand';
 
 // The note you have open, if any (#projects/notes/<id>): it's left alone until you've left it.
-function openNote(hash: string): string | null {
+export function openNote(hash: string): string | null {
   const p = hash.replace('#', '').split('/');
   return p[0] === 'projects' && p[1] === 'notes' && p[2] && p[2] !== 'in' && p[2] !== 'collections' ? decodeURIComponent(p[2]) : null;
 }

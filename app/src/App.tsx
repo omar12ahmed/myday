@@ -156,7 +156,7 @@ function Shell() {
   // Notes that clearly belong to a project are connected to it by themselves (with Undo): see shell/autoConnect.ts.
   useAutoConnect(data, status.kind === 'ok' && !gate && !immersive, hash);
   // …and, once you've switched it on, AI help places the ones the device can't (shell/aiConnect.ts).
-  useAiConnect(data, status.kind === 'ok' && !gate && !immersive);
+  useAiConnect(data, status.kind === 'ok' && !gate && !immersive, hash);
   let content;
   if (status.kind === 'damaged') {
     content = <DamagedView reason={status.reason} onImport={() => fileInput.current?.click()} onStartFresh={startFresh}

@@ -12,8 +12,8 @@ import { stIndex } from '../data/study/roadmap';
 import { ROUND_SIZE } from '../data/study/common';
 import { dueIds, type Scope } from '../data/study/queue';
 import { updateSaved } from '../data/storage';
-import { addTask, editTask } from '../data/tasks';
-import type { Category, Commitment, DateKey, MyDayData, Note, Project, StudyModule, StudySection, TaskItem } from '../data/types';
+import { addTask, editTask, inQueue, leaveTodaysPlanIfLater, onTodaysPlan } from '../data/tasks';
+import type { Category, Commitment, DateKey, MyDayData, Note, Project, StudyModule, StudySection, Task, TaskItem } from '../data/types';
 import { uid } from '../data/util';
 import type { AskSlice } from './askContext';
 import { sameTask } from './mind';
@@ -180,7 +180,11 @@ function checkChanges(items: AskItem[], data: MyDayData, slice: AskSlice, k: Dat
       const t = okTasks.has(id) ? data.tasks.items.find(y => y.id === id && !y.done) : undefined;
       if (!t) { changed.push('Left out a change to a task that isn’t on this page (or is done).'); continue; }
       if (title && title !== t.title && wants('title', t.title, 'title')) { patch.title = title; lines.push({ field: 'Title', before: t.title, after: title }); }
-      if (newDate && newDate !== t.due) { patch.date = newDate; patch.time = it.time ?? t.time ?? null; lines.push({ field: 'Day', before: pretty(t.due) + (t.time ? `, ${t.time}` : ''), after: pretty(newDate) + (patch.time ? `, ${patch.time}` : '') }); }
+      if (newDate && newDate !== t.due) {
+        patch.date = newDate; patch.time = it.time ?? t.time ?? null;
+        lines.push({ field: 'Day', before: pretty(t.due) + (t.time ? `, ${t.time}` : ''), after: pretty(newDate) + (patch.time ? `, ${patch.time}` : '') });
+        if (newDate > k && onTodaysPlan(data, t, k) && !inQueue(data, t)) lines.push({ field: 'Today’s plan', before: 'on it', after: 'taken off' });
+      }
       else if (!newDate && it.time && t.due && it.time !== t.time) { patch.time = it.time; lines.push({ field: 'Time', before: t.time ?? 'any time', after: it.time }); }
       if (it.minutes && Math.min(600, Math.max(5, it.minutes)) !== t.minutes && wants('minutes', t.title, 'length')) { patch.minutes = Math.min(600, Math.max(5, it.minutes)); lines.push({ field: 'Length', before: `${t.minutes} min`, after: `${patch.minutes} min` }); }
       if (it.category && it.category !== t.category && wants('category', t.title, 'list')) { patch.category = it.category; lines.push({ field: 'List', before: CAT_LABEL[t.category], after: CAT_LABEL[it.category] }); }
@@ -209,9 +213,9 @@ function checkChanges(items: AskItem[], data: MyDayData, slice: AskSlice, k: Dat
 }
 
 // Applies the ticked changes in one save. Undo puts back exact copies of everything it touched.
-export interface AskChangeUndo { tasks: TaskItem[]; notes: Note[]; commitments: Commitment[]; projects: Project[] }
+export interface AskChangeUndo { tasks: TaskItem[]; notes: Note[]; commitments: Commitment[]; projects: Project[]; offPlan: { day: DateKey; task: Task; at: number }[] }
 export function applyAskChanges(changes: AskChange[]): AskChangeUndo | null {
-  const u: AskChangeUndo = { tasks: [], notes: [], commitments: [], projects: [] };
+  const u: AskChangeUndo = { tasks: [], notes: [], commitments: [], projects: [], offPlan: [] };
   const r = updateSaved(d => {
     const keep = <T extends { id: string }>(list: T[], item: T | undefined) => { if (item && !list.some(y => y.id === item.id)) list.push(structuredClone(item)); };
     let any = false;
@@ -224,6 +228,10 @@ export function applyAskChanges(changes: AskChange[]): AskChangeUndo | null {
         any = editTask(d.tasks, c.id, { ...(c.patch.title ? { title: c.patch.title } : {}), ...(c.patch.date ? { due: c.patch.date } : {}), ...(c.patch.time !== undefined ? { time: c.patch.time } : {}),
           ...(c.patch.minutes ? { minutes: c.patch.minutes } : {}), ...(c.patch.category ? { category: c.patch.category } : {}) }) || any;
         if (c.patch.projectId) any = linkTask(d, c.id, c.patch.projectId) || any;
+        // Moved to a later day while on today's plan: it comes off the plan too (Undo puts that one task back, in its place).
+        const k = todayKey(), uid = d.tasks.items.find(y => y.id === c.id)?.planUid, at = d.days[k]?.tasks.findIndex(x => x.uid === uid) ?? -1;
+        const copy = at >= 0 ? structuredClone(d.days[k].tasks[at]) : null;
+        if (leaveTodaysPlanIfLater(d, c.id, k)) { any = true; if (copy) u.offPlan.push({ day: k, task: copy, at }); }
       } else if (c.target === 'appointment') {
         const a = d.commitments.find(y => y.id === c.id);
         if (!a) continue;
@@ -247,7 +255,8 @@ export function applyAskChanges(changes: AskChange[]): AskChangeUndo | null {
 export function undoAskChanges(u: AskChangeUndo): boolean {
   return updateSaved(d => {
     const put = <T extends { id: string }>(list: T[], copies: T[]) => { let n = 0; for (const c of copies) { const i = list.findIndex(y => y.id === c.id); if (i >= 0) { list[i] = structuredClone(c); n++; } } return n; };
-    const n = put(d.tasks.items, u.tasks) + put(d.notes.items, u.notes) + put(d.commitments, u.commitments) + put(d.projects.items, u.projects);
+    let n = put(d.tasks.items, u.tasks) + put(d.notes.items, u.notes) + put(d.commitments, u.commitments) + put(d.projects.items, u.projects);
+    for (const o of u.offPlan) { const day = d.days[o.day]; if (day && !day.tasks.some(x => x.uid === o.task.uid)) { day.tasks.splice(Math.min(o.at, day.tasks.length), 0, structuredClone(o.task)); n++; } }
     if (!n) return false;
   }) === 'saved';
 }

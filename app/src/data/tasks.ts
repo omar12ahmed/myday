@@ -148,6 +148,18 @@ export function removeTask(d: TasksData, id: string): boolean {
   return true;
 }
 export function moveToTomorrow(d: TasksData, id: string): boolean { return editTask(d, id, { due: shift(todayKey(), 1) }); }
+// Moved to a later day while it's on today's plan: it comes off today's plan too, so the plan and the task agree —
+// unless it's already ticked there or rolled to the queue. Earlier days' plans are history and stay as they were.
+// Returns true when it came off.
+export function leaveTodaysPlanIfLater(data: MyDayData, id: string, k: DateKey = todayKey()): boolean {
+  const t = data.tasks.items.find(x => x.id === id), day = data.days[k];
+  if (!t || t.plannedOn !== k || !t.due || t.due <= k) return false;
+  const copy = planCopy(data, t);
+  if (copy && (copy.done || copy.rolledQid)) return false;
+  if (day && copy) day.tasks = day.tasks.filter(x => x !== copy);
+  t.plannedOn = null; t.planUid = null;
+  return true;
+}
 
 // Adding it to today's plan — only if there's room for today's energy (the same rule Today uses: 1, 2 or 3 tasks).
 export function planRoom(data: MyDayData, k: DateKey = todayKey()): { built: boolean; rest: boolean; room: number; limit: number } {
@@ -215,7 +227,7 @@ export function unstick(data: MyDayData, id: string, u: Unstuck, k: DateKey = to
     case 'tired': {
       const off = nextDayOff(data, k);
       t.due = off.date; t.time = null;
-      return `Moved to ${off.label}.`;
+      return `Moved to ${off.label}${leaveTodaysPlanIfLater(data, id, k) ? ', and off today\'s plan' : ''}.`;
     }
     case 'info':
       if (need) t.notes = `Needs: ${need}\n${t.notes}`.slice(0, TASK_LIMITS.notes);

@@ -159,6 +159,13 @@ const day = (energy, rest = false) => `s => { s.days['${K}'] = { energy: ${energ
   await click('[data-s=due-done][data-id=tkOld]'); await sleep(300);
   t = await byTitle('Renew car tax');
   check('the tick on "Due today" marks a task done, and it leaves the card', t.done && t.doneOn === K && !(await exists('#dueToday')));
+  await go(`today/tasks/${sendForm}`, 2026, 10, 15, 15, 7);
+  check('a task on today\'s plan says a later day takes it off the plan', (await text('#taskEditor')).includes('Moving it to a later day takes it off today\'s plan'));
+  const otherUid = (await data()).days[K].tasks.find(x => x.uid !== (dd.tasks.items.find(y => y.id === sendForm) || {}).planUid)?.uid;
+  await click('[data-action=task-tomorrow]'); await sleep(300);
+  dd = await data();
+  check('"Tomorrow" on it: tomorrow\'s date, off today\'s plan (the other one stays), and it says so', dd.tasks.items.find(x => x.id === sendForm).due === '2026-10-16' && dd.tasks.items.find(x => x.id === sendForm).plannedOn === null
+    && eq(dd.days[K].tasks.map(x => x.uid), [otherUid]) && (await text('#toast')).includes("Moved to tomorrow, and off today's plan"), [dd.days[K].tasks.map(x => x.uid), otherUid, await text('#toast')]);
 
   console.log('\n[5] A rest day');
   await editStorage(`s => { s.tasks.items.find(x => x.id === 'tkOld').done = false; s.tasks.items.find(x => x.id === 'tkOld').doneOn = null; }`);

@@ -5,11 +5,13 @@ import { todayKey } from '../data/dates';
 import { update } from '../data/storage';
 import { toast } from '../data/toast';
 import type { MyDayData } from '../data/types';
+import { openNote } from './autoConnect';
 
 // AI help placing notes, by itself (1.15.0): once you've switched it on, a few seconds after things settle, MyDay asks
 // about the notes it couldn't place on the device (see ai/connect.ts) — at most twice a day on each device, so the
 // day's AI requests stay free for what you ask yourself. If AI help isn't available (signed out, today's limit, the
 // month's budget), it stops trying until tomorrow. The count is kept on this device only ('myday.ai.connect').
+// It never looks at the note you have open, or one changed in the last few minutes (ai/connect.ts).
 const KEY = 'myday.ai.connect';
 export const AI_CONNECT_PER_DAY = 2;
 const WAIT_MS = 4000;
@@ -22,12 +24,12 @@ function setUsed(count: number) {
   try { localStorage.setItem(KEY, JSON.stringify({ day: todayKey(), count })); } catch { /* storage blocked: it just won't run */ }
 }
 
-export function useAiConnect(data: MyDayData, canSave: boolean) {
+export function useAiConnect(data: MyDayData, canSave: boolean, hash: string) {
   const on = !!data.patterns.prefs.aiNotes;
   useEffect(() => {
-    if (!canSave || !on || AI_MODE === 'off' || running || usedToday() >= AI_CONNECT_PER_DAY || !connectContext(data)) return;
+    if (!canSave || !on || AI_MODE === 'off' || running || usedToday() >= AI_CONNECT_PER_DAY || !connectContext(data, openNote(hash))) return;
     const t = window.setTimeout(async () => {
-      const plan = connectContext(data);
+      const plan = connectContext(data, openNote(location.hash)); // the note open now, not when the wait began
       if (!plan || running || usedToday() >= AI_CONNECT_PER_DAY) return;
       running = true;
       setUsed(usedToday() + 1);
@@ -41,5 +43,5 @@ export function useAiConnect(data: MyDayData, canSave: boolean) {
       } finally { running = false; }
     }, WAIT_MS);
     return () => window.clearTimeout(t);
-  }, [data, canSave, on]);
+  }, [data, canSave, on, hash]);
 }

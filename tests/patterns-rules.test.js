@@ -213,6 +213,30 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   check('…unticking it brings it back', o.letGoOn === null && K.groupOf(d, o, today) !== 'done');
   check('every answer is kept on the task (4 here)', o.blockers.map(b => b.reason).join() === 'boring,info,tired,notneeded');
 
+  console.log('\n[10b] A task moved to a later day comes off today\'s plan (and only then)');
+  {
+    const p2 = fresh(), built = date => ({ energy: 4, rest: false, builtAt: date + 'T08:00', checkedIn: false, tasks: [] });
+    p2.days[k] = built(k);
+    const a = K.addTask(p2.tasks, { title: 'Post the form', due: k });
+    K.addToTodaysPlan(p2, a, k);
+    const T2 = id => p2.tasks.items.find(x => x.id === id);
+    check('on today\'s plan to begin with', T2(a).plannedOn === k && p2.days[k].tasks.length === 1);
+    check('still today: it stays', !K.leaveTodaysPlanIfLater(p2, a, k) && p2.days[k].tasks.length === 1);
+    K.editTask(p2.tasks, a, { due: K.shift(k, 2) });
+    check('a later day: off today\'s plan, and the link cleared', K.leaveTodaysPlanIfLater(p2, a, k) && p2.days[k].tasks.length === 0 && T2(a).plannedOn === null && T2(a).planUid === null);
+    const b = K.addTask(p2.tasks, { title: 'Ring the bank', due: k }); K.addToTodaysPlan(p2, b, k);
+    p2.days[k].tasks.find(x => x.uid === T2(b).planUid).done = true; K.editTask(p2.tasks, b, { due: K.shift(k, 1) });
+    check('already ticked on the plan: it stays there', !K.leaveTodaysPlanIfLater(p2, b, k) && p2.days[k].tasks.length === 1);
+    const y = K.shift(k, -1); p2.days[y] = built(y);
+    const c = K.addTask(p2.tasks, { title: 'From yesterday', due: y }); K.addToTodaysPlan(p2, c, y);
+    K.editTask(p2.tasks, c, { due: K.shift(k, 3) });
+    check('yesterday\'s plan is history: left as it was', !K.leaveTodaysPlanIfLater(p2, c, k) && p2.days[y].tasks.length === 1);
+    const e = K.addTask(p2.tasks, { title: 'Clean the oven', due: k }); K.addToTodaysPlan(p2, e, k);
+    const uid = T2(e).planUid, said = K.unstick(p2, e, { reason: 'tired' }, k);
+    check('"too tired" moves it on and off today\'s plan, and says so', said.endsWith(', and off today\'s plan.') && !p2.days[k].tasks.some(x => x.uid === uid) && T2(e).due > k, said);
+    check('…the plan\'s other tasks are untouched', p2.days[k].tasks.length === 1 && p2.days[k].tasks[0].done);
+  }
+
   console.log('\n[11] What usually gets in the way');
   d = fresh();
   for (const [i, r] of [[1, 'start'], [2, 'start'], [3, 'big'], [4, 'start']]) {

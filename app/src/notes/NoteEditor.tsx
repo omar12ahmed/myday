@@ -5,6 +5,7 @@ import { Card } from '../components/Card';
 import { useConfirm } from '../components/confirm';
 import { Field, Select, TextArea, TextInput } from '../components/Field';
 import { BackLink, Note } from '../components/parts';
+import { Switch } from '../components/Switch';
 import { shortDate } from '../data/dates';
 import { addTask } from '../data/tasks';
 import { editNote, INBOX, isBlank, NOTE_LIMITS, noteName, removeNote, setPrivate } from '../data/notes';
@@ -92,6 +93,14 @@ export function NoteEditor({ data, id }: { data: MyDayData; id: string }) {
     <>
       {project ? <BackLink to={`projects/p/${project.id}`} label={project.title} /> : <BackLink to="projects/notes" label="Notes" />}
       <Card aria-label="Note" id="noteEditor">
+        {/* Private: AI help never reads it (never sent by Ask, AI help with notes or revision cards). Up top, so it can
+            be switched on before anything else. */}
+        <div className="flex justify-end -mt-1 mb-3">
+          <Switch on={!!note.private} data-action="note-private" icon={<Lock size={16} aria-hidden="true" />}
+            onChange={on => { flush(); if (update(d => (setPrivate(d.notes, id, on) ? undefined : false))) toast(on ? 'Private — AI help will never read this note.' : 'No longer private.'); }}>Private</Switch>
+        </div>
+        {/* Below the switch, so the switch itself never moves when it's tapped. */}
+        {note.private && <p className="text-sm text-fg-2 -mt-1 mb-3" data-s="note-private-hint">AI help never reads this note. It's still saved to your account, like all your notes.</p>}
         <div className="grid gap-3">
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Where it's kept" htmlFor="noteCat">
@@ -137,10 +146,6 @@ export function NoteEditor({ data, id }: { data: MyDayData; id: string }) {
             onClick={() => update(d => (editNote(d.notes, id, { pinned: !note.pinned }) ? undefined : false))}>
             <Pin size={18} aria-hidden="true" /> {note.pinned ? 'Pinned' : 'Pin to the top'}
           </Button>
-          <Button inline variant={note.private ? 'selected' : 'tonal'} aria-pressed={!!note.private} data-action="note-private"
-            onClick={() => { flush(); if (update(d => (setPrivate(d.notes, id, !note.private) ? undefined : false))) toast(note.private ? 'No longer private.' : 'Private — AI help will never read this note.'); }}>
-            <Lock size={18} aria-hidden="true" /> {note.private ? 'Private' : 'Keep private'}
-          </Button>
           <Button inline variant="ghost" data-action="note-delete" onClick={remove}><Trash2 size={18} aria-hidden="true" /> Delete</Button>
           {status === 'failed' && <Button inline data-action="note-retry" onClick={() => { pending.current = true; flush(); }}>Try saving again</Button>}
         </div>
@@ -152,7 +157,6 @@ export function NoteEditor({ data, id }: { data: MyDayData; id: string }) {
               : <Button inline variant="ghost" data-action="note-as-task" onClick={() => { flush(); if (update(d => { const tid = addTask(d.tasks, { title: asTask }); if (!tid) return false; if (note.projectId) d.tasks.items.find(t => t.id === tid)!.projectId = note.projectId; })) toast(`Added to your tasks${project ? ` in “${project.title}”` : ''}.`); }}>Add as a task</Button>)}
           </p>
         )}
-        {note.private && <Note className="mb-0 mt-3">Private: AI help never reads this note. It's still saved to your account, like all your notes, so it's on your other devices.</Note>}
       </Card>
       {AI_MODE !== 'off' && data.patterns.prefs.aiNotes && !note.private && <NoteCards key={note.id} data={data} note={note} flush={flush} />}
       {related.length > 0 && (

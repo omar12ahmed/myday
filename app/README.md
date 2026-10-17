@@ -646,12 +646,15 @@ tasks" on Today). Older `#inbox…` and `#notes…` links are rewritten to where
   that project, and MyDay never puts it back in that one); the note and the project page say "connected by MyDay"
   too. Choosing a note's project yourself always wins. A note in a project has been put somewhere, so it leaves the
   Notes Inbox. A note also shows its **related notes** (sharing two meaningful words, or one strong one), and can be
-  marked **private**: AI help will never read it (it still syncs with your own account, like every note). Honest
+  marked **private** with the small **Private** switch at the top of the note (from 1.28.0; a lock marks it in lists):
+  AI help will never read it (it still syncs with your own account, like every note). Honest
   limit: matching words isn't understanding meaning — a link can be wrong, which is what Undo is for; AI help (part
   2, once you switch it on) will place the notes word-matching can't.
 - **AI help with notes (1.15.0, part 2):** off until you switch it on (Notes → "AI help with notes", saved with your
   preferences so it follows your account). Then, a few seconds after things settle, MyDay sends the notes it couldn't
-  place by itself — never private ones, never ones already in a project — with your open projects' names and summaries
+  place by itself — never private ones, never ones already in a project, never the note you have open, and (from
+  1.28.0) never one whose words changed in the last 5 minutes, so there's always time to switch a new note to
+  private first — with your open projects' names and summaries
   (`src/ai/connect.ts`; the shared instructions and checks in `../supabase/functions/_shared/ai/connect.ts`). The model
   says which project each clearly belongs to (or none) and what kind of note it is (idea, task, question, reference,
   reflection). Every answer is checked; a note is linked only if it's still unplaced, not private and unchanged since
@@ -687,7 +690,9 @@ tasks" on Today). Older `#inbox…` and `#notes…` links are rewritten to where
   tap adds the task to today's plan (at its time, if it has one), but only while there's room for your energy (1, 2
   or 3 tasks, the same limit as Build my day). Nothing is added by itself. Before the day is built, and on a rest day,
   the card says so instead. A task on the plan is linked, not copied: ticking it off on the plan ticks it off in
-  Tasks, and the other way round.
+  Tasks, and the other way round. Moving it to a later day (its date, "Tomorrow", "too tired" or Ask) takes it off
+  today's plan too, unless it's already ticked there (from 1.28.0; `leaveTodaysPlanIfLater` in `src/data/tasks.ts`;
+  earlier days' plans are history and stay as they were).
 - Saved as the `tasks` section (`{ lists, items }`; a task points at its plan copy with `plannedOn` and `planUid`).
   Added in 1.5.0; the classic MyDay keeps it unread (a task added to today's plan is an ordinary plan task there).
   Tasks are synced with your account (from 1.8.0) and are in "Export my data".
@@ -956,3 +961,8 @@ returns up to 8 small tasks; you tick the ones to add.
     quiet line above the plan when it helps (too much for the time or energy left, or a task due today to start with).
     And a new page, What MyDay knows, says exactly what each kind of AI help sends and what never leaves MyDay. The
     server's `ask` job (instructions `myday-ask-v12`) was deployed first. No data or database change.
+40. **Release 1.28.0:** small fixes. Notes have a small **Private** switch at the top (a lock marks private notes in
+    lists), and AI help with notes now waits until you've left a note and it's had 5 minutes without changes, so a
+    new note can always be made private before AI help could look at it. A task on today's plan that you move to a
+    later day comes off today's plan too (Undo in Ask puts it back). Today's theme test no longer fails at night (it
+    read the browser bar a moment too early). No data or database change; no server change.

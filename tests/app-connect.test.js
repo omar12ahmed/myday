@@ -87,11 +87,19 @@ const seed = `s => {
   check('…one tap adds it (your link)', (await note('n4')).projectId === 'pjCoffee' && !(await note('n4')).linkedBy);
 
   console.log('\n[5] Private');
+  check('the Private switch is at the top of the note (before its words), off to begin with', (await ev(`document.querySelector('[data-action=note-private]').getAttribute('role')`)) === 'switch'
+    && (await ev(`document.querySelector('[data-action=note-private]').getAttribute('aria-checked')`)) === 'false'
+    && (await ev(`!!(document.querySelector('[data-action=note-private]').compareDocumentPosition(document.getElementById('noteText')) & Node.DOCUMENT_POSITION_FOLLOWING)`)));
   await click('[data-action=note-private]'); await sleep(300);
-  check('"Keep private": saved, said plainly — AI help never reads it; it still syncs with your account', (await note('n4')).private === true && (await toast()).includes('AI help will never read this note') && (await text('#noteEditor')).includes('still saved to your account'));
+  check('…switched on, it shows', (await ev(`document.querySelector('[data-action=note-private]').getAttribute('aria-checked')`)) === 'true' && (await exists('[data-s=note-private-hint]')));
+  check('"Private": saved, said plainly — AI help never reads it; it still syncs with your account', (await note('n4')).private === true && (await toast()).includes('AI help will never read this note') && (await text('#noteEditor')).includes('still saved to your account'));
   check('…the words and "changed" time stay as they were', (await note('n4')).text === 'Coffee with Sam on Friday' && (await note('n4')).updatedAt === '2026-10-02T09:00');
   await click('[data-action=note-private]'); await sleep(300);
   check('…and off again', !('private' in (await note('n4'))));
+  await editStorage(`s => { s.notes.items.find(n => n.id === 'n4').private = true; }`);
+  await go('projects/p/pjCoffee', 2026, 10, 15, 9, 22);
+  check('a private note is marked with a small lock where notes are listed (here, its project)', await exists('[data-s=note-row-private]'));
+  await editStorage(`s => { delete s.notes.items.find(n => n.id === 'n4').private; }`);
 
   console.log('\n[6] Capture says where a note went');
   await go('calendar', 2026, 10, 15, 10);

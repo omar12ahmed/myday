@@ -421,7 +421,11 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   check('tap → Match device (device dark) → dark colours', (await ev(`document.documentElement.dataset.theme`)) === 'auto' && (await bgOf()) === 'rgb(20, 24, 21)', await bgOf());
   await T.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'light' }] });
   check('…device switches to light → light colours', (await bgOf()) === 'rgb(247, 245, 239)', await bgOf());
-  check('Match device updates the browser bar when the OS theme changes', (await ev(`document.querySelector('meta[name=theme-color]').content`)) === '#f7f5ef');
+  // The browser tells the page about a theme change at its next frame, a moment after the colours themselves change —
+  // so wait for the bar (this used to be read too early, and failed now and then, mostly at night).
+  const bar = () => ev(`document.querySelector('meta[name=theme-color]').content`);
+  for (let i = 0; i < 20 && (await bar()) !== '#f7f5ef'; i++) await sleep(100);
+  check('Match device updates the browser bar when the OS theme changes', (await bar()) === '#f7f5ef', await bar());
   await T.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'dark' }] });
   await click('#themeBtn'); await sleep(400);
   check('tap → back to Light (even when the device is dark)', (await ev(`document.documentElement.dataset.theme`)) === 'light' && (await bgOf()) === 'rgb(247, 245, 239)', await bgOf());
