@@ -147,6 +147,16 @@ sends, what MyDay keeps about how you work (your name and preferences, with a li
 Finance and Health records), that the AI remembers nothing, which model does which job, and the limits. Evaluated on 12
 more synthetic requests (`../ai-eval/reviews/2026-10-17-ask-quality.md`).
 
+**Breaking a task into smaller steps (1.29.0):** on a task's page, **✦ Break into smaller steps** (shown only when the
+app is built with AI help, and not on a done or let-go task) opens + already filled in ("Break this into smaller steps";
+`src/capture/openCapture.ts`), as the course page's button does. Nothing is sent until you tap Ask MyDay, and the
+preview shows the task's title, date, length and notes, with your open projects' names. Ask returns up to 8 small
+steps, the first the easiest, and the app checks them (`src/ai/ask.ts`, `checkAskReply`): they go in the task's own
+list and its project (if it's in one that's still open), whatever was suggested; a step with the same title as
+something on your lists starts unticked, and a line under the cards says where they'll go (`src/capture/AskPanel.tsx`).
+Add saves the ticked steps as tasks in one go, with one step of Undo. The task itself is never changed; tick it off
+yourself once its steps are done.
+
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
 
@@ -966,3 +976,9 @@ returns up to 8 small tasks; you tick the ones to add.
     new note can always be made private before AI help could look at it. A task on today's plan that you move to a
     later day comes off today's plan too (Undo in Ask puts it back). Today's theme test no longer fails at night (it
     read the browser bar a moment too early). No data or database change; no server change.
+41. **Release 1.29.0:** a task's page has **✦ Break into smaller steps** (only when the app has AI help, and not on a
+    done or let-go task). It opens + with Ask MyDay already filled in; nothing is sent until you tap it, and the
+    preview shows the task's title, date, length and notes. Up to 8 small steps come back, checked on the device: they
+    go in the task's own list and open project, whatever was suggested, and a step whose title is already on your
+    lists starts unticked. Add saves the ticked steps as tasks in one go, with Undo; the task itself is never changed.
+    No server, data or database change.

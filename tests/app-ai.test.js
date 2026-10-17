@@ -529,6 +529,37 @@ const SEED = `s => {
     await mock.ev(`location.hash = 'today'`); await sleep(200);
   }
 
+  console.log('\n[8k] "Break into smaller steps" on a task');
+  {
+    const at = `${TODAY}T08:00`;
+    const TKS = (id, title, x = {}) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: at, postponed: 0, blockers: [], letGoOn: null, ...x });
+    await seeded(mock, MOCK);
+    await mock.setData(`s => { s.tasks.lists = [{ id: 'tlW', name: 'Work' }]; s.projects.items.push({ id: 'pjSt', title: 'Home move', summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${at}', updatedAt: '${at}' }); s.tasks.items.push(${JSON.stringify(TKS('tkSt', 'Book the removal van', { listId: 'tlW', projectId: 'pjSt' }))}, ${JSON.stringify(TKS('tkStD', 'Return the keys', { listId: 'tlW', done: true, doneOn: TODAY }))}); }`);
+    await mock.until(`document.querySelector('#app')`);
+    const tasks = async () => (await mock.data()).tasks.items;
+    const parentBefore = JSON.stringify((await tasks()).find(t => t.id === 'tkSt'));
+    const nBefore = (await tasks()).length;
+    await mock.ev(`location.hash = 'today/tasks/tkSt'`); await mock.until(`document.querySelector('[data-action=task-ask-steps]')`, 5000);
+    check('an open task\'s page offers "Break into smaller steps"', (await mock.text('[data-action=task-ask-steps]')).includes('Break into smaller steps'));
+    await mock.click('[data-action=task-ask-steps]'); await mock.until(`document.getElementById('captureText')`, 5000);
+    check('…which opens + with the request already typed, and nothing sent or added yet', (await mock.ev(`document.getElementById('captureText').value`)) === 'Break this into smaller steps' && (await tasks()).length === nBefore && !(await mock.exists('[data-s=ask-item]')));
+    await mock.click('[data-action=ask-go]'); await mock.until(`['shown', 'error'].includes(document.querySelector('[data-s=ask-panel]')?.dataset.phase)`, 10000);
+    check('Ask MyDay answers with step cards, and says they go in the same list and project as the task, which stays as it is', (await mock.ev(`document.querySelectorAll('[data-s=ask-item]').length`)) === 3 && (await mock.text('[data-s=ask-steps-where]')).includes('“Book the removal van”'), await mock.text('[data-s=ask-panel]'));
+    check('…each step shows the list it goes in', (await mock.ev(`[...document.querySelectorAll('[data-s=ask-item]')].every(x => x.textContent.includes('list “Work”'))`)) === true);
+    await mock.click('[data-action=ask-add]'); await sleep(250);
+    const now = await tasks();
+    const newOnes = now.slice(nBefore);
+    check('Add saves the steps as tasks in that list and project', newOnes.length === 3 && newOnes.every(t => t.listId === 'tlW' && t.projectId === 'pjSt'), newOnes);
+    check('…and the task itself is unchanged', JSON.stringify(now.find(t => t.id === 'tkSt')) === parentBefore);
+    await mock.click('[data-action=ask-undo]'); await sleep(250);
+    check('Undo takes the steps back', (await tasks()).length === nBefore && JSON.stringify((await tasks()).find(t => t.id === 'tkSt')) === parentBefore);
+    await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(150);
+    await mock.ev(`location.hash = 'today/tasks/tkStD'`);
+    const doneShown = await mock.until(`document.getElementById('taskEditor') && document.querySelector('[data-action=task-toggle]')?.getAttribute('aria-pressed') === 'true'`, 5000);
+    check('a done task\'s page has no such button', doneShown && !(await mock.exists('[data-action=task-ask-steps]')));
+    await mock.ev(`location.hash = 'today'`); await sleep(200);
+  }
+
   console.log('\n[9] Layout');
   await D.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await D.ev(`location.hash = 'today'`);

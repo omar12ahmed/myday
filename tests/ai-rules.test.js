@@ -891,6 +891,43 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('a reply with a target the server doesn\'t know is dropped by its reader', K.readAsk(C([ch('project', 'pjC', { title: 'x' }), ch('task', '', { title: 'x' })]))?.items.length === 0);
   }
 
+  console.log('\n[12d] Ask MyDay on a task: smaller steps in its list and project');
+  {
+    K.setClock(`${D}T10:00`);
+    const s0 = K.freshState(), at = `${D}T09:00`;
+    const P = (id, title, status = 'active') => ({ id, title, summary: '', stage: 'explore', status, nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at });
+    const TK = (id, title, x = {}) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: at, postponed: 0, blockers: [], letGoOn: null, ...x });
+    s0.projects.items = [P('pjA', 'Home move'), P('pjB', 'Coffee subscription'), P('pjOld', 'Old move', 'done')];
+    s0.tasks.lists = [{ id: 'tlW', name: 'Work' }];
+    s0.tasks.items = [TK('tkL', 'Book the removal van', { listId: 'tlW', projectId: 'pjA' }), TK('tkOld', 'Close the old account', { listId: 'tlW', projectId: 'pjOld' }), TK('tkNone', 'Sort the post', { listId: 'tlW' }), TK('tkBare', 'Tidy the shed', { projectId: 'pjA' })];
+    localStorage.clear(); localStorage.setItem('myday.data.v4', JSON.stringify(s0)); K.boot();
+    const w = K.getSnapshot().data;
+    const S = (...titles) => JSON.stringify({ kind: 'steps', message: 'Here are some smaller steps.', action: null, items: titles.map(t => (typeof t === 'string' ? { type: 'task', title: t } : { type: 'task', ...t })) });
+    const slice = id => K.askSlice(w, `#today/tasks/${id}`, D);
+    let c = K.checkAskReply(S('Get three quotes', { title: 'Choose a date', projectId: 'pjB' }, { title: 'Pack the kitchen', projectId: 'pjOld' }), w, slice('tkL'), D);
+    check('a steps reply on a task page: every step gets the task\'s list and its open project, whatever project the model gave', c.kind === 'steps' && c.items.length === 3 && c.items.every(i => i.listId === 'tlW' && i.projectId === 'pjA'), c.items);
+    c = K.checkAskReply(S('Gather the paperwork', { title: 'Phone the bank', projectId: 'pjA' }), w, slice('tkOld'), D);
+    check('a task whose project is done: the steps go in its list but in no project', c.items.length === 2 && c.items.every(i => i.listId === 'tlW' && i.projectId === null), c.items);
+    c = K.checkAskReply(S('Gather the post', { title: 'Open the letters', projectId: 'pjB' }), w, slice('tkNone'), D);
+    check('a task with no project: the steps get no project, even when the model named one', c.items.length === 2 && c.items.every(i => i.projectId === null), c.items);
+    c = K.checkAskReply(S('Clear the floor', 'Sort the tools'), w, slice('tkBare'), D);
+    check('a task with no list: the steps have no list id at all', c.items.length === 2 && c.items.every(i => !('listId' in i)), c.items);
+    c = K.checkAskReply(S('Book the removal van', 'Get three quotes'), w, slice('tkL'), D);
+    check('a step with the same title as the task is marked as already there (so it starts unticked)', c.items.find(i => i.title === 'Book the removal van').already === true && c.items.find(i => i.title === 'Get three quotes').already === false, c.items);
+    c = K.checkAskReply(S('Get three quotes', 'Choose a date', 'Pack the kitchen'), w, slice('tkL'), D);
+    const before = JSON.parse(JSON.stringify(K.getSnapshot().data));
+    const u = K.addAskItems(c.items);
+    const d = K.getSnapshot().data;
+    const added = d.tasks.items.filter(t => !before.tasks.items.some(b => b.id === t.id));
+    check('Add saves the steps in that list and project', !!u && added.length === 3 && added.every(t => t.listId === 'tlW' && t.projectId === 'pjA'), added);
+    check('…and leaves the task itself exactly as it was', eq(d.tasks.items.find(t => t.id === 'tkL'), before.tasks.items.find(t => t.id === 'tkL')));
+    const undone = K.undoAsk(u), after = K.getSnapshot().data, noStamp = ps => ps.map(({ updatedAt, ...x }) => x);
+    check('Undo takes all the steps back (the project is as it was, apart from its "updated" time)', undone && eq(after.tasks.items, before.tasks.items) && eq(noStamp(after.projects.items), noStamp(before.projects.items)));
+    const sl = slice('tkL');
+    c = K.checkAskReply(K.mockAsk(K.askContext(sl, 'Break this into smaller steps', D)), K.getSnapshot().data, sl, D);
+    check('the practice helper, asked for smaller steps on a task page, gives steps that pass the checks (in its list and project)', c.kind === 'steps' && c.items.length === 3 && c.items.every(i => i.type === 'task' && i.listId === 'tlW' && i.projectId === 'pjA' && !i.already), c);
+  }
+
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);
