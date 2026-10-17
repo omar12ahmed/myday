@@ -280,6 +280,10 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     check('an Ask request is answered (200) by the main model, as JSON with a kind and a message', a.status === 200 && a.body.model === 'Main model' && ['add', 'steps', 'answer', 'cannot'].includes(out.kind) && typeof out.message === 'string', a.body);
     a = await kask({ ...ak, page: 'today', followUp: { previous: 'Here are three steps.', text: 'Smaller please' }, context: { today: { energy: null, freeMinutes: null, plan: [], dueToday: [] } } });
     check('…with one follow-up, or from Today with energy not set yet', a.status === 200, a.body);
+    a = await kask({ ...ak, page: 'study', context: { study: { course: { id: 'coP', title: 'Pre-Security' }, nextTask: { id: 'tkH', title: 'HTTP in detail' }, topics: ['Cybersecurity'], revisionDue: 6, energy: 2, freeMinutes: 90 } } });
+    check('…or from Study, with today\'s energy and free time', a.status === 200, a.body);
+    a = await kask({ ...ak, page: 'study', context: { study: { course: null, nextTask: null, topics: [], revisionDue: 0, energy: 9, freeMinutes: 90 } } });
+    check('…but an energy outside 1–5 is refused (400)', a.status === 400);
     for (const [bad, why] of [[{ ...ak, page: 'admin' }, 'an unknown page'], [{ ...ak, text: '' }, 'nothing typed'], [{ ...ak, text: 'x'.repeat(601) }, 'over 600 characters typed'],
       [{ ...ak, context: { ...ak.context, finance: { balance: 1 } } }, 'a part of MyDay Ask never sends (Finance)'], [{ ...ak, context: { note: { id: 'n', title: 't', text: 'x'.repeat(3001) } } }, 'a note over 3,000 characters'],
       [{ ...ak, followUp: { previous: '', text: '' } }, 'an empty follow-up'], [{ ...ak, memory: 'everything' }, 'an extra field']]) {

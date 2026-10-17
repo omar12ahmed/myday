@@ -21,7 +21,7 @@ const PROJECTS = [{ id: 'pjCof', title: 'Coffee subscription for offices' }, { i
 const TODAY: AskPageContext = { projects: PROJECTS, today: { energy: 2, freeMinutes: 150, plan: [
   { id: 'u1', title: 'Course section: DNS in detail', minutes: 30, done: false }, { id: 'u2', title: 'Batch cook', minutes: 45, done: false }, { id: 'u3', title: 'Gym', minutes: 60, done: true }],
   dueToday: [{ id: 'tk1', title: 'Pay council tax' }] } };
-const STUDY: AskPageContext = { projects: PROJECTS, study: { course: { id: 'coP', title: 'TryHackMe: Pre-Security path' }, nextTask: { id: 'tkH', title: 'HTTP in detail' }, topics: ['Cybersecurity', 'Arabic'], revisionDue: 6 } };
+const STUDY: AskPageContext = { projects: PROJECTS, study: { course: { id: 'coP', title: 'TryHackMe: Pre-Security path' }, nextTask: { id: 'tkH', title: 'HTTP in detail' }, topics: ['Cybersecurity', 'Arabic'], revisionDue: 6, energy: 2, freeMinutes: 150 } };
 const COFFEE: AskPageContext = { projects: PROJECTS, project: { id: 'pjCof', title: 'Coffee subscription for offices', summary: 'Fresh beans delivered to small offices every fortnight, priced per kilo.', stage: 'explore',
   tasks: [{ id: 't1', title: 'Ring two local roasters', done: true }, { id: 't2', title: 'List 10 offices nearby', done: false }], notes: ['Competitors: Pact and Grind', 'Roasters sell at £12 a kilo'] } };
 const HARGEISA: AskPageContext = { projects: PROJECTS, project: { id: 'pjHar', title: 'Hargeisa marketplace', summary: 'An online marketplace for traders in Hargeisa: listings, mobile money payments, delivery.', stage: 'explore', tasks: [], notes: ['Zaad and eDahab are what most traders use', 'Delivery riders charge per trip'] } };

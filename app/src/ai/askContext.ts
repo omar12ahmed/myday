@@ -3,7 +3,7 @@
 // Never a private note; Finance and Health send only the page's name; a project's notes' text only with "AI help with
 // notes" switched on.
 import { ASK_LIMITS as L, type AskContext, type AskPage, type AskPageContext } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
-import { parseKey, todayKey } from '../data/dates';
+import { parseKey, prettyDate, todayKey } from '../data/dates';
 import { noteName } from '../data/notes';
 import { projectNotes, projectTasks } from '../data/projects';
 import { stIndex } from '../data/study/roadmap';
@@ -17,6 +17,8 @@ import { buildContext } from './context';
 const cut = (s: string, n: number) => (s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s);
 const ref = (id: string, title: string) => ({ id, title: cut(title.trim() || 'Untitled', L.titleChars) });
 const toMin = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
+// Free time left today, in minutes (from the Calendar's own reckoning), or null when the day has none worked out.
+const freeOf = (pc: ReturnType<typeof buildContext>) => (pc.free.length ? pc.free.reduce((a, f) => a + Math.max(0, toMin(f.end) - toMin(f.start)), 0) : null);
 
 // Which page you're on, from the address (and the thing it shows, if any).
 export function askPage(hash: string): { page: AskPage; id: string | null } {
@@ -47,17 +49,18 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey())
   if (open.length && page !== 'finance' && page !== 'health') { ctx.projects = open.map(p => ref(p.id, p.title)); parts.push('your open projects’ names'); }
   if (page === 'today') {
     const pc = buildContext(data, k, '');
-    const free = pc.free.reduce((a, f) => a + Math.max(0, toMin(f.end) - toMin(f.start)), 0);
     const due = data.tasks.items.filter(t => !t.done && !t.letGoOn && t.due === k).slice(0, L.list);
-    ctx.today = { energy: pc.energy, freeMinutes: pc.free.length ? free : null,
+    ctx.today = { energy: pc.energy, freeMinutes: freeOf(pc),
       plan: pc.tasks.slice(0, L.list).map(t => ({ ...ref(t.id, t.title), minutes: t.minutes, done: t.done })), dueToday: due.map(t => ref(t.id, t.title)) };
     parts.push("today's plan, your energy, your free time and tasks due today");
   } else if (page === 'study') {
     const st = data.study, ix = stIndex(st), gs = topicsOf(st).map(t => topicGlance(st, ix, t.id)!).filter(Boolean);
     const g = gs.find(x => x.isFocus && x.next) ?? gs.find(x => x.next) ?? null;
+    const pc = buildContext(data, k, '');
     ctx.study = { course: g?.next ? ref(g.next.id, g.next.title) : null, nextTask: g?.nextTask ? ref(g.nextTask.id, g.nextTask.title) : null,
-      topics: topicsOf(st).map(t => cut(t.title, L.titleChars)).filter(Boolean).slice(0, L.list), revisionDue: dueIds(data, k).length };
-    parts.push('your current course and next task, your topics and how much revision is due');
+      topics: topicsOf(st).map(t => cut(t.title, L.titleChars)).filter(Boolean).slice(0, L.list), revisionDue: dueIds(data, k).length,
+      energy: pc.energy, freeMinutes: freeOf(pc) };
+    parts.push('your current course and next task, your topics, how much revision is due, and your energy and free time today');
   } else if (page === 'project' && id) {
     const p = data.projects.items.find(x => x.id === id);
     if (p) {
@@ -93,4 +96,59 @@ export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(
     page: slice.page, text: cut(text.trim(), L.textChars), ...(followUp ? { followUp: { previous: cut(followUp.previous, L.previousChars), text: cut(followUp.text.trim(), L.followUpChars) } } : {}),
     context: slice.context,
   };
+}
+
+// ---------- What you see before you tap: the request itself, in words ----------
+// Built from the very request that would be sent (askContext's result), so the preview can't drift from what's shared.
+export interface AskPreview { short: string[]; all: { label: string; lines: string[] }[] }
+const PAGE_WORD: Record<AskPage, string> = { today: 'Today', tasks: 'Tasks', task: 'A task', calendar: 'Calendar', projects: 'Projects', project: 'A project',
+  notes: 'Notes', note: 'A note', study: 'Study', health: 'Health', finance: 'Finance', other: 'Elsewhere in MyDay' };
+const energyWord = (e: number | null | undefined) => (e ? `${e} of 5` : 'not set yet');
+const freeWord = (m: number | null | undefined) => (m === null || m === undefined ? 'not worked out' : m < 60 ? `${m} min` : `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ''}`);
+const clip = (s: string, n = 160) => (s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s);
+const n = (count: number, one: string, many = one + 's') => `${count} ${count === 1 ? one : many}`;
+
+export function askPreview(c: AskContext, privateNote = false): AskPreview {
+  const x = c.context, short: string[] = [], all: AskPreview['all'] = [];
+  all.push({ label: 'What you typed', lines: [c.text || '(nothing yet)', ...(c.followUp ? [`and then: “${c.followUp.text}”`] : [])] });
+  all.push({ label: 'When and where', lines: [`${prettyDate(c.date)}, ${c.time}`, `Page: ${PAGE_WORD[c.page]}`] });
+  if (x.today) {
+    const t = x.today;
+    short.push(`Energy ${energyWord(t.energy)}`, `Free time ${freeWord(t.freeMinutes)}`, n(t.plan.length, 'task') + ' on today’s plan', n(t.dueToday.length, 'task') + ' due today');
+    all.push({ label: 'Today', lines: [`Energy: ${energyWord(t.energy)}`, `Free time: ${freeWord(t.freeMinutes)}`] });
+    if (t.plan.length) all.push({ label: 'Today’s plan', lines: t.plan.map(p => `${p.done ? '✓ ' : ''}${p.title} (${p.minutes} min)`) });
+    if (t.dueToday.length) all.push({ label: 'Due today', lines: t.dueToday.map(d => d.title) });
+  }
+  if (x.study) {
+    const s = x.study;
+    short.push(`Course: ${s.course ? clip(s.course.title, 40) : 'none yet'}`, ...(s.nextTask ? [`Next: ${clip(s.nextTask.title, 40)}`] : []),
+      ...(s.energy !== undefined ? [`Energy ${energyWord(s.energy)}`] : []), ...(s.freeMinutes !== undefined ? [`Free time ${freeWord(s.freeMinutes)}`] : []));
+    all.push({ label: 'Study', lines: [`Current course: ${s.course?.title ?? 'none yet'}`, `Next task: ${s.nextTask?.title ?? 'none'}`, `Revision due: ${n(s.revisionDue, 'card')}`,
+      ...(s.energy !== undefined ? [`Energy: ${energyWord(s.energy)}`] : []), ...(s.freeMinutes !== undefined ? [`Free time: ${freeWord(s.freeMinutes)}`] : [])] });
+    if (s.topics.length) all.push({ label: 'Your topics', lines: s.topics });
+  }
+  if (x.project) {
+    const p = x.project;
+    short.push(`Project: ${clip(p.title, 40)}`, `${n(p.tasks.length, 'task')}, ${n(p.notes.length, 'note title')}${p.notesText ? ' and their text' : ''}`);
+    all.push({ label: 'This project', lines: [`Name: ${p.title}`, `Summary: ${p.summary ? clip(p.summary) : '(none)'}`, `Stage: ${p.stage.charAt(0).toUpperCase() + p.stage.slice(1)}`] });
+    if (p.tasks.length) all.push({ label: 'Its tasks', lines: p.tasks.map(t => `${t.done ? '✓ ' : ''}${t.title}`) });
+    if (p.notes.length) all.push({ label: 'Its notes (titles)', lines: p.notes });
+    if (p.notesText) all.push({ label: 'Its notes’ text (AI help with notes is on; private notes left out)', lines: [clip(p.notesText, 300)] });
+  }
+  if (x.note) {
+    short.push(`This note: ${clip(x.note.title || x.note.text, 40)}`);
+    all.push({ label: 'This note', lines: [...(x.note.title ? [`Title: ${x.note.title}`] : []), `Text: ${clip(x.note.text, 300)}`] });
+  }
+  if (privateNote) { short.push('This note: not sent (private)'); all.push({ label: 'This note', lines: ['Not sent — it’s private.'] }); }
+  if (x.task) {
+    short.push(`Task: ${clip(x.task.title, 40)}`);
+    all.push({ label: 'This task', lines: [`Title: ${x.task.title}`, `Due: ${x.task.due ?? 'no date'}`, `About ${x.task.minutes} min`, ...(x.task.notes ? [`Notes: ${clip(x.task.notes)}`] : [])] });
+  }
+  if (x.calendar) {
+    short.push(n(x.calendar.appointments.length, 'appointment') + ' today');
+    all.push({ label: 'Today’s appointments', lines: x.calendar.appointments.length ? x.calendar.appointments.map(a => `${a.time} ${a.title}`) : ['none'] });
+  }
+  if (x.projects?.length) { short.push(n(x.projects.length, 'open project name')); all.push({ label: 'Your open projects (names only)', lines: x.projects.map(p => p.title) }); }
+  if (!short.length) short.push('Only what you typed and the date');
+  return { short, all };
 }

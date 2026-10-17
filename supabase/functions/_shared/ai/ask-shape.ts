@@ -28,7 +28,7 @@ interface Ref { id: string; title: string }
 export interface AskPageContext {
   projects?: Ref[];                                                     // open projects' names (to file things into)
   today?: { energy: number | null; freeMinutes: number | null; plan: { id: string; title: string; minutes: number; done: boolean }[]; dueToday: Ref[] };
-  study?: { course: Ref | null; nextTask: Ref | null; topics: string[]; revisionDue: number };
+  study?: { course: Ref | null; nextTask: Ref | null; topics: string[]; revisionDue: number; energy?: number | null; freeMinutes?: number | null }; // energy and free time today, to fit a session to them
   project?: { id: string; title: string; summary: string; stage: typeof ASK_STAGES[number]; tasks: (Ref & { done: boolean })[]; notes: string[]; notesText?: string };
   note?: { id: string; title: string; text: string };
   task?: { id: string; title: string; due: string | null; minutes: number; notes: string };
@@ -88,7 +88,9 @@ export function checkAskContext(raw: unknown): raw is AskContext {
   }
   if (x.study !== undefined) {
     const s = x.study;
-    if (!obj(s) || !only(s, ['course', 'nextTask', 'topics', 'revisionDue'])) return false;
+    if (!obj(s) || !only(s, ['course', 'nextTask', 'topics', 'revisionDue', 'energy', 'freeMinutes'])) return false;
+    if (s.energy !== undefined && !(s.energy === null || (Number.isInteger(s.energy) && (s.energy as number) >= 1 && (s.energy as number) <= 5))) return false;
+    if (s.freeMinutes !== undefined && !(s.freeMinutes === null || (Number.isInteger(s.freeMinutes) && (s.freeMinutes as number) >= 0 && (s.freeMinutes as number) <= 1440))) return false;
     if (!(s.course === null || refs([s.course])) || !(s.nextTask === null || refs([s.nextTask]))) return false;
     if (!Array.isArray(s.topics) || s.topics.length > L.list || !s.topics.every(t => str(t, L.titleChars, false)) || !(Number.isInteger(s.revisionDue) && (s.revisionDue as number) >= 0)) return false;
   }

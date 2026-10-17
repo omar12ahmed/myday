@@ -21,7 +21,9 @@ reply where it changed something.
 | v3 | 80 (7 network timeouts) | all met | $0.0180 | "What should I do first?" re-proposed today's plan and a task due today as *new* tasks; "Focus mode" answered with details that aren't in MyDay (a timer). |
 | v4 | 80 | 664/665 | $0.0212 | Existing items referred to by name; Focus mode described accurately (both repeats). One new project's first tasks pointed at a made-up project id. |
 | v5 | 10 | 89/89 | $0.0027 | New-project tasks marked "new" and linked when added together. One empty message ("What's Focus mode?"). |
-| **v6** | 9 | 81/81 | $0.0023 | Message always written; Focus mode accurate in 3 of 3 (one adds "set a short timer", a small invention); new projects with linked first steps (3/3); tired-study → a 30-minute session on the next task (3/3). |
+| v6 | 9 | 81/81 | $0.0023 | Message always written; Focus mode accurate in 3 of 3 (one adds "set a short timer", a small invention); new projects with linked first steps (3/3); tired-study → a 30-minute session on the next task (3/3). |
+
+| **v7** | 6 (Study only) | 53/54 | $0.0016 | Study now also sends today's energy and free time: with energy 2 it suggests 20 minutes rather than 30, and revision first. One reply was a fragment ("Here's", no steps; 32 tokens, stopped normally) — the app now treats a reply with nothing to tick, no action and under three words as unusable ("try again"). |
 
 Total: about **US$0.08** (7 calls that timed out reported no usage).
 
@@ -33,7 +35,9 @@ Total: about **US$0.08** (7 calls that timed out reported no usage).
 - Anything already on your tasks or today's plan is marked "already on your lists" and left unticked.
 - An answer with things to add shows them to tick (three at most); with an action, the action is kept and the items
   left out (said so).
-- A message that stops mid-sentence is cut back to its last whole sentence; one that isn't gentle is left out.
+- A message that stops mid-sentence is cut back to its last whole sentence; one that isn't gentle is left out; a
+  fragment with nothing to tick and no action isn't shown as an answer.
+- Your edits to a card (a day and time, the length and list, a note's text) are checked by the same rules.
 - Nothing is saved until you tick and tap Add; one step of Undo.
 
 ## Remaining limits
@@ -43,4 +47,4 @@ Total: about **US$0.08** (7 calls that timed out reported no usage).
 - Network timeouts reaching GLM happen in bursts; the app says "Couldn't reach the AI" and nothing is added.
 - Not compared against another model.
 
-**Recommendation:** ship `myday-ask-v6` on GLM-5.3-Flash (the main model; no AI_ROUTES change needed).
+**Recommendation:** ship `myday-ask-v7` on GLM-5.3-Flash (the main model; no AI_ROUTES change needed).

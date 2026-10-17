@@ -10,7 +10,7 @@
 import type { ChatMessage } from './prompt.ts';
 
 export const ASK_CONTRACT_VERSION = 1;
-export const ASK_PROMPT_VERSION = 'myday-ask-v6';
+export const ASK_PROMPT_VERSION = 'myday-ask-v7';
 export * from './ask-shape.ts';
 import type { AskContext, AskReply } from './ask-shape.ts';
 
@@ -38,7 +38,8 @@ Reply with exactly ONE kind:
   step; complete sentences only. If your answer suggests adding something, put it (at most 3) in "items" so they can
   tick it — never just offer. An answer has EITHER one action OR items, not both. Actions, only when they fit:
   · {"type":"start-study","courseId":…,"taskId":…,"minutes":…} — only if they ask what to study and "study" is in the
-    data, with its course id and next task id exactly, and minutes 5–60 that fit what they said.
+    data, with its course id and next task id exactly, and minutes 5–60 that fit what they said and, if given, their
+    energy (1 low – 5 high) and free time today.
   · {"type":"adjust-today"} — when they want to plan or re-plan today, or today feels too much: MyDay's own day
     planner does that with their energy and calendar.
 - "cannot": only for what no task could help with: deleting or changing what's already saved (they do that on its own

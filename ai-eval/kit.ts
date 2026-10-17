@@ -38,8 +38,8 @@ export { CARDS_CHECK_PROMPT_VERSION, CARDS_LIMITS, CARDS_PROMPT_VERSION, checkCa
 
 // Ask MyDay (the AI design's step 1): the shared shape and instructions, and the app's side (page slice, checks, adding).
 export { ASK_LIMITS, ASK_PROMPT_VERSION, buildAskMessages, checkAskContext, mockAsk, readAsk, type AskContext } from '../supabase/functions/_shared/ai/ask.ts';
-export { askContext, askPage, askSlice } from '../app/src/ai/askContext';
-export { addAskItems, checkAskReply, countWords, undoAsk } from '../app/src/ai/ask';
+export { askContext, askPage, askPreview, askSlice } from '../app/src/ai/askContext';
+export { addAskItems, applyAskEdit, checkAskReply, countWords, undoAsk } from '../app/src/ai/ask';
 
 // ---------- Memory-only storage ----------
 export function useMemoryStorage() {

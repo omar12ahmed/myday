@@ -64,7 +64,7 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
         if (a.taskId && !task) changed.push('The suggested task wasn’t found, so it starts on the course.');
       } else changed.push('Left out a suggestion for a course that isn’t in your roadmap.');
     }
-    return message || action ? { kind: 'answer', message, action, changed } : null;
+    return action || message.split(/\s+/).filter(Boolean).length >= 3 ? { kind: 'answer', message, action, changed } : null;
   }
   // Things to add, or steps (an answer that suggests adding something is shown the same way, with its message).
   const open = new Map(data.projects.items.filter(p => p.status !== 'done').map(p => [p.id, p]));
@@ -98,7 +98,7 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
       already: type === 'task' && onLists.has(sameTask(title)),
     });
   }
-  if (!items.length) return message ? { kind: 'answer', message, action: null, changed } : null;
+  if (!items.length) return message.split(/\s+/).filter(Boolean).length >= 3 ? { kind: 'answer', message, action: null, changed } : null; // a fragment ("Here's") isn't an answer
   return { kind: r.kind === 'steps' ? 'steps' : 'add', message: message || (r.kind === 'steps' ? 'Here are some smaller steps.' : 'Here’s what I found to add.'), items, changed };
 }
 
@@ -162,4 +162,22 @@ export function countWords(items: { type: AskItemType }[]): string {
   const parts = [[n('task'), 'task', 'tasks'], [n('note'), 'note', 'notes'], [n('appointment'), 'appointment', 'appointments'], [n('project'), 'project', 'projects']]
     .filter(([c]) => (c as number) > 0).map(([c, one, many]) => w(c as number, one as string, many as string));
   return parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : parts[0] ?? 'nothing';
+}
+
+// ---------- Your edits to a proposal, before Add ----------
+// What you change on a card (a day, a time, the length, the list, a note's text) is checked by the same rules as the
+// model's proposal: a real day from today on, a time only with a day, 5–120 minutes; an appointment left without a
+// day and a time becomes a task.
+export interface AskEdit { date?: string; time?: string; minutes?: string; category?: Category; text?: string }
+export function applyAskEdit(it: AskProposal, e: AskEdit | undefined, k: DateKey = todayKey()): AskProposal {
+  if (!e) return it;
+  const out = { ...it };
+  if (e.date !== undefined) out.date = realDate(e.date) && e.date >= k ? e.date : null;
+  if (e.time !== undefined) out.time = /^([01]\d|2[0-3]):[0-5]\d$/.test(e.time) ? e.time : null;
+  if (!out.date) out.time = null;
+  if (e.minutes !== undefined && e.minutes.trim() !== '') { const m = Math.round(Number(e.minutes)); if (Number.isFinite(m)) out.minutes = Math.min(L.maxMinutes, Math.max(L.minMinutes, m)); }
+  if (e.category) out.category = e.category;
+  if (e.text !== undefined && (out.type === 'note' || out.type === 'project')) out.text = e.text.slice(0, L.itemTextChars);
+  if (out.type === 'appointment' && !(out.date && out.time)) out.type = 'task';
+  return out;
 }

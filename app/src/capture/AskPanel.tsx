@@ -1,17 +1,17 @@
 import { CalendarPlus, FolderKanban, ListPlus, NotebookPen, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { addAskItems, checkAskReply, countWords, NEW_PROJECT, undoAsk, type AskChecked, type AskProposal, type AskUndo } from '../ai/ask';
-import { askContext, askSlice } from '../ai/askContext';
+import { addAskItems, applyAskEdit, checkAskReply, countWords, NEW_PROJECT, undoAsk, type AskChecked, type AskEdit, type AskProposal, type AskUndo } from '../ai/ask';
+import { askContext, askPreview, askSlice } from '../ai/askContext';
 import { canAdjust, handOverToAdjust } from '../ai/handover';
 import { AI_MODE, askModel } from '../ai/request';
 import { Button } from '../components/Button';
-import { TextInput } from '../components/Field';
+import { Select, TextArea, TextInput } from '../components/Field';
 import { LinkButton } from '../components/parts';
 import { prettyDate, todayKey } from '../data/dates';
 import { CAT_LABEL } from '../data/plan';
 import { getSnapshot } from '../data/storage';
 import { toast } from '../data/toast';
-import type { MyDayData } from '../data/types';
+import type { Category, MyDayData } from '../data/types';
 import { startLearning } from '../study/actions';
 
 // "Ask MyDay" in the + Capture sheet (the AI design's step 1): for what the on-device suggestions can't do — a question,
@@ -44,10 +44,13 @@ export function AskPanel({ data, text, onClose }: { data: MyDayData; text: strin
   const [phase, setPhase] = useState<Phase>({ at: 'idle' });
   const [picked, setPicked] = useState<boolean[]>([]);
   const [titles, setTitles] = useState<string[]>([]);
+  const [edits, setEdits] = useState<Record<number, AskEdit>>({});
+  const [editing, setEditing] = useState<number | null>(null);
   const [more, setMore] = useState('');
   const request = useRef<AbortController | null>(null);
   useEffect(() => () => request.current?.abort(), []);
   const [slice] = useState(() => askSlice(data, location.hash)); // the page the sheet was opened on
+  const [opened] = useState(() => new Date());                    // for the preview's "when" (the request itself uses the time you tap)
   if (AI_MODE === 'off') return null;
   const k = todayKey();
 
@@ -55,17 +58,17 @@ export function AskPanel({ data, text, onClose }: { data: MyDayData; text: strin
     request.current?.abort();
     const ctrl = new AbortController(); request.current = ctrl;
     setPhase({ at: 'asking' });
-    const reply = await askModel(askContext(slice, text, k, new Date(), followUp), ctrl.signal);
+    const reply = await askModel(askContext(slice, text, k, undefined, followUp), ctrl.signal); // the time now (askContext reads the clock)
     if (ctrl.signal.aborted) return;
     if (!reply.ok) { setPhase({ at: 'error', message: reply.message }); return; }
     const r = checkAskReply(reply.text, getSnapshot().data, slice, k);
     if (!r) { setPhase({ at: 'error', message: "The answer that came back couldn't be used — nothing was added. Try again, or put it another way." }); return; }
-    if (r.kind === 'add' || r.kind === 'steps') { setPicked(r.items.map(i => !i.already)); setTitles(r.items.map(i => i.title)); }
+    if (r.kind === 'add' || r.kind === 'steps') { setPicked(r.items.map(i => !i.already)); setTitles(r.items.map(i => i.title)); setEdits({}); setEditing(null); }
     setMore('');
     setPhase({ at: 'shown', r, model: reply.model, followed: !!followUp });
   }
   function add(r: Extract<AskChecked, { kind: 'add' | 'steps' }>) {
-    const chosen = r.items.map((it, i) => ({ ...it, title: titles[i]?.trim().slice(0, 120) || it.title })).filter((_, i) => picked[i]);
+    const chosen = r.items.map((it, i) => ({ ...applyAskEdit(it, edits[i], k), title: titles[i]?.trim().slice(0, 120) || it.title })).filter((_, i) => picked[i]);
     if (!chosen.length) return;
     const undo = addAskItems(chosen);
     if (!undo) { toast("Couldn't save just now — nothing was added."); return; }
@@ -79,7 +82,17 @@ export function AskPanel({ data, text, onClose }: { data: MyDayData; text: strin
     <div className="mt-4 pt-4 border-t border-outline" data-s="ask-panel" data-phase={phase.at}>
       {(phase.at === 'idle' || phase.at === 'error') && <>
         <Button variant="tonal" data-action="ask-go" disabled={!text.trim()} onClick={() => { void ask(); }}><Sparkles size={18} aria-hidden="true" /> Ask MyDay</Button>
-        <p className="text-xs text-fg-3 mt-1.5 mb-0" data-s="ask-sends">Sends: {slice.sends}. Nothing is saved until you tap Add.</p>
+        {(() => { const pv = askPreview(askContext(slice, text, k, opened), slice.privateNote); return (
+          <div className="mt-2 text-xs text-fg-2" data-s="ask-sends">
+            <p className="m-0 font-semibold text-fg-3">Sent to the AI with what you type:</p>
+            <ul className="list-none p-0 m-0 mt-1 flex flex-wrap gap-1.5">{pv.short.map(x => <li key={x} className="bg-surface-2 rounded-full px-2.5 py-1">{x}</li>)}</ul>
+            <details className="mt-1" data-s="ask-sends-all">
+              <summary className="cursor-pointer text-primary font-semibold min-h-11 flex items-center">Show everything that’s sent</summary>
+              {pv.all.map(sec => <div key={sec.label} className="mt-1.5"><p className="m-0 font-semibold text-fg">{sec.label}</p>
+                <ul className="m-0 pl-4 list-disc">{sec.lines.map((l, i) => <li key={i} className="break-words">{l}</li>)}</ul></div>)}
+            </details>
+            <p className="m-0 text-fg-3">Nothing is saved until you tap Add.</p>
+          </div>); })()}
       </>}
       {phase.at === 'error' && <p role="alert" className="text-[15px] bg-warn-c text-on-warn-c rounded-tile px-3 py-2 mt-2.5 mb-0">{phase.message}</p>}
       {phase.at === 'asking' && <p role="status" className="text-[15px] text-fg-2 flex items-center gap-2 my-1"><span className="size-3 rounded-full bg-primary motion-safe:animate-pulse flex-none" aria-hidden="true" /> Asking MyDay…</p>}
@@ -95,7 +108,7 @@ export function AskPanel({ data, text, onClose }: { data: MyDayData; text: strin
           {r.message && <p className="text-[15px] mt-1.5 mb-2 whitespace-pre-wrap" data-s="ask-message">{r.message}</p>}
           {(r.kind === 'add' || r.kind === 'steps') && <>
             <ul className="list-none p-0 m-0 grid gap-2">
-              {r.items.map((it, i) => (
+              {r.items.map((orig, i) => { const it = applyAskEdit(orig, edits[i], k), e = edits[i] ?? {}, set = (patch: AskEdit) => setEdits(x => ({ ...x, [i]: { ...x[i], ...patch } })); return (
                 <li key={i} className="flex items-start gap-2.5 rounded-tile border border-outline px-3 py-2" data-s="ask-item" data-type={it.type}>
                   <input type="checkbox" className="mt-3.5 size-5 accent-[var(--primary)] flex-none" checked={!!picked[i]} data-s="ask-pick" aria-label={`Add ${it.title}`}
                     onChange={e => setPicked(p => p.map((x, j) => (j === i ? e.target.checked : x)))} />
@@ -109,10 +122,25 @@ export function AskPanel({ data, text, onClose }: { data: MyDayData; text: strin
                       {it.projectId && <span>· in “{it.projectId === NEW_PROJECT ? r.items.find(x => x.type === 'project')?.title : data.projects.items.find(p => p.id === it.projectId)?.title}”</span>}
                       {it.already && <span>· already on your lists</span>}
                     </p>
-                    {it.type !== 'task' && it.text && it.text !== it.title && <p className="text-[13px] text-fg-2 m-0 mt-1 line-clamp-3">{it.text}</p>}
+                    {it.type !== 'task' && it.text && it.text !== it.title && editing !== i && <p className="text-[13px] text-fg-2 m-0 mt-1 line-clamp-3">{it.text}</p>}
+                    {editing === i ? (
+                      <div className="grid grid-cols-2 gap-2 mt-2 min-w-0" data-s="ask-edit">
+                        {(it.type === 'task' || it.type === 'appointment' || orig.type === 'appointment') && <>
+                          <label className="text-xs text-fg-2 grid gap-1 min-w-0">Day<TextInput type="date" min={k} value={e.date ?? it.date ?? ''} data-f="ask-date" className="!min-h-11 !py-1.5 min-w-0 !px-2" onChange={ev => set({ date: ev.target.value })} /></label>
+                          <label className="text-xs text-fg-2 grid gap-1 min-w-0">Time<TextInput type="time" value={e.time ?? it.time ?? ''} data-f="ask-time" disabled={!it.date} className="!min-h-11 !py-1.5 min-w-0 !px-2" onChange={ev => set({ time: ev.target.value })} /></label>
+                        </>}
+                        {it.type === 'task' && <>
+                          <label className="text-xs text-fg-2 grid gap-1">Minutes<TextInput type="number" inputMode="numeric" min={5} max={120} value={e.minutes ?? String(it.minutes)} data-f="ask-minutes" className="!min-h-11 !py-1.5" onChange={ev => set({ minutes: ev.target.value })} /></label>
+                          <label className="text-xs text-fg-2 grid gap-1">List<Select value={it.category} data-f="ask-list" className="!min-h-11 !py-1.5" onChange={ev => set({ category: ev.target.value as Category })}>
+                            {(['learning', 'admin', 'health'] as Category[]).map(c => <option key={c} value={c}>{CAT_LABEL[c]}</option>)}</Select></label>
+                        </>}
+                        {(it.type === 'note' || it.type === 'project') && <label className="col-span-2 text-xs text-fg-2 grid gap-1">{it.type === 'note' ? 'Note' : 'What it’s about'}
+                          <TextArea rows={3} maxLength={1000} value={e.text ?? it.text} data-f="ask-text" onChange={ev => set({ text: ev.target.value })} /></label>}
+                        <LinkButton data-action="ask-edit-done" className="col-span-2 text-sm" onClick={() => setEditing(null)}>Done</LinkButton>
+                      </div>
+                    ) : <LinkButton data-action="ask-edit" className="text-sm" aria-label={`Edit ${titles[i] || it.title}`} onClick={() => setEditing(i)}>Edit</LinkButton>}
                   </div>
-                </li>
-              ))}
+                </li>); })}
             </ul>
             <div className="grid grid-cols-2 gap-2.5 mt-3">
               <Button variant="primary" data-action="ask-add" disabled={!picked.some(Boolean)} onClick={() => add(r)}>Add {picked.filter(Boolean).length || ''}</Button>

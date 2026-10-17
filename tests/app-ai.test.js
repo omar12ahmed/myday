@@ -20,6 +20,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const real = new Date(), at10 = new Date(real.getFullYear(), real.getMonth(), real.getDate(), 10, 0);
 const base = Math.min(real.getTime(), at10.getTime());
 const TODAY = `${real.getFullYear()}-${String(real.getMonth() + 1).padStart(2, '0')}-${String(real.getDate()).padStart(2, '0')}`;
+const PLUS3 = (() => { const d = new Date(real); d.setDate(d.getDate() + 3); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(); // a day for editing a proposal
 const clockScript = `(() => { const RD = Date, base = ${base}, start = RD.now(); class FD extends RD { constructor(...a) { if (a.length) super(...a); else super(base + (RD.now() - start)); } static now() { return base + (RD.now() - start); } } window.Date = FD; })();`;
 
 const task = (uid, title, category, minutes, x = {}) => ({ uid, taskId: 'list-' + uid, category, title, minutes, baseMinutes: minutes, done: false, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null, ...x });
@@ -379,7 +380,9 @@ const SEED = `s => {
     await seeded(mock, MOCK); await mock.setData(askSeed); await mock.until(`document.querySelector('#app')`);
     const logAsk = srv.log.length;
     await openAsk(mock, 'projects/p/pjAsk', 'Break this into smaller steps');
-    check('the + sheet offers Ask MyDay, saying what it sends from this page before you tap', await mock.exists('[data-action=ask-go]') && (await mock.text('[data-s=ask-sends]')).includes('this project’s name, summary, stage, tasks and note titles') && (await mock.text('#captureSheet')).includes('nothing you type is sent unless you tap Ask MyDay'));
+    check('the + sheet offers Ask MyDay, showing what it sends from this page before you tap (the values themselves)', await mock.exists('[data-action=ask-go]') && (await mock.text('[data-s=ask-sends]')).includes('Project: Coffee subscription') && (await mock.text('[data-s=ask-sends]')).includes('0 tasks, 1 note title') && (await mock.text('#captureSheet')).includes('nothing you type is sent unless you tap Ask MyDay'));
+    await mock.ev(`document.querySelector('[data-s=ask-sends-all] summary').click()`); await sleep(150);
+    check('…and, expanded, everything: what you typed, the summary and note titles', await mock.ev(`document.querySelector('[data-s=ask-sends-all]').open`) && (await mock.text('[data-s=ask-sends-all]')).includes('Break this into smaller steps') && (await mock.text('[data-s=ask-sends-all]')).includes('Beans for small offices') && (await mock.text('[data-s=ask-sends-all]')).includes('Roasters sell per kilo'));
     check('…and answers: three steps, in this project, labelled as the practice helper', (await askGo(mock)) === 'shown' && (await mock.ev(`document.querySelectorAll('[data-s=ask-item]').length`)) === 3 && (await mock.text('[data-s=ask-panel]')).includes('practice helper (no AI)') && (await mock.text('[data-s=ask-panel]')).includes('in “Coffee subscription”'));
     const before8f = (await mock.data()).tasks.items.length;
     await mock.ev(`document.querySelectorAll('[data-s=ask-pick]')[2].click()`);
@@ -392,11 +395,26 @@ const SEED = `s => {
     check('…and Undo takes them back', (await mock.data()).tasks.items.length === before8f);
     await closeSheet(mock); await sleep(200);
     await openAsk(mock, 'projects/notes/nPriv', 'Summarise this note');
-    check('on a private note: the Sends line says the note isn\'t sent', (await mock.text('[data-s=ask-sends]')).includes('not this note, it’s private'));
+    check('on a private note: the preview says the note isn\'t sent', (await mock.text('[data-s=ask-sends]')).includes('This note: not sent (private)') && !(await mock.text('[data-s=ask-sends]')).includes('private worry'));
     await closeSheet(mock); await sleep(200);
     await openAsk(mock, 'today', 'call the bank, renew passport and email Sam');
     await askGo(mock);
     check('several things at once: three tasks to tick', (await mock.ev(`[...document.querySelectorAll('[data-s=ask-title]')].map(i => i.value).join('|')`)) === 'Call the bank|Renew passport|Email Sam');
+    await mock.ev(`document.querySelectorAll('[data-action=ask-edit]')[1].click()`); await sleep(150);
+    const setF = (f, v) => mock.ev(`(() => { const el = document.querySelector('[data-s=ask-edit] [data-f=${f}]'); const proto = el instanceof HTMLSelectElement ? HTMLSelectElement.prototype : HTMLInputElement.prototype;
+      Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, ${JSON.stringify(v)}); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+    await setF('ask-date', PLUS3); await sleep(100); await setF('ask-time', '10:30'); await setF('ask-minutes', '45'); await setF('ask-list', 'learning'); await sleep(150);
+    check('Edit on a card: a day, a time, the length and the list — shown on the card', (await mock.text('[data-s=ask-item]:nth-child(2)')).includes('10:30') && (await mock.text('[data-s=ask-item]:nth-child(2)')).includes('45 min · Learning'));
+    await mock.click('[data-action=ask-edit-done]');
+    const beforeEd = (await mock.data()).tasks.items.length;
+    await mock.ev(`document.querySelectorAll('[data-s=ask-pick]')[0].click()`); await mock.ev(`document.querySelectorAll('[data-s=ask-pick]')[2].click()`);
+    await mock.click('[data-action=ask-add]'); await sleep(250);
+    const edited = (await mock.data()).tasks.items.slice(beforeEd);
+    check('…and Add saves it as edited', edited.length === 1 && edited[0].title === 'Renew passport' && edited[0].due === PLUS3 && edited[0].time === '10:30' && edited[0].minutes === 45 && edited[0].category === 'learning', edited);
+    await mock.click('[data-action=ask-undo]'); await sleep(200);
+    await closeSheet(mock); await sleep(200);
+    await openAsk(mock, 'today', 'call the bank, renew passport and email Sam');
+    await askGo(mock);
     await mock.type('[data-s=ask-more]', 'and they are all for this week'); await mock.click('[data-action=ask-again]');
     await mock.until(`document.querySelector('[data-s=ask-panel]')?.dataset.phase === 'shown'`, 10000); await sleep(150);
     check('one follow-up ("Not quite…"), then no more', (await mock.ev(`document.querySelector('[data-s=ask-panel]').dataset.phase`)) === 'shown' && !(await mock.exists('[data-s=ask-more]')));
