@@ -1,1 +1,0 @@
-import"./index-CJryPRrV.js";function e(e){let t=e.yourAnswer.trim()?` You answered “${e.yourAnswer.trim().slice(0,80)}”.`:``;return JSON.stringify({explanation:`Practice helper (no AI): try saying the answer in your own words, then picture one real example of it.${t} The answer is: ${e.answer.slice(0,300)}`})}export{e as mockExplain};
