@@ -198,6 +198,19 @@ second one), and each links to the other. Ask MyDay and AI help with notes send 
 is used. It's saved inside the project (`template` and `model`, rules in `src/data/businessModel.ts`); a general
 project is saved exactly as before.
 
+**AI help on the one page (1.34.0):** on a business idea's **Model** tab, under the fourth question, **Suggest what
+must be true** asks Ask MyDay for up to five things your idea may depend on, only when you tap it. It's offered once the
+first three questions are answered (until then a quiet line says so), never on a private project (its usual note
+instead), and not once the list is full (12). Only from the Model tab, Ask sends the project's usual slice and its one
+page: your three answers, and what must be true with how each is turning out — never what you found. From the
+project's other tabs, nothing of the one page is sent. Ask's preview shows it ("One page: 3 answers, 2 things that
+must be true"), and What MyDay knows says so. Suggestions come back as cards to tick, each "on your one page, not
+checked yet"; MyDay checks each one itself (this business idea only, at most 110 characters, not a question, not
+already on your list in any state, within the 12). Add puts the ticked ones on your list as Not checked yet, with one
+step of Undo. It never marks anything and never says whether the idea will work: a reply that judges it is reworded
+("Here are a few things your idea may depend on — yours to check."). Instructions `myday-ask-v14` on GLM-5.3-Flash,
+evaluated on six made-up business ideas (18 live calls, about US$0.01). No saved-data change.
+
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
 
@@ -1053,3 +1066,11 @@ returns up to 8 small tasks; you tick the ones to add.
     and is marked **Looks true** or **Doesn't hold** only by you. Overview's "Your one page" card gives counts, never
     percentages, and Explore's brief for a business idea is built from the one page. No AI is used, and Ask MyDay sends
     nothing of it. No server or database change; going back to 1.32.0 is safe.
+46. **Release 1.34.0:** milestone 3: AI help on a business idea's one page, through Ask MyDay, only on your tap.
+    **Suggest what must be true** (on the Model tab, under question 4, once the first three questions are answered;
+    never on a private project) offers up to five things your idea may depend on, as cards to tick. MyDay checks
+    each one itself (this idea only, at most 110 characters, not a question, not already on your list, within the
+    12); Add puts them on your list as Not checked yet, with one step of Undo. It never marks anything or says
+    whether the idea will work. The one page is sent only from the Model tab, and never what you found.
+    Instructions `myday-ask-v14`; the same 20 AI requests a day, shared. The server's `ask` job was deployed first;
+    no database change; going back to 1.33.0 is safe.

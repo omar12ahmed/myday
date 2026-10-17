@@ -735,7 +735,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
     // The instructions and the practice version.
     const msgs = K.buildAskMessages(ctxA);
-    check('the instructions: five kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"change"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v13' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
+    check('the instructions: five kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"change"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v14' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
     const mk = (hash, text) => K.checkAskReply(K.mockAsk(K.askContext(K.askSlice(K.getSnapshot().data, hash, D), text, D)), K.getSnapshot().data, K.askSlice(K.getSnapshot().data, hash, D), D);
     check('practice version: steps on a project page, in that project', (r => r.kind === 'steps' && r.items.length === 3 && r.items.every(x => x.projectId === 'pjC'))(mk('#projects/p/pjC', 'Break this into smaller steps')));
     check('…several things to add', (r => r.kind === 'add' && eq(r.items.map(x => x.title), ['Call the bank', 'Renew passport', 'Email Sam']))(mk('#today', 'call the bank, renew passport and email Sam')));
@@ -1065,7 +1065,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('…and its message doesn\'t pick a winner (nothing reworded)', !/best|recommend|go with/i.test(c.message) && c.message.includes('the choice is yours'), c.message);
   }
 
-  console.log('\n[12f] Ask MyDay on a business idea sends nothing of its one page');
+  console.log('\n[12f] Ask MyDay and a business idea\'s one page: sent only from its Model tab (1.34.0), never what you found');
   {
     K.setClock(`${D}T10:00`);
     const s0 = K.freshState(), at = `${D}T09:00`;
@@ -1074,15 +1074,91 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
       model: { problem: 'Zebra problem wording', who: 'Quokka audience wording', how: 'Narwhal pricing wording', assumptions: [ASM('asA', 'Pelican assumption wording'), ASM('asB', 'Walrus checked wording', { state: 'looks-true', checkedOn: D, found: 'Ibex evidence wording' })] } }];
     localStorage.clear(); localStorage.setItem('myday.data.v4', JSON.stringify(s0)); K.boot();
     const w = K.getSnapshot().data, text = o => JSON.stringify(o);
-    const secrets = ['Zebra', 'Quokka', 'Narwhal', 'Pelican', 'Walrus', 'Ibex'];
-    const page = K.askSlice(w, '#projects/p/pjB', D), model = K.askSlice(w, '#projects/p/pjB/model', D);
-    check('the Model tab is the project page for Ask: the same project slice as the project\'s own page', model.context.project && model.context.project.id === 'pjB' && eq(model.context.project, page.context.project), model.context);
-    for (const [name, sl] of [['project page', page], ['Model tab', model]]) {
+    const onePage = ['Zebra', 'Quokka', 'Narwhal', 'Pelican', 'Walrus'];
+    const page = K.askSlice(w, '#projects/p/pjB', D), model = K.askSlice(w, '#projects/p/pjB/model', D), ms = K.askSlice(w, '#projects/p/pjB/milestones', D);
+    for (const [name, sl] of [['project page', page], ['Milestones tab', ms]]) {
       const req = K.askContext(sl, 'What should I do next?', D), pv = K.askPreview(req, sl.privateNote, sl.held);
-      check(`on the ${name}, nothing of the one page is in the request`, !secrets.some(x => text(req).includes(x)), text(req));
-      check(`on the ${name}, nothing of the one page is in the preview text`, !secrets.some(x => text(pv).includes(x)), pv.short);
+      check(`on the ${name}, nothing of the one page is in the request`, ![...onePage, 'Ibex'].some(x => text(req).includes(x)) && !('onePage' in req.context.project), text(req));
+      check(`on the ${name}, nothing of the one page is in the preview text`, ![...onePage, 'Ibex'].some(x => text(pv).includes(x)), pv.short);
       check(`on the ${name}, the project's name and summary are still sent`, text(req).includes('Lunch boxes for sites') && text(req).includes('Hot lunches for builders'), text(req));
     }
+    const req = K.askContext(model, 'Suggest what must be true for this idea to work', D), pv = K.askPreview(req, model.privateNote, model.held);
+    check('on the Model tab, the one page is sent: the three answers and what must be true with its state', eq(req.context.project.onePage, { problem: 'Zebra problem wording', who: 'Quokka audience wording', how: 'Narwhal pricing wording',
+      mustBeTrue: [{ text: 'Pelican assumption wording', state: 'open' }, { text: 'Walrus checked wording', state: 'looks-true' }] }), req.context.project.onePage);
+    check('…but never what you found', !text(req).includes('Ibex') && !text(pv).includes('Ibex'), text(req));
+    check('…and the preview shows it, and the Sends line names it', onePage.every(x => text(pv.all).includes(x)) && pv.short.some(x => /^One page: 3 answers, 2 things that must be true$/.test(x)) && /its one page/.test(model.sends), [pv.short, model.sends]);
+    check('…the rest of the project slice is the same as on its own page', eq({ ...req.context.project, onePage: undefined }, { ...page.context.project, onePage: undefined }));
+  }
+
+  console.log('\n[12g] What must be true from Ask MyDay: checked, added, undone');
+  {
+    K.setClock(`${D}T10:00`);
+    const s0 = K.freshState(), at = `${D}T09:00`;
+    const ASM = (id, text, x = {}) => ({ id, text, state: 'open', found: '', checkedOn: null, taskId: null, createdAt: at, ...x });
+    const BP = (id, title, x = {}) => ({ id, title, summary: 'Hot lunches for builders', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at, template: 'business',
+      model: { problem: 'Builders cannot get a hot lunch', who: 'Small crews', how: 'Boxes at noon', assumptions: [] }, ...x });
+    s0.projects.items = [
+      BP('pjB', 'Lunch boxes for sites', { model: { problem: 'Builders cannot get a hot lunch', who: 'Small crews', how: 'Boxes at noon', assumptions: [
+        ASM('asA', 'Crews would pay for lunch'), ASM('asB', 'Sites allow deliveries!', { state: 'looks-true', checkedOn: D, found: 'Yes' }), ASM('asC', 'Cooking 40 boxes is realistic', { state: 'doesnt-hold', checkedOn: D })] } }),
+      BP('pjFull', 'Ten already', { model: { problem: '', who: '', how: '', assumptions: Array.from({ length: 10 }, (_, i) => ASM('af' + i, 'Existing belief number ' + i)) } }),
+      BP('pjPriv', 'Secret lunch idea', { private: true }),
+      { id: 'pjGen', title: 'Garden shed', summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at },
+    ];
+    localStorage.clear(); localStorage.setItem('myday.data.v4', JSON.stringify(s0)); K.boot();
+    const w = K.getSnapshot().data, text = o => JSON.stringify(o);
+    const R = o => text({ kind: 'add', message: 'A few things your idea may depend on.', items: [], action: null, ...o });
+    const B = (title, x = {}) => ({ type: 'must-be-true', title, ...x });
+    const mp = K.askSlice(w, '#projects/p/pjB/model', D), page = K.askSlice(w, '#projects/p/pjB', D);
+    const mine = c => (c?.items ?? []).filter(i => i.type === 'must-be-true');
+
+    let c = K.checkAskReply(R({ items: [B('Crews would try a new lunch supplier'), B('We can reach crews cheaply'), B('Margins cover the ingredients')] }), w, mp, D);
+    check('three must-be-true items from the Model tab give three proposals of that type, each for the page\'s project', mine(c).length === 3 && c.items.length === 3 && c.items.every(i => i.plan?.projectId === 'pjB' && i.projectId === 'pjB'), c);
+
+    c = K.checkAskReply(R({ items: [B('x'.repeat(111)), B('x'.repeat(110)), B('Margins cover the ingredients')] }), w, mp, D);
+    check('an item longer than 110 characters is left out, and said to be too long', mine(c).length === 2 && !c.items.some(i => i.title.length > 110) && c.changed.some(x => x.includes('too long')), c);
+
+    c = K.checkAskReply(R({ items: [B('Will crews pay for this?'), B('Margins cover the ingredients')] }), w, mp, D);
+    check('an item ending in a question mark is left out, and said to be a question', eq(mine(c).map(i => i.title), ['Margins cover the ingredients']) && c.changed.some(x => x.includes('a question')), c);
+
+    c = K.checkAskReply(R({ items: [B('crews would PAY for lunch.'), B('sites allow deliveries'), B('Cooking 40 boxes is realistic'), B('Margins cover the ingredients')] }), w, mp, D);
+    check('an item the same as one already on the list is left out whatever its state, ignoring case and punctuation, and said so', eq(mine(c).map(i => i.title), ['Margins cover the ingredients']) && c.changed.filter(x => x.includes('already on your list')).length === 3, c);
+
+    c = K.checkAskReply(R({ items: Array.from({ length: 7 }, (_, i) => B('Brand new belief ' + i)) }), w, mp, D);
+    check('with more than five items only five are kept, and it says "Left out more than five"', mine(c).length === 5 && eq(mine(c).map(i => i.title), Array.from({ length: 5 }, (_, i) => 'Brand new belief ' + i)) && c.changed.some(x => x.includes('Left out more than five')), c);
+
+    const full = K.askSlice(w, '#projects/p/pjFull/model', D);
+    c = K.checkAskReply(R({ items: [B('New belief one'), B('New belief two'), B('New belief three')] }), w, full, D);
+    check('with ten already on the list only two more are kept, and it says 12 is the most', mine(c).length === 2 && c.changed.some(x => x.includes('12 is the most')), c);
+
+    c = K.checkAskReply(R({ items: [B('Margins cover the ingredients'), B('Crews would try a new supplier')] }), w, page, D);
+    check('from the project\'s Overview (no one page sent) every must-be-true item is left out, and said not to have been sent', mine(c).length === 0 && c.changed.filter(x => x.includes('wasn\'t sent')).length === 2, c);
+
+    c = K.checkAskReply(R({ items: [B('Margins cover the ingredients')] }), w, K.askSlice(w, '#projects/p/pjGen/model', D), D);
+    check('for a general project (no template) on its /model address every must-be-true item is left out, and said not to have been sent', mine(c).length === 0 && c.changed.some(x => x.includes('wasn\'t sent')), c);
+
+    const priv = K.askSlice(w, '#projects/p/pjPriv/model', D);
+    c = K.checkAskReply(R({ items: [B('Margins cover the ingredients')] }), w, priv, D);
+    check('a private business project sends no project, so every must-be-true item is left out', !('project' in priv.context) && mine(c).length === 0 && c.changed.length > 0, [priv.context, c]);
+
+    c = K.checkAskReply(R({ message: 'This is a great idea and it will definitely succeed.', items: [B('Margins cover the ingredients')] }), w, mp, D);
+    check('a message that judges the idea is replaced by "Here are a few things your idea may depend on — yours to check.", and it says so', c.message === 'Here are a few things your idea may depend on — yours to check.' && c.changed.length > 0, c);
+    c = K.checkAskReply(R({ message: 'Here are some things the idea may rely on.', items: [B('Margins cover the ingredients')] }), w, mp, D);
+    check('…but a neutral message is kept as it is', c.message === 'Here are some things the idea may rely on.' && !c.changed.length, c);
+
+    c = K.checkAskReply(R({ items: [{ type: 'must-be-true', text: 'Margins cover the ingredients' }, { type: 'must-be-true', text: 'Crews would try a new supplier' }] }), w, mp, D);
+    check('items whose words come in "text" instead of "title" are read the same', eq(mine(c).map(i => i.title), ['Margins cover the ingredients', 'Crews would try a new supplier']), c);
+
+    // ---- Add and Undo ----
+    const planned = K.checkAskReply(R({ items: [B('Crews would try a new lunch supplier'), B('We can reach crews cheaply'), B('Margins cover the ingredients')] }), w, mp, D);
+    const u = K.addAskItems(planned.items), as1 = K.getSnapshot().data.projects.items.find(p => p.id === 'pjB').model.assumptions;
+    check('Add puts the three on the project\'s list after the existing ones, open, with nothing found, not yet checked and no task', !!u && eq(as1.map(a => a.text), ['Crews would pay for lunch', 'Sites allow deliveries!', 'Cooking 40 boxes is realistic', 'Crews would try a new lunch supplier', 'We can reach crews cheaply', 'Margins cover the ingredients'])
+      && as1.slice(3).every(a => a.state === 'open' && a.found === '' && a.checkedOn === null && a.taskId === null), as1);
+    check('…and gives back one "assumption" entry for each, to undo', u.plan.length === 3 && u.plan.every(x => x.kind === 'assumption' && x.projectId === 'pjB') && eq(u.plan.map(x => x.id), as1.slice(3).map(a => a.id)), u.plan);
+    check('countWords says "3 things that must be true" for three and "a thing that must be true" for one', K.countWords(planned.items) === '3 things that must be true' && K.countWords([{ type: 'must-be-true' }]) === 'a thing that must be true', K.countWords(planned.items));
+    K.update(d => { const m = d.projects.items.find(p => p.id === 'pjB').model; m.assumptions = m.assumptions.filter(a => a.text !== 'We can reach crews cheaply'); });
+    check('Undo takes back exactly those', K.undoAsk(u), null);
+    const as2 = K.getSnapshot().data.projects.items.find(p => p.id === 'pjB').model.assumptions;
+    check('…one you had already removed stays removed, and the others on the list stay as they were', eq(as2.map(a => a.text), ['Crews would pay for lunch', 'Sites allow deliveries!', 'Cooking 40 boxes is realistic']) && eq(as2, as1.slice(0, 3)), as2);
   }
 
   const { pass, fail } = summary();

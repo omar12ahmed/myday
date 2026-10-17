@@ -314,6 +314,33 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
       check(`ask: ${why} — refused (400) before any model call`, a.status === 400 && finished.length === 0, a.status);
     }
   }
+
+  console.log('\n[2h] What must be true: the one page in the request, must-be-true in the reply (1.34.0)');
+  {
+    const A = await import(path.join(ROOT, 'supabase/functions/_shared/ai/ask.ts'));
+    const page = { problem: 'Builders can’t get a hot lunch on site', who: 'Small building crews', how: 'We bring boxes at noon and charge per box', mustBeTrue: [
+      { text: 'Crews would pay for a daily lunch', state: 'open' }, { text: 'We can cook 40 boxes a day', state: 'looks-true' }, { text: 'Sites allow deliveries', state: 'doesnt-hold' }] };
+    const mk = (onePage, text = 'Suggest what must be true for this idea to work') => ({ version: 1, action: 'ask', date: '2026-11-10', weekday: 'Tuesday', time: '10:00', page: 'project', text,
+      context: { project: { id: 'pjB', title: 'Lunch boxes for sites', summary: 'Hot lunches for builders', stage: 'explore', tasks: [], notes: [], ...(onePage === undefined ? {} : { onePage }) } } });
+    check('a project context with a valid one page (three answers, up to 12 beliefs with a state) is accepted', A.checkAskContext(mk(page)) === true);
+    check('…and so is a project context with no one page', A.checkAskContext(mk(undefined)) === true);
+    check('…but an answer over 1,000 characters is refused', A.checkAskContext(mk({ ...page, how: 'x'.repeat(1001) })) === false);
+    check('…but 13 beliefs are refused', A.checkAskContext(mk({ ...page, mustBeTrue: Array.from({ length: 13 }, (_, i) => ({ text: 'Belief ' + i, state: 'open' })) })) === false);
+    check('…but 12 beliefs are accepted', A.checkAskContext(mk({ ...page, mustBeTrue: Array.from({ length: 12 }, (_, i) => ({ text: 'Belief ' + i, state: 'open' })) })) === true);
+    check('…but a belief over 110 characters is refused', A.checkAskContext(mk({ ...page, mustBeTrue: [{ text: 'x'.repeat(111), state: 'open' }] })) === false);
+    check('…but a belief with an unknown state is refused', A.checkAskContext(mk({ ...page, mustBeTrue: [{ text: 'Crews would pay', state: 'maybe' }] })) === false);
+    check('…but a belief carrying what you found is refused', A.checkAskContext(mk({ ...page, mustBeTrue: [{ text: 'Crews would pay', state: 'open', found: 'Three said yes' }] })) === false);
+    check('…but a one page carrying anything more is refused', A.checkAskContext(mk({ ...page, extra: 'x' })) === false);
+    const rep = items => JSON.stringify({ kind: 'add', message: 'A few things.', items, action: null });
+    const r1 = A.readAsk(rep([{ type: 'must-be-true', title: 'Crews would pay' }, { type: 'must-be-true', text: 'We can cook 40 boxes a day' }]));
+    check('a reply\'s must-be-true items are kept, the words read from "title" or, when it is missing, from "text"', r1 && r1.items.length === 2 && r1.items.every(i => i.type === 'must-be-true') && r1.items[0].title === 'Crews would pay' && r1.items[1].title === 'We can cook 40 boxes a day', r1);
+    const sys = A.buildAskMessages(mk(page)).map(m => m.content).join('\n');
+    check('the instructions are version myday-ask-v14 and mention must-be-true and onePage', A.ASK_PROMPT_VERSION === 'myday-ask-v14' && sys.includes('must-be-true') && sys.includes('onePage'), A.ASK_PROMPT_VERSION);
+    const m1 = JSON.parse(A.mockAsk(mk(page)));
+    check('the practice version, with a one page and "Suggest what must be true…", answers "add" with 3 must-be-true items', m1.kind === 'add' && m1.items.length === 3 && m1.items.every(i => i.type === 'must-be-true'), m1);
+    const m2 = JSON.parse(A.mockAsk(mk(undefined)));
+    check('…and without a one page it does not', !m2.items.some(i => i.type === 'must-be-true'), m2);
+  }
   env = { AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_MOCK_DELAY_MS: '0', AI_DAILY_LIMIT: '50', AI_MIN_SECONDS_BETWEEN: '0', AI_MONTHLY_BUDGET_USD: '1' };
 
   console.log('\n[3] A caller is verified before anything else, and secrets stay out of Git');

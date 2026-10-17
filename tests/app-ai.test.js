@@ -633,6 +633,62 @@ const SEED = `s => {
     await mock.ev(`location.hash = 'today'`); await sleep(200);
   }
 
+  console.log('\n[8m] Suggest what must be true on a business idea\'s one page');
+  {
+    const at = `${TODAY}T08:00`;
+    const as = (id, text, state = 'open', found = '') => ({ id, text, state, found, checkedOn: state === 'open' ? null : TODAY, taskId: null, createdAt: at });
+    const EX = [as('asX1', 'Cafes would pay to be listed', 'looks-true', 'Zorblat said yes on the phone'), as('asX2', 'Owners read messages in the morning', 'open')];
+    const PJB = (id, title, model, x = {}) => ({ id, title, summary: 'A made-up directory', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at, template: 'business', model, ...x });
+    const M3 = { problem: 'Small cafes are hard to find', who: 'Students new to the town', how: 'A free map; cafes pay a small fee', assumptions: EX };
+    const twelve = Array.from({ length: 12 }, (_, i) => as('asT' + i, 'Made-up belief number ' + i));
+    await seeded(mock, MOCK);
+    await mock.setData(`s => { s.projects.items.push(${JSON.stringify(PJB('pjB2', 'Cafe map two answers', { ...M3, how: '', assumptions: [] }))}, ${JSON.stringify(PJB('pjB3', 'Cafe map', M3))}, ${JSON.stringify(PJB('pjBP', 'Cafe map private', { ...M3, assumptions: [] }, { private: true }))}, ${JSON.stringify(PJB('pjB12', 'Cafe map twelve', { ...M3, assumptions: twelve }))}); }`);
+    await mock.until(`document.querySelector('#app')`);
+    const proj = async () => (await mock.data()).projects.items.find(p => p.id === 'pjB3');
+    const model = async id => { await mock.ev(`location.hash = 'projects/p/${id}/model'`); await mock.until(`document.getElementById('projectModel')`, 5000); await sleep(200); };
+
+    await model('pjB2');
+    check('with only two of the three answers, the Model tab says to answer the first three questions and has no "Suggest what must be true" button', (await mock.text('[data-s=model-ai-wait]')) === 'Once the first three questions are answered, Ask MyDay can suggest what must be true.' && !(await mock.exists('[data-action=model-ask]')), await mock.text('[data-s=model-musts]'));
+    await model('pjB3');
+    check('with all three answered, the Model tab offers "Suggest what must be true" and no waiting line', (await mock.text('[data-action=model-ask]')).includes('Suggest what must be true') && !(await mock.exists('[data-s=model-ai-wait]')));
+    await model('pjBP');
+    check('on a private business idea there is no button, only "Private project — AI help isn\'t offered here."', !(await mock.exists('[data-action=model-ask]')) && (await mock.text('[data-s=ai-private]')) === 'Private project — AI help isn\'t offered here.');
+    await model('pjB12');
+    check('with 12 things already listed there is neither the button nor the waiting line', !(await mock.exists('[data-action=model-ask]')) && !(await mock.exists('[data-s=model-ai-wait]')));
+
+    await model('pjB3');
+    const before = await proj();
+    await mock.click('[data-action=model-ask]'); await mock.until(`document.getElementById('captureText')`, 5000); await sleep(200);
+    const typed = await mock.ev(`document.getElementById('captureText').value`);
+    const sends = await mock.text('[data-s=ask-sends]');
+    check('tapping it opens + with "Suggest what must be true for this idea to work" typed, and nothing added yet', typed === 'Suggest what must be true for this idea to work' && !(await mock.exists('[data-s=ask-item]')) && eq((await proj()).model, before.model), typed);
+    check('the "Sent to the AI" preview has the chip "One page: 3 answers, 2 things that must be true"', sends.includes('One page: 3 answers, 2 things that must be true'), sends);
+    check('…and "Show everything that\'s sent" lists the three answers and each thing with how it is turning out', ['Small cafes are hard to find', 'Students new to the town', 'A free map; cafes pay a small fee', 'Cafes would pay to be listed — looks true', 'Owners read messages in the morning — not checked yet'].every(s => sends.includes(s)), sends);
+    check('…but never the text of what was found', !sends.includes('Zorblat'), sends);
+    await mock.click('[data-action=ask-go]'); await mock.until(`['shown', 'error'].includes(document.querySelector('[data-s=ask-panel]')?.dataset.phase)`, 10000);
+    check('Ask MyDay answers with 3 "must be true" cards, each saying "on your one page, not checked yet"', (await mock.ev(`document.querySelectorAll('[data-s=ask-item][data-type=must-be-true]').length`)) === 3 && (await mock.ev(`[...document.querySelectorAll('[data-s=ask-item][data-type=must-be-true]')].every(x => x.textContent.includes('on your one page, not checked yet'))`)) === true, await mock.text('[data-s=ask-panel]'));
+    await mock.click('[data-action=ask-add]'); await sleep(250);
+    const after = (await proj()).model.assumptions;
+    check('Add puts them on the one page after the existing ones, in order, as not checked yet', after.length === 5 && after[0].id === 'asX1' && after[1].id === 'asX2' && after.slice(2).every(a => a.state === 'open') && after.slice(2).map(a => a.text).join('|') === 'The people it’s for would try something new for this|They would pay enough to cover what it costs|You can reach them without spending much', after.map(a => a.text));
+    check('…the message says "Added 3 things that must be true."', (await mock.text('#toast')).includes('Added 3 things that must be true.'), await mock.text('#toast'));
+    check('…and the Model tab lists them', (await mock.ev(`document.querySelectorAll('#projectModel [data-s=assumption]').length`)) === 5);
+    await mock.click('[data-action=ask-undo]'); await sleep(250);
+    const undone = (await proj()).model.assumptions;
+    check('Undo takes the three back and leaves the existing two', eq(undone, EX) && (await mock.ev(`document.querySelectorAll('#projectModel [data-s=assumption]').length`)) === 2, undone.map(a => a.text));
+    await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(150);
+
+    await mock.ev(`location.hash = 'projects/p/pjB3'`); await mock.until(`document.querySelector('#app')`, 5000); await sleep(300);
+    await mock.click('[data-action=capture-open]'); await mock.until(`document.getElementById('captureText')`); await mock.type('#captureText', 'hello'); await sleep(250);
+    const sendsO = await mock.text('[data-s=ask-sends]');
+    check('from the same project\'s Overview the preview has no "One page" chip and nothing of the answers', sendsO.includes('Cafe map') && !sendsO.includes('One page') && !sendsO.includes('Small cafes are hard to find') && !sendsO.includes('Students new'), sendsO);
+    await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(150);
+
+    await mock.ev(`location.hash = 'knows'`); await mock.until(`document.getElementById('knows')`, 5000);
+    const kn = await mock.text('#knows');
+    check('What MyDay knows mentions "Suggest what must be true" and that what you found is never sent', kn.includes('Suggest what must be true') && kn.includes('never what you found'), kn.slice(0, 200));
+    await mock.ev(`location.hash = 'today'`); await sleep(200);
+  }
+
   console.log('\n[9] Layout');
   await D.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await D.ev(`location.hash = 'today'`);
