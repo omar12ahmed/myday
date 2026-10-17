@@ -115,6 +115,26 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('a project that isn\'t private doesn\'t gain the field', !('private' in rs.get('project:pj1')) && !('private' in nb.projects.items.find(p => p.id === 'pj1')));
   }
 
+  console.log('\n[1d] A business idea\'s one page');
+  {
+    const pr = clone(raw);
+    pr.projects.items.push({ id: 'pj4', title: 'Lunch boxes for sites', summary: 'Hot lunches', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-03T09:00', updatedAt: '2026-10-04T09:00', template: 'business',
+      model: { problem: 'Site workers eat badly', who: 'Site managers', how: 'Cook daily, charge per box', futureThing: { a: 1 }, assumptions: [
+        { id: 'as1', text: 'Sites will pay', state: 'open', found: '', checkedOn: null, taskId: null, createdAt: '2026-10-03T09:00' },
+        { id: 'as2', text: 'Lunch fits a break', state: 'looks-true', found: 'Two managers said yes', checkedOn: '2026-10-10', taskId: 'tk1', createdAt: '2026-10-03T09:01', futureBit: 'a' },
+        { id: 'as3', text: 'Cooks can scale up', state: 'doesnt-hold', found: '', checkedOn: '2026-10-11', taskId: null, createdAt: '2026-10-03T09:02' }] } },
+      { id: 'pj5', title: 'A case', summary: '', stage: 'capture', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-03T09:00', updatedAt: '2026-10-04T09:00', template: 'case' });
+    const rs = R.localRecords(R.normalize(pr)), rec = rs.get('project:pj4'), recCase = rs.get('project:pj5');
+    check('a business idea travels as one project record with its template and one page inside, exactly as entered', !!rec && rec.template === 'business' && eq(rec, pr.projects.items[1]), rec);
+    check('…keeping the unknown fields on the model and on an assumption', rec.model.futureThing.a === 1 && rec.model.assumptions[1].futureBit === 'a');
+    check('checked as it arrives on another device, it is exactly the same', R.fingerprint(R.cleanRecord('project:pj4', clone(rec))) === R.fingerprint(rec));
+    const nb = clone(R.freshState());
+    for (const [key, c] of rs) R.putRecord(nb, key, clone(c));
+    check('put into a new MyDay, the business idea comes back the same', R.fingerprint(R.localRecords(R.normalize(nb)).get('project:pj4')) === R.fingerprint(rec) && nb.projects.items.find(p => p.id === 'pj4').model.assumptions.length === 3);
+    check('a project of a kind this version does not know ("case") survives the round trip unchanged', !!recCase && recCase.template === 'case' && eq(recCase, pr.projects.items[2]) && R.fingerprint(R.cleanRecord('project:pj5', clone(recCase))) === R.fingerprint(recCase) && nb.projects.items.find(p => p.id === 'pj5').template === 'case', recCase);
+    check('a project that is not a business idea gains neither field', !('template' in rs.get('project:pj1')) && !('model' in rs.get('project:pj1')) && !('model' in nb.projects.items.find(p => p.id === 'pj1')));
+  }
+
   console.log('\n[2] What stays on each device');
   check('the theme and animations aren\'t in the planning settings', !('theme' in recs.get('settings:planning')) && !('motion' in recs.get('settings:planning')) && recs.get('settings:planning').earliestTime === '07:30');
   check('the downloaded bank holidays aren\'t synced, only the region', eq(recs.get('holidays:region'), { region: 'scotland' }));

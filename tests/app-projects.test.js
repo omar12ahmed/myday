@@ -625,6 +625,150 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await go('projects', 2026, 10, 16, 9, 9); await sleep(200);
   check('…and the lock is gone from the board card', !(await exists('[data-s=project-private]')));
 
+  // ---- The Business template (1.33.0) ----
+  const asObj = (id, text, state = 'open', extra = {}) => ({ id, text, state, found: '', checkedOn: state === 'open' ? null : '2026-10-14', taskId: null, createdAt: '2026-10-10T09:00', ...extra });
+  const bizObj = (id, title, model, extra = {}) => pjObj(id, title, 'capture', { template: 'business', ...(model ? { model } : {}), ...extra });
+  const tabsOf = () => ev(`[...document.querySelectorAll('[data-s=project-tabs] [data-tab]')].map(a => a.dataset.tab)`);
+  const kindNow = () => ev(`(document.querySelector('[data-s=project-kind] [data-action=project-kind]:checked') || {}).value || null`);
+  const rowSel = id => `[data-s=assumption][data-id="${id}"]`;
+
+  console.log('\n[24] Starting a business idea');
+  await go('projects', 2026, 10, 15, 22); await reset(); await go('projects', 2026, 10, 15, 22);
+  check('the Start a project form has a kind choice, with General chosen to begin with', (await exists('[data-s=project-kind][role=radiogroup]')) && (await kindNow()) === 'general', await kindNow());
+  await click('[data-action=project-kind][value=business]'); await sleep(150);
+  check('choosing Business idea selects it', (await kindNow()) === 'business', await kindNow());
+  await type('#projectNew', 'Bakery bread-share app'); await click('[data-action=project-add]'); await sleep(400);
+  let bz = await project('Bakery bread-share app');
+  check('a business idea is saved with template business and no model yet', bz && bz.template === 'business' && !('model' in bz), bz);
+  check('…it opens on its Model tab', (await hash()) === `#projects/p/${bz.id}/model` && (await tabOf()) === 'model', await hash());
+  check('…the tabs are Overview, Model, Milestones, Decisions', eq(await tabsOf(), ['overview', 'model', 'milestones', 'decisions']), await tabsOf());
+  await go('projects', 2026, 10, 15, 22, 5);
+  check('back on the projects page the kind choice is on General again', (await kindNow()) === 'general', await kindNow());
+  await type('#projectNew', 'Plain garden tidy'); await click('[data-action=project-add]'); await sleep(400);
+  const gp = await project('Plain garden tidy');
+  check('starting with General saves no template at all', gp && !('template' in gp) && !('model' in gp), gp);
+  check('…it opens on its Overview', (await hash()) === `#projects/p/${gp.id}` && (await tabOf()) === 'overview', await hash());
+  check('…the tabs are Overview, Milestones, Decisions (no Model)', eq(await tabsOf(), ['overview', 'milestones', 'decisions']), await tabsOf());
+
+  console.log('\n[25] The Model tab');
+  await go('projects', 2026, 10, 15, 23); await reset(); await go('projects', 2026, 10, 15, 23);
+  const tkP = (id, projectId) => ({ id, title: 'Visit the market', listId: '', category: 'Admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-10-12T09:00', postponed: 0, blockers: [], letGoOn: null, projectId });
+  await seed([bizObj('pjB1', 'Model: bread-share', null), bizObj('pjB2', 'Model: has a task', { problem: '', who: '', how: '', assumptions: [asObj('asT1', 'Cafes would pay for a weekly delivery')] }, { nextTaskId: 'tkB2' })]);
+  await editStorage(`s => { s.tasks.items.push(${JSON.stringify(tkP('tkB2', 'pjB2'))}); }`);
+  await go('projects/p/pjB1/model', 2026, 10, 15, 23, 5);
+  check('before any answer the Model tab invites you to start, rather than counting', (await text('[data-s=model-progress]')).startsWith('Four simple questions, in your words'), await text('[data-s=model-progress]'));
+  await type('#model-problem', '  Bakeries throw away bread at closing  '); await sleep(300);
+  await type('#model-who', 'Small bakeries and hungry students'); await sleep(300);
+  await type('#model-how', 'Sell the leftovers cheaply through an app'); await sleep(300);
+  let pb = await pAt('pjB1');
+  check('each answer is saved when it changes, trimmed', pb.model && pb.model.problem === 'Bakeries throw away bread at closing' && pb.model.who === 'Small bakeries and hungry students' && pb.model.how === 'Sell the leftovers cheaply through an app', pb.model);
+  await go('projects/p/pjB1/model', 2026, 10, 15, 23, 6);
+  check('…and they show again after reloading', (await ev(`document.getElementById('model-problem').value`)) === 'Bakeries throw away bread at closing' && (await ev(`document.getElementById('model-who').value`)) === 'Small bakeries and hungry students' && (await ev(`document.getElementById('model-how').value`)) === 'Sell the leftovers cheaply through an app');
+  check('three answers read "3 of 4 questions answered"', (await text('[data-s=model-progress]')) === '3 of 4 questions answered', await text('[data-s=model-progress]'));
+  await editStorage(`s => { const m = s.projects.items.find(p => p.id === 'pjB1').model; m.who = ''; m.how = ''; }`);
+  await go('projects/p/pjB1/model', 2026, 10, 15, 23, 7);
+  check('one answer reads "1 of 4 questions answered"', (await text('[data-s=model-progress]')) === '1 of 4 questions answered', await text('[data-s=model-progress]'));
+  await type('#modelNew', 'Students would buy day-old bread'); await click('[data-action=model-add]'); await sleep(300);
+  pb = await pAt('pjB1');
+  const A1 = pb.model.assumptions[0] && pb.model.assumptions[0].id;
+  check('adding something that must be true gives an open row', pb.model.assumptions.length === 1 && pb.model.assumptions[0].text === 'Students would buy day-old bread' && (await ev(`document.querySelector('${rowSel(A1)}').dataset.state`)) === 'open', pb.model.assumptions);
+  check('…and counts as the fourth question', (await text('[data-s=model-progress]')) === '2 of 4 questions answered · 1 still to check', await text('[data-s=model-progress]'));
+  await click(`${rowSel(A1)} [data-action=as-find-out]`); await sleep(300);
+  const ft = await task('Find out: Students would buy day-old bread');
+  pb = await pAt('pjB1');
+  check('"Find out" adds a 15 minute task in the project', ft && ft.minutes === 15 && ft.projectId === 'pjB1' && pb.model.assumptions[0].taskId === ft.id, ft);
+  check('…with no next step before, it says it is the project\'s next step for now', (await toast()) === 'Added — it’s this project’s next step for now.', await toast());
+  check('…the row links to the task and no longer offers Find out', (await ev(`document.querySelector('${rowSel(A1)} [data-s=as-task]').getAttribute('href')`)) === `#today/tasks/${ft.id}` && !(await exists(`${rowSel(A1)} [data-action=as-find-out]`)));
+  await go('projects/p/pjB2/model', 2026, 10, 15, 23, 8);
+  await click(`${rowSel('asT1')} [data-action=as-find-out]`); await sleep(300);
+  pb = await pAt('pjB2');
+  check('on a project that already had a task, it says the next step stays as it is', (await toast()) === 'Added to this project’s tasks. Your next step stays as it is.', await toast());
+  check('…and its next step is unchanged', pb.nextTaskId === 'tkB2' && !!(await task('Find out: Cafes would pay for a weekly delivery')), pb.nextTaskId);
+  await go('projects/p/pjB1/model', 2026, 10, 15, 23, 9);
+  await click(`${rowSel(A1)} [data-action=as-mark][data-state=looks-true]`); await sleep(300);
+  pb = await pAt('pjB1');
+  check('"Looks true" saves the state and today as the day it was checked', pb.model.assumptions[0].state === 'looks-true' && pb.model.assumptions[0].checkedOn === '2026-10-15', pb.model.assumptions[0]);
+  check('…the row changes and has no more mark buttons', (await ev(`document.querySelector('${rowSel(A1)}').dataset.state`)) === 'looks-true' && !(await exists(`${rowSel(A1)} [data-action=as-mark]`)));
+  check('…and its edit button now says "Add what I found"', (await text(`${rowSel(A1)} [data-action=as-edit]`)) === 'Add what I found', await text(`${rowSel(A1)} [data-action=as-edit]`));
+  await click(`${rowSel(A1)} [data-action=as-edit]`); await sleep(200);
+  await type(`#asS-${A1}`, 'open'); await sleep(300);
+  pb = await pAt('pjB1');
+  check('setting it back to Not checked yet clears the day it was checked', pb.model.assumptions[0].state === 'open' && pb.model.assumptions[0].checkedOn === null, pb.model.assumptions[0]);
+  await type(`#asF-${A1}`, 'Three students said yes at the market'); await sleep(300);
+  check('what was found is saved', (await pAt('pjB1')).model.assumptions[0].found === 'Three students said yes at the market');
+  await click(`${rowSel(A1)} [data-action=as-edit]`); await sleep(200);
+  check('…and shown on the row', (await text(`${rowSel(A1)} [data-s=as-found]`)).includes('Three students said yes at the market'), await text(`${rowSel(A1)} [data-s=as-found]`));
+  await editStorage(`s => { const t = s.tasks.items.find(x => x.title === 'Find out: Students would buy day-old bread'); t.done = true; t.doneOn = '2026-10-15'; }`);
+  await go('projects/p/pjB1/model', 2026, 10, 15, 23, 10);
+  check('an open assumption whose task is done asks what you found', (await text(`${rowSel(A1)} [data-s=as-waiting]`)) === 'Its Find out task is done — what did you find?', await text(`${rowSel(A1)} [data-s=as-waiting]`));
+  await go('projects/p/pjB1', 2026, 10, 15, 23, 11);
+  check('…and so does the Overview', (await text('[data-s=model-waiting]')) === 'A Find out task is done — what did you find?', await text('[data-s=model-waiting]'));
+  await go('projects/p/pjB1/model', 2026, 10, 15, 23, 12);
+  await click(`${rowSel(A1)} [data-action=as-edit]`); await sleep(200);
+  await click(`${rowSel(A1)} [data-action=as-remove]`); await answer(false);
+  check('"Remove" asks first, and "Keep it" keeps it', (await pAt('pjB1')).model.assumptions.length === 1 && (await exists(rowSel(A1))));
+  await click(`${rowSel(A1)} [data-action=as-remove]`); await answer(true);
+  check('confirming removes it, and its Find out task stays', !(await exists(rowSel(A1))) && !(await pAt('pjB1')).model.assumptions.some(a => a.id === A1) && !!(await task('Find out: Students would buy day-old bread')));
+  await seed([bizObj('pjFull', 'Model: twelve things', { problem: '', who: '', how: '', assumptions: Array.from({ length: 12 }, (_, i) => asObj('asF' + i, 'Made-up belief number ' + (i + 1))) })]);
+  await go('projects/p/pjFull/model', 2026, 10, 15, 23, 13);
+  check('at 12 things that must be true, it says so and the add form is gone', (await exists('[data-s=model-full]')) && !(await exists('#modelAddForm')));
+
+  console.log('\n[26] The Overview card and the board');
+  await seed([
+    bizObj('pjO', 'Overview: seed swap', { problem: 'Gardeners buy too many seeds', who: 'Allotment holders', how: '', assumptions: [asObj('asO1', 'People will swap in person', 'looks-true'), asObj('asO2', 'There is a free place to meet'), asObj('asO3', 'Swaps happen every season')] }),
+    bizObj('pjOe', 'Overview: nothing yet', null),
+    pjObj('pjOg', 'Overview: a general one', 'capture'),
+  ]);
+  await go('projects/p/pjO', 2026, 10, 15, 23, 14);
+  check('the card counts the questions answered, what is still to check and what looks true', (await text('#projectModelCard [data-s=model-summary]')) === '3 of 4 questions answered · 2 still to check · 1 looks true', await text('#projectModelCard [data-s=model-summary]'));
+  await go('projects/p/pjOe', 2026, 10, 15, 23, 15);
+  check('a business idea with no model invites you to start with the first question', (await text('#projectModelCard [data-s=model-summary]')) === 'Four simple questions put your idea on one page — start with the first', await text('#projectModelCard [data-s=model-summary]'));
+  await go('projects/p/pjOg', 2026, 10, 15, 23, 16);
+  check('a general project has no one-page card', (await exists('#projectHead')) && !(await exists('#projectModelCard')));
+  await go('projects/p/pjO', 2026, 10, 15, 23, 17);
+  const rec = await ev(`[...document.querySelectorAll('#projectRecent [data-s=recent]')].map(li => ({ what: li.dataset.what, text: li.textContent }))`);
+  check('Recently shows what you found out, with the thing that was checked', rec.some(r => r.what === 'checked' && r.text.includes('Found out') && r.text.includes('People will swap in person')), rec);
+  await go('projects', 2026, 10, 15, 23, 18);
+  check('on the board a business idea\'s card says "Business idea"', (await text('.project-card[data-id=pjO] [data-s=project-kind-label]')) === 'Business idea', await text('.project-card[data-id=pjO]'));
+  check('…and a general project\'s card says nothing of the kind', (await exists('.project-card[data-id=pjOg]')) && !(await exists('.project-card[data-id=pjOg] [data-s=project-kind-label]')));
+
+  console.log('\n[27] Changing the kind of project');
+  await go('projects/p/pjO', 2026, 10, 15, 23, 19);
+  await click('[data-action=project-edit]'); await sleep(200);
+  await type('#projectKind', 'general'); await sleep(300);
+  const pk = await pAt('pjO');
+  check('changing to General removes the template but keeps the one page', !('template' in pk) && pk.model && pk.model.problem === 'Gardeners buy too many seeds' && pk.model.assumptions.length === 3, pk);
+  check('…and the Model tab goes', !(await ev(`!!document.querySelector('[data-s=project-tabs] [data-tab=model]')`)));
+  await go('projects/p/pjO/model', 2026, 10, 15, 23, 20);
+  check('the Model address then shows the Overview instead', (await exists('#projectHead')) && !(await exists('#projectModel')) && (await tabOf()) === 'overview', await tabOf());
+  await click('[data-action=project-edit]'); await sleep(200);
+  await type('#projectKind', 'business'); await sleep(300);
+  check('changing back to Business idea brings the Model tab back', (await pAt('pjO')).template === 'business' && (await ev(`!!document.querySelector('[data-s=project-tabs] [data-tab=model]')`)));
+  await go('projects/p/pjO/model', 2026, 10, 15, 23, 21);
+  check('…with the answers still there', (await ev(`document.getElementById('model-problem').value`)) === 'Gardeners buy too many seeds' && (await ev(`document.querySelectorAll('[data-s=assumption]').length`)) === 3);
+  await seed([pjObj('pjCase', 'Kind: a case file', 'capture', { template: 'case' })]);
+  await go('projects/p/pjCase', 2026, 10, 15, 23, 22);
+  await click('[data-action=project-edit]'); await sleep(200);
+  check('a project of a kind this version does not know has no kind choice', !(await exists('#projectKind')) && (await exists('#projectSummary')));
+  await type('#projectSummary', 'Just a summary'); await sleep(300);
+  check('…and editing its summary leaves its kind as it was', (await pAt('pjCase')).template === 'case' && (await pAt('pjCase')).summary === 'Just a summary', await pAt('pjCase'));
+  await go('projects/p/pjO', 2026, 10, 15, 23, 23);
+  await click('[data-action=project-delete]'); await sleep(250);
+  check('deleting a project that has a one page says so in the confirmation', (await text('dialog[open]')).includes('one page,'), await text('dialog[open]'));
+  await answer(false);
+  check('…and "Keep it" keeps it', !!(await pAt('pjO')));
+
+  console.log('\n[28] Phones: the Model tab');
+  await seed([bizObj('pjPm', 'Phone: a business idea with quite a long name to see how things wrap on a very narrow screen', { problem: 'A long problem written out in full so that it has to wrap onto several lines on a narrow phone', who: 'Someone', how: 'Somehow', assumptions: [asObj('asPm', 'A fairly long thing that must be true so we can see how it wraps on narrow screens')] })]);
+  for (const w of [320, 360]) {
+    await T.send('Emulation.setDeviceMetricsOverride', { width: w, height: 740, deviceScaleFactor: 2, mobile: true });
+    await go('projects/p/pjPm/model', 2026, 10, 15, 23, 30); await sleep(200);
+    const tabs = await ev(`[...document.querySelectorAll('[data-s=project-tabs] a')].map(a => ({ t: a.textContent.trim(), sw: a.scrollWidth, cw: a.clientWidth }))`);
+    check(`phone ${w} px: every tab link fits its own width`, tabs.length === 4 && tabs.every(x => x.sw <= x.cw), tabs);
+    check(`phone ${w} px: the Model tab does not scroll sideways`, (await ev('document.documentElement.scrollWidth')) <= w, await ev('document.documentElement.scrollWidth'));
+  }
+  await T.send('Emulation.clearDeviceMetricsOverride');
+
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
   const sm = T.summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);

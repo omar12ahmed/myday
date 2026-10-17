@@ -35,6 +35,32 @@ const rejects=(fn)=>{try{fn();return false;}catch{return true;}};
  check('non-finite inputs rejected',rejects(()=>C.calculateEconomics({...econ,operating:Infinity})));
  check('currency rounds consistently to cents',C.calculateEconomics({...econ,orderValue:19.99,takeRate:7.5}).revenue===1.5);
  check('unknown visual properties cannot enter a scene',rejects(()=>C.validateExplore({...doc,scenes:doc.scenes.map(s=>({...s,code:'alert(1)'}))})));
+ // A business idea's one page (1.33.0)
+ {
+  const as=(id,text,state)=>({id,text,state,found:'',checkedOn:state==='open'?null:'2026-10-12',taskId:null,createdAt:'2026-10-01T09:00'});
+  const biz=(model,x={})=>({id:'pjLunch',title:'Lunch boxes for sites',summary:'Hot lunches.',template:'business',model,...x});
+  const model={problem:'P text',who:'W text',how:'',assumptions:[as('as1','Sites will pay','looks-true'),as('as2','Lunch fits a break','open'),as('as3','Cooks can scale up','open')]};
+  let b=null,threw=false;
+  try{b=C.contentForProject(biz(model));}catch{threw=true;}
+  check('a business idea with a one page builds its brief without throwing',!threw&&!!b);
+  const hero=b.scenes[0],page=b.scenes.find(s=>s.id==='one-page'),act=b.scenes.find(s=>s.type==='action');
+  check('that brief is a starter edition called project-one-page-v1',b.edition==='starter'&&b.id==='project-one-page-v1');
+  check('its opening proposition is the problem as written',hero.proposition==='P text');
+  check('its one-page scene is a problem scene listing only the answered questions',!!page&&page.type==='problem'&&JSON.stringify(page.issues.map(i=>i.title))===JSON.stringify(['The problem','Who it’s for']));
+  check('its action task is to find out about the first open assumption',act.task.assumptionId==='as2'&&act.task.title==='Find out: Lunch fits a break');
+  check('what is established is the checked-true assumption and what is uncertain is the open ones joined with a dot',act.established==='Sites will pay'&&act.uncertain==='Lunch fits a break · Cooks can scale up');
+  const none=C.contentForProject(biz({...model,assumptions:[as('as1','Sites will pay','looks-true')]})).scenes.find(s=>s.type==='action');
+  check('with no open assumptions the action task is the generic first-assumption one, without an assumption id',none.task.id==='first-assumption'&&!('assumptionId' in none.task));
+  const noAns=C.contentForProject(biz({problem:'',who:'',how:'',assumptions:[as('as1','Sites will pay','open')]}));
+  check('with no answers but an assumption there is no one-page scene and the opening proposition is the summary',!noAns.scenes.some(s=>s.id==='one-page')&&noAns.scenes[0].proposition==='Hot lunches.');
+  check('a business idea with no one page gets the generic brief',C.contentForProject(biz(undefined)).id==='project-starter-v1');
+  const gen=C.contentForProject({id:'pjG',title:'Lunch boxes for sites',summary:'Hot lunches.',model});
+  check('a general project with a one page gets the generic brief',gen.id==='project-starter-v1');
+  check('a business idea titled Hargeisa Marketplace still opens the curated exploration',C.contentForProject(biz(model,{title:'Hargeisa Marketplace'})).edition==='curated');
+  const act1=b.scenes.find(s=>s.type==='action');
+  check('the schema accepts an action task with the assumption id as1',!rejects(()=>C.validateExplore({...b,scenes:b.scenes.map(s=>s.type==='action'?{...s,task:{...act1.task,assumptionId:'as1'}}:s)})));
+  check('the schema rejects an action task with the assumption id "a b"',rejects(()=>C.validateExplore({...b,scenes:b.scenes.map(s=>s.type==='action'?{...s,task:{...act1.task,assumptionId:'a b'}}:s)})));
+ }
  fs.rmSync(tmp,{recursive:true,force:true});
  console.log(`\n${pass} passed, ${fail} failed`);process.exit(fail?1:0);
 })().catch(e=>{console.error('HARNESS',e);process.exit(1)});

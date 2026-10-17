@@ -61,8 +61,10 @@ function ProjectsHome({ data }: { data: MyDayData }) {
           <Button inline type="submit" variant="primary" data-action="project-add" disabled={!text.trim()}><Plus size={18} aria-hidden="true" /> Start</Button>
           <div className="col-span-2 flex flex-wrap items-center gap-2" role="radiogroup" aria-label="Kind of project" data-s="project-kind">
             {TEMPLATES.map(t => (
-              <label key={t.id} className="inline-flex items-center gap-2 min-h-11 px-3 rounded-btn border border-outline text-[14px] font-semibold text-fg-2 cursor-pointer has-[:checked]:border-primary has-[:checked]:text-fg has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-primary">
-                <input type="radio" name="projectKind" value={t.id} className="size-4 accent-primary" checked={kind === t.id} onChange={() => setKind(t.id)} data-action="project-kind" />{t.label}
+              // The radio itself covers its whole label (a 44 px tap target) and is drawn as the dot beside the words.
+              <label key={t.id} className="group relative inline-flex items-center gap-2 min-h-11 px-3 rounded-btn border border-outline text-[14px] font-semibold text-fg-2 cursor-pointer has-[:checked]:border-primary has-[:checked]:text-fg has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-primary">
+                <input type="radio" name="projectKind" value={t.id} className="absolute inset-0 m-0 opacity-0 cursor-pointer" checked={kind === t.id} onChange={() => setKind(t.id)} data-action="project-kind" />
+                <span aria-hidden="true" className="grid place-items-center size-[18px] rounded-full border-2 border-outline-strong group-has-[:checked]:border-primary"><span className="hidden size-2 rounded-full bg-primary group-has-[:checked]:block" /></span>{t.label}
               </label>
             ))}
           </div>

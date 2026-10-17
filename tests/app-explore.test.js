@@ -102,5 +102,23 @@ const capture = async name => fs.writeFileSync('/tmp/myday-explore-' + name + '.
   await send('Network.setBlockedURLs',{urls:[]});await send('Network.setBypassServiceWorker',{bypass:false});await send('Network.setCacheDisabled',{cacheDisabled:false});
   await route('#projects/p/missing/explore'); check('missing project has a safe exit', (await text('.ex-unavailable')).includes('isn’t here'));
   await route('#projects/p/%ZZ/explore'); check('malformed link is contained', await T.exists('.ex-unavailable'));
+  // ---- A business idea's Explore is built from its one page (1.33.0) ----
+  await send('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});
+  await ev(`(()=>{const d=JSON.parse(localStorage.getItem('${KEY}'));d.tasks.items=[];d.projects.items.push({id:'pjBiz',title:'Shop listings',summary:'',stage:'capture',status:'active',template:'business',nextTaskId:null,commitmentIds:[],createdAt:'2026-10-01T09:00',updatedAt:'2026-10-01T09:00',model:{problem:'Corner shops struggle to reach new customers',who:'Independent shops nearby',how:'',assumptions:[{id:'asBiz',text:'Shops would pay to be listed',state:'open',found:'',checkedOn:null,taskId:null,createdAt:'2026-10-01T09:00'}]}});localStorage.setItem('${KEY}',JSON.stringify(d));})()`);
+  await go('projects/p/pjBiz/explore'); await sleep(300);
+  check('a business idea\'s Explore says it is built from its one page', (await text('.ex-example-note')).includes('Built from your one page. No research has been generated.'), await text('.ex-example-note'));
+  check('…and shows the answers on the page', (await T.exists('#ex-one-page')) && (await text('#ex-one-page')).includes('Corner shops struggle to reach new customers') && (await text('#ex-one-page')).includes('Independent shops nearby'));
+  await click('[data-action=explore-create-task]'); await sleep(300);
+  let biz=await T.data(), found=biz.tasks.items.filter(t=>t.title==='Find out: Shops would pay to be listed');
+  check('creating the task makes exactly one "Find out" task, remembered on that assumption', found.length===1&&found[0].projectId==='pjBiz'&&biz.projects.items.find(p=>p.id==='pjBiz').model.assumptions[0].taskId===found[0].id, found);
+  check('…and the button becomes "Task added · open task"', !await T.exists('[data-action=explore-create-task]')&&(await text('.ex-task-control a')).includes('Task added · open task'), await text('.ex-task-control a'));
+  await go('projects/p/pjBiz/model'); await sleep(300);
+  check('the Model tab shows the same task on that row, with no Find out button', await T.exists('[data-s=assumption] [data-s=as-task]')&&!await T.exists('[data-action=as-find-out]'));
+  check('…and there is still just one task', (await T.data()).tasks.items.filter(t=>t.title.startsWith('Find out:')).length===1);
+  check('the Model tab links to Explore', await ev(`document.querySelector('[data-action=model-explore]').getAttribute('href')`)==='#projects/p/pjBiz/explore');
+  await go('projects/p/pjBiz/explore'); await sleep(300);
+  check('Explore links back to the one page', await ev(`document.querySelector('[data-action=explore-one-page]').getAttribute('href')`)==='#projects/p/pjBiz/model');
+  await route('#projects/p/pjExplore1/explore');
+  check('a general project\'s Explore has no one-page link', await T.exists('#explore-title')&&!await T.exists('[data-action=explore-one-page]'));
   const s=T.summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail?1:0);
 })().catch(e=>{console.error('HARNESS',e);process.exit(1)});

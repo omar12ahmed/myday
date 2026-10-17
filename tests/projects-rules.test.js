@@ -18,7 +18,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   fs.mkdirSync(dir, { recursive: true });
   const src = p => JSON.stringify(path.join(ROOT, 'app/src/data', p));
   fs.writeFileSync(path.join(dir, 'kit.ts'), [
-    `export * from ${src('projectPlan')};`, `export { normalizeProjects, deleteProject, recently, addProject, setProjectPrivate, privateProjectIds } from ${src('projects')};`,
+    `export * from ${src('projectPlan')};`, `export * from ${src('businessModel')};`, `export { normalizeProjects, deleteProject, recently, addProject, setProjectPrivate, privateProjectIds } from ${src('projects')};`,
     `export { freshState, normalize } from ${src('normalize')};`, `export { shift } from ${src('dates')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
@@ -208,6 +208,170 @@ const clone = o => JSON.parse(JSON.stringify(o));
   rep = { dropped: 0 };
   out = K.normalizeProjects({ items: [base('pjA', { private: true }), base('pjB', { private: false }), base('pjC', { private: 'yes' }), base('pjD', { private: 1 }), base('pjE')] }, rep);
   check('reading saved projects keeps private: true and drops any other value', out.items[0].private === true && ['pjB', 'pjC', 'pjD', 'pjE'].every((id, i) => !('private' in out.items[i + 1])) && rep.dropped === 0, out.items);
+
+  console.log('\n[9] The Business template: kind of project and its one page');
+  {
+    const AO = (id, text, x = {}) => ({ id, text, state: 'open', found: '', checkedOn: null, taskId: null, createdAt: OLD, ...x });
+    const read = (x, r = { dropped: 0 }) => K.normalizeProjects({ items: [base('pjT', x)] }, r).items[0];
+    let r9 = { dropped: 0 };
+    let o9 = read({}, r9);
+    check('a project without a template or model gets neither key when read', !('template' in o9) && !('model' in o9) && r9.dropped === 0, o9);
+    check('the template "business" is kept when read', read({ template: 'business' }).template === 'business');
+    check('a template from a newer MyDay ("case") is kept as it is', read({ template: 'case' }).template === 'case');
+    check('"general", an empty string, a number and a 41-character string are removed', ['general', '', 7, 'x'.repeat(41)].every(t => !('template' in read({ template: t }))));
+    check('a 40-character template is kept', read({ template: 'x'.repeat(40) }).template === 'x'.repeat(40));
+
+    r9 = { dropped: 0 };
+    o9 = read({ model: { problem: 'Slow lunches', futureField: { a: 1 }, assumptions: [AO('asA', 'Sites will pay', { futureBit: 'x' })] } }, r9);
+    check('unknown fields on the model and on an assumption are kept', eq(o9.model.futureField, { a: 1 }) && o9.model.assumptions[0].futureBit === 'x' && r9.dropped === 0, o9.model);
+    r9 = { dropped: 0 };
+    o9 = read({ model: { assumptions: [{ text: 'No id', state: 'open' }, AO('asB', '   '), AO('asC', 'Kept')] } }, r9);
+    check('an assumption with no id, or with blank text, is dropped and counted', eq(o9.model.assumptions.map(a => a.id), ['asC']) && r9.dropped === 2, [o9.model, r9]);
+    o9 = read({ model: { assumptions: [AO('asA', 'First'), AO('asA', 'Second')] } });
+    check('a repeated assumption id gets a new id starting "as"', o9.model.assumptions[0].id === 'asA' && o9.model.assumptions[1].id !== 'asA' && o9.model.assumptions[1].id.startsWith('as'), o9.model.assumptions);
+    o9 = read({ model: { assumptions: [AO('asA', 'Odd state', { state: 'maybe' })] } });
+    check('an unknown assumption state becomes "open"', o9.model.assumptions[0].state === 'open');
+    o9 = read({ model: { assumptions: [AO('asA', 'Open one', { checkedOn: '2026-10-05' }), AO('asB', 'Marked', { state: 'looks-true', checkedOn: '2026-10-05' })] } });
+    check('an "open" assumption with a saved checked day has it cleared; a marked one with a valid day keeps it', o9.model.assumptions[0].checkedOn === null && o9.model.assumptions[1].checkedOn === '2026-10-05', o9.model.assumptions);
+    const longAns = '  ' + 'a'.repeat(1100) + '  ';
+    o9 = read({ model: { problem: longAns, who: 'Someone' } });
+    check('an answer is cut to 1000 characters but not trimmed', o9.model.problem.length === 1000 && o9.model.problem.startsWith('  a') && o9.model.who === 'Someone', o9.model.problem.length);
+    o9 = read({ model: { assumptions: [AO('asA', '  Sites   will\n pay  ' + 'z'.repeat(200), { found: 'f'.repeat(500) })] } });
+    check('assumption text has its whitespace collapsed, is trimmed and is cut to 110', o9.model.assumptions[0].text.startsWith('Sites will pay z') && o9.model.assumptions[0].text.length === 110, o9.model.assumptions[0].text);
+    check('what was found is cut to 400', o9.model.assumptions[0].found.length === 400);
+    o9 = read({ model: { assumptions: [AO('asA', 'Task one', { taskId: '' }), AO('asB', 'Task two', { taskId: 'tkX' })] } });
+    check('an empty task id is read as null, a real one is kept', o9.model.assumptions[0].taskId === null && o9.model.assumptions[1].taskId === 'tkX');
+    o9 = read({ model: { problem: '  ', who: '', how: '\n', assumptions: [] } });
+    check('a model with nothing written is removed', !('model' in o9), o9);
+    o9 = read({ model: { problem: '', futureField: 1 } });
+    check('an empty model that holds an unknown field is kept', 'model' in o9 && o9.model.futureField === 1, o9);
+    r9 = { dropped: 0 };
+    o9 = read({ model: 'oops' }, r9);
+    check('a model that is not an object is removed and counted', !('model' in o9) && r9.dropped === 1, [o9, r9]);
+    r9 = { dropped: 0 };
+    o9 = read({ model: { problem: 'P', assumptions: 'oops' } }, r9);
+    check('assumptions that are not a list are counted and read as none', eq(o9.model.assumptions, []) && r9.dropped === 1, [o9.model, r9]);
+
+    // ---- Changing it ----
+    d = world(base());
+    const ctx9 = rest(d), other = base('pjOther'); d.projects.items.push(other); const otherBefore = clone(other);
+    const up = () => { P(d).updatedAt = OLD; };
+    up();
+    check('setTemplate general to business sets "business" and moves the updated time on', K.setTemplate(d, 'pjA', 'business') && P(d).template === 'business' && P(d).updatedAt > OLD, P(d));
+    up();
+    check('setTemplate business to business changes nothing (false)', !K.setTemplate(d, 'pjA', 'business') && P(d).updatedAt === OLD);
+    K.editAnswer(d, 'pjA', 'problem', 'Slow lunches');
+    up();
+    check('business back to general removes the template and keeps the model', K.setTemplate(d, 'pjA', 'general') && !('template' in P(d)) && P(d).model.problem === 'Slow lunches' && P(d).updatedAt > OLD, P(d));
+    check('general to general changes nothing (false)', !K.setTemplate(d, 'pjA', 'general'));
+    P(d).template = 'case'; up();
+    check('an unknown template ("case") set to general is removed (true)', K.setTemplate(d, 'pjA', 'general') && !('template' in P(d)) && P(d).updatedAt > OLD, P(d));
+    delete P(d).model;
+
+    up();
+    check('editAnswer trims what is typed', K.editAnswer(d, 'pjA', 'who', '  Site managers  ') && P(d).model.who === 'Site managers' && P(d).updatedAt > OLD, P(d).model);
+    check('…and does nothing when it is unchanged', !K.editAnswer(d, 'pjA', 'who', 'Site managers '));
+    K.editAnswer(d, 'pjA', 'how', 'h'.repeat(1200));
+    check('…and cuts it to 1000 characters', P(d).model.how.length === 1000);
+    check('editAnswer creates the model when there is none', (() => { const e = world(base('pjN')); return K.editAnswer(e, 'pjN', 'problem', 'P') && eq(e.projects.items[0].model, { problem: 'P', who: '', how: '', assumptions: [] }); })());
+    check('blanking the only thing written removes the model field', (() => { const e = world(base('pjN')); K.editAnswer(e, 'pjN', 'problem', 'P'); return K.editAnswer(e, 'pjN', 'problem', '  ') && !('model' in e.projects.items[0]); })());
+
+    d = world(base(), other);
+    up();
+    const a1 = K.addAssumption(d, 'pjA', '  Sites will pay  ');
+    check('addAssumption returns an id starting "as" and moves the updated time on', typeof a1 === 'string' && a1.startsWith('as') && P(d).updatedAt > OLD, a1);
+    check('…the new one is open, with nothing found, no checked day and no task', eq((({ state, found, checkedOn, taskId, text }) => ({ state, found, checkedOn, taskId, text }))(P(d).model.assumptions[0]), { state: 'open', found: '', checkedOn: null, taskId: null, text: 'Sites will pay' }), P(d).model.assumptions[0]);
+    check('a blank assumption adds nothing (null)', K.addAssumption(d, 'pjA', '   ') === null && P(d).model.assumptions.length === 1);
+    for (let i = 2; i <= 12; i++) K.addAssumption(d, 'pjA', 'Thing ' + i);
+    check('the 12th assumption is accepted and the 13th returns "full"', P(d).model.assumptions.length === 12 && K.addAssumption(d, 'pjA', 'Thing 13') === 'full' && P(d).model.assumptions.length === 12);
+    up();
+    check('editAssumption with a blank text is refused and the text stays', !K.editAssumption(d, 'pjA', a1, '  ') && P(d).model.assumptions[0].text === 'Sites will pay' && P(d).updatedAt === OLD);
+    check('…the same text changes nothing; a new text changes it', !K.editAssumption(d, 'pjA', a1, ' Sites will pay ') && K.editAssumption(d, 'pjA', a1, 'Sites will pay weekly') && P(d).model.assumptions[0].text === 'Sites will pay weekly' && P(d).updatedAt > OLD);
+    up();
+    check('editFound trims and cuts to 400', K.editFound(d, 'pjA', a1, '  ' + 'f'.repeat(450)) && P(d).model.assumptions[0].found === 'f'.repeat(400) && P(d).updatedAt > OLD);
+    check('…and does nothing when unchanged', !K.editFound(d, 'pjA', a1, 'f'.repeat(400)));
+    up();
+    check('marking "looks-true" sets the checked day to the one given', K.setAssumptionState(d, 'pjA', a1, 'looks-true', '2026-10-12') && P(d).model.assumptions[0].state === 'looks-true' && P(d).model.assumptions[0].checkedOn === '2026-10-12' && P(d).updatedAt > OLD);
+    check('marking "doesnt-hold" sets the checked day too', K.setAssumptionState(d, 'pjA', a1, 'doesnt-hold', '2026-10-13') && P(d).model.assumptions[0].state === 'doesnt-hold' && P(d).model.assumptions[0].checkedOn === '2026-10-13');
+    check('back to "open" clears the checked day and keeps what was found', K.setAssumptionState(d, 'pjA', a1, 'open') && P(d).model.assumptions[0].checkedOn === null && P(d).model.assumptions[0].found === 'f'.repeat(400));
+    check('the same state, or an unknown state, changes nothing (false)', !K.setAssumptionState(d, 'pjA', a1, 'open') && !K.setAssumptionState(d, 'pjA', a1, 'maybe', '2026-10-14') && P(d).model.assumptions[0].state === 'open');
+
+    // Find out
+    d = world(base(), other);
+    d.tasks.items = [{ id: 'tkNext', title: 'Existing step', projectId: 'pjA', done: false, doneOn: null, createdAt: OLD }];
+    P(d).nextTaskId = 'tkNext';
+    const af = K.addAssumption(d, 'pjA', 'Sites will pay');
+    const tasks0 = d.tasks.items.length;
+    up();
+    const tf = K.findOut(d, 'pjA', af), tk = d.tasks.items.find(t => t.id === tf);
+    check('findOut adds one task "Find out: <text>" of 15 minutes, admin, no date, in the project', typeof tf === 'string' && d.tasks.items.length === tasks0 + 1 && tk.title === 'Find out: Sites will pay' && tk.minutes === 15 && tk.category === 'admin' && tk.due === null && tk.projectId === 'pjA', tk);
+    check('…the assumption remembers the task, and the project\'s next step is unchanged', P(d).model.assumptions[0].taskId === tf && P(d).nextTaskId === 'tkNext' && P(d).updatedAt > OLD);
+    check('a second findOut returns null and adds nothing', K.findOut(d, 'pjA', af) === null && d.tasks.items.length === tasks0 + 1);
+    d.tasks.items = d.tasks.items.filter(t => t.id !== tf);
+    const tf2 = K.findOut(d, 'pjA', af);
+    check('once that task is gone, findOut adds a new one', typeof tf2 === 'string' && tf2 !== tf && d.tasks.items.some(t => t.id === tf2) && P(d).model.assumptions[0].taskId === tf2);
+
+    // Looking at it
+    d = world(base());
+    const m1a = K.addAssumption(d, 'pjA', 'One'), m2a = K.addAssumption(d, 'pjA', 'Two'), m3a = K.addAssumption(d, 'pjA', 'Three');
+    K.setAssumptionState(d, 'pjA', m1a, 'looks-true', '2026-10-12'); K.setAssumptionState(d, 'pjA', m2a, 'doesnt-hold', '2026-10-12');
+    K.editAnswer(d, 'pjA', 'problem', 'P'); K.editAnswer(d, 'pjA', 'who', '  ');
+    check('modelProgress counts the answered questions (one more for any assumption) and each state', eq(K.modelProgress(P(d)), { answered: 2, assumptions: 3, open: 1, looksTrue: 1, doesntHold: 1 }), K.modelProgress(P(d)));
+    check('modelProgress of a project without a model is all zero', eq(K.modelProgress(base('pjZ')), { answered: 0, assumptions: 0, open: 0, looksTrue: 0, doesntHold: 0 }));
+    const A3 = P(d).model.assumptions[2];
+    check('awaitingAnswer is false with no task', !K.awaitingAnswer(d, A3));
+    d.tasks.items = [{ id: 'tkF', title: 'Find out: Three', projectId: 'pjA', done: false, doneOn: null, createdAt: OLD }];
+    A3.taskId = 'tkF';
+    check('…false while its task is not done', !K.awaitingAnswer(d, A3));
+    d.tasks.items[0].done = true; d.tasks.items[0].doneOn = '2026-10-12';
+    check('…true when it is open and its task is done', K.awaitingAnswer(d, A3));
+    check('…false once it is marked, and false when its task is gone', (() => { const m = { ...A3, state: 'looks-true' }; return !K.awaitingAnswer(d, m) && !K.awaitingAnswer({ ...d, tasks: { ...d.tasks, items: [] } }, A3); })());
+    check('firstToFindOut is the first open assumption without a task', K.firstToFindOut(d, P(d)) === null);
+    A3.taskId = null;
+    check('…and it is the open one once its task is not there', K.firstToFindOut(d, P(d)).id === A3.id);
+    check('isBusiness and knownTemplate: general, business and "case"', !K.isBusiness(base()) && K.knownTemplate(base()) && K.isBusiness(base('p', { template: 'business' })) && K.knownTemplate(base('p', { template: 'business' })) && !K.isBusiness(base('p', { template: 'case' })) && !K.knownTemplate(base('p', { template: 'case' })));
+
+    // Recently
+    d = world(base('pjA', { template: 'business' }), base('pjG'));
+    const ra = K.addAssumption(d, 'pjA', 'Sites will pay'), rb = K.addAssumption(d, 'pjA', 'Lunch fits a break');
+    K.setAssumptionState(d, 'pjA', ra, 'looks-true', '2026-10-12'); K.setAssumptionState(d, 'pjA', rb, 'doesnt-hold', '2026-10-13');
+    const ch = K.recently(d, P(d), 10).filter(h => h.what === 'checked');
+    check('a marked assumption appears in Recently as "checked", at the end of its day, with its state and a link to the Model tab', eq(ch.map(h => [h.at, h.title, h.href]), [['2026-10-13T23:58', 'Lunch fits a break — doesn’t hold', '#projects/p/pjA/model'], ['2026-10-12T23:58', 'Sites will pay — looks true', '#projects/p/pjA/model']]), ch);
+    const g = base('pjG', { model: clone(P(d).model) });
+    check('a general project with the same model has no "checked" entries', !K.recently(d, g, 10).some(h => h.what === 'checked'));
+
+    // Nothing else is touched
+    d = world(base(), other);
+    d.tasks.items = []; d.notes.items = [{ id: 'n1', title: 'A note', text: 'x', projectId: 'pjA' }];
+    d.days['2026-10-10'] = { energy: 3, rest: false, builtAt: '2026-10-10T08:00', checkedIn: true, tasks: [] };
+    const ctxB = rest(d);
+    let ax;
+    const steps9 = [
+      ['switching to a business idea', () => K.setTemplate(d, 'pjA', 'business')],
+      ['writing an answer', () => K.editAnswer(d, 'pjA', 'problem', 'Slow lunches')],
+      ['adding an assumption', () => { ax = K.addAssumption(d, 'pjA', 'Sites will pay'); }],
+      ['editing an assumption', () => K.editAssumption(d, 'pjA', ax, 'Sites will pay weekly')],
+      ['writing what was found', () => K.editFound(d, 'pjA', ax, 'Two said yes')],
+      ['marking an assumption', () => K.setAssumptionState(d, 'pjA', ax, 'looks-true', '2026-10-12')],
+      ['removing an assumption', () => K.removeAssumption(d, 'pjA', ax)],
+      ['switching back to general', () => K.setTemplate(d, 'pjA', 'general')],
+    ];
+    for (const [name, run] of steps9) {
+      P(d).updatedAt = OLD;
+      run();
+      check(`${name} moves the project's updated time on`, P(d).updatedAt > OLD, P(d).updatedAt);
+    }
+    check('none of that touched the days, tasks, notes, title, summary, stage or status, or the other project', eq(rest(d), ctxB) && eq(d.projects.items[1], otherBefore));
+
+    // Removing
+    d = world(base());
+    const ba = K.addAssumption(d, 'pjA', 'Sites will pay'), bb = K.addAssumption(d, 'pjA', 'Lunch fits a break');
+    const bt = K.findOut(d, 'pjA', ba);
+    check('removeAssumption takes it out and keeps the other', K.removeAssumption(d, 'pjA', ba) && eq(P(d).model.assumptions.map(a => a.id), [bb]) && !K.removeAssumption(d, 'pjA', ba));
+    check('…its Find out task stays in the tasks', d.tasks.items.some(t => t.id === bt));
+    check('…and removing the last one, with no answers, removes the model field', K.removeAssumption(d, 'pjA', bb) && !('model' in P(d)), P(d));
+    check('…but with an answer written, the model stays', (() => { const e = world(base()); K.editAnswer(e, 'pjA', 'problem', 'P'); const i = K.addAssumption(e, 'pjA', 'x'); K.removeAssumption(e, 'pjA', i); return e.projects.items[0].model.problem === 'P' && eq(e.projects.items[0].model.assumptions, []); })());
+  }
 
   fs.rmSync(dir, { recursive: true, force: true });
   const s = summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);

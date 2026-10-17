@@ -1065,6 +1065,26 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('…and its message doesn\'t pick a winner (nothing reworded)', !/best|recommend|go with/i.test(c.message) && c.message.includes('the choice is yours'), c.message);
   }
 
+  console.log('\n[12f] Ask MyDay on a business idea sends nothing of its one page');
+  {
+    K.setClock(`${D}T10:00`);
+    const s0 = K.freshState(), at = `${D}T09:00`;
+    const ASM = (id, text, x = {}) => ({ id, text, state: 'open', found: '', checkedOn: null, taskId: null, createdAt: at, ...x });
+    s0.projects.items = [{ id: 'pjB', title: 'Lunch boxes for sites', summary: 'Hot lunches for builders', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at, template: 'business',
+      model: { problem: 'Zebra problem wording', who: 'Quokka audience wording', how: 'Narwhal pricing wording', assumptions: [ASM('asA', 'Pelican assumption wording'), ASM('asB', 'Walrus checked wording', { state: 'looks-true', checkedOn: D, found: 'Ibex evidence wording' })] } }];
+    localStorage.clear(); localStorage.setItem('myday.data.v4', JSON.stringify(s0)); K.boot();
+    const w = K.getSnapshot().data, text = o => JSON.stringify(o);
+    const secrets = ['Zebra', 'Quokka', 'Narwhal', 'Pelican', 'Walrus', 'Ibex'];
+    const page = K.askSlice(w, '#projects/p/pjB', D), model = K.askSlice(w, '#projects/p/pjB/model', D);
+    check('the Model tab is the project page for Ask: the same project slice as the project\'s own page', model.context.project && model.context.project.id === 'pjB' && eq(model.context.project, page.context.project), model.context);
+    for (const [name, sl] of [['project page', page], ['Model tab', model]]) {
+      const req = K.askContext(sl, 'What should I do next?', D), pv = K.askPreview(req, sl.privateNote, sl.held);
+      check(`on the ${name}, nothing of the one page is in the request`, !secrets.some(x => text(req).includes(x)), text(req));
+      check(`on the ${name}, nothing of the one page is in the preview text`, !secrets.some(x => text(pv).includes(x)), pv.short);
+      check(`on the ${name}, the project's name and summary are still sent`, text(req).includes('Lunch boxes for sites') && text(req).includes('Hot lunches for builders'), text(req));
+    }
+  }
+
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

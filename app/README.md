@@ -182,6 +182,22 @@ says how many items were left out, and its AI buttons give way to "Private proje
 help with notes may still offer its name and summary as a place to link a note, if you choose. The flag is an optional
 `private` on the project (`src/data/projects.ts`), synced with it.
 
+**The Business template (1.33.0):** when you start a project you choose its kind, General or Business idea (General
+unless you pick otherwise). You can change it later under About it → Edit ("Kind of project"). Switching back to
+General keeps the one page out of sight, never deleted; switching back shows it again. A new business idea opens on
+its **Model** tab (**Overview · Model · Milestones · Decisions**), headed "Your business on one page", with four
+simple questions in your own words: What problem does it solve? Who is it for? How does it work, and how does it pay?
+What must be true for it to work? The fourth is a list of up to 12 things you believe but haven't checked yet. Each
+one has **Find out**, which adds a task "Find out: …" (15 minutes, no date) to the project's tasks; a next step you
+chose stays as it is. You mark it **Looks true** or **Doesn't hold** yourself (Edit can set it back to Not checked
+yet) and can add what you found. Nothing is marked by itself; when a Find out task is done and it's still not checked,
+it asks "what did you find?". Overview's "Your one page" card gives counts only, e.g. "3 of 4 questions answered · 2
+still to check · 1 looks true". Recently lists what you found out, and the board labels business cards "Business
+idea". Explore for a business idea is built from the one page (its last chapter offers the same Find out task, never a
+second one), and each links to the other. Ask MyDay and AI help with notes send nothing from the one page, and no AI
+is used. It's saved inside the project (`template` and `model`, rules in `src/data/businessModel.ts`); a general
+project is saved exactly as before.
+
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
 
@@ -430,6 +446,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/study/` | The Study screens: `StudyScreen` (picks the screen from the address, e.g. `#study/roadmap`), `Dashboard`, `Roadmap`, `CourseDetails`, `TaskDetails`, `SessionView`, `CheckinView`, `RevisionView`, `ConceptsView`, `ConceptView`, `ProgressView`, `StudySettings` and `StudyTodayCard`; `actions.ts` (what each button saves), `round.ts` (the revision round, kept in memory), `parts.tsx` (small shared pieces). |
 | `src/knows/KnowsScreen.tsx` | What MyDay knows (1.27.0, `#knows`): what each kind of AI help sends and when (Ask's lines from `SENDS` in `src/ai/askContext.ts`), what's never sent, which model does which job (keep in step with `AI_ROUTES`), limits. |
 | `src/data/projectPlan.ts`, `src/projects/PlanViews.tsx`, `src/projects/planText.ts` | Milestones and decisions (1.31.0): `projectPlan.ts` (checking the saved lists, and adding, editing, reaching, choosing, thinking again, with the limits); `PlanViews.tsx` (the Milestones and Decisions screens and Overview's two cards); `planText.ts` (the "Aiming for" wording, which never says late or overdue). |
+| `src/data/businessModel.ts`, `src/projects/ModelView.tsx` | The Business template (1.33.0): `businessModel.ts` (the kind of project and the one page: reading what's saved, the four answers, the list of what must be true with its limits, Find out, marking, counts); `ModelView.tsx` (the Model tab and Overview's "Your one page" card). The counts line is `progressLine` in `planText.ts`; Explore's brief from the one page is `fromOnePage` in `src/explore/content.ts`. |
 | `src/commitments/` | Work shifts and appointments: the form and list used by both Today and Calendar. |
 | `src/shell/` | Navigation, the top bar's parts (`TopBar`: the Focus mode switch and your account; `focusMode.ts`, the device-only `myday.focus`), the theme button, the shared footer (`AppFooter`), the "couldn't be read" notice (`LoadIssue`) and the screens for unreadable or older data. |
 | `public/icon.svg` | The tab icon. |
@@ -1029,3 +1046,10 @@ returns up to 8 small tasks; you tick the ones to add.
     nothing to Ask MyDay, and their AI buttons give way to a note saying so. What MyDay knows and AI help with notes
     say all this. The server's `ask` job (instructions `myday-ask-v13`) was deployed first. No database change; going
     back to 1.31.0 is safe.
+45. **Release 1.33.0:** milestone 3, release 3: the Business template. Start a project now offers a kind, General or
+    Business idea, and About it → Edit can change it later (back to General keeps the one page, out of sight). A
+    business idea opens on its **Model** tab, **Your business on one page**: four simple questions in your own words,
+    the fourth a list of what must be true. Each of those has **Find out** (a 15-minute task in the project, no date)
+    and is marked **Looks true** or **Doesn't hold** only by you. Overview's "Your one page" card gives counts, never
+    percentages, and Explore's brief for a business idea is built from the one page. No AI is used, and Ask MyDay sends
+    nothing of it. No server or database change; going back to 1.32.0 is safe.
