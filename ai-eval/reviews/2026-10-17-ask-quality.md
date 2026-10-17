@@ -22,7 +22,6 @@ reply where it changed something.
 | v4 | 80 | 664/665 | $0.0212 | Existing items referred to by name; Focus mode described accurately (both repeats). One new project's first tasks pointed at a made-up project id. |
 | v5 | 10 | 89/89 | $0.0027 | New-project tasks marked "new" and linked when added together. One empty message ("What's Focus mode?"). |
 | v6 | 9 | 81/81 | $0.0023 | Message always written; Focus mode accurate in 3 of 3 (one adds "set a short timer", a small invention); new projects with linked first steps (3/3); tired-study → a 30-minute session on the next task (3/3). |
-
 | **v7** | 6 (Study only) | 53/54 | $0.0016 | Study now also sends today's energy and free time: with energy 2 it suggests 20 minutes rather than 30, and revision first. One reply was a fragment ("Here's", no steps; 32 tokens, stopped normally) — the app now treats a reply with nothing to tick, no action and under three words as unusable ("try again"). |
 
 Total: about **US$0.08** (7 calls that timed out reported no usage).
