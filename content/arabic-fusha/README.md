@@ -8,6 +8,8 @@ These are curriculum targets, not certified proficiency levels.
 Start studying with the [lesson teaching companion](../teaching/arabic-fusha-lessons.md):
 all 152 lessons have explanations, worked examples, guided exercises, explained answers
 and specific reading/listening assignments, also shown directly in MyDay.
+Arabic screens include a remembered transliteration toggle and a pronunciation key;
+see [pronunciation support](../teaching/pronunciation/README.md) for coverage and conventions.
 Use the [complete curriculum](MyDay_Arabic_Fusha_Curriculum.md) and
 [package guide](MyDay_Arabic_README.md). Download
 [the HTML reader](MyDay_Arabic_Fusha_Curriculum.html) to read it offline with module navigation.

@@ -17,8 +17,10 @@ import { startRevision } from '../actions';
 import { BackLink, Choice, Choices, Eyebrow, ExternalLink, InlineLink } from '../parts';
 import { Lines, LinkButton } from '../cybersecurity/parts';
 import { Ar, Mixed } from './Ar';
+import { Pronunciation, PronunciationControls } from './Pronunciation';
 import { TeachingLesson } from '../teaching/TeachingLesson';
 import texts from './data/texts.json';
+import passageReadings from '../../../../content/teaching/pronunciation/passages.json';
 import {
   corePath, lessonIndex, loadAnswers, loadModule, moduleList, modules, paths, projects, resources, short, skills, topics, version,
   type Answers, type Lesson, type ModuleContent, type Question,
@@ -34,12 +36,13 @@ const assets = new Map<string, Asset>(texts.assets.map(a => [a.id, a]));
 
 export default function ArabicScreen({ data, id }: { data: MyDayData; id: string }) {
   const tab = id === 'texts' || id.startsWith('asset.') ? 'texts' : id === 'vocabulary' || id === 'sessions' ? id : 'map';
-  return <div className="arabic-study break-words">
+  return <Pronunciation><div className="arabic-study break-words">
     <nav className="workspace-tabs" aria-label="Arabic">
       <a href="#study">‹ Study</a>
       {([['map', 'Learning map', ''], ['texts', 'Reading texts', '/texts'], ['vocabulary', 'Vocabulary', '/vocabulary'], ['sessions', 'Your sessions', '/sessions']] as const).map(([key, label, path]) =>
         <a key={key} href={'#study/arabic' + path} aria-current={tab === key ? 'page' : undefined}>{label}</a>)}
     </nav>
+    <PronunciationControls />
     {modules.has(id) ? <ModuleView key={id} data={data} id={id} />
       : lessonIndex[id] ? <LessonView key={id} data={data} id={id} />
       : assets.has(id) ? <TextView key={id} asset={assets.get(id)!} />
@@ -48,7 +51,7 @@ export default function ArabicScreen({ data, id }: { data: MyDayData; id: string
       : id === 'sessions' ? <SessionsView data={data} />
       : id ? <Card><h2>This page isn’t here</h2><BackLink to="study/arabic" label="Back to the learning map" /></Card>
       : <MapView data={data} />}
-  </div>;
+  </div></Pronunciation>;
 }
 
 // Your path's lessons in course order (optional lessons aside): where "the next small step" comes from.
@@ -324,7 +327,7 @@ function TextsIndex() {
     <div className="grid sm:grid-cols-2 gap-3 mb-4">{texts.assets.map(a => <a key={a.id} href={href(a.id)} data-ar-text={short(a.id)} className="block no-underline text-fg rounded-card border border-outline bg-surface shadow-card p-4 hover:border-outline-strong focus-visible:outline-2 focus-visible:outline-primary">
       <span className="text-xs font-bold text-primary uppercase tracking-wide">{a.stage_target} · {a.type === 'original_text' ? 'Text' : a.type === 'structured_data' ? 'Timetable' : 'Sound pairs'}</span>
       <h3 className="mt-2 mb-1 text-[17px]">{a.title}</h3>
-      {'text_ar' in a && a.text_ar && <Ar block className="text-[17px] text-fg-2 m-0 line-clamp-2">{a.text_ar}</Ar>}
+      {'text_ar' in a && a.text_ar && <Ar block showReading={false} className="text-[17px] text-fg-2 m-0 line-clamp-2">{a.text_ar}</Ar>}
     </a>)}</div>
   </>;
 }
@@ -334,6 +337,7 @@ function TextView({ asset: a }: { asset: Asset }) {
   const [vowels, setVowels] = useState(true);
   const shown = vowels || !plain ? full : plain;
   const questions = 'comprehension_questions' in a ? (a.comprehension_questions ?? []) : [];
+  const prepared = (passageReadings as Record<string, { latin: string; style: string }>)[a.id];
   return <>
     <Card>
       <BackLink to="study/arabic/texts" label="Reading texts" />
@@ -343,7 +347,8 @@ function TextView({ asset: a }: { asset: Asset }) {
         <Button inline variant={vowels ? 'primary' : 'ghost'} aria-pressed={vowels} data-action="ar-vowels" onClick={() => setVowels(true)}>With vowel marks</Button>
         <Button inline variant={!vowels ? 'primary' : 'ghost'} aria-pressed={!vowels} data-action="ar-no-vowels" onClick={() => setVowels(false)}>Without</Button>
       </div>}
-      {shown && <div className="rounded-tile bg-surface-2 px-4 py-3" data-ar-reading="">{shown.split('\n').map((line, i) => <Ar key={i} block className="text-[24px] my-1">{line}</Ar>)}</div>}
+      {shown && <div className="rounded-tile bg-surface-2 px-4 py-3" data-ar-reading="">{shown.split('\n').map((line, i) => <Ar key={i} block className="text-[24px] my-1" reading={prepared?.latin.split('\n')[i]}>{line}</Ar>)}</div>}
+      {prepared?.style.startsWith('word-by-word') && <p className="text-xs text-fg-2">The prepared transliteration is a word-by-word reading, generally without noun case endings. Use a recording for connected speech.</p>}
       {'rows' in a && a.rows && <div className="overflow-x-auto"><table className="w-full text-left border-collapse mt-2">
         <thead><tr className="border-b border-outline"><th className="py-2 pr-3">Day</th><th className="py-2 pr-3">Time</th><th className="py-2 pr-3">Activity</th><th className="py-2">Place</th></tr></thead>
         <tbody>{a.rows.map((r, i) => <tr key={i} className="border-b border-outline"><td className="py-2 pr-3"><Ar>{r.day_ar}</Ar></td><td className="py-2 pr-3 tabular-nums">{r.time}</td><td className="py-2 pr-3"><Ar>{r.activity_ar}</Ar></td><td className="py-2"><Ar>{r.place_ar}</Ar></td></tr>)}</tbody>

@@ -2,6 +2,8 @@
 
 Start with the [cybersecurity lessons](cybersecurity-lessons.md) or [Arabic Fuṣḥā lessons](arabic-fusha-lessons.md). The same explanations and assignments appear directly in MyDay's lesson screens, above the existing practical tasks.
 
+Arabic pages also include a remembered Show / Hide transliteration choice and an expandable pronunciation key. See [Arabic pronunciation support](pronunciation/README.md) for coverage, reading conventions and sources.
+
 This companion adds original teaching to all 146 cybersecurity and 152 Arabic lessons: an explanation, worked example, guided exercise, explained answer and specific resource assignments. There are 168 distinct assigned resources, including 15 cybersecurity video/course pages and 13 Arabic video/audio lesson pages. The resources include official documentation, named lectures, grammar lessons, narrated texts, dictionaries and primary literary texts. A repeated reference has a task-specific instruction, rather than being assigned as an undirected course homepage.
 
 Use the short explanation and exercise as the minimum session. Continue with the first assigned resource, then the course's existing practical task and later review. Full lectures, chapters and optional references may need several sessions; these additions do not promise that every resource fits the original lesson estimate.

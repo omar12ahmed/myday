@@ -10,6 +10,7 @@ import { InlineLink, Note } from '../parts';
 import { Question, type Asked } from '../RevisionView';
 import { skipQuestion, type Round } from '../round';
 import { Ar, Mixed } from './Ar';
+import { Pronunciation, PronunciationControls } from './Pronunciation';
 import checksJson from './data/checks.json';
 import texts from './data/texts.json';
 
@@ -33,7 +34,7 @@ export default function ArabicQuestion({ data, r, at, card }: { data: MyDayData;
   const q = asked(card, ref, answers);
   if (q === 'gone') return <Gone card={card} at={at} />;
   if (!q) return <Card><p role="status" className="m-0">{failed ? 'The answers couldn’t be opened. Check your connection and try again.' : 'Opening…'}</p></Card>;
-  return <Question data={data} r={r} at={at} q={q} />;
+  return <Pronunciation><PronunciationControls /><Question data={data} r={r} at={at} q={q} /></Pronunciation>;
 }
 
 function asked(card: ArabicCard, ref: CardRef, answers: Answers | null): Asked | 'gone' | null {

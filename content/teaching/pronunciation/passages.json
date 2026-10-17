@@ -1,0 +1,72 @@
+{
+  "asset.arabic-profile": {
+    "source": "أَنَا لَيْلَى. أَنَا طَالِبَةٌ. أَسْكُنُ فِي مَدِينَةٍ صَغِيرَةٍ. بَيْتِي قَرِيبٌ مِنَ الْمَدْرَسَةِ. أَدْرُسُ الْعَرَبِيَّةَ فِي الصَّبَاحِ، وَأَقْرَأُ فِي الْمَسَاءِ. عِنْدِي كِتَابٌ جَدِيدٌ وَدَفْتَرٌ صَغِيرٌ.",
+    "latin": "anā laylā. anā ṭālibatun. askunu fī madīnatin ṣaghīratin. baytī qarībun mina al-madrasati. adrusu al-ʿarabiyyata fī aṣ-ṣabāḥi, waʾaqraʾu fī al-masāʾi. ʿindī kitābun jadīdun wadaftarun ṣaghīrun.",
+    "style": "written vowels and endings"
+  },
+  "asset.arabic-room": {
+    "source": "هَذِهِ غُرْفَةٌ صَغِيرَةٌ. فِي الْغُرْفَةِ مَكْتَبٌ وَكُرْسِيٌّ. عَلَى الْمَكْتَبِ ثَلَاثَةُ كُتُبٍ. الْكُتُبُ جَدِيدَةٌ. هَذَا كِتَابُ لَيْلَى، وَذَلِكَ كِتَابُ سَامِي. بَابُ الْغُرْفَةِ مَفْتُوحٌ.",
+    "latin": "hādhihi ghurfatun ṣaghīratun. fī al-ghurfati maktabun wakursiyyun. ʿalā al-maktabi thalāthatu kutubin. al-kutubu jadīdatun. hādhā kitābu laylā, wa-dhālika kitābu sāmī. bābu al-ghurfati maftūḥun.",
+    "style": "written vowels and endings"
+  },
+  "asset.arabic-introduction-dialogue": {
+    "source": "سَامِي: مَرْحَبًا. مَا اسْمُكِ؟\nلَيْلَى: اسْمِي لَيْلَى. وَمَا اسْمُكَ؟\nسَامِي: اسْمِي سَامِي. هَلْ أَنْتِ طَالِبَةٌ؟\nلَيْلَى: نَعَمْ، أَنَا طَالِبَةٌ. هَلْ تَدْرُسُ الْعَرَبِيَّةَ؟\nسَامِي: نَعَمْ. أَدْرُسُ الْعَرَبِيَّةَ فِي الْمَسَاءِ.\nلَيْلَى: أَنَا أَدْرُسُ فِي الصَّبَاحِ.",
+    "latin": "sāmī: marḥaban. mā ismuki?\nlaylā: ismī laylā. wamā ismuka?\nsāmī: ismī sāmī. hal anti ṭālibatun?\nlaylā: naʿam, anā ṭālibatun. hal tadrusu al-ʿarabiyyata?\nsāmī: naʿam. adrusu al-ʿarabiyyata fī al-masāʾi.\nlaylā: anā adrusu fī aṣ-ṣabāḥi.",
+    "style": "written vowels and endings"
+  },
+  "asset.arabic-appointment": {
+    "source": "مَرْحَبًا يَا سَامِي. مَوْعِدُنَا يَوْمَ الثُّلَاثَاءِ فِي السَّاعَةِ الثَّالِثَةِ. الْمَكْتَبَةُ بِجَانِبِ الْمَدْرَسَةِ. أَنَا فِي الْمَكْتَبَةِ فِي السَّاعَةِ الثَّانِيَةِ. إِلَى اللِّقَاءِ!\nلَيْلَى",
+    "latin": "marḥaban yā sāmī. mawʿidunā yawma ath-thulāthāʾi fī as-sāʿati ath-thālithati. al-maktabatu bijānibi al-madrasati. anā fī al-maktabati fī as-sāʿati ath-thāniyati. ilā al-liqāʾi!\nlaylā",
+    "style": "written vowels and endings"
+  },
+  "asset.arabic-routine": {
+    "source": "أَسْتَيْقِظُ فِي الصَّبَاحِ. أَشْرَبُ الْمَاءَ، ثُمَّ أَقْرَأُ كِتَابًا. أَدْرُسُ الْعَرَبِيَّةَ نِصْفَ سَاعَةٍ. بَعْدَ ذَلِكَ أَذْهَبُ إِلَى الْعَمَلِ. فِي الْمَسَاءِ أَكْتُبُ جُمَلًا قَصِيرَةً. أَنَا أُحِبُّ الْقِرَاءَةَ، وَلَكِنَّ الْكِتَابَةَ صَعْبَةٌ أَحْيَانًا.",
+    "latin": "astayqiẓu fī aṣ-ṣabāḥi. ashrabu al-māʾa, thumma aqraʾu kitāban. adrusu al-ʿarabiyyata niṣfa sāʿatin. baʿda dhālika adhhabu ilā al-ʿamali. fī al-masāʾi aktubu jumalan qaṣīratan. anā uḥibbu al-qirāʾata, wa-lākinna al-kitābata ṣaʿbatun aḥyānan.",
+    "style": "written vowels and endings"
+  },
+  "asset.arabic-weekend": {
+    "source": "فِي يَوْمِ السَّبْتِ زُرْتُ صَدِيقِي سَامِي. كَانَ الْجَوُّ جَمِيلًا، فَذَهَبْنَا إِلَى الْحَدِيقَةِ. جَلَسْنَا تَحْتَ شَجَرَةٍ وَتَحَدَّثْنَا عَنِ الدِّرَاسَةِ. بَعْدَ ذَلِكَ أَرَدْنَا أَنْ نَذْهَبَ إِلَى الْمَكْتَبَةِ، وَلَكِنَّهَا كَانَتْ مُغْلَقَةً. لَمْ نَدْخُلِ الْمَكْتَبَةَ. عُدْنَا إِلَى الْبَيْتِ وَقَرَأْنَا قِصَّةً قَصِيرَةً. فِي الْأُسْبُوعِ الْقَادِمِ سَنَزُورُ الْمَكْتَبَةَ يَوْمَ الْجُمُعَةِ. سَأَتَأَكَّدُ مِنْ وَقْتِ افْتِتَاحِهَا قَبْلَ الزِّيَارَةِ.",
+    "latin": "fī yawmi as-sabti zurtu ṣadīqī sāmī. kāna al-jawwu jamīlan, fadhahabnā ilā al-ḥadīqati. jalasnā taḥta shajaratin wataḥaddathnā ʿani ad-dirāsati. baʿda dhālika aradnā an nadhhaba ilā al-maktabati, wa-lākinnahā kānat mughlaqatan. lam nadkhuli al-maktabata. ʿudnā ilā al-bayti waqaraʾnā qiṣṣatan qaṣīratan. fī al-usbūʿi al-qādimi sanazūru al-maktabata yawma al-jumuʿati. saʾataʾakkadu min waqti iftitāḥihā qabla az-ziyārati.",
+    "style": "written vowels and endings"
+  },
+  "asset.arabic-changed-plan": {
+    "source": "لَيْلَى: أُرِيدُ أَنْ أَدْرُسَ مَعَكِ يَوْمَ الثُّلَاثَاءِ. هَلْ تَسْتَطِيعِينَ أَنْ تَحْضُرِي فِي السَّاعَةِ الثَّالِثَةِ؟\nنُور: لَا أَسْتَطِيعُ، لِأَنَّ عِنْدِي مَوْعِدًا. أَسْتَطِيعُ أَنْ أَحْضُرَ يَوْمَ الْأَرْبِعَاءِ.\nلَيْلَى: هَلْ تُنَاسِبُكِ السَّاعَةُ الرَّابِعَةُ؟\nنُور: نَعَمْ. أَيْنَ سَنَلْتَقِي؟\nلَيْلَى: فِي الْمَكْتَبَةِ. سَأُرْسِلُ إِلَيْكِ الْعُنْوَانَ.\nنُور: شُكْرًا. إِذَنْ مَوْعِدُنَا يَوْمَ الْأَرْبِعَاءِ فِي السَّاعَةِ الرَّابِعَةِ.",
+    "latin": "laylā: urīdu an adrusa maʿaki yawma ath-thulāthāʾi. hal tastaṭīʿīna an taḥḍurī fī as-sāʿati ath-thālithati?\nnūr: lā astaṭīʿu, liʾanna ʿindī mawʿidan. astaṭīʿu an aḥḍura yawma al-arbiʿāʾi.\nlaylā: hal tunāsibuki as-sāʿatu ar-rābiʿatu?\nnūr: naʿam. ayna sanaltaqī?\nlaylā: fī al-maktabati. saʾursilu ilayki al-ʿunwāna.\nnūr: shukran. idhan mawʿidunā yawma al-arbiʿāʾi fī as-sāʿati ar-rābiʿati.",
+    "style": "written vowels and endings"
+  },
+  "asset.arabic-notice": {
+    "source": "تَفْتَحُ الْمَكْتَبَةُ أَبْوَابَهَا مِنَ السَّاعَةِ التَّاسِعَةِ صَبَاحًا إِلَى السَّاعَةِ الْخَامِسَةِ مَسَاءً. تُغْلَقُ يَوْمَ السَّبْتِ. يَسْتَطِيعُ الْقُرَّاءُ اسْتِعَارَةَ ثَلَاثَةِ كُتُبٍ لِمُدَّةِ أُسْبُوعَيْنِ. لَا يُسْمَحُ بِالطَّعَامِ فِي غُرْفَةِ الْقِرَاءَةِ. لِطَلَبِ الْمُسَاعَدَةِ، يُرْجَى سُؤَالُ الْمُوَظَّفِ عِنْدَ الْمَدْخَلِ.",
+    "latin": "taftaḥu al-maktabatu abwābahā mina as-sāʿati at-tāsiʿati ṣabāḥan ilā as-sāʿati al-khāmisati masāʾan. tughlaqu yawma as-sabti. yastaṭīʿu al-qurrāʾu istiʿārata thalāthati kutubin limuddati usbūʿayni. lā yusmaḥu bi-ṭ-ṭaʿāmi fī ghurfati al-qirāʾati. liṭalabi al-musāʿadati, yurjā suʾālu al-muwaẓẓafi ʿinda al-madkhali.",
+    "style": "written vowels and endings"
+  },
+  "asset.arabic-study-method": {
+    "source": "كان سامي يدرس كلمات جديدة كل مساء، لكنه كان ينسى كثيرا منها بعد أيام قليلة. لذلك قرر أن يغير طريقته. بدأ يقرأ نصوصا قصيرة عن الموضوعات التي يحبها، ثم يختار من كل نص كلمات قليلة يحتاج إليها. لم يكتف بكتابة معانيها، بل كتب جملا من عنده واستعمل الكلمات في حديثه مع صديق. في نهاية الأسبوع عاد إلى النص الأول وحاول تلخيصه دون النظر إليه. وجد أنه يتذكر بعض الكلمات بسهولة، وأن كلمات أخرى ما زالت تحتاج إلى مراجعة. لم يعتبر ذلك فشلا؛ فقد ساعده على معرفة ما ينبغي أن يدرسه في الأسبوع التالي.",
+    "latin": "kāna Sāmī yadrusu kalimāt jadīda kulla masāʾ, lākinnahu kāna yansā kathīran minhā baʿda ayyām qalīla. li-dhālika qarrara an yughayyira ṭarīqatahu. badaʾa yaqraʾu nuṣūṣan qaṣīra ʿan al-mawḍūʿāt allatī yuḥibbuhā, thumma yakhtāru min kull naṣṣ kalimāt qalīla yaḥtāju ilayhā. lam yaktafi bi-kitābat maʿānīhā, bal kataba jumalan min ʿindihi wa-staʿmala al-kalimāt fī ḥadīthihi maʿa ṣadīq. fī nihāyat al-usbūʿ ʿāda ilā an-naṣṣ al-awwal wa-ḥāwala talkhīṣahu dūna an-naẓar ilayhi. wajada annahu yatadhakkaru baʿḍ al-kalimāt bi-suhūla, wa-anna kalimāt ukhrā mā zālat taḥtāju ilā murājaʿa. lam yaʿtabir dhālika fashalan; fa-qad sāʿadahu ʿalā maʿrifat mā yanbaghī an yadrusahu fī al-usbūʿ at-tālī.",
+    "style": "word-by-word; nominal case endings generally omitted"
+  },
+  "asset.arabic-community-library": {
+    "source": "أعلنت مكتبة الحي عن مشروع جديد لتشجيع القراءة بين الكبار. سيجتمع المشاركون مرة كل أسبوع لقراءة قصة قصيرة ومناقشتها. وقالت منسقة المشروع إن الهدف ليس قراءة أكبر عدد من الصفحات، بل فهم النص وتبادل الآراء حوله. يستطيع المشارك أن يختار نسخة مطبوعة أو إلكترونية، كما يمكنه الاستماع إلى تسجيل للقصة إذا كان متاحا بصورة قانونية. لا يشترط المشروع معرفة سابقة بالأدب، لكنه يطلب من كل مشارك أن يأتي بسؤال واحد على الأقل. وسيجرب الفريق هذا النظام لمدة شهر، ثم يجمع الملاحظات قبل أن يقرر الاستمرار فيه. لم يحدد الإعلان بعد عدد المشاركين أو موعد الاجتماع الأول.",
+    "latin": "aʿlanat maktabat al-ḥayy ʿan mashrūʿ jadīd li-tashjīʿ al-qirāʾa bayna al-kibār. sa-yajtamiʿu al-mushārikūn marratan kulla usbūʿ li-qirāʾat qiṣṣa qaṣīra wa-munāqashatihā. wa-qālat munassiqat al-mashrūʿ inna al-hadaf laysa qirāʾat akbar ʿadad min aṣ-ṣafaḥāt, bal fahm an-naṣṣ wa-tabādul al-ārāʾ ḥawlahu. yastaṭīʿu al-mushārik an yakhtāra nuskha maṭbūʿa aw iliktrūniyya, kamā yumkinuhu al-istimāʿ ilā tasjīl li-l-qiṣṣa idhā kāna mutāḥan bi-ṣūra qānūniyya. lā yashtariṭu al-mashrūʿ maʿrifa sābiqa bi-l-adab, lākinnahu yaṭlubu min kull mushārik an yaʾtiya bi-suʾāl wāḥid ʿalā al-aqall. wa-sa-yujarribu al-farīq hādhā an-niẓām li-muddat shahr, thumma yajmaʿu al-mulāḥaẓāt qabla an yuqarrira al-istimrār fīhi. lam yuḥaddid al-iʿlān baʿdu ʿadad al-mushārikīn aw mawʿid al-ijtimāʿ al-awwal.",
+    "style": "word-by-word; nominal case endings generally omitted"
+  },
+  "asset.arabic-transport-report": {
+    "source": "قالت بلدية مدينة افتراضية إن عدد مستخدمي الحافلات ارتفع من عشرة آلاف إلى اثني عشر ألفا في الشهر الماضي، بعد تخفيض سعر التذكرة. ووصفت البلدية الزيادة بأنها دليل على نجاح التخفيض. غير أن باحثة في النقل أشارت إلى أن الأرقام وحدها لا تكفي لتحديد السبب؛ فقد افتتحت المدينة في الشهر نفسه خطين جديدين، كما أغلقت بعض الشوارع لأعمال الصيانة. وطالبت الباحثة بمقارنة الأعداد على مدى فترة أطول وبمعرفة ما إذا كان الركاب الجدد قد توقفوا عن استخدام سياراتهم. واتفق الطرفان على ضرورة تحسين الخدمة، لكنهما اختلفا في تفسير الزيادة. هذه بيانات تعليمية مختلقة، ولا تصف مدينة حقيقية.",
+    "latin": "qālat baladiyyat madīna iftirāḍiyya inna ʿadad mustakhdimī al-ḥāfilāt irtafaʿa min ʿasharat ālāf ilā ithnay ʿashar alfan fī ash-shahr al-māḍī, baʿda takhfīḍ siʿr at-tadhkira. wa-waṣafat al-baladiyya az-ziyāda bi-annahā dalīl ʿalā najāḥ at-takhfīḍ. ghayra anna bāḥitha fī an-naql ashārat ilā anna al-arqām waḥdahā lā takfī li-taḥdīd as-sabab; fa-qad iftataḥat al-madīna fī ash-shahr nafsihi khaṭṭayn jadīdayn, kamā aghlaqat baʿḍ ash-shawāriʿ li-aʿmāl aṣ-ṣiyāna. wa-ṭālabat al-bāḥitha bi-muqāranat al-aʿdād ʿalā madā fatra aṭwal wa-bi-maʿrifat mā idhā kāna ar-rukkāb al-judud qad tawaqqafū ʿan istikhdām sayyārātihim. wa-ttafaqa aṭ-ṭarafān ʿalā ḍarūrat taḥsīn al-khidma, lākinnahumā ikhtalafā fī tafsīr az-ziyāda. hādhihi bayānāt taʿlīmiyya mukhtalaqa, wa-lā taṣifu madīna ḥaqīqiyya.",
+    "style": "word-by-word; nominal case endings generally omitted"
+  },
+  "asset.arabic-digital-reading": {
+    "source": "يرى بعض القراء أن الكتب الإلكترونية تسهل الوصول إلى المعرفة، لأنها تتيح حمل مكتبة كبيرة والبحث داخل النص بسرعة. ويخشى آخرون أن تؤدي كثرة الإشعارات والروابط إلى تشتت الانتباه. لا يبدو أن السؤال المفيد هو أي النوعين أفضل في جميع الأحوال، بل أيهما أنسب للقارئ وللمهمة. فمن يريد العثور على معلومة محددة قد يستفيد من البحث الرقمي، بينما قد يفضل قارئ آخر نسخة ورقية خلال جلسة طويلة. ويمكن تقليل المشتتات بإغلاق الإشعارات واختيار وقت مناسب للقراءة. ومع ذلك، فإن تفضيل وسيلة معينة لا يثبت وحده أنها تحسن فهم كل قارئ. ينبغي أن يقارن الشخص أداءه في مهام متشابهة، وأن يختار الوسيلة التي تساعده على تحقيق غرضه.",
+    "latin": "yarā baʿḍ al-qurrāʾ anna al-kutub al-iliktrūniyya tusahhilu al-wuṣūl ilā al-maʿrifa, li-annahā tutīḥu ḥaml maktaba kabīra wa-l-baḥth dākhil an-naṣṣ bi-surʿa. wa-yakhshā ākharūn an tuʾaddiya kathrat al-ishʿārāt wa-r-rawābiṭ ilā tashattut al-intibāh. lā yabdū anna as-suʾāl al-mufīd huwa ayyu an-nawʿayn afḍal fī jamīʿ al-aḥwāl, bal ayyuhumā ansab li-l-qāriʾ wa-li-l-muhimma. fa-man yurīdu al-ʿuthūr ʿalā maʿlūma muḥaddada qad yastafīdu min al-baḥth ar-raqmī, baynamā qad yufaḍḍilu qāriʾ ākhar nuskha waraqiyya khilāla jalsa ṭawīla. wa-yumkinu taqlīl al-mushtitāt bi-ighlāq al-ishʿārāt wa-khtiyār waqt munāsib li-l-qirāʾa. wa-maʿa dhālika, fa-inna tafḍīl wasīla muʿayyana lā yuthbitu waḥdahu annahā tuḥassinu fahm kull qāriʾ. yanbaghī an yuqārina ash-shakhṣ adāʾahu fī mahāmm mutashābiha, wa-an yakhtāra al-wasīla allatī tusāʿiduhu ʿalā taḥqīq gharaḍihi.",
+    "style": "word-by-word; nominal case endings generally omitted"
+  },
+  "asset.arabic-email": {
+    "source": "السيدة المحترمة،\nأرغب في الحصول على معلومات عن دورة اللغة العربية التي ستبدأ الشهر القادم. هل يمكنكم توضيح مواعيد الدروس وعدد المشاركين المتوقع؟ أعمل في المساء، ولذلك أبحث عن مجموعة تلتقي في الصباح. أود أيضا معرفة ما إذا كانت الدورة تتضمن تدريبات على المحادثة بالفصحى، وما إذا كان هناك اختبار لتحديد المستوى قبل التسجيل.\nأشكركم على مساعدتكم، وأتطلع إلى ردكم.\nمع خالص التحية،\nليلى",
+    "latin": "as-sayyida al-muḥtarama,\narghabu fī al-ḥuṣūl ʿalā maʿlūmāt ʿan dawrat al-lugha al-ʿarabiyya allatī sa-tabdaʾu ash-shahr al-qādim. hal yumkinukum tawḍīḥ mawāʿīd ad-durūs wa-ʿadad al-mushārikīn al-mutawaqqaʿ? aʿmalu fī al-masāʾ, wa-li-dhālika abḥathu ʿan majmūʿa taltaqī fī aṣ-ṣabāḥ. awaddu ayḍan maʿrifat mā idhā kānat ad-dawra tataḍammanu tadrībāt ʿalā al-muḥādatha bi-l-fuṣḥā, wa-mā idhā kāna hunāka ikhtibār li-taḥdīd al-mustawā qabla at-tasjīl.\nashkurukum ʿalā musāʿadatikum, wa-ataṭallaʿu ilā raddikum.\nmaʿa khāliṣ at-taḥiyya,\nLaylā",
+    "style": "word-by-word; nominal case endings generally omitted"
+  },
+  "asset.arabic-technical-report": {
+    "source": "في الساعة التاسعة صباحا، أبلغ مستخدم في شركة افتراضية أنه لم يتمكن من الدخول إلى حسابه. أظهرت السجلات خمس محاولات دخول غير ناجحة خلال عشر دقائق، ثم تم قفل الحساب مؤقتا. لم تتوفر بعد معلومات كافية لمعرفة ما إذا كانت المحاولات صادرة عن المستخدم نفسه أو عن شخص آخر. اتصل فريق الدعم بالمستخدم عبر وسيلة معروفة، وطلب منه تأكيد آخر محاولة قام بها. سيقارن الفريق الإجابة بالسجلات قبل اتخاذ الخطوة التالية. لا تتضمن هذه الحالة التعليمية أي بيانات حقيقية أو كلمات مرور.",
+    "latin": "fī as-sāʿa at-tāsiʿa ṣabāḥan, ablagha mustakhdim fī sharika iftirāḍiyya annahu lam yatamakkan min ad-dukhūl ilā ḥisābihi. aẓharat as-sijillāt khams muḥāwalāt dukhūl ghayr nājiḥa khilāla ʿashr daqāʾiq, thumma tamma qafl al-ḥisāb muʾaqqatan. lam tatawaffar baʿdu maʿlūmāt kāfiya li-maʿrifat mā idhā kānat al-muḥāwalāt ṣādira ʿan al-mustakhdim nafsihi aw ʿan shakhṣ ākhar. ittaṣala farīq ad-daʿm bi-l-mustakhdim ʿabra wasīla maʿrūfa, wa-ṭalaba minhu taʾkīd ākhir muḥāwala qāma bihā. sa-yuqārinu al-farīq al-ijāba bi-s-sijillāt qabla ittikhādh al-khuṭwa at-tāliya. lā tataḍammanu hādhihi al-ḥāla at-taʿlīmiyya ayya bayānāt ḥaqīqiyya aw kalimāt murūr.",
+    "style": "word-by-word; nominal case endings generally omitted"
+  }
+}
