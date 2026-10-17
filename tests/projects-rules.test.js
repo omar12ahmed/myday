@@ -18,7 +18,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   fs.mkdirSync(dir, { recursive: true });
   const src = p => JSON.stringify(path.join(ROOT, 'app/src/data', p));
   fs.writeFileSync(path.join(dir, 'kit.ts'), [
-    `export * from ${src('projectPlan')};`, `export { normalizeProjects, deleteProject, recently, addProject } from ${src('projects')};`,
+    `export * from ${src('projectPlan')};`, `export { normalizeProjects, deleteProject, recently, addProject, setProjectPrivate, privateProjectIds } from ${src('projects')};`,
     `export { freshState, normalize } from ${src('normalize')};`, `export { shift } from ${src('dates')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
@@ -193,6 +193,21 @@ const clone = o => JSON.parse(JSON.stringify(o));
   check('a project without any gets no such happenings', K.recently(d, plainP, 10).length === 0);
   check('deleting the project removes it with its milestones and decisions', K.deleteProject(d, 'pjA') && !d.projects.items.some(p => p.id === 'pjA') && !JSON.stringify(d.projects).includes('First office signed') && !JSON.stringify(d.projects).includes('Which roaster?'));
   check('…but keeps its notes and tasks, just no longer linked to it', d.notes.items.length === 2 && d.tasks.items.length === 2 && d.notes.items.concat(d.tasks.items).every(x => !('projectId' in x)));
+
+  console.log('\n[8] Private projects (your switch)');
+  d = world(base('pjA'), base('pjB'));
+  const ctxP = rest(d);
+  P(d).updatedAt = OLD;
+  check('making a project private sets private: true and moves its updated time on', K.setProjectPrivate(d, 'pjA', true) && P(d).private === true && P(d).updatedAt > OLD, P(d));
+  check('making it private again changes nothing (false)', !K.setProjectPrivate(d, 'pjA', true));
+  check('privateProjectIds lists only the private ones', eq([...K.privateProjectIds(d)], ['pjA']));
+  P(d).updatedAt = OLD;
+  check('turning it off removes the field altogether and moves the updated time on', K.setProjectPrivate(d, 'pjA', false) && !('private' in P(d)) && P(d).updatedAt > OLD, P(d));
+  check('turning it off again changes nothing (false), and a project that isn\'t there is false either', !K.setProjectPrivate(d, 'pjA', false) && !K.setProjectPrivate(d, 'pjNope', true) && K.privateProjectIds(d).size === 0);
+  check('the switch touched nothing else about the project, its days, tasks or notes', eq(rest(d), ctxP));
+  rep = { dropped: 0 };
+  out = K.normalizeProjects({ items: [base('pjA', { private: true }), base('pjB', { private: false }), base('pjC', { private: 'yes' }), base('pjD', { private: 1 }), base('pjE')] }, rep);
+  check('reading saved projects keeps private: true and drops any other value', out.items[0].private === true && ['pjB', 'pjC', 'pjD', 'pjE'].every((id, i) => !('private' in out.items[i + 1])) && rep.dropped === 0, out.items);
 
   fs.rmSync(dir, { recursive: true, force: true });
   const s = summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);

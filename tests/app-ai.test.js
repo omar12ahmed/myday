@@ -560,6 +560,79 @@ const SEED = `s => {
     await mock.ev(`location.hash = 'today'`); await sleep(200);
   }
 
+  console.log('\n[8l] Milestones and decisions with Ask MyDay; private projects');
+  {
+    const at = `${TODAY}T08:00`;
+    const ms = (id, title) => ({ id, title, aim: null, reachedOn: null, createdAt: at });
+    const op = (id, text, pros = [], cons = []) => ({ id, text, pros, cons });
+    const dc = (id, question, options, chosen = null) => ({ id, question, options, chosen, why: chosen ? 'Fits' : '', decidedOn: chosen ? TODAY : null, createdAt: at, updatedAt: at });
+    const TKP = { id: 'tkPv', title: 'Order the chairs', listId: '', category: 'admin', minutes: 15, due: TODAY, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: at, postponed: 0, blockers: [], letGoOn: null, projectId: 'pjMs' };
+    const PJ = { id: 'pjMs', title: 'Garden party', summary: 'A small party in June', stage: 'decide', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at,
+      milestones: [ms('msE1', 'Pick a date')],
+      decisions: [dc('dcV', 'Which venue?', [op('opV1', 'Town hall', ['Cheap']), op('opV2', 'Garden')]), dc('dcE', 'Which caterer?', [op('opE1', 'Soup van')]), dc('dcD', 'Which music?', [op('opD1', 'Band', ['Lively'])], 'opD1')] };
+    await seeded(mock, MOCK);
+    await mock.setData(`s => { s.projects.items.push(${JSON.stringify(PJ)}); s.tasks.items.push(${JSON.stringify(TKP)}); }`);
+    await mock.until(`document.querySelector('#app')`);
+    const proj = async () => (await mock.data()).projects.items.find(p => p.id === 'pjMs');
+    const typed = () => mock.ev(`document.getElementById('captureText')?.value`);
+
+    await mock.ev(`location.hash = 'projects/p/pjMs/milestones'`); await mock.until(`document.querySelector('[data-action=ms-ask]')`, 5000);
+    check('the Milestones tab offers "Suggest milestones"', (await mock.text('[data-action=ms-ask]')).includes('Suggest milestones'));
+    const before = await proj();
+    await mock.click('[data-action=ms-ask]'); await mock.until(`document.getElementById('captureText')`, 5000);
+    check('…which opens + with the request typed, the preview showing the project and "1 milestone", and nothing sent or added yet', (await typed()) === 'Suggest milestones for this project' && (await mock.text('[data-s=ask-sends]')).includes('Garden party') && (await mock.text('[data-s=ask-sends]')).includes('1 milestone') && !(await mock.exists('[data-s=ask-item]')) && eq((await proj()).milestones, before.milestones), await mock.text('[data-s=ask-sends]'));
+    await mock.click('[data-action=ask-go]'); await mock.until(`['shown', 'error'].includes(document.querySelector('[data-s=ask-panel]')?.dataset.phase)`, 10000);
+    check('Ask MyDay answers with milestone cards, which have no Edit link', (await mock.ev(`document.querySelectorAll('[data-s=ask-item][data-type=milestone]').length`)) === 3 && !(await mock.exists('[data-s=ask-item] [data-action=ask-edit]')), await mock.text('[data-s=ask-panel]'));
+    await mock.click('[data-action=ask-add]'); await sleep(250);
+    let after = await proj();
+    check('Add puts them in the project\'s milestones, after the one it had', after.milestones.length === 4 && after.milestones[0].id === 'msE1' && after.milestones.slice(1).map(m => m.title).join('|') === 'Clear on what “done” looks like|The first real piece finished|Everything wrapped up', after.milestones.map(m => m.title));
+    await mock.click('[data-action=ask-undo]'); await sleep(250);
+    check('Undo takes them back exactly', eq((await proj()).milestones, before.milestones));
+    await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
+
+    await mock.ev(`location.hash = 'projects/p/pjMs/decisions'`); await mock.until(`document.querySelector('[data-s=decision]')`, 5000);
+    check('on the Decisions tab the open decision with a pro shows "What am I missing?"', (await mock.exists('[data-s=decision][data-id=dcV] [data-action=dc-ask]')) && (await mock.text('[data-s=decision][data-id=dcV] [data-action=dc-ask]')).includes('What am I missing?'));
+    check('…a decision whose options have no pros or cons yet shows none', !(await mock.exists('[data-s=decision][data-id=dcE] [data-action=dc-ask]')));
+    check('…and a decided one shows none', !(await mock.exists('[data-s=decision][data-id=dcD] [data-action=dc-ask]')));
+    await mock.click('[data-s=decision][data-id=dcV] [data-action=dc-ask]'); await mock.until(`document.getElementById('captureText')`, 5000);
+    check('…tapping it opens + with the request typed and the preview showing "Decision: Which venue?"', (await typed()) === 'What am I missing in “Which venue?”?' && (await mock.text('[data-s=ask-sends]')).includes('Decision: Which venue?') && !(await mock.exists('[data-s=ask-item]')), [await typed(), await mock.text('[data-s=ask-sends]')]);
+    const beforeD = await proj();
+    await mock.click('[data-action=ask-go]'); await mock.until(`['shown', 'error'].includes(document.querySelector('[data-s=ask-panel]')?.dataset.phase)`, 10000);
+    const conTxt = await mock.ev(`document.querySelector('[data-s=ask-item][data-type=con]')?.textContent || ''`);
+    check('Ask MyDay answers with a con card "for “Town hall”" and an option card, with no Edit link', conTxt.includes('for “Town hall”') && (await mock.exists('[data-s=ask-item][data-type=option]')) && !(await mock.exists('[data-s=ask-item] [data-action=ask-edit]')), await mock.text('[data-s=ask-panel]'));
+    await mock.click('[data-action=ask-add]'); await sleep(250);
+    const dcA = (await proj()).decisions.find(x => x.id === 'dcV');
+    check('Add puts the con on that option and the new option in the decision', dcA.options.length === 3 && dcA.options[0].cons.length === 1 && dcA.options[2].text === 'Wait a month and decide then', dcA);
+    await mock.click('[data-action=ask-undo]'); await sleep(250);
+    const noStamp = l => l.map(({ updatedAt, ...x }) => x); // Undo, like adding, marks the decision as just changed; everything else is as it was
+    check('Undo takes both back (the decision\'s options and points as they were)', eq(noStamp((await proj()).decisions), noStamp(beforeD.decisions)), (await proj()).decisions);
+    await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
+
+    check('before it is private, no lock shows and the switch is off', (await mock.ev(`document.querySelector('[data-action=project-private]').getAttribute('aria-checked')`)) === 'false' && !(await mock.exists('[data-s=project-private-hint]')));
+    await mock.click('[data-action=project-private]'); await sleep(250);
+    check('making it private: the switch shows on, the hint shows, and it is saved', (await mock.ev(`document.querySelector('[data-action=project-private]').getAttribute('aria-checked')`)) === 'true' && (await mock.exists('[data-s=project-private-hint]')) && (await proj()).private === true);
+    check('…the decision\'s AI button is replaced by "Private project — AI help isn\'t offered here."', !(await mock.exists('[data-action=dc-ask]')) && (await mock.text('[data-s=ai-private]')) === 'Private project — AI help isn\'t offered here.');
+    await mock.ev(`location.hash = 'projects/p/pjMs/milestones'`); await mock.until(`document.querySelector('#projectMilestones')`, 5000); await sleep(150);
+    check('…and so is the milestones one', !(await mock.exists('[data-action=ms-ask]')) && (await mock.text('[data-s=ai-private]')) === 'Private project — AI help isn\'t offered here.');
+    await mock.click('[data-action=capture-open]'); await mock.until(`document.getElementById('captureText')`); await mock.type('#captureText', 'hello'); await sleep(200);
+    const sends = await mock.text('[data-s=ask-sends]');
+    check('+ on its page: the preview says "This project: not sent (private)" and never names it', sends.includes('This project: not sent (private)') && !sends.includes('Garden party') && !sends.includes('Pick a date'), sends);
+    await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
+
+    await mock.ev(`location.hash = 'today'`); await mock.until(`document.querySelector('[data-action=capture-open]')`, 5000); await sleep(300);
+    await mock.click('[data-action=capture-open]'); await mock.until(`document.getElementById('captureText')`); await mock.type('#captureText', 'hello'); await sleep(200);
+    const sendsT = await mock.text('[data-s=ask-sends]');
+    check('on Today the preview counts the items from private projects it left out, and never names the task or project', /2 items from private projects not sent/.test(sendsT) && !sendsT.includes('Order the chairs') && !sendsT.includes('Garden party'), sendsT);
+    await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
+
+    await mock.ev(`location.hash = 'projects'`); await mock.until(`document.querySelector('[data-id=pjMs]')`, 5000); await sleep(200);
+    check('the project\'s board card shows the lock', await mock.exists('[data-s=project-private]'));
+    await mock.ev(`location.hash = 'knows'`); await mock.until(`document.querySelector('[data-s=knows-private-projects]')`, 5000);
+    const kp = await mock.text('[data-s=knows-private-projects]');
+    check('What MyDay knows lists private projects and counts yours', kp.startsWith('Projects you’ve made private') && kp.includes('You have one at the moment'), kp);
+    await mock.ev(`location.hash = 'today'`); await sleep(200);
+  }
+
   console.log('\n[9] Layout');
   await D.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await D.ev(`location.hash = 'today'`);

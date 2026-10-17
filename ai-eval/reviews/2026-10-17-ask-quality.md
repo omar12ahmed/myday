@@ -85,3 +85,18 @@ Total for 1.27.0: about **US$0.05**. Besides the instructions, the app now chang
 when what you typed asks for it (the rest is left out and said), and only things the page sent can change.
 
 **Recommendation:** ship `myday-ask-v12` on GLM-5.3-Flash (no AI_ROUTES change needed).
+
+## Milestones and decisions (1.32.0)
+
+New synthetic requests: `m01`–`m03` (milestones for a move, a new idea, a learning goal with a target month) and
+`d01`–`d04` (what am I missing in two decisions, a yes/no, and one asking MyDay to just choose). New checks: milestones
+only, 3–6, none repeating, dates from today on; for a decision only pros, cons, one option (or a task to find out),
+pros/cons naming a real option, none repeating, and never choosing (`CHOOSES`).
+
+| Instructions | Calls | Checks met | Cost | What reading the replies found |
+|---|---|---|---|---|
+| myday-ask-v13 (first) | 21 | 307/318 | $0.0095 | Milestones good: outcomes in order, none repeated, dates only when given ("by July" → next July). Every "what am I missing" reply put its points in `text`, not `title`, so the reader dropped them all — the reader now accepts `text` for these four kinds. The "just choose" request was refused kindly every time; the eval's choosing check matched "I can't pick a winner" (too broad) — narrowed in the app and the eval. |
+| v13 (points in `title`) | 15 | 228/228 | $0.0066 | Points now arrive. Reading them: two pros that were really cons ("Likely pricier rents" as a pro of the dearer area; "Quieter evenings" for the noisy one) and a couple of invented facts. |
+| **v13 (sides checked, "may" for guesses)** | 9 | 144/144 | $0.0041 | Every pro and con on the right side (costs, longer journeys and risk as cons); guesses say "may"; nothing contradicts what was written; one option at most. A couple of points debatable — fine for suggestions you tick. |
+
+Total about **US$0.02**. Recommendation: ship `myday-ask-v13` on GLM-5.3-Flash.

@@ -939,6 +939,132 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('the practice helper, asked for smaller steps on a task page, gives steps that pass the checks (in its list and project)', c.kind === 'steps' && c.items.length === 3 && c.items.every(i => i.type === 'task' && i.listId === 'tlW' && i.projectId === 'pjA' && !i.already), c);
   }
 
+  console.log('\n[12e] Ask MyDay with milestones and decisions; private projects');
+  {
+    K.setClock(`${D}T10:00`);
+    const s0 = K.freshState(), at = `${D}T09:00`;
+    const P = (id, title, x = {}) => ({ id, title, summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at, ...x });
+    const TK = (id, title, x = {}) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: at, postponed: 0, blockers: [], letGoOn: null, ...x });
+    const NT = (id, text, x = {}) => ({ id, categoryId: '', title: '', text, pinned: false, createdAt: at, updatedAt: at, ...x });
+    const MS = (id, title, x = {}) => ({ id, title, aim: null, reachedOn: null, createdAt: at, ...x });
+    const OP = (id, text, pros = [], cons = []) => ({ id, text, pros, cons });
+    const DC = (id, question, options) => ({ id, question, options, chosen: null, why: '', decidedOn: null, createdAt: at, updatedAt: at });
+    s0.projects.items = [
+      P('pjA', 'Hargeisa shop', { milestones: [MS('msA', 'Find a unit', { aim: '2026-12-01' }), MS('msR', 'Visit the market', { reachedOn: '2026-11-02' })],
+        decisions: [DC('dcA', 'Which unit?', [OP('opA', 'Market stall', ['Cheap', 'Busy', 'Near buses', 'Low rent', 'Easy to leave'], ['Small']), OP('opB', 'Corner shop', [], ['Dear'])])] }),
+      P('pjP', 'Surprise party', { private: true, commitmentIds: ['cP'], milestones: [MS('msP', 'Book the hall')], decisions: [DC('dcP', 'Which hall?', [OP('opP', 'Town hall', ['Roomy'], [])])] }),
+      P('pjMany', 'Big list', { milestones: Array.from({ length: 29 }, (_, i) => MS('mm' + i, 'Step number ' + i)) }),
+      P('pjLong', 'Long words', { decisions: [DC('dcL', 'Q'.repeat(250), Array.from({ length: 5 }, (_, i) => OP('ol' + i, 'Option ' + i, Array.from({ length: 8 }, (_, j) => 'p'.repeat(200) + j), ['con'])))] }),
+    ];
+    s0.tasks.items = [TK('tkP1', 'Order the cake', { projectId: 'pjP', due: D }), TK('tkP2', 'Ring the band', { projectId: 'pjP', plannedOn: D, planUid: 'uP' }), TK('tkPub', 'Ring agents', { projectId: 'pjA', due: D })];
+    s0.notes.items = [NT('nP', 'Guest list for the party', { projectId: 'pjP' }), NT('nPub', 'Market stalls sell per day', { projectId: 'pjA' })];
+    s0.days[D] = { energy: 3, rest: false, builtAt: D + 'T08:00', checkedIn: false, tasks: [task('u1', 'Pay council tax', 'admin', 15), task('uP', 'Ring the band', 'admin', 15)] };
+    s0.context[D] = { energy: 3, sleep: { start: null, end: null, estimatedHours: 7 } };
+    s0.commitments.push({ id: 'c1', kind: 'appointment', title: 'Dentist', start: `${D}T15:00`, end: `${D}T15:30` }, { id: 'cP', kind: 'appointment', title: 'Cake pickup', start: `${D}T11:00`, end: `${D}T11:30` });
+    localStorage.clear(); localStorage.setItem('myday.data.v4', JSON.stringify(s0)); K.boot();
+    let w = K.getSnapshot().data;
+    const text = o => JSON.stringify(o);
+
+    // ---- Private projects ----
+    let sl = K.askSlice(w, '#today', D);
+    check('Today leaves out the private project\'s name, its task due today and its plan copy on today\'s plan', eq(sl.context.projects.map(p => p.id), ['pjA', 'pjMany', 'pjLong']) && eq(sl.context.today.plan.map(t => t.id), ['u1']) && eq(sl.context.today.dueToday.map(t => t.id), ['tkPub'])
+      && !/Surprise|cake|band/i.test(text(sl.context)), sl.context);
+    check('…and counts what was left out: the project, the plan copy and the task due today (3)', sl.held.count === 3 && sl.held.here === null, sl.held);
+    let pv = K.askPreview(K.askContext(sl, 'x', D), sl.privateNote, sl.held);
+    check('…and the preview says "3 items from private projects not sent"', pv.short.includes('3 items from private projects not sent') && !/Surprise|cake|band/i.test(text(pv)), pv.short);
+    sl = K.askSlice(w, '#projects/p/pjP', D);
+    pv = K.askPreview(K.askContext(sl, 'x', D), sl.privateNote, sl.held);
+    check('a private project\'s own page sends nothing of it (here is "project") and its Sends line says so', sl.held.here === 'project' && !('project' in sl.context) && /not this project, it.s private/.test(sl.sends) && !/Surprise|Book the hall|Town hall/.test(text(sl.context)), sl);
+    check('…and the preview says this project isn\'t sent', pv.short.includes('This project: not sent (private)') && !/Surprise|Town hall/.test(text(pv.all.filter(x => x.label !== 'Left out (you made their projects private)'))), pv.short);
+    sl = K.askSlice(w, '#today/tasks/tkP1', D);
+    check('a task of a private project isn\'t sent (here is "task")', sl.held.here === 'task' && !('task' in sl.context) && /not this task, its project is private/.test(sl.sends) && !/cake/i.test(text(sl.context)), sl);
+    sl = K.askSlice(w, '#projects/notes/nP', D);
+    check('a note of a private project isn\'t sent (here is "note", and it counts as a private note)', sl.held.here === 'note' && sl.privateNote && !('note' in sl.context) && !/party/i.test(text(sl.context)), sl);
+    sl = K.askSlice(w, '#calendar', D);
+    check('the Calendar leaves out an appointment listed on a private project, and sends the other', eq(sl.context.calendar.appointments.map(a => a.id), ['c1']) && !/Cake/.test(text(sl.context)) && sl.held.count >= 1, sl);
+    check('Finance and Health are unaffected: only the page\'s name, nothing held', ['#finance', '#health/workout'].every(h => { const x = K.askSlice(w, h, D); return eq(x.context, {}) && x.held.count === 0 && x.held.here === null; }));
+    sl = K.askSlice(w, '#projects/p/pjA', D);
+    check('a project that isn\'t private is sent as before (nothing held on its page)', sl.held.here === null && sl.context.project.id === 'pjA' && eq(sl.context.project.tasks.map(t => t.id), ['tkPub']) && eq(sl.context.projects.map(p => p.id), ['pjA', 'pjMany', 'pjLong']), sl);
+
+    // ---- Milestones and the decision in the slice ----
+    sl = K.askSlice(w, '#projects/p/pjA', D);
+    check('a project page sends its milestones (id, title, reached, aim) and no decision', eq(sl.context.project.milestones, [{ id: 'msA', title: 'Find a unit', reached: false, aim: '2026-12-01' }, { id: 'msR', title: 'Visit the market', reached: true, aim: null }]) && !('decision' in sl.context.project));
+    const slD = K.askSlice(w, '#projects/p/pjA', D, { decisionId: 'dcA' });
+    check('with a decision in focus it also sends that one decision: its question and each option with its pros and cons', eq(slD.context.project.decision, { id: 'dcA', question: 'Which unit?', options: [{ id: 'opA', text: 'Market stall', pros: ['Cheap', 'Busy', 'Near buses', 'Low rent', 'Easy to leave'], cons: ['Small'] }, { id: 'opB', text: 'Corner shop', pros: [], cons: ['Dear'] }] }), slD.context.project.decision);
+    check('…and the Sends line mentions it (only then)', /the decision you asked about/.test(slD.sends) && !/decision/.test(sl.sends) && /milestones/.test(sl.sends), slD.sends);
+    check('…a decision id that isn\'t on the project sends none', !('decision' in K.askSlice(w, '#projects/p/pjA', D, { decisionId: 'dcNope' }).context.project));
+    pv = K.askPreview(K.askContext(slD, 'What am I missing?', D));
+    check('the preview shows the milestones and the decision with its pros and cons', pv.short.includes('2 milestones') && pv.all.some(x => x.label === 'The decision you asked about' && x.lines[0] === 'Which unit?' && /Market stall — pros: Cheap/.test(x.lines[1])), pv.all);
+    const ctxD = K.askContext(slD, 'What am I missing?', D);
+    check('the server accepts both the milestones and the decision', K.checkAskContext(ctxD) && K.checkAskContext(K.askContext(sl, 'Suggest milestones', D)));
+    const slL = K.askSlice(w, '#projects/p/pjLong', D, { decisionId: 'dcL' }), dl = slL.context.project.decision;
+    check('a long decision is cut to the limits: question 200, 4 options, 6 points a side of at most 160 characters — and still passes the server\'s check',
+      dl.question.length <= 200 && dl.options.length === 4 && dl.options.every(o => o.pros.length === 6 && o.pros.every(t => t.length <= 160)) && K.checkAskContext(K.askContext(slL, 'x', D)), dl.options.map(o => o.pros.length));
+    const bad = f => { const c = JSON.parse(text(ctxD)); f(c.context.project.decision); return K.checkAskContext(c); };
+    check('the server refuses a decision with 5 options, a point over 160 characters, or an extra field',
+      !bad(d => { d.options = [...d.options, ...Array.from({ length: 3 }, (_, i) => ({ id: 'x' + i, text: 'X', pros: [], cons: [] }))]; }) && !bad(d => { d.options[0].pros.push('z'.repeat(161)); }) && !bad(d => { d.extra = 1; }) && !bad(d => { d.options[0].score = 3; }) && bad(() => {}));
+
+    // ---- Checking replies ----
+    const R = o => text({ kind: 'add', message: 'A few ideas.', items: [], action: null, ...o });
+    const home = K.askSlice(w, '#today', D), pageA = K.askSlice(w, '#projects/p/pjA', D), pageP = K.askSlice(w, '#projects/p/pjP', D), pageMany = K.askSlice(w, '#projects/p/pjMany', D);
+    const M = (title, x = {}) => ({ type: 'milestone', title, ...x });
+    let c = K.checkAskReply(R({ items: [M('Sign the lease', { date: '2026-12-15' }), M('First sale', { date: '2026-11-01' }), M('find a unit'), M('Open the doors')] }), w, pageA, D);
+    check('milestones are added for the page\'s project, with a date to aim for', c.kind === 'add' && c.items.filter(i => i.type === 'milestone').length === 3 && c.items.every(i => i.plan?.projectId === 'pjA' && i.projectId === 'pjA') && c.items.find(i => i.title === 'Sign the lease').date === '2026-12-15', c);
+    check('…a duplicate of an existing milestone is left out, and said', !c.items.some(i => i.title === 'find a unit') && c.changed.some(x => x.includes('already one of your milestones')), c.changed);
+    check('…a date before today is dropped (the milestone stays, with no date)', c.items.find(i => i.title === 'First sale').date === null && c.items.find(i => i.title === 'Open the doors').date === null);
+    c = K.checkAskReply(R({ items: [M('Sign the lease'), { type: 'task', title: 'Ring someone' }] }), w, home, D);
+    check('milestones are left out on another page (Today), and said', !c.items.some(i => i.type === 'milestone') && c.items.length === 1 && c.changed.some(x => x.includes('isn\'t on this page')), c);
+    c = K.checkAskReply(R({ items: [M('Sign the lease')] }), w, pageP, D);
+    check('…and for a private project (nothing of it was sent, so nothing is added to it)', c === null || !c.items?.some(i => i.type === 'milestone'), c);
+    c = K.checkAskReply(R({ items: [M('Four'), M('Five'), M('Six')] }), w, pageMany, D);
+    check('a project with 29 milestones takes one more and no further — 30 at most — and says so', c.items.length === 1 && c.changed.some(x => x.includes('past 30')), c);
+
+    const P2 = (type, title, optionId) => ({ type, title, ...(optionId !== undefined ? { optionId } : {}) });
+    c = K.checkAskReply(R({ items: [P2('pro', 'Many walkers pass', 'opB'), P2('con', 'Hard to heat', 'opB'), P2('pro', 'Invented option', 'opZ'), P2('con', 'No option named'), P2('con', 'dear', 'opB'), P2('con', 'Hard to heat', 'opB')] }), w, slD, D);
+    check('a pro or con is added to a real option of the decision asked about', c.items.length === 2 && c.items.every(i => i.plan?.decisionId === 'dcA' && i.plan.optionId === 'opB') && eq(c.items.map(i => i.plan.side), ['pros', 'cons']) && c.items[0].text === 'Corner shop', c);
+    check('…one naming an option that isn\'t there, or none, is left out, and said', c.changed.filter(x => x.includes('isn\'t in this decision')).length === 2, c.changed);
+    check('…a repeat of a point already listed is left out (once, however it\'s cased), and the same point twice in a reply counts once', c.changed.some(x => x.includes('already listed')) && c.items.filter(i => i.title === 'Hard to heat').length === 1, c.changed);
+    c = K.checkAskReply(R({ items: [P2('pro', 'Sixth pro', 'opA'), P2('pro', 'Seventh pro', 'opA'), P2('con', 'Another con', 'opA')] }), w, slD, D);
+    check('at most 6 pros or cons per side of an option, counting the ones already there (opA has 5 pros)', eq(c.items.map(i => i.title), ['Sixth pro', 'Another con']) && c.changed.some(x => x.includes('six is the most')), c);
+    c = K.checkAskReply(R({ items: [P2('option', 'market stall'), P2('option', 'Online only'), P2('option', 'Pop-up'), P2('option', 'Partner up')] }), w, slD, D);
+    check('an option duplicating a listed one is left out; at most 4 options in all (2 listed, so 2 more)', eq(c.items.map(i => i.title), ['Online only', 'Pop-up']) && c.changed.some(x => x.includes('already one of the options')) && c.changed.some(x => x.includes('four is the most')), c);
+    c = K.checkAskReply(R({ items: [P2('pro', 'Cheap to start', 'opA'), P2('option', 'Online only'), M('Open the doors')] }), w, pageA, D);
+    check('without a decision in the slice, pros, cons and options are left out (a milestone still goes in), and it says no decision was asked about', eq(c.items.map(i => i.type), ['milestone']) && c.changed.filter(x => x.includes('no decision was asked about')).length === 2, c);
+
+    const mess = (message, extra) => K.checkAskReply(R({ message, items: [P2('con', 'Hard to heat', 'opB')], ...extra }), w, slD, D);
+    for (const m of ['Near the station is the best choice.', 'I\'d go with the corner shop for the footfall.', 'I recommend the market stall.']) {
+      c = mess(m);
+      check(`a message that picks an option ("${m}") is reworded, and says so`, c.message === 'Here are a few more things to weigh — the choice is yours.' && c.changed.some(x => x.includes('which option to choose')), c);
+    }
+    c = mess('A few more things to weigh up for the corner shop.');
+    check('a message without such words is kept as it was', c.message === 'A few more things to weigh up for the corner shop.' && !c.changed.some(x => x.includes('which option to choose')), c);
+    c = K.checkAskReply(R({ message: 'Near the station is the best choice for a first milestone.', items: [M('Open the doors')] }), w, pageA, D);
+    check('…and with no decision in the slice the message is left alone', c.message.includes('best choice'), c);
+
+    // ---- Adding and Undo ----
+    const planned = K.checkAskReply(R({ items: [M('Sign the lease', { date: '2026-12-15' }), P2('option', 'Online only'), P2('pro', 'Many walkers pass', 'opB'), P2('con', 'Hard to heat', 'opB'), P2('con', 'Needs a deposit', 'opB')] }), w, slD, D);
+    const before = JSON.parse(text(K.getSnapshot().data)), strip = d => { const x = JSON.parse(text(d)); const pj = x.projects.items.find(p => p.id === 'pjA'); delete pj.milestones; delete pj.decisions; delete pj.updatedAt; delete x.saves; return x; }; // `saves` is the save counter, not your data
+    const u = K.addAskItems(planned.items), d1 = K.getSnapshot().data, pjA = d1.projects.items.find(p => p.id === 'pjA'), dcA = pjA.decisions[0];
+    check('Add puts the ticked milestone in the project, with its aim, after the existing ones', !!u && eq(pjA.milestones.map(m => m.title), ['Find a unit', 'Visit the market', 'Sign the lease']) && pjA.milestones[2].aim === '2026-12-15' && pjA.milestones[2].reachedOn === null, pjA.milestones);
+    check('…the option to the decision, and the pros and cons to the right option', eq(dcA.options.map(o => o.text), ['Market stall', 'Corner shop', 'Online only']) && eq(dcA.options[1].pros, ['Many walkers pass']) && eq(dcA.options[1].cons, ['Dear', 'Hard to heat', 'Needs a deposit']) && eq(dcA.options[0].pros, before.projects.items[0].decisions[0].options[0].pros), dcA.options);
+    check('…and leaves the rest of the project, and everything else saved, as it was', eq(strip(d1), strip(before)) && eq(pjA.decisions[0].chosen, null) && eq(d1.projects.items.find(p => p.id === 'pjP'), before.projects.items.find(p => p.id === 'pjP')));
+    check('countWords says what was added, e.g. "2 milestones and a con"', K.countWords([{ type: 'milestone' }, { type: 'milestone' }, { type: 'con' }]) === '2 milestones and a con' && K.countWords(planned.items) === 'a milestone, an option, a pro and 2 cons', K.countWords(planned.items));
+    K.update(d => { const o = d.projects.items.find(p => p.id === 'pjA').decisions[0].options[1]; o.cons = o.cons.filter(t => t !== 'Hard to heat'); });
+    check('Undo takes back exactly those — a point you removed meanwhile stays removed, and your own points stay', K.undoAsk(u), null);
+    const pjB = K.getSnapshot().data.projects.items.find(p => p.id === 'pjA'), dcB = pjB.decisions[0];
+    check('…the milestone, the option and the added points are gone; everything else is as before', eq(pjB.milestones, before.projects.items[0].milestones) && eq(dcB.options, before.projects.items[0].decisions[0].options) && eq(strip(K.getSnapshot().data), strip(before)), dcB.options);
+    check('…and a second Undo changes nothing (false)', !K.undoAsk(u));
+
+    // ---- The practice helper ----
+    sl = K.askSlice(K.getSnapshot().data, '#projects/p/pjA', D);
+    c = K.checkAskReply(K.mockAsk(K.askContext(sl, 'Suggest some milestones for this project', D)), K.getSnapshot().data, sl, D);
+    check('the practice helper, asked for milestones on a project page, gives milestones that pass the checks', c.kind === 'add' && c.items.length === 3 && c.items.every(i => i.type === 'milestone' && i.plan.projectId === 'pjA') && c.changed.length === 0, c);
+    const slM = K.askSlice(K.getSnapshot().data, '#projects/p/pjA', D, { decisionId: 'dcA' });
+    c = K.checkAskReply(K.mockAsk(K.askContext(slM, 'What am I missing?', D)), K.getSnapshot().data, slM, D);
+    check('…with a decision in focus, "What am I missing?" gives a con and an option that pass the checks', c.kind === 'add' && eq(c.items.map(i => i.type), ['con', 'option']) && c.items[0].plan.optionId === 'opA' && c.changed.length === 0, c);
+    check('…and its message doesn\'t pick a winner (nothing reworded)', !/best|recommend|go with/i.test(c.message) && c.message.includes('the choice is yours'), c.message);
+  }
+
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

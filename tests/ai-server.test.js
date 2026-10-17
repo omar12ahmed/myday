@@ -299,6 +299,14 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     check('…but more than 12 modules is refused (400)', a.status === 400);
     a = await kask({ ...ak, page: 'course', text: 'plan it', context: { course: { ...co, modules: [{ ...co.modules[0], sections: [{ ...co.modules[0].sections[0], tasks: [{ ...co.modules[0].sections[0].tasks[0], url: 'https://x' }] }] }] } } });
     check('…and so is a course carrying anything beyond the outline (a link)', a.status === 400);
+    const dcs = { id: 'dcA', question: 'Which unit?', options: [{ id: 'opA', text: 'Market stall', pros: ['Cheap'], cons: ['Small'] }, { id: 'opB', text: 'Corner shop', pros: [], cons: ['Dear'] }] };
+    const withPlan = over => ({ ...ak, text: 'What am I missing?', context: { ...ak.context, project: { ...ak.context.project, milestones: [{ id: 'msA', title: 'Find a unit', reached: false, aim: '2026-11-20' }], decision: { ...dcs, ...over } } } });
+    a = await kask(withPlan({}));
+    check('a request from a project page with its milestones and one decision (options with pros and cons) is answered (200)', a.status === 200 && a.body.model === 'Main model', a.body);
+    a = await kask(withPlan({ options: Array.from({ length: 5 }, (_, i) => ({ id: 'o' + i, text: 'Option ' + i, pros: [], cons: [] })) }));
+    check('…but a decision with 5 options is refused (400) before any model call', a.status === 400 && finished.length === 0, a.status);
+    a = await kask(withPlan({ options: [{ ...dcs.options[0], pros: ['x'.repeat(161)] }] }));
+    check('…and so is a pro of 161 characters (400)', a.status === 400 && finished.length === 0, a.status);
     for (const [bad, why] of [[{ ...ak, page: 'admin' }, 'an unknown page'], [{ ...ak, text: '' }, 'nothing typed'], [{ ...ak, text: 'x'.repeat(601) }, 'over 600 characters typed'],
       [{ ...ak, context: { ...ak.context, finance: { balance: 1 } } }, 'a part of MyDay Ask never sends (Finance)'], [{ ...ak, context: { note: { id: 'n', title: 't', text: 'x'.repeat(3001) } } }, 'a note over 3,000 characters'],
       [{ ...ak, followUp: { previous: '', text: '' } }, 'an empty follow-up'], [{ ...ak, memory: 'everything' }, 'an extra field']]) {

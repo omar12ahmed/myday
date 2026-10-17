@@ -176,9 +176,11 @@ export function readAsk(textIn: string): AskReply | null {
     }
     // A step with no type is a task (a study task when it says where in a course it goes): steps are nothing else.
     const type = obj(it) && it.type === undefined && raw.kind === 'steps' ? (it.sectionId || it.section || it.moduleId || it.module ? 'study-task' : 'task') : obj(it) ? it.type : null;
-    if (!obj(it) || !ASK_ITEM_TYPES.includes(type as AskItem['type']) || type === 'change' || !str(it.title, ASK_LIMITS.titleChars, false)) continue;
+    // A milestone, pro, con or option whose words came in "text" rather than "title" is read the same.
+    const title = obj(it) && !str(it.title, ASK_LIMITS.titleChars, false) && ['milestone', 'pro', 'con', 'option'].includes(type as string) && str(it.text, ASK_LIMITS.titleChars, false) ? it.text : obj(it) ? it.title : null;
+    if (!obj(it) || !ASK_ITEM_TYPES.includes(type as AskItem['type']) || type === 'change' || !str(title, ASK_LIMITS.titleChars, false)) continue;
     out.push({
-      type: type as AskItem['type'], title: (it.title as string).trim(),
+      type: type as AskItem['type'], title: (title as string).trim(),
       date: isDate(it.date) ? it.date as string : null, time: isTime(it.time) ? it.time as string : null,
       minutes: Number.isFinite(it.minutes) ? Math.round(it.minutes as number) : null,
       category: ASK_CATEGORIES.includes(it.category as typeof ASK_CATEGORIES[number]) ? it.category as AskItem['category'] : null,

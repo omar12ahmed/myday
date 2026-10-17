@@ -607,6 +607,24 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   d = await data();
   check('deleting it removes the project (and so its milestones and decisions), and keeps its notes and tasks', !d.projects.items.some(x => x.id === 'pjN') && d.notes.items.length === notesBefore && d.tasks.items.length === tasksBefore && (await hash()) === '#projects');
 
+  console.log('\n[23] Private projects, in the plain build (no AI)');
+  await go('projects', 2026, 10, 16, 9); await reset(); await go('projects', 2026, 10, 16, 9);
+  await seed([pjObj('pjPr', 'Private: a quiet plan', 'decide', { milestones: [msObj('msR1', 'First step')], decisions: [dcObj('dcR1', 'Which way?', [opObj('opR1', 'Left', ['A pro'])])] })]);
+  await go('projects/p/pjPr/milestones', 2026, 10, 16, 9, 5);
+  check('the Private switch starts off, and the saved project has no private field', (await ev(`document.querySelector('[data-action=project-private]').getAttribute('aria-checked')`)) === 'false' && !('private' in (await pAt('pjPr'))));
+  await click('[data-action=project-private]'); await sleep(250);
+  check('turning it on saves private: true, and the switch shows on', (await pAt('pjPr')).private === true && (await ev(`document.querySelector('[data-action=project-private]').getAttribute('aria-checked')`)) === 'true');
+  check('in this build (no AI) there are no AI buttons, with or without the project private', !(await exists('[data-action=ms-ask]')) && !(await exists('[data-action=dc-ask]')) && !(await exists('[data-s=ai-private]')));
+  await go('projects/p/pjPr/decisions', 2026, 10, 16, 9, 6);
+  check('…nor on the Decisions tab', !(await exists('[data-action=dc-ask]')) && !(await exists('[data-s=ai-private]')));
+  await go('projects', 2026, 10, 16, 9, 7); await sleep(200);
+  check('the board card shows the lock while it is private', await exists('[data-s=project-private]'));
+  await go('projects/p/pjPr', 2026, 10, 16, 9, 8);
+  await click('[data-action=project-private]'); await sleep(250);
+  check('turning it off removes the field from the saved project, and the switch shows off', !('private' in (await pAt('pjPr'))) && (await ev(`document.querySelector('[data-action=project-private]').getAttribute('aria-checked')`)) === 'false' && (await pAt('pjPr')).milestones.length === 1, await pAt('pjPr'));
+  await go('projects', 2026, 10, 16, 9, 9); await sleep(200);
+  check('…and the lock is gone from the board card', !(await exists('[data-s=project-private]')));
+
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
   const sm = T.summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);

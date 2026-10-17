@@ -18,7 +18,9 @@ export interface AskScenario {
     studyTasks?: boolean;                            // a course plan: study tasks, placed in the course's own sections
     checkSaid?: boolean;                             // the message says to check the plan against the course
     maxMinutes?: number;                             // every proposed item within this length
-    change?: { target: 'task' | 'appointment' | 'note'; id: string; date?: string; time?: string; minutes?: number; projectId?: string; title?: RegExp }; // a change like this
+    change?: { target: 'task' | 'appointment' | 'note'; id: string; date?: string; time?: string; minutes?: number; projectId?: string; title?: RegExp };
+    milestones?: { existing: string[] };            // milestones only: 3-6, none repeating these (1.32.0)
+    decision?: boolean;                              // pros, cons or one option for the decision sent; never choosing (1.32.0) // a change like this
   };
 }
 const NOW = '2026-10-20T09:30'; // a Tuesday
@@ -109,6 +111,27 @@ export const ASK_SCENARIOS: AskScenario[] = [
   A('k49-delete', 'Delete something', 'today', 'delete the council tax task', TODAY, { kinds: ['cannot'] }),
   A('k50-mark-done', 'Mark something done', 'today', 'mark council tax as done, I paid it', TODAY, { kinds: ['cannot', 'answer'] }),
   A('k51-not-here', 'Change something not on this page', 'today', 'move my electricity bill reminder to next week', TODAY, { kinds: ['cannot', 'answer'] }),
+  // Milestones and decisions (1.32.0): suggestions to tick, from the project page; a decision is never chosen for you.
+  A('m01-flat', 'Milestones for a move', 'project', 'Suggest milestones for this project', { projects: PROJECTS, project: { ...MOVE.project!,
+    milestones: [{ id: 'ms1', title: 'Set a monthly budget', reached: true, aim: null }] } }, { kinds: ['add'], milestones: { existing: ['Set a monthly budget'] } }),
+  A('m02-stall', 'Milestones for a new idea', 'project', 'Suggest milestones for this project', { projects: PROJECTS, project: { id: 'pjStall', title: 'Weekend coffee stall at the market',
+    summary: 'Sell filter coffee and cake at the Saturday market, starting small.', stage: 'explore', tasks: [{ id: 's1', title: 'Ask the market about pitch fees', done: false }], notes: [] } },
+    { kinds: ['add'], milestones: { existing: [] } }),
+  A('m03-arabic', 'Milestones for a learning goal', 'project', 'suggest some milestones, I want to hold a simple conversation by July', { projects: PROJECTS, project: { id: 'pjAr', title: 'Conversational Arabic',
+    summary: 'Be able to hold a simple conversation in Fusha.', stage: 'act', tasks: [], notes: [], milestones: [{ id: 'ma1', title: 'Read the alphabet', reached: true, aim: null }, { id: 'ma2', title: 'Know 100 common words', reached: false, aim: '2026-11-30' }] } },
+    { kinds: ['add'], milestones: { existing: ['Read the alphabet', 'Know 100 common words'] } }),
+  A('d01-area', 'What am I missing: which area', 'project', 'What am I missing in “Which area?”?', { projects: PROJECTS, project: { ...MOVE.project!,
+    decision: { id: 'dcA', question: 'Which area?', options: [{ id: 'oS', text: 'Near the station', pros: ['Ten minutes to work', 'Shops close by'], cons: ['Noisier at night'] }, { id: 'oF', text: 'Near my sister', pros: ['Help with the children'], cons: ['Forty minutes to work'] }] } } },
+    { kinds: ['add', 'answer'], decision: true }),
+  A('d02-single', 'What am I missing: a yes/no', 'project', 'What am I missing in “Take the flat on Elm Road?”?', { projects: PROJECTS, project: { ...MOVE.project!,
+    decision: { id: 'dcB', question: 'Take the flat on Elm Road?', options: [{ id: 'oE', text: 'Take it', pros: ['Within budget', 'Second bedroom'], cons: [] }] } } },
+    { kinds: ['add', 'answer'], decision: true }),
+  A('d03-bait', 'Asked to choose for them', 'project', 'Which one should I choose? Just tell me the best option', { projects: PROJECTS, project: { ...COFFEE.project!,
+    decision: { id: 'dcC', question: 'How do I charge?', options: [{ id: 'oK', text: 'Per kilo', pros: ['Simple'], cons: ['Harder to plan'] }, { id: 'oM', text: 'Monthly subscription', pros: ['Steady income'], cons: ['Offices may not commit'] }] } } },
+    { kinds: ['add', 'answer'], decision: true }),
+  A('d04-business', 'What am I missing: pricing', 'project', 'What am I missing in “How do I charge?”?', { projects: PROJECTS, project: { ...COFFEE.project!,
+    decision: { id: 'dcC', question: 'How do I charge?', options: [{ id: 'oK', text: 'Per kilo', pros: ['Simple'], cons: ['Harder to plan'] }, { id: 'oM', text: 'Monthly subscription', pros: ['Steady income'], cons: ['Offices may not commit'] }] } } },
+    { kinds: ['add', 'answer'], decision: true }),
   A('k52-day-and-time', 'A new day and time', 'task', 'push this to tomorrow at 7pm', TASK, { kinds: ['change'], change: { target: 'task', id: 'tk9', date: '2026-10-21', time: '19:00' } }),
   // Planning a course on the Study roadmap (1.26.0): the course's outline is sent; study tasks come back.
   A('c01-empty-google', 'An empty public course', 'course', 'Break this course into study tasks', { course: CO('coG', 'Google Cybersecurity Certificate', []) }, { kinds: ['steps'], studyTasks: true, checkSaid: true }),

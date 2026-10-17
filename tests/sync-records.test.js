@@ -102,6 +102,19 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('a project without them round-trips without the fields appearing', !('milestones' in recPlain) && !('decisions' in recPlain) && !('milestones' in R.cleanRecord('project:pj1', clone(recPlain))) && !('decisions' in R.cleanRecord('project:pj1', clone(recPlain))) && !('milestones' in nb.projects.items.find(p => p.id === 'pj1')) && !('decisions' in nb.projects.items.find(p => p.id === 'pj1')));
   }
 
+  console.log('\n[1c] A private project');
+  {
+    const pr = clone(raw);
+    pr.projects.items.push({ id: 'pj3', title: 'Surprise party', summary: 'Keep it quiet', stage: 'organise', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-03T09:00', updatedAt: '2026-10-04T09:00', private: true });
+    const rs = R.localRecords(R.normalize(pr)), rec = rs.get('project:pj3');
+    check('a private project travels as one project record, with private: true inside', !!rec && rec.private === true && eq(rec, pr.projects.items[1]) && [...rs.keys()].filter(k => /^project/.test(k)).length === 2, rec);
+    check('checked as it arrives on another device, it is exactly the same', R.fingerprint(R.cleanRecord('project:pj3', clone(rec))) === R.fingerprint(rec) && R.cleanRecord('project:pj3', clone(rec)).private === true);
+    const nb = clone(R.freshState());
+    for (const [key, c] of rs) R.putRecord(nb, key, clone(c));
+    check('put into a new MyDay, it comes back private and the same', R.fingerprint(R.localRecords(R.normalize(nb)).get('project:pj3')) === R.fingerprint(rec) && nb.projects.items.find(p => p.id === 'pj3').private === true);
+    check('a project that isn\'t private doesn\'t gain the field', !('private' in rs.get('project:pj1')) && !('private' in nb.projects.items.find(p => p.id === 'pj1')));
+  }
+
   console.log('\n[2] What stays on each device');
   check('the theme and animations aren\'t in the planning settings', !('theme' in recs.get('settings:planning')) && !('motion' in recs.get('settings:planning')) && recs.get('settings:planning').earliestTime === '07:30');
   check('the downloaded bank holidays aren\'t synced, only the region', eq(recs.get('holidays:region'), { region: 'scotland' }));

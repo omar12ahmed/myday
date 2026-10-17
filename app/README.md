@@ -170,6 +170,18 @@ Both lists are saved inside the project (`milestones` and `decisions`, `src/data
 it and need no new record or database change; a project without them is saved exactly as before. Recently lists
 milestones reached and decisions made, and Ask MyDay doesn't send them. No AI is used.
 
+**AI help with milestones and decisions, and private projects (1.32.0):** on a project's **Milestones** tab, **Suggest
+milestones** offers 3–6 milestones in order, none repeating yours, with a date to aim for only if you gave one. On an
+open decision, **What am I missing?** appears once you've written a pro or con yourself, and offers pros or cons for
+its options (each labelled for its option) or one more option. It never chooses, ranks or scores: a reply that picks
+an option is reworded, and the panel says so. Both go through Ask MyDay, only on your tap: **+** shows exactly what's
+sent first, suggestions come back as cards to tick, and Add saves them under the same rules and limits as adding them
+yourself, with one step of Undo. A **private project** (switched at the top of its page; a lock marks it on the board)
+sends nothing to Ask MyDay: not its name, summary, milestones, decisions, tasks, notes or appointments. The preview
+says how many items were left out, and its AI buttons give way to "Private project — AI help isn't offered here." AI
+help with notes may still offer its name and summary as a place to link a note, if you choose. The flag is an optional
+`private` on the project (`src/data/projects.ts`), synced with it.
+
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
 
@@ -1010,3 +1022,10 @@ returns up to 8 small tasks; you tick the ones to add.
     winner). Nothing is automatic: no tasks, appointments or reminders are made. No server or database change: saved
     data only gains these two optional lists inside each project, and going back to 1.30.0 is safe (it keeps them,
     unseen).
+44. **Release 1.32.0:** AI help with milestones and decisions, through Ask MyDay, only on your tap. **Suggest
+    milestones** works on a project's Milestones tab, and **What am I missing?** on an open decision (once you've
+    written a pro or con yourself). Suggestions come back as cards to tick; Add saves them with the usual rules, with
+    one step of Undo. It never chooses for you. **Private projects** (a switch at the top of a project's page) send
+    nothing to Ask MyDay, and their AI buttons give way to a note saying so. What MyDay knows and AI help with notes
+    say all this. The server's `ask` job (instructions `myday-ask-v13`) was deployed first. No database change; going
+    back to 1.31.0 is safe.

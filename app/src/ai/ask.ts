@@ -39,7 +39,7 @@ export interface AskProposal {
 }
 const PLAN_TYPES: AskItemType[] = ['milestone', 'pro', 'con', 'option'];
 // Words that pick for you. A decision stays yours: a reply saying which option is best is reworded (and says so).
-const CHOOSES = /\b(best|better (option|choice)|I(?:'d| would) (choose|pick|go)|recommend|go with|winner|the (right|clear) (choice|option)|you should (choose|pick|go))\b/i;
+const CHOOSES = /\b(is|seems|looks|would be) (the )?(best|better|right|clear|obvious)( option| choice| one| fit| way to go)?\b|\bI(?:'d| would) (choose|pick|go (?:with|for))\b|\bI recommend\b|\b(?:you should|I'd suggest you) (?:choose|pick|go (?:with|for))\b|\b(?:clear|obvious) winner\b/i;
 // A task or note for the project proposed in the same answer (it's created first when you tap Add).
 export const NEW_PROJECT = '@new';
 export type AskChecked =

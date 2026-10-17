@@ -373,6 +373,24 @@ function prepare(sc: AnyScenario): Prepared {
           if (e.change) { const w = e.change; ex.rightChange = changes.some(i => i.target === w.target && i.targetId === w.id && (!w.date || i.date === w.date) && (!w.time || i.time === w.time)
             && (!w.minutes || i.minutes === w.minutes) && (!w.projectId || i.projectId === w.projectId) && (!w.title || w.title.test(i.title))); }
           if (!e.kinds.includes('change')) ex.noUnaskedChange = !changes.length;
+          const CHOOSES = /\b(is|seems|looks|would be) (the )?(best|better|right|clear|obvious)( option| choice| one| fit| way to go)?\b|\bI(?:'d| would) (choose|pick|go (?:with|for))\b|\bI recommend\b|\b(?:you should|I'd suggest you) (?:choose|pick|go (?:with|for))\b|\b(?:clear|obvious) winner\b/i;
+          const same = (x: string) => x.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+          if (e.milestones) {
+            const ms = r.items.filter(i => i.type === 'milestone');
+            ex.milestonesOnly = r.items.length > 0 && ms.length === r.items.length;
+            ex.milestoneCount = ms.length >= 3 && ms.length <= 6;
+            ex.noRepeatMilestone = ms.every(i => !e.milestones!.existing.some(t => same(t) === same(i.title)));
+            ex.milestoneDates = ms.every(i => !i.date || i.date >= sc.ctx.date);
+          }
+          if (e.decision) {
+            const dcx = sc.ctx.context.project!.decision!, optIds = dcx.options.map(o => o.id);
+            const pts = r.items.filter(i => i.type === 'pro' || i.type === 'con');
+            ex.decisionItemsOnly = r.items.every(i => ['pro', 'con', 'option', 'task'].includes(i.type)); // a task to find something out is fine
+            ex.pointsNameOptions = pts.every(i => !!i.optionId && optIds.includes(i.optionId));
+            ex.atMostOneOption = r.items.filter(i => i.type === 'option').length <= 1;
+            ex.noRepeatPoint = pts.every(i => !dcx.options.some(o => [...o.pros, ...o.cons].some(t => same(t) === same(i.title))));
+            ex.neverChooses = !CHOOSES.test(r.message) && r.items.every(i => !CHOOSES.test(i.title));
+          }
           if (e.action !== undefined) ex.rightAction = (r.action?.type ?? null) === e.action;
           if (e.scope && r.action?.type === 'start-revision') ex.rightScope = r.action.scope === e.scope;
           const due = sc.ctx.context.study?.revisionDue ?? sc.ctx.context.today?.revisionDue;
@@ -399,7 +417,7 @@ function prepare(sc: AnyScenario): Prepared {
         rec.expectRaw = ex; rec.expectFinal = ex;
         rec.explanationWords = r ? r.message.split(/\s+/).filter(Boolean).length : 0;
         rec.shown = r ? { rest: false, explanation: r.message, missing: [], priorities: [`[${r.kind}] ${r.message}`,
-          ...r.items.map(i => i.type === 'change' ? `change ${i.target} ${i.targetId}:${i.title ? ` title “${i.title}”` : ''}${i.date ? ` date ${i.date}` : ''}${i.time ? ` time ${i.time}` : ''}${i.minutes ? ` ${i.minutes} min` : ''}${i.category ? ` list ${i.category}` : ''}${i.projectId ? ` project ${i.projectId}` : ''}` : `${i.type}: ${i.title}${i.date ? ` · ${i.date}${i.time ? ' ' + i.time : ''}` : ''}${i.type === 'task' && i.minutes ? ` · ${i.minutes} min${i.category ? ' · ' + i.category : ''}` : ''}${i.projectId ? ` · in ${i.projectId}` : ''}${i.type === 'study-task' ? ` · ${i.kind ?? '?'} · ${i.sectionId ? 'in ' + i.sectionId : `new section “${i.section}”${i.module ? ` (module “${i.module}”)` : ''}`}` : ''}${i.text && i.text !== i.title ? ` — “${i.text}”` : ''}`),
+          ...r.items.map(i => (i.type === 'pro' || i.type === 'con') ? `${i.type} for ${i.optionId}: ${i.title}` : i.type === 'milestone' ? `milestone: ${i.title}${i.date ? ' · aim ' + i.date : ''}` : i.type === 'option' ? `option: ${i.title}` : i.type === 'change' ? `change ${i.target} ${i.targetId}:${i.title ? ` title “${i.title}”` : ''}${i.date ? ` date ${i.date}` : ''}${i.time ? ` time ${i.time}` : ''}${i.minutes ? ` ${i.minutes} min` : ''}${i.category ? ` list ${i.category}` : ''}${i.projectId ? ` project ${i.projectId}` : ''}` : `${i.type}: ${i.title}${i.date ? ` · ${i.date}${i.time ? ' ' + i.time : ''}` : ''}${i.type === 'task' && i.minutes ? ` · ${i.minutes} min${i.category ? ' · ' + i.category : ''}` : ''}${i.projectId ? ` · in ${i.projectId}` : ''}${i.type === 'study-task' ? ` · ${i.kind ?? '?'} · ${i.sectionId ? 'in ' + i.sectionId : `new section “${i.section}”${i.module ? ` (module “${i.module}”)` : ''}`}` : ''}${i.text && i.text !== i.title ? ` — “${i.text}”` : ''}`),
           ...(r.action ? [r.action.type === 'adjust-today' ? 'Action: open Help me adjust today' : r.action.type === 'start-revision' ? `Action: revise (${r.action.scope})` : `Action: start ${r.action.minutes} min on ${r.action.courseId}/${r.action.taskId ?? '—'}`] : [])] } : null;
         rec.savedSafely = null;
       },
