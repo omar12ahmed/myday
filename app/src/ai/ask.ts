@@ -27,6 +27,7 @@ export interface AskProposal {
   minutes: number;                              // a task's length (others: unused)
   category: Category;                           // a task's list (others: unused)
   projectId: string | null;                     // a project that exists and isn't done — or NEW_PROJECT: the one proposed alongside
+  listId?: string;                              // steps for a task: the list that task is in (your own lists, Tasks)
   text: string;                                 // a note's text / a project's summary ('' otherwise)
   already: boolean;                             // a task with this title is already on your lists (left unticked)
   // A study task (into the course on the page): its kind and where it goes — an existing section, or a new section
@@ -96,6 +97,9 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
   // Things to add, or steps (an answer that suggests adding something is shown the same way, with its message).
   const open = new Map(data.projects.items.filter(p => p.status !== 'done').map(p => [p.id, p]));
   const here = slice.context.project && open.has(slice.context.project.id) ? slice.context.project.id : null;
+  // Steps for the task on the page go where that task is: its list and (if it's open) its project. The task itself stays.
+  const parent = slice.context.task ? data.tasks.items.find(t => t.id === slice.context.task!.id) ?? null : null;
+  const parentProject = parent?.projectId && open.has(parent.projectId) ? parent.projectId : null;
   // Already there: open tasks, today's plan and the project's tasks (left unticked, so nothing is added twice by accident).
   const onLists = new Set([...data.tasks.items.filter(t => !t.done && !t.letGoOn).map(t => t.title), ...(data.days[k]?.tasks ?? []).filter(t => !t.done).map(t => t.title)].map(sameTask));
   const seen = new Set<string>();
@@ -117,6 +121,7 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
     let projectId = it.projectId && open.has(it.projectId) ? it.projectId : it.projectId === 'new' && oneNew && it.type !== 'project' ? NEW_PROJECT : null;
     if (it.projectId && !projectId) changed.push(`“${title}”: not put in a project that isn’t open.`);
     if (r.kind === 'steps' && here) projectId = here;
+    if (r.kind === 'steps' && parent) projectId = parentProject;
     let date: DateKey | null = realDate(it.date) && it.date >= k ? it.date : null;
     if (it.date && !date) changed.push(`“${title}”: left without a date (it wasn’t a day from today on).`);
     let time = date && it.time ? it.time : null;
@@ -140,6 +145,7 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
       minutes: Math.min(L.maxMinutes, Math.max(L.minMinutes, it.minutes ?? 15)),
       category: it.category ?? guessCategory(title),
       projectId: type === 'project' ? null : projectId,
+      ...(r.kind === 'steps' && parent && type === 'task' && parent.listId ? { listId: parent.listId } : {}),
       text: type === 'note' ? (it.text?.trim() || title).slice(0, L.itemTextChars) : type === 'project' ? (it.text?.trim() ?? '').slice(0, L.itemTextChars) : '',
       already: type === 'task' && onLists.has(sameTask(title)),
     });
@@ -300,7 +306,7 @@ export function addAskItems(items: AskProposal[]): AskUndo | null {
     const inProject = (pid: string | null) => (pid === NEW_PROJECT ? created : pid);
     for (const it of items) {
       if (it.type === 'task') {
-        const id = addTask(d.tasks, { title: it.title, category: it.category, due: it.date, time: it.time, minutes: it.minutes });
+        const id = addTask(d.tasks, { title: it.title, category: it.category, due: it.date, time: it.time, minutes: it.minutes, listId: it.listId && d.tasks.lists.some(l => l.id === it.listId) ? it.listId : '' });
         if (!id) continue;
         const pt = inProject(it.projectId);
         if (pt) linkTask(d, id, pt);

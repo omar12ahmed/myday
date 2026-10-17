@@ -1,5 +1,7 @@
-import { Trash2 } from 'lucide-react';
+import { Sparkles, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { AI_MODE } from '../ai/request';
+import { openCapture } from '../capture/openCapture';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { useConfirm } from '../components/confirm';
@@ -73,6 +75,9 @@ export function TaskEditor({ data, id }: { data: MyDayData; id: string }) {
         </div>
         {!done && !planned && (!room.built || room.room <= 0) && <p className="text-[15px] text-fg-2 mb-0 mt-2" data-s="plan-note">{!room.built ? 'To add it to today\'s plan, build your day on Today first.' : room.rest ? 'Today is a rest day — "Tomorrow" moves it on.' : `Today's plan is full for your energy (${room.limit} task${room.limit === 1 ? '' : 's'}) — "Tomorrow" moves it on.`}</p>}
         {planned && !done && <Note className="mb-0 mt-2">On today's plan — ticking it off there ticks it off here too. Moving it to a later day takes it off today's plan.</Note>}
+        {/* Ask MyDay on this task (only on your tap; + shows exactly what's sent first): smaller steps in its list and project. */}
+        {AI_MODE !== 'off' && !done && <Button inline variant="tonal" className="mt-3" data-action="task-ask-steps" onClick={() => openCapture('Break this into smaller steps')}>
+          <Sparkles size={18} aria-hidden="true" /> Break into smaller steps</Button>}
       </Card>
       {ask && !done && !stuck && <StuckCard data={data} t={t} stuck={false} />}
     </>

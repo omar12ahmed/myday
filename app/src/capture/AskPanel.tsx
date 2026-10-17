@@ -141,6 +141,7 @@ export function AskPanel({ data, text, onClose }: { data: MyDayData; text: strin
                         ? `“${slice.context.course?.modules.flatMap(m => m.sections).find(x => x.id === it.study!.sectionId)?.title || 'this section'}”`
                         : `a new section “${it.study.section}”${it.study.module ? ` (new module “${it.study.module}”)` : ''}`}</span>}
                       {it.projectId && <span>· in “{it.projectId === NEW_PROJECT ? r.items.find(x => x.type === 'project')?.title : data.projects.items.find(p => p.id === it.projectId)?.title}”</span>}
+                      {it.listId && <span>· list “{data.tasks.lists.find(l => l.id === it.listId)?.name}”</span>}
                       {it.already && <span>· already on your lists</span>}
                     </p>
                     {it.type !== 'task' && it.text && it.text !== it.title && editing !== i && <p className="text-[13px] text-fg-2 m-0 mt-1 line-clamp-3">{it.text}</p>}
@@ -168,6 +169,7 @@ export function AskPanel({ data, text, onClose }: { data: MyDayData; text: strin
                   </div>
                 </li>); })}
             </ul>
+            {r.kind === 'steps' && slice.context.task && <p className="text-[13px] text-fg-3 m-0 mt-2" data-s="ask-steps-where">They go in the same list and project as “{slice.context.task.title}”, which stays as it is — tick it off once the steps are done.</p>}
             <div className="grid grid-cols-2 gap-2.5 mt-3">
               <Button variant="primary" data-action="ask-add" disabled={!picked.some(Boolean)} onClick={() => add(r)}>Add {picked.filter(Boolean).length || ''}</Button>
               <Button variant="ghost" data-action="ask-dismiss" onClick={() => setPhase({ at: 'idle' })}>Dismiss</Button>
