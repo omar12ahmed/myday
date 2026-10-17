@@ -157,6 +157,11 @@ something on your lists starts unticked, and a line under the cards says where t
 Add saves the ticked steps as tasks in one go, with one step of Undo. The task itself is never changed; tick it off
 yourself once its steps are done.
 
+**The Projects board and Recently (1.30.0):** on Projects, active projects sit in three columns (Ideas, Exploring and
+Doing) by the stage they're at, and one tap moves a project along or back. A project's page shows **Recently**, the
+last five things that happened to it (tasks added or done, notes written or changed), newest first, each opening what
+it's about. Both are worked out from what's already saved.
+
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
 
@@ -982,3 +987,9 @@ returns up to 8 small tasks; you tick the ones to add.
     go in the task's own list and open project, whatever was suggested, and a step whose title is already on your
     lists starts unticked. Add saves the ticked steps as tasks in one go, with Undo; the task itself is never changed.
     No server, data or database change.
+42. **Release 1.30.0:** Projects has a board of your active projects in three columns: **Ideas** (capture, understand,
+    organise), **Exploring** (explore, decide) and **Doing** (act, reflect). One tap moves a project to the next
+    column (at its first stage) or back (at its last). When more than three projects are being explored, or more than
+    two are in Doing, the column says so gently: "pausing one is fine, it'll keep". Paused and done projects stay
+    folded away below. A project's page has **Recently**: up to five things from lately, newest first (tasks added or
+    done, notes written or changed), each opening what it's about. No server, data or database change.

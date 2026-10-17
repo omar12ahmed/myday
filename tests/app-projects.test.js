@@ -239,6 +239,79 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('phone: the projects page too', smallHome.length === 0, smallHome.slice(0, 5));
   await T.send('Emulation.clearDeviceMetricsOverride');
 
+  console.log('\n[13] The board: Ideas, Exploring, Doing');
+  await go('projects', 2026, 10, 15, 14); await reset(); await go('projects', 2026, 10, 15, 14);
+  const mk = (id, title, stage, status = 'active') => `{ id: '${id}', title: '${title}', summary: '', stage: '${stage}', status: '${status}', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-10T09:00', updatedAt: '2026-10-10T09:00' }`;
+  await editStorage(`s => { s.projects.items.push(${mk('pjA', 'Board: pottery stall', 'capture')}, ${mk('pjB', 'Board: garden notes', 'organise')}, ${mk('pjC', 'Board: bike repair course', 'explore')},
+    ${mk('pjD', 'Board: allotment plan', 'decide')}, ${mk('pjE', 'Board: tea blog', 'explore')}, ${mk('pjF', 'Board: window box', 'act')}, ${mk('pjG', 'Board: paused hobby', 'explore', 'paused')}); }`);
+  await go('projects', 2026, 10, 15, 14, 5);
+  const col = id => ev(`[...document.querySelectorAll('#projectList section[data-column=${id}] .project-card')].map(c => c.dataset.id).sort()`);
+  const head = id => ev(`document.querySelector('#projectList section[data-column=${id}] h3').textContent.replace(/\\s+/g, ' ').trim()`);
+  const has = (id, action) => ev(`!!document.querySelector('.project-card[data-id=${id}] [data-action=${action}]')`);
+  const toastIs = async re => { await until(`/${re}/.test(document.querySelector('#toast') ? document.querySelector('#toast').textContent : '')`, 3000); return text('#toast'); };
+  const stageOfP = async id => (await projects()).find(x => x.id === id).stage;
+  const many = id => ev(`(document.querySelector('#projectList section[data-column=${id}] [data-s=column-many]') || {}).textContent || null`);
+  check('Ideas holds the capture and organise projects', eq(await col('ideas'), ['pjA', 'pjB']), await col('ideas'));
+  check('Exploring holds the explore and decide projects', eq(await col('exploring'), ['pjC', 'pjD', 'pjE']), await col('exploring'));
+  check('Doing holds the act project', eq(await col('doing'), ['pjF']), await col('doing'));
+  check('each column heading shows its name and how many (Ideas 2, Exploring 3, Doing 1)', eq([await head('ideas'), await head('exploring'), await head('doing')], ['Ideas 2', 'Exploring 3', 'Doing 1']), [await head('ideas'), await head('exploring'), await head('doing')]);
+  check('a paused project is not on the board', !(await ev(`!!document.querySelector('#projectList [data-id=pjG]')`)));
+  check('Ideas cards have no back button, but can move on', !(await has('pjA', 'project-back')) && !(await has('pjB', 'project-back')) && (await has('pjA', 'project-on')) && (await has('pjB', 'project-on')));
+  check('Doing cards have no on button, but can move back', !(await has('pjF', 'project-on')) && (await has('pjF', 'project-back')));
+  check('Exploring cards can move both ways', (await has('pjC', 'project-on')) && (await has('pjC', 'project-back')));
+  check('three in Exploring and one in Doing say nothing about too many', (await many('exploring')) === null && (await many('doing')) === null && (await many('ideas')) === null);
+
+  await click('.project-card[data-id=pjA] [data-action=project-on]');
+  const mv1 = await toastIs('Moved to Exploring');
+  check('moving an Ideas card on puts it in Exploring, at the Explore stage', (await stageOfP('pjA')) === 'explore' && eq(await col('exploring'), ['pjA', 'pjC', 'pjD', 'pjE']), await col('exploring'));
+  check('…the message says gently that four are being explored', mv1 === 'Moved to Exploring — that\'s 4 there now. Three at a time is plenty; pausing one is fine.', mv1);
+  check('…and Exploring says so too, kindly', (await many('exploring')) === '4 here at once. Your rule of thumb is three at a time — pausing one is fine, it\'ll keep.', await many('exploring'));
+  check('…and the Ideas count drops to 1', (await head('ideas')) === 'Ideas 1' && (await head('exploring')) === 'Exploring 4', [await head('ideas'), await head('exploring')]);
+
+  await click('.project-card[data-id=pjF] [data-action=project-back]'); await sleep(300);
+  check('moving a Doing card back puts it in Exploring, at the Decide stage', (await stageOfP('pjF')) === 'decide' && (await col('exploring')).includes('pjF'), await stageOfP('pjF'));
+  check('…Doing is empty and says "Nothing here right now."', (await text('#projectList section[data-column=doing] [data-s=column-empty]')) === 'Nothing here right now.' && eq(await col('doing'), []));
+  await click('.project-card[data-id=pjC] [data-action=project-back]'); await sleep(300);
+  check('moving an Exploring card back puts it in Ideas, at the Organise stage', (await stageOfP('pjC')) === 'organise' && eq(await col('ideas'), ['pjB', 'pjC']), await stageOfP('pjC'));
+
+  await click('.project-card[data-id=pjA] [data-action=project-on]'); await sleep(300);
+  const mv2 = await toastIs('Moved to Doing');
+  check('moving an Exploring card on puts it in Doing, at the Act stage, with no worry at one', (await stageOfP('pjA')) === 'act' && mv2 === 'Moved to Doing.', mv2);
+  await click('.project-card[data-id=pjD] [data-action=project-on]'); await sleep(300);
+  check('two in Doing: still no "too many" note, and the message is plain', (await head('doing')) === 'Doing 2' && (await many('doing')) === null && (await text('#toast')) === 'Moved to Doing.', [await head('doing'), await text('#toast')]);
+  await click('.project-card[data-id=pjE] [data-action=project-on]');
+  const mv3 = await toastIs('Moved to Doing');
+  check('a third in Doing says gently that two at a time is plenty', mv3 === 'Moved to Doing — that\'s 3 there now. Two at a time is plenty; pausing one is fine.', mv3);
+  check('…and Doing shows its own rule-of-thumb note', (await many('doing')) === '3 here at once. Your rule of thumb is two at a time — pausing one is fine, it\'ll keep.', await many('doing'));
+  check('Exploring (now just one) has no note', (await many('exploring')) === null && (await head('exploring')) === 'Exploring 1');
+  check('nothing was lost: the paused project is still paused and all seven are still saved', (await projects()).length === 7 && (await project('Board: paused hobby')).status === 'paused');
+
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 780, deviceScaleFactor: 2, mobile: true });
+  await go('projects', 2026, 10, 15, 14, 10);
+  check('phone 390 px: the board does not scroll sideways', !(await ev('document.documentElement.scrollWidth > innerWidth')));
+  const moves = await ev(`[...document.querySelectorAll('#projectList [data-s=project-moves] button')].filter(b => b.getClientRects().length).map(b => ({ t: b.textContent.trim(), h: Math.round(b.getBoundingClientRect().height) }))`);
+  check('phone 390 px: the move buttons are all at least 44 px tall', moves.length > 0 && moves.every(m => m.h >= 44), moves);
+  await T.send('Emulation.clearDeviceMetricsOverride');
+
+  console.log('\n[14] Recently on a project');
+  await go('projects', 2026, 10, 15, 15); await reset(); await go('projects', 2026, 10, 15, 15);
+  const tk = (id, title, created, extra = '') => `{ id: '${id}', title: '${title}', listId: '', category: 'Admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '${created}', postponed: 0, blockers: [], letGoOn: null, projectId: 'pjR'${extra} }`;
+  const nt = (id, title, created, updated) => `{ id: '${id}', categoryId: '', title: '${title}', text: 'made-up words', pinned: false, createdAt: '${created}', updatedAt: '${updated}', projectId: 'pjR' }`;
+  await editStorage(`s => { s.projects.items.push(${mk('pjR', 'Recently: cake stall', 'act')}, ${mk('pjQ', 'Recently: empty one', 'capture')});
+    s.tasks.items.push(${tk('tkOld', 'Bake test loaf', '2026-10-10T09:00', ", done: true, doneOn: '2026-10-14'")}, ${tk('tkNew', 'Price the flour', '2026-10-15T08:30')}, ${tk('tkX1', 'Oldest idea one', '2026-10-01T09:00')}, ${tk('tkX2', 'Oldest idea two', '2026-09-30T09:00')});
+    s.notes.items.push(${nt('ntCh', 'Stall layout', '2026-10-13T10:00', '2026-10-15T09:00')}, ${nt('ntOld', 'Supplier list', '2026-10-12T10:00', '2026-10-12T10:00')}); }`);
+  await go('projects/p/pjR', 2026, 10, 15, 15, 5);
+  const rows = await ev(`[...document.querySelectorAll('#projectRecent [data-s=recent]')].map(li => ({ what: li.dataset.what, href: li.querySelector('a').getAttribute('href'), small: li.querySelectorAll('span')[0].textContent.trim(), title: li.querySelectorAll('span')[1].textContent.trim() }))`);
+  check('Recently shows at most 5 rows when there are 7 happenings', rows.length === 5, rows.length);
+  check('…newest first: note changed today, task added today, task done yesterday, the older note, then the first task added',
+    eq(rows.map(r => r.what), ['note-changed', 'added', 'done', 'note', 'added']) && eq(rows.map(r => r.title), ['Stall layout', 'Price the flour', 'Bake test loaf', 'Supplier list', 'Bake test loaf']), rows);
+  check('…with the right small lines (Today · Note changed, Today · Added, Yesterday · Done)', eq(rows.slice(0, 3).map(r => r.small), ['Today · Note changed', 'Today · Added', 'Yesterday · Done']), rows.slice(0, 3).map(r => r.small));
+  check('…older ones show a date, not Today or Yesterday', rows.slice(3).every(r => !/^(Today|Yesterday)/.test(r.small)) && rows[3].small.endsWith(' · Note') && rows[4].small.endsWith(' · Added'), rows.slice(3).map(r => r.small));
+  check('…each opens its task or note', eq(rows.map(r => r.href), ['#projects/notes/ntCh', '#today/tasks/tkNew', '#today/tasks/tkOld', '#projects/notes/ntOld', '#today/tasks/tkOld']), rows.map(r => r.href));
+  check('…the two oldest tasks are left out', !rows.some(r => /Oldest idea/.test(r.title)));
+  await go('projects/p/pjQ', 2026, 10, 15, 15, 10);
+  check('a project with nothing in it has no Recently card', (await exists('#projectTitle')) && !(await exists('#projectRecent')));
+
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
   const sm = T.summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);
