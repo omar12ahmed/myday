@@ -1,5 +1,7 @@
-import { ArrowDown, ArrowUp, Check, Flag, Minus, Plus, Scale, Trash2, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, Check, Flag, Minus, Plus, Scale, Sparkles, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
+import { AI_MODE } from '../ai/request';
+import { openCapture } from '../capture/openCapture';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { useConfirm } from '../components/confirm';
@@ -117,6 +119,7 @@ export function MilestonesView({ p }: { p: Project }) {
           ))}
         </ol>
       )}
+      {!full && <AiHelp p={p} action="ms-ask" label="Suggest milestones" onAsk={() => openCapture('Suggest milestones for this project')} />}
       {full ? <p className="text-[15px] text-fg-2 mb-0 mt-3" data-s="ms-full">That's 30 — plenty to steer by. Remove one to add another.</p> : (
         <form className="grid gap-3 mt-4 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end" onSubmit={e => { e.preventDefault(); add(); }} id="msAddForm">
           <Field label={total ? 'Add a milestone' : 'Add the first milestone'} htmlFor="msNew"><TextInput id="msNew" value={title} maxLength={PLAN_LIMITS.milestoneTitle} placeholder="e.g. Shortlist three flats" onChange={e => setTitle(e.target.value)} /></Field>
@@ -241,6 +244,9 @@ function DecisionCard({ p, x }: { p: Project; x: Decision }) {
         </div>
       ) : <Note className="mb-0 mt-3">No options yet. Add one — or just one, for a yes or no.</Note>}
 
+      {!decided && x.options.some(o => o.pros.length + o.cons.length > 0) && (
+        <AiHelp p={p} action="dc-ask" label="What am I missing?" onAsk={() => openCapture(`What am I missing in “${x.question}”?`, { decisionId: x.id })} />
+      )}
       {x.options.length < PLAN_LIMITS.options ? (
         <form className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 items-end mt-4" onSubmit={e => { e.preventDefault(); addOpt(); }} data-s="opt-add-form">
           <Field label={x.options.length ? 'Add an option' : 'Add the first option'} htmlFor={`dcOpt-${x.id}`}><TextInput id={`dcOpt-${x.id}`} value={opt} maxLength={PLAN_LIMITS.optionText} placeholder="e.g. Near the station" onChange={e => setOpt(e.target.value)} /></Field>
@@ -287,4 +293,12 @@ function Points({ p, x, o, side }: { p: Project; x: Decision; o: DecisionOption;
         ) : <LinkButton className="ml-2 text-[15px]" data-action={`${word}-add`} onClick={() => setAdding(true)}>+ {word.charAt(0).toUpperCase() + word.slice(1)}</LinkButton>}
     </div>
   );
+}
+
+// Ask MyDay's help for this project (1.32.0): only on your tap, through + (which shows exactly what's sent first);
+// suggestions come back to tick. Not offered for a project you made private.
+function AiHelp({ p, action, label, onAsk }: { p: Project; action: string; label: string; onAsk: () => void }) {
+  if (AI_MODE === 'off') return null;
+  if (p.private) return <p className="text-sm text-fg-3 mb-0 mt-3" data-s="ai-private">Private project — AI help isn't offered here.</p>;
+  return <Button inline variant="tonal" className="mt-3" data-action={action} onClick={onAsk}><Sparkles size={18} aria-hidden="true" /> {label}</Button>;
 }

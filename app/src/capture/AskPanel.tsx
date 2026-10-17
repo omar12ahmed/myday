@@ -1,8 +1,9 @@
-import { ArrowRight, BookOpen, CalendarPlus, FolderKanban, ListPlus, NotebookPen, PencilLine, Sparkles } from 'lucide-react';
+import { ArrowRight, BookOpen, CalendarPlus, Flag, FolderKanban, ListPlus, Minus, NotebookPen, PencilLine, Plus, Scale, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { addAskItems, applyAskChanges, applyAskEdit, checkAskReply, countWords, NEW_PROJECT, undoAsk, undoAskChanges, type AskChangeUndo, type AskChecked, type AskEdit, type AskProposal, type AskUndo } from '../ai/ask';
 import { askContext, askPreview, askSlice } from '../ai/askContext';
 import { canAdjust, handOverToAdjust } from '../ai/handover';
+import type { AskFocus } from './openCapture';
 import { AI_MODE, askModel } from '../ai/request';
 import { Button } from '../components/Button';
 import { Select, TextArea, TextInput } from '../components/Field';
@@ -31,8 +32,9 @@ const ICON: Record<AskProposal['type'], ReactNode> = {
   task: <ListPlus size={16} aria-hidden="true" />, note: <NotebookPen size={16} aria-hidden="true" />,
   appointment: <CalendarPlus size={16} aria-hidden="true" />, project: <FolderKanban size={16} aria-hidden="true" />, 'study-task': <BookOpen size={16} aria-hidden="true" />,
   change: <PencilLine size={16} aria-hidden="true" />,
+  milestone: <Flag size={16} aria-hidden="true" />, pro: <Plus size={16} aria-hidden="true" />, con: <Minus size={16} aria-hidden="true" />, option: <Scale size={16} aria-hidden="true" />,
 };
-const TYPE_WORD: Record<AskProposal['type'], string> = { task: 'Task', note: 'Note', appointment: 'Appointment', project: 'Project', 'study-task': 'Study task', change: 'Change' };
+const TYPE_WORD: Record<AskProposal['type'], string> = { task: 'Task', note: 'Note', appointment: 'Appointment', project: 'Project', 'study-task': 'Study task', change: 'Change', milestone: 'Milestone', pro: 'Pro', con: 'Con', option: 'Option' };
 
 // The answer as it was shown, for the one follow-up.
 function shownText(r: AskChecked): string {
@@ -43,7 +45,7 @@ function shownText(r: AskChecked): string {
   return parts.filter(Boolean).join('\n');
 }
 
-export function AskPanel({ data, text, onClose }: { data: MyDayData; text: string; onClose: () => void }) {
+export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text: string; focus?: AskFocus; onClose: () => void }) {
   const [phase, setPhase] = useState<Phase>({ at: 'idle' });
   const [picked, setPicked] = useState<boolean[]>([]);
   const [titles, setTitles] = useState<string[]>([]);
@@ -52,7 +54,7 @@ export function AskPanel({ data, text, onClose }: { data: MyDayData; text: strin
   const [more, setMore] = useState('');
   const request = useRef<AbortController | null>(null);
   useEffect(() => () => request.current?.abort(), []);
-  const [slice] = useState(() => askSlice(data, location.hash)); // the page the sheet was opened on
+  const [slice] = useState(() => askSlice(data, location.hash, todayKey(), focus)); // the page the sheet was opened on (and what it's about)
   const [opened] = useState(() => new Date());                    // for the preview's "when" (the request itself uses the time you tap)
   if (AI_MODE === 'off') return null;
   const k = todayKey();
@@ -95,7 +97,7 @@ export function AskPanel({ data, text, onClose }: { data: MyDayData; text: strin
     <div className="mt-4 pt-4 border-t border-outline" data-s="ask-panel" data-phase={phase.at}>
       {(phase.at === 'idle' || phase.at === 'error') && <>
         <Button variant="tonal" data-action="ask-go" disabled={!text.trim()} onClick={() => { void ask(); }}><Sparkles size={18} aria-hidden="true" /> Ask MyDay</Button>
-        {(() => { const pv = askPreview(askContext(slice, text, k, opened), slice.privateNote); return (
+        {(() => { const pv = askPreview(askContext(slice, text, k, opened), slice.privateNote, slice.held); return (
           <div className="mt-2 text-xs text-fg-2" data-s="ask-sends">
             <p className="m-0 font-semibold text-fg-3">Sent to the AI with what you type:</p>
             <ul className="list-none p-0 m-0 mt-1 flex flex-wrap gap-1.5">{pv.short.map(x => <li key={x} className="bg-surface-2 rounded-full px-2.5 py-1">{x}</li>)}</ul>
@@ -135,7 +137,8 @@ export function AskPanel({ data, text, onClose }: { data: MyDayData; text: strin
                       onChange={e => setTitles(t => t.map((x, j) => (j === i ? e.target.value : x)))} />
                     <p className="text-[13px] text-fg-3 m-0 mt-1 flex flex-wrap items-center gap-x-1.5">
                       <span className="inline-flex items-center gap-1">{ICON[it.type]} {TYPE_WORD[it.type]}</span>
-                      {it.date && <span>· {prettyDate(it.date)}{it.time ? `, ${it.time}` : ''}</span>}
+                      {it.date && <span>· {it.type === 'milestone' ? 'aiming for ' : ''}{prettyDate(it.date)}{it.time ? `, ${it.time}` : ''}</span>}
+                      {(it.type === 'pro' || it.type === 'con') && <span>· for “{it.text}”</span>}
                       {it.type === 'task' && <span>· {it.minutes} min · {CAT_LABEL[it.category]}</span>}
                       {it.study && <span>· {it.minutes} min · {it.study.kind === 'practical' ? 'Practical' : 'Learn'} · in {it.study.sectionId
                         ? `“${slice.context.course?.modules.flatMap(m => m.sections).find(x => x.id === it.study!.sectionId)?.title || 'this section'}”`
@@ -144,7 +147,7 @@ export function AskPanel({ data, text, onClose }: { data: MyDayData; text: strin
                       {it.listId && <span>· list “{data.tasks.lists.find(l => l.id === it.listId)?.name}”</span>}
                       {it.already && <span>· already on your lists</span>}
                     </p>
-                    {it.type !== 'task' && it.text && it.text !== it.title && editing !== i && <p className="text-[13px] text-fg-2 m-0 mt-1 line-clamp-3">{it.text}</p>}
+                    {(it.type === 'note' || it.type === 'project') && it.text && it.text !== it.title && editing !== i && <p className="text-[13px] text-fg-2 m-0 mt-1 line-clamp-3">{it.text}</p>}
                     {editing === i ? (
                       <div className="grid grid-cols-2 gap-2 mt-2 min-w-0" data-s="ask-edit">
                         {(it.type === 'task' || it.type === 'appointment' || orig.type === 'appointment') && <>
@@ -165,7 +168,7 @@ export function AskPanel({ data, text, onClose }: { data: MyDayData; text: strin
                           <TextArea rows={3} maxLength={1000} value={e.text ?? it.text} data-f="ask-text" onChange={ev => set({ text: ev.target.value })} /></label>}
                         <LinkButton data-action="ask-edit-done" className="col-span-2 text-sm" onClick={() => setEditing(null)}>Done</LinkButton>
                       </div>
-                    ) : <LinkButton data-action="ask-edit" className="text-sm" aria-label={`Edit ${titles[i] || it.title}`} onClick={() => setEditing(i)}>Edit</LinkButton>}
+                    ) : it.plan ? null : <LinkButton data-action="ask-edit" className="text-sm" aria-label={`Edit ${titles[i] || it.title}`} onClick={() => setEditing(i)}>Edit</LinkButton>}
                   </div>
                 </li>); })}
             </ul>

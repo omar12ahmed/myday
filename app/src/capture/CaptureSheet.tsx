@@ -12,7 +12,7 @@ import type { Category, MyDayData } from '../data/types';
 import { loadLibs, parseCapture, type Capture, type CaptureLibs } from './parse';
 import { addAppointment, addCapturedTask, appointmentEnd, saveNote, startProject } from './save';
 import { AskPanel } from './AskPanel';
-import { CAPTURE_EVENT } from './openCapture';
+import { CAPTURE_EVENT, type AskFocus } from './openCapture';
 import { AI_MODE } from '../ai/request';
 
 // "+ Capture", on every screen: phones get a round button above the bar (easy to reach), wide screens one beside
@@ -20,18 +20,19 @@ import { AI_MODE } from '../ai/request';
 export function CaptureButton({ data }: { data: MyDayData }) {
   const [open, setOpen] = useState(false);
   const [preset, setPreset] = useState('');
+  const [focus, setFocus] = useState<AskFocus | undefined>(undefined);
   // A page's shortcut can open the sheet with words already in it (openCapture.ts).
   useEffect(() => {
-    const onOpen = (e: Event) => { setPreset(String((e as CustomEvent<{ text: string }>).detail?.text ?? '')); setOpen(true); };
+    const onOpen = (e: Event) => { const d = (e as CustomEvent<{ text: string; focus?: AskFocus }>).detail; setPreset(String(d?.text ?? '')); setFocus(d?.focus); setOpen(true); };
     window.addEventListener(CAPTURE_EVENT, onOpen);
     return () => window.removeEventListener(CAPTURE_EVENT, onOpen);
   }, []);
   return (
     <>
-      <button type="button" className="capture-btn" data-action="capture-open" aria-label="Capture: a note, task or appointment" onClick={() => { setPreset(''); setOpen(true); }}>
+      <button type="button" className="capture-btn" data-action="capture-open" aria-label="Capture: a note, task or appointment" onClick={() => { setPreset(''); setFocus(undefined); setOpen(true); }}>
         <Plus size={24} aria-hidden="true" /><span className="capture-label">Capture</span>
       </button>
-      {open && <CaptureSheet data={data} initialText={preset} onClose={() => { setOpen(false); setPreset(''); }} />}
+      {open && <CaptureSheet data={data} initialText={preset} focus={focus} onClose={() => { setOpen(false); setPreset(''); setFocus(undefined); }} />}
     </>
   );
 }
@@ -42,7 +43,7 @@ const openProject = (id: string) => { location.hash = `projects/p/${id}`; };
 // Type anything; MyDay suggests what it looks like (a time → the Calendar, an action → a task, an idea → a project, or
 // just a note) — and does only what you tap. Those suggestions are worked out on this device; below them, Ask MyDay
 // (only when the app has AI help, and only on your tap) is for questions, breakdowns and several things at once.
-export function CaptureSheet({ data, initialText = '', onClose }: { data: MyDayData; initialText?: string; onClose: () => void }) {
+export function CaptureSheet({ data, initialText = '', focus, onClose }: { data: MyDayData; initialText?: string; focus?: AskFocus; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
   const [text, setText] = useState(initialText);
   const [libs, setLibs] = useState<CaptureLibs | null>(null);
@@ -114,7 +115,7 @@ export function CaptureSheet({ data, initialText = '', onClose }: { data: MyDayD
         </div>
         <Note className="mt-3 mb-0 text-sm">{AI_MODE === 'off' ? 'Everything is worked out on this device — nothing you type is sent anywhere.' : 'These suggestions are worked out on this device — nothing you type is sent unless you tap Ask MyDay.'}</Note>
       </form>
-      <div className="px-5 pb-5 -mt-1"><AskPanel data={data} text={text} onClose={close} /></div>
+      <div className="px-5 pb-5 -mt-1"><AskPanel data={data} text={text} focus={focus} onClose={close} /></div>
     </dialog>
   );
 }

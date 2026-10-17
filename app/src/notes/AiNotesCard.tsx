@@ -25,7 +25,7 @@ export function AiNotesCard({ data }: { data: MyDayData }) {
           : 'Let AI help place the notes MyDay can\'t place by itself, in the right project — with Undo, like MyDay\'s own links.'}
       </p>
       <p className="text-sm text-fg-3 m-0 mt-2">
-        What's sent: a few notes at a time (never ones you've marked private, ones already in a project, the one you have open, or one you changed in the last few minutes) and your open projects' names and summaries, to the AI service used by MyDay's AI help. At most {AI_CONNECT_PER_DAY} times a day on each device; a note is sent again only if you change it. While it's on, a note also offers “Make revision cards”, which sends that one note only when you tap it.
+        What's sent: a few notes at a time (never ones you've marked private, ones already in a project, the one you have open, or one you changed in the last few minutes) and your open projects' names and summaries (projects you've made private included — name and summary only), to the AI service used by MyDay's AI help. At most {AI_CONNECT_PER_DAY} times a day on each device; a note is sent again only if you change it. While it's on, a note also offers “Make revision cards”, which sends that one note only when you tap it.
       </p>
     </Card>
   );

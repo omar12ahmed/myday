@@ -17,11 +17,13 @@ export const ASK_LIMITS = {
   minMinutes: 5, maxMinutes: 120,
   // A course's outline (Study → a course): sent in full up to these sizes; up to 12 study tasks proposed for it.
   courseModules: 12, courseSections: 30, courseTasks: 80, studyItems: 12,
+  // A project's milestones and the one decision you asked about ("What am I missing?"), from 1.32.0.
+  milestones: 30, decisionOptions: 4, decisionPoints: 6, pointChars: 160, questionChars: 200,
 };
 export const ASK_PAGES = ['today', 'tasks', 'task', 'calendar', 'projects', 'project', 'notes', 'note', 'study', 'course', 'health', 'finance', 'other'] as const;
 export type AskPage = typeof ASK_PAGES[number];
 export const ASK_KINDS = ['add', 'steps', 'answer', 'cannot', 'change'] as const;
-export const ASK_ITEM_TYPES = ['task', 'note', 'appointment', 'project', 'study-task', 'change'] as const;
+export const ASK_ITEM_TYPES = ['task', 'note', 'appointment', 'project', 'study-task', 'change', 'milestone', 'pro', 'con', 'option'] as const;
 export const ASK_TARGETS = ['task', 'appointment', 'note'] as const;
 export const ASK_CATEGORIES = ['learning', 'admin', 'health'] as const;
 export const ASK_STAGES = ['capture', 'understand', 'organise', 'explore', 'decide', 'act', 'reflect'] as const;
@@ -32,7 +34,11 @@ export interface AskPageContext {
   projects?: Ref[];                                                     // open projects' names (to file things into)
   today?: { energy: number | null; freeMinutes: number | null; plan: { id: string; title: string; minutes: number; done: boolean }[]; dueToday: Ref[]; revisionDue?: number };
   study?: { course: Ref | null; nextTask: Ref | null; topics: string[]; revisionDue: number; energy?: number | null; freeMinutes?: number | null }; // energy and free time today, to fit a session to them
-  project?: { id: string; title: string; summary: string; stage: typeof ASK_STAGES[number]; tasks: (Ref & { done: boolean })[]; notes: string[]; notesText?: string };
+  project?: {
+    id: string; title: string; summary: string; stage: typeof ASK_STAGES[number]; tasks: (Ref & { done: boolean })[]; notes: string[]; notesText?: string;
+    milestones?: { id: string; title: string; reached: boolean; aim: string | null }[];   // its milestones (1.32.0)
+    decision?: { id: string; question: string; options: { id: string; text: string; pros: string[]; cons: string[] }[] }; // the one you asked about
+  };
   note?: { id: string; title: string; text: string };
   task?: { id: string; title: string; due: string | null; minutes: number; notes: string };
   calendar?: { day: string; appointments: { id?: string; title: string; time: string }[] }; // id: so a change can name one
@@ -66,6 +72,8 @@ export interface AskItem {
   sectionId?: string | null; section?: string | null; moduleId?: string | null; module?: string | null;
   // A change to something already saved (kind "change"): what it is and its id; the other fields are the new values.
   target?: typeof ASK_TARGETS[number] | null; targetId?: string | null;
+  // A pro or con for one of the decision's options (types "pro" / "con"): which option.
+  optionId?: string | null;
 }
 export const ASK_SCOPES = ['all', 'arabic', 'cybersecurity'] as const;
 export type AskAction = { type: 'start-study'; courseId: string; taskId: string | null; minutes: number } | { type: 'adjust-today' } | { type: 'start-revision'; scope: typeof ASK_SCOPES[number] };
@@ -125,10 +133,17 @@ export function checkAskContext(raw: unknown): raw is AskContext {
   }
   if (x.project !== undefined) {
     const p = x.project;
-    if (!obj(p) || !only(p, ['id', 'title', 'summary', 'stage', 'tasks', 'notes', 'notesText'])) return false;
+    if (!obj(p) || !only(p, ['id', 'title', 'summary', 'stage', 'tasks', 'notes', 'notesText', 'milestones', 'decision'])) return false;
     if (!str(p.id, 64, false) || !str(p.title, L.titleChars, false) || !str(p.summary, L.summaryChars) || !ASK_STAGES.includes(p.stage as typeof ASK_STAGES[number])) return false;
     if (!refs(p.tasks, t => typeof t.done === 'boolean') || !Array.isArray(p.notes) || p.notes.length > L.list || !p.notes.every(n => str(n, L.titleChars, false))) return false;
     if (p.notesText !== undefined && !str(p.notesText, L.projectNotesChars)) return false;
+    if (p.milestones !== undefined && !(Array.isArray(p.milestones) && p.milestones.length <= L.milestones && p.milestones.every(m => obj(m) && only(m, ['id', 'title', 'reached', 'aim'])
+      && str(m.id, 64, false) && str(m.title, L.titleChars, false) && typeof m.reached === 'boolean' && (m.aim === null || isDate(m.aim))))) return false;
+    if (p.decision !== undefined) {
+      const dc = p.decision, pts = (v: unknown) => Array.isArray(v) && v.length <= L.decisionPoints && v.every(t => str(t, L.pointChars, false));
+      if (!(obj(dc) && only(dc, ['id', 'question', 'options']) && str(dc.id, 64, false) && str(dc.question, L.questionChars, false) && Array.isArray(dc.options) && dc.options.length <= L.decisionOptions
+        && dc.options.every(o => obj(o) && only(o, ['id', 'text', 'pros', 'cons']) && str(o.id, 64, false) && str(o.text, L.titleChars, false) && pts(o.pros) && pts(o.cons)))) return false;
+    }
   }
   if (x.note !== undefined && !(obj(x.note) && only(x.note, ['id', 'title', 'text']) && str(x.note.id, 64, false) && str(x.note.title, L.titleChars) && str(x.note.text, L.noteTextChars))) return false;
   if (x.task !== undefined && !(obj(x.task) && only(x.task, ['id', 'title', 'due', 'minutes', 'notes']) && str(x.task.id, 64, false) && str(x.task.title, L.titleChars, false)
@@ -173,6 +188,7 @@ export function readAsk(textIn: string): AskReply | null {
       sectionId: word(it.sectionId, 64),
       section: word(it.section, ASK_LIMITS.titleChars),
       moduleId: word(it.moduleId, 64),
+      optionId: word(it.optionId, 64),
       module: word(it.module, ASK_LIMITS.titleChars),
     });
   }

@@ -57,6 +57,7 @@ export function normalizeProjects(raw: unknown, report: { dropped: number }): Pr
     const milestones = normalizeMilestones(p.milestones, report), decisions = normalizeDecisions(p.decisions, report);
     if (milestones) item.milestones = milestones; else delete item.milestones;
     if (decisions) item.decisions = decisions; else delete item.decisions;
+    if (p.private === true) item.private = true; else delete item.private;
     seen.add(item.id);
     out.items.push(item);
   }
@@ -88,6 +89,17 @@ export function editProject(d: MyDayData, id: string, patch: Partial<Pick<Projec
   if (changed) touch(p);
   return changed;
 }
+
+// Private (your switch, 1.32.0): Ask MyDay sends nothing of it — see ai/askContext.ts. Returns false when unchanged.
+export function setProjectPrivate(d: MyDayData, id: string, on: boolean): boolean {
+  const p = find(d, id);
+  if (!p || !!p.private === on) return false;
+  if (on) p.private = true; else delete p.private;
+  touch(p);
+  return true;
+}
+// Is this task, note or appointment part of a project you made private? (Then Ask MyDay leaves it out too.)
+export const privateProjectIds = (data: MyDayData) => new Set(data.projects.items.filter(p => p.private).map(p => p.id));
 
 // Remove a project. Its notes, tasks and appointments stay — they just aren't linked to it any more.
 export function deleteProject(d: MyDayData, id: string): boolean {

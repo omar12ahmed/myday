@@ -13,6 +13,7 @@ import { ROUND_SIZE } from '../data/study/common';
 import { dueIds, type Scope } from '../data/study/queue';
 import { updateSaved } from '../data/storage';
 import { addTask, editTask, inQueue, leaveTodaysPlanIfLater, onTodaysPlan } from '../data/tasks';
+import { addMilestone, addOption, addPoint, PLAN_LIMITS, removeMilestone, removeOption, removePoint, type Side } from '../data/projectPlan';
 import type { Category, Commitment, DateKey, MyDayData, Note, Project, StudyModule, StudySection, Task, TaskItem } from '../data/types';
 import { uid } from '../data/util';
 import type { AskSlice } from './askContext';
@@ -33,7 +34,12 @@ export interface AskProposal {
   // A study task (into the course on the page): its kind and where it goes — an existing section, or a new section
   // (named) in an existing module or a new module (named).
   study?: { courseId: string; kind: 'learn' | 'practical'; sectionId: string | null; section: string | null; moduleId: string | null; module: string | null };
+  // A milestone for the project on the page, or a pro, con or option for the decision you asked about (1.32.0).
+  plan?: { projectId: string; decisionId?: string; optionId?: string; side?: Side };
 }
+const PLAN_TYPES: AskItemType[] = ['milestone', 'pro', 'con', 'option'];
+// Words that pick for you. A decision stays yours: a reply saying which option is best is reworded (and says so).
+const CHOOSES = /\b(best|better (option|choice)|I(?:'d| would) (choose|pick|go)|recommend|go with|winner|the (right|clear) (choice|option)|you should (choose|pick|go))\b/i;
 // A task or note for the project proposed in the same answer (it's created first when you tap Add).
 export const NEW_PROJECT = '@new';
 export type AskChecked =
@@ -108,15 +114,48 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
   const course = slice.context.course ? stIndex(data.study).course.get(slice.context.course.id)?.node ?? null : null;
   const inCourse = course ? new Set(course.modules.flatMap(m => m.sections.flatMap(sc => sc.tasks.map(t => sameTask(t.title))))) : new Set<string>();
   const studyCap = r.items.some(i => i.type === 'study-task') && course ? L.studyItems : L.items;
+  // Milestones, pros, cons and options: only for the project on this page (never a private one), checked against what it
+  // already has and its limits (30 milestones; per decision 4 options, per option 6 pros and 6 cons).
+  const pr = slice.context.project ? data.projects.items.find(x => x.id === slice.context.project!.id && !x.private) ?? null : null;
+  const dc = pr && slice.context.project?.decision ? pr.decisions?.find(x => x.id === slice.context.project!.decision!.id) ?? null : null;
+  let plannedMs = 0, plannedOpts = 0;
+  const plannedPts: Record<string, number> = {};
   for (const it of r.items) {
     if (items.length >= studyCap) break;
-    let type: AskItemType = course && r.kind === 'steps' ? 'study-task' : r.kind === 'steps' ? 'task' : it.type;
+    let type: AskItemType = PLAN_TYPES.includes(it.type) ? it.type : course && r.kind === 'steps' ? 'study-task' : r.kind === 'steps' ? 'task' : it.type;
     if (type === 'study-task' && !course) type = 'task'; // only on a course page
     if (type !== 'study-task' && items.length >= L.items) continue;
     if (r.kind === 'answer' && items.length >= 3) break; // an answer suggests at most three
     const title = it.title.replace(/\s+/g, ' ').trim().slice(0, L.titleChars);
     if (!title || seen.has(type + ':' + sameTask(title))) continue;
     seen.add(type + ':' + sameTask(title));
+    if (PLAN_TYPES.includes(type)) {
+      const base = { title, date: null, time: null, minutes: 0, category: 'admin' as Category, text: '', already: false };
+      if (!pr) { changed.push(`“${title}”: left out — it's for a project that isn't on this page.`); continue; }
+      if (type === 'milestone') {
+        if ((pr.milestones ?? []).some(m => sameTask(m.title) === sameTask(title))) { changed.push(`“${title}”: already one of your milestones.`); continue; }
+        if ((pr.milestones?.length ?? 0) + plannedMs >= PLAN_LIMITS.milestones) { changed.push('Left out milestones past 30 — plenty to steer by.'); continue; }
+        plannedMs++;
+        items.push({ ...base, type, date: realDate(it.date) && it.date >= k ? it.date : null, projectId: pr.id, plan: { projectId: pr.id } });
+        continue;
+      }
+      if (!dc) { changed.push(`“${title}”: left out — no decision was asked about.`); continue; }
+      if (type === 'option') {
+        if (dc.options.some(o => sameTask(o.text) === sameTask(title))) { changed.push(`“${title}”: already one of the options.`); continue; }
+        if (dc.options.length + plannedOpts >= PLAN_LIMITS.options) { changed.push('Left out another option — four is the most.'); continue; }
+        plannedOpts++;
+        items.push({ ...base, type, projectId: pr.id, plan: { projectId: pr.id, decisionId: dc.id } });
+        continue;
+      }
+      const o = dc.options.find(x => x.id === it.optionId), side: Side = type === 'pro' ? 'pros' : 'cons';
+      if (!o) { changed.push(`“${title}”: left out — it named an option that isn't in this decision.`); continue; }
+      const key = `${o.id}:${side}`;
+      if (o[side].some(t => sameTask(t) === sameTask(title))) { changed.push(`“${title}”: already listed for “${o.text}”.`); continue; }
+      if (o[side].length + (plannedPts[key] ?? 0) >= PLAN_LIMITS.points) { changed.push(`Left out more ${side} for “${o.text}” — six is the most.`); continue; }
+      plannedPts[key] = (plannedPts[key] ?? 0) + 1;
+      items.push({ ...base, type, text: o.text, projectId: pr.id, plan: { projectId: pr.id, decisionId: dc.id, optionId: o.id, side } });
+      continue;
+    }
     const oneNew = r.items.filter(x => x.type === 'project').length === 1;
     let projectId = it.projectId && open.has(it.projectId) ? it.projectId : it.projectId === 'new' && oneNew && it.type !== 'project' ? NEW_PROJECT : null;
     if (it.projectId && !projectId) changed.push(`“${title}”: not put in a project that isn’t open.`);
@@ -150,8 +189,11 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
       already: type === 'task' && onLists.has(sameTask(title)),
     });
   }
-  if (!items.length) return message.split(/\s+/).filter(Boolean).length >= 3 ? { kind: 'answer', message, action: null, changed } : null; // a fragment ("Here's") isn't an answer
-  return { kind: r.kind === 'steps' ? 'steps' : 'add', message: message || (r.kind === 'steps' ? 'Here are some smaller steps.' : 'Here’s what I found to add.'), items, changed };
+  // With a decision on the page, the choice stays yours: a message that picks one is reworded.
+  let msg = message;
+  if (dc && CHOOSES.test(msg)) { msg = 'Here are a few more things to weigh — the choice is yours.'; changed.push('MyDay left out a view on which option to choose — that’s yours to decide.'); }
+  if (!items.length) return msg.split(/\s+/).filter(Boolean).length >= 3 ? { kind: 'answer', message: msg, action: null, changed } : null; // a fragment ("Here's") isn't an answer
+  return { kind: r.kind === 'steps' ? 'steps' : 'add', message: msg || (r.kind === 'steps' ? 'Here are some smaller steps.' : 'Here’s what I found to add.'), items, changed };
 }
 
 // ---------- Changes to what's already saved ----------
@@ -268,13 +310,29 @@ export function undoAskChanges(u: AskChangeUndo): boolean {
 }
 
 // ---------- Saving what you ticked ----------
-export interface AskUndo { tasks: string[]; notes: string[]; appointments: string[]; projects: string[]; study?: { tasks: string[]; sections: string[]; modules: string[] } }
+export interface AskUndo {
+  tasks: string[]; notes: string[]; appointments: string[]; projects: string[]; study?: { tasks: string[]; sections: string[]; modules: string[] };
+  // Milestones, options and pros/cons it added to a project (1.32.0).
+  plan?: ({ kind: 'milestone'; projectId: string; id: string } | { kind: 'option'; projectId: string; decisionId: string; id: string } | { kind: 'point'; projectId: string; decisionId: string; optionId: string; side: Side; text: string })[];
+}
 const end30 = (date: DateKey, time: string) => { const t = new Date(`${date}T${time}`); t.setMinutes(t.getMinutes() + 30); return `${keyOf(t)}T${pad(t.getHours())}:${pad(t.getMinutes())}`; };
 
 // Adds them all in one save. Returns what to take back with Undo, or null if nothing could be saved.
 export function addAskItems(items: AskProposal[]): AskUndo | null {
-  const u: AskUndo = { tasks: [], notes: [], appointments: [], projects: [], study: { tasks: [], sections: [], modules: [] } };
+  const u: AskUndo = { tasks: [], notes: [], appointments: [], projects: [], study: { tasks: [], sections: [], modules: [] }, plan: [] };
   const r = updateSaved(d => {
+    // Milestones for the project, and options or pros/cons for the decision you asked about — through the same rules
+    // (and limits) as adding them yourself.
+    for (const it of items) {
+      const pl = it.plan;
+      if (!pl) continue;
+      if (it.type === 'milestone') { const id = addMilestone(d, pl.projectId, it.title, it.date); if (id && id !== 'full') u.plan!.push({ kind: 'milestone', projectId: pl.projectId, id }); }
+      else if (it.type === 'option' && pl.decisionId) { const id = addOption(d, pl.projectId, pl.decisionId, it.title); if (id && id !== 'full') u.plan!.push({ kind: 'option', projectId: pl.projectId, decisionId: pl.decisionId, id }); }
+      else if (pl.decisionId && pl.optionId && pl.side && addPoint(d, pl.projectId, pl.decisionId, pl.optionId, pl.side, it.title) === true) {
+        const o = d.projects.items.find(x => x.id === pl.projectId)?.decisions?.find(x => x.id === pl.decisionId)?.options.find(x => x.id === pl.optionId);
+        if (o) u.plan!.push({ kind: 'point', projectId: pl.projectId, decisionId: pl.decisionId, optionId: pl.optionId, side: pl.side, text: o[pl.side][o[pl.side].length - 1] });
+      }
+    }
     // Study tasks into the course on the page. A section or module is found by its id or by its name (the course's own,
     // or one made earlier in this same Add), so nothing is made twice; one the model only half-named goes with the last
     // one it made, else the course's last module.
@@ -326,7 +384,7 @@ export function addAskItems(items: AskProposal[]): AskUndo | null {
         u.appointments.push(id);
       }
     }
-    if (!u.tasks.length && !u.notes.length && !u.appointments.length && !u.projects.length && !u.study!.tasks.length) return false;
+    if (!u.tasks.length && !u.notes.length && !u.appointments.length && !u.projects.length && !u.study!.tasks.length && !u.plan!.length) return false;
   });
   return r === 'saved' ? u : null;
 }
@@ -351,7 +409,18 @@ export function undoAsk(u: AskUndo): boolean {
         c.modules = c.modules.filter(m => !(sm.has(m.id) && !m.sections.length));
       }
     }
-    if (d.tasks.items.length + d.notes.items.length + d.commitments.length + d.projects.items.length === before && !studyGone) return false;
+    // Milestones, options and pros/cons it added (newest first; one you've already removed stays removed).
+    let planGone = 0;
+    for (const x of [...(u.plan ?? [])].reverse()) {
+      if (x.kind === 'milestone') planGone += removeMilestone(d, x.projectId, x.id) ? 1 : 0;
+      else if (x.kind === 'option') planGone += removeOption(d, x.projectId, x.decisionId, x.id) ? 1 : 0;
+      else {
+        const list = d.projects.items.find(p => p.id === x.projectId)?.decisions?.find(y => y.id === x.decisionId)?.options.find(o => o.id === x.optionId)?.[x.side];
+        const i = list ? list.lastIndexOf(x.text) : -1;
+        if (i >= 0) planGone += removePoint(d, x.projectId, x.decisionId, x.optionId, x.side, i) ? 1 : 0;
+      }
+    }
+    if (d.tasks.items.length + d.notes.items.length + d.commitments.length + d.projects.items.length === before && !studyGone && !planGone) return false;
   }) === 'saved';
 }
 
@@ -359,7 +428,8 @@ export function undoAsk(u: AskUndo): boolean {
 export function countWords(items: { type: AskItemType }[]): string {
   const n = (t: AskItemType) => items.filter(i => i.type === t).length;
   const w = (c: number, one: string, many: string) => (c === 1 ? `a${/^[aeiou]/.test(one) ? 'n' : ''} ${one}` : `${c} ${many}`);
-  const parts = [[n('study-task'), 'study task', 'study tasks'], [n('task'), 'task', 'tasks'], [n('note'), 'note', 'notes'], [n('appointment'), 'appointment', 'appointments'], [n('project'), 'project', 'projects']]
+  const parts = [[n('study-task'), 'study task', 'study tasks'], [n('task'), 'task', 'tasks'], [n('note'), 'note', 'notes'], [n('appointment'), 'appointment', 'appointments'], [n('project'), 'project', 'projects'],
+    [n('milestone'), 'milestone', 'milestones'], [n('option'), 'option', 'options'], [n('pro'), 'pro', 'pros'], [n('con'), 'con', 'cons']]
     .filter(([c]) => (c as number) > 0).map(([c, one, many]) => w(c as number, one as string, many as string));
   return parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : parts[0] ?? 'nothing';
 }

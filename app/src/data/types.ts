@@ -160,6 +160,9 @@ export interface Project {
   // From 1.31.0 (optional; absent = none, so a project without them is saved exactly as before): see data/projectPlan.ts.
   milestones?: Milestone[];
   decisions?: Decision[];
+  // From 1.32.0 (optional; absent = not private): you made it private, so Ask MyDay sends nothing of it. AI help with
+  // notes may still offer its name and summary as a place to link notes (your choice, 17 Oct 2026).
+  private?: true;
 }
 export interface ProjectsData { items: Project[]; [other: string]: unknown }
 

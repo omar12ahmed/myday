@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, FolderKanban, Plus } from 'lucide-react';
+import { ArrowLeft, ArrowRight, FolderKanban, Lock, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
@@ -73,7 +73,7 @@ function ProjectsHome({ data }: { data: MyDayData }) {
                 <ul className="list-none p-0 m-0 mt-1">
                   {list.map(p => (
                     <li key={p.id} className="border-t border-outline first:border-t-0"><a href={`#projects/p/${p.id}`} className="flex justify-between gap-3 items-center min-h-11 py-2 text-fg no-underline" data-id={p.id}>
-                      <span className="font-medium">{p.title}</span><span className="text-sm text-fg-3">{stageOf(p.stage).label}</span></a></li>
+                      <span className="font-medium">{p.title}{p.private && <Lock size={13} aria-label="Private" className="inline ml-1.5 text-fg-3 align-[-1px]" />}</span><span className="text-sm text-fg-3">{stageOf(p.stage).label}</span></a></li>
                   ))}
                 </ul>
               </details>
@@ -126,7 +126,7 @@ function ProjectCard({ data, p, back, on, onMove }: { data: MyDayData; p: Projec
     <a href={`#projects/p/${p.id}`} className="group flex flex-col gap-3 p-5 pb-3 text-fg no-underline rounded-t-card hover:bg-surface-2 transition-colors">
       <span className="flex items-center justify-between gap-2">
         <span className="text-xs font-bold tracking-[.08em] uppercase text-primary" data-s="project-stage">{stageOf(p.stage).label}</span>
-        <span className="text-xs text-fg-3 tabular-nums">{shortDate(lastActivity(data, p).slice(0, 10))}</span>
+        <span className="flex items-center gap-1.5 text-xs text-fg-3 tabular-nums">{p.private && <Lock size={13} aria-label="Private" data-s="project-private" />}{shortDate(lastActivity(data, p).slice(0, 10))}</span>
       </span>
       <span className="block text-[19px] font-bold leading-snug tracking-[-.01em] break-words">{p.title}</span>
       <Progression stage={p.stage} compact />

@@ -9,9 +9,10 @@ import { CategoryChip } from '../components/CategoryChip';
 import { useConfirm } from '../components/confirm';
 import { CommitInput, CommitTextarea, Field, Select, TextInput } from '../components/Field';
 import { BackLink, Eyebrow, Note, NotFound } from '../components/parts';
+import { Switch } from '../components/Switch';
 import { prettyDate, relDay, shortDate, todayKey } from '../data/dates';
 import { addNote, noteName } from '../data/notes';
-import { comingUp, deleteProject, editProject, lastActivity, linkNote, nextStep, PROJECT_LIMITS, projectById, projectNotes, projectTasks, recently, setNextStep, STATUS_LABEL, unlinkAppointment } from '../data/projects';
+import { comingUp, deleteProject, editProject, setProjectPrivate, lastActivity, linkNote, nextStep, PROJECT_LIMITS, projectById, projectNotes, projectTasks, recently, setNextStep, STATUS_LABEL, unlinkAppointment } from '../data/projects';
 import { update } from '../data/storage';
 import { addTask, addToTodaysPlan, onTodaysPlan, planRoom, setTaskDone } from '../data/tasks';
 import { toast } from '../data/toast';
@@ -62,8 +63,16 @@ function ProjectTop({ p, tab }: { p: Project; tab: ProjectTab }) {
   const tabClass = (on: boolean) => `seg-link flex-1 inline-flex items-center justify-center min-h-11 rounded-xl text-[15px] font-semibold no-underline ${on ? 'on bg-primary-container text-on-primary-container' : 'text-fg-2'}`;
   return (
     <Card aria-labelledby="projectTitle" id="projectTop" className="!pb-2.5">
-      {p.status !== 'active' && <Eyebrow>{STATUS_LABEL[p.status]}</Eyebrow>}
-      <h2 id="projectTitle" className="text-[26px] tracking-[-.02em] m-0 break-words">{p.title}</h2>
+      <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
+        <div className="min-w-0">
+          {p.status !== 'active' && <Eyebrow>{STATUS_LABEL[p.status]}</Eyebrow>}
+          <h2 id="projectTitle" className="text-[26px] tracking-[-.02em] m-0 break-words">{p.title}</h2>
+        </div>
+        {/* Private (your choice): Ask MyDay sends nothing of this project. */}
+        <Switch on={!!p.private} data-action="project-private" icon={<Lock size={16} aria-hidden="true" />}
+          onChange={on => { if (update(d => (setProjectPrivate(d, p.id, on) ? undefined : false))) toast(on ? 'Private — Ask MyDay won’t send anything of this project.' : 'No longer private.'); }}>Private</Switch>
+      </div>
+      {p.private && <p className="text-sm text-fg-2 m-0 mt-2" data-s="project-private-hint">Ask MyDay sends nothing of this project. AI help with notes can still suggest it as a place for a note (its name and summary only).</p>}
       <nav className="seg flex gap-1.5 mt-3" role="tablist" aria-label="Project sections" data-s="project-tabs">
         <a className={tabClass(tab === 'overview')} href={`#projects/p/${encodeURIComponent(p.id)}`} role="tab" aria-selected={tab === 'overview'} data-tab="overview">Overview</a>
         <a className={tabClass(tab === 'milestones')} href={tabHref(p, 'milestones')} role="tab" aria-selected={tab === 'milestones'} data-tab="milestones">Milestones</a>

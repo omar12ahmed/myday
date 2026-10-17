@@ -634,8 +634,11 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
         milestones: [{ id: 'msA', title: 'Secret milestone title', aim: '2026-12-01', reachedOn: null, createdAt: at }],
         decisions: [{ id: 'dcA', question: 'Secret decision question?', options: [{ id: 'opA', text: 'Secret option', pros: ['Secret pro'], cons: ['Secret con'] }], chosen: 'opA', why: 'Secret reason', decidedOn: D, createdAt: at, updatedAt: at }] }) } };
       const slPlan = K.askSlice(withPlan, '#projects/p/pjC', D), slNone = K.askSlice(w, '#projects/p/pjC', D);
-      check('a project carrying milestones and decisions sends exactly the same context, Sends line and preview as without them — they are never sent',
-        eq(slPlan.context, slNone.context) && slPlan.sends === slNone.sends && eq(K.askPreview(K.askContext(slPlan, 'x', D)), K.askPreview(K.askContext(slNone, 'x', D))) && !JSON.stringify(K.askContext(slPlan, 'x', D)).includes('Secret'));
+      // From 1.32.0 a project page sends its milestones (titles, reached or not, the date aimed for); a decision only when
+      // "What am I missing?" names it — and nothing of a project you made private.
+      check('a project page sends its milestones (title, reached, aim) — but no decision unless one is asked about',
+        eq(slPlan.context.project.milestones, [{ id: 'msA', title: 'Secret milestone title', reached: false, aim: '2026-12-01' }]) && !('decision' in slPlan.context.project)
+        && !JSON.stringify(K.askContext(slPlan, 'x', D)).includes('Secret decision') && eq({ ...slPlan.context.project, milestones: undefined }, { ...slNone.context.project, milestones: undefined }), slPlan.context.project);
     }
     const ps = K.askSlice(w, '#projects/notes/n3', D);
     pv = K.askPreview(K.askContext(ps, 'x', D), ps.privateNote);
@@ -732,7 +735,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
     // The instructions and the practice version.
     const msgs = K.buildAskMessages(ctxA);
-    check('the instructions: five kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"change"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v12' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
+    check('the instructions: five kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"change"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v13' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
     const mk = (hash, text) => K.checkAskReply(K.mockAsk(K.askContext(K.askSlice(K.getSnapshot().data, hash, D), text, D)), K.getSnapshot().data, K.askSlice(K.getSnapshot().data, hash, D), D);
     check('practice version: steps on a project page, in that project', (r => r.kind === 'steps' && r.items.length === 3 && r.items.every(x => x.projectId === 'pjC'))(mk('#projects/p/pjC', 'Break this into smaller steps')));
     check('…several things to add', (r => r.kind === 'add' && eq(r.items.map(x => x.title), ['Call the bank', 'Renew passport', 'Email Sam']))(mk('#today', 'call the bank, renew passport and email Sam')));

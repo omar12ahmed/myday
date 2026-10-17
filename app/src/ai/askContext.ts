@@ -5,7 +5,8 @@
 import { ASK_LIMITS as L, type AskContext, type AskPage, type AskPageContext } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
 import { parseKey, prettyDate, todayKey } from '../data/dates';
 import { noteName } from '../data/notes';
-import { projectNotes, projectTasks } from '../data/projects';
+import { privateProjectIds, projectNotes, projectTasks } from '../data/projects';
+import type { AskFocus } from '../capture/openCapture';
 import { stIndex } from '../data/study/roadmap';
 import { dueIds } from '../data/study/queue';
 import { topicGlance, topicsOf } from '../data/study/topics';
@@ -39,7 +40,10 @@ export function askPage(hash: string): { page: AskPage; id: string | null } {
   return { page: 'other', id: null };
 }
 
-export interface AskSlice { page: AskPage; context: AskPageContext; sends: string; privateNote: boolean }
+// `privateNote`: the page's own note is private (or in a private project), so it isn't sent. `held`: what else was left out
+// because you made it private — the page's own project or task (`here`), and how many items of private projects
+// (`count`: open projects' names, tasks on today's plan or due today, appointments).
+export interface AskSlice { page: AskPage; context: AskPageContext; sends: string; privateNote: boolean; held: { here: 'project' | 'task' | 'note' | null; count: number } }
 
 // The words for what each page sends — shared by the "Sends:" line and the What MyDay knows page, so they can't drift.
 export const SENDS = {
@@ -47,12 +51,14 @@ export const SENDS = {
   today: "today's plan, your energy, your free time, tasks due today and how much revision is due",
   study: 'your current course and next task, your topics, how much revision is due, and your energy and free time today',
   course: 'this course’s outline (its modules, sections and tasks — titles and lengths only)',
-  project: (withText: boolean) => `this project’s name, summary, stage, tasks and note titles${withText ? ' and text (not private ones)' : ''}`,
+  project: (withText: boolean) => `this project’s name, summary, stage, tasks, milestones and note titles${withText ? ' and text (not private ones)' : ''}`,
+  decision: 'the decision you asked about (its question, options, pros and cons)',
   note: 'this note', task: 'this task', calendar: "today's appointments",
 } as const;
-function sendsLine(parts: string[], privateNote = false): string {
+const HELD_WORD = { note: 'not this note, it’s private', project: 'not this project, it’s private', task: 'not this task, its project is private' } as const;
+function sendsLine(parts: string[], here: AskSlice['held']['here'] = null): string {
   const listed = parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : parts[0];
-  return `what you typed, the date${listed ? ', ' + listed : ''}${privateNote ? ' — not this note, it’s private' : ''}`;
+  return `what you typed, the date${listed ? ', ' + listed : ''}${here ? ` — ${HELD_WORD[here]}` : ''}`;
 }
 // What a page sends when it has everything it can send (open projects, the thing it shows) — for What MyDay knows.
 export function sendsFor(page: AskPage, aiNotes: boolean): string {
@@ -62,18 +68,29 @@ export function sendsFor(page: AskPage, aiNotes: boolean): string {
   return sendsLine(parts);
 }
 
-// The slice for a page, and the words for the "Sends:" line.
-export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey()): AskSlice {
+// The slice for a page, and the words for the "Sends:" line. Nothing of a project you made private is sent: not its name
+// (in the open projects), its own page, its tasks (on today's plan or due today), its notes or its appointments.
+export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey(), focus?: AskFocus): AskSlice {
   const { page, id } = askPage(hash);
   const ctx: AskPageContext = {}, parts: string[] = [];
-  let privateNote = false;
-  const open = data.projects.items.filter(p => p.status !== 'done').slice(0, L.list);
-  if (open.length && page !== 'finance' && page !== 'health') { ctx.projects = open.map(p => ref(p.id, p.title)); parts.push(SENDS.openProjects); }
+  let privateNote = false, here: AskSlice['held']['here'] = null, count = 0;
+  const hidden = privateProjectIds(data);
+  const inPrivate = (projectId: string | undefined) => !!projectId && hidden.has(projectId);
+  const open = data.projects.items.filter(p => p.status !== 'done'), shown = open.filter(p => !p.private).slice(0, L.list);
+  if (page !== 'finance' && page !== 'health') {
+    count += open.length - open.filter(p => !p.private).length;
+    if (shown.length) { ctx.projects = shown.map(p => ref(p.id, p.title)); parts.push(SENDS.openProjects); }
+  }
   if (page === 'today') {
     const pc = buildContext(data, k, '');
-    const due = data.tasks.items.filter(t => !t.done && !t.letGoOn && t.due === k).slice(0, L.list);
+    // A plan task linked to a task of a private project (by its plan copy) is left out, like the task itself.
+    const fromPrivate = new Set(data.tasks.items.filter(t => inPrivate(t.projectId) && t.plannedOn === k && t.planUid).map(t => t.planUid as string));
+    const plan = pc.tasks.filter(t => !fromPrivate.has(t.id));
+    const due = data.tasks.items.filter(t => !t.done && !t.letGoOn && t.due === k);
+    const dueShown = due.filter(t => !inPrivate(t.projectId));
+    count += pc.tasks.length - plan.length + due.length - dueShown.length;
     ctx.today = { energy: pc.energy, freeMinutes: freeOf(pc), revisionDue: dueIds(data, k).length,
-      plan: pc.tasks.slice(0, L.list).map(t => ({ ...ref(t.id, t.title), minutes: t.minutes, done: t.done })), dueToday: due.map(t => ref(t.id, t.title)) };
+      plan: plan.slice(0, L.list).map(t => ({ ...ref(t.id, t.title), minutes: t.minutes, done: t.done })), dueToday: dueShown.slice(0, L.list).map(t => ref(t.id, t.title)) };
     parts.push(SENDS.today);
   } else if (page === 'study') {
     const st = data.study, ix = stIndex(st), gs = topicsOf(st).map(t => topicGlance(st, ix, t.id)!).filter(Boolean);
@@ -110,28 +127,39 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey())
     }
   } else if (page === 'project' && id) {
     const p = data.projects.items.find(x => x.id === id);
-    if (p) {
+    if (p?.private) here = 'project';
+    else if (p) {
       const notes = projectNotes(data, p).filter(n => !n.private), withText = !!data.patterns.prefs.aiNotes;
       let text = '';
       if (withText) for (const n of notes) { const add = `${noteName(n)}: ${n.text.trim()}\n`; if (text.length + add.length > L.projectNotesChars) break; text += add; }
       ctx.project = { id: p.id, title: cut(p.title, L.titleChars), summary: cut(p.summary, L.summaryChars), stage: p.stage,
         tasks: (({ open, done }) => [...open, ...done])(projectTasks(data, p)).slice(0, L.list).map(t => ({ ...ref(t.id, t.title), done: t.done })), notes: notes.slice(0, L.list).map(n => cut(noteName(n), L.titleChars)),
-        ...(withText && text ? { notesText: text.trim() } : {}) };
+        ...(withText && text ? { notesText: text.trim() } : {}),
+        // Its milestones (titles, reached or not, the date aimed for), and — for "What am I missing?" — the one decision.
+        ...(p.milestones?.length ? { milestones: p.milestones.slice(0, L.milestones).map(m => ({ id: m.id, title: cut(m.title, L.titleChars), reached: !!m.reachedOn, aim: m.aim })) } : {}) };
+      const dc = focus?.decisionId ? p.decisions?.find(x => x.id === focus.decisionId) : undefined;
+      const pt = (list: string[]) => list.slice(0, L.decisionPoints).map(t => cut(t, L.pointChars));
+      if (dc) ctx.project.decision = { id: dc.id, question: cut(dc.question, L.questionChars), options: dc.options.slice(0, L.decisionOptions).map(o => ({ id: o.id, text: cut(o.text, L.titleChars), pros: pt(o.pros), cons: pt(o.cons) })) };
       parts.push(SENDS.project(withText));
+      if (dc) parts.push(SENDS.decision);
     }
   } else if (page === 'note' && id) {
     const n = data.notes.items.find(x => x.id === id);
-    if (n?.private) privateNote = true;
+    if (n?.private || inPrivate(n?.projectId)) { privateNote = true; here = 'note'; }
     else if (n) { ctx.note = { id: n.id, title: cut(n.title, L.titleChars), text: cut(n.text, L.noteTextChars) }; parts.push(SENDS.note); }
   } else if (page === 'task' && id) {
     const t = data.tasks.items.find(x => x.id === id);
-    if (t) { ctx.task = { id: t.id, title: cut(t.title, L.titleChars), due: t.due, minutes: t.minutes, notes: cut(t.notes, L.taskNotesChars) }; parts.push(SENDS.task); }
+    if (t && inPrivate(t.projectId)) here = 'task';
+    else if (t) { ctx.task = { id: t.id, title: cut(t.title, L.titleChars), due: t.due, minutes: t.minutes, notes: cut(t.notes, L.taskNotesChars) }; parts.push(SENDS.task); }
   } else if (page === 'calendar') {
-    const appts = data.commitments.filter(c => c.kind === 'appointment' && c.start.slice(0, 10) === k).sort((a, b) => a.start.localeCompare(b.start)).slice(0, L.list);
+    const ofPrivate = new Set(data.projects.items.filter(p => p.private).flatMap(p => p.commitmentIds));
+    const all = data.commitments.filter(c => c.kind === 'appointment' && c.start.slice(0, 10) === k).sort((a, b) => a.start.localeCompare(b.start));
+    const appts = all.filter(c => !ofPrivate.has(c.id)).slice(0, L.list);
+    count += all.length - all.filter(c => !ofPrivate.has(c.id)).length;
     ctx.calendar = { day: k, appointments: appts.map(c => ({ id: c.id, title: cut(c.title, L.titleChars), time: c.start.slice(11, 16) })) };
     parts.push(SENDS.calendar);
   }
-  return { page, context: ctx, sends: sendsLine(parts, privateNote), privateNote };
+  return { page, context: ctx, sends: sendsLine(parts, here), privateNote, held: { here, count } };
 }
 
 export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(), now = new Date(), followUp?: { previous: string; text: string }): AskContext {
@@ -153,7 +181,7 @@ const freeWord = (m: number | null | undefined) => (m === null || m === undefine
 const clip = (s: string, n = 160) => (s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s);
 const n = (count: number, one: string, many = one + 's') => `${count} ${count === 1 ? one : many}`;
 
-export function askPreview(c: AskContext, privateNote = false): AskPreview {
+export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['held']): AskPreview {
   const x = c.context, short: string[] = [], all: AskPreview['all'] = [];
   all.push({ label: 'What you typed', lines: [c.text || '(nothing yet)', ...(c.followUp ? [`and then: “${c.followUp.text}”`] : [])] });
   all.push({ label: 'When and where', lines: [`${prettyDate(c.date)}, ${c.time}`, `Page: ${PAGE_WORD[c.page]}`] });
@@ -185,12 +213,24 @@ export function askPreview(c: AskContext, privateNote = false): AskPreview {
     if (p.tasks.length) all.push({ label: 'Its tasks', lines: p.tasks.map(t => `${t.done ? '✓ ' : ''}${t.title}`) });
     if (p.notes.length) all.push({ label: 'Its notes (titles)', lines: p.notes });
     if (p.notesText) all.push({ label: 'Its notes’ text (AI help with notes is on; private notes left out)', lines: [clip(p.notesText, 300)] });
+    if (p.milestones?.length) {
+      short.push(n(p.milestones.length, 'milestone'));
+      all.push({ label: 'Its milestones', lines: p.milestones.map(m => `${m.reached ? '✓ ' : ''}${m.title}${m.aim && !m.reached ? ` (aiming for ${m.aim})` : ''}`) });
+    }
+    if (p.decision) {
+      const dc = p.decision;
+      short.push(`Decision: ${clip(dc.question, 40)}`);
+      all.push({ label: 'The decision you asked about', lines: [dc.question, ...dc.options.map(o => `${o.text} — pros: ${o.pros.join('; ') || 'none yet'}; cons: ${o.cons.join('; ') || 'none yet'}`)] });
+    }
   }
   if (x.note) {
     short.push(`This note: ${clip(x.note.title || x.note.text, 40)}`);
     all.push({ label: 'This note', lines: [...(x.note.title ? [`Title: ${x.note.title}`] : []), `Text: ${clip(x.note.text, 300)}`] });
   }
   if (privateNote) { short.push('This note: not sent (private)'); all.push({ label: 'This note', lines: ['Not sent — it’s private.'] }); }
+  if (held?.here === 'project') { short.push('This project: not sent (private)'); all.push({ label: 'This project', lines: ['Not sent — you made it private.'] }); }
+  if (held?.here === 'task') { short.push('This task: not sent (private project)'); all.push({ label: 'This task', lines: ['Not sent — its project is private.'] }); }
+  if (held?.count) { short.push(`${n(held.count, 'item')} from private projects not sent`); all.push({ label: 'Left out (you made their projects private)', lines: [`${n(held.count, 'item')} — project names, tasks or appointments`] }); }
   if (x.task) {
     short.push(`Task: ${clip(x.task.title, 40)}`);
     all.push({ label: 'This task', lines: [`Title: ${x.task.title}`, `Due: ${x.task.due ?? 'no date'}`, `About ${x.task.minutes} min`, ...(x.task.notes ? [`Notes: ${clip(x.task.notes)}`] : [])] });
