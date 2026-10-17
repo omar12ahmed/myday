@@ -584,6 +584,107 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('…and an empty one isn\'t kept', !K.keepAnotherWay(w, 'cpX', { ...AW, text: '   ' }) && K.anotherWayOf(w, 'cpX') === null);
   }
 
+  console.log('\n[12] Ask MyDay: which page, what\'s sent from it, the checks on each reply, adding and Undo');
+  {
+    K.setClock(`${D}T10:00`);
+    const s0 = K.freshState(), at = `${D}T09:00`;
+    const P = (id, title, status = 'active') => ({ id, title, summary: 'Fresh coffee beans for small offices.', stage: 'explore', status, nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at });
+    const TK = (id, title, x = {}) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: at, postponed: 0, blockers: [], letGoOn: null, ...x });
+    const NT = (id, text, x = {}) => ({ id, categoryId: '', title: '', text, pinned: false, createdAt: at, updatedAt: at, ...x });
+    s0.projects.items = [P('pjC', 'Coffee subscription'), P('pjOld', 'Old move', 'done')];
+    s0.tasks.items = [TK('tkA', 'Ring two roasters', { projectId: 'pjC' }), TK('tkB', 'Call the bank', { due: D })];
+    s0.notes.items = [NT('n1', 'Roasters sell per kilo', { projectId: 'pjC' }), NT('n2', 'My salary worries', { projectId: 'pjC', private: true }), NT('n3', 'A private diary line', { private: true }), NT('n4', 'Price list idea')];
+    s0.study.stages = [{ id: 'sg1', title: 'Foundations', courses: [{ id: 'coP', title: 'Pre-Security', url: '', minutes: 30, listId: null, archived: false, modules: [{ id: 'm1', title: 'Net', sections: [{ id: 's1', title: 'Web', tasks: [
+      { id: 'tkH', title: 'HTTP in detail', minutes: 30, url: '', kind: 'learn', note: '', done: false, doneOn: null }, { id: 'tkD', title: 'DNS in detail', minutes: 30, url: '', kind: 'learn', note: '', done: true, doneOn: D }] }] }] }] }];
+    s0.days[D] = { energy: 3, rest: false, builtAt: D + 'T08:00', checkedIn: false, tasks: [task('u1', 'Course section', 'learning', 30)] };
+    s0.context[D] = { energy: 3, sleep: { start: null, end: null, estimatedHours: 7 } };
+    s0.commitments.push({ id: 'c1', kind: 'appointment', title: 'Dentist', start: `${D}T15:00`, end: `${D}T15:30` });
+    localStorage.clear(); localStorage.setItem('myday.data.v4', JSON.stringify(s0)); K.boot();
+    let w = K.getSnapshot().data;
+    const pages = ['#today', '#today/tasks', '#today/tasks/tkB', '#projects', '#projects/p/pjC', '#projects/notes', '#projects/notes/n4', '#study/map', '#calendar', '#health/workout', '#finance', '#explore'].map(h => { const p = K.askPage(h); return p.page + (p.id ? ':' + p.id : ''); });
+    check('the page is read from the address (and the thing it shows)', eq(pages, ['today', 'tasks', 'task:tkB', 'projects', 'project:pjC', 'notes', 'note:n4', 'study', 'calendar', 'health', 'finance', 'other']), pages);
+    let sl = K.askSlice(w, '#projects/p/pjC', D);
+    check('a project page sends its name, summary, stage, tasks and note titles — never a private note', sl.context.project.id === 'pjC' && eq(sl.context.project.tasks.map(t => t.id), ['tkA']) && eq(sl.context.project.notes, ['Roasters sell per kilo']) && !JSON.stringify(sl).includes('salary') && !('notesText' in sl.context.project));
+    check('…and open projects\' names only (not a done one), said in the Sends line', eq(sl.context.projects.map(p => p.id), ['pjC']) && sl.sends.includes('open projects') && sl.sends.includes('note titles'));
+    w = { ...w, patterns: { ...w.patterns, prefs: { ...w.patterns.prefs, aiNotes: true } } };
+    sl = K.askSlice(w, '#projects/p/pjC', D);
+    check('with AI help with notes on: the project\'s notes\' text too — still never a private one', sl.context.project.notesText.includes('Roasters sell per kilo') && !sl.context.project.notesText.includes('salary') && sl.sends.includes('text (not private ones)'));
+    sl = K.askSlice(w, '#projects/notes/n3', D);
+    check('a private note\'s page: the note isn\'t sent, and the Sends line says so', sl.privateNote && !('note' in sl.context) && sl.sends.includes('not this note') && !JSON.stringify(sl.context).includes('diary'));
+    sl = K.askSlice(w, '#finance', D);
+    check('Finance (and Health): only the page\'s name — not even project names', eq(sl.context, {}) && sl.sends === 'what you typed, the date');
+    sl = K.askSlice(w, '#today', D);
+    check('Today: the plan by id, energy, free time and tasks due today', eq(sl.context.today.plan.map(t => t.id), ['u1']) && sl.context.today.energy === 3 && Number.isInteger(sl.context.today.freeMinutes) && eq(sl.context.today.dueToday.map(t => t.id), ['tkB']));
+    sl = K.askSlice(w, '#study', D);
+    check('Study: the current course and its next task (not a done one), topics and revision due', sl.context.study.course.id === 'coP' && sl.context.study.nextTask.id === 'tkH' && Array.isArray(sl.context.study.topics) && sl.context.study.revisionDue === 0);
+    const cal = K.askSlice(w, '#calendar', D);
+    let ctxA = K.askContext(K.askSlice(w, '#projects/p/pjC', D), '  Break this into steps  ' + 'x'.repeat(700), D, new Date(), { previous: 'Earlier answer', text: 'Smaller please' });
+    check('what\'s sent passes the server\'s check: today\'s appointments, the text cut to 600, one follow-up', cal.context.calendar.appointments[0].title === 'Dentist' && ctxA.text.length === 600 && ctxA.followUp.text === 'Smaller please' && K.checkAskContext(ctxA) && K.checkAskContext(K.askContext(cal, 'hi', D)));
+    const big = K.freshState(); big.projects.items = Array.from({ length: 40 }, (_, i) => P('p' + i, 'P'.repeat(300)));
+    big.notes.items = [NT('nb', 'n'.repeat(9000))];
+    const bigCtx = K.askContext(K.askSlice(big, '#projects/notes/nb', D), 'x'.repeat(5000), D);
+    check('even with a lot saved, a request stays under the server\'s 16 KB and passes its check', JSON.stringify({ context: bigCtx }).length < 16000 && K.checkAskContext(bigCtx) && bigCtx.context.projects.length === 20);
+    check('the server refuses anything else: an unknown field, an unknown page, an empty request', !K.checkAskContext({ ...ctxA, extra: 1 }) && !K.checkAskContext({ ...ctxA, page: 'admin' }) && !K.checkAskContext({ ...ctxA, text: '  ' }) && !K.checkAskContext({ ...ctxA, context: { secrets: 'x' } }));
+
+    // The checks on each reply (the model only proposes).
+    const proj = K.askSlice(w, '#projects/p/pjC', D), home = K.askSlice(w, '#today', D);
+    const R = o => JSON.stringify({ message: 'Here you go.', items: [], action: null, ...o });
+    check('not JSON, or an unknown kind: nothing to show', K.checkAskReply('nope', w, home, D) === null && K.checkAskReply(R({ kind: 'delete' }), w, home, D) === null);
+    let c = K.checkAskReply(R({ kind: 'add', items: [
+      { type: 'task', title: 'Renew passport', date: '2026-11-13', minutes: 500, category: null, projectId: 'pjInvented' },
+      { type: 'task', title: 'call the bank' },
+      { type: 'appointment', title: 'Dentist again', date: '2026-11-12', time: null },
+      { type: 'task', title: 'Old thing', date: '2026-11-01' },
+      { type: 'note', title: 'Gift ideas', text: 'Mum likes gardening books' },
+      { type: 'project', title: 'Learn to cook', text: 'Five dinners I can make', projectId: 'pjC' },
+      ...Array.from({ length: 6 }, (_, i) => ({ type: 'task', title: 'Extra ' + i })) ] }), w, home, D);
+    const it = n => c.items.find(x => x.title === n);
+    check('at most 8 things are proposed', c.kind === 'add' && c.items.length === 8);
+    check('a made-up project is never used (the item stays, without it), and lengths are kept sensible (5–120 min)', it('Renew passport').projectId === null && it('Renew passport').minutes === 120 && it('Renew passport').date === '2026-11-13' && c.changed.some(x => x.includes('Renew passport')));
+    check('a task already on your lists is marked and left unticked', it('call the bank').already === true && it('Renew passport').already === false);
+    check('an appointment needs a day and a time — otherwise it becomes a task (and says so)', it('Dentist again').type === 'task' && it('Dentist again').date === '2026-11-12' && c.changed.some(x => x.includes('needs a day and a time')));
+    check('a day in the past is left out', it('Old thing').date === null && c.changed.some(x => x.includes('Old thing')));
+    check('a note keeps its text; a project gets no project of its own', it('Gift ideas').type === 'note' && it('Gift ideas').text === 'Mum likes gardening books' && it('Learn to cook').projectId === null && it('Learn to cook').text === 'Five dinners I can make');
+    c = K.checkAskReply(R({ kind: 'steps', items: [{ type: 'note', title: 'Write what done looks like' }, { type: 'task', title: 'List three roasters', projectId: null }] }), w, proj, D);
+    check('steps on a project page: all tasks, all in that project', c.kind === 'steps' && c.items.every(x => x.type === 'task' && x.projectId === 'pjC'));
+    c = K.checkAskReply(R({ kind: 'answer', message: 'Try 15 minutes.', action: { type: 'start-study', courseId: 'coP', taskId: 'tkD', minutes: 300 } }), w, home, D);
+    check('a study action: a real course; a done task falls back to the course (said); minutes 5–60', c.action.courseId === 'coP' && c.action.taskId === null && c.action.minutes === 60 && c.action.label === 'Pre-Security' && c.changed.length === 1);
+    c = K.checkAskReply(R({ kind: 'answer', message: 'Try it.', action: { type: 'start-study', courseId: 'coInvented', taskId: null, minutes: 15 } }), w, home, D);
+    check('…a made-up course: no action (the answer stays)', c.kind === 'answer' && c.action === null && c.message === 'Try it.');
+    c = K.checkAskReply(R({ kind: 'answer', message: 'Let\'s shape today.', action: { type: 'adjust-today' } }), w, home, D);
+    check('planning today is handed over to Help me adjust today', c.action.type === 'adjust-today');
+    c = K.checkAskReply(R({ kind: 'cannot', message: 'MyDay can\'t delete things from here.', items: [{ type: 'task', title: 'x' }], action: { type: 'adjust-today' } }), w, home, D);
+    check('"can\'t do that here": just the message — no items, no action', c.kind === 'cannot' && !('items' in c) && !('action' in c));
+    c = K.checkAskReply(R({ kind: 'answer', message: 'You should push yourself harder, no excuses.' }), w, home, D);
+    check('a message that isn\'t gentle is left out (and with nothing else, nothing is shown)', c === null);
+    c = K.checkAskReply(R({ kind: 'add', message: 'You should stop being lazy.', items: [{ type: 'task', title: 'Tidy desk' }] }), w, home, D);
+    check('…and with items, they stay under a neutral line', c.kind === 'add' && c.message === 'Here’s what I found to add.' && c.changed.some(x => x.includes('gentle')));
+
+    // Adding what you ticked, and Undo.
+    c = K.checkAskReply(R({ kind: 'add', items: [
+      { type: 'task', title: 'Email the roaster', projectId: 'pjC', minutes: 20, category: 'admin', date: '2026-11-12', time: '10:00' },
+      { type: 'note', title: 'Price idea', text: 'Charge per kilo', projectId: 'pjC' },
+      { type: 'appointment', title: 'Roastery visit', date: '2026-11-14', time: '11:00', projectId: 'pjC' },
+      { type: 'project', title: 'Office tasting day', text: 'A free tasting for offices' }] }), K.getSnapshot().data, home, D);
+    const before = K.getSnapshot().data;
+    const u = K.addAskItems(c.items);
+    const after = K.getSnapshot().data;
+    const t1 = after.tasks.items.find(t => t.title === 'Email the roaster'), n1 = after.notes.items.find(n => n.text === 'Charge per kilo'), a1 = after.commitments.find(x => x.title === 'Roastery visit'), p1 = after.projects.items.find(p => p.title === 'Office tasting day');
+    check('Add saves them all at once: a task (date, time, length, in the project)', !!t1 && t1.due === '2026-11-12' && t1.time === '10:00' && t1.minutes === 20 && t1.projectId === 'pjC');
+    check('…a note (titled, in the project), an appointment (30 minutes, listed on the project) and a project', n1.title === 'Price idea' && n1.projectId === 'pjC' && a1.start === '2026-11-14T11:00' && a1.end === '2026-11-14T11:30' && after.projects.items.find(p => p.id === 'pjC').commitmentIds.includes(a1.id) && p1.summary === 'A free tasting for offices');
+    check('…and says what in words', K.countWords(c.items) === 'a task, a note, an appointment and a project' && K.countWords([{ type: 'task' }, { type: 'task' }]) === '2 tasks');
+    check('Undo takes them all back (the project\'s appointment list too)', K.undoAsk(u) && eq(K.getSnapshot().data.tasks.items.map(t => t.id), before.tasks.items.map(t => t.id)) && eq(K.getSnapshot().data.notes.items.map(n => n.id), before.notes.items.map(n => n.id)) && K.getSnapshot().data.commitments.length === before.commitments.length && eq(K.getSnapshot().data.projects.items.find(p => p.id === 'pjC').commitmentIds, []) && K.getSnapshot().data.projects.items.length === before.projects.items.length);
+    check('…and a second Undo changes nothing', !K.undoAsk(u));
+
+    // The instructions and the practice version.
+    const msgs = K.buildAskMessages(ctxA);
+    check('the instructions: four kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v1');
+    const mk = (hash, text) => K.checkAskReply(K.mockAsk(K.askContext(K.askSlice(K.getSnapshot().data, hash, D), text, D)), K.getSnapshot().data, K.askSlice(K.getSnapshot().data, hash, D), D);
+    check('practice version: steps on a project page, in that project', (r => r.kind === 'steps' && r.items.length === 3 && r.items.every(x => x.projectId === 'pjC'))(mk('#projects/p/pjC', 'Break this into smaller steps')));
+    check('…several things to add', (r => r.kind === 'add' && eq(r.items.map(x => x.title), ['Call the bank', 'Renew passport', 'Email Sam']))(mk('#today', 'call the bank, renew passport and email Sam')));
+    check('…planning today handed over; what to study on Study; deleting can\'t be done here', mk('#today', 'plan my day').action.type === 'adjust-today' && mk('#study', 'what should I study?').action.courseId === 'coP' && mk('#today', 'delete all my tasks').kind === 'cannot');
+  }
+
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

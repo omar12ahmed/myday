@@ -36,6 +36,11 @@ export { addNoteCards, noteCardsContext, noteCheckContext, noteLines, readNoteCa
 export { anotherWayOf, keepAnotherWay } from '../app/src/data/study/anotherWay';
 export { CARDS_CHECK_PROMPT_VERSION, CARDS_LIMITS, CARDS_PROMPT_VERSION, checkCardsContext, cleanDraftCard, mockCards, mockCardsCheck, readDraft, readVerdicts, type CardsCheckContext, type CardsContext, type DraftCard } from '../supabase/functions/_shared/ai/cards.ts';
 
+// Ask MyDay (the AI design's step 1): the shared shape and instructions, and the app's side (page slice, checks, adding).
+export { ASK_LIMITS, ASK_PROMPT_VERSION, buildAskMessages, checkAskContext, mockAsk, readAsk, type AskContext } from '../supabase/functions/_shared/ai/ask.ts';
+export { askContext, askPage, askSlice } from '../app/src/ai/askContext';
+export { addAskItems, checkAskReply, countWords, undoAsk } from '../app/src/ai/ask';
+
 // ---------- Memory-only storage ----------
 export function useMemoryStorage() {
   const m = new Map<string, string>();

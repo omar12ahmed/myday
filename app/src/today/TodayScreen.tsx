@@ -30,6 +30,7 @@ import { DailyTodayCard } from '../health/DailyTodayCard';
 import { healthReminders } from '../health/reminders';
 import { liveExercises } from '../data/health/daily';
 import { AdjustCard } from '../ai/AdjustCard';
+import { hasAdjustNote, onHandover } from '../ai/handover';
 import { MindCard } from '../ai/MindCard';
 import { DueTodayCard } from './DueTodayCard';
 import { ProjectStepsCard, TasksLink } from './ProjectCards';
@@ -63,6 +64,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
   const [eveningKey, setEveningKey] = useState<string | null>(null);
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [aiOpen, setAiOpen] = useState(false);          // "Help me adjust today" is open
+  const [adjustKey, setAdjustKey] = useState(0);        // a new one when Ask MyDay hands "plan my day" over (it starts with what you typed)
   const [aiUndo, setAiUndo] = useState<Undo | null>(null); // the last AI suggestion used (one step of Undo)
   const [mindOpen, setMindOpen] = useState(false);            // "Add what's on my mind" is open
   const [mindUndo, setMindUndo] = useState<MindUndo | null>(null); // the tasks it last added (one step of Undo)
@@ -77,6 +79,13 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
   const [justDoneUid, setJustDoneUid] = useState<string | null>(null);
   const [justLearned, setJustLearned] = useState(false);
   const d = data.days[k];
+  // Ask MyDay handed "plan my day" over: open Help me adjust today with what was typed (when today has a plan).
+  const canTakeOver = AI_MODE !== 'off' && !!d && !d.rest;
+  useEffect(() => {
+    const open = () => { if (hasAdjustNote() && canTakeOver) { setProposal(null); setAdjustKey(x => x + 1); setAiOpen(true); scrollTo('aiCard'); } };
+    open();
+    return onHandover(open);
+  }, [canTakeOver]);
 
   // Data replaced from outside (another tab, an import): drop drafts made from the older data.
   const [seenGeneration, setSeenGeneration] = useState(generation);
@@ -316,7 +325,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
           onEvening={() => { setView('evening'); setEveningKey(k); }} onReview={review} onSwapRest={swapRest} onRestart={restart}
           onAdjust={AI_MODE !== 'off' && !d.rest ? () => { setProposal(null); setAiOpen(true); scrollTo('aiCard'); } : undefined}
           onMind={AI_MODE !== 'off' ? openMind : undefined} />)}
-        {slot('order-1', aiOpen && <AdjustCard data={data} k={k} onClose={() => setAiOpen(false)} onApplied={u => { setAiOpen(false); setAiUndo(u); }} />)}
+        {slot('order-1', aiOpen && <AdjustCard key={adjustKey} data={data} k={k} onClose={() => setAiOpen(false)} onApplied={u => { setAiOpen(false); setAiUndo(u); }} />)}
         {slot('order-1', canUndo(data, aiUndo) && (
           <Card id="aiUndo" className="!py-3">
             <div className="flex items-center justify-between gap-3">

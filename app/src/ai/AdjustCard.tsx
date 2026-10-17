@@ -1,5 +1,6 @@
 import { Moon, Sparkles } from 'lucide-react';
 import { useRef, useState } from 'react';
+import { takeAdjustNote } from './handover';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { CategoryChip } from '../components/CategoryChip';
@@ -25,7 +26,7 @@ type Phase =
 // when you use it (apply.ts).
 export function AdjustCard({ data, k, onClose, onApplied }: { data: MyDayData; k: DateKey; onClose: () => void; onApplied: (u: Undo) => void }) {
   const [phase, setPhase] = useState<Phase>({ at: 'ask' });
-  const [note, setNote] = useState('');
+  const [note, setNote] = useState(() => takeAdjustNote() ?? ''); // filled in when Ask MyDay handed "plan my day" over
   const seq = useRef(0);
   const ctrl = useRef<AbortController | null>(null);
   const categoryOf = (uid: string) => data.days[k]?.tasks.find(t => t.uid === uid)?.category ?? 'admin';

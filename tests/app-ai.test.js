@@ -362,6 +362,74 @@ const SEED = `s => {
     await D.setData(`s => { s.study.concepts = s.study.concepts.filter(c => c.id !== 'cpMask'); }`); await D.until(`!document.getElementById('signInGate')`, 15000);
   }
 
+  console.log('\n[8f] Ask MyDay in the + Capture sheet (practice mode, then through the real server code)');
+  {
+    const at = `${TODAY}T09:00`;
+    const PJ = { id: 'pjAsk', title: 'Coffee subscription', summary: 'Beans for small offices', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at };
+    const NOTE = (id, text, x = {}) => ({ id, categoryId: '', title: '', text, pinned: false, createdAt: at, updatedAt: at, ...x });
+    const askSeed = `s => { s.projects.items = s.projects.items.filter(p => p.id !== 'pjAsk'); s.projects.items.push(${JSON.stringify(PJ)});
+      s.notes.items = s.notes.items.filter(n => !['nAsk', 'nPriv'].includes(n.id)); s.notes.items.push(${JSON.stringify(NOTE('nAsk', 'Roasters sell per kilo', { projectId: 'pjAsk' }))}, ${JSON.stringify(NOTE('nPriv', 'A private worry about money', { private: true }))}); }`;
+    const openAsk = async (Dv, hash, text) => {
+      await Dv.ev(`location.hash = ${JSON.stringify(hash)}`); await sleep(300);
+      await Dv.click('[data-action=capture-open]'); await Dv.until(`document.getElementById('captureText')`);
+      await Dv.type('#captureText', text); await sleep(150);
+    };
+    const askGo = async Dv => { await Dv.click('[data-action=ask-go]'); await Dv.until(`['shown', 'error'].includes(document.querySelector('[data-s=ask-panel]')?.dataset.phase)`, 15000); return Dv.ev(`document.querySelector('[data-s=ask-panel]').dataset.phase`); };
+    const closeSheet = Dv => Dv.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`);
+    await seeded(mock, MOCK); await mock.setData(askSeed); await mock.until(`document.querySelector('#app')`);
+    const logAsk = srv.log.length;
+    await openAsk(mock, 'projects/p/pjAsk', 'Break this into smaller steps');
+    check('the + sheet offers Ask MyDay, saying what it sends from this page before you tap', await mock.exists('[data-action=ask-go]') && (await mock.text('[data-s=ask-sends]')).includes('this project’s name, summary, stage, tasks and note titles') && (await mock.text('#captureSheet')).includes('nothing you type is sent unless you tap Ask MyDay'));
+    check('…and answers: three steps, in this project, labelled as the practice helper', (await askGo(mock)) === 'shown' && (await mock.ev(`document.querySelectorAll('[data-s=ask-item]').length`)) === 3 && (await mock.text('[data-s=ask-panel]')).includes('practice helper (no AI)') && (await mock.text('[data-s=ask-panel]')).includes('in “Coffee subscription”'));
+    const before8f = (await mock.data()).tasks.items.length;
+    await mock.ev(`document.querySelectorAll('[data-s=ask-pick]')[2].click()`);
+    await mock.ev(`(() => { const el = document.querySelectorAll('[data-s=ask-title]')[0]; Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(el, 'Decide what done means'); el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+    check('nothing is saved before Add', (await mock.data()).tasks.items.length === before8f && (await mock.text('[data-action=ask-add]')).trim() === 'Add 2');
+    await mock.click('[data-action=ask-add]'); await sleep(250);
+    const added = (await mock.data()).tasks.items.slice(before8f);
+    check('Add saves only the ticked ones, with your edit, in the project', added.length === 2 && added[0].title === 'Decide what done means' && added.every(t => t.projectId === 'pjAsk') && (await mock.text('[data-s=ask-added]')).includes('Added 2 tasks'));
+    await mock.click('[data-action=ask-undo]'); await sleep(250);
+    check('…and Undo takes them back', (await mock.data()).tasks.items.length === before8f);
+    await closeSheet(mock); await sleep(200);
+    await openAsk(mock, 'projects/notes/nPriv', 'Summarise this note');
+    check('on a private note: the Sends line says the note isn\'t sent', (await mock.text('[data-s=ask-sends]')).includes('not this note, it’s private'));
+    await closeSheet(mock); await sleep(200);
+    await openAsk(mock, 'today', 'call the bank, renew passport and email Sam');
+    await askGo(mock);
+    check('several things at once: three tasks to tick', (await mock.ev(`[...document.querySelectorAll('[data-s=ask-title]')].map(i => i.value).join('|')`)) === 'Call the bank|Renew passport|Email Sam');
+    await mock.type('[data-s=ask-more]', 'and they are all for this week'); await mock.click('[data-action=ask-again]');
+    await mock.until(`document.querySelector('[data-s=ask-panel]')?.dataset.phase === 'shown'`, 10000); await sleep(150);
+    check('one follow-up ("Not quite…"), then no more', (await mock.ev(`document.querySelector('[data-s=ask-panel]').dataset.phase`)) === 'shown' && !(await mock.exists('[data-s=ask-more]')));
+    await closeSheet(mock); await sleep(200);
+    await openAsk(mock, 'today', 'delete all my tasks');
+    await askGo(mock);
+    check('"delete all my tasks": it can\'t, says so kindly, and nothing changes', (await mock.text('[data-s=ask-message]')).includes("can't do that") && !(await mock.exists('[data-action=ask-add]')) && !(await mock.exists('[data-action=ask-action]')));
+    await closeSheet(mock); await sleep(200);
+    await openAsk(mock, 'today', 'Help me plan my day, I only have an hour');
+    await askGo(mock);
+    await mock.click('[data-action=ask-action]'); await mock.until(`document.getElementById('aiNote')`, 5000);
+    check('planning today is handed to Help me adjust today, already filled in (nothing sent until you tap there)', !(await mock.exists('#captureSheet')) && (await mock.ev(`document.getElementById('aiNote').value`)) === 'Help me plan my day, I only have an hour' && (await mock.ev(`document.getElementById('aiCard').dataset.phase`)) === 'ask');
+    await close(mock); await sleep(150);
+    await mock.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+    await openAsk(mock, 'projects/p/pjAsk', 'Break this into smaller steps'); await askGo(mock);
+    const smallAsk = await mock.ev(`[...document.querySelectorAll('[data-s=ask-panel] button, [data-s=ask-panel] input')].filter(b => b.offsetParent !== null && b.getBoundingClientRect().height < 44 && b.type !== 'checkbox').map(b => b.textContent.trim() || b.getAttribute('aria-label'))`);
+    check('phone: the answer fits (nothing sideways) and its buttons are easy to tap', !(await mock.ev('document.documentElement.scrollWidth > innerWidth')) && !smallAsk.length, smallAsk);
+    await closeSheet(mock); await mock.send('Emulation.clearDeviceMetricsOverride');
+    check('practice mode sent nothing anywhere', srv.log.length === logAsk);
+    // Through the server's real code (the stand-in), signed in: the app's request must be one the server accepts.
+    setAi({ AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_LABEL: 'Main model', AI_MIN_SECONDS_BETWEEN: '0' });
+    await D.setData(askSeed); await D.until(`!document.getElementById('signInGate')`, 15000);
+    const c0 = aiCalls().length;
+    await openAsk(D, 'projects/p/pjAsk', 'Break this into smaller steps');
+    const phaseD = await askGo(D);
+    const sentA = aiCalls().slice(c0).find(c => c.body.context.action === 'ask');
+    check('with an account: the server accepts the app\'s request and answers (labelled with the model)', phaseD === 'shown' && (await D.text('[data-s=ask-panel]')).includes('AI-written by Main model'), [phaseD, await D.text('[data-s=ask-panel]')]);
+    check('…it sent what you typed, the date, the page and that page\'s slice — no private note, nothing else', !!sentA && JSON.stringify(Object.keys(sentA.body.context).sort()) === JSON.stringify(['action', 'context', 'date', 'page', 'text', 'time', 'version', 'weekday'])
+      && JSON.stringify(Object.keys(sentA.body.context.context).sort()) === JSON.stringify(['project', 'projects']) && !JSON.stringify(sentA.body).includes('private worry'), sentA && Object.keys(sentA.body.context));
+    await D.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await D.ev(`location.hash = 'today'`);
+    await D.setData(`s => { s.projects.items = s.projects.items.filter(p => p.id !== 'pjAsk'); s.notes.items = s.notes.items.filter(n => !['nAsk', 'nPriv'].includes(n.id)); }`); await D.until(`!document.getElementById('signInGate')`, 15000);
+  }
+
   console.log('\n[9] Layout');
   await D.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await D.ev(`location.hash = 'today'`);

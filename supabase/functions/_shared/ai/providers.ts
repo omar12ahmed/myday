@@ -7,8 +7,9 @@
 //   mock               the rule-based stand-in in mock.ts (no key, no network)
 // Which model does which job (routeFor, at the end) is configuration too.
 import { mockPlanner, type MockVariant } from './mock.ts';
-import { isCards, isCardsCheck, isConnect, isExplain, isNoteCards, isNoteCardsCheck, isNoteCheck, isTasks, isTutor, messagesFor, type AiContext } from './prompt.ts';
+import { isAsk, isCards, isCardsCheck, isConnect, isExplain, isNoteCards, isNoteCardsCheck, isNoteCheck, isTasks, isTutor, messagesFor, type AiContext } from './prompt.ts';
 import { mockExplain } from './explain.ts';
+import { mockAsk } from './ask.ts';
 import { mockCards, mockCardsCheck } from './cards.ts';
 import { mockNoteCards, mockNoteCardsCheck, mockNoteCheck } from './note-cards.ts';
 import { mockConnect, type ConnectMockVariant } from './connect.ts';
@@ -83,7 +84,7 @@ export async function callModel(cfg: ProviderConfig, ctx: AiContext, fetchImpl: 
     if (variant === 'truncated') return { ok: false, error: 'truncated', finishReason: 'length', inputTokens: 900, outputTokens: cfg.maxOutputTokens, latencyMs: Date.now() - t0 };
     await sleep(variant === 'slow' ? cfg.timeoutMs + 50 : cfg.mockDelayMs ?? 0);
     if (variant === 'slow') return { ok: false, error: 'timeout', latencyMs: Date.now() - t0 };
-    const full = isExplain(ctx) ? mockExplain(ctx) : isNoteCheck(ctx) ? mockNoteCheck(ctx) : isNoteCards(ctx) ? mockNoteCards(ctx) : isNoteCardsCheck(ctx) ? mockNoteCardsCheck(ctx)
+    const full = isAsk(ctx) ? mockAsk(ctx) : isExplain(ctx) ? mockExplain(ctx) : isNoteCheck(ctx) ? mockNoteCheck(ctx) : isNoteCards(ctx) ? mockNoteCards(ctx) : isNoteCardsCheck(ctx) ? mockNoteCardsCheck(ctx)
       : isCards(ctx) ? mockCards(ctx, variant === 'sloppy' ? 'sloppy' : 'good') : isCardsCheck(ctx) ? mockCardsCheck(ctx) : isConnect(ctx) ? mockConnect(ctx, (['good', 'sloppy', 'invalid'].includes(variant) ? variant : 'good') as ConnectMockVariant) : isTutor(ctx) ? mockTutor(ctx, variant === 'sloppy' ? 'sloppy' : 'good') : isTasks(ctx)
       ? mockTasks(ctx, (['good', 'sloppy', 'invalid'].includes(variant) ? variant : 'good') as TasksMockVariant)
       : mockPlanner(ctx, (['good', 'sloppy', 'invalid', 'rest'].includes(variant) ? variant : 'good') as MockVariant);
@@ -191,11 +192,11 @@ export function configFromEnv(env: (name: string) => string | undefined, prefix 
 // the main one, and so does a job routed to a learning model that isn't set up. If the chosen model can't answer
 // (no connection, no answer in time, a provider error, nothing in its reply), the other gets one try, unless
 // AI_FALLBACK=off. A reply the app then finds unusable isn't retried: the app says so instead.
-export type Job = 'adjust' | 'tasks' | 'connect' | 'tutor' | 'cards' | 'note-check' | 'note-cards' | 'explain' | 'explain-arabic';
+export type Job = 'adjust' | 'tasks' | 'connect' | 'tutor' | 'cards' | 'note-check' | 'note-cards' | 'explain' | 'explain-arabic' | 'ask';
 export type Slot = 'main' | 'learn';
-export const JOBS: Job[] = ['adjust', 'tasks', 'connect', 'tutor', 'cards', 'note-check', 'note-cards', 'explain', 'explain-arabic'];
+export const JOBS: Job[] = ['adjust', 'tasks', 'connect', 'tutor', 'cards', 'note-check', 'note-cards', 'explain', 'explain-arabic', 'ask'];
 // (Explaining an Arabic card is its own job, so it can go to the model that was accurate with Arabic.)
-export const jobOf = (ctx: AiContext): Job => (isExplain(ctx) ? (ctx.subject === 'arabic' ? 'explain-arabic' : 'explain') : isNoteCheck(ctx) ? 'note-check' : isNoteCards(ctx) || isNoteCardsCheck(ctx) ? 'note-cards' : isCards(ctx) || isCardsCheck(ctx) ? 'cards' : isConnect(ctx) ? 'connect' : isTutor(ctx) ? 'tutor' : isTasks(ctx) ? 'tasks' : 'adjust');
+export const jobOf = (ctx: AiContext): Job => (isAsk(ctx) ? 'ask' : isExplain(ctx) ? (ctx.subject === 'arabic' ? 'explain-arabic' : 'explain') : isNoteCheck(ctx) ? 'note-check' : isNoteCards(ctx) || isNoteCardsCheck(ctx) ? 'note-cards' : isCards(ctx) || isCardsCheck(ctx) ? 'cards' : isConnect(ctx) ? 'connect' : isTutor(ctx) ? 'tutor' : isTasks(ctx) ? 'tasks' : 'adjust');
 // The model failures worth trying the other model for: it couldn't be reached or gave nothing. (A reply cut short,
 // filtered or unfinished cost tokens and says something about the request, so it isn't passed on.)
 export const fallsBack = (r: ModelResult) => !r.ok && ['timeout', 'network', 'http', 'config', 'empty'].includes(r.error);

@@ -11,6 +11,8 @@ import { toast } from '../data/toast';
 import type { Category, MyDayData } from '../data/types';
 import { loadLibs, parseCapture, type Capture, type CaptureLibs } from './parse';
 import { addAppointment, addCapturedTask, appointmentEnd, saveNote, startProject } from './save';
+import { AskPanel } from './AskPanel';
+import { AI_MODE } from '../ai/request';
 
 // "+ Capture", on every screen: phones get a round button above the bar (easy to reach), wide screens one beside
 // the theme button.
@@ -30,7 +32,8 @@ let libsOnce: Promise<CaptureLibs> | null = null; // loaded the first time Captu
 const openProject = (id: string) => { location.hash = `projects/p/${id}`; };
 
 // Type anything; MyDay suggests what it looks like (a time → the Calendar, an action → a task, an idea → a project, or
-// just a note) — and does only what you tap. Nothing is spotted or sent anywhere but on this device.
+// just a note) — and does only what you tap. Those suggestions are worked out on this device; below them, Ask MyDay
+// (only when the app has AI help, and only on your tap) is for questions, breakdowns and several things at once.
 export function CaptureSheet({ data, onClose }: { data: MyDayData; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
   const [text, setText] = useState('');
@@ -101,8 +104,9 @@ export function CaptureSheet({ data, onClose }: { data: MyDayData; onClose: () =
           ))}
           <Button variant="ghost" data-action="capture-cancel" onClick={close}>Cancel</Button>
         </div>
-        <Note className="mt-3 mb-0 text-sm">Everything is worked out on this device — nothing you type is sent anywhere.</Note>
+        <Note className="mt-3 mb-0 text-sm">{AI_MODE === 'off' ? 'Everything is worked out on this device — nothing you type is sent anywhere.' : 'These suggestions are worked out on this device — nothing you type is sent unless you tap Ask MyDay.'}</Note>
       </form>
+      <div className="px-5 pb-5 -mt-1"><AskPanel data={data} text={text} onClose={close} /></div>
     </dialog>
   );
 }

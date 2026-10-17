@@ -270,6 +270,23 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
       check(`explain: ${why} — refused (400) before any model call`, e.status === 400 && finished.length === 0, e.status);
     }
   }
+  console.log('\n[2g] Ask MyDay (the AI design, step 1): one call, on the main model; only the page slice the app sends');
+  {
+    const ak = { version: 1, action: 'ask', date: '2026-11-10', weekday: 'Tuesday', time: '10:00', page: 'project', text: 'Break this into smaller steps',
+      context: { projects: [{ id: 'pjC', title: 'Coffee subscription' }], project: { id: 'pjC', title: 'Coffee subscription', summary: 'Beans for offices', stage: 'explore', tasks: [{ id: 'tkA', title: 'Ring roasters', done: false }], notes: ['Roasters sell per kilo'] } } };
+    env = { ...kbase, ...kMain, ...kLearn(), AI_ROUTES: '{"explain-arabic": "learn"}' };
+    let a = await kask(ak);
+    const out = a.status === 200 ? JSON.parse(a.body.output) : null;
+    check('an Ask request is answered (200) by the main model, as JSON with a kind and a message', a.status === 200 && a.body.model === 'Main model' && ['add', 'steps', 'answer', 'cannot'].includes(out.kind) && typeof out.message === 'string', a.body);
+    a = await kask({ ...ak, page: 'today', followUp: { previous: 'Here are three steps.', text: 'Smaller please' }, context: { today: { energy: null, freeMinutes: null, plan: [], dueToday: [] } } });
+    check('…with one follow-up, or from Today with energy not set yet', a.status === 200, a.body);
+    for (const [bad, why] of [[{ ...ak, page: 'admin' }, 'an unknown page'], [{ ...ak, text: '' }, 'nothing typed'], [{ ...ak, text: 'x'.repeat(601) }, 'over 600 characters typed'],
+      [{ ...ak, context: { ...ak.context, finance: { balance: 1 } } }, 'a part of MyDay Ask never sends (Finance)'], [{ ...ak, context: { note: { id: 'n', title: 't', text: 'x'.repeat(3001) } } }, 'a note over 3,000 characters'],
+      [{ ...ak, followUp: { previous: '', text: '' } }, 'an empty follow-up'], [{ ...ak, memory: 'everything' }, 'an extra field']]) {
+      a = await kask(bad);
+      check(`ask: ${why} — refused (400) before any model call`, a.status === 400 && finished.length === 0, a.status);
+    }
+  }
   env = { AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_MOCK_DELAY_MS: '0', AI_DAILY_LIMIT: '50', AI_MIN_SECONDS_BETWEEN: '0', AI_MONTHLY_BUDGET_USD: '1' };
 
   console.log('\n[3] A caller is verified before anything else, and secrets stay out of Git');
