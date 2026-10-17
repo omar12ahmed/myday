@@ -1,10 +1,10 @@
-import { FolderKanban, Plus } from 'lucide-react';
+import { ArrowLeft, ArrowRight, FolderKanban, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Field, TextInput } from '../components/Field';
 import { shortDate } from '../data/dates';
-import { addProject, lastActivity, nextStep, PROJECT_LIMITS, projectAppointments, projectNotes, projectsInOrder, projectTasks, stageOf } from '../data/projects';
+import { addProject, board, COLUMNS, lastActivity, moveToColumn, nextStep, PROJECT_LIMITS, projectAppointments, projectNotes, projectsInOrder, projectTasks, stageOf, type BoardColumn } from '../data/projects';
 import { update } from '../data/storage';
 import { toast } from '../data/toast';
 import type { MyDayData, Project } from '../data/types';
@@ -58,11 +58,7 @@ function ProjectsHome({ data }: { data: MyDayData }) {
           <Button inline type="submit" variant="primary" data-action="project-add" disabled={!text.trim()}><Plus size={18} aria-hidden="true" /> Start</Button>
         </form>
       </Card>
-      {active.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-4" id="projectList">
-          {active.map(p => <ProjectCard key={p.id} data={data} p={p} />)}
-        </div>
-      ) : (
+      {active.length > 0 ? <Board data={data} /> : (
         <Card id="projectsEmpty" className="max-w-[720px] mx-auto">
           <p className="text-[15px] text-fg-2 m-0">No projects yet. Anything you'd like to make happen can be one — "Start a podcast", "Move house",
             "Arabic for travel". Start with just a name; the rest can come later.</p>
@@ -89,12 +85,45 @@ function ProjectsHome({ data }: { data: MyDayData }) {
   );
 }
 
-// A project at a glance: its stage on the progression, its one next step, and what's in it.
-function ProjectCard({ data, p }: { data: MyDayData; p: Project }) {
+// Your active projects as a board (it takes the place of an idea wall elsewhere): Ideas · Exploring · Doing, by stage.
+// One tap moves a project to the next or previous column. Past your own rule of thumb (three being explored, two being
+// done), the column says so, gently — nothing is stopped. Columns stack on phones, sit side by side on wide screens.
+const moved = (to: BoardColumn) => COLUMNS.find(c => c.id === to)!.label;
+function Board({ data }: { data: MyDayData }) {
+  const cols = board(data);
+  function move(p: Project, to: BoardColumn) {
+    if (!update(d => (moveToColumn(d, p.id, to) ? undefined : false))) return;
+    const col = COLUMNS.find(c => c.id === to)!, n = cols[to].length + 1;
+    toast(col.most && n > col.most ? `Moved to ${moved(to)} — that's ${n} there now. ${col.most === 3 ? 'Three' : 'Two'} at a time is plenty; pausing one is fine.` : `Moved to ${moved(to)}.`);
+  }
+  return (
+    <div className="grid gap-x-4 gap-y-2 lg:grid-cols-3 items-start mb-4" id="projectList">
+      {COLUMNS.map((c, i) => {
+        const list = cols[c.id], many = c.most !== null && list.length > c.most;
+        return (
+          <section key={c.id} aria-labelledby={`col-${c.id}`} className="min-w-0" data-column={c.id}>
+            <h3 id={`col-${c.id}`} className="flex items-baseline gap-2 m-0 mt-2">{c.label} <span className="text-fg-3 font-normal tabular-nums">{list.length}</span></h3>
+            <p className="text-sm text-fg-3 m-0 mb-2.5">{c.hint}</p>
+            {many && <p className="text-sm rounded-tile bg-surface-2 border border-outline px-3 py-2 m-0 mb-2.5" data-s="column-many">{list.length} here at once. Your rule of thumb is {c.most === 3 ? 'three' : 'two'} at a time — pausing one is fine, it'll keep.</p>}
+            {list.length ? (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                {list.map(p => <ProjectCard key={p.id} data={data} p={p} back={i > 0 ? COLUMNS[i - 1].id : null} on={i < COLUMNS.length - 1 ? COLUMNS[i + 1].id : null} onMove={to => move(p, to)} />)}
+              </div>
+            ) : <p className="text-sm text-fg-3 m-0 mb-3 rounded-tile border border-dashed border-outline px-3 py-3" data-s="column-empty">Nothing here right now.</p>}
+          </section>
+        );
+      })}
+    </div>
+  );
+}
+
+// A project at a glance: its stage on the progression, its one next step, and what's in it — and the board's moves.
+function ProjectCard({ data, p, back, on, onMove }: { data: MyDayData; p: Project; back: BoardColumn | null; on: BoardColumn | null; onMove: (to: BoardColumn) => void }) {
   const step = nextStep(data, p), t = projectTasks(data, p), notes = projectNotes(data, p).length, appts = projectAppointments(data, p).length;
   const bits = [notes && `${notes} note${notes === 1 ? '' : 's'}`, t.open.length && `${t.open.length} to do`, t.done.length && `${t.done.length} done`, appts && `${appts} appointment${appts === 1 ? '' : 's'}`].filter(Boolean);
   return (
-    <a href={`#projects/p/${p.id}`} className="project-card group flex flex-col gap-3 rounded-card border border-outline bg-surface shadow-card p-5 text-fg no-underline transition-[translate,box-shadow] duration-150 hover:-translate-y-0.5" data-id={p.id}>
+    <div className="project-card flex flex-col rounded-card border border-outline bg-surface shadow-card text-fg" data-id={p.id}>
+    <a href={`#projects/p/${p.id}`} className="group flex flex-col gap-3 p-5 pb-3 text-fg no-underline rounded-t-card hover:bg-surface-2 transition-colors">
       <span className="flex items-center justify-between gap-2">
         <span className="text-xs font-bold tracking-[.08em] uppercase text-primary" data-s="project-stage">{stageOf(p.stage).label}</span>
         <span className="text-xs text-fg-3 tabular-nums">{shortDate(lastActivity(data, p).slice(0, 10))}</span>
@@ -102,7 +131,12 @@ function ProjectCard({ data, p }: { data: MyDayData; p: Project }) {
       <span className="block text-[19px] font-bold leading-snug tracking-[-.01em] break-words">{p.title}</span>
       <Progression stage={p.stage} compact />
       <span className="block text-[15px] text-fg-2" data-s="project-next">{step ? <><span className="font-semibold text-fg">Next:</span> {step.title}</> : 'No next step yet — what\'s the smallest one?'}</span>
-      {bits.length > 0 && <span className="block text-sm text-fg-3 mt-auto">{bits.join(' · ')}</span>}
+      {bits.length > 0 && <span className="block text-sm text-fg-3">{bits.join(' · ')}</span>}
     </a>
+    <div className="flex flex-wrap justify-between gap-2 px-3 pb-3 mt-auto" data-s="project-moves">
+      {back ? <Button inline variant="ghost" className="!px-3 !text-[14px]" data-action="project-back" aria-label={`Move “${p.title}” back to ${moved(back)}`} onClick={() => onMove(back)}><ArrowLeft size={16} aria-hidden="true" /> {moved(back)}</Button> : <span />}
+      {on && <Button inline variant="ghost" className="!px-3 !text-[14px]" data-action="project-on" aria-label={`Move “${p.title}” on to ${moved(on)}`} onClick={() => onMove(on)}>{moved(on)} <ArrowRight size={16} aria-hidden="true" /></Button>}
+    </div>
+    </div>
   );
 }

@@ -9,6 +9,7 @@
 // Deleting a project never deletes its notes, tasks or appointments: they're just no longer linked to it.
 // In "Export my data", and synced with your account (one record per project; see sync/records.ts).
 import { isDateTime, localStamp, todayKey } from './dates';
+import { noteName } from './notes';
 import { isDone, onTodaysPlan } from './tasks';
 import type { Commitment, DateKey, MyDayData, Note, Project, ProjectsData, ProjectStage, ProjectStatus, TaskItem } from './types';
 import { isObj, listOf, uid } from './util';
@@ -177,6 +178,46 @@ export function lastActivity(data: MyDayData, p: Project): string {
 // Projects in the order they're listed: active ones first (most recently worked on first), then paused, then done.
 export function projectsInOrder(data: MyDayData, status: ProjectStatus): Project[] {
   return data.projects.items.filter(p => p.status === status).map(p => ({ p, at: lastActivity(data, p) })).sort((a, b) => b.at.localeCompare(a.at)).map(x => x.p);
+}
+
+// ---------- The board: your active projects by where they are ----------
+// Three columns over the progression (a project's stage decides its column). Moving a card forward puts it at that
+// column's first stage, moving it back at its last. `most` is your own rule of thumb (11 Oct 2026: three ideas being
+// explored, two being done at a time) — said gently on the board, never enforced.
+export type BoardColumn = 'ideas' | 'exploring' | 'doing';
+export const COLUMNS: { id: BoardColumn; label: string; hint: string; stages: ProjectStage[]; most: number | null }[] = [
+  { id: 'ideas', label: 'Ideas', hint: 'Out of your head, being understood and gathered.', stages: ['capture', 'understand', 'organise'], most: null },
+  { id: 'exploring', label: 'Exploring', hint: 'Finding out more, then choosing a way forward.', stages: ['explore', 'decide'], most: 3 },
+  { id: 'doing', label: 'Doing', hint: 'Small steps, on your days.', stages: ['act', 'reflect'], most: 2 },
+];
+export const columnOf = (stage: ProjectStage): BoardColumn => COLUMNS.find(c => c.stages.includes(stage))!.id;
+export function board(data: MyDayData): Record<BoardColumn, Project[]> {
+  const out: Record<BoardColumn, Project[]> = { ideas: [], exploring: [], doing: [] };
+  for (const p of projectsInOrder(data, 'active')) out[columnOf(p.stage)].push(p);
+  return out;
+}
+export function moveToColumn(d: MyDayData, id: string, to: BoardColumn): boolean {
+  const p = d.projects.items.find(x => x.id === id), i = COLUMNS.findIndex(c => c.id === to);
+  if (!p || i < 0) return false;
+  const from = COLUMNS.findIndex(c => c.stages.includes(p.stage));
+  if (i === from) return false;
+  const col = COLUMNS[i];
+  return editProject(d, id, { stage: i > from ? col.stages[0] : col.stages[col.stages.length - 1] });
+}
+
+// ---------- What happened lately ----------
+// A project's latest happenings, newest first, from what's saved: tasks added or done, notes written or changed.
+// (A task ticked only on a day's plan has no date of its own here, so it shows once it's ticked in Tasks.)
+export interface Happening { at: string; what: 'added' | 'done' | 'note' | 'note-changed'; title: string; href: string }
+export function recently(data: MyDayData, p: Project, max = 5): Happening[] {
+  const out: Happening[] = [];
+  for (const t of data.tasks.items) {
+    if (t.projectId !== p.id) continue;
+    out.push({ at: t.createdAt, what: 'added', title: t.title, href: `#today/tasks/${t.id}` });
+    if (t.done && t.doneOn) out.push({ at: `${t.doneOn}T23:59`, what: 'done', title: t.title, href: `#today/tasks/${t.id}` });
+  }
+  for (const n of projectNotes(data, p)) out.push({ at: n.updatedAt, what: n.updatedAt > n.createdAt ? 'note-changed' : 'note', title: noteName(n), href: `#projects/notes/${n.id}` });
+  return out.sort((a, b) => b.at.localeCompare(a.at)).slice(0, max);
 }
 
 // Next steps for Today: each active project's next step that isn't already on today's plan or due today (those are

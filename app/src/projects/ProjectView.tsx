@@ -9,9 +9,9 @@ import { CategoryChip } from '../components/CategoryChip';
 import { useConfirm } from '../components/confirm';
 import { CommitInput, CommitTextarea, Field, Select, TextInput } from '../components/Field';
 import { BackLink, Eyebrow, Note, NotFound } from '../components/parts';
-import { prettyDate, shortDate, todayKey } from '../data/dates';
+import { prettyDate, relDay, shortDate, todayKey } from '../data/dates';
 import { addNote, noteName } from '../data/notes';
-import { comingUp, deleteProject, editProject, lastActivity, linkNote, nextStep, PROJECT_LIMITS, projectById, projectNotes, projectTasks, setNextStep, STATUS_LABEL, unlinkAppointment } from '../data/projects';
+import { comingUp, deleteProject, editProject, lastActivity, linkNote, nextStep, PROJECT_LIMITS, projectById, projectNotes, projectTasks, recently, setNextStep, STATUS_LABEL, unlinkAppointment } from '../data/projects';
 import { update } from '../data/storage';
 import { addTask, addToTodaysPlan, onTodaysPlan, planRoom, setTaskDone } from '../data/tasks';
 import { toast } from '../data/toast';
@@ -41,6 +41,7 @@ export function ProjectView({ data, id }: { data: MyDayData; id: string }) {
         <div className="min-w-0">
           <ComingUpCard data={data} p={p} />
           <ProgressCard data={data} p={p} />
+          <RecentlyCard data={data} p={p} />
           <ManageCard p={p} />
         </div>
       </div>
@@ -281,6 +282,29 @@ function ProgressCard({ data, p }: { data: MyDayData; p: Project }) {
         </>
       ) : <Note className="mt-0">Steps you finish will show here.</Note>}
       <p className="text-sm text-fg-3 m-0 mt-2 tabular-nums">Started {shortDate(p.createdAt.slice(0, 10))} · last worked on {shortDate(lastActivity(data, p).slice(0, 10))}</p>
+    </Card>
+  );
+}
+
+// What happened lately, newest first (tasks added or done, notes written or changed) — each opens what it's about.
+const HAPPENED = { added: 'Added', done: 'Done', note: 'Note', 'note-changed': 'Note changed' } as const;
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+function RecentlyCard({ data, p }: { data: MyDayData; p: Project }) {
+  const list = recently(data, p), k = todayKey();
+  if (!list.length) return null;
+  return (
+    <Card aria-labelledby="projectRecentH" id="projectRecent">
+      <h3 id="projectRecentH">Recently</h3>
+      <ul className="list-none p-0 m-0">
+        {list.map((h, i) => (
+          <li key={i} className="border-t border-outline first:border-t-0" data-s="recent" data-what={h.what}>
+            <a href={h.href} className="block min-h-11 py-2 text-fg no-underline hover:bg-surface-2 rounded-tile -mx-2 px-2">
+              <span className="block text-sm text-fg-3 tabular-nums">{cap(relDay(h.at.slice(0, 10), k) || 'today')} · {HAPPENED[h.what]}</span>
+              <span className="block break-words">{h.title}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
     </Card>
   );
 }
