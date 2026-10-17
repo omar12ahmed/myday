@@ -660,6 +660,32 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   check('wide screens: "Focus mode" is written next to its switch', (await text('[data-action=focus-mode]')).includes('Focus mode'));
   await T.send('Emulation.clearDeviceMetricsOverride');
 
+  console.log("\n[22] One quiet line above today's plan, only when it helps");
+  const K2 = '2027-06-02';
+  const PT = (uid, title, minutes, x = {}) => ({ uid, taskId: null, category: 'admin', title, minutes, baseMinutes: minutes, done: false, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null, ...x });
+  const setDay = (energy, tasks, items = []) => editStorage(`s => { s.rota = { patterns: [] }; delete s.context['${K2}']; s.days['${K2}'] = { energy: ${energy}, rest: false, builtAt: '${K2}T08:00', checkedIn: false, tasks: ${JSON.stringify(tasks)} };
+    s.tasks.items = s.tasks.items.filter(t => !t.id.startsWith('tkS')).concat(${JSON.stringify(items)}); }`);
+  const summaryLine = async () => (await exists('[data-s=day-summary]')) ? text('[data-s=day-summary]') : null;
+  await setDay(4, [PT('s1', 'Laundry', 15), PT('s2', 'Reply to Sam', 15)]);
+  await openAt(2027, 6, 2, 9);
+  check('a plan that fits your time and energy: no line at all', (await summaryLine()) === null, await summaryLine());
+  await setDay(5, [PT('s1', 'Laundry', 60), PT('s2', 'Tidy the desk', 60), PT('s3', 'Plan the week', 60)]);
+  await openAt(2027, 6, 2, 20);
+  let line = await summaryLine();
+  check('more planned than the time left: how much of each, and that leaving something is fine', /^About 3 h planned · (\d+ (h|min)|\d+ h \d+ min|no free time left today)( free)? — it's fine to leave something for tomorrow$/.test(line ?? ''), line);
+  await setDay(2, [PT('s1', 'Laundry', 10), PT('s2', 'Reply to Sam', 10)]);
+  await openAt(2027, 6, 2, 9);
+  line = await summaryLine();
+  check('more tasks than your energy has room for: said gently, no score', /— your energy has room for one; the rest can wait$/.test(line ?? '') && !/%|score|behind/i.test(line), line);
+  const TI = { id: 'tkS1', title: 'Pay council tax', listId: '', category: 'admin', minutes: 15, due: K2, time: null, notes: '', done: false, doneOn: null, plannedOn: K2, planUid: 's2', createdAt: K2 + 'T08:00', postponed: 0, blockers: [], letGoOn: null };
+  await setDay(4, [PT('s1', 'Laundry', 15), PT('s2', 'Pay council tax', 15)], [TI]);
+  await openAt(2027, 6, 2, 9);
+  line = await summaryLine();
+  check('a task due today on the plan: named as the one to start with', /^About 30 min planned · .+ free — first: Pay council tax \(due today\)$/.test(line ?? ''), line);
+  await editStorage(`s => { s.days['${K2}'].tasks.forEach(t => { t.done = true; }); }`);
+  await openAt(2027, 6, 2, 10);
+  check('everything done: the line goes', (await summaryLine()) === null);
+
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
   const sm = T.summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);

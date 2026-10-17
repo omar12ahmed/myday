@@ -1,7 +1,7 @@
 // Small helpers for showing a day's plan, ported from the current MyDay (same wording).
-import { dtToMin, nowMin, todayKey } from './dates';
-import { minutesLabel } from './plan';
-import { conflictsFor } from './schedule';
+import { dtToMin, fmtDuration, nowMin, todayKey } from './dates';
+import { limitFor, minutesLabel } from './plan';
+import { conflictsFor, contextFor, freeSegments } from './schedule';
 import type { DateKey, Day, MyDayData, Task } from './types';
 
 export function energyLine(d: Day): string {
@@ -74,3 +74,28 @@ export function planWarnings(data: MyDayData, k: string, d: Day): Record<string,
   }
   return out;
 }
+
+// One quiet line above today's plan, only when it helps: more still planned than the free time left today, more open
+// tasks than your energy has room for, or a task due today on the plan (named as the one to start with). Never a
+// score; worked out on the device from what's saved. Null when there's nothing worth saying.
+export function daySummary(data: MyDayData, k: DateKey, d: Day): string | null {
+  if (d.rest || k !== todayKey()) return null;
+  const open = sortedTasks(d).timed.concat(sortedTasks(d).untimed).filter(t => !t.done);
+  if (!open.length) return null;
+  const now = nowMin(k);
+  const planned = open.reduce((n, t) => n + t.minutes, 0);
+  const doneBusy = d.tasks.filter(t => t.done && t.scheduledStart && t.scheduledEnd).map(t => ({ start: dtToMin(t.scheduledStart!, k), end: dtToMin(t.scheduledEnd!, k) }));
+  const free = freeSegments(data, k, doneBusy).reduce((n, g) => n + Math.max(0, g.end - Math.max(g.start, now)), 0);
+  // Room as "Review my plan" counts it: the energy limit, less what's done.
+  const room = Math.max(0, limitFor(contextFor(data, k).energy || d.energy || null) - d.tasks.filter(t => t.done).length);
+  const due = open.find(t => data.tasks.items.some(x => x.plannedOn === k && x.planUid === t.uid && !x.done && x.due === k));
+  const tooLong = planned > free + 10, tooMany = open.length > room;
+  if (!tooLong && !tooMany && !due) return null;
+  const head = `About ${fmtDuration(planned)} planned · ${free >= 5 ? `${fmtDuration(Math.floor(free / 5) * 5)} free` : 'no free time left today'}`;
+  if (due) return `${head} — first: ${due.title} (due today)`;
+  const anyDone = d.tasks.some(t => t.done);
+  if (tooMany) return room === 0 ? `${head} — that's today's energy used well; the rest can wait`
+    : `${head} — your energy has room for ${['one', 'two', 'three'][Math.min(room, 3) - 1]}${anyDone ? ' more' : ''}; the rest can wait`;
+  return `${head} — it's fine to leave something for tomorrow`;
+}
+

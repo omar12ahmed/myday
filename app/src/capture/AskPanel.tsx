@@ -104,7 +104,7 @@ export function AskPanel({ data, text, onClose }: { data: MyDayData; text: strin
               {pv.all.map(sec => <div key={sec.label} className="mt-1.5"><p className="m-0 font-semibold text-fg">{sec.label}</p>
                 <ul className="m-0 pl-4 list-disc">{sec.lines.map((l, i) => <li key={i} className="break-words">{l}</li>)}</ul></div>)}
             </details>
-            <p className="m-0 text-fg-3">Nothing is saved or changed until you tap Add or Apply.</p>
+            <p className="m-0 text-fg-3">Nothing is saved or changed until you tap Add or Apply. <LinkButton data-action="ask-knows" className="text-xs" onClick={() => { onClose(); location.hash = 'knows'; window.scrollTo(0, 0); }}>What MyDay knows</LinkButton></p>
           </div>); })()}
       </>}
       {phase.at === 'error' && <p role="alert" className="text-[15px] bg-warn-c text-on-warn-c rounded-tile px-3 py-2 mt-2.5 mb-0">{phase.message}</p>}

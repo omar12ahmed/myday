@@ -41,19 +41,40 @@ export function askPage(hash: string): { page: AskPage; id: string | null } {
 
 export interface AskSlice { page: AskPage; context: AskPageContext; sends: string; privateNote: boolean }
 
+// The words for what each page sends — shared by the "Sends:" line and the What MyDay knows page, so they can't drift.
+export const SENDS = {
+  openProjects: 'your open projects’ names',
+  today: "today's plan, your energy, your free time, tasks due today and how much revision is due",
+  study: 'your current course and next task, your topics, how much revision is due, and your energy and free time today',
+  course: 'this course’s outline (its modules, sections and tasks — titles and lengths only)',
+  project: (withText: boolean) => `this project’s name, summary, stage, tasks and note titles${withText ? ' and text (not private ones)' : ''}`,
+  note: 'this note', task: 'this task', calendar: "today's appointments",
+} as const;
+function sendsLine(parts: string[], privateNote = false): string {
+  const listed = parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : parts[0];
+  return `what you typed, the date${listed ? ', ' + listed : ''}${privateNote ? ' — not this note, it’s private' : ''}`;
+}
+// What a page sends when it has everything it can send (open projects, the thing it shows) — for What MyDay knows.
+export function sendsFor(page: AskPage, aiNotes: boolean): string {
+  const parts: string[] = page === 'finance' || page === 'health' ? [] : [SENDS.openProjects];
+  const own = page === 'project' ? SENDS.project(aiNotes) : page in SENDS ? SENDS[page as 'today'] : null;
+  if (typeof own === 'string') parts.push(own);
+  return sendsLine(parts);
+}
+
 // The slice for a page, and the words for the "Sends:" line.
 export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey()): AskSlice {
   const { page, id } = askPage(hash);
   const ctx: AskPageContext = {}, parts: string[] = [];
   let privateNote = false;
   const open = data.projects.items.filter(p => p.status !== 'done').slice(0, L.list);
-  if (open.length && page !== 'finance' && page !== 'health') { ctx.projects = open.map(p => ref(p.id, p.title)); parts.push('your open projects’ names'); }
+  if (open.length && page !== 'finance' && page !== 'health') { ctx.projects = open.map(p => ref(p.id, p.title)); parts.push(SENDS.openProjects); }
   if (page === 'today') {
     const pc = buildContext(data, k, '');
     const due = data.tasks.items.filter(t => !t.done && !t.letGoOn && t.due === k).slice(0, L.list);
     ctx.today = { energy: pc.energy, freeMinutes: freeOf(pc), revisionDue: dueIds(data, k).length,
       plan: pc.tasks.slice(0, L.list).map(t => ({ ...ref(t.id, t.title), minutes: t.minutes, done: t.done })), dueToday: due.map(t => ref(t.id, t.title)) };
-    parts.push("today's plan, your energy, your free time, tasks due today and how much revision is due");
+    parts.push(SENDS.today);
   } else if (page === 'study') {
     const st = data.study, ix = stIndex(st), gs = topicsOf(st).map(t => topicGlance(st, ix, t.id)!).filter(Boolean);
     const g = gs.find(x => x.isFocus && x.next) ?? gs.find(x => x.next) ?? null;
@@ -61,7 +82,7 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey())
     ctx.study = { course: g?.next ? ref(g.next.id, g.next.title) : null, nextTask: g?.nextTask ? ref(g.nextTask.id, g.nextTask.title) : null,
       topics: topicsOf(st).map(t => cut(t.title, L.titleChars)).filter(Boolean).slice(0, L.list), revisionDue: dueIds(data, k).length,
       energy: pc.energy, freeMinutes: freeOf(pc) };
-    parts.push('your current course and next task, your topics, how much revision is due, and your energy and free time today');
+    parts.push(SENDS.study);
   } else if (page === 'course' && id) {
     const c = stIndex(data.study).course.get(id)?.node;
     if (c) {
@@ -85,7 +106,7 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey())
         modules.push({ id: m.id, title: cut(m.title, L.titleChars), sections: secs });
       }
       ctx.course = { id: c.id, title: cut(c.title, L.titleChars), minutes: c.minutes, modules };
-      parts.push('this course’s outline (its modules, sections and tasks — titles and lengths only)');
+      parts.push(SENDS.course);
     }
   } else if (page === 'project' && id) {
     const p = data.projects.items.find(x => x.id === id);
@@ -96,23 +117,21 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey())
       ctx.project = { id: p.id, title: cut(p.title, L.titleChars), summary: cut(p.summary, L.summaryChars), stage: p.stage,
         tasks: (({ open, done }) => [...open, ...done])(projectTasks(data, p)).slice(0, L.list).map(t => ({ ...ref(t.id, t.title), done: t.done })), notes: notes.slice(0, L.list).map(n => cut(noteName(n), L.titleChars)),
         ...(withText && text ? { notesText: text.trim() } : {}) };
-      parts.push(`this project’s name, summary, stage, tasks and note titles${withText ? ' and text (not private ones)' : ''}`);
+      parts.push(SENDS.project(withText));
     }
   } else if (page === 'note' && id) {
     const n = data.notes.items.find(x => x.id === id);
     if (n?.private) privateNote = true;
-    else if (n) { ctx.note = { id: n.id, title: cut(n.title, L.titleChars), text: cut(n.text, L.noteTextChars) }; parts.push('this note'); }
+    else if (n) { ctx.note = { id: n.id, title: cut(n.title, L.titleChars), text: cut(n.text, L.noteTextChars) }; parts.push(SENDS.note); }
   } else if (page === 'task' && id) {
     const t = data.tasks.items.find(x => x.id === id);
-    if (t) { ctx.task = { id: t.id, title: cut(t.title, L.titleChars), due: t.due, minutes: t.minutes, notes: cut(t.notes, L.taskNotesChars) }; parts.push('this task'); }
+    if (t) { ctx.task = { id: t.id, title: cut(t.title, L.titleChars), due: t.due, minutes: t.minutes, notes: cut(t.notes, L.taskNotesChars) }; parts.push(SENDS.task); }
   } else if (page === 'calendar') {
     const appts = data.commitments.filter(c => c.kind === 'appointment' && c.start.slice(0, 10) === k).sort((a, b) => a.start.localeCompare(b.start)).slice(0, L.list);
     ctx.calendar = { day: k, appointments: appts.map(c => ({ id: c.id, title: cut(c.title, L.titleChars), time: c.start.slice(11, 16) })) };
-    parts.push("today's appointments");
+    parts.push(SENDS.calendar);
   }
-  const listed = parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : parts[0];
-  const sends = `what you typed, the date${listed ? ', ' + listed : ''}${privateNote ? ' — not this note, it’s private' : ''}`;
-  return { page, context: ctx, sends, privateNote };
+  return { page, context: ctx, sends: sendsLine(parts, privateNote), privateNote };
 }
 
 export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(), now = new Date(), followUp?: { previous: string; text: string }): AskContext {

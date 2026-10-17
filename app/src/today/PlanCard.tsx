@@ -2,7 +2,7 @@ import { Check, ListPlus, Moon, Sparkles, WandSparkles } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { EnergyMeter } from '../components/EnergyMeter';
-import { energyLine, nextTask, planWarnings, progressNote, sortedTasks } from '../data/today';
+import { daySummary, energyLine, nextTask, planWarnings, progressNote, sortedTasks } from '../data/today';
 import type { Day, MyDayData, Task } from '../data/types';
 import { QueueNote } from './QueueNote';
 import { TaskList } from './TaskList';
@@ -51,6 +51,7 @@ export function PlanCard({ data, k, justDoneUid, onToggle, onTimer, onEvening, o
 }) {
   const d = data.days[k];
   const progress = progressNote(d);
+  const summary = daySummary(data, k, d);
   const anyDone = d.tasks.some(t => t.done);
   return (
     <Card id="slot-plan" aria-labelledby="plan-h">
@@ -66,6 +67,7 @@ export function PlanCard({ data, k, justDoneUid, onToggle, onTimer, onEvening, o
             {progress.text}
           </p>
         )}
+        {summary && <p className="m-0 text-sm text-fg-2" data-s="day-summary">{summary}</p>}
       </div>
       {d.rest ? <RestDayCard />
         : d.tasks.length ? <DayTasks data={data} k={k} d={d} mode="plan" justDoneUid={justDoneUid} onToggle={onToggle} onTimer={onTimer} />

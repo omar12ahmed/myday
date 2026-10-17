@@ -113,7 +113,7 @@ const SEED = `s => {
 
   console.log('\n[3] With an account: the ai-plan Edge Function (its real code, a mock model)');
   const D = await device('edge');
-  await open(D, EDGE); await D.setData(SEED);
+  await open(D, EDGE); await D.until(`localStorage.getItem('myday.data.v4')`); await D.setData(SEED); // once the app has saved its first copy
   check('signed out: MyDay asks you to sign in first (from 1.9.0), so AI help can\'t be reached, and nothing is sent', (await D.until(`document.getElementById('signInGate')`)) && !(await D.exists('[data-action=ai-open]')) && aiCalls().length === 0);
   await D.until(`document.getElementById('syncEmailInput')`);
   await D.type('#syncEmailInput', A.email); await D.type('#syncPassword', A.password); await D.click('[data-action=sync-signin]');
@@ -504,6 +504,28 @@ const SEED = `s => {
     await mock.click('[data-s=ask-applied] [data-action=ask-undo]'); await sleep(300);
     check('Undo puts it back on today, as it was', (await due()) === TODAY && (await mock.ev(`JSON.parse(localStorage.getItem('myday.data.v4')).tasks.items.find(t => t.id === 'tkCT').postponed`)) === 0);
     await mock.click('[data-action=capture-cancel]'); await sleep(200);
+  }
+
+  console.log('\n[8j] What MyDay knows');
+  {
+    await seeded(mock, MOCK);
+    await mock.setData(`s => { s.notes.items.push({ id: 'nPv', categoryId: '', title: 'Diary', text: 'Private line', pinned: false, createdAt: '${TODAY}T08:00', updatedAt: '${TODAY}T08:00', private: true }); }`);
+    await mock.until(`document.querySelector('#app')`);
+    await mock.ev(`location.hash = 'today'`); await sleep(300);
+    await mock.click('[data-action=capture-open]'); await mock.until(`document.getElementById('captureText')`);
+    await mock.type('#captureText', 'hello'); await sleep(150);
+    check('Ask\'s preview links to What MyDay knows', await mock.exists('[data-s=ask-sends] [data-action=ask-knows]'));
+    await mock.click('[data-action=ask-knows]'); await sleep(400);
+    check('…which closes the sheet and opens the page', (await mock.ev('location.hash')) === '#knows' && !(await mock.exists('#captureSheet')) && (await mock.text('#screenName')) === 'What MyDay knows');
+    const page = await mock.text('#knows');
+    check('it lists what Ask sends from each page, in the preview\'s own words', (await mock.text('#knowsAsk [data-page=today] dd')).startsWith('What you typed, the date, ') && (await mock.text('#knowsAsk [data-page=finance] dd')) === 'What you typed, the date.' && page.includes('Help me adjust today'));
+    { const n = await mock.ev(`JSON.parse(localStorage.getItem('myday.data.v4')).notes.items.filter(n => n.private).length`), line = await mock.text('[data-s=knows-private]');
+      check('…says private notes are never sent, and counts yours', line.startsWith('Notes you’ve marked private') && line.includes(`You have ${n === 1 ? 'one' : n} at the moment`), [line, n]); }
+    check('…has the AI help with notes switch, which models do which job, and the limits', (await mock.exists('#knows [data-action=ai-notes]')) && page.includes('GLM-5.3-Flash') && page.includes('Gemini 3.8 Flash') && page.includes('20 AI requests a day'));
+    check('…and says this copy uses the practice helper (nothing sent)', (await mock.text('[data-s=knows-mode]')).includes('practice helper'));
+    check('the footer links to it too', await mock.exists('#footer [data-action=knows]'));
+    check('nothing scrolls sideways on the page', !(await mock.ev('document.documentElement.scrollWidth > innerWidth')));
+    await mock.ev(`location.hash = 'today'`); await sleep(200);
   }
 
   console.log('\n[9] Layout');

@@ -1,4 +1,4 @@
-import { Download, FolderOpen, Lightbulb, ListTodo, Smartphone } from 'lucide-react';
+import { Download, FolderOpen, Lightbulb, ListTodo, ShieldCheck, Smartphone } from 'lucide-react';
 import { useSyncExternalStore } from 'react';
 import { Button } from '../components/Button';
 import { update } from '../data/storage';
@@ -27,6 +27,7 @@ export function AppFooter({ data, canSave, onEdit, onExport, onImport }: {
         <Button inline variant="quiet" className="!text-[14px]" data-action="edit" onClick={onEdit}><ListTodo size={16} aria-hidden="true" /> Edit task lists</Button>
         {canInstall && <Button inline variant="quiet" className="!text-[14px]" data-action="install" onClick={async () => { if (await install()) toast('MyDay is installed — open it from your apps.'); }}><Smartphone size={16} aria-hidden="true" /> Install MyDay as an app</Button>}
         <Button inline variant="quiet" className="!text-[14px]" data-action="noticed" onClick={() => { location.hash = 'noticed'; window.scrollTo(0, 0); }}><Lightbulb size={16} aria-hidden="true" /> What MyDay has noticed</Button>
+        <Button inline variant="quiet" className="!text-[14px]" data-action="knows" onClick={() => { location.hash = 'knows'; window.scrollTo(0, 0); }}><ShieldCheck size={16} aria-hidden="true" /> What MyDay knows</Button>
         <Button inline variant="quiet" className="!text-[14px]" data-action="export" onClick={onExport}><Download size={16} aria-hidden="true" /> Export my data</Button>
         <Button inline variant="quiet" className="!text-[14px]" data-action="import" onClick={onImport}><FolderOpen size={16} aria-hidden="true" /> Import my data</Button>
         <Button inline variant="quiet" className="!text-[14px]" data-action="motion" aria-pressed={!off} onClick={() => {

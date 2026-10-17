@@ -1,0 +1,106 @@
+import { ShieldCheck } from 'lucide-react';
+import { Card } from '../components/Card';
+import { BackLink } from '../components/parts';
+import { sendsFor } from '../ai/askContext';
+import { AI_MODE } from '../ai/request';
+import type { AskPage } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
+import type { MyDayData } from '../data/types';
+import { AiNotesCard } from '../notes/AiNotesCard';
+import { AI_CONNECT_PER_DAY } from '../shell/aiConnect';
+
+// What MyDay knows (#knows): where your things are kept, exactly what each kind of AI help sends and when, which model
+// does which job, and what's never sent. Linked from Ask MyDay's preview and the footer. Ask's lines come from the same
+// words as its "Sent to the AI" preview (askContext.ts SENDS), so the two can't drift apart.
+
+// Pages, grouped where they send the same.
+const PAGES: { label: string; page: AskPage }[] = [
+  { label: 'Today', page: 'today' }, { label: 'A task', page: 'task' }, { label: 'Calendar', page: 'calendar' },
+  { label: 'A project', page: 'project' }, { label: 'A note', page: 'note' }, { label: 'Study', page: 'study' },
+  { label: 'A course on your roadmap', page: 'course' }, { label: 'Tasks, Projects, Notes and other pages', page: 'projects' },
+  { label: 'Health and Finance', page: 'finance' },
+];
+// The other AI help, each only when you tap it (the request shapes are in supabase/functions/_shared/ai/).
+const OTHER: [string, string][] = [
+  ['Help me adjust today', 'today’s plan (task titles, lengths, times), your energy and sleep, busy times from your calendar (as “appointment” or “work”, without titles), your free time, how much revision is due, and what you write'],
+  ['Add what’s on my mind', 'only what you write, and the date'],
+  ['AI help with notes', `a few notes MyDay can’t place by itself, and your open projects’ names and summaries — only once you switch it on, at most ${AI_CONNECT_PER_DAY} times a day on each device`],
+  ['Make revision cards (on a note)', 'that one note (lines you’ve left out replaced by a placeholder), and the questions already in your revision from it'],
+  ['Ask the tutor (Cybersecurity)', 'which lesson you’re on and your question'],
+  ['More practice (Cybersecurity)', 'which lesson, and the questions already in your revision for it'],
+  ['Explain it another way', 'the question, its answer and the explanation you’ve seen, your own answer and how it went — and, for a Cybersecurity check, which lesson'],
+];
+// Which model does which job — set on the server (AI_ROUTES); keep in step with it (CLAUDE.md, "AI roles").
+const MODELS: [string, string][] = [
+  ['GLM-5.3-Flash (Z.ai)', 'Ask MyDay, Help me adjust today, Add what’s on my mind, AI help with notes, the Cybersecurity tutor, explaining Cybersecurity and your own concepts another way, writing cards from your notes, and checking Cybersecurity lesson cards'],
+  ['Gemini 3.8 Flash (Google)', 'writing Cybersecurity lesson cards, checking a note before cards are made from it, checking cards from your notes, and explaining Arabic another way'],
+];
+
+export function KnowsScreen({ data }: { data: MyDayData }) {
+  const privateNotes = data.notes.items.filter(n => n.private).length;
+  const aiNotes = !!data.patterns.prefs.aiNotes;
+  return (
+    <div className="max-w-[720px] mx-auto" id="knows">
+      <BackLink to="today" label="Today" />
+      <Card aria-labelledby="knows-h">
+        <h2 id="knows-h" className="flex items-center gap-2"><ShieldCheck size={22} aria-hidden="true" className="text-primary" /> What MyDay knows</h2>
+        <p className="text-[15px] m-0">Everything you enter is kept in this browser, and in your account when you’re signed in (only your sign-in can read it). MyDay’s own suggestions, links and patterns are worked out on this device.</p>
+        <p className="text-[15px] text-fg-2 mb-0 mt-2" data-s="knows-mode">{AI_MODE === 'off' ? 'AI help isn’t set up in this copy of MyDay, so nothing is ever sent to an AI.'
+          : AI_MODE === 'mock' ? 'This copy of MyDay uses the practice helper: nothing is sent anywhere.'
+          : 'An AI sees something only when you tap for its help (or switch on AI help with notes), and only what’s listed here.'}</p>
+      </Card>
+
+      <Card aria-labelledby="knows-ask-h" id="knowsAsk">
+        <h3 id="knows-ask-h">When you tap Ask MyDay</h3>
+        <p className="text-[15px] text-fg-2 m-0">It sends what you typed and the page you’re on, with that page’s small slice of your data. You see the slice itself before every request, under “Sent to the AI with what you type”.</p>
+        <dl className="m-0 mt-3 grid gap-2.5">
+          {PAGES.map(p => (
+            <div key={p.page} data-page={p.page}>
+              <dt className="font-semibold text-[15px]">{p.label}</dt>
+              <dd className="m-0 text-[15px] text-fg-2">{cap(sendsFor(p.page, aiNotes))}.</dd>
+            </div>))}
+        </dl>
+        <p className="text-sm text-fg-3 m-0 mt-3">A project’s notes’ text goes only with AI help with notes switched on. Nothing changes until you tick it and tap Add or Apply, and Ask never deletes anything or ticks anything off.</p>
+      </Card>
+
+      <Card aria-labelledby="knows-other-h" id="knowsOther">
+        <h3 id="knows-other-h">The other AI help — only when you tap it</h3>
+        <dl className="m-0 grid gap-2.5">
+          {OTHER.map(([what, sends]) => (
+            <div key={what}><dt className="font-semibold text-[15px]">{what}</dt><dd className="m-0 text-[15px] text-fg-2">{cap(sends)}.</dd></div>))}
+        </dl>
+      </Card>
+
+      <AiNotesCard data={data} />
+
+      <Card aria-labelledby="knows-never-h" id="knowsNever">
+        <h3 id="knows-never-h">Never sent</h3>
+        <ul className="m-0 pl-5 grid gap-1.5 text-[15px]">
+          <li data-s="knows-private">Notes you’ve marked private — by any AI help, ever.{privateNotes > 0 && ` You have ${privateNotes === 1 ? 'one' : privateNotes} at the moment.`}</li>
+          <li>Your name, your account’s email address, and your preferences and patterns (What MyDay has noticed works on this device).</li>
+          <li>Your Finance records, and your Health records — Help me adjust today sees only when you’re working out, as busy time.</li>
+        </ul>
+      </Card>
+
+      <Card aria-labelledby="knows-memory-h" id="knowsMemory">
+        <h3 id="knows-memory-h">The AI remembers nothing</h3>
+        <p className="text-[15px] m-0">The AI has no memory of you: each request stands on its own, sent by MyDay’s server without your name or account details. MyDay keeps your history itself, on your devices and in your account. Ask MyDay allows one follow-up, which sends its earlier answer back with it; nothing of the conversation is kept after you close it. MyDay’s server records how many requests you’ve made and what they cost — never what was in them.</p>
+      </Card>
+
+      <Card aria-labelledby="knows-models-h" id="knowsModels">
+        <h3 id="knows-models-h">Which AI does which job</h3>
+        <dl className="m-0 grid gap-2.5">
+          {MODELS.map(([model, jobs]) => (
+            <div key={model}><dt className="font-semibold text-[15px]">{model}</dt><dd className="m-0 text-[15px] text-fg-2">{cap(jobs)}.</dd></div>))}
+        </dl>
+        <p className="text-sm text-fg-3 m-0 mt-3">Chosen by testing on made-up material, judged on accuracy and teaching quality. Everything an AI writes is labelled as AI-written and is only a suggestion.</p>
+      </Card>
+
+      <Card aria-labelledby="knows-limits-h" id="knowsLimits">
+        <h3 id="knows-limits-h">Limits</h3>
+        <p className="text-[15px] m-0">At most 20 AI requests a day for your account, a short pause between them, and a small monthly spending cap, all kept on MyDay’s server. Only signed-in accounts can use AI help.</p>
+      </Card>
+    </div>
+  );
+}
+
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);

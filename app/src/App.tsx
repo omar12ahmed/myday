@@ -15,6 +15,7 @@ import { Nav } from './shell/Nav';
 import { AccountChip, FocusSwitch } from './shell/TopBar';
 import { barSection, SECTIONS, sectionFromHash, type SectionId } from './shell/sections';
 import { NoticedScreen } from './patterns/NoticedScreen';
+import { KnowsScreen } from './knows/KnowsScreen';
 import { ProjectsScreen } from './projects/ProjectsScreen';
 import { useAiConnect } from './shell/aiConnect';
 import { useAutoConnect } from './shell/autoConnect';
@@ -147,7 +148,7 @@ function Shell() {
 
   const blocked = status.kind === 'damaged' || status.kind === 'older';
   // The screen's name, above the date (on wide screens MyDay's own name is at the top of the side menu).
-  const screenName = hash.startsWith('#sync') ? 'Your account' : hash.startsWith('#noticed') ? 'What MyDay has noticed' : hash.startsWith('#today/tasks') ? 'Tasks' : SECTIONS.find(x => x.id === section)?.label ?? 'MyDay';
+  const screenName = hash.startsWith('#sync') ? 'Your account' : hash.startsWith('#noticed') ? 'What MyDay has noticed' : hash.startsWith('#knows') ? 'What MyDay knows' : hash.startsWith('#today/tasks') ? 'Tasks' : SECTIONS.find(x => x.id === section)?.label ?? 'MyDay';
   // Sign in first (when sync is set up): see sync/SignInGate.tsx.
   const gate = !blocked && signInRequired(sync) && !useHere;
   const explore = exploreRoute(hash);
@@ -162,6 +163,7 @@ function Shell() {
       onDownload={() => download(`myday-unreadable-${todayKey()}.json`, status.raw)} />;
   } else if (status.kind === 'older') content = <OlderView />;
   else if (hash.startsWith('#noticed')) content = <NoticedScreen data={data} />;
+  else if (hash.startsWith('#knows')) content = <KnowsScreen data={data} />;
   else if (hash.startsWith('#sync')) {
     content = SYNC.configured ? <SyncScreen onExport={exportData} /> : (
       <div className="max-w-[720px] mx-auto"><Card>
@@ -195,7 +197,7 @@ function Shell() {
             <p id="date" className="screen-date">{prettyDate(k)}</p>
           </div>
           <div className="flex items-center gap-2 lg:gap-3 flex-none">
-            {!blocked && !gate && section === 'today' && !hash.startsWith('#today/tasks') && !hash.startsWith('#noticed') && !hash.startsWith('#sync') && <FocusSwitch />}
+            {!blocked && !gate && section === 'today' && !hash.startsWith('#today/tasks') && !hash.startsWith('#noticed') && !hash.startsWith('#knows') && !hash.startsWith('#sync') && <FocusSwitch />}
             {!blocked && !gate && <AccountChip data={data} sync={sync} />}
             {!blocked && !gate && status.kind === 'ok' && <CaptureButton data={data} />}
             <ThemeButton theme={theme} motionAllowed={motionAllowed} onChange={next => update(d => { d.settings.theme = next; })} />
@@ -211,7 +213,7 @@ function Shell() {
         )}
         {content}
         {/* Today has these at the bottom of its own layout; every other screen (Tasks under Today too) gets them here. */}
-        {!immersive && !blocked && !gate && (section !== 'today' || hash.startsWith('#noticed') || hash.startsWith('#today/tasks')) && !hash.startsWith('#sync') && (
+        {!immersive && !blocked && !gate && (section !== 'today' || hash.startsWith('#noticed') || hash.startsWith('#knows') || hash.startsWith('#today/tasks')) && !hash.startsWith('#sync') && (
           <div className="max-w-[720px] mx-auto mt-6">
             <AppFooter data={data} canSave={status.kind === 'ok'} onEdit={() => { location.hash = 'today/edit'; }} onExport={exportData} onImport={() => fileInput.current?.click()} />
           </div>

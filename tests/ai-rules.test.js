@@ -609,6 +609,10 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     w = { ...w, patterns: { ...w.patterns, prefs: { ...w.patterns.prefs, aiNotes: true } } };
     sl = K.askSlice(w, '#projects/p/pjC', D);
     check('with AI help with notes on: the project\'s notes\' text too — still never a private one', sl.context.project.notesText.includes('Roasters sell per kilo') && !sl.context.project.notesText.includes('salary') && sl.sends.includes('text (not private ones)'));
+    const agree = [['#today', 'today'], ['#today/tasks/tkB', 'task'], ['#calendar', 'calendar'], ['#projects/p/pjC', 'project'], ['#projects/notes/n4', 'note'], ['#study', 'study'], ['#study/course/coP', 'course'], ['#today/tasks', 'tasks'], ['#projects', 'projects'], ['#finance', 'finance'], ['#health', 'health']]
+      .filter(([h, pg]) => K.askSlice(w, h, D).sends !== K.sendsFor(pg, true));
+    check('What MyDay knows says exactly what each page\'s "Sends" line says (AI help with notes on)', agree.length === 0, agree);
+    check('…and with it off, a project page sends note titles only', K.sendsFor('project', false) === K.askSlice({ ...w, patterns: { ...w.patterns, prefs: { ...w.patterns.prefs, aiNotes: false } } }, '#projects/p/pjC', D).sends && !K.sendsFor('project', false).includes('text'));
     sl = K.askSlice(w, '#projects/notes/n3', D);
     check('a private note\'s page: the note isn\'t sent, and the Sends line says so', sl.privateNote && !('note' in sl.context) && sl.sends.includes('not this note') && !JSON.stringify(sl.context).includes('diary'));
     sl = K.askSlice(w, '#finance', D);
