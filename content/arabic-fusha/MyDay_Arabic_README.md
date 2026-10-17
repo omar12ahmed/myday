@@ -6,6 +6,7 @@ The target is Modern Standard Arabic (MSA). The common core has 24 modules; six 
 
 ## Open these first
 
+- **Study the lessons:** [Teaching companion](../teaching/arabic-fusha-lessons.md), with explanations, worked examples, guided exercises, explained answers and assigned resources for all 152 lessons. The [JSON companion](../teaching/arabic-fusha.json) uses the existing IDs and powers the lesson screens. See [source checks and authoring](../teaching/README.md).
 - **Output A:** `MyDay_Arabic_Fusha_Curriculum.html` is an offline reader with module navigation. Use the browser’s Find command for a lesson or topic. The complete content is also in `MyDay_Arabic_Fusha_Curriculum.md`.
 - **Output B:** `MyDay_Arabic_Fusha_Curriculum.json` is the canonical static course.
 - `MyDay_Arabic_Adaptive_Tutor_Spec.json` is a separate proposed adaptive policy and learner-state contract. No AI provider or model is required.

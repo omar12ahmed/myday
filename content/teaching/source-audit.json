@@ -1,0 +1,1346 @@
+[
+  {
+    "id": "learn",
+    "url": "https://www.learningscientists.org/downloadable-materials",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "scope",
+    "url": "https://csrc.nist.gov/pubs/sp/800/115/final",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "vm",
+    "url": "https://docs.getutm.app/guides/ubuntu/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "notes",
+    "url": "https://book.the-turing-way.org/reproducible-research/overview",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "debug",
+    "url": "https://docs.python.org/3/tutorial/errors.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "computer",
+    "url": "https://cs50.harvard.edu/x/2026/weeks/0/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "unicode",
+    "url": "https://docs.python.org/3/howto/unicode.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "shell",
+    "url": "https://ubuntu.com/tutorials/command-line-for-beginners",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "process",
+    "url": "https://man7.org/linux/man-pages/man5/proc.5.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ubuntu-packages",
+    "url": "https://documentation.ubuntu.com/server/how-to/software/package-management/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ip",
+    "url": "https://www.professormesser.com/network-plus/n10-009/n10-009-video/introduction-to-ip-n10-009/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "subnet",
+    "url": "https://www.cloudflare.com/learning/network-layer/what-is-a-subnet/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "dns",
+    "url": "https://www.cloudflare.com/learning/dns/what-is-dns/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "dns-video",
+    "url": "https://www.professormesser.com/network-plus/n10-009/n10-009-video/dns-records-n10-009/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "tcp",
+    "url": "https://www.cloudflare.com/learning/ddos/glossary/tcp-ip/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "udp",
+    "url": "https://www.cloudflare.com/learning/ddos/glossary/user-datagram-protocol-udp/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "http",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "wireshark",
+    "url": "https://www.wireshark.org/docs/wsug_html_chunked/ChapterWork.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "firewall",
+    "url": "https://documentation.ubuntu.com/server/how-to/security/firewalls/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "bandit",
+    "url": "https://overthewire.org/wargames/bandit/bandit0.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public instructions; provider lab may require a free account."
+  },
+  {
+    "id": "permissions",
+    "url": "https://man7.org/linux/man-pages/man7/inode.7.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "journal",
+    "url": "https://man7.org/linux/man-pages/man1/journalctl.1.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ssh",
+    "url": "https://man.openbsd.org/ssh",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "windows-process",
+    "url": "https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-process",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "windows-acl",
+    "url": "https://learn.microsoft.com/en-us/windows/security/identity-protection/access-control/access-control",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "powershell",
+    "url": "https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/get-member",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "windows-events",
+    "url": "https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.diagnostics/get-winevent",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "windows-security",
+    "url": "https://learn.microsoft.com/en-us/defender-endpoint/microsoft-defender-antivirus-windows",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "python-flow",
+    "url": "https://docs.python.org/3/tutorial/controlflow.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "python-data",
+    "url": "https://docs.python.org/3/tutorial/inputoutput.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "regex",
+    "url": "https://docs.python.org/3/howto/regex.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "sql",
+    "url": "https://www.postgresql.org/docs/current/tutorial-select.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "tests",
+    "url": "https://docs.python.org/3/library/unittest.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "git-basics",
+    "url": "https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "git-branches",
+    "url": "https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "bash",
+    "url": "https://man7.org/linux/man-pages/man1/bash.1.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ps-functions",
+    "url": "https://learn.microsoft.com/en-us/powershell/scripting/learn/ps101/09-functions",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "python-env",
+    "url": "https://docs.python.org/3/tutorial/venv.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "csf",
+    "url": "https://www.nist.gov/cyberframework",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "iam",
+    "url": "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "phishing",
+    "url": "https://www.ncsc.gov.uk/collection/phishing-scams",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "logging",
+    "url": "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "hash",
+    "url": "https://docs.python.org/3/library/hashlib.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "crypto",
+    "url": "https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "tls",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Transport_Layer_Security",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "passwords",
+    "url": "https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "oauth",
+    "url": "https://openid.net/developers/how-connect-works/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "web",
+    "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Getting_started/Web_standards/How_the_web_works",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "javascript",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "sql-prevention",
+    "url": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "cookies",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Cookies",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "api",
+    "url": "https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "threat",
+    "url": "https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "backup",
+    "url": "https://www.ncsc.gov.uk/collection/small-organisations-guide-to-cyber-security/backing-up-your-data",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "aws-responsibility",
+    "url": "https://aws.amazon.com/compliance/shared-responsibility-model/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "nmap",
+    "url": "https://nmap.org/book/man-port-scanning-basics.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "cvss",
+    "url": "https://www.first.org/cvss/v4.0/user-guide",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "kev",
+    "url": "https://github.com/cisagov/kev-data",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ir",
+    "url": "https://csrc.nist.gov/pubs/sp/800/61/r3/final",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "attack",
+    "url": "https://attack.mitre.org/techniques/T1078/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "nice",
+    "url": "https://www.nist.gov/itl/applied-cybersecurity/nice/nice-framework-resource-center/nice-framework-current-versions",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "report",
+    "url": "https://owasp.github.io/www-project-web-security-testing-guide/latest/5-Reporting/01-Reporting_Structure",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "proxy",
+    "url": "https://portswigger.net/burp/documentation/desktop/getting-started/intercepting-http-traffic",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public instructions; provider lab may require a free account."
+  },
+  {
+    "id": "sqli",
+    "url": "https://portswigger.net/web-security/sql-injection",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "sqli-lab",
+    "url": "https://portswigger.net/web-security/sql-injection/lab-retrieve-hidden-data",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public instructions; provider lab may require a free account."
+  },
+  {
+    "id": "xss",
+    "url": "https://portswigger.net/web-security/cross-site-scripting",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "access",
+    "url": "https://portswigger.net/web-security/access-control",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ssrf",
+    "url": "https://portswigger.net/web-security/ssrf",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "logic",
+    "url": "https://portswigger.net/web-security/logic-flaws",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ad",
+    "url": "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "kerberos",
+    "url": "https://learn.microsoft.com/en-us/windows-server/security/kerberos/kerberos-authentication-overview",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "gpo",
+    "url": "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/group-policy/group-policy-overview",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ad-secure",
+    "url": "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/plan/security-best-practices/best-practices-for-securing-active-directory",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "sudo",
+    "url": "https://man7.org/linux/man-pages/man5/sudoers.5.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "services-acl",
+    "url": "https://learn.microsoft.com/en-us/windows/win32/services/service-security-and-access-rights",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "secrets",
+    "url": "https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "sigma",
+    "url": "https://sigmahq.io/docs/basics/rules.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "precision",
+    "url": "https://developers.google.com/machine-learning/crash-course/classification/accuracy-precision-recall",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "forensics",
+    "url": "https://csrc.nist.gov/pubs/sp/800/86/final",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "volatility",
+    "url": "https://volatility3.readthedocs.io/en/latest/getting-started-linux-tutorial.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "reversing",
+    "url": "https://p.ost2.fyi/courses/course-v1:OpenSecurityTraining2+Arch1001_x86-64_Asm+2021_v1/about",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Course study may require registration; introductory page is public."
+  },
+  {
+    "id": "ghidra",
+    "url": "https://github.com/NationalSecurityAgency/ghidra/blob/master/GhidraDocs/GhidraClass/Beginner/Introduction_to_Ghidra_Student_Guide.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "yara",
+    "url": "https://yara.readthedocs.io/en/stable/writingrules.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "aws-budget",
+    "url": "https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "aws-iam",
+    "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "aws-s3",
+    "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-block-public-access.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "aws-cloudtrail",
+    "url": "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-management-events-with-cloudtrail.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "terraform",
+    "url": "https://developer.hashicorp.com/terraform/cli/commands/plan",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "docker",
+    "url": "https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-a-container/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "docker-secure",
+    "url": "https://docs.docker.com/engine/security/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "actions",
+    "url": "https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "slsa",
+    "url": "https://slsa.dev/spec/v1.1/threats-overview",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "kubernetes",
+    "url": "https://kubernetes.io/docs/concepts/security/security-checklist/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ssdf",
+    "url": "https://csrc.nist.gov/projects/ssdf",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "asvs",
+    "url": "https://owasp.org/www-project-application-security-verification-standard/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "fuzz",
+    "url": "https://llvm.org/docs/LibFuzzer.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ai",
+    "url": "https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "zero-trust",
+    "url": "https://csrc.nist.gov/pubs/sp/800/207/final",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "race",
+    "url": "https://portswigger.net/web-security/race-conditions",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "jwt",
+    "url": "https://portswigger.net/web-security/jwt",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "caldera",
+    "url": "https://caldera.readthedocs.io/en/latest/Getting-started.html",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "controls-video",
+    "url": "https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/security-controls-sy0-701/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "hash-video",
+    "url": "https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/hashing-and-digital-signatures-sy0-701/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "access-video",
+    "url": "https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/access-controls-sy0-701/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ir-video",
+    "url": "https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/incident-response-sy0-701/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "forensics-video",
+    "url": "https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/digital-forensics-sy0-701/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "logs-video",
+    "url": "https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/log-data-sy0-701/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "web-video",
+    "url": "https://cs50.harvard.edu/x/2026/weeks/8/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "memory-video",
+    "url": "https://cs50.harvard.edu/x/2026/weeks/4/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-routine",
+    "url": "https://learning.aljazeera.net/en/articles/pages/22000",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-library-form",
+    "url": "https://learning.aljazeera.net/en/articles/pages/21984",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-floating",
+    "url": "https://learning.aljazeera.net/en/articles/pages/21919",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-centre",
+    "url": "https://learning.aljazeera.net/en/generallanguage/%D9%81%D9%8A-%D9%85%D8%B1%D9%83%D8%B2-%D8%AA%D8%B9%D9%84%D9%8A%D9%85-%D8%A7%D9%84%D9%84%D8%BA%D8%A9-%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-vacation",
+    "url": "https://learning.aljazeera.net/en/generallanguage/%D8%B9%D8%B7%D9%84%D8%A9-%D8%A7%D9%84%D9%85%D8%AF%D8%B1%D8%B3%D8%A9",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-apartment",
+    "url": "https://learning.aljazeera.net/en/languageofmedia/%D8%A5%D9%8A%D8%AC%D8%A7%D8%B1-%D8%B4%D9%82%D8%A9",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-why",
+    "url": "https://learning.aljazeera.net/en/generallanguage/%D9%84%D9%85%D8%A7%D8%B0%D8%A7-%D9%8A%D8%AA%D8%B9%D9%84%D9%85%D9%88%D9%86-%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-hamza",
+    "url": "https://learning.aljazeera.net/en/generallanguage/%D8%A7%D9%84%D8%A3%D9%84%D9%81-%D9%88%D8%A7%D9%84%D9%87%D9%85%D8%B2%D8%A9",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-ba",
+    "url": "https://learning.aljazeera.net/en/languageofmedia/%D8%AD%D8%B1%D9%81-%D8%A7%D9%84%D8%A8%D8%A7%D8%A1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-tha",
+    "url": "https://learning.aljazeera.net/en/generallanguage/%D8%AD%D8%B1%D9%81-%D8%A7%D9%84%D8%AB%D8%A7%D8%A1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-ha",
+    "url": "https://learning.aljazeera.net/en/generallanguage/%D8%A7%D9%84%D8%AD%D8%B1%D9%88%D9%81-%D9%88%D8%A7%D9%84%D8%A3%D8%B5%D9%88%D8%A7%D8%AA-%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9-7-%D8%AD%D8%B1%D9%81-%D8%A7%D9%84%D8%AD%D8%A7%D8%A1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-kha",
+    "url": "https://learning.aljazeera.net/en/generallanguage/%D8%A7%D9%84%D8%AD%D8%B1%D9%88%D9%81-%D9%88%D8%A7%D9%84%D8%A3%D8%B5%D9%88%D8%A7%D8%AA-%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9-7-%D8%AD%D8%B1%D9%81-%D8%A7%D9%84%D8%AE%D8%A7%D8%A1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-sad",
+    "url": "https://learning.aljazeera.net/en/generallanguage/%D8%A7%D9%84%D8%AD%D8%B1%D9%88%D9%81-%D9%88%D8%A7%D9%84%D8%A3%D8%B5%D9%88%D8%A7%D8%AA-%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9-14-%D8%AD%D8%B1%D9%81-%D8%A7%D9%84%D8%B5%D8%A7%D8%AF",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-alphabet",
+    "url": "https://madinaharabic.com/free-content/reading/lesson-1/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-this",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-1/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-article",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-3/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-nominal",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-4/part-9",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-idafa",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-5/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-adjectives",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-9/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-relative-feminine",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-12/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-human-plurals",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-13/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-verbs",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-28/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-tenses",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-29/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-negation",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-31/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-weak",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-32/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-passive",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-34/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-moods",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-36/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-questions",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-41/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-pronouns",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-44/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-conditional",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-49/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-masdar",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-50/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-dual",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-55/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-cefr",
+    "url": "https://www.coe.int/en/web/portfolio/self-assessment-grid",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-tech",
+    "url": "https://learn.microsoft.com/ar-sa/azure/app-service/overview-authentication-authorization",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-constantine",
+    "url": "https://learning.aljazeera.net/en/articles/pages/22011",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-ibn",
+    "url": "https://learning.aljazeera.net/en/articles/pages/21952",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-final-hamza",
+    "url": "https://learning.aljazeera.net/en/generallanguage/%D9%83%D8%AA%D8%A7%D8%A8%D8%A9-%D8%A7%D9%84%D9%87%D9%85%D8%B2%D8%A9-%D9%81%D9%8A-%D8%A2%D8%AE%D8%B1-%D8%A7%D9%84%D9%83%D9%84%D9%85%D8%A9",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-kana",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-59/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-inna",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-60/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-case",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-25/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-imperative",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-40/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-relative",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-9/part-4",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-numbers",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-19/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-dictionary",
+    "url": "https://www.dohadictionary.org/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-kalila",
+    "url": "https://downloads.hindawi.org/books/61851406.pdf",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-derived",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-93/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-hal",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-71/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-tamyiz",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-72/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-exception",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-73/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-diptotes",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-22/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-gender-verbs",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-30/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-plurals",
+    "url": "https://madinaharabic.com/free-content/grammar/lesson-17/part-1",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-quran-script",
+    "url": "https://corpus.quran.com/documentation/phonetic.jsp",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-quran-pauses",
+    "url": "https://corpus.quran.com/documentation/pausemarks.jsp",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-quran-morph",
+    "url": "https://corpus.quran.com/documentation/morphologicalfeatures.jsp",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "ar-poem",
+    "url": "https://ar.wikisource.org/wiki/%D8%A5%D8%B1%D8%A7%D8%AF%D8%A9_%D8%A7%D9%84%D8%AD%D9%8A%D8%A7%D8%A9",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: destination, title and topic. Not an automated guarantee of future availability.",
+    "media_playback_tested": false,
+    "access": "Public page at review; optional paid services are not assigned."
+  },
+  {
+    "id": "python-video",
+    "url": "https://cs50.harvard.edu/x/2026/weeks/6/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: lecture page, notes and embedded video identified.",
+    "media_playback_tested": false,
+    "access": "Public lecture and notes; no paid certificate assigned."
+  },
+  {
+    "id": "shell-video",
+    "url": "https://missing.csail.mit.edu/2020/course-shell/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: lecture page, notes and embedded video identified.",
+    "media_playback_tested": false,
+    "access": "Public lecture and notes; no paid certificate assigned."
+  },
+  {
+    "id": "git-video",
+    "url": "https://missing.csail.mit.edu/2020/version-control/",
+    "checked_on": "2026-10-16",
+    "method": "Web retrieval: lecture page, notes and embedded video identified.",
+    "media_playback_tested": false,
+    "access": "Public lecture and notes; no paid certificate assigned."
+  }
+]

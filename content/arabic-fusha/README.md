@@ -5,14 +5,19 @@ Modern Standard Arabic curriculum, version 1.1.1: 30 modules, 152 lessons,
 from script and sounds to a B2 learning target, with six optional extensions.
 These are curriculum targets, not certified proficiency levels.
 
-Start with the [complete curriculum](MyDay_Arabic_Fusha_Curriculum.md) and
+Start studying with the [lesson teaching companion](../teaching/arabic-fusha-lessons.md):
+all 152 lessons have explanations, worked examples, guided exercises, explained answers
+and specific reading/listening assignments, also shown directly in MyDay.
+Arabic screens include a remembered transliteration toggle and a pronunciation key;
+see [pronunciation support](../teaching/pronunciation/README.md) for coverage and conventions.
+Use the [complete curriculum](MyDay_Arabic_Fusha_Curriculum.md) and
 [package guide](MyDay_Arabic_README.md). Download
 [the HTML reader](MyDay_Arabic_Fusha_Curriculum.html) to read it offline with module navigation.
 
 The [canonical JSON](MyDay_Arabic_Fusha_Curriculum.json), schema, starter materials,
-assessment keys and separate adaptive tutor specification are included for future
-MyDay integration. Answer keys need an appropriate reveal boundary in the app.
-Audio recordings and a deployed tutor are not included.
+assessment keys and separate adaptive tutor specification are included. MyDay's Study
+screens support lessons, sessions and revision, with answers revealed on request.
+Audio is linked from providers, not bundled; a deployed adaptive tutor is not included.
 
 From the repository root, validate the package with Python 3:
 
@@ -26,5 +31,5 @@ After editing the canonical JSON or architecture introduction, regenerate the re
 python3 content/arabic-fusha/authoring/render_curriculum.py
 ```
 
-Application import, Study screens and progress storage still require implementation.
+The [teaching guide](../teaching/README.md) documents companion generation and source checks.
 The package guide documents the data relationships, evidence requirements and review limits.

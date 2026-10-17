@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0",
+  "courses": [
+    {
+      "course": "cybersecurity",
+      "lessons": 146,
+      "assignedSources": 112,
+      "watchSources": 15
+    },
+    {
+      "course": "arabic-fusha",
+      "lessons": 152,
+      "assignedSources": 60,
+      "watchSources": 13
+    }
+  ],
+  "uniqueAssignedSources": 168,
+  "catalogueSources": 168
+}
