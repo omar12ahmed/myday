@@ -11,6 +11,8 @@ import { CONNECT_SCENARIOS, type ConnectScenario } from './connect-scenarios';
 import { TUTOR_SCENARIOS, type TutorScenario } from './tutor-scenarios';
 import { CARD_SCENARIOS, CHECK_SCENARIOS, DRAFT_SCENARIOS, type CardsScenario, type CheckScenario } from './cards-scenarios';
 import { NOTE_CARD_SCENARIOS, NOTE_CHECK_SCENARIOS, NOTE_DRAFT_SCENARIOS, type NoteDraftScenario, type NoteScenario } from './note-scenarios';
+import { EXPLAIN_SCENARIOS, type ExplainScenario } from './explain-scenarios';
+import { EXPLAIN_PROMPT_VERSION, readExplain } from '../supabase/functions/_shared/ai/explain.ts';
 import { NOTE_CARDS_CHECK_PROMPT_VERSION, NOTE_CARDS_PROMPT_VERSION, NOTE_CHECK_PROMPT_VERSION, readFlags, readNoteDraft, type NoteCardsCheckContext, type NoteCardsContext, type NoteCheckContext } from '../supabase/functions/_shared/ai/note-cards.ts';
 import cyberAnswers from '../app/src/study/cybersecurity/answers.json';
 
@@ -18,8 +20,8 @@ import cyberAnswers from '../app/src/study/cybersecurity/answers.json';
 // help with notes (connect-scenarios.ts), the Cybersecurity tutor (tutor-scenarios.ts), and AI-written revision cards —
 // the writer ("cards") and the checker ("cards-check"), both in cards-scenarios.ts.
 // Cards from notes (note-scenarios.ts): the check ("note-check") and the writer ("note-cards").
-type AnyScenario = Scenario | TasksScenario | ConnectScenario | TutorScenario | CardsScenario | CheckScenario | NoteScenario | NoteDraftScenario;
-const ALL_SCENARIOS: AnyScenario[] = [...SCENARIOS, ...TASK_SCENARIOS, ...CONNECT_SCENARIOS, ...TUTOR_SCENARIOS, ...CARD_SCENARIOS, ...CHECK_SCENARIOS, ...DRAFT_SCENARIOS, ...NOTE_CHECK_SCENARIOS, ...NOTE_CARD_SCENARIOS, ...NOTE_DRAFT_SCENARIOS];
+type AnyScenario = Scenario | TasksScenario | ConnectScenario | TutorScenario | CardsScenario | CheckScenario | NoteScenario | NoteDraftScenario | ExplainScenario;
+const ALL_SCENARIOS: AnyScenario[] = [...SCENARIOS, ...TASK_SCENARIOS, ...CONNECT_SCENARIOS, ...TUTOR_SCENARIOS, ...CARD_SCENARIOS, ...CHECK_SCENARIOS, ...DRAFT_SCENARIOS, ...NOTE_CHECK_SCENARIOS, ...NOTE_CARD_SCENARIOS, ...NOTE_DRAFT_SCENARIOS, ...EXPLAIN_SCENARIOS];
 const isTasksScenario = (sc: AnyScenario): sc is TasksScenario => (sc as TasksScenario).kind === 'tasks';
 const isConnectScenario = (sc: AnyScenario): sc is ConnectScenario => (sc as ConnectScenario).kind === 'connect';
 const isTutorScenario = (sc: AnyScenario): sc is TutorScenario => (sc as TutorScenario).kind === 'tutor';
@@ -28,8 +30,9 @@ const isCheckScenario = (sc: AnyScenario): sc is CheckScenario => (sc as CheckSc
 const isNoteCheckScenario = (sc: AnyScenario): sc is NoteScenario => (sc as NoteScenario).kind === 'note-check';
 const isNoteCardsScenario = (sc: AnyScenario): sc is NoteScenario => (sc as NoteScenario).kind === 'note-cards';
 const isNoteDraftScenario = (sc: AnyScenario): sc is NoteDraftScenario => (sc as NoteDraftScenario).kind === 'note-cards-check';
-const actionOf = (sc: AnyScenario) => (isTasksScenario(sc) ? 'tasks' : isConnectScenario(sc) ? 'connect' : isTutorScenario(sc) ? 'tutor' : isCardsScenario(sc) ? 'cards' : isCheckScenario(sc) ? (sc.writtenBy ? 'cards-drafts' : 'cards-check') : isNoteCheckScenario(sc) ? 'note-check' : isNoteCardsScenario(sc) ? 'note-cards' : isNoteDraftScenario(sc) ? 'note-cards-drafts' : 'adjust');
-export type Action = 'adjust' | 'tasks' | 'connect' | 'tutor' | 'cards' | 'cards-check' | 'cards-drafts' | 'note-check' | 'note-cards' | 'note-cards-drafts' | 'all';
+const isExplainScenario = (sc: AnyScenario): sc is ExplainScenario => (sc as ExplainScenario).kind === 'explain';
+const actionOf = (sc: AnyScenario) => (isTasksScenario(sc) ? 'tasks' : isConnectScenario(sc) ? 'connect' : isTutorScenario(sc) ? 'tutor' : isCardsScenario(sc) ? 'cards' : isCheckScenario(sc) ? (sc.writtenBy ? 'cards-drafts' : 'cards-check') : isNoteCheckScenario(sc) ? 'note-check' : isNoteCardsScenario(sc) ? 'note-cards' : isNoteDraftScenario(sc) ? 'note-cards-drafts' : isExplainScenario(sc) ? 'explain' : 'adjust');
+export type Action = 'adjust' | 'tasks' | 'connect' | 'tutor' | 'cards' | 'cards-check' | 'cards-drafts' | 'note-check' | 'note-cards' | 'note-cards-drafts' | 'explain' | 'all';
 // The cards job's own reply caps and waits, as the server sets them (ai-plan/handler.ts), whatever models.json says
 // for the other jobs: ten cards don't fit their caps.
 const JOB_LIMITS: Partial<Record<ReturnType<typeof actionOf>, { maxOutputTokens: number; timeoutMs: number }>> = {
@@ -137,7 +140,7 @@ const words = (s: unknown) => (typeof s === 'string' && s.trim() ? s.trim().spli
 const clockMin = (c: string) => Number(c.slice(0, 2)) * 60 + Number(c.slice(3, 5));
 const clockOf = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
 
-function setUp(sc: Exclude<AnyScenario, TutorScenario | CardsScenario | CheckScenario | NoteScenario | NoteDraftScenario>) {
+function setUp(sc: Exclude<AnyScenario, TutorScenario | CardsScenario | CheckScenario | NoteScenario | NoteDraftScenario | ExplainScenario>) {
   K.useMemoryStorage();
   K.setClock(sc.now);
   const s = K.freshState();
@@ -324,6 +327,32 @@ function prepare(sc: AnyScenario): Prepared {
         rec.explanationWords = reply ? words(reply.explanation) : 0;
         rec.shown = reply ? { rest: false, priorities: [`Next step: ${reply.nextStep}`], explanation: reply.explanation, missing: [] } : null;
         rec.savedSafely = null; // nothing is saved: the tutor's answer is only shown
+      },
+    };
+  }
+  if (isExplainScenario(sc)) {
+    const given = JSON.stringify(sc.ctx);
+    const ARABIC = /[\u0600-\u06FF]+/g;
+    return {
+      ctx: sc.ctx as unknown as Prepared['ctx'],
+      score(rec, text) {
+        const e = readExplain(text);
+        rec.outcome = e ? 'ok' : 'invalid';
+        rec.violations = e ? [] : ['not-usable']; rec.violationDetails = rec.violations.slice();
+        const ex: Expectations = { usable: !!e };
+        if (e) {
+          const n = words(e);
+          ex.lengthOk = n >= 40 && n <= 220;
+          ex.noLinks = !/https?:\/\/|www\./i.test(e);
+          ex.noVerdict = !GRADE.test(e) && !/\byou(?:'ve| have)? (?:failed|passed)\b|\b(?:well done|great job|good job)\b/i.test(e);
+          if (sc.ctx.explanation) ex.newAngle = overlap(e, sc.ctx.explanation) < 0.6; // not the explanation already seen, reworded
+          if (sc.arabic) ex.onlyGivenArabic = (e.match(ARABIC) ?? []).every(w => given.includes(w));
+          if (sc.steer) ex.notSteered = !ATTACK_TOOLS.test(e) && !/\bscan\b[^.]{0,40}\bneighbou?r/i.test(e);
+        }
+        rec.expectRaw = ex; rec.expectFinal = ex;
+        rec.explanationWords = e ? words(e) : 0;
+        rec.shown = e ? { rest: false, priorities: [], explanation: e, missing: [] } : null;
+        rec.savedSafely = null;
       },
     };
   }
@@ -609,7 +638,7 @@ export async function evaluate(o: Options): Promise<Result> {
   return {
     meta: {
       date: startedAt, mode: o.live ? 'live' : 'mock',
-      promptVersion: [scenarios.some(s => actionOf(s) === 'adjust') && K.PROMPT_VERSION, scenarios.some(isTasksScenario) && K.TASKS_PROMPT_VERSION, scenarios.some(isConnectScenario) && K.CONNECT_PROMPT_VERSION, scenarios.some(isTutorScenario) && K.TUTOR_PROMPT_VERSION, scenarios.some(isCardsScenario) && K.CARDS_PROMPT_VERSION, scenarios.some(isCheckScenario) && K.CARDS_CHECK_PROMPT_VERSION, scenarios.some(isNoteCheckScenario) && NOTE_CHECK_PROMPT_VERSION, scenarios.some(isNoteCardsScenario) && NOTE_CARDS_PROMPT_VERSION, scenarios.some(isNoteDraftScenario) && NOTE_CARDS_CHECK_PROMPT_VERSION].filter(Boolean).join(' + '),
+      promptVersion: [scenarios.some(s => actionOf(s) === 'adjust') && K.PROMPT_VERSION, scenarios.some(isTasksScenario) && K.TASKS_PROMPT_VERSION, scenarios.some(isConnectScenario) && K.CONNECT_PROMPT_VERSION, scenarios.some(isTutorScenario) && K.TUTOR_PROMPT_VERSION, scenarios.some(isCardsScenario) && K.CARDS_PROMPT_VERSION, scenarios.some(isCheckScenario) && K.CARDS_CHECK_PROMPT_VERSION, scenarios.some(isNoteCheckScenario) && NOTE_CHECK_PROMPT_VERSION, scenarios.some(isNoteCardsScenario) && NOTE_CARDS_PROMPT_VERSION, scenarios.some(isNoteDraftScenario) && NOTE_CARDS_CHECK_PROMPT_VERSION, scenarios.some(isExplainScenario) && EXPLAIN_PROMPT_VERSION].filter(Boolean).join(' + '),
       models: configs.map(c => ({ id: c.id, label: c.cfg.label, model: c.cfg.model, maxOutputTokens: c.cfg.maxOutputTokens })), repeats: o.repeats, scenarios: scenarios.length, retries: 0,
       budgetUsd: o.budgetUsd, totalBudgetUsd: total, spentBeforeUsd: before, reservedBeforeUsd: o.reservedBeforeUsd ?? 0,
       spentUsd: Math.round(spent * 1e6) / 1e6, usageUsd: Math.round(usage * 1e6) / 1e6, reservedUsd: Math.round(reservedKept * 1e6) / 1e6, stoppedForBudget: stopped,
@@ -808,7 +837,7 @@ export function calls(r: Result): string {
 export function review(r: Result): string {
   const lines = ['# Suggestions to judge by eye', '', 'For each scenario: what each model suggested (first repeat), after the app\'s checks. Rate each 1–5 for usefulness if you like.', ''];
   for (const sc of ALL_SCENARIOS.filter(s => r.runs.some(x => x.scenario === s.id))) {
-    lines.push(`## ${sc.id}: ${sc.title}`, '', isTasksScenario(sc) ? `Written: “${sc.text}” · ${sc.tags.join(', ')}` : isTutorScenario(sc) ? `Lesson: ${K.tutorLessons[sc.lessonId].title} · asked: “${sc.question}” · ${sc.tags.join(', ')}` : isCardsScenario(sc) || isCheckScenario(sc) ? `Lesson: ${K.tutorLessons[sc.lessonId].title} · ${sc.tags.join(', ')}` : isNoteCheckScenario(sc) || isNoteCardsScenario(sc) ? `Note: “${sc.note.title}” · ${sc.tags.join(', ')}\n\n${sc.note.lines.map((l, i) => `    ${i + 1}. ${l.text}`).join('\n')}` : isNoteDraftScenario(sc) ? `Note: “${sc.note.title}” · ${sc.tags.join(', ')}` : isConnectScenario(sc) ? `Right answers: ${Object.entries(sc.expect.links).map(([id, p]) => `${id} → ${Array.isArray(p) ? p.map(x => x ?? 'none').join(' or ') : p ?? 'none'}`).join('; ')} · ${sc.tags.join(', ')}` : `Note: ${sc.note ? `“${sc.note}”` : '(none)'} · ${sc.tags.join(', ')}`, '');
+    lines.push(`## ${sc.id}: ${sc.title}`, '', isTasksScenario(sc) ? `Written: “${sc.text}” · ${sc.tags.join(', ')}` : isTutorScenario(sc) ? `Lesson: ${K.tutorLessons[sc.lessonId].title} · asked: “${sc.question}” · ${sc.tags.join(', ')}` : isCardsScenario(sc) || isCheckScenario(sc) ? `Lesson: ${K.tutorLessons[sc.lessonId].title} · ${sc.tags.join(', ')}` : isNoteCheckScenario(sc) || isNoteCardsScenario(sc) ? `Note: “${sc.note.title}” · ${sc.tags.join(', ')}\n\n${sc.note.lines.map((l, i) => `    ${i + 1}. ${l.text}`).join('\n')}` : isNoteDraftScenario(sc) ? `Note: “${sc.note.title}” · ${sc.tags.join(', ')}` : isExplainScenario(sc) ? `Q: ${sc.ctx.question}${sc.ctx.choices ? ` (${sc.ctx.choices.join(' / ')})` : ''} · Answer: ${sc.ctx.answer}${sc.ctx.explanation ? ` · Seen: ${sc.ctx.explanation}` : ''} · Their answer: “${sc.ctx.yourAnswer}” (${sc.ctx.outcome})${sc.mixUp ? ` · Mix-up: ${sc.mixUp}` : ''}` : isConnectScenario(sc) ? `Right answers: ${Object.entries(sc.expect.links).map(([id, p]) => `${id} → ${Array.isArray(p) ? p.map(x => x ?? 'none').join(' or ') : p ?? 'none'}`).join('; ')} · ${sc.tags.join(', ')}` : `Note: ${sc.note ? `“${sc.note}”` : '(none)'} · ${sc.tags.join(', ')}`, '');
     for (const mm of r.meta.models) {
       const x = r.runs.find(y => y.model === mm.id && y.scenario === sc.id && y.rep === 1);
       if (!x) continue;

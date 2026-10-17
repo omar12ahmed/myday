@@ -9,6 +9,7 @@
 #   app-final (every section together), app-site (the website layouts from deploy/build-site.sh)
 # Cloud sync: sync-db (the database migrations, in PostgreSQL via PGlite — no browser), app-sync (two devices end to
 #   end, against a local stand-in for Supabase; see supabase-standin.js). Neither uses a real Supabase project.
+# Connections (the knowledge graph): graph-rules (its rules, no browser), app-graph (the screen).
 # AI planner: ai-rules (the rules, on the app's own code — no browser), ai-server (the Edge Function and its limits),
 #   app-ai (in the browser: practice mode, and an account against the stand-in). No real model is called.
 #   Opt-in (not run by default): ai-concurrency — the AI limits under simultaneous requests, in a real PostgreSQL
@@ -19,7 +20,7 @@ set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(dirname "$HERE")"
 SUITES=("$@")
-[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study study-learning-rules app-learning arabic-rules app-arabic app-teaching app-design app-explore explore-rules explore-assets app-explore-visual app-architecture app-storage app-today app-calendar-pay app-finance app-inbox app-tasks app-projects app-connect app-study app-topics app-workout app-food app-goals goals-rules capture-rules patterns-rules understand-rules app-patterns app-final app-site app-install sw-rules sync-db sync-records app-sync ai-rules ai-server app-ai cybersecurity-rules app-cybersecurity)
+[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study study-learning-rules app-learning arabic-rules app-arabic app-teaching app-design app-explore explore-rules explore-assets app-explore-visual app-architecture app-storage app-today app-calendar-pay app-finance app-inbox app-tasks app-projects app-connect app-graph app-study app-topics app-workout app-food app-goals goals-rules capture-rules patterns-rules understand-rules graph-rules app-patterns app-final app-site app-install sw-rules sync-db sync-records app-sync ai-rules ai-server app-ai cybersecurity-rules app-cybersecurity)
 
 # ---- What's needed ----
 CHROME="${CHROME:-}"

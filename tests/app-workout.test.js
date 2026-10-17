@@ -450,5 +450,66 @@ const sessionOf = (id, date, exs) => ({ id, date, templateId: 'tP', templateName
   const liveS = await screensIn('index.html'), newS = await screensIn(APP);
   for (const k of Object.keys(liveS)) check(`${k}: the same as the current MyDay`, eq(liveS[k], newS[k]), [liveS[k], newS[k]]);
 
+  // ------------------------------------------------------------------
+  console.log('\n[42] Daily exercises');
+  await go('health/workout'); await reset(); await go('health/workout');
+  check('Workout home offers Daily exercises, with a way to add one', (await text('#daily-mg-h')) === 'Daily exercises' && await exists('[data-action=daily-add]'));
+  await go('today');
+  check('Today has no daily-exercises card before any exercise exists', !(await exists('#slot-daily')));
+  await go('health/workout');
+  await click('[data-action=daily-add]'); await sleep(150);
+  await setVal('#dailyName', 'Push-ups'); await setVal('#dailyTarget', '150'); await setVal('#dailySet', '25');
+  await click('[data-action=daily-add-save]'); await sleep(200);
+  check('adding one lists it with its target and set size, and saves it', (await text('.daily-mg-row')).includes('Push-ups') && (await text('.daily-mg-row')).includes('daily target 150 · in sets of 25') && (await H()).daily.exercises.length === 1);
+  await click('[data-action=daily-add]'); await sleep(150);
+  await setVal('#dailyName', 'push-ups'); await setVal('#dailyTarget', '100'); await setVal('#dailySet', '10');
+  await click('[data-action=daily-add-save]'); await sleep(200);
+  check('a duplicate name is refused with a message (any case)', (await text('[role=alert]')).includes('already have') && (await H()).daily.exercises.length === 1);
+  await click('[data-action=daily-add-cancel]'); await sleep(150);
+  await go('today');
+  check('Today shows the countdown: "150 left" with "+ a set of 25"', (await text('#slot-daily')).includes('150 left') && (await text('[data-action=daily-tap]')) === '+ a set of 25' && !(await exists('[data-action=daily-undo]')));
+  await click('[data-action=daily-tap]'); await sleep(200);
+  check('one tap logs a set and counts down to "125 left", with undo', (await text('#slot-daily')).includes('125 left') && eq((await H()).daily.log['2026-11-02'][(await H()).daily.exercises[0].id], [25]) && await exists('[data-action=daily-undo]'));
+  await click('[data-action=daily-undo]'); await sleep(200);
+  check('undo takes the set back ("150 left", nothing left in the log)', (await text('#slot-daily')).includes('150 left') && !((await H()).daily.log['2026-11-02']));
+  await click('[data-action=daily-tap]'); await sleep(150); await click('[data-action=daily-tap]'); await sleep(200);
+  check('each tap adds one set, in order', eq((await H()).daily.log['2026-11-02'][(await H()).daily.exercises[0].id], [25, 25]));
+  const did = (await H()).daily.exercises[0].id;
+  await editStorage(`s => { const e = s.health.daily.exercises[0]; e.target = 55; }`);
+  await go('today');
+  check('a target change applies from today ("5 left"), the last tap is just what\'s left', (await text('#slot-daily')).includes('5 left') && (await text('[data-action=daily-tap]')) === '+ a set of 5');
+  await click('[data-action=daily-tap]'); await sleep(200);
+  check('finishing folds the exercise to a tick, "done for today"', (await text('#slot-daily')).includes('done for today') && !(await exists('[data-action=daily-tap]')) && (await text('#slot-daily')).includes('✓'));
+  check('…and the last set logged only the 5 left', eq((await H()).daily.log['2026-11-02'][did], [25, 25, 5]));
+  await go('health/workout');
+  check('the week shows in Health, with a bar for today', (await ev(`[...document.querySelectorAll('.daily-mg-row')].length`)) === 1 && (await ev(`(() => { const c = document.querySelector('#daily-mg-h').closest('.card'); return c ? c.textContent.includes('This week') : false; })()`)));
+  await click('[data-action=daily-target][data-dir="1"]'); await sleep(150);
+  check('the target stepper goes up in 5s (55 → 60)', (await H()).daily.exercises[0].target === 60);
+  await editStorage(`s => { const e = s.health.daily.exercises[0]; e.target = 12; e.set = 12; }`);
+  await go('health/workout');
+  await click('[data-action=daily-target][data-dir="-1"]'); await sleep(150);
+  check('stepping the target below the set size brings the set size with it (12 → 7 and 7)', (await H()).daily.exercises[0].target === 7 && (await H()).daily.exercises[0].set === 7);
+  await click('[data-action=daily-archive]'); await sleep(200);
+  await go('today');
+  const offToday = !(await exists('#slot-daily'));
+  await go('health/workout');
+  check('archived: off Today, kept in Health under Archived', offToday && (await text('details.group')).includes('Push-ups'));
+  // Phones: every Daily exercises button is easy to tap (44 px), on Today and in Health.
+  await editStorage(`s => { const e = s.health.daily.exercises[0]; e.archived = false; e.target = 500; e.set = 25; }`);
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  const small = sel => ev(`[...document.querySelectorAll(${JSON.stringify(sel)})].filter(b => b.getBoundingClientRect().height < 44).map(b => b.textContent.trim())`);
+  await go('today');
+  const smallToday = await small('#slot-daily button'), todayButtons = await ev(`document.querySelectorAll('#slot-daily button').length`);
+  await go('health/workout');
+  const smallHealth = await small('#daily-mg-h ~ * button, .daily-mg-row button');
+  check('phone: every Daily exercises button is at least 44 px tall (Today and Health)', todayButtons >= 2 && !smallToday.length && !smallHealth.length && !(await ev('document.documentElement.scrollWidth > innerWidth')), [todayButtons, smallToday, smallHealth]);
+  await T.send('Emulation.clearDeviceMetricsOverride');
+  await editStorage(`s => { s.health.daily = { exercises: [{ id: 'ok', name: 'Plank', target: 5, set: 1, archived: false }, { id: 'bad', name: '', target: 10, set: 5 }, { id: 'noT', name: 'No target' }, { id: 'ok', name: 'Twice', target: 5, set: 5 }, 'nope'], log: { 'not-a-day': { ok: [1] }, '2026-11-02': { ok: [1, 0, 'x', 2], ghost: [5], nope: 3 } } }; }`);
+  await go('today');
+  await click('#themeBtn'); await sleep(200); // a save, so the tidied data is what's read back
+  const dn = (await H()).daily;
+  check('messy saved data is tidied: one good exercise, its good taps, the rest dropped', dn.exercises.length === 1 && dn.exercises[0].id === 'ok' && eq(dn.log, { '2026-11-02': { ok: [1, 2] } }));
+  check('…and Today counts down the tidied exercise ("2 left" of 5)', (await text('#slot-daily')).includes('Plank') && (await text('#slot-daily')).includes('2 left'));
+
   finish();
 })().catch(e => { console.error('HARNESS ERROR', e); const s = T.summary(); console.log(`${s.pass} passed, ${s.fail} failed before the error`); process.exit(2); });

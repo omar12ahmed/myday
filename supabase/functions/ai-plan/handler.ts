@@ -18,6 +18,7 @@ import { checkTutorContext } from '../_shared/ai/tutor.ts';
 import { checkConnectContext } from '../_shared/ai/connect.ts';
 import { CARDS_LIMITS, checkCardsContext, readDraft, readVerdicts, type CardsCheckContext, type CardsContext } from '../_shared/ai/cards.ts';
 import { checkNoteCardsContext, checkNoteCheckContext, readNoteDraft, type NoteCardsCheckContext, type NoteCardsContext } from '../_shared/ai/note-cards.ts';
+import { checkExplainContext } from '../_shared/ai/explain.ts';
 import { isCards, isNoteCards, type AiContext } from '../_shared/ai/prompt.ts';
 
 export interface Deps {
@@ -95,7 +96,7 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
   if (raw.length > LIMITS.bodyBytes) return reply(413, { ok: false, error: 'bad-request' }, 'too-large');
   let body: { context?: unknown };
   try { body = JSON.parse(raw); } catch { return reply(400, { ok: false, error: 'bad-request' }, 'not-json'); }
-  if (!body || !(checkContext(body.context) || checkTasksContext(body.context) || checkTutorContext(body.context) || checkConnectContext(body.context) || checkCardsContext(body.context) || checkNoteCheckContext(body.context) || checkNoteCardsContext(body.context))) return reply(400, { ok: false, error: 'bad-request' }, 'bad-context');
+  if (!body || !(checkContext(body.context) || checkTasksContext(body.context) || checkTutorContext(body.context) || checkConnectContext(body.context) || checkCardsContext(body.context) || checkNoteCheckContext(body.context) || checkNoteCardsContext(body.context) || checkExplainContext(body.context))) return reply(400, { ok: false, error: 'bad-request' }, 'bad-context');
   const ctx = body.context;
 
   // 3. The model for this job (and the other one, in case it can't answer), and the limits. Both models' worst cases

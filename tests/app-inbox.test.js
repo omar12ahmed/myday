@@ -42,7 +42,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('the bar: Today, Calendar, Projects, Finance, Health, Study', eq(await ev(`[...document.querySelectorAll('#nav .nav-item')].map(a => a.textContent.trim())`), ['Today', 'Calendar', 'Projects', 'Finance', 'Health', 'Study']));
   check('Today no longer has its own Notes card (Capture is on every screen instead)', !(await exists('#notesCard')) && (await exists('[data-action=capture-open]')));
   await click('#nav a[href="#projects"]'); await sleep(300);
-  check('Projects opens on your projects, with a Notes tab', (await exists('#projectNew')) && eq(await ev(`[...document.querySelectorAll('.section-tabs [role=tab]')].map(a => a.textContent + (a.getAttribute('aria-selected') === 'true' ? '*' : ''))`), ['Projects*', 'Notes']));
+  check('Projects opens on your projects, with Notes and Connections tabs', (await exists('#projectNew')) && eq(await ev(`[...document.querySelectorAll('.section-tabs [role=tab]')].map(a => a.textContent + (a.getAttribute('aria-selected') === 'true' ? '*' : ''))`), ['Projects*', 'Notes', 'Connections']));
   await click('.section-tabs a[href="#projects/notes"]'); await sleep(300);
   check('the Notes tab: a search, an empty Inbox that says what it\'s for, and the starter collections', (await exists('#noteSearch')) && (await text('#noteInbox')).includes('no need to file it')
     && eq(await ev(`[...document.querySelectorAll('#noteCollections .ncol-row span:first-child')].map(s => s.textContent)`), ['Lifestyle', 'Business ideas', 'Health & fitness', 'Money', 'Study & career', 'Personal']));

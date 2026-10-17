@@ -571,6 +571,19 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
   }
 
+  console.log('\n[11] Explanations you keep on a revision card (any kind)');
+  {
+    K.setClock(`${D}T19:00`); const s0 = K.freshState(); localStorage.clear(); localStorage.setItem('myday.data.v4', JSON.stringify(s0)); K.boot();
+    const w = K.getSnapshot().data;
+    w.study.concepts.push({ id: 'cpX', title: 'x', prompt: 'Q?', answer: 'A' }); w.cybersecurity.cards.push({ id: 'assessment.lab-isolation-check.q1', addedOn: D, review: { reps: 0, interval: 0, lapses: 0, due: null } });
+    w.arabic.cards.push({ id: 'lexeme.arabic-seed-008:recognise', addedOn: D, review: { reps: 0, interval: 0, lapses: 0, due: null } });
+    const AW = { text: '  Think of DNS as a phone book.  ', by: 'GLM-5.3-Flash', on: D };
+    check('keeping one on a concept, a Cybersecurity check and an Arabic card (tidied), and reading it back', ['cpX', 'assessment.lab-isolation-check.q1', 'lexeme.arabic-seed-008:recognise'].every(id => K.keepAnotherWay(w, id, AW) && K.anotherWayOf(w, id).text === 'Think of DNS as a phone book.'));
+    check('…keeping another replaces it (one per card)', K.keepAnotherWay(w, 'cpX', { ...AW, text: 'Another one.' }) && K.anotherWayOf(w, 'cpX').text === 'Another one.');
+    check('…removing it leaves the card as it was; removing again, or on a card that isn\'t there, changes nothing', K.keepAnotherWay(w, 'cpX', null) && !('anotherWay' in w.study.concepts.find(c => c.id === 'cpX')) && !K.keepAnotherWay(w, 'cpX', null) && !K.keepAnotherWay(w, 'cpNope', AW));
+    check('…and an empty one isn\'t kept', !K.keepAnotherWay(w, 'cpX', { ...AW, text: '   ' }) && K.anotherWayOf(w, 'cpX') === null);
+  }
+
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

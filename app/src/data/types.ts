@@ -134,6 +134,10 @@ export interface MyDayData {
   // unread). Notes and tasks say which project they belong to (`projectId`); appointments are listed on the project.
   projects: ProjectsData;
 
+  // Study → Reading: books you're reading, where you are, and your notes on each (added in 1.24.0; the classic
+  // MyDay keeps it unread). Reading never counts towards the learning streak.
+  reading: ReadingData;
+
   // Anything else (e.g. a section added by a newer MyDay) is kept as it was, never dropped.
   [other: string]: unknown;
 }
@@ -280,6 +284,30 @@ export interface StudyData {
   activeId: string | null;      // the session in progress, if any (only ever one)
   reviews: Review[];
   settings: { vault: string; showClock: boolean };
+}
+
+// ---------- Study → Reading ----------
+// A book you're reading: where you are (page), and your notes on it. Total pages are optional — without
+// them there's just the page number and no bar (never a percentage). Reaching the last page finishes the book.
+export interface BookNote {
+  id: string;
+  page: number | null;   // the page the note is about, if given
+  text: string;
+  addedOn: DateKey;
+}
+export interface Book {
+  id: string;
+  title: string;
+  author: string;        // may be ""
+  pages: number | null;  // total pages, if you know them
+  page: number;          // where you are (0 = not started; never past `pages`)
+  notes: BookNote[];
+  addedOn: DateKey;
+  finishedOn: DateKey | null; // set when you reach the last page (or finish it yourself); the book folds away
+}
+export interface ReadingData {
+  books: Book[];
+  [other: string]: unknown;    // anything a newer MyDay adds here is kept
 }
 
 // ---------- Health: Workout ----------
@@ -465,7 +493,24 @@ export interface FinanceData {
 export interface HealthData {
   workout: WorkoutData;
   food: FoodData;
+  daily: DailyData;
   [other: string]: unknown;
+}
+
+// ---------- Health: Daily exercises ----------
+// Everyday movements with a daily target and a set size ("150 push-ups, in sets of 25"). One tap on
+// Today logs one set; each tap's reps are kept so a mis-tap can be undone. Missed days cost nothing:
+// every morning starts from the full target again, and changes apply from today (history stays as it was).
+export interface DailyExercise {
+  id: string;
+  name: string;
+  target: number;    // reps to do each day (1–1000)
+  set: number;       // reps per tap (1–500, never more than target)
+  archived: boolean; // archived: off Today and the count, history kept
+}
+export interface DailyData {
+  exercises: DailyExercise[];
+  log: Record<DateKey, Record<string, number[]>>; // day → exercise id → each tap's reps, in order
 }
 
 // ---------- Health: Food ----------

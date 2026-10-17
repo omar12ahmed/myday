@@ -408,23 +408,23 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   const bgOf = () => ev(`getComputedStyle(document.body).backgroundColor`);
   await openAt(2027, 2, 7, 7);
   // From 1.11.0 the new app is warm and light by default (the classic MyDay's default stays dark).
-  check('light by default (the warm neutral page)', (await ev(`document.documentElement.dataset.theme`)) === 'light' && (await bgOf()) === 'rgb(246, 245, 242)', await bgOf());
+  check('light by default (the warm neutral page)', (await ev(`document.documentElement.dataset.theme`)) === 'light' && (await bgOf()) === 'rgb(247, 245, 239)', await bgOf());
   check('theme button labelled for screen readers', (await ev(`document.getElementById('themeBtn').getAttribute('aria-label')`)) === 'Theme: Light. Tap to change.');
   await click('#themeBtn'); await sleep(400);
-  check('tap → Dark: the charcoal colours applied and saved', (await ev(`document.documentElement.dataset.theme`)) === 'dark' && (await bgOf()) === 'rgb(23, 27, 25)' && (await data()).settings.theme === 'dark');
-  check('browser bar colour follows the theme', (await ev(`document.querySelector('meta[name=theme-color]').content`)) === '#171b19');
+  check('tap → Dark: the charcoal colours applied and saved', (await ev(`document.documentElement.dataset.theme`)) === 'dark' && (await bgOf()) === 'rgb(20, 24, 21)' && (await data()).settings.theme === 'dark');
+  check('browser bar colour follows the theme', (await ev(`document.querySelector('meta[name=theme-color]').content`)) === '#141815');
   await T.send('Page.addScriptToEvaluateOnNewDocument', { source: `new MutationObserver((m, o) => { if (document.body) { window.__themeAtBody = document.documentElement.getAttribute('data-theme'); o.disconnect(); } }).observe(document, { childList: true, subtree: true });` });
   await openAt(2027, 2, 7, 8);
   check('saved theme is applied before the page body appears (no flash)', (await ev('window.__themeAtBody')) === 'dark', await ev('window.__themeAtBody'));
   await click('#themeBtn'); await sleep(400);
   await T.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'dark' }] });
-  check('tap → Match device (device dark) → dark colours', (await ev(`document.documentElement.dataset.theme`)) === 'auto' && (await bgOf()) === 'rgb(23, 27, 25)', await bgOf());
+  check('tap → Match device (device dark) → dark colours', (await ev(`document.documentElement.dataset.theme`)) === 'auto' && (await bgOf()) === 'rgb(20, 24, 21)', await bgOf());
   await T.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'light' }] });
-  check('…device switches to light → light colours', (await bgOf()) === 'rgb(246, 245, 242)', await bgOf());
-  check('Match device updates the browser bar when the OS theme changes', (await ev(`document.querySelector('meta[name=theme-color]').content`)) === '#f6f5f2');
+  check('…device switches to light → light colours', (await bgOf()) === 'rgb(247, 245, 239)', await bgOf());
+  check('Match device updates the browser bar when the OS theme changes', (await ev(`document.querySelector('meta[name=theme-color]').content`)) === '#f7f5ef');
   await T.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'dark' }] });
   await click('#themeBtn'); await sleep(400);
-  check('tap → back to Light (even when the device is dark)', (await ev(`document.documentElement.dataset.theme`)) === 'light' && (await bgOf()) === 'rgb(246, 245, 242)', await bgOf());
+  check('tap → back to Light (even when the device is dark)', (await ev(`document.documentElement.dataset.theme`)) === 'light' && (await bgOf()) === 'rgb(247, 245, 239)', await bgOf());
   await T.send('Emulation.setEmulatedMedia', { features: [] });
   const contrastIn = async theme => ev(`(() => {
     document.documentElement.dataset.theme = ${JSON.stringify(theme)};
@@ -472,13 +472,12 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   check('no sideways scrolling at phone width (proposal)', !(await ev('document.documentElement.scrollWidth > innerWidth')));
   await T.send('Emulation.clearDeviceMetricsOverride');
 
-  console.log('\n[19] Animations, focus timer, celebration, garden');
+  console.log('\n[19] Animations, focus timer, celebration');
   const secs = async () => { const p = (await text('#timerTime')).split(':').map(Number); return p.length === 3 ? p[0] * 3600 + p[1] * 60 + p[2] : p[0] * 60 + p[1]; };
   const advanceTimer = sec => ev(`(() => { const t = JSON.parse(localStorage.getItem('${KEY}')).timer; const d = new Date(t.startedAt + ${'${sec}'} * 1000); __setNow(d.getFullYear(), d.getMonth() + 1, d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds()); })()`.replace('${sec}', sec));
   const tickAll = async () => { while (await ev(`!!document.querySelector('#app .task input:not(:checked)')`)) { await ev(`document.querySelector('#app .task input:not(:checked)').click()`); await sleep(50); } };
   const anim = sel => ev(`(() => { const el = document.querySelector(${JSON.stringify('X')}); return el ? getComputedStyle(el).animationName : 'missing'; })()`.replace('"X"', JSON.stringify(sel)));
   await reset(); await openAt(2027, 5, 3, 7);
-  check('garden starts as a seed with a friendly caption', (await text('#gardenCaption')).startsWith('Each learning session you finish grows a leaf'));
   await setEnergy(5); await click('[data-action=build]');
   check('proposal items slide in one by one', (await ev(`document.querySelectorAll('.prop-item.stagger').length`)) === 3);
   await click('[data-action=prop-edit]');
@@ -489,11 +488,10 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   check('the next task is marked "Up next"', (await text('#app .task.next')).includes('Up next') && (await ev(`document.querySelectorAll('#app .task.next').length`)) === 1);
   await tick(0);
   check('ticking plays a pop + glow on that card', (await anim('.task.just-done')) === 'glow' && (await anim('.task.just-done .box')) === 'pop');
-  check('garden grows its first leaf, with a grow animation', (await text('#gardenCaption')).startsWith('1 learning session so far · 0 flowers and a sprout with 1 leaf') && (await ev(`document.querySelectorAll('#garden .gd-leaf').length`)) === 1 && (await exists('#garden .gd-grow')));
   check("today's tile in the 7-day row pops", await exists('.wd.today.on.just'));
   check('a gentle "1 done so far" note (no score before anything is ticked)', (await text('#slot-plan')).includes('1 done so far'));
   await openAt(2027, 5, 3, 7, 1);
-  check('animations play once, not on every refresh', !(await exists('.task.just-done')) && !(await exists('#garden .gd-grow')));
+  check('animations play once, not on every refresh', !(await exists('.task.just-done')));
 
   await click('[data-action=timer-focus]');
   check('focus timer opens for the next task with its full time', (await text('#timerCard .title')) === 'Laundry' && (await text('#timerTime')) === '15:00' && (await text('#timerCard .eyebrow')) === 'Focus');
@@ -550,11 +548,6 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   check('…no burst and no animations under reduced motion', !(await exists('.burst')) && (await anim('#app .task')) === 'none');
   await T.send('Emulation.setEmulatedMedia', { features: [] });
 
-  await editStorage(`s => { for (let i = 1; i <= 10; i++) { const k = '2027-04-' + String(i).padStart(2, '0'); s.days[k] = { energy: 3, rest: false, builtAt: '', checkedIn: true, tasks: [{ uid: 'g' + i, taskId: 'l1', category: 'learning', title: 'Old session', minutes: 30, baseMinutes: 30, done: true, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null }] }; } }`);
-  await openAt(2027, 5, 5, 9);
-  const n = Object.values((await data()).days).reduce((a, d) => a + d.tasks.filter(t => t.category === 'learning' && t.done).length, 0);
-  const fl = await ev(`document.querySelectorAll('#garden .gd-flower').length`), lv = await ev(`document.querySelectorAll('#garden .gd-leaf').length`);
-  check(`garden: ${n} sessions → ${Math.floor(n / 5)} flowers + ${n % 5} leaves`, fl === Math.floor(n / 5) && lv === n % 5 && (await text('#gardenCaption')).startsWith(`${n} learning sessions so far`), [n, fl, lv]);
   await openAt(2027, 5, 6, 7); await build(3);
   await click('[data-action=timer-focus]');
   await openAt(2027, 5, 7, 7); await sleep(200);

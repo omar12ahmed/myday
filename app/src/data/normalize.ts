@@ -10,6 +10,7 @@ import { normalizeCyber } from './cybersecurity/normalize';
 import { emptyArabic } from './arabic/types';
 import { normalizeArabic } from './arabic/normalize';
 import { emptyFood } from './food/normalize';
+import { emptyDaily } from './health/daily';
 import { emptyWorkout } from './workout/common';
 import { normalizeHealth } from './workout/normalize';
 import { normalizeStudy } from './study/normalize';
@@ -18,6 +19,7 @@ import { emptyNotes, normalizeNotes } from './notes';
 import { emptyFitness, normalizeFitness } from './goals';
 import { emptyPatterns, normalizePatterns } from './patterns/saved';
 import { emptyProjects, normalizeProjects } from './projects';
+import { emptyReading, normalizeReading } from './reading';
 import { emptyTasks, normalizeTasks } from './tasks';
 import type { Category, Commitment, DayContext, Energy, ListItem, MyDayData, QueueItem, Settings, Task, Theme } from './types';
 import { clone, intIn, isObj, listOf, uid, cleanMinutes } from './util';
@@ -73,7 +75,7 @@ export function freshState(): MyDayData {
     rota: emptyRota(),
     pay: defaultPay(),
     bankHolidays: { region: 'england-and-wales', fetchedAt: null, divisions: null },
-    health: { workout: emptyWorkout(), food: emptyFood() },
+    health: { workout: emptyWorkout(), food: emptyFood(), daily: emptyDaily() },
     study: emptyStudy(),
     cybersecurity: emptyCyber(),
     arabic: emptyArabic(),
@@ -83,6 +85,7 @@ export function freshState(): MyDayData {
     tasks: emptyTasks(),
     patterns: emptyPatterns(),
     projects: emptyProjects(),
+    reading: emptyReading(),
     saves: { seq: 0, log: [] },
   };
 }
@@ -261,16 +264,17 @@ export function normalize(raw: unknown, report = { dropped: 0 }): MyDayData {
   s.tasks = normalizeTasks(raw.tasks, report);       // added by the new app in 1.5.0; absent before → no tasks yet
   s.patterns = normalizePatterns(raw.patterns, report); // added by the new app in 1.6.0; absent before → nothing chosen yet
   s.projects = normalizeProjects(raw.projects, report); // added by the new app in 1.12.0; absent before → no projects yet
+  s.reading = normalizeReading(raw.reading, report);   // added by the new app in 1.24.0; absent before → no books yet
   if (isObj(raw.saves)) {
     s.saves = { seq: intIn(raw.saves.seq, 0, 1e12, 0), log: listOf(raw.saves.log).filter(x => typeof x === 'string').slice(-SAVE_LOG) };
   }
   // A whole section of the wrong kind (e.g. damaged into text) can't be read. Like the current MyDay, its
   // empty default is used — but it's counted, so it's never left out silently (see storage.ts).
   const wrong = (v: unknown, kind: 'object' | 'array') => v !== null && v !== undefined && (kind === 'array' ? !Array.isArray(v) : !isObj(v));
-  for (const k of ['lists', 'days', 'nudge', 'settings', 'context', 'rota', 'pay', 'bankHolidays', 'health', 'study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'projects']) if (wrong(raw[k], 'object')) report.dropped++;
+  for (const k of ['lists', 'days', 'nudge', 'settings', 'context', 'rota', 'pay', 'bankHolidays', 'health', 'study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'projects', 'reading']) if (wrong(raw[k], 'object')) report.dropped++;
   for (const k of ['queue', 'commitments']) if (wrong(raw[k], 'array')) report.dropped++;
   if (isObj(raw.lists)) for (const cat of CATS) if (cat in raw.lists && wrong(raw.lists[cat], 'array')) report.dropped++;
-  if (isObj(raw.health)) for (const k of ['workout', 'food']) if (wrong(raw.health[k], 'object')) report.dropped++;
+  if (isObj(raw.health)) for (const k of ['workout', 'food', 'daily']) if (wrong(raw.health[k], 'object')) report.dropped++;
   // Keep everything else exactly as it was: anything added by a newer MyDay.
   for (const key of Object.keys(raw)) {
     if (!(key in s) && !['__proto__', 'constructor', 'prototype'].includes(key)) s[key] = raw[key];

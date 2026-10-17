@@ -356,6 +356,7 @@ const go = async (hash, y, m, d, h = 9, mi = 0, url = APP) => { T.setUrl(url + '
   await editStorage(`s => { s.rota.patterns = [${PATTERN}]; s.rota.overrides = { '2026-11-03': { planned: { type: 'off' }, actual: { status: 'sick' } } }; s.rota.entries = [{ id: 'o9', kind: 'overtime', start: '2026-11-07T10:00', end: '2026-11-07T14:00', note: 'x' }]; s.pay.hourlyRate = 15;
     s.health = { workout: { exercises: [], templates: [{ id: 't1', name: 'Legs', minutes: 45, archived: false, items: [] }], schedule: { mode: 'off', weekdays: {}, sequence: [], next: 0, restDays: 1, since: null }, planned: {}, sessions: [], activeId: null, restTimer: { enabled: false, seconds: 90 }, rest: null }, food: { prefs: { exclude: [], dislikes: [], maxMinutes: null, batchOnly: false }, recipes: {}, favourites: [], want: [], cooked: [], shopping: [], cooking: null } }; s.study = { stages: [{ id: 'st1', title: 'Networking', courses: [] }], focusCourseId: null, concepts: [], sessions: [], activeId: null, reviews: [], settings: { vault: '', showClock: true } }; s.futureSection = { kept: true }; }`); // Study as both apps save it, so the comparison below can be exact
   await openAt(2026, 11, 2, 12);
+  await click('#themeBtn'); await sleep(200); await click('#themeBtn'); await sleep(200); // a save: Health gains Daily exercises when the app opens
   for (const f of fs.readdirSync(S + '/dl')) fs.unlinkSync(S + '/dl/' + f);
   await click('[data-action=export]'); await sleep(1500);
   const e4 = JSON.parse(fs.readFileSync(S + '/dl/myday-export-2026-11-02.json', 'utf8'));

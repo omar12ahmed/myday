@@ -282,7 +282,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   check('Done returns to the dashboard; the next task is now HTTP in detail', (await ev('location.hash')) === '#study' && (await text('#stFocus')).includes('HTTP in detail'));
   await nav('today'); await sleep(150);
   check('a ticked Today task and a Study session on the same day count as one learning day', (await text('#streak')).includes('Learning days in the last 7: 1'));
-  check('…and grow one leaf in the garden, not two', (await text('#gardenCaption')).startsWith('1 learning session '));
+  check('…and the card points at what\'s next and when you last sat with it', (await text('#streak-next')) === 'Cybersecurity — up next: TryHackMe: Pre-Security path. Studied today.', [await text('#streak-next')]);
   await nav('study'); await click('#stFocus [data-action=s-start][data-short="1"]'); await sleep(250);
   check('the shorter alternative starts a 15-minute session', (await SD()).sessions[1].plannedMin === 15 && (await SD()).sessions[1].short === true);
   await nav('study/roadmap');
@@ -294,7 +294,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   st2 = await SD();
   check('Skip leaves no check-in, and the session still counts', st2.sessions[1].status === 'done' && st2.sessions[1].checkin === null && st2.sessions[1].taskDone === null);
   await nav('today'); await sleep(150);
-  check('a second session that day: still one learning day, now two leaves', (await text('#streak')).includes('Learning days in the last 7: 1') && (await text('#gardenCaption')).startsWith('2 learning sessions'));
+  check('a second session that day: still one learning day', (await text('#streak')).includes('Learning days in the last 7: 1'));
   await editStorage(`s => { s.study.focusCourseId = 'coE'; }`);
   await go('study', 2026, 11, 3, 9);
   check('a course with no tasks yet can still have a session', (await text('#stFocus')).includes('You can still start a session'));
@@ -516,7 +516,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   await nav('today'); await sleep(150);
   for (let i = 0; i < 3; i++) { await click('#themeBtn'); await sleep(200); } // redraws everything (and saves) three times
   await go('today', 2026, 11, 2, 18);
-  check('after redraws and a reload: still 1 learning day and 1 leaf (the session and the tick count once)', (await text('#streak')).includes('Learning days in the last 7: 1') && (await text('#gardenCaption')).startsWith('1 learning session '), [await text('#streak h2'), await text('#gardenCaption')]);
+  check('after redraws and a reload: still 1 learning day (the session and the tick count once)', (await text('#streak')).includes('Learning days in the last 7: 1'), [await text('#streak h2')]);
   check('…and still exactly one saved session', (await SD()).sessions.length === 1);
   await go('today', 2026, 11, 4, 9);
   check('two days later the day still counts once in the rolling 7', (await text('#streak')).includes('Learning days in the last 7: 1'));
@@ -572,7 +572,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
     const both = JSON.parse(JSON.stringify(pr)); both.concepts = both.concepts.concat(concepts);
     await editStorage(`s => { s.study = ${JSON.stringify(both)}; s.commitments = [{ id: 'c1', kind: 'appointment', title: 'GP', start: '2026-11-02T10:00', end: '2026-11-02T11:00' }]; s.context = { '2026-11-02': { energy: 2, sleep: { start: null, end: null, estimatedHours: null } } }; s.days['2026-10-31'] = { energy: 3, rest: false, builtAt: '', checkedIn: true, tasks: [${JSON.stringify(Object.assign({}, learnTask, { uid: 'u9', done: true }))}] }; }`);
     await go('today', 2026, 11, 2, 9, 0, url);
-    out.streak = ((await text('#streak')).match(/Learning days in the last 7: \d+/) || [''])[0]; out.garden = flat(await text('#gardenCaption'));
+    out.streak = ((await text('#streak')).match(/Learning days in the last 7: \d+/) || [''])[0];
     await go('study', 2026, 11, 2, 9, 0, url);
     out.focus = [await text('#stFocus h2'), await text('#stFocus .st-path'), await text('#stFocus .st-next'), await text('#stLen')].map(flat);
     out.revision = flat(await text('#stRevision'));
@@ -586,6 +586,194 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   }
   const liveS = await screensIn('index.html'), newS = await screensIn(APP);
   for (const k of Object.keys(liveS)) check(`${k}: the same as the current MyDay`, eq(liveS[k], newS[k]), [liveS[k], newS[k]]);
+
+  // ------------------------------------------------------------------
+  console.log('\n[53] Your map (Stations): lines, stations, finish line, revisit rings');
+  await go('today', 2026, 11, 2, 9); await reset(); await go('today', 2026, 11, 2, 9);
+  await editStorage(`s => { s.study = ${JSON.stringify(pr)}; }`);
+  await go('study/map', 2026, 11, 2, 9);
+  check('the map opens with the one-line summary (tasks in, next step, last studied)',
+    flat(await text('#mapLine')) === flat('You\'re 2 of 3 tasks into Cybersecurity — next: HTTP in detail · TryHackMe: Pre-Security path. Studied yesterday.'), [await text('#mapLine')]);
+  check('one line for the stage, with its two courses as stations (focus course is "now", the empty one "ahead")',
+    eq(await ev(`[...document.querySelectorAll('[data-s=map-line]')].map(l => l.dataset.stage)`), ['sgF']) &&
+    eq(await ev(`[...document.querySelectorAll('[data-s=map-st]')].map(a => a.dataset.id + ':' + a.dataset.st)`), ['coP:now', 'coE:ahead']));
+  check('the finish line is still out of reach: "1 task to the flag"',
+    (await ev(`document.querySelector('[data-s=map-term]').dataset.done`)) === '0' && (await text('[data-s=map-term]')).includes('1 task to the flag'));
+  check('a station opens its course', (await ev(`document.querySelector('[data-s=map-st][data-id=coP]').getAttribute('href')`)) === '#study/course/coP');
+  // A wobbly concept linked to a course task puts a "worth a revisit" ring on its station.
+  await editStorage(`s => { s.study.concepts.push({ id: 'cpM', title: 'Shaky one', taskIds: ['tkD'], createdOn: '2026-10-01', kind: 'written', prompt: 'q', answer: 'a', explanation: '', choices: [], correct: null, hint: '', source: '', note: '', review: { reps: 1, interval: 1, lapses: 2, due: '2026-11-01' } });
+    s.study.reviews.push({ id: 'rM1', conceptId: 'cpM', title: 'Shaky one', date: '2026-10-31', at: '2026-10-31T12:00', kind: 'written', outcome: 'wrong', graded: 'self', chosen: null, support: 'own', rating: 'again', gap: 1, due: '2026-11-01' }, { id: 'rM2', conceptId: 'cpM', title: 'Shaky one', date: '2026-11-01', at: '2026-11-01T12:00', kind: 'written', outcome: 'wrong', graded: 'self', chosen: null, support: 'own', rating: 'again', gap: 1, due: '2026-11-02' }); }`);
+  await go('study/map', 2026, 11, 2, 9);
+  check('a concept that might benefit from more practice rings its station and is listed under the map',
+    (await text('[data-s=map-st][data-id=coP]')).includes('worth a revisit') && (await text('#map-prac-h')) === 'Might benefit from more practice (1)' && (await text('#app')).includes('Shaky one'));
+  check('unlinked wobbly concepts stay on Progress, off the map', (await text('#map-prac-h')) === 'Might benefit from more practice (1)');
+  // Finish every task: the flag is reached.
+  await editStorage(`s => { for (const sg of s.study.stages) for (const c of sg.courses) for (const m of c.modules) for (const sc of m.sections) for (const t of sc.tasks) if (!t.done) { t.done = true; t.doneOn = '2026-11-02'; } }`);
+  await go('study/map', 2026, 11, 2, 9);
+  check('all tasks complete: the flag is reached (an empty course doesn\'t block it)',
+    eq(await ev(`[...document.querySelectorAll('[data-s=map-st]')].map(a => a.dataset.st)`), ['done', 'ahead']) && (await ev(`document.querySelector('[data-s=map-term]').dataset.done`)) === '1' && (await text('[data-s=map-term]')).includes('Stage complete'));
+  // Two topics: pills appear, switching changes the line.
+  await editStorage(`s => { s.study.topics = [{ id: 'tpC', title: 'Cybersecurity' }, { id: 'tpA', title: 'Arabic' }];
+    for (const sg of s.study.stages) sg.topicId = 'tpC';
+    s.study.stages.push({ id: 'sgA', title: 'Reading', topicId: 'tpA', courses: [{ id: 'coL', title: 'Letters', url: '', minutes: 20, listId: null, archived: false, modules: [{ id: 'mdL', title: 'Alphabet', sections: [{ id: 'scL', title: 'Part 1', tasks: [{ id: 'tkL1', title: 'First ten letters', minutes: 20, url: '', kind: 'learn', note: '', done: false, doneOn: null }] }] }] }] }); }`);
+  await go('study/map', 2026, 11, 2, 9);
+  check('topic links appear, the current topic marked as the page', eq(await ev(`[...document.querySelectorAll('[data-s=map-topic]')].map(a => a.dataset.id + (a.getAttribute('aria-current') === 'page' ? '*' : ''))`), ['tpC*', 'tpA']) && !(await exists('[role=tablist], [role=tab]')));
+  await click('[data-s=map-topic][data-id=tpA]'); await sleep(300);
+  check('switching to Arabic shows its line and summary', flat(await text('#mapLine')).includes(flat('0 of 1 tasks into Arabic')) && eq(await ev(`[...document.querySelectorAll('[data-s=map-st]')].map(a => a.dataset.id + ':' + a.dataset.st)`), ['coL:now']), [await text('#mapLine')]);
+  check('the dashboard links to the map', (await go('study', 2026, 11, 2, 9), await sleep(200), (await text('.st-links')).includes('Your map')) && (await exists('.st-links a[href="#study/map"]')));
+
+  console.log('\n[53b] Your map: fog, reading size, no collisions, dark theme, phones, and straight into a session');
+  await go('today', 2026, 11, 2, 9); await reset(); await go('today', 2026, 11, 2, 9);
+  const fogged = JSON.parse(JSON.stringify(pr));
+  for (const [id, title] of [['coX', 'Networking fundamentals for the complete beginner'], ['coY', 'Linux fundamentals']])
+    fogged.stages[0].courses.push({ id, title, url: '', minutes: 30, listId: null, archived: false, modules: [{ id: 'md' + id, title: 'One', sections: [{ id: 'sc' + id, title: 'Part 1', tasks: [task('tk' + id, 'First part', 30)] }] }] });
+  await editStorage(`s => { s.study = ${JSON.stringify(fogged)}; }`);
+  await go('study/map', 2026, 11, 2, 9);
+  const stations = () => ev(`[...document.querySelectorAll('[data-s=map-st]')].map(a => a.dataset.id + ':' + a.dataset.st + ':' + a.dataset.fog)`);
+  check('fog: the station after "you are here" stays clear, the ones beyond sit in the fog',
+    eq(await stations(), ['coP:now:0', 'coE:ahead:0', 'coX:ahead:1', 'coY:ahead:1']) && (await exists('[data-s=map-fog]')), await stations());
+  check('wide screens: the line is drawn at the map\'s own width (not scaled), names at 14 px',
+    await ev(`(() => { const svg = document.querySelector('[data-s=map-line] svg'); return !!svg && Math.abs(svg.getBoundingClientRect().width - Number(svg.getAttribute('width'))) < 1 && [...svg.querySelectorAll('[data-s=map-st] text')].every(t => getComputedStyle(t).fontSize === '14px' || getComputedStyle(t).fontSize === '12px'); })()`));
+  check('a long name is shortened on the line, its full name kept as the station\'s title',
+    await ev(`(() => { const a = document.querySelector('[data-s=map-st][data-id=coX]'); return a.querySelector('text').textContent.endsWith('…') && a.querySelector('title').textContent === 'Networking fundamentals for the complete beginner' && a.getAttribute('aria-label').startsWith('Networking fundamentals for the complete beginner — ahead, in the fog'); })()`));
+  const collisions = () => ev(`(() => { const svg = document.querySelector('[data-s=map-line] svg'), box = svg.getBoundingClientRect();
+    const rs = [...svg.querySelectorAll('text')].map(t => t.getBoundingClientRect()).concat([svg.querySelector('[data-s=map-term]').getBoundingClientRect()]);
+    const hit = (a, b) => a.left < b.right - 0.5 && b.left < a.right - 0.5 && a.top < b.bottom - 0.5 && b.top < a.bottom - 0.5;
+    const out = rs.filter(r => r.left < box.left - 0.5 || r.right > box.right + 0.5).length;
+    let n = 0; for (let i = 0; i < rs.length; i++) for (let j = i + 1; j < rs.length; j++) if (hit(rs[i], rs[j])) n++;
+    return out + n; })()`);
+  check('nothing on the line overlaps (names, "you are here", the finish flag) or runs off the edge', (await collisions()) === 0, await collisions());
+  check('the flag\'s note is in the stage\'s heading, clear of the names', (await text('[data-s=map-line] h4 + *')).includes('3 tasks to the flag'), await text('[data-s=map-line] h4 + *'));
+  check('the key is drawn with the stations\' own shapes, "Started" half-filled like its station', (await text('[data-s=map-key]')).includes('Started') && (await text('[data-s=map-key]')).includes('In the fog') && (await ev(`document.querySelectorAll('[data-s=map-key] svg').length`)) === 7 && (await exists('[data-s=map-key] svg path[d^="M0 -5.5 A"]')));
+  // Dark theme: every colour comes from the theme (nothing black on charcoal, nothing white-hot).
+  const contrastIn = () => ev(`(() => {
+    const rgb = c => { const m = c.match(/[0-9.]+/g).map(Number); return m.slice(0, 3); };
+    const lum = c => { const [r, g, b] = rgb(c).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+    const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+    const card = getComputedStyle(document.querySelector('[data-s=map-line]').closest('section')).backgroundColor;
+    const texts = [...document.querySelectorAll('[data-s=map-line] svg text')].map(t => ratio(getComputedStyle(t).fill, card));
+    const fills = [...document.querySelectorAll('[data-s=map-line] svg circle, [data-s=map-line] svg rect:not([data-s=map-fog])')].map(c => getComputedStyle(c).fill);
+    return { min: Math.min(...texts), white: fills.filter(f => f === 'rgb(255, 255, 255)').length, black: fills.filter(f => f === 'rgb(0, 0, 0)').length, card }; })()`);
+  const light = await contrastIn();
+  check('light theme: every name on the line passes AA contrast (4.5:1)', light.min >= 4.5, light);
+  await editStorage(`s => { s.settings.theme = 'dark'; }`); await go('study/map', 2026, 11, 2, 9);
+  const dark = await contrastIn();
+  check('dark theme: names pass AA on the dark card, and no station is drawn white or black', dark.min >= 4.5 && dark.white === 0 && dark.black === 0 && dark.card !== light.card, dark);
+  await editStorage(`s => { s.settings.theme = 'light'; }`);
+  // Phones: the same stations listed top to bottom, every name in full.
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await go('study/map', 2026, 11, 2, 9);
+  check('phone: the stations are listed top to bottom (no tiny drawing), with the same stations and fog', (await exists('[data-s=map-list]')) && !(await exists('[data-s=map-line] svg')) && eq(await stations(), ['coP:now:0', 'coE:ahead:0', 'coX:ahead:1', 'coY:ahead:1']));
+  check('phone: every name in full, at a readable size',
+    (await text('[data-s=map-st][data-id=coX]')).includes('Networking fundamentals for the complete beginner') && await ev(`[...document.querySelectorAll('[data-s=map-st] span')].every(s => parseFloat(getComputedStyle(s).fontSize) >= 13)`));
+  check('phone: the finish line says how far there is to go', (await text('[data-s=map-term]')).includes('3 tasks to the flag'));
+  check('phone: no sideways scrolling on the map', !(await ev('document.documentElement.scrollWidth > innerWidth')));
+  check('phone: every station and topic link is at least 44 px tall', await ev(`[...document.querySelectorAll('[data-s=map-st], [data-s=map-topic], [data-action=map-start]')].every(b => b.getBoundingClientRect().height >= 44)`));
+  await T.send('Emulation.clearDeviceMetricsOverride');
+  // Straight into a session: from the map's summary, and from Today's learning card.
+  await go('study/map', 2026, 11, 2, 9);
+  check('the summary offers 15 minutes on the next task', (await text('[data-action=map-start]')) === 'Start 15 minutes');
+  await click('[data-action=map-start]'); await sleep(300);
+  let mapSes = (await SD()).sessions.at(-1);
+  check('…which starts a 15-minute session on it and opens the session', (await ev('location.hash')) === '#study/session' && mapSes.courseId === 'coP' && mapSes.taskId === 'tkH' && mapSes.plannedMin === 15 && mapSes.short === true, [await ev('location.hash'), mapSes]);
+  await go('study/map', 2026, 11, 2, 9);
+  check('while a session runs, the map points back to it instead of starting another', !(await exists('[data-action=map-start]')) && (await ev(`document.querySelector('[data-action=map-session]').getAttribute('href')`)) === '#study/session');
+  await editStorage(`s => { s.study.sessions = s.study.sessions.filter(x => x.status === 'done'); s.study.activeId = null; }`);
+  await go('today', 2026, 11, 2, 9);
+  check('Today: the "up next" line comes with Start 15 minutes', (await text('[data-action=streak-start]')) === 'Start 15 minutes');
+  await click('[data-action=streak-start]'); await sleep(300);
+  mapSes = (await SD()).sessions.at(-1);
+  check('…which goes straight into a 15-minute session on the next task', (await ev('location.hash')) === '#study/session' && mapSes.courseId === 'coP' && mapSes.taskId === 'tkH' && mapSes.plannedMin === 15, [await ev('location.hash'), mapSes]);
+  await go('today', 2026, 11, 2, 9);
+  check('…and while it runs, Today\'s card goes back to it', (await text('[data-action=streak-start]')) === 'Back to your study session');
+
+  // ------------------------------------------------------------------
+  console.log('\n[54] Reading: books, the page stepper, notes, finished');
+  await go('study'); await reset(); await go('study');
+  check('Study home offers the two tabs (Courses, Reading)', eq(await texts('.study-tabs .seg-link'), ['Courses', 'Reading']) && (await ev(`document.querySelector('.study-tabs a[href="#study"]').getAttribute('aria-selected')`)) === 'true');
+  await nav('study/reading');
+  check('Reading opens empty, with a way to add a book (Reading tab selected)', (await text('#reading-h')) === 'Now reading' && await exists('[data-action=read-add]') && (await ev(`document.querySelector('.study-tabs a[href="#study/reading"]').getAttribute('aria-selected')`)) === 'true');
+  await click('[data-action=read-add]'); await sleep(150);
+  await setVal('#bkTitle', 'Deep Work'); await setVal('#bkAuthor', 'Cal Newport'); await setVal('#bkPages', '296');
+  await click('[data-action=read-add-save]'); await sleep(200);
+  check('adding a book lists it with its author and page count, and saves it', (await text('.book-row')).includes('Deep Work') && (await text('.book-row')).includes('Cal Newport') && (await text('.book-row')).includes('of 296') && (await ev(`document.querySelector('[data-f=read-page-at]').value`)) === '0' && (await D()).reading.books.length === 1);
+  await click('[data-action=read-add]'); await sleep(150);
+  await setVal('#bkTitle', 'deep work'); await click('[data-action=read-add-save]'); await sleep(200);
+  check('a duplicate title is refused with a message (any case)', (await text('[role=alert]')).includes('already on your reading list') && (await D()).reading.books.length === 1);
+  await setVal('#bkPages', '0'); await setVal('#bkTitle', 'Atomic Habits');
+  await click('[data-action=read-add-save]'); await sleep(200);
+  check('an out-of-range page count is refused too', (await text('[role=alert]')).includes('whole number') && (await D()).reading.books.length === 1);
+  await setVal('#bkPages', ''); await click('[data-action=read-add-save]'); await sleep(200);
+  check('a book without a page count is fine — no bar, just the page number', (await D()).reading.books.length === 2 && (await texts('.book-row')).some(r => r.includes('Atomic Habits')) && !(await ev(`(() => { const rows = [...document.querySelectorAll('.book-row')]; const r = rows.find(x => x.textContent.includes('Atomic Habits')); return !!r.querySelector('[role=img]'); })()`)));
+  const bk1 = (await D()).reading.books[0].id;
+  await click(`[data-action=read-page][data-id="${bk1}"][data-dir="1"]`); await sleep(150);
+  await click(`[data-action=read-page][data-id="${bk1}"][data-dir="1"]`); await sleep(200);
+  const pageAt = id => ev(`document.querySelector('[data-f=read-page-at][data-id="${id}"]').value`);
+  check('the page stepper counts up, one page at a time — the page, never a percentage', (await D()).reading.books[0].page === 2 && (await pageAt(bk1)) === '2' && (await text('.book-row')).includes('of 296') && !(await text('#app')).includes('%'));
+  await click(`[data-action=read-page][data-id="${bk1}"][data-dir="-1"]`); await sleep(200);
+  check('…and back down', (await D()).reading.books[0].page === 1);
+  // Typing the page you're on (saved when you leave the box), instead of 83 taps.
+  const typePage = (id, v) => ev(`(() => { const el = document.querySelector('[data-f=read-page-at][data-id="${id}"]'); el.focus();
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(el, ${JSON.stringify('${v}')}); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new FocusEvent('focusout', { bubbles: true })); })()`.replace('${v}', v));
+  await typePage(bk1, '84'); await sleep(200);
+  check('typing the page you\'re on jumps straight there', (await D()).reading.books[0].page === 84 && (await pageAt(bk1)) === '84');
+  await typePage(bk1, 'abc'); await sleep(200);
+  check('…something that isn\'t a page is refused gently, and the page stays', (await D()).reading.books[0].page === 84 && (await text('.book-row [role=alert]')).includes('whole number') && (await pageAt(bk1)) === '84');
+  await editStorage(`s => { s.reading.books[0].page = 1; }`); await go('study/reading');
+  // Details can be added later, or fixed.
+  const bk2e = (await D()).reading.books[1].id;
+  await click(`[data-action=read-edit][data-id="${bk2e}"]`); await sleep(150);
+  await setVal(`#bkA-${bk2e}`, 'James Clear'); await setVal(`#bkP-${bk2e}`, '320');
+  await click('[data-action=read-edit-save]'); await sleep(200);
+  check('Edit adds what came later (the author and total pages)', (await D()).reading.books[1].author === 'James Clear' && (await D()).reading.books[1].pages === 320 && !(await exists('[data-s=read-edit]')));
+  await editStorage(`s => { s.reading.books[1].page = 150; }`); await go('study/reading');
+  await click(`[data-action=read-edit][data-id="${bk2e}"]`); await sleep(150);
+  await setVal(`#bkP-${bk2e}`, '100'); await click('[data-action=read-edit-save]'); await sleep(200);
+  check('…but never a total below the page you\'re on (nothing loses its place)', (await D()).reading.books[1].pages === 320 && (await text('[data-s=read-edit] [role=alert]')).includes('at least 150 pages'));
+  await setVal(`#bkP-${bk2e}`, ''); await click('[data-action=read-edit-save]'); await sleep(200);
+  check('…and the total can be taken away again (no bar, just the page)', (await D()).reading.books[1].pages === null && (await D()).reading.books[1].page === 150);
+  await editStorage(`s => { s.reading.books[1].page = 0; }`); await go('study/reading');
+  await click(`[data-action=read-notes][data-id="${bk1}"]`); await sleep(150);
+  await setVal('[data-f=read-note-page]', '42'); await setVal('[data-f=read-note-text]', 'Depth compounds.');
+  await click(`[data-action=read-note-add][data-id="${bk1}"]`); await sleep(200);
+  check('a note lands with its page chip, and the field clears for the next one', (await text('.book-row')).includes('p. 42') && (await text('.book-row')).includes('Depth compounds.') && (await ev(`document.querySelector('[data-f=read-note-text]').value`)) === '' && (await D()).reading.books[0].notes.length === 1);
+  await setVal('[data-f=read-note-text]', 'Second note, no page.');
+  await click(`[data-action=read-note-add][data-id="${bk1}"]`); await sleep(200);
+  check('a note without a page is fine', (await D()).reading.books[0].notes.length === 2 && (await D()).reading.books[0].notes[1].page === null);
+  await click(`[data-action=read-note-del][data-book="${bk1}"]`); await answer(false);
+  check('removing a note asks first (Cancel keeps it)', (await D()).reading.books[0].notes.length === 2);
+  await click(`[data-action=read-note-del][data-book="${bk1}"]`); await answer(true);
+  check('a note can be removed', (await D()).reading.books[0].notes.length === 1 && (await D()).reading.books[0].notes[0].text === 'Second note, no page.');
+  await editStorage(`s => { s.reading.books[0].page = 295; }`);
+  await go('study/reading');
+  await click(`[data-action=read-page][data-id="${bk1}"][data-dir="1"]`); await sleep(250);
+  check('reaching the last page finishes the book: off Now reading, shelved under Finished with the day', (await D()).reading.books[0].finishedOn === '2026-11-02' && !(await text('#app')).includes('295 of 296') && (await text('#read-fin-h')).includes('Finished (1)') && (await text('#app')).includes('Deep Work'));
+  await click(`[data-action=read-reopen][data-id="${bk1}"]`); await sleep(200);
+  check('Read again puts it back, one page short of the end', (await D()).reading.books[0].finishedOn === null && (await D()).reading.books[0].page === 295);
+  const bk2 = (await D()).reading.books[1].id;
+  await click(`[data-action=read-finish][data-id="${bk2}"]`); await sleep(200);
+  check('a book with no page count is finished with "Mark as finished"', (await D()).reading.books[1].finishedOn === '2026-11-02');
+  await click(`[data-action=read-remove][data-id="${bk2}"]`); await answer(true);
+  check('Remove (asked first) takes a finished book away, notes and all', (await D()).reading.books.length === 1);
+  // A book added by mistake can be removed while you're reading it (asked first).
+  await click('[data-action=read-add]'); await sleep(150); await setVal('#bkTitle', 'Typo book'); await click('[data-action=read-add-save]'); await sleep(200);
+  const typo = (await D()).reading.books.find(b => b.title === 'Typo book').id;
+  await click(`[data-action=read-edit][data-id="${typo}"]`); await sleep(150); await click(`[data-s=read-edit] [data-action=read-remove]`); await answer(true);
+  check('a book you\'re reading can be removed from Edit (asked first)', !(await D()).reading.books.some(b => b.title === 'Typo book') && (await D()).reading.books.length === 1);
+  // Phones: every Reading button is easy to tap, nothing scrolls sideways.
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await go('study/reading');
+  await click(`[data-action=read-notes][data-id="${bk1}"]`); await sleep(150);
+  const smallR = await ev(`[...document.querySelectorAll('#app button, .study-tabs a')].filter(b => b.getBoundingClientRect().height < 44).map(b => b.textContent.trim() || b.getAttribute('aria-label'))`);
+  check('phone: every Reading button is at least 44 px tall, no sideways scrolling', !smallR.length && !(await ev('document.documentElement.scrollWidth > innerWidth')), smallR);
+  await T.send('Emulation.clearDeviceMetricsOverride');
+  await editStorage(`s => { s.reading = { books: [{ id: 'ok', title: 'Plankton', author: '', pages: 100, page: 140, notes: [{ id: 'n1', page: 500, text: 'Beyond the book' }, { id: 'n2', page: null, text: '' }, 'junk'], addedOn: '2026-11-01', finishedOn: null }, { id: 'noT', author: 'No title' }, 'nope'], futureReadingField: { kept: true } }; }`);
+  await go('study/reading');
+  await click('#themeBtn'); await sleep(200); // a save, so the tidied data is what's read back
+  const rd = (await D()).reading;
+  check('messy saved data is tidied: one good book, page pulled back to the last, one good note (its out-of-range page let go), the rest dropped — and a future field kept', rd.books.length === 1 && rd.books[0].page === 100 && rd.books[0].notes.length === 1 && rd.books[0].notes[0].page === null && rd.books[0].notes[0].text === 'Beyond the book' && eq(rd.futureReadingField, { kept: true }));
+  await go('today');
+  check('reading is never on Today (and never in the learning streak)', !(await text('#app')).includes('Now reading') && !(await text('#app')).includes('Plankton'));
 
   finish();
 })().catch(e => { console.error('HARNESS ERROR', e); const s = T.summary(); console.log(`${s.pass} passed, ${s.fail} failed before the error`); process.exit(2); });

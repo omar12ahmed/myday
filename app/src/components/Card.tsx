@@ -2,9 +2,9 @@ import type { HTMLAttributes, ReactNode } from 'react';
 
 // The rounded panel that holds each part of a screen.
 //   plain  – the usual card
-//   nudge  – soft peach, for a gentle message
+//   nudge  – soft teal, for a gentle message
 //   notice – soft amber, for something worth knowing
-//   accent – the usual card with an orange outline, for something waiting on you (e.g. a proposal)
+//   accent – the usual card with a teal outline, for something waiting on you (e.g. a proposal)
 type Tone = 'plain' | 'nudge' | 'notice' | 'accent';
 
 const TONE: Record<Tone, string> = {

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react';
 
 // Form fields with their styling in one place. Every field has a visible label (or an aria-label
-// when the label is the text beside it), a 48px tap height and a clear focus ring (an orange border with a soft
+// when the label is the text beside it), a 48px tap height and a clear focus ring (a teal border with a soft
 // glow around it — see index.css).
 
 const CONTROL = 'w-full min-h-12 px-3 py-2.5 rounded-[10px] bg-surface-3 text-fg border border-outline-strong text-[15px]';

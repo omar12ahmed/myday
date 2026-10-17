@@ -4,6 +4,7 @@ import { isDateKey, isTime } from '../dates';
 import { intIn, isObj, uid } from '../util';
 import type { HealthData, SessionExercise, TemplateItem, WorkoutSession } from '../types';
 import { emptyFood, normalizeFood } from '../food/normalize';
+import { emptyDaily, normalizeDaily } from '../health/daily';
 import { cleanSetValues, emptyWorkout, EX_TYPES, WEEKDAYS } from './common';
 
 const str = (v: unknown, max = 200) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
@@ -37,7 +38,7 @@ function cleanSession(o: unknown, report: { dropped: number }): WorkoutSession |
 
 export function normalizeHealth(raw: unknown, report: { dropped: number }): HealthData {
   // Absent (older data, or never opened) → empty Workout and Food, as the current MyDay does.
-  if (!isObj(raw)) return { workout: emptyWorkout(), food: emptyFood() };
+  if (!isObj(raw)) return { workout: emptyWorkout(), food: emptyFood(), daily: emptyDaily() };
   const hw = emptyWorkout(), w = isObj(raw.workout) ? raw.workout : {};
   if (Array.isArray(w.exercises)) for (const e of w.exercises) {
     if (isObj(e) && typeof e.id === 'string' && e.id && str(e.name) && EX_TYPES.includes(e.type as never)) hw.exercises.push({ id: e.id, name: str(e.name, 80), type: e.type as never, archived: e.archived === true });
@@ -72,6 +73,6 @@ export function normalizeHealth(raw: unknown, report: { dropped: number }): Heal
   if (isObj(w.restTimer)) hw.restTimer = { enabled: w.restTimer.enabled === true, seconds: intIn(w.restTimer.seconds, 10, 900, 90) };
   if (isObj(w.rest) && Number.isFinite(w.rest.startedAt) && Number.isInteger(w.rest.durationSec)) hw.rest = { startedAt: w.rest.startedAt as number, durationSec: w.rest.durationSec as number };
   // Anything else under Health stays exactly as it was, in its place.
-  const h: HealthData = { ...raw, workout: hw, food: normalizeFood(raw.food, report) };
+  const h: HealthData = { ...raw, workout: hw, food: normalizeFood(raw.food, report), daily: normalizeDaily(raw.daily, report) };
   return h;
 }

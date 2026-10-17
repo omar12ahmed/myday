@@ -38,7 +38,11 @@ it) and `20261006120000_sync_projects.sql` (projects sync, from 1.12.0: the reco
 with it) and `20261012120000_sync_arabic_cards.sql` (Arabic in revision: one more kind, `arabic_card` — apply it
 **before** publishing the release that brings Arabic into revision; older versions keep working with it) and
 `20261014120000_sync_cyber_cards.sql` (Cybersecurity's own checks in revision: one more kind, `cyber_card` — apply it
-before publishing the release that brings them into revision; older versions keep working with it). Apply them
+before publishing the release that brings them into revision; older versions keep working with it) and
+`20261016120000_sync_daily.sql` (Daily exercises in Health: one more kind, `daily`, a single record that's never
+deleted — apply it before publishing 1.23.0; older versions keep working with it) and
+`20261017120000_sync_books.sql` (Study → Reading: one more kind, `book`, one record per book, deletable — apply it
+before publishing 1.24.0; older versions keep working with it). Apply them
 **one** of these two ways (not both):
 
 **A. With the Supabase CLI (recommended: it records which migrations have run).** From the `myday-site` folder:
@@ -178,6 +182,8 @@ The model never writes anything: it only replies, and the app decides what's all
 | `migrations/20261006120000_sync_projects.sql` | Projects sync (1.12.0): `sync_records` accepts `project` records (its two kind checks replaced by named ones; nothing else touched). |
 | `migrations/20261007120000_sync_cybersecurity.sql` | Cybersecurity (1.14.0): `sync_records` accepts the learning path and notebook attempts (`cybersecurity`, `cyber_attempt`). |
 | `migrations/20261011120000_sync_arabic.sql` | Arabic Fuṣḥā: `sync_records` accepts the chosen path and lesson sessions (`arabic`, `arabic_attempt`; sessions can be deleted, the path can't). Nothing else changes. |
+| `migrations/20261017120000_sync_books.sql` | Study → Reading: `sync_records` accepts one more kind, `book` (one record per book: title, author, pages, where you are, notes, finished day), which can be deleted (a book removed). Only the two lists of allowed kinds change; existing rows, version checks, grants and per-user RLS are unchanged. |
+| `migrations/20261016120000_sync_daily.sql` | Daily exercises (Health): `sync_records` accepts one more kind, `daily` (the record `daily:moves`: the exercises and each day's sets; never deleted). Only the list of allowed kinds changes; existing rows, version checks, grants and per-user RLS are unchanged. |
 | `migrations/20261014120000_sync_cyber_cards.sql` | Cybersecurity in revision: `sync_records` accepts revision cards (`cyber_card`: a lesson's knowledge-check question by the course's id, with its schedule; cards can be deleted). Answers use the existing `review` kind. Nothing else changes. |
 | `migrations/20261012120000_sync_arabic_cards.sql` | Arabic in revision: `sync_records` accepts revision cards (`arabic_card`: a starter word or lesson check by the course's id, with its schedule; cards can be deleted). Answers use the existing `review` kind. Nothing else changes. |
 | `ai-secrets.example.env` | The settings, as a template with placeholders only (fill in a copy that Git ignores; the key ends up only in Supabase). |

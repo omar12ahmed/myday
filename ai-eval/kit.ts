@@ -32,6 +32,8 @@ export { aiCyberCards, dueIds } from '../app/src/data/study/queue';
 // Cards from your notes (part C): the shared shapes and the app's side.
 export { checkNoteCardsContext, checkNoteCheckContext, NOTE_LIMITS, readFlags, readNoteDraft } from '../supabase/functions/_shared/ai/note-cards.ts';
 export { addNoteCards, noteCardsContext, noteCheckContext, noteLines, readNoteCardsReply, readNoteCheck } from '../app/src/ai/noteCards';
+// Explanations you keep on a revision card (step 4).
+export { anotherWayOf, keepAnotherWay } from '../app/src/data/study/anotherWay';
 export { CARDS_CHECK_PROMPT_VERSION, CARDS_LIMITS, CARDS_PROMPT_VERSION, checkCardsContext, cleanDraftCard, mockCards, mockCardsCheck, readDraft, readVerdicts, type CardsCheckContext, type CardsContext, type DraftCard } from '../supabase/functions/_shared/ai/cards.ts';
 
 // ---------- Memory-only storage ----------

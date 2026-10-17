@@ -42,16 +42,16 @@ function asked(card: ArabicCard, ref: CardRef, answers: Answers | null): Asked |
   if (ref.kind === 'word') {
     const w = words.get(ref.lexemeId);
     if (!w) return 'gone';
-    const example = <><Ar>{w.example_ar}</Ar>{'\n'}{w.example_meaning_en}</>;
+    const example = <><Ar>{w.example_ar}</Ar>{'\n'}{w.example_meaning_en}</>, exampleText = `${w.example_ar} — ${w.example_meaning_en}`;
     const notYet = <>This one hasn’t clicked yet, which is normal for a new word. Read its example once more, slowly, out loud if you can; at the end of the round there’s a link back to the starter words.</>;
     if (ref.side === 'recognise') {
       const title = `${w.form_ar} → ${w.meaning_en}`;
-      return { ...base, title, path: 'Arabic · starter word', notYet, save: saving(title),
+      return { ...base, title, path: 'Arabic · starter word', notYet, save: saving(title), explain: { subject: 'arabic', question: `What does ${w.form_ar} mean?`, answer: `${w.meaning_en} (${w.part_of_speech.replace('_', ' ')})`, explanation: exampleText },
         prompt: <><Ar className="block text-[34px] leading-normal">{w.form_ar}</Ar>What does it mean?</>,
         answer: `${w.meaning_en} · ${w.part_of_speech.replace('_', ' ')}`, answerLabel: 'Meaning', explanation: example, explanationLabel: 'Example' };
     }
     const title = `${w.meaning_en} → ${w.form_ar}`;
-    return { ...base, title, path: 'Arabic · write it from memory', notYet, save: saving(title),
+    return { ...base, title, path: 'Arabic · write it from memory', notYet, save: saving(title), explain: { subject: 'arabic', question: `Write it in Arabic: “${w.meaning_en}”`, answer: w.form_ar, explanation: exampleText },
       prompt: <>Write it in Arabic: “{w.meaning_en}”</>,
       answer: <Ar className="text-[28px]">{w.form_ar}</Ar>, answerLabel: 'In Arabic', explanation: example, explanationLabel: 'Example' };
   }
@@ -61,7 +61,7 @@ function asked(card: ArabicCard, ref: CardRef, answers: Answers | null): Asked |
   const a = answers[ref.questionId];
   if (!a) return 'gone';
   const title = `${c.lesson} · check ${/\.q(\d+)$/.exec(ref.questionId)?.[1] ?? ''}`.trim();
-  return { ...base, title, path: `Arabic · ${c.lesson}`, save: saving(title),
+  return { ...base, title, path: `Arabic · ${c.lesson}`, save: saving(title), explain: { subject: 'arabic', question: c.prompt, answer: a.answer, explanation: a.variation },
     notYet: <>This one hasn’t clicked yet, which is normal for something new. Read the reference answer once more, slowly; at the end of the round there’s a link back to its lesson.</>,
     prompt: <Mixed text={c.prompt} />,
     answer: <Mixed text={a.answer} />, answerLabel: 'Reference answer', explanation: <Mixed text={a.variation} />, explanationLabel: 'What also counts',

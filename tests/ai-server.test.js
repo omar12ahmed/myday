@@ -254,6 +254,24 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   check('…and one that isn\'t valid JSON stops the function as not set up, before any call', k.status === 503 && effort.length === 3, k.body);
   env = { AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_MOCK_DELAY_MS: '0', AI_DAILY_LIMIT: '50', AI_MIN_SECONDS_BETWEEN: '0', AI_MONTHLY_BUDGET_USD: '1' };
 
+  console.log('\n[2f] "Explain it another way" (AI roles step 4): one call; Arabic can go to its own model');
+  {
+    const ex = { version: 1, action: 'explain', subject: 'cybersecurity', lessonId: 'lesson.routing-dns-dhcp', question: 'Can a working IP connection coexist with broken DNS?', answer: 'Yes; name resolution is a separate step.', explanation: '', yourAnswer: 'No', outcome: 'wrong' };
+    env = { ...kbase, ...kMain, ...kLearn(), AI_ROUTES: '{"explain-arabic": "learn"}' };
+    let e = await kask(ex);
+    check('an explanation request is answered (200) by the model for "explain" (here the main one), as JSON with the explanation', e.status === 200 && e.body.model === 'Main model' && typeof JSON.parse(e.body.output).explanation === 'string', e.body);
+    e = await kask({ ...ex, subject: 'arabic', lessonId: undefined, question: 'What does بَاب mean?', answer: 'door', explanation: 'الْبَابُ مَفْتُوحٌ. — The door is open.' });
+    check('…an Arabic card\'s goes to the model for "explain-arabic" (here the learning one)', e.status === 200 && e.body.model === 'Learning model', e.body);
+    e = await kask({ ...ex, subject: 'study', lessonId: undefined, choices: ['21', '22', '25', '53'], yourAnswer: '21', outcome: null });
+    check('…a multiple-choice concept of your own, not yet marked, is accepted too', e.status === 200, e.body);
+    for (const [bad, why] of [[{ ...ex, lessonId: 'lesson.missing' }, 'an unknown lesson'], [{ ...ex, subject: 'study' }, 'a lesson on something that isn\'t Cybersecurity'], [{ ...ex, question: '' }, 'no question'],
+      [{ ...ex, yourAnswer: 'x'.repeat(1001) }, 'an answer over 1,000 characters'], [{ ...ex, choices: ['only one'] }, 'a single option'], [{ ...ex, outcome: 'great' }, 'an unknown outcome'], [{ ...ex, notes: 'private' }, 'an extra field']]) {
+      e = await kask(bad);
+      check(`explain: ${why} — refused (400) before any model call`, e.status === 400 && finished.length === 0, e.status);
+    }
+  }
+  env = { AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_MOCK_DELAY_MS: '0', AI_DAILY_LIMIT: '50', AI_MIN_SECONDS_BETWEEN: '0', AI_MONTHLY_BUDGET_USD: '1' };
+
   console.log('\n[3] A caller is verified before anything else, and secrets stay out of Git');
   let begun = 0, provided = 0;
   const spyDeps = { begin: async () => { begun++; return { ok: true }; }, fetchImpl: async () => { provided++; return new Response('{}'); } };

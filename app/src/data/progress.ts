@@ -1,9 +1,8 @@
-// The rolling learning count, the "shrink it to 15 minutes" nudge, and the learning garden.
+// The rolling learning count and the "shrink it to 15 minutes" nudge.
 // Ported from the current MyDay (same rules and wording). Nothing here ever resets to zero:
 // missed days and rest days simply slide out of the 7-day window.
 import { dtToMin, minToDt, shift, todayKey } from './dates';
 import { learningDoneOn, learningForToday, limitFor, releaseTask, shrinkTask } from './plan';
-import { studyOnlySessions } from './study/sessions';
 import type { DateKey, MyDayData, Task } from './types';
 
 // Learning done (true/false) for the 6 days before today and today, oldest first.
@@ -61,11 +60,4 @@ export function swapInLearning(data: MyDayData, k: DateKey, replaceUid: string |
     d.tasks.splice(i, 1, lt);
   } else d.tasks.unshift(lt);
   return { changed: true, message: 'Swapped in: 15 minutes of learning.' };
-}
-
-// Learning sessions so far: ticked learning tasks plus finished Study sessions (each counted once).
-export function learningSessions(data: MyDayData): number {
-  let n = 0;
-  for (const d of Object.values(data.days)) for (const t of d.tasks) if (t.category === 'learning' && t.done) n++;
-  return n + studyOnlySessions(data);
 }
