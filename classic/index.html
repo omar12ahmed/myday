@@ -4143,6 +4143,8 @@
       hf.cooking = { recipeId: c.recipeId, step: intIn(c.step, 0, 500, 0), servings: optNum(c.servings, 1, 100), startedAt: str(c.startedAt, 20),
         timer: t && Number.isInteger(t.durationSec) && Number.isFinite(t.accumulatedMs) ? { label: str(t.label, 40), durationSec: t.durationSec, startedAt: Number.isFinite(t.startedAt) ? t.startedAt : null, accumulatedMs: t.accumulatedMs, finished: t.finished === true } : null };
     }
+    // Daily exercises are the new app's (kept exactly as saved here, like Notes and Finance at the top level).
+    if (isObj(raw.daily)) h.daily = raw.daily;
     return h;
   }
 
