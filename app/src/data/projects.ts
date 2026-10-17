@@ -10,6 +10,7 @@
 // In "Export my data", and synced with your account (one record per project; see sync/records.ts).
 import { isDateTime, localStamp, todayKey } from './dates';
 import { noteName } from './notes';
+import { chosenOption, normalizeDecisions, normalizeMilestones } from './projectPlan';
 import { isDone, onTodaysPlan } from './tasks';
 import type { Commitment, DateKey, MyDayData, Note, Project, ProjectsData, ProjectStage, ProjectStatus, TaskItem } from './types';
 import { isObj, listOf, uid } from './util';
@@ -52,6 +53,10 @@ export function normalizeProjects(raw: unknown, report: { dropped: number }): Pr
       createdAt: isDateTime(p.createdAt) ? p.createdAt : now,
       updatedAt: isDateTime(p.updatedAt) ? p.updatedAt : isDateTime(p.createdAt) ? p.createdAt : now,
     };
+    // Milestones and decisions (1.31.0): kept only when there are some, so a project without them is unchanged.
+    const milestones = normalizeMilestones(p.milestones, report), decisions = normalizeDecisions(p.decisions, report);
+    if (milestones) item.milestones = milestones; else delete item.milestones;
+    if (decisions) item.decisions = decisions; else delete item.decisions;
     seen.add(item.id);
     out.items.push(item);
   }
@@ -206,9 +211,10 @@ export function moveToColumn(d: MyDayData, id: string, to: BoardColumn): boolean
 }
 
 // ---------- What happened lately ----------
-// A project's latest happenings, newest first, from what's saved: tasks added or done, notes written or changed.
+// A project's latest happenings, newest first, from what's saved: tasks added or done, notes written or changed,
+// milestones reached and decisions made.
 // (A task ticked only on a day's plan has no date of its own here, so it shows once it's ticked in Tasks.)
-export interface Happening { at: string; what: 'added' | 'done' | 'note' | 'note-changed'; title: string; href: string }
+export interface Happening { at: string; what: 'added' | 'done' | 'note' | 'note-changed' | 'milestone' | 'decided'; title: string; href: string }
 export function recently(data: MyDayData, p: Project, max = 5): Happening[] {
   const out: Happening[] = [];
   for (const t of data.tasks.items) {
@@ -217,6 +223,9 @@ export function recently(data: MyDayData, p: Project, max = 5): Happening[] {
     if (t.done && t.doneOn) out.push({ at: `${t.doneOn}T23:59`, what: 'done', title: t.title, href: `#today/tasks/${t.id}` });
   }
   for (const n of projectNotes(data, p)) out.push({ at: n.updatedAt, what: n.updatedAt > n.createdAt ? 'note-changed' : 'note', title: noteName(n), href: `#projects/notes/${n.id}` });
+  // Milestones reached and decisions made (dates only, so they count as the end of that day, like tasks done).
+  for (const m of p.milestones ?? []) if (m.reachedOn) out.push({ at: `${m.reachedOn}T23:58`, what: 'milestone', title: m.title, href: `#projects/p/${p.id}/milestones` });
+  for (const x of p.decisions ?? []) { const o = chosenOption(x); if (o && x.decidedOn) out.push({ at: `${x.decidedOn}T23:58`, what: 'decided', title: `${x.question} — ${o.text}`, href: `#projects/p/${p.id}/decisions` }); }
   return out.sort((a, b) => b.at.localeCompare(a.at)).slice(0, max);
 }
 

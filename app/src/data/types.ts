@@ -157,8 +157,26 @@ export interface Project {
                               // shared with the classic MyDay — don't change)
   createdAt: DateTime;
   updatedAt: DateTime;
+  // From 1.31.0 (optional; absent = none, so a project without them is saved exactly as before): see data/projectPlan.ts.
+  milestones?: Milestone[];
+  decisions?: Decision[];
 }
 export interface ProjectsData { items: Project[]; [other: string]: unknown }
+
+// A milestone: a big marker on the way, in your order. `aim` is a date to aim for (guidance, never "late");
+// `reachedOn` the day you ticked it reached.
+export interface Milestone { id: string; title: string; aim: DateKey | null; reachedOn: DateKey | null; createdAt: DateTime; [other: string]: unknown }
+// A decision: a question, 1–4 options each with its own pros and cons (no scores), and — once you choose — the chosen
+// option, your reasons and the day. "Think again" clears the choice but keeps everything else, and remembers the last
+// choice in `lastChoice`.
+export interface DecisionOption { id: string; text: string; pros: string[]; cons: string[]; [other: string]: unknown }
+export interface Decision {
+  id: string; question: string; options: DecisionOption[];
+  chosen: string | null; why: string; decidedOn: DateKey | null;
+  lastChoice?: { text: string; on: DateKey };
+  createdAt: DateTime; updatedAt: DateTime;
+  [other: string]: unknown;
+}
 
 // ---------- Calendar: the shift rota ----------
 export type ShiftType = 'day' | 'night' | 'off';

@@ -20,17 +20,22 @@ import { bothMention, mightBelong } from '../data/understand';
 import { dueText } from '../tasks/route';
 import { TaskRow } from '../tasks/TasksScreen';
 import { Progression } from './parts';
+import { DecisionsCard, DecisionsView, MilestonesCard, MilestonesView } from './PlanViews';
+import { tabHref } from './planText';
 
 // One project (#projects/p/<id>): what it is, where it is on the progression, its one next step, and everything that
 // belongs to it — tasks, notes, what's coming up (dated tasks and appointments) and how far it has come. On wide screens
 // the doing (next step, tasks, notes) is on the left and the overview on the right.
-export function ProjectView({ data, id }: { data: MyDayData; id: string }) {
+export type ProjectTab = 'overview' | 'milestones' | 'decisions';
+export function ProjectView({ data, id, tab = 'overview' }: { data: MyDayData; id: string; tab?: ProjectTab }) {
   useEffect(() => { restoreExploreEntry(id); }, [id]);
   const p = projectById(data, id);
   if (!p) return <><BackLink to="projects" label="Projects" /><NotFound title="This project isn't here" back="projects" label="Back to your projects" /></>;
   return (
     <>
       <BackLink to="projects" label="Projects" />
+      <ProjectTop p={p} tab={tab} />
+      {tab === 'milestones' ? <MilestonesView p={p} /> : tab === 'decisions' ? <DecisionsView p={p} /> : <>
       <ProjectHead p={p} />
       <div className="grid gap-x-5 lg:grid-cols-[minmax(0,1fr)_340px] items-start">
         <div className="min-w-0">
@@ -39,13 +44,32 @@ export function ProjectView({ data, id }: { data: MyDayData; id: string }) {
           <NotesCard data={data} p={p} />
         </div>
         <div className="min-w-0">
+          <MilestonesCard p={p} />
+          <DecisionsCard p={p} />
           <ComingUpCard data={data} p={p} />
           <ProgressCard data={data} p={p} />
           <RecentlyCard data={data} p={p} />
           <ManageCard p={p} />
         </div>
       </div>
+      </>}
     </>
+  );
+}
+
+// The project's name and its sections: Overview · Milestones · Decisions (each its own address, so Back works).
+function ProjectTop({ p, tab }: { p: Project; tab: ProjectTab }) {
+  const tabClass = (on: boolean) => `seg-link flex-1 inline-flex items-center justify-center min-h-11 rounded-xl text-[15px] font-semibold no-underline ${on ? 'on bg-primary-container text-on-primary-container' : 'text-fg-2'}`;
+  return (
+    <Card aria-labelledby="projectTitle" id="projectTop" className="!pb-2.5">
+      {p.status !== 'active' && <Eyebrow>{STATUS_LABEL[p.status]}</Eyebrow>}
+      <h2 id="projectTitle" className="text-[26px] tracking-[-.02em] m-0 break-words">{p.title}</h2>
+      <nav className="seg flex gap-1.5 mt-3" role="tablist" aria-label="Project sections" data-s="project-tabs">
+        <a className={tabClass(tab === 'overview')} href={`#projects/p/${encodeURIComponent(p.id)}`} role="tab" aria-selected={tab === 'overview'} data-tab="overview">Overview</a>
+        <a className={tabClass(tab === 'milestones')} href={tabHref(p, 'milestones')} role="tab" aria-selected={tab === 'milestones'} data-tab="milestones">Milestones</a>
+        <a className={tabClass(tab === 'decisions')} href={tabHref(p, 'decisions')} role="tab" aria-selected={tab === 'decisions'} data-tab="decisions">Decisions</a>
+      </nav>
+    </Card>
   );
 }
 
@@ -53,13 +77,10 @@ function ProjectHead({ p }: { p: Project }) {
   const [editing, setEditing] = useState(false);
   const save = (patch: Partial<Pick<Project, 'title' | 'summary' | 'stage'>>) => update(d => (editProject(d, p.id, patch) ? undefined : false));
   return (
-    <Card aria-labelledby="projectTitle" id="projectHead">
+    <Card aria-label="About this project" id="projectHead">
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          {p.status !== 'active' && <Eyebrow>{STATUS_LABEL[p.status]}</Eyebrow>}
-          <h2 id="projectTitle" className="text-[26px] tracking-[-.02em] m-0 break-words">{p.title}</h2>
-        </div>
-        <Button inline variant="ghost" className="flex-none" aria-expanded={editing} data-action="project-edit" onClick={() => setEditing(!editing)}><Pencil size={16} aria-hidden="true" /> {editing ? 'Done' : 'Edit'}</Button>
+        <h3 className="m-0 text-[15px] text-fg-2 font-semibold">About it</h3>
+        <Button inline variant="ghost" className="flex-none -mt-2" aria-expanded={editing} data-action="project-edit" onClick={() => setEditing(!editing)}><Pencil size={16} aria-hidden="true" /> {editing ? 'Done' : 'Edit'}</Button>
       </div>
       {editing ? (
         <div className="grid gap-3 mt-3">
@@ -287,7 +308,7 @@ function ProgressCard({ data, p }: { data: MyDayData; p: Project }) {
 }
 
 // What happened lately, newest first (tasks added or done, notes written or changed) — each opens what it's about.
-const HAPPENED = { added: 'Added', done: 'Done', note: 'Note', 'note-changed': 'Note changed' } as const;
+const HAPPENED = { added: 'Added', done: 'Done', note: 'Note', 'note-changed': 'Note changed', milestone: 'Milestone reached', decided: 'Decided' } as const;
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 function RecentlyCard({ data, p }: { data: MyDayData; p: Project }) {
   const list = recently(data, p), k = todayKey();
@@ -313,7 +334,7 @@ function ManageCard({ p }: { p: Project }) {
   const confirm = useConfirm();
   const status = (s: Project['status'], msg: string) => { if (update(d => (editProject(d, p.id, { status: s }) ? undefined : false))) toast(msg); };
   async function remove() {
-    const yes = await confirm({ title: 'Delete this project?', body: 'Its notes, tasks and appointments stay where they are — they just won\'t be linked to a project any more.', confirmLabel: 'Delete project', cancelLabel: 'Keep it' });
+    const yes = await confirm({ title: 'Delete this project?', body: 'Its milestones and decisions go with it; its notes, tasks and appointments stay.', confirmLabel: 'Delete project', cancelLabel: 'Keep it' });
     if (!yes) return;
     if (update(d => (deleteProject(d, p.id) ? undefined : false))) { toast('Project deleted. Its notes and tasks are still here.'); location.hash = 'projects'; }
   }

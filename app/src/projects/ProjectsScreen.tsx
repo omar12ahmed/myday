@@ -18,7 +18,7 @@ import { ProjectView } from './ProjectView';
 // about one intention; notes are the raw material, linked to a project or not (yet).
 export function ProjectsScreen({ data, hash }: { data: MyDayData; hash: string }) {
   const parts = hash.replace('#', '').split('/').map(decodeURIComponent);
-  if (parts[1] === 'p' && parts[2]) return <div className="max-w-[1000px] mx-auto"><ProjectView key={parts[2]} data={data} id={parts[2]} /></div>;
+  if (parts[1] === 'p' && parts[2]) return <div className="max-w-[1000px] mx-auto"><ProjectView key={parts[2]} data={data} id={parts[2]} tab={parts[3] === 'milestones' || parts[3] === 'decisions' ? parts[3] : 'overview'} /></div>;
   const tab = parts[1] === 'notes' ? 'notes' : parts[1] === 'connections' ? 'connections' : 'projects';
   const tabClass = (on: boolean) => `seg-link flex-1 inline-flex items-center justify-center gap-1.5 min-h-11 rounded-xl text-[15px] font-semibold no-underline ${on ? 'on bg-primary-container text-on-primary-container' : 'text-fg-2'}`;
   return (
