@@ -19,6 +19,7 @@ import { AiCards } from './AiCards';
 import { TutorCard } from './TutorCard';
 import { PracticeIndex, PracticeView, RelatedPractice } from './Practice';
 import { CheckRevision, CyberRevisionGlance } from './CheckRevision';
+import { TeachingLesson } from '../teaching/TeachingLesson';
 
 export function ResourceLinks({ ids }: { ids: string[] }) {
   return <div className="grid gap-3">{ids.map(id => { const r = resources.get(id); return r && <div key={id}>
@@ -123,6 +124,7 @@ function LessonView({ data, lesson: l }: { data: MyDayData; lesson: Lesson }) {
         <Button onClick={() => startLearning(task.course.id, task.node.id, minutes, minutes < l.estimated_duration_minutes.standard)}>Start a study session</Button>
       </div> : <p className="text-sm text-fg-2">You can do the activities below now. Add your path on the learning map to use the Study timer too.</p>}
     </Card>
+    <TeachingLesson key={'teaching-' + l.id} course="cybersecurity" lessonId={l.id} />
     <Card><h3>Choose a manageable session</h3>{l.variants.map(v => <details key={v.mode}><summary className="min-h-11 py-2 cursor-pointer capitalize text-primary">{v.mode} · {v.minutes} min</summary><p>{v.activity}</p><p className="text-sm text-fg-2">{v.evidence_scope}</p></details>)}</Card>
     <Card><h3>Learn by doing</h3><div className="grid gap-3">{[l.practical_task_id, l.knowledge_check_id, l.mini_challenge_id].map(id => <LinkButton key={id} to={'study/cybersecurity/' + id}>{activities.get(id)!.title}</LinkButton>)}</div>
       <h3>Completion criteria</h3><Lines items={l.completion_criteria} /><p className="text-sm text-fg-2">A short session is a checkpoint. Marking a roadmap task complete records your choice, not verified mastery.</p>
@@ -131,7 +133,7 @@ function LessonView({ data, lesson: l }: { data: MyDayData; lesson: Lesson }) {
     <AiCards key={'cards-' + l.id} data={data} lesson={l} coursePrompts={activities.get(l.knowledge_check_id)?.questions.map(q => q.prompt) ?? []} />
     <RelatedPractice data={data} ids={[l.id]} />
     <TutorCard key={l.id} lesson={l} />
-    <Card><h3>Read and explore</h3><ResourceLinks ids={l.resource_ids} /></Card>
+    <Card><details><summary className="cursor-pointer min-h-11 py-2 text-primary font-semibold">Module reference library</summary><ResourceLinks ids={l.resource_ids} /></details></Card>
   </>;
 }
 function NotebookIndex({ data }: { data: MyDayData }) {

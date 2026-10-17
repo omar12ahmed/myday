@@ -1,0 +1,169 @@
+# id	kind	title	url
+learn	read	Learning Scientists — Six strategies for effective learning	https://www.learningscientists.org/downloadable-materials
+scope	read	NIST SP 800-115 — Technical guide to information security testing	https://csrc.nist.gov/pubs/sp/800/115/final
+vm	read	UTM — Running Ubuntu on Apple Silicon	https://docs.getutm.app/guides/ubuntu/
+notes	read	The Turing Way — Reproducible research	https://book.the-turing-way.org/reproducible-research/overview
+debug	read	Python tutorial — Errors and exceptions	https://docs.python.org/3/tutorial/errors.html
+computer	watch	CS50 — Lecture 0: Scratch	https://cs50.harvard.edu/x/2026/weeks/0/
+unicode	read	Python — Unicode HOWTO	https://docs.python.org/3/howto/unicode.html
+shell	read	Ubuntu — The Linux command line for beginners	https://ubuntu.com/tutorials/command-line-for-beginners
+process	read	Linux manual — proc	https://man7.org/linux/man-pages/man5/proc.5.html
+ubuntu-packages	read	Ubuntu Server — Package management	https://documentation.ubuntu.com/server/how-to/software/package-management/
+ip	watch	Professor Messer — Introduction to IP	https://www.professormesser.com/network-plus/n10-009/n10-009-video/introduction-to-ip-n10-009/
+subnet	read	Cloudflare — What is a subnet?	https://www.cloudflare.com/learning/network-layer/what-is-a-subnet/
+dns	read	Cloudflare — What is DNS?	https://www.cloudflare.com/learning/dns/what-is-dns/
+dns-video	watch	Professor Messer — DNS Records	https://www.professormesser.com/network-plus/n10-009/n10-009-video/dns-records-n10-009/
+tcp	read	Cloudflare — What is TCP/IP?	https://www.cloudflare.com/learning/ddos/glossary/tcp-ip/
+udp	read	Cloudflare — What is UDP?	https://www.cloudflare.com/learning/ddos/glossary/user-datagram-protocol-udp/
+http	read	MDN — Overview of HTTP	https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview
+wireshark	read	Wireshark User's Guide — Display filtering	https://www.wireshark.org/docs/wsug_html_chunked/ChapterWork.html
+firewall	read	Ubuntu Server — Firewalls	https://documentation.ubuntu.com/server/how-to/security/firewalls/
+bandit	practice	OverTheWire Bandit — Level 0	https://overthewire.org/wargames/bandit/bandit0.html
+permissions	read	Linux manual — inode permissions	https://man7.org/linux/man-pages/man7/inode.7.html
+journal	read	journalctl(1) - Linux manual page	https://man7.org/linux/man-pages/man1/journalctl.1.html
+ssh	read	OpenBSD — ssh manual	https://man.openbsd.org/ssh
+windows-process	read	Microsoft Learn — Get-Process	https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-process
+windows-acl	read	Microsoft Learn — Access control overview	https://learn.microsoft.com/en-us/windows/security/identity-protection/access-control/access-control
+powershell	read	Get-Member (Microsoft.PowerShell.Utility) - PowerShell | Microsoft Learn	https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/get-member
+windows-events	read	Microsoft Learn — Get-WinEvent	https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.diagnostics/get-winevent
+windows-security	read	Microsoft Defender Antivirus in Windows Overview - Microsoft Defender for Endpoint | Microsoft Learn	https://learn.microsoft.com/en-us/defender-endpoint/microsoft-defender-antivirus-windows
+python-flow	read	Python tutorial — More control flow tools	https://docs.python.org/3/tutorial/controlflow.html
+python-data	read	Python tutorial — Input and output	https://docs.python.org/3/tutorial/inputoutput.html
+regex	read	Python — Regular expression HOWTO	https://docs.python.org/3/howto/regex.html
+sql	read	PostgreSQL tutorial — Querying a table	https://www.postgresql.org/docs/current/tutorial-select.html
+tests	read	Python — unittest	https://docs.python.org/3/library/unittest.html
+git-basics	read	Pro Git — Recording changes to the repository	https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository
+git-branches	read	Pro Git — Basic branching and merging	https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging
+bash	read	bash(1) - Linux manual page	https://man7.org/linux/man-pages/man1/bash.1.html
+ps-functions	read	Microsoft Learn — PowerShell functions	https://learn.microsoft.com/en-us/powershell/scripting/learn/ps101/09-functions
+python-env	read	Python tutorial — Virtual environments and packages	https://docs.python.org/3/tutorial/venv.html
+csf	read	NIST Cybersecurity Framework 2.0	https://www.nist.gov/cyberframework
+iam	read	OWASP — Authorization Cheat Sheet	https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html
+phishing	read	Phishing scams: how to spot and report them | National Cyber Security Centre	https://www.ncsc.gov.uk/collection/phishing-scams
+logging	read	OWASP — Logging Cheat Sheet	https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html
+hash	read	Python — hashlib	https://docs.python.org/3/library/hashlib.html
+crypto	read	OWASP — Cryptographic Storage Cheat Sheet	https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html
+tls	read	MDN — Transport Layer Security	https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Transport_Layer_Security
+passwords	read	OWASP — Password Storage Cheat Sheet	https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
+oauth	read	OpenID Foundation — How OpenID Connect works	https://openid.net/developers/how-connect-works/
+web	read	MDN — How the web works	https://developer.mozilla.org/en-US/docs/Learn_web_development/Getting_started/Web_standards/How_the_web_works
+javascript	read	MDN — Using the Fetch API	https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+sql-prevention	read	OWASP — SQL Injection Prevention Cheat Sheet	https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html
+cookies	read	MDN — Using HTTP cookies	https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Cookies
+api	read	Microsoft Azure Architecture — Web API design best practices	https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design
+threat	read	OWASP — Threat Modeling Cheat Sheet	https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html
+backup	read	Small organisations guide to cyber security | Backing up your data | National Cyber Security Centre	https://www.ncsc.gov.uk/collection/small-organisations-guide-to-cyber-security/backing-up-your-data
+aws-responsibility	read	AWS — Shared responsibility model	https://aws.amazon.com/compliance/shared-responsibility-model/
+nmap	read	Nmap — Port scanning basics	https://nmap.org/book/man-port-scanning-basics.html
+cvss	read	FIRST — CVSS v4.0 user guide	https://www.first.org/cvss/v4.0/user-guide
+kev	read	GitHub - cisagov/kev-data: Mirror of cisa.gov/kev data files · GitHub	https://github.com/cisagov/kev-data
+ir	read	NIST SP 800-61 Rev. 3 — Incident response recommendations	https://csrc.nist.gov/pubs/sp/800/61/r3/final
+attack	read	MITRE ATT&CK — Valid Accounts	https://attack.mitre.org/techniques/T1078/
+nice	read	NIST NICE — Framework components	https://www.nist.gov/itl/applied-cybersecurity/nice/nice-framework-resource-center/nice-framework-current-versions
+report	read	OWASP WSTG — Reporting structure	https://owasp.github.io/www-project-web-security-testing-guide/latest/5-Reporting/01-Reporting_Structure
+proxy	practice	PortSwigger — Intercepting HTTP traffic	https://portswigger.net/burp/documentation/desktop/getting-started/intercepting-http-traffic
+sqli	read	PortSwigger — SQL injection	https://portswigger.net/web-security/sql-injection
+sqli-lab	practice	PortSwigger — SQL injection: retrieving hidden data	https://portswigger.net/web-security/sql-injection/lab-retrieve-hidden-data
+xss	read	PortSwigger — Cross-site scripting	https://portswigger.net/web-security/cross-site-scripting
+access	read	PortSwigger — Access control vulnerabilities	https://portswigger.net/web-security/access-control
+ssrf	read	PortSwigger — Server-side request forgery	https://portswigger.net/web-security/ssrf
+logic	read	PortSwigger — Business logic vulnerabilities	https://portswigger.net/web-security/logic-flaws
+ad	read	Microsoft Learn — Active Directory Domain Services overview	https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview
+kerberos	read	Microsoft Learn — Kerberos authentication overview	https://learn.microsoft.com/en-us/windows-server/security/kerberos/kerberos-authentication-overview
+gpo	read	Microsoft Learn — Group Policy overview	https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/group-policy/group-policy-overview
+ad-secure	read	Microsoft Learn — Best practices for securing Active Directory	https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/plan/security-best-practices/best-practices-for-securing-active-directory
+sudo	read	sudoers(5) - Linux manual page	https://man7.org/linux/man-pages/man5/sudoers.5.html
+services-acl	read	Microsoft Learn — Service security and access rights	https://learn.microsoft.com/en-us/windows/win32/services/service-security-and-access-rights
+secrets	read	OWASP — Secrets Management Cheat Sheet	https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html
+sigma	read	Sigma — Rule basics	https://sigmahq.io/docs/basics/rules.html
+precision	read	Google Machine Learning — Accuracy, precision and recall	https://developers.google.com/machine-learning/crash-course/classification/accuracy-precision-recall
+forensics	read	NIST SP 800-86 — Integrating forensics into incident response	https://csrc.nist.gov/pubs/sp/800/86/final
+volatility	read	Volatility 3 — Getting started	https://volatility3.readthedocs.io/en/latest/getting-started-linux-tutorial.html
+reversing	watch	OpenSecurityTraining2 — Architecture 1001: x86-64 Assembly	https://p.ost2.fyi/courses/course-v1:OpenSecurityTraining2+Arch1001_x86-64_Asm+2021_v1/about
+ghidra	read	ghidra/GhidraDocs/GhidraClass/Beginner/Introduction_to_Ghidra_Student_Guide.html at master · NationalSecurityAgency/ghidra · GitHub	https://github.com/NationalSecurityAgency/ghidra/blob/master/GhidraDocs/GhidraClass/Beginner/Introduction_to_Ghidra_Student_Guide.html
+yara	read	YARA — Writing rules	https://yara.readthedocs.io/en/stable/writingrules.html
+aws-budget	read	AWS Budgets — Managing costs	https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html
+aws-iam	read	AWS IAM — Policy evaluation logic	https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html
+aws-s3	read	Amazon S3 — Blocking public access	https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-block-public-access.html
+aws-cloudtrail	read	AWS CloudTrail — Logging management events	https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-management-events-with-cloudtrail.html
+terraform	read	HashiCorp — Terraform plan	https://developer.hashicorp.com/terraform/cli/commands/plan
+docker	read	Docker — What is a container?	https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-a-container/
+docker-secure	read	Docker — Security	https://docs.docker.com/engine/security/
+actions	read	GitHub — Secure use of GitHub Actions	https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions
+slsa	read	SLSA — Supply chain threats	https://slsa.dev/spec/v1.1/threats-overview
+kubernetes	read	Kubernetes — Security checklist	https://kubernetes.io/docs/concepts/security/security-checklist/
+ssdf	read	NIST — Secure Software Development Framework	https://csrc.nist.gov/projects/ssdf
+asvs	read	OWASP — Application Security Verification Standard	https://owasp.org/www-project-application-security-verification-standard/
+fuzz	read	LLVM — libFuzzer tutorial and usage	https://llvm.org/docs/LibFuzzer.html
+ai	read	OWASP — LLM prompt injection prevention	https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html
+zero-trust	read	NIST SP 800-207 — Zero Trust Architecture	https://csrc.nist.gov/pubs/sp/800/207/final
+race	read	PortSwigger — Race conditions	https://portswigger.net/web-security/race-conditions
+jwt	read	PortSwigger — JWT attacks	https://portswigger.net/web-security/jwt
+caldera	read	MITRE Caldera — Getting started	https://caldera.readthedocs.io/en/latest/Getting-started.html
+controls-video	watch	Security Controls - CompTIA Security+ SY0-701	https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/security-controls-sy0-701/
+hash-video	watch	Hashing and Digital Signatures - CompTIA Security+ SY0-701	https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/hashing-and-digital-signatures-sy0-701/
+access-video	watch	Access Controls - CompTIA Security+ SY0-701 - 4.6 - Professor Messer IT Certification Training Courses	https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/access-controls-sy0-701/
+ir-video	watch	Incident Response - CompTIA Security+ SY0-701 - 4.8 - Professor Messer IT Certification Training Courses	https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/incident-response-sy0-701/
+forensics-video	watch	Digital Forensics - CompTIA Security+ SY0-701 - 4.8 - Professor Messer IT Certification Training Courses	https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/digital-forensics-sy0-701/
+logs-video	watch	Log Data - CompTIA Security+ SY0-701 - 4.9 - Professor Messer IT Certification Training Courses	https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/log-data-sy0-701/
+web-video	watch	Week 8 HTML, CSS, JavaScript - CS50x 2026	https://cs50.harvard.edu/x/2026/weeks/8/
+memory-video	watch	Week 4 Memory - CS50x 2026	https://cs50.harvard.edu/x/2026/weeks/4/
+ar-routine	read	بَرْنامَجُكَ اليَوْمِيُّ | تعلم العربية	https://learning.aljazeera.net/en/articles/pages/22000
+ar-library-form	read	تَعْبِئَةُ نَمُوْذَجِ بِطَاقَةِ مَكْتَبَةٍ | تعلم العربية	https://learning.aljazeera.net/en/articles/pages/21984
+ar-floating	watch	المَدْرَسَةُ العائِمَةُ في بَنْغلادِش | تعلم العربية	https://learning.aljazeera.net/en/articles/pages/21919
+ar-centre	watch	في مَرْكَزِ تَعْلِيمِ اللُّغَةِ العَرَبِيَّةِ | تعلم العربية	https://learning.aljazeera.net/en/generallanguage/%D9%81%D9%8A-%D9%85%D8%B1%D9%83%D8%B2-%D8%AA%D8%B9%D9%84%D9%8A%D9%85-%D8%A7%D9%84%D9%84%D8%BA%D8%A9-%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9
+ar-vacation	watch	عُطْلَةُ الْـمَدْرَسَةِ | تعلم العربية	https://learning.aljazeera.net/en/generallanguage/%D8%B9%D8%B7%D9%84%D8%A9-%D8%A7%D9%84%D9%85%D8%AF%D8%B1%D8%B3%D8%A9
+ar-apartment	watch	شَقَّةٌ لِلْإِيجارِ | تعلم العربية	https://learning.aljazeera.net/en/languageofmedia/%D8%A5%D9%8A%D8%AC%D8%A7%D8%B1-%D8%B4%D9%82%D8%A9
+ar-why	watch	لِـمَاذَا يَتَعَلَّمُونَ الْعَرَبِيَّةَ؟ | تعلم العربية	https://learning.aljazeera.net/en/generallanguage/%D9%84%D9%85%D8%A7%D8%B0%D8%A7-%D9%8A%D8%AA%D8%B9%D9%84%D9%85%D9%88%D9%86-%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9
+ar-hamza	watch	الْحُروفُ والأصْوات العَرَبِيّة (1) الأَلِف والهَمْزَة | تعلم العربية	https://learning.aljazeera.net/en/generallanguage/%D8%A7%D9%84%D8%A3%D9%84%D9%81-%D9%88%D8%A7%D9%84%D9%87%D9%85%D8%B2%D8%A9
+ar-ba	watch	الْحُرُوفُ والأصْوات العَرَبِيّة (2) حَرْفُ البَاء | تعلم العربية	https://learning.aljazeera.net/en/languageofmedia/%D8%AD%D8%B1%D9%81-%D8%A7%D9%84%D8%A8%D8%A7%D8%A1
+ar-tha	watch	الْحُرُوفُ والأصْواتُ العَرَبِيّة (4) حَرْفُ الثَّاءِ | تعلم العربية	https://learning.aljazeera.net/en/generallanguage/%D8%AD%D8%B1%D9%81-%D8%A7%D9%84%D8%AB%D8%A7%D8%A1
+ar-ha	watch	الْحُرُوفُ والأصْواتُ العَرَبِيّة (6) حَرْفُ الحاءِ | تعلم العربية	https://learning.aljazeera.net/en/generallanguage/%D8%A7%D9%84%D8%AD%D8%B1%D9%88%D9%81-%D9%88%D8%A7%D9%84%D8%A3%D8%B5%D9%88%D8%A7%D8%AA-%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9-7-%D8%AD%D8%B1%D9%81-%D8%A7%D9%84%D8%AD%D8%A7%D8%A1
+ar-kha	watch	الْحُرُوفُ والأصْواتُ العَرَبِيّة (7) حَرْفُ الخاءِ | تعلم العربية	https://learning.aljazeera.net/en/generallanguage/%D8%A7%D9%84%D8%AD%D8%B1%D9%88%D9%81-%D9%88%D8%A7%D9%84%D8%A3%D8%B5%D9%88%D8%A7%D8%AA-%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9-7-%D8%AD%D8%B1%D9%81-%D8%A7%D9%84%D8%AE%D8%A7%D8%A1
+ar-sad	watch	الْحُرُوفُ والأصْواتُ العَرَبِيّة (14) حَرْفُ الصَّادِ | تعلم العربية	https://learning.aljazeera.net/en/generallanguage/%D8%A7%D9%84%D8%AD%D8%B1%D9%88%D9%81-%D9%88%D8%A7%D9%84%D8%A3%D8%B5%D9%88%D8%A7%D8%AA-%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9-14-%D8%AD%D8%B1%D9%81-%D8%A7%D9%84%D8%B5%D8%A7%D8%AF
+ar-alphabet	watch	Arabic Reading Lesson 1: Arabic Alphabet [with Interactive Chart] - Madinah Arabic – Madinah Arabic	https://madinaharabic.com/free-content/reading/lesson-1/part-1
+ar-this	read	Arabic Grammar Lesson 1: This is… – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-1/part-1
+ar-article	read	Arabic Grammar Lesson 3: Definite Article – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-3/part-1
+ar-nominal	read	Arabic Grammar Lesson 4: Nominal Sentence – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-4/part-9
+ar-idafa	read	Arabic Grammar Lesson 5, Part 1 – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-5/part-1
+ar-adjectives	read	Arabic Grammar Lesson 9: Adjective Clause – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-9/part-1
+ar-relative-feminine	read	Arabic Grammar Lesson 12, Part 1 – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-12/part-1
+ar-human-plurals	read	Arabic Grammar Lesson 13, Part 1 – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-13/part-1
+ar-verbs	read	Arabic Grammar Lesson 28: Conjugation of Verbs in Arabic – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-28/part-1
+ar-tenses	read	Arabic Grammar Lesson 29: Tenses of the Verb (Past, Present and Future) – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-29/part-1
+ar-negation	read	Arabic Grammar Lesson 31: Verb in the Affirmative and the Negative Form – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-31/part-1
+ar-weak	read	Arabic Grammar Lesson 32: Sound Verb and Defective Verb – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-32/part-1
+ar-passive	read	Arabic Grammar Lesson 34: Active and Passive Voice – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-34/part-1
+ar-moods	read	Arabic Grammar Lesson 36: Declension of the Present Verb – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-36/part-1
+ar-questions	read	Arabic Grammar Lesson 41: Interrogative (questioning) Articles (1 of 3) – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-41/part-1
+ar-pronouns	read	Arabic Grammar Lesson 44: Pronouns (1 of 5) – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-44/part-1
+ar-conditional	read	Arabic Grammar Lesson 49: The Conditional Sentence – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-49/part-1
+ar-masdar	read	Arabic Grammar Lesson 50: Verbal Nouns – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-50/part-1
+ar-dual	read	Arabic Grammar Lesson 55: The dual – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-55/part-1
+ar-cefr	read	Self-assessment Grids (CEFR) - European Language Portfolio (ELP)	https://www.coe.int/en/web/portfolio/self-assessment-grid
+ar-tech	read	المصادقة والتخويل - Azure App Service | Microsoft Learn	https://learn.microsoft.com/ar-sa/azure/app-service/overview-authentication-authorization
+ar-constantine	watch	قسنطينة.. مدينة العلماء والحضارات | تعلم العربية	https://learning.aljazeera.net/en/articles/pages/22011
+ar-ibn	read	ابن بطوطة يطوف بعُمان ويزور ديار عاد | تعلم العربية	https://learning.aljazeera.net/en/articles/pages/21952
+ar-final-hamza	read	كتابة الهمزة في آخر الكلمة | تعلم العربية	https://learning.aljazeera.net/en/generallanguage/%D9%83%D8%AA%D8%A7%D8%A8%D8%A9-%D8%A7%D9%84%D9%87%D9%85%D8%B2%D8%A9-%D9%81%D9%8A-%D8%A2%D8%AE%D8%B1-%D8%A7%D9%84%D9%83%D9%84%D9%85%D8%A9
+ar-kana	read	Arabic Grammar Lesson 59: /kāna/ and its sisters – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-59/part-1
+ar-inna	read	Arabic Grammar Lesson 60: Annuller particles (/inna/ and its sisters) – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-60/part-1
+ar-case	read	Arabic Grammar Lesson 25: The Declinable and the non-Declinable – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-25/part-1
+ar-imperative	read	Arabic Grammar Lesson 40: Indeclension of the Imperative Verb – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-40/part-1
+ar-relative	read	Arabic Grammar Lesson 9: Adjective Clause – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-9/part-4
+ar-numbers	read	Arabic Grammar Lesson 19, Part 1 – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-19/part-1
+ar-dictionary	lookup	معجم الدوحة التاريخي للغة العربية | معاني الكلمات وجذورها	https://www.dohadictionary.org/
+ar-kalila	read	كليلة ودمنة	https://downloads.hindawi.org/books/61851406.pdf
+ar-derived	read	Arabic Grammar Lesson 93: Measures of the augmented verbs – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-93/part-1
+ar-hal	read	Arabic Grammar Lesson 71: The status – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-71/part-1
+ar-tamyiz	read	Arabic Grammar Lesson 72: The distinctive – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-72/part-1
+ar-exception	read	Arabic Grammar Lesson 73: The exclusion (1 of 3) – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-73/part-1
+ar-diptotes	read	Arabic Grammar Lesson 22: Cases of Diptotes – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-22/part-1
+ar-gender-verbs	read	Arabic Grammar Lesson 30: Masculinity and Feminization of Verb – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-30/part-1
+ar-plurals	read	Arabic Grammar Lesson 17, Part 1 – Madinah Arabic	https://madinaharabic.com/free-content/grammar/lesson-17/part-1
+ar-quran-script	read	Phonetic Transcription	https://corpus.quran.com/documentation/phonetic.jsp
+ar-quran-pauses	read	The Quranic Arabic Corpus - Pause Marks	https://corpus.quran.com/documentation/pausemarks.jsp
+ar-quran-morph	read	Morphological Features	https://corpus.quran.com/documentation/morphologicalfeatures.jsp
+ar-poem	read	إرادة الحياة - ويكي مصدر	https://ar.wikisource.org/wiki/%D8%A5%D8%B1%D8%A7%D8%AF%D8%A9_%D8%A7%D9%84%D8%AD%D9%8A%D8%A7%D8%A9
+python-video	watch	CS50 — Week 6: Python	https://cs50.harvard.edu/x/2026/weeks/6/
+shell-video	watch	MIT Missing Semester — The Shell	https://missing.csail.mit.edu/2020/course-shell/
+git-video	watch	MIT Missing Semester — Version Control	https://missing.csail.mit.edu/2020/version-control/

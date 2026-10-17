@@ -2,7 +2,9 @@
 
 Version 1.0.0 · 4 October 2026
 
-Start with `MyDay_Cybersecurity_Curriculum.md`. Its architecture comes first, followed by the full module/lesson catalogue, projects, environments, verified resources and answer guide.
+Start studying with the [lesson teaching companion](../teaching/cybersecurity-lessons.md): every lesson now has an explanation, worked example, guided exercise, explained answer and specific reading/video assignments. These appear directly in MyDay's lesson screens. Use `MyDay_Cybersecurity_Curriculum.md` for the full roadmap, projects, environments and assessment structure.
+
+The [companion JSON](../teaching/cybersecurity.json) uses the existing lesson IDs. See the [teaching guide](../teaching/README.md) for source checks, access notes and regeneration instructions.
 
 ## Files
 

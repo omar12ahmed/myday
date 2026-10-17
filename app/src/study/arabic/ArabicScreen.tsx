@@ -17,6 +17,7 @@ import { startRevision } from '../actions';
 import { BackLink, Choice, Choices, Eyebrow, ExternalLink, InlineLink } from '../parts';
 import { Lines, LinkButton } from '../cybersecurity/parts';
 import { Ar, Mixed } from './Ar';
+import { TeachingLesson } from '../teaching/TeachingLesson';
 import texts from './data/texts.json';
 import {
   corePath, lessonIndex, loadAnswers, loadModule, moduleList, modules, paths, projects, resources, short, skills, topics, version,
@@ -182,12 +183,13 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
         <Ar block className="text-[28px] m-0">{l.example.text_ar}</Ar>
         <p className="text-sm text-fg-2 m-0">{l.example.meaning_en}</p>
       </div>}
-      {needsVoice && <p className="text-sm text-fg-2 flex gap-2 items-start mt-3 mb-0"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />This lesson uses listening or speaking. No recording is included: use a verified recording or a fluent speaker.</p>}
+      {needsVoice && <p className="text-sm text-fg-2 flex gap-2 items-start mt-3 mb-0"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />This lesson uses listening or speaking. Use the assigned listening material below where provided, or a fluent speaker. External recordings open on the provider’s site.</p>}
       {l.prerequisites.all.length > 0 && <details className="mt-3"><summary className="cursor-pointer min-h-11 py-2 text-primary font-semibold">Builds on {l.prerequisites.all.length} earlier skill{l.prerequisites.all.length === 1 ? '' : 's'}</summary>
         <ul className="list-disc pl-5">{l.prerequisites.all.map(s => skills[s] && <li key={s}><InlineLink href={href(skills[s].taught_by_lesson_ids[0])}>{skills[s].name}</InlineLink></li>)}</ul>
         <p className="text-sm text-fg-2">You can still explore this lesson.</p>
       </details>}
     </Card>
+    <TeachingLesson key={'teaching-' + l.id} course="arabic-fusha" lessonId={l.id} />
     {finished && <FinishedCard data={data} checkIds={checkIds} onClose={() => setFinished(false)} />}
     <SessionCard data={data} lesson={l} onFinished={() => setFinished(true)} />
     {task && <Card><h3>Practical task · {task.estimated_minutes} min</h3><p><Mixed text={task.instruction} /></p>
@@ -203,7 +205,7 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
     <Card><h3>When the lesson is done</h3><Lines items={l.completion_criteria} /><p className="text-sm text-fg-2 mb-0">One full attempt is a step, not mastery: a fresh task on another day tells you more.</p></Card>
     <LessonHistory data={data} lesson={l} />
     {l.starter_asset_ids.length > 0 && <Card><h3>Read alongside</h3><div className="grid gap-2">{l.starter_asset_ids.map(a => assets.get(a) && <InlineLink key={a} href={href(a)}>{assets.get(a)!.title}</InlineLink>)}</div></Card>}
-    <Card><h3>Read and explore</h3><ResourceLinks ids={l.resource_ids} /></Card>
+    <Card><details><summary className="cursor-pointer min-h-11 py-2 text-primary font-semibold">Module reference library</summary><ResourceLinks ids={l.resource_ids} /></details></Card>
   </>;
 }
 
