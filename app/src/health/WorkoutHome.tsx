@@ -9,6 +9,7 @@ import type { DateKey, MyDayData } from '../data/types';
 import { activeWorkout, completedOn, finishedSessions, missedSession, nextInSequence, sessionPlanFor, tplById, upcomingPlans } from '../data/workout/plans';
 import { setsDone, setsTotal } from '../data/workout/sessions';
 import { continueMissed, moveMissed, newTemplate, skipMissed, startWorkoutFrom, toggleArchiveTemplate } from './actions';
+import { DailyManage } from './DailyManage';
 
 const BTN = 'btn inline-flex items-center justify-center gap-2 min-h-tap w-full rounded-btn bg-primary text-on-primary font-[650] shadow-raised';
 
@@ -142,6 +143,7 @@ export function WorkoutHome({ data, moving, setMoving }: { data: MyDayData; movi
             </details>
           )}
         </Card>
+        <DailyManage data={data} />
         <Card aria-labelledby="sch-h">
           <div className="card-head flex justify-between items-center gap-3">
             <h2 id="sch-h" className="m-0">Schedule</h2>

@@ -33,7 +33,7 @@ import { ARABIC_CORE_PATH, type ArabicAttempt, type ArabicCard } from '../data/a
 export type Kind = 'list' | 'queue' | 'day' | 'context'
   | 'settings' | 'rota' | 'pay' | 'holidays' | 'finance' | 'study' | 'workout' | 'food' | 'fitness' | 'notes' | 'tasks' | 'patterns'
   | 'commitment' | 'note' | 'task' | 'session' | 'review' | 'wsession' | 'recipe' | 'project' | 'cybersecurity' | 'cyber_attempt'
-  | 'arabic' | 'arabic_attempt' | 'arabic_card' | 'cyber_card';
+  | 'arabic' | 'arabic_attempt' | 'arabic_card' | 'cyber_card' | 'daily';
 export type Content = Record<string, unknown>;
 
 // A record's key on this device: "list:learning", "day:2026-10-02", "note:nt8f…"…
@@ -155,6 +155,12 @@ const ONE: One[] = [
   { kind: 'arabic', id: 'preferences', label: 'Arabic learning path',
     get: d => ({ pathId: d.arabic.pathId }), put: (d, c) => { d.arabic.pathId = String(c.pathId); },
     clean: raw => ({ pathId: normalizeArabic(raw).pathId }), summary: c => String(c.pathId), starter: c => c.pathId === ARABIC_CORE_PATH },
+  { kind: 'daily', id: 'moves', label: 'Daily exercises (Health)',
+    get: d => d.health.daily as unknown as Content, put: (dr, c) => { dr.health.daily = c as unknown as MyDayData['health']['daily']; },
+    clean: raw => via({ health: { daily: raw } }).health.daily as unknown as Content,
+    summary: c => { const dd = c as unknown as MyDayData['health']['daily']; return `${plural(dd.exercises.length, 'exercise')} · ${plural(Object.keys(dd.log).length, 'day')} logged`; },
+    lines: c => (c as unknown as MyDayData['health']['daily']).exercises.map(e => `${e.name} — ${e.target} a day, in sets of ${e.set}${e.archived ? ' (archived)' : ''}`),
+    starter: c => !(c.exercises as unknown[]).length && !Object.keys(obj(c.log)).length },
 ];
 
 // ---------- One record per item ----------

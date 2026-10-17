@@ -26,7 +26,9 @@ import { dueIds } from '../data/study/queue';
 import { activeStudy } from '../data/study/sessions';
 import { StudyTodayCard } from '../study/StudyTodayCard';
 import { HealthTodayCard } from '../health/HealthTodayCard';
+import { DailyTodayCard } from '../health/DailyTodayCard';
 import { healthReminders } from '../health/reminders';
+import { liveExercises } from '../data/health/daily';
 import { AdjustCard } from '../ai/AdjustCard';
 import { MindCard } from '../ai/MindCard';
 import { DueTodayCard } from './DueTodayCard';
@@ -266,6 +268,8 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
   const yesterdayOpen = !!yd && !yd.rest && !yd.checkedIn && yd.tasks.some(t => !t.done && !t.rolledQid);
   // Health: only what's waiting (a workout, cooking, the shopping list). Nothing goes on the task list.
   const healthCard = healthReminders(data, k).length > 0 && <HealthTodayCard data={data} k={k} />;
+  // Daily exercises: a countdown on Today, one tap per set (managed in Health → Workout).
+  const dailyCard = liveExercises(data.health.daily).length > 0 && <DailyTodayCard data={data} k={k} />;
   // Study: only what's waiting (a session in progress, or revision ready). Nothing goes on the task list.
   const studyCard = (!!activeStudy(data.study) || dueIds(data, k).length > 0) && <StudyTodayCard data={data} k={k} />;
 
@@ -331,6 +335,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
         {slot('order-1', <ProjectStepsCard data={data} k={k} />, 'slot-steps')}
         {slot('order-1', <TasksLink data={data} />, 'slot-tasks')}
         {slot('order-1', healthCard, 'slot-health')}
+        {slot('order-1', dailyCard, 'slot-daily')}
         {slot('order-1', studyCard, 'slot-study')}
         {slot('order-3', context, 'slot-context')}
         {slot('order-4', proposalCard)}
@@ -352,6 +357,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
         {slot('order-1', <TasksLink data={data} />, 'slot-tasks')}
         {slot('order-2', context, 'slot-context')}
         {slot('order-3', healthCard, 'slot-health')}
+        {slot('order-3', dailyCard, 'slot-daily')}
         {slot('order-3', studyCard, 'slot-study')}
         {slot('order-4', yesterdayOpen && <YesterdayCard onOpen={() => { setView('evening'); setEveningKey(shift(k, -1)); }} />)}
         {slot('order-4', <NoticedLink data={data} k={k} />, 'slot-noticed')}

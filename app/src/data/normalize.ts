@@ -10,6 +10,7 @@ import { normalizeCyber } from './cybersecurity/normalize';
 import { emptyArabic } from './arabic/types';
 import { normalizeArabic } from './arabic/normalize';
 import { emptyFood } from './food/normalize';
+import { emptyDaily } from './health/daily';
 import { emptyWorkout } from './workout/common';
 import { normalizeHealth } from './workout/normalize';
 import { normalizeStudy } from './study/normalize';
@@ -73,7 +74,7 @@ export function freshState(): MyDayData {
     rota: emptyRota(),
     pay: defaultPay(),
     bankHolidays: { region: 'england-and-wales', fetchedAt: null, divisions: null },
-    health: { workout: emptyWorkout(), food: emptyFood() },
+    health: { workout: emptyWorkout(), food: emptyFood(), daily: emptyDaily() },
     study: emptyStudy(),
     cybersecurity: emptyCyber(),
     arabic: emptyArabic(),
@@ -270,7 +271,7 @@ export function normalize(raw: unknown, report = { dropped: 0 }): MyDayData {
   for (const k of ['lists', 'days', 'nudge', 'settings', 'context', 'rota', 'pay', 'bankHolidays', 'health', 'study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'projects']) if (wrong(raw[k], 'object')) report.dropped++;
   for (const k of ['queue', 'commitments']) if (wrong(raw[k], 'array')) report.dropped++;
   if (isObj(raw.lists)) for (const cat of CATS) if (cat in raw.lists && wrong(raw.lists[cat], 'array')) report.dropped++;
-  if (isObj(raw.health)) for (const k of ['workout', 'food']) if (wrong(raw.health[k], 'object')) report.dropped++;
+  if (isObj(raw.health)) for (const k of ['workout', 'food', 'daily']) if (wrong(raw.health[k], 'object')) report.dropped++;
   // Keep everything else exactly as it was: anything added by a newer MyDay.
   for (const key of Object.keys(raw)) {
     if (!(key in s) && !['__proto__', 'constructor', 'prototype'].includes(key)) s[key] = raw[key];

@@ -465,7 +465,24 @@ export interface FinanceData {
 export interface HealthData {
   workout: WorkoutData;
   food: FoodData;
+  daily: DailyData;
   [other: string]: unknown;
+}
+
+// ---------- Health: Daily exercises ----------
+// Everyday movements with a daily target and a set size ("150 push-ups, in sets of 25"). One tap on
+// Today logs one set; each tap's reps are kept so a mis-tap can be undone. Missed days cost nothing:
+// every morning starts from the full target again, and changes apply from today (history stays as it was).
+export interface DailyExercise {
+  id: string;
+  name: string;
+  target: number;    // reps to do each day (1–1000)
+  set: number;       // reps per tap (1–500, never more than target)
+  archived: boolean; // archived: off Today and the count, history kept
+}
+export interface DailyData {
+  exercises: DailyExercise[];
+  log: Record<DateKey, Record<string, number[]>>; // day → exercise id → each tap's reps, in order
 }
 
 // ---------- Health: Food ----------
