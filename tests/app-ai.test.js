@@ -523,6 +523,7 @@ const SEED = `s => {
       check('…says private notes are never sent, and counts yours', line.startsWith('Notes you’ve marked private') && line.includes(`You have ${n === 1 ? 'one' : n} at the moment`), [line, n]); }
     check('…has the AI help with notes switch, which models do which job, and the limits', (await mock.exists('#knows [data-action=ai-notes]')) && page.includes('GLM-5.3-Flash') && page.includes('Gemini 3.8 Flash') && page.includes('20 AI requests a day'));
     check('…and says this copy uses the practice helper (nothing sent)', (await mock.text('[data-s=knows-mode]')).includes('practice helper'));
+    check('it shows what MyDay keeps about how you work — your own preferences, to change in What MyDay has noticed', (await mock.text('[data-s=knows-prefs]')).includes('AI help with notes: ') && await mock.exists('#knowsKeeps [data-action=knows-noticed]'));
     check('the footer links to it too', await mock.exists('#footer [data-action=knows]'));
     check('nothing scrolls sideways on the page', !(await mock.ev('document.documentElement.scrollWidth > innerWidth')));
     await mock.ev(`location.hash = 'today'`); await sleep(200);

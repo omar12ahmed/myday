@@ -1,9 +1,11 @@
 import { ShieldCheck } from 'lucide-react';
 import { Card } from '../components/Card';
-import { BackLink } from '../components/parts';
+import { BackLink, LinkButton } from '../components/parts';
 import { sendsFor } from '../ai/askContext';
 import { AI_MODE } from '../ai/request';
 import type { AskPage } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
+import { CATEGORIES } from '../data/patterns/saved';
+import { CAT_LABEL } from '../data/plan';
 import type { MyDayData } from '../data/types';
 import { AiNotesCard } from '../notes/AiNotesCard';
 import { AI_CONNECT_PER_DAY } from '../shell/aiConnect';
@@ -38,6 +40,16 @@ const MODELS: [string, string][] = [
 export function KnowsScreen({ data }: { data: MyDayData }) {
   const privateNotes = data.notes.items.filter(n => n.private).length;
   const aiNotes = !!data.patterns.prefs.aiNotes;
+  // Your own preferences and answers (What MyDay has noticed), in words.
+  const pr = data.patterns.prefs, name = typeof pr.name === 'string' ? pr.name.trim() : '';
+  const yes = Object.values(data.patterns.answers).filter(a => a.said === 'yes').length;
+  const kept = [
+    name ? `What to call you: ${name}` : 'No name saved',
+    pr.maxTasks ? `At most ${pr.maxTasks.value} task${pr.maxTasks.value === 1 ? '' : 's'} a day` : null,
+    ...CATEGORIES.map(c => (pr.maxMinutes[c] ? `${CAT_LABEL[c]} tasks up to ${pr.maxMinutes[c]!.value} minutes` : null)),
+    yes ? `${yes} pattern${yes === 1 ? '' : 's'} you said ${yes === 1 ? 'is' : 'are'} right` : null,
+    `AI help with notes: ${aiNotes ? 'on' : 'off'}`,
+  ].filter((x): x is string => !!x);
   return (
     <div className="max-w-[720px] mx-auto" id="knows">
       <BackLink to="today" label="Today" />
@@ -47,6 +59,14 @@ export function KnowsScreen({ data }: { data: MyDayData }) {
         <p className="text-[15px] text-fg-2 mb-0 mt-2" data-s="knows-mode">{AI_MODE === 'off' ? 'AI help isn’t set up in this copy of MyDay, so nothing is ever sent to an AI.'
           : AI_MODE === 'mock' ? 'This copy of MyDay uses the practice helper: nothing is sent anywhere.'
           : 'An AI sees something only when you tap for its help (or switch on AI help with notes), and only what’s listed here.'}</p>
+      </Card>
+
+      <Card aria-labelledby="knows-keeps-h" id="knowsKeeps">
+        <h3 id="knows-keeps-h">What MyDay keeps about how you work</h3>
+        <ul className="m-0 pl-5 grid gap-1.5 text-[15px]" data-s="knows-prefs">
+          {kept.map(x => <li key={x}>{x}</li>)}
+        </ul>
+        <p className="text-sm text-fg-3 m-0 mt-2">Yours to change — MyDay never adds to these by itself, and none of them is sent to the AI. <LinkButton data-action="knows-noticed" className="text-sm" onClick={() => { location.hash = 'noticed'; window.scrollTo(0, 0); }}>See or change them in What MyDay has noticed</LinkButton></p>
       </Card>
 
       <Card aria-labelledby="knows-ask-h" id="knowsAsk">

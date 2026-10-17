@@ -130,6 +130,23 @@ module named like one the course already has is that one, a section that isn't t
 course already has is left unticked, 5–120 minutes; Add puts them into the course on your roadmap in one save (it
 syncs with the roadmap), with Undo that also takes back the sections and modules it made. Edit: the length and kind.
 
+**Revision, changes and What MyDay knows (1.27.0):** Ask (instructions `myday-ask-v12`) can **start a revision round**
+when something is due ("Revise 3 cards now" — Today and Study send how many cards are due; a round is at most 5; one
+subject when you ask about it), and can **change what's already saved** on the page you asked from: a task's day and
+time, title, length, list or project; an appointment's day, time or title (its length kept); a note's title or project.
+Each change is a card showing before → after, ticked to apply (**Apply**), with Undo putting back exact copies of
+everything touched. The app checks every change (`src/ai/ask.ts`): only things the page sent (their ids), not a done
+task or a private note, days from today on, an open project, only real changes — and a task's list, length or title
+only when what you typed asks for it (the page never sends a task's list; anything else is left out and said). Ask
+never deletes or ticks anything off. Today's plan has **one quiet line** above it, only when it helps — "About 2 h
+planned · 1 h 15 min free — it's fine to leave something for tomorrow", "…your energy has room for one; the rest can
+wait", or "…first: Pay council tax (due today)" (`daySummary` in `src/data/today.ts`; on the device, never a score).
+**What MyDay knows** (`#knows`, `src/knows/KnowsScreen.tsx`; from Ask's preview and the footer): what each page sends
+to Ask (in the preview's own words — `SENDS` in `src/ai/askContext.ts`, so they can't drift), what the other AI help
+sends, what MyDay keeps about how you work (your name and preferences, with a link to change them), the AI help with notes switch, what's never sent (private notes, your name and email, preferences and patterns,
+Finance and Health records), that the AI remembers nothing, which model does which job, and the limits. Evaluated on 12
+more synthetic requests (`../ai-eval/reviews/2026-10-17-ask-quality.md`).
+
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
 
@@ -376,6 +393,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/study/teaching/TeachingLesson.tsx`, `src/study/arabic/transliterate.ts`, `src/study/arabic/Pronunciation.tsx`, `../content/teaching/` | Lesson teaching (1.26.0, PR #1): each course's teaching companion (`content/teaching/*.json`, generated and checked at build by `scripts/prepare-teaching.mjs`), shown above a lesson's practical tasks (`TeachingLesson`); Arabic transliteration (authored readings first, then rules; `transliterate.ts`, checked by `scripts/validate-pronunciation.mjs`) with the Show / Hide choice and the pronunciation guide (`Pronunciation.tsx`, device-only key `myday.arabic.transliteration`). |
 | `src/data/reading.ts`, `src/study/ReadingView.tsx`, `src/study/readingActions.ts`, `src/study/StudyTabs.tsx` | Study → Reading (1.24.0): checking saved books (`reading.ts`); the Reading tab — books, the page you're on, notes, Edit, Finished (`ReadingView`); what each button saves (`readingActions.ts`); Study's Courses / Reading tabs (`StudyTabs`). |
 | `src/study/` | The Study screens: `StudyScreen` (picks the screen from the address, e.g. `#study/roadmap`), `Dashboard`, `Roadmap`, `CourseDetails`, `TaskDetails`, `SessionView`, `CheckinView`, `RevisionView`, `ConceptsView`, `ConceptView`, `ProgressView`, `StudySettings` and `StudyTodayCard`; `actions.ts` (what each button saves), `round.ts` (the revision round, kept in memory), `parts.tsx` (small shared pieces). |
+| `src/knows/KnowsScreen.tsx` | What MyDay knows (1.27.0, `#knows`): what each kind of AI help sends and when (Ask's lines from `SENDS` in `src/ai/askContext.ts`), what's never sent, which model does which job (keep in step with `AI_ROUTES`), limits. |
 | `src/commitments/` | Work shifts and appointments: the form and list used by both Today and Calendar. |
 | `src/shell/` | Navigation, the top bar's parts (`TopBar`: the Focus mode switch and your account; `focusMode.ts`, the device-only `myday.focus`), the theme button, the shared footer (`AppFooter`), the "couldn't be read" notice (`LoadIssue`) and the screens for unreadable or older data. |
 | `public/icon.svg` | The tab icon. |
@@ -932,3 +950,9 @@ returns up to 8 small tasks; you tick the ones to add.
     course's outline (shown first) and proposes study tasks into its sections — or new ones — to tick, edit and add
     into the course on your roadmap, with Undo. The server's `ask` job (instructions `myday-ask-v10`) was deployed
     first. No data or database change.
+39. **Release 1.27.0:** Ask MyDay can start a revision round when cards are due, and change what's already saved on
+    the page you're on — a task's or appointment's day and time, a title, a task's length or list, a task's or note's
+    project — shown before → after, applied only when ticked, with Undo; never deleting or ticking off. Today gets one
+    quiet line above the plan when it helps (too much for the time or energy left, or a task due today to start with).
+    And a new page, What MyDay knows, says exactly what each kind of AI help sends and what never leaves MyDay. The
+    server's `ask` job (instructions `myday-ask-v12`) was deployed first. No data or database change.

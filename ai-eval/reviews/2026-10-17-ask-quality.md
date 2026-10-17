@@ -63,3 +63,25 @@ The app (`app/src/ai/ask.ts`) finds sections and modules by id or by name — th
 same Add — so nothing is made twice; treats "null"/"none" as no value; marks tasks the course already has.
 
 **Recommendation:** ship `myday-ask-v10` on GLM-5.3-Flash (the main model; no AI_ROUTES change needed).
+
+## Revision and changes to what's saved (1.27.0)
+
+New synthetic requests: `k41`–`k43` (revise or something new, with cards due; revise one subject; nothing due) and
+`k44`–`k52` (move a task due today to Friday; rename a project's task; make the open task 45 minutes; put the open note
+in a project; move the dentist to 4pm; push the open task to tomorrow at 7pm; and three that must not change anything:
+delete a task, mark one done, move something that isn't on the page). New checks: the right revision scope, revision
+offered only when something is due, a lesson never offered as revision; a change only to something on the page, the
+right target and fields, days from today on, no list guessed (the page never sends a task's list), no change when none
+was asked for.
+
+| Instructions | Calls | Checks met | Cost | What reading the replies found |
+|---|---|---|---|---|
+| myday-ask-v11 | 14 (the revision requests and k21) | 117/118 | $0.0046 | "Revise 3 cards now" offered when cards are due and only then; the subject's scope right; a lesson no longer offered for revising. |
+| v12 | 64 (every Ask scenario once) | 689/692 | $0.0237 | Changes right in every case (move, rename, length, a note into a project, the dentist to 4pm, a new day and time); delete and mark done refused kindly, pointing to the page. Two breakdowns came back without each step's `"type"`, so the reader dropped them all — the reader now takes a step with no type as a task (a study task when it says where in a course). One course plan gave modules but no section names — the app already puts those in "Planned with Ask" in that module; the check was stricter than the app. Re-scored with the reader fixed: 692/692. |
+| v12, changes 3× | 33 | 327/329 | $0.0114 | One rename pointed at the wrong task (a done one): the app drops it, as a done task can't be changed. One "move this to tomorrow at 7pm" also sent the task's list as "learning" — a guess, since the page never sends it. One offer to add a reminder with nothing to tick. |
+| **v12** (fields only when asked; "match its title") | 27 | 272/273 | $0.0089 | No guessed lists or lengths; every target right. One reply stopped at "Here's the change:" with no items — the app now treats a change reply with nothing usable as unusable ("try again"), or, when it left something out for a reason, says why. |
+
+Total for 1.27.0: about **US$0.05**. Besides the instructions, the app now changes a task's list, length or title only
+when what you typed asks for it (the rest is left out and said), and only things the page sent can change.
+
+**Recommendation:** ship `myday-ask-v12` on GLM-5.3-Flash (no AI_ROUTES change needed).
