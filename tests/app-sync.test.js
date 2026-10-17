@@ -243,6 +243,62 @@ function task(uid, taskId, category, title, minutes, done = false) {
   check('…choosing the phone\'s sends it, and the Mac gets it', await mac.until(`JSON.parse(localStorage.getItem('myday.data.v4')).notes.categories[0].name === 'Phone: Life'`));
   await synced(mac);
 
+  console.log('\n[5c] A project\'s milestones and decisions travel with the project (one record, no new kind)');
+  await synced(mac); await synced(phone);
+  const AIM = shiftKey(30);
+  await mac.setData(`s => { s.projects.items.push({ id: 'pjSync', title: 'Sync: garden shed', summary: '', stage: 'decide', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${Y}T09:00', updatedAt: '${Y}T09:00',
+    milestones: [{ id: 'msA', title: 'Pick a site', aim: '${AIM}', reachedOn: null, createdAt: '${Y}T09:01' }, { id: 'msB', title: 'Order the base', aim: null, reachedOn: null, createdAt: '${Y}T09:02' }],
+    decisions: [{ id: 'dcA', question: 'Which size?', options: [{ id: 'opS', text: 'Small', pros: ['Cheap'], cons: [] }, { id: 'opL', text: 'Large', pros: [], cons: ['Costly'] }], chosen: 'opL', why: 'Room for tools', decidedOn: '${Y}', createdAt: '${Y}T09:03', updatedAt: '${Y}T09:04' }] }); }`);
+  await synced(mac);
+  const macPj = (await mac.data()).projects.items.find(x => x.id === 'pjSync');
+  const cloudPj = async () => (await cloudRecord(userA, 'project', 'pjSync'));
+  check('the Mac sends the project with its milestones and its decided decision, inside the one project record', !!(await cloudPj()) && (await cloudPj()).data.milestones.length === 2 && (await cloudPj()).data.decisions[0].chosen === 'opL' && (await cloudPj()).data.decisions[0].why === 'Room for tools', (await cloudPj()));
+  await phone.returnToApp();
+  await phone.until(`JSON.parse(localStorage.getItem('myday.data.v4')).projects.items.some(p => p.id === 'pjSync')`);
+  const phonePj = (await phone.data()).projects.items.find(x => x.id === 'pjSync');
+  const canon = v => Array.isArray(v) ? v.map(canon) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map(k => [k, canon(v[k])])) : v;
+  check('the phone receives them exactly (milestones, aim date, options, pros and cons, the choice, the reason, the date)', eq(canon(phonePj), canon(macPj)) && phonePj.milestones.length === 2 && phonePj.decisions[0].chosen === 'opL', [phonePj, macPj]);
+  await synced(phone);
+  // The phone, offline, reaches the first milestone.
+  await phone.offline(true);
+  await phone.ev(`location.hash = 'projects/p/pjSync/milestones'`);
+  await phone.until(`document.querySelector('#projectMilestones [data-action=ms-reach]')`);
+  await phone.click('#projectMilestones [data-action=ms-reach]');
+  await sleep(400);
+  check('offline, reaching a milestone is kept on the phone ("Saved on this device")', (await phone.data()).projects.items.find(x => x.id === 'pjSync').milestones[0].reachedOn === today && (await statusIs(phone, 'local', 8000)), await diag(phone));
+  check('…and the account still has it as not reached', (await cloudPj()).data.milestones[0].reachedOn === null);
+  await phone.offline(false); await phone.returnToApp();
+  await synced(phone, 20000);
+  check('back online, it is saved to your account', await cloudUntil(async () => (await cloudPj()).data.milestones[0].reachedOn === today, 15000), (await cloudPj()).data.milestones[0]);
+  await mac.returnToApp();
+  check('…and the Mac receives it', await mac.until(`JSON.parse(localStorage.getItem('myday.data.v4')).projects.items.find(p => p.id === 'pjSync').milestones[0].reachedOn === '${today}'`));
+  await synced(mac);
+  // Both change the same project at once: the Mac renames a milestone, the phone (offline) adds a pro.
+  await phone.offline(true);
+  await phone.ev(`location.hash = 'projects/p/pjSync/decisions'`);
+  await phone.until(`document.querySelector('[data-s=option][data-id=opS] [data-s=pros] [data-action=pro-add]')`);
+  await phone.click('[data-s=option][data-id=opS] [data-s=pros] [data-action=pro-add]');
+  await phone.until(`document.querySelector('[data-s=option][data-id=opS] [data-s=pros] form input')`);
+  await phone.type('[data-s=option][data-id=opS] [data-s=pros] form input', 'Phone: fits the corner');
+  await phone.click('[data-s=option][data-id=opS] [data-action=pro-save]');
+  await sleep(400);
+  await mac.setData(`s => { s.projects.items.find(p => p.id === 'pjSync').milestones[1].title = 'Mac: order the base now'; }`);
+  await synced(mac);
+  await phone.offline(false); await phone.returnToApp();
+  check('the same project changed on both devices is a conflict to decide (nothing merged, nothing overwritten)', await statusIs(phone, 'attention') && (await phone.data()).projects.items.find(x => x.id === 'pjSync').decisions[0].options[0].pros.includes('Phone: fits the corner')
+    && (await cloudPj()).data.milestones[1].title === 'Mac: order the base now' && !(await cloudPj()).data.decisions[0].options[0].pros.includes('Phone: fits the corner'), await diag(phone));
+  check('…the phone has not taken the Mac\'s rename, and the account has not taken the phone\'s pro', (await phone.data()).projects.items.find(x => x.id === 'pjSync').milestones[1].title === 'Order the base');
+  await goSync(phone);
+  await phone.until(`document.querySelector('[data-action=conflict-cloud][data-key="project:pjSync"]')`);
+  check('…the sync screen names it as a project, and offers both versions to choose from', (await phone.text('#syncConflicts')).includes('Project') && (await phone.exists('[data-action=conflict-here][data-key="project:pjSync"]')), await phone.text('#syncConflicts'));
+  await phone.click('[data-action=conflict-cloud][data-key="project:pjSync"]');
+  await synced(phone, 20000);
+  const afterPj = (await phone.data()).projects.items.find(x => x.id === 'pjSync');
+  check('choosing the account\'s version gives the phone the Mac\'s rename, keeps the phone\'s version aside, and merges nothing', afterPj.milestones[1].title === 'Mac: order the base now' && !afterPj.decisions[0].options[0].pros.includes('Phone: fits the corner')
+    && (await phone.notes()).kept.some(k => k.key === 'project:pjSync' && k.why === 'conflict' && JSON.stringify(k.content).includes('Phone: fits the corner')), (await phone.notes()).kept.map(k => k.key));
+  await mac.returnToApp(); await synced(mac);
+  check('…and the account is unchanged by it', (await cloudPj()).data.milestones[1].title === 'Mac: order the base now' && (await mac.data()).projects.items.find(x => x.id === 'pjSync').milestones[1].title === 'Mac: order the base now');
+
   console.log('\n[6] Today\'s plan, and deleting it ("Start today over") — the deletion syncs and doesn\'t come back');
   await goToday(mac);
   await mac.until(`document.getElementById('energy')`);

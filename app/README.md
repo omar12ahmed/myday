@@ -162,6 +162,14 @@ Doing) by the stage they're at, and one tap moves a project along or back. A pro
 last five things that happened to it (tasks added or done, notes written or changed), newest first, each opening what
 it's about. Both are worked out from what's already saved.
 
+**Milestones and Decisions (1.31.0):** a milestone is reached with a tap ("Not yet" undoes it), can be renamed, moved or
+given a date to aim for, and is removed only after asking. A decision's options sit side by side (stacked on phones).
+**Choose this** asks "Why this one? (optional)" before **Decide**; the others stay, marked "Not chosen". **Think again**
+reopens it with everything kept, and at the Decide stage the project can be moved to Doing, but only on your tap.
+Both lists are saved inside the project (`milestones` and `decisions`, `src/data/projectPlan.ts`), so they sync with
+it and need no new record or database change; a project without them is saved exactly as before. Recently lists
+milestones reached and decisions made, and Ask MyDay doesn't send them. No AI is used.
+
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
 
@@ -409,6 +417,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/reading.ts`, `src/study/ReadingView.tsx`, `src/study/readingActions.ts`, `src/study/StudyTabs.tsx` | Study → Reading (1.24.0): checking saved books (`reading.ts`); the Reading tab — books, the page you're on, notes, Edit, Finished (`ReadingView`); what each button saves (`readingActions.ts`); Study's Courses / Reading tabs (`StudyTabs`). |
 | `src/study/` | The Study screens: `StudyScreen` (picks the screen from the address, e.g. `#study/roadmap`), `Dashboard`, `Roadmap`, `CourseDetails`, `TaskDetails`, `SessionView`, `CheckinView`, `RevisionView`, `ConceptsView`, `ConceptView`, `ProgressView`, `StudySettings` and `StudyTodayCard`; `actions.ts` (what each button saves), `round.ts` (the revision round, kept in memory), `parts.tsx` (small shared pieces). |
 | `src/knows/KnowsScreen.tsx` | What MyDay knows (1.27.0, `#knows`): what each kind of AI help sends and when (Ask's lines from `SENDS` in `src/ai/askContext.ts`), what's never sent, which model does which job (keep in step with `AI_ROUTES`), limits. |
+| `src/data/projectPlan.ts`, `src/projects/PlanViews.tsx`, `src/projects/planText.ts` | Milestones and decisions (1.31.0): `projectPlan.ts` (checking the saved lists, and adding, editing, reaching, choosing, thinking again, with the limits); `PlanViews.tsx` (the Milestones and Decisions screens and Overview's two cards); `planText.ts` (the "Aiming for" wording, which never says late or overdue). |
 | `src/commitments/` | Work shifts and appointments: the form and list used by both Today and Calendar. |
 | `src/shell/` | Navigation, the top bar's parts (`TopBar`: the Focus mode switch and your account; `focusMode.ts`, the device-only `myday.focus`), the theme button, the shared footer (`AppFooter`), the "couldn't be read" notice (`LoadIssue`) and the screens for unreadable or older data. |
 | `public/icon.svg` | The tab icon. |
@@ -993,3 +1002,11 @@ returns up to 8 small tasks; you tick the ones to add.
     two are in Doing, the column says so gently: "pausing one is fine, it'll keep". Paused and done projects stay
     folded away below. A project's page has **Recently**: up to five things from lately, newest first (tasks added or
     done, notes written or changed), each opening what it's about. No server, data or database change.
+43. **Release 1.31.0:** milestone 3, release 2. A project's page has three tabs, **Overview · Milestones ·
+    Decisions**, each with its own address, so Back works. Overview keeps everything it had and gains two small cards:
+    the milestones reached with the next one and its aim, and the open decisions. **Milestones** are the big markers
+    on the way, in your order (up to 30), with an optional date to aim for, shown gently and never as late.
+    **Decisions** set a question against 1–4 options, each with its own pros and cons (up to 6 each; no scores, no
+    winner). Nothing is automatic: no tasks, appointments or reminders are made. No server or database change: saved
+    data only gains these two optional lists inside each project, and going back to 1.30.0 is safe (it keeps them,
+    unseen).

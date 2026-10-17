@@ -83,6 +83,25 @@ const clone = o => JSON.parse(JSON.stringify(o));
   check('…the links between them too: the favourite and want-to-cook still point at the recipe, the check-in at its concept', eq(putBack.health.food.favourites, ['rOwn']) && putBack.health.food.want[0].recipeId === 'rOwn' && eq(putBack.study.sessions[0].checkin.conceptIds, ['cp1']));
   check('a record checked on its own keeps its links (the recipe and concept aren\'t in it)', eq(R.cleanRecord('food:kitchen', clone(recs.get('food:kitchen'))).favourites, ['rOwn']) && eq(R.cleanRecord('session:ss1', clone(recs.get('session:ss1'))).checkin.conceptIds, ['cp1']));
 
+  console.log('\n[1b] A project with milestones and decisions');
+  {
+    const pr = clone(raw);
+    pr.projects.items.push({ id: 'pj2', title: 'Hargeisa shop', summary: 'A small shop', stage: 'decide', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-03T09:00', updatedAt: '2026-10-04T09:00', futureThing: { a: 1 },
+      milestones: [{ id: 'ms1', title: 'Find a unit', aim: '2026-11-15', reachedOn: '2026-10-10', createdAt: '2026-10-03T09:00', futureBit: 'm' }, { id: 'ms2', title: 'Open the doors', aim: null, reachedOn: null, createdAt: '2026-10-03T09:01' }],
+      decisions: [{ id: 'dc1', question: 'Which unit?', options: [{ id: 'op1', text: 'Market stall', pros: ['Cheap'], cons: ['Small'], futureBit: 'o' }, { id: 'op2', text: 'Corner shop', pros: [], cons: ['Dear', 'Far'] }], chosen: null, why: 'Cheaper to start', decidedOn: null, lastChoice: { text: 'Corner shop', on: '2026-10-08' }, createdAt: '2026-10-03T09:02', updatedAt: '2026-10-08T09:00', futureBit: 'd' },
+        { id: 'dc2', question: 'Who helps?', options: [{ id: 'op3', text: 'Family', pros: ['Trusted'], cons: [] }], chosen: 'op3', why: '', decidedOn: '2026-10-09', createdAt: '2026-10-03T09:03', updatedAt: '2026-10-09T09:00' }] });
+    const nd = R.normalize(pr), rs = R.localRecords(nd);
+    const rec = rs.get('project:pj2'), recPlain = rs.get('project:pj1');
+    check('a project with milestones and decisions travels as one project record, with them inside', !!rec && rec.milestones.length === 2 && rec.decisions.length === 2 && !rs.has('milestone:ms1'), [...rs.keys()].filter(k => /^project/.test(k)));
+    check('…keeping a decision\'s last choice, the unknown fields, and exactly what was entered', rec.decisions[0].lastChoice.text === 'Corner shop' && rec.futureThing.a === 1 && rec.milestones[0].futureBit === 'm' && rec.decisions[0].options[0].futureBit === 'o' && eq(rec, pr.projects.items[1]), rec);
+    check('checked as it arrives on another device, it is exactly the same', R.fingerprint(R.cleanRecord('project:pj2', clone(rec))) === R.fingerprint(rec));
+    const nb = clone(R.freshState());
+    for (const [key, c] of rs) R.putRecord(nb, key, clone(c));
+    const back = R.localRecords(R.normalize(nb)).get('project:pj2');
+    check('put into a new MyDay, the project comes back the same, milestones and decisions included', R.fingerprint(back) === R.fingerprint(rec) && eq(nb.projects.items.find(p => p.id === 'pj2').decisions[1].chosen, 'op3'));
+    check('a project without them round-trips without the fields appearing', !('milestones' in recPlain) && !('decisions' in recPlain) && !('milestones' in R.cleanRecord('project:pj1', clone(recPlain))) && !('decisions' in R.cleanRecord('project:pj1', clone(recPlain))) && !('milestones' in nb.projects.items.find(p => p.id === 'pj1')) && !('decisions' in nb.projects.items.find(p => p.id === 'pj1')));
+  }
+
   console.log('\n[2] What stays on each device');
   check('the theme and animations aren\'t in the planning settings', !('theme' in recs.get('settings:planning')) && !('motion' in recs.get('settings:planning')) && recs.get('settings:planning').earliestTime === '07:30');
   check('the downloaded bank holidays aren\'t synced, only the region', eq(recs.get('holidays:region'), { region: 'scotland' }));

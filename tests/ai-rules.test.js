@@ -629,6 +629,14 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('…and, expanded, everything sent: what you typed, when and where, revision due, the open projects\' names', pv.all[0].lines[0] === 'what should I study?' && pv.all.some(x => x.label === 'When and where' && x.lines.includes('Page: Study')) && pv.all.some(x => x.lines.includes('Revision due: 0 cards')) && pv.all.some(x => x.label.startsWith('Your open projects') && x.lines.includes('Coffee subscription')));
     pv = K.askPreview(K.askContext(K.askSlice(w, '#projects/p/pjC', D), 'x', D));
     check('a project page: its name, how many tasks and note titles (and their text, when AI help with notes is on)', pv.short.includes('Project: Coffee subscription') && pv.short.includes('1 task, 1 note title and their text') && pv.all.some(x => x.label === 'Its tasks' && x.lines.includes('Ring two roasters')));
+    {
+      const withPlan = { ...w, projects: { ...w.projects, items: w.projects.items.map(p => p.id !== 'pjC' ? p : { ...p,
+        milestones: [{ id: 'msA', title: 'Secret milestone title', aim: '2026-12-01', reachedOn: null, createdAt: at }],
+        decisions: [{ id: 'dcA', question: 'Secret decision question?', options: [{ id: 'opA', text: 'Secret option', pros: ['Secret pro'], cons: ['Secret con'] }], chosen: 'opA', why: 'Secret reason', decidedOn: D, createdAt: at, updatedAt: at }] }) } };
+      const slPlan = K.askSlice(withPlan, '#projects/p/pjC', D), slNone = K.askSlice(w, '#projects/p/pjC', D);
+      check('a project carrying milestones and decisions sends exactly the same context, Sends line and preview as without them — they are never sent',
+        eq(slPlan.context, slNone.context) && slPlan.sends === slNone.sends && eq(K.askPreview(K.askContext(slPlan, 'x', D)), K.askPreview(K.askContext(slNone, 'x', D))) && !JSON.stringify(K.askContext(slPlan, 'x', D)).includes('Secret'));
+    }
     const ps = K.askSlice(w, '#projects/notes/n3', D);
     pv = K.askPreview(K.askContext(ps, 'x', D), ps.privateNote);
     check('a private note: the preview says it isn\'t sent', pv.short.includes('This note: not sent (private)') && !JSON.stringify(pv).includes('diary'));

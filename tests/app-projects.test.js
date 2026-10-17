@@ -312,6 +312,301 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await go('projects/p/pjQ', 2026, 10, 15, 15, 10);
   check('a project with nothing in it has no Recently card', (await exists('#projectTitle')) && !(await exists('#projectRecent')));
 
+  // ---- Milestones and Decisions on a project (1.31.0) ----
+  const pjObj = (id, title, stage, extra = {}) => ({ id, title, summary: '', stage, status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-10T09:00', updatedAt: '2026-10-10T09:00', ...extra });
+  const msObj = (id, title, aim = null, reachedOn = null) => ({ id, title, aim, reachedOn, createdAt: '2026-10-10T09:00' });
+  const opObj = (id, text, pros = [], cons = []) => ({ id, text, pros, cons });
+  const dcObj = (id, question, options, chosen = null, why = '', decidedOn = null, extra = {}) => ({ id, question, options, chosen, why, decidedOn, createdAt: '2026-10-10T09:00', updatedAt: '2026-10-10T09:00', ...extra });
+  const seed = list => editStorage(`s => { s.projects.items.push(...${JSON.stringify(list)}); }`);
+  const sel = id => ({ ms: `[data-s=milestone][data-id="${id}"]`, op: `[data-s=option][data-id="${id}"]` });
+  const tabOf = () => ev(`(document.querySelector('[data-s=project-tabs] a[aria-selected=true]') || {}).dataset?.tab || null`);
+  const pAt = id => projects().then(l => l.find(x => x.id === id));
+  const msTitles = async id => ((await pAt(id)).milestones || []).map(m => m.title);
+  const noBlame = async () => !/\b(late|overdue|behind)\b/i.test(await text('#app'));
+
+  console.log('\n[15] A project\'s tabs: Overview, Milestones, Decisions');
+  await go('projects', 2026, 10, 15, 16); await reset(); await go('projects', 2026, 10, 15, 16);
+  await seed([pjObj('pjT', 'Tabs: garden shed', 'organise')]);
+  for (const [suffix, tab, want, notWant] of [['', 'overview', '#projectHead', '#projectMilestones'], ['/milestones', 'milestones', '#projectMilestones', '#projectHead'], ['/decisions', 'decisions', '#projectDecisions', '#projectHead']]) {
+    await go(`projects/p/pjT${suffix}`, 2026, 10, 15, 16, 5); await sleep(200);
+    check(`opening #projects/p/pjT${suffix} shows the ${tab} tab (selected) and its content`, (await tabOf()) === tab && (await exists(want)) && !(await exists(notWant)) && (await text('#projectTitle')) === 'Tabs: garden shed', [await tabOf(), await hash()]);
+  }
+  check('the three tabs are tabs: Overview, Milestones, Decisions, in that order', eq(await ev(`[...document.querySelectorAll('[data-s=project-tabs] [role=tab]')].map(a => a.textContent.trim())`), ['Overview', 'Milestones', 'Decisions']));
+  check('the Overview heading card is now titled "About it"', await (async () => { await go('projects/p/pjT', 2026, 10, 15, 16, 6); return (await text('#projectHead')).includes('About it'); })());
+  await click('[data-s=project-tabs] a[data-tab=milestones]'); await sleep(250);
+  check('tapping Milestones changes the address and the tab', (await hash()) === '#projects/p/pjT/milestones' && (await tabOf()) === 'milestones' && (await exists('#projectMilestones')), await hash());
+  await click('[data-s=project-tabs] a[data-tab=decisions]'); await sleep(250);
+  check('tapping Decisions changes the address and the tab', (await hash()) === '#projects/p/pjT/decisions' && (await tabOf()) === 'decisions' && (await exists('#projectDecisions')), await hash());
+  await ev('history.back()'); await sleep(300);
+  check('Back returns to the Milestones tab', (await hash()) === '#projects/p/pjT/milestones' && (await tabOf()) === 'milestones' && (await exists('#projectMilestones')), await hash());
+  await go('projects/p/pjT', 2026, 10, 15, 16, 6); await sleep(200);
+  await click('[data-s=project-tabs] a[data-tab=milestones]'); await sleep(250);
+  await ev('history.back()'); await sleep(300);
+  check('…and from the Overview, one tap on Milestones then Back returns to the Overview', (await hash()) === '#projects/p/pjT' && (await tabOf()) === 'overview' && (await exists('#projectHead')), await hash());
+  await click('[data-s=project-tabs] a[data-tab=overview]'); await sleep(200);
+  for (const suffix of ['/milestones', '/decisions']) {
+    await go(`projects/p/pjT${suffix}`, 2026, 10, 15, 16, 7); await sleep(200);
+    await ev('location.reload()'); await sleep(1500);
+    check(`reloading on ${suffix} stays on that tab`, (await hash()) === `#projects/p/pjT${suffix}` && (await tabOf()) === suffix.slice(1), [await hash(), await tabOf()]);
+  }
+  await go('projects/p/pjT', 2026, 10, 15, 16, 8);
+  await click('[data-action=project-explore]'); await sleep(400);
+  check('the Explore link still opens Explore', (await hash()) === '#projects/p/pjT/explore' && (await exists('#explore-title')), await hash());
+  await ev('history.back()'); await sleep(300);
+  check('…and Back returns to the project\'s Overview', (await hash()) === '#projects/p/pjT' && (await exists('#projectTitle')), await hash());
+  for (const suffix of ['', '/milestones', '/decisions']) {
+    await go(`projects/p/pjNone${suffix}`, 2026, 10, 15, 16, 9); await sleep(200);
+    check(`an unknown project at ${suffix || 'its Overview address'} still says "This project isn't here"`, (await text('#app')).includes("This project isn't here") && !(await exists('[data-s=project-tabs]')));
+  }
+
+  console.log('\n[16] The two cards on the Overview');
+  await seed([
+    pjObj('pjCe', 'Cards: empty one', 'capture'),
+    pjObj('pjCp', 'Cards: in progress', 'organise', {
+      milestones: [msObj('msP1', 'Draw the plan', null, '2026-10-10'), msObj('msP2', 'Book the builder', '2026-10-01'), msObj('msP3', 'Buy the paint', '2026-11-20')],
+      decisions: [dcObj('dcP1', 'Which colour?', [opObj('opP1', 'Green')]), dcObj('dcP2', 'Which door?', []), dcObj('dcP3', 'Which roof?', []), dcObj('dcP4', 'Which lock?', []), dcObj('dcP5', 'Which path?', [], null, '', null, { createdAt: '2026-10-11T09:00' })],
+    }),
+    pjObj('pjCf', 'Cards: finished', 'act', {
+      milestones: [msObj('msF1', 'Dig the hole', null, '2026-10-08'), msObj('msF2', 'Pour the base', null, '2026-10-12')],
+      decisions: [dcObj('dcF1', 'Which size?', [opObj('opF1', 'Small'), opObj('opF2', 'Large')], 'opF1', 'Fits the corner', '2026-10-14')],
+    }),
+    pjObj('pjCa', 'Cards: next with a future date', 'organise', { milestones: [msObj('msA1', 'Choose a site', '2026-11-05')] }),
+  ]);
+  await go('projects/p/pjCe', 2026, 10, 15, 16, 10);
+  check('an empty project\'s Milestones card invites you to add the first one', (await text('#projectMilestonesCard [data-s=ms-summary]')) === 'Milestones are the big markers on the way — add the first one', await text('#projectMilestonesCard'));
+  check('…and its Decisions card asks "Is there a choice to make?"', (await text('#projectDecisionsCard [data-s=dc-summary]')) === 'Is there a choice to make? Add a decision', await text('#projectDecisionsCard'));
+  check('…each card links to its tab', (await ev(`document.querySelector('#projectMilestonesCard a').getAttribute('href')`)) === '#projects/p/pjCe/milestones' && (await ev(`document.querySelector('#projectDecisionsCard a').getAttribute('href')`)) === '#projects/p/pjCe/decisions');
+  await click('#projectMilestonesCard a'); await sleep(250);
+  check('…tapping the Milestones card opens the Milestones tab', (await hash()) === '#projects/p/pjCe/milestones' && (await tabOf()) === 'milestones', await hash());
+  await go('projects/p/pjCe', 2026, 10, 15, 16, 11);
+  await click('#projectDecisionsCard a'); await sleep(250);
+  check('…and the Decisions card opens the Decisions tab', (await hash()) === '#projects/p/pjCe/decisions' && (await tabOf()) === 'decisions', await hash());
+  await go('projects/p/pjCp', 2026, 10, 15, 16, 12);
+  const msSum = await text('#projectMilestonesCard [data-s=ms-summary]');
+  check('in progress: "1 of 3 milestones reached · Next: <the first not reached>", with its passed date said gently', /^1 of 3 milestones reached · Next: Book the builder \(aimed for .*1 Oct\)$/.test(msSum), msSum);
+  check('…open decisions are listed (three, then "and 2 more"), each linking to the Decisions tab, in place of the summary', (await ev(`document.querySelectorAll('#projectDecisionsCard [data-s=dc-open] li a').length`)) === 3
+    && (await text('#projectDecisionsCard [data-s=dc-open]')).includes('and 2 more') && (await ev(`document.querySelector('#projectDecisionsCard [data-s=dc-open] a').getAttribute('href')`)) === '#projects/p/pjCp/decisions' && !(await exists('#projectDecisionsCard [data-s=dc-summary]')), await text('#projectDecisionsCard'));
+  check('…the newest open question comes first', (await ev(`document.querySelector('#projectDecisionsCard [data-s=dc-open] li a').textContent`)) === 'Which path?');
+  check('…nothing on the Overview says late, overdue or behind', await noBlame(), await text('#app'));
+  await go('projects/p/pjCa', 2026, 10, 15, 16, 13);
+  check('a date still to come reads "Next: … (aiming for …)"', /^0 of 1 milestones reached · Next: Choose a site \(aiming for .*5 Nov\)$/.test(await text('#projectMilestonesCard [data-s=ms-summary]')), await text('#projectMilestonesCard [data-s=ms-summary]'));
+  await go('projects/p/pjCf', 2026, 10, 15, 16, 14);
+  check('all reached: "All 2 milestones reached."', (await text('#projectMilestonesCard [data-s=ms-summary]')) === 'All 2 milestones reached.', await text('#projectMilestonesCard [data-s=ms-summary]'));
+  check('…and a decided decision: "Decided <date>: <option>"', /^Decided .*14 Oct: Small$/.test(await text('#projectDecisionsCard [data-s=dc-summary]')) && !(await exists('#projectDecisionsCard [data-s=dc-open]')), await text('#projectDecisionsCard'));
+  await go('projects/p/pjCp/milestones', 2026, 10, 15, 16, 15);
+  check('on the Milestones tab a passed date reads "Aimed for … — change it whenever it suits", never late, overdue or behind', (await text(`${sel('msP2').ms} [data-s=ms-when]`)).startsWith('Aimed for ') && (await text(`${sel('msP2').ms} [data-s=ms-when]`)).endsWith('change it whenever it suits') && (await noBlame()), await text(`${sel('msP2').ms} [data-s=ms-when]`));
+  check('…and a date to come reads "Aiming for …"', (await text(`${sel('msP3').ms} [data-s=ms-when]`)).startsWith('Aiming for '));
+  await go('projects/p/pjCp/decisions', 2026, 10, 15, 16, 16);
+  check('the Decisions tab says nothing late, overdue or behind either', await noBlame());
+
+  console.log('\n[17] Milestones: add, reach, undo, edit, move, remove');
+  await seed([pjObj('pjM', 'Milestones: village hall', 'organise')]);
+  await go('projects/p/pjM/milestones', 2026, 10, 15, 17);
+  check('a project with none says what milestones are, and asks for the first', (await text('[data-s=ms-progress]')).includes('The big markers on the way') && (await text('#projectMilestones')).includes('Add the first milestone') && !(await exists('[data-s=milestone]')));
+  check('"Add" waits for a title', await ev(`document.querySelector('[data-action=ms-add]').disabled`));
+  await type('#msNew', '  Shortlist three halls  '); await click('[data-action=ms-add]'); await sleep(300);
+  check('the first milestone is added (title trimmed, no date, not reached); the form is empty again; a kind message', eq(((await pAt('pjM')).milestones || []).map(m => [m.title, m.aim, m.reachedOn]), [['Shortlist three halls', null, null]]) && (await ev(`document.getElementById('msNew').value`)) === '' && (await toast()) === 'Milestone added.', await pAt('pjM'));
+  await type('#msNew', 'Book the hall'); await type('#msNewAim', '2026-11-20'); await click('[data-action=ms-add]'); await sleep(300);
+  let pm = await pAt('pjM');
+  const [M1, M2] = pm.milestones.map(m => m.id);
+  check('a second one, with a date to aim for, goes after the first', eq(pm.milestones.map(m => [m.title, m.aim, m.reachedOn]), [['Shortlist three halls', null, null], ['Book the hall', '2026-11-20', null]]), pm.milestones);
+  check('"0 of 2 reached", and the first is marked Next (only it)', (await text('[data-s=ms-progress]')) === '0 of 2 reached' && (await ev(`document.querySelectorAll('[data-s=ms-next]').length`)) === 1 && (await exists(`${sel(M1).ms} [data-s=ms-next]`)));
+  check('…the one with a date says "Aiming for …20 Nov"; the other says nothing about dates', /^Aiming for .*20 Nov$/.test(await text(`${sel(M2).ms} [data-s=ms-when]`)) && !(await exists(`${sel(M1).ms} [data-s=ms-when]`)));
+  await click(`${sel(M1).ms} [data-action=ms-reach]`); await sleep(300);
+  pm = await pAt('pjM');
+  check('reaching the first one: today\'s date is saved, a kind message', pm.milestones[0].reachedOn === '2026-10-15' && (await toast()) === 'Milestone reached — lovely.', [pm.milestones[0], await toast()]);
+  check('…it shows "Reached …15 Oct" and is marked reached; progress is "1 of 2 reached"; Next moves to the second', /^Reached .*15 Oct$/.test(await text(`${sel(M1).ms} [data-s=ms-when]`)) && (await ev(`document.querySelector('${sel(M1).ms}').dataset.reached`)) === 'yes'
+    && (await text('[data-s=ms-progress]')) === '1 of 2 reached' && (await exists(`${sel(M2).ms} [data-s=ms-next]`)) && !(await exists(`${sel(M1).ms} [data-s=ms-next]`)));
+  await go('projects/p/pjM', 2026, 10, 15, 17, 5);
+  check('the Overview card follows: "1 of 2 milestones reached · Next: Book the hall"', (await text('#projectMilestonesCard [data-s=ms-summary]')).startsWith('1 of 2 milestones reached · Next: Book the hall'), await text('#projectMilestonesCard [data-s=ms-summary]'));
+  await go('projects/p/pjM/milestones', 2026, 10, 15, 17, 6);
+  await click(`${sel(M1).ms} [data-action=ms-unreach]`); await sleep(300);
+  check('"Not yet" undoes it: not reached, the date goes, Next is back on the first, a kind message', (await pAt('pjM')).milestones[0].reachedOn === null && (await text('[data-s=ms-progress]')) === '0 of 2 reached' && (await exists(`${sel(M1).ms} [data-s=ms-next]`)) && (await toast()) === 'Back to not reached yet.', await toast());
+  await click(`${sel(M1).ms} [data-action=ms-edit]`); await sleep(200);
+  check('"Edit" opens the title and date fields, with up / down / remove', (await exists(`${sel(M1).ms} [data-s=ms-editor]`)) && (await exists(`${sel(M1).ms} [data-action=ms-up]`)) && (await exists(`${sel(M1).ms} [data-action=ms-remove]`)) && !(await exists(`${sel(M1).ms} [data-action=ms-clear-aim]`)));
+  check('…the first can\'t move up, and the last can\'t move down', (await ev(`document.querySelector('${sel(M1).ms} [data-action=ms-up]').disabled`)) && !(await ev(`document.querySelector('${sel(M1).ms} [data-action=ms-down]').disabled`)));
+  await type(`#msT-${M1}`, 'Shortlist two halls'); await sleep(250);
+  await type(`#msA-${M1}`, '2026-11-01'); await sleep(250);
+  pm = await pAt('pjM');
+  check('editing the title and the date saves them', pm.milestones[0].title === 'Shortlist two halls' && pm.milestones[0].aim === '2026-11-01', pm.milestones[0]);
+  check('…and the list shows them', /Shortlist two halls/.test(await text(sel(M1).ms)) && /^Aiming for .*1 Nov$/.test(await text(`${sel(M1).ms} [data-s=ms-when]`)));
+  await type(`#msT-${M1}`, '   '); await sleep(250);
+  check('an empty title is put back, not saved', (await pAt('pjM')).milestones[0].title === 'Shortlist two halls' && (await ev(`document.getElementById('msT-${M1}').value`)) === 'Shortlist two halls');
+  await click(`${sel(M1).ms} [data-action=ms-clear-aim]`); await sleep(250);
+  check('"Clear the date" takes the date off, and the line goes', (await pAt('pjM')).milestones[0].aim === null && !(await exists(`${sel(M1).ms} [data-s=ms-when]`)) && !(await exists(`${sel(M1).ms} [data-action=ms-clear-aim]`)));
+  await click(`${sel(M1).ms} [data-action=ms-down]`); await sleep(250);
+  check('"Down" swaps it with the next one', eq((await msTitles('pjM')), ['Book the hall', 'Shortlist two halls']) && (await exists(`${sel(M2).ms} [data-s=ms-next]`)), await msTitles('pjM'));
+  await click(`${sel(M1).ms} [data-action=ms-up]`); await sleep(250);
+  check('"Up" puts it back', eq((await msTitles('pjM')), ['Shortlist two halls', 'Book the hall']), await msTitles('pjM'));
+  await click(`${sel(M1).ms} [data-action=ms-remove]`); await sleep(250);
+  check('"Remove" asks first: "Remove this milestone?"', (await text('dialog[open]')).includes('Remove this milestone?') && (await text('dialog[open]')).includes('Shortlist two halls'), await text('dialog[open]'));
+  await answer(false);
+  check('…"Keep it" keeps it', eq((await msTitles('pjM')), ['Shortlist two halls', 'Book the hall']));
+  await click(`${sel(M1).ms} [data-action=ms-remove]`); await answer(true);
+  check('…removing it after confirming takes it out (and says so)', eq((await msTitles('pjM')), ['Book the hall']) && (await toast()) === 'Milestone removed.' && !(await exists(sel(M1).ms)), await msTitles('pjM'));
+  await click(`${sel(M2).ms} [data-action=ms-edit]`); await click(`${sel(M2).ms} [data-action=ms-remove]`); await answer(true);
+  check('removing the last one takes the list away again (a project with none is saved as before)', !('milestones' in (await pAt('pjM'))) && (await text('[data-s=ms-progress]')).includes('The big markers on the way'), await pAt('pjM'));
+  await type('#msNew', 'Half-written milestone'); await type('#msNewAim', '2026-12-01');
+  await click('[data-s=project-tabs] a[data-tab=decisions]'); await sleep(250);
+  await click('[data-s=project-tabs] a[data-tab=milestones]'); await sleep(250);
+  check('what you typed in the add fields (not yet added) is still there after visiting Decisions', (await ev(`document.getElementById('msNew').value`)) === 'Half-written milestone' && (await ev(`document.getElementById('msNewAim').value`)) === '2026-12-01' && !('milestones' in (await pAt('pjM'))));
+  await click('[data-s=project-tabs] a[data-tab=decisions]'); await sleep(250);
+  await type('#dcNew', 'Half-written question');
+  await click('[data-s=project-tabs] a[data-tab=overview]'); await sleep(250);
+  await click('[data-s=project-tabs] a[data-tab=decisions]'); await sleep(250);
+  check('…and the same for a question typed on the Decisions tab', (await ev(`document.getElementById('dcNew').value`)) === 'Half-written question');
+  await seed([pjObj('pjM30', 'Milestones: thirty', 'organise', { milestones: Array.from({ length: 30 }, (_, i) => msObj('msN' + i, 'Step ' + (i + 1))) })]);
+  await go('projects/p/pjM30/milestones', 2026, 10, 15, 17, 10);
+  check('at 30 milestones: "That\'s 30 — plenty to steer by. Remove one to add another." and no add form', (await text('[data-s=ms-full]')) === "That's 30 — plenty to steer by. Remove one to add another." && !(await exists('#msNew')) && !(await exists('[data-action=ms-add]')) && (await text('[data-s=ms-progress]')) === '0 of 30 reached', await text('[data-s=ms-progress]'));
+  await click(`${sel('msN3').ms} [data-action=ms-edit]`); await click(`${sel('msN3').ms} [data-action=ms-remove]`); await answer(true);
+  check('…removing one brings the add form back', (await exists('#msNew')) && !(await exists('[data-s=ms-full]')) && (await pAt('pjM30')).milestones.length === 29);
+
+  console.log('\n[18] Decisions: options, pros and cons, choosing, thinking again');
+  await seed([pjObj('pjDc', 'Decisions: shed', 'decide')]);
+  await go('projects/p/pjDc/decisions', 2026, 10, 15, 18);
+  check('the hint says two or three options are plenty, pros and cons, no scores', (await text('[data-s=dc-hint]')).includes('Two or three options are plenty') && (await text('[data-s=dc-hint]')).includes('no scores') && !(await exists('[data-s=decision]')));
+  check('"Add" waits for a question', await ev(`document.querySelector('[data-action=dc-add]').disabled`));
+  await type('#dcNew', 'Which size of shed?'); await click('[data-action=dc-add]'); await sleep(300);
+  let dcs = (await pAt('pjDc')).decisions;
+  const DC = dcs[0].id;
+  check('adding a question: an open decision with no options yet, the form emptied, a kind message', dcs.length === 1 && dcs[0].question === 'Which size of shed?' && eq(dcs[0].options, []) && dcs[0].chosen === null && (await toast()) === 'Decision added — now the options.' && (await ev(`document.getElementById('dcNew').value`)) === '', dcs);
+  check('…shown as Open, inviting the first option', (await text('[data-s=decision] [data-s=dc-state]')) === 'Open' && (await ev(`document.querySelector('[data-s=decision]').dataset.state`)) === 'open' && (await text('[data-s=decision]')).includes('No options yet'));
+  await type(`#dcOpt-${DC}`, 'Small'); await click('[data-s=decision] [data-action=opt-add]'); await sleep(250);
+  await type(`#dcOpt-${DC}`, 'Large'); await click('[data-s=decision] [data-action=opt-add]'); await sleep(250);
+  dcs = (await pAt('pjDc')).decisions;
+  const [OS, OL] = dcs[0].options.map(o => o.id);
+  check('two options are added, in order, with no pros or cons', eq(dcs[0].options.map(o => [o.text, o.pros, o.cons]), [['Small', [], []], ['Large', [], []]]), dcs[0].options);
+  check('…each has "Choose this"', (await exists(`${sel(OS).op} [data-action=opt-choose]`)) && (await exists(`${sel(OL).op} [data-action=opt-choose]`)));
+  for (const line of ['Cheap', 'Fits the corner']) {
+    if (!(await exists(`${sel(OS).op} [data-s=pros] form`))) { await click(`${sel(OS).op} [data-s=pros] [data-action=pro-add]`); await sleep(150); }
+    await type(`${sel(OS).op} [data-s=pros] form input`, line); await click(`${sel(OS).op} [data-action=pro-save]`); await sleep(250);
+  }
+  await click(`${sel(OS).op} [data-s=cons] [data-action=con-add]`); await sleep(150);
+  await type(`${sel(OS).op} [data-s=cons] form input`, 'Only small tools'); await click(`${sel(OS).op} [data-action=con-save]`); await sleep(250);
+  await click(`${sel(OL).op} [data-s=cons] [data-action=con-add]`); await sleep(150);
+  await type(`${sel(OL).op} [data-s=cons] form input`, 'Costs more'); await click(`${sel(OL).op} [data-action=con-save]`); await sleep(250);
+  dcs = (await pAt('pjDc')).decisions;
+  check('pros and cons are added to each option (no scores)', eq(dcs[0].options.map(o => [o.pros, o.cons]), [[['Cheap', 'Fits the corner'], ['Only small tools']], [[], ['Costs more']]]), dcs[0].options);
+  check('…and listed as lines under Pros and Cons', (await ev(`document.querySelectorAll('${sel(OS).op} [data-s=pros] [data-s=point]').length`)) === 2 && (await ev(`document.querySelectorAll('${sel(OL).op} [data-s=cons] [data-s=point]').length`)) === 1 && !/\d+\s*\/\s*\d+|score/i.test(await text('[data-s=decision]')));
+  await click(`${sel(OS).op} [data-s=pros] [data-s=point]:nth-child(2) [data-action=point-remove]`); await sleep(250);
+  check('removing a point takes only that line away', eq((await pAt('pjDc')).decisions[0].options[0].pros, ['Cheap']), (await pAt('pjDc')).decisions[0].options[0].pros);
+  await click(`${sel(OL).op} [data-action=opt-choose]`); await sleep(200);
+  check('"Choose this" asks "Why this one? (optional)" with Decide and Cancel, and decides nothing yet', (await exists(`${sel(OL).op} [data-s=dc-choosing]`)) && (await text(`${sel(OL).op} [data-s=dc-choosing]`)).includes('Why this one? (optional)') && (await exists('[data-action=dc-decide]')) && (await exists('[data-action=dc-cancel]')) && (await pAt('pjDc')).decisions[0].chosen === null);
+  await click('[data-action=dc-cancel]'); await sleep(200);
+  check('"Cancel" closes it, and nothing is decided', !(await exists('[data-s=dc-choosing]')) && (await pAt('pjDc')).decisions[0].chosen === null);
+  await click(`${sel(OL).op} [data-action=opt-choose]`); await sleep(200);
+  await type(`#dcWhy-${DC}`, 'Room for the mower'); await click('[data-action=dc-decide]'); await sleep(300);
+  let dd = (await pAt('pjDc')).decisions[0];
+  check('deciding saves the option, the reason and today', dd.chosen === OL && dd.why === 'Room for the mower' && dd.decidedOn === '2026-10-15' && (await toast()) === 'Decided. It can change later.', dd);
+  check('…the card shows "Decided …15 Oct: Large" and the reason', /^Decided .*15 Oct: Large$/.test(await text('[data-s=dc-decided] p')) && (await text('[data-s=dc-why]')) === 'Room for the mower' && /^Decided .*15 Oct$/.test(await text('[data-s=dc-state]')) && (await ev(`document.querySelector('[data-s=decision]').dataset.state`)) === 'decided');
+  check('…the chosen option is marked, and the other says "Not chosen"', (await ev(`document.querySelector('${sel(OL).op}').dataset.chosen`)) === 'yes' && (await text(`${sel(OL).op} [data-s=opt-chosen]`)) === 'Chosen' && (await text(`${sel(OS).op} [data-s=opt-not]`)) === 'Not chosen' && !(await exists(`${sel(OS).op} [data-action=opt-choose]`)));
+  check('the project is at Decide: "Move this project to Doing?" is offered, but nothing has moved by itself', (await exists('[data-s=dc-to-doing]')) && (await text('[data-s=dc-to-doing]')).includes('Move this project to Doing?') && (await pAt('pjDc')).stage === 'decide');
+  await click('[data-action=dc-again]'); await sleep(300);
+  dd = (await pAt('pjDc')).decisions[0];
+  check('"Think again" opens it again, keeping the question, options, pros, cons and reason; the last choice is remembered', dd.chosen === null && dd.decidedOn === null && dd.why === 'Room for the mower' && dd.options.length === 2 && eq(dd.options[0].pros, ['Cheap']) && dd.lastChoice && dd.lastChoice.text === 'Large' && dd.lastChoice.on === '2026-10-15', dd);
+  check('…it says what you chose last time, and that your reasons are kept, and offers "Choose this" again', (await text('[data-s=dc-last]')).includes('Last time you chose “Large”') && (await text('[data-s=dc-last]')).includes('Your reasons are kept') && (await exists(`${sel(OS).op} [data-action=opt-choose]`)) && !(await exists('[data-s=dc-to-doing]')) && !(await exists('[data-s=dc-decided]')), await text('[data-s=dc-last]'));
+  await click(`${sel(OS).op} [data-action=opt-choose]`); await sleep(200);
+  check('choosing again offers the reason you kept', (await ev(`document.getElementById('dcWhy-${DC}').value`)) === 'Room for the mower');
+  await type(`#dcWhy-${DC}`, 'Changed my mind: the corner is tight'); await click('[data-action=dc-decide]'); await sleep(300);
+  dd = (await pAt('pjDc')).decisions[0];
+  check('deciding again keeps the new choice and reason', dd.chosen === OS && dd.why === 'Changed my mind: the corner is tight', dd);
+  await click(`${sel(OS).op} [data-action=opt-remove]`); await sleep(250);
+  check('removing an option asks first', (await text('dialog[open]')).includes('Remove this option?'), await text('dialog[open]'));
+  await answer(true);
+  dd = (await pAt('pjDc')).decisions[0];
+  check('removing the chosen option reopens the decision, and the message says so', dd.chosen === null && dd.options.length === 1 && dd.options[0].id === OL && /it was your choice, so this decision is open again/.test(await toast()) && (await ev(`document.querySelector('[data-s=decision]').dataset.state`)) === 'open', [dd, await toast()]);
+  await click(`${sel(OL).op} [data-action=opt-choose]`); await sleep(200);
+  await click('[data-action=dc-decide]'); await sleep(300);
+  dd = (await pAt('pjDc')).decisions[0];
+  check('a decision with a single option can be decided (a yes or no), with no reason', dd.chosen === OL && dd.why !== undefined && (await ev(`document.querySelector('[data-s=decision]').dataset.state`)) === 'decided', dd);
+  await click('[data-action=dc-to-doing]'); await sleep(300);
+  check('"Move it" moves the project to Doing (stage Act) — only when tapped — and says so', (await pAt('pjDc')).stage === 'act' && (await toast()) === 'Moved to Doing.' && !(await exists('[data-s=dc-to-doing]')), [(await pAt('pjDc')).stage, await toast()]);
+  await seed([pjObj('pjDx', 'Decisions: other stage', 'explore', { decisions: [dcObj('dcX', 'Which tea?', [opObj('opX', 'Green')], 'opX', '', '2026-10-14')] })]);
+  await go('projects/p/pjDx/decisions', 2026, 10, 15, 18, 5);
+  check('on a project that isn\'t at Decide, a decided decision doesn\'t offer to move it', (await exists('[data-s=dc-decided]')) && !(await exists('[data-s=dc-to-doing]')) && (await pAt('pjDx')).stage === 'explore');
+  await click('[data-action=dc-remove]'); await sleep(250);
+  check('removing a whole decision asks first ("Keep it" keeps it)', (await text('dialog[open]')).includes('Remove this decision?'), await text('dialog[open]'));
+  await answer(false);
+  check('…and it is still there', (await pAt('pjDx')).decisions?.length === 1);
+  await click('[data-action=dc-remove]'); await answer(true);
+  check('…removing it takes the list away again', !('decisions' in (await pAt('pjDx'))) && (await toast()) === 'Decision removed.', await pAt('pjDx'));
+  await seed([pjObj('pjD12', 'Decisions: twelve', 'decide', { decisions: Array.from({ length: 12 }, (_, i) => dcObj('dcT' + i, 'Question ' + (i + 1), [])) })]);
+  await go('projects/p/pjD12/decisions', 2026, 10, 15, 18, 10);
+  check('at 12 decisions: "That\'s 12 decisions — plenty for one project. Remove one to add another." and no add form', (await text('[data-s=dc-full]')) === "That's 12 decisions — plenty for one project. Remove one to add another." && !(await exists('#dcNew')) && (await ev(`document.querySelectorAll('[data-s=decision]').length`)) === 12, await text('[data-s=dc-full]'));
+
+  console.log('\n[19] Nothing happens by itself');
+  await seed([pjObj('pjN', 'Quiet: allotment', 'organise', { nextTaskId: 'tkQ1' })]);
+  await editStorage(`s => { s.days['${K}'] = { energy: 3, rest: false, builtAt: '${K}T08:00', checkedIn: false, tasks: [{ uid: 'uQ1', taskId: null, category: 'admin', title: 'Quiet: a task on the plan', minutes: 15, baseMinutes: 15, done: false, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null }] };
+    s.tasks.items.push({ id: 'tkQ1', title: 'Quiet: call the council', listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-10-10T09:00', postponed: 0, blockers: [], letGoOn: null, projectId: 'pjN' });
+    s.notes.items.push({ id: 'ntQ1', categoryId: '', title: 'Quiet note', text: 'made-up words', pinned: false, createdAt: '2026-10-10T09:00', updatedAt: '2026-10-10T09:00', projectId: 'pjN' }); }`);
+  const quiet = async () => { const d = await data(), p = d.projects.items.find(x => x.id === 'pjN'); return { days: d.days, tasks: d.tasks, notes: d.notes, queue: d.queue, commitments: d.commitments, stage: p.stage, status: p.status, nextTaskId: p.nextTaskId, commitmentIds: p.commitmentIds, others: d.projects.items.filter(x => x.id !== 'pjN') }; };
+  await go('projects/p/pjN/milestones', 2026, 10, 15, 19);
+  const quietBefore = await quiet();
+  await type('#msNew', 'Clear the weeds'); await click('[data-action=ms-add]'); await sleep(250);
+  await type('#msNew', 'Dig the beds'); await type('#msNewAim', '2026-10-20'); await click('[data-action=ms-add]'); await sleep(250);
+  const qm = (await pAt('pjN')).milestones.map(m => m.id);
+  await click(`${sel(qm[0]).ms} [data-action=ms-reach]`); await sleep(250);
+  await click(`${sel(qm[1]).ms} [data-action=ms-reach]`); await sleep(250);
+  await click('[data-s=project-tabs] a[data-tab=decisions]'); await sleep(250);
+  await type('#dcNew', 'Raised beds or flat?'); await click('[data-action=dc-add]'); await sleep(250);
+  const qd = (await pAt('pjN')).decisions[0].id;
+  await type(`#dcOpt-${qd}`, 'Raised'); await click('[data-s=decision] [data-action=opt-add]'); await sleep(250);
+  const qo = (await pAt('pjN')).decisions[0].options[0].id;
+  await click(`${sel(qo).op} [data-action=opt-choose]`); await sleep(200); await click('[data-action=dc-decide]'); await sleep(300);
+  const quietAfter = await quiet();
+  check('reaching milestones and deciding changed nothing else: the day plans, the tasks, the notes, the queue and the Calendar are as they were', ['days', 'tasks', 'notes', 'queue', 'commitments', 'others'].every(k => eq(quietAfter[k], quietBefore[k])), Object.keys(quietBefore).filter(k => !eq(quietAfter[k], quietBefore[k])));
+  check('…and the project\'s stage, status, next step and appointments are as they were', quietAfter.stage === 'organise' && quietAfter.status === 'active' && quietAfter.nextTaskId === 'tkQ1' && eq(quietAfter.commitmentIds, []));
+  check('…the milestones and decision were saved though', (await pAt('pjN')).milestones.every(m => m.reachedOn === '2026-10-15') && (await pAt('pjN')).decisions[0].chosen === qo);
+  await go('today', 2026, 10, 15, 19, 5);
+  const todayText = await text('#app');
+  check('Today shows nothing new: no milestone or decision on it, and the plan is the one task it had', !/Clear the weeds|Dig the beds|Raised beds/.test(todayText) && eq((await data()).days[K].tasks.map(t => t.title), ['Quiet: a task on the plan']), todayText.slice(0, 200));
+
+  console.log('\n[20] Export and import');
+  for (const x of fs.readdirSync(S + '/dl')) fs.unlinkSync(S + '/dl/' + x);
+  const beforeExport = (await data()).projects;
+  await click('[data-action=export]'); await sleep(1200);
+  const exp2 = JSON.parse(fs.readFileSync(S + '/dl/myday-export-2026-10-15.json', 'utf8'));
+  check('"Export my data" includes the milestones and decisions of every project', eq(exp2.data.projects, beforeExport) && exp2.data.projects.items.some(x => x.id === 'pjN' && x.milestones.length === 2 && x.decisions.length === 1) && exp2.data.projects.items.some(x => x.id === 'pjDc' && x.decisions[0].options.length === 1), exp2.data.projects.items.length);
+  await reset(); await go('today', 2026, 10, 15, 19, 10);
+  check('after a reset there are none', (await projects()).length === 0);
+  await setFile(S + '/dl/myday-export-2026-10-15.json'); await sleep(200); await answer(true);
+  const imported = (await data()).projects;
+  check('importing the backup brings every project back exactly, milestones and decisions included', eq(imported, exp2.data.projects) && eq(imported, beforeExport), imported.items.length);
+  await go('projects/p/pjN/milestones', 2026, 10, 15, 19, 15);
+  check('…and they show on the tabs', (await text('[data-s=ms-progress]')) === '2 of 2 reached' && (await ev(`document.querySelectorAll('[data-s=milestone]').length`)) === 2);
+  await go('projects/p/pjN/decisions', 2026, 10, 15, 19, 16);
+  check('…and the decision, with its chosen option', (await ev(`document.querySelector('[data-s=decision]').dataset.state`)) === 'decided' && (await text('[data-s=dc-decided]')).includes('Raised'));
+
+  console.log('\n[21] Phone, 390 px: the tabs');
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 780, deviceScaleFactor: 2, mobile: true });
+  await seed([pjObj('pjPh', 'Phone: a rather long project name to see how the tabs and buttons wrap on a narrow screen', 'decide', {
+    milestones: [msObj('msH1', 'A milestone with a rather long title to see it wrap properly', '2026-10-01'), msObj('msH2', 'Second one', '2026-11-20', null)],
+    decisions: [dcObj('dcH1', 'An open question that is rather long, to see it wrap nicely on a phone?', [opObj('opH1', 'First choice with a long name', ['A pro'], ['A con']), opObj('opH2', 'Second')]),
+      dcObj('dcH2', 'Decided one', [opObj('opH3', 'Yes')], 'opH3', 'A reason', '2026-10-14')],
+  })]);
+  const tooSmall = () => ev(`[...document.querySelectorAll('#app button, #app input:not([type=checkbox]), #app select, #app textarea, #app [role=tab]')].filter(b => b.getClientRects().length).map(b => { const r = b.getBoundingClientRect(); return { t: (b.getAttribute('aria-label') || b.textContent || b.id || b.className).trim().slice(0, 28), h: Math.round(r.height) }; }).filter(x => x.h < 44)`);
+  const sideways = () => ev('document.documentElement.scrollWidth > innerWidth');
+  for (const tab of ['', '/milestones', '/decisions']) {
+    await go(`projects/p/pjPh${tab}`, 2026, 10, 15, 20); await sleep(200);
+    if (tab === '/milestones') { await click(`${sel('msH1').ms} [data-action=ms-edit]`); await sleep(200); }
+    if (tab === '/decisions') { await click(`${sel('opH1').op} [data-s=pros] [data-action=pro-add]`); await click(`${sel('opH2').op} [data-action=opt-choose]`); await sleep(200); }
+    check(`phone 390 px, ${tab ? tab.slice(1) : 'overview'}: nothing scrolls sideways`, !(await sideways()));
+    const small = await tooSmall();
+    check(`phone 390 px, ${tab ? tab.slice(1) : 'overview'}: every button, field and tab is at least 44 px tall`, small.length === 0, small.slice(0, 6));
+  }
+  await T.send('Emulation.clearDeviceMetricsOverride');
+
+  console.log('\n[22] Deleting a project with milestones and decisions');
+  await go('projects/p/pjN', 2026, 10, 15, 21);
+  const notesBefore = (await data()).notes.items.length, tasksBefore = (await data()).tasks.items.length;
+  await click('[data-action=project-delete]'); await sleep(250);
+  check('the confirmation says its milestones and decisions go with it, and its notes, tasks and appointments stay', (await text('dialog[open]')).includes('Its milestones and decisions go with it; its notes, tasks and appointments stay.'), await text('dialog[open]'));
+  await answer(false);
+  check('"Keep it" keeps the project with its milestones and decisions', (await pAt('pjN')).milestones.length === 2 && (await pAt('pjN')).decisions.length === 1);
+  await click('[data-action=project-delete]'); await answer(true);
+  d = await data();
+  check('deleting it removes the project (and so its milestones and decisions), and keeps its notes and tasks', !d.projects.items.some(x => x.id === 'pjN') && d.notes.items.length === notesBefore && d.tasks.items.length === tasksBefore && (await hash()) === '#projects');
+
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
   const sm = T.summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);
