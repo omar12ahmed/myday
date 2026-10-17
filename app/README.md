@@ -102,6 +102,22 @@ day — kept by both versions since 1.20.2), shown there next time until you rem
 untouched. Models chosen by evaluation (`../ai-eval/reviews/2026-10-16-explain-quality.md`): GLM explains Cybersecurity
 and your concepts, Gemini explains Arabic. Shown only when the app is built with AI help.
 
+Ask MyDay (the AI design's step 1, 1.25.0): in the + Capture sheet, below the suggestions worked out on the device,
+**✦ Ask MyDay** is for what they can't do — a question, a breakdown into steps, several things at once. Only on your
+tap, and the **Sends:** line says exactly what goes with it from the page you're on (`src/ai/askContext.ts`): what you
+typed, the date, the page and its small slice — today's plan, energy, free time and tasks due on Today; the current
+course and next task on Study; a project's name, summary, stage, tasks and note titles (their text only with "AI help
+with notes" on); the open note; the open task; today's appointments on the Calendar; open projects' names; never a
+private note, and only the page's name from Health and Finance. The server's job `ask` (GLM, the main model;
+`../supabase/functions/_shared/ai/ask.ts`, instructions `myday-ask-v6`) answers with one kind: things to add (tasks,
+notes, appointments, a project), steps, a short answer with at most one action (start a short study session; or, for
+"plan my day", open Help me adjust today already filled in — `src/ai/handover.ts`), or "MyDay can't do that from here".
+The app checks it all against your data (`src/ai/ask.ts`: real ids only, days from today on, an appointment only with
+a day and a time, 5–120 minutes, gentle wording, anything already on your lists or today's plan left unticked) and
+shows cards to tick and rename (`src/capture/AskPanel.tsx`); Add saves them at once through the same rules as Capture,
+with one step of Undo. One follow-up ("Not quite? …") at most; nothing of the conversation is kept. Evaluated on 40
+synthetic requests (`../ai-eval/reviews/2026-10-17-ask-quality.md`). Shown only when the app is built with AI help.
+
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
 
@@ -891,3 +907,7 @@ returns up to 8 small tasks; you tick the ones to add.
     notes per book with their page, Edit for the details that come later, and a Finished shelf. No percentages, nothing
     on Today, never in the learning streak. Synced one record per book — database migration
     `20261017120000_sync_books.sql` applied first (one more kind, `book`); older versions keep working with it.
+37. **Release 1.25.0:** Ask MyDay in the + button (step 1 of the AI design): a question, a breakdown into steps or
+    several things at once, answered as cards to tick — nothing saved until you tap Add, with Undo; "plan my day" opens
+    Help me adjust today already filled in. Only on your tap, with exactly what's sent shown first; never a private
+    note. The server's `ask` job was deployed first. No data or database change.

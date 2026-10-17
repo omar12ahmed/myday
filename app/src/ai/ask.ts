@@ -23,10 +23,12 @@ export interface AskProposal {
   date: DateKey | null; time: string | null;   // a task's due date/time; an appointment's date and time (both always set)
   minutes: number;                              // a task's length (others: unused)
   category: Category;                           // a task's list (others: unused)
-  projectId: string | null;                     // a project that exists and isn't done
+  projectId: string | null;                     // a project that exists and isn't done — or NEW_PROJECT: the one proposed alongside
   text: string;                                 // a note's text / a project's summary ('' otherwise)
   already: boolean;                             // a task with this title is already on your lists (left unticked)
 }
+// A task or note for the project proposed in the same answer (it's created first when you tap Add).
+export const NEW_PROJECT = '@new';
 export type AskChecked =
   | { kind: 'add' | 'steps'; message: string; items: AskProposal[]; changed: string[] }
   | { kind: 'answer'; message: string; action: { type: 'start-study'; courseId: string; taskId: string | null; minutes: number; label: string } | { type: 'adjust-today' } | null; changed: string[] }
@@ -42,9 +44,15 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
   if (!r) return null;
   const changed: string[] = [];
   let message = r.message.trim();
+  // A message that stops mid-sentence is cut back to its last whole sentence.
+  if (message && !/[.!?…)"”’]$/.test(message)) {
+    const whole = message.match(/^[\s\S]*[.!?…](?=\s|$)/);
+    message = whole ? whole[0].trim() : message.replace(/[\s,;:—–-]+$/, '') + '.';
+  }
   if (message && !gentle(message)) { message = ''; changed.push('Left out a sentence that wasn’t gentle enough.'); }
   if (r.kind === 'cannot') return message ? { kind: 'cannot', message, changed } : null;
-  if (r.kind === 'answer') {
+  if (r.kind === 'answer' && (!r.items.length || r.action)) {
+    if (r.items.length) changed.push('Its suggestion to start is here; the things it offered to add were left out — ask again for those.');
     let action: Extract<AskChecked, { kind: 'answer' }>['action'] = null;
     if (r.action?.type === 'adjust-today') action = { type: 'adjust-today' };
     else if (r.action?.type === 'start-study') {
@@ -58,18 +66,21 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
     }
     return message || action ? { kind: 'answer', message, action, changed } : null;
   }
-  // Things to add, or steps.
+  // Things to add, or steps (an answer that suggests adding something is shown the same way, with its message).
   const open = new Map(data.projects.items.filter(p => p.status !== 'done').map(p => [p.id, p]));
   const here = slice.context.project && open.has(slice.context.project.id) ? slice.context.project.id : null;
-  const onLists = new Set(data.tasks.items.filter(t => !t.done && !t.letGoOn).map(t => sameTask(t.title)));
+  // Already there: open tasks, today's plan and the project's tasks (left unticked, so nothing is added twice by accident).
+  const onLists = new Set([...data.tasks.items.filter(t => !t.done && !t.letGoOn).map(t => t.title), ...(data.days[k]?.tasks ?? []).filter(t => !t.done).map(t => t.title)].map(sameTask));
   const seen = new Set<string>();
   const items: AskProposal[] = [];
   for (const it of r.items) {
     let type: AskItemType = r.kind === 'steps' ? 'task' : it.type;
+    if (r.kind === 'answer' && items.length >= 3) break; // an answer suggests at most three
     const title = it.title.replace(/\s+/g, ' ').trim().slice(0, L.titleChars);
     if (!title || seen.has(type + ':' + sameTask(title))) continue;
     seen.add(type + ':' + sameTask(title));
-    let projectId = it.projectId && open.has(it.projectId) ? it.projectId : null;
+    const oneNew = r.items.filter(x => x.type === 'project').length === 1;
+    let projectId = it.projectId && open.has(it.projectId) ? it.projectId : it.projectId === 'new' && oneNew && it.type !== 'project' ? NEW_PROJECT : null;
     if (it.projectId && !projectId) changed.push(`“${title}”: not put in a project that isn’t open.`);
     if (r.kind === 'steps' && here) projectId = here;
     let date: DateKey | null = realDate(it.date) && it.date >= k ? it.date : null;
@@ -88,7 +99,7 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
     });
   }
   if (!items.length) return message ? { kind: 'answer', message, action: null, changed } : null;
-  return { kind: r.kind, message: message || (r.kind === 'steps' ? 'Here are some smaller steps.' : 'Here’s what I found to add.'), items, changed };
+  return { kind: r.kind === 'steps' ? 'steps' : 'add', message: message || (r.kind === 'steps' ? 'Here are some smaller steps.' : 'Here’s what I found to add.'), items, changed };
 }
 
 // ---------- Saving what you ticked ----------
@@ -99,26 +110,30 @@ const end30 = (date: DateKey, time: string) => { const t = new Date(`${date}T${t
 export function addAskItems(items: AskProposal[]): AskUndo | null {
   const u: AskUndo = { tasks: [], notes: [], appointments: [], projects: [] };
   const r = updateSaved(d => {
+    // The project first, so the tasks and notes proposed with it can go in it (if you ticked it; otherwise they stand alone).
+    let created: string | null = null;
+    for (const it of items) if (it.type === 'project') { const id = addProject(d, it.title, it.text); if (id) { u.projects.push(id); created ??= id; } }
+    const inProject = (pid: string | null) => (pid === NEW_PROJECT ? created : pid);
     for (const it of items) {
       if (it.type === 'task') {
         const id = addTask(d.tasks, { title: it.title, category: it.category, due: it.date, time: it.time, minutes: it.minutes });
         if (!id) continue;
-        if (it.projectId) linkTask(d, id, it.projectId);
+        const pt = inProject(it.projectId);
+        if (pt) linkTask(d, id, pt);
         u.tasks.push(id);
       } else if (it.type === 'note') {
         const id = addNote(d.notes, '', it.text || it.title);
         const n = d.notes.items.find(x => x.id === id);
         if (n && it.text && it.text !== it.title) n.title = it.title;
-        if (it.projectId) linkNote(d, id, it.projectId);
+        const pn = inProject(it.projectId);
+        if (pn) linkNote(d, id, pn);
         u.notes.push(id);
       } else if (it.type === 'appointment' && it.date && it.time) {
         const id = 'c' + uid();
         d.commitments.push({ id, kind: 'appointment', title: it.title, start: `${it.date}T${it.time}`, end: end30(it.date, it.time) });
-        if (it.projectId) linkAppointment(d, it.projectId, id);
+        const pa = inProject(it.projectId);
+        if (pa) linkAppointment(d, pa, id);
         u.appointments.push(id);
-      } else if (it.type === 'project') {
-        const id = addProject(d, it.title, it.text);
-        if (id) u.projects.push(id);
       }
     }
     if (!u.tasks.length && !u.notes.length && !u.appointments.length && !u.projects.length) return false;

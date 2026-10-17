@@ -1,6 +1,6 @@
 import { CalendarPlus, FolderKanban, ListPlus, NotebookPen, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { addAskItems, checkAskReply, countWords, undoAsk, type AskChecked, type AskProposal, type AskUndo } from '../ai/ask';
+import { addAskItems, checkAskReply, countWords, NEW_PROJECT, undoAsk, type AskChecked, type AskProposal, type AskUndo } from '../ai/ask';
 import { askContext, askSlice } from '../ai/askContext';
 import { canAdjust, handOverToAdjust } from '../ai/handover';
 import { AI_MODE, askModel } from '../ai/request';
@@ -106,7 +106,7 @@ export function AskPanel({ data, text, onClose }: { data: MyDayData; text: strin
                       <span className="inline-flex items-center gap-1">{ICON[it.type]} {TYPE_WORD[it.type]}</span>
                       {it.date && <span>· {prettyDate(it.date)}{it.time ? `, ${it.time}` : ''}</span>}
                       {it.type === 'task' && <span>· {it.minutes} min · {CAT_LABEL[it.category]}</span>}
-                      {it.projectId && <span>· in “{data.projects.items.find(p => p.id === it.projectId)?.title}”</span>}
+                      {it.projectId && <span>· in “{it.projectId === NEW_PROJECT ? r.items.find(x => x.type === 'project')?.title : data.projects.items.find(p => p.id === it.projectId)?.title}”</span>}
                       {it.already && <span>· already on your lists</span>}
                     </p>
                     {it.type !== 'task' && it.text && it.text !== it.title && <p className="text-[13px] text-fg-2 m-0 mt-1 line-clamp-3">{it.text}</p>}
