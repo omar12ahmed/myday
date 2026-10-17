@@ -664,6 +664,8 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('…a made-up course: no action (the answer stays)', c.kind === 'answer' && c.action === null && c.message === 'Try it for ten minutes.');
     c = K.checkAskReply(R({ kind: 'answer', message: 'Let\'s shape today.', action: { type: 'adjust-today' } }), w, home, D);
     check('planning today is handed over to Help me adjust today', c.action.type === 'adjust-today');
+    c = K.checkAskReply(JSON.stringify({ kind: 'answer', message: 'HTTP in detail is a gentle pick for half an hour.', items: [{ type: 'start-study', courseId: 'coP', taskId: 'tkH', minutes: 20 }], action: null }), w, home, D);
+    check('an action put among the items by mistake is still the action (the Start button)', c.kind === 'answer' && c.action?.type === 'start-study' && c.action.taskId === 'tkH' && c.action.minutes === 20);
     c = K.checkAskReply(R({ kind: 'answer', message: 'The gist: follow up Thursday.', items: [1, 2, 3, 4].map(i => ({ type: 'task', title: 'Follow-up ' + i })) }), w, home, D);
     check('an answer that suggests adding things shows them to tick (three at most), with its message', c.kind === 'add' && c.items.length === 3 && c.message === 'The gist: follow up Thursday.');
     c = K.checkAskReply(R({ kind: 'answer', message: 'Try 15 minutes.', action: { type: 'adjust-today' }, items: [{ type: 'task', title: 'Study HTTP' }] }), w, home, D);

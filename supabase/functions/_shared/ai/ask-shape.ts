@@ -159,7 +159,9 @@ export function readAsk(textIn: string): AskReply | null {
     });
   }
   let action: AskAction | null = null;
-  const a = raw.action;
+  // A model sometimes puts its action among the items: it's taken as the action (only when there's no action already).
+  const stray = !obj(raw.action) ? items.find(x => obj(x) && (x.type === 'start-study' || x.type === 'adjust-today')) : undefined;
+  const a = obj(raw.action) ? raw.action : stray;
   if (obj(a) && a.type === 'adjust-today') action = { type: 'adjust-today' };
   else if (obj(a) && a.type === 'start-study' && typeof a.courseId === 'string' && a.courseId) {
     action = { type: 'start-study', courseId: a.courseId, taskId: typeof a.taskId === 'string' && a.taskId ? a.taskId : null, minutes: Number.isFinite(a.minutes) ? Math.round(a.minutes as number) : 15 };
