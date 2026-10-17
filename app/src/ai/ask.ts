@@ -14,6 +14,7 @@ import { dueIds, type Scope } from '../data/study/queue';
 import { updateSaved } from '../data/storage';
 import { addTask, editTask, inQueue, leaveTodaysPlanIfLater, onTodaysPlan } from '../data/tasks';
 import { addMilestone, addOption, addPoint, PLAN_LIMITS, removeMilestone, removeOption, removePoint, type Side } from '../data/projectPlan';
+import { addAssumption, isBusiness, MODEL_LIMITS, removeAssumption } from '../data/businessModel';
 import type { Category, Commitment, DateKey, MyDayData, Note, Project, StudyModule, StudySection, Task, TaskItem } from '../data/types';
 import { uid } from '../data/util';
 import type { AskSlice } from './askContext';
@@ -34,10 +35,15 @@ export interface AskProposal {
   // A study task (into the course on the page): its kind and where it goes — an existing section, or a new section
   // (named) in an existing module or a new module (named).
   study?: { courseId: string; kind: 'learn' | 'practical'; sectionId: string | null; section: string | null; moduleId: string | null; module: string | null };
-  // A milestone for the project on the page, or a pro, con or option for the decision you asked about (1.32.0).
+  // A milestone for the project on the page, or a pro, con or option for the decision you asked about (1.32.0), or
+  // something that must be true for a business idea's one page (1.34.0).
   plan?: { projectId: string; decisionId?: string; optionId?: string; side?: Side };
 }
-const PLAN_TYPES: AskItemType[] = ['milestone', 'pro', 'con', 'option'];
+const PLAN_TYPES: AskItemType[] = ['milestone', 'pro', 'con', 'option', 'must-be-true'];
+// Words that judge a business idea or say how its beliefs will turn out: that's for you to find out, so a reply saying
+// so is reworded (and says so).
+const JUDGES = /\b(great|good|bad|strong|weak|promising|solid|brilliant|risky|terrible) (idea|plan|business|concept)\b|\b(will|would|could|might) (definitely |probably |likely )?(fail|succeed|flop|take off)\b|\b(is|are|seems?|looks?) (likely|unlikely|probably|definitely) (true|false|right|wrong)\b|\b(likely|unlikely) to (work|fail|succeed)\b|\b(most|least|biggest|highest) risk/i;
+const SUGGESTED_BELIEFS = 5; // a few at a time
 // Words that pick for you. A decision stays yours: a reply saying which option is best is reworded (and says so).
 const CHOOSES = /\b(is|seems|looks|would be) (the )?(best|better|right|clear|obvious)( option| choice| one| fit| way to go)?\b|\bI(?:'d| would) (choose|pick|go (?:with|for))\b|\bI recommend\b|\b(?:you should|I'd suggest you) (?:choose|pick|go (?:with|for))\b|\b(?:clear|obvious) winner\b/i;
 // A task or note for the project proposed in the same answer (it's created first when you tap Add).
@@ -118,7 +124,7 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
   // already has and its limits (30 milestones; per decision 4 options, per option 6 pros and 6 cons).
   const pr = slice.context.project ? data.projects.items.find(x => x.id === slice.context.project!.id && !x.private) ?? null : null;
   const dc = pr && slice.context.project?.decision ? pr.decisions?.find(x => x.id === slice.context.project!.decision!.id) ?? null : null;
-  let plannedMs = 0, plannedOpts = 0;
+  let plannedMs = 0, plannedOpts = 0, plannedBeliefs = 0;
   const plannedPts: Record<string, number> = {};
   for (const it of r.items) {
     if (items.length >= studyCap) break;
@@ -132,6 +138,18 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
     if (PLAN_TYPES.includes(type)) {
       const base = { title, date: null, time: null, minutes: 0, category: 'admin' as Category, text: '', already: false };
       if (!pr) { changed.push(`“${title}”: left out — it's for a project that isn't on this page.`); continue; }
+      if (type === 'must-be-true') {
+        // Only for a business idea whose one page was sent (its Model tab): short, a statement, new, within the limits.
+        if (!isBusiness(pr) || !slice.context.project?.onePage) { changed.push(`“${title}”: left out — it's for a business idea's one page, and that wasn't sent.`); continue; }
+        if (title.length > MODEL_LIMITS.assumption) { changed.push(`“${title}”: left out — too long for the list (110 characters).`); continue; }
+        if (/\?\s*$/.test(title)) { changed.push(`“${title}”: left out — a question, not something to check.`); continue; }
+        if ((pr.model?.assumptions ?? []).some(a => sameTask(a.text) === sameTask(title))) { changed.push(`“${title}”: already on your list.`); continue; }
+        if (plannedBeliefs >= SUGGESTED_BELIEFS) { changed.push('Left out more than five — a few at a time is plenty.'); continue; }
+        if ((pr.model?.assumptions.length ?? 0) + plannedBeliefs >= MODEL_LIMITS.assumptions) { changed.push('Left out more — 12 is the most.'); continue; }
+        plannedBeliefs++;
+        items.push({ ...base, type, projectId: pr.id, plan: { projectId: pr.id } });
+        continue;
+      }
       if (type === 'milestone') {
         if ((pr.milestones ?? []).some(m => sameTask(m.title) === sameTask(title))) { changed.push(`“${title}”: already one of your milestones.`); continue; }
         if ((pr.milestones?.length ?? 0) + plannedMs >= PLAN_LIMITS.milestones) { changed.push('Left out milestones past 30 — plenty to steer by.'); continue; }
@@ -192,6 +210,8 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
   // With a decision on the page, the choice stays yours: a message that picks one is reworded.
   let msg = message;
   if (dc && CHOOSES.test(msg)) { msg = 'Here are a few more things to weigh — the choice is yours.'; changed.push('MyDay left out a view on which option to choose — that’s yours to decide.'); }
+  // With beliefs for a one page, whether the idea will work stays yours to find out: a message that judges it is reworded.
+  if (plannedBeliefs && JUDGES.test(msg)) { msg = 'Here are a few things your idea may depend on — yours to check.'; changed.push('MyDay left out a view on how the idea will turn out — that’s for you to find out.'); }
   if (!items.length) return msg.split(/\s+/).filter(Boolean).length >= 3 ? { kind: 'answer', message: msg, action: null, changed } : null; // a fragment ("Here's") isn't an answer
   return { kind: r.kind === 'steps' ? 'steps' : 'add', message: msg || (r.kind === 'steps' ? 'Here are some smaller steps.' : 'Here’s what I found to add.'), items, changed };
 }
@@ -313,7 +333,7 @@ export function undoAskChanges(u: AskChangeUndo): boolean {
 export interface AskUndo {
   tasks: string[]; notes: string[]; appointments: string[]; projects: string[]; study?: { tasks: string[]; sections: string[]; modules: string[] };
   // Milestones, options and pros/cons it added to a project (1.32.0).
-  plan?: ({ kind: 'milestone'; projectId: string; id: string } | { kind: 'option'; projectId: string; decisionId: string; id: string } | { kind: 'point'; projectId: string; decisionId: string; optionId: string; side: Side; text: string })[];
+  plan?: ({ kind: 'milestone'; projectId: string; id: string } | { kind: 'assumption'; projectId: string; id: string } | { kind: 'option'; projectId: string; decisionId: string; id: string } | { kind: 'point'; projectId: string; decisionId: string; optionId: string; side: Side; text: string })[];
 }
 const end30 = (date: DateKey, time: string) => { const t = new Date(`${date}T${time}`); t.setMinutes(t.getMinutes() + 30); return `${keyOf(t)}T${pad(t.getHours())}:${pad(t.getMinutes())}`; };
 
@@ -327,6 +347,7 @@ export function addAskItems(items: AskProposal[]): AskUndo | null {
       const pl = it.plan;
       if (!pl) continue;
       if (it.type === 'milestone') { const id = addMilestone(d, pl.projectId, it.title, it.date); if (id && id !== 'full') u.plan!.push({ kind: 'milestone', projectId: pl.projectId, id }); }
+      else if (it.type === 'must-be-true') { const id = addAssumption(d, pl.projectId, it.title); if (id && id !== 'full') u.plan!.push({ kind: 'assumption', projectId: pl.projectId, id }); }
       else if (it.type === 'option' && pl.decisionId) { const id = addOption(d, pl.projectId, pl.decisionId, it.title); if (id && id !== 'full') u.plan!.push({ kind: 'option', projectId: pl.projectId, decisionId: pl.decisionId, id }); }
       else if (pl.decisionId && pl.optionId && pl.side && addPoint(d, pl.projectId, pl.decisionId, pl.optionId, pl.side, it.title) === true) {
         const o = d.projects.items.find(x => x.id === pl.projectId)?.decisions?.find(x => x.id === pl.decisionId)?.options.find(x => x.id === pl.optionId);
@@ -413,6 +434,7 @@ export function undoAsk(u: AskUndo): boolean {
     let planGone = 0;
     for (const x of [...(u.plan ?? [])].reverse()) {
       if (x.kind === 'milestone') planGone += removeMilestone(d, x.projectId, x.id) ? 1 : 0;
+      else if (x.kind === 'assumption') planGone += removeAssumption(d, x.projectId, x.id) ? 1 : 0;
       else if (x.kind === 'option') planGone += removeOption(d, x.projectId, x.decisionId, x.id) ? 1 : 0;
       else {
         const list = d.projects.items.find(p => p.id === x.projectId)?.decisions?.find(y => y.id === x.decisionId)?.options.find(o => o.id === x.optionId)?.[x.side];
@@ -429,7 +451,7 @@ export function countWords(items: { type: AskItemType }[]): string {
   const n = (t: AskItemType) => items.filter(i => i.type === t).length;
   const w = (c: number, one: string, many: string) => (c === 1 ? `a${/^[aeiou]/.test(one) ? 'n' : ''} ${one}` : `${c} ${many}`);
   const parts = [[n('study-task'), 'study task', 'study tasks'], [n('task'), 'task', 'tasks'], [n('note'), 'note', 'notes'], [n('appointment'), 'appointment', 'appointments'], [n('project'), 'project', 'projects'],
-    [n('milestone'), 'milestone', 'milestones'], [n('option'), 'option', 'options'], [n('pro'), 'pro', 'pros'], [n('con'), 'con', 'cons']]
+    [n('milestone'), 'milestone', 'milestones'], [n('option'), 'option', 'options'], [n('pro'), 'pro', 'pros'], [n('con'), 'con', 'cons'], [n('must-be-true'), 'thing that must be true', 'things that must be true']]
     .filter(([c]) => (c as number) > 0).map(([c, one, many]) => w(c as number, one as string, many as string));
   return parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : parts[0] ?? 'nothing';
 }

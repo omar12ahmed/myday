@@ -297,7 +297,7 @@ function Points({ p, x, o, side }: { p: Project; x: Decision; o: DecisionOption;
 
 // Ask MyDay's help for this project (1.32.0): only on your tap, through + (which shows exactly what's sent first);
 // suggestions come back to tick. Not offered for a project you made private.
-function AiHelp({ p, action, label, onAsk }: { p: Project; action: string; label: string; onAsk: () => void }) {
+export function AiHelp({ p, action, label, onAsk }: { p: Project; action: string; label: string; onAsk: () => void }) {
   if (AI_MODE === 'off') return null;
   if (p.private) return <p className="text-sm text-fg-3 mb-0 mt-3" data-s="ai-private">Private project — AI help isn't offered here.</p>;
   return <Button inline variant="tonal" className="mt-3" data-action={action} onClick={onAsk}><Sparkles size={18} aria-hidden="true" /> {label}</Button>;

@@ -1,5 +1,7 @@
 import { ArrowUpRight, Check, FileText, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { AI_MODE } from '../ai/request';
+import { openCapture } from '../capture/openCapture';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { useConfirm } from '../components/confirm';
@@ -15,6 +17,7 @@ import { isDone } from '../data/tasks';
 import { toast } from '../data/toast';
 import type { Assumption, AssumptionState, MyDayData, Project } from '../data/types';
 import { exploreHref, rememberExploreEntry } from '../explore/route';
+import { AiHelp } from './PlanViews';
 import { progressLine, tabHref } from './planText';
 
 // A business idea's one page (1.33.0): the Model tab, and its small card on the Overview. The rules are in
@@ -39,6 +42,9 @@ export function ModelView({ data, p }: { data: MyDayData; p: Project }) {
   const m = p.model, list = m?.assumptions ?? [];
   const [text, setText] = useState('');
   const full = list.length >= MODEL_LIMITS.assumptions;
+  // AI help (1.34.0, only on your tap): once the first three questions are answered, Ask MyDay can suggest what else must
+  // be true — sending this one page (never what you found), and never saying whether the idea will work.
+  const answered = !!m && !!m.problem.trim() && !!m.who.trim() && !!m.how.trim();
   function add() {
     let r: string | null = null;
     update(d => { r = addAssumption(d, p.id, text); if (!r || r === 'full') return false; });
@@ -65,6 +71,9 @@ export function ModelView({ data, p }: { data: MyDayData; p: Project }) {
               {list.map(a => <AssumptionRow key={a.id} data={data} p={p} a={a} />)}
             </ul>
           )}
+          {!full && AI_MODE !== 'off' && (answered || p.private
+            ? <AiHelp p={p} action="model-ask" label="Suggest what must be true" onAsk={() => openCapture('Suggest what must be true for this idea to work')} />
+            : <p className="text-sm text-fg-3 mb-0 mt-3" data-s="model-ai-wait">Once the first three questions are answered, Ask MyDay can suggest what must be true.</p>)}
           {full ? <p className="text-[15px] text-fg-2 mb-0 mt-3" data-s="model-full">That's 12 — plenty to test. Remove one to add another.</p> : (
             <form className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 items-end mt-3" onSubmit={e => { e.preventDefault(); add(); }} id="modelAddForm">
               <Field label={list.length ? 'Add something else that must be true' : 'Add the first thing that must be true'} htmlFor="modelNew">

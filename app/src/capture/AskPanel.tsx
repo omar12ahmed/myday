@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, CalendarPlus, Flag, FolderKanban, ListPlus, Minus, NotebookPen, PencilLine, Plus, Scale, Sparkles } from 'lucide-react';
+import { ArrowRight, BookOpen, CalendarPlus, FileText, Flag, FolderKanban, ListPlus, Minus, NotebookPen, PencilLine, Plus, Scale, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { addAskItems, applyAskChanges, applyAskEdit, checkAskReply, countWords, NEW_PROJECT, undoAsk, undoAskChanges, type AskChangeUndo, type AskChecked, type AskEdit, type AskProposal, type AskUndo } from '../ai/ask';
 import { askContext, askPreview, askSlice } from '../ai/askContext';
@@ -33,8 +33,9 @@ const ICON: Record<AskProposal['type'], ReactNode> = {
   appointment: <CalendarPlus size={16} aria-hidden="true" />, project: <FolderKanban size={16} aria-hidden="true" />, 'study-task': <BookOpen size={16} aria-hidden="true" />,
   change: <PencilLine size={16} aria-hidden="true" />,
   milestone: <Flag size={16} aria-hidden="true" />, pro: <Plus size={16} aria-hidden="true" />, con: <Minus size={16} aria-hidden="true" />, option: <Scale size={16} aria-hidden="true" />,
+  'must-be-true': <FileText size={16} aria-hidden="true" />,
 };
-const TYPE_WORD: Record<AskProposal['type'], string> = { task: 'Task', note: 'Note', appointment: 'Appointment', project: 'Project', 'study-task': 'Study task', change: 'Change', milestone: 'Milestone', pro: 'Pro', con: 'Con', option: 'Option' };
+const TYPE_WORD: Record<AskProposal['type'], string> = { task: 'Task', note: 'Note', appointment: 'Appointment', project: 'Project', 'study-task': 'Study task', change: 'Change', milestone: 'Milestone', pro: 'Pro', con: 'Con', option: 'Option', 'must-be-true': 'Must be true' };
 
 // The answer as it was shown, for the one follow-up.
 function shownText(r: AskChecked): string {
@@ -133,12 +134,13 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
                   <input type="checkbox" className="mt-3.5 size-5 accent-[var(--primary)] flex-none" checked={!!picked[i]} data-s="ask-pick" aria-label={`Add ${it.title}`}
                     onChange={e => setPicked(p => p.map((x, j) => (j === i ? e.target.checked : x)))} />
                   <div className="min-w-0 flex-1">
-                    <TextInput value={titles[i] ?? ''} maxLength={120} data-s="ask-title" aria-label={`${TYPE_WORD[it.type]} title`} className="!min-h-11 !py-1.5"
+                    <TextInput value={titles[i] ?? ''} maxLength={it.type === 'must-be-true' ? 110 : 120} data-s="ask-title" aria-label={`${TYPE_WORD[it.type]} title`} className="!min-h-11 !py-1.5"
                       onChange={e => setTitles(t => t.map((x, j) => (j === i ? e.target.value : x)))} />
                     <p className="text-[13px] text-fg-3 m-0 mt-1 flex flex-wrap items-center gap-x-1.5">
                       <span className="inline-flex items-center gap-1">{ICON[it.type]} {TYPE_WORD[it.type]}</span>
                       {it.date && <span>· {it.type === 'milestone' ? 'aiming for ' : ''}{prettyDate(it.date)}{it.time ? `, ${it.time}` : ''}</span>}
                       {(it.type === 'pro' || it.type === 'con') && <span>· for “{it.text}”</span>}
+                      {it.type === 'must-be-true' && <span>· on your one page, not checked yet</span>}
                       {it.type === 'task' && <span>· {it.minutes} min · {CAT_LABEL[it.category]}</span>}
                       {it.study && <span>· {it.minutes} min · {it.study.kind === 'practical' ? 'Practical' : 'Learn'} · in {it.study.sectionId
                         ? `“${slice.context.course?.modules.flatMap(m => m.sections).find(x => x.id === it.study!.sectionId)?.title || 'this section'}”`

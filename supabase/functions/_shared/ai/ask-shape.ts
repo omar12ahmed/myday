@@ -19,11 +19,14 @@ export const ASK_LIMITS = {
   courseModules: 12, courseSections: 30, courseTasks: 80, studyItems: 12,
   // A project's milestones and the one decision you asked about ("What am I missing?"), from 1.32.0.
   milestones: 30, decisionOptions: 4, decisionPoints: 6, pointChars: 160, questionChars: 200,
+  // A business idea's one page, sent only from its Model tab (1.34.0): three answers and what must be true so far.
+  answerChars: 1000, beliefs: 12, beliefChars: 110,
 };
 export const ASK_PAGES = ['today', 'tasks', 'task', 'calendar', 'projects', 'project', 'notes', 'note', 'study', 'course', 'health', 'finance', 'other'] as const;
 export type AskPage = typeof ASK_PAGES[number];
 export const ASK_KINDS = ['add', 'steps', 'answer', 'cannot', 'change'] as const;
-export const ASK_ITEM_TYPES = ['task', 'note', 'appointment', 'project', 'study-task', 'change', 'milestone', 'pro', 'con', 'option'] as const;
+export const ASK_ITEM_TYPES = ['task', 'note', 'appointment', 'project', 'study-task', 'change', 'milestone', 'pro', 'con', 'option', 'must-be-true'] as const;
+export const BELIEF_STATES = ['open', 'looks-true', 'doesnt-hold'] as const;
 export const ASK_TARGETS = ['task', 'appointment', 'note'] as const;
 export const ASK_CATEGORIES = ['learning', 'admin', 'health'] as const;
 export const ASK_STAGES = ['capture', 'understand', 'organise', 'explore', 'decide', 'act', 'reflect'] as const;
@@ -38,6 +41,9 @@ export interface AskPageContext {
     id: string; title: string; summary: string; stage: typeof ASK_STAGES[number]; tasks: (Ref & { done: boolean })[]; notes: string[]; notesText?: string;
     milestones?: { id: string; title: string; reached: boolean; aim: string | null }[];   // its milestones (1.32.0)
     decision?: { id: string; question: string; options: { id: string; text: string; pros: string[]; cons: string[] }[] }; // the one you asked about
+    // A business idea's one page, only from its Model tab (1.34.0): what problem, for whom, how it works and pays, and
+    // what must be true so far with how each is turning out (not what you found).
+    onePage?: { problem: string; who: string; how: string; mustBeTrue: { text: string; state: typeof BELIEF_STATES[number] }[] };
   };
   note?: { id: string; title: string; text: string };
   task?: { id: string; title: string; due: string | null; minutes: number; notes: string };
@@ -133,7 +139,7 @@ export function checkAskContext(raw: unknown): raw is AskContext {
   }
   if (x.project !== undefined) {
     const p = x.project;
-    if (!obj(p) || !only(p, ['id', 'title', 'summary', 'stage', 'tasks', 'notes', 'notesText', 'milestones', 'decision'])) return false;
+    if (!obj(p) || !only(p, ['id', 'title', 'summary', 'stage', 'tasks', 'notes', 'notesText', 'milestones', 'decision', 'onePage'])) return false;
     if (!str(p.id, 64, false) || !str(p.title, L.titleChars, false) || !str(p.summary, L.summaryChars) || !ASK_STAGES.includes(p.stage as typeof ASK_STAGES[number])) return false;
     if (!refs(p.tasks, t => typeof t.done === 'boolean') || !Array.isArray(p.notes) || p.notes.length > L.list || !p.notes.every(n => str(n, L.titleChars, false))) return false;
     if (p.notesText !== undefined && !str(p.notesText, L.projectNotesChars)) return false;
@@ -143,6 +149,12 @@ export function checkAskContext(raw: unknown): raw is AskContext {
       const dc = p.decision, pts = (v: unknown) => Array.isArray(v) && v.length <= L.decisionPoints && v.every(t => str(t, L.pointChars, false));
       if (!(obj(dc) && only(dc, ['id', 'question', 'options']) && str(dc.id, 64, false) && str(dc.question, L.questionChars, false) && Array.isArray(dc.options) && dc.options.length <= L.decisionOptions
         && dc.options.every(o => obj(o) && only(o, ['id', 'text', 'pros', 'cons']) && str(o.id, 64, false) && str(o.text, L.titleChars, false) && pts(o.pros) && pts(o.cons)))) return false;
+    }
+    if (p.onePage !== undefined) {
+      const op = p.onePage;
+      if (!(obj(op) && only(op, ['problem', 'who', 'how', 'mustBeTrue']) && str(op.problem, L.answerChars) && str(op.who, L.answerChars) && str(op.how, L.answerChars)
+        && Array.isArray(op.mustBeTrue) && op.mustBeTrue.length <= L.beliefs
+        && op.mustBeTrue.every(b => obj(b) && only(b, ['text', 'state']) && str(b.text, L.beliefChars, false) && BELIEF_STATES.includes(b.state as typeof BELIEF_STATES[number])))) return false;
     }
   }
   if (x.note !== undefined && !(obj(x.note) && only(x.note, ['id', 'title', 'text']) && str(x.note.id, 64, false) && str(x.note.title, L.titleChars) && str(x.note.text, L.noteTextChars))) return false;
@@ -176,8 +188,8 @@ export function readAsk(textIn: string): AskReply | null {
     }
     // A step with no type is a task (a study task when it says where in a course it goes): steps are nothing else.
     const type = obj(it) && it.type === undefined && raw.kind === 'steps' ? (it.sectionId || it.section || it.moduleId || it.module ? 'study-task' : 'task') : obj(it) ? it.type : null;
-    // A milestone, pro, con or option whose words came in "text" rather than "title" is read the same.
-    const title = obj(it) && !str(it.title, ASK_LIMITS.titleChars, false) && ['milestone', 'pro', 'con', 'option'].includes(type as string) && str(it.text, ASK_LIMITS.titleChars, false) ? it.text : obj(it) ? it.title : null;
+    // A milestone, pro, con, option or belief whose words came in "text" rather than "title" is read the same.
+    const title = obj(it) && !str(it.title, ASK_LIMITS.titleChars, false) && ['milestone', 'pro', 'con', 'option', 'must-be-true'].includes(type as string) && str(it.text, ASK_LIMITS.titleChars, false) ? it.text : obj(it) ? it.title : null;
     if (!obj(it) || !ASK_ITEM_TYPES.includes(type as AskItem['type']) || type === 'change' || !str(title, ASK_LIMITS.titleChars, false)) continue;
     out.push({
       type: type as AskItem['type'], title: (title as string).trim(),

@@ -79,7 +79,7 @@ export function KnowsScreen({ data }: { data: MyDayData }) {
               <dd className="m-0 text-[15px] text-fg-2">{cap(sendsFor(p.page, aiNotes))}.</dd>
             </div>))}
         </dl>
-        <p className="text-sm text-fg-3 m-0 mt-3">On a project, “Suggest milestones” sends the same; on a decision, “What am I missing?” also sends that one decision — its question, options, pros and cons. Suggestions never choose an option for you. A project’s notes’ text goes only with AI help with notes switched on. Nothing changes until you tick it and tap Add or Apply, and Ask never deletes anything or ticks anything off.</p>
+        <p className="text-sm text-fg-3 m-0 mt-3">On a project, “Suggest milestones” sends the same; on a decision, “What am I missing?” also sends that one decision — its question, options, pros and cons. Suggestions never choose an option for you. On a business idea’s Model tab, Ask also sends its one page — your three answers, and what must be true with how each is turning out (never what you found) — and from nowhere else; “Suggest what must be true” sends the same, and never says whether the idea will work. A project’s notes’ text goes only with AI help with notes switched on. Nothing changes until you tick it and tap Add or Apply, and Ask never deletes anything or ticks anything off.</p>
       </Card>
 
       <Card aria-labelledby="knows-other-h" id="knowsOther">
@@ -96,7 +96,7 @@ export function KnowsScreen({ data }: { data: MyDayData }) {
         <h3 id="knows-never-h">Never sent</h3>
         <ul className="m-0 pl-5 grid gap-1.5 text-[15px]">
           <li data-s="knows-private">Notes you’ve marked private — by any AI help, ever.{privateNotes > 0 && ` You have ${privateNotes === 1 ? 'one' : privateNotes} at the moment.`}</li>
-          <li data-s="knows-private-projects">Projects you’ve made private — by Ask MyDay: not their name, summary, milestones, decisions, tasks, notes or appointments. (AI help with notes can still suggest one as a place for a note, by its name and summary — your choice.){privateProjects > 0 && ` You have ${privateProjects === 1 ? 'one' : privateProjects} at the moment.`}</li>
+          <li data-s="knows-private-projects">Projects you’ve made private — by Ask MyDay: not their name, summary, milestones, decisions, one page, tasks, notes or appointments. (AI help with notes can still suggest one as a place for a note, by its name and summary — your choice.){privateProjects > 0 && ` You have ${privateProjects === 1 ? 'one' : privateProjects} at the moment.`}</li>
           <li>Your name, your account’s email address, and your preferences and patterns (What MyDay has noticed works on this device).</li>
           <li>Your Finance records, and your Health records — Help me adjust today sees only when you’re working out, as busy time.</li>
         </ul>

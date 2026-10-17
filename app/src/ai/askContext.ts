@@ -1,10 +1,11 @@
 // What "Ask MyDay" sends from the page you're on (the AI design, 17 Oct 2026): what you typed, the date and time, the
 // page's name and that page's small slice of your data — the same slice the "Sends:" line describes before you tap.
 // Never a private note; Finance and Health send only the page's name; a project's notes' text only with "AI help with
-// notes" switched on.
+// notes" switched on. A business idea's one page only from its Model tab (1.34.0).
 import { ASK_LIMITS as L, type AskContext, type AskPage, type AskPageContext } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
 import { parseKey, prettyDate, todayKey } from '../data/dates';
 import { noteName } from '../data/notes';
+import { isBusiness } from '../data/businessModel';
 import { privateProjectIds, projectNotes, projectTasks } from '../data/projects';
 import type { AskFocus } from '../capture/openCapture';
 import { stIndex } from '../data/study/roadmap';
@@ -53,6 +54,7 @@ export const SENDS = {
   course: 'this course’s outline (its modules, sections and tasks — titles and lengths only)',
   project: (withText: boolean) => `this project’s name, summary, stage, tasks, milestones and note titles${withText ? ' and text (not private ones)' : ''}`,
   decision: 'the decision you asked about (its question, options, pros and cons)',
+  onePage: 'its one page (your three answers, and what must be true with how each is turning out — not what you found)',
   note: 'this note', task: 'this task', calendar: "today's appointments",
 } as const;
 const HELD_WORD = { note: 'not this note, it’s private', project: 'not this project, it’s private', task: 'not this task, its project is private' } as const;
@@ -140,8 +142,13 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey(),
       const dc = focus?.decisionId ? p.decisions?.find(x => x.id === focus.decisionId) : undefined;
       const pt = (list: string[]) => list.slice(0, L.decisionPoints).map(t => cut(t, L.pointChars));
       if (dc) ctx.project.decision = { id: dc.id, question: cut(dc.question, L.questionChars), options: dc.options.slice(0, L.decisionOptions).map(o => ({ id: o.id, text: cut(o.text, L.titleChars), pros: pt(o.pros), cons: pt(o.cons) })) };
+      // A business idea's one page, only when you ask from its Model tab (your choice, 17 Oct 2026). Not what you found.
+      const m = isBusiness(p) && hash.replace(/^#/, '').split('/')[3] === 'model' ? p.model : undefined;
+      if (m) ctx.project.onePage = { problem: cut(m.problem, L.answerChars), who: cut(m.who, L.answerChars), how: cut(m.how, L.answerChars),
+        mustBeTrue: m.assumptions.slice(0, L.beliefs).map(a => ({ text: cut(a.text, L.beliefChars), state: a.state })) };
       parts.push(SENDS.project(withText));
       if (dc) parts.push(SENDS.decision);
+      if (m) parts.push(SENDS.onePage);
     }
   } else if (page === 'note' && id) {
     const n = data.notes.items.find(x => x.id === id);
@@ -180,6 +187,7 @@ const energyWord = (e: number | null | undefined) => (e ? `${e} of 5` : 'not set
 const freeWord = (m: number | null | undefined) => (m === null || m === undefined ? 'not worked out' : m < 60 ? `${m} min` : `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ''}`);
 const clip = (s: string, n = 160) => (s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s);
 const n = (count: number, one: string, many = one + 's') => `${count} ${count === 1 ? one : many}`;
+const STATE_WORD = { open: 'not checked yet', 'looks-true': 'looks true', 'doesnt-hold': 'doesn’t hold' } as const;
 
 export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['held']): AskPreview {
   const x = c.context, short: string[] = [], all: AskPreview['all'] = [];
@@ -216,6 +224,13 @@ export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['
     if (p.milestones?.length) {
       short.push(n(p.milestones.length, 'milestone'));
       all.push({ label: 'Its milestones', lines: p.milestones.map(m => `${m.reached ? '✓ ' : ''}${m.title}${m.aim && !m.reached ? ` (aiming for ${m.aim})` : ''}`) });
+    }
+    if (p.onePage) {
+      const op = p.onePage, said = [op.problem, op.who, op.how].filter(a => a.trim()).length;
+      short.push(`One page: ${n(said, 'answer')}, ${n(op.mustBeTrue.length, 'thing', 'things')} that must be true`);
+      all.push({ label: 'Its one page', lines: [`What problem it solves: ${op.problem.trim() ? clip(op.problem, 300) : '(not answered yet)'}`, `Who it’s for: ${op.who.trim() ? clip(op.who, 300) : '(not answered yet)'}`,
+        `How it works and pays: ${op.how.trim() ? clip(op.how, 300) : '(not answered yet)'}`] });
+      if (op.mustBeTrue.length) all.push({ label: 'What must be true (what you found isn’t sent)', lines: op.mustBeTrue.map(b => `${b.text} — ${STATE_WORD[b.state]}`) });
     }
     if (p.decision) {
       const dc = p.decision;
