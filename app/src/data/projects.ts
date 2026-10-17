@@ -9,6 +9,7 @@
 // Deleting a project never deletes its notes, tasks or appointments: they're just no longer linked to it.
 // In "Export my data", and synced with your account (one record per project; see sync/records.ts).
 import { isDateTime, localStamp, todayKey } from './dates';
+import { isBusiness, normalizeModel, normalizeTemplate, STATE_LABEL } from './businessModel';
 import { noteName } from './notes';
 import { chosenOption, normalizeDecisions, normalizeMilestones } from './projectPlan';
 import { isDone, onTodaysPlan } from './tasks';
@@ -58,6 +59,10 @@ export function normalizeProjects(raw: unknown, report: { dropped: number }): Pr
     if (milestones) item.milestones = milestones; else delete item.milestones;
     if (decisions) item.decisions = decisions; else delete item.decisions;
     if (p.private === true) item.private = true; else delete item.private;
+    // The kind of project and a business idea's one page (1.33.0): kept only when there's something, likewise.
+    const template = normalizeTemplate(p.template), model = normalizeModel(p.model, report);
+    if (template) item.template = template; else delete item.template;
+    if (model) item.model = model; else delete item.model;
     seen.add(item.id);
     out.items.push(item);
   }
@@ -224,9 +229,9 @@ export function moveToColumn(d: MyDayData, id: string, to: BoardColumn): boolean
 
 // ---------- What happened lately ----------
 // A project's latest happenings, newest first, from what's saved: tasks added or done, notes written or changed,
-// milestones reached and decisions made.
+// milestones reached, decisions made and — for a business idea — what you found out.
 // (A task ticked only on a day's plan has no date of its own here, so it shows once it's ticked in Tasks.)
-export interface Happening { at: string; what: 'added' | 'done' | 'note' | 'note-changed' | 'milestone' | 'decided'; title: string; href: string }
+export interface Happening { at: string; what: 'added' | 'done' | 'note' | 'note-changed' | 'milestone' | 'decided' | 'checked'; title: string; href: string }
 export function recently(data: MyDayData, p: Project, max = 5): Happening[] {
   const out: Happening[] = [];
   for (const t of data.tasks.items) {
@@ -238,6 +243,7 @@ export function recently(data: MyDayData, p: Project, max = 5): Happening[] {
   // Milestones reached and decisions made (dates only, so they count as the end of that day, like tasks done).
   for (const m of p.milestones ?? []) if (m.reachedOn) out.push({ at: `${m.reachedOn}T23:58`, what: 'milestone', title: m.title, href: `#projects/p/${p.id}/milestones` });
   for (const x of p.decisions ?? []) { const o = chosenOption(x); if (o && x.decidedOn) out.push({ at: `${x.decidedOn}T23:58`, what: 'decided', title: `${x.question} — ${o.text}`, href: `#projects/p/${p.id}/decisions` }); }
+  if (isBusiness(p)) for (const a of p.model?.assumptions ?? []) if (a.checkedOn) out.push({ at: `${a.checkedOn}T23:58`, what: 'checked', title: `${a.text} — ${STATE_LABEL[a.state].toLowerCase()}`, href: `#projects/p/${p.id}/model` });
   return out.sort((a, b) => b.at.localeCompare(a.at)).slice(0, max);
 }
 

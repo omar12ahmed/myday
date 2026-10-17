@@ -163,6 +163,11 @@ export interface Project {
   // From 1.32.0 (optional; absent = not private): you made it private, so Ask MyDay sends nothing of it. AI help with
   // notes may still offer its name and summary as a place to link notes (your choice, 17 Oct 2026).
   private?: true;
+  // From 1.33.0 (optional; absent = a general project): the kind of project you chose, and — for a business idea —
+  // its one page (see data/businessModel.ts). Switching back to general keeps the one page, just out of sight. A kind
+  // this version doesn't know (from a newer MyDay) is kept as it is.
+  template?: string;
+  model?: BusinessModel;
 }
 export interface ProjectsData { items: Project[]; [other: string]: unknown }
 
@@ -180,6 +185,19 @@ export interface Decision {
   createdAt: DateTime; updatedAt: DateTime;
   [other: string]: unknown;
 }
+// A business idea on one page (1.33.0): four simple questions in your words. The fourth, what must be true, is a list
+// of things you believe but haven't checked yet; each can be found out (a task in the project) and marked as it turns
+// out — never by itself. Room to open out into a Lean Canvas later (unknown fields are kept).
+export type AssumptionState = 'open' | 'looks-true' | 'doesnt-hold';
+export interface Assumption {
+  id: string; text: string; state: AssumptionState;
+  found: string;              // what you found (optional)
+  checkedOn: DateKey | null;  // the day you marked it (null while it's not checked yet)
+  taskId: string | null;      // its "Find out" task, once you've added one
+  createdAt: DateTime;
+  [other: string]: unknown;
+}
+export interface BusinessModel { problem: string; who: string; how: string; assumptions: Assumption[]; [other: string]: unknown }
 
 // ---------- Calendar: the shift rota ----------
 export type ShiftType = 'day' | 'night' | 'off';

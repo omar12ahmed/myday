@@ -15,7 +15,7 @@ export const FlowSchema = z.strictObject({ ...base, type: z.literal('flow'), des
 const money = z.number().finite().min(0).max(10000);
 export const EconomicsInputsSchema = z.strictObject({ orderValue: money, productCost: money, logistics: money, delivery: money, operating: money, takeRate: z.number().finite().min(0).max(100) });
 export const EconomicsSchema = z.strictObject({ ...base, type: z.literal('economics'), description: text, currency: z.literal('USD'), inputs: EconomicsInputsSchema });
-export const ActionSchema = z.strictObject({ ...base, type: z.literal('action'), description: text, image: AssetIdSchema.optional(), established: text.optional(), uncertain: text.optional(), task: z.strictObject({ id, title: z.string().min(1).max(120), notes: z.string().min(1).max(1500), minutes: z.number().int().min(5).max(120) }) });
+export const ActionSchema = z.strictObject({ ...base, type: z.literal('action'), description: text, image: AssetIdSchema.optional(), established: text.optional(), uncertain: text.optional(), task: z.strictObject({ id, title: z.string().min(1).max(120), notes: z.string().min(1).max(1500), minutes: z.number().int().min(5).max(120), assumptionId: id.optional() }) });
 export const SceneSchema = z.discriminatedUnion('type', [HeroSchema, ContextSchema, ProblemSchema, FlowSchema, ArchitectureSchema, EconomicsSchema, ActionSchema]);
 export const ExploreSchema = z.strictObject({
   schemaVersion: z.literal(1), id, projectId: z.string().min(1).max(160), title: text,

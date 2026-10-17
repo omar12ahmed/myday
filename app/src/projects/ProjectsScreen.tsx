@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Field, TextInput } from '../components/Field';
+import { isBusiness, setTemplate, TEMPLATES, type TemplateChoice } from '../data/businessModel';
 import { shortDate } from '../data/dates';
 import { addProject, board, COLUMNS, lastActivity, moveToColumn, nextStep, PROJECT_LIMITS, projectAppointments, projectNotes, projectsInOrder, projectTasks, stageOf, type BoardColumn } from '../data/projects';
 import { update } from '../data/storage';
@@ -18,7 +19,7 @@ import { ProjectView } from './ProjectView';
 // about one intention; notes are the raw material, linked to a project or not (yet).
 export function ProjectsScreen({ data, hash }: { data: MyDayData; hash: string }) {
   const parts = hash.replace('#', '').split('/').map(decodeURIComponent);
-  if (parts[1] === 'p' && parts[2]) return <div className="max-w-[1000px] mx-auto"><ProjectView key={parts[2]} data={data} id={parts[2]} tab={parts[3] === 'milestones' || parts[3] === 'decisions' ? parts[3] : 'overview'} /></div>;
+  if (parts[1] === 'p' && parts[2]) return <div className="max-w-[1000px] mx-auto"><ProjectView key={parts[2]} data={data} id={parts[2]} tab={parts[3] === 'model' || parts[3] === 'milestones' || parts[3] === 'decisions' ? parts[3] : 'overview'} /></div>;
   const tab = parts[1] === 'notes' ? 'notes' : parts[1] === 'connections' ? 'connections' : 'projects';
   const tabClass = (on: boolean) => `seg-link flex-1 inline-flex items-center justify-center gap-1.5 min-h-11 rounded-xl text-[15px] font-semibold no-underline ${on ? 'on bg-primary-container text-on-primary-container' : 'text-fg-2'}`;
   return (
@@ -37,14 +38,16 @@ export function ProjectsScreen({ data, hash }: { data: MyDayData; hash: string }
 
 function ProjectsHome({ data }: { data: MyDayData }) {
   const [text, setText] = useState('');
+  const [kind, setKind] = useState<TemplateChoice>('general');
   const active = projectsInOrder(data, 'active'), paused = projectsInOrder(data, 'paused'), done = projectsInOrder(data, 'done');
   function start() {
     let id: string | null = null;
-    update(d => { id = addProject(d, text); if (!id) return false; });
+    update(d => { id = addProject(d, text); if (!id) return false; if (kind === 'business') setTemplate(d, id, 'business'); });
     if (!id) return;
-    setText('');
-    toast('Project started — everything about it can live here.');
-    location.hash = `projects/p/${id}`;
+    setText(''); setKind('general');
+    // A business idea opens on its one page: the four questions are where it starts.
+    toast(kind === 'business' ? 'Business idea started — four simple questions put it on one page.' : 'Project started — everything about it can live here.');
+    location.hash = kind === 'business' ? `projects/p/${id}/model` : `projects/p/${id}`;
   }
   return (
     <>
@@ -56,6 +59,13 @@ function ProjectsHome({ data }: { data: MyDayData }) {
             <TextInput id="projectNew" value={text} maxLength={PROJECT_LIMITS.title} onChange={e => setText(e.target.value)} placeholder="e.g. A coffee subscription for offices" />
           </Field>
           <Button inline type="submit" variant="primary" data-action="project-add" disabled={!text.trim()}><Plus size={18} aria-hidden="true" /> Start</Button>
+          <div className="col-span-2 flex flex-wrap items-center gap-2" role="radiogroup" aria-label="Kind of project" data-s="project-kind">
+            {TEMPLATES.map(t => (
+              <label key={t.id} className="inline-flex items-center gap-2 min-h-11 px-3 rounded-btn border border-outline text-[14px] font-semibold text-fg-2 cursor-pointer has-[:checked]:border-primary has-[:checked]:text-fg has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-primary">
+                <input type="radio" name="projectKind" value={t.id} className="size-4 accent-primary" checked={kind === t.id} onChange={() => setKind(t.id)} data-action="project-kind" />{t.label}
+              </label>
+            ))}
+          </div>
         </form>
       </Card>
       {active.length > 0 ? <Board data={data} /> : (
@@ -125,7 +135,7 @@ function ProjectCard({ data, p, back, on, onMove }: { data: MyDayData; p: Projec
     <div className="project-card flex flex-col rounded-card border border-outline bg-surface shadow-card text-fg" data-id={p.id}>
     <a href={`#projects/p/${p.id}`} className="group flex flex-col gap-3 p-5 pb-3 text-fg no-underline rounded-t-card hover:bg-surface-2 transition-colors">
       <span className="flex items-center justify-between gap-2">
-        <span className="text-xs font-bold tracking-[.08em] uppercase text-primary" data-s="project-stage">{stageOf(p.stage).label}</span>
+        <span className="flex items-baseline gap-2 min-w-0"><span className="text-xs font-bold tracking-[.08em] uppercase text-primary" data-s="project-stage">{stageOf(p.stage).label}</span>{isBusiness(p) && <span className="text-xs text-fg-3" data-s="project-kind-label">Business idea</span>}</span>
         <span className="flex items-center gap-1.5 text-xs text-fg-3 tabular-nums">{p.private && <Lock size={13} aria-label="Private" data-s="project-private" />}{shortDate(lastActivity(data, p).slice(0, 10))}</span>
       </span>
       <span className="block text-[19px] font-bold leading-snug tracking-[-.01em] break-words">{p.title}</span>
