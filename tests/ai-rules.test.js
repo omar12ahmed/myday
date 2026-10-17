@@ -712,11 +712,69 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
     // The instructions and the practice version.
     const msgs = K.buildAskMessages(ctxA);
-    check('the instructions: four kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v7' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
+    check('the instructions: four kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v8' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
     const mk = (hash, text) => K.checkAskReply(K.mockAsk(K.askContext(K.askSlice(K.getSnapshot().data, hash, D), text, D)), K.getSnapshot().data, K.askSlice(K.getSnapshot().data, hash, D), D);
     check('practice version: steps on a project page, in that project', (r => r.kind === 'steps' && r.items.length === 3 && r.items.every(x => x.projectId === 'pjC'))(mk('#projects/p/pjC', 'Break this into smaller steps')));
     check('…several things to add', (r => r.kind === 'add' && eq(r.items.map(x => x.title), ['Call the bank', 'Renew passport', 'Email Sam']))(mk('#today', 'call the bank, renew passport and email Sam')));
     check('…planning today handed over; what to study on Study; deleting can\'t be done here', mk('#today', 'plan my day').action.type === 'adjust-today' && mk('#study', 'what should I study?').action.courseId === 'coP' && mk('#today', 'delete all my tasks').kind === 'cannot');
+  }
+
+  console.log('\n[12b] Ask MyDay on a Study course: its outline sent, study tasks checked against it, added into it, Undo');
+  {
+    K.setClock(`${D}T10:00`);
+    const s0 = K.freshState();
+    const T = (id, title, done = false, kind = 'learn') => ({ id, title, minutes: 30, url: '', kind, note: '', done, doneOn: done ? D : null });
+    s0.study.stages = [{ id: 'sg1', title: 'Foundations', courses: [
+      { id: 'coP', title: 'Pre-Security', url: 'https://example.com/course', minutes: 30, listId: null, archived: false, modules: [{ id: 'm1', title: 'Networking', sections: [{ id: 's1', title: 'How the web works', tasks: [T('tkD', 'DNS in detail', true), T('tkH', 'HTTP in detail')] }] }] },
+      { id: 'coE', title: 'Linux basics', url: '', minutes: 25, listId: null, archived: false, modules: [] }] }];
+    localStorage.clear(); localStorage.setItem('myday.data.v4', JSON.stringify(s0)); K.boot();
+    let w = K.getSnapshot().data;
+    const pg = K.askPage('#study/course/coP');
+    check('a course page is read from the address', pg.page === 'course' && pg.id === 'coP' && K.askPage('#study').page === 'study');
+    let sl = K.askSlice(w, '#study/course/coP', D);
+    check('it sends the course\'s outline: modules, sections, task titles, lengths, kinds, done — no links or notes', sl.context.course.id === 'coP' && sl.context.course.modules[0].sections[0].tasks.map(t => t.id + ':' + t.done).join() === 'tkD:true,tkH:false' && !JSON.stringify(sl.context).includes('example.com'));
+    const pv = K.askPreview(K.askContext(sl, 'Break this course into study tasks', D));
+    check('…shown before you tap: the course and its size, and (expanded) the outline', pv.short.includes('Course: Pre-Security') && pv.short.includes('1 module, 1 section, 2 tasks') && pv.all.some(x => x.label === 'Its outline' && x.lines[0] === 'Networking › How the web works: ✓ DNS in detail; HTTP in detail'));
+    check('…and the server accepts it', K.checkAskContext(K.askContext(sl, 'plan it', D)));
+    const huge = K.freshState(); huge.study.stages = [{ id: 'sgH', title: 'Big', courses: [{ id: 'coH', title: 'Huge', url: '', minutes: 30, listId: null, archived: false,
+      modules: Array.from({ length: 15 }, (_, m) => ({ id: 'hm' + m, title: 'Module ' + m, sections: Array.from({ length: 4 }, (_, c) => ({ id: `hs${m}-${c}`, title: 'Section ' + c, tasks: Array.from({ length: 5 }, (_, t) => T(`ht${m}-${c}-${t}`, 'Task ' + 'x'.repeat(150))) })) })) }] }];
+    const hc = K.askContext(K.askSlice(huge, '#study/course/coH', D), 'plan it', D);
+    const hs = hc.context.course.modules.flatMap(m => m.sections), ht = hs.flatMap(x => x.tasks);
+    check('a very large course is cut (at most 12 modules, 30 sections, 80 tasks, in course order) and still fits the server\'s 16 KB', hc.context.course.modules.length === 12 && hs.length <= 30 && ht.length <= 80 && ht.length >= 30 && ht[0].id === 'ht0-0-0' && K.checkAskContext(hc) && JSON.stringify({ context: hc }).length < 16000, [hs.length, ht.length, JSON.stringify({ context: hc }).length]);
+    const R = o => JSON.stringify({ kind: 'steps', message: 'A plan from general knowledge — check it against the course.', action: null, ...o });
+    let c = K.checkAskReply(R({ items: [
+      { type: 'study-task', title: 'HTTPS and certificates', minutes: 40, kind: 'learn', sectionId: 's1' },
+      { type: 'study-task', title: 'Capture a request in the browser', minutes: 20, kind: 'practical', sectionId: 'sInvented' },
+      { type: 'study-task', title: 'Subnetting basics', minutes: 30, kind: 'learn', section: 'IP addressing', module: 'Networking 2' },
+      { type: 'study-task', title: 'Subnetting practice', minutes: 30, kind: 'practical', section: 'IP addressing', module: 'Networking 2' },
+      { type: 'study-task', title: 'http in detail', minutes: 30, kind: 'learn', sectionId: 's1' },
+      ...Array.from({ length: 10 }, (_, i) => ({ type: 'study-task', title: 'Extra ' + i, sectionId: 's1' }))] }), w, sl, D);
+    const it = n => c.items.find(x => x.title === n);
+    check('study tasks into an existing section, with their length and kind', it('HTTPS and certificates').study.sectionId === 's1' && it('HTTPS and certificates').minutes === 40 && it('HTTP' + 'S and certificates').study.kind === 'learn');
+    check('…a section that isn\'t in the course becomes a new one (and says so)', it('Capture a request in the browser').study.sectionId === null && it('Capture a request in the browser').study.section === 'Planned with Ask' && c.changed.some(x => x.includes('isn’t in this course')));
+    check('…a new section in a new module', it('Subnetting basics').study.section === 'IP addressing' && it('Subnetting basics').study.module === 'Networking 2');
+    check('…one the course already has is marked and left unticked; at most 12', it('http in detail').already === true && it('HTTPS and certificates').already === false && c.items.length === 12);
+    const home = K.askSlice(w, '#today', D);
+    c = K.checkAskReply(R({ kind: 'add', items: [{ type: 'study-task', title: 'Somewhere', sectionId: 's1' }] }), w, home, D);
+    check('away from a course page, a study task is an ordinary task', c.items[0].type === 'task' && !c.items[0].study);
+    c = K.checkAskReply(R({ items: [
+      { type: 'study-task', title: 'HTTPS and certificates', minutes: 40, kind: 'learn', sectionId: 's1' },
+      { type: 'study-task', title: 'Subnetting basics', minutes: 30, kind: 'learn', section: 'IP addressing', module: 'Networking 2' },
+      { type: 'study-task', title: 'Subnetting practice', minutes: 30, kind: 'practical', section: 'IP addressing', module: 'Networking 2' }] }), w, sl, D);
+    const u = K.addAskItems(c.items);
+    let co = K.getSnapshot().data.study.stages[0].courses[0];
+    const m2 = co.modules.find(m => m.title === 'Networking 2');
+    check('Add puts them into the course: one into its section, two into one new section in one new module', co.modules[0].sections[0].tasks.map(t => t.title).join('|') === 'DNS in detail|HTTP in detail|HTTPS and certificates' && !!m2 && m2.sections.length === 1 && m2.sections[0].title === 'IP addressing' && m2.sections[0].tasks.map(t => t.kind).join() === 'learn,practical');
+    check('…said in words', K.countWords(c.items) === '3 study tasks');
+    check('Undo takes the tasks back, and the section and module it made', K.undoAsk(u) && (co = K.getSnapshot().data.study.stages[0].courses[0]) && co.modules.length === 1 && co.modules[0].sections[0].tasks.length === 2);
+    const se = K.askSlice(K.getSnapshot().data, '#study/course/coE', D);
+    c = K.checkAskReply(K.mockAsk(K.askContext(se, 'Break this course into study tasks', D)), K.getSnapshot().data, se, D);
+    const u2 = K.addAskItems(c.items);
+    const ce = K.getSnapshot().data.study.stages[0].courses[1];
+    check('an empty course: the practice helper\'s plan goes into a new module and section', c.kind === 'steps' && c.items.length === 3 && ce.modules.length === 1 && ce.modules[0].title === 'Module 1' && ce.modules[0].sections[0].title === 'Getting started' && ce.modules[0].sections[0].tasks.length === 3);
+    check('…and Undo leaves it empty again', K.undoAsk(u2) && K.getSnapshot().data.study.stages[0].courses[1].modules.length === 0);
+    const ed = K.applyAskEdit({ type: 'study-task', title: 'x', date: null, time: null, minutes: 30, category: 'learning', projectId: null, text: '', already: false, study: { courseId: 'coP', kind: 'learn', sectionId: 's1', section: null, moduleId: null, module: null } }, { kind: 'practical', minutes: '45' }, D);
+    check('editing a study task: its kind and length', ed.study.kind === 'practical' && ed.minutes === 45);
   }
 
   const { pass, fail } = summary();

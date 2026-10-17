@@ -1,4 +1,7 @@
 import { Button } from '../components/Button';
+import { Sparkles } from 'lucide-react';
+import { AI_MODE } from '../ai/request';
+import { openCapture } from '../capture/openCapture';
 import { Card } from '../components/Card';
 import { CommitInput, Field, Select } from '../components/Field';
 import { completion, completionText, focusCourse, stIndex } from '../data/study/roadmap';
@@ -22,6 +25,9 @@ export function CourseDetails({ data, id }: { data: MyDayData; id: string }) {
       <h2 id="co-h">{c.title}</h2>
       <p className="text-[15px] m-0">{completionText(comp)}</p>
       <Bar c={comp} />
+      {/* Ask MyDay with this course's outline: study tasks to tick, added into the course (nothing until you tap Add). */}
+      {AI_MODE !== 'off' && !c.archived && <Button inline variant="tonal" className="mt-3" data-action="s-ask-plan" data-id={c.id} onClick={() => openCapture('Break this course into study tasks')}>
+        <Sparkles size={18} aria-hidden="true" /> Plan this course with Ask</Button>}
       <div className="grid gap-3.5 mt-3">
         <Field label="Name" htmlFor="coTitle">
           <CommitInput key={c.title} id="coTitle" type="text" maxLength={120} data-s="title" data-id={c.id} defaultValue={c.title} onCommit={el => saveItemText(c.id, 'title', el)} />

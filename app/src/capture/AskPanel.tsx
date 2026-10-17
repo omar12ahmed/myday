@@ -1,4 +1,4 @@
-import { CalendarPlus, FolderKanban, ListPlus, NotebookPen, Sparkles } from 'lucide-react';
+import { BookOpen, CalendarPlus, FolderKanban, ListPlus, NotebookPen, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { addAskItems, applyAskEdit, checkAskReply, countWords, NEW_PROJECT, undoAsk, type AskChecked, type AskEdit, type AskProposal, type AskUndo } from '../ai/ask';
 import { askContext, askPreview, askSlice } from '../ai/askContext';
@@ -28,9 +28,9 @@ type Phase =
 
 const ICON: Record<AskProposal['type'], ReactNode> = {
   task: <ListPlus size={16} aria-hidden="true" />, note: <NotebookPen size={16} aria-hidden="true" />,
-  appointment: <CalendarPlus size={16} aria-hidden="true" />, project: <FolderKanban size={16} aria-hidden="true" />,
+  appointment: <CalendarPlus size={16} aria-hidden="true" />, project: <FolderKanban size={16} aria-hidden="true" />, 'study-task': <BookOpen size={16} aria-hidden="true" />,
 };
-const TYPE_WORD: Record<AskProposal['type'], string> = { task: 'Task', note: 'Note', appointment: 'Appointment', project: 'Project' };
+const TYPE_WORD: Record<AskProposal['type'], string> = { task: 'Task', note: 'Note', appointment: 'Appointment', project: 'Project', 'study-task': 'Study task' };
 
 // The answer as it was shown, for the one follow-up.
 function shownText(r: AskChecked): string {
@@ -119,6 +119,9 @@ export function AskPanel({ data, text, onClose }: { data: MyDayData; text: strin
                       <span className="inline-flex items-center gap-1">{ICON[it.type]} {TYPE_WORD[it.type]}</span>
                       {it.date && <span>· {prettyDate(it.date)}{it.time ? `, ${it.time}` : ''}</span>}
                       {it.type === 'task' && <span>· {it.minutes} min · {CAT_LABEL[it.category]}</span>}
+                      {it.study && <span>· {it.minutes} min · {it.study.kind === 'practical' ? 'Practical' : 'Learn'} · in {it.study.sectionId
+                        ? `“${slice.context.course?.modules.flatMap(m => m.sections).find(x => x.id === it.study!.sectionId)?.title || 'this section'}”`
+                        : `a new section “${it.study.section}”${it.study.module ? ` (new module “${it.study.module}”)` : ''}`}</span>}
                       {it.projectId && <span>· in “{it.projectId === NEW_PROJECT ? r.items.find(x => x.type === 'project')?.title : data.projects.items.find(p => p.id === it.projectId)?.title}”</span>}
                       {it.already && <span>· already on your lists</span>}
                     </p>
@@ -133,6 +136,11 @@ export function AskPanel({ data, text, onClose }: { data: MyDayData; text: strin
                           <label className="text-xs text-fg-2 grid gap-1">Minutes<TextInput type="number" inputMode="numeric" min={5} max={120} value={e.minutes ?? String(it.minutes)} data-f="ask-minutes" className="!min-h-11 !py-1.5" onChange={ev => set({ minutes: ev.target.value })} /></label>
                           <label className="text-xs text-fg-2 grid gap-1">List<Select value={it.category} data-f="ask-list" className="!min-h-11 !py-1.5" onChange={ev => set({ category: ev.target.value as Category })}>
                             {(['learning', 'admin', 'health'] as Category[]).map(c => <option key={c} value={c}>{CAT_LABEL[c]}</option>)}</Select></label>
+                        </>}
+                        {it.type === 'study-task' && <>
+                          <label className="text-xs text-fg-2 grid gap-1 min-w-0">Minutes<TextInput type="number" inputMode="numeric" min={5} max={120} value={e.minutes ?? String(it.minutes)} data-f="ask-minutes" className="!min-h-11 !py-1.5" onChange={ev => set({ minutes: ev.target.value })} /></label>
+                          <label className="text-xs text-fg-2 grid gap-1 min-w-0">Kind<Select value={it.study?.kind ?? 'learn'} data-f="ask-kind" className="!min-h-11 !py-1.5" onChange={ev => set({ kind: ev.target.value as 'learn' | 'practical' })}>
+                            <option value="learn">Learn</option><option value="practical">Practical</option></Select></label>
                         </>}
                         {(it.type === 'note' || it.type === 'project') && <label className="col-span-2 text-xs text-fg-2 grid gap-1">{it.type === 'note' ? 'Note' : 'What it’s about'}
                           <TextArea rows={3} maxLength={1000} value={e.text ?? it.text} data-f="ask-text" onChange={ev => set({ text: ev.target.value })} /></label>}

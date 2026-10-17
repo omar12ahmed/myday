@@ -12,18 +12,26 @@ import type { Category, MyDayData } from '../data/types';
 import { loadLibs, parseCapture, type Capture, type CaptureLibs } from './parse';
 import { addAppointment, addCapturedTask, appointmentEnd, saveNote, startProject } from './save';
 import { AskPanel } from './AskPanel';
+import { CAPTURE_EVENT } from './openCapture';
 import { AI_MODE } from '../ai/request';
 
 // "+ Capture", on every screen: phones get a round button above the bar (easy to reach), wide screens one beside
 // the theme button.
 export function CaptureButton({ data }: { data: MyDayData }) {
   const [open, setOpen] = useState(false);
+  const [preset, setPreset] = useState('');
+  // A page's shortcut can open the sheet with words already in it (openCapture.ts).
+  useEffect(() => {
+    const onOpen = (e: Event) => { setPreset(String((e as CustomEvent<{ text: string }>).detail?.text ?? '')); setOpen(true); };
+    window.addEventListener(CAPTURE_EVENT, onOpen);
+    return () => window.removeEventListener(CAPTURE_EVENT, onOpen);
+  }, []);
   return (
     <>
-      <button type="button" className="capture-btn" data-action="capture-open" aria-label="Capture: a note, task or appointment" onClick={() => setOpen(true)}>
+      <button type="button" className="capture-btn" data-action="capture-open" aria-label="Capture: a note, task or appointment" onClick={() => { setPreset(''); setOpen(true); }}>
         <Plus size={24} aria-hidden="true" /><span className="capture-label">Capture</span>
       </button>
-      {open && <CaptureSheet data={data} onClose={() => setOpen(false)} />}
+      {open && <CaptureSheet data={data} initialText={preset} onClose={() => { setOpen(false); setPreset(''); }} />}
     </>
   );
 }
@@ -34,9 +42,9 @@ const openProject = (id: string) => { location.hash = `projects/p/${id}`; };
 // Type anything; MyDay suggests what it looks like (a time → the Calendar, an action → a task, an idea → a project, or
 // just a note) — and does only what you tap. Those suggestions are worked out on this device; below them, Ask MyDay
 // (only when the app has AI help, and only on your tap) is for questions, breakdowns and several things at once.
-export function CaptureSheet({ data, onClose }: { data: MyDayData; onClose: () => void }) {
+export function CaptureSheet({ data, initialText = '', onClose }: { data: MyDayData; initialText?: string; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
-  const [text, setText] = useState('');
+  const [text, setText] = useState(initialText);
   const [libs, setLibs] = useState<CaptureLibs | null>(null);
   const [cat, setCat] = useState<Category | null>(null); // a list you chose for the task (otherwise the guess)
   const [now] = useState(() => new Date());               // "tomorrow" means from when Capture opened

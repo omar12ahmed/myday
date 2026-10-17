@@ -10,7 +10,7 @@ import { addProject, linkAppointment, linkNote, linkTask } from '../data/project
 import { stIndex } from '../data/study/roadmap';
 import { updateSaved } from '../data/storage';
 import { addTask } from '../data/tasks';
-import type { Category, DateKey, MyDayData } from '../data/types';
+import type { Category, DateKey, MyDayData, StudyModule, StudySection } from '../data/types';
 import { uid } from '../data/util';
 import type { AskSlice } from './askContext';
 import { sameTask } from './mind';
@@ -26,6 +26,9 @@ export interface AskProposal {
   projectId: string | null;                     // a project that exists and isn't done — or NEW_PROJECT: the one proposed alongside
   text: string;                                 // a note's text / a project's summary ('' otherwise)
   already: boolean;                             // a task with this title is already on your lists (left unticked)
+  // A study task (into the course on the page): its kind and where it goes — an existing section, or a new section
+  // (named) in an existing module or a new module (named).
+  study?: { courseId: string; kind: 'learn' | 'practical'; sectionId: string | null; section: string | null; moduleId: string | null; module: string | null };
 }
 // A task or note for the project proposed in the same answer (it's created first when you tap Add).
 export const NEW_PROJECT = '@new';
@@ -73,8 +76,15 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
   const onLists = new Set([...data.tasks.items.filter(t => !t.done && !t.letGoOn).map(t => t.title), ...(data.days[k]?.tasks ?? []).filter(t => !t.done).map(t => t.title)].map(sameTask));
   const seen = new Set<string>();
   const items: AskProposal[] = [];
+  // On a course page, a plan for the course is study tasks in that course (checked against its real outline).
+  const course = slice.context.course ? stIndex(data.study).course.get(slice.context.course.id)?.node ?? null : null;
+  const inCourse = course ? new Set(course.modules.flatMap(m => m.sections.flatMap(sc => sc.tasks.map(t => sameTask(t.title))))) : new Set<string>();
+  const studyCap = r.items.some(i => i.type === 'study-task') && course ? L.studyItems : L.items;
   for (const it of r.items) {
-    let type: AskItemType = r.kind === 'steps' ? 'task' : it.type;
+    if (items.length >= studyCap) break;
+    let type: AskItemType = course && r.kind === 'steps' ? 'study-task' : r.kind === 'steps' ? 'task' : it.type;
+    if (type === 'study-task' && !course) type = 'task'; // only on a course page
+    if (type !== 'study-task' && items.length >= L.items) continue;
     if (r.kind === 'answer' && items.length >= 3) break; // an answer suggests at most three
     const title = it.title.replace(/\s+/g, ' ').trim().slice(0, L.titleChars);
     if (!title || seen.has(type + ':' + sameTask(title))) continue;
@@ -89,6 +99,15 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
     if (type === 'appointment' && !(date && time)) { type = 'task'; changed.push(`“${title}”: made a task — an appointment needs a day and a time.`); }
     if (type === 'project') { projectId = null; date = null; time = null; }
     if (type === 'note') { date = null; time = null; }
+    if (type === 'study-task' && course) {
+      const sec = it.sectionId ? course.modules.flatMap(m => m.sections).find(x => x.id === it.sectionId) ?? null : null;
+      const mod = it.moduleId ? course.modules.find(m => m.id === it.moduleId) ?? null : null;
+      if (it.sectionId && !sec) changed.push(`“${title}”: put in a new section — the one suggested isn’t in this course.`);
+      items.push({ type, title, date: null, time: null, minutes: Math.min(L.maxMinutes, Math.max(L.minMinutes, it.minutes ?? course.minutes ?? 30)), category: 'learning', projectId: null, text: '',
+        already: inCourse.has(sameTask(title)),
+        study: { courseId: course.id, kind: it.kind ?? 'learn', sectionId: sec?.id ?? null, section: sec ? null : (it.section || 'Planned with Ask'), moduleId: sec ? null : mod?.id ?? null, module: sec || mod ? null : it.module ?? null } });
+      continue;
+    }
     items.push({
       type, title, date, time,
       minutes: Math.min(L.maxMinutes, Math.max(L.minMinutes, it.minutes ?? 15)),
@@ -103,13 +122,39 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
 }
 
 // ---------- Saving what you ticked ----------
-export interface AskUndo { tasks: string[]; notes: string[]; appointments: string[]; projects: string[] }
+export interface AskUndo { tasks: string[]; notes: string[]; appointments: string[]; projects: string[]; study?: { tasks: string[]; sections: string[]; modules: string[] } }
 const end30 = (date: DateKey, time: string) => { const t = new Date(`${date}T${time}`); t.setMinutes(t.getMinutes() + 30); return `${keyOf(t)}T${pad(t.getHours())}:${pad(t.getMinutes())}`; };
 
 // Adds them all in one save. Returns what to take back with Undo, or null if nothing could be saved.
 export function addAskItems(items: AskProposal[]): AskUndo | null {
-  const u: AskUndo = { tasks: [], notes: [], appointments: [], projects: [] };
+  const u: AskUndo = { tasks: [], notes: [], appointments: [], projects: [], study: { tasks: [], sections: [], modules: [] } };
   const r = updateSaved(d => {
+    // Study tasks into the course on the page: new sections (and modules) are made once each, in the order proposed.
+    const madeSec = new Map<string, StudySection>(), madeMod = new Map<string, StudyModule>();
+    for (const it of items) {
+      if (it.type !== 'study-task' || !it.study) continue;
+      const c = stIndex(d.study).course.get(it.study.courseId)?.node;
+      if (!c) continue;
+      let sec: StudySection | null = it.study.sectionId ? c.modules.flatMap(m => m.sections).find(x => x.id === it.study!.sectionId) ?? null : null;
+      if (!sec) {
+        const key = `${it.study.moduleId ?? ''}|${it.study.module ?? ''}|${it.study.section ?? ''}`;
+        sec = madeSec.get(key) ?? null;
+        if (!sec) {
+          let mod: StudyModule | null = it.study.moduleId ? c.modules.find(m => m.id === it.study!.moduleId) ?? null : null;
+          if (!mod && it.study.module) {
+            mod = madeMod.get(it.study.module) ?? null;
+            if (!mod) { mod = { id: 'md' + uid(), title: it.study.module, sections: [] }; c.modules.push(mod); madeMod.set(it.study.module, mod); u.study!.modules.push(mod.id); }
+          }
+          if (!mod) mod = c.modules[c.modules.length - 1] ?? null;
+          if (!mod) { mod = { id: 'md' + uid(), title: 'Planned with Ask', sections: [] }; c.modules.push(mod); u.study!.modules.push(mod.id); }
+          sec = { id: 'sc' + uid(), title: it.study.section ?? 'Planned with Ask', tasks: [] };
+          mod.sections.push(sec); madeSec.set(key, sec); u.study!.sections.push(sec.id);
+        }
+      }
+      const id = 'tk' + uid();
+      sec.tasks.push({ id, title: it.title, minutes: it.minutes, url: '', kind: it.study.kind, note: '', done: false, doneOn: null });
+      u.study!.tasks.push(id);
+    }
     // The project first, so the tasks and notes proposed with it can go in it (if you ticked it; otherwise they stand alone).
     let created: string | null = null;
     for (const it of items) if (it.type === 'project') { const id = addProject(d, it.title, it.text); if (id) { u.projects.push(id); created ??= id; } }
@@ -136,7 +181,7 @@ export function addAskItems(items: AskProposal[]): AskUndo | null {
         u.appointments.push(id);
       }
     }
-    if (!u.tasks.length && !u.notes.length && !u.appointments.length && !u.projects.length) return false;
+    if (!u.tasks.length && !u.notes.length && !u.appointments.length && !u.projects.length && !u.study!.tasks.length) return false;
   });
   return r === 'saved' ? u : null;
 }
@@ -151,7 +196,17 @@ export function undoAsk(u: AskUndo): boolean {
     d.commitments = d.commitments.filter(x => !a.has(x.id));
     for (const pr of d.projects.items) if (pr.commitmentIds.some(id => a.has(id))) pr.commitmentIds = pr.commitmentIds.filter(id => !a.has(id));
     d.projects.items = d.projects.items.filter(x => !p.has(x.id));
-    if (d.tasks.items.length + d.notes.items.length + d.commitments.length + d.projects.items.length === before) return false;
+    // Study tasks it added, then the sections and modules it made (only if nothing else has been put in them since).
+    let studyGone = 0;
+    if (u.study) {
+      const st = new Set(u.study.tasks), ss = new Set(u.study.sections), sm = new Set(u.study.modules);
+      for (const sg of d.study.stages) for (const c of sg.courses) {
+        for (const m of c.modules) for (const sc of m.sections) { const n = sc.tasks.length; sc.tasks = sc.tasks.filter(t => !st.has(t.id)); studyGone += n - sc.tasks.length; }
+        for (const m of c.modules) m.sections = m.sections.filter(sc => !(ss.has(sc.id) && !sc.tasks.length));
+        c.modules = c.modules.filter(m => !(sm.has(m.id) && !m.sections.length));
+      }
+    }
+    if (d.tasks.items.length + d.notes.items.length + d.commitments.length + d.projects.items.length === before && !studyGone) return false;
   }) === 'saved';
 }
 
@@ -159,7 +214,7 @@ export function undoAsk(u: AskUndo): boolean {
 export function countWords(items: { type: AskItemType }[]): string {
   const n = (t: AskItemType) => items.filter(i => i.type === t).length;
   const w = (c: number, one: string, many: string) => (c === 1 ? `a${/^[aeiou]/.test(one) ? 'n' : ''} ${one}` : `${c} ${many}`);
-  const parts = [[n('task'), 'task', 'tasks'], [n('note'), 'note', 'notes'], [n('appointment'), 'appointment', 'appointments'], [n('project'), 'project', 'projects']]
+  const parts = [[n('study-task'), 'study task', 'study tasks'], [n('task'), 'task', 'tasks'], [n('note'), 'note', 'notes'], [n('appointment'), 'appointment', 'appointments'], [n('project'), 'project', 'projects']]
     .filter(([c]) => (c as number) > 0).map(([c, one, many]) => w(c as number, one as string, many as string));
   return parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : parts[0] ?? 'nothing';
 }
@@ -168,7 +223,7 @@ export function countWords(items: { type: AskItemType }[]): string {
 // What you change on a card (a day, a time, the length, the list, a note's text) is checked by the same rules as the
 // model's proposal: a real day from today on, a time only with a day, 5–120 minutes; an appointment left without a
 // day and a time becomes a task.
-export interface AskEdit { date?: string; time?: string; minutes?: string; category?: Category; text?: string }
+export interface AskEdit { date?: string; time?: string; minutes?: string; category?: Category; text?: string; kind?: 'learn' | 'practical' }
 export function applyAskEdit(it: AskProposal, e: AskEdit | undefined, k: DateKey = todayKey()): AskProposal {
   if (!e) return it;
   const out = { ...it };
@@ -178,6 +233,7 @@ export function applyAskEdit(it: AskProposal, e: AskEdit | undefined, k: DateKey
   if (e.minutes !== undefined && e.minutes.trim() !== '') { const m = Math.round(Number(e.minutes)); if (Number.isFinite(m)) out.minutes = Math.min(L.maxMinutes, Math.max(L.minMinutes, m)); }
   if (e.category) out.category = e.category;
   if (e.text !== undefined && (out.type === 'note' || out.type === 'project')) out.text = e.text.slice(0, L.itemTextChars);
+  if (e.kind && out.study) out.study = { ...out.study, kind: e.kind };
   if (out.type === 'appointment' && !(out.date && out.time)) out.type = 'task';
   return out;
 }

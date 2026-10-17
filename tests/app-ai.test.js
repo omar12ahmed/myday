@@ -448,6 +448,26 @@ const SEED = `s => {
     await D.setData(`s => { s.projects.items = s.projects.items.filter(p => p.id !== 'pjAsk'); s.notes.items = s.notes.items.filter(n => !['nAsk', 'nPriv'].includes(n.id)); }`); await D.until(`!document.getElementById('signInGate')`, 15000);
   }
 
+  console.log('\n[8g] Ask MyDay on a Study course: "Plan this course with Ask", study tasks into the course, Undo');
+  {
+    const course = { id: 'coAsk', title: 'Pre-Security path', url: '', minutes: 30, listId: null, archived: false, modules: [{ id: 'mA', title: 'Networking', sections: [{ id: 'sA', title: 'How the web works', tasks: [{ id: 'tA', title: 'DNS in detail', minutes: 30, url: '', kind: 'learn', note: '', done: false, doneOn: null }] }] }] };
+    await seeded(mock, MOCK);
+    await mock.setData(`s => { s.study.stages = [{ id: 'sgA', title: 'Foundations', courses: [${JSON.stringify(course)}] }]; }`); await mock.until(`document.querySelector('#app')`);
+    await mock.ev(`location.hash = 'study/course/coAsk'`); await mock.until(`document.querySelector('[data-action=s-ask-plan]')`, 5000);
+    check('a course page offers "Plan this course with Ask"', (await mock.text('[data-action=s-ask-plan]')).includes('Plan this course with Ask'));
+    await mock.click('[data-action=s-ask-plan]'); await mock.until(`document.getElementById('captureText')`, 5000);
+    check('…which opens + with the request already typed, and shows the course\'s outline will be sent', (await mock.ev(`document.getElementById('captureText').value`)) === 'Break this course into study tasks' && (await mock.text('[data-s=ask-sends]')).includes('Course: Pre-Security path') && (await mock.text('[data-s=ask-sends]')).includes('1 module, 1 section, 1 task'));
+    await mock.click('[data-action=ask-go]'); await mock.until(`['shown', 'error'].includes(document.querySelector('[data-s=ask-panel]')?.dataset.phase)`, 10000);
+    check('…and answers with study tasks for its section', (await mock.ev(`[...document.querySelectorAll('[data-s=ask-item]')].map(x => x.dataset.type).join()`)) === 'study-task,study-task,study-task' && (await mock.text('[data-s=ask-panel]')).includes('in “How the web works”'));
+    await mock.click('[data-action=ask-add]'); await sleep(250);
+    const sec = async () => (await mock.data()).study.stages[0].courses[0].modules[0].sections[0].tasks;
+    check('Add puts them into the course on your roadmap', (await sec()).length === 4 && (await sec())[3].kind === 'practical' && (await mock.text('[data-s=ask-added]')).includes('Added 3 study tasks'));
+    await mock.click('[data-action=ask-undo]'); await sleep(250);
+    check('…and Undo takes them back', (await sec()).length === 1);
+    await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(150);
+    await mock.ev(`location.hash = 'today'`);
+  }
+
   console.log('\n[9] Layout');
   await D.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await D.ev(`location.hash = 'today'`);

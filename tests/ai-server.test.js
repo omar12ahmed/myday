@@ -284,6 +284,13 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     check('…or from Study, with today\'s energy and free time', a.status === 200, a.body);
     a = await kask({ ...ak, page: 'study', context: { study: { course: null, nextTask: null, topics: [], revisionDue: 0, energy: 9, freeMinutes: 90 } } });
     check('…but an energy outside 1–5 is refused (400)', a.status === 400);
+    const co = { id: 'coP', title: 'Pre-Security', minutes: 30, modules: [{ id: 'm1', title: 'Networking', sections: [{ id: 's1', title: 'Web', tasks: [{ id: 't1', title: 'HTTP in detail', minutes: 30, kind: 'learn', done: false }] }] }] };
+    a = await kask({ ...ak, page: 'course', text: 'Break this course into study tasks', context: { course: co } });
+    check('…or from a Study course, with its outline', a.status === 200, a.body);
+    a = await kask({ ...ak, page: 'course', text: 'plan it', context: { course: { ...co, modules: Array.from({ length: 13 }, (_, i) => ({ id: 'm' + i, title: 'M', sections: [] })) } } });
+    check('…but more than 12 modules is refused (400)', a.status === 400);
+    a = await kask({ ...ak, page: 'course', text: 'plan it', context: { course: { ...co, modules: [{ ...co.modules[0], sections: [{ ...co.modules[0].sections[0], tasks: [{ ...co.modules[0].sections[0].tasks[0], url: 'https://x' }] }] }] } } });
+    check('…and so is a course carrying anything beyond the outline (a link)', a.status === 400);
     for (const [bad, why] of [[{ ...ak, page: 'admin' }, 'an unknown page'], [{ ...ak, text: '' }, 'nothing typed'], [{ ...ak, text: 'x'.repeat(601) }, 'over 600 characters typed'],
       [{ ...ak, context: { ...ak.context, finance: { balance: 1 } } }, 'a part of MyDay Ask never sends (Finance)'], [{ ...ak, context: { note: { id: 'n', title: 't', text: 'x'.repeat(3001) } } }, 'a note over 3,000 characters'],
       [{ ...ak, followUp: { previous: '', text: '' } }, 'an empty follow-up'], [{ ...ak, memory: 'everything' }, 'an extra field']]) {

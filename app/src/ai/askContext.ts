@@ -34,7 +34,8 @@ export function askPage(hash: string): { page: AskPage; id: string | null } {
     if (p[1] === 'notes') { const n = notesRoute('#' + h); return n.view === 'note' ? { page: 'note', id: n.id } : { page: 'notes', id: null }; }
     return { page: 'projects', id: null };
   }
-  if (top === 'study' || top === 'calendar' || top === 'health' || top === 'finance') return { page: top, id: null };
+  if (top === 'study') { const p = h.split('/'); return p[1] === 'course' && p[2] ? { page: 'course', id: decodeURIComponent(p[2]) } : { page: 'study', id: null }; }
+  if (top === 'calendar' || top === 'health' || top === 'finance') return { page: top, id: null };
   return { page: 'other', id: null };
 }
 
@@ -61,6 +62,31 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey())
       topics: topicsOf(st).map(t => cut(t.title, L.titleChars)).filter(Boolean).slice(0, L.list), revisionDue: dueIds(data, k).length,
       energy: pc.energy, freeMinutes: freeOf(pc) };
     parts.push('your current course and next task, your topics, how much revision is due, and your energy and free time today');
+  } else if (page === 'course' && id) {
+    const c = stIndex(data.study).course.get(id)?.node;
+    if (c) {
+      // In course order, until the counts — or about 9,000 characters, so a request always fits — are reached.
+      let sections = 0, tasks = 0, size = 0;
+      const modules = [], BUDGET = 9000;
+      for (const m of c.modules.slice(0, L.courseModules)) {
+        const secs = [];
+        for (const sc of m.sections) {
+          if (sections >= L.courseSections || size > BUDGET) break;
+          const ts = [];
+          for (const t of sc.tasks) {
+            if (tasks >= L.courseTasks || size > BUDGET) break;
+            const row = { id: t.id, title: cut(t.title, 80), minutes: t.minutes, kind: t.kind, done: t.done };
+            size += JSON.stringify(row).length; tasks++; ts.push(row);
+          }
+          sections++; size += sc.title.length + 40;
+          secs.push({ id: sc.id, title: cut(sc.title, L.titleChars), tasks: ts });
+        }
+        size += m.title.length + 40;
+        modules.push({ id: m.id, title: cut(m.title, L.titleChars), sections: secs });
+      }
+      ctx.course = { id: c.id, title: cut(c.title, L.titleChars), minutes: c.minutes, modules };
+      parts.push('this course’s outline (its modules, sections and tasks — titles and lengths only)');
+    }
   } else if (page === 'project' && id) {
     const p = data.projects.items.find(x => x.id === id);
     if (p) {
@@ -102,7 +128,7 @@ export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(
 // Built from the very request that would be sent (askContext's result), so the preview can't drift from what's shared.
 export interface AskPreview { short: string[]; all: { label: string; lines: string[] }[] }
 const PAGE_WORD: Record<AskPage, string> = { today: 'Today', tasks: 'Tasks', task: 'A task', calendar: 'Calendar', projects: 'Projects', project: 'A project',
-  notes: 'Notes', note: 'A note', study: 'Study', health: 'Health', finance: 'Finance', other: 'Elsewhere in MyDay' };
+  notes: 'Notes', note: 'A note', study: 'Study', course: 'A Study course', health: 'Health', finance: 'Finance', other: 'Elsewhere in MyDay' };
 const energyWord = (e: number | null | undefined) => (e ? `${e} of 5` : 'not set yet');
 const freeWord = (m: number | null | undefined) => (m === null || m === undefined ? 'not worked out' : m < 60 ? `${m} min` : `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ''}`);
 const clip = (s: string, n = 160) => (s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s);
@@ -126,6 +152,12 @@ export function askPreview(c: AskContext, privateNote = false): AskPreview {
     all.push({ label: 'Study', lines: [`Current course: ${s.course?.title ?? 'none yet'}`, `Next task: ${s.nextTask?.title ?? 'none'}`, `Revision due: ${n(s.revisionDue, 'card')}`,
       ...(s.energy !== undefined ? [`Energy: ${energyWord(s.energy)}`] : []), ...(s.freeMinutes !== undefined ? [`Free time: ${freeWord(s.freeMinutes)}`] : [])] });
     if (s.topics.length) all.push({ label: 'Your topics', lines: s.topics });
+  }
+  if (x.course) {
+    const co = x.course, secs = co.modules.flatMap(m => m.sections), tks = secs.flatMap(sc => sc.tasks);
+    short.push(`Course: ${clip(co.title, 40)}`, `${n(co.modules.length, 'module')}, ${n(secs.length, 'section')}, ${n(tks.length, 'task')}`);
+    all.push({ label: 'This course', lines: [`Name: ${co.title}`, `Usual session: ${co.minutes} min`] });
+    if (secs.length) all.push({ label: 'Its outline', lines: co.modules.flatMap(m => m.sections.map(sc => `${m.title ? m.title + ' › ' : ''}${sc.title || 'Untitled section'}: ${sc.tasks.length ? sc.tasks.map(t => `${t.done ? '✓ ' : ''}${t.title}`).join('; ') : 'no tasks yet'}`)) });
   }
   if (x.project) {
     const p = x.project;
