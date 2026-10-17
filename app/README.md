@@ -373,6 +373,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/health/food/` | The Food screens: `FoodScreen` (picks the screen from the address, e.g. `#health/food/shopping`), `FoodHome`, `RecipeCard`, `SearchBox` (with suggestions), `SearchView`, `RecipeView`, `WantView`, `ShoppingView`, `CookView`, `PrefsView`, `RecipeForm`; `actions.ts` (what each button saves) and `visit.ts` (what's kept in memory for the visit: ideas, search results, suggestions, drafts). |
 | `src/health/` | The Health screens: `HealthScreen` (the Workout and Food tabs; picks the screen from the address, e.g. `#health/workout/schedule`), `WorkoutHome`, `TemplateEditor`, `SessionView` (a workout in progress, and correcting a logged one), `SetFields` (the number boxes for a set), `HistoryViews` (history, exercises, exercise history), `Chart`, `ScheduleView` and `HealthTodayCard`; `actions.ts` (what each button saves). |
 | `src/data/health/daily.ts`, `src/health/DailyManage.tsx`, `src/health/DailyTodayCard.tsx`, `src/health/dailyActions.ts` | Daily exercises (1.23.0): checking the saved data, what's left today and this week (`daily.ts`); managing them in Health → Workout (`DailyManage`), the countdown on Today (`DailyTodayCard`) and what each button saves (`dailyActions.ts`). |
+| `src/study/teaching/TeachingLesson.tsx`, `src/study/arabic/transliterate.ts`, `src/study/arabic/Pronunciation.tsx`, `../content/teaching/` | Lesson teaching (1.26.0, PR #1): each course's teaching companion (`content/teaching/*.json`, generated and checked at build by `scripts/prepare-teaching.mjs`), shown above a lesson's practical tasks (`TeachingLesson`); Arabic transliteration (authored readings first, then rules; `transliterate.ts`, checked by `scripts/validate-pronunciation.mjs`) with the Show / Hide choice and the pronunciation guide (`Pronunciation.tsx`, device-only key `myday.arabic.transliteration`). |
 | `src/data/reading.ts`, `src/study/ReadingView.tsx`, `src/study/readingActions.ts`, `src/study/StudyTabs.tsx` | Study → Reading (1.24.0): checking saved books (`reading.ts`); the Reading tab — books, the page you're on, notes, Edit, Finished (`ReadingView`); what each button saves (`readingActions.ts`); Study's Courses / Reading tabs (`StudyTabs`). |
 | `src/study/` | The Study screens: `StudyScreen` (picks the screen from the address, e.g. `#study/roadmap`), `Dashboard`, `Roadmap`, `CourseDetails`, `TaskDetails`, `SessionView`, `CheckinView`, `RevisionView`, `ConceptsView`, `ConceptView`, `ProgressView`, `StudySettings` and `StudyTodayCard`; `actions.ts` (what each button saves), `round.ts` (the revision round, kept in memory), `parts.tsx` (small shared pieces). |
 | `src/commitments/` | Work shifts and appointments: the form and list used by both Today and Calendar. |
@@ -923,7 +924,11 @@ returns up to 8 small tasks; you tick the ones to add.
     several things at once, answered as cards to tick and edit — nothing saved until you tap Add, with Undo; "plan my
     day" opens Help me adjust today already filled in. Only on your tap, with exactly what's sent shown first (the values
     themselves, and everything on request); never a private note. The server's `ask` job was deployed first. No data or database change.
-38. **Release 1.26.0:** Ask MyDay plans a Study course: "Plan this course with Ask" on a course page sends the course's
-    outline (shown first) and proposes study tasks into its sections — or new ones — to tick, edit and add into the
-    course on your roadmap, with Undo. The server's `ask` job (instructions `myday-ask-v10`) was deployed first. No
-    data or database change.
+38. **Release 1.26.0:** Teaching in every Cybersecurity and Arabic lesson (PR #1): a short explanation, a worked
+    example, "Try it" with an explained answer behind a button, and assigned reading, watching or listening from
+    reputable sources (168, checked 16 Oct 2026) — loaded only when a lesson opens, never marking progress. Arabic gains
+    a Show / Hide transliteration choice (remembered on the device) and a pronunciation guide; missing vowels are
+    bracketed, not guessed. And Ask MyDay plans a Study course: "Plan this course with Ask" on a course page sends the
+    course's outline (shown first) and proposes study tasks into its sections — or new ones — to tick, edit and add
+    into the course on your roadmap, with Undo. The server's `ask` job (instructions `myday-ask-v10`) was deployed
+    first. No data or database change.
