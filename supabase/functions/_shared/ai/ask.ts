@@ -10,7 +10,7 @@
 import type { ChatMessage } from './prompt.ts';
 
 export const ASK_CONTRACT_VERSION = 1;
-export const ASK_PROMPT_VERSION = 'myday-ask-v10';
+export const ASK_PROMPT_VERSION = 'myday-ask-v11';
 export * from './ask-shape.ts';
 import type { AskContext, AskReply } from './ask-shape.ts';
 
@@ -49,6 +49,9 @@ Reply with exactly ONE kind:
     energy (1 low – 5 high) and free time today.
   · {"type":"adjust-today"} — when they want to plan or re-plan today, or today feels too much: MyDay's own day
     planner does that with their energy and calendar.
+  · {"type":"start-revision","scope":"all"} — only when "revisionDue" is more than 0 and you suggest revising (it
+    starts a short round of what's due); "scope" "arabic" or "cybersecurity" only when they ask about that subject.
+    Never suggest revising with the start-study action: that starts the next lesson.
 - "cannot": only for what no task could help with: deleting or changing what's already saved (they do that on its own
   page), looking things up on the web, medical, legal or money decisions, or anything unsafe. One or two kind sentences
   saying so and what they could do instead. No items, no action.
@@ -98,6 +101,10 @@ export function mockAsk(c: AskContext): string {
   }
   if (c.page === 'today' && /\b(plan|re-?plan|today|overwhelm|too much)\b/i.test(t)) {
     return reply({ kind: 'answer', message: "Practice helper (no AI): let's shape today together — Help me adjust today looks at your energy and free time.", items: [], action: { type: 'adjust-today' } });
+  }
+  const due = x.study?.revisionDue ?? x.today?.revisionDue ?? 0;
+  if (/\b(revise|revision|review)\b/i.test(t) && due > 0) {
+    return reply({ kind: 'answer', message: `Practice helper (no AI): ${due} revision ${due === 1 ? 'card is' : 'cards are'} due — a short round is a gentle start.`, items: [], action: { type: 'start-revision', scope: 'all' } });
   }
   if (/\b(study|learn|revise)\b/i.test(t) && x.study?.course) {
     const next = x.study.nextTask;

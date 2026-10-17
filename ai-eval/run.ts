@@ -363,6 +363,10 @@ function prepare(sc: AnyScenario): Prepared {
           }
           if (r.kind === 'cannot') ex.cannotHasNothing = !r.items.length && !r.action;
           if (e.action !== undefined) ex.rightAction = (r.action?.type ?? null) === e.action;
+          if (e.scope && r.action?.type === 'start-revision') ex.rightScope = r.action.scope === e.scope;
+          const due = sc.ctx.context.study?.revisionDue ?? sc.ctx.context.today?.revisionDue;
+          if (r.action?.type === 'start-revision') ex.revisionWhenDue = (due ?? 0) > 0;
+          if (r.action?.type === 'start-study' && /\brevis/i.test(r.message) && !/\b(lesson|next task|new)\b/i.test(r.message)) ex.lessonNotRevision = false;
           if (e.projectId && (r.kind === 'add' || r.kind === 'steps')) ex.inProject = r.items.every(i => i.type === 'project' || i.projectId === e.projectId);
           if (e.dates) ex.rightDates = e.dates.every(([re, d]) => r.items.some(i => re.test(i.title) && d.split('|').includes(i.date ?? '')));
           if (e.appointment) ex.rightAppointment = r.items.some(i => i.type === 'appointment' && i.date === e.appointment![0] && i.time === e.appointment![1]);

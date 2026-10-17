@@ -468,6 +468,21 @@ const SEED = `s => {
     await mock.ev(`location.hash = 'today'`);
   }
 
+  console.log('\n[8h] Ask MyDay can start a revision round');
+  {
+    await seeded(mock, MOCK);
+    await mock.setData(`s => { s.study.concepts = [1, 2, 3].map(i => ({ id: 'cpAR' + i, title: 'Card ' + i, taskIds: [], createdOn: '${TODAY}', kind: 'written', prompt: 'Question ' + i + '?', answer: 'Answer', explanation: '', choices: [], correct: null, hint: '', source: '', note: '', review: { reps: 1, interval: 1, lapses: 0, due: '${TODAY}' } })); }`);
+    await mock.until(`document.querySelector('#app')`);
+    await mock.ev(`location.hash = 'study'`); await sleep(300);
+    await mock.click('[data-action=capture-open]'); await mock.until(`document.getElementById('captureText')`);
+    await mock.type('#captureText', 'should I revise first?'); await sleep(150);
+    await mock.click('[data-action=ask-go]'); await mock.until(`document.querySelector('[data-s=ask-panel]')?.dataset.phase === 'shown'`, 10000);
+    check('asked on Study with cards due: "Revise 3 cards now"', (await mock.text('[data-action=ask-action]')) === 'Revise 3 cards now');
+    await mock.click('[data-action=ask-action]'); await sleep(400);
+    check('…which starts the round on its first question', (await mock.ev('location.hash')) === '#study/revise' && !(await mock.exists('#captureSheet')) && (await mock.text('#app')).includes('Question 1?'));
+    await mock.ev(`location.hash = 'today'`);
+  }
+
   console.log('\n[9] Layout');
   await D.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await D.ev(`location.hash = 'today'`);

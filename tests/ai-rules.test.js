@@ -664,6 +664,9 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('…a made-up course: no action (the answer stays)', c.kind === 'answer' && c.action === null && c.message === 'Try it for ten minutes.');
     c = K.checkAskReply(R({ kind: 'answer', message: 'Let\'s shape today.', action: { type: 'adjust-today' } }), w, home, D);
     check('planning today is handed over to Help me adjust today', c.action.type === 'adjust-today');
+    c = K.checkAskReply(R({ kind: 'answer', message: 'A short revision round is a gentle start.', action: { type: 'start-revision', scope: 'all' } }), w, home, D);
+    check('a revision action with nothing due isn\'t offered (and says so)', c.kind === 'answer' && c.action === null && c.changed.some(x => x.includes('Nothing is due')));
+    check('Today\'s slice says how much revision is due, and the preview shows it', home.context.today.revisionDue === 0 && K.askPreview(K.askContext(home, 'x', D)).all.some(x => x.label === 'Today' && x.lines.includes('Revision due: 0 cards')));
     c = K.checkAskReply(JSON.stringify({ kind: 'answer', message: 'HTTP in detail is a gentle pick for half an hour.', items: [{ type: 'start-study', courseId: 'coP', taskId: 'tkH', minutes: 20 }], action: null }), w, home, D);
     check('an action put among the items by mistake is still the action (the Start button)', c.kind === 'answer' && c.action?.type === 'start-study' && c.action.taskId === 'tkH' && c.action.minutes === 20);
     c = K.checkAskReply(R({ kind: 'answer', message: 'The gist: follow up Thursday.', items: [1, 2, 3, 4].map(i => ({ type: 'task', title: 'Follow-up ' + i })) }), w, home, D);
@@ -714,11 +717,29 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
     // The instructions and the practice version.
     const msgs = K.buildAskMessages(ctxA);
-    check('the instructions: four kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v10' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
+    check('the instructions: four kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v11' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
     const mk = (hash, text) => K.checkAskReply(K.mockAsk(K.askContext(K.askSlice(K.getSnapshot().data, hash, D), text, D)), K.getSnapshot().data, K.askSlice(K.getSnapshot().data, hash, D), D);
     check('practice version: steps on a project page, in that project', (r => r.kind === 'steps' && r.items.length === 3 && r.items.every(x => x.projectId === 'pjC'))(mk('#projects/p/pjC', 'Break this into smaller steps')));
     check('…several things to add', (r => r.kind === 'add' && eq(r.items.map(x => x.title), ['Call the bank', 'Renew passport', 'Email Sam']))(mk('#today', 'call the bank, renew passport and email Sam')));
     check('…planning today handed over; what to study on Study; deleting can\'t be done here', mk('#today', 'plan my day').action.type === 'adjust-today' && mk('#study', 'what should I study?').action.courseId === 'coP' && mk('#today', 'delete all my tasks').kind === 'cannot');
+  }
+
+  console.log('\n[12a] Ask MyDay can start a revision round when something is due');
+  {
+    K.setClock(`${D}T10:00`);
+    const s1 = K.freshState();
+    s1.study.concepts = Array.from({ length: 7 }, (_, i) => ({ id: 'cpR' + i, title: 'Card ' + i, taskIds: [], createdOn: '2026-11-01', kind: 'written', prompt: 'Q' + i, answer: 'A', explanation: '', choices: [], correct: null, hint: '', source: '', note: '', review: { reps: 1, interval: 1, lapses: 0, due: D } }));
+    localStorage.clear(); localStorage.setItem('myday.data.v4', JSON.stringify(s1)); K.boot();
+    const w1 = K.getSnapshot().data, st1 = K.askSlice(w1, '#study', D);
+    check('Study\'s slice counts what\'s due', st1.context.study.revisionDue === 7);
+    let c1 = K.checkAskReply(JSON.stringify({ kind: 'answer', message: 'Seven cards are due; a short round first.', items: [], action: { type: 'start-revision', scope: 'all' } }), w1, st1, D);
+    check('with cards due: the action starts a round (at most 5 cards, a round\'s size)', c1.action?.type === 'start-revision' && c1.action.count === 5 && c1.action.scope === 'all');
+    c1 = K.checkAskReply(JSON.stringify({ kind: 'answer', message: 'Revise the Arabic ones first, gently.', items: [], action: { type: 'start-revision', scope: 'arabic' } }), w1, st1, D);
+    check('…but not for a subject with nothing due (Arabic here)', c1.action === null);
+    c1 = K.checkAskReply(JSON.stringify({ kind: 'answer', message: 'A short round is a good start.', items: [{ type: 'start-revision', scope: 'all' }], action: null }), w1, st1, D);
+    check('…and one put among the items by mistake is still the action', c1.action?.type === 'start-revision');
+    c1 = K.checkAskReply(K.mockAsk(K.askContext(st1, 'should I revise first?', D)), w1, st1, D);
+    check('the practice helper offers a round when cards are due', c1.action?.type === 'start-revision');
   }
 
   console.log('\n[12b] Ask MyDay on a Study course: its outline sent, study tasks checked against it, added into it, Undo');

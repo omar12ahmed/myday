@@ -280,6 +280,10 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     check('an Ask request is answered (200) by the main model, as JSON with a kind and a message', a.status === 200 && a.body.model === 'Main model' && ['add', 'steps', 'answer', 'cannot'].includes(out.kind) && typeof out.message === 'string', a.body);
     a = await kask({ ...ak, page: 'today', followUp: { previous: 'Here are three steps.', text: 'Smaller please' }, context: { today: { energy: null, freeMinutes: null, plan: [], dueToday: [] } } });
     check('…with one follow-up, or from Today with energy not set yet', a.status === 200, a.body);
+    a = await kask({ ...ak, page: 'today', context: { today: { energy: 3, freeMinutes: 60, plan: [], dueToday: [], revisionDue: 4 } } });
+    check('…from Today with revision due', a.status === 200, a.body);
+    a = await kask({ ...ak, page: 'today', context: { today: { energy: 3, freeMinutes: 60, plan: [], dueToday: [], revisionDue: -1 } } });
+    check('…but not a negative count (400)', a.status === 400);
     a = await kask({ ...ak, page: 'study', context: { study: { course: { id: 'coP', title: 'Pre-Security' }, nextTask: { id: 'tkH', title: 'HTTP in detail' }, topics: ['Cybersecurity'], revisionDue: 6, energy: 2, freeMinutes: 90 } } });
     check('…or from Study, with today\'s energy and free time', a.status === 200, a.body);
     a = await kask({ ...ak, page: 'study', context: { study: { course: null, nextTask: null, topics: [], revisionDue: 0, energy: 9, freeMinutes: 90 } } });

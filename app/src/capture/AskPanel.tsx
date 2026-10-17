@@ -12,7 +12,7 @@ import { CAT_LABEL } from '../data/plan';
 import { getSnapshot } from '../data/storage';
 import { toast } from '../data/toast';
 import type { Category, MyDayData } from '../data/types';
-import { startLearning } from '../study/actions';
+import { startLearning, startRevision } from '../study/actions';
 
 // "Ask MyDay" in the + Capture sheet (the AI design's step 1): for what the on-device suggestions can't do — a question,
 // a breakdown into steps, several things at once. Only on your tap; the "Sends:" line says exactly what goes with it
@@ -36,7 +36,7 @@ const TYPE_WORD: Record<AskProposal['type'], string> = { task: 'Task', note: 'No
 function shownText(r: AskChecked): string {
   const parts = [r.message];
   if (r.kind === 'add' || r.kind === 'steps') parts.push(...r.items.map(i => `- ${TYPE_WORD[i.type]}: ${i.title}`));
-  if (r.kind === 'answer' && r.action) parts.push(r.action.type === 'adjust-today' ? '(offered: Help me adjust today)' : `(offered: start ${r.action.minutes} minutes on ${r.action.label})`);
+  if (r.kind === 'answer' && r.action) parts.push(r.action.type === 'adjust-today' ? '(offered: Help me adjust today)' : r.action.type === 'start-revision' ? `(offered: revise ${r.action.count} cards)` : `(offered: start ${r.action.minutes} minutes on ${r.action.label})`);
   return parts.filter(Boolean).join('\n');
 }
 
@@ -157,6 +157,8 @@ export function AskPanel({ data, text, onClose }: { data: MyDayData; text: strin
           </>}
           {r.kind === 'answer' && r.action?.type === 'start-study' && (() => { const a = r.action; return (
             <Button variant="primary" data-action="ask-action" onClick={() => { onClose(); startLearning(a.courseId, a.taskId, a.minutes, true); }}>Start {a.minutes} minutes on {a.label}</Button>); })()}
+          {r.kind === 'answer' && r.action?.type === 'start-revision' && (() => { const a = r.action; return (
+            <Button variant="primary" data-action="ask-action" onClick={() => { onClose(); startRevision(a.scope); }}>Revise {a.count === 1 ? '1 card' : `${a.count} cards`} now</Button>); })()}
           {r.kind === 'answer' && r.action?.type === 'adjust-today' && (canAdjust(getSnapshot().data, k)
             ? <Button variant="primary" data-action="ask-action" onClick={() => { onClose(); handOverToAdjust(text); }}>Open Help me adjust today</Button>
             : <p className="text-[15px] text-fg-2 m-0" data-s="ask-build-first">Today’s plan isn’t built yet — set your energy and tap Build my day on Today, then Help me adjust today can shape it. <LinkButton data-action="ask-today" onClick={() => { onClose(); location.hash = 'today'; }}>Go to Today</LinkButton></p>)}

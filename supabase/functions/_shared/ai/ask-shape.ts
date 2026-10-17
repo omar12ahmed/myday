@@ -29,7 +29,7 @@ interface Ref { id: string; title: string }
 // The slice of the page you're on (only what's listed here is ever sent; the app shows it before you tap).
 export interface AskPageContext {
   projects?: Ref[];                                                     // open projects' names (to file things into)
-  today?: { energy: number | null; freeMinutes: number | null; plan: { id: string; title: string; minutes: number; done: boolean }[]; dueToday: Ref[] };
+  today?: { energy: number | null; freeMinutes: number | null; plan: { id: string; title: string; minutes: number; done: boolean }[]; dueToday: Ref[]; revisionDue?: number };
   study?: { course: Ref | null; nextTask: Ref | null; topics: string[]; revisionDue: number; energy?: number | null; freeMinutes?: number | null }; // energy and free time today, to fit a session to them
   project?: { id: string; title: string; summary: string; stage: typeof ASK_STAGES[number]; tasks: (Ref & { done: boolean })[]; notes: string[]; notesText?: string };
   note?: { id: string; title: string; text: string };
@@ -64,7 +64,8 @@ export interface AskItem {
   kind?: 'learn' | 'practical' | null;
   sectionId?: string | null; section?: string | null; moduleId?: string | null; module?: string | null;
 }
-export type AskAction = { type: 'start-study'; courseId: string; taskId: string | null; minutes: number } | { type: 'adjust-today' };
+export const ASK_SCOPES = ['all', 'arabic', 'cybersecurity'] as const;
+export type AskAction = { type: 'start-study'; courseId: string; taskId: string | null; minutes: number } | { type: 'adjust-today' } | { type: 'start-revision'; scope: typeof ASK_SCOPES[number] };
 export interface AskReply { kind: typeof ASK_KINDS[number]; message: string; items: AskItem[]; action: AskAction | null }
 
 const obj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
@@ -105,7 +106,8 @@ export function checkAskContext(raw: unknown): raw is AskContext {
   if (x.projects !== undefined && !refs(x.projects)) return false;
   if (x.today !== undefined) {
     const t = x.today;
-    if (!obj(t) || !only(t, ['energy', 'freeMinutes', 'plan', 'dueToday'])) return false;
+    if (!obj(t) || !only(t, ['energy', 'freeMinutes', 'plan', 'dueToday', 'revisionDue'])) return false;
+    if (t.revisionDue !== undefined && !(Number.isInteger(t.revisionDue) && (t.revisionDue as number) >= 0)) return false;
     if (!(t.energy === null || (Number.isInteger(t.energy) && (t.energy as number) >= 1 && (t.energy as number) <= 5))) return false;
     if (!(t.freeMinutes === null || (Number.isInteger(t.freeMinutes) && (t.freeMinutes as number) >= 0 && (t.freeMinutes as number) <= 1440))) return false;
     if (!refs(t.plan, p => Number.isInteger(p.minutes) && typeof p.done === 'boolean') || !refs(t.dueToday)) return false;
@@ -160,9 +162,10 @@ export function readAsk(textIn: string): AskReply | null {
   }
   let action: AskAction | null = null;
   // A model sometimes puts its action among the items: it's taken as the action (only when there's no action already).
-  const stray = !obj(raw.action) ? items.find(x => obj(x) && (x.type === 'start-study' || x.type === 'adjust-today')) : undefined;
+  const stray = !obj(raw.action) ? items.find(x => obj(x) && (x.type === 'start-study' || x.type === 'adjust-today' || x.type === 'start-revision')) : undefined;
   const a = obj(raw.action) ? raw.action : stray;
   if (obj(a) && a.type === 'adjust-today') action = { type: 'adjust-today' };
+  else if (obj(a) && a.type === 'start-revision') action = { type: 'start-revision', scope: ASK_SCOPES.includes(a.scope as typeof ASK_SCOPES[number]) ? a.scope as typeof ASK_SCOPES[number] : 'all' };
   else if (obj(a) && a.type === 'start-study' && typeof a.courseId === 'string' && a.courseId) {
     action = { type: 'start-study', courseId: a.courseId, taskId: typeof a.taskId === 'string' && a.taskId ? a.taskId : null, minutes: Number.isFinite(a.minutes) ? Math.round(a.minutes as number) : 15 };
   }

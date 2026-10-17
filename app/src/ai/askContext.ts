@@ -51,9 +51,9 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey())
   if (page === 'today') {
     const pc = buildContext(data, k, '');
     const due = data.tasks.items.filter(t => !t.done && !t.letGoOn && t.due === k).slice(0, L.list);
-    ctx.today = { energy: pc.energy, freeMinutes: freeOf(pc),
+    ctx.today = { energy: pc.energy, freeMinutes: freeOf(pc), revisionDue: dueIds(data, k).length,
       plan: pc.tasks.slice(0, L.list).map(t => ({ ...ref(t.id, t.title), minutes: t.minutes, done: t.done })), dueToday: due.map(t => ref(t.id, t.title)) };
-    parts.push("today's plan, your energy, your free time and tasks due today");
+    parts.push("today's plan, your energy, your free time, tasks due today and how much revision is due");
   } else if (page === 'study') {
     const st = data.study, ix = stIndex(st), gs = topicsOf(st).map(t => topicGlance(st, ix, t.id)!).filter(Boolean);
     const g = gs.find(x => x.isFocus && x.next) ?? gs.find(x => x.next) ?? null;
@@ -141,7 +141,7 @@ export function askPreview(c: AskContext, privateNote = false): AskPreview {
   if (x.today) {
     const t = x.today;
     short.push(`Energy ${energyWord(t.energy)}`, `Free time ${freeWord(t.freeMinutes)}`, n(t.plan.length, 'task') + ' on today’s plan', n(t.dueToday.length, 'task') + ' due today');
-    all.push({ label: 'Today', lines: [`Energy: ${energyWord(t.energy)}`, `Free time: ${freeWord(t.freeMinutes)}`] });
+    all.push({ label: 'Today', lines: [`Energy: ${energyWord(t.energy)}`, `Free time: ${freeWord(t.freeMinutes)}`, ...(t.revisionDue !== undefined ? [`Revision due: ${n(t.revisionDue, 'card')}`] : [])] });
     if (t.plan.length) all.push({ label: 'Today’s plan', lines: t.plan.map(p => `${p.done ? '✓ ' : ''}${p.title} (${p.minutes} min)`) });
     if (t.dueToday.length) all.push({ label: 'Due today', lines: t.dueToday.map(d => d.title) });
   }

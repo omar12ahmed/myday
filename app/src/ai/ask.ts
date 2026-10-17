@@ -8,6 +8,8 @@ import { isDateKey, keyOf, pad, todayKey } from '../data/dates';
 import { addNote } from '../data/notes';
 import { addProject, linkAppointment, linkNote, linkTask } from '../data/projects';
 import { stIndex } from '../data/study/roadmap';
+import { ROUND_SIZE } from '../data/study/common';
+import { dueIds, type Scope } from '../data/study/queue';
 import { updateSaved } from '../data/storage';
 import { addTask } from '../data/tasks';
 import type { Category, DateKey, MyDayData, StudyModule, StudySection } from '../data/types';
@@ -34,7 +36,7 @@ export interface AskProposal {
 export const NEW_PROJECT = '@new';
 export type AskChecked =
   | { kind: 'add' | 'steps'; message: string; items: AskProposal[]; changed: string[] }
-  | { kind: 'answer'; message: string; action: { type: 'start-study'; courseId: string; taskId: string | null; minutes: number; label: string } | { type: 'adjust-today' } | null; changed: string[] }
+  | { kind: 'answer'; message: string; action: { type: 'start-study'; courseId: string; taskId: string | null; minutes: number; label: string } | { type: 'adjust-today' } | { type: 'start-revision'; scope: Scope; count: number } | null; changed: string[] }
   | { kind: 'cannot'; message: string; changed: string[] };
 
 const realDate = (s: string | null | undefined): s is DateKey => !!s && isDateKey(s) && keyOf(new Date(`${s}T12:00`)) === s;
@@ -58,6 +60,11 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
     if (r.items.length) changed.push('Its suggestion to start is here; the things it offered to add were left out — ask again for those.');
     let action: Extract<AskChecked, { kind: 'answer' }>['action'] = null;
     if (r.action?.type === 'adjust-today') action = { type: 'adjust-today' };
+    else if (r.action?.type === 'start-revision') {
+      const count = dueIds(data, k, r.action.scope).length;
+      if (count) action = { type: 'start-revision', scope: r.action.scope, count: Math.min(count, ROUND_SIZE) };
+      else changed.push('Nothing is due to revise right now, so there’s no round to start.');
+    }
     else if (r.action?.type === 'start-study') {
       const a = r.action, ix = stIndex(data.study), course = ix.course.get(a.courseId)?.node;
       const tasks = course ? ix.courseTasks.get(course.id) ?? [] : [];
