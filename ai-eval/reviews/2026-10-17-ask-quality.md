@@ -46,4 +46,20 @@ Total: about **US$0.08** (7 calls that timed out reported no usage).
 - Network timeouts reaching GLM happen in bursts; the app says "Couldn't reach the AI" and nothing is added.
 - Not compared against another model.
 
-**Recommendation:** ship `myday-ask-v7` on GLM-5.3-Flash (the main model; no AI_ROUTES change needed).
+## Planning a Study course (1.26.0)
+
+12 synthetic course pages (`c01`–`c12` in `ai-eval/ask-scenarios.ts`): empty public courses (Google's cybersecurity
+certificate, Madinah Arabic Book 1, a book), partly planned ones (TryHackMe Pre-Security, CS50 Python), practical tasks
+for each section, 20-minute pieces, a follow-up asking for fewer, bigger sessions, "what's my next step here?",
+"delete this course", a finished course, and a task title trying to give orders.
+
+| Instructions | Calls | Checks met | Cost | What reading the replies found |
+|---|---|---|---|---|
+| myday-ask-v8 | 24 | 316/324 | $0.0089 | Plans follow each course's known shape (Google's courses in order, CS50 Python week by week) and say to check against the course; 20-minute pieces kept short; "fewer, bigger" respected; "delete" refused; the steering title ignored. Two of my checks were too strict ("checking" missed; a study action from the course page itself). Real: re-proposed "HTTP in detail", which the course already has; named a new module "Networking" when one exists. |
+| v9 | 24 | 321/324 | $0.0094 | Duplicates down; once wrote the section name as the word "null"; GLM gives new modules made-up ids ("m2"). |
+| **v10** | 6 | 88/90 | $0.0027 | New sections and modules named on every task. Left: one exact repeat (the app leaves it unticked), one plan with no placement (the app puts it in "Planned with Ask"). |
+
+The app (`app/src/ai/ask.ts`) finds sections and modules by id or by name — the course's own or one made earlier in the
+same Add — so nothing is made twice; treats "null"/"none" as no value; marks tasks the course already has.
+
+**Recommendation:** ship `myday-ask-v10` on GLM-5.3-Flash (the main model; no AI_ROUTES change needed).

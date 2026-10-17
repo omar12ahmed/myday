@@ -10,7 +10,7 @@
 import type { ChatMessage } from './prompt.ts';
 
 export const ASK_CONTRACT_VERSION = 1;
-export const ASK_PROMPT_VERSION = 'myday-ask-v8';
+export const ASK_PROMPT_VERSION = 'myday-ask-v10';
 export * from './ask-shape.ts';
 import type { AskContext, AskReply } from './ask-shape.ts';
 
@@ -37,8 +37,9 @@ Reply with exactly ONE kind:
 - On a course page ("course" in the data: a course on their Study roadmap, as an outline), breaking the course down
   or planning it is "steps" with up to 12 items of type "study-task": "title" (what to study or do, specific),
   "minutes" 10–90, "kind" "learn" or "practical", and where it goes — "sectionId" of an existing section, or a new
-  "section" name, with "moduleId" of an existing module or a new "module" name. Follow the course's real order; never
-  repeat a task it already has. What you know of a public course is general knowledge: say in the message that it's
+  "section" name, with "moduleId" of an existing module or a new "module" name — use the existing one's id when a section
+  or module of that name is already there. A new section or module has no id: give its name on every task in it. Follow the course's real order. A task already in the outline (done or
+  not) is never proposed again: refer to it by name instead. What you know of a public course is general knowledge: say in the message that it's
   worth checking against the course itself, and don't invent precise unit numbers or URLs.
 - "answer": a question or a request for advice. At most four short sentences, practical, ending with one clear next
   step; complete sentences only. If your answer suggests adding something, put it (at most 3) in "items" so they can

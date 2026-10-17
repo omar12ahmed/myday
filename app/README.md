@@ -110,7 +110,7 @@ request that would be sent (`src/ai/askContext.ts`): what you typed, the date, t
 plan, energy, free time and tasks due on Today; the current course and next task, energy and free time on Study; a project's name, summary, stage, tasks and note titles (their text only with "AI help
 with notes" on); the open note; the open task; today's appointments on the Calendar; open projects' names; never a
 private note, and only the page's name from Health and Finance. The server's job `ask` (GLM, the main model;
-`../supabase/functions/_shared/ai/ask.ts`, instructions `myday-ask-v7`) answers with one kind: things to add (tasks,
+`../supabase/functions/_shared/ai/ask.ts`, instructions `myday-ask-v10`) answers with one kind: things to add (tasks,
 notes, appointments, a project), steps, a short answer with at most one action (start a short study session; or, for
 "plan my day", open Help me adjust today already filled in — `src/ai/handover.ts`), or "MyDay can't do that from here".
 The app checks it all against your data (`src/ai/ask.ts`: real ids only, days from today on, an appointment only with
@@ -119,6 +119,16 @@ shows cards to tick, rename and edit — a day and time, the length and list, a 
 (`src/capture/AskPanel.tsx`); Add saves them at once through the same rules as Capture,
 with one step of Undo. One follow-up ("Not quite? …") at most; nothing of the conversation is kept. Evaluated on 40
 synthetic requests (`../ai-eval/reviews/2026-10-17-ask-quality.md`). Shown only when the app is built with AI help.
+
+**Planning a Study course with Ask (1.26.0):** a course page has **✦ Plan this course with Ask**, which opens + already
+filled in ("Break this course into study tasks"; `src/capture/openCapture.ts`). From a course page Ask sends the
+course's outline — its modules, sections and tasks: titles, lengths, kinds and done or not, no links or notes, cut to
+12 modules, 30 sections, 80 tasks and about 9,000 characters (shown first in the preview). It proposes up to 12
+**study tasks**, each into one of the course's sections or a new named section (in one of its modules or a new one),
+labelled as general knowledge to check against the course. The app checks them against the real outline: a section or
+module named like one the course already has is that one, a section that isn't there becomes a new one, a task the
+course already has is left unticked, 5–120 minutes; Add puts them into the course on your roadmap in one save (it
+syncs with the roadmap), with Undo that also takes back the sections and modules it made. Edit: the length and kind.
 
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
@@ -913,3 +923,7 @@ returns up to 8 small tasks; you tick the ones to add.
     several things at once, answered as cards to tick and edit — nothing saved until you tap Add, with Undo; "plan my
     day" opens Help me adjust today already filled in. Only on your tap, with exactly what's sent shown first (the values
     themselves, and everything on request); never a private note. The server's `ask` job was deployed first. No data or database change.
+38. **Release 1.26.0:** Ask MyDay plans a Study course: "Plan this course with Ask" on a course page sends the course's
+    outline (shown first) and proposes study tasks into its sections — or new ones — to tick, edit and add into the
+    course on your roadmap, with Undo. The server's `ask` job (instructions `myday-ask-v10`) was deployed first. No
+    data or database change.

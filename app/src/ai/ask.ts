@@ -100,8 +100,11 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
     if (type === 'project') { projectId = null; date = null; time = null; }
     if (type === 'note') { date = null; time = null; }
     if (type === 'study-task' && course) {
-      const sec = it.sectionId ? course.modules.flatMap(m => m.sections).find(x => x.id === it.sectionId) ?? null : null;
-      const mod = it.moduleId ? course.modules.find(m => m.id === it.moduleId) ?? null : null;
+      // An id from the outline — or a "new" name that's really one the course already has (no duplicate sections or modules).
+      const same = (a: string, b: string | null | undefined) => !!b && a.trim().toLowerCase() === b.trim().toLowerCase();
+      const mod = (it.moduleId ? course.modules.find(m => m.id === it.moduleId) : null) ?? course.modules.find(m => same(m.title, it.module)) ?? null;
+      const sec = (it.sectionId ? course.modules.flatMap(m => m.sections).find(x => x.id === it.sectionId) : null)
+        ?? (it.section ? (mod ? mod.sections : course.modules.flatMap(m => m.sections)).find(x => same(x.title, it.section)) : null) ?? null;
       if (it.sectionId && !sec) changed.push(`“${title}”: put in a new section — the one suggested isn’t in this course.`);
       items.push({ type, title, date: null, time: null, minutes: Math.min(L.maxMinutes, Math.max(L.minMinutes, it.minutes ?? course.minutes ?? 30)), category: 'learning', projectId: null, text: '',
         already: inCourse.has(sameTask(title)),
@@ -129,27 +132,26 @@ const end30 = (date: DateKey, time: string) => { const t = new Date(`${date}T${t
 export function addAskItems(items: AskProposal[]): AskUndo | null {
   const u: AskUndo = { tasks: [], notes: [], appointments: [], projects: [], study: { tasks: [], sections: [], modules: [] } };
   const r = updateSaved(d => {
-    // Study tasks into the course on the page: new sections (and modules) are made once each, in the order proposed.
-    const madeSec = new Map<string, StudySection>(), madeMod = new Map<string, StudyModule>();
+    // Study tasks into the course on the page. A section or module is found by its id or by its name (the course's own,
+    // or one made earlier in this same Add), so nothing is made twice; one the model only half-named goes with the last
+    // one it made, else the course's last module.
+    const same = (a: string, b: string | null) => !!b && a.trim().toLowerCase() === b.trim().toLowerCase();
+    let lastMadeMod: StudyModule | null = null;
     for (const it of items) {
       if (it.type !== 'study-task' || !it.study) continue;
       const c = stIndex(d.study).course.get(it.study.courseId)?.node;
       if (!c) continue;
       let sec: StudySection | null = it.study.sectionId ? c.modules.flatMap(m => m.sections).find(x => x.id === it.study!.sectionId) ?? null : null;
       if (!sec) {
-        const key = `${it.study.moduleId ?? ''}|${it.study.module ?? ''}|${it.study.section ?? ''}`;
-        sec = madeSec.get(key) ?? null;
-        if (!sec) {
-          let mod: StudyModule | null = it.study.moduleId ? c.modules.find(m => m.id === it.study!.moduleId) ?? null : null;
-          if (!mod && it.study.module) {
-            mod = madeMod.get(it.study.module) ?? null;
-            if (!mod) { mod = { id: 'md' + uid(), title: it.study.module, sections: [] }; c.modules.push(mod); madeMod.set(it.study.module, mod); u.study!.modules.push(mod.id); }
-          }
-          if (!mod) mod = c.modules[c.modules.length - 1] ?? null;
-          if (!mod) { mod = { id: 'md' + uid(), title: 'Planned with Ask', sections: [] }; c.modules.push(mod); u.study!.modules.push(mod.id); }
-          sec = { id: 'sc' + uid(), title: it.study.section ?? 'Planned with Ask', tasks: [] };
-          mod.sections.push(sec); madeSec.set(key, sec); u.study!.sections.push(sec.id);
+        let mod: StudyModule | null = (it.study.moduleId ? c.modules.find(m => m.id === it.study!.moduleId) : null) ?? c.modules.find(m => same(m.title, it.study!.module)) ?? null;
+        if (!mod && it.study.module) {
+          mod = { id: 'md' + uid(), title: it.study.module, sections: [] }; c.modules.push(mod); u.study!.modules.push(mod.id); lastMadeMod = mod;
         }
+        mod ??= lastMadeMod ?? c.modules[c.modules.length - 1] ?? null;
+        if (!mod) { mod = { id: 'md' + uid(), title: 'Planned with Ask', sections: [] }; c.modules.push(mod); u.study!.modules.push(mod.id); lastMadeMod = mod; }
+        const name = it.study.section ?? 'Planned with Ask';
+        sec = mod.sections.find(x => same(x.title, name)) ?? null;
+        if (!sec) { sec = { id: 'sc' + uid(), title: name, tasks: [] }; mod.sections.push(sec); u.study!.sections.push(sec.id); }
       }
       const id = 'tk' + uid();
       sec.tasks.push({ id, title: it.title, minutes: it.minutes, url: '', kind: it.study.kind, note: '', done: false, doneOn: null });

@@ -74,6 +74,8 @@ const isTime = (v: unknown) => typeof v === 'string' && /^([01]\d|2[0-3]):[0-5]\
 const refs = (v: unknown, extra?: (x: Record<string, unknown>) => boolean) =>
   Array.isArray(v) && v.length <= ASK_LIMITS.list && v.every(x => obj(x) && str(x.id, 64, false) && str(x.title, ASK_LIMITS.titleChars) && (!extra || extra(x)));
 const only = (o: Record<string, unknown>, keys: string[]) => Object.keys(o).every(k => keys.includes(k));
+// A model sometimes writes the word "null" (or "none") for no value.
+const word = (v: unknown, max: number) => (typeof v === 'string' && v.trim() && !/^(null|none|undefined|n\/a)$/i.test(v.trim()) ? v.trim().slice(0, max) : null);
 
 // The server's check of what arrives (the app builds it; anything else is refused before a model is called).
 export function checkAskContext(raw: unknown): raw is AskContext {
@@ -147,13 +149,13 @@ export function readAsk(textIn: string): AskReply | null {
       date: isDate(it.date) ? it.date as string : null, time: isTime(it.time) ? it.time as string : null,
       minutes: Number.isFinite(it.minutes) ? Math.round(it.minutes as number) : null,
       category: ASK_CATEGORIES.includes(it.category as typeof ASK_CATEGORIES[number]) ? it.category as AskItem['category'] : null,
-      projectId: typeof it.projectId === 'string' && it.projectId ? it.projectId : null,
+      projectId: word(it.projectId, 64),
       text: typeof it.text === 'string' ? it.text.slice(0, ASK_LIMITS.itemTextChars) : null,
       kind: it.kind === 'learn' || it.kind === 'practical' ? it.kind : null,
-      sectionId: typeof it.sectionId === 'string' && it.sectionId ? it.sectionId : null,
-      section: typeof it.section === 'string' && it.section.trim() ? it.section.trim().slice(0, ASK_LIMITS.titleChars) : null,
-      moduleId: typeof it.moduleId === 'string' && it.moduleId ? it.moduleId : null,
-      module: typeof it.module === 'string' && it.module.trim() ? it.module.trim().slice(0, ASK_LIMITS.titleChars) : null,
+      sectionId: word(it.sectionId, 64),
+      section: word(it.section, ASK_LIMITS.titleChars),
+      moduleId: word(it.moduleId, 64),
+      module: word(it.module, ASK_LIMITS.titleChars),
     });
   }
   let action: AskAction | null = null;

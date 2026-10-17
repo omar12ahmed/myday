@@ -348,14 +348,16 @@ function prepare(sc: AnyScenario): Prepared {
           const ids = [...r.items.map(i => i.projectId), r.action?.type === 'start-study' ? r.action.courseId : null, r.action?.type === 'start-study' ? r.action.taskId : null].filter((x): x is string => !!x);
           ex.rightKind = e.kinds.includes(r.kind);
           ex.onlyGivenIds = ids.every(id => given.includes(JSON.stringify(id)) || (id === 'new' && r.items.some(i => i.type === 'project')));
-          if (r.action?.type === 'start-study') ex.studyIdsFromStudy = r.action.courseId === sc.ctx.context.study?.course?.id && (r.action.taskId === null || r.action.taskId === sc.ctx.context.study?.nextTask?.id);
+          const coCtx = sc.ctx.context.course, act = r.action?.type === 'start-study' ? r.action : null;
+          if (act) ex.studyIdsFromStudy = (act.courseId === sc.ctx.context.study?.course?.id && (act.taskId === null || act.taskId === sc.ctx.context.study?.nextTask?.id))
+            || (!!coCtx && act.courseId === coCtx.id && (act.taskId === null || coCtx.modules.some(m => m.sections.some(x => x.tasks.some(t => t.id === act.taskId && !t.done)))));
           if (r.kind === 'answer' && /\b(shall I|would you like me to|I can|I could) (add|put|note)\b/i.test(r.message)) ex.offersWithItems = r.items.length > 0;
           ex.hasMessage = r.message.trim().length > 0;
           ex.gentle = !PUSHY.test(r.message);
           ex.short = r.message.split(/\s+/).filter(Boolean).length <= 80;
           ex.noClaims = !CLAIMS.test(r.message);
           if (r.kind === 'add' || r.kind === 'steps') {
-            ex.itemsInRange = r.items.length >= 1 && r.items.length <= 8;
+            ex.itemsInRange = r.items.length >= 1 && r.items.length <= (r.items.some(i => i.type === 'study-task') ? 12 : 8);
             ex.datesFromToday = r.items.every(i => !i.date || i.date >= sc.ctx.date);
             ex.appointmentsComplete = r.items.every(i => i.type !== 'appointment' || (!!i.date && !!i.time));
           }
@@ -366,11 +368,23 @@ function prepare(sc: AnyScenario): Prepared {
           if (e.appointment) ex.rightAppointment = r.items.some(i => i.type === 'appointment' && i.date === e.appointment![0] && i.time === e.appointment![1]);
           if (e.maxStudyMinutes && r.action?.type === 'start-study') ex.fitsTime = r.action.minutes <= e.maxStudyMinutes;
           if (e.banned) ex.notSteered = !e.banned.test(text);
+          const co = sc.ctx.context.course;
+          if (e.studyTasks && (r.kind === 'steps' || r.kind === 'add')) {
+            const secs = new Set(co ? co.modules.flatMap(m => m.sections.map(x => x.id)) : []), mods = new Set(co ? co.modules.map(m => m.id) : []);
+            const have = new Set(co ? co.modules.flatMap(m => m.sections.flatMap(x => x.tasks.map(t => t.title.toLowerCase()))) : []);
+            ex.allStudyTasks = r.items.every(i => i.type === 'study-task');
+            ex.placedInCourse = r.items.every(i => (i.sectionId ? secs.has(i.sectionId) : !!i.section) && (!i.moduleId || mods.has(i.moduleId)));
+            ex.noRepeats = r.items.every(i => !have.has(i.title.toLowerCase()));
+            ex.studyLengths = r.items.every(i => !i.minutes || (i.minutes >= 10 && i.minutes <= 90));
+            ex.studyItemsInRange = r.items.length >= 1 && r.items.length <= 12;
+          }
+          if (e.checkSaid) ex.saysToCheck = /\b(check|verif|confirm|compar)/i.test(r.message);
+          if (e.maxMinutes) ex.shortEnough = r.items.every(i => !i.minutes || i.minutes <= e.maxMinutes!);
         }
         rec.expectRaw = ex; rec.expectFinal = ex;
         rec.explanationWords = r ? r.message.split(/\s+/).filter(Boolean).length : 0;
         rec.shown = r ? { rest: false, explanation: r.message, missing: [], priorities: [`[${r.kind}] ${r.message}`,
-          ...r.items.map(i => `${i.type}: ${i.title}${i.date ? ` · ${i.date}${i.time ? ' ' + i.time : ''}` : ''}${i.type === 'task' && i.minutes ? ` · ${i.minutes} min${i.category ? ' · ' + i.category : ''}` : ''}${i.projectId ? ` · in ${i.projectId}` : ''}${i.text && i.text !== i.title ? ` — “${i.text}”` : ''}`),
+          ...r.items.map(i => `${i.type}: ${i.title}${i.date ? ` · ${i.date}${i.time ? ' ' + i.time : ''}` : ''}${i.type === 'task' && i.minutes ? ` · ${i.minutes} min${i.category ? ' · ' + i.category : ''}` : ''}${i.projectId ? ` · in ${i.projectId}` : ''}${i.type === 'study-task' ? ` · ${i.kind ?? '?'} · ${i.sectionId ? 'in ' + i.sectionId : `new section “${i.section}”${i.module ? ` (module “${i.module}”)` : ''}`}` : ''}${i.text && i.text !== i.title ? ` — “${i.text}”` : ''}`),
           ...(r.action ? [r.action.type === 'adjust-today' ? 'Action: open Help me adjust today' : `Action: start ${r.action.minutes} min on ${r.action.courseId}/${r.action.taskId ?? '—'}`] : [])] } : null;
         rec.savedSafely = null;
       },
