@@ -494,6 +494,16 @@ const sessionOf = (id, date, exs) => ({ id, date, templateId: 'tP', templateName
   const offToday = !(await exists('#slot-daily'));
   await go('health/workout');
   check('archived: off Today, kept in Health under Archived', offToday && (await text('details.group')).includes('Push-ups'));
+  // Phones: every Daily exercises button is easy to tap (44 px), on Today and in Health.
+  await editStorage(`s => { const e = s.health.daily.exercises[0]; e.archived = false; e.target = 500; e.set = 25; }`);
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  const small = sel => ev(`[...document.querySelectorAll(${JSON.stringify(sel)})].filter(b => b.getBoundingClientRect().height < 44).map(b => b.textContent.trim())`);
+  await go('today');
+  const smallToday = await small('#slot-daily button'), todayButtons = await ev(`document.querySelectorAll('#slot-daily button').length`);
+  await go('health/workout');
+  const smallHealth = await small('#daily-mg-h ~ * button, .daily-mg-row button');
+  check('phone: every Daily exercises button is at least 44 px tall (Today and Health)', todayButtons >= 2 && !smallToday.length && !smallHealth.length && !(await ev('document.documentElement.scrollWidth > innerWidth')), [todayButtons, smallToday, smallHealth]);
+  await T.send('Emulation.clearDeviceMetricsOverride');
   await editStorage(`s => { s.health.daily = { exercises: [{ id: 'ok', name: 'Plank', target: 5, set: 1, archived: false }, { id: 'bad', name: '', target: 10, set: 5 }, { id: 'noT', name: 'No target' }, { id: 'ok', name: 'Twice', target: 5, set: 5 }, 'nope'], log: { 'not-a-day': { ok: [1] }, '2026-11-02': { ok: [1, 0, 'x', 2], ghost: [5], nope: 3 } } }; }`);
   await go('today');
   await click('#themeBtn'); await sleep(200); // a save, so the tidied data is what's read back

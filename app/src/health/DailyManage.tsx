@@ -14,9 +14,9 @@ function Stepper({ e, field, label }: { e: DailyExercise; field: 'target' | 'set
   return (
     <div className="flex items-center gap-1 text-[13px] font-semibold text-fg-3" role="group" aria-label={`${e.name} ${label}`}>
       <span className="mr-0.5">{label}</span>
-      <Button inline variant="ghost" className="!min-h-9 !px-2.5" data-action={`daily-${field}`} data-id={e.id} data-dir="-1" aria-label={`${label} down`} onClick={() => stepDaily(e.id, field, -1)}>−</Button>
+      <Button inline variant="ghost" className="!min-h-11 !min-w-11 !px-2.5" data-action={`daily-${field}`} data-id={e.id} data-dir="-1" aria-label={`${label} down`} onClick={() => stepDaily(e.id, field, -1)}>−</Button>
       <b className="min-w-9 text-center text-fg tabular-nums">{e[field]}</b>
-      <Button inline variant="ghost" className="!min-h-9 !px-2.5" data-action={`daily-${field}`} data-id={e.id} data-dir="1" aria-label={`${label} up`} onClick={() => stepDaily(e.id, field, 1)}>+</Button>
+      <Button inline variant="ghost" className="!min-h-11 !min-w-11 !px-2.5" data-action={`daily-${field}`} data-id={e.id} data-dir="1" aria-label={`${label} up`} onClick={() => stepDaily(e.id, field, 1)}>+</Button>
     </div>
   );
 }
@@ -44,7 +44,7 @@ export function DailyManage({ data }: { data: MyDayData }) {
         <div key={e.id} className="daily-mg-row py-3 border-t border-dashed border-outline first-of-type:border-t-0">
           <div className="flex justify-between items-center gap-3">
             <div className="min-w-0"><div className="font-bold">{e.name}</div><Meta>daily target {e.target} · in sets of {e.set}</Meta></div>
-            <LinkButton data-action="daily-archive" data-id={e.id} className="flex-none !min-h-0 text-sm" onClick={() => toggleDailyArchived(e.id)}>Archive</LinkButton>
+            <LinkButton data-action="daily-archive" data-id={e.id} className="flex-none text-sm" aria-label={`Archive ${e.name}`} onClick={() => toggleDailyArchived(e.id)}>Archive</LinkButton>
           </div>
           <div className="flex flex-wrap gap-x-5 gap-y-1.5 mt-2">
             <Stepper e={e} field="target" label="target" />

@@ -31,7 +31,7 @@ export function DailyTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
             </div>
             <div className="flex items-center gap-4">
               <Button inline variant="primary" data-action="daily-tap" data-id={e.id} onClick={() => tapSet(e.id)}>+ a set of {Math.min(e.set, left)}</Button>
-              {tapsOn(d, k, e.id).length > 0 && <LinkButton data-action="daily-undo" data-id={e.id} className="!min-h-0 text-sm" onClick={() => undoTap(e.id)}>undo</LinkButton>}
+              {tapsOn(d, k, e.id).length > 0 && <LinkButton data-action="daily-undo" data-id={e.id} className="text-sm px-1" aria-label={`Undo the last ${e.name} set`} onClick={() => undoTap(e.id)}>undo</LinkButton>}
             </div>
           </div>
         );

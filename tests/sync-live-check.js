@@ -14,6 +14,7 @@
 // `--arabic-only`: the same for the Arabic Fuṣḥā kinds (the sixth migration).
 // `--arabic-cards-only`: the same for Arabic revision cards (the seventh migration).
 // `--cyber-cards-only`: the same for Cybersecurity revision cards (the eighth migration).
+// `--daily-only`: the same for Daily exercises (the ninth migration).
 const { randomUUID } = require('crypto');
 
 const URL_ = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
@@ -94,6 +95,20 @@ async function arabicCardsCheck(a, b) {
 
 // Cybersecurity in revision (eighth migration, 20261014120000_sync_cyber_cards.sql): A saves a revision card
 // (synthetic), B can't see it, A takes it out of revision.
+// Daily exercises (ninth migration, 20261016120000_sync_daily.sql): A saves the one record, B can't see it, and A
+// puts back what was there before (a single record, never deleted).
+async function dailyCheck(a, b) {
+  console.log('\nDaily exercises (ninth migration: 20261016120000_sync_daily.sql)');
+  const old = (await pull(a)).find(x => x.kind === 'daily' && x.record_id === 'moves');
+  const moves = { exercises: [{ id: 'dLive', name: 'Live check push-ups', target: 150, set: 25, archived: false }], log: { '2026-10-17': { dLive: [25] } } };
+  let r = await push(a, [change('daily', 'moves', old ? old.version : 0, moves)]);
+  check('A can save Daily exercises — so the ninth migration is applied', Array.isArray(r) && r[0].status === 'applied', r);
+  check('A reads it back', (await pull(a)).some(x => x.kind === 'daily' && x.record_id === 'moves' && x.data.exercises?.[0]?.name === 'Live check push-ups'));
+  check('B can\'t see it', (await pull(b)).every(x => x.kind !== 'daily'));
+  r = await push(a, [change('daily', 'moves', r[0].version, old ? old.data : { exercises: [], log: {} })]);
+  check('…and A\'s record is put back as it was', Array.isArray(r) && r[0].status === 'applied', r);
+}
+
 async function cyberCardsCheck(a, b) {
   console.log('\nCybersecurity revision cards (eighth migration: 20261014120000_sync_cyber_cards.sql)');
   const id = 'assessment.lab-isolation-check.q2', old = (await pull(a)).find(x => x.kind === 'cyber_card' && x.record_id === id);
@@ -145,6 +160,16 @@ async function projectsCheck(a, b, id) {
       process.exit(2);
     }
     await arabicCheck(a, b, `live-check-session-${Date.now()}`);
+    console.log(`\n${pass} passed, ${fail} failed`);
+    process.exit(fail ? 1 : 0);
+  }
+  // --daily-only: the same, for the ninth migration's kind (Daily exercises).
+  if (process.argv.includes('--daily-only')) {
+    if (![A.email, B.email].every(e => /@example\.com$/i.test(e || '')) || A.email === B.email) {
+      console.log('  STOP --daily-only runs only with two different disposable @example.com test accounts.');
+      process.exit(2);
+    }
+    await dailyCheck(a, b);
     console.log(`\n${pass} passed, ${fail} failed`);
     process.exit(fail ? 1 : 0);
   }

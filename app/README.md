@@ -213,6 +213,19 @@ pay rules) and its settings card are gone from the screen; the rules behind them
   settings text now says note links appear on concepts and check-ins (tasks have no note field in either app).
 - Export and import are on Today (the current MyDay shows them at the bottom of every section).
 
+### Daily exercises (Health → Workout, 1.23.0)
+
+Everyday movements with a daily target and a set size — "150 push-ups, in sets of 25". Add them in Health → Workout
+(name, daily target, set size; − / + to change a target or set size; archive one to take it off Today, its history
+kept). On Today, each counts down what's left with a slim bar and one button — "+ a set of 25" — that logs one set
+(the last one only what's left, so the day ends exactly on target), with **undo** for a mis-tap; a finished exercise
+folds to a tick, "done for today". Missed days cost nothing: every morning starts from the full target, and a changed
+target applies from today (days already logged stay as they were). Health shows this week as bars — full when every
+exercise was finished, soft for some, empty simply a quieter day. Saved as `health.daily` (`exercises`: id, name,
+target 1–1000, set 1–500, archived; `log`: day → exercise → each set's reps), new-app only — the classic MyDay keeps it
+unread (from 1.23.0's `index.html`); synced with your account as one record (`daily:moves`, migration
+`../supabase/migrations/20261016120000_sync_daily.sql`). Built by another tool (Kimi) and released after review.
+
 ### Workout: differences from the current MyDay
 
 - Same records, rules and wording. The checks compare the two apps side by side: the saved workout data (including
@@ -316,6 +329,7 @@ pay rules) and its settings card are gone from the screen; the rules behind them
 | `src/notes/`, `src/capture/` | Notes, in the Projects section (`NotesScreen`: search, Inbox, collections; `NoteEditor`; `CategoriesView`; `route.ts` — `#projects/notes`, `#projects/notes/<id>`, `#projects/notes/in/<id>`, `#projects/notes/collections`), and Capture (`parse.ts`, `save.ts`, `CaptureSheet.tsx`). The notes data: `src/data/notes.ts`. |
 | `src/health/food/` | The Food screens: `FoodScreen` (picks the screen from the address, e.g. `#health/food/shopping`), `FoodHome`, `RecipeCard`, `SearchBox` (with suggestions), `SearchView`, `RecipeView`, `WantView`, `ShoppingView`, `CookView`, `PrefsView`, `RecipeForm`; `actions.ts` (what each button saves) and `visit.ts` (what's kept in memory for the visit: ideas, search results, suggestions, drafts). |
 | `src/health/` | The Health screens: `HealthScreen` (the Workout and Food tabs; picks the screen from the address, e.g. `#health/workout/schedule`), `WorkoutHome`, `TemplateEditor`, `SessionView` (a workout in progress, and correcting a logged one), `SetFields` (the number boxes for a set), `HistoryViews` (history, exercises, exercise history), `Chart`, `ScheduleView` and `HealthTodayCard`; `actions.ts` (what each button saves). |
+| `src/data/health/daily.ts`, `src/health/DailyManage.tsx`, `src/health/DailyTodayCard.tsx`, `src/health/dailyActions.ts` | Daily exercises (1.23.0): checking the saved data, what's left today and this week (`daily.ts`); managing them in Health → Workout (`DailyManage`), the countdown on Today (`DailyTodayCard`) and what each button saves (`dailyActions.ts`). |
 | `src/study/` | The Study screens: `StudyScreen` (picks the screen from the address, e.g. `#study/roadmap`), `Dashboard`, `Roadmap`, `CourseDetails`, `TaskDetails`, `SessionView`, `CheckinView`, `RevisionView`, `ConceptsView`, `ConceptView`, `ProgressView`, `StudySettings` and `StudyTodayCard`; `actions.ts` (what each button saves), `round.ts` (the revision round, kept in memory), `parts.tsx` (small shared pieces). |
 | `src/commitments/` | Work shifts and appointments: the form and list used by both Today and Calendar. |
 | `src/shell/` | Navigation, the top bar's parts (`TopBar`: the Focus mode switch and your account; `focusMode.ts`, the device-only `myday.focus`), the theme button, the shared footer (`AppFooter`), the "couldn't be read" notice (`LoadIssue`) and the screens for unreadable or older data. |
@@ -855,4 +869,5 @@ returns up to 8 small tasks; you tick the ones to add.
     what's left, with a quiet undo for a mis-tap; finished exercises fold away to a tick. Missed a day? The target
     starts fresh tomorrow — nothing piles up. Adjust targets or add exercises in Health; changes apply from today,
     days already logged stay as they were. Saved as `health.daily` (the current MyDay keeps it unread, like Notes),
-    synced as one `daily:moves` record — apply database migration `20261016120000_sync_daily.sql` before publishing.
+    synced as one `daily:moves` record — database migration `20261016120000_sync_daily.sql` applied first (17 Oct 2026;
+    older versions keep working with it). Undo, Archive and the − / + steppers are full-size tap targets on phones.
