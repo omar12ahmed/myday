@@ -483,6 +483,29 @@ const SEED = `s => {
     await mock.ev(`location.hash = 'today'`);
   }
 
+  console.log('\n[8i] Ask MyDay changes something already saved: before → after, Apply, Undo');
+  {
+    await seeded(mock, MOCK);
+    const tmr = (() => { const d = new Date(`${TODAY}T12:00`); d.setDate(d.getDate() + 1); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })();
+    await mock.setData(`s => { s.tasks.items.push({ id: 'tkCT', title: 'Pay council tax', listId: '', category: 'admin', minutes: 15, due: '${TODAY}', time: '09:30', notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '${TODAY}T08:00', postponed: 0, blockers: [], letGoOn: null }); }`);
+    await mock.until(`document.querySelector('#app')`);
+    await mock.ev(`location.hash = 'today'`); await sleep(300);
+    await mock.click('[data-action=capture-open]'); await mock.until(`document.getElementById('captureText')`);
+    await mock.type('#captureText', 'move council tax to tomorrow'); await sleep(150);
+    check('the Sends line says changes need a tap too', (await mock.text('[data-s=ask-sends]')).includes('until you tap Add or Apply'));
+    await mock.click('[data-action=ask-go]'); await mock.until(`document.querySelector('[data-s=ask-panel]')?.dataset.phase === 'shown'`, 10000);
+    const line = await mock.text('[data-s=ask-change] [data-s=ask-change-line]');
+    check('one change card, its day before → after (its time kept)', (await mock.ev(`document.querySelectorAll('[data-s=ask-change]').length`)) === 1 && /^Day:/.test(line) && line.includes('09:30') && (await mock.text('[data-s=ask-change]')).includes('Pay council tax'), line);
+    const due = () => mock.ev(`JSON.parse(localStorage.getItem('myday.data.v4')).tasks.items.find(t => t.id === 'tkCT').due`);
+    check('…nothing changed yet', (await due()) === TODAY);
+    check('…Apply is labelled with how many', (await mock.text('[data-action=ask-apply]')) === 'Apply 1');
+    await mock.click('[data-action=ask-apply]'); await mock.until(`document.querySelector('[data-s=ask-panel]')?.dataset.phase === 'applied'`);
+    check('Apply moves it to tomorrow and says so', (await due()) === tmr && (await mock.text('[data-s=ask-applied]')).includes('Changed “Pay council tax”'));
+    await mock.click('[data-s=ask-applied] [data-action=ask-undo]'); await sleep(300);
+    check('Undo puts it back on today, as it was', (await due()) === TODAY && (await mock.ev(`JSON.parse(localStorage.getItem('myday.data.v4')).tasks.items.find(t => t.id === 'tkCT').postponed`)) === 0);
+    await mock.click('[data-action=capture-cancel]'); await sleep(200);
+  }
+
   console.log('\n[9] Layout');
   await D.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await D.ev(`location.hash = 'today'`);

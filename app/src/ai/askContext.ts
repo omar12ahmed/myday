@@ -107,7 +107,7 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey())
     if (t) { ctx.task = { id: t.id, title: cut(t.title, L.titleChars), due: t.due, minutes: t.minutes, notes: cut(t.notes, L.taskNotesChars) }; parts.push('this task'); }
   } else if (page === 'calendar') {
     const appts = data.commitments.filter(c => c.kind === 'appointment' && c.start.slice(0, 10) === k).sort((a, b) => a.start.localeCompare(b.start)).slice(0, L.list);
-    ctx.calendar = { day: k, appointments: appts.map(c => ({ title: cut(c.title, L.titleChars), time: c.start.slice(11, 16) })) };
+    ctx.calendar = { day: k, appointments: appts.map(c => ({ id: c.id, title: cut(c.title, L.titleChars), time: c.start.slice(11, 16) })) };
     parts.push("today's appointments");
   }
   const listed = parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : parts[0];

@@ -277,11 +277,15 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     env = { ...kbase, ...kMain, ...kLearn(), AI_ROUTES: '{"explain-arabic": "learn"}' };
     let a = await kask(ak);
     const out = a.status === 200 ? JSON.parse(a.body.output) : null;
-    check('an Ask request is answered (200) by the main model, as JSON with a kind and a message', a.status === 200 && a.body.model === 'Main model' && ['add', 'steps', 'answer', 'cannot'].includes(out.kind) && typeof out.message === 'string', a.body);
+    check('an Ask request is answered (200) by the main model, as JSON with a kind and a message', a.status === 200 && a.body.model === 'Main model' && ['add', 'steps', 'change', 'answer', 'cannot'].includes(out.kind) && typeof out.message === 'string', a.body);
     a = await kask({ ...ak, page: 'today', followUp: { previous: 'Here are three steps.', text: 'Smaller please' }, context: { today: { energy: null, freeMinutes: null, plan: [], dueToday: [] } } });
     check('…with one follow-up, or from Today with energy not set yet', a.status === 200, a.body);
     a = await kask({ ...ak, page: 'today', context: { today: { energy: 3, freeMinutes: 60, plan: [], dueToday: [], revisionDue: 4 } } });
     check('…from Today with revision due', a.status === 200, a.body);
+    a = await kask({ ...ak, page: 'calendar', text: 'Move the dentist to 4pm', context: { calendar: { day: '2026-11-10', appointments: [{ id: 'c1', title: 'Dentist', time: '15:00' }] } } });
+    check('…from the Calendar, with each appointment\'s id (so a change can point at it)', a.status === 200, a.body);
+    a = await kask({ ...ak, page: 'calendar', text: 'Move the dentist', context: { calendar: { day: '2026-11-10', appointments: [{ id: 'c1', title: 'Dentist', time: '15:00', notes: 'x' }] } } });
+    check('…but an appointment carrying anything more is refused (400)', a.status === 400);
     a = await kask({ ...ak, page: 'today', context: { today: { energy: 3, freeMinutes: 60, plan: [], dueToday: [], revisionDue: -1 } } });
     check('…but not a negative count (400)', a.status === 400);
     a = await kask({ ...ak, page: 'study', context: { study: { course: { id: 'coP', title: 'Pre-Security' }, nextTask: { id: 'tkH', title: 'HTTP in detail' }, topics: ['Cybersecurity'], revisionDue: 6, energy: 2, freeMinutes: 90 } } });

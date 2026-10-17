@@ -1,6 +1,6 @@
-import { BookOpen, CalendarPlus, FolderKanban, ListPlus, NotebookPen, Sparkles } from 'lucide-react';
+import { ArrowRight, BookOpen, CalendarPlus, FolderKanban, ListPlus, NotebookPen, PencilLine, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { addAskItems, applyAskEdit, checkAskReply, countWords, NEW_PROJECT, undoAsk, type AskChecked, type AskEdit, type AskProposal, type AskUndo } from '../ai/ask';
+import { addAskItems, applyAskChanges, applyAskEdit, checkAskReply, countWords, NEW_PROJECT, undoAsk, undoAskChanges, type AskChangeUndo, type AskChecked, type AskEdit, type AskProposal, type AskUndo } from '../ai/ask';
 import { askContext, askPreview, askSlice } from '../ai/askContext';
 import { canAdjust, handOverToAdjust } from '../ai/handover';
 import { AI_MODE, askModel } from '../ai/request';
@@ -17,25 +17,28 @@ import { startLearning, startRevision } from '../study/actions';
 // "Ask MyDay" in the + Capture sheet (the AI design's step 1): for what the on-device suggestions can't do — a question,
 // a breakdown into steps, several things at once. Only on your tap; the "Sends:" line says exactly what goes with it
 // (the page's slice, askContext.ts). What comes back is checked against your data (ai/ask.ts) and shown as cards:
-// things to add (tick, rename, Add — one step of Undo), steps, a short answer with at most one action, or "can't do
-// that here". One follow-up at most; nothing is kept of the conversation.
+// things to add (tick, rename, Add — one step of Undo), steps, changes to what's already saved (before → after, tick,
+// Apply — Undo puts the old values back), a short answer with at most one action, or "can't do that here". One follow-up at most; nothing is kept of the conversation.
 type Phase =
   | { at: 'idle' }
   | { at: 'asking' }
   | { at: 'shown'; r: AskChecked; model: string; followed: boolean }
   | { at: 'added'; undo: AskUndo; words: string }
+  | { at: 'applied'; undo: AskChangeUndo; words: string }
   | { at: 'error'; message: string };
 
 const ICON: Record<AskProposal['type'], ReactNode> = {
   task: <ListPlus size={16} aria-hidden="true" />, note: <NotebookPen size={16} aria-hidden="true" />,
   appointment: <CalendarPlus size={16} aria-hidden="true" />, project: <FolderKanban size={16} aria-hidden="true" />, 'study-task': <BookOpen size={16} aria-hidden="true" />,
+  change: <PencilLine size={16} aria-hidden="true" />,
 };
-const TYPE_WORD: Record<AskProposal['type'], string> = { task: 'Task', note: 'Note', appointment: 'Appointment', project: 'Project', 'study-task': 'Study task' };
+const TYPE_WORD: Record<AskProposal['type'], string> = { task: 'Task', note: 'Note', appointment: 'Appointment', project: 'Project', 'study-task': 'Study task', change: 'Change' };
 
 // The answer as it was shown, for the one follow-up.
 function shownText(r: AskChecked): string {
   const parts = [r.message];
   if (r.kind === 'add' || r.kind === 'steps') parts.push(...r.items.map(i => `- ${TYPE_WORD[i.type]}: ${i.title}`));
+  if (r.kind === 'change') parts.push(...r.changes.map(c => `- Change ${c.target} “${c.label}”: ${c.lines.map(l => `${l.field.toLowerCase()} ${l.before} → ${l.after}`).join('; ')}`));
   if (r.kind === 'answer' && r.action) parts.push(r.action.type === 'adjust-today' ? '(offered: Help me adjust today)' : r.action.type === 'start-revision' ? `(offered: revise ${r.action.count} cards)` : `(offered: start ${r.action.minutes} minutes on ${r.action.label})`);
   return parts.filter(Boolean).join('\n');
 }
@@ -61,9 +64,10 @@ export function AskPanel({ data, text, onClose }: { data: MyDayData; text: strin
     const reply = await askModel(askContext(slice, text, k, undefined, followUp), ctrl.signal); // the time now (askContext reads the clock)
     if (ctrl.signal.aborted) return;
     if (!reply.ok) { setPhase({ at: 'error', message: reply.message }); return; }
-    const r = checkAskReply(reply.text, getSnapshot().data, slice, k);
+    const r = checkAskReply(reply.text, getSnapshot().data, slice, k, [text, followUp?.text].filter(Boolean).join('\n'));
     if (!r) { setPhase({ at: 'error', message: "The answer that came back couldn't be used — nothing was added. Try again, or put it another way." }); return; }
     if (r.kind === 'add' || r.kind === 'steps') { setPicked(r.items.map(i => !i.already)); setTitles(r.items.map(i => i.title)); setEdits({}); setEditing(null); }
+    if (r.kind === 'change') setPicked(r.changes.map(() => true));
     setMore('');
     setPhase({ at: 'shown', r, model: reply.model, followed: !!followUp });
   }
@@ -75,6 +79,15 @@ export function AskPanel({ data, text, onClose }: { data: MyDayData; text: strin
     const words = countWords(chosen);
     toast(`Added ${words}.`);
     setPhase({ at: 'added', undo, words });
+  }
+  function apply(r: Extract<AskChecked, { kind: 'change' }>) {
+    const chosen = r.changes.filter((_, i) => picked[i]);
+    if (!chosen.length) return;
+    const undo = applyAskChanges(chosen);
+    if (!undo) { toast("Couldn't save just now — nothing was changed."); return; }
+    const words = chosen.length === 1 ? `“${chosen[0].label}”` : `${chosen.length} things`;
+    toast(`Changed ${words}.`);
+    setPhase({ at: 'applied', undo, words });
   }
 
   const label = (model: string) => (AI_MODE === 'mock' ? 'Ask MyDay · practice helper (no AI)' : `Ask MyDay · AI-written by ${model} — check before adding`);
@@ -91,7 +104,7 @@ export function AskPanel({ data, text, onClose }: { data: MyDayData; text: strin
               {pv.all.map(sec => <div key={sec.label} className="mt-1.5"><p className="m-0 font-semibold text-fg">{sec.label}</p>
                 <ul className="m-0 pl-4 list-disc">{sec.lines.map((l, i) => <li key={i} className="break-words">{l}</li>)}</ul></div>)}
             </details>
-            <p className="m-0 text-fg-3">Nothing is saved until you tap Add.</p>
+            <p className="m-0 text-fg-3">Nothing is saved or changed until you tap Add or Apply.</p>
           </div>); })()}
       </>}
       {phase.at === 'error' && <p role="alert" className="text-[15px] bg-warn-c text-on-warn-c rounded-tile px-3 py-2 mt-2.5 mb-0">{phase.message}</p>}
@@ -99,6 +112,11 @@ export function AskPanel({ data, text, onClose }: { data: MyDayData; text: strin
       {phase.at === 'added' && <div className="flex flex-wrap items-center gap-x-3 gap-y-1" data-s="ask-added">
         <p className="text-[15px] m-0">Added {phase.words}.</p>
         <LinkButton data-action="ask-undo" onClick={() => { if (undoAsk(phase.undo)) { toast('Taken back.'); setPhase({ at: 'idle' }); } }}>Undo</LinkButton>
+        <LinkButton data-action="ask-close" className="ml-auto" onClick={onClose}>Close</LinkButton>
+      </div>}
+      {phase.at === 'applied' && <div className="flex flex-wrap items-center gap-x-3 gap-y-1" data-s="ask-applied">
+        <p className="text-[15px] m-0">Changed {phase.words}.</p>
+        <LinkButton data-action="ask-undo" onClick={() => { if (undoAskChanges(phase.undo)) { toast('Put back as it was.'); setPhase({ at: 'idle' }); } }}>Undo</LinkButton>
         <LinkButton data-action="ask-close" className="ml-auto" onClick={onClose}>Close</LinkButton>
       </div>}
       {phase.at === 'shown' && (() => {
@@ -155,6 +173,28 @@ export function AskPanel({ data, text, onClose }: { data: MyDayData; text: strin
               <Button variant="ghost" data-action="ask-dismiss" onClick={() => setPhase({ at: 'idle' })}>Dismiss</Button>
             </div>
           </>}
+          {r.kind === 'change' && <>
+            <ul className="list-none p-0 m-0 grid gap-2">
+              {r.changes.map((c, i) => (
+                <li key={`${c.target}:${c.id}`} className="flex items-start gap-2.5 rounded-tile border border-outline px-3 py-2" data-s="ask-change" data-target={c.target}>
+                  <input type="checkbox" className="mt-1 size-5 accent-[var(--primary)] flex-none" checked={!!picked[i]} data-s="ask-pick" aria-label={`Change ${c.label}`}
+                    onChange={e => setPicked(p => p.map((x, j) => (j === i ? e.target.checked : x)))} />
+                  <div className="min-w-0 flex-1">
+                    <p className="m-0 text-[15px] font-semibold break-words">{c.label}</p>
+                    <p className="text-[13px] text-fg-3 m-0 flex items-center gap-1">{ICON[c.target]} {TYPE_WORD[c.target]}</p>
+                    <ul className="list-none p-0 m-0 mt-1 grid gap-0.5 text-[14px]">
+                      {c.lines.map(l => <li key={l.field} className="flex flex-wrap items-center gap-x-1.5 break-words" data-s="ask-change-line">
+                        <span className="text-fg-2">{l.field}:</span> <s className="text-fg-3">{l.before}</s>
+                        <ArrowRight size={14} aria-label="becomes" className="flex-none" /> <span className="font-semibold">{l.after}</span></li>)}
+                    </ul>
+                  </div>
+                </li>))}
+            </ul>
+            <div className="grid grid-cols-2 gap-2.5 mt-3">
+              <Button variant="primary" data-action="ask-apply" disabled={!picked.some(Boolean)} onClick={() => apply(r)}>Apply {picked.filter(Boolean).length || ''}</Button>
+              <Button variant="ghost" data-action="ask-dismiss" onClick={() => setPhase({ at: 'idle' })}>Dismiss</Button>
+            </div>
+          </>}
           {r.kind === 'answer' && r.action?.type === 'start-study' && (() => { const a = r.action; return (
             <Button variant="primary" data-action="ask-action" onClick={() => { onClose(); startLearning(a.courseId, a.taskId, a.minutes, true); }}>Start {a.minutes} minutes on {a.label}</Button>); })()}
           {r.kind === 'answer' && r.action?.type === 'start-revision' && (() => { const a = r.action; return (
@@ -169,7 +209,7 @@ export function AskPanel({ data, text, onClose }: { data: MyDayData; text: strin
                 onKeyDown={e => { if (e.key === 'Enter' && more.trim()) { e.preventDefault(); void ask({ previous: shownText(r), text: more }); } }} />
               <Button inline variant="ghost" className="whitespace-nowrap" data-action="ask-again" disabled={!more.trim()} onClick={() => { void ask({ previous: shownText(r), text: more }); }}>Ask again</Button>
             </div>
-          ) : r.kind !== 'add' && r.kind !== 'steps' && <LinkButton data-action="ask-dismiss" onClick={() => setPhase({ at: 'idle' })}>Done</LinkButton>}
+          ) : r.kind !== 'add' && r.kind !== 'steps' && r.kind !== 'change' && <LinkButton data-action="ask-dismiss" onClick={() => setPhase({ at: 'idle' })}>Done</LinkButton>}
         </div>;
       })()}
     </div>

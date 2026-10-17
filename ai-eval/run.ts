@@ -345,7 +345,7 @@ function prepare(sc: AnyScenario): Prepared {
         rec.violations = r ? [] : ['not-usable']; rec.violationDetails = rec.violations.slice();
         const ex: Expectations = { usable: !!r };
         if (r) {
-          const ids = [...r.items.map(i => i.projectId), r.action?.type === 'start-study' ? r.action.courseId : null, r.action?.type === 'start-study' ? r.action.taskId : null].filter((x): x is string => !!x);
+          const ids = [...r.items.map(i => i.projectId), ...r.items.map(i => i.targetId), r.action?.type === 'start-study' ? r.action.courseId : null, r.action?.type === 'start-study' ? r.action.taskId : null].filter((x): x is string => !!x);
           ex.rightKind = e.kinds.includes(r.kind);
           ex.onlyGivenIds = ids.every(id => given.includes(JSON.stringify(id)) || (id === 'new' && r.items.some(i => i.type === 'project')));
           const coCtx = sc.ctx.context.course, act = r.action?.type === 'start-study' ? r.action : null;
@@ -362,6 +362,17 @@ function prepare(sc: AnyScenario): Prepared {
             ex.appointmentsComplete = r.items.every(i => i.type !== 'appointment' || (!!i.date && !!i.time));
           }
           if (r.kind === 'cannot') ex.cannotHasNothing = !r.items.length && !r.action;
+          const changes = r.items.filter(i => i.type === 'change'), x0 = sc.ctx.context;
+          if (changes.length) {
+            const okIds: Record<string, string[]> = { task: [...(x0.today?.dueToday ?? []).map(t => t.id), ...(x0.project?.tasks ?? []).map(t => t.id), ...(x0.task ? [x0.task.id] : [])],
+              appointment: (x0.calendar?.appointments ?? []).map(a => a.id ?? ''), note: x0.note ? [x0.note.id] : [] };
+            ex.changesOnPage = changes.every(i => !!i.target && okIds[i.target].includes(i.targetId ?? ''));
+            ex.changesFromToday = changes.every(i => !i.date || i.date >= sc.ctx.date);
+            ex.noGuessedList = changes.every(i => !i.category || /\b(learning|admin|health|list|category)\b/i.test(sc.ctx.text)); // the page never sends a task's list
+          }
+          if (e.change) { const w = e.change; ex.rightChange = changes.some(i => i.target === w.target && i.targetId === w.id && (!w.date || i.date === w.date) && (!w.time || i.time === w.time)
+            && (!w.minutes || i.minutes === w.minutes) && (!w.projectId || i.projectId === w.projectId) && (!w.title || w.title.test(i.title))); }
+          if (!e.kinds.includes('change')) ex.noUnaskedChange = !changes.length;
           if (e.action !== undefined) ex.rightAction = (r.action?.type ?? null) === e.action;
           if (e.scope && r.action?.type === 'start-revision') ex.rightScope = r.action.scope === e.scope;
           const due = sc.ctx.context.study?.revisionDue ?? sc.ctx.context.today?.revisionDue;
@@ -377,7 +388,7 @@ function prepare(sc: AnyScenario): Prepared {
             const secs = new Set(co ? co.modules.flatMap(m => m.sections.map(x => x.id)) : []), mods = new Set(co ? co.modules.map(m => m.id) : []);
             const have = new Set(co ? co.modules.flatMap(m => m.sections.flatMap(x => x.tasks.map(t => t.title.toLowerCase()))) : []);
             ex.allStudyTasks = r.items.every(i => i.type === 'study-task');
-            ex.placedInCourse = r.items.every(i => (i.sectionId ? secs.has(i.sectionId) : !!i.section) && (!i.moduleId || mods.has(i.moduleId)));
+            ex.placedInCourse = r.items.every(i => (i.sectionId ? secs.has(i.sectionId) : !!(i.section || i.module)) && (!i.moduleId || mods.has(i.moduleId))); // a new module without a section name: the app names it
             ex.noRepeats = r.items.every(i => !have.has(i.title.toLowerCase()));
             ex.studyLengths = r.items.every(i => !i.minutes || (i.minutes >= 10 && i.minutes <= 90));
             ex.studyItemsInRange = r.items.length >= 1 && r.items.length <= 12;
@@ -388,8 +399,8 @@ function prepare(sc: AnyScenario): Prepared {
         rec.expectRaw = ex; rec.expectFinal = ex;
         rec.explanationWords = r ? r.message.split(/\s+/).filter(Boolean).length : 0;
         rec.shown = r ? { rest: false, explanation: r.message, missing: [], priorities: [`[${r.kind}] ${r.message}`,
-          ...r.items.map(i => `${i.type}: ${i.title}${i.date ? ` · ${i.date}${i.time ? ' ' + i.time : ''}` : ''}${i.type === 'task' && i.minutes ? ` · ${i.minutes} min${i.category ? ' · ' + i.category : ''}` : ''}${i.projectId ? ` · in ${i.projectId}` : ''}${i.type === 'study-task' ? ` · ${i.kind ?? '?'} · ${i.sectionId ? 'in ' + i.sectionId : `new section “${i.section}”${i.module ? ` (module “${i.module}”)` : ''}`}` : ''}${i.text && i.text !== i.title ? ` — “${i.text}”` : ''}`),
-          ...(r.action ? [r.action.type === 'adjust-today' ? 'Action: open Help me adjust today' : `Action: start ${r.action.minutes} min on ${r.action.courseId}/${r.action.taskId ?? '—'}`] : [])] } : null;
+          ...r.items.map(i => i.type === 'change' ? `change ${i.target} ${i.targetId}:${i.title ? ` title “${i.title}”` : ''}${i.date ? ` date ${i.date}` : ''}${i.time ? ` time ${i.time}` : ''}${i.minutes ? ` ${i.minutes} min` : ''}${i.category ? ` list ${i.category}` : ''}${i.projectId ? ` project ${i.projectId}` : ''}` : `${i.type}: ${i.title}${i.date ? ` · ${i.date}${i.time ? ' ' + i.time : ''}` : ''}${i.type === 'task' && i.minutes ? ` · ${i.minutes} min${i.category ? ' · ' + i.category : ''}` : ''}${i.projectId ? ` · in ${i.projectId}` : ''}${i.type === 'study-task' ? ` · ${i.kind ?? '?'} · ${i.sectionId ? 'in ' + i.sectionId : `new section “${i.section}”${i.module ? ` (module “${i.module}”)` : ''}`}` : ''}${i.text && i.text !== i.title ? ` — “${i.text}”` : ''}`),
+          ...(r.action ? [r.action.type === 'adjust-today' ? 'Action: open Help me adjust today' : r.action.type === 'start-revision' ? `Action: revise (${r.action.scope})` : `Action: start ${r.action.minutes} min on ${r.action.courseId}/${r.action.taskId ?? '—'}`] : [])] } : null;
         rec.savedSafely = null;
       },
     };

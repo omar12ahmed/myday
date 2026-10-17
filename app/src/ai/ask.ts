@@ -4,15 +4,16 @@
 // dropped or made safe (and said). Things to add are saved through the same rules as Capture's, all at once, with one
 // step of Undo. Nothing here talks to a model (request.ts does) and nothing is saved until you tap Add.
 import { ASK_LIMITS as L, readAsk, type AskItem } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
-import { isDateKey, keyOf, pad, todayKey } from '../data/dates';
-import { addNote } from '../data/notes';
+import { CAT_LABEL } from '../data/plan';
+import { isDateKey, keyOf, pad, prettyDate, todayKey } from '../data/dates';
+import { addNote, editNote } from '../data/notes';
 import { addProject, linkAppointment, linkNote, linkTask } from '../data/projects';
 import { stIndex } from '../data/study/roadmap';
 import { ROUND_SIZE } from '../data/study/common';
 import { dueIds, type Scope } from '../data/study/queue';
 import { updateSaved } from '../data/storage';
-import { addTask } from '../data/tasks';
-import type { Category, DateKey, MyDayData, StudyModule, StudySection } from '../data/types';
+import { addTask, editTask } from '../data/tasks';
+import type { Category, Commitment, DateKey, MyDayData, Note, Project, StudyModule, StudySection, TaskItem } from '../data/types';
 import { uid } from '../data/util';
 import type { AskSlice } from './askContext';
 import { sameTask } from './mind';
@@ -37,14 +38,23 @@ export const NEW_PROJECT = '@new';
 export type AskChecked =
   | { kind: 'add' | 'steps'; message: string; items: AskProposal[]; changed: string[] }
   | { kind: 'answer'; message: string; action: { type: 'start-study'; courseId: string; taskId: string | null; minutes: number; label: string } | { type: 'adjust-today' } | { type: 'start-revision'; scope: Scope; count: number } | null; changed: string[] }
-  | { kind: 'cannot'; message: string; changed: string[] };
+  | { kind: 'cannot'; message: string; changed: string[] }
+  | { kind: 'change'; message: string; changes: AskChange[]; changed: string[] };
+
+// A change to something already saved: what it is, the lines to show (before → after) and what to apply.
+export interface AskChange {
+  target: 'task' | 'appointment' | 'note'; id: string; label: string;
+  lines: { field: string; before: string; after: string }[];
+  patch: { title?: string; date?: DateKey; time?: string | null; minutes?: number; category?: Category; projectId?: string; start?: string; end?: string };
+}
 
 const realDate = (s: string | null | undefined): s is DateKey => !!s && isDateKey(s) && keyOf(new Date(`${s}T12:00`)) === s;
 const guessCategory = (t: string): Category => (/\b(study|revise|read|learn|course|lesson|practi[sc]e|exam|homework)\b/i.test(t) ? 'learning' : /\b(gym|run|walk|workout|doctor|gp|dentist|physio|meds|sleep|stretch|swim|yoga)\b/i.test(t) ? 'health' : 'admin');
 const gentle = (s: string) => !PRESSURE.test(s);
 
 // Checks a reply against your data. Returns null when nothing in it can be used.
-export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k: DateKey = todayKey()): AskChecked | null {
+// `asked` is what you typed (and your follow-up): a change only touches a task's length, list or title when it asks for that.
+export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k: DateKey = todayKey(), asked?: string): AskChecked | null {
   const r = readAsk(text);
   if (!r) return null;
   const changed: string[] = [];
@@ -56,6 +66,13 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
   }
   if (message && !gentle(message)) { message = ''; changed.push('Left out a sentence that wasn’t gentle enough.'); }
   if (r.kind === 'cannot') return message ? { kind: 'cannot', message, changed } : null;
+  if (r.kind === 'change' || r.items.some(i => i.type === 'change')) {
+    const changes = checkChanges(r.items.filter(i => i.type === 'change'), data, slice, k, changed, asked);
+    if (r.items.some(i => i.type !== 'change')) changed.push('Left out things to add — ask for those on their own.');
+    if (changes.length) return { kind: 'change', message: message || 'Here’s what would change.', changes, changed };
+    // Nothing left to change: say why when something was left out; otherwise the reply couldn't be used.
+    return changed.length ? { kind: 'answer', message: 'Nothing here can be changed from this page — you can change it on its own page.', action: null, changed } : null;
+  }
   if (r.kind === 'answer' && (!r.items.length || r.action)) {
     if (r.items.length) changed.push('Its suggestion to start is here; the things it offered to add were left out — ask again for those.');
     let action: Extract<AskChecked, { kind: 'answer' }>['action'] = null;
@@ -129,6 +146,110 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
   }
   if (!items.length) return message.split(/\s+/).filter(Boolean).length >= 3 ? { kind: 'answer', message, action: null, changed } : null; // a fragment ("Here's") isn't an answer
   return { kind: r.kind === 'steps' ? 'steps' : 'add', message: message || (r.kind === 'steps' ? 'Here are some smaller steps.' : 'Here’s what I found to add.'), items, changed };
+}
+
+// ---------- Changes to what's already saved ----------
+// Only things on the page you asked from (their ids were sent), only the fields MyDay allows (a day and time, a title,
+// a task's length or list, a task's or note's project), only real changes. Never deleting, never marking done.
+const pretty = (k?: string | null) => (k ? prettyDate(k) : 'no date');
+// The page doesn't send a task's list (nor, from Today, its length), and a model tends to fill in what it can't see: so
+// those, and a new title, change only when what you typed asks for them.
+const ASKS = {
+  title: /\b(renam\w*|retitl\w*|reword\w*|call (it|this|that)|title|name)\b|["“”]/i,
+  minutes: /\b(\d+\s*(m|mins?|minutes?|h|hrs?|hours?)|minutes?|mins?|hours?|shorter|longer|quicker|length|long)\b/i,
+  category: /\b(learning|admin|health|list|category)\b/i,
+};
+function checkChanges(items: AskItem[], data: MyDayData, slice: AskSlice, k: DateKey, changed: string[], asked?: string): AskChange[] {
+  const wants = (f: keyof typeof ASKS, name: string, what: string) => { if (asked === undefined || ASKS[f].test(asked)) return true; changed.push(`Left out a new ${what} for “${name}” — you didn’t ask for that.`); return false; };
+  const x = slice.context;
+  const okTasks = new Set([...(x.today?.dueToday ?? []).map(t => t.id), ...(x.project?.tasks ?? []).map(t => t.id), ...(x.task ? [x.task.id] : [])]);
+  const okAppts = new Set((x.calendar?.appointments ?? []).map(a => a.id).filter((id): id is string => !!id));
+  const okNotes = new Set(x.note ? [x.note.id] : []);
+  const open = new Map(data.projects.items.filter(p => p.status !== 'done').map(p => [p.id, p]));
+  const projectName = (id?: string | null) => (id ? data.projects.items.find(p => p.id === id)?.title ?? 'a project' : 'no project');
+  const out: AskChange[] = [], seen = new Set<string>();
+  for (const it of items.slice(0, L.items)) {
+    const id = it.targetId ?? '', key = `${it.target}:${id}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const title = it.title?.replace(/\s+/g, ' ').trim().slice(0, L.titleChars) ?? '';
+    const lines: AskChange['lines'] = [], patch: AskChange['patch'] = {};
+    const newDate = it.date && realDate(it.date) && it.date >= k ? it.date : null;
+    if (it.date && !newDate) changed.push('Left out a change to a day before today.');
+    if (it.target === 'task') {
+      const t = okTasks.has(id) ? data.tasks.items.find(y => y.id === id && !y.done) : undefined;
+      if (!t) { changed.push('Left out a change to a task that isn’t on this page (or is done).'); continue; }
+      if (title && title !== t.title && wants('title', t.title, 'title')) { patch.title = title; lines.push({ field: 'Title', before: t.title, after: title }); }
+      if (newDate && newDate !== t.due) { patch.date = newDate; patch.time = it.time ?? t.time ?? null; lines.push({ field: 'Day', before: pretty(t.due) + (t.time ? `, ${t.time}` : ''), after: pretty(newDate) + (patch.time ? `, ${patch.time}` : '') }); }
+      else if (!newDate && it.time && t.due && it.time !== t.time) { patch.time = it.time; lines.push({ field: 'Time', before: t.time ?? 'any time', after: it.time }); }
+      if (it.minutes && Math.min(600, Math.max(5, it.minutes)) !== t.minutes && wants('minutes', t.title, 'length')) { patch.minutes = Math.min(600, Math.max(5, it.minutes)); lines.push({ field: 'Length', before: `${t.minutes} min`, after: `${patch.minutes} min` }); }
+      if (it.category && it.category !== t.category && wants('category', t.title, 'list')) { patch.category = it.category; lines.push({ field: 'List', before: CAT_LABEL[t.category], after: CAT_LABEL[it.category] }); }
+      if (it.projectId && open.has(it.projectId) && it.projectId !== t.projectId) { patch.projectId = it.projectId; lines.push({ field: 'Project', before: projectName(t.projectId), after: projectName(it.projectId) }); }
+      if (lines.length) out.push({ target: 'task', id, label: t.title, lines, patch });
+    } else if (it.target === 'appointment') {
+      const c = okAppts.has(id) ? data.commitments.find(y => y.id === id && y.kind === 'appointment') : undefined;
+      if (!c) { changed.push('Left out a change to an appointment that isn’t on this page.'); continue; }
+      if (title && title !== c.title && wants('title', c.title, 'title')) { patch.title = title; lines.push({ field: 'Title', before: c.title, after: title }); }
+      const day = newDate ?? c.start.slice(0, 10), time = it.time ?? c.start.slice(11, 16);
+      if ((newDate || it.time) && `${day}T${time}` !== c.start) {
+        const length = new Date(c.end).getTime() - new Date(c.start).getTime(), endAt = new Date(new Date(`${day}T${time}`).getTime() + Math.max(0, length));
+        patch.start = `${day}T${time}`; patch.end = `${keyOf(endAt)}T${pad(endAt.getHours())}:${pad(endAt.getMinutes())}`;
+        lines.push({ field: 'When', before: `${pretty(c.start.slice(0, 10))}, ${c.start.slice(11, 16)}`, after: `${pretty(day)}, ${time}` });
+      }
+      if (lines.length) out.push({ target: 'appointment', id, label: c.title, lines, patch });
+    } else if (it.target === 'note') {
+      const n = okNotes.has(id) ? data.notes.items.find(y => y.id === id && !y.private) : undefined;
+      if (!n) { changed.push('Left out a change to a note that isn’t on this page.'); continue; }
+      if (title && title !== n.title && wants('title', n.title || 'this note', 'title')) { patch.title = title; lines.push({ field: 'Title', before: n.title || '(none)', after: title }); }
+      if (it.projectId && open.has(it.projectId) && it.projectId !== n.projectId) { patch.projectId = it.projectId; lines.push({ field: 'Project', before: projectName(n.projectId), after: projectName(it.projectId) }); }
+      if (lines.length) out.push({ target: 'note', id, label: n.title || n.text.split('\n')[0].slice(0, 60), lines, patch });
+    }
+  }
+  return out;
+}
+
+// Applies the ticked changes in one save. Undo puts back exact copies of everything it touched.
+export interface AskChangeUndo { tasks: TaskItem[]; notes: Note[]; commitments: Commitment[]; projects: Project[] }
+export function applyAskChanges(changes: AskChange[]): AskChangeUndo | null {
+  const u: AskChangeUndo = { tasks: [], notes: [], commitments: [], projects: [] };
+  const r = updateSaved(d => {
+    const keep = <T extends { id: string }>(list: T[], item: T | undefined) => { if (item && !list.some(y => y.id === item.id)) list.push(structuredClone(item)); };
+    let any = false;
+    for (const c of changes) {
+      if (c.target === 'task') {
+        const t = d.tasks.items.find(y => y.id === c.id);
+        if (!t) continue;
+        keep(u.tasks, t);
+        for (const pid of [t.projectId, c.patch.projectId]) keep(u.projects, d.projects.items.find(p => p.id === pid));
+        any = editTask(d.tasks, c.id, { ...(c.patch.title ? { title: c.patch.title } : {}), ...(c.patch.date ? { due: c.patch.date } : {}), ...(c.patch.time !== undefined ? { time: c.patch.time } : {}),
+          ...(c.patch.minutes ? { minutes: c.patch.minutes } : {}), ...(c.patch.category ? { category: c.patch.category } : {}) }) || any;
+        if (c.patch.projectId) any = linkTask(d, c.id, c.patch.projectId) || any;
+      } else if (c.target === 'appointment') {
+        const a = d.commitments.find(y => y.id === c.id);
+        if (!a) continue;
+        keep(u.commitments, a);
+        if (c.patch.title) a.title = c.patch.title;
+        if (c.patch.start && c.patch.end) { a.start = c.patch.start; a.end = c.patch.end; }
+        any = true;
+      } else {
+        const n = d.notes.items.find(y => y.id === c.id);
+        if (!n) continue;
+        keep(u.notes, n);
+        for (const pid of [n.projectId, c.patch.projectId]) keep(u.projects, d.projects.items.find(p => p.id === pid));
+        if (c.patch.title) any = editNote(d.notes, c.id, { title: c.patch.title }) || any;
+        if (c.patch.projectId) any = linkNote(d, c.id, c.patch.projectId) || any;
+      }
+    }
+    if (!any) return false;
+  });
+  return r === 'saved' ? u : null;
+}
+export function undoAskChanges(u: AskChangeUndo): boolean {
+  return updateSaved(d => {
+    const put = <T extends { id: string }>(list: T[], copies: T[]) => { let n = 0; for (const c of copies) { const i = list.findIndex(y => y.id === c.id); if (i >= 0) { list[i] = structuredClone(c); n++; } } return n; };
+    const n = put(d.tasks.items, u.tasks) + put(d.notes.items, u.notes) + put(d.commitments, u.commitments) + put(d.projects.items, u.projects);
+    if (!n) return false;
+  }) === 'saved';
 }
 
 // ---------- Saving what you ticked ----------

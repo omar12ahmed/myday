@@ -20,8 +20,9 @@ export const ASK_LIMITS = {
 };
 export const ASK_PAGES = ['today', 'tasks', 'task', 'calendar', 'projects', 'project', 'notes', 'note', 'study', 'course', 'health', 'finance', 'other'] as const;
 export type AskPage = typeof ASK_PAGES[number];
-export const ASK_KINDS = ['add', 'steps', 'answer', 'cannot'] as const;
-export const ASK_ITEM_TYPES = ['task', 'note', 'appointment', 'project', 'study-task'] as const;
+export const ASK_KINDS = ['add', 'steps', 'answer', 'cannot', 'change'] as const;
+export const ASK_ITEM_TYPES = ['task', 'note', 'appointment', 'project', 'study-task', 'change'] as const;
+export const ASK_TARGETS = ['task', 'appointment', 'note'] as const;
 export const ASK_CATEGORIES = ['learning', 'admin', 'health'] as const;
 export const ASK_STAGES = ['capture', 'understand', 'organise', 'explore', 'decide', 'act', 'reflect'] as const;
 
@@ -34,7 +35,7 @@ export interface AskPageContext {
   project?: { id: string; title: string; summary: string; stage: typeof ASK_STAGES[number]; tasks: (Ref & { done: boolean })[]; notes: string[]; notesText?: string };
   note?: { id: string; title: string; text: string };
   task?: { id: string; title: string; due: string | null; minutes: number; notes: string };
-  calendar?: { day: string; appointments: { title: string; time: string }[] };
+  calendar?: { day: string; appointments: { id?: string; title: string; time: string }[] }; // id: so a change can name one
   // A course on your Study roadmap, as an outline (titles, lengths, kinds, done or not — no links, notes or concepts).
   course?: { id: string; title: string; minutes: number; modules: { id: string; title: string; sections: { id: string; title: string; tasks: { id: string; title: string; minutes: number; kind: 'learn' | 'practical'; done: boolean }[] }[] }[] };
 }
@@ -63,6 +64,8 @@ export interface AskItem {
   // in one of its modules (moduleId) or a new module (module).
   kind?: 'learn' | 'practical' | null;
   sectionId?: string | null; section?: string | null; moduleId?: string | null; module?: string | null;
+  // A change to something already saved (kind "change"): what it is and its id; the other fields are the new values.
+  target?: typeof ASK_TARGETS[number] | null; targetId?: string | null;
 }
 export const ASK_SCOPES = ['all', 'arabic', 'cybersecurity'] as const;
 export type AskAction = { type: 'start-study'; courseId: string; taskId: string | null; minutes: number } | { type: 'adjust-today' } | { type: 'start-revision'; scope: typeof ASK_SCOPES[number] };
@@ -131,7 +134,7 @@ export function checkAskContext(raw: unknown): raw is AskContext {
   if (x.task !== undefined && !(obj(x.task) && only(x.task, ['id', 'title', 'due', 'minutes', 'notes']) && str(x.task.id, 64, false) && str(x.task.title, L.titleChars, false)
     && (x.task.due === null || isDate(x.task.due)) && Number.isInteger(x.task.minutes) && str(x.task.notes, L.taskNotesChars))) return false;
   if (x.calendar !== undefined && !(obj(x.calendar) && only(x.calendar, ['day', 'appointments']) && isDate(x.calendar.day) && Array.isArray(x.calendar.appointments)
-    && x.calendar.appointments.length <= L.list && x.calendar.appointments.every(a => obj(a) && str(a.title, L.titleChars) && isTime(a.time)))) return false;
+    && x.calendar.appointments.length <= L.list && x.calendar.appointments.every(a => obj(a) && only(a, ['id', 'title', 'time']) && (a.id === undefined || str(a.id, 64, false)) && str(a.title, L.titleChars) && isTime(a.time)))) return false;
   return true;
 }
 
@@ -145,9 +148,22 @@ export function readAsk(textIn: string): AskReply | null {
   if (!Array.isArray(items)) return null;
   const out: AskItem[] = [];
   for (const it of items.slice(0, Math.max(ASK_LIMITS.items, ASK_LIMITS.studyItems))) {
-    if (!obj(it) || !ASK_ITEM_TYPES.includes(it.type as AskItem['type']) || !str(it.title, ASK_LIMITS.titleChars, false)) continue;
+    // A change needs a target and an id; its title is only a new title (it may be absent).
+    if (obj(it) && it.type === 'change') {
+      const target = ASK_TARGETS.includes(it.target as typeof ASK_TARGETS[number]) ? it.target as typeof ASK_TARGETS[number] : null, targetId = word(it.targetId, 64);
+      if (!target || !targetId) continue;
+      out.push({ type: 'change', title: word(it.title, ASK_LIMITS.titleChars) ?? '', target, targetId,
+        date: isDate(it.date) ? it.date as string : null, time: isTime(it.time) ? it.time as string : null,
+        minutes: Number.isFinite(it.minutes) ? Math.round(it.minutes as number) : null,
+        category: ASK_CATEGORIES.includes(it.category as typeof ASK_CATEGORIES[number]) ? it.category as AskItem['category'] : null,
+        projectId: word(it.projectId, 64) });
+      continue;
+    }
+    // A step with no type is a task (a study task when it says where in a course it goes): steps are nothing else.
+    const type = obj(it) && it.type === undefined && raw.kind === 'steps' ? (it.sectionId || it.section || it.moduleId || it.module ? 'study-task' : 'task') : obj(it) ? it.type : null;
+    if (!obj(it) || !ASK_ITEM_TYPES.includes(type as AskItem['type']) || type === 'change' || !str(it.title, ASK_LIMITS.titleChars, false)) continue;
     out.push({
-      type: it.type as AskItem['type'], title: (it.title as string).trim(),
+      type: type as AskItem['type'], title: (it.title as string).trim(),
       date: isDate(it.date) ? it.date as string : null, time: isTime(it.time) ? it.time as string : null,
       minutes: Number.isFinite(it.minutes) ? Math.round(it.minutes as number) : null,
       category: ASK_CATEGORIES.includes(it.category as typeof ASK_CATEGORIES[number]) ? it.category as AskItem['category'] : null,

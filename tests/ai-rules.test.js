@@ -717,7 +717,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
     // The instructions and the practice version.
     const msgs = K.buildAskMessages(ctxA);
-    check('the instructions: four kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v11' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
+    check('the instructions: five kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"change"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v12' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
     const mk = (hash, text) => K.checkAskReply(K.mockAsk(K.askContext(K.askSlice(K.getSnapshot().data, hash, D), text, D)), K.getSnapshot().data, K.askSlice(K.getSnapshot().data, hash, D), D);
     check('practice version: steps on a project page, in that project', (r => r.kind === 'steps' && r.items.length === 3 && r.items.every(x => x.projectId === 'pjC'))(mk('#projects/p/pjC', 'Break this into smaller steps')));
     check('…several things to add', (r => r.kind === 'add' && eq(r.items.map(x => x.title), ['Call the bank', 'Renew passport', 'Email Sam']))(mk('#today', 'call the bank, renew passport and email Sam')));
@@ -807,6 +807,67 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const u3 = K.addAskItems(c.items), cp = K.getSnapshot().data.study.stages[0].courses[0], wa = cp.modules.filter(m => m.title === 'Web applications');
     check('a new module the model gave a made-up id: its tasks stay together, in one new module and one section (no duplicates; "null" isn\'t a name)', wa.length === 1 && wa[0].sections.filter(x => x.title === 'Web application basics').length === 1 && wa[0].sections.find(x => x.title === 'Web application basics').tasks.length === 2 && !cp.modules.some(m => m.title === 'none') && !cp.modules.flatMap(m => m.sections).some(x => x.title === 'null'));
     check('…and Undo takes all of it back', K.undoAsk(u3) && K.getSnapshot().data.study.stages[0].courses[0].modules.length === 1);
+  }
+
+  console.log('\n[12c] Ask MyDay changes what\'s already saved: only what was sent, only allowed fields, before → after, exact Undo');
+  {
+    K.setClock(`${D}T10:00`);
+    const s0 = K.freshState(), at = `${D}T09:00`;
+    const P = (id, title, status = 'active') => ({ id, title, summary: '', stage: 'explore', status, nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at });
+    const TK = (id, title, x = {}) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: at, postponed: 0, blockers: [], letGoOn: null, ...x });
+    const NT = (id, text, x = {}) => ({ id, categoryId: '', title: '', text, pinned: false, createdAt: at, updatedAt: at, ...x });
+    const plus = n => { const d = new Date(`${D}T12:00`); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+    s0.projects.items = [P('pjC', 'Coffee subscription'), P('pjH', 'Home move'), P('pjOld', 'Old move', 'done')];
+    s0.tasks.items = [TK('tkB', 'Pay council tax', { due: D, time: '09:30', projectId: 'pjH' }), TK('tkX', 'Not on this page', { due: plus(5) }), TK('tkDone', 'Done already', { due: D, done: true, doneOn: D })];
+    s0.notes.items = [NT('n4', 'Roasters sell per kilo', { title: 'Roasters' }), NT('n3', 'A private diary line', { private: true })];
+    s0.commitments.push({ id: 'c1', kind: 'appointment', title: 'Dentist', start: `${D}T15:00`, end: `${D}T15:45` });
+    localStorage.clear(); localStorage.setItem('myday.data.v4', JSON.stringify(s0)); K.boot();
+    let w = K.getSnapshot().data;
+    const today = K.askSlice(w, '#today', D), cal = K.askSlice(w, '#calendar', D), note = K.askSlice(w, '#projects/notes/n4', D);
+    check('the Calendar sends each appointment\'s id (so a change can point at it), and the server accepts it', cal.context.calendar.appointments[0].id === 'c1' && K.checkAskContext(K.askContext(cal, 'move the dentist', D)));
+    const C = (items, o = {}) => JSON.stringify({ kind: 'change', message: 'Here’s what would change.', action: null, items, ...o });
+    const ch = (target, targetId, x = {}) => ({ type: 'change', title: '', target, targetId, date: null, time: null, minutes: null, category: null, projectId: null, ...x });
+    let c = K.checkAskReply(C([ch('task', 'tkB', { date: plus(3), minutes: 30, category: 'health', projectId: 'pjC', title: 'Pay the council tax' })]), w, today, D);
+    const one = c?.changes?.[0];
+    check('a task due today: day, length, list, project and title shown before → after', c.kind === 'change' && one.id === 'tkB' && eq(one.lines.map(l => l.field), ['Title', 'Day', 'Length', 'List', 'Project']) && one.lines[1].before.endsWith(', 09:30') && one.lines[1].after.endsWith(', 09:30') && one.lines[2].after === '30 min' && one.lines[4].before === 'Home move' && one.lines[4].after === 'Coffee subscription', one?.lines);
+    check('…and nothing is changed until Apply', K.getSnapshot().data.tasks.items.find(t => t.id === 'tkB').due === D);
+    const before = JSON.parse(JSON.stringify(K.getSnapshot().data));
+    const u = K.applyAskChanges(c.changes);
+    let t = K.getSnapshot().data.tasks.items.find(x => x.id === 'tkB');
+    check('Apply changes it through the Tasks rules (moved later is counted, its time kept) and moves it to the other project', !!u && t.due === plus(3) && t.time === '09:30' && t.minutes === 30 && t.category === 'health' && t.title === 'Pay the council tax' && t.projectId === 'pjC' && t.postponed === 1);
+    check('Undo puts back exactly what was there (the task and both projects)', K.undoAskChanges(u) && eq(K.getSnapshot().data.tasks.items, before.tasks.items) && eq(K.getSnapshot().data.projects.items, before.projects.items));
+    check('…and nothing else was touched (notes, appointments, days)', eq(K.getSnapshot().data.notes.items, before.notes.items) && eq(K.getSnapshot().data.commitments, before.commitments) && eq(K.getSnapshot().data.days, before.days));
+    w = K.getSnapshot().data;
+    c = K.checkAskReply(C([ch('task', 'tkX', { date: plus(1) }), ch('task', 'tkDone', { date: plus(1) }), ch('task', 'tkNope', { date: plus(1) }), ch('note', 'n4', { title: 'x' }), ch('appointment', 'c1', { time: '16:00' })]), w, today, D);
+    check('only what this page sent can change: not a task from elsewhere, a done one, a made-up id, or a note or appointment not on Today', !c || c.kind !== 'change', c);
+    c = K.checkAskReply(C([ch('task', 'tkB', { date: plus(-2) }), ch('task', 'tkB', { minutes: 15 })]), w, today, D);
+    check('a day before today is left out (and said), and a change to what it already is is no change', !c || c.kind !== 'change', c);
+    check('…a reply with nothing left to change says why, in MyDay\'s words', c.kind === 'answer' && c.message.startsWith('Nothing here can be changed') && c.changed.some(x => x.includes('before today')), c);
+    check('…and one with no changes at all ("Here\'s the change:") isn\'t usable', K.checkAskReply(JSON.stringify({ kind: 'change', message: 'Here\'s the change: ' }), w, today, D) === null);
+    c = K.checkAskReply(C([ch('task', 'tkB', { projectId: 'pjOld' }), ch('task', 'tkB', { projectId: 'pjMadeUp' })]), w, today, D);
+    check('a done or made-up project isn\'t used', !c || c.kind !== 'change', c);
+    c = K.checkAskReply(C([ch('appointment', 'c1', { time: '16:00' })]), w, cal, D);
+    check('an appointment on the Calendar: a new time, its length kept', c.kind === 'change' && c.changes[0].patch.start === `${D}T16:00` && c.changes[0].patch.end === `${D}T16:45` && c.changes[0].lines[0].after.endsWith('16:00'));
+    const u2 = K.applyAskChanges(c.changes);
+    check('…applied, and Undo puts the old time back', u2 && K.getSnapshot().data.commitments.find(x => x.id === 'c1').start === `${D}T16:00` && K.undoAskChanges(u2) && K.getSnapshot().data.commitments.find(x => x.id === 'c1').end === `${D}T15:45`);
+    c = K.checkAskReply(C([ch('note', 'n4', { projectId: 'pjC', title: 'Roaster prices' })]), K.getSnapshot().data, note, D);
+    const u3 = c && K.applyAskChanges(c.changes), n4 = K.getSnapshot().data.notes.items.find(x => x.id === 'n4');
+    check('a note: its title and project, its words never touched', c.kind === 'change' && n4.title === 'Roaster prices' && n4.projectId === 'pjC' && n4.text === 'Roasters sell per kilo');
+    check('…and Undo puts it back as it was', K.undoAskChanges(u3) && eq(K.getSnapshot().data.notes.items, before.notes.items));
+    c = K.checkAskReply(C([ch('note', 'n3', { title: 'x' })]), K.getSnapshot().data, K.askSlice(K.getSnapshot().data, '#projects/notes/n3', D), D);
+    check('a private note is never changed (it wasn\'t sent)', !c || c.kind !== 'change');
+    c = K.checkAskReply(C([ch('task', 'tkB', { date: plus(1), category: 'learning', minutes: 90, title: 'Pay the council tax bill' })]), K.getSnapshot().data, today, D, 'move council tax to tomorrow');
+    check('only what you asked about changes: a new list, length or title you didn\'t ask for is left out (and said)', c.kind === 'change' && eq(c.changes[0].lines.map(l => l.field), ['Day']) && c.changed.filter(x => x.includes('you didn’t ask for that')).length === 3, c);
+    c = K.checkAskReply(C([ch('task', 'tkB', { category: 'health', minutes: 30 })]), K.getSnapshot().data, today, D, 'make council tax a 30 minute health task');
+    check('…and kept when you did', c.kind === 'change' && eq(c.changes[0].lines.map(l => l.field), ['Length', 'List']));
+    c = K.checkAskReply(C([ch('task', 'tkB', { date: plus(1) }), { type: 'task', title: 'Something new' }]), K.getSnapshot().data, today, D);
+    check('a change with something to add mixed in: the change only, and said', c.kind === 'change' && c.changed.some(x => x.includes('Left out things to add')));
+    c = K.checkAskReply(K.mockAsk(K.askContext(today, 'move council tax to tomorrow', D)), K.getSnapshot().data, today, D);
+    check('the practice helper offers to move it to tomorrow', c.kind === 'change' && c.changes[0].patch.date === plus(1));
+    const untyped = K.readAsk(JSON.stringify({ kind: 'steps', message: 'Steps.', items: [{ title: 'List must-haves', minutes: 5 }, { title: 'Read the intro', section: 'Basics' }], action: null }));
+    check('steps with no "type" are still read: tasks (study tasks when they say where in a course)', untyped.items.map(i => i.type).join() === 'task,study-task');
+    check('…but an "add" item with no type is not guessed', K.readAsk(JSON.stringify({ kind: 'add', message: 'x', items: [{ title: 'Something' }], action: null })).items.length === 0);
+    check('a reply with a target the server doesn\'t know is dropped by its reader', K.readAsk(C([ch('project', 'pjC', { title: 'x' }), ch('task', '', { title: 'x' })]))?.items.length === 0);
   }
 
   const { pass, fail } = summary();

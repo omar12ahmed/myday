@@ -3,7 +3,7 @@
 // steer the model through the data. No real notes, projects or tasks.
 import type { AskContext, AskPageContext } from '../supabase/functions/_shared/ai/ask.ts';
 
-type Kind = 'add' | 'steps' | 'answer' | 'cannot';
+type Kind = 'add' | 'steps' | 'change' | 'answer' | 'cannot';
 export interface AskScenario {
   kind: 'ask'; id: string; title: string; tags: string[]; now: string; ctx: AskContext;
   expect: {
@@ -18,6 +18,7 @@ export interface AskScenario {
     studyTasks?: boolean;                            // a course plan: study tasks, placed in the course's own sections
     checkSaid?: boolean;                             // the message says to check the plan against the course
     maxMinutes?: number;                             // every proposed item within this length
+    change?: { target: 'task' | 'appointment' | 'note'; id: string; date?: string; time?: string; minutes?: number; projectId?: string; title?: RegExp }; // a change like this
   };
 }
 const NOW = '2026-10-20T09:30'; // a Tuesday
@@ -33,7 +34,7 @@ const MOVE: AskPageContext = { projects: PROJECTS, project: { id: 'pjMove', titl
   tasks: [{ id: 'm1', title: 'Sort out the move', done: false }], notes: ['Budget £1,150 a month'] } };
 const AMINA: AskPageContext = { projects: PROJECTS, note: { id: 'n1', title: 'Call with Amina', text: 'Amina can introduce me to two traders. Follow up with her Thursday. Need a price list by Friday. Also think about Somali-first listings.' } };
 const TASK: AskPageContext = { projects: PROJECTS, task: { id: 'tk9', title: 'Finish cybersecurity application', due: '2026-10-24', minutes: 90, notes: 'Personal statement and two references' } };
-const CAL: AskPageContext = { projects: PROJECTS, calendar: { day: '2026-10-20', appointments: [{ title: 'Dentist', time: '15:00' }] } };
+const CAL: AskPageContext = { projects: PROJECTS, calendar: { day: '2026-10-20', appointments: [{ id: 'c1', title: 'Dentist', time: '15:00' }] } };
 
 type Course = NonNullable<AskPageContext['course']>;
 const TK = (id: string, title: string, done = false, kind: 'learn' | 'practical' = 'learn') => ({ id, title, minutes: 30, kind, done });
@@ -99,6 +100,16 @@ export const ASK_SCENARIOS: AskScenario[] = [
   A('k41-revise-or-new', 'Revise or something new? (Today, revision due)', 'today', 'should I revise or start something new?', TODAY, { kinds: ['answer'], action: 'start-revision' }),
   A('k42-revise-arabic', 'Revise one subject', 'study', 'I want to revise my Arabic for ten minutes', { ...STUDY, study: { ...STUDY.study!, revisionDue: 4 } }, { kinds: ['answer'], action: 'start-revision', scope: 'arabic' }),
   A('k43-nothing-due', 'Revise with nothing due', 'study', 'can I do some revision?', { ...STUDY, study: { ...STUDY.study!, revisionDue: 0 } }, { kinds: ['answer'] }),
+  // Changing what's already saved (1.27.0): only things on the page, only the allowed fields; never deleting or ticking off.
+  A('k44-move-task', 'Move a task due today', 'today', 'move council tax to Friday', TODAY, { kinds: ['change'], change: { target: 'task', id: 'tk1', date: '2026-10-23' } }),
+  A('k45-rename', 'Rename a project task', 'project', 'rename "List 10 offices nearby" to "List 10 offices within a mile"', COFFEE, { kinds: ['change'], change: { target: 'task', id: 't2', title: /within a mile/i } }),
+  A('k46-shorter', 'Make a task shorter', 'task', 'this should only take 45 minutes', TASK, { kinds: ['change'], change: { target: 'task', id: 'tk9', minutes: 45 } }),
+  A('k47-note-project', 'Put a note in a project', 'note', 'this note belongs in the Hargeisa project', AMINA, { kinds: ['change'], change: { target: 'note', id: 'n1', projectId: 'pjHar' } }),
+  A('k48-move-appt', 'Move an appointment', 'calendar', 'move the dentist to 4pm', CAL, { kinds: ['change'], change: { target: 'appointment', id: 'c1', time: '16:00' } }),
+  A('k49-delete', 'Delete something', 'today', 'delete the council tax task', TODAY, { kinds: ['cannot'] }),
+  A('k50-mark-done', 'Mark something done', 'today', 'mark council tax as done, I paid it', TODAY, { kinds: ['cannot', 'answer'] }),
+  A('k51-not-here', 'Change something not on this page', 'today', 'move my electricity bill reminder to next week', TODAY, { kinds: ['cannot', 'answer'] }),
+  A('k52-day-and-time', 'A new day and time', 'task', 'push this to tomorrow at 7pm', TASK, { kinds: ['change'], change: { target: 'task', id: 'tk9', date: '2026-10-21', time: '19:00' } }),
   // Planning a course on the Study roadmap (1.26.0): the course's outline is sent; study tasks come back.
   A('c01-empty-google', 'An empty public course', 'course', 'Break this course into study tasks', { course: CO('coG', 'Google Cybersecurity Certificate', []) }, { kinds: ['steps'], studyTasks: true, checkSaid: true }),
   A('c02-thm-partial', 'A partly planned course', 'course', 'Break this course into study tasks', { course: CO('coP', 'TryHackMe: Pre-Security path', [M('m1', 'Networking', [S('s1', 'How the web works', [TK('t1', 'DNS in detail', true), TK('t2', 'HTTP in detail')])])]) }, { kinds: ['steps'], studyTasks: true }),
