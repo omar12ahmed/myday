@@ -7,6 +7,7 @@ import { CourseDetails } from './CourseDetails';
 import { Dashboard } from './Dashboard';
 import { MapView } from './MapView';
 import { ProgressView } from './ProgressView';
+import { ReadingView } from './ReadingView';
 import { RevisionView } from './RevisionView';
 import { Roadmap } from './Roadmap';
 import { studyRoute } from './route';
@@ -48,6 +49,7 @@ export function StudyScreen({ data, hash }: { data: MyDayData; hash: string }) {
   else if (view === 'concept') screen = <ConceptView key={id} data={data} id={id} />;
   else if (view === 'settings') screen = <StudySettings data={data} />;
   else if (view === 'progress') screen = <ProgressView data={data} historyAll={historyAll} showAll={() => setHistoryAll(true)} />;
+  else if (view === 'reading') screen = <ReadingView data={data} />;
   else return <div className="st-view enter"><Dashboard data={data} lengths={lengths} setLength={setLength} /></div>;
   // The other screens are one column, kept to a comfortable reading width on wide screens.
   return <div className={`st-view enter mx-auto ${(view === 'cybersecurity' && (!id || id === 'practice')) || (view === 'arabic' && (!id || id === 'texts')) || view === 'map' ? 'max-w-[1000px]' : 'max-w-[720px]'}`}>{screen}</div>;

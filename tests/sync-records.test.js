@@ -49,6 +49,8 @@ const clone = o => JSON.parse(JSON.stringify(o));
   raw.health.food.shopping = [{ id: 'sh1', name: 'milk', category: 'Dairy', checked: false, recipes: [], manual: true }];
   // Daily exercises (Health): one exercise, with two days of sets logged.
   raw.health.daily = { exercises: [{ id: 'de1', name: 'Push-ups', target: 150, set: 25, archived: false }], log: { '2026-10-02': { de1: [25, 25, 25] }, '2026-10-03': { de1: [25] } } };
+  // Study → Reading: a book part-way through, with two notes.
+  raw.reading = { books: [{ id: 'bk1', title: 'Deep Work', author: 'Cal Newport', pages: 296, page: 84, notes: [{ id: 'bn1', page: 42, text: 'Depth compounds.', addedOn: '2026-10-03' }, { id: 'bn2', page: null, text: 'Re-read chapter 2.', addedOn: '2026-10-04' }], addedOn: '2026-10-01', finishedOn: null }] };
   raw.fitness = { units: 'metric', answers: null, setOn: null };
   raw.notes.items = [{ id: 'nt1', categoryId: raw.notes.categories[3].id, title: '', text: 'Budget for the van', pinned: false, createdAt: '2026-10-01T09:00', updatedAt: '2026-10-01T09:00' }];
   raw.tasks.lists = [{ id: 'tl1', name: 'Moving house' }];
@@ -71,7 +73,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   console.log('\n[1] Every record survives the trip unchanged');
   const recs = R.localRecords(data);
   const kinds = [...new Set([...recs.keys()].map(k => R.splitKey(k).kind))].sort();
-  check('every kind of record is there', eq(kinds, ['arabic', 'arabic_attempt', 'arabic_card', 'commitment', 'context', 'cyber_card', 'cybersecurity', 'daily', 'day', 'finance', 'fitness', 'food', 'holidays', 'list', 'note', 'notes', 'pay', 'patterns', 'project', 'queue', 'recipe', 'review', 'rota', 'session', 'settings', 'study', 'task', 'tasks', 'workout', 'wsession'].filter(k => k !== 'context' && k !== 'day').sort()), kinds);
+  check('every kind of record is there', eq(kinds, ['arabic', 'arabic_attempt', 'arabic_card', 'book', 'commitment', 'context', 'cyber_card', 'cybersecurity', 'daily', 'day', 'finance', 'fitness', 'food', 'holidays', 'list', 'note', 'notes', 'pay', 'patterns', 'project', 'queue', 'recipe', 'review', 'rota', 'session', 'settings', 'study', 'task', 'tasks', 'workout', 'wsession'].filter(k => k !== 'context' && k !== 'day').sort()), kinds);
   const changedOnTheWay = [...recs].filter(([key, c]) => R.fingerprint(R.cleanRecord(key, clone(c))) !== R.fingerprint(c)).map(([k]) => k);
   check('checked as it arrives on another device, every record is exactly the same (so devices never drift apart)', changedOnTheWay.length === 0, changedOnTheWay);
   const putBack = clone(R.freshState());

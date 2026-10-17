@@ -687,5 +687,57 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   await go('today', 2026, 11, 2, 9);
   check('…and while it runs, Today\'s card goes back to it', (await text('[data-action=streak-start]')) === 'Back to your study session');
 
+  // ------------------------------------------------------------------
+  console.log('\n[54] Reading: books, the page stepper, notes, finished');
+  await go('study'); await reset(); await go('study');
+  check('Study home offers the two tabs (Courses, Reading)', eq(await texts('.study-tabs .seg-link'), ['Courses', 'Reading']) && (await ev(`document.querySelector('.study-tabs a[href="#study"]').getAttribute('aria-selected')`)) === 'true');
+  await nav('study/reading');
+  check('Reading opens empty, with a way to add a book (Reading tab selected)', (await text('#reading-h')) === 'Now reading' && await exists('[data-action=read-add]') && (await ev(`document.querySelector('.study-tabs a[href="#study/reading"]').getAttribute('aria-selected')`)) === 'true');
+  await click('[data-action=read-add]'); await sleep(150);
+  await setVal('#bkTitle', 'Deep Work'); await setVal('#bkAuthor', 'Cal Newport'); await setVal('#bkPages', '296');
+  await click('[data-action=read-add-save]'); await sleep(200);
+  check('adding a book lists it with its author and page count, and saves it', (await text('.book-row')).includes('Deep Work') && (await text('.book-row')).includes('Cal Newport') && (await text('.book-row')).includes('0 of 296') && (await D()).reading.books.length === 1);
+  await click('[data-action=read-add]'); await sleep(150);
+  await setVal('#bkTitle', 'deep work'); await click('[data-action=read-add-save]'); await sleep(200);
+  check('a duplicate title is refused with a message (any case)', (await text('[role=alert]')).includes('already on your reading list') && (await D()).reading.books.length === 1);
+  await setVal('#bkPages', '0'); await setVal('#bkTitle', 'Atomic Habits');
+  await click('[data-action=read-add-save]'); await sleep(200);
+  check('an out-of-range page count is refused too', (await text('[role=alert]')).includes('whole number') && (await D()).reading.books.length === 1);
+  await setVal('#bkPages', ''); await click('[data-action=read-add-save]'); await sleep(200);
+  check('a book without a page count is fine — no bar, just the page number', (await D()).reading.books.length === 2 && (await texts('.book-row')).some(r => r.includes('Atomic Habits')) && !(await ev(`(() => { const rows = [...document.querySelectorAll('.book-row')]; const r = rows.find(x => x.textContent.includes('Atomic Habits')); return !!r.querySelector('[role=img]'); })()`)));
+  const bk1 = (await D()).reading.books[0].id;
+  await click(`[data-action=read-page][data-id="${bk1}"][data-dir="1"]`); await sleep(150);
+  await click(`[data-action=read-page][data-id="${bk1}"][data-dir="1"]`); await sleep(200);
+  check('the page stepper counts up, one page at a time', (await D()).reading.books[0].page === 2 && (await text('.book-row')).includes('2 of 296') && (await text('.book-row')).includes('1%'));
+  await click(`[data-action=read-page][data-id="${bk1}"][data-dir="-1"]`); await sleep(200);
+  check('…and back down', (await D()).reading.books[0].page === 1);
+  await click(`[data-action=read-notes][data-id="${bk1}"]`); await sleep(150);
+  await setVal('[data-f=read-note-page]', '42'); await setVal('[data-f=read-note-text]', 'Depth compounds.');
+  await click(`[data-action=read-note-add][data-id="${bk1}"]`); await sleep(200);
+  check('a note lands with its page chip, and the field clears for the next one', (await text('.book-row')).includes('p. 42') && (await text('.book-row')).includes('Depth compounds.') && (await ev(`document.querySelector('[data-f=read-note-text]').value`)) === '' && (await D()).reading.books[0].notes.length === 1);
+  await setVal('[data-f=read-note-text]', 'Second note, no page.');
+  await click(`[data-action=read-note-add][data-id="${bk1}"]`); await sleep(200);
+  check('a note without a page is fine', (await D()).reading.books[0].notes.length === 2 && (await D()).reading.books[0].notes[1].page === null);
+  await click(`[data-action=read-note-del][data-book="${bk1}"]`); await sleep(200);
+  check('a note can be removed', (await D()).reading.books[0].notes.length === 1 && (await D()).reading.books[0].notes[0].text === 'Second note, no page.');
+  await editStorage(`s => { s.reading.books[0].page = 295; }`);
+  await go('study/reading');
+  await click(`[data-action=read-page][data-id="${bk1}"][data-dir="1"]`); await sleep(250);
+  check('reaching the last page finishes the book: off Now reading, shelved under Finished with the day', (await D()).reading.books[0].finishedOn === '2026-11-02' && !(await text('#app')).includes('295 of 296') && (await text('#read-fin-h')).includes('Finished (1)') && (await text('#app')).includes('Deep Work'));
+  await click(`[data-action=read-reopen][data-id="${bk1}"]`); await sleep(200);
+  check('Read again puts it back, one page short of the end', (await D()).reading.books[0].finishedOn === null && (await D()).reading.books[0].page === 295);
+  const bk2 = (await D()).reading.books[1].id;
+  await click(`[data-action=read-finish][data-id="${bk2}"]`); await sleep(200);
+  check('a book with no page count is finished with "Mark as finished"', (await D()).reading.books[1].finishedOn === '2026-11-02');
+  await click(`[data-action=read-remove][data-id="${bk2}"]`); await answer(true);
+  check('Remove (asked first) takes a finished book away, notes and all', (await D()).reading.books.length === 1);
+  await editStorage(`s => { s.reading = { books: [{ id: 'ok', title: 'Plankton', author: '', pages: 100, page: 140, notes: [{ id: 'n1', page: 500, text: 'Beyond the book' }, { id: 'n2', page: null, text: '' }, 'junk'], addedOn: '2026-11-01', finishedOn: null }, { id: 'noT', author: 'No title' }, 'nope'], futureReadingField: { kept: true } }; }`);
+  await go('study/reading');
+  await click('#themeBtn'); await sleep(200); // a save, so the tidied data is what's read back
+  const rd = (await D()).reading;
+  check('messy saved data is tidied: one good book, page pulled back to the last, one good note (its out-of-range page let go), the rest dropped — and a future field kept', rd.books.length === 1 && rd.books[0].page === 100 && rd.books[0].notes.length === 1 && rd.books[0].notes[0].page === null && rd.books[0].notes[0].text === 'Beyond the book' && eq(rd.futureReadingField, { kept: true }));
+  await go('today');
+  check('reading is never on Today (and never in the learning streak)', !(await text('#app')).includes('Now reading') && !(await text('#app')).includes('Plankton'));
+
   finish();
 })().catch(e => { console.error('HARNESS ERROR', e); const s = T.summary(); console.log(`${s.pass} passed, ${s.fail} failed before the error`); process.exit(2); });
