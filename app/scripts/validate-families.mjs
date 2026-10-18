@@ -1,7 +1,7 @@
 // Word families on the Arabic vocabulary page (1.38.0): MyDay's own authored file, checked at every build, so a word
 // can't land in the wrong family or slip through unplaced. Families are display information only: revision, answers
 // and saved data are untouched. (Whether every Arabic run in the notes has a full reading is checked by the
-// arabic-families rules test, which runs the app's own transliteration.)
+// arabic-pronunciation-rules test, which runs the app's own transliteration.)
 import { readFileSync } from 'node:fs';
 const root = new URL('../../', import.meta.url);
 const read = p => JSON.parse(readFileSync(new URL(p, root), 'utf8'));

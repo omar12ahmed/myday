@@ -277,6 +277,19 @@ tapped "Not this week". Never a notification. Projects has a link to it too ("Lo
 `reviewDay`, `reviewed` and `reviewHidden`. Going back to 1.36.0 is safe: checked with its own code (5/5) and its
 built app (3/3).
 
+**Word families (1.38.0):** on the Arabic vocabulary page (`#study/arabic/vocabulary`), a **Word families** card sits
+above the list: one view, nothing to switch. It shows the four roots that connect 12 of the 48 starter words — ك-ت-ب
+“writing” (5 words), د-ر-س “studying” (3), ق-ر-أ “reading” (2) and ط-ل-ب “seeking” (2) — each root shown whole with
+its reading, and each word a button: a tap shows its note (why it belongs, with its reading and meaning) and “Show it
+in the list, with its revision buttons”; a second tap closes it. Pairs are marked ⇄ (past and present, or a gender
+pair), and each family explains its pattern, such as مَـ “place of” in both مَكْتَبَة and مَدْرَسَة. The other 36
+words are named honestly in two groups: 14 whose relatives aren’t in the list yet, and 22 small words not built from
+roots. Each family word in the list carries a small “ك-ت-ب family” badge. Readings follow Show / Hide transliteration.
+The families are MyDay’s own authored file (`content/teaching/arabic/word-families.json`, by word id), checked at
+every build by `app/scripts/validate-families.mjs`: every member exists and is placed once, contains its root’s
+letters in order, pairs and notes belong to their family, examples really appear, and all 48 words are placed. For
+noticing, not testing: nothing is saved and revision is unchanged.
+
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
 
@@ -529,6 +542,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/caseFile.ts`, `src/projects/CaseViews.tsx` | The Case template (1.35.0): `caseFile.ts` (reading what's saved, unknown fields kept, links to missing items let go; the timeline, evidence and issues with their limits, links, counts and the size guard); `CaseViews.tsx` (the Overview's "Your case" card and the Timeline, Evidence and Issues tabs). |
 | `src/data/projectDashboard.ts`, `src/projects/AtAGlance.tsx` | The dashboards per kind (1.36.0): `projectDashboard.ts` (the tiles, the next dates, the weeks, entries by month, each issue's links and Worth a look; Today's own dashboard numbers stay in `dashboard.ts`); `AtAGlance.tsx` (the At a glance card, its pictures and Summarise this). |
 | `src/data/weekReview.ts`, `src/review/ReviewScreen.tsx`, `src/today/ReviewCard.tsx` | The weekly review (1.37.0): `weekReview.ts` (when the review is due, what moved, what's waiting, focus, and saving the review); `ReviewScreen.tsx` (the four steps and See the pattern); `ReviewCard.tsx` (the card on Today). |
+| `src/study/arabic/WordFamilies.tsx`, `src/study/arabic/families.ts`, `content/teaching/arabic/word-families.json`, `scripts/validate-families.mjs` | Word families (1.38.0): the card on the vocabulary page and its notes; which family a word is in; the authored families (by word id); the build check. |
 | `src/commitments/` | Work shifts and appointments: the form and list used by both Today and Calendar. |
 | `src/shell/` | Navigation, the top bar's parts (`TopBar`: the Focus mode switch and your account; `focusMode.ts`, the device-only `myday.focus`), the theme button, the shared footer (`AppFooter`), the "couldn't be read" notice (`LoadIssue`) and the screens for unreadable or older data. |
 | `public/icon.svg` | The tab icon. |
@@ -1171,3 +1185,9 @@ returns up to 8 small tasks; you tick the ones to add.
     a note. A card on Today on your review day, and a link from Projects.
     **See the pattern** (only on your tap, with AI help) names a pattern or two in your week. Saved data is
     all optional. The server's `ask` job was deployed first; no database change; going back to 1.36.0 is safe.
+51. **Release 1.38.0:** word families on the Arabic vocabulary page. A **Word families** card above the word list
+    shows the four roots that connect 12 of the 48 starter words (ك-ت-ب, د-ر-س, ق-ر-أ, ط-ل-ب): tap a word for its
+    note, reading and meaning, and a way to it in the list with its revision buttons. Each family's pattern is
+    explained, and the other 36 words are named in two honest groups. Families are MyDay's own authored file,
+    checked at every build; nothing is saved and revision is unchanged. No data, server or database change; going
+    back to 1.37.0 is safe.
