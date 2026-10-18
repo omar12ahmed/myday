@@ -19,6 +19,8 @@ import { Lines, LinkButton } from '../cybersecurity/parts';
 import { Ar, Mixed } from './Ar';
 import { familyOf } from './families';
 import { Root, WordFamilies } from './WordFamilies';
+import { PlayButton, VoiceNote } from './Listen';
+import { hasVoice } from './voice';
 import { Pronunciation, PronunciationControls } from './Pronunciation';
 import { TeachingLesson } from '../teaching/TeachingLesson';
 import texts from './data/texts.json';
@@ -77,7 +79,7 @@ function MapView({ data }: { data: MyDayData }) {
       <h2 className="text-[28px] lg:text-[34px] mb-1">From first sounds to independent use.</h2>
       <Ar block className="text-[26px] text-fg-2 mt-0">العربية الفصحى</Ar>
       <p>Modern Standard Arabic, one small session at a time: script and sounds first, then sentences, reading, listening and writing.</p>
-      <p className="text-sm text-fg-2 flex gap-2 items-start"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />No recordings are included yet. For listening and speaking, use a verified recording or a fluent speaker; typed work never stands in for them.</p>
+      <p className="text-sm text-fg-2 flex gap-2 items-start"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />{hasVoice ? 'The starter words have a synthesised voice to copy, in Vocabulary; lessons and texts have no recordings yet. ' : 'No recordings are included yet. '}For listening and speaking, use a verified recording or a fluent speaker; typed work never stands in for them.</p>
       <div className="rounded-tile bg-surface p-4 border border-outline mt-4" data-ar-next={step.resume ? 'resume' : 'next'}>
         <Eyebrow>{step.resume ? 'Pick up where you left off' : started ? 'Your next small step' : 'Your first small step'}</Eyebrow>
         <h3>{lessonIndex[step.lessonId].title}</h3>
@@ -431,8 +433,8 @@ function ChecksInRevision({ data, ids }: { data: MyDayData; ids: string[] }) {
 }
 
 // The starter words, each with its example, and your choice of which come back in revision: recognising a word
-// first (Arabic → meaning), writing it from memory when you want to. Listening and speaking aren't tested: no
-// recordings are included.
+// first (Arabic → meaning), writing it from memory when you want to. Each word and example has a play button once
+// its synthesised clip has been listened to (Listen.tsx); listening and speaking still aren't tested.
 function Vocabulary({ data }: { data: MyDayData }) {
   const confirm = useConfirm();
   const k = todayKey(), ids = texts.lexicon.map(w => w.id), next = nextWords(data, ids, ADD_A_FEW), today = wordsAddedOn(data, k);
@@ -448,15 +450,17 @@ function Vocabulary({ data }: { data: MyDayData }) {
       <p className="text-[15px]" data-ar-words-in={inRev}>{inRev ? `${plural(inRev, 'word')} of ${texts.lexicon.length} in your revision.` : 'None in your revision yet.'} Words you add first come back tomorrow, then at growing gaps. A few new ones a day is plenty: the course suggests 3 to 8, and a day with none is fine.</p>
       {plenty && <p className="text-[15px]" data-ar-plenty="">That’s {today} new words today, which is plenty. The rest will keep for another day.</p>}
       {next.length > 0 && <Button variant={plenty ? 'ghost' : 'primary'} data-action="ar-words-add" onClick={() => addToRevision(next.map(id => wordCard(id, 'recognise')))}>Add the next {next.length === 1 ? 'word' : plural(next.length, 'word')} to revision</Button>}
-      <p className="text-sm text-fg-2 flex gap-2 items-start mt-3 mb-0"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />Revision covers reading and writing. Without recordings, listening and speaking stay untested.</p>
+      {hasVoice ? <VoiceNote /> : <p className="text-sm text-fg-2 flex gap-2 items-start mt-3 mb-0"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />Revision covers reading and writing. Without recordings, listening and speaking stay untested.</p>}
     </Card>
     <WordFamilies />
     <Card><ul className="list-none p-0 m-0 divide-y divide-outline" data-ar-vocabulary="">{texts.lexicon.map(w => {
       const recognise = cardState(data, wordCard(w.id, 'recognise')), write = cardState(data, wordCard(w.id, 'write')), fam = familyOf(w.id);
       return <li key={w.id} data-ar-word={w.id} tabIndex={-1} data-in={recognise || write ? 'yes' : 'no'} className="py-3 grid gap-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-4 items-baseline focus:outline-2 focus:outline-primary focus:outline-offset-4 rounded-sm">
-        <div><Ar block className="text-[26px] font-medium m-0">{w.form_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.meaning_en} · {w.part_of_speech.replace('_', ' ')}</p>
+        <div className="flex items-start gap-2"><div className="min-w-0 flex-1"><Ar block className="text-[26px] font-medium m-0">{w.form_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.meaning_en} · {w.part_of_speech.replace('_', ' ')}</p>
           {fam && <p className="text-xs text-fg-2 m-0 mt-1" data-ar-family-badge={fam.id}><span className="inline-flex items-center gap-1 rounded-full bg-surface-2 border border-outline px-2 py-0.5"><Root f={fam} reading={false} /> family</span></p>}</div>
-        <div><Ar block className="text-[20px] m-0">{w.example_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.example_meaning_en}</p></div>
+          <PlayButton id={w.id} part="word" label={w.form_ar} /></div>
+        <div className="flex items-start gap-2"><div className="min-w-0 flex-1"><Ar block className="text-[20px] m-0">{w.example_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.example_meaning_en}</p></div>
+          <PlayButton id={w.id} part="example" label={`the example for ${w.form_ar}`} /></div>
         <div className="sm:col-span-2 mt-1">
           {(recognise || write) && <p className="text-sm m-0 mb-1.5">{recognise && <span className="block">Recognising it: {recognise}</span>}{write && <span className="block">Writing it: {write}</span>}</p>}
           <div className="flex flex-wrap gap-2">

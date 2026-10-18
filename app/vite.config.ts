@@ -36,7 +36,8 @@ function checkNoSecrets(mode: string) {
 
 // The service worker (sw/sw.js), so MyDay opens without a connection and can be installed as an app: built with this
 // release's identifier and the list of every file it's made of (the built ones and the ones in public/), so each
-// release is cached whole and replaces the one before. Only in the built app — never on the dev server.
+// release is cached whole and replaces the one before — apart from the Arabic clips, listed separately and cached
+// only when played. Only in the built app — never on the dev server.
 function serviceWorker(): Plugin {
   const publicFiles = (dir: string): string[] => readdirSync(dir).flatMap(f => {
     const p = join(dir, f)
@@ -47,13 +48,16 @@ function serviceWorker(): Plugin {
     apply: 'build',
     enforce: 'post',
     generateBundle(_options, bundle) {
-      const files = [...new Set(['index.html', ...Object.keys(bundle), ...publicFiles(fileURLToPath(new URL('./public', import.meta.url)))])]
+      const all = [...new Set(['index.html', ...Object.keys(bundle), ...publicFiles(fileURLToPath(new URL('./public', import.meta.url)))])]
         .filter(f => f !== 'sw.js' && !f.endsWith('.map'))
         .map(f => './' + f.split('\\').join('/'))
         .sort()
+      // The Arabic clips are cached one by one when played, not with the release (see sw/sw.js).
+      const audio = all.filter(f => f.startsWith('./arabic-audio/')), files = all.filter(f => !audio.includes(f))
       const source = readFileSync(new URL('./sw/sw.js', import.meta.url), 'utf8')
         .replace('__VERSION__', JSON.stringify(`${version}-${commit}${changed ? '-changes' : ''}-${Date.now().toString(36)}`))
         .replace('__FILES__', JSON.stringify(files))
+        .replace('__AUDIO__', JSON.stringify(audio))
       this.emitFile({ type: 'asset', fileName: 'sw.js', source })
     },
   }

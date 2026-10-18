@@ -2,6 +2,7 @@ import { ArrowDown, ArrowLeftRight, X } from 'lucide-react';
 import { useContext, useState } from 'react';
 import { Card } from '../../components/Card';
 import { Ar, Mixed } from './Ar';
+import { PlayButton } from './Listen';
 import { FAMILIES as families, type Family } from './families';
 import { PronunciationContext } from './pronunciationContext';
 import texts from './data/texts.json';
@@ -100,10 +101,11 @@ function WordNote({ f, id, onClose }: { f: Family; id: string; onClose: () => vo
   return (
     <div className="mt-2.5 rounded-tile bg-surface border border-outline px-3 py-2.5" data-ar-family-note={id}>
       <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <Ar block className="text-[26px] m-0">{w.form_ar}</Ar>
           <p className="text-sm text-fg-2 m-0">{w.meaning_en} · {w.part_of_speech.replace('_', ' ')}</p>
         </div>
+        <PlayButton id={id} part="word" label={w.form_ar} />
         <button type="button" onClick={onClose} aria-label="Close this note" className="flex-none grid place-items-center size-11 rounded-btn text-fg-2 hover:bg-surface-2 cursor-pointer"><X size={18} aria-hidden="true" /></button>
       </div>
       {note && <p className="text-[15px] m-0 mt-1.5"><Note text={note} /></p>}
