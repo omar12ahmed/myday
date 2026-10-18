@@ -34,6 +34,7 @@ import { hasAdjustNote, onHandover } from '../ai/handover';
 import { MindCard } from '../ai/MindCard';
 import { DueTodayCard } from './DueTodayCard';
 import { ProjectStepsCard, TasksLink } from './ProjectCards';
+import { ReviewCard } from './ReviewCard';
 import { NoticedLink } from '../patterns/NoticedScreen';
 import { undoMind, type MindUndo } from '../ai/mind';
 import { canUndo, undoAi, type Undo } from '../ai/apply';
@@ -340,6 +341,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
         ))}
         {mindSlots}
         {slot('order-1', <QuickAdd k={k} />, 'slot-quick')}
+        {slot('order-1', <ReviewCard data={data} k={k} />, 'slot-review')}
         {slot('order-1', <DueTodayCard data={data} k={k} />, 'slot-due')}
         {slot('order-1', <ProjectStepsCard data={data} k={k} />, 'slot-steps')}
         {slot('order-1', <TasksLink data={data} />, 'slot-tasks')}
@@ -361,6 +363,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
         {mindSlots}
         {slot('order-1', proposalCard)}
         {slot('order-1', <QuickAdd k={k} />, 'slot-quick')}
+        {slot('order-1', <ReviewCard data={data} k={k} />, 'slot-review')}
         {slot('order-1', <DueTodayCard data={data} k={k} />, 'slot-due')}
         {slot('order-1', <ProjectStepsCard data={data} k={k} />, 'slot-steps')}
         {slot('order-1', <TasksLink data={data} />, 'slot-tasks')}

@@ -19,7 +19,7 @@ const PAGES: { label: string; page: AskPage }[] = [
   { label: 'Today', page: 'today' }, { label: 'A task', page: 'task' }, { label: 'Calendar', page: 'calendar' },
   { label: 'A project', page: 'project' }, { label: 'A note', page: 'note' }, { label: 'Study', page: 'study' },
   { label: 'A course on your roadmap', page: 'course' }, { label: 'Tasks, Projects, Notes and other pages', page: 'projects' },
-  { label: 'Health and Finance', page: 'finance' },
+  { label: 'Health and Finance', page: 'finance' }, { label: 'Your week (the weekly review)', page: 'review' },
 ];
 // The other AI help, each only when you tap it (the request shapes are in supabase/functions/_shared/ai/).
 const OTHER: [string, string][] = [

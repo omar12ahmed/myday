@@ -4,7 +4,7 @@
 //
 // A note in no collection and no project is in the Inbox: you never have to file anything. Collections ("categories" in the
 // saved data) are optional places to file notes later; a note whose collection has gone is back in the Inbox.
-import { isDateTime, localStamp } from './dates';
+import { isDateKey, isDateTime, localStamp } from './dates';
 import type { Note, NoteCategory, NotesData } from './types';
 import { isObj, listOf, uid } from './util';
 
@@ -42,6 +42,7 @@ export function normalizeNotes(raw: unknown, report: { dropped: number }): Notes
       updatedAt: isDateTime(n.updatedAt) ? n.updatedAt : isDateTime(n.createdAt) ? n.createdAt : now,
     };
     if (typeof note.projectId !== 'string' || !note.projectId) delete note.projectId; // a project link (1.12.0), or none
+    if (!isDateKey(note.reflectionWeek)) delete note.reflectionWeek; // a weekly review's reflection (1.37.0), or not
     // How it was linked, and the projects you took it out of (1.13.0); each left out when there's nothing to say.
     if (!note.projectId || (note.linkedBy !== 'rules' && note.linkedBy !== 'ai')) { delete note.linkedBy; delete note.linkWhy; }
     else if (typeof note.linkWhy !== 'string' || !note.linkWhy) delete note.linkWhy; else note.linkWhy = note.linkWhy.slice(0, 120);

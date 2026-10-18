@@ -21,8 +21,10 @@ export const ASK_LIMITS = {
   milestones: 30, decisionOptions: 4, decisionPoints: 6, pointChars: 160, questionChars: 200,
   // A business idea's one page, sent only from its Model tab (1.34.0): three answers and what must be true so far.
   answerChars: 1000, beliefs: 12, beliefChars: 110,
+  // The weekly review (1.37.0): what moved per project, what's waiting, next week's focus.
+  reviewProjects: 20, reviewWaiting: 5, reviewWaitingChars: 200, reviewFocus: 3,
 };
-export const ASK_PAGES = ['today', 'tasks', 'task', 'calendar', 'projects', 'project', 'notes', 'note', 'study', 'course', 'health', 'finance', 'other'] as const;
+export const ASK_PAGES = ['today', 'tasks', 'task', 'calendar', 'projects', 'project', 'notes', 'note', 'study', 'course', 'health', 'finance', 'review', 'other'] as const;
 export type AskPage = typeof ASK_PAGES[number];
 export const ASK_KINDS = ['add', 'steps', 'answer', 'cannot', 'change'] as const;
 export const ASK_ITEM_TYPES = ['task', 'note', 'appointment', 'project', 'study-task', 'change', 'milestone', 'pro', 'con', 'option', 'must-be-true'] as const;
@@ -49,6 +51,10 @@ export interface AskPageContext {
   task?: { id: string; title: string; due: string | null; minutes: number; notes: string };
   calendar?: { day: string; appointments: { id?: string; title: string; time: string }[] }; // id: so a change can name one
   // A course on your Study roadmap, as an outline (titles, lengths, kinds, done or not — no links, notes or concepts).
+  // The weekly review (#review, 1.37.0): the last seven days in counts, what's waiting and the focus — never anything of
+  // a private project.
+  review?: { from: string; to: string; moved: { project: string; tasks: number; milestones: number; decisions: number; found: number; recorded: number }[];
+    otherTasks: number; studySessions: number; studyMinutes: number; workouts: number; waiting: string[]; focus: string[] };
   course?: { id: string; title: string; minutes: number; modules: { id: string; title: string; sections: { id: string; title: string; tasks: { id: string; title: string; minutes: number; kind: 'learn' | 'practical'; done: boolean }[] }[] }[] };
 }
 
@@ -105,7 +111,15 @@ export function checkAskContext(raw: unknown): raw is AskContext {
   if (c.followUp !== undefined && !(obj(c.followUp) && only(c.followUp, ['previous', 'text']) && str(c.followUp.previous, L.previousChars) && str(c.followUp.text, L.followUpChars, false))) return false;
   if (!obj(c.context)) return false;
   const x = c.context;
-  if (!only(x, ['projects', 'today', 'study', 'project', 'note', 'task', 'calendar', 'course'])) return false;
+  if (!only(x, ['projects', 'today', 'study', 'project', 'note', 'task', 'calendar', 'course', 'review'])) return false;
+  if (x.review !== undefined) {
+    const r = x.review, n = (v: unknown) => Number.isInteger(v) && (v as number) >= 0 && (v as number) <= 100000;
+    if (!(obj(r) && only(r, ['from', 'to', 'moved', 'otherTasks', 'studySessions', 'studyMinutes', 'workouts', 'waiting', 'focus']) && isDate(r.from) && isDate(r.to)
+      && Array.isArray(r.moved) && r.moved.length <= L.reviewProjects && r.moved.every(m => obj(m) && only(m, ['project', 'tasks', 'milestones', 'decisions', 'found', 'recorded']) && str(m.project, L.titleChars, false) && n(m.tasks) && n(m.milestones) && n(m.decisions) && n(m.found) && n(m.recorded))
+      && n(r.otherTasks) && n(r.studySessions) && n(r.studyMinutes) && n(r.workouts)
+      && Array.isArray(r.waiting) && r.waiting.length <= L.reviewWaiting && r.waiting.every(w => str(w, L.reviewWaitingChars, false))
+      && Array.isArray(r.focus) && r.focus.length <= L.reviewFocus && r.focus.every(f => str(f, L.titleChars, false)))) return false;
+  }
   if (x.course !== undefined) {
     const co = x.course;
     if (!obj(co) || !only(co, ['id', 'title', 'minutes', 'modules']) || !str(co.id, 64, false) || !str(co.title, L.titleChars, false) || !Number.isInteger(co.minutes) || !Array.isArray(co.modules) || co.modules.length > L.courseModules) return false;

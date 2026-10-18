@@ -170,6 +170,8 @@ export interface Project {
   model?: BusinessModel;
   // From 1.35.0 (optional; absent = none): a case's own records — its timeline, evidence and issues (data/caseFile.ts).
   case?: CaseFile;
+  // From 1.37.0 (optional): in your weekly focus for the seven days from this day (data/weekReview.ts).
+  focus?: DateKey;
 }
 export interface ProjectsData { items: Project[]; [other: string]: unknown }
 
@@ -468,7 +470,9 @@ export interface Pref { value: number; on: DateKey; from: string | null; why: st
 export interface PatternAnswer { said: 'yes' | 'no'; on: DateKey; examples: number; title: string }
 export interface PatternsData {
   // name: what MyDay calls you (from 1.11.0); aiNotes: you let AI help place notes in projects (1.15.0; absent = off)
-  prefs: { maxMinutes: Record<Category, Pref | null>; maxTasks: Pref | null; name?: string; aiNotes?: true; [other: string]: unknown };
+  prefs: { maxMinutes: Record<Category, Pref | null>; maxTasks: Pref | null; name?: string; aiNotes?: true;
+    // The weekly review (1.37.0): your review day (0 Sunday … 6; absent = Sunday), and the review day you've done or put off.
+    reviewDay?: number; reviewed?: DateKey; reviewHidden?: DateKey; [other: string]: unknown };
   answers: Record<string, PatternAnswer>; // by pattern id, e.g. "size:learning"
   [other: string]: unknown;
 }
@@ -524,6 +528,7 @@ export interface Note {
   // Added in 1.15.0, when AI help has looked at the note (each absent until then):
   aiKind?: 'idea' | 'task' | 'question' | 'reference' | 'journal' | 'other'; // what kind of note it seemed to be
   aiSeen?: string;           // a fingerprint of the words it saw, so it's asked again only if you change them
+  reflectionWeek?: DateKey;  // 1.37.0: your weekly review's reflection, for the seven days from this day
 }
 export interface NotesData {
   categories: NoteCategory[];

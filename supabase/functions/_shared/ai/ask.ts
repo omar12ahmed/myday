@@ -10,7 +10,7 @@
 import type { ChatMessage } from './prompt.ts';
 
 export const ASK_CONTRACT_VERSION = 1;
-export const ASK_PROMPT_VERSION = 'myday-ask-v15';
+export const ASK_PROMPT_VERSION = 'myday-ask-v16';
 export * from './ask-shape.ts';
 import type { AskContext, AskReply } from './ask-shape.ts';
 
@@ -77,6 +77,11 @@ Reply with exactly ONE kind:
   done, not how it turned out — a done "Find out: X" means they've looked into whether X, so say exactly that, never
   that X is confirmed or true; never add facts, amounts or dates that aren't there. If it's about a legal, medical or
   money matter, summarise without advising.
+- A week in review ("review" in the data: the last seven days — what moved in each project, other tasks done, study
+  and workouts, what's waiting, and the focus chosen for next week): when they ask what pattern you see, "answer" in two
+  or three sentences naming one or two patterns the facts show (where the week's effort went, a project that's been
+  quiet, something that keeps moving), warmly and without judging — no scores, no "only", no "should"; a quiet week is
+  fine — then one small, kind suggestion for next week. Only what the data shows; never guess why. No items.
 - "answer": a question or a request for advice. At most four short sentences, practical, ending with one clear next
   step; complete sentences only. If your answer suggests adding something, put it (at most 3) in "items" so they can
   tick it — never just offer. An answer has EITHER one action OR items, not both. Actions, only when they fit:
@@ -146,6 +151,10 @@ export function mockAsk(c: AskContext): string {
     return reply({ kind: 'add', message: `Practice helper (no AI): a few things “${x.project.title}” may depend on — yours to check.`, action: null, items: [
       { type: 'must-be-true', title: 'The people it’s for would try something new for this' }, { type: 'must-be-true', title: 'They would pay enough to cover what it costs' },
       { type: 'must-be-true', title: 'You can reach them without spending much' }] });
+  }
+  if (x.review && /\bpattern\b/i.test(t)) {
+    const r = x.review, top = r.moved[0];
+    return reply({ kind: 'answer', message: `Practice helper (no AI): ${top ? `most of the week went into “${top.project}”` : 'a quiet week — that’s fine'}${r.waiting.length ? `, and ${r.waiting.length} thing${r.waiting.length === 1 ? ' is' : 's are'} waiting` : ''}. One small idea: start next week with the smallest step you can.`, items: [], action: null });
   }
   if (x.project && /\b(summari[sz]e|where (this|it|we) (is|are|stands?))\b/i.test(t)) {
     const p = x.project, done = p.tasks.filter(k => k.done).length, next = p.tasks.find(k => !k.done);

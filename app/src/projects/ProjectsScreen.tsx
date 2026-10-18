@@ -4,6 +4,7 @@ import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Field, TextInput } from '../components/Field';
 import { isBusiness, isCase, setTemplate, TEMPLATES, type TemplateChoice } from '../data/businessModel';
+import { inFocus } from '../data/weekReview';
 import { shortDate } from '../data/dates';
 import { addProject, board, COLUMNS, lastActivity, moveToColumn, nextStep, PROJECT_LIMITS, projectAppointments, projectNotes, projectsInOrder, projectTasks, stageOf, type BoardColumn } from '../data/projects';
 import { update } from '../data/storage';
@@ -53,7 +54,7 @@ function ProjectsHome({ data }: { data: MyDayData }) {
     <>
       <Card aria-labelledby="projects-h" id="projectsIntro" className="max-w-[720px] mx-auto">
         <h2 id="projects-h" className="flex items-center gap-2"><FolderKanban size={22} aria-hidden="true" className="text-primary" /> Your projects</h2>
-        <p className="text-[15px] text-fg-2 m-0">One place for everything about one intention — from a vague idea to small steps on your days.</p>
+        <p className="text-[15px] text-fg-2 m-0">One place for everything about one intention — from a vague idea to small steps on your days. <a href="#review" className="text-primary font-semibold no-underline hover:underline underline-offset-4 whitespace-nowrap" data-action="open-review">Look back at your week</a></p>
         <form className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 items-end mt-4" onSubmit={e => { e.preventDefault(); start(); }}>
           <Field label="Start a project" htmlFor="projectNew">
             <TextInput id="projectNew" value={text} maxLength={PROJECT_LIMITS.title} onChange={e => setText(e.target.value)} placeholder="e.g. A coffee subscription for offices" />
@@ -137,7 +138,7 @@ function ProjectCard({ data, p, back, on, onMove }: { data: MyDayData; p: Projec
     <div className="project-card flex flex-col rounded-card border border-outline bg-surface shadow-card text-fg" data-id={p.id}>
     <a href={`#projects/p/${p.id}`} className="group flex flex-col gap-3 p-5 pb-3 text-fg no-underline rounded-t-card hover:bg-surface-2 transition-colors">
       <span className="flex items-center justify-between gap-2">
-        <span className="flex items-baseline gap-2 min-w-0"><span className="text-xs font-bold tracking-[.08em] uppercase text-primary" data-s="project-stage">{stageOf(p.stage).label}</span>{(isBusiness(p) || isCase(p)) && <span className="text-xs text-fg-3" data-s="project-kind-label">{isCase(p) ? 'Case' : 'Business idea'}</span>}</span>
+        <span className="flex flex-wrap items-baseline gap-x-2 min-w-0"><span className="text-xs font-bold tracking-[.08em] uppercase text-primary" data-s="project-stage">{stageOf(p.stage).label}</span>{(isBusiness(p) || isCase(p)) && <span className="text-xs text-fg-3" data-s="project-kind-label">{isCase(p) ? 'Case' : 'Business idea'}</span>}{inFocus(p) && <span className="text-xs font-semibold text-primary" data-s="project-focus">This week’s focus</span>}</span>
         <span className="flex items-center gap-1.5 text-xs text-fg-3 tabular-nums">{p.private && <Lock size={13} aria-label="Private" data-s="project-private" />}{shortDate(lastActivity(data, p).slice(0, 10))}</span>
       </span>
       <span className="block text-[19px] font-bold leading-snug tracking-[-.01em] break-words">{p.title}</span>

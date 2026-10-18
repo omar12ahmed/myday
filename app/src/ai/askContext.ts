@@ -3,7 +3,8 @@
 // Never a private note; Finance and Health send only the page's name; a project's notes' text only with "AI help with
 // notes" switched on. A business idea's one page only from its Model tab (1.34.0).
 import { ASK_LIMITS as L, type AskContext, type AskPage, type AskPageContext } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
-import { parseKey, prettyDate, todayKey } from '../data/dates';
+import { parseKey, prettyDate, shift, todayKey } from '../data/dates';
+import { focusProjects, whatMoved, whatsWaiting } from '../data/weekReview';
 import { noteName } from '../data/notes';
 import { isBusiness } from '../data/businessModel';
 import { privateProjectIds, projectNotes, projectTasks } from '../data/projects';
@@ -37,7 +38,7 @@ export function askPage(hash: string): { page: AskPage; id: string | null } {
     return { page: 'projects', id: null };
   }
   if (top === 'study') { const p = h.split('/'); return p[1] === 'course' && p[2] ? { page: 'course', id: decodeURIComponent(p[2]) } : { page: 'study', id: null }; }
-  if (top === 'calendar' || top === 'health' || top === 'finance') return { page: top, id: null };
+  if (top === 'calendar' || top === 'health' || top === 'finance' || top === 'review') return { page: top, id: null };
   return { page: 'other', id: null };
 }
 
@@ -56,6 +57,7 @@ export const SENDS = {
   decision: 'the decision you asked about (its question, options, pros and cons)',
   onePage: 'its one page (your three answers, and what must be true with how each is turning out — not what you found)',
   note: 'this note', task: 'this task', calendar: "today's appointments",
+  review: 'your last seven days in counts (what moved in each project, other tasks, study and workouts), what’s waiting and next week’s focus — nothing of private projects',
 } as const;
 const HELD_WORD = { note: 'not this note, it’s private', project: 'not this project, it’s private', task: 'not this task, its project is private' } as const;
 function sendsLine(parts: string[], here: AskSlice['held']['here'] = null): string {
@@ -158,6 +160,17 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey(),
     const t = data.tasks.items.find(x => x.id === id);
     if (t && inPrivate(t.projectId)) here = 'task';
     else if (t) { ctx.task = { id: t.id, title: cut(t.title, L.titleChars), due: t.due, minutes: t.minutes, notes: cut(t.notes, L.taskNotesChars) }; parts.push(SENDS.task); }
+  } else if (page === 'review') {
+    // The weekly review (1.37.0): counts and names only, and nothing of a project you've made private.
+    const w = whatMoved(data, k), wait = whatsWaiting(data, k), priv = (pid?: string | null) => !!pid && hidden.has(pid);
+    const taskPrivate = (tid?: string) => { const t = tid ? data.tasks.items.find(x => x.id === tid) : undefined; return inPrivate(t?.projectId); };
+    const moved = w.projects.filter(m => !m.project.private), waitShown = wait.filter(x => !priv(x.projectId) && !taskPrivate(x.taskId));
+    const focus = focusProjects(data, shift(k, 1)).filter(p => !p.private);
+    count += w.projects.length - moved.length + wait.length - waitShown.length;
+    ctx.review = { from: w.from, to: w.to, moved: moved.slice(0, L.reviewProjects).map(m => ({ project: cut(m.project.title, L.titleChars), tasks: m.tasks, milestones: m.milestones, decisions: m.decisions, found: m.found, recorded: m.recorded })),
+      otherTasks: w.otherTasks, studySessions: w.studySessions, studyMinutes: w.studyMinutes, workouts: w.workouts,
+      waiting: waitShown.slice(0, L.reviewWaiting).map(x => cut(x.text, L.reviewWaitingChars)), focus: focus.slice(0, L.reviewFocus).map(p => cut(p.title, L.titleChars)) };
+    parts.push(SENDS.review);
   } else if (page === 'calendar') {
     const ofPrivate = new Set(data.projects.items.filter(p => p.private).flatMap(p => p.commitmentIds));
     const all = data.commitments.filter(c => c.kind === 'appointment' && c.start.slice(0, 10) === k).sort((a, b) => a.start.localeCompare(b.start));
@@ -182,7 +195,7 @@ export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(
 // Built from the very request that would be sent (askContext's result), so the preview can't drift from what's shared.
 export interface AskPreview { short: string[]; all: { label: string; lines: string[] }[] }
 const PAGE_WORD: Record<AskPage, string> = { today: 'Today', tasks: 'Tasks', task: 'A task', calendar: 'Calendar', projects: 'Projects', project: 'A project',
-  notes: 'Notes', note: 'A note', study: 'Study', course: 'A Study course', health: 'Health', finance: 'Finance', other: 'Elsewhere in MyDay' };
+  notes: 'Notes', note: 'A note', study: 'Study', course: 'A Study course', health: 'Health', finance: 'Finance', review: 'Your week', other: 'Elsewhere in MyDay' };
 const energyWord = (e: number | null | undefined) => (e ? `${e} of 5` : 'not set yet');
 const freeWord = (m: number | null | undefined) => (m === null || m === undefined ? 'not worked out' : m < 60 ? `${m} min` : `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ''}`);
 const clip = (s: string, n = 160) => (s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s);
@@ -249,6 +262,14 @@ export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['
   if (x.task) {
     short.push(`Task: ${clip(x.task.title, 40)}`);
     all.push({ label: 'This task', lines: [`Title: ${x.task.title}`, `Due: ${x.task.due ?? 'no date'}`, `About ${x.task.minutes} min`, ...(x.task.notes ? [`Notes: ${clip(x.task.notes)}`] : [])] });
+  }
+  if (x.review) {
+    const r = x.review;
+    short.push(`Your week: ${n(r.moved.length, 'project')} moved`, ...(r.waiting.length ? [`${n(r.waiting.length, 'thing')} waiting`] : []));
+    all.push({ label: `Your week (${r.from} to ${r.to})`, lines: [...r.moved.map(m => `${m.project}: ${[m.tasks && `${m.tasks} tasks done`, m.milestones && `${m.milestones} milestones`, m.decisions && `${m.decisions} decisions`, m.found && `${m.found} found out`, m.recorded && `${m.recorded} recorded`].filter(Boolean).join(', ')}`),
+      `Other tasks done: ${r.otherTasks}`, `Study: ${r.studySessions} sessions, ${r.studyMinutes} min`, `Workouts: ${r.workouts}`] });
+    if (r.waiting.length) all.push({ label: 'What’s waiting', lines: r.waiting });
+    if (r.focus.length) all.push({ label: 'Next week’s focus', lines: r.focus });
   }
   if (x.calendar) {
     short.push(n(x.calendar.appointments.length, 'appointment') + ' today');

@@ -50,6 +50,9 @@ export function normalizePatterns(raw: unknown, report: { dropped: number }): Pa
   const name = typeof prefs.name === 'string' ? prefs.name.trim().slice(0, NAME_MAX) : '';
   if (name) out.prefs.name = name; else delete out.prefs.name;
   if (prefs.aiNotes === true) out.prefs.aiNotes = true; else delete out.prefs.aiNotes; // AI help with notes (1.15.0)
+  // The weekly review (1.37.0): kept only when valid, so a device that never reviewed saves exactly as before.
+  if (Number.isInteger(prefs.reviewDay) && (prefs.reviewDay as number) >= 1 && (prefs.reviewDay as number) <= 6) out.prefs.reviewDay = prefs.reviewDay as number; else delete out.prefs.reviewDay;
+  for (const key of ['reviewed', 'reviewHidden'] as const) { if (isDateKey(prefs[key])) out.prefs[key] = prefs[key] as string; else delete out.prefs[key]; }
   return out;
 }
 

@@ -8,7 +8,7 @@
 // listed on the project (`commitmentIds`), so the Calendar's own records — shared with the classic MyDay — never change.
 // Deleting a project never deletes its notes, tasks or appointments: they're just no longer linked to it.
 // In "Export my data", and synced with your account (one record per project; see sync/records.ts).
-import { isDateTime, localStamp, todayKey } from './dates';
+import { isDateKey, isDateTime, localStamp, shift, todayKey } from './dates';
 import { isBusiness, normalizeModel, normalizeTemplate, STATE_LABEL } from './businessModel';
 import { normalizeCase } from './caseFile';
 import { noteName } from './notes';
@@ -67,6 +67,7 @@ export function normalizeProjects(raw: unknown, report: { dropped: number }): Pr
     // A case's own records (1.35.0): likewise.
     const kase = normalizeCase(p.case, report);
     if (kase) item.case = kase; else delete item.case;
+    if (isDateKey(p.focus)) item.focus = p.focus; else delete item.focus; // in your weekly focus (1.37.0)
     seen.add(item.id);
     out.items.push(item);
   }
@@ -253,9 +254,12 @@ export function recently(data: MyDayData, p: Project, max = 5): Happening[] {
 
 // Next steps for Today: each active project's next step that isn't already on today's plan or due today (those are
 // under "Due today" already). At most `max`, most recently worked-on projects first.
+// Projects in your weekly focus come first (1.37.0).
 export function stepsForToday(data: MyDayData, k: DateKey = todayKey(), max = 3): { project: Project; task: TaskItem }[] {
   const out: { project: Project; task: TaskItem }[] = [];
-  for (const p of projectsInOrder(data, 'active')) {
+  const focused = (p: Project) => !!p.focus && p.focus <= k && k < shift(p.focus, 7);
+  const active = projectsInOrder(data, 'active');
+  for (const p of [...active.filter(focused), ...active.filter(p => !focused(p))]) {
     const t = nextStep(data, p);
     if (!t || onTodaysPlan(data, t, k) || (t.due && t.due <= k)) continue;
     out.push({ project: p, task: t });

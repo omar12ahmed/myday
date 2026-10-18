@@ -1,3 +1,4 @@
+import { inFocus } from '../data/weekReview';
 import { FolderKanban, ListTodo } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
@@ -28,7 +29,7 @@ export function ProjectStepsCard({ data, k }: { data: MyDayData; k: DateKey }) {
         {steps.map(({ project, task }) => (
           <li key={task.id} className="flex items-center gap-2 border-t border-outline first:border-t-0 py-2" data-id={task.id} data-s="project-step">
             <a href={`#projects/p/${project.id}`} className="flex-1 min-w-0 min-h-11 py-1 text-fg no-underline">
-              <span className="block text-xs font-bold tracking-[.06em] uppercase text-fg-3 truncate">{project.title}</span>
+              <span className="block text-xs font-bold tracking-[.06em] uppercase text-fg-3 truncate">{project.title}{inFocus(project, k) && <span className="ml-1.5 normal-case tracking-normal font-semibold text-primary" data-s="step-focus">· This week’s focus</span>}</span>
               <span className="block font-medium leading-snug break-words">{task.title}</span>
               <span className="flex flex-wrap items-center gap-2 mt-0.5 text-sm text-fg-3 tabular-nums">
                 {task.due && <span>{dueText(task, k)}</span>}<span>{task.minutes} min</span><CategoryChip kind={task.category} />
