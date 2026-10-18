@@ -746,12 +746,12 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('changing back to Business idea brings the Model tab back', (await pAt('pjO')).template === 'business' && (await ev(`!!document.querySelector('[data-s=project-tabs] [data-tab=model]')`)));
   await go('projects/p/pjO/model', 2026, 10, 15, 23, 21);
   check('…with the answers still there', (await ev(`document.getElementById('model-problem').value`)) === 'Gardeners buy too many seeds' && (await ev(`document.querySelectorAll('[data-s=assumption]').length`)) === 3);
-  await seed([pjObj('pjCase', 'Kind: a case file', 'capture', { template: 'case' })]);
+  await seed([pjObj('pjCase', 'Kind: a workshop plan', 'capture', { template: 'workshop' })]);
   await go('projects/p/pjCase', 2026, 10, 15, 23, 22);
   await click('[data-action=project-edit]'); await sleep(200);
   check('a project of a kind this version does not know has no kind choice', !(await exists('#projectKind')) && (await exists('#projectSummary')));
   await type('#projectSummary', 'Just a summary'); await sleep(300);
-  check('…and editing its summary leaves its kind as it was', (await pAt('pjCase')).template === 'case' && (await pAt('pjCase')).summary === 'Just a summary', await pAt('pjCase'));
+  check('…and editing its summary leaves its kind as it was', (await pAt('pjCase')).template === 'workshop' && (await pAt('pjCase')).summary === 'Just a summary', await pAt('pjCase'));
   await go('projects/p/pjO', 2026, 10, 15, 23, 23);
   await click('[data-action=project-delete]'); await sleep(250);
   check('deleting a project that has a one page says so in the confirmation', (await text('dialog[open]')).includes('one page,'), await text('dialog[open]'));
@@ -766,6 +766,191 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
     const tabs = await ev(`[...document.querySelectorAll('[data-s=project-tabs] a')].map(a => ({ t: a.textContent.trim(), sw: a.scrollWidth, cw: a.clientWidth }))`);
     check(`phone ${w} px: every tab link fits its own width`, tabs.length === 4 && tabs.every(x => x.sw <= x.cw), tabs);
     check(`phone ${w} px: the Model tab does not scroll sideways`, (await ev('document.documentElement.scrollWidth')) <= w, await ev('document.documentElement.scrollWidth'));
+  }
+  await T.send('Emulation.clearDeviceMetricsOverride');
+
+  // ---- The Case template (1.35.0) ----
+  const norm = s => s.replace(/\s+/g, ' ').trim();
+  const tlObj = (id, date, title, extra = {}) => ({ id, date, about: false, title, details: '', source: 'mine', evidenceIds: [], issueIds: [], createdAt: '2026-10-10T09:00', ...extra });
+  const evObj = (id, title, status = 'have', extra = {}) => ({ id, title, kind: 'document', date: null, where: '', status, notes: '', issueIds: [], createdAt: '2026-10-10T09:00', ...extra });
+  const isObj = (id, title, extra = {}) => ({ id, title, status: 'considering', notes: '', createdAt: '2026-10-10T09:00', ...extra });
+  const caseObj = (id, title, file, extra = {}) => pjObj(id, title, 'capture', { template: 'case', case: { timeline: [], evidence: [], issues: [], ...file }, ...extra });
+  const caseOf = async id => (await pAt(id)).case;
+  const entryRows = () => ev(`[...document.querySelectorAll('[data-s=tl-entry]')].map(li => li.querySelector('p.font-semibold').textContent.trim())`);
+  const dialogText = () => text('dialog[open]');
+
+  console.log('\n[29] Starting a case');
+  await go('projects', 2026, 10, 15, 8); await reset(); await go('projects', 2026, 10, 15, 8);
+  const kinds = await ev(`[...document.querySelectorAll('[data-s=project-kind] [data-action=project-kind]')].map(i => i.value)`);
+  check('the Start a project kind choice has General, Business idea and Case', eq(kinds, ['general', 'business', 'case']), kinds);
+  await click('[data-action=project-kind][value=case]'); await sleep(150);
+  check('choosing Case selects it', (await kindNow()) === 'case', await kindNow());
+  await type('#projectNew', 'Dispute about my unpaid overtime'); await click('[data-action=project-add]'); await sleep(400);
+  const cs = await project('Dispute about my unpaid overtime');
+  check('a case is saved with template case, no private field and no case records yet', cs && cs.template === 'case' && !('private' in cs) && !('case' in cs), cs);
+  check('…it opens on its Overview', (await hash()) === `#projects/p/${cs.id}` && (await tabOf()) === 'overview', await hash());
+  check('…the tabs are Overview, Timeline, Evidence, Issues', eq(await tabsOf(), ['overview', 'timeline', 'evidence', 'issues']), await tabsOf());
+  check('…and there is no "Explore this idea" link on a case', (await exists('#projectHead')) && !(await exists('#projectExplore')));
+  await go('projects', 2026, 10, 15, 8, 5);
+  check('on the board the case\'s card says "Case"', (await text(`.project-card[data-id=${cs.id}] [data-s=project-kind-label]`)) === 'Case', await text(`.project-card[data-id=${cs.id}]`));
+
+  console.log('\n[30] The case timeline');
+  const CT = cs.id;
+  await go(`projects/p/${CT}/timeline`, 2026, 10, 15, 8, 10);
+  check('with nothing yet the add form is open and says where to start', (await exists('#tlAddForm')) && (await exists('[data-s=tl-empty]')) && (await tabOf()) === 'timeline');
+  const addTl = async (date, title, source, about) => {
+    await type('#tlDate', date); await type('#tlTitle', title);
+    await click(`input[name=tlSource][value=${source}]`);
+    if (about) await click('[data-s=tl-about]');
+    await click('[data-action=tl-add]'); await sleep(300);
+  };
+  await addTl('2026-09-20', 'Meeting with my manager about my hours', 'theirs', false);
+  await addTl('2026-08-05', 'First written warning', 'mine', false);
+  await addTl('2026-09-02', 'Rota changed without notice', 'evidence', true);
+  let tl = (await caseOf(CT)).timeline;
+  check('three entries are saved, each with the source chosen and the "About this date" setting', eq(tl.map(t => [t.date, t.source, t.about]), [['2026-09-20', 'theirs', false], ['2026-08-05', 'mine', false], ['2026-09-02', 'evidence', true]]), tl);
+  check('…the add form is no longer showing the empty note', !(await exists('[data-s=tl-empty]')) && (await exists('[data-s=tl-entry]')));
+  check('entries show in date order, not the order they were added', eq(await entryRows(), ['First written warning', 'Rota changed without notice', 'Meeting with my manager about my hours']), await entryRows());
+  check('…grouped under month headings', eq(await ev(`[...document.querySelectorAll('#caseTimeline section h3')].map(h => h.textContent.trim())`), ['August 2026', 'September 2026']));
+  check('…each with its source chip', eq(await ev(`[...document.querySelectorAll('[data-s=tl-entry] [data-s=tl-source-chip]')].map(c => c.textContent.trim())`), ['My account', 'In the evidence', 'Their account']));
+  const idOf = title => (tl.find(t => t.title === title) || {}).id;
+  const T_APPROX = idOf('Rota changed without notice'), T_MEET = idOf('Meeting with my manager about my hours');
+  check('an approximate date reads "About …" and an exact one does not', /^About .*2 Sep/.test(norm(await text(`[data-s=tl-entry][data-id="${T_APPROX}"] p`))) && !/About/.test(await text(`[data-s=tl-entry][data-id="${T_MEET}"] p`)), await text(`[data-s=tl-entry][data-id="${T_APPROX}"] p`));
+  await editStorage(`s => { const c = s.projects.items.find(p => p.id === '${CT}').case;
+    c.evidence.push(${JSON.stringify(evObj('evL1', 'Rota screenshot'))}); c.issues.push(${JSON.stringify(isObj('isL1', 'Changed hours without notice'))}); }`);
+  await go(`projects/p/${CT}/timeline`, 2026, 10, 15, 8, 11);
+  await click(`[data-s=tl-entry][data-id="${T_MEET}"] [data-action=tl-edit]`); await sleep(200);
+  await click(`[data-s=links-entry-evidence] [data-s=link-pick][data-id=evL1]`); await sleep(250);
+  await click(`[data-s=links-entry-issue] [data-s=link-pick][data-id=isL1]`); await sleep(250);
+  let mt = (await caseOf(CT)).timeline.find(t => t.id === T_MEET);
+  check('ticking evidence and an issue in an entry\'s editor saves both links', eq(mt.evidenceIds, ['evL1']) && eq(mt.issueIds, ['isL1']), mt);
+  await click(`[data-s=tl-entry][data-id="${T_MEET}"] [data-action=tl-edit]`); await sleep(200);
+  const linkChips = norm(await text(`[data-s=tl-entry][data-id="${T_MEET}"] [data-s=tl-links]`));
+  check('…and the entry then shows them as chips', linkChips.includes('Rota screenshot') && linkChips.includes('Changed hours without notice'), linkChips);
+  await click(`[data-s=tl-entry][data-id="${T_MEET}"] [data-action=tl-edit]`); await sleep(200);
+  await click(`[data-s=links-entry-evidence] [data-s=link-pick][data-id=evL1]`); await sleep(250);
+  check('ticking a linked piece of evidence again unlinks it', eq((await caseOf(CT)).timeline.find(t => t.id === T_MEET).evidenceIds, []));
+  await click(`[data-s=tl-entry][data-id="${T_MEET}"] [data-action=tl-remove]`); await answer(false);
+  check('Remove asks first, and "Keep it" keeps the entry', (await caseOf(CT)).timeline.length === 3 && (await exists(`[data-s=tl-entry][data-id="${T_MEET}"]`)));
+  await click(`[data-s=tl-entry][data-id="${T_MEET}"] [data-action=tl-remove]`); await answer(true);
+  check('confirming removes the entry and leaves the other two', eq((await caseOf(CT)).timeline.map(t => t.id).sort(), [idOf('First written warning'), T_APPROX].sort()) && !(await exists(`[data-s=tl-entry][data-id="${T_MEET}"]`)));
+
+  console.log('\n[31] Case evidence');
+  await seed([caseObj('pjEv', 'Evidence: a deposit dispute', { timeline: [tlObj('tlE1', '2026-09-10', 'Landlord kept my deposit')] })]);
+  await go('projects/p/pjEv/evidence', 2026, 10, 15, 9, 20);
+  check('with no evidence yet the add form is open and says what counts', (await exists('#evAddForm')) && (await exists('[data-s=ev-empty]')));
+  const addEv = async (title, kindV, status, where) => {
+    await type('#evTitle', title); await type('#evKind', kindV); await type('#evStatus', status); await type('#evWhere', where);
+    await click('[data-action=ev-add]'); await sleep(300);
+  };
+  await addEv('Tenancy agreement', 'document', 'to-get', 'https://example.com/folder/tenancy');
+  await addEv('Texts with the landlord', 'message', 'have', 'Phone, saved messages');
+  await addEv('Bank statement', 'email', 'reviewed', '');
+  const evs = (await caseOf('pjEv')).evidence;
+  check('three pieces of evidence are saved with their kind, status and where they are kept', eq(evs.map(e => [e.title, e.kind, e.status, e.where]), [['Tenancy agreement', 'document', 'to-get', 'https://example.com/folder/tenancy'], ['Texts with the landlord', 'message', 'have', 'Phone, saved messages'], ['Bank statement', 'email', 'reviewed', '']]), evs);
+  const E1 = evs[0].id, E2 = evs[1].id, E3 = evs[2].id;
+  const evRow = id => `[data-s=evidence][data-id="${id}"]`;
+  const shownEv = () => ev(`[...document.querySelectorAll('[data-s=evidence]')].map(li => li.dataset.id)`);
+  const filterLabel = f => text(`[data-s=ev-filter] button[data-filter=${f}]`).then(norm);
+  check('the status filter shows counts: All 3, To get 1, Have it 1, Reviewed 1', eq([await filterLabel('all'), await filterLabel('to-get'), await filterLabel('have'), await filterLabel('reviewed')], ['All 3', 'To get 1', 'Have it 1', 'Reviewed 1']), [await filterLabel('all'), await filterLabel('to-get'), await filterLabel('have'), await filterLabel('reviewed')]);
+  await click('[data-s=ev-filter] button[data-filter=have]'); await sleep(200);
+  check('choosing "Have it" lists only what you have', eq(await shownEv(), [E2]), await shownEv());
+  await click('[data-s=ev-filter] button[data-filter=to-get]'); await sleep(200);
+  check('choosing "To get" lists only what you still need', eq(await shownEv(), [E1]), await shownEv());
+  check('…its button says "Got it"', (await text(`${evRow(E1)} [data-action=ev-next]`)) === 'Got it');
+  await click(`${evRow(E1)} [data-action=ev-next]`); await sleep(250);
+  check('"Got it" moves it from To get to Have it', (await caseOf('pjEv')).evidence[0].status === 'have' && eq(await shownEv(), []) && (await filterLabel('to-get')) === 'To get 0' && (await filterLabel('have')) === 'Have it 2', await filterLabel('have'));
+  await click('[data-s=ev-filter] button[data-filter=have]'); await sleep(200);
+  check('…and it then offers "Reviewed"', (await text(`${evRow(E1)} [data-action=ev-next]`)) === 'Reviewed', await shownEv());
+  await click(`${evRow(E1)} [data-action=ev-next]`); await sleep(250);
+  check('"Reviewed" moves it to Reviewed, which has no next button', (await caseOf('pjEv')).evidence[0].status === 'reviewed' && !(await exists(`${evRow(E3)} [data-action=ev-next]`)) && (await filterLabel('reviewed')) === 'Reviewed 2');
+  await click('[data-s=ev-filter] button[data-filter=all]'); await sleep(200);
+  const lk = await ev(`(() => { const a = document.querySelector('${evRow(E1)} [data-s=ev-where] a'); return a ? { href: a.getAttribute('href'), target: a.target, rel: a.rel } : null; })()`);
+  check('a place starting with https:// is shown as a link that opens in a new tab safely', eq(lk, { href: 'https://example.com/folder/tenancy', target: '_blank', rel: 'noopener noreferrer' }), lk);
+  check('…and a plain place is shown as text, not a link', (await text(`${evRow(E2)} [data-s=ev-where]`)).includes('Phone, saved messages') && !(await exists(`${evRow(E2)} [data-s=ev-where] a`)));
+  await editStorage(`s => { s.projects.items.find(p => p.id === 'pjEv').case.timeline[0].evidenceIds = ['${E1}', '${E2}']; }`);
+  await go('projects/p/pjEv/evidence', 2026, 10, 15, 9, 21);
+  await click(`${evRow(E1)} [data-action=ev-edit]`); await sleep(200);
+  await click(`${evRow(E1)} [data-action=ev-remove]`); await answer(false);
+  check('Remove asks first, and "Keep it" keeps the evidence', (await caseOf('pjEv')).evidence.length === 3 && (await exists(evRow(E1))));
+  await click(`${evRow(E1)} [data-action=ev-remove]`); await sleep(250);
+  check('…evidence linked from a timeline entry says so in the question', (await dialogText()).includes('comes off the timeline entry it’s linked to'), await dialogText());
+  await answer(true);
+  const after = await caseOf('pjEv');
+  check('confirming removes the evidence; the timeline entry stays without that link, still linked to the other', !after.evidence.some(e => e.id === E1) && after.timeline.length === 1 && eq(after.timeline[0].evidenceIds, [E2]), after);
+
+  console.log('\n[32] Case issues, and the Overview card');
+  await seed([caseObj('pjIs', 'Issues: a pay claim', {
+    timeline: [tlObj('tlI1', '2026-09-01', 'Told my hours were cut'), tlObj('tlI2', '2026-09-15', 'Last payslip', { source: 'evidence' })],
+    evidence: [evObj('evI1', 'Payslips', 'have'), evObj('evI2', 'Contract', 'to-get'), evObj('evI3', 'Emails', 'reviewed')],
+  })]);
+  await go('projects/p/pjIs/issues', 2026, 10, 15, 9, 30);
+  check('with no issues the form asks for the first', (await text('#isAddForm')).includes('Add the first issue') && !(await exists('[data-s=issue]')));
+  await type('#isNew', 'Unpaid holiday pay'); await click('[data-action=is-add]'); await sleep(300);
+  await type('#isNew', 'Hours cut without agreement'); await click('[data-action=is-add]'); await sleep(300);
+  const iss = (await caseOf('pjIs')).issues;
+  check('issues are added by name, starting as "considering"', eq(iss.map(i => [i.title, i.status]), [['Unpaid holiday pay', 'considering'], ['Hours cut without agreement', 'considering']]), iss);
+  const I1 = iss[0].id, I2 = iss[1].id;
+  const issRow = id => `[data-s=issue][data-id="${id}"]`;
+  check('an issue with nothing linked says so', (await exists(`${issRow(I1)} [data-s=is-nothing]`)) && (await exists(`${issRow(I2)} [data-s=is-nothing]`)));
+  await editStorage(`s => { const c = s.projects.items.find(p => p.id === 'pjIs').case; c.evidence[0].issueIds = ['${I1}']; c.timeline[0].issueIds = ['${I1}']; }`);
+  await go('projects/p/pjIs/issues', 2026, 10, 15, 9, 31);
+  const links = norm(await text(`${issRow(I1)} [data-s=is-links]`));
+  check('an issue with linked evidence and entries lists them under "Evidence" and "Timeline"', links.includes('Evidence') && links.includes('Payslips') && links.includes('Timeline') && links.includes('Told my hours were cut') && !(await exists(`${issRow(I1)} [data-s=is-nothing]`)), links);
+  check('…while the other issue still has nothing linked', await exists(`${issRow(I2)} [data-s=is-nothing]`));
+  await type(`#isS-${I1}`, 'claiming'); await sleep(250);
+  check('the status select changes the saved status', (await caseOf('pjIs')).issues[0].status === 'claiming' && (await caseOf('pjIs')).issues[1].status === 'considering', (await caseOf('pjIs')).issues);
+  await editStorage(`s => { s.tasks.items.push(${tk('tkC1', 'Send my witness statement', '2026-10-10T09:00', ", due: '2026-10-22', projectId: 'pjIs'")}, ${tk('tkC2', 'Old past deadline', '2026-10-01T09:00', ", due: '2026-10-10', projectId: 'pjIs'")}, ${tk('tkC3', 'File the claim form', '2026-10-10T09:00', ", due: '2026-10-18', projectId: 'pjIs'")}); }`);
+  await go('projects/p/pjIs', 2026, 10, 15, 9, 32);
+  const nx = norm(await text('#projectCaseCard [data-s=case-next]'));
+  check('the Overview card shows "Next date:" for the earliest dated task from today, not an earlier past one', nx.startsWith('Next date:') && nx.includes('18 Oct') && nx.includes('File the claim form') && !nx.includes('Old past deadline') && !nx.includes('witness'), nx);
+  check('…and the counts line reads "2 timeline entries · 3 pieces of evidence (1 to get) · 2 issues"', norm(await text('#projectCaseCard [data-s=case-summary]')) === '2 timeline entries · 3 pieces of evidence (1 to get) · 2 issues', await text('#projectCaseCard [data-s=case-summary]'));
+  check('…with the not-legal-advice line', (await text('#projectCaseCard [data-s=case-not-advice]')).includes('doesn’t give legal advice'), await text('#projectCaseCard [data-s=case-not-advice]'));
+  await click('[data-action=case-deadline]'); await sleep(150);
+  check('"Add a deadline" waits for a title and a date', await ev(`document.querySelector('[data-action=case-deadline-add]').disabled`));
+  await type('#caseDlTitle', 'Reply to the employer'); await type('#caseDlDate', '2026-10-16'); await click('[data-action=case-deadline-add]'); await sleep(300);
+  const dl = await task('Reply to the employer');
+  check('adding a deadline makes a task with that date, in the case', dl && dl.due === '2026-10-16' && dl.projectId === 'pjIs', dl);
+  check('…and it becomes the next date', norm(await text('#projectCaseCard [data-s=case-next]')).includes('16 Oct') && norm(await text('#projectCaseCard [data-s=case-next]')).includes('Reply to the employer'), await text('#projectCaseCard [data-s=case-next]'));
+  await seed([caseObj('pjNd', 'Issues: no dates', {})]);
+  await go('projects/p/pjNd', 2026, 10, 15, 9, 33);
+  check('a case with no dated tasks says "No dates yet"', (await text('#projectCaseCard [data-s=case-next]')).includes('No dates yet'), await text('#projectCaseCard [data-s=case-next]'));
+
+  console.log('\n[33] Changing kind, privacy, deleting and phones');
+  await seed([caseObj('pjKd', 'Kind: a tribunal claim', { timeline: [tlObj('tlK1', '2026-09-01', 'The first thing')], evidence: [evObj('evK1', 'A letter')], issues: [isObj('isK1', 'An issue')] })]);
+  await go('projects/p/pjKd', 2026, 10, 15, 10);
+  await click('[data-action=project-edit]'); await sleep(200);
+  await type('#projectKind', 'general'); await sleep(300);
+  const kg = await pAt('pjKd');
+  check('switching a case to General removes the kind but keeps its records', !('template' in kg) && kg.case && kg.case.timeline.length === 1 && kg.case.evidence.length === 1 && kg.case.issues.length === 1, kg);
+  check('…the case tabs go and Milestones and Decisions come back', eq(await tabsOf(), ['overview', 'milestones', 'decisions']), await tabsOf());
+  await go('projects/p/pjKd/timeline', 2026, 10, 15, 10, 1);
+  check('…and the Timeline address then shows the Overview', (await exists('#projectHead')) && !(await exists('#caseTimeline')) && (await tabOf()) === 'overview', await tabOf());
+  await click('[data-action=project-edit]'); await sleep(200);
+  await type('#projectKind', 'case'); await sleep(300);
+  check('switching back to Case brings the tabs back', (await pAt('pjKd')).template === 'case' && eq(await tabsOf(), ['overview', 'timeline', 'evidence', 'issues']), await tabsOf());
+  await go('projects/p/pjKd/timeline', 2026, 10, 15, 10, 2);
+  check('…with the timeline entry still there', eq(await entryRows(), ['The first thing']), await entryRows());
+  await click('[data-action=project-private]'); await sleep(250);
+  check('a private case saves private: true', (await pAt('pjKd')).private === true);
+  check('…and its hint says Ask MyDay sends nothing of this case and AI help with notes never suggests it', (await text('[data-s=project-private-hint]')) === 'Ask MyDay sends nothing of this case, and AI help with notes never suggests it.', await text('[data-s=project-private-hint]'));
+  await go('projects/p/pjKd', 2026, 10, 15, 10, 3);
+  await click('[data-action=project-delete]'); await sleep(250);
+  check('deleting a case with records says "timeline, evidence and issues" in the question', (await dialogText()).includes('timeline, evidence and issues'), await dialogText());
+  await answer(false);
+  check('…and "Keep it" keeps the case', !!(await pAt('pjKd')));
+  await seed([caseObj('pjCph', 'Phone: a case with a rather long name to see how the tabs and the entries wrap on a narrow screen', {
+    timeline: [tlObj('tlP1', '2026-09-01', 'A fairly long entry about what happened on that day, written out so it has to wrap onto several lines')],
+    evidence: [evObj('evP1', 'A long piece of evidence title that has to wrap', 'to-get', { where: 'https://example.com/a/very/long/address/that/could/push/the/page/wider/than/the/screen/if/it/is/not/wrapped' })],
+    issues: [isObj('isP1', 'An issue with a rather long name to check wrapping')] })]);
+  for (const w of [320]) {
+    await T.send('Emulation.setDeviceMetricsOverride', { width: w, height: 740, deviceScaleFactor: 2, mobile: true });
+    for (const h of ['', '/timeline', '/evidence', '/issues']) {
+      await go('projects/p/pjCph' + h, 2026, 10, 15, 10, 10); await sleep(200);
+      const tb = await ev(`[...document.querySelectorAll('[data-s=project-tabs] a')].map(a => ({ t: a.textContent.trim(), sw: a.scrollWidth, cw: a.clientWidth }))`);
+      check(`phone ${w} px, ${h || 'Overview'}: the four case tabs each fit their own width`, tb.length === 4 && tb.every(x => x.sw <= x.cw), tb);
+      check(`phone ${w} px, ${h || 'Overview'}: the page does not scroll sideways`, (await ev('document.documentElement.scrollWidth')) <= w, await ev('document.documentElement.scrollWidth'));
+    }
   }
   await T.send('Emulation.clearDeviceMetricsOverride');
 

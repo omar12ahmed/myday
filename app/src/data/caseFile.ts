@@ -25,7 +25,7 @@ const EV_STATUSES = Object.keys(EVIDENCE_STATUS_LABEL) as EvidenceStatus[], ISSU
 const OWN_KEYS = ['timeline', 'evidence', 'issues'];
 
 // ---------- Reading what's saved (unknown fields kept; anything unreadable counted, never dropped silently) ----------
-const line = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : '');
+const line = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max).trimEnd() : '');
 const block = (v: unknown, max: number) => (typeof v === 'string' ? v.slice(0, max) : '');
 const ids = (v: unknown, known: Set<string>, max: number) => [...new Set(listOf(v).filter((x): x is string => typeof x === 'string' && known.has(x)))].slice(0, max);
 const created = (v: unknown) => (isDateTime(v) ? v : localStamp());

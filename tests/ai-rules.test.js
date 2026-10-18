@@ -477,6 +477,13 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   cd = notesWorld();
   check('a note the reply left out still counts as looked at (so it isn\'t sent again and again)', (K.applyConnect(cd, cx.seen, rr.answers.filter(a => a.id !== 'nW')), !!cd.notes.items.find(n => n.id === 'nW').aiSeen && !cd.notes.items.find(n => n.id === 'nW').aiKind));
 
+  // Private projects in the request: a private case is never offered, a private general project still is (by name and summary).
+  const privWorld = (extra) => { const w = notesWorld(); w.projects.items = [CP('pjCase', 'Dispute with the landlord', 'Deposit not returned'), CP('pjGen', 'Private plans', 'Kept to myself')]; Object.assign(w.projects.items[0], { template: 'case' }, extra.case); Object.assign(w.projects.items[1], extra.gen); return K.normalize(w); };
+  const sentIds = w => K.connectContext(w).ctx.projects.map(p => p.id).sort();
+  check('a private case is not among the projects AI help with notes is sent', !sentIds(privWorld({ case: { private: true }, gen: {} })).includes('pjCase'), sentIds(privWorld({ case: { private: true }, gen: {} })));
+  check('the same case, not private, is among them', sentIds(privWorld({ case: {}, gen: {} })).includes('pjCase'), sentIds(privWorld({ case: {}, gen: {} })));
+  check('a private general project is still sent (its name and summary), as before', eq(K.connectContext(privWorld({ case: { private: true }, gen: { private: true } })).ctx.projects.map(p => [p.id, p.title, p.summary]), [['pjGen', 'Private plans', 'Kept to myself']]), sentIds(privWorld({ case: { private: true }, gen: { private: true } })));
+
   console.log('\n[9] AI-written revision cards: what\'s sent, the checks on a reply, adding and Undo');
   const LS = 'lesson.lab-isolation';
   const cardsWorld = () => { K.setClock(`${D}T19:00`); const s = K.freshState(); localStorage.clear(); localStorage.setItem('myday.data.v4', JSON.stringify(s)); K.boot(); return K.getSnapshot().data; };

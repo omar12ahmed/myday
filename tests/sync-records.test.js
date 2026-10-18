@@ -135,6 +135,29 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('a project that is not a business idea gains neither field', !('template' in rs.get('project:pj1')) && !('model' in rs.get('project:pj1')) && !('model' in nb.projects.items.find(p => p.id === 'pj1')));
   }
 
+  console.log('\n[1e] A case\'s records');
+  {
+    const pr = clone(raw);
+    const T = (id, date, x = {}) => ({ id, date, about: false, title: 'Entry ' + id, details: '', source: 'mine', evidenceIds: [], issueIds: [], createdAt: '2026-10-03T09:00', ...x });
+    const E = (id, status, x = {}) => ({ id, title: 'Evidence ' + id, kind: 'document', date: null, where: '', status, notes: '', issueIds: [], createdAt: '2026-10-03T09:00', ...x });
+    pr.projects.items.push({ id: 'pj6', title: 'Dispute over a deposit', summary: 'Landlord kept it', stage: 'organise', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-03T09:00', updatedAt: '2026-10-04T09:00', template: 'case', private: true,
+      case: { futureCase: { a: 1 },
+        timeline: [T('tl1', '2026-09-01', { source: 'mine', about: true, details: 'Moved out', evidenceIds: ['ev1', 'ev2'], issueIds: ['is1'], futureBit: 't' }), T('tl2', '2026-09-10', { source: 'theirs', evidenceIds: ['ev3'] }), T('tl3', '2026-09-20', { source: 'evidence', about: false, issueIds: ['is1', 'is2'] })],
+        evidence: [E('ev1', 'to-get', { kind: 'email', issueIds: ['is1'] }), E('ev2', 'have', { kind: 'message', date: '2026-09-02', where: 'https://example.com/folder/receipt.pdf', futureBit: 'e' }), E('ev3', 'reviewed', { kind: 'witness', where: 'In the blue folder, drawer 2', notes: 'Neighbour saw it', issueIds: ['is2'] })],
+        issues: [{ id: 'is1', title: 'Deposit not protected', status: 'considering', notes: '', createdAt: '2026-10-03T09:00', futureBit: 'i' }, { id: 'is2', title: 'Damage claim', status: 'claiming', notes: 'Photos taken', createdAt: '2026-10-03T09:00' }, { id: 'is3', title: 'Late fee', status: 'dropped', notes: '', createdAt: '2026-10-03T09:00' }] } });
+    const norm = R.normalize(pr), item = norm.projects.items.find(p => p.id === 'pj6');
+    check('the case project is read back from saved data exactly as entered (nothing dropped or changed)', eq(item, pr.projects.items[pr.projects.items.length - 1]), item);
+    const rs = R.localRecords(norm), rec = rs.get('project:pj6');
+    check('a case travels as one project record with its timeline, evidence and issues inside, exactly as entered', !!rec && eq(rec, item) && rec.case.timeline.length === 3 && rec.case.evidence.length === 3 && rec.case.issues.length === 3, rec);
+    check('…keeping the unknown fields on the case, an entry, an evidence item and an issue, and private', rec.case.futureCase.a === 1 && rec.case.timeline[0].futureBit === 't' && rec.case.evidence[1].futureBit === 'e' && rec.case.issues[0].futureBit === 'i' && rec.private === true);
+    check('…and every source, status, the about flag, the links and a link-looking "where" as they were', eq(rec.case.timeline.map(t => [t.source, t.about]), [['mine', true], ['theirs', false], ['evidence', false]]) && eq(rec.case.evidence.map(e => e.status), ['to-get', 'have', 'reviewed']) && eq(rec.case.issues.map(i => i.status), ['considering', 'claiming', 'dropped'])
+      && rec.case.evidence[1].where === 'https://example.com/folder/receipt.pdf' && eq(rec.case.timeline[0].evidenceIds, ['ev1', 'ev2']) && eq(rec.case.timeline[2].issueIds, ['is1', 'is2']) && eq(rec.case.evidence[2].issueIds, ['is2']));
+    check('checked as it arrives on another device, it is exactly the same', R.fingerprint(R.cleanRecord('project:pj6', clone(rec))) === R.fingerprint(rec));
+    const nb = clone(R.freshState());
+    for (const [key, c] of rs) R.putRecord(nb, key, clone(c));
+    check('put into a new MyDay, the case comes back the same', R.fingerprint(R.localRecords(R.normalize(nb)).get('project:pj6')) === R.fingerprint(rec) && eq(nb.projects.items.find(p => p.id === 'pj6').case, rec.case));
+  }
+
   console.log('\n[2] What stays on each device');
   check('the theme and animations aren\'t in the planning settings', !('theme' in recs.get('settings:planning')) && !('motion' in recs.get('settings:planning')) && recs.get('settings:planning').earliestTime === '07:30');
   check('the downloaded bank holidays aren\'t synced, only the region', eq(recs.get('holidays:region'), { region: 'scotland' }));

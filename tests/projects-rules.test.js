@@ -18,7 +18,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   fs.mkdirSync(dir, { recursive: true });
   const src = p => JSON.stringify(path.join(ROOT, 'app/src/data', p));
   fs.writeFileSync(path.join(dir, 'kit.ts'), [
-    `export * from ${src('projectPlan')};`, `export * from ${src('businessModel')};`, `export { normalizeProjects, deleteProject, recently, addProject, setProjectPrivate, privateProjectIds } from ${src('projects')};`,
+    `export * from ${src('projectPlan')};`, `export * from ${src('businessModel')};`, `export * from ${src('caseFile')};`, `export { normalizeProjects, deleteProject, recently, addProject, setProjectPrivate, privateProjectIds } from ${src('projects')};`,
     `export { freshState, normalize } from ${src('normalize')};`, `export { shift } from ${src('dates')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
@@ -329,7 +329,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('firstToFindOut is the first open assumption without a task', K.firstToFindOut(d, P(d)) === null);
     A3.taskId = null;
     check('…and it is the open one once its task is not there', K.firstToFindOut(d, P(d)).id === A3.id);
-    check('isBusiness and knownTemplate: general, business and "case"', !K.isBusiness(base()) && K.knownTemplate(base()) && K.isBusiness(base('p', { template: 'business' })) && K.knownTemplate(base('p', { template: 'business' })) && !K.isBusiness(base('p', { template: 'case' })) && !K.knownTemplate(base('p', { template: 'case' })));
+    check('isBusiness and knownTemplate: general, business and "case" (a case is known since 1.35.0), but not a kind from a newer MyDay', !K.isBusiness(base()) && K.knownTemplate(base()) && K.isBusiness(base('p', { template: 'business' })) && K.knownTemplate(base('p', { template: 'business' })) && !K.isBusiness(base('p', { template: 'case' })) && K.knownTemplate(base('p', { template: 'case' })) && !K.knownTemplate(base('p', { template: 'brand-new' })));
 
     // Recently
     d = world(base('pjA', { template: 'business' }), base('pjG'));
@@ -371,6 +371,206 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('…its Find out task stays in the tasks', d.tasks.items.some(t => t.id === bt));
     check('…and removing the last one, with no answers, removes the model field', K.removeAssumption(d, 'pjA', bb) && !('model' in P(d)), P(d));
     check('…but with an answer written, the model stays', (() => { const e = world(base()); K.editAnswer(e, 'pjA', 'problem', 'P'); const i = K.addAssumption(e, 'pjA', 'x'); K.removeAssumption(e, 'pjA', i); return e.projects.items[0].model.problem === 'P' && eq(e.projects.items[0].model.assumptions, []); })());
+  }
+
+  console.log('\n[10] The Case template: a case\'s timeline, evidence and issues');
+  {
+    const read10 = (c, r = { dropped: 0 }, x = {}) => K.normalizeProjects({ items: [base('pjC', { template: 'case', case: c, ...x })] }, r).items[0];
+    const TL = (id, x = {}) => ({ id, date: '2026-09-01', about: false, title: 'Landlord kept the deposit', details: '', source: 'mine', evidenceIds: [], issueIds: [], createdAt: OLD, ...x });
+    const EV = (id, x = {}) => ({ id, title: 'Tenancy agreement', kind: 'document', date: null, where: '', status: 'have', notes: '', issueIds: [], createdAt: OLD, ...x });
+    const IS = (id, x = {}) => ({ id, title: 'Deposit not protected', status: 'considering', notes: '', createdAt: OLD, ...x });
+    const caseOf = (d, id = 'pjA') => d.projects.items.find(p => p.id === id).case;
+
+    // Kinds
+    check('the kinds of project are General, Business idea and Case, in that order', eq(K.TEMPLATES.map(t => t.id), ['general', 'business', 'case']), K.TEMPLATES);
+    let d = world(base(), base('pjO'));
+    const otherBefore10 = clone(d.projects.items[1]);
+    check('isCase is true for a case and false for a general or business project', K.isCase(base('p', { template: 'case' })) && !K.isCase(base()) && !K.isCase(base('p', { template: 'business' })));
+    check('knownTemplate is true for "case", and still false for a kind this version does not know', K.knownTemplate(base('p', { template: 'case' })) && !K.knownTemplate(base('p', { template: 'brand-new' })));
+    d.projects.items[0].updatedAt = OLD;
+    check('setTemplate to "case" sets it and moves the updated time on', K.setTemplate(d, 'pjA', 'case') && P(d).template === 'case' && P(d).updatedAt > OLD, P(d));
+    check('setTemplate to "case" again changes nothing (false)', K.setTemplate(d, 'pjA', 'case') === false);
+    K.addEntry(d, 'pjA', { date: '2026-09-01', title: 'Moved out' });
+    check('setTemplate back to "general" removes the template but keeps the case\'s records', K.setTemplate(d, 'pjA', 'general') && !('template' in P(d)) && P(d).case.timeline.length === 1);
+
+    // Reading what's saved
+    let r = { dropped: 0 };
+    let o = K.normalizeProjects({ items: [base('pjA')] }, r).items[0];
+    check('a project without a case gets none when read', !('case' in o) && r.dropped === 0, o);
+    const full = { futureCase: { a: 1 }, timeline: [TL('tl1', { futureBit: 't', evidenceIds: ['ev1'], issueIds: ['is1'] })], evidence: [EV('ev1', { futureBit: 'e', issueIds: ['is1'] })], issues: [IS('is1', { futureBit: 'i' })] };
+    r = { dropped: 0 }; o = read10(clone(full), r);
+    check('a case is read back exactly as it was, with nothing dropped', eq(o.case, full) && r.dropped === 0, o.case);
+    check('unknown fields on the case, an entry, an evidence item and an issue are kept', o.case.futureCase.a === 1 && o.case.timeline[0].futureBit === 't' && o.case.evidence[0].futureBit === 'e' && o.case.issues[0].futureBit === 'i');
+    r = { dropped: 0 };
+    o = read10({ timeline: [TL('a'), { ...TL('b'), id: '' }, TL('c', { title: '   ' }), TL('d', { date: '2026-13-45' }), TL('e', { date: 'last week' }), { ...TL('f'), id: undefined }, 'junk'], evidence: [EV('x'), EV('', {}), EV('y', { title: ' ' })], issues: [IS('z'), IS('', {}), IS('w', { title: '' })] }, r);
+    check('entries with no id, a blank title or a bad date, and evidence or issues with no id or a blank title, are dropped and counted', eq(o.case.timeline.map(t => t.id), ['a']) && eq(o.case.evidence.map(e => e.id), ['x']) && eq(o.case.issues.map(i => i.id), ['z']) && r.dropped === 6 + 2 + 2, [o.case, r]);
+    o = read10({ timeline: [TL('same'), TL('same')], evidence: [EV('same'), EV('same')], issues: [IS('same'), IS('same')] });
+    const unique = l => new Set(l.map(x => x.id)).size === l.length;
+    check('repeated ids get new ones with the right prefixes (tl, ev, is), and the first keeps its own', unique(o.case.timeline) && unique(o.case.evidence) && unique(o.case.issues) && o.case.timeline[0].id === 'same' && o.case.timeline[1].id.startsWith('tl') && o.case.evidence[1].id.startsWith('ev') && o.case.issues[1].id.startsWith('is'), o.case);
+    o = read10({ timeline: [TL('a', { source: 'someone' }), TL('b', { source: 5 })], evidence: [EV('x', { kind: 'carrier pigeon', status: 'maybe' }), EV('y', { status: 5, kind: null })], issues: [IS('z', { status: 'won' })] });
+    check('an unknown source becomes "mine", an unknown kind "other", an unknown evidence status "to-get" and an unknown issue status "considering"',
+      o.case.timeline.every(t => t.source === 'mine') && o.case.evidence.every(e => e.kind === 'other' && e.status === 'to-get') && o.case.issues[0].status === 'considering', o.case);
+    o = read10({ timeline: [TL('a', { about: 'yes' }), TL('b', { about: 1 }), TL('c', { about: true })] });
+    check('"about" is true only when it is true', eq(o.case.timeline.map(t => t.about), [false, false, true]));
+    const long = n => 'x'.repeat(n);
+    o = read10({ timeline: [TL('a', { title: long(200), details: long(900) })], evidence: [EV('x', { title: long(200), where: '  ' + 'w  '.repeat(120), notes: long(500) })], issues: [IS('z', { title: long(150), notes: long(900) })] });
+    check('texts are cut to their limits (entry title 160, details 800; evidence title 160, notes 400; issue title 120, notes 800)', o.case.timeline[0].title.length === 160 && o.case.timeline[0].details.length === 800 && o.case.evidence[0].title.length === 160 && o.case.evidence[0].notes.length === 400 && o.case.issues[0].title.length === 120 && o.case.issues[0].notes.length === 800);
+    check('"where" has its whitespace collapsed and is cut to 200 (no space left at the end)', o.case.evidence[0].where === ('w '.repeat(150)).slice(0, 200).trimEnd() && !/\s{2}/.test(o.case.evidence[0].where), o.case.evidence[0].where);
+    o = read10({ timeline: [TL('a', { evidenceIds: ['ev1', 'gone', 'ev1', 'ev2'], issueIds: ['is1', 'gone', 'is1'] })], evidence: [EV('ev1', { issueIds: ['is1', 'gone'] }), EV('ev2')], issues: [IS('is1')] });
+    check('links to evidence or issues that do not exist are let go, and repeats removed', eq(o.case.timeline[0].evidenceIds, ['ev1', 'ev2']) && eq(o.case.timeline[0].issueIds, ['is1']) && eq(o.case.evidence[0].issueIds, ['is1']), o.case);
+    const manyEv = Array.from({ length: 14 }, (_, i) => EV('ev' + i)), manyIs = Array.from({ length: 8 }, (_, i) => IS('is' + i));
+    o = read10({ timeline: [TL('a', { evidenceIds: manyEv.map(e => e.id), issueIds: manyIs.map(i => i.id) })], evidence: manyEv.map((e, i) => i === 0 ? { ...e, issueIds: manyIs.map(x => x.id) } : e), issues: manyIs });
+    check('an entry\'s links are cut to 10 pieces of evidence and 5 issues, and so are an evidence item\'s issue links', o.case.timeline[0].evidenceIds.length === 10 && o.case.timeline[0].issueIds.length === 5 && o.case.evidence[0].issueIds.length === 5);
+    r = { dropped: 0 }; o = read10({ timeline: [], evidence: [], issues: [] }, r);
+    check('a case with nothing in it (and nothing unknown) is removed', !('case' in o) && r.dropped === 0, o);
+    check('…but one with nothing in it and an unknown field is kept', read10({ timeline: [], evidence: [], issues: [], futureCase: 1 }).case.futureCase === 1);
+    check('…and a case whose only content was unreadable is removed too (the unreadable ones counted)', (() => { const rr = { dropped: 0 }; const x = read10({ timeline: [TL('a', { title: '' })] }, rr); return !('case' in x) && rr.dropped === 1; })());
+    r = { dropped: 0 }; o = read10('not a case', r);
+    check('a case that is not an object is removed and counted', !('case' in o) && r.dropped === 1, [o, r]);
+    r = { dropped: 0 }; o = read10({ timeline: 'nope', evidence: { a: 1 }, issues: 7 }, r);
+    check('lists that are not arrays are counted (one each) and the case is removed', !('case' in o) && r.dropped === 3, [o, r]);
+
+    // Timeline
+    d = world(base('pjA', { template: 'case' }), base('pjO'));
+    const otherB = clone(d.projects.items[1]);
+    check('an entry needs a real date and a title: otherwise null, and nothing is added', K.addEntry(d, 'pjA', { date: '2026-02-30', title: 'x' }) === null && K.addEntry(d, 'pjA', { date: 'soon', title: 'x' }) === null && K.addEntry(d, 'pjA', { date: '2026-09-01', title: '   ' }) === null && K.addEntry(d, 'pjNope', { date: '2026-09-01', title: 'x' }) === null && !('case' in P(d)));
+    const t1 = K.addEntry(d, 'pjA', { date: '2026-09-10', title: '  Letter from the agent  ' });
+    check('addEntry returns an id starting "tl"; it defaults to my account and not "about", with no links', typeof t1 === 'string' && t1.startsWith('tl') && (({ source, about, title, details, evidenceIds, issueIds }) => eq({ source, about, title, details, evidenceIds, issueIds }, { source: 'mine', about: false, title: 'Letter from the agent', details: '', evidenceIds: [], issueIds: [] }))(caseOf(d).timeline[0]), caseOf(d).timeline[0]);
+    const t2 = K.addEntry(d, 'pjA', { date: '2026-09-01', title: 'Moved out', source: 'theirs', about: true, details: 'They said so' });
+    check('an entry can be given a source, "about" and details', caseOf(d).timeline[1].source === 'theirs' && caseOf(d).timeline[1].about === true && caseOf(d).timeline[1].details === 'They said so');
+    P(d).updatedAt = OLD;
+    check('editEntry changes only what is given, and moves the updated time on', K.editEntry(d, 'pjA', t1, { title: 'Letter from the agency' }) === true && eq((({ title, date, source, about }) => [title, date, source, about])(caseOf(d).timeline[0]), ['Letter from the agency', '2026-09-10', 'mine', false]) && P(d).updatedAt > OLD);
+    P(d).updatedAt = OLD;
+    check('editEntry with the same values changes nothing (false) and leaves the updated time', K.editEntry(d, 'pjA', t1, { title: 'Letter from the agency', source: 'mine' }) === false && P(d).updatedAt === OLD);
+    check('editEntry can change the date, source, about and details; a bad date or blank title is ignored', K.editEntry(d, 'pjA', t1, { date: '2026-09-11', source: 'evidence', about: true, details: 'Dated the 11th' }) === true && K.editEntry(d, 'pjA', t1, { date: 'nope', title: '  ' }) === false && eq((({ date, source, about, details, title }) => [date, source, about, details, title])(caseOf(d).timeline[0]), ['2026-09-11', 'evidence', true, 'Dated the 11th', 'Letter from the agency']));
+    const t3 = K.addEntry(d, 'pjA', { date: '2026-09-01', title: 'Same day, later' });
+    check('timelineInOrder sorts by date, then by the order added', eq(K.timelineInOrder(P(d)).map(t => t.id), [t2, t3, t1]), K.timelineInOrder(P(d)).map(t => t.id));
+    check('timelineInOrder sorts by creation time when the dates are equal, even if saved the other way round', (() => { const q = base('pjQ', { case: { timeline: [TL('late', { createdAt: '2026-10-01T10:00' }), TL('early', { createdAt: '2026-10-01T09:00' })], evidence: [], issues: [] } }); return eq(K.timelineInOrder(q).map(t => t.id), ['early', 'late']); })());
+    P(d).updatedAt = OLD;
+    check('removeEntry takes it out (the others stay); a second time returns false', K.removeEntry(d, 'pjA', t3) === true && eq(caseOf(d).timeline.map(t => t.id), [t1, t2]) && K.removeEntry(d, 'pjA', t3) === false && P(d).updatedAt > OLD);
+    d = world(base('pjA', { template: 'case' }));
+    for (let i = 0; i < 150; i++) K.addEntry(d, 'pjA', { date: '2026-09-01', title: 'Entry ' + i });
+    check('the 150th entry is accepted and the 151st returns "full"', caseOf(d).timeline.length === 150 && K.addEntry(d, 'pjA', { date: '2026-09-01', title: 'One more' }) === 'full' && caseOf(d).timeline.length === 150);
+
+    // Evidence
+    d = world(base('pjA', { template: 'case' }), base('pjO'));
+    check('evidence needs a title: otherwise null', K.addEvidence(d, 'pjA', { title: '  ' }) === null && K.addEvidence(d, 'pjNope', { title: 'x' }) === null && !('case' in P(d)));
+    const e1 = K.addEvidence(d, 'pjA', { title: ' Tenancy agreement ', date: 'sometime', where: '  In   the   blue folder ' });
+    check('addEvidence returns an id starting "ev"; it defaults to a document that I have, with a date of null when it is not a real date, and "where" tidied', typeof e1 === 'string' && e1.startsWith('ev') && (({ title, kind, status, date, where, notes, issueIds }) => eq({ title, kind, status, date, where, notes, issueIds }, { title: 'Tenancy agreement', kind: 'document', status: 'have', date: null, where: 'In the blue folder', notes: '', issueIds: [] }))(caseOf(d).evidence[0]), caseOf(d).evidence[0]);
+    P(d).updatedAt = OLD;
+    check('editEvidence changes status, kind, where and notes, and moves the updated time on', K.editEvidence(d, 'pjA', e1, { status: 'reviewed', kind: 'email', where: 'Inbox, 3 Sept', notes: 'Read it twice' }) === true && eq((({ status, kind, where, notes }) => [status, kind, where, notes])(caseOf(d).evidence[0]), ['reviewed', 'email', 'Inbox, 3 Sept', 'Read it twice']) && P(d).updatedAt > OLD);
+    check('editEvidence can set a date and clear it to null', K.editEvidence(d, 'pjA', e1, { date: '2026-09-03' }) === true && caseOf(d).evidence[0].date === '2026-09-03' && K.editEvidence(d, 'pjA', e1, { date: null }) === true && caseOf(d).evidence[0].date === null);
+    check('editEvidence with the same values changes nothing (false); an unknown status or kind is ignored', K.editEvidence(d, 'pjA', e1, { status: 'reviewed', kind: 'email' }) === false && K.editEvidence(d, 'pjA', e1, { status: 'maybe', kind: 'pigeon' }) === false && caseOf(d).evidence[0].status === 'reviewed');
+    K.setTemplate(d, 'pjA', 'case');
+    const tx = K.addEntry(d, 'pjA', { date: '2026-09-01', title: 'Signed' }), tx2 = K.addEntry(d, 'pjA', { date: '2026-09-02', title: 'Moved in' }), e2 = K.addEvidence(d, 'pjA', { title: 'Photos' });
+    K.toggleLink(d, 'pjA', 'entry-evidence', tx, e1); K.toggleLink(d, 'pjA', 'entry-evidence', tx, e2); K.toggleLink(d, 'pjA', 'entry-evidence', tx2, e1);
+    P(d).updatedAt = OLD;
+    check('removeEvidence takes it out of the evidence and off the entries that named it (the entries stay)', K.removeEvidence(d, 'pjA', e1) === true && eq(caseOf(d).evidence.map(e => e.id), [e2]) && eq(caseOf(d).timeline.find(t => t.id === tx).evidenceIds, [e2]) && eq(caseOf(d).timeline.find(t => t.id === tx2).evidenceIds, []) && caseOf(d).timeline.length === 2 && P(d).updatedAt > OLD && K.removeEvidence(d, 'pjA', e1) === false);
+    d = world(base('pjA', { template: 'case' }));
+    for (let i = 0; i < 150; i++) K.addEvidence(d, 'pjA', { title: 'Item ' + i });
+    check('the 150th piece of evidence is accepted and the 151st returns "full"', caseOf(d).evidence.length === 150 && K.addEvidence(d, 'pjA', { title: 'One more' }) === 'full' && caseOf(d).evidence.length === 150);
+
+    // Issues
+    d = world(base('pjA', { template: 'case' }), base('pjO'));
+    check('an issue needs a title: otherwise null', K.addIssue(d, 'pjA', '  ') === null && K.addIssue(d, 'pjNope', 'x') === null);
+    const i1 = K.addIssue(d, 'pjA', '  Deposit not protected ');
+    check('addIssue returns an id starting "is"; it starts as "considering" with no notes', typeof i1 === 'string' && i1.startsWith('is') && caseOf(d).issues[0].title === 'Deposit not protected' && caseOf(d).issues[0].status === 'considering' && caseOf(d).issues[0].notes === '');
+    P(d).updatedAt = OLD;
+    check('editIssue changes the title, status and notes, and moves the updated time on', K.editIssue(d, 'pjA', i1, { title: 'Deposit was not protected', status: 'claiming', notes: 'Scheme says no record' }) === true && eq((({ title, status, notes }) => [title, status, notes])(caseOf(d).issues[0]), ['Deposit was not protected', 'claiming', 'Scheme says no record']) && P(d).updatedAt > OLD);
+    check('editIssue with the same values changes nothing (false); a blank title or unknown status is ignored', K.editIssue(d, 'pjA', i1, { status: 'claiming' }) === false && K.editIssue(d, 'pjA', i1, { title: '  ', status: 'won' }) === false && caseOf(d).issues[0].title === 'Deposit was not protected');
+    const i2 = K.addIssue(d, 'pjA', 'Damage claim'), te = K.addEntry(d, 'pjA', { date: '2026-09-01', title: 'Checked out' }), ee = K.addEvidence(d, 'pjA', { title: 'Photos' });
+    K.toggleLink(d, 'pjA', 'entry-issue', te, i1); K.toggleLink(d, 'pjA', 'entry-issue', te, i2); K.toggleLink(d, 'pjA', 'evidence-issue', ee, i1);
+    P(d).updatedAt = OLD;
+    check('removeIssue takes it out and off the evidence and entries linked to it (they stay)', K.removeIssue(d, 'pjA', i1) === true && eq(caseOf(d).issues.map(i => i.id), [i2]) && eq(caseOf(d).timeline[0].issueIds, [i2]) && eq(caseOf(d).evidence[0].issueIds, []) && caseOf(d).timeline.length === 1 && caseOf(d).evidence.length === 1 && P(d).updatedAt > OLD && K.removeIssue(d, 'pjA', i1) === false);
+    d = world(base('pjA', { template: 'case' }));
+    for (let i = 0; i < 20; i++) K.addIssue(d, 'pjA', 'Issue ' + i);
+    check('the 20th issue is accepted and the 21st returns "full"', caseOf(d).issues.length === 20 && K.addIssue(d, 'pjA', 'One more') === 'full' && caseOf(d).issues.length === 20);
+
+    // Links, counts
+    d = world(base('pjA', { template: 'case' }));
+    const lt = K.addEntry(d, 'pjA', { date: '2026-09-01', title: 'Entry' }), le = K.addEvidence(d, 'pjA', { title: 'Evidence' }), li = K.addIssue(d, 'pjA', 'Issue');
+    P(d).updatedAt = OLD;
+    check('an entry links to evidence, then unlinks on the second tap, moving the updated time on', K.toggleLink(d, 'pjA', 'entry-evidence', lt, le) === true && eq(caseOf(d).timeline[0].evidenceIds, [le]) && P(d).updatedAt > OLD && K.toggleLink(d, 'pjA', 'entry-evidence', lt, le) === true && eq(caseOf(d).timeline[0].evidenceIds, []));
+    check('an entry links to an issue, then unlinks', K.toggleLink(d, 'pjA', 'entry-issue', lt, li) === true && eq(caseOf(d).timeline[0].issueIds, [li]) && K.toggleLink(d, 'pjA', 'entry-issue', lt, li) === true && eq(caseOf(d).timeline[0].issueIds, []));
+    check('evidence links to an issue, then unlinks', K.toggleLink(d, 'pjA', 'evidence-issue', le, li) === true && eq(caseOf(d).evidence[0].issueIds, [li]) && K.toggleLink(d, 'pjA', 'evidence-issue', le, li) === true && eq(caseOf(d).evidence[0].issueIds, []));
+    P(d).updatedAt = OLD;
+    check('an id that does not exist links nothing (false), whichever kind, and the updated time stays', K.toggleLink(d, 'pjA', 'entry-evidence', lt, 'evNope') === false && K.toggleLink(d, 'pjA', 'entry-evidence', 'tlNope', le) === false && K.toggleLink(d, 'pjA', 'entry-issue', lt, 'isNope') === false && K.toggleLink(d, 'pjA', 'evidence-issue', 'evNope', li) === false && K.toggleLink(d, 'pjA', 'evidence-issue', le, 'isNope') === false && K.toggleLink(d, 'pjA', 'entry-evidence', lt, li) === false && P(d).updatedAt === OLD);
+    const evs = Array.from({ length: 11 }, (_, i) => K.addEvidence(d, 'pjA', { title: 'More ' + i })), iss = Array.from({ length: 6 }, (_, i) => K.addIssue(d, 'pjA', 'More issue ' + i));
+    const tenOk = evs.slice(0, 10).every(e => K.toggleLink(d, 'pjA', 'entry-evidence', lt, e) === true);
+    check('the 10th evidence link on an entry is accepted and the 11th returns "full"', tenOk && K.toggleLink(d, 'pjA', 'entry-evidence', lt, evs[10]) === 'full' && caseOf(d).timeline[0].evidenceIds.length === 10);
+    const fiveOk = iss.slice(0, 5).every(s => K.toggleLink(d, 'pjA', 'entry-issue', lt, s) === true);
+    check('the 5th issue link on an entry is accepted and the 6th returns "full"', fiveOk && K.toggleLink(d, 'pjA', 'entry-issue', lt, iss[5]) === 'full' && caseOf(d).timeline[0].issueIds.length === 5);
+    check('…the same limit of 5 holds for evidence linked to issues', iss.slice(0, 5).every(s => K.toggleLink(d, 'pjA', 'evidence-issue', le, s) === true) && K.toggleLink(d, 'pjA', 'evidence-issue', le, iss[5]) === 'full');
+    check('a link at the limit can still be taken off', K.toggleLink(d, 'pjA', 'entry-issue', lt, iss[0]) === true && caseOf(d).timeline[0].issueIds.length === 4);
+    check('caseCounts of a project without a case is all zero', eq(K.caseCounts(base('pjZ')), { timeline: 0, evidence: 0, toGet: 0, have: 0, reviewed: 0, issues: 0, claiming: 0 }));
+    d = world(base('pjA', { template: 'case' }));
+    const ct = [K.addEntry(d, 'pjA', { date: '2026-09-03', title: 'Third' }), K.addEntry(d, 'pjA', { date: '2026-09-01', title: 'First' }), K.addEntry(d, 'pjA', { date: '2026-09-02', title: 'Second' })];
+    const ce = [K.addEvidence(d, 'pjA', { title: 'A', status: 'to-get' }), K.addEvidence(d, 'pjA', { title: 'B', status: 'to-get' }), K.addEvidence(d, 'pjA', { title: 'C', status: 'have' }), K.addEvidence(d, 'pjA', { title: 'D', status: 'reviewed' })];
+    const ci = [K.addIssue(d, 'pjA', 'One'), K.addIssue(d, 'pjA', 'Two'), K.addIssue(d, 'pjA', 'Three')];
+    K.editIssue(d, 'pjA', ci[0], { status: 'claiming' }); K.editIssue(d, 'pjA', ci[1], { status: 'claiming' }); K.editIssue(d, 'pjA', ci[2], { status: 'dropped' });
+    check('caseCounts counts the entries, the evidence by status, the issues and those being claimed', eq(K.caseCounts(P(d)), { timeline: 3, evidence: 4, toGet: 2, have: 1, reviewed: 1, issues: 3, claiming: 2 }), K.caseCounts(P(d)));
+    K.toggleLink(d, 'pjA', 'evidence-issue', ce[0], ci[0]); K.toggleLink(d, 'pjA', 'evidence-issue', ce[2], ci[0]); K.toggleLink(d, 'pjA', 'entry-issue', ct[0], ci[0]); K.toggleLink(d, 'pjA', 'entry-issue', ct[1], ci[0]); K.toggleLink(d, 'pjA', 'entry-issue', ct[2], ci[1]);
+    const il = K.issueLinks(P(d), ci[0]);
+    check('issueLinks gives the evidence and the entries (in date order) linked to an issue', eq(il.evidence.map(e => e.id), [ce[0], ce[2]]) && eq(il.entries.map(t => t.id), [ct[1], ct[0]]), il);
+    check('…and nothing for an issue with no links, or for a project without a case', eq(K.issueLinks(P(d), ci[2]), { evidence: [], entries: [] }) && eq(K.issueLinks(base('pjZ'), 'x'), { evidence: [], entries: [] }));
+
+    // Size guard
+    const ARABIC = 'ع'.repeat(800), EMOJI = '😀'.repeat(400);
+    d = world(base('pjA', { template: 'case' }), base('pjO'));
+    const sizeB = clone(d.projects.items[1]);
+    let big = null, added = 0;
+    for (let i = 0; i < 150 && big === null; i++) { const x = K.addEntry(d, 'pjA', { date: '2026-09-01', title: 'ع'.repeat(160), details: ARABIC }); if (x === 'big') big = 'entry'; else added++; }
+    for (let i = 0; i < 150 && big === null; i++) { const x = K.addEvidence(d, 'pjA', { title: '😀'.repeat(80), where: 'ع'.repeat(200), notes: EMOJI }); if (x === 'big') big = 'evidence'; else added++; }
+    check('filling a case with long texts in Arabic and emoji ends with an add refused as "big" before the counts are reached', big !== null && added > 0 && added < 300, { big, added });
+    const lenT = caseOf(d).timeline.length, lenE = caseOf(d).evidence.length, bytesNow = K.projectBytes(P(d));
+    check('the project then stays at or under the budget of 380,000 bytes', K.CASE_LIMITS.bytes === 380000 && bytesNow <= 380000 && bytesNow > 300000, bytesNow);
+    const refusedE = K.addEvidence(d, 'pjA', { title: '😀'.repeat(80), where: 'ع'.repeat(200), notes: EMOJI }), refusedT = K.addEntry(d, 'pjA', { date: '2026-09-01', title: 'ع'.repeat(160), details: ARABIC }), idsAll = JSON.stringify(caseOf(d));
+    check('a refused add leaves nothing behind (same counts, same bytes, same updated time)', (refusedE === 'big' || refusedT === 'big') && caseOf(d).timeline.length === lenT && caseOf(d).evidence.length === lenE && K.projectBytes(P(d)) === bytesNow, [refusedE, refusedT]);
+    // Make a little room (empty one entry's details), add issues, then lengthen their notes until the budget says no.
+    const roomT = caseOf(d).timeline[0];
+    K.editEntry(d, 'pjA', roomT.id, { details: '' });
+    const roomIs = [K.addIssue(d, 'pjA', 'ع'.repeat(120)), K.addIssue(d, 'pjA', 'ع'.repeat(120)), K.addIssue(d, 'pjA', 'ع'.repeat(120))];
+    let grown = null, stayed = null, atOld = null;
+    for (const id of roomIs) {
+      if (typeof id !== 'string') continue;
+      P(d).updatedAt = OLD;
+      const res = K.editIssue(d, 'pjA', id, { notes: 'ع'.repeat(800) });
+      if (res === 'big') { grown = res; stayed = caseOf(d).issues.find(i => i.id === id).notes; atOld = P(d).updatedAt; break; }
+    }
+    check('an edit that makes a text longer past the budget returns "big", leaves the old value and the updated time, and the project stays within the budget', grown === 'big' && stayed === '' && atOld === OLD && K.projectBytes(P(d)) <= 380000, { grown, stayed, bytes: K.projectBytes(P(d)) });
+    check('…and the other project, the days and tasks were never touched', eq(d.projects.items[1], sizeB));
+    // The largest case the counts allow, in plain English at full lengths, still fits in a saved project (524,288 bytes)
+    const word = n => 'abcdefghij'.repeat(Math.ceil(n / 10)).slice(0, n);
+    const bigCase = { timeline: [], evidence: [], issues: [] };
+    for (let i = 0; i < 20; i++) bigCase.issues.push(IS('is' + 'x'.repeat(12) + i, { title: word(120), notes: word(800), status: 'claiming' }));
+    for (let i = 0; i < 150; i++) bigCase.evidence.push(EV('ev' + 'x'.repeat(12) + i, { title: word(160), where: word(200), notes: word(400), date: '2026-09-01', issueIds: bigCase.issues.slice(0, 5).map(x => x.id) }));
+    for (let i = 0; i < 150; i++) bigCase.timeline.push(TL('tl' + 'x'.repeat(12) + i, { title: word(160), details: word(800), evidenceIds: bigCase.evidence.slice(0, 10).map(x => x.id), issueIds: bigCase.issues.slice(0, 5).map(x => x.id) }));
+    const maxP = K.normalizeProjects({ items: [base('pjM', { template: 'case', case: bigCase })] }, { dropped: 0 }).items[0];
+    check('the largest case the counts allow, in plain English at full lengths, is read in full and the whole project stays under 524,288 bytes', maxP.case.timeline.length === 150 && maxP.case.evidence.length === 150 && maxP.case.issues.length === 20 && K.projectBytes(maxP) < 524288, K.projectBytes(maxP));
+
+    // Nothing else is touched
+    d = world(base('pjA', { template: 'case' }), base('pjO'));
+    d.tasks.items = [{ id: 'tkX', title: 'Pay council tax', projectId: 'pjA', done: false, doneOn: null, createdAt: OLD }]; d.notes.items = [{ id: 'n1', title: 'A note', text: 'x', projectId: 'pjA' }];
+    d.days['2026-10-10'] = { energy: 3, rest: false, builtAt: '2026-10-10T08:00', checkedIn: true, tasks: [] };
+    const ctx10 = rest(d), other10 = clone(d.projects.items[1]);
+    let a1, a2, a3;
+    const steps = [
+      ['adding an entry', () => { a1 = K.addEntry(d, 'pjA', { date: '2026-09-01', title: 'Moved out' }); }],
+      ['editing an entry', () => K.editEntry(d, 'pjA', a1, { title: 'Moved out of the flat' })],
+      ['adding evidence', () => { a2 = K.addEvidence(d, 'pjA', { title: 'Tenancy agreement' }); }],
+      ['editing evidence', () => K.editEvidence(d, 'pjA', a2, { status: 'reviewed' })],
+      ['adding an issue', () => { a3 = K.addIssue(d, 'pjA', 'Deposit not protected'); }],
+      ['editing an issue', () => K.editIssue(d, 'pjA', a3, { status: 'claiming' })],
+      ['linking an entry to evidence', () => K.toggleLink(d, 'pjA', 'entry-evidence', a1, a2)],
+      ['linking an entry to an issue', () => K.toggleLink(d, 'pjA', 'entry-issue', a1, a3)],
+      ['linking evidence to an issue', () => K.toggleLink(d, 'pjA', 'evidence-issue', a2, a3)],
+      ['removing an issue', () => K.removeIssue(d, 'pjA', a3)],
+      ['removing evidence', () => K.removeEvidence(d, 'pjA', a2)],
+      ['removing an entry', () => K.removeEntry(d, 'pjA', a1)],
+    ];
+    for (const [name, run] of steps) { P(d).updatedAt = OLD; run(); check(`${name} moves the project's updated time on`, P(d).updatedAt > OLD, P(d).updatedAt); }
+    check('none of that touched the days, tasks, notes, title, summary, stage or status, or the other project', eq(rest(d), ctx10) && eq(d.projects.items[1], other10));
+    check('removing the last record of a case removes the case field', !('case' in P(d)), P(d));
   }
 
   fs.rmSync(dir, { recursive: true, force: true });
