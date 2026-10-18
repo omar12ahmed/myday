@@ -1038,6 +1038,114 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   }
   await T.send('Emulation.clearDeviceMetricsOverride');
 
+  console.log('\n[35] The weekly review');
+  const rtk = (id, title, projectId, extra = {}) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-09-20T09:00', postponed: 0, blockers: [], letGoOn: null, projectId, ...extra });
+  const stepNo = () => ev(`document.getElementById('reviewStep').dataset.step`);
+  const waitKinds = () => ev(`[...document.querySelectorAll('[data-s=waiting]')].map(li => li.dataset.kind)`);
+  const waitTexts = () => ev(`[...document.querySelectorAll('[data-s=waiting]')].map(li => li.querySelector('p').textContent)`);
+  const rawNow = () => ev(`localStorage.getItem('${KEY}')`);
+  const rprefs = async () => (await data()).patterns.prefs;
+  const toStep = async n => { for (let i = 0; i < n; i++) { await click('[data-action=review-next]'); await sleep(150); } };
+  await go('review', 2026, 10, 18, 9); await reset(); await go('review', 2026, 10, 18, 9);
+  check('a week with nothing in it says it is quiet, and that is allowed', (await text('[data-s=review-quiet]')).includes('A quiet week') && !(await exists('[data-s=review-moved]')), await text('#reviewStep'));
+  await toStep(1);
+  check('…and with nothing waiting step 2 says so', (await text('[data-s=review-nothing-waiting]')).includes('Nothing waiting on you'), await text('#reviewStep'));
+  check('in this plain build (no AI) there is no "See the pattern" button', !(await exists('[data-action=review-pattern]')));
+
+  await go('projects', 2026, 10, 18, 9);
+  check('Projects\' intro has "Look back at your week", going to the review', (await ev(`document.querySelector('[data-action=open-review]').getAttribute('href')`)) === '#review' && (await text('[data-action=open-review]')).includes('Look back at your week'));
+  await click('[data-action=open-review]'); await sleep(300);
+  check('…and it opens "Your week" with the seven days', (await hash()) === '#review' && (await text('#reviewH')).includes('Your week') && (await text('#reviewTop')).includes('The last seven days, ') && (await stepNo()) === '0', await text('#reviewTop'));
+
+  const sess = (id, date, ms) => ({ id, courseId: null, taskId: null, title: 'Made-up study', date, startedAt: date + 'T09:00', plannedMin: 20, short: false, status: 'done', runningSince: null, activeMs: ms, endedAt: date + 'T09:30', checkin: null, taskDone: null, todayUid: null });
+  const wk = (id, date) => ({ id, date, templateId: null, templateName: 'Made-up workout', startedAt: date + 'T07:00', finishedAt: date + 'T07:40', status: 'done', plannedDate: null, editedAt: null, exercises: [] });
+  await seed([
+    pjObj('pjR1', 'Review: paint the hall', 'act', { updatedAt: '2026-10-16T09:00', milestones: [msObj('msR1', 'Walls prepared', null, '2026-10-16')] }),
+    pjObj('pjR2', 'Review: seed swap', 'act', { updatedAt: '2026-10-16T09:00' }),
+    pjObj('pjR3', 'Review: learn piano', 'explore', { updatedAt: '2026-10-16T09:00' }),
+    pjObj('pjR4', 'Review: tidy the garden', 'explore', { updatedAt: '2026-10-16T09:00' }),
+    pjObj('pjRq', 'Review: old plan', 'capture', { updatedAt: '2026-09-01T09:00' }),
+  ]);
+  await editStorage(`s => { s.tasks.items.push(
+    ${JSON.stringify(rtk('tkR1', 'Sand the walls', 'pjR1', { done: true, doneOn: '2026-10-17' }))}, ${JSON.stringify(rtk('tkR2', 'Fill the cracks', 'pjR1', { done: true, doneOn: '2026-10-16' }))},
+    ${JSON.stringify(rtk('tkR3', 'Buy white paint', 'pjR1', { done: true, doneOn: '2026-10-15' }))}, ${JSON.stringify(rtk('tkR4', 'Wash the brushes', 'pjR1', { done: true, doneOn: '2026-10-14' }))},
+    ${JSON.stringify(rtk('tkR5', 'Pick a swap date', 'pjR2', { done: true, doneOn: '2026-10-17' }))},
+    ${JSON.stringify(rtk('tkR6', 'Call the dentist', null, { done: true, doneOn: '2026-10-16' }))}, ${JSON.stringify(rtk('tkR7', 'Post a parcel', null, { done: true, doneOn: '2026-10-13' }))},
+    ${JSON.stringify(rtk('tkR8', 'Done long ago', 'pjR2', { done: true, doneOn: '2026-09-20' }))},
+    ${JSON.stringify(rtk('tkS1', 'Renew the passport', null, { postponed: 3 }))}, ${JSON.stringify(rtk('tkS2', 'Book the boiler service', null, { postponed: 4 }))},
+    ${JSON.stringify(rtk('tkS3', 'Return the parcel', null, { postponed: 3 }))}, ${JSON.stringify(rtk('tkS4', 'Clear the loft', null, { postponed: 5 }))});
+    s.study.sessions.push(${JSON.stringify(sess('stR1', '2026-10-15', 20 * 60000))}, ${JSON.stringify(sess('stR2', '2026-10-17', 25 * 60000))});
+    s.health.workout.sessions.push(${JSON.stringify(wk('wkR1', '2026-10-16'))}); }`);
+  await go('review', 2026, 10, 18, 9, 5);
+  check('step 1 lists the busiest project first with its counts', (await ev(`[...document.querySelectorAll('[data-s=review-moved] > li')].map(li => li.dataset.id)`)).join() === 'pjR1,pjR2' && norm(await text('[data-s=review-moved] > li')).startsWith('Review: paint the hall') && norm(await text('[data-s=review-moved] > li')).includes('4 tasks done · 1 milestone reached'), norm(await text('[data-s=review-moved]')));
+  check('…with the names of three done tasks', norm(await text('[data-s=review-moved] > li')).includes('Sand the walls · Fill the cracks · Buy white paint') && !norm(await text('[data-s=review-moved]')).includes('Done long ago'), norm(await text('[data-s=review-moved]')));
+  const other = norm(await text('[data-s=review-other]'));
+  check('…and the other tasks, Study and workouts in one line each', other.includes('2 other tasks done') && other.includes('Study: 2 sessions, 45 min') && other.includes('1 workout'), other);
+  check('…no "quiet week" line when something moved', !(await exists('[data-s=review-quiet]')));
+  check('the steps are named, the first marked as current', (await ev(`[...document.querySelectorAll('#reviewTop li')].map(li => li.textContent + (li.getAttribute('aria-current') ? '*' : ''))`)).join('|') === '1. What moved*|2. What\'s waiting|3. Next week\'s focus|4. A line or two', await text('#reviewTop'));
+
+  await click('[data-action=review-next]'); await sleep(200);
+  check('Next goes to step 2, "What\'s waiting"', (await stepNo()) === '1' && (await text('#reviewStepH')) === 'What\'s waiting');
+  check('waiting items are at most five, stuck tasks first then a quiet project', (await waitKinds()).join() === 'stuck,stuck,stuck,stuck,quiet', await waitKinds());
+  check('…a stuck task says how many times it moved; a quiet project how many weeks', (await waitTexts())[0] === '“Renew the passport” has moved 3 times' && (await waitTexts())[4] === '“Review: old plan” has been quiet for 6 weeks', await waitTexts());
+  const beforeLeave = await rawNow();
+  await click('[data-s=waiting][data-kind=stuck] [data-action=waiting-leave]'); await sleep(200);
+  check('"Leave it for now" takes that one off the list and saves nothing', (await waitKinds()).length === 4 && !(await waitTexts()).some(t => t.includes('Renew the passport')) && (await rawNow()) === beforeLeave, await waitTexts());
+  await click('[data-action=review-back]'); await sleep(150);
+  check('Back returns to the step before', (await stepNo()) === '0' && (await exists('[data-s=review-moved]')));
+  await click('[data-action=review-next]'); await sleep(200);
+  check('…and the one left for now is still left when you come back', (await waitKinds()).length === 4);
+  await click('[data-s=waiting][data-kind=quiet] [data-action=waiting-pause]'); await sleep(250);
+  check('"Pause it" on a quiet project pauses it and takes it off the list', (await project('Review: old plan')).status === 'paused' && !(await waitKinds()).includes('quiet') && (await waitKinds()).length === 3, [(await project('Review: old plan')).status, await waitKinds()]);
+  await click('[data-s=waiting][data-kind=stuck] [data-action=waiting-let-go]'); await sleep(250);
+  const gone = (await data()).tasks.items.filter(t => t.letGoOn);
+  check('"Let it go" on a stuck task lets it go (its let-go day is today) and takes it off the list', gone.length === 1 && gone[0].id === 'tkS2' && gone[0].letGoOn === '2026-10-18' && (await waitKinds()).length === 2, [gone.map(t => t.id + t.letGoOn), await waitKinds()]);
+
+  await click('[data-action=review-next]'); await sleep(200);
+  check('step 3 lists the active projects with a checkbox each (the paused one is not there)', (await stepNo()) === '2' && (await ev(`[...document.querySelectorAll('[data-s=focus-pick]')].map(i => i.dataset.id)`)).sort().join() === 'pjR1,pjR2,pjR3,pjR4', await text('#reviewStep'));
+  for (const id of ['pjR1', 'pjR2', 'pjR3']) { await ev(`document.querySelector('[data-s=focus-pick][data-id=${id}]').click()`); await sleep(100); }
+  check('a fourth can\'t be ticked: its box is disabled and "That’s three" says why', (await ev(`document.querySelector('[data-s=focus-pick][data-id=pjR4]').disabled`)) === true && (await text('[data-s=focus-full]')).includes('three'), await text('#reviewStep'));
+  await ev(`document.querySelector('[data-s=focus-pick][data-id=pjR3]').click()`); await sleep(100);
+  check('…and unticking one makes room again', !(await exists('[data-s=focus-full]')) && (await ev(`document.querySelector('[data-s=focus-pick][data-id=pjR4]').disabled`)) === false);
+
+  await click('[data-action=review-next]'); await sleep(200);
+  check('step 4 has the two questions', (await stepNo()) === '3' && (await exists('#reviewWent')) && (await exists('#reviewEasier')) && (await exists('[data-action=review-finish]')));
+  await type('#reviewWent', 'The hall is nearly done'); await type('#reviewEasier', 'Fewer plans on Mondays');
+  check('the review day starts on Sunday', (await ev(`document.getElementById('reviewDay').value`)) === '0');
+  await type('#reviewDay', '3'); await sleep(250);
+  check('choosing Wednesday as the review day saves it', (await rprefs()).reviewDay === 3, await rprefs());
+  await type('#reviewDay', '0'); await sleep(250);
+  check('choosing Sunday again removes it', !('reviewDay' in (await rprefs())), await rprefs());
+  const pjBefore = (await pAt('pjR1')).updatedAt;
+  await click('[data-action=review-finish]'); await sleep(300);
+  const d35 = await data(), pr = d35.patterns.prefs, noteW = d35.notes.items.filter(n => n.reflectionWeek);
+  check('Finish puts the chosen projects in focus from tomorrow, and nobody else', d35.projects.items.filter(p => p.focus).map(p => p.id + p.focus).sort().join() === 'pjR1' + '2026-10-19,pjR2' + '2026-10-19', d35.projects.items.map(p => p.id + p.focus));
+  check('…without moving a project\'s updated time', (await pAt('pjR1')).updatedAt === pjBefore);
+  check('…keeps what you wrote as a note "Week of …" for that week', noteW.length === 1 && noteW[0].title.startsWith('Week of ') && noteW[0].reflectionWeek === '2026-10-12' && noteW[0].text.includes('The hall is nearly done') && noteW[0].text.includes('Fewer plans on Mondays'), noteW);
+  check('…and marks this Sunday\'s review as done', pr.reviewed === '2026-10-18', pr);
+  check('…then says it is done, naming the focus', (await exists('#reviewDone')) && (await text('[data-s=review-focus-done]')).includes('Review: paint the hall') && (await text('[data-s=review-focus-done]')).includes('Review: seed swap') && (await text('#reviewDone')).includes('Week of'), await text('#reviewDone'));
+
+  await go('projects', 2026, 10, 19, 10);
+  check('the board marks a project in focus with "This week’s focus", and no other', (await ev(`[...document.querySelectorAll('.project-card')].filter(c => c.querySelector('[data-s=project-focus]')).map(c => c.dataset.id)`)).sort().join() === 'pjR1,pjR2' && (await text('.project-card[data-id=pjR1] [data-s=project-focus]')) === 'This week’s focus');
+
+  await editStorage(`s => { delete s.patterns.prefs.reviewed; }`);
+  await go('review', 2026, 10, 19, 9);
+  await toStep(2);
+  check('on the Monday the focus already chosen starts ticked', (await ev(`[...document.querySelectorAll('[data-s=focus-pick]:checked')].map(i => i.dataset.id)`)).sort().join() === 'pjR1,pjR2');
+  await toStep(1);
+  await click('[data-action=review-finish]'); await sleep(300);
+  check('finishing with nothing written adds no second note, and marks the review done', (await data()).notes.items.filter(n => n.reflectionWeek).length === 1 && (await rprefs()).reviewed === '2026-10-18' && (await exists('#reviewDone')));
+
+
+  for (const w of [320]) {
+    await T.send('Emulation.setDeviceMetricsOverride', { width: w, height: 740, deviceScaleFactor: 2, mobile: true });
+    await go('review', 2026, 10, 18, 11); await sleep(250);
+    const w0 = await ev('document.documentElement.scrollWidth');
+    await toStep(1); await sleep(200);
+    check(`phone ${w} px: the review does not scroll sideways on its first two steps`, (await exists('#reviewStep')) && w0 <= w && (await ev('document.documentElement.scrollWidth')) <= w, [w0, await ev('document.documentElement.scrollWidth')]);
+  }
+  await T.send('Emulation.clearDeviceMetricsOverride');
+
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
   const sm = T.summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);

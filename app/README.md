@@ -256,6 +256,27 @@ matters. Evaluated live on made-up projects (about US$0.06, `ai-eval/reviews/202
 helper (no AI) answers it too. Each picture has words for screen readers and never relies on colour alone, in light
 and dark themes.
 
+**Your week — the weekly review (1.37.0):** a short look back over the last seven days, at `#review` ("Your week"), in
+four steps, one at a time, with Back and Next. Nothing changes until you tap. **1 What moved:** each project's tasks
+done, milestones reached, decisions made, things found out, case records added (up to three done task names shown),
+other tasks done, Study sessions and minutes, and workouts as counts and names, never scores; a quiet week is called
+fine. **2 What's waiting:** at most five things from real data: a task moved three or more times or long past its
+date, a project quiet for two weeks, a decision open for two weeks, a done Find out not yet marked, and evidence still
+to get. Each has "Pick a next step", "What's in the way?" or "Open it", "Pause it" for a quiet project, "Let it go"
+for a stuck task, and "Leave it for now". **3 Next week's focus:** up to three active projects, from tomorrow for
+seven days. Their next steps come first in "From your projects" on Today, marked "This week's focus", and the board
+labels them. **4 A line or two (optional):** "What went well?" and "What would make next week easier?", saved as an
+ordinary note "Week of …", in Personal when you have that collection. **See the pattern** (step 1, only on your tap,
+with AI help): Ask MyDay gets your week in counts and names (what moved, what's waiting, next week's focus; never
+private projects) and answers in two or three warm sentences naming a pattern or two, then one small suggestion. It
+never judges. Instructions `myday-ask-v16`, evaluated live on made-up weeks (about US$0.05); the practice helper
+answers it too. What MyDay knows lists the review page. **Look back at your week** is a card on Today, shown only on
+your review day (Sunday unless you choose another day on the review page) and the day after, until you've done it or
+tapped "Not this week". Never a notification. Projects has a link to it too ("Look back at your week"). Saved data
+(all optional): a project's `focus` (the day its focus week starts), a note's `reflectionWeek`, and your preferences'
+`reviewDay`, `reviewed` and `reviewHidden`. Going back to 1.36.0 is safe: checked with its own code (5/5) and its
+built app (3/3).
+
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
 
@@ -507,6 +528,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/businessModel.ts`, `src/projects/ModelView.tsx` | The Business template (1.33.0): `businessModel.ts` (the kind of project and the one page: reading what's saved, the four answers, the list of what must be true with its limits, Find out, marking, counts); `ModelView.tsx` (the Model tab and Overview's "Your one page" card). The counts line is `progressLine` in `planText.ts`; Explore's brief from the one page is `fromOnePage` in `src/explore/content.ts`. |
 | `src/data/caseFile.ts`, `src/projects/CaseViews.tsx` | The Case template (1.35.0): `caseFile.ts` (reading what's saved, unknown fields kept, links to missing items let go; the timeline, evidence and issues with their limits, links, counts and the size guard); `CaseViews.tsx` (the Overview's "Your case" card and the Timeline, Evidence and Issues tabs). |
 | `src/data/projectDashboard.ts`, `src/projects/AtAGlance.tsx` | The dashboards per kind (1.36.0): `projectDashboard.ts` (the tiles, the next dates, the weeks, entries by month, each issue's links and Worth a look; Today's own dashboard numbers stay in `dashboard.ts`); `AtAGlance.tsx` (the At a glance card, its pictures and Summarise this). |
+| `src/data/weekReview.ts`, `src/review/ReviewScreen.tsx`, `src/today/ReviewCard.tsx` | The weekly review (1.37.0): `weekReview.ts` (when the review is due, what moved, what's waiting, focus, and saving the review); `ReviewScreen.tsx` (the four steps and See the pattern); `ReviewCard.tsx` (the card on Today). |
 | `src/commitments/` | Work shifts and appointments: the form and list used by both Today and Calendar. |
 | `src/shell/` | Navigation, the top bar's parts (`TopBar`: the Focus mode switch and your account; `focusMode.ts`, the device-only `myday.focus`), the theme button, the shared footer (`AppFooter`), the "couldn't be read" notice (`LoadIssue`) and the screens for unreadable or older data. |
 | `public/icon.svg` | The tab icon. |
@@ -1143,3 +1165,9 @@ returns up to 8 small tasks; you tick the ones to add.
     "Summarise where this project is, and the one next step", only on your tap and never on a private project;
     the summary says only what the data shows (instructions `myday-ask-v15`). The practice helper answers it too.
     The server's `ask` job was deployed first; no data or database change; going back to 1.35.1 is safe.
+50. **Release 1.37.0:** milestone 6, Reflect: **Your week**, a short look back over the last seven days, at
+    `#review`, in four steps, one at a time: what moved, what's waiting (at most five, and nothing changes until
+    you tap), next week's focus (up to three active projects, shown first on Today), and a line or two saved as
+    a note. A card on Today on your review day, and a link from Projects.
+    **See the pattern** (only on your tap, with AI help) names a pattern or two in your week. Saved data is
+    all optional. The server's `ask` job was deployed first; no database change; going back to 1.36.0 is safe.

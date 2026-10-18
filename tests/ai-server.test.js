@@ -192,6 +192,33 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   check('both models\' worst cases are rReserved up front, since both could be billed', Math.abs(rReserved - both) < 1e-12 && both > P.worstCaseCostUsd(route.primary.cfg, rctx), [rReserved, both]);
   check('the learning model is asked first, then the main one; each request goes to its own address with its own key', hosts.join() === 'learn.example,main.example' && a.body.model === 'main.example' && a.body.fallback === true);
   check('the tokens of both calls are recorded', finished.length === 1 && finished[0][0] === 700 && finished[0][1] === 120);
+  console.log('\n[2j] The weekly review in Ask (v16): the review context is checked; the practice reply');
+  {
+    const A = await import(path.join(ROOT, 'supabase/functions/_shared/ai/ask.ts'));
+    const rv = { from: '2026-11-04', to: '2026-11-10', moved: [{ project: 'Hargeisa shop', tasks: 3, milestones: 1, decisions: 0, found: 0, recorded: 0 }, { project: 'Allotment plan', tasks: 1, milestones: 0, decisions: 0, found: 0, recorded: 0 }],
+      otherTasks: 2, studySessions: 1, studyMinutes: 25, workouts: 1, waiting: ['“Pay council tax” has moved 3 times'], focus: ['Allotment plan'] };
+    const mk = (review, text = 'What pattern do you see in my week?') => ({ version: 1, action: 'ask', date: '2026-11-10', weekday: 'Tuesday', time: '10:00', page: 'review', text, context: { review } });
+    check('a valid review context (counts, names, what is waiting, the focus) is accepted', A.checkAskContext(mk(rv)) === true);
+    check('…and so is a quiet week with nothing moved, waiting or in focus', A.checkAskContext(mk({ ...rv, moved: [], waiting: [], focus: [] })) === true);
+    const bad = (why, r) => check(`…but ${why} is refused`, A.checkAskContext(mk(r)) === false);
+    bad('a count that is not a whole number (2.5 tasks)', { ...rv, moved: [{ ...rv.moved[0], tasks: 2.5 }] });
+    bad('a negative count', { ...rv, moved: [{ ...rv.moved[0], milestones: -1 }] });
+    bad('a count given as text', { ...rv, otherTasks: '2' });
+    bad('more than 20 projects moved', { ...rv, moved: Array.from({ length: 21 }, (_, i) => ({ ...rv.moved[0], project: 'Project ' + i })) });
+    check('…but exactly 20 projects moved are accepted', A.checkAskContext(mk({ ...rv, moved: Array.from({ length: 20 }, (_, i) => ({ ...rv.moved[0], project: 'Project ' + i })) })) === true);
+    bad('6 things waiting', { ...rv, waiting: Array.from({ length: 6 }, (_, i) => 'Waiting ' + i) });
+    bad('4 projects in focus', { ...rv, focus: ['A', 'B', 'C', 'D'] });
+    bad('an extra field on the review', { ...rv, extra: 'x' });
+    bad('an extra field on a project that moved', { ...rv, moved: [{ ...rv.moved[0], title: 'Task titles' }] });
+    const sys = A.buildAskMessages(mk(rv)).map(m => m.content).join('\n').replace(/\s+/g, ' ');
+    check('the instructions are version myday-ask-v16', A.ASK_PROMPT_VERSION === 'myday-ask-v16', A.ASK_PROMPT_VERSION);
+    check('…and have the week-in-review part: what pattern do you see, answer with no items, "never guess why"', sys.includes('A week in review') && sys.includes('what pattern you see') && sys.includes('never guess why') && sys.includes('No items'), sys.slice(0, 200));
+    const m1 = JSON.parse(A.mockAsk(mk(rv)));
+    check('the practice version answers "What pattern do you see in my week?" with kind "answer" and no items', m1.kind === 'answer' && Array.isArray(m1.items) && m1.items.length === 0 && m1.action === null, m1);
+    check('…naming the project the week went into most, and that one thing is waiting', m1.message.includes('“Hargeisa shop”') && !m1.message.includes('Allotment') && m1.message.includes('1 thing is waiting'), m1.message);
+    const m2 = JSON.parse(A.mockAsk(mk({ ...rv, moved: [], waiting: [], focus: [] })));
+    check('with nothing moved it says it was a quiet week, and does not mention anything waiting', m2.kind === 'answer' && m2.items.length === 0 && m2.message.includes('a quiet week') && !m2.message.includes('waiting'), m2.message);
+  }
   env = { AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_MOCK_DELAY_MS: '0', AI_DAILY_LIMIT: '50', AI_MIN_SECONDS_BETWEEN: '0', AI_MONTHLY_BUDGET_USD: '1' };
 
   console.log('\n[2e] AI-written revision cards: a writer, then a checker (AI roles step 3, B)');

@@ -54,7 +54,8 @@ function ProjectsHome({ data }: { data: MyDayData }) {
     <>
       <Card aria-labelledby="projects-h" id="projectsIntro" className="max-w-[720px] mx-auto">
         <h2 id="projects-h" className="flex items-center gap-2"><FolderKanban size={22} aria-hidden="true" className="text-primary" /> Your projects</h2>
-        <p className="text-[15px] text-fg-2 m-0">One place for everything about one intention — from a vague idea to small steps on your days. <a href="#review" className="text-primary font-semibold no-underline hover:underline underline-offset-4 whitespace-nowrap" data-action="open-review">Look back at your week</a></p>
+        <p className="text-[15px] text-fg-2 m-0">One place for everything about one intention — from a vague idea to small steps on your days.</p>
+        <a href="#review" className="inline-flex items-center min-h-11 text-primary font-semibold text-[15px] no-underline hover:underline underline-offset-4" data-action="open-review">Look back at your week</a>
         <form className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 items-end mt-4" onSubmit={e => { e.preventDefault(); start(); }}>
           <Field label="Start a project" htmlFor="projectNew">
             <TextInput id="projectNew" value={text} maxLength={PROJECT_LIMITS.title} onChange={e => setText(e.target.value)} placeholder="e.g. A coffee subscription for offices" />

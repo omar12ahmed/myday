@@ -19,7 +19,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   const src = p => JSON.stringify(path.join(ROOT, 'app/src/data', p));
   fs.writeFileSync(path.join(dir, 'kit.ts'), [
     `export * from ${src('projectPlan')};`, `export * from ${src('businessModel')};`, `export * from ${src('caseFile')};`, `export { normalizeProjects, deleteProject, recently, addProject, setProjectPrivate, privateProjectIds } from ${src('projects')};`,
-    `export { freshState, normalize } from ${src('normalize')};`, `export { shift, shortDate } from ${src('dates')};`, `export * from ${src('projectDashboard')};`,
+    `export { freshState, normalize } from ${src('normalize')};`, `export { shift, shortDate } from ${src('dates')};`, `export * from ${src('projectDashboard')};`, `export * from ${src('weekReview')};`, `export { stepsForToday } from ${src('projects')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
   const OLD = '2026-10-01T09:00';
@@ -781,6 +781,166 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('a case with a dated task gives the date first, then the issues pointer, then the evidence pointer', eq(texts(wl(all)), ['File the form — in 2 days', '1 issue has nothing linked yet', '1 piece of evidence still to get']), wl(all));
     all.tasks.items = []; all.commitments = [{ id: 'cmA', kind: 'appointment', title: 'Hearing', start: '2026-10-16T10:00', end: '2026-10-16T11:00' }]; all.projects.items[0].commitmentIds = ['cmA'];
     check('with a date, two case pointers and no open task, the three first are kept and the "No next step" one is left out', eq(texts(wl(all)), ['Hearing — in 2 days', '1 issue has nothing linked yet', '1 piece of evidence still to get']), wl(all));
+  }
+
+  console.log('\n[12] The weekly review: when, what moved, what\'s waiting, focus');
+  {
+    const k = '2026-10-18'; // a Sunday
+    const TK = (id, pid, x = {}) => ({ id, title: 'Task ' + id, listId: '', category: 'Admin', minutes: 25, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: OLD, postponed: 0, blockers: [], letGoOn: null, projectId: pid, ...x });
+    const AS = (id, text, x = {}) => ({ id, text, state: 'open', found: '', checkedOn: null, taskId: null, createdAt: OLD, ...x });
+    const TLe = (id, x = {}) => ({ id, date: '2026-09-01', about: false, title: 'Landlord kept the deposit', details: '', source: 'mine', evidenceIds: [], issueIds: [], createdAt: OLD, ...x });
+    const EVi = (id, x = {}) => ({ id, title: 'Tenancy agreement', kind: 'document', date: null, where: '', status: 'have', notes: '', issueIds: [], createdAt: OLD, ...x });
+    const withPrefs = (prefs) => { const d = K.freshState(); Object.assign(d.patterns.prefs, prefs); return d; };
+
+    console.log('  When');
+    check('the review day is Sunday unless you choose another', K.reviewDay(K.freshState()) === 0);
+    check('a saved 5 makes it Friday', K.reviewDay(withPrefs({ reviewDay: 5 })) === 5);
+    check('a review day that is not a weekday number (9, -1, 2.5, "x") is read as Sunday', [9, -1, 2.5, 'x'].every(v => K.reviewDay(withPrefs({ reviewDay: v })) === 0));
+    const week = ['2026-10-18', '2026-10-19', '2026-10-20', '2026-10-21', '2026-10-22', '2026-10-23', '2026-10-24']; // Sunday … Saturday
+    check('with Sunday as the review day, every day from Sunday to Saturday belongs to the review on Sunday 18 Oct', week.every(day => K.lastReviewDay(K.freshState(), day) === '2026-10-18'), week.map(day => K.lastReviewDay(K.freshState(), day)));
+    check('with Friday as the review day, Sunday to Thursday belong to Friday 16 Oct and Friday and Saturday to Friday 23 Oct', eq(week.map(day => K.lastReviewDay(withPrefs({ reviewDay: 5 }), day)), ['2026-10-16', '2026-10-16', '2026-10-16', '2026-10-16', '2026-10-16', '2026-10-23', '2026-10-23']), week.map(day => K.lastReviewDay(withPrefs({ reviewDay: 5 }), day)));
+    check('the review is due on the review day and the day after, giving that review day', K.reviewDue(K.freshState(), '2026-10-18') === '2026-10-18' && K.reviewDue(K.freshState(), '2026-10-19') === '2026-10-18');
+    check('…and not two days after (nothing is due), or any later that week', K.reviewDue(K.freshState(), '2026-10-20') === null && K.reviewDue(K.freshState(), '2026-10-24') === null);
+    check('with Friday as the review day it is due on Friday 23 and Saturday 24, not on Sunday 25', K.reviewDue(withPrefs({ reviewDay: 5 }), '2026-10-23') === '2026-10-23' && K.reviewDue(withPrefs({ reviewDay: 5 }), '2026-10-24') === '2026-10-23' && K.reviewDue(withPrefs({ reviewDay: 5 }), '2026-10-25') === null);
+    check('once that review is done it is no longer due', K.reviewDue(withPrefs({ reviewed: '2026-10-18' }), '2026-10-19') === null);
+    check('once that review is put off it is no longer due', K.reviewDue(withPrefs({ reviewHidden: '2026-10-18' }), '2026-10-18') === null);
+    check('a review done or put off for an earlier week does not hide this week\'s', K.reviewDue(withPrefs({ reviewed: '2026-10-11', reviewHidden: '2026-10-04' }), '2026-10-18') === '2026-10-18');
+
+    console.log('  What moved');
+    const mv = K.freshState();
+    mv.projects.items = [
+      base('pjA', { title: 'Coffee subscription', milestones: [{ id: 'ms1', title: 'First order', aim: null, reachedOn: '2026-10-12', createdAt: OLD }, { id: 'ms2', title: 'Second order', aim: null, reachedOn: '2026-10-11', createdAt: OLD }, { id: 'ms3', title: 'Third order', aim: null, reachedOn: null, createdAt: OLD }],
+        decisions: [{ id: 'dc1', question: 'Which roaster?', options: [{ id: 'op1', text: 'Local', pros: [], cons: [] }], chosen: 'op1', why: '', decidedOn: '2026-10-18', createdAt: OLD, updatedAt: OLD }, { id: 'dc2', question: 'Which box?', options: [], chosen: null, why: '', decidedOn: null, createdAt: OLD, updatedAt: OLD }] }),
+      base('pjB', { title: 'Van hire idea', template: 'business', model: { problem: '', who: '', how: '', assumptions: [AS('as1', 'Crews would pay', { state: 'looks-true', checkedOn: '2026-10-15' }), AS('as2', 'Sites allow it', { state: 'looks-true', checkedOn: '2026-10-10' })] } }),
+      base('pjC', { title: 'Deposit dispute', template: 'case', case: { timeline: [TLe('tl1', { createdAt: '2026-10-14T09:00' }), TLe('tl2', { createdAt: '2026-10-11T09:00' })], evidence: [EVi('ev1', { createdAt: '2026-10-18T20:00' }), EVi('ev2', { createdAt: '2026-10-19T08:00' })], issues: [{ id: 'is1', title: 'Late fee', status: 'considering', notes: '', createdAt: '2026-10-15T09:00' }] } }),
+      base('pjD', { title: 'Allotment plan' }),
+    ];
+    mv.tasks.items = [
+      TK('a1', 'pjA', { title: 'Write to roasters', done: true, doneOn: '2026-10-13' }), TK('a2', 'pjA', { title: 'Price the boxes', done: true, doneOn: '2026-10-12' }),
+      TK('a3', 'pjA', { title: 'Book a tasting', done: true, doneOn: '2026-10-18' }), TK('a4', 'pjA', { title: 'Order samples', done: true, doneOn: '2026-10-15' }),
+      TK('a5', 'pjA', { title: 'Done last week', done: true, doneOn: '2026-10-11' }), TK('a6', 'pjA', { title: 'Done tomorrow', done: true, doneOn: '2026-10-19' }), TK('a7', 'pjA', { title: 'Not done', done: false }),
+      TK('d1', 'pjD', { title: 'Old job', done: true, doneOn: '2026-10-05' }),
+      TK('o1', null, { title: 'Pay council tax', done: true, doneOn: '2026-10-16' }), TK('o2', null, { title: 'Renew passport', done: true, doneOn: '2026-10-12' }), TK('o3', null, { title: 'Old chore', done: true, doneOn: '2026-10-09' }), TK('o4', null, { title: 'Open chore' }),
+    ];
+    mv.study.sessions = [
+      { id: 'ss1', courseId: null, taskId: null, title: 'THM', date: '2026-10-13', startedAt: '2026-10-13T19:00', plannedMin: 30, short: false, status: 'done', runningSince: null, activeMs: 1500000, endedAt: '2026-10-13T19:30', checkin: null, taskDone: null, todayUid: null },
+      { id: 'ss2', courseId: null, taskId: null, title: 'THM', date: '2026-10-17', startedAt: '2026-10-17T19:00', plannedMin: 15, short: true, status: 'done', runningSince: null, activeMs: 600000, endedAt: '2026-10-17T19:10', checkin: null, taskDone: null, todayUid: null },
+      { id: 'ss3', courseId: null, taskId: null, title: 'Still going', date: '2026-10-18', startedAt: '2026-10-18T19:00', plannedMin: 15, short: true, status: 'active', runningSince: 1, activeMs: 300000, endedAt: null, checkin: null, taskDone: null, todayUid: null },
+      { id: 'ss4', courseId: null, taskId: null, title: 'Before', date: '2026-10-11', startedAt: '2026-10-11T19:00', plannedMin: 30, short: false, status: 'done', runningSince: null, activeMs: 1800000, endedAt: '2026-10-11T19:30', checkin: null, taskDone: null, todayUid: null },
+    ];
+    const WS = (id, date, status) => ({ id, date, templateId: 'wt1', templateName: 'Full body', startedAt: date + 'T07:00', finishedAt: status === 'active' ? null : date + 'T07:45', status, plannedDate: null, editedAt: null, exercises: [] });
+    mv.health.workout.sessions = [WS('w1', '2026-10-14', 'done'), WS('w2', '2026-10-18', 'active'), WS('w3', '2026-10-11', 'done')];
+    const wk = K.whatMoved(mv, k);
+    check('the week is the seven days ending on the day given (12 to 18 Oct)', wk.from === '2026-10-12' && wk.to === '2026-10-18', [wk.from, wk.to]);
+    check('only projects with something moved are listed, busiest first (Coffee subscription, Deposit dispute, Van hire idea)', eq(wk.projects.map(m => m.project.id), ['pjA', 'pjC', 'pjB']), wk.projects.map(m => m.project.id));
+    const mA = wk.projects[0];
+    check('a project counts the tasks done this week, the milestones reached and the decisions decided, and nothing from outside the week', mA.tasks === 4 && mA.milestones === 1 && mA.decisions === 1, [mA.tasks, mA.milestones, mA.decisions]);
+    check('a project lists up to 3 of the tasks it finished, in the order they are saved', eq(mA.done, ['Write to roasters', 'Price the boxes', 'Book a tasting']), mA.done);
+    check('a business idea counts a belief checked this week as found out (not the one checked before the week)', wk.projects[2].found === 1 && wk.projects[2].tasks === 0, wk.projects[2]);
+    check('a case counts a timeline entry and a piece of evidence made this week as recorded (not those from before or after)', wk.projects[1].recorded === 2 && wk.projects[1].found === 0, wk.projects[1]);
+    check('a project whose only done task was outside the week is left out', !wk.projects.some(m => m.project.id === 'pjD'));
+    check('tasks done this week that belong to no project are counted (2 of 3; the old one and the open one are not)', wk.otherTasks === 2, wk.otherTasks);
+    check('study counts the sessions finished this week (2) and their minutes from the time actually spent (35), not a session still going or one from before', wk.studySessions === 2 && wk.studyMinutes === 35, [wk.studySessions, wk.studyMinutes]);
+    check('workouts count those not still going this week (1), not one from before', wk.workouts === 1, wk.workouts);
+    const quietWeek = K.whatMoved(K.freshState(), k);
+    check('a week with nothing in it is all zero and lists no projects', quietWeek.projects.length === 0 && quietWeek.otherTasks === 0 && quietWeek.studySessions === 0 && quietWeek.studyMinutes === 0 && quietWeek.workouts === 0, quietWeek);
+
+    console.log('  What\'s waiting');
+    const wt = K.freshState();
+    const act = (id, x = {}) => base(id, { updatedAt: '2026-10-17T09:00', ...x });
+    wt.projects.items = [
+      act('pjQ', { title: 'Allotment plan', updatedAt: '2026-09-20T09:00' }),
+      act('pjP', { title: 'Paused thing', status: 'paused', updatedAt: '2026-08-01T09:00' }),
+      act('pjR', { title: 'Coffee subscription', decisions: [{ id: 'dc1', question: 'Which roaster?', options: [], chosen: null, why: '', decidedOn: null, createdAt: '2026-10-01T09:00', updatedAt: OLD }, { id: 'dc2', question: 'Which box?', options: [], chosen: null, why: '', decidedOn: null, createdAt: '2026-10-05T09:00', updatedAt: OLD }, { id: 'dc3', question: 'Which van?', options: [], chosen: 'x', why: '', decidedOn: '2026-10-02', createdAt: '2026-09-01T09:00', updatedAt: OLD }] }),
+      act('pjB', { title: 'Van hire idea', template: 'business', model: { problem: '', who: '', how: '', assumptions: [AS('as1', 'Crews would pay', { taskId: 'f1' })] } }),
+      act('pjC', { title: 'Deposit dispute', template: 'case', case: { timeline: [], evidence: [EVi('ev1', { status: 'to-get' }), EVi('ev2', { status: 'to-get' }), EVi('ev3', { status: 'have' })], issues: [] } }),
+    ];
+    wt.tasks.items = [
+      TK('s1', null, { title: 'Pay council tax', postponed: 3 }), TK('s2', null, { title: 'Renew passport', due: '2026-10-10' }),
+      TK('s3', null, { title: 'Due only 6 days ago', due: '2026-10-12' }), TK('s4', null, { title: 'Moved twice', postponed: 2 }),
+      TK('s5', null, { title: 'Let go of', postponed: 5, letGoOn: '2026-10-10' }), TK('s6', null, { title: 'Ticked', postponed: 5, done: true, doneOn: '2026-10-16' }),
+      TK('f1', 'pjB', { title: 'Find out: Crews would pay', done: true, doneOn: '2026-10-16' }),
+    ];
+    const wa = K.whatsWaiting(wt, k, 10);
+    check('a task that has moved 3 times says so', wa[0].kind === 'stuck' && wa[0].text === '“Pay council tax” has moved 3 times', wa[0]);
+    check('a task a week past due says when it has been waiting since', wa[1].kind === 'stuck' && wa[1].text === `“Renew passport” has been waiting since ${K.shortDate('2026-10-10')}`, wa[1]);
+    check('a task moved twice, one only 6 days past due, one let go of and one ticked are not stuck', wa.filter(w => w.kind === 'stuck').length === 2, wa.map(w => w.text));
+    check('an active project quiet for 4 weeks says so (and a paused one is not mentioned)', wa[2].kind === 'quiet' && wa[2].text === '“Allotment plan” has been quiet for 4 weeks' && !wa.some(w => w.text.includes('Paused thing')), wa.map(w => w.text));
+    check('an open decision 14 or more days old is mentioned with its project (not a newer one or a decided one)', wa[3].kind === 'decision' && wa[3].text === '“Which roaster?” is still open (Coffee subscription)' && wa.filter(w => w.kind === 'decision').length === 1, wa.map(w => w.text));
+    check('a business idea whose Find out task is done asks what you found', wa[4].kind === 'found' && wa[4].text === 'Van hire idea: a Find out task is done — what did you find?', wa[4]);
+    check('a case with evidence still to get says how many pieces', wa[5].kind === 'evidence' && wa[5].text === 'Deposit dispute: 2 pieces of evidence still to get', wa[5]);
+    check('they come in the order stuck, quiet, decision, found out, evidence', eq(wa.map(w => w.kind), ['stuck', 'stuck', 'quiet', 'decision', 'found', 'evidence']), wa.map(w => w.kind));
+    check('each links to where it can be dealt with', wa[0].href === '#today/tasks/s1' && wa[2].href === '#projects/p/pjQ' && wa[3].href === '#projects/p/pjR/decisions' && wa[5].href === '#projects/p/pjC/evidence', wa.map(w => w.href));
+    const wa5 = K.whatsWaiting(wt, k);
+    check('by default no more than 5 are given, the last of the six left out', wa5.length === 5 && eq(wa5.map(w => w.kind), ['stuck', 'stuck', 'quiet', 'decision', 'found']), wa5.map(w => w.kind));
+    const qb = K.freshState(); qb.projects.items = [act('pj14', { title: 'Fourteen days', updatedAt: '2026-10-04T09:00' }), act('pj13', { title: 'Thirteen days', updatedAt: '2026-10-05T09:00' })];
+    check('a project is quiet at 14 days ("2 weeks") but not at 13', eq(K.whatsWaiting(qb, k).map(w => w.text), ['“Fourteen days” has been quiet for 2 weeks']), K.whatsWaiting(qb, k));
+    check('a week with nothing waiting gives an empty list', K.whatsWaiting(K.freshState(), k).length === 0);
+
+    console.log('  Focus');
+    const fp = base('pjF', { focus: '2026-10-19' });
+    check('a project is in focus for the 7 days from its focus day (19 to 25 Oct), not before or after', !K.inFocus(fp, '2026-10-18') && K.inFocus(fp, '2026-10-19') && K.inFocus(fp, '2026-10-25') && !K.inFocus(fp, '2026-10-26'));
+    check('a project with no focus is never in focus', !K.inFocus(base('pjG'), k));
+    const fw = world(fp, base('pjH', { focus: '2026-10-19', status: 'paused' }), base('pjI'));
+    check('the projects in focus are the active ones within their week', eq(K.focusProjects(fw, '2026-10-20').map(p => p.id), ['pjF']) && K.focusProjects(fw, '2026-10-26').length === 0);
+
+    console.log('  Finishing the review');
+    const fr = () => { const d = K.freshState(); d.projects.items = ['pjA', 'pjB', 'pjC', 'pjD'].map(id => base(id)).concat(base('pjE', { status: 'paused' })); return d; };
+    const fin = (over = {}) => ({ day: '2026-10-18', from: '2026-10-12', start: '2026-10-19', focus: [], went: '', easier: '', ...over });
+    const focused = d => d.projects.items.filter(p => p.focus).map(p => p.id);
+    let f = fr(); K.finishReview(f, fin({ focus: ['pjA', 'pjB', 'pjC'] }));
+    check('up to 3 active projects chosen get the focus week starting on the day given', eq(focused(f), ['pjA', 'pjB', 'pjC']) && f.projects.items[0].focus === '2026-10-19', focused(f));
+    f = fr(); K.finishReview(f, fin({ focus: ['pjA', 'pjB', 'pjC', 'pjD'] }));
+    check('a 4th project chosen is ignored', eq(focused(f), ['pjA', 'pjB', 'pjC']), focused(f));
+    f = fr(); K.finishReview(f, fin({ focus: ['pjE', 'pjA'] }));
+    check('a paused project chosen does not get the focus', eq(focused(f), ['pjA']), focused(f));
+    f = fr(); f.projects.items[3].focus = '2026-10-19'; f.projects.items[2].focus = '2026-10-12';
+    K.finishReview(f, fin({ focus: ['pjA'] }));
+    check('a project in focus for this same week but not chosen again loses it; one from an earlier week is left as it was', eq(focused(f), ['pjC', 'pjA'].sort((a, b) => ['pjA', 'pjC'].indexOf(a) - ['pjA', 'pjC'].indexOf(b))) && f.projects.items[3].focus === undefined && f.projects.items[2].focus === '2026-10-12', f.projects.items.map(p => [p.id, p.focus]));
+    f = fr(); K.finishReview(f, fin({ focus: ['pjA'] }));
+    check('giving a project its focus does not change its updated time', f.projects.items[0].updatedAt === OLD && f.projects.items[1].updatedAt === OLD);
+    f = fr(); let r = K.finishReview(f, fin({ went: '   ', easier: '' }));
+    check('nothing written adds no note (noteId is null) but the review is marked as done', r.noteId === null && f.notes.items.length === 0 && f.patterns.prefs.reviewed === '2026-10-18');
+    f = fr(); r = K.finishReview(f, fin({ went: '  Finished the quote  ' }));
+    const nt = f.notes.items[0];
+    check('only the first answer written adds a note with just that part', f.notes.items.length === 1 && r.noteId === nt.id && nt.text === 'What went well:\nFinished the quote', nt.text);
+    check('the note is titled with the week\'s first day, kept in Personal, and marked as that week\'s reflection', nt.title === `Week of ${K.shortDate('2026-10-12')}` && nt.categoryId === f.notes.categories.find(c => c.name === 'Personal').id && nt.reflectionWeek === '2026-10-12' && !nt.pinned, nt);
+    f = fr(); K.finishReview(f, fin({ easier: 'Fewer meetings' }));
+    check('only the second answer written adds a note with just that part', f.notes.items[0].text === 'What would make next week easier:\nFewer meetings', f.notes.items[0].text);
+    f = fr(); K.finishReview(f, fin({ went: 'A quiet week', easier: 'Fewer meetings' }));
+    check('both answers make one note with both parts, a blank line between', f.notes.items[0].text === 'What went well:\nA quiet week\n\nWhat would make next week easier:\nFewer meetings', f.notes.items[0].text);
+    f = fr(); f.notes.categories = f.notes.categories.filter(c => c.name !== 'Personal'); K.finishReview(f, fin({ went: 'A quiet week' }));
+    check('with no Personal collection the note is not filed anywhere (empty category)', f.notes.items[0].categoryId === '', f.notes.items[0]);
+
+    console.log('  Putting it off and the review day');
+    f = K.freshState();
+    check('putting the review off remembers that day, and putting off the same day again changes nothing', K.putOffReview(f, '2026-10-18') && f.patterns.prefs.reviewHidden === '2026-10-18' && !K.putOffReview(f, '2026-10-18'));
+    check('the review day is already Sunday, so choosing Sunday changes nothing', !K.setReviewDay(f, 0) && !('reviewDay' in f.patterns.prefs));
+    check('choosing 1 to 6 saves it, and the same again changes nothing', K.setReviewDay(f, 5) && f.patterns.prefs.reviewDay === 5 && !K.setReviewDay(f, 5) && K.reviewDay(f) === 5);
+    check('choosing Sunday again removes the field from the preferences', K.setReviewDay(f, 0) && !('reviewDay' in f.patterns.prefs) && K.reviewDay(f) === 0, f.patterns.prefs);
+    check('a day that is not a whole number from 0 to 6 is refused and nothing is saved', [7, -1, 2.5, NaN].every(v => !K.setReviewDay(f, v)) && !('reviewDay' in f.patterns.prefs));
+
+    console.log('  Next steps on Today');
+    const sf = K.freshState();
+    sf.projects.items = [base('pjX', { title: 'Recent one', updatedAt: '2026-10-17T09:00' }), base('pjY', { title: 'Older one', updatedAt: '2026-10-05T09:00' })];
+    sf.tasks.items = [TK('x1', 'pjX', { createdAt: '2026-10-05T09:00' }), TK('y1', 'pjY', { createdAt: '2026-10-05T09:00' })];
+    check('with no focus, the project worked on most recently comes first', eq(K.stepsForToday(sf, k).map(s => s.project.id), ['pjX', 'pjY']), K.stepsForToday(sf, k).map(s => s.project.id));
+    sf.projects.items[1].focus = '2026-10-12';
+    check('a project in focus comes before one worked on more recently', eq(K.stepsForToday(sf, k).map(s => s.project.id), ['pjY', 'pjX']), K.stepsForToday(sf, k).map(s => s.project.id));
+    check('once its focus week is over it goes back to its place', eq(K.stepsForToday(sf, '2026-10-19').map(s => s.project.id), ['pjX', 'pjY']), K.stepsForToday(sf, '2026-10-19').map(s => s.project.id));
+
+    console.log('  Reading saved data');
+    rep = { dropped: 0 };
+    out = K.normalizeProjects({ items: [base('pjOk', { focus: '2026-10-19' }), base('pjBad', { focus: 'soon' }), base('pjNum', { focus: 20261019 })] }, rep);
+    check('a project\'s focus is kept when it is a real date and left out when it is not', out.items[0].focus === '2026-10-19' && !('focus' in out.items[1]) && !('focus' in out.items[2]), out.items.map(p => p.focus));
+    const nr = K.freshState(); const cat = nr.notes.categories[0].id;
+    nr.notes.items = [{ id: 'n1', categoryId: cat, title: 'a', text: 'a', pinned: false, createdAt: OLD, updatedAt: OLD, reflectionWeek: '2026-10-12' }, { id: 'n2', categoryId: cat, title: 'b', text: 'b', pinned: false, createdAt: OLD, updatedAt: OLD, reflectionWeek: 'last week' }];
+    const nn = K.normalize(clone(nr));
+    check('a note\'s reflection week is kept when it is a real date and left out when it is not', nn.notes.items.find(n => n.id === 'n1').reflectionWeek === '2026-10-12' && !('reflectionWeek' in nn.notes.items.find(n => n.id === 'n2')));
+    const rd = (prefs) => { const d = K.freshState(); Object.assign(d.patterns.prefs, prefs); return K.normalize(clone(d)).patterns.prefs; };
+    check('the review day is kept only as 1 to 6 (0, 7, 2.5 and text leave no field)', rd({ reviewDay: 3 }).reviewDay === 3 && [0, 7, 2.5, 'x'].every(v => !('reviewDay' in rd({ reviewDay: v }))));
+    check('reviewed and reviewHidden are kept only as real dates', rd({ reviewed: '2026-10-16', reviewHidden: '2026-10-09' }).reviewed === '2026-10-16' && rd({ reviewed: '2026-10-16', reviewHidden: '2026-10-09' }).reviewHidden === '2026-10-09'
+      && !('reviewed' in rd({ reviewed: 'yesterday' })) && !('reviewHidden' in rd({ reviewHidden: 7 })));
   }
 
   fs.rmSync(dir, { recursive: true, force: true });

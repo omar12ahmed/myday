@@ -1170,6 +1170,37 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('…one you had already removed stays removed, and the others on the list stay as they were', eq(as2.map(a => a.text), ['Crews would pay for lunch', 'Sites allow deliveries!', 'Cooking 40 boxes is realistic']) && eq(as2, as1.slice(0, 3)), as2);
   }
 
+  console.log('\n[12h] Ask MyDay on the weekly review page: counts and names only, nothing of a private project');
+  {
+    K.setClock(`${D}T10:00`);
+    const s0 = K.freshState(), at = `${D}T09:00`;
+    const P = (id, title, x = {}) => ({ id, title, summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at, ...x });
+    const TK = (id, title, x = {}) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: at, postponed: 0, blockers: [], letGoOn: null, ...x });
+    s0.projects.items = [
+      P('pjA', 'Hargeisa shop', { milestones: [{ id: 'msA', title: 'Visit the market', aim: null, reachedOn: '2026-11-08', createdAt: at }] }),
+      P('pjF', 'Allotment plan', { focus: '2026-11-11' }),
+      P('pjP', 'Surprise party', { private: true, focus: '2026-11-11', milestones: [{ id: 'msP', title: 'Book the hall', aim: null, reachedOn: '2026-11-07', createdAt: at }] }),
+    ];
+    s0.tasks.items = [
+      TK('a1', 'Ring agents', { projectId: 'pjA', done: true, doneOn: '2026-11-09' }), TK('a2', 'Price stalls', { projectId: 'pjA', done: true, doneOn: '2026-11-05' }),
+      TK('p1', 'Order the cake', { projectId: 'pjP', done: true, doneOn: '2026-11-09' }), TK('p2', 'Ring the band', { projectId: 'pjP', postponed: 3 }),
+      TK('o1', 'Renew passport', { done: true, doneOn: '2026-11-06' }), TK('o2', 'Pay council tax', { postponed: 3 }),
+    ];
+    localStorage.clear(); localStorage.setItem('myday.data.v4', JSON.stringify(s0)); K.boot();
+    const w = K.getSnapshot().data, text = o => JSON.stringify(o);
+    const sl = K.askSlice(w, '#review', D), req = K.askContext(sl, 'What pattern do you see in my week?', D), pv = K.askPreview(req, sl.privateNote, sl.held);
+    check('on the weekly review the page is "review" and the request carries the seven days ending today', sl.page === 'review' && req.page === 'review' && req.context.review.from === '2026-11-04' && req.context.review.to === '2026-11-10', req.context.review);
+    check('what moved is sent as counts for each project (2 tasks and a milestone for Hargeisa shop)', eq(req.context.review.moved, [{ project: 'Hargeisa shop', tasks: 2, milestones: 1, decisions: 0, found: 0, recorded: 0 }]), req.context.review.moved);
+    check('…with the other tasks done, study and workouts as plain numbers', req.context.review.otherTasks === 1 && req.context.review.studySessions === 0 && req.context.review.studyMinutes === 0 && req.context.review.workouts === 0, req.context.review);
+    check('what is waiting is sent as its words, and next week\'s focus as project names', eq(req.context.review.waiting, ['“Pay council tax” has moved 3 times']) && eq(req.context.review.focus, ['Allotment plan']), req.context.review);
+    check('nothing of the private project is in the request: not its name, its tasks, its milestone, what is waiting on it or its focus', !/Surprise|cake|band|hall/i.test(text(req)), text(req));
+    check('…or in the preview', !/Surprise|cake|band|hall/i.test(text(pv)), pv);
+    check('what was left out is counted: the private project\'s name, its move this week and its waiting task (3)', sl.held.count === 3 && sl.held.here === null, sl.held);
+    check('the preview says "Your week: 1 project moved" and "1 thing waiting", and says 3 items from private projects were not sent', pv.short.includes('Your week: 1 project moved') && pv.short.includes('1 thing waiting') && pv.short.includes('3 items from private projects not sent'), pv.short);
+    check('the preview shows the week in full, and the Sends line says what is sent', text(pv.all).includes('Hargeisa shop') && text(pv.all).includes('Allotment plan') && /seven days/.test(sl.sends), [pv.all, sl.sends]);
+    check('the request passes the server\'s check', K.checkAskContext(req));
+  }
+
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

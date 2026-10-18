@@ -712,6 +712,33 @@ const SEED = `s => {
     await mock.ev(`location.hash = 'today'`); await sleep(200);
   }
 
+  console.log('\n[8o] See the pattern in the weekly review');
+  {
+    const at = `${TODAY}T08:00`;
+    const PJ = (id, title, x = {}) => ({ id, title, summary: 'A made-up plan', stage: 'act', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at, ...x });
+    const DT = (id, title, projectId) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: true, doneOn: TODAY, plannedOn: null, planUid: null, createdAt: at, postponed: 0, blockers: [], letGoOn: null, projectId });
+    await seeded(mock, MOCK);
+    await mock.setData(`s => { s.projects.items = []; s.tasks.items = []; }`); await mock.until(`document.querySelector('#app')`);
+    await mock.ev(`location.hash = 'review'`); await mock.until(`document.getElementById('reviewStep')`, 5000); await sleep(200);
+    check('a quiet week has no "See the pattern" button', (await mock.exists('[data-s=review-quiet]')) && !(await mock.exists('[data-action=review-pattern]')));
+    await mock.setData(`s => { s.projects.items.push(${JSON.stringify(PJ('pjWk', 'Garden shed'))}, ${JSON.stringify(PJ('pjWp', 'Shed private secret', { private: true }))});
+      s.tasks.items.push(${JSON.stringify(DT('tkW1', 'Sweep the floor', 'pjWk'))}, ${JSON.stringify(DT('tkW2', 'Paint the door', 'pjWk'))},
+        ${JSON.stringify(DT('tkW3', 'Hidden one', 'pjWp'))}, ${JSON.stringify(DT('tkW4', 'Hidden two', 'pjWp'))}, ${JSON.stringify(DT('tkW5', 'Hidden three', 'pjWp'))}); }`);
+    await mock.ev(`location.hash = 'today'`); await sleep(200);
+    await mock.ev(`location.hash = 'review'`); await mock.until(`document.querySelector('[data-s=review-moved]')`, 5000); await sleep(200);
+    check('when something moved, step 1 offers "See the pattern"', (await mock.text('[data-action=review-pattern]')).includes('See the pattern'));
+    await mock.click('[data-action=review-pattern]'); await mock.until(`document.getElementById('captureText')`, 5000); await sleep(250);
+    check('tapping it opens + with "What pattern do you see in my week?" typed, and nothing answered yet', (await mock.ev(`document.getElementById('captureText').value`)) === 'What pattern do you see in my week?' && !(await mock.exists('[data-s=ask-message]')));
+    const sendsW = await mock.text('[data-s=ask-sends]');
+    check('the "Sent to the AI" preview has the chip "Your week: 1 project moved", counting only the project that is not private', sendsW.includes('Your week: 1 project moved'), sendsW);
+    check('…and never names the private project or its tasks', !sendsW.includes('Shed private secret') && !sendsW.includes('Hidden'), sendsW);
+    await mock.click('[data-action=ask-go]'); await mock.until(`['shown', 'error'].includes(document.querySelector('[data-s=ask-panel]')?.dataset.phase)`, 10000);
+    const msgW = await mock.text('[data-s=ask-message]');
+    check('Ask MyDay answers with a message from the practice helper naming the top project, and no cards', msgW.includes('Practice helper (no AI)') && msgW.includes('Garden shed') && !msgW.includes('Shed private secret') && (await mock.ev(`document.querySelectorAll('[data-s=ask-item]').length`)) === 0, msgW);
+    await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
+    await mock.ev(`location.hash = 'today'`); await sleep(200);
+  }
+
   console.log('\n[9] Layout');
   await D.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await D.ev(`location.hash = 'today'`);

@@ -690,6 +690,46 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   await openAt(2027, 6, 2, 10);
   check('everything done: the line goes', (await summaryLine()) === null);
 
+  console.log('\n[23] The weekly review card on Today');
+  const prefs = async () => (await data()).patterns.prefs;
+  const reviewCard = () => exists('#reviewCard');
+  await openAt(2026, 10, 18, 9); await reset(); await openAt(2026, 10, 18, 9);
+  check('on a Sunday "Look back at your week" shows, with Start going to the review', (await reviewCard()) && (await text('#reviewCard h3')).includes('Look back at your week') && (await ev(`document.querySelector('#reviewCard [data-action=review-start]').getAttribute('href')`)) === '#review', await text('#reviewCard'));
+  check('…and "Not this week" is beside it', await exists('#reviewCard [data-action=review-later]'));
+  await openAt(2026, 10, 19, 9);
+  check('on the Monday after, the card is still there', await reviewCard());
+  await openAt(2026, 10, 20, 9);
+  check('on the Tuesday it is gone', !(await reviewCard()));
+  await openAt(2026, 10, 18, 9);
+  await click('#reviewCard [data-action=review-later]'); await sleep(300);
+  check('"Not this week" hides the card, with a gentle message', !(await reviewCard()) && (await toast()).includes('Not this week'), await toast());
+  check('…and saves that Sunday as the review put off', (await prefs()).reviewHidden === '2026-10-18', await prefs());
+  await openAt(2026, 10, 19, 9);
+  check('…and on Monday it stays hidden', !(await reviewCard()));
+  await editStorage(`s => { s.patterns.prefs.reviewDay = 5; delete s.patterns.prefs.reviewHidden; }`);
+  await openAt(2026, 10, 16, 9);
+  check('with the review day set to Friday the card shows on a Friday', await reviewCard());
+  await openAt(2026, 10, 18, 9);
+  check('…and on that Sunday (two days after) it does not', !(await reviewCard()));
+  await editStorage(`s => { s.patterns.prefs.reviewed = '2026-10-16'; }`);
+  await openAt(2026, 10, 16, 10);
+  check('once that Friday\'s review is done the card is gone', !(await reviewCard()));
+  await editStorage(`s => { delete s.patterns.prefs.reviewDay; delete s.patterns.prefs.reviewed; }`);
+  await openAt(2026, 10, 18, 10);
+  await editStorage(`s => { s.patterns.prefs.reviewed = '2026-10-18'; }`);
+  await openAt(2026, 10, 18, 11);
+  check('once the Sunday review is done the card is gone that day too', !(await reviewCard()));
+
+  const KP = '2026-10-19';
+  const mkT = (id, title, projectId) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-10-10T09:00', postponed: 0, blockers: [], letGoOn: null, projectId });
+  const mkP = (id, title, updatedAt, x = {}) => ({ id, title, summary: '', stage: 'act', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-01T09:00', updatedAt, ...x });
+  await editStorage(`s => { s.projects.items.push(${JSON.stringify(mkP('pjFa', 'Paint the hall', '2026-10-17T09:00'))}, ${JSON.stringify(mkP('pjFb', 'Sort the shed', '2026-10-05T09:00', { focus: KP }))});
+    s.tasks.items.push(${JSON.stringify(mkT('tkFa', 'Buy white paint', 'pjFa'))}, ${JSON.stringify(mkT('tkFb', 'Clear the shelves', 'pjFb'))}); }`);
+  await openAt(2026, 10, 19, 12);
+  const order = await ev(`[...document.querySelectorAll('#projectSteps [data-s=project-step]')].map(li => li.querySelector('.block').textContent.trim() + ' | ' + li.dataset.id)`);
+  check('on Monday after choosing a focus, "From your projects" lists the focused project\'s step first, marked "This week’s focus"', order.length === 2 && order[0].startsWith('Sort the shed') && order[0].includes('This week’s focus') && order[1].startsWith('Paint the hall') && !order[1].includes('focus'), order);
+  check('…the marker is the step-focus label, once', (await ev(`document.querySelectorAll('#projectSteps [data-s=step-focus]').length`)) === 1 && (await text('#projectSteps [data-s=step-focus]')).includes('This week’s focus'));
+
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
   const sm = T.summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);

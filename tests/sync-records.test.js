@@ -158,6 +158,25 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('put into a new MyDay, the case comes back the same', R.fingerprint(R.localRecords(R.normalize(nb)).get('project:pj6')) === R.fingerprint(rec) && eq(nb.projects.items.find(p => p.id === 'pj6').case, rec.case));
   }
 
+  console.log('\n[1f] The weekly review\'s fields');
+  {
+    const pr = clone(raw);
+    pr.projects.items.push({ id: 'pj7', title: 'Allotment plan', summary: 'Spring beds', stage: 'act', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-03T09:00', updatedAt: '2026-10-04T09:00', focus: '2026-10-19' });
+    pr.notes.items.push({ id: 'nt7', categoryId: pr.notes.categories[5].id, title: 'Week of Sun 11 Oct', text: 'What went well:\nA quiet week', pinned: false, createdAt: '2026-10-18T09:00', updatedAt: '2026-10-18T09:00', reflectionWeek: '2026-10-12' });
+    Object.assign(pr.patterns.prefs, { reviewDay: 5, reviewed: '2026-10-16', reviewHidden: '2026-10-09' });
+    const norm = R.normalize(pr), rs = R.localRecords(norm);
+    const pj = rs.get('project:pj7'), nt = rs.get('note:nt7'), pt = rs.get('patterns:patterns');
+    check('a project in focus travels with its focus day, exactly as entered', !!pj && pj.focus === '2026-10-19' && eq(pj, pr.projects.items.find(p => p.id === 'pj7')), pj);
+    check('a note written for a weekly review travels with the week it is for', !!nt && nt.reflectionWeek === '2026-10-12' && eq(nt, pr.notes.items.find(n => n.id === 'nt7')), nt);
+    check('the review day and the reviews done and put off travel with your preferences', !!pt && pt.prefs.reviewDay === 5 && pt.prefs.reviewed === '2026-10-16' && pt.prefs.reviewHidden === '2026-10-09', pt && pt.prefs);
+    check('checked as they arrive on another device, all three are exactly the same', ['project:pj7', 'note:nt7', 'patterns:patterns'].every(key => R.fingerprint(R.cleanRecord(key, clone(rs.get(key)))) === R.fingerprint(rs.get(key))));
+    const nb = clone(R.freshState());
+    for (const [key, c] of rs) R.putRecord(nb, key, clone(c));
+    const back = R.normalize(nb);
+    check('put into a new MyDay, the focus, the reflection\'s week and the review preferences come back the same', back.projects.items.find(p => p.id === 'pj7').focus === '2026-10-19' && back.notes.items.find(n => n.id === 'nt7').reflectionWeek === '2026-10-12'
+      && back.patterns.prefs.reviewDay === 5 && back.patterns.prefs.reviewed === '2026-10-16' && back.patterns.prefs.reviewHidden === '2026-10-09', back.patterns.prefs);
+  }
+
   console.log('\n[2] What stays on each device');
   check('the theme and animations aren\'t in the planning settings', !('theme' in recs.get('settings:planning')) && !('motion' in recs.get('settings:planning')) && recs.get('settings:planning').earliestTime === '07:30');
   check('the downloaded bank holidays aren\'t synced, only the region', eq(recs.get('holidays:region'), { region: 'scotland' }));
