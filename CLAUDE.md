@@ -34,6 +34,7 @@ Read this file before making any changes. If something here seems to conflict wi
 | `android/` | The Android app (a Trusted Web Activity made with Bubblewrap), `android/README.md` |
 | `design-system/myday/MASTER.md` | Design decisions (also "Design" in `app/README.md`) |
 | `CYBERSECURITY_INTEGRATION.md` | How Study → Cybersecurity fits together, and its limits |
+| `specs/` | Written specs for features not built yet, with their mockups |
 | `.claude/agents/` | The helper agents: test-runner, test-writer, docs-drafter |
 
 ## Branches, releases and what's live
@@ -314,8 +315,9 @@ suggestion. All the new fields are optional and kept by 1.36.0.
 
 ## Open ideas (not decided: ask me before building any of them)
 
-- **Word families on the Arabic vocabulary page.** A written spec exists (on my Mac, not in the repo). Phase 1 needs my
-  choice: one view or a toggle.
+- **Word families on the Arabic vocabulary page.** The spec is `specs/vocabulary-families.md`, with its mockup beside it
+  (the mockup's "Full list" table isn't the real page; the spec says what to keep). Phase 1 needs my choice first: one
+  view or a toggle.
 - **Audio for the 48 Arabic starter words** (text-to-speech). A proposal exists (on my Mac). Still open: who checks
   the clips.
 - **More AI:**

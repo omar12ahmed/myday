@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MyDay — Vocabulary: word families (Clarity)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F0FDFA; --card:#FFFFFF; --ink:#134E4A; --ink-2:#3D6660; --ink-3:#5B7F7A;
+  --line:#D7ECE8; --primary:#0D9488; --on-primary:#FFFFFF; --accent:#EA580C; --on-accent:#FFFFFF;
+  --primary-soft:#CCFBF1; --done:#15803D; --done-soft:#DCFCE7;
+  --learning:#1D4ED8; --learning-soft:#DBEAFE; --health:#047857; --health-soft:#D1FAE5;
+  --radius:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+.app{display:grid;grid-template-columns:212px 1fr;min-height:100vh}
+/* sidebar */
+.side{border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:2px;background:var(--card)}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;padding:6px 10px 18px}
+.logo-mark{width:30px;height:30px;border-radius:8px;background:var(--primary);color:#fff;display:grid;place-items:center;font-size:15px;font-weight:800}
+.nav-item{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:8px;color:var(--ink-2);text-decoration:none;font-weight:600;font-size:14px;border:1px solid transparent}
+.nav-item svg{width:18px;height:18px;stroke:var(--ink-3)}
+.nav-item.active{background:var(--primary-soft);color:var(--ink);border-color:#99E8DC}
+.nav-item.active svg{stroke:var(--primary)}
+.side-foot{margin-top:auto;font-size:11px;color:var(--ink-3);padding:10px}
+/* main */
+.main{padding:26px 32px;max-width:1080px}
+.crumbs{display:flex;gap:6px;font-size:12px;font-weight:600;color:var(--ink-3);margin-bottom:6px}
+.crumbs a{color:var(--ink-3);text-decoration:none}
+.crumbs a:hover{color:var(--primary)}
+.top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;gap:16px;flex-wrap:wrap}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--primary)}
+h1{font-size:28px;font-weight:800;letter-spacing:-.02em;margin-top:4px}
+.sub{color:var(--ink-3);font-size:13px;font-weight:600;margin-top:3px}
+/* view toggle */
+.toggle{display:flex;border:1.5px solid var(--line);border-radius:9px;overflow:hidden;background:var(--card)}
+.toggle button{border:none;background:transparent;padding:9px 16px;font:700 13px 'Plus Jakarta Sans';color:var(--ink-3);cursor:pointer}
+.toggle button.on{background:var(--primary);color:#fff}
+/* insight banner */
+.insight{background:linear-gradient(120deg,var(--primary-soft),#E6FFFB);border:1px solid #99E8DC;border-radius:var(--radius);padding:14px 18px;display:flex;gap:12px;align-items:flex-start;margin-bottom:16px}
+.insight svg{flex:none;width:20px;height:20px;stroke:var(--primary);margin-top:1px}
+.insight p{font-size:14px;font-weight:600;color:var(--ink);line-height:1.45}
+.insight p b{color:var(--primary)}
+/* family cards */
+.fams{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+@media (max-width:900px){.fams{grid-template-columns:1fr}}
+@media (max-width:760px){
+  .app{grid-template-columns:1fr}
+  .side{flex-direction:row;flex-wrap:wrap;align-items:center;border-right:none;border-bottom:1px solid var(--line);padding:10px 12px}
+  .logo{padding:4px 8px 4px}
+  .side-foot{display:none}
+  .nav-item{padding:7px 9px;font-size:12px}
+  .main{padding:18px 16px}
+}
+.fam{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px}
+.fam.hero{grid-column:1/-1}
+.fam-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:4px}
+.root{direction:rtl;font-family:'Amiri',serif;font-size:30px;font-weight:700;color:var(--primary);letter-spacing:.05em}
+.root-latin{font-size:12px;font-weight:700;color:var(--ink-3);letter-spacing:.08em}
+.fam-theme{font-size:14px;font-weight:700;margin-bottom:2px}
+.fam-count{font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.1em;white-space:nowrap}
+/* words */
+.words{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.word{border:1.5px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--bg);cursor:pointer;transition:border-color .15s,background .15s;position:relative}
+.word:hover{border-color:var(--primary)}
+.word.picked{border-color:var(--primary);background:var(--primary-soft)}
+.word .ar{direction:rtl;font-family:'Amiri',serif;font-size:21px;line-height:1.2;color:var(--ink)}
+.word .lat{font-size:11.5px;font-weight:700;color:var(--primary);direction:ltr;text-align:right}
+.word .en{font-size:11.5px;font-weight:600;color:var(--ink-3);direction:ltr;text-align:right}
+.pair{position:relative}
+.pair::after{content:"⇄";position:absolute;top:-9px;right:-7px;font-size:11px;color:var(--accent);background:#FFF4EC;border:1px solid #F6C9A8;border-radius:50%;width:17px;height:17px;display:grid;place-items:center}
+/* pattern note */
+.pattern{border-top:1px dashed var(--line);padding-top:10px;font-size:13px;font-weight:600;color:var(--ink-2);line-height:1.5;display:flex;gap:8px;align-items:flex-start}
+.pattern .p-tag{flex:none;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;background:var(--learning-soft);color:var(--learning);border-radius:5px;padding:3px 7px;margin-top:1px}
+.pattern .ar-inline{font-family:'Amiri',serif;font-size:16px;color:var(--ink)}
+/* picked word detail strip */
+.detail{background:var(--card);border:1.5px solid var(--primary);border-radius:var(--radius);padding:16px 20px;margin-bottom:16px;display:none;gap:18px;align-items:center;flex-wrap:wrap}
+.detail.show{display:flex}
+.detail .d-ar{direction:rtl;font-family:'Amiri',serif;font-size:40px;font-weight:700;color:var(--ink)}
+.detail .d-lat{font-size:16px;font-weight:800;color:var(--primary)}
+.detail .d-en{font-size:14px;font-weight:600;color:var(--ink-2)}
+.detail .d-fam{font-size:12.5px;font-weight:600;color:var(--ink-3);line-height:1.5;max-width:420px}
+.play{flex:none;width:38px;height:38px;border-radius:50%;background:var(--primary);border:none;display:grid;place-items:center;cursor:pointer}
+.play svg{width:15px;height:15px;fill:#fff;margin-left:2px}
+.synth{font-size:10.5px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.08em;text-align:center}
+/* singletons */
+.alone{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px}
+.alone h2{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px}
+.alone .why{font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:12px;line-height:1.5}
+.cloud{display:flex;flex-wrap:wrap;gap:7px}
+.solo{border:1px solid var(--line);border-radius:7px;padding:6px 10px;background:var(--card);display:flex;align-items:baseline;gap:7px}
+.solo .ar{direction:rtl;font-family:'Amiri',serif;font-size:17px;color:var(--ink)}
+.solo .en{font-size:11px;font-weight:600;color:var(--ink-3)}
+/* flat view */
+.flat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px}
+.flat table{width:100%;border-collapse:collapse}
+.flat th{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3);text-align:left;padding:6px 10px;border-bottom:2px solid var(--line)}
+.flat td{padding:8px 10px;border-bottom:1px dashed var(--line);font-size:13.5px;font-weight:600}
+.flat tr:last-child td{border-bottom:none}
+.flat .ar{direction:rtl;font-family:'Amiri',serif;font-size:19px;text-align:right}
+.flat td.ar{width:170px}
+.flat th.ar-h{text-align:right}
+.fam-mini{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--primary);background:var(--primary-soft);border-radius:4px;padding:2px 6px;white-space:nowrap}
+.foot{margin-top:22px;font-size:11px;color:var(--ink-3);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="logo"><span class="logo-mark">M</span>MyDay</div>
+    <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Today</a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Calendar</a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M2 7h20M2 7v13a2 2 0 002 2h16a2 2 0 002-2V7M2 7l2-4h16l2 4"/><path d="M10 12h4"/></svg>Projects</a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Finance</a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0016.5 3c-1.8 0-3.4 1-4.5 2.5C10.9 4 9.3 3 7.5 3A5.5 5.5 0 002 8.5c0 2.3 1.5 4 3 5.5l7 7z"/></svg>Health</a>
+    <a class="nav-item active" href="#"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2zM22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>Study</a>
+    <div class="side-foot">1.24.0 · Saved on this device</div>
+  </aside>
+  <main class="main">
+    <div class="crumbs"><a href="#">Study</a> › <a href="#">Arabic Fuṣḥā</a> › <span>Vocabulary</span></div>
+    <div class="top">
+      <div>
+        <div class="eyebrow">Starter words</div>
+        <h1>Vocabulary</h1>
+        <div class="sub">48 words · 12 of them already belong to a family</div>
+      </div>
+      <div class="toggle" role="tablist" aria-label="Vocabulary view">
+        <button id="btnFam" class="on" onclick="setView('fam')">By family</button>
+        <button id="btnFlat" onclick="setView('flat')">Full list</button>
+      </div>
+    </div>
+
+    <div id="viewFam">
+      <div class="insight">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2.5"/></svg>
+        <p>Arabic grows words from <b>three-letter roots</b>. Four roots connect 12 of your 48 starter words — and one building pattern, <b>مَـ (ma-) “the place where…”</b>, appears in two different families. You have been learning patterns without being told.</p>
+      </div>
+
+      <div class="detail" id="detail">
+        <button class="play" aria-label="Play pronunciation"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+        <div>
+          <div class="d-ar" id="dAr">كِتَاب</div>
+          <div class="synth">Synthesised voice</div>
+        </div>
+        <div>
+          <div class="d-lat" id="dLat">kitāb</div>
+          <div class="d-en" id="dEn">book</div>
+        </div>
+        <p class="d-fam" id="dFam">From the root ك-ت-ب, “writing”. The same root gives you “wrote”, “writes”, “books” and “library”.</p>
+      </div>
+
+      <div class="fams">
+        <!-- k-t-b hero family -->
+        <section class="fam hero">
+          <div class="fam-head">
+            <div>
+              <div class="root">ك-ت-ب</div>
+              <div class="root-latin">K-T-B · “WRITING”</div>
+            </div>
+            <span class="fam-count">5 of your words</span>
+          </div>
+          <div class="words">
+            <div class="word" onclick="pick(this,'كِتَاب','kitāb','book','From the root ك-ت-ب, “writing”. A kitāb is the thing written.')"><div class="ar">كِتَاب</div><div class="lat">kitāb</div><div class="en">book</div></div>
+            <div class="word" onclick="pick(this,'كُتُب','kutub','books','The plural of كِتَاب. Arabic plurals often reshape the word from the same root rather than adding an ending.')"><div class="ar">كُتُب</div><div class="lat">kutub</div><div class="en">books</div></div>
+            <div class="word pair" onclick="pick(this,'كَتَبَ','kataba','he wrote','Past tense of the root ك-ت-ب. Its present-tense partner is يَكْتُبُ.')"><div class="ar">كَتَبَ</div><div class="lat">kataba</div><div class="en">he wrote</div></div>
+            <div class="word pair" onclick="pick(this,'يَكْتُبُ','yaktubu','he writes','Present tense of كَتَبَ. The root consonants ك-ت-ب stay; the vowels and prefix carry the time.')"><div class="ar">يَكْتُبُ</div><div class="lat">yaktubu</div><div class="en">he writes</div></div>
+            <div class="word" onclick="pick(this,'مَكْتَبَة','maktaba','library / bookshop','مَ + the root ك-ت-ب: literally “a place of writing”. The same building pattern as مَدْرَسَة, “a place of study”.')"><div class="ar">مَكْتَبَة</div><div class="lat">maktaba</div><div class="en">library · bookshop</div></div>
+          </div>
+          <div class="pattern"><span class="p-tag">Pattern</span><span><span class="ar-inline">مَكْتَبَة</span> = مَـ “place of” + ك-ت-ب “writing”. You already own this pattern — see it again in <span class="ar-inline">مَدْرَسَة</span> below.</span></div>
+        </section>
+
+        <!-- d-r-s family -->
+        <section class="fam">
+          <div class="fam-head">
+            <div>
+              <div class="root">د-ر-س</div>
+              <div class="root-latin">D-R-S · “STUDYING”</div>
+            </div>
+            <span class="fam-count">3 of your words</span>
+          </div>
+          <div class="words">
+            <div class="word pair" onclick="pick(this,'دَرَسَ','darasa','he studied','Past tense of the root د-ر-س. Its present-tense partner is يَدْرُسُ.')"><div class="ar">دَرَسَ</div><div class="lat">darasa</div><div class="en">he studied</div></div>
+            <div class="word pair" onclick="pick(this,'يَدْرُسُ','yadrusu','he studies','Present tense of دَرَسَ — same root, vowels carry the time, exactly like كَتَبَ / يَكْتُبُ.')"><div class="ar">يَدْرُسُ</div><div class="lat">yadrusu</div><div class="en">he studies</div></div>
+            <div class="word" onclick="pick(this,'مَدْرَسَة','madrasa','school','مَ + د-ر-س: “a place of study”. Same pattern as مَكْتَبَة — and its ة ending is the feminine marker you met in طَالِبَة.')"><div class="ar">مَدْرَسَة</div><div class="lat">madrasa</div><div class="en">school</div></div>
+          </div>
+          <div class="pattern"><span class="p-tag">Pattern</span><span>The مَـ place pattern again: <span class="ar-inline">مَدْرَسَة</span> “place of study”. Two families, one pattern — patterns repeat more than words do.</span></div>
+        </section>
+
+        <!-- q-r-a family -->
+        <section class="fam">
+          <div class="fam-head">
+            <div>
+              <div class="root">ق-ر-أ</div>
+              <div class="root-latin">Q-R-ʾ · “READING”</div>
+            </div>
+            <span class="fam-count">2 of your words</span>
+          </div>
+          <div class="words">
+            <div class="word pair" onclick="pick(this,'قَرَأَ','qaraʾa','he read','Past tense of the root ق-ر-أ — the same root the word Qurʾān is built from.')"><div class="ar">قَرَأَ</div><div class="lat">qaraʾa</div><div class="en">he read</div></div>
+            <div class="word pair" onclick="pick(this,'يَقْرَأُ','yaqraʾu','he reads','Present tense of قَرَأَ. By now the past/present shape should feel familiar — the third verb pair you own.')"><div class="ar">يَقْرَأُ</div><div class="lat">yaqraʾu</div><div class="en">he reads</div></div>
+          </div>
+          <div class="pattern"><span class="p-tag">Pattern</span><span>Your third past ⇄ present pair. Three verbs, one habit: root stays, vowels move.</span></div>
+        </section>
+
+        <!-- t-l-b family -->
+        <section class="fam">
+          <div class="fam-head">
+            <div>
+              <div class="root">ط-ل-ب</div>
+              <div class="root-latin">Ṭ-L-B · “SEEKING”</div>
+            </div>
+            <span class="fam-count">2 of your words</span>
+          </div>
+          <div class="words">
+            <div class="word" onclick="pick(this,'طَالِب','ṭālib','male student','Literally “a seeker” — a student is someone who seeks. The root ط-ل-ب means seeking or requesting.')"><div class="ar">طَالِب</div><div class="lat">ṭālib</div><div class="en">male student</div></div>
+            <div class="word" onclick="pick(this,'طَالِبَة','ṭāliba','female student','طَالِب + ة, the feminine ending. You have seen the same ة in مَدْرَسَة.')"><div class="ar">طَالِبَة</div><div class="lat">ṭāliba</div><div class="en">female student</div></div>
+          </div>
+          <div class="pattern"><span class="p-tag">Pattern</span><span>Not a verb pair this time — a gender pair built with <span class="ar-inline">ة</span>. Same ending as <span class="ar-inline">مَدْرَسَة</span>, <span class="ar-inline">فِكْرَة</span>.</span></div>
+        </section>
+      </div>
+
+      <section class="alone">
+        <h2>Standing alone — for now · 36 words</h2>
+        <p class="why">Most starter words have no relatives yet, and many — pronouns, question words, connectors — never join the root system at all. That is normal. Families appear as your vocabulary grows; this section will shrink.</p>
+        <div class="cloud">
+          <span class="solo"><span class="ar">أَنَا</span><span class="en">I</span></span>
+          <span class="solo"><span class="ar">أَنْتَ</span><span class="en">you (m)</span></span>
+          <span class="solo"><span class="ar">أَنْتِ</span><span class="en">you (f)</span></span>
+          <span class="solo"><span class="ar">هُوَ</span><span class="en">he</span></span>
+          <span class="solo"><span class="ar">هِيَ</span><span class="en">she</span></span>
+          <span class="solo"><span class="ar">نَحْنُ</span><span class="en">we</span></span>
+          <span class="solo"><span class="ar">بَيْت</span><span class="en">house</span></span>
+          <span class="solo"><span class="ar">بَاب</span><span class="en">door</span></span>
+          <span class="solo"><span class="ar">كَبِير</span><span class="en">big</span></span>
+          <span class="solo"><span class="ar">صَغِير</span><span class="en">small</span></span>
+          <span class="solo"><span class="ar">جَدِيد</span><span class="en">new</span></span>
+          <span class="solo"><span class="ar">فِي</span><span class="en">in</span></span>
+          <span class="solo"><span class="ar">مِنْ</span><span class="en">from</span></span>
+          <span class="solo"><span class="ar">إِلَى</span><span class="en">to</span></span>
+          <span class="solo"><span class="ar">عَلَى</span><span class="en">on</span></span>
+          <span class="solo"><span class="ar">أَيْنَ</span><span class="en">where</span></span>
+          <span class="solo"><span class="ar">مَنْ</span><span class="en">who</span></span>
+          <span class="solo"><span class="ar">مَتَى</span><span class="en">when</span></span>
+          <span class="solo"><span class="ar">هَلْ</span><span class="en">question marker</span></span>
+          <span class="solo"><span class="ar">شُكْرًا</span><span class="en">thank you</span></span>
+          <span class="solo"><span class="ar">مِنْ فَضْلِكَ</span><span class="en">please (m)</span></span>
+          <span class="solo"><span class="ar">مِنْ فَضْلِكِ</span><span class="en">please (f)</span></span>
+          <span class="solo"><span class="ar">صَبَاح</span><span class="en">morning</span></span>
+          <span class="solo"><span class="ar">مَسَاء</span><span class="en">evening</span></span>
+          <span class="solo"><span class="ar">أَمْسِ</span><span class="en">yesterday</span></span>
+          <span class="solo"><span class="ar">غَدًا</span><span class="en">tomorrow</span></span>
+          <span class="solo"><span class="ar">الْيَوْم</span><span class="en">today</span></span>
+          <span class="solo"><span class="ar">أُرِيدُ</span><span class="en">I want</span></span>
+          <span class="solo"><span class="ar">عِنْدِي</span><span class="en">I have</span></span>
+          <span class="solo"><span class="ar">سُؤَال</span><span class="en">question</span></span>
+          <span class="solo"><span class="ar">لِأَنَّ</span><span class="en">because</span></span>
+          <span class="solo"><span class="ar">ثُمَّ</span><span class="en">then</span></span>
+          <span class="solo"><span class="ar">لَكِنَّ</span><span class="en">but</span></span>
+          <span class="solo"><span class="ar">لِذَلِكَ</span><span class="en">therefore</span></span>
+          <span class="solo"><span class="ar">فِكْرَة</span><span class="en">idea</span></span>
+          <span class="solo"><span class="ar">مَعْنَى</span><span class="en">meaning</span></span>
+        </div>
+      </section>
+    </div>
+
+    <div id="viewFlat" style="display:none">
+      <section class="flat">
+        <table>
+          <thead><tr><th class="ar-h">Word</th><th>Reading</th><th>Meaning</th><th>Family</th></tr></thead>
+          <tbody id="flatBody"></tbody>
+        </table>
+      </section>
+    </div>
+
+    <div class="foot">
+      <span>Mockup — Direction 1: Clarity · vocabulary, word-family view</span>
+      <span>Families are hand-authored data, not computed · transliteration per the pronunciation feature · play buttons assume the audio proposal</span>
+    </div>
+  </main>
+</div>
+<script>
+const WORDS = [
+ ['كِتَاب','kitāb','book','ك-ت-ب'], ['كُتُب','kutub','books','ك-ت-ب'], ['كَتَبَ','kataba','he wrote','ك-ت-ب'], ['يَكْتُبُ','yaktubu','he writes','ك-ت-ب'], ['مَكْتَبَة','maktaba','library · bookshop','ك-ت-ب'],
+ ['دَرَسَ','darasa','he studied','د-ر-س'], ['يَدْرُسُ','yadrusu','he studies','د-ر-س'], ['مَدْرَسَة','madrasa','school','د-ر-س'],
+ ['قَرَأَ','qaraʾa','he read','ق-ر-أ'], ['يَقْرَأُ','yaqraʾu','he reads','ق-ر-أ'],
+ ['طَالِب','ṭālib','male student','ط-ل-ب'], ['طَالِبَة','ṭāliba','female student','ط-ل-ب'],
+ ['أَنَا','anā','I',''], ['أَنْتَ','anta','you (m)',''], ['أَنْتِ','anti','you (f)',''], ['هُوَ','huwa','he',''], ['هِيَ','hiya','she',''], ['نَحْنُ','naḥnu','we',''],
+ ['بَيْت','bayt','house',''], ['بَاب','bāb','door',''], ['كَبِير','kabīr','big',''], ['صَغِير','ṣaghīr','small',''], ['جَدِيد','jadīd','new',''],
+ ['فِي','fī','in',''], ['مِنْ','min','from',''], ['إِلَى','ilā','to',''], ['عَلَى','ʿalā','on',''],
+ ['أَيْنَ','ayna','where',''], ['مَنْ','man','who',''], ['مَتَى','matā','when',''], ['هَلْ','hal','question marker',''],
+ ['شُكْرًا','shukran','thank you',''], ['مِنْ فَضْلِكَ','min faḍlika','please (m)',''], ['مِنْ فَضْلِكِ','min faḍliki','please (f)',''],
+ ['صَبَاح','ṣabāḥ','morning',''], ['مَسَاء','masāʾ','evening',''], ['أَمْسِ','amsi','yesterday',''], ['غَدًا','ghadan','tomorrow',''], ['الْيَوْم','al-yawm','today',''],
+ ['أُرِيدُ','urīdu','I want',''], ['عِنْدِي','ʿindī','I have',''], ['سُؤَال','suʾāl','question',''],
+ ['لِأَنَّ','liʾanna','because',''], ['ثُمَّ','thumma','then',''], ['لَكِنَّ','lākinna','but',''], ['لِذَلِكَ','lidhālika','therefore',''],
+ ['فِكْرَة','fikra','idea',''], ['مَعْنَى','maʿnan','meaning','']
+];
+document.getElementById('flatBody').innerHTML = WORDS.map(w =>
+  `<tr><td class="ar" lang="ar" dir="rtl">${w[0]}</td><td>${w[1]}</td><td>${w[2]}</td><td>${w[3] ? `<span class="fam-mini">${w[3]}</span>` : '<span style="color:var(--ink-3);font-size:12px">—</span>'}</td></tr>`
+).join('');
+function setView(v){
+  document.getElementById('viewFam').style.display = v==='fam' ? '' : 'none';
+  document.getElementById('viewFlat').style.display = v==='flat' ? '' : 'none';
+  document.getElementById('btnFam').classList.toggle('on', v==='fam');
+  document.getElementById('btnFlat').classList.toggle('on', v==='flat');
+}
+let picked = null;
+function pick(el, ar, lat, en, fam){
+  if (picked) picked.classList.remove('picked');
+  if (picked === el) { picked = null; document.getElementById('detail').classList.remove('show'); return; }
+  picked = el; el.classList.add('picked');
+  document.getElementById('dAr').textContent = ar;
+  document.getElementById('dLat').textContent = lat;
+  document.getElementById('dEn').textContent = en;
+  document.getElementById('dFam').textContent = fam;
+  document.getElementById('detail').classList.add('show');
+}
+</script>
+</body>
+</html>
