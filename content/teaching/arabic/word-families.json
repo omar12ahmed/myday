@@ -1,0 +1,68 @@
+{
+  "about": "MyDay's own word families for the Arabic starter words (1.38.0): authored and checked, never worked out automatically. Words are named by their fixed id in the curriculum package's lexicon_seed. app/scripts/validate-families.mjs checks this file at every build.",
+  "families": [
+    {
+      "id": "ktb",
+      "root_ar": "ك-ت-ب",
+      "root_reading": "k-t-b",
+      "theme_en": "writing",
+      "members": ["lexeme.arabic-seed-009", "lexeme.arabic-seed-010", "lexeme.arabic-seed-036", "lexeme.arabic-seed-037", "lexeme.arabic-seed-012"],
+      "pair": ["lexeme.arabic-seed-036", "lexeme.arabic-seed-037"],
+      "pattern_en": "مَكْتَبَة = مَـ “place of” + ك-ت-ب “writing”. You already know this pattern: see it again in مَدْرَسَة, in the د-ر-س family.",
+      "word_notes": {
+        "lexeme.arabic-seed-009": "From the root ك-ت-ب, “writing”. The same root gives you “wrote”, “writes”, “books” and “library”.",
+        "lexeme.arabic-seed-010": "The plural of كِتَاب: the same three letters, with different vowels.",
+        "lexeme.arabic-seed-036": "“He wrote”: the past form. Its partner يَكْتُبُ is “he writes”.",
+        "lexeme.arabic-seed-037": "“He writes”: the present form, which adds يَـ at the front. Its partner is كَتَبَ, “he wrote”.",
+        "lexeme.arabic-seed-012": "مَـ “place of” + ك-ت-ب “writing”: a place of books — a library, or a bookshop by context."
+      },
+      "also_in_examples": [
+        { "form_ar": "مَكْتَب", "meaning_en": "desk", "note_en": "“Place of writing”: the same مَـ pattern, in عَلَى الْمَكْتَبِ." }
+      ]
+    },
+    {
+      "id": "drs",
+      "root_ar": "د-ر-س",
+      "root_reading": "d-r-s",
+      "theme_en": "studying",
+      "members": ["lexeme.arabic-seed-038", "lexeme.arabic-seed-039", "lexeme.arabic-seed-011"],
+      "pair": ["lexeme.arabic-seed-038", "lexeme.arabic-seed-039"],
+      "pattern_en": "The مَـ place pattern again: مَدْرَسَة, “place of study”. Two families, one pattern — patterns repeat more than words do.",
+      "word_notes": {
+        "lexeme.arabic-seed-038": "“He studied”: the past form. Its partner يَدْرُسُ is “he studies”.",
+        "lexeme.arabic-seed-039": "“He studies”: the present form, with يَـ at the front. Its partner is دَرَسَ, “he studied”.",
+        "lexeme.arabic-seed-011": "مَـ “place of” + د-ر-س “studying”: a place of study, a school."
+      }
+    },
+    {
+      "id": "qra",
+      "root_ar": "ق-ر-أ",
+      "root_reading": "q-r-ʾ",
+      "theme_en": "reading",
+      "members": ["lexeme.arabic-seed-034", "lexeme.arabic-seed-035"],
+      "pair": ["lexeme.arabic-seed-034", "lexeme.arabic-seed-035"],
+      "pattern_en": "Your third past ⇄ present pair. Three verbs, one habit: the root stays; the vowels change, and the present adds يَـ.",
+      "word_notes": {
+        "lexeme.arabic-seed-034": "“He read”: the past form. Its partner يَقْرَأُ is “he reads”.",
+        "lexeme.arabic-seed-035": "“He reads”: the present form, with يَـ at the front. Its partner is قَرَأَ, “he read”."
+      }
+    },
+    {
+      "id": "tlb",
+      "root_ar": "ط-ل-ب",
+      "root_reading": "ṭ-l-b",
+      "theme_en": "seeking",
+      "members": ["lexeme.arabic-seed-013", "lexeme.arabic-seed-014"],
+      "pair": ["lexeme.arabic-seed-013", "lexeme.arabic-seed-014"],
+      "pattern_en": "Not a verb pair this time — a gender pair, made with ة. The same ending as مَدْرَسَة and فِكْرَة.",
+      "word_notes": {
+        "lexeme.arabic-seed-013": "A male student: one who seeks (knowledge).",
+        "lexeme.arabic-seed-014": "A female student: the same word with ة at the end."
+      }
+    }
+  ],
+  "standing_alone": {
+    "relatives_not_here": ["lexeme.arabic-seed-007", "lexeme.arabic-seed-008", "lexeme.arabic-seed-015", "lexeme.arabic-seed-016", "lexeme.arabic-seed-017", "lexeme.arabic-seed-029", "lexeme.arabic-seed-030", "lexeme.arabic-seed-031", "lexeme.arabic-seed-032", "lexeme.arabic-seed-033", "lexeme.arabic-seed-040", "lexeme.arabic-seed-042", "lexeme.arabic-seed-047", "lexeme.arabic-seed-048"],
+    "small_words": ["lexeme.arabic-seed-001", "lexeme.arabic-seed-002", "lexeme.arabic-seed-003", "lexeme.arabic-seed-004", "lexeme.arabic-seed-005", "lexeme.arabic-seed-006", "lexeme.arabic-seed-018", "lexeme.arabic-seed-019", "lexeme.arabic-seed-020", "lexeme.arabic-seed-021", "lexeme.arabic-seed-022", "lexeme.arabic-seed-023", "lexeme.arabic-seed-024", "lexeme.arabic-seed-025", "lexeme.arabic-seed-026", "lexeme.arabic-seed-027", "lexeme.arabic-seed-028", "lexeme.arabic-seed-041", "lexeme.arabic-seed-043", "lexeme.arabic-seed-044", "lexeme.arabic-seed-045", "lexeme.arabic-seed-046"]
+  }
+}

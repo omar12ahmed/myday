@@ -17,6 +17,8 @@ import { startRevision } from '../actions';
 import { BackLink, Choice, Choices, Eyebrow, ExternalLink, InlineLink } from '../parts';
 import { Lines, LinkButton } from '../cybersecurity/parts';
 import { Ar, Mixed } from './Ar';
+import { familyOf } from './families';
+import { Root, WordFamilies } from './WordFamilies';
 import { Pronunciation, PronunciationControls } from './Pronunciation';
 import { TeachingLesson } from '../teaching/TeachingLesson';
 import texts from './data/texts.json';
@@ -448,10 +450,12 @@ function Vocabulary({ data }: { data: MyDayData }) {
       {next.length > 0 && <Button variant={plenty ? 'ghost' : 'primary'} data-action="ar-words-add" onClick={() => addToRevision(next.map(id => wordCard(id, 'recognise')))}>Add the next {next.length === 1 ? 'word' : plural(next.length, 'word')} to revision</Button>}
       <p className="text-sm text-fg-2 flex gap-2 items-start mt-3 mb-0"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />Revision covers reading and writing. Without recordings, listening and speaking stay untested.</p>
     </Card>
+    <WordFamilies />
     <Card><ul className="list-none p-0 m-0 divide-y divide-outline" data-ar-vocabulary="">{texts.lexicon.map(w => {
-      const recognise = cardState(data, wordCard(w.id, 'recognise')), write = cardState(data, wordCard(w.id, 'write'));
-      return <li key={w.id} data-ar-word={w.id} data-in={recognise || write ? 'yes' : 'no'} className="py-3 grid gap-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-4 items-baseline">
-        <div><Ar block className="text-[26px] font-medium m-0">{w.form_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.meaning_en} · {w.part_of_speech.replace('_', ' ')}</p></div>
+      const recognise = cardState(data, wordCard(w.id, 'recognise')), write = cardState(data, wordCard(w.id, 'write')), fam = familyOf(w.id);
+      return <li key={w.id} data-ar-word={w.id} tabIndex={-1} data-in={recognise || write ? 'yes' : 'no'} className="py-3 grid gap-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-4 items-baseline focus:outline-2 focus:outline-primary focus:outline-offset-4 rounded-sm">
+        <div><Ar block className="text-[26px] font-medium m-0">{w.form_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.meaning_en} · {w.part_of_speech.replace('_', ' ')}</p>
+          {fam && <p className="text-xs text-fg-2 m-0 mt-1" data-ar-family-badge={fam.id}><span className="inline-flex items-center gap-1 rounded-full bg-surface-2 border border-outline px-2 py-0.5"><Root f={fam} /> family</span></p>}</div>
         <div><Ar block className="text-[20px] m-0">{w.example_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.example_meaning_en}</p></div>
         <div className="sm:col-span-2 mt-1">
           {(recognise || write) && <p className="text-sm m-0 mb-1.5">{recognise && <span className="block">Recognising it: {recognise}</span>}{write && <span className="block">Writing it: {write}</span>}</p>}
