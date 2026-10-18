@@ -212,28 +212,28 @@ step of Undo. It never marks anything and never says whether the idea will work:
 evaluated on six made-up business ideas (18 live calls, about US$0.01). No saved-data change.
 
 **The Case template (1.35.0):** a project can be a **Case**, the third kind in Start a project (General · Business
-idea · Case) and in About it → Edit → Kind of project. A case starts like any project, Private off until you
-switch it on. Its tabs are **Overview · Timeline · Evidence · Issues** (only four fit on a phone); its milestones
-and decisions open from their cards on Overview, and there's no Explore link. **Timeline** lists what happened in
-date order, grouped by month. Each entry has a date ("About this date" if it's approximate), what happened, optional
-details, and where it comes from: **My account**, **Their account** or **In the evidence**, so the three never blur.
-Each can link to evidence and issues. **Evidence** records what it is, its kind (document, email or letter,
-message, photo or recording, witness, other), an optional date, where it's kept (a folder or link; MyDay doesn't
-store files) and notes. Its status is **To get**, **Have it** or **Reviewed**, changed with a one-tap "Got it" or
-"Reviewed", and a filter shows counts. **Issues** are what you're claiming or considering, each marked
-**Considering**, **Claiming** or **Dropped**, with "What I need to show". Each lists its linked evidence and timeline
-entries, and "Nothing linked yet" shows the gaps. **Deadlines** are the case's dated tasks and appointments: "Add a
-deadline" on Overview's "Your case" card adds a dated task, so it reaches Today and Coming up as usual, and the card
-leads with "Next date". MyDay never works out legal time limits; you enter the dates. The "Your case" card gives
-counts only (e.g. "3 timeline entries · 2 pieces of evidence (1 to get) · 2 issues") and says: "MyDay helps you
-organise your case. It doesn't give legal advice or say whether a claim will succeed — ACAS or Citizens Advice can
-help with that." **Privacy:** while a case is private, Ask MyDay sends nothing of it, and AI help with notes never
-suggests it, not even its name and summary (unlike other private projects). A case's timeline, evidence and issues
-are never sent to AI, private or not. No AI is used in this release. Limits: 150 timeline entries, 150 pieces of
-evidence and 20 issues. Once the whole project would pass about 380 KB, nothing more is added (a project is saved to
-your account as one record of at most 512 KB, counted in bytes). Saved data: two optional fields inside the project,
-`template: 'case'` and `case`, with the rules in `src/data/caseFile.ts`, synced in the existing project record.
-Going back to 1.34.0 is safe: checked with 1.34.0's own code (5/5) and its built app (5/5), which keep both fields.
+idea · Case) and in About it → Edit → Kind of project. A case starts like any project, Private off until you switch it
+on. Its tabs are **Overview · Timeline · Evidence · Issues** (only four fit on a phone); its milestones and decisions
+open from their cards on Overview, and there's no Explore link. **Timeline** lists what happened in date order,
+grouped by month. Each entry has a date ("About this date" if it's approximate), what happened, optional details, and
+where it comes from: **My account**, **Their account** or **In the evidence**, so the three never blur. Each can link
+to evidence and issues. **Evidence** records what it is, its kind (document, email or letter, message, photo or
+recording, witness, other), an optional date, where it's kept (a folder or link; MyDay doesn't store files) and notes.
+Its status is **To get**, **Have it** or **Reviewed**, changed with a one-tap "Got it" or "Reviewed", and a filter
+shows counts. **Issues** are what you're claiming or considering, each marked **Considering**, **Claiming** or
+**Dropped**, with "What I need to show". Each lists its linked evidence and timeline entries, and "Nothing linked yet"
+shows the gaps. **Deadlines** are the case's dated tasks and appointments: "Add a deadline" on Overview's "Your case"
+card adds a dated task, so it reaches Today and Coming up as usual, and the card leads with "Next date". MyDay never
+works out legal time limits; you enter the dates. The "Your case" card gives counts only (e.g. "3 timeline entries · 2
+pieces of evidence (1 to get) · 2 issues") and says: "MyDay helps you organise your case. It doesn't give legal advice
+or say whether a claim will succeed — ACAS or Citizens Advice can help with that." **Privacy:** a case's Private
+switch works as for any project — while it's on, Ask MyDay sends nothing of it, and AI help with notes can still
+suggest it as a place for a note by its name and summary. A case's timeline, evidence and issues are never sent to AI,
+private or not. No AI is used in this release. Limits: 150 timeline entries, 150 pieces of evidence and 20 issues.
+Once the whole project would pass about 380 KB, nothing more is added (a project is saved to your account as one
+record of at most 512 KB, counted in bytes). Saved data: two optional fields inside the project, `template: 'case'`
+and `case`, with the rules in `src/data/caseFile.ts`, synced in the existing project record. Going back to 1.34.0 is
+safe: checked with 1.34.0's own code (5/5) and its built app (5/5), which keep both fields.
 
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
@@ -1105,5 +1105,5 @@ returns up to 8 small tasks; you tick the ones to add.
     entry's source is My account, Their account or In the evidence. Evidence is To get, Have it or Reviewed, with
     one-tap Got it or Reviewed. Issues are Considering, Claiming or Dropped, each listing its linked evidence and
     timeline entries. Add a deadline on the Your case card adds a dated task, and MyDay never works out legal time
-    limits. A private case is sent to neither Ask MyDay nor AI help with notes, and a case's timeline, evidence and
-    issues never go to AI. No server or database change; going back to 1.34.0 is safe.
+    limits. Private works as for any project, and a case's timeline, evidence and issues never go to AI. No server
+    or database change; going back to 1.34.0 is safe.

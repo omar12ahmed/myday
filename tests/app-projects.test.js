@@ -933,7 +933,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('…with the timeline entry still there', eq(await entryRows(), ['The first thing']), await entryRows());
   await click('[data-action=project-private]'); await sleep(250);
   check('a private case saves private: true', (await pAt('pjKd')).private === true);
-  check('…and its hint says Ask MyDay sends nothing of this case and AI help with notes never suggests it', (await text('[data-s=project-private-hint]')) === 'Ask MyDay sends nothing of this case, and AI help with notes never suggests it.', await text('[data-s=project-private-hint]'));
+  check('…and its hint is the same as any private project\'s (no special rule for cases)', (await text('[data-s=project-private-hint]')) === 'Ask MyDay sends nothing of this project. AI help with notes can still suggest it as a place for a note (its name and summary only).', await text('[data-s=project-private-hint]'));
   await go('projects/p/pjKd', 2026, 10, 15, 10, 3);
   await click('[data-action=project-delete]'); await sleep(250);
   check('deleting a case with records says "timeline, evidence and issues" in the question', (await dialogText()).includes('timeline, evidence and issues'), await dialogText());

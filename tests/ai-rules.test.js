@@ -477,12 +477,14 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   cd = notesWorld();
   check('a note the reply left out still counts as looked at (so it isn\'t sent again and again)', (K.applyConnect(cd, cx.seen, rr.answers.filter(a => a.id !== 'nW')), !!cd.notes.items.find(n => n.id === 'nW').aiSeen && !cd.notes.items.find(n => n.id === 'nW').aiKind));
 
-  // Private projects in the request: a private case is never offered, a private general project still is (by name and summary).
-  const privWorld = (extra) => { const w = notesWorld(); w.projects.items = [CP('pjCase', 'Dispute with the landlord', 'Deposit not returned'), CP('pjGen', 'Private plans', 'Kept to myself')]; Object.assign(w.projects.items[0], { template: 'case' }, extra.case); Object.assign(w.projects.items[1], extra.gen); return K.normalize(w); };
+  // Private projects in the request: a private case is offered like any private project — its name and summary only
+  // (your choice, 18 Oct 2026: no special rule for cases); a case's timeline, evidence and issues are never sent.
+  const privWorld = (extra) => { const w = notesWorld(); w.projects.items = [CP('pjCase', 'Dispute with the landlord', 'Deposit not returned'), CP('pjGen', 'Private plans', 'Kept to myself')]; Object.assign(w.projects.items[0], { template: 'case', case: { timeline: [{ id: 'tl1', date: '2026-06-01', about: false, title: 'Zanzibar meeting wording', details: '', source: 'mine', evidenceIds: [], issueIds: [], createdAt: '2026-06-01T09:00' }], evidence: [], issues: [] } }, extra.case); Object.assign(w.projects.items[1], extra.gen); return K.normalize(w); };
   const sentIds = w => K.connectContext(w).ctx.projects.map(p => p.id).sort();
-  check('a private case is not among the projects AI help with notes is sent', !sentIds(privWorld({ case: { private: true }, gen: {} })).includes('pjCase'), sentIds(privWorld({ case: { private: true }, gen: {} })));
-  check('the same case, not private, is among them', sentIds(privWorld({ case: {}, gen: {} })).includes('pjCase'), sentIds(privWorld({ case: {}, gen: {} })));
-  check('a private general project is still sent (its name and summary), as before', eq(K.connectContext(privWorld({ case: { private: true }, gen: { private: true } })).ctx.projects.map(p => [p.id, p.title, p.summary]), [['pjGen', 'Private plans', 'Kept to myself']]), sentIds(privWorld({ case: { private: true }, gen: { private: true } })));
+  const pc = K.connectContext(privWorld({ case: { private: true }, gen: { private: true } }));
+  check('a private case is among the projects AI help with notes is sent, like any private project: its name and summary only', eq(pc.ctx.projects.map(p => [p.id, p.title, p.summary]).sort(), [['pjCase', 'Dispute with the landlord', 'Deposit not returned'], ['pjGen', 'Private plans', 'Kept to myself']]), pc.ctx.projects);
+  check('…and nothing of a case\'s timeline, evidence or issues is in the request', !JSON.stringify(pc.ctx).includes('Zanzibar'), JSON.stringify(pc.ctx).slice(0, 300));
+  check('the same case, not private, is among them too', sentIds(privWorld({ case: {}, gen: {} })).includes('pjCase'), sentIds(privWorld({ case: {}, gen: {} })));
 
   console.log('\n[9] AI-written revision cards: what\'s sent, the checks on a reply, adding and Undo');
   const LS = 'lesson.lab-isolation';

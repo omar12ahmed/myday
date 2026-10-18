@@ -83,7 +83,7 @@ function ProjectTop({ p, tab }: { p: Project; tab: ProjectTab }) {
         <Switch on={!!p.private} data-action="project-private" icon={<Lock size={16} aria-hidden="true" />}
           onChange={on => { if (update(d => (setProjectPrivate(d, p.id, on) ? undefined : false))) toast(on ? 'Private — Ask MyDay won’t send anything of this project.' : 'No longer private.'); }}>Private</Switch>
       </div>
-      {p.private && <p className="text-sm text-fg-2 m-0 mt-2" data-s="project-private-hint">{isCase(p) ? 'Ask MyDay sends nothing of this case, and AI help with notes never suggests it.' : 'Ask MyDay sends nothing of this project. AI help with notes can still suggest it as a place for a note (its name and summary only).'}</p>}
+      {p.private && <p className="text-sm text-fg-2 m-0 mt-2" data-s="project-private-hint">Ask MyDay sends nothing of this project. AI help with notes can still suggest it as a place for a note (its name and summary only).</p>}
       <nav className="seg flex gap-1.5 mt-3" role="tablist" aria-label="Project sections" data-s="project-tabs">
         <a className={tabClass(tab === 'overview')} href={`#projects/p/${encodeURIComponent(p.id)}`} role="tab" aria-selected={tab === 'overview'} data-tab="overview">Overview</a>
         {isBusiness(p) && <a className={tabClass(tab === 'model')} href={tabHref(p, 'model')} role="tab" aria-selected={tab === 'model'} data-tab="model">Model</a>}
