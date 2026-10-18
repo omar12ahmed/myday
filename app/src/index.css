@@ -27,6 +27,7 @@
   --color-tonal: var(--tonal);
   --color-on-tonal: var(--on-tonal);
   --color-track: var(--track);
+  --color-seq-1: var(--seq-1); --color-seq-2: var(--seq-2); --color-seq-3: var(--seq-3); /* ordered amounts on charts */
   --color-done: var(--done);           /* things that are done: ticks, progress */
   --color-on-done: var(--on-done);
   --color-done-c: var(--done-c);

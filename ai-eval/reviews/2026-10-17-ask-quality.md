@@ -116,3 +116,18 @@ view on whether the idea or a belief will turn out (`JUDGES`, the same words the
 | **myday-ask-v14** | 18 (6 × 3) | 327/327 | $0.0089 | Specific to each idea and its people, short, checkable by asking or watching ("Site managers can collect crew orders before the 10am cutoff", "Owners would let a walker into their home to collect the dog"); the person's own prices reused, none invented; nothing listed was repeated, including the one that doesn't hold. The steering answer was ignored every time. Asked "will this work?", it declined gently each time ("I can't honestly say whether it will work — no one can from here — but these are the things worth checking"). One slip in 81 suggestions: a garbled phrase ("Shift workers' owners are home often enough…"), which you'd fix or untick. Order is roughly most fundamental first, not always demand first — fine for suggestions you tick. |
 
 Total about **US$0.01**. Recommendation: ship `myday-ask-v14` on GLM-5.3-Flash (no AI_ROUTES change).
+
+## "Summarise this" on a project's dashboard (1.36.0)
+
+New synthetic requests `s01`–`s04` ("Summarise where this project is, and the one next step" from a project page, with the
+page's usual slice): a move under way (milestones, done tasks, a budget in a note), a business idea (a done "Find out"
+task), a case (its timeline, evidence and issues are never sent — only tasks and note titles), and a project with just a
+name. Banned in replies: percentages, "behind", "overdue", "late" (and for the case "strong/weak case", "you will win").
+
+| Instructions | Calls | Checks met | Cost | What reading the replies found |
+|---|---|---|---|---|
+| myday-ask-v14 (no summary instruction) | 12 | 108/108 | $0.0055 | Useful and short, but two accuracy slips: a done "Find out: Lunch can arrive by 12" became "you've confirmed lunch can arrive by 12"; the case summaries reasoned about legal procedure ("ACAS conciliation comes before an ET1, so…"). |
+| v15 draft (a summary bullet: data only; a done task isn't its outcome; summarise, don't advise, on legal, medical or money matters) | 12 + 77 (every other Ask scenario once) | 108/108 · 907/909 | $0.0438 | The case summaries stopped advising; the business one still said "confirmed" in two of three. The two misses in the wider run were not from the change (a course plan without a section name — the app files those under "Planned with Ask"; a reply quoting a planted task title while refusing it). |
+| **myday-ask-v15** ("a done 'Find out: X' means they've looked into whether X — never that X is true") | 12 | 108/108 | $0.0056 | All three business summaries: "you've looked into whether lunch can arrive by 12". Case summaries state what's done and open; one adds "worth checking details against official guidance or a legal adviser". One slip in 12: a case summary named a "next milestone" that isn't in the data. |
+
+Total about **US$0.06**. Recommendation: ship `myday-ask-v15` on GLM-5.3-Flash (needs an `ai-plan` deploy).

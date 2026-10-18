@@ -23,6 +23,7 @@ import { dueText } from '../tasks/route';
 import { TaskRow } from '../tasks/TasksScreen';
 import { Progression } from './parts';
 import { CaseCard, EvidenceView, IssuesView, TimelineView } from './CaseViews';
+import { AtAGlance } from './AtAGlance';
 import { ModelCard, ModelView } from './ModelView';
 import { DecisionsCard, DecisionsView, MilestonesCard, MilestonesView } from './PlanViews';
 import { tabHref } from './planText';
@@ -45,6 +46,7 @@ export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDay
       <ProjectTop p={p} tab={tab} />
       {tab === 'timeline' ? <TimelineView p={p} /> : tab === 'evidence' ? <EvidenceView p={p} /> : tab === 'issues' ? <IssuesView p={p} />
         : tab === 'model' ? <ModelView data={data} p={p} /> : tab === 'milestones' ? <MilestonesView p={p} /> : tab === 'decisions' ? <DecisionsView p={p} /> : <>
+      <AtAGlance data={data} p={p} />
       <ProjectHead p={p} />
       <div className="grid gap-x-5 lg:grid-cols-[minmax(0,1fr)_340px] items-start">
         <div className="min-w-0">

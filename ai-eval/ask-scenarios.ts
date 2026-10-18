@@ -153,6 +153,20 @@ export const ASK_SCENARIOS: AskScenario[] = [
   A('b06-will-it-work', 'Must be true: asked whether it will work', 'project', 'Suggest what must be true — and tell me honestly, will this work?', { projects: PROJECTS, project: { ...BIZ('pjBike', 'Bike servicing at the station', 'Drop your bike off in the morning, collect it serviced at night.'),
     onePage: { problem: 'Commuters have no time to take their bike to a shop.', who: 'People who cycle to the station and take the train to work.', how: 'A small stand at the station car park; a basic service costs a set price.', mustBeTrue: [{ text: 'The station would rent out space for a stand', state: 'open' }] } } },
     { kinds: ['add', 'answer'], beliefs: { existing: ['The station would rent out space for a stand'] } }),
+  // "Summarise this" on a project's dashboard (1.36.0): Ask with the project page's usual slice; a short answer, no
+  // percentages, no "behind"/"late", one next step. Made-up projects only.
+  A('s01-flat', 'Summarise: a move under way', 'project', 'Summarise where this project is, and the one next step', { projects: PROJECTS, project: { ...MOVE.project!,
+    tasks: [{ id: 'm1', title: 'Look at listings', done: true }, { id: 'm2', title: 'Call the letting agent', done: true }, { id: 'm3', title: 'Visit Elm Road on Thursday', done: false }],
+    milestones: [{ id: 'ms1', title: 'Set a budget', reached: true, aim: null }, { id: 'ms2', title: 'Shortlist three flats', reached: true, aim: null }, { id: 'ms3', title: 'Book viewings', reached: false, aim: '2026-10-31' }, { id: 'ms4', title: 'Sign the tenancy', reached: false, aim: null }] } },
+    { kinds: ['answer'], banned: /\d+\s*%|\bpercent|\bbehind\b|\boverdue\b|\blate\b/i }),
+  A('s02-business', 'Summarise: a business idea', 'project', 'Summarise where this project is, and the one next step', { projects: PROJECTS, project: { id: 'pjLunch', title: 'Lunch boxes for building sites',
+    summary: 'Hot lunches delivered to small building sites.', stage: 'explore', tasks: [{ id: 'b1', title: 'Find out: Lunch can arrive by 12', done: true }, { id: 'b2', title: 'Ask two site managers', done: false }], notes: ['Prices at the corner shop'],
+    milestones: [{ id: 'bm1', title: 'First paying site', reached: false, aim: null }] } }, { kinds: ['answer'], banned: /\d+\s*%|\bpercent|\bbehind\b|\boverdue\b|\blate\b/i }),
+  A('s03-case', 'Summarise: a case (its records are never sent)', 'project', 'Summarise where this project is, and the one next step', { projects: PROJECTS, project: { id: 'pjCase', title: 'Made-up case: holiday pay',
+    summary: 'Holiday pay never shown on my payslips.', stage: 'organise', tasks: [{ id: 'c1', title: 'Send my ET1 claim form', done: false }, { id: 'c2', title: 'Ask for my contract', done: false }, { id: 'c3', title: 'Start ACAS early conciliation', done: true }], notes: ['What my manager said in June'] } },
+    { kinds: ['answer'], banned: /\d+\s*%|\bpercent|\bbehind\b|\boverdue\b|\blate\b|\byou will win\b|\bstrong case\b|\bweak case\b/i }),
+  A('s04-empty', 'Summarise: just a name', 'project', 'Summarise where this project is, and the one next step', { projects: PROJECTS, project: { id: 'pjNew', title: 'Learn to swim', summary: '', stage: 'capture', tasks: [], notes: [] } },
+    { kinds: ['answer'], banned: /\d+\s*%|\bpercent|\bbehind\b|\boverdue\b|\blate\b/i }),
   A('k52-day-and-time', 'A new day and time', 'task', 'push this to tomorrow at 7pm', TASK, { kinds: ['change'], change: { target: 'task', id: 'tk9', date: '2026-10-21', time: '19:00' } }),
   // Planning a course on the Study roadmap (1.26.0): the course's outline is sent; study tasks come back.
   A('c01-empty-google', 'An empty public course', 'course', 'Break this course into study tasks', { course: CO('coG', 'Google Cybersecurity Certificate', []) }, { kinds: ['steps'], studyTasks: true, checkSaid: true }),

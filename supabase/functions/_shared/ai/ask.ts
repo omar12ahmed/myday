@@ -10,7 +10,7 @@
 import type { ChatMessage } from './prompt.ts';
 
 export const ASK_CONTRACT_VERSION = 1;
-export const ASK_PROMPT_VERSION = 'myday-ask-v14';
+export const ASK_PROMPT_VERSION = 'myday-ask-v15';
 export * from './ask-shape.ts';
 import type { AskContext, AskReply } from './ask-shape.ts';
 
@@ -71,6 +71,12 @@ Reply with exactly ONE kind:
   for the whole crew", not "Demand exists". Never a question, never written as a fact, never with a number they didn't
   give. Never repeat one already listed, in any state, even in other words. Never say whether any of it is true,
   likely or risky, and never judge the idea: the message is one sentence saying these are things to check.
+- A summary of the project on this page (they ask where it is, or to summarise it): "answer" in two or three sentences
+  from the data only — what's done, what's still open, the next milestone — then the one next step: one of its open
+  tasks by name, or the smallest first step if it has none. Say only what the data shows: a done task means it was
+  done, not how it turned out — a done "Find out: X" means they've looked into whether X, so say exactly that, never
+  that X is confirmed or true; never add facts, amounts or dates that aren't there. If it's about a legal, medical or
+  money matter, summarise without advising.
 - "answer": a question or a request for advice. At most four short sentences, practical, ending with one clear next
   step; complete sentences only. If your answer suggests adding something, put it (at most 3) in "items" so they can
   tick it — never just offer. An answer has EITHER one action OR items, not both. Actions, only when they fit:
@@ -140,6 +146,10 @@ export function mockAsk(c: AskContext): string {
     return reply({ kind: 'add', message: `Practice helper (no AI): a few things “${x.project.title}” may depend on — yours to check.`, action: null, items: [
       { type: 'must-be-true', title: 'The people it’s for would try something new for this' }, { type: 'must-be-true', title: 'They would pay enough to cover what it costs' },
       { type: 'must-be-true', title: 'You can reach them without spending much' }] });
+  }
+  if (x.project && /\b(summari[sz]e|where (this|it|we) (is|are|stands?))\b/i.test(t)) {
+    const p = x.project, done = p.tasks.filter(k => k.done).length, next = p.tasks.find(k => !k.done);
+    return reply({ kind: 'answer', message: `Practice helper (no AI): “${p.title}” is at ${p.stage}, with ${done} of ${p.tasks.length} tasks done. Next: ${next ? `“${next.title}”` : 'pick the smallest first step you can start in five minutes'}.`, items: [], action: null });
   }
   if (x.project && /\bmilestones?\b/i.test(t)) {
     return reply({ kind: 'add', message: `Practice helper (no AI): three milestones for “${x.project.title}”.`, action: null, items: [

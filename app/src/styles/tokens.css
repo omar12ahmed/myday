@@ -25,6 +25,8 @@
   --tonal: #edeae0;
   --on-tonal: #3a4038;
   --track: #e3e5dc;
+  /* A three-step teal for ordered amounts on charts (e.g. evidence: to get → have it → reviewed), light to dark. */
+  --seq-1: #9ccfc1; --seq-2: #2e9e8d; --seq-3: #0a4a40;
   --done: #15803d;     --on-done: #ffffff;
   --done-c: #ddf3e3;   --on-done-c: #14532d;
   --rail: #f0ede5;     --rail-2: #f0ede5;   --on-rail: #3a4038;
@@ -65,6 +67,7 @@
   --tonal: #2b332b;
   --on-tonal: #d9e2d3;
   --track: #333b33;
+  --seq-1: #35594f; --seq-2: #4aa596; --seq-3: #a6ecdf;
   --done: #8fd3a8;     --on-done: #0e2a1a;
   --done-c: #1d3326;   --on-done-c: #c6ecd3;
   --rail: #181e1a;     --rail-2: #181e1a;   --on-rail: #c2c9bd;
@@ -106,6 +109,7 @@
     --tonal: #2b332b;
     --on-tonal: #d9e2d3;
     --track: #333b33;
+    --seq-1: #35594f; --seq-2: #4aa596; --seq-3: #a6ecdf;
     --done: #8fd3a8;     --on-done: #0e2a1a;
     --done-c: #1d3326;   --on-done-c: #c6ecd3;
     --rail: #181e1a;     --rail-2: #181e1a;   --on-rail: #c2c9bd;
