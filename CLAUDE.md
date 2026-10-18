@@ -293,8 +293,11 @@ suggestion. All the new fields are optional and kept by 1.36.0.
     the course's own checks in revision; AI "More practice" cards;
   - **Arabic Fuṣḥā:** the curriculum package read-only, lesson sessions, starter words and lesson checks in revision,
     transliteration, and word families on the vocabulary page (four roots linking 12 of the 48 starter words; MyDay's
-    own authored file, checked at every build; nothing saved). It never claims audio or certified levels, and keeps
-    the package's 0–100 evidence scores internal.
+    own authored file, checked at every build; nothing saved), and a synthesised voice for the 48 starter words and
+    their examples (1.39.0: one voice, made once and listened to before shipping, labelled "Synthesised voice — a
+    model to copy; checked by ear, not yet by a teacher"; clips and their audit in `content/arabic-audio/`, checked
+    at every build by `app/scripts/prepare-audio.mjs`). Lessons and texts have no recordings. It never claims
+    certified levels, and keeps the package's 0–100 evidence scores internal.
 - **Health:** Workout, Daily exercises, Food (recipes, kitchen, shopping list), and Goal. Goal's estimates come from
   public guidance, labelled with their sources. It sets no calorie targets when someone is pregnant, after an eating
   disorder, or with a condition, and never calls food "good" or "bad".
@@ -316,8 +319,8 @@ suggestion. All the new fields are optional and kept by 1.36.0.
 
 ## Open ideas (not decided: ask me before building any of them)
 
-- **Audio for the 48 Arabic starter words** (text-to-speech). A proposal exists (on my Mac). Still open: who checks
-  the clips.
+- **Arabic audio, round two:** the lessons' headline examples (152 clips) with the same voice and checks; one human
+  speaker could later replace the whole set. The 14 reading texts stay with human or external recordings.
 - **Roots in revision** (word families, `specs/vocabulary-families.md` §8): not now — the families are for noticing,
   not testing. Revisit after a month of use (from 1.38.0, 19 Oct 2026).
 - **More AI:**
@@ -383,7 +386,8 @@ suggestion. All the new fields are optional and kept by 1.36.0.
   - `myday.sync.v1` (read and written only by `app/src/sync/state.ts`);
   - `myday.sync.auth`;
   - `myday.ai.connect`;
-  - `myday.arabic.transliteration`.
+  - `myday.arabic.transliteration`;
+  - `myday.arabic.slower` (the starter words' voice at three-quarter speed).
 
   Theme, animations, running timers, downloaded bank holidays and nudges also stay per device.
 
