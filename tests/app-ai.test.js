@@ -689,6 +689,29 @@ const SEED = `s => {
     await mock.ev(`location.hash = 'today'`); await sleep(200);
   }
 
+  console.log('\n[8n] Summarise this on a project\'s dashboard');
+  {
+    const at = `${TODAY}T08:00`;
+    const PJ = (id, title, x = {}) => ({ id, title, summary: 'A made-up plan', stage: 'act', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at, ...x });
+    const TK = { id: 'tkGl', title: 'Measure the shelf', listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: at, postponed: 0, blockers: [], letGoOn: null, projectId: 'pjGl' };
+    await seeded(mock, MOCK);
+    await mock.setData(`s => { s.projects.items.push(${JSON.stringify(PJ('pjGl', 'Shelf for the hall'))}, ${JSON.stringify(PJ('pjGp', 'Shelf private', { private: true }))}); s.tasks.items.push(${JSON.stringify(TK)}); }`);
+    await mock.until(`document.querySelector('#app')`);
+
+    await mock.ev(`location.hash = 'projects/p/pjGl'`); await mock.until(`document.querySelector('[data-action=glance-summary]')`, 5000);
+    check('a project with an open task shows "Summarise this" in At a glance', (await mock.text('#projectGlance [data-action=glance-summary]')).includes('Summarise this'));
+    await mock.click('[data-action=glance-summary]'); await mock.until(`document.getElementById('captureText')`, 5000); await sleep(200);
+    check('tapping it opens + with "Summarise where this project is, and the one next step" typed, and nothing answered yet', (await mock.ev(`document.getElementById('captureText').value`)) === 'Summarise where this project is, and the one next step' && !(await mock.exists('[data-s=ask-message]')));
+    await mock.click('[data-action=ask-go]'); await mock.until(`['shown', 'error'].includes(document.querySelector('[data-s=ask-panel]')?.dataset.phase)`, 10000);
+    const msg = await mock.text('[data-s=ask-message]');
+    check('Ask MyDay answers with a message naming the project and its first open task, and no cards', msg.includes('Practice helper (no AI)') && msg.includes('Shelf for the hall') && msg.includes('Measure the shelf') && (await mock.ev(`document.querySelectorAll('[data-s=ask-item]').length`)) === 0, msg);
+    await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
+
+    await mock.ev(`location.hash = 'projects/p/pjGp'`); await mock.until(`document.querySelector('#projectGlance')`, 5000); await sleep(200);
+    check('on a private project At a glance says AI help is not offered here, instead of the button', !(await mock.exists('[data-action=glance-summary]')) && (await mock.text('#projectGlance [data-s=ai-private]')) === 'Private project — AI help isn\'t offered here.');
+    await mock.ev(`location.hash = 'today'`); await sleep(200);
+  }
+
   console.log('\n[9] Layout');
   await D.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await D.ev(`location.hash = 'today'`);

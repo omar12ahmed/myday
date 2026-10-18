@@ -235,6 +235,27 @@ record of at most 512 KB, counted in bytes). Saved data: two optional fields ins
 and `case`, with the rules in `src/data/caseFile.ts`, synced in the existing project record. Going back to 1.34.0 is
 safe: checked with 1.34.0's own code (5/5) and its built app (5/5), which keep both fields.
 
+**At a glance (1.36.0):** every project's Overview now starts with **At a glance**, worked out from what's already
+saved, so nothing new is stored. Each kind has four tiles, and each one is a link to where you'd act. A **General**
+project shows Next step, Next date, Milestones ("2 of 5 reached", "Next: …") and Decisions. A **Business idea** shows
+Next step, Your one page ("3 of 4 answered"), What must be true ("2 to check · 1 looks true") and Milestones. A
+**Case** shows Next date, Evidence to get, Issues with nothing linked and Timeline entries. Pictures appear only when
+there's something to show, and never as an empty chart: milestones as stations on a line (reached, the next one, the
+rest); what you did in the last 8 weeks (tasks done, milestones reached, decisions made, and things found out or
+recorded) as small columns you can hover or focus to read; a business idea's What must be true in three counts; a
+case's evidence by status (one bar in three teal steps, with a legend naming and counting each), its issues and what's
+linked to each ("nothing linked yet" shows), its timeline entries by month, and its next dates. **Worth a look** gives
+at most three gentle pointers from real data: a date within the next week, a Find out task that's done, one-page
+questions still to answer, issues with nothing linked, evidence still to get, or no next step yet. It never says
+"overdue" or "late", and it never gives percentages or scores. **Summarise this** opens Ask MyDay with "Summarise
+where this project is, and the one next step", only on your tap and never on a private project. It uses the project
+page's usual preview (for a case, its tasks, milestones and note titles, never its timeline, evidence or issues). The
+`ask` job's instructions are now `myday-ask-v15`: a summary says only what the data shows, so a done "Find out" task
+means it was looked into, not how it turned out, and it summarises without advising on legal, medical or money
+matters. Evaluated live on made-up projects (about US$0.06, `ai-eval/reviews/2026-10-17-ask-quality.md`). The practice
+helper (no AI) answers it too. Each picture has words for screen readers and never relies on colour alone, in light
+and dark themes.
+
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
 
@@ -485,6 +506,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/projectPlan.ts`, `src/projects/PlanViews.tsx`, `src/projects/planText.ts` | Milestones and decisions (1.31.0): `projectPlan.ts` (checking the saved lists, and adding, editing, reaching, choosing, thinking again, with the limits); `PlanViews.tsx` (the Milestones and Decisions screens and Overview's two cards); `planText.ts` (the "Aiming for" wording, which never says late or overdue). |
 | `src/data/businessModel.ts`, `src/projects/ModelView.tsx` | The Business template (1.33.0): `businessModel.ts` (the kind of project and the one page: reading what's saved, the four answers, the list of what must be true with its limits, Find out, marking, counts); `ModelView.tsx` (the Model tab and Overview's "Your one page" card). The counts line is `progressLine` in `planText.ts`; Explore's brief from the one page is `fromOnePage` in `src/explore/content.ts`. |
 | `src/data/caseFile.ts`, `src/projects/CaseViews.tsx` | The Case template (1.35.0): `caseFile.ts` (reading what's saved, unknown fields kept, links to missing items let go; the timeline, evidence and issues with their limits, links, counts and the size guard); `CaseViews.tsx` (the Overview's "Your case" card and the Timeline, Evidence and Issues tabs). |
+| `src/data/projectDashboard.ts`, `src/projects/AtAGlance.tsx` | The dashboards per kind (1.36.0): `projectDashboard.ts` (the tiles, the next dates, the weeks, entries by month, each issue's links and Worth a look; Today's own dashboard numbers stay in `dashboard.ts`); `AtAGlance.tsx` (the At a glance card, its pictures and Summarise this). |
 | `src/commitments/` | Work shifts and appointments: the form and list used by both Today and Calendar. |
 | `src/shell/` | Navigation, the top bar's parts (`TopBar`: the Focus mode switch and your account; `focusMode.ts`, the device-only `myday.focus`), the theme button, the shared footer (`AppFooter`), the "couldn't be read" notice (`LoadIssue`) and the screens for unreadable or older data. |
 | `public/icon.svg` | The tab icon. |
@@ -1114,3 +1136,10 @@ returns up to 8 small tasks; you tick the ones to add.
     stay exactly as they are. Checked against the database stand-in (real PostgreSQL), which refuses halves as the
     account does: without the fix sync stops, with it everything is saved. No server or database change; going back
     to 1.35.0 is safe.
+49. **Release 1.36.0:** milestone 3, release 5: dashboards per kind of project. Every project's Overview starts
+    with **At a glance**, worked out from what's already saved (nothing new is saved). Four tiles per kind link
+    to where you'd act. Pictures appear only when there's something to show. **Worth a look** gives at most three
+    gentle pointers from real data, never "overdue" or "late". **Summarise this** opens Ask MyDay with
+    "Summarise where this project is, and the one next step", only on your tap and never on a private project;
+    the summary says only what the data shows (instructions `myday-ask-v15`). The practice helper answers it too.
+    The server's `ask` job was deployed first; no data or database change; going back to 1.35.1 is safe.

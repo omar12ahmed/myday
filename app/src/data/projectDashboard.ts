@@ -35,7 +35,8 @@ export function tiles(data: MyDayData, p: Project, k: DateKey = todayKey()): Til
   const msTile: Tile = ms.total ? { key: 'milestones', label: 'Milestones', value: `${ms.reached} of ${ms.total} reached`, sub: ms.next ? `Next: ${ms.next.title}` : 'All reached', href: tab(p, 'milestones') }
     : { key: 'milestones', label: 'Milestones', value: 'None yet', sub: 'The big markers on the way', href: tab(p, 'milestones') };
   if (isCase(p)) {
-    const g = caseCounts(p), bare = (p.case?.issues ?? []).filter(i => { const l = issueLinks(p, i.id); return !l.evidence.length && !l.entries.length; }).length;
+    // A dropped issue isn't a gap: only the ones you're claiming or considering count.
+    const g = caseCounts(p), bare = (p.case?.issues ?? []).filter(i => { if (i.status === 'dropped') return false; const l = issueLinks(p, i.id); return !l.evidence.length && !l.entries.length; }).length;
     const last = timelineInOrder(p).at(-1);
     return [dateTile,
       { key: 'to-get', label: 'Evidence to get', value: String(g.toGet), sub: `of ${plural(g.evidence, 'piece')} of evidence`, href: tab(p, 'evidence') },

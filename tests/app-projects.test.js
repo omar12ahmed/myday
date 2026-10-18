@@ -954,6 +954,90 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   }
   await T.send('Emulation.clearDeviceMetricsOverride');
 
+  console.log('\n[34] At a glance');
+  const gtk = (id, title, projectId, extra = {}) => ({ id, title, listId: '', category: 'Admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-09-20T09:00', postponed: 0, blockers: [], letGoOn: null, projectId, ...extra });
+  const tileParts = key => ev(`[...document.querySelectorAll('#projectGlance [data-tile=${key}] > span')].map(s => s.textContent.trim())`);
+  const tileKeys = () => ev(`[...document.querySelectorAll('#projectGlance [data-s=glance-tiles] [data-tile]')].map(a => a.dataset.tile)`);
+  const tileHref = key => ev(`document.querySelector('#projectGlance [data-tile=${key}]').getAttribute('href')`);
+  const pointerKeys = () => ev(`[...document.querySelectorAll('#projectGlance [data-s=glance-pointers] [data-pointer]')].map(a => a.dataset.pointer)`);
+  await go('projects', 2026, 10, 15, 8); await reset(); await go('projects', 2026, 10, 15, 8);
+  await seed([
+    pjObj('pjG1', 'Glance: paint the hall', 'act', {
+      milestones: [msObj('msG1', 'Walls prepared', null, '2026-10-13'), msObj('msG2', 'Paint bought', null, '2026-10-01'), msObj('msG3', 'First coat on'), msObj('msG4', 'Second coat on'), msObj('msG5', 'Tidied up')],
+      decisions: [dcObj('dcG1', 'Which colour for the hall?', [opObj('opG1', 'Soft white')])] }),
+    pjObj('pjG2', 'Glance: only a name', 'capture'),
+    bizObj('pjG3', 'Glance: a seed swap', { problem: 'Gardeners buy too many seeds', who: 'Allotment holders', how: '', assumptions: [asObj('asG1', 'People will swap in person'), asObj('asG2', 'There is a free place to meet'), asObj('asG3', 'Swaps happen every season', 'looks-true'), asObj('asG4', 'Nobody minds the mud', 'doesnt-hold'), asObj('asG5', 'It works in winter', 'doesnt-hold'), asObj('asG6', 'Sheds are dry', 'doesnt-hold')] }),
+    caseObj('pjG4', 'Glance: a pay claim', {
+      timeline: [tlObj('tlG1', '2026-08-05', 'Told my hours were cut', { issueIds: ['isG1'] }), tlObj('tlG2', '2026-09-02', 'Rota changed without notice'), tlObj('tlG3', '2026-09-20', 'Meeting with the manager')],
+      evidence: [evObj('evG1', 'Payslips', 'to-get', { issueIds: ['isG1'] }), evObj('evG2', 'Contract', 'to-get'), evObj('evG3', 'Emails', 'have')],
+      issues: [isObj('isG1', 'Unpaid holiday pay'), isObj('isG2', 'Hours cut without agreement')] }),
+    caseObj('pjG5', 'Glance: a case with a date and no task', {
+      evidence: [evObj('evG4', 'A letter', 'to-get')], issues: [isObj('isG3', 'An issue with nothing linked')] }, { commitmentIds: ['cmG1'] }),
+  ]);
+  await editStorage(`s => { s.tasks.items.push(${JSON.stringify(gtk('tkG1', 'Call the supplier', 'pjG1', { due: '2026-10-20' }))},
+    ${JSON.stringify(gtk('tkG2', 'Order paint', 'pjG1', { done: true, doneOn: '2026-10-14' }))}, ${JSON.stringify(gtk('tkG3', 'Sand the door', 'pjG1', { done: true, doneOn: '2026-10-06' }))},
+    ${JSON.stringify(gtk('tkG4', 'Buy brushes', 'pjG1', { done: true, doneOn: '2026-09-30' }))}, ${JSON.stringify(gtk('tkG5', 'Long ago', 'pjG1', { done: true, doneOn: '2026-06-01' }))},
+    ${JSON.stringify(gtk('tkG6', 'Send the witness statement', 'pjG4', { due: '2026-10-18' }))});
+    s.commitments.push({ id: 'cmG1', kind: 'appointment', title: 'Hearing at the tribunal', start: '2026-10-16T10:00', end: '2026-10-16T11:00' }); }`);
+
+  await go('projects/p/pjG1', 2026, 10, 15, 8, 5);
+  check('a general project\'s At a glance has four tiles: next step, next date, milestones and decisions', eq(await tileKeys(), ['step', 'date', 'milestones', 'decisions']), await tileKeys());
+  check('…the next step tile names the task and its length', eq(await tileParts('step'), ['Next step', 'Call the supplier', '15 min']), await tileParts('step'));
+  const dateParts = await tileParts('date');
+  check('…the next date tile names the dated task and its day', dateParts[0] === 'Next date' && dateParts[1] === 'Call the supplier' && dateParts[2].includes('20 Oct'), dateParts);
+  check('…the milestones tile says 2 of 5 reached and what is next', eq(await tileParts('milestones'), ['Milestones', '2 of 5 reached', 'Next: First coat on']), await tileParts('milestones'));
+  check('…the decisions tile says 1 open and shows the question', eq(await tileParts('decisions'), ['Decisions', '1 open', 'Which colour for the hall?']), await tileParts('decisions'));
+  check('…each tile links to the right place', (await tileHref('step')) === '#today/tasks/tkG1' && (await tileHref('date')) === '#today/tasks/tkG1' && (await tileHref('milestones')) === '#projects/p/pjG1/milestones' && (await tileHref('decisions')) === '#projects/p/pjG1/decisions',
+    [await tileHref('step'), await tileHref('date'), await tileHref('milestones'), await tileHref('decisions')]);
+  check('the milestone route reads "2 of 5 reached · Next: First coat on"', norm(await text('[data-s=glance-route]')).includes('2 of 5 reached · Next: First coat on'), await text('[data-s=glance-route]'));
+  const cols = await ev(`[...document.querySelectorAll('[data-s=glance-weeks] [role=listitem]')].map(c => ({ label: c.getAttribute('aria-label'), tab: c.tabIndex }))`);
+  check('the week-by-week chart has 8 columns, the last labelled "This week" with what happened in it', cols.length === 8 && cols[7].label === 'This week: 1 task done, 1 milestone reached' && cols.slice(0, 7).every(c => c.label.startsWith('Week of')), cols);
+  check('…every column can be focused with the keyboard', cols.every(c => c.tab === 0), cols);
+  check('…and a total line says "5 in the last 8 weeks" (the task from June is not counted)', norm(await text('[data-s=glance-weeks]')).includes('5 in the last 8 weeks'), await text('[data-s=glance-weeks]'));
+  check('the pointers include the dated task coming up', (await pointerKeys()).includes('soon') && norm(await text('[data-pointer=soon]')).includes('Call the supplier — in 5 days'), await text('[data-s=glance-pointers]'));
+
+  await go('projects/p/pjG2', 2026, 10, 15, 8, 6);
+  check('a project with only a name shows "None yet" on the next step, next date and milestones tiles', (await tileParts('step'))[1] === 'None yet' && (await tileParts('date'))[1] === 'None yet' && (await tileParts('milestones'))[1] === 'None yet', [await tileParts('step'), await tileParts('date'), await tileParts('milestones')]);
+  check('…and "None open" on decisions', (await tileParts('decisions'))[1] === 'None open', await tileParts('decisions'));
+  check('…no pictures are drawn', await exists('#projectGlance') && !(await exists('[data-s=glance-pictures]')));
+  check('…and its only pointer is "No next step yet"', eq(await pointerKeys(), ['step']) && (await text('[data-pointer=step]')).includes('No next step yet'), await text('[data-s=glance-pointers]'));
+
+  await go('projects/p/pjG3', 2026, 10, 15, 8, 7);
+  check('a business idea\'s tiles are next step, one page, what must be true and milestones', eq(await tileKeys(), ['step', 'one-page', 'beliefs', 'milestones']), await tileKeys());
+  check('…the one-page tile says "3 of 4 answered" (two answers, and the things that must be true count as the fourth)', (await tileParts('one-page'))[1] === '3 of 4 answered', await tileParts('one-page'));
+  check('…the must-be-true tile counts the things and how they are turning out', eq((await tileParts('beliefs')).slice(1), ['6 things', '2 to check · 1 looks true · 3 don’t hold']), await tileParts('beliefs'));
+  const bel = await ev(`[...document.querySelectorAll('[data-s=glance-beliefs] li')].map(li => li.textContent.trim())`);
+  check('the beliefs picture shows the three counts: 2 not checked yet, 1 looks true, 3 do not hold', eq(bel, ['2Not checked yet', '1Looks true', '3Doesn’t hold']), bel);
+
+  await go('projects/p/pjG4', 2026, 10, 15, 8, 8);
+  check('a case\'s tiles are next date, evidence to get, issues with nothing linked and timeline entries', eq(await tileKeys(), ['date', 'to-get', 'bare', 'timeline']), await tileKeys());
+  check('…the next date is the dated task', (await tileParts('date'))[1] === 'Send the witness statement' && (await tileParts('date'))[2].includes('18 Oct'), await tileParts('date'));
+  check('…2 pieces of evidence to get, of 3', eq((await tileParts('to-get')).slice(1), ['2', 'of 3 pieces of evidence']), await tileParts('to-get'));
+  check('…1 issue with nothing linked, of 2', eq((await tileParts('bare')).slice(1), ['1', 'of 2 issues']), await tileParts('bare'));
+  check('…3 timeline entries, the latest on 20 Sep', (await tileParts('timeline'))[1] === '3' && (await tileParts('timeline'))[2].includes('20 Sep'), await tileParts('timeline'));
+  const evParts = await ev(`[...document.querySelectorAll('[data-s=glance-evidence] [role=listitem]')].map(d => d.getAttribute('aria-label'))`);
+  check('the evidence bar\'s parts say "To get: 2" and "Have it: 1" (a part with none is not drawn)', eq(evParts, ['To get: 2', 'Have it: 1']), evParts);
+  const legend = norm(await text('[data-s=glance-evidence]'));
+  check('…while its legend lists all three with counts, including a 0', legend.includes('To get 2') && legend.includes('Have it 1') && legend.includes('Reviewed 0'), legend);
+  const rowsI = await ev(`[...document.querySelectorAll('[data-s=glance-issues] tbody tr')].map(r => r.textContent.replace(/\\s+/g, ' ').trim())`);
+  check('the issues table has one row per issue, and says "nothing linked yet" only for the issue without links', rowsI.length === 2 && !rowsI[0].includes('nothing linked yet') && rowsI[1].includes('nothing linked yet'), rowsI);
+  const months = await ev(`[...document.querySelectorAll('[data-s=glance-months] [role=listitem]')].map(c => c.getAttribute('aria-label'))`);
+  check('the timeline-by-month chart has a column for each month with entries', months.length === 2 && months[0] === 'Aug 2026: 1 entry' && /^Sept? 2026: 2 entries$/.test(months[1]), months);
+  check('"Next dates" lists the dated task', norm(await text('[data-s=glance-dates]')).includes('Send the witness statement'), await text('[data-s=glance-dates]'));
+  const ptr = await pointerKeys(), ptrText = norm(await text('[data-s=glance-pointers]'));
+  check('the pointers include "has nothing linked yet" and "still to get", and there are never more than 3', ptrText.includes('has nothing linked yet') && ptrText.includes('still to get') && ptr.length <= 3, ptr);
+  await go('projects/p/pjG5', 2026, 10, 15, 8, 9);
+  check('a case with a date, a bare issue, evidence to get and no open task has four possible pointers but shows only 3', eq(await pointerKeys(), ['soon', 'bare', 'to-get']), await pointerKeys());
+
+  check('in this plain build (no AI) there is no "Summarise this" button', !(await exists('[data-action=glance-summary]')) && !(await exists('#projectGlance [data-s=ai-private]')));
+
+  for (const w of [320, 360]) {
+    await T.send('Emulation.setDeviceMetricsOverride', { width: w, height: 740, deviceScaleFactor: 2, mobile: true });
+    await go('projects/p/pjG4', 2026, 10, 15, 8, 10); await sleep(200);
+    check(`phone ${w} px: the case's Overview, with its At a glance, does not scroll sideways`, (await exists('#projectGlance')) && (await ev('document.documentElement.scrollWidth')) <= w, await ev('document.documentElement.scrollWidth'));
+  }
+  await T.send('Emulation.clearDeviceMetricsOverride');
+
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
   const sm = T.summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);

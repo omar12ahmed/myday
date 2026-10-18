@@ -19,7 +19,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   const src = p => JSON.stringify(path.join(ROOT, 'app/src/data', p));
   fs.writeFileSync(path.join(dir, 'kit.ts'), [
     `export * from ${src('projectPlan')};`, `export * from ${src('businessModel')};`, `export * from ${src('caseFile')};`, `export { normalizeProjects, deleteProject, recently, addProject, setProjectPrivate, privateProjectIds } from ${src('projects')};`,
-    `export { freshState, normalize } from ${src('normalize')};`, `export { shift } from ${src('dates')};`,
+    `export { freshState, normalize } from ${src('normalize')};`, `export { shift, shortDate } from ${src('dates')};`, `export * from ${src('projectDashboard')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
   const OLD = '2026-10-01T09:00';
@@ -571,6 +571,216 @@ const clone = o => JSON.parse(JSON.stringify(o));
     for (const [name, run] of steps) { P(d).updatedAt = OLD; run(); check(`${name} moves the project's updated time on`, P(d).updatedAt > OLD, P(d).updatedAt); }
     check('none of that touched the days, tasks, notes, title, summary, stage or status, or the other project', eq(rest(d), ctx10) && eq(d.projects.items[1], other10));
     check('removing the last record of a case removes the case field', !('case' in P(d)), P(d));
+  }
+
+  console.log('\n[11] A project\'s dashboard: tiles, weeks, pointers');
+  {
+    const k = '2026-10-14'; // a Wednesday; its Monday is the 12th
+    const TK = (id, pid, x = {}) => ({ id, title: 'Task ' + id, listId: '', category: 'Admin', minutes: 25, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: OLD, postponed: 0, blockers: [], letGoOn: null, projectId: pid, ...x });
+    const AS = (id, text, x = {}) => ({ id, text, state: 'open', found: '', checkedOn: null, taskId: null, createdAt: OLD, ...x });
+    const TLe = (id, x = {}) => ({ id, date: '2026-09-01', about: false, title: 'Landlord kept the deposit', details: '', source: 'mine', evidenceIds: [], issueIds: [], createdAt: OLD, ...x });
+    const EVi = (id, x = {}) => ({ id, title: 'Tenancy agreement', kind: 'document', date: null, where: '', status: 'have', notes: '', issueIds: [], createdAt: OLD, ...x });
+    const ISs = (id, x = {}) => ({ id, title: 'Deposit not protected', status: 'considering', notes: '', createdAt: OLD, ...x });
+    const keys = ts => ts.map(t => t.key);
+    const byKey = (ts, key) => ts.find(t => t.key === key);
+
+    console.log('  mondayOf');
+    check('every day of the week of Monday 12 October 2026 gives Monday the 12th, including the Monday itself and the Sunday', ['2026-10-12', '2026-10-13', '2026-10-14', '2026-10-15', '2026-10-16', '2026-10-17', '2026-10-18'].every(x => K.mondayOf(x) === '2026-10-12'), ['2026-10-12', '2026-10-18'].map(K.mondayOf));
+    check('the next Monday (19 October) gives itself, and the Sunday before a month starts goes back to that week\'s Monday (Sunday 1 November gives 26 October)', K.mondayOf('2026-10-19') === '2026-10-19' && K.mondayOf('2026-11-01') === '2026-10-26', [K.mondayOf('2026-10-19'), K.mondayOf('2026-11-01')]);
+
+    console.log('  tiles');
+    // A general project: a next step, two milestones of five reached, one decision open.
+    let d = world(base('pjG', { nextTaskId: 'tkA', commitmentIds: ['cmA'] }));
+    d.tasks.items = [TK('tkA', 'pjG', { title: 'Call the roaster', minutes: 15 }), TK('tkB', 'pjG', { title: 'Order samples', due: '2026-10-16', time: '10:30' })];
+    d.commitments = [{ id: 'cmA', kind: 'appointment', title: 'Tasting at the roastery', start: '2026-10-20T14:00', end: '2026-10-20T15:00' }];
+    const ms = ['First order', 'Second roaster', 'Third office', 'Fourth', 'Fifth'].map(t => K.addMilestone(d, 'pjG', t));
+    K.setReached(d, 'pjG', ms[0], true, '2026-10-05'); K.setReached(d, 'pjG', ms[1], true, '2026-10-08');
+    const dc1 = K.addDecision(d, 'pjG', 'Which roaster?'), op1 = K.addOption(d, 'pjG', dc1, 'Local');
+    K.decide(d, 'pjG', dc1, op1, 'Closest', '2026-10-09');
+    K.addDecision(d, 'pjG', 'Which grinder to buy?');
+    let ts = K.tiles(d, d.projects.items[0], k);
+    check('a general project\'s tiles are the next step, the next date, milestones and decisions, in that order', eq(keys(ts), ['step', 'date', 'milestones', 'decisions']), keys(ts));
+    check('the next step tile names the chosen task with its minutes and links to that task', eq(((t) => [t.value, t.sub, t.href])(byKey(ts, 'step')), ['Call the roaster', '15 min', '#today/tasks/tkA']), byKey(ts, 'step'));
+    check('the next date tile names the soonest dated task with its day and time, and links to that task', byKey(ts, 'date').value === 'Order samples' && byKey(ts, 'date').sub === `${K.shortDate('2026-10-16')}, 10:30` && byKey(ts, 'date').href === '#today/tasks/tkB', byKey(ts, 'date'));
+    check('the milestones tile says "2 of 5 reached" with "Next: Third office" and links to the Milestones tab', eq(((t) => [t.value, t.sub, t.href])(byKey(ts, 'milestones')), ['2 of 5 reached', 'Next: Third office', '#projects/p/pjG/milestones']), byKey(ts, 'milestones'));
+    check('the decisions tile says "1 open" with that decision\'s question and links to the Decisions tab', eq(((t) => [t.value, t.sub, t.href])(byKey(ts, 'decisions')), ['1 open', 'Which grinder to buy?', '#projects/p/pjG/decisions']), byKey(ts, 'decisions'));
+    for (const m of ms.slice(2)) K.setReached(d, 'pjG', m, true, '2026-10-10');
+    ts = K.tiles(d, d.projects.items[0], k);
+    check('with every milestone reached the sub line says "All reached"', byKey(ts, 'milestones').value === '5 of 5 reached' && byKey(ts, 'milestones').sub === 'All reached', byKey(ts, 'milestones'));
+    // Empty general project, and a date that is an appointment
+    const dE = world(base('pjE', { commitmentIds: ['cmA'] }));
+    dE.commitments = clone(d.commitments);
+    let tE = K.tiles(dE, dE.projects.items[0], k);
+    check('with no tasks the next step tile says "None yet" and links to the project', eq(((t) => [t.value, t.sub, t.href])(byKey(tE, 'step')), ['None yet', 'What’s the smallest one?', '#projects/p/pjE']), byKey(tE, 'step'));
+    check('an appointment is the next date when no task is dated, with its time, linking to the Calendar', eq(((t) => [t.value, t.sub, t.href])(byKey(tE, 'date')), ['Tasting at the roastery', `${K.shortDate('2026-10-20')}, 14:00`, '#calendar']), byKey(tE, 'date'));
+    check('with no milestones and no open decisions those tiles say "None yet" and "None open"', byKey(tE, 'milestones').value === 'None yet' && byKey(tE, 'decisions').value === 'None open' && byKey(tE, 'decisions').sub === 'Is there a choice to make?', [byKey(tE, 'milestones'), byKey(tE, 'decisions')]);
+    const dN = world(base('pjN'));
+    check('with nothing dated the next date tile says "None yet"', byKey(K.tiles(dN, dN.projects.items[0], k), 'date').value === 'None yet');
+
+    // A business idea
+    const biz = world(base('pjB', { template: 'business', model: { problem: 'Slow lunches', who: 'Small crews', how: '', assumptions: [AS('asA', 'Crews would pay'), AS('asB', 'We can cook 40 boxes'), AS('asC', 'Sites allow deliveries', { state: 'doesnt-hold' }), AS('asD', 'Roasters deliver', { state: 'looks-true' })] } }));
+    let tb = K.tiles(biz, biz.projects.items[0], k);
+    check('a business idea\'s tiles are the next step, the one page, what must be true and milestones', eq(keys(tb), ['step', 'one-page', 'beliefs', 'milestones']), keys(tb));
+    check('the one page tile counts answered questions (two answers plus the beliefs list make "3 of 4 answered") and links to the model', byKey(tb, 'one-page').value === '3 of 4 answered' && byKey(tb, 'one-page').sub === 'Four simple questions' && byKey(tb, 'one-page').href === '#projects/p/pjB/model', byKey(tb, 'one-page'));
+    check('what must be true counts the things and says how many are open, look true and don\'t hold', eq(((t) => [t.value, t.sub])(byKey(tb, 'beliefs')), ['4 things', '2 to check · 1 looks true · 1 doesn’t hold']), byKey(tb, 'beliefs'));
+    biz.projects.items[0].model.assumptions = [AS('asA', 'Crews would pay')];
+    tb = K.tiles(biz, biz.projects.items[0], k);
+    check('one thing to check reads "1 thing" with "1 to check"', byKey(tb, 'beliefs').value === '1 thing' && byKey(tb, 'beliefs').sub === '1 to check', byKey(tb, 'beliefs'));
+    biz.projects.items[0].model.assumptions = [AS('asA', 'Crews would pay', { state: 'looks-true' })];
+    check('one belief that looks true reads "1 looks true"', byKey(K.tiles(biz, biz.projects.items[0], k), 'beliefs').sub === '1 looks true');
+    const bE = world(base('pjB2', { template: 'business' }));
+    tb = K.tiles(bE, bE.projects.items[0], k);
+    check('an empty business idea says "0 of 4 answered", "None yet" for what must be true, and "None yet" for milestones', byKey(tb, 'one-page').value === '0 of 4 answered' && byKey(tb, 'beliefs').value === 'None yet' && byKey(tb, 'beliefs').sub === 'What it depends on' && byKey(tb, 'milestones').value === 'None yet', tb);
+
+    // A case
+    const cs = world(base('pjC', { template: 'case', case: {
+      timeline: [TLe('tl1', { date: '2026-08-15' }), TLe('tl2', { date: '2026-09-20', issueIds: ['is1'] })],
+      evidence: [EVi('ev1', { status: 'to-get' }), EVi('ev2', { status: 'have', issueIds: ['is1'] }), EVi('ev3', { status: 'to-get' })],
+      issues: [ISs('is1'), ISs('is2'), ISs('is3', { status: 'dropped' })],
+    } }));
+    let tc = K.tiles(cs, cs.projects.items[0], k);
+    check('a case\'s tiles are the next date, evidence to get, issues with nothing linked and timeline entries', eq(keys(tc), ['date', 'to-get', 'bare', 'timeline']), keys(tc));
+    check('evidence to get shows 2 "of 3 pieces of evidence" and links to the Evidence tab', eq(((t) => [t.value, t.sub, t.href])(byKey(tc, 'to-get')), ['2', 'of 3 pieces of evidence', '#projects/p/pjC/evidence']), byKey(tc, 'to-get'));
+    check('issues with nothing linked leaves out the dropped one (it isn\'t a gap), "of 3 issues"', eq(((t) => [t.value, t.sub, t.href])(byKey(tc, 'bare')), ['1', 'of 3 issues', '#projects/p/pjC/issues']), byKey(tc, 'bare'));
+    check('the timeline tile counts the entries and gives the latest date', eq(((t) => [t.value, t.sub, t.href])(byKey(tc, 'timeline')), ['2', `Latest: ${K.shortDate('2026-09-20')}`, '#projects/p/pjC/timeline']), byKey(tc, 'timeline'));
+    const cE = world(base('pjC2', { template: 'case' }));
+    tc = K.tiles(cE, cE.projects.items[0], k);
+    check('an empty case says 0 pieces and 0 issues, and describes the timeline instead of a latest date', byKey(tc, 'to-get').sub === 'of 0 pieces of evidence' && byKey(tc, 'bare').sub === 'of 0 issues' && byKey(tc, 'timeline').sub === 'What happened, in date order', tc);
+    const c1 = world(base('pjC3', { template: 'case', case: { timeline: [], evidence: [EVi('ev1', { status: 'to-get' })], issues: [ISs('is1')] } }));
+    tc = K.tiles(c1, c1.projects.items[0], k);
+    check('a single piece of evidence and a single issue read "of 1 piece of evidence" and "of 1 issue"', byKey(tc, 'to-get').sub === 'of 1 piece of evidence' && byKey(tc, 'bare').sub === 'of 1 issue', tc);
+
+    console.log('  nextDates');
+    const nd = world(base('pjD', { commitmentIds: ['cmA', 'cmB', 'cmC'] }));
+    nd.tasks.items = [
+      TK('tkP', 'pjD', { title: 'Past', due: '2026-10-10' }), TK('tkT', 'pjD', { title: 'Today', due: k, time: '09:00' }), TK('tkL', 'pjD', { title: 'Later', due: '2026-10-30' }),
+      TK('tkDone', 'pjD', { title: 'Done one', due: '2026-10-15', done: true, doneOn: '2026-10-13' }), TK('tkNone', 'pjD', { title: 'No date' }), TK('tkOther', 'pjX', { title: 'Another project', due: '2026-10-14' }),
+    ];
+    nd.commitments = [
+      { id: 'cmA', kind: 'appointment', title: 'Visit', start: '2026-10-16T11:00', end: '2026-10-16T12:00' },
+      { id: 'cmB', kind: 'appointment', title: 'Old visit', start: '2026-10-01T11:00', end: '2026-10-01T12:00' },
+      { id: 'cmC', kind: 'appointment', title: 'Review', start: '2026-10-22T09:00', end: '2026-10-22T10:00' },
+    ];
+    const ndp = nd.projects.items[0];
+    let nds = K.nextDates(nd, ndp, k);
+    check('next dates are the dated tasks still to do and the appointments, from the day on, in time order', eq(nds.map(x => x.title), ['Today', 'Visit', 'Review']), nds);
+    check('…at most three, so the fourth ("Later") is left out', nds.length === 3 && !nds.some(x => x.title === 'Later'), nds.map(x => x.title));
+    check('a past dated task, a past appointment, a done task, an undated task and another project\'s task are not included', ['Past', 'Old visit', 'Done one', 'No date', 'Another project'].every(t => !K.nextDates(nd, ndp, k, 10).some(x => x.title === t)), K.nextDates(nd, ndp, k, 10).map(x => x.title));
+    check('a task carries its day, time and link to the task; an appointment its day, time and the Calendar', eq([nds[0].day, nds[0].time, nds[0].href, nds[1].day, nds[1].time, nds[1].href], [k, '09:00', '#today/tasks/tkT', '2026-10-16', '11:00', '#calendar']), nds);
+    check('asking from a later day leaves out what is earlier (from 17 October: Review, then Later)', eq(K.nextDates(nd, ndp, '2026-10-17').map(x => x.title), ['Review', 'Later']), K.nextDates(nd, ndp, '2026-10-17'));
+
+    console.log('  weeksDone');
+    const wk = world(base('pjW', { template: 'business', model: { problem: '', who: '', how: '', assumptions: [AS('asA', 'Crews would pay', { state: 'looks-true', checkedOn: '2026-10-13' }), AS('asB', 'Old check', { state: 'looks-true', checkedOn: '2026-08-01' })] } }));
+    wk.tasks.items = [
+      TK('t1', 'pjW', { done: true, doneOn: '2026-10-13' }), TK('t2', 'pjW', { done: true, doneOn: '2026-10-12' }), TK('t3', 'pjW', { done: true, doneOn: '2026-10-06' }),
+      TK('t4', 'pjW', { done: true, doneOn: null }), TK('t5', 'pjW', { done: true, doneOn: '2026-08-01' }), TK('t6', 'pjW', { done: true, doneOn: '2026-10-20' }),
+      TK('t7', 'pjW', { done: false, doneOn: '2026-10-13' }), TK('t8', 'pjX', { done: true, doneOn: '2026-10-13' }),
+    ];
+    const wp = wk.projects.items[0];
+    K.addMilestone(wk, 'pjW', 'Reached one'); K.addMilestone(wk, 'pjW', 'Reached two');
+    K.setReached(wk, 'pjW', wp.milestones[0].id, true, '2026-10-07'); K.setReached(wk, 'pjW', wp.milestones[1].id, true, '2026-10-14');
+    const wd = K.addDecision(wk, 'pjW', 'Which?'), wo = K.addOption(wk, 'pjW', wd, 'This one'); K.decide(wk, 'pjW', wd, wo, '', '2026-10-14');
+    const wd2 = K.addDecision(wk, 'pjW', 'Not yet decided');
+    let wks = K.weeksDone(wk, wp, k);
+    check('weeksDone gives 8 weeks, each starting on a Monday, the last starting on this week\'s Monday and the first 49 days before it', wks.length === 8 && wks[7].start === K.mondayOf(k) && wks[7].start === '2026-10-12' && wks[0].start === '2026-08-24' && wks.every(w => K.mondayOf(w.start) === w.start), wks.map(w => w.start));
+    check('tasks ticked off with a day count in their week (two this week, one last week)', wks[7].tasks === 2 && wks[6].tasks === 1 && wks.slice(0, 6).every(w => w.tasks === 0), wks.map(w => w.tasks));
+    check('a done task with no day, one before the first week, one dated after the day asked from, an undone one and another project\'s do not count', wks.reduce((n, w) => n + w.tasks, 0) === 3, wks.map(w => w.tasks));
+    check('milestones reached count in the week they were reached', wks[6].milestones === 1 && wks[7].milestones === 1, wks.map(w => w.milestones));
+    check('a decision made counts in its week, and one not yet decided does not', wks[7].decisions === 1 && wks.reduce((n, w) => n + w.decisions, 0) === 1 && wd2 !== null, wks.map(w => w.decisions));
+    check('for a business idea a belief checked this week counts as found out, and one from before the first week does not', wks[7].found === 1 && wks.reduce((n, w) => n + w.found, 0) === 1, wks.map(w => w.found));
+    check('nothing was recorded for a business idea', wks.every(w => w.recorded === 0));
+    check('each week\'s total adds up its parts, and the weeks add up to everything counted (3 tasks, 2 milestones, 1 decision, 1 found = 7)', wks.every(w => w.total === w.tasks + w.milestones + w.decisions + w.found + w.recorded) && wks.reduce((n, w) => n + w.total, 0) === 7, wks.map(w => w.total));
+    check('this week\'s total is 5 (2 tasks, 1 milestone, 1 decision, 1 found) and last week\'s is 2', wks[7].total === 5 && wks[6].total === 2, [wks[7].total, wks[6].total]);
+    check('a week count of 3 with a different number of weeks gives that many weeks, ending the same', (w3 => w3.length === 3 && w3[2].start === '2026-10-12' && w3[0].start === '2026-09-28')(K.weeksDone(wk, wp, k, 3)));
+    // A general project: its model and case do not count
+    const gw = world(base('pjGW', { model: { problem: '', who: '', how: '', assumptions: [AS('asA', 'Hidden belief', { state: 'looks-true', checkedOn: '2026-10-13' })] }, case: { timeline: [TLe('tl1', { createdAt: '2026-10-13T09:00' })], evidence: [EVi('ev1', { createdAt: '2026-10-13T09:00' })], issues: [] } }));
+    wks = K.weeksDone(gw, gw.projects.items[0], k);
+    check('a general project that carries a model or a case counts none of it', wks.every(w => w.found === 0 && w.recorded === 0 && w.total === 0), wks);
+    // A case: timeline entries and evidence count as recorded
+    const cw = world(base('pjCW', { template: 'case', case: { timeline: [TLe('tl1', { date: '2026-03-01', createdAt: '2026-10-13T09:00' }), TLe('tl2', { createdAt: '2026-10-06T09:00' })], evidence: [EVi('ev1', { createdAt: '2026-10-14T18:00' }), EVi('ev2', { createdAt: '2026-06-01T09:00' })], issues: [ISs('is1', { createdAt: '2026-10-13T09:00' })] },
+      model: { problem: '', who: '', how: '', assumptions: [AS('asA', 'Hidden belief', { state: 'looks-true', checkedOn: '2026-10-13' })] } }));
+    wks = K.weeksDone(cw, cw.projects.items[0], k);
+    check('for a case, timeline entries and evidence count as recorded on the day they were made (not the date they are about)', wks[7].recorded === 2 && wks[6].recorded === 1 && wks.reduce((n, w) => n + w.recorded, 0) === 3, wks.map(w => w.recorded));
+    check('…an issue does not, and a case\'s hidden model adds no "found"', wks.every(w => w.found === 0) && wks[7].total === 2, wks.map(w => w.total));
+
+    console.log('  timelineByMonth');
+    const tm = base('pjM', { template: 'case', case: { timeline: [TLe('a', { date: '2026-10-02' }), TLe('b', { date: '2026-08-30' }), TLe('c', { date: '2026-10-20' }), TLe('d', { date: '2026-08-01' }), TLe('e', { date: '2026-09-15' })], evidence: [], issues: [] } });
+    check('timeline entries are counted per month in date order, however they were added', eq(K.timelineByMonth(tm), [{ month: '2026-08', count: 2 }, { month: '2026-09', count: 1 }, { month: '2026-10', count: 2 }]), K.timelineByMonth(tm));
+    const long = base('pjM2', { template: 'case', case: { timeline: Array.from({ length: 14 }, (_, i) => TLe('e' + i, { date: `${2025 + Math.floor((i + 8) / 12)}-${String(((i + 8) % 12) + 1).padStart(2, '0')}-10` })), evidence: [], issues: [] } });
+    const lm = K.timelineByMonth(long);
+    check('over 12 months only the latest 12 are given (14 months from 2025-09 end at 2026-10)', lm.length === 12 && lm[0].month === '2025-11' && lm[11].month === '2026-10', lm.map(x => x.month));
+    check('a project with no case has no months, and "max" can be smaller', K.timelineByMonth(base('pjM3')).length === 0 && K.timelineByMonth(tm, 2).length === 2 && K.timelineByMonth(tm, 2)[1].month === '2026-10');
+
+    console.log('  issueGrid');
+    const ig = base('pjI', { template: 'case', case: {
+      timeline: [TLe('tl1', { issueIds: ['is1'] }), TLe('tl2', { issueIds: ['is1', 'is2'] })],
+      evidence: [EVi('ev1', { issueIds: ['is1'] }), EVi('ev2')],
+      issues: [ISs('is1', { title: 'Deposit not protected', status: 'claiming' }), ISs('is2', { title: 'Repairs ignored' }), ISs('is3', { title: 'Late notice', status: 'dropped' })],
+    } });
+    check('each issue is listed with its title, status and how much evidence and how many timeline entries are linked to it', eq(K.issueGrid(ig), [
+      { id: 'is1', title: 'Deposit not protected', status: 'claiming', evidence: 1, entries: 2 },
+      { id: 'is2', title: 'Repairs ignored', status: 'considering', evidence: 0, entries: 1 },
+      { id: 'is3', title: 'Late notice', status: 'dropped', evidence: 0, entries: 0 }]), K.issueGrid(ig));
+    check('a project without a case has an empty grid', eq(K.issueGrid(base('pjI2')), []));
+
+    console.log('  worthALook');
+    const wl = (data, id = data.projects.items[0].id, kk = k) => K.worthALook(data, data.projects.items.find(p => p.id === id), kk);
+    const texts = r => r.map(x => x.text);
+    const g1 = world(base('pjL'));
+    g1.tasks.items = [TK('a', 'pjL', { title: 'Book the van', due: k })];
+    check('a dated task today is pointed out as "— today", linking to the task', eq(wl(g1).map(x => [x.text, x.href]), [['Book the van — today', '#today/tasks/a']]), wl(g1));
+    g1.tasks.items[0].due = '2026-10-15';
+    check('…tomorrow as "— tomorrow"', texts(wl(g1))[0] === 'Book the van — tomorrow', wl(g1));
+    g1.tasks.items[0].due = '2026-10-17';
+    check('…in three days as "— in 3 days"', texts(wl(g1))[0] === 'Book the van — in 3 days', wl(g1));
+    g1.tasks.items[0].due = '2026-10-21';
+    check('…seven days away still as "— in 7 days"', texts(wl(g1))[0] === 'Book the van — in 7 days', wl(g1));
+    g1.tasks.items[0].due = '2026-10-22';
+    check('…but eight days away gives nothing', wl(g1).length === 0, wl(g1));
+    g1.tasks.items = [TK('a', 'pjL', { title: 'Book the van', due: '2026-10-10' })];
+    check('a past dated task is not pointed out (and the project still has its open task)', wl(g1).length === 0, wl(g1));
+    g1.commitments = [{ id: 'cmA', kind: 'appointment', title: 'Viewing', start: '2026-10-15T10:00', end: '2026-10-15T11:00' }]; g1.projects.items[0].commitmentIds = ['cmA'];
+    check('an appointment within the week is pointed out too, linking to the Calendar', eq(wl(g1).map(x => [x.text, x.href]), [['Viewing — tomorrow', '#calendar']]), wl(g1));
+    // No next step
+    const ns = world(base('pjS'));
+    check('an active project with no open tasks says "No next step yet — what’s the smallest one?" and links to the project', eq(wl(ns).map(x => [x.key, x.text, x.href]), [['step', 'No next step yet — what’s the smallest one?', '#projects/p/pjS']]), wl(ns));
+    const ps = world(base('pjS', { status: 'paused' }));
+    check('a paused project does not get it', wl(ps).length === 0, wl(ps));
+    ns.tasks.items = [TK('z', 'pjS', { done: true, doneOn: k })];
+    check('a project whose only task is done still gets it', texts(wl(ns)).length === 1 && texts(wl(ns))[0].startsWith('No next step'), wl(ns));
+    ns.tasks.items = [TK('z', 'pjS')];
+    check('a project with an open task does not', wl(ns).length === 0, wl(ns));
+    // Business
+    const bz = world(base('pjB', { template: 'business', model: { problem: 'P', who: 'W', how: 'H', assumptions: [] } }));
+    check('a business idea with three questions answered gets no pointer about its one page', wl(bz).every(x => x.key !== 'one-page'), wl(bz));
+    bz.projects.items[0].model = { problem: 'P', who: '', how: '', assumptions: [AS('asA', 'Crews would pay')] };
+    bz.tasks.items = [TK('f1', 'pjB'), TK('f2', 'pjB', { done: true, doneOn: k, title: 'Find out: Crews would pay' })];
+    bz.projects.items[0].model.assumptions[0].taskId = 'f2';
+    check('a business idea with fewer than 3 answered says "Your one page has 2 questions still to answer", after the Find out pointer', eq(texts(wl(bz)), ['A Find out task is done — what did you find?', 'Your one page has 2 questions still to answer']), wl(bz));
+    bz.projects.items[0].model.assumptions.push(AS('asB', 'Sites allow it', { taskId: 'f3' }));
+    bz.tasks.items.push(TK('f3', 'pjB', { done: true, doneOn: k }));
+    check('two beliefs whose Find out tasks are done say "2 Find out tasks are done — what did you find?"', texts(wl(bz))[0] === '2 Find out tasks are done — what did you find?', wl(bz));
+    bz.projects.items[0].model.assumptions = [AS('asA', 'Crews would pay')];
+    bz.tasks.items = [TK('f1', 'pjB')];
+    check('a belief with no Find out task, one answer and an open task: only the one-page pointer, "2 questions still to answer"', eq(texts(wl(bz)), ['Your one page has 2 questions still to answer']), wl(bz));
+    const bz0 = world(base('pjB', { template: 'business' })); bz0.tasks.items = [TK('f1', 'pjB')];
+    check('an empty business idea says its one page has 4 questions still to answer', eq(texts(wl(bz0)), ['Your one page has 4 questions still to answer']), wl(bz0));
+    bz0.projects.items[0].model = { problem: 'P', who: 'W', how: '', assumptions: [] };
+    check('with two answers written it says "2 questions still to answer"', eq(texts(wl(bz0)), ['Your one page has 2 questions still to answer']), wl(bz0));
+    // Case
+    const cw2 = world(base('pjC', { template: 'case', case: { timeline: [], evidence: [EVi('ev1', { status: 'to-get' })], issues: [ISs('is1'), ISs('is2', { status: 'dropped' })] } }));
+    cw2.tasks.items = [TK('c1', 'pjC')];
+    check('a case says "1 issue has nothing linked yet" (the dropped issue is not counted) and "1 piece of evidence still to get"', eq(texts(wl(cw2)), ['1 issue has nothing linked yet', '1 piece of evidence still to get']), wl(cw2));
+    cw2.projects.items[0].case.issues.push(ISs('is3')); cw2.projects.items[0].case.evidence.push(EVi('ev2', { status: 'to-get' }));
+    check('…and with two of each "2 issues have nothing linked yet" and "2 pieces of evidence still to get"', eq(texts(wl(cw2)), ['2 issues have nothing linked yet', '2 pieces of evidence still to get']), wl(cw2));
+    cw2.projects.items[0].case.evidence[0].issueIds = ['is1']; cw2.projects.items[0].case.evidence[1].status = 'have';
+    check('linking evidence to an issue takes it out of the first count, and evidence that is had is no longer "still to get"', eq(texts(wl(cw2)), ['1 issue has nothing linked yet', '1 piece of evidence still to get']), wl(cw2));
+    // Order and the limit of three
+    const all = world(base('pjO', { template: 'case', case: { timeline: [], evidence: [EVi('ev1', { status: 'to-get' })], issues: [ISs('is1')] } }));
+    all.tasks.items = [TK('o1', 'pjO', { title: 'File the form', due: '2026-10-16' })];
+    check('a case with a dated task gives the date first, then the issues pointer, then the evidence pointer', eq(texts(wl(all)), ['File the form — in 2 days', '1 issue has nothing linked yet', '1 piece of evidence still to get']), wl(all));
+    all.tasks.items = []; all.commitments = [{ id: 'cmA', kind: 'appointment', title: 'Hearing', start: '2026-10-16T10:00', end: '2026-10-16T11:00' }]; all.projects.items[0].commitmentIds = ['cmA'];
+    check('with a date, two case pointers and no open task, the three first are kept and the "No next step" one is left out', eq(texts(wl(all)), ['Hearing — in 2 days', '1 issue has nothing linked yet', '1 piece of evidence still to get']), wl(all));
   }
 
   fs.rmSync(dir, { recursive: true, force: true });

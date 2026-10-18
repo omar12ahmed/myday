@@ -341,6 +341,26 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     const m2 = JSON.parse(A.mockAsk(mk(undefined)));
     check('…and without a one page it does not', !m2.items.some(i => i.type === 'must-be-true'), m2);
   }
+
+  console.log('\n[2i] Summarise this (Ask v15): the instructions and the practice reply');
+  {
+    const A = await import(path.join(ROOT, 'supabase/functions/_shared/ai/ask.ts'));
+    const mk = tasks => ({ version: 1, action: 'ask', date: '2026-11-10', weekday: 'Tuesday', time: '10:00', page: 'project', text: 'Summarise where this project is, and the one next step',
+      context: { project: { id: 'pjB', title: 'Lunch boxes for sites', summary: 'Hot lunches for builders', stage: 'explore', tasks, notes: [] } } });
+    const sys = A.buildAskMessages(mk([])).map(m => m.content).join('\n').replace(/\s+/g, ' ');
+    check('the instructions are version myday-ask-v15', A.ASK_PROMPT_VERSION === 'myday-ask-v15', A.ASK_PROMPT_VERSION);
+    check('the summary instructions say a done "Find out" task means they looked into it, not that its answer is confirmed', sys.includes('A summary of the project on this page') && sys.includes('a done "Find out: X" means they\'ve looked into whether X') && sys.includes('never that X is confirmed or true'));
+    check('…and to summarise without advising on a legal, medical or money matter', sys.includes('legal, medical or money matter, summarise without advising'));
+    const withTasks = mk([{ id: 'tkA', title: 'Ring the caterer', done: true }, { id: 'tkB', title: 'Price the boxes', done: false }, { id: 'tkC', title: 'Book a stall', done: false }]);
+    check('the project context with tasks is accepted', A.checkAskContext(withTasks) === true);
+    const m1 = JSON.parse(A.mockAsk(withTasks));
+    check('the practice version answers "Summarise where this project is…" with kind "answer" and no items', m1.kind === 'answer' && Array.isArray(m1.items) && m1.items.length === 0 && m1.action === null, m1);
+    check('…naming the project and its first open task', m1.message.includes('Lunch boxes for sites') && m1.message.includes('Price the boxes') && !m1.message.includes('Ring the caterer'), m1.message);
+    const m2 = JSON.parse(A.mockAsk(mk([{ id: 'tkA', title: 'Ring the caterer', done: true }])));
+    check('with every task done it says to pick the smallest first step', m2.kind === 'answer' && m2.items.length === 0 && m2.message.includes('pick the smallest first step'), m2.message);
+    const m3 = JSON.parse(A.mockAsk(mk([])));
+    check('with no tasks at all it also says to pick the smallest first step, and names the project', m3.kind === 'answer' && m3.items.length === 0 && m3.message.includes('pick the smallest first step') && m3.message.includes('Lunch boxes for sites'), m3.message);
+  }
   env = { AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_MOCK_DELAY_MS: '0', AI_DAILY_LIMIT: '50', AI_MIN_SECONDS_BETWEEN: '0', AI_MONTHLY_BUDGET_USD: '1' };
 
   console.log('\n[3] A caller is verified before anything else, and secrets stay out of Git');
