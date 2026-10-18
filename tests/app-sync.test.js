@@ -528,6 +528,43 @@ function task(uid, taskId, category, title, minutes, done = false) {
   check('a legacy service_role key stops it too', /secret/.test(tryBuild(legacyService)));
   fs.rmSync(tmp, { recursive: true, force: true });
 
+  console.log('\n[14] Half a character never stops syncing (text cut in the middle of an emoji; the account refuses it)');
+  // A half character is a lone UTF-16 surrogate; it is built in the page so no JS file holds one.
+  const HALF = `String.fromCharCode(0xD83D)`;
+  const hasHalf = x => /[\uD800-\uDFFF]/.test(x.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, ''));
+  const tk = (id, title) => `{ id: '${id}', title: ${title}, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '${Y}T09:00', postponed: 0, blockers: [], letGoOn: null }`;
+  await synced(mac);
+  await mac.setData(`s => { s.tasks.items.push(${tk('tkH9', `'Pay council tax 😀' + ${HALF}`)}, ${tk('tkH1', `'Renew passport'`)}); }`);
+  await synced(mac);
+  const h9 = await cloudRecord(userA, 'task', 'tkH9'), h1 = await cloudRecord(userA, 'task', 'tkH1');
+  check('a task whose title ends in half a character reaches the account with the half taken out and the whole emoji kept', !!h9 && h9.data.title === 'Pay council tax 😀', h9 && JSON.stringify(h9.data.title));
+  check('…and so does the task that sorts after it', !!h1 && h1.data.title === 'Renew passport');
+  check('…and the Mac shows saved, not an error', (await mac.status()) === 'synced', await diag(mac));
+  const laptop = await T.device('laptop', path.join(dl, 'laptop'));
+  await laptop.open(APP + '#today');
+  await signIn(laptop, A);
+  await laptop.until(`!document.getElementById('signInGate') && document.getElementById('nav')`, 15000);
+  await synced(laptop);
+  const ld = await laptop.data();
+  const lh9 = ld.tasks.items.find(t => t.id === 'tkH9');
+  check('a second device gets the task, without the half', !!lh9 && lh9.title === 'Pay council tax 😀' && !!ld.tasks.items.find(t => t.id === 'tkH1'), lh9 && JSON.stringify(lh9.title));
+
+  // A change noted by 1.35.0 with half a character inside it, still waiting to be sent.
+  srv.faults.push({ path: '/rest/v1/rpc/sync_push', mode: 'error', times: 99 });
+  await mac.setData(`s => { s.tasks.items.find(t => t.id === 'tkH9').title = 'Book dentist'; s.tasks.items.find(t => t.id === 'tkH1').title = 'Renew passport online'; }`);
+  await sent(mac, 'task:tkH9'); await sent(mac, 'task:tkH1');
+  await mac.ev(`(() => { const n = JSON.parse(localStorage.getItem('myday.sync.v1')); n.link.out['task:tkH9'].content.title = 'Book dentist 😀' + ${HALF}; localStorage.setItem('myday.sync.v1', JSON.stringify(n)); })()`);
+  const noted = (await mac.notes()).link.out['task:tkH9'];
+  check('(test setup: a change waiting to be sent holds half a character)', !!noted && hasHalf(noted.content.title), noted && JSON.stringify(noted.content.title));
+  srv.faults.length = 0;
+  await mac.open(APP + '#today');
+  await syncNowWhenReady(mac);
+  await synced(mac);
+  const n9 = await cloudRecord(userA, 'task', 'tkH9'), n1 = await cloudRecord(userA, 'task', 'tkH1');
+  check('the noted change is sent and applied, with the half taken out and the whole emoji kept', !!n9 && !!h9 && n9.data.title === 'Book dentist 😀' && n9.version === h9.version + 1, n9 && JSON.stringify(n9.data.title));
+  check('…the change after it in the same send is applied too', !!n1 && !!h1 && n1.data.title === 'Renew passport online' && n1.version === h1.version + 1, n1 && JSON.stringify(n1.data.title));
+  check('…nothing is left waiting, nothing was refused, and sync shows saved', Object.keys((await mac.notes()).link.out).length === 0 && Object.keys((await mac.notes()).link.rejected).length === 0 && (await mac.status()) === 'synced', await diag(mac));
+
   fs.rmSync(dl, { recursive: true, force: true });
   await srv.close();
   const { pass, fail } = summary();

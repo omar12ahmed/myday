@@ -1107,3 +1107,10 @@ returns up to 8 small tasks; you tick the ones to add.
     timeline entries. Add a deadline on the Your case card adds a dated task, and MyDay never works out legal time
     limits. Private works as for any project, and a case's timeline, evidence and issues never go to AI. No server
     or database change; going back to 1.34.0 is safe.
+48. **Release 1.35.1:** a fix. Text is cut to a length in many places, and a cut in the middle of an emoji left half a
+    character behind; your account refuses a record holding one, and the device would then stop syncing (it kept
+    retrying that change). MyDay now takes such halves out whenever it saves, as it reads saved data, and from a
+    change waiting to be sent (`mendHalves` in `src/data/util.ts`); whole emoji, Arabic and every other character
+    stay exactly as they are. Checked against the database stand-in (real PostgreSQL), which refuses halves as the
+    account does: without the fix sync stops, with it everything is saved. No server or database change; going back
+    to 1.35.0 is safe.

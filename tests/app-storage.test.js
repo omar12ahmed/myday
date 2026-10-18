@@ -163,6 +163,45 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   check('…and the current MyDay picks up the new app\'s save too (no data lost either way)', (await inFrame(`document.querySelector('#toast').textContent`)).includes('another tab') && (await D()).lists.learning.length === 5);
   await ev(`document.getElementById('b').remove()`);
 
+  console.log('\n[9] Half a character (text cut in the middle of an emoji) is never saved');
+  // A half character is a lone UTF-16 surrogate, built in the page so no JS file holds one.
+  const HALF = `String.fromCharCode(0xD83D)`, LOW = `String.fromCharCode(0xDE00)`;
+  const hasHalf = v => /[\uD800-\uDFFF]/.test(String(v).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, ''));
+  const scan = o => typeof o === 'string' ? hasHalf(o) : o && typeof o === 'object' ? Object.values(o).some(scan) : false;
+  await ev('localStorage.clear()'); await go();
+  const base = await D();
+  await otherTabWrites(`s => {
+    s.lists.admin.push({ id: 'a9', title: 'Pay council tax 😀' + ${HALF}, minutes: 15 });
+    s.notes.items.push({ id: 'ntH', categoryId: '', title: 'مرحبا', text: 'Call ' + ${LOW} + 'the bank 😀 مرحبا', pinned: false, createdAt: '2026-11-01T09:00', updatedAt: '2026-11-01T09:00' });
+    s.futureSection = { notes: ['kept 😀' + ${HALF}, 'مرحبا'], deep: { more: ${LOW} + 'x' } };
+  }`);
+  check('(test setup: the saved text holds half characters)', scan(await D()));
+  await go(10);
+  await click('[data-action=edit]'); await sleep(200);
+  check('saved data holding half characters opens normally, and the task title shows without the half', await ev(`[...document.querySelectorAll('.edit-row input.t')].some(i => i.value === 'Pay council tax 😀')`));
+  await click('[data-action=add][data-cat=admin]'); await sleep(200); await click('[data-action=back]'); await sleep(250);
+  s = await D();
+  const a9 = s.lists.admin.find(x => x.id === 'a9'), ntH = s.notes.items.find(x => x.id === 'ntH');
+  check('after the next save, the task title has the half taken out and the whole emoji kept', !!a9 && a9.title === 'Pay council tax 😀' && a9.minutes === 15, a9);
+  check('…the note keeps its Arabic and emoji with only the half taken out of its text', !!ntH && ntH.text === 'Call the bank 😀 مرحبا' && ntH.title === 'مرحبا' && ntH.createdAt === '2026-11-01T09:00', ntH);
+  check('…a section the new app does not handle yet is mended too, everything else in it kept', eq(s.futureSection, { notes: ['kept 😀', 'مرحبا'], deep: { more: 'x' } }), s.futureSection);
+  check('…and no text anywhere in the saved data holds a lone half (no \\ud8xx–\\udfxx escape is left)', !scan(s) && !/\\ud[89a-f][0-9a-f]{2}/i.test(await raw()));
+  check('…the other fields are as they were (the added task and the other lists)', s.lists.admin.length === base.lists.admin.length + 2 && eq(s.lists.learning, base.lists.learning) && eq(s.lists.health, base.lists.health) && s.schemaVersion === 4, s.lists.admin.length);
+
+  await ev('localStorage.clear()'); await go();
+  await otherTabWrites(`s => {
+    s.lists.admin.push({ id: 'a9', title: 'Pay council tax 😀', minutes: 15 });
+    s.notes.items.push({ id: 'ntH', categoryId: '', title: 'مرحبا', text: 'Call the bank 😀 مرحبا', pinned: false, createdAt: '2026-11-01T09:00', updatedAt: '2026-11-01T09:00' });
+    s.futureSection = { notes: ['kept 😀', 'مرحبا'] };
+  }`);
+  await go(10);
+  const whole = await D();
+  await click('[data-action=edit]'); await sleep(200); await click('[data-action=add][data-cat=admin]'); await sleep(200); await click('[data-action=back]'); await sleep(250);
+  s = await D();
+  const expectS = JSON.parse(JSON.stringify(whole)); expectS.lists.admin = s.lists.admin; expectS.saves = s.saves;
+  check('data without any half character keeps its whole emoji and Arabic text exactly', s.lists.admin.find(x => x.id === 'a9').title === 'Pay council tax 😀' && s.notes.items.find(x => x.id === 'ntH').text === 'Call the bank 😀 مرحبا' && eq(s.futureSection, { notes: ['kept 😀', 'مرحبا'] }));
+  check('…and is otherwise saved exactly as before (only the one added task and the save numbering differ)', eq(s, expectS) && s.lists.admin.length === whole.lists.admin.length + 1);
+
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
   const sm = T.summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);
