@@ -27,6 +27,7 @@ import { todayKey } from '../data/dates';
 import { freshState as freshData } from '../data/normalize';
 import { catchUp, getSnapshot, replaceAll, subscribe as onData, updateSaved } from '../data/storage';
 import { toast } from '../data/toast';
+import { mendHalves } from '../data/util';
 import { accountOf, call, client, currentSession, hadSession, signIn, signOut, type Account } from './client';
 import { SYNC } from './config';
 import { ALL_KINDS, cleanRecord, fingerprint, isStarter, keyOf, localRecords, putRecord, recordLabel, sortKeys, splitKey, type Content, type Kind } from './records';
@@ -242,6 +243,8 @@ async function runLocked(reason: Reason) {
     if (!writeState(st)) { problem = 'storage'; message = "This device's storage is full, so changes can't be sent safely."; return; }
     const changes = batch.map(k => {
       const o = link.out[k], { kind, id } = splitKey(k);
+      // Noted before 1.35.1 with half a character in it, the account would refuse it (and every batch after): mend it.
+      if (!o.del && o.content) mendHalves(o.content);
       return { change_id: o.id, kind, record_id: id, base_version: o.base, deleted: o.del, data: o.del ? null : o.content };
     });
     const res = await call<Result[]>('sync_push', session, { account: link.user, changes, device: st.device });

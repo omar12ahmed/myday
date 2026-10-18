@@ -16,6 +16,7 @@ import { localStamp, todayKey } from './dates';
 import { CATS, freshState, isObj, normalize, SAVE_LOG, SCHEMA_VERSION, uid } from './normalize';
 import { toast } from './toast';
 import type { MyDayData } from './types';
+import { mendHalves } from './util';
 
 export const STORAGE_KEY = 'myday.data.v4'; // the same key the current MyDay uses
 const EXPORT_FORMAT = 'myday-export';
@@ -65,7 +66,12 @@ function parseSaved(raw: string, newerReason: string): { data: MyDayData; droppe
   if (typeof v === 'number' && v > SCHEMA_VERSION) return { reason: newerReason };
   if (![2, 3, SCHEMA_VERSION].includes(v as number)) return { reason: "It's in a format this version doesn't recognise." };
   const report = { dropped: 0 };
-  try { return { data: normalize(parsed, report), dropped: report.dropped }; } catch { return { reason: "It looks damaged and can't be read." }; }
+  try {
+    // Half-characters left by an earlier cut (see mendHalves) are taken out as it's read, so they can't stop syncing.
+    const data = normalize(parsed, report);
+    mendHalves(data);
+    return { data, dropped: report.dropped };
+  } catch { return { reason: "It looks damaged and can't be read." }; }
 }
 
 // Saved entries that couldn't be read when MyDay started (left out, and gone after the next save), with the
@@ -134,6 +140,7 @@ function persist(data: MyDayData): boolean {
     const prev = isObj(data.saves) ? data.saves : { seq: 0, log: [] };
     const seq = prev.seq + 1, id = seq + '.' + TAB_ID;
     data.saves = { seq, log: prev.log.concat(id).slice(-SAVE_LOG) };
+    mendHalves(data); // never save half a character (text cut in the middle of an emoji): see util.ts
     const text = JSON.stringify(data);
     localStorage.setItem(STORAGE_KEY, text);
     lastSaved = text;
