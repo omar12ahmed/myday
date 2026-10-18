@@ -38,6 +38,43 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
   check('the timetable and sound-contrast pairs also have readings', starter.assets.filter(a => a.rows || a.pairs).every(a => (a.rows || []).every(r => ['day_ar','activity_ar','place_ar'].every(k => !t(r[k]).incomplete)) && (a.pairs || []).every(p => !t(p.a).incomplete && !t(p.b).incomplete)));
   execFileSync('node', [path.join(ROOT, 'app/scripts/validate-pronunciation.mjs')], { stdio: 'pipe' });
   check('all 14 longer texts are aligned with the unchanged original Arabic', true);
+  // Word families (1.38.0): the authored file, its build-time rules and the readings of its Arabic notes.
+  const famPath = path.join(ROOT, 'content/teaching/arabic/word-families.json');
+  const runFam = file => { try { return { code: 0, out: execFileSync('node', [path.join(ROOT, 'app/scripts/validate-families.mjs'), ...(file ? [file] : [])], { stdio: 'pipe' }).toString() }; } catch (e) { return { code: e.status || 1, out: `${e.stdout || ''}${e.stderr || ''}` }; } };
+  const real = runFam();
+  check('the real word families file passes: 4 families, 12 words in them, 36 standing alone, all 48 placed once', real.code === 0 && real.out.includes('4 families, 12 words in them, 36 standing alone; all 48 placed once'));
+  const fam = json('content/teaching/arabic/word-families.json');
+  const bad = (name, mutate, message, expected) => {
+    const copy = JSON.parse(JSON.stringify(fam)); mutate(copy);
+    const file = path.join(temp, `bad-${name}.json`); fs.writeFileSync(file, JSON.stringify(copy));
+    const r = runFam(file);
+    check(`${expected}: a bad copy fails the build and ${message}`, r.code !== 0 && r.out.includes(message));
+  };
+  const ktb = f => f.families.find(x => x.id === 'ktb'), tlb = f => f.families.find(x => x.id === 'tlb');
+  bad('not-a-word', f => { ktb(f).members[0] = 'lexeme.arabic-seed-999'; }, "isn't a starter word", 'a family member that is not a starter word');
+  bad('two-families', f => { tlb(f).members[0] = 'lexeme.arabic-seed-009'; tlb(f).pair = null; }, 'is in the ktb family and the tlb family', 'a word placed in two families');
+  bad('twice', f => { ktb(f).members.push('lexeme.arabic-seed-009'); }, 'a member is listed twice', 'a member listed twice in one family');
+  bad('wrong-root', f => { ktb(f).members.push('lexeme.arabic-seed-040'); f.standing_alone.relatives_not_here = f.standing_alone.relatives_not_here.filter(i => i !== 'lexeme.arabic-seed-040'); }, "doesn't contain ك-ت-ب in order", 'a word that lacks its root\'s letters in order');
+  bad('pair', f => { ktb(f).pair = ['lexeme.arabic-seed-009', 'lexeme.arabic-seed-010', 'lexeme.arabic-seed-012']; }, 'a pair must be two of its members', 'a pair that is not two members');
+  bad('pair-outsider', f => { ktb(f).pair = ['lexeme.arabic-seed-009', 'lexeme.arabic-seed-038']; }, 'a pair must be two of its members', 'a pair with a word from another family');
+  bad('note-key', f => { ktb(f).word_notes['lexeme.arabic-seed-038'] = 'x'; }, "which isn't a member", 'a word note for a word that is not a member');
+  bad('example', f => { ktb(f).also_in_examples[0].form_ar = 'مَسْجِد'; }, "isn't in a starter example or text", 'an also-in-examples form that no starter example or text contains');
+  bad('unplaced', f => { f.standing_alone.small_words.pop(); }, 'not placed anywhere', 'a starter word left unplaced');
+  bad('root-length', f => { ktb(f).root_ar = 'ك-ت'; }, 'the root must be three letters', 'a root that is not three letters');
+  const starterWords = new Map(starter.lexicon.map(w => [w.id, w]));
+  const members = id => fam.families.find(f => f.id === id).members;
+  check('the ك-ت-ب family has exactly 5 members', members('ktb').length === 5);
+  const tlbFam = fam.families.find(f => f.id === 'tlb');
+  check('the ط-ل-ب family is the gender pair of the two student words', tlbFam.members.length === 2 && tlbFam.pair.join() === 'lexeme.arabic-seed-013,lexeme.arabic-seed-014' && starterWords.get(tlbFam.pair[0]).meaning_en.includes('student'));
+  const inFam = fam.families.flatMap(f => f.members), relatives = fam.standing_alone.relatives_not_here, small = fam.standing_alone.small_words;
+  check('no pronoun, preposition, particle, question word, connector or set phrase is in a family', inFam.every(id => !['pronoun', 'preposition', 'particle', 'connector', 'question', 'chunk'].includes(starterWords.get(id).part_of_speech)));
+  check('12 words are in families and 14 + 22 stand alone, which is all 48', inFam.length === 12 && relatives.length === 14 && small.length === 22 && new Set([...inFam, ...relatives, ...small]).size === 48);
+  // Every Arabic run in the notes gets a complete reading; a root written like ك-ت-ب is shown whole by the app, with its root_reading.
+  const rootForm = /[ء-ي](?:-[ء-ي]){2}/g;
+  const famText = fam.families.flatMap(f => [f.pattern_en, ...Object.values(f.word_notes || {}), ...(f.also_in_examples || []).flatMap(x => [x.form_ar, x.note_en])]);
+  const famRuns = famText.flatMap(x => [...x.replace(rootForm, ' ').matchAll(arabic)].map(m => m[0])).filter(s => /[ء-ي]/.test(s));
+  const incompleteRuns = famRuns.filter(s => t(s).incomplete);
+  check(`every Arabic run in the family patterns, word notes and also-in-examples forms has a complete reading (${famRuns.length} runs checked)`, famRuns.length > 20 && incompleteRuns.length === 0);
   fs.rmSync(temp, { recursive: true, force: true });
   console.log(`\n${pass} passed, ${fail} failed`); process.exit(fail ? 1 : 0);
 })().catch(e => { console.error('HARNESS', e); process.exit(1); });

@@ -15,8 +15,8 @@ const byId = new Map(texts.lexicon.map(w => [w.id, w]));
 const short = (m: string) => m.replace(/, (masculine singular|to a male)$/, ' (m)').replace(/, (feminine singular|to a female)$/, ' (f)').replace(/, choose by context$/, '');
 
 // A root in its own right-to-left run (so the hyphens don't reorder), with its reading when readings are shown.
-export function Root({ f }: { f: Pick<Family, 'root_ar' | 'root_reading'> }) {
-  const { enabled } = useContext(PronunciationContext);
+export function Root({ f, reading = true }: { f: Pick<Family, 'root_ar' | 'root_reading'>; reading?: boolean }) {
+  const enabled = useContext(PronunciationContext).enabled && reading;
   return <span className="whitespace-nowrap"><bdi lang="ar" dir="rtl" className="ar-inline">{f.root_ar}</bdi>
     {enabled && <span className="ar-transliteration" data-ar-transliteration="" dir="ltr" lang="ar-Latn"> ({f.root_reading})</span>}</span>;
 }
