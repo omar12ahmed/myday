@@ -35,11 +35,12 @@ self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
       .then(keys => Promise.all(keys.filter(k => k.startsWith('myday-') && k !== CACHE && k !== SOUNDS).map(k => caches.delete(k))))
-      .then(() => caches.open(SOUNDS))
-      .then(sounds => {
+      // Clips this release no longer plays (only if a clip has ever been played here: no empty cache is made).
+      .then(() => caches.has(SOUNDS))
+      .then(played => played && caches.open(SOUNDS).then(sounds => {
         const kept = new Set(AUDIO.map(f => new URL(f, scopeUrl()).href));
         return sounds.keys().then(reqs => Promise.all(reqs.filter(r => !kept.has(r.url)).map(r => sounds.delete(r))));
-      })
+      }))
       .then(() => self.clients.claim()),
   );
 });

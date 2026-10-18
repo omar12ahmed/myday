@@ -39,8 +39,10 @@ for (const w of lexicon) {
     const audio = Buffer.from((await res.json()).audioContent, 'base64');
     const file = createHash('sha256').update(audio).digest('hex').slice(0, 16) + '.mp3';
     writeFileSync(new URL(file, clips), audio);
-    if (entry?.file && entry.file !== file) rmSync(new URL(entry.file, clips), { force: true });
     (audit.clips[w.id] ??= {})[part] = { text, file, voice: VOICE, made: today, check: 'to check', ...(entry?.note ? { earlier: entry.note } : {}) };
+    // The old clip goes, unless another word still uses the same file (two words share one example sentence).
+    const inUse = Object.values(audit.clips).some(parts => Object.values(parts).some(c => c.file === entry?.file));
+    if (entry?.file && entry.file !== file && !inUse) rmSync(new URL(entry.file, clips), { force: true });
     made++; chars += text.length;
   }
 }

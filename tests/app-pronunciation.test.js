@@ -110,5 +110,72 @@ const wait = async sel => { for (let i = 0; i < 60; i++) { if (await exists(sel)
   await click(fword('lexeme.arabic-seed-036')); await wait('[data-ar-family-note]'); await sleep(100);
   check('at 390 px an open note still fits and its close and show buttons are at least 44 px', await ev(`document.documentElement.scrollWidth === innerWidth && [...document.querySelectorAll('[data-ar-family-note] button')].every(x => x.getBoundingClientRect().height >= 44)`));
   await send('Emulation.clearDeviceMetricsOverride');
+  // The starter words' synthesised voice (1.39.0). Real taps are used (el.click() gives no user activation, and a browser needs one to play sound).
+  const fs = require('fs'), path = require('path');
+  const ROOT = process.env.MYDAY_ROOT || path.resolve(__dirname, '..');
+  const clipFiles = JSON.parse(fs.readFileSync(path.join(ROOT, 'app/src/study/arabic/data/audio.json'), 'utf8')).clips;
+  const served = path.join(__dirname, 'srv', 'app', 'dist');
+  const clipSel = (id, part) => `[data-ar-clip="${id}:${part}"]`;
+  const state = (id, part) => ev(`(document.querySelector('${clipSel(id, part)}') || {getAttribute: () => 'missing'}).getAttribute('data-state')`);
+  const states = () => ev(`[...document.querySelectorAll('[data-ar-clip]')].filter(b => b.getAttribute('data-state') !== 'idle').map(b => b.getAttribute('data-ar-clip'))`);
+  const clipFetches = () => ev(`performance.getEntriesByType('resource').map(r => r.name).filter(n => n.includes('arabic-audio/'))`);
+  const realTap = async sel => {
+    await ev(`document.querySelector(${JSON.stringify(sel)}).scrollIntoView({block: 'center'})`); await sleep(120);
+    const r = await ev(`(() => { const b = document.querySelector(${JSON.stringify(sel)}).getBoundingClientRect(); return {x: b.x + b.width / 2, y: b.y + b.height / 2}; })()`);
+    await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: r.x, y: r.y });
+    await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: r.x, y: r.y, button: 'left', clickCount: 1 });
+    await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: r.x, y: r.y, button: 'left', clickCount: 1 });
+  };
+  const until = async (fn, tries = 80) => { for (let i = 0; i < tries; i++) { if (await fn()) return true; await sleep(100); } return false; };
+
+  await go('study/arabic/vocabulary', 19); await wait('[data-ar-vocabulary]'); await sleep(300);
+  const voiceSaved = await ev('localStorage.getItem("myday.data.v4")');
+  const names = await ev(`(() => { const out = {buttons: [...document.querySelectorAll('[data-ar-vocabulary] [data-action="ar-play"]')], bad: [], small: 0}; for (const b of out.buttons) { const r = b.getBoundingClientRect(); if (Math.round(r.width) !== 44 || Math.round(r.height) !== 44) out.small++; const li = b.closest('[data-ar-word]'); const ar = li.querySelector('[lang="ar"]').textContent; const want = b.getAttribute('data-ar-clip').endsWith(':word') ? 'Play ' + ar : 'Play the example for ' + ar; if (b.getAttribute('aria-label') !== want) out.bad.push([b.getAttribute('data-ar-clip'), b.getAttribute('aria-label'), want]); } return {n: out.buttons.length, small: out.small, bad: out.bad.slice(0, 3)}; })()`);
+  check('the vocabulary page has 96 play buttons, every one 44 by 44 px', names.n === 96 && names.small === 0, names);
+  check('a word\'s play button is named "Play" and its Arabic, and an example\'s "Play the example for" and the word\'s Arabic', names.bad.length === 0 && await ev(`document.querySelector('${clipSel('lexeme.arabic-seed-009', 'word')}').getAttribute('aria-label') === 'Play كِتَاب'`) && await ev(`document.querySelector('${clipSel('lexeme.arabic-seed-009', 'example')}').getAttribute('aria-label') === 'Play the example for كِتَاب'`), names.bad);
+  check('opening the page fetches no clip and every play button is idle', (await clipFetches()).length === 0 && await ev(`[...document.querySelectorAll('[data-ar-clip]')].every(b => b.getAttribute('data-state') === 'idle')`), await clipFetches());
+  const voiceNote = await T.text('[data-ar-voice]');
+  check('the voice note says the voice is synthesised, a model to copy, checked by ear and not yet by a teacher', voiceNote.includes('Synthesised voice — a model to copy; checked by ear, not yet by a teacher.'), voiceNote);
+  check('the voice note says listening and speaking stay untested, and the old "Without recordings" sentence is gone', voiceNote.includes('listening and speaking stay untested') && !(await ev(`document.body.textContent.includes('Without recordings')`)), voiceNote);
+
+  await ev(`window.__seen = []; new MutationObserver(ms => ms.forEach(m => { if (m.target.getAttribute('data-ar-clip') === 'lexeme.arabic-seed-009:word') window.__seen.push(m.target.getAttribute('data-state')); })).observe(document.querySelector('[data-ar-vocabulary]'), {subtree: true, attributes: true, attributeFilter: ['data-state']})`);
+  await realTap(clipSel('lexeme.arabic-seed-009', 'word'));
+  const reachedPlaying = await until(async () => (await ev('window.__seen')).includes('playing'));
+  const returnedIdle = await until(async () => (await state('lexeme.arabic-seed-009', 'word')) === 'idle', 150);
+  const fetched = await clipFetches();
+  check('tapping a word plays its clip and goes back to idle when it ends', reachedPlaying && returnedIdle, await ev('window.__seen'));
+  check('exactly one clip was fetched, and it was that word\'s file', fetched.length === 1 && fetched[0].endsWith('arabic-audio/' + clipFiles['lexeme.arabic-seed-009'].word), fetched);
+
+  await realTap(clipSel('lexeme.arabic-seed-009', 'example')); await until(async () => (await state('lexeme.arabic-seed-009', 'example')) !== 'idle');
+  // A long clip (045's example, about 3 s), so the stop below can't be the clip simply ending.
+  await realTap(clipSel('lexeme.arabic-seed-045', 'example')); await until(async () => (await state('lexeme.arabic-seed-045', 'example')) === 'playing');
+  const now = await states();
+  check('only one clip plays at a time: starting another leaves only that one not idle', now.length === 1 && now[0] === 'lexeme.arabic-seed-045:example', now);
+  await realTap(clipSel('lexeme.arabic-seed-045', 'example')); await until(async () => (await states()).length === 0, 3);
+  check('tapping the playing clip again stops it at once (well before its 3 s end)', (await states()).length === 0, await states());
+
+  const slower = '[data-action="ar-slower"]';
+  check('Slower is off by default', await ev(`document.querySelector('${slower}').getAttribute('role') === 'switch' && document.querySelector('${slower}').getAttribute('aria-checked') === 'false'`));
+  await click(slower); await sleep(120);
+  check('turning Slower on switches it on, remembers it on this device and leaves the learning data alone', await ev(`document.querySelector('${slower}').getAttribute('aria-checked')`) === 'true' && await ev('localStorage.getItem("myday.arabic.slower")') === 'yes' && await ev('localStorage.getItem("myday.data.v4")') === voiceSaved);
+  await go('study/arabic/vocabulary', 19); await wait(slower);
+  check('Slower is still on after reloading the page', await ev(`document.querySelector('${slower}').getAttribute('aria-checked')`) === 'true');
+
+  await wait('[data-ar-families]');
+  await click(fword('lexeme.arabic-seed-012')); await wait('[data-ar-family-note]');
+  check('a family word\'s note has a play button named "Play" and the word\'s Arabic', await ev(`(() => { const b = document.querySelector('[data-ar-family-note] ${clipSel('lexeme.arabic-seed-012', 'word')}'); return !!b && b.getAttribute('aria-label') === 'Play مَكْتَبَة'; })()`));
+
+  const gone = clipFiles['lexeme.arabic-seed-020'].word;
+  fs.rmSync(path.join(served, 'arabic-audio', gone));
+  await realTap(clipSel('lexeme.arabic-seed-020', 'word'));
+  const failed = await until(async () => (await state('lexeme.arabic-seed-020', 'word')) === 'failed');
+  check('a clip that cannot be fetched shows the failed state and says it needs a connection the first time', failed && await ev(`document.querySelector('${clipSel('lexeme.arabic-seed-020', 'word')}').parentElement.textContent.includes('Couldn’t play it. The first time, it needs a connection.')`));
+
+  await go('study/arabic'); await wait('.arabic-entry');
+  check('the learning map says the starter words have a synthesised voice to copy, in Vocabulary', (await ev('document.body.textContent')).includes('The starter words have a synthesised voice to copy, in Vocabulary'));
+  const swText = fs.readFileSync(path.join(served, 'sw.js'), 'utf8');
+  const listIn = name => { const m = swText.match(new RegExp('const ' + name + ' = (\\[[^\\]]*\\])')); return m ? JSON.parse(m[1]) : null; };
+  const audioList = listIn('AUDIO'), filesList = listIn('FILES');
+  check('the built service worker lists 96 clips under AUDIO and none of them under FILES', !!audioList && !!filesList && audioList.length === 96 && audioList.every(f => f.includes('arabic-audio/')) && !filesList.some(f => f.includes('arabic-audio/')), { audio: audioList && audioList.length, inFiles: filesList && filesList.filter(f => f.includes('arabic-audio/')).length });
   const s = T.summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

@@ -75,6 +75,45 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
   const famRuns = famText.flatMap(x => [...x.replace(rootForm, ' ').matchAll(arabic)].map(m => m[0])).filter(s => /[ء-ي]/.test(s));
   const incompleteRuns = famRuns.filter(s => t(s).incomplete);
   check(`every Arabic run in the family patterns, word notes and also-in-examples forms has a complete reading (${famRuns.length} runs checked)`, famRuns.length > 20 && incompleteRuns.length === 0);
+  // The starter words' audio (1.39.0): the audit that says which clips were listened to, checked at every build.
+  const audioDir = path.join(ROOT, 'content/arabic-audio');
+  const runAudio = dir => { try { return { code: 0, out: execFileSync('node', [path.join(ROOT, 'app/scripts/prepare-audio.mjs'), dir], { stdio: 'pipe' }).toString() }; } catch (e) { return { code: e.status || 1, out: `${e.stdout || ''}${e.stderr || ''}` }; } };
+  const realAudio = runAudio(audioDir);
+  check('the real audio audit passes: 96 clips listened to and shipped; 0 not yet listened to, 0 left out', realAudio.code === 0 && realAudio.out.includes('96 clips listened to and shipped; 0 not yet listened to, 0 left out'));
+  const audit = json('content/arabic-audio/audio-audit.json');
+  const seed = new Map(course.lexicon_seed.map(w => [w.id, w]));
+  check('the course has 48 starter words', seed.size === 48);
+  const parts = [['word', 'form_ar'], ['example', 'example_ar']];
+  check('every one of the 48 starter words has a word clip and an example clip in the audit', [...seed.keys()].every(id => parts.every(([p]) => audit.clips[id] && audit.clips[id][p])) && Object.keys(audit.clips).length === 48);
+  check('every clip is marked "checked"', [...seed.keys()].every(id => parts.every(([p]) => audit.clips[id][p].check === 'checked')));
+  check('every clip was made with the audit\'s own voice', [...seed.keys()].every(id => parts.every(([p]) => audit.clips[id][p].voice === audit.voice.name)));
+  check('every clip\'s text is exactly the course\'s vowelled word or example', [...seed.entries()].every(([id, w]) => parts.every(([p, k]) => audit.clips[id][p].text === w[k])));
+  check('the label says what the voice is and that no teacher has checked it', audit.label === 'Synthesised voice — a model to copy; checked by ear, not yet by a teacher.');
+  const auditText = fs.readFileSync(path.join(audioDir, 'audio-audit.json'), 'utf8');
+  check('the audit holds no personal details (no "@", no cloud project id)', !auditText.includes('@') && !/project-[0-9a-z]/i.test(auditText));
+  // Broken copies of the whole folder fail the build, each for its own reason.
+  const brokenAudio = (name, mutate, message, expected) => {
+    const dir = path.join(temp, `audio-${name}`);
+    fs.cpSync(audioDir, dir, { recursive: true });
+    const file = path.join(dir, 'audio-audit.json');
+    const copy = JSON.parse(fs.readFileSync(file, 'utf8')); mutate(copy, dir); fs.writeFileSync(file, JSON.stringify(copy));
+    const r = runAudio(dir);
+    check(`${expected}: a bad copy fails the build and says "${message}"`, r.code !== 0 && r.out.includes(message));
+  };
+  const firstId = Object.keys(audit.clips)[0];
+  brokenAudio('text', c => { c.clips[firstId].word.text += 'ا'; }, 'the text changed', 'a clip whose text no longer matches the course');
+  brokenAudio('bytes', (c, dir) => { const f = path.join(dir, 'clips', audit.clips[firstId].word.file); const b = fs.readFileSync(f); b[b.length - 1] ^= 1; fs.writeFileSync(f, b); }, "contents don't match its name", 'a clip with one byte changed');
+  brokenAudio('stray', (c, dir) => { fs.writeFileSync(path.join(dir, 'clips', '0123456789abcdef.mp3'), 'x'); }, 'files no clip uses', 'a stray file among the clips');
+  brokenAudio('unknown', c => { c.clips[firstId].word.check = 'maybe'; }, 'unknown check', 'a check that is not one of the four');
+  brokenAudio('short', (c, dir) => {
+    const tiny = Buffer.alloc(1000, 7), name = require('crypto').createHash('sha256').update(tiny).digest('hex').slice(0, 16) + '.mp3';
+    fs.rmSync(path.join(dir, 'clips', c.clips[firstId].word.file)); fs.writeFileSync(path.join(dir, 'clips', name), tiny); c.clips[firstId].word.file = name;
+  }, 'too short', 'a clip cut short (1,000 bytes)');
+  const dirToCheck = path.join(temp, 'audio-tocheck');
+  fs.cpSync(audioDir, dirToCheck, { recursive: true });
+  const toCheck = JSON.parse(fs.readFileSync(path.join(dirToCheck, 'audio-audit.json'), 'utf8')); toCheck.clips[firstId].word.check = 'to check'; fs.writeFileSync(path.join(dirToCheck, 'audio-audit.json'), JSON.stringify(toCheck));
+  const rTo = runAudio(dirToCheck);
+  check('a clip marked "to check" still passes the build, shipping 95 and counting 1 not yet listened to', rTo.code === 0 && rTo.out.includes('95 clips listened to and shipped; 1 not yet listened to'), rTo.out);
   fs.rmSync(temp, { recursive: true, force: true });
   console.log(`\n${pass} passed, ${fail} failed`); process.exit(fail ? 1 : 0);
 })().catch(e => { console.error('HARNESS', e); process.exit(1); });

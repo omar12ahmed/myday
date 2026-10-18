@@ -27,7 +27,8 @@ Arabic Fuṣḥā in Study (part 1, reading only): the supplied package in `../c
 answers (loaded only when asked for). `#study/arabic` has the learning map by level, module and lesson pages,
 16 original reading texts (with and without vowel marks) and 48 starter words. Arabic is marked `lang="ar"
 dir="rtl"`, in Noto Naskh Arabic (`@fontsource-variable/noto-naskh-arabic`, downloaded only when Arabic shows);
-Arabic inside English sentences is isolated with `<bdi>`. No level is awarded and no recordings are included.
+Arabic inside English sentences is isolated with `<bdi>`. No level is awarded. The only recordings are a synthesised
+voice for the 48 starter words (see 1.39.0); lessons and texts have none.
 
 Part 2, your sessions: a lesson session saves what you did, never a score — the lesson, session length, start and
 finish, help used, what you practised (ticked by you; listening and speaking are never assumed), your first answers
@@ -290,6 +291,27 @@ every build by `app/scripts/validate-families.mjs`: every member exists and is p
 letters in order, pairs and notes belong to their family, examples really appear, and all 48 words are placed. For
 noticing, not testing: nothing is saved and revision is unchanged.
 
+**A voice for the starter words (1.39.0):** on the Arabic vocabulary page, each of the 48 starter words and its example
+sentence has a play button (44 px) beside the Arabic, and a family word's note has one too. One clip plays at a time,
+only when you tap; nothing plays by itself, and tapping again stops it. The voice is Google Cloud Text-to-Speech's Chirp
+3 HD voice "Charon" (`ar-XA`), chosen by ear in a blind trial of four voices (two WaveNet, two Chirp 3 HD). The 96 clips
+were made once from the curriculum's exact vowelled text by `app/scripts/make-arabic-audio.mjs`, run by hand and never
+by the build or the app; its key comes from the environment and was deleted afterwards. The clips total about 800 KB.
+Before shipping, a second model (Gemini 3.8 Flash) transcribed every clip with its vowels; where it heard something
+different, the clip was made again (three clips, four retakes). Then all 96 were listened to against the text and its
+reading. The app labels them honestly: "Synthesised voice — a model to copy; checked by ear, not yet by a teacher." The
+note adds that the voice may leave out the last vowel at the end of a sentence, as speakers do, and that revision covers
+reading and writing, while listening and speaking stay untested. A **Slower** switch plays the same clip at
+three-quarter speed, pitch kept, and remembers the choice on the device (device-only key `myday.arabic.slower`, not part
+of `myday.data.v4`). The clips are in `content/arabic-audio/`, each named by its contents, with `audio-audit.json` (the
+voice, the label, the exact text each clip says and its check). `app/scripts/prepare-audio.mjs` checks them at every
+build: a text that changed since its clip was made, a file that doesn't match its name or is cut short, or a stray file
+or unknown check stops the build. Only clips that have been listened to are shipped: copied to `public/arabic-audio/`
+(not in Git) and listed in `src/study/arabic/data/audio.json`. Offline: the clips aren't part of a release's files, so a
+new release doesn't download them again. Each is kept by the service worker the first time it plays, in its own cache,
+and plays offline after that; the first play needs a connection, and if it fails the button says so. No saved-data
+change.
+
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
 
@@ -543,6 +565,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/projectDashboard.ts`, `src/projects/AtAGlance.tsx` | The dashboards per kind (1.36.0): `projectDashboard.ts` (the tiles, the next dates, the weeks, entries by month, each issue's links and Worth a look; Today's own dashboard numbers stay in `dashboard.ts`); `AtAGlance.tsx` (the At a glance card, its pictures and Summarise this). |
 | `src/data/weekReview.ts`, `src/review/ReviewScreen.tsx`, `src/today/ReviewCard.tsx` | The weekly review (1.37.0): `weekReview.ts` (when the review is due, what moved, what's waiting, focus, and saving the review); `ReviewScreen.tsx` (the four steps and See the pattern); `ReviewCard.tsx` (the card on Today). |
 | `src/study/arabic/WordFamilies.tsx`, `src/study/arabic/families.ts`, `content/teaching/arabic/word-families.json`, `scripts/validate-families.mjs` | Word families (1.38.0): the card on the vocabulary page and its notes; which family a word is in; the authored families (by word id); the build check. |
+| `src/study/arabic/voice.ts`, `src/study/arabic/Listen.tsx`, `../content/arabic-audio/`, `scripts/make-arabic-audio.mjs`, `scripts/prepare-audio.mjs` | The starter words' voice (1.39.0): the clip list and the one shared player with Slower (device-only key `myday.arabic.slower`); the play button and the voice note; the clips and their audit; making them (by hand); the build check. |
 | `src/commitments/` | Work shifts and appointments: the form and list used by both Today and Calendar. |
 | `src/shell/` | Navigation, the top bar's parts (`TopBar`: the Focus mode switch and your account; `focusMode.ts`, the device-only `myday.focus`), the theme button, the shared footer (`AppFooter`), the "couldn't be read" notice (`LoadIssue`) and the screens for unreadable or older data. |
 | `public/icon.svg` | The tab icon. |
@@ -696,7 +719,9 @@ in the app drawer, opening full screen. On a **Mac**: use the website as usual, 
   in `vite.config.ts`, which fills in the release and the list of its files. It caches the whole release, so MyDay
   opens offline; opening MyDay online always gets the latest page; a new release replaces the old cache. It never
   touches your account, AI help, recipes, bank holidays or other sites, nor your MyDay data. Only in the built app
-  (not `npm run dev`).
+  (not `npm run dev`). The Arabic starter words' clips (1.39.0) stay out of the release's files; each is cached
+  one by one the first time it plays, in a cache of their own that outlives releases. A release removes clips
+  it no longer plays.
 - `src/shell/install.ts`: the footer's "Install MyDay as an app", shown only when the browser offers to install.
 - The status bar follows the theme (the page's `theme-color`).
 - **An APK file** too (`../android/`, see its README): a Trusted Web Activity made with Bubblewrap that opens the
@@ -1191,3 +1216,8 @@ returns up to 8 small tasks; you tick the ones to add.
     explained, and the other 36 words are named in two honest groups. Families are MyDay's own authored file,
     checked at every build; nothing is saved and revision is unchanged. No data, server or database change; going
     back to 1.37.0 is safe.
+52. **Release 1.39.0:** a voice for the Arabic starter words. A play button sits beside each of the 48 words and their
+    examples, and in a family word's note: one synthesised voice (Chirp 3 HD), chosen by ear, cross-checked by a second
+    model and listened to in full, and labelled "Synthesised voice — a model to copy; checked by ear, not yet by a
+    teacher". A Slower switch plays at three-quarter speed, and each clip is kept for offline use the first time it
+    plays. No saved-data, server or database change; going back to 1.38.0 is safe.
