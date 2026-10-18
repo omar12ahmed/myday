@@ -199,7 +199,11 @@ const SEED = `s => {
   console.log('\n[8b] AI help with notes (understand & connect, part 2)');
   setAi({ AI_MODEL: 'mock:good', AI_MIN_SECONDS_BETWEEN: '0' });
   const NP = (id, title, summary) => ({ id, title, summary, stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: TODAY + 'T08:00', updatedAt: TODAY + 'T08:00' });
-  const NN = (id, text, x = {}) => ({ id, categoryId: '', title: '', text, pinned: false, createdAt: TODAY + 'T08:00', updatedAt: TODAY + 'T08:00', ...x });
+  // Made-up notes written an hour before the page's clock: AI help with notes leaves alone a note changed in the
+  // last 5 minutes, and before 08:05 "today at 08:00" would still be to come (so this suite failed when run after midnight).
+  const pad = n => String(n).padStart(2, '0'), hourBefore = new Date(base - 3600000);
+  const WRITTEN = `${hourBefore.getFullYear()}-${pad(hourBefore.getMonth() + 1)}-${pad(hourBefore.getDate())}T${pad(hourBefore.getHours())}:${pad(hourBefore.getMinutes())}`;
+  const NN = (id, text, x = {}) => ({ id, categoryId: '', title: '', text, pinned: false, createdAt: WRITTEN, updatedAt: WRITTEN, ...x });
   await D.ev(`localStorage.removeItem('myday.ai.connect')`);
   await D.setData(`s => { s.projects = { items: [${JSON.stringify(NP('pjPod', 'Start a podcast about nursing', 'Short episodes with nurses about shift work.'))}] };
     s.notes.items = [${[NN('nA', 'Friday meeting with Sam about the podcast'), NN('nPriv', 'Friday meeting with Sam about the podcast budget', { private: true }),

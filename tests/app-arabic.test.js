@@ -50,7 +50,9 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   await go('study/arabic/asset.arabic-contrast-bank'); await wait('main li');
   check('the sound pairs are shown side by side', (await T.text('main')).includes('قَلْب') && (await T.text('main')).includes('كَلْب'));
   await go('study/arabic/vocabulary'); await wait('[data-ar-vocabulary]');
-  check('all 48 starter words are listed with examples', await count('[data-ar-vocabulary] > li') === 48 && await count('[data-ar-vocabulary] [lang="ar"]') === 96);
+  // 96 = each word and its example; a word in a family also has a badge with its root (Arabic too), counted apart.
+  check('all 48 starter words are listed with examples', await count('[data-ar-vocabulary] > li') === 48 && await count('[data-ar-vocabulary] [lang="ar"]:not([data-ar-family-badge] *)') === 96
+    && await count('[data-ar-vocabulary] [data-ar-family-badge] [lang="ar"]') === 12);
   await go('study/arabic/lesson.nothing-here'); await sleep(300);
   check('an unknown page says so, with a way back', (await T.text('main')).includes('isn’t here'));
 

@@ -292,8 +292,9 @@ suggestion. All the new fields are optional and kept by 1.36.0.
   - **Cybersecurity:** a lab with the learning map, lessons, Practice shelf, lab notebook and toolkit; an AI tutor;
     the course's own checks in revision; AI "More practice" cards;
   - **Arabic Fuṣḥā:** the curriculum package read-only, lesson sessions, starter words and lesson checks in revision,
-    and transliteration. It never claims audio or certified levels, and keeps the package's 0–100 evidence scores
-    internal.
+    transliteration, and word families on the vocabulary page (four roots linking 12 of the 48 starter words; MyDay's
+    own authored file, checked at every build; nothing saved). It never claims audio or certified levels, and keeps
+    the package's 0–100 evidence scores internal.
 - **Health:** Workout, Daily exercises, Food (recipes, kitchen, shopping list), and Goal. Goal's estimates come from
   public guidance, labelled with their sources. It sets no calorie targets when someone is pregnant, after an eating
   disorder, or with a condition, and never calls food "good" or "bad".
@@ -315,11 +316,10 @@ suggestion. All the new fields are optional and kept by 1.36.0.
 
 ## Open ideas (not decided: ask me before building any of them)
 
-- **Word families on the Arabic vocabulary page.** The spec is `specs/vocabulary-families.md`, with its mockup beside it
-  (the mockup's "Full list" table isn't the real page; the spec says what to keep). Phase 1 needs my choice first: one
-  view or a toggle.
 - **Audio for the 48 Arabic starter words** (text-to-speech). A proposal exists (on my Mac). Still open: who checks
   the clips.
+- **Roots in revision** (word families, `specs/vocabulary-families.md` §8): not now — the families are for noticing,
+  not testing. Revisit after a month of use (from 1.38.0, 19 Oct 2026).
 - **More AI:**
   - brand-new named lists from "Add what's on my mind". That's a saved-data change in both versions and the sync
     tables, so it needs a migration plan and my confirmation first;
