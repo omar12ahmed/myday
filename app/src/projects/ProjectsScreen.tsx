@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Field, TextInput } from '../components/Field';
-import { isBusiness, setTemplate, TEMPLATES, type TemplateChoice } from '../data/businessModel';
+import { isBusiness, isCase, setTemplate, TEMPLATES, type TemplateChoice } from '../data/businessModel';
 import { shortDate } from '../data/dates';
 import { addProject, board, COLUMNS, lastActivity, moveToColumn, nextStep, PROJECT_LIMITS, projectAppointments, projectNotes, projectsInOrder, projectTasks, stageOf, type BoardColumn } from '../data/projects';
 import { update } from '../data/storage';
@@ -12,14 +12,14 @@ import type { MyDayData, Project } from '../data/types';
 import { NotesScreen } from '../notes/NotesScreen';
 import { ConnectionsView } from './ConnectionsView';
 import { Progression } from './parts';
-import { ProjectView } from './ProjectView';
+import { ProjectView, type ProjectTab } from './ProjectView';
 
 // Projects (called the Inbox until 1.12.0): your projects (#projects, one project at #projects/p/<id>), your notes
 // (#projects/notes…) and how they connect (#projects/connections, the knowledge graph). A project gathers everything
 // about one intention; notes are the raw material, linked to a project or not (yet).
 export function ProjectsScreen({ data, hash }: { data: MyDayData; hash: string }) {
   const parts = hash.replace('#', '').split('/').map(decodeURIComponent);
-  if (parts[1] === 'p' && parts[2]) return <div className="max-w-[1000px] mx-auto"><ProjectView key={parts[2]} data={data} id={parts[2]} tab={parts[3] === 'model' || parts[3] === 'milestones' || parts[3] === 'decisions' ? parts[3] : 'overview'} /></div>;
+  if (parts[1] === 'p' && parts[2]) return <div className="max-w-[1000px] mx-auto"><ProjectView key={parts[2]} data={data} id={parts[2]} tab={['model', 'milestones', 'decisions', 'timeline', 'evidence', 'issues'].includes(parts[3]) ? parts[3] as ProjectTab : 'overview'} /></div>;
   const tab = parts[1] === 'notes' ? 'notes' : parts[1] === 'connections' ? 'connections' : 'projects';
   const tabClass = (on: boolean) => `seg-link flex-1 inline-flex items-center justify-center gap-1.5 min-h-11 rounded-xl text-[15px] font-semibold no-underline ${on ? 'on bg-primary-container text-on-primary-container' : 'text-fg-2'}`;
   return (
@@ -42,11 +42,11 @@ function ProjectsHome({ data }: { data: MyDayData }) {
   const active = projectsInOrder(data, 'active'), paused = projectsInOrder(data, 'paused'), done = projectsInOrder(data, 'done');
   function start() {
     let id: string | null = null;
-    update(d => { id = addProject(d, text); if (!id) return false; if (kind === 'business') setTemplate(d, id, 'business'); });
+    update(d => { id = addProject(d, text); if (!id) return false; if (kind !== 'general') setTemplate(d, id, kind); });
     if (!id) return;
     setText(''); setKind('general');
     // A business idea opens on its one page: the four questions are where it starts.
-    toast(kind === 'business' ? 'Business idea started — four simple questions put it on one page.' : 'Project started — everything about it can live here.');
+    toast(kind === 'business' ? 'Business idea started — four simple questions put it on one page.' : kind === 'case' ? 'Case started — its timeline, evidence and issues each have a tab.' : 'Project started — everything about it can live here.');
     location.hash = kind === 'business' ? `projects/p/${id}/model` : `projects/p/${id}`;
   }
   return (
@@ -137,7 +137,7 @@ function ProjectCard({ data, p, back, on, onMove }: { data: MyDayData; p: Projec
     <div className="project-card flex flex-col rounded-card border border-outline bg-surface shadow-card text-fg" data-id={p.id}>
     <a href={`#projects/p/${p.id}`} className="group flex flex-col gap-3 p-5 pb-3 text-fg no-underline rounded-t-card hover:bg-surface-2 transition-colors">
       <span className="flex items-center justify-between gap-2">
-        <span className="flex items-baseline gap-2 min-w-0"><span className="text-xs font-bold tracking-[.08em] uppercase text-primary" data-s="project-stage">{stageOf(p.stage).label}</span>{isBusiness(p) && <span className="text-xs text-fg-3" data-s="project-kind-label">Business idea</span>}</span>
+        <span className="flex items-baseline gap-2 min-w-0"><span className="text-xs font-bold tracking-[.08em] uppercase text-primary" data-s="project-stage">{stageOf(p.stage).label}</span>{(isBusiness(p) || isCase(p)) && <span className="text-xs text-fg-3" data-s="project-kind-label">{isCase(p) ? 'Case' : 'Business idea'}</span>}</span>
         <span className="flex items-center gap-1.5 text-xs text-fg-3 tabular-nums">{p.private && <Lock size={13} aria-label="Private" data-s="project-private" />}{shortDate(lastActivity(data, p).slice(0, 10))}</span>
       </span>
       <span className="block text-[19px] font-bold leading-snug tracking-[-.01em] break-words">{p.title}</span>

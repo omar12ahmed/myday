@@ -10,6 +10,7 @@
 // In "Export my data", and synced with your account (one record per project; see sync/records.ts).
 import { isDateTime, localStamp, todayKey } from './dates';
 import { isBusiness, normalizeModel, normalizeTemplate, STATE_LABEL } from './businessModel';
+import { normalizeCase } from './caseFile';
 import { noteName } from './notes';
 import { chosenOption, normalizeDecisions, normalizeMilestones } from './projectPlan';
 import { isDone, onTodaysPlan } from './tasks';
@@ -63,6 +64,9 @@ export function normalizeProjects(raw: unknown, report: { dropped: number }): Pr
     const template = normalizeTemplate(p.template), model = normalizeModel(p.model, report);
     if (template) item.template = template; else delete item.template;
     if (model) item.model = model; else delete item.model;
+    // A case's own records (1.35.0): likewise.
+    const kase = normalizeCase(p.case, report);
+    if (kase) item.case = kase; else delete item.case;
     seen.add(item.id);
     out.items.push(item);
   }

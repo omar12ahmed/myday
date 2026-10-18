@@ -10,7 +10,7 @@ export function aimText(aim: DateKey, k: DateKey = todayKey(), lower = false): s
   const s = aim >= k ? `Aiming for ${shortDate(aim)}` : `Aimed for ${shortDate(aim)} — change it whenever it suits`;
   return lower ? s.charAt(0).toLowerCase() + s.slice(1) : s;
 }
-export const tabHref = (p: Project, tab: 'model' | 'milestones' | 'decisions') => `#projects/p/${encodeURIComponent(p.id)}/${tab}`;
+export const tabHref = (p: Project, tab: 'model' | 'milestones' | 'decisions' | 'timeline' | 'evidence' | 'issues') => `#projects/p/${encodeURIComponent(p.id)}/${tab}`;
 
 // A business idea's one page in counts: "3 of 4 questions answered · 2 still to check · 1 looks true".
 export function progressLine(p: Project): string {

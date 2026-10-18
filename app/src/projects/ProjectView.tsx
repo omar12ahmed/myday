@@ -12,7 +12,7 @@ import { BackLink, Eyebrow, Note, NotFound } from '../components/parts';
 import { Switch } from '../components/Switch';
 import { prettyDate, relDay, shortDate, todayKey } from '../data/dates';
 import { addNote, noteName } from '../data/notes';
-import { isBusiness, knownTemplate, setTemplate, TEMPLATES, type TemplateChoice } from '../data/businessModel';
+import { isBusiness, isCase, knownTemplate, setTemplate, TEMPLATES, type TemplateChoice } from '../data/businessModel';
 import { comingUp, deleteProject, editProject, setProjectPrivate, lastActivity, linkNote, nextStep, PROJECT_LIMITS, projectById, projectNotes, projectTasks, recently, setNextStep, STATUS_LABEL, unlinkAppointment } from '../data/projects';
 import { update } from '../data/storage';
 import { addTask, addToTodaysPlan, onTodaysPlan, planRoom, setTaskDone } from '../data/tasks';
@@ -22,6 +22,7 @@ import { bothMention, mightBelong } from '../data/understand';
 import { dueText } from '../tasks/route';
 import { TaskRow } from '../tasks/TasksScreen';
 import { Progression } from './parts';
+import { CaseCard, EvidenceView, IssuesView, TimelineView } from './CaseViews';
 import { ModelCard, ModelView } from './ModelView';
 import { DecisionsCard, DecisionsView, MilestonesCard, MilestonesView } from './PlanViews';
 import { tabHref } from './planText';
@@ -29,18 +30,21 @@ import { tabHref } from './planText';
 // One project (#projects/p/<id>): what it is, where it is on the progression, its one next step, and everything that
 // belongs to it — tasks, notes, what's coming up (dated tasks and appointments) and how far it has come. On wide screens
 // the doing (next step, tasks, notes) is on the left and the overview on the right.
-export type ProjectTab = 'overview' | 'model' | 'milestones' | 'decisions';
+export type ProjectTab = 'overview' | 'model' | 'milestones' | 'decisions' | 'timeline' | 'evidence' | 'issues';
+const CASE_TABS: ProjectTab[] = ['timeline', 'evidence', 'issues'];
 export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDayData; id: string; tab?: ProjectTab }) {
   useEffect(() => { restoreExploreEntry(id); }, [id]);
   const p = projectById(data, id);
   if (!p) return <><BackLink to="projects" label="Projects" /><NotFound title="This project isn't here" back="projects" label="Back to your projects" /></>;
-  // The Model tab is a business idea's; anywhere else its address shows the Overview.
-  const tab = asked === 'model' && !isBusiness(p) ? 'overview' : asked;
+  // The Model tab is a business idea's, and Timeline, Evidence and Issues a case's; anywhere else their address shows the
+  // Overview.
+  const tab = (asked === 'model' && !isBusiness(p)) || (CASE_TABS.includes(asked) && !isCase(p)) ? 'overview' : asked;
   return (
     <>
       <BackLink to="projects" label="Projects" />
       <ProjectTop p={p} tab={tab} />
-      {tab === 'model' ? <ModelView data={data} p={p} /> : tab === 'milestones' ? <MilestonesView p={p} /> : tab === 'decisions' ? <DecisionsView p={p} /> : <>
+      {tab === 'timeline' ? <TimelineView p={p} /> : tab === 'evidence' ? <EvidenceView p={p} /> : tab === 'issues' ? <IssuesView p={p} />
+        : tab === 'model' ? <ModelView data={data} p={p} /> : tab === 'milestones' ? <MilestonesView p={p} /> : tab === 'decisions' ? <DecisionsView p={p} /> : <>
       <ProjectHead p={p} />
       <div className="grid gap-x-5 lg:grid-cols-[minmax(0,1fr)_340px] items-start">
         <div className="min-w-0">
@@ -49,6 +53,7 @@ export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDay
           <NotesCard data={data} p={p} />
         </div>
         <div className="min-w-0">
+          {isCase(p) && <CaseCard data={data} p={p} />}
           {isBusiness(p) && <ModelCard data={data} p={p} />}
           <MilestonesCard p={p} />
           <DecisionsCard p={p} />
@@ -78,12 +83,19 @@ function ProjectTop({ p, tab }: { p: Project; tab: ProjectTab }) {
         <Switch on={!!p.private} data-action="project-private" icon={<Lock size={16} aria-hidden="true" />}
           onChange={on => { if (update(d => (setProjectPrivate(d, p.id, on) ? undefined : false))) toast(on ? 'Private — Ask MyDay won’t send anything of this project.' : 'No longer private.'); }}>Private</Switch>
       </div>
-      {p.private && <p className="text-sm text-fg-2 m-0 mt-2" data-s="project-private-hint">Ask MyDay sends nothing of this project. AI help with notes can still suggest it as a place for a note (its name and summary only).</p>}
+      {p.private && <p className="text-sm text-fg-2 m-0 mt-2" data-s="project-private-hint">{isCase(p) ? 'Ask MyDay sends nothing of this case, and AI help with notes never suggests it.' : 'Ask MyDay sends nothing of this project. AI help with notes can still suggest it as a place for a note (its name and summary only).'}</p>}
       <nav className="seg flex gap-1.5 mt-3" role="tablist" aria-label="Project sections" data-s="project-tabs">
         <a className={tabClass(tab === 'overview')} href={`#projects/p/${encodeURIComponent(p.id)}`} role="tab" aria-selected={tab === 'overview'} data-tab="overview">Overview</a>
         {isBusiness(p) && <a className={tabClass(tab === 'model')} href={tabHref(p, 'model')} role="tab" aria-selected={tab === 'model'} data-tab="model">Model</a>}
-        <a className={tabClass(tab === 'milestones')} href={tabHref(p, 'milestones')} role="tab" aria-selected={tab === 'milestones'} data-tab="milestones">Milestones</a>
-        <a className={tabClass(tab === 'decisions')} href={tabHref(p, 'decisions')} role="tab" aria-selected={tab === 'decisions'} data-tab="decisions">Decisions</a>
+        {isCase(p) ? <>
+          {/* A case's own tabs (only four fit on a phone): its milestones and decisions open from their Overview cards. */}
+          <a className={tabClass(tab === 'timeline')} href={tabHref(p, 'timeline')} role="tab" aria-selected={tab === 'timeline'} data-tab="timeline">Timeline</a>
+          <a className={tabClass(tab === 'evidence')} href={tabHref(p, 'evidence')} role="tab" aria-selected={tab === 'evidence'} data-tab="evidence">Evidence</a>
+          <a className={tabClass(tab === 'issues')} href={tabHref(p, 'issues')} role="tab" aria-selected={tab === 'issues'} data-tab="issues">Issues</a>
+        </> : <>
+          <a className={tabClass(tab === 'milestones')} href={tabHref(p, 'milestones')} role="tab" aria-selected={tab === 'milestones'} data-tab="milestones">Milestones</a>
+          <a className={tabClass(tab === 'decisions')} href={tabHref(p, 'decisions')} role="tab" aria-selected={tab === 'decisions'} data-tab="decisions">Decisions</a>
+        </>}
       </nav>
     </Card>
   );
@@ -95,7 +107,10 @@ function ProjectHead({ p }: { p: Project }) {
   // A business idea has a one page (the Model tab). Back to general keeps it, out of sight.
   function changeKind(to: TemplateChoice) {
     if (!update(d => (setTemplate(d, p.id, to) ? undefined : false))) return;
-    toast(to === 'business' ? 'Now a business idea — its one page is on the Model tab.' : p.model ? 'Now a general project. Its one page is kept, out of sight — switch back any time.' : 'Now a general project.');
+    // What the old kind had stays, out of sight, until you switch back.
+    const kept = [p.template === 'business' && p.model && 'its one page', p.template === 'case' && p.case && 'its timeline, evidence and issues'].filter(Boolean)[0];
+    const now = to === 'business' ? 'Now a business idea — its one page is on the Model tab.' : to === 'case' ? 'Now a case — its timeline, evidence and issues each have a tab.' : 'Now a general project.';
+    toast(kept ? `${now} ${kept.charAt(0).toUpperCase() + kept.slice(1)} ${kept.includes('and') ? 'are' : 'is'} kept, out of sight — switch back any time.` : now);
   }
   return (
     <Card aria-label="About this project" id="projectHead">
@@ -109,7 +124,7 @@ function ProjectHead({ p }: { p: Project }) {
           <Field label="What is it, and why does it matter to you?" htmlFor="projectSummary"><CommitTextarea id="projectSummary" rows={4} key={p.summary} defaultValue={p.summary} maxLength={PROJECT_LIMITS.summary} onCommit={el => save({ summary: el.value })} /></Field>
           {knownTemplate(p) && (
             <Field label="Kind of project" htmlFor="projectKind">
-              <Select id="projectKind" className="!w-auto" value={isBusiness(p) ? 'business' : 'general'} onChange={e => changeKind(e.target.value as TemplateChoice)}>
+              <Select id="projectKind" className="!w-auto" value={isBusiness(p) ? 'business' : isCase(p) ? 'case' : 'general'} onChange={e => changeKind(e.target.value as TemplateChoice)}>
                 {TEMPLATES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
               </Select>
             </Field>
@@ -121,7 +136,7 @@ function ProjectHead({ p }: { p: Project }) {
         <button type="button" className="min-h-11 mt-1 -mb-1 text-[15px] font-semibold text-primary bg-transparent border-0 p-0 cursor-pointer hover:underline underline-offset-4" data-action="project-why" onClick={() => setEditing(true)}>What is it, and why does it matter to you?</button>
       )}
       <div className="mt-5"><Progression stage={p.stage} onPick={stage => save({ stage })} /></div>
-      <a id="projectExplore" href={exploreHref(p.id)} onClick={() => rememberExploreEntry(p.id)} data-action="project-explore" className="inline-flex items-center gap-2 min-h-11 mt-3 text-primary font-semibold text-[15px] no-underline hover:underline underline-offset-4">Explore this idea <ArrowUpRight size={17} aria-hidden="true" /></a>
+      {!isCase(p) && <a id="projectExplore" href={exploreHref(p.id)} onClick={() => rememberExploreEntry(p.id)} data-action="project-explore" className="inline-flex items-center gap-2 min-h-11 mt-3 text-primary font-semibold text-[15px] no-underline hover:underline underline-offset-4">Explore this idea <ArrowUpRight size={17} aria-hidden="true" /></a>}
     </Card>
   );
 }
@@ -362,7 +377,7 @@ function ManageCard({ p }: { p: Project }) {
   const confirm = useConfirm();
   const status = (s: Project['status'], msg: string) => { if (update(d => (editProject(d, p.id, { status: s }) ? undefined : false))) toast(msg); };
   async function remove() {
-    const yes = await confirm({ title: 'Delete this project?', body: `Its ${p.model ? 'one page, ' : ''}milestones and decisions go with it; its notes, tasks and appointments stay.`, confirmLabel: 'Delete project', cancelLabel: 'Keep it' });
+    const yes = await confirm({ title: 'Delete this project?', body: `Its ${p.case ? 'timeline, evidence and issues, ' : ''}${p.model ? 'one page, ' : ''}milestones and decisions go with it; its notes, tasks and appointments stay.`, confirmLabel: 'Delete project', cancelLabel: 'Keep it' });
     if (!yes) return;
     if (update(d => (deleteProject(d, p.id) ? undefined : false))) { toast('Project deleted. Its notes and tasks are still here.'); location.hash = 'projects'; }
   }

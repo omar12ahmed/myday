@@ -3,6 +3,7 @@
 // never notes already in a project, never blank ones, and never the same words twice. Every answer is checked here; a
 // note is linked only if it's still unplaced and unchanged since it was sent — listed under "MyDay connected these"
 // with Undo, like the device's own links. Nothing you wrote is changed.
+import { isCase } from '../data/businessModel';
 import { CONNECT_LIMITS, NOTE_KINDS, type ConnectContext, type NoteKind } from '../../../supabase/functions/_shared/ai/connect.ts';
 import { localStamp } from '../data/dates';
 import { isBlank } from '../data/notes';
@@ -34,7 +35,8 @@ const bytes = (s: string) => new TextEncoder().encode(s).length;
 // notes if it would be over the size limit. Null when there's nothing to ask (no such notes, or no open projects).
 export function connectContext(data: MyDayData, open: string | null = null, now = new Date()): { ctx: ConnectContext; seen: Record<string, string> } | null {
   const L = CONNECT_LIMITS;
-  const projects = data.projects.items.filter(p => p.status !== 'done').sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, L.projects)
+  // A case you've made private is never offered (your choice, 18 Oct 2026); other private projects are, by name and summary.
+  const projects = data.projects.items.filter(p => p.status !== 'done' && !(p.private && isCase(p))).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, L.projects)
     .map(p => ({ id: p.id, title: p.title.slice(0, L.projectTitleChars), summary: p.summary.slice(0, L.projectSummaryChars) }));
   const picked = notesForAi(data, open, now).slice(0, L.notes);
   if (!picked.length || !projects.length) return null;

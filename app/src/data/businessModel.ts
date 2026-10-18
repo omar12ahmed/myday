@@ -7,6 +7,8 @@
 // What must be true is a list of things you believe but haven't checked yet. Each can be found out (one tap adds a
 // task in the project; your next step stays as it is) and marked as it turns out — only by you, never by itself.
 // No scores, no percentages: places and counts.
+//
+// The kind of project lives here too: general (no field), a business idea (1.33.0) or a case (1.35.0, data/caseFile.ts).
 import { isDateKey, isDateTime, localStamp, todayKey } from './dates';
 import { addTask, isDone } from './tasks';
 import type { Assumption, AssumptionState, BusinessModel, DateKey, MyDayData, Project, TaskItem } from './types';
@@ -15,11 +17,12 @@ import { isObj, listOf, uid } from './util';
 // An assumption fits in a task's title after "Find out: " (tasks allow 120 characters).
 export const MODEL_LIMITS = { answer: 1000, assumptions: 12, assumption: 110, found: 400 };
 
-export type TemplateChoice = 'general' | 'business';
-export const TEMPLATES: { id: TemplateChoice; label: string }[] = [{ id: 'general', label: 'General' }, { id: 'business', label: 'Business idea' }];
+export type TemplateChoice = 'general' | 'business' | 'case';
+export const TEMPLATES: { id: TemplateChoice; label: string }[] = [{ id: 'general', label: 'General' }, { id: 'business', label: 'Business idea' }, { id: 'case', label: 'Case' }];
 export const isBusiness = (p: Project) => p.template === 'business';
+export const isCase = (p: Project) => p.template === 'case';
 // A kind of project this version knows (none = general). One from a newer MyDay is kept, and not offered to change.
-export const knownTemplate = (p: Project) => p.template === undefined || p.template === 'business';
+export const knownTemplate = (p: Project) => p.template === undefined || p.template === 'business' || p.template === 'case';
 
 export type AnswerKey = 'problem' | 'who' | 'how';
 export const QUESTIONS: { key: AnswerKey; label: string; hint: string }[] = [
@@ -35,7 +38,7 @@ const OWN_KEYS = ['problem', 'who', 'how', 'assumptions'];
 // ---------- Reading what's saved (unknown fields kept; anything unreadable counted, never dropped silently) ----------
 const line = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : '');
 const answer = (v: unknown) => (typeof v === 'string' ? v.slice(0, MODEL_LIMITS.answer) : '');
-// The kind of project: "business", or one from a newer MyDay (kept as it is). None means general.
+// The kind of project: "business", "case", or one from a newer MyDay (kept as it is). None means general.
 export function normalizeTemplate(v: unknown): string | undefined {
   return typeof v === 'string' && v.trim() && v.length <= 40 && v !== 'general' ? v : undefined;
 }
@@ -92,12 +95,13 @@ const modelOf = (p: Project): BusinessModel => (p.model ??= { problem: '', who: 
 function tidy(p: Project) { if (p.model && isEmpty(p.model)) delete p.model; }
 const as = (p: Project | null, id: string) => p?.model?.assumptions.find(a => a.id === id) ?? null;
 
-// General or a business idea. Back to general keeps the one page (out of sight); a business idea again shows it.
+// General, a business idea or a case. Changing kind keeps what the other kind had (a one page, a case's records), out
+// of sight; changing back shows it again.
 export function setTemplate(d: MyDayData, projectId: string, to: TemplateChoice): boolean {
   const p = proj(d, projectId);
   if (!p) return false;
-  if (to === 'business') { if (p.template === 'business') return false; p.template = 'business'; }
-  else { if (p.template === undefined) return false; delete p.template; }
+  if (to === 'general') { if (p.template === undefined) return false; delete p.template; }
+  else { if (p.template === to) return false; p.template = to; }
   touch(p);
   return true;
 }

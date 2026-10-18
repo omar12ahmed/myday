@@ -168,6 +168,8 @@ export interface Project {
   // this version doesn't know (from a newer MyDay) is kept as it is.
   template?: string;
   model?: BusinessModel;
+  // From 1.35.0 (optional; absent = none): a case's own records — its timeline, evidence and issues (data/caseFile.ts).
+  case?: CaseFile;
 }
 export interface ProjectsData { items: Project[]; [other: string]: unknown }
 
@@ -198,6 +200,29 @@ export interface Assumption {
   [other: string]: unknown;
 }
 export interface BusinessModel { problem: string; who: string; how: string; assumptions: Assumption[]; [other: string]: unknown }
+// A case (1.35.0): what happened (the timeline, each entry saying where it comes from — your account, their account or
+// the evidence), the evidence (where it's kept: MyDay doesn't store files) and the issues you're claiming or considering,
+// linked to each other. MyDay organises; it never says whether a claim is good, and never works out legal time limits.
+export type TimelineSource = 'mine' | 'theirs' | 'evidence';
+export interface TimelineEntry {
+  id: string; date: DateKey; about: boolean;   // about: the date is approximate
+  title: string; details: string; source: TimelineSource;
+  evidenceIds: string[]; issueIds: string[];
+  createdAt: DateTime;
+  [other: string]: unknown;
+}
+export type EvidenceKind = 'document' | 'email' | 'message' | 'media' | 'witness' | 'other';
+export type EvidenceStatus = 'to-get' | 'have' | 'reviewed';
+export interface EvidenceItem {
+  id: string; title: string; kind: EvidenceKind; date: DateKey | null;
+  where: string;                                // where it's kept (a folder, a link…)
+  status: EvidenceStatus; notes: string; issueIds: string[];
+  createdAt: DateTime;
+  [other: string]: unknown;
+}
+export type IssueStatus = 'considering' | 'claiming' | 'dropped';
+export interface CaseIssue { id: string; title: string; status: IssueStatus; notes: string; createdAt: DateTime; [other: string]: unknown }
+export interface CaseFile { timeline: TimelineEntry[]; evidence: EvidenceItem[]; issues: CaseIssue[]; [other: string]: unknown }
 
 // ---------- Calendar: the shift rota ----------
 export type ShiftType = 'day' | 'night' | 'off';
