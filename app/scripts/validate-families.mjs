@@ -7,7 +7,8 @@ const root = new URL('../../', import.meta.url);
 const read = p => JSON.parse(readFileSync(new URL(p, root), 'utf8'));
 const fail = message => { throw new Error('Arabic word families: ' + message); };
 const material = read('content/arabic-fusha/MyDay_Arabic_Starter_Materials.json');
-const file = read('content/teaching/arabic/word-families.json');
+// Usually the authored file; a test can pass another one (a path) to check that a broken file fails.
+const file = process.argv[2] ? JSON.parse(readFileSync(process.argv[2], 'utf8')) : read('content/teaching/arabic/word-families.json');
 const lexicon = new Map(material.lexicon_seed.map(w => [w.id, w]));
 // Letters only: vowel marks, shadda, sukūn, dagger alif and tatweel removed; every hamza form treated as one.
 const bare = s => s.normalize('NFC').replace(/[ً-ْٰـ]/g, '').replace(/[أإآؤئء]/g, 'ء');
