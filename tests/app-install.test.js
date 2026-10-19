@@ -50,7 +50,11 @@ const editStorage = fn => ev(`(() => { const s = JSON.parse(localStorage.getItem
   const files = JSON.parse(fs.readFileSync(path.join(COPY, 'sw.js'), 'utf8').match(/const FILES = (\[.*?\]);/)[1]);
   const cached = await ev(`caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith('myday-')).map(k => caches.open(k).then(c => c.keys())))).then(all => all.flat().map(r => r.url))`);
   check('every file of this release is cached (the app, its scripts, styles, fonts, icons and manifest)', files.length > 10 && files.every(f => cached.includes(new URL(f, base).href)), files.filter(f => !cached.includes(new URL(f, base).href)));
-  check('…in one cache, named after this release', (await ev(`caches.keys()`)).filter(k => k.startsWith('myday-')).length === 1);
+  // The Arabic clips (1.39.0) have a cache of their own once one has been played on this site, so it's left out here.
+  const keys = await ev(`caches.keys()`), releases = keys.filter(k => k.startsWith('myday-') && k !== 'myday-audio');
+  check('…in one cache, named after this release', releases.length === 1, keys);
+  check('…and the clip cache, if a clip has been played, holds only Arabic clips', !keys.includes('myday-audio')
+    || (await ev(`caches.open('myday-audio').then(c => c.keys()).then(rs => rs.every(r => r.url.includes('/arabic-audio/')))`)), keys);
   const inst = await send('Page.getInstallabilityErrors');
   check('Chrome finds nothing stopping it from being installed', eq(inst.installabilityErrors, []), inst.installabilityErrors);
 
