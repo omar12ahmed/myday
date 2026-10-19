@@ -36,6 +36,7 @@ Read this file before making any changes. If something here seems to conflict wi
 | `CYBERSECURITY_INTEGRATION.md` | How Study → Cybersecurity fits together, and its limits |
 | `specs/` | Written specs for features not built yet, with their mockups |
 | `mac-steps/` | What a branch still needs on my Mac, one file per branch (`<branch>.md`), deleted once done |
+| `cloud-tasks/` | Work queued for cloud sessions, written on my Mac: what to do, what to leave for the Mac |
 | `.claude/agents/` | The helper agents: test-runner, test-writer, docs-drafter |
 
 ## Branches, releases and what's live
@@ -66,6 +67,8 @@ A cloud session works on a copy of this repository. It has none of my secrets, t
 should be pasted in. Use cloud sessions for long, self-contained work: building on a new branch, running the full
 tests, reviews and audits, writing tests and drafting docs.
 
+- **Queued work:** when I point you at a file in `cloud-tasks/` (e.g. `cloud-tasks/next-steps.md`), do only the step
+  I name, as that file describes.
 - **Branches:** work on a new branch off `react-rebuild`, or on the branch you were given, and push only that branch.
   Never push to `main` or `react-rebuild`. Never merge, tag, or rewrite a branch that someone else pushed.
 - **Mac-only steps.** These never happen in a cloud session:
