@@ -113,7 +113,7 @@ const wait = async sel => { for (let i = 0; i < 60; i++) { if (await exists(sel)
   // The starter words' synthesised voice (1.39.0). Real taps are used (el.click() gives no user activation, and a browser needs one to play sound).
   const fs = require('fs'), path = require('path');
   const ROOT = process.env.MYDAY_ROOT || path.resolve(__dirname, '..');
-  const clipFiles = JSON.parse(fs.readFileSync(path.join(ROOT, 'app/src/study/arabic/data/audio.json'), 'utf8')).clips;
+  const clipFiles = JSON.parse(fs.readFileSync(path.join(ROOT, 'app/src/study/arabic/voice-clips.json'), 'utf8')).clips;
   const served = path.join(__dirname, 'srv', 'app', 'dist');
   const clipSel = (id, part) => `[data-ar-clip="${id}:${part}"]`;
   const state = (id, part) => ev(`(document.querySelector('${clipSel(id, part)}') || {getAttribute: () => 'missing'}).getAttribute('data-state')`);

@@ -11,13 +11,14 @@
       "pattern_en": "مَكْتَبَة = مَـ “place of” + ك-ت-ب “writing”. You already know this pattern: see it again in مَدْرَسَة, in the د-ر-س family.",
       "word_notes": {
         "lexeme.arabic-seed-009": "From the root ك-ت-ب, “writing”. The same root gives you “wrote”, “writes”, “books” and “library”.",
-        "lexeme.arabic-seed-010": "The plural of كِتَاب: the same three letters, with different vowels.",
+        "lexeme.arabic-seed-010": "The plural of كِتَاب: the same root, reshaped. Arabic plurals often change a word’s shape rather than adding an ending.",
         "lexeme.arabic-seed-036": "“He wrote”: the past form. Its partner يَكْتُبُ is “he writes”.",
         "lexeme.arabic-seed-037": "“He writes”: the present form, which adds يَـ at the front. Its partner is كَتَبَ, “he wrote”.",
         "lexeme.arabic-seed-012": "مَـ “place of” + ك-ت-ب “writing”: a place of books — a library, or a bookshop by context."
       },
       "also_in_examples": [
-        { "form_ar": "مَكْتَب", "meaning_en": "desk", "note_en": "“Place of writing”: the same مَـ pattern, in عَلَى الْمَكْتَبِ." }
+        { "form_ar": "مَكْتَب", "meaning_en": "desk", "note_en": "“Place of writing”: the same مَـ pattern, in عَلَى الْمَكْتَبِ." },
+        { "form_ar": "أَكْتُبُ", "meaning_en": "I write", "note_en": "The present with أَ for “I” instead of يَـ for “he”, in أَقْرَأُ ثُمَّ أَكْتُبُ." }
       ]
     },
     {
@@ -32,7 +33,11 @@
         "lexeme.arabic-seed-038": "“He studied”: the past form. Its partner يَدْرُسُ is “he studies”.",
         "lexeme.arabic-seed-039": "“He studies”: the present form, with يَـ at the front. Its partner is دَرَسَ, “he studied”.",
         "lexeme.arabic-seed-011": "مَـ “place of” + د-ر-س “studying”: a place of study, a school."
-      }
+      },
+      "also_in_examples": [
+        { "form_ar": "نَدْرُسُ", "meaning_en": "we study", "note_en": "The present with نَـ for “we”, in نَحْنُ نَدْرُسُ." },
+        { "form_ar": "أَدْرُسُ", "meaning_en": "I study", "note_en": "The present with أَ for “I”, in أَدْرُسُ الْيَوْمَ." }
+      ]
     },
     {
       "id": "qra",
@@ -43,9 +48,12 @@
       "pair": ["lexeme.arabic-seed-034", "lexeme.arabic-seed-035"],
       "pattern_en": "Your third past ⇄ present pair. Three verbs, one habit: the root stays; the vowels change, and the present adds يَـ.",
       "word_notes": {
-        "lexeme.arabic-seed-034": "“He read”: the past form. Its partner يَقْرَأُ is “he reads”.",
+        "lexeme.arabic-seed-034": "“He read”: the past form — and the root the word Qurʾān is built from. Its partner يَقْرَأُ is “he reads”.",
         "lexeme.arabic-seed-035": "“He reads”: the present form, with يَـ at the front. Its partner is قَرَأَ, “he read”."
-      }
+      },
+      "also_in_examples": [
+        { "form_ar": "أَقْرَأُ", "meaning_en": "I read", "note_en": "The present with أَ for “I”, in أَقْرَأُ فِي الْمَسَاءِ." }
+      ]
     },
     {
       "id": "tlb",

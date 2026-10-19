@@ -3,7 +3,7 @@
 // itself. A clip is fetched whole and played from memory, because the service worker keeps whole files for offline
 // (an <audio src> would ask for byte ranges, which it doesn't keep). "Slower" plays the same clip at 0.75×, pitch
 // kept; your choice is remembered on this device (myday.arabic.slower, not part of your MyDay data).
-import audio from './data/audio.json';
+import audio from './voice-clips.json';
 
 export type Part = 'word' | 'example';
 const clips = audio.clips as Record<string, Partial<Record<Part, string>>>;

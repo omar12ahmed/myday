@@ -35,6 +35,7 @@ Read this file before making any changes. If something here seems to conflict wi
 | `design-system/myday/MASTER.md` | Design decisions (also "Design" in `app/README.md`) |
 | `CYBERSECURITY_INTEGRATION.md` | How Study → Cybersecurity fits together, and its limits |
 | `specs/` | Written specs for features not built yet, with their mockups |
+| `mac-steps/` | What a branch still needs on my Mac, one file per branch (`<branch>.md`), deleted once done |
 | `.claude/agents/` | The helper agents: test-runner, test-writer, docs-drafter |
 
 ## Branches, releases and what's live
@@ -77,6 +78,11 @@ tests, reviews and audits, writing tests and drafting docs.
   - anything that touches my real data.
 
   If the work needs one of these, finish everything else and list what's left for the Mac.
+- **Mac steps in a file (my decision, 18 Oct 2026).** Whenever work leaves anything for my Mac, also write it as
+  `mac-steps/<branch>.md` on that branch and push it with the work: the steps in order with exact commands, what to
+  look at and review, the checks still to run (with what already ran in the cloud), and the release steps this
+  release needs. One file per branch, so branches never conflict. No personal details: the repository is public. I
+  delete the file once the steps are done.
 - **Careful areas:** saved data, `storage.ts`, sync, migrations, `index.html`, AI instructions, the app's checks on
   AI replies, and security. Change these only when the task asks for it, and say in the report that they need a
   careful review.
@@ -84,7 +90,7 @@ tests, reviews and audits, writing tests and drafting docs.
   - the branch and its commits, and what changed;
   - every check that ran, with its counts and every FAIL line word for word;
   - every check that didn't run, and why;
-  - what still needs my Mac.
+  - what still needs my Mac (and that it's in `mac-steps/<branch>.md`).
 
   Keep the checks you ran apart from the checks I still need to do.
 

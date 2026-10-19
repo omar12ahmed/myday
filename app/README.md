@@ -307,7 +307,7 @@ of `myday.data.v4`). The clips are in `content/arabic-audio/`, each named by its
 voice, the label, the exact text each clip says and its check). `app/scripts/prepare-audio.mjs` checks them at every
 build: a text that changed since its clip was made, a file that doesn't match its name or is cut short, or a stray file
 or unknown check stops the build. Only clips that have been listened to are shipped: copied to `public/arabic-audio/`
-(not in Git) and listed in `src/study/arabic/data/audio.json`. Offline: the clips aren't part of a release's files, so a
+(not in Git) and listed in `src/study/arabic/voice-clips.json`. Offline: the clips aren't part of a release's files, so a
 new release doesn't download them again. Each is kept by the service worker the first time it plays, in its own cache,
 and plays offline after that; the first play needs a connection, and if it fails the button says so. No saved-data
 change.
@@ -1220,4 +1220,6 @@ returns up to 8 small tasks; you tick the ones to add.
     examples, and in a family word's note: one synthesised voice (Chirp 3 HD), chosen by ear, cross-checked by a second
     model and listened to in full, and labelled "Synthesised voice — a model to copy; checked by ear, not yet by a
     teacher". A Slower switch plays at three-quarter speed, and each clip is kept for offline use the first time it
-    plays. No saved-data, server or database change; going back to 1.38.0 is safe.
+    plays. Word families gain four more forms from your examples (أَكْتُبُ, نَدْرُسُ, أَدْرُسُ, أَقْرَأُ, with what أَ
+    and نَـ mean) and fuller notes on the plural كُتُب and on ق-ر-أ, taken from a cloud session’s version of the same
+    feature. No saved-data, server or database change; going back to 1.38.0 is safe.

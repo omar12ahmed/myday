@@ -84,7 +84,10 @@ function FamilyCard({ f, wide, open, onOpen }: { f: Family; wide: boolean; open:
         {here && <WordNote f={f} id={here} onClose={() => onOpen(null)} />}
       </div>
       <p className="text-[15px] m-0 mt-2.5" data-ar-family-pattern=""><span className="font-semibold">Pattern: </span><Note text={f.pattern_en} /></p>
-      {also.map(x => <p key={x.form_ar} className="text-sm text-fg-2 m-0 mt-1.5" data-ar-family-also=""><span className="font-semibold text-fg">Also in your examples: </span><Ar showReading>{x.form_ar}</Ar> {x.meaning_en} — <Note text={x.note_en} /></p>)}
+      {also.length > 0 && <div className="mt-1.5">
+        <p className="text-sm font-semibold m-0">Also in your examples:</p>
+        {also.map(x => <p key={x.form_ar} className="text-sm text-fg-2 m-0 mt-0.5" data-ar-family-also=""><Ar showReading>{x.form_ar}</Ar> {x.meaning_en} — <Note text={x.note_en} /></p>)}
+      </div>}
     </section>
   );
 }

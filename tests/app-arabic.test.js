@@ -19,7 +19,9 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   await go('study/arabic'); await wait('[data-ar-module]');
   check('the map shows all 30 modules', await count('[data-ar-module]') === 30);
   check('…the 24 core modules by level, then the 6 optional extensions', await ev(`['Pre-A1','A1','A2','B1','B2'].map(s => document.querySelectorAll('[data-ar-stage="' + s + '"] [data-ar-module]').length).join() === '3,5,5,6,5' && document.querySelectorAll('[data-ar-stage="extensions"] [data-ar-module]').length === 6`));
-  check('it offers a first small step and says recordings aren\'t included', await exists('.next-card a[href^="#study/arabic/lesson."]') && (await T.text('.next-card')).includes('No recordings'));
+  // From 1.39.0 the starter words have a synthesised voice; lessons and texts still have no recordings.
+  check('it offers a first small step and says only the starter words have a voice (lessons and texts have no recordings)', await exists('.next-card a[href^="#study/arabic/lesson."]')
+    && (await T.text('.next-card')).includes('The starter words have a synthesised voice to copy') && (await T.text('.next-card')).includes('lessons and texts have no recordings yet'));
   await ev(`(() => { const i = document.querySelector('#arSearch'), set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(i, 'past'); i.dispatchEvent(new Event('input', { bubbles: true })); })()`); await sleep(150);
   check('search narrows the map to matching modules', await count('[data-ar-module]') > 0 && await count('[data-ar-module]') < 30 && await exists('[data-ar-module="arabic-past-stories"]'));
 

@@ -3,7 +3,8 @@
 // whose contents don't match its name, a stray file or an unknown check fails the build. Clips not yet listened to
 // ("to check", "redo") and ones left out ship nothing: their words simply have no play button.
 // Clips: content/arabic-audio/ (made by make-arabic-audio.mjs) → public/arabic-audio/ (not in Git; cached by the
-// service worker only when played) and the list the app reads, src/study/arabic/data/audio.json.
+// service worker only when played) and the list the app reads, src/study/arabic/voice-clips.json — kept out of
+// src/study/arabic/data/, which prepare-arabic.mjs empties and rewrites whenever it runs.
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 
@@ -48,6 +49,6 @@ if (!process.argv[2]) {
   rmSync(out, { recursive: true, force: true });
   mkdirSync(out, { recursive: true });
   for (const parts of Object.values(shipped)) for (const file of Object.values(parts)) copyFileSync(new URL(file, clipsDir), new URL(file, out));
-  writeFileSync(new URL('app/src/study/arabic/data/audio.json', root), JSON.stringify({ voice: audit.voice.name, label: audit.label, clips: shipped }));
+  writeFileSync(new URL('app/src/study/arabic/voice-clips.json', root), JSON.stringify({ voice: audit.voice.name, label: audit.label, clips: shipped }));
 }
 console.log(`Arabic audio: ${count.checked} clips listened to and shipped; ${count['to check'] + count.redo} not yet listened to, ${count['left out']} left out (no button).`);
