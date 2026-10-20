@@ -333,7 +333,7 @@ suggestion. All the new fields are optional and kept by 1.36.0.
 
 - **A voice across the whole Arabic course** (my question, 20 Oct 2026): in rounds — 2 the 152 lessons' headline
   examples; 3 everything else that's fully vowelled; text without vowel marks only once a teacher or fluent speaker
-  can check it, or a human recording replaces it. A plan first: `cloud-tasks/next-steps.md`, step 3.
+  can check it, or a human recording replaces it. The plan, waiting for my answers: `specs/arabic-audio-course.md`.
 - **Roots in revision** (word families, `specs/vocabulary-families.md` §8): not now — the families are for noticing,
   not testing. Revisit after a month of use (from 1.38.0, 19 Oct 2026).
 - **More AI:**

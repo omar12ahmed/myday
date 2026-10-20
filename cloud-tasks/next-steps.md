@@ -136,6 +136,9 @@ its questions.
 
 ## Step 3: a plan for a voice across the whole Arabic course (a spec; build nothing)
 
+**Done on the Mac, 20 Oct 2026:** `specs/arabic-audio-course.md`, with the inventory script
+`app/scripts/arabic-audio-inventory.mjs`.
+
 **Branch:** `spec-arabic-audio-course`
 
 **What round one (1.39.0) built.** The 48 starter words and their example sentences have a synthesised voice.
