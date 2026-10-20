@@ -63,6 +63,9 @@ Read this file before making any changes. If something here seems to conflict wi
 
 ## Cloud sessions
 
+**Not in use since 20 Oct 2026 (my decision):** I no longer use cloud sessions; all work happens on my Mac. This
+section stays for reference.
+
 A cloud session works on a copy of this repository. It has none of my secrets, test accounts or saved data, and none
 should be pasted in. Use cloud sessions for long, self-contained work: building on a new branch, running the full
 tests, reviews and audits, writing tests and drafting docs.

@@ -1,5 +1,8 @@
 # Cloud tasks: the next steps after 1.39.0
 
+**No longer for cloud sessions (20 Oct 2026):** the owner stopped using them, and these steps are being done on the
+Mac. Step 1's offline mode was only for the cloud; its clock-proofing part still applies.
+
 Written on the Mac on 19 Oct 2026, for cloud sessions. The owner will point a session at **one** step below. Do
 only that step.
 
