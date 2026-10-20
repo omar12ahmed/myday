@@ -93,6 +93,8 @@ and the Mac's Chrome, using the ports and command that `CLAUDE.md` gives. Then t
 
 ## Step 2: a plan for named lists from "Add what's on my mind" (a spec; build nothing)
 
+**Done on the Mac, 20 Oct 2026:** `specs/named-lists.md`.
+
 **Branch:** `spec-named-lists`
 
 **Why.** The owner's next AI milestones, in order, start with **brand-new named lists** from "Add what's on my

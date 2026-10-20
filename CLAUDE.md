@@ -337,8 +337,8 @@ suggestion. All the new fields are optional and kept by 1.36.0.
 - **Roots in revision** (word families, `specs/vocabulary-families.md` §8): not now — the families are for noticing,
   not testing. Revisit after a month of use (from 1.38.0, 19 Oct 2026).
 - **More AI:**
-  - brand-new named lists from "Add what's on my mind". That's a saved-data change in both versions and the sync
-    tables, so it needs a migration plan and my confirmation first;
+  - brand-new named lists from "Add what's on my mind". The plan, waiting for my answers: `specs/named-lists.md`
+    (recommended: into the Tasks section's own lists, which exist since 1.5.0, so no migration);
   - notes pasted from outside MyDay, sorted into tasks, Study items and ideas;
   - revision cards from trusted material I add (PDFs, e.g. with Gemini's File Search);
   - a web-search service for research (a cost and key decision);
