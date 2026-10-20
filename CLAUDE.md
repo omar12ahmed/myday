@@ -328,8 +328,9 @@ suggestion. All the new fields are optional and kept by 1.36.0.
 
 ## Open ideas (not decided: ask me before building any of them)
 
-- **Arabic audio, round two:** the lessons' headline examples (152 clips) with the same voice and checks; one human
-  speaker could later replace the whole set. The 14 reading texts stay with human or external recordings.
+- **A voice across the whole Arabic course** (my question, 20 Oct 2026): in rounds — 2 the 152 lessons' headline
+  examples; 3 everything else that's fully vowelled; text without vowel marks only once a teacher or fluent speaker
+  can check it, or a human recording replaces it. A plan first: `cloud-tasks/next-steps.md`, step 3.
 - **Roots in revision** (word families, `specs/vocabulary-families.md` §8): not now — the families are for noticing,
   not testing. Revisit after a month of use (from 1.38.0, 19 Oct 2026).
 - **More AI:**

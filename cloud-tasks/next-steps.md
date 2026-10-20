@@ -131,47 +131,89 @@ its questions.
 
 ---
 
-## Step 3: a plan for Arabic audio, round two (a spec; build nothing)
+## Step 3: a plan for a voice across the whole Arabic course (a spec; build nothing)
 
-**Branch:** `spec-arabic-audio-2`
+**Branch:** `spec-arabic-audio-course`
 
 **What round one (1.39.0) built.** The 48 starter words and their example sentences have a synthesised voice.
 - **The voice:** one Google Cloud Text-to-Speech Chirp 3 HD voice, chosen in a blind four-voice trial.
 - **The clips:** made once, on the Mac, by `app/scripts/make-arabic-audio.mjs`. The key came from the environment
   and was deleted afterwards.
-- **The checks:** a second model transcribed every clip, and doubtful clips were made again. Then the owner
-  listened to all 96. The owner has basic Arabic; no teacher has listened yet.
+- **The checks:** a second model transcribed every clip, fully vowelled, and the doubtful ones were made again (a
+  synthesised voice sometimes slips: a word cut short, a wrong final vowel). Then the owner listened to all 96
+  against the text and its reading. The owner has basic Arabic; no teacher has listened yet.
 - **Where it lives:** the clips and `audio-audit.json` are in `content/arabic-audio/`, checked at every build by
-  `app/scripts/prepare-audio.mjs`. Only clips that have been listened to ship.
+  `app/scripts/prepare-audio.mjs`. Only clips that have been listened to ship. The app's list of them is
+  `app/src/study/arabic/voice-clips.json`.
 - **Offline:** the service worker keeps each clip the first time it plays.
 - **The label:** "Synthesised voice — a model to copy; checked by ear, not yet by a teacher."
 - **More detail:** `app/README.md`, under "A voice for the starter words".
 
-**Round two, as first proposed:** the lessons' headline examples. Each of the 152 lessons has an `example`
-(`text_ar`, `meaning_en`, `register`, `diacritics`) in `content/arabic-fusha/MyDay_Arabic_Fusha_Curriculum.json`.
-The 14 reading texts stay with human or external recordings.
+**What the owner asked (20 Oct 2026):** whether all the Arabic text in the course could have a voice. The answer
+given, and agreed as the frame for this plan: yes in principle, in rounds, with one firm limit.
+- **Cost and size aren't the obstacle.** A rough count on the Mac found about 1,200 distinct Arabic runs, about
+  23,000 characters in all. Google's free allowance is 1 million characters a month. That's around 1,200 clips,
+  about 10 MB in the repository, and about 40 minutes of audio. Your inventory replaces these rough numbers.
+- **Text without vowel marks is the limit.** About half of those runs carry no vowel marks: the course fades them
+  from intermediate level on purpose, and most checks and reference answers are written that way. On such text a
+  synthesised voice has to guess the vowels and case endings. Neither a learner with basic Arabic nor the
+  transcription cross-check can tell when the guess is wrong, because there are no marks to compare against. The
+  reading texts themselves say a recording should be made by a competent Fuṣḥā speaker and checked against the
+  text before it's used for listening.
+- **The rounds, as agreed:**
+  1. **Round two:** the 152 lessons' headline examples. Each lesson has an `example` (`text_ar`, `meaning_en`,
+     `register`, `diacritics`) in `content/arabic-fusha/MyDay_Arabic_Fusha_Curriculum.json`.
+  2. **Round three:** everything else that is fully vowelled. That means the teaching companion's examples
+     (`content/teaching/arabic-fusha.json`), the early reading texts and fully vowelled exercise items, checked
+     the same way as round one.
+  3. **Unvowelled text:** only once a teacher or fluent speaker can check it, or a human recording replaces it.
+     Until then, those parts keep their honest "no recording" notes.
 
-**Write `specs/arabic-audio-round-two.md`:**
-1. **An inventory of the 152 examples:** characters in all, and how many are letter groups (like "ب ت ث ن ي"),
-   single words, phrases and sentences. Also how many are fully vowelled and how many have partial ("targeted") or
-   no vowel marks. A synthesised voice can't be trusted on text without vowel marks.
-2. **Which deserve a clip and which don't.** A letter group, for example, would be read as letter names: say what
-   each lesson actually wants the learner to hear.
-3. **Where the play button goes on a lesson page:** see `app/src/study/arabic/ArabicScreen.tsx` and
-   `app/src/study/teaching/TeachingLesson.tsx`.
-4. **How the audit and the build check extend** (keyed by lesson id, with a snapshot of the text), and that the
-   service worker's rule stays the same. Include the size.
-5. **The Mac's part:**
-   - making the clips with the key;
-   - the transcription cross-check;
-   - the owner's listening load, in minutes;
-   - the cost: Google's pricing page showed the first 1 million characters a month free for WaveNet and
-     Chirp 3 HD, to be confirmed on the day.
-6. **Questions for the owner,** each with your recommendation, including whether this is worth doing now.
+**Write `specs/arabic-audio-course.md`:**
+1. **A precise inventory** of every piece of Arabic the app shows.
+   - **The sources:** the curriculum (`lessons`, `assets` = reading texts, `exercises`, `assessments`), the answer
+     keys (`MyDay_Arabic_Assessment_Keys.json`), the teaching companion and the word-families notes; say which
+     screen shows each one.
+   - **For each source:** the count, the characters, the kind (letter drill, word, phrase, sentence or passage) and
+     the vowelling (full, partial / "targeted", or none), with a few examples of each.
+   - **How you got the numbers:** a script on the branch (for example `ai-eval/` or `tests/`; not part of the
+     build), so they can be re-run.
+2. **What should and shouldn't have a voice.** Go piece by piece where it matters, and give a reason each time:
+   - **Letter drills** would be read as letter names. Say what each lesson actually wants the learner to hear.
+   - **Audio must never give away an answer.** For example, a check asking the learner to add vowels or to tell
+     two sounds apart. Reference answers could be voiced only after they're revealed.
+   - **Listening activities** in the course expect a human or external recording; say how they should be treated.
+   - **Reading texts:** play the whole text, one paragraph at a time, or one sentence at a time?
+3. **Each round in detail:**
+   - which pieces it includes;
+   - the clips, characters and listening minutes;
+   - the screens and the places on them where a play button goes (`app/src/study/arabic/ArabicScreen.tsx`,
+     `app/src/study/teaching/TeachingLesson.tsx`, the reading text view);
+   - and what the Mac and the owner have to do.
+4. **How the audit and the build check generalise** beyond starter words. Today they're keyed by lexeme id, with
+   `word` and `example`. Propose a key for any source (for example the source's id and field, plus a snapshot of
+   the exact text), and how `prepare-audio.mjs` and `voice-clips.json` change.
+   - Check that the service worker's rule still holds when `AUDIO` lists over 1,000 clips.
+   - Check the repository size.
+   - A clip should be shared when the same text appears in several places.
+5. **Unvowelled text:** set out the options with their trade-offs.
+   - wait for a fluent speaker to check;
+   - add vowel marks to a separate copy that a teacher then reviews (never changing the course's own text, which
+     fades vowels on purpose);
+   - a human recording;
+   - or leave it without a voice.
 
-**Don't:** make any audio, call any paid service, or write app code.
+   Recommend one.
+6. **The Mac's part per round:** making the clips with the key, the transcription cross-check, the owner's
+   listening load in minutes, and the cost. Google's pricing page showed the first 1 million characters a month
+   free for WaveNet and Chirp 3 HD; that's to be confirmed on the day.
+7. **Questions for the owner,** each with your recommendation. Include the order of the rounds and whether to
+   look for a teacher's check before round three.
 
-**Done when:** the spec is pushed on the branch, with `mac-steps/spec-arabic-audio-2.md`.
+**Don't:** make any audio, call any paid service, or write app code. The inventory script is the only code.
+
+**Done when:** the spec and the inventory script are pushed on the branch, with
+`mac-steps/spec-arabic-audio-course.md` (read the spec and answer its questions).
 
 ---
 
