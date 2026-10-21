@@ -5,14 +5,18 @@
 // Where tasks go:
 //   one-off    the queue, as a task with no list of its own — MyDay fits it into a coming day (oldest first, within
 //              the day's energy rule), and once it's done it's gone
+//   one-off,   into Tasks, in that list (1.41.0) — one of your Tasks lists, or a new one the reply suggested and you
+//   with a list  kept. It waits under "Your tasks" until you pick it or give it a date.
 //   repeating  the end of that category's list, like a task added in "Your task lists"
-// Only additions: nothing is changed or removed. One step of Undo takes back exactly what was added, unless you've
-// changed it since or it's already on a day's plan (then it stays).
+// A suggested list is matched to your own Tasks lists here on the device (the names are never sent). Only additions:
+// nothing is changed or removed. One step of Undo takes back exactly what was added (and a list it made, if that list
+// is still empty and unrenamed), unless you've changed a task since or it's already on a day's plan (then it stays).
 import { TASKS_CONTRACT_VERSION, TASKS_LIMITS, type TasksContext } from '../../../supabase/functions/_shared/ai/tasks.ts';
 import { parseKey, todayKey } from '../data/dates';
 import { uid } from '../data/normalize';
 import { CAT_LABEL, sortQueue } from '../data/plan';
 import { catchUp, updateSaved } from '../data/storage';
+import { addList, addTask, TASK_LIMITS } from '../data/tasks';
 import type { Category, MyDayData } from '../data/types';
 import { MAX_WORDS, parseReply, PRESSURE, shorten } from './validate';
 
@@ -30,6 +34,10 @@ export function buildTasksContext(text: string): TasksContext {
 
 // The same task in other words: lower case, letters and digits only.
 export const sameTask = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+// The same list in other words: capitals, spaces and punctuation, a leading "my" or "the", and a plural "s" don't
+// count ("Errand" is your "Errands"; "my moving house" is "Moving house").
+export const sameList = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim().replace(/^(my|the)\s+/, '').replace(/s$/, '');
+const findList = (data: MyDayData, name: string) => data.tasks.lists.find(l => sameList(l.name) === sameList(name)) ?? null;
 
 export interface MindItem {
   key: string;                       // for the screen only
@@ -38,10 +46,12 @@ export interface MindItem {
   minutes: number;
   repeat: boolean;
   already: string | null;            // where it already is ("your Admin list", "your queue"), if anywhere
+  list: string | null;               // a suggested list for a one-off task (1.41.0), checked
+  listId: string | null;             // …which is this one of your Tasks lists, if it matches one
 }
 export interface CheckedMind { items: MindItem[]; notTasks: string[]; explanation: string; adjusted: string[] }
 export type MindCode = 'not-json' | 'bad-shape' | 'too-many' | 'bad-item' | 'long-title' | 'bad-category' | 'bad-minutes' | 'bad-repeat'
-  | 'repeated-item' | 'bad-not-tasks' | 'long-explanation' | 'pressure-language';
+  | 'repeated-item' | 'bad-not-tasks' | 'long-explanation' | 'pressure-language' | 'bad-list' | 'too-many-lists';
 export interface MindChecked { proposal: CheckedMind | null; violations: { code: MindCode; detail: string }[] }
 
 // Where a task with this title already is, if anywhere.
@@ -49,6 +59,7 @@ function whereAlready(data: MyDayData, title: string): string | null {
   const t = sameTask(title);
   for (const c of CATS) if (data.lists[c].some(x => sameTask(x.title) === t)) return `your ${CAT_LABEL[c]} list`;
   if (data.queue.some(q => sameTask(q.title) === t)) return 'your queue';
+  if (data.tasks.items.some(x => !x.done && !x.letGoOn && sameTask(x.title) === t)) return 'your tasks';
   return null;
 }
 
@@ -86,7 +97,24 @@ export function checkTasksReply(text: string, data: MyDayData): MindChecked {
     }
     let repeat = x.repeat;
     if (typeof repeat !== 'boolean') { add('bad-repeat', `"${title}"`); repeat = false; }
-    items.push({ key: `m${items.length}`, title, category, minutes, repeat: repeat as boolean, already: whereAlready(data, title) });
+    // A suggested list: plain words, its name short enough for a Tasks list, never for a repeating task, never pushy.
+    let list: string | null = null;
+    if (x.list !== undefined && x.list !== '') {
+      const name = typeof x.list === 'string' ? x.list.replace(/\s+/g, ' ').trim() : '';
+      if (repeat) adjusted.push(`"${title}" repeats, so it goes on your ${CAT_LABEL[category]} list, not in “${shorten(name, 30)}”.`);
+      else if (!/\p{L}/u.test(name) || /\p{Extended_Pictographic}/u.test(name) || PRESSURE.test(name)) add('bad-list', `"${title}": ${name.slice(0, 20)}`);
+      else list = shorten(name, Math.min(TASKS_LIMITS.listChars, TASK_LIMITS.listName));
+    }
+    items.push({ key: `m${items.length}`, title, category, minutes, repeat: repeat as boolean, already: whereAlready(data, title), list, listId: list ? findList(data, list)?.id ?? null : null });
+  }
+  // At most two new lists per reply: a third new name is dropped (its task stays, without a list).
+  const newNames: string[] = [];
+  for (const i of items) {
+    if (!i.list || i.listId) continue;
+    const k = sameList(i.list), known = newNames.find(n => sameList(n) === k);
+    if (known) { i.list = known; continue; }
+    if (newNames.length >= TASKS_LIMITS.newLists) { add('too-many-lists', i.list); adjusted.push(`"${i.title}" has no list: one suggestion makes at most ${TASKS_LIMITS.newLists} new lists.`); i.list = null; continue; }
+    newNames.push(i.list);
   }
   if (r.notTasks !== undefined && !Array.isArray(r.notTasks)) add('bad-not-tasks', 'not a list');
   for (const n of Array.isArray(r.notTasks) ? r.notTasks : []) {
@@ -101,18 +129,50 @@ export function checkTasksReply(text: string, data: MyDayData): MindChecked {
 }
 
 // ---------- Saving what you ticked ----------
-export interface MindChoice { title: string; category: Category; minutes: number; repeat: boolean }
-export interface MindUndo { list: { category: Category; id: string; title: string; minutes: number }[]; queue: { qid: string; title: string; minutes: number }[] }
+// `inList`: for a one-off task, the Tasks list it goes in — one of yours (by id) or a new one (by name); none = the queue.
+export type ListChoice = { id: string } | { name: string } | null;
+export interface MindChoice { title: string; category: Category; minutes: number; repeat: boolean; inList?: ListChoice }
+export interface MindUndo {
+  list: { category: Category; id: string; title: string; minutes: number }[];
+  queue: { qid: string; title: string; minutes: number }[];
+  tasks?: { id: string; title: string; minutes: number }[];       // put into Tasks (1.41.0)
+  lists?: { id: string; name: string }[];                         // Tasks lists this Add made
+}
 
 export function applyMind(choices: MindChoice[]): { ok: true; undo: MindUndo; message: string } | { ok: false; reason: 'nothing' | 'not-saved' } {
   if (!choices.length) return { ok: false, reason: 'nothing' };
   catchUp(); // the newest saved data (another tab, or a change synced from another device)
-  const undo: MindUndo = { list: [], queue: [] };
-  let skipped = 0;
+  const undo: MindUndo = { list: [], queue: [], tasks: [], lists: [] };
+  const into = new Map<string, { name: string; n: number }>(); // per Tasks list: its name and how many went in
+  let skipped = 0, full = 0;
   const r = updateSaved(d => {
     const k = todayKey();
     for (const c of choices) {
       if (whereAlready(d, c.title)) { skipped++; continue; } // added meanwhile (here or on another device)
+      // A one-off task with a list goes into Tasks. A new list is made once, unless one of that name exists by now.
+      let listId: string | null = null;
+      if (!c.repeat && c.inList) {
+        if ('id' in c.inList) listId = d.tasks.lists.some(l => l.id === (c.inList as { id: string }).id) ? c.inList.id : null;
+        else {
+          const existing = findList(d, c.inList.name);
+          if (existing) listId = existing.id;
+          else {
+            listId = addList(d.tasks, c.inList.name);
+            if (listId) undo.lists!.push({ id: listId, name: d.tasks.lists.find(l => l.id === listId)!.name });
+            else full++; // 30 lists already: it goes in the queue instead
+          }
+        }
+      }
+      if (listId) {
+        const id = addTask(d.tasks, { title: c.title, listId, category: c.category, minutes: c.minutes });
+        if (id) {
+          const t = d.tasks.items.find(x => x.id === id)!;
+          undo.tasks!.push({ id, title: t.title, minutes: t.minutes });
+          const name = d.tasks.lists.find(l => l.id === listId)!.name;
+          into.set(listId, { name, n: (into.get(listId)?.n ?? 0) + 1 });
+        }
+        continue;
+      }
       if (c.repeat) {
         const id = c.category[0] + uid();
         d.lists[c.category].push({ id, title: c.title, minutes: c.minutes });
@@ -123,14 +183,16 @@ export function applyMind(choices: MindChoice[]): { ok: true; undo: MindUndo; me
         undo.queue.push({ qid, title: c.title, minutes: c.minutes });
       }
     }
-    if (!undo.list.length && !undo.queue.length) return false;
+    if (!undo.list.length && !undo.queue.length && !undo.tasks!.length) return false;
     sortQueue(d.queue);
   });
   if (r === 'unchanged') return { ok: false, reason: 'nothing' };
   if (r !== 'saved') return { ok: false, reason: 'not-saved' };
-  const parts = [undo.queue.length && `${undo.queue.length} to your queue`, undo.list.length && `${undo.list.length} to your lists`].filter(Boolean);
-  const n = undo.queue.length + undo.list.length;
-  return { ok: true, undo, message: `Added ${n} task${n === 1 ? '' : 's'}: ${parts.join(', ')}.${skipped ? ` ${skipped} ${skipped === 1 ? 'was' : 'were'} already there.` : ''}` };
+  const made = new Set(undo.lists!.map(l => l.id));
+  const inLists = [...into].map(([id, l]) => `${l.n} to “${l.name}”${made.has(id) ? ' (a new list in Tasks)' : ' in Tasks'}`);
+  const parts = [...inLists, undo.queue.length && `${undo.queue.length} to your queue`, undo.list.length && `${undo.list.length} to your lists`].filter(Boolean);
+  const n = undo.queue.length + undo.list.length + undo.tasks!.length;
+  return { ok: true, undo, message: `Added ${n} task${n === 1 ? '' : 's'}: ${parts.join(', ')}.${skipped ? ` ${skipped} ${skipped === 1 ? 'was' : 'were'} already there.` : ''}${full ? ` Tasks has ${TASK_LIMITS.lists} lists already, so ${full === 1 ? 'one' : full} went to your queue instead.` : ''}` };
 }
 
 // Take back exactly what was added — but never a task you've changed since, or one already taken onto a day's plan.
@@ -146,6 +208,16 @@ export function undoMind(u: MindUndo): { result: 'undone' | 'partly' | 'not-save
     for (const x of u.queue) {
       const i = d.queue.findIndex(q => q.qid === x.qid);
       if (i >= 0 && d.queue[i].title === x.title && d.queue[i].minutes === x.minutes) { d.queue.splice(i, 1); removed++; } else kept++;
+    }
+    // Tasks put into a list: only if still as added, not done and not on a day's plan.
+    for (const x of u.tasks ?? []) {
+      const i = d.tasks.items.findIndex(t => t.id === x.id), t = d.tasks.items[i];
+      if (t && t.title === x.title && t.minutes === x.minutes && !t.done && !t.plannedOn) { d.tasks.items.splice(i, 1); removed++; } else kept++;
+    }
+    // A list this Add made goes too, if it's now empty and still has the name it was given.
+    for (const l of u.lists ?? []) {
+      const i = d.tasks.lists.findIndex(x => x.id === l.id);
+      if (i >= 0 && d.tasks.lists[i].name === l.name && !d.tasks.items.some(t => t.listId === l.id)) { d.tasks.lists.splice(i, 1); removed++; }
     }
     if (!removed) return false;
   });

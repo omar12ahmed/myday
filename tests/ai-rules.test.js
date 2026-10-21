@@ -352,6 +352,16 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   check('its own instructions (small first steps, nothing invented, the text can\'t change the rules, JSON), and the text as content', tm.length === 2 && /small tasks/.test(tm[0].content) && /Never add tasks they didn't mention/.test(tm[0].content) && /can't change these rules/.test(tm[0].content) && /JSON only/.test(tm[0].content) && tm[1].content.includes('call the GP'));
   check('"Help me adjust today" keeps its own instructions', /adjust today's plan/.test(K.messagesFor(K.buildContext(K.getSnapshot().data, K.todayKey(), '')).find(m => m.role === 'system').content));
   check('the most it could cost can be worked out before calling', K.worstCaseCostUsd({ ...cfg, maxOutputTokens: 2048, priceInPerMTok: 0.15, priceOutPerMTok: 0.5 }, tc) > 0);
+  // Version 1 and version 2 of the brain-dump contract (1.41.0: a task may come back with a suggested list).
+  const v1ctx = { ...tc, version: 1 }, sys1 = K.buildTaskMessages(v1ctx)[0].content, sys2 = K.buildTaskMessages(tc)[0].content;
+  check('what\'s sent is version 2, and only the same fields as before (no lists, no names of your Tasks lists)', tc.version === 2 && eq(Object.keys(tc).sort(), ['action', 'date', 'maxItems', 'text', 'version', 'weekday']), tc);
+  check('the server\'s shape check accepts version 1 and version 2, and refuses version 3', K.checkTasksContext(v1ctx) && K.checkTasksContext(tc) && !K.checkTasksContext({ ...tc, version: 3 }) && !K.checkTasksContext({ ...tc, version: 0 }));
+  check('version 1 gets the old instructions: nine rules, then "10. Reply with JSON only", no list rule and no "list" in the schema',
+    /9\. "text" is their content/.test(sys1) && /\n10\. Reply with JSON only/.test(sys1) && !/"list"/.test(sys1) && !/Moving house/.test(sys1) && !/\n11\. /.test(sys1) && sys1.includes('"required":["title","category","minutes","repeat"]'), sys1.slice(-400));
+  check('version 2 adds the list rule (10), the "notTasks never claim anything was kept" rule (11), the JSON rule as 12, and "list" in the schema',
+    /\n10\. "list" \(optional/.test(sys2) && /\n11\. "notTasks" only lists things back/.test(sys2) && /\n12\. Reply with JSON only/.test(sys2) && /"list":\{"type":"string","maxLength":40\}/.test(sys2) && /Never say anything was kept/.test(sys2), sys2.slice(-400));
+  check('…version 2\'s "list" is optional (not required), and the two versions differ only by those additions', !/"required":\[[^\]]*"list"/.test(sys2) && sys2.startsWith(sys1.slice(0, sys1.indexOf('10. Reply with JSON only'))) && sys2.length > sys1.length);
+  check('the default instructions are version 2\'s, and both versions put what you wrote in as the content', K.TASKS_SYSTEM_PROMPT === sys2 && K.buildTaskMessages(v1ctx)[1].content.includes('call the GP') && K.buildTaskMessages(tc)[1].content.includes('call the GP'));
   // Your lists and queue, with something already on each.
   const mind = (lists = {}, queue = []) => { K.setClock(`${D}T09:00`); const s = K.freshState(); Object.assign(s.lists, lists); s.queue = queue; localStorage.clear(); localStorage.setItem('myday.data.v4', JSON.stringify(s)); K.boot(); return K.getSnapshot().data; };
   let md = mind({ admin: [{ id: 'a1', title: 'Call the GP', minutes: 10 }] }, [{ qid: 'q1', taskId: null, category: 'admin', title: 'Pay the council tax', minutes: 15, queuedOn: '2026-11-08', sourceUid: null }]);
@@ -403,16 +413,116 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   localStorage.setItem = realSet7;
   check('if the browser can\'t save (storage full), it says so and nothing changes', !ar.ok && ar.reason === 'not-saved' && localStorage.getItem('myday.data.v4') === saved7);
 
+  // Suggested lists (1.41.0): checked on the reply, matched to your Tasks lists on this device.
+  const mindL = (items = [], lists = [{ id: 'tlE', name: 'Errands' }, { id: 'tlM', name: 'Moving house' }]) => {
+    K.setClock(`${D}T09:00`); const s = K.freshState(); s.tasks = { lists, items }; s.queue = [];
+    localStorage.clear(); localStorage.setItem('myday.data.v4', JSON.stringify(s)); K.boot(); return K.getSnapshot().data;
+  };
+  const itL = (title, list, extra = {}) => ({ ...it(title), ...(list === undefined ? {} : { list }), ...extra });
+  const readNow = () => JSON.parse(localStorage.getItem('myday.data.v4'));
+  let ml = mindL();
+  let lr = K.checkTasksReply(mt([itL('Post the parcel', 'errands'), itL('Book a van', 'My moving houses'), itL('Pack the books', ' Moving   house '), itL('Call the GP')]), ml);
+  check('a suggested list is matched to your own Tasks list whatever the capitals, "my" or a plural "s" ("errands" → Errands, "My moving houses" → Moving house)',
+    lr.violations.length === 0 && lr.proposal.items[0].listId === 'tlE' && lr.proposal.items[1].listId === 'tlM' && lr.proposal.items[2].listId === 'tlM' && lr.proposal.items[3].list === null && lr.proposal.items[3].listId === null, lr.proposal.items);
+  check('…and K.sameList says the same of those names', K.sameList('errands') === K.sameList('Errands') && K.sameList('My moving houses') === K.sameList('Moving house') && K.sameList('Garden') !== K.sameList('Errands'));
+  lr = K.checkTasksReply(mt([itL('Book a van', 'Moving house'), itL('Pack the books', 'moving house'), itL('Clear the shed', 'Garden')]), ml);
+  check('a list name that matches none of yours stays a new name (no listId); the same new name twice is one list', lr.proposal.items[0].listId === 'tlM' && lr.proposal.items[2].list === 'Garden' && lr.proposal.items[2].listId === null, lr.proposal.items);
+  lr = K.checkTasksReply(mt([itL('Book a van', 'Moving 😀 house'), itL('Pack the books', '123 !!!'), itL('Clear the shed', 'You must do this now'), itL('Call the GP', 'Errands')]), ml);
+  check('a list with an emoji, no letters or pushy wording is dropped with "bad-list" (the task stays, with no list); a good one is kept',
+    lr.proposal.items.length === 4 && lr.proposal.items.slice(0, 3).every(x => x.list === null && x.listId === null) && lr.violations.filter(v => v.code === 'bad-list').length === 3 && lr.proposal.items[3].listId === 'tlE', lr);
+  lr = K.checkTasksReply(mt([itL('Water the plants', 'Garden', { repeat: true }), itL('Post the parcel', 'Errands')]), ml);
+  check('a list on a repeating task is ignored, with a plain line saying it goes on its category\'s list', lr.proposal.items[0].list === null && lr.proposal.items[0].repeat === true && lr.proposal.adjusted.some(a => /Water the plants/.test(a) && /repeats/.test(a) && /Garden/.test(a)) && lr.proposal.items[1].listId === 'tlE', lr.proposal);
+  lr = K.checkTasksReply(mt([itL('Clear the shed', 'Garden'), itL('Cut the hedge', 'garden'), itL('Plan the trip', 'Holiday'), itL('Book the hotel', 'Wedding'), itL('Choose a venue', 'Holiday'), itL('Post the parcel', 'Errands')]), ml);
+  check('at most two NEW list names in one reply: a third is dropped with "too-many-lists" and its task is kept without a list (a repeat of a new name, and your own lists, don\'t count)',
+    lr.proposal.items.map(x => x.list).join('|') === 'Garden|Garden|Holiday||Holiday|Errands' && lr.violations.filter(v => v.code === 'too-many-lists').length === 1 && lr.proposal.items[3].title === 'Book the hotel' && lr.proposal.adjusted.some(a => /Book the hotel/.test(a) && /no list/.test(a)), lr);
+  lr = K.checkTasksReply(mt([itL('Book a van', 'M'.repeat(60))]), ml);
+  check('a 60-character list name is cut to 40 characters', lr.proposal.items[0].list.length <= 40 && lr.proposal.items[0].list.length >= 30, lr.proposal.items[0].list);
+  lr = K.checkTasksReply(mt([itL('Book a van', 5), itL('Pack the books', '')]), ml);
+  check('a list that isn\'t text, and an empty one, give no list', lr.proposal.items.every(x => x.list === null), lr);
+  // The practice helper.
+  const mocktx = { ...K.buildTasksContext('Moving house: book a van, pack the books\nCall the GP') };
+  const mk2 = K.checkTasksReply(K.mockTasks(mocktx, 'good'), ml), mk1 = K.checkTasksReply(K.mockTasks({ ...mocktx, version: 1 }, 'good'), ml);
+  check('the practice helper (version 2) gives "Moving house" to both tasks after the heading, and nothing to the one on its own line', mk2.violations.length === 0 && mk2.proposal.items.length === 3 && mk2.proposal.items.filter(x => x.listId === 'tlM').length === 2 && mk2.proposal.items.find(x => /GP/.test(x.title)).list === null, mk2.proposal.items);
+  check('…and at version 1 it gives no list at all', mk1.proposal.items.length === 3 && mk1.proposal.items.every(x => x.list === null) && !/"list"/.test(K.mockTasks({ ...mocktx, version: 1 }, 'good')));
+  check('…and never a list to a repeating task', (() => { const its = JSON.parse(K.mockTasks(K.buildTasksContext('Garden: stretch every morning, cut the hedge'), 'good')).items; return its.find(x => /stretch/i.test(x.title)).repeat === true && !('list' in its.find(x => /stretch/i.test(x.title))) && its.find(x => /hedge/i.test(x.title)).list === 'Garden'; })());
+  // A Tasks item with the same open title counts as already there.
+  const own = (title, x = {}) => ({ id: 'tk' + title.length, title, listId: 'tlE', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: `${D}T08:00`, postponed: 0, blockers: [], letGoOn: null, ...x });
+  ml = mindL([own('Post the parcel'), own('Renew the passport', { done: true, doneOn: D })]);
+  lr = K.checkTasksReply(mt([it('post the parcel.'), it('Renew the passport')]), ml);
+  check('a task already open in Tasks is marked "your tasks" (whatever the wording); a ticked-off one isn\'t', lr.proposal.items[0].already === 'your tasks' && lr.proposal.items[1].already === null, lr.proposal.items);
+  // Saving into Tasks.
+  const CH = (title, x = {}) => ({ title, category: 'admin', minutes: 20, repeat: false, ...x });
+  ml = mindL([own('Post the parcel')], [{ id: 'tlE', name: 'Errands' }]);
+  const bq = readNow();
+  ar = K.applyMind([CH('Book a van', { inList: { name: 'Moving house' }, minutes: 30, category: 'admin' }), CH('Pack the books', { inList: { name: 'Moving house' }, category: 'health', minutes: 45 })]);
+  let al = readNow();
+  const mh = al.tasks.lists.filter(l => l.name === 'Moving house');
+  const inMh = al.tasks.items.filter(t => mh[0] && t.listId === mh[0].id);
+  check('two one-offs sent to the same new name make ONE new list "Moving house"', ar.ok && al.tasks.lists.length === 2 && mh.length === 1, al.tasks.lists);
+  check('…each goes into it as a Tasks item with its category and minutes and no date, and the queue is unchanged', inMh.length === 2 && inMh.find(t => t.title === 'Book a van').minutes === 30 && inMh.find(t => t.title === 'Pack the books').category === 'health' && inMh.find(t => t.title === 'Pack the books').minutes === 45 && inMh.every(t => t.due === null && t.time === null && !t.done && t.plannedOn === null) && eq(al.queue, bq.queue), inMh);
+  check('…and the message says where they went', ar.message === 'Added 2 tasks: 2 to “Moving house” (a new list in Tasks).', ar.message);
+  check('…through the checked save path, and nothing else changes (lists, days, existing Tasks, Study)', al.saves.seq === bq.saves.seq + 1 && eq(al.lists, bq.lists) && eq(al.days, bq.days) && eq(al.study, bq.study) && al.tasks.items.some(t => t.title === 'Post the parcel') && al.tasks.items.length === 3);
+  ur = K.undoMind(ar.undo);
+  al = readNow();
+  check('Undo removes both tasks and the new list, leaving Tasks as it was', ur.result === 'undone' && eq(al.tasks, bq.tasks) && eq(al.queue, bq.queue), { ur, tasks: al.tasks });
+  // Into one of your own lists, by id, and by a name that matches one.
+  ml = mindL();
+  const bq2 = readNow();
+  ar = K.applyMind([CH('Buy stamps', { inList: { id: 'tlE' } })]);
+  al = readNow();
+  check('a one-off with the id of one of your Tasks lists goes into it; no new list is made', ar.ok && al.tasks.lists.length === 2 && al.tasks.items.length === 1 && al.tasks.items[0].listId === 'tlE' && al.tasks.items[0].title === 'Buy stamps' && ar.message === 'Added 1 task: 1 to “Errands” in Tasks.', [ar.message, al.tasks]);
+  ur = K.undoMind(ar.undo);
+  check('…Undo removes the task and leaves your list', ur.result === 'undone' && readNow().tasks.items.length === 0 && readNow().tasks.lists.length === 2);
+  ml = mindL();
+  ar = K.applyMind([CH('Buy stamps', { inList: { name: 'ERRANDS' } }), CH('Pack the books', { inList: { name: 'my moving house' } })]);
+  al = readNow();
+  check('a new name that matches one of yours (other capitals, "my") reuses that list: no new list, tasks in the right lists', ar.ok && al.tasks.lists.length === 2 && al.tasks.items.find(t => t.title === 'Buy stamps').listId === 'tlE' && al.tasks.items.find(t => t.title === 'Pack the books').listId === 'tlM' && ar.undo.lists.length === 0, [ar.message, al.tasks.lists]);
+  ur = K.undoMind(ar.undo);
+  check('…and Undo then leaves both of your lists in place', ur.result === 'undone' && readNow().tasks.lists.length === 2 && readNow().tasks.items.length === 0);
+  // A mix: one into a new list, one to the queue (no list), one repeating (to its category list).
+  ml = mindL();
+  ar = K.applyMind([CH('Book a van', { inList: { name: 'Moving house' } }), CH('Call the GP', { inList: null }), CH('Stretch', { category: 'health', repeat: true, inList: { name: 'Moving house' } })]);
+  al = readNow();
+  check('with no list a one-off goes to the queue, and a repeating task goes to its list even if a list was named', ar.ok && al.queue.some(q => q.title === 'Call the GP') && al.lists.health.some(x => x.title === 'Stretch') && al.tasks.items.length === 1 && ar.message === 'Added 3 tasks: 1 to “Moving house” in Tasks, 1 to your queue, 1 to your lists.', ar.message);
+  // 30 lists already.
+  const thirty = Array.from({ length: 30 }, (_, i) => ({ id: 'tl' + i, name: 'List number ' + i }));
+  ml = mindL([], thirty);
+  ar = K.applyMind([CH('Book a van', { inList: { name: 'Moving house' } })]);
+  al = readNow();
+  check('with 30 lists already, a new list isn\'t made: the task goes to the queue and the message says so', ar.ok && al.tasks.lists.length === 30 && al.tasks.items.length === 0 && al.queue.some(q => q.title === 'Book a van') && /Tasks has 30 lists already, so one went to your queue instead\./.test(ar.message), [ar.message, al.queue]);
+  // Undo after changes.
+  ml = mindL();
+  ar = K.applyMind([CH('Book a van', { inList: { name: 'Moving house' } }), CH('Pack the books', { inList: { name: 'Moving house' } })]);
+  K.update(d => { d.tasks.items.find(t => t.title === 'Book a van').title = 'Book a van for Friday'; d.tasks.items.find(t => t.title === 'Pack the books').done = true; d.tasks.items.find(t => t.title === 'Pack the books').doneOn = D; });
+  ur = K.undoMind(ar.undo);
+  al = readNow();
+  check('Undo keeps a task you\'ve since renamed or ticked, and then keeps the list too (it isn\'t empty)', ur.result === 'partly' && ur.kept === 2 && al.tasks.items.length === 2 && al.tasks.lists.some(l => l.name === 'Moving house'), { ur, tasks: al.tasks });
+  ml = mindL();
+  ar = K.applyMind([CH('Book a van', { inList: { name: 'Moving house' } }), CH('Pack the books', { inList: { name: 'Moving house' } })]);
+  K.update(d => { d.tasks.items.find(t => t.title === 'Pack the books').plannedOn = D; d.tasks.items.find(t => t.title === 'Pack the books').planUid = 'u1'; });
+  ur = K.undoMind(ar.undo);
+  al = readNow();
+  check('…a task already taken onto a day\'s plan stays too (and the list with it); the other one goes', ur.result === 'partly' && al.tasks.items.length === 1 && al.tasks.items[0].title === 'Pack the books' && al.tasks.lists.some(l => l.name === 'Moving house'), { ur, tasks: al.tasks });
+  ml = mindL();
+  ar = K.applyMind([CH('Book a van', { inList: { name: 'Moving house' } })]);
+  K.update(d => { d.tasks.lists.find(l => l.name === 'Moving house').name = 'House move'; });
+  ur = K.undoMind(ar.undo);
+  al = readNow();
+  check('Undo removes the task but keeps a list you\'ve renamed', al.tasks.items.length === 0 && al.tasks.lists.some(l => l.name === 'House move'), { ur, lists: al.tasks.lists });
+  ml = mindL([own('Book a van')]);
+  ar = K.applyMind([CH('book a van', { inList: { name: 'Moving house' } })]);
+  check('a task whose title is already open in Tasks isn\'t added again, and no empty list is made for it', !ar.ok && ar.reason === 'nothing' && readNow().tasks.lists.length === 2);
+
   // The evaluation, for this action too.
   const mockM = v => ({ label: 'Mock ' + v, provider: 'mock', model: 'mock:' + v, priceInPerMTok: 0, priceOutPerMTok: 0 });
   const tasksRun = await run.evaluate({ ...base, live: false, budgetUsd: null, action: 'tasks', modelIds: ['g', 's'], models: { g: mockM('good'), s: mockM('sloppy') } });
-  check('the evaluation runs the 12 brain-dump scenarios × 3 with their own instructions; adding everything suggested only ever adds to the lists and queue',
-    tasksRun.runs.length === 72 && tasksRun.runs.every(x => x.outcome === 'ok' && x.savedSafely === true) && tasksRun.meta.promptVersion === 'myday-tasks-v1' && tasksRun.meta.scenarios === 12, tasksRun.runs.filter(x => x.savedSafely !== true).slice(0, 2));
+  check('the evaluation runs the 20 brain-dump scenarios × 3 with their own instructions; adding everything suggested only ever adds to the lists, the queue and Tasks',
+    tasksRun.runs.length === 120 && tasksRun.runs.every(x => x.outcome === 'ok' && x.savedSafely === true) && tasksRun.meta.promptVersion === 'myday-tasks-v2' && tasksRun.meta.scenarios === 20, tasksRun.runs.filter(x => x.savedSafely !== true).slice(0, 2));
   const metS = k => tasksRun.runs.filter(x => x.model === 's').flatMap(x => Object.values(x[k])).filter(Boolean).length;
   check('…its rule-breaking helper is scored separately on its own replies and after MyDay\'s corrections', metS('expectRaw') < metS('expectFinal'), [metS('expectRaw'), metS('expectFinal')]);
   const both = await run.evaluate({ ...base, live: false, budgetUsd: null, repeats: 1, scenarioIds: ['s04-good-day', 't03-feelings'], modelIds: ['g'], models: { g: mockM('good') } });
-  check('scenarios of both kinds can be named together', both.runs.length === 2 && both.meta.promptVersion === 'myday-adjust-v1 + myday-tasks-v1' && /Written: “I'm exhausted/.test(run.review(both)));
-  check('the cost estimate covers brain dumps too', /\| 12 \|/.test(run.estimate({ ...base, repeats: 1, action: 'tasks', scenarioIds: null, modelIds: ['q'], models: { q: { ...cheap, maxOutputTokens: 2048 } } })));
+  check('scenarios of both kinds can be named together', both.runs.length === 2 && both.meta.promptVersion === 'myday-adjust-v1 + myday-tasks-v2' && /Written: “I'm exhausted/.test(run.review(both)));
+  check('the cost estimate covers brain dumps too', /\| 20 \|/.test(run.estimate({ ...base, repeats: 1, action: 'tasks', scenarioIds: null, modelIds: ['q'], models: { q: { ...cheap, maxOutputTokens: 2048 } } })));
 
   console.log('\n[8] AI help with notes: what\'s sent, every check on a reply, and linking only what\'s still unplaced');
   K.setClock(`${D}T09:00`);

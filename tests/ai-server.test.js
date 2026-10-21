@@ -112,9 +112,27 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   check('…the model gets the brain-dump instructions (not the day-planning ones), with what you wrote as content', res.status === 200 && /small tasks/.test(tsent.messages[0].content) && !/adjust today's plan/.test(tsent.messages[0].content) && tsent.messages[1].content.includes('call the GP'));
   check('…and it counts towards the same daily limit and budget', Number((await sql('select requests from public.ai_usage where user_id = $1 order by day desc limit 1', [C]))[0].requests) > 0);
   check('the logs still hold only an outcome and a time (nothing you wrote)', lines.every(l => /^ai-plan \S+ \d{3} \d+ms$/.test(l)) && !lines.join(' ').includes('insurance'));
+  // Version 2 (1.41.0): a task may come back with a suggested list. Version 1 (an older app) is still answered, without.
+  const okReply = async (url, init) => { tsent = JSON.parse(init.body); return new Response(JSON.stringify({ choices: [{ message: { content: '{"items":[],"notTasks":[],"explanation":"Ok."}' }, finish_reason: 'stop' }], usage: { prompt_tokens: 500, completion_tokens: 20 } }), { status: 200 }); };
+  const t2 = { ...tctx, version: 2 };
+  tsent = null; res = await call({ context: t2 }, {}, { fetchImpl: okReply });
+  check('a version 2 brain dump is accepted, and the model gets the instructions with the list rule and "list" in the schema', res.status === 200 && tsent && /"list" \(optional/.test(tsent.messages[0].content) && /"list":\{"type":"string"/.test(tsent.messages[0].content) && tsent.messages[1].content.includes('call the GP'));
+  tsent = null; res = await call({ context: tctx }, {}, { fetchImpl: okReply });
+  check('a version 1 brain dump is still accepted, and the model gets the old instructions with no list rule and no "list" in the schema', res.status === 200 && tsent && !/"list"/.test(tsent.messages[0].content) && !/Moving house/.test(tsent.messages[0].content) && /small tasks/.test(tsent.messages[0].content));
+  tsent = null;
+  const r3 = await call({ context: { ...tctx, version: 3 } }, {}, { fetchImpl: okReply });
+  const r0 = await call({ context: { ...t2, version: 0 } }, {}, { fetchImpl: okReply });
+  const rx = await call({ context: { ...t2, lists: ['Errands'] } }, {}, { fetchImpl: okReply });
+  check('version 3 (or 0), and a version 2 request carrying your list names, are refused with 400 before any model call', r3.status === 400 && r0.status === 400 && rx.status === 400 && tsent === null, [r3.status, r0.status, rx.status]);
   env = { ...env, AI_PROVIDER: 'mock', AI_MODEL: 'mock:good' };
+  const lctx = { ...t2, text: 'Moving house: book a van, pack the books, cancel the broadband\nCall the GP' };
+  res = await call({ context: lctx }); body = await res.json();
+  const lout = JSON.parse(body.output);
+  check('the practice reply for version 2 can carry lists: "Moving house" on the three tasks after the heading, none on the one on its own line', res.status === 200 && body.ok && lout.items.length === 4 && lout.items.filter(i => i.list === 'Moving house').length === 3 && lout.items.find(i => /GP/.test(i.title)).list === undefined, lout.items);
+  res = await call({ context: { ...lctx, version: 1 } }); body = await res.json();
+  check('…and the practice reply for version 1 carries none', res.status === 200 && body.ok && JSON.parse(body.output).items.length === 4 && JSON.parse(body.output).items.every(i => !('list' in i)), body.output);
 
-  console.log('\n[2c] AI help with notes through the same function and limits');
+  console.log('\n[2c]AI help with notes through the same function and limits');
   const cctx = { version: 1, action: 'connect', notes: [{ id: 'nA', title: '', text: 'Friday meeting with Sam about the podcast' }, { id: 'nB', title: 'Secret note title', text: 'Wifi password is in the drawer' }],
     projects: [{ id: 'pjPod', title: 'Start a podcast about nursing', summary: 'Short episodes with nurses about shift work.' }] };
   res = await call({ context: cctx }); body = await res.json();

@@ -111,6 +111,60 @@ const SEED = `s => {
   check('before the day is built it\'s there too (queued tasks are picked first when you build)', await mock.exists('#slot-energy [data-action=mind-open]'));
   check('practice mode still contacted no server', srv.log.length === logBefore);
 
+  console.log('\n[2d] "Add what\'s on my mind" can put tasks into a list in Tasks (practice mode)');
+  {
+    const itemsL = () => mock.ev(`[...document.querySelectorAll('#mindItems .mind-item')].map(li => { const sel = li.querySelector('[data-s=mind-list]'); return { t: li.querySelector('.font-medium').textContent, on: li.querySelector('input').checked, sel: sel ? sel.value : null, label: sel ? sel.selectedOptions[0].textContent : null, h: sel ? Math.round(sel.getBoundingClientRect().height) : null, where: li.querySelector('[data-s=mind-where]')?.textContent || '' }; })`);
+    const pickL = (key, value) => mock.ev(`(() => { const el = document.querySelectorAll('#mindItems [data-s=mind-list]')[${key}]; Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set.call(el, ${JSON.stringify(value)}); el.dispatchEvent(new Event('change', { bubbles: true })); return el.value; })()`);
+    const openMind = async text => {
+      await mock.click('[data-action=mind-open]'); await mock.until(`document.getElementById('mindText')`);
+      await mock.type('#mindText', text);
+      await mock.click('[data-action=mind-ask]'); await mock.until(`document.getElementById('mindCard')?.dataset.phase === 'review'`);
+    };
+    await open(mock, MOCK);
+    await mock.setData(SEED.replace(/}$/, `  s.tasks.lists = []; s.tasks.items = []; s.queue = []; s.lists.admin = s.lists.admin.filter(x => x.id !== 'a-gp');\n}`)); await mock.until(`document.querySelector('[data-action=evening]')`);
+    const before = await mock.data();
+    await openMind('Moving house: book a van, pack the books, cancel the broadband\ncall the GP');
+    let its = await itemsL();
+    check('four tasks suggested; the three under the heading say "Where it goes": “New list: Moving house”, and the one on its own is on “Your queue”',
+      its.length === 4 && its.filter(i => i.sel === 'new:Moving house' && i.label === 'New list: Moving house').length === 3 && /GP/i.test(its.find(i => i.sel === '').t) && its.find(i => i.sel === '').label === 'Your queue', its);
+    check('the hint says 3 of these go into a new list, “Moving house”, in Tasks', /^3 of these go into a new list, “Moving house”, in Tasks\./.test(await mock.text('[data-s=mind-list-hint]')), await mock.text('[data-s=mind-list-hint]'));
+    check('…each line says where it goes (a new list in Tasks, or the queue)', its.filter(i => /Goes into Tasks, in “Moving house” \(a new list\)/.test(i.where)).length === 3 && /Goes in your queue/.test(its.find(i => i.sel === '').where), its.map(i => i.where));
+    check('nothing is saved before “Add”', eq((await mock.data()).tasks, before.tasks) && eq((await mock.data()).queue, before.queue));
+    check('every “Where it goes” select is at least 44 px tall', its.every(i => i.h >= 44), its.map(i => i.h));
+    await mock.click('[data-action=mind-add]'); await sleep(300);
+    let after = await mock.data();
+    const mhl = after.tasks.lists.filter(l => l.name === 'Moving house');
+    const mhi = after.tasks.items.filter(t => mhl[0] && t.listId === mhl[0].id);
+    check('Add: Tasks has one list “Moving house” with those 3 tasks, none with a date', mhl.length === 1 && after.tasks.lists.length === 1 && mhi.length === 3 && ['book a van', 'pack the books', 'cancel the broadband'].every(n => mhi.some(t => t.title.toLowerCase().includes(n))) && mhi.every(t => t.due === null), after.tasks);
+    check('…and the one on its own went to the queue, not into Tasks', after.queue.length === 1 && /GP/i.test(after.queue[0].title) && after.queue[0].taskId === null && after.tasks.items.length === 3, after.queue);
+    check('…the message names “Moving house” as a new list in Tasks, with Undo', (await mock.text('#toast')).includes('3 to “Moving house” (a new list in Tasks)') && (await mock.text('#toast')).includes('1 to your queue') && (await mock.exists('[data-action=mind-undo]')), await mock.text('#toast'));
+    check('…today\'s plan and energy are untouched', eq(after.days, before.days) && eq(after.context, before.context));
+    await mock.click('[data-action=mind-undo]'); await sleep(300);
+    after = await mock.data();
+    check('Undo: the 3 tasks and the new list are gone, and the GP task is gone from the queue', after.tasks.lists.length === 0 && after.tasks.items.length === 0 && after.queue.length === 0 && (await mock.text('#toast')).includes('Taken back'), { tasks: after.tasks, queue: after.queue });
+    // A list they already have.
+    await mock.setData(`s => { s.tasks.lists = [{ id: 'tlErr', name: 'Errands' }]; s.tasks.items = []; s.queue = []; }`); await mock.until(`document.querySelector('[data-action=evening]')`);
+    await openMind('errands: buy stamps, post the parcel');
+    its = await itemsL();
+    check('with a Tasks list “Errands”, both tasks default to “Errands (in Tasks)”, and there is no “new list” hint', its.length === 2 && its.every(i => i.sel === 'id:tlErr' && i.label === 'Errands (in Tasks)') && !(await mock.exists('[data-s=mind-list-hint]')), its);
+    await mock.click('[data-action=mind-add]'); await sleep(300);
+    after = await mock.data();
+    check('Add: both go into Errands, no new list is made, and the message says “in Tasks”', after.tasks.lists.length === 1 && after.tasks.items.length === 2 && after.tasks.items.every(t => t.listId === 'tlErr') && after.queue.length === 0 && (await mock.text('#toast')).includes('2 to “Errands” in Tasks'), [after.tasks, await mock.text('#toast')]);
+    await mock.click('[data-action=mind-undo]'); await sleep(300);
+    after = await mock.data();
+    check('Undo takes the two tasks out and keeps your list “Errands”', after.tasks.items.length === 0 && eq(after.tasks.lists, [{ id: 'tlErr', name: 'Errands' }]));
+    // Changing one task's select to the queue.
+    await openMind('errands: buy stamps, post the parcel');
+    await pickL(1, '');
+    its = await itemsL();
+    check('changing one task\'s “Where it goes” to “Your queue” updates its line', its[0].sel === 'id:tlErr' && its[1].sel === '' && /Goes in your queue/.test(its[1].where) && /Goes into Tasks, in “Errands”/.test(its[0].where), its);
+    await mock.click('[data-action=mind-add]'); await sleep(300);
+    after = await mock.data();
+    check('Add: just that one goes to the queue; the other goes into Errands', after.queue.length === 1 && /post the parcel/i.test(after.queue[0].title) && after.tasks.items.length === 1 && /buy stamps/i.test(after.tasks.items[0].title) && after.tasks.items[0].listId === 'tlErr', [after.queue, after.tasks.items]);
+    await mock.click('[data-action=mind-undo]'); await sleep(300);
+    check('practice mode still contacted no server', srv.log.length === logBefore);
+  }
+
   console.log('\n[3] With an account: the ai-plan Edge Function (its real code, a mock model)');
   const D = await device('edge');
   await open(D, EDGE); await D.until(`localStorage.getItem('myday.data.v4')`); await D.setData(SEED); // once the app has saved its first copy

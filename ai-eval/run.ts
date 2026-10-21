@@ -181,14 +181,14 @@ function expectations(sc: Scenario, v: View | null): Expectations {
 }
 
 // ---------- "Add what's on my mind": what a useful answer does ----------
-interface TasksView { items: { title: string; category: string; minutes: number; repeat: boolean }[]; notTasks: string }
+interface TasksView { items: { title: string; category: string; minutes: number; repeat: boolean; list: string | null }[]; notTasks: string }
 function rawTasksView(raw: unknown): TasksView | null {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
   const r = raw as Record<string, unknown>;
   if (!Array.isArray(r.items)) return null;
   const items = r.items.filter(x => x && typeof x === 'object').map(x => {
     const i = x as Record<string, unknown>;
-    return { title: String(i.title ?? ''), category: String(i.category ?? ''), minutes: Number(i.minutes) || 0, repeat: i.repeat === true };
+    return { title: String(i.title ?? ''), category: String(i.category ?? ''), minutes: Number(i.minutes) || 0, repeat: i.repeat === true, list: typeof i.list === 'string' && i.list.trim() ? i.list.trim() : null };
   });
   return { items, notTasks: Array.isArray(r.notTasks) ? r.notTasks.filter(n => typeof n === 'string').join(' | ') : '' };
 }
@@ -207,6 +207,16 @@ function tasksExpectations(sc: TasksScenario, v: TasksView | null, text: string)
   if (e.oneOff) out.oneOff = !!v && e.oneOff.every(re => matching(re).every(i => !i.repeat));
   if (e.notTasks) out.notTasks = !!v && e.notTasks.every(re => re.test(v.notTasks));
   out.small = !!v && v.items.every(i => i.minutes > 0 && i.minutes <= (e.maxMinutes ?? 60));
+  // Lists (version 2): groups that belong together share one list; tasks on their own and repeating ones have none;
+  // never more than two different names; a list you have is matched.
+  const listed = v ? v.items.filter(i => i.list) : [];
+  if (e.together) out.together = !!v && e.together.every(group => {
+    const its = v.items.filter(i => group.some(re => re.test(i.title)));
+    return its.length >= 2 && its.every(i => i.list && K.sameList(i.list) === K.sameList(its[0].list!));
+  });
+  if (e.alone) out.alone = !!v && e.alone.every(re => matching(re).every(i => !i.list));
+  out.lists = !!v && new Set(listed.map(i => K.sameList(i.list!))).size <= (e.maxLists ?? 2) && listed.every(i => !i.repeat);
+  if (e.matchesList) out.matchesList = !!v && listed.some(i => K.sameList(i.list!) === K.sameList(e.matchesList!));
   // Nothing invented: every task shares a word (by its first four letters) with what was written. A rough guide.
   const said = wordsOf(text);
   out.fromText = !!v && v.items.every(i => wordsOf(i.title).some(w => said.some(t => t.startsWith(w.slice(0, 4)) || w.startsWith(t.slice(0, 4)))));
@@ -624,15 +634,20 @@ function prepare(sc: AnyScenario): Prepared {
         rec.expectFinal = tasksExpectations(sc, finalTasksView(p), sc.text);
         if (!p) return;
         rec.priorities = p.items.length; rec.adjusted = p.adjusted;
-        rec.shown = { rest: false, priorities: p.items.map(i => `${i.title} · ${i.category} · ${i.minutes} min${i.repeat ? ' · repeating' : ''}${i.already ? ` (already on ${i.already})` : ''}`), explanation: p.explanation, missing: p.notTasks.map(n => `not a task: ${n}`) };
-        // Adding them all (as if all ticked, except those already there) must change only the lists and the queue,
-        // and only by adding.
+        rec.shown = { rest: false, priorities: p.items.map(i => `${i.title} · ${i.category} · ${i.minutes} min${i.repeat ? ' · repeating' : ''}${i.list ? ` · list: ${i.list}${i.listId ? ' (yours)' : ''}` : ''}${i.already ? ` (already on ${i.already})` : ''}`), explanation: p.explanation, missing: p.notTasks.map(n => `not a task: ${n}`) };
+        // Adding them all (as if all ticked, except those already there), each where the card would put it by
+        // default (a list you have; a new list only when two or more share it), must change only the lists, the
+        // queue and Tasks, and only by adding.
+        const shared = (l: string) => p.items.filter(x => x.list && !x.listId && K.sameList(x.list) === K.sameList(l)).length;
         const was = JSON.parse(JSON.stringify(K.getSnapshot().data));
-        const r = K.applyMind(p.items.filter(i => !i.already).map(i => ({ title: i.title, category: i.category, minutes: i.minutes, repeat: i.repeat })));
+        const r = K.applyMind(p.items.filter(i => !i.already).map(i => ({ title: i.title, category: i.category, minutes: i.minutes, repeat: i.repeat,
+          inList: i.repeat ? null : i.listId ? { id: i.listId } : i.list && shared(i.list) >= 2 ? { name: i.list } : null })));
         const now = K.getSnapshot().data;
-        const rest = (d: typeof now) => JSON.stringify({ ...d, lists: null, queue: null, saves: null });
+        const rest = (d: typeof now) => JSON.stringify({ ...d, lists: null, queue: null, tasks: null, saves: null });
         const onlyAdded = (['learning', 'admin', 'health'] as const).every(c => JSON.stringify(now.lists[c].slice(0, was.lists[c].length)) === JSON.stringify(was.lists[c]))
-          && was.queue.every((q: { qid: string }) => now.queue.some(x => x.qid === q.qid));
+          && was.queue.every((q: { qid: string }) => now.queue.some(x => x.qid === q.qid))
+          && JSON.stringify(now.tasks.items.slice(0, was.tasks.items.length)) === JSON.stringify(was.tasks.items)
+          && JSON.stringify(now.tasks.lists.slice(0, was.tasks.lists.length)) === JSON.stringify(was.tasks.lists);
         rec.savedSafely = (r.ok || (r.reason === 'nothing' && !p.items.some(i => !i.already))) && rest(now) === rest(was) && onlyAdded;
       },
     };

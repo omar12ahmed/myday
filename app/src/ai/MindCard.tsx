@@ -3,27 +3,41 @@ import { useRef, useState } from 'react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { CategoryChip } from '../components/CategoryChip';
-import { Field, TextArea } from '../components/Field';
+import { Field, Select, TextArea } from '../components/Field';
 import { Choice, LinkButton, Note } from '../components/parts';
 import { CAT_LABEL } from '../data/plan';
 import { getSnapshot } from '../data/storage';
 import { TASKS_LIMITS } from '../../../supabase/functions/_shared/ai/tasks.ts';
-import { applyMind, buildTasksContext, checkTasksReply, type CheckedMind, type MindItem, type MindUndo } from './mind';
+import type { TaskList } from '../data/types';
+import { applyMind, buildTasksContext, checkTasksReply, sameList, type CheckedMind, type ListChoice, type MindItem, type MindUndo } from './mind';
 import { AI_MODE, askModel } from './request';
 
 type Phase =
   | { at: 'write' }
   | { at: 'thinking' }
-  | { at: 'review'; p: CheckedMind; model: string }
+  | { at: 'review'; p: CheckedMind; model: string; lists: TaskList[] }
   | { at: 'error'; message: string };
 
 // "Add what's on my mind": write anything, get small tasks back, tick the ones you want. Nothing is added until
 // "Add"; the reply is checked first (mind.ts), and tasks already on your lists or queue start unticked.
+// A one-off task can go into one of your Tasks lists, or a new one the reply suggested (1.41.0): "Where it goes" on
+// each. A suggested list that matches one of yours is chosen; a new one is chosen only when two or more tasks share
+// it, so a single stray task never makes a list by itself.
+
+// "Where it goes", as the picker holds it: '' (the queue), 'id:<list id>' or 'new:<name>'. Its label wraps the picker,
+// so the words and the picker are one tap target (44 px or more).
+const toChoice = (v: string): ListChoice => (v.startsWith('id:') ? { id: v.slice(3) } : v.startsWith('new:') ? { name: v.slice(4) } : null);
+function defaultLists(items: MindItem[]): Record<string, string> {
+  const shared = new Map<string, number>();
+  for (const i of items) if (i.list && !i.listId) shared.set(sameList(i.list), (shared.get(sameList(i.list)) ?? 0) + 1);
+  return Object.fromEntries(items.map(i => [i.key, i.listId ? `id:${i.listId}` : i.list && (shared.get(sameList(i.list)) ?? 0) >= 2 ? `new:${i.list}` : '']));
+}
 export function MindCard({ onClose, onAdded }: { onClose: () => void; onAdded: (u: MindUndo, message: string) => void }) {
   const [phase, setPhase] = useState<Phase>({ at: 'write' });
   const [text, setText] = useState('');
   const [picked, setPicked] = useState<Record<string, boolean>>({});
   const [repeat, setRepeat] = useState<Record<string, boolean>>({});
+  const [listOf, setListOf] = useState<Record<string, string>>({});
   const seq = useRef(0);
   const ctrl = useRef<AbortController | null>(null);
 
@@ -40,11 +54,13 @@ export function MindCard({ onClose, onAdded }: { onClose: () => void; onAdded: (
     const p = checked.proposal;
     setPicked(Object.fromEntries(p.items.map(i => [i.key, !i.already])));
     setRepeat(Object.fromEntries(p.items.map(i => [i.key, i.repeat])));
-    setPhase({ at: 'review', p, model: reply.model });
+    setListOf(defaultLists(p.items));
+    setPhase({ at: 'review', p, model: reply.model, lists: getSnapshot().data.tasks.lists });
   }
   function cancel() { seq.current++; ctrl.current?.abort(); onClose(); }
   function add(items: MindItem[]) {
-    const chosen = items.filter(i => picked[i.key]).map(i => ({ title: i.title, category: i.category, minutes: i.minutes, repeat: !!repeat[i.key] }));
+    const chosen = items.filter(i => picked[i.key]).map(i => ({ title: i.title, category: i.category, minutes: i.minutes, repeat: !!repeat[i.key],
+      inList: repeat[i.key] ? null : toChoice(listOf[i.key] ?? '') }));
     const r = applyMind(chosen);
     if (!r.ok) {
       setPhase({ at: 'error', message: r.reason === 'nothing' ? 'Those are all on your lists or queue already, so nothing was added.' : "Couldn't save just now — nothing was added. Please try again." });
@@ -93,11 +109,18 @@ export function MindCard({ onClose, onAdded }: { onClose: () => void; onAdded: (
       )}
 
       {phase.at === 'review' && (() => {
-        const { p, model } = phase;
+        const { p, model, lists } = phase;
         const n = p.items.filter(i => picked[i.key]).length;
+        // The new lists this reply suggests, and how many ticked one-off tasks are going into each.
+        const newNames = [...new Set(p.items.filter(i => i.list && !i.listId).map(i => i.list!))];
+        const going = (v: string) => p.items.filter(i => picked[i.key] && !repeat[i.key] && listOf[i.key] === v).length;
+        const nameOf = (v: string) => v.startsWith('id:') ? lists.find(l => l.id === v.slice(3))?.name ?? '' : v.slice(4);
         return (
           <>
             <p className="text-xs font-bold tracking-[.08em] uppercase text-fg-3 m-0 mb-2">Suggestions · nothing added yet</p>
+            {newNames.filter(nm => going(`new:${nm}`) > 0).map(nm => (
+              <p key={nm} className="text-[15px] m-0 mb-2.5" data-s="mind-list-hint">{going(`new:${nm}`)} of these go into a new list, “{nm}”, in Tasks. Change any of them under “Where it goes”.</p>
+            ))}
             {p.items.length ? (
               <ul className="list-none p-0 m-0 grid gap-2.5" id="mindItems">
                 {p.items.map(i => (
@@ -119,9 +142,21 @@ export function MindCard({ onClose, onAdded }: { onClose: () => void; onAdded: (
                           <Choice on={!repeat[i.key]} data-s="mind-once" onClick={() => setRepeat(s => ({ ...s, [i.key]: false }))}>One-off</Choice>
                           <Choice on={!!repeat[i.key]} data-s="mind-repeat" onClick={() => setRepeat(s => ({ ...s, [i.key]: true }))}>Repeating</Choice>
                         </div>
-                        <p className="text-sm text-fg-2 m-0 mt-1.5">{repeat[i.key]
+                        {!repeat[i.key] && (lists.length > 0 || newNames.length > 0) && (
+                          <label className="grid gap-1.5 mt-2.5 text-sm text-fg-2" data-s="mind-list-label">
+                            <span>Where it goes</span>
+                            <Select id={`mindList-${i.key}`} data-s="mind-list" value={listOf[i.key] ?? ''} onChange={e => setListOf(s => ({ ...s, [i.key]: e.target.value }))}>
+                              <option value="">Your queue</option>
+                              {lists.map(l => <option key={l.id} value={`id:${l.id}`}>{l.name} (in Tasks)</option>)}
+                              {newNames.map(nm => <option key={nm} value={`new:${nm}`}>New list: {nm}</option>)}
+                            </Select>
+                          </label>
+                        )}
+                        <p className="text-sm text-fg-2 m-0 mt-1.5" data-s="mind-where">{repeat[i.key]
                           ? `Added to your ${CAT_LABEL[i.category]} list, so it comes round regularly.`
-                          : 'Goes in your queue; MyDay fits it into a coming day.'}</p>
+                          : listOf[i.key]
+                            ? `Goes into Tasks, in “${nameOf(listOf[i.key])}”${listOf[i.key].startsWith('new:') ? ' (a new list)' : ''}. It waits under “Your tasks” until you pick it or give it a date.`
+                            : 'Goes in your queue; MyDay fits it into a coming day.'}</p>
                       </div>
                     )}
                   </li>
