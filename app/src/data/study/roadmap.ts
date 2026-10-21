@@ -63,6 +63,7 @@ export function focusCourse(st: StudyData, ix: StudyIndex): StudyCourse | null {
   const chosen = st.focusCourseId ? ix.course.get(st.focusCourseId) : null;
   const live = [...ix.course.values()].map(e => e.node).filter(c => !c.archived);
   // A completed pinned course must not strand the learner there when other work remains.
+  if (chosen && !chosen.node.archived && !(ix.courseTasks.get(chosen.node.id)?.length)) return chosen.node;
   if (chosen && !chosen.node.archived && ix.courseTasks.get(chosen.node.id)?.some(t => !t.done)) return chosen.node;
   return live.find(c => ix.courseTasks.get(c.id)!.some(t => !t.done)) || (chosen && !chosen.node.archived ? chosen.node : live[0]) || null;
 }
