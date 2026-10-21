@@ -41,7 +41,7 @@ suites run by default; none reads or changes real user records.
 From the `myday-site` folder:
 
 ```sh
-tests/run.sh                  # everything (about 12–15 minutes)
+tests/run.sh                  # everything (about 22–37 minutes at 1.40.0)
 tests/run.sh storage          # one suite (under a minute)
 tests/run.sh storage today    # several suites
 tests/run.sh app-storage app-today app-calendar-pay app-finance app-inbox app-tasks app-patterns patterns-rules app-study app-workout app-food app-final app-site   # the new app only (builds it first)
@@ -66,6 +66,14 @@ by default). The main kit stays in Los Angeles, because its suites check dates t
 these suites pass just after midnight and just before it.
 
 ## The suites
+
+Arabic reading audio adds two suites to the default run (53 suites on `arabic-reading-audio`):
+- `arabic-voice-player`: controlled fetch and Audio events against the real shared player, including sequences,
+  late fetch/body/play completions, Stop, leaving a text, failure and Slower; no browser or AI calls.
+- `app-reading-voice`: the real reading component in a temporary browser fixture. A virtual clip list tests checked,
+  partly checked and unheard states without changing the real audit. It checks every early text, the six unvowelled
+  texts, transliteration, vowel toggles, 44 px targets and a 375 px layout; controlled playback plus native Audio
+  decoding and automatic advancement using existing checked local MP3s. No external service or saved user data.
 
 | Suite | What it covers |
 |---|---|

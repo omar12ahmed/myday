@@ -7,6 +7,7 @@
 // `Mixed` component finds them). Vowelling is a heuristic: marks per Arabic letter, full at 0.4 or more (long-vowel
 // letters and a word's last letter carry no mark, so even fully vowelled words sit near 0.5), none at 0.
 import { readFileSync } from 'node:fs';
+import { kind, letters, readingPassages, vowelling } from './arabic-reading-sentences.mjs';
 
 const root = new URL('../../', import.meta.url);
 const read = p => JSON.parse(readFileSync(new URL(p, root), 'utf8'));
@@ -17,17 +18,6 @@ const families = read('content/teaching/arabic/word-families.json');
 const voiced = read('content/arabic-audio/audio-audit.json');
 
 const RUN = /[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]+(?:[\s،؛؟]+[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]+)*/g;
-const LETTER = /[ء-يٱ]/g, MARK = /[ً-ْٰ]/g;
-const letters = s => (s.match(LETTER) || []).length;
-const vowelling = s => { const n = letters(s), m = (s.match(MARK) || []).length; return m === 0 ? 'none' : m / n >= 0.4 ? 'full' : 'partial'; };
-const kind = s => {
-  const words = s.trim().split(/\s+/).filter(w => letters(w));
-  if (words.every(w => letters(w) === 1)) return 'letters';
-  const sentences = s.split(/[.؟!?]\s*/).filter(x => letters(x)).length;
-  if (sentences >= 2 && words.length >= 12) return 'passage';
-  if (/[.؟!?]\s*$/.test(s.trim()) || words.length >= 5) return 'sentence';
-  return words.length === 1 ? 'word' : 'phrase';
-};
 
 // Each source field: where it's shown, and whether the field is Arabic only (the whole field is one piece).
 const fields = [];
@@ -72,14 +62,13 @@ if (process.argv.includes('--json')) { console.log(JSON.stringify({ rows, total 
 // The rounds proposed in specs/arabic-audio-course.md: fully vowelled pieces only, never a letter drill, never one
 // already voiced; a reading text as its sentences; a piece in an earlier round isn't counted again.
 if (process.argv.includes('--rounds')) {
-  const sentences = t => t.split(/(?<=[.؟!])\s+/).map(s => s.trim()).filter(s => letters(s));
   const pick = (values, whole) => [...new Set(values.filter(v => typeof v === 'string').flatMap(v => whole ? [v.trim()] : [...v.matchAll(RUN)].map(m => m[0].trim())))]
     .filter(p => letters(p) >= 2 && vowelling(p) === 'full' && kind(p) !== 'letters');
-  const vowelledTexts = course.assets.filter(a => a.text_ar && vowelling(a.text_ar) === 'full');
+  const passages = readingPassages(root);
   const rounds = [
     ['Round two: the lessons’ headline examples', pick(course.lessons.map(l => l.example?.text_ar), true)],
+    [`Round three: the ${Object.keys(passages).length} vowelled reading texts, by sentence`, [...new Set(Object.values(passages).flatMap(parts => parts.map(p => p.spoken)))]],
     ['Round three: teaching examples, practice and solutions', pick(Object.values(teaching.lessons).flatMap(l => [l.example, l.practice, l.solution, l.explanation]), false)],
-    [`Round three: the ${vowelledTexts.length} vowelled reading texts, by sentence`, [...new Set(vowelledTexts.flatMap(a => sentences(a.text_ar)))]],
     ['Round three: the sound pairs and the word families’ forms', pick([...course.assets.flatMap(a => (a.pairs || []).flatMap(p => [p.a, p.b])), ...families.families.flatMap(f => [f.pattern_en, ...Object.values(f.word_notes || {}), ...(f.also_in_examples || []).flatMap(x => [x.form_ar, x.note_en])])], false)],
     ['Round three: lesson checks and answers, voiced only once the answer is shown', pick([...course.assessments.flatMap(a => (a.questions || []).map(q => q.prompt)), ...keys.answer_keys.map(k => k.expected_answer)], false)],
   ];

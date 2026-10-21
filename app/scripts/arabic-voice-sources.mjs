@@ -6,23 +6,8 @@
 // a voice (the marks are how a listener and the cross-check know it was read right), never a letter drill (it would
 // be read as letter names).
 import { readFileSync } from 'node:fs';
-
-export const LETTER = /[ء-يٱ]/g;
-const MARK = /[ً-ْٰ]/g;
-export const letters = s => (s.match(LETTER) || []).length;
-// Marks per Arabic letter: full at 0.4 or more (long-vowel letters and a word's last letter carry no mark, so even a
-// fully vowelled word sits near 0.5), none at 0.
-export const vowelling = s => { const n = letters(s), m = (s.match(MARK) || []).length; return m === 0 ? 'none' : m / n >= 0.4 ? 'full' : 'partial'; };
-export const kind = s => {
-  const words = s.trim().split(/\s+/).filter(w => letters(w));
-  if (words.every(w => letters(w) === 1)) return 'letters';
-  const sentences = s.split(/[.؟!?]\s*/).filter(x => letters(x)).length;
-  if (sentences >= 2 && words.length >= 12) return 'passage';
-  if (/[.؟!?]\s*$/.test(s.trim()) || words.length >= 5) return 'sentence';
-  return words.length === 1 ? 'word' : 'phrase';
-};
-// Worth a voice: fully vowelled, not a letter drill, at least two letters.
-export const voiceable = s => typeof s === 'string' && letters(s) >= 2 && vowelling(s) === 'full' && kind(s) !== 'letters';
+import { readingPassages, voiceable } from './arabic-reading-sentences.mjs';
+export { LETTER, letters, vowelling, kind, voiceable } from './arabic-reading-sentences.mjs';
 
 // The voiced sources, in the order of the rounds. Each gives the exact texts it voices (as the app shows them).
 export function voiceSources(root) {
@@ -34,5 +19,6 @@ export function voiceSources(root) {
     { id: 'starter-words', round: 1, label: 'starter words and their examples', texts: uniq(course.lexicon_seed.flatMap(w => [w.form_ar, w.example_ar])) },
     // Round two (1.40.0): each lesson's headline example, where it's fully vowelled and not a letter drill.
     { id: 'lesson-examples', round: 2, label: 'lessons’ headline examples', texts: uniq(course.lessons.map(l => l.example?.text_ar).filter(voiceable)) },
+    { id: 'reading-texts', round: 3, label: 'vowelled reading texts, by sentence', texts: uniq(Object.values(readingPassages(root)).flatMap(parts => parts.map(p => p.spoken))) },
   ];
 }

@@ -1,7 +1,7 @@
 import { useContext, type ReactNode } from 'react';
 import { PronunciationContext } from './pronunciationContext';
 
-function Reading({ text, block = false, prepared }: { text: string; block?: boolean; prepared?: string }) {
+export function Reading({ text, block = false, prepared }: { text: string; block?: boolean; prepared?: string }) {
   const { enabled, read } = useContext(PronunciationContext);
   const reading = enabled ? prepared ? { text: prepared, incomplete: false, note: undefined } : read(text) : null;
   if (!reading || !/[ء-ي]/.test(text)) return null;

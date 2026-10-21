@@ -53,6 +53,15 @@ Read this file before making any changes. If something here seems to conflict wi
   my mind" (1.39.0 before it: a voice for the starter words). On the server: `ai-plan` version 21, with Ask MyDay’s
   instructions at `myday-ask-v16` and the brain dump’s at `myday-tasks-v2`. A release that changes AI instructions or
   server code needs `ai-plan` deployed (on my Mac) before it's published.
+- **Prepared: 1.41.0 on `arabic-reading-audio` (round three (a)), not published.** Sentence and whole-text playback
+  for the 8 vowelled reading texts; 59 positions, 58 distinct spoken texts, 3 reused clips and 55 new clips (2,177 characters). All 55
+  generated and independently transcribed blind with Gemini; main session reviewed every transcription, no retakes
+  indicated (US$0.00886875; `content/arabic-audio/cross-check-reading-texts.json`). Owner listened to all 55 on 21 Oct:
+  "all fine". All are checked; 286 clips ship, covering all 58 reading sentence texts. No saved-data, server or database
+  change. `app/scripts/review-arabic-audio.mjs <source>` makes a local checklist for any future unheard clips.
+  The temporary TTS-only key was deleted after generation. Final build and lint passed; full run 53/53 suites,
+  4,894 checks, 0 failed (24.2 minutes). The initial Calendar network wait passed on the final run (108/0).
+  Owner confirmed backups exported on every device.
 - **Publishing happens only on my Mac.** The steps, in this order:
   1. Remind me to export backups on every device.
   2. Commit the release on `react-rebuild` and run all the checks.
@@ -308,12 +317,13 @@ suggestion. All the new fields are optional and kept by 1.36.0.
   - **Arabic Fuṣḥā:** the curriculum package read-only, lesson sessions, starter words and lesson checks in revision,
     transliteration, and word families on the vocabulary page (four roots linking 12 of the 48 starter words; MyDay's
     own authored file, checked at every build; nothing saved), and a synthesised voice for the 48 starter words and
-    their examples (1.39.0) and each lesson's headline example (1.40.0): one voice, made once and listened to before
-    shipping, labelled "Synthesised voice — a model to copy; checked by ear, not yet by a teacher"; clips keyed by
+    their examples (1.39.0), each lesson's headline example (1.40.0) and the 8 vowelled reading texts (prepared for
+    1.41.0): one voice, made once and listened to before shipping, labelled "Synthesised voice — a model to copy;
+    checked by ear, not yet by a teacher"; clips keyed by
     their exact text, with their audit, in `content/arabic-audio/`; which texts have a voice in
-    `app/scripts/arabic-voice-sources.mjs`; checked at every build by `app/scripts/prepare-audio.mjs`. The reading
-    texts and the rest of each lesson have no recordings. It never claims certified levels, and keeps the package's
-    0–100 evidence scores internal.
+    `app/scripts/arabic-voice-sources.mjs`; checked at every build by `app/scripts/prepare-audio.mjs`. The 6 unvowelled
+    B1/B2 reading texts and the rest of each lesson have no recordings. It never claims certified levels, and keeps
+    the package's 0–100 evidence scores internal.
 - **Health:** Workout, Daily exercises, Food (recipes, kitchen, shopping list), and Goal. Goal's estimates come from
   public guidance, labelled with their sources. It sets no calorie targets when someone is pregnant, after an eating
   disorder, or with a condition, and never calls food "good" or "bad".
@@ -336,8 +346,8 @@ suggestion. All the new fields are optional and kept by 1.36.0.
 ## Open ideas (not decided: ask me before building any of them)
 
 - **A voice across the whole Arabic course** (`specs/arabic-audio-course.md`; my answers, 20 Oct 2026: "1-6 yes").
-  Round two (the lessons' headline examples) shipped in 1.40.0. Next, round three: the 8 vowelled reading texts first
-  (by sentence), then the teaching examples, try it and solutions. In checks, answers and "try it", the voice only
+  Round two (the lessons' headline examples) shipped in 1.40.0. Round three (a), the 8 vowelled reading texts by sentence,
+  is prepared for 1.41.0 (not yet published). After that, round three (b): teaching examples, try it and solutions. In checks, answers and "try it", the voice only
   after the answer is shown. No voice for letter drills; one voice for everything. Text without vowel marks waits for
   a teacher or fluent speaker, and it's worth looking for one. `app/scripts/arabic-audio-inventory.mjs --rounds` sizes
   what's left.
@@ -538,7 +548,7 @@ Run the checks and report the results, including any failures.
   app-sync`.
 - After changing AI: also `tests/run.sh ai-rules ai-server app-ai`, and the opt-in `ai-deno` (the function's real
   entry under Deno; 24 checks).
-- **Before a release:** the full run, `tests/run.sh` with no names. That's 51 suites; at 1.40.0 it was 4,804 checks
+- **Before a release:** the full run, `tests/run.sh` with no names. That's 53 suites; at 1.41.0 it was 4,894 checks
   and took 22–37 minutes.
 - **Running the tests:**
   - Ports: `MYDAY_HTTP_PORT` (default 8765), `MYDAY_CDP_PORT` (9333), `MYDAY_SUPA_PORT` (54329), `MYDAY_LS_PORT`

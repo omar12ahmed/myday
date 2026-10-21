@@ -12,6 +12,7 @@
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { voiceSources } from './arabic-voice-sources.mjs';
+import { readingPassages } from './arabic-reading-sentences.mjs';
 
 const root = new URL('../../', import.meta.url);
 const fail = message => { throw new Error('Arabic audio: ' + message); };
@@ -50,7 +51,7 @@ if (!process.argv[2]) {
   rmSync(out, { recursive: true, force: true });
   mkdirSync(out, { recursive: true });
   for (const file of Object.values(shipped)) copyFileSync(new URL(file, clipsDir), new URL(file, out));
-  writeFileSync(new URL('app/src/study/arabic/voice-clips.json', root), JSON.stringify({ voice: audit.voice.name, label: audit.label, clips: shipped }));
+  writeFileSync(new URL('app/src/study/arabic/voice-clips.json', root), JSON.stringify({ voice: audit.voice.name, label: audit.label, clips: shipped, readings: readingPassages(root) }));
 }
 const per = sources.map(s => `${s.label} ${s.texts.filter(t => shipped[t]).length} of ${s.texts.length}`).join('; ');
 console.log(`Arabic audio: ${count.checked} clips listened to and shipped; ${count['to check'] + count.redo} not yet listened to, ${count['left out']} left out (no button). With a voice: ${per}.`);

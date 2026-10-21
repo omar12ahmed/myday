@@ -192,7 +192,7 @@ const wait = async sel => { for (let i = 0; i < 60; i++) { if (await exists(sel)
   check('a lesson whose example is a letter drill (no shipped clip) has no play button and no voice label', !clipFiles[noClip.example.text_ar] && !(await exists('[data-ar-example] [data-ar-clip]')) && !(await exists('[data-ar-voice-label]')));
 
   await go('study/arabic'); await wait('.arabic-entry');
-  check('the learning map says the starter words and each lesson\u2019s example have a synthesised voice to copy, and the reading texts and the rest of each lesson have no recordings yet', (await ev('document.body.textContent')).includes('The starter words (in Vocabulary) and each lesson\u2019s example have a synthesised voice to copy; the reading texts and the rest of each lesson have no recordings yet.'));
+  check('the learning map names the available reading-sentence voice and keeps the listening and speaking boundary', (await ev('document.body.textContent')).includes('The starter words (in Vocabulary), each lesson\u2019s example and some reading sentences have a synthesised voice to copy; the rest of each lesson has no recordings yet.') && (await ev('document.body.textContent')).includes('typed work never stands in for them.'));
   const swText = fs.readFileSync(path.join(served, 'sw.js'), 'utf8');
   const listIn = name => { const m = swText.match(new RegExp('const ' + name + ' = (\\[[^\\]]*\\])')); return m ? JSON.parse(m[1]) : null; };
   const audioList = listIn('AUDIO'), filesList = listIn('FILES');

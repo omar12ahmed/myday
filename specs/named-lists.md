@@ -1,7 +1,8 @@
 # Named lists from "Add what's on my mind": the plan
 
-**Status:** a plan for the owner's decision. Nothing is built.
-**Date:** 20 October 2026, after release 1.39.0.
+**Status:** option B accepted and released in 1.40.0 (21 October 2026). The original plan below is retained as
+historical context.
+**Original plan date:** 20 October 2026, after release 1.39.0.
 
 ## 1. The practical problem
 

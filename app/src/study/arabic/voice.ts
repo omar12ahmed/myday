@@ -10,12 +10,16 @@ const clips = audio.clips as Record<string, string>;
 export const clipFor = (text: string): string | null => clips[text] ?? null;
 export const hasVoice = Object.keys(clips).length > 0;
 export const voiceLabel = audio.label;
+export interface ReadingSentence { text: string; plain: string; spoken: string; line: number }
+const readings = audio.readings as Record<string, ReadingSentence[]>;
+export const readingFor = (id: string): ReadingSentence[] | null => readings[id] ?? null;
+export const hasReadingVoice = Object.values(readings).some(parts => parts.some(p => clipFor(p.spoken)));
 
 export const SLOWER_KEY = 'myday.arabic.slower';
 function initialSlower() { try { return localStorage.getItem(SLOWER_KEY) === 'yes'; } catch { return false; } }
 
-export interface VoiceState { playing: string | null; loading: string | null; failed: string | null; slower: boolean }
-let state: VoiceState = { playing: null, loading: null, failed: null, slower: initialSlower() };
+export interface VoiceState { playing: string | null; loading: string | null; failed: string | null; slower: boolean; sequence: string | null }
+let state: VoiceState = { playing: null, loading: null, failed: null, slower: initialSlower(), sequence: null };
 const listeners = new Set<() => void>();
 const set = (change: Partial<VoiceState>) => { state = { ...state, ...change }; listeners.forEach(l => l()); };
 export const subscribe = (l: () => void) => { listeners.add(l); return () => { listeners.delete(l); }; };
@@ -34,37 +38,61 @@ let player: HTMLAudioElement | null = null, objectUrl: string | null = null, tur
 
 function stop() {
   turn++;
-  if (player) { player.onended = null; player.pause(); }
+  if (player) { player.onended = null; player.onerror = null; player.pause(); }
   if (objectUrl) URL.revokeObjectURL(objectUrl);
   objectUrl = null;
-  set({ playing: null, loading: null });
+  set({ playing: null, loading: null, sequence: null });
 }
 
-// Play a clip, or stop it if it's the one playing. `key` names the button ("<word id>:word").
-export async function playOrStop(key: string, file: string) {
-  if (state.playing === key || state.loading === key) { stop(); return; }
+// A text's page stops only its own playback when you leave it; a different page cannot stop a newer clip.
+export function stopVoiceFor(prefix: string) {
+  if ([state.playing, state.loading, state.sequence].some(key => key === prefix || key?.startsWith(prefix + ':'))) stop();
+}
+
+interface Clip { key: string; file: string }
+async function start(items: Clip[], sequence: string | null) {
   stop();
+  if (!items.length) return;
   const mine = turn;
   player ??= new Audio();
   player.src = SILENCE;
   player.play().catch(() => {});
-  set({ loading: key, failed: null });
-  try {
-    const res = await fetch('arabic-audio/' + file);
-    if (!res.ok) throw new Error('clip ' + res.status);
-    const blob = await res.blob();
+  const play = async (index: number): Promise<void> => {
     if (mine !== turn) return;
-    objectUrl = URL.createObjectURL(blob);
-    player.src = objectUrl;
-    player.preservesPitch = true;
-    // Loading a clip resets the speed to the default one, so both are set.
-    player.defaultPlaybackRate = player.playbackRate = state.slower ? 0.75 : 1;
-    player.onended = () => { if (mine === turn) stop(); };
-    await player.play();
-    if (mine === turn) set({ loading: null, playing: key });
-  } catch {
-    if (mine !== turn) return;
-    stop();
-    set({ failed: key });
-  }
+    const { key, file } = items[index];
+    const failed = () => { if (mine === turn) { stop(); set({ failed: key }); } };
+    set({ playing: null, loading: key, failed: null, sequence });
+    try {
+      const res = await fetch('arabic-audio/' + file);
+      if (!res.ok) throw new Error('clip ' + res.status);
+      const blob = await res.blob();
+      if (mine !== turn) return;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      objectUrl = URL.createObjectURL(blob);
+      player!.src = objectUrl;
+      player!.preservesPitch = true;
+      player!.defaultPlaybackRate = player!.playbackRate = state.slower ? 0.75 : 1;
+      player!.onerror = failed;
+      player!.onended = () => {
+        if (mine !== turn) return;
+        if (index + 1 < items.length) void play(index + 1);
+        else stop();
+      };
+      await player!.play();
+      if (mine === turn) set({ loading: null, playing: key });
+    } catch { failed(); }
+  };
+  await play(0);
+}
+
+// Play one clip, cancelling any whole-text request, or stop the current clip.
+export async function playOrStop(key: string, file: string) {
+  if (state.playing === key || state.loading === key) { stop(); return; }
+  await start([{ key, file }], null);
+}
+
+// Only the current sentence is fetched; subsequent sentences follow its end, never a timer.
+export async function playSequenceOrStop(group: string, items: Clip[]) {
+  if (state.sequence === group) { stop(); return; }
+  await start(items, group);
 }

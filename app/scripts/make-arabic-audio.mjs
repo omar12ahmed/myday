@@ -31,6 +31,7 @@ for (const text of source.texts) {
   if (entry && entry.check !== 'redo') continue;
   const res = await fetch('https://texttospeech.googleapis.com/v1/text:synthesize', {
     method: 'POST',
+    signal: AbortSignal.timeout(30000),
     headers: { 'content-type': 'application/json', 'x-goog-api-key': key },
     body: JSON.stringify({ input: { text: spoken(text) }, voice: { languageCode: 'ar-XA', name: VOICE }, audioConfig: { audioEncoding: 'MP3', sampleRateHertz: 24000 } }),
   });
@@ -40,6 +41,8 @@ for (const text of source.texts) {
   writeFileSync(new URL(file, clips), audio);
   if (entry?.file && entry.file !== file) rmSync(new URL(entry.file, clips), { force: true });
   audit.clips[text] = { file, voice: VOICE, made: today, check: 'to check', ...(entry?.note ? { earlier: entry.note } : {}) };
+  // Keep completed clips in the audit even if a later request fails or the run is interrupted.
+  writeFileSync(auditFile, JSON.stringify(audit, null, 1) + '\n');
   made++; chars += text.length;
 }
 writeFileSync(auditFile, JSON.stringify(audit, null, 1) + '\n');

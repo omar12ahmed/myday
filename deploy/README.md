@@ -16,8 +16,11 @@ the `react-rebuild` branch.
 3. Run `deploy/publish-main.sh` (the default layout is **switch**). It builds the website from that commit and
    commits it to `main` in a temporary checkout. Your working folder isn't touched.
 4. Run `git push origin main`. Pages publishes within a few minutes. Browsers may keep the previous page for
-   up to about 10 minutes (Pages' normal caching); a reload after that shows the new release. There's no
-   service worker or offline cache, so nothing else needs clearing, and saved data is never cleared.
+   up to about 10 minutes (Pages' normal caching); reload while online, then check the version in step 5.
+   Since 1.10.0, a service worker caches each release so the app can open offline. Page loads try the network
+   first, falling back to the cached page if needed; a new service worker replaces the older app cache automatically.
+   Since 1.39.0, Arabic audio has a separate cache: each clip is kept after its first play and retained across
+   releases; clips no longer used are removed. Updates use the normal reload flow; leave saved data in place.
    If the site hasn't changed after 10 minutes, check that GitHub started a build (`gh run list --limit 2`); if the
    last one is for the previous commit, ask for one: `gh api -X POST repos/omar12ahmed/myday/pages/builds` (it
    publishes `main` as it is). This happened once, with 1.4.0.

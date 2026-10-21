@@ -20,7 +20,8 @@ import { Ar, Mixed } from './Ar';
 import { familyOf } from './families';
 import { Root, WordFamilies } from './WordFamilies';
 import { PlayButton, VoiceLabel, VoiceNote } from './Listen';
-import { hasVoice } from './voice';
+import { hasReadingVoice, hasVoice } from './voice';
+import { ReadingVoice } from './ReadingVoice';
 import { Pronunciation, PronunciationControls } from './Pronunciation';
 import { TeachingLesson } from '../teaching/TeachingLesson';
 import texts from './data/texts.json';
@@ -79,7 +80,7 @@ function MapView({ data }: { data: MyDayData }) {
       <h2 className="text-[28px] lg:text-[34px] mb-1">From first sounds to independent use.</h2>
       <Ar block className="text-[26px] text-fg-2 mt-0">العربية الفصحى</Ar>
       <p>Modern Standard Arabic, one small session at a time: script and sounds first, then sentences, reading, listening and writing.</p>
-      <p className="text-sm text-fg-2 flex gap-2 items-start"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />{hasVoice ? 'The starter words (in Vocabulary) and each lesson’s example have a synthesised voice to copy; the reading texts and the rest of each lesson have no recordings yet. ' : 'No recordings are included yet. '}For listening and speaking, use a verified recording or a fluent speaker; typed work never stands in for them.</p>
+      <p className="text-sm text-fg-2 flex gap-2 items-start"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />{hasVoice ? hasReadingVoice ? 'The starter words (in Vocabulary), each lesson’s example and some reading sentences have a synthesised voice to copy; the rest of each lesson has no recordings yet. ' : 'The starter words (in Vocabulary) and each lesson’s example have a synthesised voice to copy; the reading texts and the rest of each lesson have no recordings yet. ' : 'No recordings are included yet. '}For listening and speaking, use a verified recording or a fluent speaker; typed work never stands in for them.</p>
       <div className="rounded-tile bg-surface p-4 border border-outline mt-4" data-ar-next={step.resume ? 'resume' : 'next'}>
         <Eyebrow>{step.resume ? 'Pick up where you left off' : started ? 'Your next small step' : 'Your first small step'}</Eyebrow>
         <h3>{lessonIndex[step.lessonId].title}</h3>
@@ -328,7 +329,7 @@ function ResourceLinks({ ids }: { ids: string[] }) {
 function TextsIndex() {
   return <>
     <Card><Eyebrow><Library className="inline mr-1" size={18} aria-hidden="true" /> Reading texts</Eyebrow><h2>Short texts written for this course</h2>
-      <p className="mb-0">Original, fictional texts from beginner to intermediate. Early texts carry full vowel marks; later ones are written as Arabic usually is, without them. No recordings yet.</p>
+      <p className="mb-0">Original, fictional texts from beginner to intermediate. Early texts carry full vowel marks; later ones are written as Arabic usually is, without them. {hasReadingVoice ? 'Tap a sentence where a voice is available to hear it.' : 'No recordings yet.'}</p>
     </Card>
     <div className="grid sm:grid-cols-2 gap-3 mb-4">{texts.assets.map(a => <a key={a.id} href={href(a.id)} data-ar-text={short(a.id)} className="block no-underline text-fg rounded-card border border-outline bg-surface shadow-card p-4 hover:border-outline-strong focus-visible:outline-2 focus-visible:outline-primary">
       <span className="text-xs font-bold text-primary uppercase tracking-wide">{a.stage_target} · {a.type === 'original_text' ? 'Text' : a.type === 'structured_data' ? 'Timetable' : 'Sound pairs'}</span>
@@ -353,7 +354,7 @@ function TextView({ asset: a }: { asset: Asset }) {
         <Button inline variant={vowels ? 'primary' : 'ghost'} aria-pressed={vowels} data-action="ar-vowels" onClick={() => setVowels(true)}>With vowel marks</Button>
         <Button inline variant={!vowels ? 'primary' : 'ghost'} aria-pressed={!vowels} data-action="ar-no-vowels" onClick={() => setVowels(false)}>Without</Button>
       </div>}
-      {shown && <div className="rounded-tile bg-surface-2 px-4 py-3" data-ar-reading="">{shown.split('\n').map((line, i) => <Ar key={i} block className="text-[24px] my-1" reading={prepared?.latin.split('\n')[i]}>{line}</Ar>)}</div>}
+      {shown && <ReadingVoice id={a.id} full={full ?? shown} plain={plain ?? null} vowels={vowels} prepared={prepared?.latin} />}
       {prepared?.style.startsWith('word-by-word') && <p className="text-xs text-fg-2">The prepared transliteration is a word-by-word reading, generally without noun case endings. Use a recording for connected speech.</p>}
       {'rows' in a && a.rows && <div className="overflow-x-auto"><table className="w-full text-left border-collapse mt-2">
         <thead><tr className="border-b border-outline"><th className="py-2 pr-3">Day</th><th className="py-2 pr-3">Time</th><th className="py-2 pr-3">Activity</th><th className="py-2">Place</th></tr></thead>
@@ -366,7 +367,7 @@ function TextView({ asset: a }: { asset: Asset }) {
       </li>)}</ul>}
       {'task' in a && a.task && <p className="mt-3"><Mixed text={a.task} /></p>}
       {a.use_note && <p className="text-sm text-fg-2"><Mixed text={a.use_note} /></p>}
-      <p className="text-sm text-fg-2 flex gap-2 items-start mb-0"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />No recording included. Read it aloud yourself, or ask a fluent speaker to.</p>
+      {!shown && <p className="text-sm text-fg-2 flex gap-2 items-start mb-0"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />No recording included. Read it aloud yourself, or ask a fluent speaker to.</p>}
     </Card>
     {questions.length > 0 && <Card><h3>Questions about the text</h3><ol className="list-decimal pl-5 grid gap-4">{questions.map(q => <li key={q.id}><CheckQuestion q={q} /></li>)}</ol></Card>}
   </>;
