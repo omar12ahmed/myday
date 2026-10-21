@@ -312,6 +312,19 @@ new release doesn't download them again. Each is kept by the service worker the 
 and plays offline after that; the first play needs a connection, and if it fails the button says so. No saved-data
 change.
 
+**A voice for each lesson’s example (1.40.0):** the second round of `specs/arabic-audio-course.md`. Each Arabic lesson’s
+headline example has a play button beside it, with the label under it ("Synthesised voice — a model to copy; checked by
+ear, not yet by a teacher. Slower playback: Study → Arabic → Vocabulary."): 146 of the 152 lessons. The other six are
+letter drills, which a voice would read as letter names, or written without vowel marks, which a voice can only guess;
+they have none. The same voice made 136 new clips (10 examples share a starter sentence’s clip). Gemini transcribed each
+one, 21 were made again, and all were listened to in full on 21 October 2026. Where an example lists forms with a slash
+("مَلِك / مَالِك"), the slash is spoken as a short pause. Clips now belong to their exact text: `audio-audit.json` is
+keyed by it, one clip serves every place that text appears, and `app/scripts/arabic-voice-sources.mjs` says which texts
+have a voice. `make-arabic-audio.mjs <source>` makes one source’s clips. The build check (`prepare-audio.mjs`) also
+fails on a clip whose text is no longer in a voiced part of the course, and on one file used by two texts. The app’s
+list is `src/study/arabic/voice-clips.json` (text → file). `app/scripts/arabic-audio-inventory.mjs --rounds` counts
+what’s left for round three. No saved-data change.
+
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
 
@@ -543,7 +556,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/components/` | Shared pieces with their styling in one place: `Button`, `Card`, `Banner`, `Field` (inputs, including ones saved as you type), `Dialog` (confirmations), `Toast`, `CategoryChip`, `EnergyMeter`, and `parts` (links, rows, chips and labels used by the section screens). |
 | `src/today/` | The Today section's cards and `TodayScreen`, which puts them together — including the dashboard's `GreetingCard` (greeting, calendar), `DashboardCards` (the ring and this week's bars, counted by `src/data/dashboard.ts`), `QuickAdd`, `FocusCard` and `FocusView` (Focus mode). |
 | `src/calendar/` | The Calendar: `CalendarScreen`, the month grid, agenda, selected-day panel, pattern editor and side cards. |
-| `src/ai/` | "Help me adjust today": `context.ts` (what's sent), `validate.ts` (the rules), `apply.ts` (saving, stale check, undo) and `AdjustCard.tsx` (the card on Today). "Add what's on my mind": `mind.ts` (what's sent, the checks, adding and undo) and `MindCard.tsx`. Both: `request.ts` (the Edge Function or practice mode). Since 1.41.0 a one-off can go into a Tasks list (`sameList` matches names on the device). |
+| `src/ai/` | "Help me adjust today": `context.ts` (what's sent), `validate.ts` (the rules), `apply.ts` (saving, stale check, undo) and `AdjustCard.tsx` (the card on Today). "Add what's on my mind": `mind.ts` (what's sent, the checks, adding and undo) and `MindCard.tsx`. Both: `request.ts` (the Edge Function or practice mode). Since 1.40.0 a one-off can go into a Tasks list (`sameList` matches names on the device). |
 | `../ai-eval/` | The evaluation of AI models on 20 synthetic days and 12 synthetic brain dumps (see its README). |
 | `src/finance/` | The Finance screen: `FinanceScreen` (with Left over), `WorkPayCard`, `ExpensesCard`, `OwedCard`, `RatesCard` (folded away), and `actions.ts` (what each button saves). |
 | `src/data/patterns/`, `src/patterns/` | What MyDay has noticed: `notice.ts` (finding patterns in your history), `saved.ts` (your preferences and answers, the `patterns` section), `adapt.ts` (using preferences in Build my day and the room on today's plan); the screen `NoticedScreen.tsx` (`#noticed`, and the quiet line on Today). `src/components/Why.tsx`: a note with a "Why?". `src/tasks/StuckCard.tsx`: "What's getting in the way?". |
@@ -565,7 +578,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/projectDashboard.ts`, `src/projects/AtAGlance.tsx` | The dashboards per kind (1.36.0): `projectDashboard.ts` (the tiles, the next dates, the weeks, entries by month, each issue's links and Worth a look; Today's own dashboard numbers stay in `dashboard.ts`); `AtAGlance.tsx` (the At a glance card, its pictures and Summarise this). |
 | `src/data/weekReview.ts`, `src/review/ReviewScreen.tsx`, `src/today/ReviewCard.tsx` | The weekly review (1.37.0): `weekReview.ts` (when the review is due, what moved, what's waiting, focus, and saving the review); `ReviewScreen.tsx` (the four steps and See the pattern); `ReviewCard.tsx` (the card on Today). |
 | `src/study/arabic/WordFamilies.tsx`, `src/study/arabic/families.ts`, `content/teaching/arabic/word-families.json`, `scripts/validate-families.mjs` | Word families (1.38.0): the card on the vocabulary page and its notes; which family a word is in; the authored families (by word id); the build check. |
-| `src/study/arabic/voice.ts`, `src/study/arabic/Listen.tsx`, `../content/arabic-audio/`, `scripts/make-arabic-audio.mjs`, `scripts/prepare-audio.mjs` | The starter words' voice (1.39.0): the clip list and the one shared player with Slower (device-only key `myday.arabic.slower`); the play button and the voice note; the clips and their audit; making them (by hand); the build check. |
+| `src/study/arabic/voice.ts`, `src/study/arabic/Listen.tsx`, `../content/arabic-audio/`, `scripts/arabic-voice-sources.mjs`, `scripts/make-arabic-audio.mjs`, `scripts/prepare-audio.mjs`, `scripts/arabic-audio-inventory.mjs` | The Arabic course's voice (1.39.0; lessons' examples 1.40.0): the clip list (by exact text) and the one shared player with Slower (device-only key `myday.arabic.slower`); the play button, the voice note and the label; the clips and their audit; which texts have a voice; making them (by hand); the build check; what's left to voice. |
 | `src/commitments/` | Work shifts and appointments: the form and list used by both Today and Calendar. |
 | `src/shell/` | Navigation, the top bar's parts (`TopBar`: the Focus mode switch and your account; `focusMode.ts`, the device-only `myday.focus`), the theme button, the shared footer (`AppFooter`), the "couldn't be read" notice (`LoadIssue`) and the screens for unreadable or older data. |
 | `public/icon.svg` | The tab icon. |
@@ -972,14 +985,14 @@ returns up to 8 small tasks; you tick the ones to add.
   kept once, gentle wording; anything not turned into a task is listed back under "Not turned into tasks". Tasks
   already on a list or in the queue (in any wording) are marked and start unticked.
 - **Added** (`applyMind`) only after **Add**: a one-off to the **queue** (no list of its own — MyDay fits it into a
-  coming day, oldest first, within the day's energy rule, and once done it's gone), or, since 1.41.0, into a **Tasks
+  coming day, oldest first, within the day's energy rule, and once done it's gone), or, since 1.40.0, into a **Tasks
   list** when "Where it goes" names one (see Lists below); a repeating one to the end of its **list**. Only additions;
   nothing else changes. One step of **Undo** takes back exactly what was added, except a
   task you've changed since or one already on a day's plan.
 - Saved data keeps its shape (a queue item with no list, `taskId: null`, as the classic MyDay already allows), so
   both versions and sync read it as they are.
 
-**Lists (1.41.0):** a one-off task can now go into one of your lists in Tasks: one you already have, or a new one
+**Lists (1.40.0):** a one-off task can now go into one of your lists in Tasks: one you already have, or a new one
 the suggestion names (for example "Moving house" for "book a van, pack the books, cancel the broadband"). Each ticked
 one-off task has **Where it goes**: your queue (as before), one of your Tasks lists, or "New list: …". A list you
 already have is chosen when the suggestion matches it (capitals, "my" or "the" and a plural "s" don't count).
@@ -1241,8 +1254,10 @@ older app still gets version 1. Evaluated live on GLM-5.3-Flash with every reply
     plays. Word families gain four more forms from your examples (أَكْتُبُ, نَدْرُسُ, أَدْرُسُ, أَقْرَأُ, with what أَ
     and نَـ mean) and fuller notes on the plural كُتُب and on ق-ر-أ, taken from a cloud session’s version of the same
     feature. No saved-data, server or database change; going back to 1.38.0 is safe.
-53. **Release 1.41.0:** lists from "Add what's on my mind". A one-off task can go into one of your Tasks lists, or a
-    new one the suggestion names; a new list is made only when two or more tasks share it. What's sent is unchanged
-    (names are matched on the device), and Undo takes back a list it made. The server's instructions were deployed
-    first (`myday-tasks-v2`); no saved-data or database change; going back to 1.40.0 is safe (the tasks and lists
-    are ordinary Tasks data).
+53. **Release 1.40.0:** a voice for each lesson’s example, and lists from "Add what’s on my mind". 146 of the 152 Arabic
+    lessons’ headline examples have a play button: the same synthesised voice, cross-checked by a second model and
+    listened to in full; clips now belong to their exact text and are shared. A one-off task from "Add what’s on my
+    mind" can go into one of your Tasks lists or a new one the suggestion names; a new list only when two or more tasks
+    share it; what’s sent is unchanged and names are matched on the device; Undo takes back a list it made. The server’s
+    instructions were deployed first (`myday-tasks-v2`); no saved-data or database change; going back to 1.39.0 is safe
+    (the lessons’ examples simply have no button there, and the tasks and lists are ordinary Tasks data).

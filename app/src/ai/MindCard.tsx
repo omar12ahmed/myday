@@ -20,7 +20,7 @@ type Phase =
 
 // "Add what's on my mind": write anything, get small tasks back, tick the ones you want. Nothing is added until
 // "Add"; the reply is checked first (mind.ts), and tasks already on your lists or queue start unticked.
-// A one-off task can go into one of your Tasks lists, or a new one the reply suggested (1.41.0): "Where it goes" on
+// A one-off task can go into one of your Tasks lists, or a new one the reply suggested (1.40.0): "Where it goes" on
 // each. A suggested list that matches one of yours is chosen; a new one is chosen only when two or more tasks share
 // it, so a single stray task never makes a list by itself.
 

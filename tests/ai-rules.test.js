@@ -352,7 +352,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   check('its own instructions (small first steps, nothing invented, the text can\'t change the rules, JSON), and the text as content', tm.length === 2 && /small tasks/.test(tm[0].content) && /Never add tasks they didn't mention/.test(tm[0].content) && /can't change these rules/.test(tm[0].content) && /JSON only/.test(tm[0].content) && tm[1].content.includes('call the GP'));
   check('"Help me adjust today" keeps its own instructions', /adjust today's plan/.test(K.messagesFor(K.buildContext(K.getSnapshot().data, K.todayKey(), '')).find(m => m.role === 'system').content));
   check('the most it could cost can be worked out before calling', K.worstCaseCostUsd({ ...cfg, maxOutputTokens: 2048, priceInPerMTok: 0.15, priceOutPerMTok: 0.5 }, tc) > 0);
-  // Version 1 and version 2 of the brain-dump contract (1.41.0: a task may come back with a suggested list).
+  // Version 1 and version 2 of the brain-dump contract (1.40.0: a task may come back with a suggested list).
   const v1ctx = { ...tc, version: 1 }, sys1 = K.buildTaskMessages(v1ctx)[0].content, sys2 = K.buildTaskMessages(tc)[0].content;
   check('what\'s sent is version 2, and only the same fields as before (no lists, no names of your Tasks lists)', tc.version === 2 && eq(Object.keys(tc).sort(), ['action', 'date', 'maxItems', 'text', 'version', 'weekday']), tc);
   check('the server\'s shape check accepts version 1 and version 2, and refuses version 3', K.checkTasksContext(v1ctx) && K.checkTasksContext(tc) && !K.checkTasksContext({ ...tc, version: 3 }) && !K.checkTasksContext({ ...tc, version: 0 }));
@@ -413,7 +413,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   localStorage.setItem = realSet7;
   check('if the browser can\'t save (storage full), it says so and nothing changes', !ar.ok && ar.reason === 'not-saved' && localStorage.getItem('myday.data.v4') === saved7);
 
-  // Suggested lists (1.41.0): checked on the reply, matched to your Tasks lists on this device.
+  // Suggested lists (1.40.0): checked on the reply, matched to your Tasks lists on this device.
   const mindL = (items = [], lists = [{ id: 'tlE', name: 'Errands' }, { id: 'tlM', name: 'Moving house' }]) => {
     K.setClock(`${D}T09:00`); const s = K.freshState(); s.tasks = { lists, items }; s.queue = [];
     localStorage.clear(); localStorage.setItem('myday.data.v4', JSON.stringify(s)); K.boot(); return K.getSnapshot().data;

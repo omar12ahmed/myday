@@ -5,7 +5,7 @@
 // Where tasks go:
 //   one-off    the queue, as a task with no list of its own — MyDay fits it into a coming day (oldest first, within
 //              the day's energy rule), and once it's done it's gone
-//   one-off,   into Tasks, in that list (1.41.0) — one of your Tasks lists, or a new one the reply suggested and you
+//   one-off,   into Tasks, in that list (1.40.0) — one of your Tasks lists, or a new one the reply suggested and you
 //   with a list  kept. It waits under "Your tasks" until you pick it or give it a date.
 //   repeating  the end of that category's list, like a task added in "Your task lists"
 // A suggested list is matched to your own Tasks lists here on the device (the names are never sent). Only additions:
@@ -46,7 +46,7 @@ export interface MindItem {
   minutes: number;
   repeat: boolean;
   already: string | null;            // where it already is ("your Admin list", "your queue"), if anywhere
-  list: string | null;               // a suggested list for a one-off task (1.41.0), checked
+  list: string | null;               // a suggested list for a one-off task (1.40.0), checked
   listId: string | null;             // …which is this one of your Tasks lists, if it matches one
 }
 export interface CheckedMind { items: MindItem[]; notTasks: string[]; explanation: string; adjusted: string[] }
@@ -135,7 +135,7 @@ export interface MindChoice { title: string; category: Category; minutes: number
 export interface MindUndo {
   list: { category: Category; id: string; title: string; minutes: number }[];
   queue: { qid: string; title: string; minutes: number }[];
-  tasks?: { id: string; title: string; minutes: number }[];       // put into Tasks (1.41.0)
+  tasks?: { id: string; title: string; minutes: number }[];       // put into Tasks (1.40.0)
   lists?: { id: string; name: string }[];                         // Tasks lists this Add made
 }
 

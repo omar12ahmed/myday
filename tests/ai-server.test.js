@@ -112,7 +112,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   check('…the model gets the brain-dump instructions (not the day-planning ones), with what you wrote as content', res.status === 200 && /small tasks/.test(tsent.messages[0].content) && !/adjust today's plan/.test(tsent.messages[0].content) && tsent.messages[1].content.includes('call the GP'));
   check('…and it counts towards the same daily limit and budget', Number((await sql('select requests from public.ai_usage where user_id = $1 order by day desc limit 1', [C]))[0].requests) > 0);
   check('the logs still hold only an outcome and a time (nothing you wrote)', lines.every(l => /^ai-plan \S+ \d{3} \d+ms$/.test(l)) && !lines.join(' ').includes('insurance'));
-  // Version 2 (1.41.0): a task may come back with a suggested list. Version 1 (an older app) is still answered, without.
+  // Version 2 (1.40.0): a task may come back with a suggested list. Version 1 (an older app) is still answered, without.
   const okReply = async (url, init) => { tsent = JSON.parse(init.body); return new Response(JSON.stringify({ choices: [{ message: { content: '{"items":[],"notTasks":[],"explanation":"Ok."}' }, finish_reason: 'stop' }], usage: { prompt_tokens: 500, completion_tokens: 20 } }), { status: 200 }); };
   const t2 = { ...tctx, version: 2 };
   tsent = null; res = await call({ context: t2 }, {}, { fetchImpl: okReply });

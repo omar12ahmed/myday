@@ -7,7 +7,7 @@
 // What's sent is only what you wrote and today's date — not your lists, queue or plan (the app finds duplicates
 // itself, on this device, and matches a suggested list name to your own lists there).
 //
-// Version 2 (1.41.0): a one-off task may come back with a suggested "list" — a short name for the thing several tasks
+// Version 2 (1.40.0): a one-off task may come back with a suggested "list" — a short name for the thing several tasks
 // belong to ("Moving house"). The app matches it to your Tasks lists or offers it as a new one. Version 1 requests
 // (an older app) get exactly the version 1 instructions, with no list.
 

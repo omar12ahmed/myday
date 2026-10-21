@@ -286,7 +286,8 @@ suggestion. All the new fields are optional and kept by 1.36.0.
   - Your tasks, From your projects, Due today;
   - the focus timer, and cards for Study, Workout, Food reminders and the review;
   - the evening check-in;
-  - AI help: "Help me adjust today" and "Add what's on my mind".
+  - AI help: "Help me adjust today" and "Add what's on my mind" (which can put tasks into a Tasks list, from
+    1.40.0).
 - **Calendar:** a repeating shift pattern with versions that start from a chosen date; one-date changes stored apart
   from the pattern; appointments; bank holidays from gov.uk.
 - **Finance** replaced Pay in the new app; the classic keeps Pay. It shows:
@@ -306,10 +307,12 @@ suggestion. All the new fields are optional and kept by 1.36.0.
   - **Arabic Fuṣḥā:** the curriculum package read-only, lesson sessions, starter words and lesson checks in revision,
     transliteration, and word families on the vocabulary page (four roots linking 12 of the 48 starter words; MyDay's
     own authored file, checked at every build; nothing saved), and a synthesised voice for the 48 starter words and
-    their examples (1.39.0: one voice, made once and listened to before shipping, labelled "Synthesised voice — a
-    model to copy; checked by ear, not yet by a teacher"; clips and their audit in `content/arabic-audio/`, checked
-    at every build by `app/scripts/prepare-audio.mjs`). Lessons and texts have no recordings. It never claims
-    certified levels, and keeps the package's 0–100 evidence scores internal.
+    their examples (1.39.0) and each lesson's headline example (1.40.0): one voice, made once and listened to before
+    shipping, labelled "Synthesised voice — a model to copy; checked by ear, not yet by a teacher"; clips keyed by
+    their exact text, with their audit, in `content/arabic-audio/`; which texts have a voice in
+    `app/scripts/arabic-voice-sources.mjs`; checked at every build by `app/scripts/prepare-audio.mjs`. The reading
+    texts and the rest of each lesson have no recordings. It never claims certified levels, and keeps the package's
+    0–100 evidence scores internal.
 - **Health:** Workout, Daily exercises, Food (recipes, kitchen, shopping list), and Goal. Goal's estimates come from
   public guidance, labelled with their sources. It sets no calorie targets when someone is pregnant, after an eating
   disorder, or with a condition, and never calls food "good" or "bad".
@@ -331,14 +334,15 @@ suggestion. All the new fields are optional and kept by 1.36.0.
 
 ## Open ideas (not decided: ask me before building any of them)
 
-- **A voice across the whole Arabic course** (my question, 20 Oct 2026): in rounds — 2 the 152 lessons' headline
-  examples; 3 everything else that's fully vowelled; text without vowel marks only once a teacher or fluent speaker
-  can check it, or a human recording replaces it. The plan, waiting for my answers: `specs/arabic-audio-course.md`.
+- **A voice across the whole Arabic course** (`specs/arabic-audio-course.md`; my answers, 20 Oct 2026: "1-6 yes").
+  Round two (the lessons' headline examples) shipped in 1.40.0. Next, round three: the 8 vowelled reading texts first
+  (by sentence), then the teaching examples, try it and solutions. In checks, answers and "try it", the voice only
+  after the answer is shown. No voice for letter drills; one voice for everything. Text without vowel marks waits for
+  a teacher or fluent speaker, and it's worth looking for one. `app/scripts/arabic-audio-inventory.mjs --rounds` sizes
+  what's left.
 - **Roots in revision** (word families, `specs/vocabulary-families.md` §8): not now — the families are for noticing,
   not testing. Revisit after a month of use (from 1.38.0, 19 Oct 2026).
 - **More AI:**
-  - brand-new named lists from "Add what's on my mind". The plan, waiting for my answers: `specs/named-lists.md`
-    (recommended: into the Tasks section's own lists, which exist since 1.5.0, so no migration);
   - notes pasted from outside MyDay, sorted into tasks, Study items and ideas;
   - revision cards from trusted material I add (PDFs, e.g. with Gemini's File Search);
   - a web-search service for research (a cost and key decision);
