@@ -38,7 +38,7 @@ export function learningOptions(data: MyDayData): LearningOption[] {
   };
 
   const path = paths.get(data.arabic.pathId) ?? corePath;
-  const arabicIds = moduleList.filter(m => path.required_module_ids.includes(m.id))
+  const arabicIds = [...moduleList].filter(m => path.required_module_ids.includes(m.id)).sort((a, b) => a.sequence - b.sequence)
     .flatMap(m => m.lesson_ids.filter(id => !lessonIndex[id].optional));
   const arabicStep = nextArabicStep(data, arabicIds);
   const arabicComplete = arabicIds.length > 0 && arabicIds.every(id => arabicLessonDone(data, id));
