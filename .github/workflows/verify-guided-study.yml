@@ -37,3 +37,8 @@ jobs:
         run: node tests/cybersecurity-rules.test.js
       - name: Test Arabic curriculum rules
         run: node tests/arabic-rules.test.js
+      - name: Browser integration tests (disposable profile)
+        run: |
+          CHROME="$(command -v google-chrome || command -v chromium || true)"
+          if [ -z "$CHROME" ]; then echo "No Chrome/Chromium executable"; exit 1; fi
+          CHROME="$CHROME" bash tests/run.sh app-study app-arabic app-cybersecurity
