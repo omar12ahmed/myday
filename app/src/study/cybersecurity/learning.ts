@@ -99,11 +99,21 @@ export function attemptsFor(data: MyDayData, activityId: string) {
 export function prerequisiteGaps(lessonId: string) { return lessons.get(lessonId)?.prerequisites.all ?? []; }
 export function nextLesson(data: MyDayData) {
   const path = selectedPath(data.cybersecurity.pathId);
-  const ordered = path.required_module_ids.flatMap(id => modules.get(id)!.lesson_ids).map(id => lessons.get(id)!);
-  const resume = data.cybersecurity.attempts.filter(a => !a.submittedAt && a.curriculumVersion === CYBER_VERSION).flatMap(a => ordered.filter(l =>
-    [l.practical_task_id, l.knowledge_check_id, l.mini_challenge_id].includes(a.activityId) || practiceById.get(a.activityId)?.lessonIds.includes(l.id)))[0];
-  if (resume) return { lesson: resume, reason: 'Resume your saved attempt', code: 'user_choice' };
-  const lesson = ordered.find(l => !l.optional && !l.prerequisites.all.length && !attemptsFor(data, l.practical_task_id).some(a => a.submittedAt)) ?? ordered[0];
-  return { lesson, reason: attemptsFor(data, lesson.practical_task_id).some(a => a.submittedAt)
-    ? 'Review your foundation evidence, or choose another lesson to explore' : 'Start with a lesson that needs no prior skill evidence', code: 'ready_next_lesson' };
+  const ordered = path.required_module_ids.flatMap(id => modules.get(id)!.lesson_ids)
+    .map(id => lessons.get(id)!).filter(l => !l.optional);
+  // Resume a saved activity before suggesting new work.
+  const resume = data.cybersecurity.attempts.filter(a => !a.submittedAt && a.curriculumVersion === CYBER_VERSION)
+    .flatMap(a => ordered.filter(l => [l.practical_task_id, l.knowledge_check_id, l.mini_challenge_id].includes(a.activityId) ||
+      practiceById.get(a.activityId)?.lessonIds.includes(l.id)))[0];
+  if (resume) return { lesson: resume, reason: 'Resume your saved attempt', code: 'user_choice' as const };
+  // Completion records a learner's choice to finish the lesson, not verified mastery.
+  const ix = stIndex(data.study);
+  const lesson = ordered.find(l => {
+    const task = ix.task.get(curriculumTaskId(l.id))?.node;
+    if (task?.done) return false;
+    return !data.cybersecurity.attempts.some(a => a.activityId === l.practical_task_id && a.submittedAt)
+      || task?.done === false;
+  }) ?? ordered[0];
+  return { lesson, reason: 'Next in your curriculum order; check prerequisites before advanced work',
+    code: 'ready_next_lesson' as const };
 }
