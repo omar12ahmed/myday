@@ -1,0 +1,39 @@
+name: Verify guided Study
+
+on:
+  pull_request:
+    branches: [react-rebuild]
+  push:
+    branches: [feature/study-guided-sequence-20261022]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-rules:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Install Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - name: Install app dependencies
+        run: npm ci
+        working-directory: app
+      - name: Typecheck and build
+        run: npm run build
+        working-directory: app
+      - name: Test guided study progression and reset
+        run: node tests/study-guided-rules.test.js
+      - name: Test existing Study learning rules
+        run: node tests/study-learning-rules.test.js
+      - name: Test Cybersecurity curriculum rules
+        run: node tests/cybersecurity-rules.test.js
+      - name: Test Arabic curriculum rules
+        run: node tests/arabic-rules.test.js
