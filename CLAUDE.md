@@ -49,22 +49,28 @@ Read this file before making any changes. If something here seems to conflict wi
   `live-before-X.Y.Z` on `main`.
 - Bump `app/package.json`'s version for each release. The release identifier (version, commit, build date) is at the
   bottom of every screen.
-- **In progress: 1.42.0, Arabic audio round three (b)** on branch `arabic-teaching-audio`; not live.
-  Teaching explanation/examples, sound pairs and family notes/forms have explicit checked-clip controls. Try it and
-  solutions wait for reveal; lesson-check prompts also wait for the reference data to load. Hide/navigation stop
-  their own audio; revision and saved data unchanged. Review caught and fixed a shared family/list play key and a
-  slow-answer-load reveal gap. The earlier 380 estimate included 14 fragments, two shadda-only words and a syllable
-  drill; these are excluded. 363 new clips generated and transcribed blind, 27 retakes across 21 texts. Six unresolved
-  recordings are left out for a fluent reviewer; owner listened to all 357 eligible clips in two batches: "both fine".
-  `content/arabic-audio/cross-check-teaching.json` holds provenance. Temporary TTS keys deleted. All 643 checked clips now enter the app; six left-out recordings have no controls. Native decode of all 357 passed (679 seconds); phone listening pages checked.
-  Build and lint passed; all 54 default suites verified, **4,956 passed, 0 failed**. The full run had one outdated
+- **Live: 1.42.0** (21 Oct 2026, tag `v1.42.0` on source `0d7cfdc`; main `e083037`): Arabic audio
+  round three (b). Before it: 1.41.0, tagged `live-before-1.42.0` on main. On the server: `ai-plan` version 21,
+  Ask instructions `myday-ask-v16`, brain dump instructions `myday-tasks-v2`; no server deployment or migration.
+- **1.42.0, audio round three (b):** teaching explanations/examples, sound pairs and family notes/forms have
+  explicit checked-clip controls. Try it and solutions wait for reveal; lesson-check prompts also wait for the
+  reference data to load. Hide/navigation stop their own audio; revision and saved data unchanged. Review caught
+  and fixed a shared family/list play key and a slow-answer-load reveal gap.
+  The earlier 380 estimate included 14 fragments, two shadda-only words and a syllable drill; these are excluded.
+  363 new clips were generated and transcribed blind, with 27 retakes across 21 texts. Six uncertain recordings
+  remain held for a fluent reviewer, with the authored text unchanged. The owner listened to all 357 eligible
+  clips in two batches: "both fine". **643 checked clips ship**; the six holds have no controls. All 357 new files
+  decoded natively (679 seconds). Provenance: `content/arabic-audio/cross-check-teaching.json`. Temporary TTS keys
+  deleted; no active task keys remained.
+  Build and lint passed; **54/54 default suites verified, 4,956 passed, 0 failed**. The full run had one outdated
   headline-only assertion, corrected and rerun (66/0), and a documented Chrome disconnect in app-ai, which passed
-  alone (207/0). No other failures. Backups were already confirmed in this session. Publishing and live checks
-  remain. No server/database step. Going back to 1.41.0 is safe.
-- **Live: 1.41.0** (21 Oct 2026, tag `v1.41.0` on source `f888703`; main `fa7738f`): a voice for the eight
-  vowelled Arabic reading texts, sentence by sentence or with whole-text Listen. Before it: 1.40.0, tagged
-  `live-before-1.41.0` on main. On the server: `ai-plan` version 21, Ask instructions `myday-ask-v16`, brain dump
-  instructions `myday-tasks-v2`; no server deployment or migration was needed for 1.41.0.
+  alone (207/0). No other failures. Live check: **24/24**, two disposable accounts in isolated throwaway browsers:
+  native teaching/practice/answer/family playback, reveal/hide and loaded-reference gates, Stop/navigation,
+  new-clip offline cache, sound-pair guidance, named 44px phone controls, device-only Slower, bare B1 text without
+  controls, and both learning-data copies byte-identical. Profiles and listening server removed afterwards.
+  Review, docs and runner agents were used; findings reviewed and resolved. Two test-writing agents reached their
+  usage limit without edits, so main wrote the tests. Backups were already confirmed on every device in this session.
+  No saved-data change; going back to 1.41.0 is safe.
 - **1.41.0, audio round three (a):** 59 sentence positions, 58 distinct spoken texts, 3 reused clips and 55 new
   clips (2,177 characters, about 596 KB, 149 seconds). All 55 generated and transcribed blind with Gemini; main
   session reviewed every transcription, no retakes indicated (US$0.00886875;
@@ -364,8 +370,8 @@ suggestion. All the new fields are optional and kept by 1.36.0.
 
 - **A voice across the whole Arabic course** (`specs/arabic-audio-course.md`; my answers, 20 Oct 2026: "1-6 yes").
   Round two (the lessons' headline examples) shipped in 1.40.0. Round three (a), the 8 vowelled reading texts by sentence,
-  shipped in 1.41.0. Round three (b), teaching examples, try it, solutions, sound pairs and family forms, is ready
-  for 1.42.0: 357 approved clips, six uncertain recordings held back. In checks, answers and "try it", the voice
+  shipped in 1.41.0. Round three (b), teaching examples, try it, solutions, sound pairs and family forms, shipped
+  in 1.42.0: 357 approved clips, six uncertain recordings held back. In checks, answers and "try it", the voice
   waits for the answer to be shown and loaded. No voice for letter drills; one voice for everything. Text without
   vowel marks and the six holds wait for a teacher or fluent speaker. `app/scripts/arabic-audio-inventory.mjs --rounds`
   shows source coverage; held-piece counts are estimates because passages and sentence clips have different boundaries.
