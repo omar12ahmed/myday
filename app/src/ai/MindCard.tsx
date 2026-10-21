@@ -121,6 +121,9 @@ export function MindCard({ onClose, onAdded }: { onClose: () => void; onAdded: (
             {newNames.filter(nm => going(`new:${nm}`) > 0).map(nm => (
               <p key={nm} className="text-[15px] m-0 mb-2.5" data-s="mind-list-hint">{going(`new:${nm}`)} of these go into a new list, “{nm}”, in Tasks. Change any of them under “Where it goes”.</p>
             ))}
+            {p.items.some(i => picked[i.key] && !repeat[i.key] && listOf[i.key]) && (
+              <p className="text-sm text-fg-2 m-0 mb-2.5" data-s="mind-list-wait">A task in a list waits under “Your tasks” until you pick it or give it a date.</p>
+            )}
             {p.items.length ? (
               <ul className="list-none p-0 m-0 grid gap-2.5" id="mindItems">
                 {p.items.map(i => (
@@ -155,7 +158,7 @@ export function MindCard({ onClose, onAdded }: { onClose: () => void; onAdded: (
                         <p className="text-sm text-fg-2 m-0 mt-1.5" data-s="mind-where">{repeat[i.key]
                           ? `Added to your ${CAT_LABEL[i.category]} list, so it comes round regularly.`
                           : listOf[i.key]
-                            ? `Goes into Tasks, in “${nameOf(listOf[i.key])}”${listOf[i.key].startsWith('new:') ? ' (a new list)' : ''}. It waits under “Your tasks” until you pick it or give it a date.`
+                            ? `Goes into Tasks, in “${nameOf(listOf[i.key])}”${listOf[i.key].startsWith('new:') ? ' (a new list)' : ''}.`
                             : 'Goes in your queue; MyDay fits it into a coming day.'}</p>
                       </div>
                     )}
