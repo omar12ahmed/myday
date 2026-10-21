@@ -3,7 +3,7 @@ import { BookOpen, FlaskConical, NotebookPen, ShieldCheck } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { Field, Select, TextInput } from '../../components/Field';
-import { update } from '../../data/storage';
+import { getSnapshot, update } from '../../data/storage';
 import type { MyDayData } from '../../data/types';
 import { toast } from '../../data/toast';
 import { curriculumTaskId, lessonHref } from '../../data/cybersecurity/types';
@@ -122,7 +122,16 @@ function LessonView({ data, lesson: l }: { data: MyDayData; lesson: Lesson }) {
       {current ? <LinkButton to="study/session">Return to your study session</LinkButton> : task ? <div className="grid gap-3 mt-3">
         <Field label="Time for this session" htmlFor="cyberMinutes"><Select id="cyberMinutes" value={minutes} onChange={e => setMinutes(Number(e.target.value))}>{[15,30,60,90].map(m => <option key={m} value={m}>{m} minutes</option>)}</Select></Field>
         <Button onClick={() => startLearning(task.course.id, task.node.id, minutes, minutes < l.estimated_duration_minutes.standard)}>Start a study session</Button>
-      </div> : <p className="text-sm text-fg-2">You can do the activities below now. Add your path on the learning map to use the Study timer too.</p>}
+      </div> : selectedPath(data.cybersecurity.pathId).required_module_ids.includes(l.module_id) ? <div className="grid gap-3 mt-3">
+        <p className="text-sm text-fg-2 m-0">Start from this lesson. MyDay will add your selected curriculum path to the roadmap without changing existing work.</p>
+        <Field label="Time for this session" htmlFor="cyberMinutes"><Select id="cyberMinutes" value={minutes} onChange={e => setMinutes(Number(e.target.value))}>{[15, 30, 60, 90].map(m => <option key={m} value={m}>{m} minutes</option>)}</Select></Field>
+        <Button data-action="cyber-start-direct" onClick={() => {
+          update(d => { if (!importPath(d, d.cybersecurity.pathId)) return false; });
+          const entry = stIndex(getSnapshot().data.study).task.get(curriculumTaskId(l.id));
+          if (entry) startLearning(entry.course.id, entry.node.id, minutes, minutes < l.estimated_duration_minutes.standard);
+          else toast('Choose this curriculum path on the learning map to start its timer.');
+        }}>Start this lesson</Button>
+      </div> : <p className="text-sm text-fg-2">You can explore the activities below now. Add this lesson’s path on the learning map to use the Study timer.</p>}
     </Card>
     <TeachingLesson key={'teaching-' + l.id} course="cybersecurity" lessonId={l.id} />
     <Card><h3>Choose a manageable session</h3>{l.variants.map(v => <details key={v.mode}><summary className="min-h-11 py-2 cursor-pointer capitalize text-primary">{v.mode} · {v.minutes} min</summary><p>{v.activity}</p><p className="text-sm text-fg-2">{v.evidence_scope}</p></details>)}</Card>
