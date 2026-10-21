@@ -1,5 +1,6 @@
+import { useEffect, useState } from 'react';
+import type { LearningOption } from './nextLearning';
 import { Card } from '../components/Card';
-import { learningOptions } from './nextLearning';
 import { Button } from '../components/Button';
 import { ROUND_SIZE } from '../data/study/common';
 import { dueIds } from '../data/study/queue';
@@ -13,7 +14,14 @@ import { Meta, Row, TextLink } from './parts';
 // Nothing is added to the day's task list, and nothing shows when nothing is waiting.
 export function StudyTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
   const cur = activeStudy(data.study), due = dueIds(data, k).length, today = reviewedOn(data.study, k);
-  const options = learningOptions(data);
+  const [options, setOptions] = useState<LearningOption[]>([]);
+  // Load the large Arabic/Cybersecurity catalogues away from the initial Today bundle.
+  useEffect(() => {
+    let live = true;
+    import('./nextLearning').then(({ learningOptions }) => { if (live) setOptions(learningOptions(data)); })
+      .catch(() => { if (live) setOptions([]); });
+    return () => { live = false; };
+  }, [data]);
   if (!cur && !due && !options.length) return null;
   return (
     <Card aria-labelledby="study-card-h">
