@@ -161,10 +161,14 @@ const SEED = `s => {
   const cards = () => ev(`[...document.querySelectorAll('#studyHome .topic-card')].map(a => ({ t: a.querySelector('.topic-title').textContent, focus: !!a.querySelector('[data-s=topic-focus]'), next: a.querySelector('[data-s=topic-next]').textContent, comp: a.querySelector('[data-s=topic-comp]')?.textContent ?? null, last: a.querySelector('[data-s=topic-last]')?.textContent ?? null, href: a.getAttribute('href') }))`);
   let cs = await cards();
   check('the home page: the current focus, with its topic ("Current focus · Cybersecurity")', (await text('#stFocus .eyebrow')) === 'Current focus · Cybersecurity' && (await text('#stFocus')).includes('Linux 1'));
-  check('…then your topics as cards, in order, each opening its page', eq(cs.map(c => c.t), ['Cybersecurity', 'Arabic', 'Business']) && eq(cs.map(c => c.href), ['#study/topic/tpCy', '#study/topic/tpAr', '#study/topic/tpBiz']));
-  check('…each with its next step, progress and when you last studied it', cs[0].focus && cs[1].next === 'Next: Lesson 2 · Madinah Arabic book 1' && cs[1].comp === '1 of 4 tasks · 2 courses' && cs[1].last === 'Studied 3 days ago' && cs[0].last === 'Not studied yet' && !cs[1].focus, cs);
-  check('…a topic with no courses says so, simply', cs[2].next === 'No courses yet — add the first one.' && cs[2].comp === null && cs[2].last === null);
+  check('…then the other topics as cards, in order, each opening its page', eq(cs.map(c => c.t), ['Arabic', 'Business']) && eq(cs.map(c => c.href), ['#study/topic/tpAr', '#study/topic/tpBiz']), cs);
+  check('…each with its next step, progress and when you last studied it', cs.find(c => c.t === 'Arabic')?.next === 'Next: Lesson 2 · Madinah Arabic book 1' && cs.find(c => c.t === 'Arabic')?.comp === '1 of 4 tasks · 2 courses' && cs.find(c => c.t === 'Arabic')?.last === 'Studied 3 days ago' && !cs.some(c => c.focus), cs);
+  check('…a topic with no courses says so, simply', cs.find(c => c.t === 'Business')?.next === 'No courses yet — add the first one.' && cs.find(c => c.t === 'Business')?.comp === null && cs.find(c => c.t === 'Business')?.last === null);
+  check('Cybersecurity has one guided entry with the original saved courses and their progress inside it', await ev(`document.querySelectorAll('.cyber-entry').length === 1 && document.querySelectorAll('a[href="#study/cybersecurity"]').length === 1 && document.querySelector('.cyber-entry [data-cyber-saved-courses="tpCy"]')?.getAttribute('href') === '#study/topic/tpCy'`) && (await text('.cyber-entry [data-cyber-saved-courses="tpCy"]')).includes('1 of 2 tasks · 1 course'));
   check('…and "+ Add a topic" at the end', await exists('#studyHome [data-action=topic-add]'));
+  await click('.cyber-entry [data-cyber-saved-courses="tpCy"]'); await sleep(300);
+  check('the saved Cybersecurity link opens its original topic, with its course, next task, progress and study date', (await ev('location.hash')) === '#study/topic/tpCy' && (await text('#topic-h')) === 'Cybersecurity' && (await text('#topicHead [data-s=topic-comp]')) === '1 of 2 tasks complete (50%)' && (await text('#topicHead [data-s=topic-last]')) === 'Not studied yet · 1 course' && (await text('#topicCourses')).includes('TryHackMe') && (await text('#topicNext .st-next')) === 'Linux 1');
+  await go('study', 2026, 10, 15, 13, 5);
   await click('#studyHome .topic-card[data-id=tpAr]'); await sleep(300);
   check('a topic\'s page: its name, progress and when you last studied it', (await ev('location.hash')) === '#study/topic/tpAr' && (await text('#topic-h')) === 'Arabic' && (await text('#topicHead [data-s=topic-comp]')) === '1 of 4 tasks complete (25%)' && (await text('#topicHead [data-s=topic-last]')) === 'Studied 3 days ago · 2 courses');
   check('…what\'s up next in it, ready to start', (await text('#topicNext .eyebrow')) === 'Up next in Arabic' && (await text('#topicNext')).includes('Madinah Arabic book 1') && (await text('#topicNext .st-next')) === 'Lesson 2' && (await exists('#topicNext [data-action=s-start]')));
@@ -176,7 +180,7 @@ const SEED = `s => {
   await editStorage(`s => { s.study.sessions = s.study.sessions.filter(x => x.status !== 'active'); s.study.activeId = null; }`);
   await go('study/topic/tpAr', 2026, 10, 15, 13, 10);
   await click('#topicNext [data-action=s-focus]'); await sleep(300);
-  check('"Make this my focus" → it\'s on the home page, with its topic', (await study()).focusCourseId === 'coA' && (await ev('location.hash')) === '#study' && (await text('#stFocus .eyebrow')) === 'Current focus · Arabic' && (await cards())[1].focus);
+  check('"Make this my focus" → it\'s on the home page, with its topic', (await study()).focusCourseId === 'coA' && (await ev('location.hash')) === '#study' && (await text('#stFocus .eyebrow')) === 'Current focus · Arabic' && (await cards()).find(c => c.t === 'Arabic')?.focus);
   await go('study/course/coB', 2026, 10, 15, 13, 15);
   check('a course\'s page goes back to its topic', (await ev(`document.querySelector('#app a[href="#study/topic/tpAr"]')?.textContent || ''`)).includes('Arabic'));
   await go('study/topic/tpBiz', 2026, 10, 15, 13, 20);
@@ -195,10 +199,79 @@ const SEED = `s => {
   for (const h of ['study', 'study/topic/tpAr']) {
     await go(h, 2026, 10, 15, 14);
     check(`phone, #${h}: nothing scrolls sideways`, !(await ev('document.documentElement.scrollWidth > innerWidth')));
-    const tiny = await ev(`[...document.querySelectorAll('#app button, #app .topic-card, #app .tc-row a')].filter(b => b.offsetParent !== null).map(b => { const r = b.getBoundingClientRect(); return { t: b.textContent.trim().slice(0, 24), h: Math.round(r.height) }; }).filter(x => x.h < 44)`);
+    const tiny = await ev(`[...document.querySelectorAll('#app button, #app .topic-card, #app .tc-row a, .cyber-entry a')].filter(b => b.offsetParent !== null).map(b => { const r = b.getBoundingClientRect(); return { t: b.textContent.trim().slice(0, 24), h: r.height }; }).filter(x => x.h < 44)`);
     check(`phone, #${h}: every card, row and button is at least 44 px high`, tiny.length === 0, tiny.slice(0, 5));
   }
   await T.send('Emulation.clearDeviceMetricsOverride');
+
+  console.log('\n[11] One Cybersecurity entry, with existing courses kept accessible');
+  const cyberEntries = () => ev(`({ guided: document.querySelectorAll('.cyber-entry').length, links: document.querySelectorAll('a[href="#study/cybersecurity"]').length, generic: [...document.querySelectorAll('#studyHome .topic-card .topic-title')].filter(e => e.textContent.trim().toLowerCase() === 'cybersecurity').length })`);
+  await go('today', 2026, 10, 15, 15); await reset(); await go('study', 2026, 10, 15, 15);
+  check('an empty Study has exactly one Cybersecurity entry, opening the guided path', eq(await cyberEntries(), { guided: 1, links: 1, generic: 0 }) && (await text('.cyber-entry')).includes('27 modules') && (await text('.cyber-entry')).includes('146 lessons'), await cyberEntries());
+  check('an empty Study has no saved-courses link yet', !(await exists('.cyber-entry [data-cyber-saved-courses]')));
+  const emptyBefore = await ev(`localStorage.getItem('${KEY}')`);
+  await click('.cyber-entry a[href="#study/cybersecurity"]'); await sleep(400);
+  check('the single entry opens the actual guided curriculum', (await ev('location.hash')) === '#study/cybersecurity' && (await text('.cyber-workshop')).includes('Cybersecurity workshop') && (await exists('[data-action=cyber-import]')));
+  check('reading the guided path from empty Study writes no saved learning data', (await ev(`localStorage.getItem('${KEY}')`)) === emptyBefore);
+
+  await go('today', 2026, 10, 15, 15, 5); await click('#themeBtn'); await sleep(250);
+  await editStorage(SEED);
+  const unnamedBefore = await ev(`localStorage.getItem('${KEY}')`);
+  await go('study', 2026, 10, 15, 15, 5);
+  check('an unnamed starter roadmap has one Cybersecurity entry and its original main-topic saved link', eq(await cyberEntries(), { guided: 1, links: 1, generic: 0 }) && await ev(`document.querySelector('.cyber-entry [data-cyber-saved-courses="main"]')?.getAttribute('href') === '#study/topic/main'`) && (await text('.cyber-entry [data-cyber-saved-courses="main"]')).includes('1 of 1 tasks · 1 course'), await cyberEntries());
+  await click('.cyber-entry [data-cyber-saved-courses="main"]'); await sleep(300);
+  check('the unnamed saved link keeps the original course and its completed task', (await ev('location.hash')) === '#study/topic/main' && (await text('#topic-h')) === 'Cybersecurity' && (await text('#topicHead [data-s=topic-comp]')) === '1 of 1 task complete (100%)' && (await text('#topicCourses')).includes('TryHackMe: Pre-Security path'), await text('#topicHead'));
+  await click('#topicCourses a[href="#study/course/co1"]'); await sleep(300);
+  check('the unnamed saved course opens normally, keeping its name and completion', (await ev('location.hash')) === '#study/course/co1' && (await text('#co-h')) === 'TryHackMe: Pre-Security path' && (await text('#app')).includes('1 of 1 task complete (100%)'), await text('#co-h'));
+  await go('study/roadmap/main', 2026, 10, 15, 15, 5);
+  check('the unnamed saved roadmap still contains the checked original Intro task', await ev(`document.querySelector('[data-s="task-done"][data-id="tk1"]')?.checked === true`) && (await text('[data-node="md1"]')).includes('Intro'));
+  await go('study', 2026, 10, 15, 15, 5);
+  check('reading and navigating the unnamed roadmap leaves its saved bytes and lack of topics unchanged', (await ev(`localStorage.getItem('${KEY}')`)) === unnamedBefore && (await study()).topics === undefined);
+
+  await editStorage(`s => { s.study.topics = [{ id: 'tpCase', title: '  cYbErSeCuRiTy  ' }, { id: 'tpOther', title: 'Field notes' }];
+    s.study.stages.forEach(sg => { sg.topicId = 'tpCase'; });
+    s.study.stages.push({ id: 'sgOther', title: 'Start here', topicId: 'tpOther', courses: [] }); }`);
+  const namedBefore = await ev(`localStorage.getItem('${KEY}')`);
+  await go('study', 2026, 10, 15, 15, 10);
+  check('case and surrounding whitespace still give one Cybersecurity entry with the original named-topic link', eq(await cyberEntries(), { guided: 1, links: 1, generic: 0 }) && await ev(`document.querySelector('.cyber-entry [data-cyber-saved-courses="tpCase"]')?.getAttribute('href') === '#study/topic/tpCase'`) && (await text('.cyber-entry [data-cyber-saved-courses="tpCase"]')).includes('1 of 1 tasks · 1 course'), await cyberEntries());
+  check('consolidating Cybersecurity keeps an unrelated saved subject visible with its own link', eq((await cards()).map(c => [c.t, c.href]), [['Field notes', '#study/topic/tpOther']]));
+  await click('.cyber-entry [data-cyber-saved-courses="tpCase"]'); await sleep(300);
+  check('the case-insensitive saved link opens the existing named course and completion', (await ev('location.hash')) === '#study/topic/tpCase' && (await text('#topic-h')).trim().toLowerCase() === 'cybersecurity' && (await text('#topicHead [data-s=topic-comp]')) === '1 of 1 task complete (100%)' && (await text('#topicCourses')).includes('TryHackMe: Pre-Security path'), await text('#topicHead'));
+  await go('study/roadmap/tpCase', 2026, 10, 15, 15, 10);
+  check('the saved completed task is still checked in the original named roadmap', await ev(`document.querySelector('[data-s="task-done"][data-id="tk1"]')?.checked === true`));
+  await go('study', 2026, 10, 15, 15, 10);
+  check('reading the named roadmap keeps every saved byte, including its original topic name', (await ev(`localStorage.getItem('${KEY}')`)) === namedBefore);
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await go('study', 2026, 10, 15, 15, 10);
+  const savedTargets = await ev(`[...document.querySelectorAll('.cyber-entry [data-cyber-saved-courses]')].map(a => ({ title: a.textContent.trim(), height: a.getBoundingClientRect().height, width: a.getBoundingClientRect().width }))`);
+  check('phone: the consolidated entry and its saved courses fit without sideways scrolling', !(await ev('document.documentElement.scrollWidth > innerWidth')));
+  check('phone: the saved-courses link is present and at least 44 pixels high', savedTargets.length === 1 && savedTargets.every(a => a.height >= 44 && a.width > 0), savedTargets);
+  await T.send('Emulation.clearDeviceMetricsOverride');
+
+  await editStorage(`s => { s.study.stages.find(sg => sg.id === 'sg1').courses[0].archived = true; }`);
+  const archivedBefore = await ev(`localStorage.getItem('${KEY}')`);
+  await go('study', 2026, 10, 15, 15, 15);
+  check('an archived-only Cybersecurity roadmap still has one entry and counts its saved course as set aside', eq(await cyberEntries(), { guided: 1, links: 1, generic: 0 }) && (await text('.cyber-entry [data-cyber-saved-courses="tpCase"]')).includes('1 course (1 set aside)'), await text('.cyber-entry [data-cyber-saved-courses="tpCase"]'));
+  await click('.cyber-entry [data-cyber-saved-courses="tpCase"]'); await sleep(300);
+  check('the archived-only saved topic keeps its existing roadmap link available', (await ev('location.hash')) === '#study/topic/tpCase' && await exists('a[href="#study/roadmap/tpCase"]'));
+  await click('a[href="#study/roadmap/tpCase"]'); await sleep(300);
+  check('the archived course and its checked task remain reachable in the original roadmap', (await ev('location.hash')) === '#study/roadmap/tpCase' && (await text('[data-node="co1"]')).includes('TryHackMe: Pre-Security path') && (await text('[data-node="co1"]')).includes('Archived') && await ev(`document.querySelector('[data-s="task-done"][data-id="tk1"]')?.checked === true`));
+  check('reading the archived course through the saved link leaves every saved byte unchanged', (await ev(`localStorage.getItem('${KEY}')`)) === archivedBefore);
+
+  await go('today', 2026, 10, 15, 16); await reset(); await go('study', 2026, 10, 15, 16);
+  await click('.cyber-entry a[href="#study/cybersecurity"]'); await sleep(400);
+  await click('[data-action=cyber-import]'); await sleep(300);
+  const importedStudy = await study(), importedTopic = importedStudy.topics.find(t => t.title === 'Cybersecurity');
+  const importedCourses = importedStudy.stages.flatMap(sg => sg.courses);
+  check('importing the guided path creates its real saved courses', importedTopic && importedCourses.length === 14 && importedCourses.every(c => c.id.startsWith('cyber:1:module.')) && importedCourses.some(c => c.modules.some(m => m.sections.some(s => s.tasks.some(t => t.id === 'cyber:1:lesson.learning-evidence')))));
+  const importedBefore = await ev(`localStorage.getItem('${KEY}')`);
+  for (let reload = 0; reload < 2; reload++) {
+    await go('study', 2026, 10, 15, 16);
+    check(`the imported path still has one Cybersecurity entry after ${reload ? 'a further reload' : 'returning to Study'}`, eq(await cyberEntries(), { guided: 1, links: 1, generic: 0 }) && await ev(`document.querySelector('.cyber-entry [data-cyber-saved-courses]')?.getAttribute('href') === ${JSON.stringify('#study/topic/' + importedTopic?.id)}`), await cyberEntries());
+  }
+  await click('.cyber-entry [data-cyber-saved-courses]'); await sleep(300);
+  check('the imported saved-courses link opens every course from the chosen path', (await ev('location.hash')) === '#study/topic/' + importedTopic?.id && (await ev(`document.querySelectorAll('#topicCourses .tc-row').length`)) === 14 && (await text('#topicCourses')).includes(importedCourses[0].title));
+  check('returning, reloading and reading the imported courses writes no additional learning data', (await ev(`localStorage.getItem('${KEY}')`)) === importedBefore);
 
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));

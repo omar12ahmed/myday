@@ -49,6 +49,14 @@ Read this file before making any changes. If something here seems to conflict wi
   `live-before-X.Y.Z` on `main`.
 - Bump `app/package.json`'s version for each release. The release identifier (version, commit, build date) is at the
   bottom of every screen.
+- **In progress: 1.42.1**, branch `cybersecurity-single-entry`: the owner asked to keep only the correct
+  Cybersecurity entry. The guided 27-module/146-lesson course remains the main entry on Study home. A generic
+  topic named Cybersecurity is folded into it as "Your saved courses", pointing to the original topic page.
+  All topic/course/task/session progress stays intact; other topics and routes are unchanged. This is a home-page
+  presentation change only. Review caught an archived-only course count; it now includes set-aside courses.
+  The focused app-topics suite passed 77/0; desktop and phone screenshots were checked. Full release checks and
+  live verification are pending. No saved-data, server or database
+  change; going back to 1.42.0 is safe. Backup confirmation from this session still applies.
 - **Live: 1.42.0** (21 Oct 2026, tag `v1.42.0` on source `0d7cfdc`; main `e083037`): Arabic audio
   round three (b). Before it: 1.41.0, tagged `live-before-1.42.0` on main. On the server: `ai-plan` version 21,
   Ask instructions `myday-ask-v16`, brain dump instructions `myday-tasks-v2`; no server deployment or migration.

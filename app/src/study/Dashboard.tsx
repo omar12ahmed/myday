@@ -87,6 +87,8 @@ export function Dashboard({ data, lengths, setLength }: { data: MyDayData; lengt
   if (!st.stages.length) return <div className="study-welcome"><StudyTabs on="courses" /><div className="mb-6"><p className="eyebrow">Your learning space</p><h2 className="text-[28px] lg:text-[34px] mb-2">Make room for curiosity.</h2><p className="text-fg-2 text-[15px] max-w-xl">Follow a guided path or bring a subject of your own. Pick a small next step and build from there.</p></div><div className="grid lg:grid-cols-2 gap-5 items-start"><RevisionCard data={data} /><CyberCard /><ArabicCard data={data} /><SetupCard data={data} /></div></div>;
   const ix = stIndex(st), c = focusCourse(st, ix), cur = activeStudy(st), k = todayKey();
   const glances = topicsOf(st).map(t => topicGlance(st, ix, t.id)!).filter(Boolean);
+  // The guided course is the single Cybersecurity entry. Older roadmap courses remain accessible inside it.
+  const cyberTopics = glances.filter(g => g.topic.title.trim().toLowerCase() === 'cybersecurity');
   const named = !!st.topics?.length;
   const focusTopic = c ? glances.find(g => g.isFocus) : undefined;
   const t = c ? nextTaskIn(ix, c) : null, comp = c ? completion(ix.courseTasks.get(c.id)!) : null;
@@ -139,14 +141,14 @@ export function Dashboard({ data, lengths, setLength }: { data: MyDayData; lengt
         <section aria-labelledby="topics-home-h" id="studyHome" className="mb-4">
           <h3 id="topics-home-h" className="px-1 mt-5">Your topics</h3>
           <div className="grid gap-3 sm:grid-cols-2">
-            {glances.map(g => <TopicCard key={g.topic.id || 'main'} g={g} k={k} />)}
+            {glances.filter(g => !cyberTopics.includes(g)).map(g => <TopicCard key={g.topic.id || 'main'} g={g} k={k} />)}
             <AddTopicCard data={data} />
           </div>
         </section>
       </div>
       <div className="min-w-0">
         <RevisionCard data={data} />
-        <CyberCard />
+        <CyberCard roadmaps={cyberTopics} />
         <ArabicCard data={data} />
         <Card aria-label="More in Study">
           <nav className="st-links flex flex-wrap gap-x-5" aria-label="Study">

@@ -788,6 +788,9 @@ Cybersecurity, Arabic):
   progress ("1 of 4 tasks · 2 courses") and when you last studied it ("Studied 3 days ago") — and **+ Add a topic**,
   which opens the new topic's page. Revision, the whole roadmap, Concepts, Progress & history and Settings stay
   beside them (below on phones). The mixed "Other courses" list moved into each topic's page.
+- **Cybersecurity** has one home card for the guided path (27 modules, 146 lessons), from 1.42.1.
+  If you already have a Cybersecurity topic, **Your saved courses** on that card shows its task completion and
+  course count (including courses set aside), and opens its original topic page. Your roadmap and progress are unchanged.
 - **A topic's page** (`#study/topic/<id>`; `main` for a roadmap without topics): its progress, **Up next in <topic>**
   ready to start (or "Make this my focus"), its courses by stage with "Focus on this", and a link to the roadmap opened
   on that topic (`#study/roadmap/<id>`), where its outline is edited. A course's page goes back to its topic.
@@ -1300,3 +1303,7 @@ older app still gets version 1. Evaluated live on GLM-5.3-Flash with every reply
     Six uncertain recordings are held for a fluent reviewer; 643 checked clips ship.
     Only checked clips enter the app, with the same synthesised-voice label.
     No saved-data, server or database change; going back to 1.41.0 is safe.
+56. **Release 1.42.1:** one **Cybersecurity** card on Study's home, for the current guided path. **Your saved courses**
+    on it shows task completion and course count, including courses set aside, and opens your original Cybersecurity
+    topic page. Your topics, courses, progress, sessions and revision are unchanged.
+    No saved-data, server or database change; going back to 1.42.0 is safe.
