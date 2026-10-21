@@ -10,8 +10,8 @@ import type { DateKey, MyDayData } from '../data/types';
 import { startRevision } from './actions';
 import { Meta, Row, TextLink } from './parts';
 
-// On Today: only what's waiting for you in Study — a session in progress, or revision that's ready.
-// Nothing is added to the day's task list, and nothing shows when nothing is waiting.
+// On Today: a direct next lesson, an existing session to resume, and revision if due.
+// The full curriculum is loaded on demand; none of this adds tasks to Today's plan.
 export function StudyTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
   const cur = activeStudy(data.study), due = dueIds(data, k).length, today = reviewedOn(data.study, k);
   const [options, setOptions] = useState<LearningOption[]>([]);
@@ -34,12 +34,11 @@ export function StudyTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
       )}
       {!cur && options.length > 0 && <div className="grid gap-3 mb-3" data-s="study-next-lessons">
         <div><strong>Continue learning</strong><p className="text-sm text-fg-2 m-0">Your next lesson is ready — or choose another subject.</p></div>
-        {options.map((option, i) => <div key={option.subject} className="rounded-tile border border-outline p-3" data-subject={option.subject}>
-          <p className="text-xs text-fg-3 m-0">{option.label} · {option.minutes} min</p>
-          <p className="font-semibold my-1">{option.title}</p>
-          <p className="text-sm text-fg-2 mt-0 mb-2">{option.detail}</p>
-          <a href={option.href} className={`inline-flex items-center justify-center min-h-11 rounded-btn px-4 font-semibold no-underline ${i === 0 ? 'bg-primary text-on-primary' : 'bg-surface-2 text-primary border border-outline'}`} data-action="continue-learning">{option.resume ? 'Resume lesson' : option.allComplete ? 'Revisit lesson' : 'Continue learning'}</a>
-        </div>)}
+        <LessonOption option={options[0]} primary />
+        {options.length > 1 && <details className="rounded-tile border border-outline p-3" data-s="study-other-subjects">
+          <summary className="cursor-pointer min-h-11 flex items-center text-primary font-semibold">Choose another subject</summary>
+          <div className="grid gap-2 mt-2">{options.slice(1).map(option => <LessonOption key={option.subject} option={option} />)}</div>
+        </details>}
         <a href="#study" className="text-primary font-semibold text-sm min-h-11 inline-flex items-center">Browse all courses and lessons</a>
       </div>}
       {due > 0 && today >= DAILY_ENOUGH && (
@@ -56,4 +55,15 @@ export function StudyTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
       )}
     </Card>
   );
+}
+
+function LessonOption({ option, primary = false }: { option: LearningOption; primary?: boolean }) {
+  return <div className="rounded-tile border border-outline p-3" data-subject={option.subject}>
+    <p className="text-xs text-fg-3 m-0">{option.label} · {option.minutes} min</p>
+    <p className="font-semibold my-1">{option.title}</p>
+    <p className="text-sm text-fg-2 mt-0 mb-2">{option.detail}</p>
+    <a href={option.href} className={`inline-flex items-center justify-center min-h-11 rounded-btn px-4 font-semibold no-underline ${primary ? 'bg-primary text-on-primary' : 'bg-surface-2 text-primary border border-outline'}`} data-action="continue-learning">
+      {option.resume ? 'Resume lesson' : option.allComplete ? 'Revisit lesson' : 'Continue learning'}
+    </a>
+  </div>;
 }
