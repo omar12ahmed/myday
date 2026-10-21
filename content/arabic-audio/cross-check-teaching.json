@@ -7550,7 +7550,7 @@
    },
    "cost_usd": 7.275e-05,
    "review": "transcript reviewed and owner listened — both fine; not teacher-checked",
-   "note": "The second take was transcribed سَارَة: the same pausal sounds, with a different final spelling. The first take was remade after صار. Owner listening still required."
+   "note": "The second take was transcribed سَارَة rather than سَارَ; treated as a possible pausal-spelling ambiguity for listening review. The owner listened and approved it (“both fine”); this is not a teacher’s check."
   },
   "صَارَ": {
    "file": "d8f14d917181107e.mp3",

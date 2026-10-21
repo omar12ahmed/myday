@@ -57,8 +57,10 @@ Read this file before making any changes. If something here seems to conflict wi
   drill; these are excluded. 363 new clips generated and transcribed blind, 27 retakes across 21 texts. Six unresolved
   recordings are left out for a fluent reviewer; owner listened to all 357 eligible clips in two batches: "both fine".
   `content/arabic-audio/cross-check-teaching.json` holds provenance. Temporary TTS keys deleted. All 643 checked clips now enter the app; six left-out recordings have no controls. Native decode of all 357 passed (679 seconds); phone listening pages checked.
-  Build and lint passed; final pronunciation rules 125/0. Full pre-listening checks were stopped after approval so the final release run can use the approved manifest.
-  Final release checks pending; backups were already confirmed in this session. No server/database step. Going back to 1.41.0 is safe.
+  Build and lint passed; all 54 default suites verified, **4,956 passed, 0 failed**. The full run had one outdated
+  headline-only assertion, corrected and rerun (66/0), and a documented Chrome disconnect in app-ai, which passed
+  alone (207/0). No other failures. Backups were already confirmed in this session. Publishing and live checks
+  remain. No server/database step. Going back to 1.41.0 is safe.
 - **Live: 1.41.0** (21 Oct 2026, tag `v1.41.0` on source `f888703`; main `fa7738f`): a voice for the eight
   vowelled Arabic reading texts, sentence by sentence or with whole-text Listen. Before it: 1.40.0, tagged
   `live-before-1.41.0` on main. On the server: `ai-plan` version 21, Ask instructions `myday-ask-v16`, brain dump
@@ -331,11 +333,13 @@ suggestion. All the new fields are optional and kept by 1.36.0.
   - **Arabic Fuṣḥā:** the curriculum package read-only, lesson sessions, starter words and lesson checks in revision,
     transliteration, and word families on the vocabulary page (four roots linking 12 of the 48 starter words; MyDay's
     own authored file, checked at every build; nothing saved), and a synthesised voice for the 48 starter words and
-    their examples (1.39.0), each lesson's headline example (1.40.0) and the 8 vowelled reading texts (1.41.0): one voice, made once and listened to before shipping, labelled "Synthesised voice — a model to copy;
+    their examples (1.39.0), each lesson's headline example (1.40.0), the 8 vowelled reading texts (1.41.0), and
+    checked teaching examples, sound pairs and family notes/forms (1.42.0). Practice, solutions and lesson checks
+    wait for the answer to be revealed and loaded. One voice, made once and listened to before shipping, labelled "Synthesised voice — a model to copy;
     checked by ear, not yet by a teacher"; clips keyed by
     their exact text, with their audit, in `content/arabic-audio/`; which texts have a voice in
     `app/scripts/arabic-voice-sources.mjs`; checked at every build by `app/scripts/prepare-audio.mjs`. The 6 unvowelled
-    B1/B2 reading texts and the rest of each lesson have no recordings. It never claims certified levels, and keeps
+    B1/B2 reading texts, unvowelled pieces, letter/syllable drills, fragments and six uncertain recordings have no controls. It never claims certified levels, and keeps
     the package's 0–100 evidence scores internal.
 - **Health:** Workout, Daily exercises, Food (recipes, kitchen, shopping list), and Goal. Goal's estimates come from
   public guidance, labelled with their sources. It sets no calorie targets when someone is pregnant, after an eating
@@ -360,10 +364,11 @@ suggestion. All the new fields are optional and kept by 1.36.0.
 
 - **A voice across the whole Arabic course** (`specs/arabic-audio-course.md`; my answers, 20 Oct 2026: "1-6 yes").
   Round two (the lessons' headline examples) shipped in 1.40.0. Round three (a), the 8 vowelled reading texts by sentence,
-  shipped in 1.41.0. Next, round three (b): teaching examples, try it and solutions. In checks, answers and "try it", the voice only
-  after the answer is shown. No voice for letter drills; one voice for everything. Text without vowel marks waits for
-  a teacher or fluent speaker, and it's worth looking for one. `app/scripts/arabic-audio-inventory.mjs --rounds` sizes
-  what's left.
+  shipped in 1.41.0. Round three (b), teaching examples, try it, solutions, sound pairs and family forms, is ready
+  for 1.42.0: 357 approved clips, six uncertain recordings held back. In checks, answers and "try it", the voice
+  waits for the answer to be shown and loaded. No voice for letter drills; one voice for everything. Text without
+  vowel marks and the six holds wait for a teacher or fluent speaker. `app/scripts/arabic-audio-inventory.mjs --rounds`
+  shows source coverage; held-piece counts are estimates because passages and sentence clips have different boundaries.
 - **Roots in revision** (word families, `specs/vocabulary-families.md` §8): not now — the families are for noticing,
   not testing. Revisit after a month of use (from 1.38.0, 19 Oct 2026).
 - **More AI:**

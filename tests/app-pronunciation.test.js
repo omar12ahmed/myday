@@ -189,7 +189,8 @@ const wait = async sel => { for (let i = 0; i < 60; i++) { if (await exists(sel)
   const lessonFetched = (await clipFetches()).filter(n => n.endsWith('arabic-audio/' + clipFiles[withClip.example.text_ar]));
   check('tapping the lesson example plays it, goes back to idle, and fetched that text\u2019s file', lessonPlaying && lessonIdle && lessonFetched.length === 1 && (await clipFetches()).length === lessonFetchesBefore + 1, { lessonPlaying, lessonIdle, lessonFetched });
   await go('study/arabic/' + noClip.id); await wait('[data-ar-example]'); await sleep(300);
-  check('a lesson whose example is a letter drill (no shipped clip) has no play button and no voice label', !clipFiles[noClip.example.text_ar] && !(await exists('[data-ar-example] [data-ar-clip]')) && !(await exists('[data-ar-voice-label]')));
+  check('a letter-drill headline has no play button or voice label', !clipFiles[noClip.example.text_ar] && !(await exists('[data-ar-example] [data-ar-clip]')) && !(await exists('[data-ar-example] [data-ar-voice-label]')));
+  check('a complete word in the same lesson has its checked teaching recording and voice label', await exists('[data-teaching] [aria-label="Play بَابٌ"]') && await exists('[data-teaching] [data-ar-voice-label]'));
 
   await go('study/arabic'); await wait('.arabic-entry');
   check('the learning map names the available course voice and keeps the listening and speaking boundary', (await ev('document.body.textContent')).includes('The starter words, lesson examples and some teaching and reading texts have a synthesised voice to copy. Look for a play button; some Arabic has no recording.') && (await ev('document.body.textContent')).includes('typed work never stands in for them.'));

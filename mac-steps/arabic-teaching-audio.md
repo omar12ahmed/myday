@@ -2,19 +2,15 @@
 
 Work is on `arabic-teaching-audio`. The current live release remains 1.41.0.
 
-1. Run the final full release checks against the approved manifest. The pre-listening run was stopped after owner
-   approval to restart with the approved clips. Build/lint and the 125 pronunciation-rule checks passed; the new
-   teaching-voice browser checks passed 32/0.
+1. Final checks are complete against the approved manifest: build/lint passed, 54 default suites verified,
+   4,956 passed and 0 failed. An outdated headline-only assertion was corrected and rerun (66/0); app-ai passed
+   alone (207/0) after the documented Chrome disconnect. The new teaching-voice suite passed 32/0.
 2. Owner listened to both batches and confirmed "both fine" (21 October 2026). All 357 exact files were matched
-   against the checklist and marked checked; six held clips remain left out. To regenerate future listening pages:
-   ```sh
-   MYDAY_AUDIO_REVIEW_BATCH=179 node app/scripts/review-arabic-audio.mjs teaching sounds-families lesson-checks
-   python3 -m http.server 8801 --bind 127.0.0.1 --directory site/audio-review
-   ```
-   Open http://127.0.0.1:8801/ and http://127.0.0.1:8801/batch-2.html. Confirm both batches or request retakes by clip
-   number. The checklist identifies the exact text and file in `site/audio-review/review-index.json`.
+   against the checklist and marked checked; six held clips remain left out. The existing local pages and
+   `site/audio-review/review-index.json` identify the exact approved text and files. Do not regenerate them with
+   no pending clips.
 3. Provenance and docs record approval. Do not approve the six `left out` clips.
-4. Build/lint and run the full release checks with the approved clip manifest. Use isolated test ports:
+4. The final release checks used these isolated test ports:
    ```sh
    cd app && npm run build && npm run lint
    cd ..
