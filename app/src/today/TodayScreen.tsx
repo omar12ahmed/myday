@@ -22,8 +22,6 @@ import { StreakCard } from './ProgressCards';
 import { ProposalCard, type ProposalActions } from './ProposalCard';
 import { TimerCard, type TimerAction } from './TimerCard';
 import { AppFooter } from '../shell/AppFooter';
-import { dueIds } from '../data/study/queue';
-import { activeStudy } from '../data/study/sessions';
 import { StudyTodayCard } from '../study/StudyTodayCard';
 import { HealthTodayCard } from '../health/HealthTodayCard';
 import { DailyTodayCard } from '../health/DailyTodayCard';
