@@ -28,12 +28,7 @@ export function learningOptions(data: MyDayData): LearningOption[] {
   const cyberPathNow = cyberPath(data.cybersecurity.pathId);
   const cyberIds = cyberPathNow.required_module_ids.flatMap(id => cyberModules.get(id)?.lesson_ids ?? []);
   const ix = stIndex(data.study);
-  const cyberDone = cyberIds.filter(id => !cyber.lesson.optional || id !== cyber.lesson.id).length > 0 &&
-    cyberIds.every(id => {
-      // Missing imported tasks cannot be treated as completed.
-      const t = ix.task.get('cyber:1:' + id);
-      return !t || t.node.done;
-    }) && cyberIds.some(id => ix.task.has('cyber:1:' + id));
+  const cyberDone = cyberIds.length > 0 && cyberIds.every(id => ix.task.get('cyber:1:' + id)?.node.done === true);
   const cyberOption: LearningOption = {
     subject: 'cybersecurity', label: 'Cybersecurity', title: cyber.lesson.title,
     detail: cyberDone ? 'Required lessons marked complete — revisit any lesson' : 'Next in your foundation-to-advanced path',
