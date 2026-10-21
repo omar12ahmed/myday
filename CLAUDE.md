@@ -49,9 +49,10 @@ Read this file before making any changes. If something here seems to conflict wi
   `live-before-X.Y.Z` on `main`.
 - Bump `app/package.json`'s version for each release. The release identifier (version, commit, build date) is at the
   bottom of every screen.
-- **Live: 1.39.0** (19 Oct 2026, tag `v1.39.0`), a voice for the Arabic starter words (1.38.0 before it: word families).
-  On the server: `ai-plan` version 20, with Ask MyDay's instructions at `myday-ask-v16`. A release that changes AI
-  instructions or server code needs `ai-plan` deployed (on my Mac) before it's published.
+- **Live: 1.40.0** (21 Oct 2026, tag `v1.40.0`): a voice for each Arabic lesson’s example, and lists from "Add what’s on
+  my mind" (1.39.0 before it: a voice for the starter words). On the server: `ai-plan` version 21, with Ask MyDay’s
+  instructions at `myday-ask-v16` and the brain dump’s at `myday-tasks-v2`. A release that changes AI instructions or
+  server code needs `ai-plan` deployed (on my Mac) before it's published.
 - **Publishing happens only on my Mac.** The steps, in this order:
   1. Remind me to export backups on every device.
   2. Commit the release on `react-rebuild` and run all the checks.
@@ -537,7 +538,7 @@ Run the checks and report the results, including any failures.
   app-sync`.
 - After changing AI: also `tests/run.sh ai-rules ai-server app-ai`, and the opt-in `ai-deno` (the function's real
   entry under Deno; 24 checks).
-- **Before a release:** the full run, `tests/run.sh` with no names. That's 51 suites; at 1.39.0 it was 4,740 checks
+- **Before a release:** the full run, `tests/run.sh` with no names. That's 51 suites; at 1.40.0 it was 4,804 checks
   and took 22–37 minutes.
 - **Running the tests:**
   - Ports: `MYDAY_HTTP_PORT` (default 8765), `MYDAY_CDP_PORT` (9333), `MYDAY_SUPA_PORT` (54329), `MYDAY_LS_PORT`
