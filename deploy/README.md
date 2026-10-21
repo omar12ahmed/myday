@@ -13,8 +13,9 @@ the `react-rebuild` branch.
 1. Export backups first: on the website, Today → "Export my data", **on each device you use** (e.g. your Mac
    and your phone). Saved data lives separately in each browser.
 2. Commit the source on `react-rebuild`, then run build/lint and the relevant checks using the
-   [testing scope in CLAUDE.md](../CLAUDE.md#after-each-change). Small UI fixes use targeted suites; substantial
-   or sensitive changes require `tests/run.sh` with no suite names.
+   [testing scope in CLAUDE.md](../CLAUDE.md#after-each-change). Use targeted suites by default; run `tests/run.sh`
+   with no suite names only when the change's reach or regression evidence justifies it. A release alone does
+   not require a full run.
 3. Run `deploy/publish-main.sh` (the default layout is **switch**). It builds the website from that commit and
    commits it to `main` in a temporary checkout. Your working folder isn't touched.
 4. Run `git push origin main`. Pages publishes within a few minutes. Browsers may keep the previous page for

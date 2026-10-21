@@ -574,25 +574,28 @@ suggestion. All the new fields are optional and kept by 1.36.0.
 
 Run checks that match what changed and report their results, including failures.
 
-**Testing scope (owner's decision, 21 Oct 2026):** small UI fixes use targeted checks, including when released.
-A full run is reserved for substantial or cross-feature changes and changes to saved data/storage, sync,
-authentication, migrations, security, calculations or shared core logic.
+**Testing scope (owner's decision, 21 Oct 2026):** run the full suite only when necessary, never automatically
+for every fix or release. Start with checks for the changed behaviour and its dependencies. Expand to a full run
+only when the change's reach, uncertain dependencies or regression evidence make targeted coverage insufficient;
+explain that reason before starting. Sensitive areas (saved data/storage, sync, authentication, migrations,
+security, calculations and shared core logic) need careful coverage, but a file/category alone does not trigger
+all suites. Small UI fixes and documentation changes do not trigger a full run by themselves.
 
-- After changing `app/`, run `npm run build` and `npm run lint`, then the browser/rules suites for the affected
+- After changing app code in `app/`, run `npm run build` and `npm run lint`, then the browser/rules suites for the affected
   behaviour and its dependencies. For a display-only change, test the affected screens, navigation and phone
   layout; verify that existing saved data stays unchanged where relevant. Do not run every suite just because
   an app file changed.
 - After changing `index.html`, run the relevant classic suites, plus new-app compatibility checks if shared data
-  or behaviour is affected. Use a full run for the broader/sensitive changes listed above. On my Mac, while
+  or behaviour is affected. Expand to a full run only when justified by the scope above. On my Mac, while
   Live Server is running, use `MYDAY_LS_PORT=5599 tests/run.sh`.
-- After changing sync (`app/src/sync/`, `supabase/` or `storage.ts`), include `sync-db`, `sync-records` and
-  `app-sync` in the required full run.
+- After changing sync (`app/src/sync/`, `supabase/` or `storage.ts`), include the relevant `sync-db`,
+  `sync-records` and `app-sync` checks; choose any broader coverage using the scope above.
 - After changing AI, include `ai-rules`, `ai-server`, `app-ai` and the opt-in `ai-deno` (the function's real entry
-  under Deno). Run every default suite too when shared service, validation, authentication or other core logic changes.
+  under Deno). Expand to every default suite only when targeted coverage cannot adequately cover the affected flows.
 - **Before a release:** build/lint and the relevant checks must pass, followed by a live check with disposable
   accounts in throwaway browsers. A small UI release does not require the full suite. Report the actual scope;
   never describe a targeted run or an interrupted full run as a complete one.
-- **Full run when required:** `tests/run.sh` with no names, currently 54 default suites. Do not repeat checks
+- **Full run when justified:** `tests/run.sh` with no names, currently 54 default suites. Do not repeat checks
   that already passed unless code changes, failures or unresolved concerns justify it.
 - **Running the tests:**
   - Ports: `MYDAY_HTTP_PORT` (default 8765), `MYDAY_CDP_PORT` (9333), `MYDAY_SUPA_PORT` (54329), `MYDAY_LS_PORT`
