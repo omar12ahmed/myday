@@ -258,6 +258,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   await click('[data-action=s-finish]'); await sleep(250);
   a = (await SD()).sessions[0];
   check('Finish saves the time (26 min, not counting the pause) and opens the check-in', a.status === 'done' && Math.abs(a.activeMs - 26 * 60000) < 5000 && a.endedAt === '2026-11-02T09:55' && (await SD()).activeId === null && (await ev('location.hash')) === '#study/checkin/' + a.id, a);
+  for (let n = 0; n < 18 && !(await exists('[data-action=s-ci-task]')); n++) await sleep(100);
   check('the check-in says it is optional', (await text('#app')).includes('Everything here is optional'));
   check('concepts linked to the task are offered to pick', eq(await texts('.st-pick'), ['DNS records']));
   await click('[data-action=s-ci-concept][data-id=cpR]'); await sleep(100);
