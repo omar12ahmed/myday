@@ -49,19 +49,21 @@ Read this file before making any changes. If something here seems to conflict wi
   `live-before-X.Y.Z` on `main`.
 - Bump `app/package.json`'s version for each release. The release identifier (version, commit, build date) is at the
   bottom of every screen.
-- **In progress: 1.42.1**, branch `cybersecurity-single-entry`: the owner asked to keep only the correct
-  Cybersecurity entry. The guided 27-module/146-lesson course remains the main entry on Study home. A generic
-  topic named Cybersecurity is folded into it as "Your saved courses", pointing to the original topic page.
-  All topic/course/task/session progress stays intact; other topics and routes are unchanged. This is a home-page
-  presentation change only. Review caught an archived-only course count; it now includes set-aside courses.
-  Targeted Study checks caught a dropped empty-course notice; it has been restored.
-  Build/lint passed; desktop and phone screenshots checked. The owner approved targeted checks for small UI fixes,
-  including this release. **4 suites, 435 passed, 0 failed**: app-study 231/0, app-topics 77/0, app-cybersecurity 85/0,
-  app-design 42/0. The initial targeted run caught the empty-course notice (434/1); after restoring it, only Study
-  and topics reran. The full run was deliberately stopped after four completed suites (400/0); no full pass claimed.
-  Publishing and live verification remain. No saved-data, server or database
-  change; going back to 1.42.0 is safe. Backup confirmation from this session still applies.
-- **Live: 1.42.0** (21 Oct 2026, tag `v1.42.0` on source `0d7cfdc`; main `e083037`): Arabic audio
+- **Live: 1.42.1** (21 Oct 2026, tag `v1.42.1` on source `a292886`; main `57974ff`): one Cybersecurity
+  entry on Study home, opening the current 27-module/146-lesson guided course. An older topic named Cybersecurity
+  is accessible through "Your saved courses" inside that card, with its task completion and course count,
+  including set-aside courses. Other topics, routes, focus, sessions and revision stay unchanged; no data is deleted.
+  Review caught an archived-only count and targeted Study checks caught a dropped empty-course notice; both fixed.
+  Build/lint passed; **4 targeted suites, 435 passed, 0 failed**: app-study 231/0, app-topics 77/0,
+  app-cybersecurity 85/0, app-design 42/0. The initial targeted run was 434/1; after restoring the empty-course
+  notice, only Study/topics reran. The full run was deliberately stopped under the owner's new testing policy
+  after four completed suites (400/0); no full pass is claimed. Desktop/phone screenshots checked.
+  Live check **19/19**, two disposable accounts in isolated throwaway browsers: one correct entry, saved-course
+  links, other topics, current course/lesson, phone fit and 44px links; both learning-data copies byte-identical.
+  Profiles and task servers removed; feature worktree cleaned up. Review, test-writing, docs and runner agents
+  helped; main reviewed their work. Backups were already confirmed on every device in this session.
+  No saved-data, server or database change; going back to 1.42.0 is safe. `live-before-1.42.1` marks previous main.
+- **Previous release: 1.42.0** (21 Oct 2026, tag `v1.42.0` on source `0d7cfdc`; main `e083037`): Arabic audio
   round three (b). Before it: 1.41.0, tagged `live-before-1.42.0` on main. On the server: `ai-plan` version 21,
   Ask instructions `myday-ask-v16`, brain dump instructions `myday-tasks-v2`; no server deployment or migration.
 - **1.42.0, audio round three (b):** teaching explanations/examples, sound pairs and family notes/forms have
