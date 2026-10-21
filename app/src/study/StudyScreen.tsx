@@ -1,6 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import type { MyDayData } from '../data/types';
-const CheckinView = lazy(() => import('./CheckinView').then(module => ({ default: module.CheckinView })));
 import { ConceptsView } from './ConceptsView';
 import { ConceptView } from './ConceptView';
 import { CourseDetails } from './CourseDetails';
@@ -16,6 +15,7 @@ import { StudySettings } from './StudySettings';
 import { TaskDetails } from './TaskDetails';
 import { TopicView } from './TopicView';
 import { topicFromPath } from '../data/study/topics';
+const CheckinView = lazy(() => import('./CheckinView').then(module => ({ default: module.CheckinView })));
 const CyberScreen = lazy(() => import('./cybersecurity/CyberScreen'));
 const ArabicScreen = lazy(() => import('./arabic/ArabicScreen'));
 
