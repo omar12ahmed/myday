@@ -47,7 +47,7 @@ for (const part of ['explanation', 'example', 'practice', 'solution'])
   add(`teaching: ${part}`, `a lesson page: teaching (${part})`, Object.values(teaching.lessons).map(l => l[part]), false);
 add('word families: notes and forms', 'Vocabulary: Word families', families.families.flatMap(f => [f.pattern_en, ...Object.values(f.word_notes || {}), ...(f.also_in_examples || []).flatMap(x => [x.form_ar, x.note_en])]), false);
 
-const already = new Set(Object.values(voiced.clips).flatMap(p => Object.values(p).map(c => c.text)));
+const already = new Set(Object.keys(voiced.clips)); // the audit is keyed by each clip's exact text (1.40.0)
 const all = new Map();
 const rows = fields.map(f => {
   const pieces = f.values.flatMap(v => f.whole ? (letters(v) ? [v.trim()] : []) : [...v.matchAll(RUN)].map(m => m[0].trim()).filter(p => letters(p) >= 1));

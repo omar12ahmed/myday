@@ -1,13 +1,13 @@
-// The starter words' voice (1.39.0): which word and example have a clip (only ones listened to before shipping — see
-// app/scripts/prepare-audio.mjs), and one shared player. One clip at a time, and only when you tap play — never by
+// The Arabic course's synthesised voice (starter words 1.39.0, lessons' examples 1.40.0): which texts have a clip
+// (only ones listened to before shipping — see app/scripts/prepare-audio.mjs; a clip belongs to its exact text, so one
+// clip serves every place that text appears), and one shared player. One clip at a time, and only when you tap play — never by
 // itself. A clip is fetched whole and played from memory, because the service worker keeps whole files for offline
 // (an <audio src> would ask for byte ranges, which it doesn't keep). "Slower" plays the same clip at 0.75×, pitch
 // kept; your choice is remembered on this device (myday.arabic.slower, not part of your MyDay data).
 import audio from './voice-clips.json';
 
-export type Part = 'word' | 'example';
-const clips = audio.clips as Record<string, Partial<Record<Part, string>>>;
-export const clipOf = (id: string, part: Part): string | null => clips[id]?.[part] ?? null;
+const clips = audio.clips as Record<string, string>;
+export const clipFor = (text: string): string | null => clips[text] ?? null;
 export const hasVoice = Object.keys(clips).length > 0;
 export const voiceLabel = audio.label;
 

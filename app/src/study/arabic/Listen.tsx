@@ -1,15 +1,16 @@
 import { LoaderCircle, Square, Volume2 } from 'lucide-react';
 import { useSyncExternalStore } from 'react';
 import { Switch } from '../../components/Switch';
-import { clipOf, playOrStop, setSlower, subscribe, voiceLabel, voiceState, type Part } from './voice';
+import { clipFor, playOrStop, setSlower, subscribe, voiceLabel, voiceState } from './voice';
 
-// A play button for a starter word or its example (1.39.0). Nothing at all when that clip hasn't shipped.
-// `label` is what it plays, for its accessible name: "Play كِتَاب".
-export function PlayButton({ id, part, label }: { id: string; part: Part; label: string }) {
+// A play button for a piece of Arabic: `text` exactly as shown (its clip is found by it). Nothing at all when that text
+// has no clip that's been listened to. `name` says which button it is (for one-at-a-time and the tests): "<word id>:word",
+// "<lesson id>:example". `label` is what it plays, for its accessible name: "Play كِتَاب".
+export function PlayButton({ text, name, label }: { text: string; name: string; label: string }) {
   const s = useSyncExternalStore(subscribe, voiceState);
-  const file = clipOf(id, part);
+  const file = clipFor(text);
   if (!file) return null;
-  const key = `${id}:${part}`, playing = s.playing === key, loading = s.loading === key;
+  const key = name, playing = s.playing === key, loading = s.loading === key;
   return <span className="inline-flex items-center gap-2 flex-none">
     <button type="button" data-action="ar-play" data-ar-clip={key} data-state={playing ? 'playing' : loading ? 'loading' : s.failed === key ? 'failed' : 'idle'}
       aria-label={playing || loading ? `Stop ${label}` : `Play ${label}`} onClick={() => playOrStop(key, file)}
@@ -18,6 +19,12 @@ export function PlayButton({ id, part, label }: { id: string; part: Part; label:
     </button>
     {s.failed === key && <span role="status" className="text-sm text-fg-2">Couldn’t play it. The first time, it needs a connection.</span>}
   </span>;
+}
+
+// The honest label under a piece of Arabic that has a voice, away from the Vocabulary card (e.g. a lesson's example).
+export function VoiceLabel({ text }: { text: string }) {
+  if (!clipFor(text)) return null;
+  return <p className="text-xs text-fg-2 m-0 mt-1" data-ar-voice-label="">{voiceLabel} Slower playback: Study → Arabic → Vocabulary.</p>;
 }
 
 // What the voice is, honestly, and the Slower switch: on the Vocabulary card.

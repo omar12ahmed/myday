@@ -1,5 +1,5 @@
 {
- "about": "Audio for the Arabic starter words: one synthesised voice, made from the exact vowelled text below and listened to before it ships. MyDay’s own add-on — the curriculum package’s audio_status describes the course’s own materials and is unchanged. Made by app/scripts/make-arabic-audio.mjs; checked at every build by app/scripts/validate-audio.mjs.",
+ "about": "Audio for the Arabic course: one synthesised voice, made from the exact vowelled text and listened to before it ships. Each clip belongs to its exact text, so one clip serves every place that text appears. Which texts have a voice is defined in app/scripts/arabic-voice-sources.mjs (specs/arabic-audio-course.md). MyDay’s own add-on: the curriculum package’s audio_status describes the course’s own materials and is unchanged. Made by app/scripts/make-arabic-audio.mjs; checked at every build by app/scripts/prepare-audio.mjs.",
  "voice": {
   "service": "Google Cloud Text-to-Speech",
   "name": "ar-XA-Chirp3-HD-Charon",
@@ -7,8 +7,6 @@
   "settings": "MP3, 24 kHz, normal speed; slower playback is done by the browser"
  },
  "label": "Synthesised voice — a model to copy; checked by ear, not yet by a teacher.",
- "listening": "All 96 clips listened to against the vowelled text and its reading, by ear, by MyDay’s learner (basic Arabic), on 19 October 2026 — not yet by an Arabic teacher. Before that, the voice was chosen in a blind trial (10 clips, 4 voices).",
- "cross_check": "Every clip was also transcribed, fully vowelled, by a second model (Gemini 3.8 Flash) and compared with its text; clips it heard differently were made again until it agreed (three clips, four retakes; each marked “earlier”). A transcription can mishear too: this flags clips to listen to, it doesn’t approve them.",
  "terms": "Google Cloud Text-to-Speech, prebuilt voice, generally available for Arabic (checked 19 October 2026): no attribution required; generated content isn’t presented as a human recording (the app labels it “Synthesised voice”).",
  "checks": {
   "to check": "made, not yet listened to: not shipped",
@@ -16,873 +14,1665 @@
   "redo": "heard a mistake: made again next run",
   "left out": "couldn’t be made right: no play button"
  },
+ "rounds": [
+  {
+   "round": 1,
+   "source": "starter-words",
+   "release": "1.39.0",
+   "made": "2026-10-19",
+   "listening": "All 96 clips listened to against the vowelled text and its reading, by ear, by MyDay’s learner (basic Arabic), on 19 October 2026 — not yet by an Arabic teacher. Before that, the voice was chosen in a blind trial (10 clips, 4 voices).",
+   "cross_check": "Every clip was also transcribed, fully vowelled, by a second model (Gemini 3.8 Flash) and compared with its text; clips it heard differently were made again until it agreed (three clips, four retakes; each marked “earlier”). A transcription can mishear too: this flags clips to listen to, it doesn’t approve them."
+  },
+  {
+   "round": 2,
+   "source": "lesson-examples",
+   "release": "1.40.0",
+   "made": "2026-10-20",
+   "listening": "All 136 new clips listened to against the vowelled text and its reading, by ear, by MyDay’s learner (basic Arabic), on 21 October 2026 — “all fine”; not yet by an Arabic teacher. 10 lesson examples share a starter example’s clip.",
+   "cross_check": "Every clip transcribed, fully vowelled, by Gemini 3.8 Flash. 21 made again: 20 contrast pairs where the slash between forms was read aloud (now spoken as a short pause) and “لَنْ يَدْرُسُوا.”, heard as لَمْ in two takes and kept from a take heard as لَنْ when asked directly. About US$0.04."
+  }
+ ],
  "clips": {
-  "lexeme.arabic-seed-001": {
-   "word": {
-    "text": "أَنَا",
-    "file": "e8b43d61eb264274.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "أَنَا طَالِبٌ.",
-    "file": "93c2e0c153d11f2b.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "أَنَا": {
+   "file": "e8b43d61eb264274.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-002": {
-   "word": {
-    "text": "أَنْتَ",
-    "file": "3e706d6f83676f73.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "هَلْ أَنْتَ طَالِبٌ؟",
-    "file": "e6c2a369a80ee2d9.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "أَنَا طَالِبٌ.": {
+   "file": "93c2e0c153d11f2b.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-003": {
-   "word": {
-    "text": "أَنْتِ",
-    "file": "bb4a7d72ce985557.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "هَلْ أَنْتِ طَالِبَةٌ؟",
-    "file": "cbfdae67655311a6.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "أَنْتَ": {
+   "file": "3e706d6f83676f73.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-004": {
-   "word": {
-    "text": "هُوَ",
-    "file": "24c26aab0950024f.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "هُوَ فِي الْبَيْتِ.",
-    "file": "ecb9cdc1164a6f8f.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "هَلْ أَنْتَ طَالِبٌ؟": {
+   "file": "e6c2a369a80ee2d9.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-005": {
-   "word": {
-    "text": "هِيَ",
-    "file": "b2641d570616cb1c.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "earlier": "cross-check heard it differently",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "هِيَ فِي الْمَدْرَسَةِ.",
-    "file": "9274978e882baa14.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "أَنْتِ": {
+   "file": "bb4a7d72ce985557.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-006": {
-   "word": {
-    "text": "نَحْنُ",
-    "file": "ba1ef74b071c7232.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "نَحْنُ نَدْرُسُ.",
-    "file": "951d123ecb6ffda0.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "هَلْ أَنْتِ طَالِبَةٌ؟": {
+   "file": "cbfdae67655311a6.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-007": {
-   "word": {
-    "text": "بَيْت",
-    "file": "02ffbf147d78521e.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "هَذَا بَيْتٌ كَبِيرٌ.",
-    "file": "5fb6738d14b1e146.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "هُوَ": {
+   "file": "24c26aab0950024f.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-008": {
-   "word": {
-    "text": "بَاب",
-    "file": "482e89f2d5afc3e2.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "earlier": "cross-check heard it differently",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "الْبَابُ مَفْتُوحٌ.",
-    "file": "bf0f031fd8d52c79.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "هُوَ فِي الْبَيْتِ.": {
+   "file": "ecb9cdc1164a6f8f.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-009": {
-   "word": {
-    "text": "كِتَاب",
-    "file": "3ec42587ce68e961.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "عِنْدِي كِتَابٌ.",
-    "file": "928c30f825a7742f.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "هِيَ": {
+   "file": "b2641d570616cb1c.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "earlier": "cross-check heard it differently",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-010": {
-   "word": {
-    "text": "كُتُب",
-    "file": "7417afe532c25c80.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "هَذِهِ كُتُبٌ جَدِيدَةٌ.",
-    "file": "120f67479b7a63d8.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "هِيَ فِي الْمَدْرَسَةِ.": {
+   "file": "9274978e882baa14.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-011": {
-   "word": {
-    "text": "مَدْرَسَة",
-    "file": "179eab04bd82a325.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "الْمَدْرَسَةُ قَرِيبَةٌ.",
-    "file": "1560b2f7743326a1.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "نَحْنُ": {
+   "file": "ba1ef74b071c7232.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-012": {
-   "word": {
-    "text": "مَكْتَبَة",
-    "file": "a6753effcaf89ae6.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "أَنَا فِي الْمَكْتَبَةِ.",
-    "file": "459519fc9356be66.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "نَحْنُ نَدْرُسُ.": {
+   "file": "951d123ecb6ffda0.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-013": {
-   "word": {
-    "text": "طَالِب",
-    "file": "95490d8240822002.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "سَامِي طَالِبٌ.",
-    "file": "3df92f95acf9fbf5.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "بَيْت": {
+   "file": "02ffbf147d78521e.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-014": {
-   "word": {
-    "text": "طَالِبَة",
-    "file": "bb5cd2ca026207ee.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "لَيْلَى طَالِبَةٌ.",
-    "file": "3597e839a462570a.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "هَذَا بَيْتٌ كَبِيرٌ.": {
+   "file": "5fb6738d14b1e146.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-015": {
-   "word": {
-    "text": "كَبِير",
-    "file": "a6e7f24ba49ddf77.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "الْبَيْتُ كَبِيرٌ.",
-    "file": "bd0bd61fb3bd3376.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "بَاب": {
+   "file": "482e89f2d5afc3e2.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "earlier": "cross-check heard it differently",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-016": {
-   "word": {
-    "text": "صَغِير",
-    "file": "c6f0f6c7ac28cd0b.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "عِنْدِي دَفْتَرٌ صَغِيرٌ.",
-    "file": "4431a7b895f29b6e.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "الْبَابُ مَفْتُوحٌ.": {
+   "file": "bf0f031fd8d52c79.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-017": {
-   "word": {
-    "text": "جَدِيد",
-    "file": "340349edee6d7d22.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "هَذَا كِتَابٌ جَدِيدٌ.",
-    "file": "1361d138bece8d45.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "كِتَاب": {
+   "file": "3ec42587ce68e961.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-018": {
-   "word": {
-    "text": "فِي",
-    "file": "0bc5f5d5ecee628c.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "أَنَا فِي الْبَيْتِ.",
-    "file": "767f71197b63031b.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "عِنْدِي كِتَابٌ.": {
+   "file": "928c30f825a7742f.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-019": {
-   "word": {
-    "text": "مِنْ",
-    "file": "32ed17deb0d5a433.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "هُوَ مِنْ مِصْرَ.",
-    "file": "41592df10fdf9a6b.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "كُتُب": {
+   "file": "7417afe532c25c80.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-020": {
-   "word": {
-    "text": "إِلَى",
-    "file": "89d871dccee7bda2.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "أَذْهَبُ إِلَى الْمَدْرَسَةِ.",
-    "file": "0eb41838e1c3d986.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "هَذِهِ كُتُبٌ جَدِيدَةٌ.": {
+   "file": "120f67479b7a63d8.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-021": {
-   "word": {
-    "text": "عَلَى",
-    "file": "e85828f1221484ed.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "الْكِتَابُ عَلَى الْمَكْتَبِ.",
-    "file": "e058968e2ff9a162.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "مَدْرَسَة": {
+   "file": "179eab04bd82a325.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-022": {
-   "word": {
-    "text": "أَيْنَ",
-    "file": "3f78d32efd0d152a.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "earlier": "cross-check heard it differently",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "أَيْنَ الْكِتَابُ؟",
-    "file": "866fff646b25bdcd.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "الْمَدْرَسَةُ قَرِيبَةٌ.": {
+   "file": "1560b2f7743326a1.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-023": {
-   "word": {
-    "text": "مَنْ",
-    "file": "d8340470be031b40.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "مَنْ هُوَ؟",
-    "file": "101c00cfb8af2bb5.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "مَكْتَبَة": {
+   "file": "a6753effcaf89ae6.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-024": {
-   "word": {
-    "text": "مَتَى",
-    "file": "feaf8b80bc81ed9c.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "مَتَى الْمَوْعِدُ؟",
-    "file": "8ca7adee80f65d75.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "أَنَا فِي الْمَكْتَبَةِ.": {
+   "file": "459519fc9356be66.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-025": {
-   "word": {
-    "text": "هَلْ",
-    "file": "930a08669cba46a0.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "هَلْ أَنْتَ فِي الْبَيْتِ؟",
-    "file": "370e61b3fbcde612.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "طَالِب": {
+   "file": "95490d8240822002.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-026": {
-   "word": {
-    "text": "شُكْرًا",
-    "file": "99c38fba8948820b.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "شُكْرًا لَكَ.",
-    "file": "4cdb8543b02f9642.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "سَامِي طَالِبٌ.": {
+   "file": "3df92f95acf9fbf5.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-027": {
-   "word": {
-    "text": "مِنْ فَضْلِكَ",
-    "file": "99f1161e21c7a2c1.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "مَاءً، مِنْ فَضْلِكَ.",
-    "file": "4e218437c7dcb69b.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "طَالِبَة": {
+   "file": "bb5cd2ca026207ee.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-028": {
-   "word": {
-    "text": "مِنْ فَضْلِكِ",
-    "file": "30593f613e888c8e.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "مَاءً، مِنْ فَضْلِكِ.",
-    "file": "5faf731ce6942740.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "لَيْلَى طَالِبَةٌ.": {
+   "file": "3597e839a462570a.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-029": {
-   "word": {
-    "text": "صَبَاح",
-    "file": "280bf50b160638cb.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "أَدْرُسُ فِي الصَّبَاحِ.",
-    "file": "288e88d1c9d91f0d.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "كَبِير": {
+   "file": "a6e7f24ba49ddf77.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-030": {
-   "word": {
-    "text": "مَسَاء",
-    "file": "348c654d4aae2dc0.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "أَقْرَأُ فِي الْمَسَاءِ.",
-    "file": "2eff058cf395f960.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "الْبَيْتُ كَبِيرٌ.": {
+   "file": "bd0bd61fb3bd3376.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-031": {
-   "word": {
-    "text": "أَمْسِ",
-    "file": "670403447116b240.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "دَرَسْتُ أَمْسِ.",
-    "file": "82d012838d35ff70.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "صَغِير": {
+   "file": "c6f0f6c7ac28cd0b.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-032": {
-   "word": {
-    "text": "غَدًا",
-    "file": "039aeaf701d14e76.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "سَأَدْرُسُ غَدًا.",
-    "file": "10172449a36ad791.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "عِنْدِي دَفْتَرٌ صَغِيرٌ.": {
+   "file": "4431a7b895f29b6e.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-033": {
-   "word": {
-    "text": "الْيَوْم",
-    "file": "7f309519f45d45cb.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "أَدْرُسُ الْيَوْمَ.",
-    "file": "921e1938e8ada887.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "جَدِيد": {
+   "file": "340349edee6d7d22.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-034": {
-   "word": {
-    "text": "قَرَأَ",
-    "file": "bc2c5eb4ca5f6589.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "قَرَأَ سَامِي الْكِتَابَ.",
-    "file": "cfb86c0762449736.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "هَذَا كِتَابٌ جَدِيدٌ.": {
+   "file": "1361d138bece8d45.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-035": {
-   "word": {
-    "text": "يَقْرَأُ",
-    "file": "951f37f886920e69.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "يَقْرَأُ سَامِي.",
-    "file": "c67af8cc42546803.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "فِي": {
+   "file": "0bc5f5d5ecee628c.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-036": {
-   "word": {
-    "text": "كَتَبَ",
-    "file": "2cf64b08b9d213c5.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "كَتَبَ رِسَالَةً.",
-    "file": "9150ca273c8d7ef1.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "أَنَا فِي الْبَيْتِ.": {
+   "file": "767f71197b63031b.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-037": {
-   "word": {
-    "text": "يَكْتُبُ",
-    "file": "8b8b7e0e64a95115.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "يَكْتُبُ رِسَالَةً.",
-    "file": "aede6b120972f1f4.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "مِنْ": {
+   "file": "32ed17deb0d5a433.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-038": {
-   "word": {
-    "text": "دَرَسَ",
-    "file": "e185145fc2bb34ff.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "دَرَسَ الْعَرَبِيَّةَ.",
-    "file": "bf8d73c3d2f95704.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "هُوَ مِنْ مِصْرَ.": {
+   "file": "41592df10fdf9a6b.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-039": {
-   "word": {
-    "text": "يَدْرُسُ",
-    "file": "79e887071e40bd0f.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "يَدْرُسُ الْعَرَبِيَّةَ.",
-    "file": "772e1245a92c972d.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "إِلَى": {
+   "file": "89d871dccee7bda2.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-040": {
-   "word": {
-    "text": "أُرِيدُ",
-    "file": "574657dbc8064903.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "أُرِيدُ كِتَابًا.",
-    "file": "690b3781c3ae2fae.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "أَذْهَبُ إِلَى الْمَدْرَسَةِ.": {
+   "file": "0eb41838e1c3d986.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-041": {
-   "word": {
-    "text": "عِنْدِي",
-    "file": "d7afe949a3c7c244.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "عِنْدِي سُؤَالٌ.",
-    "file": "8bf37ea6d8c79034.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "عَلَى": {
+   "file": "e85828f1221484ed.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-042": {
-   "word": {
-    "text": "سُؤَال",
-    "file": "2d8fe6005dd57a8b.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "عِنْدِي سُؤَالٌ.",
-    "file": "d987dfbe91a86e68.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "الْكِتَابُ عَلَى الْمَكْتَبِ.": {
+   "file": "e058968e2ff9a162.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-043": {
-   "word": {
-    "text": "لِأَنَّ",
-    "file": "3a73803a40d1d833.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "أَقْرَأُ لِأَنَّ الْكِتَابَ مُفِيدٌ.",
-    "file": "95f91d9f47ae2b8d.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "أَيْنَ": {
+   "file": "3f78d32efd0d152a.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "earlier": "cross-check heard it differently",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-044": {
-   "word": {
-    "text": "ثُمَّ",
-    "file": "6f363939c759a086.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "أَقْرَأُ ثُمَّ أَكْتُبُ.",
-    "file": "2837f6abff9f0772.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "أَيْنَ الْكِتَابُ؟": {
+   "file": "866fff646b25bdcd.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-045": {
-   "word": {
-    "text": "لَكِنَّ",
-    "file": "55b67cbc0538aba7.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "الْكِتَابُ طَوِيلٌ، لَكِنَّهُ مُفِيدٌ.",
-    "file": "afc2dba3107f8716.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "مَنْ": {
+   "file": "d8340470be031b40.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-046": {
-   "word": {
-    "text": "لِذَلِكَ",
-    "file": "3112d9447d8b3c99.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "أَنَا مُتْعَبٌ، لِذَلِكَ سَأَرْتَاحُ.",
-    "file": "0a207925823265c3.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "مَنْ هُوَ؟": {
+   "file": "101c00cfb8af2bb5.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-047": {
-   "word": {
-    "text": "فِكْرَة",
-    "file": "7881fa9e4c9d551f.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "هَذِهِ فِكْرَةٌ جَيِّدَةٌ.",
-    "file": "2ac6cdf245da7246.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "مَتَى": {
+   "file": "feaf8b80bc81ed9c.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
   },
-  "lexeme.arabic-seed-048": {
-   "word": {
-    "text": "مَعْنَى",
-    "file": "734489a2d1d76189.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   },
-   "example": {
-    "text": "مَا مَعْنَى هَذِهِ الْكَلِمَةِ؟",
-    "file": "39cecd3758d7fb1e.mp3",
-    "voice": "ar-XA-Chirp3-HD-Charon",
-    "made": "2026-10-18",
-    "check": "checked",
-    "checked": "2026-10-19"
-   }
+  "مَتَى الْمَوْعِدُ؟": {
+   "file": "8ca7adee80f65d75.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "هَلْ": {
+   "file": "930a08669cba46a0.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "هَلْ أَنْتَ فِي الْبَيْتِ؟": {
+   "file": "370e61b3fbcde612.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "شُكْرًا": {
+   "file": "99c38fba8948820b.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "شُكْرًا لَكَ.": {
+   "file": "4cdb8543b02f9642.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "مِنْ فَضْلِكَ": {
+   "file": "99f1161e21c7a2c1.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "مَاءً، مِنْ فَضْلِكَ.": {
+   "file": "4e218437c7dcb69b.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "مِنْ فَضْلِكِ": {
+   "file": "30593f613e888c8e.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "مَاءً، مِنْ فَضْلِكِ.": {
+   "file": "5faf731ce6942740.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "صَبَاح": {
+   "file": "280bf50b160638cb.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "أَدْرُسُ فِي الصَّبَاحِ.": {
+   "file": "288e88d1c9d91f0d.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "مَسَاء": {
+   "file": "348c654d4aae2dc0.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "أَقْرَأُ فِي الْمَسَاءِ.": {
+   "file": "2eff058cf395f960.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "أَمْسِ": {
+   "file": "670403447116b240.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "دَرَسْتُ أَمْسِ.": {
+   "file": "82d012838d35ff70.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "غَدًا": {
+   "file": "039aeaf701d14e76.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "سَأَدْرُسُ غَدًا.": {
+   "file": "10172449a36ad791.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "الْيَوْم": {
+   "file": "7f309519f45d45cb.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "أَدْرُسُ الْيَوْمَ.": {
+   "file": "921e1938e8ada887.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "قَرَأَ": {
+   "file": "bc2c5eb4ca5f6589.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "قَرَأَ سَامِي الْكِتَابَ.": {
+   "file": "cfb86c0762449736.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "يَقْرَأُ": {
+   "file": "951f37f886920e69.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "يَقْرَأُ سَامِي.": {
+   "file": "c67af8cc42546803.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "كَتَبَ": {
+   "file": "2cf64b08b9d213c5.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "كَتَبَ رِسَالَةً.": {
+   "file": "9150ca273c8d7ef1.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "يَكْتُبُ": {
+   "file": "8b8b7e0e64a95115.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "يَكْتُبُ رِسَالَةً.": {
+   "file": "aede6b120972f1f4.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "دَرَسَ": {
+   "file": "e185145fc2bb34ff.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "دَرَسَ الْعَرَبِيَّةَ.": {
+   "file": "bf8d73c3d2f95704.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "يَدْرُسُ": {
+   "file": "79e887071e40bd0f.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "يَدْرُسُ الْعَرَبِيَّةَ.": {
+   "file": "772e1245a92c972d.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "أُرِيدُ": {
+   "file": "574657dbc8064903.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "أُرِيدُ كِتَابًا.": {
+   "file": "690b3781c3ae2fae.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "عِنْدِي": {
+   "file": "d7afe949a3c7c244.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "عِنْدِي سُؤَالٌ.": {
+   "file": "8bf37ea6d8c79034.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "سُؤَال": {
+   "file": "2d8fe6005dd57a8b.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "لِأَنَّ": {
+   "file": "3a73803a40d1d833.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "أَقْرَأُ لِأَنَّ الْكِتَابَ مُفِيدٌ.": {
+   "file": "95f91d9f47ae2b8d.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "ثُمَّ": {
+   "file": "6f363939c759a086.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "أَقْرَأُ ثُمَّ أَكْتُبُ.": {
+   "file": "2837f6abff9f0772.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "لَكِنَّ": {
+   "file": "55b67cbc0538aba7.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "الْكِتَابُ طَوِيلٌ، لَكِنَّهُ مُفِيدٌ.": {
+   "file": "afc2dba3107f8716.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "لِذَلِكَ": {
+   "file": "3112d9447d8b3c99.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "أَنَا مُتْعَبٌ، لِذَلِكَ سَأَرْتَاحُ.": {
+   "file": "0a207925823265c3.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "فِكْرَة": {
+   "file": "7881fa9e4c9d551f.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "هَذِهِ فِكْرَةٌ جَيِّدَةٌ.": {
+   "file": "2ac6cdf245da7246.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "مَعْنَى": {
+   "file": "734489a2d1d76189.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "مَا مَعْنَى هَذِهِ الْكَلِمَةِ؟": {
+   "file": "39cecd3758d7fb1e.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-18",
+   "check": "checked",
+   "checked": "2026-10-19"
+  },
+  "الْعَرَبِيَّةُ الْفُصْحَى": {
+   "file": "d2dea997589fe448.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "أَهْلًا": {
+   "file": "ed1220a3cde89016.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "مَرْحَبًا": {
+   "file": "c1bf7f73ee125c29.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "أَدْرُسُ الْعَرَبِيَّةَ.": {
+   "file": "8f64066e8ae8be16.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "كَتَبَ / كَاتِب": {
+   "file": "8f70f06b42bdad4e.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "earlier": "slash read aloud",
+   "checked": "2026-10-21"
+  },
+  "دَرَسَ / دَرَّسَ": {
+   "file": "df012cc07ffceaa8.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "earlier": "slash read aloud",
+   "checked": "2026-10-21"
+  },
+  "مَدْرَسَة / عَلَى": {
+   "file": "dff879825e5403a3.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "earlier": "slash read aloud",
+   "checked": "2026-10-21"
+  },
+  "بَيْت / بَاب": {
+   "file": "12370334c1f32354.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "earlier": "slash read aloud",
+   "checked": "2026-10-21"
+  },
+  "صَبَاحُ الْخَيْرِ": {
+   "file": "00e1da170515064e.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "مَلِك / مَالِك": {
+   "file": "e0b0dff09eae2788.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "earlier": "slash read aloud",
+   "checked": "2026-10-21"
+  },
+  "قَلْب / كَلْب": {
+   "file": "400117d36441b071.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "earlier": "slash read aloud",
+   "checked": "2026-10-21"
+  },
+  "الْقَمَر / الشَّمْس": {
+   "file": "d4fabe0a6c668873.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "earlier": "slash read aloud",
+   "checked": "2026-10-21"
+  },
+  "كَيْفَ حَالُكَ؟": {
+   "file": "ebbf7e414100b5e2.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "أَنَا سَارَةُ.": {
+   "file": "dd53609402437993.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "هُوَ طَالِبٌ.": {
+   "file": "d4352f48a36970d8.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "أَيْنَ الْبَيْتُ؟": {
+   "file": "d42855bd72973ff2.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "لَمْ أَفْهَمْ.": {
+   "file": "9866b98e01b32af3.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "كِتَاب / الْكِتَاب": {
+   "file": "1ea24974bfe5c4ec.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "earlier": "slash read aloud",
+   "checked": "2026-10-21"
+  },
+  "كُتُبٌ جَدِيدَةٌ": {
+   "file": "36ff56bd29952697.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "هَذِهِ كُتُبٌ.": {
+   "file": "38ba2cd6dc5126dc.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "كِتَابُ الطَّالِبِ": {
+   "file": "e523b094c30df3f5.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "أَقْرَأُ الْكِتَابَ.": {
+   "file": "24323836bcac3df2.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "السَّاعَةُ الثَّالِثَةُ": {
+   "file": "f53da7953e2d55b6.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "الْمَكْتَبَةُ بِجَانِبِ الْمَدْرَسَةِ.": {
+   "file": "49784218a93d11f1.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "أُرِيدُ مَاءً، مِنْ فَضْلِكَ.": {
+   "file": "86294153b9edfb10.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "أَيْنَ الْمَوْعِدُ؟": {
+   "file": "8b09b38c9530dff4.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "أَيْنَ؟ مَتَى؟ مَنْ؟": {
+   "file": "845b226086a146c8.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "مَكْتَبَة / مَدْرَسَة": {
+   "file": "7e4445eabb4d6034.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "earlier": "slash read aloud",
+   "checked": "2026-10-21"
+  },
+  "أَسْكُنُ فِي مَدِينَةٍ صَغِيرَةٍ.": {
+   "file": "42b8e75665ca7da2.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "أَتَعَلَّمُ كُلَّ يَوْمٍ.": {
+   "file": "faacfc595e21a80c.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "كَتَبْتُ رِسَالَةً.": {
+   "file": "fd08fe90abf80979.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "مَاذَا قَرَأْتَ؟": {
+   "file": "6105f04f702d0c0e.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "كَانَ الْجَوُّ جَمِيلًا.": {
+   "file": "202a166215027eef.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "ثُمَّ عُدْتُ إِلَى الْبَيْتِ.": {
+   "file": "f730d766a3c809a3.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "فِي الْمَسَاءِ قَرَأْتُ كِتَابًا.": {
+   "file": "c3b91eabdfdf3e21.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "لَمْ أَدْرُسْ أَمْسِ.": {
+   "file": "205bb2d2b99c3da3.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "اِفْتَحِ الْكِتَابَ.": {
+   "file": "9b40f7240462d9b7.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "أُرِيدُ أَنْ أَتَعَلَّمَ.": {
+   "file": "b832eb38145c004f.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "لَا أَسْتَطِيعُ أَنْ أَحْضُرَ.": {
+   "file": "23f90171b026ba92.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "مَدْرَسَتُهَا": {
+   "file": "f75a450e641f8b87.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "قَرَأَ الطَّالِبُ الْكِتَابَ.": {
+   "file": "ca3d61790adadcc8.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "بَابُ بَيْتِ الطَّالِبِ": {
+   "file": "4560a4b30da59930.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "كِتَابَانِ / كِتَابَيْنِ": {
+   "file": "9cb350a5ae74cf60.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "earlier": "slash read aloud",
+   "checked": "2026-10-21"
+  },
+  "هَذَا الْبَيْتُ أَكْبَرُ مِنْ ذَلِكَ الْبَيْتِ.": {
+   "file": "52d5a34bb74e3a08.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "كَاتِب / مَكْتُوب / مَكْتَبَة": {
+   "file": "9a2862f51450d9c4.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "earlier": "slash read aloud",
+   "checked": "2026-10-21"
+  },
+  "وَبِالْكِتَابِ": {
+   "file": "fc5d0f7c7c97c69d.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "كِتَابٌ / كُتُبٌ": {
+   "file": "499d28a6154a4bab.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "earlier": "slash read aloud",
+   "checked": "2026-10-21"
+  },
+  "كِتَابَة": {
+   "file": "4c9dc38d049c5539.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "قَرَأَ / يَقْرَأُ": {
+   "file": "611a5e838eca12c6.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "earlier": "slash read aloud",
+   "checked": "2026-10-21"
+  },
+  "أَمْسِ / غَدًا": {
+   "file": "f8c912bdb297c60c.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "earlier": "slash read aloud",
+   "checked": "2026-10-21"
+  },
+  "بَعْدَ ذَلِكَ": {
+   "file": "735260d61620a097.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "مَا رَأْيُكَ؟": {
+   "file": "a7acab20b9eb18f0.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "فِي الْأُسْبُوعِ الْقَادِمِ": {
+   "file": "6d2a1000551037ac.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "أُرِيدُ أَنْ أَقْرَأَ أَكْثَرَ.": {
+   "file": "33a1a8cb509bf0fe.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "عَلَّمَ / تَعَلَّمَ": {
+   "file": "14b8596a94e74253.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "earlier": "slash read aloud",
+   "checked": "2026-10-21"
+  },
+  "قَالَ / قُلْتُ": {
+   "file": "c2f11ea4ecb015c0.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "earlier": "slash read aloud",
+   "checked": "2026-10-21"
+  },
+  "وَعَدَ / يَعِدُ": {
+   "file": "a91d1beb80c75dcd.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "earlier": "slash read aloud",
+   "checked": "2026-10-21"
+  },
+  "لَنْ يَدْرُسُوا.": {
+   "file": "65c649add9fdd254.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "earlier": "cross-check heard لَمْ in two takes; this take heard as لَنْ when asked directly",
+   "checked": "2026-10-21"
+  },
+  "كُتِبَ التَّقْرِيرُ.": {
+   "file": "18a9f7214e470af7.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "الْكِتَابُ الَّذِي قَرَأْتُهُ": {
+   "file": "e50f0b71fb2d412c.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "إِنَّ الطَّالِبَ مُجْتَهِدٌ.": {
+   "file": "9b8c170bca595c90.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "قَالَ إِنَّهُ مُتْعَبٌ.": {
+   "file": "54f4f48e413b30c3.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "إِذَا دَرَسْتَ، فَسَتَفْهَمُ.": {
+   "file": "bc23503d762f0ba5.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "أَدْرُسُ لِكَيْ أَفْهَمَ.": {
+   "file": "cd914f9741e14cc1.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "عَلِمَ / عِلْم / عَلَم": {
+   "file": "46538351efc711ca.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "earlier": "slash read aloud",
+   "checked": "2026-10-21"
+  },
+  "قِصَّة قَصِيرَة": {
+   "file": "3f74e40622e8e4f8.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "اتَّخَذَ قَرَارًا": {
+   "file": "3be19d57cfe4b7f7.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "الفِكْرَةُ الرَّئِيسِيَّةُ": {
+   "file": "a515ad4a105b5bef.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "بِالإِضَافَةِ إِلَى ذَلِكَ": {
+   "file": "5d1720348876d651.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "هَلْ يُمْكِنُ أَنْ تُعْطِيَ مِثَالًا؟": {
+   "file": "af53a7ec1457bd02.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "مِنْ وِجْهَةِ نَظَرِي": {
+   "file": "e31231460096b5c1.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "بِاللُّغَةِ العَرَبِيَّةِ الفُصْحَى": {
+   "file": "2aa3bb19f59d09b6.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "عَلَى سَبِيلِ الْمِثَالِ": {
+   "file": "0b29415dbbfb1216.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "السَّيِّدَةُ المُحْتَرَمَةُ": {
+   "file": "5c1584ceb6b930c4.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "يُوَضِّحُ النَّصُّ أَنَّ...": {
+   "file": "7827bb8fbe92fa9d.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "المُرَاجَعَةُ": {
+   "file": "8c60fbe39f30e5b0.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "المَصْدَرُ الأَوَّلُ": {
+   "file": "4edc53b3e4345fde.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "أَوَّلًا... ثَانِيًا...": {
+   "file": "67374293166096b8.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "لَسْتُ مُتَأَكِّدًا.": {
+   "file": "e0e12df13c70705d.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "خُطَّةُ التَّعَلُّمِ": {
+   "file": "e905452594886ab8.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "أَسْتَطِيعُ أَنْ أَشْرَحَ الْفِكْرَةَ.": {
+   "file": "b99ad99ba3b4ca93.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "افْتِتَاحُ مَكْتَبَةٍ جَدِيدَةٍ": {
+   "file": "9173c95d6cb3cf16.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "بِحَسَبِ التَّقْرِيرِ": {
+   "file": "92d76199b0d906ef.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "ارْتَفَعَ العَدَدُ.": {
+   "file": "d6dbc37d60082da3.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "أَشَارَ إِلَى أَنَّ...": {
+   "file": "f61c311ae71deb9c.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "مِنْ جِهَةٍ أُخْرَى": {
+   "file": "2a531965338b4614.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "الحُجَّةُ وَالدَّلِيلُ": {
+   "file": "0b3d7c99e4c23288.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "مِنَ المُحْتَمَلِ أَنْ...": {
+   "file": "b0c1555ac7110dbd.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "يَبْدُو أَنَّ...": {
+   "file": "0c11a51bf8777c96.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "مَعَ ذَلِكَ": {
+   "file": "d45ea30a7bdd3049.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "أَتَفَهَّمُ هَذِهِ الوِجْهَةَ، وَلَكِنْ...": {
+   "file": "2e0ec17449ec41fa.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "حَضَرَ الطُّلَّابُ. / الطُّلَّابُ حَضَرُوا.": {
+   "file": "1f0d7ca4d13f17af.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "earlier": "slash read aloud",
+   "checked": "2026-10-21"
+  },
+  "عَادَ الطَّالِبُ مُتْعَبًا.": {
+   "file": "85725b19b8a3b7f5.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "عِشْرُونَ كِتَابًا": {
+   "file": "0a5315139f5a0533.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "لَا شَكَّ فِي ذَلِكَ.": {
+   "file": "fda8f6cf1f067737.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "التَّدْقِيقُ اللُّغَوِيُّ": {
+   "file": "abbe40f77df61c0a.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "فِي الخِتَامِ": {
+   "file": "4f972bc8a95bdad0.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "سَأَتَنَاوَلُ ثَلَاثَ نِقَاطٍ.": {
+   "file": "5c39ad968ff738dc.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "هَلْ تَقْصِدُ أَنَّ...؟": {
+   "file": "06866c44cb16d3cd.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "بِعِبَارَةٍ أَبْسَطَ": {
+   "file": "f41182157b807d0d.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "وُضُوحُ المَعْنَى": {
+   "file": "186f0ee032d46178.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "المَوْقِفُ وَالتَّفَاصِيلُ": {
+   "file": "8e47ec7824b8ac33.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "مُحَادَثَةٌ دُونَ نَصٍّ جَاهِزٍ": {
+   "file": "00f2e250719e5cd9.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "مِلَفُّ الإِنْجَازِ": {
+   "file": "a8aa61ab1ea9397a.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "تَقْيِيمُ المَهَارَاتِ": {
+   "file": "32b3eff6f57320bb.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "التَّعَلُّمُ المُسْتَمِرُّ": {
+   "file": "563c3fe755602868.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "مَنْهَجِيَّةُ البَحْثِ": {
+   "file": "b462db8e1ab3cc1a.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "تَعْرِيفُ المُصْطَلَحِ": {
+   "file": "59cff1a28800a443.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "تُشِيرُ النَّتَائِجُ إِلَى...": {
+   "file": "ea42e9a0bdff0b8c.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "التَّوْصِيَةُ الرَّئِيسِيَّةُ": {
+   "file": "65f62f5cd2951702.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "مُرَاجَعَةٌ مُسْتَقِلَّةٌ": {
+   "file": "b95769390d40aa08.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "الأَدَبُ العَرَبِيُّ": {
+   "file": "5884c6c285e535b4.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "الرَّاوِي وَالشَّخْصِيَّةُ": {
+   "file": "2798d3bc406e4b26.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "التَّشْبِيهُ وَالاسْتِعَارَةُ": {
+   "file": "1c1e1efdf655e642.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "بَيْتٌ شِعْرِيٌّ": {
+   "file": "4594188182e6e7ec.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "قِرَاءَةٌ نَقْدِيَّةٌ": {
+   "file": "65185aaf8e415700.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "النَّثْرُ الكَلَاسِيكِيُّ": {
+   "file": "eeccd39f360415a2.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "الإِعْرَابُ": {
+   "file": "77592ba14224bc1f.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "دَلَالَةُ اللَّفْظِ": {
+   "file": "975411cb149a6cde.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "النَّصُّ وَالشَّرْحُ": {
+   "file": "3350afec18686a67.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "شَرْحٌ مُوجَزٌ": {
+   "file": "b58df6071fce051d.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "التَّفْسِيرُ / التَّجْوِيدُ": {
+   "file": "0d6e7db46b8702d1.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "earlier": "slash read aloud",
+   "checked": "2026-10-21"
+  },
+  "الرَّسْمُ وَالضَّبْطُ": {
+   "file": "0037496ba72710e4.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "الصَّرْفُ وَالنَّحْوُ": {
+   "file": "c13380797b3f48d6.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "السِّيَاقُ": {
+   "file": "8c794587ce4be7b6.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "دِرَاسَةٌ لُغَوِيَّةٌ": {
+   "file": "5241a05669f1567e.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "الْمَعْنَى وَالسِّيَاقُ": {
+   "file": "937742d9451124a9.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "التَّرْجَمَةُ": {
+   "file": "f81efa607f5449b1.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "مُرَاجَعَةُ التَّرْجَمَةِ": {
+   "file": "482fc225473d68c7.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "نَقْلُ المَعْلُومَاتِ": {
+   "file": "03a424449ed45668.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "مِلَفُّ أَعْمَالِ التَّرْجَمَةِ": {
+   "file": "4a10fc50ded7ac43.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "أَمْنُ المَعْلُومَاتِ": {
+   "file": "f0902484762ac7cb.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "شَبَكَةُ الحَاسُوبِ": {
+   "file": "d6015d1640ca41a6.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "حِمَايَةُ الحِسَابِ": {
+   "file": "2003d1a298943102.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "مُلَخَّصُ الحَادِثَةِ": {
+   "file": "27f34b9f2a7a8c7f.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
+  },
+  "عَرْضٌ تَوْضِيحِيٌّ": {
+   "file": "1eec62f9caf215d1.mp3",
+   "voice": "ar-XA-Chirp3-HD-Charon",
+   "made": "2026-10-20",
+   "check": "checked",
+   "checked": "2026-10-21"
   }
  }
 }

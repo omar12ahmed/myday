@@ -19,7 +19,7 @@ import { Lines, LinkButton } from '../cybersecurity/parts';
 import { Ar, Mixed } from './Ar';
 import { familyOf } from './families';
 import { Root, WordFamilies } from './WordFamilies';
-import { PlayButton, VoiceNote } from './Listen';
+import { PlayButton, VoiceLabel, VoiceNote } from './Listen';
 import { hasVoice } from './voice';
 import { Pronunciation, PronunciationControls } from './Pronunciation';
 import { TeachingLesson } from '../teaching/TeachingLesson';
@@ -79,7 +79,7 @@ function MapView({ data }: { data: MyDayData }) {
       <h2 className="text-[28px] lg:text-[34px] mb-1">From first sounds to independent use.</h2>
       <Ar block className="text-[26px] text-fg-2 mt-0">العربية الفصحى</Ar>
       <p>Modern Standard Arabic, one small session at a time: script and sounds first, then sentences, reading, listening and writing.</p>
-      <p className="text-sm text-fg-2 flex gap-2 items-start"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />{hasVoice ? 'The starter words have a synthesised voice to copy, in Vocabulary; lessons and texts have no recordings yet. ' : 'No recordings are included yet. '}For listening and speaking, use a verified recording or a fluent speaker; typed work never stands in for them.</p>
+      <p className="text-sm text-fg-2 flex gap-2 items-start"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />{hasVoice ? 'The starter words (in Vocabulary) and each lesson’s example have a synthesised voice to copy; the reading texts and the rest of each lesson have no recordings yet. ' : 'No recordings are included yet. '}For listening and speaking, use a verified recording or a fluent speaker; typed work never stands in for them.</p>
       <div className="rounded-tile bg-surface p-4 border border-outline mt-4" data-ar-next={step.resume ? 'resume' : 'next'}>
         <Eyebrow>{step.resume ? 'Pick up where you left off' : started ? 'Your next small step' : 'Your first small step'}</Eyebrow>
         <h3>{lessonIndex[step.lessonId].title}</h3>
@@ -187,8 +187,10 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
       <h2>{l.title}</h2><Lines items={l.learning_objectives} />
       <p className="text-sm text-fg-2">Key ideas: {l.key_concepts.map((k, i) => <span key={i}>{i > 0 && ' · '}<Mixed text={k} /></span>)}</p>
       {l.example && <div className="rounded-tile bg-surface border border-outline px-4 py-3 mt-3" data-ar-example="">
-        <Ar block className="text-[28px] m-0">{l.example.text_ar}</Ar>
+        <div className="flex items-start gap-2"><div className="min-w-0 flex-1"><Ar block className="text-[28px] m-0">{l.example.text_ar}</Ar></div>
+          <PlayButton text={l.example.text_ar} name={`${l.id}:example`} label="the lesson’s example" /></div>
         <p className="text-sm text-fg-2 m-0">{l.example.meaning_en}</p>
+        <VoiceLabel text={l.example.text_ar} />
       </div>}
       {needsVoice && <p className="text-sm text-fg-2 flex gap-2 items-start mt-3 mb-0"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />This lesson uses listening or speaking. Use the assigned listening material below where provided, or a fluent speaker. External recordings open on the provider’s site.</p>}
       {l.prerequisites.all.length > 0 && <details className="mt-3"><summary className="cursor-pointer min-h-11 py-2 text-primary font-semibold">Builds on {l.prerequisites.all.length} earlier skill{l.prerequisites.all.length === 1 ? '' : 's'}</summary>
@@ -458,9 +460,9 @@ function Vocabulary({ data }: { data: MyDayData }) {
       return <li key={w.id} data-ar-word={w.id} tabIndex={-1} data-in={recognise || write ? 'yes' : 'no'} className="py-3 grid gap-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-4 items-baseline focus:outline-2 focus:outline-primary focus:outline-offset-4 rounded-sm">
         <div className="flex items-start gap-2"><div className="min-w-0 flex-1"><Ar block className="text-[26px] font-medium m-0">{w.form_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.meaning_en} · {w.part_of_speech.replace('_', ' ')}</p>
           {fam && <p className="text-xs text-fg-2 m-0 mt-1" data-ar-family-badge={fam.id}><span className="inline-flex items-center gap-1 rounded-full bg-surface-2 border border-outline px-2 py-0.5"><Root f={fam} reading={false} /> family</span></p>}</div>
-          <PlayButton id={w.id} part="word" label={w.form_ar} /></div>
+          <PlayButton text={w.form_ar} name={`${w.id}:word`} label={w.form_ar} /></div>
         <div className="flex items-start gap-2"><div className="min-w-0 flex-1"><Ar block className="text-[20px] m-0">{w.example_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.example_meaning_en}</p></div>
-          <PlayButton id={w.id} part="example" label={`the example for ${w.form_ar}`} /></div>
+          <PlayButton text={w.example_ar} name={`${w.id}:example`} label={`the example for ${w.form_ar}`} /></div>
         <div className="sm:col-span-2 mt-1">
           {(recognise || write) && <p className="text-sm m-0 mb-1.5">{recognise && <span className="block">Recognising it: {recognise}</span>}{write && <span className="block">Writing it: {write}</span>}</p>}
           <div className="flex flex-wrap gap-2">

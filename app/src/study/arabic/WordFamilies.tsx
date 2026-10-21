@@ -108,7 +108,7 @@ function WordNote({ f, id, onClose }: { f: Family; id: string; onClose: () => vo
           <Ar block className="text-[26px] m-0">{w.form_ar}</Ar>
           <p className="text-sm text-fg-2 m-0">{w.meaning_en} · {w.part_of_speech.replace('_', ' ')}</p>
         </div>
-        <PlayButton id={id} part="word" label={w.form_ar} />
+        <PlayButton text={w.form_ar} name={`${id}:word`} label={w.form_ar} />
         <button type="button" onClick={onClose} aria-label="Close this note" className="flex-none grid place-items-center size-11 rounded-btn text-fg-2 hover:bg-surface-2 cursor-pointer"><X size={18} aria-hidden="true" /></button>
       </div>
       {note && <p className="text-[15px] m-0 mt-1.5"><Note text={note} /></p>}

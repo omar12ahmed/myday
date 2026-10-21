@@ -113,7 +113,10 @@ const wait = async sel => { for (let i = 0; i < 60; i++) { if (await exists(sel)
   // The starter words' synthesised voice (1.39.0). Real taps are used (el.click() gives no user activation, and a browser needs one to play sound).
   const fs = require('fs'), path = require('path');
   const ROOT = process.env.MYDAY_ROOT || path.resolve(__dirname, '..');
-  const clipFiles = JSON.parse(fs.readFileSync(path.join(ROOT, 'app/src/study/arabic/voice-clips.json'), 'utf8')).clips;
+  const clipFiles = JSON.parse(fs.readFileSync(path.join(ROOT, 'app/src/study/arabic/voice-clips.json'), 'utf8')).clips; // exact Arabic text -> file
+  const course = JSON.parse(fs.readFileSync(path.join(ROOT, 'content/arabic-fusha/MyDay_Arabic_Fusha_Curriculum.json'), 'utf8'));
+  const seedText = (id, part) => course.lexicon_seed.find(w => w.id === id)[part === 'word' ? 'form_ar' : 'example_ar'];
+  const clipOf = (id, part) => clipFiles[seedText(id, part)];
   const served = path.join(__dirname, 'srv', 'app', 'dist');
   const clipSel = (id, part) => `[data-ar-clip="${id}:${part}"]`;
   const state = (id, part) => ev(`(document.querySelector('${clipSel(id, part)}') || {getAttribute: () => 'missing'}).getAttribute('data-state')`);
@@ -144,7 +147,7 @@ const wait = async sel => { for (let i = 0; i < 60; i++) { if (await exists(sel)
   const returnedIdle = await until(async () => (await state('lexeme.arabic-seed-009', 'word')) === 'idle', 150);
   const fetched = await clipFetches();
   check('tapping a word plays its clip and goes back to idle when it ends', reachedPlaying && returnedIdle, await ev('window.__seen'));
-  check('exactly one clip was fetched, and it was that word\'s file', fetched.length === 1 && fetched[0].endsWith('arabic-audio/' + clipFiles['lexeme.arabic-seed-009'].word), fetched);
+  check('exactly one clip was fetched, and it was that word\'s file', fetched.length === 1 && fetched[0].endsWith('arabic-audio/' + clipOf('lexeme.arabic-seed-009', 'word')), fetched);
 
   await realTap(clipSel('lexeme.arabic-seed-009', 'example')); await until(async () => (await state('lexeme.arabic-seed-009', 'example')) !== 'idle');
   // A long clip (045's example, about 3 s), so the stop below can't be the clip simply ending.
@@ -165,17 +168,35 @@ const wait = async sel => { for (let i = 0; i < 60; i++) { if (await exists(sel)
   await click(fword('lexeme.arabic-seed-012')); await wait('[data-ar-family-note]');
   check('a family word\'s note has a play button named "Play" and the word\'s Arabic', await ev(`(() => { const b = document.querySelector('[data-ar-family-note] ${clipSel('lexeme.arabic-seed-012', 'word')}'); return !!b && b.getAttribute('aria-label') === 'Play مَكْتَبَة'; })()`));
 
-  const gone = clipFiles['lexeme.arabic-seed-020'].word;
+  const gone = clipOf('lexeme.arabic-seed-020', 'word');
   fs.rmSync(path.join(served, 'arabic-audio', gone));
   await realTap(clipSel('lexeme.arabic-seed-020', 'word'));
   const failed = await until(async () => (await state('lexeme.arabic-seed-020', 'word')) === 'failed');
   check('a clip that cannot be fetched shows the failed state and says it needs a connection the first time', failed && await ev(`document.querySelector('${clipSel('lexeme.arabic-seed-020', 'word')}').parentElement.textContent.includes('Couldn’t play it. The first time, it needs a connection.')`));
 
+  // A lesson's headline example (round two): a play button and the voice label, only when that text has a shipped clip.
+  const withClip = course.lessons.find(l => l.example && clipFiles[l.example.text_ar]);
+  const noClip = course.lessons.find(l => l.id === 'lesson.arabic-letter-families');
+  const lessonBtn = `[data-ar-example] [data-ar-clip="${withClip.id}:example"]`;
+  await go('study/arabic/' + withClip.id); await wait('[data-ar-example]'); await sleep(300);
+  check('a lesson whose example has a shipped clip shows a 44 by 44 play button named "Play the lesson\u2019s example"', await ev(`(() => { const b = document.querySelector('${lessonBtn}'); if (!b) return false; const r = b.getBoundingClientRect(); return Math.round(r.width) === 44 && Math.round(r.height) === 44 && b.getAttribute('aria-label') === 'Play the lesson\u2019s example'; })()`), withClip.id);
+  const lessonLabel = await T.text('[data-ar-example] [data-ar-voice-label]').catch(() => '');
+  check('…and the voice label sits under it, with where to find Slower playback', lessonLabel.includes('Synthesised voice — a model to copy; checked by ear, not yet by a teacher.') && lessonLabel.includes('Slower playback: Study → Arabic → Vocabulary.') && await exists('[data-ar-voice-label]'), lessonLabel);
+  const lessonFetchesBefore = (await clipFetches()).length;
+  await realTap(lessonBtn);
+  const lessonPlaying = await until(async () => (await ev(`document.querySelector('${lessonBtn}').getAttribute('data-state')`)) === 'playing');
+  const lessonIdle = await until(async () => (await ev(`document.querySelector('${lessonBtn}').getAttribute('data-state')`)) === 'idle', 150);
+  const lessonFetched = (await clipFetches()).filter(n => n.endsWith('arabic-audio/' + clipFiles[withClip.example.text_ar]));
+  check('tapping the lesson example plays it, goes back to idle, and fetched that text\u2019s file', lessonPlaying && lessonIdle && lessonFetched.length === 1 && (await clipFetches()).length === lessonFetchesBefore + 1, { lessonPlaying, lessonIdle, lessonFetched });
+  await go('study/arabic/' + noClip.id); await wait('[data-ar-example]'); await sleep(300);
+  check('a lesson whose example is a letter drill (no shipped clip) has no play button and no voice label', !clipFiles[noClip.example.text_ar] && !(await exists('[data-ar-example] [data-ar-clip]')) && !(await exists('[data-ar-voice-label]')));
+
   await go('study/arabic'); await wait('.arabic-entry');
-  check('the learning map says the starter words have a synthesised voice to copy, in Vocabulary', (await ev('document.body.textContent')).includes('The starter words have a synthesised voice to copy, in Vocabulary'));
+  check('the learning map says the starter words and each lesson\u2019s example have a synthesised voice to copy, and the reading texts and the rest of each lesson have no recordings yet', (await ev('document.body.textContent')).includes('The starter words (in Vocabulary) and each lesson\u2019s example have a synthesised voice to copy; the reading texts and the rest of each lesson have no recordings yet.'));
   const swText = fs.readFileSync(path.join(served, 'sw.js'), 'utf8');
   const listIn = name => { const m = swText.match(new RegExp('const ' + name + ' = (\\[[^\\]]*\\])')); return m ? JSON.parse(m[1]) : null; };
   const audioList = listIn('AUDIO'), filesList = listIn('FILES');
-  check('the built service worker lists 96 clips under AUDIO and none of them under FILES', !!audioList && !!filesList && audioList.length === 96 && audioList.every(f => f.includes('arabic-audio/')) && !filesList.some(f => f.includes('arabic-audio/')), { audio: audioList && audioList.length, inFiles: filesList && filesList.filter(f => f.includes('arabic-audio/')).length });
+  const shippedFiles = new Set(Object.values(clipFiles));
+  check('the built service worker lists every shipped clip under AUDIO and none of them under FILES', !!audioList && !!filesList && shippedFiles.size > 0 && audioList.length === shippedFiles.size && audioList.every(f => shippedFiles.has(f.split('/').pop())) && audioList.every(f => f.includes('arabic-audio/')) && !filesList.some(f => f.includes('arabic-audio/')), { audio: audioList && audioList.length, inFiles: filesList && filesList.filter(f => f.includes('arabic-audio/')).length });
   const s = T.summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });
