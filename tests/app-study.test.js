@@ -458,7 +458,9 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   check('nothing was added to today\'s task list', !(await D()).days['2026-11-02']);
   await editStorage(`s => { s.study.concepts = []; s.study.activeId = null; s.study.sessions = s.study.sessions.filter(x => x.status === 'done'); }`);
   await go('today', 2026, 11, 2, 9);
-  check('…and no Study card when nothing is waiting', !(await text('#slot-study')).trim());
+  await sleep(900); // the guided curricula are loaded on demand, not in Today's initial bundle
+  check('…and Today offers an ordered next lesson even without a session or revision due',
+    await exists('#slot-study [data-s="study-next-lessons"]') && await exists('#slot-study [data-subject="cybersecurity"] a[data-action="continue-learning"]') && await exists('#slot-study [data-subject="arabic"] a[data-action="continue-learning"]'));
   // Export / import round trip with sessions, concepts and reviews — and every other section
   await editStorage(`s => { s.study = ${JSON.stringify(pr)}; s.health = { workout: { templates: [{ id: 't1', name: 'Legs', minutes: 45 }] }, food: { shopping: [{ id: 'sh1', text: 'Oats', checked: false }] } }; s.futureSection = { kept: true }; }`);
   await go('today', 2026, 11, 2, 9);
