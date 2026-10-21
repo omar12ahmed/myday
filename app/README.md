@@ -543,7 +543,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/components/` | Shared pieces with their styling in one place: `Button`, `Card`, `Banner`, `Field` (inputs, including ones saved as you type), `Dialog` (confirmations), `Toast`, `CategoryChip`, `EnergyMeter`, and `parts` (links, rows, chips and labels used by the section screens). |
 | `src/today/` | The Today section's cards and `TodayScreen`, which puts them together — including the dashboard's `GreetingCard` (greeting, calendar), `DashboardCards` (the ring and this week's bars, counted by `src/data/dashboard.ts`), `QuickAdd`, `FocusCard` and `FocusView` (Focus mode). |
 | `src/calendar/` | The Calendar: `CalendarScreen`, the month grid, agenda, selected-day panel, pattern editor and side cards. |
-| `src/ai/` | "Help me adjust today": `context.ts` (what's sent), `validate.ts` (the rules), `apply.ts` (saving, stale check, undo) and `AdjustCard.tsx` (the card on Today). "Add what's on my mind": `mind.ts` (what's sent, the checks, adding and undo) and `MindCard.tsx`. Both: `request.ts` (the Edge Function or practice mode). |
+| `src/ai/` | "Help me adjust today": `context.ts` (what's sent), `validate.ts` (the rules), `apply.ts` (saving, stale check, undo) and `AdjustCard.tsx` (the card on Today). "Add what's on my mind": `mind.ts` (what's sent, the checks, adding and undo) and `MindCard.tsx`. Both: `request.ts` (the Edge Function or practice mode). Since 1.41.0 a one-off can go into a Tasks list (`sameList` matches names on the device). |
 | `../ai-eval/` | The evaluation of AI models on 20 synthetic days and 12 synthetic brain dumps (see its README). |
 | `src/finance/` | The Finance screen: `FinanceScreen` (with Left over), `WorkPayCard`, `ExpensesCard`, `OwedCard`, `RatesCard` (folded away), and `actions.ts` (what each button saves). |
 | `src/data/patterns/`, `src/patterns/` | What MyDay has noticed: `notice.ts` (finding patterns in your history), `saved.ts` (your preferences and answers, the `patterns` section), `adapt.ts` (using preferences in Build my day and the room on today's plan); the screen `NoticedScreen.tsx` (`#noticed`, and the quiet line on Today). `src/components/Why.tsx`: a note with a "Why?". `src/tasks/StuckCard.tsx`: "What's getting in the way?". |
@@ -972,11 +972,29 @@ returns up to 8 small tasks; you tick the ones to add.
   kept once, gentle wording; anything not turned into a task is listed back under "Not turned into tasks". Tasks
   already on a list or in the queue (in any wording) are marked and start unticked.
 - **Added** (`applyMind`) only after **Add**: a one-off to the **queue** (no list of its own — MyDay fits it into a
-  coming day, oldest first, within the day's energy rule, and once done it's gone); a repeating one to the end of its
-  **list**. Only additions; nothing else changes. One step of **Undo** takes back exactly what was added, except a
+  coming day, oldest first, within the day's energy rule, and once done it's gone), or, since 1.41.0, into a **Tasks
+  list** when "Where it goes" names one (see Lists below); a repeating one to the end of its **list**. Only additions;
+  nothing else changes. One step of **Undo** takes back exactly what was added, except a
   task you've changed since or one already on a day's plan.
 - Saved data keeps its shape (a queue item with no list, `taskId: null`, as the classic MyDay already allows), so
   both versions and sync read it as they are.
+
+**Lists (1.41.0):** a one-off task can now go into one of your lists in Tasks: one you already have, or a new one
+the suggestion names (for example "Moving house" for "book a van, pack the books, cancel the broadband"). Each ticked
+one-off task has **Where it goes**: your queue (as before), one of your Tasks lists, or "New list: …". A list you
+already have is chosen when the suggestion matches it (capitals, "my" or "the" and a plural "s" don't count).
+A new list is chosen only when two or more tasks share it, so a single task never makes a list by itself, and a line
+above says how many go into a new list. A task in a list waits under "Your tasks" until you pick it or give it a
+date. A task without a list goes to the queue, as before; repeating tasks still go on their Learning, Admin or Health
+list. What's sent doesn't change: only what you write and today's date, never your lists' names (matching happens on
+the device). The suggestion's checks: at most two new lists per suggestion, plain words (no emoji or pushy words),
+names up to 40 characters, and never on a repeating task. Tasks already open in Tasks count as "already there".
+With 30 lists already, the task goes to the queue and the message says so. One step of **Undo** takes back the
+tasks it added (unless you've changed them, marked them done or put them on a day's plan) and a list it made, if
+that list is still empty and has its name. No saved-data change: Tasks has had its own lists since 1.5.0, so
+there's no migration and no database change. The server's instructions are `myday-tasks-v2` (contract version 2); an
+older app still gets version 1. Evaluated live on GLM-5.3-Flash with every reply read
+(`ai-eval/reviews/2026-10-20-tasks-lists-quality.md`, about US$0.007).
 
 ## Milestones
 
@@ -1223,3 +1241,8 @@ returns up to 8 small tasks; you tick the ones to add.
     plays. Word families gain four more forms from your examples (أَكْتُبُ, نَدْرُسُ, أَدْرُسُ, أَقْرَأُ, with what أَ
     and نَـ mean) and fuller notes on the plural كُتُب and on ق-ر-أ, taken from a cloud session’s version of the same
     feature. No saved-data, server or database change; going back to 1.38.0 is safe.
+53. **Release 1.41.0:** lists from "Add what's on my mind". A one-off task can go into one of your Tasks lists, or a
+    new one the suggestion names; a new list is made only when two or more tasks share it. What's sent is unchanged
+    (names are matched on the device), and Undo takes back a list it made. The server's instructions were deployed
+    first (`myday-tasks-v2`); no saved-data or database change; going back to 1.40.0 is safe (the tasks and lists
+    are ordinary Tasks data).
