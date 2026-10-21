@@ -39,7 +39,7 @@ async function device(name, dir) {
   bySession.set(sessionId, d => events.push(d));
   fs.mkdirSync(dir, { recursive: true });
   await s('Page.enable'); await s('Runtime.enable'); await s('Network.enable');
-  await s('Emulation.setTimezoneOverride', { timezoneId: 'Europe/London' });
+  await s('Emulation.setTimezoneOverride', { timezoneId: process.env.MYDAY_TEST_TZ || 'Europe/London' }); // see cdp.js
   await s('Emulation.setLocaleOverride', { locale: 'en-GB' });
   await s('Emulation.setFocusEmulationEnabled', { enabled: true });
   await send('Browser.setDownloadBehavior', { behavior: 'allow', downloadPath: dir, browserContextId });

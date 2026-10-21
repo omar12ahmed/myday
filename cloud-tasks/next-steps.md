@@ -32,6 +32,11 @@ only that step.
 
 ## Step 1: make the full test run pass in a cloud session (tests only)
 
+**Done on the Mac, 20–21 Oct 2026, as far as it still applies:** with no cloud sessions, the offline mode isn't
+needed. The clock part was checked: the suites that use the real clock pass just after midnight and just before it
+(the one night-time failure, app-ai's notes, was fixed in 2468dbc), and a run can now be put at any local time with
+`MYDAY_TEST_TZ` (see `tests/README.md`).
+
 **Branch:** `cloud-test-run`
 
 **Why.** Cloud sessions are the place for full test runs, but a full run there can't currently pass. On 18 Oct a

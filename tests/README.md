@@ -57,6 +57,14 @@ A few checks need the internet: one real gov.uk bank-holiday request, one real T
 `npx live-server` for the Live Server check. Everything else uses made-up responses, so offline those
 few will fail and the rest still run.
 
+**At another time of day.** Most browser suites set their own date and hour (`openAt` in `cdp.js`, in Los
+Angeles time), so when you run them doesn't matter. The suites that use the real clock (app-ai, app-sync and the
+rules suites) can be run as if it were another local time: give Node and the two-device kit the same time zone.
+For example, when it's 16:30 UTC, `TZ=Etc/GMT-8 MYDAY_TEST_TZ=Etc/GMT-8 tests/run.sh app-ai` runs just after
+midnight (`Etc/GMT-8` is UTC+8). `MYDAY_TEST_TZ` changes only the two-device kit (`cdp-devices.js`, Europe/London
+by default). The main kit stays in Los Angeles, because its suites check dates there. Checked on 20–21 Oct 2026:
+these suites pass just after midnight and just before it.
+
 ## The suites
 
 | Suite | What it covers |
