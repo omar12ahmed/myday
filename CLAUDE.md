@@ -54,8 +54,12 @@ Read this file before making any changes. If something here seems to conflict wi
   topic named Cybersecurity is folded into it as "Your saved courses", pointing to the original topic page.
   All topic/course/task/session progress stays intact; other topics and routes are unchanged. This is a home-page
   presentation change only. Review caught an archived-only course count; it now includes set-aside courses.
-  The focused app-topics suite passed 77/0; desktop and phone screenshots were checked. Full release checks and
-  live verification are pending. No saved-data, server or database
+  Targeted Study checks caught a dropped empty-course notice; it has been restored.
+  Build/lint passed; desktop and phone screenshots checked. The owner approved targeted checks for small UI fixes,
+  including this release. **4 suites, 435 passed, 0 failed**: app-study 231/0, app-topics 77/0, app-cybersecurity 85/0,
+  app-design 42/0. The initial targeted run caught the empty-course notice (434/1); after restoring it, only Study
+  and topics reran. The full run was deliberately stopped after four completed suites (400/0); no full pass claimed.
+  Publishing and live verification remain. No saved-data, server or database
   change; going back to 1.42.0 is safe. Backup confirmation from this session still applies.
 - **Live: 1.42.0** (21 Oct 2026, tag `v1.42.0` on source `0d7cfdc`; main `e083037`): Arabic audio
   round three (b). Before it: 1.41.0, tagged `live-before-1.42.0` on main. On the server: `ai-plan` version 21,
@@ -566,31 +570,36 @@ suggestion. All the new fields are optional and kept by 1.36.0.
 
 ## After each change
 
-Run the checks and report the results, including any failures.
+Run checks that match what changed and report their results, including failures.
 
-- After changing `index.html`: run `tests/run.sh` (every suite, or the suites the change touches). On my Mac, while
+**Testing scope (owner's decision, 21 Oct 2026):** small UI fixes use targeted checks, including when released.
+A full run is reserved for substantial or cross-feature changes and changes to saved data/storage, sync,
+authentication, migrations, security, calculations or shared core logic.
+
+- After changing `app/`, run `npm run build` and `npm run lint`, then the browser/rules suites for the affected
+  behaviour and its dependencies. For a display-only change, test the affected screens, navigation and phone
+  layout; verify that existing saved data stays unchanged where relevant. Do not run every suite just because
+  an app file changed.
+- After changing `index.html`, run the relevant classic suites, plus new-app compatibility checks if shared data
+  or behaviour is affected. Use a full run for the broader/sensitive changes listed above. On my Mac, while
   Live Server is running, use `MYDAY_LS_PORT=5599 tests/run.sh`.
-- After changing `app/`:
-  1. `npm run build` and `npm run lint` in `app`.
-  2. `tests/run.sh app-storage app-today app-calendar-pay app-finance app-inbox app-tasks app-projects app-connect
-     app-graph understand-rules graph-rules app-patterns patterns-rules projects-rules cybersecurity-rules
-     app-cybersecurity app-study app-workout app-food app-final app-site app-install sw-rules`, plus the suites for
-     what changed.
-- After changing sync (`app/src/sync/`, `supabase/` or `storage.ts`): also `tests/run.sh sync-db sync-records
-  app-sync`.
-- After changing AI: also `tests/run.sh ai-rules ai-server app-ai`, and the opt-in `ai-deno` (the function's real
-  entry under Deno; 24 checks).
-- **Before a release:** the full run, `tests/run.sh` with no names. That's 53 suites; at 1.41.0 it was 4,894 checks
-  and took 24.2 minutes.
+- After changing sync (`app/src/sync/`, `supabase/` or `storage.ts`), include `sync-db`, `sync-records` and
+  `app-sync` in the required full run.
+- After changing AI, include `ai-rules`, `ai-server`, `app-ai` and the opt-in `ai-deno` (the function's real entry
+  under Deno). Run every default suite too when shared service, validation, authentication or other core logic changes.
+- **Before a release:** build/lint and the relevant checks must pass, followed by a live check with disposable
+  accounts in throwaway browsers. A small UI release does not require the full suite. Report the actual scope;
+  never describe a targeted run or an interrupted full run as a complete one.
+- **Full run when required:** `tests/run.sh` with no names, currently 54 default suites. Do not repeat checks
+  that already passed unless code changes, failures or unresolved concerns justify it.
 - **Running the tests:**
   - Ports: `MYDAY_HTTP_PORT` (default 8765), `MYDAY_CDP_PORT` (9333), `MYDAY_SUPA_PORT` (54329), `MYDAY_LS_PORT`
     (5500). Only one test run per set of ports at a time; give each worktree its own set.
-  - Check that **every** suite printed its result line, not just the FAIL lines: a suite can stop early and print
-    nothing.
-  - Known flakes: re-run that suite alone once and report both results. If it fails the same way twice, it's a
+  - Account for every requested suite result, not just FAIL lines: a suite can stop early without a summary.
+  - Known flakes: rerun that suite alone once and report both results. If it fails the same way twice, it is a
     failure. The list is in `.claude/agents/test-runner.md`.
-- **Then explain** what changed, how to check that it works, and any limitations. Keep checks actually performed apart
-  from checks I still need to do.
+- **Then explain** what changed, how to check that it works, and any limitations. Keep checks actually performed
+  apart from checks still needed, and explain why any normally relevant check was omitted.
 
 ## Working with subagents (my decision, 17 Oct 2026)
 

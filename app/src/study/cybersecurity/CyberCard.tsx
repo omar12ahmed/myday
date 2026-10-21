@@ -11,7 +11,7 @@ export function CyberCard({ roadmaps = [] }: { roadmaps?: TopicGlance[] }) {
     <a href="#study/cybersecurity" className="flex items-center justify-between gap-3 min-h-12 text-primary font-semibold text-sm no-underline border-t border-outline pt-4">Open cybersecurity <ArrowUpRight size={19} aria-hidden="true" /></a>
     {roadmaps.map(g => <a key={g.topic.id || 'main'} href={'#' + topicPath(g.topic.id)} data-cyber-saved-courses={g.topic.id || 'main'} className="block min-h-11 py-3 mt-2 text-primary text-sm no-underline border-t border-outline">
       <span className="block font-semibold">Your saved courses</span>
-      <span className="block text-fg-2 mt-1">{g.comp.total > 0 ? `${g.comp.done} of ${g.comp.total} tasks · ` : ''}{g.courses.length + g.setAside} course{g.courses.length + g.setAside === 1 ? '' : 's'}{g.setAside > 0 ? ` (${g.setAside} set aside)` : ''}</span>
+      <span className="block text-fg-2 mt-1">{g.courses.length > 0 ? g.comp.total > 0 ? `${g.comp.done} of ${g.comp.total} tasks · ` : 'No tasks added yet · ' : ''}{g.courses.length + g.setAside} course{g.courses.length + g.setAside === 1 ? '' : 's'}{g.setAside > 0 ? ` (${g.setAside} set aside)` : ''}</span>
     </a>)}
   </Card>;
 }
