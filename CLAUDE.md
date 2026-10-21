@@ -49,19 +49,23 @@ Read this file before making any changes. If something here seems to conflict wi
   `live-before-X.Y.Z` on `main`.
 - Bump `app/package.json`'s version for each release. The release identifier (version, commit, build date) is at the
   bottom of every screen.
-- **Live: 1.40.0** (21 Oct 2026, tag `v1.40.0`): a voice for each Arabic lesson’s example, and lists from "Add what’s on
-  my mind" (1.39.0 before it: a voice for the starter words). On the server: `ai-plan` version 21, with Ask MyDay’s
-  instructions at `myday-ask-v16` and the brain dump’s at `myday-tasks-v2`. A release that changes AI instructions or
-  server code needs `ai-plan` deployed (on my Mac) before it's published.
-- **Prepared: 1.41.0 on `arabic-reading-audio` (round three (a)), not published.** Sentence and whole-text playback
-  for the 8 vowelled reading texts; 59 positions, 58 distinct spoken texts, 3 reused clips and 55 new clips (2,177 characters). All 55
-  generated and independently transcribed blind with Gemini; main session reviewed every transcription, no retakes
-  indicated (US$0.00886875; `content/arabic-audio/cross-check-reading-texts.json`). Owner listened to all 55 on 21 Oct:
-  "all fine". All are checked; 286 clips ship, covering all 58 reading sentence texts. No saved-data, server or database
-  change. `app/scripts/review-arabic-audio.mjs <source>` makes a local checklist for any future unheard clips.
-  The temporary TTS-only key was deleted after generation. Final build and lint passed; full run 53/53 suites,
-  4,894 checks, 0 failed (24.2 minutes). The initial Calendar network wait passed on the final run (108/0).
-  Owner confirmed backups exported on every device.
+- **Live: 1.41.0** (21 Oct 2026, tag `v1.41.0` on source `f888703`; main `fa7738f`): a voice for the eight
+  vowelled Arabic reading texts, sentence by sentence or with whole-text Listen. Before it: 1.40.0, tagged
+  `live-before-1.41.0` on main. On the server: `ai-plan` version 21, Ask instructions `myday-ask-v16`, brain dump
+  instructions `myday-tasks-v2`; no server deployment or migration was needed for 1.41.0.
+- **1.41.0, audio round three (a):** 59 sentence positions, 58 distinct spoken texts, 3 reused clips and 55 new
+  clips (2,177 characters, about 596 KB, 149 seconds). All 55 generated and transcribed blind with Gemini; main
+  session reviewed every transcription, no retakes indicated (US$0.00886875;
+  `content/arabic-audio/cross-check-reading-texts.json`). Owner listened to all 55 on 21 Oct: "all fine".
+  All are checked; 286 clips ship. Dialogue names stay on screen, not in the voice. Vowel marks can be hidden
+  without changing the audio or prepared transliteration. One shared player, with Stop and Slower, stops on leaving
+  a text. No saved-data change; going back to 1.40.0 is safe. The temporary TTS-only key was deleted.
+  Final build and lint passed; full run **53/53 suites, 4,894 checks, 0 failed** (24.2 minutes). The initial Calendar
+  network wait passed on the final run (108/0). Owner confirmed backups on every device before publishing.
+  Live check: **19/19**, two disposable accounts in two throwaway browsers; native first/next-sentence playback,
+  Stop, hidden vowels, cached new clip offline, phone layout, device-only Slower, bare B1 text without controls,
+  and both learning-data copies unchanged. Profiles removed afterwards. Test-writing, docs, review and runner
+  agents were used; findings reviewed and resolved. `review-arabic-audio.mjs <source>` makes future local checklists.
 - **Publishing happens only on my Mac.** The steps, in this order:
   1. Remind me to export backups on every device.
   2. Commit the release on `react-rebuild` and run all the checks.
@@ -317,8 +321,7 @@ suggestion. All the new fields are optional and kept by 1.36.0.
   - **Arabic Fuṣḥā:** the curriculum package read-only, lesson sessions, starter words and lesson checks in revision,
     transliteration, and word families on the vocabulary page (four roots linking 12 of the 48 starter words; MyDay's
     own authored file, checked at every build; nothing saved), and a synthesised voice for the 48 starter words and
-    their examples (1.39.0), each lesson's headline example (1.40.0) and the 8 vowelled reading texts (prepared for
-    1.41.0): one voice, made once and listened to before shipping, labelled "Synthesised voice — a model to copy;
+    their examples (1.39.0), each lesson's headline example (1.40.0) and the 8 vowelled reading texts (1.41.0): one voice, made once and listened to before shipping, labelled "Synthesised voice — a model to copy;
     checked by ear, not yet by a teacher"; clips keyed by
     their exact text, with their audit, in `content/arabic-audio/`; which texts have a voice in
     `app/scripts/arabic-voice-sources.mjs`; checked at every build by `app/scripts/prepare-audio.mjs`. The 6 unvowelled
@@ -347,7 +350,7 @@ suggestion. All the new fields are optional and kept by 1.36.0.
 
 - **A voice across the whole Arabic course** (`specs/arabic-audio-course.md`; my answers, 20 Oct 2026: "1-6 yes").
   Round two (the lessons' headline examples) shipped in 1.40.0. Round three (a), the 8 vowelled reading texts by sentence,
-  is prepared for 1.41.0 (not yet published). After that, round three (b): teaching examples, try it and solutions. In checks, answers and "try it", the voice only
+  shipped in 1.41.0. Next, round three (b): teaching examples, try it and solutions. In checks, answers and "try it", the voice only
   after the answer is shown. No voice for letter drills; one voice for everything. Text without vowel marks waits for
   a teacher or fluent speaker, and it's worth looking for one. `app/scripts/arabic-audio-inventory.mjs --rounds` sizes
   what's left.
@@ -549,7 +552,7 @@ Run the checks and report the results, including any failures.
 - After changing AI: also `tests/run.sh ai-rules ai-server app-ai`, and the opt-in `ai-deno` (the function's real
   entry under Deno; 24 checks).
 - **Before a release:** the full run, `tests/run.sh` with no names. That's 53 suites; at 1.41.0 it was 4,894 checks
-  and took 22–37 minutes.
+  and took 24.2 minutes.
 - **Running the tests:**
   - Ports: `MYDAY_HTTP_PORT` (default 8765), `MYDAY_CDP_PORT` (9333), `MYDAY_SUPA_PORT` (54329), `MYDAY_LS_PORT`
     (5500). Only one test run per set of ports at a time; give each worktree its own set.

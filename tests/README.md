@@ -67,7 +67,7 @@ these suites pass just after midnight and just before it.
 
 ## The suites
 
-Arabic reading audio adds two suites to the default run (53 suites on `arabic-reading-audio`):
+Arabic reading audio adds two suites to the default run (53 suites at 1.41.0):
 - `arabic-voice-player`: controlled fetch and Audio events against the real shared player, including sequences,
   late fetch/body/play completions, Stop, leaving a text, failure and Slower; no browser or AI calls.
 - `app-reading-voice`: the real reading component in a temporary browser fixture. A virtual clip list tests checked,

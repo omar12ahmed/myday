@@ -1,7 +1,7 @@
 # A voice across the Arabic course: the plan
 
 **Status:** the owner accepted questions 1–6 on 20 October 2026. Round two shipped in 1.40.0. Round three (a) is
-prepared for 1.41.0 on `arabic-reading-audio`, not yet published: 55 new clips generated, independently transcribed
+shipped in 1.41.0 (21 October 2026): 55 new clips generated, independently transcribed
 and listened to on 21 October 2026 ("all fine"). Round three (b) and the unvowelled material are still outstanding.
 **Date:** 20 October 2026, after release 1.39.0.
 **The numbers:** from `app/scripts/arabic-audio-inventory.mjs`. Run it by hand, with `--rounds` for the sizes in §4.
@@ -100,7 +100,7 @@ The remaining teaching count is now one lower because it shares a newly checked 
 ## 5. How it would work in the app
 
 This was the original implementation proposal. The text-keyed audit and stronger build checks shipped in 1.40.0;
-reading-text controls and shared sentence extraction are prepared for 1.41.0. The descriptions below retain the
+reading-text controls and shared sentence extraction shipped in 1.41.0. The descriptions below retain the
 original starting point for reference.
 
 - **One clip per distinct text, shared wherever that text appears.**

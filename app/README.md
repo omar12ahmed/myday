@@ -28,7 +28,7 @@ answers (loaded only when asked for). `#study/arabic` has the learning map by le
 16 original reading texts (with and without vowel marks) and 48 starter words. Arabic is marked `lang="ar"
 dir="rtl"`, in Noto Naskh Arabic (`@fontsource-variable/noto-naskh-arabic`, downloaded only when Arabic shows);
 Arabic inside English sentences is isolated with `<bdi>`. No level is awarded. A synthesised voice covers the 48
-starter words and their examples (1.39.0) and lessons' headline examples (1.40.0); reading-text audio is prepared for 1.41.0.
+starter words and their examples (1.39.0) and lessons' headline examples (1.40.0); reading-text audio arrived in 1.41.0.
 
 Part 2, your sessions: a lesson session saves what you did, never a score — the lesson, session length, start and
 finish, help used, what you practised (ticked by you; listening and speaking are never assumed), your first answers
@@ -325,13 +325,13 @@ fails on a clip whose text is no longer in a voiced part of the course, and on o
 list is `src/study/arabic/voice-clips.json` (text → file). `app/scripts/arabic-audio-inventory.mjs --rounds` counts
 what’s left for round three. No saved-data change.
 
-**A voice for reading texts (round three (a), prepared for 1.41.0):** a whole-text **Listen** button and
+**A voice for reading texts (round three (a), 1.41.0):** a whole-text **Listen** button and
 individual sentence controls for the 8 vowelled texts. The same audio plays when you hide the vowel marks. Dialogue
 speaker names stay visible but are not spoken, and the standalone signature stays as its own sentence. The shared
 player keeps one clip playing at a time, uses the same **Slower** choice and stops when you leave the text.
 `scripts/arabic-reading-sentences.mjs` finds 59 sentence positions and 58 distinct spoken texts: 3 reuse existing
 clips, leaving 55 new clips and 2,177 new characters to voice. All 55 new clips were independently transcribed and
-listened to on 21 October 2026 ("all fine"); 1.41.0 is not yet published. Only clips listened to and marked checked enter the app, and whole-text Listen
+listened to on 21 October 2026 ("all fine"); released in 1.41.0. Only clips listened to and marked checked enter the app, and whole-text Listen
 is available only when every sentence has a checked clip. No saved-data, server or database change.
 
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
@@ -588,7 +588,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/weekReview.ts`, `src/review/ReviewScreen.tsx`, `src/today/ReviewCard.tsx` | The weekly review (1.37.0): `weekReview.ts` (when the review is due, what moved, what's waiting, focus, and saving the review); `ReviewScreen.tsx` (the four steps and See the pattern); `ReviewCard.tsx` (the card on Today). |
 | `src/study/arabic/WordFamilies.tsx`, `src/study/arabic/families.ts`, `content/teaching/arabic/word-families.json`, `scripts/validate-families.mjs` | Word families (1.38.0): the card on the vocabulary page and its notes; which family a word is in; the authored families (by word id); the build check. |
 | `src/study/arabic/voice.ts`, `src/study/arabic/Listen.tsx`, `../content/arabic-audio/`, `scripts/arabic-voice-sources.mjs`, `scripts/make-arabic-audio.mjs`, `scripts/prepare-audio.mjs`, `scripts/arabic-audio-inventory.mjs` | The Arabic course's voice (1.39.0; lessons' examples 1.40.0): the clip list (by exact text) and the one shared player with Slower (device-only key `myday.arabic.slower`); the play button, the voice note and the label; the clips and their audit; which texts have a voice; making them (by hand); the build check; what's left to voice. |
-| `src/study/arabic/ReadingVoice.tsx`, `src/study/arabic/voice.ts`, `scripts/arabic-reading-sentences.mjs`, `src/study/arabic/voice-clips.json`, `scripts/review-arabic-audio.mjs` | Reading-text voice (round three (a), prepared for 1.41.0): whole-text Listen and sentence controls; sequence support in the shared player; shared sentence boundaries; the generated `readings` list, with only checked clips playable; a local listening checklist for future clips. Not yet published. |
+| `src/study/arabic/ReadingVoice.tsx`, `src/study/arabic/voice.ts`, `scripts/arabic-reading-sentences.mjs`, `src/study/arabic/voice-clips.json`, `scripts/review-arabic-audio.mjs` | Reading-text voice (round three (a), 1.41.0): whole-text Listen and sentence controls; sequence support in the shared player; shared sentence boundaries; the generated `readings` list, with only checked clips playable; a local listening checklist for future clips. |
 | `src/commitments/` | Work shifts and appointments: the form and list used by both Today and Calendar. |
 | `src/shell/` | Navigation, the top bar's parts (`TopBar`: the Focus mode switch and your account; `focusMode.ts`, the device-only `myday.focus`), the theme button, the shared footer (`AppFooter`), the "couldn't be read" notice (`LoadIssue`) and the screens for unreadable or older data. |
 | `public/icon.svg` | The tab icon. |
@@ -874,7 +874,7 @@ tasks" on Today). Older `#inbox…` and `#notes…` links are rewritten to where
   sent anywhere — no saved-data change. Honest limit: it shows shared words, not meaning (that would need an
   embedding service — a later decision).
 - **Next:** all six Direction milestones are complete. The next feature is recorded in `../CLAUDE.md` under
-  "Open ideas"; Arabic reading-text audio is prepared for 1.41.0.
+  "Open ideas"; Arabic reading-text audio arrived in 1.41.0.
 - **Tasks** holds every one-off task in one place, separate from Today's repeating Learning / Admin / Health lists
   (which stay as they are). Type a task in your own words and its date and time are read from them, as in Capture
   ("pay rent by Friday" is due Friday; "call GP tomorrow at 10am" is due tomorrow at 10:00). Tasks are grouped
@@ -1271,7 +1271,7 @@ older app still gets version 1. Evaluated live on GLM-5.3-Flash with every reply
     share it; what’s sent is unchanged and names are matched on the device; Undo takes back a list it made. The server’s
     instructions were deployed first (`myday-tasks-v2`); no saved-data or database change; going back to 1.39.0 is safe
     (the lessons’ examples simply have no button there, and the tasks and lists are ordinary Tasks data).
-54. **Release 1.41.0 (prepared, not yet published):** a voice for the eight vowelled Arabic reading texts. **Listen to
+54. **Release 1.41.0:** a voice for the eight vowelled Arabic reading texts. **Listen to
     the whole text** plays sentence by sentence, or tap a sentence to hear only that one. The current sentence lights
     up; Stop, choosing another sentence or leaving the text ends whole-text playback. The same clips play with vowel
     marks shown or hidden, using the shared Slower choice. Dialogue names stay visible but are not spoken. The 55 new
