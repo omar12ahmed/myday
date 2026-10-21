@@ -7,7 +7,8 @@
 // `Mixed` component finds them). Vowelling is a heuristic: marks per Arabic letter, full at 0.4 or more (long-vowel
 // letters and a word's last letter carry no mark, so even fully vowelled words sit near 0.5), none at 0.
 import { readFileSync } from 'node:fs';
-import { kind, letters, readingPassages, vowelling } from './arabic-reading-sentences.mjs';
+import { kind, letters, readingPassages, voiceable, vowelling } from './arabic-reading-sentences.mjs';
+import { arabicRuns } from '../src/study/arabic/arabic-runs.mjs';
 
 const root = new URL('../../', import.meta.url);
 const read = p => JSON.parse(readFileSync(new URL(p, root), 'utf8'));
@@ -17,7 +18,6 @@ const teaching = read('content/teaching/arabic-fusha.json');
 const families = read('content/teaching/arabic/word-families.json');
 const voiced = read('content/arabic-audio/audio-audit.json');
 
-const RUN = /[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]+(?:[\s،؛؟]+[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]+)*/g;
 
 // Each source field: where it's shown, and whether the field is Arabic only (the whole field is one piece).
 const fields = [];
@@ -40,7 +40,7 @@ add('word families: notes and forms', 'Vocabulary: Word families', families.fami
 const already = new Set(Object.keys(voiced.clips)); // the audit is keyed by each clip's exact text (1.40.0)
 const all = new Map();
 const rows = fields.map(f => {
-  const pieces = f.values.flatMap(v => f.whole ? (letters(v) ? [v.trim()] : []) : [...v.matchAll(RUN)].map(m => m[0].trim()).filter(p => letters(p) >= 1));
+  const pieces = f.values.flatMap(v => f.whole ? (letters(v) ? [v.trim()] : []) : arabicRuns(v).map(m => m.text.trim()).filter(p => letters(p) >= 1));
   const distinct = [...new Set(pieces)];
   const count = (fn, k) => distinct.filter(p => fn(p) === k).length;
   distinct.forEach(p => all.set(p, (all.get(p) || []).concat(f.id)));
@@ -62,8 +62,8 @@ if (process.argv.includes('--json')) { console.log(JSON.stringify({ rows, total 
 // The rounds proposed in specs/arabic-audio-course.md: fully vowelled pieces only, never a letter drill, never one
 // already voiced; a reading text as its sentences; a piece in an earlier round isn't counted again.
 if (process.argv.includes('--rounds')) {
-  const pick = (values, whole) => [...new Set(values.filter(v => typeof v === 'string').flatMap(v => whole ? [v.trim()] : [...v.matchAll(RUN)].map(m => m[0].trim())))]
-    .filter(p => letters(p) >= 2 && vowelling(p) === 'full' && kind(p) !== 'letters');
+  const pick = (values, whole) => [...new Set(values.filter(v => typeof v === 'string').flatMap(v => whole ? [v.trim()] : arabicRuns(v).map(m => m.text.trim())))]
+    .filter(voiceable);
   const passages = readingPassages(root);
   const rounds = [
     ['Round two: the lessons’ headline examples', pick(course.lessons.map(l => l.example?.text_ar), true)],
@@ -80,7 +80,7 @@ if (process.argv.includes('--rounds')) {
     console.log(`| ${name} | ${fresh.length} | ${chars} | ${Math.round(seconds / 60)} min | ${Math.round(seconds * 2.5 / 60)} min |`);
   }
   const held = everything.filter(p => !seen.has(p));
-  const why = p => kind(p) === 'letters' ? 'a letter drill' : vowelling(p) === 'none' ? 'no vowel marks' : vowelling(p) === 'partial' ? 'partly vowelled' : 'one or two letters';
+  const why = p => p.includes('ـ') ? 'an affix or unfinished word' : kind(p) === 'letters' ? 'a letter drill' : vowelling(p) === 'none' ? 'no vowel marks' : vowelling(p) === 'partial' ? 'partly vowelled' : 'one or two letters';
   const counts = held.reduce((a, p) => (a[why(p)] = (a[why(p)] || 0) + 1, a), {});
   console.log(`\nHeld back: ${held.length} pieces (${Object.entries(counts).map(([k, v]) => `${v} ${k}`).join(', ')}), plus the ${course.assets.filter(a => a.text_ar && vowelling(a.text_ar) !== 'full').length} reading texts without vowel marks.`);
   process.exit(0);

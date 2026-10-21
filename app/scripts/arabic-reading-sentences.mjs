@@ -2,7 +2,7 @@
 // The curriculum stays untouched. Dialogue names remain on screen but are not spoken.
 import { readFileSync } from 'node:fs';
 
-export const LETTER = /[ء-يٱ]/g;
+export const LETTER = /[\u0621-\u063F\u0641-\u064A\u0671]/g; // U+0640 is a joining mark, not a letter.
 export const letters = s => (s.match(LETTER) || []).length;
 export const vowelling = s => {
   const n = letters(s), m = (s.match(/[ً-ْٰ]/g) || []).length;
@@ -10,13 +10,16 @@ export const vowelling = s => {
 };
 export const kind = s => {
   const words = s.trim().split(/\s+/).filter(w => letters(w));
-  if (words.every(w => letters(w) === 1)) return 'letters';
+  const syllables = s.trim().split(/[\s،؛]+/).filter(Boolean);
+  const drill = syllables.length > 1 && syllables.every(w => /^[ء-غف-ي][َُِ][اوي]?$/.test(w) && w[0] === syllables[0][0]);
+  if (words.every(w => letters(w) === 1) || drill) return 'letters';
   const sentences = s.split(/[.؟!?]\s*/).filter(x => letters(x)).length;
   if (sentences >= 2 && words.length >= 12) return 'passage';
   if (/[.؟!?]\s*$/.test(s.trim()) || words.length >= 5) return 'sentence';
   return words.length === 1 ? 'word' : 'phrase';
 };
-export const voiceable = s => typeof s === 'string' && letters(s) >= 2 && vowelling(s) === 'full' && kind(s) !== 'letters';
+// A joining mark here denotes an affix or an unfinished practice word, not a whole word to imitate.
+export const voiceable = s => typeof s === 'string' && !s.includes('ـ') && /[ً-ِْٰ]/.test(s) && letters(s) >= 2 && vowelling(s) === 'full' && kind(s) !== 'letters';
 
 const sentences = line => line.trim().split(/(?<=[.؟!?])\s+/u).filter(Boolean);
 export function readingPassages(root) {

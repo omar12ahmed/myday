@@ -2,7 +2,7 @@ import { ArrowDown, ArrowLeftRight, X } from 'lucide-react';
 import { useContext, useState } from 'react';
 import { Card } from '../../components/Card';
 import { Ar, Mixed } from './Ar';
-import { PlayButton } from './Listen';
+import { MixedVoiceLabel, PlayButton } from './Listen';
 import { FAMILIES as families, type Family } from './families';
 import { PronunciationContext } from './pronunciationContext';
 import texts from './data/texts.json';
@@ -23,17 +23,17 @@ export function Root({ f, reading = true }: { f: Pick<Family, 'root_ar' | 'root_
 }
 // A note in English with Arabic in it: a root written like ك-ت-ب is shown whole, as a root (not letter by letter).
 const ROOT = /[\u0621-\u064A](?:-[\u0621-\u064A]){2}/g;
-function Note({ text }: { text: string }) {
+function Note({ text, voice }: { text: string; voice: string }) {
   const out = [];
   let last = 0;
   for (const m of text.matchAll(ROOT)) {
     const f = families.families.find(x => x.root_ar === m[0]);
     if (!f) continue;
-    if (m.index > last) out.push(<Mixed key={last} text={text.slice(last, m.index)} />);
+    if (m.index > last) out.push(<Mixed key={last} text={text.slice(last, m.index)} voice={`${voice}:${last}`} />);
     out.push(<Root key={'r' + m.index} f={f} />);
     last = m.index + m[0].length;
   }
-  if (last < text.length) out.push(<Mixed key={last} text={text.slice(last)} />);
+  if (last < text.length) out.push(<Mixed key={last} text={text.slice(last)} voice={`${voice}:${last}`} />);
   return <>{out}</>;
 }
 
@@ -49,6 +49,7 @@ export function WordFamilies() {
       <div className="grid gap-3 sm:grid-cols-2 mt-3">
         {families.families.map((f, i) => <FamilyCard key={f.id} f={f} wide={i === 0} open={open} onOpen={setOpen} />)}
       </div>
+      <MixedVoiceLabel texts={families.families.flatMap(f => [f.pattern_en, ...Object.values(f.word_notes), ...(f.also_in_examples ?? []).flatMap(x => [x.form_ar, x.note_en])])} />
       <Group title="Their relatives aren’t in this list yet" ids={alone.relatives_not_here} s="ar-alone-relatives"
         note="Each of these has a root, but no other word from it is among your starter words. Lessons and texts will bring some." />
       <Group title="Small words — not built from roots" ids={alone.small_words} s="ar-alone-small"
@@ -83,10 +84,10 @@ function FamilyCard({ f, wide, open, onOpen }: { f: Family; wide: boolean; open:
       <div id={`ar-family-note-${f.id}`} aria-live="polite">
         {here && <WordNote f={f} id={here} onClose={() => onOpen(null)} />}
       </div>
-      <p className="text-[15px] m-0 mt-2.5" data-ar-family-pattern=""><span className="font-semibold">Pattern: </span><Note text={f.pattern_en} /></p>
+      <p className="text-[15px] m-0 mt-2.5" data-ar-family-pattern=""><span className="font-semibold">Pattern: </span><Note text={f.pattern_en} voice={`${f.id}:family:pattern`} /></p>
       {also.length > 0 && <div className="mt-1.5">
         <p className="text-sm font-semibold m-0">Also in your examples:</p>
-        {also.map(x => <p key={x.form_ar} className="text-sm text-fg-2 m-0 mt-0.5" data-ar-family-also=""><Ar showReading>{x.form_ar}</Ar> {x.meaning_en} — <Note text={x.note_en} /></p>)}
+        {also.map((x, i) => <p key={x.form_ar} className="text-sm text-fg-2 m-0 mt-0.5" data-ar-family-also=""><Ar showReading>{x.form_ar}</Ar><PlayButton text={x.form_ar} name={`${f.id}:family:also:${i}`} label={x.form_ar} /> {x.meaning_en} — <Note text={x.note_en} voice={`${f.id}:family:also:${i}:note`} /></p>)}
       </div>}
     </section>
   );
@@ -108,10 +109,10 @@ function WordNote({ f, id, onClose }: { f: Family; id: string; onClose: () => vo
           <Ar block className="text-[26px] m-0">{w.form_ar}</Ar>
           <p className="text-sm text-fg-2 m-0">{w.meaning_en} · {w.part_of_speech.replace('_', ' ')}</p>
         </div>
-        <PlayButton text={w.form_ar} name={`${id}:word`} label={w.form_ar} />
+        <PlayButton text={w.form_ar} name={`${id}:family:word`} label={w.form_ar} />
         <button type="button" onClick={onClose} aria-label="Close this note" className="flex-none grid place-items-center size-11 rounded-btn text-fg-2 hover:bg-surface-2 cursor-pointer"><X size={18} aria-hidden="true" /></button>
       </div>
-      {note && <p className="text-[15px] m-0 mt-1.5"><Note text={note} /></p>}
+      {note && <p className="text-[15px] m-0 mt-1.5"><Note text={note} voice={`${id}:family:note`} /></p>}
       <button type="button" onClick={show} data-action="ar-family-show" className="inline-flex items-center gap-1.5 min-h-11 mt-1 text-primary font-semibold text-[15px] bg-transparent border-0 p-0 cursor-pointer hover:underline underline-offset-4">
         <ArrowDown size={16} aria-hidden="true" /> Show it in the list, with its revision buttons</button>
     </div>

@@ -1,7 +1,8 @@
 import { LoaderCircle, Square, Volume2 } from 'lucide-react';
-import { useSyncExternalStore } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { Switch } from '../../components/Switch';
-import { clipFor, playOrStop, setSlower, subscribe, voiceLabel, voiceState } from './voice';
+import { clipFor, playOrStop, setSlower, stopVoiceFor, subscribe, voiceLabel, voiceState } from './voice';
+import { arabicRuns } from './arabic-runs.mjs';
 
 // A play button for a piece of Arabic: `text` exactly as shown (its clip is found by it). Nothing at all when that text
 // has no clip that's been listened to. `name` says which button it is (for one-at-a-time and the tests): "<word id>:word",
@@ -9,16 +10,23 @@ import { clipFor, playOrStop, setSlower, subscribe, voiceLabel, voiceState } fro
 export function PlayButton({ text, name, label }: { text: string; name: string; label: string }) {
   const s = useSyncExternalStore(subscribe, voiceState);
   const file = clipFor(text);
+  useEffect(() => () => stopVoiceFor(name), [name]);
   if (!file) return null;
   const key = name, playing = s.playing === key, loading = s.loading === key;
-  return <span className="inline-flex items-center gap-2 flex-none">
+  return <span className="inline-flex max-w-full items-center gap-2 align-middle">
     <button type="button" data-action="ar-play" data-ar-clip={key} data-state={playing ? 'playing' : loading ? 'loading' : s.failed === key ? 'failed' : 'idle'}
       aria-label={playing || loading ? `Stop ${label}` : `Play ${label}`} onClick={() => playOrStop(key, file)}
-      className="grid place-items-center size-11 rounded-btn border border-outline bg-surface hover:bg-surface-2 text-primary cursor-pointer">
+      className="grid place-items-center size-11 flex-none rounded-btn border border-outline bg-surface hover:bg-surface-2 text-primary cursor-pointer">
       {playing ? <Square size={15} fill="currentColor" aria-hidden="true" /> : loading ? <LoaderCircle size={19} className="animate-spin" aria-hidden="true" /> : <Volume2 size={20} aria-hidden="true" />}
     </button>
-    {s.failed === key && <span role="status" className="text-sm text-fg-2">Couldn’t play it. The first time, it needs a connection.</span>}
+    {s.failed === key && <span role="status" className="min-w-0 text-sm text-fg-2">Couldn’t play it. The first time, it needs a connection.</span>}
   </span>;
+}
+
+// A single honest label for a section of mixed prose, only if it has a playable run.
+export function MixedVoiceLabel({ texts }: { texts: string[] }) {
+  if (!texts.some(t => arabicRuns(t).some(p => clipFor(p.text.trim())))) return null;
+  return <p className="text-xs text-fg-2 m-0 mt-2" data-ar-voice-label="">{voiceLabel} Slower playback: Study → Arabic → Vocabulary.</p>;
 }
 
 // The honest label under a piece of Arabic that has a voice, away from the Vocabulary card (e.g. a lesson's example).

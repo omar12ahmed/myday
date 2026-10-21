@@ -334,6 +334,18 @@ clips, leaving 55 new clips and 2,177 new characters to voice. All 55 new clips 
 listened to on 21 October 2026 ("all fine"); released in 1.41.0. Only clips listened to and marked checked enter the app, and whole-text Listen
 is available only when every sentence has a checked clip. No saved-data, server or database change.
 
+**A voice for teaching and checks (round three (b), 1.42.0):** play controls beside fully vowelled
+Arabic in teaching explanations and worked examples, sound pairs, and word-family notes and extra forms. **Try it**
+and solutions offer audio only after **Reveal explained answer**; hiding the answer removes the controls and stops
+their audio. Lesson-check prompts and reference answers offer audio only after the reference data has loaded, in
+ordinary lessons and sessions. Revision cards stay as they are. Isolated letters, syllable drills, affixes, unfinished
+words, unvowelled pieces and pieces marked only with shadda are held back. The same Charon voice, shared player,
+**Slower**, offline cache and synthesised-voice label apply; only checked clips enter the app. The 363 new clips have
+been transcribed blind, with 27 retakes. You listened to all 357 eligible clips ("both fine"); six uncertain
+recordings are held for a fluent reviewer. 643 checked clips ship.
+`scripts/review-arabic-audio.mjs teaching sounds-families lesson-checks` makes a local listening checklist;
+`MYDAY_AUDIO_REVIEW_BATCH` splits it into manageable sittings. No saved-data change.
+
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
 
@@ -589,6 +601,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/study/arabic/WordFamilies.tsx`, `src/study/arabic/families.ts`, `content/teaching/arabic/word-families.json`, `scripts/validate-families.mjs` | Word families (1.38.0): the card on the vocabulary page and its notes; which family a word is in; the authored families (by word id); the build check. |
 | `src/study/arabic/voice.ts`, `src/study/arabic/Listen.tsx`, `../content/arabic-audio/`, `scripts/arabic-voice-sources.mjs`, `scripts/make-arabic-audio.mjs`, `scripts/prepare-audio.mjs`, `scripts/arabic-audio-inventory.mjs` | The Arabic course's voice (1.39.0; lessons' examples 1.40.0): the clip list (by exact text) and the one shared player with Slower (device-only key `myday.arabic.slower`); the play button, the voice note and the label; the clips and their audit; which texts have a voice; making them (by hand); the build check; what's left to voice. |
 | `src/study/arabic/ReadingVoice.tsx`, `src/study/arabic/voice.ts`, `scripts/arabic-reading-sentences.mjs`, `src/study/arabic/voice-clips.json`, `scripts/review-arabic-audio.mjs` | Reading-text voice (round three (a), 1.41.0): whole-text Listen and sentence controls; sequence support in the shared player; shared sentence boundaries; the generated `readings` list, with only checked clips playable; a local listening checklist for future clips. |
+| `src/study/arabic/arabic-runs.mjs`, `scripts/arabic-voice-sources.mjs`, `scripts/review-arabic-audio.mjs` | Teaching and check voice (round three (b), 1.42.0): shared extraction of the exact Arabic displayed; the `teaching`, `sounds-families` and `lesson-checks` sources; a local listening checklist combining sources, split into sittings with `MYDAY_AUDIO_REVIEW_BATCH`. |
 | `src/commitments/` | Work shifts and appointments: the form and list used by both Today and Calendar. |
 | `src/shell/` | Navigation, the top bar's parts (`TopBar`: the Focus mode switch and your account; `focusMode.ts`, the device-only `myday.focus`), the theme button, the shared footer (`AppFooter`), the "couldn't be read" notice (`LoadIssue`) and the screens for unreadable or older data. |
 | `public/icon.svg` | The tab icon. |
@@ -1278,3 +1291,12 @@ older app still gets version 1. Evaluated live on GLM-5.3-Flash with every reply
     clips were independently transcribed and listened to in full ("all fine"); the label still says they are synthesised
     and not yet teacher-checked. Unvowelled B1/B2 texts keep their no-recording note. No saved-data, server or database
     change; going back to 1.40.0 is safe (reading-text controls simply disappear).
+55. **Release 1.42.0:** a voice for fully vowelled teaching examples, sound pairs and word-family
+    notes and forms. Try it and solutions gain controls only after **Reveal explained answer**; hiding them stops
+    their audio. Lesson-check prompts and reference answers gain controls only after the references have loaded,
+    in ordinary lessons and sessions. Revision cards are unchanged. The same voice, Slower and offline cache apply;
+    isolated letters, syllable drills, affixes, unfinished words and unvowelled or shadda-only pieces stay silent.
+    363 new clips were transcribed blind, with 27 retakes; you listened to all 357 eligible clips ("both fine").
+    Six uncertain recordings are held for a fluent reviewer; 643 checked clips ship.
+    Only checked clips enter the app, with the same synthesised-voice label.
+    No saved-data, server or database change; going back to 1.41.0 is safe.

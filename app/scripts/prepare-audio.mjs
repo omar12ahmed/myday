@@ -11,7 +11,7 @@
 // src/study/arabic/data/, which prepare-arabic.mjs empties and rewrites whenever it runs.
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { voiceSources } from './arabic-voice-sources.mjs';
+import { spokenText, voiceSources } from './arabic-voice-sources.mjs';
 import { readingPassages } from './arabic-reading-sentences.mjs';
 
 const root = new URL('../../', import.meta.url);
@@ -30,6 +30,7 @@ for (const [text, c] of Object.entries(audit.clips ?? {})) {
   const short = `“${text.length > 40 ? text.slice(0, 40) + '…' : text}”`;
   if (!sources.some(s => s.texts.includes(text))) fail(`${short}: its text is no longer in any voiced part of the course. Make the new text's clip with make-arabic-audio.mjs and take this one out.`);
   if (!CHECKS.includes(c.check)) fail(`${short}: unknown check “${c.check}”`);
+  if (c.spoken !== undefined && c.spoken !== spokenText(text)) fail(`${short}: the spoken text changes more than its pause punctuation`);
   if (c.voice !== audit.voice.name) fail(`${short}: made with another voice (${c.voice})`);
   if (!/^[0-9a-f]{16}\.mp3$/.test(c.file ?? '')) fail(`${short}: a clip is named by its contents (16 hex + .mp3)`);
   const at = new URL(c.file, clipsDir);

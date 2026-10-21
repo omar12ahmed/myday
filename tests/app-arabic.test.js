@@ -20,8 +20,8 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   check('the map shows all 30 modules', await count('[data-ar-module]') === 30);
   check('…the 24 core modules by level, then the 6 optional extensions', await ev(`['Pre-A1','A1','A2','B1','B2'].map(s => document.querySelectorAll('[data-ar-stage="' + s + '"] [data-ar-module]').length).join() === '3,5,5,6,5' && document.querySelectorAll('[data-ar-stage="extensions"] [data-ar-module]').length === 6`));
   // Checked clips already shared with three reading sentences are available; unheard clips stay unshipped.
-  check('it offers a first small step and accurately says the starter words, lesson examples and some reading sentences have a voice, with the rest still unrecorded', await exists('.next-card a[href^="#study/arabic/lesson."]')
-    && (await T.text('.next-card')).includes('The starter words (in Vocabulary), each lesson\u2019s example and some reading sentences have a synthesised voice to copy; the rest of each lesson has no recordings yet.')
+  check('it offers a first small step and accurately describes the available voice and unrecorded material', await exists('.next-card a[href^="#study/arabic/lesson."]')
+    && (await T.text('.next-card')).includes('The starter words, lesson examples and some teaching and reading texts have a synthesised voice to copy. Look for a play button; some Arabic has no recording.')
     && (await T.text('.next-card')).includes('For listening and speaking, use a verified recording or a fluent speaker; typed work never stands in for them.'));
   await ev(`(() => { const i = document.querySelector('#arSearch'), set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(i, 'past'); i.dispatchEvent(new Event('input', { bubbles: true })); })()`); await sleep(150);
   check('search narrows the map to matching modules', await count('[data-ar-module]') > 0 && await count('[data-ar-module]') < 30 && await exists('[data-ar-module="arabic-past-stories"]'));

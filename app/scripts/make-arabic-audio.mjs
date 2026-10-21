@@ -9,7 +9,7 @@
 // never written anywhere.
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { voiceSources } from './arabic-voice-sources.mjs';
+import { spokenText, voiceSources } from './arabic-voice-sources.mjs';
 
 const root = new URL('../../', import.meta.url);
 const dir = new URL('content/arabic-audio/', root), clips = new URL('clips/', dir), auditFile = new URL('audio-audit.json', dir);
@@ -24,7 +24,8 @@ mkdirSync(clips, { recursive: true });
 const today = new Date().toISOString().slice(0, 10);
 // What the voice is given: the text as shown, except that a slash between alternatives ("مَلِك / مَالِك") is spoken as
 // a short pause (an Arabic comma) — read aloud, the slash came out as a stray word.
-const spoken = text => text.replace(/\s*\/\s*/g, '، ');
+// A final full stop makes an isolated form a complete utterance, without changing any of its letters or marks.
+const spoken = spokenText;
 let made = 0, chars = 0;
 for (const text of source.texts) {
   const entry = audit.clips[text];
@@ -40,7 +41,7 @@ for (const text of source.texts) {
   const file = createHash('sha256').update(audio).digest('hex').slice(0, 16) + '.mp3';
   writeFileSync(new URL(file, clips), audio);
   if (entry?.file && entry.file !== file) rmSync(new URL(entry.file, clips), { force: true });
-  audit.clips[text] = { file, voice: VOICE, made: today, check: 'to check', ...(entry?.note ? { earlier: entry.note } : {}) };
+  audit.clips[text] = { file, voice: VOICE, made: today, spoken: spoken(text), check: 'to check', ...(entry?.note ? { earlier: entry.note } : {}) };
   // Keep completed clips in the audit even if a later request fails or the run is interrupted.
   writeFileSync(auditFile, JSON.stringify(audit, null, 1) + '\n');
   made++; chars += text.length;

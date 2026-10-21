@@ -1,5 +1,7 @@
 import { useContext, type ReactNode } from 'react';
 import { PronunciationContext } from './pronunciationContext';
+import { arabicRuns } from './arabic-runs.mjs';
+import { PlayButton } from './Listen';
 
 export function Reading({ text, block = false, prepared }: { text: string; block?: boolean; prepared?: string }) {
   const { enabled, read } = useContext(PronunciationContext);
@@ -22,15 +24,16 @@ export function Ar({ children, block = false, className = '', reading, showReadi
 
 // English with Arabic words inside it ("How do مِن and في differ?"): each Arabic run is isolated, so it
 // reads right to left without reordering the English around it.
-const ARABIC_RUN = /[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]+(?:[\s،؛؟]+[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]+)*/g;
-export function Mixed({ text }: { text: string }) {
+// Voice is opt-in at an agreed teaching position. All other uses, including revision, remain text only.
+export function Mixed({ text, voice }: { text: string; voice?: string }) {
   const parts: ReactNode[] = [];
   let last = 0;
-  for (const m of text.matchAll(ARABIC_RUN)) {
+  for (const m of arabicRuns(text)) {
     if (m.index > last) parts.push(text.slice(last, m.index));
-    parts.push(<bdi key={m.index} lang="ar" className="ar-inline">{m[0]}</bdi>);
-    parts.push(<Reading key={'reading-' + m.index} text={m[0]} />);
-    last = m.index + m[0].length;
+    parts.push(<bdi key={m.index} lang="ar" className="ar-inline">{m.text}</bdi>);
+    parts.push(<Reading key={'reading-' + m.index} text={m.text} />);
+    if (voice) parts.push(<PlayButton key={'voice-' + m.index} text={m.text.trim()} name={`${voice}:${m.index}`} label={m.text.trim()} />);
+    last = m.index + m.text.length;
   }
   if (last < text.length) parts.push(text.slice(last));
   return <>{parts}</>;

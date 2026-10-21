@@ -19,8 +19,8 @@ import { Lines, LinkButton } from '../cybersecurity/parts';
 import { Ar, Mixed } from './Ar';
 import { familyOf } from './families';
 import { Root, WordFamilies } from './WordFamilies';
-import { PlayButton, VoiceLabel, VoiceNote } from './Listen';
-import { hasReadingVoice, hasVoice } from './voice';
+import { MixedVoiceLabel, PlayButton, VoiceLabel, VoiceNote } from './Listen';
+import { clipFor, hasReadingVoice, hasVoice } from './voice';
 import { ReadingVoice } from './ReadingVoice';
 import { Pronunciation, PronunciationControls } from './Pronunciation';
 import { TeachingLesson } from '../teaching/TeachingLesson';
@@ -80,7 +80,7 @@ function MapView({ data }: { data: MyDayData }) {
       <h2 className="text-[28px] lg:text-[34px] mb-1">From first sounds to independent use.</h2>
       <Ar block className="text-[26px] text-fg-2 mt-0">العربية الفصحى</Ar>
       <p>Modern Standard Arabic, one small session at a time: script and sounds first, then sentences, reading, listening and writing.</p>
-      <p className="text-sm text-fg-2 flex gap-2 items-start"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />{hasVoice ? hasReadingVoice ? 'The starter words (in Vocabulary), each lesson’s example and some reading sentences have a synthesised voice to copy; the rest of each lesson has no recordings yet. ' : 'The starter words (in Vocabulary) and each lesson’s example have a synthesised voice to copy; the reading texts and the rest of each lesson have no recordings yet. ' : 'No recordings are included yet. '}For listening and speaking, use a verified recording or a fluent speaker; typed work never stands in for them.</p>
+      <p className="text-sm text-fg-2 flex gap-2 items-start"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />{hasVoice ? 'The starter words, lesson examples and some teaching and reading texts have a synthesised voice to copy. Look for a play button; some Arabic has no recording. ' : 'No recordings are included yet. '}For listening and speaking, use a verified recording or a fluent speaker; typed work never stands in for them.</p>
       <div className="rounded-tile bg-surface p-4 border border-outline mt-4" data-ar-next={step.resume ? 'resume' : 'next'}>
         <Eyebrow>{step.resume ? 'Pick up where you left off' : started ? 'Your next small step' : 'Your first small step'}</Eyebrow>
         <h3>{lessonIndex[step.lessonId].title}</h3>
@@ -223,17 +223,21 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
 // self-study, so anyone with the app could read them — answer first for your own sake.
 function CheckQuestion({ q }: { q: Question | { id: string; prompt: string; answer_key_id: string } }) {
   const [open, setOpen] = useState(false);
+  const [referenceReady, setReferenceReady] = useState(false);
   return <div data-ar-question={q.id}>
-    <p className="mb-1.5"><Mixed text={q.prompt} /></p>
-    {open ? <Reference keyId={q.answer_key_id} /> : <Button inline variant="ghost" data-action="ar-reveal" onClick={() => setOpen(true)}>Show the reference answer</Button>}
+    <p className="mb-1.5"><Mixed text={q.prompt} voice={open && referenceReady ? `${q.id}:prompt` : undefined} /></p>
+    {open && referenceReady && <MixedVoiceLabel texts={[q.prompt]} />}
+    {open ? <Reference keyId={q.answer_key_id} onReady={setReferenceReady} /> : <Button inline variant="ghost" data-action="ar-reveal" onClick={() => setOpen(true)}>Show the reference answer</Button>}
   </div>;
 }
-function Reference({ keyId }: { keyId: string }) {
+function Reference({ keyId, onReady }: { keyId: string; onReady?: (ready: boolean) => void }) {
   const [answers, setAnswers] = useState<Answers | null>(null), [failed, setFailed] = useState(false);
   useEffect(() => { let live = true; loadAnswers().then(a => { if (live) setAnswers(a); }, () => { if (live) setFailed(true); }); return () => { live = false; }; }, []);
   const a = answers?.[keyId];
+  useEffect(() => { onReady?.(!!a); }, [a, onReady]);
   return a ? <div className="bg-surface-2 rounded-tile px-3.5 py-2.5" data-ar-answer="">
-    <span className="text-sm text-fg-2">Reference answer</span><p className="mt-1 mb-1"><Mixed text={a.answer} /></p>
+    <span className="text-sm text-fg-2">Reference answer</span><p className="mt-1 mb-1"><Mixed text={a.answer} voice={`${keyId}:answer`} /></p>
+    <MixedVoiceLabel texts={[a.answer]} />
     <p className="text-sm text-fg-2 m-0">What also counts: <Mixed text={a.variation} /></p>
   </div> : <p role="status" className="text-sm text-fg-2">{failed ? 'The answers couldn’t be opened. Check your connection and try again.' : 'Opening…'}</p>;
 }
@@ -281,14 +285,16 @@ function SessionCard({ data, lesson: l, onFinished }: { data: MyDayData; lesson:
 // A check question during a session: your first answer is kept; once you look, it stays as you wrote it.
 function SessionQuestion({ session, q }: { session: ArabicAttempt; q: Question }) {
   const revealed = session.revealed.includes(q.id), first = session.answers[q.id] ?? '';
+  const [referenceReady, setReferenceReady] = useState(false);
   const change = (fn: (a: ArabicAttempt) => void) => update(d => { if (!changeSession(d, session.id, fn)) return false; });
   return <div data-ar-question={q.id}>
-    <p className="mb-1.5"><Mixed text={q.prompt} /></p>
+    <p className="mb-1.5"><Mixed text={q.prompt} voice={revealed && referenceReady ? `${q.id}:prompt` : undefined} /></p>
+    {revealed && referenceReady && <MixedVoiceLabel texts={[q.prompt]} />}
     {revealed
       ? (first ? <div className="rounded-tile border border-outline px-3.5 py-2.5 mb-2" data-ar-first=""><span className="text-sm text-fg-2">Your first answer</span><p dir="auto" className="ar-input mt-1 mb-0 whitespace-pre-wrap">{first}</p></div>
         : <p className="text-sm text-fg-2 mb-2">You looked before answering. That’s fine, and it’s noted.</p>)
       : <CommitTextarea key={session.id + q.id} rows={2} dir="auto" className="ar-input mb-2" aria-label="Your first answer" data-s="ar-answer" data-q={q.id} defaultValue={first} placeholder="Your answer, in Arabic or English" onCommit={el => change(a => writeFirstAnswer(a, q.id, el.value))} />}
-    {revealed ? <Reference keyId={q.answer_key_id} /> : <Button inline variant="ghost" data-action="ar-reveal" onClick={() => change(a => markRevealed(a, q.id))}>Show the reference answer</Button>}
+    {revealed ? <Reference keyId={q.answer_key_id} onReady={setReferenceReady} /> : <Button inline variant="ghost" data-action="ar-reveal" onClick={() => change(a => markRevealed(a, q.id))}>Show the reference answer</Button>}
   </div>;
 }
 
@@ -345,6 +351,8 @@ function TextView({ asset: a }: { asset: Asset }) {
   const shown = vowels || !plain ? full : plain;
   const questions = 'comprehension_questions' in a ? (a.comprehension_questions ?? []) : [];
   const prepared = (passageReadings as Record<string, { latin: string; style: string }>)[a.id];
+  const pairs = 'pairs' in a ? a.pairs : null;
+  const hasPairVoice = pairs?.some(p => clipFor(p.a) || clipFor(p.b));
   return <>
     <Card>
       <BackLink to="study/arabic/texts" label="Reading texts" />
@@ -361,13 +369,15 @@ function TextView({ asset: a }: { asset: Asset }) {
         <tbody>{a.rows.map((r, i) => <tr key={i} className="border-b border-outline"><td className="py-2 pr-3"><Ar>{r.day_ar}</Ar></td><td className="py-2 pr-3 tabular-nums">{r.time}</td><td className="py-2 pr-3"><Ar>{r.activity_ar}</Ar></td><td className="py-2"><Ar>{r.place_ar}</Ar></td></tr>)}</tbody>
       </table></div>}
       {'pairs' in a && a.pairs && <ul className="list-none p-0 grid sm:grid-cols-2 gap-2 mt-2">{a.pairs.map((p, i) => <li key={i} className="rounded-tile bg-surface-2 px-3.5 py-2.5 flex items-center justify-between gap-3">
-        <span><Ar className="text-[24px]">{p.a}</Ar> <span className="text-sm text-fg-2">{p.meaning_a}</span></span>
+        <span><Ar className="text-[24px]">{p.a}</Ar> <span className="text-sm text-fg-2">{p.meaning_a}</span><PlayButton text={p.a} name={`${a.id}:pair:${i}:a`} label={p.a} /></span>
         <span className="text-fg-3" aria-hidden="true">/</span>
-        <span><Ar className="text-[24px]">{p.b}</Ar> <span className="text-sm text-fg-2">{p.meaning_b}</span></span>
+        <span><Ar className="text-[24px]">{p.b}</Ar> <span className="text-sm text-fg-2">{p.meaning_b}</span><PlayButton text={p.b} name={`${a.id}:pair:${i}:b`} label={p.b} /></span>
       </li>)}</ul>}
       {'task' in a && a.task && <p className="mt-3"><Mixed text={a.task} /></p>}
-      {a.use_note && <p className="text-sm text-fg-2"><Mixed text={a.use_note} /></p>}
-      {!shown && <p className="text-sm text-fg-2 flex gap-2 items-start mb-0"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />No recording included. Read it aloud yourself, or ask a fluent speaker to.</p>}
+      {a.use_note && <p className="text-sm text-fg-2">{pairs && <strong>From the course’s recording brief: </strong>}<Mixed text={a.use_note} /></p>}
+      {hasPairVoice && <p className="text-sm text-fg-2">The play buttons are synthesised models to copy. The course’s listening task still needs a fluent speaker’s recording.</p>}
+      {hasPairVoice && pairs ? <MixedVoiceLabel texts={pairs.flatMap(p => [p.a, p.b])} />
+        : !shown && <p className="text-sm text-fg-2 flex gap-2 items-start mb-0"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />No recording included. Read it aloud yourself, or ask a fluent speaker to.</p>}
     </Card>
     {questions.length > 0 && <Card><h3>Questions about the text</h3><ol className="list-decimal pl-5 grid gap-4">{questions.map(q => <li key={q.id}><CheckQuestion q={q} /></li>)}</ol></Card>}
   </>;

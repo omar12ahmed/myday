@@ -14,7 +14,7 @@ const wait = async sel => { for (let i = 0; i < 60; i++) { if (await exists(sel)
   check('lesson teaching includes readable Latin alongside Arabic', await ev(`[...document.querySelectorAll('[data-teaching] [data-ar-transliteration]')].some(e => e.textContent.includes('al-baytu kabīrun'))`));
   check('Latin and Arabic retain their own language and direction', await ev(`document.querySelector('[data-ar-example] [lang="ar"]').dir === 'rtl' && [...document.querySelectorAll('[data-ar-transliteration]')].every(e => e.dir === 'ltr' && e.lang === 'ar-Latn')`));
   check('neither kind of answer is inserted before reveal', !(await exists('[data-teaching-solution]')) && !(await exists('[data-ar-answer]')));
-  await click('[data-teaching] button'); await wait('[data-teaching-solution]');
+  await click('[data-teaching] button[aria-expanded]'); await wait('[data-teaching-solution]');
   check('revealed teaching answers get their own pronunciation support', await exists('[data-teaching-solution] [data-ar-transliteration]') && !(await exists('[data-ar-answer]')));
   await click(toggle); await sleep(80);
   check('hiding removes every Latin aid but preserves the Arabic', await count('[data-ar-transliteration]') === 0 && await exists('[data-ar-example] [lang="ar"]'));
@@ -166,7 +166,7 @@ const wait = async sel => { for (let i = 0; i < 60; i++) { if (await exists(sel)
 
   await wait('[data-ar-families]');
   await click(fword('lexeme.arabic-seed-012')); await wait('[data-ar-family-note]');
-  check('a family word\'s note has a play button named "Play" and the word\'s Arabic', await ev(`(() => { const b = document.querySelector('[data-ar-family-note] ${clipSel('lexeme.arabic-seed-012', 'word')}'); return !!b && b.getAttribute('aria-label') === 'Play مَكْتَبَة'; })()`));
+  check('a family word\'s note has a play button named "Play" and the word\'s Arabic', await ev(`(() => { const b = document.querySelector('[data-ar-family-note] ${clipSel('lexeme.arabic-seed-012', 'family:word')}'); return !!b && b.getAttribute('aria-label') === 'Play مَكْتَبَة'; })()`));
 
   const gone = clipOf('lexeme.arabic-seed-020', 'word');
   fs.rmSync(path.join(served, 'arabic-audio', gone));
@@ -192,7 +192,7 @@ const wait = async sel => { for (let i = 0; i < 60; i++) { if (await exists(sel)
   check('a lesson whose example is a letter drill (no shipped clip) has no play button and no voice label', !clipFiles[noClip.example.text_ar] && !(await exists('[data-ar-example] [data-ar-clip]')) && !(await exists('[data-ar-voice-label]')));
 
   await go('study/arabic'); await wait('.arabic-entry');
-  check('the learning map names the available reading-sentence voice and keeps the listening and speaking boundary', (await ev('document.body.textContent')).includes('The starter words (in Vocabulary), each lesson\u2019s example and some reading sentences have a synthesised voice to copy; the rest of each lesson has no recordings yet.') && (await ev('document.body.textContent')).includes('typed work never stands in for them.'));
+  check('the learning map names the available course voice and keeps the listening and speaking boundary', (await ev('document.body.textContent')).includes('The starter words, lesson examples and some teaching and reading texts have a synthesised voice to copy. Look for a play button; some Arabic has no recording.') && (await ev('document.body.textContent')).includes('typed work never stands in for them.'));
   const swText = fs.readFileSync(path.join(served, 'sw.js'), 'utf8');
   const listIn = name => { const m = swText.match(new RegExp('const ' + name + ' = (\\[[^\\]]*\\])')); return m ? JSON.parse(m[1]) : null; };
   const audioList = listIn('AUDIO'), filesList = listIn('FILES');

@@ -12,8 +12,8 @@ const waitFor = async sel => { for (let i = 0; i < 60; i++) { if (await exists(s
   check('explanation, worked example and task are present', await ev(`['Read this first','Worked example','Try it'].every(t => document.querySelector('[data-teaching]').textContent.includes(t))`));
   check('its assignment is a direct page with a specific instruction', await ev(`(() => {const r = document.querySelector('[data-teaching-resource]'); return !!r && r.querySelector('a').href.startsWith('https://') && r.textContent.length > 100;})()`));
   check('answer is absent before reveal', !(await exists('[data-teaching-solution]')));
-  await click('[data-teaching] button');
-  check('reveal shows the explanation and announces expanded state', await exists('[data-teaching-solution]') && await ev(`document.querySelector('[data-teaching] button').getAttribute('aria-expanded') === 'true'`));
+  await click('[data-teaching] button[aria-expanded]');
+  check('reveal shows the explanation and announces expanded state', await exists('[data-teaching-solution]') && await ev(`document.querySelector('[data-teaching] button[aria-expanded]').getAttribute('aria-expanded') === 'true'`));
   await ev(`location.hash = 'study/cybersecurity/lesson.hashing-integrity'`);
   check('navigating without reload loads the new lesson', await waitFor('[data-teaching="lesson.hashing-integrity"]'));
   check('a new lesson does not inherit the revealed answer', !(await exists('[data-teaching-solution]')));
@@ -22,9 +22,9 @@ const waitFor = async sel => { for (let i = 0; i < 60; i++) { if (await exists(s
   check('Arabic examples have language and direction isolation', await ev(`document.querySelectorAll('[data-teaching] bdi[lang="ar"]').length >= 4`));
   check('the explanation distinguishes statement from noun phrase', (await T.text('[data-teaching]')).includes('The house is big'));
   check('guided answer starts hidden separately from assessment answers', !(await exists('[data-teaching-solution]')) && !(await exists('[data-ar-answer]')));
-  await click('[data-teaching] button');
+  await click('[data-teaching] button[aria-expanded]');
   check('guided reveal does not reveal assessment answers', await exists('[data-teaching-solution]') && !(await exists('[data-ar-answer]')));
-  await click('[data-teaching] button');
+  await click('[data-teaching] button[aria-expanded]');
   check('answer can be hidden again', !(await exists('[data-teaching-solution]')));
   await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
   check('Arabic teaching fits a phone width', await ev('document.documentElement.scrollWidth === innerWidth'));

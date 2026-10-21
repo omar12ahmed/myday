@@ -87,6 +87,33 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
   const sources = (await import(pathToFileURL(path.join(ROOT, 'app/scripts/arabic-voice-sources.mjs')))).voiceSources(pathToFileURL(ROOT + path.sep));
   const sourceMod = await import(pathToFileURL(path.join(ROOT, 'app/scripts/arabic-voice-sources.mjs')));
   const src = id => sources.find(s => s.id === id);
+  check('an isolated form gets final punctuation without changing a letter or vowel mark', sourceMod.spokenText('دَعَا') === 'دَعَا.');
+  check('a slash between alternatives becomes a pause and the words stay unchanged', sourceMod.spokenText('مَلِك / مَالِك') === 'مَلِك، مَالِك.');
+  check('an authored question keeps its own final punctuation', sourceMod.spokenText('مَا اسْمُكَ؟') === 'مَا اسْمُكَ؟');
+  // Round three (b): author exactly the runs displayed, never unfinished words or isolated affixes.
+  const { arabicRuns } = await import(pathToFileURL(path.join(ROOT, 'app/src/study/arabic/arabic-runs.mjs')));
+  const mixedSample = 'Compare كَتَبَ / كُتِبَ; then هٰذَا كِتَابٌ، هٰذَا قَلَمٌ؟';
+  const mixedRuns = arabicRuns(mixedSample);
+  check('mixed Arabic preserves slash alternatives separately and an Arabic comma inside its sentence', JSON.stringify(mixedRuns.map(p => p.text)) === JSON.stringify(['كَتَبَ', 'كُتِبَ', 'هٰذَا كِتَابٌ، هٰذَا قَلَمٌ؟']));
+  check('each extracted run points at its exact original display characters', mixedRuns.every(p => mixedSample.slice(p.index, p.index + p.text.length) === p.text));
+  check('extracting one passage cannot change the boundaries of a later extraction', JSON.stringify(arabicRuns(mixedSample)) === JSON.stringify(mixedRuns));
+  check('a joining mark is not counted as an Arabic letter', sourceMod.letters('ـكَ') === 1 && sourceMod.letters('ـ') === 0);
+  for (const text of ['ـكَ', 'ـكِ', 'نَـ', 'ـتُ', 'سَـ', 'ـهُ', 'ـيْنِ', 'لَنْ يَكْتُبـ', 'لَمْ يَكْتُبـ', 'ـًا', 'بَ تَ ثَ', 'بَا، بِي، بُو', 'إنّ', 'أنّ', 'الجملة'])
+    check(`the incomplete or unvowelled fragment ${text} is held back from synthesis`, !sourceMod.voiceable(text));
+  check('a fully marked complete word remains voiceable', sourceMod.voiceable('إِنَّ') && sourceMod.voiceable('مَكْتَب'));
+  const fixtureRoot = path.join(temp, 'voice-sources');
+  const fixtureJson = (file, value) => { const at = path.join(fixtureRoot, file); fs.mkdirSync(path.dirname(at), { recursive: true }); fs.writeFileSync(at, JSON.stringify(value)); };
+  fixtureJson('content/arabic-fusha/MyDay_Arabic_Fusha_Curriculum.json', { lexicon_seed: [], lessons: [], assets: [{ pairs: [{ a: 'قَلْب', b: 'كَلْب' }] }], assessments: [{ questions: [{ prompt: 'Read كِتَابٌ then إنّ.' }] }] });
+  fixtureJson('content/arabic-fusha/MyDay_Arabic_Assessment_Keys.json', { answer_keys: [{ expected_answer: 'Compare كِتَابٌ / قَلَمٌ.' }] });
+  fixtureJson('content/teaching/arabic-fusha.json', { lessons: { example: { explanation: 'A fragment ـكَ.', example: 'Read كِتَابٌ.', practice: 'Try قَلَمٌ / كِتَابٌ.', solution: 'Answer قَلَمٌ.' } } });
+  fixtureJson('content/teaching/arabic/word-families.json', { families: [{ pattern_en: 'Root ك-ت-ب; pattern مَـ; form مَكْتَب.', word_notes: { sample: 'Again كِتَابٌ.' }, also_in_examples: [{ form_ar: 'مَكْتَب', note_en: 'Study يَكْتُبُ.' }] }] });
+  const fixtureSources = sourceMod.voiceSources(pathToFileURL(fixtureRoot + path.sep));
+  const fixtureSource = id => fixtureSources.find(s => s.id === id);
+  check('teaching sources include practice and solution runs once, while excluding the unfinished affix', JSON.stringify(fixtureSource('teaching').texts) === JSON.stringify(['كِتَابٌ', 'قَلَمٌ']));
+  check('sound and family sources include complete forms and notes while excluding roots and prefixes', JSON.stringify(fixtureSource('sounds-families').texts) === JSON.stringify(['قَلْب', 'كَلْب', 'مَكْتَب', 'كِتَابٌ', 'يَكْتُبُ']));
+  check('lesson-check sources include prompts and expected answers without inventing missing vowel marks', JSON.stringify(fixtureSource('lesson-checks').texts) === JSON.stringify(['كِتَابٌ', 'قَلَمٌ']));
+  check('the same exact text can be reused by all three new sources', ['teaching', 'sounds-families', 'lesson-checks'].every(id => fixtureSource(id).texts.includes('كِتَابٌ')));
+  check('all three real round-three sources contain unique, complete, fully marked texts', ['teaching', 'sounds-families', 'lesson-checks'].every(id => src(id)?.round === 3 && src(id).texts.length > 0 && new Set(src(id).texts).size === src(id).texts.length && src(id).texts.every(sourceMod.voiceable)));
   const seed = new Map(course.lexicon_seed.map(w => [w.id, w]));
   check('the course has 48 starter words', seed.size === 48);
   const starterTexts = [...seed.values()].flatMap(w => [w.form_ar, w.example_ar]);
@@ -157,6 +184,7 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
   brokenAudio('bytes', (c, dir) => { const f = path.join(dir, 'clips', audit.clips[firstText].file); const b = fs.readFileSync(f); b[b.length - 1] ^= 1; fs.writeFileSync(f, b); }, "contents don't match its name", 'a clip with one byte changed');
   brokenAudio('stray', (c, dir) => { fs.writeFileSync(path.join(dir, 'clips', '0123456789abcdef.mp3'), 'x'); }, 'files no clip uses', 'a stray file among the clips');
   brokenAudio('unknown', c => { c.clips[firstText].check = 'maybe'; }, 'unknown check', 'a check that is not one of the known ones');
+  brokenAudio('spoken-words', c => { c.clips[firstText].spoken = 'كَلِمَة أُخْرَى.'; }, 'the spoken text changes more than its pause punctuation', 'a spoken form that changes the authored words');
   brokenAudio('short', (c, dir) => {
     const tiny = Buffer.alloc(1000, 7), name = require('crypto').createHash('sha256').update(tiny).digest('hex').slice(0, 16) + '.mp3';
     fs.rmSync(path.join(dir, 'clips', c.clips[firstText].file)); fs.writeFileSync(path.join(dir, 'clips', name), tiny); c.clips[firstText].file = name;

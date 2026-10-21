@@ -3,6 +3,7 @@ import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { ExternalLink } from '../parts';
 import { Mixed } from '../arabic/Ar';
+import { MixedVoiceLabel } from '../arabic/Listen';
 
 type Course = 'cybersecurity' | 'arabic-fusha';
 interface Source { title: string; kind: string; url: string; checkedOn: string; access: string }
@@ -14,10 +15,10 @@ const loaders: Record<Course, () => Promise<{ default: Companion }>> = {
 };
 
 // Text stays data: backticks become code; Arabic runs retain direction and language.
-function Prose({ text }: { text: string }) {
+function Prose({ text, voice }: { text: string; voice?: string }) {
   return <>{text.split(/(`[^`]+`)/g).map((part, i) => part.startsWith('`')
     ? <code key={i} dir="ltr" className="rounded bg-surface-2 px-1 break-words">{part.slice(1, -1)}</code>
-    : <Mixed key={i} text={part} />)}</>;
+    : <Mixed key={i} text={part} voice={voice ? `${voice}:${i}` : undefined} />)}</>;
 }
 
 // A key at the call site resets reveal state on lesson navigation. No progress is written by reading.
@@ -37,15 +38,17 @@ export function TeachingLesson({ course, lessonId }: { course: Course; lessonId:
       : <p>Loading the explanation and examples…</p>}
   </Card>;
   const solutionId = 'teaching-solution-' + lessonId.replaceAll('.', '-');
+  const voice = course === 'arabic-fusha' ? `${lessonId}:teaching` : undefined;
   return <div data-teaching={lessonId} className="min-w-0 break-words">
     <Card aria-label="Lesson reading">
       <h3>Read this first</h3>
       <p className="text-sm text-fg-2">Short session: read, try, then compare. Continue with the assigned material when you have time.</p>
-      <p className="leading-relaxed"><Prose text={lesson.explanation} /></p>
-      <h4>Worked example</h4><p className="leading-relaxed"><Prose text={lesson.example} /></p>
-      <h4>Try it</h4><p className="leading-relaxed"><Prose text={lesson.practice} /></p>
+      <p className="leading-relaxed"><Prose text={lesson.explanation} voice={voice && `${voice}:explanation`} /></p>
+      <h4>Worked example</h4><p className="leading-relaxed"><Prose text={lesson.example} voice={voice && `${voice}:example`} /></p>
+      <h4>Try it</h4><p className="leading-relaxed" data-teaching-practice=""><Prose text={lesson.practice} voice={revealed && voice ? `${voice}:practice` : undefined} /></p>
       <Button aria-expanded={revealed} aria-controls={solutionId} onClick={() => setRevealed(v => !v)}>{revealed ? 'Hide explained answer' : 'Reveal explained answer'}</Button>
-      {revealed && <div id={solutionId} data-teaching-solution="" className="mt-4 rounded-tile border border-outline p-4"><h4>Explained answer</h4><p className="leading-relaxed mb-0"><Prose text={lesson.solution} /></p></div>}
+      {revealed && <div id={solutionId} data-teaching-solution="" className="mt-4 rounded-tile border border-outline p-4"><h4>Explained answer</h4><p className="leading-relaxed mb-0"><Prose text={lesson.solution} voice={voice && `${voice}:solution`} /></p></div>}
+      {voice && <MixedVoiceLabel texts={[lesson.explanation, lesson.example, ...(revealed ? [lesson.practice, lesson.solution] : [])]} />}
     </Card>
     <Card aria-label="Assigned learning material"><h3>Read, watch and explore next</h3>
       <p className="text-sm text-fg-2">Start with the first assignment. A long lecture or chapter can span several sessions.</p>
