@@ -26,6 +26,8 @@ has been saved locally; a failed save leaves progress unchanged. The backup can 
 two-device reset/restore flow; CI passed 10 suites (852 checks). No full rerun was needed.
 The live-service check passed 39 checks on two isolated devices using one disposable account, including
 delete propagation and importing the downloaded backup. The account was restored to its original test data.
+After publishing, 37 smoke checks passed on two disposable accounts in isolated desktop/phone browsers;
+both learning-data copies stayed byte-identical.
 
 No database migration or server deployment is needed. Going back to 1.42.1 keeps the existing record shapes,
 but the older version drops the new default-subject setting, so it returns to Cybersecurity on upgrade.

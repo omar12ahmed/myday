@@ -49,7 +49,24 @@ Read this file before making any changes. If something here seems to conflict wi
   `live-before-X.Y.Z` on `main`.
 - Bump `app/package.json`'s version for each release. The release identifier (version, commit, build date) is at the
   bottom of every screen.
-- **Live: 1.42.1** (21 Oct 2026, tag `v1.42.1` on source `a292886`; main `57974ff`): one Cybersecurity
+- **Live: 1.43.0** (22 Oct 2026, tag `v1.43.0` on source `d0e14cf`; main `59e277a`): Guided Study
+  offers the next, resumable or revisit lesson on Today, with an explicit default subject. General check-ins
+  continue their own course; Cybersecurity imports/starts in one saved step. A reset needs a fresh checked full
+  backup, rechecks incoming changes and reports success only after saving. It removes check-ins, Arabic
+  answers/attempts, Cybersecurity evidence and revision history, while keeping outline, concept questions,
+  separate notes and other sections. Recorded completion stays separate from mastery.
+  Review fixes include obsolete/optional draft handling, pinned-course jumps, Arabic next steps and skipped
+  theme-animation rejections. Build/lint and **15 targeted suites, 1,394/0** passed; GitHub CI **10 suites, 852/0**.
+  A separate live-service two-device reset/restore check passed **39/0**, including importing the downloaded
+  backup; the disposable account was returned to its original test data. Published smoke check **37/0** on two
+  disposable accounts in isolated desktop/phone browsers: version/source, Today options, settings/reset gate,
+  Arabic/Cybersecurity, phone fit and 44px controls; both learning-data copies byte-identical. Pages deployment
+  succeeded. Profiles and task servers removed; completed release checklist removed. No full run, migration,
+  server deployment or real learner reset. Review/test/docs/release-audit agents helped; findings were reviewed.
+  Backups were already confirmed on every device. Rollback to 1.42.1 drops the new default-subject preference;
+  code rollback cannot undo reset history, so import the checked pre-reset backup. `live-before-1.43.0` marks
+  the previous published main. The 643 approved audio files are unchanged.
+- **Previous release: 1.42.1** (21 Oct 2026, tag `v1.42.1` on source `a292886`; main `57974ff`): one Cybersecurity
   entry on Study home, opening the current 27-module/146-lesson guided course. An older topic named Cybersecurity
   is accessible through "Your saved courses" inside that card, with its task completion and course count,
   including set-aside courses. Other topics, routes, focus, sessions and revision stay unchanged; no data is deleted.
@@ -63,17 +80,7 @@ Read this file before making any changes. If something here seems to conflict wi
   Profiles and task servers removed; feature worktree cleaned up. Review, test-writing, docs and runner agents
   helped; main reviewed their work. Backups were already confirmed on every device in this session.
   No saved-data, server or database change; going back to 1.42.0 is safe. `live-before-1.42.1` marks previous main.
-- **1.43.0 release prepared (22 Oct 2026):** Guided Study from PR #2 adds Today next/resume/revisit
-  lessons, an explicit default subject, own-course check-in progression, atomic Cybersecurity start and a fresh
-  checked-backup Study reset. Completion stays separate from mastery. Review fixed stale backups, failed-save
-  success, optional/obsolete drafts, course jumps and a skipped theme-animation rejection.
-  Build/lint, 15 targeted suites (1,394/0), GitHub CI (10 suites,852/0), and a separate live-service two-device
-  reset/restore check (39/0) pass. Disposable data only; the account was restored to its original state afterwards.
-  No full run, migration or server deployment. Release audit/docs agents helped; their findings were reviewed.
-  Backups were already confirmed on every real device. Publishing and its final smoke check are next; live
-  remains 1.42.1 until then. Rollback drops the new default-subject preference, and cannot recover reset history:
-  import the checked pre-reset backup. See `mac-steps/feature-study-guided-sequence-20261022.md` until completed.
-- **Previous release: 1.42.0** (21 Oct 2026, tag `v1.42.0` on source `0d7cfdc`; main `e083037`): Arabic audio
+- **Earlier release: 1.42.0** (21 Oct 2026, tag `v1.42.0` on source `0d7cfdc`; main `e083037`): Arabic audio
   round three (b). Before it: 1.41.0, tagged `live-before-1.42.0` on main. On the server: `ai-plan` version 21,
   Ask instructions `myday-ask-v16`, brain dump instructions `myday-tasks-v2`; no server deployment or migration.
 - **1.42.0, audio round three (b):** teaching explanations/examples, sound pairs and family notes/forms have
