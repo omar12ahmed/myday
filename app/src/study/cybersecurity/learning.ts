@@ -97,23 +97,29 @@ export function attemptsFor(data: MyDayData, activityId: string) {
 // The package's mastery policy is proposed. Self-study results cannot silently satisfy its verified gates.
 // People may explore any lesson by choice; the workspace always names the exact unmet prerequisites.
 export function prerequisiteGaps(lessonId: string) { return lessons.get(lessonId)?.prerequisites.all ?? []; }
+// Preserve the curriculum's order, including optional lessons a learner may explicitly explore.
+export function selectedPathLessons(pathId: string) {
+  return selectedPath(pathId).required_module_ids.flatMap(id => modules.get(id)!.lesson_ids)
+    .map(id => lessons.get(id)!);
+}
 export function nextLesson(data: MyDayData) {
-  const path = selectedPath(data.cybersecurity.pathId);
-  const ordered = path.required_module_ids.flatMap(id => modules.get(id)!.lesson_ids)
-    .map(id => lessons.get(id)!).filter(l => !l.optional);
+  const ordered = selectedPathLessons(data.cybersecurity.pathId);
+  const required = ordered.filter(l => !l.optional);
+  const ix = stIndex(data.study);
+  // A submitted activity is evidence of that attempt, not a whole lesson's completion.
+  const complete = (l: typeof ordered[number]) => ix.task.get(curriculumTaskId(l.id))?.node.done === true;
+  const allComplete = required.length > 0 && required.every(complete);
   // Resume a saved activity before suggesting new work.
-  const resume = data.cybersecurity.attempts.filter(a => !a.submittedAt && a.curriculumVersion === CYBER_VERSION)
+  const resume = data.cybersecurity.attempts.filter(a => {
+    const activity = activities.get(a.activityId);
+    return activity && !a.submittedAt && a.curriculumVersion === CYBER_VERSION
+      && a.rubricVersion === (activity.version ?? CYBER_VERSION);
+  })
     .flatMap(a => ordered.filter(l => [l.practical_task_id, l.knowledge_check_id, l.mini_challenge_id].includes(a.activityId) ||
       practiceById.get(a.activityId)?.lessonIds.includes(l.id)))[0];
-  if (resume) return { lesson: resume, reason: 'Resume your saved attempt', code: 'user_choice' as const };
+  if (resume) return { lesson: resume, reason: 'Resume your saved attempt', code: 'user_choice' as const, allComplete };
   // Completion records a learner's choice to finish the lesson, not verified mastery.
-  const ix = stIndex(data.study);
-  const lesson = ordered.find(l => {
-    const task = ix.task.get(curriculumTaskId(l.id))?.node;
-    if (task?.done) return false;
-    return !data.cybersecurity.attempts.some(a => a.activityId === l.practical_task_id && a.submittedAt)
-      || task?.done === false;
-  }) ?? ordered[0];
-  return { lesson, reason: 'Next in your curriculum order; check prerequisites before advanced work',
-    code: 'ready_next_lesson' as const };
+  const lesson = required.find(l => !complete(l)) ?? required[0];
+  return { lesson, reason: allComplete ? 'Required lessons marked complete — choose a lesson to revisit'
+    : 'Next in your course; check prerequisites before advanced work', code: 'ready_next_lesson' as const, allComplete };
 }

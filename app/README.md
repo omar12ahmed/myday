@@ -1,5 +1,25 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**Guided Study — PR #2 candidate, not released.** The live release remains 1.42.1.
+Today offers a direct next lesson for Cybersecurity or Arabic, plus unfinished saved courses when available.
+An active Study session takes priority. **Choose another subject** and the **Default learning subject** setting
+save your preference; recent activity does not silently switch it. Recommendations resume current saved attempts
+or follow the selected curriculum's required lesson order, using your recorded completion. Completing an activity
+does not by itself complete a Cybersecurity lesson, and finishing practice does not establish verified mastery.
+After finishing a lesson, the next-step link offers the next lesson, a saved session, or a revisit when the path is complete.
+A general-course check-in continues that session's course first; if it is finished, the fallback names the actual course.
+
+The candidate also adds **Reset Study progress** in Study settings. It removes task completion marks, Study
+sessions and their check-ins, Arabic answers and practice attempts, Cybersecurity notebook attempts and evidence,
+and revision history; concept and revision-card schedules start afresh. The course outline, concept questions,
+revision cards, separate notes, selected paths and other MyDay sections remain. A reset can synchronise to other
+devices. First download a complete MyDay backup, save and check the file, then explicitly confirm that check in
+MyDay. Requesting a download alone does not enable reset. Any saved-data change, including an incoming sync
+change before or during confirmation, requires a fresh checked backup. Success is shown only after the reset
+has been saved locally; a failed save leaves progress unchanged. The backup can restore the removed work through
+**Import my data**. The local stand-in suite passes 32 checks, including deletion propagation and restoring the
+downloaded file on two devices. This candidate has not been verified against live Supabase and remains a draft.
+
 Explore (local implementation): projects now offer **Explore this idea**, opening a dedicated narrative at
 `#projects/p/<id>/explore`. The curated Hargeisa Marketplace example has seven scenes, with a typed and validated
 content contract, optional GSAP motion, and an explicit action that creates a normal project task. Other projects

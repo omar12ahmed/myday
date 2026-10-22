@@ -1,5 +1,5 @@
-// Remove learner progress only. Curriculum contents, paths, explanations, authored notes and
-// revision-card questions remain; their schedules begin again. Sync can propagate removals.
+// Clear learning history, including check-ins and attempt evidence. Course contents, paths,
+// concept questions and separate notes remain; review schedules begin again. Sync propagates removals.
 import type { MyDayData } from '../data/types';
 
 const freshReview = () => ({ reps: 0, interval: 0, lapses: 0, due: null });

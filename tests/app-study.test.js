@@ -20,6 +20,7 @@ const editStorage = fn => ev(`(() => { const s = JSON.parse(localStorage.getItem
 const go = async (hash, y = 2026, m = 11, d = 2, h = 9, mi = 0, url = APP) => { T.setUrl(url + '#' + hash); await openAt(y, m, d, h, mi); };
 const nav = async hash => { await ev(`location.hash = ${JSON.stringify(hash)}`); await sleep(250); };
 const texts = sel => ev(`[...document.querySelectorAll(${JSON.stringify(sel)})].map(e => e.textContent.trim())`);
+const until = async (predicate, label, ms = 5000) => { for (let t = 0; t < ms; t += 100) { if (await predicate()) return; await sleep(100); } throw new Error('Timed out waiting for ' + label); };
 const flat = s => String(s).replace(/\s+/g, ''); // compared without spacing (the two apps lay out text differently)
 // React only notices a value set through the browser's own setter, followed by the events typing makes.
 const setVal = (sel, v, evt = 'change') => ev(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); if (!el) throw new Error('missing ${sel.replace(/'/g, '')}');
@@ -258,8 +259,9 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   await click('[data-action=s-finish]'); await sleep(250);
   a = (await SD()).sessions[0];
   check('Finish saves the time (26 min, not counting the pause) and opens the check-in', a.status === 'done' && Math.abs(a.activeMs - 26 * 60000) < 5000 && a.endedAt === '2026-11-02T09:55' && (await SD()).activeId === null && (await ev('location.hash')) === '#study/checkin/' + a.id, a);
-  for (let n = 0; n < 18 && !(await exists('[data-action=s-ci-task]')); n++) await sleep(100);
+  await until(() => exists('[data-action=s-ci-task]'), 'the optional task check-in');
   check('the check-in says it is optional', (await text('#app')).includes('Everything here is optional'));
+  check('before marking the task complete, the check-in does not offer a next task', !(await exists('[data-s="study-up-next"]')));
   check('concepts linked to the task are offered to pick', eq(await texts('.st-pick'), ['DNS records']));
   await click('[data-action=s-ci-concept][data-id=cpR]'); await sleep(100);
   await ev(`document.getElementById('ciNew').value = 'Resolvers'`); await click('[data-action=s-ci-add]'); await sleep(150);
@@ -276,6 +278,13 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   const dnsTask = allTasks(st2).find(t => t.id === 'tkD');
   check('task completion, clarity and the session are kept as separate records', dnsTask.done && dnsTask.doneOn === '2026-11-02' && st2.sessions[0].taskDone === true && st2.sessions[0].checkin.clarity === 'partly' && st2.sessions[0].checkin.takeaway === 'DNS maps names to addresses' && st2.sessions[0].checkin.note === 'Networking/DNS');
   check('the chosen answers show as pressed', (await text('[data-action=s-ci-clarity][aria-pressed=true]')) === 'Partly understand' && (await text('[data-action=s-ci-task][aria-pressed=true]')) === "Yes, it's complete");
+  await until(() => exists('[data-s="study-up-next"] a[href="#study/task/tkH"]'), 'the next unfinished task after completing DNS');
+  check('marking the task complete offers HTTP next, without claiming mastery or starting another session', (await text('[data-s="study-up-next"]')).includes('Up next: HTTP in detail') && !/master|verified|score/i.test(await text('[data-s="study-up-next"]')) && (await SD()).sessions.length === 1, await text('[data-s="study-up-next"]'));
+  await click('[data-s="study-up-next"] a');
+  await until(() => exists('#tkMin'), 'the next task details');
+  check('the check-in link opens the exact next unfinished task', (await ev('location.hash')) === '#study/task/tkH' && (await text('#app')).includes('HTTP in detail') && (await SD()).sessions.length === 1, await ev('location.hash'));
+  await nav('study/checkin/' + a.id);
+  await until(() => exists('[data-action=s-tick-today]'), 'the original check-in');
   check('the matching learning task on today\'s plan is offered, not ticked automatically', (await exists('[data-action=s-tick-today]')) && !(await D()).days['2026-11-02'].tasks[0].done);
   await click('[data-action=s-tick-today]'); await sleep(150);
   check('…and ticked when you ask, linked to this session', (await D()).days['2026-11-02'].tasks[0].done && (await SD()).sessions[0].todayUid === 'u1' && (await text('#app')).includes("is ticked on today's plan"));
@@ -311,6 +320,24 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   check('…and Discard removes it', st2.sessions.length === 2 && st2.activeId === null && (await ev('location.hash')) === '#study');
   await nav('today'); await sleep(150);
   check('…so it does not count: 3 Nov is not a learning day (still 1 in the last 7)', (await text('#streak')).includes('Learning days in the last 7: 1'));
+
+  console.log('\n[43b] A check-in continues its own course before a different pinned course');
+  const pinnedCourse = { id: 'coPin', title: 'Python practice', url: '', minutes: 20, listId: null, archived: false, modules: [{ id: 'mdPin', title: 'Basics', sections: [{ id: 'scPin', title: 'First steps', tasks: [task('tkPin', 'Trace a Python loop', 20)] }] }] };
+  await editStorage(`s => { s.study.stages[0].courses.push(${JSON.stringify(pinnedCourse)}); s.study.focusCourseId = 'coPin';
+    const b1 = s.study.stages[0].courses.find(c => c.id === 'coP').modules[0].sections[0].tasks.find(t => t.id === 'tkD'); b1.done = false; b1.doneOn = null;
+    s.study.sessions.find(x => x.id === ${JSON.stringify(a.id)}).taskDone = null; }`);
+  await go('study/checkin/' + a.id);
+  await until(() => exists('[data-action=s-ci-task][data-v="1"]'), 'the finished session in the unpinned course');
+  await click('[data-action=s-ci-task][data-v="1"]');
+  await until(() => exists('[data-s="study-up-next"] a[href="#study/task/tkH"]'), 'the next task in the session’s own course');
+  check('completing a task continues that session’s course before a different pinned course, naming the actual course', (await text('[data-s="study-up-next"]')).includes('HTTP in detail') && (await text('[data-s="study-up-next"]')).includes('TryHackMe: Pre-Security path') && !(await text('[data-s="study-up-next"]')).includes('Python practice') && (await SD()).focusCourseId === 'coPin' && allTasks(await SD()).find(t => t.id === 'tkD').done, [await text('[data-s="study-up-next"]'), (await SD()).focusCourseId]);
+  await editStorage(`s => { const b2 = s.study.stages[0].courses.find(c => c.id === 'coP').modules[0].sections[0].tasks.find(t => t.id === 'tkH'); b2.done = true; b2.doneOn = '2026-11-02'; }`);
+  await go('study/checkin/' + a.id);
+  await until(() => exists('[data-s="study-up-next"] a[href="#study/task/tkPin"]'), 'the eligible fallback when the session’s course is exhausted');
+  check('when that course is exhausted, the fallback clearly names the pinned course without calling it the next lesson in the completed course', (await text('[data-s="study-up-next"]')).includes('Trace a Python loop') && (await text('[data-s="study-up-next"]')).includes('Python practice') && !(await text('[data-s="study-up-next"]')).includes('Next in your course') && (await SD()).focusCourseId === 'coPin', await text('[data-s="study-up-next"]'));
+  await click('[data-s="study-up-next"] a');
+  await until(() => exists('#tkMin'), 'the fallback course’s task');
+  check('the fallback link opens the task in the named pinned course without creating a session', (await ev('location.hash')) === '#study/task/tkPin' && (await text('#app')).includes('Trace a Python loop') && (await SD()).sessions.length === 2, [await ev('location.hash'), (await SD()).sessions.length]);
 
   if (STOP < 44) return finish();
   // ------------------------------------------------------------------
@@ -459,9 +486,33 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   check('nothing was added to today\'s task list', !(await D()).days['2026-11-02']);
   await editStorage(`s => { s.study.concepts = []; s.study.activeId = null; s.study.sessions = s.study.sessions.filter(x => x.status === 'done'); }`);
   await go('today', 2026, 11, 2, 9);
-  await sleep(900); // the guided curricula are loaded on demand, not in Today's initial bundle
+  await until(() => exists('#slot-study [data-s="study-next-lessons"] [data-subject="arabic"] a[data-action="continue-learning"]'), 'Today’s on-demand lesson choices');
   check('…and Today offers an ordered next lesson even without a session or revision due',
     await exists('#slot-study [data-s="study-next-lessons"]') && await exists('#slot-study [data-subject="cybersecurity"] a[data-action="continue-learning"]') && await exists('#slot-study [data-subject="arabic"] a[data-action="continue-learning"]'));
+  const primaryLesson = () => ev(`(() => { const e = document.querySelector('[data-s="study-next-lessons"] > [data-subject]'); return e && { subject: e.dataset.subject, href: e.querySelector('[data-action="continue-learning"]').getAttribute('href'), text: e.textContent }; })()`);
+  check('Today initially puts Cybersecurity first and keeps the alternative subjects in a disclosure', (await primaryLesson()).subject === 'cybersecurity' && !(await ev(`document.querySelector('[data-s="study-other-subjects"]').open`)), await primaryLesson());
+  await click('[data-s="study-other-subjects"] summary');
+  const arabicHref = await ev(`document.querySelector('[data-subject="arabic"] [data-action="continue-learning"]').getAttribute('href')`);
+  await click('[data-subject="arabic"] [data-action="continue-learning"]');
+  await until(async () => (await ev('location.hash')) === arabicHref, 'the Arabic lesson chosen on Today');
+  check('choosing Arabic from Today saves that explicit subject and opens its lesson', (await SD()).settings.primarySubject === 'arabic' && (await ev('location.hash')) === arabicHref, [(await SD()).settings.primarySubject, await ev('location.hash')]);
+  await go('today', 2026, 11, 2, 9);
+  await until(async () => (await primaryLesson())?.subject === 'arabic', 'Arabic as Today’s primary choice after reload');
+  check('after a reload, Today keeps Arabic first rather than reverting to Cybersecurity', (await primaryLesson()).href === arabicHref && !(await ev(`document.querySelector('[data-s="study-other-subjects"]').open`)), await primaryLesson());
+  const pinnedRoadmap = JSON.parse(JSON.stringify(roadmap));
+  pinnedRoadmap.stages[0].courses.push({ id: 'coZ', title: 'JavaScript practice', url: '', minutes: 20, listId: null, archived: false, modules: [{ id: 'mdZ', title: 'Basics', sections: [{ id: 'scZ', title: 'First steps', tasks: [task('tkZ', 'Trace a loop', 20)] }] }] });
+  await editStorage(`s => { s.study.stages = ${JSON.stringify(pinnedRoadmap.stages)}; s.study.focusCourseId = 'coZ'; s.study.settings.primarySubject = 'roadmap'; }`);
+  await go('today', 2026, 11, 2, 9);
+  await until(async () => (await primaryLesson())?.subject === 'roadmap', 'the pinned general course on Today');
+  check('a preferred general course uses the pinned eligible course rather than the first course', (await primaryLesson()).href === '#study/task/tkZ' && (await primaryLesson()).text.includes('JavaScript practice'), await primaryLesson());
+  await editStorage(`s => { s.study.stages[0].courses.find(c => c.id === 'coZ').archived = true; }`);
+  await go('today', 2026, 11, 2, 9);
+  await until(async () => (await primaryLesson())?.subject === 'roadmap', 'the eligible fallback course on Today');
+  check('an archived pin falls back to the first eligible general course', (await primaryLesson()).href === '#study/task/tkD' && !(await primaryLesson()).text.includes('Trace a loop'), await primaryLesson());
+  await editStorage(`s => { for (const t of s.study.stages[0].courses[0].modules[0].sections[0].tasks) { t.done = true; t.doneOn = '2026-11-02'; } }`);
+  await go('today', 2026, 11, 2, 9);
+  await until(async () => (await primaryLesson())?.subject === 'cybersecurity', 'a subject fallback with no eligible general tasks');
+  check('when the preferred general course has no unfinished tasks, Today offers an eligible subject without an empty course choice', !(await exists('[data-s="study-next-lessons"] [data-subject="roadmap"]')) && (await SD()).settings.primarySubject === 'roadmap', await primaryLesson());
   // Export / import round trip with sessions, concepts and reviews — and every other section
   await editStorage(`s => { s.study = ${JSON.stringify(pr)}; s.health = { workout: { templates: [{ id: 't1', name: 'Legs', minutes: 45 }] }, food: { shopping: [{ id: 'sh1', text: 'Oats', checked: false }] } }; s.futureSection = { kept: true }; }`);
   await go('today', 2026, 11, 2, 9);
@@ -538,6 +589,19 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
     await click('[data-action=s-rev-show]'); await sleep(120);
     const okRev = (await contrastOf('.st-prompt')) >= 4.5 && (await contrastOf('.st-answer p')) >= 4.5 && (await contrastOf('[data-action=s-rev-rate][data-v=good]')) >= 4.5 && (await contrastOf('[data-action=s-rev-rate][data-v=again]')) >= 4.5;
     check(`theme "${theme}": revision question, answer and rating buttons readable`, okRev, [await contrastOf('.st-prompt'), await contrastOf('.st-answer p'), await contrastOf('[data-action=s-rev-rate][data-v=good]')]);
+  }
+  await T.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });
+  await editStorage(`s => { s.settings.theme = 'light'; s.settings.motion = 'auto'; }`);
+  await go('study', 2026, 11, 2, 9);
+  await ev(`window.themeNativeTransition = document.startViewTransition; document.startViewTransition = function(...args) { const transition = window.themeNativeTransition.apply(this, args); window.skippedThemeTransition = transition; transition.skipTransition(); return transition; };`);
+  try {
+    await click('#themeBtn');
+    const finished = await ev(`window.skippedThemeTransition.finished.then(() => true)`);
+    await until(async () => (await ev('document.documentElement.dataset.theme')) === 'dark' && (await D()).settings.theme === 'dark', 'the theme update after a skipped native transition');
+    check('skipping the native theme animation still finishes the change and saves the displayed theme without an uncaught rejection', finished === true && await ev(`!!window.skippedThemeTransition && matchMedia('(prefers-reduced-motion: no-preference)').matches`) && (await D()).settings.motion === 'auto' && (await ev('document.documentElement.dataset.theme')) === 'dark', [finished, (await D()).settings.theme, await ev('document.documentElement.dataset.theme')]);
+  } finally {
+    await ev('document.startViewTransition = window.themeNativeTransition; delete window.themeNativeTransition; delete window.skippedThemeTransition');
+    await T.send('Emulation.setEmulatedMedia', { features: [] });
   }
 
   // ------------------------------------------------------------------

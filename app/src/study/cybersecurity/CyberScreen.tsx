@@ -3,13 +3,14 @@ import { BookOpen, FlaskConical, NotebookPen, ShieldCheck } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { Field, Select, TextInput } from '../../components/Field';
-import { getSnapshot, update } from '../../data/storage';
+import { update, updateSaved } from '../../data/storage';
 import type { MyDayData } from '../../data/types';
 import { toast } from '../../data/toast';
 import { curriculumTaskId, lessonHref } from '../../data/cybersecurity/types';
 import { stIndex } from '../../data/study/roadmap';
-import { activeStudy } from '../../data/study/sessions';
+import { activeStudy, startStudySession } from '../../data/study/sessions';
 import { startLearning } from '../actions';
+import { go } from '../route';
 import { BackLink, Eyebrow, ExternalLink, InlineLink } from '../parts';
 import { Lines, LinkButton } from './parts';
 import { activities, curriculum, environments, lessons, modules, resources, selectedPath, skills, type Lesson } from './catalogue';
@@ -126,10 +127,17 @@ function LessonView({ data, lesson: l }: { data: MyDayData; lesson: Lesson }) {
         <p className="text-sm text-fg-2 m-0">Start from this lesson. MyDay will add your selected curriculum path to the roadmap without changing existing work.</p>
         <Field label="Time for this session" htmlFor="cyberMinutes"><Select id="cyberMinutes" value={minutes} onChange={e => setMinutes(Number(e.target.value))}>{[15, 30, 60, 90].map(m => <option key={m} value={m}>{m} minutes</option>)}</Select></Field>
         <Button data-action="cyber-start-direct" onClick={() => {
-          update(d => { if (!importPath(d, d.cybersecurity.pathId)) return false; });
-          const entry = stIndex(getSnapshot().data.study).task.get(curriculumTaskId(l.id));
-          if (entry) startLearning(entry.course.id, entry.node.id, minutes, minutes < l.estimated_duration_minutes.standard);
-          else toast('Choose this curriculum path on the learning map to start its timer.');
+          let resume = false;
+          const saved = updateSaved(d => {
+            if (activeStudy(d.study)) { resume = true; return false; }
+            if (!selectedPath(d.cybersecurity.pathId).required_module_ids.includes(l.module_id)) return false;
+            importPath(d, d.cybersecurity.pathId);
+            const entry = stIndex(d.study).task.get(curriculumTaskId(l.id));
+            if (!entry || !startStudySession(d.study, entry.course.id, entry.node.id, minutes, minutes < l.estimated_duration_minutes.standard)) return false;
+          });
+          if (saved === 'saved' || resume) go('study/session');
+          else if (saved === 'unchanged') toast('Choose this curriculum path on the learning map to start its timer.');
+          else toast("Couldn't save the lesson. Your existing work is unchanged.");
         }}>Start this lesson</Button>
       </div> : <p className="text-sm text-fg-2">You can explore the activities below now. Add this lesson’s path on the learning map to use the Study timer.</p>}
     </Card>

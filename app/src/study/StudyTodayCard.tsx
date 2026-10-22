@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { LearningOption } from './nextLearning';
 import { Card } from '../components/Card';
-import { update } from '../data/storage';
+import { updateSaved } from '../data/storage';
 import { Button } from '../components/Button';
 import { ROUND_SIZE } from '../data/study/common';
 import { dueIds } from '../data/study/queue';
@@ -15,12 +15,13 @@ import { Meta, Row, TextLink } from './parts';
 // The full curriculum is loaded on demand; none of this adds tasks to Today's plan.
 export function StudyTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
   const cur = activeStudy(data.study), due = dueIds(data, k).length, today = reviewedOn(data.study, k);
-  const [options, setOptions] = useState<LearningOption[]>([]);
+  const [loaded, setLoaded] = useState<{ data: MyDayData; options: LearningOption[] } | null>(null);
+  const options = loaded?.data === data ? loaded.options : [];
   // Load the large Arabic/Cybersecurity catalogues away from the initial Today bundle.
   useEffect(() => {
     let live = true;
-    import('./nextLearning').then(({ learningOptions }) => { if (live) setOptions(learningOptions(data)); })
-      .catch(() => { if (live) setOptions([]); });
+    import('./nextLearning').then(({ learningOptions }) => { if (live) setLoaded({ data, options: learningOptions(data) }); })
+      .catch(() => { if (live) setLoaded(null); });
     return () => { live = false; };
   }, [data]);
   if (!cur && !due && !options.length) return null;
@@ -63,7 +64,7 @@ function LessonOption({ option, primary = false }: { option: LearningOption; pri
     <p className="text-xs text-fg-3 m-0">{option.label} · {option.minutes} min</p>
     <p className="font-semibold my-1">{option.title}</p>
     <p className="text-sm text-fg-2 mt-0 mb-2">{option.detail}</p>
-    <a href={option.href} onClick={() => update(d => { d.study.settings.primarySubject = option.subject; })} className={`inline-flex items-center justify-center min-h-11 rounded-btn px-4 font-semibold no-underline ${primary ? 'bg-primary text-on-primary' : 'bg-surface-2 text-primary border border-outline'}`} data-action="continue-learning">
+    <a href={option.href} onClick={() => updateSaved(d => { d.study.settings.primarySubject = option.subject; })} className={`inline-flex items-center justify-center min-h-11 rounded-btn px-4 font-semibold no-underline ${primary ? 'bg-primary text-on-primary' : 'bg-surface-2 text-primary border border-outline'}`} data-action="continue-learning">
       {option.resume ? 'Resume lesson' : option.allComplete ? 'Revisit lesson' : 'Continue learning'}
     </a>
   </div>;

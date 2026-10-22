@@ -513,8 +513,11 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await phone.returnToApp();
   check('the primary subject syncs to another device', await phone.until(`JSON.parse(localStorage.getItem('myday.data.v4')).study.settings.primarySubject === 'arabic'`));
   await mac.click('[data-action=study-backup]');
+  await mac.until(`document.querySelector('[data-action=study-backup-verified]')`);
+  check('requesting a backup alone leaves reset disabled', await mac.ev(`document.querySelector('[data-action=study-reset]').disabled`));
+  await mac.click('[data-action=study-backup-verified]');
   await mac.until(`document.querySelector('[data-action=study-reset]:not(:disabled)')`);
-  check('reset is gated behind requesting a full MyDay backup', await mac.exists('[data-action=study-reset]:not(:disabled)'));
+  check('reset is gated behind checking the requested full MyDay backup', await mac.exists('[data-action=study-reset]:not(:disabled)'));
   await mac.click('[data-action=study-reset]');
   await mac.until(`document.querySelector('dialog[open]')`);
   check('reset demands explicit destructive confirmation', /Reset all Study progress/.test(await mac.text('dialog[open]')));

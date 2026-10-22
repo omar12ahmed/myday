@@ -3,12 +3,14 @@ name: Verify guided Study
 on:
   pull_request:
     branches: [react-rebuild]
-  push:
-    branches: [feature/study-guided-sequence-20261022]
   workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: guided-study-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-and-rules:
@@ -29,6 +31,9 @@ jobs:
       - name: Typecheck and build
         run: npm run build
         working-directory: app
+      - name: Lint
+        run: npm run lint
+        working-directory: app
       - name: Test guided study progression and reset
         run: node tests/study-guided-rules.test.js
       - name: Test existing Study learning rules
@@ -41,4 +46,4 @@ jobs:
         run: |
           CHROME="$(command -v google-chrome || command -v chromium || true)"
           if [ -z "$CHROME" ]; then echo "No Chrome/Chromium executable"; exit 1; fi
-          CHROME="$CHROME" bash tests/run.sh app-study app-arabic app-cybersecurity app-sync sync-records
+          CHROME="$CHROME" bash tests/run.sh app-study app-arabic app-cybersecurity app-study-reset app-sync sync-records
