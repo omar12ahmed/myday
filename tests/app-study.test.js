@@ -551,7 +551,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   mz.sessions.push({ id: 's1', date: '2026-10-29' }, { id: 'sBad', date: 'yesterday' }, sess('a1', '2026-11-02', 5, null, { status: 'active', runningSince: null }), sess('a2', '2026-11-02', 6, null, { status: 'active', runningSince: null }));
   mz.activeId = 'a2';
   mz.reviews.push({ id: 'rBad', conceptId: 'cpX', date: '2026-11-01', rating: 'excellent' }, { id: 'rNo', date: '2026-11-01', rating: 'good' });
-  mz.focusCourseId = 'gone'; mz.settings = { vault: 'V'.repeat(200) }; mz.unknownStudyField = { kept: '?' };
+  mz.focusCourseId = 'gone'; mz.settings = { vault: 'V'.repeat(200), primarySubject: 'arabic' }; mz.unknownStudyField = { kept: '?' };
   const seedIds = new Set(JSON.stringify(mz).match(/"id":"[^"]*"/g).map(x => x.slice(6, -1)));
   const maskNew = o => JSON.stringify(o, (k, v) => (k === 'id' && typeof v === 'string' && !seedIds.has(v) ? 'NEW' : v));
   async function seedAndSave(url) {
@@ -563,7 +563,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   }
   const liveSt = await seedAndSave('index.html'), newSt = await seedAndSave(APP);
   check('Study is saved exactly as the current MyDay saves it (same records kept, same bad ones dropped)', maskNew(liveSt) === maskNew(newSt), [maskNew(liveSt).slice(0, 300), maskNew(newSt).slice(0, 300)]);
-  check('Classic MyDay preserves the selected primary Study subject when saving', liveSt.settings.primarySubject === 'cybersecurity' && newSt.settings.primarySubject === 'cybersecurity');
+  check('Classic MyDay preserves the selected primary Study subject when saving', liveSt.settings.primarySubject === 'arabic' && newSt.settings.primarySubject === 'arabic');
   T.setUrl('index.html#study/progress'); await openAt(2026, 11, 2, 12);
   // 28 Oct, 30 Oct, 1 Nov (sessions), 31 Oct (a Today tick) and 2 Nov (the extra in-progress session,
   // which both apps finish when loading, as only one can be in progress).
