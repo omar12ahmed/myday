@@ -1,6 +1,8 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
-**Guided Study — PR #2 candidate, not released.** The live release remains 1.42.1.
+<a id="guided-study"></a>
+
+**Guided Study (1.43.0 · 22 October 2026).**
 Today offers a direct next lesson for Cybersecurity or Arabic, plus unfinished saved courses when available.
 An active Study session takes priority. **Choose another subject** and the **Default learning subject** setting
 save your preference; recent activity does not silently switch it. Recommendations resume current saved attempts
@@ -9,7 +11,10 @@ does not by itself complete a Cybersecurity lesson, and finishing practice does 
 After finishing a lesson, the next-step link offers the next lesson, a saved session, or a revisit when the path is complete.
 A general-course check-in continues that session's course first; if it is finished, the fallback names the actual course.
 
-The candidate also adds **Reset Study progress** in Study settings. It removes task completion marks, Study
+A new Cybersecurity learner can choose **Start this lesson** without first importing the path manually. The selected
+path and its study session are saved together; a failed save adds neither and leaves existing work unchanged.
+
+**Reset Study progress** in Study settings removes task completion marks, Study
 sessions and their check-ins, Arabic answers and practice attempts, Cybersecurity notebook attempts and evidence,
 and revision history; concept and revision-card schedules start afresh. The course outline, concept questions,
 revision cards, separate notes, selected paths and other MyDay sections remain. A reset can synchronise to other
@@ -17,8 +22,14 @@ devices. First download a complete MyDay backup, save and check the file, then e
 MyDay. Requesting a download alone does not enable reset. Any saved-data change, including an incoming sync
 change before or during confirmation, requires a fresh checked backup. Success is shown only after the reset
 has been saved locally; a failed save leaves progress unchanged. The backup can restore the removed work through
-**Import my data**. The local stand-in suite passes 32 checks, including deletion propagation and restoring the
-downloaded file on two devices. This candidate has not been verified against live Supabase and remains a draft.
+**Import my data**. Local targeted checks passed across 15 suites (1,394 checks), including the disposable
+two-device reset/restore flow; CI passed 10 suites (852 checks). No full rerun was needed.
+The live-service check passed 39 checks on two isolated devices using one disposable account, including
+delete propagation and importing the downloaded backup. The account was restored to its original test data.
+
+No database migration or server deployment is needed. Going back to 1.42.1 keeps the existing record shapes,
+but the older version drops the new default-subject setting, so it returns to Cybersecurity on upgrade.
+Rolling back the code cannot undo a reset: use **Import my data** with the checked pre-reset backup to recover the work.
 
 Explore (local implementation): projects now offer **Explore this idea**, opening a dedicated narrative at
 `#projects/p/<id>/explore`. The curated Hargeisa Marketplace example has seven scenes, with a typed and validated
@@ -1327,3 +1338,11 @@ older app still gets version 1. Evaluated live on GLM-5.3-Flash with every reply
     on it shows task completion and course count, including courses set aside, and opens your original Cybersecurity
     topic page. Your topics, courses, progress, sessions and revision are unchanged.
     No saved-data, server or database change; going back to 1.42.0 is safe.
+57. **Release 1.43.0:** Today offers the next lesson, a saved session or a revisit in your chosen default subject.
+    General-course check-ins continue their own course first; recorded completion stays separate from mastery.
+    Cybersecurity can add the selected path and start its lesson in one saved step; failed saves leave work unchanged.
+    Reset Study progress requires a fresh, checked full backup and confirmation before clearing learning history.
+    Your outline, concept questions, revision cards, separate notes and other MyDay sections remain;
+    see [Guided Study](#guided-study) for exactly what is removed, backup safeguards and verification results.
+    Going back to 1.42.1 drops the new subject preference; only importing the pre-reset backup can undo a reset.
+    No database migration or server deployment is needed.

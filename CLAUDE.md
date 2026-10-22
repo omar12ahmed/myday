@@ -63,16 +63,16 @@ Read this file before making any changes. If something here seems to conflict wi
   Profiles and task servers removed; feature worktree cleaned up. Review, test-writing, docs and runner agents
   helped; main reviewed their work. Backups were already confirmed on every device in this session.
   No saved-data, server or database change; going back to 1.42.0 is safe. `live-before-1.42.1` marks previous main.
-- **Draft PR #2, Guided Study (22 Oct 2026):** branch `feature/study-guided-sequence-20261022` adds next lessons
-  on Today, recorded-completion progression, direct Cybersecurity start and a backup-gated Study reset. Review
-  strengthened backup freshness, checked-file confirmation, failed-save handling, atomic import/start, required
-  versus optional lesson completion, current-version draft resume, pinned courses and Arabic next steps.
-  General check-ins continue their own course before a clearly named fallback. The local stand-in verifies
-  reset/deletion propagation and downloaded-backup restore on two disposable devices (32/0). Guided rules pass
-  83/0; **15 targeted suites, 1,394 passed, 0 failed**, including the overlapping-theme-animation regression, are recorded
-  in `mac-steps/feature-study-guided-sequence-20261022.md`. Review/test/docs/runner agents helped, with findings
-  reviewed and resolved. No full suite run, real learning reset, merge, version bump or publication. Keep draft
-  until the disposable live-service reset/restore verification and final release review pass; live stays 1.42.1.
+- **1.43.0 release prepared (22 Oct 2026):** Guided Study from PR #2 adds Today next/resume/revisit
+  lessons, an explicit default subject, own-course check-in progression, atomic Cybersecurity start and a fresh
+  checked-backup Study reset. Completion stays separate from mastery. Review fixed stale backups, failed-save
+  success, optional/obsolete drafts, course jumps and a skipped theme-animation rejection.
+  Build/lint, 15 targeted suites (1,394/0), GitHub CI (10 suites,852/0), and a separate live-service two-device
+  reset/restore check (39/0) pass. Disposable data only; the account was restored to its original state afterwards.
+  No full run, migration or server deployment. Release audit/docs agents helped; their findings were reviewed.
+  Backups were already confirmed on every real device. Publishing and its final smoke check are next; live
+  remains 1.42.1 until then. Rollback drops the new default-subject preference, and cannot recover reset history:
+  import the checked pre-reset backup. See `mac-steps/feature-study-guided-sequence-20261022.md` until completed.
 - **Previous release: 1.42.0** (21 Oct 2026, tag `v1.42.0` on source `0d7cfdc`; main `e083037`): Arabic audio
   round three (b). Before it: 1.41.0, tagged `live-before-1.42.0` on main. On the server: `ai-plan` version 21,
   Ask instructions `myday-ask-v16`, brain dump instructions `myday-tasks-v2`; no server deployment or migration.

@@ -1,7 +1,7 @@
 # Guided Study — PR #2 release follow-up
 
 Source branch: `feature/study-guided-sequence-20261022`.
-[PR #2](https://github.com/omar12ahmed/myday/pull/2) remains a draft. Live is still 1.42.1;
+[PR #2](https://github.com/omar12ahmed/myday/pull/2) has completed its release safeguard. Live is still 1.42.1;
 this branch has not been merged or published and no real learning data has been reset.
 
 ## Review and checks
@@ -16,7 +16,8 @@ path and starts its timer in one saved change.
 Build/typecheck and lint pass. The new reset suite passes 32 checks against the local PostgreSQL/Auth stand-in:
 full downloaded backup, checked-file gate, cancellation, failed saves, incoming progress before/during
 confirmation, deletion markers reaching another device, retained content, and restoring the downloaded file
-through Import on both devices. This is not verification against a live Supabase project.
+through Import on both devices. The separate live-service two-device check also passed39/0, using disposable data only. It covered reset,
+delete propagation and importing the downloaded backup, then restored the original disposable account.
 
 **Final local verification: 15 targeted suites, 1,394 passed, 0 failed.**
 
@@ -59,7 +60,7 @@ Run builds that prepare shared curriculum/audio files sequentially in a worktree
 not isolate generated assets. A concurrent audio preparation caused one Arabic rules bundler setup failure
 during this review; only that suite reran in isolation and passed 49/0. No full suite was run.
 
-## Remaining before release
+## Release follow-up (verification complete; publication next)
 
 1. Review the final head and GitHub Actions results. Fetch without changing the current checkout:
 
@@ -77,7 +78,7 @@ during this review; only that suite reran in isolation and passed 49/0. No full 
    including a change while confirmation is open. Then reset and verify all progress deletions and fresh
    schedules reach the second profile while course content and separate notes stay. Import that downloaded
    backup and verify restored records/cards on both profiles after reload, without duplicates or conflicts.
-   This disposable live-service check remains required before releasing reset for real synced records.
+   Completed on22October2026:39passed,0failed.
 4. Record the live-service results, resolve any failures, complete final review and mark the PR ready only
    when its safeguards pass. Merging/publishing is a separate release step; this review did neither.
 5. Before a release, follow [deploy/README.md](../deploy/README.md): fresh backups on every real device,
