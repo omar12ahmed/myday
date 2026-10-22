@@ -563,6 +563,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   }
   const liveSt = await seedAndSave('index.html'), newSt = await seedAndSave(APP);
   check('Study is saved exactly as the current MyDay saves it (same records kept, same bad ones dropped)', maskNew(liveSt) === maskNew(newSt), [maskNew(liveSt).slice(0, 300), maskNew(newSt).slice(0, 300)]);
+  check('Classic MyDay preserves the selected primary Study subject when saving', liveSt.settings.primarySubject === 'cybersecurity' && newSt.settings.primarySubject === 'cybersecurity');
   T.setUrl('index.html#study/progress'); await openAt(2026, 11, 2, 12);
   // 28 Oct, 30 Oct, 1 Nov (sessions), 31 Oct (a Today tick) and 2 Nov (the extra in-progress session,
   // which both apps finish when loading, as only one can be in progress).
