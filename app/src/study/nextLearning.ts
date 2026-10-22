@@ -1,9 +1,7 @@
 // A read-only recommendation derived from the ordered curricula and saved learner progress.
 // Content stays in each curriculum; there is no extra cursor to get out of sync.
 import type { MyDayData } from '../data/types';
-import { lessonFromTask } from '../data/cybersecurity/types';
 import { nextStep as nextArabicStep, lessonDone as arabicLessonDone } from '../data/arabic/sessions';
-import { activeStudy } from '../data/study/sessions';
 import { stIndex } from '../data/study/roadmap';
 import { lessonIndex, moduleList, paths, corePath } from './arabic/catalogue';
 import { nextLesson as nextCyberLesson } from './cybersecurity/learning';
@@ -23,7 +21,6 @@ export interface LearningOption {
 
 // An active general/Cyber study timer always takes priority over new lessons.
 export function learningOptions(data: MyDayData): LearningOption[] {
-  const cur = activeStudy(data.study);
   const cyber = nextCyberLesson(data);
   const cyberPathNow = cyberPath(data.cybersecurity.pathId);
   const cyberIds = cyberPathNow.required_module_ids.flatMap(id => cyberModules.get(id)?.lesson_ids ?? []);
@@ -61,14 +58,8 @@ export function learningOptions(data: MyDayData): LearningOption[] {
     minutes: nextGeneral.task.minutes, resume: false, allComplete: false,
   });
 
-  const activeId = lessonFromTask(cur?.taskId ?? null);
-  if (cur && activeId) return options.sort((a, b) => Number(b.subject === 'cybersecurity') - Number(a.subject === 'cybersecurity'));
-  // The last subject studied becomes the default, without saving a new preference or disturbing either path.
-  const seen = [
-    ...data.arabic.attempts.map(a => ({ subject: 'arabic' as const, at: a.startedAt })),
-    ...data.cybersecurity.attempts.map(a => ({ subject: 'cybersecurity' as const, at: a.startedAt })),
-    ...data.study.sessions.map(s => ({ subject: lessonFromTask(s.taskId) ? 'cybersecurity' as const : 'roadmap' as const, at: s.startedAt })),
-  ].sort((a, b) => b.at.localeCompare(a.at));
-  const preferred = seen[0]?.subject;
-  return preferred ? options.sort((a, b) => Number(b.subject === preferred) - Number(a.subject === preferred)) : options;
+  // The learner's explicit choice wins over recent activity; default to fundamentals.
+  const preferred = data.study.settings.primarySubject ?? 'cybersecurity';
+  const pinned = options.find(o => o.subject === preferred);
+  return pinned ? [pinned, ...options.filter(o => o !== pinned)] : options;
 }
