@@ -20,7 +20,7 @@ set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(dirname "$HERE")"
 SUITES=("$@")
-[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study study-learning-rules app-learning arabic-rules arabic-pronunciation-rules arabic-voice-player app-reading-voice app-teaching-voice app-arabic app-teaching app-pronunciation app-design app-explore explore-rules explore-assets app-explore-visual app-architecture app-storage app-today app-calendar-pay app-finance app-inbox app-tasks app-projects app-connect app-graph app-study app-topics app-workout app-food app-goals goals-rules capture-rules patterns-rules projects-rules understand-rules graph-rules app-patterns app-final app-site app-install sw-rules sync-db sync-records app-sync ai-rules ai-server app-ai cybersecurity-rules app-cybersecurity)
+[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study study-learning-rules study-guided-rules app-study-reset app-learning arabic-rules arabic-pronunciation-rules arabic-voice-player app-reading-voice app-teaching-voice app-arabic app-teaching app-pronunciation app-design app-explore explore-rules explore-assets app-explore-visual app-architecture app-storage app-today app-calendar-pay app-finance app-inbox app-tasks app-projects app-connect app-graph app-study app-topics app-workout app-food app-goals goals-rules capture-rules patterns-rules projects-rules understand-rules graph-rules app-patterns app-final app-site app-install sw-rules sync-db sync-records app-sync ai-rules ai-server app-ai cybersecurity-rules app-cybersecurity)
 
 # ---- What's needed ----
 CHROME="${CHROME:-}"
@@ -50,8 +50,8 @@ if printf '%s\n' "${SUITES[@]}" | grep -q '^app-'; then
   (cd "$ROOT/app" && VITE_SUPABASE_URL= VITE_SUPABASE_PUBLISHABLE_KEY= VITE_AI= npm run build >"$WORK/app-build.log" 2>&1) || { echo "The new app didn't build:"; tail -20 "$WORK/app-build.log"; exit 1; }
   mkdir -p "$WORK/srv/app" && cp -R "$ROOT/app/dist" "$WORK/srv/app/dist"
 fi
-# A copy of the new app with cloud sync and AI help switched on, pointing at the local Supabase stand-in (app-sync, app-ai).
-if printf '%s\n' "${SUITES[@]}" | grep -qE '^app-(sync|ai)$'; then
+# A copy with cloud sync and AI help switched on, pointing at the local stand-in (sync, Study reset, AI).
+if printf '%s\n' "${SUITES[@]}" | grep -qE '^app-(sync|study-reset|ai)$'; then
   (cd "$ROOT/app" && VITE_SUPABASE_URL="http://127.0.0.1:$MYDAY_SUPA_PORT" VITE_SUPABASE_PUBLISHABLE_KEY="sb_publishable_standin_test_key_0000000000" VITE_AI=edge \
     npx vite build --outDir "$WORK/srv/sync" --emptyOutDir >"$WORK/sync-build.log" 2>&1) || { echo "The sync test copy of the app didn't build:"; tail -20 "$WORK/sync-build.log"; exit 1; }
 fi

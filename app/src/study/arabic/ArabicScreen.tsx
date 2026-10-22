@@ -181,6 +181,10 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
   const check = content.assessments.find(a => a.id === l.knowledge_check_id);
   const needsVoice = l.input_requirements?.modalities.some(m => m === 'listening' || m === 'speaking');
   const session = openSession(data, l.id), checkIds = check?.questions?.map(q => q.id) ?? [];
+  const p = paths.get(data.arabic.pathId) ?? corePath;
+  const ordered = pathLessons(p.id);
+  const step = ordered.length ? nextStep(data, ordered) : null;
+  const nextId = step && (step.resume || ordered.some(id => !lessonDone(data, id))) ? step.lessonId : null;
   return <>
     <Card tone="accent">
       <BackLink to={'study/arabic/' + l.module_id} label={modules.get(l.module_id)!.name} />
@@ -200,7 +204,12 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
       </details>}
     </Card>
     <TeachingLesson key={'teaching-' + l.id} course="arabic-fusha" lessonId={l.id} />
-    {finished && <FinishedCard data={data} checkIds={checkIds} onClose={() => setFinished(false)} />}
+    {finished && <><FinishedCard data={data} checkIds={checkIds} onClose={() => setFinished(false)} />
+      <Card tone="accent" data-s="arabic-up-next"><h3>Session saved</h3>
+        <p className="text-sm text-fg-2">Finishing records practice, not verified mastery. {nextId ? 'Continue on your selected path whenever you are ready.' : 'Every required lesson on your selected path has a finished session. You can choose a lesson to revisit on the map.'}</p>
+        {nextId ? <a className="inline-flex items-center min-h-11 text-primary font-semibold" href={href(nextId)}>{step?.resume ? 'Resume lesson' : 'Next lesson'}: {lessonIndex[nextId].title}</a>
+          : <a className="inline-flex items-center min-h-11 text-primary font-semibold" href="#study/arabic">Return to the Arabic learning map</a>}
+      </Card></>}
     <SessionCard data={data} lesson={l} onFinished={() => setFinished(true)} />
     {task && <Card><h3>Practical task · {task.estimated_minutes} min</h3><p><Mixed text={task.instruction} /></p>
       <h4>What to produce</h4><Lines items={task.expected_evidence} />

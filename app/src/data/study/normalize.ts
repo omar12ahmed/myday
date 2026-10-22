@@ -85,7 +85,13 @@ export function normalizeStudy(raw: unknown, report = { dropped: 0 }): StudyData
       st.topics.push({ id: t.id.slice(0, 64), title: str(t.title, 60) });
     }
   }
-  if (isObj(raw.settings)) { st.settings.vault = str(raw.settings.vault, 100); st.settings.showClock = raw.settings.showClock !== false; }
+  if (isObj(raw.settings)) {
+    st.settings.vault = str(raw.settings.vault, 100);
+    st.settings.showClock = raw.settings.showClock !== false;
+    if (raw.settings.primarySubject === 'arabic' || raw.settings.primarySubject === 'cybersecurity' || raw.settings.primarySubject === 'roadmap') {
+      st.settings.primarySubject = raw.settings.primarySubject;
+    }
+  }
 
   const taskIds = new Set(st.stages.flatMap(sg => sg.courses.flatMap(c => c.modules.flatMap(m => m.sections.flatMap(s => s.tasks.map(t => t.id))))));
   for (const x of listOf(raw.concepts)) {

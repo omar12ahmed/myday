@@ -63,6 +63,16 @@ Read this file before making any changes. If something here seems to conflict wi
   Profiles and task servers removed; feature worktree cleaned up. Review, test-writing, docs and runner agents
   helped; main reviewed their work. Backups were already confirmed on every device in this session.
   No saved-data, server or database change; going back to 1.42.0 is safe. `live-before-1.42.1` marks previous main.
+- **Draft PR #2, Guided Study (22 Oct 2026):** branch `feature/study-guided-sequence-20261022` adds next lessons
+  on Today, recorded-completion progression, direct Cybersecurity start and a backup-gated Study reset. Review
+  strengthened backup freshness, checked-file confirmation, failed-save handling, atomic import/start, required
+  versus optional lesson completion, current-version draft resume, pinned courses and Arabic next steps.
+  General check-ins continue their own course before a clearly named fallback. The local stand-in verifies
+  reset/deletion propagation and downloaded-backup restore on two disposable devices (32/0). Guided rules pass
+  83/0; **15 targeted suites, 1,394 passed, 0 failed**, including the overlapping-theme-animation regression, are recorded
+  in `mac-steps/feature-study-guided-sequence-20261022.md`. Review/test/docs/runner agents helped, with findings
+  reviewed and resolved. No full suite run, real learning reset, merge, version bump or publication. Keep draft
+  until the disposable live-service reset/restore verification and final release review pass; live stays 1.42.1.
 - **Previous release: 1.42.0** (21 Oct 2026, tag `v1.42.0` on source `0d7cfdc`; main `e083037`): Arabic audio
   round three (b). Before it: 1.41.0, tagged `live-before-1.42.0` on main. On the server: `ai-plan` version 21,
   Ask instructions `myday-ask-v16`, brain dump instructions `myday-tasks-v2`; no server deployment or migration.
@@ -100,7 +110,7 @@ Read this file before making any changes. If something here seems to conflict wi
   agents were used; findings reviewed and resolved. `review-arabic-audio.mjs <source>` makes future local checklists.
 - **Publishing happens only on my Mac.** The steps, in this order:
   1. Remind me to export backups on every device.
-  2. Commit the release on `react-rebuild` and run all the checks.
+  2. Commit the release on `react-rebuild` and run the relevant checks under "After each change" below.
   3. Only the steps this release needs, each with my go-ahead: apply the migration, then deploy `ai-plan`.
   4. Run `deploy/publish-main.sh`, then `git push origin main`.
   5. Do a live check with the two disposable test accounts in two throwaway browsers, then tidy up.
@@ -595,7 +605,7 @@ all suites. Small UI fixes and documentation changes do not trigger a full run b
 - **Before a release:** build/lint and the relevant checks must pass, followed by a live check with disposable
   accounts in throwaway browsers. A small UI release does not require the full suite. Report the actual scope;
   never describe a targeted run or an interrupted full run as a complete one.
-- **Full run when justified:** `tests/run.sh` with no names, currently 54 default suites. Do not repeat checks
+- **Full run when justified:** `tests/run.sh` with no names, currently 56 default suites. Do not repeat checks
   that already passed unless code changes, failures or unresolved concerns justify it.
 - **Running the tests:**
   - Ports: `MYDAY_HTTP_PORT` (default 8765), `MYDAY_CDP_PORT` (9333), `MYDAY_SUPA_PORT` (54329), `MYDAY_LS_PORT`

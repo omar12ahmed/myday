@@ -2,6 +2,7 @@
 // load only when asked for, a reading text with and without vowel marks, the starter words, right-to-left
 // Arabic in its own typeface, phone layout — and nothing saved. Disposable profile, no real data.
 const T = require('./cdp.js');
+const curriculum = require(require('path').join(process.env.MYDAY_ROOT || require('path').resolve(__dirname, '..'), 'content/arabic-fusha/MyDay_Arabic_Fusha_Curriculum.json'));
 const { ev, send, sleep, check, click, exists } = T;
 const go = async hash => { T.setUrl('app/dist/index.html#' + hash); await T.openAt(2026, 10, 11, 9); await sleep(700); };
 const count = sel => ev(`document.querySelectorAll(${JSON.stringify(sel)}).length`);
@@ -191,6 +192,34 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   await on(12, 'study/arabic/vocabulary'); await sleep(400);
   check('the starter words with their revision buttons fit a phone', await ev('document.documentElement.scrollWidth === innerWidth'));
   await send('Emulation.clearDeviceMetricsOverride');
+
+  console.log('\n[9] Finishing follows the selected required path');
+  const selectedPath = curriculum.paths.find(p => p.id === 'path.arabic-start');
+  const byId = new Map(curriculum.lessons.map(l => [l.id, l]));
+  const required = curriculum.modules.filter(m => selectedPath.required_module_ids.includes(m.id)).sort((a, b) => a.sequence - b.sequence)
+    .flatMap(m => m.lesson_ids.filter(id => !byId.get(id).optional));
+  const optional = curriculum.lessons.find(l => l.optional && !selectedPath.required_module_ids.includes(l.module_id));
+  const outsidePath = curriculum.lessons.find(l => !l.optional && !selectedPath.required_module_ids.includes(l.module_id));
+  const attempt = (id, finished = true) => ({ id: 'next-' + id.replace(/[^A-Za-z0-9_-]/g, '-'), lessonId: id, curriculumVersion: curriculum.curriculum_version, variant: 'standard', startedAt: '2026-10-11T08:00:00.000Z', finishedAt: finished ? '2026-10-11T08:20:00.000Z' : null, help: 'independent', practised: [], answers: {}, revealed: [], revisit: '' });
+  const finishWith = async (lessonId, attempts) => {
+    await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); d.arabic.pathId = ${JSON.stringify(selectedPath.id)}; d.arabic.attempts = ${JSON.stringify(attempts)}; localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`);
+    await go('study/arabic/' + lessonId); await wait('[data-action="ar-begin"]');
+    await click('[data-action="ar-begin"]'); await wait('[data-action="ar-finish"]');
+    await click('[data-action="ar-finish"]'); await wait('[data-s="arabic-up-next"]');
+    return ev(`(() => { const e = document.querySelector('[data-s="arabic-up-next"]'); return { href: e?.querySelector('a')?.getAttribute('href'), text: e?.textContent }; })()`);
+  };
+  let next = await finishWith(required[0], [attempt(required[1])]);
+  check('after finishing, an already completed successor is skipped for the earliest unfinished required lesson', next.href === '#study/arabic/' + required[2] && next.text.includes(byId.get(required[2]).title) && next.text.includes('not verified mastery'), next);
+  await click('[data-s="arabic-up-next"] a'); await wait('[data-ar-session="none"]');
+  check('the next-lesson link opens that required lesson without starting another session', (await ev('location.hash')) === '#study/arabic/' + required[2] && !(await AR()).attempts.some(a => a.lessonId === required[2]), [await ev('location.hash'), (await AR()).attempts.map(a => a.lessonId)]);
+  next = await finishWith(required[0], [attempt(required[1]), attempt(required[4], false)]);
+  check('after finishing, a resumable required lesson wins over a positional successor', next.href === '#study/arabic/' + required[4] && next.text.includes('Resume lesson:'), next);
+  next = await finishWith(optional.id, []);
+  check('finishing an optional extension offers the earliest required lesson on the selected path', next.href === '#study/arabic/' + required[0] && !next.text.includes('Every required lesson'), next);
+  next = await finishWith(outsidePath.id, [attempt(required[0])]);
+  check('finishing a lesson outside the selected path returns to its earliest unfinished required lesson', next.href === '#study/arabic/' + required[1], next);
+  next = await finishWith(optional.id, required.map(id => attempt(id)));
+  check('after all required lessons have finished sessions, an optional finish returns to the map without inventing a next lesson', next.href === '#study/arabic' && next.text.includes('Every required lesson on your selected path has a finished session') && next.text.includes('not verified mastery') && !next.text.includes('Next lesson:'), next);
 
   const s = T.summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
 })().catch(e => { console.error('HARNESS', e); process.exit(1); });

@@ -14,7 +14,11 @@ export function ThemeButton({ theme, motionAllowed, onChange }: { theme: Theme; 
   function next() {
     const t = ORDER[(ORDER.indexOf(theme) + 1) % ORDER.length];
     // A soft cross-fade where the browser supports it (and animations are on).
-    if (motionAllowed && document.startViewTransition) document.startViewTransition(() => flushSync(() => onChange(t)));
+    if (motionAllowed && document.startViewTransition) {
+      const transition = document.startViewTransition(() => flushSync(() => onChange(t)));
+      // A newer transition may skip this animation; the theme update still runs.
+      void transition.ready.catch(() => {});
+    }
     else onChange(t);
     toast(`Theme: ${LABEL[t]}`);
   }

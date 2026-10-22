@@ -349,7 +349,7 @@ export interface StudyData {
   sessions: StudySession[];
   activeId: string | null;      // the session in progress, if any (only ever one)
   reviews: Review[];
-  settings: { vault: string; showClock: boolean };
+  settings: { vault: string; showClock: boolean; primarySubject: 'cybersecurity' | 'arabic' | 'roadmap' };
 }
 
 // ---------- Study → Reading ----------
