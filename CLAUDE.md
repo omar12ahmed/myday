@@ -49,7 +49,24 @@ Read this file before making any changes. If something here seems to conflict wi
   `live-before-X.Y.Z` on `main`.
 - Bump `app/package.json`'s version for each release. The release identifier (version, commit, build date) is at the
   bottom of every screen.
-- **Live: 1.42.1** (21 Oct 2026, tag `v1.42.1` on source `a292886`; main `57974ff`): one Cybersecurity
+- **Live: 1.43.0** (22 Oct 2026, tag `v1.43.0` on source `d0e14cf`; main `59e277a`): Guided Study
+  offers the next, resumable or revisit lesson on Today, with an explicit default subject. General check-ins
+  continue their own course; Cybersecurity imports/starts in one saved step. A reset needs a fresh checked full
+  backup, rechecks incoming changes and reports success only after saving. It removes check-ins, Arabic
+  answers/attempts, Cybersecurity evidence and revision history, while keeping outline, concept questions,
+  separate notes and other sections. Recorded completion stays separate from mastery.
+  Review fixes include obsolete/optional draft handling, pinned-course jumps, Arabic next steps and skipped
+  theme-animation rejections. Build/lint and **15 targeted suites, 1,394/0** passed; GitHub CI **10 suites, 852/0**.
+  A separate live-service two-device reset/restore check passed **39/0**, including importing the downloaded
+  backup; the disposable account was returned to its original test data. Published smoke check **37/0** on two
+  disposable accounts in isolated desktop/phone browsers: version/source, Today options, settings/reset gate,
+  Arabic/Cybersecurity, phone fit and 44px controls; both learning-data copies byte-identical. Pages deployment
+  succeeded. Profiles and task servers removed; completed release checklist removed. No full run, migration,
+  server deployment or real learner reset. Review/test/docs/release-audit agents helped; findings were reviewed.
+  Backups were already confirmed on every device. Rollback to 1.42.1 drops the new default-subject preference;
+  code rollback cannot undo reset history, so import the checked pre-reset backup. `live-before-1.43.0` marks
+  the previous published main. The 643 approved audio files are unchanged.
+- **Previous release: 1.42.1** (21 Oct 2026, tag `v1.42.1` on source `a292886`; main `57974ff`): one Cybersecurity
   entry on Study home, opening the current 27-module/146-lesson guided course. An older topic named Cybersecurity
   is accessible through "Your saved courses" inside that card, with its task completion and course count,
   including set-aside courses. Other topics, routes, focus, sessions and revision stay unchanged; no data is deleted.
@@ -63,7 +80,7 @@ Read this file before making any changes. If something here seems to conflict wi
   Profiles and task servers removed; feature worktree cleaned up. Review, test-writing, docs and runner agents
   helped; main reviewed their work. Backups were already confirmed on every device in this session.
   No saved-data, server or database change; going back to 1.42.0 is safe. `live-before-1.42.1` marks previous main.
-- **Previous release: 1.42.0** (21 Oct 2026, tag `v1.42.0` on source `0d7cfdc`; main `e083037`): Arabic audio
+- **Earlier release: 1.42.0** (21 Oct 2026, tag `v1.42.0` on source `0d7cfdc`; main `e083037`): Arabic audio
   round three (b). Before it: 1.41.0, tagged `live-before-1.42.0` on main. On the server: `ai-plan` version 21,
   Ask instructions `myday-ask-v16`, brain dump instructions `myday-tasks-v2`; no server deployment or migration.
 - **1.42.0, audio round three (b):** teaching explanations/examples, sound pairs and family notes/forms have
@@ -100,7 +117,7 @@ Read this file before making any changes. If something here seems to conflict wi
   agents were used; findings reviewed and resolved. `review-arabic-audio.mjs <source>` makes future local checklists.
 - **Publishing happens only on my Mac.** The steps, in this order:
   1. Remind me to export backups on every device.
-  2. Commit the release on `react-rebuild` and run all the checks.
+  2. Commit the release on `react-rebuild` and run the relevant checks under "After each change" below.
   3. Only the steps this release needs, each with my go-ahead: apply the migration, then deploy `ai-plan`.
   4. Run `deploy/publish-main.sh`, then `git push origin main`.
   5. Do a live check with the two disposable test accounts in two throwaway browsers, then tidy up.
@@ -595,7 +612,7 @@ all suites. Small UI fixes and documentation changes do not trigger a full run b
 - **Before a release:** build/lint and the relevant checks must pass, followed by a live check with disposable
   accounts in throwaway browsers. A small UI release does not require the full suite. Report the actual scope;
   never describe a targeted run or an interrupted full run as a complete one.
-- **Full run when justified:** `tests/run.sh` with no names, currently 54 default suites. Do not repeat checks
+- **Full run when justified:** `tests/run.sh` with no names, currently 56 default suites. Do not repeat checks
   that already passed unless code changes, failures or unresolved concerns justify it.
 - **Running the tests:**
   - Ports: `MYDAY_HTTP_PORT` (default 8765), `MYDAY_CDP_PORT` (9333), `MYDAY_SUPA_PORT` (54329), `MYDAY_LS_PORT`

@@ -625,6 +625,41 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await mac.setData(`s => { for (let i = 1; i <= 20; i++) { const d = String(i).padStart(2, '0'); s.context['2025-01-' + d] = { energy: 3, sleep: { start: null, end: null, estimatedHours: 7 } }; s.days['2025-02-' + d] = { energy: 3, rest: true, builtAt: '', checkedIn: false, tasks: [] }; } }`);
   check('a lot changed at once (e.g. a backup restored in the classic MyDay) is saved to your account too', await cloudUntil(async () => (await sql(`select count(*)::int as n from public.day_plans where user_id = $1 and id like '2025-02-%'`, [userA]))[0].n === 20, 20000) && (await synced(mac)));
 
+
+  console.log('\n[10b] Guided Study preference and reset, safely against disposable cloud and devices');
+  // Existing ssMac was saved in the account earlier, so reset must tombstone it,
+  // not merely hide it on the initiating device.
+  await synced(mac); await synced(phone);
+  const sessionBefore = await cloudRecord(userA, 'session', 'ssMac');
+  check('setup: a completed Study session exists in the account', !!sessionBefore && !sessionBefore.deleted);
+  await mac.ev(`location.hash = 'study/settings'`);
+  await mac.until(`document.querySelector('[data-s="study-primary-subject"]')`);
+  await mac.ev(`(() => { const el = document.querySelector('[data-s="study-primary-subject"]'); el.value = 'arabic'; el.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+  check('choosing Arabic persists as the primary Study subject', await mac.until(`JSON.parse(localStorage.getItem('myday.data.v4')).study.settings.primarySubject === 'arabic'`));
+  await synced(mac);
+  await phone.returnToApp();
+  check('the primary subject syncs to another device', await phone.until(`JSON.parse(localStorage.getItem('myday.data.v4')).study.settings.primarySubject === 'arabic'`));
+  await mac.click('[data-action=study-backup]');
+  await mac.until(`document.querySelector('[data-action=study-backup-verified]')`);
+  check('requesting a backup alone leaves reset disabled', await mac.ev(`document.querySelector('[data-action=study-reset]').disabled`));
+  await mac.click('[data-action=study-backup-verified]');
+  await mac.until(`document.querySelector('[data-action=study-reset]:not(:disabled)')`);
+  check('reset is gated behind checking the requested full MyDay backup', await mac.exists('[data-action=study-reset]:not(:disabled)'));
+  await mac.click('[data-action=study-reset]');
+  await mac.until(`document.querySelector('dialog[open]')`);
+  check('reset demands explicit destructive confirmation', /Reset all Study progress/.test(await mac.text('dialog[open]')));
+  await mac.answer(true);
+  check('reset clears sessions but keeps the course, subject choice and unrelated notes', await mac.until(`JSON.parse(localStorage.getItem('myday.data.v4')).study.sessions.length === 0`) &&
+    (await mac.data()).study.stages.some(s => s.courses.some(c => c.id === 'coAr')) &&
+    (await mac.data()).study.settings.primarySubject === 'arabic' && (await mac.data()).notes.items.some(n => n.id === 'ntMac2'));
+  await synced(mac);
+  const deletedStudySession = await cloudRecord(userA, 'session', 'ssMac');
+  check('the Study session is a deleted cloud record (tombstone)', !!deletedStudySession && deletedStudySession.deleted === true);
+  await phone.returnToApp();
+  check('deleted Study history disappears from the second device', await phone.until(`!JSON.parse(localStorage.getItem('myday.data.v4')).study.sessions.some(s => s.id === 'ssMac')`));
+  check('unrelated notes remain on the second device', (await phone.data()).notes.items.some(n => n.id === 'ntMac2'));
+
+
   console.log('\n[11] A device that still has another account\'s MyDay (signed out before 1.9.0): never mixed');
   await phone.ev(`localStorage.removeItem('myday.sync.auth')`);
   await phone.open(APP + '#today');

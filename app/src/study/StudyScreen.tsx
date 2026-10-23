@@ -1,6 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import type { MyDayData } from '../data/types';
-import { CheckinView } from './CheckinView';
 import { ConceptsView } from './ConceptsView';
 import { ConceptView } from './ConceptView';
 import { CourseDetails } from './CourseDetails';
@@ -16,6 +15,7 @@ import { StudySettings } from './StudySettings';
 import { TaskDetails } from './TaskDetails';
 import { TopicView } from './TopicView';
 import { topicFromPath } from '../data/study/topics';
+const CheckinView = lazy(() => import('./CheckinView').then(module => ({ default: module.CheckinView })));
 const CyberScreen = lazy(() => import('./cybersecurity/CyberScreen'));
 const ArabicScreen = lazy(() => import('./arabic/ArabicScreen'));
 
@@ -43,7 +43,7 @@ export function StudyScreen({ data, hash }: { data: MyDayData; hash: string }) {
   else if (view === 'course') screen = <CourseDetails data={data} id={id} />;
   else if (view === 'task') screen = <TaskDetails data={data} id={id} />;
   else if (view === 'session') screen = <SessionView data={data} />;
-  else if (view === 'checkin') screen = <CheckinView key={id} data={data} id={id} />;
+  else if (view === 'checkin') screen = <Suspense fallback={<p role="status">Opening your check-in…</p>}><CheckinView key={id} data={data} id={id} /></Suspense>;
   else if (view === 'revise') screen = <RevisionView data={data} />;
   else if (view === 'concepts') screen = <ConceptsView data={data} />;
   else if (view === 'concept') screen = <ConceptView key={id} data={data} id={id} />;

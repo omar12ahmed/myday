@@ -15,7 +15,7 @@ export const RATING: Record<Rating, string> = { again: 'Again', hard: 'Hard', go
 export const STATUS_TEXT = { introduced: 'Introduced', practice: 'Needs practice', practising: 'Practising', recalled: 'Recalled independently' } as const;
 
 export function emptyStudy(): StudyData {
-  return { stages: [], focusCourseId: null, concepts: [], sessions: [], activeId: null, reviews: [], settings: { vault: '', showClock: true } };
+  return { stages: [], focusCourseId: null, concepts: [], sessions: [], activeId: null, reviews: [], settings: { vault: '', showClock: true, primarySubject: 'cybersecurity' } };
 }
 
 // Trimmed text up to `max` characters ('' if it isn't text).

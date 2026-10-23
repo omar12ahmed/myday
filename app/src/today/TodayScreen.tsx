@@ -22,8 +22,6 @@ import { StreakCard } from './ProgressCards';
 import { ProposalCard, type ProposalActions } from './ProposalCard';
 import { TimerCard, type TimerAction } from './TimerCard';
 import { AppFooter } from '../shell/AppFooter';
-import { dueIds } from '../data/study/queue';
-import { activeStudy } from '../data/study/sessions';
 import { StudyTodayCard } from '../study/StudyTodayCard';
 import { HealthTodayCard } from '../health/HealthTodayCard';
 import { DailyTodayCard } from '../health/DailyTodayCard';
@@ -280,8 +278,8 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
   const healthCard = healthReminders(data, k).length > 0 && <HealthTodayCard data={data} k={k} />;
   // Daily exercises: a countdown on Today, one tap per set (managed in Health → Workout).
   const dailyCard = liveExercises(data.health.daily).length > 0 && <DailyTodayCard data={data} k={k} />;
-  // Study: only what's waiting (a session in progress, or revision ready). Nothing goes on the task list.
-  const studyCard = (!!activeStudy(data.study) || dueIds(data, k).length > 0) && <StudyTodayCard data={data} k={k} />;
+  // Study: the next lesson, a session to resume or revision ready. Nothing goes on the task list.
+  const studyCard = <StudyTodayCard data={data} k={k} />; // always available: the next lesson appears even without an active session or due revision
 
   // Phones: one column, in this order (as in the current MyDay) — so the timeline comes straight after
   // the plan. Wide screens: the timeline and the learning count move to a second column on the right.

@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { learningOptions } from './nextLearning';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { CommitInput, Field, TextInput } from '../components/Field';
@@ -19,6 +20,8 @@ export function CheckinView({ data, id }: { data: MyDayData; id: string }) {
   const ix = stIndex(st), t = s.taskId ? ix.task.get(s.taskId) : null;
   const ci = s.checkin || { conceptIds: [], clarity: null, takeaway: '', question: '', note: '' };
   const offered = checkinConcepts(st, s), todayT = todayTaskFor(data, s);
+  const next = learningOptions(data, s.courseId).find(x => x.subject === (s.taskId?.startsWith('cyber:1:') ? 'cybersecurity' : 'roadmap'));
+  const completed = !!t && t.node.done;
 
   function add() {
     const el = newRef.current;
@@ -76,6 +79,11 @@ export function CheckinView({ data, id }: { data: MyDayData; id: string }) {
       {todayT && (todayT.done || s.todayUid
         ? <p className="text-[15px]">“{todayT.title}” is ticked on today's plan.</p>
         : <Button className="mb-3" data-action="s-tick-today" data-id={s.id} onClick={() => tickToday(s.id)}>Also tick “{todayT.title}” on today's plan</Button>)}
+      {completed && next && <div className="rounded-tile bg-surface-2 border border-outline p-3 mb-3" data-s="study-up-next">
+        <p className="font-semibold m-0">{next.resume ? 'Resume' : next.allComplete ? 'Revisit a lesson' : 'Up next'}: {next.title}</p>
+        <p className="text-sm text-fg-2 m-0 mt-1">{next.subject === 'roadmap' ? `${next.detail} · Continue whenever you are ready.` : next.resume || next.allComplete ? next.detail : 'Next in your course, whenever you are ready.'}</p>
+        <a href={next.href} className="inline-flex items-center min-h-11 text-primary font-semibold">{next.resume ? 'Resume lesson' : next.allComplete ? 'Revisit lesson' : 'Open next lesson'}</a>
+      </div>}
       <div className="row2 grid grid-cols-2 gap-2.5">
         <Button variant="primary" data-action="s-ci-done" data-id={s.id} onClick={() => checkinFinished(s.id, true)}>Done</Button>
         <Button variant="ghost" data-action="s-ci-skip" data-id={s.id} onClick={() => checkinFinished(s.id, false)}>Skip</Button>

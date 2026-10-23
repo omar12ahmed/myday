@@ -5912,7 +5912,7 @@
       // { id, conceptId, title, date, at, kind, outcome: 'right'|'partly'|'wrong'|'notsure'|null, graded: 'auto'|'self'|null,
       //   chosen, support: 'own'|'hint'|'notes', rating: 'again'|'hard'|'good', gap, due }
       reviews: [],
-      settings: { vault: '', showClock: true }
+      settings: { vault: '', showClock: true, primarySubject: 'cybersecurity' }
     };
   }
   const CLARITY = { understand: 'Understand', partly: 'Partly understand', notyet: 'Not yet' };
@@ -5974,7 +5974,12 @@
         st.topics.push({ id: t.id.slice(0, 64), title: str(t.title, 60) });
       }
     }
-    if (isObj(raw.settings)) { st.settings.vault = str(raw.settings.vault, 100); st.settings.showClock = raw.settings.showClock !== false; }
+    if (isObj(raw.settings)) {
+      st.settings.vault = str(raw.settings.vault, 100);
+      st.settings.showClock = raw.settings.showClock !== false;
+      // Keep the new MyDay's chosen learning subject if this classic version saves the same data.
+      if (['cybersecurity', 'arabic', 'roadmap'].includes(raw.settings.primarySubject)) st.settings.primarySubject = raw.settings.primarySubject;
+    }
 
     // Where an AI-written card came from — the same rules as the new app's cleanOrigin (app/src/data/study/normalize.ts):
     // a Cybersecurity lesson's checked strictly; any other subject kept as short plain values (a word for its subject and

@@ -3,12 +3,41 @@ const T = require('./cdp.js');
 const fs = require('fs');
 const { ev, click, exists, text, data, sleep, check } = T;
 const go = async hash => { T.setUrl('app/dist/index.html#' + hash); await T.openAt(2026, 10, 5, 10); await sleep(300); };
+const until = async (predicate, label, ms = 5000) => { for (let t = 0; t < ms; t += 100) { if (await predicate()) return; await sleep(100); } throw new Error('Timed out waiting for ' + label); };
 async function fill(sel, value) {
   await ev(`(() => { const e = document.querySelector(${JSON.stringify(sel)}); const p = e instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : e instanceof HTMLSelectElement ? HTMLSelectElement.prototype : HTMLInputElement.prototype; Object.getOwnPropertyDescriptor(p, 'value').set.call(e, ${JSON.stringify(value)}); e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); e.blur(); })()`); await sleep(80);
 }
 (async () => {
   await T.connect(); await go('study'); await ev('localStorage.clear()'); await go('study');
   check('cybersecurity is available before setting up a roadmap', await exists('a[href="#study/cybersecurity"]'));
+  await go('study/cybersecurity/lesson.learning-evidence');
+  await until(() => exists('[data-action="cyber-start-direct"]'), 'a fresh lesson’s direct start');
+  const directBefore = await ev(`localStorage.getItem('myday.data.v4')`);
+  check('a fresh learner can start a lesson directly without manually importing its path', !(await data()).study.stages.length && !(await data()).study.sessions.length && await exists('#cyberMinutes'));
+  await ev(`window.directRealSetItem = Storage.prototype.setItem; Storage.prototype.setItem = function(k, v) { if (k === 'myday.data.v4') throw new DOMException('Test quota', 'QuotaExceededError'); return window.directRealSetItem.call(this, k, v); };`);
+  await click('[data-action="cyber-start-direct"]');
+  await until(async () => (await text('#toast')).includes("Couldn't save the lesson"), 'the rejected direct start message');
+  check('a rejected direct start neither imports the path nor starts a session or claims success', (await ev(`localStorage.getItem('myday.data.v4')`)) === directBefore && !(await data()).study.stages.length && !(await data()).study.sessions.length && (await ev('location.hash')) === '#study/cybersecurity/lesson.learning-evidence' && await exists('[data-action="cyber-start-direct"]'), [(await data()).study.stages.length, (await data()).study.sessions.length, await ev('location.hash'), await text('#toast')]);
+  await ev('Storage.prototype.setItem = window.directRealSetItem; delete window.directRealSetItem');
+  await click('[data-action="cyber-start-direct"]');
+  await until(() => exists('#stClock'), 'the directly started Study timer');
+  const direct = await data();
+  check('a successful direct start adds the real path and exactly one active session together', direct.study.stages.flatMap(s => s.courses).length === 14 && direct.study.sessions.length === 1 && direct.study.sessions[0].status === 'active' && direct.study.sessions[0].taskId === 'cyber:1:lesson.learning-evidence' && direct.study.activeId === direct.study.sessions[0].id && (await ev('location.hash')) === '#study/session', [direct.study.stages.flatMap(s => s.courses).length, direct.study.sessions, direct.study.activeId]);
+  const outsideStudy = d => { const copy = JSON.parse(JSON.stringify(d)); delete copy.study; delete copy.saves; return JSON.stringify(copy); };
+  check('direct lesson start preserves every unrelated saved section', outsideStudy(direct) === outsideStudy(JSON.parse(directBefore)));
+  await go('study/session');
+  check('the directly started lesson and its timer survive a reload', (await data()).study.sessions.length === 1 && await exists('a[href="#study/cybersecurity/lesson.learning-evidence"]') && await exists('#stClock'));
+  await click('[data-action="s-finish"]');
+  await until(() => exists('[data-action="s-ci-task"]'), 'the Cybersecurity session check-in');
+  check('finishing the Cybersecurity timer alone does not claim task completion or offer the following lesson', !(await exists('[data-s="study-up-next"]')) && (await data()).study.sessions[0].taskDone === null);
+  await click('[data-action="s-ci-task"][data-v="1"]');
+  await until(() => exists('[data-s="study-up-next"] a[href="#study/cybersecurity/lesson.authorised-scope"]'), 'the next required Cybersecurity lesson');
+  check('explicit task completion offers the following required Cybersecurity lesson without claiming mastery', (await data()).study.sessions[0].taskDone === true && (await text('[data-s="study-up-next"]')).includes('Permission, boundaries and stop conditions') && !/master|verified|score/i.test(await text('[data-s="study-up-next"]')), await text('[data-s="study-up-next"]'));
+  await click('[data-s="study-up-next"] a');
+  await until(() => exists('#cyberMinutes'), 'the next Cybersecurity lesson');
+  check('the next-lesson check-in link opens that lesson while leaving the finished session intact', (await ev('location.hash')) === '#study/cybersecurity/lesson.authorised-scope' && (await data()).study.sessions.length === 1 && (await data()).study.sessions[0].status === 'done' && (await data()).study.activeId === null, [await ev('location.hash'), (await data()).study.sessions[0].status]);
+  // Restore the fresh fixture so the established import and notebook journey stays independent.
+  await ev('localStorage.clear()'); await go('study');
   await click('a[href="#study/cybersecurity"]'); await sleep(400);
   check('the foundation map renders 14 modules', await ev(`document.querySelectorAll('section[aria-label="Modules on your learning map"] > a').length`) === 14);
   await click('[data-action=cyber-import]'); await sleep(300);

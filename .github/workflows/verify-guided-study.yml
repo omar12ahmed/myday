@@ -1,0 +1,49 @@
+name: Verify guided Study
+
+on:
+  pull_request:
+    branches: [react-rebuild]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: guided-study-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-rules:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Install Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - name: Install app dependencies
+        run: npm ci
+        working-directory: app
+      - name: Typecheck and build
+        run: npm run build
+        working-directory: app
+      - name: Lint
+        run: npm run lint
+        working-directory: app
+      - name: Test guided study progression and reset
+        run: node tests/study-guided-rules.test.js
+      - name: Test existing Study learning rules
+        run: node tests/study-learning-rules.test.js
+      - name: Test Cybersecurity curriculum rules
+        run: node tests/cybersecurity-rules.test.js
+      - name: Test Arabic curriculum rules
+        run: node tests/arabic-rules.test.js
+      - name: Browser integration tests (disposable profile)
+        run: |
+          CHROME="$(command -v google-chrome || command -v chromium || true)"
+          if [ -z "$CHROME" ]; then echo "No Chrome/Chromium executable"; exit 1; fi
+          CHROME="$CHROME" bash tests/run.sh app-study app-arabic app-cybersecurity app-study-reset app-sync sync-records
