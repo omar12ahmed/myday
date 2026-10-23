@@ -92,6 +92,11 @@ aren't in revision already; a check already there keeps its schedule. The finish
 Partly right counts as getting there, so it waits for Ready. Marks change nothing until you finish, so you can
 correct one before then.
 
+**At most 8 new cards a day** (owner, 24 Oct 2026). Cards that join by themselves (these, and the checks after Ready)
+first come back on a day that has room: at most 8 first-time cards a day. When a day is full, the next card goes to
+the next day with room, in course order. Cards you add yourself are never delayed, but they count towards the 8. The
+finish card names the real day. Details are in `specs/study-home-and-lessons.md` §7.
+
 **Ready to move on** saves the day, and every check of that lesson not already in revision joins it, due 7 days
 later. The card says so: "Its 3 checks will come back on Thu 30 Oct." Checks already in revision keep their schedule.
 Taking Ready back ("Not ready after all", on the lesson page) leaves the cards in revision; you can take them out as
@@ -102,7 +107,9 @@ now. Ready can also be marked without a session, for a lesson you already know, 
 One suggestion with a **Why this?**, worked out on the device by these rules in order (no AI, nothing sent):
 
 1. **Resume:** a session is open on a lesson in your path. *"You have a session open on this lesson."*
-2. **Revisit:** the next new lesson builds directly on a lesson that needs revision (its `prerequisites.all`).
+2. **Revisit:** the next new lesson builds directly on a lesson that needs revision (its `prerequisites.all`,
+   content prerequisites only: checkpoints such as `b1-portfolio` are never catch-up; see
+   `specs/study-home-and-lessons.md` §8).
    *"‹Next› builds on ‹this›, which needs revision: ‹what›."*
 3. **Revise:** Arabic checks or words are due today and you haven't reached today's gentle stop. *"4 Arabic checks
    are back today; a few minutes keeps them."* The lesson is a second link right under it, so nothing is forced.
@@ -111,9 +118,16 @@ One suggestion with a **Why this?**, worked out on the device by these rules in 
 
 When every lesson on your path is Ready or Holding, it says so and suggests revision or a lesson that needs revision.
 
-**Energy.** If today's energy is 1 or 2, the suggestion offers the 15-minute session for a lesson and the 10-minute
-revision session for a revisit, and the session card starts on that length. At 3–5, or with no energy set, it offers
-the standard session. The full lesson is always one tap away. Every lesson already has all five lengths.
+**Energy and free time.** These use Study's existing rule, `suggestLength(data, standardMinutes)` in
+`app/src/data/study/sessions.ts`. It caps the length at 15, 20 or 30 minutes for energy 1, 2 or 3, and trims it to
+the free time before your next plan. The longest session that fits is offered:
+
+- the standard session if it fits;
+- otherwise the 15-minute short session for a lesson, or the 10-minute revision session for a revisit;
+- under 15 minutes, the 10-minute revision session.
+
+The session card starts on that length, and `suggestLength`'s own reasons ("energy 2 today", "25 min free before
+work") appear in "Why this?". The full lesson is always one tap away. Every lesson already has all five lengths.
 
 The same next step and reason feed Today's Guided Study card (`app/src/study/nextLearning.ts`), replacing "Every
 required lesson has a finished session".
@@ -182,7 +196,9 @@ never counts. No guilt words; a lesson that needs revision is just the next usef
 ## 12. Checks to write
 
 - **arabic-rules / study rules:** each state and the precedence order. Holding at 6 and 7 days after Ready. A slip
-  after Ready, and its clearing. Every next-step rule and its reason. Energy 1–2 versus 3–5 versus unset. Older
+  after Ready, and its clearing. Every next-step rule and its reason, with "Catch-up" never pointing at a checkpoint. The suggested length for each
+energy level, for little free time and for no energy set, with `suggestLength`'s reasons shown. The 8-a-day
+placement: a full day pushes to the next day with room, and your own additions are never delayed. Older
   finished sessions counting as Practised.
 - **app-arabic:** marking answers. Both finish cards. Finishing brings Not right / Not sure checks back the next day
   (not Partly right, not ones already in revision), and "Don't bring them back" takes exactly those out. Ready adds
