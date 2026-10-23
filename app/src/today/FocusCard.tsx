@@ -1,4 +1,4 @@
-import { Minus, Play, Plus } from 'lucide-react';
+import { Minus, Play, Plus, Timer } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
@@ -17,14 +17,14 @@ export function FocusCard({ data, k, onStart }: { data: MyDayData; k: DateKey; o
   const m = task ? mins[task.uid] ?? task.minutes : 25;
   const change = (by: number) => task && setMins({ ...mins, [task.uid]: Math.min(240, Math.max(5, m + by)) });
   return (
-    <Card aria-labelledby="focus-h" id="focusCard" className="focus-card relative overflow-hidden !bg-gradient-to-br from-primary-container to-surface">
+    <Card aria-labelledby="focus-h" id="focusCard" className="focus-card">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 id="focus-h" className="m-0 mb-1">Focus timer</h3>
           {task && <p className="text-[15px] text-fg-2 m-0">One task, one timer — pick it and how long.</p>}
           {!task && <p className="text-[15px] text-fg-2 m-0">{!d ? 'Build your day, then focus on one task at a time.' : d.rest ? "It's a rest day — no timer needed." : 'Nothing left to focus on today — lovely.'}</p>}
         </div>
-        <Hourglass />
+        <Timer size={20} className="flex-none text-fg-3" aria-hidden="true" />
       </div>
       {task && <>
         <label className="grid gap-1 text-sm text-fg-2 mt-1" htmlFor="focusTask">Task
@@ -40,19 +40,5 @@ export function FocusCard({ data, k, onStart }: { data: MyDayData; k: DateKey; o
         <Button variant="primary" className="w-full" data-action="focus-start" onClick={() => onStart(task, m)}><Play size={18} aria-hidden="true" /> Start</Button>
       </>}
     </Card>
-  );
-}
-
-// A small hourglass, drawn (decorative).
-function Hourglass() {
-  return (
-    <svg aria-hidden="true" width="44" height="56" viewBox="0 0 44 56" className="flex-none">
-      <rect x="4" y="2" width="36" height="5" rx="2.5" className="fill-primary" />
-      <rect x="4" y="49" width="36" height="5" rx="2.5" className="fill-primary" />
-      <path d="M9 7 h26 c0 10 -9 14 -9 21 c0 7 9 11 9 21 h-26 c0 -10 9 -14 9 -21 c0 -7 -9 -11 -9 -21 Z" className="fill-surface stroke-primary-outline" strokeWidth="2" />
-      <path d="M13 12 h18 c-1 6 -6 9 -9 13 c-3 -4 -8 -7 -9 -13 Z" className="fill-done" opacity=".85" />
-      <path d="M22 30 v8" className="stroke-done" strokeWidth="2" strokeLinecap="round" />
-      <path d="M14 47 c2 -5 5 -7 8 -8 c3 1 6 3 8 8 Z" className="fill-done" opacity=".85" />
-    </svg>
   );
 }

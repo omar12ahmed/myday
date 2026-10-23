@@ -30,10 +30,10 @@ export function GreetingCard({ data, k, onGo }: { data: MyDayData; k: DateKey; o
     if (update(x => (setName(x.patterns, draft) ? undefined : false))) toast(`Nice to meet you, ${draft.trim().slice(0, NAME_MAX)}.`);
   }
   return (
-    <section id="greeting" aria-labelledby="greeting-h" className="greeting relative overflow-hidden rounded-card bg-surface shadow-card mb-4 border border-outline">
-      <div className="relative grid gap-2.5 p-3 lg:gap-6 lg:p-6 lg:grid-cols-[minmax(0,1fr)_minmax(240px,280px)] lg:items-center">
-        <div className="greeting-panel rounded-tile px-2 py-1 lg:px-2 lg:py-4 max-w-[30rem]">
-          <h2 id="greeting-h" className="text-[22px] lg:text-[34px] font-semibold tracking-[-.04em] m-0" data-part={part}>{HELLO[part]}{name ? `, ${name}` : ''}!</h2>
+    <section id="greeting" aria-labelledby="greeting-h" className="greeting">
+      <div className="greeting-grid">
+        <div className="greeting-panel min-w-0">
+          <h1 id="greeting-h" data-part={part}>{HELLO[part]}{name ? `, ${name}` : ''}!</h1>
           <p className={`text-[15px] text-fg-2 m-0 mt-1 ${d ? '' : 'max-lg:hidden'}`} data-s="greeting-line">{line}</p>
           {!name && asking ? (
             <form className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] gap-2 items-end" onSubmit={e => { e.preventDefault(); saveName(); }}>
@@ -47,7 +47,7 @@ export function GreetingCard({ data, k, onGo }: { data: MyDayData; k: DateKey; o
             </form>
           ) : (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 max-lg:mt-0">
-              <Button inline variant="primary" className="max-lg:hidden" data-action="greeting-go" onClick={onGo}>{d ? "Today's plan" : 'Build my day'} <ChevronRight size={18} aria-hidden="true" /></Button>
+              <Button inline variant="quiet" className="greeting-go max-lg:hidden" data-action="greeting-go" onClick={onGo}>{d ? "Today's plan" : 'Build my day'} <ChevronRight size={16} aria-hidden="true" /></Button>
               {!name && <button type="button" className="min-h-11 -my-2 text-[15px] font-semibold text-primary underline-offset-4 hover:underline cursor-pointer bg-transparent border-0 p-0" data-action="name-ask" onClick={() => setAsking(true)}>What should MyDay call you?</button>}
             </div>
           )}
@@ -71,7 +71,7 @@ function MonthCard({ data, k }: { data: MyDayData; k: DateKey }) {
   const month = parseKey(first).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
   const days = Array.from({ length: 42 }, (_, i) => shift(start, i)).filter((day, i) => i < 35 || day.slice(0, 7) === k.slice(0, 7));
   return (
-    <div className="month-card rounded-tile bg-surface-2 p-4" data-s="month">
+    <div className="month-card" data-s="month">
       <div className="flex items-center justify-between mb-1.5">
         <p className="m-0 text-sm font-bold">{month}</p>
         <a href="#calendar" className="text-sm font-semibold text-primary no-underline inline-flex items-center min-h-11 -my-2.5 px-1" data-action="greeting-calendar">Calendar ›</a>
@@ -81,7 +81,7 @@ function MonthCard({ data, k }: { data: MyDayData; k: DateKey }) {
         {days.map(day => {
           const inMonth = day.slice(0, 7) === k.slice(0, 7), today = day === k, busy = inMonth && busyOn(data, day);
           return (
-            <span key={day} role="cell" className={`relative mx-auto grid place-items-center size-7 rounded-full text-[13px] ${today ? 'bg-primary text-on-primary font-bold' : inMonth ? 'text-fg' : 'text-fg-3 opacity-60'}`}
+            <span key={day} role="cell" className={`relative mx-auto grid place-items-center size-7 rounded-full text-[13px] ${today ? 'bg-primary text-on-primary font-bold' : inMonth ? 'text-fg' : 'text-fg-3'}`}
               aria-label={`${parseKey(day).getDate()}${today ? ', today' : ''}${busy ? ', something on' : ''}`} data-day={day}>
               {parseKey(day).getDate()}
               {busy && <span aria-hidden="true" className={`absolute bottom-0.5 size-1 rounded-full ${today ? 'bg-on-primary' : 'bg-primary'}`} />}

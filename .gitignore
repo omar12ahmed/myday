@@ -1,5 +1,7 @@
 # The website built by deploy/build-site.sh (published, never committed here)
 site/
+# Local design directions, browser reports and synthetic screenshots
+.taste-skill/
 # Personal backups and copies of saved data: never commit these
 myday-export-*.json
 myday-saved-copy-*.json

@@ -21,5 +21,5 @@ interface CardProps extends HTMLAttributes<HTMLElement> {
 
 // className is for spacing or layout around the card; its look belongs in the styles above.
 export function Card({ tone = 'plain', className = '', children, ...rest }: CardProps) {
-  return <section className={`card border rounded-card p-5 lg:p-6 mb-4 shadow-card ${TONE[tone]} ${className}`} {...rest}>{children}</section>;
+  return <section data-tone={tone} className={`card border rounded-card p-5 lg:p-6 mb-4 ${TONE[tone]} ${className}`} {...rest}>{children}</section>;
 }

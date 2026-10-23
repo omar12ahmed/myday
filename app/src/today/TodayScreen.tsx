@@ -22,6 +22,7 @@ import { StreakCard } from './ProgressCards';
 import { ProposalCard, type ProposalActions } from './ProposalCard';
 import { TimerCard, type TimerAction } from './TimerCard';
 import { AppFooter } from '../shell/AppFooter';
+import { activeStudy } from '../data/study/sessions';
 import { StudyTodayCard } from '../study/StudyTodayCard';
 import { HealthTodayCard } from '../health/HealthTodayCard';
 import { DailyTodayCard } from '../health/DailyTodayCard';
@@ -279,11 +280,13 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
   // Daily exercises: a countdown on Today, one tap per set (managed in Health → Workout).
   const dailyCard = liveExercises(data.health.daily).length > 0 && <DailyTodayCard data={data} k={k} />;
   // Study: the next lesson, a session to resume or revision ready. Nothing goes on the task list.
+  // An active or paused session belongs next to the plan; otherwise the card stays with the other reminders.
+  const currentStudy = activeStudy(data.study);
   const studyCard = <StudyTodayCard data={data} k={k} />; // always available: the next lesson appears even without an active session or due revision
 
-  // Phones: one column, in this order (as in the current MyDay) — so the timeline comes straight after
-  // the plan. Wide screens: the timeline and the learning count move to a second column on the right.
-  // `order` only matters on phones; `enter` fades the cards in after moving between screens.
+  // Phones: one column, with the plan and any resumable Study before the supporting timeline.
+  // Wide screens: the timeline and learning count move to a second column on the right.
+  // `order` only matters on phones; entrance classes remain for compatibility, without workspace animation.
   const slot = (order: string, node: React.ReactNode, id?: string) =>
     node ? <div id={id} className={`min-w-0 ${order} lg:order-none${entering ? ' enter' : ''}`}>{node}</div> : null;
 
@@ -320,6 +323,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
     main = (
       <>
         {slot('order-1', data.timer && !timerIsStale(data) && <TimerCard data={data} onAction={timerAction} />)}
+        {slot('order-1', currentStudy && studyCard, 'slot-study')}
         {slot('order-1', <PlanCard data={data} k={k} justDoneUid={justDoneUid} onToggle={(t, done) => toggle(k, t, done)} onTimer={timer}
           onEvening={() => { setView('evening'); setEveningKey(k); }} onReview={review} onSwapRest={swapRest} onRestart={restart}
           onAdjust={AI_MODE !== 'off' && !d.rest ? () => { setProposal(null); setAiOpen(true); scrollTo('aiCard'); } : undefined}
@@ -345,7 +349,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
         {slot('order-1', <TasksLink data={data} />, 'slot-tasks')}
         {slot('order-1', healthCard, 'slot-health')}
         {slot('order-1', dailyCard, 'slot-daily')}
-        {slot('order-1', studyCard, 'slot-study')}
+        {slot('order-1', !currentStudy && studyCard, 'slot-study')}
         {slot('order-3', context, 'slot-context')}
         {slot('order-4', proposalCard)}
         {slot('order-4', <NoticedLink data={data} k={k} />, 'slot-noticed')}
@@ -358,6 +362,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
         {slot('order-1', <MorningCard key={energy} energy={energy} queue={data.queue}
           onEnergy={v => { update(dr => { ensureContext(dr, k).energy = v; }); contextChanged(); }} onBuild={build} onSkip={skip}
           onMind={AI_MODE !== 'off' ? openMind : undefined} />)}
+        {slot('order-1', currentStudy && studyCard, 'slot-study')}
         {mindSlots}
         {slot('order-1', proposalCard)}
         {slot('order-1', <QuickAdd k={k} />, 'slot-quick')}
@@ -368,7 +373,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
         {slot('order-2', context, 'slot-context')}
         {slot('order-3', healthCard, 'slot-health')}
         {slot('order-3', dailyCard, 'slot-daily')}
-        {slot('order-3', studyCard, 'slot-study')}
+        {slot('order-3', !currentStudy && studyCard, 'slot-study')}
         {slot('order-4', yesterdayOpen && <YesterdayCard onOpen={() => { setView('evening'); setEveningKey(shift(k, -1)); }} />)}
         {slot('order-4', <NoticedLink data={data} k={k} />, 'slot-noticed')}
       </>
@@ -390,28 +395,29 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
   // Wide screens: a dashboard — the greeting across the top, your day on the left, the focus timer, today and this
   // week, the timeline and your progress on the right. Phones: one column, in a sensible order.
   return (
-    <div className="today-layout flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(320px,380px)] lg:gap-x-6 lg:items-start">
+    <div className="today-layout flex flex-col lg:grid lg:items-start">
+      {view !== 'auto' && <h1 className="sr-only">Today</h1>}
       {view === 'auto' && (
-        <div className="contents lg:block lg:min-w-0 lg:[grid-area:hero]">
+        <div className="today-hero contents lg:block lg:min-w-0">
           {slot('order-0', <GreetingCard data={data} k={k} onGo={() => scrollTo(d ? 'slot-plan' : 'slot-energy')} />, 'slot-greeting')}
         </div>
       )}
-      <div className="contents lg:block lg:min-w-0 lg:[grid-area:main]">
+      <div className="today-main contents lg:block lg:min-w-0">
         {slot('order-0', showNudge && view !== 'edit' && (
           <NudgeCard day={d} choosing={nudge.choosing} onShrink={shrink} onSwap={uid => swapLearning(uid)} onAdd={() => swapLearning(null)} onDismiss={hideNudge} />
         ))}
         {main}
       </div>
       {view !== 'edit' && (
-        <aside className="contents lg:block lg:min-w-0 lg:[grid-area:side]" aria-label="More for today">
+        <aside className="today-aside contents lg:block lg:min-w-0" aria-label="More for today">
           {view === 'auto' && slot('order-1', !(data.timer && !timerIsStale(data)) && <FocusCard data={data} k={k} onStart={(t, m) => timer(t, 'focus', m)} />, 'slot-focus')}
-          {view === 'auto' && slot('order-2', <div className="grid grid-cols-2 gap-4 mb-4 [&>.card]:mb-0"><TodayRing data={data} k={k} /><WeekCard data={data} k={k} /></div>, 'slot-week')}
+          {view === 'auto' && slot('order-2', <div className="day-record"><TodayRing data={data} k={k} /><WeekCard data={data} k={k} /></div>, 'slot-week')}
           {view === 'auto' && slot('order-2', <GlanceCard data={data} k={k} proposal={d ? null : proposal} />)}
           {slot('order-8', <StreakCard data={data} justLearned={justLearned} />)}
         </aside>
       )}
       {view !== 'edit' && (
-        <div className="min-w-0 order-9 lg:order-none lg:[grid-area:foot]">
+        <div className="today-footer min-w-0 order-9 lg:order-none">
           <AppFooter data={data} canSave={canSave} onEdit={() => { setView('edit'); window.scrollTo(0, 0); }} onExport={onExport} onImport={onImport} />
         </div>
       )}

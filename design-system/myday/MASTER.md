@@ -12,7 +12,29 @@
 
 ---
 
-## As implemented (branch `clarity-look`, 16 Oct 2026)
+## Current implementation (22 Oct 2026)
+
+The user-requested Taste redesign follows **Editorial greeting**, seed 137248462, keeping the bundled
+Plus Jakarta Sans, teal and Capture orange. `app/src/styles/tokens.css` and
+`app/src/styles/workspace.css` are the implementation source of truth. These decisions supersede the
+historical starting palette and component examples below:
+
+- Open paper workspace: sage-neutral `#f4f5f2`, white surfaces and neutral-charcoal dark `#151716`.
+- Primary actions use teal `#0f766e` in light and `#7ed7c6` in dark, with the existing contrasting text pair.
+  Teal also retains orientation and next-step state;
+  orange stays exclusive to Capture. Established category and completion colours keep their meanings.
+- A 224 px labelled sidebar, 16 px grid gutters, and a centred canvas up to 1136 px wide.
+  Today's grid uses eight columns for the plan and four for its supporting stream.
+- Today's greeting is the page title. Tasks form a continuous day sheet; project next steps repeat
+  that treatment. Progress counts are regular-weight, with no invented minimum bar at zero.
+- Task actions use 14 px text and 44 px targets, with a pale teal Just start action on the next task.
+  Active or paused Study sessions sit directly above the plan or, before planning, below the energy card.
+- Flat panels at 8 px radius, controls at 6 px, tags at 4 px. No resting shadows or blurred navigation.
+- Full-width opaque phone navigation, 52 px Capture above it, and at least 44 px interactive targets.
+  Long tab rows scroll inside their own frame on narrow phones.
+- Working content has no entrance animation. Existing completion and control feedback obey reduced motion.
+
+## Historical starting point (16 Oct 2026)
 
 The generated palette below was the starting point; the shipped tokens in `app/src/styles/tokens.css`
 differ deliberately, chosen with Omar from five mocked-up directions ("Clarity, warmed"):

@@ -1,16 +1,16 @@
-/* MyDay: the Clarity look — flat warm paper, ink typography, one teal accent,
-   and a single warm orange reserved for Capture. Surfaces are separated by
-   quiet warm borders, not shadows. Semantic category colours stay distinct.
+/* MyDay: Clarity, an open paper workspace. Low-chroma sage grounds, teal actions
+   and next steps, and orange reserved for Capture. Flat surfaces
+   and a small, consistent radius keep the working interface quiet.
    Light, dark and device themes use the same contrast-tested token pairs. */
 :root {
   color-scheme: light;
-  --bg: #f7f5ef;
-  --glass: rgba(247, 245, 239, .94);
+  --bg: #f4f5f2;
+  --glass: #f4f5f2;
   --surface: #ffffff;
-  --surface-2: #f0ede5;
-  --surface-3: #fcfbf8;
-  --outline: #e4e1d7;
-  --outline-strong: #8a8b82;
+  --surface-2: #e9ede8;
+  --surface-3: #f8f9f6;
+  --outline: #e1e6df;
+  --outline-strong: #838d83;
   --text: #22261f;
   --text-2: #4f554c;
   --text-3: #62675d;
@@ -22,14 +22,16 @@
   --accent: #c2410c;           /* orange-700, Capture only: white text passes AA */
   --on-accent: #ffffff;
   --accent-outline: #e0b191;
-  --tonal: #edeae0;
+  --tonal: #e9ede8;
   --on-tonal: #3a4038;
-  --track: #e3e5dc;
+  --track: #dce3dc;
+  --action: var(--primary);
+  --on-action: var(--on-primary);
   /* A three-step teal for ordered amounts on charts (e.g. evidence: to get → have it → reviewed), light to dark. */
   --seq-1: #9ccfc1; --seq-2: #2e9e8d; --seq-3: #0a4a40;
   --done: #15803d;     --on-done: #ffffff;
   --done-c: #ddf3e3;   --on-done-c: #14532d;
-  --rail: #f0ede5;     --rail-2: #f0ede5;   --on-rail: #3a4038;
+  --rail: #f4f5f2;     --rail-2: #e9ede8;   --on-rail: #3a4038;
   --learning: #34598b; --learning-c: #e0e9f6;
   --admin: #70521a;    --admin-c: #f4ead6;
   --health: #30663f;   --health-c: #ddf0e2;
@@ -40,18 +42,18 @@
   --inverse: #25302b;  --on-inverse: #f0f7f3;
   --primary-2: #0b5d56;
   --focus-glow: rgba(15, 118, 110, .16);
-  --shadow: 0 1px 2px rgba(34, 38, 31, .04);
-  --shadow-btn: 0 1px 2px rgba(34, 38, 31, .06);
-  --shadow-cta: 0 1px 2px rgba(11, 93, 86, .18);
+  --shadow: none;
+  --shadow-btn: none;
+  --shadow-cta: none;
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #141815;
-  --glass: rgba(20, 24, 21, .94);
-  --surface: #1d221e;
-  --surface-2: #252b25;
-  --surface-3: #212721;
-  --outline: #333b33;
+  --bg: #151716;
+  --glass: #151716;
+  --surface: #1e211f;
+  --surface-2: #292e2a;
+  --surface-3: #232724;
+  --outline: #353c36;
   --outline-strong: #7b887a;
   --text: #eef1ea;
   --text-2: #c2c9bd;
@@ -67,10 +69,12 @@
   --tonal: #2b332b;
   --on-tonal: #d9e2d3;
   --track: #333b33;
+  --action: var(--primary);
+  --on-action: var(--on-primary);
   --seq-1: #35594f; --seq-2: #4aa596; --seq-3: #a6ecdf;
   --done: #8fd3a8;     --on-done: #0e2a1a;
   --done-c: #1d3326;   --on-done-c: #c6ecd3;
-  --rail: #181e1a;     --rail-2: #181e1a;   --on-rail: #c2c9bd;
+  --rail: #151716;     --rail-2: #292e2a;   --on-rail: #c2c9bd;
   --learning: #a6bddd; --learning-c: #1f2b3b;
   --admin: #d8c29c;    --admin-c: #33291a;
   --health: #a6cbae;   --health-c: #1c2f22;
@@ -81,19 +85,19 @@
   --inverse: #eef7f2;  --on-inverse: #1d2823;
   --primary-2: #95e0d0;
   --focus-glow: rgba(126, 215, 198, .18);
-  --shadow: 0 1px 2px rgba(0, 0, 0, .12);
-  --shadow-btn: 0 1px 2px rgba(0, 0, 0, .18);
-  --shadow-cta: 0 1px 3px rgba(0, 0, 0, .22);
+  --shadow: none;
+  --shadow-btn: none;
+  --shadow-cta: none;
 }
 @media (prefers-color-scheme: dark) {
   :root[data-theme="auto"] {
     color-scheme: dark;
-    --bg: #141815;
-    --glass: rgba(20, 24, 21, .94);
-    --surface: #1d221e;
-    --surface-2: #252b25;
-    --surface-3: #212721;
-    --outline: #333b33;
+    --bg: #151716;
+    --glass: #151716;
+    --surface: #1e211f;
+    --surface-2: #292e2a;
+    --surface-3: #232724;
+    --outline: #353c36;
     --outline-strong: #7b887a;
     --text: #eef1ea;
     --text-2: #c2c9bd;
@@ -109,10 +113,12 @@
     --tonal: #2b332b;
     --on-tonal: #d9e2d3;
     --track: #333b33;
+    --action: var(--primary);
+    --on-action: var(--on-primary);
     --seq-1: #35594f; --seq-2: #4aa596; --seq-3: #a6ecdf;
     --done: #8fd3a8;     --on-done: #0e2a1a;
     --done-c: #1d3326;   --on-done-c: #c6ecd3;
-    --rail: #181e1a;     --rail-2: #181e1a;   --on-rail: #c2c9bd;
+    --rail: #151716;     --rail-2: #292e2a;   --on-rail: #c2c9bd;
     --learning: #a6bddd; --learning-c: #1f2b3b;
     --admin: #d8c29c;    --admin-c: #33291a;
     --health: #a6cbae;   --health-c: #1c2f22;
@@ -123,8 +129,8 @@
     --inverse: #eef7f2;  --on-inverse: #1d2823;
     --primary-2: #95e0d0;
     --focus-glow: rgba(126, 215, 198, .18);
-    --shadow: 0 1px 2px rgba(0, 0, 0, .12);
-    --shadow-btn: 0 1px 2px rgba(0, 0, 0, .18);
-    --shadow-cta: 0 1px 3px rgba(0, 0, 0, .22);
+    --shadow: none;
+    --shadow-btn: none;
+    --shadow-cta: none;
   }
 }

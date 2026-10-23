@@ -662,31 +662,37 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/sync/` | Optional cloud sync (see "Cloud sync"): `config.ts` (is it set up?), `records.ts` (which parts of the saved data are records, fingerprints, descriptions), `state.ts` (sync's notes, `myday.sync.v1`), `client.ts` (Supabase: sign-in and the two sync functions), `engine.ts` (sending, receiving, conflicts, reviews, the status), and the screens: `SyncBadge` (the status at the top), `SyncScreen` (`#sync`), `ReviewPanel` (what would change), `Compare` (two versions side by side). |
 | `../supabase/` | The database changes for sync (`migrations/`, version-controlled SQL) and the set-up guide. |
 | `../deploy/` | Publishing: building the website (`build-site.sh`), previewing it (`preview-site.sh`), committing it to `main` (`publish-main.sh`) and the guide. |
-| `src/styles/tokens.css` | Colours for dark and light themes (the same as the current MyDay). |
+| `src/styles/tokens.css` | Clarity's light/dark palette, semantic categories and primary-action roles. |
+| `src/styles/workspace.css` | The open workspace frame, responsive navigation, shared presentation, Today grid, project board and Study shelf. |
 | `src/index.css` | Gives the colours Tailwind names (e.g. `bg-surface`, `text-fg-2`), sets the font, the navigation bar and the animations. |
 | `../tests/app-*.test.js` | The checks for this app (adapted from the current MyDay's checks). |
 
 ## Design
 
-The October 2026 refresh uses a quiet, warm workspace with clearer navigation and fewer competing accents.
-It builds on 1.11.0's dashboard and shared components. The classic MyDay (`../index.html`) keeps its green look;
-both versions still share the font, task timeline and saved data. This refresh needs no data migration.
+The October 2026 redesign uses an open paper workspace, based on Taste's **Editorial greeting** direction
+(seed 137248462). Its defining detail is the connection between a project's next step and Today's plan:
+the same quiet task treatment, with teal on key actions and next steps. The classic MyDay (`../index.html`)
+keeps its existing look; both versions still share the font, task timeline and saved data. No data migration.
 
-- **Colours** (`src/styles/tokens.css`): warm paper (#f7f5ef), white cards and charcoal text, with a flat teal
+- **Colours** (`src/styles/tokens.css`): low-chroma sage paper (#f4f5f2), white cards and charcoal text, with a flat teal
   accent (`primary`, #0f766e light / #7ed7c6 dark — teal-700 was the lightest teal whose white text passes AA)
-  and one warm orange reserved for Capture (`accent`, #c2410c light / #f0a069 dark). Dark mode uses a warm
-  charcoal page (#141815). Green still means done, and category colours retain their meaning. Light remains
+  and one warm orange reserved for Capture (`accent`, #c2410c light / #f0a069 dark). Primary actions use the
+  established teal pair in each theme. Dark mode uses neutral charcoal (#151716). Green still means done,
+  and category colours retain their meaning. Light remains
   the default; Match device follows system changes, including the native browser bar. Semantic text pairs
   are checked for WCAG AA contrast in both themes.
-- **Hierarchy:** flat surfaces separated by quiet warm borders instead of shadows (cards 12 px, buttons 8 px),
-  solid primary buttons and generous spacing. Section headings use sentence case. Background glows and the
-  decorative landscape have been removed. Footer tools remain available as small, quiet buttons; form controls
-  and focus states use the same shared tokens throughout.
-- **Navigation:** on phones, a frosted bar floating just above the bottom edge; on wide screens (64rem and up),
-  a 208 px neutral sidebar with the MyDay logo linking to Today, followed by each section's icon and name.
-  The current section has a distinct surface and an accessible current-page label.
+- **Hierarchy** (`src/styles/workspace.css`): a 12-column desktop grid with 16 px gutters, flat panels (8 px),
+  controls (6 px), and sentence-case labels. Today uses eight columns for the plan and four for supporting
+  information. Independent streams keep their natural height. The greeting is Today's `h1`; other screens
+  use their section name. Footer tools stay available. Disabled shared buttons retain readable text.
+- **Navigation:** on phones, an opaque full-width bottom bar with six labelled destinations and a 52 px
+  Capture button above it; on wide screens (64rem and up), a 224 px sidebar on the page ground, with an
+  outline circle-and-tick wordmark, task/note shortcuts, and the existing Noticed/Knows destinations.
+  The current section uses a neutral fill and an accessible current-page label. Workspace tabs use an ink
+  underline; long tab rows scroll inside their own frame on narrow phones.
 - **Top bar:** the section's name above the date; on Today, the Focus mode switch; your account when signed in;
-  Capture and the theme button. On wide screens Capture sits in the header's normal layout, so it cannot drift
+  Capture and the theme button. The header scrolls with the content to keep headings unobscured.
+  On wide screens Capture sits in the header's normal layout, so it cannot drift
   over the account or theme controls. A keyboard-only Skip to content link focuses the current workspace
   without changing the route.
 - **App icon:** the circle-and-tick on an orange gradient (`public/icon.svg`, `public/icon-maskable.svg`; sizes made by
@@ -699,6 +705,8 @@ both versions still share the font, task timeline and saved data. This refresh n
   The round marker beside each task shows a tick once it's done; tapping anywhere on a task ticks it off. Each fact
   appears once: the time on top, then the title, then the category and length.
 - **Up next:** one task is marked "Up next", using the existing `nextTask()` rule in `today.ts`.
+  Task actions use 14 px text and at least 44 px targets; the next task's Just start action has a pale teal fill,
+  while other timer actions have an outline.
 - **Progress note:** nothing until the first task is done, then "1 done so far", and
   "That's the whole plan — lovely." once everything is done.
 - **Morning:** energy and Build my day share a card, just under the greeting; on phones the greeting stays compact so
@@ -707,14 +715,19 @@ both versions still share the font, task timeline and saved data. This refresh n
   screens (this week on phones), with a dot on days with a shift or appointment. The plan keeps quick add,
   the focus timer, today's progress ring and this week's green bars — plain counts, never scores or percentages.
   Names can still be changed under Your preferences.
+- **Study on Today:** an active or paused session appears immediately above the plan (below the energy card
+  before a plan is built), before Quick Add and the other reminders. Resume opens the same saved session.
+  Revision-only reminders keep their existing position; nothing is added to the task list.
 - **Focus mode:** shows only the next task with Start focus, Just start and Tick it off, or the running timer.
   Show everything brings the rest back. The choice stays on this device only (`myday.focus`).
 - **Study:** the first visit offers the guided cybersecurity path beside course setup. Suggested courses can be
   reviewed in a disclosure before creating the roadmap. Existing learning dashboards and records keep their
   behaviour. Cybersecurity uses a wider catalogue, narrower reading pages and tabs that identify the current
-  destination; the extra Practice promotional card has been removed in favour of a clear next-step action.
+  destination. Guided courses form a compact shelf beside roadmap setup, with plain icons and course metadata.
+  The shared `Ar` renderer owns Arabic's bundled font, so the first course-card label already uses Noto Naskh.
 - **Confirmations** ("Start today over?", "Replace your saved data?") use an in-page dialog.
-- **Motion** stays small and switches off with the Animations button or when the device asks for reduced motion.
+- **Motion:** working content appears immediately; controls and completion keep their brief feedback.
+  Motion switches off with the Animations button or when the device asks for reduced motion.
 
 The original timeline was adapted from the "Process Timeline" component on [21st.dev](https://21st.dev).
 The refresh reviewed [coss ui](https://github.com/cosscom/coss) and [Twenty](https://github.com/twentyhq/twenty)

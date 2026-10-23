@@ -24,7 +24,7 @@ export function ProjectsScreen({ data, hash }: { data: MyDayData; hash: string }
   const tab = parts[1] === 'notes' ? 'notes' : parts[1] === 'connections' ? 'connections' : 'projects';
   const tabClass = (on: boolean) => `seg-link flex-1 inline-flex items-center justify-center gap-1.5 min-h-11 rounded-xl text-[15px] font-semibold no-underline ${on ? 'on bg-primary-container text-on-primary-container' : 'text-fg-2'}`;
   return (
-    <div className={tab === 'notes' ? 'max-w-[720px] mx-auto' : 'max-w-[1000px] mx-auto'}>
+    <div className={tab === 'notes' ? 'max-w-[720px] mx-auto' : 'projects-workspace'}>
       <Card className="section-tabs !p-2.5 max-w-[720px] mx-auto">
         <div className="seg flex gap-1.5" role="tablist" aria-label="Projects, notes and connections">
           <a className={tabClass(tab === 'projects')} href="#projects" role="tab" aria-selected={tab === 'projects'}>Projects</a>
@@ -54,9 +54,11 @@ function ProjectsHome({ data }: { data: MyDayData }) {
   return (
     <>
       <Card aria-labelledby="projects-h" id="projectsIntro" className="max-w-[720px] mx-auto">
-        <h2 id="projects-h" className="flex items-center gap-2"><FolderKanban size={22} aria-hidden="true" className="text-primary" /> Your projects</h2>
-        <p className="text-[15px] text-fg-2 m-0">One place for everything about one intention — from a vague idea to small steps on your days.</p>
-        <a href="#review" className="inline-flex items-center min-h-11 text-primary font-semibold text-[15px] no-underline hover:underline underline-offset-4" data-action="open-review">Look back at your week</a>
+        <div className="projects-intro-copy">
+          <h2 id="projects-h" className="flex items-center gap-2"><FolderKanban size={22} aria-hidden="true" className="text-primary" /> Your projects</h2>
+          <p className="text-[15px] text-fg-2 m-0">One place for everything about one intention — from a vague idea to small steps on your days.</p>
+          <a href="#review" className="inline-flex items-center min-h-11 text-primary font-semibold text-[15px] no-underline hover:underline underline-offset-4" data-action="open-review">Look back at your week</a>
+        </div>
         <form className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 items-end mt-4" onSubmit={e => { e.preventDefault(); start(); }}>
           <Field label="Start a project" htmlFor="projectNew">
             <TextInput id="projectNew" value={text} maxLength={PROJECT_LIMITS.title} onChange={e => setText(e.target.value)} placeholder="e.g. A coffee subscription for offices" />
@@ -75,7 +77,8 @@ function ProjectsHome({ data }: { data: MyDayData }) {
       </Card>
       {active.length > 0 ? <Board data={data} /> : (
         <Card id="projectsEmpty" className="max-w-[720px] mx-auto">
-          <p className="text-[15px] text-fg-2 m-0">No projects yet. Anything you'd like to make happen can be one — "Start a podcast", "Move house",
+          <h3>No projects yet</h3>
+          <p className="text-[15px] text-fg-2 m-0">Anything you'd like to make happen can be one — "Start a podcast", "Move house",
             "Arabic for travel". Start with just a name; the rest can come later.</p>
         </Card>
       )}
@@ -121,7 +124,7 @@ function Board({ data }: { data: MyDayData }) {
             <p className="text-sm text-fg-3 m-0 mb-2.5">{c.hint}</p>
             {many && <p className="text-sm rounded-tile bg-surface-2 border border-outline px-3 py-2 m-0 mb-2.5" data-s="column-many">{list.length} here at once. Your rule of thumb is {c.most === 3 ? 'three' : 'two'} at a time — pausing one is fine, it'll keep.</p>}
             {list.length ? (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              <div className="project-cards grid gap-3">
                 {list.map(p => <ProjectCard key={p.id} data={data} p={p} back={i > 0 ? COLUMNS[i - 1].id : null} on={i < COLUMNS.length - 1 ? COLUMNS[i + 1].id : null} onMove={to => move(p, to)} />)}
               </div>
             ) : <p className="text-sm text-fg-3 m-0 mb-3 rounded-tile border border-dashed border-outline px-3 py-3" data-s="column-empty">Nothing here right now.</p>}

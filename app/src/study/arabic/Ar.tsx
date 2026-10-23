@@ -1,4 +1,7 @@
 import { useContext, type ReactNode } from 'react';
+// Load the font wherever Arabic first appears, including Study's course card.
+// The browser downloads its glyph file only when Arabic text is rendered.
+import '@fontsource-variable/noto-naskh-arabic';
 import { PronunciationContext } from './pronunciationContext';
 import { arabicRuns } from './arabic-runs.mjs';
 import { PlayButton } from './Listen';

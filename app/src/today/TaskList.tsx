@@ -49,7 +49,7 @@ export function TaskList({ tasks, dayKey, joined = false, nextUid = null, justDo
               <div className={`flex-1 min-w-0 rounded-tile border px-3.5 py-3 transition-colors ${next ? 'bg-surface border-primary shadow-card' : 'bg-surface-2 border-transparent group-hover:border-outline-strong'}`}>
                 {(next || time) && (
                   <p className="flex flex-wrap items-center gap-x-2 gap-y-1 m-0 mb-1 text-sm font-semibold text-fg-2 tabular-nums">
-                    {next && <span className="text-xs font-bold tracking-[.06em] uppercase px-2 py-0.5 rounded-full bg-primary-container text-on-primary-container">Up next</span>}
+                    {next && <span className="next-label text-xs font-semibold text-primary">Up next</span>}
                     {time}
                   </p>
                 )}

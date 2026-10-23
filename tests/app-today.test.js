@@ -408,27 +408,27 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   const bgOf = () => ev(`getComputedStyle(document.body).backgroundColor`);
   await openAt(2027, 2, 7, 7);
   // From 1.11.0 the new app is warm and light by default (the classic MyDay's default stays dark).
-  check('light by default (the warm neutral page)', (await ev(`document.documentElement.dataset.theme`)) === 'light' && (await bgOf()) === 'rgb(247, 245, 239)', await bgOf());
+  check('light by default (the paper workspace)', (await ev(`document.documentElement.dataset.theme`)) === 'light' && (await bgOf()) === 'rgb(244, 245, 242)', await bgOf());
   check('theme button labelled for screen readers', (await ev(`document.getElementById('themeBtn').getAttribute('aria-label')`)) === 'Theme: Light. Tap to change.');
   await click('#themeBtn'); await sleep(400);
-  check('tap → Dark: the charcoal colours applied and saved', (await ev(`document.documentElement.dataset.theme`)) === 'dark' && (await bgOf()) === 'rgb(20, 24, 21)' && (await data()).settings.theme === 'dark');
-  check('browser bar colour follows the theme', (await ev(`document.querySelector('meta[name=theme-color]').content`)) === '#141815');
+  check('tap → Dark: the charcoal colours applied and saved', (await ev(`document.documentElement.dataset.theme`)) === 'dark' && (await bgOf()) === 'rgb(21, 23, 22)' && (await data()).settings.theme === 'dark');
+  check('browser bar colour follows the theme', (await ev(`document.querySelector('meta[name=theme-color]').content`)) === '#151716');
   await T.send('Page.addScriptToEvaluateOnNewDocument', { source: `new MutationObserver((m, o) => { if (document.body) { window.__themeAtBody = document.documentElement.getAttribute('data-theme'); o.disconnect(); } }).observe(document, { childList: true, subtree: true });` });
   await openAt(2027, 2, 7, 8);
   check('saved theme is applied before the page body appears (no flash)', (await ev('window.__themeAtBody')) === 'dark', await ev('window.__themeAtBody'));
   await click('#themeBtn'); await sleep(400);
   await T.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'dark' }] });
-  check('tap → Match device (device dark) → dark colours', (await ev(`document.documentElement.dataset.theme`)) === 'auto' && (await bgOf()) === 'rgb(20, 24, 21)', await bgOf());
+  check('tap → Match device (device dark) → dark colours', (await ev(`document.documentElement.dataset.theme`)) === 'auto' && (await bgOf()) === 'rgb(21, 23, 22)', await bgOf());
   await T.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'light' }] });
-  check('…device switches to light → light colours', (await bgOf()) === 'rgb(247, 245, 239)', await bgOf());
+  check('…device switches to light → light colours', (await bgOf()) === 'rgb(244, 245, 242)', await bgOf());
   // The browser tells the page about a theme change at its next frame, a moment after the colours themselves change —
   // so wait for the bar (this used to be read too early, and failed now and then, mostly at night).
   const bar = () => ev(`document.querySelector('meta[name=theme-color]').content`);
-  for (let i = 0; i < 20 && (await bar()) !== '#f7f5ef'; i++) await sleep(100);
-  check('Match device updates the browser bar when the OS theme changes', (await bar()) === '#f7f5ef', await bar());
+  for (let i = 0; i < 20 && (await bar()) !== '#f4f5f2'; i++) await sleep(100);
+  check('Match device updates the browser bar when the OS theme changes', (await bar()) === '#f4f5f2', await bar());
   await T.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'dark' }] });
   await click('#themeBtn'); await sleep(400);
-  check('tap → back to Light (even when the device is dark)', (await ev(`document.documentElement.dataset.theme`)) === 'light' && (await bgOf()) === 'rgb(247, 245, 239)', await bgOf());
+  check('tap → back to Light (even when the device is dark)', (await ev(`document.documentElement.dataset.theme`)) === 'light' && (await bgOf()) === 'rgb(244, 245, 242)', await bgOf());
   await T.send('Emulation.setEmulatedMedia', { features: [] });
   const contrastIn = async theme => ev(`(() => {
     document.documentElement.dataset.theme = ${JSON.stringify(theme)};
@@ -483,12 +483,20 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   const anim = sel => ev(`(() => { const el = document.querySelector(${JSON.stringify('X')}); return el ? getComputedStyle(el).animationName : 'missing'; })()`.replace('"X"', JSON.stringify(sel)));
   await reset(); await openAt(2027, 5, 3, 7);
   await setEnergy(5); await click('[data-action=build]');
-  check('proposal items slide in one by one', (await ev(`document.querySelectorAll('.prop-item.stagger').length`)) === 3);
+  check('proposal items are immediately readable without entrance motion', await ev(`[...document.querySelectorAll('.prop-item')].length === 3 && [...document.querySelectorAll('.prop-item')].every(el => getComputedStyle(el).animationName === 'none' && getComputedStyle(el).opacity === '1')`));
   await click('[data-action=prop-edit]');
   check('…but not again on every edit', (await ev(`document.querySelectorAll('.prop-item.stagger').length`)) === 0);
   await click('[data-action=prop-done-edit]'); await click('[data-action=prop-apply]');
-  check('moving to the plan screen fades the cards in', await exists('#app .enter'));
+  check('moving to the plan keeps the working cards immediately visible', await ev(`!!document.querySelector('#slot-plan') && [...document.querySelectorAll('#app .enter')].every(el => getComputedStyle(el).animationName === 'none' && getComputedStyle(el).opacity === '1')`));
   check('"Just start" is highlighted only on the next task', (await ev(`[...document.querySelectorAll('[data-action=timer-start]')].map(b => b.dataset.variant === 'ghost')`)).join() === 'false,true,true');
+  check('task actions keep readable 14 px text and 44 px targets', await ev(`[...document.querySelectorAll('.task-actions button')].every(b => parseFloat(getComputedStyle(b).fontSize) >= 14 && b.getBoundingClientRect().height >= 44)`));
+  check('the next Just start action has a visible fill, and the other timer actions retain outlines', await ev(`(() => {
+    const buttons = [...document.querySelectorAll('.task-actions button')];
+    const next = document.querySelector('.task.next + .task-actions [data-action=timer-start]');
+    return !!next && getComputedStyle(next).backgroundColor !== 'rgba(0, 0, 0, 0)' && buttons.filter(b => b !== next).every(b => {
+      const s = getComputedStyle(b); return parseFloat(s.borderTopWidth) >= 1 && s.borderTopColor !== 'rgba(0, 0, 0, 0)';
+    });
+  })()`));
   check('the next task is marked "Up next"', (await text('#app .task.next')).includes('Up next') && (await ev(`document.querySelectorAll('#app .task.next').length`)) === 1);
   await tick(0);
   check('ticking plays a pop + glow on that card', (await anim('.task.just-done')) === 'glow' && (await anim('.task.just-done .box')) === 'pop');

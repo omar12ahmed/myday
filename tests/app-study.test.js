@@ -477,6 +477,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   // Today card
   await go('today', 2026, 11, 2, 9);
   check('Today shows a Study card only for what is waiting: revision ready', (await text('#slot-study')).includes('Revision ready') && (await text('#slot-study')).includes('1 question'));
+  check('revision alone stays with the other reminders', await ev(`document.querySelector('#slot-study').getBoundingClientRect().top > document.querySelector('#slot-quick').getBoundingClientRect().bottom`));
   await click('#slot-study [data-action=s-rev-start]'); await sleep(300);
   check('…and Revise goes straight to the first question', (await ev('location.hash')) === '#study/revise' && (await text('.st-prompt')) === 'What is a TTL?');
   await go('study', 2026, 11, 2, 9);
@@ -484,6 +485,43 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   await nav('today'); await sleep(150);
   check('…and a session in progress, with Resume', (await text('#slot-study')).includes('Study session in progress') && (await exists('#slot-study a[href="#study/session"]')));
   check('nothing was added to today\'s task list', !(await D()).days['2026-11-02']);
+  const sessionBefore = await SD();
+  // A session to resume is beside the plan, not buried under the other reminders.
+  // Cover both reading orders, with and without a plan, running and paused.
+  for (const width of [1440, 390]) {
+    await T.send('Emulation.setDeviceMetricsOverride', { width, height: width === 390 ? 844 : 1000, deviceScaleFactor: 1, mobile: width === 390 });
+    for (const planned of [false, true]) for (const paused of [false, true]) {
+      await editStorage(`s => {
+        s.study = ${JSON.stringify(sessionBefore)};
+        if (${paused}) s.study.sessions.find(x => x.id === s.study.activeId).runningSince = null;
+        delete s.days['2026-11-02'];
+        if (${planned}) s.days['2026-11-02'] = { energy: 3, rest: false, builtAt: '2026-11-02T08:30', checkedIn: false, tasks: [${JSON.stringify(learnTask)}] };
+      }`);
+      await go('today', 2026, 11, 2, 9);
+      const label = `${width}px, ${planned ? 'planned' : 'morning'}, ${paused ? 'paused' : 'running'}`;
+      check(`Study sits directly ${planned ? 'before the plan' : 'after the energy card'} (${label})`, await ev(`(() => {
+        const anchor = document.getElementById('${planned ? 'slot-plan' : 'slot-energy'}');
+        const study = document.getElementById('slot-study'), quick = document.getElementById('slot-quick');
+        const adjacent = ${planned} ? study.nextElementSibling === anchor.parentElement : anchor.parentElement.nextElementSibling === study;
+        const ordered = ${planned} ? study.getBoundingClientRect().bottom <= anchor.getBoundingClientRect().top : study.getBoundingClientRect().top >= anchor.getBoundingClientRect().bottom;
+        return document.querySelectorAll('#slot-study').length === 1 && adjacent && ordered
+          && study.getBoundingClientRect().bottom <= quick.getBoundingClientRect().top
+          && document.documentElement.scrollWidth <= innerWidth;
+      })()`));
+      if (planned) check(`Study's Resume is visible in the first viewport (${label})`, await ev(`(() => {
+        const r = document.querySelector('#slot-study a[href="#study/session"]').getBoundingClientRect();
+        const nav = document.getElementById('nav').getBoundingClientRect();
+        return r.top >= 0 && r.bottom <= (${width} === 390 ? nav.top : innerHeight);
+      })()`));
+      if (width === 390) check(`phone: Study comes before the supporting timer (${label})`, await ev(`document.getElementById('slot-study').getBoundingClientRect().bottom <= document.getElementById('slot-focus').getBoundingClientRect().top`));
+      await click('#slot-study a[href="#study/session"]'); await sleep(200);
+      const resumed = await SD();
+      check(`Resume opens the same saved session (${label})`, (await ev('location.hash')) === '#study/session'
+        && resumed.activeId === sessionBefore.activeId && resumed.sessions.length === sessionBefore.sessions.length
+        && (await exists(paused ? '[data-action=s-resume]' : '[data-action=s-pause]')));
+    }
+  }
+  await T.send('Emulation.clearDeviceMetricsOverride');
   await editStorage(`s => { s.study.concepts = []; s.study.activeId = null; s.study.sessions = s.study.sessions.filter(x => x.status === 'done'); }`);
   await go('today', 2026, 11, 2, 9);
   await until(() => exists('#slot-study [data-s="study-next-lessons"] [data-subject="arabic"] a[data-action="continue-learning"]'), 'Today’s on-demand lesson choices');

@@ -152,6 +152,7 @@ function Shell() {
   const screenName = hash.startsWith('#sync') ? 'Your account' : hash.startsWith('#noticed') ? 'What MyDay has noticed' : hash.startsWith('#knows') ? 'What MyDay knows' : hash.startsWith('#review') ? 'Your week' : hash.startsWith('#today/tasks') ? 'Tasks' : SECTIONS.find(x => x.id === section)?.label ?? 'MyDay';
   // Sign in first (when sync is set up): see sync/SignInGate.tsx.
   const gate = !blocked && signInRequired(sync) && !useHere;
+  const todayHome = !blocked && !gate && section === 'today' && !/^#(?:sync|noticed|knows|review|today\/tasks)/.test(hash);
   const explore = exploreRoute(hash);
   const immersive = !!explore && !blocked && !gate;
   // Notes that clearly belong to a project are connected to it by themselves (with Undo): see shell/autoConnect.ts.
@@ -193,7 +194,8 @@ function Shell() {
         <div className="appbar-card">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h1 className="screen-name" id="screenName">{blocked || gate ? 'MyDay' : screenName}</h1>
+              {todayHome ? <p className="screen-name screen-context" id="screenName">Today</p>
+                : <h1 className="screen-name" id="screenName">{blocked || gate ? 'MyDay' : screenName}</h1>}
               {!blocked && !gate && <SyncBadge />}
             </div>
             <p id="date" className="screen-date">{prettyDate(k)}</p>
@@ -207,7 +209,7 @@ function Shell() {
         </div>
       </header>}
       {!immersive && !blocked && !gate && <Nav current={barSection(section)} />}
-      <main id="app" tabIndex={-1} className={immersive ? 'explore-main focus:outline-none' : 'max-w-[640px] lg:max-w-[1120px] mx-auto px-4 lg:px-7 pt-5 lg:pt-8 focus:outline-none'}>
+      <main id="app" tabIndex={-1} className={immersive ? 'explore-main focus:outline-none' : 'workspace-main focus:outline-none'}>
         {loadIssue && !blocked && (
           <LoadIssue dropped={loadIssue.dropped}
             onDownload={() => download(`myday-saved-copy-${todayKey()}.json`, loadIssue.raw)}

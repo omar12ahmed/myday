@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from
 // when the label is the text beside it), a 48px tap height and a clear focus ring (a teal border with a soft
 // glow around it — see index.css).
 
-const CONTROL = 'w-full min-h-12 px-3 py-2.5 rounded-[10px] bg-surface-3 text-fg border border-outline-strong text-[15px]';
+const CONTROL = 'field-control w-full min-h-12 px-3 py-2.5 rounded-btn bg-surface text-fg border border-outline-strong text-[15px]';
 
 // A label above its control, e.g. <Field label="Starts" htmlFor="cfStart"><TextInput id="cfStart" … /></Field>
 export function Field({ label, htmlFor, children, className = '' }: { label: string; htmlFor: string; children: ReactNode; className?: string }) {

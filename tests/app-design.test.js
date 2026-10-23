@@ -7,6 +7,12 @@ const ROOT = process.env.MYDAY_ROOT || path.resolve(__dirname, '..');
 const go = async route => { T.setUrl('app/dist/index.html#' + route); await T.openAt(2026, 10, 5, 9); await sleep(200); };
 const capture = async name => fs.writeFileSync('/tmp/myday-design-' + name + '.png', Buffer.from((await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false })).data, 'base64'));
 const theme = async value => { await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); d.settings.theme = ${JSON.stringify(value)}; localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`); };
+const tealAction = () => ev(`(() => {
+  const b = document.querySelector('[data-action="build"]');
+  const probe = document.createElement('span'); probe.style.color = 'var(--primary)'; document.body.append(probe);
+  const expected = getComputedStyle(probe).color; probe.remove();
+  return !!b && getComputedStyle(b).backgroundColor === expected;
+})()`);
 (async () => {
   await T.connect(); await go('today'); await ev('localStorage.clear()'); await go('today');
   await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1050, deviceScaleFactor: 1, mobile: false });
@@ -14,9 +20,17 @@ const theme = async value => { await ev(`(() => { const d = JSON.parse(localStor
   for (const route of ['today', 'study', 'calendar', 'projects', 'finance', 'health/workout', 'study/cybersecurity', 'study/cybersecurity/practice']) {
     await go(route);
     check('desktop fits: ' + route, !await ev('document.documentElement.scrollWidth > innerWidth'));
+    check('one readable page title: ' + route, await ev(`(() => { const hs = [...document.querySelectorAll('h1')].filter(h => h.getClientRects().length); return hs.length === 1 && getComputedStyle(hs[0]).opacity === '1'; })()`));
     check('header controls do not overlap: ' + route, await ev(`(() => { const a = document.querySelector('.capture-btn').getBoundingClientRect(), b = document.querySelector('#themeBtn').getBoundingClientRect(), h = document.querySelector('.appbar-card').getBoundingClientRect(); return a.right <= b.left && a.top >= h.top && a.bottom <= h.bottom; })()`));
     await capture(route.replaceAll('/', '-'));
   }
+  await go('today');
+  check('light theme uses the established teal for the main action', await tealAction());
+  await go('study');
+  await click('.nav-shortcuts a[href="#today/tasks"]'); await sleep(200);
+  check('the workspace task shortcut opens the existing task screen', await ev('location.hash === "#today/tasks" && !!document.querySelector("#screenName")'));
+  await click('.nav-shortcuts a[href="#projects/notes"]'); await sleep(200);
+  check('the workspace note shortcut opens the existing notes screen', await ev('location.hash === "#projects/notes"'));
   await go('study');
   await click('.skip-link');
   check('Skip to content focuses the workspace without changing the route', await ev('document.activeElement.id === "app" && location.hash === "#study"'));
@@ -26,6 +40,7 @@ const theme = async value => { await ev(`(() => { const d = JSON.parse(localStor
   check('workshop tabs identify the current destination', await ev(`document.querySelector('nav[aria-label="Cybersecurity"] [aria-current="page"]').textContent === 'Practice'`));
   await theme('dark'); await go('study'); await capture('study-dark');
   await go('today'); await capture('today-dark');
+  check('dark theme uses the established teal for the main action', await tealAction());
   // Use the real importer to exercise a populated subject dashboard as well as the first-run screen.
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'myday-design-fixture-'));
   const { bundle } = await import(pathToFileURL(path.join(ROOT, 'ai-eval/build.mjs')).href);

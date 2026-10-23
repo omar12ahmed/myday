@@ -8,8 +8,10 @@ import { Ar } from './Ar';
 export function ArabicCard({ data }: { data: MyDayData }) {
   const open = data.arabic.attempts.filter(a => !a.finishedAt).pop();
   return <Card className="arabic-entry" aria-labelledby="arabic-card-title">
-    <div className="flex items-center justify-between gap-3 mb-5"><span className="size-11 rounded-tile bg-primary-container text-primary grid place-items-center"><Languages size={24} strokeWidth={1.6} aria-hidden="true" /></span><span className="text-xs font-medium text-fg-3">Guided learning path</span></div>
-    <h2 id="arabic-card-title" className="text-[26px] mb-0">Arabic Fuṣḥā</h2>
+    <div className="course-title-row">
+      <h2 id="arabic-card-title"><Languages size={18} strokeWidth={1.6} aria-hidden="true" />Arabic Fuṣḥā</h2>
+      <span className="text-xs text-fg-3">Guided learning path</span>
+    </div>
     <Ar block className="text-[20px] text-fg-2 mt-0">العربية الفصحى</Ar>
     <p className="text-[15px] text-fg-2">From the script and its sounds to reading and writing, one short session at a time.</p>
     <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-fg-2 mt-5 mb-5"><span className="inline-flex gap-2 items-center"><BookOpen size={16} aria-hidden="true" />30 modules</span><span className="inline-flex gap-2 items-center"><Library size={16} aria-hidden="true" />152 lessons</span></div>

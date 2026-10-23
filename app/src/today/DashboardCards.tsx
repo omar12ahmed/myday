@@ -10,13 +10,15 @@ export function TodayRing({ data, k }: { data: MyDayData; k: DateKey }) {
   const r = 34, c = 2 * Math.PI * r, part = p.total ? p.done / p.total : 0;
   const words = !p.built ? 'Not planned yet' : p.rest ? 'Rest day' : !p.total ? 'Nothing planned' : p.done === p.total ? 'All done — lovely' : `${p.done} of ${p.total} done`;
   return (
-    <Card aria-labelledby="ring-h" id="todayRing" className="!p-4 flex flex-col items-center text-center">
-      <h3 id="ring-h" className="m-0 mb-2 self-start">Today</h3>
-      <svg width="96" height="96" viewBox="0 0 96 96" aria-hidden="true" className="-rotate-90">
-        <circle cx="48" cy="48" r={r} fill="none" strokeWidth="10" className="stroke-track" />
-        {part > 0 && <circle cx="48" cy="48" r={r} fill="none" strokeWidth="10" strokeLinecap="round" className="stroke-done" strokeDasharray={c} strokeDashoffset={c * (1 - part)} />}
-      </svg>
-      <p className="m-0 mt-2 text-[15px] font-semibold" data-s="ring-words">{words}</p>
+    <Card aria-labelledby="ring-h" id="todayRing">
+      <h3 id="ring-h" className="m-0">Today</h3>
+      <div className="record-summary">
+        <svg width="48" height="48" viewBox="0 0 96 96" aria-hidden="true" className="-rotate-90">
+          <circle cx="48" cy="48" r={r} fill="none" strokeWidth="6" className="stroke-track" />
+          {part > 0 && <circle cx="48" cy="48" r={r} fill="none" strokeWidth="6" strokeLinecap="round" className="stroke-done" strokeDasharray={c} strokeDashoffset={c * (1 - part)} />}
+        </svg>
+        <p className="m-0" data-s="ring-words">{words}</p>
+      </div>
     </Card>
   );
 }
@@ -24,12 +26,12 @@ export function TodayRing({ data, k }: { data: MyDayData; k: DateKey }) {
 export function WeekCard({ data, k }: { data: MyDayData; k: DateKey }) {
   const week = thisWeek(data, k), most = Math.max(1, ...week.map(w => w.n)), total = week.reduce((a, w) => a + w.n, 0);
   return (
-    <Card aria-labelledby="week-h" id="weekCard" className="!p-4">
+    <Card aria-labelledby="week-h" id="weekCard">
       <h3 id="week-h" className="m-0 mb-2">This week</h3>
-      <div className="grid grid-cols-7 gap-1.5 items-end h-[84px]" aria-hidden="true">
+      <div className="record-bars grid grid-cols-7 gap-1.5 items-end" aria-hidden="true">
         {week.map(w => (
           <div key={w.day} className="flex flex-col items-center justify-end h-full">
-            <span className={`w-full max-w-[18px] rounded-full ${w.n ? 'bg-done' : 'bg-track'} ${w.today ? 'ring-2 ring-primary-outline' : ''}`} style={{ height: `${w.future ? 6 : Math.max(6, (w.n / most) * 72)}px` }} />
+            <span title={`${w.n} done`} className={`w-full max-w-[14px] ${w.n ? 'bg-done' : 'bg-track'}`} style={{ height: `${w.future ? 0 : w.n ? (w.n / most) * 48 : 1}px` }} />
           </div>
         ))}
       </div>

@@ -25,7 +25,7 @@ const editStorage = fn => ev(`(() => { const s = JSON.parse(localStorage.getItem
   const base = await ev(`new URL('./', document.querySelector('link[rel=manifest]').href).href`);
   check('it\'s linked from the page, named MyDay, opening full screen (no browser bar)', m.name === 'MyDay' && m.short_name === 'MyDay' && m.display === 'standalone');
   check('…starting at Today, inside its own folder (so it works under /myday/ on the website)', new URL(m.start_url, base).href === base + '#today' && new URL(m.scope, base).href === base);
-  check('…with the app\'s colours for its splash screen and status bar (the warm light page)', m.background_color === '#f7f5ef' && m.theme_color === '#f7f5ef');
+  check('…with the app\'s colours for its splash screen and status bar (the paper workspace)', m.background_color === '#f4f5f2' && m.theme_color === '#f4f5f2');
   const icons = await ev(`Promise.all(${JSON.stringify(m.icons)}.map(i => new Promise(res => { const im = new Image(); im.onload = () => res({ ...i, w: im.naturalWidth, h: im.naturalHeight }); im.onerror = () => res({ ...i, w: 0 }); im.src = new URL(i.src, ${JSON.stringify(base)}).href; })))`);
   check('icons at 192 and 512 px load, at the sizes they say', icons.filter(i => i.purpose === 'any').map(i => `${i.w}x${i.h}`).join() === '192x192,512x512' && icons.every(i => i.sizes === `${i.w}x${i.h}`), icons);
   check('…and a maskable one (512 px, filling the square, for Android\'s own icon shapes)', icons.some(i => i.purpose === 'maskable' && i.w === 512));
@@ -79,9 +79,9 @@ const editStorage = fn => ev(`(() => { const s = JSON.parse(localStorage.getItem
 
   console.log('\n[5] The phone\'s status bar follows the theme');
   await editStorage(`s => { s.settings.theme = 'light'; }`); await open(9, 3);
-  check('light theme → a light status bar', (await ev(`document.querySelector('meta[name=theme-color]').content`)) === '#f7f5ef');
+  check('light theme → a light status bar', (await ev(`document.querySelector('meta[name=theme-color]').content`)) === '#f4f5f2');
   await editStorage(`s => { s.settings.theme = 'dark'; }`); await open(9, 4);
-  check('dark theme → a dark one', (await ev(`document.querySelector('meta[name=theme-color]').content`)) === '#141815');
+  check('dark theme → a dark one', (await ev(`document.querySelector('meta[name=theme-color]').content`)) === '#151716');
 
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));

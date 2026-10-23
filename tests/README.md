@@ -34,9 +34,12 @@ classic preservation and long reasons at 390/768/1440 px in both themes. `sync-r
 round trip; `app-sync` edits a choice offline and verifies its history on the account and the other device.
 `ai-rules` verifies that the added history stays out of both the request and preview. All fixtures are synthetic.
 
-The `app-design` suite checks the shared header, keyboard skip link, Capture, selected cybersecurity tabs,
+The `app-design` suite checks the shared header, one readable page title, teal primary actions in both themes,
+task/note shortcuts, keyboard skip link, Capture, selected cybersecurity tabs,
 360 px phone layouts, navigation targets and preservation of imported learning records. It writes light and
 dark screenshots of synthetic workspaces to `/tmp/myday-design-*.png` for visual review.
+`app-today` checks readable, visibly differentiated task actions. `app-study` checks that active and paused
+sessions appear directly above the plan or below the energy card on desktop and phone, and Resume opens the same session.
 
 The `app-explore` suite checks the seven-scene narrative, routing/history, desktop and mobile layouts,
 local data preservation, task creation/deduplication/storage failures, motion preferences and offline refresh.

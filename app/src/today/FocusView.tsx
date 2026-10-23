@@ -18,7 +18,7 @@ export function FocusView({ data, k, onToggle, onTimer, onShowAll, timerCard, mo
   return (
     <div className="max-w-[640px] mx-auto" id="focusView">
       <div className="flex items-center justify-between gap-3 mb-4">
-        <p className="m-0 min-w-0 text-[15px] text-fg-2">Focus mode — just what's next.</p>
+        <h1 className="m-0 min-w-0 text-lg font-semibold">Focus mode — just what's next.</h1>
         <Button inline variant="ghost" className="whitespace-nowrap flex-none" data-action="focus-show-all" onClick={onShowAll}><Eye size={18} aria-hidden="true" /> Show everything</Button>
       </div>
       {timerCard}
