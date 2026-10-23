@@ -26,11 +26,12 @@ export interface Conflict {
   at: string | null;     // when the cloud saved it
 }
 export interface Link {
+  projectProtocol?: 2;   // absent: this device still has whole-project baselines to convert
   user: string;          // the account's id
   email: string;
   linkedAt: string;
   cursor: number;        // the account's change number this device has caught up to
-  base: Record<string, { v: number; f: string | null }>; // each record's cloud version as last seen here (f null = deleted)
+  base: Record<string, { v: number; f: string | null; index?: number }>; // each record's cloud version as last seen here (f null = deleted)
   out: Record<string, Outgoing>;
   conflicts: Record<string, Conflict>;
   rejected: Record<string, { f: string | null; reason: string }>; // changes the cloud refused (not sent again unless changed)
@@ -57,7 +58,7 @@ export function newId(): string {
 
 export const freshState = (): SyncState => ({ v: 1, device: 'd-' + newId().slice(0, 8), link: null, kept: [], before: null });
 export const newLink = (user: string, email: string): Link => ({
-  user, email, linkedAt: new Date().toISOString(), cursor: 0, base: {}, out: {}, conflicts: {}, rejected: {}, review: null, lastSynced: null,
+  projectProtocol: 2, user, email, linkedAt: new Date().toISOString(), cursor: 0, base: {}, out: {}, conflicts: {}, rejected: {}, review: null, lastSynced: null,
 });
 
 const isObj = (o: unknown): o is Record<string, unknown> => !!o && typeof o === 'object' && !Array.isArray(o);

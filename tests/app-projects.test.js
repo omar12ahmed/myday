@@ -495,26 +495,43 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await click('[data-action=dc-cancel]'); await sleep(200);
   check('"Cancel" closes it, and nothing is decided', !(await exists('[data-s=dc-choosing]')) && (await pAt('pjDc')).decisions[0].chosen === null);
   await click(`${sel(OL).op} [data-action=opt-choose]`); await sleep(200);
-  await type(`#dcWhy-${DC}`, 'Room for the mower'); await click('[data-action=dc-decide]'); await sleep(300);
+  await type(`#dcWhy-${DC}`, 'Room for the mower');
+  await ev(`window.historySaveItem = Storage.prototype.setItem; Storage.prototype.setItem = function(k, v) { if (k === '${KEY}') throw new DOMException('Synthetic full storage', 'QuotaExceededError'); return window.historySaveItem.call(this, k, v); };`);
+  await click('[data-action=dc-decide]'); await sleep(200);
+  check('if saving fails, Decide leaves the decision open and the written reason available to retry', (await pAt('pjDc')).decisions[0].chosen === null && (await exists('[data-s=dc-choosing]')) && (await ev(`document.getElementById('dcWhy-${DC}').value`)) === 'Room for the mower' && /Couldn.t save/.test(await toast()));
+  await ev('Storage.prototype.setItem = window.historySaveItem; delete window.historySaveItem;');
+  await click('[data-action=dc-decide]'); await sleep(300);
   let dd = (await pAt('pjDc')).decisions[0];
   check('deciding saves the option, the reason and today', dd.chosen === OL && dd.why === 'Room for the mower' && dd.decidedOn === '2026-10-15' && (await toast()) === 'Decided. It can change later.', dd);
   check('…the card shows "Decided …15 Oct: Large" and the reason', /^Decided .*15 Oct: Large$/.test(await text('[data-s=dc-decided] p')) && (await text('[data-s=dc-why]')) === 'Room for the mower' && /^Decided .*15 Oct$/.test(await text('[data-s=dc-state]')) && (await ev(`document.querySelector('[data-s=decision]').dataset.state`)) === 'decided');
   check('…the chosen option is marked, and the other says "Not chosen"', (await ev(`document.querySelector('${sel(OL).op}').dataset.chosen`)) === 'yes' && (await text(`${sel(OL).op} [data-s=opt-chosen]`)) === 'Chosen' && (await text(`${sel(OS).op} [data-s=opt-not]`)) === 'Not chosen' && !(await exists(`${sel(OS).op} [data-action=opt-choose]`)));
   check('the project is at Decide: "Move this project to Doing?" is offered, but nothing has moved by itself', (await exists('[data-s=dc-to-doing]')) && (await text('[data-s=dc-to-doing]')).includes('Move this project to Doing?') && (await pAt('pjDc')).stage === 'decide');
+  await ev(`window.historySaveItem = Storage.prototype.setItem; Storage.prototype.setItem = function(k, v) { if (k === '${KEY}') throw new DOMException('Synthetic full storage', 'QuotaExceededError'); return window.historySaveItem.call(this, k, v); };`);
+  await click('[data-action=dc-again]'); await sleep(200);
+  check('if history cannot be saved, Think again keeps the existing choice on screen and in storage', (await pAt('pjDc')).decisions[0].chosen === OL && (await exists('[data-s=dc-decided]')) && !(await exists('[data-s=dc-history]')) && /Couldn.t save/.test(await toast()));
+  await ev('Storage.prototype.setItem = window.historySaveItem; delete window.historySaveItem;');
   await click('[data-action=dc-again]'); await sleep(300);
   dd = (await pAt('pjDc')).decisions[0];
   check('"Think again" opens it again, keeping the question, options, pros, cons and reason; the last choice is remembered', dd.chosen === null && dd.decidedOn === null && dd.why === 'Room for the mower' && dd.options.length === 2 && eq(dd.options[0].pros, ['Cheap']) && dd.lastChoice && dd.lastChoice.text === 'Large' && dd.lastChoice.on === '2026-10-15', dd);
   check('…it says what you chose last time, and that your reasons are kept, and offers "Choose this" again', (await text('[data-s=dc-last]')).includes('Last time you chose “Large”') && (await text('[data-s=dc-last]')).includes('Your reasons are kept') && (await exists(`${sel(OS).op} [data-action=opt-choose]`)) && !(await exists('[data-s=dc-to-doing]')) && !(await exists('[data-s=dc-decided]')), await text('[data-s=dc-last]'));
+  check('previous choices are available in a closed disclosure, keeping the options easy to reach', (await text('[data-s=dc-history] summary')) === 'Previous choices (1)' && !(await ev(`document.querySelector('[data-s=dc-history]').open`)) && dd.history[0].why === 'Room for the mower');
+  await ev(`document.querySelector('[data-s=dc-history] summary').focus()`);
+  await T.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, text: '\r' });
+  await T.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
+  const historyOpened = await until(`document.querySelector('[data-s=dc-history]').open`);
+  check('the disclosure opens from the keyboard and shows the choice, full date and reason', historyOpened && /Large.*15 Oct 2026.*Room for the mower/s.test(await text('[data-s=dc-history-entry]')), await ev(`({ open: document.querySelector('[data-s=dc-history]').open, focused: document.activeElement?.tagName, text: document.querySelector('[data-s=dc-history-entry]').innerText })`));
   await click(`${sel(OS).op} [data-action=opt-choose]`); await sleep(200);
   check('choosing again offers the reason you kept', (await ev(`document.getElementById('dcWhy-${DC}').value`)) === 'Room for the mower');
   await type(`#dcWhy-${DC}`, 'Changed my mind: the corner is tight'); await click('[data-action=dc-decide]'); await sleep(300);
   dd = (await pAt('pjDc')).decisions[0];
   check('deciding again keeps the new choice and reason', dd.chosen === OS && dd.why === 'Changed my mind: the corner is tight', dd);
+  check('choosing again cannot overwrite the previous reason', dd.history.length === 1 && dd.history[0].text === 'Large' && dd.history[0].why === 'Room for the mower');
   await click(`${sel(OS).op} [data-action=opt-remove]`); await sleep(250);
   check('removing an option asks first', (await text('dialog[open]')).includes('Remove this option?'), await text('dialog[open]'));
   await answer(true);
   dd = (await pAt('pjDc')).decisions[0];
   check('removing the chosen option reopens the decision, and the message says so', dd.chosen === null && dd.options.length === 1 && dd.options[0].id === OL && /it was your choice, so this decision is open again/.test(await toast()) && (await ev(`document.querySelector('[data-s=decision]').dataset.state`)) === 'open', [dd, await toast()]);
+  check('a removed chosen option remains in history, with the latest choice first even on the same day', eq(dd.history.map(h => [h.text, h.why]), [['Large', 'Room for the mower'], ['Small', 'Changed my mind: the corner is tight']]) && eq(await ev(`[...document.querySelectorAll('[data-s=dc-history-entry] > p:first-child')].map(e => e.textContent)`), ['Small', 'Large']));
   await click(`${sel(OL).op} [data-action=opt-choose]`); await sleep(200);
   await click('[data-action=dc-decide]'); await sleep(300);
   dd = (await pAt('pjDc')).decisions[0];
@@ -533,6 +550,35 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await seed([pjObj('pjD12', 'Decisions: twelve', 'decide', { decisions: Array.from({ length: 12 }, (_, i) => dcObj('dcT' + i, 'Question ' + (i + 1), [])) })]);
   await go('projects/p/pjD12/decisions', 2026, 10, 15, 18, 10);
   check('at 12 decisions: "That\'s 12 decisions — plenty for one project. Remove one to add another." and no add form', (await text('[data-s=dc-full]')) === "That's 12 decisions — plenty for one project. Remove one to add another." && !(await exists('#dcNew')) && (await ev(`document.querySelectorAll('[data-s=decision]').length`)) === 12, await text('[data-s=dc-full]'));
+
+  await seed([pjObj('pjD10', 'Decisions: reading corner', 'decide', { decisions: [dcObj('dc10', 'Which chair?', [
+    opObj('op10', 'Restore the spare chair', Array.from({ length: 9 }, (_, i) => `Pro ${i + 1}`), Array.from({ length: 9 }, (_, i) => `Con ${i + 1}`)),
+    opObj('op11', 'Buy a compact chair'), opObj('op12', 'Try a stool'), opObj('op13', 'Keep looking'),
+  ])] })]);
+  await go('projects/p/pjD10/decisions', 2026, 10, 15, 18, 11);
+  check('four options are shown and no fifth can be added', (await ev(`document.querySelectorAll('[data-s=option]').length`)) === 4 && (await exists('[data-s=opt-full]')) && !(await exists('[data-s=opt-add-form]')));
+  for (const side of ['pro', 'con']) {
+    await click(`${sel('op10').op} [data-action=${side}-add]`);
+    await type(`${sel('op10').op} [data-s=${side}s] form input`, `${side} 10`);
+    await click(`${sel('op10').op} [data-action=${side}-save]`); await sleep(150);
+    check(`the tenth ${side} is saved, with a clear limit and no eleventh add control`, (await pAt('pjD10')).decisions[0].options[0][side + 's'].length === 10 && (await text(`${sel('op10').op} [data-s=${side}s] [data-s=points-full]`)).startsWith(`Ten ${side}s`) && !(await exists(`${sel('op10').op} [data-action=${side}-add]`)));
+  }
+  await go('projects/p/pjD10/decisions', 2026, 10, 15, 18, 12);
+  check('all ten pros and ten cons survive a reload and are displayed', (await ev(`document.querySelectorAll('${sel('op10').op} [data-s=pros] [data-s=point]').length`)) === 10 && (await ev(`document.querySelectorAll('${sel('op10').op} [data-s=cons] [data-s=point]').length`)) === 10);
+  await click(`${sel('op10').op} [data-s=pros] [data-action=point-remove]`); await sleep(150);
+  check('removing one point makes room to add another without affecting the other side', (await pAt('pjD10')).decisions[0].options[0].pros.length === 9 && (await pAt('pjD10')).decisions[0].options[0].cons.length === 10 && (await exists(`${sel('op10').op} [data-action=pro-add]`)));
+
+  await seed([pjObj('pjDSize', 'Decision history at the project allowance', 'decide', {
+    decisions: [dcObj('dcSize', 'Which size?', [opObj('opSize', 'Small')], 'opSize', 'A'.repeat(600), '2026-10-14')],
+  })]);
+  await editStorage(`s => { const p = s.projects.items.find(x => x.id === 'pjDSize'); const d = p.decisions[0]; d.futurePadding = ''; d.futurePadding = 'x'.repeat(380000); }`);
+  await go('projects/p/pjDSize/decisions', 2026, 10, 15, 18, 15);
+  const sizeBefore = await pAt('pjDSize');
+  await click('[data-action=dc-again]'); await sleep(150);
+  check('at the byte allowance, Think again explains that nothing changed and keeps the choice and all content', eq(await pAt('pjDSize'), sizeBefore) && (await exists('[data-s=dc-decided]')) && /too large.*Nothing changed/.test(await toast()));
+  await click('[data-action=opt-remove]'); await answer(true);
+  check('removing the chosen option shrinks its core and keeps the complete reason in a separate snapshot', !(await pAt('pjDSize')).decisions[0].options.length && (await pAt('pjDSize')).decisions[0].history[0].why.length === 600);
+  await editStorage(`s => { delete s.projects.items.find(x => x.id === 'pjDSize').decisions[0].futurePadding; }`);
 
   console.log('\n[19] Nothing happens by itself');
   await seed([pjObj('pjN', 'Quiet: allotment', 'organise', { nextTaskId: 'tkQ1' })]);
@@ -572,6 +618,10 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await setFile(S + '/dl/myday-export-2026-10-15.json'); await sleep(200); await answer(true);
   const imported = (await data()).projects;
   check('importing the backup brings every project back exactly, milestones and decisions included', eq(imported, exp2.data.projects) && eq(imported, beforeExport), imported.items.length);
+  check('export and restore include all previous choices and their independent reasons', eq(imported.items.find(p => p.id === 'pjDc').decisions[0].history.map(h => [h.text, h.why]), [['Large', 'Room for the mower'], ['Small', 'Changed my mind: the corner is tight']]));
+  T.setUrl('index.html#today'); await openAt(2026, 10, 15, 19, 12);
+  await click('#themeBtn'); await sleep(300);
+  check('the classic app preserves new decision history unread when it saves', eq((await data()).projects, imported));
   await go('projects/p/pjN/milestones', 2026, 10, 15, 19, 15);
   check('…and they show on the tabs', (await text('[data-s=ms-progress]')) === '2 of 2 reached' && (await ev(`document.querySelectorAll('[data-s=milestone]').length`)) === 2);
   await go('projects/p/pjN/decisions', 2026, 10, 15, 19, 16);
@@ -593,6 +643,19 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
     check(`phone 390 px, ${tab ? tab.slice(1) : 'overview'}: nothing scrolls sideways`, !(await sideways()));
     const small = await tooSmall();
     check(`phone 390 px, ${tab ? tab.slice(1) : 'overview'}: every button, field and tab is at least 44 px tall`, small.length === 0, small.slice(0, 6));
+  }
+  await editStorage(`s => { const x = s.projects.items.find(p => p.id === 'pjPh').decisions[0]; x.history = [
+    { id: 'dhOld', text: 'An option that has since been removed', on: '2025-01-01', why: null },
+    { id: 'dhLong', text: 'A previous choice with a long name that should wrap across lines', on: '2026-10-14', why: 'A reason that stays readable when there is quite a lot to say. '.repeat(7) + '\\n' + 'word'.repeat(35) }
+  ]; }`);
+  for (const theme of ['light', 'dark']) {
+    await editStorage(`s => { s.settings.theme = '${theme}'; }`);
+    for (const width of [390, 768, 1440]) {
+      await T.send('Emulation.setDeviceMetricsOverride', { width, height: 900, deviceScaleFactor: 1, mobile: width === 390 });
+      await go('projects/p/pjPh/decisions', 2026, 10, 15, 20, 5);
+      await click('[data-s=dc-history] summary'); await sleep(100);
+      check(`previous choices, ${theme}, ${width}px: long reasons wrap without horizontal scrolling and the disclosure has a 44px target`, !(await sideways()) && (await ev(`document.querySelector('[data-s=dc-history] summary').getBoundingClientRect().height`)) >= 44 && /reason for this older choice was not saved/.test(await text('[data-s=dc-history]')));
+    }
   }
   await T.send('Emulation.clearDeviceMetricsOverride');
 

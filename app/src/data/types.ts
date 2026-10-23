@@ -1,6 +1,6 @@
-// The shape of MyDay's saved data: localStorage key "myday.data.v4", schemaVersion 4.
+// The shape of MyDay's saved data: localStorage key "myday.data.v4", schemaVersion 5.
 // It must match the current MyDay (../index.html) exactly, because both versions use the same saved data.
-// If a field is added or changed, the current MyDay needs the same change and a new schemaVersion (see CLAUDE.md).
+// If a field is added or changed, the current MyDay needs the same change and a new schemaVersion (see AGENTS.md).
 
 import type { CyberData } from './cybersecurity/types';
 import type { ArabicData } from './arabic/types';
@@ -87,7 +87,7 @@ export interface FocusTimer {
 }
 
 export interface MyDayData {
-  schemaVersion: 4;
+  schemaVersion: 5;
   createdOn: DateKey;
   lists: Record<Category, ListItem[]>;
   queue: QueueItem[];
@@ -180,12 +180,18 @@ export interface ProjectsData { items: Project[]; [other: string]: unknown }
 export interface Milestone { id: string; title: string; aim: DateKey | null; reachedOn: DateKey | null; createdAt: DateTime; [other: string]: unknown }
 // A decision: a question, 1–4 options each with its own pros and cons (no scores), and — once you choose — the chosen
 // option, your reasons and the day. "Think again" clears the choice but keeps everything else, and remembers the last
-// choice in `lastChoice`.
+// choice in `lastChoice`. `history` keeps previous choices oldest first, independently of editable options.
 export interface DecisionOption { id: string; text: string; pros: string[]; cons: string[]; [other: string]: unknown }
+export interface DecisionHistoryEntry {
+  id: string; text: string; on: DateKey;
+  why: string | null; // null: an older choice's reason was not saved; '': no reason given
+  [other: string]: unknown;
+}
 export interface Decision {
   id: string; question: string; options: DecisionOption[];
   chosen: string | null; why: string; decidedOn: DateKey | null;
   lastChoice?: { text: string; on: DateKey };
+  history?: DecisionHistoryEntry[];
   createdAt: DateTime; updatedAt: DateTime;
   [other: string]: unknown;
 }

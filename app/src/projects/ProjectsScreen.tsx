@@ -43,7 +43,8 @@ function ProjectsHome({ data }: { data: MyDayData }) {
   const active = projectsInOrder(data, 'active'), paused = projectsInOrder(data, 'paused'), done = projectsInOrder(data, 'done');
   function start() {
     let id: string | null = null;
-    update(d => { id = addProject(d, text); if (!id) return false; if (kind !== 'general') setTemplate(d, id, kind); });
+    const saved = update(d => { id = addProject(d, text); if (!id) return false; if (kind !== 'general') setTemplate(d, id, kind); });
+    if (!saved) return;
     if (!id) return;
     setText(''); setKind('general');
     // A business idea opens on its one page: the four questions are where it starts.

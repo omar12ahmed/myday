@@ -43,13 +43,13 @@ const go = async (hash, h = 9) => { T.setUrl('index.html#' + hash); await T.open
   await click('[data-action=back]'); await sleep(150);
 
   console.log('\n[62] Data from a newer version of MyDay is never overwritten');
-  await otherTabWrites(`s => { s.schemaVersion = 5; s.newThing = 1; }`);
+  await otherTabWrites(`s => { s.schemaVersion = 6; s.newThing = 1; }`);
   await ev(`location.hash = '#study'`); await sleep(200);
   await ev(`(() => { const b = document.querySelector('[data-action=s-setup]') || document.querySelector('[data-action=s-focus]') || document.querySelector('#nav a'); b.click(); })()`);
   await ev(`location.hash = '#today'`); await sleep(200);
   await ev(`document.dispatchEvent(new Event('visibilitychange'))`); await sleep(250);
   s = await D();
-  check('the newer save is left exactly as it was', s.schemaVersion === 5 && s.newThing === 1);
+  check('the newer save is left exactly as it was', s.schemaVersion === 6 && s.newThing === 1);
   check('…and this copy explains and stops saving', (await text('#app')).includes('saved by a newer version of MyDay in another tab'));
 
   console.log('\n[63] Normal use in one tab is unaffected');

@@ -5,6 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const { pathToFileURL } = require('url');
 const { execFileSync } = require('child_process');
 const T = require('./cdp-devices.js');
 const S = require('./supabase-standin.js');
@@ -19,7 +20,7 @@ const API = `http://127.0.0.1:${SUPA}`;
 const KEY = S.PUBLISHABLE_KEY;
 const A = { email: 'a@example.test', password: 'disposable-pass-a' }, C = { email: 'c@example.test', password: 'disposable-pass-c' };
 
-let srv;
+let srv, R;
 const sql = (q, params = []) => S.owner(srv.db, q, params).then(r => r.rows);
 const rpcLog = () => srv.log.filter(e => e.path.startsWith('/rest/v1/rpc/'));
 const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -58,18 +59,36 @@ async function editList(D, cat, id, title) {
   await D.type(sel, title);
   await sleep(200);
 }
+// An external local edit while offline: deliver the storage event without navigating away from the loaded app.
+async function changeHere(D, fn) {
+  await D.ev(`(() => { const key='myday.data.v4', oldValue=localStorage.getItem(key), s=JSON.parse(oldValue); (${fn})(s);
+    const newValue=JSON.stringify(s); localStorage.setItem(key,newValue); window.dispatchEvent(new StorageEvent('storage',{key,oldValue,newValue,storageArea:localStorage})); })()`);
+}
 const listTitle = (d, cat, id) => { const x = d.lists[cat].find(i => i.id === id); return x ? x.title : null; };
 const cloudList = async (cat, user) => (await sql(`select data, version from public.task_lists where user_id = $1 and id = $2`, [user, cat]))[0];
 
 // The parts of MyDay that are one record each (from 1.8.0), as every device has them.
 const ONE_KEYS = ['arabic:preferences', 'cybersecurity:preferences', 'settings:planning', 'rota:rota', 'pay:pay', 'holidays:region', 'finance:finance', 'study:roadmap', 'workout:setup', 'food:kitchen', 'food:shopping', 'fitness:goal', 'notes:collections', 'tasks:lists', 'patterns:patterns', 'daily:moves'];
-const cloudRecord = async (user, kind, id) => (await sql(`select data, version, deleted from public.sync_records where user_id = $1 and kind = $2 and id = $3`, [user, kind, id]))[0];
+const cloudRecord = async (user, kind, id) => {
+  const root = (await sql(`select data, version, deleted from public.sync_records where user_id = $1 and kind = $2 and id = $3`, [user, kind, id]))[0];
+  if (kind !== 'project' || !root || root.deleted) return root;
+  const rows = await sql(`select kind,id,data from public.sync_records where user_id=$1 and not deleted and data->>'projectId'=$2`, [user, id]);
+  const draft = R.freshState();
+  R.putRecords(draft, rows.map(row => [`${row.kind}:${row.id}`, R.cleanRecord(`${row.kind}:${row.id}`, row.data)]));
+  return { ...root, data: draft.projects.items.find(p => p.id === id) };
+};
 
 function task(uid, taskId, category, title, minutes, done = false) {
   return { uid, taskId, category, title, minutes, baseMinutes: minutes, done, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null };
 }
 
 (async () => {
+  const { bundle } = await import(pathToFileURL(path.join(ROOT, 'ai-eval/build.mjs')).href);
+  const kitDir = fs.mkdtempSync(path.join(os.tmpdir(), 'myday-browser-sync-kit-'));
+  const src = p => JSON.stringify(path.join(ROOT, 'app/src', p));
+  fs.writeFileSync(path.join(kitDir, 'kit.ts'), `export * from ${src('sync/records')};\nexport * from ${src('data/projectRecords')};\nexport { freshState } from ${src('data/normalize')};`);
+  R = await import(pathToFileURL(await bundle(path.join(kitDir, 'kit.ts'), path.join(kitDir, 'out'))).href);
+  fs.rmSync(kitDir, { recursive: true, force: true });
   const db = await S.createDb();
   srv = await S.start(db, SUPA);
   srv.db = db;
@@ -180,6 +199,20 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await phone.returnToApp();
   check('…and appears on the phone when it comes back to MyDay', await phone.until(`JSON.parse(localStorage.getItem('myday.data.v4')).lists.learning.some(i => i.title === 'Mac: Web security')`));
 
+  console.log('\n[5a] Explicit Arabic lesson completion between devices');
+  await synced(mac); await synced(phone);
+  await mac.ev(`location.hash = 'study/arabic/lesson.arabic-fusha-register'`);
+  await mac.until(`document.querySelector('[data-ar-completion="learning"]')`);
+  await mac.click('[data-action="ar-lesson-done"]');
+  check('an explicit Arabic completion reaches the account using the existing record kind', await cloudUntil(async () => !!(await cloudRecord(userA, 'arabic', 'preferences'))?.data.lessonCompletions?.['lesson.arabic-fusha-register']));
+  await synced(mac); await phone.returnToApp();
+  check('the other device receives the explicit choice without inventing a practice session', await phone.until(`!!JSON.parse(localStorage.getItem('myday.data.v4')).arabic.lessonCompletions?.['lesson.arabic-fusha-register']`) && (await phone.data()).arabic.attempts.length === 0);
+  await phone.ev(`location.hash = 'study/arabic/lesson.arabic-fusha-register'`);
+  await phone.until(`document.querySelector('[data-ar-completion="done"]')`);
+  await phone.click('[data-action="ar-lesson-done"]'); await synced(phone);
+  await mac.returnToApp();
+  check('reopening on the other device restores the lesson’s learning state', await mac.until(`document.querySelector('[data-ar-completion="learning"]')`) && !(await mac.data()).arabic.lessonCompletions['lesson.arabic-fusha-register']);
+
   console.log('\n[5b] Everything else syncs too: Calendar, Finance, Inbox, Study, Health, settings');
   await synced(mac); await synced(phone);
   const T0 = shiftKey(1);
@@ -243,7 +276,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
   check('…choosing the phone\'s sends it, and the Mac gets it', await mac.until(`JSON.parse(localStorage.getItem('myday.data.v4')).notes.categories[0].name === 'Phone: Life'`));
   await synced(mac);
 
-  console.log('\n[5c] A project\'s milestones and decisions travel with the project (one record, no new kind)');
+  console.log('\n[5c] Split project items, independent edits, history and deletion');
   await synced(mac); await synced(phone);
   const AIM = shiftKey(30);
   await mac.setData(`s => { s.projects.items.push({ id: 'pjSync', title: 'Sync: garden shed', summary: '', stage: 'decide', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${Y}T09:00', updatedAt: '${Y}T09:00',
@@ -252,7 +285,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await synced(mac);
   const macPj = (await mac.data()).projects.items.find(x => x.id === 'pjSync');
   const cloudPj = async () => (await cloudRecord(userA, 'project', 'pjSync'));
-  check('the Mac sends the project with its milestones and its decided decision, inside the one project record', !!(await cloudPj()) && (await cloudPj()).data.milestones.length === 2 && (await cloudPj()).data.decisions[0].chosen === 'opL' && (await cloudPj()).data.decisions[0].why === 'Room for tools', (await cloudPj()));
+  check('the Mac sends the project with its milestones and its decided decision, as separate item records', !!(await cloudPj()) && (await cloudPj()).data.milestones.length === 2 && (await cloudPj()).data.decisions[0].chosen === 'opL' && (await cloudPj()).data.decisions[0].why === 'Room for tools', (await cloudPj()));
   await phone.returnToApp();
   await phone.until(`JSON.parse(localStorage.getItem('myday.data.v4')).projects.items.some(p => p.id === 'pjSync')`);
   const phonePj = (await phone.data()).projects.items.find(x => x.id === 'pjSync');
@@ -267,12 +300,23 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await sleep(400);
   check('offline, reaching a milestone is kept on the phone ("Saved on this device")', (await phone.data()).projects.items.find(x => x.id === 'pjSync').milestones[0].reachedOn === today && (await statusIs(phone, 'local', 8000)), await diag(phone));
   check('…and the account still has it as not reached', (await cloudPj()).data.milestones[0].reachedOn === null);
+  await phone.ev(`location.hash = 'projects/p/pjSync/decisions'`);
+  await phone.until(`document.querySelector('[data-action=dc-again]')`);
+  await phone.click('[data-action=dc-again]');
+  await phone.until(`document.querySelector('[data-s=option][data-id=opS] [data-action=opt-choose]')`);
+  await phone.click('[data-s=option][data-id=opS] [data-action=opt-choose]');
+  await phone.type('#dcWhy-dcA', 'Measured the corner: small fits');
+  await phone.click('[data-action=dc-decide]'); await sleep(300);
+  const offlineDecision = (await phone.data()).projects.items.find(x => x.id === 'pjSync').decisions[0];
+  check('offline, choosing again retains the previous label, reason and original day without changing the stage', offlineDecision.chosen === 'opS' && offlineDecision.why === 'Measured the corner: small fits' && offlineDecision.history.length === 1 && offlineDecision.history[0].text === 'Large' && offlineDecision.history[0].why === 'Room for tools' && offlineDecision.history[0].on === Y && (await phone.data()).projects.items.find(x => x.id === 'pjSync').stage === 'decide');
+  check('the account retains its earlier choice while the phone is offline', (await cloudPj()).data.decisions[0].chosen === 'opL' && !(await cloudPj()).data.decisions[0].history);
   await phone.offline(false); await phone.returnToApp();
   await synced(phone, 20000);
   check('back online, it is saved to your account', await cloudUntil(async () => (await cloudPj()).data.milestones[0].reachedOn === today, 15000), (await cloudPj()).data.milestones[0]);
   await mac.returnToApp();
   check('…and the Mac receives it', await mac.until(`JSON.parse(localStorage.getItem('myday.data.v4')).projects.items.find(p => p.id === 'pjSync').milestones[0].reachedOn === '${today}'`));
   await synced(mac);
+  check('the whole history and new choice reach the account and the other device unchanged', eq(canon((await cloudPj()).data.decisions[0]), canon(offlineDecision)) && eq(canon((await mac.data()).projects.items.find(x => x.id === 'pjSync').decisions[0]), canon(offlineDecision)));
   // Both change the same project at once: the Mac renames a milestone, the phone (offline) adds a pro.
   await phone.offline(true);
   await phone.ev(`location.hash = 'projects/p/pjSync/decisions'`);
@@ -285,19 +329,102 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await mac.setData(`s => { s.projects.items.find(p => p.id === 'pjSync').milestones[1].title = 'Mac: order the base now'; }`);
   await synced(mac);
   await phone.offline(false); await phone.returnToApp();
-  check('the same project changed on both devices is a conflict to decide (nothing merged, nothing overwritten)', await statusIs(phone, 'attention') && (await phone.data()).projects.items.find(x => x.id === 'pjSync').decisions[0].options[0].pros.includes('Phone: fits the corner')
-    && (await cloudPj()).data.milestones[1].title === 'Mac: order the base now' && !(await cloudPj()).data.decisions[0].options[0].pros.includes('Phone: fits the corner'), await diag(phone));
-  check('…the phone has not taken the Mac\'s rename, and the account has not taken the phone\'s pro', (await phone.data()).projects.items.find(x => x.id === 'pjSync').milestones[1].title === 'Order the base');
+  check('edits to separate project items merge without a conflict', await statusIs(phone, 'synced', 20000)
+    && (await cloudPj()).data.milestones[1].title === 'Mac: order the base now' && (await cloudPj()).data.decisions[0].options[0].pros.includes('Phone: fits the corner'), await diag(phone));
+  check('the phone receives the milestone edit while retaining its own decision edit and history', (await phone.data()).projects.items.find(x => x.id === 'pjSync').milestones[1].title === 'Mac: order the base now'
+    && (await phone.data()).projects.items.find(x => x.id === 'pjSync').decisions[0].history[0].why === 'Room for tools');
+  await mac.returnToApp(); await synced(mac);
+  check('the Mac receives the independent decision edit', (await mac.data()).projects.items.find(x => x.id === 'pjSync').decisions[0].options[0].pros.includes('Phone: fits the corner'));
+  const wire = await sql("select kind,data from public.sync_records where user_id=$1 and not deleted and data->>'projectId'='pjSync'", [userA]);
+  check('the cloud core excludes feature arrays, with milestones, decisions and history in separate records', !wire.find(r => r.kind === 'project').data.value.decisions
+    && wire.filter(r => r.kind === 'project_milestone').length === 2 && wire.some(r => r.kind === 'project_choice'));
+
+  // Edits to the same decision still require a choice, without replacing unrelated project tools.
+  await phone.offline(true);
+  await changeHere(phone, `s => { s.projects.items.find(p => p.id === 'pjSync').decisions[0].question = 'Phone: which chair?'; }`);
+  await mac.setData(`s => { s.projects.items.find(p => p.id === 'pjSync').decisions[0].question = 'Mac: which chair?'; }`);
+  await synced(mac);
+  if (!(await cloudUntil(async () => (await cloudPj()).data.decisions[0].question === 'Mac: which chair?'))) throw new Error('Mac decision was not sent before reconnecting the phone: '+JSON.stringify(await diag(mac)));
+  await phone.offline(false); await phone.returnToApp();
+  check('concurrent edits to the same decision still ask for a choice', await statusIs(phone, 'attention'), await diag(phone));
+  const decisionKey = 'project_decision:' + R.projectPartId('pjSync', 'dcA');
   await goSync(phone);
-  await phone.until(`document.querySelector('[data-action=conflict-cloud][data-key="project:pjSync"]')`);
-  check('…the sync screen names it as a project, and offers both versions to choose from', (await phone.text('#syncConflicts')).includes('Project') && (await phone.exists('[data-action=conflict-here][data-key="project:pjSync"]')), await phone.text('#syncConflicts'));
-  await phone.click('[data-action=conflict-cloud][data-key="project:pjSync"]');
+  await phone.until(`document.querySelector('[data-action=conflict-cloud][data-key="${decisionKey}"]')`);
+  check('the conflict screen names the decision and offers both versions', (await phone.text('#syncConflicts')).includes('Decision') && (await phone.exists(`[data-action=conflict-here][data-key="${decisionKey}"]`)));
+  await phone.click(`[data-action=conflict-cloud][data-key="${decisionKey}"]`);
   await synced(phone, 20000);
   const afterPj = (await phone.data()).projects.items.find(x => x.id === 'pjSync');
-  check('choosing the account\'s version gives the phone the Mac\'s rename, keeps the phone\'s version aside, and merges nothing', afterPj.milestones[1].title === 'Mac: order the base now' && !afterPj.decisions[0].options[0].pros.includes('Phone: fits the corner')
-    && (await phone.notes()).kept.some(k => k.key === 'project:pjSync' && k.why === 'conflict' && JSON.stringify(k.content).includes('Phone: fits the corner')), (await phone.notes()).kept.map(k => k.key));
-  await mac.returnToApp(); await synced(mac);
-  check('…and the account is unchanged by it', (await cloudPj()).data.milestones[1].title === 'Mac: order the base now' && (await mac.data()).projects.items.find(x => x.id === 'pjSync').milestones[1].title === 'Mac: order the base now');
+  check('choosing the account decision retains other tools and history, keeping the displaced decision aside', afterPj.decisions[0].question === 'Mac: which chair?' && afterPj.milestones[1].title === 'Mac: order the base now'
+    && afterPj.decisions[0].history[0].why === 'Room for tools'
+    && (await phone.notes()).kept.some(k => k.key === decisionKey && k.content.value.question === 'Phone: which chair?'));
+
+  // This represents the original migration snapshot, whose exact SQL conversion is checked in project-sync-db.
+  // Use fresh child versions here by taking a separate small project through the normal client first.
+  await mac.setData(`s => { s.projects.items.push({id:'pjUpgrade',title:'Upgrade fixture',summary:'',stage:'explore',status:'active',nextTaskId:null,commitmentIds:[],createdAt:'2026-10-20T09:00',updatedAt:'2026-10-20T09:00',milestones:[{id:'msOld',title:'Original marker',aim:null,reachedOn:null,createdAt:'2026-10-20T09:00'}]}); }`);
+  await synced(mac);
+  if (!(await cloudUntil(async () => !!(await cloudRecord(userA,'project','pjUpgrade'))))) throw new Error('Upgrade fixture did not reach cloud');
+  await phone.returnToApp(); await phone.until(`JSON.parse(localStorage.getItem('myday.data.v4')).projects.items.some(p=>p.id==='pjUpgrade')`); await synced(phone);
+  const originalProject = (await phone.data()).projects.items.find(p=>p.id==='pjUpgrade');
+  await sql('insert into public.sync_project_legacy(user_id,id,version,core_version,data) values($1,$2,1,2,$3::jsonb)', [userA,'pjUpgrade',JSON.stringify(originalProject)]);
+  await phone.offline(true);
+  await phone.ev(`(() => { const state=JSON.parse(localStorage.getItem('myday.sync.v1')); delete state.link.projectProtocol;
+    for(const key of Object.keys(state.link.base)) if(key.startsWith('project_milestone:') && key.endsWith('${R.projectPartId('pjUpgrade','msOld')}')) delete state.link.base[key];
+    state.link.base['project:pjUpgrade']={v:1,f:${JSON.stringify(R.fingerprint(originalProject))}};
+    localStorage.setItem('myday.sync.v1',JSON.stringify(state)); })()`);
+  await changeHere(phone, `s => { s.projects.items.find(p=>p.id==='pjUpgrade').milestones[0].title='Offline upgraded marker'; }`);
+  await mac.setData(`s => { s.projects.items.find(p=>p.id==='pjUpgrade').summary='Changed on the other device'; }`); await synced(mac);
+  await phone.offline(false); await phone.returnToApp(); await synced(phone,30000);
+  check('a legacy device upgrades its baseline before syncing offline edits, retaining independent cloud changes', (await phone.notes()).link.projectProtocol===2
+    && (await cloudRecord(userA,'project','pjUpgrade')).data.milestones[0].title==='Offline upgraded marker'
+    && (await phone.data()).projects.items.find(p=>p.id==='pjUpgrade').summary==='Changed on the other device');
+
+  // More than one pull page: no history pruning, and the complete project exceeds the former limit.
+  await mac.setData(`s => { const p=s.projects.items.find(p => p.id === 'pjSync'); p.decisions[0].history=Array.from({length:650},(_,i)=>({id:'dhLarge'+i,text:'Former chair '+i,on:'2026-10-22',why:'文'.repeat(300)})); }`);
+  await synced(mac, 60000);
+  await phone.returnToApp(); await synced(phone, 60000);
+  check('a project over 512 KiB survives a multi-page cloud round trip with all 650 previous choices', Buffer.byteLength(JSON.stringify((await cloudPj()).data)) > 524288
+    && (await phone.data()).projects.items.find(p => p.id === 'pjSync').decisions[0].history.length === 650);
+  check('large-project sync keeps each database record below its byte limit', (await sql("select max(octet_length(data::text))::int as bytes from public.sync_records where user_id=$1 and not deleted and data->>'projectId'='pjSync'", [userA]))[0].bytes < 380000);
+
+  // Concurrent appends at the same history index converge to one order, retaining both choices.
+  await phone.offline(true);
+  await changeHere(phone, `s => { s.projects.items.find(p=>p.id==='pjSync').decisions[0].history.push({id:'dhPhone',text:'Phone chair',on:'2026-10-23',why:'From phone'}); }`);
+  await mac.setData(`s => { s.projects.items.find(p=>p.id==='pjSync').decisions[0].history.push({id:'dhMac',text:'Mac chair',on:'2026-10-23',why:'From Mac'}); }`);
+  await synced(mac, 20000);
+  if (!(await cloudUntil(async () => (await cloudPj()).data.decisions[0].history.some(h=>h.id==='dhMac')))) throw new Error('Mac append did not reach cloud');
+  await phone.offline(false); await phone.returnToApp(); await synced(phone, 30000);
+  await mac.returnToApp(); await synced(mac, 30000);
+  await phone.returnToApp(); await synced(phone, 30000);
+  const historyIds = async D => (await D.data()).projects.items.find(p=>p.id==='pjSync').decisions[0].history.map(h=>h.id);
+  check('same-position appends retain both snapshots in the same order on both devices', eq(await historyIds(mac), await historyIds(phone)) && (await historyIds(mac)).length === 652, [(await historyIds(mac)).slice(-3), (await historyIds(phone)).slice(-3)]);
+
+  // Deletion racing an offline child edit must preserve the entire local subtree for the choice.
+  await phone.offline(true);
+  await changeHere(phone, `s => { s.projects.items.find(p=>p.id==='pjSync').milestones[0].title='Phone: keep this marker'; }`);
+  await mac.setData(`s => { s.projects.items=s.projects.items.filter(p=>p.id!=='pjSync'); }`);
+  await synced(mac, 30000);
+  if (!(await cloudUntil(async () => (await cloudPj()).deleted))) throw new Error('Mac project deletion did not reach cloud');
+  await phone.offline(false); await phone.returnToApp();
+  check('a project deletion conflicts with an offline child edit while retaining all local history', await statusIs(phone, 'attention', 30000)
+    && (await phone.data()).projects.items.find(p=>p.id==='pjSync').decisions[0].history.length === 652, await diag(phone));
+  await goSync(phone); await phone.until(`document.querySelector('[data-action=conflict-here][data-key="project:pjSync"]')`);
+  await phone.click('[data-action=conflict-here][data-key="project:pjSync"]'); await synced(phone, 60000);
+  await mac.returnToApp(); await synced(mac, 60000);
+  check('choosing this device restores the parent and every child without pruning history', (await cloudPj()).data.decisions[0].history.length === 652
+    && (await mac.data()).projects.items.find(p=>p.id==='pjSync').milestones[0].title === 'Phone: keep this marker');
+
+  await phone.offline(true);
+  await changeHere(phone, `s => { s.projects.items.find(p=>p.id==='pjSync').milestones[0].title='Phone: kept in the replaced file'; }`);
+  await mac.setData(`s => { s.projects.items=s.projects.items.filter(p=>p.id!=='pjSync'); }`);
+  if (!(await cloudUntil(async () => (await cloudPj()).deleted))) throw new Error('Second deletion did not reach cloud');
+  await phone.offline(false); await phone.returnToApp();
+  await statusIs(phone,'attention',30000); await goSync(phone);
+  await phone.until(`document.querySelector('[data-action=conflict-cloud][data-key="project:pjSync"]')`);
+  await phone.click('[data-action=conflict-cloud][data-key="project:pjSync"]'); await synced(phone,60000);
+  const displaced = (await phone.notes()).kept.filter(k=>k.why==='conflict' && k.content?.projectId==='pjSync');
+  check('choosing the account deletion removes the project and keeps every displaced history snapshot and edited marker', !(await phone.data()).projects.items.some(p=>p.id==='pjSync')
+    && displaced.filter(k=>k.key.startsWith('project_choice:')).length===652
+    && displaced.some(k=>k.content.value.title==='Phone: kept in the replaced file'));
 
   console.log('\n[6] Today\'s plan, and deleting it ("Start today over") — the deletion syncs and doesn\'t come back');
   await goToday(mac);
@@ -374,7 +501,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
   check('…and the Mac gets it', await mac.until(`JSON.parse(localStorage.getItem('myday.data.v4')).lists.learning.find(i => i.id === 'l2').title === 'Phone second'`));
 
   console.log('\n[8] Failed, interrupted and retried requests');
-  srv.faults.push({ path: '/rest/v1/rpc/sync_push', mode: 'error', times: 1 });
+  srv.faults.push({ path: '/rest/v1/rpc/sync_push_v2', mode: 'error', times: 1 });
   let v0 = (await cloudList('health', userA)).version;
   await editList(mac, 'health', 'h1', 'Gym (after a failed send)');
   const firstId = (await sent(mac, 'list:health')) && (await mac.notes()).link.out['list:health'].id;
@@ -388,7 +515,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
 
   // Two dropped replies: Chrome quietly resends a POST once when a connection closes without an answer, so the
   // first two tries both reach the cloud and get no reply; then MyDay itself tries again.
-  srv.faults.push({ path: '/rest/v1/rpc/sync_push', mode: 'drop', times: 2 });
+  srv.faults.push({ path: '/rest/v1/rpc/sync_push_v2', mode: 'drop', times: 2 });
   v0 = (await cloudList('health', userA)).version;
   srv.log.length = 0;
   await editList(mac, 'health', 'h2', 'Meal prep (reply lost)');
@@ -397,14 +524,14 @@ function task(uid, taskId, category, title, minutes, done = false) {
   check('a reply that never arrives (saved in the cloud, but the device can\'t tell): the change stays noted', !!(await mac.notes()).link.out['list:health'] && (await mac.status()) === 'local', await diag(mac));
   await syncNowWhenReady(mac);
   await synced(mac);
-  const pushes = srv.log.filter(e => e.path === '/rest/v1/rpc/sync_push').map(e => e.body.changes.find(c => c.record_id === 'health')).filter(Boolean);
+  const pushes = srv.log.filter(e => e.path === '/rest/v1/rpc/sync_push_v2').map(e => e.body.changes.find(c => c.record_id === 'health')).filter(Boolean);
   check('every retry sent the same change (same id) again', pushes.length >= 3 && pushes.every(p => p.change_id === pushes[0].change_id), pushes.map(p => p.change_id));
   check('…and the cloud applied it once: one new version, one record of the change, no duplicate', (await cloudList('health', userA)).version === v0 + 1 &&
     (await sql('select count(*)::int as n from public.sync_changes where change_id = $1', [pushes[0].change_id]))[0].n === 1 &&
     (await cloudList('health', userA)).data.items.filter(i => i.id === 'h2').length === 1);
 
   await phone.returnToApp(); await synced(phone); // the phone catches up first (a list is one record: see app/README.md)
-  srv.faults.push({ path: '/rest/v1/rpc/sync_push', mode: 'error', times: 99 }, { path: '/rest/v1/rpc/sync_pull', mode: 'error', times: 99 });
+  srv.faults.push({ path: '/rest/v1/rpc/sync_push_v2', mode: 'error', times: 99 }, { path: '/rest/v1/rpc/sync_pull_v2', mode: 'error', times: 99 });
   await editList(phone, 'admin', 'a1', 'Laundry (pending 1)');
   await sent(phone, 'list:admin');
   await editList(phone, 'health', 'h3', 'Walk (pending 2)');
@@ -419,7 +546,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
   check('…and they\'re sent once the cloud answers again', (await cloudList('admin', userA)).data.items.find(i => i.id === 'a1').title === 'Laundry (pending 1)' && (await cloudList('health', userA)).data.items.find(i => i.id === 'h3').title === 'Walk (pending 2)');
 
   await mac.returnToApp(); await synced(mac); // the Mac catches up with the phone's changes first
-  srv.faults.push({ path: '/rest/v1/rpc/sync_push', mode: 'delay', ms: 2000, times: 1 });
+  srv.faults.push({ path: '/rest/v1/rpc/sync_push_v2', mode: 'delay', ms: 2000, times: 1 });
   await editList(mac, 'learning', 'l3', 'HTB Academy (slow connection)');
   check('on a slow connection the status shows "Saving…" while it works', await statusIs(mac, 'syncing', 8000) && (await mac.text('#syncBadge')) === 'Saving…', await mac.text('#syncBadge'));
   check('…then "Synced"', await synced(mac));
@@ -458,9 +585,9 @@ function task(uid, taskId, category, title, minutes, done = false) {
   check('the account\'s own token reads only its own rows', (await (await rest('/rest/v1/task_lists?select=*', tA)).json()).every(r => r.user_id === userA) && (await (await rest('/rest/v1/sync_records?select=*', tA)).json()).every(r => r.user_id === userA));
   check('another account\'s token reads none of them', (await (await rest('/rest/v1/task_lists?select=*', tC)).json()).every(r => r.user_id === userC) && (await (await rest('/rest/v1/sync_records?select=*', tC)).json()).every(r => r.user_id === userC));
   check('another account can\'t change them directly', (await rest(`/rest/v1/task_lists?user_id=eq.${userA}`, tC, { method: 'PATCH', body: JSON.stringify({ data: { items: [] } }) })).status === 403);
-  check('…or through sync_pull/sync_push by naming that account', (await rest('/rest/v1/rpc/sync_pull', tC, { method: 'POST', body: JSON.stringify({ account: userA, since: 0 }) })).status === 403 &&
-    (await rest('/rest/v1/rpc/sync_push', tC, { method: 'POST', body: JSON.stringify({ account: userA, changes: [] }) })).status === 403);
-  check('signed-out visitors (publishable key only) get nothing', (await rest('/rest/v1/task_lists?select=*', null)).status === 401 && (await rest('/rest/v1/rpc/sync_pull', null, { method: 'POST', body: JSON.stringify({ account: userA }) })).status === 401);
+  check('…or through sync_pull/sync_push by naming that account', (await rest('/rest/v1/rpc/sync_pull_v2', tC, { method: 'POST', body: JSON.stringify({ account: userA, since: 0 }) })).status === 403 &&
+    (await rest('/rest/v1/rpc/sync_push_v2', tC, { method: 'POST', body: JSON.stringify({ account: userA, changes: [] }) })).status === 403);
+  check('signed-out visitors (publishable key only) get nothing', (await rest('/rest/v1/task_lists?select=*', null)).status === 401 && (await rest('/rest/v1/rpc/sync_pull_v2', null, { method: 'POST', body: JSON.stringify({ account: userA }) })).status === 401);
   await goSync(mac);
   await mac.click('#syncScreen [data-action=sync-signout]');
   await mac.until(`document.querySelector('dialog[open]')`); await mac.answer(true);
@@ -507,7 +634,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await signIn(phone, C);
   check('signing in as another account: explained ("A different account"), MyDay stays closed', await phaseIs(phone, 'other-account') && (await phone.text('#gate-h')) === 'A different account');
   await sleep(1500);
-  check('…nothing is sent to that account, and this device\'s MyDay is unchanged', !srv.log.some(e => e.path === '/rest/v1/rpc/sync_push') && eq(withoutSaves(await phone.data()), phoneHad));
+  check('…nothing is sent to that account, and this device\'s MyDay is unchanged', !srv.log.some(e => e.path === '/rest/v1/rpc/sync_push_v2') && eq(withoutSaves(await phone.data()), phoneHad));
   check('…and the first account\'s records in the cloud are untouched', (await cloudList('admin', userA)).data.items.some(i => i.title === 'Groceries (from the backup)'));
   await phone.click('#syncScreen [data-action=sync-signout]');
   check('signing out of the other account leaves this device\'s MyDay (the first account\'s) as it is', await phaseIs(phone, 'signed-out') && eq(withoutSaves(await phone.data()), phoneHad));
@@ -550,7 +677,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
   check('a second device gets the task, without the half', !!lh9 && lh9.title === 'Pay council tax 😀' && !!ld.tasks.items.find(t => t.id === 'tkH1'), lh9 && JSON.stringify(lh9.title));
 
   // A change noted by 1.35.0 with half a character inside it, still waiting to be sent.
-  srv.faults.push({ path: '/rest/v1/rpc/sync_push', mode: 'error', times: 99 });
+  srv.faults.push({ path: '/rest/v1/rpc/sync_push_v2', mode: 'error', times: 99 });
   await mac.setData(`s => { s.tasks.items.find(t => t.id === 'tkH9').title = 'Book dentist'; s.tasks.items.find(t => t.id === 'tkH1').title = 'Renew passport online'; }`);
   await sent(mac, 'task:tkH9'); await sent(mac, 'task:tkH1');
   await mac.ev(`(() => { const n = JSON.parse(localStorage.getItem('myday.sync.v1')); n.link.out['task:tkH9'].content.title = 'Book dentist 😀' + ${HALF}; localStorage.setItem('myday.sync.v1', JSON.stringify(n)); })()`);

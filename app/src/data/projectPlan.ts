@@ -1,15 +1,16 @@
 // Milestones and decisions (1.31.0): two optional lists kept inside each project (`project.milestones`,
-// `project.decisions`), so they're saved and synced with it — no new kind of record, no database change. A project
+// `project.decisions`). Cloud sync projects these into separate item records through projectRecords.ts. A project
 // without them has neither field, exactly as before; removing the last one removes the field again.
 //
 // Milestones are big markers on the way (in your order; a date to aim for is guidance, never "late"). Decisions are a
 // question with 1–4 options, each with its own pros and cons — no scores, no weights, no winner worked out: you choose.
 // Nothing here adds tasks, touches Today or moves the project on the board.
 import { isDateKey, isDateTime, localStamp, todayKey } from './dates';
-import type { DateKey, Decision, DecisionOption, Milestone, MyDayData, Project } from './types';
+import { projectRecordSizes, projectRecordsFit } from './projectSize';
+import type { DateKey, Decision, DecisionHistoryEntry, DecisionOption, Milestone, MyDayData, Project } from './types';
 import { isObj, listOf, uid } from './util';
 
-export const PLAN_LIMITS = { milestones: 30, milestoneTitle: 120, decisions: 12, question: 200, options: 4, optionText: 120, points: 6, point: 160, why: 600 };
+export const PLAN_LIMITS = { milestones: 30, milestoneTitle: 120, decisions: 12, question: 200, options: 4, optionText: 120, points: 10, point: 160, why: 600 };
 
 // ---------- Reading saved lists (unknown fields kept; anything unreadable counted, never dropped silently) ----------
 const text = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : '');
@@ -27,6 +28,19 @@ export function normalizeMilestones(raw: unknown, report: { dropped: number }): 
   return out.length ? out : undefined;
 }
 const points = (v: unknown) => listOf(v).map(x => text(x, PLAN_LIMITS.point)).filter(Boolean);
+export function normalizeHistory(raw: unknown, report: { dropped: number }): DecisionHistoryEntry[] | undefined {
+  if (raw === undefined) return undefined;
+  if (!Array.isArray(raw)) { report.dropped++; return undefined; }
+  const out: DecisionHistoryEntry[] = [], seen = new Set<string>();
+  for (const h of raw) {
+    const label = isObj(h) ? text(h.text, PLAN_LIMITS.optionText) : '';
+    if (!isObj(h) || typeof h.id !== 'string' || !h.id || !label || !isDateKey(h.on)) { report.dropped++; continue; }
+    const id = seen.has(h.id) ? 'dh' + uid() : h.id;
+    seen.add(id);
+    out.push({ ...h, id, text: label, on: h.on, why: typeof h.why === 'string' ? h.why.slice(0, PLAN_LIMITS.why) : null });
+  }
+  return out.length ? out : undefined;
+}
 export function normalizeDecisions(raw: unknown, report: { dropped: number }): Decision[] | undefined {
   if (raw === undefined) return undefined;
   if (!Array.isArray(raw)) { report.dropped++; return undefined; }
@@ -52,8 +66,10 @@ export function normalizeDecisions(raw: unknown, report: { dropped: number }): D
       createdAt: isDateTime(x.createdAt) ? x.createdAt : localStamp(),
       updatedAt: isDateTime(x.updatedAt) ? x.updatedAt : isDateTime(x.createdAt) ? x.createdAt : localStamp(),
     };
-    if (isObj(x.lastChoice) && typeof x.lastChoice.text === 'string' && x.lastChoice.text.trim() && isDateKey(x.lastChoice.on)) d.lastChoice = { text: text(x.lastChoice.text, PLAN_LIMITS.optionText), on: x.lastChoice.on };
+    if (isObj(x.lastChoice) && typeof x.lastChoice.text === 'string' && x.lastChoice.text.trim() && isDateKey(x.lastChoice.on)) d.lastChoice = { ...x.lastChoice, text: text(x.lastChoice.text, PLAN_LIMITS.optionText), on: x.lastChoice.on };
     else delete d.lastChoice;
+    const history = normalizeHistory(x.history, report);
+    if (history) d.history = history; else delete d.history;
     out.push(d);
   }
   return out.length ? out : undefined;
@@ -73,6 +89,13 @@ export function decisionsInOrder(p: Project): Decision[] {
 }
 export const chosenOption = (d: Decision) => d.options.find(o => o.id === d.chosen) ?? null;
 
+// Older saves know at most one previous choice. Read it without migrating on load. When already decided again,
+// `why` belongs to the current choice, so it must never be attributed to that older choice.
+export function decisionHistory(x: Decision): DecisionHistoryEntry[] {
+  if (x.history?.length) return x.history;
+  return x.lastChoice ? [{ ...x.lastChoice, id: 'legacy:' + x.id, why: x.chosen ? null : x.why }] : [];
+}
+
 // ---------- Changing them (each returns whether anything changed; the project's "updated" time moves on) ----------
 const proj = (d: MyDayData, id: string) => d.projects.items.find(p => p.id === id) ?? null;
 const touch = (p: Project) => { p.updatedAt = localStamp(); };
@@ -81,6 +104,25 @@ function tidy(p: Project) { if (p.milestones && !p.milestones.length) delete p.m
 const ms = (p: Project | null, id: string) => p?.milestones?.find(m => m.id === id) ?? null;
 const dc = (p: Project | null, id: string) => p?.decisions?.find(x => x.id === id) ?? null;
 const touchDecision = (p: Project, x: Decision) => { x.updatedAt = localStamp(); touch(p); };
+
+// Never prune history to fit sync. Refuse growth atomically, keeping the old choice and all its content.
+// An oversized imported item may still shrink; storage.ts applies the same item allowance to every project save.
+function saveChoice(p: Project, x: Decision, change: (next: Decision) => void): true | 'big' {
+  const next = structuredClone(x), sizesBefore = projectRecordSizes(p), updatedBefore = p.updatedAt;
+  change(next);
+  const index = p.decisions!.indexOf(x);
+  p.decisions![index] = next;
+  touchDecision(p, next);
+  if (projectRecordsFit(sizesBefore, p)) return true;
+  p.decisions![index] = x; p.updatedAt = updatedBefore;
+  return 'big';
+}
+function keepPreviousChoice(x: Decision) {
+  const o = chosenOption(x);
+  if (!o || !x.decidedOn) return;
+  x.history = [...decisionHistory(x), { id: 'dh' + uid(), text: o.text, on: x.decidedOn, why: x.why }];
+  x.lastChoice = { text: o.text, on: x.decidedOn };
+}
 
 export function addMilestone(d: MyDayData, projectId: string, title: string, aim: DateKey | null = null): string | 'full' | null {
   const p = proj(d, projectId), t = text(title, PLAN_LIMITS.milestoneTitle);
@@ -154,14 +196,17 @@ export function editOption(d: MyDayData, projectId: string, id: string, optionId
   return true;
 }
 // Removing the chosen option reopens the decision (and says so): 'reopened'. Otherwise 'removed'.
-export function removeOption(d: MyDayData, projectId: string, id: string, optionId: string): 'removed' | 'reopened' | null {
+export function removeOption(d: MyDayData, projectId: string, id: string, optionId: string): 'removed' | 'reopened' | 'big' | null {
   const p = proj(d, projectId), x = dc(p, id);
   if (!p || !x || !x.options.some(o => o.id === optionId)) return null;
   const wasChosen = x.chosen === optionId;
-  if (wasChosen) reopen(x);
+  if (wasChosen) {
+    const saved = saveChoice(p, x, next => { reopen(next); next.options = next.options.filter(o => o.id !== optionId); });
+    return saved === 'big' ? 'big' : 'reopened';
+  }
   x.options = x.options.filter(o => o.id !== optionId);
   touchDecision(p, x);
-  return wasChosen ? 'reopened' : 'removed';
+  return 'removed';
 }
 export type Side = 'pros' | 'cons';
 export function addPoint(d: MyDayData, projectId: string, id: string, optionId: string, side: Side, line: string): boolean | 'full' {
@@ -184,12 +229,16 @@ export function editPoint(d: MyDayData, projectId: string, id: string, optionId:
 export const removePoint = (d: MyDayData, projectId: string, id: string, optionId: string, side: Side, index: number) => editPoint(d, projectId, id, optionId, side, index, '');
 
 // Choosing: the option, your reasons (optional) and today. Nothing else moves — not the project's stage, not Today.
-export function decide(d: MyDayData, projectId: string, id: string, optionId: string, why: string, k: DateKey = todayKey()): boolean {
+export function decide(d: MyDayData, projectId: string, id: string, optionId: string, why: string, k: DateKey = todayKey()): boolean | 'big' {
   const p = proj(d, projectId), x = dc(p, id);
-  if (!p || !x || !x.options.some(o => o.id === optionId)) return false;
-  x.chosen = optionId; x.decidedOn = k; x.why = why.trim().slice(0, PLAN_LIMITS.why);
-  touchDecision(p, x);
-  return true;
+  const w = why.trim().slice(0, PLAN_LIMITS.why);
+  if (!p || !x || !isDateKey(k) || !x.options.some(o => o.id === optionId)) return false;
+  if (x.chosen === optionId && x.decidedOn === k && x.why === w) return false;
+  return saveChoice(p, x, next => {
+    if (next.chosen) keepPreviousChoice(next);
+    else if (!next.history?.length && next.lastChoice) next.history = decisionHistory(next);
+    next.chosen = optionId; next.decidedOn = k; next.why = w;
+  });
 }
 export function editWhy(d: MyDayData, projectId: string, id: string, why: string): boolean {
   const p = proj(d, projectId), x = dc(p, id), w = why.trim().slice(0, PLAN_LIMITS.why);
@@ -200,15 +249,13 @@ export function editWhy(d: MyDayData, projectId: string, id: string, why: string
 // "Think again": the choice is cleared; the question, options, pros, cons and your reasons stay, and the last choice is
 // remembered (shown, and offered again) so nothing you wrote is lost.
 function reopen(x: Decision) {
-  const o = x.options.find(y => y.id === x.chosen);
-  if (o && x.decidedOn) x.lastChoice = { text: o.text, on: x.decidedOn };
+  keepPreviousChoice(x);
   x.chosen = null; x.decidedOn = null;
 }
-export function thinkAgain(d: MyDayData, projectId: string, id: string): boolean {
+export function thinkAgain(d: MyDayData, projectId: string, id: string): boolean | 'big' {
   const p = proj(d, projectId), x = dc(p, id);
   if (!p || !x || !x.chosen) return false;
-  reopen(x); touchDecision(p, x);
-  return true;
+  return saveChoice(p, x, reopen);
 }
 export function removeDecision(d: MyDayData, projectId: string, id: string): boolean {
   const p = proj(d, projectId);

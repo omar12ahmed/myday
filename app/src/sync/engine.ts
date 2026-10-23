@@ -25,13 +25,17 @@
 import { useSyncExternalStore } from 'react';
 import { todayKey } from '../data/dates';
 import { freshState as freshData } from '../data/normalize';
-import { catchUp, getSnapshot, replaceAll, subscribe as onData, updateSaved } from '../data/storage';
+import { catchUp, getSnapshot, replaceAll, subscribe as onData, updateFromSync as updateSaved } from '../data/storage';
 import { toast } from '../data/toast';
 import { mendHalves } from '../data/util';
 import { accountOf, call, client, currentSession, hadSession, signIn, signOut, type Account } from './client';
 import { SYNC } from './config';
-import { ALL_KINDS, cleanRecord, fingerprint, isStarter, keyOf, localRecords, putRecord, recordLabel, sortKeys, splitKey, type Content, type Kind } from './records';
+import { ALL_KINDS, cleanRecord, fingerprint, isStarter, keyOf, localRecords, putRecord, putRecords, recordLabel, sortKeys, splitKey, type Content, type Kind } from './records';
 import { freshState, newId, newLink, readState, SYNC_KEY, writeState, type Conflict, type Link, type SyncState } from './state';
+import { inProjectScope, isProjectKind, projectAncestors, projectApplyOrder, projectPositions, orderProjectParts } from './projectParts';
+import { upgradeProjectLink, type OriginalProject } from './projectUpgrade';
+import { recordBytes } from '../data/projectRecords';
+import type { MyDayData } from '../data/types';
 
 const KINDS: Kind[] = ALL_KINDS;
 const BATCH = 100;           // changes per request (the cloud accepts up to 100)
@@ -225,6 +229,12 @@ async function runLocked(reason: Reason) {
   if (!link) { needJoin = true; return; }          // just signed in here: combined with your account (after this)
   if (link.user !== account.id) return;          // a different account: nothing is sent or fetched
   if (getSnapshot().status.kind !== 'ok') return;  // saving is paused on this device: sync waits too
+  if (link.projectProtocol !== 2) {
+    const original = await call<OriginalProject[]>('sync_project_upgrade_rows', session, { account: link.user });
+    if (!original.ok) { failed(original.why, original.message); return; }
+    upgradeProjectLink(link, original.data);
+    if (!writeState(st)) { problem = 'storage'; message = "This device's storage is full, so its sync notes couldn't be upgraded."; return; }
+  }
   if (link.review) { link.review = null; writeState(st); } // a pause for a review (before 1.9.0) just carries on
 
   // 1. Note the changes made here (before sending anything), however many: they're yours, so they go to your account.
@@ -236,9 +246,14 @@ async function runLocked(reason: Reason) {
   publish();
 
   // 2. Send them, a batch at a time. Each is noted as sent before it goes.
-  const keys = sortKeys(Object.keys(link.out));
-  for (let i = 0; i < keys.length; i += BATCH) {
-    const batch = keys.slice(i, i + BATCH);
+  const sent = new Set<string>();
+  for (;;) {
+    // Create/resolve parents before sending their children. A parent conflict must not turn pending child
+    // edits into rejections, and a restored project must exist before its items are restored.
+    const batch = sortKeys(Object.keys(link.out).filter(key => !sent.has(key)
+      && !projectAncestors(key).some(parent => link.out[parent] || link.conflicts[parent]))).slice(0, BATCH);
+    if (!batch.length) break;
+    for (const key of batch) sent.add(key);
     for (const k of batch) link.out[k].tries++;
     if (!writeState(st)) { problem = 'storage'; message = "This device's storage is full, so changes can't be sent safely."; return; }
     const changes = batch.map(k => {
@@ -247,7 +262,7 @@ async function runLocked(reason: Reason) {
       if (!o.del && o.content) mendHalves(o.content);
       return { change_id: o.id, kind, record_id: id, base_version: o.base, deleted: o.del, data: o.del ? null : o.content };
     });
-    const res = await call<Result[]>('sync_push', session, { account: link.user, changes, device: st.device });
+    const res = await call<Result[]>('sync_push_v2', session, { account: link.user, changes, device: st.device });
     if (!res.ok) { failed(res.why, res.message); writeState(st); return; } // the changes stay noted, and are sent again with the same ids
     catchUp();
     const now = localRecords(getSnapshot().data);
@@ -257,7 +272,8 @@ async function runLocked(reason: Reason) {
       const o = link.out[key];
       delete link.out[key];
       if (r.status === 'applied') {
-        link.base[key] = { v: r.version!, f: o.f };
+        // Keep the original local fingerprint: mending an old retry payload is not a new local edit.
+        link.base[key] = { ...baseline(r.version!, o.content), f: o.f };
         delete link.rejected[key];
       } else if (r.status === 'conflict') {
         noteCloudVersion(link, key, now.get(key) ?? null, { v: r.version!, del: !!r.deleted, content: r.deleted ? null : cleanRecord(key, r.data), by: null, at: null });
@@ -269,35 +285,61 @@ async function runLocked(reason: Reason) {
   }
 
   // 3. Fetch what changed in the cloud since last time, and save it here.
+  const incoming: Row[] = [];
+  let cursor = link.cursor;
   for (;;) {
-    const res = await call<Row[]>('sync_pull', session, { account: link.user, since: link.cursor, max_rows: PAGE });
+    const res = await call<Row[]>('sync_pull_v2', session, { account: link.user, since: cursor, max_rows: PAGE });
     if (!res.ok) { failed(res.why, res.message); return; }
-    const rows = res.data.filter(r => KINDS.includes(r.kind));
-    if (res.data.length) {
-      const ok = await applyRows(st, link, rows, res.data[res.data.length - 1].seq);
-      if (!ok) { schedule(1500); return; } // couldn't save just now (e.g. another tab saved first): try again shortly
-    }
+    incoming.push(...res.data.filter(r => KINDS.includes(r.kind)));
+    if (res.data.length) cursor = res.data[res.data.length - 1].seq;
     if (res.data.length < PAGE) break;
   }
+  if (cursor > link.cursor && !(await applyRows(st, link, incoming, cursor))) { schedule(1500); return; }
   lastPullAt = Date.now();
   link.lastSynced = new Date().toISOString();
   writeState(st);
   succeeded();
+  if (changedKeys(link, localRecords(getSnapshot().data)).some(key => !link.out[key])) schedule(300, 'change');
 }
 
 // Notes changes as on their way, each with a new change id and the cloud version it was based on.
 function noteOutgoing(link: Link, local: Map<string, Content>, keys: string[]) {
   for (const key of keys) {
     const content = local.get(key) ?? null;
+    if (content && isProjectKind(splitKey(key).kind) && recordBytes(content) > 524288) {
+      link.rejected[key] = { f: fingerprint(content), reason: 'This project item is too large for cloud sync. Its saved content is still on this device.' };
+      continue;
+    }
     link.out[key] = { id: newId(), base: link.base[key] ? link.base[key].v : 0, del: !content, content, f: fingerprint(content), tries: 0 };
   }
 }
 
+const baseline = (v: number, content: Content | null) => ({ v, f: fingerprint(content), ...(typeof content?.index === 'number' ? { index: content.index } : {}) });
+
 // The cloud has version `cloud` of a record whose content here is `here`. Equal → nothing to decide; else a conflict.
-function noteCloudVersion(link: Link, key: string, here: Content | null, cloud: Conflict) {
+function noteCloudVersion(link: Link, key: string, here: Content | null, cloud: Conflict, draft?: MyDayData): boolean {
   const cf = fingerprint(cloud.content);
-  if (fingerprint(here) === cf) { link.base[key] = { v: cloud.v, f: cf }; delete link.conflicts[key]; return; }
+  if (fingerprint(here) === cf) { link.base[key] = baseline(cloud.v, cloud.content); delete link.conflicts[key]; return false; }
+  // Tool edits touch the project's displayed "updated" day/time. Two independent tool edits should not
+  // require a metadata choice merely because those timestamps differ; keep the later one deterministically.
+  if (splitKey(key).kind === 'project' && here && cloud.content && !cloud.del) {
+    const hv = { ...(here.value as Content) }, cv = { ...(cloud.content.value as Content) };
+    const ht = String(hv.updatedAt ?? ''), ct = String(cv.updatedAt ?? '');
+    delete hv.updatedAt; delete cv.updatedAt;
+    if (fingerprint({ ...here, value: hv }) === fingerprint({ ...cloud.content, value: cv })) {
+      const merged = ht >= ct ? here : cloud.content;
+      const changed = fingerprint(merged) !== fingerprint(here);
+      if (draft) { if (changed) putRecord(draft, key, merged); }
+      else if (changed && updateSaved(d => { putRecord(d, key, merged); }) === 'not-saved') { link.conflicts[key] = cloud; return false; }
+      link.base[key] = baseline(cloud.v, cloud.content); delete link.conflicts[key];
+      return changed;
+    }
+  }
+  // Parent revisions also advance for child edits. An unchanged cloud payload isn't a conflicting metadata
+  // edit. A deletion still requires a choice because it would also remove those newer descendants.
+  if (here && !cloud.del && link.base[key]?.f === cf) { link.base[key] = baseline(cloud.v, cloud.content); delete link.conflicts[key]; return false; }
   link.conflicts[key] = cloud;
+  return false;
 }
 
 // Saves records from the cloud here, in one save. Sync's notes change only if that save worked.
@@ -311,28 +353,47 @@ async function applyRows(st: SyncState, link: Link, rows: Row[], lastSeq: number
   try {
     result = updateSaved(draft => {
       const local = localRecords(draft);
+      const positions = projectPositions(local, next.base);
       let changed = false;
+      const latest = new Map<string, Row>();
       for (const row of rows) {
+        const key = keyOf(row.kind, row.record_id);
+        if (!latest.has(key) || latest.get(key)!.version < row.version) latest.set(key, row);
+      }
+      // Detect parent deletions before applying any descendant tombstones. A conflict must keep the complete
+      // local subtree available, including unchanged siblings, until the person chooses a version.
+      for (const [key, row] of latest) {
+        if (!row.deleted || !['project', 'project_decision', 'project_case'].includes(row.kind) || next.out[key]) continue;
+        if ([...new Set([...local.keys(), ...Object.keys(next.out)])].some(child => child !== key && inProjectScope(child, key)
+          && (next.out[child] || fingerprint(local.get(child)) !== (next.base[child]?.f ?? null)))) {
+          noteCloudVersion(next, key, local.get(key) ?? null, { v: row.version, del: true, content: null, by: row.updated_by, at: row.updated_at });
+        }
+      }
+      const ordered = [...latest.values()].sort((a, b) => projectApplyOrder([keyOf(a.kind, a.record_id), a.deleted ? null : a.data as Content], [keyOf(b.kind, b.record_id), b.deleted ? null : b.data as Content]));
+      for (const row of ordered) {
         const key = keyOf(row.kind, row.record_id);
         const known = next.base[key];
         if (known && row.version <= known.v) continue; // already have this version (e.g. it was sent from here)
         if (next.out[key]) continue;                    // a change from here is still on its way: sorted out next time
+        if (projectAncestors(key).some(parent => next.conflicts[parent] && (next.conflicts[parent].del || !local.has(parent)))) continue;
         const clean = row.deleted ? null : cleanRecord(key, row.data);
         if (!row.deleted && !clean) continue;           // nothing usable in it
         const cloud: Conflict = { v: row.version, del: row.deleted, content: clean, by: row.updated_by, at: row.updated_at };
         const here = local.get(key) ?? null;
-        if (next.conflicts[key]) { noteCloudVersion(next, key, here, cloud); continue; } // still undecided: keep the newest cloud version
+        if (next.conflicts[key]) { changed = noteCloudVersion(next, key, here, cloud, draft) || changed; continue; } // still undecided: keep the newest cloud version
         if (fingerprint(here) === (known ? known.f : null)) {
           // Unchanged here since last in step, so the cloud's newer version simply replaces it.
           putRecord(draft, key, clean);
-          next.base[key] = { v: row.version, f: fingerprint(clean) };
+          if (typeof clean?.index === 'number') positions.set(key, clean.index);
+          next.base[key] = baseline(row.version, clean);
           changed = true;
           if (key === keyOf('day', today) || key === keyOf('context', today)) touchesToday = true;
         } else {
-          noteCloudVersion(next, key, here, cloud); // changed in both places: you decide
+          changed = noteCloudVersion(next, key, here, cloud, draft) || changed; // changed in both places: you decide
         }
       }
       if (!changed) return false;
+      orderProjectParts(draft, positions);
     }, () => touchesToday); // today's plan changed: anything you were in the middle of on Today was based on the older one
   } finally {
     applying = false;
@@ -436,7 +497,7 @@ export async function joinAccount(): Promise<boolean> {
 // Clears another account's MyDay from this device (after you've downloaded a backup), so yours can come here.
 export async function clearThisDevice() {
   await withLock(async () => {
-    replaceAll(freshData());
+    if (!replaceAll(freshData())) return;
     const read = readState();
     const st = read.ok ? read.state : freshState();
     st.link = null; st.before = null; st.kept = [];
@@ -462,9 +523,10 @@ export async function signOutHere(anyway = false): Promise<'done' | 'unsaved' | 
   }
   if (!(await signOut())) return 'failed';
   account = null;
+  let cleared = true;
   if (mine) {
     await withLock(async () => {
-      replaceAll(freshData());
+      if (!replaceAll(freshData())) { cleared = false; return; }
       const st = readState();
       const fresh = freshState();
       if (st.ok) fresh.device = st.state.device;
@@ -473,7 +535,7 @@ export async function signOutHere(anyway = false): Promise<'done' | 'unsaved' | 
   }
   succeeded();
   publish('signed-out');
-  return 'done';
+  return cleared ? 'done' : 'failed';
 }
 
 export async function doSignOut(): Promise<boolean> {
@@ -511,23 +573,58 @@ export async function resolveConflicts(keys: string[], choice: 'here' | 'cloud')
     if (!read.ok || !read.state.link) { ok = false; return; }
     const st = read.state, link = st.link!;
     const todo = keys.filter(k => link.conflicts[k]);
+    const localBefore = localRecords(getSnapshot().data);
+    const parents = todo.filter(k => ['project', 'project_decision', 'project_case'].includes(splitKey(k).kind)
+      && (!localBefore.has(k) || link.conflicts[k].del));
+    let subtree: Row[] = [];
+    if (parents.length) {
+      const { session } = await currentSession();
+      if (!session || accountOf(session)?.id !== link.user) { ok = false; return; }
+      const all = await fetchAll(session, link.user);
+      if ('error' in all) { ok = false; return; }
+      subtree = all.rows.filter(row => parents.some(parent => inProjectScope(keyOf(row.kind, row.record_id), parent)));
+      catchUp();
+      const current = localRecords(getSnapshot().data);
+      const scope = new Set([...localBefore.keys(), ...current.keys()]);
+      if ([...scope].some(key => parents.some(parent => inProjectScope(key, parent))
+        && fingerprint(localBefore.get(key)) !== fingerprint(current.get(key)))) { ok = false; return; }
+      for (const parent of parents) {
+        const row = subtree.find(r => keyOf(r.kind, r.record_id) === parent);
+        if (!row || row.version !== link.conflicts[parent].v) {
+          if (row) link.conflicts[parent] = { v: row.version, del: row.deleted, content: row.deleted ? null : cleanRecord(parent, row.data), by: row.updated_by, at: row.updated_at };
+          writeState(st); ok = false; return;
+        }
+      }
+    }
     if (choice === 'cloud') {
       const local = localRecords(getSnapshot().data);
       const at = new Date().toISOString();
-      const keep = todo.filter(k => local.get(k));
+      const keep = [...local.keys()].filter(k => todo.includes(k) || parents.some(parent => inProjectScope(k, parent)));
       for (const k of keep) st.kept.push({ key: k, label: recordLabel(k), content: local.get(k)!, at, why: 'conflict' });
       if (!writeState(st)) { ok = false; return; } // this device's versions are kept before anything is replaced
       const touchesToday = todo.some(k => k === keyOf('day', todayKey()) || k === keyOf('context', todayKey()));
       applying = true;
       let r: ReturnType<typeof updateSaved>;
-      try { r = updateSaved(draft => { for (const k of todo) putRecord(draft, k, link.conflicts[k].content); }, touchesToday); }
+      try { r = updateSaved(draft => {
+        putRecords(draft, [...todo.map(k => [k, link.conflicts[k].content] as [string, Content | null]),
+          ...subtree.map(row => [keyOf(row.kind, row.record_id), row.deleted ? null : cleanRecord(keyOf(row.kind, row.record_id), row.data)] as [string, Content | null])]);
+      }, touchesToday); }
       finally { applying = false; }
       if (r === 'not-saved') { st.kept.splice(st.kept.length - keep.length, keep.length); writeState(st); ok = false; return; }
     }
     for (const k of todo) {
       const c = link.conflicts[k];
-      link.base[k] = { v: c.v, f: c.del ? null : fingerprint(c.content) };
+      link.base[k] = baseline(c.v, c.content);
       delete link.conflicts[k];
+    }
+    // A parent deletion/restoration is a choice about that subtree. Discard obsolete child retry payloads
+    // and establish the latest cloud baseline before queuing any local restoration.
+    for (const row of subtree) {
+      const key = keyOf(row.kind, row.record_id), clean = row.deleted ? null : cleanRecord(key, row.data);
+      link.base[key] = baseline(row.version, clean);
+    }
+    for (const table of [link.out, link.conflicts, link.rejected]) for (const key of Object.keys(table)) {
+      if (parents.some(parent => inProjectScope(key, parent))) delete table[key];
     }
     writeState(st);
   });
@@ -579,7 +676,7 @@ export interface Review {
   account: Account;
   items: ReviewItem[];
   cursor: number;                          // the account's latest change number when the review was made
-  rows: Record<string, { v: number; f: string | null }>; // every record in the account
+  rows: Record<string, { v: number; f: string | null; index?: number }>; // every record in the account
   localF: Record<string, string | null>;   // this device's records when the review was made
   before: string | null;                   // the account this device synced with before, if different
 }
@@ -588,7 +685,7 @@ async function fetchAll(session: NonNullable<Awaited<ReturnType<typeof currentSe
   const rows: Row[] = [];
   let since = 0;
   for (;;) {
-    const res = await call<Row[]>('sync_pull', session, { account: user, since, max_rows: PAGE });
+    const res = await call<Row[]>('sync_pull_v2', session, { account: user, since, max_rows: PAGE });
     if (!res.ok) {
       return { error: res.why === 'network' ? "Couldn't reach your account. Check your connection and try again."
         : res.why === 'refused' && /PGRST202|Could not find the function/i.test(res.message) ? "Your Supabase project isn't set up for MyDay yet (its database changes haven't been applied)."
@@ -625,7 +722,7 @@ export async function prepareReview(): Promise<{ ok: true; review: Review } | { 
     const cloudContent = row && !row.deleted ? cleanRecord(key, row.data) : null;
     const hf = fingerprint(here), cf = fingerprint(cloudContent);
     localF[key] = hf;
-    if (row) rows[key] = { v: row.version, f: cf };
+    if (row) rows[key] = baseline(row.version, cloudContent);
     if (!here && !cloudContent) continue;
     const item: ReviewItem = { key, label: recordLabel(key), here, cloud: cloudContent, cloudDeleted: !!row && row.deleted, action: 'same', suggest: null, why: '' };
     if (hf === cf) item.action = 'same';
@@ -663,10 +760,13 @@ export async function applyReview(review: Review, choices: Record<string, 'here'
     const local = localRecords(snap.data);
     const nowKeys = new Set([...local.keys(), ...Object.keys(review.localF)]);
     for (const k of nowKeys) if (fingerprint(local.get(k)) !== (review.localF[k] ?? null)) return { ok: false, message: 'Something changed on this device while you were looking. Here is the review again.', stale: true };
-    const check = await call<Row[]>('sync_pull', session, { account: acct.id, since: review.cursor, max_rows: 1 });
+    const check = await call<Row[]>('sync_pull_v2', session, { account: acct.id, since: review.cursor, max_rows: 1 });
     if (!check.ok) return { ok: false, message: check.why === 'network' ? "Couldn't reach your account. Nothing has changed — try again." : 'Your account had a problem answering. Nothing has changed — try again.' };
     if (check.data.length) return { ok: false, message: 'Something changed in your account while you were looking. Here is the review again.', stale: true };
 
+    catchUp();
+    const latestLocal = localRecords(getSnapshot().data);
+    if ([...new Set([...latestLocal.keys(), ...Object.keys(review.localF)])].some(k => fingerprint(latestLocal.get(k)) !== (review.localF[k] ?? null))) return { ok: false, message: 'Something changed on this device while you were looking. Please review again.', stale: true };
     const read = readState();
     const st = read.ok ? read.state : freshState();
     if (st.link && st.link.user !== acct.id) return { ok: false, message: 'This device syncs with a different account.' };
@@ -680,7 +780,7 @@ export async function applyReview(review: Review, choices: Record<string, 'here'
     if (take.length) {
       applying = true;
       let r: ReturnType<typeof updateSaved>;
-      try { r = updateSaved(draft => { for (const i of take) putRecord(draft, i.key, i.cloud); }, true); }
+      try { r = updateSaved(draft => { putRecords(draft, take.map(i => [i.key, i.cloud])); }, true); }
       finally { applying = false; }
       if (r === 'not-saved') {
         if (keep.length) { st.kept.splice(st.kept.length - keep.length, keep.length); writeState(st); }
@@ -691,7 +791,7 @@ export async function applyReview(review: Review, choices: Record<string, 'here'
     // as on their way (so they're sent even if this is interrupted, and aren't mistaken for a surprise bulk change).
     const link = newLink(acct.id, acct.email);
     link.cursor = review.cursor;
-    for (const [k, b] of Object.entries(review.rows)) link.base[k] = { v: b.v, f: b.f };
+    for (const [k, b] of Object.entries(review.rows)) link.base[k] = { ...b };
     if (st.link && st.link.lastSynced) link.lastSynced = st.link.lastSynced;
     const nowLocal = localRecords(getSnapshot().data);
     noteOutgoing(link, nowLocal, changedKeys(link, nowLocal));

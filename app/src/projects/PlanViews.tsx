@@ -6,16 +6,16 @@ import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { useConfirm } from '../components/confirm';
 import { CommitInput, Field, TextArea, TextInput } from '../components/Field';
-import { LinkButton, Note } from '../components/parts';
-import { shortDate, todayKey } from '../data/dates';
+import { LinkButton, Note, Summary } from '../components/parts';
+import { parseKey, shortDate, todayKey } from '../data/dates';
 import { editProject } from '../data/projects';
 import {
-  addDecision, addMilestone, addOption, addPoint, chosenOption, decide, decisionsInOrder, editMilestone, editOption, editPoint, editQuestion,
+  addDecision, addMilestone, addOption, addPoint, chosenOption, decide, decisionHistory, decisionsInOrder, editMilestone, editOption, editPoint, editQuestion,
   milestoneProgress, moveMilestone, PLAN_LIMITS, removeDecision, removeMilestone, removeOption, setReached, thinkAgain, type Side,
 } from '../data/projectPlan';
-import { update } from '../data/storage';
+import { update, updateSaved } from '../data/storage';
 import { toast } from '../data/toast';
-import type { DateKey, Decision, DecisionOption, Milestone, Project } from '../data/types';
+import type { DateKey, Decision, DecisionOption, Milestone, MyDayData, Project } from '../data/types';
 import { aimText, tabHref } from './planText';
 
 // A project's Milestones and Decisions tabs (1.31.0), and their two small cards on the Overview. The rules are in
@@ -71,7 +71,8 @@ export function MilestonesView({ p }: { p: Project }) {
   const full = total >= PLAN_LIMITS.milestones;
   function add() {
     let r: string | null = null;
-    update(d => { r = addMilestone(d, p.id, title, (aim || null) as DateKey | null); if (!r || r === 'full') return false; });
+    const saved = update(d => { r = addMilestone(d, p.id, title, (aim || null) as DateKey | null); if (!r || r === 'full') return false; });
+    if (!saved && r && r !== 'full') return;
     if (r && r !== 'full') { setTitle(''); setAim(''); toast('Milestone added.'); }
   }
   async function remove(m: Milestone) {
@@ -137,7 +138,8 @@ export function DecisionsView({ p }: { p: Project }) {
   const [q, setQ] = useDraft(`dc-q:${p.id}`);
   function add() {
     let r: string | null = null;
-    update(d => { r = addDecision(d, p.id, q); if (!r || r === 'full') return false; });
+    const saved = update(d => { r = addDecision(d, p.id, q); if (!r || r === 'full') return false; });
+    if (!saved && r && r !== 'full') return;
     if (r && r !== 'full') { setQ(''); toast('Decision added — now the options.'); }
   }
   return (
@@ -163,26 +165,35 @@ function DecisionCard({ p, x }: { p: Project; x: Decision }) {
   const [why, setWhy] = useState('');
   const [editingQ, setEditingQ] = useState(false);
   const [opt, setOpt] = useDraft(`dc-opt:${p.id}:${x.id}`);
-  const chosen = chosenOption(x), decided = !!chosen;
+  const chosen = chosenOption(x), decided = !!chosen, history = decisionHistory(x);
+  const tooBig = () => toast('This decision is too large to save that change. Nothing changed. Export a backup before removing content.');
+  function saveChoice(change: (d: MyDayData) => boolean | 'big') {
+    let r = false as boolean | 'big';
+    const saved = updateSaved(d => { r = change(d); if (r !== true) return false; });
+    if (r === 'big') tooBig();
+    return saved === 'saved';
+  }
   function addOpt() {
     let r: string | null = null;
-    update(d => { r = addOption(d, p.id, x.id, opt); if (!r || r === 'full') return false; });
+    const saved = update(d => { r = addOption(d, p.id, x.id, opt); if (!r || r === 'full') return false; });
+    if (!saved && r && r !== 'full') return;
     if (r && r !== 'full') setOpt('');
   }
   async function removeOpt(o: DecisionOption) {
     if (!(await confirm({ title: 'Remove this option?', body: `“${o.text}” and its pros and cons.`, confirmLabel: 'Remove', cancelLabel: 'Keep it' }))) return;
     let r: ReturnType<typeof removeOption> = null;
-    update(d => { r = removeOption(d, p.id, x.id, o.id); if (!r) return false; });
-    if (r) toast(r === 'reopened' ? 'Option removed — it was your choice, so this decision is open again.' : 'Option removed.');
+    const saved = updateSaved(d => { r = removeOption(d, p.id, x.id, o.id); if (!r || r === 'big') return false; });
+    if (r === 'big') tooBig();
+    else if (saved === 'saved') toast(r === 'reopened' ? 'Option removed — it was your choice, so this decision is open again.' : 'Option removed.');
   }
   async function remove() {
-    if (!(await confirm({ title: 'Remove this decision?', body: 'Its options, pros and cons go with it.', confirmLabel: 'Remove', cancelLabel: 'Keep it' }))) return;
-    if (update(d => (removeDecision(d, p.id, x.id) ? undefined : false))) toast('Decision removed.');
+    if (!(await confirm({ title: 'Remove this decision?', body: 'Its options, pros, cons and previous choices go with it.', confirmLabel: 'Remove', cancelLabel: 'Keep it' }))) return;
+    if (updateSaved(d => (removeDecision(d, p.id, x.id) ? undefined : false)) === 'saved') toast('Decision removed.');
   }
   function startChoosing(o: DecisionOption) { setChoosing(o.id); setWhy(x.why); }
   function confirmChoice() {
     if (!choosing) return;
-    if (update(d => (decide(d, p.id, x.id, choosing, why) ? undefined : false))) { setChoosing(null); toast('Decided. It can change later.'); }
+    if (saveChoice(d => decide(d, p.id, x.id, choosing, why))) { setChoosing(null); toast('Decided. It can change later.'); }
   }
   return (
     <Card aria-labelledby={`dcQ-${x.id}`} data-s="decision" data-id={x.id} data-state={decided ? 'decided' : 'open'}>
@@ -204,7 +215,7 @@ function DecisionCard({ p, x }: { p: Project; x: Decision }) {
           <p className="m-0 font-semibold break-words">Decided {shortDate(x.decidedOn!)}: {chosen!.text}</p>
           {x.why && <p className="m-0 mt-1 text-[15px] whitespace-pre-line break-words" data-s="dc-why">{x.why}</p>}
           <div className="flex flex-wrap gap-2.5 mt-2">
-            <Button inline variant="ghost" className="!border-on-done-c !text-on-done-c" data-action="dc-again" onClick={() => { if (update(d => (thinkAgain(d, p.id, x.id) ? undefined : false))) toast('Open again — your options, pros, cons and reasons are all still here.'); }}>Think again</Button>
+            <Button inline variant="ghost" className="!border-on-done-c !text-on-done-c" data-action="dc-again" onClick={() => { if (saveChoice(d => thinkAgain(d, p.id, x.id))) toast('Open again — your options, pros, cons and reasons are all still here.'); }}>Think again</Button>
           </div>
           {p.stage === 'decide' && (
             <p className="m-0 mt-2 flex flex-wrap items-center gap-x-2 text-[15px]" data-s="dc-to-doing">Move this project to Doing?
@@ -214,6 +225,21 @@ function DecisionCard({ p, x }: { p: Project; x: Decision }) {
       )}
       {!decided && x.lastChoice && (
         <Note className="mb-0 mt-3"><span data-s="dc-last">Last time you chose “{x.lastChoice.text}” ({shortDate(x.lastChoice.on)}).{x.why ? ' Your reasons are kept — they\'ll be there when you choose again.' : ''}</span></Note>
+      )}
+
+      {history.length > 0 && (
+        <details className="group mt-3" data-s="dc-history">
+          <Summary>Previous choices ({history.length})</Summary>
+          <ol className="list-none m-0 p-0 divide-y divide-outline" aria-label="Previous choices, newest first">
+            {[...history].reverse().map(h => (
+              <li key={h.id} className="py-3 break-words" data-s="dc-history-entry">
+                <p className="m-0 font-semibold">{h.text}</p>
+                <time className="text-sm text-fg-2" dateTime={h.on}>{parseKey(h.on).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</time>
+                <p className="m-0 mt-1 text-[15px] whitespace-pre-line">{h.why === null ? 'The reason for this older choice was not saved.' : h.why || 'No reason given.'}</p>
+              </li>
+            ))}
+          </ol>
+        </details>
       )}
 
       {x.options.length > 0 ? (
@@ -265,7 +291,8 @@ function Points({ p, x, o, side }: { p: Project; x: Decision; o: DecisionOption;
   const list = o[side], full = list.length >= PLAN_LIMITS.points;
   function add() {
     let r = false as boolean | 'full';
-    update(d => { r = addPoint(d, p.id, x.id, o.id, side, line); if (r !== true) return false; });
+    const saved = update(d => { r = addPoint(d, p.id, x.id, o.id, side, line); if (r !== true) return false; });
+    if (!saved && r && r !== 'full') return;
     if (r === true) setLine('');
   }
   return (
@@ -283,7 +310,7 @@ function Points({ p, x, o, side }: { p: Project; x: Decision; o: DecisionOption;
           ))}
         </ul>
       )}
-      {full ? <p className="m-0 ml-2 text-xs text-fg-3">Six {word}s — plenty.</p>
+      {full ? <p className="m-0 ml-2 text-xs text-fg-3" data-s="points-full">Ten {word}s — plenty. Remove one to add another.</p>
         : adding ? (
           <form className="flex gap-1.5 items-center mt-1" onSubmit={e => { e.preventDefault(); add(); }}>
             <TextInput aria-label={`A ${word} of “${o.text}”`} autoFocus value={line} maxLength={PLAN_LIMITS.point} onChange={e => setLine(e.target.value)} className="!min-h-11 flex-1 min-w-0" />

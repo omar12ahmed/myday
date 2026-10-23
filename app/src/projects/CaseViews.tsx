@@ -20,7 +20,7 @@ import { tabHref } from './planText';
 // is only how they look and what the buttons do. Counts, never scores: MyDay organises, and never judges a claim.
 
 const NOT_ADVICE = 'MyDay helps you organise your case. It doesn’t give legal advice or say whether a claim will succeed — ACAS or Citizens Advice can help with that.';
-const BIG = 'This case is close to the most one project can hold when saved to your account — shorten some notes or details first.';
+const BIG = 'This Case item is too large to save. Nothing changed. Shorten its notes or details and try again.';
 const said = (r: unknown, what: string, max: string) => { if (r === 'full') toast(`That's ${max} — the most a case can hold. Remove one to add another.`); else if (r === 'big') toast(BIG); else if (typeof r === 'string') toast(what); };
 const chip = 'inline-flex items-center text-xs font-semibold rounded-full px-2 py-0.5 bg-surface-2 border border-outline text-fg-2';
 const when = (t: TimelineEntry) => `${t.about ? 'About ' : ''}${shortDate(t.date)}`;
@@ -31,7 +31,8 @@ export function CaseCard({ data, p }: { data: MyDayData; p: Project }) {
   const [adding, setAdding] = useState(false), [title, setTitle] = useState(''), [date, setDate] = useState('');
   function addDeadline() {
     let id = null as string | null;
-    update(d => { id = addTask(d.tasks, { title, due: date, minutes: 15, category: 'admin' }); if (!id) return false; d.tasks.items.find(t => t.id === id)!.projectId = p.id; });
+    const saved = update(d => { id = addTask(d.tasks, { title, due: date, minutes: 15, category: 'admin' }); if (!id) return false; d.tasks.items.find(t => t.id === id)!.projectId = p.id; });
+    if (!saved) return;
     if (id) { setTitle(''); setDate(''); setAdding(false); toast('Deadline added — it reaches Today on its day.'); }
   }
   const parts = [`${g.timeline} timeline ${g.timeline === 1 ? 'entry' : 'entries'}`, `${g.evidence} ${g.evidence === 1 ? 'piece' : 'pieces'} of evidence${g.toGet ? ` (${g.toGet} to get)` : ''}`, `${g.issues} ${g.issues === 1 ? 'issue' : 'issues'}`];
@@ -61,7 +62,8 @@ export function TimelineView({ p }: { p: Project }) {
   const [n, setN] = useState({ date: '', about: false, title: '', details: '', source: 'mine' as TimelineSource });
   function add() {
     let r = null as ReturnType<typeof addEntry>;
-    update(d => { r = addEntry(d, p.id, n); if (!r || r === 'full' || r === 'big') return false; });
+    const saved = update(d => { r = addEntry(d, p.id, n); if (!r || r === 'full' || r === 'big') return false; });
+    if (!saved && r && r !== 'full' && r !== 'big') return;
     said(r, 'Added to the timeline.', String(CASE_LIMITS.timeline));
     if (typeof r === 'string' && r !== 'full' && r !== 'big') setN({ date: '', about: false, title: '', details: '', source: n.source });
   }
@@ -173,7 +175,8 @@ export function EvidenceView({ p }: { p: Project }) {
   const [n, setN] = useState({ title: '', kind: 'document' as EvidenceKind, date: '', where: '', status: 'have' as EvidenceStatus });
   function add() {
     let r = null as ReturnType<typeof addEvidence>;
-    update(d => { r = addEvidence(d, p.id, n); if (!r || r === 'full' || r === 'big') return false; });
+    const saved = update(d => { r = addEvidence(d, p.id, n); if (!r || r === 'full' || r === 'big') return false; });
+    if (!saved && r && r !== 'full' && r !== 'big') return;
     said(r, 'Evidence added.', String(CASE_LIMITS.evidence));
     if (typeof r === 'string' && r !== 'full' && r !== 'big') setN({ ...n, title: '', date: '', where: '' });
   }
@@ -255,7 +258,8 @@ export function IssuesView({ p }: { p: Project }) {
   const [title, setTitle] = useState('');
   function add() {
     let r = null as ReturnType<typeof addIssue>;
-    update(d => { r = addIssue(d, p.id, title); if (!r || r === 'full' || r === 'big') return false; });
+    const saved = update(d => { r = addIssue(d, p.id, title); if (!r || r === 'full' || r === 'big') return false; });
+    if (!saved && r && r !== 'full' && r !== 'big') return;
     said(r, 'Issue added.', String(CASE_LIMITS.issues));
     if (typeof r === 'string' && r !== 'full' && r !== 'big') setTitle('');
   }

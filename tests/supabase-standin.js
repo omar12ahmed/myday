@@ -33,12 +33,12 @@ const PUBLISHABLE_KEY = 'sb_publishable_standin_test_key_0000000000';
 const JWT_SECRET = crypto.randomBytes(32);
 
 // ---------- The database ----------
-async function createDb() {
+async function createDb({ before } = {}) {
   const { PGlite } = require(require.resolve('@electric-sql/pglite', { paths: [path.join(ROOT, 'app')] }));
   const db = await PGlite.create();
   await db.exec(fs.readFileSync(path.join(ROOT, 'tests/fixtures/supabase-stub.sql'), 'utf8'));
   const dir = path.join(ROOT, 'supabase/migrations');
-  for (const f of fs.readdirSync(dir).filter(f => f.endsWith('.sql')).sort()) await db.exec(fs.readFileSync(path.join(dir, f), 'utf8'));
+  for (const f of fs.readdirSync(dir).filter(f => f.endsWith('.sql') && (!before || f < before)).sort()) await db.exec(fs.readFileSync(path.join(dir, f), 'utf8'));
   return db;
 }
 
@@ -219,13 +219,17 @@ function start(db, port = 0) {
     const rpc = p.match(/^\/rest\/v1\/rpc\/(\w+)$/);
     if (rpc) {
       try {
-        if (rpc[1] === 'sync_push') {
-          const r = await as(db, who, q => q('select public.sync_push(account => $1::uuid, changes => $2::jsonb, device => $3) as r', [body.account ?? null, JSON.stringify(body.changes), body.device ?? null]));
+        if (rpc[1] === 'sync_push' || rpc[1] === 'sync_push_v2') {
+          const r = await as(db, who, q => q(`select public.${rpc[1]}(account => $1::uuid, changes => $2::jsonb, device => $3) as r`, [body.account ?? null, JSON.stringify(body.changes), body.device ?? null]));
           return reply(200, r.rows[0].r);
         }
-        if (rpc[1] === 'sync_pull') {
-          const r = await as(db, who, q => q('select * from public.sync_pull(account => $1::uuid, since => $2::bigint, max_rows => $3::integer)', [body.account ?? null, body.since ?? 0, body.max_rows ?? 500]));
+        if (rpc[1] === 'sync_pull' || rpc[1] === 'sync_pull_v2') {
+          const r = await as(db, who, q => q(`select * from public.${rpc[1]}(account => $1::uuid, since => $2::bigint, max_rows => $3::integer)`, [body.account ?? null, body.since ?? 0, body.max_rows ?? 500]));
           return reply(200, r.rows.map(x => ({ ...x, seq: Number(x.seq) })));
+        }
+        if (rpc[1] === 'sync_project_upgrade_rows') {
+          const r = await as(db, who, q => q('select * from public.sync_project_upgrade_rows($1::uuid)', [body.account ?? null]));
+          return reply(200, r.rows);
         }
         // The AI limits, as the Edge Function's entry (index.ts) calls them through supabase-js: named arguments.
         if (rpc[1] === 'ai_begin') {

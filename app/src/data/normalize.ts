@@ -27,7 +27,7 @@ import { clone, intIn, isObj, listOf, uid, cleanMinutes } from './util';
 // The small helpers live in util.ts; they're re-exported here for the files that already use them.
 export { clone, intIn, isObj, listOf, uid, cleanMinutes };
 
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 export const SAVE_LOG = 20; // how many recent save signatures travel with the data (see storage.ts)
 export const CATS: Category[] = ['learning', 'admin', 'health'];
 const THEMES: Theme[] = ['dark', 'light', 'auto'];
@@ -151,7 +151,7 @@ function cleanContext(o: unknown): DayContext | null {
   };
 }
 
-// Turns anything roughly the right shape (version 2, 3 or 4) into valid version-4 data.
+// Turns anything roughly the right shape (version 2, 3, 4 or 5) into valid version-5 data.
 // Throws only if the input isn't an object at all; otherwise drops bad entries and counts them.
 export function normalize(raw: unknown, report = { dropped: 0 }): MyDayData {
   if (!isObj(raw)) throw new Error('Not a MyDay data object.');

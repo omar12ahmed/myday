@@ -13,14 +13,14 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
 (async () => {
   const db = await S.createDb();
   const A = await S.addUser(db, 'a@example.test', 'pass-a'), B = await S.addUser(db, 'b@example.test', 'pass-b');
-  const push = (who, changes, device = 'dev-1', account = who) => S.as(db, who, q => q('select public.sync_push($1, $2::jsonb, $3) as r', [account, JSON.stringify(changes), device])).then(r => r.rows[0].r);
-  const pull = (who, since = 0, max = 500, account = who) => S.as(db, who, q => q('select * from public.sync_pull($1, $2, $3)', [account, since, max])).then(r => r.rows);
+  const push = (who, changes, device = 'dev-1', account = who) => S.as(db, who, q => q('select public.sync_push_v2($1, $2::jsonb, $3) as r', [account, JSON.stringify(changes), device])).then(r => r.rows[0].r);
+  const pull = (who, since = 0, max = 500, account = who) => S.as(db, who, q => q('select * from public.sync_pull_v2($1, $2, $3)', [account, since, max])).then(r => r.rows);
   const sql = (q, p) => S.owner(db, q, p).then(r => r.rows);
 
   console.log('\n[1] The migration sets up a Supabase-like database cleanly');
-  const tables = ['sync_accounts', 'task_lists', 'task_queue', 'day_plans', 'day_context', 'sync_records', 'sync_changes'];
+  const tables = ['sync_accounts', 'task_lists', 'task_queue', 'day_plans', 'day_context', 'sync_records', 'sync_changes', 'sync_project_legacy'];
   const rls = await sql(`select relname, relrowsecurity from pg_class where relnamespace = 'public'::regnamespace and relkind = 'r' order by relname`);
-  check('the seven tables exist (sync_records from the second migration)', tables.every(t => rls.some(r => r.relname === t)), rls.map(r => r.relname));
+  check('the sync and recovery tables exist', tables.every(t => rls.some(r => r.relname === t)), rls.map(r => r.relname));
   check('Row Level Security is on for every table', rls.every(r => r.relrowsecurity), rls);
 
   console.log('\n[2] Grants: signed-out visitors get nothing; signed-in users may only read, and call the two sync functions');
@@ -28,15 +28,15 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     from unnest($1::text[]) t, unnest(array['anon','authenticated']) r, unnest(array['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER']) p`, [tables]);
   const allowed = priv.filter(x => x.yes).map(x => `${x.r}:${x.t}:${x.p}`).sort();
   check('anon has no table rights at all', !allowed.some(x => x.startsWith('anon:')), allowed);
-  check('authenticated: SELECT on the five record tables only (no writes, nothing on the bookkeeping tables)',
-    JSON.stringify(allowed) === JSON.stringify(['day_context', 'day_plans', 'sync_records', 'task_lists', 'task_queue'].map(t => `authenticated:${t}:SELECT`)), allowed);
+  check('authenticated: SELECT on record and recovery tables only (no writes or bookkeeping access)',
+    JSON.stringify(allowed) === JSON.stringify(['day_context', 'day_plans', 'sync_project_legacy', 'sync_records', 'task_lists', 'task_queue'].map(t => `authenticated:${t}:SELECT`)), allowed);
   const fx = await sql(`select r, f, has_function_privilege(r, f, 'EXECUTE') as yes from unnest(array['anon','authenticated','public']) r,
-    unnest(array['public.sync_push(uuid,jsonb,text)','public.sync_pull(uuid,bigint,integer)']) f`);
+    unnest(array['public.sync_push_v2(uuid,jsonb,text)','public.sync_pull_v2(uuid,bigint,integer)']) f`);
   check('only authenticated may call sync_push and sync_pull', fx.every(x => x.yes === (x.r === 'authenticated')), fx);
   check('signed out: reading a table is refused', /permission denied/.test(await fails(() => S.as(db, null, q => q('select * from public.day_plans')))));
   check('signed out: calling sync_pull is refused', /permission denied/.test(await fails(() => pull(null))));
   check('signed out: calling sync_push is refused', /permission denied/.test(await fails(() => push(null, []))));
-  check('a signed-in role with no user id (no token subject) can\'t save', /Sign in to sync/.test(await fails(() => S.as(db, null, async q => { await q('set local role authenticated'); return q(`select public.sync_push(null, '[]'::jsonb)`); }))));
+  check('a signed-in role with no user id (no token subject) can\'t save', /Sign in to sync/.test(await fails(() => S.as(db, null, async q => { await q('set local role authenticated'); return q(`select public.sync_push_v2(null, '[]'::jsonb)`); }))));
 
   console.log('\n[3] Saving and reading your own records');
   let r = await push(A, [change('list', 'learning', 0, list(['Course 1', 'Course 2'])), change('day', '2026-10-01', 0, day(2))]);
@@ -160,7 +160,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
 
   console.log('\n[9b] Projects (third migration, 20261006120000_sync_projects.sql)');
   const pj = { id: 'pj1', title: 'Coffee subscription', summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-06T09:00', updatedAt: '2026-10-06T09:00' };
-  r = await push(A, [change('project', 'pj1', 0, pj)]);
+  r = await push(A, [change('project', 'pj1', 0, { projectId: 'pj1', value: pj })]);
   check('a project can be saved (version 1)', r[0].status === 'applied' && r[0].version === 1, r);
   r = await push(A, [change('project', 'pj1', 1, null, { deleted: true })]);
   check('…and deleted, kept as a tombstone like a note or a task', r[0].status === 'applied' && (await pull(A)).some(x => x.kind === 'project' && x.record_id === 'pj1' && x.deleted && x.data === null));

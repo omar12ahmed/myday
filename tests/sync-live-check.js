@@ -43,8 +43,8 @@ async function signIn(u) {
   return { token: j.access_token, id: j.user.id };
 }
 const rpc = (fn, tok, args) => fetch(`${URL_}/rest/v1/rpc/${fn}`, { method: 'POST', headers: headers(tok), body: JSON.stringify(args) });
-const push = async (who, changes, account = who.id) => (await rpc('sync_push', who.token, { account, changes, device: 'live-check' })).json();
-const pull = async (who, since = 0, account = who.id) => (await rpc('sync_pull', who.token, { account, since, max_rows: 1000 })).json();
+const push = async (who, changes, account = who.id) => (await rpc('sync_push_v2', who.token, { account, changes, device: 'live-check' })).json();
+const pull = async (who, since = 0, account = who.id) => (await rpc('sync_pull_v2', who.token, { account, since, max_rows: 1000 })).json();
 const change = (kind, record_id, base_version, data, extra = {}) => ({ change_id: randomUUID(), kind, record_id, base_version, deleted: false, data, ...extra });
 const day = title => ({ energy: 3, rest: false, builtAt: '2000-01-01T08:00', checkedIn: false, tasks: [{ uid: 'live-check', taskId: null, category: 'admin', title, minutes: 10, baseMinutes: 10, done: false, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null }] });
 const DAY = '2000-01-01'; // a date far from any real plan
@@ -137,9 +137,9 @@ async function cyberCardsCheck(a, b) {
 async function projectsCheck(a, b, id) {
   console.log('\nProjects (third migration: 20261006120000_sync_projects.sql)');
   const proj = { id, title: 'Live check project', summary: '', stage: 'capture', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-06T09:00', updatedAt: '2026-10-06T09:00' };
-  let r = await push(a, [change('project', id, 0, proj)]);
+  let r = await push(a, [change('project', id, 0, { projectId: id, value: proj })]);
   check('A can save a project — so the third migration is applied', Array.isArray(r) && r[0].status === 'applied' && r[0].version === 1, r);
-  check('A reads it back', (await pull(a)).some(x => x.kind === 'project' && x.record_id === id && x.data.title === 'Live check project'));
+  check('A reads it back', (await pull(a)).some(x => x.kind === 'project' && x.record_id === id && x.data.value.title === 'Live check project'));
   check('B sees none of it', (await pull(b)).every(x => x.kind !== 'project' || x.record_id !== id));
   r = await push(a, [change('project', id, 1, null, { deleted: true })]);
   check('the project can be deleted (a deletion marker for other devices)', Array.isArray(r) && r[0].status === 'applied' && r[0].version === 2, r);
@@ -251,16 +251,16 @@ async function projectsCheck(a, b, id) {
   check('B can\'t delete A\'s rows', s === 401 || s === 403, s);
   s = (await fetch(`${URL_}/rest/v1/day_plans?user_id=eq.${a.id}`, { method: 'PATCH', headers: headers(a.token), body: JSON.stringify({ version: 99 }) })).status;
   check('even A can\'t write to the table directly (only through sync_push, which checks versions)', s === 401 || s === 403, s);
-  s = (await rpc('sync_push', b.token, { account: a.id, changes: [change('day', DAY, 1, day('B was here'))] })).status;
+  s = (await rpc('sync_push_v2', b.token, { account: a.id, changes: [change('day', DAY, 1, day('B was here'))] })).status;
   check('B can\'t save into A\'s account through sync_push', s === 401 || s === 403, s);
-  s = (await rpc('sync_pull', b.token, { account: a.id, since: 0 })).status;
+  s = (await rpc('sync_pull_v2', b.token, { account: a.id, since: 0 })).status;
   check('B can\'t read A\'s account through sync_pull', s === 401 || s === 403, s);
   s = (await fetch(`${URL_}/rest/v1/day_plans?select=*`, { headers: headers(null) }));
   const anonRows = s.ok ? await s.json() : [];
   check('signed out (publishable key only): no rows', !s.ok || anonRows.length === 0, s.status);
-  s = (await rpc('sync_pull', null, { account: a.id, since: 0 })).status;
+  s = (await rpc('sync_pull_v2', null, { account: a.id, since: 0 })).status;
   check('signed out: sync_pull refused', s === 401 || s === 403, s);
-  r = await (await rpc('sync_push', b.token, { account: b.id, changes: [change('day', DAY, 0, day('B own'))] })).json();
+  r = await (await rpc('sync_push_v2', b.token, { account: b.id, changes: [change('day', DAY, 0, day('B own'))] })).json();
   check('B saving the same date makes B\'s own record; A\'s is untouched', r[0].status === 'applied' && (await pull(a))[0].data.tasks[0].title === 'Live check A', r);
 
   console.log('\nVersion checks, retries and deletions');

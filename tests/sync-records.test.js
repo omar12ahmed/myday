@@ -21,6 +21,13 @@ const clone = o => JSON.parse(JSON.stringify(o));
   fs.writeFileSync(path.join(dir, 'kit.ts'), [`export * from ${src('sync/records')};`, `export { freshState, normalize } from ${src('data/normalize')};`].join('\n'));
   const R = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
 
+  const project = (records, id, clean = false) => {
+    const target = R.freshState();
+    const rows = [...records].filter(([k, c]) => R.splitKey(k).kind.startsWith('project') && c.projectId === id);
+    R.putRecords(target, rows.map(([k, c]) => [k, clean ? R.cleanRecord(k, clone(c)) : clone(c)]));
+    return target.projects.items.find(p => p.id === id);
+  };
+
   // Made-up data in every part of MyDay, read the way MyDay reads saved data when it opens.
   const raw = clone(R.freshState());
   Object.assign(raw.settings, { earliestTime: '07:30', theme: 'light' });
@@ -88,31 +95,37 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const pr = clone(raw);
     pr.projects.items.push({ id: 'pj2', title: 'Hargeisa shop', summary: 'A small shop', stage: 'decide', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-03T09:00', updatedAt: '2026-10-04T09:00', futureThing: { a: 1 },
       milestones: [{ id: 'ms1', title: 'Find a unit', aim: '2026-11-15', reachedOn: '2026-10-10', createdAt: '2026-10-03T09:00', futureBit: 'm' }, { id: 'ms2', title: 'Open the doors', aim: null, reachedOn: null, createdAt: '2026-10-03T09:01' }],
-      decisions: [{ id: 'dc1', question: 'Which unit?', options: [{ id: 'op1', text: 'Market stall', pros: ['Cheap'], cons: ['Small'], futureBit: 'o' }, { id: 'op2', text: 'Corner shop', pros: [], cons: ['Dear', 'Far'] }], chosen: null, why: 'Cheaper to start', decidedOn: null, lastChoice: { text: 'Corner shop', on: '2026-10-08' }, createdAt: '2026-10-03T09:02', updatedAt: '2026-10-08T09:00', futureBit: 'd' },
+      decisions: [{ id: 'dc1', question: 'Which unit?', options: [{ id: 'op1', text: 'Market stall', pros: Array.from({ length: 10 }, (_, i) => 'Pro ' + (i + 1)), cons: Array.from({ length: 10 }, (_, i) => 'Con ' + (i + 1)), futureBit: 'o' }, { id: 'op2', text: 'Corner shop', pros: [], cons: ['Dear', 'Far'] }], chosen: null, why: 'Cheaper to start', decidedOn: null, lastChoice: { text: 'Corner shop', on: '2026-10-08', futureBit: { reason: 'Kept by a future version' } }, createdAt: '2026-10-03T09:02', updatedAt: '2026-10-08T09:00', futureBit: 'd' },
         { id: 'dc2', question: 'Who helps?', options: [{ id: 'op3', text: 'Family', pros: ['Trusted'], cons: [] }], chosen: 'op3', why: '', decidedOn: '2026-10-09', createdAt: '2026-10-03T09:03', updatedAt: '2026-10-09T09:00' }] });
+    pr.projects.items[1].decisions[0].history = [
+      { id: 'dh1', text: 'A removed unit', on: '2026-10-07', why: null, futureBit: { kept: true } },
+      { id: 'dh2', text: 'Corner shop', on: '2026-10-08', why: 'Cheaper to start\nSpace for storage' },
+    ];
     const nd = R.normalize(pr), rs = R.localRecords(nd);
-    const rec = rs.get('project:pj2'), recPlain = rs.get('project:pj1');
-    check('a project with milestones and decisions travels as one project record, with them inside', !!rec && rec.milestones.length === 2 && rec.decisions.length === 2 && !rs.has('milestone:ms1'), [...rs.keys()].filter(k => /^project/.test(k)));
+    const rec = project(rs, 'pj2'), recPlain = project(rs, 'pj1');
+    check('a project with milestones and decisions reassembles from project records, with separate item records', !!rec && rec.milestones.length === 2 && rec.decisions.length === 2 && [...rs.keys()].some(k => k.startsWith('project_milestone:')), [...rs.keys()].filter(k => /^project/.test(k)));
     check('…keeping a decision\'s last choice, the unknown fields, and exactly what was entered', rec.decisions[0].lastChoice.text === 'Corner shop' && rec.futureThing.a === 1 && rec.milestones[0].futureBit === 'm' && rec.decisions[0].options[0].futureBit === 'o' && eq(rec, pr.projects.items[1]), rec);
-    check('checked as it arrives on another device, it is exactly the same', R.fingerprint(R.cleanRecord('project:pj2', clone(rec))) === R.fingerprint(rec));
+    check('checked as it arrives on another device, it is exactly the same', R.fingerprint(project(rs, 'pj2', true)) === R.fingerprint(rec));
+    check('ten points per side and unknown details of the previous choice survive normalising and syncing', rec.decisions[0].options[0].pros.length === 10 && rec.decisions[0].options[0].cons.length === 10 && eq(rec.decisions[0].lastChoice.futureBit, { reason: 'Kept by a future version' }));
+    check('complete choice history, including unknown nested fields and unavailable reasons, survives the record boundary', eq(rec.decisions[0].history, pr.projects.items[1].decisions[0].history));
     const nb = clone(R.freshState());
     for (const [key, c] of rs) R.putRecord(nb, key, clone(c));
-    const back = R.localRecords(R.normalize(nb)).get('project:pj2');
+    const back = project(R.localRecords(R.normalize(nb)), 'pj2');
     check('put into a new MyDay, the project comes back the same, milestones and decisions included', R.fingerprint(back) === R.fingerprint(rec) && eq(nb.projects.items.find(p => p.id === 'pj2').decisions[1].chosen, 'op3'));
-    check('a project without them round-trips without the fields appearing', !('milestones' in recPlain) && !('decisions' in recPlain) && !('milestones' in R.cleanRecord('project:pj1', clone(recPlain))) && !('decisions' in R.cleanRecord('project:pj1', clone(recPlain))) && !('milestones' in nb.projects.items.find(p => p.id === 'pj1')) && !('decisions' in nb.projects.items.find(p => p.id === 'pj1')));
+    check('a project without them round-trips without the fields appearing', !('milestones' in recPlain) && !('decisions' in recPlain) && !('milestones' in project(rs, 'pj1', true)) && !('decisions' in project(rs, 'pj1', true)) && !('milestones' in nb.projects.items.find(p => p.id === 'pj1')) && !('decisions' in nb.projects.items.find(p => p.id === 'pj1')));
   }
 
   console.log('\n[1c] A private project');
   {
     const pr = clone(raw);
     pr.projects.items.push({ id: 'pj3', title: 'Surprise party', summary: 'Keep it quiet', stage: 'organise', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-03T09:00', updatedAt: '2026-10-04T09:00', private: true });
-    const rs = R.localRecords(R.normalize(pr)), rec = rs.get('project:pj3');
-    check('a private project travels as one project record, with private: true inside', !!rec && rec.private === true && eq(rec, pr.projects.items[1]) && [...rs.keys()].filter(k => /^project/.test(k)).length === 2, rec);
-    check('checked as it arrives on another device, it is exactly the same', R.fingerprint(R.cleanRecord('project:pj3', clone(rec))) === R.fingerprint(rec) && R.cleanRecord('project:pj3', clone(rec)).private === true);
+    const rs = R.localRecords(R.normalize(pr)), rec = project(rs, 'pj3');
+    check('a private project reassembles from project records, with private: true inside', !!rec && rec.private === true && eq(rec, pr.projects.items[1]) && [...rs.keys()].filter(k => /^project/.test(k)).length === 2, rec);
+    check('checked as it arrives on another device, it is exactly the same', R.fingerprint(project(rs, 'pj3', true)) === R.fingerprint(rec) && project(rs, 'pj3', true).private === true);
     const nb = clone(R.freshState());
     for (const [key, c] of rs) R.putRecord(nb, key, clone(c));
-    check('put into a new MyDay, it comes back private and the same', R.fingerprint(R.localRecords(R.normalize(nb)).get('project:pj3')) === R.fingerprint(rec) && nb.projects.items.find(p => p.id === 'pj3').private === true);
-    check('a project that isn\'t private doesn\'t gain the field', !('private' in rs.get('project:pj1')) && !('private' in nb.projects.items.find(p => p.id === 'pj1')));
+    check('put into a new MyDay, it comes back private and the same', R.fingerprint(project(R.localRecords(R.normalize(nb)), 'pj3')) === R.fingerprint(rec) && nb.projects.items.find(p => p.id === 'pj3').private === true);
+    check('a project that isn\'t private doesn\'t gain the field', !('private' in project(rs, 'pj1')) && !('private' in nb.projects.items.find(p => p.id === 'pj1')));
   }
 
   console.log('\n[1d] A business idea\'s one page');
@@ -124,15 +137,15 @@ const clone = o => JSON.parse(JSON.stringify(o));
         { id: 'as2', text: 'Lunch fits a break', state: 'looks-true', found: 'Two managers said yes', checkedOn: '2026-10-10', taskId: 'tk1', createdAt: '2026-10-03T09:01', futureBit: 'a' },
         { id: 'as3', text: 'Cooks can scale up', state: 'doesnt-hold', found: '', checkedOn: '2026-10-11', taskId: null, createdAt: '2026-10-03T09:02' }] } },
       { id: 'pj5', title: 'A case', summary: '', stage: 'capture', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-03T09:00', updatedAt: '2026-10-04T09:00', template: 'case' });
-    const rs = R.localRecords(R.normalize(pr)), rec = rs.get('project:pj4'), recCase = rs.get('project:pj5');
-    check('a business idea travels as one project record with its template and one page inside, exactly as entered', !!rec && rec.template === 'business' && eq(rec, pr.projects.items[1]), rec);
+    const rs = R.localRecords(R.normalize(pr)), rec = project(rs, 'pj4'), recCase = project(rs, 'pj5');
+    check('a business idea reassembles from project records with its template and one page, exactly as entered', !!rec && rec.template === 'business' && eq(rec, pr.projects.items[1]), rec);
     check('…keeping the unknown fields on the model and on an assumption', rec.model.futureThing.a === 1 && rec.model.assumptions[1].futureBit === 'a');
-    check('checked as it arrives on another device, it is exactly the same', R.fingerprint(R.cleanRecord('project:pj4', clone(rec))) === R.fingerprint(rec));
+    check('checked as it arrives on another device, it is exactly the same', R.fingerprint(project(rs, 'pj4', true)) === R.fingerprint(rec));
     const nb = clone(R.freshState());
     for (const [key, c] of rs) R.putRecord(nb, key, clone(c));
-    check('put into a new MyDay, the business idea comes back the same', R.fingerprint(R.localRecords(R.normalize(nb)).get('project:pj4')) === R.fingerprint(rec) && nb.projects.items.find(p => p.id === 'pj4').model.assumptions.length === 3);
-    check('a project of a kind this version does not know ("case") survives the round trip unchanged', !!recCase && recCase.template === 'case' && eq(recCase, pr.projects.items[2]) && R.fingerprint(R.cleanRecord('project:pj5', clone(recCase))) === R.fingerprint(recCase) && nb.projects.items.find(p => p.id === 'pj5').template === 'case', recCase);
-    check('a project that is not a business idea gains neither field', !('template' in rs.get('project:pj1')) && !('model' in rs.get('project:pj1')) && !('model' in nb.projects.items.find(p => p.id === 'pj1')));
+    check('put into a new MyDay, the business idea comes back the same', R.fingerprint(project(R.localRecords(R.normalize(nb)), 'pj4')) === R.fingerprint(rec) && nb.projects.items.find(p => p.id === 'pj4').model.assumptions.length === 3);
+    check('a project of a kind this version does not know ("case") survives the round trip unchanged', !!recCase && recCase.template === 'case' && eq(recCase, pr.projects.items[2]) && R.fingerprint(project(rs, 'pj5', true)) === R.fingerprint(recCase) && nb.projects.items.find(p => p.id === 'pj5').template === 'case', recCase);
+    check('a project that is not a business idea gains neither field', !('template' in project(rs, 'pj1')) && !('model' in project(rs, 'pj1')) && !('model' in nb.projects.items.find(p => p.id === 'pj1')));
   }
 
   console.log('\n[1e] A case\'s records');
@@ -147,15 +160,15 @@ const clone = o => JSON.parse(JSON.stringify(o));
         issues: [{ id: 'is1', title: 'Deposit not protected', status: 'considering', notes: '', createdAt: '2026-10-03T09:00', futureBit: 'i' }, { id: 'is2', title: 'Damage claim', status: 'claiming', notes: 'Photos taken', createdAt: '2026-10-03T09:00' }, { id: 'is3', title: 'Late fee', status: 'dropped', notes: '', createdAt: '2026-10-03T09:00' }] } });
     const norm = R.normalize(pr), item = norm.projects.items.find(p => p.id === 'pj6');
     check('the case project is read back from saved data exactly as entered (nothing dropped or changed)', eq(item, pr.projects.items[pr.projects.items.length - 1]), item);
-    const rs = R.localRecords(norm), rec = rs.get('project:pj6');
-    check('a case travels as one project record with its timeline, evidence and issues inside, exactly as entered', !!rec && eq(rec, item) && rec.case.timeline.length === 3 && rec.case.evidence.length === 3 && rec.case.issues.length === 3, rec);
+    const rs = R.localRecords(norm), rec = project(rs, 'pj6');
+    check('a case reassembles from project records with its timeline, evidence and issues, exactly as entered', !!rec && eq(rec, item) && rec.case.timeline.length === 3 && rec.case.evidence.length === 3 && rec.case.issues.length === 3, rec);
     check('…keeping the unknown fields on the case, an entry, an evidence item and an issue, and private', rec.case.futureCase.a === 1 && rec.case.timeline[0].futureBit === 't' && rec.case.evidence[1].futureBit === 'e' && rec.case.issues[0].futureBit === 'i' && rec.private === true);
     check('…and every source, status, the about flag, the links and a link-looking "where" as they were', eq(rec.case.timeline.map(t => [t.source, t.about]), [['mine', true], ['theirs', false], ['evidence', false]]) && eq(rec.case.evidence.map(e => e.status), ['to-get', 'have', 'reviewed']) && eq(rec.case.issues.map(i => i.status), ['considering', 'claiming', 'dropped'])
       && rec.case.evidence[1].where === 'https://example.com/folder/receipt.pdf' && eq(rec.case.timeline[0].evidenceIds, ['ev1', 'ev2']) && eq(rec.case.timeline[2].issueIds, ['is1', 'is2']) && eq(rec.case.evidence[2].issueIds, ['is2']));
-    check('checked as it arrives on another device, it is exactly the same', R.fingerprint(R.cleanRecord('project:pj6', clone(rec))) === R.fingerprint(rec));
+    check('checked as it arrives on another device, it is exactly the same', R.fingerprint(project(rs, 'pj6', true)) === R.fingerprint(rec));
     const nb = clone(R.freshState());
     for (const [key, c] of rs) R.putRecord(nb, key, clone(c));
-    check('put into a new MyDay, the case comes back the same', R.fingerprint(R.localRecords(R.normalize(nb)).get('project:pj6')) === R.fingerprint(rec) && eq(nb.projects.items.find(p => p.id === 'pj6').case, rec.case));
+    check('put into a new MyDay, the case comes back the same', R.fingerprint(project(R.localRecords(R.normalize(nb)), 'pj6')) === R.fingerprint(rec) && eq(nb.projects.items.find(p => p.id === 'pj6').case, rec.case));
   }
 
   console.log('\n[1f] The weekly review\'s fields');
@@ -165,7 +178,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     pr.notes.items.push({ id: 'nt7', categoryId: pr.notes.categories[5].id, title: 'Week of Sun 11 Oct', text: 'What went well:\nA quiet week', pinned: false, createdAt: '2026-10-18T09:00', updatedAt: '2026-10-18T09:00', reflectionWeek: '2026-10-12' });
     Object.assign(pr.patterns.prefs, { reviewDay: 5, reviewed: '2026-10-16', reviewHidden: '2026-10-09' });
     const norm = R.normalize(pr), rs = R.localRecords(norm);
-    const pj = rs.get('project:pj7'), nt = rs.get('note:nt7'), pt = rs.get('patterns:patterns');
+    const pj = project(rs, 'pj7'), nt = rs.get('note:nt7'), pt = rs.get('patterns:patterns');
     check('a project in focus travels with its focus day, exactly as entered', !!pj && pj.focus === '2026-10-19' && eq(pj, pr.projects.items.find(p => p.id === 'pj7')), pj);
     check('a note written for a weekly review travels with the week it is for', !!nt && nt.reflectionWeek === '2026-10-12' && eq(nt, pr.notes.items.find(n => n.id === 'nt7')), nt);
     check('the review day and the reviews done and put off travel with your preferences', !!pt && pt.prefs.reviewDay === 5 && pt.prefs.reviewed === '2026-10-16' && pt.prefs.reviewHidden === '2026-10-09', pt && pt.prefs);
@@ -196,10 +209,10 @@ const clone = o => JSON.parse(JSON.stringify(o));
   R.putRecord(d, 'recipe:rNew', { id: 'rNew', title: 'Dal' });
   R.putRecord(d, 'recipe:rOwn', null);
   check('recipes are added and removed by id', !!d.health.food.recipes.rNew && !d.health.food.recipes.rOwn);
-  R.putRecord(d, 'project:pjNew', { ...d.projects.items[0], id: 'pjNew', title: 'Podcast' });
+  R.putRecord(d, 'project:pjNew', { projectId: 'pjNew', value: { ...d.projects.items[0], id: 'pjNew', title: 'Podcast' } });
   R.putRecord(d, 'project:pj1', null);
   check('projects are added and removed by id (the tasks and notes that pointed at one are left as they are)', eq(d.projects.items.map(p => p.id), ['pjNew']) && d.tasks.items[0].projectId === 'pj1');
-  check('a project arriving with a wrong stage is read like a saved one (Capture), not refused', R.cleanRecord('project:pjX', { id: 'pjX', title: 'X', stage: 'nowhere' }).stage === 'capture');
+  check('a project arriving with a wrong stage is read like a saved one (Capture), not refused', R.cleanRecord('project:pjX', { projectId: 'pjX', value: { id: 'pjX', title: 'X', stage: 'nowhere' } }).value.stage === 'capture');
   check('the one-record parts can\'t be removed (a deletion is ignored)', (R.putRecord(d, 'finance:finance', null), d.finance.expenses.length === 1));
   check('an item whose id doesn\'t match the record is refused', R.cleanRecord('note:ntX', { id: 'ntOther', text: 'x', categoryId: '' }) === null && R.cleanRecord('nope:x', {}) === null);
 

@@ -150,7 +150,7 @@ function NextStepCard({ data, p }: { data: MyDayData; p: Project }) {
   function addStep() {
     const title = text.trim();
     if (!title) return;
-    update(d => { const id = addTask(d.tasks, { title }); if (!id) return false; d.tasks.items.find(t => t.id === id)!.projectId = p.id; setNextStep(d, p.id, id); });
+    if (!update(d => { const id = addTask(d.tasks, { title }); if (!id) return false; d.tasks.items.find(t => t.id === id)!.projectId = p.id; setNextStep(d, p.id, id); })) return;
     setText('');
     toast('Next step set — it can go on Today whenever you like.');
   }
@@ -191,7 +191,8 @@ function NextStepCard({ data, p }: { data: MyDayData; p: Project }) {
 function toToday(data: MyDayData, t: TaskItem) {
   const room = planRoom(data);
   let r = '' as ReturnType<typeof addToTodaysPlan> | '';
-  update(d => { r = addToTodaysPlan(d, t.id); if (r !== 'added') return false; });
+  const saved = update(d => { r = addToTodaysPlan(d, t.id); if (r !== 'added') return false; });
+  if (!saved && r === 'added') return;
   toast(r === 'added' ? "Added to today's plan." : r === 'full' ? `Today's plan is full for your energy (${room.limit} task${room.limit === 1 ? '' : 's'}) — it'll keep.` : room.rest ? "Today is a rest day — it'll keep." : 'Build your day first, on Today — then add it.');
 }
 
@@ -207,8 +208,8 @@ function TasksCard({ data, p }: { data: MyDayData; p: Project }) {
     const libs = await (libsOnce ??= loadLibs()).catch(() => null);
     const c = libs ? parseCapture(words, new Date(), libs) : null;
     let ok = false;
-    update(d => { const id = addTask(d.tasks, { title: c ? c.title : words, due: c?.date ?? null, time: c?.time ?? null, category: c?.category ?? 'admin' }); if (!id) return false; d.tasks.items.find(t => t.id === id)!.projectId = p.id; ok = true; });
-    if (!ok) return;
+    const saved = update(d => { const id = addTask(d.tasks, { title: c ? c.title : words, due: c?.date ?? null, time: c?.time ?? null, category: c?.category ?? 'admin' }); if (!id) return false; d.tasks.items.find(t => t.id === id)!.projectId = p.id; ok = true; });
+    if (!saved || !ok) return;
     setText('');
     toast(c?.date ? `Added — ${prettyDate(c.date)}${c.time ? `, ${c.time}` : ''}.` : 'Added.');
   }
@@ -238,8 +239,8 @@ function NotesCard({ data, p }: { data: MyDayData; p: Project }) {
   const others = data.notes.items.filter(n => !n.projectId && (n.title.trim() || n.text.trim())).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 40);
   function newNote() {
     let id = '';
-    update(d => { id = addNote(d.notes); d.notes.items.find(n => n.id === id)!.projectId = p.id; });
-    if (id) location.hash = `projects/notes/${id}`;
+    const saved = update(d => { id = addNote(d.notes); d.notes.items.find(n => n.id === id)!.projectId = p.id; });
+    if (saved && id) location.hash = `projects/notes/${id}`;
   }
   return (
     <Card aria-labelledby="projectNotesH" id="projectNotes">

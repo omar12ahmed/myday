@@ -1,5 +1,19 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.44.0 — project storage and choice history:** projects now sync as separate items, so their total can exceed
+512 KiB. Each item retains the existing database limit, with a 380,000-byte editing allowance. Independent item
+edits merge; editing the same item and deletion races retain version conflicts. Previous choices keep their
+label, reason and original day, with no automatic history pruning. Decisions allow ten pros and ten cons per
+option; Ask still sends only the first six per side and excludes reasons/history. Capture requires a fresh preview
+after external data replacement. Failed saves retain the existing snapshot and project addition drafts.
+
+The matching classic app and React app use schema **5** under the unchanged `myday.data.v4` key. They read
+version 2–4 data and exports; saving writes version 5. Previous releases refuse version-5 data without changing
+it. Keep device exports before returning to an older release. After the split-project migration, old clients
+cannot cloud-sync. [Migration, recovery and rollback](../supabase/PROJECT_STORAGE.md). R2 uploads and automatic
+backups remain separate work.
+
+
 Explore (local implementation): projects now offer **Explore this idea**, opening a dedicated narrative at
 `#projects/p/<id>/explore`. The curated Hargeisa Marketplace example has seven scenes, with a typed and validated
 content contract, optional GSAP motion, and an explicit action that creates a normal project task. Other projects
@@ -231,8 +245,7 @@ or say whether a claim will succeed — ACAS or Citizens Advice can help with th
 switch works as for any project — while it's on, Ask MyDay sends nothing of it, and AI help with notes can still
 suggest it as a place for a note by its name and summary. A case's timeline, evidence and issues are never sent to AI,
 private or not. No AI is used in this release. Limits: 150 timeline entries, 150 pieces of evidence and 20 issues.
-Once the whole project would pass about 380 KB, nothing more is added (a project is saved to your account as one
-record of at most 512 KB, counted in bytes). Saved data: two optional fields inside the project, `template: 'case'`
+Since 1.44.0, the 380,000-byte editing allowance applies to each split item; the whole project can exceed 512 KiB. Saved data: two optional fields inside the project, `template: 'case'`
 and `case`, with the rules in `src/data/caseFile.ts`, synced in the existing project record. Going back to 1.34.0 is
 safe: checked with 1.34.0's own code (5/5) and its built app (5/5), which keep both fields.
 
@@ -524,7 +537,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 
 ## Saved data
 
-- Same key and format as the current MyDay: `myday.data.v4`, `schemaVersion` 4. No migration is needed.
+- Same key and format as the current MyDay: `myday.data.v4`, `schemaVersion` 5. Versions 2–4 are read and upgraded on save.
 - `src/data/storage.ts` is the only code that reads or writes it. It loads and checks the data before anything can be saved.
   If the data can't be read, or came from a newer MyDay, saving stops and the saved copy is left exactly as it was
   (you can download it, import a backup, or start fresh).

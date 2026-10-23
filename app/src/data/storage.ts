@@ -17,6 +17,7 @@ import { CATS, freshState, isObj, normalize, SAVE_LOG, SCHEMA_VERSION, uid } fro
 import { toast } from './toast';
 import type { MyDayData } from './types';
 import { mendHalves } from './util';
+import { projectChangesFit } from './projectSize';
 
 export const STORAGE_KEY = 'myday.data.v4'; // the same key the current MyDay uses
 const EXPORT_FORMAT = 'myday-export';
@@ -64,7 +65,7 @@ function parseSaved(raw: string, newerReason: string): { data: MyDayData; droppe
   if (!isObj(parsed)) return { reason: "It looks damaged and can't be read." };
   const v = parsed.schemaVersion;
   if (typeof v === 'number' && v > SCHEMA_VERSION) return { reason: newerReason };
-  if (![2, 3, SCHEMA_VERSION].includes(v as number)) return { reason: "It's in a format this version doesn't recognise." };
+  if (![2, 3, 4, SCHEMA_VERSION].includes(v as number)) return { reason: "It's in a format this version doesn't recognise." };
   const report = { dropped: 0 };
   try {
     // Half-characters left by an earlier cut (see mendHalves) are taken out as it's read, so they can't stop syncing.
@@ -160,7 +161,8 @@ export function update(change: (draft: MyDayData) => void | false): boolean {
   if (savedElsewhere()) { reloadFromStorage(true); return false; } // keep the newer save; this change is not written
   const draft = structuredClone(snapshot.data);
   if (change(draft) === false) return false;
-  persist(draft);
+  if (!projectsFit(draft)) return false;
+  if (!persist(draft) && st !== 'unavailable') return false;
   set({ data: draft });
   return true;
 }
@@ -170,10 +172,25 @@ export function update(change: (draft: MyDayData) => void | false): boolean {
 // change came from another device, so open drafts based on the older data are dropped (as for another tab).
 // `outside` may be a function, asked after the change is made.
 export function updateSaved(change: (draft: MyDayData) => void | false, outside: boolean | (() => boolean) = false): 'saved' | 'unchanged' | 'not-saved' {
+  return checkedUpdate(change, outside, true);
+}
+// Cloud records already passed the database allowance. Preserve readable incoming/future content even when
+// it exceeds the smaller editing allowance; subsequent edits may keep it unchanged or shrink it.
+export function updateFromSync(change: (draft: MyDayData) => void | false, outside: boolean | (() => boolean) = false): 'saved' | 'unchanged' | 'not-saved' {
+  return checkedUpdate(change, outside, false);
+}
+function projectsFit(data: MyDayData): boolean {
+  mendHalves(data);
+  if (projectChangesFit(snapshot.data.projects.items, data.projects.items)) return true;
+  toast('That project item is too large to save. Your previous data is still here.');
+  return false;
+}
+function checkedUpdate(change: (draft: MyDayData) => void | false, outside: boolean | (() => boolean), checkSize: boolean): 'saved' | 'unchanged' | 'not-saved' {
   if (snapshot.status.kind !== 'ok') return 'not-saved';
   if (savedElsewhere()) { reloadFromStorage(false); return 'not-saved'; }
   const draft = structuredClone(snapshot.data);
   if (change(draft) === false) return 'unchanged';
+  if (checkSize && !projectsFit(draft)) return 'not-saved';
   if (!persist(draft)) return 'not-saved';
   const fromOutside = typeof outside === 'function' ? outside() : outside;
   set(fromOutside ? { data: draft, generation: snapshot.generation + 1 } : { data: draft });
@@ -182,9 +199,10 @@ export function updateSaved(change: (draft: MyDayData) => void | false, outside:
 
 // Replace everything (an import, or starting fresh after unreadable data). Saving starts again.
 export function replaceAll(data: MyDayData): boolean {
+  if (!projectsFit(data)) return false;
+  if (snapshot.status.kind !== 'unavailable' && !persist(data)) return false;
   set({ data, status: snapshot.status.kind === 'unavailable' ? snapshot.status : { kind: 'ok' }, generation: snapshot.generation + 1 });
-  if (snapshot.status.kind === 'unavailable') return true;
-  return persist(snapshot.data);
+  return true;
 }
 
 // ---------- Another tab saved ----------
@@ -242,7 +260,7 @@ export function parseImport(text: string): { data: MyDayData; dropped: number; s
   }
   const v = obj.schemaVersion as number;
   if (v > SCHEMA_VERSION) throw new Error('That file came from a newer version of MyDay.');
-  if (![2, 3, 4].includes(v)) throw new Error("That file's version isn't supported.");
+  if (![2, 3, 4, SCHEMA_VERSION].includes(v)) throw new Error("That file's version isn't supported.");
   const data = obj.data;
   if (!isObj(data) || data.schemaVersion !== v || !isObj(data.lists) || !isObj(data.days)) throw new Error('That file is missing parts MyDay needs.');
   const report = { dropped: 0 };

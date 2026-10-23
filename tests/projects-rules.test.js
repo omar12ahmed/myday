@@ -18,7 +18,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   fs.mkdirSync(dir, { recursive: true });
   const src = p => JSON.stringify(path.join(ROOT, 'app/src/data', p));
   fs.writeFileSync(path.join(dir, 'kit.ts'), [
-    `export * from ${src('projectPlan')};`, `export * from ${src('businessModel')};`, `export * from ${src('caseFile')};`, `export { normalizeProjects, deleteProject, recently, addProject, setProjectPrivate, privateProjectIds } from ${src('projects')};`,
+    `export * from ${src('projectRecords')};`, `export * from ${src('projectPlan')};`, `export * from ${src('businessModel')};`, `export * from ${src('caseFile')};`, `export { normalizeProjects, deleteProject, recently, addProject, setProjectPrivate, privateProjectIds } from ${src('projects')};`,
     `export { freshState, normalize } from ${src('normalize')};`, `export { shift, shortDate } from ${src('dates')};`, `export * from ${src('projectDashboard')};`, `export * from ${src('weekReview')};`, `export { stepsForToday } from ${src('projects')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
@@ -87,13 +87,13 @@ const clone = o => JSON.parse(JSON.stringify(o));
   check('up to four options are accepted', X().options.length === 4);
   check('a 5th option returns "full" and adds nothing; a blank option adds nothing (null)', K.addOption(d, 'pjA', dA, 'A fifth') === 'full' && X().options.length === 4 && K.addOption(d, 'pjA', dA, ' ') === null);
   check('an option\'s text can be edited', K.editOption(d, 'pjA', dA, oB, 'Online wholesale') && X().options[1].text === 'Online wholesale' && !K.editOption(d, 'pjA', dA, oB, 'Online wholesale'));
-  for (let i = 1; i <= 6; i++) { K.addPoint(d, 'pjA', dA, oA, 'pros', 'Pro ' + i); K.addPoint(d, 'pjA', dA, oA, 'cons', 'Con ' + i); }
-  check('six pros and six cons are accepted', X().options[0].pros.length === 6 && X().options[0].cons.length === 6);
-  check('a 7th pro or con returns "full" and adds nothing', K.addPoint(d, 'pjA', dA, oA, 'pros', 'Pro 7') === 'full' && K.addPoint(d, 'pjA', dA, oA, 'cons', 'Con 7') === 'full' && X().options[0].pros.length === 6 && X().options[0].cons.length === 6);
+  for (let i = 1; i <= 10; i++) { K.addPoint(d, 'pjA', dA, oA, 'pros', 'Pro ' + i); K.addPoint(d, 'pjA', dA, oA, 'cons', 'Con ' + i); }
+  check('ten pros and ten cons are accepted', X().options[0].pros.length === 10 && X().options[0].cons.length === 10);
+  check('an 11th pro or con returns "full" and adds nothing', K.addPoint(d, 'pjA', dA, oA, 'pros', 'Pro 11') === 'full' && K.addPoint(d, 'pjA', dA, oA, 'cons', 'Con 11') === 'full' && X().options[0].pros.length === 10 && X().options[0].cons.length === 10);
   check('a blank point adds nothing (false)', K.addPoint(d, 'pjA', dA, oB, 'pros', '  ') === false && X().options[1].pros.length === 0);
   check('a point can be edited', K.editPoint(d, 'pjA', dA, oA, 'pros', 1, 'Fresher beans') && X().options[0].pros[1] === 'Fresher beans' && !K.editPoint(d, 'pjA', dA, oA, 'pros', 1, 'Fresher beans'));
-  check('a blank edit removes the point', K.editPoint(d, 'pjA', dA, oA, 'cons', 0, '  ') && X().options[0].cons.length === 5 && X().options[0].cons[0] === 'Con 2');
-  check('removePoint takes one out by its place; a place that isn\'t there changes nothing', K.removePoint(d, 'pjA', dA, oA, 'pros', 0) && X().options[0].pros[0] === 'Fresher beans' && X().options[0].pros.length === 5 && !K.removePoint(d, 'pjA', dA, oA, 'pros', 9));
+  check('a blank edit removes the point', K.editPoint(d, 'pjA', dA, oA, 'cons', 0, '  ') && X().options[0].cons.length === 9 && X().options[0].cons[0] === 'Con 2');
+  check('removePoint takes one out by its place; a place that isn\'t there changes nothing', K.removePoint(d, 'pjA', dA, oA, 'pros', 0) && X().options[0].pros[0] === 'Fresher beans' && X().options[0].pros.length === 9 && !K.removePoint(d, 'pjA', dA, oA, 'pros', 9));
   K.removePoint(d, 'pjA', dA, oA, 'pros', 4); // keep it short
   const stage0 = P(d).stage;
   check('deciding sets the chosen option, the day and the reasons', K.decide(d, 'pjA', dA, oB, '  Cheapest to start  ', '2026-10-12') && X().chosen === oB && X().decidedOn === '2026-10-12' && X().why === 'Cheapest to start');
@@ -139,6 +139,65 @@ const clone = o => JSON.parse(JSON.stringify(o));
   rep = { dropped: 0 };
   const dd = K.normalizeProjects({ items: [base('pjR', { decisions: [{ id: 'x1', question: 'Q?', options: [{ id: 'a', text: 'A' }, { id: 'a', text: 'A2' }, { text: 'No id' }] }, { id: 'x1', question: 'Same id' }, { id: 'x3', question: ' ' }] })] }, rep).items[0].decisions;
   check('duplicate decision or option ids get new ones; an option without an id and a decision without a question are dropped and counted', dd.length === 2 && dd[0].id !== dd[1].id && dd[0].options.length === 2 && dd[0].options[0].id !== dd[0].options[1].id && rep.dropped === 2, [dd, rep]);
+
+  console.log('\n[5a] Previous choices keep their own reasons and dates');
+  {
+    const h = world(base()), id = K.addDecision(h, 'pjA', 'Which chair?');
+    const a = K.addOption(h, 'pjA', id, 'Restore the spare'), b = K.addOption(h, 'pjA', id, 'Buy a chair');
+    const current = () => P(h).decisions[0];
+    K.decide(h, 'pjA', id, a, 'Fits the room\nAlready here', '2025-12-31');
+    check('a first choice has no previous choices and adds no history field', K.decisionHistory(current()).length === 0 && !('history' in current()));
+    K.thinkAgain(h, 'pjA', id);
+    const first = clone(current().history[0]);
+    check('reopening snapshots the label, full reason and actual decision day', first.text === 'Restore the spare' && first.why === 'Fits the room\nAlready here' && first.on === '2025-12-31' && !!first.id);
+    K.decide(h, 'pjA', id, b, 'More comfortable', '2026-01-01');
+    K.editOption(h, 'pjA', id, a, 'Give away the spare');
+    K.editWhy(h, 'pjA', id, 'Tried it and it supports my back');
+    check('choosing again and editing options or current reasons cannot rewrite an earlier snapshot', eq(current().history, [first]));
+    check('an identical repeated choice is a no-op, with no duplicate history', K.decide(h, 'pjA', id, b, current().why, '2026-01-01') === false && eq(current().history, [first]));
+    check('removing the selected option still reopens the decision', K.removeOption(h, 'pjA', id, b) === 'reopened' && current().chosen === null);
+    check('the removed option and its final reason remain readable in history', eq(current().history.map(x => [x.text, x.why, x.on]), [['Restore the spare', first.why, '2025-12-31'], ['Buy a chair', 'Tried it and it supports my back', '2026-01-01']]) && current().options.length === 1);
+    const before = clone(current());
+    check('reopening an already open decision does not duplicate the last snapshot', K.thinkAgain(h, 'pjA', id) === false && eq(current(), before));
+    K.decide(h, 'pjA', id, a, '', '2026-01-01');
+    K.decide(h, 'pjA', id, a, 'After a second try', '2026-01-01');
+    check('directly replacing a choice also preserves the prior choice, including an explicitly blank reason', current().history.at(-1).why === '' && current().history.at(-1).text === 'Give away the spare');
+    for (let i = 0; i < 45; i++) { K.thinkAgain(h, 'pjA', id); K.decide(h, 'pjA', id, a, 'Try ' + i, '2026-01-01'); }
+    check('repeated choices on the same day retain their sequence without a silent history cap', current().history.length === 48 && current().history.at(-1).why === 'Try 43' && new Set(current().history.map(x => x.id)).size === 48);
+    const norm = K.normalizeProjects(clone(h.projects), { dropped: 0 });
+    check('all previous choices round-trip through normalisation in the same order', eq(norm.items[0].decisions[0].history, current().history));
+
+    const legacy = world(base('pjA', { decisions: [{ ...clone(current()), history: undefined, chosen: null, decidedOn: null, why: 'Old reason', lastChoice: { text: 'Old option', on: '2024-02-29', future: { kept: true } } }] }));
+    const old = () => P(legacy).decisions[0], oldBefore = clone(old());
+    check('reading an older open decision recovers its one known reason without rewriting saved data', K.decisionHistory(old())[0].why === 'Old reason' && eq(old(), oldBefore));
+    K.decide(legacy, 'pjA', id, a, 'A new reason', '2026-01-02');
+    check('choosing again explicitly carries the old record forward before overwriting its reason', old().history[0].why === 'Old reason' && old().history[0].on === '2024-02-29' && old().history[0].future.kept && old().why === 'A new reason');
+    K.thinkAgain(legacy, 'pjA', id);
+    check('reopening after that conversion adds the new choice exactly once', old().history.length === 2 && old().history[1].why === 'A new reason');
+    delete old().history; old().chosen = a; old().decidedOn = '2026-01-03'; old().why = 'Current reason';
+    check('an already decided legacy record never attributes the current reason to its previous choice', K.decisionHistory(old())[0].why === null);
+    K.thinkAgain(legacy, 'pjA', id);
+    check('both the unknown older reason and the known current reason survive conversion', old().history.length === 2 && old().history[0].why === null && old().history[1].why === 'Current reason');
+
+    const report = { dropped: 0 }, rawHistory = [{ id: 'h1', text: 'Archived', on: '2026-01-01', why: '', future: { kept: true } }, { id: 'h1', text: 'Again', on: '2026-01-01', why: null }, { id: 'bad', text: 'Bad date', on: '2026-02-30' }, null];
+    const read = K.normalizeDecisions([{ ...current(), history: rawHistory }], report)[0].history;
+    check('history preserves unknown fields and distinguishes absent reasons from blank ones', read[0].future.kept && read[0].why === '' && read[1].why === null);
+    check('unreadable history entries are reported and duplicate ids are repaired', report.dropped === 2 && read.length === 2 && read[0].id !== read[1].id);
+    const invalid = { dropped: 0 };
+    check('a malformed history collection is reported rather than silently lost', !('history' in K.normalizeDecisions([{ ...current(), history: {} }], invalid)[0]) && invalid.dropped === 1);
+
+    const big = world(base()), bigId = K.addDecision(big, 'pjA', 'Which?'), bigOpt = K.addOption(big, 'pjA', bigId, 'This one');
+    K.decide(big, 'pjA', bigId, bigOpt, 'A'.repeat(600), '2026-01-01');
+    const decisionCore = P(big).decisions[0]; decisionCore.futurePadding = '';
+    decisionCore.futurePadding = 'x'.repeat(380000 - K.recordBytes(K.splitProject(P(big)).find(x => x.kind === 'project_decision').content));
+    const bigBefore = clone(big);
+    check('a history snapshot that exceeds the shared byte allowance is refused atomically', K.thinkAgain(big, 'pjA', bigId) === 'big' && eq(big, bigBefore), K.projectBytes(P(big)));
+    const removeBig = clone(big);
+    check('removing a selected option can shrink its core while archiving the complete reason separately', K.removeOption(removeBig, 'pjA', bigId, bigOpt) === 'reopened' && P(removeBig).decisions[0].history[0].why.length === 600 && !P(removeBig).decisions[0].options.length);
+    check('replacing a current choice is also atomic at the size boundary', K.decide(big, 'pjA', bigId, bigOpt, 'B'.repeat(600), '2026-01-02') === 'big' && eq(big, bigBefore));
+    delete P(big).decisions[0].futurePadding;
+    check('making room allows reopening, retaining the complete reason', K.thinkAgain(big, 'pjA', bigId) === true && P(big).decisions[0].history[0].why.length === 600);
+  }
 
   console.log('\n[6] Every change moves the project on, and touches nothing else');
   d = world(base());
@@ -514,31 +573,30 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('issueLinks gives the evidence and the entries (in date order) linked to an issue', eq(il.evidence.map(e => e.id), [ce[0], ce[2]]) && eq(il.entries.map(t => t.id), [ct[1], ct[0]]), il);
     check('…and nothing for an issue with no links, or for a project without a case', eq(K.issueLinks(P(d), ci[2]), { evidence: [], entries: [] }) && eq(K.issueLinks(base('pjZ'), 'x'), { evidence: [], entries: [] }));
 
-    // Size guard
+    // The allowance applies to each item, so a large Case is no longer one large sync payload.
     const ARABIC = 'ع'.repeat(800), EMOJI = '😀'.repeat(400);
     d = world(base('pjA', { template: 'case' }), base('pjO'));
     const sizeB = clone(d.projects.items[1]);
-    let big = null, added = 0;
-    for (let i = 0; i < 150 && big === null; i++) { const x = K.addEntry(d, 'pjA', { date: '2026-09-01', title: 'ع'.repeat(160), details: ARABIC }); if (x === 'big') big = 'entry'; else added++; }
-    for (let i = 0; i < 150 && big === null; i++) { const x = K.addEvidence(d, 'pjA', { title: '😀'.repeat(80), where: 'ع'.repeat(200), notes: EMOJI }); if (x === 'big') big = 'evidence'; else added++; }
-    check('filling a case with long texts in Arabic and emoji ends with an add refused as "big" before the counts are reached', big !== null && added > 0 && added < 300, { big, added });
-    const lenT = caseOf(d).timeline.length, lenE = caseOf(d).evidence.length, bytesNow = K.projectBytes(P(d));
-    check('the project then stays at or under the budget of 380,000 bytes', K.CASE_LIMITS.bytes === 380000 && bytesNow <= 380000 && bytesNow > 300000, bytesNow);
-    const refusedE = K.addEvidence(d, 'pjA', { title: '😀'.repeat(80), where: 'ع'.repeat(200), notes: EMOJI }), refusedT = K.addEntry(d, 'pjA', { date: '2026-09-01', title: 'ع'.repeat(160), details: ARABIC }), idsAll = JSON.stringify(caseOf(d));
-    check('a refused add leaves nothing behind (same counts, same bytes, same updated time)', (refusedE === 'big' || refusedT === 'big') && caseOf(d).timeline.length === lenT && caseOf(d).evidence.length === lenE && K.projectBytes(P(d)) === bytesNow, [refusedE, refusedT]);
-    // Make a little room (empty one entry's details), add issues, then lengthen their notes until the budget says no.
+    for (let i = 0; i < 150; i++) K.addEntry(d, 'pjA', { date: '2026-09-01', title: 'ع'.repeat(160), details: ARABIC });
+    for (let i = 0; i < 150; i++) K.addEvidence(d, 'pjA', { title: '😀'.repeat(80), where: 'ع'.repeat(200), notes: EMOJI });
+    check('all permitted long Arabic and emoji Case items can be added', caseOf(d).timeline.length === 150 && caseOf(d).evidence.length === 150);
+    const bytesNow = K.projectBytes(P(d));
+    check('the complete project exceeds 512 KiB while each sync record stays within its allowance', bytesNow > 524288 && K.splitProject(P(d)).every(r => K.recordBytes(r.content) <= 380000), bytesNow);
+    const beforeCounts = clone(d);
+    const refusedE = K.addEvidence(d, 'pjA', { title: 'One more' }), refusedT = K.addEntry(d, 'pjA', { date: '2026-09-01', title: 'One more' });
+    check('count limits still refuse extra items atomically', refusedE === 'full' && refusedT === 'full' && eq(d, beforeCounts), [refusedE, refusedT]);
     const roomT = caseOf(d).timeline[0];
     K.editEntry(d, 'pjA', roomT.id, { details: '' });
-    const roomIs = [K.addIssue(d, 'pjA', 'ع'.repeat(120)), K.addIssue(d, 'pjA', 'ع'.repeat(120)), K.addIssue(d, 'pjA', 'ع'.repeat(120))];
-    let grown = null, stayed = null, atOld = null;
-    for (const id of roomIs) {
-      if (typeof id !== 'string') continue;
-      P(d).updatedAt = OLD;
-      const res = K.editIssue(d, 'pjA', id, { notes: 'ع'.repeat(800) });
-      if (res === 'big') { grown = res; stayed = caseOf(d).issues.find(i => i.id === id).notes; atOld = P(d).updatedAt; break; }
-    }
-    check('an edit that makes a text longer past the budget returns "big", leaves the old value and the updated time, and the project stays within the budget', grown === 'big' && stayed === '' && atOld === OLD && K.projectBytes(P(d)) <= 380000, { grown, stayed, bytes: K.projectBytes(P(d)) });
-    check('…and the other project, the days and tasks were never touched', eq(d.projects.items[1], sizeB));
+    const roomy = caseOf(d).timeline[0];
+    roomy.futurePadding = '';
+    roomy.futurePadding = 'x'.repeat(380000 - K.recordBytes(K.splitProject(P(d)).find(r => r.kind === 'project_timeline' && r.content.value.id === roomT.id).content));
+    P(d).updatedAt = OLD;
+    const itemBefore = clone(d);
+    check('growing one item beyond its allowance is refused without changing content or timestamps', K.editEntry(d, 'pjA', roomT.id, { details: ARABIC }) === 'big' && eq(d, itemBefore));
+    caseOf(d).timeline[0].futurePadding += 'oversized older content';
+    caseOf(d).timeline[0].details = 'Longer';
+    check('an imported oversized item can still shrink', K.editEntry(d, 'pjA', roomT.id, { details: '' }) === true && caseOf(d).timeline[0].details === '');
+    check('the other project was never touched', eq(d.projects.items[1], sizeB));
     // The largest case the counts allow, in plain English at full lengths, still fits in a saved project (524,288 bytes)
     const word = n => 'abcdefghij'.repeat(Math.ceil(n / 10)).slice(0, n);
     const bigCase = { timeline: [], evidence: [], issues: [] };

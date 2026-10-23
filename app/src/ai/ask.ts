@@ -121,7 +121,7 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
   const inCourse = course ? new Set(course.modules.flatMap(m => m.sections.flatMap(sc => sc.tasks.map(t => sameTask(t.title))))) : new Set<string>();
   const studyCap = r.items.some(i => i.type === 'study-task') && course ? L.studyItems : L.items;
   // Milestones, pros, cons and options: only for the project on this page (never a private one), checked against what it
-  // already has and its limits (30 milestones; per decision 4 options, per option 6 pros and 6 cons).
+  // already has and its limits (30 milestones; per decision 4 options, per option 10 pros and 10 cons).
   const pr = slice.context.project ? data.projects.items.find(x => x.id === slice.context.project!.id && !x.private) ?? null : null;
   const dc = pr && slice.context.project?.decision ? pr.decisions?.find(x => x.id === slice.context.project!.decision!.id) ?? null : null;
   let plannedMs = 0, plannedOpts = 0, plannedBeliefs = 0;
@@ -169,7 +169,7 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
       if (!o) { changed.push(`“${title}”: left out — it named an option that isn't in this decision.`); continue; }
       const key = `${o.id}:${side}`;
       if (o[side].some(t => sameTask(t) === sameTask(title))) { changed.push(`“${title}”: already listed for “${o.text}”.`); continue; }
-      if (o[side].length + (plannedPts[key] ?? 0) >= PLAN_LIMITS.points) { changed.push(`Left out more ${side} for “${o.text}” — six is the most.`); continue; }
+      if (o[side].length + (plannedPts[key] ?? 0) >= PLAN_LIMITS.points) { changed.push(`Left out more ${side} for “${o.text}” — ${PLAN_LIMITS.points} is the most.`); continue; }
       plannedPts[key] = (plannedPts[key] ?? 0) + 1;
       items.push({ ...base, type, text: o.text, projectId: pr.id, plan: { projectId: pr.id, decisionId: dc.id, optionId: o.id, side } });
       continue;
@@ -435,7 +435,10 @@ export function undoAsk(u: AskUndo): boolean {
     for (const x of [...(u.plan ?? [])].reverse()) {
       if (x.kind === 'milestone') planGone += removeMilestone(d, x.projectId, x.id) ? 1 : 0;
       else if (x.kind === 'assumption') planGone += removeAssumption(d, x.projectId, x.id) ? 1 : 0;
-      else if (x.kind === 'option') planGone += removeOption(d, x.projectId, x.decisionId, x.id) ? 1 : 0;
+      else if (x.kind === 'option') {
+        const removed = removeOption(d, x.projectId, x.decisionId, x.id);
+        planGone += removed === 'removed' || removed === 'reopened' ? 1 : 0;
+      }
       else {
         const list = d.projects.items.find(p => p.id === x.projectId)?.decisions?.find(y => y.id === x.decisionId)?.options.find(o => o.id === x.optionId)?.[x.side];
         const i = list ? list.lastIndexOf(x.text) : -1;

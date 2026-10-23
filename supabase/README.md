@@ -1,3 +1,6 @@
+> Project storage release 1.43.0 requires the split-project migration and updated clients.
+> Read [PROJECT_STORAGE.md](PROJECT_STORAGE.md) for backups, recovery and rollback before deployment.
+
 # Cloud sync with Supabase: setting it up
 
 MyDay can keep your **task lists, queue, daily plans and each day's context (energy and sleep)** in step between

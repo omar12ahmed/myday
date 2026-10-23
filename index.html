@@ -838,7 +838,7 @@
   // Raise SCHEMA_VERSION in any release that adds or changes saved fields (with a migration, per CLAUDE.md).
   // Older copies of MyDay refuse to save data from a newer version instead of dropping the parts they
   // don't know — that protection only works if new fields always come with a new version number.
-  const SCHEMA_VERSION = 4;
+  const SCHEMA_VERSION = 5;
   const PREVIOUS_KEYS = [['myday.data.v3', 3], ['myday.data.v2', 2]]; // earlier single-key versions, migrated once
   const EXPORT_FORMAT = 'myday-export';
   const LEGACY_KEYS = ['myday.tasks', 'myday.days', 'myday.nudge', 'myday.meta']; // version 1, migrated once
@@ -1233,7 +1233,7 @@
     let parsed = null;
     try { parsed = JSON.parse(raw); } catch (e) { /* handled below */ }
     const lost = lostMySave(parsed);
-    if (!isObj(parsed) || ![2, 3, SCHEMA_VERSION].includes(parsed.schemaVersion)) {
+    if (!isObj(parsed) || ![2, 3, 4, SCHEMA_VERSION].includes(parsed.schemaVersion)) {
       markDamaged(raw, STORAGE_KEY, isObj(parsed) && parsed.schemaVersion > SCHEMA_VERSION
         ? 'It was saved by a newer version of MyDay in another tab. Reload this page to use it.'
         : "It was changed in another tab and can't be read here.");
@@ -1288,7 +1288,7 @@
       let parsed;
       try { parsed = JSON.parse(raw); } catch (e) { return markDamaged(raw, STORAGE_KEY); }
       if (!isObj(parsed)) return markDamaged(raw, STORAGE_KEY);
-      if (![2, 3, SCHEMA_VERSION].includes(parsed.schemaVersion)) {
+      if (![2, 3, 4, SCHEMA_VERSION].includes(parsed.schemaVersion)) {
         return markDamaged(raw, STORAGE_KEY, parsed.schemaVersion > SCHEMA_VERSION
           ? 'It was saved by a newer version of MyDay.'
           : "It's in a format this version doesn't recognise.");
@@ -1908,7 +1908,7 @@
     let data;
     if (obj.format === EXPORT_FORMAT) {
       if (obj.schemaVersion > SCHEMA_VERSION) throw new Error('That file came from a newer version of MyDay.');
-      if (![2, 3, 4].includes(obj.schemaVersion)) throw new Error("That file's version isn't supported.");
+      if (![2, 3, 4, SCHEMA_VERSION].includes(obj.schemaVersion)) throw new Error("That file's version isn't supported.");
       if (!isObj(obj.data) || obj.data.schemaVersion !== obj.schemaVersion || !isObj(obj.data.lists) || !isObj(obj.data.days)) {
         throw new Error('That file is missing parts MyDay needs.');
       }

@@ -10,7 +10,7 @@ import { Select, TextArea, TextInput } from '../components/Field';
 import { LinkButton } from '../components/parts';
 import { prettyDate, todayKey } from '../data/dates';
 import { CAT_LABEL } from '../data/plan';
-import { getSnapshot } from '../data/storage';
+import { catchUp, getSnapshot } from '../data/storage';
 import { toast } from '../data/toast';
 import type { Category, MyDayData } from '../data/types';
 import { startLearning, startRevision } from '../study/actions';
@@ -56,16 +56,27 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
   const request = useRef<AbortController | null>(null);
   useEffect(() => () => request.current?.abort(), []);
   const [slice] = useState(() => askSlice(data, location.hash, todayKey(), focus)); // the page the sheet was opened on (and what it's about)
+  const [generation] = useState(() => getSnapshot().generation);
   const [opened] = useState(() => new Date());                    // for the preview's "when" (the request itself uses the time you tap)
   if (AI_MODE === 'off') return null;
   const k = todayKey();
 
+  // Another tab, sync or a restore may have made something in this preview private. Require a fresh preview before
+  // sending, showing a late reply, or applying it; catch up even if the browser's storage event hasn't arrived yet.
+  function previewIsCurrent() {
+    catchUp();
+    if (getSnapshot().generation === generation) return true;
+    setPhase({ at: 'error', message: 'MyDay changed in another tab or on another device. Close Capture and open it again to check what will be sent.' });
+    return false;
+  }
   async function ask(followUp?: { previous: string; text: string }) {
+    if (!previewIsCurrent()) return;
     request.current?.abort();
     const ctrl = new AbortController(); request.current = ctrl;
     setPhase({ at: 'asking' });
     const reply = await askModel(askContext(slice, text, k, undefined, followUp), ctrl.signal); // the time now (askContext reads the clock)
     if (ctrl.signal.aborted) return;
+    if (!previewIsCurrent()) return;
     if (!reply.ok) { setPhase({ at: 'error', message: reply.message }); return; }
     const r = checkAskReply(reply.text, getSnapshot().data, slice, k, [text, followUp?.text].filter(Boolean).join('\n'));
     if (!r) { setPhase({ at: 'error', message: "The answer that came back couldn't be used — nothing was added. Try again, or put it another way." }); return; }
@@ -75,6 +86,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
     setPhase({ at: 'shown', r, model: reply.model, followed: !!followUp });
   }
   function add(r: Extract<AskChecked, { kind: 'add' | 'steps' }>) {
+    if (!previewIsCurrent()) return;
     const chosen = r.items.map((it, i) => ({ ...applyAskEdit(it, edits[i], k), title: titles[i]?.trim().slice(0, 120) || it.title })).filter((_, i) => picked[i]);
     if (!chosen.length) return;
     const undo = addAskItems(chosen);
@@ -84,6 +96,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
     setPhase({ at: 'added', undo, words });
   }
   function apply(r: Extract<AskChecked, { kind: 'change' }>) {
+    if (!previewIsCurrent()) return;
     const chosen = r.changes.filter((_, i) => picked[i]);
     if (!chosen.length) return;
     const undo = applyAskChanges(chosen);

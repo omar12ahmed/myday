@@ -47,7 +47,8 @@ export function ModelView({ data, p }: { data: MyDayData; p: Project }) {
   const answered = !!m && !!m.problem.trim() && !!m.who.trim() && !!m.how.trim();
   function add() {
     let r: string | null = null;
-    update(d => { r = addAssumption(d, p.id, text); if (!r || r === 'full') return false; });
+    const saved = update(d => { r = addAssumption(d, p.id, text); if (!r || r === 'full') return false; });
+    if (!saved && r && r !== 'full') return;
     if (r && r !== 'full') { setText(''); toast('Added. Find out whenever you’re ready.'); }
   }
   return (
@@ -100,7 +101,8 @@ function AssumptionRow({ data, p, a }: { data: MyDayData; p: Project; a: Assumpt
   function find() {
     let id: string | null = null;
     const had = nextStep(data, p);
-    update(d => { id = findOut(d, p.id, a.id); if (!id) return false; });
+    const saved = update(d => { id = findOut(d, p.id, a.id); if (!id) return false; });
+    if (!saved) return;
     // With no next step yet, the project's first task to do becomes it (as always); otherwise yours stays.
     if (id) toast(had ? 'Added to this project’s tasks. Your next step stays as it is.' : 'Added — it’s this project’s next step for now.');
   }

@@ -29,11 +29,13 @@ import { cleanAttempt, cleanCyberCard, normalizeCyber } from '../data/cybersecur
 import type { CyberAttempt, CyberCard } from '../data/cybersecurity/types';
 import { cleanArabicAttempt, cleanArabicCard, normalizeArabic } from '../data/arabic/normalize';
 import { ARABIC_CORE_PATH, type ArabicAttempt, type ArabicCard } from '../data/arabic/types';
+import { PROJECT_KINDS, splitProject, type ProjectContent, type ProjectKind } from '../data/projectRecords';
+import { cleanProjectRecord, isProjectKind, projectApplyOrder, putProjectRecord } from './projectParts';
 
 export type Kind = 'list' | 'queue' | 'day' | 'context'
   | 'settings' | 'rota' | 'pay' | 'holidays' | 'finance' | 'study' | 'workout' | 'food' | 'fitness' | 'notes' | 'tasks' | 'patterns'
   | 'commitment' | 'note' | 'task' | 'session' | 'review' | 'wsession' | 'recipe' | 'project' | 'cybersecurity' | 'cyber_attempt'
-  | 'arabic' | 'arabic_attempt' | 'arabic_card' | 'cyber_card' | 'daily' | 'book';
+  | 'arabic' | 'arabic_attempt' | 'arabic_card' | 'cyber_card' | 'daily' | 'book' | ProjectKind;
 export type Content = Record<string, unknown>;
 
 // A record's key on this device: "list:learning", "day:2026-10-02", "note:nt8f…"…
@@ -255,7 +257,7 @@ const MANY: Many[] = [
 ];
 const oneOf = (kind: Kind, id: string) => ONE.find(o => o.kind === kind && o.id === id);
 const manyOf = (kind: Kind) => MANY.find(m => m.kind === kind);
-export const ALL_KINDS: Kind[] = ['list', 'queue', 'day', 'context', ...new Set(ONE.map(o => o.kind)), ...MANY.map(m => m.kind)];
+export const ALL_KINDS: Kind[] = ['list', 'queue', 'day', 'context', ...new Set(ONE.map(o => o.kind)), ...MANY.map(m => m.kind), ...PROJECT_KINDS.filter(k => k !== 'project')];
 
 // Every synced record on this device. A day, context or item record that doesn't exist is simply missing.
 export function localRecords(data: MyDayData): Map<string, Content> {
@@ -265,14 +267,16 @@ export function localRecords(data: MyDayData): Map<string, Content> {
   for (const [k, d] of Object.entries(data.days)) out.set(keyOf('day', k), d as unknown as Content);
   for (const [k, c] of Object.entries(data.context)) out.set(keyOf('context', k), c as unknown as Content);
   for (const o of ONE) out.set(keyOf(o.kind, o.id), o.get(data));
-  for (const m of MANY) for (const it of m.items(data)) out.set(keyOf(m.kind, it.id), it as unknown as Content);
+  for (const m of MANY) if (m.kind !== 'project') for (const it of m.items(data)) out.set(keyOf(m.kind, it.id), it as unknown as Content);
+  data.projects.items.forEach(p => { for (const r of splitProject(p)) out.set(keyOf(r.kind, r.id), r.content); });
   return out;
 }
 
 // Puts one record into a draft of the saved data. null removes it (days, context and items can be removed).
 export function putRecord(draft: MyDayData, key: string, content: Content | null) {
   const { kind, id } = splitKey(key);
-  if (kind === 'list') draft.lists[id as Category] = ((content && content.items) as ListItem[]) || [];
+  if (isProjectKind(kind)) putProjectRecord(draft, kind, id, content as ProjectContent | null);
+  else if (kind === 'list') draft.lists[id as Category] = ((content && content.items) as ListItem[]) || [];
   else if (kind === 'queue') draft.queue = ((content && content.items) as QueueItem[]) || [];
   else if (kind === 'day') { if (content) draft.days[id] = content as unknown as Day; else delete draft.days[id]; }
   else if (kind === 'context') { if (content) draft.context[id] = content as unknown as DayContext; else delete draft.context[id]; }
@@ -280,11 +284,17 @@ export function putRecord(draft: MyDayData, key: string, content: Content | null
   else manyOf(kind)?.put(draft, id, content);
 }
 
+// A fetch can span pages or deliver a newer parent after its children. Apply the complete fetch in dependency order.
+export function putRecords(draft: MyDayData, rows: [string, Content | null][]) {
+  for (const [key, content] of [...rows].sort(projectApplyOrder)) putRecord(draft, key, content);
+}
+
 // A record from the cloud, checked exactly the way saved data is checked when MyDay opens (normalize), so it
 // can never put anything into MyDay that a backup file couldn't. null = nothing usable (or not a record we know).
 export function cleanRecord(key: string, data: unknown): Content | null {
   const { kind, id } = splitKey(key);
   const d = isObj(data) ? data : {};
+  if (isProjectKind(kind)) return cleanProjectRecord(kind, id, d);
   const raw: Record<string, unknown> = { schemaVersion: SCHEMA_VERSION };
   if (kind === 'list') {
     if (!CATS.includes(id as Category)) return null;
@@ -336,6 +346,10 @@ export function fingerprint(content: Content | null | undefined): string | null 
 // ---------- Describing records (for the review and conflict screens) ----------
 export function recordLabel(key: string): string {
   const { kind, id } = splitKey(key);
+  const projectLabels: Partial<Record<ProjectKind, string>> = { project: 'Project details', project_milestone: 'Milestone', project_decision: 'Decision',
+    project_choice: 'Previous choice', project_model: 'Business Model', project_case: 'Case details', project_issue: 'Case issue',
+    project_evidence: 'Case evidence', project_timeline: 'Case timeline entry' };
+  if (isProjectKind(kind)) return projectLabels[kind]!;
   if (kind === 'list') return `${CAT_LABEL[id as Category] ?? id} list`;
   if (kind === 'queue') return 'Queue';
   if (kind === 'day') return `Plan for ${prettyDate(id)}`;
@@ -345,7 +359,7 @@ export function recordLabel(key: string): string {
 
 // Records listed in a sensible order: the lists (in their usual order), the queue, then days newest first
 // (each day's plan before its context), then everything else by kind (in the order above), newest items first.
-const LATER: Kind[] = [...new Set([...ONE.map(o => o.kind), ...MANY.map(m => m.kind)])];
+const LATER: Kind[] = [...new Set([...ONE.map(o => o.kind), ...MANY.map(m => m.kind), ...PROJECT_KINDS])];
 export function sortKeys(keys: string[]): string[] {
   const rank = (k: string) => { const { kind, id } = splitKey(k); return kind === 'list' ? CATS.indexOf(id as Category) : kind === 'queue' ? 3 : kind === 'day' || kind === 'context' ? 4 : 5 + LATER.indexOf(kind); };
   return [...keys].sort((a, b) => rank(a) - rank(b) || splitKey(b).id.localeCompare(splitKey(a).id) || b.localeCompare(a));
@@ -355,6 +369,11 @@ export function sortKeys(keys: string[]): string[] {
 export function recordSummary(key: string, content: Content | null): string {
   if (!content) return 'Deleted';
   const { kind, id } = splitKey(key);
+  if (isProjectKind(kind)) {
+    const v = (content as ProjectContent).value;
+    if (kind === 'project') return `${v.title} · ${STAGES.find(x => x.id === v.stage)?.label ?? v.stage}${v.status === 'active' ? '' : ` · ${STATUS_LABEL[v.status as Project['status']]?.toLowerCase() ?? v.status}`}`;
+    return String(v.title ?? v.question ?? v.text ?? (kind === 'project_model' ? 'Your business idea' : 'Case details'));
+  }
   if (kind === 'list') return plural((content.items as ListItem[]).length, 'task');
   if (kind === 'queue') { const n = (content.items as QueueItem[]).length; return n ? `${n} waiting` : 'Nothing waiting'; }
   if (kind === 'day') {
@@ -376,6 +395,28 @@ export function recordSummary(key: string, content: Content | null): string {
 export function recordLines(key: string, content: Content | null): string[] {
   if (!content) return [];
   const { kind, id } = splitKey(key);
+  if (isProjectKind(kind)) {
+    const v = (content as ProjectContent).value;
+    const words = (items: unknown) => Array.isArray(items) ? items.join('; ') : '';
+    if (kind === 'project_decision') {
+      const options = (Array.isArray(v.options) ? v.options : []) as { id: string; text: string; pros: string[]; cons: string[] }[];
+      // One wrapping row per option keeps all its points visible within Compare's eight-row preview.
+      return [String(v.question), ...options.map(o => `${o.text} — Pros: ${words(o.pros) || 'None'} · Cons: ${words(o.cons) || 'None'}`),
+        v.chosen ? `Chosen: ${options.find(o => o.id === v.chosen)?.text ?? v.chosen}` : 'Open decision',
+        `Reason: ${v.why || 'No reason given'}`, ...(v.decidedOn ? [`Decided: ${v.decidedOn}`] : [])];
+    }
+    if (kind === 'project_model') {
+      const assumptions = (Array.isArray(v.assumptions) ? v.assumptions : []) as { text: string; state: string; found: string }[];
+      return [`Problem: ${v.problem || 'Not written yet'}`, `Who: ${v.who || 'Not written yet'}`, `How: ${v.how || 'Not written yet'}`,
+        ...assumptions.map(a => `${a.text} (${a.state})${a.found ? `: ${a.found}` : ''}`).reduce<string[]>((all, line) => [all.length ? `${all[0]}; ${line}` : line], [])];
+    }
+    return [v.title, v.text, v.summary, v.details, v.notes,
+      kind === 'project_choice' ? (v.why === null ? 'Reason not saved' : v.why || 'No reason given') : v.why,
+      v.on, v.date ? `${v.about ? 'About ' : ''}${v.date}` : null,
+      v.aim ? `Aiming for: ${v.aim}` : null, kind === 'project_milestone' ? (v.reachedOn ? `Reached: ${v.reachedOn}` : 'Not reached yet') : null,
+      v.status, v.kind, v.source, v.where, v.private ? 'Private' : null]
+      .filter((x): x is string => typeof x === 'string' && !!x);
+  }
   if (kind === 'list') return (content.items as ListItem[]).map(t => `${t.title} · ${t.minutes} min`);
   if (kind === 'queue') return (content.items as QueueItem[]).map(q => `${q.title} · from ${prettyDate(q.queuedOn)}`);
   if (kind === 'day') {

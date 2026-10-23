@@ -20,7 +20,7 @@ set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(dirname "$HERE")"
 SUITES=("$@")
-[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study study-learning-rules app-learning arabic-rules arabic-pronunciation-rules arabic-voice-player app-reading-voice app-teaching-voice app-arabic app-teaching app-pronunciation app-design app-explore explore-rules explore-assets app-explore-visual app-architecture app-storage app-today app-calendar-pay app-finance app-inbox app-tasks app-projects app-connect app-graph app-study app-topics app-workout app-food app-goals goals-rules capture-rules patterns-rules projects-rules understand-rules graph-rules app-patterns app-final app-site app-install sw-rules sync-db sync-records app-sync ai-rules ai-server app-ai cybersecurity-rules app-cybersecurity)
+[ ${#SUITES[@]} -eq 0 ] && SUITES=(storage today calendar-pay health study study-learning-rules app-learning arabic-rules arabic-pronunciation-rules arabic-voice-player app-reading-voice app-teaching-voice app-arabic app-teaching app-pronunciation app-design app-explore explore-rules explore-assets app-explore-visual app-architecture app-storage app-today app-calendar-pay app-finance app-inbox app-tasks app-projects app-connect app-graph app-study app-topics app-workout app-food app-goals goals-rules capture-rules patterns-rules projects-rules understand-rules graph-rules app-patterns app-final app-site app-install sw-rules sync-db sync-records project-sync project-sync-db app-sync ai-rules ai-server app-ai cybersecurity-rules app-cybersecurity)
 
 # ---- What's needed ----
 CHROME="${CHROME:-}"
@@ -50,6 +50,15 @@ if printf '%s\n' "${SUITES[@]}" | grep -q '^app-'; then
   (cd "$ROOT/app" && VITE_SUPABASE_URL= VITE_SUPABASE_PUBLISHABLE_KEY= VITE_AI= npm run build >"$WORK/app-build.log" 2>&1) || { echo "The new app didn't build:"; tail -20 "$WORK/app-build.log"; exit 1; }
   mkdir -p "$WORK/srv/app" && cp -R "$ROOT/app/dist" "$WORK/srv/app/dist"
 fi
+# Previous React release for the explicit schema/rollback check. Nothing uses real account settings.
+if printf '%s\n' "${SUITES[@]}" | grep -q '^app-schema$'; then
+  PREVIOUS_REF="${MYDAY_PREVIOUS_REF:-eba403a}"
+  mkdir -p "$WORK/previous-source"
+  git -C "$ROOT" archive "$PREVIOUS_REF" | tar -x -C "$WORK/previous-source"
+  ln -s "$ROOT/app/node_modules" "$WORK/previous-source/app/node_modules"
+  (cd "$WORK/previous-source/app" && VITE_SUPABASE_URL= VITE_SUPABASE_PUBLISHABLE_KEY= VITE_AI= npm run build -- --outDir "$WORK/srv/previous" --emptyOutDir >"$WORK/previous-build.log" 2>&1) || { echo "Previous release fixture failed to build:"; tail -20 "$WORK/previous-build.log"; exit 1; }
+fi
+
 # A copy of the new app with cloud sync and AI help switched on, pointing at the local Supabase stand-in (app-sync, app-ai).
 if printf '%s\n' "${SUITES[@]}" | grep -qE '^app-(sync|ai)$'; then
   (cd "$ROOT/app" && VITE_SUPABASE_URL="http://127.0.0.1:$MYDAY_SUPA_PORT" VITE_SUPABASE_PUBLISHABLE_KEY="sb_publishable_standin_test_key_0000000000" VITE_AI=edge \

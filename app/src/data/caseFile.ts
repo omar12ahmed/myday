@@ -1,20 +1,19 @@
 // The Case template (1.35.0): a project can be a case (`project.template === 'case'`), with its own records inside it
 // (`project.case`): the timeline (what happened, in date order, each entry saying where it comes from — your account,
 // their account or the evidence), the evidence (what could show it, and where it's kept: MyDay doesn't store files) and
-// the issues (what you're claiming or considering), linked to each other. Saved and synced with the project — no new
-// kind of record, no database change. A project without it has no `case` field, exactly as before.
+// the issues (what you're claiming or considering), linked to each other. Saved inside the project locally;
+// cloud sync stores its items separately through projectRecords.ts. A project without it has no `case` field, exactly as before.
 //
 // MyDay organises; it never says whether a claim is good, and never works out legal time limits (deadlines are the
 // case's own dated tasks and appointments, which you enter). A case is private only if you switch it (your choice).
 //
-// A project is saved to your account as one record of at most 512 KB, counted in bytes (a letter outside basic English
-// takes two to four). So besides the counts below, nothing is added once the whole project would pass about 380 KB —
-// leaving room for its milestones, decisions and the rest.
+// Each split item shares the conservative editing allowance below; total Case size is not one sync record.
 import { isDateKey, isDateTime, localStamp } from './dates';
+import { PROJECT_SIZE_BUDGET, projectRecordSizes, projectRecordsFit } from './projectSize';
 import type { CaseFile, CaseIssue, EvidenceItem, EvidenceKind, EvidenceStatus, IssueStatus, MyDayData, Project, TimelineEntry, TimelineSource } from './types';
 import { isObj, listOf, uid } from './util';
 
-export const CASE_LIMITS = { timeline: 150, evidence: 150, issues: 20, title: 160, issueTitle: 120, details: 800, where: 200, notes: 400, issueNotes: 800, evidenceLinks: 10, issueLinks: 5, bytes: 380_000 };
+export const CASE_LIMITS = { timeline: 150, evidence: 150, issues: 20, title: 160, issueTitle: 120, details: 800, where: 200, notes: 400, issueNotes: 800, evidenceLinks: 10, issueLinks: 5, bytes: PROJECT_SIZE_BUDGET };
 
 export const SOURCE_LABEL: Record<TimelineSource, string> = { mine: 'My account', theirs: 'Their account', evidence: 'In the evidence' };
 export const KIND_LABEL: Record<EvidenceKind, string> = { document: 'Document', email: 'Email or letter', message: 'Message', media: 'Photo or recording', witness: 'Witness', other: 'Other' };
@@ -81,7 +80,7 @@ export function issueLinks(p: Project, issueId: string): { evidence: EvidenceIte
   return { evidence: (p.case?.evidence ?? []).filter(e => e.issueIds.includes(issueId)), entries: timelineInOrder(p).filter(t => t.issueIds.includes(issueId)) };
 }
 // How big the project is when saved to your account, in bytes.
-export const projectBytes = (p: Project) => new TextEncoder().encode(JSON.stringify(p)).length;
+export { projectBytes } from './projectSize';
 
 // ---------- Changing it ----------
 // Each change returns what happened: an add gives the new id, 'full' (that list's count is reached) or 'big' (the
@@ -91,10 +90,11 @@ const proj = (d: MyDayData, id: string) => d.projects.items.find(p => p.id === i
 const touch = (p: Project) => { p.updatedAt = localStamp(); };
 const fileOf = (p: Project): CaseFile => (p.case ??= { timeline: [], evidence: [], issues: [] });
 function tidy(p: Project) { if (p.case && isEmpty(p.case)) delete p.case; }
-// Makes a change, and takes it back if the project would then pass its size budget.
+// Makes a change, and takes it back if an item would exceed its size budget.
 function within(p: Project, change: () => void, undo: () => void): boolean {
+  const before = projectRecordSizes(p);
   change();
-  if (projectBytes(p) <= CASE_LIMITS.bytes) return true;
+  if (projectRecordsFit(before, p)) return true;
   undo(); tidy(p);
   return false;
 }

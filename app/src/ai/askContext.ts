@@ -54,7 +54,7 @@ export const SENDS = {
   study: 'your current course and next task, your topics, how much revision is due, and your energy and free time today',
   course: 'this course’s outline (its modules, sections and tasks — titles and lengths only)',
   project: (withText: boolean) => `this project’s name, summary, stage, tasks, milestones and note titles${withText ? ' and text (not private ones)' : ''}`,
-  decision: 'the decision you asked about (its question, options, pros and cons)',
+  decision: `the decision you asked about (its question, options, and the first ${L.decisionPoints} pros and ${L.decisionPoints} cons per option)`,
   onePage: 'its one page (your three answers, and what must be true with how each is turning out — not what you found)',
   note: 'this note', task: 'this task', calendar: "today's appointments",
   review: 'your last seven days in counts (what moved in each project, other tasks, study and workouts), what’s waiting and next week’s focus — nothing of private projects',
@@ -248,7 +248,7 @@ export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['
     if (p.decision) {
       const dc = p.decision;
       short.push(`Decision: ${clip(dc.question, 40)}`);
-      all.push({ label: 'The decision you asked about', lines: [dc.question, ...dc.options.map(o => `${o.text} — pros: ${o.pros.join('; ') || 'none yet'}; cons: ${o.cons.join('; ') || 'none yet'}`)] });
+      all.push({ label: 'The decision you asked about', lines: [dc.question, ...dc.options.map(o => `${o.text} — pros: ${o.pros.join('; ') || 'none yet'}; cons: ${o.cons.join('; ') || 'none yet'}`), `Up to the first ${L.decisionPoints} pros and ${L.decisionPoints} cons per option are sent.`] });
     }
   }
   if (x.note) {

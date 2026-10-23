@@ -1,3 +1,9 @@
+## Project storage release checks
+
+`project-sync` and `project-sync-db` cover split wire records and database conversion;
+`app-schema` covers schema 4 → 5, full export/import and previous-release refusal.
+Use the relevant storage, project, sync and AI suites alongside these. Synthetic data only.
+
 # MyDay checks
 
 Cybersecurity: `tests/run.sh cybersecurity-rules app-cybersecurity sync-db sync-records` checks the package

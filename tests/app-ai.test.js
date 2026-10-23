@@ -502,8 +502,32 @@ const SEED = `s => {
     check('with an account: the server accepts the app\'s request and answers (labelled with the model)', phaseD === 'shown' && (await D.text('[data-s=ask-panel]')).includes('AI-written by Main model'), [phaseD, await D.text('[data-s=ask-panel]')]);
     check('…it sent what you typed, the date, the page and that page\'s slice — no private note, nothing else', !!sentA && JSON.stringify(Object.keys(sentA.body.context).sort()) === JSON.stringify(['action', 'context', 'date', 'page', 'text', 'time', 'version', 'weekday'])
       && JSON.stringify(Object.keys(sentA.body.context.context).sort()) === JSON.stringify(['project', 'projects']) && !JSON.stringify(sentA.body).includes('private worry'), sentA && Object.keys(sentA.body.context));
-    await D.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await D.ev(`location.hash = 'today'`);
+    await closeSheet(D);
+    await openAsk(D, 'projects/p/pjAsk', 'Break this into smaller steps');
+    const beforePrivacyCalls = aiCalls().length;
+    // Deliberately omit the storage event: the send path must catch up before it can send its old preview.
+    await D.ev(`(() => { const s = JSON.parse(localStorage.getItem('myday.data.v4')); s.projects.items.find(p => p.id === 'pjAsk').private = true; localStorage.setItem('myday.data.v4', JSON.stringify(s)); })()`);
+    await D.click('[data-action=ask-go]'); await sleep(800);
+    check('a project made private after Capture opened is never sent, even before its storage event arrives', (await D.ev(`document.querySelector('[data-s=ask-panel]')?.dataset.phase`)) === 'error' && (await D.text('[data-s=ask-panel]')).includes('Close Capture and open it again') && aiCalls().length === beforePrivacyCalls);
+    await closeSheet(D); await D.ev(`location.hash = 'today'`);
     await D.setData(`s => { s.projects.items = s.projects.items.filter(p => p.id !== 'pjAsk'); s.notes.items = s.notes.items.filter(n => !['nAsk', 'nPriv'].includes(n.id)); }`); await D.until(`!document.getElementById('signInGate')`, 15000);
+
+    await mock.setData(askSeed);
+    const privatiseElsewhere = () => mock.ev(`(() => { const oldValue = localStorage.getItem('myday.data.v4'); const s = JSON.parse(oldValue); s.projects.items.find(p => p.id === 'pjAsk').private = true; const newValue = JSON.stringify(s); localStorage.setItem('myday.data.v4', newValue); window.dispatchEvent(new StorageEvent('storage', { key: 'myday.data.v4', oldValue, newValue, storageArea: localStorage })); })()`);
+    await openAsk(mock, 'projects/p/pjAsk', 'Break this into smaller steps');
+    await mock.click('[data-action=ask-go]');
+    await privatiseElsewhere();
+    await sleep(800);
+    check('a reply arriving after an external privacy change is discarded', (await mock.ev(`document.querySelector('[data-s=ask-panel]')?.dataset.phase`)) === 'error' && !(await mock.exists('[data-action=ask-add]')));
+    await closeSheet(mock);
+    await mock.setData(`s => { delete s.projects.items.find(p => p.id === 'pjAsk').private; }`);
+    await openAsk(mock, 'projects/p/pjAsk', 'Break this into smaller steps'); await askGo(mock);
+    const beforePrivateAdd = (await mock.data()).tasks.items.length;
+    await privatiseElsewhere();
+    await mock.click('[data-action=ask-add]'); await sleep(200);
+    check('making a project private after a reply prevents applying the old proposal', (await mock.data()).tasks.items.length === beforePrivateAdd && (await mock.ev(`document.querySelector('[data-s=ask-panel]')?.dataset.phase`)) === 'error');
+    await closeSheet(mock);
+    await mock.setData(askSeed);
   }
 
   console.log('\n[8g] Ask MyDay on a Study course: "Plan this course with Ask", study tasks into the course, Undo');

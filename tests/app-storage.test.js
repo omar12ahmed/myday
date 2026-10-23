@@ -68,10 +68,10 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   await click('[data-action=back]'); await sleep(150);
 
   console.log('\n[4] Data from a newer version of MyDay is never overwritten');
-  await otherTabWrites(`s => { s.schemaVersion = 5; s.newThing = 1; }`);
+  await otherTabWrites(`s => { s.schemaVersion = 6; s.newThing = 1; }`);
   await ev(`document.dispatchEvent(new Event('visibilitychange'))`); await sleep(250);
   s = await D();
-  check('the newer save is left exactly as it was', s.schemaVersion === 5 && s.newThing === 1);
+  check('the newer save is left exactly as it was', s.schemaVersion === 6 && s.newThing === 1);
   check('…and this copy explains and stops saving', (await text('#app')).includes('saved by a newer version of MyDay in another tab'));
 
   console.log('\n[5] Normal use in one tab is unaffected');
@@ -112,6 +112,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     bankHolidays: { region: 'scotland', fetchedAt: '2026-10-01T09:00', divisions: null },
     health: { workout: { templates: [{ id: 't1', name: 'Legs', minutes: 45 }], sessions: [], planned: {}, schedule: { mode: 'off' } }, food: { shopping: [{ id: 's1', name: 'Oats', checked: false }] } },
     study: { stages: [{ id: 'st1', title: 'Networking' }], sessions: [{ id: 'x1', date: '2026-11-01', status: 'done', todayUid: null }] },
+    arabic: { pathId: 'path.arabic-core-b2', attempts: [], cards: [], lessonCompletions: { 'lesson.arabic-fusha-register': '2026-11-01T10:00:00.000Z' } },
     futureSection: { notes: ['kept'] },
   };
   await otherTabWrites(`s => Object.assign(s, ${JSON.stringify(sections)})`);
@@ -136,7 +137,12 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   for (const f of require('fs').readdirSync(T.S + '/dl')) require('fs').unlinkSync(T.S + '/dl/' + f);
   await click('[data-action=export]'); await sleep(1200);
   const exp = JSON.parse(require('fs').readFileSync(T.S + '/dl/myday-export-2026-11-02.json', 'utf8'));
-  check('…and all of it is included in exports', ['rota', 'pay', 'bankHolidays', 'health', 'study', 'futureSection'].every(k => JSON.stringify(exp.data[k]) === JSON.stringify(s[k])));
+  check('…and all of it is included in exports', ['rota', 'pay', 'bankHolidays', 'health', 'study', 'arabic', 'futureSection'].every(k => JSON.stringify(exp.data[k]) === JSON.stringify(s[k])));
+  check('explicit Arabic completion survives storage and backup without a session or mastery claim', exp.data.arabic.lessonCompletions['lesson.arabic-fusha-register'] === sections.arabic.lessonCompletions['lesson.arabic-fusha-register'] && exp.data.arabic.attempts.length === 0 && !exp.data.arabic.verified);
+  await otherTabWrites(`s => { s.arabic.lessonCompletions = {}; }`); await go(10);
+  await T.setFile(T.S + '/dl/myday-export-2026-11-02.json'); await sleep(200);
+  await click('[data-action="dialog-confirm"]'); await sleep(300);
+  check('importing the backup restores the explicit Arabic choice', eq((await D()).arabic.lessonCompletions, sections.arabic.lessonCompletions));
   await ev(`localStorage.setItem('${KEY}', localStorage.getItem('${KEY}').replace('{', '{"__proto__":{"polluted":true},'))`);
   check('(test setup: the saved text now has a "__proto__" key)', (await raw()).includes('"__proto__"'));
   await go(11);
@@ -155,7 +161,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   await click('[data-action=edit]'); await click('[data-action=add][data-cat=health]'); await sleep(150); await click('[data-action=back]'); await sleep(150);
   await go(11, APP);
   check('changes made in the current MyDay show in the new app', eq(await ev(`[...document.querySelectorAll('#app .task input')].map(i => i.checked)`), [true, true, false]) && (await D()).lists.health.length === 4);
-  check('…and the data is still version 4, one key', (await D()).schemaVersion === 4 && eq(await ev(`Object.keys(localStorage).filter(k => k.startsWith('myday'))`), [KEY]));
+  check('…and the data is version 5, the same key', (await D()).schemaVersion === 5 && eq(await ev(`Object.keys(localStorage).filter(k => k.startsWith('myday'))`), [KEY]));
   await addIframe('../../index.html#today'); await sleep(1500);
   await inFrame(`document.querySelectorAll('#app .task input')[2].click()`); await sleep(500);
   check('the current MyDay saving in another tab → the new app updates by itself', (await text('#toast')).includes('Updated with changes from another tab') && (await ev(`document.querySelectorAll('#app .task input:checked').length`)) === 3, await text('#toast'));
@@ -186,7 +192,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   check('…the note keeps its Arabic and emoji with only the half taken out of its text', !!ntH && ntH.text === 'Call the bank 😀 مرحبا' && ntH.title === 'مرحبا' && ntH.createdAt === '2026-11-01T09:00', ntH);
   check('…a section the new app does not handle yet is mended too, everything else in it kept', eq(s.futureSection, { notes: ['kept 😀', 'مرحبا'], deep: { more: 'x' } }), s.futureSection);
   check('…and no text anywhere in the saved data holds a lone half (no \\ud8xx–\\udfxx escape is left)', !scan(s) && !/\\ud[89a-f][0-9a-f]{2}/i.test(await raw()));
-  check('…the other fields are as they were (the added task and the other lists)', s.lists.admin.length === base.lists.admin.length + 2 && eq(s.lists.learning, base.lists.learning) && eq(s.lists.health, base.lists.health) && s.schemaVersion === 4, s.lists.admin.length);
+  check('…the other fields are as they were (the added task and the other lists)', s.lists.admin.length === base.lists.admin.length + 2 && eq(s.lists.learning, base.lists.learning) && eq(s.lists.health, base.lists.health) && s.schemaVersion === 5, s.lists.admin.length);
 
   await ev('localStorage.clear()'); await go();
   await otherTabWrites(`s => {
@@ -201,6 +207,28 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   const expectS = JSON.parse(JSON.stringify(whole)); expectS.lists.admin = s.lists.admin; expectS.saves = s.saves;
   check('data without any half character keeps its whole emoji and Arabic text exactly', s.lists.admin.find(x => x.id === 'a9').title === 'Pay council tax 😀' && s.notes.items.find(x => x.id === 'ntH').text === 'Call the bank 😀 مرحبا' && eq(s.futureSection, { notes: ['kept 😀', 'مرحبا'] }));
   check('…and is otherwise saved exactly as before (only the one added task and the save numbering differ)', eq(s, expectS) && s.lists.admin.length === whole.lists.admin.length + 1);
+
+  console.log('\n[10] Failed project writes keep saved data and the draft available to retry');
+  await ev('localStorage.clear()'); await go(10, APP + '#projects');
+  const input = async (selector, value) => ev(`(() => { const el=document.querySelector(${JSON.stringify(selector)}); Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(el,${JSON.stringify(value)}); el.dispatchEvent(new Event('input',{bubbles:true})); })()`);
+  await input('#projectNew', 'Synthetic retry project');
+  await ev(`window.__projectSetItem=Storage.prototype.setItem; Storage.prototype.setItem=function(k,v){ if(k==='${KEY}') throw new DOMException('Synthetic quota failure','QuotaExceededError'); return window.__projectSetItem.call(this,k,v); };`);
+  const beforeFailedProject = await raw();
+  await click('[data-action=project-add]'); await sleep(200);
+  check('a failed project creation keeps storage, the form and its typed title, without a success message', (await raw())===beforeFailedProject && (await exists('#projectNew')) && (await ev(`document.querySelector('#projectNew').value`))==='Synthetic retry project' && /Couldn't save/.test(await text('#toast')));
+  await ev('Storage.prototype.setItem=window.__projectSetItem');
+  await click('[data-action=project-add]'); await sleep(250);
+  const retryProject = (await D()).projects.items.find(p=>p.title==='Synthetic retry project');
+  check('retry creates just one saved project', !!retryProject && (await D()).projects.items.length===1);
+  await ev(`location.hash='projects/p/${retryProject.id}/milestones'`); await sleep(250);
+  await input('#msNew','Synthetic retry milestone');
+  await ev(`Storage.prototype.setItem=function(k,v){ if(k==='${KEY}') throw new DOMException('Synthetic quota failure','QuotaExceededError'); return window.__projectSetItem.call(this,k,v); };`);
+  const beforeFailedMarker = await raw();
+  await click('[data-action=ms-add]'); await sleep(200);
+  check('a failed milestone addition keeps its draft and the saved project, and explains the failure', (await raw())===beforeFailedMarker && (await ev(`document.querySelector('#msNew').value`))==='Synthetic retry milestone' && /Couldn't save/.test(await text('#toast')));
+  await ev('Storage.prototype.setItem=window.__projectSetItem');
+  await click('[data-action=ms-add]'); await sleep(200);
+  check('retry saves one milestone with the same draft text', (await D()).projects.items[0].milestones.length===1 && (await D()).projects.items[0].milestones[0].title==='Synthetic retry milestone');
 
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
