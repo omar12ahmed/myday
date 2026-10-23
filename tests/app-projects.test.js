@@ -1209,6 +1209,31 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   }
   await T.send('Emulation.clearDeviceMetricsOverride');
 
+  console.log('\n[36] Decisions while the browser blocks saving');
+  // Storage that can't even be read at start: MyDay keeps changes in memory until the page closes (storage.ts).
+  const blocked = (await T.send('Page.addScriptToEvaluateOnNewDocument', { source: `(() => { const no = () => { throw new DOMException('Synthetic blocked storage', 'SecurityError'); };
+    Storage.prototype.getItem = no; Storage.prototype.setItem = no; Storage.prototype.removeItem = no; })();` })).identifier;
+  await go('projects', 2026, 10, 15, 10);
+  check('with saving blocked, MyDay says so', (await text('.storage-note')).includes('Saving is unavailable'), await text('.storage-note'));
+  await type('#projectNew', 'Shed without saving'); await click('[data-action=project-add]'); await sleep(300);
+  await click('[data-s=project-tabs] a[data-tab=decisions]'); await sleep(250);
+  await type('#dcNew', 'Which shed?'); await click('[data-action=dc-add]'); await sleep(300);
+  const MD = await ev(`document.querySelector('[data-s=decision]')?.dataset.id`);
+  for (const o of ['Wooden', 'Metal']) { await type(`#dcOpt-${MD}`, o); await click('[data-s=decision] [data-action=opt-add]'); await sleep(250); }
+  const [MW, MM] = await ev(`[...document.querySelectorAll('[data-s=option]')].map(o => o.dataset.id)`);
+  await click(`${sel(MW).op} [data-action=opt-choose]`); await sleep(200);
+  await type(`#dcWhy-${MD}`, 'Looks right'); await click('[data-action=dc-decide]'); await sleep(300);
+  check('Decide still works in memory', (await ev(`document.querySelector('[data-s=decision]').dataset.state`)) === 'decided' && (await toast()) === 'Decided. It can change later.', await toast());
+  await click('[data-action=dc-again]'); await sleep(300);
+  check('…so does Think again, keeping the choice under Previous choices', (await ev(`document.querySelector('[data-s=decision]').dataset.state`)) === 'open' && (await text('[data-s=dc-history] summary')) === 'Previous choices (1)');
+  await click(`${sel(MW).op} [data-action=opt-choose]`); await sleep(200);
+  await click('[data-action=dc-decide]'); await sleep(300);
+  await click(`${sel(MW).op} [data-action=opt-remove]`); await answer(true);
+  check('…removing the chosen option reopens it', !(await exists(sel(MW).op)) && (await exists(sel(MM).op)) && /this decision is open again/.test(await toast()) && (await text('[data-s=dc-history] summary')) === 'Previous choices (2)', await toast());
+  await click('[data-action=dc-remove]'); await answer(true);
+  check('…and removing the decision takes it away', !(await exists('[data-s=decision]')) && (await toast()) === 'Decision removed.', await toast());
+  await T.send('Page.removeScriptToEvaluateOnNewDocument', { identifier: blocked });
+
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
   const sm = T.summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);

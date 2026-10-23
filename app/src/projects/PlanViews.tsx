@@ -13,7 +13,7 @@ import {
   addDecision, addMilestone, addOption, addPoint, chosenOption, decide, decisionHistory, decisionsInOrder, editMilestone, editOption, editPoint, editQuestion,
   milestoneProgress, moveMilestone, PLAN_LIMITS, removeDecision, removeMilestone, removeOption, setReached, thinkAgain, type Side,
 } from '../data/projectPlan';
-import { update, updateSaved } from '../data/storage';
+import { update } from '../data/storage';
 import { toast } from '../data/toast';
 import type { DateKey, Decision, DecisionOption, Milestone, MyDayData, Project } from '../data/types';
 import { aimText, tabHref } from './planText';
@@ -167,11 +167,12 @@ function DecisionCard({ p, x }: { p: Project; x: Decision }) {
   const [opt, setOpt] = useDraft(`dc-opt:${p.id}:${x.id}`);
   const chosen = chosenOption(x), decided = !!chosen, history = decisionHistory(x);
   const tooBig = () => toast('This decision is too large to save that change. Nothing changed. Export a backup before removing content.');
+  // update() keeps the previous choice when the browser can't save, and still works in memory when saving is blocked.
   function saveChoice(change: (d: MyDayData) => boolean | 'big') {
     let r = false as boolean | 'big';
-    const saved = updateSaved(d => { r = change(d); if (r !== true) return false; });
+    const saved = update(d => { r = change(d); if (r !== true) return false; });
     if (r === 'big') tooBig();
-    return saved === 'saved';
+    return saved;
   }
   function addOpt() {
     let r: string | null = null;
@@ -182,13 +183,13 @@ function DecisionCard({ p, x }: { p: Project; x: Decision }) {
   async function removeOpt(o: DecisionOption) {
     if (!(await confirm({ title: 'Remove this option?', body: `“${o.text}” and its pros and cons.`, confirmLabel: 'Remove', cancelLabel: 'Keep it' }))) return;
     let r: ReturnType<typeof removeOption> = null;
-    const saved = updateSaved(d => { r = removeOption(d, p.id, x.id, o.id); if (!r || r === 'big') return false; });
+    const saved = update(d => { r = removeOption(d, p.id, x.id, o.id); if (!r || r === 'big') return false; });
     if (r === 'big') tooBig();
-    else if (saved === 'saved') toast(r === 'reopened' ? 'Option removed — it was your choice, so this decision is open again.' : 'Option removed.');
+    else if (saved) toast(r === 'reopened' ? 'Option removed — it was your choice, so this decision is open again.' : 'Option removed.');
   }
   async function remove() {
     if (!(await confirm({ title: 'Remove this decision?', body: 'Its options, pros, cons and previous choices go with it.', confirmLabel: 'Remove', cancelLabel: 'Keep it' }))) return;
-    if (updateSaved(d => (removeDecision(d, p.id, x.id) ? undefined : false)) === 'saved') toast('Decision removed.');
+    if (update(d => (removeDecision(d, p.id, x.id) ? undefined : false))) toast('Decision removed.');
   }
   function startChoosing(o: DecisionOption) { setChoosing(o.id); setWhy(x.why); }
   function confirmChoice() {

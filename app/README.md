@@ -1,5 +1,12 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.44.1 — decisions when saving is blocked:** where the browser blocks storage (changes last until the page
+closes), Decide, Think again, Remove option and Remove decision did nothing in 1.44.0. They now use the same save
+path as every other edit: still refused when saved data can't be read or another tab saved first, and the previous
+choice is kept if saving fails. The docs now say that removing or reordering a milestone, decision or Case item
+also rewrites the positions after it, so editing one of those on another device at the same time is a conflict to
+choose, not a merge. No saved-data, sync or database change; going back to 1.44.0 is safe.
+
 **1.44.0 — project storage and choice history:** projects now sync as separate items, so their total can exceed
 512 KiB. Each item retains the existing database limit, with a 380,000-byte editing allowance. Independent item
 edits merge; editing the same item and deletion races retain version conflicts. Previous choices keep their

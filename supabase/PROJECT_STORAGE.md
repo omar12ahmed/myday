@@ -19,13 +19,17 @@ All parts stay in `sync_records`, scoped by `user_id` and the existing RLS. Chil
 optional decision and item ids as UTF-8 hex components. Incoming envelopes must agree with those identities.
 Children require a live parent. Deleting a project, decision or Case metadata tombstones its descendants.
 A child edit advances its parent revisions, so a stale parent deletion conflicts rather than erasing a newer edit.
-Independent item edits merge. Editing the same item on two devices retains the version-check conflict flow.
+Independent edits to different items merge. Editing the same item on two devices retains the version-check
+conflict flow.
 
-Array positions travel with each child. Concurrent additions at the same position use record identity as a
+Array positions travel with each child, inside its record. Removing or reordering an item therefore also rewrites
+every later sibling's position. If another device edits one of those siblings before it hears about the change, that
+sibling becomes an ordinary conflict, not a merge: both versions are kept until the person chooses. Additions
+append, so they do not move existing items. Concurrent additions at the same position use record identity as a
 consistent tie-breaker; this does not claim an exact time ordering across devices. Pull pages are collected before
-one local save, then parents and children are applied in dependency order. A parent-deletion conflict retains
-its complete local subtree; choosing the account keeps all displaced records in the existing downloadable file.
-Choosing this device restores parents before children. Readable unknown value fields travel with their item.
+one local save, then parents and children are applied in dependency order. A parent-deletion conflict retains its
+complete local subtree; choosing the account keeps all displaced records in the existing downloadable file. Choosing
+this device restores parents before children. Readable unknown value fields travel with their item.
 
 ## Upgrade and rollout
 

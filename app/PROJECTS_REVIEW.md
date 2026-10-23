@@ -100,8 +100,10 @@ Exports contain the complete project records. Restore parses and normalises the 
 
 The later storage upgrade projects each complete local project into separate account records: core details,
 milestones, decisions, individual previous choices, Model, Case metadata and individual Case items. Each keeps
-the existing 524,288-byte database cap; total project size can exceed it. Independent item edits merge, while
-same-item edits and deletion races retain version conflicts. Parent deletions tombstone descendants. Incoming
+the existing 524,288-byte database cap; total project size can exceed it. Independent edits to different items
+merge, while same-item edits and deletion races retain version conflicts. Positions are stored in each item's
+record, so removing or reordering an item also rewrites its later siblings; a concurrent edit to one of those
+siblings on another device becomes a conflict rather than a merge. Parent deletions tombstone descendants. Incoming
 pages are assembled before one checked local save. The original cloud project is retained in a read-only,
 account-isolated recovery table during migration. Updated MyDay is required for cloud sync after migration;
 older versions keep their local data. See `../supabase/PROJECT_STORAGE.md` for rollout and rollback details.
