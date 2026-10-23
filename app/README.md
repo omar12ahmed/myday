@@ -1,5 +1,14 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.45.0 — the open paper workspace:** a calmer redesign of every screen (details under "Design" below). The page
+is a low-chroma sage paper (#f4f5f2; dark mode a neutral charcoal, #151716), with flat panels, smaller corners and
+teal kept for key actions and next steps. Wide screens use a 12-column grid: Today puts the plan in eight columns
+and supporting information in four, and the 224 px sidebar groups Your workspace with task and note shortcuts.
+Phones get an opaque bottom bar with six labelled sections and a round Capture button above it. An active or
+paused Study session sits right above Today's plan; otherwise the Study card stays with the other reminders, and it
+remains always available as in 1.43.0. No saved-data, sync or database change; going back to 1.44.1 is safe (only
+the look returns). The installed Android app keeps its own splash and status-bar colours until it is next rebuilt.
+
 **1.44.1 — decisions when saving is blocked:** where the browser blocks storage (changes last until the page
 closes), Decide, Think again, Remove option and Remove decision did nothing in 1.44.0. They now use the same save
 path as every other edit: still refused when saved data can't be read or another tab saved first, and the previous
