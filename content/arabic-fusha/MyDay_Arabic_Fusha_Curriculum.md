@@ -1,6 +1,6 @@
 # MyDay Arabic Fuṣḥā curriculum
 
-Version 1.1.1 · researched 10 October 2026, corrected 11 October 2026 · course ID `course.arabic-fusha`
+Version 1.1.2 · researched 10 October 2026, corrected 11 and 24 October 2026 · course ID `course.arabic-fusha`
 
 This is a complete curriculum specification for a beginner learning Modern Standard Arabic, with optional specialist extensions. It is designed to support months or years of study in MyDay. It is not a claim that a short list of lessons, a vocabulary streak or a completed textbook produces fluency. The package defines what to learn, how to practise and what evidence would demonstrate progress. An adaptive tutor can choose the next task without changing those underlying outcomes.
 
@@ -2995,7 +2995,7 @@ Allow 45 minutes across short sessions, plus 15 minutes for a changed task on an
 
 
 
-**Key concepts:** verb valency; object noun; attached pronoun; أقرأه.
+**Key concepts:** verb valency; object noun; attached pronoun; أقرؤه.
 
 **Arabic example:** أَقْرَأُ الْكِتَابَ. — I read the book.
 
@@ -3007,7 +3007,7 @@ Allow 45 minutes across short sessions, plus 15 minutes for a changed task on an
 
 - Does every Arabic verb take the same preposition as its English equivalent?
 
-- In أقرأه, what does ه refer to?
+- In أقرؤه, what does ه refer to?
 
 - Choose the suitable forms: أذهب ___ المدرسة; أقرأ ___, meaning I read it when it refers to الكتاب.
 
@@ -4815,7 +4815,7 @@ Allow 45 minutes across short sessions, plus 15 minutes for a changed task on an
 
 **Knowledge check** (`assessment.arabic-future-plans-check`):
 
-- Do سـ and سوف attach to ordinary present-form verbs?
+- Are سـ and سوف used with ordinary present-form verbs?
 
 - Does a future marker by itself prove certainty?
 
@@ -4891,7 +4891,7 @@ Allow 45 minutes across short sessions, plus 15 minutes for a changed task on an
 
 - Is ليس simply interchangeable with لا before every verb?
 
-- Negate درست أمس using لم and identify the form of the following verb.
+- Negate دَرَسْتُ أَمْسِ using لم and identify the form of the following verb.
 
 
 
@@ -5513,7 +5513,7 @@ Allow 45 minutes across short sessions, plus 15 minutes for a changed task on an
 
 - Do كتابان and كتابين indicate different quantities?
 
-- Do sound feminine plurals take fatḥa in the accusative like every singular noun?
+- Do sound feminine plurals take fatḥa in the accusative like typical singular nouns?
 
 - Write the dual of كتاب as a nominative label, then use the correct form after رأيت to mean I saw two books.
 
@@ -5585,7 +5585,7 @@ Allow 45 minutes across short sessions, plus 15 minutes for a changed task on an
 
 - Does a comparative always translate with an English -er ending?
 
-- Write three books using كتاب and a correctly agreeing number.
+- Write three books using كتاب and a correctly formed number.
 
 
 
@@ -7219,7 +7219,7 @@ Allow 45 minutes across short sessions, plus 15 minutes for a changed task on an
 
 **Knowledge check** (`assessment.arabic-relative-clauses-check`):
 
-- Does an indefinite noun always take الذي before a following descriptive clause?
+- Does an indefinite noun take الذي before a following descriptive clause?
 
 - What does the ه in الكتاب الذي قرأته refer to?
 
@@ -7445,7 +7445,7 @@ Allow 45 minutes across short sessions, plus 15 minutes for a changed task on an
 
 - Must conditional meaning be inferred from the particle alone?
 
-- Translate the basic meaning of إذا درست، فستفهم. Does the sentence itself state that studying has already happened?
+- Translate the basic meaning of إذا درستَ، فستفهم. Does the sentence itself state that studying has already happened?
 
 
 
@@ -10625,7 +10625,7 @@ Allow 45 minutes across short sessions, plus 15 minutes for a changed task on an
 
 **Key concepts:** turn taking; reference to evidence; clarification; synthesis.
 
-**Arabic example:** أَتَفَهَّمُ هَذِهِ الوِجْهَةَ، وَلَكِنْ... — I understand this perspective, but...
+**Arabic example:** أَتَفَهَّمُ وِجْهَةَ النَّظَرِ هَذِهِ، وَلَكِنْ... — I understand this perspective, but...
 
 **Practical exercise** (`exercise.arabic-supported-debate`): Discuss a familiar education or technology question for eight minutes; reference two sources and summarise the partner's position accurately.
 
@@ -11005,7 +11005,7 @@ Allow 45 minutes across short sessions, plus 15 minutes for a changed task on an
 
 - Does a diptote normally take tanwīn?
 
-- Can a diptote's genitive marking differ when definite or in iḍāfa?
+- Can a diptote's genitive marking differ with ال or in iḍāfa?
 
 - Write thirteen books and thirteen letters using كتاب and رسالة.
 
@@ -15873,13 +15873,13 @@ Preteach أستيقظ، نصف ساعة، أحيانا as chunks; the text is su
 
 **ID:** `asset.arabic-weekend` · **Target:** A2
 
-فِي يَوْمِ السَّبْتِ زُرْتُ صَدِيقِي سَامِي. كَانَ الْجَوُّ جَمِيلًا، فَذَهَبْنَا إِلَى الْحَدِيقَةِ. جَلَسْنَا تَحْتَ شَجَرَةٍ وَتَحَدَّثْنَا عَنِ الدِّرَاسَةِ. بَعْدَ ذَلِكَ أَرَدْنَا أَنْ نَذْهَبَ إِلَى الْمَكْتَبَةِ، وَلَكِنَّهَا كَانَتْ مُغْلَقَةً. لَمْ نَدْخُلِ الْمَكْتَبَةَ. عُدْنَا إِلَى الْبَيْتِ وَقَرَأْنَا قِصَّةً قَصِيرَةً. فِي الْأُسْبُوعِ الْقَادِمِ سَنَزُورُ الْمَكْتَبَةَ يَوْمَ الْجُمُعَةِ. سَأَتَأَكَّدُ مِنْ وَقْتِ افْتِتَاحِهَا قَبْلَ الزِّيَارَةِ.
+فِي يَوْمِ السَّبْتِ زُرْتُ صَدِيقِي سَامِي. كَانَ الْجَوُّ جَمِيلًا، فَذَهَبْنَا إِلَى الْحَدِيقَةِ. جَلَسْنَا تَحْتَ شَجَرَةٍ وَتَحَدَّثْنَا عَنِ الدِّرَاسَةِ. بَعْدَ ذَلِكَ أَرَدْنَا أَنْ نَذْهَبَ إِلَى الْمَكْتَبَةِ، وَلَكِنَّهَا كَانَتْ مُغْلَقَةً. لَمْ نَدْخُلِ الْمَكْتَبَةَ. عُدْنَا إِلَى الْبَيْتِ وَقَرَأْنَا قِصَّةً قَصِيرَةً. فِي الْأُسْبُوعِ الْقَادِمِ سَنَزُورُ الْمَكْتَبَةَ يَوْمَ الْجُمُعَةِ. سَأَتَأَكَّدُ مِنْ وَقْتِ فَتْحِ أَبْوَابِهَا قَبْلَ الزِّيَارَةِ.
 
 
 
 **Unvowelled practice display:**
 
-في يوم السبت زرت صديقي سامي. كان الجو جميلا، فذهبنا إلى الحديقة. جلسنا تحت شجرة وتحدثنا عن الدراسة. بعد ذلك أردنا أن نذهب إلى المكتبة، ولكنها كانت مغلقة. لم ندخل المكتبة. عدنا إلى البيت وقرأنا قصة قصيرة. في الأسبوع القادم سنزور المكتبة يوم الجمعة. سأتأكد من وقت افتتاحها قبل الزيارة.
+في يوم السبت زرت صديقي سامي. كان الجو جميلا، فذهبنا إلى الحديقة. جلسنا تحت شجرة وتحدثنا عن الدراسة. بعد ذلك أردنا أن نذهب إلى المكتبة، ولكنها كانت مغلقة. لم ندخل المكتبة. عدنا إلى البيت وقرأنا قصة قصيرة. في الأسبوع القادم سنزور المكتبة يوم الجمعة. سأتأكد من وقت فتح أبوابها قبل الزيارة.
 
 
 
@@ -16026,7 +16026,7 @@ A short practice stimulus, not a complete stage examination.
 
 **ID:** `asset.arabic-transport-report` · **Target:** B2
 
-قالت بلدية مدينة افتراضية إن عدد مستخدمي الحافلات ارتفع من عشرة آلاف إلى اثني عشر ألفا في الشهر الماضي، بعد تخفيض سعر التذكرة. ووصفت البلدية الزيادة بأنها دليل على نجاح التخفيض. غير أن باحثة في النقل أشارت إلى أن الأرقام وحدها لا تكفي لتحديد السبب؛ فقد افتتحت المدينة في الشهر نفسه خطين جديدين، كما أغلقت بعض الشوارع لأعمال الصيانة. وطالبت الباحثة بمقارنة الأعداد على مدى فترة أطول وبمعرفة ما إذا كان الركاب الجدد قد توقفوا عن استخدام سياراتهم. واتفق الطرفان على ضرورة تحسين الخدمة، لكنهما اختلفا في تفسير الزيادة. هذه بيانات تعليمية مختلقة، ولا تصف مدينة حقيقية.
+قالت بلدية مدينة خيالية إن عدد مستخدمي الحافلات ارتفع من عشرة آلاف إلى اثني عشر ألفا في الشهر الماضي، بعد تخفيض سعر التذكرة. ووصفت البلدية الزيادة بأنها دليل على نجاح التخفيض. غير أن باحثة في النقل أشارت إلى أن الأرقام وحدها لا تكفي لتحديد السبب؛ فقد افتتحت المدينة في الشهر نفسه خطين جديدين، كما أغلقت بعض الشوارع لأعمال الصيانة. وطالبت الباحثة بمقارنة الأعداد على مدى فترة أطول وبمعرفة ما إذا كان الركاب الجدد قد توقفوا عن استخدام سياراتهم. واتفق الطرفان على ضرورة تحسين الخدمة، لكنهما اختلفا في تفسير الزيادة. هذه بيانات تعليمية مختلقة، ولا تصف مدينة حقيقية.
 
 
 
@@ -16108,7 +16108,7 @@ A short practice stimulus, not a complete stage examination.
 
 **ID:** `asset.arabic-technical-report` · **Target:** B1-extension
 
-في الساعة التاسعة صباحا، أبلغ مستخدم في شركة افتراضية أنه لم يتمكن من الدخول إلى حسابه. أظهرت السجلات خمس محاولات دخول غير ناجحة خلال عشر دقائق، ثم تم قفل الحساب مؤقتا. لم تتوفر بعد معلومات كافية لمعرفة ما إذا كانت المحاولات صادرة عن المستخدم نفسه أو عن شخص آخر. اتصل فريق الدعم بالمستخدم عبر وسيلة معروفة، وطلب منه تأكيد آخر محاولة قام بها. سيقارن الفريق الإجابة بالسجلات قبل اتخاذ الخطوة التالية. لا تتضمن هذه الحالة التعليمية أي بيانات حقيقية أو كلمات مرور.
+في الساعة التاسعة صباحا، أفاد مستخدم في شركة خيالية بأنه لم يتمكن من الدخول إلى حسابه. أظهرت السجلات خمس محاولات دخول غير ناجحة خلال عشر دقائق، ثم تم قفل الحساب مؤقتا. لم تتوفر بعد معلومات كافية لمعرفة ما إذا كانت المحاولات صادرة عن المستخدم نفسه أو عن شخص آخر. اتصل فريق الدعم بالمستخدم عبر وسيلة معروفة، وطلب منه تأكيد آخر محاولة قام بها. سيقارن الفريق الإجابة بالسجلات قبل اتخاذ الخطوة التالية. لا تتضمن هذه الحالة التعليمية أي بيانات حقيقية أو كلمات مرور.
 
 
 

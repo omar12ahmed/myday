@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "course_id": "course.arabic-fusha",
-  "curriculum_version": "1.1.1",
+  "curriculum_version": "1.1.2",
   "answer_keys": [
     {
       "id": "asset.arabic-profile.q1",
@@ -45,7 +45,7 @@
     },
     {
       "id": "asset.arabic-introduction-dialogue.q3",
-      "expected_answer": "اسْمُكِ / أَنْتِ; accept an explanation without grammatical terminology.",
+      "expected_answer": "اسْمُكِ / أَنْتِ; also accept طَالِبَةٌ in his question, which shows the same. Accept an explanation without grammatical terminology.",
       "acceptable_variation": "Equivalent meanings and accurate paraphrases; do not require exact English wording."
     },
     {
@@ -685,7 +685,7 @@
     },
     {
       "id": "assessment.arabic-future-plans-check.q1",
-      "expected_answer": "Yes.",
+      "expected_answer": "Yes. سـ is written joined to the verb (سأدرس); سوف is a separate word (سوف أدرس).",
       "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
     },
     {
@@ -705,7 +705,7 @@
     },
     {
       "id": "assessment.arabic-requests-imperatives-check.q1",
-      "expected_answer": "Not always; prohibitive لا governs the jussive.",
+      "expected_answer": "No. A statement of not doing uses لا with the indicative (لا تكتبون, you do not write); a prohibition uses لا with the jussive (لا تكتبوا, do not write). Without vowel marks, forms with no ending look the same (لا تكتب can be either), while لا تكتبين and لا تكتبي differ.",
       "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
     },
     {
@@ -935,7 +935,7 @@
     },
     {
       "id": "assessment.arabic-relative-clauses-check.q1",
-      "expected_answer": "No; the construction differs from a definite antecedent.",
+      "expected_answer": "No, never: the clause follows the indefinite noun directly, as in كتاب قرأته. Only a definite noun takes الذي.",
       "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
     },
     {
@@ -1310,7 +1310,7 @@
     },
     {
       "id": "assessment.arabic-numbers-exceptions-check.q2",
-      "expected_answer": "Yes; those conditions affect its marking.",
+      "expected_answer": "Yes. With ال, or as the first term of an iḍāfa, a diptote takes kasra in the genitive (في المساجدِ); otherwise it takes fatḥa (في مساجدَ).",
       "acceptable_variation": "Equivalent accurate explanations; grammar metalanguage and English phrasing are not mandatory."
     },
     {
@@ -1810,7 +1810,7 @@
     },
     {
       "id": "assessment.arabic-repair-phrases-check.q3",
-      "expected_answer": "لم أفهم. Accept a suitable taught request, such as هل يمكنك أن تعيد ذلك، من فضلك؟ Treat the request as a learned chunk; do not require untaught grammatical analysis.",
+      "expected_answer": "لم أفهم. Accept a suitable taught request, such as من فضلك، أعد ببطء. Treat the request as a learned chunk; do not require untaught grammatical analysis.",
       "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
     },
     {
@@ -1850,7 +1850,7 @@
     },
     {
       "id": "assessment.arabic-objects-prepositions-check.q3",
-      "expected_answer": "أذهب إلى المدرسة؛ أقرأه. Distinguish the prepositional complement from an attached direct-object pronoun.",
+      "expected_answer": "أذهب إلى المدرسة؛ أقرؤه. Distinguish the prepositional complement from an attached direct-object pronoun. With ـه attached, the hamza is inside the word and carries ḍamma, which is stronger than the fatḥa on the ر before it, so its standard seat is wāw: أقرؤه. The spelling أقرأه is also seen in print.",
       "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
     },
     {
@@ -1925,7 +1925,7 @@
     },
     {
       "id": "assessment.arabic-story-retell-check.q3",
-      "expected_answer": "Leila visited the library; she did not find the book. Accept زارت ليلى المكتبة؛ لم تجد الكتاب. Do not infer that the library was closed.",
+      "expected_answer": "Layla visited the library; she did not find the book. Accept زارت ليلى المكتبة؛ لم تجد الكتاب. Do not infer that the library was closed.",
       "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
     },
     {
@@ -2140,7 +2140,7 @@
     },
     {
       "id": "assessment.arabic-headlines-leads-check.q3",
-      "expected_answer": "Stated: the opening of a new library. Not supplied: its location and opening date, for example. Do not invent an actor or date.",
+      "expected_answer": "Stated: the opening of a new library (or bookshop: مكتبة can mean either). Not supplied: its location and opening date, for example. Do not invent an actor or date.",
       "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
     },
     {
@@ -2185,7 +2185,7 @@
     },
     {
       "id": "assessment.arabic-supported-debate-check.q3",
-      "expected_answer": "For example: أتفهم هذه الوجهة، ولكنني أرى أن القراءة الورقية أنسب لهذه المهمة. Accept another relevant, fair contrast; it must not distort the other view.",
+      "expected_answer": "For example: أتفهم وجهة النظر هذه، ولكنني أرى أن القراءة الورقية أنسب لهذه المهمة. Accept another relevant, fair contrast; it must not distort the other view.",
       "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
     },
     {
@@ -2210,7 +2210,7 @@
     },
     {
       "id": "assessment.arabic-precision-edit-check.q3",
-      "expected_answer": "الطلاب يدرسون العربية. The verb agrees in number with the preceding plural human subject.",
+      "expected_answer": "الطلاب يدرسون العربية. The verb agrees in number with the preceding plural human subject. Moving the verb first is also correct: يدرس الطلابُ العربية, because a verb before its subject stays singular.",
       "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
     },
     {
@@ -2255,7 +2255,7 @@
     },
     {
       "id": "assessment.arabic-narrator-character-check.q3",
-      "expected_answer": "Leila expresses the judgement. The text attributes it to a character; it does not automatically establish the author's opinion.",
+      "expected_answer": "Layla expresses the judgement. The text attributes it to a character; it does not automatically establish the author's opinion.",
       "acceptable_variation": "Accept equivalent Arabic wording when the meaning and targeted structure are correct. Full vowels are optional unless the prompt tests a particular ending or sound/spelling contrast. Open responses require comparison with the actual source or rubric; never exact-match them to a sample answer."
     },
     {

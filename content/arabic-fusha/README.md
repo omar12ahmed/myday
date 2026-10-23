@@ -1,6 +1,6 @@
 # Arabic Fuṣḥā curriculum
 
-Modern Standard Arabic curriculum, version 1.1.1: 30 modules, 152 lessons,
+Modern Standard Arabic curriculum, version 1.1.2: 30 modules, 152 lessons,
 304 exercises, 60 practice labs and 18 projects. The 24-module core progresses
 from script and sounds to a B2 learning target, with six optional extensions.
 These are curriculum targets, not certified proficiency levels.

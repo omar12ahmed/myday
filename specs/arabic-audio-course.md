@@ -93,6 +93,11 @@ the main session read every transcript. 21 texts were remade (27 retakes). Six u
 for a fluent reviewer: هَلِ; سَاعَة; الْكِتَابَ; دَعَا; إِنْ; and the teaching sentence ending in مَلَاحِظَاتٍ,
 whose vowel the voice repeatedly read differently. The authored text stays unchanged.
 
+**Curriculum 1.1.2 (24 October 2026):** the course review found that held sentence's text was itself wrong (the
+voice had been reading the correct مُلَاحَظَاتٍ). It was corrected, with five other voiced sentences, and their six clips
+were removed (`audio-audit.json`, `removed`): 638 checked clips ship and five recordings stay held. The corrected
+sentences and other new voiced texts get new clips made, transcribed blind and listened to as in every round.
+
 The owner listened to all 357 eligible clips, split into 179 and 178, and confirmed "both fine" on 21 October 2026. All decode in the browser: 679 seconds
 (11 min 19 s) of audio, roughly 28 minutes of listening with repeats. Generate the two local pages with
 `MYDAY_AUDIO_REVIEW_BATCH=179 node app/scripts/review-arabic-audio.mjs teaching sounds-families lesson-checks`.

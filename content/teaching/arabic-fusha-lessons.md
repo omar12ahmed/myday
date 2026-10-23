@@ -565,7 +565,7 @@ Learn greetings as exchanges, including an appropriate reply. Formal introductio
 
 #### Worked example
 
-مَرْحَبًا، اِسْمِي سَامِرٌ. مَا اسْمُكَ؟ means 'Hello, my name is Samir. What is your name?' addressing a man. مَا اسْمُكِ؟ addresses a woman.
+مَرْحَبًا، اِسْمِي سَامِرٌ. مَا اسْمُكَ؟ means 'Hello, my name is Sāmir. What is your name?' addressing a man. مَا اسْمُكِ؟ addresses a woman.
 
 #### Try it
 
@@ -690,7 +690,7 @@ Choose a repair phrase for a missed name and another for an unknown word.
 <details>
 <summary>Reveal the explained answer</summary>
 
-Ask مَا اسْمُكَ مَرَّةً أُخْرَى؟ for the name, or request repetition. Use مَا مَعْنَى ...؟ for meaning. Adapt addressee forms with feedback.
+Ask عَفْوًا، مَا اسْمُكَ؟ for the name, or request repetition. Use مَا مَعْنَى ...؟ for meaning. Adapt addressee forms with feedback.
 
 </details>
 
@@ -992,7 +992,7 @@ Write three routine actions with one time expression and ثُمَّ.
 <details>
 <summary>Reveal the explained answer</summary>
 
-A suitable sequence is أَدْرُسُ صَبَاحًا، ثُمَّ أَقْرَأُ، وَأَكْتُبُ مَلَاحِظَاتٍ. Check whether the order matches the intended meaning.
+A suitable sequence is أَدْرُسُ صَبَاحًا، ثُمَّ أَقْرَأُ، وَأَكْتُبُ مُلَاحَظَاتٍ. Check whether the order matches the intended meaning.
 
 </details>
 
@@ -1223,7 +1223,7 @@ A short introduction should convey meaning without depending on a full written s
 
 #### Worked example
 
-أَنَا سَامِرٌ. أَسْكُنُ فِي لَنْدَنَ. وَأَنْتَ؟ means 'I am Samir. I live in London. And you?' Adapt the name, place and addressee.
+أَنَا سَامِرٌ. أَسْكُنُ فِي لَنْدَنَ. وَأَنْتَ؟ means 'I am Sāmir. I live in London. And you?' Adapt the name, place and addressee.
 
 #### Try it
 
@@ -1431,7 +1431,7 @@ Retelling preserves central people, actions, order and outcome while using your 
 
 #### Worked example
 
-Original mini-story: ذَهَبَ سَامِرٌ إِلَى الْمَكْتَبَةِ. قَرَأَ كِتَابًا، ثُمَّ رَجَعَ. Samir went to the library, read a book and returned. It does not say he borrowed the book.
+Original mini-story: ذَهَبَ سَامِرٌ إِلَى الْمَكْتَبَةِ. قَرَأَ كِتَابًا، ثُمَّ رَجَعَ. Sāmir went to the library, read a book, then returned. It does not say he borrowed the book.
 
 #### Try it
 
@@ -2059,7 +2059,7 @@ Lesson ID: `lesson.arabic-derived-forms`
 
 #### Read
 
-Derived verb forms use recognisable patterns that often relate meanings, but each verb must still be checked. Form II frequently has a doubled middle root consonant; other forms add letters or alter vowels. A common semantic tendency is a clue, not a guaranteed translation.
+Derived verb forms use recognisable patterns that often relate meanings, but each verb must still be checked. Form II doubles the middle root consonant (فَعَّلَ); other forms add letters or alter vowels. A common semantic tendency is a clue, not a guaranteed translation.
 
 #### Worked example
 
@@ -2209,7 +2209,7 @@ Lesson ID: `lesson.arabic-relative-clauses`
 
 #### Read
 
-Relative clauses identify or describe a noun. A definite masculine singular noun commonly uses الَّذِي; feminine singular uses الَّتِي. Indefinite nouns commonly take a following descriptive clause without that relative pronoun. Some relative clauses need a pronoun referring back to the head noun.
+Relative clauses identify or describe a noun. A definite masculine singular noun takes الَّذِي; a feminine singular one takes الَّتِي. An indefinite noun never takes الَّذِي or الَّتِي: its describing clause follows directly, as in كِتَابٌ قَرَأْتُهُ. Some relative clauses need a pronoun referring back to the head noun.
 
 #### Worked example
 
@@ -2304,7 +2304,7 @@ Conditional sentences connect a condition with a result. إِذَا commonly int
 
 #### Worked example
 
-إِذَا وَجَدْتُ وَقْتًا، سَأَقْرَأُ means 'If/when I find time, I will read'. The reading depends on the stated condition.
+إِذَا وَجَدْتُ وَقْتًا، فَسَأَقْرَأُ means 'If/when I find time, I will read'. A result that begins with سَـ or سَوْفَ takes فَـ. The reading depends on the stated condition.
 
 #### Try it
 
@@ -2313,7 +2313,7 @@ Identify condition and result, then change the result to studying Arabic.
 <details>
 <summary>Reveal the explained answer</summary>
 
-إِذَا وَجَدْتُ وَقْتًا، سَأَدْرُسُ الْعَرَبِيَّةَ. Preserve the relation and do not present the result as unconditional.
+إِذَا وَجَدْتُ وَقْتًا، فَسَأَدْرُسُ الْعَرَبِيَّةَ. Preserve the relation and do not present the result as unconditional.
 
 </details>
 
@@ -3325,7 +3325,7 @@ Lesson ID: `lesson.arabic-numbers-exceptions`
 
 #### Read
 
-Number constructions vary across 1–2, 3–10, compound numbers and tens. Diptote nouns have restricted declension, commonly lacking tanwīn and using fatḥa for genitive when indefinite and not in iḍāfa. Learn conditions and counterexamples rather than one simplified slogan.
+Number constructions vary across 1–2, 3–10, compound numbers and tens. Diptote nouns have restricted declension: they never take tanwīn, and their genitive takes fatḥa unless they have ال or are the first term of an iḍāfa. Many names are diptotes too, even though they are definite: بِأَحْمَدَ، فِي مَكَّةَ; others decline fully: بِسَامِرٍ. Learn conditions and counterexamples rather than one simplified slogan.
 
 #### Worked example
 
@@ -3338,7 +3338,7 @@ Explain why the counted noun differs in the two number phrases.
 <details>
 <summary>Reveal the explained answer</summary>
 
-The number construction governs singular/plural and case differently. Treat diptotes as a separate declension issue and check whether ال or iḍāfa changes the pattern.
+After 3–10 the counted noun is a genitive plural (ثَلَاثَةُ كُتُبٍ); after 11–99 it is an accusative singular (عِشْرُونَ كِتَابًا). Treat diptotes as a separate declension issue and check whether ال or iḍāfa changes the pattern.
 
 </details>
 
@@ -3900,7 +3900,7 @@ Distinguish narrator, character speech and the author's historical identity. Tra
 
 #### Worked example
 
-Original example: قال سامر: سأعود غدًا. لكن الراوي يذكر أنه لم يعد. 'Samir said: I will return tomorrow. But the narrator states that he did not return.' Promise and narrated outcome differ.
+Original example: قال سامر: سأعود غدًا. لكن الراوي يذكر أنه لم يعد. 'Sāmir said: I will return tomorrow. But the narrator states that he did not return.' Promise and narrated outcome differ.
 
 #### Try it
 

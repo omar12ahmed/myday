@@ -34,7 +34,7 @@ export interface ArabicData {
   cards: ArabicCard[]; // added after 1.16.0; absent before → nothing in revision yet
   [other: string]: unknown; // anything a newer MyDay adds here is kept
 }
-export const ARABIC_VERSION = '1.1.1'; // the package version these screens show (checked against it by arabic-rules)
+export const ARABIC_VERSION = '1.1.2'; // the package version these screens show (checked against it by arabic-rules)
 export const ARABIC_CORE_PATH = 'path.arabic-core-b2';
 export const emptyArabic = (): ArabicData => ({ pathId: ARABIC_CORE_PATH, attempts: [], cards: [] });
 // The course suggests 3–8 new words a day (zero is fine). Past this many, a gentle note says so; it never stops you.

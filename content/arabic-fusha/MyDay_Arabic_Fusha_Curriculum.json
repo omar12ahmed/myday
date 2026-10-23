@@ -1,7 +1,7 @@
 {
   "package_type": "myday.language-curriculum",
   "schema_version": "1.0.0",
-  "curriculum_version": "1.1.1",
+  "curriculum_version": "1.1.2",
   "created_on": "2026-10-10",
   "course": {
     "id": "course.arabic-fusha",
@@ -13262,7 +13262,7 @@
         "verb valency",
         "object noun",
         "attached pronoun",
-        "أقرأه"
+        "أقرؤه"
       ],
       "practical_task_id": "exercise.arabic-objects-prepositions",
       "knowledge_check_id": "assessment.arabic-objects-prepositions-check",
@@ -21947,7 +21947,7 @@
         "Transfer task attempted and one error or uncertainty logged"
       ],
       "example": {
-        "text_ar": "أَتَفَهَّمُ هَذِهِ الوِجْهَةَ، وَلَكِنْ...",
+        "text_ar": "أَتَفَهَّمُ وِجْهَةَ النَّظَرِ هَذِهِ، وَلَكِنْ...",
         "meaning_en": "I understand this perspective, but...",
         "register": "MSA",
         "diacritics": "targeted; examples may be labels or chunks",
@@ -49257,7 +49257,7 @@
         },
         {
           "id": "assessment.arabic-objects-prepositions-check.q2",
-          "prompt": "In أقرأه, what does ه refer to?",
+          "prompt": "In أقرؤه, what does ه refer to?",
           "answer_key_id": "assessment.arabic-objects-prepositions-check.q2",
           "response_type": "short_answer"
         },
@@ -50201,7 +50201,7 @@
       "questions": [
         {
           "id": "assessment.arabic-future-plans-check.q1",
-          "prompt": "Do سـ and سوف attach to ordinary present-form verbs?",
+          "prompt": "Are سـ and سوف used with ordinary present-form verbs?",
           "answer_key_id": "assessment.arabic-future-plans-check.q1",
           "response_type": "short_answer"
         },
@@ -50254,7 +50254,7 @@
         },
         {
           "id": "assessment.arabic-negation-system-check.q3",
-          "prompt": "Negate درست أمس using لم and identify the form of the following verb.",
+          "prompt": "Negate دَرَسْتُ أَمْسِ using لم and identify the form of the following verb.",
           "answer_key_id": "assessment.arabic-negation-system-check.q3",
           "response_type": "short_answer"
         }
@@ -50591,7 +50591,7 @@
         },
         {
           "id": "assessment.arabic-dual-sound-plurals-check.q2",
-          "prompt": "Do sound feminine plurals take fatḥa in the accusative like every singular noun?",
+          "prompt": "Do sound feminine plurals take fatḥa in the accusative like typical singular nouns?",
           "answer_key_id": "assessment.arabic-dual-sound-plurals-check.q2",
           "response_type": "short_answer"
         },
@@ -50638,7 +50638,7 @@
         },
         {
           "id": "assessment.arabic-quantity-comparison-check.q3",
-          "prompt": "Write three books using كتاب and a correctly agreeing number.",
+          "prompt": "Write three books using كتاب and a correctly formed number.",
           "answer_key_id": "assessment.arabic-quantity-comparison-check.q3",
           "response_type": "short_answer"
         }
@@ -51493,7 +51493,7 @@
       "questions": [
         {
           "id": "assessment.arabic-relative-clauses-check.q1",
-          "prompt": "Does an indefinite noun always take الذي before a following descriptive clause?",
+          "prompt": "Does an indefinite noun take الذي before a following descriptive clause?",
           "answer_key_id": "assessment.arabic-relative-clauses-check.q1",
           "response_type": "short_answer"
         },
@@ -51628,7 +51628,7 @@
         },
         {
           "id": "assessment.arabic-conditionals-check.q3",
-          "prompt": "Translate the basic meaning of إذا درست، فستفهم. Does the sentence itself state that studying has already happened?",
+          "prompt": "Translate the basic meaning of إذا درستَ، فستفهم. Does the sentence itself state that studying has already happened?",
           "answer_key_id": "assessment.arabic-conditionals-check.q3",
           "response_type": "short_answer"
         }
@@ -53370,7 +53370,7 @@
         },
         {
           "id": "assessment.arabic-numbers-exceptions-check.q2",
-          "prompt": "Can a diptote's genitive marking differ when definite or in iḍāfa?",
+          "prompt": "Can a diptote's genitive marking differ with ال or in iḍāfa?",
           "answer_key_id": "assessment.arabic-numbers-exceptions-check.q2",
           "response_type": "short_answer"
         },
@@ -57370,8 +57370,8 @@
       "title": "A changed weekend",
       "type": "original_text",
       "stage_target": "A2",
-      "text_ar": "فِي يَوْمِ السَّبْتِ زُرْتُ صَدِيقِي سَامِي. كَانَ الْجَوُّ جَمِيلًا، فَذَهَبْنَا إِلَى الْحَدِيقَةِ. جَلَسْنَا تَحْتَ شَجَرَةٍ وَتَحَدَّثْنَا عَنِ الدِّرَاسَةِ. بَعْدَ ذَلِكَ أَرَدْنَا أَنْ نَذْهَبَ إِلَى الْمَكْتَبَةِ، وَلَكِنَّهَا كَانَتْ مُغْلَقَةً. لَمْ نَدْخُلِ الْمَكْتَبَةَ. عُدْنَا إِلَى الْبَيْتِ وَقَرَأْنَا قِصَّةً قَصِيرَةً. فِي الْأُسْبُوعِ الْقَادِمِ سَنَزُورُ الْمَكْتَبَةَ يَوْمَ الْجُمُعَةِ. سَأَتَأَكَّدُ مِنْ وَقْتِ افْتِتَاحِهَا قَبْلَ الزِّيَارَةِ.",
-      "text_unvowelled": "في يوم السبت زرت صديقي سامي. كان الجو جميلا، فذهبنا إلى الحديقة. جلسنا تحت شجرة وتحدثنا عن الدراسة. بعد ذلك أردنا أن نذهب إلى المكتبة، ولكنها كانت مغلقة. لم ندخل المكتبة. عدنا إلى البيت وقرأنا قصة قصيرة. في الأسبوع القادم سنزور المكتبة يوم الجمعة. سأتأكد من وقت افتتاحها قبل الزيارة.",
+      "text_ar": "فِي يَوْمِ السَّبْتِ زُرْتُ صَدِيقِي سَامِي. كَانَ الْجَوُّ جَمِيلًا، فَذَهَبْنَا إِلَى الْحَدِيقَةِ. جَلَسْنَا تَحْتَ شَجَرَةٍ وَتَحَدَّثْنَا عَنِ الدِّرَاسَةِ. بَعْدَ ذَلِكَ أَرَدْنَا أَنْ نَذْهَبَ إِلَى الْمَكْتَبَةِ، وَلَكِنَّهَا كَانَتْ مُغْلَقَةً. لَمْ نَدْخُلِ الْمَكْتَبَةَ. عُدْنَا إِلَى الْبَيْتِ وَقَرَأْنَا قِصَّةً قَصِيرَةً. فِي الْأُسْبُوعِ الْقَادِمِ سَنَزُورُ الْمَكْتَبَةَ يَوْمَ الْجُمُعَةِ. سَأَتَأَكَّدُ مِنْ وَقْتِ فَتْحِ أَبْوَابِهَا قَبْلَ الزِّيَارَةِ.",
+      "text_unvowelled": "في يوم السبت زرت صديقي سامي. كان الجو جميلا، فذهبنا إلى الحديقة. جلسنا تحت شجرة وتحدثنا عن الدراسة. بعد ذلك أردنا أن نذهب إلى المكتبة، ولكنها كانت مغلقة. لم ندخل المكتبة. عدنا إلى البيت وقرأنا قصة قصيرة. في الأسبوع القادم سنزور المكتبة يوم الجمعة. سأتأكد من وقت فتح أبوابها قبل الزيارة.",
       "source": "Original MyDay teaching material; fictional people and events.",
       "audio_status": "not_included",
       "audio_provision": "A competent MSA speaker may record this script; check recording against text before listening assessment.",
@@ -57541,8 +57541,8 @@
       "title": "A fictional transport report",
       "type": "original_text",
       "stage_target": "B2",
-      "text_ar": "قالت بلدية مدينة افتراضية إن عدد مستخدمي الحافلات ارتفع من عشرة آلاف إلى اثني عشر ألفا في الشهر الماضي، بعد تخفيض سعر التذكرة. ووصفت البلدية الزيادة بأنها دليل على نجاح التخفيض. غير أن باحثة في النقل أشارت إلى أن الأرقام وحدها لا تكفي لتحديد السبب؛ فقد افتتحت المدينة في الشهر نفسه خطين جديدين، كما أغلقت بعض الشوارع لأعمال الصيانة. وطالبت الباحثة بمقارنة الأعداد على مدى فترة أطول وبمعرفة ما إذا كان الركاب الجدد قد توقفوا عن استخدام سياراتهم. واتفق الطرفان على ضرورة تحسين الخدمة، لكنهما اختلفا في تفسير الزيادة. هذه بيانات تعليمية مختلقة، ولا تصف مدينة حقيقية.",
-      "text_unvowelled": "قالت بلدية مدينة افتراضية إن عدد مستخدمي الحافلات ارتفع من عشرة آلاف إلى اثني عشر ألفا في الشهر الماضي، بعد تخفيض سعر التذكرة. ووصفت البلدية الزيادة بأنها دليل على نجاح التخفيض. غير أن باحثة في النقل أشارت إلى أن الأرقام وحدها لا تكفي لتحديد السبب؛ فقد افتتحت المدينة في الشهر نفسه خطين جديدين، كما أغلقت بعض الشوارع لأعمال الصيانة. وطالبت الباحثة بمقارنة الأعداد على مدى فترة أطول وبمعرفة ما إذا كان الركاب الجدد قد توقفوا عن استخدام سياراتهم. واتفق الطرفان على ضرورة تحسين الخدمة، لكنهما اختلفا في تفسير الزيادة. هذه بيانات تعليمية مختلقة، ولا تصف مدينة حقيقية.",
+      "text_ar": "قالت بلدية مدينة خيالية إن عدد مستخدمي الحافلات ارتفع من عشرة آلاف إلى اثني عشر ألفا في الشهر الماضي، بعد تخفيض سعر التذكرة. ووصفت البلدية الزيادة بأنها دليل على نجاح التخفيض. غير أن باحثة في النقل أشارت إلى أن الأرقام وحدها لا تكفي لتحديد السبب؛ فقد افتتحت المدينة في الشهر نفسه خطين جديدين، كما أغلقت بعض الشوارع لأعمال الصيانة. وطالبت الباحثة بمقارنة الأعداد على مدى فترة أطول وبمعرفة ما إذا كان الركاب الجدد قد توقفوا عن استخدام سياراتهم. واتفق الطرفان على ضرورة تحسين الخدمة، لكنهما اختلفا في تفسير الزيادة. هذه بيانات تعليمية مختلقة، ولا تصف مدينة حقيقية.",
+      "text_unvowelled": "قالت بلدية مدينة خيالية إن عدد مستخدمي الحافلات ارتفع من عشرة آلاف إلى اثني عشر ألفا في الشهر الماضي، بعد تخفيض سعر التذكرة. ووصفت البلدية الزيادة بأنها دليل على نجاح التخفيض. غير أن باحثة في النقل أشارت إلى أن الأرقام وحدها لا تكفي لتحديد السبب؛ فقد افتتحت المدينة في الشهر نفسه خطين جديدين، كما أغلقت بعض الشوارع لأعمال الصيانة. وطالبت الباحثة بمقارنة الأعداد على مدى فترة أطول وبمعرفة ما إذا كان الركاب الجدد قد توقفوا عن استخدام سياراتهم. واتفق الطرفان على ضرورة تحسين الخدمة، لكنهما اختلفا في تفسير الزيادة. هذه بيانات تعليمية مختلقة، ولا تصف مدينة حقيقية.",
       "source": "Original MyDay teaching material; fictional people and events.",
       "audio_status": "not_included",
       "audio_provision": "A competent MSA speaker may record this script; check recording against text before listening assessment.",
@@ -57643,8 +57643,8 @@
       "title": "A fictional account-access report",
       "type": "original_text",
       "stage_target": "B1-extension",
-      "text_ar": "في الساعة التاسعة صباحا، أبلغ مستخدم في شركة افتراضية أنه لم يتمكن من الدخول إلى حسابه. أظهرت السجلات خمس محاولات دخول غير ناجحة خلال عشر دقائق، ثم تم قفل الحساب مؤقتا. لم تتوفر بعد معلومات كافية لمعرفة ما إذا كانت المحاولات صادرة عن المستخدم نفسه أو عن شخص آخر. اتصل فريق الدعم بالمستخدم عبر وسيلة معروفة، وطلب منه تأكيد آخر محاولة قام بها. سيقارن الفريق الإجابة بالسجلات قبل اتخاذ الخطوة التالية. لا تتضمن هذه الحالة التعليمية أي بيانات حقيقية أو كلمات مرور.",
-      "text_unvowelled": "في الساعة التاسعة صباحا، أبلغ مستخدم في شركة افتراضية أنه لم يتمكن من الدخول إلى حسابه. أظهرت السجلات خمس محاولات دخول غير ناجحة خلال عشر دقائق، ثم تم قفل الحساب مؤقتا. لم تتوفر بعد معلومات كافية لمعرفة ما إذا كانت المحاولات صادرة عن المستخدم نفسه أو عن شخص آخر. اتصل فريق الدعم بالمستخدم عبر وسيلة معروفة، وطلب منه تأكيد آخر محاولة قام بها. سيقارن الفريق الإجابة بالسجلات قبل اتخاذ الخطوة التالية. لا تتضمن هذه الحالة التعليمية أي بيانات حقيقية أو كلمات مرور.",
+      "text_ar": "في الساعة التاسعة صباحا، أفاد مستخدم في شركة خيالية بأنه لم يتمكن من الدخول إلى حسابه. أظهرت السجلات خمس محاولات دخول غير ناجحة خلال عشر دقائق، ثم تم قفل الحساب مؤقتا. لم تتوفر بعد معلومات كافية لمعرفة ما إذا كانت المحاولات صادرة عن المستخدم نفسه أو عن شخص آخر. اتصل فريق الدعم بالمستخدم عبر وسيلة معروفة، وطلب منه تأكيد آخر محاولة قام بها. سيقارن الفريق الإجابة بالسجلات قبل اتخاذ الخطوة التالية. لا تتضمن هذه الحالة التعليمية أي بيانات حقيقية أو كلمات مرور.",
+      "text_unvowelled": "في الساعة التاسعة صباحا، أفاد مستخدم في شركة خيالية بأنه لم يتمكن من الدخول إلى حسابه. أظهرت السجلات خمس محاولات دخول غير ناجحة خلال عشر دقائق، ثم تم قفل الحساب مؤقتا. لم تتوفر بعد معلومات كافية لمعرفة ما إذا كانت المحاولات صادرة عن المستخدم نفسه أو عن شخص آخر. اتصل فريق الدعم بالمستخدم عبر وسيلة معروفة، وطلب منه تأكيد آخر محاولة قام بها. سيقارن الفريق الإجابة بالسجلات قبل اتخاذ الخطوة التالية. لا تتضمن هذه الحالة التعليمية أي بيانات حقيقية أو كلمات مرور.",
       "source": "Original MyDay teaching material; fictional people and events.",
       "audio_status": "not_included",
       "audio_provision": "A competent MSA speaker may record this script; check recording against text before listening assessment.",

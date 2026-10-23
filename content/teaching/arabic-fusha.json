@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "curriculumVersion": "1.1.1",
+  "curriculumVersion": "1.1.2",
   "title": "Arabic Fuṣḥā",
   "lessons": {
     "lesson.arabic-fusha-register": {
@@ -229,7 +229,7 @@
     },
     "lesson.arabic-greetings-address": {
       "explanation": "Learn greetings as exchanges, including an appropriate reply. Formal introductions can use اِسْمِي, 'my name is', and أَنَا, 'I'. Address forms depend on the person and context; do not assume one memorised masculine form fits everyone. Understanding the reply is as important as delivering your line.",
-      "example": "مَرْحَبًا، اِسْمِي سَامِرٌ. مَا اسْمُكَ؟ means 'Hello, my name is Samir. What is your name?' addressing a man. مَا اسْمُكِ؟ addresses a woman.",
+      "example": "مَرْحَبًا، اِسْمِي سَامِرٌ. مَا اسْمُكَ؟ means 'Hello, my name is Sāmir. What is your name?' addressing a man. مَا اسْمُكِ؟ addresses a woman.",
       "practice": "Introduce yourself, ask a name and give a response to the same question.",
       "solution": "Use اِسْمِي followed by your name. Choose ـكَ or ـكِ for the addressee, and practise recognising the question without a script.",
       "resources": [
@@ -279,7 +279,7 @@
       "explanation": "Repair phrases let you keep communicating when understanding fails. Ask for repetition, slower speech or clarification of one word. Name the missing information when possible. This is a communicative skill, not evidence of failure; a successful exchange often includes repair.",
       "example": "لَمْ أَفْهَمْ. مِنْ فَضْلِكَ، أَعِدْ بِبُطْءٍ means 'I did not understand. Please repeat slowly' to a man. مَا مَعْنَى هٰذِهِ الْكَلِمَةِ؟ asks the meaning of this word.",
       "practice": "Choose a repair phrase for a missed name and another for an unknown word.",
-      "solution": "Ask مَا اسْمُكَ مَرَّةً أُخْرَى؟ for the name, or request repetition. Use مَا مَعْنَى ...؟ for meaning. Adapt addressee forms with feedback.",
+      "solution": "Ask عَفْوًا، مَا اسْمُكَ؟ for the name, or request repetition. Use مَا مَعْنَى ...؟ for meaning. Adapt addressee forms with feedback.",
       "resources": [
         {
           "sourceId": "ar-centre",
@@ -411,7 +411,7 @@
       "explanation": "A routine needs time and order, not just a list of verbs. وَ links items without necessarily specifying sequence; ثُمَّ explicitly indicates 'then'. Use time phrases and repeated present verbs for habits. Keep the subject consistent unless you deliberately change it.",
       "example": "أَسْتَيْقِظُ صَبَاحًا، ثُمَّ أَشْرَبُ الْمَاءَ، وَأَذْهَبُ إِلَى الْعَمَلِ means 'I wake up in the morning, then drink water and go to work'.",
       "practice": "Write three routine actions with one time expression and ثُمَّ.",
-      "solution": "A suitable sequence is أَدْرُسُ صَبَاحًا، ثُمَّ أَقْرَأُ، وَأَكْتُبُ مَلَاحِظَاتٍ. Check whether the order matches the intended meaning.",
+      "solution": "A suitable sequence is أَدْرُسُ صَبَاحًا، ثُمَّ أَقْرَأُ، وَأَكْتُبُ مُلَاحَظَاتٍ. Check whether the order matches the intended meaning.",
       "resources": [
         {
           "sourceId": "ar-routine",
@@ -509,7 +509,7 @@
     },
     "lesson.arabic-a1-speaking": {
       "explanation": "A short introduction should convey meaning without depending on a full written script. Practise a few prompts such as name, origin and residence, then vary their order. Include a question and a repair phrase so the task is an exchange rather than a recital.",
-      "example": "أَنَا سَامِرٌ. أَسْكُنُ فِي لَنْدَنَ. وَأَنْتَ؟ means 'I am Samir. I live in London. And you?' Adapt the name, place and addressee.",
+      "example": "أَنَا سَامِرٌ. أَسْكُنُ فِي لَنْدَنَ. وَأَنْتَ؟ means 'I am Sāmir. I live in London. And you?' Adapt the name, place and addressee.",
       "practice": "Speak for 30–45 seconds from three keywords, then answer a name or location question in a different order.",
       "solution": "Check whether a listener can recover the essential facts. Note one recurring difficulty and retry with changed details; reading a script aloud is a separate skill.",
       "resources": [
@@ -597,7 +597,7 @@
     },
     "lesson.arabic-story-retell": {
       "explanation": "Retelling preserves central people, actions, order and outcome while using your own language. Do not add motives or details that the source does not provide. Use a few keywords, hide the text and speak or write, then compare for omissions and additions.",
-      "example": "Original mini-story: ذَهَبَ سَامِرٌ إِلَى الْمَكْتَبَةِ. قَرَأَ كِتَابًا، ثُمَّ رَجَعَ. Samir went to the library, read a book and returned. It does not say he borrowed the book.",
+      "example": "Original mini-story: ذَهَبَ سَامِرٌ إِلَى الْمَكْتَبَةِ. قَرَأَ كِتَابًا، ثُمَّ رَجَعَ. Sāmir went to the library, read a book, then returned. It does not say he borrowed the book.",
       "practice": "Retell the mini-story in two sentences and identify one detail you must not invent.",
       "solution": "Preserve the three events and their order. Borrowing, buying or enjoying the book would be unsupported additions.",
       "resources": [
@@ -864,7 +864,7 @@
       ]
     },
     "lesson.arabic-derived-forms": {
-      "explanation": "Derived verb forms use recognisable patterns that often relate meanings, but each verb must still be checked. Form II frequently has a doubled middle root consonant; other forms add letters or alter vowels. A common semantic tendency is a clue, not a guaranteed translation.",
+      "explanation": "Derived verb forms use recognisable patterns that often relate meanings, but each verb must still be checked. Form II doubles the middle root consonant (فَعَّلَ); other forms add letters or alter vowels. A common semantic tendency is a clue, not a guaranteed translation.",
       "example": "عَلِمَ means 'knew'; عَلَّمَ means 'taught'; تَعَلَّمَ means 'learned'. Their relationship is useful, but translating every Form II as 'make someone do' will produce errors.",
       "practice": "Compare the three forms and write a sentence using تَعَلَّمَ or يَتَعَلَّمُ.",
       "solution": "يَتَعَلَّمُ الطَّالِبُ الْعَرَبِيَّةَ, 'The student learns Arabic.' Verify the actual verb and its complement instead of guessing from pattern alone.",
@@ -928,7 +928,7 @@
       ]
     },
     "lesson.arabic-relative-clauses": {
-      "explanation": "Relative clauses identify or describe a noun. A definite masculine singular noun commonly uses الَّذِي; feminine singular uses الَّتِي. Indefinite nouns commonly take a following descriptive clause without that relative pronoun. Some relative clauses need a pronoun referring back to the head noun.",
+      "explanation": "Relative clauses identify or describe a noun. A definite masculine singular noun takes الَّذِي; a feminine singular one takes الَّتِي. An indefinite noun never takes الَّذِي or الَّتِي: its describing clause follows directly, as in كِتَابٌ قَرَأْتُهُ. Some relative clauses need a pronoun referring back to the head noun.",
       "example": "الْكِتَابُ الَّذِي قَرَأْتُهُ جَمِيلٌ means 'The book that I read is beautiful'. ـهُ refers back to the book as the object of 'read'.",
       "practice": "Say 'the student who studies Arabic' for a female student.",
       "solution": "الطَّالِبَةُ الَّتِي تَدْرُسُ الْعَرَبِيَّةَ. This is a noun phrase; add a predicate if you want a complete statement.",
@@ -973,9 +973,9 @@
     },
     "lesson.arabic-conditionals": {
       "explanation": "Conditional sentences connect a condition with a result. إِذَا commonly introduces an expected or possible situation; إِنْ can introduce a condition with jussive patterns; لَوْ often introduces a hypothetical or counterfactual relation. Usage depends on context and construction, so avoid equating them mechanically with one English word.",
-      "example": "إِذَا وَجَدْتُ وَقْتًا، سَأَقْرَأُ means 'If/when I find time, I will read'. The reading depends on the stated condition.",
+      "example": "إِذَا وَجَدْتُ وَقْتًا، فَسَأَقْرَأُ means 'If/when I find time, I will read'. A result that begins with سَـ or سَوْفَ takes فَـ. The reading depends on the stated condition.",
       "practice": "Identify condition and result, then change the result to studying Arabic.",
-      "solution": "إِذَا وَجَدْتُ وَقْتًا، سَأَدْرُسُ الْعَرَبِيَّةَ. Preserve the relation and do not present the result as unconditional.",
+      "solution": "إِذَا وَجَدْتُ وَقْتًا، فَسَأَدْرُسُ الْعَرَبِيَّةَ. Preserve the relation and do not present the result as unconditional.",
       "resources": [
         {
           "sourceId": "ar-conditional",
@@ -1416,10 +1416,10 @@
       ]
     },
     "lesson.arabic-numbers-exceptions": {
-      "explanation": "Number constructions vary across 1–2, 3–10, compound numbers and tens. Diptote nouns have restricted declension, commonly lacking tanwīn and using fatḥa for genitive when indefinite and not in iḍāfa. Learn conditions and counterexamples rather than one simplified slogan.",
+      "explanation": "Number constructions vary across 1–2, 3–10, compound numbers and tens. Diptote nouns have restricted declension: they never take tanwīn, and their genitive takes fatḥa unless they have ال or are the first term of an iḍāfa. Many names are diptotes too, even though they are definite: بِأَحْمَدَ، فِي مَكَّةَ; others decline fully: بِسَامِرٍ. Learn conditions and counterexamples rather than one simplified slogan.",
       "example": "ثَلَاثَةُ كُتُبٍ, 'three books', contrasts with عِشْرُونَ كِتَابًا, 'twenty books'. فِي مَسَاجِدَ, 'in mosques', illustrates a diptote plural without ال; فِي الْمَسَاجِدِ restores kasra with ال.",
       "practice": "Explain why the counted noun differs in the two number phrases.",
-      "solution": "The number construction governs singular/plural and case differently. Treat diptotes as a separate declension issue and check whether ال or iḍāfa changes the pattern.",
+      "solution": "After 3–10 the counted noun is a genitive plural (ثَلَاثَةُ كُتُبٍ); after 11–99 it is an accusative singular (عِشْرُونَ كِتَابًا). Treat diptotes as a separate declension issue and check whether ال or iḍāfa changes the pattern.",
       "resources": [
         {
           "sourceId": "ar-numbers",
@@ -1661,7 +1661,7 @@
     },
     "lesson.arabic-narrator-character": {
       "explanation": "Distinguish narrator, character speech and the author's historical identity. Track pronouns, speech verbs and time shifts. A character's belief is not necessarily the narrator's judgement. Reliable interpretation begins with knowing who speaks and what each participant knows.",
-      "example": "Original example: قال سامر: سأعود غدًا. لكن الراوي يذكر أنه لم يعد. 'Samir said: I will return tomorrow. But the narrator states that he did not return.' Promise and narrated outcome differ.",
+      "example": "Original example: قال سامر: سأعود غدًا. لكن الراوي يذكر أنه لم يعد. 'Sāmir said: I will return tomorrow. But the narrator states that he did not return.' Promise and narrated outcome differ.",
       "practice": "Mark speakers and pronoun referents in a short scene, then summarise the event order.",
       "solution": "Keep direct speech, reported speech and narration separate. If a referent is ambiguous, explain the alternatives rather than silently choosing one.",
       "resources": [

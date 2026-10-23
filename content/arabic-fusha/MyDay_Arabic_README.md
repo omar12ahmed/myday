@@ -1,6 +1,6 @@
 # MyDay Arabic Fuṣḥā package
 
-Version 1.1.1 · 11 October 2026 · `course.arabic-fusha`
+Version 1.1.2 · 24 October 2026 · `course.arabic-fusha`
 
 The target is Modern Standard Arabic (MSA). The common core has 24 modules; six optional modules extend it into academic/professional communication, literature, classical prose, Qur’anic language study, translation and technology communication.
 
@@ -102,6 +102,36 @@ After editing the canonical JSON, run `python3 authoring/render_curriculum.py`. 
 ## Scope of this delivery
 
 This is a curriculum, content seed, assessment specification and import package. It is versioned in the MyDay repository under `content/arabic-fusha`. Application integration is pending; the package does not include a deployed adaptive tutor, audio library or accredited proficiency test. None of the optional branches is required merely to demonstrate the common core.
+
+## Version 1.1.2 correction
+
+Corrects errors found in a review of every Arabic item on 23 October 2026. No ID, question or lesson changes meaning;
+attempts recorded under earlier versions keep their version.
+
+- **Lesson example:** the B2 debate example now reads أَتَفَهَّمُ وِجْهَةَ النَّظَرِ هَذِهِ. On its own, الوِجْهَة means "direction", not "point of view".
+- **Spelling:** the attached-pronoun form is أقرؤه, the standard hamza seat (key concept, check prompt and answer).
+- **Check prompts:** two are vowelled where the unvowelled form could mean more than one person (دَرَسْتُ أَمْسِ، درستَ). Five
+  are reworded where the wording was inaccurate or misleading: سوف is a separate word; "like typical singular nouns";
+  "a correctly formed number"; "with ال or in iḍāfa"; and an indefinite noun never takes الذي (the old prompt said
+  "always", inviting "sometimes").
+- **Answers:**
+  - Corrected: the diptote genitive, the لا statement/prohibition contrast, the hamza seat in أقرؤه, and the
+    indefinite relative clause.
+  - Now also accepted: the verb-first correction, "bookshop" for مكتبة, and طَالِبَةٌ as the address clue.
+  - The repair-phrase example now uses the taught model.
+  - "Leila" becomes "Layla", the course's own spelling.
+- **Reading texts:**
+  - The fictional city and company are خيالية, not افتراضية, which reads as "virtual".
+  - The weekend text checks the library's opening time with فَتْحِ أَبْوَابِهَا.
+  - The technical report's reporting verb is أفاد … بأنه.
+
+The teaching companion's Arabic rows were corrected at the same time (`content/teaching/`): مُلَاحَظَات, فَـ before a سَـ
+result, Form II, the diptote rule (many names are diptotes, not all), the relative clause (a definite noun takes الذي, an indefinite
+one never does), and names glossed as Sāmir. Prepared transliterations add the helping vowel where a word ending in a
+consonant without a case ending meets the article (mina al-, ʿani al-, kānati al-, lam yuḥaddidi al-), correct
+al-mushattitāt, and hyphenate joined prefixes consistently. The six voice clips whose sentences changed were
+removed; each corrected sentence has no play button until its new clip has been made and listened to, and the
+weekend text's "Listen to the whole text" returns once its changed sentence has a clip.
 
 ## Version 1.1.1 correction
 
