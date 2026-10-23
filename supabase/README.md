@@ -1,5 +1,5 @@
-> Project storage release 1.43.0 requires the split-project migration and updated clients.
-> Read [PROJECT_STORAGE.md](PROJECT_STORAGE.md) for backups, recovery and rollback before deployment.
+> Since release 1.44.0 (23 Oct 2026), projects sync as separate records: the split-project migration is applied
+> and older clients can't sync. Read [PROJECT_STORAGE.md](PROJECT_STORAGE.md) for recovery and rollback.
 
 # Cloud sync with Supabase: setting it up
 
