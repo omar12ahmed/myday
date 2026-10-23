@@ -161,14 +161,14 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   const files = fs.readdirSync(S + '/dl').filter(f => f.endsWith('.json'));
   check('export downloads myday-export-2026-12-09.json', files.includes('myday-export-2026-12-09.json'), files);
   const exp = JSON.parse(fs.readFileSync(S + '/dl/' + files[0], 'utf8'));
-  check('export has format, schemaVersion 4, exportedAt, data (with settings, commitments, context)',
-    exp.format === 'myday-export' && exp.schemaVersion === 4 && /^2026-12-09T\d\d:\d\d$/.test(exp.exportedAt) && exp.data.schemaVersion === 4 &&
+  check('export has format, schemaVersion 5, exportedAt, data (with settings, commitments, context)',
+    exp.format === 'myday-export' && exp.schemaVersion === 5 && /^2026-12-09T\d\d:\d\d$/.test(exp.exportedAt) && exp.data.schemaVersion === 5 &&
     !!exp.data.settings && Array.isArray(exp.data.commitments) && typeof exp.data.context === 'object');
   const snapshot = await raw();
   fs.writeFileSync(S + '/bad.json', 'hello, not json');
   await setFile(S + '/bad.json');
   check('non-JSON import rejected, nothing changed', (await toast()).includes("isn't readable JSON") && (await raw()) === snapshot, await toast());
-  fs.writeFileSync(S + '/newer.json', JSON.stringify({ format: 'myday-export', schemaVersion: 5, data: {} }));
+  fs.writeFileSync(S + '/newer.json', JSON.stringify({ format: 'myday-export', schemaVersion: 6, data: {} }));
   await setFile(S + '/newer.json');
   check('newer-version file rejected', (await toast()).includes('newer version'), await toast());
   fs.writeFileSync(S + '/missing.json', JSON.stringify({ format: 'myday-export', schemaVersion: 3, data: { schemaVersion: 3 } }));
@@ -196,7 +196,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   check('corrupted data → recovery screen, no crash', (await text('#app h2')) === "Your saved data couldn't be opened");
   check('corrupted data is not overwritten', (await raw()) === '{"schemaVersion":3, broken');
   await click('[data-action=start-fresh]');
-  check('"Start fresh" replaces it with valid data', (await data()).schemaVersion === 4 && (await exists('[data-action=build]')));
+  check('"Start fresh" replaces it with valid data', (await data()).schemaVersion === 5 && (await exists('[data-action=build]')));
   await ev(`localStorage.setItem('${KEY}', JSON.stringify({ schemaVersion: 3, lists: { learning: 'oops', admin: [{ title: '' }, { id: 'a9', title: 'Post office', minutes: 'abc' }] },
     days: { '2026-13-45': {}, '2026-12-08': { energy: 9, tasks: [{ category: 'admin', title: 'Laundry', done: true, scheduledStart: 'nope' }, { nope: 1 }] } }, queue: 'x', nudge: null,
     settings: { bufferMinutes: -5, earliestTime: '22:00', latestTime: '07:00', gapMinutes: 'x' },
@@ -219,7 +219,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     localStorage.setItem('myday.meta', JSON.stringify({ version: 1, firstUsed: '2026-12-01' }));`);
   await openAt(2026, 12, 9, 13);
   const mig = await data();
-  check('version-1 data migrated straight to version 4', mig.schemaVersion === 4 && mig.lists.learning[0].title === 'Old learning' && mig.queue.length === 1 && mig.createdOn === '2026-12-01');
+  check('version-1 data migrated straight to version 5', mig.schemaVersion === 5 && mig.lists.learning[0].title === 'Old learning' && mig.queue.length === 1 && mig.createdOn === '2026-12-01');
   check('version-1 keys removed', eq(await mydayKeys(), [KEY]));
 
   console.log('\n[10] Migration from version 2 (real data made by the previous app)');
@@ -237,7 +237,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   T.setUrl('index.html');
   await openAt(2027, 1, 6, 10);
   const m3 = await data();
-  check('new app migrates it to myday.data.v4 and removes myday.data.v2', !!m3 && m3.schemaVersion === 4 && eq(await mydayKeys(), [KEY]));
+  check('new app migrates it to myday.data.v4 and removes myday.data.v2', !!m3 && m3.schemaVersion === 5 && eq(await mydayKeys(), [KEY]));
   check('days, completion state and energy preserved', m3.days['2027-01-05'].tasks[0].done === true && m3.days['2027-01-05'].energy === 5 &&
     eq(m3.days['2027-01-06'].tasks.map(t => t.uid), v2raw.days['2027-01-06'].tasks.map(t => t.uid)));
   check('queue, lists and nudge preserved', eq(m3.queue, v2raw.queue) && eq(m3.lists, v2raw.lists) && eq(m3.nudge, v2raw.nudge));
@@ -247,7 +247,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   await reset(); await openAt(2027, 1, 6, 11);
   await setFile(S + '/v2-export.json');
   const iv2 = await data();
-  check('an exported version-2 file imports into the new app', Object.keys(iv2.days).length === 2 && iv2.days['2027-01-05'].tasks[0].done === true && iv2.schemaVersion === 4);
+  check('an exported version-2 file imports into the new app', Object.keys(iv2.days).length === 2 && iv2.days['2027-01-05'].tasks[0].done === true && iv2.schemaVersion === 5);
   await ev(`localStorage.clear(); localStorage.setItem('myday.data.v2', '{broken')`);
   await openAt(2027, 1, 6, 12);
   check('corrupted version-2 data → recovery screen, left untouched, nothing new written', (await text('#app h2')) === "Your saved data couldn't be opened" && eq(await mydayKeys(), ['myday.data.v2']));

@@ -127,7 +127,7 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   await importFile(S + '/representative.json');
   check('importing it into an empty browser restores every record exactly', noSaves(await D()) === noSaves(B.data));
   const B2 = await exportNow();
-  check('exporting again gives the same records', noSaves(B2.data) === noSaves(B.data) && B2.schemaVersion === 4);
+  check('exporting again gives the same records', noSaves(B2.data) === noSaves(B.data) && B2.schemaVersion === 5);
   await importFile(S + '/representative.json');
   check('importing over existing data replaces it exactly (asked first)', noSaves(await D()) === noSaves(B.data));
   // Every section shows its records in the new app…
@@ -335,15 +335,22 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   // Opening Finance the first time saved your rates into the pay settings; everything else must be exactly as that release saved it.
   const RATES = ['hourlyRate', 'overtimeMultiplier', 'bankHolidayMultiplier', 'nightMultiplier', 'taxCode', 'niCategory', 'studentLoans', 'frequency', 'periodAnchor', 'annualLeavePaid', 'cancelledPaid', 'sickPay'];
   const payRest = o => { const c = { ...o.pay }; for (const k of RATES) delete c[k]; return JSON.stringify(c); };
-  check('the new app saves every record exactly as that release had it (it adds an empty Study, Finance, Notes, Goal, Tasks, What MyDay has noticed, Projects, Cybersecurity, Arabic, Reading and Daily exercises; Finance\'s first visit saves your rates)',
-    without(N, ['study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'projects', 'cybersecurity', 'arabic', 'reading', 'pay']) === without(P, ['study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'projects', 'cybersecurity', 'arabic', 'reading', 'pay']) && payRest(N) === payRest(P) && N.pay.taxCode === '1241T' && N.study.stages.length === 0 && N.finance.debts.length === 0 && N.finance.ratesSetOn === '2026-11-02' && N.notes.items.length === 0 && N.fitness.answers === null && eq(N.tasks, { lists: [], items: [] }) && eq(N.patterns.answers, {}) && eq(N.cybersecurity, { pathId: 'path.core', attempts: [], cards: [] }) && eq(N.reading, { books: [] }),
-    d70(JSON.parse(without(N, ['study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'projects', 'cybersecurity', 'arabic', 'reading', 'pay'])), JSON.parse(without(P, ['study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'projects', 'cybersecurity', 'arabic', 'reading', 'pay']))).slice(0, 6));
+  const ADDED = ['study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'projects', 'cybersecurity', 'arabic', 'reading', 'pay', 'schemaVersion'];
+  check('the new app saves every record exactly as that release had it (it adds an empty Study, Finance, Notes, Goal, Tasks, What MyDay has noticed, Projects, Cybersecurity, Arabic, Reading and Daily exercises; Finance\'s first visit saves your rates; the data becomes version 5)',
+    without(N, ADDED) === without(P, ADDED) && N.schemaVersion === 5 && payRest(N) === payRest(P) && N.pay.taxCode === '1241T' && N.study.stages.length === 0 && N.finance.debts.length === 0 && N.finance.ratesSetOn === '2026-11-02' && N.notes.items.length === 0 && N.fitness.answers === null && eq(N.tasks, { lists: [], items: [] }) && eq(N.patterns.answers, {}) && eq(N.cybersecurity, { pathId: 'path.core', attempts: [], cards: [] }) && eq(N.reading, { books: [] }),
+    d70(JSON.parse(without(N, ADDED)), JSON.parse(without(P, ADDED))).slice(0, 6));
+  // Since 1.44.0 (schema 5), going back means a backup exported before updating: the older release refuses the newer
+  // data rather than opening it, and never saves over it (before, its next save quietly left Study out).
+  const savedByNew = await ev(`localStorage.getItem('${KEY}')`);
   await go('health/workout', 2026, 11, 2, 9, 5, PREV);
-  check('going back: the previous release still opens what the new app saved', (await text('#app')).includes('Upper body'));
-  await editStorage(`s => { s.study = { stages: [{ id: 'sg1', title: 'Foundations', courses: [] }] }; }`);
+  check('going back: the previous release says the data is from a newer MyDay instead of opening it', (await text('#app')).includes('saved by a newer version of MyDay') && !(await text('#app')).includes('Upper body'));
   await go('today', 2026, 11, 2, 9, 6, PREV);
-  for (let i = 0; i < 3; i++) { await click('#themeBtn'); await sleep(250); }
-  check('…but it has no Study, so its next save leaves Study out (export before going back)', !('study' in (await D())));
+  // Try to make it save (the theme button saves). Reduced motion: that release's theme cross-fade doesn't handle an
+  // aborted view transition, which it meets on this screen; the attempt to save is the same either way.
+  await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
+  for (let i = 0; i < 3; i++) { if (await exists('#themeBtn')) await click('#themeBtn'); await sleep(250); }
+  await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });
+  check('…and never saves over it, so Study and everything else stay exactly as the new app saved them', (await ev(`localStorage.getItem('${KEY}')`)) === savedByNew && 'study' in (await D()));
 
   finish();
 })().catch(e => { console.error('HARNESS ERROR', e); const s = T.summary(); console.log(`${s.pass} passed, ${s.fail} failed before the error`); process.exit(2); });

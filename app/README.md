@@ -13,7 +13,6 @@ it. Keep device exports before returning to an older release. After the split-pr
 cannot cloud-sync. [Migration, recovery and rollback](../supabase/PROJECT_STORAGE.md). R2 uploads and automatic
 backups remain separate work.
 
-
 <a id="guided-study"></a>
 
 **Guided Study (1.43.0 · 22 October 2026).**
@@ -278,7 +277,8 @@ or say whether a claim will succeed — ACAS or Citizens Advice can help with th
 switch works as for any project — while it's on, Ask MyDay sends nothing of it, and AI help with notes can still
 suggest it as a place for a note by its name and summary. A case's timeline, evidence and issues are never sent to AI,
 private or not. No AI is used in this release. Limits: 150 timeline entries, 150 pieces of evidence and 20 issues.
-Since 1.44.0, the 380,000-byte editing allowance applies to each split item; the whole project can exceed 512 KiB. Saved data: two optional fields inside the project, `template: 'case'`
+Since 1.44.0, the 380,000-byte editing allowance applies to each split item; the whole project can exceed 512 KiB.
+Saved data: two optional fields inside the project, `template: 'case'`
 and `case`, with the rules in `src/data/caseFile.ts`, synced in the existing project record. Going back to 1.34.0 is
 safe: checked with 1.34.0's own code (5/5) and its built app (5/5), which keep both fields.
 

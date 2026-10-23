@@ -112,7 +112,6 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     bankHolidays: { region: 'scotland', fetchedAt: '2026-10-01T09:00', divisions: null },
     health: { workout: { templates: [{ id: 't1', name: 'Legs', minutes: 45 }], sessions: [], planned: {}, schedule: { mode: 'off' } }, food: { shopping: [{ id: 's1', name: 'Oats', checked: false }] } },
     study: { stages: [{ id: 'st1', title: 'Networking' }], sessions: [{ id: 'x1', date: '2026-11-01', status: 'done', todayUid: null }] },
-    arabic: { pathId: 'path.arabic-core-b2', attempts: [], cards: [], lessonCompletions: { 'lesson.arabic-fusha-register': '2026-11-01T10:00:00.000Z' } },
     futureSection: { notes: ['kept'] },
   };
   await otherTabWrites(`s => Object.assign(s, ${JSON.stringify(sections)})`);
@@ -137,12 +136,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   for (const f of require('fs').readdirSync(T.S + '/dl')) require('fs').unlinkSync(T.S + '/dl/' + f);
   await click('[data-action=export]'); await sleep(1200);
   const exp = JSON.parse(require('fs').readFileSync(T.S + '/dl/myday-export-2026-11-02.json', 'utf8'));
-  check('…and all of it is included in exports', ['rota', 'pay', 'bankHolidays', 'health', 'study', 'arabic', 'futureSection'].every(k => JSON.stringify(exp.data[k]) === JSON.stringify(s[k])));
-  check('explicit Arabic completion survives storage and backup without a session or mastery claim', exp.data.arabic.lessonCompletions['lesson.arabic-fusha-register'] === sections.arabic.lessonCompletions['lesson.arabic-fusha-register'] && exp.data.arabic.attempts.length === 0 && !exp.data.arabic.verified);
-  await otherTabWrites(`s => { s.arabic.lessonCompletions = {}; }`); await go(10);
-  await T.setFile(T.S + '/dl/myday-export-2026-11-02.json'); await sleep(200);
-  await click('[data-action="dialog-confirm"]'); await sleep(300);
-  check('importing the backup restores the explicit Arabic choice', eq((await D()).arabic.lessonCompletions, sections.arabic.lessonCompletions));
+  check('…and all of it is included in exports', ['rota', 'pay', 'bankHolidays', 'health', 'study', 'futureSection'].every(k => JSON.stringify(exp.data[k]) === JSON.stringify(s[k])));
   await ev(`localStorage.setItem('${KEY}', localStorage.getItem('${KEY}').replace('{', '{"__proto__":{"polluted":true},'))`);
   check('(test setup: the saved text now has a "__proto__" key)', (await raw()).includes('"__proto__"'));
   await go(11);

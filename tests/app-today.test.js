@@ -176,15 +176,15 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   const files = fs.readdirSync(S + '/dl').filter(f => f.endsWith('.json'));
   check('export downloads myday-export-2026-12-09.json', files.includes('myday-export-2026-12-09.json'), files);
   const exp = JSON.parse(fs.readFileSync(S + '/dl/' + files[0], 'utf8'));
-  check('export has format, schemaVersion 4, exportedAt, data (with settings, commitments, context)',
-    exp.format === 'myday-export' && exp.schemaVersion === 4 && /^2026-12-09T\d\d:\d\d$/.test(exp.exportedAt) && exp.data.schemaVersion === 4 &&
+  check('export has format, schemaVersion 5, exportedAt, data (with settings, commitments, context)',
+    exp.format === 'myday-export' && exp.schemaVersion === 5 && /^2026-12-09T\d\d:\d\d$/.test(exp.exportedAt) && exp.data.schemaVersion === 5 &&
     !!exp.data.settings && Array.isArray(exp.data.commitments) && typeof exp.data.context === 'object');
   check('export is the full saved data (identical to what is stored)', noSaves(exp.data) === noSaves(await raw()));
   const snapshot = await raw();
   fs.writeFileSync(S + '/bad.json', 'hello, not json');
   await importFile(S + '/bad.json');
   check('non-JSON import rejected, nothing changed', (await toast()).includes("isn't readable JSON") && (await raw()) === snapshot, await toast());
-  fs.writeFileSync(S + '/newer.json', JSON.stringify({ format: 'myday-export', schemaVersion: 5, data: {} }));
+  fs.writeFileSync(S + '/newer.json', JSON.stringify({ format: 'myday-export', schemaVersion: 6, data: {} }));
   await importFile(S + '/newer.json');
   check('newer-version file rejected', (await toast()).includes('newer version'), await toast());
   fs.writeFileSync(S + '/missing.json', JSON.stringify({ format: 'myday-export', schemaVersion: 3, data: { schemaVersion: 3 } }));
@@ -214,7 +214,7 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   await click('[data-action=start-fresh]');
   check('"Start fresh" asks first (in the page)', (await dialogText()).includes('Start fresh?'));
   await answer(true);
-  check('"Start fresh" replaces it with valid data', (await data()).schemaVersion === 4 && (await exists('[data-action=build]')));
+  check('"Start fresh" replaces it with valid data', (await data()).schemaVersion === 5 && (await exists('[data-action=build]')));
   await ev(`localStorage.setItem('${KEY}', JSON.stringify({ schemaVersion: 7, future: true }))`);
   await openAt(2026, 12, 9, 10, 30);
   check('data from a newer MyDay → explained, saving paused, left exactly as it was', (await text('#app')).includes('saved by a newer version of MyDay') && (await raw()) === JSON.stringify({ schemaVersion: 7, future: true }));
@@ -261,7 +261,7 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   await reset(); await openAt(2027, 1, 6, 11);
   await importFile(S + '/v2-export.json');
   const iv2 = await data();
-  check('an exported version-2 file imports into the new app', Object.keys(iv2.days).length === 2 && iv2.days['2027-01-05'].tasks[0].done === true && iv2.schemaVersion === 4);
+  check('an exported version-2 file imports into the new app', Object.keys(iv2.days).length === 2 && iv2.days['2027-01-05'].tasks[0].done === true && iv2.schemaVersion === 5);
   check('…and its plan shows', eq(await planTitles(), v2raw.days['2027-01-06'].tasks.map(t => t.title)));
   fs.writeFileSync(S + '/v1-export.json', JSON.stringify({ 'myday.tasks': { learning: [], admin: [], health: [] } }));
   const beforeV1 = await raw();

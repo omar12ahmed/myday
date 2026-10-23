@@ -139,7 +139,7 @@ const finish = () => {
   for (const f of fs.readdirSync(S + '/dl')) fs.unlinkSync(S + '/dl/' + f);
   await click('[data-action=export]'); await sleep(1500);
   const exp = JSON.parse(fs.readFileSync(S + '/dl/myday-export-2026-11-02.json', 'utf8'));
-  check('export includes Study', exp.schemaVersion === 4 && exp.data.study && exp.data.study.stages.length === 4);
+  check('export includes Study', exp.schemaVersion === 5 && exp.data.study && exp.data.study.stages.length === 4);
   const snap = await ev(`localStorage.getItem('${KEY}')`);
   await reset(); await go('study', 2026, 11, 2, 11);
   await T.setFile(S + '/dl/myday-export-2026-11-02.json');

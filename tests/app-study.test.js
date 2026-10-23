@@ -203,7 +203,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   console.log('\n[42] Saved data: export/import and older backups');
   await nav('today');
   const exp = await exportNow();
-  check('export includes Study', exp.schemaVersion === 4 && exp.data.study && exp.data.study.stages.length === 4);
+  check('export includes Study', exp.schemaVersion === 5 && exp.data.study && exp.data.study.stages.length === 4);
   const snap = await ev(`localStorage.getItem('${KEY}')`);
   await reset(); await go('study', 2026, 11, 2, 11);
   await importFile(S + '/dl/myday-export-2026-11-02.json');

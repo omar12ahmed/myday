@@ -352,7 +352,7 @@ T.setHandler(d => {
   console.log('\n[40] Export/import and older backups');
   await go('today', 2026, 11, 2, 13, 30);
   const exp = await exportNow();
-  check('export includes Food (recipes, favourites, shopping, cooking) and every other section', exp.schemaVersion === 4 && exp.data.health.food.cooked.length === 1 && Object.keys(exp.data.health.food.recipes).length >= 3 && exp.data.health.food.shopping.length > 5 && !!exp.data.health.food.cooking && 'workout' in exp.data.health && 'study' in exp.data && 'rota' in exp.data);
+  check('export includes Food (recipes, favourites, shopping, cooking) and every other section', exp.schemaVersion === 5 && exp.data.health.food.cooked.length === 1 && Object.keys(exp.data.health.food.recipes).length >= 3 && exp.data.health.food.shopping.length > 5 && !!exp.data.health.food.cooking && 'workout' in exp.data.health && 'study' in exp.data && 'rota' in exp.data);
   const snap = await ev(`localStorage.getItem('${KEY}')`);
   await reset(); await go('health/food', 2026, 11, 2, 14);
   await setFile(S + '/dl/myday-export-2026-11-02.json'); await sleep(200); await answer(true);

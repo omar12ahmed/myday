@@ -361,7 +361,7 @@ T.setHandler(d => {
   for (const f of fs.readdirSync(S + '/dl')) fs.unlinkSync(S + '/dl/' + f);
   await click('[data-action=export]'); await sleep(1500);
   const exp = JSON.parse(fs.readFileSync(S + '/dl/myday-export-2026-11-02.json', 'utf8'));
-  check('export includes Health', exp.schemaVersion === 4 && exp.data.health && exp.data.health.food.cooked.length === 1);
+  check('export includes Health', exp.schemaVersion === 5 && exp.data.health && exp.data.health.food.cooked.length === 1);
   const snap = await ev(`localStorage.getItem('${KEY}')`);
   await reset(); await go('health/food', 2026, 11, 2, 13);
   await setFile(S + '/dl/myday-export-2026-11-02.json');

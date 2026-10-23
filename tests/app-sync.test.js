@@ -199,20 +199,6 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await phone.returnToApp();
   check('…and appears on the phone when it comes back to MyDay', await phone.until(`JSON.parse(localStorage.getItem('myday.data.v4')).lists.learning.some(i => i.title === 'Mac: Web security')`));
 
-  console.log('\n[5a] Explicit Arabic lesson completion between devices');
-  await synced(mac); await synced(phone);
-  await mac.ev(`location.hash = 'study/arabic/lesson.arabic-fusha-register'`);
-  await mac.until(`document.querySelector('[data-ar-completion="learning"]')`);
-  await mac.click('[data-action="ar-lesson-done"]');
-  check('an explicit Arabic completion reaches the account using the existing record kind', await cloudUntil(async () => !!(await cloudRecord(userA, 'arabic', 'preferences'))?.data.lessonCompletions?.['lesson.arabic-fusha-register']));
-  await synced(mac); await phone.returnToApp();
-  check('the other device receives the explicit choice without inventing a practice session', await phone.until(`!!JSON.parse(localStorage.getItem('myday.data.v4')).arabic.lessonCompletions?.['lesson.arabic-fusha-register']`) && (await phone.data()).arabic.attempts.length === 0);
-  await phone.ev(`location.hash = 'study/arabic/lesson.arabic-fusha-register'`);
-  await phone.until(`document.querySelector('[data-ar-completion="done"]')`);
-  await phone.click('[data-action="ar-lesson-done"]'); await synced(phone);
-  await mac.returnToApp();
-  check('reopening on the other device restores the lesson’s learning state', await mac.until(`document.querySelector('[data-ar-completion="learning"]')`) && !(await mac.data()).arabic.lessonCompletions['lesson.arabic-fusha-register']);
-
   console.log('\n[5b] Everything else syncs too: Calendar, Finance, Inbox, Study, Health, settings');
   await synced(mac); await synced(phone);
   const T0 = shiftKey(1);

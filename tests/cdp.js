@@ -15,7 +15,21 @@ function send(method, params = {}) {
   });
 }
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+// The two-device suites (cdp-devices.js) give each "device" its own browser context in this same Chrome and leave
+// them open. Close them first, or this connects to one of their pages: its downloads go to that device's folder,
+// and Chrome treats it as private (app-install's "in-incognito"). The page left is brought to the front in connect(),
+// because opening those devices left it hidden (no view transitions, no animation frames).
+async function closeDeviceContexts() {
+  const v = await (await fetch(`http://localhost:${CDP_PORT}/json/version`)).json();
+  const b = new WebSocket(v.webSocketDebuggerUrl);
+  await new Promise(r => b.onopen = r);
+  let n = 0;
+  const call = (method, params = {}) => new Promise(r => { const i = ++n; b.onmessage = m => { const d = JSON.parse(m.data); if (d.id === i) r(d.result || {}); }; b.send(JSON.stringify({ id: i, method, params })); });
+  for (const browserContextId of (await call('Target.getBrowserContexts')).browserContextIds || []) await call('Target.disposeBrowserContext', { browserContextId });
+  b.close();
+}
 async function connect() {
+  await closeDeviceContexts();
   const targets = await (await fetch(`http://localhost:${CDP_PORT}/json`)).json();
   const page = targets.find(t => t.type === 'page');
   ws = new WebSocket(page.webSocketDebuggerUrl);
@@ -23,7 +37,7 @@ async function connect() {
   ws.onclose = e => { console.log(`HARNESS: browser connection closed (code ${e.code}${e.reason ? ', ' + e.reason : ''})`); process.exit(3); };
   ws.onerror = e => console.log('HARNESS: connection error', e && (e.message || e.type));
   ws.onmessage = m => { const d = JSON.parse(m.data); if (d.id && pending.has(d.id)) { const p = pending.get(d.id); pending.delete(d.id); d.error ? p.rej(new Error(JSON.stringify(d.error))) : p.res(d.result); } else { events.push(d); if (handler) handler(d); } };
-  await send('Page.enable'); await send('Runtime.enable'); await send('DOM.enable');
+  await send('Page.enable'); await send('Runtime.enable'); await send('DOM.enable'); await send('Page.bringToFront');
   await send('Emulation.setTimezoneOverride', { timezoneId: 'America/Los_Angeles' });
   await send('Emulation.setLocaleOverride', { locale: 'en-GB' });
   await send('Browser.setDownloadBehavior', { behavior: 'allow', downloadPath: S + '/dl' }).catch(() => {});

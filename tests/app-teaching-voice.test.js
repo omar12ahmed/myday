@@ -178,7 +178,7 @@ const button = '[data-action="ar-play"]';
       }
     }
     await send('Emulation.clearDeviceMetricsOverride');
-    check('the fixture began with ordinary saved data', !!saved && JSON.parse(saved).schemaVersion === 4);
+    check('the fixture began with ordinary saved data', !!saved && JSON.parse(saved).schemaVersion === 5);
     result = T.summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
   } finally { fs.rmSync(temp, { recursive: true, force: true }); }
   process.exit(result.fail ? 1 : 0);
