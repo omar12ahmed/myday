@@ -52,11 +52,9 @@ by the classic app; the new app links there (set when building, with `VITE_CLASS
 
 ## Publishing with cloud sync
 
-The sync build needs the Supabase project's URL and publishable key, supplied through ignored
-`app/.env.production.local` or the deployment environment (see [`../supabase/README.md`](../supabase/README.md),
-step 4). These are visible in the built client; keep deployment identifiers out of source commits and public
-instructions. Older checkouts may still have settings in tracked `app/.env.production`; preserve the intended
-build settings when moving them. Without sync environment settings, the build has no sync.
+The published app includes sync: it's built with the Supabase project's URL and publishable key from the committed
+`app/.env.production` (public values; see [`../supabase/README.md`](../supabase/README.md), step 4). Without them,
+the build has no sync.
 The release before 1.1.0 is tagged `live-before-1.1.0`. Sync's notes (`myday.sync.v1`) and the sign-in session (`myday.sync.auth`) live beside the saved
 data in each browser. Going back to a release without sync leaves them unused; it doesn't affect your MyDay data.
 

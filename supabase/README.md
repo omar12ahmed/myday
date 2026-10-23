@@ -21,9 +21,9 @@ devices first (Today → Export my data, on the Mac and on the phone).
 
 Anything starting `VITE_` is built into the app that every visitor downloads. That's fine for the URL and the
 publishable key. It must never be a secret key, so `app/vite.config.ts` refuses to build if it finds one.
-Although the URL and publishable key are visible in the built client, keep deployment-specific values out of this
-public source repository and its documentation. Use ignored local environment files or deployment settings;
-committed examples contain placeholders only.
+The URL and publishable key are public by design (they are visible in the built client) and are committed in
+`app/.env.production`. Keep every other deployment-specific value out of this public repository and its
+documentation: secrets and tokens go in ignored local files or deployment settings, and examples use placeholders.
 
 ## 1. Create the project
 
@@ -97,12 +97,11 @@ VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 Then `cd app && npm run dev`, and open http://localhost:5173. That address has its own, separate saved data, so
 it's a safe place to try: import a backup there, or use made-up data.
 
-**To publish with sync**, put the same two lines in `app/.env.production.local`, which Git ignores, or supply
-them through the deployment environment. Keep actual URLs and keys out of commits. Non-secret feature flags can
-remain in `app/.env.production`. Older checkouts may already track deployment values there; review and move those
-values as a separate configuration change, preserving the release build's settings.
-Then follow `deploy/README.md` as usual (export backups on every device first). A build with no sync environment
-settings has no sync. `tests/run.sh` always builds its test copies with safe local or disabled sync settings.
+**To publish with sync**, put the same two lines in `app/.env.production` and commit that file. Both values are
+public by design, and committing them means the published site is built from exactly what's in Git (the owner's
+decision, kept on 23 Oct 2026). Then follow `deploy/README.md` as usual (export backups on every device first).
+Without them, the published app has no sync. `tests/run.sh` always builds its test copies without sync settings,
+or pointing at the local stand-in.
 
 ## 5. Check the project with the two disposable accounts
 
