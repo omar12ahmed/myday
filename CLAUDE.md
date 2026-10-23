@@ -49,7 +49,16 @@ Read this file before making any changes. If something here seems to conflict wi
   `live-before-X.Y.Z` on `main`.
 - Bump `app/package.json`'s version for each release. The release identifier (version, commit, build date) is at the
   bottom of every screen.
-- **Live: 1.44.0** (23 Oct 2026, tag `v1.44.0` on source `e6e0f6f`; main `8ab7ecb`): projects sync as separate records
+- **Live: 1.44.1** (23 Oct 2026, tag `v1.44.1` on source `988e506`; main `e4c9707`): Decide, Think again, Remove
+  option and Remove decision work again when the browser blocks saving (changes kept until the page closes); in
+  1.44.0 they used the cloud-sync save path and did nothing. They now use `update()`, like every other edit. Found by
+  another session; an independent read-only review (Fable) said ship. Docs now say that removing or reordering an
+  item rewrites the positions after it, so a concurrent edit to one of those is a conflict, not a merge. Build/lint
+  passed; app-projects **422/0** (its new blocked-storage check [36] fails without the fix), app-sync **144/0**. Live
+  check **22/22** on disposable account A in two throwaway browsers (version and source, decisions chosen, reopened
+  and chosen again through the screens, received on the phone, tidied). No saved-data, sync, server or database
+  change; going back to 1.44.0 is safe. `live-before-1.44.1` marks the previous main.
+- **Previous release: 1.44.0** (23 Oct 2026, tag `v1.44.0` on source `e6e0f6f`; main `8ab7ecb`): projects sync as separate records
   (details, milestones, decisions, previous choices, Business Model, Case details, issues, evidence and timeline), so
   a whole project can exceed 512 KiB; each item keeps the database limit with a 380,000-byte editing allowance.
   Decisions keep **Previous choices** (label, reason and day; never pruned) and allow ten pros and ten cons per
@@ -71,11 +80,8 @@ Read this file before making any changes. If something here seems to conflict wi
   device before the migration. Going back needs the backups exported before updating and a coordinated database
   restore (`supabase/PROJECT_STORAGE.md`). `live-before-1.44.0` marks the previous main. The 643 approved audio files
   are unchanged.
-- **Previous release: 1.43.0** (22 Oct 2026, tag `v1.43.0` on source `d0e14cf`; main `59e277a`): Guided Study
-  offers the next, resumable or revisit lesson on Today, with an explicit default subject; a Study reset needs a
-  fresh checked full backup and reports success only after saving. 15 targeted suites 1,394/0, GitHub CI 852/0,
-  live reset/restore 39/0 and smoke 37/0 on disposable accounts. No migration or server deployment.
-- **Earlier releases:** 1.42.1 (21 Oct 2026, `v1.42.1` on `a292886`): one Cybersecurity entry on Study home.
+- **Earlier releases:** 1.43.0 (22 Oct 2026, `v1.43.0` on `d0e14cf`): Guided Study's next, resumable or revisit lesson
+  on Today, and a Study reset that needs a fresh checked backup. 1.42.1 (21 Oct 2026, `v1.42.1` on `a292886`): one Cybersecurity entry on Study home.
   1.42.0 (`v1.42.0` on `0d7cfdc`): Arabic audio round three (b). On the server: `ai-plan` version 21, Ask
   instructions `myday-ask-v16`, brain dump instructions `myday-tasks-v2`; unchanged by 1.43.0 and 1.44.0.
 - **1.42.0, audio round three (b):** teaching explanations/examples, sound pairs and family notes/forms have
