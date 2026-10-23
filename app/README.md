@@ -2,9 +2,12 @@
 
 **1.45.0 — the open paper workspace:** a calmer redesign of every screen (details under "Design" below). The page
 is a low-chroma sage paper (#f4f5f2; dark mode a neutral charcoal, #151716), with flat panels, smaller corners and
-teal kept for key actions and next steps. Wide screens use a 12-column grid: Today puts the plan in eight columns
-and supporting information in four, and the 224 px sidebar groups Your workspace with task and note shortcuts.
-Phones get an opaque bottom bar with six labelled sections and a round Capture button above it. An active or
+teal kept for key actions, next steps and where you are. Wide screens use a 12-column grid: Today puts the plan in
+eight columns and supporting information in four (seven and five on smaller laptops); the header, with Capture,
+stays at the top while the page scrolls; and the 224 px sidebar, which scrolls on short screens, groups Your
+workspace with task and note shortcuts and What MyDay has noticed / knows. Phones get an opaque bottom bar with six
+labelled sections and a round Capture button above it; tab rows wrap rather than hide a tab. Disabled buttons have
+no fill and a dashed outline, so they don't look like buttons that work. An active or
 paused Study session sits right above Today's plan; otherwise the Study card stays with the other reminders, and it
 remains always available as in 1.43.0. No saved-data, sync or database change; going back to 1.44.1 is safe (only
 the look returns). The installed Android app keeps its own splash and status-bar colours until it is next rebuilt.
@@ -692,16 +695,19 @@ keeps its existing look; both versions still share the font, task timeline and s
   are checked for WCAG AA contrast in both themes.
 - **Hierarchy** (`src/styles/workspace.css`): a 12-column desktop grid with 16 px gutters, flat panels (8 px),
   controls (6 px), and sentence-case labels. Today uses eight columns for the plan and four for supporting
-  information. Independent streams keep their natural height. The greeting is Today's `h1`; other screens
-  use their section name. Footer tools stay available. Disabled shared buttons retain readable text.
+  information (seven and five between 64rem and 75rem). Independent streams keep their natural height. The
+  greeting is Today's `h1`; other screens use their section name. Footer tools stay available. Disabled shared
+  buttons have no fill and a dashed outline, and keep readable text.
 - **Navigation:** on phones, an opaque full-width bottom bar with six labelled destinations and a 52 px
   Capture button above it; on wide screens (64rem and up), a 224 px sidebar on the page ground, with an
   outline circle-and-tick wordmark, task/note shortcuts, and the existing Noticed/Knows destinations.
-  The current section uses a neutral fill and an accessible current-page label. Workspace tabs use an ink
-  underline; long tab rows scroll inside their own frame on narrow phones.
+  The current section uses the teal container fill with a teal icon, plus an accessible current-page label; the
+  sidebar scrolls on short screens. Workspace tabs use an ink underline with the focus ring drawn inside the tab;
+  on phones, tab rows wrap onto a second line instead of hiding a tab.
 - **Top bar:** the section's name above the date; on Today, the Focus mode switch; your account when signed in;
-  Capture and the theme button. The header scrolls with the content to keep headings unobscured.
-  On wide screens Capture sits in the header's normal layout, so it cannot drift
+  Capture and the theme button. On phones the header scrolls with the content (Capture floats above the bar);
+  on wide screens it stays at the top, so Capture is always in reach. There Capture sits in the header's normal
+  layout, so it cannot drift
   over the account or theme controls. A keyboard-only Skip to content link focuses the current workspace
   without changing the route.
 - **App icon:** the circle-and-tick on an orange gradient (`public/icon.svg`, `public/icon-maskable.svg`; sizes made by

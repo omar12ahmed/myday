@@ -27,7 +27,7 @@ export function QuickAdd({ k }: { k: DateKey }) {
     toast(result === 'added' ? "Added to today's plan." : result === 'full' ? "Added — it's under Due today (today's plan is full for your energy)." : "Added — it's under Due today. Build your day to add it to the plan.");
   }
   return (
-    <Card aria-label="Add a task for today" id="quickAdd" className="!py-3">
+    <Card aria-label="Add a task for today" id="quickAdd">
       <h3 className="quick-heading">Add a task for today</h3>
       <form className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-2 items-center" onSubmit={e => { e.preventDefault(); add(); }}>
         <input id="quickText" className="min-h-11 min-w-0 rounded-tile border border-outline bg-surface-2 px-3 text-fg text-base" placeholder="Add a task…" aria-label="Add a task for today"

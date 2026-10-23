@@ -203,7 +203,7 @@
   .card > :last-child { margin-bottom: 0; }
   .topic-card { transition: border-color .15s, box-shadow .15s; }
   .topic-card:hover { box-shadow: var(--shadow-btn); }
-  /* Your map on phones: the unexplored stations sit in a soft mist, the rail dotted into it (text keeps full contrast). */
+  /* Your map on phones: the unexplored stations sit on a flat quiet fill, the rail dotted into it (text keeps full contrast). */
   .map-fog { background: var(--surface-2); }
   .map-fog-rail { background: repeating-linear-gradient(to bottom, var(--text-3) 0 3px, transparent 3px 9px); }
   /* Connections: names keep a halo of the card's colour so lines never run through them; a ring shows keyboard focus. */

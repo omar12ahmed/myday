@@ -25,7 +25,7 @@ export function ProjectsScreen({ data, hash }: { data: MyDayData; hash: string }
   const tabClass = (on: boolean) => `seg-link flex-1 inline-flex items-center justify-center gap-1.5 min-h-11 rounded-xl text-[15px] font-semibold no-underline ${on ? 'on bg-primary-container text-on-primary-container' : 'text-fg-2'}`;
   return (
     <div className={tab === 'notes' ? 'max-w-[720px] mx-auto' : 'projects-workspace'}>
-      <Card className="section-tabs !p-2.5 max-w-[720px] mx-auto">
+      <Card className="section-tabs max-w-[720px] mx-auto">
         <div className="seg flex gap-1.5" role="tablist" aria-label="Projects, notes and connections">
           <a className={tabClass(tab === 'projects')} href="#projects" role="tab" aria-selected={tab === 'projects'}>Projects</a>
           <a className={tabClass(tab === 'notes')} href="#projects/notes" role="tab" aria-selected={tab === 'notes'}>Notes</a>

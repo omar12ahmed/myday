@@ -17,26 +17,30 @@
 /* Opaque phone dock and a labelled, open desktop plane. */
 .nav { left: 0; right: 0; bottom: 0; gap: 0; padding: 6px 6px max(6px, env(safe-area-inset-bottom)); background: var(--surface); backdrop-filter: none; border: 0; border-top: 1px solid var(--outline); border-radius: 0; box-shadow: none; }
 .nav-item { min-height: 58px; border-radius: 6px; font-size: 11px; font-weight: 500; }
-.nav-item[aria-current="page"] { background: var(--surface-2); color: var(--text); }
-.nav-item[aria-current="page"] .nav-icon { color: var(--text); }
+.nav-item[aria-current="page"] { background: var(--primary-container); color: var(--on-primary-container); font-weight: 600; }
+.nav-item[aria-current="page"] .nav-icon { color: var(--primary); }
 .nav-icon { height: 26px; }
 .nav-shortcuts, .nav-utilities { display: none; }
 .capture-btn { width: 52px; height: 52px; right: 20px; bottom: calc(84px + env(safe-area-inset-bottom)); border-radius: 50%; box-shadow: none; font-weight: 600; }
 .focus-switch { background: transparent; border-color: transparent; font-weight: 500; }
-.focus-switch[aria-checked="true"] { background: var(--surface-2); color: var(--text); }
+.focus-switch[aria-checked="true"] { background: var(--primary-container); color: var(--on-primary-container); border-color: var(--primary); }
 #themeBtn { border-color: transparent; border-radius: 6px; }
 
 /* One spacing rhythm and three corners: panels 8, controls 6, tags 4. */
 .workspace-main .card { box-shadow: none; }
 .workspace-main .card[data-tone="plain"] { border-color: var(--outline); }
 [data-variant] { font-size: 14px; line-height: 1.5; }
-[data-variant]:disabled { background: var(--surface-2); color: var(--text-3); border-color: var(--outline); opacity: 1; filter: none; }
+/* Disabled: no fill and a dashed outline, so it never looks like a button that works; its text stays readable. */
+[data-variant]:disabled { background: transparent; color: var(--text-3); border: 1px dashed var(--outline-strong); box-shadow: none; opacity: 1; filter: none; cursor: not-allowed; }
+[data-variant="quiet"]:disabled { border-color: transparent; }
 .workspace-main .field-control { border-color: var(--outline-strong); }
 .workspace-main :is(.uppercase, .eyebrow) { text-transform: none; letter-spacing: 0; font-weight: 500; }
 .workspace-main :is(.section-tabs, .study-tabs, .health-tabs) { padding: 0 !important; background: transparent; border: 0; border-bottom: 1px solid var(--outline); border-radius: 0; box-shadow: none; margin-bottom: 24px; }
 .workspace-main .seg { gap: 24px; justify-content: flex-start; max-width: 100%; overflow-x: auto; scrollbar-width: thin; }
 .workspace-main .seg-link { flex: 0 0 auto; border-radius: 0; padding: 10px 2px; border-bottom: 2px solid transparent; background: transparent; color: var(--text-2); font-weight: 500; }
 .workspace-main .seg-link.on { color: var(--text); border-bottom-color: var(--text); font-weight: 600; }
+/* The row scrolls sideways, which would clip an outside focus ring: draw it inside the tab. */
+.workspace-main .seg-link:focus-visible { outline-offset: -3px; }
 .workspace-tabs { background: transparent; border: 0; border-bottom: 1px solid var(--outline); border-radius: 0; padding: 0; gap: 20px; }
 .workspace-tabs a { padding: 10px 0; border-radius: 0; border-bottom: 2px solid transparent; font-size: 14px; }
 .workspace-tabs a[aria-current="page"] { background: transparent; border-bottom-color: var(--text); box-shadow: none; }
@@ -91,7 +95,7 @@
 /* Tasks read as one continuous plan, with one next step held in teal. */
 .tasks { list-style: none; padding: 0; }
 .task > div { border-radius: 6px; background: transparent; border-color: transparent; padding: 12px; }
-.task.next > div { background: var(--surface-3); border-color: var(--primary-outline); }
+.task.next > div { background: var(--surface-3); border-color: var(--primary); }
 .task.done .title { text-decoration: line-through; text-decoration-color: var(--outline-strong); }
 .task .box { width: 24px; height: 24px; margin-top: 14px; border-width: 1px; }
 .tasks > li > span[aria-hidden="true"] { left: 11px; width: 1px; }
@@ -121,11 +125,10 @@
 .project-cards { grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
 [data-s="project-stage"] { font-size: 12px; color: var(--text-2); }
 [data-s="project-next"] { border-top: 1px solid var(--outline); padding-top: 12px; }
-[data-s="project-moves"] [data-variant] { border-color: transparent; font-size: 12px !important; }
+[data-s="project-moves"] [data-variant] { border-color: transparent; }
 .app-tools { margin-top: 32px; }
 .app-tools > div { justify-content: flex-start; }
 .app-tools .storage-note, .app-tools .app-version { text-align: left; }
-.app-tools [data-variant="quiet"] { font-size: 12px !important; }
 
 /* Feedback belongs to controls; app content does not perform entrances. */
 .workspace-main .enter, .workspace-main .stagger { animation: none; }
@@ -135,7 +138,8 @@
   .workspace-main { padding-top: 24px; }
   .appbar-card { min-height: 88px; }
   body:has(.nav) { padding-left: 224px; }
-  .nav { width: 224px; padding: 30px 16px 20px; gap: 3px; border: 0; background: var(--bg); }
+  /* Scrolls on short screens (a 768 px laptop, landscape tablet or zoom), so every link stays reachable. */
+  .nav { width: 224px; padding: 30px 16px 20px; gap: 3px; border: 0; background: var(--bg); overflow-y: auto; overscroll-behavior: contain; }
   .nav-logo { display: flex; align-items: center; gap: 8px; padding: 0 8px; min-height: 44px; margin-bottom: 36px; font-size: 26px; font-weight: 650; letter-spacing: -.055em; color: var(--text); text-decoration: none; }
   .nav-logo .day-mark { color: var(--primary); width: 32px; height: 32px; }
   .nav-wordmark-dot { color: var(--primary); }
@@ -143,8 +147,7 @@
   .nav-item { min-height: 44px; gap: 10px; font-size: 14px; padding: 8px 12px; border-radius: 6px; font-weight: 400; }
   .nav-icon { width: 20px; height: 24px; }
   .nav-icon svg { width: 18px; height: 18px; stroke-width: 1.6; }
-  .nav-item[aria-current="page"] { background: var(--surface-2); box-shadow: none; font-weight: 600; }
-  .nav-item[aria-current="page"] .nav-icon { color: var(--text); }
+  .nav-item[aria-current="page"] { box-shadow: none; font-weight: 600; }
   .nav-shortcuts { display: grid; margin-top: 32px; }
   .nav-utilities { display: grid; margin-top: auto; }
   .nav-shortcuts a, .nav-utilities a { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 12px; text-decoration: none; color: var(--text-2); font-size: 13px; line-height: 1.45; border-radius: 6px; }
@@ -152,6 +155,8 @@
   .nav-shortcuts svg, .nav-utilities svg { flex: none; stroke-width: 1.5; }
   .nav-utilities p { margin: 18px 12px 0; font-size: 12px; color: var(--text-3); }
   .capture-btn { position: static; width: auto; height: 44px; padding-inline: 16px; border-radius: 6px; }
+  /* Wide screens: the header (and Capture in it) stays at the top while the page scrolls. */
+  .appbar { position: sticky; top: 0; z-index: 20; }
   .today-layout { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 16px; grid-template-areas: none; }
   .today-hero { grid-column: 1 / -1; }
   .today-main { grid-column: 1 / 9; grid-row: 2; }
@@ -189,6 +194,7 @@
   #slot-energy #energyLabel { margin-top: 12px; font-size: 22px; }
   #slot-energy #slot-actions { margin-top: 12px; }
   .record-summary { gap: 8px; }
-  .workspace-main .seg { gap: 18px; }
+  /* Phones: tabs wrap onto a second line rather than hiding one off to the side. */
+  .workspace-main .seg { gap: 4px 18px; flex-wrap: wrap; overflow-x: visible; }
   .workspace-main .seg-link { font-size: 14px; }
 }

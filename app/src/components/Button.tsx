@@ -19,7 +19,7 @@ const VARIANT: Record<Variant, string> = {
   primary: 'bg-[var(--action)] text-[var(--on-action)] border-transparent font-[600] enabled:hover:brightness-[1.08]',
   ghost: 'bg-transparent text-fg-2 border-outline font-[600] enabled:hover:bg-surface-2 enabled:hover:text-fg',
   quiet: 'bg-transparent text-fg-2 border-transparent font-[550] enabled:hover:bg-surface-2 enabled:hover:text-fg',
-  selected: 'bg-tonal text-fg border-outline-strong font-[600]',
+  selected: 'bg-primary-container text-on-primary-container border-primary font-[600]',
 };
 
 const FULL_WIDTH = 'w-full min-h-tap px-5 py-3';

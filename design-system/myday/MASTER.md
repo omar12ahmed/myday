@@ -24,7 +24,7 @@ historical starting palette and component examples below:
   Teal also retains orientation and next-step state;
   orange stays exclusive to Capture. Established category and completion colours keep their meanings.
 - A 224 px labelled sidebar, 16 px grid gutters, and a centred canvas up to 1136 px wide.
-  Today's grid uses eight columns for the plan and four for its supporting stream.
+  Today's grid uses eight columns for the plan and four for its supporting stream (seven and five on smaller laptops).
 - Today's greeting is the page title. Tasks form a continuous day sheet; project next steps repeat
   that treatment. Progress counts are regular-weight, with no invented minimum bar at zero.
 - Task actions use 14 px text and 44 px targets, with a pale teal Just start action on the next task.
