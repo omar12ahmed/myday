@@ -182,6 +182,7 @@ The model never writes anything: it only replies, and the app decides what's all
 | `functions/_shared/ai/` | Shared by the function, the app and the evaluation: `schema.ts` (what's sent and returned), `prompt.ts` (the instructions), `providers.ts` (the model adapter, and which model does which job: `routeFor`), `mock.ts` (the practice planner). |
 | `migrations/20261003120000_ai_usage.sql` | Request, token and spending limits per account (counts only, never content). |
 | `migrations/20261005120000_sync_everything.sql` | Sync for everything else: the `sync_records` table, and `sync_push` / `sync_pull` handling it. |
+| `migrations/20261023120000_split_project_sync.sql` | 1.44.0 (applied 23 Oct 2026): split project items, isolated original-project recovery rows, versioned RPCs and update-required legacy endpoints. See [rollout and rollback](PROJECT_STORAGE.md). |
 | `migrations/20261006120000_sync_projects.sql` | Projects sync (1.12.0): `sync_records` accepts `project` records (its two kind checks replaced by named ones; nothing else touched). |
 | `migrations/20261007120000_sync_cybersecurity.sql` | Cybersecurity (1.14.0): `sync_records` accepts the learning path and notebook attempts (`cybersecurity`, `cyber_attempt`). |
 | `migrations/20261011120000_sync_arabic.sql` | Arabic Fuṣḥā: `sync_records` accepts the chosen path and lesson sessions (`arabic`, `arabic_attempt`; sessions can be deleted, the path can't). Nothing else changes. |

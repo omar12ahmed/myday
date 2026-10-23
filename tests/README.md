@@ -22,6 +22,18 @@ with a plain description.
 Your own saved data is never touched. The checks use a temporary Chrome profile, which is deleted
 afterwards. They also set the page's clock to fixed dates, so results don't depend on today's date.
 
+Project checks include ten pros and ten cons per option (`projects-rules`, `app-projects`), preservation of all ten
+points and unknown previous-choice fields through account records (`sync-records`), and the unchanged six-point
+AI context allowance (`ai-rules`). `app-ai` checks that an external change after Capture opens prevents sending a
+stale preview, displaying its late reply or applying its proposals, including a project newly made private.
+
+Decision-history checks cover repeated reopen/choose cycles, removed options, independent reasons, same-day
+sequence, older `lastChoice` conversion, unknown fields and atomic refusal at the project byte allowance
+(`projects-rules`). `app-projects` covers failed-save retry, keyboard disclosure, newest-first display, export/restore,
+classic preservation and long reasons at 390/768/1440 px in both themes. `sync-records` checks the complete history
+round trip; `app-sync` edits a choice offline and verifies its history on the account and the other device.
+`ai-rules` verifies that the added history stays out of both the request and preview. All fixtures are synthetic.
+
 The `app-design` suite checks the shared header, keyboard skip link, Capture, selected cybersecurity tabs,
 360 px phone layouts, navigation targets and preservation of imported learning records. It writes light and
 dark screenshots of synthetic workspaces to `/tmp/myday-design-*.png` for visual review.
@@ -158,3 +170,14 @@ Each suite is a plain script built on `cdp.js`, a small helper that drives Chrom
 
 - **Before fixing a bug,** add a check that fails because of it.
 - **After the fix,** confirm the check passes, and that it fails if the fix is taken out.
+
+## Split-project storage checks (1.44.0)
+
+`project-sync` checks the real wire mapper and checked store: unknown fields, links and history, large-project
+reassembly, deterministic concurrent positions, per-item and atomic batch/import refusal, quota failures and retry.
+`project-sync-db` applies the upgrade to a disposable pre-upgrade database and checks exact projection, original
+recovery, legacy refusal, RLS, version checks, parent deletion, malformed-source rollback and large projects.
+`app-sync` exercises independent project-item edits, same-item conflicts, multi-page large history, concurrent
+appends and deletion/restoration between disposable browser devices. `sync-records`, `sync-db`, `storage`,
+`app-storage`, `projects-rules` and `app-projects` retain the surrounding compatibility and feature coverage.
+These suites use synthetic data and the local stand-in; they do not authorise or exercise a hosted migration.
