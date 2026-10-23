@@ -1,17 +1,13 @@
-# Cloud tasks: the next steps after 1.39.0
+# Archived cloud tasks: the next steps after 1.39.0
 
-**No longer for cloud sessions (20 Oct 2026):** the owner stopped using them, and these steps are being done on the
-Mac. Step 1's offline mode was only for the cloud; its clock-proofing part still applies.
+**Archived on 20 Oct 2026:** the owner stopped using cloud sessions. This file is a historical record, not an active
+work queue or instruction source. Follow `AGENTS.md` unless the owner explicitly reactivates one of these tasks.
 
 Written on the Mac on 19 Oct 2026, for cloud sessions. The owner will point a session at **one** step below. Do
 only that step.
 
-**Before anything else, read `CLAUDE.md` in full.** It holds the rules these steps rely on, especially:
-- "Cloud sessions", with the Mac-only steps and "Mac steps in a file";
-- "Careful areas";
-- "Saved data";
-- "After each change";
-- "Lessons learned".
+**If a task is explicitly reactivated, read `AGENTS.md`.** Its current repository, privacy, saved-data, verification,
+release and completion rules replace the old instruction sections this file originally referenced.
 
 ## How every step works
 
@@ -19,12 +15,12 @@ only that step.
   branch. Never push to `main` or `react-rebuild`, and never merge, tag or publish.
 - **Mac steps:** before you finish, write `mac-steps/<branch>.md` on the branch and push it with the work. It says
   what's left for the Mac, in order, with exact commands.
-- **The report** (as `CLAUDE.md` says):
+- **The report** (as `AGENTS.md` says):
   - the branch and its commits;
   - every check that ran, with its counts and every FAIL line word for word;
   - every check that didn't run, and why;
   - what still needs the Mac.
-- **The owner decides.** If a step reaches a choice that isn't settled here or in `CLAUDE.md`, stop at that point.
+- **The owner decides.** If a step reaches a choice that isn't settled here or in `AGENTS.md`, stop at that point.
   Write the choice down with your recommendation, and don't pick it yourself.
 - **No personal details anywhere:** the repository is public. Use made-up data only.
 
@@ -92,7 +88,7 @@ the same kind of problem.
 - a run without the variable behaves exactly as before.
 
 **Leave for the Mac** (in `mac-steps/cloud-test-run.md`): a full run without `MYDAY_OFFLINE`, on the real network
-and the Mac's Chrome, using the ports and command that `CLAUDE.md` gives. Then the review and the merge.
+and the Mac's Chrome, using the ports and command that `AGENTS.md` gives. Then the review and the merge.
 
 ---
 
@@ -114,7 +110,7 @@ mind" on Today, then notes pasted from outside MyDay sorted into tasks, Study it
 - `app/src/data/`: the task lists, the queue, and the `tasks` section with its own lists, since 1.5.0;
 - the lists in `index.html`, the classic MyDay;
 - `app/src/sync/records.ts` and `supabase/migrations/`;
-- "Saved data" and "Cloud sync" in `app/README.md` and `CLAUDE.md`.
+- the saved-data and sync guidance in `app/README.md` and `AGENTS.md`.
 
 **Write `specs/named-lists.md`:**
 1. **The practical problem:** what happens today when a brain dump holds something with no list to go in.

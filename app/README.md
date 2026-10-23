@@ -878,7 +878,7 @@ examples, training experience, days and equipment, pace, and a few health questi
 ## Projects, Notes, Tasks and Capture
 
 From 1.12.0 MyDay follows one progression — **capture → understand → organise → explore → decide → act → reflect** —
-and **Projects** are its spine (milestone 1 of the direction in `CLAUDE.md`). The Inbox became **Projects** (the third
+and **Projects** are its spine (the durable direction is summarised in `../AGENTS.md`). The Inbox became **Projects** (the third
 section in the bar), with two tabs, **Projects** and **Notes**; **Tasks** moved to **Today** (`#today/tasks`, and "Your
 tasks" on Today). Older `#inbox…` and `#notes…` links are rewritten to where those screens are now.
 - **A project** gathers everything about one intention: what it is and why it matters (in your words), where it is on
@@ -942,8 +942,8 @@ tasks" on Today). Older `#inbox…` and `#notes…` links are rewritten to where
   counted, not drawn. At most 150 notes are drawn (the most connected). Nothing is saved by looking and nothing is
   sent anywhere — no saved-data change. Honest limit: it shows shared words, not meaning (that would need an
   embedding service — a later decision).
-- **Next:** all six Direction milestones are complete. The next feature is recorded in `../CLAUDE.md` under
-  "Open ideas"; Arabic reading-text audio arrived in 1.41.0.
+- **Next:** all six Direction milestones are complete. Future work is chosen by the owner from the current specs and
+  task, rather than from historical instruction notes; Arabic reading-text audio arrived in 1.41.0.
 - **Tasks** holds every one-off task in one place, separate from Today's repeating Learning / Admin / Health lists
   (which stay as they are). Type a task in your own words and its date and time are read from them, as in Capture
   ("pay rent by Friday" is due Friday; "call GP tomorrow at 10am" is due tomorrow at 10:00). Tasks are grouped

@@ -13,7 +13,7 @@ the `react-rebuild` branch.
 1. Export backups first: on the website, Today → "Export my data", **on each device you use** (e.g. your Mac
    and your phone). Saved data lives separately in each browser.
 2. Commit the source on `react-rebuild`, then run build/lint and the relevant checks using the
-   [testing scope in CLAUDE.md](../CLAUDE.md#after-each-change). Use targeted suites by default; run `tests/run.sh`
+   [testing scope in AGENTS.md](../AGENTS.md#verification). Use targeted suites by default; run `tests/run.sh`
    with no suite names only when the change's reach or regression evidence justifies it. A release alone does
    not require a full run.
 3. Run `deploy/publish-main.sh` (the default layout is **switch**). It builds the website from that commit and
@@ -52,9 +52,12 @@ by the classic app; the new app links there (set when building, with `VITE_CLASS
 
 ## Publishing with cloud sync
 
-From release 1.1.0 the published app includes sync: it's built with the Supabase project's URL and publishable key
-from `app/.env.production` (public values; see [`../supabase/README.md`](../supabase/README.md), step 4). Without that
-file, it would be built without sync, as 1.0.0 was. The release before 1.1.0 is tagged `live-before-1.1.0`. Sync's notes (`myday.sync.v1`) and the sign-in session (`myday.sync.auth`) live beside the saved
+The sync build needs the Supabase project's URL and publishable key, supplied through ignored
+`app/.env.production.local` or the deployment environment (see [`../supabase/README.md`](../supabase/README.md),
+step 4). These are visible in the built client; keep deployment identifiers out of source commits and public
+instructions. Older checkouts may still have settings in tracked `app/.env.production`; preserve the intended
+build settings when moving them. Without sync environment settings, the build has no sync.
+The release before 1.1.0 is tagged `live-before-1.1.0`. Sync's notes (`myday.sync.v1`) and the sign-in session (`myday.sync.auth`) live beside the saved
 data in each browser. Going back to a release without sync leaves them unused; it doesn't affect your MyDay data.
 
 ## Publishing with AI help
@@ -76,18 +79,21 @@ plan task there. The release before 1.6.0 is tagged `live-before-1.6.0`; going b
 stops using your preferences.
 
 To switch AI help off quickly, without a release: `npx supabase secrets set AI_PROVIDER=off --project-ref
-nkslcgnbmxuhznvldfnz` (any value other than a known provider) — the cards then say it isn't set up, and nothing is
+<your-project-ref>` (any value other than a known provider) — the cards then say it isn't set up, and nothing is
 sent. Set it back to `openai-compatible` to switch it on again. To remove the buttons too: delete `VITE_AI=edge` from `app/.env.production` and publish again.
 
 ## Going back
 
-The release before the new app is tagged **`live-before-1.0.0`**. To publish it again:
+Check the current schema and sync protocol before using any historical rollback command below. Once the
+split-project migration has run, an old sync client is not an operational rollback; follow
+[`../supabase/PROJECT_STORAGE.md`](../supabase/PROJECT_STORAGE.md). Prepare an authorised rollback in an isolated
+checkout and preserve the owner's working tree.
 
-```bash
-git switch main && git revert --no-edit HEAD && git push origin main    # undoes the last publish commit
-# or put exactly that release back:
-git switch main && git checkout live-before-1.0.0 -- . && git commit -m "Go back to the release before 1.0.0" && git push origin main
-```
+Choose a known-good source commit on `react-rebuild` and prepare it in a separate source worktree. Check its
+data compatibility and build settings, then use the normal build/check/publish procedure above for the authorised
+rollback. Keep `main` as generated output; do not switch the owner's source checkout to it or replace its files
+by hand. The historical **`live-before-1.0.0`** tag identifies the release before the new app; it is not a general
+rollback target for current saved data.
 
 **Going back to the code doesn't go back to the data.** Your saved data stays in each browser as the new app
 last saved it. That old release has no Study and doesn't keep sections it doesn't know, so the first time it

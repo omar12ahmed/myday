@@ -149,9 +149,13 @@ The `app-*` suites build the new app (`npm run build` in `app/`, so run `npm ins
 beside the current MyDay, the way Live Server does, so the two share saved data as they do for real.
 If Live Server is running, use `MYDAY_LS_PORT=5599 tests/run.sh …` so the `today` suite's Live Server check doesn't clash with it.
 
+Run builds and build-triggering suites sequentially within one worktree. Each production build prepares shared
+curriculum/audio files before Vite runs, so separate ports or output directories do not prevent build interference.
+Use separate worktrees and distinct values for all four test ports if concurrent runs are necessary.
+
 The sync suites use `@electric-sql/pglite`, a development package of the new app (so `npm install` in `app/` first).
-`app-sync` builds a copy of the app with `VITE_SUPABASE_URL` pointing at the stand-in; every other app suite is built
-without sync settings, even if `app/.env.production` has them. The stand-in can also run on its own:
+`app-sync` and `app-ai` build a copy of the app with `VITE_SUPABASE_URL` pointing at the stand-in; other app copies
+are built without sync settings, even if production environment files have them. The stand-in can also run on its own:
 `node tests/supabase-standin.js 54329`.
 
 **A real Supabase project** is checked with `tests/sync-live-check.js` (two disposable test accounts; see

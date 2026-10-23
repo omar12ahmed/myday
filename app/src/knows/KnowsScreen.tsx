@@ -31,7 +31,7 @@ const OTHER: [string, string][] = [
   ['More practice (Cybersecurity)', 'which lesson, and the questions already in your revision for it'],
   ['Explain it another way', 'the question, its answer and the explanation you’ve seen, your own answer and how it went — and, for a Cybersecurity check, which lesson'],
 ];
-// Which model does which job — set on the server (AI_ROUTES); keep in step with it (CLAUDE.md, "AI roles").
+// Which model does which job — set on the server (AI_ROUTES); keep this list aligned with the server configuration.
 const MODELS: [string, string][] = [
   ['GLM-5.3-Flash (Z.ai)', 'Ask MyDay, Help me adjust today, Add what’s on my mind, AI help with notes, the Cybersecurity tutor, explaining Cybersecurity and your own concepts another way, writing cards from your notes, and checking Cybersecurity lesson cards'],
   ['Gemini 3.8 Flash (Google)', 'writing Cybersecurity lesson cards, checking a note before cards are made from it, checking cards from your notes, and explaining Arabic another way'],
