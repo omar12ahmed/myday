@@ -49,40 +49,35 @@ Read this file before making any changes. If something here seems to conflict wi
   `live-before-X.Y.Z` on `main`.
 - Bump `app/package.json`'s version for each release. The release identifier (version, commit, build date) is at the
   bottom of every screen.
-- **Live: 1.43.0** (22 Oct 2026, tag `v1.43.0` on source `d0e14cf`; main `59e277a`): Guided Study
-  offers the next, resumable or revisit lesson on Today, with an explicit default subject. General check-ins
-  continue their own course; Cybersecurity imports/starts in one saved step. A reset needs a fresh checked full
-  backup, rechecks incoming changes and reports success only after saving. It removes check-ins, Arabic
-  answers/attempts, Cybersecurity evidence and revision history, while keeping outline, concept questions,
-  separate notes and other sections. Recorded completion stays separate from mastery.
-  Review fixes include obsolete/optional draft handling, pinned-course jumps, Arabic next steps and skipped
-  theme-animation rejections. Build/lint and **15 targeted suites, 1,394/0** passed; GitHub CI **10 suites, 852/0**.
-  A separate live-service two-device reset/restore check passed **39/0**, including importing the downloaded
-  backup; the disposable account was returned to its original test data. Published smoke check **37/0** on two
-  disposable accounts in isolated desktop/phone browsers: version/source, Today options, settings/reset gate,
-  Arabic/Cybersecurity, phone fit and 44px controls; both learning-data copies byte-identical. Pages deployment
-  succeeded. Profiles and task servers removed; completed release checklist removed. No full run, migration,
-  server deployment or real learner reset. Review/test/docs/release-audit agents helped; findings were reviewed.
-  Backups were already confirmed on every device. Rollback to 1.42.1 drops the new default-subject preference;
-  code rollback cannot undo reset history, so import the checked pre-reset backup. `live-before-1.43.0` marks
-  the previous published main. The 643 approved audio files are unchanged.
-- **Previous release: 1.42.1** (21 Oct 2026, tag `v1.42.1` on source `a292886`; main `57974ff`): one Cybersecurity
-  entry on Study home, opening the current 27-module/146-lesson guided course. An older topic named Cybersecurity
-  is accessible through "Your saved courses" inside that card, with its task completion and course count,
-  including set-aside courses. Other topics, routes, focus, sessions and revision stay unchanged; no data is deleted.
-  Review caught an archived-only count and targeted Study checks caught a dropped empty-course notice; both fixed.
-  Build/lint passed; **4 targeted suites, 435 passed, 0 failed**: app-study 231/0, app-topics 77/0,
-  app-cybersecurity 85/0, app-design 42/0. The initial targeted run was 434/1; after restoring the empty-course
-  notice, only Study/topics reran. The full run was deliberately stopped under the owner's new testing policy
-  after four completed suites (400/0); no full pass is claimed. Desktop/phone screenshots checked.
-  Live check **19/19**, two disposable accounts in isolated throwaway browsers: one correct entry, saved-course
-  links, other topics, current course/lesson, phone fit and 44px links; both learning-data copies byte-identical.
-  Profiles and task servers removed; feature worktree cleaned up. Review, test-writing, docs and runner agents
-  helped; main reviewed their work. Backups were already confirmed on every device in this session.
-  No saved-data, server or database change; going back to 1.42.0 is safe. `live-before-1.42.1` marks previous main.
-- **Earlier release: 1.42.0** (21 Oct 2026, tag `v1.42.0` on source `0d7cfdc`; main `e083037`): Arabic audio
-  round three (b). Before it: 1.41.0, tagged `live-before-1.42.0` on main. On the server: `ai-plan` version 21,
-  Ask instructions `myday-ask-v16`, brain dump instructions `myday-tasks-v2`; no server deployment or migration.
+- **Live: 1.44.0** (23 Oct 2026, tag `v1.44.0` on source `e6e0f6f`; main `8ab7ecb`): projects sync as separate
+  records (details, milestones, decisions, previous choices, Business Model, Case details, issues, evidence and
+  timeline), so a whole project can exceed 512 KiB; each item keeps the database limit with a 380,000-byte editing
+  allowance. Decisions keep **Previous choices** (label, reason and day; never pruned) and allow ten pros and ten
+  cons per option. Saved data is **schema 5**: both apps read versions 2–5 and save 5; older releases refuse
+  version-5 data without overwriting it. Started by another tool, finished and published from the Mac.
+  Migration `20261023120000_split_project_sync.sql` applied first, after a fresh backup of the sync tables and a
+  rehearsal on the real data that rolled back: every project archived unchanged and split into its expected parts,
+  every other record and the change log identical by fingerprint; the old `sync_push`/`sync_pull` now refuse with
+  "Update MyDay on this device". Published about 30 seconds after the migration; Pages deployment succeeded.
+  Build/lint passed; **all 58 default suites, 5,265 passed, 0 failed** (in two parts on an unchanged tree after a
+  session restart) and `app-schema` 11/0 (the built 1.43.0 refuses schema-5 data without overwriting it). The first
+  full run exposed a test-harness fault from 1.43.0: app-study-reset left browser contexts open and later suites
+  attached to them (missing exports, app-install's "in-incognito"); `tests/cdp.js` now closes them. 23 stale
+  schema-4 expectations and app-final [70] were updated; no app code changed after the review. Live: server check
+  **5/5** (accounts A and B) and a two-device browser check **22/22** on account A in throwaway browsers: version
+  and source, upgraded sync notes, schema 5, a made-up project with a milestone and a decision chosen, reopened and
+  chosen again (through the screens) received on the phone with the same content, separate parts in the account,
+  old calls refused, a phone edit reaching the Mac, then deleted with no live part left. Profiles removed. Backups
+  confirmed on every device before the migration. Going back needs the backups exported before updating and a
+  coordinated database restore (`supabase/PROJECT_STORAGE.md`). `live-before-1.44.0` marks the previous main.
+  The 643 approved audio files are unchanged.
+- **Previous release: 1.43.0** (22 Oct 2026, tag `v1.43.0` on source `d0e14cf`; main `59e277a`): Guided Study
+  offers the next, resumable or revisit lesson on Today, with an explicit default subject; a Study reset needs a
+  fresh checked full backup and reports success only after saving. 15 targeted suites 1,394/0, GitHub CI 852/0,
+  live reset/restore 39/0 and smoke 37/0 on disposable accounts. No migration or server deployment.
+- **Earlier releases:** 1.42.1 (21 Oct 2026, `v1.42.1` on `a292886`): one Cybersecurity entry on Study home.
+  1.42.0 (`v1.42.0` on `0d7cfdc`): Arabic audio round three (b). On the server: `ai-plan` version 21, Ask
+  instructions `myday-ask-v16`, brain dump instructions `myday-tasks-v2`; unchanged by 1.43.0 and 1.44.0.
 - **1.42.0, audio round three (b):** teaching explanations/examples, sound pairs and family notes/forms have
   explicit checked-clip controls. Try it and solutions wait for reveal; lesson-check prompts also wait for the
   reference data to load. Hide/navigation stop their own audio; revision and saved data unchanged. Review caught
@@ -304,8 +299,8 @@ key decision for later).
   - sources are kept apart (My account / Their account / In the evidence);
   - no legal advice: the "Your case" card carries a not-legal-advice line pointing to ACAS and Citizens Advice;
   - no AI and no Explore;
-  - limits: 150 timeline entries, 150 evidence items, 20 issues. Nothing more is added once the project would pass
-    380,000 bytes, because the account refuses records over 524,288 bytes.
+  - limits: 150 timeline entries, 150 evidence items, 20 issues. Since 1.44.0 each item syncs as its own record, so
+    the 380,000-byte allowance applies per item, not per project (the account refuses records over 524,288 bytes).
 - **Dashboards** ("At a glance" on every project's Overview; `app/src/projects/AtAGlance.tsx`,
   `app/src/data/projectDashboard.ts`):
   - four tiles per kind, using places and counts, never percentages;
@@ -446,7 +441,8 @@ suggestion. All the new fields are optional and kept by 1.36.0.
     it.
   - Most additions are optional fields, absent when unused, and kept unread by the release before. Check that going
     back keeps them.
-- **The shared key:** both versions use localStorage key `myday.data.v4` (`schemaVersion` 4).
+- **The shared key:** both versions use localStorage key `myday.data.v4` (`schemaVersion` 5 since 1.44.0; versions
+  2–4 are read and saved as 5; older releases refuse version-5 data without overwriting it).
   - A change to fields the classic also reads is made in `index.html` and in `app/src/data/` together.
   - Some top-level sections exist in the new app only: `finance`, `notes`, `tasks`, `projects`, `patterns`, `fitness`,
     `cybersecurity`, `arabic`, `reading`. The classic keeps unknown sections unread.
@@ -501,8 +497,9 @@ suggestion. All the new fields are optional and kept by 1.36.0.
   - `tests/run.sh` builds its test copies without them.
 - **Database changes** go in version-controlled files in `supabase/migrations/`. Never edit a migration that has been
   applied; add a new one.
-  - Keep Row Level Security on and grants minimal (no direct table writes). Writes go through `sync_push` with version
-    checks.
+  - Keep Row Level Security on and grants minimal (no direct table writes). Writes go through `sync_push_v2` with
+    version checks (since 1.44.0; the old `sync_push`/`sync_pull` refuse with "Update MyDay on this device").
+    Projects travel as separate records (see `supabase/PROJECT_STORAGE.md`).
   - The project has no CLI migration history table: migrations are applied on my Mac through the Management API, in
     one transaction, checking that existing rows are unchanged by fingerprint.
 - **Keys:** only the publishable key goes in the app. Secret and service_role keys never go in the app, in `VITE_`

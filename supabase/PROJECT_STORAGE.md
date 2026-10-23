@@ -29,11 +29,13 @@ Choosing this device restores parents before children. Readable unknown value fi
 
 ## Upgrade and rollout
 
-The migration is `migrations/20261023120000_split_project_sync.sql`. It has **not been applied to real data** by
-this source task. It locks the account and record tables in one transaction, archives original live project
-payloads and versions in `sync_project_legacy`, then converts them without pruning. Unrecognised shapes, invalid
-identities or size violations abort the transaction. The recovery table permits only each account's own reads;
-clients cannot modify it. It has no automatic expiry.
+The migration is `migrations/20261023120000_split_project_sync.sql`. It was **applied to the live project on 23 Oct
+2026** for release 1.44.0, after a backup of the sync tables and a rehearsal on the real data that rolled back.
+Every original project was archived unchanged and split into its expected parts; every other record and the change
+log stayed identical by fingerprint. It locks the account and record tables in one transaction, archives original
+live project payloads and versions in `sync_project_legacy`, then converts them without pruning. Unrecognised
+shapes, invalid identities or size violations abort the transaction. The recovery table permits only each account's
+own reads; clients cannot modify it. It has no automatic expiry.
 
 The new client calls `sync_push_v2` and `sync_pull_v2`. The legacy endpoints refuse reads and writes with an
 update-required message, preventing old clients from uploading a complete project over its converted core.
@@ -56,7 +58,7 @@ A SQL error before commit rolls the entire conversion back. After commit, **do n
 simply remove the new endpoints**: legacy rows are archived pre-upgrade snapshots, not a copy of subsequent edits.
 Operational rollback needs a coordinated maintenance window and restoration of a verified database backup, or
 reconstruction of complete nested projects from all current split records before returning to the old protocol.
-Preserve device exports and reconcile any changes made after the backup. This task has not executed a live rollback.
+Preserve device exports and reconcile any changes made after the backup. No live rollback has been run.
 
 ## R2 boundary
 
