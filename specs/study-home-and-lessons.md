@@ -174,7 +174,8 @@ Each step is its own release, finished and checked before the next:
 | a. One focus and Study home (§3, §4) | none new; the existing fields get one control | study-guided-rules, app-study, app-today (the same next step on both), app-design, phone layout, 44 px |
 | b. Lesson journey, Arabic then Cybersecurity (§5) | device-only `myday.study.lessonStep` | app-arabic, app-cybersecurity, app-teaching, app-teaching-voice, app-pronunciation, phone layout |
 | c. Keep a word (§6) | `arabic.words`, record kind `arabic_word`, migration | arabic-rules, app-arabic, storage, app-storage, sync-records, sync-db, app-sync, app-study-reset, going back to the previous release |
-| d. Catch-up from content prerequisites (§8) | none | arabic-rules (a checkpoint is never catch-up), study-guided-rules |
-| e. "Check my answer" (§9) | none in the app's data | ai-rules, ai-server, app-ai, ai-deno, plus the blind evaluation |
+| d. "Check my answer" (§9) | none in the app's data | ai-rules, ai-server, app-ai, ai-deno, plus the blind evaluation |
 
-The 8-a-day limit (§7) belongs with `adaptive-study.md` and ships with it.
+The 8-a-day limit (§7) and the prerequisite kinds (§8) ship with `adaptive-study.md`, because its catch-up rule and
+automatic cards need them. Its checks cover them (arabic-rules: a checkpoint is never catch-up; the 8-a-day
+placement).
