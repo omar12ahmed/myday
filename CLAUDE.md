@@ -49,28 +49,28 @@ Read this file before making any changes. If something here seems to conflict wi
   `live-before-X.Y.Z` on `main`.
 - Bump `app/package.json`'s version for each release. The release identifier (version, commit, build date) is at the
   bottom of every screen.
-- **Live: 1.44.0** (23 Oct 2026, tag `v1.44.0` on source `e6e0f6f`; main `8ab7ecb`): projects sync as separate
-  records (details, milestones, decisions, previous choices, Business Model, Case details, issues, evidence and
-  timeline), so a whole project can exceed 512 KiB; each item keeps the database limit with a 380,000-byte editing
-  allowance. Decisions keep **Previous choices** (label, reason and day; never pruned) and allow ten pros and ten
-  cons per option. Saved data is **schema 5**: both apps read versions 2–5 and save 5; older releases refuse
-  version-5 data without overwriting it. Started by another tool, finished and published from the Mac.
-  Migration `20261023120000_split_project_sync.sql` applied first, after a fresh backup of the sync tables and a
-  rehearsal on the real data that rolled back: every project archived unchanged and split into its expected parts,
-  every other record and the change log identical by fingerprint; the old `sync_push`/`sync_pull` now refuse with
-  "Update MyDay on this device". Published about 30 seconds after the migration; Pages deployment succeeded.
+- **Live: 1.44.0** (23 Oct 2026, tag `v1.44.0` on source `e6e0f6f`; main `8ab7ecb`): projects sync as separate records
+  (details, milestones, decisions, previous choices, Business Model, Case details, issues, evidence and timeline), so
+  a whole project can exceed 512 KiB; each item keeps the database limit with a 380,000-byte editing allowance.
+  Decisions keep **Previous choices** (label, reason and day; never pruned) and allow ten pros and ten cons per
+  option. Saved data is **schema 5**: both apps read versions 2–5 and save 5; older releases refuse version-5 data
+  without overwriting it. Started by another tool, finished and published from the Mac. Migration
+  `20261023120000_split_project_sync.sql` applied first, after a fresh backup of the sync tables and a rehearsal on
+  the live database (test data only) that rolled back: every project archived unchanged and split into its expected
+  parts, every other record and the change log identical by fingerprint; the old `sync_push`/`sync_pull` now refuse
+  with "Update MyDay on this device". Published about 30 seconds after the migration; Pages deployment succeeded.
   Build/lint passed; **all 58 default suites, 5,265 passed, 0 failed** (in two parts on an unchanged tree after a
   session restart) and `app-schema` 11/0 (the built 1.43.0 refuses schema-5 data without overwriting it). The first
   full run exposed a test-harness fault from 1.43.0: app-study-reset left browser contexts open and later suites
-  attached to them (missing exports, app-install's "in-incognito"); `tests/cdp.js` now closes them. 23 stale
-  schema-4 expectations and app-final [70] were updated; no app code changed after the review. Live: server check
-  **5/5** (accounts A and B) and a two-device browser check **22/22** on account A in throwaway browsers: version
-  and source, upgraded sync notes, schema 5, a made-up project with a milestone and a decision chosen, reopened and
-  chosen again (through the screens) received on the phone with the same content, separate parts in the account,
-  old calls refused, a phone edit reaching the Mac, then deleted with no live part left. Profiles removed. Backups
-  confirmed on every device before the migration. Going back needs the backups exported before updating and a
-  coordinated database restore (`supabase/PROJECT_STORAGE.md`). `live-before-1.44.0` marks the previous main.
-  The 643 approved audio files are unchanged.
+  attached to them (missing exports, app-install's "in-incognito"); `tests/cdp.js` now closes them. 23 stale schema-4
+  expectations and app-final [70] were updated; no app code changed after the review. Live: server check **5/5**
+  (accounts A and B) and a two-device browser check **22/22** on account A in throwaway browsers: version and source,
+  upgraded sync notes, schema 5, a made-up project with a milestone and a decision chosen, reopened and chosen again
+  (through the screens) received on the phone with the same content, separate parts in the account, old calls refused,
+  a phone edit reaching the Mac, then deleted with no live part left. Profiles removed. Backups confirmed on every
+  device before the migration. Going back needs the backups exported before updating and a coordinated database
+  restore (`supabase/PROJECT_STORAGE.md`). `live-before-1.44.0` marks the previous main. The 643 approved audio files
+  are unchanged.
 - **Previous release: 1.43.0** (22 Oct 2026, tag `v1.43.0` on source `d0e14cf`; main `59e277a`): Guided Study
   offers the next, resumable or revisit lesson on Today, with an explicit default subject; a Study reset needs a
   fresh checked full backup and reports success only after saving. 15 targeted suites 1,394/0, GitHub CI 852/0,
