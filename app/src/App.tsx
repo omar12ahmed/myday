@@ -218,7 +218,7 @@ function Shell() {
         {content}
         {/* Today has these at the bottom of its own layout; every other screen (Tasks under Today too) gets them here. */}
         {!immersive && !blocked && !gate && (section !== 'today' || hash.startsWith('#noticed') || hash.startsWith('#knows') || hash.startsWith('#review') || hash.startsWith('#today/tasks')) && !hash.startsWith('#sync') && (
-          <div className="max-w-[720px] mx-auto mt-6">
+          <div className="screen-footer max-w-[720px] mx-auto mt-6">
             <AppFooter data={data} canSave={status.kind === 'ok'} onEdit={() => { location.hash = 'today/edit'; }} onExport={exportData} onImport={() => fileInput.current?.click()} />
           </div>
         )}

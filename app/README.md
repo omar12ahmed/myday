@@ -696,10 +696,11 @@ keeps its existing look; both versions still share the font, task timeline and s
 - **Hierarchy** (`src/styles/workspace.css`): a 12-column desktop grid with 16 px gutters, flat panels (8 px),
   controls (6 px), and sentence-case labels. Today uses eight columns for the plan and four for supporting
   information (seven and five between 64rem and 75rem). Independent streams keep their natural height. The
-  greeting is Today's `h1`; other screens use their section name. Footer tools stay available. Disabled shared
-  buttons have no fill and a dashed outline, and keep readable text.
+  greeting is Today's `h1`; other screens use their section name. Footer tools stay available, aligned with the
+  content on wide screens. Disabled shared buttons have no fill and a dashed outline, and keep readable text.
 - **Navigation:** on phones, an opaque full-width bottom bar with six labelled destinations and a 52 px
-  Capture button above it; on wide screens (64rem and up), a 224 px sidebar on the page ground, with an
+  Capture button above it (a ring in the page colour and a soft shadow, so it reads as floating); on wide
+  screens (64rem and up), a 224 px sidebar on the page ground, with an
   outline circle-and-tick wordmark, task/note shortcuts, and the existing Noticed/Knows destinations.
   The current section uses the teal container fill with a teal icon, plus an accessible current-page label; the
   sidebar scrolls on short screens. Workspace tabs use an ink underline with the focus ring drawn inside the tab;
@@ -725,7 +726,8 @@ keeps its existing look; both versions still share the font, task timeline and s
 - **Progress note:** nothing until the first task is done, then "1 done so far", and
   "That's the whole plan — lovely." once everything is done.
 - **Morning:** energy and Build my day share a card, just under the greeting; on phones the greeting stays compact so
-  Build my day is visible without scrolling (checked by `tests/app-today`).
+  Build my day is visible without scrolling (checked by `tests/app-today`). On wide screens the greeting offers
+  "Today's plan" only once there is one (before that, Build my day is the button just below).
 - **Today's dashboard:** the time-of-day greeting and optional name sit beside this month's calendar on wide
   screens (this week on phones), with a dot on days with a shift or appointment. The plan keeps quick add,
   the focus timer, today's progress ring and this week's green bars — plain counts, never scores or percentages.

@@ -47,7 +47,8 @@ export function GreetingCard({ data, k, onGo }: { data: MyDayData; k: DateKey; o
             </form>
           ) : (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 max-lg:mt-0">
-              <Button inline variant="quiet" className="greeting-go max-lg:hidden" data-action="greeting-go" onClick={onGo}>{d ? "Today's plan" : 'Build my day'} <ChevronRight size={16} aria-hidden="true" /></Button>
+              {/* Only once there's a plan: before it, Build my day is the button just below. */}
+              {d && <Button inline variant="quiet" className="greeting-go max-lg:hidden" data-action="greeting-go" onClick={onGo}>Today's plan <ChevronRight size={16} aria-hidden="true" /></Button>}
               {!name && <button type="button" className="min-h-11 -my-2 text-[15px] font-semibold text-primary underline-offset-4 hover:underline cursor-pointer bg-transparent border-0 p-0" data-action="name-ask" onClick={() => setAsking(true)}>What should MyDay call you?</button>}
             </div>
           )}
