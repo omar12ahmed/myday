@@ -1,8 +1,9 @@
 # Delete everything (the true wipe)
 
-**Status:** the owner's decision of 24 October 2026 ("delete everything" is a true wipe, `specs/myday-vision.md`),
-with the details chosen on 24 October 2026 (§2). Being built on branch `wipe`. Nothing live (the migration, the two
-function deploys, publishing) happens without the owner's yes at each step.
+**Status:** released in 1.73.0 (24 October 2026): the owner's decision ("delete everything" is a true wipe,
+`specs/myday-vision.md`) with the details chosen on 24 October 2026 (§2). Fable review: ship with changes (all made).
+With the owner's yes: the migration rehearsed (rolled back) and applied 21:44:25–29Z after a backup (every row,
+policy, constraint and earlier function identical); backup (v3) and files (v4) redeployed before the app; published.
 **Based on:** source at 1.71.0. Related: `specs/files.md` (files go with the wipe), `specs/automatic-backups.md`
 (backups go with the wipe), `supabase/PROJECT_STORAGE.md` (the pre-1.44.0 project copies).
 

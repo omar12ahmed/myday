@@ -1,5 +1,16 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.73.0 — Delete everything:** at the end of Your account, **Delete everything…** opens a page that says what goes
+(your MyDay on every device and in your account, what you deleted before, your files and your backups) and what
+stays (your sign-in), offers **Download a copy first**, and works once you type "delete everything". Your account's
+data goes first, then this device (everything MyDay keeps here but the sign-in), then every file and backup, tried
+again until they're gone. Your other devices clear themselves at their next sync and say "Everything was deleted from
+another device on …"; anything they hadn't sent yet goes too. AI usage counts stay, so the limits keep working. Saved
+data is unchanged in shape; the database gained the wipe (`20261025160000_wipe.sql`, applied 24 Oct 2026) and the
+backup and files functions were updated first. Going back to 1.72.0 is safe until a wipe; after one, 1.72.0 and older
+can't write the account, back it up or add files ("This account was cleared with Delete everything. Update MyDay to
+sync it.") until updated, when they clear themselves.
+
 **1.72.0 — Ask MyDay looks at your open decisions:** ask "which decisions am I putting off?" or "what do I still have
 to decide on the flat move?" and Ask MyDay looks, on this device, at the decisions you haven't made yet across your
 open projects (or the one you name): each one's question and options, which options have no pros or cons yet, and the
@@ -871,7 +882,7 @@ is now, then goes through Import's own checks and question; signed in it replace
 it says so. The device's id, label and last result live in `myday.backup.v1` on that device only (not your data, not
 synced or exported). No saved-data, sync or database change. Never sent to AI.
 
-**Delete everything (unreleased; `specs/delete-everything.md`):** at the end of Your account, **Delete everything…**
+**Delete everything (1.73.0; `specs/delete-everything.md`):** at the end of Your account, **Delete everything…**
 opens a page that says what goes (your MyDay on every device and in your account, what you deleted before, your files
 and your backups) and what stays (your sign-in), offers **Download a copy first**, and works once you type "delete
 everything". The account's data goes first (`sync_wipe`), then this device (everything MyDay keeps here but the

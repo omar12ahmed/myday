@@ -334,7 +334,7 @@ These kinds don't need separate copies of the same information.
 
   **Decided (24 Oct 2026): "delete everything" is a true wipe** — your data on the device and in your account, the
   deletion markers and the pre-1.44.0 project copies all go; your sign-in stays. It needs a server change, built and
-  reviewed before real use starts.
+  reviewed before real use starts. *Built in 1.73.0 (`specs/delete-everything.md`), with files and backups.*
 
 ### Search
 
