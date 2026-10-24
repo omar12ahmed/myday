@@ -11,6 +11,10 @@ const loaders: Record<Course, () => Promise<{ default: Companion }>> = {
   'arabic-fusha': () => import('../../../../content/teaching/arabic-fusha.json'),
 };
 
+// One lesson's teaching, outside a component ("Check my answer" loads it only when you ask); null if it can't be opened.
+export const loadTeaching = (course: Course, lessonId: string): Promise<Teaching | null> =>
+  loaders[course]().then(m => m.default.lessons[lessonId] ?? null, () => null);
+
 // The lesson's teaching: loaded once per course (a large file, on demand). No progress is written by reading.
 export function useTeaching(course: Course, lessonId: string) {
   const [book, setBook] = useState<Companion | null>(null);

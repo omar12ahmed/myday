@@ -7,6 +7,7 @@ import { useConfirm } from '../../components/confirm';
 import { CommitTextarea, Field, Select, TextInput } from '../../components/Field';
 import { shift, shortDate, todayKey } from '../../data/dates';
 import { getSnapshot, update } from '../../data/storage';
+import { toast } from '../../data/toast';
 import { dueIds, nextDueDate } from '../../data/study/queue';
 import { understanding, UNDERSTANDING } from '../../data/study/revision';
 import type { MyDayData } from '../../data/types';
@@ -30,7 +31,9 @@ import { clipFor, hasReadingVoice, hasVoice } from './voice';
 import { ReadingVoice } from './ReadingVoice';
 import { Pronunciation, PronunciationControls } from './Pronunciation';
 import { TeachingMaterial, TeachingRead, TeachingTry, TeachingWaiting } from '../teaching/TeachingLesson';
-import { useTeaching } from '../teaching/useTeaching';
+import { loadTeaching, useTeaching } from '../teaching/useTeaching';
+import { CheckMyAnswer } from '../CheckMyAnswer';
+import { arabicCheckSource } from './checkSource';
 import { RestartOffer, StepBar } from '../journey/Journey';
 import { AR_MAX, editWord, keepWord, keptCardId, keptWord, MEANING_MAX, NOTE_MAX, practiseWriting, removeWord, sentencesIn } from '../../data/arabic/words';
 import { KeepAWord } from './KeepAWord';
@@ -309,7 +312,7 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
       {transfer && <div className="border-t border-outline pt-3 mt-4" data-ar-transfer=""><h4 className="mt-0">For an extended session</h4><p className="mb-0"><Mixed text={transfer.activity} /></p></div>}
     </Card>,
     check: () => { const qs = check?.questions ?? [], short = length === 'short' && shown.includes('check');
-      const one = (q: Question) => session ? <SessionQuestion data={data} session={session} q={q} /> : <CheckQuestion q={q} />;
+      const one = (q: Question) => session ? <SessionQuestion data={data} session={session} lesson={l} q={q} /> : <CheckQuestion q={q} />;
       return <Card id="ar-step-check" className={STEP_SCROLL} data-ar-step="check" data-ar-check=""><Eyebrow>Check</Eyebrow>{heading('Check your understanding')}
         <p className="text-sm text-fg-2">{session ? 'Write your first answer, then compare. Once you’ve looked, your first answer stays as you wrote it.' : 'Answer first, in your head or on paper, then compare. Start a session to keep your answers.'}</p>
         <ol className="list-decimal pl-5 grid gap-4">{(short ? qs.slice(0, 1) : qs).map(q => <li key={q.id}>{one(q)}</li>)}</ol>
@@ -470,10 +473,17 @@ function SessionFinish({ data, lesson: l, session: open, steps, onFinished }: { 
 
 // A check question during a session: your first answer is kept; once you look, it stays as you wrote it. Then,
 // optionally, how it went, in revision's own words: that's what "looks ready" and the checks that come back use.
-function SessionQuestion({ data, session, q }: { data: MyDayData; session: ArabicAttempt; q: Question }) {
+// Once you've written an answer, "Check my answer" can help (a written check only; never one you speak or listen to);
+// its suggested mark can be used once you can mark the question, with "Used a hint" unless you've said otherwise.
+function SessionQuestion({ data, session, lesson: l, q }: { data: MyDayData; session: ArabicAttempt; lesson: Lesson; q: Question }) {
   const revealed = session.revealed.includes(q.id), first = session.answers[q.id] ?? '';
   const [referenceReady, setReferenceReady] = useState(false);
   const change = (fn: (a: ArabicAttempt) => void) => update(d => { if (!changeSession(d, session.id, fn)) return false; });
+  const source = () => Promise.all([loadAnswers(), loadTeaching('arabic-fusha', l.id)]).then(([a, t]) => arabicCheckSource(l, q, a[q.answer_key_id], t), () => null);
+  const takeMark = (o: Outcome) => {
+    if (update(d => { const m = lessonRecord(d, session.lessonId)?.marks?.[q.id]; if (!markCheck(d, session.id, q.id, o, m?.attemptId === session.id ? m.support : 'hint', todayKey())) return false; }))
+      toast(`Marked ${OUTCOME[o].toLowerCase()}. You can change it under “How did it go?”.`);
+  };
   return <div data-ar-question={q.id}>
     <p className="mb-1.5"><Mixed text={q.prompt} voice={revealed && referenceReady ? `${q.id}:prompt` : undefined} /></p>
     {revealed && referenceReady && <MixedVoiceLabel texts={[q.prompt]} />}
@@ -483,6 +493,7 @@ function SessionQuestion({ data, session, q }: { data: MyDayData; session: Arabi
       : <CommitTextarea key={session.id + q.id} rows={2} dir="auto" className="ar-input mb-2" aria-label="Your first answer" data-s="ar-answer" data-q={q.id} defaultValue={first} placeholder="Your answer, in Arabic or English" onCommit={el => change(a => writeFirstAnswer(a, q.id, el.value))} />}
     {revealed ? <Reference keyId={q.answer_key_id} onReady={setReferenceReady} /> : <Button inline variant="ghost" data-action="ar-reveal" onClick={() => change(a => markRevealed(a, q.id))}>Show the reference answer</Button>}
     {revealed && referenceReady && <MarkAnswer data={data} session={session} q={q} />}
+    {first && q.response_type === 'short_answer' && <CheckMyAnswer answer={first} getSource={source} render={t => <Mixed text={t} />} onUseMark={revealed && referenceReady ? takeMark : undefined} />}
   </div>;
 }
 

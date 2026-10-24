@@ -62,16 +62,17 @@ Return only JSON: {"hint":"…","example":"…","explanation":"…","followUp":{
 }
 
 // ---------- Practice version (no AI) ----------
-// "sloppy" breaks the rules on purpose (a verdict, a link, an Arabic word that wasn't sent), so the checks can be seen
-// to catch it.
+// It suggests a mark only when your answer is the reference answer word for word. "sloppy" breaks the rules on purpose
+// (a verdict, a link, an Arabic word that wasn't sent), so the checks can be seen to catch it.
 export function mockCheckAnswer(c: CheckAnswerContext, variant: 'good' | 'sloppy' = 'good'): string {
   if (variant === 'sloppy') return JSON.stringify({ hint: 'Well done, you passed!', example: 'See https://example.com for more. مَدْرَسَةٌ', explanation: 'x', followUp: { question: '?', answer: '!' }, drewOn: 'it', suggestedMark: 'right' });
   const first = c.reference.split(/[.!?]\s/)[0].slice(0, 200).replace(/[.!?;:]+$/, ''); // (no lookbehind: older Safari versions lack it)
+  const same = (x: string) => x.normalize('NFC').toLowerCase().replace(/[\s.!?؟،,;:]+/g, ' ').trim(); // word for word, punctuation aside
   return JSON.stringify({
     hint: 'Practice helper (no AI): compare your answer with the lesson’s first objective, one idea at a time.',
     example: `Practice helper (no AI): the lesson’s teaching starts with: ${c.teaching.slice(0, 160) || c.objective.slice(0, 160)}`,
     explanation: `Practice helper (no AI): the course’s answer begins “${first}”. Say in your own words how your answer gets there, and what it leaves out.`,
     followUp: { question: 'Practice helper (no AI): can you say the main idea in one sentence?', answer: first },
-    drewOn: 'the lesson’s objectives', suggestedMark: null,
+    drewOn: 'the lesson’s objectives', suggestedMark: same(c.yourAnswer) === same(c.reference) ? 'right' : null, // a rule, not a judgement
   });
 }

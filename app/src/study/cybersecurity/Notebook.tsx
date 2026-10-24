@@ -14,6 +14,13 @@ import { Lines } from './parts';
 import { RelatedPractice } from './Practice';
 import { CheckRevision } from './CheckRevision';
 import { AddToPortfolio } from './Portfolio';
+import { CheckMyAnswer } from '../CheckMyAnswer';
+import { loadTeaching } from '../teaching/useTeaching';
+import { cyberCheckSource } from './checkSource';
+
+// "Check my answer" on a knowledge check's question: the answer guide's answer and the lesson's teaching, loaded on the tap.
+const checkSource = (lessonId: string, q: { id: string; prompt: string }) =>
+  Promise.all([import('./answers.json'), loadTeaching('cybersecurity', lessonId)]).then(([a, t]) => cyberCheckSource(lessonId, q, (a.default as Record<string, string>)[q.id], t), () => null);
 
 export function ActivityView({ data, activity }: { data: MyDayData; activity: Activity }) {
   const lesson = [...lessons.values()].find(l => [l.practical_task_id, l.knowledge_check_id, l.mini_challenge_id].includes(activity.id));
@@ -53,7 +60,10 @@ export function ActivityView({ data, activity }: { data: MyDayData; activity: Ac
         <Field label="Assistance used" htmlFor="cyberAssistance"><Select id="cyberAssistance" value={draft.assistance} onChange={e => save(a => { a.assistance = e.target.value as CyberAttempt['assistance']; })}>
           <option value="independent">On my own</option><option value="hint">Used hints or AI help</option><option value="guided">Followed notes or a walkthrough</option>
         </Select></Field>
-        {activity.questions.map(q => <Field key={q.id} label={q.prompt} htmlFor={q.id}><CommitTextarea id={q.id} rows={3} maxLength={4000} defaultValue={draft.answers[q.id] ?? ''} onCommit={el => save(a => { a.answers[q.id] = el.value; })} /></Field>)}
+        {activity.questions.map(q => <div key={q.id}>
+          <Field label={q.prompt} htmlFor={q.id}><CommitTextarea id={q.id} rows={3} maxLength={4000} defaultValue={draft.answers[q.id] ?? ''} onCommit={el => save(a => { a.answers[q.id] = el.value; })} /></Field>
+          {isCheck && <CheckMyAnswer answer={draft.answers[q.id] ?? ''} getSource={() => checkSource(lesson.id, q)} aside="If you use it, set “Assistance used” to “Used hints or AI help”." />}
+        </div>)}
         <Field label="Observed result, evidence and limitations" htmlFor="cyberEvidence"><CommitTextarea id="cyberEvidence" rows={6} maxLength={12000} defaultValue={draft.evidence} onCommit={el => save(a => { a.evidence = el.value; })} placeholder="What happened? What did you check? What failed or remains uncertain? A redacted file reference can help." /></Field>
         {!!activity.rubric.length && <fieldset className="border border-outline rounded-tile p-3 grid gap-3"><legend className="px-1 font-semibold">Your provisional rubric assessment</legend>
           <p className="text-sm text-fg-2 m-0">Score the observable evidence for each criterion. This is a self-assessment, not verified skill mastery.</p>
