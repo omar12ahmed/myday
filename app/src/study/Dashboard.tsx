@@ -202,7 +202,7 @@ function WorthALook({ items }: { items: Offer[] }) {
   );
 }
 
-// ---------- Explore: your map, then your subjects as tiles, each with its places in counts ----------
+// ---------- Browse: your map, then your subjects as tiles, each with its places in counts ----------
 function ReadingTile({ data }: { data: MyDayData }) {
   const books = data.reading.books.filter(b => !b.finishedOn), reading = books.filter(b => b.page > 0).length;
   return (
@@ -226,7 +226,8 @@ function SetupTile() {
 const pickGlance = (m: typeof import('./nextLearning'), d: MyDayData) => m.learningGlance(d);
 
 // The opening screen on three levels (specs/study-home-and-lessons.md §4): Now (your focus's next step, the same as
-// Today's), Worth a look (a few gentle offers), Explore (your map and subjects); Manage folded at the bottom.
+// Today's), Worth a look (a few gentle offers), Browse (your map and subjects; "Explore" belongs to Projects); Manage folded
+// at the bottom.
 export function Dashboard({ data, lengths, setLength }: { data: MyDayData; lengths: Record<string, number>; setLength: (key: string, m: number) => void }) {
   const st = data.study, ix = stIndex(st), cur = activeStudy(st), k = todayKey();
   const glance = useNextLearning(data, pickGlance);
@@ -251,10 +252,10 @@ export function Dashboard({ data, lengths, setLength }: { data: MyDayData; lengt
         {items.length > 0 && <div className="min-w-0"><WorthALook items={items} /></div>}
       </div>
 
-      <section aria-labelledby="explore-h" id="studyHome" className="mt-2 mb-4">
-        <h3 id="explore-h" className="px-1">Explore</h3>
+      <section aria-labelledby="browse-h" id="studyHome" className="mt-2 mb-4">
+        <h3 id="browse-h" className="px-1">Browse</h3>
         {st.stages.length > 0 && <a href="#study/map" data-s="study-map-link" className="flex items-center justify-between gap-3 min-h-12 mb-4 px-4 py-3 rounded-card border border-outline bg-surface text-fg no-underline hover:border-outline-strong focus-visible:outline-2 focus-visible:outline-primary">
-          <span><strong className="block">Your map</strong><span className="text-sm text-fg-2">Your courses as a map, each stage a line and each course a station, for exploring and the long view.</span></span>
+          <span><strong className="block">Your map</strong><span className="text-sm text-fg-2">Your courses as a map, each stage a line and each course a station, for finding your way around and the long view.</span></span>
           <ArrowUpRight size={19} aria-hidden="true" className="flex-none text-primary" />
         </a>}
         <div className="grid gap-x-3 sm:grid-cols-2 lg:grid-cols-3 items-start">

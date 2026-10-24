@@ -746,7 +746,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   check('topic links appear, the current topic marked as the page', eq(await ev(`[...document.querySelectorAll('[data-s=map-topic]')].map(a => a.dataset.id + (a.getAttribute('aria-current') === 'page' ? '*' : ''))`), ['tpC*', 'tpA']) && !(await exists('[role=tablist], [role=tab]')));
   await click('[data-s=map-topic][data-id=tpA]'); await sleep(300);
   check('switching to Arabic shows its line and summary', flat(await text('#mapLine')).includes(flat('0 of 1 tasks into Arabic')) && eq(await ev(`[...document.querySelectorAll('[data-s=map-st]')].map(a => a.dataset.id + ':' + a.dataset.st)`), ['coL:now']), [await text('#mapLine')]);
-  check('Study home links to the map, under Explore', (await go('study', 2026, 11, 2, 9), await sleep(200), (await text('#studyHome [data-s=study-map-link]')).includes('Your map')) && (await exists('#studyHome a[data-s=study-map-link][href="#study/map"]')));
+  check('Study home links to the map, under Browse', (await go('study', 2026, 11, 2, 9), await sleep(200), (await text('#studyHome [data-s=study-map-link]')).includes('Your map')) && (await exists('#studyHome a[data-s=study-map-link][href="#study/map"]')));
 
   console.log('\n[53b] Your map: fog, reading size, no collisions, dark theme, phones, and straight into a session');
   await go('today', 2026, 11, 2, 9); await reset(); await go('today', 2026, 11, 2, 9);
@@ -902,7 +902,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   check('reading is never on Today (and never in the learning streak)', !(await text('#app')).includes('Now reading') && !(await text('#app')).includes('Plankton'));
 
   // ------------------------------------------------------------------
-  console.log('\n[55] Study home: one focus, the same next step as Today, Worth a look, Explore and Manage');
+  console.log('\n[55] Study home: one focus, the same next step as Today, Worth a look, Browse and Manage');
   await go('today', 2026, 11, 2, 9); await reset(); await go('today', 2026, 11, 2, 9);
   const own = JSON.parse(JSON.stringify(roadmap)); own.concepts = [];
   await editStorage(`s => { s.study = ${JSON.stringify({ ...own, settings: { ...OWN, primarySubject: 'arabic' } })}; }`);
@@ -938,9 +938,10 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   check('…and then no course is labelled your focus', (await go('study/roadmap', 2026, 11, 2, 9), !(await text('#app')).includes('Current focus')));
   await go('study', 2026, 11, 2, 9); await until(() => exists('#stFocus[data-now=cybersecurity]'), 'the Now card');
   check('Worth a look is hidden when there\'s nothing to offer', !(await exists('[data-s=worth-a-look]')));
-  check('Explore: your map, then the subjects as tiles (Arabic, Cybersecurity, your topics, Reading)', await exists('#studyHome [data-s=study-map-link]') && await exists('#studyHome .arabic-entry')
+  check('Browse: your map, then the subjects as tiles (Arabic, Cybersecurity, your topics, Reading)', await exists('#studyHome [data-s=study-map-link]') && await exists('#studyHome .arabic-entry')
     && await exists('#studyHome .cyber-entry') && await exists('#studyHome [data-s=reading-tile]')
     && (await exists('#studyHome .topic-card') || await exists('#studyHome .cyber-entry [data-cyber-saved-courses]'))); // this roadmap's one topic is taken as Cybersecurity's saved courses
+  check('the level is called Browse ("Explore" is Projects\' word)', (await text('#browse-h')) === 'Browse' && !(await ev(`[...document.querySelectorAll('.study-home h2, .study-home h3')].some(h => h.textContent.trim() === 'Explore')`)), await text('#studyHome'));
   check('Manage is folded at the bottom: the whole roadmap, concepts, progress and settings', !(await ev(`document.querySelector('[data-s=study-manage]').open`))
     && eq(await ev(`[...document.querySelectorAll('[data-s=study-manage] a')].map(a => a.getAttribute('href'))`), ['#study/roadmap', '#study/concepts', '#study/progress', '#study/settings']));
   await editStorage(`s => { s.study.concepts = ${JSON.stringify(concepts)};
@@ -951,12 +952,12 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   check('Worth a look offers at most three: a session open in another subject, revision ready, a lesson that needs revision (the fourth, concepts without a question, waits)',
     eq(worth, ['arabic-open', 'revision', 'needs-lesson.arabic-fusha-register']), worth);
   check('…in plain words, with no backlog, nothing "overdue" and no percentages', (await text('[data-s=worth-a-look]')).includes('needs revision') && !/overdue|behind|missed/i.test(await text('#app')) && !/\d+\s?%/.test(await text('#app')));
-  check('Explore counts Arabic places in words', (await text('.arabic-entry')).includes('1 needs revision'));
+  check('Browse counts Arabic places in words', (await text('.arabic-entry')).includes('1 needs revision'));
   await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await go('study', 2026, 11, 2, 9); await until(() => exists('[data-s=worth-a-look] [data-worth]'), 'Worth a look on a phone');
   const smallH = await ev(`[...document.querySelectorAll('#app button, #app summary, #app a.btn-link, #app select, #app [data-action=study-now]')].filter(b => b.getClientRects().length && b.getBoundingClientRect().height < 44).map(b => b.textContent.trim().slice(0, 24) + ' ' + Math.round(b.getBoundingClientRect().height))`);
   check('phone: Study home has no sideways scrolling, and every control is at least 44 px tall', !(await ev('document.documentElement.scrollWidth > innerWidth')) && !smallH.length, smallH);
-  check('phone: the Now card comes first, then Worth a look, then Explore', await ev(`(() => { const n = document.querySelector('#stFocus').getBoundingClientRect(), w = document.querySelector('[data-s=worth-a-look]').getBoundingClientRect(), x = document.querySelector('#studyHome').getBoundingClientRect(); return n.bottom <= w.top && w.bottom <= x.top; })()`));
+  check('phone: the Now card comes first, then Worth a look, then Browse', await ev(`(() => { const n = document.querySelector('#stFocus').getBoundingClientRect(), w = document.querySelector('[data-s=worth-a-look]').getBoundingClientRect(), x = document.querySelector('#studyHome').getBoundingClientRect(); return n.bottom <= w.top && w.bottom <= x.top; })()`));
   await T.send('Emulation.clearDeviceMetricsOverride');
 
   finish();
