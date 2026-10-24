@@ -172,7 +172,14 @@ export interface Project {
   case?: CaseFile;
   // From 1.37.0 (optional): in your weekly focus for the seven days from this day (data/weekReview.ts).
   focus?: DateKey;
+  // From 1.47.0 (optional; absent = none, so a project without them is saved exactly as before; 1.46.x keeps them
+  // unread, so no schema change): the result you're aiming for, what would count as finished, and a short note on
+  // where you left off, with when you wrote it. Never sent to AI.
+  outcome?: string;
+  finishedWhen?: string;
+  leftOff?: LeftOff;
 }
+export interface LeftOff { text: string; at: DateTime; [other: string]: unknown }
 export interface ProjectsData { items: Project[]; [other: string]: unknown }
 
 // A milestone: a big marker on the way, in your order. `aim` is a date to aim for (guidance, never "late");

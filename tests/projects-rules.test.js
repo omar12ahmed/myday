@@ -7,6 +7,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { pathToFileURL } = require('url');
+const { execFileSync } = require('child_process');
 const { check, summary } = require('./cdp.js');
 const ROOT = process.env.MYDAY_ROOT || path.resolve(__dirname, '..');
 const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -18,7 +19,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   fs.mkdirSync(dir, { recursive: true });
   const src = p => JSON.stringify(path.join(ROOT, 'app/src/data', p));
   fs.writeFileSync(path.join(dir, 'kit.ts'), [
-    `export * from ${src('projectRecords')};`, `export * from ${src('projectPlan')};`, `export * from ${src('businessModel')};`, `export * from ${src('caseFile')};`, `export { normalizeProjects, deleteProject, recently, addProject, setProjectPrivate, privateProjectIds, comingUp, stillOpen } from ${src('projects')};`,
+    `export * from ${src('projectRecords')};`, `export * from ${src('projectPlan')};`, `export * from ${src('businessModel')};`, `export * from ${src('caseFile')};`, `export { normalizeProjects, deleteProject, recently, addProject, setProjectPrivate, editProject, setLeftOff, privateProjectIds, comingUp, stillOpen } from ${src('projects')};`,
     `export { freshState, normalize } from ${src('normalize')};`, `export { shift, shortDate } from ${src('dates')};`, `export * from ${src('projectDashboard')};`, `export * from ${src('weekReview')};`, `export { stepsForToday } from ${src('projects')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
@@ -964,6 +965,125 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('the review day is kept only as 1 to 6 (0, 7, 2.5 and text leave no field)', rd({ reviewDay: 3 }).reviewDay === 3 && [0, 7, 2.5, 'x'].every(v => !('reviewDay' in rd({ reviewDay: v }))));
     check('reviewed and reviewHidden are kept only as real dates', rd({ reviewed: '2026-10-16', reviewHidden: '2026-10-09' }).reviewed === '2026-10-16' && rd({ reviewed: '2026-10-16', reviewHidden: '2026-10-09' }).reviewHidden === '2026-10-09'
       && !('reviewed' in rd({ reviewed: 'yesterday' })) && !('reviewHidden' in rd({ reviewHidden: 7 })));
+  }
+
+
+  console.log('\n[13] The outcome, what counts as finished, and where I left off (all optional, inside the project)');
+  {
+    const AT = '2026-10-20T18:30';
+    const withAll = base('pjL', { outcome: 'A quiet corner I read in every evening', finishedWhen: 'The chair is bought and the shelf is up', leftOff: { text: 'Measured the wall; the shelf bracket is still to choose', at: AT } });
+    let rp = { dropped: 0 };
+    let o1 = K.normalizeProjects({ items: [clone(withAll)] }, rp).items[0];
+    check('a project with an outcome, a finish line and a note is read back exactly as it was, nothing counted', eq(o1, withAll) && rp.dropped === 0, [o1, rp]);
+    rp = { dropped: 0 };
+    o1 = K.normalizeProjects({ items: [base('pjL', { outcome: 'o'.repeat(250), finishedWhen: 'f'.repeat(700), leftOff: { text: 'n'.repeat(900), at: AT } })] }, rp).items[0];
+    check('an outcome is cut to 200 characters, a finish line to 600 and a note to 800, with nothing counted', o1.outcome.length === 200 && o1.finishedWhen.length === 600 && o1.leftOff.text.length === 800 && o1.leftOff.at === AT && rp.dropped === 0, [o1.outcome.length, o1.finishedWhen.length, o1.leftOff.text.length, rp]);
+    rp = { dropped: 0 };
+    o1 = K.normalizeProjects({ items: [base('pjL', { outcome: '', finishedWhen: '' })] }, rp).items[0];
+    check('an empty outcome or finish line is removed without being counted', !('outcome' in o1) && !('finishedWhen' in o1) && rp.dropped === 0, [o1, rp]);
+    rp = { dropped: 0 };
+    o1 = K.normalizeProjects({ items: [base('pjL', { outcome: 42 })] }, rp).items[0];
+    check('an outcome that is a number is removed and counted as dropped', !('outcome' in o1) && rp.dropped === 1, [o1, rp]);
+    rp = { dropped: 0 };
+    o1 = K.normalizeProjects({ items: [base('pjL', { leftOff: { at: AT } })] }, rp).items[0];
+    check('a note without text is removed and counted as dropped', !('leftOff' in o1) && rp.dropped === 1, [o1, rp]);
+    rp = { dropped: 0 };
+    o1 = K.normalizeProjects({ items: [base('pjL', { leftOff: { text: 'Something', at: 'yesterday' } })] }, rp).items[0];
+    check('a note with a time that is not a real date and time is removed and counted as dropped', !('leftOff' in o1) && rp.dropped === 1, [o1, rp]);
+    rp = { dropped: 0 };
+    o1 = K.normalizeProjects({ items: [base('pjL', { leftOff: { text: 'Something', at: AT, futureBit: { a: 1 } } })] }, rp).items[0];
+    check('an unknown field inside a note is kept', eq(o1.leftOff, { text: 'Something', at: AT, futureBit: { a: 1 } }) && rp.dropped === 0, o1.leftOff);
+    rp = { dropped: 0 };
+    o1 = K.normalizeProjects({ items: [base('pjL')] }, rp).items[0];
+    check('a project without the fields gains none of them', !('outcome' in o1) && !('finishedWhen' in o1) && !('leftOff' in o1) && eq(Object.keys(o1).sort(), Object.keys(base('pjL')).sort()) && rp.dropped === 0, o1);
+
+    console.log('  Editing the outcome and the finish line');
+    d = world(base());
+    check('editing sets an outcome and a finish line, trimmed', K.editProject(d, 'pjA', { outcome: '  A tidy shed  ' }) && K.editProject(d, 'pjA', { finishedWhen: '  Everything has a place  ' }) && P(d).outcome === 'A tidy shed' && P(d).finishedWhen === 'Everything has a place', P(d));
+    check('the same value again returns false and changes nothing', !K.editProject(d, 'pjA', { outcome: 'A tidy shed' }) && !K.editProject(d, 'pjA', { outcome: ' A tidy shed ' }) && !K.editProject(d, 'pjA', { finishedWhen: 'Everything has a place' }));
+    check('an empty value removes the field, and clearing it again returns false', K.editProject(d, 'pjA', { outcome: '   ' }) && !('outcome' in P(d)) && !K.editProject(d, 'pjA', { outcome: '' }) && K.editProject(d, 'pjA', { finishedWhen: '' }) && !('finishedWhen' in P(d)), P(d));
+    d = world(base());
+    check('a project with neither set is not changed by an empty edit', !K.editProject(d, 'pjA', { outcome: '', finishedWhen: '' }) && P(d).updatedAt === OLD);
+    K.editProject(d, 'pjA', { outcome: 'x'.repeat(300) });
+    check('an outcome over 200 characters is cut to 200', P(d).outcome.length === 200);
+    d = world(base());
+    K.editProject(d, 'pjA', { outcome: 'A tidy shed' });
+    check('a change moves the project\'s updated time (and the same value does not)', P(d).updatedAt !== OLD, P(d).updatedAt);
+    P(d).updatedAt = OLD; K.editProject(d, 'pjA', { outcome: 'A tidy shed' });
+    check('…an unchanged outcome leaves it where it was', P(d).updatedAt === OLD);
+
+    console.log('  Where I left off');
+    d = world(base());
+    const t0 = new Date(), stamp = x => `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}T${String(x.getHours()).padStart(2, '0')}:${String(x.getMinutes()).padStart(2, '0')}`;
+    check('saving a note keeps its text (trimmed) and the local time it was written', K.setLeftOff(d, 'pjA', '  Waiting on the quote  ') && P(d).leftOff.text === 'Waiting on the quote' && [stamp(t0), stamp(new Date())].includes(P(d).leftOff.at) && Object.keys(P(d).leftOff).sort().join() === 'at,text', P(d).leftOff);
+    check('saving the same text returns false and keeps the first time', (() => { P(d).leftOff.at = AT; P(d).updatedAt = OLD; return !K.setLeftOff(d, 'pjA', 'Waiting on the quote ') && P(d).leftOff.at === AT && P(d).updatedAt === OLD; })(), P(d));
+    check('new text replaces the note and moves its time and the project\'s updated time', K.setLeftOff(d, 'pjA', 'Quote came back') && P(d).leftOff.text === 'Quote came back' && P(d).leftOff.at !== AT && P(d).updatedAt !== OLD, P(d));
+    check('an empty text clears the note, and clearing again returns false', K.setLeftOff(d, 'pjA', '  ') && !('leftOff' in P(d)) && !K.setLeftOff(d, 'pjA', '') && !K.setLeftOff(d, 'pjNope', 'x'), P(d));
+    K.setLeftOff(d, 'pjA', 'n'.repeat(900));
+    check('a note over 800 characters is cut to 800', P(d).leftOff.text.length === 800);
+  }
+
+  console.log('\n[14] The previous release keeps all three fields (so the saved-data version stays 5)');
+  {
+    const git = (...a) => execFileSync('git', a, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+    let ref = process.env.MYDAY_PREVIOUS_PROJECTS_REF;
+    if (!ref) {
+      // A tag on HEAD is that release itself, so it is skipped, unless the feature is still uncommitted on top of it
+      // (then that tagged release is the one the feature is built on, and the one to compare with).
+      const building = git('status', '--porcelain', '--', 'app/src') !== '';
+      const onHead = building ? [] : git('tag', '--points-at', 'HEAD').split('\n').filter(Boolean);
+      ref = git('tag', '--merged', 'HEAD', '--list', 'v*', '--sort=-v:refname').split('\n').filter(t => t && !onHead.includes(t))[0];
+    }
+    console.log(`  Previous release used: ${ref} (${git('rev-parse', '--short', ref + '^{commit}')})`);
+    check('a previous release was found to compare against', !!ref, ref);
+    const odir = path.join(os.tmpdir(), `myday-projects-prev-${process.pid}`);
+    try {
+      fs.mkdirSync(odir, { recursive: true });
+      const tarFile = path.join(odir, 'src.tar');
+      execFileSync('git', ['archive', '--format=tar', '-o', tarFile, ref, 'app/src'], { cwd: ROOT });
+      execFileSync('tar', ['-xf', tarFile, '-C', odir]);
+      const o = f => JSON.stringify(path.join(odir, 'app/src', f));
+      fs.writeFileSync(path.join(odir, 'oldkit.ts'), [
+        `export { freshState, normalize } from ${o('data/normalize')};`,
+        `export { normalizeProjects, editProject, setNextStep, addProject } from ${o('data/projects')};`,
+        `export { addMilestone } from ${o('data/projectPlan')};`,
+        `export { splitProject } from ${o('data/projectRecords')};`,
+        `export { cleanProjectRecord, putProjectRecord } from ${o('sync/projectParts')};`,
+      ].join('\n'));
+      const OK = await import(pathToFileURL(await bundle(path.join(odir, 'oldkit.ts'), path.join(odir, 'out'))).href);
+      const fields = p => clone({ outcome: p.outcome, finishedWhen: p.finishedWhen, leftOff: p.leftOff });
+      const LO = { text: 'Waiting on the quote; call the builder Monday', at: '2026-10-20T18:30', futureBit: 'kept' };
+      const mine = () => base('pjP', { outcome: 'A quiet corner I read in every evening', finishedWhen: 'The chair is bought and the shelf is up', leftOff: clone(LO) });
+      const want = fields(mine());
+      const oldWorld = (...ps) => { const w = OK.freshState(); w.projects.items = ps; return w; };
+      const same = (p, why) => eq(fields(p), want) ? true : (console.log('    ' + why, fields(p)), false);
+
+      const loaded = OK.normalize(clone(oldWorld(mine())));
+      check(`${ref}: data with all three fields keeps them unchanged when loaded from storage`, same(loaded.projects.items[0], 'loaded'), fields(loaded.projects.items[0]));
+
+      const e = OK.normalize(clone(oldWorld(mine(), base('pjQ'))));
+      const tk = { id: 'tkP', title: 'Pay council tax', done: false, projectId: 'pjP' };
+      const pj = () => e.projects.items.find(x => x.id === 'pjP');
+      OK.editProject(e, 'pjP', { title: 'Reading corner' }); OK.editProject(e, 'pjP', { stage: 'decide' }); OK.editProject(e, 'pjP', { status: 'paused' });
+      check(`${ref}: its own edit of the title, stage and status changes them and keeps all three fields`, pj().title === 'Reading corner' && pj().stage === 'decide' && pj().status === 'paused' && same(pj(), 'edited'), [pj().title, pj().stage, pj().status, fields(pj())]);
+      const ms = OK.addMilestone(e, 'pjP', 'Buy the chair');
+      check(`${ref}: adding a milestone keeps all three fields`, !!ms && pj().milestones.length === 1 && same(pj(), 'milestone'), fields(pj()));
+      e.tasks.items.push({ ...tk });
+      const ns = OK.setNextStep(e, 'pjP', 'tkP');
+      check(`${ref}: setting the next step keeps all three fields`, ns && pj().nextTaskId === 'tkP' && same(pj(), 'next step'), [pj().nextTaskId, fields(pj())]);
+
+      const payload = { format: 'myday-export', schemaVersion: 5, exportedAt: '2026-10-21T09:00', data: oldWorld(mine()) };
+      const imported = OK.normalize(JSON.parse(JSON.stringify(payload, null, 2)).data);
+      check(`${ref}: a JSON export then import (normalise) keeps all three fields`, same(imported.projects.items[0], 'import'), fields(imported.projects.items[0]));
+
+      const rows = OK.splitProject(mine());
+      const core = rows.find(r => r.kind === 'project');
+      const cleaned = OK.cleanProjectRecord('project', core.id, JSON.parse(JSON.stringify(core.content)));
+      check(`${ref}: the project core sync record carries all three fields through its own split and cleaning`, !!cleaned && eq(fields(cleaned.value), want) && eq(fields(core.content.value), want), cleaned);
+      const fresh = OK.freshState();
+      OK.putProjectRecord(fresh, 'project', core.id, cleaned);
+      check(`${ref}: putting that record into fresh data gives back the project with all three fields unchanged`, fresh.projects.items.length === 1 && same(fresh.projects.items[0], 'sync') && eq(fresh.projects.items[0].leftOff, LO), fresh.projects.items);
+    } finally { fs.rmSync(odir, { recursive: true, force: true }); }
   }
 
   fs.rmSync(dir, { recursive: true, force: true });

@@ -17,7 +17,7 @@ import { isDone, onTodaysPlan } from './tasks';
 import type { Commitment, DateKey, MyDayData, Note, Project, ProjectsData, ProjectStage, ProjectStatus, TaskItem } from './types';
 import { isObj, listOf, uid } from './util';
 
-export const PROJECT_LIMITS = { projects: 200, title: 120, summary: 4000, commitments: 200 };
+export const PROJECT_LIMITS = { projects: 200, title: 120, summary: 4000, commitments: 200, outcome: 200, finishedWhen: 600, leftOff: 800 };
 
 export const STAGES: { id: ProjectStage; label: string; hint: string }[] = [
   { id: 'capture', label: 'Capture', hint: "It's out of your head and safe here." },
@@ -68,6 +68,14 @@ export function normalizeProjects(raw: unknown, report: { dropped: number }): Pr
     const kase = normalizeCase(p.case, report);
     if (kase) item.case = kase; else delete item.case;
     if (isDateKey(p.focus)) item.focus = p.focus; else delete item.focus; // in your weekly focus (1.37.0)
+    // The outcome, what counts as finished and where you left off (1.47.0): kept only when written; a shape this
+    // version can't read is counted, never kept half-read.
+    for (const [key, max] of [['outcome', PROJECT_LIMITS.outcome], ['finishedWhen', PROJECT_LIMITS.finishedWhen]] as const) {
+      if (typeof p[key] === 'string' && p[key].trim()) item[key] = p[key].slice(0, max); else { if (p[key] !== undefined && p[key] !== '') report.dropped++; delete item[key]; }
+    }
+    const lo = p.leftOff;
+    if (isObj(lo) && typeof lo.text === 'string' && lo.text.trim() && isDateTime(lo.at)) item.leftOff = { ...lo, text: lo.text.slice(0, PROJECT_LIMITS.leftOff), at: lo.at };
+    else { if (lo !== undefined) report.dropped++; delete item.leftOff; }
     seen.add(item.id);
     out.items.push(item);
   }
@@ -87,8 +95,9 @@ export function addProject(d: MyDayData, title: string, summary = '', stage: Pro
 const find = (d: MyDayData, id: string) => d.projects.items.find(p => p.id === id);
 const touch = (p: Project) => { p.updatedAt = localStamp(); };
 
-// Change a project's title, summary, stage or status. Returns false (nothing to save) when nothing changed.
-export function editProject(d: MyDayData, id: string, patch: Partial<Pick<Project, 'title' | 'summary' | 'stage' | 'status'>>): boolean {
+// Change a project's title, summary, stage, status, outcome or what counts as finished (an empty outcome or finish line
+// removes it). Returns false (nothing to save) when nothing changed.
+export function editProject(d: MyDayData, id: string, patch: Partial<Pick<Project, 'title' | 'summary' | 'stage' | 'status' | 'outcome' | 'finishedWhen'>>): boolean {
   const p = find(d, id);
   if (!p) return false;
   let changed = false;
@@ -96,8 +105,27 @@ export function editProject(d: MyDayData, id: string, patch: Partial<Pick<Projec
   if (patch.summary !== undefined) { const s = patch.summary.slice(0, PROJECT_LIMITS.summary); if (s !== p.summary) { p.summary = s; changed = true; } }
   if (patch.stage && STAGE_IDS.includes(patch.stage) && patch.stage !== p.stage) { p.stage = patch.stage; changed = true; }
   if (patch.status && STATUSES.includes(patch.status) && patch.status !== p.status) { p.status = patch.status; changed = true; }
+  for (const key of ['outcome', 'finishedWhen'] as const) {
+    const v = patch[key];
+    if (v === undefined) continue;
+    const s = v.trim().slice(0, PROJECT_LIMITS[key]);
+    if (s === (p[key] ?? '')) continue;
+    if (s) p[key] = s; else delete p[key];
+    changed = true;
+  }
   if (changed) touch(p);
   return changed;
+}
+
+// Where you left off (1.47.0): one short note and when you wrote it. Empty clears it. Returns false when unchanged.
+export function setLeftOff(d: MyDayData, id: string, text: string): boolean {
+  const p = find(d, id);
+  if (!p) return false;
+  const t = text.trim().slice(0, PROJECT_LIMITS.leftOff);
+  if (t === (p.leftOff?.text ?? '')) return false;
+  if (t) p.leftOff = { text: t, at: localStamp() }; else delete p.leftOff;
+  touch(p);
+  return true;
 }
 
 // Private (your switch, 1.32.0): Ask MyDay sends nothing of it — see ai/askContext.ts. Returns false when unchanged.

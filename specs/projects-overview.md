@@ -1,7 +1,7 @@
 # Projects Overview: next step first, one place per fact, open past dates kept
 
 **Status:** approved by the owner on 24 October 2026, with the recommended answers to section 4. Phase 1,
-release 1 of `specs/projects-vision.md`. Not yet released.
+release 1 of `specs/projects-vision.md`. Released in 1.46.0 (24 October 2026).
 **Based on:** source at release 1.45.2. Display only: no saved-data, sync or AI-payload change.
 
 ## 1. The practical problem

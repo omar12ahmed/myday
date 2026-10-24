@@ -416,7 +416,10 @@ export function recordLines(key: string, content: Content | null): string[] {
       return [`Problem: ${v.problem || 'Not written yet'}`, `Who: ${v.who || 'Not written yet'}`, `How: ${v.how || 'Not written yet'}`,
         ...assumptions.map(a => `${a.text} (${a.state})${a.found ? `: ${a.found}` : ''}`).reduce<string[]>((all, line) => [all.length ? `${all[0]}; ${line}` : line], [])];
     }
-    return [v.title, v.text, v.summary, v.details, v.notes,
+    // A project's own outcome, finish line and where you left off (1.47.0), so a conflict shows them too.
+    const own = kind === 'project' ? [v.outcome ? `Aiming for: ${v.outcome}` : null, v.finishedWhen ? `Finished when: ${v.finishedWhen}` : null,
+      isObj(v.leftOff) && typeof v.leftOff.text === 'string' ? `Where I left off: ${v.leftOff.text}` : null] : [];
+    return [v.title, ...own, v.text, v.summary, v.details, v.notes,
       kind === 'project_choice' ? (v.why === null ? 'Reason not saved' : v.why || 'No reason given') : v.why,
       v.on, v.date ? `${v.about ? 'About ' : ''}${v.date}` : null,
       v.aim ? `Aiming for: ${v.aim}` : null, kind === 'project_milestone' ? (v.reachedOn ? `Reached: ${v.reachedOn}` : 'Not reached yet') : null,

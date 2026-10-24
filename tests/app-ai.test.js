@@ -821,6 +821,45 @@ const SEED = `s => {
     await mock.ev(`location.hash = 'today'`); await sleep(200);
   }
 
+  console.log('\n[8p] A project\'s outcome, finish line and "where I left off" are never sent to Ask MyDay');
+  {
+    const at = `${TODAY}T09:00`;
+    const OUT = 'Zebrafinch outcome: a hammock by the pond', FIN = 'Quokka finish line: both ropes tested', LEFT = 'Wombat note: waiting on the rope from the shop';
+    const PJ = { id: 'pjLo', title: 'Pond hammock', summary: 'Beans of a plan', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at,
+      outcome: OUT, finishedWhen: FIN, leftOff: { text: LEFT, at } };
+    const hidden = t => !t.includes('Zebrafinch') && !t.includes('Quokka') && !t.includes('Wombat') && !t.includes('hammock by the pond') && !t.includes('ropes tested') && !t.includes('rope from the shop');
+    const loSeed = `s => { s.projects.items = s.projects.items.filter(p => p.id !== 'pjLo'); s.projects.items.push(${JSON.stringify(PJ)}); }`;
+    const openLo = async (Dv, text) => {
+      await Dv.ev(`location.hash = 'projects/p/pjLo'`); await sleep(300);
+      await Dv.click('[data-action=capture-open]'); await Dv.until(`document.getElementById('captureText')`);
+      await Dv.type('#captureText', text); await sleep(150);
+    };
+    const goLo = async Dv => { await Dv.click('[data-action=ask-go]'); await Dv.until(`['shown', 'error'].includes(document.querySelector('[data-s=ask-panel]')?.dataset.phase)`, 15000); return Dv.ev(`document.querySelector('[data-s=ask-panel]').dataset.phase`); };
+    await seeded(mock, MOCK); await mock.setData(loSeed); await mock.until(`document.querySelector('#app')`);
+    await mock.ev(`location.hash = 'projects/p/pjLo'`); await mock.until(`document.querySelector('#projectLeftOff')`, 5000);
+    check('the project page shows the three fields themselves', (await mock.text('[data-s=project-outcome]')).includes('Zebrafinch') && (await mock.text('[data-s=leftoff-text]')).includes('Wombat'));
+    await mock.click('[data-action=capture-open]'); await mock.until(`document.getElementById('captureText')`);
+    await mock.type('#captureText', 'Break this into smaller steps'); await sleep(200);
+    await mock.ev(`document.querySelector('[data-s=ask-sends-all] summary').click()`); await sleep(150);
+    const prevShort = await mock.text('[data-s=ask-sends]'), prevAll = await mock.text('[data-s=ask-sends-all]');
+    check('Ask MyDay\'s preview names the project but none of the three texts, short or expanded', prevShort.includes('Pond hammock') && prevAll.includes('Beans of a plan') && hidden(prevShort) && hidden(prevAll), [prevShort, prevAll]);
+    await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
+
+    setAi({ AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_LABEL: 'Main model', AI_MIN_SECONDS_BETWEEN: '0' });
+    await D.setData(loSeed); await D.until(`!document.getElementById('signInGate')`, 15000);
+    const c0 = aiCalls().length;
+    await openLo(D, 'Break this into smaller steps');
+    const prevD = (await D.text('[data-s=ask-sends]'));
+    const phase = await goLo(D);
+    const sentLo = aiCalls().slice(c0).find(c => c.body.context.action === 'ask');
+    const bodyLo = JSON.stringify(sentLo && sentLo.body);
+    check('with an account, the request is sent and answered, and it does carry the project\'s title and summary', phase === 'shown' && !!sentLo && bodyLo.includes('Pond hammock') && bodyLo.includes('Beans of a plan'), [phase, bodyLo.slice(0, 300)]);
+    check('…but the request body contains none of the outcome, the finish line or the note', !!sentLo && hidden(bodyLo) && !/outcome|finishedWhen|leftOff/.test(bodyLo), bodyLo);
+    check('…and the preview shown for the same request had none of them', hidden(prevD), prevD);
+    await D.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
+    await mock.ev(`location.hash = 'today'`); await D.ev(`location.hash = 'today'`); await sleep(200);
+  }
+
   console.log('\n[9] Layout');
   await D.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await D.ev(`location.hash = 'today'`);

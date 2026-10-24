@@ -408,6 +408,18 @@ appointments aren't listed, and there's no red, no "overdue" and no count of day
 next step yet": the Next step card beside it already asks for the smallest one. Nothing new is saved, and Ask
 MyDay's request and preview are unchanged (`comingUp` is unchanged; still-open tasks come from `stillOpen`).
 
+**The outcome, what counts as finished, and where you left off (unreleased; `specs/projects-left-off.md`):** a
+project can say what it's aiming for ("Aiming for: …", a line under its title on every tab) and what would count as
+finished ("Finished when: …" in About it), both written in About it → Edit. **Where I left off** is one short note
+for next time, with prompts (what was happening, what's unresolved, the next useful thing, anything needed to pick
+it up again): once written it sits at the top of the Overview, above the next step, with the day it was written and
+Edit; clearing it asks first. Without one, About it offers "Leave a note for next time". Finishing every task never
+marks the outcome as reached, and paused or done projects keep their note. Saved data: three optional fields on the
+project (`outcome`, `finishedWhen`, `leftOff: { text, at }`), absent when empty, in the existing project record and
+sync record, with no new record kind, migration or database change. There's no schema change, by the owner's
+exception in AGENTS.md: 1.46.x keeps unknown project fields, so going back keeps them unread, which `projects-rules`
+proves with the previous release's own code. A sync conflict on the project shows them. None of them is sent to AI.
+
 **Your week — the weekly review (1.37.0):** a short look back over the last seven days, at `#review` ("Your week"), in
 four steps, one at a time, with Back and Next. Nothing changes until you tap. **1 What moved:** each project's tasks
 done, milestones reached, decisions made, things found out, case records added (up to three done task names shown),
@@ -736,7 +748,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `../ai-eval/` | The evaluation of AI models on 20 synthetic days and 12 synthetic brain dumps (see its README). |
 | `src/finance/` | The Finance screen: `FinanceScreen` (with Left over), `WorkPayCard`, `ExpensesCard`, `OwedCard`, `RatesCard` (folded away), and `actions.ts` (what each button saves). |
 | `src/data/patterns/`, `src/patterns/` | What MyDay has noticed: `notice.ts` (finding patterns in your history), `saved.ts` (your preferences and answers, the `patterns` section), `adapt.ts` (using preferences in Build my day and the room on today's plan); the screen `NoticedScreen.tsx` (`#noticed`, and the quiet line on Today). `src/components/Why.tsx`: a note with a "Why?". `src/tasks/StuckCard.tsx`: "What's getting in the way?". |
-| `src/projects/`, `src/data/projects.ts` | Projects (1.12.0): `ProjectsScreen` (the Projects, Notes and Connections tabs, "Start a project", project cards), `ProjectView` (one project: the next step with Worth a look beside it, At a glance, what it is, the progression, tasks, notes, coming up, recently, pause / done / delete), `parts.tsx` (the progression steps, the project picker used by notes and tasks); the data, the next step and what's coming up in `src/data/projects.ts`. Today's "From your projects" and "Your tasks": `src/today/ProjectCards.tsx`. Older `#inbox…`/`#notes…` links: `src/shell/legacyLinks.ts`. |
+| `src/projects/`, `src/data/projects.ts` | Projects (1.12.0): `ProjectsScreen` (the Projects, Notes and Connections tabs, "Start a project", project cards), `ProjectView` (one project: where you left off, the next step with Worth a look beside it, At a glance, what it is, what it's aiming for and what counts as finished, the progression, tasks, notes, coming up, recently, pause / done / delete), `parts.tsx` (the progression steps, the project picker used by notes and tasks); the data, the next step and what's coming up in `src/data/projects.ts`. Today's "From your projects" and "Your tasks": `src/today/ProjectCards.tsx`. Older `#inbox…`/`#notes…` links: `src/shell/legacyLinks.ts`. |
 | `src/tasks/`, `src/data/tasks.ts` | Tasks (under Today since 1.12.0): `TasksScreen` (adding, the groups, lists as chips, search), `TaskEditor`, `ListsView`, `route.ts` (`#today/tasks`, `#today/tasks/<id>`, `#today/tasks/list/<id>`, `#today/tasks/lists`); the data and rules (groups, due today, room on today's plan, the link to the plan) in `src/data/tasks.ts`. Today's "Due today" card: `src/today/DueTodayCard.tsx`. |
 | `src/data/graph.ts`, `src/projects/ConnectionsView.tsx` | Connections, the knowledge graph (milestone 4): which notes and projects connect, the groups that go together and their fixed layout, fitted to a width (`graph.ts`); the screen at `#projects/connections` — the drawing, a dot's details with Keep / Undo, "What goes together" (`ConnectionsView.tsx`). Shared with Your map: `src/components/measure.ts` (drawing at the real width, names measured in the app's font). |
 | `src/data/understand.ts`, `src/shell/autoConnect.ts`, `src/notes/ConnectedCard.tsx` | Understanding notes on the device (1.13.0): the words that count, which project a note clearly belongs to, related notes, Undo / Keep (`understand.ts`); connecting a moment after changes (`autoConnect.ts`); "MyDay connected these" (`ConnectedCard.tsx`). |
