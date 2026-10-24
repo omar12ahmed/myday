@@ -38,9 +38,10 @@ export function rateConcept(st: StudyData, conceptId: string, k: DateKey, a: Ans
   return true;
 }
 // The same for anything in revision with a schedule (a concept, or an Arabic card): it's rescheduled, and the answer
-// goes into Study's revision history under the item's id, with a title to show there.
-export function rateItem(st: StudyData, item: { id: string; review: Concept['review'] }, about: { title: string; kind: Concept['kind'] }, k: DateKey, a: Answered, rating: Rating) {
-  const gap = nextGap(item.review.interval, rating);
+// goes into Study's revision history under the item's id, with a title to show there. Practise again has its own
+// gaps (`gapOf`, arabic/practice.ts).
+export function rateItem(st: StudyData, item: { id: string; review: Concept['review'] }, about: { title: string; kind: Concept['kind'] }, k: DateKey, a: Answered, rating: Rating, gapOf = nextGap) {
+  const gap = gapOf(item.review.interval, rating);
   item.review = { reps: item.review.reps + 1, interval: gap, lapses: item.review.lapses + (rating === 'again' && item.review.reps ? 1 : 0), due: shift(k, gap) };
   st.reviews.push({
     id: 'rv' + uid(), conceptId: item.id, title: about.title.slice(0, 120), date: k, at: localStamp(), kind: about.kind, outcome: a.outcome,

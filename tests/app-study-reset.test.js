@@ -47,9 +47,10 @@ async function synced(d) {
       s.arabic.lessons = [{ id: 'lesson.arabic-fusha-register', readyOn: '${today}', revisit: { since: '${today}', what: 'Keep for the restore' } }];
       s.cybersecurity.cards = [{ id: 'assessment.learning-evidence-check.q1', addedOn: '${today}', review }];
       s.arabic.words = [{ id: 'kwreset0001', ar: 'بَيْتٌ', meaning: 'house', addedOn: '${today}', recognise: review, write: null }];
+      s.arabic.practice = [{ id: 'lesson.arabic-fusha-register', tried: '${today}', addedOn: '${today}', review }];
       s.notes.items.push({ id: 'ntReset', categoryId: '', title: 'Separate note', text: 'This must stay', pinned: false, createdAt: '${today}T08:00', updatedAt: '${today}T08:00' });
     }`);
-    const removed = [['session', 'ssReset'], ['review', 'rvReset'], ['arabic_attempt', 'aaReset'], ['arabic_lesson', 'lesson.arabic-fusha-register'], ['cyber_attempt', 'caReset']];
+    const removed = [['session', 'ssReset'], ['review', 'rvReset'], ['arabic_attempt', 'aaReset'], ['arabic_lesson', 'lesson.arabic-fusha-register'], ['arabic_practice', 'lesson.arabic-fusha-register'], ['cyber_attempt', 'caReset']];
     check('all kinds of learning history reach the account before resetting', await eventually(async () => (await Promise.all(removed.map(([kind, id]) => record(kind, id)))).every(r => r && !r.deleted)));
     await phone.returnToApp();
     check('the second device receives the original learning history', await phone.until(`JSON.parse(localStorage.getItem('${KEY}')).study.sessions.some(s => s.id === 'ssReset') && JSON.parse(localStorage.getItem('${KEY}')).cybersecurity.attempts.some(a => a.id === 'caReset')`));
@@ -103,7 +104,7 @@ async function synced(d) {
 
     const restore = await checkedBackup('Final backup'), beforeReset = await mac.data();
     await mac.click('[data-action=study-reset]'); await mac.until(`!!document.querySelector('dialog[open]')`); await mac.answer(true);
-    check('a confirmed reset clears each kind of local learning history', await mac.until(`(() => { const s = JSON.parse(localStorage.getItem('${KEY}')); return !s.study.sessions.length && !s.study.reviews.length && !s.arabic.attempts.length && !s.arabic.lessons.length && !s.cybersecurity.attempts.length; })()`));
+    check('a confirmed reset clears each kind of local learning history', await mac.until(`(() => { const s = JSON.parse(localStorage.getItem('${KEY}')); return !s.study.sessions.length && !s.study.reviews.length && !s.arabic.attempts.length && !s.arabic.lessons.length && !s.arabic.practice.length && !s.cybersecurity.attempts.length; })()`));
     const reset = await mac.data();
     check('the outline, concept questions and separate notes remain', reset.study.stages[0].courses[0].modules[0].sections[0].tasks[0].done === false && reset.study.concepts[0].prompt === beforeReset.study.concepts[0].prompt && eq(reset.notes, beforeReset.notes));
     check('revision cards remain with fresh schedules', reset.arabic.cards[0].review.reps === 0 && reset.cybersecurity.cards[0].review.due === null && reset.study.concepts[0].review.reps === 0);
@@ -113,7 +114,7 @@ async function synced(d) {
     check('every unrelated MyDay section is unchanged', eq(unrelated(reset), unrelated(beforeReset)));
     check('all removed history becomes account deletion markers', await eventually(async () => (await Promise.all([...removed, ['session', 'ssAfterBackup'], ['session', 'ssDuringConfirm']].map(([kind, id]) => record(kind, id)))).every(r => r?.deleted)));
     await phone.returnToApp();
-    check('the second device receives all deletions and fresh schedules', await phone.until(`(() => { const s = JSON.parse(localStorage.getItem('${KEY}')); return !s.study.sessions.length && !s.study.reviews.length && !s.arabic.attempts.length && !s.arabic.lessons?.length && !s.cybersecurity.attempts.length && s.arabic.cards[0]?.review.reps === 0; })()`));
+    check('the second device receives all deletions and fresh schedules', await phone.until(`(() => { const s = JSON.parse(localStorage.getItem('${KEY}')); return !s.study.sessions.length && !s.study.reviews.length && !s.arabic.attempts.length && !s.arabic.lessons?.length && !s.arabic.practice?.length && !s.cybersecurity.attempts.length && s.arabic.cards[0]?.review.reps === 0; })()`));
     check('the second device keeps separate notes and course content', (await phone.data()).notes.items.some(n => n.id === 'ntReset') && (await phone.data()).study.stages[0].courses[0].modules[0].sections[0].tasks[0].note === 'Keep this course note');
     await synced(mac); await synced(phone);
 

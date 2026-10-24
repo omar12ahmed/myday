@@ -77,6 +77,9 @@ const clone = o => JSON.parse(JSON.stringify(o));
   // …and a word you kept (Keep a word), practised both ways, with a note and where it came from.
   raw.arabic.words = [{ id: 'kwsync00001', ar: 'بَيْتٌ', meaning: 'house', note: 'from the profile', from: 'asset.arabic-profile', addedOn: '2026-10-12',
     recognise: { reps: 1, interval: 3, lapses: 0, due: '2026-10-15' }, write: { reps: 0, interval: 0, lapses: 0, due: '2026-10-13' } }];
+  // …and Practise again: one lesson in revision after its Try and challenge, another with a tick in a session still open.
+  raw.arabic.practice = [{ id: 'lesson.arabic-origin-location', tried: '2026-10-11', challenged: '2026-10-11', addedOn: '2026-10-11', review: { reps: 1, interval: 21, lapses: 0, due: '2026-11-01' } },
+    { id: 'lesson.arabic-fusha-register', open: { attemptId: 'aa1', did: ['try'] } }];
   raw.study.reviews.push({ id: 'rv2', conceptId: 'lexeme.arabic-seed-001:recognise', title: 'أَنَا → I', date: '2026-10-11', at: '2026-10-11T09:30', kind: 'written', outcome: 'right', graded: 'self', chosen: null, support: 'own', rating: 'good', gap: 4, due: '2026-10-15' });
   // …and a Cybersecurity knowledge check in revision (after 1.17.1).
   raw.cybersecurity = { pathId: 'path.core', attempts: [], cards: [{ id: 'assessment.lab-isolation-check.q2', addedOn: '2026-10-14', review: { reps: 0, interval: 0, lapses: 0, due: '2026-10-15' }, anotherWay: { text: 'Think of DNS as a phone book: you look up a name to get the number.', by: 'Gemini 3.8 Flash', on: '2026-10-16' } }] };
@@ -86,7 +89,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   console.log('\n[1] Every record survives the trip unchanged');
   const recs = R.localRecords(data);
   const kinds = [...new Set([...recs.keys()].map(k => R.splitKey(k).kind))].sort();
-  check('every kind of record is there', eq(kinds, ['arabic', 'arabic_attempt', 'arabic_card', 'arabic_lesson', 'arabic_word', 'book', 'commitment', 'context', 'cyber_card', 'cybersecurity', 'daily', 'day', 'finance', 'fitness', 'food', 'holidays', 'list', 'note', 'notes', 'pay', 'patterns', 'project', 'queue', 'recipe', 'review', 'rota', 'session', 'settings', 'study', 'task', 'tasks', 'workout', 'wsession'].filter(k => k !== 'context' && k !== 'day').sort()), kinds);
+  check('every kind of record is there', eq(kinds, ['arabic', 'arabic_attempt', 'arabic_card', 'arabic_lesson', 'arabic_practice', 'arabic_word', 'book', 'commitment', 'context', 'cyber_card', 'cybersecurity', 'daily', 'day', 'finance', 'fitness', 'food', 'holidays', 'list', 'note', 'notes', 'pay', 'patterns', 'project', 'queue', 'recipe', 'review', 'rota', 'session', 'settings', 'study', 'task', 'tasks', 'workout', 'wsession'].filter(k => k !== 'context' && k !== 'day').sort()), kinds);
   const changedOnTheWay = [...recs].filter(([key, c]) => R.fingerprint(R.cleanRecord(key, clone(c))) !== R.fingerprint(c)).map(([k]) => k);
   check('checked as it arrives on another device, every record is exactly the same (so devices never drift apart)', changedOnTheWay.length === 0, changedOnTheWay);
   const putBack = clone(R.freshState());
@@ -107,6 +110,16 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('a word removed elsewhere leaves a device that never had one exactly as it was', !('words' in none.arabic)); }
   { const has = clone(R.normalize(raw)); R.putRecord(has, 'arabic_word:kwsync00001', null);
     check('…and removes it from a device that had it', Array.isArray(has.arabic.words) && has.arabic.words.length === 0); }
+  const noPractice = clone(raw); delete noPractice.arabic.practice;
+  check('MyDay data from before Practise again sends no practice records', ![...R.localRecords(R.normalize(noPractice)).keys()].some(k => R.splitKey(k).kind === 'arabic_practice'));
+  check('each lesson to practise again is its own record: its days, its place in revision, and ticks in a session still open', recs.get('arabic_practice:lesson.arabic-origin-location').review.due === '2026-11-01'
+    && recs.get('arabic_practice:lesson.arabic-origin-location').challenged === '2026-10-11' && eq(recs.get('arabic_practice:lesson.arabic-fusha-register').open, { attemptId: 'aa1', did: ['try'] }));
+  { const none = clone(R.freshState()); R.putRecord(none, 'arabic_practice:lesson.arabic-origin-location', null);
+    check('a practice record cleared elsewhere leaves a device that never had one exactly as it was', !('practice' in none.arabic)); }
+  { const has = clone(R.normalize(raw)); R.putRecord(has, 'arabic_practice:lesson.arabic-origin-location', null);
+    check('…and removes it from a device that had it, leaving the other', eq(has.arabic.practice.map(p => p.id), ['lesson.arabic-fusha-register'])); }
+  check('a practice record with nothing in it, or for another course, isn\'t taken in', R.cleanRecord('arabic_practice:lesson.arabic-origin-location', { id: 'lesson.arabic-origin-location' }) === null
+    && R.cleanRecord('arabic_practice:lesson.learning-evidence', { id: 'lesson.learning-evidence', tried: '2026-10-11' }) === null);
 
   console.log('\n[1b] A project with milestones and decisions');
   {

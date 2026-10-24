@@ -2,7 +2,7 @@ import { isDateKey } from '../dates';
 import { intIn, isObj } from '../util';
 import { cleanAnotherWay } from '../study/anotherWay';
 import type { Outcome, Support } from '../types';
-import { ARABIC_CORE_PATH, emptyArabic, MODALITIES, VARIANTS, type ArabicAttempt, type ArabicCard, type ArabicData, type ArabicLesson, type ArabicMark, type Help, type KeptWord, type Review, KEPT_FROM } from './types';
+import { ARABIC_CORE_PATH, emptyArabic, MODALITIES, VARIANTS, type ArabicAttempt, type ArabicCard, type ArabicData, type ArabicLesson, type ArabicMark, type ArabicPractice, type Help, type PracticeStep, type KeptWord, type Review, KEPT_FROM } from './types';
 
 // Arabic records are checked like everything else MyDay opens: anything malformed is dropped (and counted),
 // never guessed at, and nothing from another course can slip in. Fields a newer MyDay adds to the section are
@@ -88,6 +88,23 @@ export function cleanArabicLesson(raw: unknown): ArabicLesson | null {
   return out;
 }
 
+// Practise again on a lesson: its id is the lesson's (the sync record's); days are kept only as days, ticks only for a
+// session id and the two steps; a schedule only with the day it joined. One with nothing left in it isn't kept.
+const STEPS: PracticeStep[] = ['try', 'challenge'];
+export function cleanArabicPractice(raw: unknown): ArabicPractice | null {
+  if (!isObj(raw) || typeof raw.id !== 'string' || !LESSON.test(raw.id)) return null;
+  const out: ArabicPractice = { id: raw.id };
+  if (isDateKey(raw.tried)) out.tried = raw.tried;
+  if (isDateKey(raw.challenged)) out.challenged = raw.challenged;
+  const o = raw.open;
+  if (isObj(o) && typeof o.attemptId === 'string' && /^[A-Za-z0-9_-]{1,100}$/.test(o.attemptId) && Array.isArray(o.did)) {
+    const did = STEPS.filter(s => (o.did as unknown[]).includes(s));
+    if (did.length) out.open = { attemptId: o.attemptId, did };
+  }
+  if (isDateKey(raw.addedOn) && isObj(raw.review)) { out.addedOn = raw.addedOn; out.review = review(raw.review); }
+  return out.tried || out.challenged || out.open || out.review ? out : null;
+}
+
 export function normalizeArabic(raw: unknown, report = { dropped: 0 }): ArabicData {
   if (raw === undefined) return emptyArabic();
   if (!isObj(raw)) { report.dropped++; return emptyArabic(); }
@@ -117,6 +134,17 @@ export function normalizeArabic(raw: unknown, report = { dropped: 0 }): ArabicDa
       const l = cleanArabicLesson(r);
       if (!l || lessonIds.has(l.id)) { report.dropped++; continue; }
       lessonIds.add(l.id); out.lessons.push(l);
+    }
+  }
+  delete out.practice;
+  if (raw.practice !== undefined) {
+    out.practice = [];
+    if (!Array.isArray(raw.practice)) report.dropped++;
+    const practiceIds = new Set<string>();
+    for (const r of Array.isArray(raw.practice) ? raw.practice.slice(0, 500) : []) {
+      const p = cleanArabicPractice(r);
+      if (!p || practiceIds.has(p.id)) { report.dropped++; continue; }
+      practiceIds.add(p.id); out.practice.push(p);
     }
   }
   delete out.words;

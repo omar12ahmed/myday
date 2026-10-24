@@ -5,7 +5,7 @@
 // Study's `arabic_lesson` records must be left alone by a release that doesn't know them (before 1.47.0): not taken
 // in, not changed, not deleted, and never stopping it syncing. A previous release that knows them takes them in like
 // any other record; [2] and [3] check whichever applies. [7] does the same for Keep a word's `arabic_word` records
-// (Keep a word). Made-up data only.
+// (Keep a word), and [9] for Practise again's `arabic_practice` records. Made-up data only.
 const fs = require('fs'), os = require('os'), path = require('path');
 const { isDeepStrictEqual: eq } = require('node:util');
 const D = require('./cdp-devices.js'), S = require('./supabase-standin.js');
@@ -185,6 +185,29 @@ async function signIn(d, url) {
     check('…with the links unchanged in its saved data', eq(backPr.resources, resources) && backPr.stage === 'understand', backPr.resources);
     check('the Resources card shows both links: the titled one with its site and note, and the untitled one by its site', await now.until(`(() => { const t = document.querySelector('#projectResources')?.textContent || ''; return t.includes('Timber merchant') && t.includes('example-timber.co.uk') && t.includes('Note: Ask about offcuts') && t.includes('example.org'); })()`, 15000), await now.text('#projectResources'));
     check('…and each link opens its address in a new tab', await now.ev(`[...document.querySelectorAll('#projectResources [data-s=resource-link]')].map(a => a.getAttribute('href') + '|' + a.target).join()`) === 'https://example-timber.co.uk/oak|_blank,https://www.example.org/guide|_blank', await now.ev(`[...document.querySelectorAll('#projectResources [data-s=resource-link]')].map(a => a.getAttribute('href'))`));
+
+    console.log('\n[9] A lesson to practise again (arabic_practice) is left alone by a release that doesn\'t know it');
+    const knowsPractice = fs.readdirSync(assets).some(f => f.endsWith('.js') && fs.readFileSync(path.join(assets, f), 'utf8').includes('arabic_practice'));
+    console.log(`The previous release ${knowsPractice ? 'knows' : 'doesn\u2019t know'} arabic_practice records.`);
+    const practice = { id: 'lesson.arabic-fusha-register', tried: today, addedOn: today, review: { reps: 0, interval: 7, lapses: 0, due: today } };
+    await now.returnToApp();
+    await now.setData(`s => { s.arabic.practice = [${JSON.stringify(practice)}]; }`);
+    check('this release sends the lesson to practise again as its own record', await eventually(async () => { const r = await record('arabic_practice', practice.id); return !!r && !r.deleted && eq(r.data, practice); }) && await synced(now));
+    const sentPractice = await record('arabic_practice', practice.id);
+    await before.returnToApp();
+    check('the previous release syncs normally with that record in the account', await synced(before) && (await before.status()) === 'synced');
+    if (knowsPractice) check('…and takes it in like any other record (it knows this kind)', await before.until(`(JSON.parse(localStorage.getItem('${KEY}')).arabic.practice || []).length === 1`, 20000) && eq((await before.data()).arabic.practice, [practice]), (await before.data()).arabic.practice);
+    else check('…without taking it in: its saved data has no practice records', !('practice' in (await before.data()).arabic));
+    await before.setData(`s => { s.arabic.pathId = 'path.arabic-core-b2'; s.arabic.lessons = [{ id: 'lesson.arabic-fusha-register', readyOn: '${today}' }]; }`);
+    check('an Arabic change on the previous release, on the same lesson, syncs as usual', await eventually(async () => (await record('arabic_lesson', 'lesson.arabic-fusha-register'))?.data?.readyOn === today) && await synced(before));
+    check('…and leaves the practice record exactly as it was sent', eq(await record('arabic_practice', practice.id), sentPractice));
+    await now.returnToApp();
+    check('back on this release the lesson to practise again is just as it was, beside the Ready mark', await now.until(`JSON.parse(localStorage.getItem('${KEY}')).arabic.lessons?.some(l => l.readyOn === '${today}')`, 20000) && eq((await now.data()).arabic.practice, [practice]));
+    await now.setData(`s => { s.arabic.practice = []; s.arabic.lessons = []; }`);
+    check('clearing it here leaves a tombstone in the account', await eventually(async () => !!(await record('arabic_practice', practice.id))?.deleted) && await synced(now));
+    await before.returnToApp();
+    if (knowsPractice) check('…which the previous release takes in as a removal, syncing normally', await synced(before) && await before.until(`!(JSON.parse(localStorage.getItem('${KEY}')).arabic.practice || []).length`, 20000));
+    else check('…which the previous release ignores, syncing normally', await synced(before) && (await before.status()) === 'synced' && !('practice' in (await before.data()).arabic));
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {

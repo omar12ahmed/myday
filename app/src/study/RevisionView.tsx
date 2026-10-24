@@ -37,6 +37,7 @@ export interface Asked {
   title: string;                 // its name in your history and in the round's summary (may hold the answer)
   path?: string;                 // the small line above the question, when the title would give the answer away
   prompt: ReactNode;
+  task?: ReactNode;              // under the question: what to do (a lesson to practise again)
   choices: string[]; correct: number | null;
   hint: string;
   answer: ReactNode; answerLabel: string;                 // written questions: shown after "Show the answer"
@@ -46,6 +47,7 @@ export interface Asked {
   notYet?: ReactNode;            // what to do when it hasn't clicked yet (otherwise: ideas at the end of the round)
   arabic?: boolean;              // your typed answer may be Arabic (typed right to left when it is)
   interval: number;              // the last gap in its schedule, for the Again / Hard / Good labels
+  gap?: (prev: number, rating: Rating) => number; // its own gaps (Practise again's), when they aren't revision's
   // "Explain it another way" (AnotherWay.tsx): the question in plain words for the AI (your answer is added on the tap).
   explain?: Pick<ExplainContext, 'subject' | 'lessonId' | 'question' | 'answer' | 'explanation'>;
   save(d: MyDayData, k: DateKey, a: Answered, rating: Rating): boolean;
@@ -77,7 +79,7 @@ function described(data: MyDayData, id: string): { title: string; href: string; 
   if (cyberCardOf(data, id)) return { title: last?.title || 'Cybersecurity', href: '#study/cybersecurity/' + lessonOfCheck(id), concept: false };
   if (!cardOf(data, id)) return null;
   const ref = cardRef(id);
-  return { title: last?.title || 'Arabic', href: ref.kind === 'check' ? '#study/arabic/' + ref.lessonId : '#study/arabic/vocabulary', concept: false };
+  return { title: last?.title || 'Arabic', href: ref.kind === 'check' || ref.kind === 'practice' ? '#study/arabic/' + ref.lessonId : '#study/arabic/vocabulary', concept: false };
 }
 const inRevision = (d: MyDayData, id: string) => d.study.concepts.some(c => c.id === id) || !!cardOf(d, id) || !!cyberCardOf(d, id);
 const opening = <Card><p role="status" className="m-0">Opening…</p></Card>;
@@ -155,7 +157,7 @@ function RoundOver({ data, r }: { data: MyDayData; r: Round | null }) {
 
 export function Question({ data, r, q, at }: { data: MyDayData; r: Round; q: Asked; at: number }) {
   const shown = r.phase === 'shown';
-  const gapLabel = (rating: Rating) => { const g = nextGap(q.interval, rating); return g === 1 ? 'tomorrow' : `in ${g} days`; };
+  const gapLabel = (rating: Rating) => { const g = (q.gap ?? nextGap)(q.interval, rating); return g === 1 ? 'tomorrow' : `in ${g} days`; };
 
   // While asking: choose an answer, show it, say "not sure", or take a hint.
   const choose = (i: number) => changeRound(x => { x.chosen = i; x.outcome = i === q.correct ? 'right' : 'wrong'; x.phase = 'shown'; });
@@ -180,6 +182,7 @@ export function Question({ data, r, q, at }: { data: MyDayData; r: Round; q: Ask
       </div>
       <p className="st-path text-[13px] text-fg-3 m-0">{q.path ?? q.title}</p>
       <h2 id="q-h" className="st-prompt text-[21px] leading-snug mt-1.5 mb-3.5 whitespace-pre-wrap">{q.prompt}</h2>
+      {q.task && <div className="mb-3.5">{q.task}</div>}
 
       {q.kind === 'choice' ? (
         <div className="grid gap-2.5">

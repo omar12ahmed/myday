@@ -2,7 +2,9 @@
 
 **Status:** release (a), one focus and Study home (§3, §4), published in 1.51.0 (24 October 2026); release (b),
 the lesson journey, published for Arabic in 1.53.0 and for Cybersecurity in 1.55.0; release (c), Keep a word,
-in 1.57.0 (24 October 2026, its migration applied that day); (d)–(f) planned. The owner's decisions of 24 October
+in 1.57.0 (24 October 2026, its migration applied that day); release (d), Practise again, built on branch
+`practise-again` (its migration not yet applied), with Progress and the weekly prompts as their own release next;
+(e)–(f) planned. The owner's decisions of 24 October
 2026 are in §2. This builds on
 `specs/adaptive-study.md` (lesson states, answer marks, revision from every lesson, the next-step rules), published
 in 1.47.0; this plan is a series of later, separate releases (§14).
@@ -126,9 +128,9 @@ One page, in this order, with a sticky step bar (each step a 44 px target) that 
 - **Listening and speaking:** Try shows the play buttons (with Slower) and a "Say it aloud, then compare" prompt where
   the lesson uses them. There's no recording yourself for now (decision 7). Listening and speaking stay untested
   unless you tick that you used a recording or a person.
-- **Steps you did are recorded.** At Reflect, the steps you did are saved on the lesson (`arabic.lessons[id].tried`
-  and `.challenged`: the last day you did its Try and its mini challenge). Progress uses this (§11), and so does
-  Practise again (§9).
+- **Steps you did are recorded.** At Reflect, the steps you did are saved for the lesson (`tried` and `challenged`:
+  the last day you did its Try and its mini challenge). Progress uses this (§11), and so does Practise again (§9),
+  whose record holds them (`arabic.practice`, §9 "As built").
 
 **Light / Normal / Deep.** Three names for how you want to study now. They're shown on the Now card and the lesson's
 session choice, and are built only from what exists:
@@ -238,8 +240,25 @@ Not everything should be a flashcard: a skill needs doing again, not just rememb
 - **In a round:** at most one Practise again card per round of 5, since it takes longer than a question. It opens the
   lesson at its Try step, with the explained answer hidden until you ask. You then mark it with the usual outcome and
   support, and that answer goes into `study.reviews`.
-- **Saved:** its schedule sits in the lesson's record (`arabic.lessons[id].practice`, synced as `arabic_lesson`), not
-  in `arabic.cards`, because older versions drop card ids they don't recognise.
+- **Saved:** its schedule sits in its own record, not in `arabic.cards`, because older versions drop card ids they
+  don't recognise.
+- **As built (release d, 24 October 2026):** not on the lesson's record after all. Every release since 1.47.0
+  rebuilds an `arabic_lesson` record from the fields it knows, on load as well as on save, so a field added there
+  would be lost (and the loss synced) as soon as a device opened the previous release. Instead a new optional
+  `arabic.practice` holds, per lesson: `tried` and `challenged` (the last days), `open` (what you've ticked in the
+  session still open: sessions' own records are rebuilt the same way by older releases), and once it has joined,
+  `addedOn` and `review`. It syncs as a new kind, `arabic_practice` (migration
+  `20261024200000_sync_arabic_practice.sql`), which older releases ignore, so saved data stays schema 5 (the owner's
+  exception; `tests/app-sync-previous.test.js` [9]). The rules are `app/src/data/arabic/practice.ts`, with
+  `bringBackPractice` in `app/src/data/arabic/lessons.ts` (it places the card within the 8 a day). At Reflect,
+  "Did you do its Try it or mini challenge?" offers the steps the lesson has. Finishing records the day; when the
+  lesson isn't in revision it joins, about a week later, and the finish card says the day, with "Don't bring it
+  back". Discarding the session takes its ticks. The card is `<lesson id>:practise`: one per lesson, at most one per
+  round. In the round it shows the lesson's Try it and mini challenge (`app/src/study/arabic/PractiseQuestion.tsx`)
+  with the explained answer hidden until you ask, then the usual marks. Its gaps are 7 → 21 → 60 → 180 on Good,
+  the same gap on Hard, and back to 7 on Again. The lesson's place line says when you last did them and when it's
+  back. A Study reset clears it. Cybersecurity's "Learn by doing" comes with Cybersecurity's move to the adaptive
+  rules.
 
 ## 10. The Cybersecurity portfolio, with files
 
@@ -352,7 +371,7 @@ Each step is its own release, finished and checked before the next:
 | a. One focus and Study home (§3, §4) | none new; the existing fields get one control | study-guided-rules, app-study, app-today (the same next step on both), app-design, phone layout, 44 px |
 | b. Lesson journey with Light / Normal / Deep and the restart (§5), Arabic then Cybersecurity | device-only `myday.study.lessonStep`; `tried` / `challenged` on `arabic.lessons` | app-arabic, app-cybersecurity, app-teaching, app-teaching-voice, app-pronunciation, app-study (modes and restart), phone layout |
 | c. Keep a word (§6) | `arabic.words`, record kind `arabic_word`, migration | arabic-rules, app-arabic, storage, app-storage, sync-records, sync-db, app-sync, app-study-reset, going back to the previous release |
-| d. Practise again (§9) and Progress (§11) | `practice` on `arabic.lessons`; the weekly prompts in the existing "Week of …" note | arabic-rules (the 7/21/60 ladder, one per round, the 8-a-day count), app-arabic, app-study, projects-rules and app-projects (the "Your week" prompts) |
+| d. Practise again (§9) and Progress (§11) | `arabic.practice`, record kind `arabic_practice`, migration (§9 "As built"); the weekly prompts in the existing "Week of …" note | arabic-rules (the 7/21/60 ladder, one per round, the 8-a-day count), sync-records, sync-db, app-arabic, app-study-reset, going back to the previous release; then Progress: app-study, projects-rules and app-projects (the "Your week" prompts) |
 | e. Cybersecurity portfolio with files (§10) | `cybersecurity.portfolio`, record kind `cyber_portfolio`; the private R2 bucket and the Edge Function that guards it (`deploy/R2.md`); IndexedDB file cache | cybersecurity-rules, app-cybersecurity, storage, app-storage, sync-records, sync-db, app-sync, a storage-policy test (one account can't read another's files; the local stand-in `tests/supabase-standin.js` has no file storage yet, so either extend it or check on the Mac with the two disposable accounts), file type and size refusals, the secrets warning, export, phone layout; the Fable security review |
 | f. Graduated help and "Check my answer" (§12) | none in the app's data | ai-rules, ai-server, app-ai, ai-deno, plus the blind evaluation |
 

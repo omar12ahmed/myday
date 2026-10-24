@@ -4,7 +4,7 @@
 import { useSyncExternalStore } from 'react';
 import { todayKey } from '../data/dates';
 import { ROUND_SIZE } from '../data/study/common';
-import { dueIds, type Scope } from '../data/study/queue';
+import { roundIds, type Scope } from '../data/study/queue';
 import type { DateKey, MyDayData, Outcome, Rating, Support } from '../data/types';
 
 export interface Question { phase: 'ask' | 'shown'; typed: string; chosen: number | null; hint: boolean; support: Support; outcome: Outcome | null }
@@ -18,9 +18,10 @@ const set = (r: Round | null) => { round = r; listeners.forEach(fn => fn()); };
 const subscribe = (fn: () => void) => { listeners.add(fn); return () => { listeners.delete(fn); }; };
 export const useRound = () => useSyncExternalStore(subscribe, () => round);
 
-// A new round: up to ROUND_SIZE of what's ready to revise (oldest due first).
+// A new round: up to ROUND_SIZE of what's ready to revise (oldest due first), at most one of them a lesson to
+// practise again.
 export function startRound(d: MyDayData, scope: Scope = 'all') {
-  const k = todayKey(), ids = dueIds(d, k, scope).slice(0, ROUND_SIZE);
+  const k = todayKey(), ids = roundIds(d, k, scope, ROUND_SIZE);
   set(ids.length ? { day: k, scope, ids, i: 0, results: [], ...freshQuestion() } : null);
 }
 export const clearRound = () => set(null);

@@ -11,9 +11,10 @@ import { dueIds, nextDueDate } from '../../data/study/queue';
 import { understanding, UNDERSTANDING } from '../../data/study/revision';
 import type { MyDayData } from '../../data/types';
 import { addCards, cardOf, cardRef, nextWords, removeCards, wordCard, wordInRevision, wordsAddedOn } from '../../data/arabic/cards';
-import { ADD_A_FEW, MODALITIES, NEW_WORDS_A_DAY, type ArabicAttempt, type Help, type Variant } from '../../data/arabic/types';
+import { ADD_A_FEW, MODALITIES, NEW_WORDS_A_DAY, type ArabicAttempt, type Help, type PracticeStep, type Variant } from '../../data/arabic/types';
 import { beginSession, changeSession, discardSession, finishSession, markRevealed, openSession, sessionsFor, writeFirstAnswer } from '../../data/arabic/sessions';
-import { bringBackNotYet, clearRevisit, discardMarks, flagRevisit, lessonRecord, markCheck, markReady, marksIn, practisedUnmarked, unmarkReady } from '../../data/arabic/lessons';
+import { bringBackNotYet, bringBackPractice, clearRevisit, discardMarks, flagRevisit, lessonRecord, markCheck, markReady, marksIn, practisedUnmarked, unmarkReady } from '../../data/arabic/lessons';
+import { discardTicks, practiceCardId, practiceCards, practiceOf, tickStep, ticksIn } from '../../data/arabic/practice';
 import { looksReady, MODE_LABEL, modeOf, STATE_LABEL, STEP_LABEL, type JourneyStep, type LessonState, type Mode, type StepKind } from '../../data/study/mastery';
 import { OUTCOME, SUPPORT } from '../../data/study/common';
 import type { Outcome, Support } from '../../data/types';
@@ -314,7 +315,8 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
       </Card>; },
     reflect: () => <div id="ar-step-reflect" className={STEP_SCROLL} data-ar-step="reflect">
       {finished && <FinishedCard data={data} lessonId={l.id} checks={checkIds} finished={finished} next={next} onClose={() => setFinished(null)} />}
-      {session && <SessionFinish lesson={l} session={session} onFinished={f => { setFinished(f); setStep('reflect'); toStep('ar', 'reflect'); }} />}
+      {session && <SessionFinish data={data} lesson={l} session={session} steps={[...(teaching.lesson ? ['try' as const] : []), ...(challenge ? ['challenge' as const] : [])]}
+        onFinished={f => { setFinished(f); setStep('reflect'); toStep('ar', 'reflect'); }} />}
     </div>,
   };
 
@@ -392,8 +394,9 @@ const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 const HELP: Record<Help, string> = { independent: 'On my own', hint: 'With a hint', guided: 'Guided' };
 const when = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 
-// Just finished: which session, and the checks that haven't clicked yet that came back by themselves.
-interface Finished { attemptId: string; notYet: { id: string; due: string }[]; variant: Variant }
+// Just finished: which session, the checks that haven't clicked yet that came back by themselves, and the day the
+// lesson comes back to practise again, when it joined revision just now.
+interface Finished { attemptId: string; notYet: { id: string; due: string }[]; variant: Variant; practice: string | null }
 
 // Before a session: choose a length, grouped as Light, Normal and Deep (three names over the lesson's own sessions).
 // The suggestion comes from energy and free time; any of them counts, and you can finish early.
@@ -419,20 +422,25 @@ function SessionChoice({ data, lesson: l, suggested, chosen, setChosen, onBegin 
   </Card>;
 }
 
-// Reflect, while a session is open: what you practised, how much help, what to revisit, then finish (or discard).
-function SessionFinish({ lesson: l, session: open, onFinished }: { lesson: Lesson; session: ArabicAttempt; onFinished: (f: Finished) => void }) {
+// Reflect, while a session is open: what you practised, whether you did its Try it and mini challenge, how much
+// help, what to revisit, then finish (or discard).
+const DID: Record<PracticeStep, string> = { try: 'Its Try it', challenge: 'Its mini challenge' };
+function SessionFinish({ data, lesson: l, session: open, steps, onFinished }: { data: MyDayData; lesson: Lesson; session: ArabicAttempt; steps: PracticeStep[]; onFinished: (f: Finished) => void }) {
   const confirm = useConfirm();
   const change = (fn: (a: ArabicAttempt) => void) => update(d => { if (!changeSession(d, open.id, fn)) return false; });
   const v = l.variants.find(x => x.mode === open.variant);
   async function discard() {
-    if (await confirm({ title: 'Discard this session?', body: 'Its answers, marks and note will be removed. Your other sessions stay as they are.', confirmLabel: 'Discard', cancelLabel: 'Keep it' })) update(d => { discardMarks(d, open.id, l.id); if (!discardSession(d, open.id)) return false; });
+    if (await confirm({ title: 'Discard this session?', body: 'Its answers, marks and note will be removed. Your other sessions stay as they are.', confirmLabel: 'Discard', cancelLabel: 'Keep it' })) update(d => { discardMarks(d, open.id, l.id); discardTicks(d, open.id, l.id); if (!discardSession(d, open.id)) return false; });
   }
-  // Finishing saves the session and brings back, from tomorrow, the checks you marked Not right or Not sure.
+  // Finishing saves the session and brings back, from tomorrow, the checks you marked Not right or Not sure; what you
+  // ticked of its Try it and mini challenge is saved, and the first time the lesson comes back to practise again.
   function finish() {
-    let notYet: Finished['notYet'] = [];
+    let notYet: Finished['notYet'] = [], practice: string | null = null;
     const k = todayKey();
-    if (update(d => { if (!finishSession(d, open.id)) return false; notYet = bringBackNotYet(d, open.id, l.id, k); })) onFinished({ attemptId: open.id, notYet, variant: open.variant });
+    if (update(d => { if (!finishSession(d, open.id)) return false; notYet = bringBackNotYet(d, open.id, l.id, k); practice = bringBackPractice(d, open.id, l.id, k); }))
+      onFinished({ attemptId: open.id, notYet, variant: open.variant, practice });
   }
+  const did = ticksIn(data, open.id, l.id);
   return <Card tone="accent" data-ar-session="open">
     <Eyebrow><NotebookPen className="inline mr-1" size={16} aria-hidden="true" /> {MODE_LABEL[modeOf(open.variant)]} · {cap(open.variant)}{v ? ` · ${v.minutes} min` : ''} · started {when(open.startedAt)}</Eyebrow>
     <h3>Reflect</h3>
@@ -440,6 +448,11 @@ function SessionFinish({ lesson: l, session: open, onFinished }: { lesson: Lesso
     <h4 className="mb-1">What did you practise?</h4>
     <p className="text-sm text-fg-2 mt-0">Tick only what you actually did. Listening and speaking need a recording or a person.</p>
     <Choices label="What did you practise?">{MODALITIES.map(m => <Choice key={m} on={open.practised.includes(m)} data-action="ar-practised" data-v={m} onClick={() => change(a => { a.practised = a.practised.includes(m) ? a.practised.filter(x => x !== m) : [...a.practised, m]; })}>{cap(m)}</Choice>)}</Choices>
+    {steps.length > 0 && <div data-ar-did={did.join(' ') || 'none'}>
+      <h4 className="mb-1">Did you do {steps.length === 2 ? 'its Try it or mini challenge' : steps[0] === 'try' ? 'its Try it' : 'its mini challenge'}?</h4>
+      <p className="text-sm text-fg-2 mt-0">Tick what you did in this session. The first time, the lesson comes back to practise again, about a week later.</p>
+      <Choices label="Did you do them?">{steps.map(s => <Choice key={s} on={did.includes(s)} data-action="ar-did" data-v={s} onClick={() => update(d => { if (!tickStep(d, open.id, s, !did.includes(s))) return false; })}>{DID[s]}</Choice>)}</Choices>
+    </div>}
     <h4 className="mb-1">How much help did you use?</h4>
     <Choices label="How much help did you use?">{(Object.keys(HELP) as Help[]).map(h => <Choice key={h} on={open.help === h} data-action="ar-help" data-v={h} onClick={() => change(a => { a.help = h; })}>{HELP[h]}</Choice>)}</Choices>
     <Field label="What to revisit next time" htmlFor="arRevisit"><CommitTextarea key={open.id} id="arRevisit" rows={2} dir="auto" className="ar-input" data-s="ar-revisit" defaultValue={open.revisit} placeholder="e.g. when to use مِن and when في" onCommit={el => change(a => { a.revisit = el.value.slice(0, 1000); })} /></Field>
@@ -586,11 +599,11 @@ function RevisionGlance({ data }: { data: MyDayData }) {
   const k = todayKey(), refs = data.arabic.cards.map(c => cardRef(c.id));
   const due = dueIds(data, k, 'arabic').length, next = nextDueDate(data, k, 'arabic');
   const words = new Set(refs.flatMap(r => (r.kind === 'word' ? [r.lexemeId] : []))).size, checks = refs.filter(r => r.kind === 'check').length;
-  const kept = data.arabic.words?.length ?? 0, any = refs.length + kept;
+  const kept = data.arabic.words?.length ?? 0, practice = practiceCards(data).length, any = refs.length + kept + practice;
   return <Card data-ar-revision={due ? 'due' : any ? 'later' : 'none'}>
     <h3 className="flex items-center gap-2 mt-0"><RotateCcw size={20} aria-hidden="true" />Revision</h3>
     {any
-      ? <p className="text-[15px]">In your revision: {[words && plural(words, 'starter word'), kept && plural(kept, 'word') + ' you kept', checks && plural(checks, 'lesson check')].filter(Boolean).join(', ').replace(/, ([^,]*)$/, ' and $1')}. {due ? `${due} ready now.` : next ? `Next back on ${shortDate(next)}.` : ''}</p>
+      ? <p className="text-[15px]">In your revision: {[words && plural(words, 'starter word'), kept && plural(kept, 'word') + ' you kept', checks && plural(checks, 'lesson check'), practice && plural(practice, 'lesson') + ' to practise again'].filter(Boolean).join(', ').replace(/, ([^,]*)$/, ' and $1')}. {due ? `${due} ready now.` : next ? `Next back on ${shortDate(next)}.` : ''}</p>
       : <p className="text-[15px]">Bring words and lesson checks back at growing gaps, so they stay with you. Add them from <InlineLink href="#study/arabic/vocabulary">Vocabulary</InlineLink> or a lesson’s checks.</p>}
     {due > 0 && <Button variant="primary" data-action="ar-revise" onClick={() => startRevision('arabic')}>Revise Arabic</Button>}
   </Card>;
@@ -620,12 +633,18 @@ function FinishedCard({ data, lessonId, checks, finished, next, onClose }: { dat
   const done = state === 'ready' || state === 'holding';
   const markIt = () => { let added: { id: string; due: string }[] = []; const k = todayKey(); if (update(d => { added = markReady(d, lessonId, checks, k); })) setReadyNote(added.length ? `Its ${plural(added.length, 'check')} will come back ${backWhen(added.map(a => a.due))}.` : 'Its checks are already in your revision.'); };
   const keepOut = () => { const ids = back.map(b => b.id); if (update(d => { if (!removeCards(d, ids)) return false; })) setBack([]); };
+  const [practice, setPractice] = useState(finished.practice);
+  const practiceOut = () => { if (update(d => { if (!removeCards(d, [practiceCardId(lessonId)])) return false; })) setPractice(null); };
   return <Card tone="accent" data-ar-finished={ready ? 'looks-ready' : 'practised'}>
     <h3 className="mt-0">{done ? 'Ready to move on' : ready ? 'Looks ready to move on.' : 'Practised. Come back to it when you like.'}</h3>
     <p className="text-[15px]">Saved: what you did, not a score.{readyNote ? ` ${readyNote}` : ''}</p>
     {back.length > 0 && <div className="border-t border-outline pt-3 mb-3" data-ar-not-yet={back.length}>
       <p className="text-[15px] mt-0">{back.length === 1 ? '1 check that hasn’t clicked yet will' : `${back.length} checks that haven’t clicked yet will`} come back {backWhen(back.map(b => b.due))}.</p>
       <Button inline variant="ghost" data-action="ar-not-yet-out" onClick={keepOut}>Don’t bring {back.length === 1 ? 'it' : 'them'} back</Button>
+    </div>}
+    {practice && <div className="border-t border-outline pt-3 mb-3" data-ar-practice-back={practice}>
+      <p className="text-[15px] mt-0">You’ll practise it again on {shortDate(practice)}: its Try it and mini challenge, from memory, in revision.</p>
+      <Button inline variant="ghost" data-action="ar-practice-out" onClick={practiceOut}>Don’t bring it back</Button>
     </div>}
     {!done && !asking && <div className="flex flex-wrap gap-2">
       <Button variant={ready ? 'primary' : 'ghost'} data-action="ar-ready" onClick={markIt}>{ready ? 'Ready to move on' : 'Ready anyway'}</Button>
@@ -656,6 +675,7 @@ function LessonPlace({ data, lessonId, checks }: { data: MyDayData; lessonId: st
   const sessions = sessionsFor(data, lessonId).filter(a => a.finishedAt).length;
   // When its checks really come back: the earliest due day among them (the 8-a-day limit and earlier schedules included).
   const nextBack = checks.map(id => cardOf(data, id)?.review.due).filter((x): x is string => !!x).sort()[0];
+  const practice = practiceOf(data, lessonId), did = [practice?.tried && `its Try it on ${shortDate(practice.tried)}`, practice?.challenged && `its mini challenge on ${shortDate(practice.challenged)}`].filter(Boolean);
   const line = state === 'new' ? 'New: no session yet.'
     : state === 'practised' ? `Practised: ${plural(sessions, 'session')}. Mark it ready to move on when it clicks.`
     : state === 'ready' ? `Ready to move on since ${shortDate(rec!.readyOn!)}.${nextBack ? ` Its checks are in your revision: the next is ${backOn(nextBack)}.` : ''}`
@@ -665,6 +685,8 @@ function LessonPlace({ data, lessonId, checks }: { data: MyDayData; lessonId: st
   return <div className="rounded-tile bg-surface border border-outline px-4 py-3 my-3" data-ar-place={state}>
     <p className="m-0 font-semibold"><span dir="auto">{line}</span></p>
     {note && <p className="text-sm text-fg-2 m-0 mt-1" data-ar-place-note="">{note}</p>}
+    {practice && (did.length > 0 || practice.review) && <p className="text-sm text-fg-2 m-0 mt-1" data-ar-place-practice={practice.review?.due ?? 'out'}>
+      {did.length > 0 && `You last did ${did.join(' and ')}.`}{practice.review?.due && ` Practise again: ${backOn(practice.review.due, !practice.review.reps)}.`}</p>}
     {checks.length > 0 && <p className="text-sm text-fg-2 m-0 mt-1">{STATE_LABEL.holding} means its {plural(checks.length, 'written check')} came back right on your own a week or more after Ready. Listening and speaking aren’t part of them.</p>}
     {!asking && <div className="flex flex-wrap gap-2 mt-2">
       {state !== 'ready' && state !== 'holding' && <Button inline variant="ghost" data-action="ar-place-ready" onClick={ready}>Ready to move on</Button>}

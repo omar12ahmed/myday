@@ -63,6 +63,10 @@ function check(label, ok) {
       && keepWords.arabic.words[0].recognise.reps === 0 && keepWords.arabic.words[0].recognise.due === null && keepWords.arabic.words[0].write.reps === 0);
     rule.resetLearningProgress(withWords, { removeWords: true });
     check('…and removes them only if you choose', Array.isArray(withWords.arabic.words) && withWords.arabic.words.length === 0);
+    const withPractice = JSON.parse(JSON.stringify(state));
+    withPractice.arabic.practice = [{ id: 'lesson.arabic-fusha-register', tried: '2026-10-01', addedOn: '2026-10-01', review: { reps: 1, interval: 21, lapses: 0, due: '2026-10-29' } }];
+    rule.resetLearningProgress(withPractice);
+    check('A Study reset clears Practise again too (the days you did a lesson\'s Try and its place in revision)', Array.isArray(withPractice.arabic.practice) && withPractice.arabic.practice.length === 0);
 
     console.log('\n[Recommendations] Explicit choices and unfinished general courses');
     const fresh = () => { const d = rule.freshState(); d.study.stages = []; return d; };

@@ -6,7 +6,7 @@ import { MixedVoiceLabel } from '../arabic/Listen';
 import type { TeachingParts } from './useTeaching';
 
 // Text stays data: backticks become code; Arabic runs retain direction and language.
-function Prose({ text, voice }: { text: string; voice?: string }) {
+export function Prose({ text, voice }: { text: string; voice?: string }) {
   return <>{text.split(/(`[^`]+`)/g).map((part, i) => part.startsWith('`')
     ? <code key={i} dir="ltr" className="rounded bg-surface-2 px-1 break-words">{part.slice(1, -1)}</code>
     : <Mixed key={i} text={part} voice={voice ? `${voice}:${i}` : undefined} />)}</>;

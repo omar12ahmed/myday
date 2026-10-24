@@ -55,12 +55,27 @@ export interface KeptWord {
   recognise: Review;       // Arabic → meaning
   write: Review | null;    // meaning → Arabic, once you ask for it
 }
+// Practise again (specs/study-home-and-lessons.md §9), one per lesson: the last day a finished session included its
+// "Try it" and its mini challenge (you tick them at Reflect), and once you've done either, its own place in revision
+// (about 7 days, then 21, 60 and 180). Ticks made in a session that's still open wait in `open` until it finishes.
+// Kept apart from the lesson's record and synced as its own: older versions rebuild that record from the fields they
+// know (and would drop these).
+export type PracticeStep = 'try' | 'challenge';
+export interface ArabicPractice {
+  id: string;                                         // the lesson's id
+  tried?: DateKey;                                    // the last day you did its Try it, in a finished session
+  challenged?: DateKey;                               // …and its mini challenge
+  open?: { attemptId: string; did: PracticeStep[] };  // what you've ticked in the session still open
+  addedOn?: DateKey;                                  // the day it joined revision
+  review?: Review;                                    // its schedule in revision, once it has joined
+}
 export interface ArabicData {
   pathId: string;
   attempts: ArabicAttempt[];
   cards: ArabicCard[]; // added after 1.16.0; absent before → nothing in revision yet
   lessons?: ArabicLesson[]; // adaptive Study; absent until you mark an answer, a lesson ready or one to revisit
   words?: KeptWord[]; // Keep a word; absent until you keep one
+  practice?: ArabicPractice[]; // Practise again; absent until you tick a Try or a mini challenge
   [other: string]: unknown; // anything a newer MyDay adds here is kept
 }
 export const ARABIC_VERSION = '1.1.2'; // the package version these screens show (checked against it by arabic-rules)

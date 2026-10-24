@@ -27,8 +27,8 @@ import type { Category, Commitment, Day, DayContext, ListItem, MyDayData, Note, 
 import { isObj } from '../data/util';
 import { cleanAttempt, cleanCyberCard, normalizeCyber } from '../data/cybersecurity/normalize';
 import type { CyberAttempt, CyberCard } from '../data/cybersecurity/types';
-import { cleanArabicAttempt, cleanArabicCard, cleanArabicLesson, cleanKeptWord, normalizeArabic } from '../data/arabic/normalize';
-import { ARABIC_CORE_PATH, type ArabicAttempt, type ArabicCard, type ArabicLesson, type KeptWord } from '../data/arabic/types';
+import { cleanArabicAttempt, cleanArabicCard, cleanArabicLesson, cleanArabicPractice, cleanKeptWord, normalizeArabic } from '../data/arabic/normalize';
+import { ARABIC_CORE_PATH, type ArabicAttempt, type ArabicCard, type ArabicLesson, type ArabicPractice, type KeptWord } from '../data/arabic/types';
 import { PROJECT_KINDS, splitProject, type ProjectContent, type ProjectKind } from '../data/projectRecords';
 import { cleanProjectRecord, isProjectKind, projectApplyOrder, putProjectRecord } from './projectParts';
 import { resourceName } from '../data/projectResources';
@@ -36,7 +36,7 @@ import { resourceName } from '../data/projectResources';
 export type Kind = 'list' | 'queue' | 'day' | 'context'
   | 'settings' | 'rota' | 'pay' | 'holidays' | 'finance' | 'study' | 'workout' | 'food' | 'fitness' | 'notes' | 'tasks' | 'patterns'
   | 'commitment' | 'note' | 'task' | 'session' | 'review' | 'wsession' | 'recipe' | 'project' | 'cybersecurity' | 'cyber_attempt'
-  | 'arabic' | 'arabic_attempt' | 'arabic_card' | 'arabic_lesson' | 'arabic_word' | 'cyber_card' | 'daily' | 'book' | ProjectKind;
+  | 'arabic' | 'arabic_attempt' | 'arabic_card' | 'arabic_lesson' | 'arabic_word' | 'arabic_practice' | 'cyber_card' | 'daily' | 'book' | ProjectKind;
 export type Content = Record<string, unknown>;
 
 // A record's key on this device: "list:learning", "day:2026-10-02", "note:nt8f…"…
@@ -213,6 +213,12 @@ const MANY: Many[] = [
     items: d => d.arabic.words ?? [], put: (d, id, c) => { if (c || d.arabic.words) putItem(d.arabic.words ??= [], id, c); },
     clean: (id, raw) => same(id, cleanKeptWord(raw)),
     summary: c => { const x = c as unknown as KeptWord; return `${x.ar} — ${x.meaning}${x.write ? ' · both ways' : ''}`; } },
+  // Practise again on one Arabic lesson: the days you did its Try it and mini challenge, ticks in a session still
+  // open, and its place in revision. Its own record, so an older MyDay (which doesn't know this kind) leaves it alone.
+  { kind: 'arabic_practice', label: 'Arabic: a lesson to practise again',
+    items: d => d.arabic.practice ?? [], put: (d, id, c) => { if (c || d.arabic.practice) putItem(d.arabic.practice ??= [], id, c); },
+    clean: (id, raw) => same(id, cleanArabicPractice(raw)),
+    summary: c => { const x = c as unknown as ArabicPractice; return [x.id, x.tried ? `Try it ${prettyDate(x.tried)}` : '', x.challenged ? `challenge ${prettyDate(x.challenged)}` : '', x.review?.due ? `back ${prettyDate(x.review.due)}` : ''].filter(Boolean).join(' · '); } },
   // A Cybersecurity revision card: only its question's id (the course's), the day it was added and its schedule.
   { kind: 'cyber_card', label: 'Cybersecurity revision card',
     items: d => d.cybersecurity.cards, put: (d, id, c) => putItem(d.cybersecurity.cards, id, c),

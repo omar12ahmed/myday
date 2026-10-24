@@ -257,6 +257,18 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   r = await push(A, [change('arabic_lesson', 'lesson.arabic-greetings-address', 0, { id: 'lesson.arabic-greetings-address', readyOn: '2026-10-24' }), change('arabic_card', 'lexeme.arabic-seed-004:recognise', 0, { id: 'lexeme.arabic-seed-004:recognise', addedOn: '2026-10-24', review: ccard.review })]);
   check('every earlier kind is still accepted after the kind lists change again', r.every(x => x.status === 'applied'), r);
 
+  console.log('\n[17] A lesson to practise again (Practise again, 20261024200000_sync_arabic_practice.sql)');
+  const practice = { id: 'lesson.arabic-fusha-register', tried: '2026-10-24', addedOn: '2026-10-24', review: { reps: 0, interval: 7, lapses: 0, due: '2026-10-31' } };
+  r = await push(A, [change('arabic_practice', practice.id, 0, practice)]);
+  check('a lesson to practise again saves through sync_push_v2, its id being the lesson\'s', r[0].status === 'applied' && r[0].version === 1, r);
+  check('another learner cannot read it', !(await pull(reader)).some(x => x.kind === 'arabic_practice'));
+  r = await push(A, [change('arabic_practice', practice.id, 0, { ...practice, challenged: '2026-10-24' })]);
+  check('a stale device cannot overwrite it', r[0].status === 'conflict', r);
+  r = await push(A, [change('arabic_practice', practice.id, 1, null, { deleted: true })]);
+  check('clearing it (a Study reset) reaches other devices as a tombstone', r[0].status === 'applied' && (await pull(A)).some(x => x.kind === 'arabic_practice' && x.deleted));
+  r = await push(A, [change('arabic_word', 'kwdbtest002', 0, { ...word, id: 'kwdbtest002' }), change('arabic_lesson', 'lesson.arabic-greetings-names', 0, { id: 'lesson.arabic-greetings-names', readyOn: '2026-10-24' })]);
+  check('every earlier kind is still accepted after this change too', r.every(x => x.status === 'applied'), r);
+
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

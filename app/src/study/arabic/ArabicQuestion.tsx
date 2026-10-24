@@ -11,12 +11,14 @@ import { InlineLink, Note } from '../parts';
 import { Question, type Asked } from '../RevisionView';
 import { skipQuestion, type Round } from '../round';
 import { Ar, Mixed } from './Ar';
+import { lessonIndex } from './catalogue';
+import { PractiseQuestion } from './PractiseQuestion';
 import { Pronunciation, PronunciationControls } from './Pronunciation';
 import checksJson from './data/checks.json';
 import texts from './data/texts.json';
 
 // An Arabic card in a revision round, asked like any other question: a starter word one way round, a lesson check,
-// or a word you kept one way round. You compare your answer yourself; MyDay never marks Arabic (the course's own
+// a word you kept one way round, or a lesson to practise again (PractiseQuestion.tsx). You compare your answer yourself; MyDay never marks Arabic (the course's own
 // answers are examples, and vowel marks are optional unless the question is about them).
 type Answers = Record<string, { answer: string; variation: string }>;
 const words = new Map(texts.lexicon.map(w => [w.id, w]));
@@ -32,13 +34,16 @@ export default function ArabicQuestion({ data, r, at, card }: { data: MyDayData;
     import('./data/answers.json').then(m => { if (live) setAnswers(m.default as Answers); }, () => { if (live) setFailed(true); });
     return () => { live = false; };
   }, [needsAnswers]);
+  if (ref.kind === 'practice') return lessonIndex[ref.lessonId]
+    ? <Pronunciation><PronunciationControls /><PractiseQuestion data={data} r={r} at={at} card={card} lessonId={ref.lessonId} /></Pronunciation>
+    : <Gone card={card} at={at} kept={false} />;
   const q = asked(data, card, ref, answers);
   if (q === 'gone') return <Gone card={card} at={at} kept={ref.kind === 'kept'} />;
   if (!q) return <Card><p role="status" className="m-0">{failed ? 'The answers couldn’t be opened. Check your connection and try again.' : 'Opening…'}</p></Card>;
   return <Pronunciation><PronunciationControls /><Question data={data} r={r} at={at} q={q} /></Pronunciation>;
 }
 
-function asked(data: MyDayData, card: ArabicCard, ref: CardRef, answers: Answers | null): Asked | 'gone' | null {
+function asked(data: MyDayData, card: ArabicCard, ref: Exclude<CardRef, { kind: 'practice' }>, answers: Answers | null): Asked | 'gone' | null {
   const base = { id: card.id, kind: 'written' as const, choices: [], correct: null, hint: '', notesUrl: '', arabic: true, interval: card.review.interval };
   const saving = (title: string): Asked['save'] => (d, k, a, rating) => rateCard(d, card.id, title, k, a, rating);
   // A word you kept: your own meaning and note, nothing from the course, and no AI explanation (your words stay yours).

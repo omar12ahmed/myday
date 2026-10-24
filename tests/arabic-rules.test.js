@@ -51,7 +51,7 @@ check('vowelled and unvowelled versions are both kept where the package has them
   const os = require('os'), { pathToFileURL } = require('url');
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'myday-arabic-data-'));
   const { bundle } = await import(pathToFileURL(path.join(ROOT, 'ai-eval/build.mjs')).href);
-  fs.writeFileSync(path.join(tmp, 'entry.ts'), [...['types', 'normalize', 'sessions', 'cards', 'lessons', 'words'].map(f => path.join(ROOT, 'app/src/data/arabic', f)), path.join(ROOT, 'app/src/data/study/queue'),
+  fs.writeFileSync(path.join(tmp, 'entry.ts'), [...['types', 'normalize', 'sessions', 'cards', 'lessons', 'words', 'practice'].map(f => path.join(ROOT, 'app/src/data/arabic', f)), path.join(ROOT, 'app/src/data/study/queue'),
     path.join(ROOT, 'app/src/data/study/revision'), path.join(ROOT, 'app/src/data/study/mastery')].map(f => `export * from ${JSON.stringify(f)};`).join('\n'));
   const A = await import(pathToFileURL(await bundle(path.join(tmp, 'entry.ts'), path.join(tmp, 'out'))).href);
   check('the version the screens record matches the package', A.ARABIC_VERSION === source.curriculum_version);
@@ -290,6 +290,59 @@ check('vowelled and unvowelled versions are both kept where the package has them
   check('saved words: a duplicate, a bad id, no Arabic letter and no meaning are dropped (and counted); a bad source or schedule is left out of the word', nw.length === 2 && wrep.dropped === 4
     && nw[0].note.length === 300 && nw[0].recognise.due === '2026-10-15' && nw[0].write.due === null && !('from' in nw[1]) && nw[1].recognise.reps === 0);
   check('no words yet stays exactly that: the field is absent, as older data was', !('words' in A.normalizeArabic({ pathId: 'path.arabic-a1', attempts: [] })));
+
+  console.log('\n[P] Practise again: what you did, coming back on its own gaps, one per round, and saved data');
+  check('its gaps: Good steps 7 → 21 → 60 → 180 and stays at 180; Hard keeps the gap; Again goes back to 7', A.practiceGap(7, 'good') === 21 && A.practiceGap(21, 'good') === 60 && A.practiceGap(60, 'good') === 180
+    && A.practiceGap(180, 'good') === 180 && A.practiceGap(21, 'hard') === 21 && A.practiceGap(0, 'hard') === 7 && A.practiceGap(60, 'again') === 7 && A.practiceGap(400, 'hard') === 180);
+  const PL = 'lesson.arabic-fusha-register', pd = { study: { reviews: [], concepts: [] }, arabic: A.emptyArabic(), cybersecurity: { cards: [] } };
+  const ps1 = A.beginSession(pd, PL, 'standard');
+  check('in an open session you tick what you did of its Try it and mini challenge; nothing else is saved yet', A.tickStep(pd, ps1, 'challenge', true) && A.tickStep(pd, ps1, 'try', true) && !A.tickStep(pd, ps1, 'try', true)
+    && JSON.stringify(A.ticksIn(pd, ps1, PL)) === JSON.stringify(['try', 'challenge']) && JSON.stringify(pd.arabic.practice) === JSON.stringify([{ id: PL, open: { attemptId: ps1, did: ['try', 'challenge'] } }]));
+  check('unticking takes it back, and the last untick leaves nothing saved', A.tickStep(pd, ps1, 'challenge', false) && A.tickStep(pd, ps1, 'try', false) && pd.arabic.practice.length === 0 && A.tickStep(pd, ps1, 'try', true));
+  check('discarding the session takes its ticks with it', (() => { const d2 = JSON.parse(JSON.stringify(pd)); A.discardTicks(d2, ps1, PL); return d2.arabic.practice.length === 0; })());
+  A.finishSession(pd, ps1);
+  check('a finished session can\'t be ticked', !A.tickStep(pd, ps1, 'challenge', true));
+  const due1 = A.bringBackPractice(pd, ps1, PL, '2026-10-11'), p1 = A.practiceOf(pd, PL);
+  check('finishing saves the day you did its Try, and the lesson joins revision a week later', due1 === '2026-10-18' && p1.tried === '2026-10-11' && !('challenged' in p1) && !('open' in p1)
+    && p1.addedOn === '2026-10-11' && JSON.stringify(p1.review) === JSON.stringify({ reps: 0, interval: 7, lapses: 0, due: '2026-10-18' }));
+  const pc = PL + ':practise';
+  check('in revision it is one card, Arabic\'s and everything\'s, due on its day', JSON.stringify(A.practiceCards(pd).map(c => c.id)) === JSON.stringify([pc]) && JSON.stringify(A.cardRef(pc)) === JSON.stringify({ kind: 'practice', lessonId: PL })
+    && A.cardOf(pd, pc).review.due === '2026-10-18' && A.dueIds(pd, '2026-10-18', 'arabic').includes(pc) && A.dueIds(pd, '2026-10-18').includes(pc) && !A.dueIds(pd, '2026-10-17', 'arabic').includes(pc));
+  const ps2 = A.beginSession(pd, PL, 'practical'); A.tickStep(pd, ps2, 'challenge', true); A.finishSession(pd, ps2);
+  check('doing it again in a later session saves the day, and its place in revision stays as it was', A.bringBackPractice(pd, ps2, PL, '2026-10-14') === null && p1.challenged === '2026-10-14' && p1.review.due === '2026-10-18');
+  const ps3 = A.beginSession(pd, PL, 'short'); A.finishSession(pd, ps3);
+  check('a session with nothing ticked changes nothing', A.bringBackPractice(pd, ps3, PL, '2026-10-15') === null && p1.tried === '2026-10-11' && p1.challenged === '2026-10-14');
+  check('answering it reschedules it on its own gaps and keeps the answer in your history', A.rateCard(pd, pc, 'Fusha practise again', '2026-10-18', { outcome: 'right', support: 'own', chosen: null }, 'good')
+    && p1.review.interval === 21 && p1.review.due === '2026-11-08' && p1.review.reps === 1 && pd.study.reviews.at(-1).conceptId === pc && pd.study.reviews.at(-1).gap === 21);
+  check('…and Again brings it back in a week', A.rateCard(pd, pc, 'Fusha practise again', '2026-11-08', { outcome: 'wrong', support: 'own', chosen: null }, 'again') && p1.review.interval === 7 && p1.review.due === '2026-11-15' && p1.review.lapses === 1);
+  check('"Don\'t bring it back" takes it out of revision; the days you did it stay', A.removeCards(pd, [pc]) && !A.cardOf(pd, pc) && !('review' in p1) && p1.tried === '2026-10-11' && !A.removeCards(pd, [pc]));
+  const ps4 = A.beginSession(pd, PL, 'standard'); A.tickStep(pd, ps4, 'try', true); A.finishSession(pd, ps4);
+  check('…and doing its Try in a later session brings it back, a week on', A.bringBackPractice(pd, ps4, PL, '2026-11-20') === '2026-11-27' && A.cardOf(pd, pc).review.reps === 0);
+  // Ticks left by a session that's gone (discarded on an older MyDay, say) don't count for another session.
+  const stale = { study: { reviews: [], concepts: [] }, arabic: { ...A.emptyArabic(), practice: [{ id: PL, open: { attemptId: 'aaGone', did: ['try'] } }] }, cybersecurity: { cards: [] } };
+  const ps5 = A.beginSession(stale, PL, 'standard'); A.finishSession(stale, ps5);
+  check('ticks from another session don\'t count, and finishing clears them', A.ticksIn(stale, ps5, PL).length === 0 && A.bringBackPractice(stale, ps5, PL, '2026-10-11') === null && stale.arabic.practice.length === 0);
+  // A round takes at most one lesson to practise again; the others wait.
+  const many = { study: { reviews: [], concepts: [] }, arabic: { ...A.emptyArabic(), practice: ['fusha-register', 'origin-location', 'greetings-address'].map(x => ({ id: 'lesson.arabic-' + x, tried: '2026-09-20', addedOn: '2026-09-20', review: { reps: 0, interval: 7, lapses: 0, due: '2026-09-27' } })) }, cybersecurity: { cards: [] } };
+  A.addCards(many, ['lexeme.arabic-seed-001:recognise', 'lexeme.arabic-seed-002:recognise', 'lexeme.arabic-seed-003:recognise', 'lexeme.arabic-seed-004:recognise', 'lexeme.arabic-seed-005:recognise'], '2026-10-01');
+  const round = A.roundIds(many, '2026-10-10', 'arabic', 5);
+  // (the three lessons are the oldest due, so without the limit they'd fill the round)
+  check('a round of 5 has at most one lesson to practise again, the rest questions', round.length === 5 && round[0].endsWith(':practise') && round.filter(id => id.endsWith(':practise')).length === 1 && A.dueIds(many, '2026-10-10', 'arabic').length === 8);
+  check('…and with only lessons left, a round is just one of them', A.roundIds({ ...many, arabic: { ...many.arabic, cards: [] } }, '2026-10-10', 'arabic', 5).length === 1);
+  // The 8-a-day count: a lesson joining revision by itself goes to the next day with room.
+  const full = { study: { reviews: [], concepts: [] }, arabic: A.emptyArabic(), cybersecurity: { cards: [] } };
+  A.addAutomatic(full, Array.from({ length: 8 }, (_, i) => `assessment.arabic-fusha-register-check.q${i + 1}`), '2026-10-18', '2026-10-11');
+  const ps6 = A.beginSession(full, PL, 'standard'); A.tickStep(full, ps6, 'try', true); A.finishSession(full, ps6);
+  check('with 8 cards already first back a week on, the lesson comes back the day after (it counts in the 8 a day)', A.bringBackPractice(full, ps6, PL, '2026-10-11') === '2026-10-19');
+  // Saved data: only well-formed records, absent stays absent.
+  const prep = { dropped: 0 };
+  const np = A.normalizeArabic({ pathId: 'path.arabic-a1', attempts: [], practice: [
+    { id: PL, tried: '2026-10-11', challenged: 'soon', open: { attemptId: 'aa1', did: ['try', 'dance', 'try'] }, addedOn: '2026-10-11', review: { reps: 1, interval: 21, lapses: 0, due: '2026-11-01' } },
+    { id: PL, tried: '2026-10-12' }, { id: 'lesson.learning-evidence', tried: '2026-10-11' }, { id: 'lesson.arabic-origin-location' },
+    { id: 'lesson.arabic-greetings-address', review: { reps: 0, interval: 7, lapses: 0, due: '2026-10-18' }, open: { attemptId: 'bad id!', did: ['try'] } }] }, prep).practice;
+  check('saved practice: a duplicate, another course\'s lesson, an empty record and a schedule without its day are dropped (and counted); a bad day or step is left out', np.length === 1 && prep.dropped === 4
+    && !('challenged' in np[0]) && JSON.stringify(np[0].open) === JSON.stringify({ attemptId: 'aa1', did: ['try'] }) && np[0].review.due === '2026-11-01');
+  check('no practice yet stays exactly that: the field is absent, as older data was', !('practice' in A.normalizeArabic({ pathId: 'path.arabic-a1', attempts: [] })));
   fs.rmSync(tmp, { recursive: true, force: true });
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

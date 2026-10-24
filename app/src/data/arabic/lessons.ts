@@ -6,6 +6,7 @@ import { shift } from '../dates';
 import { DELAYED_CHECK_DAYS, lessonState, placeNewCards, struggled, type CheckAnswer, type LessonEvidence, type LessonState } from '../study/mastery';
 import type { DateKey, MyDayData, Outcome, Support } from '../types';
 import { cardOf } from './cards';
+import { applyTicks, joinRevision, practiceCards, PRACTICE_FIRST_DAYS } from './practice';
 import { keptCards } from './words';
 import type { ArabicLesson } from './types';
 
@@ -67,10 +68,12 @@ export const notYetIn = (d: MyDayData, attemptId: string, lessonId: string) =>
 
 // ---------- Cards that join revision by themselves ----------
 // Every card in revision that hasn't been answered yet, by its first day back: what the 8-a-day limit counts (the
-// words you keep included: never delayed themselves, they count when MyDay places the automatic ones).
+// words you keep included: never delayed themselves, they count when MyDay places the automatic ones; and Practise
+// again's cards).
 function firstDueDays(d: MyDayData): (DateKey | null)[] {
   const fresh = (r: { reps: number; due: DateKey | null }) => (r.reps === 0 ? [r.due] : []);
-  return [...d.arabic.cards.flatMap(c => fresh(c.review)), ...keptCards(d).flatMap(c => fresh(c.review)), ...d.cybersecurity.cards.flatMap(c => fresh(c.review)), ...d.study.concepts.flatMap(c => fresh(c.review))];
+  return [...d.arabic.cards.flatMap(c => fresh(c.review)), ...keptCards(d).flatMap(c => fresh(c.review)), ...practiceCards(d).flatMap(c => fresh(c.review)),
+    ...d.cybersecurity.cards.flatMap(c => fresh(c.review)), ...d.study.concepts.flatMap(c => fresh(c.review))];
 }
 // Adds the checks not already in revision, first back on `from` or the next day with room. Cards already there keep
 // their schedule. Returns what was added, with the day each comes back.
@@ -84,6 +87,14 @@ export function addAutomatic(d: MyDayData, ids: string[], from: DateKey, k: Date
 // After a session: the checks that haven't clicked yet come back from the next day.
 export const bringBackNotYet = (d: MyDayData, attemptId: string, lessonId: string, k: DateKey) =>
   addAutomatic(d, notYetIn(d, attemptId, lessonId), shift(k, 1), k);
+// …and what you did of its Try it and mini challenge is saved; the first time (or again once you've taken it out),
+// the lesson comes back to practise again about a week later. Returns that day, or null.
+export function bringBackPractice(d: MyDayData, attemptId: string, lessonId: string, k: DateKey): DateKey | null {
+  if (!applyTicks(d, attemptId, lessonId, k).join) return null;
+  const [due] = placeNewCards(firstDueDays(d), shift(k, PRACTICE_FIRST_DAYS), 1);
+  joinRevision(d, lessonId, due, k);
+  return due;
+}
 
 // ---------- Ready to move on, and Needs revision ----------
 // Saves the day and brings the lesson's checks back a week later (the delayed check). Marking it ready again starts

@@ -17,8 +17,10 @@ export function resetLearningProgress(d: MyDayData, { removeWords = false } = {}
   d.study.reviews = [];
   for (const concept of d.study.concepts) concept.review = freshReview();
   d.arabic.attempts = [];
-  // Your place on each Arabic lesson (marks, Ready to move on, Needs revision) is learning history too.
+  // Your place on each Arabic lesson (marks, Ready to move on, Needs revision) is learning history too, and so is
+  // Practise again (the days you did a lesson's Try and mini challenge, and its place in revision).
   if (d.arabic.lessons) d.arabic.lessons = [];
+  if (d.arabic.practice) d.arabic.practice = [];
   d.cybersecurity.attempts = [];
   for (const card of d.arabic.cards) card.review = freshReview();
   for (const card of d.cybersecurity.cards) card.review = freshReview();
