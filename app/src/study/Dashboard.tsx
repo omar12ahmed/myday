@@ -119,8 +119,9 @@ function FocusNow({ data, now, others, ix, lengths, setLength }: {
           <p className="text-[15px] text-fg-2 m-0">About {fmtDuration(t.minutes)}{t.kind === 'practical' ? ' · Practical' : ''}</p>
         </>}
         {!t && <p className="text-[15px] mt-2 mb-0">This course has no sections or tasks yet. You can still start a session and add them later. <InlineLink href="#study/roadmap">Add its modules and sections</InlineLink></p>}
-        <Why text={now.why} />
+        {/* Start first, then why: on a phone, Start stays in the first screen. */}
         <StartBlock data={data} course={c} task={t} lengths={lengths} setLength={setLength} />
+        <Why text={now.why} />
         {link && <div className="mt-1"><ExternalLink href={link}>Open the course link</ExternalLink></div>}
         {comp.total > 0 && (
           <div className="mt-3 pt-3 border-t border-outline" data-s="focus-completion">
