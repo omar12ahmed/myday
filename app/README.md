@@ -1,5 +1,14 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.56.0 — Projects: Learning (Study links):** a project's Overview has a **Learning** card in its side column. Link
+one of your own courses, a book in Reading or an Arabic lesson you're learning for the project, with an optional
+"why it matters". Each shows Study's own status ("3 of 8 tasks marked complete", "Page 120 of 300", or the lesson's
+state: New, Practised, Ready to move on, Holding or Needs revision), never a percentage, and opens it in Study.
+Something removed from Study keeps its link, marked "No longer in Study"; Edit why and Unlink change only the
+project. No schema, sync or database change: 1.55.1 keeps a project's links unread, so going back is safe, but it
+doesn't show them, so update every device you use. Never sent to AI. Cybersecurity lessons and a "For your project"
+line in Study come next.
+
 **1.55.1 — One task, one tick:** ticking off a task from Your tasks on a day's plan (on Today, in the evening
 check-in or by finishing its Study session) now marks the task itself done as well, dated that plan's day. Your week's
 "What moved" counts project tasks ticked on Today, this week's count has each tick once, and unticking on the plan
@@ -548,18 +557,17 @@ so the next step agrees with Coming up. The board, At a glance and Today are oth
 `nextStep` exactly (`whyNext` in `src/data/projects.ts`) and write nothing; the choice is the existing `nextTaskId`,
 so there's no saved-data, sync or database change. Nothing is sent to AI.
 
-**Learning for a project (unreleased; `specs/projects-study-links.md`):** a project's Overview has a **Learning**
-card in its side column, after Recently. **Link something** links one of your own courses, a book in Reading or an
-Arabic lesson from your path, with an optional "why it matters". Each link shows Study's own status, never a
-percentage and never a guess at what you know: a course's "3 of 8 tasks marked complete" (or "Archived in Study"), a
-book's "Page 120 of 300", "Not started" or "Finished on …", and an Arabic lesson's state (New, Practised, Ready to
-move on, Holding or Needs revision, loaded on demand as on Study home). It opens the course, Reading or the lesson.
-Something removed from Study keeps its link, marked "No longer in Study". **Edit why** and **Unlink** change only
-the project; up to 20 links. Saved data: an optional `studyLinks` on the project (`{ kind, id, title, why?, addedOn
-}`), in the project's own synced record, with no schema, migration or database change (the exception in AGENTS.md:
-1.54.0 keeps the field unread, but doesn't show it). The conflict details say "Learning: …". Never sent to AI.
-Cybersecurity lessons and a "For your project" line on the Study side are follow-ups, once the Cybersecurity lesson
-pages being rebuilt are released.
+**Learning for a project (1.56.0; `specs/projects-study-links.md`):** a project's Overview has a **Learning** card
+in its side column, after Recently. **Link something** links one of your own courses, a book in Reading or an Arabic
+lesson from your path, with an optional "why it matters". Each link shows Study's own status, never a percentage and
+never a guess at what you know: a course's "3 of 8 tasks marked complete" (or "Archived in Study"), a book's "Page
+120 of 300", "Not started" or "Finished on …", and an Arabic lesson's state (New, Practised, Ready to move on,
+Holding or Needs revision, loaded on demand as on Study home). It opens the course, Reading or the lesson. Something
+removed from Study keeps its link, marked "No longer in Study". **Edit why** and **Unlink** change only the project;
+up to 20 links. Saved data: an optional `studyLinks` on the project (`{ kind, id, title, why?, addedOn }`), in the
+project's own synced record, with no schema, migration or database change (the exception in AGENTS.md: 1.55.1 keeps
+the field unread, but doesn't show it). The conflict details say "Learning: …". Never sent to AI. Cybersecurity
+lessons and a "For your project" line on the Study side are the next release (the owner's follow-ups).
 
 **Your week — the weekly review (1.37.0):** a short look back over the last seven days, at `#review` ("Your week"), in
 four steps, one at a time, with Back and Next. Nothing changes until you tap. **1 What moved:** each project's tasks

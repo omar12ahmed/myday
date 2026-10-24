@@ -1,9 +1,9 @@
 # Learning for a project (Study links)
 
 **Status:** approved by the owner on 24 October 2026 ("start"; Study links first; your own courses, books and Arabic
-lessons; a side-column card; Projects side only for now). Phase 2, release 1 of `specs/projects-vision.md`. Not yet
-released.
-**Based on:** source at 1.54.0 plus docs (b0e1079).
+lessons; a side-column card; Projects side only for now). Phase 2, release 1 of `specs/projects-vision.md`. Released
+in 1.56.0 (owner's advance yes).
+**Based on:** source at 1.54.0 plus docs (b0e1079), rebased onto 1.55.1.
 
 ## 1. The practical problem
 
@@ -54,8 +54,8 @@ status, never a guessed one.
   - A link this version can't read is counted, never kept half-read. A why that isn't text is simply left off.
   - A why is trimmed after it's cut to 200 characters, so saved text reads back unchanged (found in review).
 - **Older releases:** this uses the owner's exception in AGENTS.md (optional fields inside an existing record whose
-  unknown fields the previous release keeps). 1.54.0 keeps the field unread through read, edit, save and sync, which is
-  proved with `app-sync-previous`. 1.54.0 doesn't show the links, so update every device you use.
+  unknown fields the previous release keeps). 1.55.1 keeps the field unread through read, edit, save and sync, which is
+  proved with `app-sync-previous`. 1.55.1 doesn't show the links, so update every device you use.
 - **Sync:** links travel in the project's own record (the split project sync). The sync-conflict details show them as
   "Learning: …".
 - **Export and import:** links are included, as the rest of the project is.
@@ -92,7 +92,7 @@ status, never a guessed one.
   - editing why, unlinking, opening each in Study;
   - a gone course;
   - the cap, keyboard use, and a phone at 320 px.
-- **Previous release:** `app-sync-previous` against 1.54.0. A project with links survives the older version's read,
+- **Previous release:** `app-sync-previous` against 1.55.1. A project with links survives the older version's read,
   edit, save and sync, with the links intact.
 - **Visual (Taste skill):** the card empty and with three links, desktop and phone, light and dark.
 

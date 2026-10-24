@@ -178,8 +178,8 @@ export interface Project {
   outcome?: string;
   finishedWhen?: string;
   leftOff?: LeftOff;
-  // From the Study links release (optional; absent = none, so a project without them is saved exactly as before;
-  // 1.54.0 keeps them unread, so no schema change): what you're learning for it in Study — your own courses, books and
+  // From 1.56.0 (optional; absent = none, so a project without them is saved exactly as before; 1.55.1 keeps them
+  // unread, so no schema change): what you're learning for it in Study — your own courses, books and
   // Arabic lessons — and why (data/studyLinks.ts). Never sent to AI.
   studyLinks?: StudyLink[];
 }
