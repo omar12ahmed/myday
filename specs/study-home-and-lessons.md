@@ -295,9 +295,8 @@ portfolio's own text (titles, notes, evidence) is kept out as well.
 - **On the device:** the files themselves are cached in IndexedDB for viewing offline (Files elsewhere opens with a
   connection). Signing out removes the cache, as with the rest of MyDay's data.
 - **Requires sign-in.** Without an account, files aren't kept; the text entry still is.
-- **Removing** an entry: its files go to the shared Recently deleted (30 days, with Put back and "Delete now"), or are
-  deleted at once. The owner chooses when this release starts; recommended: Recently deleted, one behaviour across
-  MyDay, so a mistake never loses evidence.
+- **Removing** an entry: its files go to the shared Recently deleted (30 days, with Put back and "Delete now"), as in
+  every area (the owner's decision, 24 October 2026: one behaviour across MyDay, so a mistake never loses evidence).
 - **Backups:** "Download a copy" lists the files (as for every area) without their contents; files come with "Export
   portfolio", and the backup screen says so plainly.
 - **Going back** to an older version keeps `cybersecurity.portfolio` unread on the device, and older versions ignore
