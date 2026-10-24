@@ -267,12 +267,15 @@ reports), an optional note, and up to 5 files. The portfolio page lists entries 
 its lesson, the evidence, the files, the day you reviewed it, and later the NICE statements it relates to. **Export
 portfolio** downloads it as a folder: an index page plus the files.
 
-**Files:**
-- **Types:** PNG, JPEG, WebP and PDF only. No SVG, HTML or Office files, since those can carry code or hidden content.
-- **Limits:** 2 MB each and 200 MB in all (defaults; confirm at build against R2's current pricing and included
-  usage, `deploy/R2.md` §1).
-- **Checking a file:** each file is checked on the device for type (by its content, not its name) and size before
-  upload. The service checks them again.
+**Files: the shared design, `specs/files.md` (published in 1.68.0).** The portfolio is that design's `portfolio`
+area, so storage, the server and the checks aren't designed again here:
+- **Types and limits:** PNG, JPEG, WebP and PDF only; 2 MB each; 200 MB in all (the area's rules, already in
+  `supabase/functions/_shared/files/rules.ts`), within every account's 2 GB. Never SVG, HTML or Office files.
+- **Checking a file:** by content on the device before upload, and by the `files` function's confirm step (size,
+  magic bytes, SHA-256) before it counts as kept (`specs/files.md` §4).
+- **Where they live:** R2's private attachments bucket under the verified user's own keys, reached only through the
+  `files` function (sign-in first, presigned links for one file and one operation, content-free logs). Each file is
+  a `file` record (area 'portfolio'), synced as the kind `file`.
 
 **The privacy check, before anything is added.** A short checklist you tick:
 - no passwords, tokens or keys;
@@ -282,34 +285,25 @@ portfolio** downloads it as a folder: an index page plus the files.
 Text evidence is also scanned on the device for obvious secrets: private-key headers, `password=`, common key
 formats. Any find shows a warning to fix it first. Images can't be checked automatically, so the tick is yours.
 
-**Never sent to AI** and never included in Ask MyDay.
+**Never sent to AI** and never included in Ask MyDay: files never reach AI in any area (`specs/files.md` §5), and the
+portfolio's own text (titles, notes, evidence) is kept out as well.
 
-**Storage (new, careful area; the plan is `deploy/R2.md`):**
-- **Where:** Cloudflare R2's private attachments bucket (`myday-attachments` in `deploy/R2.md` §2). Files are kept
-  under the signed-in account's own prefix (`portfolio/<user id>/<entry id>/<file id>`), but a prefix alone isn't
-  isolation, and the database's row-level security doesn't reach R2.
-- **Access:** only through an authenticated Supabase Edge Function. It verifies the signed-in user and enforces
-  ownership for every upload, view, list and removal, checks the type and size before allowing an upload, and
-  checks the stored file again before it counts as kept. Transfers use short-lived presigned links for one file and
-  one operation; CORS allows only the website's own address. There are no public links. The R2 credentials live
-  only in the server's secret store (an Object Read & Write token for that bucket alone), never in `VITE_`
-  variables, and request logs never hold saved data, file names or signed links.
-- **Saved data:** only metadata is in `myday.data.v4`: `cybersecurity.portfolio`, holding entries of id, attempt
-  id, lesson id, title, note, the day reviewed, and files (id, name, type, bytes, SHA-256). It syncs as a new record
-  kind, `cyber_portfolio`.
-- **On the device:** the files themselves are cached in IndexedDB for viewing offline. localStorage can't hold them.
-- **Migration and set-up:** a new migration adds the record kind; the R2 bucket, its CORS and the Edge Function with
-  its secrets are set up as `deploy/R2.md` describes. Each is done on the Mac with your go-ahead, the migration after
-  a fresh backup and a rehearsal.
+**What's the portfolio's own (careful area):**
+- **Saved data:** `cybersecurity.portfolio`, holding entries of id, attempt id, lesson id, title, note, the day
+  reviewed, and `fileIds` (at most 5, the shared records' ids). It syncs as a new record kind, `cyber_portfolio`
+  (a constraints-only migration, applied on the Mac with your go-ahead after a fresh backup and a rehearsal).
+- **On the device:** the files themselves are cached in IndexedDB for viewing offline (Files elsewhere opens with a
+  connection). Signing out removes the cache, as with the rest of MyDay's data.
 - **Requires sign-in.** Without an account, files aren't kept; the text entry still is.
-- **Removing** an entry deletes its files from R2 (through the function). Signing out removes the local file cache, as with the rest
-  of MyDay's data.
-- **Backups:** "Download a copy" includes the metadata. Files come only with "Export portfolio", and the backup
-  screen says so plainly.
+- **Removing** an entry: its files go to the shared Recently deleted (30 days, with Put back and "Delete now"), or are
+  deleted at once. The owner chooses when this release starts; recommended: Recently deleted, one behaviour across
+  MyDay, so a mistake never loses evidence.
+- **Backups:** "Download a copy" lists the files (as for every area) without their contents; files come with "Export
+  portfolio", and the backup screen says so plainly.
 - **Going back** to an older version keeps `cybersecurity.portfolio` unread on the device, and older versions ignore
-  the new record kind (verify in `app-sync`). Files stay in R2.
-- **Review:** an independent security review (Fable) before release: the function's sign-in and ownership checks,
-  the presigned links, CORS, the type and size checks, the logs, and that nothing reaches AI.
+  the new record kind (verify with `app-sync-previous`).
+- **Review:** an independent security review (Fable) before release: the area's rules, the confirm step, the cache,
+  the privacy tick and scan, and that nothing reaches AI.
 
 **NICE Framework, a later step:** a MyDay-authored mapping file. It holds, per module, the NICE work roles and a few
 Task, Knowledge and Skill statements, checked against NIST's official NICE Framework Components (version named in the
@@ -387,7 +381,7 @@ Each step is its own release, finished and checked before the next:
 | b. Lesson journey with Light / Normal / Deep and the restart (§5), Arabic then Cybersecurity | device-only `myday.study.lessonStep`; `tried` / `challenged` on `arabic.lessons` | app-arabic, app-cybersecurity, app-teaching, app-teaching-voice, app-pronunciation, app-study (modes and restart), phone layout |
 | c. Keep a word (§6) | `arabic.words`, record kind `arabic_word`, migration | arabic-rules, app-arabic, storage, app-storage, sync-records, sync-db, app-sync, app-study-reset, going back to the previous release |
 | d. Practise again (§9) and Progress (§11) | `arabic.practice`, record kind `arabic_practice`, migration (§9 "As built"); the weekly prompts in the existing "Week of …" note | arabic-rules (the 7/21/60 ladder, one per round, the 8-a-day count), sync-records, sync-db, app-arabic, app-study-reset, going back to the previous release; then Progress: app-study, projects-rules and app-projects (the "Your week" prompts) |
-| e. Cybersecurity portfolio with files (§10) | `cybersecurity.portfolio`, record kind `cyber_portfolio`; the private R2 bucket and the Edge Function that guards it (`deploy/R2.md`); IndexedDB file cache | cybersecurity-rules, app-cybersecurity, storage, app-storage, sync-records, sync-db, app-sync, a storage-policy test (one account can't read another's files; the local stand-in `tests/supabase-standin.js` has no file storage yet, so either extend it or check on the Mac with the two disposable accounts), file type and size refusals, the secrets warning, export, phone layout; the Fable security review |
+| e. Cybersecurity portfolio with files (§10) | `cybersecurity.portfolio` with `fileIds`, record kind `cyber_portfolio`; files through the shared design (`specs/files.md`: the `portfolio` area, kind `file`, the `files` function); IndexedDB file cache | cybersecurity-rules, app-cybersecurity, storage, app-storage, sync-records, sync-db, app-sync, app-sync-previous; the shared files suites for the `portfolio` area (its types, sizes and total, and one account never reaching another's files); the privacy tick and the secrets warning, export, the offline cache, phone layout; the Fable security review |
 | f. Graduated help and "Check my answer" (§12) | none in the app's data | ai-rules, ai-server, app-ai, ai-deno, plus the blind evaluation |
 
 The 8-a-day limit (§7) and the prerequisite kinds (§8) ship with `adaptive-study.md`, because its catch-up rule and
