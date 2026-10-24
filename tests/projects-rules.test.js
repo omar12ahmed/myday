@@ -20,7 +20,8 @@ const clone = o => JSON.parse(JSON.stringify(o));
   const src = p => JSON.stringify(path.join(ROOT, 'app/src/data', p));
   fs.writeFileSync(path.join(dir, 'kit.ts'), [
     `export * from ${src('projectRecords')};`, `export * from ${src('projectPlan')};`, `export * from ${src('businessModel')};`, `export * from ${src('caseFile')};`, `export { normalizeProjects, deleteProject, recently, addProject, setProjectPrivate, editProject, setLeftOff, privateProjectIds, comingUp, stillOpen } from ${src('projects')};`,
-    `export { freshState, normalize } from ${src('normalize')};`, `export { shift, shortDate } from ${src('dates')};`, `export * from ${src('projectDashboard')};`, `export * from ${src('weekReview')};`, `export { stepsForToday } from ${src('projects')};`,
+    `export { freshState, normalize } from ${src('normalize')};`, `export { shift, shortDate } from ${src('dates')};`, `export * from ${src('projectDashboard')};`, `export * from ${src('weekReview')};`, `export { stepsForToday, nextStep } from ${src('projects')};`,
+    `export { normalizeTasks, setWaiting, stopWaiting, isWaiting, chaseTask, chaseWaiting, isStuck, setTaskDone } from ${src('tasks')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
   const OLD = '2026-10-01T09:00';
@@ -1108,6 +1109,218 @@ const clone = o => JSON.parse(JSON.stringify(o));
         const fresh = OK.freshState();
         OK.putProjectRecord(fresh, 'project', core.id, cleaned);
         check(`${ref}: putting that record into fresh data gives back the project with all three fields unchanged`, fresh.projects.items.length === 1 && same(fresh.projects.items[0], 'sync') && eq(fresh.projects.items[0].leftOff, LO), fresh.projects.items);
+      } finally { fs.rmSync(odir, { recursive: true, force: true }); }
+    }
+  }
+
+  console.log('\n[15] Waiting on someone or something (a task field; the next step, Today and Worth a look go by it)');
+  {
+    const k = '2026-10-14';
+    const TK = (id, pid, x = {}) => ({ id, title: 'Task ' + id, listId: '', category: 'admin', minutes: 25, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: OLD, postponed: 0, blockers: [], letGoOn: null, ...(pid ? { projectId: pid } : {}), ...x });
+    const W = (on, until = null, x = {}) => ({ on, since: '2026-10-10', until, ...x });
+    const rd = (items, r = { dropped: 0 }) => ({ items: K.normalizeTasks({ lists: [], items: clone(items) }, r).items, r });
+
+    console.log('  reading');
+    const good = W('Priya', '2026-10-20', { chaseTaskId: 'tkC', futureBit: { a: 1 } });
+    let got = rd([TK('a', null, { waiting: good })]);
+    check('a valid wait is kept exactly as it was, with nothing counted as dropped', eq(got.items[0].waiting, good) && got.r.dropped === 0, [got.items[0].waiting, got.r]);
+    check('unknown keys inside the wait are kept (the chase task and a newer MyDay\'s field)', got.items[0].waiting.futureBit.a === 1 && got.items[0].waiting.chaseTaskId === 'tkC', got.items[0].waiting);
+    got = rd([TK('a', null, { waiting: W('x'.repeat(130), '2026-10-20') })]);
+    check('who or what is limited to 120 characters', got.items[0].waiting.on === 'x'.repeat(120) && got.items[0].waiting.on.length === 120, got.items[0].waiting.on.length);
+    got = rd([TK('a', null, { waiting: W('Priya', 'soon') }), TK('b', null, { waiting: { on: 'Quote', since: '2026-10-10' } }), TK('c', null, { waiting: W('Part', '2026-02-31') })]);
+    check('an expected day that isn\'t a date (or is missing) becomes null, and the wait is kept', got.items.every(t => t.waiting && t.waiting.until === null) && got.r.dropped === 0, got.items.map(t => t.waiting));
+    got = rd([TK('a', null, { waiting: null }), TK('b', null, { waiting: { on: '   ', since: '2026-10-10', until: null } }), TK('c', null, { waiting: { on: '', since: 'bad' } }), TK('d', null)]);
+    check('a null or blank wait is simply absent and is not counted as dropped', got.items.every(t => !('waiting' in t)) && got.r.dropped === 0, [got.items.map(t => t.waiting), got.r]);
+    const bad = [ 'oops', 5, [], { on: 5, since: '2026-10-10' }, { since: '2026-10-10' }, { on: 'Priya', since: 'yesterday' }, { on: 'Priya' } ];
+    got = rd(bad.map((w, i) => TK('b' + i, null, { waiting: w })));
+    check('a wait this version can\'t read is left out and counted, once for each', got.items.every(t => !('waiting' in t)) && got.r.dropped === bad.length, [got.items.map(t => t.waiting), got.r]);
+    got = rd([TK('a', null)]);
+    check('a task without a wait has no waiting field', !('waiting' in got.items[0]) && got.r.dropped === 0);
+
+    console.log('  setWaiting and stopWaiting');
+    let td = K.freshState(); td.tasks.items = [TK('tkA', null, { title: 'Ask about the armchair' })];
+    const T = () => td.tasks.items[0];
+    check('setting a wait trims who, and starts today as "since"; the expected day is kept', K.setWaiting(td.tasks, 'tkA', '  Priya  ', '2026-10-20', k) && eq(T().waiting, { on: 'Priya', since: k, until: '2026-10-20' }), T().waiting);
+    check('the same wait again returns false and changes nothing', !K.setWaiting(td.tasks, 'tkA', 'Priya', '2026-10-20', '2026-10-30') && eq(T().waiting, { on: 'Priya', since: k, until: '2026-10-20' }), T().waiting);
+    T().waiting.futureBit = 'kept'; T().waiting.chaseTaskId = 'tkC';
+    check('changing who or when keeps the first "since" and anything saved beside it', K.setWaiting(td.tasks, 'tkA', 'Priya at the shop', null, '2026-10-30') && eq(T().waiting, { on: 'Priya at the shop', since: k, until: null, futureBit: 'kept', chaseTaskId: 'tkC' }), T().waiting);
+    check('an empty (or blank) who is refused and the wait stays', !K.setWaiting(td.tasks, 'tkA', '   ', '2026-10-20', k) && T().waiting.on === 'Priya at the shop');
+    check('a task that isn\'t there is refused', !K.setWaiting(td.tasks, 'tkNope', 'Priya', null, k));
+    check('an expected day that isn\'t a date is stored as null', K.setWaiting(td.tasks, 'tkA', 'Priya at the shop', 'soon', k) === false && T().waiting.until === null);
+    check('who is cut to 120 characters', K.setWaiting(td.tasks, 'tkA', 'y'.repeat(150), null, k) && T().waiting.on.length === 120);
+    td.tasks.items.push(TK('tkB', null));
+    check('a task starting a wait with an empty who gets no waiting field', !K.setWaiting(td.tasks, 'tkB', '', null, k) && !('waiting' in td.tasks.items[1]));
+    check('stopping removes the wait (and with it the chase record); stopping again returns false', K.stopWaiting(td.tasks, 'tkA') && !('waiting' in T()) && !K.stopWaiting(td.tasks, 'tkA') && !K.stopWaiting(td.tasks, 'tkNope'), T());
+    check('stopping leaves the task\'s other fields as they were', eq(Object.keys(T()).sort(), Object.keys(TK('tkA', null)).sort()), Object.keys(T()));
+
+    console.log('  chaseWaiting');
+    const cw = world(base('pjA'));
+    cw.tasks.items = [TK('tkA', 'pjA', { title: 'Ask about the armchair', listId: 'lsHome', category: 'learning', minutes: 45, waiting: W('Priya', '2026-10-12') })];
+    const A = () => cw.tasks.items.find(t => t.id === 'tkA');
+    const r1 = K.chaseWaiting(cw, 'tkA');
+    const made = cw.tasks.items.filter(t => t.id !== 'tkA');
+    check('Chase it adds exactly one task, "Chase <who>: <title>"', typeof r1 === 'string' && made.length === 1 && made[0].id === r1 && made[0].title === 'Chase Priya: Ask about the armchair', [r1, made]);
+    check('…of 5 minutes, in the same list, category and project, to do and undated', made[0].minutes === 5 && made[0].listId === 'lsHome' && made[0].category === 'learning' && made[0].projectId === 'pjA' && !made[0].done && made[0].due === null, made[0]);
+    check('…and records it on the wait as chaseTaskId, keeping the rest of the wait', A().waiting.chaseTaskId === r1 && A().waiting.on === 'Priya' && A().waiting.until === '2026-10-12' && K.chaseTask(cw, A()).id === r1, A().waiting);
+    check('while that follow-up is still to do, Chase it returns "already" and adds nothing', K.chaseWaiting(cw, 'tkA') === 'already' && cw.tasks.items.length === 2);
+    K.setTaskDone(cw, r1, true);
+    check('once the follow-up is done there is no open follow-up (chaseTask null)', K.chaseTask(cw, A()) === null);
+    const r2 = K.chaseWaiting(cw, 'tkA');
+    check('…and Chase it adds another, which is recorded instead', typeof r2 === 'string' && r2 !== r1 && cw.tasks.items.length === 3 && A().waiting.chaseTaskId === r2, [r2, A().waiting]);
+    cw.tasks.items.find(t => t.id === r2).letGoOn = k;
+    const r3 = K.chaseWaiting(cw, 'tkA');
+    check('…and once that one is let go, it adds a third', typeof r3 === 'string' && r3 !== r2 && cw.tasks.items.length === 4 && A().waiting.chaseTaskId === r3);
+    cw.tasks.items.push(TK('tkN', 'pjA'));
+    check('a task that isn\'t waiting, or isn\'t there, gets no follow-up (null)', K.chaseWaiting(cw, 'tkN') === null && K.chaseWaiting(cw, 'tkNope') === null && cw.tasks.items.length === 5);
+    const np = world(base('pjA')); np.tasks.items = [TK('tkA', null, { title: 'Order the part', waiting: W('Dev') })];
+    const rn = K.chaseWaiting(np, 'tkA');
+    check('a task with no project gets a follow-up with no project', typeof rn === 'string' && !('projectId' in np.tasks.items[1]), np.tasks.items[1]);
+
+    console.log('  isWaiting and isStuck');
+    const ws = world(base('pjA'));
+    ws.tasks.items = [TK('a', 'pjA', { waiting: W('Priya') }), TK('b', 'pjA', { waiting: W('Priya'), done: true, doneOn: k }), TK('c', 'pjA', { waiting: W('Priya'), letGoOn: k }), TK('d', 'pjA')];
+    check('isWaiting is true for a task still to do with a wait, and false once it is done, let go, or has none', eq(ws.tasks.items.map(t => K.isWaiting(ws, t)), [true, false, false, false]), ws.tasks.items.map(t => K.isWaiting(ws, t)));
+    const mv = TK('m', 'pjA', { postponed: 3, due: '2026-10-01' });
+    ws.tasks.items = [mv];
+    check('a task moved later three times is stuck…', K.isStuck(ws, mv, k) === true);
+    mv.waiting = W('Priya');
+    check('…but not while it is waiting on someone', K.isStuck(ws, mv, k) === false);
+    delete mv.waiting;
+    check('…and it is stuck again once the wait ends', K.isStuck(ws, mv, k) === true);
+
+    console.log('  the next step and Today');
+    const nx = world(base('pjA'));
+    nx.tasks.items = [TK('a', 'pjA', { title: 'First', due: '2026-10-20', waiting: W('Priya') }), TK('b', 'pjA', { title: 'Second', due: '2026-10-25' }), TK('c', 'pjA', { title: 'Third' })];
+    const step = () => K.nextStep(nx, nx.projects.items[0])?.id ?? null;
+    check('MyDay\'s own choice skips a waiting task and takes the next one', step() === 'b', step());
+    delete nx.tasks.items[0].waiting;
+    check('…and without the wait the first task would be the choice', step() === 'a', step());
+    nx.tasks.items[0].waiting = W('Priya');
+    nx.projects.items[0].nextTaskId = 'a';
+    check('a waiting task you chose yourself stays the next step', step() === 'a', step());
+    nx.projects.items[0].nextTaskId = null;
+    nx.tasks.items[1].waiting = W('Dev'); nx.tasks.items[2].waiting = W('Sam');
+    check('when every open task is waiting there is no automatic next step (null)', step() === null, step());
+    nx.tasks.items[2].letGoOn = k; nx.tasks.items[1].done = true;
+    check('a done or let-go task is not the next step either way', step() === null);
+    const td2 = world(base('pjA'));
+    td2.tasks.items = [TK('a', 'pjA', { title: 'First', waiting: W('Priya') }), TK('b', 'pjA', { title: 'Second' })];
+    check('Today\'s project steps offer the automatic choice (the one that isn\'t waiting)', eq(K.stepsForToday(td2, k).map(x => x.task.id), ['b']), K.stepsForToday(td2, k).map(x => x.task.id));
+    td2.projects.items[0].nextTaskId = 'a';
+    check('…but not a waiting step you chose: Today skips that project', eq(K.stepsForToday(td2, k), []), K.stepsForToday(td2, k).map(x => x.task.id));
+    delete td2.tasks.items[0].waiting;
+    check('…and offers it again once the wait ends', eq(K.stepsForToday(td2, k).map(x => x.task.id), ['a']));
+
+    console.log('  worthALook');
+    const wl = (data, kk = k) => K.worthALook(data, data.projects.items[0], kk);
+    const wp = (data, kk = k) => wl(data, kk).filter(x => x.key === 'waiting');
+    const wo = world(base('pjA'));
+    wo.tasks.items = [TK('n', 'pjA', { title: 'Next one' }), TK('w1', 'pjA', { title: 'Ask about the armchair', waiting: W('Priya', '2026-10-12') }), TK('w2', 'pjA', { title: 'Order the part', waiting: W('Dev', '2026-10-10') }),
+      TK('w3', 'pjA', { title: 'Later one', waiting: W('Sam', '2026-10-20') }), TK('w4', 'pjA', { title: 'No day', waiting: W('Lee') })];
+    check('with several waits whose day has come, only the oldest expected day is pointed out, linking to its task', eq(wp(wo).map(x => [x.text, x.href]), [[`Still waiting on Dev (Order the part) — expected ${K.shortDate('2026-10-10')}`, '#today/tasks/w2']]), wp(wo));
+    check('its chase flag names the task and says no follow-up has been added', eq(wp(wo)[0].chase, { taskId: 'w2', added: false }), wp(wo)[0].chase);
+    check('on the expected day itself it is pointed out; the day before it is not', wp(wo, '2026-10-10').length === 1 && wp(wo, '2026-10-10')[0].chase.taskId === 'w2' && wp(wo, '2026-10-09').length === 0, [wp(wo, '2026-10-10'), wp(wo, '2026-10-09')]);
+    check('a wait with no expected day, or one still to come, is never pointed out', !wp(wo).some(x => ['w3', 'w4'].includes(x.chase.taskId)) && wp(wo, '2026-10-13').length === 1);
+    K.chaseWaiting(wo, 'w2');
+    check('after Chase it, the pointer stays and its chase flag says a follow-up has been added', wp(wo).length === 1 && wp(wo)[0].chase.taskId === 'w2' && wp(wo)[0].chase.added === true, wp(wo)[0]);
+    wo.projects.items[0].nextTaskId = 'w2';
+    check('when that task is the chosen next step, the next oldest is pointed out instead (the Next step card says the first)', eq(wp(wo).map(x => x.chase.taskId), ['w1']), wp(wo));
+    wo.projects.items[0].nextTaskId = 'w1'; wo.tasks.items.find(t => t.id === 'w2').done = true;
+    check('a done task is not pointed out; with the other chosen as the next step nothing is left to point out', wp(wo).length === 0, wp(wo));
+    wo.tasks.items.find(t => t.id === 'w2').done = false; wo.projects.items[0].nextTaskId = null;
+    wo.tasks.items.find(t => t.id === 'w2').letGoOn = k;
+    check('a task let go is not pointed out either (the next oldest is)', eq(wp(wo).map(x => x.chase.taskId), ['w1']), wp(wo));
+    wo.tasks.items.find(t => t.id === 'w2').letGoOn = null;
+    for (const status of ['paused', 'done']) {
+      wo.projects.items[0].status = status;
+      check(`a ${status} project gets no waiting pointer`, wp(wo).length === 0, wp(wo));
+    }
+    wo.projects.items[0].status = 'active';
+    check('the pointer is back when the project is active again', wp(wo).length === 1);
+    const so2 = world(base('pjA'));
+    so2.tasks.items = [TK('n', 'pjA', { title: 'Next one' }), TK('o', 'pjA', { title: 'Late and waiting', due: '2026-10-01', waiting: W('Priya', '2026-10-30') }), TK('p', 'pjA', { title: 'Late and not waiting', due: '2026-10-02' })];
+    so2.projects.items[0].nextTaskId = 'n'; // chosen, so neither late task is the next step
+    check('a waiting task whose date has passed is never pointed out as "still open" (the other late task is)', eq(wl(so2).filter(x => x.key === 'still-open').map(x => x.href), ['#today/tasks/p']) && wp(so2).length === 0, wl(so2));
+    so2.tasks.items[2].done = true;
+    check('…so with nothing else late there is no still-open pointer at all', !wl(so2).some(x => x.key === 'still-open'), wl(so2));
+    so2.tasks.items[1].waiting.until = '2026-10-05';
+    check('…and once its expected day has come only the waiting pointer appears for it', eq(wl(so2).map(x => x.key), ['waiting']), wl(so2));
+  }
+
+  console.log('\n[16] The previous release (1.48.0) keeps a task\'s wait unchanged, with the field it does not know');
+  {
+    const git = (...a) => execFileSync('git', a, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+    // The last release without "waiting": the one a device may go back to. Pinned, so this never compares the
+    // feature with itself, whatever the working tree holds; MYDAY_PREVIOUS_WAITING_REF overrides it.
+    const BEFORE_WAITING = 'v1.48.0';
+    const ref = process.env.MYDAY_PREVIOUS_WAITING_REF || BEFORE_WAITING;
+    let commit = '';
+    try { commit = git('rev-parse', '--verify', '--quiet', '--short', ref + '^{commit}'); } catch { /* not found */ }
+    check(`the previous release to compare against for waiting (${ref}) exists in this checkout`, !!commit, ref);
+    console.log(`  Previous release used: ${ref} (${commit || 'not found'})`);
+    if (commit) {
+      const odir = path.join(os.tmpdir(), `myday-waiting-prev-${process.pid}`);
+      try {
+        fs.mkdirSync(odir, { recursive: true });
+        const tarFile = path.join(odir, 'src.tar');
+        execFileSync('git', ['archive', '--format=tar', '-o', tarFile, ref, 'app/src'], { cwd: ROOT });
+        execFileSync('tar', ['-xf', tarFile, '-C', odir]);
+        const o = f => JSON.stringify(path.join(odir, 'app/src', f));
+        fs.writeFileSync(path.join(odir, 'oldkit.ts'), [
+          `export { freshState, normalize } from ${o('data/normalize')};`,
+          `export { normalizeTasks, editTask, setTaskDone, moveToTomorrow } from ${o('data/tasks')};`,
+          `export { cleanRecord, putRecord, keyOf } from ${o('sync/records')};`,
+          `export { boot, update, exportText, parseImport, replaceAll } from ${o('data/storage')};`,
+        ].join('\n'));
+        const OK = await import(pathToFileURL(await bundle(path.join(odir, 'oldkit.ts'), path.join(odir, 'out'))).href);
+        const WAIT = { on: 'Priya at the furniture shop', since: '2026-10-20', until: '2026-10-28', chaseTaskId: 'tkChase', futureBit: { kept: ['yes', 1] } };
+        const mine = () => ({ id: 'tkW', title: 'Ask about the armchair', listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: OLD, postponed: 0, blockers: [], letGoOn: null, projectId: 'pjP', waiting: clone(WAIT) });
+        const oldWorld = (...items) => { const w = OK.freshState(); w.projects.items = [base('pjP')]; w.tasks.items = items; return w; };
+        const wt = t => clone(t && t.waiting);
+        const same = (t, why) => eq(wt(t), WAIT) ? true : (console.log('    ' + why, wt(t)), false);
+
+        let rep2 = { dropped: 0 };
+        const read = OK.normalizeTasks({ lists: [], items: [mine()] }, rep2);
+        check(`${ref}: reading a task with a wait keeps the wait unchanged (unknown key too) and counts nothing`, same(read.items[0], 'read') && rep2.dropped === 0, wt(read.items[0]));
+        const loaded = OK.normalize(clone(oldWorld(mine())));
+        check(`${ref}: data with a waiting task keeps it unchanged when loaded from storage`, same(loaded.tasks.items[0], 'loaded'), wt(loaded.tasks.items[0]));
+
+        const e = OK.normalize(clone(oldWorld(mine())));
+        const T = () => e.tasks.items[0];
+        check(`${ref}: its own edit of the title keeps the wait unchanged`, OK.editTask(e.tasks, 'tkW', { title: 'Ask about the green armchair' }) && T().title === 'Ask about the green armchair' && same(T(), 'title'), wt(T()));
+        check(`${ref}: its own edit of the date keeps the wait unchanged`, OK.editTask(e.tasks, 'tkW', { due: '2026-11-02', notes: 'Ring first' }) && T().due === '2026-11-02' && same(T(), 'date'), wt(T()));
+        check(`${ref}: its own "Move to tomorrow" keeps the wait unchanged`, OK.moveToTomorrow(e.tasks, 'tkW') !== undefined && same(T(), 'tomorrow'), wt(T()));
+        check(`${ref}: its own ticking done, and then undone, keeps the wait unchanged`, OK.setTaskDone(e, 'tkW', true) && T().done === true && same(T(), 'done') && OK.setTaskDone(e, 'tkW', false) && T().done === false && same(T(), 'undone'), wt(T()));
+
+        const payload = { format: 'myday-export', schemaVersion: 5, exportedAt: '2026-10-21T09:00', data: oldWorld(mine()) };
+        const imported = OK.normalize(JSON.parse(JSON.stringify(payload, null, 2)).data);
+        check(`${ref}: a JSON export then import (normalise) keeps the wait unchanged`, same(imported.tasks.items[0], 'import'), wt(imported.tasks.items[0]));
+
+        const mem = new Map();
+        globalThis.localStorage = { getItem: k => (mem.has(k) ? mem.get(k) : null), setItem: (k, v) => { mem.set(k, String(v)); }, removeItem: k => { mem.delete(k); },
+          key: i => [...mem.keys()][i] ?? null, get length() { return mem.size; } };
+        try {
+          mem.set('myday.data.v4', JSON.stringify(oldWorld(mine())));
+          OK.boot();
+          const savedT = () => JSON.parse(mem.get('myday.data.v4')).tasks.items.find(x => x.id === 'tkW');
+          const wrote = OK.update(dd => { OK.editTask(dd.tasks, 'tkW', { title: 'Saved by the previous release' }); });
+          check(`${ref}: its own save writes an edit to the browser's storage and keeps the wait unchanged`, wrote && savedT().title === 'Saved by the previous release' && same(savedT(), 'saved'), wt(savedT()));
+          const back = OK.parseImport(OK.exportText().text);
+          check(`${ref}: its own export, read by its own import, keeps the wait unchanged`, same(back.data.tasks.items.find(x => x.id === 'tkW'), 'export/import'), wt(back.data.tasks.items.find(x => x.id === 'tkW')));
+          mem.set('myday.data.v4', JSON.stringify(oldWorld({ ...mine(), id: 'tkOther', title: 'Other data on this device', waiting: undefined })));
+          OK.boot();
+          check(`${ref}: restoring that file saves the wait again, unchanged`, OK.replaceAll(back.data) && same(savedT(), 'restored'), wt(savedT()));
+        } finally { delete globalThis.localStorage; }
+
+        const key = OK.keyOf('task', 'tkW');
+        const cleaned = OK.cleanRecord(key, JSON.parse(JSON.stringify(mine())));
+        check(`${ref}: its task sync record cleaning keeps the wait unchanged`, !!cleaned && same(cleaned, 'cleaned'), wt(cleaned));
+        const fresh = OK.freshState();
+        OK.putRecord(fresh, key, cleaned);
+        check(`${ref}: putting that record into fresh data gives back the task with the wait unchanged`, fresh.tasks.items.length === 1 && same(fresh.tasks.items[0], 'put'), fresh.tasks.items);
+        const edited = { ...JSON.parse(JSON.stringify(mine())), title: 'Edited elsewhere', due: '2026-11-05' };
+        const cleaned2 = OK.cleanRecord(key, edited);
+        check(`${ref}: a task record edited (title and date) and cleaned still has the wait unchanged`, !!cleaned2 && cleaned2.title === 'Edited elsewhere' && same(cleaned2, 'cleaned edit'), wt(cleaned2));
       } finally { fs.rmSync(odir, { recursive: true, force: true }); }
     }
   }

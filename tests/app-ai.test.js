@@ -860,6 +860,46 @@ const SEED = `s => {
     await mock.ev(`location.hash = 'today'`); await D.ev(`location.hash = 'today'`); await sleep(200);
   }
 
+  console.log('\n[8q] Who a task is waiting on is never sent to Ask MyDay');
+  {
+    const at = `${TODAY}T09:00`;
+    const ON = 'Narwhal joiner at the gate yard';
+    const PJ = { id: 'pjWt', title: 'Garden gate', summary: 'A gate for the side path', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at };
+    const TK = { id: 'tkWt', title: 'Fit the gate latch', listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: at, postponed: 0, blockers: [], letGoOn: null, projectId: 'pjWt',
+      waiting: { on: ON, since: TODAY, until: '2026-12-30', chaseTaskId: 'tkChaseWt', futureBit: 'Okapi' } };
+    const hidden = t => !t.includes('Narwhal') && !t.includes('joiner') && !t.includes('Okapi') && !t.includes('tkChaseWt') && !/waiting/i.test(t);
+    const wtSeed = `s => { s.projects.items = s.projects.items.filter(p => p.id !== 'pjWt'); s.projects.items.push(${JSON.stringify(PJ)}); s.tasks.items = s.tasks.items.filter(t => t.id !== 'tkWt'); s.tasks.items.push(${JSON.stringify(TK)}); }`;
+    const openWt = async (Dv, text) => {
+      await Dv.ev(`location.hash = 'projects/p/pjWt'`); await sleep(300);
+      await Dv.click('[data-action=capture-open]'); await Dv.until(`document.getElementById('captureText')`);
+      await Dv.type('#captureText', text); await sleep(150);
+    };
+    await seeded(mock, MOCK); await mock.setData(wtSeed); await mock.until(`document.querySelector('#app')`);
+    await mock.ev(`location.hash = 'projects/p/pjWt'`); await mock.until(`document.querySelector('#projectTasks')`, 5000);
+    check('the project page shows the wait itself on the task row', (await mock.text('#projectTasks [data-s=task-waiting]')).includes('Narwhal joiner'), await mock.text('#projectTasks'));
+    await mock.click('[data-action=capture-open]'); await mock.until(`document.getElementById('captureText')`);
+    await mock.type('#captureText', 'Break this into smaller steps'); await sleep(200);
+    await mock.ev(`document.querySelector('[data-s=ask-sends-all] summary').click()`); await sleep(150);
+    const prevShort = await mock.text('[data-s=ask-sends]'), prevAll = await mock.text('[data-s=ask-sends-all]');
+    check('Ask MyDay\'s preview names the project but nothing about who the task waits on, short or expanded', prevShort.includes('Garden gate') && prevAll.includes('A gate for the side path') && hidden(prevShort) && hidden(prevAll), [prevShort, prevAll]);
+    await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
+
+    setAi({ AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_LABEL: 'Main model', AI_MIN_SECONDS_BETWEEN: '0' });
+    await D.setData(wtSeed); await D.until(`!document.getElementById('signInGate')`, 15000);
+    const c0 = aiCalls().length;
+    await openWt(D, 'Break this into smaller steps');
+    const prevD = await D.text('[data-s=ask-sends]');
+    await D.click('[data-action=ask-go]'); await D.until(`['shown', 'error'].includes(document.querySelector('[data-s=ask-panel]')?.dataset.phase)`, 15000);
+    const phase = await D.ev(`document.querySelector('[data-s=ask-panel]').dataset.phase`);
+    const sentWt = aiCalls().slice(c0).find(c => c.body.context.action === 'ask');
+    const bodyWt = JSON.stringify(sentWt && sentWt.body);
+    check('with an account, the request is sent and answered, and it does carry the project\'s title and summary', phase === 'shown' && !!sentWt && bodyWt.includes('Garden gate') && bodyWt.includes('A gate for the side path'), [phase, bodyWt.slice(0, 300)]);
+    check('…but the request body contains neither the text of the wait nor the key "waiting"', !!sentWt && hidden(bodyWt) && !bodyWt.includes('"waiting"') && !bodyWt.includes('chaseTaskId'), bodyWt);
+    check('…and the preview shown for the same request had none of it', hidden(prevD), prevD);
+    await D.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
+    await mock.ev(`location.hash = 'today'`); await D.ev(`location.hash = 'today'`); await sleep(200);
+  }
+
   console.log('\n[9] Layout');
   await D.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await D.ev(`location.hash = 'today'`);

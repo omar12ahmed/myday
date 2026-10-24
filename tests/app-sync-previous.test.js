@@ -86,6 +86,24 @@ async function signIn(d, url) {
     check('the project shows the updated title', await now.until(`document.querySelector('#projectTitle')?.textContent === 'Saturday bakery stall (renamed)'`, 10000), await now.text('#projectTitle'));
     check('…the outcome line', (await now.text('[data-s=project-outcome]')).includes(own.outcome), await now.text('[data-s=project-outcome]'));
     check('…and the "Where I left off" card with the note', (await now.text('#projectLeftOff')).includes('Where I left off') && (await now.text('[data-s=leftoff-text]')) === leftOff.text, await now.text('#projectLeftOff'));
+    console.log('\n[5] A task that is waiting on someone passes through the previous release unchanged');
+    const TW = 'tkWaitBack';
+    const waiting = { on: 'Priya at the furniture shop', since: today, until: '2026-12-30', chaseTaskId: 'tkChaseBack', futureBit: { keep: ['this', 1] } };
+    await now.setData(`s => { s.tasks.items.push({ id: '${TW}', title: 'Ask about the armchair', listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '${stamp}', postponed: 0, blockers: [], letGoOn: null, waiting: ${JSON.stringify(waiting)} }); }`);
+    check('a waiting task, with an extra key inside the wait, reaches the account with the wait unchanged', await eventually(async () => eq((await record('task', TW))?.data?.waiting, waiting)) && await synced(now), (await record('task', TW))?.data);
+    await before.returnToApp();
+    check('the previous release receives the task', await before.until(`JSON.parse(localStorage.getItem('${KEY}')).tasks.items.some(t => t.id === '${TW}')`, 20000));
+    const heldTask = () => before.data().then(d => d.tasks.items.find(t => t.id === TW));
+    check('…and its saved data holds the wait exactly, extra key included', eq((await heldTask()).waiting, waiting), (await heldTask()).waiting);
+    await before.setData(`s => { const t = s.tasks.items.find(x => x.id === '${TW}'); t.title = 'Ask about the green armchair'; t.due = '2026-12-05'; }`);
+    check('a title and date change on the previous release reaches the account', await eventually(async () => { const r = (await record('task', TW))?.data; return r?.title === 'Ask about the green armchair' && r?.due === '2026-12-05'; }) && await synced(before), (await record('task', TW))?.data);
+    check('…with the wait still exactly as sent', eq((await record('task', TW))?.data?.waiting, waiting), (await record('task', TW))?.data?.waiting);
+    check('…and the previous release still holds the wait in its own saved data', eq((await heldTask()).waiting, waiting));
+    await now.open(NOW + `#today/tasks/${TW}`); await now.returnToApp();
+    check('this release receives the new title and date', await now.until(`JSON.parse(localStorage.getItem('${KEY}')).tasks.items.find(t => t.id === '${TW}')?.title === 'Ask about the green armchair'`, 20000));
+    const backTask = (await now.data()).tasks.items.find(t => t.id === TW);
+    check('…with the wait unchanged in its saved data', eq(backTask.waiting, waiting) && backTask.due === '2026-12-05', backTask);
+    check('the task page shows the wait card for it', await now.until(`document.querySelector('[data-s=waiting-line]')?.textContent.startsWith('Waiting on Priya at the furniture shop')`, 10000), await now.text('#taskWaiting'));
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {
