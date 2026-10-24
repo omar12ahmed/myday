@@ -4,8 +4,8 @@
 the lesson journey, published for Arabic in 1.53.0 and for Cybersecurity in 1.55.0; release (c), Keep a word,
 in 1.57.0 (24 October 2026, its migration applied that day); release (d), Practise again, published in 1.64.0
 (24 October 2026, its migration applied that day), and its second half, Progress and the weekly prompts, built on
-branch `study-progress` and published in 1.67.0; release (e), the Cybersecurity portfolio, built on branch
-`portfolio` (its migration not yet applied); (f) planned. The owner's decisions of 24 October 2026 are in §2. This builds on
+branch `study-progress` and published in 1.67.0; release (e), the Cybersecurity portfolio, in 1.71.0
+(24 October 2026, its migration applied that day); (f) planned. The owner's decisions of 24 October 2026 are in §2. This builds on
 `specs/adaptive-study.md` (lesson states, answer marks, revision from every lesson, the next-step rules), published
 in 1.47.0; this plan is a series of later, separate releases (§14).
 **Plan date:** 24 October 2026, after release 1.44.1.
