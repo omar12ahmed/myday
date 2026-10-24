@@ -1,6 +1,7 @@
 // Sayings (owner's request, 24 Oct 2026): one quiet line per screen, chosen for where you are. This is authored content,
 // not saved data. Attributions stay honest: a well-known rendering says "paraphrase", an uncertain one says "attributed",
-// and the two lessons are the owner's own takeaways, shown with their meaning. A quotation that leaves words out shows "…".
+// and the two lessons are the owner's takeaways, shown with their meaning (the resistance one credited to the book it
+// follows). A quotation that leaves words out shows "…".
 // Gentle by context: the demanding lines (systems, "conceive and believe") appear only in planning and building places,
 // never on a rest day or a low-energy day, where they could read as blame.
 import type { DateKey } from './types';
@@ -15,6 +16,7 @@ export interface Saying {
   attributed?: true;       // commonly attributed, not certain
   paraphrase?: true;       // a well-known rendering, not word for word
   meaning?: string;        // the lessons' "Meaning"
+  from?: string;           // the book a lesson follows, where there is one
   places: SayingPlace[];
 }
 
@@ -45,7 +47,7 @@ export const SAYINGS: Saying[] = [
     meaning: 'You do not need to have every answer before you begin, but you do need to keep learning and adapting.', places: ['projects'] },
   { id: 'lesson-resistance', text: 'Resistance often appears when you are about to do meaningful creative work.',
     meaning: 'Waiting until you feel motivated can prevent you from starting. Establishing a routine can help you work even when motivation is low.',
-    places: ['today'] },
+    from: 'Steven Pressfield, The War of Art', places: ['today'] },
 ];
 
 // One saying per place per day: the same all day (no flicker between visits), a different one most days.
@@ -61,8 +63,14 @@ export function sayingFor(place: SayingPlace, day: DateKey): Saying | null {
 export const todayPlace = (rest: boolean, energy: number | null | undefined): SayingPlace =>
   rest || (energy != null && energy <= 2) ? 'today-gentle' : 'today';
 
-// "— al-Shāfiʿī", "— attributed to Napoleon Hill", "— Marcus Aurelius, Meditations (paraphrase)"; a lesson has no author.
+// "al-Shāfiʿī", "attributed to Napoleon Hill", "attributed to Marcus Aurelius, Meditations (paraphrase)"; a lesson has no author.
 export function byLine(s: Saying): string | null {
   if (!s.by) return null;
   return `${s.attributed ? 'attributed to ' : ''}${s.by}${s.source ? `, ${s.source}` : ''}${s.paraphrase ? ' (paraphrase)' : ''}`;
+}
+
+// The caption under a saying: "— " and its credit, "— Lesson from" the book a lesson follows, or just "Lesson".
+export function caption(s: Saying): string {
+  const by = byLine(s);
+  return by ? `— ${by}` : s.from ? `— Lesson from ${s.from}` : 'Lesson';
 }

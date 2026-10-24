@@ -783,7 +783,7 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   await setEnergyCommitted(3); await sleep(300);
   ids = await sayingIds();
   check(`a day with the resistance lesson (${keyOf(iLesson)}) shows it on Today`, eq(ids, ['lesson-resistance']), ids);
-  check('…its caption reads "Lesson" and it has no Arabic', (await text('[data-s=saying] figcaption')) === 'Lesson' && !(await exists('[data-s=saying] [lang=ar]')), await text('[data-s=saying] figcaption'));
+  check('…its caption credits the book it follows ("— Lesson from Steven Pressfield, The War of Art") and it has no Arabic', (await text('[data-s=saying] figcaption')) === '— Lesson from Steven Pressfield, The War of Art' && !(await exists('[data-s=saying] [lang=ar]')), await text('[data-s=saying] figcaption'));
   check('…its fold-out is called "Meaning"', (await text('[data-s=saying-more] summary')).trim() === 'Meaning');
   const meaning = SY.SAYINGS.find(s => s.id === 'lesson-resistance').meaning;
   check('…the meaning is kept out of the way until opened', !(await ev(`document.querySelector('[data-s=saying-more]').open`)));

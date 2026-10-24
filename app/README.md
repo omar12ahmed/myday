@@ -1,13 +1,14 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
 **1.49.0 — Sayings, and more room on Today:** each screen shows one quiet saying chosen for where you are: Today
-(gentler ones on a rest day or when your energy is 1 or 2), Study, Finance, Projects and Your week. It stays the same
-all day and changes on most days. Arabic verses are shown fully vowelled above their English; a saying that is only
-commonly attributed says "attributed to", a well-known rendering says "(paraphrase)", and two short lessons come
-with their meaning. "Sayings: On/Off" in the footer hides them on this device only (`myday.sayings`; not part of
-your data, not synced or exported). On wide screens Today no longer shows a month calendar: the side column (focus
-timer, today and this week, the day at a glance, learning days) now starts beside the greeting. Phones keep this
-week's strip. No saved-data, sync or database change; going back to 1.48.0 is safe.
+(gentler ones on a rest day or when your energy is 1 or 2), Study, Finance, Projects and Your week. It stays the
+same all day and changes on most days. Arabic verses are shown fully vowelled above their English; a saying that is
+only commonly attributed says "attributed to", a well-known rendering says "(paraphrase)", and two short lessons
+come with their meaning (the one on resistance credited to Steven Pressfield's The War of Art). "Sayings: On/Off" in
+the footer hides them on this device only (`myday.sayings`; not part of your data, not synced or exported). On wide
+screens Today no longer shows a month calendar: the side column (focus timer, today and this week, the day at a
+glance, learning days) now starts beside the greeting. Phones keep this week's strip. No saved-data, sync or
+database change; going back to 1.48.0 is safe.
 
 **1.48.0 — Projects: the outcome, what counts as finished, and Where I left off:** a project can say what it's
 aiming for (a line under its title) and what would count as finished (in About it), and keep one short note for next

@@ -1,5 +1,5 @@
 import { todayKey } from '../data/dates';
-import { byLine, sayingFor, type SayingPlace } from '../data/sayings';
+import { byLine, caption, sayingFor, type SayingPlace } from '../data/sayings';
 import type { DateKey } from '../data/types';
 import { useSayings } from '../shell/sayingsMode';
 import { Ar } from '../study/arabic/Ar';
@@ -21,7 +21,7 @@ export function Saying({ place, day = todayKey(), className = '' }: { place: Say
           {s.ar && <div className="saying-ar mb-1">{s.ar.map(half => <Ar key={half} block showReading={false} className="text-[19px] leading-[1.9] m-0">{half}</Ar>)}</div>}
           <p className="m-0 text-[15px] leading-relaxed text-fg-2">{by ? `“${s.text}”` : s.text}</p>
         </Quote>
-        <figcaption className="text-[13px] text-fg-3 mt-1">{by ? `— ${by}` : 'Lesson'}</figcaption>
+        <figcaption className="text-[13px] text-fg-3 mt-1">{caption(s)}</figcaption>
       </figure>
       {(s.meaning || s.ar) && <details className="saying-more text-[13px] text-fg-2" data-s="saying-more">
         <summary className="inline-flex items-center min-h-11 cursor-pointer text-primary font-semibold">{s.meaning ? 'Meaning' : 'About the Arabic'}</summary>

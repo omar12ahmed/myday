@@ -61,6 +61,10 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   check('al-Shāfiʿī on learning is only attributed: "attributed to al-Shāfiʿī"', by('shafii-learn') === 'attributed to al-Shāfiʿī', by('shafii-learn'));
   check('Marcus Aurelius is attributed and called a paraphrase (the line is in no translation): "attributed to Marcus Aurelius, Meditations (paraphrase)"', by('aurelius-mind') === 'attributed to Marcus Aurelius, Meditations (paraphrase)', by('aurelius-mind'));
   check('"conceive and believe" is only attributed: "attributed to Napoleon Hill"', by('hill-conceive') === 'attributed to Napoleon Hill', by('hill-conceive'));
+  check('the caption: "— " and the credit for a saying, "— Lesson from" the book a lesson follows, or just "Lesson"',
+    K.caption(K.SAYINGS.find(s => s.id === 'shafii-days')) === '— al-Shāfiʿī'
+    && K.caption(K.SAYINGS.find(s => s.id === 'lesson-resistance')) === '— Lesson from Steven Pressfield, The War of Art'
+    && K.caption(K.SAYINGS.find(s => s.id === 'lesson-business')) === 'Lesson', K.SAYINGS.map(s => K.caption(s)));
   check('Morgan Housel is credited with his book: "Morgan Housel, The Psychology of Money"', by('housel-money') === 'Morgan Housel, The Psychology of Money', by('housel-money'));
   check('the two lessons have no credit line', by('lesson-business') === null && by('lesson-resistance') === null, [by('lesson-business'), by('lesson-resistance')]);
 
