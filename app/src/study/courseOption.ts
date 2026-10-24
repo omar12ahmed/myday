@@ -2,6 +2,7 @@
 // apart from nextLearning.ts, which loads the Arabic and Cybersecurity catalogues on demand, so Study home can show a
 // course of yours straight away. Read-only: nothing here is saved.
 import { nextTaskIn, stIndex, type StudyIndex } from '../data/study/roadmap';
+import { courseFocus } from '../data/study/yourFocus';
 import type { MyDayData } from '../data/types';
 
 export type LearningSubject = 'cybersecurity' | 'arabic' | 'roadmap';
@@ -25,14 +26,16 @@ const ticked = (ix: StudyIndex, courseId: string) => !!ix.courseTasks.get(course
 const begun = (data: MyDayData, ix: StudyIndex, courseId: string) => ticked(ix, courseId) || data.study.sessions.some(s => s.courseId === courseId);
 
 // Your courses' next task, in the order of their stages: `generalCourseId`'s if it has work left, then your focus
-// course's, then the first with work left. Your focus course with no tasks yet is still offered while it's your focus
-// (a session still counts); one that's finished gives way to another with work. Imported Cybersecurity lessons have their own option.
+// course's, then the first with work left. While your focus is your courses, the course that's labelled your focus
+// (courseFocus, the same rule everywhere) is the one offered, and one with no tasks yet still is (a session still
+// counts); a finished one gives way to another with work. Imported Cybersecurity lessons have their own option.
 export function roadmapOption(data: MyDayData, generalCourseId = data.study.focusCourseId): LearningOption | null {
-  const ix = stIndex(data.study), tasks = (id: string) => ix.courseTasks.get(id) ?? [];
+  const ix = stIndex(data.study), tasks = (id: string) => ix.courseTasks.get(id) ?? [], hasWork = (id: string) => tasks(id).some(t => !t.done);
   const live = [...ix.course.values()].filter(e => !e.node.archived && !e.node.id.startsWith('cyber:1:'));
-  const work = live.filter(e => tasks(e.node.id).some(t => !t.done)), pinned = live.find(e => e.node.id === data.study.focusCourseId);
-  const empty = pinned && !tasks(pinned.node.id).length && data.study.settings.primarySubject === 'roadmap'; // only while it's your focus
-  const course = work.find(e => e.node.id === generalCourseId) ?? (pinned && (work.includes(pinned) || empty) ? pinned : undefined) ?? work[0];
+  const work = live.filter(e => hasWork(e.node.id)), focus = courseFocus(data.study, ix);
+  const yours = focus && (hasWork(focus.id) || !tasks(focus.id).length) ? live.find(e => e.node.id === focus.id) : undefined;
+  const pinned = work.find(e => e.node.id === data.study.focusCourseId);
+  const course = work.find(e => e.node.id === generalCourseId) ?? yours ?? pinned ?? work[0];
   if (!course) return null;
   const c = course.node, task = nextTaskIn(ix, c);
   return {

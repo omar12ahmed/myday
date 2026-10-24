@@ -7,7 +7,7 @@ import { topicPath, type TopicGlance } from '../../data/study/topics';
 export function CyberCard({ roadmaps = [], counts }: { roadmaps?: TopicGlance[]; counts?: { done: number; total: number } }) {
   return <Card className="cyber-entry" aria-labelledby="cyber-card-title">
     <div className="course-title-row">
-      <h2 id="cyber-card-title"><ShieldCheck size={18} strokeWidth={1.6} aria-hidden="true" />Cybersecurity</h2>
+      <h3 id="cyber-card-title"><ShieldCheck size={18} strokeWidth={1.6} aria-hidden="true" />Cybersecurity</h3>
       <span className="text-xs text-fg-3">Guided learning path</span>
     </div>
     <p className="text-[15px] text-fg-2">From first principles to hands-on practice. Your lessons, experiments and discoveries, in one place.</p>

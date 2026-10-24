@@ -8,7 +8,7 @@ import { Ar } from './Ar';
 export function ArabicCard({ counts }: { counts?: { ready: number; needs: unknown[] } }) {
   return <Card className="arabic-entry" aria-labelledby="arabic-card-title">
     <div className="course-title-row">
-      <h2 id="arabic-card-title"><Languages size={18} strokeWidth={1.6} aria-hidden="true" />Arabic Fuṣḥā</h2>
+      <h3 id="arabic-card-title"><Languages size={18} strokeWidth={1.6} aria-hidden="true" />Arabic Fuṣḥā</h3>
       <span className="text-xs text-fg-3">Guided learning path</span>
     </div>
     <Ar block className="text-[20px] text-fg-2 mt-0">العربية الفصحى</Ar>

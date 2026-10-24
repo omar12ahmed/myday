@@ -928,7 +928,8 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   const t2 = await todayPick(), h2 = await homePick();
   check('your course as your focus: Today and Study home agree on its next task, the course and the reason', t2.subject === 'roadmap' && h2.subject === 'roadmap'
     && t2.title === (await text('#stFocus .st-next')) && t2.detail === h2.title && t2.why === h2.why, [t2, h2]);
-  check('…and the course is labelled your focus in the roadmap', (await go('study/roadmap', 2026, 11, 2, 9), (await text('#app')).includes('Current focus')));
+  check('…and that course, not the other, is labelled your focus in the roadmap', (await go('study/roadmap', 2026, 11, 2, 9), (await text('[data-node="coP"]')).includes('Current focus'))
+    && !(await text('[data-node="coE"]')).includes('Current focus'));
   await go('study', 2026, 11, 2, 9);
   await click('#stFocus [data-s=study-other-subjects] summary'); await sleep(150);
   const cyHref = await ev(`document.querySelector('#stFocus [data-s=study-other-subjects] [data-subject=cybersecurity] [data-action=continue-learning]').getAttribute('href')`);

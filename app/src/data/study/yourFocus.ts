@@ -30,7 +30,7 @@ export function focusValue(st: StudyData, ix: StudyIndex): string {
 export interface FocusChoice { value: string; label: string; course: boolean }
 export function focusChoices(st: StudyData, ix: StudyIndex): FocusChoice[] {
   const out: FocusChoice[] = [{ value: 'cybersecurity', label: 'Cybersecurity', course: false }, { value: 'arabic', label: 'Arabic Fuṣḥā', course: false },
-    ...focusableCourses(ix).map(c => ({ value: 'course:' + c.id, label: c.title, course: true }))];
+    ...focusableCourses(ix).map(c => ({ value: 'course:' + c.id, label: c.title.trim() || 'Untitled course', course: true }))];
   if (focusValue(st, ix) === 'roadmap') out.push({ value: 'roadmap', label: 'Your courses', course: true });
   return out;
 }

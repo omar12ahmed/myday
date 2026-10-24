@@ -9,6 +9,7 @@ import { uid } from '../util';
 import type { DateKey, MyDayData, StudyCourse, StudyData, StudyStage, StudyTask, StudyTopic } from '../types';
 import { STARTER_STAGES } from './common';
 import { addStudyItem, completion, focusCourse, nextTaskIn, removeStudyItem, type StudyIndex } from './roadmap';
+import { courseFocus } from './yourFocus';
 
 export const TOPIC_LIMITS = { topics: 20, title: 60 };
 export const FIRST_STAGE = 'Start here'; // a new topic's first stage, so a course can be added straight away
@@ -127,7 +128,7 @@ export interface TopicGlance {
   comp: ReturnType<typeof completion>;
   next: StudyCourse | null;         // what to carry on with: your focus if it's in this topic, else the first with work left
   nextTask: StudyTask | null;
-  isFocus: boolean;                 // your focus course is in this topic
+  isFocus: boolean;                 // your focus is one of your courses, and it's in this topic
   lastStudied: DateKey | null;      // the last finished session in one of its courses
 }
 export function topicGlance(st: StudyData, ix: StudyIndex, topicId: string): TopicGlance | null {
@@ -135,8 +136,11 @@ export function topicGlance(st: StudyData, ix: StudyIndex, topicId: string): Top
   if (!topic) return null;
   const all = stagesOf(st, topicId).flatMap(stage => stage.courses.map(course => ({ course, stage })));
   const courses = all.filter(x => !x.course.archived).map(x => ({ ...x, comp: completion(ix.courseTasks.get(x.course.id) ?? []) }));
-  const fc = focusCourse(st, ix), isFocus = !!fc && courses.some(x => x.course === fc);
-  const next = isFocus ? fc : courses.find(x => x.comp.done < x.comp.total)?.course ?? courses[0]?.course ?? null;
+  // Your focus is in this topic only while your focus is your courses (data/study/yourFocus.ts); its next course is
+  // that one, or else your pinned course if it's here, or the first with work left.
+  const yours = courseFocus(st, ix), isFocus = !!yours && courses.some(x => x.course === yours);
+  const fc = focusCourse(st, ix), pinnedHere = !!fc && courses.some(x => x.course === fc);
+  const next = isFocus ? yours : pinnedHere ? fc : courses.find(x => x.comp.done < x.comp.total)?.course ?? courses[0]?.course ?? null;
   const ids = new Set(all.map(x => x.course.id));
   const last = st.sessions.filter(s => s.status === 'done' && s.courseId && ids.has(s.courseId)).map(s => s.date).sort().pop() ?? null;
   return {

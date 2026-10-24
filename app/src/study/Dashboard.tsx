@@ -12,7 +12,7 @@ import { DAILY_ENOUGH, dueConcepts, questionReady, reviewedOn } from '../data/st
 import { applySetup, completion, completionText, proposeSetup, stIndex, taskPath, type SetupRow, type StudyIndex } from '../data/study/roadmap';
 import { addTopic, studiedText, TOPIC_LIMITS, topicGlance, topicOfStage, topicPath, topicsOf, type TopicGlance } from '../data/study/topics';
 import { activeStudy, sessionMinutes } from '../data/study/sessions';
-import { courseFocus } from '../data/study/yourFocus';
+import { focusableCourses } from '../data/study/yourFocus';
 import { toast } from '../data/toast';
 import type { MyDayData } from '../data/types';
 import { focusOn, startRevision } from './actions';
@@ -100,8 +100,9 @@ function FocusNow({ data, now, others, ix, lengths, setLength }: {
   data: MyDayData; now: LearningOption; others: LearningOption[] | null; ix: StudyIndex; lengths: Record<string, number>; setLength: (key: string, m: number) => void;
 }) {
   const st = data.study;
-  // Your focus is one of your courses, but none has a task left: the next step is in another subject, and says so.
-  const elsewhere = st.settings.primarySubject === 'roadmap' && now.subject !== 'roadmap';
+  // Your focus is your courses, but none has a task left (or you haven't added one): the next step is in another
+  // subject, and says so.
+  const elsewhere = st.settings.primarySubject === 'roadmap' && now.subject !== 'roadmap', noCourses = !focusableCourses(ix).length;
   const more = others && <OtherSubjects data={data} others={others} />;
   if (now.subject === 'roadmap') {
     const e = ix.course.get(now.courseId!), t = now.taskId ? ix.task.get(now.taskId)?.node ?? null : null;
@@ -136,9 +137,10 @@ function FocusNow({ data, now, others, ix, lengths, setLength }: {
     <Card tone="accent" id="stFocus" className="next-card" data-now={now.subject} aria-labelledby="focus-h">
       <Eyebrow>{now.resume ? 'Pick up where you left off' : elsewhere ? 'Up next' : 'Your focus'} · {now.label}</Eyebrow>
       <h2 id="focus-h">{now.title}</h2>
-      {elsewhere && <p className="text-[15px] m-0 mb-2" data-s="focus-elsewhere">None of your courses has a task left to do, so here’s your next lesson in {now.label}. <InlineLink href="#study/roadmap">Add tasks</InlineLink></p>}
+      {elsewhere && <p className="text-[15px] m-0 mb-2" data-s="focus-elsewhere">{noCourses ? 'You haven’t added a course of your own yet' : 'None of your courses has a task left to do'}, so here’s your next lesson in {now.label}. <InlineLink href="#study/roadmap">{noCourses ? 'Add a course' : 'Add tasks'}</InlineLink></p>}
       <p className="text-[15px] text-fg-2 m-0" data-s="option-detail">{now.detail}</p>
-      <p className="text-sm text-fg-3 m-0 mt-1">About {now.minutes} min{now.resume ? '' : ' suits today'}</p>
+      {/* Only Arabic's length follows your energy and free time; a Cybersecurity lesson's is its usual length. */}
+      <p className="text-sm text-fg-3 m-0 mt-1">About {now.minutes} min{now.subject === 'arabic' && !now.resume ? ' suits today' : ''}</p>
       <Why text={now.why} />
       {now.revise ? <div className="grid gap-2.5 mt-2">
           <Button variant="primary" data-action="study-now" onClick={() => { focusOn(now); startRevision(now.revise); }}><RotateCcw size={18} aria-hidden="true" /> {optionAction(now)}</Button>
@@ -158,7 +160,7 @@ function offers(data: MyDayData, glance: LearningGlance | null, now: LearningOpt
   const st = data.study, out: Offer[] = [];
   const isNow = (href: string) => now?.href === href;
   if (glance?.arabic.open && !isNow('#study/arabic/' + encodeURIComponent(glance.arabic.open.id)))
-    out.push({ key: 'arabic-open', title: 'A session is open in Arabic', detail: glance.arabic.open.title, href: '#study/arabic/' + glance.arabic.open.id, label: 'Pick it up' });
+    out.push({ key: 'arabic-open', title: 'A session is open in Arabic', detail: glance.arabic.open.title, href: '#study/arabic/' + encodeURIComponent(glance.arabic.open.id), label: 'Pick it up' });
   const cyber = glance?.options.find(o => o.subject === 'cybersecurity' && o.resume);
   if (cyber && !isNow(cyber.href)) out.push({ key: 'cyber-open', title: 'A session is open in Cybersecurity', detail: cyber.title, href: cyber.href, label: 'Pick it up' });
   // When the Now card is Arabic revision, its cards aren't offered again here.
@@ -171,7 +173,7 @@ function offers(data: MyDayData, glance: LearningGlance | null, now: LearningOpt
       detail: names && cards ? `${names}, plus ${cards}` : names || cards, run: () => startRevision(), label: 'Revise' });
   }
   for (const l of glance?.arabic.needs ?? []) if (!isNow('#study/arabic/' + encodeURIComponent(l.id)))
-    out.push({ key: 'needs-' + l.id, title: `${l.title} needs revision`, href: '#study/arabic/' + l.id, label: 'Open lesson' });
+    out.push({ key: 'needs-' + l.id, title: `${l.title} needs revision`, href: '#study/arabic/' + encodeURIComponent(l.id), label: 'Open lesson' });
   const needQ = st.concepts.filter(c => !questionReady(c)).length;
   if (needQ) out.push({ key: 'questions', title: `${needQ} concept${needQ === 1 ? ' needs' : 's need'} a revision question`, href: '#study/concepts', label: 'Add questions' });
   return out.slice(0, 3);
@@ -224,8 +226,7 @@ export function Dashboard({ data, lengths, setLength }: { data: MyDayData; lengt
   const glance = useNextLearning(data, pickGlance);
   // One of your courses needs no catalogue, so it shows before the guided subjects have loaded.
   const now = glance?.options[0] ?? (st.settings.primarySubject === 'roadmap' ? roadmapOption(data) : null);
-  const items = offers(data, glance, cur ? null : now, k);
-  const yours = courseFocus(st, ix);
+  const items = offers(data, glance ?? null, cur ? null : now, k);
   const glances = st.stages.length ? topicsOf(st).map(t => topicGlance(st, ix, t.id)!).filter(Boolean) : [];
   // The guided course is the single Cybersecurity entry. Older roadmap courses remain accessible inside it.
   const cyberTopics = glances.filter(g => g.topic.title.trim().toLowerCase() === 'cybersecurity');
@@ -238,7 +239,8 @@ export function Dashboard({ data, lengths, setLength }: { data: MyDayData; lengt
         <div className="min-w-0">
           {cur ? <SessionNow cur={cur} />
             : now ? <FocusNow data={data} now={now} others={glance ? glance.options.slice(1) : null} ix={ix} lengths={lengths} setLength={setLength} />
-            : <Card tone="accent" className="next-card min-h-[200px]" id="stFocus" data-now="loading"><Eyebrow>Your focus</Eyebrow><p role="status" className="text-[15px] text-fg-2">Finding your next step…</p></Card>}
+            : <Card tone="accent" className="next-card min-h-[200px]" id="stFocus" data-now={glance === undefined ? 'unavailable' : 'loading'}><Eyebrow>Your focus</Eyebrow>
+              <p role="status" className="text-[15px] text-fg-2">{glance === undefined ? 'Your next step couldn’t be worked out just now. Every subject below still opens, and it tries again as you go.' : 'Finding your next step…'}</p></Card>}
         </div>
         {items.length > 0 && <div className="min-w-0"><WorthALook items={items} /></div>}
       </div>
@@ -252,7 +254,7 @@ export function Dashboard({ data, lengths, setLength }: { data: MyDayData; lengt
         <div className="grid gap-x-3 sm:grid-cols-2 lg:grid-cols-3 items-start">
           <ArabicCard counts={glance?.arabic} />
           <CyberCard roadmaps={cyberTopics} counts={glance?.cyber} />
-          {glances.filter(g => !cyberTopics.includes(g)).map(g => <TopicCard key={g.topic.id || 'main'} g={g} k={k} focus={!!yours && g.courses.some(x => x.course.id === yours.id)} />)}
+          {glances.filter(g => !cyberTopics.includes(g)).map(g => <TopicCard key={g.topic.id || 'main'} g={g} k={k} />)}
           <ReadingTile data={data} />
           {st.stages.length > 0 ? <AddTopicCard data={data} /> : <SetupTile />}
         </div>
@@ -272,12 +274,12 @@ export function Dashboard({ data, lengths, setLength }: { data: MyDayData; lengt
 }
 
 // One topic on the home page: its next step, progress and when you last studied it. The whole card opens its page.
-function TopicCard({ g, k, focus }: { g: TopicGlance; k: string; focus: boolean }) {
+function TopicCard({ g, k }: { g: TopicGlance; k: string }) {
   return (
     <a href={'#' + topicPath(g.topic.id)} className="topic-card block bg-surface border border-outline rounded-card shadow-card p-4 mb-4 text-fg no-underline hover:border-outline-strong focus-visible:outline-2 focus-visible:outline-primary" data-id={g.topic.id}>
       <span className="flex items-start justify-between gap-2">
         <span className="topic-title text-[18px] font-semibold leading-snug min-w-0 break-words">{g.topic.title}</span>
-        {focus && <span className="flex-none text-xs font-bold tracking-[.06em] uppercase px-2 py-0.5 rounded-full bg-primary-container text-on-primary-container" data-s="topic-focus">Focus</span>}
+        {g.isFocus && <span className="flex-none text-xs font-bold tracking-[.06em] uppercase px-2 py-0.5 rounded-full bg-primary-container text-on-primary-container" data-s="topic-focus">Focus</span>}
       </span>
       <span className="block text-[15px] mt-1.5 text-fg-2" data-s="topic-next">
         {!g.next ? 'No courses yet — add the first one.' : g.nextTask ? <>Next: <span className="text-fg font-medium">{g.nextTask.title}</span> <span className="text-fg-3">· {g.next.title}</span></> : <>{g.next.title}{g.comp.total && g.comp.done === g.comp.total ? ' — all tasks complete' : ''}</>}

@@ -4,7 +4,6 @@ import { fmtDuration, todayKey } from '../data/dates';
 import { completionText, stIndex, taskPath } from '../data/study/roadmap';
 import { activeStudy } from '../data/study/sessions';
 import { studiedText, topicGlance } from '../data/study/topics';
-import { courseFocus } from '../data/study/yourFocus';
 import type { MyDayData } from '../data/types';
 import { setFocus } from './actions';
 import { BackLink, Bar, Eyebrow, Note, TextLink } from './parts';
@@ -16,8 +15,7 @@ export function TopicView({ data, id, lengths, setLength }: { data: MyDayData; i
   const st = data.study, ix = stIndex(st), g = topicGlance(st, ix, id);
   if (!g) return <><BackLink to="study" label="Study" /><Card><h2>This topic isn't here</h2><Note className="m-0">It may have been removed, here or in another tab.</Note></Card></>;
   const roadmap = `#study/roadmap/${g.topic.id || 'main'}`, busy = !!activeStudy(st);
-  // Labelled your focus only while your focus is one of your courses (not Arabic or Cybersecurity).
-  const yours = courseFocus(st, ix), isFocus = !!yours && g.next?.id === yours.id;
+  const isFocus = g.isFocus; // only while your focus is one of your courses (data/study/yourFocus.ts)
   const stages = [...new Map(g.courses.map(x => [x.stage.id, x.stage])).values()];
   return (
     <>

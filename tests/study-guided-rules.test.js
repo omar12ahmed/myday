@@ -250,6 +250,15 @@ function check(label, ok) {
       && rule.learningOptions(yf)[0].courseId === 'own-a' && rule.learningOptions(yf)[0].href === '#study/task/a2');
     check('An archived or unknown course, or an unknown value, can\'t be chosen', !rule.chooseFocus(yf, 'course:own-gone') && !rule.chooseFocus(yf, 'course:nope') && !rule.chooseFocus(yf, 'nonsense'));
     check('Choosing the Cybersecurity course\'s own roadmap copy makes Cybersecurity your focus', rule.chooseFocus(yf, 'course:cyber:1:module.learning-lab') && yf.study.settings.primarySubject === 'cybersecurity');
+    const loose = fresh(); loose.study.settings.primarySubject = 'roadmap'; loose.study.focusCourseId = null;
+    loose.study.stages = [{ id: 'l1', title: 'L', courses: [course('loose-empty', []), course('loose-done', [task('ld', true)])] }];
+    const lix = rule.stIndex(loose.study);
+    check('With "your courses" chosen, no course pinned and none with work, the course labelled your focus is the one offered',
+      rule.courseFocus(loose.study, lix)?.id === 'loose-empty' && rule.learningOptions(loose)[0].courseId === 'loose-empty' && rule.focusValue(loose.study, lix) === 'course:loose-empty');
+    loose.study.stages[0].courses = [course('loose-done', [task('ld', true)])];
+    const lix2 = rule.stIndex(loose.study);
+    check('…and with only a finished course, the next step is in another subject (no empty course offered)', rule.courseFocus(loose.study, lix2)?.id === 'loose-done'
+      && rule.learningOptions(loose)[0].subject !== 'roadmap' && !rule.learningOptions(loose).some(o => o.subject === 'roadmap'));
     const none = fresh(); none.study.settings.primarySubject = 'roadmap';
     const nix = rule.stIndex(none.study);
     check('With "your courses" chosen but none added, that choice is still shown as chosen', rule.focusValue(none.study, nix) === 'roadmap' && rule.focusChoices(none.study, nix).some(c => c.value === 'roadmap'));
