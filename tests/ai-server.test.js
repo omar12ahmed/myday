@@ -229,7 +229,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     bad('an extra field on the review', { ...rv, extra: 'x' });
     bad('an extra field on a project that moved', { ...rv, moved: [{ ...rv.moved[0], title: 'Task titles' }] });
     const sys = A.buildAskMessages(mk(rv)).map(m => m.content).join('\n').replace(/\s+/g, ' ');
-    check('the instructions are version myday-ask-v19', A.ASK_PROMPT_VERSION === 'myday-ask-v19', A.ASK_PROMPT_VERSION);
+    check('the instructions are version myday-ask-v20', A.ASK_PROMPT_VERSION === 'myday-ask-v20', A.ASK_PROMPT_VERSION);
     check('…and have the week-in-review part: what pattern do you see, answer with no items, "never guess why"', sys.includes('A week in review') && sys.includes('what pattern you see') && sys.includes('never guess why') && sys.includes('No items'), sys.slice(0, 200));
     const m1 = JSON.parse(A.mockAsk(mk(rv)));
     check('the practice version answers "What pattern do you see in my week?" with kind "answer" and no items', m1.kind === 'answer' && Array.isArray(m1.items) && m1.items.length === 0 && m1.action === null, m1);
@@ -326,6 +326,26 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     check('the practice version looks at the open project named', mp1.kind === 'lookup' && mp1.lookup.tool === 'project' && mp1.lookup.query === 'pj1', mp1);
     const mp2 = JSON.parse(A.mockAsk({ ...base, text: "What's next on the garden shed?", can: ['notes', 'day', 'project'], lookup: proj }));
     check('…and, with the project, says where it is and the next task', mp2.kind === 'answer' && mp2.message.includes('“Garden shed” is at explore, with 0 of 1 tasks done. Next: “Order the felt”'), mp2.message);
+    // "Open decisions" (v20): questions, options with counts, when opened — never what a pro or con says, never more.
+    const decs = { tool: 'decisions', query: 'all', decisions: [{ id: 'd1', projectId: 'pj1', project: 'Garden shed', question: 'Which roof?', options: [{ text: 'Felt', pros: 1, cons: 0 }, { text: 'Tin', pros: 0, cons: 2 }], since: '2026-11-01', reopened: false }],
+      mustBeTrue: [{ id: 'a1', projectId: 'pj2', project: 'Corner café', text: 'People want oat milk' }], found: { decisions: 1, mustBeTrue: 1 } };
+    check('a decisions lookup is accepted (the app saying it can look at open decisions too)', A.checkAskContext({ ...base, can: ['notes', 'day', 'project', 'decisions'], lookup: decs }) === true);
+    bad('an option carrying what its pros say', { ...base, lookup: { ...decs, decisions: [{ ...decs.decisions[0], options: [{ text: 'Felt', pros: ['Cheap'], cons: 0 }] }] } });
+    bad('a decision carrying its reason', { ...base, lookup: { ...decs, decisions: [{ ...decs.decisions[0], why: 'x' }] } });
+    bad('a must-be-true item carrying what was found', { ...base, lookup: { ...decs, mustBeTrue: [{ ...decs.mustBeTrue[0], found: 'x' }] } });
+    bad('9 decisions', { ...base, lookup: { ...decs, decisions: Array.from({ length: 9 }, (_, i) => ({ ...decs.decisions[0], id: 'd' + i })) } });
+    bad('a decision with 5 options', { ...base, lookup: { ...decs, decisions: [{ ...decs.decisions[0], options: Array.from({ length: 5 }, () => decs.decisions[0].options[0]) }] } });
+    bad('a decisions lookup with a count of private ones', { ...base, lookup: { ...decs, leftOut: 1 } });
+    const offerDec = sysOf({ ...base, can: ['notes', 'day', 'project', 'decisions'] }), afterDec = sysOf({ ...base, can: ['notes', 'day', 'project', 'decisions'], lookup: decs });
+    check('the instructions offer a decisions lookup only when the app says it can', offerDec.includes('"tool":"decisions","query":"all"') && !offerProj.includes('"tool":"decisions"'));
+    check('…and, with them, never pick, rank or hint at a winner, never claim what a pro or con says, and cite them', afterDec.includes('NEVER say which option is best, never rank, score,') && afterDec.includes('Never claim what a pro or con says') && afterDec.includes('"sources"') && afterDec.includes('Never reply "lookup" again'));
+    const dlr = A.readAsk(JSON.stringify({ kind: 'lookup', message: 'Looking at your open decisions.', lookup: { tool: 'decisions', query: 'all' } }));
+    check('a decisions lookup reply is read: all, or a project\'s id', dlr && dlr.lookup.tool === 'decisions' && dlr.lookup.query === 'all' && A.readAsk(JSON.stringify({ kind: 'lookup', message: 'x', lookup: { tool: 'decisions', query: 'pj1' } }))?.lookup.query === 'pj1'
+      && A.readAsk(JSON.stringify({ kind: 'lookup', message: 'x', lookup: { tool: 'decisions', query: 'my garden shed' } })) === null);
+    const md3 = JSON.parse(A.mockAsk({ ...base, text: 'Which decisions am I putting off?', can: ['notes', 'day', 'project', 'decisions'] }));
+    check('the practice version looks at your open decisions', md3.kind === 'lookup' && md3.lookup.tool === 'decisions' && md3.lookup.query === 'all', md3);
+    const md4 = JSON.parse(A.mockAsk({ ...base, text: 'Which decisions am I putting off?', can: ['notes', 'day', 'project', 'decisions'], lookup: decs }));
+    check('…and, with them, says how many and the oldest, citing them', md4.kind === 'answer' && md4.message.includes('one decision is open — the oldest is “Which roof?” (Garden shed), since 2026-11-01') && md4.sources.join() === 'd1', md4);
   }
   env = { AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_MOCK_DELAY_MS: '0', AI_DAILY_LIMIT: '50', AI_MIN_SECONDS_BETWEEN: '0', AI_MONTHLY_BUDGET_USD: '1' };
 
@@ -470,7 +490,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     const r1 = A.readAsk(rep([{ type: 'must-be-true', title: 'Crews would pay' }, { type: 'must-be-true', text: 'We can cook 40 boxes a day' }]));
     check('a reply\'s must-be-true items are kept, the words read from "title" or, when it is missing, from "text"', r1 && r1.items.length === 2 && r1.items.every(i => i.type === 'must-be-true') && r1.items[0].title === 'Crews would pay' && r1.items[1].title === 'We can cook 40 boxes a day', r1);
     const sys = A.buildAskMessages(mk(page)).map(m => m.content).join('\n');
-    check('the instructions are version myday-ask-v19 and mention must-be-true and onePage', A.ASK_PROMPT_VERSION === 'myday-ask-v19' && sys.includes('must-be-true') && sys.includes('onePage'), A.ASK_PROMPT_VERSION);
+    check('the instructions are version myday-ask-v20 and mention must-be-true and onePage', A.ASK_PROMPT_VERSION === 'myday-ask-v20' && sys.includes('must-be-true') && sys.includes('onePage'), A.ASK_PROMPT_VERSION);
     const m1 = JSON.parse(A.mockAsk(mk(page)));
     check('the practice version, with a one page and "Suggest what must be true…", answers "add" with 3 must-be-true items', m1.kind === 'add' && m1.items.length === 3 && m1.items.every(i => i.type === 'must-be-true'), m1);
     const m2 = JSON.parse(A.mockAsk(mk(undefined)));
@@ -483,7 +503,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     const mk = tasks => ({ version: 1, action: 'ask', date: '2026-11-10', weekday: 'Tuesday', time: '10:00', page: 'project', text: 'Summarise where this project is, and the one next step',
       context: { project: { id: 'pjB', title: 'Lunch boxes for sites', summary: 'Hot lunches for builders', stage: 'explore', tasks, notes: [] } } });
     const sys = A.buildAskMessages(mk([])).map(m => m.content).join('\n').replace(/\s+/g, ' ');
-    check('the instructions are version myday-ask-v19', A.ASK_PROMPT_VERSION === 'myday-ask-v19', A.ASK_PROMPT_VERSION);
+    check('the instructions are version myday-ask-v20', A.ASK_PROMPT_VERSION === 'myday-ask-v20', A.ASK_PROMPT_VERSION);
     check('the summary instructions say a done "Find out" task means they looked into it, not that its answer is confirmed', sys.includes('A summary of the project on this page') && sys.includes('a done "Find out: X" means they\'ve looked into whether X') && sys.includes('never that X is confirmed or true'));
     check('…and to summarise without advising on a legal, medical or money matter', sys.includes('legal, medical or money matter, summarise without advising'));
     const withTasks = mk([{ id: 'tkA', title: 'Ring the caterer', done: true }, { id: 'tkB', title: 'Price the boxes', done: false }, { id: 'tkC', title: 'Book a stall', done: false }]);

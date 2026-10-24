@@ -782,7 +782,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const ps = K.askSlice(w, '#projects/notes/n3', D);
     pv = K.askPreview(K.askContext(ps, 'x', D), ps.privateNote);
     check('a private note: the preview says it isn\'t sent', pv.short.includes('This note: not sent (private)') && !JSON.stringify(pv).includes('diary'));
-    check('Finance: what you typed and the date (and, if needed, a look in your notes)', eq(K.askPreview(K.askContext(K.askSlice(w, '#finance', D), 'x', D)).short, ['What you typed and the date', 'If needed, a look in your notes or at a day']));
+    check('Finance: what you typed and the date (and, if needed, a look in your notes)', eq(K.askPreview(K.askContext(K.askSlice(w, '#finance', D), 'x', D)).short, ['What you typed and the date', 'If needed, a look in your notes, at a day or at your open decisions']));
     const cal = K.askSlice(w, '#calendar', D);
     let ctxA = K.askContext(K.askSlice(w, '#projects/p/pjC', D), '  Break this into steps  ' + 'x'.repeat(700), D, new Date(), { previous: 'Earlier answer', text: 'Smaller please' });
     check('what\'s sent passes the server\'s check: today\'s appointments, the text cut to 600, one follow-up', cal.context.calendar.appointments[0].title === 'Dentist' && ctxA.text.length === 600 && ctxA.followUp.text === 'Smaller please' && K.checkAskContext(ctxA) && K.checkAskContext(K.askContext(cal, 'hi', D)));
@@ -874,7 +874,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
     // The instructions and the practice version.
     const msgs = K.buildAskMessages(ctxA);
-    check('the instructions: five kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"change"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v19' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
+    check('the instructions: five kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"change"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v20' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
     const mk = (hash, text) => K.checkAskReply(K.mockAsk(K.askContext(K.askSlice(K.getSnapshot().data, hash, D), text, D)), K.getSnapshot().data, K.askSlice(K.getSnapshot().data, hash, D), D);
     check('practice version: steps on a project page, in that project', (r => r.kind === 'steps' && r.items.length === 3 && r.items.every(x => x.projectId === 'pjC'))(mk('#projects/p/pjC', 'Break this into smaller steps')));
     check('…several things to add', (r => r.kind === 'add' && eq(r.items.map(x => x.title), ['Call the bank', 'Renew passport', 'Email Sam']))(mk('#today', 'call the bank, renew passport and email Sam')));
@@ -1403,7 +1403,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('more than 8 found: the newest 8 are sent, and "found" still says how many matched', mr.lookup.notes.length === 8 && mr.lookup.found === 11 && K.lookupLine(mr.lookup, 0).includes('11 notes (the newest 8 sent)'), [mr.lookup.notes.length, mr.lookup.found]);
     const lslice = K.askSlice(ld, '#today', LD), lfound = K.notesLookup(ld, 'bike rack').lookup, Q = 'What did I write about the bike rack?';
     const lc1 = K.askContext(lslice, Q, LD);
-    check('the request says this app can look in your notes, at a day or at a project, and the server\'s check accepts it', eq(lc1.can, ['notes', 'day', 'project']) && !('lookup' in lc1) && K.checkAskContext(lc1));
+    check('the request says this app can look in your notes, at a day, at a project or at your open decisions, and the server\'s check accepts it', eq(lc1.can, ['notes', 'day', 'project', 'decisions']) && !('lookup' in lc1) && K.checkAskContext(lc1));
     const lc2 = K.askContext(lslice, Q, LD, undefined, undefined, lfound);
     check('…the second request carries what was found, and is accepted too', lc2.lookup === lfound && K.checkAskContext(lc2));
     const LKR = q => JSON.stringify({ kind: 'lookup', message: 'Looking in your notes.', lookup: { tool: 'notes', query: q } });
@@ -1487,13 +1487,44 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const PRO = JSON.stringify({ kind: 'add', message: 'Points to weigh — the choice is yours.', items: [{ type: 'pro', title: 'Lasts for decades', optionId: 'oTin' }] });
     const pro = K.checkAskReply(PRO, pw, dslice2, LD, 'what am I missing?', own.lookup);
     check('a look at the page\'s own project keeps the decision it was sent with (its pros and cons still go)', !!dslice2.context.project.decision && pro?.kind === 'add' && pro.items.length === 1 && pro.items[0].type === 'pro', pro);
-    check('Finance sends no project names, so it offers no look at a project', eq(K.askContext(K.askSlice(pw, '#finance', LD), 'x', LD).can, ['notes', 'day']));
+    check('Finance sends no project names, so it offers no look at a project (but notes, a day and open decisions)', eq(K.askContext(K.askSlice(pw, '#finance', LD), 'x', LD).can, ['notes', 'day', 'decisions']));
     const pp1 = K.checkAskReply(K.mockAsk(K.askContext(tslice, pq, LD)), pw, tslice, LD);
     const pp2 = pp1?.kind === 'lookup' && pp1.tool === 'project' ? K.projectLookup(pw, pp1.query) : null;
     const pp3 = pp2 && K.checkAskReply(K.mockAsk(K.askContext(tslice, pq, LD, undefined, undefined, pp2.lookup)), pw, tslice, LD, undefined, pp2.lookup);
     check('practice mode, end to end: "What\'s next on the garden shed?" from Today looks at it, then says where it is', pp1?.query === 'pjShed' && pp3?.kind === 'answer' && pp3.message.includes('“Garden shed” is at explore, with 1 of 2 tasks done. Next: “Order the felt”'), [pp1, pp3]);
     const tpv = K.askPreview(K.askContext(tslice, pq, LD));
-    check('the preview says it may look at one of your projects, and what it would send', tpv.short.includes('If needed, a look in your notes, at a day or at one of your projects') && tpv.all.some(x => x.label === 'If it needs to: one of your projects' && x.lines.join(' ').includes('never its outcome')), tpv);
+    check('the preview says it may look at one of your projects, and what it would send', tpv.short.includes('If needed, a look in your notes, at a day, at one of your projects or at your open decisions') && tpv.all.some(x => x.label === 'If it needs to: one of your projects' && x.lines.join(' ').includes('never its outcome')), tpv);
+    // "Open decisions" (v20): nothing chosen yet, oldest first, across open projects (or one) — never a private one's.
+    const DC = (id, question, x = {}) => ({ id, question, options: [{ id: id + 'a', text: 'Felt', pros: ['PRO-TEXT-A'], cons: [] }, { id: id + 'b', text: 'Tin', pros: [], cons: ['CON-TEXT-B', 'CON-TEXT-C'] }], chosen: null, why: '', decidedOn: null, createdAt: lat, updatedAt: lat, ...x });
+    const AS = (id, text, state) => ({ id, text, state, found: 'FOUND-TEXT', checkedOn: null, taskId: null, createdAt: lat });
+    const zw = K.normalize({ ...pw, projects: { ...pw.projects, items: [
+      LP('pjShed', 'Garden shed', { decisions: [DC('dRoof', 'Which roof?'), DC('dOld', 'Which door?', { createdAt: '2026-11-01T08:00', lastChoice: { text: 'LASTCHOICE-TEXT', on: '2026-11-05' }, history: [{ id: 'h1', text: 'HISTORY-TEXT', on: '2026-11-05', why: 'WHY-OLD' }] }),
+        DC('dPaint', 'Which paint?', { chosen: 'dPainta', why: 'WHY-TEXT', decidedOn: '2026-11-09' })] }),
+      LP('pjCafe', 'Corner café', { template: 'business', model: { problem: 'p', who: 'w', how: 'h', assumptions: [AS('aOpen', 'People want oat milk', 'open'), AS('aTrue', 'Rent is affordable', 'looks-true')] } }),
+      LP('pjHid', 'Hidden plans', { private: true, decisions: [DC('dHid', 'HIDDEN-QUESTION')] }), LP('pjOld', 'Old kitchen', { status: 'done', decisions: [DC('dKit', 'OLD-QUESTION')] })] } });
+    const zl = K.decisionsLookup(zw, 'all'), zs = JSON.stringify(zl.lookup);
+    check('open decisions: nothing chosen yet, oldest first, each option with how many pros and cons, the day opened and if reopened', eq(zl.lookup.decisions.map(d => d.id), ['dOld', 'dRoof']) && zl.lookup.decisions[0].reopened && !zl.lookup.decisions[1].reopened
+      && eq(zl.lookup.decisions[1].options, [{ text: 'Felt', pros: 1, cons: 0 }, { text: 'Tin', pros: 0, cons: 2 }]) && zl.lookup.decisions[0].since === '2026-11-01' && zl.lookup.decisions[0].project === 'Garden shed', zl.lookup.decisions);
+    check('…and what a business idea still has to check (not what\'s already checked)', eq(zl.lookup.mustBeTrue, [{ id: 'aOpen', projectId: 'pjCafe', project: 'Corner café', text: 'People want oat milk' }]) && eq(zl.lookup.found, { decisions: 2, mustBeTrue: 1 }), zl.lookup.mustBeTrue);
+    check('…never what a pro or con says, your reasons, earlier choices or what you found; never a private or finished project\'s (the private one counted here only)', !/PRO-TEXT|CON-TEXT|LASTCHOICE|HISTORY|WHY-|FOUND-TEXT|HIDDEN|OLD-QUESTION|Hidden plans|Old kitchen/.test(zs) && zl.leftOut === 1 && !('leftOut' in zl.lookup), [zs.slice(0, 200), zl.leftOut]);
+    check('…one project by its id (nothing counted from others); never a private, finished or missing one', eq(K.decisionsLookup(zw, 'pjShed').lookup.decisions.map(d => d.id), ['dOld', 'dRoof']) && K.decisionsLookup(zw, 'pjShed').leftOut === 0
+      && K.decisionsLookup(zw, 'pjHid') === null && K.decisionsLookup(zw, 'pjOld') === null && K.decisionsLookup(zw, 'pjNope') === null);
+    const zline = K.lookupLine(zl.lookup, zl.leftOut);
+    check('what the panel says: how many decisions and things to check, and the private one left out', zline === 'Looked at your open decisions: 2 decisions, one thing to check — one in a private project left out.', zline);
+    const zslice = K.askSlice(zw, '#today', LD), zq = 'Which decisions am I putting off?';
+    check('the server\'s check accepts a request carrying them', K.checkAskContext(K.askContext(zslice, zq, LD, undefined, undefined, zl.lookup)));
+    const ZLK = q => JSON.stringify({ kind: 'lookup', message: 'Looking at your open decisions.', lookup: { tool: 'decisions', query: q } });
+    check('a decisions lookup reply is taken for all, or for an open project it was given — not a private one', eq(K.checkAskReply(ZLK('all'), zw, zslice, LD), { kind: 'lookup', tool: 'decisions', query: 'all' })
+      && eq(K.checkAskReply(ZLK('pjShed'), zw, zslice, LD), { kind: 'lookup', tool: 'decisions', query: 'pjShed' }) && K.checkAskReply(ZLK('pjHid'), zw, zslice, LD) === null);
+    const ZANS = (m, sources) => JSON.stringify({ kind: 'answer', message: m, items: [], action: null, sources });
+    const za = K.checkAskReply(ZANS('“Which door?” has been open since 1 November. Tin is the best option. Try adding a con to Felt.', ['dOld', 'aOpen', 'dHid', 'dMadeUp']), zw, zslice, LD, undefined, zl.lookup);
+    check('after the look: the decisions and things to check it used, as links to their tabs (never a private or made-up one)', eq(za?.sources, [{ id: 'dOld', title: 'Which door?', href: '#projects/p/pjShed/decisions' }, { id: 'aOpen', title: 'People want oat milk', href: '#projects/p/pjCafe/model' }]), za?.sources);
+    check('…and a sentence that picks an option is left out (the choice stays yours), the rest kept', za?.message === '“Which door?” has been open since 1 November. Try adding a con to Felt.' && za.changed.some(c => /yours to decide/.test(c)), za);
+    const zp1 = K.checkAskReply(K.mockAsk(K.askContext(zslice, zq, LD)), zw, zslice, LD);
+    const zp2 = zp1?.kind === 'lookup' && zp1.tool === 'decisions' ? K.decisionsLookup(zw, zp1.query) : null;
+    const zp3 = zp2 && K.checkAskReply(K.mockAsk(K.askContext(zslice, zq, LD, undefined, undefined, zp2.lookup)), zw, zslice, LD, undefined, zp2.lookup);
+    check('practice mode, end to end: "Which decisions am I putting off?" looks, then says how many and the oldest', zp1?.query === 'all' && zp3?.kind === 'answer' && zp3.message.includes('2 decisions are open — the oldest is “Which door?” (Garden shed)') && eq(zp3.sources.map(x => x.id), ['dOld', 'dRoof']), [zp1, zp3]);
+    check('the preview says it may look at your open decisions, and what it would send', K.askPreview(K.askContext(zslice, zq, LD)).all.some(x => x.label === 'If it needs to: your open decisions' && x.lines.join(' ').includes('never your reasons')));
   }
 
   console.log('\n[Privacy] Nothing private reaches AI, by any feature (one filter: app/src/ai/reach.ts)');
@@ -1581,6 +1612,12 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const looks = data.projects.items.map(p => [p.id, K.projectLookup(data, p.id)]);
     check('a look at a project: never the private one, and nothing held back of the others', looks.find(([id]) => id === 'pjSecret')[1] === null && looks.filter(([, l]) => l).length >= 2
       && looks.every(([, l]) => !l || (leaks(l.lookup).length === 0 && leaks(K.askContext(K.askSlice(data, '#today', PD), 'what next?', PD, undefined, undefined, l.lookup)).length === 0)), looks.map(([id, l]) => [id, l && leaks(l.lookup)]));
+    // A look at the open decisions, all and each project's: nothing of the private project, never a pro's or con's text,
+    // a reason or what was found — while the open project's own decision is there (so the check sees something).
+    const decLooks = [K.decisionsLookup(data, 'all'), ...data.projects.items.map(p => K.decisionsLookup(data, p.id))].filter(Boolean);
+    check('a look at your open decisions: nothing private in what it sends (not even a pro\'s or con\'s text)', decLooks.length >= 2 && K.decisionsLookup(data, 'pjSecret') === null
+      && decLooks[0].lookup.decisions.some(d => d.question === 'Which wood?') && decLooks.every(l => leaks(l.lookup).length === 0 && !JSON.stringify(l.lookup).includes('Larch-PRO')
+        && leaks(K.askContext(K.askSlice(data, '#today', PD), 'which decisions are open?', PD, undefined, undefined, l.lookup)).length === 0), decLooks.map(l => leaks(l.lookup)));
     check('a lookup in your notes: nothing private in what it sends — not even how many private notes matched', withLook.every(r => leaks(r).length === 0) && lookSecret.leftOut > 0 && lookSecret.lookup.notes.length === 0 && lookShed.lookup.notes.some(n => n.id === 'nOpen'), withLook.map(r => leaks(r)));
     data.patterns.prefs.aiNotes = false;
     const noText = K.askContext(K.askSlice(data, '#projects/p/pjOpen', PD), 'x', PD);

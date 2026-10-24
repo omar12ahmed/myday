@@ -596,6 +596,17 @@ proposed as there (each still a card you tick); the panel links the project. Off
 go with the question (not Finance or Health). Evaluated with
 `ai-eval/ask-scenarios.ts` (p01–p08).
 
+**Looking at your open decisions** (`myday-ask-v20`, the owner's choice of the next lookup): "which decisions am I
+putting off?" or "what do I still have to decide on the flat move?" from any page — Ask MyDay replies "look up" with
+"all" (or that project's id); the app looks on the device (`decisionsLookup` in `src/ai/lookup.ts`) at the decisions
+with nothing chosen yet, oldest first, across your open projects (or the one): each one's question, its options with
+how many pros and cons each has (never what they say), the day it was opened and whether it was reopened, plus what a
+business idea still has to check (its text only). Only those fields are picked; never your reasons, earlier choices or
+what you found, and never a private project's (counted only on the device: "— 1 in a private project left out"). The
+answer links the decisions it names (their project's Decisions tab) and the things to check (its Model tab); a sentence
+that picks, ranks or judges is left out, as on a decision's own page. Not offered with a decision or one page already
+on the page. Evaluated with `ai-eval/ask-scenarios.ts` (o01–o08).
+
 **Planning a Study course with Ask (1.26.0):** a course page has **✦ Plan this course with Ask**, which opens + already
 filled in ("Break this course into study tasks"; `src/capture/openCapture.ts`). From a course page Ask sends the
 course's outline — its modules, sections and tasks: titles, lengths, kinds and done or not, no links or notes, cut to

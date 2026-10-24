@@ -1,6 +1,6 @@
 # Ask MyDay: one privacy filter, then read-only lookups
 
-**Status:** agreed direction (the owner's decisions are in §6). Step 1, the filter (`app/src/ai/reach.ts`), shipped in 1.61.0; step 2's first lookup, "Search your notes", shipped in 1.63.0; the second, "Your day", in 1.66.0 (`dayLookup`; the server's instructions `myday-ask-v18` were deployed first); the third, "A project's context", in 1.70.0 (`projectLookup`; the server's instructions `myday-ask-v19` were deployed first).
+**Status:** agreed direction (the owner's decisions are in §6). Step 1, the filter (`app/src/ai/reach.ts`), shipped in 1.61.0; step 2's first lookup, "Search your notes", shipped in 1.63.0; the second, "Your day", in 1.66.0 (`dayLookup`; the server's instructions `myday-ask-v18` were deployed first); the third, "A project's context", in 1.70.0 (`projectLookup`; the server's instructions `myday-ask-v19` were deployed first); the fourth, "Open decisions" (`decisionsLookup`, instructions `myday-ask-v20`), is built and needs the server deployed before the app.
 **Builds on:** [`myday-vision.md`](myday-vision.md) §4, and the owner's decision of 24 Oct 2026 that Private covers
 every AI feature except note filing.
 
@@ -76,8 +76,13 @@ and note titles (their text only with "AI help with notes" on). Never a private 
 finished or where you left off; its decisions and one page stay on its page. It also covers "find projects": open
 projects' names already go with most questions, and the model names the project by its id from them.
 
-Later candidates, each with its own decision: open decisions and must-be-true items, waiting tasks, and the learning
-recommendation (`nextLearning`, the one authority for what to study next).
+The fourth, the owner's choice (24 Oct 2026): **Open decisions** — the decisions with nothing chosen yet across your
+open projects (or one), each one's question, its options with how many pros and cons each has (not what they say) and
+when it was opened, plus a business idea's unchecked must-be-true items. Never a private project's, your reasons,
+earlier choices or what you found; it never picks an option for you.
+
+Later candidates, each with its own decision: waiting tasks, and the learning recommendation (`nextLearning`, the one
+authority for what to study next).
 
 ## 4. Quality before it's switched on
 
@@ -114,3 +119,4 @@ recommendation (`nextLearning`, the one authority for what to study next).
 5. **Busy time counts every appointment** (for "Your day"): a private project's appointments go as busy time, by kind
    and time only, as in Help me adjust today, so a day is never shown free when it isn't.
 6. **"A project's context" is the third lookup.**
+7. **"Open decisions" is the fourth lookup.**

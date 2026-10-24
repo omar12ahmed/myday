@@ -201,7 +201,7 @@ export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(
     page: slice.page, text: cut(text.trim(), L.textChars), ...(followUp ? { followUp: { previous: cut(followUp.previous, L.previousChars), text: cut(followUp.text.trim(), L.followUpChars) } } : {}),
     context: slice.context,
     // A project can be looked at only where your open projects' names go with the question (not Finance or Health).
-    can: slice.context.projects?.length ? ['notes', 'day', 'project'] : ['notes', 'day'], ...(lookup ? { lookup } : {}),
+    can: slice.context.projects?.length ? ['notes', 'day', 'project', 'decisions'] : ['notes', 'day', 'decisions'], ...(lookup ? { lookup } : {}),
   };
 }
 
@@ -293,10 +293,12 @@ export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['
   if (!short.length) short.push('What you typed and the date');
   if (c.can?.includes('notes')) {
     const projects = c.can.includes('project');
-    short.push(projects ? 'If needed, a look in your notes, at a day or at one of your projects' : 'If needed, a look in your notes or at a day');
+    const looks = ['in your notes', ...(c.can.includes('day') ? ['at a day'] : []), ...(projects ? ['at one of your projects'] : []), ...(c.can.includes('decisions') ? ['at your open decisions'] : [])];
+    short.push(`If needed, a look ${looks.length > 1 ? `${looks.slice(0, -1).join(', ')} or ${looks[looks.length - 1]}` : looks[0]}`);
     all.push({ label: 'If it needs to: your notes', lines: ['Ask MyDay may look in your notes for words from your question, on this device, and send up to 8 that match: their titles and projects, and a short snippet only with AI help with notes on.', 'Never a private note, or a note in a private project — not even whether one matched.'] });
     if (c.can.includes('day')) all.push({ label: 'If it needs to: a day', lines: ['Or at one day you ask about (from a week ago to two months ahead): its plan’s tasks, what’s due, busy times by kind only (never an appointment’s name), free time and energy.', 'Never a private project’s tasks; its appointments only as busy time.'] });
     if (projects) all.push({ label: 'If it needs to: one of your projects', lines: ['Or at one of your open projects you ask about by name: what its own page sends — its name, summary, stage, tasks, milestones and note titles (their text only with AI help with notes on).', 'Never a private project, or a private note of it; never its outcome, what counts as finished or where you left off.'] });
+    if (c.can.includes('decisions')) all.push({ label: 'If it needs to: your open decisions', lines: ['Or at your open decisions (across your open projects, or one you name): each one’s question, its options with how many pros and cons each has (not what they say) and the day it was opened; and what a business idea still has to check.', 'Never a private project’s; never your reasons, earlier choices or what you found.'] });
   }
   return { short, all };
 }

@@ -3,7 +3,7 @@
 // appointment only with a date and a time, sensible lengths, gentle wording — and anything that doesn't hold is
 // dropped or made safe (and said). Things to add are saved through the same rules as Capture's, all at once, with one
 // step of Undo. Nothing here talks to a model (request.ts does) and nothing is saved until you tap Add.
-import { ASK_LIMITS as L, readAsk, type AskItem, type AskLookup, type AskNotesLookup } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
+import { ASK_LIMITS as L, readAsk, type AskItem, type AskLookup } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
 import { DAY_AHEAD, DAY_BACK } from './lookup';
 import { CAT_LABEL } from '../data/plan';
 import { isDateKey, keyOf, pad, prettyDate, shift, todayKey } from '../data/dates';
@@ -55,10 +55,10 @@ export type AskChecked =
   | { kind: 'add' | 'steps'; message: string; items: AskProposal[]; changed: string[]; sources?: AskSource[] }
   | { kind: 'answer'; message: string; action: { type: 'start-study'; courseId: string; taskId: string | null; minutes: number; label: string } | { type: 'adjust-today' } | { type: 'start-revision'; scope: Scope; count: number } | null; changed: string[]; sources?: AskSource[] }
   | { kind: 'cannot'; message: string; changed: string[] }
-  | { kind: 'lookup'; tool: 'notes' | 'day' | 'project'; query: string } // query: the words to search, the day, or a project's id
+  | { kind: 'lookup'; tool: 'notes' | 'day' | 'project' | 'decisions'; query: string } // query: the words to search, the day, a project's id, or "all"
   | { kind: 'change'; message: string; changes: AskChange[]; changed: string[] };
 // After a lookup, the notes an answer used (only ones the lookup found), shown as links.
-export interface AskSource { id: string; title: string }
+export interface AskSource { id: string; title: string; href?: string } // href: where it opens (a note's own page otherwise)
 
 // A change to something already saved: what it is, the lines to show (before → after) and what to apply.
 export interface AskChange {
@@ -81,6 +81,8 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
     if (looked || !r.lookup) return null;
     // A project only by the id of one of the open projects it was given (never a private one: they aren't given).
     if (r.lookup.tool === 'project' && !slice.context.projects?.some(p => p.id === r.lookup!.query)) return null;
+    // Open decisions: all of them, or one of the open projects it was given.
+    if (r.lookup.tool === 'decisions' && r.lookup.query !== 'all' && !slice.context.projects?.some(p => p.id === r.lookup!.query)) return null;
     if (r.lookup.tool === 'day') {
       if (!realDate(r.lookup.query)) return null;
       // A day only from a week ago to two months ahead (what the app will look at): further off, it says so.
@@ -95,9 +97,20 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
   const out = checkReply(text, data, asOnPage ? { ...slice, context: { ...slice.context, project: looked.project } } : slice, k, asked);
   // Help me adjust today plans today only: not offered after a look at another day.
   if (out?.kind === 'answer' && out.action?.type === 'adjust-today' && looked?.tool === 'day' && looked.query !== k) return { ...out, action: null };
-  if (!out || looked?.tool !== 'notes' || !r?.sources?.length || (out.kind !== 'answer' && out.kind !== 'add' && out.kind !== 'steps')) return out;
-  const used = [...new Set(r.sources)].map(id => looked.notes.find(n => n.id === id)).filter((x): x is AskNotesLookup['notes'][number] => !!x).map(x => ({ id: x.id, title: x.title }));
-  return used.length ? { ...out, sources: used } : out;
+  if (!out || (out.kind !== 'answer' && out.kind !== 'add' && out.kind !== 'steps')) return out;
+  // After a look at your open decisions, each stays yours: a sentence that picks, ranks or judges is left out.
+  let shown = out;
+  if (looked?.tool === 'decisions') {
+    const kept = (out.message.match(/[^.!?…]+[.!?…]+["”’)]*\s*|[^.!?…]+$/g) ?? []).filter(x => !CHOOSES.test(x) && !JUDGES.test(x)).join('').trim();
+    if (kept !== out.message.trim()) shown = { ...out, message: kept.split(/\s+/).length >= 3 ? kept : 'Here’s what’s still open — each choice is yours.', changed: [...out.changed, 'MyDay left out a view on which option to choose — that’s yours to decide.'] };
+  }
+  if (!looked || (looked.tool !== 'notes' && looked.tool !== 'decisions') || !r?.sources?.length) return shown;
+  // The records an answer says it used: only ones the lookup found, once each, as links.
+  const found: AskSource[] = looked.tool === 'notes' ? looked.notes.map(x => ({ id: x.id, title: x.title }))
+    : [...looked.decisions.map(x => ({ id: x.id, title: x.question, href: `#projects/p/${encodeURIComponent(x.projectId)}/decisions` })),
+      ...looked.mustBeTrue.map(x => ({ id: x.id, title: x.text, href: `#projects/p/${encodeURIComponent(x.projectId)}/model` }))];
+  const used = [...new Set(r.sources)].map(id => found.find(x => x.id === id)).filter((x): x is AskSource => !!x);
+  return used.length ? { ...shown, sources: used } : shown;
 }
 function checkReply(text: string, data: MyDayData, slice: AskSlice, k: DateKey, asked?: string): AskChecked | null {
   const r = readAsk(text);

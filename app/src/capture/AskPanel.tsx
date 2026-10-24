@@ -2,7 +2,7 @@ import { ArrowRight, BookOpen, CalendarPlus, FileText, Flag, FolderKanban, ListP
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { addAskItems, applyAskChanges, applyAskEdit, checkAskReply, countWords, DAY_TOO_FAR, NEW_PROJECT, undoAsk, undoAskChanges, type AskChangeUndo, type AskChecked, type AskEdit, type AskProposal, type AskUndo } from '../ai/ask';
 import { askContext, askPreview, askSlice } from '../ai/askContext';
-import { dayLookup, lookupLine, notesLookup, projectLookup } from '../ai/lookup';
+import { dayLookup, decisionsLookup, lookupLine, notesLookup, projectLookup } from '../ai/lookup';
 import type { AskLookup } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
 import { canAdjust, handOverToAdjust } from '../ai/handover';
 import type { AskFocus } from './openCapture';
@@ -37,7 +37,7 @@ const pause = (ms: number, signal: AbortSignal) => new Promise<void>(done => {
 type Phase =
   | { at: 'idle' }
   | { at: 'asking' }
-  | { at: 'looking'; tool: 'notes' | 'day' | 'project'; query: string }
+  | { at: 'looking'; tool: 'notes' | 'day' | 'project' | 'decisions'; query: string }
   | { at: 'shown'; r: Shown; model: string; followed: boolean; looked?: Looked }
   | { at: 'added'; undo: AskUndo; words: string }
   | { at: 'applied'; undo: AskChangeUndo; words: string }
@@ -103,12 +103,12 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
       // (after the server's pause between requests; the newest data, checked again, is what's searched).
       // (While looking, a project is shown by its title.)
       const q = r.query;
-      setPhase({ at: 'looking', tool: r.tool, query: r.tool === 'project' ? getSnapshot().data.projects.items.find(p => p.id === q)?.title ?? 'that project' : q });
+      setPhase({ at: 'looking', tool: r.tool, query: r.tool === 'project' || (r.tool === 'decisions' && q !== 'all') ? getSnapshot().data.projects.items.find(p => p.id === q)?.title ?? 'that project' : q });
       if (AI_MODE === 'edge') await pause(PACE_MS - (clock() - started), ctrl.signal);
       if (ctrl.signal.aborted || !previewIsCurrent()) return;
       const now = getSnapshot().data;
-      const found = r.tool === 'day' ? dayLookup(now, r.query, k) : r.tool === 'project' ? projectLookup(now, r.query) : notesLookup(now, r.query);
-      if (!found) { setPhase({ at: 'error', message: r.tool === 'project' ? 'That project can’t be looked at now — it may have been finished or made private.' : DAY_TOO_FAR }); return; }
+      const found = r.tool === 'day' ? dayLookup(now, r.query, k) : r.tool === 'project' ? projectLookup(now, r.query) : r.tool === 'decisions' ? decisionsLookup(now, r.query) : notesLookup(now, r.query);
+      if (!found) { setPhase({ at: 'error', message: r.tool === 'day' ? DAY_TOO_FAR : 'That project can’t be looked at now — it may have been finished or made private.' }); return; }
       looked = found;
       const again = () => askModel(askContext(slice, text, k, undefined, followUp, looked!.lookup), ctrl.signal);
       reply = await again();
@@ -168,7 +168,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
       </>}
       {phase.at === 'error' && <p role="alert" className="text-[15px] bg-warn-c text-on-warn-c rounded-tile px-3 py-2 mt-2.5 mb-0">{phase.message}</p>}
       {phase.at === 'asking' && <p role="status" className="text-[15px] text-fg-2 flex items-center gap-2 my-1"><span className="size-3 rounded-full bg-primary motion-safe:animate-pulse flex-none" aria-hidden="true" /> Asking MyDay…</p>}
-      {phase.at === 'looking' && <p role="status" className="text-[15px] text-fg-2 flex items-center gap-2 my-1" data-s="ask-looking"><span className="size-3 rounded-full bg-primary motion-safe:animate-pulse flex-none" aria-hidden="true" /> {phase.tool === 'day' ? `Looking at ${prettyDate(phase.query)}…` : phase.tool === 'project' ? `Looking at your project “${phase.query}”…` : `Looking in your notes for “${phase.query}”…`}</p>}
+      {phase.at === 'looking' && <p role="status" className="text-[15px] text-fg-2 flex items-center gap-2 my-1" data-s="ask-looking"><span className="size-3 rounded-full bg-primary motion-safe:animate-pulse flex-none" aria-hidden="true" /> {phase.tool === 'day' ? `Looking at ${prettyDate(phase.query)}…` : phase.tool === 'project' ? `Looking at your project “${phase.query}”…` : phase.tool === 'decisions' ? (phase.query === 'all' ? 'Looking at your open decisions…' : `Looking at the open decisions in “${phase.query}”…`) : `Looking in your notes for “${phase.query}”…`}</p>}
       {phase.at === 'added' && <div className="flex flex-wrap items-center gap-x-3 gap-y-1" data-s="ask-added">
         <p className="text-[15px] m-0">Added {phase.words}.</p>
         <LinkButton data-action="ask-undo" onClick={() => { if (undoAsk(phase.undo)) { toast('Taken back.'); setPhase({ at: 'idle' }); } }}>Undo</LinkButton>
@@ -193,7 +193,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
             {phase.looked.lookup.tool === 'project' && <> <a className="text-primary underline inline-flex items-center min-h-11 -my-3" href={`#projects/p/${encodeURIComponent(phase.looked.lookup.query)}`} onClick={onClose} data-s="ask-project">Open the project</a></>}</p>}
           {r.message && <p className="text-[15px] mt-1.5 mb-2 whitespace-pre-wrap" data-s="ask-message">{r.message}</p>}
           {(r.kind === 'answer' || r.kind === 'add' || r.kind === 'steps') && r.sources?.length ? (
-            <p className="text-[13px] text-fg-2 m-0 mb-2" data-s="ask-sources">From your notes: {r.sources.map((x, i) => <span key={x.id}>{i ? ', ' : ''}<a className="text-primary underline inline-flex items-center min-h-11 -my-3" href={`#projects/notes/${encodeURIComponent(x.id)}`} onClick={onClose} data-s="ask-source">{x.title}</a></span>)}</p>
+            <p className="text-[13px] text-fg-2 m-0 mb-2" data-s="ask-sources">{phase.looked?.lookup.tool === 'decisions' ? 'From your decisions' : 'From your notes'}: {r.sources.map((x, i) => <span key={x.id}>{i ? ', ' : ''}<a className="text-primary underline inline-flex items-center min-h-11 -my-3" href={x.href ?? `#projects/notes/${encodeURIComponent(x.id)}`} onClick={onClose} data-s="ask-source">{x.title}</a></span>)}</p>
           ) : null}
           {(r.kind === 'add' || r.kind === 'steps') && <>
             <ul className="list-none p-0 m-0 grid gap-2">

@@ -911,7 +911,7 @@ const SEED = `s => {
     const NT = (id, title, text, x = {}) => ({ id, categoryId: '', title, text, pinned: false, createdAt: at, updatedAt: at, ...x });
     const PJ = (id, title, x = {}) => ({ id, title, summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at, ...x });
     const lkSeed = `s => { s.patterns.prefs.aiNotes = true; s.projects.items = s.projects.items.filter(p => !['pjShedLk', 'pjHushLk', 'pjKilnLk'].includes(p.id));
-      s.projects.items.push(${JSON.stringify(PJ('pjShedLk', 'Garden shed'))}, ${JSON.stringify(PJ('pjHushLk', 'Quiet plans', { private: true }))}, ${JSON.stringify(PJ('pjKilnLk', 'Pottery kiln'))});
+      s.projects.items.push(${JSON.stringify(PJ('pjShedLk', 'Garden shed'))}, ${JSON.stringify(PJ('pjHushLk', 'Quiet plans', { private: true }))}, ${JSON.stringify(PJ('pjKilnLk', 'Pottery kiln', { decisions: [{ id: 'dKilnLk', question: 'Gas or electric?', options: [{ id: 'oGas', text: 'Gas', pros: ['Hotter'], cons: [] }, { id: 'oEl', text: 'Electric', pros: [], cons: [] }], chosen: null, why: '', decidedOn: null, createdAt: '2026-01-01T08:00', updatedAt: '2026-01-01T08:00' }] }))});
       s.notes.items = s.notes.items.filter(n => !n.id.startsWith('nLk')); s.notes.items.push(${JSON.stringify(NT('nLkRack', 'Shed sizes', 'Leave room for a bike rack on the left wall.', { projectId: 'pjShedLk' }))},
         ${JSON.stringify(NT('nLkPriv', 'Walrus', 'my private bike rack worry', { private: true }))}, ${JSON.stringify(NT('nLkHush', 'Walrus two', 'a bike rack in the quiet plans', { projectId: 'pjHushLk' }))}); }`;
     const Q = 'What did I write about the bike rack?';
@@ -932,6 +932,10 @@ const SEED = `s => {
     await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
     const pdy = await runLk(mock, 'Am I free on Thursday?');
     check('practice mode: "Am I free on Thursday?" looks at that day and says so above the answer', pdy.phase === 'shown' && /^Looked at Thursday \d{1,2} \w+: /.test(pdy.looked) && pdy.sources.length === 0, [pdy.looked, pdy.error]);
+    await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
+    const pdc = await runLk(mock, 'Which decisions am I putting off?');
+    check('practice mode: "Which decisions am I putting off?" looks at your open decisions, says so above the answer and links the oldest (never what its pros say)', pdc.phase === 'shown' && /^Looked at your open decisions: (one decision|\d+ decisions)/.test(pdc.looked)
+      && pdc.sources.some(x => x === 'Gas or electric?|#projects/p/pjKilnLk/decisions') && pdc.prev.includes('at your open decisions'), [pdc.looked, pdc.sources, pdc.error]);
     await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
     const ppj = await runLk(mock, "What's next on the pottery kiln?");
     const plink = await mock.ev(`document.querySelector('[data-s=ask-project]')?.getAttribute('href') || ''`);

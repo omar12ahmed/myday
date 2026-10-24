@@ -10,7 +10,7 @@
 import type { ChatMessage } from './prompt.ts';
 
 export const ASK_CONTRACT_VERSION = 1;
-export const ASK_PROMPT_VERSION = 'myday-ask-v19';
+export const ASK_PROMPT_VERSION = 'myday-ask-v20';
 export * from './ask-shape.ts';
 import type { AskContext, AskReply } from './ask-shape.ts';
 
@@ -42,6 +42,18 @@ each time exactly as in "busy" and "free" (a "work" time is their shift), as
 when they're free, warmly and without judging. If that day is before the given date, it has passed: say what was on it,
 not when they're free. MyDay builds a plan only for today: never offer to plan or build another day, and no
 "adjust-today". The "due" tasks already exist: never offer to add them again. Never guess what an appointment or a shift is for. Never reply "lookup" again.${quoting}`;
+  if (c.lookup?.tool === 'decisions') return `
+
+The app looked at their open decisions ("lookup" in the data, "tool" "decisions": "decisions", the oldest few with
+nothing chosen yet, each with its project, its question, its options with how many pros and cons each has so far (not
+what they say), the day it was opened ("since") and whether it was reopened after a choice; "mustBeTrue", things a
+business idea depends on that they haven't checked yet; "found", how many there are in all). Private projects are
+never sent. Answer from those only, as "answer": which are open and since when (the oldest first), and one small next
+step — adding a pro or con to an option that has none, or opening the decision and asking "What am I missing?" there,
+or a task to find out one thing to check. Each decision is theirs: NEVER say which option is best, never rank, score,
+recommend or choose one, and never hint at a winner; never say whether something to check is likely true. Never claim
+what a pro or con says — you only see how many there are. Put the ids of the decisions and things to check you name in
+"sources" (only ids from "lookup"). If there are none, say so plainly. Never reply "lookup" again.${quoting}`;
   if (c.lookup?.tool === 'project') return `
 
 The app looked at one of their projects ("lookup" in the data, "tool" "project": "project" is what its own page would
@@ -62,6 +74,10 @@ decisions and its one page aren't here: for those, say to ask on its page. Never
   {"kind":"lookup","message":"Looking at that project.","lookup":{"tool":"project","query":"…"}}, the query that
   project's id exactly as in "projects". If no project in "projects" matches, don't look: say you can't see one by that
   name.`);
+  if (tools.includes('decisions')) offer.push(`- At their open decisions: they ask which decisions are open, waiting or being put off, what they still have
+  to decide, or what's still to check (must be true) — and neither a "decision" nor a "onePage" is in the data —
+  {"kind":"lookup","message":"Looking at your open decisions.","lookup":{"tool":"decisions","query":"all"}}, or for one
+  project they name, the query that project's id exactly as in "projects".`);
   if (!offer.length) return '';
   return `
 
@@ -205,6 +221,16 @@ export function mockAsk(c: AskContext): string {
     return reply({ kind: 'answer', action: null, items: [], sources: l.notes.slice(0, 3).map(n => n.id),
       message: l.notes.length ? `Practice helper (no AI): ${l.found === 1 ? 'one note matches' : `${l.found} notes match`} “${l.query}”: ${names}.`
         : `Practice helper (no AI): nothing in your notes matches “${l.query}”.` });
+  }
+  // Looking at open decisions: the second time round, which are open; the first time, a lookup.
+  if (c.lookup?.tool === 'decisions') {
+    const l = c.lookup, first = l.decisions[0];
+    return reply({ kind: 'answer', action: null, items: [], sources: l.decisions.slice(0, 3).map(d => d.id),
+      message: l.found.decisions ? `Practice helper (no AI): ${l.found.decisions === 1 ? 'one decision is' : `${l.found.decisions} decisions are`} open — the oldest is “${first.question}” (${first.project}), since ${first.since}.`
+        : 'Practice helper (no AI): no decisions are open.' });
+  }
+  if (c.can?.includes('decisions') && !c.lookup && !x.project?.decision && !x.project?.onePage && /\b(decisions?|decide|deciding|putting off|must be true)\b/i.test(t)) {
+    return reply({ kind: 'lookup', message: 'Practice helper (no AI): looking at your open decisions.', items: [], action: null, lookup: { tool: 'decisions', query: 'all' } });
   }
   // Looking at a project: the second time round, where it's at; the first time, a lookup for the open project named.
   if (c.lookup?.tool === 'project') {

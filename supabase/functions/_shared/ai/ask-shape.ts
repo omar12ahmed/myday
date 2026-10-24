@@ -24,7 +24,7 @@ export const ASK_LIMITS = {
   // The weekly review (1.37.0): what moved per project, what's waiting, next week's focus.
   reviewProjects: 20, reviewWaiting: 5, reviewWaitingChars: 200, reviewFocus: 3,
   // A lookup (specs/ai-tools.md §3): the words to search, up to 8 notes found, each with a short snippet at most.
-  lookupQueryChars: 60, lookupNotes: 8, lookupSnippetChars: 200, lookupSources: 8,
+  lookupQueryChars: 60, lookupNotes: 8, lookupSnippetChars: 200, lookupSources: 8, lookupDecisions: 8, lookupBeliefs: 8,
   // "Your day" (v18): one day's plan, what's due, busy and free times — capped like the rest of a page's slice.
   dayTasks: 20, dayBusy: 40, dayFree: 24,
 };
@@ -32,7 +32,7 @@ export const ASK_PAGES = ['today', 'tasks', 'task', 'calendar', 'projects', 'pro
 export type AskPage = typeof ASK_PAGES[number];
 export const ASK_KINDS = ['add', 'steps', 'answer', 'cannot', 'change', 'lookup'] as const;
 // What a lookup can look in: your notes (v17), or one day (v18). The app says what it can look in with `can`.
-export const ASK_TOOLS = ['notes', 'day', 'project'] as const;
+export const ASK_TOOLS = ['notes', 'day', 'project', 'decisions'] as const;
 export const DAY_KINDS = ['work', 'appointment', 'workout', 'sleep', 'prep'] as const;
 export const ASK_ITEM_TYPES = ['task', 'note', 'appointment', 'project', 'study-task', 'change', 'milestone', 'pro', 'con', 'option', 'must-be-true'] as const;
 export const BELIEF_STATES = ['open', 'looks-true', 'doesnt-hold'] as const;
@@ -99,7 +99,17 @@ export interface AskDayLookup {
 // "A project's context" (v19): one of your open projects you asked about by name (query: its id from "projects"), as
 // its own page sends it — never a private one; its decisions and one page stay on its page.
 export interface AskProjectLookup { tool: 'project'; query: string; project: Omit<NonNullable<AskPageContext['project']>, 'decision' | 'onePage'> }
-export type AskLookup = AskNotesLookup | AskDayLookup | AskProjectLookup;
+// "Open decisions" (v20): across your open projects (query "all") or one (its id), the decisions with nothing chosen
+// yet — the question, each option's text with how many pros and cons it has (never what they say), the day it was
+// opened and whether it was reopened — and what a business idea must have true that isn't checked yet (its text only,
+// never what you found). Never a private project's; never your reasons or earlier choices.
+export interface AskDecisionsLookup {
+  tool: 'decisions'; query: string;
+  decisions: { id: string; projectId: string; project: string; question: string; options: { text: string; pros: number; cons: number }[]; since: string; reopened: boolean }[];
+  mustBeTrue: { id: string; projectId: string; project: string; text: string }[];
+  found: { decisions: number; mustBeTrue: number }; // how many in all (the lists carry the oldest few)
+}
+export type AskLookup = AskNotesLookup | AskDayLookup | AskProjectLookup | AskDecisionsLookup;
 
 // What the model returns (JSON only). The app checks it all again.
 export interface AskItem {
@@ -181,6 +191,14 @@ export function checkAskContext(raw: unknown): raw is AskContext {
         && Array.isArray(lk.notes) && lk.notes.length <= L.lookupNotes && lk.notes.every(x => obj(x) && only(x, ['id', 'title', 'project', 'snippet']) && str(x.id, 64, false) && str(x.title, L.titleChars, false)
           && (x.project === null || str(x.project, L.titleChars, false)) && (x.snippet === null || str(x.snippet, L.lookupSnippetChars)))
         && n(lk.found) && typeof lk.titlesOnly === 'boolean')) return false;
+    } else if (lk.tool === 'decisions') {
+      const ref = (x: Record<string, unknown>) => str(x.id, 64, false) && str(x.projectId, 64, false) && str(x.project, L.titleChars, false);
+      if (!(only(lk, ['tool', 'query', 'decisions', 'mustBeTrue', 'found']) && str(lk.query, 64, false)
+        && Array.isArray(lk.decisions) && lk.decisions.length <= L.lookupDecisions && lk.decisions.every(d => obj(d) && only(d, ['id', 'projectId', 'project', 'question', 'options', 'since', 'reopened']) && ref(d)
+          && str(d.question, L.questionChars, false) && isDate(d.since) && typeof d.reopened === 'boolean' && Array.isArray(d.options) && d.options.length <= L.decisionOptions
+          && d.options.every(o => obj(o) && only(o, ['text', 'pros', 'cons']) && str(o.text, L.titleChars, false) && n(o.pros) && n(o.cons)))
+        && Array.isArray(lk.mustBeTrue) && lk.mustBeTrue.length <= L.lookupBeliefs && lk.mustBeTrue.every(b => obj(b) && only(b, ['id', 'projectId', 'project', 'text']) && ref(b) && str(b.text, L.beliefChars, false))
+        && obj(lk.found) && only(lk.found, ['decisions', 'mustBeTrue']) && n(lk.found.decisions) && n(lk.found.mustBeTrue))) return false;
     } else if (lk.tool === 'project') {
       if (!(only(lk, ['tool', 'query', 'project']) && str(lk.query, 64, false) && checkProject(lk.project, false) && (lk.project as { id: unknown }).id === lk.query)) return false;
     } else if (lk.tool === 'day') {
@@ -261,7 +279,7 @@ export function readAsk(textIn: string): AskReply | null {
     const lk = obj(raw.lookup) ? raw.lookup : raw, query = word(lk.query ?? lk.day, ASK_LIMITS.lookupQueryChars);
     const tool = lk.tool === undefined ? 'notes' : ASK_TOOLS.includes(lk.tool as typeof ASK_TOOLS[number]) ? lk.tool as typeof ASK_TOOLS[number] : null; // nothing else can be looked in
     if (tool === 'day' && !isDate(query)) return null; // a day is a date the model worked out
-    if (tool === 'project' && !/^[\w-]{1,64}$/.test(query ?? '')) return null; // a project by its id, from "projects"
+    if ((tool === 'project' || tool === 'decisions') && !/^[\w-]{1,64}$/.test(query ?? '')) return null; // a project by its id, from "projects" (or "all" decisions)
     return query && tool ? { kind: 'lookup', message: (raw.message as string).trim(), items: [], action: null, lookup: { tool, query } } : null;
   }
   const sources = Array.isArray(raw.sources) ? raw.sources.filter((x): x is string => typeof x === 'string' && x.length > 0 && x.length <= 64).slice(0, ASK_LIMITS.lookupSources) : [];
