@@ -5,7 +5,7 @@ import { Field, Select, TextInput } from '../components/Field';
 import { Choice, Choices, LinkButton, Note } from '../components/parts';
 import { update } from '../data/storage';
 import { stIndex } from '../data/study/roadmap';
-import { addStudyLink, bookChoices, courseChoices, isLessonKind, LINK_KIND_LABEL, LINK_KINDS, LINK_LIMITS, linkView, removeStudyLink, setStudyLinkWhy, type LessonInfo, type LessonKind, type LinkKind, type LinkView } from '../data/studyLinks';
+import { addStudyLink, bookChoices, courseChoices, isLessonKind, LINK_KIND_LABEL, LINK_KINDS, LINK_LIMITS, linkView, removeStudyLink, setStudyLinkWhy, tidyWhy, type LessonInfo, type LessonKind, type LinkKind, type LinkView } from '../data/studyLinks';
 import { toast } from '../data/toast';
 import type { MyDayData, Project } from '../data/types';
 
@@ -67,8 +67,9 @@ function LinkRow({ p, v }: { p: Project; v: LinkView }) {
   </>;
   function save() {
     if (why === null) return;
-    if (update(d => (setStudyLinkWhy(d, p.id, l.kind, l.id, why) ? undefined : false))) toast('Saved.');
-    stop();
+    // Nothing changed closes quietly; a save that didn't happen keeps the field (and what you typed) open.
+    if (tidyWhy(why) === (l.why ?? '')) { stop(); return; }
+    if (update(d => (setStudyLinkWhy(d, p.id, l.kind, l.id, why) ? undefined : false))) { toast('Saved.'); stop(); }
   }
   return (
     <li className="border-t border-outline first:border-t-0 py-2" data-s="learning-link" data-kind={l.kind} data-id={l.id} data-gone={v.gone || undefined}>

@@ -4,7 +4,7 @@ import { Card } from '../components/Card';
 import { useConfirm } from '../components/confirm';
 import { Field, TextArea, TextInput } from '../components/Field';
 import { LinkButton, Note } from '../components/parts';
-import { addResource, editResource, removeResource, RESOURCE_LIMITS, resourceName, siteOf, webAddress, type ResourceInput } from '../data/projectResources';
+import { addResource, canOpen, editResource, removeResource, RESOURCE_LIMITS, resourceName, siteOf, tidyText, webAddress, type ResourceInput } from '../data/projectResources';
 import { update } from '../data/storage';
 import { toast } from '../data/toast';
 import type { Project, ProjectResource } from '../data/types';
@@ -40,10 +40,18 @@ function ResourceRow({ p, r }: { p: Project; r: ProjectResource }) {
   return (
     <li className="border-t border-outline first:border-t-0 py-2" data-s="resource" data-id={r.id}>
       {editing ? <ResourceForm p={p} r={r} onDone={() => { setEditing(false); focusSoon(editId); }} /> : (<>
-        <a href={r.url} target="_blank" rel="noopener noreferrer" className="block min-h-11 py-1 text-fg no-underline hover:bg-surface-2 rounded-tile -mx-2 px-2" data-s="resource-link">
-          <span className="block font-medium text-primary break-words">{name} <span aria-hidden="true">↗</span><span className="sr-only">(opens in a new tab)</span></span>
-          {r.title && <span className="block text-sm text-fg-3 break-all" data-s="resource-site">{siteOf(r.url)}</span>}
-        </a>
+        {canOpen(r) ? (
+          <a href={r.url} target="_blank" rel="noopener noreferrer" className="block min-h-11 py-1 text-fg no-underline hover:bg-surface-2 rounded-tile -mx-2 px-2" data-s="resource-link">
+            <span className="block font-medium text-primary break-words">{name} <span aria-hidden="true">↗</span></span>
+            {r.title && <span className="block text-sm text-fg-3 break-all" data-s="resource-site">{siteOf(r.url)}</span>}
+            <span className="sr-only">(opens in a new tab)</span>
+          </a>
+        ) : (
+          <div className="py-1" data-s="resource-closed">
+            <span className="block font-medium break-words">{name}</span>
+            <span className="block text-sm text-fg-3">Can’t be opened here</span>
+          </div>
+        )}
         {r.note && <p className="m-0 mt-1 text-[15px] text-fg-2 break-words" data-s="resource-note">Note: {r.note}</p>}
         <div className="flex flex-wrap gap-x-5">
           <LinkButton className="text-[15px]" id={editId} data-action="resource-edit" aria-label={`Edit “${name}”`} onClick={() => { setEditing(true); focusSoon(`resourceUrl-${r.id}`); }}>Edit</LinkButton>
@@ -64,9 +72,15 @@ function ResourceForm({ p, r, onDone }: { p: Project; r?: ProjectResource; onDon
     if (!whole) { setError(NOT_AN_ADDRESS); focusSoon(`resourceUrl-${key}`); return; }
     if ((p.resources ?? []).some(x => x.id !== r?.id && x.url === whole)) { setError('That link is already kept in this project.'); focusSoon(`resourceUrl-${key}`); return; }
     const input: ResourceInput = { url, title, note };
-    if (r) { if (update(d => (editResource(d, p.id, r.id, input) ? undefined : false))) toast('Saved.'); onDone(); return; }
+    // Editing: nothing changed closes quietly; a save that didn't happen keeps the form (and what you typed) open.
+    if (r) {
+      if (whole === r.url && tidyText(title, RESOURCE_LIMITS.title) === r.title && tidyText(note, RESOURCE_LIMITS.note) === (r.note ?? '')) { onDone(); return; }
+      if (update(d => (editResource(d, p.id, r.id, input) ? undefined : false))) { toast('Saved.'); onDone(); }
+      return;
+    }
     let id: string | null = null;
     if (update(d => { id = addResource(d, p.id, input); if (!id) return false; })) { toast(`Kept “${title.trim() || siteOf(whole)}”.`); onDone(); }
+    else if (!id) setError('That link couldn’t be kept just now. This project may already have 30 links.');
   }
   const esc = (e: KeyboardEvent) => { if (e.key === 'Escape' && !e.nativeEvent.isComposing) onDone(); };
   return (

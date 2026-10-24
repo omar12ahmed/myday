@@ -6,8 +6,9 @@ import type { DateKey, MyDayData, ProjectResource } from './types';
 import { isObj, uid } from './util';
 
 export const RESOURCE_LIMITS = { resources: 30, title: 120, note: 300, url: 2000 };
-// Tidied the same way every time (trimmed after the cut too), so saved text reads back unchanged.
-const tidy = (s: string, max: number) => s.trim().slice(0, max).trimEnd();
+// Tidied the same way every time (cut on whole characters, never half an emoji, and trimmed after the cut too), so
+// saved text reads back unchanged.
+export const tidyText = (s: string, max: number) => Array.from(s.trim()).slice(0, max).join('').trimEnd();
 
 // A web address as you typed it, made whole: "example.com/page" becomes "https://example.com/page". Only http(s) with a
 // real site name and no user name or password in it; '' when it isn't one (e.g. "javascript:…", "mailto:…").
@@ -25,19 +26,23 @@ export function webAddress(raw: string): string {
 export const siteOf = (url: string) => { try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url; } };
 // What a link is called: its title, or its site when it has none.
 export const resourceName = (r: Pick<ProjectResource, 'title' | 'url'>) => r.title || siteOf(r.url);
+// Whether this MyDay opens it: a saved address another MyDay accepted but this one doesn't is kept (so editing the
+// project here never deletes it for your other devices) and shown, but not opened.
+export const canOpen = (r: Pick<ProjectResource, 'url'>) => webAddress(r.url) === r.url;
 
-// Reading saved links: kept only when there are some. One without an id or a web address is counted, never kept
-// half-read; a duplicate id is merged. Fields from a newer MyDay are kept.
+// Reading saved links: kept only when there are some. One without an id or an address is counted, never kept half-read;
+// a later duplicate id is skipped. A web address is made whole; any other address (from a MyDay with different rules)
+// is kept as it is and never opened (canOpen). Fields from a newer MyDay are kept.
 export function normalizeResources(raw: unknown, report: { dropped: number }): ProjectResource[] | null {
   if (raw === undefined || raw === null) return null;
   if (!Array.isArray(raw)) { report.dropped++; return null; }
   const out: ProjectResource[] = [];
   for (const r of raw) {
-    const url = isObj(r) && typeof r.url === 'string' ? webAddress(r.url) : '';
+    const url = isObj(r) && typeof r.url === 'string' && r.url.trim() ? webAddress(r.url) || r.url : '';
     if (!isObj(r) || typeof r.id !== 'string' || !r.id || !url) { report.dropped++; continue; }
     if (out.some(x => x.id === r.id)) continue;
-    const item: ProjectResource = { ...r, id: r.id, title: typeof r.title === 'string' ? tidy(r.title, RESOURCE_LIMITS.title) : '', url, addedOn: isDateKey(r.addedOn) ? r.addedOn : todayKey() };
-    if (typeof r.note === 'string' && r.note.trim()) item.note = tidy(r.note, RESOURCE_LIMITS.note); else delete item.note;
+    const item: ProjectResource = { ...r, id: r.id, title: typeof r.title === 'string' ? tidyText(r.title, RESOURCE_LIMITS.title) : '', url, addedOn: isDateKey(r.addedOn) ? r.addedOn : todayKey() };
+    if (typeof r.note === 'string' && r.note.trim()) item.note = tidyText(r.note, RESOURCE_LIMITS.note); else delete item.note;
     out.push(item);
   }
   return out.length ? out : null;
@@ -51,8 +56,8 @@ export interface ResourceInput { url: string; title?: string; note?: string }
 export function addResource(d: MyDayData, projectId: string, input: ResourceInput, k: DateKey = todayKey()): string | null {
   const p = project(d, projectId), url = webAddress(input.url), list = p?.resources ?? [];
   if (!p || !url || list.length >= RESOURCE_LIMITS.resources || list.some(r => r.url === url)) return null;
-  const note = tidy(input.note ?? '', RESOURCE_LIMITS.note), id = 'rs' + uid();
-  p.resources = [...list, { id, title: tidy(input.title ?? '', RESOURCE_LIMITS.title), url, ...(note ? { note } : {}), addedOn: k }];
+  const note = tidyText(input.note ?? '', RESOURCE_LIMITS.note), id = 'rs' + uid();
+  p.resources = [...list, { id, title: tidyText(input.title ?? '', RESOURCE_LIMITS.title), url, ...(note ? { note } : {}), addedOn: k }];
   p.updatedAt = localStamp();
   return id;
 }
@@ -61,7 +66,7 @@ export function addResource(d: MyDayData, projectId: string, input: ResourceInpu
 export function editResource(d: MyDayData, projectId: string, id: string, input: ResourceInput): boolean {
   const p = project(d, projectId), r = p?.resources?.find(x => x.id === id), url = webAddress(input.url);
   if (!p || !r || !url || p.resources!.some(x => x.id !== id && x.url === url)) return false;
-  const title = tidy(input.title ?? '', RESOURCE_LIMITS.title), note = tidy(input.note ?? '', RESOURCE_LIMITS.note);
+  const title = tidyText(input.title ?? '', RESOURCE_LIMITS.title), note = tidyText(input.note ?? '', RESOURCE_LIMITS.note);
   if (r.url === url && r.title === title && (r.note ?? '') === note) return false;
   r.url = url; r.title = title;
   if (note) r.note = note; else delete r.note;

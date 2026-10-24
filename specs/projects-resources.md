@@ -32,9 +32,12 @@ The vision (§12) asks for related-resource links on a project.
   - **Note** (optional, up to 300 characters).
   - The same address can't be kept twice in one project. At most 30 links a project.
   - Escape or Cancel closes the form without saving.
+  - If saving doesn't happen (e.g. another tab saved first), the form stays open with what you typed. If a link
+    can't be added for a reason the form didn't check (e.g. the project reached 30 on another device), it says
+    "That link couldn't be kept just now. This project may already have 30 links." (found in review).
 - **Project search** also looks at each link's title and note (your own words, never the address). A result is
   labelled "Link"; it opens the Overview with that link brought into view and focused. The "nothing found" hint
-  ends "…decisions and links".
+  ends "…decisions and links" (a case's: "…its timeline, evidence, issues and links").
 - The board, At a glance and Today don't change.
 
 ## 3. Saved data, sync and AI
@@ -42,9 +45,15 @@ The vision (§12) asks for related-resource links on a project.
 - **Saved data:** an optional `resources` on the project, with no schema change. Each link is
   `{ id, title, url, note?, addedOn }`.
   - A project without links is saved exactly as before.
-  - On reading, an address is checked with the same rule as when adding. A link whose address isn't a web address,
-    or that has no id, is counted and left out, never kept half-read.
-  - Titles and notes are tidied the same way every time, so saved text reads back unchanged.
+  - On reading, a web address is made whole with the same rule as when adding. A link with no id or no address is
+    counted and left out.
+  - A link whose address this MyDay doesn't accept (e.g. from a later MyDay with wider rules, or a browser that reads an
+    unusual address differently) is kept as it is and shown as "Can't be opened here", with no link. That way,
+    editing the project on this device never deletes it for your other devices (found in review, as Study links keep
+    a kind they don't know). `webAddress` must not be loosened without keeping that in mind.
+  - Titles and notes are tidied the same way every time, cut on whole characters, so saved text reads back unchanged.
+  - A site with a non-Latin name shows in its encoded form (e.g. "xn--mnchen-3ya.de"). This is safe, because a
+    lookalike can't pass as a familiar site, but it's unfriendly; a later release could decode it.
   - Unknown fields from a newer MyDay are kept.
 - **Older releases:** the owner's exception in AGENTS.md. The previous release keeps the field unread through read,
   edit, save and sync (proved with `app-sync-previous`), but doesn't show it, so update every device.

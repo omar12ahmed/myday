@@ -20,8 +20,9 @@ export type LessonKind = typeof LESSON_KINDS[number];
 export const isLessonKind = (k: string): k is LessonKind => (LESSON_KINDS as readonly string[]).includes(k);
 export const knownKind = (k: string): k is LinkKind => (LINK_KINDS as string[]).includes(k);
 const same = (l: StudyLink, kind: string, id: string) => l.kind === kind && l.id === id;
-// Why it matters, tidied the same way every time (trimmed after the cut too), so saved text reads back unchanged.
-const tidyWhy = (s: string) => s.trim().slice(0, LINK_LIMITS.why).trimEnd();
+// Why it matters, tidied the same way every time (cut on whole characters and trimmed after the cut too), so saved
+// text reads back unchanged.
+export const tidyWhy = (s: string) => Array.from(s.trim()).slice(0, LINK_LIMITS.why).join('').trimEnd();
 
 // Reading saved links: kept only when there are some. A duplicate is merged; one this version can't read is counted,
 // never kept half-read. A kind from a newer MyDay is kept as it is. A why that isn't text is simply left off.
