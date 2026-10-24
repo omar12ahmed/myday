@@ -1,5 +1,13 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.54.0 — Projects: why this next step:** a project's Next step card has **Why this?**, folded as in Study. It says
+whether you chose the step or MyDay picked it (the earliest date, the one added first when none has a date, or the
+only task still to do), and names a waiting task that comes first and was passed over. When a step you chose was
+done or let go in the last week, it says so first; nothing is added to Today by itself. "Or choose another next
+step" now starts with **Let MyDay pick**, which hands your choice back and says what MyDay picks. A project's tasks
+now follow the Tasks screen's order, so on a shared day a task with no time comes after timed ones and the next step
+agrees with Coming up. No saved-data, sync or database change; going back to 1.53.0 is safe. Nothing is sent to AI.
+
 **1.53.0 — Arabic lessons as a journey:** an Arabic lesson is now one page in steps: Warm-up (two questions from the
 lesson before it on your path, from memory), Understand (the key ideas, the example with its voice, the explanation
 and the worked example), Try (Try it with its explained answer, the practical task, the mini challenge, and "Say it
@@ -507,7 +515,7 @@ to the item itself (a milestone, decision or case record is brought into view an
 or choosing another tab ends the search. A screen reader hears the count. Nothing is saved, and nothing is sent to
 AI or anywhere else.
 
-**Why this next step (unreleased; `specs/projects-next-why.md`):** the Overview's Next step card has **Why this?**,
+**Why this next step (1.54.0; `specs/projects-next-why.md`):** the Overview's Next step card has **Why this?**,
 folded as in Study. It says whether you chose the step ("You chose this step. Left to MyDay, it would be “Paint the
 first wall”.") or MyDay picked it: the earliest date, the one added first when none has a date, or the only task
 still to do, saying when a waiting task that comes first was passed over ("“Book the electrician” comes first, but

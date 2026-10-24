@@ -1,8 +1,8 @@
 # Why this next step
 
 **Status:** approved by the owner on 24 October 2026 ("start"; "Why this?" like Study, on the project Overview only,
-"Let MyDay pick" in the picker). Phase 1, release 5 of `specs/projects-vision.md`. Not yet released.
-**Based on:** source at release 1.52.0.
+"Let MyDay pick" in the picker). Phase 1, release 5 of `specs/projects-vision.md`. Released in 1.54.0.
+**Based on:** source at release 1.52.0 (rebased onto 1.53.0).
 
 ## 1. The practical problem
 
