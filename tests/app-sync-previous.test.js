@@ -163,6 +163,28 @@ async function signIn(d, url) {
     await before.returnToApp();
     if (knowsWords) check('…which the previous release takes in as a removal, syncing normally', await synced(before) && await before.until(`!(JSON.parse(localStorage.getItem('${KEY}')).arabic.words || []).length`, 20000));
     else check('…which the previous release ignores, syncing normally', await synced(before) && (await before.status()) === 'synced' && !('words' in (await before.data()).arabic));
+
+    console.log('\n[8] A project\'s web links (resources) pass through the previous release unchanged');
+    const PR = 'pjResourcesBack';
+    const resources = [
+      { id: 'rsBack1', title: 'Timber merchant', url: 'https://example-timber.co.uk/oak', note: 'Ask about offcuts', addedOn: today, futureBit: { keep: ['links', 1] } },
+      { id: 'rsBack2', title: '', url: 'https://www.example.org/guide', addedOn: today }];
+    const resOf = r => { const v = r?.value ?? r; return v?.resources; };
+    await now.setData(`s => { s.projects.items.push({ id: '${PR}', title: 'Shed links', summary: 'Pages for the shed.', stage: 'capture', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}', resources: ${JSON.stringify(resources)} }); }`);
+    check('a project with web links (one with an extra key) reaches the account with the links unchanged', await eventually(async () => eq(resOf((await record('project', PR))?.data), resources)) && await synced(now), resOf((await record('project', PR))?.data));
+    await before.returnToApp();
+    check('the previous release receives the project', await before.until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.some(p => p.id === '${PR}')`, 20000));
+    check('…and its saved data holds the links exactly, extra key included', eq(resOf((await before.data()).projects.items.find(p => p.id === PR)), resources), resOf((await before.data()).projects.items.find(p => p.id === PR)));
+    await before.setData(`s => { const p = s.projects.items.find(x => x.id === '${PR}'); p.title = 'Shed links (renamed)'; p.stage = 'understand'; p.updatedAt = '${today}T12:00'; }`);
+    check('a title and stage change on the previous release reaches the account', await eventually(async () => { const r = (await record('project', PR))?.data?.value; return r?.title === 'Shed links (renamed)' && r?.stage === 'understand'; }) && await synced(before), (await record('project', PR))?.data);
+    check('…with the links still exactly as sent', eq(resOf((await record('project', PR))?.data), resources), resOf((await record('project', PR))?.data));
+    check('…and the previous release still holds them in its own saved data', eq(resOf((await before.data()).projects.items.find(p => p.id === PR)), resources));
+    await now.open(NOW + `#projects/p/${PR}`); await now.returnToApp();
+    check('this release receives the new title and stage', await now.until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === '${PR}')?.title === 'Shed links (renamed)'`, 20000));
+    const backPr = (await now.data()).projects.items.find(p => p.id === PR);
+    check('…with the links unchanged in its saved data', eq(backPr.resources, resources) && backPr.stage === 'understand', backPr.resources);
+    check('the Resources card shows both links: the titled one with its site and note, and the untitled one by its site', await now.until(`(() => { const t = document.querySelector('#projectResources')?.textContent || ''; return t.includes('Timber merchant') && t.includes('example-timber.co.uk') && t.includes('Note: Ask about offcuts') && t.includes('example.org'); })()`, 15000), await now.text('#projectResources'));
+    check('…and each link opens its address in a new tab', await now.ev(`[...document.querySelectorAll('#projectResources [data-s=resource-link]')].map(a => a.getAttribute('href') + '|' + a.target).join()`) === 'https://example-timber.co.uk/oak|_blank,https://www.example.org/guide|_blank', await now.ev(`[...document.querySelectorAll('#projectResources [data-s=resource-link]')].map(a => a.getAttribute('href'))`));
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {

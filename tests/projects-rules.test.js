@@ -22,6 +22,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     `export * from ${src('projectRecords')};`, `export * from ${src('projectPlan')};`, `export * from ${src('businessModel')};`, `export * from ${src('caseFile')};`, `export { normalizeProjects, deleteProject, recently, addProject, setProjectPrivate, editProject, setLeftOff, privateProjectIds, comingUp, stillOpen } from ${src('projects')};`,
     `export { freshState, normalize } from ${src('normalize')};`, `export { shift, shortDate } from ${src('dates')};`, `export * from ${src('projectDashboard')};`, `export * from ${src('weekReview')};`, `export { stepsForToday, nextStep, whyNext } from ${src('projects')};`,
     `export { normalizeStudyLinks, addStudyLink, removeStudyLink, setStudyLinkWhy, linkView, courseChoices, bookChoices, linkedFrom, LINK_LIMITS } from ${src('studyLinks')};`, `export * as Cyber from ${JSON.stringify(path.join(ROOT, 'app/src/projects/learningCyber'))};`, `export { stIndex } from ${src('study/roadmap')};`,
+    `export { webAddress, siteOf, resourceName, normalizeResources, addResource, editResource, removeResource, RESOURCE_LIMITS } from ${src('projectResources')};`,
     `export { searchProject, fold, matchCount, SEARCH_KIND_LABEL } from ${src('projectSearch')};`,
     `export { normalizeTasks, setWaiting, stopWaiting, isWaiting, chaseTask, chaseWaiting, isStuck, setTaskDone, inQueue, onTodaysPlan, unstick } from ${src('tasks')};`,
     `export { setDone, clearDay, toggleRoll, followQueued, taskFromQueue, sendToQueue } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
@@ -1518,7 +1519,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
       d2.tasks.items.find(t => t.id === 'tkOpen').plannedOn = '2026-10-10'; d2.tasks.items.find(t => t.id === 'tkOpen').planUid = 'u9';
       return K.searchProject(d2, d2.projects.items[0], 'bolts')[0].done === 'done';
     })());
-    check('the labels say "About it", "Task", "Note", "Milestone", "Decision", "Your one page", "Timeline", "Evidence" and "Issue"', eq(Object.values(K.SEARCH_KIND_LABEL), ['About it', 'Task', 'Note', 'Milestone', 'Decision', 'Your one page', 'Timeline', 'Evidence', 'Issue']), K.SEARCH_KIND_LABEL);
+    check('the labels say "About it", "Task", "Note", "Milestone", "Decision", "Your one page", "Timeline", "Evidence", "Issue" and "Link"', eq(Object.values(K.SEARCH_KIND_LABEL), ['About it', 'Task', 'Note', 'Milestone', 'Decision', 'Your one page', 'Timeline', 'Evidence', 'Issue', 'Link']), K.SEARCH_KIND_LABEL);
     const everything = world(base('pjE', { template: 'case', title: 'Zed everything', summary: 'zed', milestones: [{ id: 'm1', title: 'zed ms', aim: null, reachedOn: null, createdAt: OLD }], decisions: [{ id: 'd1', question: 'zed?', options: [], chosen: null, why: '', decidedOn: null, createdAt: OLD, updatedAt: OLD }],
       case: { timeline: [{ id: 't1', date: '2026-10-01', about: false, title: 'zed t', details: '', source: 'mine', evidenceIds: [], issueIds: [], createdAt: OLD }], evidence: [{ id: 'e1', title: 'zed e', kind: 'document', date: null, where: '', status: 'have', notes: '', issueIds: [], createdAt: OLD }], issues: [{ id: 'i1', title: 'zed i', status: 'considering', notes: '', createdAt: OLD }] } }));
     everything.tasks.items = [tk('tz', 'zed task', 'pjE')]; everything.notes.items = [nt('nz', 'zed note', '', 'pjE')];
@@ -1778,6 +1779,83 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('with nothing linked every live course and every book is offered', eq(K.courseChoices(lw(), base('pjZ')).map(c => c.id), ['coA', 'coB', 'coD']) && K.bookChoices(lw(), base('pjZ')).length === 4);
     check('a course in a second stage comes after the first stage\'s', (() => { const e = lw(); e.study.stages.push({ id: 'sg2', title: 'Two', courses: [course('coE', 'Second stage', 0, 0)] }); return eq(K.courseChoices(e, base('pjZ')).map(c => c.id), ['coA', 'coB', 'coD', 'coE']); })());
     check('choices and views write nothing', (() => { const e = lw(); K.addStudyLink(e, 'pjL', { kind: 'course', id: 'coA', title: 'A' }); const j = JSON.stringify(e); K.courseChoices(e, P(e)); K.bookChoices(e, P(e)); K.linkView(e, links(e)[0], K.stIndex(e.study)); return JSON.stringify(e) === j; })());
+  }
+
+
+  console.log('\n[19] Resources for a project: web links (specs/projects-resources.md)');
+  {
+    const AT = '2026-10-20';
+    const nr = raw => { const rep = { dropped: 0 }; return [K.normalizeResources(raw, rep), rep.dropped]; };
+    const rs = (id, url, x = {}) => ({ id, title: '', url, addedOn: AT, ...x });
+    const rw = () => world(base('pjR', { title: 'Garden shed' }));
+    const R = d => P(d).resources;
+
+    console.log('  Web addresses');
+    const wa = K.webAddress;
+    check('a bare address becomes https: "example.com/page" is "https://example.com/page"', wa('example.com/page') === 'https://example.com/page', wa('example.com/page'));
+    check('capitals in the site name are lowered, and the path keeps its own capitals', wa('Example.COM/Page') === 'https://example.com/Page' && wa('HTTPS://Example.Com/A') === 'https://example.com/A', [wa('Example.COM/Page'), wa('HTTPS://Example.Com/A')]);
+    check('a protocol-less "//cdn.example.com/x" gets https', wa('//cdn.example.com/x') === 'https://cdn.example.com/x');
+    check('http is kept as http, and a port is kept', wa('http://example.com/a') === 'http://example.com/a' && wa('example.com:8080/a') === 'https://example.com:8080/a', [wa('http://example.com/a'), wa('example.com:8080/a')]);
+    check('spaces around the address are trimmed', wa('   example.org   ') === 'https://example.org/');
+    const refused = ['javascript:alert(1)', 'mailto:me@example.com', 'https://user:pw@example.com', 'ftp://example.com', 'localhost:3000', 'example', '', '   ', 'example.com/' + 'a'.repeat(2000), 'https://', 'data:text/html,hi'];
+    check('refused (empty): javascript:, mailto:, a user name or password, ftp, a site with no dot, a bare word, blank and over 2000 characters', refused.every(x => wa(x) === ''), refused.filter(x => wa(x) !== '').map(x => [x.slice(0, 30), wa(x).slice(0, 40)]));
+    check('an address over 2000 characters is refused, and one just under is kept', wa('example.com/' + 'a'.repeat(2000)) === '' && wa('example.com/' + 'a'.repeat(1900)).length > 1900);
+    check('the result of webAddress is unchanged by running it again (idempotent)', ['example.com/page', 'Example.COM/Page?x=1#top', '//cdn.example.com/x', 'http://example.com:8080/a b'].every(x => wa(wa(x)) === wa(x)));
+    check('siteOf drops "www." and keeps other subdomains; resourceName is the title, or the site without one', K.siteOf('https://www.example-timber.co.uk/oak') === 'example-timber.co.uk' && K.siteOf('https://shop.example.com/') === 'shop.example.com'
+      && K.resourceName({ title: 'Timber merchant', url: 'https://example.com/' }) === 'Timber merchant' && K.resourceName({ title: '', url: 'https://www.example.org/x' }) === 'example.org');
+
+    console.log('  Reading saved links');
+    check('absent or null reads as none (nothing counted); a non-list is counted once; an empty list reads as none', eq(nr(undefined), [null, 0]) && eq(nr(null), [null, 0]) && eq(nr('oops'), [null, 1]) && eq(nr([]), [null, 0]));
+    const bad = nr([rs('rsOk', 'example.com/ok'), { title: 'No id', url: 'example.com/a' }, { id: 'rsNoUrl', title: 'No address' }, rs('rsBad', 'javascript:alert(1)'), rs('rsPw', 'https://u:p@example.com'), 'text', null]);
+    check('a link without an id or a web address (or not an object) is counted and left out; the good one stays, its address made whole', bad[1] === 6 && eq(bad[0].map(r => [r.id, r.url]), [['rsOk', 'https://example.com/ok']]), bad);
+    const dup = nr([rs('rsA', 'example.com/a', { title: 'First' }), rs('rsA', 'example.org/b', { title: 'Second' })]);
+    check('a duplicate id is merged silently (the first stays)', dup[1] === 0 && eq(dup[0].map(r => r.title), ['First']));
+    const unk = nr([{ ...rs('rsA', 'example.com/a'), future: { a: [1] }, pin: true }]);
+    check('fields from a newer MyDay are kept', eq(unk[0][0].future, { a: [1] }) && unk[0][0].pin === true && unk[1] === 0, unk);
+    const tt = nr([rs('rsA', 'example.com/a', { title: '  ' + 'T'.repeat(200) + '  ', note: 'N'.repeat(400) }), rs('rsB', 'example.com/b', { title: 'Q'.repeat(119) + ' ' + 'z'.repeat(50), note: 'x'.repeat(299) + ' ' + 'y'.repeat(50) }), rs('rsC', 'example.com/c', { note: '   ' }), rs('rsD', 'example.com/d', { title: 42, note: 42 })]);
+    check('title and note are trimmed and capped at 120 and 300; a blank or non-text note is left off; a non-text title is empty', tt[0][0].title.length === 120 && tt[0][0].note.length === 300 && !('note' in tt[0][2]) && !('note' in tt[0][3]) && tt[0][3].title === '', tt[0].map(r => [r.title.length, r.note && r.note.length]));
+    check('a cut that ends on a space is tidied, and a second read gives the same (idempotent)', !/\s$/.test(tt[0][1].title) && !/\s$/.test(tt[0][1].note) && eq(nr(tt[0]), [tt[0], 0]), [tt[0][1].title.length, tt[0][1].note.length]);
+    const dt = nr([rs('rsA', 'example.com/a', { addedOn: 'last week' }), rs('rsB', 'example.com/b', { addedOn: undefined })]);
+    check('an invalid or missing addedOn is replaced by a date (nothing counted)', dt[1] === 0 && dt[0].length === 2 && dt[0].every(r => /^\d{4}-\d\d-\d\d$/.test(r.addedOn)));
+    const many = nr(Array.from({ length: 35 }, (_, i) => rs('rs' + i, `example.com/p${i}`)));
+    check('more than 30 valid links from elsewhere are all kept (only adding is capped)', many[0].length === 35 && many[1] === 0);
+    const viaProjects = K.normalizeProjects({ items: [base('pjA', { resources: [rs('rsA', 'example.com/a')] }), base('pjB', { resources: [] }), base('pjC'), base('pjD', { resources: 'broken' })] }, { dropped: 0 }).items;
+    check('through normalizeProjects a project keeps its links; one with none (empty, absent or broken) has no resources key', viaProjects[0].resources.length === 1 && viaProjects.slice(1).every(p => !('resources' in p)), viaProjects.map(p => 'resources' in p));
+
+    console.log('  Adding, editing and removing');
+    let d = rw();
+    const before = P(d).updatedAt;
+    const id1 = K.addResource(d, 'pjR', { url: 'Example-Timber.co.uk/oak', title: '  Timber merchant  ', note: '  Ask about offcuts  ' }, AT);
+    check('adding returns an id starting "rs" and keeps the whole address, the tidied title and note, and the day', /^rs/.test(id1) && eq(R(d), [{ id: id1, title: 'Timber merchant', url: 'https://example-timber.co.uk/oak', note: 'Ask about offcuts', addedOn: AT }]), R(d));
+    check('…and the project\'s updated time moves on', P(d).updatedAt > before);
+    const id2 = K.addResource(d, 'pjR', { url: 'example.org/guide' }, AT);
+    check('a blank title and note are fine: an empty title and no note key at all', R(d)[1].title === '' && !('note' in R(d)[1]) && R(d)[1].id === id2 && (() => { const e = rw(); K.addResource(e, 'pjR', { url: 'example.org', note: '   ' }); return !('note' in R(e)[0]); })());
+    check('a bad address, a missing project and a duplicate address (after tidying) all return null and add nothing', K.addResource(d, 'pjR', { url: 'javascript:alert(1)' }) === null && K.addResource(d, 'pjNope', { url: 'example.net' }) === null
+      && K.addResource(d, 'pjR', { url: 'EXAMPLE.org/guide' }) === null && K.addResource(d, 'pjR', { url: 'https://example.org/guide' }) === null && R(d).length === 2);
+    check('the same site with another path is a different link', K.addResource(d, 'pjR', { url: 'example.org/other' }) !== null && R(d).length === 3);
+    const cap = rw();
+    for (let i = 0; i < 30; i++) K.addResource(cap, 'pjR', { url: `example.com/p${i}` });
+    check('the 30th link is accepted and a 31st returns null', R(cap).length === 30 && K.addResource(cap, 'pjR', { url: 'example.com/one-more' }) === null && R(cap).length === 30);
+    check('a title over 120 and a note over 300 are cut when added', (() => { const e = rw(); K.addResource(e, 'pjR', { url: 'example.com', title: 'T'.repeat(200), note: 'N'.repeat(400) }); return R(e)[0].title.length === 120 && R(e)[0].note.length === 300; })());
+    check('editing changes the address (made whole), title and note, and the project\'s updated time', (() => { const t0 = P(d).updatedAt; return K.editResource(d, 'pjR', id1, { url: 'example-timber.co.uk/pine', title: 'Pine yard', note: 'Closed Sundays' }) && eq(R(d)[0], { id: id1, title: 'Pine yard', url: 'https://example-timber.co.uk/pine', note: 'Closed Sundays', addedOn: AT }) && P(d).updatedAt >= t0; })(), R(d)[0]);
+    check('the same values again change nothing (false)', !K.editResource(d, 'pjR', id1, { url: 'https://example-timber.co.uk/pine', title: 'Pine yard', note: 'Closed Sundays' }));
+    check('a bad address, another link\'s address, a missing link and a missing project all return false', !K.editResource(d, 'pjR', id1, { url: 'mailto:a@example.com' }) && !K.editResource(d, 'pjR', id1, { url: 'example.org/guide' }) && !K.editResource(d, 'pjR', 'rsNope', { url: 'example.net' }) && !K.editResource(d, 'pjNope', id1, { url: 'example.net' }) && R(d)[0].url === 'https://example-timber.co.uk/pine');
+    check('a link may be saved with its own address again (not a duplicate of itself) while its title changes', K.editResource(d, 'pjR', id1, { url: 'example-timber.co.uk/pine', title: 'Pine yard 2', note: 'Closed Sundays' }) && R(d)[0].title === 'Pine yard 2');
+    check('a blank note removes the note key', K.editResource(d, 'pjR', id1, { url: 'example-timber.co.uk/pine', title: 'Pine yard 2', note: '   ' }) && !('note' in R(d)[0]));
+    check('removing takes just that link out (false when it is not there)', K.removeResource(d, 'pjR', id2) && eq(R(d).map(r => r.id).includes(id2), false) && !K.removeResource(d, 'pjR', id2) && !K.removeResource(d, 'pjNope', id1));
+    check('when the last link goes the project has no resources key again (as before)', (() => { const e = rw(); const i = K.addResource(e, 'pjR', { url: 'example.com' }); return K.removeResource(e, 'pjR', i) && !('resources' in P(e)) && eq(Object.keys(P(e)).sort(), Object.keys(base('pjR', { title: 'x' })).sort()); })());
+
+    console.log('  Project search');
+    const sd = world(base('pjR', { title: 'Garden shed', resources: [rs('rs1', 'https://timber-yard.example.com/oak', { title: 'Timber merchant', note: 'Ask about offcuts' }), rs('rs2', 'https://www.example.org/x', { note: 'Planning portal form' })] }));
+    const sf = q => K.searchProject(sd, P(sd), q);
+    check('a link\'s title is found: kind "resource", titled as itself, opening the Overview', eq(sf('merchant').map(h => [h.kind, h.id, h.title, h.href, h.excerpt]), [['resource', 'rs1', 'Timber merchant', '#projects/p/pjR', '']]), sf('merchant'));
+    check('a link\'s note is found, with the note as its excerpt', eq(sf('offcuts').map(h => [h.kind, h.id, h.excerpt]), [['resource', 'rs1', 'Ask about offcuts']]), sf('offcuts'));
+    check('the address and the site are not searched ("oak" and "yard" are only in the address)', eq(sf('oak'), []) && eq(sf('yard'), []) && eq(sf('example'), []) && eq(sf('https'), []), [sf('oak'), sf('example')]);
+    check('an untitled link\'s hit is called by its site (without www.) and found by its note', eq(sf('portal').map(h => [h.id, h.title]), [['rs2', 'example.org']]), sf('portal'));
+    check('the kind\'s label is "Link"', K.SEARCH_KIND_LABEL.resource === 'Link');
+    const ord = world(base('pjR', { title: 'Order shed', resources: [rs('rs1', 'https://example.com/a', { title: 'Order link' })], milestones: [{ id: 'm1', title: 'Order timber', aim: null, reachedOn: null, createdAt: OLD }] })); ord.tasks.items = [{ id: 'tk1', title: 'Order bolts', listId: '', category: 'Admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-09-20T09:00', postponed: 0, blockers: [], letGoOn: null, projectId: 'pjR' }];
+    check('links come last, after every other kind', eq(K.searchProject(ord, P(ord), 'order').map(h => h.kind), ['about', 'task', 'milestone', 'resource']), K.searchProject(ord, P(ord), 'order').map(h => h.kind));
+    check('searching writes nothing', (() => { const j = JSON.stringify(sd); sf('merchant'); sf('portal'); return JSON.stringify(sd) === j; })());
   }
 
   fs.rmSync(dir, { recursive: true, force: true });

@@ -1662,7 +1662,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
 
   console.log('  Nothing found, Clear and Escape');
   await srType('zebra');
-  check('nothing found: "Nothing in this project matches “zebra”" and a plain hint, no results', (await text('#pjSearchH')) === 'Nothing in this project matches “zebra”' && (await ev(`document.querySelectorAll('[data-s=search-hit]').length`)) === 0 && (await text('#projectSearchResults')).includes('It looks at what it’s about, its tasks, notes, milestones and decisions. Every word you type has to be there'), await text('#projectSearchResults'));
+  check('nothing found: "Nothing in this project matches “zebra”" and a plain hint, no results', (await text('#pjSearchH')) === 'Nothing in this project matches “zebra”' && (await ev(`document.querySelectorAll('[data-s=search-hit]').length`)) === 0 && (await text('#projectSearchResults')).includes('It looks at what it’s about, its tasks, notes, milestones, decisions and links. Every word you type has to be there'), await text('#projectSearchResults'));
   await click('[data-action=search-clear]');
   check('Clear empties the field, brings the Milestones tab back and focuses the field', await until(`!document.getElementById('projectSearchResults') && document.activeElement && document.activeElement.id === 'projectSearch'`) && (await srField()) === '' && (await tabOf()) === 'milestones', [await srField(), await ev(`document.activeElement && document.activeElement.id`)]);
   await srType('foundations');
@@ -1699,7 +1699,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await seed([bizObj('pjQb', 'Tea stall', { problem: 'Commuters want good tea', who: 'Station queues', how: 'A cart', assumptions: [asObj('asQ', 'People pay two pounds', 'looks-true', { found: 'Six of ten said yes' })] })]);
   await go('projects/p/pjQb', 2026, 10, 15, 9, 19);
   await srType('zebra');
-  check('nothing found on a business idea says "…milestones, decisions and its one page."', (await text('#projectSearchResults')).includes('It looks at what it’s about, its tasks, notes, milestones, decisions and its one page. Every word'), await text('#projectSearchResults'));
+  check('nothing found on a business idea says "…milestones, decisions, its one page and links."', (await text('#projectSearchResults')).includes('It looks at what it’s about, its tasks, notes, milestones, decisions, its one page and links. Every word'), await text('#projectSearchResults'));
   await srType('your answers');
   check('MyDay\'s own label "Your answers" is not searched: it finds nothing', (await text('#pjSearchH')) === 'Nothing in this project matches “your answers”');
   await srType('commuters');
@@ -1713,6 +1713,8 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await go('projects/p/pjQc', 2026, 10, 15, 9, 20);
   await srType('overtime');
   check('a case\'s results include evidence (title or notes)', eq((await srRows()).map(x => x.split(':')[0]), ['about', 'evidence']) && (await srHrefs())[1] === '#projects/p/pjQc/evidence', await srRows());
+  await srType('zebra');
+  check('nothing found on a case says "…decisions, its timeline, evidence and issues and links."', (await text('#projectSearchResults')).includes('It looks at what it’s about, its tasks, notes, milestones, decisions, its timeline, evidence and issues and links. Every word'), await text('#projectSearchResults'));
   await srType('manager');
   check('…the timeline', eq((await srHrefs()), ['#projects/p/pjQc/timeline']) && (await text('#pjSearchH')) === '1 match for “manager”', await srHrefs());
   await srType('hours');
@@ -1983,6 +1985,89 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
     await go(hashv, 2026, 10, 15, 9, 20); await until(`!!document.querySelector('${sel}')`); await sleep(200);
     check(`phone 320 px: the ${name} with "For your project" does not scroll sideways`, (await exists(sel)) && (await ev('document.documentElement.scrollWidth')) <= 320, await ev('document.documentElement.scrollWidth'));
   }
+  await T.send('Emulation.clearDeviceMetricsOverride');
+
+  console.log('\n[43] Resources for a project');
+  await go('projects', 2026, 10, 15, 9, 0); await reset(); await go('projects', 2026, 10, 15, 9, 0);
+  await seed([pjObj('pjRs', 'Garden shed', 'act', { resources: [{ id: 'rsSeed', title: 'Planning portal', url: 'https://example.co.uk/planning', note: 'Form for outbuildings', addedOn: '2026-10-10' }] }), pjObj('pjRe', 'Empty links', 'act')]);
+  const rsList = async id => (await pAt(id)).resources;
+  const rsRow = id => `[data-s=resource][data-id="${id}"]`;
+  const rsAdd = async (url, title = '', note = '') => { if (!(await exists('[data-s=resource-form]'))) await click('[data-action=resource-add]'); await until(`!!document.getElementById('resourceUrl-new')`); await type('#resourceUrl-new', url); if (title) await type('#resourceTitle-new', title); if (note) await type('#resourceNote-new', note); await click('[data-action=resource-save]'); await sleep(300); };
+
+  console.log('  The empty card');
+  await go('projects/p/pjRe', 2026, 10, 15, 9, 5);
+  check('the Resources card sits after Learning and before Manage', await ev(`(() => { const a = document.getElementById('projectLearning'), b = document.getElementById('projectResources'), c = document.getElementById('projectManage'); return !!a && !!b && !!c && !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) && !!(b.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING); })()`));
+  check('empty, it has the hint and "Add a link", and the project has no resources key', (await text('#projectResources')).includes('Keep the links you need for this project: a supplier’s page, a guide, a form.') && (await text('[data-action=resource-add]')) === 'Add a link' && !(await exists('[data-s=resource]')) && !('resources' in (await pAt('pjRe'))), await text('#projectResources'));
+
+  console.log('  Adding a link');
+  await click('[data-action=resource-add]');
+  check('"Add a link" puts the keyboard in the web address field, and Add waits for an address', await until(`document.activeElement && document.activeElement.id === 'resourceUrl-new'`) && await ev(`document.querySelector('[data-action=resource-save]').disabled`));
+  await type('#resourceUrl-new', 'example-timber.co.uk/oak'); await type('#resourceTitle-new', 'Timber merchant'); await type('#resourceNote-new', 'Ask about offcuts');
+  await click('[data-action=resource-save]'); await sleep(300);
+  const rs1 = (await rsList('pjRe'))?.[0];
+  check('it is saved with https, the title, the note and the day, under an id starting "rs"', rs1 && /^rs/.test(rs1.id) && rs1.url === 'https://example-timber.co.uk/oak' && rs1.title === 'Timber merchant' && rs1.note === 'Ask about offcuts' && rs1.addedOn === '2026-10-15', rs1);
+  check('…with a toast and the form closed', (await toast()) === 'Kept “Timber merchant”.' && !(await exists('[data-s=resource-form]')), await toast());
+  const row1 = rsRow(rs1.id);
+  check('the row shows the title with ↗, the site in small text, and "Note: …"', (await text(`${row1} [data-s=resource-link]`)).replace(/\s+/g, ' ').startsWith('Timber merchant ↗') && (await text(`${row1} [data-s=resource-site]`)) === 'example-timber.co.uk' && (await text(`${row1} [data-s=resource-note]`)) === 'Note: Ask about offcuts');
+  check('its link opens in a new tab with rel noopener, announces that for screen readers, and goes to the address', await ev(`(() => { const a = document.querySelector('${row1} a'); return a.getAttribute('href') === 'https://example-timber.co.uk/oak' && a.target === '_blank' && a.rel.split(' ').includes('noopener') && a.querySelector('.sr-only').textContent === '(opens in a new tab)'; })()`));
+  check('after adding, the keyboard goes back to "Add a link"', await until(`document.activeElement && document.activeElement.id === 'resourceAdd'`));
+  await rsAdd('https://www.example.org/guide');
+  const rs2 = (await rsList('pjRe'))[1];
+  check('an untitled link is named by its site (without www.), with no separate site line and no note line', rs2.title === '' && !('note' in rs2) && (await text(`${rsRow(rs2.id)} [data-s=resource-link]`)).replace(/\s+/g, ' ').startsWith('example.org ↗') && !(await exists(`${rsRow(rs2.id)} [data-s=resource-site]`)) && !(await exists(`${rsRow(rs2.id)} [data-s=resource-note]`)) && (await toast()) === 'Kept “example.org”.', [await toast(), rs2]);
+
+  console.log('  Refusals');
+  await click('[data-action=resource-add]'); await until(`!!document.getElementById('resourceUrl-new')`);
+  await type('#resourceUrl-new', 'javascript:alert(1)'); await click('[data-action=resource-save]'); await sleep(250);
+  check('an address that is not a web address shows the message, as an alert, and saves nothing', (await text('[data-s=resource-error]')) === 'That doesn’t look like a web address. Try something like example.com/page.' && (await ev(`document.querySelector('[data-s=resource-error]').getAttribute('role')`)) === 'alert' && (await rsList('pjRe')).length === 2, await text('[data-s=resource-error]'));
+  check('…the keyboard goes back to the address field, and typing again clears the message', (await until(`document.activeElement && document.activeElement.id === 'resourceUrl-new'`)) && (await type('#resourceUrl-new', 'example.net'), await sleep(150), !(await exists('[data-s=resource-error]'))));
+  await type('#resourceUrl-new', 'EXAMPLE-TIMBER.co.uk/oak'); await click('[data-action=resource-save]'); await sleep(250);
+  check('the same address again says "That link is already kept in this project." and saves nothing', (await text('[data-s=resource-error]')) === 'That link is already kept in this project.' && (await rsList('pjRe')).length === 2, await text('[data-s=resource-error]'));
+  await click('[data-action=resource-cancel]'); await sleep(200);
+  check('Cancel closes the form with nothing saved', !(await exists('[data-s=resource-form]')) && (await rsList('pjRe')).length === 2);
+
+  console.log('  Editing and removing');
+  await click(`${row1} [data-action=resource-edit]`);
+  check('Edit opens the form with the keyboard in the address field, holding the current values', await until(`document.activeElement && document.activeElement.id === 'resourceUrl-${rs1.id}'`) && (await ev(`document.getElementById('resourceTitle-${rs1.id}').value`)) === 'Timber merchant' && (await ev(`document.getElementById('resourceNote-${rs1.id}').value`)) === 'Ask about offcuts');
+  await type(`#resourceTitle-${rs1.id}`, 'Oak merchant'); await click('[data-action=resource-save]'); await sleep(300);
+  check('Save changes the title and keeps the rest', (await rsList('pjRe'))[0].title === 'Oak merchant' && (await rsList('pjRe'))[0].note === 'Ask about offcuts' && (await text(`${row1} [data-s=resource-link]`)).startsWith('Oak merchant'));
+  check('…and the keyboard goes back to that link\'s Edit button', await until(`document.activeElement && document.activeElement.id === 'resourceEdit-${rs1.id}'`));
+  await click(`${row1} [data-action=resource-edit]`); await sleep(200);
+  await type(`#resourceTitle-${rs1.id}`, 'Something else entirely');
+  await ev(`document.getElementById('resourceTitle-${rs1.id}').focus()`);
+  await T.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+  await T.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+  await sleep(250);
+  check('Escape cancels the edit: nothing changed, the form closed, and the keyboard is back on Edit', !(await exists('[data-s=resource-form]')) && (await rsList('pjRe'))[0].title === 'Oak merchant' && await until(`document.activeElement && document.activeElement.id === 'resourceEdit-${rs1.id}'`));
+  await click(`${rsRow(rs2.id)} [data-action=resource-remove]`); await sleep(250);
+  check('Remove asks first, naming the link, and offers "Keep it" and "Remove"', (await text('dialog[open]')).includes('Remove “example.org”?') && (await text('dialog[open]')).includes('The link and your note go; the page itself isn’t affected.') && (await text('[data-action=dialog-cancel]')) === 'Keep it' && (await text('[data-action=dialog-confirm]')) === 'Remove', await text('dialog[open]'));
+  await answer(false);
+  check('"Keep it" keeps the link', (await rsList('pjRe')).length === 2 && (await exists(rsRow(rs2.id))));
+  await click(`${rsRow(rs2.id)} [data-action=resource-remove]`); await answer(true);
+  check('"Remove" takes it out of the project, with the toast "Link removed."', (await rsList('pjRe')).length === 1 && !(await exists(rsRow(rs2.id))) && (await toast()) === 'Link removed.', [await toast(), (await rsList('pjRe')).length]);
+  await click(`${row1} [data-action=resource-remove]`); await answer(true);
+  check('when the last link goes the project has no resources key again', !('resources' in (await pAt('pjRe'))));
+
+  console.log('  Project search');
+  await go('projects/p/pjRs', 2026, 10, 15, 9, 10);
+  await srType('outbuildings');
+  check('a word in a link\'s note finds it, labelled "Link"', eq(await srRows(), ['resource:Link | Planning portal | Form for outbuildings']), await srRows());
+  await click('[data-s=search-hit][data-kind=resource] a');
+  check('picking it clears the search and puts the keyboard on that link\'s row on the Overview', await until(`document.activeElement && document.activeElement.dataset.id === 'rsSeed'`) && !(await srShowing()) && (await tabOf()) === 'overview', await ev(`document.activeElement && document.activeElement.outerHTML.slice(0, 80)`));
+  await srType('planning');
+  check('a word in a link\'s title finds it too', eq((await srRows()).map(x => x.split(':')[0]), ['resource']));
+  await srType('example');
+  check('a word only in the address or site finds nothing', (await text('#pjSearchH')) === 'Nothing in this project matches “example”');
+  await srType('planning example');
+  check('…and a word from the title plus one only in the address finds nothing (every word must match)', (await text('#pjSearchH')).startsWith('Nothing in this project matches'));
+  await click('[data-action=search-clear]');
+
+  console.log('  A phone');
+  await editStorage(`s => { const p = s.projects.items.find(x => x.id === 'pjRs'); p.resources.push({ id: 'rsB', title: 'A long supplier name that has to wrap on a very narrow screen without any sideways scrolling', url: 'https://example.com/a/really/long/unbroken/path/that/goes/on/and/on/and/on/and/on/and/on', note: 'A long note written out in full so that it has to wrap onto several lines', addedOn: '2026-10-11' }, { id: 'rsC', title: '', url: 'https://averyveryverylongsubdomainnamewithoutanybreaks.example.org/x', addedOn: '2026-10-12' }); }`);
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 320, height: 740, deviceScaleFactor: 2, mobile: true });
+  await go('projects/p/pjRs', 2026, 10, 15, 9, 20);
+  await until(`!!document.querySelector('[data-action=resource-add]')`); await click('[data-action=resource-add]'); await sleep(300);
+  check('phone 320 px: with three links and the form open, nothing scrolls sideways', (await exists('[data-s=resource-form]')) && (await ev(`document.querySelectorAll('[data-s=resource]').length`)) === 3 && (await ev('document.documentElement.scrollWidth')) <= 320, await ev('document.documentElement.scrollWidth'));
+  check('phone 320 px: the Edit and Remove buttons, the links and the form\'s controls are at least 44 px tall', await ev(`[...document.querySelectorAll('[data-action=resource-edit], [data-action=resource-remove], [data-s=resource-link], [data-s=resource-form] button, [data-s=resource-form] input')].every(b => b.getBoundingClientRect().height >= 44)`), await ev(`[...document.querySelectorAll('[data-action=resource-edit], [data-action=resource-remove], [data-s=resource-link], [data-s=resource-form] button, [data-s=resource-form] input')].map(b => Math.round(b.getBoundingClientRect().height))`));
   await T.send('Emulation.clearDeviceMetricsOverride');
 
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);

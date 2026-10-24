@@ -1377,10 +1377,12 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     w.projects.items = [
       PJ('pjSecret', 'SECRET-PROJECT', 'SECRET-SUMMARY', { private: true, commitmentIds: ['cSecret'], outcome: 'SECRET-OUTCOME', finishedWhen: 'SECRET-FINISHED', leftOff: { text: 'SECRET-LEFTOFF', at },
         template: 'business', model: MODEL('SECRET-PROBLEM', 'SECRET-BELIEF', 'SECRET-FOUND'), milestones: [{ id: 'mS', title: 'SECRET-MILESTONE', aim: null, reachedOn: null, createdAt: OLD }],
-        decisions: [DEC('dS', 'SECRET-DECISION', 'SECRET-OPTION')], studyLinks: [{ kind: 'course', id: 'crX', title: 'SECRET-LINK', why: 'SECRET-WHY', addedOn: PD }], updatedAt: OLD }),
+        decisions: [DEC('dS', 'SECRET-DECISION', 'SECRET-OPTION')], studyLinks: [{ kind: 'course', id: 'crX', title: 'SECRET-LINK', why: 'SECRET-WHY', addedOn: PD }],
+        resources: [{ id: 'rsS', title: 'SECRET-RES-TITLE', url: 'https://example.com/SECRET-RES-URL', note: 'SECRET-RES-NOTE', addedOn: PD }], updatedAt: OLD }),
       PJ('pjOpen', 'Garden shed', 'A shed for the bikes', { outcome: 'SECRET-OUTCOME-OPEN', finishedWhen: 'SECRET-FINISHED-OPEN', leftOff: { text: 'SECRET-LEFTOFF-OPEN', at },
         template: 'business', model: MODEL('Bikes get wet', 'Fits the garden', 'SECRET-FOUND-OPEN'), decisions: [DEC('dO', 'Which wood?', 'Larch')],
-        studyLinks: [{ kind: 'course', id: 'crY', title: 'Carpentry basics', why: 'SECRET-WHY-OPEN', addedOn: PD }] }),
+        studyLinks: [{ kind: 'course', id: 'crY', title: 'Carpentry basics', why: 'SECRET-WHY-OPEN', addedOn: PD }],
+        resources: [{ id: 'rsO', title: 'SECRET-RES-TITLE-OPEN', url: 'https://example.org/SECRET-RES-URL-OPEN', note: 'SECRET-RES-NOTE-OPEN', addedOn: PD }] }),
       PJ('pjCase', 'Deposit dispute', 'Getting the deposit back', { template: 'case', case: {
         timeline: [{ id: 'tl1', date: '2026-10-01', about: false, title: 'SECRET-TIMELINE', details: 'SECRET-TIMELINE-DETAILS', source: 'mine', evidenceIds: [], issueIds: [], createdAt: OLD }],
         evidence: [{ id: 'ev1', title: 'SECRET-EVIDENCE', kind: 'document', date: null, where: 'SECRET-WHERE', status: 'have', notes: '', issueIds: [], createdAt: OLD }],
@@ -1402,7 +1404,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const data = K.normalize(w);
     const SECRETS = ['SECRET-PROJECT', 'SECRET-SUMMARY', 'SECRET-OUTCOME', 'SECRET-FINISHED', 'SECRET-LEFTOFF', 'SECRET-TASK', 'SECRET-DUE', 'SECRET-STUCK', 'SECRET-DONE', 'SECRET-PERSON',
       'SECRET-NOTE', 'SECRET-PNOTE', 'SECRET-APPT', 'SECRET-PROBLEM', 'SECRET-BELIEF', 'SECRET-FOUND', 'SECRET-MILESTONE', 'SECRET-DECISION', 'SECRET-OPTION', 'SECRET-LINK', 'SECRET-WHY',
-      'SECRET-TIMELINE', 'SECRET-EVIDENCE', 'SECRET-WHERE', 'SECRET-ISSUE', 'SECRET-NAME', 'SECRET-MONEY'];
+      'SECRET-RES-TITLE', 'SECRET-RES-URL', 'SECRET-RES-NOTE', 'SECRET-TIMELINE', 'SECRET-EVIDENCE', 'SECRET-WHERE', 'SECRET-ISSUE', 'SECRET-NAME', 'SECRET-MONEY'];
     check('the made-up world really holds every secret after MyDay reads it (so the checks below can\'t pass by accident)', SECRETS.every(x => JSON.stringify(data).includes(x)), SECRETS.filter(x => !JSON.stringify(data).includes(x)));
     const leaks = (req, allowed = []) => SECRETS.filter(x => !allowed.includes(x) && JSON.stringify(req).includes(x));
     const pages = ['#today', '#calendar', '#today/tasks', '#projects', '#projects/p/pjSecret', '#projects/p/pjSecret/model', '#projects/p/pjOpen', '#projects/p/pjOpen/model', '#projects/p/pjCase',
