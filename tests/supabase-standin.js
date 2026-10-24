@@ -121,9 +121,9 @@ function start(db, port = 0) {
   let filesHandler = null, filesConfigured = true;
   const filesFail = {}; // action -> how many more times that one files action answers 502 (to test Try again after a failed step)
   const filesStore = {
-    async head(key) { const o = fileObjects.get(key); return o ? { size: o.body.length, type: o.type } : null; },
+    async head(key) { const o = fileObjects.get(key); return o ? { size: o.size ?? o.body.length, type: o.type } : null; },
     async firstBytes(key, n) { const o = fileObjects.get(key); return new Uint8Array(o ? o.body.subarray(0, n) : []); },
-    async list(prefix) { return [...fileObjects].filter(([k]) => k.startsWith(prefix)).map(([key, o]) => ({ key, size: o.body.length })); },
+    async list(prefix) { return [...fileObjects].filter(([k]) => k.startsWith(prefix)).map(([key, o]) => ({ key, size: o.size ?? o.body.length })); },
     async remove(key) { fileObjects.delete(key); },
     async sign(method, key, headers, seconds) {
       const token = require('crypto').randomUUID().replace(/-/g, '');
@@ -204,10 +204,12 @@ function start(db, port = 0) {
       // Files: whether the function is set up, what's stored (keys, sizes, types), changing a stored file's bytes (to
       // test the server's check), and starting empty.
       if (what === 'files-configured') { filesConfigured = !!body.configured; return send(res, 200, { configured: filesConfigured }); }
-      if (what === 'files-objects') return send(res, 200, [...fileObjects].map(([key, o]) => ({ key, size: o.body.length, type: o.type, disposition: o.disposition })));
+      if (what === 'files-objects') return send(res, 200, [...fileObjects].map(([key, o]) => ({ key, size: o.size ?? o.body.length, type: o.type, disposition: o.disposition })));
       if (what === 'files-tamper') { const o = fileObjects.get(body.key); if (o) o.body = Buffer.from(body.text || ''); return send(res, 200, { ok: !!o }); }
       if (what === 'files-reset') { fileObjects.clear(); fileLinks.clear(); filesLog.length = 0; filesConfigured = true; for (const k of Object.keys(filesFail)) delete filesFail[k]; return send(res, 200, { ok: true }); }
       if (what === 'files-log') return send(res, 200, filesLog);
+      // (Test only) stores an object that reports a size it doesn't have, so usage and the account's room can be tested: { key, size, type }.
+      if (what === 'files-put') { fileObjects.set(body.key, { body: Buffer.from('x'), size: body.size, type: body.type || 'application/pdf', disposition: 'inline' }); return send(res, 200, { ok: true }); }
       if (what === 'files-fail') { filesFail[body.action] = body.times ?? 1; return send(res, 200, { ok: true }); }
       return send(res, 404, { message: 'Unknown control' });
     }
