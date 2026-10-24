@@ -62,6 +62,30 @@ async function signIn(d, url) {
     check('removing it here leaves a tombstone in the account', await eventually(async () => !!(await record('arabic_lesson', L))?.deleted) && await synced(now));
     await before.returnToApp();
     check('…which the previous release ignores, syncing normally', await synced(before) && (await before.status()) === 'synced' && !('lessons' in (await before.data()).arabic));
+
+    console.log('\n[4] A project\'s outcome, finish line and "where I left off" pass through the previous release unchanged');
+    const P = 'pjLeftOff', stamp = `${today}T09:00`;
+    const leftOff = { text: 'Stopped after phoning the bakery about the oven quote.', at: stamp, futureBit: { keep: ['this', 1] } };
+    const own = { outcome: 'A bakery stall that opens on Saturdays', finishedWhen: 'The first Saturday market day has run', leftOff };
+    await now.setData(`s => { s.projects.items.push({ id: '${P}', title: 'Saturday bakery stall', summary: 'Selling bread at the market.', stage: 'capture', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}', outcome: ${JSON.stringify(own.outcome)}, finishedWhen: ${JSON.stringify(own.finishedWhen)}, leftOff: ${JSON.stringify(leftOff)} }); }`);
+    const fieldsOf = r => { const v = r?.value ?? r; return { outcome: v?.outcome, finishedWhen: v?.finishedWhen, leftOff: v?.leftOff }; };
+    check('a project with an outcome, a finish line and a note with an extra key reaches the account', await eventually(async () => eq(fieldsOf((await record('project', P))?.data), own)) && await synced(now), fieldsOf((await record('project', P))?.data));
+    await before.returnToApp();
+    check('the previous release receives the project', await before.until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.some(p => p.id === '${P}')`, 20000));
+    const held = (await before.data()).projects.items.find(p => p.id === P);
+    check('…and its saved data holds the outcome, the finish line and the note exactly, extra key included', eq(fieldsOf(held), own), fieldsOf(held));
+    await before.setData(`s => { const p = s.projects.items.find(x => x.id === '${P}'); p.title = 'Saturday bakery stall (renamed)'; p.stage = 'understand'; p.updatedAt = '${today}T10:00'; }`);
+    check('a title and stage change on the previous release reaches the account', await eventually(async () => { const r = (await record('project', P))?.data?.value; return r?.title === 'Saturday bakery stall (renamed)' && r?.stage === 'understand'; }) && await synced(before), (await record('project', P))?.data);
+    const after = (await record('project', P))?.data;
+    check('…with the outcome, the finish line and the note still exactly as sent', eq(fieldsOf(after), own), fieldsOf(after));
+    check('…and the previous release still holds all three in its own saved data', eq(fieldsOf((await before.data()).projects.items.find(p => p.id === P)), own));
+    await now.open(NOW + `#projects/p/${P}`); await now.returnToApp();
+    check('this release receives the new title and stage', await now.until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === '${P}')?.title === 'Saturday bakery stall (renamed)'`, 20000));
+    const back = (await now.data()).projects.items.find(p => p.id === P);
+    check('…with the outcome, the finish line and the note unchanged in its saved data', eq(fieldsOf(back), own) && back.stage === 'understand', fieldsOf(back));
+    check('the project shows the updated title', await now.until(`document.querySelector('#projectTitle')?.textContent === 'Saturday bakery stall (renamed)'`, 10000), await now.text('#projectTitle'));
+    check('…the outcome line', (await now.text('[data-s=project-outcome]')).includes(own.outcome), await now.text('[data-s=project-outcome]'));
+    check('…and the "Where I left off" card with the note', (await now.text('#projectLeftOff')).includes('Where I left off') && (await now.text('[data-s=leftoff-text]')) === leftOff.text, await now.text('#projectLeftOff'));
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {
