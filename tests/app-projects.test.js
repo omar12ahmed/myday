@@ -1830,6 +1830,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   console.log('  Linking a course');
   await click('[data-action=learning-add]');
   check('"Link something" puts the keyboard on the kind choices, with Course chosen', await until(`document.activeElement && document.activeElement.id === 'learningKind-course'`) && (await ev(`document.getElementById('learningKind-course').getAttribute('aria-pressed')`)) === 'true' && (await ev(`document.querySelectorAll('[data-s=learning-kind]').length`)) === 3);
+  check('courses are not grouped', (await ev(`document.querySelectorAll('#learningPick optgroup').length`)) === 0);
   check('the list offers the two courses in roadmap order', eq(await lnOpts(), [['', 'Choose…'], ['coLnA', 'Networking basics'], ['coLnB', 'Safety first']]), await lnOpts());
   check('Link waits until something is chosen', await ev(`document.querySelector('[data-action=learning-link]').disabled`));
   await lnPick('coLnA', 'To set up the shop Wi-Fi');
@@ -1847,8 +1848,22 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('the book list offers the book', eq(await lnOpts(), [['', 'Choose…'], ['bkLn', 'Bookkeeping made plain']]), await lnOpts());
   await lnPick('bkLn');
   check('a linked book shows "Page 120 of 300" and opens Reading', (await text(`${lnRow('book', 'bkLn')} [data-s=learning-status]`)) === 'Page 120 of 300' && (await ev(`document.querySelector('${lnRow('book', 'bkLn')} a').getAttribute('href')`)) === '#study/reading' && !(await exists(`${lnRow('book', 'bkLn')} [data-s=learning-why]`)), await text(lnRow('book', 'bkLn')));
+  // A failed load: block the Arabic chunk on a fresh page, then let it through and press Try again.
+  await go('projects/p/pjLn', 2026, 10, 15, 9, 12);
+  await T.send('Network.enable'); await T.send('Network.setBypassServiceWorker', { bypass: true }); await T.send('Network.setCacheDisabled', { cacheDisabled: true });
+  await T.send('Network.setBlockedURLs', { urls: ['*learningArabic*'] });
+  await lnAdd('arabic');
+  check('when the Arabic lessons cannot load, the form says so with a "Try again" button, and offers no list', await until(`!!document.querySelector('[data-s=learning-arabic-failed]')`) && (await text('[data-s=learning-arabic-failed]')).includes('couldn’t load just now') && (await text('[data-action=learning-retry]')) === 'Try again' && !(await exists('#learningPick')) && await ev(`document.querySelector('[data-action=learning-link]').disabled`), await text('[data-s=learning-form]'));
+  await T.send('Network.setBlockedURLs', { urls: [] });
+  await click('[data-action=learning-retry]');
+  check('"Try again" loads them once the network lets the chunk through', await until(`!!document.getElementById('learningPick') && document.querySelectorAll('#learningPick option').length > 10`) && !(await exists('[data-s=learning-arabic-failed]')), await text('[data-s=learning-form]'));
+  await T.send('Network.setBypassServiceWorker', { bypass: false }); await T.send('Network.setCacheDisabled', { cacheDisabled: false });
+  await click('[data-action=learning-cancel]'); await sleep(150);
   await lnAdd('arabic');
   check('choosing the Arabic kind loads the lessons into the list', await until(`!!document.getElementById('learningPick') && document.querySelectorAll('#learningPick option').length > 10`) && (await lnOpts()).some(o => o[0] === ARABIC && o[1] === ARABIC_TITLE), (await lnOpts()).slice(0, 3));
+  const groups = await ev(`[...document.querySelectorAll('#learningPick optgroup')].map(g => [g.label, g.querySelectorAll('option').length])`);
+  check('the Arabic lessons are grouped by module name, in path order: every group has a name and lessons, and the optgroups hold all the options', groups.length >= 2 && groups.every(g => g[0] && g[0] !== 'Choose…' && g[1] > 0) && (await ev(`document.querySelectorAll('#learningPick option').length`)) === 1 + groups.reduce((n, g) => n + g[1], 0), groups.slice(0, 3));
+  check('the first group\'s name is a module name, not a lesson title, and the lesson sits inside a group', (await ev(`(() => { const o = document.querySelector('#learningPick option[value="${ARABIC}"]'); return !!o && o.parentElement.tagName === 'OPTGROUP' && !!o.parentElement.label && o.parentElement.label !== o.textContent; })()`)) && !(await lnOpts()).some(o => o[1] === groups[0][0]), groups[0]);
   await lnPick(ARABIC);
   check('the Arabic lesson is saved with its real title', eq((await lnLinks()).filter(l => l.kind === 'arabic').map(l => [l.id, l.title, 'why' in l]), [[ARABIC, ARABIC_TITLE, false]]), await lnLinks());
   check('…and its row shows the title, "Arabic lesson" and Study\'s state "New" once it has loaded', await until(`(document.querySelector('${lnRow('arabic', ARABIC)} [data-s=learning-status]') || {}).textContent === 'New'`) && (await text(lnRow('arabic', ARABIC))).includes(ARABIC_TITLE) && (await text(lnRow('arabic', ARABIC))).includes('Arabic lesson'), await text(lnRow('arabic', ARABIC)));
@@ -1888,7 +1903,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   console.log('  A course removed from Study, and a phone');
   await editStorage(`s => { s.study.stages[0].courses = s.study.stages[0].courses.filter(c => c.id !== 'coLnA'); }`);
   await go('projects/p/pjLn', 2026, 10, 15, 9, 20);
-  check('the link stays, with the title you linked, "No longer in Study", Unlink, and no link to open', (await ev(`document.querySelector('${lnRow('course', 'coLnA')}').dataset.gone`)) === 'true' && (await text(`${lnRow('course', 'coLnA')} [data-s=learning-status]`)) === 'No longer in Study' && (await text(lnRow('course', 'coLnA'))).includes('Networking basics') && !(await exists(`${lnRow('course', 'coLnA')} a`)) && (await exists(`${lnRow('course', 'coLnA')} [data-action=learning-unlink]`)), await text(lnRow('course', 'coLnA')));
+  check('the link stays, with the title you linked, "No longer in Study", Unlink (no Edit/Add why), and no link to open', (await ev(`document.querySelector('${lnRow('course', 'coLnA')}').dataset.gone`)) === 'true' && (await text(`${lnRow('course', 'coLnA')} [data-s=learning-status]`)) === 'No longer in Study' && (await text(lnRow('course', 'coLnA'))).includes('Networking basics') && !(await exists(`${lnRow('course', 'coLnA')} a`)) && (await exists(`${lnRow('course', 'coLnA')} [data-action=learning-unlink]`)) && !(await exists(`${lnRow('course', 'coLnA')} [data-action=learning-edit]`)), await text(lnRow('course', 'coLnA')));
   check('…and it is still saved on the project', (await lnLinks()).some(l => l.id === 'coLnA'));
   await T.send('Emulation.setDeviceMetricsOverride', { width: 320, height: 740, deviceScaleFactor: 2, mobile: true });
   await go('projects/p/pjLn', 2026, 10, 15, 9, 25);
