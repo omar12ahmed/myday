@@ -74,8 +74,8 @@ function onlySentArabic(reply: string, sent: string): boolean {
 }
 // Verdicts about you. The lesson's own words ("not a score of technical competence", "the flag you passed to chmod",
 // "the disk is 90% full") are fine.
-const VERDICT = /\b(?:you(?:['’]ve| have) (?:passed|failed)|you (?:passed|failed) (?:this|the|that) (?:check|test|question|quiz|lesson)|you(?:['’]ve| have)? mastered|well done|great job|excellent work|your (?:grade|score|mark) (?:is|was)|(?:grade|score)\s*[:=]|score of \d|you (?:got|scored|earned) \d)/i;
-const LINK = /\bhttps?:\/\/|\bwww\.[a-z0-9-]+\.[a-z]/i;
+export const VERDICT = /\b(?:you(?:['’]ve| have) (?:passed|failed)|you (?:passed|failed) (?:this|the|that) (?:check|test|question|quiz|lesson)|you(?:['’]ve| have)? mastered|well done|great job|excellent work|your (?:grade|score|mark) (?:is|was)|(?:grade|score)\s*[:=]|score of \d|you (?:got|scored|earned) \d)/i;
+export const LINK = /\bhttps?:\/\/|\bwww\.[a-z0-9-]+\.[a-z]/i;
 const str = (v: unknown, max: number) => typeof v === 'string' && v.trim().length > 0 && v.trim().length <= max;
 
 // The reply, if it's usable: the right parts and lengths, no links, no verdicts, and for Arabic only Arabic that was sent.
