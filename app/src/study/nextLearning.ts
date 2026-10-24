@@ -16,6 +16,7 @@ export interface LearningOption {
   minutes: number;
   resume: boolean;
   allComplete: boolean;
+  started: boolean; // begun at all (a session, attempt or ticked task): Today says "Start" until then
 }
 
 // An active general/Cyber study timer always takes priority over new lessons.
@@ -23,13 +24,16 @@ export interface LearningOption {
 export function learningOptions(data: MyDayData, generalCourseId = data.study.focusCourseId): LearningOption[] {
   const cyber = nextCyberLesson(data);
   const ix = stIndex(data.study);
+  const ticked = (courseId: string) => !!ix.courseTasks.get(courseId)?.some(t => t.done);
+  const cyberStarted = data.cybersecurity.attempts.length > 0 || data.study.sessions.some(s => !!s.courseId?.startsWith('cyber:1:'))
+    || [...ix.course.keys()].some(id => id.startsWith('cyber:1:') && ticked(id));
   const cyberOption: LearningOption = {
     subject: 'cybersecurity', label: 'Cybersecurity', title: cyber.lesson.title,
     detail: cyber.code === 'user_choice' ? 'Resume your saved attempt'
-      : cyber.allComplete ? 'Required lessons marked complete — revisit any lesson' : 'Next in your course',
+      : cyber.allComplete ? 'Required lessons marked complete — revisit any lesson' : cyberStarted ? 'Next in your course' : 'The first lesson in your course',
     href: '#study/cybersecurity/' + encodeURIComponent(cyber.lesson.id),
     minutes: cyber.lesson.estimated_duration_minutes.standard,
-    resume: cyber.code === 'user_choice', allComplete: cyber.allComplete,
+    resume: cyber.code === 'user_choice', allComplete: cyber.allComplete, started: cyberStarted,
   };
 
   const path = paths.get(data.arabic.pathId) ?? corePath;
@@ -37,12 +41,13 @@ export function learningOptions(data: MyDayData, generalCourseId = data.study.fo
     .flatMap(m => m.lesson_ids.filter(id => !lessonIndex[id].optional));
   const arabicStep = nextArabicStep(data, arabicIds);
   const arabicComplete = arabicIds.length > 0 && arabicIds.every(id => arabicLessonDone(data, id));
+  const arabicStarted = data.arabic.attempts.length > 0;
   const arabicOption: LearningOption = {
     subject: 'arabic', label: 'Arabic Fuṣḥā', title: lessonIndex[arabicStep.lessonId].title,
     detail: arabicStep.resume ? 'Resume your open Arabic session'
-      : arabicComplete ? 'Every required lesson has a finished session — choose a lesson to revisit' : 'Next in your course',
+      : arabicComplete ? 'Every required lesson has a finished session — choose a lesson to revisit' : arabicStarted ? 'Next in your course' : 'The first lesson in your course',
     href: '#study/arabic/' + encodeURIComponent(arabicStep.lessonId),
-    minutes: lessonIndex[arabicStep.lessonId].minutes, resume: arabicStep.resume, allComplete: arabicComplete,
+    minutes: lessonIndex[arabicStep.lessonId].minutes, resume: arabicStep.resume, allComplete: arabicComplete, started: arabicStarted,
   };
 
   // User-authored roadmap courses remain available, in the order of their stages and lessons.
@@ -57,6 +62,7 @@ export function learningOptions(data: MyDayData, generalCourseId = data.study.fo
     subject: 'roadmap', label: 'Your courses', title: generalTask.title,
     detail: generalCourse.node.title, href: '#study/task/' + encodeURIComponent(generalTask.id),
     minutes: generalTask.minutes, resume: false, allComplete: false,
+    started: ticked(generalCourse.node.id) || data.study.sessions.some(s => s.courseId === generalCourse.node.id),
   });
 
   // The learner's explicit choice wins over recent activity; default to fundamentals.

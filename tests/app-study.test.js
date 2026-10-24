@@ -529,6 +529,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
     await exists('#slot-study [data-s="study-next-lessons"]') && await exists('#slot-study [data-subject="cybersecurity"] a[data-action="continue-learning"]') && await exists('#slot-study [data-subject="arabic"] a[data-action="continue-learning"]'));
   const primaryLesson = () => ev(`(() => { const e = document.querySelector('[data-s="study-next-lessons"] > [data-subject]'); return e && { subject: e.dataset.subject, href: e.querySelector('[data-action="continue-learning"]').getAttribute('href'), text: e.textContent }; })()`);
   check('Today initially puts Cybersecurity first and keeps the alternative subjects in a disclosure', (await primaryLesson()).subject === 'cybersecurity' && !(await ev(`document.querySelector('[data-s="study-other-subjects"]').open`)), await primaryLesson());
+  check('with nothing begun in Cybersecurity yet (no attempt, session or ticked task), Today says "Start learning", "Your first lesson is ready" and "Start lesson"', (await text('[data-s="study-next-lessons"]')).includes('Start learning') && (await text('[data-s="study-next-lessons"]')).includes('Your first lesson is ready') && (await primaryLesson()).text.includes('The first lesson in your course') && (await ev(`document.querySelector('[data-s="study-next-lessons"] > [data-subject] [data-action="continue-learning"]').textContent.trim()`)) === 'Start lesson', await text('[data-s="study-next-lessons"]'));
   await click('[data-s="study-other-subjects"] summary');
   const arabicHref = await ev(`document.querySelector('[data-subject="arabic"] [data-action="continue-learning"]').getAttribute('href')`);
   await click('[data-subject="arabic"] [data-action="continue-learning"]');
@@ -543,6 +544,12 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   await go('today', 2026, 11, 2, 9);
   await until(async () => (await primaryLesson())?.subject === 'roadmap', 'the pinned general course on Today');
   check('a preferred general course uses the pinned eligible course rather than the first course', (await primaryLesson()).href === '#study/task/tkZ' && (await primaryLesson()).text.includes('JavaScript practice'), await primaryLesson());
+  check('a course you haven\'t begun yet is offered with "Start lesson", not "Continue learning"', (await ev(`document.querySelector('[data-s="study-next-lessons"] > [data-subject] [data-action="continue-learning"]').textContent.trim()`)) === 'Start lesson' && (await text('[data-s="study-next-lessons"]')).includes('Start learning'), await text('[data-s="study-next-lessons"]'));
+  await editStorage(`s => { const done = s.study.sessions.find(x => x.status === 'done'); s.study.sessions.push({ ...done, id: 'ssStartedZ', courseId: 'coZ', taskId: 'tkZ' }); }`);
+  await go('today', 2026, 11, 2, 9);
+  await until(async () => (await primaryLesson())?.subject === 'roadmap', 'the pinned course after a session on it');
+  check('once you\'ve had a session on it, Today says "Continue learning" and "Your next lesson is ready" again', (await ev(`document.querySelector('[data-s="study-next-lessons"] > [data-subject] [data-action="continue-learning"]').textContent.trim()`)) === 'Continue learning' && (await text('[data-s="study-next-lessons"]')).includes('Your next lesson is ready'), await text('[data-s="study-next-lessons"]'));
+  await editStorage(`s => { s.study.sessions = s.study.sessions.filter(x => x.id !== 'ssStartedZ'); }`); // put the sessions back as they were
   await editStorage(`s => { s.study.stages[0].courses.find(c => c.id === 'coZ').archived = true; }`);
   await go('today', 2026, 11, 2, 9);
   await until(async () => (await primaryLesson())?.subject === 'roadmap', 'the eligible fallback course on Today');

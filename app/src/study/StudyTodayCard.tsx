@@ -35,7 +35,9 @@ export function StudyTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
         </Row>
       )}
       {!cur && options.length > 0 && <div className="grid gap-3 mb-3" data-s="study-next-lessons">
-        <div><strong>Continue learning</strong><p className="text-sm text-fg-2 m-0">Your next lesson is ready — or choose another subject.</p></div>
+        {options[0].started || options[0].resume || options[0].allComplete
+          ? <div><strong>Continue learning</strong><p className="text-sm text-fg-2 m-0">Your next lesson is ready — or choose another subject.</p></div>
+          : <div><strong>Start learning</strong><p className="text-sm text-fg-2 m-0">Your first lesson is ready — or choose another subject.</p></div>}
         <LessonOption option={options[0]} primary />
         {options.length > 1 && <details className="rounded-tile border border-outline p-3" data-s="study-other-subjects">
           <summary className="cursor-pointer min-h-11 flex items-center text-primary font-semibold">Choose another subject</summary>
@@ -65,7 +67,7 @@ function LessonOption({ option, primary = false }: { option: LearningOption; pri
     <p className="font-semibold my-1">{option.title}</p>
     <p className="text-sm text-fg-2 mt-0 mb-2">{option.detail}</p>
     <a href={option.href} onClick={() => updateSaved(d => { d.study.settings.primarySubject = option.subject; })} className={`inline-flex items-center justify-center min-h-11 rounded-btn px-4 font-semibold no-underline ${primary ? 'bg-primary text-on-primary' : 'bg-surface-2 text-primary border border-outline'}`} data-action="continue-learning">
-      {option.resume ? 'Resume lesson' : option.allComplete ? 'Revisit lesson' : 'Continue learning'}
+      {option.resume ? 'Resume lesson' : option.allComplete ? 'Revisit lesson' : option.started ? 'Continue learning' : 'Start lesson'}
     </a>
   </div>;
 }
