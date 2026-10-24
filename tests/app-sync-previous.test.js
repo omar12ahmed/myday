@@ -210,7 +210,7 @@ async function signIn(d, url) {
     else check('…which the previous release ignores, syncing normally', await synced(before) && (await before.status()) === 'synced' && !('practice' in (await before.data()).arabic));
 
     console.log('\n[10] Attached files (a project\'s and a note\'s fileIds, the files section and a file record) pass through the previous release unchanged');
-    const knowsFiles = fs.readdirSync(assets).some(f => f.endsWith('.js') && /['"]file['"]\s*[,:\]]/.test(fs.readFileSync(path.join(assets, f), 'utf8')) && fs.readFileSync(path.join(assets, f), 'utf8').includes('fileIds'));
+    const knowsFiles = fs.readdirSync(assets).some(f => f.endsWith('.js') && /[`'"]file[`'"]\s*[,:\]]/.test(fs.readFileSync(path.join(assets, f), 'utf8')) && fs.readFileSync(path.join(assets, f), 'utf8').includes('fileIds'));
     console.log(`The previous release ${knowsFiles ? 'knows' : 'doesn’t know'} attached files.`);
     const PF = 'pjFilesBack', NF = 'ntFilesBack', FID = 'flback000001';
     const fileRec = { id: FID, name: 'Timber quote.pdf', type: 'application/pdf', size: 4321, sha256: 'e'.repeat(64), area: 'project', state: 'kept', addedOn: today, futureBit: { keep: ['file', 1] } };
