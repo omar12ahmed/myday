@@ -374,6 +374,20 @@ note's text does: AI help with notes when it's on, and Ask MyDay opened on that 
     accept or change. It never sets a lesson's state, and never judges listening or pronunciation.
   - **Before shipping:** a blind evaluation on made-up answers (for Arabic, Gemini was the only accurate model on
     16 Oct). It counts against the shared 20 a day.
+  - **As built (release f, 24 October 2026), "Check my answer" only; the tutor is unchanged:** under an Arabic
+    session's check once your first answer is saved (written checks only), and under each question of a Cybersecurity
+    knowledge check in the notebook (`app/src/study/CheckMyAnswer.tsx`). One tap sends one request
+    (`app/src/ai/checkAnswer.ts` with each course's `checkSource.ts`): the lesson's objectives, its teaching (the
+    companion's explanation and worked example, and an Arabic lesson's own example), the skills it builds on by name,
+    the question, the reference answer (and what also counts) and your answer. Nothing of your MyDay is read, and an
+    answer that looks like it holds a password or key isn't sent (the portfolio's check). The server's jobs are
+    `check-answer` and `check-answer-arabic` (`supabase/functions/_shared/ai/check-answer.ts`); a reply is used only
+    with every part, no links or verdicts about you, and for Arabic only Arabic that was sent (as given, or with no
+    vowel marks at all). The parts show one at a time; the suggested mark appears with the explanation, and an Arabic
+    session can use it once you can mark the question ("Use this mark", with "Used a hint"); the notebook has no
+    per-question marks, so there it's only shown, with a reminder to set "Assistance used". Nothing is saved by
+    asking. Evaluated blind (`ai-eval/reviews/2026-10-24-check-answer-quality.md`): Gemini 3.8 Flash checks Arabic
+    answers (no reply refused, nothing false), GLM-5.3-Flash Cybersecurity ones (`"check-answer-arabic": "learn"`).
 - **The skills view and four Arabic tracks:** reading, writing, listening and speaking each shown in words and
   counts, with the CEFR descriptors as a guide to objectives, never a qualification. The package's 0–100 model stays
   internal.

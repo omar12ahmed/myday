@@ -564,6 +564,19 @@ day — kept by both versions since 1.20.2), shown there next time until you rem
 untouched. Models chosen by evaluation (`../ai-eval/reviews/2026-10-16-explain-quality.md`): GLM explains Cybersecurity
 and your concepts, Gemini explains Arabic. Shown only when the app is built with AI help.
 
+Check my answer (graduated help, `../specs/study-home-and-lessons.md` §12): under an Arabic session's check once your
+first answer is saved, and under each question of a Cybersecurity knowledge check in the notebook, one tap asks the AI
+server for help with your own answer (`src/study/CheckMyAnswer.tsx`; what's sent is built by `src/ai/checkAnswer.ts`
+from each course's `checkSource.ts`; the server's jobs `check-answer` and `check-answer-arabic` in
+`../supabase/functions/_shared/ai/check-answer.ts`). Sent: the lesson's objectives and teaching, the skills it builds
+on, the question, its reference answer and your answer — nothing else, and never an answer that looks like it holds a
+password or key. One reply, shown a part at a time as you ask: a hint, an example, the explanation (with a suggested
+mark), a follow-up question, its answer; labelled as AI-written, by which model, with the part of the lesson it drew
+on. An Arabic session can "Use this mark" once the question can be marked; it never sets a lesson's state, never judges
+speaking or listening, and nothing is saved by asking. Models chosen by a blind evaluation
+(`../ai-eval/reviews/2026-10-24-check-answer-quality.md`): GLM checks Cybersecurity answers, Gemini Arabic ones.
+Shown only when the app is built with AI help.
+
 Ask MyDay (the AI design's step 1, 1.25.0): in the + Capture sheet, below the suggestions worked out on the device,
 **✦ Ask MyDay** is for what they can't do — a question, a breakdown into steps, several things at once. Only on your
 tap, and a preview shows exactly what goes with it from the page you're on — the values themselves ("Course: …", "Next:
