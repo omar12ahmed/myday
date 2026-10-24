@@ -286,6 +286,18 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   r = await push(A, [change('filez', 'x1', 0, {})]);
   check('a kind that is still unknown is refused', r[0].status === 'rejected', r);
 
+  console.log('\n[19] A portfolio entry (Cybersecurity portfolio, 20261025140000_sync_cyber_portfolio.sql)');
+  const entry = { id: 'pfdbtest001', attemptId: 'caDb', activityId: 'exercise.learning-evidence', title: 'Baseline evidence', evidence: 'Compared two runs.', note: '', reviewedOn: '2026-10-25', fileIds: ['fldbtest002'] };
+  r = await push(A, [change('cyber_portfolio', entry.id, 0, entry)]);
+  check('a portfolio entry saves through sync_push_v2, its id being the entry\'s own', r[0].status === 'applied' && r[0].version === 1, r);
+  check('another account cannot read it', !(await pull(reader)).some(x => x.kind === 'cyber_portfolio'));
+  r = await push(A, [change('cyber_portfolio', entry.id, 0, { ...entry, title: 'Stale' })]);
+  check('a stale device cannot overwrite it', r[0].status === 'conflict', r);
+  r = await push(A, [change('cyber_portfolio', entry.id, 1, null, { deleted: true })]);
+  check('removing it reaches other devices as a tombstone (the kind is deletable)', r[0].status === 'applied' && (await pull(A)).some(x => x.kind === 'cyber_portfolio' && x.deleted));
+  r = await push(A, [change('file', 'fldbtest003', 0, { ...file, id: 'fldbtest003', area: 'portfolio' }), change('arabic_word', 'kwdbtest003', 0, { ...word, id: 'kwdbtest003' })]);
+  check('every earlier kind, a portfolio file record among them, is still accepted after this change', r.every(x => x.status === 'applied'), r);
+
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

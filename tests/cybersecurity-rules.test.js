@@ -7,7 +7,7 @@ const same = require('node:util').isDeepStrictEqual;
 (async () => {
   const { bundle } = await import(pathToFileURL(path.join(ROOT, 'ai-eval/build.mjs')).href);
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'myday-cyber-rules-'));
-  const files = ['app/src/study/cybersecurity/catalogue', 'app/src/study/cybersecurity/learning', 'app/src/study/cybersecurity/practiceCatalogue', 'app/src/study/cybersecurity/practiceRules', 'app/src/study/cybersecurity/tutorReply', 'app/src/data/cybersecurity/normalize', 'app/src/data/cybersecurity/types', 'app/src/data/normalize', 'app/src/sync/records', 'app/src/study/route', 'supabase/functions/_shared/ai/tutor', 'supabase/functions/_shared/ai/prompt', 'app/src/data/cybersecurity/cards', 'app/src/data/study/queue'];
+  const files = ['app/src/study/cybersecurity/catalogue', 'app/src/study/cybersecurity/learning', 'app/src/study/cybersecurity/practiceCatalogue', 'app/src/study/cybersecurity/practiceRules', 'app/src/study/cybersecurity/tutorReply', 'app/src/data/cybersecurity/normalize', 'app/src/data/cybersecurity/types', 'app/src/data/normalize', 'app/src/sync/records', 'app/src/study/route', 'supabase/functions/_shared/ai/tutor', 'supabase/functions/_shared/ai/prompt', 'app/src/data/cybersecurity/cards', 'app/src/data/study/queue', 'app/src/data/cybersecurity/portfolio', 'app/src/study/cybersecurity/portfolioPages'];
   fs.writeFileSync(path.join(dir, 'kit.ts'), files.map(f => `export * from ${JSON.stringify(path.join(ROOT, f))};`).join('\n'));
   const C = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
   const d = C.freshState();
@@ -138,6 +138,37 @@ const same = require('node:util').isDeepStrictEqual;
   check('nothing is due on the day it was added; the next day they are, in the one queue and in "Revise Cybersecurity"', C.dueIds(dd, '2026-10-14').length === 0 && C.dueIds(dd, '2026-10-15').join() === ids.join() && C.dueIds(dd, '2026-10-15', 'cybersecurity').join() === ids.join() && C.dueIds(dd, '2026-10-15', 'arabic').length === 0);
   check('an answer reschedules the card with Study\'s rules and goes into Study\'s history under its id, self-assessed', C.rateCyberCard(dd, ids[0], 'Choose and isolate · check 1', '2026-10-15', { outcome: 'right', chosen: null, support: 'own' }, 'good') && dd.cybersecurity.cards[0].review.due === '2026-10-19' && dd.study.reviews.at(-1).conceptId === ids[0] && dd.study.reviews.at(-1).graded === 'self');
   check('taking them out keeps their past answers', C.removeCyberCards(dd, ids) && dd.cybersecurity.cards.length === 0 && dd.study.reviews.length === 1);
+
+  console.log('\n[Portfolio] Entries from handed-in attempts, the privacy check, secrets and saved data');
+  check('a private key, a password or key written out, and common token formats are found', C.secretsIn('-----BEGIN OPENSSH PRIVATE KEY-----').includes('a private key')
+    && C.secretsIn('db password=hunter2').includes('a password or key written out') && C.secretsIn('API_KEY: "abc123def"').includes('a password or key written out')
+    && C.secretsIn('key AKIAIOSFODNN7EXAMPLE').includes('an AWS access key') && C.secretsIn('ghp_' + 'a'.repeat(36)).includes('a GitHub token')
+    && C.secretsIn('eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U').includes('a sign-in token (JWT)'));
+  check('…but a value that\'s plainly redacted isn\'t', C.secretsIn('password=<redacted>').length === 0 && C.secretsIn('password: ****').length === 0 && C.secretsIn('token=[REDACTED]').length === 0 && C.secretsIn('api_key=xxx').length === 0);
+  check('private, loopback and documentation addresses are fine; a public one is pointed out', C.secretsIn('10.0.0.5 192.168.1.20 172.16.4.1 127.0.0.1 192.0.2.10 198.51.100.7 203.0.113.9 169.254.1.1').length === 0
+    && C.secretsIn('scanned 8.8.8.8').includes('a public IP address') && C.secretsIn('version 1.2.3.4.5').length === 0 && C.secretsIn('999.1.1.1').length === 0);
+  check('nothing ordinary is a find', C.secretsIn('I listed the open ports with ss -tulpn and compared them with the baseline.').length === 0);
+  const pf = C.freshState(), k = '2026-10-24';
+  pf.cybersecurity.attempts.push({ id: 'caPf', activityId: 'exercise.learning-evidence', curriculumVersion: '1.0.0', rubricVersion: '1.0.0', startedAt: '2026-10-24T08:00:00.000Z', submittedAt: null, inputVariant: 'first baseline', environmentId: '', assistance: 'independent', evidence: 'Compared two runs.', answers: {}, rubricScores: [], criticalPassed: true, resumePoint: '', answerRevealed: false, assessor: 'self', verified: false });
+  const text = { title: 'Learning evidence: first baseline', evidence: 'Compared two runs.', note: '' };
+  check('an attempt not yet handed in can\'t be added', C.addEntry(pf, 'caPf', text, true, k) === null);
+  pf.cybersecurity.attempts[0].submittedAt = '2026-10-24T08:30:00.000Z';
+  check('…nor without all three privacy ticks, a title, or with something that looks like a secret', C.addEntry(pf, 'caPf', text, false, k) === null && C.addEntry(pf, 'caPf', { ...text, title: '  ' }, true, k) === null
+    && C.addEntry(pf, 'caPf', { ...text, evidence: 'logged in with password=hunter2' }, true, k) === null && !('portfolio' in pf.cybersecurity));
+  const pid = C.addEntry(pf, 'caPf', { ...text, note: '  first try  ' }, true, k), e = pf.cybersecurity.portfolio?.[0];
+  check('a handed-in attempt, checked, makes an entry: its own copy of the evidence, the note trimmed, the day reviewed', /^pf[a-z0-9]{6,30}$/.test(pid) && e.attemptId === 'caPf' && e.activityId === 'exercise.learning-evidence'
+    && e.evidence === 'Compared two runs.' && e.note === 'first try' && e.reviewedOn === k && !('fileIds' in e) && C.entriesFrom(pf, 'caPf').length === 1);
+  check('the reason it can\'t be added yet says what it found', /looks like a password or key written out/.test(C.notYet({ ...text, evidence: 'password=hunter2' })) && C.notYet({ ...text, title: '' }) === 'Give it a title.' && C.notYet(text) === '');
+  check('editing it is checked again and moves the day reviewed', !C.editEntry(pf, pid, { ...text, evidence: 'token=abc123456' }, true, '2026-10-25') && C.editEntry(pf, pid, { ...text, title: 'A better title' }, true, '2026-10-25')
+    && e.title === 'A better title' && e.reviewedOn === '2026-10-25' && !C.editEntry(pf, pid, { title: 'A better title', evidence: e.evidence, note: e.note }, true, '2026-10-26'));
+  check('removing it leaves the attempt in the notebook', C.removeEntry(pf, pid) && pf.cybersecurity.portfolio.length === 0 && pf.cybersecurity.attempts.length === 1 && !C.removeEntry(pf, pid));
+  const prep = { dropped: 0 }, good = { id: 'pfabc12345', attemptId: 'caPf', activityId: 'exercise.learning-evidence', title: 'Kept', evidence: 'x'.repeat(13000), note: 'n', reviewedOn: k, fileIds: ['flaaaaaa01', 'flaaaaaa01', 'bad', 'flaaaaaa02', 'flaaaaaa03', 'flaaaaaa04', 'flaaaaaa05', 'flaaaaaa06'] };
+  const np = C.normalizeCyber({ pathId: 'path.core', attempts: [], portfolio: [good, { ...good }, { ...good, id: 'pfbad' }, { ...good, id: 'pfnodate001', reviewedOn: 'soon' }, { ...good, id: 'pfnotitle01', title: ' ' }] }, prep).portfolio;
+  check('saved entries: a duplicate, a bad id, no day or no title are dropped (and counted); evidence capped, file ids cleaned to 5', np.length === 1 && prep.dropped === 4 && np[0].evidence.length === 12000
+    && JSON.stringify(np[0].fileIds) === JSON.stringify(['flaaaaaa01', 'flaaaaaa02', 'flaaaaaa03', 'flaaaaaa04', 'flaaaaaa05']));
+  check('no portfolio yet stays exactly that: the field is absent, as older data was', !('portfolio' in C.normalizeCyber({ pathId: 'path.core', attempts: [] })));
+  const page = C.portfolioPage([{ ...good, title: '<script>alert(1)</script>', evidence: 'a & b', fileIds: undefined }], k);
+  check('the exported page escapes every entry and runs nothing (no scripts, nothing fetched)', page.includes('&lt;script&gt;alert(1)&lt;/script&gt;') && page.includes('a &amp; b') && !/<script/i.test(page.replace(/&lt;script/g, '')) && page.includes("default-src 'none'"));
 
   fs.rmSync(dir, { recursive: true, force: true });
   const s = summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
