@@ -1,11 +1,9 @@
-import { useState } from 'react';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { ExternalLink } from '../parts';
 import { Mixed } from '../arabic/Ar';
 import { MixedVoiceLabel } from '../arabic/Listen';
-
-import { useTeaching, type Course, type TeachingParts } from './useTeaching';
+import type { TeachingParts } from './useTeaching';
 
 // Text stays data: backticks become code; Arabic runs retain direction and language.
 function Prose({ text, voice }: { text: string; voice?: string }) {
@@ -26,7 +24,7 @@ export function TeachingRead({ t, label = true }: { t: TeachingParts; label?: bo
   if (!lesson) return null;
   return <>
     <p className="leading-relaxed"><Prose text={lesson.explanation} voice={voice && `${voice}:explanation`} /></p>
-    <h4>Worked example</h4><p className="leading-relaxed"><Prose text={lesson.example} voice={voice && `${voice}:example`} /></p>
+    <h4 data-teaching-example="">Worked example</h4><p className="leading-relaxed"><Prose text={lesson.example} voice={voice && `${voice}:example`} /></p>
     {label && voice && <MixedVoiceLabel texts={[lesson.explanation, lesson.example]} />}
   </>;
 }
@@ -56,23 +54,4 @@ export function TeachingMaterial({ t }: { t: TeachingParts }) {
     </li>; })}</ol>
     <details className="mt-3"><summary className="cursor-pointer min-h-11 py-2 text-primary">About these resources</summary><p className="text-sm text-fg-2">Pages and topics checked on 16 October 2026. Videos play on their provider’s site; playback was not tested. If a player is unavailable, use its reading or transcript for a reading task and return to listening later. Reading a transcript does not establish unaided listening.</p></details>
   </Card>;
-}
-
-// The whole teaching in one place: the parts the lesson journeys place under Understand and Try, together (the voice
-// check in tests/app-teaching-voice.test.js renders it). A key at the call site resets reveal state on navigation.
-export function TeachingLesson({ course, lessonId }: { course: Course; lessonId: string }) {
-  const t = useTeaching(course, lessonId);
-  const [revealed, setRevealed] = useState(false);
-  const { lesson, voice } = t;
-  if (!lesson) return <TeachingWaiting missing={t.missing} />;
-  return <div data-teaching={lessonId} className="min-w-0 break-words">
-    <Card aria-label="Lesson reading">
-      <h3>Read this first</h3>
-      <p className="text-sm text-fg-2">Short session: read, try, then compare. Continue with the assigned material when you have time.</p>
-      <TeachingRead t={t} label={false} />
-      <TeachingTry t={t} lessonId={lessonId} revealed={revealed} setRevealed={setRevealed} label={false} />
-      {voice && <MixedVoiceLabel texts={[lesson.explanation, lesson.example, ...(revealed ? [lesson.practice, lesson.solution] : [])]} />}
-    </Card>
-    <TeachingMaterial t={t} />
-  </div>;
 }

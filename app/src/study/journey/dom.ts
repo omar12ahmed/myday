@@ -31,7 +31,7 @@ export const ARABIC_TINY: Tiny = {
 };
 export const CYBER_TINY: Tiny = {
   warmup: { label: 'Answer one warm-up question', targets: ['#cy-step-warmup [data-cy-question]', '#cy-step-warmup h3'] },
-  understand: { label: 'Read the worked example again', targets: ['#cy-step-understand [data-teaching]', '#cy-step-understand h3'] },
+  understand: { label: 'Read the worked example again', targets: ['#cy-step-understand [data-teaching-example]', '#cy-step-understand h3'] },
   try: { label: 'Go back to your Try', targets: ['#cy-step-try [data-teaching-practice]', '#cy-step-try h3'] },
   check: { label: 'Answer one check', targets: ['#cy-step-check [data-cy-question]', '#cy-step-check h3'] },
   reflect: { label: 'Finish in your study session', targets: ['#cy-step-reflect a[href="#study/session"]', '#cy-step-reflect h3'] },

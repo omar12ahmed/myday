@@ -242,8 +242,8 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
   // A just-finished session keeps its steps while its card shows.
   const length: Variant = session ? session.variant : finished ? finished.variant : l && !l.variants.some(v => v.mode === chosen) ? 'standard' : chosen;
   const shown = journeyFor(data, id, length, !!session || !!finished);
-  const { setStep, current, remember, jump: jumpTo, hush } = useJourney({ prefix: 'ar', shown, loaded, sessionId: () => openSession(getSnapshot().data, id)?.id ?? null });
-  const [checking, setChecking] = useState(() => current === 'check'); // you went to Check: the explanation folds away
+  const { step, setStep, current, remember, jump: jumpTo, hush } = useJourney({ prefix: 'ar', shown, loaded, sessionId: () => openSession(getSnapshot().data, id)?.id ?? null });
+  const [checking, setChecking] = useState(() => step === 'check'); // you went to Check (or reopened there): the explanation folds away
   const [explain, setExplain] = useState(false); // …until you ask for it again
   const jump = (s: JourneyStep) => { setChecking(s === 'check'); jumpTo(s); };
   if (!content || !l) return <><Card><BackLink to={'study/arabic/' + entry.module_id} label={modules.get(entry.module_id)!.name} /><h2>{entry.title}</h2></Card><Loading failed={failed} /></>;

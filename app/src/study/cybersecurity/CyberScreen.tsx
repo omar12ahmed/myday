@@ -1,4 +1,4 @@
-import { Fragment, useState, type ReactNode } from 'react';
+import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react';
 import { BookOpen, FlaskConical, NotebookPen, ShieldCheck } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
@@ -26,6 +26,7 @@ import { MODE_LABEL, modeOf, STEP_LABEL, type JourneyStep, type Mode } from '../
 import { RestartOffer, StepBar } from '../journey/Journey';
 import { CYBER_TINY } from '../journey/dom';
 import { useJourney } from '../journey/useJourney';
+import { keepSessionMode, keptSessionMode } from '../lessonStep';
 
 export function ResourceLinks({ ids }: { ids: string[] }) {
   return <div className="grid gap-3">{ids.map(id => { const r = resources.get(id); return r && <div key={id}>
@@ -128,21 +129,27 @@ function LessonView({ data, lesson: l }: { data: MyDayData; lesson: Lesson }) {
   const [revealed, setRevealed] = useState(false);
   const [suggested] = useState(() => suggestedSession(data, l));
   const [chosen, setChosen] = useState<string>(suggested.mode);
-  const mode = running ? sessionMode(l, running) : chosen, variant = l.variants.find(v => v.mode === chosen);
+  const mode = running ? sessionMode(l, running, keptSessionMode(running.id)) : chosen, variant = l.variants.find(v => v.mode === chosen);
   const minutes = variant?.minutes ?? 15;
   const shown = cyberJourney(data, l.id, mode, !!running);
-  const { current: step, jump, remember, hush } = useJourney({ prefix: 'cy', shown, loaded: true, sessionId: () => {
-    const c = activeStudy(getSnapshot().data.study); return c && c.taskId === curriculumTaskId(l.id) ? c.id : null;
-  } });
+  const runningHere = () => { const c = activeStudy(getSnapshot().data.study); return c && c.taskId === curriculumTaskId(l.id) ? c.id : null; };
+  // The teaching loads after the page: reopening at your step waits for it, so the page doesn't move under you.
+  const { step: kept, current: step, jump: jumpTo, remember, hush } = useJourney({ prefix: 'cy', shown, loaded: !!teaching.lesson || teaching.missing, sessionId: runningHere });
+  const [checking, setChecking] = useState(() => kept === 'check'); // you went to Check: the explanation folds away
+  const [explain, setExplain] = useState(false); // …until you ask for it again
+  const jump = (x: JourneyStep) => { setChecking(x === 'check'); jumpTo(x); };
+  const folded = checking && step === 'check' && shown.includes('understand') && !explain;
+  // The session you chose for the timer, remembered on this device (its minutes alone can't always tell).
+  const rememberMode = () => { const id = runningHere(); if (id) keepSessionMode(id, chosen); };
   const rest = cyberSteps(data, l.id).filter(x => !shown.includes(x)), prev = warmUpLesson(data, l.id);
   const check = activities.get(l.knowledge_check_id), qs = check?.questions ?? [];
   const choice = <>
     <Field label="Your session" htmlFor="cyberMinutes"><Select id="cyberMinutes" value={chosen} onChange={e => setChosen(e.target.value)}>
       {MODES.map(g => <optgroup key={g.mode} label={MODE_LABEL[g.mode]}>{g.lengths.map(m => l.variants.find(v => v.mode === m)).filter(Boolean).map(v => <option key={v!.mode} value={v!.mode}>{cap(v!.mode)} · {v!.minutes} min</option>)}</optgroup>)}
     </Select></Field>
-    {variant && <p className="text-sm text-fg-2 m-0" data-cy-session-note="">{MODE_LABEL[modeOf(variant.mode)]}: {variant.activity.replace(/[.;]?$/, '.')}
-      {suggested.mode === chosen && suggested.why.length ? ` Suits today (${suggested.why.join(', ')}).` : ''}
-      <span className="block text-fg-3 mt-0.5">Shows {cyberJourney(data, l.id, variant.mode, false).map(x => STEP_LABEL[x]).join(', ')} first; the rest stay one tap away.</span></p>}
+    {variant && (() => { const first = cyberJourney(data, l.id, variant.mode, false); return <p className="text-sm text-fg-2 m-0" data-cy-session-note="">{MODE_LABEL[modeOf(variant.mode)]}: {variant.activity.replace(/[.;]?$/, '.')}
+      {suggested.mode === chosen && suggested.why.length ? ` Suits today (${suggested.why.join(', ')}).` : ''} <span className="text-fg-3">Evidence: {variant.evidence_scope}.</span>
+      <span className="block text-fg-3 mt-0.5">Shows {first.map(x => STEP_LABEL[x]).join(', ')}{first.length < cyberSteps(data, l.id).length ? ' first; the rest stay one tap away' : ''}.</span></p>; })()}
   </>;
 
   const sections: Record<JourneyStep, () => ReactNode> = {
@@ -155,10 +162,14 @@ function LessonView({ data, lesson: l }: { data: MyDayData; lesson: Lesson }) {
     understand: () => <>
       <Card id="cy-step-understand" className={CY_SCROLL} data-cy-step="understand"><Eyebrow>Understand</Eyebrow>
         <h3>Read it, and see it worked</h3>
-        <p className="text-sm text-fg-2">Key concepts: {l.key_concepts.join(' · ')}</p>
-        {teaching.lesson ? <div data-teaching={l.id} className="min-w-0 break-words"><TeachingRead t={teaching} /></div> : <TeachingWaiting missing={teaching.missing} bare />}
+        {folded ? <><p className="text-[15px] text-fg-2" data-cy-folded="">The explanation is folded away while you check yourself, so the answers come from memory.</p>
+            <Button inline variant="ghost" data-action="cy-explain-again" onClick={() => setExplain(true)}>Show the explanation again</Button></>
+          : <>
+            <p className="text-sm text-fg-2">Key concepts: {l.key_concepts.join(' · ')}</p>
+            {teaching.lesson ? <div data-teaching={l.id} className="min-w-0 break-words"><TeachingRead t={teaching} /></div> : <TeachingWaiting missing={teaching.missing} bare />}
+          </>}
       </Card>
-      {teaching.lesson && <TeachingMaterial t={teaching} />}
+      {teaching.lesson && !folded && <TeachingMaterial t={teaching} />}
     </>,
     try: () => <div id="cy-step-try" className={CY_SCROLL} data-cy-step="try">
       <Card><Eyebrow>Try</Eyebrow><h3>Apply it, then compare</h3>
@@ -173,7 +184,7 @@ function LessonView({ data, lesson: l }: { data: MyDayData; lesson: Lesson }) {
     </div>,
     check: () => { const short = mode === 'short' && shown.includes('check');
       return <Card id="cy-step-check" className={CY_SCROLL} data-cy-step="check" data-cy-check=""><Eyebrow>Check</Eyebrow><h3>Check your understanding</h3>
-        <p className="text-sm text-fg-2">Answer first, in your head or on paper, then compare. To keep your answers, answer in your lab notebook.</p>
+        <p className="text-sm text-fg-2">Answer first, in your head or on paper, then compare. The guide is for self-study after your own attempt; looking isn’t a pass. To keep your answers, answer in your lab notebook, and if you looked first, say so there.</p>
         <ol className="list-decimal pl-5 grid gap-4">{(short ? qs.slice(0, 1) : qs).map(q => <li key={q.id}><CheckPrompt q={q} /></li>)}</ol>
         {short && qs.length > 1 && <details className="mt-3" data-cy-more-checks=""><summary className="cursor-pointer min-h-11 py-2 text-primary font-semibold">{qs.length === 2 ? 'The other question' : `The other ${qs.length - 1} questions`}</summary>
           <ol start={2} className="list-decimal pl-5 grid gap-4">{qs.slice(1).map(q => <li key={q.id}><CheckPrompt q={q} /></li>)}</ol></details>}
@@ -193,7 +204,7 @@ function LessonView({ data, lesson: l }: { data: MyDayData; lesson: Lesson }) {
       <Lines items={l.learning_objectives} />
       {current ? <LinkButton to="study/session">Return to your study session</LinkButton> : task ? <div className="grid gap-3 mt-3">
         {choice}
-        <Button onClick={() => startLearning(task.course.id, task.node.id, minutes, minutes < l.estimated_duration_minutes.standard)}>Start a study session</Button>
+        <Button onClick={() => { startLearning(task.course.id, task.node.id, minutes, minutes < l.estimated_duration_minutes.standard); rememberMode(); }}>Start a study session</Button>
       </div> : selectedPath(data.cybersecurity.pathId).required_module_ids.includes(l.module_id) ? <div className="grid gap-3 mt-3">
         <p className="text-sm text-fg-2 m-0">Start from this lesson. MyDay will add your selected curriculum path to the roadmap without changing existing work.</p>
         {choice}
@@ -206,6 +217,7 @@ function LessonView({ data, lesson: l }: { data: MyDayData; lesson: Lesson }) {
             const entry = stIndex(d.study).task.get(curriculumTaskId(l.id));
             if (!entry || !startStudySession(d.study, entry.course.id, entry.node.id, minutes, minutes < l.estimated_duration_minutes.standard)) return false;
           });
+          if (saved === 'saved') rememberMode();
           if (saved === 'saved' || resume) go('study/session');
           else if (saved === 'unchanged') toast('Choose this curriculum path on the learning map to start its timer.');
           else toast("Couldn't save the lesson. Your existing work is unchanged.");
@@ -213,7 +225,7 @@ function LessonView({ data, lesson: l }: { data: MyDayData; lesson: Lesson }) {
       </div> : <p className="text-sm text-fg-2">You can explore the activities below now. Add this lesson’s path on the learning map to use the Study timer.</p>}
     </Card>
     <StepBar prefix="cy" steps={shown} current={step} onPick={jump} />
-    {running && <RestartOffer prefix="cy" tiny={CYBER_TINY} step={step} onGo={x => { hush(); remember(x); }} />}
+    {running && <RestartOffer prefix="cy" tiny={CYBER_TINY} step={step} onGo={x => { hush(); remember(x); setChecking(x === 'check'); }} />}
     {shown.map(x => <Fragment key={x}>{sections[x]()}</Fragment>)}
     {rest.length > 0 && <div className="mb-4" data-cy-rest={rest.join(' ')}><details>
       <summary className="flex items-center min-h-12 px-5 rounded-card border border-outline bg-surface text-primary font-semibold cursor-pointer">The rest of this lesson: {rest.map(x => STEP_LABEL[x]).join(', ')}</summary>
@@ -230,15 +242,23 @@ function LessonView({ data, lesson: l }: { data: MyDayData; lesson: Lesson }) {
     </details></Card>
   </>;
 }
-// A knowledge-check question with its answer guide behind a button (the guide loads on first use).
+// A knowledge-check question with its answer guide behind a button (the guide loads on first use). Focus moves to the
+// guide as it opens, and it's announced when it arrives; if it can't load, the button comes back to try again.
 function CheckPrompt({ q }: { q: { id: string; prompt: string } }) {
   const [open, setOpen] = useState(false), [answers, setAnswers] = useState<Record<string, string> | null>(null), [failed, setFailed] = useState(false);
-  const reveal = () => { setOpen(true); import('./answers.json').then(x => setAnswers(x.default)).catch(() => setFailed(true)); };
+  const guide = useRef<HTMLDivElement>(null), live = useRef(true);
+  useEffect(() => () => { live.current = false; }, []);
+  const reveal = () => {
+    setOpen(true); setFailed(false);
+    requestAnimationFrame(() => guide.current?.focus({ preventScroll: true }));
+    import('./answers.json').then(x => { if (live.current) setAnswers(x.default); }).catch(() => { if (live.current) { setFailed(true); setOpen(false); } });
+  };
   return <div data-cy-question={q.id}>
     <p className="mb-1.5">{q.prompt}</p>
+    {failed && <p role="alert" className="text-sm text-fg-2 mb-1">Couldn’t load the guide. Try again in a moment.</p>}
     {!open ? <Button inline variant="ghost" data-action="cy-reveal" onClick={reveal}>Show the answer guide</Button>
-      : <div className="bg-surface-2 rounded-tile px-3.5 py-2.5" data-cy-answer=""><span className="text-sm text-fg-2">Answer guide</span>
-        <p className="mt-1 mb-0" role={failed || !answers ? 'status' : undefined}>{failed ? 'Couldn’t load the guide. Try again in a moment.' : !answers ? 'Opening…' : answers[q.id]}</p></div>}
+      : <div ref={guide} tabIndex={-1} className="bg-surface-2 rounded-tile px-3.5 py-2.5" data-cy-answer=""><span className="text-sm text-fg-2">Answer guide</span>
+        <p className="mt-1 mb-0" role="status">{answers ? answers[q.id] : 'Opening…'}</p></div>}
   </div>;
 }
 function NotebookIndex({ data }: { data: MyDayData }) {

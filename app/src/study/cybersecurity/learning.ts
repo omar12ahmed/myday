@@ -1,10 +1,9 @@
-import type { MyDayData, StudyCourse, StudyStage } from '../../data/types';
+import type { MyDayData, StudyCourse, StudySession, StudyStage } from '../../data/types';
 import { uid } from '../../data/util';
 import { firstTopicName } from '../../data/study/topics';
 import { stIndex } from '../../data/study/roadmap';
 import { lengthFor, stepsFor, type JourneyStep } from '../../data/study/mastery';
 import { suggestLength } from '../../data/study/sessions';
-import type { StudySession } from '../../data/types';
 import { CYBER_VERSION, curriculumTaskId, type CyberAttempt } from '../../data/cybersecurity/types';
 import { activities, curriculum, lessons, modules, selectedPath, type Activity, type Lesson } from './catalogue';
 import { practiceProblem, setScenario } from './practiceRules';
@@ -141,15 +140,20 @@ export function practised(data: MyDayData, l: Lesson) {
 }
 // The session to suggest: energy and free time decide (suggestLength), and the practical one only once you've begun
 // the lesson (it skips the teaching). Its minutes are the lesson's own.
-export function suggestedSession(data: MyDayData, l: Lesson) {
+export function sessionFor(l: Lesson, suggested: { minutes: number; why: string[] }, begun: boolean) {
   const of = (mode: string) => l.variants.find(v => v.mode === mode)?.minutes;
-  const s = suggestLength(data, l.estimated_duration_minutes.standard);
-  const mode = lengthFor(s.minutes, { standard: of('standard') ?? l.estimated_duration_minutes.standard, short: of('short') ?? 15, practical: practised(data, l) ? of('practical') : undefined }, false);
-  return { mode, minutes: of(mode) ?? s.minutes, why: s.why };
+  const mode = lengthFor(suggested.minutes, { standard: of('standard') ?? l.estimated_duration_minutes.standard, short: of('short') ?? 15, practical: begun ? of('practical') : undefined }, false);
+  return { mode, minutes: of(mode) ?? suggested.minutes, why: suggested.why };
 }
-// Which of the lesson's sessions a running Study timer is: the one with its planned minutes, else short or standard.
-export function sessionMode(l: Lesson, s: StudySession): string {
-  return l.variants.find(v => v.minutes === s.plannedMin)?.mode ?? (s.short ? 'short' : 'standard');
+export const suggestedSession = (data: MyDayData, l: Lesson) => sessionFor(l, suggestLength(data, l.estimated_duration_minutes.standard), practised(data, l));
+// Which of the lesson's sessions a running Study timer is: the one you chose for it on this device (`chosen`), else
+// told from its minutes: never the practical one (it hides the teaching, and 45 minutes can be standard too), a
+// standard-or-longer timer the standard one, a shorter one the short one.
+export function sessionMode(l: Lesson, s: StudySession, chosen: string | null): string {
+  if (chosen && l.variants.some(v => v.mode === chosen)) return chosen;
+  const same = l.variants.filter(v => v.minutes === s.plannedMin && v.mode !== 'practical').map(v => v.mode);
+  if (same.length) return same.includes('standard') ? 'standard' : same[0];
+  return s.plannedMin < (l.variants.find(v => v.mode === 'standard')?.minutes ?? l.estimated_duration_minutes.standard) ? 'short' : 'standard';
 }
 // The warm-up: the lesson before this one on your path, once you've begun it, when its knowledge check has questions.
 export function warmUpLesson(data: MyDayData, lessonId: string): string | null {

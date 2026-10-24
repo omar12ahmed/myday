@@ -36,7 +36,6 @@ const button = '[data-action="ar-play"]';
       import { boot, getSnapshot, update } from ${imp('app/src/data/storage.ts')};
       import { voiceState } from ${imp('app/src/study/arabic/voice.ts')};
       import { addCards } from ${imp('app/src/data/arabic/cards.ts')};
-      import { TeachingLesson } from ${imp('app/src/study/teaching/TeachingLesson.tsx')};
       import audio from 'fixture-audio-manifest';
       const allClips = { ...audio.clips }, fetches = [];
       const realFetch = window.fetch.bind(window);
@@ -52,7 +51,6 @@ const button = '[data-action="ar-play"]';
       function Harness({ id }) {
         const { data } = useMyDay();
         if (id === 'generic') return <p><Mixed text="Read كِتَابٌ without a voice opt-in." /></p>;
-        if (id === 'cyber') return <TeachingLesson course="cybersecurity" lessonId="lesson.cybersecurity-what-is-cybersecurity" />;
         if (id === 'revision') {
           const card = data.arabic.cards[0];
           return <ArabicQuestion data={data} at={0} card={card} r={{ day: '2026-10-21', scope: 'arabic', ids: [card.id], i: 0, results: [], phase: 'shown', typed: '', chosen: null, hint: false, support: 'own', outcome: null }} />;

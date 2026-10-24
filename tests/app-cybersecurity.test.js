@@ -234,24 +234,31 @@ async function fill(sel, value) {
   await fill('#cyberMinutes', 'short'); await sleep(200);
   check('choosing the short session shows Understand and Check first, Try one tap away (and the first lesson has no warm-up)', (await cySteps()) === 'understand check' && (await ev(`document.querySelector('[data-cy-rest]').dataset.cyRest`)) === 'try');
   await click('[data-action="cyber-start-direct"]'); await until(() => exists('#stClock'), 'the lesson\'s timer');
-  const timer = (await data()).study.sessions[0];
+  const timer = (await data()).study.sessions[0], started = await ev(`localStorage.getItem('myday.data.v4')`);
   check('the timer runs the session you chose: 15 minutes, short', timer.plannedMin === 15 && timer.short === true);
   await go('study/cybersecurity/lesson.learning-evidence'); await until(() => exists('[data-cy-steps]'), 'the lesson again');
   check('with its timer running the lesson adds Reflect, which finishes in the session', (await cySteps()) === 'understand check reflect' && await exists('#cy-step-reflect a[href="#study/session"]'));
   await click('[data-action="cy-step"][data-v="check"]'); await sleep(900);
   check('jumping to Check keeps your place for this session on this device, focus going there', (await ev(`JSON.parse(localStorage.getItem('myday.study.lessonStep'))['${timer.id}']`)) === 'check'
     && await ev(`document.activeElement === document.querySelector('#cy-step-check h3')`));
+  check('…and the session you chose is remembered with it on this device (its minutes alone can\'t always tell)', (await ev(`JSON.parse(localStorage.getItem('myday.study.sessionLength'))['${timer.id}']`)) === 'short');
+  check('…while you check yourself, the explanation folds away', await exists('[data-cy-folded]') && !(await exists('#cy-step-understand [data-teaching]')));
+  await click('[data-action="cy-explain-again"]'); await sleep(200);
+  check('"Show the explanation again" brings it back', await exists('#cy-step-understand [data-teaching]'));
+  const firstQ = await ev(`document.querySelector('#cy-step-check [data-cy-question]').dataset.cyQuestion`);
+  const guide = JSON.parse(fs.readFileSync(require('path').join(process.env.MYDAY_ROOT, 'app/src/study/cybersecurity/answers.json'), 'utf8'));
   await click('#cy-step-check [data-action="cy-reveal"]');
-  await until(async () => !(await text('#cy-step-check [data-cy-answer]')).includes('Opening'), 'the answer guide');
-  check('Check compares with the answer guide on the page, and offers the lab notebook to keep your answers', (await text('#cy-step-check [data-cy-answer]')).length > 20
-    && await exists('#cy-step-check a[href="#study/cybersecurity/assessment.learning-evidence-check"]'));
-  await go('study/cybersecurity/lesson.learning-evidence'); await until(() => exists('[data-cy-steps]'), 'the lesson reopened'); await sleep(600);
-  check('reopening goes back to your step', (await ev(`document.querySelector('[data-action="cy-step"][aria-current="step"]').dataset.v`)) === 'check' && await ev('scrollY > 0'));
+  await until(async () => (await text('#cy-step-check [data-cy-answer]')).includes(guide[firstQ]), 'the answer guide');
+  check('Check compares with the answer guide on the page (focus on it), and offers the lab notebook to keep your answers', (await text('#cy-step-check [data-cy-answer]')).includes(guide[firstQ])
+    && await ev(`!!document.activeElement.closest('[data-cy-answer]')`) && await exists('#cy-step-check a[href="#study/cybersecurity/assessment.learning-evidence-check"]'));
+  await go('study/cybersecurity/lesson.learning-evidence'); await until(() => exists('[data-cy-steps]'), 'the lesson reopened'); await sleep(900);
+  check('reopening goes back to your step: Check, near the top of the screen', (await ev(`document.querySelector('[data-action="cy-step"][aria-current="step"]').dataset.v`)) === 'check'
+    && await ev(`scrollY > 0 && (() => { const r = document.getElementById('cy-step-check').getBoundingClientRect(); return r.top >= 0 && r.top < innerHeight / 3; })()`));
   await click('[data-action="cy-restart"]'); await sleep(150);
   check('"I got distracted — help me restart" offers one small thing', (await text('[data-cy-restart]')).includes('You were on Check.') && (await text('[data-action="cy-restart-go"]')) === 'Answer one check');
   await click('[data-action="cy-restart-go"]'); await sleep(300);
   check('…and takes you to it, focus going along', await ev(`document.activeElement !== document.body && !!document.activeElement.closest('#cy-step-check')`));
-  check('steps and the restart saved nothing: only the timer is in your data', (await data()).study.sessions.length === 1 && !(await data()).cybersecurity.attempts.length);
+  check('steps, the fold, the guide and the restart saved nothing: your data is as it was once the timer started', (await ev(`localStorage.getItem('myday.data.v4')`)) === started);
   await go('study/cybersecurity/lesson.authorised-scope'); await until(() => exists('[data-cy-steps]'), 'the next lesson');
   check('the next lesson warms up with the one before, now begun', await exists('#cy-step-warmup [data-cy-question]') && (await text('#cy-step-warmup')).includes('Learning through evidence'));
   await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });

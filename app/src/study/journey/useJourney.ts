@@ -26,6 +26,7 @@ export function useJourney({ prefix, shown, loaded, sessionId }: { prefix: strin
       if (!hit || Date.now() < quiet.current) return;
       clearTimeout(timer);
       timer = window.setTimeout(() => {
+        if (Date.now() < quiet.current) return; // you jumped meanwhile: the jump wins
         const s = hit.getAttribute(`data-${prefix}-step`) as JourneyStep, id = session.current();
         setStep(s); if (id) keepStep(id, s);
       }, 300);
@@ -38,10 +39,9 @@ export function useJourney({ prefix, shown, loaded, sessionId }: { prefix: strin
   const reopened = useRef(!sessionId());
   useEffect(() => {
     if (!loaded || reopened.current) return;
-    reopened.current = true;
-    if (!step) return;
+    if (!step) { reopened.current = true; return; }
     hush();
-    const timer = setTimeout(() => document.getElementById(`${prefix}-step-${current}`)?.scrollIntoView({ block: 'start' }), 120);
+    const timer = setTimeout(() => { reopened.current = true; document.getElementById(`${prefix}-step-${current}`)?.scrollIntoView({ block: 'start' }); }, 120);
     return () => clearTimeout(timer);
   }, [loaded, step, current, prefix]);
   return { step, setStep, current, remember, jump, hush };

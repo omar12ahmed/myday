@@ -8,7 +8,7 @@ import { focusQuietly, tinyTarget, type Tiny } from './dom';
 // sideways if it must), staying in view as you scroll: at the top on a phone, under the header on wide screens,
 // where the header stays put (88 px).
 export function StepBar({ prefix, steps, current, onPick }: { prefix: string; steps: JourneyStep[]; current: JourneyStep; onPick: (s: JourneyStep) => void }) {
-  return <nav className="ar-steps sticky top-[env(safe-area-inset-top)] lg:top-[88px] z-10 -mx-1 mb-4 px-1 py-2 bg-[var(--bg)]" aria-label="Lesson steps" {...{ [`data-${prefix}-steps`]: steps.join(' ') }}>
+  return <nav className="journey-steps sticky top-[env(safe-area-inset-top)] lg:top-[88px] z-10 -mx-1 mb-4 px-1 py-2 bg-[var(--bg)]" aria-label="Lesson steps" {...{ [`data-${prefix}-steps`]: steps.join(' ') }}>
     <ol className="flex flex-nowrap gap-1.5 overflow-x-auto list-none p-0 m-0">{steps.map((s, i) => <li key={s} className="flex-none">
       <button type="button" data-action={`${prefix}-step`} data-v={s} aria-current={s === current ? 'step' : undefined} onClick={() => onPick(s)}
         className={`inline-flex items-center gap-1.5 min-h-11 px-3.5 rounded-full border text-[15px] font-semibold cursor-pointer ${s === current ? 'bg-primary-container text-on-primary-container border-transparent' : 'bg-surface text-fg-2 border-outline'}`}>

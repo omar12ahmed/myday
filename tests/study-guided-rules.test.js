@@ -18,7 +18,7 @@ function check(label, ok) {
       'export { learningOptions, learningGlance } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/nextLearning')) + ';',
       'export { optionAction } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/courseOption')) + ';',
       'export { chooseFocus, courseFocus, focusChoices, focusValue } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/study/yourFocus')) + ';',
-      'export { nextLesson, importPath, beginAttempt, cyberJourney, practised, warmUpLesson } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/cybersecurity/learning')) + ';',
+      'export { nextLesson, importPath, beginAttempt, cyberJourney, practised, sessionFor, sessionMode, warmUpLesson } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/cybersecurity/learning')) + ';',
       'export * as cyberCatalogue from ' + JSON.stringify(path.join(ROOT, 'app/src/study/cybersecurity/catalogue')) + ';',
       'export { CYBER_VERSION, curriculumTaskId } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/cybersecurity/types')) + ';',
       'export * as arabicCatalogue from ' + JSON.stringify(path.join(ROOT, 'app/src/study/arabic/catalogue')) + ';',
@@ -247,6 +247,14 @@ function check(label, ok) {
     rule.beginAttempt(cw, cyFirst.practical_task_id);
     check('…an attempt on one of its activities counts as begun, and then it warms up with the first lesson\'s check', rule.practised(cw, cyFirst) && rule.warmUpLesson(cw, cySecond) === 'lesson.learning-evidence'
       && rule.cyberJourney(cw, cySecond, 'standard', false).join() === 'warmup,understand,try,check' && rule.cyberJourney(cw, cySecond, 'practical', true).join() === 'try,check,reflect');
+    const at45 = { minutes: 45, why: [] }, cyLong = [...rule.cyberCatalogue.lessons.values()].find(x => x.variants.find(v => v.mode === 'standard').minutes >= 60);
+    check('Cybersecurity: on a 45-minute day a lesson you haven\'t begun gets the short session, one you have the practical one (45 min)', rule.sessionFor(cyLong, at45, false).mode === 'short'
+      && rule.sessionFor(cyLong, at45, true).mode === 'practical' && rule.sessionFor(cyLong, at45, true).minutes === 45);
+    const timerOf = (plannedMin, short) => ({ plannedMin, short });
+    check('…a running 45-minute timer on a lesson whose practical and standard are both 45 minutes reads as standard (all the steps), unless you chose practical on this device',
+      cyFirst.variants.filter(v => v.minutes === 45).length === 2 && rule.sessionMode(cyFirst, timerOf(45, false), null) === 'standard' && rule.sessionMode(cyFirst, timerOf(45, false), 'practical') === 'practical');
+    check('…a timer that matches no session reads as short when it\'s shorter than standard, else standard; never practical by itself',
+      rule.sessionMode(cyFirst, timerOf(30, false), null) === 'short' && rule.sessionMode(cyFirst, timerOf(15, true), null) === 'short' && rule.sessionMode(cyFirst, timerOf(120, false), null) === 'standard');
 
     console.log('\n[Your focus] One choice for Today and Study home');
     const yf = fresh();
