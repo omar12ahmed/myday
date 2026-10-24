@@ -15,7 +15,7 @@ export const newFileId = () => 'fl' + uid();
 export type Owner = { kind: 'project' | 'note' | 'portfolio'; id: string }; // a portfolio entry: cybersecurity.portfolio
 type Place = { kind: string; id: string }; // an Owner, or a place a newer MyDay knows (kept, never found here)
 export const emptyFiles = (): FilesData => ({ items: [] });
-// The areas whose files this version can list, and so judge. A file of another area (a newer MyDay's portfolio, say)
+// The areas whose files this version can list, and so judge. A file of another area (a newer MyDay's gallery, say)
 // is left exactly as it is: never sent to Recently deleted, healed, settled or deleted for good here, since whatever
 // lists it is unknown to this version. The same goes for a file that a newer MyDay lets another kind of place list
 // (`listedIn`, e.g. a task listing a project's file): only removing it from a project or note here takes that link out.

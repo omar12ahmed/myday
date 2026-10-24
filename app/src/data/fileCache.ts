@@ -30,6 +30,12 @@ export interface Cached { type: string; bytes: ArrayBuffer }
 export const cachedFile = (id: string) => run<Cached | undefined>('readonly', s => s.get(id)).then(x => x ?? null);
 export const cacheFile = (id: string, c: Cached) => run('readwrite', s => { s.put(c, id); }).then(() => undefined);
 export const forgetCached = (ids: string[]) => run('readwrite', s => { for (const id of ids) s.delete(id); }).then(() => undefined);
+// Copies of files that no longer have a record here (deleted for good on another device): gone too (the files tidy).
+export async function forgetCachedExcept(keep: ReadonlySet<string>): Promise<void> {
+  const ids = await run<IDBValidKey[]>('readonly', s => s.getAllKeys());
+  const gone = (ids ?? []).filter((id): id is string => typeof id === 'string' && !keep.has(id));
+  if (gone.length) await forgetCached(gone);
+}
 // Closes this page's connection first (an open one would hold the deletion up).
 export async function clearFileCache(): Promise<void> {
   const open = opening; opening = null;

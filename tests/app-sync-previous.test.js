@@ -5,7 +5,8 @@
 // Study's `arabic_lesson` records must be left alone by a release that doesn't know them (before 1.47.0): not taken
 // in, not changed, not deleted, and never stopping it syncing. A previous release that knows them takes them in like
 // any other record; [2] and [3] check whichever applies. [7] does the same for Keep a word's `arabic_word` records
-// (Keep a word), and [9] for Practise again's `arabic_practice` records. Made-up data only.
+// (Keep a word), [9] for Practise again's `arabic_practice` records, and [11] for the portfolio's entries and files.
+// Made-up data only.
 const fs = require('fs'), os = require('os'), path = require('path');
 const { isDeepStrictEqual: eq } = require('node:util');
 const D = require('./cdp-devices.js'), S = require('./supabase-standin.js');
@@ -239,6 +240,38 @@ async function signIn(d, url) {
     check('back on this release the title and stage arrive, and the file ids and the file record are as they were', await now.until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === '${PF}')?.title === 'Shed papers (renamed)'`, 20000) && eq((await now.data()).files.items.find(f => f.id === FID), fileRec) && eq((await now.data()).projects.items.find(p => p.id === PF).fileIds, [FID]) && eq((await now.data()).notes.items.find(n => n.id === NF).fileIds, [FID]));
     await now.open(NOW + `#projects/p/${PF}`);
     check('the project\'s Files card lists the file, which is still in the account', await now.until(`document.querySelector('#files-project')?.textContent.includes('Timber quote.pdf')`, 15000) && eq(await record('file', FID), sentFile), await now.text('#files-project'));
+    console.log('\n[11] A Cybersecurity portfolio entry and its file are left alone by a release that doesn\'t know the portfolio, even 30+ days on');
+    const builtText = fs.readdirSync(assets).filter(f => f.endsWith('.js')).map(f => fs.readFileSync(path.join(assets, f), 'utf8')).join('\n');
+    const knowsPortfolio = /[`'"]cyber_portfolio[`'"]/.test(builtText);
+    console.log(`The previous release ${knowsPortfolio ? 'knows' : 'doesn\u2019t know'} the portfolio.`);
+    const PE = 'pfback000001', PFID = 'flpfback0001', CTRL = 'flctrl000001';
+    const old = new Date(Date.now() - 40 * 86400000), oldDay = `${old.getFullYear()}-${String(old.getMonth() + 1).padStart(2, '0')}-${String(old.getDate()).padStart(2, '0')}`;
+    const entry = { id: PE, attemptId: 'caBack', activityId: 'exercise.learning-evidence', title: 'Baseline evidence', evidence: 'Compared two runs.', note: '', reviewedOn: today, fileIds: [PFID] };
+    const pfRec = { id: PFID, name: 'Baseline.png', type: 'image/png', size: 2048, sha256: 'f'.repeat(64), area: 'portfolio', state: 'kept', addedOn: today };
+    await now.returnToApp();
+    await now.setData(`s => { s.cybersecurity.portfolio = [${JSON.stringify(entry)}]; s.files.items.push(${JSON.stringify(pfRec)}); }`);
+    check('this release sends the entry as its own record, and its file as a file record', await eventually(async () => eq((await record('cyber_portfolio', PE))?.data, entry) && eq((await record('file', PFID))?.data, pfRec)) && await synced(now));
+    await before.returnToApp();
+    check('the previous release syncs normally with them in the account', await synced(before) && (await before.status()) === 'synced');
+    if (knowsPortfolio) check('…and takes the entry in like any other record (it knows this kind)', await before.until(`(JSON.parse(localStorage.getItem('${KEY}')).cybersecurity.portfolio || []).length === 1`, 20000));
+    else check('…without taking the entry in: its saved data has no portfolio', !('portfolio' in (await before.data()).cybersecurity));
+    check('…while the file record arrives there as it is', await before.until(`(JSON.parse(localStorage.getItem('${KEY}')).files?.items || []).some(f => f.id === '${PFID}')`, 20000));
+    // A file nothing lists, in an area the previous release does judge, so its tidy can be seen to have run (it runs a
+    // minute after the page opens, then every ten).
+    const ctrl = (id, name) => JSON.stringify({ ...pfRec, id, area: 'project', name, type: 'application/pdf' });
+    await before.setData(`s => { s.files.items.push(${ctrl(CTRL, 'Control.pdf')}); }`);
+    await before.open(BEFORE + '?reload=' + Date.now() + '#today'); await before.returnToApp();
+    check('the previous release\'s own tidy ran (it marked the file nothing lists)', await before.until(`(JSON.parse(localStorage.getItem('${KEY}')).files?.items || []).find(f => f.id === '${CTRL}')?.deletedOn === '${today}'`, 150000));
+    const unmarked = (await before.data()).files.items.find(f => f.id === PFID);
+    check('…and never marked the portfolio file, though nothing it knows lists it', !!unmarked && !('deletedOn' in unmarked) && unmarked.state === 'kept', unmarked);
+    // As if an even older device had marked it long ago, so any version that judged it would delete it for good now.
+    await before.setData(`s => { const f = s.files.items.find(x => x.id === '${PFID}'); f.deletedOn = '${oldDay}'; s.files.items.push(${ctrl(CTRL + '2', 'Control 2.pdf')}); }`);
+    await before.open(BEFORE + '?reload=' + Date.now() + '#today'); await before.returnToApp();
+    check('a later tidy of the previous release ran too', await before.until(`(JSON.parse(localStorage.getItem('${KEY}')).files?.items || []).find(f => f.id === '${CTRL}2')?.deletedOn === '${today}'`, 150000));
+    const kept = (await before.data()).files.items.find(f => f.id === PFID);
+    check('…and left the portfolio file exactly as it was 40 days on: not deleted for good, not forgotten, its mark untouched', !!kept && kept.deletedOn === oldDay && kept.state === 'kept' && !(await record('file', PFID))?.deleted, kept);
+    await now.returnToApp();
+    check('back on this release the entry still lists its file, and the file is there', await now.until(`(() => { const d = JSON.parse(localStorage.getItem('${KEY}')); return (d.cybersecurity.portfolio || []).some(e => e.id === '${PE}' && (e.fileIds || []).includes('${PFID}')) && d.files.items.some(f => f.id === '${PFID}'); })()`, 20000));
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {

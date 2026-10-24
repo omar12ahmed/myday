@@ -6,7 +6,7 @@
 import { cleanName, FILE_TYPES, looksLike, PREVIEWABLE, refusal, THUMB_MAX_BYTES, typeOfName } from '../../../supabase/functions/_shared/files/rules';
 import { addFileRecord, dropAdded, dueForPurge, forgetFiles, healFiles, LISTED_AREAS, markOrphans, newFileId, setFileState, unfinished, type Owner } from '../data/files';
 import { PORTFOLIO_FILES } from '../data/cybersecurity/types';
-import { clearFileCache, forgetCached } from '../data/fileCache';
+import { clearFileCache, forgetCached, forgetCachedExcept } from '../data/fileCache';
 import { getSnapshot, update } from '../data/storage';
 import type { FileRecord } from '../data/types';
 import { currentSession } from './client';
@@ -287,6 +287,8 @@ export async function tidyFiles(now = Date.now()) {
     }
     const due = dueForPurge(getSnapshot().data);
     if (due.length) await deleteNow(due.slice(0, 50));
+    // A portfolio file deleted for good on another device: its copy on this device goes too.
+    await forgetCachedExcept(new Set(getSnapshot().data.files.items.map(f => f.id)));
   } finally { tidying = false; }
 }
 export function startFileTidy() {

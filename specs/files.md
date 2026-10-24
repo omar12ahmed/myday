@@ -79,7 +79,7 @@ Also, per the other decisions on record:
 
 - **A top-level `files` section:** `{ items: FileRecord[] }`, where each record is
   `{ id, name, type, size, sha256, area, state, addedOn, startedAt?, deletedOn?, removedFrom? }`.
-  - `area` is 'project' or 'note' here, and 'portfolio' later.
+  - `area` is 'project', 'note' or 'portfolio' (the Cybersecurity portfolio's, from the portfolio release).
   - `state` is 'uploading', 'kept' or 'failed'.
   - `startedAt` is when adding it started (ms), so a device can tell an upload that won't finish.
   - `removedFrom` is `{ kind, id }`, used by Put back.
@@ -108,10 +108,14 @@ Also, per the other decisions on record:
     - 25 MB each;
     - never SVG, HTML or any script;
     - downloaded, never rendered, except images and PDFs, which open inline.
-  - **portfolio (later):** PNG, JPEG, WebP and PDF; 2 MB each; 200 MB in all.
+  - **portfolio:** PNG, JPEG, WebP and PDF; 2 MB each; at most 5 per entry (`filesPerPlace`); 200 MB in all, inside
+    the account's 10 GB (the server checks both, and every Files card's used/left line counts the portfolio's files).
+    A portfolio entry (`cybersecurity.portfolio[]`, with its own `fileIds`) is a place like a project or a note; its
+    files, and those of entries you've removed, show on the portfolio's page, not on the Projects home
+    (`specs/study-home-and-lessons.md` §10).
   - **Removing** goes to Recently deleted in every area by default. That's one behaviour across MyDay, and a mistake
-    never loses a file. An area may choose otherwise (the hook stays). The portfolio's choice goes to the owner when
-    it starts, with myday-86 recommending this default (24 October 2026).
+    never loses a file. An area may choose otherwise (the hook stays). For the portfolio the owner chose this default
+    too (24 October 2026).
   - **Every account:** 10 GB in all (the owner's choice; 2 GB in 1.68.0). R2's free allowance is 10 GB of storage
     for the whole Cloudflare account, backups and any public assets included; past it, R2 charges for each GB stored
     a month (see Cloudflare's R2 pricing page).
@@ -181,7 +185,8 @@ Also, per the other decisions on record:
     kept if its bytes arrived and pass, otherwise failed (Remove clears it);
   - files in Recently deleted for 30 days or more are deleted from R2, then their records (50 at a time).
   The day comes from the device's clock, as everywhere in MyDay.
-  - **Areas this version can't list** (a newer MyDay's portfolio, say) are left exactly as they are: such a file is
+  - **Areas this version can't list** (a newer MyDay's gallery, say; the portfolio was the first, listed from the
+    portfolio release on) are left exactly as they are: such a file is
     never sent to Recently deleted, healed, settled or deleted for good, and the place it was removed from is kept
     as it is (`LISTED_AREAS` in `data/files.ts`; from 1.69.0, found by myday-86 before the portfolio's files). A
     release that adds an area adds it there and teaches `place`/`usedBy` where its files are listed, and sends that

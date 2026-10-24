@@ -138,7 +138,7 @@ export function FilesCard({ data, owner, area }: { data: MyDayData; owner: Owner
 }
 
 // On the Projects home: files in Recently deleted whose project or note is gone (they can't be put back, only kept for
-// 30 days or deleted now), so a file is never lost without a trace.
+// 30 days or deleted now), so a file is never lost without a trace. The portfolio's show on its own page.
 export function HomelessDeletedFiles({ data }: { data: MyDayData }) {
   const list = recentlyDeleted(data).filter(f => f.area !== 'portfolio' && (!f.removedFrom || !placeExists(data, f.removedFrom))); // the portfolio's are on its page
   if (!list.length) return null;
