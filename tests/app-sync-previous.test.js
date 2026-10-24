@@ -113,6 +113,29 @@ async function signIn(d, url) {
     const backTask = (await now.data()).tasks.items.find(t => t.id === TW);
     check('…with the wait unchanged in its saved data', eq(backTask.waiting, waiting) && backTask.due === '2026-12-05', backTask);
     check('the task page shows the wait card for it', await now.until(`document.querySelector('[data-s=waiting-line]')?.textContent.startsWith('Waiting on Priya at the furniture shop')`, 10000), await now.text('#taskWaiting'));
+
+    console.log('\n[6] A project\'s Learning links pass through the previous release unchanged');
+    const PL = 'pjLearnBack', ARABIC = 'lesson.arabic-fusha-register', ARABIC_TITLE = 'What Fuṣḥā means and where it is used';
+    const studyLinks = [
+      { kind: 'arabic', id: ARABIC, title: ARABIC_TITLE, why: 'For the trip next spring', addedOn: today, futureBit: { keep: ['this', 1] } },
+      { kind: 'course', id: 'coGoneBack', title: 'A course removed since', addedOn: today },
+      { kind: 'video', id: 'vdFuture', title: 'A kind from a newer MyDay', addedOn: today, speed: 2 }];
+    const linksOf = r => { const v = r?.value ?? r; return v?.studyLinks; };
+    await now.setData(`s => { s.projects.items.push({ id: '${PL}', title: 'Learning for the trip', summary: 'Greetings and numbers.', stage: 'capture', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}', studyLinks: ${JSON.stringify(studyLinks)} }); }`);
+    check('a project with learning links (one with an extra key, one of a newer kind) reaches the account with the links unchanged', await eventually(async () => eq(linksOf((await record('project', PL))?.data), studyLinks)) && await synced(now), linksOf((await record('project', PL))?.data));
+    await before.returnToApp();
+    check('the previous release receives the project', await before.until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.some(p => p.id === '${PL}')`, 20000));
+    check('…and its saved data holds the links exactly, extra keys included', eq(linksOf((await before.data()).projects.items.find(p => p.id === PL)), studyLinks), linksOf((await before.data()).projects.items.find(p => p.id === PL)));
+    await before.setData(`s => { const p = s.projects.items.find(x => x.id === '${PL}'); p.title = 'Learning for the trip (renamed)'; p.stage = 'understand'; p.updatedAt = '${today}T11:00'; }`);
+    check('a title and stage change on the previous release reaches the account', await eventually(async () => { const r = (await record('project', PL))?.data?.value; return r?.title === 'Learning for the trip (renamed)' && r?.stage === 'understand'; }) && await synced(before), (await record('project', PL))?.data);
+    check('…with the links still exactly as sent', eq(linksOf((await record('project', PL))?.data), studyLinks), linksOf((await record('project', PL))?.data));
+    check('…and the previous release still holds them in its own saved data', eq(linksOf((await before.data()).projects.items.find(p => p.id === PL)), studyLinks));
+    await now.open(NOW + `#projects/p/${PL}`); await now.returnToApp();
+    check('this release receives the new title and stage', await now.until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === '${PL}')?.title === 'Learning for the trip (renamed)'`, 20000));
+    const backPl = (await now.data()).projects.items.find(p => p.id === PL);
+    check('…with the learning links unchanged in its saved data', eq(backPl.studyLinks, studyLinks) && backPl.stage === 'understand', backPl.studyLinks);
+    check('the Learning card shows the lesson\'s real title and its reason', await now.until(`document.querySelector('#projectLearning')?.textContent.includes(${JSON.stringify(ARABIC_TITLE)}) && document.querySelector('#projectLearning')?.textContent.includes('Why: For the trip next spring')`, 15000), await now.text('#projectLearning'));
+    check('…the course removed since as "No longer in Study", and the newer kind as "Open it in a newer MyDay"', (await now.text('#projectLearning')).includes('No longer in Study') && (await now.text('#projectLearning')).includes('Open it in a newer MyDay'), await now.text('#projectLearning'));
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {

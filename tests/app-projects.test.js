@@ -1805,6 +1805,99 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('phone 320 px: the Overview with "Why this?" open does not scroll sideways', (await ev(`document.querySelector('[data-s=next-why]').open`)) && (await nwWhy()).length > 20 && (await ev('document.documentElement.scrollWidth')) <= 320, await ev('document.documentElement.scrollWidth'));
   await T.send('Emulation.clearDeviceMetricsOverride');
 
+  console.log('\n[41] Learning for a project');
+  const lnTask = (id, done) => ({ id, title: 'Task ' + id, minutes: 15, url: '', kind: 'learn', note: '', done, doneOn: done ? '2026-10-01' : null });
+  const lnCourse = (id, title, done, total) => ({ id, title, url: '', minutes: 0, listId: null, archived: false, modules: [{ id: 'm' + id, title: 'Module', sections: [{ id: 's' + id, title: 'Section', tasks: Array.from({ length: total }, (_, i) => lnTask(`${id}t${i}`, i < done)) }] }] });
+  const ARABIC = 'lesson.arabic-fusha-register', ARABIC_TITLE = 'What Fuṣḥā means and where it is used';
+  await go('projects', 2026, 10, 15, 9, 0); await reset(); await go('projects', 2026, 10, 15, 9, 0);
+  await seed([pjObj('pjLn', 'Wi-Fi for the shop', 'act')]);
+  await editStorage(`s => { s.study.stages = [{ id: 'sgLn', title: 'Stage', courses: [${JSON.stringify(lnCourse('coLnA', 'Networking basics', 3, 8))}, ${JSON.stringify(lnCourse('coLnB', 'Safety first', 0, 0))}] }];
+    s.reading.books = [{ id: 'bkLn', title: 'Bookkeeping made plain', author: '', pages: 300, page: 120, notes: [], addedOn: '2026-09-01', finishedOn: null }]; }`);
+  await editStorage(`s => { s.tasks.items.push(${JSON.stringify(gtk('tkLn', 'Ring the installer', 'pjLn', { createdAt: '2026-10-14T09:00' }))}); }`);
+  const lnLinks = async () => (await pAt('pjLn')).studyLinks;
+  const lnRow = (kind, id) => `[data-s=learning-link][data-kind=${kind}][data-id="${id}"]`;
+  const lnStudy = async () => JSON.stringify([(await data()).study.stages, (await data()).reading.books]);
+  const lnOpts = () => ev(`[...document.querySelectorAll('#learningPick option')].map(o => [o.value, o.textContent])`);
+  const lnAdd = async kind => { if (!(await exists('[data-s=learning-form]'))) await click('[data-action=learning-add]'); await until(`!!document.getElementById('learningKind-course')`); await click(`#learningKind-${kind}`); await sleep(150); };
+  const lnPick = async (id, why = '') => { await type('#learningPick', id); if (why) await type('#learningWhy', why); await click('[data-action=learning-link]'); await sleep(300); };
+  let studyBefore = '';
+  await go('projects/p/pjLn', 2026, 10, 15, 9, 5);
+
+  console.log('  The empty card');
+  check('the Learning card sits in the side column after Recently and before Manage', await ev(`(() => { const a = document.getElementById('projectRecent'), b = document.getElementById('projectLearning'), c = document.getElementById('projectManage'); return !!a && !!b && !!c && !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) && !!(b.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING); })()`), await ev(`[...document.querySelectorAll('#projectSoon, #projectRecent, #projectLearning, #projectManage')].map(e => e.id)`));
+  check('with nothing linked it has one line and "Link something"', (await text('#projectLearning')).includes('Link a course, book or Arabic lesson you’re learning for this project.') && (await text('[data-action=learning-add]')) === 'Link something' && !(await exists('[data-s=learning-link]')) && !('studyLinks' in (await pAt('pjLn'))), await text('#projectLearning'));
+
+  console.log('  Linking a course');
+  await click('[data-action=learning-add]');
+  check('"Link something" puts the keyboard on the kind choices, with Course chosen', await until(`document.activeElement && document.activeElement.id === 'learningKind-course'`) && (await ev(`document.getElementById('learningKind-course').getAttribute('aria-pressed')`)) === 'true' && (await ev(`document.querySelectorAll('[data-s=learning-kind]').length`)) === 3);
+  check('the list offers the two courses in roadmap order', eq(await lnOpts(), [['', 'Choose…'], ['coLnA', 'Networking basics'], ['coLnB', 'Safety first']]), await lnOpts());
+  check('Link waits until something is chosen', await ev(`document.querySelector('[data-action=learning-link]').disabled`));
+  await lnPick('coLnA', 'To set up the shop Wi-Fi');
+  const ln1 = await lnLinks();
+  check('Link saves it on the project: kind, id, the title, the why and the day, and nothing else', eq(ln1, [{ kind: 'course', id: 'coLnA', title: 'Networking basics', why: 'To set up the shop Wi-Fi', addedOn: '2026-10-15' }]), ln1);
+  check('…with a toast, and the form closed', (await toast()) === 'Linked “Networking basics”.' && !(await exists('[data-s=learning-form]')), await toast());
+  const lnText = (await text(lnRow('course', 'coLnA'))).replace(/\s+/g, ' ');
+  check('the row shows "Your course", the title, Study\'s own count and the why', lnText.includes('Your course') && lnText.includes('Networking basics') && lnText.includes('3 of 8 tasks marked complete') && lnText.includes('Why: To set up the shop Wi-Fi') && !/%/.test(lnText), lnText);
+  check('…and its link opens the course in Study', (await ev(`document.querySelector('${lnRow('course', 'coLnA')} a').getAttribute('href')`)) === '#study/course/coLnA');
+  check('after linking, the keyboard goes back to "Link something"', await until(`document.activeElement && document.activeElement.id === 'learningAdd'`));
+
+  studyBefore = await lnStudy(); // as the app keeps it once it has saved
+  console.log('  Linking a book and an Arabic lesson');
+  await lnAdd('book');
+  check('the book list offers the book', eq(await lnOpts(), [['', 'Choose…'], ['bkLn', 'Bookkeeping made plain']]), await lnOpts());
+  await lnPick('bkLn');
+  check('a linked book shows "Page 120 of 300" and opens Reading', (await text(`${lnRow('book', 'bkLn')} [data-s=learning-status]`)) === 'Page 120 of 300' && (await ev(`document.querySelector('${lnRow('book', 'bkLn')} a').getAttribute('href')`)) === '#study/reading' && !(await exists(`${lnRow('book', 'bkLn')} [data-s=learning-why]`)), await text(lnRow('book', 'bkLn')));
+  await lnAdd('arabic');
+  check('choosing the Arabic kind loads the lessons into the list', await until(`!!document.getElementById('learningPick') && document.querySelectorAll('#learningPick option').length > 10`) && (await lnOpts()).some(o => o[0] === ARABIC && o[1] === ARABIC_TITLE), (await lnOpts()).slice(0, 3));
+  await lnPick(ARABIC);
+  check('the Arabic lesson is saved with its real title', eq((await lnLinks()).filter(l => l.kind === 'arabic').map(l => [l.id, l.title, 'why' in l]), [[ARABIC, ARABIC_TITLE, false]]), await lnLinks());
+  check('…and its row shows the title, "Arabic lesson" and Study\'s state "New" once it has loaded', await until(`(document.querySelector('${lnRow('arabic', ARABIC)} [data-s=learning-status]') || {}).textContent === 'New'`) && (await text(lnRow('arabic', ARABIC))).includes(ARABIC_TITLE) && (await text(lnRow('arabic', ARABIC))).includes('Arabic lesson'), await text(lnRow('arabic', ARABIC)));
+  check('…and it opens the lesson in Study', (await ev(`document.querySelector('${lnRow('arabic', ARABIC)} a').getAttribute('href')`)) === `#study/arabic/${ARABIC}`);
+
+  console.log('  What is left to link');
+  await lnAdd('course');
+  check('the list no longer offers the linked course', eq(await lnOpts(), [['', 'Choose…'], ['coLnB', 'Safety first']]), await lnOpts());
+  await lnPick('coLnB');
+  await lnAdd('course');
+  check('with every course linked the form says "No courses left to link. Add one on your Study roadmap."', (await text('[data-s=learning-form]')).includes('No courses left to link. Add one on your Study roadmap.') && !(await exists('#learningPick')), await text('[data-s=learning-form]'));
+  await lnAdd('book');
+  check('…and likewise for books', (await text('[data-s=learning-form]')).includes('No books left to link. Add one in Study → Reading.'));
+  await click('[data-action=learning-cancel]'); await sleep(200);
+  check('Cancel closes the form and links nothing more', !(await exists('[data-s=learning-form]')) && (await lnLinks()).length === 4, (await lnLinks()).length);
+
+  console.log('  Editing why, and unlinking');
+  const edit = `${lnRow('course', 'coLnA')} [data-action=learning-edit]`;
+  check('a link with a why offers "Edit why", one without offers "Add why"', (await text(edit)) === 'Edit why' && (await text(`${lnRow('course', 'coLnB')} [data-action=learning-edit]`)) === 'Add why');
+  await click(edit); await sleep(200);
+  check('Edit why opens a field holding the why, with the keyboard in it', (await ev(`document.activeElement && document.activeElement.value`)) === 'To set up the shop Wi-Fi');
+  await type('#learningWhy-course-coLnA', 'Something else entirely');
+  await T.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+  await T.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+  await sleep(250);
+  check('Escape cancels: the field closes and the why is as it was', !(await exists('#learningWhy-course-coLnA')) && (await lnLinks())[0].why === 'To set up the shop Wi-Fi' && (await text(`${lnRow('course', 'coLnA')} [data-s=learning-why]`)) === 'Why: To set up the shop Wi-Fi');
+  await click(edit); await sleep(200);
+  await type('#learningWhy-course-coLnA', '  So customers can get online  '); await click('[data-action=learning-why-save]'); await sleep(300);
+  check('Save changes it (trimmed) and shows it', (await lnLinks())[0].why === 'So customers can get online' && (await text(`${lnRow('course', 'coLnA')} [data-s=learning-why]`)) === 'Why: So customers can get online', (await lnLinks())[0]);
+  await click(edit); await sleep(200);
+  await type('#learningWhy-course-coLnA', '   '); await click('[data-action=learning-why-save]'); await sleep(300);
+  check('a blank why removes the Why line and the saved why', !('why' in (await lnLinks())[0]) && !(await exists(`${lnRow('course', 'coLnA')} [data-s=learning-why]`)) && (await text(edit)) === 'Add why', (await lnLinks())[0]);
+  await click(`${lnRow('course', 'coLnB')} [data-action=learning-unlink]`); await sleep(300);
+  check('Unlink takes the link off the project, with the toast "Unlinked — it’s still in Study."', eq((await lnLinks()).map(l => l.id), ['coLnA', 'bkLn', ARABIC]) && !(await exists(lnRow('course', 'coLnB'))) && (await toast()) === 'Unlinked — it’s still in Study.', [await toast(), (await lnLinks()).map(l => l.id)]);
+  { const now = await lnStudy(); let i = 0; while (i < now.length && now[i] === studyBefore[i]) i++; check('…and Study\'s course and book are unchanged', now === studyBefore, [now.slice(Math.max(0, i - 60), i + 80), studyBefore.slice(Math.max(0, i - 60), i + 80)]); }
+
+  console.log('  A course removed from Study, and a phone');
+  await editStorage(`s => { s.study.stages[0].courses = s.study.stages[0].courses.filter(c => c.id !== 'coLnA'); }`);
+  await go('projects/p/pjLn', 2026, 10, 15, 9, 20);
+  check('the link stays, with the title you linked, "No longer in Study", Unlink, and no link to open', (await ev(`document.querySelector('${lnRow('course', 'coLnA')}').dataset.gone`)) === 'true' && (await text(`${lnRow('course', 'coLnA')} [data-s=learning-status]`)) === 'No longer in Study' && (await text(lnRow('course', 'coLnA'))).includes('Networking basics') && !(await exists(`${lnRow('course', 'coLnA')} a`)) && (await exists(`${lnRow('course', 'coLnA')} [data-action=learning-unlink]`)), await text(lnRow('course', 'coLnA')));
+  check('…and it is still saved on the project', (await lnLinks()).some(l => l.id === 'coLnA'));
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 320, height: 740, deviceScaleFactor: 2, mobile: true });
+  await go('projects/p/pjLn', 2026, 10, 15, 9, 25);
+  await until(`!!document.querySelector('[data-action=learning-add]')`); await click('[data-action=learning-add]'); await sleep(300);
+  check('phone 320 px: with three links and the form open, nothing scrolls sideways', (await exists('[data-s=learning-form]')) && (await ev(`document.querySelectorAll('[data-s=learning-link]').length`)) === 3 && (await ev('document.documentElement.scrollWidth')) <= 320, await ev('document.documentElement.scrollWidth'));
+  check('phone 320 px: the Edit why and Unlink buttons are at least 44 px tall', await ev(`[...document.querySelectorAll('[data-action=learning-edit], [data-action=learning-unlink]')].every(b => b.getBoundingClientRect().height >= 44)`), await ev(`[...document.querySelectorAll('[data-action=learning-edit], [data-action=learning-unlink]')].map(b => b.getBoundingClientRect().height)`));
+  check('phone 320 px: the form\'s buttons and fields are at least 44 px tall', await ev(`[...document.querySelectorAll('[data-s=learning-form] button, [data-s=learning-form] input, [data-s=learning-form] select')].every(b => b.getBoundingClientRect().height >= 44)`));
+  await T.send('Emulation.clearDeviceMetricsOverride');
+
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
   const sm = T.summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);

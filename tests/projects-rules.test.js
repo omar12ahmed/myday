@@ -21,6 +21,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   fs.writeFileSync(path.join(dir, 'kit.ts'), [
     `export * from ${src('projectRecords')};`, `export * from ${src('projectPlan')};`, `export * from ${src('businessModel')};`, `export * from ${src('caseFile')};`, `export { normalizeProjects, deleteProject, recently, addProject, setProjectPrivate, editProject, setLeftOff, privateProjectIds, comingUp, stillOpen } from ${src('projects')};`,
     `export { freshState, normalize } from ${src('normalize')};`, `export { shift, shortDate } from ${src('dates')};`, `export * from ${src('projectDashboard')};`, `export * from ${src('weekReview')};`, `export { stepsForToday, nextStep, whyNext } from ${src('projects')};`,
+    `export { normalizeStudyLinks, addStudyLink, removeStudyLink, setStudyLinkWhy, linkView, courseChoices, bookChoices, LINK_LIMITS } from ${src('studyLinks')};`, `export { stIndex } from ${src('study/roadmap')};`,
     `export { searchProject, fold, matchCount, SEARCH_KIND_LABEL } from ${src('projectSearch')};`,
     `export { normalizeTasks, setWaiting, stopWaiting, isWaiting, chaseTask, chaseWaiting, isStuck, setTaskDone } from ${src('tasks')};`,
     `export { setDone, clearDay } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
@@ -1592,6 +1593,99 @@ const clone = o => JSON.parse(JSON.stringify(o));
       return line === `Left to MyDay, it would be “${K.nextStep(w2, P(w2)).title}”.`;
     }));
     check('whyNext writes nothing: the data is deep-equal before and after, for every case above', [[], three, dw, dw2, un, unw, rest].every(ts => { const w = scene(ts, ts[0] && ts[0].id); const before = JSON.stringify(w); K.whyNext(w, P(w)); P(w).nextTaskId = null; K.whyNext(w, P(w)); P(w).nextTaskId = 'x'; K.whyNext(w, P(w)); P(w).nextTaskId = ts[0] && ts[0].id || null; return JSON.stringify(w) === before; }));
+  }
+
+
+  console.log('\n[18] Learning for a project: links to courses, books and Arabic lessons (specs/projects-study-links.md)');
+  {
+    const AT = '2026-10-20', ARABIC = 'lesson.arabic-fusha-register';
+    const task = (id, done) => ({ id, title: 'Task ' + id, minutes: 15, url: '', kind: 'learn', note: '', done, doneOn: done ? '2026-10-01' : null });
+    const course = (id, title, done, total, x = {}) => ({ id, title, url: '', minutes: 0, listId: null, archived: false, modules: [{ id: 'm' + id, title: 'Module', sections: [{ id: 's' + id, title: 'Section', tasks: Array.from({ length: total }, (_, i) => task(`${id}t${i}`, i < done)) }] }], ...x });
+    const book = (id, title, x = {}) => ({ id, title, author: '', pages: 300, page: 0, notes: [], addedOn: '2026-09-01', finishedOn: null, ...x });
+    const lw = () => {
+      const d = world(base('pjL', { title: 'Wi-Fi for the shop' }));
+      d.study.stages = [{ id: 'sg1', title: 'Stage', courses: [course('coA', 'Networking basics', 3, 8), course('coB', 'Empty course', 0, 0), course('coC', 'Old course', 0, 0, { archived: true }), course('coD', 'Shop safety', 1, 2)] }];
+      d.reading.books = [book('bkA', 'Bookkeeping made plain', { page: 120 }), book('bkB', 'Fresh book'), book('bkC', 'No total', { page: 120, pages: null }), book('bkD', 'Done book', { page: 300, finishedOn: '2026-10-12' })];
+      return d;
+    };
+    const lk = (kind, id, title, x = {}) => ({ kind, id, title, addedOn: AT, ...x });
+    const links = d => P(d).studyLinks;
+
+    console.log('  Reading saved links');
+    const nr = raw => { const rep = { dropped: 0 }; return [K.normalizeStudyLinks(raw, rep), rep.dropped]; };
+    check('no links (absent or null) read as none, and nothing is counted', eq(nr(undefined), [null, 0]) && eq(nr(null), [null, 0]));
+    check('something that is not a list is counted once and read as none', eq(nr('oops'), [null, 1]) && eq(nr({ a: 1 }), [null, 1]));
+    check('an empty list reads as none', eq(nr([]), [null, 0]));
+    const bad = nr([lk('course', 'coA', 'Fine'), { id: 'x', title: 'No kind', addedOn: AT }, { kind: 'book', title: 'No id', addedOn: AT }, { kind: 'book', id: 'bkA' }, { kind: 'book', id: 'bkB', title: '   ' }, 'text', null]);
+    check('a link without a kind, an id or a title (or not an object) is dropped and counted; the good one stays', bad[1] === 6 && eq(bad[0].map(l => l.id), ['coA']), bad);
+    const dup = nr([lk('course', 'coA', 'First'), lk('course', 'coA', 'Second'), lk('book', 'coA', 'Same id, other kind')]);
+    check('the same kind and id twice are merged silently (the first stays); the same id of another kind is a different link', dup[1] === 0 && eq(dup[0].map(l => [l.kind, l.title]), [['course', 'First'], ['book', 'Same id, other kind']]), dup);
+    const newer = nr([{ ...lk('video', 'v1', 'A newer kind'), speed: 2, nested: { a: [1] } }]);
+    check('a kind this version does not know is kept with its extra fields', eq(newer[0], [{ kind: 'video', id: 'v1', title: 'A newer kind', addedOn: AT, speed: 2, nested: { a: [1] } }]) && newer[1] === 0, newer);
+    const why = nr([lk('course', 'coA', 'A', { why: '  To set up the Wi-Fi  ' }), lk('course', 'coB', 'B', { why: 'x'.repeat(250) }), lk('course', 'coD', 'D', { why: 42 }), lk('book', 'bkA', 'E', { why: '   ' })]);
+    check('a why is trimmed and capped at 200; a blank one is left out; one that is not text is counted', why[0][0].why === 'To set up the Wi-Fi' && why[0][1].why.length === 200 && !('why' in why[0][2]) && !('why' in why[0][3]) && why[1] === 1, why);
+    const dt = nr([lk('course', 'coA', 'A', { addedOn: 'last week' }), lk('course', 'coB', 'B', { addedOn: undefined })]);
+    check('an invalid or missing addedOn is replaced by a date (the link is kept, nothing counted)', dt[1] === 0 && dt[0].length === 2 && dt[0].every(l => /^\d{4}-\d\d-\d\d$/.test(l.addedOn)), dt);
+    check('a title longer than 120 is cut to 120', nr([lk('course', 'coA', 'T'.repeat(200))])[0][0].title.length === 120);
+    const many = nr(Array.from({ length: 25 }, (_, i) => lk('book', 'b' + i, 'Book ' + i)));
+    check('more than 20 valid links from elsewhere are all kept (only adding is capped)', many[0].length === 25 && many[1] === 0);
+    const withLinks = K.normalizeProjects({ items: [base('pjR', { studyLinks: [lk('course', 'coA', 'Kept')] })] }, { dropped: 0 }).items[0], without = K.normalizeProjects({ items: [base('pjR', { studyLinks: [] }), base('pjS')] }, { dropped: 0 }).items;
+    check('through normalizeProjects a project keeps its links, and one without links has no studyLinks key at all', eq(withLinks.studyLinks, [lk('course', 'coA', 'Kept')]) && without.every(p => !('studyLinks' in p)), [withLinks, without]);
+    const unk = K.normalizeProjects({ items: [base('pjR', { studyLinks: 'broken' })] }, { dropped: 0 }).items[0];
+    check('…and a damaged studyLinks is dropped from the project', !('studyLinks' in unk));
+
+    console.log('  Adding, removing and editing why');
+    let d = lw();
+    const before = P(d).updatedAt;
+    check('adding a course link stores the title (trimmed), no why, and the day', K.addStudyLink(d, 'pjL', { kind: 'course', id: 'coA', title: '  Networking basics  ' }, '', AT) && eq(links(d), [{ kind: 'course', id: 'coA', title: 'Networking basics', addedOn: AT }]), links(d));
+    check('…and the project\'s updated time moves on', P(d).updatedAt > before);
+    check('a why is optional, trimmed and capped at 200', K.addStudyLink(d, 'pjL', { kind: 'book', id: 'bkA', title: 'Bookkeeping made plain' }, '  To keep the books  ', AT) && links(d)[1].why === 'To keep the books' && K.addStudyLink(d, 'pjL', { kind: 'book', id: 'bkB', title: 'Fresh book' }, 'y'.repeat(300), AT) && links(d)[2].why.length === 200);
+    check('a title is capped at 120 when added', (() => { const e = lw(); return K.addStudyLink(e, 'pjL', { kind: 'course', id: 'coA', title: 'T'.repeat(200) }, '', AT) && links(e)[0].title.length === 120; })());
+    check('the same item twice is refused (false)', !K.addStudyLink(d, 'pjL', { kind: 'course', id: 'coA', title: 'Again' }, '', AT) && links(d).length === 3);
+    check('a project that is not there, a course not on the roadmap and a book not in Reading are refused (false)', !K.addStudyLink(d, 'pjNope', { kind: 'course', id: 'coA', title: 'x' }) && !K.addStudyLink(d, 'pjL', { kind: 'course', id: 'coNope', title: 'x' }) && !K.addStudyLink(d, 'pjL', { kind: 'book', id: 'bkNope', title: 'x' }) && links(d).length === 3);
+    check('a blank title is refused', !K.addStudyLink(d, 'pjL', { kind: 'course', id: 'coD', title: '   ' }));
+    check('an Arabic lesson is accepted with the title the caller gives (it is not checked here)', K.addStudyLink(d, 'pjL', { kind: 'arabic', id: ARABIC, title: 'Register in Fusha' }, '', AT) && eq(links(d).at(-1), { kind: 'arabic', id: ARABIC, title: 'Register in Fusha', addedOn: AT }));
+    const cap = lw();
+    for (let i = 0; i < 20; i++) K.addStudyLink(cap, 'pjL', { kind: 'arabic', id: 'lesson.x' + i, title: 'Lesson ' + i }, '', AT);
+    check('the 20th link is accepted and a 21st is refused (false)', links(cap).length === 20 && !K.addStudyLink(cap, 'pjL', { kind: 'course', id: 'coA', title: 'One more' }) && links(cap).length === 20);
+    check('removing a link takes just that one out, and returns false for one that is not there', K.removeStudyLink(d, 'pjL', 'book', 'bkA') && eq(links(d).map(l => l.id), ['coA', 'bkB', ARABIC]) && !K.removeStudyLink(d, 'pjL', 'book', 'bkA') && !K.removeStudyLink(d, 'pjNope', 'course', 'coA'));
+    check('the same id of another kind is not removed', (() => { const e = lw(); K.addStudyLink(e, 'pjL', { kind: 'course', id: 'coA', title: 'A' }); return !K.removeStudyLink(e, 'pjL', 'book', 'coA') && links(e).length === 1; })());
+    check('when the last link goes the project has no studyLinks key again (as before)', (() => { const e = lw(); K.addStudyLink(e, 'pjL', { kind: 'course', id: 'coA', title: 'A' }); return K.removeStudyLink(e, 'pjL', 'course', 'coA') && !('studyLinks' in P(e)) && eq(Object.keys(P(e)).sort(), Object.keys(base('pjL', { title: 'x' })).sort()); })(), Object.keys(P(d)));
+    const e2 = lw(); K.addStudyLink(e2, 'pjL', { kind: 'course', id: 'coA', title: 'A' }, '', AT);
+    check('setting a why sets it trimmed and capped at 200', K.setStudyLinkWhy(e2, 'pjL', 'course', 'coA', '  Because  ') && links(e2)[0].why === 'Because' && K.setStudyLinkWhy(e2, 'pjL', 'course', 'coA', 'z'.repeat(300)) && links(e2)[0].why.length === 200);
+    check('the same why again changes nothing (false); a link that is not there changes nothing (false)', !K.setStudyLinkWhy(e2, 'pjL', 'course', 'coA', 'z'.repeat(300)) && !K.setStudyLinkWhy(e2, 'pjL', 'course', 'coNope', 'x') && !K.setStudyLinkWhy(e2, 'pjNope', 'course', 'coA', 'x'));
+    check('a blank why takes it away (the key goes); blank again changes nothing (false)', K.setStudyLinkWhy(e2, 'pjL', 'course', 'coA', '   ') && !('why' in links(e2)[0]) && !K.setStudyLinkWhy(e2, 'pjL', 'course', 'coA', ''));
+
+    console.log('  What each link shows');
+    const ix = () => K.stIndex(d2.study);
+    let d2 = lw();
+    const lv = (l, arabic) => K.linkView(d2, l, ix(), arabic);
+    const pickv = v => [v.label, v.title, v.status, v.gone, v.href];
+    check('a course shows Study\'s own count, its current title and a link to its page', eq(pickv(lv(lk('course', 'coA', 'Stored title'))), ['Your course', 'Networking basics', '3 of 8 tasks marked complete', false, '#study/course/coA']), pickv(lv(lk('course', 'coA', 'x'))));
+    check('a course with no tasks says "No tasks added yet"', lv(lk('course', 'coB', 'x')).status === 'No tasks added yet');
+    check('an archived course says "Archived in Study" and still links', eq(pickv(lv(lk('course', 'coC', 'x'))), ['Your course', 'Old course', 'Archived in Study', false, '#study/course/coC']));
+    check('a course that is gone shows the title you linked, "No longer in Study" and no link', eq(pickv(lv(lk('course', 'coGone', 'Stored title'))), ['Your course', 'Stored title', 'No longer in Study', true, null]));
+    check('a course status never contains a percentage', !/%/.test(lv(lk('course', 'coA', 'x')).status + lv(lk('course', 'coD', 'x')).status));
+    check('a book not started says "Not started" and links to Reading', eq(pickv(lv(lk('book', 'bkB', 'x'))), ['Book', 'Fresh book', 'Not started', false, '#study/reading']));
+    check('a book in progress says "Page 120 of 300"; with no total, "Page 120"', lv(lk('book', 'bkA', 'x')).status === 'Page 120 of 300' && lv(lk('book', 'bkC', 'x')).status === 'Page 120');
+    check('a finished book says "Finished on <date>"', lv(lk('book', 'bkD', 'x')).status === `Finished on ${K.shortDate('2026-10-12')}`, lv(lk('book', 'bkD', 'x')).status);
+    check('a book that is gone shows its stored title, "No longer in Study" and no link', eq(pickv(lv(lk('book', 'bkGone', 'Stored book'))), ['Book', 'Stored book', 'No longer in Study', true, null]));
+    check('an Arabic lesson with its info shows the catalogue\'s title and Study\'s state, linking to the lesson', eq(pickv(lv(lk('arabic', ARABIC, 'Stored'), { title: 'Register in Fusha', status: 'Practised' })), ['Arabic lesson', 'Register in Fusha', 'Practised', false, `#study/arabic/${ARABIC}`]));
+    check('an Arabic lesson no longer in the course (null) is gone', eq(pickv(lv(lk('arabic', ARABIC, 'Stored'), null)), ['Arabic lesson', 'Stored', 'No longer in Study', true, null]));
+    check('an Arabic lesson while the catalogue loads (undefined) shows the stored title, an empty status and its link', eq(pickv(lv(lk('arabic', ARABIC, 'Stored'), undefined)), ['Arabic lesson', 'Stored', '', false, `#study/arabic/${ARABIC}`]));
+    check('an Arabic lesson that could not load says to open it in Study', lv(lk('arabic', ARABIC, 'Stored'), 'failed').status === 'Open it in Study to see how it’s going' && !lv(lk('arabic', ARABIC, 'Stored'), 'failed').gone);
+    check('an id with odd characters is encoded in the link', lv(lk('course', 'coA', 'x')).href === '#study/course/coA' && K.linkView(d2, lk('arabic', 'a b/c', 'x'), ix(), undefined).href === '#study/arabic/a%20b%2Fc');
+    const nv = lv({ kind: 'video', id: 'v1', title: 'From the future', addedOn: AT });
+    check('a kind this version does not know shows "From a newer MyDay", its title, "Open it in a newer MyDay", is not gone and has no link', eq(pickv(nv), ['From a newer MyDay', 'From the future', 'Open it in a newer MyDay', false, null]), pickv(nv));
+
+    console.log('  What can still be linked');
+    d2 = lw();
+    P(d2).studyLinks = [lk('course', 'coD', 'Shop safety'), lk('book', 'bkB', 'Fresh book')];
+    check('course choices come in roadmap order, without archived or linked ones', eq(K.courseChoices(d2, P(d2)), [{ id: 'coA', title: 'Networking basics' }, { id: 'coB', title: 'Empty course' }]), K.courseChoices(d2, P(d2)));
+    check('book choices come in Reading\'s order, without linked ones', eq(K.bookChoices(d2, P(d2)).map(b => b.id), ['bkA', 'bkC', 'bkD']), K.bookChoices(d2, P(d2)));
+    check('with nothing linked every live course and every book is offered', eq(K.courseChoices(lw(), base('pjZ')).map(c => c.id), ['coA', 'coB', 'coD']) && K.bookChoices(lw(), base('pjZ')).length === 4);
+    check('a course in a second stage comes after the first stage\'s', (() => { const e = lw(); e.study.stages.push({ id: 'sg2', title: 'Two', courses: [course('coE', 'Second stage', 0, 0)] }); return eq(K.courseChoices(e, base('pjZ')).map(c => c.id), ['coA', 'coB', 'coD', 'coE']); })());
+    check('choices and views write nothing', (() => { const e = lw(); K.addStudyLink(e, 'pjL', { kind: 'course', id: 'coA', title: 'A' }); const j = JSON.stringify(e); K.courseChoices(e, P(e)); K.bookChoices(e, P(e)); K.linkView(e, links(e)[0], K.stIndex(e.study)); return JSON.stringify(e) === j; })());
   }
 
   fs.rmSync(dir, { recursive: true, force: true });

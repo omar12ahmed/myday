@@ -94,6 +94,15 @@ const clone = x => JSON.parse(JSON.stringify(x));
   R.putRecord(ordering, otherKey, { projectId: 'pjReading', decisionId: 'dcChair', index: 3, value: { id: 'dhAlpha', text: 'Remote', on: '2026-10-23', why: '' } });
   positions.set(otherKey, 3); R.orderProjectParts(ordering, positions);
   check('concurrent choices at the same position have a deterministic order without losing either snapshot', ordering.projects.items[0].decisions[0].history.slice(-2).map(h => h.id).join() === 'dhAlpha,dhZulu');
+  // Learning links (specs/projects-study-links.md) travel in the project's own record and show in a conflict as "Learning: …".
+  const learn = clone(data);
+  learn.projects.items[0].studyLinks = [{ kind: 'course', id: 'coMade', title: 'Networking basics', why: 'For the shop Wi-Fi', addedOn: '2026-10-20', future: { kept: 1 } }, { kind: 'book', id: 'bkMade', title: 'Bookkeeping made plain', addedOn: '2026-10-21' }];
+  const learnRecords = R.localRecords(learn), learnKey = 'project:pjReading';
+  check('a project with learning links keeps them in its own project record', JSON.stringify(learnRecords.get(learnKey)).includes('Networking basics') && !projectRows.some(([key]) => JSON.stringify(records.get(key)).includes('studyLinks')));
+  check('a conflict on that project lists them as "Learning: A; B"', R.recordLines(learnKey, learnRecords.get(learnKey)).includes('Learning: Networking basics; Bookkeeping made plain'), R.recordLines(learnKey, learnRecords.get(learnKey)));
+  check('a project without links has no "Learning:" line', !R.recordLines(learnKey, records.get(learnKey)).some(x => x.startsWith('Learning:')));
+  const learnBack = R.freshState(); put(learnBack, [...learnRecords].filter(([key]) => R.splitKey(key).kind.startsWith('project')).reverse());
+  check('the links come back unchanged from the records, extra fields included', JSON.stringify(learnBack.projects.items[0].studyLinks) === JSON.stringify(learn.projects.items[0].studyLinks), learnBack.projects.items[0].studyLinks);
   fs.rmSync(folder, { recursive: true, force: true });
   const result = summary();
   console.log(`\n${result.pass} passed, ${result.fail} failed`);

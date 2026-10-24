@@ -759,6 +759,14 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
         eq(slPlan.context.project.milestones, [{ id: 'msA', title: 'Secret milestone title', reached: false, aim: '2026-12-01' }]) && !('decision' in slPlan.context.project)
         && !JSON.stringify(K.askContext(slPlan, 'x', D)).includes('Secret decision') && eq({ ...slPlan.context.project, milestones: undefined }, { ...slNone.context.project, milestones: undefined }), slPlan.context.project);
     }
+    {
+      const withLearning = { ...w, projects: { ...w.projects, items: w.projects.items.map(p => p.id !== 'pjC' ? p : { ...p,
+        studyLinks: [{ kind: 'course', id: 'coQ', title: 'Secret course title', why: 'Secret learning reason', addedOn: D }, { kind: 'arabic', id: 'lesson.secret', title: 'Secret lesson title', addedOn: D }] }) } };
+      const slLearn = K.askSlice(withLearning, '#projects/p/pjC', D), slNoLearn = K.askSlice(w, '#projects/p/pjC', D);
+      const sent = JSON.stringify([slLearn.context, K.askContext(slLearn, 'x', D), K.askPreview(K.askContext(slLearn, 'x', D))]);
+      check('a project page sends nothing of what is linked to it in Learning (no title, reason or id), and its context is the same without them',
+        !/Secret course title|Secret learning reason|Secret lesson title|lesson\.secret|coQ|studyLinks/.test(sent) && eq(slLearn.context.project, slNoLearn.context.project), slLearn.context.project);
+    }
     const ps = K.askSlice(w, '#projects/notes/n3', D);
     pv = K.askPreview(K.askContext(ps, 'x', D), ps.privateNote);
     check('a private note: the preview says it isn\'t sent', pv.short.includes('This note: not sent (private)') && !JSON.stringify(pv).includes('diary'));
