@@ -8,6 +8,7 @@ import { localStamp } from '../data/dates';
 import { isBlank } from '../data/notes';
 import type { MyDayData, Note } from '../data/types';
 import { projectMatches } from '../data/understand';
+import { aiReach } from './reach';
 
 // A fingerprint of a note's words (FNV-1a, 32 bits): the same words give the same fingerprint on every device.
 export function fingerprintNote(n: Pick<Note, 'title' | 'text'>): string {
@@ -23,9 +24,9 @@ export function fingerprintNote(n: Pick<Note, 'title' | 'text'>): string {
 // to switch a new note to private before AI help could look at it.
 export const QUIET_MINUTES = 5;
 export function notesForAi(data: MyDayData, open: string | null = null, now = new Date()): Note[] {
-  const settled = localStamp(new Date(now.getTime() - QUIET_MINUTES * 60000));
+  const settled = localStamp(new Date(now.getTime() - QUIET_MINUTES * 60000)), reach = aiReach(data);
   return data.notes.items
-    .filter(n => !n.private && !n.projectId && !isBlank(n) && n.id !== open && n.updatedAt <= settled && n.aiSeen !== fingerprintNote(n) && !projectMatches(data, n)[0]?.sure)
+    .filter(n => reach.note(n) && !n.projectId && !isBlank(n) && n.id !== open && n.updatedAt <= settled && n.aiSeen !== fingerprintNote(n) && !projectMatches(data, n)[0]?.sure)
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
@@ -34,6 +35,8 @@ const bytes = (s: string) => new TextEncoder().encode(s).length;
 // notes if it would be over the size limit. Null when there's nothing to ask (no such notes, or no open projects).
 export function connectContext(data: MyDayData, open: string | null = null, now = new Date()): { ctx: ConnectContext; seen: Record<string, string> } | null {
   const L = CONNECT_LIMITS;
+  // Every open project, private ones included, by name and summary only: the one exception to the privacy rules in
+  // ai/reach.ts (the owner's choice, 17 Oct 2026), so a note can be filed into a project you've made private.
   const projects = data.projects.items.filter(p => p.status !== 'done').sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, L.projects)
     .map(p => ({ id: p.id, title: p.title.slice(0, L.projectTitleChars), summary: p.summary.slice(0, L.projectSummaryChars) }));
   const picked = notesForAi(data, open, now).slice(0, L.notes);
@@ -76,7 +79,7 @@ export function applyConnect(d: MyDayData, seen: Record<string, string>, answers
   let linked = 0;
   for (const [id, fp] of Object.entries(seen)) {
     const n = d.notes.items.find(x => x.id === id);
-    if (!n || n.private || isBlank(n) || fingerprintNote(n) !== fp) continue; // changed or gone meanwhile: asked again later
+    if (!n || !aiReach(d).note(n) || isBlank(n) || fingerprintNote(n) !== fp) continue; // changed, private or gone meanwhile: asked again later
     n.aiSeen = fp;
     const a = answers.find(x => x.id === id);
     if (!a) continue;

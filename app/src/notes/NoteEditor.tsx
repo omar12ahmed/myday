@@ -9,7 +9,8 @@ import { Switch } from '../components/Switch';
 import { shortDate } from '../data/dates';
 import { addTask } from '../data/tasks';
 import { editNote, INBOX, isBlank, NOTE_LIMITS, noteName, removeNote, setPrivate } from '../data/notes';
-import { linkNote, privateProjectIds, projectById } from '../data/projects';
+import { linkNote, projectById } from '../data/projects';
+import { aiReach } from '../ai/reach';
 import { ProjectPicker } from '../projects/parts';
 import { bothMention, keepLink, projectMatches, relatedNotes, unlink } from '../data/understand';
 import { getSnapshot, update, updateSaved } from '../data/storage';
@@ -159,7 +160,7 @@ export function NoteEditor({ data, id }: { data: MyDayData; id: string }) {
         )}
       </Card>
       {/* Never for a private note, or a note in a private project (Private covers every AI feature but note filing). */}
-      {AI_MODE !== 'off' && data.patterns.prefs.aiNotes && !note.private && !(note.projectId && privateProjectIds(data).has(note.projectId)) && <NoteCards key={note.id} data={data} note={note} flush={flush} />}
+      {AI_MODE !== 'off' && data.patterns.prefs.aiNotes && aiReach(data).note(note) && <NoteCards key={note.id} data={data} note={note} flush={flush} />}
       {related.length > 0 && (
         <Card aria-labelledby="noteRelatedH" id="noteRelated">
           <h3 id="noteRelatedH">Related notes</h3>

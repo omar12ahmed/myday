@@ -29,7 +29,7 @@ const OTHER: [string, string][] = [
   ['Make revision cards (on a note)', 'that one note (lines you’ve left out replaced by a placeholder), and the questions already in your revision from it — never a private note, or a note in a private project'],
   ['Ask the tutor (Cybersecurity)', 'which lesson you’re on and your question'],
   ['More practice (Cybersecurity)', 'which lesson, and the questions already in your revision for it'],
-  ['Explain it another way', 'the question, its answer and the explanation you’ve seen, your own answer and how it went — and, for a Cybersecurity check, which lesson'],
+  ['Explain it another way', 'the question, its answer and the explanation you’ve seen, your own answer and how it went — and, for a Cybersecurity check, which lesson — never for a card made from a private note, or a note in a private project'],
 ];
 // Which model does which job — set on the server (AI_ROUTES); keep this list aligned with the server configuration.
 const MODELS: [string, string][] = [

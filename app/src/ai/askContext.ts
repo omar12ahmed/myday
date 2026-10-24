@@ -7,7 +7,7 @@ import { parseKey, prettyDate, shift, todayKey } from '../data/dates';
 import { focusProjects, whatMoved, whatsWaiting } from '../data/weekReview';
 import { noteName } from '../data/notes';
 import { isBusiness } from '../data/businessModel';
-import { privateProjectIds, projectNotes, projectTasks } from '../data/projects';
+import { projectNotes, projectTasks } from '../data/projects';
 import type { AskFocus } from '../capture/openCapture';
 import { stIndex } from '../data/study/roadmap';
 import { dueIds } from '../data/study/queue';
@@ -16,6 +16,7 @@ import type { DateKey, MyDayData } from '../data/types';
 import { notesRoute } from '../notes/route';
 import { tasksRoute } from '../tasks/route';
 import { buildContext } from './context';
+import { aiReach } from './reach';
 
 const cut = (s: string, n: number) => (s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s);
 const ref = (id: string, title: string) => ({ id, title: cut(title.trim() || 'Untitled', L.titleChars) });
@@ -78,20 +79,19 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey(),
   const { page, id } = askPage(hash);
   const ctx: AskPageContext = {}, parts: string[] = [];
   let privateNote = false, here: AskSlice['held']['here'] = null, count = 0;
-  const hidden = privateProjectIds(data);
-  const inPrivate = (projectId: string | undefined) => !!projectId && hidden.has(projectId);
-  const open = data.projects.items.filter(p => p.status !== 'done'), shown = open.filter(p => !p.private).slice(0, L.list);
+  const reach = aiReach(data), inPrivate = reach.inPrivate; // what may reach AI (ai/reach.ts)
+  const open = data.projects.items.filter(p => p.status !== 'done'), shown = open.filter(reach.project).slice(0, L.list);
   if (page !== 'finance' && page !== 'health') {
-    count += open.length - open.filter(p => !p.private).length;
+    count += open.length - open.filter(reach.project).length;
     if (shown.length) { ctx.projects = shown.map(p => ref(p.id, p.title)); parts.push(SENDS.openProjects); }
   }
   if (page === 'today') {
     const pc = buildContext(data, k, '');
     // A plan task linked to a task of a private project (by its plan copy) is left out, like the task itself.
-    const fromPrivate = new Set(data.tasks.items.filter(t => inPrivate(t.projectId) && t.plannedOn === k && t.planUid).map(t => t.planUid as string));
+    const fromPrivate = reach.heldOnPlan(k);
     const plan = pc.tasks.filter(t => !fromPrivate.has(t.id));
     const due = data.tasks.items.filter(t => !t.done && !t.letGoOn && t.due === k);
-    const dueShown = due.filter(t => !inPrivate(t.projectId));
+    const dueShown = due.filter(reach.task);
     count += pc.tasks.length - plan.length + due.length - dueShown.length;
     ctx.today = { energy: pc.energy, freeMinutes: freeOf(pc), revisionDue: dueIds(data, k).length,
       plan: plan.slice(0, L.list).map(t => ({ ...ref(t.id, t.title), minutes: t.minutes, done: t.done })), dueToday: dueShown.slice(0, L.list).map(t => ref(t.id, t.title)) };
@@ -131,9 +131,9 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey(),
     }
   } else if (page === 'project' && id) {
     const p = data.projects.items.find(x => x.id === id);
-    if (p?.private) here = 'project';
+    if (p && !reach.project(p)) here = 'project';
     else if (p) {
-      const notes = projectNotes(data, p).filter(n => !n.private), withText = !!data.patterns.prefs.aiNotes;
+      const notes = projectNotes(data, p).filter(reach.note), withText = !!data.patterns.prefs.aiNotes;
       let text = '';
       if (withText) for (const n of notes) { const add = `${noteName(n)}: ${n.text.trim()}\n`; if (text.length + add.length > L.projectNotesChars) break; text += add; }
       ctx.project = { id: p.id, title: cut(p.title, L.titleChars), summary: cut(p.summary, L.summaryChars), stage: p.stage,
@@ -154,28 +154,27 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey(),
     }
   } else if (page === 'note' && id) {
     const n = data.notes.items.find(x => x.id === id);
-    if (n?.private || inPrivate(n?.projectId)) { privateNote = true; here = 'note'; }
+    if (n && !reach.note(n)) { privateNote = true; here = 'note'; }
     else if (n) { ctx.note = { id: n.id, title: cut(n.title, L.titleChars), text: cut(n.text, L.noteTextChars) }; parts.push(SENDS.note); }
   } else if (page === 'task' && id) {
     const t = data.tasks.items.find(x => x.id === id);
-    if (t && inPrivate(t.projectId)) here = 'task';
+    if (t && !reach.task(t)) here = 'task';
     else if (t) { ctx.task = { id: t.id, title: cut(t.title, L.titleChars), due: t.due, minutes: t.minutes, notes: cut(t.notes, L.taskNotesChars) }; parts.push(SENDS.task); }
   } else if (page === 'review') {
     // The weekly review (1.37.0): counts and names only, and nothing of a project you've made private.
-    const w = whatMoved(data, k), wait = whatsWaiting(data, k), priv = (pid?: string | null) => !!pid && hidden.has(pid);
+    const w = whatMoved(data, k), wait = whatsWaiting(data, k);
     const taskPrivate = (tid?: string) => { const t = tid ? data.tasks.items.find(x => x.id === tid) : undefined; return inPrivate(t?.projectId); };
-    const moved = w.projects.filter(m => !m.project.private), waitShown = wait.filter(x => !priv(x.projectId) && !taskPrivate(x.taskId));
-    const focus = focusProjects(data, shift(k, 1)).filter(p => !p.private);
+    const moved = w.projects.filter(m => reach.project(m.project)), waitShown = wait.filter(x => !inPrivate(x.projectId) && !taskPrivate(x.taskId));
+    const focus = focusProjects(data, shift(k, 1)).filter(reach.project);
     count += w.projects.length - moved.length + wait.length - waitShown.length;
     ctx.review = { from: w.from, to: w.to, moved: moved.slice(0, L.reviewProjects).map(m => ({ project: cut(m.project.title, L.titleChars), tasks: m.tasks, milestones: m.milestones, decisions: m.decisions, found: m.found, recorded: m.recorded })),
       otherTasks: w.otherTasks, studySessions: w.studySessions, studyMinutes: w.studyMinutes, workouts: w.workouts,
       waiting: waitShown.slice(0, L.reviewWaiting).map(x => cut(x.text, L.reviewWaitingChars)), focus: focus.slice(0, L.reviewFocus).map(p => cut(p.title, L.titleChars)) };
     parts.push(SENDS.review);
   } else if (page === 'calendar') {
-    const ofPrivate = new Set(data.projects.items.filter(p => p.private).flatMap(p => p.commitmentIds));
     const all = data.commitments.filter(c => c.kind === 'appointment' && c.start.slice(0, 10) === k).sort((a, b) => a.start.localeCompare(b.start));
-    const appts = all.filter(c => !ofPrivate.has(c.id)).slice(0, L.list);
-    count += all.length - all.filter(c => !ofPrivate.has(c.id)).length;
+    const appts = all.filter(reach.appointment).slice(0, L.list);
+    count += all.length - all.filter(reach.appointment).length;
     ctx.calendar = { day: k, appointments: appts.map(c => ({ id: c.id, title: cut(c.title, L.titleChars), time: c.start.slice(11, 16) })) };
     parts.push(SENDS.calendar);
   }

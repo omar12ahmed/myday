@@ -1363,6 +1363,53 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('the request passes the server\'s check', K.checkAskContext(req));
   }
 
+  console.log('\n[Privacy] Nothing private reaches AI, by any feature (one filter: app/src/ai/reach.ts)');
+  {
+    // One made-up world with something secret in every place the rules hold back, sent through every AI request.
+    const PD = '2026-11-10', at = `${PD}T08:00`;
+    K.setClock(`${PD}T09:30`);
+    const w = K.freshState();
+    w.patterns.prefs.aiNotes = true; // notes' text may go, so only the rules keep the private ones back
+    const PJ = (id, title, summary, x = {}) => ({ id, title, summary, stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at, ...x });
+    w.projects.items = [
+      PJ('pjSecret', 'SECRET-PROJECT', 'SECRET-SUMMARY', { private: true, commitmentIds: ['cSecret'], outcome: 'SECRET-OUTCOME', finishedWhen: 'SECRET-FINISHED', leftOff: { text: 'SECRET-LEFTOFF', at } }),
+      PJ('pjOpen', 'Garden shed', 'A shed for the bikes', { outcome: 'SECRET-OUTCOME-OPEN', finishedWhen: 'SECRET-FINISHED-OPEN', leftOff: { text: 'SECRET-LEFTOFF-OPEN', at } }),
+    ];
+    const TI = (id, title, x = {}) => ({ id, title, listId: '', category: 'admin', minutes: 20, due: PD, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: at, postponed: 0, blockers: [], letGoOn: null, ...x });
+    w.tasks.items = [TI('tkSecret', 'SECRET-TASK', { projectId: 'pjSecret', plannedOn: PD, planUid: 'pS', notes: 'SECRET-TASK-NOTES' }), TI('tkSecretDue', 'SECRET-DUE', { projectId: 'pjSecret' }),
+      TI('tkOpen', 'Order the felt', { projectId: 'pjOpen', plannedOn: PD, planUid: 'pO', waiting: { on: 'SECRET-PERSON', since: PD, until: null } })];
+    const PT = (uid, title) => ({ uid, taskId: null, category: 'admin', title, minutes: 20, baseMinutes: 20, done: false, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null });
+    w.days[PD] = { energy: 3, rest: false, builtAt: at, checkedIn: false, tasks: [PT('pS', 'SECRET-TASK'), PT('pO', 'Order the felt')] };
+    w.context[PD] = { energy: 3, sleep: { start: null, end: null, estimatedHours: 7 } };
+    const NT = (id, title, text, x = {}) => ({ id, categoryId: '', title, text, pinned: false, createdAt: at, updatedAt: '2026-11-01T08:00', ...x });
+    w.notes.items = [NT('nPriv', 'SECRET-NOTE-TITLE', 'SECRET-NOTE-TEXT', { private: true }), NT('nInPriv', 'SECRET-PNOTE-TITLE', 'SECRET-PNOTE-TEXT', { projectId: 'pjSecret' }),
+      NT('nOpen', 'Shed sizes', 'Two metres by three', { projectId: 'pjOpen' }), NT('nLoose', 'Loose idea', 'Ask about a bike rack')];
+    w.commitments = [{ id: 'cSecret', kind: 'appointment', title: 'SECRET-APPT', start: `${PD}T11:00`, end: `${PD}T12:00` }, { id: 'cOpen', kind: 'appointment', title: 'Dentist', start: `${PD}T15:00`, end: `${PD}T15:30` }];
+    const data = K.normalize(w);
+    const SECRETS = ['SECRET-PROJECT', 'SECRET-SUMMARY', 'SECRET-OUTCOME', 'SECRET-FINISHED', 'SECRET-LEFTOFF', 'SECRET-TASK', 'SECRET-DUE', 'SECRET-PERSON', 'SECRET-NOTE', 'SECRET-PNOTE', 'SECRET-APPT'];
+    const leaks = (req, allowed = []) => SECRETS.filter(x => !allowed.includes(x) && JSON.stringify(req).includes(x));
+    const pages = ['#today', '#calendar', '#today/tasks', '#projects', '#projects/p/pjSecret', '#projects/p/pjOpen', '#projects/p/pjOpen/model', '#projects/notes', '#projects/notes/nPriv', '#projects/notes/nInPriv', '#projects/notes/nOpen',
+      '#today/tasks/tkSecret', '#today/tasks/tkOpen', '#review', '#study', '#finance', '#health'];
+    const askLeaks = pages.map(h => [h, leaks(K.askContext(K.askSlice(data, h, PD), 'what should I do next?', PD))]).filter(([, l]) => l.length);
+    check(`Ask MyDay, from every page (${pages.length}): nothing private and none of the never-sent fields`, askLeaks.length === 0, askLeaks);
+    const plan = K.buildContext(data, PD, '');
+    check('Help me adjust today: nothing private; the private project\'s task goes only as "a private task"', leaks(plan).length === 0 && plan.tasks.some(t => t.title === 'a private task') && plan.tasks.some(t => t.title === 'Order the felt'), [leaks(plan), plan.tasks.map(t => t.title)]);
+    const filing = K.connectContext(data, null, new Date(`${PD}T12:00`));
+    check('AI help with notes: only the owner\'s exception — a private project\'s name and summary as a place to file — and never a private note or a note in a private project',
+      !!filing && leaks(filing.ctx, ['SECRET-PROJECT', 'SECRET-SUMMARY']).length === 0 && filing.ctx.projects.some(p => p.id === 'pjSecret') && !filing.ctx.notes.some(n => n.id === 'nPriv' || n.id === 'nInPriv'), filing && leaks(filing.ctx, ['SECRET-PROJECT', 'SECRET-SUMMARY']));
+    const mind = K.buildTasksContext('buy bike oil');
+    check('Add what\'s on my mind: only what you write', leaks(mind).length === 0 && JSON.stringify(mind).includes('buy bike oil'));
+    const R = K.aiReach(data);
+    check('the one filter: a private note, or a note in a private project, never reaches AI (so no revision cards or explanations from it)',
+      !R.note(data.notes.items.find(n => n.id === 'nPriv')) && !R.note(data.notes.items.find(n => n.id === 'nInPriv')) && R.note(data.notes.items.find(n => n.id === 'nOpen'))
+      && !R.fromNote('nInPriv') && !R.fromNote('nPriv') && R.fromNote('nOpen') && R.fromNote('gone-note'));
+    check('…a private project, its tasks and its appointments never do; others do', !R.project(data.projects.items[0]) && R.project(data.projects.items[1]) && !R.task(data.tasks.items[0]) && R.task(data.tasks.items[2])
+      && !R.appointment({ id: 'cSecret' }) && R.appointment({ id: 'cOpen' }) && eq([...R.heldOnPlan(PD)], ['pS']));
+    data.patterns.prefs.aiNotes = false;
+    const noText = K.askContext(K.askSlice(data, '#projects/p/pjOpen', PD), 'x', PD);
+    check('with "AI help with notes" off, no note\'s text goes at all (titles only)', !JSON.stringify(noText).includes('Two metres by three') && JSON.stringify(noText).includes('Shed sizes'));
+  }
+
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

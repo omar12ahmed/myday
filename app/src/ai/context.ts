@@ -10,8 +10,8 @@ import { dtToMin, minToDt, minToTime, nowMin, parseKey, shift } from '../data/da
 import { limitFor } from '../data/plan';
 import { blocksFor, contextFor, freeSegments, type Segment } from '../data/schedule';
 import { dueIds } from '../data/study/queue';
-import { privateProjectIds } from '../data/projects';
 import type { DateKey, DayContext, MyDayData } from '../data/types';
+import { aiReach } from './reach';
 
 // Today's energy as rated (null if not recorded). The same order of preference as "Review my plan".
 export const energyOf = (data: MyDayData, k: DateKey) => contextFor(data, k).energy || (data.days[k] && data.days[k].energy) || null;
@@ -41,7 +41,7 @@ export function doneBusy(data: MyDayData, k: DateKey): Segment[] {
 
 export function buildContext(data: MyDayData, k: DateKey, note: string): PlanContext {
   // A task of a private project goes as "a private task", without its title (the owner's choice, 24 Oct 2026).
-  const priv = privateProjectIds(data), hidden = new Set(data.tasks.items.filter(x => x.plannedOn === k && x.planUid && x.projectId && priv.has(x.projectId)).map(x => x.planUid));
+  const hidden = aiReach(data).heldOnPlan(k);
   const d = data.days[k];
   const energy = energyOf(data, k);
   const kinds = { work: 'work', appointment: 'appointment', workout: 'workout', sleep: 'sleep', buffer: 'prep' } as const;

@@ -19,6 +19,7 @@ import type { Category, Commitment, DateKey, MyDayData, Note, Project, StudyModu
 import { uid } from '../data/util';
 import type { AskSlice } from './askContext';
 import { sameTask } from './mind';
+import { aiReach } from './reach';
 import { PRESSURE } from './validate';
 
 export type AskItemType = AskItem['type'];
@@ -122,7 +123,7 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
   const studyCap = r.items.some(i => i.type === 'study-task') && course ? L.studyItems : L.items;
   // Milestones, pros, cons and options: only for the project on this page (never a private one), checked against what it
   // already has and its limits (30 milestones; per decision 4 options, per option 10 pros and 10 cons).
-  const pr = slice.context.project ? data.projects.items.find(x => x.id === slice.context.project!.id && !x.private) ?? null : null;
+  const pr = slice.context.project ? data.projects.items.find(x => x.id === slice.context.project!.id && aiReach(data).project(x)) ?? null : null;
   const dc = pr && slice.context.project?.decision ? pr.decisions?.find(x => x.id === slice.context.project!.decision!.id) ?? null : null;
   let plannedMs = 0, plannedOpts = 0, plannedBeliefs = 0;
   const plannedPts: Record<string, number> = {};
@@ -270,7 +271,7 @@ function checkChanges(items: AskItem[], data: MyDayData, slice: AskSlice, k: Dat
       }
       if (lines.length) out.push({ target: 'appointment', id, label: c.title, lines, patch });
     } else if (it.target === 'note') {
-      const n = okNotes.has(id) ? data.notes.items.find(y => y.id === id && !y.private) : undefined;
+      const n = okNotes.has(id) ? data.notes.items.find(y => y.id === id && aiReach(data).note(y)) : undefined;
       if (!n) { changed.push('Left out a change to a note that isn’t on this page.'); continue; }
       if (title && title !== n.title && wants('title', n.title || 'this note', 'title')) { patch.title = title; lines.push({ field: 'Title', before: n.title || '(none)', after: title }); }
       if (it.projectId && open.has(it.projectId) && it.projectId !== n.projectId) { patch.projectId = it.projectId; lines.push({ field: 'Project', before: projectName(n.projectId), after: projectName(it.projectId) }); }

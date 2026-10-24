@@ -14,6 +14,7 @@ import { conceptEvidence, DAILY_ENOUGH, nextGap, questionReady, rateConcept, rep
 import type { Concept, DateKey, MyDayData, Outcome, Rating, StudyData, Support } from '../data/types';
 import { startRevision } from './actions';
 import { AnotherWay } from './AnotherWay';
+import { aiReach } from '../ai/reach';
 import type { ExplainContext } from '../../../supabase/functions/_shared/ai/explain-shape.ts';
 import { BackLink, Choice, Choices, Eyebrow, InlineLink, LinkButton, Note, NoteLink, Summary, TextLink } from './parts';
 import { changeRound, nextQuestion, setTyped, useRound, type Round } from './round';
@@ -50,7 +51,7 @@ export interface Asked {
   save(d: MyDayData, k: DateKey, a: Answered, rating: Rating): boolean;
 }
 
-function conceptAsked(st: StudyData, c: Concept): Asked {
+function conceptAsked(st: StudyData, c: Concept, explainable = true): Asked {
   return {
     id: c.id, kind: c.kind, title: c.title, prompt: c.prompt, choices: c.choices, correct: c.correct, hint: c.hint,
     answer: c.answer || '—', answerLabel: 'Answer', explanation: c.explanation || null, explanationLabel: 'Explanation',
@@ -61,7 +62,8 @@ function conceptAsked(st: StudyData, c: Concept): Asked {
     </>,
     notesUrl: obsidianUrl(st, c.note), interval: c.review.interval,
     // An AI-written card from a Cybersecurity lesson is explained as Cybersecurity (with its lesson); others as your own.
-    explain: { ...(c.origin?.subject === 'cybersecurity' && c.origin.lessonId ? { subject: 'cybersecurity', lessonId: c.origin.lessonId } : { subject: 'study' }),
+    // Not for a card made from a note that is now private, or in a private project (ai/reach.ts).
+    explain: !explainable ? undefined : { ...(c.origin?.subject === 'cybersecurity' && c.origin.lessonId ? { subject: 'cybersecurity', lessonId: c.origin.lessonId } : { subject: 'study' }),
       question: c.prompt, answer: c.kind === 'choice' && c.correct !== null ? c.choices[c.correct] : c.answer, explanation: c.explanation },
     save: (d, k, a, rating) => rateConcept(d.study, c.id, k, a, rating),
   };
@@ -92,7 +94,7 @@ export function RevisionView({ data }: { data: MyDayData }) {
   if (r) for (let i = r.i; i < r.ids.length; i++) if (inRevision(data, r.ids[i])) { at = i; break; }
   if (!r || at < 0) return <RoundOver data={data} r={r} />;
   const id = r.ids[at], c = st.concepts.find(x => x.id === id), key = id + ':' + at;
-  if (c) return <Question key={key} data={data} r={r} at={at} q={conceptAsked(st, c)} />;
+  if (c) return <Question key={key} data={data} r={r} at={at} q={conceptAsked(st, c, c.origin?.subject !== 'note' || aiReach(data).fromNote(c.origin.noteId))} />;
   const cyber = cyberCardOf(data, id);
   if (cyber) return <Suspense fallback={opening}><CyberQuestion key={key} data={data} r={r} at={at} card={cyber} /></Suspense>;
   return <Suspense fallback={opening}><ArabicQuestion key={key} data={data} r={r} at={at} card={cardOf(data, id)!} /></Suspense>;
