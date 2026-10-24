@@ -51,8 +51,8 @@ check('vowelled and unvowelled versions are both kept where the package has them
   const os = require('os'), { pathToFileURL } = require('url');
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'myday-arabic-data-'));
   const { bundle } = await import(pathToFileURL(path.join(ROOT, 'ai-eval/build.mjs')).href);
-  fs.writeFileSync(path.join(tmp, 'entry.ts'), [...['types', 'normalize', 'sessions', 'cards'].map(f => path.join(ROOT, 'app/src/data/arabic', f)), path.join(ROOT, 'app/src/data/study/queue'),
-    path.join(ROOT, 'app/src/data/study/revision')].map(f => `export * from ${JSON.stringify(f)};`).join('\n'));
+  fs.writeFileSync(path.join(tmp, 'entry.ts'), [...['types', 'normalize', 'sessions', 'cards', 'lessons'].map(f => path.join(ROOT, 'app/src/data/arabic', f)), path.join(ROOT, 'app/src/data/study/queue'),
+    path.join(ROOT, 'app/src/data/study/revision'), path.join(ROOT, 'app/src/data/study/mastery')].map(f => `export * from ${JSON.stringify(f)};`).join('\n'));
   const A = await import(pathToFileURL(await bundle(path.join(tmp, 'entry.ts'), path.join(tmp, 'out'))).href);
   check('the version the screens record matches the package', A.ARABIC_VERSION === source.curriculum_version);
   const good = { id: 'aa1', lessonId: 'lesson.arabic-origin-location', curriculumVersion: '1.1.0', variant: 'short', startedAt: '2026-10-11T09:00:00.000Z', finishedAt: null, help: 'hint', practised: ['reading', 'reading', 'dancing'], answers: { 'assessment.arabic-origin-location-check.q1': 'من', 'nonsense.key': 'x' }, revealed: ['assessment.arabic-origin-location-check.q1', 'bad'], revisit: 'x'.repeat(2000), score: 95 };
@@ -72,13 +72,10 @@ check('vowelled and unvowelled versions are both kept where the package has them
   check('starting a session twice on a lesson keeps the one already open', A.beginSession(d, 'lesson.arabic-origin-location', 'short') === id && d.arabic.attempts.length === 1 && d.arabic.attempts[0].variant === 'standard');
   A.changeSession(d, id, s => { A.writeFirstAnswer(s, 'assessment.q', 'first'); A.markRevealed(s, 'assessment.q'); A.writeFirstAnswer(s, 'assessment.q', 'changed after looking'); });
   check('a first answer stays as written once the reference has been seen', d.arabic.attempts[0].answers['assessment.q'] === 'first');
-  const lessons = ['lesson.a', 'lesson.b'];
-  check('a module with a session open is being explored', A.placeOf(d, ['lesson.arabic-origin-location'], ['lesson.arabic-origin-location']) === 'exploring' && A.placeOf(d, lessons, lessons) === 'unexplored');
-  check('the next step picks up an open session first', JSON.stringify(A.nextStep(d, ['lesson.x', 'lesson.arabic-origin-location'])) === '{"lessonId":"lesson.arabic-origin-location","resume":true}');
+  check('a session still open isn\'t practice yet: the lesson stays New', A.stateOf({ ...d, study: { reviews: [] } }, 'lesson.arabic-origin-location', []) === 'new');
   A.finishSession(d, id);
   check('a finished session can no longer be changed', d.arabic.attempts[0].finishedAt && A.changeSession(d, id, s => { s.revisit = 'late'; }) === false && d.arabic.attempts[0].revisit === '');
-  check('finishing every core lesson of a module makes it visited', A.placeOf(d, ['lesson.arabic-origin-location', 'lesson.optional'], ['lesson.arabic-origin-location']) === 'visited');
-  check('then the next step is the first lesson not finished yet', JSON.stringify(A.nextStep(d, ['lesson.arabic-origin-location', 'lesson.y'])) === '{"lessonId":"lesson.y","resume":false}');
+  check('a finished session makes the lesson Practised, never by itself done', A.stateOf({ ...d, study: { reviews: [] } }, 'lesson.arabic-origin-location', []) === 'practised');
   const other = A.beginSession(d, 'lesson.y', 'short');
   check('discarding removes only that session', A.discardSession(d, other) && d.arabic.attempts.length === 1 && d.arabic.attempts[0].id === id);
 
@@ -117,6 +114,110 @@ check('vowelled and unvowelled versions are both kept where the package has them
   check('…so the learning record reads it like a concept\'s (recalled on your own)', A.understanding(dd.study, { id: cid }) === 'recalled');
   check('a card no longer in revision can\'t be answered', A.rateCard(dd, 'lexeme.arabic-seed-999:recognise', 'x', tomorrow, { outcome: 'right', chosen: null, support: 'own' }, 'good') === false && dd.study.reviews.length === 1);
   check('taking a word out removes both ways round and keeps its past answers', A.removeCards(dd, [A.wordCard(first[0], 'recognise'), A.wordCard(first[0], 'write'), cid]) && !A.wordInRevision(dd, first[0]) && dd.arabic.cards.length === 3 && dd.study.reviews.length === 1);
+
+  console.log('\n[8] Adaptive Study: your place on a lesson, the next step and the checks that come back');
+  const L = 'lesson.arabic-nominal-sentences', Q = n => `assessment.arabic-nominal-sentences-check.q${n}`, qs = [Q(1), Q(2), Q(3)];
+  check('the course map knows each lesson\'s checks, and their ids follow the lesson\'s own', Object.keys(index.lessons).every(id => index.lessons[id].checks === kcq.filter(x => x.lesson === id).length) && A.checkIds(L, 3).join() === qs.join());
+  const kinds = JSON.parse(read(path.join(ROOT, 'content/teaching/arabic/prerequisite-kinds.json')));
+  const checkpointShort = new Set(kinds.checkpoint.map(x => x.replace('skill.arabic-', '')));
+  check('catch-up never points at a checkpoint: no lesson builds on a portfolio, consolidation or study-method skill', checkpointShort.has('b1-portfolio') && checkpointShort.has('goal-baseline')
+    && Object.values(index.lessons).every(l => l.builds_on.every(x => !checkpointShort.has(x) && index.skills['skill.arabic-' + x])));
+  check('…while the content it builds on stays (past verbs build on present actions, not the A1 portfolio)', index.lessons['lesson.arabic-past-suffixes'].builds_on.includes('objects-prepositions') && !index.lessons['lesson.arabic-past-suffixes'].builds_on.includes('a1-portfolio'));
+  check('every lesson has its short and revision sessions\' minutes on the map', Object.values(index.lessons).every(l => l.short > 0 && l.revision > 0 && l.revision <= l.short && l.short < l.minutes));
+
+  const rep = { dropped: 0 };
+  const nl = A.normalizeArabic({ pathId: 'path.arabic-a1', attempts: [], cards: [], lessons: [
+    { id: L, readyOn: '2026-10-20', revisit: { since: '2026-10-21', what: 'the predicate' }, score: 90, marks: { [Q(1)]: { outcome: 'right', support: 'own', on: '2026-10-20', attemptId: 'aa1' },
+      [Q(2)]: { outcome: 'great', support: 'own', on: '2026-10-20', attemptId: 'aa1' }, 'assessment.arabic-origin-location-check.q1': { outcome: 'right', support: 'own', on: '2026-10-20', attemptId: 'aa1' } } },
+    { id: L }, { id: 'lesson.cyber-thing' }, { id: 'lesson.arabic-x', readyOn: 'soon' }] }, rep);
+  check('a lesson record keeps only what you chose: the day, the flag and marks on its own checks (nothing like a score)', nl.lessons.length === 2 && nl.lessons[0].readyOn === '2026-10-20'
+    && nl.lessons[0].revisit.what === 'the predicate' && Object.keys(nl.lessons[0].marks).join() === Q(1) && !('score' in nl.lessons[0]));
+  check('…a duplicate and another course\'s lesson are dropped and counted; a day that isn\'t one is left off', rep.dropped === 2 && nl.lessons[1].id === 'lesson.arabic-x' && !('readyOn' in nl.lessons[1]));
+  check('no lessons yet stays absent, so older data is unchanged', !('lessons' in A.normalizeArabic({ pathId: 'path.arabic-a1', attempts: [] })));
+  check('a lessons field that isn\'t a list is counted, and left as an empty list', (() => { const r = { dropped: 0 }, x = A.normalizeArabic({ lessons: 'x' }, r); return r.dropped === 1 && Array.isArray(x.lessons) && !x.lessons.length; })());
+
+  const stub = () => ({ arabic: A.emptyArabic(), study: { reviews: [], concepts: [] }, cybersecurity: { cards: [] } });
+  const review = (dd2, id, date, outcome, support = 'own', rating = outcome === 'right' ? 'good' : 'again') => dd2.study.reviews.push({ id: 'rv' + dd2.study.reviews.length, conceptId: id, title: 't', date, at: date + 'T09:00', kind: 'written', outcome, graded: 'self', chosen: null, support, rating, gap: 1, due: date });
+  const s1 = stub(), k = '2026-10-20';
+  check('a lesson with no session is New', A.stateOf(s1, L, qs) === 'new');
+  const att = A.beginSession(s1, L, 'standard');
+  check('marks are kept only in a session that\'s open, and only for the lesson\'s own checks', A.markCheck(s1, att, Q(1), 'right', 'own', k)
+    && !A.markCheck(s1, att, 'assessment.arabic-origin-location-check.q1', 'right', 'own', k) && !A.markCheck(s1, 'nope', Q(1), 'right', 'own', k));
+  A.markCheck(s1, att, Q(2), 'right', 'own', k); A.markCheck(s1, att, Q(3), 'right', 'hint', k);
+  check('"looks ready" needs every check Right on my own in that session', !A.looksReady(qs, A.marksIn(s1, att, L)));
+  A.markCheck(s1, att, Q(3), 'right', 'own', k);
+  check('…and the latest mark replaces the earlier one', A.looksReady(qs, A.marksIn(s1, att, L)) && A.lessonRecord(s1, L).marks[Q(3)].support === 'own');
+  check('…and a lesson without checks never "looks ready"', !A.looksReady([], {}));
+  A.finishSession(s1, att);
+  check('a finished session is practice: Practised, and its marks can no longer change', A.stateOf(s1, L, qs) === 'practised' && !A.markCheck(s1, att, Q(1), 'wrong', 'own', '2026-10-21'));
+
+  s1.arabic.cards.push({ id: Q(1), addedOn: '2026-10-01', review: { reps: 3, interval: 10, lapses: 0, due: '2026-11-15' } });
+  const added = A.markReady(s1, L, qs, k);
+  check('Ready to move on saves the day and brings its checks back a week later', A.lessonRecord(s1, L).readyOn === k && added.map(a => a.id).join() === [Q(2), Q(3)].join() && added.every(a => a.due === '2026-10-27'));
+  check('…while a check already in revision keeps its schedule', A.cardOf(s1, Q(1)).review.due === '2026-11-15' && A.cardOf(s1, Q(1)).review.reps === 3);
+  check('a lesson marked ready is Ready to move on', A.stateOf(s1, L, qs) === 'ready');
+  review(s1, Q(1), '2026-10-26', 'right'); review(s1, Q(2), '2026-10-27', 'right'); review(s1, Q(3), '2026-10-27', 'right');
+  check('recalling a check on your own 6 days after Ready isn\'t yet Holding', A.stateOf(s1, L, qs) === 'ready');
+  review(s1, Q(1), '2026-10-27', 'right');
+  check('every check right on your own 7 or more days after Ready: Holding', A.stateOf(s1, L, qs) === 'holding');
+  review(s1, Q(2), '2026-11-03', 'wrong', 'own', 'again');
+  check('a slip after Ready: Needs revision', A.stateOf(s1, L, qs) === 'needs-revision');
+  review(s1, Q(2), '2026-11-04', 'right');
+  check('…and recalling it on your own again clears that by itself', A.stateOf(s1, L, qs) === 'holding');
+  review(s1, Q(3), '2026-11-05', 'right', 'hint', 'good');
+  check('right with a hint after Holding isn\'t a slip', A.stateOf(s1, L, qs) === 'holding');
+  A.flagRevisit(s1, L, '  the nominal predicate  ', '2026-11-06');
+  check('your own Needs revision flag comes first, with what needs work', A.stateOf(s1, L, qs) === 'needs-revision' && A.lessonRecord(s1, L).revisit.what === 'the nominal predicate');
+  check('Done revisiting clears it (once)', A.clearRevisit(s1, L) && A.stateOf(s1, L, qs) === 'holding' && !A.clearRevisit(s1, L));
+  A.flagRevisit(s1, L, 'x', '2026-11-06'); A.markReady(s1, L, qs, '2026-11-07');
+  check('marking it ready again starts afresh from that day and clears your flag', A.lessonRecord(s1, L).readyOn === '2026-11-07' && !A.lessonRecord(s1, L).revisit && A.stateOf(s1, L, qs) === 'ready');
+  check('Not ready after all takes back the day and leaves its cards in revision', A.unmarkReady(s1, L) && !A.lessonRecord(s1, L).readyOn && !!A.cardOf(s1, Q(2)) && A.stateOf(s1, L, qs) === 'practised');
+
+  const s2 = stub(), a2 = A.beginSession(s2, L, 'short');
+  A.markCheck(s2, a2, Q(1), 'wrong', 'own', k); A.markCheck(s2, a2, Q(2), 'notsure', 'notes', k); A.markCheck(s2, a2, Q(3), 'partly', 'own', k);
+  s2.arabic.cards.push({ id: Q(2), addedOn: '2026-10-01', review: { reps: 2, interval: 4, lapses: 0, due: '2026-10-30' } });
+  A.finishSession(s2, a2);
+  const back = A.bringBackNotYet(s2, a2, L, k);
+  check('checks marked Not right or Not sure come back the next day by themselves', back.map(b => b.id).join() === Q(1) && back[0].due === '2026-10-21' && A.cardOf(s2, Q(1)).review.reps === 0);
+  check('…Partly right waits for Ready, and one already in revision keeps its schedule', !A.cardOf(s2, Q(3)) && A.cardOf(s2, Q(2)).review.due === '2026-10-30');
+
+  const s3 = stub();
+  for (let i = 0; i < 8; i++) s3.arabic.cards.push({ id: `lexeme.arabic-seed-00${i}:recognise`, addedOn: k, review: { reps: 0, interval: 0, lapses: 0, due: '2026-10-27' } });
+  check('at most 8 cards come back for the first time on one day: a full day moves the rest to the next', A.markReady(s3, L, qs, k).every(p => p.due === '2026-10-28'));
+  check('…counting every card not yet answered, in course order', JSON.stringify(A.placeNewCards(['2026-10-27', '2026-10-27', null], '2026-10-27', 3, 3)) === JSON.stringify(['2026-10-27', '2026-10-28', '2026-10-28']));
+  check('cards you add yourself are never delayed by it', A.addCards(s3, ['lexeme.arabic-seed-040:recognise'], k) === 1 && A.cardOf(s3, 'lexeme.arabic-seed-040:recognise').review.due === '2026-10-21');
+
+  const s4 = stub(), a4 = A.beginSession(s4, L, 'standard');
+  A.markCheck(s4, a4, Q(1), 'right', 'own', k); A.discardMarks(s4, a4, L); A.discardSession(s4, a4);
+  check('discarding a session removes its marks too, and a record left empty goes', !A.lessonRecord(s4, L) && !s4.arabic.attempts.length);
+  const s5 = stub();
+  A.finishSession(s5, A.beginSession(s5, L, 'standard')); A.finishSession(s5, A.beginSession(s5, 'lesson.arabic-greetings-address', 'short'));
+  A.markReady(s5, 'lesson.arabic-greetings-address', [], k);
+  check('the one-time offer lists practised lessons with no record of your own yet', A.practisedUnmarked(s5).join() === L);
+
+  const steps = ['lesson.a', 'lesson.b', 'lesson.c'], st = {};
+  const input = (o = {}) => ({ path: steps, state: id => st[id] ?? 'new', open: null, buildsOn: id => (id === 'lesson.c' ? ['lesson.a'] : []), due: 0, stopped: false, ...o });
+  check('next step, nothing done: the first lesson, New', JSON.stringify(A.nextStep(input())) === JSON.stringify({ kind: 'lesson', lessonId: 'lesson.a', state: 'new', due: 0 }));
+  st['lesson.a'] = 'practised';
+  check('a practised lesson stays the next step: no moving on just because time was spent', A.nextStep(input()).lessonId === 'lesson.a' && A.nextStep(input()).state === 'practised');
+  check('an open session on the path comes first', A.nextStep(input({ open: 'lesson.b' })).kind === 'resume' && A.nextStep(input({ open: 'lesson.b' })).lessonId === 'lesson.b');
+  check('…but not one beyond your path', A.nextStep(input({ open: 'lesson.z' })).kind === 'lesson');
+  check('revision that\'s due comes before the lesson, which stays right after it', A.nextStep(input({ due: 4 })).kind === 'revise' && A.nextStep(input({ due: 4 })).lessonId === 'lesson.a');
+  check('…unless today\'s gentle stop is reached', A.nextStep(input({ due: 4, stopped: true })).kind === 'lesson');
+  st['lesson.a'] = 'needs-revision'; st['lesson.b'] = 'ready';
+  check('the next lesson builds on one that needs revision: revisit that one first', JSON.stringify(A.nextStep(input())) === JSON.stringify({ kind: 'revisit', lessonId: 'lesson.a', because: 'lesson.c', state: 'needs-revision', due: 0 }));
+  st['lesson.c'] = 'holding';
+  check('nothing new left: it says so, pointing at the lesson that needs revision', A.nextStep(input()).kind === 'complete' && A.nextStep(input()).lessonId === 'lesson.a');
+  st['lesson.a'] = 'ready';
+  check('…or at the start of the path when every lesson is ready', A.nextStep(input()).kind === 'complete' && A.nextStep(input()).lessonId === 'lesson.a' && A.nextStep(input()).state === 'ready');
+  check('an empty path has no next step', A.nextStep({ ...input(), path: [] }) === null);
+  check('"Why this?" says why in words', A.stepReason({ kind: 'revisit', lessonId: 'lesson.a', because: 'lesson.c', state: 'needs-revision', due: 0 }, id => ({ 'lesson.c': 'Past verbs' })[id] ?? id, 'the jussive') === 'Past verbs builds on this lesson, which needs revision: the jussive.'
+    && /practised/i.test(A.stepReason({ kind: 'lesson', lessonId: 'x', state: 'practised', due: 0 }, x => x)));
+  check('session length: the standard session when it fits', A.lengthFor(45, { standard: 45, short: 15 }, false) === 'standard');
+  check('…the short session when energy or time allows 20 minutes', A.lengthFor(20, { standard: 45, short: 15 }, false) === 'short');
+  check('…the revision session for a lesson that needs revision', A.lengthFor(20, { standard: 45, short: 15 }, true) === 'revision');
+  check('…and the revision session when even the short one doesn\'t fit', A.lengthFor(10, { standard: 45, short: 15 }, false) === 'revision' && A.lengthFor(45, { standard: 45, short: 15 }, true) === 'standard');
+  check('states are words, never scores', JSON.stringify(Object.values(A.STATE_LABEL)) === JSON.stringify(['New', 'Practised', 'Ready to move on', 'Holding', 'Needs revision']));
   fs.rmSync(tmp, { recursive: true, force: true });
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

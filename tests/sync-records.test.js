@@ -71,6 +71,9 @@ const clone = o => JSON.parse(JSON.stringify(o));
   // An Arabic lesson session (after 1.15.0): first answers, one revealed, a note to self.
   // …and, from part 3, a starter word and a lesson check in revision (with an answer in Study's history).
   raw.arabic = { pathId: 'path.arabic-a1', attempts: [{ id: 'aa1', lessonId: 'lesson.arabic-origin-location', curriculumVersion: '1.1.0', variant: 'short', startedAt: '2026-10-11T09:00:00.000Z', finishedAt: '2026-10-11T09:20:00.000Z', help: 'hint', practised: ['reading', 'writing'], answers: { 'assessment.arabic-origin-location-check.q1': 'من = from, في = in' }, revealed: ['assessment.arabic-origin-location-check.q1'], revisit: 'Country adjectives' }] , cards: [{ id: 'lexeme.arabic-seed-001:recognise', addedOn: '2026-10-11', review: { reps: 1, interval: 4, lapses: 0, due: '2026-10-15' }, anotherWay: { text: 'Think of DNS as a phone book: you look up a name to get the number.', by: 'Gemini 3.8 Flash', on: '2026-10-16' } }, { id: 'assessment.arabic-origin-location-check.q1', addedOn: '2026-10-11', review: { reps: 0, interval: 0, lapses: 0, due: '2026-10-12' } }] };
+  // …and, from adaptive Study, your place on that lesson: Ready to move on, a flag to revisit it, a mark on one check.
+  raw.arabic.lessons = [{ id: 'lesson.arabic-origin-location', readyOn: '2026-10-12', revisit: { since: '2026-10-13', what: 'مِن or في' },
+    marks: { 'assessment.arabic-origin-location-check.q1': { outcome: 'partly', support: 'hint', on: '2026-10-11', attemptId: 'aa1' } } }];
   raw.study.reviews.push({ id: 'rv2', conceptId: 'lexeme.arabic-seed-001:recognise', title: 'أَنَا → I', date: '2026-10-11', at: '2026-10-11T09:30', kind: 'written', outcome: 'right', graded: 'self', chosen: null, support: 'own', rating: 'good', gap: 4, due: '2026-10-15' });
   // …and a Cybersecurity knowledge check in revision (after 1.17.1).
   raw.cybersecurity = { pathId: 'path.core', attempts: [], cards: [{ id: 'assessment.lab-isolation-check.q2', addedOn: '2026-10-14', review: { reps: 0, interval: 0, lapses: 0, due: '2026-10-15' }, anotherWay: { text: 'Think of DNS as a phone book: you look up a name to get the number.', by: 'Gemini 3.8 Flash', on: '2026-10-16' } }] };
@@ -80,7 +83,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   console.log('\n[1] Every record survives the trip unchanged');
   const recs = R.localRecords(data);
   const kinds = [...new Set([...recs.keys()].map(k => R.splitKey(k).kind))].sort();
-  check('every kind of record is there', eq(kinds, ['arabic', 'arabic_attempt', 'arabic_card', 'book', 'commitment', 'context', 'cyber_card', 'cybersecurity', 'daily', 'day', 'finance', 'fitness', 'food', 'holidays', 'list', 'note', 'notes', 'pay', 'patterns', 'project', 'queue', 'recipe', 'review', 'rota', 'session', 'settings', 'study', 'task', 'tasks', 'workout', 'wsession'].filter(k => k !== 'context' && k !== 'day').sort()), kinds);
+  check('every kind of record is there', eq(kinds, ['arabic', 'arabic_attempt', 'arabic_card', 'arabic_lesson', 'book', 'commitment', 'context', 'cyber_card', 'cybersecurity', 'daily', 'day', 'finance', 'fitness', 'food', 'holidays', 'list', 'note', 'notes', 'pay', 'patterns', 'project', 'queue', 'recipe', 'review', 'rota', 'session', 'settings', 'study', 'task', 'tasks', 'workout', 'wsession'].filter(k => k !== 'context' && k !== 'day').sort()), kinds);
   const changedOnTheWay = [...recs].filter(([key, c]) => R.fingerprint(R.cleanRecord(key, clone(c))) !== R.fingerprint(c)).map(([k]) => k);
   check('checked as it arrives on another device, every record is exactly the same (so devices never drift apart)', changedOnTheWay.length === 0, changedOnTheWay);
   const putBack = clone(R.freshState());
@@ -89,6 +92,11 @@ const clone = o => JSON.parse(JSON.stringify(o));
   check('put into a new MyDay, every record comes back the same', [...recs].every(([k, c]) => R.fingerprint(again.get(k)) === R.fingerprint(c)), [...recs].filter(([k, c]) => R.fingerprint(again.get(k)) !== R.fingerprint(c)).map(([k]) => k));
   check('…the links between them too: the favourite and want-to-cook still point at the recipe, the check-in at its concept', eq(putBack.health.food.favourites, ['rOwn']) && putBack.health.food.want[0].recipeId === 'rOwn' && eq(putBack.study.sessions[0].checkin.conceptIds, ['cp1']));
   check('a record checked on its own keeps its links (the recipe and concept aren\'t in it)', eq(R.cleanRecord('food:kitchen', clone(recs.get('food:kitchen'))).favourites, ['rOwn']) && eq(R.cleanRecord('session:ss1', clone(recs.get('session:ss1'))).checkin.conceptIds, ['cp1']));
+
+  const before = clone(raw); delete before.arabic.lessons;
+  check('MyDay data from before adaptive Study sends no lesson records', ![...R.localRecords(R.normalize(before)).keys()].some(k => R.splitKey(k).kind === 'arabic_lesson'));
+  { const none = clone(R.freshState()); R.putRecord(none, 'arabic_lesson:lesson.arabic-origin-location', null);
+    check('a lesson record deleted elsewhere leaves a device that never had one exactly as it was', !('lessons' in none.arabic)); }
 
   console.log('\n[1b] A project with milestones and decisions');
   {

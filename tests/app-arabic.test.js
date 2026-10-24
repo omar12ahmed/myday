@@ -101,7 +101,7 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   check('discarding asks first, then removes only that session', ar.attempts.length === 1 && !!ar.attempts[0].finishedAt);
   await go('study/arabic'); await wait('#arPath');
   await ev(`(() => { const s = document.querySelector('#arPath'); s.value = 'path.arabic-a1'; s.dispatchEvent(new Event('change', { bubbles: true })); })()`); await sleep(250);
-  check('choosing a goal saves it, and the next step moves on along it', (await AR()).pathId === 'path.arabic-a1' && await exists('[data-ar-next="next"]') && !(await T.text('[data-ar-next] h3')).includes('Describe origin and location'));
+  check('choosing a goal saves it, and the next step moves on along it', (await AR()).pathId === 'path.arabic-a1' && await exists('[data-ar-next="lesson"]') && !(await T.text('[data-ar-next] h3')).includes('Describe origin and location'));
   await go('study/arabic/sessions'); await wait('[data-ar-sessions]');
   check('Your sessions lists what you have done, with links back to the lesson', await count('[data-ar-sessions] > li') === 1 && await exists('[data-ar-sessions] a[href="#study/arabic/lesson.arabic-origin-location"]'));
   check('nothing else in your saved MyDay changed', await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')), s = JSON.parse(${JSON.stringify(saved)}); delete d.arabic; delete s.arabic; delete d.saves; delete s.saves; return JSON.stringify(d) === JSON.stringify(s); })()`));
@@ -131,10 +131,10 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   await on(11, reg); await wait('[data-ar-session]');
   check('a lesson\'s checks offer to come back in revision', await exists('[data-ar-checks="out"] [data-action="ar-checks-add"]'));
   await click('[data-action="ar-begin"]'); await sleep(250); await click('[data-action="ar-finish"]'); await sleep(300);
-  check('finishing a session offers this lesson\'s checks, adding nothing by itself', await exists('[data-ar-finished] [data-action="ar-finished-add"]') && !(await D()).arabic.cards.some(c => c.id.startsWith('assessment.')));
-  await click('[data-action="ar-finished-add"]'); await sleep(250);
+  check('finishing a session with nothing marked says Practised and adds nothing by itself', await exists('[data-ar-finished="practised"] [data-action="ar-ready"]') && !(await D()).arabic.cards.some(c => c.id.startsWith('assessment.')));
+  await click('[data-action="ar-checks-add"]'); await sleep(250);
   cards = (await D()).arabic.cards.filter(c => c.id.startsWith('assessment.'));
-  check('one tap adds them, first back tomorrow, and the lesson says so', cards.length === 2 && cards.every(c => c.id.startsWith('assessment.arabic-fusha-register-check.q') && c.review.due === '2026-10-12') && (await T.text('[data-ar-finished]')).includes('are in your revision') && await exists('[data-ar-checks="in"]'));
+  check('one tap under the checks adds them, first back tomorrow, and the lesson says so', cards.length === 2 && cards.every(c => c.id.startsWith('assessment.arabic-fusha-register-check.q') && c.review.due === '2026-10-12') && await exists('[data-ar-checks="in"]'));
   await on(11, 'study/arabic'); await wait('[data-ar-revision]');
   check('on the day they\'re added nothing is due: the map says when they come back', await ev(`document.querySelector('[data-ar-revision]').dataset.arRevision === 'later'`) && (await T.text('[data-ar-revision]')).includes('9 starter words and 2 lesson checks') && !(await exists('[data-action="ar-revise"]')));
 
@@ -193,7 +193,7 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   check('the starter words with their revision buttons fit a phone', await ev('document.documentElement.scrollWidth === innerWidth'));
   await send('Emulation.clearDeviceMetricsOverride');
 
-  console.log('\n[9] Finishing follows the selected required path');
+  console.log('\n[9] Finishing, then Ready to move on, follows the selected required path');
   const selectedPath = curriculum.paths.find(p => p.id === 'path.arabic-start');
   const byId = new Map(curriculum.lessons.map(l => [l.id, l]));
   const required = curriculum.modules.filter(m => selectedPath.required_module_ids.includes(m.id)).sort((a, b) => a.sequence - b.sequence)
@@ -201,25 +201,92 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   const optional = curriculum.lessons.find(l => l.optional && !selectedPath.required_module_ids.includes(l.module_id));
   const outsidePath = curriculum.lessons.find(l => !l.optional && !selectedPath.required_module_ids.includes(l.module_id));
   const attempt = (id, finished = true) => ({ id: 'next-' + id.replace(/[^A-Za-z0-9_-]/g, '-'), lessonId: id, curriculumVersion: curriculum.curriculum_version, variant: 'standard', startedAt: '2026-10-11T08:00:00.000Z', finishedAt: finished ? '2026-10-11T08:20:00.000Z' : null, help: 'independent', practised: [], answers: {}, revealed: [], revisit: '' });
-  const finishWith = async (lessonId, attempts) => {
-    await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); d.arabic.pathId = ${JSON.stringify(selectedPath.id)}; d.arabic.attempts = ${JSON.stringify(attempts)}; localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`);
+  const ready = id => ({ id, readyOn: '2026-10-11' });
+  const upNext = () => ev(`(() => { const e = document.querySelector('[data-s="arabic-up-next"]'); return { href: e?.querySelector('a')?.getAttribute('href'), text: e?.textContent }; })()`);
+  const finishWith = async (lessonId, attempts, lessons = []) => {
+    await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); d.arabic.pathId = ${JSON.stringify(selectedPath.id)}; d.arabic.attempts = ${JSON.stringify(attempts)}; d.arabic.lessons = ${JSON.stringify(lessons)}; localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`);
     await go('study/arabic/' + lessonId); await wait('[data-action="ar-begin"]');
     await click('[data-action="ar-begin"]'); await wait('[data-action="ar-finish"]');
     await click('[data-action="ar-finish"]'); await wait('[data-s="arabic-up-next"]');
-    return ev(`(() => { const e = document.querySelector('[data-s="arabic-up-next"]'); return { href: e?.querySelector('a')?.getAttribute('href'), text: e?.textContent }; })()`);
+    return upNext();
   };
-  let next = await finishWith(required[0], [attempt(required[1])]);
-  check('after finishing, an already completed successor is skipped for the earliest unfinished required lesson', next.href === '#study/arabic/' + required[2] && next.text.includes(byId.get(required[2]).title) && next.text.includes('not verified mastery'), next);
+  let next = await finishWith(required[0], [attempt(required[1])], [ready(required[1])]);
+  check('finishing alone keeps the lesson as your next step: the card offers Ready, and the link goes back to the map', next.href === '#study/arabic' && await exists('[data-ar-finished="practised"] [data-action="ar-ready"]'), next);
+  await click('[data-ar-finished] [data-action="ar-ready"]'); await sleep(300); next = await upNext();
+  check('marking it ready moves on, skipping a successor already ready, to the earliest lesson not ready yet', next.href === '#study/arabic/' + required[2] && next.text.includes('Next lesson: ' + byId.get(required[2]).title), next);
   await click('[data-s="arabic-up-next"] a'); await wait('[data-ar-session="none"]');
   check('the next-lesson link opens that required lesson without starting another session', (await ev('location.hash')) === '#study/arabic/' + required[2] && !(await AR()).attempts.some(a => a.lessonId === required[2]), [await ev('location.hash'), (await AR()).attempts.map(a => a.lessonId)]);
-  next = await finishWith(required[0], [attempt(required[1]), attempt(required[4], false)]);
-  check('after finishing, a resumable required lesson wins over a positional successor', next.href === '#study/arabic/' + required[4] && next.text.includes('Resume lesson:'), next);
+  next = await finishWith(required[0], [attempt(required[4], false)], [ready(required[1])]);
+  check('after finishing, a resumable required lesson comes first', next.href === '#study/arabic/' + required[4] && next.text.includes('Pick up where you left off:'), next);
   next = await finishWith(optional.id, []);
-  check('finishing an optional extension offers the earliest required lesson on the selected path', next.href === '#study/arabic/' + required[0] && !next.text.includes('Every required lesson'), next);
-  next = await finishWith(outsidePath.id, [attempt(required[0])]);
-  check('finishing a lesson outside the selected path returns to its earliest unfinished required lesson', next.href === '#study/arabic/' + required[1], next);
-  next = await finishWith(optional.id, required.map(id => attempt(id)));
-  check('after all required lessons have finished sessions, an optional finish returns to the map without inventing a next lesson', next.href === '#study/arabic' && next.text.includes('Every required lesson on your selected path has a finished session') && next.text.includes('not verified mastery') && !next.text.includes('Next lesson:'), next);
+  check('finishing an optional extension offers the earliest required lesson on the selected path', next.href === '#study/arabic/' + required[0] && next.text.includes('Next lesson:'), next);
+  next = await finishWith(outsidePath.id, [], [ready(required[0])]);
+  check('finishing a lesson outside the selected path returns to its earliest lesson not ready yet', next.href === '#study/arabic/' + required[1], next);
+  next = await finishWith(optional.id, [], required.map(ready));
+  check('with every required lesson ready to move on, an optional finish says so and returns to the map', next.href === '#study/arabic' && next.text.includes('Every lesson on your path is ready to move on') && !next.text.includes('Next lesson:'), next);
+
+  console.log('\n[10] Adaptive Study on a lesson: how it went, Ready to move on, Needs revision');
+  const L = 'lesson.arabic-nominal-sentences', Q = n => `assessment.arabic-nominal-sentences-check.q${n}`, nominal = c => c.id.startsWith('assessment.arabic-nominal-sentences');
+  const setValue = (sel, value) => ev(`(() => { const i = document.querySelector(${JSON.stringify(sel)}), set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(i, ${JSON.stringify(value)}); i.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+  const place = () => ev(`document.querySelector('[data-ar-place]')?.dataset.arPlace`);
+  await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); d.arabic.pathId = 'path.arabic-a1'; d.arabic.attempts = []; d.arabic.cards = []; delete d.arabic.lessons; localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`);
+  await go('study/arabic/' + L); await wait('[data-ar-place]');
+  check('a lesson says where it stands in words, and what its checks cover', await place() === 'new' && (await T.text('[data-ar-place]')).includes('3 written checks') && !/%|score|\/100/i.test(await T.text('[data-ar-place]')));
+  await click('[data-action="ar-begin"]'); await wait('[data-ar-session="open"]');
+  for (const n of [1, 2, 3]) { await click(`[data-ar-question="${Q(n)}"] [data-action="ar-reveal"]`); await sleep(120); }
+  await wait(`[data-ar-question="${Q(3)}"] [data-ar-mark]`, 6000);
+  check('after you look, each check asks how it went, optionally, in revision\'s words', await count('[data-ar-mark]') === 3 && await ev(`[...document.querySelectorAll('[data-ar-mark]')].every(e => e.dataset.arMark === 'none')`) && (await T.text(`[data-ar-question="${Q(1)}"] [data-ar-mark]`)).includes('Not sure'));
+  const mark = async (n, outcome, support) => { await click(`[data-ar-question="${Q(n)}"] [data-action="ar-mark"][data-v="${outcome}"]`); await sleep(150); if (support) { await click(`[data-ar-question="${Q(n)}"] [data-action="ar-mark-support"][data-v="${support}"]`); await sleep(150); } };
+  await mark(1, 'wrong'); await mark(2, 'right'); await mark(3, 'notsure', 'notes');
+  ar = await AR();
+  check('your marks are kept on the lesson, for this session, with no Ready yet', ar.lessons?.[0]?.id === L && ar.lessons[0].marks[Q(1)].outcome === 'wrong' && ar.lessons[0].marks[Q(3)].support === 'notes'
+    && ar.lessons[0].marks[Q(2)].attemptId === ar.attempts[0].id && !('readyOn' in ar.lessons[0]) && !ar.cards.some(nominal));
+  await click('[data-action="ar-finish"]'); await wait('[data-ar-finished]');
+  ar = await AR();
+  check('finishing: Practised, and the two that haven\'t clicked yet come back tomorrow by themselves', await ev(`document.querySelector('[data-ar-finished]').dataset.arFinished === 'practised'`) && await exists('[data-ar-not-yet="2"]')
+    && (await T.text('[data-ar-not-yet]')).includes('come back tomorrow') && ar.cards.filter(nominal).map(c => c.id + '@' + c.review.due).sort().join() === [Q(1) + '@2026-10-12', Q(3) + '@2026-10-12'].join());
+  await click('[data-action="ar-not-yet-out"]'); await sleep(200);
+  check('"Don\'t bring them back" takes exactly those out again', !(await AR()).cards.some(nominal) && !(await exists('[data-ar-not-yet]')));
+  check('the card offers Ready anyway and Needs revision, never deciding for you', await exists('[data-ar-finished] [data-action="ar-ready"]') && await exists('[data-ar-finished] [data-action="ar-needs-revision"]') && await place() === 'practised');
+  await click('[data-ar-finished] [data-action="ar-needs-revision"]'); await wait('#arRevisitWhat');
+  await setValue('#arRevisitWhat', 'the nominal predicate'); await click('[data-action="ar-revisit-save"]'); await sleep(250);
+  check('Needs revision keeps what needs work, and the lesson says so', (await AR()).lessons[0].revisit?.what === 'the nominal predicate' && await place() === 'needs-revision' && (await T.text('[data-ar-place]')).includes('the nominal predicate'));
+  await click('[data-action="ar-place-revisited"]'); await sleep(200);
+  check('Done revisiting clears it: Practised again', !(await AR()).lessons[0].revisit && await place() === 'practised');
+  await click('[data-action="ar-finished-close"]'); await sleep(150);
+  await click('[data-action="ar-begin"]'); await wait('[data-ar-session="open"]');
+  for (const n of [1, 2, 3]) { await click(`[data-ar-question="${Q(n)}"] [data-action="ar-reveal"]`); await sleep(120); }
+  await wait(`[data-ar-question="${Q(3)}"] [data-ar-mark]`, 6000);
+  for (const n of [1, 2, 3]) await mark(n, 'right');
+  await click('[data-action="ar-finish"]'); await wait('[data-ar-finished]');
+  check('every check right on your own: "Looks ready to move on", as a suggestion with a choice', await ev(`document.querySelector('[data-ar-finished]').dataset.arFinished === 'looks-ready'`) && (await T.text('[data-ar-finished]')).includes('Looks ready to move on.') && await exists('[data-ar-finished] [data-action="ar-not-yet"]') && await place() === 'practised');
+  await click('[data-ar-finished] [data-action="ar-ready"]'); await sleep(300);
+  ar = await AR();
+  check('Ready to move on saves the day and brings its 3 checks back a week later, saying when', ar.lessons[0].readyOn === '2026-10-11' && ar.cards.filter(nominal).length === 3 && ar.cards.filter(nominal).every(c => c.review.due === '2026-10-18')
+    && (await T.text('[data-ar-finished]')).includes('will come back on'));
+  check('…and the lesson says Ready to move on, with when its checks come back', await place() === 'ready' && (await T.text('[data-ar-place]')).includes('Ready to move on since'));
+  await click('[data-action="ar-place-unready"]'); await sleep(200);
+  check('Not ready after all takes the day back and leaves its checks in revision', !('readyOn' in (await AR()).lessons[0]) && (await AR()).cards.filter(nominal).length === 3 && await place() === 'practised');
+  await click('[data-action="ar-place-ready"]'); await sleep(250);
+  check('a lesson can be marked ready from its page too', (await AR()).lessons[0].readyOn === '2026-10-11' && await place() === 'ready');
+  await go('study/arabic'); await wait('[data-ar-next]');
+  check('the map counts it in words on its module, never a percentage', (await T.text('[data-ar-module="arabic-first-sentences"] [data-ar-module-counts]')).includes('1 ready') && !/%/.test(await T.text('[data-ar-module="arabic-first-sentences"]')));
+  check('the next step comes with a "Why this?" in words', await exists('[data-ar-next] [data-ar-why]') && /^Why this\?\s*\S.*\.$/.test((await T.text('[data-ar-next] [data-ar-why]')).trim()), await T.text('[data-ar-next] [data-ar-why]'));
+  await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); d.context = { ...(d.context || {}), '2026-10-11': { energy: 1, sleep: { start: null, end: null, estimatedHours: null } } }; localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`);
+  await go('study/arabic'); await wait('[data-ar-next]');
+  check('at energy 1 the next step suggests the lesson\'s short session (10 of its 20 minutes), and says why', (await T.text('[data-ar-next]')).includes('about 10 min suits today') && (await T.text('[data-ar-next] [data-ar-why]')).includes('energy 1 today'));
+  await go('study/arabic/lesson.arabic-greetings-address'); await wait('[data-ar-session="none"]');
+  check('…and the session card starts on it, with the full lesson still there', await ev(`document.querySelector('[data-s="ar-variant"]:checked')?.value === 'short'`) && await count('[data-s="ar-variant"]') === 5);
+  await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); delete d.context['2026-10-11']; d.arabic.attempts.push(${JSON.stringify(attempt('lesson.arabic-greetings-address'))}); localStorage.setItem('myday.data.v4', JSON.stringify(d)); localStorage.removeItem('myday.arabic.readyOffer'); })()`);
+  await go('study/arabic'); await wait('[data-ar-next]');
+  check('lessons practised before adaptive Study get a one-time offer, nothing ticked', await exists('[data-ar-ready-offer]') && await count('[data-ar-ready-offer] [data-s="ar-offer-lesson"]') === 1 && await ev(`document.querySelector('[data-action="ar-offer-ready"]').disabled`));
+  await click('[data-action="ar-offer-close"]'); await sleep(150);
+  await go('study/arabic'); await wait('[data-ar-next]');
+  check('"Not now" closes it for good on this device (device-only, not saved data)', !(await exists('[data-ar-ready-offer]')) && await ev(`localStorage.getItem('myday.arabic.readyOffer') === 'done'`) && !('readyOffer' in JSON.parse(await ev(`localStorage.getItem('myday.data.v4')`)).arabic));
+  await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
+  await go('study/arabic/' + L); await wait('[data-ar-place]');
+  check('on a phone the lesson\'s place and its buttons fit, each at least 44 px tall', await ev('document.documentElement.scrollWidth === innerWidth') && await ev(`[...document.querySelectorAll('[data-ar-place] button')].every(b => b.getBoundingClientRect().height >= 44)`));
+  await send('Emulation.clearDeviceMetricsOverride');
 
   const s = T.summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
 })().catch(e => { console.error('HARNESS', e); process.exit(1); });

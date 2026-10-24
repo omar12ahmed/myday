@@ -20,7 +20,10 @@ function check(label, ok) {
       'export * as cyberCatalogue from ' + JSON.stringify(path.join(ROOT, 'app/src/study/cybersecurity/catalogue')) + ';',
       'export { CYBER_VERSION, curriculumTaskId } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/cybersecurity/types')) + ';',
       'export * as arabicCatalogue from ' + JSON.stringify(path.join(ROOT, 'app/src/study/arabic/catalogue')) + ';',
-      'export { nextStep, lessonDone, beginSession, finishSession } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/arabic/sessions')) + ';',
+      'export { beginSession, finishSession } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/arabic/sessions')) + ';',
+      'export { markReady } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/arabic/lessons')) + ';',
+      'export { arabicPlan, arabicState, checksOf } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/arabic/plan')) + ';',
+      'export { todayKey } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/dates')) + ';',
     ].join('\n'));
     const rule = await import(pathToFileURL(await bundle(path.join(dir, 'entry.ts'), path.join(dir, 'out'))).href);
     const task = (id, done) => ({ id, title: id, minutes: 20, done, doneOn: done ? '2026-10-01' : null, kind: 'learn', url: '', note: '' });
@@ -31,7 +34,7 @@ function check(label, ok) {
       study: { stages: [{ id: 'foundations', title: 'Foundations', courses: [course('first', [task('one', true)]), course('second', [task('two', false)])] }],
         focusCourseId: 'first', concepts: [concept], sessions: [{ id: 'session' }], activeId: 'session', reviews: [{ id: 'review' }],
         settings: { vault: 'Learning', showClock: true } },
-      arabic: { pathId: 'arabic', attempts: [{ id: 'a' }], cards: [{ id: 'ar-card', review: { reps: 2, interval: 4, lapses: 0, due: '2026-10-30' } }] },
+      arabic: { pathId: 'arabic', attempts: [{ id: 'a' }], cards: [{ id: 'ar-card', review: { reps: 2, interval: 4, lapses: 0, due: '2026-10-30' } }], lessons: [{ id: 'lesson.arabic-fusha-register', readyOn: '2026-10-20' }] },
       cybersecurity: { pathId: 'cyber', attempts: [{ id: 'c' }], cards: [{ id: 'cy-card', review: { reps: 1, interval: 2, lapses: 0, due: '2026-10-27' } }] },
       otherSection: { preserve: true },
     };
@@ -43,7 +46,7 @@ function check(label, ok) {
     check('Every task completion mark is reset', all.every(t => !t.done && t.doneOn === null));
     check('Study session and revision records cleared', !state.study.sessions.length && !state.study.reviews.length && state.study.activeId === null);
     check('Pinned focus cleared', state.study.focusCourseId === null);
-    check('Arabic and Cybersecurity attempt records cleared', !state.arabic.attempts.length && !state.cybersecurity.attempts.length);
+    check('Arabic and Cybersecurity attempt records cleared, and your place on each Arabic lesson', !state.arabic.attempts.length && !state.cybersecurity.attempts.length && Array.isArray(state.arabic.lessons) && !state.arabic.lessons.length);
     check('Concepts and revision cards preserved but due schedules reset', state.study.concepts[0].title === 'DNS'
       && state.study.concepts[0].review.reps === 0 && state.arabic.cards[0].review.due === null && state.cybersecurity.cards[0].review.due === null);
     check('Study content and paths stay', state.study.stages[0].courses[0].modules[0].sections[0].tasks[0].title === 'one'
@@ -163,29 +166,36 @@ function check(label, ok) {
     const requiredArabic = rule.arabicCatalogue.moduleList.filter(m => arPath.required_module_ids.includes(m.id)).sort((a, b) => a.sequence - b.sequence)
       .flatMap(m => m.lesson_ids.filter(id => !rule.arabicCatalogue.lessonIndex[id].optional));
     check('The real Arabic starter path begins with the register lesson', requiredArabic[0] === 'lesson.arabic-fusha-register' && option(arabic, 'arabic').href === arHref('lesson.arabic-fusha-register'));
-    const finishArabic = id => { const sid = rule.beginSession(arabic, id, 'standard'); rule.finishSession(arabic, sid); };
-    finishArabic(requiredArabic[0]);
-    check('A finished Arabic session advances the recommendation to the earliest unfinished required lesson', rule.lessonDone(arabic, requiredArabic[0]) && option(arabic, 'arabic').href === arHref('lesson.arabic-goal-baseline'));
+    const finishArabic = (d, id) => { const sid = rule.beginSession(d, id, 'standard'); rule.finishSession(d, sid); };
+    // Adaptive Study: a finished session is practice; the lesson stays the next step until you mark it ready.
+    const readyArabic = (d, id) => { finishArabic(d, id); rule.markReady(d, id, rule.checksOf(id), rule.todayKey()); };
+    finishArabic(arabic, requiredArabic[0]);
+    check('A finished Arabic session alone is practice: the recommendation stays on that lesson, labelled Practised', rule.arabicState(arabic, requiredArabic[0]) === 'practised'
+      && option(arabic, 'arabic').href === arHref(requiredArabic[0]) && /Practised/.test(option(arabic, 'arabic').detail));
+    rule.markReady(arabic, requiredArabic[0], rule.checksOf(requiredArabic[0]), rule.todayKey());
+    check('Marking it ready to move on advances the recommendation to the earliest lesson not ready yet', rule.arabicState(arabic, requiredArabic[0]) === 'ready' && option(arabic, 'arabic').href === arHref('lesson.arabic-goal-baseline'));
     const openArabic = rule.beginSession(arabic, 'lesson.arabic-vowel-decoding', 'short');
     const openArabicBefore = JSON.stringify(arabic), arResuming = option(arabic, 'arabic');
     check('An open Arabic session on the selected required path takes priority over earlier new lessons', arResuming.href === arHref('lesson.arabic-vowel-decoding') && arResuming.resume && !arResuming.allComplete);
-    check('Arabic next-step and combined recommendations agree about resuming the open session', rule.nextStep(arabic, requiredArabic).lessonId === 'lesson.arabic-vowel-decoding' && rule.nextStep(arabic, requiredArabic).resume);
+    check('Arabic next-step and combined recommendations agree about resuming the open session', rule.arabicPlan(arabic).step.lessonId === 'lesson.arabic-vowel-decoding' && rule.arabicPlan(arabic).step.kind === 'resume');
     check('Reading Arabic recommendations does not create a cursor or change any saved session', JSON.stringify(arabic) === openArabicBefore);
     rule.finishSession(arabic, openArabic);
     rule.beginSession(arabic, 'lesson.arabic-nominal-sentences', 'standard');
     check('An Arabic session beyond the selected path does not displace required starter lessons', option(arabic, 'arabic').href === arHref('lesson.arabic-goal-baseline') && !option(arabic, 'arabic').resume);
-    requiredArabic.forEach(finishArabic);
+    requiredArabic.forEach(id => finishArabic(arabic, id));
+    check('Finished sessions on every required lesson are not yet a complete path', !option(arabic, 'arabic').allComplete);
+    requiredArabic.forEach(id => rule.markReady(arabic, id, rule.checksOf(id), rule.todayKey()));
     const arCompleteBefore = JSON.stringify(arabic), arComplete = option(arabic, 'arabic');
-    check('A finished session for every required Arabic lesson marks that selected path complete', arComplete.allComplete && !arComplete.resume);
+    check('Every required Arabic lesson marked ready to move on makes that selected path complete', arComplete.allComplete && !arComplete.resume);
     check('An exhausted Arabic path offers its first lesson for revisiting', arComplete.href === arHref('lesson.arabic-fusha-register'));
     check('Arabic completion leaves the selected path and unrelated open session untouched', JSON.stringify(arabic) === arCompleteBefore);
     rule.beginSession(arabic, requiredArabic[2], 'revision');
-    check('A new open Arabic session can resume even after every required lesson has been finished', option(arabic, 'arabic').resume && option(arabic, 'arabic').allComplete && option(arabic, 'arabic').href === arHref(requiredArabic[2]));
+    check('A new open Arabic session can resume even after every required lesson is ready to move on', option(arabic, 'arabic').resume && option(arabic, 'arabic').allComplete && option(arabic, 'arabic').href === arHref(requiredArabic[2]));
     const extension = fresh(); extension.arabic.pathId = 'path.arabic-technology';
     const extensionPath = rule.arabicCatalogue.paths.get(extension.arabic.pathId);
     const requiredExtension = rule.arabicCatalogue.moduleList.filter(m => extensionPath.required_module_ids.includes(m.id)).flatMap(m => m.lesson_ids.filter(id => !rule.arabicCatalogue.lessonIndex[id].optional));
-    for (const id of requiredExtension) rule.finishSession(extension, rule.beginSession(extension, id, 'standard'));
-    check('Unfinished optional Arabic extensions do not prevent required-path completion', !rule.lessonDone(extension, 'lesson.arabic-technical-terminology') && option(extension, 'arabic').allComplete);
+    for (const id of requiredExtension) readyArabic(extension, id);
+    check('Unfinished optional Arabic extensions do not prevent required-path completion', rule.arabicState(extension, 'lesson.arabic-technical-terminology') === 'new' && option(extension, 'arabic').allComplete);
     rule.beginSession(extension, 'lesson.arabic-technical-terminology', 'standard');
     check('An optional Arabic extension session does not replace the completed required-path recommendation', option(extension, 'arabic').allComplete && !option(extension, 'arabic').resume);
 

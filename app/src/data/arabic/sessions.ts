@@ -1,5 +1,6 @@
-// Arabic sessions: starting, changing and finishing one, and where you are on the map. Places, never scores:
-// a module is unexplored, being explored, or visited (every core lesson in it finished at least once).
+// Arabic sessions: starting, changing and finishing one. Where a lesson stands (Practised, Ready to move on…) and the
+// next step are adaptive Study's (data/arabic/lessons.ts, study/arabic/plan.ts): a finished session is practice,
+// never by itself "done".
 import { uid } from '../util';
 import type { MyDayData } from '../types';
 import { ARABIC_VERSION, type ArabicAttempt, type Variant } from './types';
@@ -40,20 +41,4 @@ export function discardSession(d: MyDayData, id: string): boolean {
   if (i < 0) return false;
   d.arabic.attempts.splice(i, 1);
   return true;
-}
-
-export type Place = 'unexplored' | 'exploring' | 'visited';
-export function placeOf(d: MyDayData, lessonIds: string[], coreLessonIds: string[]): Place {
-  if (!d.arabic.attempts.some(a => lessonIds.includes(a.lessonId))) return 'unexplored';
-  const done = new Set(d.arabic.attempts.filter(a => a.finishedAt).map(a => a.lessonId));
-  return coreLessonIds.length > 0 && coreLessonIds.every(id => done.has(id)) ? 'visited' : 'exploring';
-}
-export const lessonDone = (d: MyDayData, lessonId: string) => d.arabic.attempts.some(a => a.lessonId === lessonId && a.finishedAt);
-
-// The next small step along your path: a session still open (pick up where you left off), otherwise the first
-// lesson you haven't finished yet.
-export function nextStep(d: MyDayData, pathLessonIds: string[]): { lessonId: string; resume: boolean } {
-  const open = d.arabic.attempts.filter(a => !a.finishedAt && pathLessonIds.includes(a.lessonId)).pop();
-  if (open) return { lessonId: open.lessonId, resume: true };
-  return { lessonId: pathLessonIds.find(id => !lessonDone(d, id)) ?? pathLessonIds[0], resume: false };
 }

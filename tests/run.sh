@@ -59,8 +59,18 @@ if printf '%s\n' "${SUITES[@]}" | grep -q '^app-schema$'; then
   (cd "$WORK/previous-source/app" && VITE_SUPABASE_URL= VITE_SUPABASE_PUBLISHABLE_KEY= VITE_AI= npm run build -- --outDir "$WORK/srv/previous" --emptyOutDir >"$WORK/previous-build.log" 2>&1) || { echo "Previous release fixture failed to build:"; tail -20 "$WORK/previous-build.log"; exit 1; }
 fi
 
-# A copy of the new app with cloud sync and AI help switched on, pointing at the local Supabase stand-in (app-sync, app-study-reset, app-ai).
-if printf '%s\n' "${SUITES[@]}" | grep -qE '^app-(sync|study-reset|ai)$'; then
+# The previous release with cloud sync on, pointing at the local stand-in, for the opt-in app-sync-previous: it proves
+# that a record kind added since (arabic_lesson) is left alone by a release that doesn't know it.
+if printf '%s\n' "${SUITES[@]}" | grep -q '^app-sync-previous$'; then
+  PREVIOUS_SYNC_REF="${MYDAY_PREVIOUS_SYNC_REF:-v1.45.2}"
+  mkdir -p "$WORK/previous-sync-source"
+  git -C "$ROOT" archive "$PREVIOUS_SYNC_REF" | tar -x -C "$WORK/previous-sync-source"
+  ln -s "$ROOT/app/node_modules" "$WORK/previous-sync-source/app/node_modules"
+  (cd "$WORK/previous-sync-source/app" && VITE_SUPABASE_URL="http://127.0.0.1:$MYDAY_SUPA_PORT" VITE_SUPABASE_PUBLISHABLE_KEY="sb_publishable_standin_test_key_0000000000" VITE_AI= \
+    npm run build -- --outDir "$WORK/srv/previous-sync" --emptyOutDir >"$WORK/previous-sync-build.log" 2>&1) || { echo "The previous release's sync copy ($PREVIOUS_SYNC_REF) didn't build:"; tail -20 "$WORK/previous-sync-build.log"; exit 1; }
+fi
+# A copy of the new app with cloud sync and AI help switched on, pointing at the local Supabase stand-in (app-sync, app-sync-previous, app-study-reset, app-ai).
+if printf '%s\n' "${SUITES[@]}" | grep -qE '^app-(sync|sync-previous|study-reset|ai)$'; then
   (cd "$ROOT/app" && VITE_SUPABASE_URL="http://127.0.0.1:$MYDAY_SUPA_PORT" VITE_SUPABASE_PUBLISHABLE_KEY="sb_publishable_standin_test_key_0000000000" VITE_AI=edge \
     npx vite build --outDir "$WORK/srv/sync" --emptyOutDir >"$WORK/sync-build.log" 2>&1) || { echo "The sync test copy of the app didn't build:"; tail -20 "$WORK/sync-build.log"; exit 1; }
 fi

@@ -231,6 +231,19 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   r = await push(A, [change('arabic_card', 'lexeme.arabic-seed-002:recognise', 0, { id: 'lexeme.arabic-seed-002:recognise', addedOn: '2026-10-14', review: ccard.review })]);
   check('the earlier kinds (Arabic revision cards) are still accepted', r[0].status === 'applied', r);
 
+  console.log('\n[15] Your place on an Arabic lesson (adaptive Study, 20261024120000_sync_arabic_lessons.sql)');
+  const place = { id: 'lesson.arabic-article-connected-speech', readyOn: '2026-10-24', revisit: { since: '2026-10-25', what: 'sun letters' },
+    marks: { 'assessment.arabic-article-connected-speech-check.q1': { outcome: 'right', support: 'own', on: '2026-10-24', attemptId: 'aa1' } } };
+  r = await push(A, [change('arabic_lesson', place.id, 0, place)]);
+  check('a lesson record saves through sync_push_v2, its id being the lesson\'s own', r[0].status === 'applied' && r[0].version === 1, r);
+  check('another learner cannot read it', !(await pull(reader)).some(x => x.kind === 'arabic_lesson'));
+  r = await push(A, [change('arabic_lesson', place.id, 0, { ...place, readyOn: '2026-10-26' })]);
+  check('a stale device cannot overwrite it (Ready on one device, an older copy on another)', r[0].status === 'conflict', r);
+  r = await push(A, [change('arabic_lesson', place.id, 1, null, { deleted: true })]);
+  check('clearing it (a Study reset) reaches other devices as a tombstone', r[0].status === 'applied' && (await pull(A)).some(x => x.kind === 'arabic_lesson' && x.deleted));
+  r = await push(A, [change('arabic_card', 'lexeme.arabic-seed-003:recognise', 0, { id: 'lexeme.arabic-seed-003:recognise', addedOn: '2026-10-24', review: ccard.review }), change('cyber_card', 'assessment.lab-isolation-check.q3', 0, { ...ccard, id: 'assessment.lab-isolation-check.q3' })]);
+  check('every earlier kind is still accepted after the kind lists change', r.every(x => x.status === 'applied'), r);
+
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

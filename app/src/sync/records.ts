@@ -27,15 +27,15 @@ import type { Category, Commitment, Day, DayContext, ListItem, MyDayData, Note, 
 import { isObj } from '../data/util';
 import { cleanAttempt, cleanCyberCard, normalizeCyber } from '../data/cybersecurity/normalize';
 import type { CyberAttempt, CyberCard } from '../data/cybersecurity/types';
-import { cleanArabicAttempt, cleanArabicCard, normalizeArabic } from '../data/arabic/normalize';
-import { ARABIC_CORE_PATH, type ArabicAttempt, type ArabicCard } from '../data/arabic/types';
+import { cleanArabicAttempt, cleanArabicCard, cleanArabicLesson, normalizeArabic } from '../data/arabic/normalize';
+import { ARABIC_CORE_PATH, type ArabicAttempt, type ArabicCard, type ArabicLesson } from '../data/arabic/types';
 import { PROJECT_KINDS, splitProject, type ProjectContent, type ProjectKind } from '../data/projectRecords';
 import { cleanProjectRecord, isProjectKind, projectApplyOrder, putProjectRecord } from './projectParts';
 
 export type Kind = 'list' | 'queue' | 'day' | 'context'
   | 'settings' | 'rota' | 'pay' | 'holidays' | 'finance' | 'study' | 'workout' | 'food' | 'fitness' | 'notes' | 'tasks' | 'patterns'
   | 'commitment' | 'note' | 'task' | 'session' | 'review' | 'wsession' | 'recipe' | 'project' | 'cybersecurity' | 'cyber_attempt'
-  | 'arabic' | 'arabic_attempt' | 'arabic_card' | 'cyber_card' | 'daily' | 'book' | ProjectKind;
+  | 'arabic' | 'arabic_attempt' | 'arabic_card' | 'arabic_lesson' | 'cyber_card' | 'daily' | 'book' | ProjectKind;
 export type Content = Record<string, unknown>;
 
 // A record's key on this device: "list:learning", "day:2026-10-02", "note:nt8f…"…
@@ -200,6 +200,12 @@ const MANY: Many[] = [
     items: d => d.arabic.cards, put: (d, id, c) => putItem(d.arabic.cards, id, c),
     clean: (id, raw) => same(id, cleanArabicCard(raw)),
     summary: c => { const x = c as unknown as ArabicCard; return `${x.id} · ${x.review.due ? `back on ${prettyDate(x.review.due)}` : 'not revised yet'}`; } },
+  // Your place on one Arabic lesson (adaptive Study): Ready to move on, Needs revision, your latest check marks.
+  // Its own record, so an older MyDay (which doesn't know this kind) leaves it alone.
+  { kind: 'arabic_lesson', label: 'Arabic lesson: your place',
+    items: d => d.arabic.lessons ?? [], put: (d, id, c) => { if (c || d.arabic.lessons) putItem(d.arabic.lessons ??= [], id, c); },
+    clean: (id, raw) => same(id, cleanArabicLesson(raw)),
+    summary: c => { const x = c as unknown as ArabicLesson; return [x.id, x.readyOn ? `ready since ${prettyDate(x.readyOn)}` : '', x.revisit ? 'to revisit' : '', x.marks ? `${Object.keys(x.marks).length} marked` : ''].filter(Boolean).join(' · '); } },
   // A Cybersecurity revision card: only its question's id (the course's), the day it was added and its schedule.
   { kind: 'cyber_card', label: 'Cybersecurity revision card',
     items: d => d.cybersecurity.cards, put: (d, id, c) => putItem(d.cybersecurity.cards, id, c),

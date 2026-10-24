@@ -1,7 +1,8 @@
 import { isDateKey } from '../dates';
 import { intIn, isObj } from '../util';
 import { cleanAnotherWay } from '../study/anotherWay';
-import { ARABIC_CORE_PATH, emptyArabic, MODALITIES, VARIANTS, type ArabicAttempt, type ArabicCard, type ArabicData, type Help } from './types';
+import type { Outcome, Support } from '../types';
+import { ARABIC_CORE_PATH, emptyArabic, MODALITIES, VARIANTS, type ArabicAttempt, type ArabicCard, type ArabicData, type ArabicLesson, type ArabicMark, type Help } from './types';
 
 // Arabic records are checked like everything else MyDay opens: anything malformed is dropped (and counted),
 // never guessed at, and nothing from another course can slip in. Fields a newer MyDay adds to the section are
@@ -45,6 +46,30 @@ export function cleanArabicCard(raw: unknown): ArabicCard | null {
   };
 }
 
+// Your place on a lesson (adaptive Study). Its id is the lesson's (≤ 64 characters, the sync record's id); a mark
+// is kept only for one of that lesson's own checks, with an outcome and support revision knows.
+const LESSON = /^lesson\.arabic-[a-z0-9-]{1,50}$/;
+const OUTCOMES: Outcome[] = ['right', 'partly', 'wrong', 'notsure'];
+const SUPPORTS: Support[] = ['own', 'hint', 'notes'];
+export function cleanArabicLesson(raw: unknown): ArabicLesson | null {
+  if (!isObj(raw) || typeof raw.id !== 'string' || !LESSON.test(raw.id)) return null;
+  const out: ArabicLesson = { id: raw.id };
+  if (isDateKey(raw.readyOn)) out.readyOn = raw.readyOn;
+  const rv = raw.revisit;
+  if (isObj(rv) && isDateKey(rv.since)) out.revisit = { since: rv.since, what: str(rv.what, 300) };
+  if (isObj(raw.marks)) {
+    const own = `assessment.${raw.id.slice('lesson.'.length)}-check.q`, marks: Record<string, ArabicMark> = {};
+    for (const [q, m] of Object.entries(raw.marks).slice(0, 40)) {
+      if (!q.startsWith(own) || !/^\d{1,2}$/.test(q.slice(own.length)) || !isObj(m)) continue;
+      if (!OUTCOMES.includes(m.outcome as Outcome) || !SUPPORTS.includes(m.support as Support) || !isDateKey(m.on)) continue;
+      if (typeof m.attemptId !== 'string' || !/^[A-Za-z0-9_-]{1,100}$/.test(m.attemptId)) continue;
+      marks[q] = { outcome: m.outcome as Outcome, support: m.support as Support, on: m.on, attemptId: m.attemptId };
+    }
+    if (Object.keys(marks).length) out.marks = marks;
+  }
+  return out;
+}
+
 export function normalizeArabic(raw: unknown, report = { dropped: 0 }): ArabicData {
   if (raw === undefined) return emptyArabic();
   if (!isObj(raw)) { report.dropped++; return emptyArabic(); }
@@ -63,6 +88,18 @@ export function normalizeArabic(raw: unknown, report = { dropped: 0 }): ArabicDa
     const c = cleanArabicCard(r);
     if (!c || cardIds.has(c.id)) { report.dropped++; continue; }
     cardIds.add(c.id); out.cards.push(c);
+  }
+  // Absent until first used, and left absent: older data stays exactly as it was.
+  delete out.lessons;
+  if (raw.lessons !== undefined) {
+    out.lessons = [];
+    if (!Array.isArray(raw.lessons)) report.dropped++;
+    const lessonIds = new Set<string>();
+    for (const r of Array.isArray(raw.lessons) ? raw.lessons.slice(0, 500) : []) {
+      const l = cleanArabicLesson(r);
+      if (!l || lessonIds.has(l.id)) { report.dropped++; continue; }
+      lessonIds.add(l.id); out.lessons.push(l);
+    }
   }
   return out;
 }

@@ -1,5 +1,5 @@
 // Arabic Fuṣḥā: your records only. The course itself ships with the app and never holds a person's work.
-import type { AnotherWay, DateKey } from '../types';
+import type { AnotherWay, DateKey, Outcome, Support } from '../types';
 export type Variant = 'short' | 'standard' | 'extended' | 'revision' | 'practical';
 export type Help = 'independent' | 'hint' | 'guided';
 export type Modality = 'reading' | 'writing' | 'speaking' | 'listening';
@@ -28,10 +28,22 @@ export interface ArabicCard {
   review: { reps: number; interval: number; lapses: number; due: DateKey | null }; // the same schedule as a concept's
   anotherWay?: AnotherWay; // an explanation you kept (from 1.20.2)
 }
+// Your place on one lesson (adaptive Study, specs/adaptive-study.md): only what you chose is saved. The day you
+// said it's ready to move on, a flag to come back to it with what needs work, and your latest mark for each of its
+// checks from a session. Practised, Holding and a slip after Ready are worked out (data/study/mastery.ts). Kept
+// apart from sessions, which older versions rebuild from the fields they know, and synced as its own record.
+export interface ArabicMark { outcome: Outcome; support: Support; on: DateKey; attemptId: string }
+export interface ArabicLesson {
+  id: string;                                 // the lesson's id
+  readyOn?: DateKey;                          // the day you marked it ready to move on; gone if you take it back
+  revisit?: { since: DateKey; what: string }; // your "Needs revision" flag, with what needs work (≤ 300 characters)
+  marks?: Record<string, ArabicMark>;         // by check question id: your latest "How did it go?"
+}
 export interface ArabicData {
   pathId: string;
   attempts: ArabicAttempt[];
   cards: ArabicCard[]; // added after 1.16.0; absent before → nothing in revision yet
+  lessons?: ArabicLesson[]; // adaptive Study; absent until you mark an answer, a lesson ready or one to revisit
   [other: string]: unknown; // anything a newer MyDay adds here is kept
 }
 export const ARABIC_VERSION = '1.1.2'; // the package version these screens show (checked against it by arabic-rules)

@@ -16,6 +16,8 @@ export function resetLearningProgress(d: MyDayData): void {
   d.study.reviews = [];
   for (const concept of d.study.concepts) concept.review = freshReview();
   d.arabic.attempts = [];
+  // Your place on each Arabic lesson (marks, Ready to move on, Needs revision) is learning history too.
+  if (d.arabic.lessons) d.arabic.lessons = [];
   d.cybersecurity.attempts = [];
   for (const card of d.arabic.cards) card.review = freshReview();
   for (const card of d.cybersecurity.cards) card.review = freshReview();

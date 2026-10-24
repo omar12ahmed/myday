@@ -1,0 +1,37 @@
+{
+  "about": "MyDay's own list of the Arabic course's checkpoint and study-method skills: the orientation module and the four consolidation modules (A1, A2, B1, B2). Their lessons stay on your path in order, but they are never suggested as catch-up for a lesson that builds on them, because revisiting a portfolio or a goal-setting lesson doesn't repair grammar or vocabulary. Authored for adaptive Study (specs/study-home-and-lessons.md §8); the course package is unchanged. app/scripts/prepare-arabic.mjs checks it at every build.",
+  "modules": [
+    "module.arabic-learning-start",
+    "module.arabic-a1-integration",
+    "module.arabic-a2-integration",
+    "module.arabic-b1-integration",
+    "module.arabic-b2-independent"
+  ],
+  "checkpoint": [
+    "skill.arabic-fusha-register",
+    "skill.arabic-goal-baseline",
+    "skill.arabic-learning-loop",
+    "skill.arabic-arabic-tools",
+    "skill.arabic-practice-contract",
+    "skill.arabic-a1-listening",
+    "skill.arabic-a1-reading",
+    "skill.arabic-a1-speaking",
+    "skill.arabic-a1-writing",
+    "skill.arabic-a1-portfolio",
+    "skill.arabic-a2-listening",
+    "skill.arabic-a2-reading",
+    "skill.arabic-a2-interaction",
+    "skill.arabic-a2-composition",
+    "skill.arabic-a2-portfolio",
+    "skill.arabic-b1-source-task",
+    "skill.arabic-b1-explainer",
+    "skill.arabic-b1-unprepared",
+    "skill.arabic-b1-independent-cycle",
+    "skill.arabic-b1-portfolio",
+    "skill.arabic-b2-listening-reading",
+    "skill.arabic-b2-unseen-output",
+    "skill.arabic-portfolio-audit",
+    "skill.arabic-external-assessment",
+    "skill.arabic-lifelong-plan"
+  ]
+}

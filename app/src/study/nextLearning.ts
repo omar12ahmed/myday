@@ -1,9 +1,9 @@
 // A read-only recommendation derived from the ordered curricula and saved learner progress.
 // Content stays in each curriculum; there is no extra cursor to get out of sync.
 import type { MyDayData } from '../data/types';
-import { nextStep as nextArabicStep, lessonDone as arabicLessonDone } from '../data/arabic/sessions';
 import { nextTaskIn, stIndex } from '../data/study/roadmap';
-import { lessonIndex, moduleList, paths, corePath } from './arabic/catalogue';
+import { lessonIndex } from './arabic/catalogue';
+import { arabicPlan } from './arabic/plan';
 import { nextLesson as nextCyberLesson } from './cybersecurity/learning';
 
 export type LearningSubject = 'cybersecurity' | 'arabic' | 'roadmap';
@@ -36,18 +36,18 @@ export function learningOptions(data: MyDayData, generalCourseId = data.study.fo
     resume: cyber.code === 'user_choice', allComplete: cyber.allComplete, started: cyberStarted,
   };
 
-  const path = paths.get(data.arabic.pathId) ?? corePath;
-  const arabicIds = [...moduleList].filter(m => path.required_module_ids.includes(m.id)).sort((a, b) => a.sequence - b.sequence)
-    .flatMap(m => m.lesson_ids.filter(id => !lessonIndex[id].optional));
-  const arabicStep = nextArabicStep(data, arabicIds);
-  const arabicComplete = arabicIds.length > 0 && arabicIds.every(id => arabicLessonDone(data, id));
-  const arabicStarted = data.arabic.attempts.length > 0;
+  // Arabic: the same adaptive next step as its learning map (study/arabic/plan.ts), with the length that suits today.
+  const plan = arabicPlan(data)!, step = plan.step;
+  const arabicStarted = data.arabic.attempts.length > 0 || !!data.arabic.lessons?.length;
   const arabicOption: LearningOption = {
-    subject: 'arabic', label: 'Arabic Fuṣḥā', title: lessonIndex[arabicStep.lessonId].title,
-    detail: arabicStep.resume ? 'Resume your open Arabic session'
-      : arabicComplete ? 'Every required lesson has a finished session — choose a lesson to revisit' : arabicStarted ? 'Next in your course' : 'The first lesson in your course',
-    href: '#study/arabic/' + encodeURIComponent(arabicStep.lessonId),
-    minutes: lessonIndex[arabicStep.lessonId].minutes, resume: arabicStep.resume, allComplete: arabicComplete, started: arabicStarted,
+    subject: 'arabic', label: 'Arabic Fuṣḥā', title: lessonIndex[step.lessonId].title,
+    detail: step.kind === 'resume' ? 'Resume your open Arabic session'
+      : step.kind === 'revisit' ? `Worth revisiting first: ${lessonIndex[step.because!].title} builds on it`
+      : step.kind === 'revise' ? `Revision first (${step.due} ready in Arabic), then this lesson`
+      : step.kind === 'complete' ? 'Your path is ready to move on — revise, or revisit any lesson'
+      : step.state === 'practised' ? 'Practised — mark it ready when it clicks' : arabicStarted ? 'Next in your course' : 'The first lesson in your course',
+    href: '#study/arabic/' + encodeURIComponent(step.lessonId),
+    minutes: step.kind === 'resume' ? lessonIndex[step.lessonId].minutes : plan.length.minutes, resume: step.kind === 'resume', allComplete: plan.complete, started: arabicStarted,
   };
 
   // User-authored roadmap courses remain available, in the order of their stages and lessons.

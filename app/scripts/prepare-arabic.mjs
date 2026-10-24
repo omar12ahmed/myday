@@ -36,11 +36,32 @@ const short = id => id.split('.').pop();
 const byModule = (items, key = 'module_id') => id => items.filter(x => x[key] === id);
 const lessonsOf = byModule(c.lessons), exercisesOf = byModule(c.exercises), labsOf = byModule(c.labs), assessmentsOf = byModule(c.assessments);
 
-// The map: everything needed to choose where to go, without any lesson content.
+// MyDay's own list of checkpoint and study-method skills (content/teaching/arabic/prerequisite-kinds.json): never
+// suggested as catch-up. Every id must be a skill a lesson teaches, so a typo can't quietly let one through.
+const kinds = JSON.parse(readFileSync(new URL('../../content/teaching/arabic/prerequisite-kinds.json', import.meta.url), 'utf8'));
+const skillById = new Map(c.skills.map(s => [s.id, s]));
+const checkpoint = new Set(kinds.checkpoint);
+if (!Array.isArray(kinds.checkpoint) || checkpoint.size !== kinds.checkpoint.length) fail('prerequisite kinds: the checkpoint list repeats a skill');
+for (const id of checkpoint) if (!skillById.get(id)?.taught_by_lesson_ids?.length) fail(`prerequisite kinds: ${id} isn't a skill any lesson teaches`);
+// A lesson's checks are found from its id ("lesson.arabic-x" → "assessment.arabic-x-check.q1…"), so revision and
+// the lesson states agree on them; refuse a package where that doesn't hold.
+const checksOf = Object.fromEntries(c.assessments.filter(a => a.type === 'knowledge_check').map(a => [a.lesson_id, (a.questions || []).map(q => q.id)]));
+const minutesOf = (l, mode) => l.variants.find(v => v.mode === mode)?.minutes ?? fail(`${l.id} has no ${mode} session`);
+for (const l of c.lessons) {
+  const ids = checksOf[l.id] ?? [];
+  if (ids.some((id, i) => id !== `assessment.${l.id.slice('lesson.'.length)}-check.q${i + 1}`)) fail(`${l.id}: its check ids don't follow the lesson's own id`);
+}
+
+// The map: everything needed to choose where to go, without any lesson content. `builds_on` lists the content
+// skills a lesson needs (checkpoints left out, short names: "past-suffixes" for skill.arabic-past-suffixes) and
+// `checks` how many check questions it has; `short` and `revision` are its two shortest sessions' minutes. All feed
+// the next step on the map and on Today, which must work without opening the module.
 const index = {
   curriculum_version: c.curriculum_version, course: c.course, paths: c.paths, milestones: c.milestones, resources: c.resources,
   topics: c.topics, modules: c.modules,
-  lessons: Object.fromEntries(c.lessons.map(l => [l.id, { title: l.title, module_id: l.module_id, topic_id: l.topic_id, optional: l.optional, stage_target: l.stage_target, minutes: l.estimated_duration_minutes.standard }])),
+  lessons: Object.fromEntries(c.lessons.map(l => [l.id, { title: l.title, module_id: l.module_id, topic_id: l.topic_id, optional: l.optional, stage_target: l.stage_target, minutes: l.estimated_duration_minutes.standard,
+    builds_on: l.prerequisites.all.filter(s => !checkpoint.has(s)).map(s => s.replace(/^skill\.arabic-/, '')), checks: (checksOf[l.id] ?? []).length,
+    short: minutesOf(l, 'short'), revision: minutesOf(l, 'revision') }])),
   skills: Object.fromEntries(c.skills.map(s => [s.id, { name: s.name, module_id: s.module_id, taught_by_lesson_ids: s.taught_by_lesson_ids }])),
   projects: c.projects,
 };
