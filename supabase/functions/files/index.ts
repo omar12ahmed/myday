@@ -27,11 +27,17 @@ function r2(): Store | null {
   const tag = (xml: string, name: string) => xml.match(new RegExp(`<${name}>([\\s\\S]*?)</${name}>`))?.[1] ?? '';
   const unxml = (s: string) => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&');
   return {
+    // What's stored, from a one-byte read rather than HEAD: Cloudflare compresses text on the way out when the request
+    // accepts it (Deno's fetch does), and then sends no length, so a text file would look empty. A ranged answer isn't
+    // compressed and gives the whole size in Content-Range. An empty object can't be ranged (416): size 0.
     async head(key) {
-      const res = await aws.fetch(at(key), { method: 'HEAD' });
-      if (res.status === 404) return null;
+      const res = await aws.fetch(at(key), { headers: { Range: 'bytes=0-0' } });
+      const type = (res.headers.get('content-type') || '').split(';')[0].trim();
+      if (res.status === 404 || res.status === 416) { await res.body?.cancel(); return res.status === 404 ? null : { size: 0, type }; }
       await ok(res);
-      return { size: Number(res.headers.get('content-length')) || 0, type: (res.headers.get('content-type') || '').split(';')[0].trim() };
+      const total = Number(/\/(\d+)$/.exec(res.headers.get('content-range') || '')?.[1]);
+      await res.body?.cancel();
+      return { size: Number.isFinite(total) ? total : 0, type };
     },
     async firstBytes(key, n) {
       const res = await ok(await aws.fetch(at(key), { headers: { Range: `bytes=0-${n - 1}` } }));

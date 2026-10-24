@@ -112,6 +112,8 @@ Also, per the other decisions on record:
     type by its first bytes, read with a Range request), then answers kept, or deletes it and says why. Only then does
     the app mark the file kept. The SHA-256 is worked out on the device and kept in the record, to tell identical files
     apart; the server doesn't check it.
+  - What's stored (its size and type) is read with a one-byte Range request, not HEAD: R2's address compresses text
+    when the request accepts it, and a compressed answer has no length (found in the live check, 24 October 2026).
   - **`thumb`** `{ fileId, area, size, md5 }`: a presigned PUT for the preview (a small WebP the app makes), 200 KB at
     most, only for a stored JPEG, PNG or WebP.
   - **`open`** `{ fileId, area, thumb? }`: a **presigned GET**, valid 5 minutes. The object carries the Content-Type
