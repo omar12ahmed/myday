@@ -30,10 +30,26 @@ export interface CyberCard {
   review: { reps: number; interval: number; lapses: number; due: DateKey | null };
   anotherWay?: AnotherWay; // an explanation you kept (from 1.20.2)
 }
+// An entry in your portfolio (specs/study-home-and-lessons.md §10): made from a notebook attempt you handed in, with a
+// title, a copy of the attempt's evidence as you chose to keep it (so you can redact it first, and the portfolio stands
+// on its own), an optional note, the day you reviewed it (ticking the privacy check) and up to 5 files, listed by their
+// shared file records' ids (data/files.ts, area 'portfolio'). Synced as its own record, `cyber_portfolio`.
+export interface PortfolioEntry {
+  id: string;            // "pf…"
+  attemptId: string;     // the notebook attempt it came from
+  activityId: string;    // that attempt's activity
+  title: string;         // 1–120 characters
+  evidence: string;      // ≤ 12,000 characters
+  note: string;          // ≤ 1,000 characters
+  reviewedOn: DateKey;   // the day you ticked the privacy check
+  fileIds?: string[];    // up to PORTFOLIO_FILES
+}
+export const PORTFOLIO_FILES = 5;
 export interface CyberData {
   pathId: string;
   attempts: CyberAttempt[];
   cards: CyberCard[]; // added after 1.17.1; absent before → nothing in revision yet
+  portfolio?: PortfolioEntry[]; // the portfolio; absent until you add an entry
   [other: string]: unknown; // anything a newer MyDay adds here is kept
 }
 export const emptyCyber = (): CyberData => ({ pathId: 'path.core', attempts: [], cards: [] });

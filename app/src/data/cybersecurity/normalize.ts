@@ -1,7 +1,7 @@
 import { isDateKey } from '../dates';
 import { intIn, isObj } from '../util';
 import { cleanAnotherWay } from '../study/anotherWay';
-import { emptyCyber, type CyberAttempt, type CyberCard, type CyberData } from './types';
+import { emptyCyber, PORTFOLIO_FILES, type CyberAttempt, type CyberCard, type CyberData, type PortfolioEntry } from './types';
 
 const str = (v: unknown, max: number) => typeof v === 'string' ? v.slice(0, max) : '';
 const date = (v: unknown): v is string => typeof v === 'string' && /^\d{4}-\d\d-\d\dT/.test(v) && Number.isFinite(Date.parse(v));
@@ -38,6 +38,18 @@ export function cleanCyberCard(raw: unknown): CyberCard | null {
 }
 
 // Fields a newer MyDay adds to the section are kept as they are, so going back a version never loses them.
+// A portfolio entry: its id is the sync record's; it needs its attempt, its activity, a title and the day you reviewed
+// it. File ids are kept only in the shared records' form, at most 5; anything else malformed is left out of the entry.
+const PF = /^pf[a-z0-9]{6,30}$/, FILE_ID = /^fl[a-z0-9]{6,40}$/;
+export function cleanPortfolioEntry(raw: unknown): PortfolioEntry | null {
+  if (!isObj(raw) || typeof raw.id !== 'string' || !PF.test(raw.id) || !isDateKey(raw.reviewedOn)) return null;
+  if (typeof raw.attemptId !== 'string' || !/^[A-Za-z0-9_-]{1,100}$/.test(raw.attemptId) || typeof raw.activityId !== 'string' || !/^[a-z]+\.[a-z0-9.-]{1,120}$/.test(raw.activityId)) return null;
+  const title = str(raw.title, 120).trim();
+  if (!title) return null;
+  const ids = Array.isArray(raw.fileIds) ? [...new Set(raw.fileIds.filter((x): x is string => typeof x === 'string' && FILE_ID.test(x)))].slice(0, PORTFOLIO_FILES) : [];
+  return { id: raw.id, attemptId: raw.attemptId, activityId: raw.activityId, title, evidence: str(raw.evidence, 12000), note: str(raw.note, 1000), reviewedOn: raw.reviewedOn, ...(ids.length ? { fileIds: ids } : {}) };
+}
+
 export function normalizeCyber(raw: unknown, report = { dropped: 0 }): CyberData {
   if (raw === undefined) return emptyCyber();
   if (!isObj(raw)) { report.dropped++; return emptyCyber(); }
@@ -56,6 +68,18 @@ export function normalizeCyber(raw: unknown, report = { dropped: 0 }): CyberData
     const c = cleanCyberCard(r);
     if (!c || cardIds.has(c.id)) { report.dropped++; continue; }
     cardIds.add(c.id); out.cards.push(c);
+  }
+  // Absent until first used, and left absent: older data stays exactly as it was.
+  delete out.portfolio;
+  if (raw.portfolio !== undefined) {
+    out.portfolio = [];
+    if (!Array.isArray(raw.portfolio)) report.dropped++;
+    const entryIds = new Set<string>();
+    for (const r of Array.isArray(raw.portfolio) ? raw.portfolio.slice(0, 1000) : []) {
+      const e = cleanPortfolioEntry(r);
+      if (!e || entryIds.has(e.id)) { report.dropped++; continue; }
+      entryIds.add(e.id); out.portfolio.push(e);
+    }
   }
   return out;
 }

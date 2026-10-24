@@ -39,7 +39,7 @@ export function StudySettings({ data }: { data: MyDayData }) {
     if (!canReset || confirming.current || getSnapshot().data !== backedUp) return;
     confirming.current = true;
     try {
-      if (!(await confirm({ title: 'Reset all Study progress?', body: 'This removes completion marks, Study sessions and their check-ins, Arabic answers, practice attempts and lesson states (Ready to move on, Needs revision, your marks), Cybersecurity notebook attempts and evidence, and revision history. Your course outline, concept questions, the words you kept (unless you chose to remove them), separate notes and other MyDay sections stay. The reset can reach your other devices. Your checked backup is the way to recover the removed work.', confirmLabel: 'Reset Study progress', cancelLabel: 'Keep my progress' })) || !mounted.current) return;
+      if (!(await confirm({ title: 'Reset all Study progress?', body: 'This removes completion marks, Study sessions and their check-ins, Arabic answers, practice attempts and lesson states (Ready to move on, Needs revision, your marks), Cybersecurity notebook attempts and evidence, and revision history. Your course outline, concept questions, the words you kept (unless you chose to remove them), your Cybersecurity portfolio, separate notes and other MyDay sections stay. The reset can reach your other devices. Your checked backup is the way to recover the removed work.', confirmLabel: 'Reset Study progress', cancelLabel: 'Keep my progress' })) || !mounted.current) return;
       if (getSnapshot().data !== backedUp) {
         setBackupData(null); setVerifiedBackup(false);
         toast('MyDay changed since that backup. Download and check a fresh backup before resetting.');

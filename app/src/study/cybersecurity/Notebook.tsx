@@ -13,6 +13,7 @@ import { attemptScore, beginAttempt, submitAttempt } from './learning';
 import { Lines } from './parts';
 import { RelatedPractice } from './Practice';
 import { CheckRevision } from './CheckRevision';
+import { AddToPortfolio } from './Portfolio';
 
 export function ActivityView({ data, activity }: { data: MyDayData; activity: Activity }) {
   const lesson = [...lessons.values()].find(l => [l.practical_task_id, l.knowledge_check_id, l.mini_challenge_id].includes(activity.id));
@@ -37,7 +38,7 @@ export function ActivityView({ data, activity }: { data: MyDayData; activity: Ac
       <BackLink to={lesson ? 'study/cybersecurity/' + lesson.id : 'study/cybersecurity'} label={lesson?.title ?? 'Learning map'} />
       <Eyebrow>{project ? 'Portfolio project' : lab ? 'Lab bench' : 'Learning activity'}</Eyebrow><h2>{activity.title}</h2><p>{activity.instruction}</p>
       {lab && <><h3>Inputs</h3><p>{lab.inputs}</p><p className="text-sm text-fg-2">{lab.input_provision}</p><h3>Steps</h3><Lines items={lab.steps} /><p><strong>Reset:</strong> {lab.reset}</p><p>{lab.estimated_minutes.minimum}–{lab.estimated_minutes.maximum} minutes, split into checkpoints as needed.</p></>}
-      {project && <><p>{project.estimated_hours.minimum}–{project.estimated_hours.maximum} hours, split into checkpoints.</p><h3>Required skill evidence</h3><ul className="list-disc pl-5">{project.required_skills.map(s => <li key={s.skill_id}><InlineLink href={lessonHref(skills.get(s.skill_id)!.taught_by_lesson_ids[0])}>{skills.get(s.skill_id)!.name}</InlineLink> — {s.min_mastery}/100; not verified here</li>)}</ul><p>{project.portfolio_value}</p><p>{project.retake_rule}</p></>}
+      {project && <><p>{project.estimated_hours.minimum}–{project.estimated_hours.maximum} hours, split into checkpoints.</p><h3>Required skill evidence</h3><ul className="list-disc pl-5" data-cy-skill-evidence="">{project.required_skills.map(s => <li key={s.skill_id}><InlineLink href={lessonHref(skills.get(s.skill_id)!.taught_by_lesson_ids[0])}>{skills.get(s.skill_id)!.name}</InlineLink> — {hasEvidence(data, s.skill_id) ? 'evidence in your notebook' : 'no evidence yet'}</li>)}</ul><p className="text-sm text-fg-2">Evidence means a handed-in attempt on a lesson that teaches the skill, in your own words; MyDay doesn’t verify it.</p><p>{project.portfolio_value}</p><p>{project.retake_rule}</p></>}
       <h3>What to record</h3><Lines items={activity.expected} />
       <h3>Scope and evidence checks</h3><Lines items={activity.critical} />
       {!!activity.rubric.length && <><h3>How the task is assessed</h3><ul className="list-disc pl-5">{activity.rubric.map(r => <li key={r.criterion} className="my-2"><strong>{r.criterion} · weight {r.weight}</strong>{r.pass_evidence && <p className="text-sm text-fg-2 m-0">{r.pass_evidence}</p>}</li>)}</ul></>}
@@ -70,10 +71,10 @@ export function ActivityView({ data, activity }: { data: MyDayData; activity: Ac
       </div>
     </Card> : <Card><Button variant="primary" data-action="cyber-begin" onClick={() => { if (update(d => { if (!beginAttempt(d, activity.id)) return false; })) setProblem(''); }}>{attempts.length ? 'Start a fresh attempt' : 'Start an attempt'}</Button></Card>}
     {isCheck && <Card data-cy-check-revision=""><h3 className="mt-0">Bring these questions back later</h3><CheckRevision data={data} ids={activity.questions.map(q => q.id)} /></Card>}
-    {[...attempts].reverse().filter(a => a.submittedAt).map(a => <Result key={a.id} attempt={a} activity={activity} />)}
+    {[...attempts].reverse().filter(a => a.submittedAt).map(a => <Result key={a.id} data={data} attempt={a} activity={activity} />)}
   </>;
 }
-function Result({ attempt: a, activity }: { attempt: CyberAttempt; activity: Activity }) {
+function Result({ data, attempt: a, activity }: { data: MyDayData; attempt: CyberAttempt; activity: Activity }) {
   const score = attemptScore(a, activity);
   return <Card><Eyebrow>Notebook entry · {new Date(a.submittedAt!).toLocaleDateString('en-GB')}</Eyebrow><h3>{a.inputVariant}</h3>
     <p className="text-sm text-fg-2">{a.assistance} · self-assessed · curriculum {a.curriculumVersion} · rubric {a.rubricVersion}</p>
@@ -89,6 +90,7 @@ function Result({ attempt: a, activity }: { attempt: CyberAttempt; activity: Act
         saved.answerRevealed = true;
       })}>Compare with the answer guide</Button>}
     </>}
+    <AddToPortfolio data={data} attempt={a} title={a.inputVariant ? `${activity.title}: ${a.inputVariant}` : activity.title} />
   </Card>;
 }
 function AnswerGuide({ activity }: { activity: Activity }) {
@@ -102,4 +104,11 @@ function AnswerGuide({ activity }: { activity: Activity }) {
     <p className="text-sm text-fg-2">For self-study after your attempt. Explain any correction in your own words; viewing this guide is not a pass.</p>
     {failed ? <p role="alert">Couldn’t load the guide. Reopen this activity to try again.</p> : !answers ? <p role="status">Opening the guide…</p> : activity.questions.map(q => <p key={q.id}>{answers[q.id]}</p>)}
   </section>;
+}
+
+// A skill has evidence once you've handed in an attempt on any activity of a lesson that teaches it (practical task,
+// mini challenge or knowledge check). Your own record, not a verified mastery level.
+function hasEvidence(data: MyDayData, skillId: string): boolean {
+  const ids = new Set((skills.get(skillId)?.taught_by_lesson_ids ?? []).flatMap(id => { const l = lessons.get(id); return l ? [l.practical_task_id, l.mini_challenge_id, l.knowledge_check_id] : []; }));
+  return data.cybersecurity.attempts.some(a => !!a.submittedAt && ids.has(a.activityId));
 }

@@ -16,6 +16,7 @@ import { Lines, LinkButton } from './parts';
 import { activities, curriculum, environments, lessons, modules, resources, selectedPath, skills, type Lesson } from './catalogue';
 import { attemptsFor, cyberJourney, cyberSteps, importPath, nextLesson, prerequisiteGaps, sessionMode, suggestedSession, warmUpLesson } from './learning';
 import { ActivityView } from './Notebook';
+import { PortfolioView } from './Portfolio';
 import { AiCards } from './AiCards';
 import { TutorCard } from './TutorCard';
 import { PracticeIndex, PracticeView, RelatedPractice } from './Practice';
@@ -38,11 +39,11 @@ export function ResourceLinks({ ids }: { ids: string[] }) {
 }
 export default function CyberScreen({ data, id }: { data: MyDayData; id: string }) {
   const lesson = lessons.get(id), module = modules.get(id), activity = activities.get(id);
-  const activeTab = activity?.practice || id === 'practice' ? 'practice' : id === 'notebook' || id === 'toolkit' ? id : 'map';
+  const activeTab = activity?.practice || id === 'practice' ? 'practice' : id === 'notebook' || id === 'toolkit' || id === 'portfolio' ? id : 'map';
   return <div className="cyber-workshop break-words">
     <nav className="workspace-tabs" aria-label="Cybersecurity">
       <a href="#study">‹ Study</a>
-      {[['map', 'Learning map', ''], ['practice', 'Practice', '/practice'], ['notebook', 'Lab notebook', '/notebook'], ['toolkit', 'Toolkit', '/toolkit']].map(([key, label, path]) => <a key={key} href={'#study/cybersecurity' + path} aria-current={activeTab === key ? 'page' : undefined}>{label}</a>)}
+      {[['map', 'Learning map', ''], ['practice', 'Practice', '/practice'], ['notebook', 'Lab notebook', '/notebook'], ['portfolio', 'Portfolio', '/portfolio'], ['toolkit', 'Toolkit', '/toolkit']].map(([key, label, path]) => <a key={key} href={'#study/cybersecurity' + path} aria-current={activeTab === key ? 'page' : undefined}>{label}</a>)}
     </nav>
     {lesson ? <LessonView key={lesson.id} data={data} lesson={lesson} />
       : module ? <ModuleView data={data} id={id} />
@@ -50,6 +51,7 @@ export default function CyberScreen({ data, id }: { data: MyDayData; id: string 
       : activity ? <ActivityView key={id} data={data} activity={activity} />
       : id === 'practice' ? <PracticeIndex data={data} />
       : id === 'notebook' ? <NotebookIndex data={data} />
+      : id === 'portfolio' ? <PortfolioView data={data} />
       : id === 'toolkit' ? <Toolkit />
       : id ? <Card><h2>This learning page isn’t here</h2><BackLink to="study/cybersecurity" label="Back to the learning map" /></Card>
       : <MapView data={data} />}

@@ -1,5 +1,6 @@
 // Clear learning history, including check-ins and attempt evidence. Course contents, paths,
-// concept questions, the words you kept and separate notes remain; review schedules begin again. The words you kept
+// concept questions, the words you kept, the Cybersecurity portfolio (its entries keep their own copy of the evidence)
+// and separate notes remain; review schedules begin again. The words you kept
 // go too only if you choose (`removeWords`). Sync propagates removals.
 import type { MyDayData } from '../data/types';
 
