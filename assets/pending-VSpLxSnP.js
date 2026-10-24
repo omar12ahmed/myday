@@ -1,0 +1,1 @@
+var e=null,t=(t,n)=>{e={lessonId:t,step:n,at:Date.now()}};function n(t){let n=e?.lessonId===t&&Date.now()-e.at<5e3?e.step:null;return e=null,n}export{n,t};
