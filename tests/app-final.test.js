@@ -169,9 +169,9 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   JSON.stringify(liveAll).replace(/"(id|uid|qid|key)":"([^"]*)"/g, (m, k, v) => { seedIds.add(v); return m; });
   const mask = o => { const c = JSON.parse(noSaves(o)); delete c.health.futureHealthPart; delete c.health.daily; return canon(JSON.parse(JSON.stringify(c, (k, v) => (['id', 'uid', 'qid', 'key'].includes(k) && typeof v === 'string' && /^[a-z]{1,3}[0-9a-z]{10,}$/.test(v) ? 'NEW' : v)))); };
   // The new app adds Notes and Goal (1.3.0), Tasks, What MyDay has noticed and Projects (1.12.0), Cybersecurity (1.14.0),
-  // Arabic, Daily exercises and Reading, which the current MyDay keeps unread: compared on their own, below.
+  // Arabic, Daily exercises, Reading and Files (1.68.0), which the current MyDay keeps unread: compared on their own, below.
   // …and (from 1.11.0) its default theme is light, where the current MyDay's is dark: compared on its own too.
-  const newCmp = { ...newAll, settings: { ...newAll.settings, theme: liveAll.settings.theme } }; delete newCmp.notes; delete newCmp.fitness; delete newCmp.tasks; delete newCmp.patterns; delete newCmp.projects; delete newCmp.cybersecurity; delete newCmp.arabic; delete newCmp.reading;
+  const newCmp = { ...newAll, settings: { ...newAll.settings, theme: liveAll.settings.theme } }; delete newCmp.notes; delete newCmp.fitness; delete newCmp.tasks; delete newCmp.patterns; delete newCmp.projects; delete newCmp.cybersecurity; delete newCmp.arabic; delete newCmp.reading; delete newCmp.files;
   check('the whole saved file matches the current MyDay\'s, section by section', !('notes' in liveAll) && !('fitness' in liveAll) && !('tasks' in liveAll) && !('patterns' in liveAll) && !('projects' in liveAll) && mask(liveAll) === mask(newCmp), (() => { const a = JSON.parse(mask(liveAll)), b = JSON.parse(mask(newCmp)); return [...new Set([...Object.keys(a), ...Object.keys(b)])].filter(k => JSON.stringify(a[k]) !== JSON.stringify(b[k])); })());
   check('…except the default theme, on purpose: light in the new app (its warm look), dark in the current MyDay', newAll.settings.theme === 'light' && liveAll.settings.theme === 'dark', [newAll.settings.theme, liveAll.settings.theme]);
   check('…the new app adds Notes: the starter categories and no notes', newAll.notes.items.length === 0 && newAll.notes.categories.map(c => c.name).join() === 'Lifestyle,Business ideas,Health & fitness,Money,Study & career,Personal');
@@ -183,6 +183,7 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   check('…while the new app also keeps the unknown part of Health', eq(newAll.health.futureHealthPart, { kept: true }));
   check('…and adds Daily exercises: none yet, no days logged (the current MyDay leaves it out)', eq(newAll.health.daily, { exercises: [], log: {} }) && !('daily' in liveAll.health));
   check('…and Reading: no books yet (the current MyDay leaves it out)', eq(newAll.reading, { books: [] }) && !('reading' in liveAll));
+  check('…and Files: none yet (the current MyDay leaves it out)', eq(newAll.files, { items: [] }) && !('files' in liveAll));
 
   // ------------------------------------------------------------------
   console.log('\n[63] Unreadable or unavailable data is never replaced silently');
@@ -337,9 +338,9 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   // Opening Finance the first time saved your rates into the pay settings; everything else must be exactly as that release saved it.
   const RATES = ['hourlyRate', 'overtimeMultiplier', 'bankHolidayMultiplier', 'nightMultiplier', 'taxCode', 'niCategory', 'studentLoans', 'frequency', 'periodAnchor', 'annualLeavePaid', 'cancelledPaid', 'sickPay'];
   const payRest = o => { const c = { ...o.pay }; for (const k of RATES) delete c[k]; return JSON.stringify(c); };
-  const ADDED = ['study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'projects', 'cybersecurity', 'arabic', 'reading', 'pay', 'schemaVersion'];
-  check('the new app saves every record exactly as that release had it (it adds an empty Study, Finance, Notes, Goal, Tasks, What MyDay has noticed, Projects, Cybersecurity, Arabic, Reading and Daily exercises; Finance\'s first visit saves your rates; the data becomes version 5)',
-    without(N, ADDED) === without(P, ADDED) && N.schemaVersion === 5 && payRest(N) === payRest(P) && N.pay.taxCode === '1241T' && N.study.stages.length === 0 && N.finance.debts.length === 0 && N.finance.ratesSetOn === '2026-11-02' && N.notes.items.length === 0 && N.fitness.answers === null && eq(N.tasks, { lists: [], items: [] }) && eq(N.patterns.answers, {}) && eq(N.cybersecurity, { pathId: 'path.core', attempts: [], cards: [] }) && eq(N.reading, { books: [] }),
+  const ADDED = ['study', 'finance', 'notes', 'fitness', 'tasks', 'patterns', 'projects', 'cybersecurity', 'arabic', 'reading', 'files', 'pay', 'schemaVersion'];
+  check('the new app saves every record exactly as that release had it (it adds an empty Study, Finance, Notes, Goal, Tasks, What MyDay has noticed, Projects, Cybersecurity, Arabic, Reading, Daily exercises and Files; Finance\'s first visit saves your rates; the data becomes version 5)',
+    without(N, ADDED) === without(P, ADDED) && N.schemaVersion === 5 && payRest(N) === payRest(P) && N.pay.taxCode === '1241T' && N.study.stages.length === 0 && N.finance.debts.length === 0 && N.finance.ratesSetOn === '2026-11-02' && N.notes.items.length === 0 && N.fitness.answers === null && eq(N.tasks, { lists: [], items: [] }) && eq(N.patterns.answers, {}) && eq(N.cybersecurity, { pathId: 'path.core', attempts: [], cards: [] }) && eq(N.reading, { books: [] }) && eq(N.files, { items: [] }),
     d70(JSON.parse(without(N, ADDED)), JSON.parse(without(P, ADDED))).slice(0, 6));
   // Since 1.44.0 (schema 5), going back means a backup exported before updating: the older release refuses the newer
   // data rather than opening it, and never saves over it (before, its next save quietly left Study out).
