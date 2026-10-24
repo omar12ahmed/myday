@@ -102,3 +102,36 @@ When the other session's Cybersecurity lesson journey is released:
 
 - link Cybersecurity lessons, with "marked complete" and "begun" as Study keeps them;
 - a "For your project" line on the Study side.
+
+The journey was released in 1.55.0, so both are built in §7.
+
+## 7. Follow-up: Cybersecurity lessons and "For your project" (not yet released)
+
+Built after 1.56.0. The owner chose to ship it as the next release (24 October 2026) and where the Study-side line
+goes: the course page, books in Reading and the Cybersecurity lesson page. The Arabic lesson page was left out; it was
+being changed for "Keep a word".
+
+- **Cybersecurity lessons:**
+  - Linked like Arabic lessons, from your path in course order, grouped by module.
+  - The status is in Study's own words, because Cybersecurity has no lesson states yet:
+    - "Marked complete" when its roadmap task is ticked;
+    - "Started" after an attempt on one of its activities, a Study session on it, or its task ticked;
+    - otherwise "Not started".
+  - The catalogue loads on demand, separately from Arabic's, so a link of one kind never loads the other.
+  - It opens the lesson.
+  - The card's hint now reads "Link a course, book or lesson you're learning for this project."
+- **"For your project: …":**
+  - Shown under the title of a course on its page, a current book in Reading, and a Cybersecurity lesson on its page.
+    It names every project that links it ("For your projects: A, B"), and each name opens the project.
+  - Nothing is shown when no project links it.
+  - It's read from the projects' links; nothing new is saved.
+- **Saved data:** none new. A Cybersecurity link is a new `kind` value (`'cyber'`) in the existing `studyLinks`.
+  1.56.0 already keeps a kind it doesn't know, unread, and shows it as "From a newer MyDay" with "Open it in a newer
+  MyDay". This is proved with `app-sync-previous`.
+- **Checks:**
+  - **Rules:** the cyber kind (add, view, href, the three statuses), and `linkedFrom`.
+  - **Browser:**
+    - linking a Cybersecurity lesson (its status, the grouped list, a failed load and Try again);
+    - the line on the course page, a book and the lesson page (one project, two projects, none);
+    - each name opens its project.
+  - **Previous release:** keeps a `'cyber'` link through read, edit, save and sync.

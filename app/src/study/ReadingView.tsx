@@ -10,6 +10,7 @@ import { finishedBooks, nowReading, pctOf } from '../data/reading';
 import type { Book, MyDayData } from '../data/types';
 import { addBook, addNote, editBook, finishBook, removeBook, removeNote, reopenBook, setPage, stepPage } from './readingActions';
 import { StudyTabs } from './StudyTabs';
+import { ForYourProject } from '../projects/ForYourProject';
 
 // A note on a book: its page (if given), the text, and a way to remove it (asked first — it's your writing).
 function NoteRow({ b, n }: { b: Book; n: Book['notes'][number] }) {
@@ -74,7 +75,7 @@ function EditBook({ b, onDone }: { b: Book; onDone: () => void }) {
 
 // One book being read: title and author, a slim bar when the total is known (no percentage — where you are is the
 // page), the page control, its notes one tap away, Edit and Mark as finished.
-function BookRow({ b, open, onToggle }: { b: Book; open: boolean; onToggle: () => void }) {
+function BookRow({ data, b, open, onToggle }: { data: MyDayData; b: Book; open: boolean; onToggle: () => void }) {
   const pct = pctOf(b);
   const pageRef = useRef<HTMLInputElement>(null), noteRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -87,7 +88,7 @@ function BookRow({ b, open, onToggle }: { b: Book; open: boolean; onToggle: () =
   return (
     <div className="book-row py-3 border-t border-dashed border-outline first-of-type:border-t-0" data-id={b.id}>
       <div className="flex justify-between items-start gap-3">
-        <div className="min-w-0"><div className="font-[800]">{b.title}</div>{b.author && <Meta>{b.author}</Meta>}</div>
+        <div className="min-w-0"><div className="font-[800]">{b.title}</div>{b.author && <Meta>{b.author}</Meta>}<ForYourProject data={data} kind="book" id={b.id} className="mt-0.5" /></div>
         {!editing && <LinkButton data-action="read-edit" data-id={b.id} className="flex-none text-sm px-1" aria-label={`Edit ${b.title}`} onClick={() => setEditing(true)}>Edit</LinkButton>}
       </div>
       {editing ? <EditBook b={b} onDone={() => setEditing(false)} /> : <>
@@ -136,7 +137,7 @@ export function ReadingView({ data }: { data: MyDayData }) {
         {live.length === 0 && !adding && (
           <Note className="mt-1">No books on the go. Add one — a title is all it needs; the author and total pages can come later.</Note>
         )}
-        {live.map(b => <BookRow key={b.id} b={b} open={openNotes === b.id} onToggle={() => setOpenNotes(openNotes === b.id ? null : b.id)} />)}
+        {live.map(b => <BookRow key={b.id} data={data} b={b} open={openNotes === b.id} onToggle={() => setOpenNotes(openNotes === b.id ? null : b.id)} />)}
         {adding ? (
           <div className="mt-3">
             <Field label="Title" htmlFor="bkTitle"><TextInput ref={titleRef} id="bkTitle" maxLength={120} placeholder="The Pragmatic Programmer" autoFocus /></Field>

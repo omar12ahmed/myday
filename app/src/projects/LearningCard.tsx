@@ -5,48 +5,52 @@ import { Field, Select, TextInput } from '../components/Field';
 import { Choice, Choices, LinkButton, Note } from '../components/parts';
 import { update } from '../data/storage';
 import { stIndex } from '../data/study/roadmap';
-import { addStudyLink, bookChoices, courseChoices, LINK_KIND_LABEL, LINK_KINDS, LINK_LIMITS, linkView, removeStudyLink, setStudyLinkWhy, type ArabicInfo, type LinkKind, type LinkView } from '../data/studyLinks';
+import { addStudyLink, bookChoices, courseChoices, isLessonKind, LINK_KIND_LABEL, LINK_KINDS, LINK_LIMITS, linkView, removeStudyLink, setStudyLinkWhy, type LessonInfo, type LessonKind, type LinkKind, type LinkView } from '../data/studyLinks';
 import { toast } from '../data/toast';
 import type { MyDayData, Project } from '../data/types';
 
 // "Learning" (specs/projects-study-links.md): what you're learning for this project in Study — your courses, books and
-// Arabic lessons — with Study's own status and why it matters. Unlinking never changes Study.
+// Arabic and Cybersecurity lessons — with Study's own status and why it matters. Unlinking never changes Study.
 
 const focusSoon = (id: string) => requestAnimationFrame(() => document.getElementById(id)?.focus());
 
-// The Arabic catalogue loads on demand, only when a project has an Arabic lesson or you choose to link one. Once
-// loaded it's kept; if it can't load, the card says so, and opening the form or "Try again" tries again.
-type ArabicModule = typeof import('./learningArabic');
-type Arabic = ArabicModule | null | 'failed';
-let arabicLoaded: ArabicModule | null = null;
-let arabicLoading: Promise<ArabicModule> | null = null;
-function useArabic(need: boolean): [Arabic, () => void] {
-  const [mod, setMod] = useState<ArabicModule | null>(arabicLoaded);
+// The lesson catalogues are large, so each loads on demand, only when a project has one of its lessons or you choose
+// to link one. Once loaded it's kept; if it can't load, the card says so, and opening the form or "Try again" tries again.
+type LessonModule = typeof import('./learningArabic'); // learningCyber.ts has the same shape
+type Lessons = LessonModule | null | 'failed';
+const LOAD: Record<LessonKind, () => Promise<LessonModule>> = { arabic: () => import('./learningArabic'), cyber: () => import('./learningCyber') };
+const LESSONS_NAME: Record<LessonKind, string> = { arabic: 'Arabic', cyber: 'Cybersecurity' };
+const cache: Record<LessonKind, { mod: LessonModule | null; loading: Promise<LessonModule> | null }> = { arabic: { mod: null, loading: null }, cyber: { mod: null, loading: null } };
+function useLessons(kind: LessonKind, need: boolean): [Lessons, () => void] {
+  const c = cache[kind];
+  const [mod, setMod] = useState<LessonModule | null>(c.mod);
   const [failed, setFailed] = useState(false);
   useEffect(() => {
     if (!need || mod || failed) return;
     let live = true;
-    (arabicLoading ??= import('./learningArabic')).then(m => { arabicLoaded = m; if (live) setMod(m); })
-      .catch(() => { arabicLoading = null; if (live) setFailed(true); });
+    (c.loading ??= LOAD[kind]()).then(m => { c.mod = m; if (live) setMod(m); })
+      .catch(() => { c.loading = null; if (live) setFailed(true); });
     return () => { live = false; };
-  }, [need, mod, failed]);
+  }, [kind, c, need, mod, failed]);
   return [mod ?? (failed ? 'failed' : null), () => setFailed(false)];
 }
 
 export function LearningCard({ data, p }: { data: MyDayData; p: Project }) {
   const links = p.studyLinks ?? [];
   const [adding, setAdding] = useState(false), [kind, setKind] = useState<LinkKind>('course');
-  const [ar, retryArabic] = useArabic(links.some(l => l.kind === 'arabic') || (adding && kind === 'arabic'));
+  const need = (k: LessonKind) => links.some(l => l.kind === k) || (adding && kind === k);
+  const [arabic, retryArabic] = useLessons('arabic', need('arabic')), [cyber, retryCyber] = useLessons('cyber', need('cyber'));
+  const lessons: Record<LessonKind, Lessons> = { arabic, cyber }, retry: Record<LessonKind, () => void> = { arabic: retryArabic, cyber: retryCyber };
   const ix = useMemo(() => stIndex(data.study), [data.study]);
-  const arabic = (id: string): ArabicInfo => (ar === 'failed' ? 'failed' : ar ? ar.arabicLesson(data, id) : undefined);
-  const views = links.map(l => linkView(data, l, ix, l.kind === 'arabic' ? arabic(l.id) : undefined));
+  const info = (k: LessonKind, id: string): LessonInfo => { const m = lessons[k]; return m === 'failed' ? 'failed' : m ? m.lesson(data, id) : undefined; };
+  const views = links.map(l => linkView(data, l, ix, isLessonKind(l.kind) ? info(l.kind, l.id) : undefined));
   return (
     <Card aria-labelledby="projectLearnH" id="projectLearning">
       <h3 id="projectLearnH">Learning</h3>
       {views.length > 0 && <ul className="list-none p-0 m-0">{views.map(v => <LinkRow key={`${v.link.kind}:${v.link.id}`} p={p} v={v} />)}</ul>}
-      {views.length === 0 && !adding && <Note className="mt-0">Link a course, book or Arabic lesson you’re learning for this project.</Note>}
-      {adding ? <LinkForm data={data} p={p} kind={kind} onKind={setKind} ar={ar} onRetry={retryArabic} onDone={() => { setAdding(false); focusSoon('learningAdd'); }} />
-        : links.length < LINK_LIMITS.links ? <Button inline id="learningAdd" className={views.length ? 'mt-3' : ''} data-action="learning-add" onClick={() => { setAdding(true); retryArabic(); focusSoon(`learningKind-${kind}`); }}>Link something</Button>
+      {views.length === 0 && !adding && <Note className="mt-0">Link a course, book or lesson you’re learning for this project.</Note>}
+      {adding ? <LinkForm data={data} p={p} kind={kind} onKind={setKind} lessons={lessons} retry={retry} onDone={() => { setAdding(false); focusSoon('learningAdd'); }} />
+        : links.length < LINK_LIMITS.links ? <Button inline id="learningAdd" className={views.length ? 'mt-3' : ''} data-action="learning-add" onClick={() => { setAdding(true); retryArabic(); retryCyber(); focusSoon(`learningKind-${kind}`); }}>Link something</Button>
         : <Note className="mb-0 mt-3">{LINK_LIMITS.links} links is the most a project can have.</Note>}
     </Card>
   );
@@ -102,12 +106,14 @@ const NONE_LEFT: Record<LinkKind, string> = {
   course: 'No courses left to link. Add one on your Study roadmap.',
   book: 'No books left to link. Add one in Study → Reading.',
   arabic: 'No Arabic lessons left to link.',
+  cyber: 'No Cybersecurity lessons left to link.',
 };
-function LinkForm({ data, p, kind, onKind, ar, onRetry, onDone }: { data: MyDayData; p: Project; kind: LinkKind; onKind: (k: LinkKind) => void; ar: Arabic; onRetry: () => void; onDone: () => void }) {
+function LinkForm({ data, p, kind, onKind, lessons, retry, onDone }: { data: MyDayData; p: Project; kind: LinkKind; onKind: (k: LinkKind) => void; lessons: Record<LessonKind, Lessons>; retry: Record<LessonKind, () => void>; onDone: () => void }) {
   const [id, setId] = useState(''), [why, setWhy] = useState('');
   const linked = (k: string, x: string) => !!p.studyLinks?.some(l => l.kind === k && l.id === x);
+  const mod = isLessonKind(kind) ? lessons[kind] : null;
   const choices = kind === 'course' ? courseChoices(data, p) : kind === 'book' ? bookChoices(data, p)
-    : ar && ar !== 'failed' ? ar.arabicChoices(data).filter(c => !linked('arabic', c.id)) : null;
+    : mod && mod !== 'failed' ? mod.choices(data).filter(c => !linked(kind, c.id)) : null;
   const picked = choices?.find(c => c.id === id);
   function link() {
     if (!picked) return;
@@ -120,9 +126,9 @@ function LinkForm({ data, p, kind, onKind, ar, onRetry, onDone }: { data: MyDayD
         {LINK_KINDS.map(k => <Choice key={k} id={`learningKind-${k}`} on={kind === k} data-s="learning-kind" data-id={k} onClick={() => { onKind(k); setId(''); }}>{LINK_KIND_LABEL[k]}</Choice>)}
       </Choices>
       <div className="grid gap-3 mb-3">
-      {choices === null ? (ar === 'failed'
-        ? <p className="text-[15px] text-fg-2 m-0" data-s="learning-arabic-failed">The Arabic lessons couldn’t load just now. <LinkButton className="text-[15px]" data-action="learning-retry" onClick={onRetry}>Try again</LinkButton></p>
-        : <Note className="m-0">Loading the Arabic lessons…</Note>)
+      {choices === null ? (mod === 'failed' && isLessonKind(kind)
+        ? <p className="text-[15px] text-fg-2 m-0" data-s="learning-lessons-failed">The {LESSONS_NAME[kind]} lessons couldn’t load just now. <LinkButton className="text-[15px]" data-action="learning-retry" onClick={retry[kind]}>Try again</LinkButton></p>
+        : <Note className="m-0">Loading the {isLessonKind(kind) ? LESSONS_NAME[kind] : ''} lessons…</Note>)
         : choices.length ? (
           <Field label="Which one?" htmlFor="learningPick">
             <Select id="learningPick" value={id} onChange={e => setId(e.target.value)}>

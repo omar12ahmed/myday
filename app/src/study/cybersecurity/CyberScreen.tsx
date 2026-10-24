@@ -27,6 +27,7 @@ import { RestartOffer, StepBar } from '../journey/Journey';
 import { CYBER_TINY } from '../journey/dom';
 import { useJourney } from '../journey/useJourney';
 import { keepSessionMode, keptSessionMode } from '../lessonStep';
+import { ForYourProject } from '../../projects/ForYourProject';
 
 export function ResourceLinks({ ids }: { ids: string[] }) {
   return <div className="grid gap-3">{ids.map(id => { const r = resources.get(id); return r && <div key={id}>
@@ -201,6 +202,7 @@ function LessonView({ data, lesson: l }: { data: MyDayData; lesson: Lesson }) {
   return <>
     <Card tone="accent"><BackLink to={'study/cybersecurity/' + l.module_id} label={modules.get(l.module_id)!.name} />
       <Eyebrow>Lesson · {l.estimated_duration_minutes.standard} min{l.optional ? ' · Optional extension' : ''}</Eyebrow><h2>{l.title}</h2>
+      <ForYourProject data={data} kind="cyber" id={l.id} className="-mt-1 mb-2" />
       <Lines items={l.learning_objectives} />
       {current ? <LinkButton to="study/session">Return to your study session</LinkButton> : task ? <div className="grid gap-3 mt-3">
         {choice}

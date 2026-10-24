@@ -12,6 +12,7 @@ import { moveCourseTo, saveItemText, setArchived, setFocus } from './actions';
 import { go } from './route';
 import { BackLink, Bar, Note } from './parts';
 import { useRemove } from './useRemove';
+import { ForYourProject } from '../projects/ForYourProject';
 
 // One course: its name, link, usual session length and stage. Saved as you leave each field.
 export function CourseDetails({ data, id }: { data: MyDayData; id: string }) {
@@ -24,6 +25,7 @@ export function CourseDetails({ data, id }: { data: MyDayData; id: string }) {
     <Card aria-labelledby="co-h">
       <BackLink to={topicPath(topicOfStage(st, e.stage))} label={topicsOf(st).find(t => t.id === topicOfStage(st, e.stage))?.title ?? 'Study'} />
       <h2 id="co-h">{c.title}</h2>
+      <ForYourProject data={data} kind="course" id={c.id} className="-mt-1 mb-2" />
       <p className="text-[15px] m-0">{completionText(comp)}</p>
       <Bar c={comp} />
       {/* Ask MyDay with this course's outline: study tasks to tick, added into the course (nothing until you tap Add). */}

@@ -602,8 +602,10 @@ Rules for using it here:
 ## 20. Decisions needed from the owner
 
 - Whether "Where I left off" text may ever be included in an AI request, and if so, with what preview.
-- Whether the Private switch should govern every AI feature, including note filing, "Help me adjust today" and
-  revision cards.
+- ~~Whether the Private switch should govern every AI feature, including note filing, "Help me adjust today" and
+  revision cards.~~ *Decided by the owner on 24 October 2026:* Private covers every AI feature except note filing.
+  "Help me adjust today" sends a private project's task as "a private task", without its title (myday-83's task-links
+  branch, after 1.57.0). Note filing keeps the 17 October choice: a private project's name and summary only.
 - Whether automatic backups are scheduled before any attachment work.
 
 ## 21. Review notes

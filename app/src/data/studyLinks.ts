@@ -1,16 +1,22 @@
 // Learning for a project (specs/projects-study-links.md): links from a project to what you're learning for it in Study —
-// your own courses, books in Reading and Arabic lessons — each shown with Study's own status: never a percentage, never
-// a guess at what you know. The links live on the project (`studyLinks`); removing one never changes Study, and an item
+// your own courses, books in Reading, Arabic lessons and Cybersecurity lessons (from 1.58.0) — each shown with Study's
+// own status: never a percentage, never a guess at what you know. The links live on the project (`studyLinks`); removing one never changes Study, and an item
 // removed from Study leaves its link, marked as gone. Never sent to AI.
 import { isDateKey, localStamp, shortDate, todayKey } from './dates';
+import { lessonHref } from './cybersecurity/types';
 import { completion, completionText, stIndex, type StudyIndex } from './study/roadmap';
 import type { DateKey, MyDayData, Project, StudyLink } from './types';
 import { isObj } from './util';
 
 export const LINK_LIMITS = { links: 20, why: 200, title: 120 };
-export type LinkKind = 'course' | 'book' | 'arabic';
-export const LINK_KINDS: LinkKind[] = ['course', 'book', 'arabic'];
-export const LINK_KIND_LABEL: Record<LinkKind, string> = { course: 'Your course', book: 'Book', arabic: 'Arabic lesson' };
+export type LinkKind = 'course' | 'book' | 'arabic' | 'cyber';
+export const LINK_KINDS: LinkKind[] = ['course', 'book', 'arabic', 'cyber'];
+export const LINK_KIND_LABEL: Record<LinkKind, string> = { course: 'Your course', book: 'Book', arabic: 'Arabic lesson', cyber: 'Cybersecurity lesson' };
+// The lesson kinds: their titles and Study's status come from the on-demand catalogues (projects/learningArabic.ts,
+// learningCyber.ts).
+export const LESSON_KINDS = ['arabic', 'cyber'] as const;
+export type LessonKind = typeof LESSON_KINDS[number];
+export const isLessonKind = (k: string): k is LessonKind => (LESSON_KINDS as readonly string[]).includes(k);
 export const knownKind = (k: string): k is LinkKind => (LINK_KINDS as string[]).includes(k);
 const same = (l: StudyLink, kind: string, id: string) => l.kind === kind && l.id === id;
 // Why it matters, tidied the same way every time (trimmed after the cut too), so saved text reads back unchanged.
@@ -34,8 +40,8 @@ export function normalizeStudyLinks(raw: unknown, report: { dropped: number }): 
 
 // ---------- Changing ----------
 const project = (d: MyDayData, id: string) => d.projects.items.find(p => p.id === id);
-// Link something (its title as Study has it now). Returns false when the project or the course or book isn't there,
-// it's already linked, or the project has 20 links.
+// Link something (its title as Study has it now; a lesson's from its catalogue). Returns false when the project or the
+// course or book isn't there, it's already linked, or the project has 20 links.
 export function addStudyLink(d: MyDayData, projectId: string, item: { kind: LinkKind; id: string; title: string }, why = '', k: DateKey = todayKey()): boolean {
   const p = project(d, projectId), links = p?.studyLinks ?? [], title = item.title.trim().slice(0, LINK_LIMITS.title);
   if (!p || !item.id || !title || links.length >= LINK_LIMITS.links || links.some(l => same(l, item.kind, item.id))) return false;
@@ -64,12 +70,12 @@ export function setStudyLinkWhy(d: MyDayData, projectId: string, kind: string, i
 }
 
 // ---------- Reading ----------
-// An Arabic lesson as the on-demand catalogue gives it: its title and Study's state; null when the lesson isn't in the
-// course any more; undefined while the catalogue loads; 'failed' when it couldn't load.
-export type ArabicInfo = { title: string; status: string } | null | undefined | 'failed';
+// A lesson as its on-demand catalogue gives it: its title and Study's status; null when the lesson isn't in the course
+// any more; undefined while the catalogue loads; 'failed' when it couldn't load.
+export type LessonInfo = { title: string; status: string } | null | undefined | 'failed';
 export interface LinkView { link: StudyLink; label: string; title: string; status: string; gone: boolean; href: string | null }
 
-export function linkView(data: MyDayData, l: StudyLink, ix: StudyIndex, arabic?: ArabicInfo): LinkView {
+export function linkView(data: MyDayData, l: StudyLink, ix: StudyIndex, lesson?: LessonInfo): LinkView {
   const gone = { link: l, label: knownKind(l.kind) ? LINK_KIND_LABEL[l.kind] : 'From a newer MyDay', title: l.title, status: 'No longer in Study', gone: true, href: null };
   if (l.kind === 'course') {
     const c = ix.course.get(l.id)?.node;
@@ -83,20 +89,22 @@ export function linkView(data: MyDayData, l: StudyLink, ix: StudyIndex, arabic?:
     return { ...gone, title: b.title, gone: false, href: '#study/reading',
       status: b.finishedOn ? `Finished on ${shortDate(b.finishedOn)}` : !b.page ? 'Not started' : b.pages ? `Page ${b.page} of ${b.pages}` : `Page ${b.page}` };
   }
-  if (l.kind === 'arabic') {
-    if (arabic === null) return gone;
-    const live = typeof arabic === 'object' ? arabic : null;
-    return { ...gone, title: live?.title ?? l.title, gone: false, href: `#study/arabic/${encodeURIComponent(l.id)}`,
-      status: live ? live.status : arabic === 'failed' ? 'Open it in Study to see how it’s going' : '' };
+  if (isLessonKind(l.kind)) {
+    if (lesson === null) return gone;
+    const live = typeof lesson === 'object' ? lesson : null;
+    return { ...gone, title: live?.title ?? l.title, gone: false, href: l.kind === 'arabic' ? `#study/arabic/${encodeURIComponent(l.id)}` : lessonHref(l.id),
+      status: live ? live.status : lesson === 'failed' ? 'Open it in Study to see how it’s going' : '' };
   }
   return { ...gone, status: 'Open it in a newer MyDay', gone: false };
 }
 
 // What can still be linked, in Study's own order: your courses as on the roadmap (archived ones aside), and books as in
-// Reading. Arabic lessons come from the on-demand catalogue (projects/learningArabic.ts).
+// Reading. Lessons come from the on-demand catalogues (projects/learningArabic.ts and learningCyber.ts).
 export function courseChoices(data: MyDayData, p: Project): { id: string; title: string }[] {
   return data.study.stages.flatMap(s => s.courses).filter(c => !c.archived && !p.studyLinks?.some(l => same(l, 'course', c.id))).map(c => ({ id: c.id, title: c.title }));
 }
 export function bookChoices(data: MyDayData, p: Project): { id: string; title: string }[] {
   return data.reading.books.filter(b => !p.studyLinks?.some(l => same(l, 'book', b.id))).map(b => ({ id: b.id, title: b.title }));
 }
+// For Study's side ("For your project: …" on a course, a book or a Cybersecurity lesson): the projects that link it.
+export const linkedFrom = (data: MyDayData, kind: LinkKind, id: string): Project[] => data.projects.items.filter(p => p.studyLinks?.some(l => same(l, kind, id)));
