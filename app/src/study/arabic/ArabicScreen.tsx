@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react';
 import { BookOpen, Check, FlaskConical, Languages, Library, NotebookPen, RotateCcw, VolumeOff } from 'lucide-react';
 import '@fontsource-variable/noto-naskh-arabic';
 import { Button } from '../../components/Button';
@@ -14,10 +14,10 @@ import { addCards, cardOf, cardRef, nextWords, removeCards, wordCard, wordInRevi
 import { ADD_A_FEW, MODALITIES, NEW_WORDS_A_DAY, type ArabicAttempt, type Help, type Variant } from '../../data/arabic/types';
 import { beginSession, changeSession, discardSession, finishSession, markRevealed, openSession, sessionsFor, writeFirstAnswer } from '../../data/arabic/sessions';
 import { bringBackNotYet, clearRevisit, discardMarks, flagRevisit, lessonRecord, markCheck, markReady, marksIn, practisedUnmarked, unmarkReady } from '../../data/arabic/lessons';
-import { looksReady, STATE_LABEL, type LessonState, type StepKind } from '../../data/study/mastery';
+import { JOURNEY, looksReady, MODE_LABEL, modeOf, STATE_LABEL, STEP_LABEL, stepsFor, type JourneyStep, type LessonState, type Mode, type StepKind } from '../../data/study/mastery';
 import { OUTCOME, SUPPORT } from '../../data/study/common';
 import type { Outcome, Support } from '../../data/types';
-import { arabicPlan, arabicState, checksOf, lessonLength, moduleProgress, type ArabicPlan, type Place } from './plan';
+import { arabicPlan, arabicState, checksOf, lessonLength, moduleProgress, pathLessons, type ArabicPlan, type Place } from './plan';
 import { startRevision } from '../actions';
 import { BackLink, Choice, Choices, Eyebrow, ExternalLink, InlineLink } from '../parts';
 import { Lines, LinkButton } from '../cybersecurity/parts';
@@ -28,7 +28,10 @@ import { MixedVoiceLabel, PlayButton, VoiceLabel, VoiceNote } from './Listen';
 import { clipFor, hasReadingVoice, hasVoice } from './voice';
 import { ReadingVoice } from './ReadingVoice';
 import { Pronunciation, PronunciationControls } from './Pronunciation';
-import { TeachingLesson } from '../teaching/TeachingLesson';
+import { TeachingMaterial, TeachingRead, TeachingTry, TeachingWaiting } from '../teaching/TeachingLesson';
+import { useTeaching } from '../teaching/useTeaching';
+import { keepStep, keptStep } from '../lessonStep';
+import { RestartOffer, StepBar } from './Journey';
 import texts from './data/texts.json';
 import passageReadings from '../../../../content/teaching/pronunciation/passages.json';
 import {
@@ -121,7 +124,7 @@ function NextStep({ plan, started }: { plan: ArabicPlan; started: boolean }) {
   return <div className="rounded-tile bg-surface p-4 border border-outline mt-4" data-ar-next={step.kind}>
     <Eyebrow>{eyebrow}</Eyebrow>
     <h3>{revise ? 'Revise Arabic' : title}</h3>
-    <p className="text-sm text-fg-2">{revise ? `${step.due} ready now, then: ${title}` : step.kind === 'resume' ? 'A session on this lesson is still open.' : `${STATE_LABEL[step.state]} · about ${length.minutes} min suits today`}</p>
+    <p className="text-sm text-fg-2">{revise ? `${step.due} ready now, then: ${title}` : step.kind === 'resume' ? 'A session on this lesson is still open.' : `${STATE_LABEL[step.state]} · ${MODE_LABEL[modeOf(length.variant)]} · about ${length.minutes} min suits today`}</p>
     <details className="mb-3" data-ar-why=""><summary className="cursor-pointer min-h-11 py-2 text-primary font-semibold">Why this?</summary>
       <p className="text-sm text-fg-2 mt-0">{reason}</p>
       {step.kind !== 'resume' && length.why.length > 0 && <p className="text-sm text-fg-2 mb-0">A shorter session today: {length.why.join(', ')}. The full lesson is always there.</p>}
@@ -219,18 +222,102 @@ function ModuleView({ data, id }: { data: MyDayData; id: string }) {
   </>;
 }
 
+// A lesson as one page in steps (specs/study-home-and-lessons.md §5): Warm-up, Understand, Try, Check and Reflect.
+// The session's length decides which steps show first; the rest stay one tap away under "The rest of this lesson",
+// and everything about the lesson that isn't a step is under "More about this lesson". Your place is kept on this
+// device (lessonStep.ts) and a lesson with a session open reopens there.
 function LessonView({ data, id }: { data: MyDayData; id: string }) {
   const entry = lessonIndex[id], { content, failed } = useModule(entry.module_id);
   const [finished, setFinished] = useState<Finished | null>(null); // just finished a session here: what happens next
-  const l = content?.lessons.find(x => x.id === id);
+  const teaching = useTeaching('arabic-fusha', id);
+  const [revealed, setRevealed] = useState(false); // Try's explained answer
+  const [kept, setKept] = useState<JourneyStep | null>(() => keptStep(id));
+  const [explain, setExplain] = useState(false); // the explanation shown again while you're in Check
+  // The length that suits today (energy and free time) starts the choice; a lesson that needs revision gets the
+  // revision session. Always yours to change.
+  const [suggested] = useState(() => lessonLength(data, id, arabicState(data, id) === 'needs-revision'));
+  const [chosen, setChosen] = useState<Variant>(suggested.variant);
+  const l = content?.lessons.find(x => x.id === id), session = openSession(data, id);
+  const pick = (s: JourneyStep, scroll = true) => {
+    setKept(s); keepStep(id, s);
+    if (scroll) requestAnimationFrame(() => document.getElementById('ar-step-' + s)?.scrollIntoView({ block: 'start' }));
+  };
+  // With a session open, reopen once at the step you were on (after the page has gone back to the top).
+  const reopen = !!l && !!session, reopened = useRef(false);
+  useEffect(() => {
+    if (!reopen || reopened.current) return;
+    reopened.current = true;
+    if (!kept) return;
+    const timer = setTimeout(() => document.getElementById('ar-step-' + kept)?.scrollIntoView({ block: 'start' }), 120);
+    return () => clearTimeout(timer);
+  }, [reopen, kept]);
   if (!content || !l) return <><Card><BackLink to={'study/arabic/' + entry.module_id} label={modules.get(entry.module_id)!.name} /><h2>{entry.title}</h2></Card><Loading failed={failed} /></>;
   const task = content.exercises.find(e => e.id === l.practical_task_id), challenge = content.exercises.find(e => e.id === l.mini_challenge_id);
   const check = content.assessments.find(a => a.id === l.knowledge_check_id);
   const needsVoice = l.input_requirements?.modalities.some(m => m === 'listening' || m === 'speaking');
-  const session = openSession(data, l.id), checkIds = check?.questions?.map(q => q.id) ?? [];
+  const checkIds = check?.questions?.map(q => q.id) ?? [];
   // Where the finish card points: the path's next step (it moves on once you mark this lesson ready), never back here.
   const step = arabicPlan(data)?.step;
   const next: UpNext = !step ? null : step.kind === 'complete' ? { kind: 'complete' } : step.lessonId !== l.id ? { kind: step.kind, id: step.lessonId } : null;
+  const prev = previousOnPath(data.arabic.pathId, l.id);
+  const length: Variant = session ? session.variant : chosen;
+  const available = JOURNEY.filter(s => s === 'warmup' ? !!prev : s === 'check' ? checkIds.length > 0 : s === 'reflect' ? !!session || !!finished : true);
+  const shown = [...stepsFor(length).filter(s => available.includes(s)), ...(available.includes('reflect') ? ['reflect' as const] : [])];
+  const rest = available.filter(s => !shown.includes(s));
+  const current = kept && shown.includes(kept) ? kept : shown[0];
+  const folded = current === 'check' && shown.includes('understand') && !explain;
+  const transfer = length === 'extended' ? l.variants.find(v => v.mode === 'extended') : undefined;
+
+  const sections: Record<JourneyStep, () => ReactNode> = {
+    warmup: () => <Card id="ar-step-warmup" className={STEP_SCROLL} data-ar-step="warmup"><Eyebrow>Warm-up · 2–3 minutes</Eyebrow>
+      <h3>From the last lesson, from memory</h3>
+      <p className="text-sm text-fg-2">Before anything new: answer in your head or on paper, then compare. Nothing here is saved.</p>
+      <WarmUp lessonId={prev!} /></Card>,
+    understand: () => <Card id="ar-step-understand" className={STEP_SCROLL} data-ar-step="understand"><Eyebrow>Understand</Eyebrow>
+      <h3>Read it, and see it worked</h3>
+      {folded ? <><p className="text-[15px] text-fg-2" data-ar-folded="">The explanation is folded away while you check yourself, so the answers come from memory.</p>
+          <Button inline variant="ghost" data-action="ar-explain-again" onClick={() => setExplain(true)}>Show the explanation again</Button></>
+        : <>
+          <p className="text-sm text-fg-2">Key ideas: {l.key_concepts.map((k, i) => <span key={i}>{i > 0 && ' · '}<Mixed text={k} /></span>)}</p>
+          {l.example && <div className="rounded-tile bg-surface border border-outline px-4 py-3 my-3" data-ar-example="">
+            <div className="flex items-start gap-2"><div className="min-w-0 flex-1"><Ar block className="text-[28px] m-0">{l.example.text_ar}</Ar></div>
+              <PlayButton text={l.example.text_ar} name={`${l.id}:example`} label="the lesson’s example" /></div>
+            <p className="text-sm text-fg-2 m-0">{l.example.meaning_en}</p>
+            <VoiceLabel text={l.example.text_ar} />
+          </div>}
+          {teaching.lesson ? <div data-teaching={l.id} className="min-w-0 break-words"><TeachingRead t={teaching} /></div> : <TeachingWaiting missing={teaching.missing} />}
+        </>}
+    </Card>,
+    try: () => <Card id="ar-step-try" className={STEP_SCROLL} data-ar-step="try"><Eyebrow>Try</Eyebrow>
+      <h3>Apply it, then compare</h3>
+      {teaching.lesson && <div data-teaching={l.id} className="min-w-0 break-words"><TeachingTry t={teaching} lessonId={l.id} revealed={revealed} setRevealed={setRevealed} /></div>}
+      {needsVoice && <div className="border-t border-outline pt-3 mt-4" data-ar-say-aloud="">
+        <h4 className="mt-0">Say it aloud, then compare</h4>
+        <p className="text-sm text-fg-2 flex gap-2 items-start"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />This lesson uses listening or speaking. Say it aloud, then compare with a recording where there is one, or with a fluent speaker. External recordings open on the provider’s site.</p>
+        {l.example && <div className="flex items-center gap-2"><Ar className="text-[22px]">{l.example.text_ar}</Ar><PlayButton text={l.example.text_ar} name={`${l.id}:example`} label="the lesson’s example" /></div>}
+      </div>}
+      {task && <div className="border-t border-outline pt-3 mt-4" data-ar-task=""><h4 className="mt-0">Practical task · {task.estimated_minutes} min</h4><p><Mixed text={task.instruction} /></p>
+        <h4>What to produce</h4><Lines items={task.expected_evidence} />
+        <details><summary className="cursor-pointer min-h-11 py-2 text-primary font-semibold">How it’s judged</summary><ul className="list-disc pl-5">{task.rubric.map(r => <li key={r.criterion}>{r.criterion} ({r.weight}): <Mixed text={r.pass_evidence || ''} /></li>)}</ul></details>
+      </div>}
+      {challenge && <div className="border-t border-outline pt-3 mt-4" data-ar-challenge=""><h4 className="mt-0">Mini challenge · {challenge.estimated_minutes} min</h4><p className="mb-0"><Mixed text={challenge.instruction} /></p></div>}
+      {transfer && <div className="border-t border-outline pt-3 mt-4" data-ar-transfer=""><h4 className="mt-0">For an extended session</h4><p className="mb-0"><Mixed text={transfer.activity} /></p></div>}
+    </Card>,
+    check: () => { const qs = check?.questions ?? [], short = length === 'short' && shown.includes('check');
+      const one = (q: Question) => session ? <SessionQuestion data={data} session={session} q={q} /> : <CheckQuestion q={q} />;
+      return <Card id="ar-step-check" className={STEP_SCROLL} data-ar-step="check" data-ar-check=""><Eyebrow>Check</Eyebrow><h3>Check your understanding</h3>
+        <p className="text-sm text-fg-2">{session ? 'Write your first answer, then compare. Once you’ve looked, your first answer stays as you wrote it.' : 'Answer first, in your head or on paper, then compare. Start a session to keep your answers.'}</p>
+        <ol className="list-decimal pl-5 grid gap-4">{(short ? qs.slice(0, 1) : qs).map(q => <li key={q.id}>{one(q)}</li>)}</ol>
+        {short && qs.length > 1 && <details className="mt-3" data-ar-more-checks=""><summary className="cursor-pointer min-h-11 py-2 text-primary font-semibold">{qs.length === 2 ? 'The other question' : `The other ${qs.length - 1} questions`}</summary>
+          <ol start={2} className="list-decimal pl-5 grid gap-4">{qs.slice(1).map(q => <li key={q.id}>{one(q)}</li>)}</ol></details>}
+        <ChecksInRevision data={data} ids={checkIds} />
+      </Card>; },
+    reflect: () => <div id="ar-step-reflect" className={STEP_SCROLL} data-ar-step="reflect">
+      {finished && <FinishedCard data={data} lessonId={l.id} checks={checkIds} finished={finished} next={next} onClose={() => setFinished(null)} />}
+      {session && <SessionFinish lesson={l} session={session} onFinished={f => { setFinished(f); pick('reflect', false); }} />}
+    </div>,
+  };
+
   return <>
     <Card tone="accent">
       <BackLink to={'study/arabic/' + l.module_id} label={modules.get(l.module_id)!.name} />
@@ -238,36 +325,44 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
       <h2>{l.title}</h2>
       <LessonPlace data={data} lessonId={l.id} checks={checkIds} />
       <Lines items={l.learning_objectives} />
-      <p className="text-sm text-fg-2">Key ideas: {l.key_concepts.map((k, i) => <span key={i}>{i > 0 && ' · '}<Mixed text={k} /></span>)}</p>
-      {l.example && <div className="rounded-tile bg-surface border border-outline px-4 py-3 mt-3" data-ar-example="">
-        <div className="flex items-start gap-2"><div className="min-w-0 flex-1"><Ar block className="text-[28px] m-0">{l.example.text_ar}</Ar></div>
-          <PlayButton text={l.example.text_ar} name={`${l.id}:example`} label="the lesson’s example" /></div>
-        <p className="text-sm text-fg-2 m-0">{l.example.meaning_en}</p>
-        <VoiceLabel text={l.example.text_ar} />
-      </div>}
-      {needsVoice && <p className="text-sm text-fg-2 flex gap-2 items-start mt-3 mb-0"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />This lesson uses listening or speaking. Use the assigned listening material below where provided, or a fluent speaker. External recordings open on the provider’s site.</p>}
-      {l.prerequisites.all.length > 0 && <details className="mt-3"><summary className="cursor-pointer min-h-11 py-2 text-primary font-semibold">Builds on {l.prerequisites.all.length} earlier skill{l.prerequisites.all.length === 1 ? '' : 's'}</summary>
-        <ul className="list-disc pl-5">{l.prerequisites.all.map(s => skills[s] && <li key={s}><InlineLink href={href(skills[s].taught_by_lesson_ids[0])}>{skills[s].name}</InlineLink></li>)}</ul>
-        <p className="text-sm text-fg-2">You can still explore this lesson.</p>
-      </details>}
     </Card>
-    <TeachingLesson key={'teaching-' + l.id} course="arabic-fusha" lessonId={l.id} />
-    {finished && <FinishedCard data={data} lessonId={l.id} checks={checkIds} finished={finished} next={next} onClose={() => setFinished(null)} />}
-    <SessionCard data={data} lesson={l} onFinished={setFinished} />
-    {task && <Card><h3>Practical task · {task.estimated_minutes} min</h3><p><Mixed text={task.instruction} /></p>
-      <h4>What to produce</h4><Lines items={task.expected_evidence} />
-      <details><summary className="cursor-pointer min-h-11 py-2 text-primary font-semibold">How it’s judged</summary><ul className="list-disc pl-5">{task.rubric.map(r => <li key={r.criterion}>{r.criterion} ({r.weight}): <Mixed text={r.pass_evidence || ''} /></li>)}</ul></details>
-    </Card>}
-    {check?.questions && <Card data-ar-check=""><h3>Check your understanding</h3>
-      <p className="text-sm text-fg-2">{session ? 'Write your first answer, then compare. Once you’ve looked, your first answer stays as you wrote it.' : 'Answer first, in your head or on paper, then compare. Start a session to keep your answers.'}</p>
-      <ol className="list-decimal pl-5 grid gap-4">{check.questions.map(q => <li key={q.id}>{session ? <SessionQuestion data={data} session={session} q={q} /> : <CheckQuestion q={q} />}</li>)}</ol>
-      <ChecksInRevision data={data} ids={checkIds} />
-    </Card>}
-    {challenge && <Card><h3>Mini challenge · {challenge.estimated_minutes} min</h3><p className="mb-0"><Mixed text={challenge.instruction} /></p></Card>}
-    <Card><h3>When the lesson is done</h3><Lines items={l.completion_criteria} /><p className="text-sm text-fg-2 mb-0">One full attempt is a step, not mastery: a fresh task on another day tells you more.</p></Card>
-    <LessonHistory data={data} lesson={l} />
-    {l.starter_asset_ids.length > 0 && <Card><h3>Read alongside</h3><div className="grid gap-2">{l.starter_asset_ids.map(a => assets.get(a) && <InlineLink key={a} href={href(a)}>{assets.get(a)!.title}</InlineLink>)}</div></Card>}
-    <Card><details><summary className="cursor-pointer min-h-11 py-2 text-primary font-semibold">Module reference library</summary><ResourceLinks ids={l.resource_ids} /></details></Card>
+    {!session && <SessionChoice lesson={l} suggested={suggested} chosen={chosen} setChosen={setChosen} />}
+    <StepBar steps={shown} current={current} onPick={pick} />
+    {session && <RestartOffer step={current} onGo={s => pick(s, false)} />}
+    {shown.map(s => <Fragment key={s}>{sections[s]()}</Fragment>)}
+    {teaching.lesson && shown.includes('understand') && !folded && <TeachingMaterial t={teaching} />}
+    {rest.length > 0 && <Card data-ar-rest={rest.join(' ')}><details>
+      <summary className="cursor-pointer min-h-11 py-2 text-primary font-semibold">The rest of this lesson: {rest.map(s => STEP_LABEL[s]).join(', ')}</summary>
+      <div className="mt-3">{rest.map(s => <Fragment key={s}>{sections[s]()}</Fragment>)}{teaching.lesson && rest.includes('understand') && <TeachingMaterial t={teaching} />}</div>
+    </details></Card>}
+    <Card data-ar-more=""><details>
+      <summary className="cursor-pointer min-h-11 py-2 text-primary font-semibold">More about this lesson</summary>
+      {l.prerequisites.all.length > 0 && <><h4>Builds on {plural(l.prerequisites.all.length, 'earlier skill')}</h4>
+        <ul className="list-disc pl-5">{l.prerequisites.all.map(s => skills[s] && <li key={s}><InlineLink href={href(skills[s].taught_by_lesson_ids[0])}>{skills[s].name}</InlineLink></li>)}</ul>
+        <p className="text-sm text-fg-2">You can still explore this lesson.</p></>}
+      <h4>When the lesson is done</h4><Lines items={l.completion_criteria} /><p className="text-sm text-fg-2">One full attempt is a step, not mastery: a fresh task on another day tells you more.</p>
+      <LessonHistory data={data} lesson={l} />
+      {l.starter_asset_ids.length > 0 && <><h4>Read alongside</h4><div className="grid gap-2">{l.starter_asset_ids.map(a => assets.get(a) && <InlineLink key={a} href={href(a)}>{assets.get(a)!.title}</InlineLink>)}</div></>}
+      <h4>Module reference library</h4><ResourceLinks ids={l.resource_ids} />
+    </details></Card>
+  </>;
+}
+
+// A step's section stops below the step bar when you jump to it (and the header too, on wide screens).
+const STEP_SCROLL = 'scroll-mt-20 lg:scroll-mt-[160px]';
+
+// The lesson before this one on your path, when it has checks: its first two make the warm-up.
+function previousOnPath(pathId: string, lessonId: string): string | null {
+  const path = pathLessons(pathId), i = path.indexOf(lessonId), prev = i > 0 ? path[i - 1] : null;
+  return prev && lessonIndex[prev].checks > 0 ? prev : null;
+}
+function WarmUp({ lessonId }: { lessonId: string }) {
+  const { content, failed } = useModule(lessonIndex[lessonId].module_id);
+  const l = content?.lessons.find(x => x.id === lessonId), check = l && content!.assessments.find(a => a.id === l.knowledge_check_id);
+  if (!check?.questions) return <p role="status" className="text-sm text-fg-2 m-0">{failed ? 'The last lesson’s questions couldn’t be opened just now.' : 'Opening…'}</p>;
+  return <>
+    <p className="text-sm m-0 mb-2">From <InlineLink href={href(lessonId)}>{lessonIndex[lessonId].title}</InlineLink>:</p>
+    <ol className="list-decimal pl-5 grid gap-4">{check.questions.slice(0, 2).map(q => <li key={q.id}><CheckQuestion q={q} /></li>)}</ol>
   </>;
 }
 
@@ -302,35 +397,45 @@ const when = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { weekda
 // Just finished: which session, and the checks that haven't clicked yet that came back by themselves.
 interface Finished { attemptId: string; notYet: { id: string; due: string }[] }
 
-function SessionCard({ data, lesson: l, onFinished }: { data: MyDayData; lesson: Lesson; onFinished: (f: Finished) => void }) {
-  const confirm = useConfirm();
-  const open = openSession(data, l.id);
-  // The length that suits today (energy and free time), starting the choice; a lesson that needs revision gets the
-  // revision session. Always yours to change.
-  const [suggested] = useState(() => lessonLength(data, l.id, arabicState(data, l.id) === 'needs-revision'));
-  const [variant, setVariant] = useState<Variant>(() => (l.variants.some(v => v.mode === suggested.variant) ? suggested.variant : 'standard'));
-  if (!open) return <Card data-ar-session="none">
+// Before a session: choose a length, grouped as Light, Normal and Deep (three names over the lesson's own sessions).
+// The suggestion comes from energy and free time; any of them counts, and you can finish early.
+const MODE_GROUPS: { mode: Mode; lengths: Variant[] }[] = [{ mode: 'light', lengths: ['revision', 'short'] }, { mode: 'normal', lengths: ['practical'] }, { mode: 'deep', lengths: ['standard', 'extended'] }];
+const span = (minutes: number[]) => { const lo = Math.min(...minutes), hi = Math.max(...minutes); return lo === hi ? `${lo} min` : `${lo}–${hi} min`; };
+function SessionChoice({ lesson: l, suggested, chosen, setChosen }: { lesson: Lesson; suggested: ReturnType<typeof lessonLength>; chosen: Variant; setChosen: (v: Variant) => void }) {
+  const mode = modeOf(suggested.variant);
+  return <Card data-ar-session="none">
     <h3>Start a session</h3>
-    <p className="text-sm text-fg-2">Choose a length. Any of them counts, and you can finish early.{suggested.variant !== 'standard' ? ` ${cap(suggested.variant)} suits today${suggested.why.length ? ` (${suggested.why.join(', ')})` : ''}; the full lesson is still here.` : ''}</p>
-    <div className="grid gap-2" role="radiogroup" aria-label="Session length">{l.variants.map(v => <label key={v.mode} className="flex gap-3 items-start rounded-tile border border-outline px-3.5 py-3 cursor-pointer has-[:checked]:border-primary">
-      <input type="radio" name="arVariant" data-s="ar-variant" value={v.mode} className="mt-1 size-5 flex-none accent-primary" checked={variant === v.mode} onChange={() => setVariant(v.mode as Variant)} />
-      <span><strong>{cap(v.mode)} · {v.minutes} min</strong><span className="block text-sm text-fg-2"><Mixed text={v.activity} /></span></span>
-    </label>)}</div>
-    <Button variant="primary" className="mt-3" data-action="ar-begin" onClick={() => update(d => { beginSession(d, l.id, variant); })}>Start a {variant} session</Button>
+    <p className="text-sm text-fg-2">Choose how you want to study now. Any of them counts, and you can finish early.{suggested.variant !== 'standard' ? ` ${MODE_LABEL[mode]} (${suggested.variant}) suits today${suggested.why.length ? ` (${suggested.why.join(', ')})` : ''}; the whole lesson is still here.` : ''}</p>
+    <div className="grid gap-3" role="radiogroup" aria-label="Session length">{MODE_GROUPS.map(g => {
+      const vs = g.lengths.map(m => l.variants.find(v => v.mode === m)).filter((v): v is Lesson['variants'][number] => !!v);
+      return vs.length > 0 && <div key={g.mode} data-ar-mode={g.mode}>
+        <p className="text-sm font-bold m-0 mb-1.5">{MODE_LABEL[g.mode]} <span className="font-normal text-fg-3">· {span(vs.map(v => v.minutes))}</span></p>
+        <div className="grid gap-2">{vs.map(v => <label key={v.mode} className="flex gap-3 items-start rounded-tile border border-outline px-3.5 py-3 cursor-pointer has-[:checked]:border-primary">
+          <input type="radio" name="arVariant" data-s="ar-variant" value={v.mode} className="mt-1 size-5 flex-none accent-primary" checked={chosen === v.mode} onChange={() => setChosen(v.mode as Variant)} />
+          <span><strong>{cap(v.mode)} · {v.minutes} min</strong><span className="block text-sm text-fg-2"><Mixed text={v.activity} /></span>
+            <span className="block text-xs text-fg-3 mt-0.5">Shows: {stepsFor(v.mode).map(s => STEP_LABEL[s]).join(', ')}; the rest stay one tap away.</span></span>
+        </label>)}</div>
+      </div>; })}</div>
+    <Button variant="primary" className="mt-3" data-action="ar-begin" onClick={() => update(d => { beginSession(d, l.id, chosen); })}>Start a {chosen} session</Button>
   </Card>;
+}
+
+// Reflect, while a session is open: what you practised, how much help, what to revisit, then finish (or discard).
+function SessionFinish({ lesson: l, session: open, onFinished }: { lesson: Lesson; session: ArabicAttempt; onFinished: (f: Finished) => void }) {
+  const confirm = useConfirm();
   const change = (fn: (a: ArabicAttempt) => void) => update(d => { if (!changeSession(d, open.id, fn)) return false; });
   const v = l.variants.find(x => x.mode === open.variant);
   async function discard() {
-    if (await confirm({ title: 'Discard this session?', body: 'Its answers, marks and note will be removed. Your other sessions stay as they are.', confirmLabel: 'Discard', cancelLabel: 'Keep it' })) update(d => { discardMarks(d, open!.id, l.id); if (!discardSession(d, open!.id)) return false; });
+    if (await confirm({ title: 'Discard this session?', body: 'Its answers, marks and note will be removed. Your other sessions stay as they are.', confirmLabel: 'Discard', cancelLabel: 'Keep it' })) update(d => { discardMarks(d, open.id, l.id); if (!discardSession(d, open.id)) return false; });
   }
   // Finishing saves the session and brings back, from tomorrow, the checks you marked Not right or Not sure.
   function finish() {
     let notYet: Finished['notYet'] = [];
     const k = todayKey();
-    if (update(d => { if (!finishSession(d, open!.id)) return false; notYet = bringBackNotYet(d, open!.id, l.id, k); })) onFinished({ attemptId: open!.id, notYet });
+    if (update(d => { if (!finishSession(d, open.id)) return false; notYet = bringBackNotYet(d, open.id, l.id, k); })) onFinished({ attemptId: open.id, notYet });
   }
   return <Card tone="accent" data-ar-session="open">
-    <Eyebrow><NotebookPen className="inline mr-1" size={16} aria-hidden="true" /> Session in progress · {cap(open.variant)}{v ? ` · ${v.minutes} min` : ''} · started {when(open.startedAt)}</Eyebrow>
+    <Eyebrow><NotebookPen className="inline mr-1" size={16} aria-hidden="true" /> Reflect · {MODE_LABEL[modeOf(open.variant)]} · {cap(open.variant)}{v ? ` · ${v.minutes} min` : ''} · started {when(open.startedAt)}</Eyebrow>
     {v && <p className="text-sm text-fg-2"><Mixed text={v.activity} /></p>}
     <h4 className="mb-1">What did you practise?</h4>
     <p className="text-sm text-fg-2 mt-0">Tick only what you actually did. Listening and speaking need a recording or a person.</p>
@@ -388,9 +493,9 @@ function SessionSummary({ a, withLesson = false }: { a: ArabicAttempt; withLesso
 
 function LessonHistory({ data, lesson }: { data: MyDayData; lesson: Lesson }) {
   const done = sessionsFor(data, lesson.id).filter(a => a.finishedAt).reverse();
-  return done.length > 0 && <Card data-ar-history=""><h3>Your sessions on this lesson</h3>
+  return done.length > 0 && <div data-ar-history=""><h4>Your sessions on this lesson</h4>
     <ul className="list-none p-0 m-0 divide-y divide-outline">{done.map(a => <li key={a.id} className="py-3"><SessionSummary a={a} /></li>)}</ul>
-  </Card>;
+  </div>;
 }
 
 function SessionsView({ data }: { data: MyDayData }) {

@@ -13,6 +13,8 @@ import { applySetup, completion, completionText, proposeSetup, stIndex, taskPath
 import { addTopic, studiedText, TOPIC_LIMITS, topicGlance, topicOfStage, topicPath, topicsOf, type TopicGlance } from '../data/study/topics';
 import { activeStudy, sessionMinutes } from '../data/study/sessions';
 import { focusableCourses } from '../data/study/yourFocus';
+import { STEP_LABEL } from '../data/study/mastery';
+import { keptStep } from './lessonStep';
 import { toast } from '../data/toast';
 import type { MyDayData } from '../data/types';
 import { focusOn, startRevision } from './actions';
@@ -103,6 +105,7 @@ function FocusNow({ data, now, others, ix, lengths, setLength }: {
   // Your focus is your courses, but none has a task left (or you haven't added one): the next step is in another
   // subject, and says so.
   const elsewhere = st.settings.primarySubject === 'roadmap' && now.subject !== 'roadmap', noCourses = !focusableCourses(ix).length;
+  const kept = now.lessonId ? keptStep(now.lessonId) : null; // where you left off on a lesson, on this device
   const more = others && <OtherSubjects data={data} others={others} />;
   if (now.subject === 'roadmap') {
     const e = ix.course.get(now.courseId!), t = now.taskId ? ix.task.get(now.taskId)?.node ?? null : null;
@@ -141,7 +144,8 @@ function FocusNow({ data, now, others, ix, lengths, setLength }: {
       {elsewhere && <p className="text-[15px] m-0 mb-2" data-s="focus-elsewhere">{noCourses ? 'You haven’t added a course of your own yet' : 'None of your courses has a task left to do'}, so here’s your next lesson in {now.label}. <InlineLink href="#study/roadmap">{noCourses ? 'Add a course' : 'Add tasks'}</InlineLink></p>}
       <p className="text-[15px] text-fg-2 m-0" data-s="option-detail">{now.detail}</p>
       {/* Only Arabic's length follows your energy and free time; a Cybersecurity lesson's is its usual length. */}
-      <p className="text-sm text-fg-3 m-0 mt-1">About {now.minutes} min{now.subject === 'arabic' && !now.resume ? ' suits today' : ''}</p>
+      <p className="text-sm text-fg-3 m-0 mt-1" data-s="option-length">{now.mode ? `${now.mode} · about` : 'About'} {now.minutes} min{now.subject === 'arabic' && !now.resume ? ' suits today' : ''}</p>
+      {now.resume && kept && <p className="text-sm text-fg-2 m-0 mt-1" data-s="option-kept">You were on {STEP_LABEL[kept]}; it opens there.</p>}
       <Why text={now.why} />
       {now.revise ? <div className="grid gap-2.5 mt-2">
           <Button variant="primary" data-action="study-now" onClick={() => { focusOn(now); startRevision(now.revise); }}><RotateCcw size={18} aria-hidden="true" /> {optionAction(now)}</Button>

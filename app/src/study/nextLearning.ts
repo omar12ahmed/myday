@@ -1,7 +1,7 @@
 // A read-only recommendation derived from the ordered curricula and saved learner progress.
 // Content stays in each curriculum; there is no extra cursor to get out of sync.
 import type { MyDayData } from '../data/types';
-import { isDone } from '../data/study/mastery';
+import { isDone, MODE_LABEL, modeOf } from '../data/study/mastery';
 import { stIndex } from '../data/study/roadmap';
 import { lessonIndex } from './arabic/catalogue';
 import { arabicPlan, arabicState, pathLessons } from './arabic/plan';
@@ -48,6 +48,7 @@ export function learningOptions(data: MyDayData, generalCourseId = data.study.fo
     minutes: step.kind === 'resume' ? lessonIndex[step.lessonId].minutes : plan.length.minutes, resume: step.kind === 'resume', allComplete: plan.complete, started: arabicStarted,
     // As on the learning map: revision first when cards are back (or your path is ready and some are due).
     revise: step.kind === 'revise' || (step.kind === 'complete' && step.due > 0 && step.state !== 'needs-revision') ? 'arabic' : undefined,
+    mode: step.kind === 'resume' ? undefined : MODE_LABEL[modeOf(plan.length.variant)], lessonId: step.lessonId,
   };
 
   // User-authored roadmap courses remain available, in the order of their stages and lessons.

@@ -289,5 +289,46 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   check('on a phone the lesson\'s place and its buttons fit, each at least 44 px tall', await ev('document.documentElement.scrollWidth === innerWidth') && await ev(`[...document.querySelectorAll('[data-ar-place] button')].every(b => b.getBoundingClientRect().height >= 44)`));
   await send('Emulation.clearDeviceMetricsOverride');
 
+  console.log('\n[11] The lesson journey: steps, Light / Normal / Deep, your place and the restart');
+  const J = 'lesson.arabic-learning-loop'; // third on the core path: the lesson before it has checks, so it has a warm-up
+  await go('study/arabic/' + J); await wait('[data-ar-steps]', 5000);
+  const steps = () => ev(`document.querySelector('[data-ar-steps]').dataset.arSteps`);
+  check('a lesson is one page in steps: with the full session chosen, Warm-up, Understand, Try and Check', (await steps()) === 'warmup understand try check', await steps());
+  check('the session choice groups the lesson\'s own sessions as Light, Normal and Deep, with their real minutes',
+    (await ev(`['light', 'normal', 'deep'].map(m => [...document.querySelectorAll('[data-ar-mode="' + m + '"] [data-s=ar-variant]')].map(i => i.value).join('+')).join()`)) === 'revision+short,practical,standard+extended'
+    && (await T.text('[data-ar-mode="normal"]')).includes('Normal · 20 min'));
+  await click('[data-s=ar-variant][value=short]'); await sleep(200);
+  check('choosing the short session shows Understand and Check first, and the rest one tap away', (await steps()) === 'understand check' && (await ev(`document.querySelector('[data-ar-rest]').dataset.arRest`)) === 'warmup try'
+    && (await T.text('[data-ar-rest] summary')).includes('The rest of this lesson: Warm-up, Try'));
+  const unstarted = await ev(`localStorage.getItem('myday.data.v4')`);
+  await click('[data-action="ar-begin"]'); await wait('[data-ar-session="open"]');
+  check('with a short session open: Understand, Check and Reflect', (await steps()) === 'understand check reflect');
+  check('…Check asks one question first, the other folded away', (await count('#ar-step-check > ol > li')) === 1 && (await T.text('[data-ar-more-checks] summary')) === 'The other question');
+  const withSession = await ev(`localStorage.getItem('myday.data.v4')`);
+  await click('[data-action="ar-step"][data-v="check"]'); await sleep(400);
+  check('jumping to Check marks it as your step and keeps your place on this device only', (await ev(`document.querySelector('[data-action="ar-step"][aria-current="step"]').dataset.v`)) === 'check'
+    && (await ev(`JSON.parse(localStorage.getItem('myday.study.lessonStep'))['${J}']`)) === 'check' && (await ev(`localStorage.getItem('myday.data.v4')`)) === withSession);
+  check('…and while you check yourself, the explanation folds away', await exists('[data-ar-folded]') && !(await exists('#ar-step-understand [data-teaching]')));
+  await click('[data-action="ar-explain-again"]'); await sleep(200);
+  check('"Show the explanation again" brings it back', await exists('#ar-step-understand [data-teaching]') && !(await exists('[data-ar-folded]')));
+  await go('study/arabic/' + J); await wait('[data-ar-steps]', 5000); await sleep(400);
+  check('reopening the lesson with its session open goes back to your step', (await ev(`document.querySelector('[data-action="ar-step"][aria-current="step"]').dataset.v`)) === 'check'
+    && await ev(`(() => { const r = document.getElementById('ar-step-check').getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; })()`));
+  await click('[data-action="ar-restart"]'); await sleep(150);
+  check('"I got distracted — help me restart" says where you were and offers one small thing', (await T.text('[data-ar-restart]')).includes('You were on Check.') && (await T.text('[data-action="ar-restart-go"]')) === 'Answer one check');
+  await click('[data-action="ar-restart-go"]'); await sleep(300);
+  check('…which takes you to it: the first answer box', await ev(`document.activeElement?.matches('[data-ar-check] textarea[data-s="ar-answer"]')`));
+  check('…and none of this saved anything: only your session is in your data', (await ev(`localStorage.getItem('myday.data.v4')`)) === withSession && withSession !== unstarted);
+  check('everything else about the lesson is folded under "More about this lesson"', !(await ev(`document.querySelector('[data-ar-more] details').open`)) && (await T.text('[data-ar-more]')).includes('When the lesson is done'));
+  await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); d.study.settings.primarySubject = 'arabic'; localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`);
+  await go('study'); await wait('#stFocus[data-now="arabic"] [data-s=option-kept]', 5000);
+  check('Study home picks it up where you left off: "You were on Check; it opens there."', (await T.text('#stFocus .eyebrow')).startsWith('Pick up where you left off') && (await T.text('#stFocus [data-s=option-kept]')) === 'You were on Check; it opens there.');
+  await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await go('study/arabic/' + J); await wait('[data-ar-steps]', 5000);
+  await ev(`window.scrollTo(0, document.getElementById('ar-step-check').offsetTop)`); await sleep(300);
+  check('on a phone the step bar stays at the top as you scroll, its steps at least 44 px tall', await ev(`Math.round(document.querySelector('[data-ar-steps]').getBoundingClientRect().top) === 0`)
+    && await ev(`[...document.querySelectorAll('[data-action="ar-step"]')].every(b => b.getBoundingClientRect().height >= 44)`) && await ev('document.documentElement.scrollWidth === innerWidth'));
+  await send('Emulation.clearDeviceMetricsOverride');
+
   const s = T.summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
 })().catch(e => { console.error('HARNESS', e); process.exit(1); });

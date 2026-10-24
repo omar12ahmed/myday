@@ -14,7 +14,7 @@ export const resources = new Map(raw.resources.map(r => [r.id, r]));
 export const projects = new Map(raw.projects.map(p => [p.id, p]));
 // builds_on: the content skills a lesson needs (short names, checkpoints left out); checks: how many check questions;
 // minutes / short / revision: its standard, short and revision sessions' lengths.
-export const lessonIndex: Record<string, { title: string; module_id: string; topic_id: string; optional: boolean; stage_target: string; minutes: number; builds_on: string[]; checks: number; short: number; revision: number }> = raw.lessons;
+export const lessonIndex: Record<string, { title: string; module_id: string; topic_id: string; optional: boolean; stage_target: string; minutes: number; builds_on: string[]; checks: number; short: number; revision: number; practical: number }> = raw.lessons;
 export const skills: Record<string, { name: string; module_id: string; taught_by_lesson_ids: string[] }> = raw.skills;
 export const corePath = paths.get(raw.course.core_path_id)!;
 export const short = (id: string) => id.split('.').pop()!;

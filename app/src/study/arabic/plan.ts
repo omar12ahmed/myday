@@ -24,12 +24,13 @@ export function pathLessons(pathId: string): string[] {
     .flatMap(m => m.lesson_ids.filter(id => !lessonIndex[id].optional));
 }
 
-// How long a session to suggest on a lesson: energy and free time decide (suggestLength), and a lesson that needs
-// revision gets the revision session. The reasons are suggestLength's own ("energy 2 today").
+// How long a session to suggest on a lesson: energy and free time decide (suggestLength), a lesson that needs
+// revision gets the revision session, and the practical one is offered only once you've practised the lesson. The
+// reasons are suggestLength's own ("energy 2 today").
 export function lessonLength(d: MyDayData, lessonId: string, revisit: boolean): { variant: Variant; minutes: number; why: string[] } {
-  const l = lessonIndex[lessonId], s = suggestLength(d, l.minutes);
-  const len = lengthFor(s.minutes, { standard: l.minutes, short: l.short }, revisit);
-  return { variant: len, minutes: len === 'standard' ? l.minutes : len === 'short' ? l.short : l.revision, why: s.why };
+  const l = lessonIndex[lessonId], s = suggestLength(d, l.minutes), practised = arabicState(d, lessonId) !== 'new';
+  const len = lengthFor(s.minutes, { standard: l.minutes, short: l.short, practical: practised ? l.practical : undefined }, revisit);
+  return { variant: len, minutes: { standard: l.minutes, practical: l.practical, short: l.short, revision: l.revision }[len], why: s.why };
 }
 
 // `complete`: every lesson on your path is ready to move on or holding (true even while a session is open).

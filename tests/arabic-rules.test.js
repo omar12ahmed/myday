@@ -240,6 +240,18 @@ check('vowelled and unvowelled versions are both kept where the package has them
   check('…the revision session for a lesson that needs revision', A.lengthFor(20, { standard: 45, short: 15 }, true) === 'revision');
   check('…and the revision session when even the short one doesn\'t fit', A.lengthFor(10, { standard: 45, short: 15 }, false) === 'revision' && A.lengthFor(45, { standard: 45, short: 15 }, true) === 'standard');
   check('states are words, never scores', JSON.stringify(Object.values(A.STATE_LABEL)) === JSON.stringify(['New', 'Practised', 'Ready to move on', 'Holding', 'Needs revision']));
+  // The lesson journey (release b): a 30-minute tier for a practised lesson, three names over the lengths, and the
+  // steps each length shows first.
+  const len = { standard: 45, short: 15, practical: 30 };
+  check('session length: the practical session when 30 minutes fit and you\'ve practised the lesson', A.lengthFor(30, len, false) === 'practical' && A.lengthFor(40, len, false) === 'practical');
+  check('…never for a new lesson (no practical minutes given) or a revisit', A.lengthFor(30, { standard: 45, short: 15 }, false) === 'short' && A.lengthFor(30, len, true) === 'revision');
+  check('…and the short one below 30 minutes, the standard one when it fits', A.lengthFor(20, len, false) === 'short' && A.lengthFor(45, len, false) === 'standard');
+  check('Light is the revision and short sessions, Normal the practical one, Deep the standard and extended ones',
+    ['revision', 'short', 'practical', 'standard', 'extended'].map(A.modeOf).join() === 'light,light,normal,deep,deep' && Object.values(A.MODE_LABEL).join() === 'Light,Normal,Deep');
+  check('the steps each length shows first: revision Warm-up and Check; short Understand and Check; practical Try and Check; standard and extended all four',
+    A.stepsFor('revision').join() === 'warmup,check' && A.stepsFor('short').join() === 'understand,check' && A.stepsFor('practical').join() === 'try,check'
+    && A.stepsFor('standard').join() === 'warmup,understand,try,check' && A.stepsFor('extended').join() === 'warmup,understand,try,check');
+  check('the steps have names, in order, Reflect last', A.JOURNEY.map(s => A.STEP_LABEL[s]).join() === 'Warm-up,Understand,Try,Check,Reflect');
   fs.rmSync(tmp, { recursive: true, force: true });
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

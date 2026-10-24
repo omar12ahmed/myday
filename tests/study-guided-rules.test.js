@@ -65,6 +65,7 @@ function check(label, ok) {
     check('A new learner is offered Cybersecurity first and Arabic second', initial.map(o => o.subject).join() === 'cybersecurity,arabic');
     check('A new Cybersecurity recommendation opens the first real required lesson', initial[0].href === cyHref('lesson.learning-evidence') && !initial[0].resume && !initial[0].allComplete);
     check('A new Arabic recommendation opens the first real required lesson', initial[1].href === arHref('lesson.arabic-fusha-register') && !initial[1].resume && !initial[1].allComplete);
+    check('…naming its lesson and, for the suggested length, Light, Normal or Deep (the time of day can shorten it)', initial[1].lessonId === 'lesson.arabic-fusha-register' && ['Light', 'Normal', 'Deep'].includes(initial[1].mode));
     check('Reading initial recommendations leaves saved data byte-for-byte unchanged', JSON.stringify(blank) === blankBefore);
     const chosen = fresh();
     chosen.study.settings.primarySubject = 'arabic';

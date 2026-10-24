@@ -97,13 +97,36 @@ export function stepReason(s: Step, title: (lessonId: string) => string, what?: 
 
 // ---------- How long a session to suggest ----------
 // From Study's own suggested length (energy and free time, data/study/sessions.ts suggestLength): the standard session
-// if it fits; otherwise the short session for a lesson (usually 15 minutes) or the revision session for a revisit;
-// when even the short one doesn't fit, the revision session (usually 10 minutes).
-export type Length = 'standard' | 'short' | 'revision';
-export function lengthFor(suggested: number, minutes: { standard: number; short: number }, revisit: boolean): Length {
+// if it fits; otherwise, for a lesson you've already practised, the practical one (usually 30 minutes) when that fits;
+// then the short session (usually 15 minutes), or the revision session for a revisit; when even the short one doesn't
+// fit, the revision session (usually 10 minutes). A new lesson never gets the practical one: it skips the teaching.
+export type Length = 'standard' | 'practical' | 'short' | 'revision';
+export function lengthFor(suggested: number, minutes: { standard: number; short: number; practical?: number }, revisit: boolean): Length {
   if (suggested >= minutes.standard) return 'standard';
+  if (!revisit && minutes.practical && suggested >= minutes.practical) return 'practical';
   if (!revisit && suggested >= minutes.short) return 'short';
   return 'revision';
+}
+
+// ---------- Light, Normal and Deep: three names over the session lengths ----------
+// Light is the 10- and 15-minute sessions, Normal the practical one, Deep the standard and extended ones
+// (specs/study-home-and-lessons.md §5). Only names: the length you choose is what's saved, as before.
+export type Mode = 'light' | 'normal' | 'deep';
+export const MODE_LABEL: Record<Mode, string> = { light: 'Light', normal: 'Normal', deep: 'Deep' };
+export const modeOf = (length: string): Mode => (length === 'revision' || length === 'short' ? 'light' : length === 'practical' ? 'normal' : 'deep');
+
+// ---------- The lesson journey ----------
+// One lesson page in steps: Warm-up (recall the previous lesson), Understand, Try, Check and Reflect. The session's
+// length decides which show first; the others stay one tap away. Reflect is there while a session is open or just
+// finished.
+export type JourneyStep = 'warmup' | 'understand' | 'try' | 'check' | 'reflect';
+export const JOURNEY: JourneyStep[] = ['warmup', 'understand', 'try', 'check', 'reflect'];
+export const STEP_LABEL: Record<JourneyStep, string> = { warmup: 'Warm-up', understand: 'Understand', try: 'Try', check: 'Check', reflect: 'Reflect' };
+export function stepsFor(length: string): JourneyStep[] {
+  if (length === 'revision') return ['warmup', 'check'];
+  if (length === 'short') return ['understand', 'check'];
+  if (length === 'practical') return ['try', 'check'];
+  return ['warmup', 'understand', 'try', 'check'];
 }
 
 // ---------- Where cards that join by themselves land ----------

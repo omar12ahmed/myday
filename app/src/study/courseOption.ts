@@ -20,6 +20,8 @@ export interface LearningOption {
   courseId?: string;    // one of your courses: which, and its next task
   taskId?: string;
   revise?: 'arabic';    // the step is revision first, then the lesson (Arabic's adaptive next step)
+  mode?: string;        // Light, Normal or Deep, for the suggested length (Arabic)
+  lessonId?: string;    // the lesson it opens (Arabic), for where you left off on it
 }
 
 const ticked = (ix: StudyIndex, courseId: string) => !!ix.courseTasks.get(courseId)?.some(t => t.done);

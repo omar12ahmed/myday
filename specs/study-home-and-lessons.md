@@ -1,7 +1,7 @@
 # Study as a learning environment: one focus, a clearer home and a guided lesson
 
-**Status:** release (a), one focus and Study home (§3, §4), published in 1.51.0 (24 October 2026); (b)–(f)
-planned. The owner's decisions of 24 October 2026 are in §2. This builds on
+**Status:** release (a), one focus and Study home (§3, §4), published in 1.51.0 (24 October 2026); release (b),
+the lesson journey, built for Arabic on branch `lesson-journey` (Cybersecurity next); (c)–(f) planned. The owner's decisions of 24 October 2026 are in §2. This builds on
 `specs/adaptive-study.md` (lesson states, answer marks, revision from every lesson, the next-step rules), published
 in 1.47.0; this plan is a series of later, separate releases (§14).
 **Plan date:** 24 October 2026, after release 1.44.1.
@@ -137,6 +137,18 @@ session choice, and are built only from what exists:
 
 The default comes from `suggestLength` (energy and free time; `adaptive-study.md` §7), but it's only a default. The
 three choices are always shown, and a low-energy day can still choose Deep for something enjoyable.
+
+**As built (release b, Arabic; 24 October 2026):** the Arabic lesson page is the journey; Cybersecurity follows as
+its own release, reusing the step bar and restart (`app/src/study/arabic/Journey.tsx`) and the split teaching parts
+(`app/src/study/teaching/`). The modes are the lesson's own sessions grouped under three names (Light: revision and
+short; Normal: practical; Deep: standard and extended), each group showing its real minutes; what's saved is still
+the session length. The suggested length gains the practical session for a lesson you've already practised (a new
+lesson never gets it, since it skips the teaching), so an energy-3 day suggests Normal there. The warm-up is the
+previous lesson on your path's first two checks, answered from memory and compared, saving nothing; it's skipped when
+there's no previous lesson with checks. The step bar sticks at the top on a phone and under the header on wide
+screens. **Recording the steps you did (`tried`, `challenged`) moves to release (d)**, with Practise again and
+Progress, which are what use it: it's a field on the `arabic_lesson` record that 1.47.0–1.52.0 would drop when they
+save that record, so it belongs with (d)'s sync and going-back design. This release changes no saved data.
 
 **"I got distracted — help me restart."** It's on the lesson page whenever a session is open, and on the Now card as
 "Pick up where you left off". It reopens the exact lesson at the step you were on (the kept place) and offers one tiny
