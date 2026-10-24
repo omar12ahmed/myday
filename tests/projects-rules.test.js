@@ -1697,6 +1697,8 @@ const clone = o => JSON.parse(JSON.stringify(o));
       e.projects.items[1].studyLinks = [lk('course', 'coA', 'A'), lk('book', 'coA', 'Same id, another kind')];
       const who = (kind, id) => K.linkedFrom(e, kind, id).map(p => p.id);
       check('linkedFrom lists the projects that link a course: none, one or two (in project order)', eq(who('course', 'coNone'), []) && eq(who('cyber', CY), ['pjA']) && eq(who('course', 'coA'), ['pjA', 'pjB']), [who('course', 'coA'), who('cyber', CY)]);
+      check('a project marked done is left out; active and paused ones are listed', (() => { const g = world(base('pjAc', { title: 'Active', studyLinks: [lk('course', 'coA', 'A')] }), base('pjPa', { title: 'Paused', status: 'paused', studyLinks: [lk('course', 'coA', 'A')] }), base('pjDo', { title: 'Done', status: 'done', studyLinks: [lk('course', 'coA', 'A')] })); return eq(K.linkedFrom(g, 'course', 'coA').map(p => p.id), ['pjAc', 'pjPa']); })());
+      check('…and an item linked only by a done project has no projects at all (the done project keeps its link)', (() => { const g = world(base('pjDo', { status: 'done', studyLinks: [lk('book', 'bkA', 'B')] })); return eq(K.linkedFrom(g, 'book', 'bkA'), []) && g.projects.items[0].studyLinks.length === 1; })());
       check('…and another kind with the same id is not counted', eq(who('book', 'coA'), ['pjB']) && eq(who('arabic', 'coA'), []) && eq(who('book', CY), []));
     }
 
@@ -1715,6 +1717,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
       check('a lesson that is not in the course is null', cy.lesson(fresh(), 'lesson.nope') === null);
       const ch = cy.choices(fresh());
       check('the choices come in path order, each with a module name, the first being the evidence lesson in "Learning method, scope and lab setup"', ch.length > 20 && ch[0].id === ID && ch[0].group === 'Learning method, scope and lab setup' && ch.every(c => c.title && c.group), ch.slice(0, 2));
+      check('an optional lesson is marked optional (and a required one is not), on a path that has one', (() => { const e = fresh(); e.cybersecurity.pathId = 'path.appsec'; const c = cy.choices(e), o = c.find(x => x.id === 'lesson.ai-application-security'); return !!o && o.optional === true && o.title === 'Optional AI application trust boundaries' && o.group === 'Secure development and application security engineering'; })() && ch.every(c => !c.optional), ch.filter(c => c.optional));
       check('…and a lesson appears once', new Set(ch.map(c => c.id)).size === ch.length);
     }
 

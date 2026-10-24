@@ -1918,7 +1918,8 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await go('projects', 2026, 10, 15, 9, 0); await reset(); await go('projects', 2026, 10, 15, 9, 0);
   const fl = (kind, id, title) => ({ kind, id, title, addedOn: '2026-10-14' });
   await seed([pjObj('pjFa', 'Alpha shop', 'act', { studyLinks: [fl('course', 'coFa', 'Shop Wi-Fi course')] }), pjObj('pjFb', 'Beta shop', 'act', { studyLinks: [fl('course', 'coFa', 'Shop Wi-Fi course')] }),
-    pjObj('pjFc', 'Gamma reading', 'act', { studyLinks: [fl('book', 'bkFa', 'Bookkeeping made plain')] }), pjObj('pjFd', 'Delta security', 'act')]);
+    pjObj('pjFc', 'Gamma reading', 'act', { studyLinks: [fl('book', 'bkFa', 'Bookkeeping made plain')] }), pjObj('pjFd', 'Delta security', 'act'),
+    pjObj('pjFe', 'Echo finished', 'act', { status: 'done', studyLinks: [fl('course', 'coFa', 'Shop Wi-Fi course'), fl('course', 'coFb', 'Unlinked course')] })]);
   await editStorage(`s => { s.study.stages = [{ id: 'sgF', title: 'Stage', courses: [${JSON.stringify(lnCourse('coFa', 'Shop Wi-Fi course', 1, 2))}, ${JSON.stringify(lnCourse('coFb', 'Unlinked course', 0, 1))}] }];
     s.reading.books = [{ id: 'bkFa', title: 'Bookkeeping made plain', author: 'A. Writer', pages: 300, page: 20, notes: [], addedOn: '2026-09-01', finishedOn: null }, { id: 'bkFb', title: 'Unlinked book', author: 'B. Writer', pages: 100, page: 0, notes: [], addedOn: '2026-09-02', finishedOn: null }]; }`);
   const cyRow = `[data-s=learning-link][data-kind=cyber][data-id="${CY}"]`;
@@ -1948,16 +1949,26 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await go('projects/p/pjFd', 2026, 10, 15, 9, 7);
   check('with its roadmap task ticked it says "Marked complete"', await until(`(document.querySelector('${cyRow} [data-s=learning-status]') || {}).textContent === 'Marked complete'`), await cyStatus());
 
+  await editStorage(`s => { s.cybersecurity.pathId = 'path.appsec'; }`);
+  await go('projects/p/pjFd', 2026, 10, 15, 9, 8);
+  await lnAdd('cyber');
+  await until(`!!document.getElementById('learningPick') && document.querySelectorAll('#learningPick option').length > 10`);
+  const optText = await ev(`(document.querySelector('#learningPick option[value="lesson.ai-application-security"]') || {}).textContent`);
+  check('an optional lesson\'s option ends with " (optional)", and a required one\'s does not', optText === 'Optional AI application trust boundaries (optional)' && !(await ev(`[...document.querySelectorAll('#learningPick option')].some(o => o.value && o.value !== 'lesson.ai-application-security' && o.textContent.endsWith('(optional)'))`)), optText);
+  await lnPick('lesson.ai-application-security');
+  check('linking it saves the plain lesson title, without " (optional)"', (await pAt('pjFd')).studyLinks.some(l => l.id === 'lesson.ai-application-security' && l.title === 'Optional AI application trust boundaries'), (await pAt('pjFd')).studyLinks.map(l => l.title));
+  await editStorage(`s => { s.cybersecurity.pathId = 'path.core'; s.projects.items.find(p => p.id === 'pjFd').studyLinks = s.projects.items.find(p => p.id === 'pjFd').studyLinks.filter(l => l.id !== 'lesson.ai-application-security'); }`);
+
   console.log('  "For your project" in Study');
   const fp = sel => text(sel).then(norm);
   await go('study/course/coFa', 2026, 10, 15, 9, 10);
   await until(`!!document.getElementById('co-h')`);
-  check('a course linked by two projects says "For your projects: Alpha shop, Beta shop", right after its title', (await fp('[data-s=for-project]')) === 'For your projects: Alpha shop, Beta shop' && (await ev(`document.querySelector('[data-s=for-project]').previousElementSibling.id`)) === 'co-h', await fp('[data-s=for-project]'));
+  check('a course linked by two projects (and a finished one) says "For your projects: Alpha shop, Beta shop" without the finished project, right after its title', (await fp('[data-s=for-project]')) === 'For your projects: Alpha shop, Beta shop' && (await ev(`document.querySelector('[data-s=for-project]').previousElementSibling.id`)) === 'co-h', await fp('[data-s=for-project]'));
   check('…each name a link to its project', eq(await ev(`[...document.querySelectorAll('[data-s=for-project] a')].map(a => [a.textContent, a.getAttribute('href')])`), [['Alpha shop', '#projects/p/pjFa'], ['Beta shop', '#projects/p/pjFb']]));
   await click('[data-s=for-project] a:nth-of-type(2)'); await sleep(400);
   check('clicking a name opens that project', (await hash()) === '#projects/p/pjFb' && (await text('#projectTitle')) === 'Beta shop', await hash());
   await go('study/course/coFb', 2026, 10, 15, 9, 11); await until(`!!document.getElementById('co-h')`);
-  check('a course no project links shows nothing', !(await exists('[data-s=for-project]')));
+  check('a course only a finished project links shows nothing (no "For your project" at all)', !(await exists('[data-s=for-project]')));
   await go('study/reading', 2026, 10, 15, 9, 12); await until(`!!document.querySelector('.book-row')`);
   check('a linked book shows "For your project: Gamma reading" in its row, after the author', (await fp('.book-row[data-id=bkFa] [data-s=for-project]')) === 'For your project: Gamma reading' && (await ev(`document.querySelector('.book-row[data-id=bkFa] [data-s=for-project]').previousElementSibling.textContent`)).includes('A. Writer'), await fp('.book-row[data-id=bkFa]'));
   check('…and a book no project links shows nothing', !(await exists('.book-row[data-id=bkFb] [data-s=for-project]')) && (await ev(`document.querySelectorAll('[data-s=for-project]').length`)) === 1);
