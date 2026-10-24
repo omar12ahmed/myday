@@ -269,9 +269,40 @@ async function signIn(d, url) {
     await before.open(BEFORE + '?reload=' + Date.now() + '#today'); await before.returnToApp();
     check('a later tidy of the previous release ran too', await before.until(`(JSON.parse(localStorage.getItem('${KEY}')).files?.items || []).find(f => f.id === '${CTRL}2')?.deletedOn === '${today}'`, 150000));
     const kept = (await before.data()).files.items.find(f => f.id === PFID);
-    check('…and left the portfolio file exactly as it was 40 days on: not deleted for good, not forgotten, its mark untouched', !!kept && kept.deletedOn === oldDay && kept.state === 'kept' && !(await record('file', PFID))?.deleted, kept);
+    // A previous release that knows the portfolio sees the entry list the file, so its tidy rightly clears the old mark.
+    if (knowsPortfolio) check('…and, knowing the portfolio, kept the file its entry lists: the old mark cleared, not deleted for good, not forgotten', !!kept && !('deletedOn' in kept) && kept.state === 'kept' && !(await record('file', PFID))?.deleted, kept);
+    else check('…and left the portfolio file exactly as it was 40 days on: not deleted for good, not forgotten, its mark untouched', !!kept && kept.deletedOn === oldDay && kept.state === 'kept' && !(await record('file', PFID))?.deleted, kept);
     await now.returnToApp();
     check('back on this release the entry still lists its file, and the file is there', await now.until(`(() => { const d = JSON.parse(localStorage.getItem('${KEY}')); return (d.cybersecurity.portfolio || []).some(e => e.id === '${PE}' && (e.fileIds || []).includes('${PFID}')) && d.files.items.some(f => f.id === '${PFID}'); })()`, 20000));
+
+    console.log('\n[11] Delete everything: a release that does not know it cannot write back to a wiped account (specs/delete-everything.md)');
+    const knowsWipe = fs.readdirSync(assets).some(f => f.endsWith('.js') && fs.readFileSync(path.join(assets, f), 'utf8').includes('sync_push_v3'));
+    console.log(`The previous release ${knowsWipe ? 'knows' : 'doesn’t know'} Delete everything.`);
+    const ctl = async (name, body = {}) => (await fetch(`http://127.0.0.1:${SUPA}/__standin/${name}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).json();
+    const rowsOf = async () => (await S.owner(db, 'select kind, id, deleted from public.sync_records where user_id = $1', [user])).rows;
+    await ctl('backup-reset');
+    await now.returnToApp(); await synced(now);
+    const wasHolding = (await rowsOf()).length;
+    check('(test setup: the account holds records from the earlier sections)', wasHolding > 3, wasHolding);
+    await S.as(db, user, q => q('select public.sync_wipe($1::uuid)', [user]));
+    check('(test setup: the account was wiped with Delete everything; it holds nothing now)', (await rowsOf()).length === 0 && Number((await S.owner(db, 'select epoch from public.sync_accounts where user_id = $1', [user])).rows[0].epoch) === 1);
+    await before.setData(`s => { s.projects.items.push({ id: 'pjOldCopy', title: 'Old copy on the previous release', summary: '', stage: 'capture', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}' }); }`);
+    await before.open(BEFORE + '#sync');
+    check('the previous release\'s next push is refused, with a message that says to update (not "sign in again")', await before.until(`/This account was cleared with Delete everything\\. Update MyDay to sync it\\./.test(document.body.textContent)`, 40000), await before.text('#syncScreen'));
+    check('…it shows as a problem to fix, and does not ask to sign in again', /The cloud refused the request/.test(await before.text('#syncScreen')) && !/Please sign in again/i.test(await before.text('#syncScreen')), await before.text('#syncScreen'));
+    await D.sleep(1500);
+    check('nothing of its copy reaches the account: no project, note, task or day, and not the old project (the only rows are the other device\'s fresh start)', !(await rowsOf()).some(x => ['project', 'note', 'task', 'day', 'session'].includes(x.kind) || x.id === 'pjOldCopy') && !(await rowsOf()).some(x => x.deleted), (await rowsOf()).map(x => `${x.kind}:${x.id}`));
+    await before.open(BEFORE + '#backups'); await before.until(`document.querySelector('[data-action=backup-now]')`, 15000);
+    await before.click('[data-action=backup-now]'); await D.sleep(2500);
+    const bk = await ctl('backup-objects');
+    check('its backup is refused (409) and stores nothing', Array.isArray(bk) && bk.filter(o => o.key.startsWith(user + '/')).length === 0 && !(await before.text('#toast')).includes('Backed up'), [bk, await before.text('#toast')]);
+    await before.open(NOW + '#today');
+    check('this release, on the same device profile, clears the old copy and says so', await before.until(`!!document.querySelector('[data-s=wiped-notice]')`, 40000) && /Everything was deleted from another device on /.test(await before.text('[data-s=wiped-notice]')), await before.text('#app'));
+    check('…its data is a fresh start (the old project is gone) and it rejoins the account', (await before.data()).projects.items.every(p => p.id !== 'pjOldCopy') && await synced(before) && (await before.status()) === 'synced', await before.status());
+    check('…and now it can write: its starter records reach the account, but never the old project', await eventually(async () => (await rowsOf()).length > 0) && !(await rowsOf()).some(x => x.id === 'pjOldCopy'));
+    await before.open(NOW + '#backups'); await before.until(`document.querySelector('[data-action=backup-now]')`, 15000);
+    await before.click('[data-action=backup-now]');
+    check('and its backup works again (it sends the account\'s epoch)', await eventually(async () => ((await ctl('backup-objects')) || []).some(o => o.key.startsWith(user + '/')), 15000));
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {

@@ -487,7 +487,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
   check('…and the Mac gets it', await mac.until(`JSON.parse(localStorage.getItem('myday.data.v4')).lists.learning.find(i => i.id === 'l2').title === 'Phone second'`));
 
   console.log('\n[8] Failed, interrupted and retried requests');
-  srv.faults.push({ path: '/rest/v1/rpc/sync_push_v2', mode: 'error', times: 1 });
+  srv.faults.push({ path: '/rest/v1/rpc/sync_push_v3', mode: 'error', times: 1 });
   let v0 = (await cloudList('health', userA)).version;
   await editList(mac, 'health', 'h1', 'Gym (after a failed send)');
   const firstId = (await sent(mac, 'list:health')) && (await mac.notes()).link.out['list:health'].id;
@@ -501,7 +501,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
 
   // Two dropped replies: Chrome quietly resends a POST once when a connection closes without an answer, so the
   // first two tries both reach the cloud and get no reply; then MyDay itself tries again.
-  srv.faults.push({ path: '/rest/v1/rpc/sync_push_v2', mode: 'drop', times: 2 });
+  srv.faults.push({ path: '/rest/v1/rpc/sync_push_v3', mode: 'drop', times: 2 });
   v0 = (await cloudList('health', userA)).version;
   srv.log.length = 0;
   await editList(mac, 'health', 'h2', 'Meal prep (reply lost)');
@@ -510,14 +510,14 @@ function task(uid, taskId, category, title, minutes, done = false) {
   check('a reply that never arrives (saved in the cloud, but the device can\'t tell): the change stays noted', !!(await mac.notes()).link.out['list:health'] && (await mac.status()) === 'local', await diag(mac));
   await syncNowWhenReady(mac);
   await synced(mac);
-  const pushes = srv.log.filter(e => e.path === '/rest/v1/rpc/sync_push_v2').map(e => e.body.changes.find(c => c.record_id === 'health')).filter(Boolean);
+  const pushes = srv.log.filter(e => e.path === '/rest/v1/rpc/sync_push_v3').map(e => e.body.changes.find(c => c.record_id === 'health')).filter(Boolean);
   check('every retry sent the same change (same id) again', pushes.length >= 3 && pushes.every(p => p.change_id === pushes[0].change_id), pushes.map(p => p.change_id));
   check('…and the cloud applied it once: one new version, one record of the change, no duplicate', (await cloudList('health', userA)).version === v0 + 1 &&
     (await sql('select count(*)::int as n from public.sync_changes where change_id = $1', [pushes[0].change_id]))[0].n === 1 &&
     (await cloudList('health', userA)).data.items.filter(i => i.id === 'h2').length === 1);
 
   await phone.returnToApp(); await synced(phone); // the phone catches up first (a list is one record: see app/README.md)
-  srv.faults.push({ path: '/rest/v1/rpc/sync_push_v2', mode: 'error', times: 99 }, { path: '/rest/v1/rpc/sync_pull_v2', mode: 'error', times: 99 });
+  srv.faults.push({ path: '/rest/v1/rpc/sync_push_v3', mode: 'error', times: 99 }, { path: '/rest/v1/rpc/sync_pull_v2', mode: 'error', times: 99 });
   await editList(phone, 'admin', 'a1', 'Laundry (pending 1)');
   await sent(phone, 'list:admin');
   await editList(phone, 'health', 'h3', 'Walk (pending 2)');
@@ -532,7 +532,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
   check('…and they\'re sent once the cloud answers again', (await cloudList('admin', userA)).data.items.find(i => i.id === 'a1').title === 'Laundry (pending 1)' && (await cloudList('health', userA)).data.items.find(i => i.id === 'h3').title === 'Walk (pending 2)');
 
   await mac.returnToApp(); await synced(mac); // the Mac catches up with the phone's changes first
-  srv.faults.push({ path: '/rest/v1/rpc/sync_push_v2', mode: 'delay', ms: 2000, times: 1 });
+  srv.faults.push({ path: '/rest/v1/rpc/sync_push_v3', mode: 'delay', ms: 2000, times: 1 });
   await editList(mac, 'learning', 'l3', 'HTB Academy (slow connection)');
   check('on a slow connection the status shows "Saving…" while it works', await statusIs(mac, 'syncing', 8000) && (await mac.text('#syncBadge')) === 'Saving…', await mac.text('#syncBadge'));
   check('…then "Synced"', await synced(mac));
@@ -655,7 +655,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await signIn(phone, C);
   check('signing in as another account: explained ("A different account"), MyDay stays closed', await phaseIs(phone, 'other-account') && (await phone.text('#gate-h')) === 'A different account');
   await sleep(1500);
-  check('…nothing is sent to that account, and this device\'s MyDay is unchanged', !srv.log.some(e => e.path === '/rest/v1/rpc/sync_push_v2') && eq(withoutSaves(await phone.data()), phoneHad));
+  check('…nothing is sent to that account, and this device\'s MyDay is unchanged', !srv.log.some(e => e.path === '/rest/v1/rpc/sync_push_v3') && eq(withoutSaves(await phone.data()), phoneHad));
   check('…and the first account\'s records in the cloud are untouched', (await cloudList('admin', userA)).data.items.some(i => i.title === 'Groceries (from the backup)'));
   await phone.click('#syncScreen [data-action=sync-signout]');
   check('signing out of the other account leaves this device\'s MyDay (the first account\'s) as it is', await phaseIs(phone, 'signed-out') && eq(withoutSaves(await phone.data()), phoneHad));
@@ -698,7 +698,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
   check('a second device gets the task, without the half', !!lh9 && lh9.title === 'Pay council tax 😀' && !!ld.tasks.items.find(t => t.id === 'tkH1'), lh9 && JSON.stringify(lh9.title));
 
   // A change noted by 1.35.0 with half a character inside it, still waiting to be sent.
-  srv.faults.push({ path: '/rest/v1/rpc/sync_push_v2', mode: 'error', times: 99 });
+  srv.faults.push({ path: '/rest/v1/rpc/sync_push_v3', mode: 'error', times: 99 });
   await mac.setData(`s => { s.tasks.items.find(t => t.id === 'tkH9').title = 'Book dentist'; s.tasks.items.find(t => t.id === 'tkH1').title = 'Renew passport online'; }`);
   await sent(mac, 'task:tkH9'); await sent(mac, 'task:tkH1');
   await mac.ev(`(() => { const n = JSON.parse(localStorage.getItem('myday.sync.v1')); n.link.out['task:tkH9'].content.title = 'Book dentist 😀' + ${HALF}; localStorage.setItem('myday.sync.v1', JSON.stringify(n)); })()`);
@@ -1167,6 +1167,152 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await fl.open(APP + '#today');
   await fl.setData(`s => { s.files.items = s.files.items.filter(f => f.area !== 'portfolio'); if (s.cybersecurity) delete s.cybersecurity.portfolio; }`);
   check('the portfolio entries and their files are cleared for what follows', (await fl.data()).files.items.every(f => f.area !== 'portfolio') && !((await fl.data()).cybersecurity.portfolio || []).length);
+
+
+  console.log('\n[19] Delete everything: the true wipe, on two devices of one account (specs/delete-everything.md)');
+  const W = { email: 'wipe@example.test', password: 'disposable-pass-wipe' };
+  const userW = await S.addUser(db, W.email, W.password);
+  const wmac = await T.device('wipe-mac', path.join(dl, 'wipe-mac')), wphone = await T.device('wipe-phone', path.join(dl, 'wipe-phone'));
+  const inW = (q, p = []) => sql(q, [userW, ...p]);
+  const wrows = async () => (await inW(`select kind, id, deleted from public.sync_records where user_id = $1`)).concat(await inW(`select 'list' as kind, id, false as deleted from public.task_lists where user_id = $1`));
+  const wDevice = async (D, name) => { await D.open(APP + '#today'); await signIn(D, W); await D.until(`!document.getElementById('signInGate') && document.getElementById('nav')`, 20000); await synced(D); };
+  await ctl('files-reset'); await ctl('backup-reset');
+  await wDevice(wmac); await wDevice(wphone);
+  check('(test setup: two devices signed in to one fresh account)', (await wmac.exists('#nav')) && (await wphone.exists('#nav')));
+  const PJW = 'pjWipeA', N1 = 'ntWipeKeep', N2 = 'ntWipeGone';
+  await wmac.setData(`s => { s.projects.items.push({ id: '${PJW}', title: 'Shed to be forgotten', summary: 'Made-up.', stage: 'capture', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${today}T09:00', updatedAt: '${today}T09:00' });
+    s.tasks.items.push({ id: 'tkWipe1', title: 'Order the made-up timber', listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '${today}T09:00', postponed: 0, blockers: [], letGoOn: null, projectId: '${PJW}' });
+    for (const id of ['${N1}', '${N2}']) s.notes.items.push({ id, categoryId: '', title: 'Note ' + id, text: 'Made-up words.', pinned: false, createdAt: '${today}T09:00', updatedAt: '${today}T09:00' }); }`);
+  await synced(wmac);
+  await wmac.setData(`s => { s.notes.items = s.notes.items.filter(n => n.id !== '${N2}'); }`);
+  await synced(wmac);
+  check('(test setup: the account holds the project, the task, a note, and a deletion marker for the deleted note)', await cloudUntil(async () => { const r = await wrows(); return r.some(x => x.kind === 'project' && x.id === PJW) && r.some(x => x.kind === 'note' && x.id === N2 && x.deleted) && r.some(x => x.kind === 'task'); }, 15000), await wrows());
+  await wmac.ev(`location.hash = '#projects/p/${PJW}'`); await wmac.until(`document.getElementById('files-project')`, 15000);
+  await give(wmac, '#files-project input[type=file]', [ftxt]);
+  await wmac.until(`document.querySelectorAll('#files-project [data-s=file][data-state=kept]').length === 1`, 20000);
+  await wmac.ev(`location.hash = '#backups'`); await wmac.until(`document.querySelector('[data-action=backup-now]')`, 15000);
+  await wmac.click('[data-action=backup-now]'); await toastIs(wmac, 'Backed up.', 10000);
+  const wFiles = async () => (await fobjects()).filter(o => o.key.startsWith(userW + '/')), wBackups = async () => (await stored()).filter(o => o.key.startsWith(userW + '/'));
+  check('(test setup: a file is in R2 and a backup is in the backup store)', (await wFiles()).length >= 1 && (await wBackups()).length >= 1, [await wFiles(), await wBackups()]);
+  await wmac.ev(`localStorage.setItem('myday.sayings', 'off'); localStorage.setItem('myday.focus', JSON.stringify({ on: true })); localStorage.setItem('myday.study.lessonStep', JSON.stringify({ x: 1 })); localStorage.setItem('myday.arabic.slower', '1');`);
+  await synced(wphone); await wphone.returnToApp();
+  await wphone.until(`JSON.parse(localStorage.getItem('myday.data.v4')).projects.items.some(p => p.id === '${PJW}')`, 25000);
+  await wphone.offline(true);
+  await changeHere(wphone, `s => { s.projects.items.find(p => p.id === '${PJW}').title = 'Changed on the phone while offline'; s.projects.items.find(p => p.id === '${PJW}').updatedAt = '${today}T11:00'; }`);
+  check('(test setup: the phone is offline with one change made and not in the account)', (await wphone.data()).projects.items.find(p => p.id === PJW).title === 'Changed on the phone while offline' && (await inW(`select data from public.sync_records where user_id = $1 and kind = 'project'`)).every(x => x.data.title !== 'Changed on the phone while offline'));
+
+  console.log('  The page');
+  await wmac.ev(`location.hash = 'sync'`); await wmac.until(`document.getElementById('syncScreen')`, 10000);
+  check('Your account has a "Delete everything" section with an entry button', await wmac.until(`!!document.querySelector('[data-s=wipe-entry]')`, 10000) && (await wmac.text('[data-s=wipe-entry]')).includes('Your sign-in stays.'), await wmac.text('#syncScreen'));
+  await wmac.click('[data-action=wipe-open]');
+  check('…which opens the page #delete-everything', (await wmac.ev('location.hash')) === '#delete-everything' && await wmac.until(`!!document.querySelector('[data-s=delete-everything]')`, 8000));
+  check('the page says what goes and what stays', /on this device, on your other devices and in your account/.test(await wmac.text('[data-s=delete-everything]')) && /Your sign-in stays/.test(await wmac.text('[data-s=delete-everything]')) && /can’t be undone/.test(await wmac.text('[data-s=delete-everything]')));
+  const goOff = () => wmac.ev(`document.querySelector('[data-action=wipe-go]').disabled`);
+  check('Delete everything is disabled until the phrase is typed', await goOff());
+  await wmac.type('#wipePhrase', 'delete');
+  check('"delete" alone keeps it disabled; "delete everything!" too', await goOff() && (await wmac.type('#wipePhrase', 'delete everything!'), await goOff()));
+  await wmac.type('#wipePhrase', '  Delete EVERYTHING  ');
+  check('the phrase counts ignoring capitals and spaces at the ends', !(await goOff()));
+  await wmac.type('#wipePhrase', '');
+  for (const f of fs.readdirSync(wmac.dir)) fs.unlinkSync(path.join(wmac.dir, f));
+  await wmac.click('[data-action=wipe-export]'); await sleep(1500);
+  const wexp = JSON.parse(wmac.lastDownload() || '{}');
+  check('"Download a copy first" saves the same file as Export my data', wexp.format === 'myday-export' && eq(withoutSaves(wexp.data), withoutSaves(await wmac.data())), Object.keys(wexp));
+  await wmac.send('Emulation.setDeviceMetricsOverride', { width: 320, height: 740, deviceScaleFactor: 2, mobile: true });
+  await wmac.open(APP + '#delete-everything'); await wmac.until(`document.querySelector('[data-s=delete-everything]')`, 15000); await sleep(300);
+  check('phone 320 px: the page does not scroll sideways, and its buttons and field are at least 44 px tall', (await wmac.ev('document.documentElement.scrollWidth')) <= 320 && (await wmac.ev(`[...document.querySelectorAll('[data-s=delete-everything] button, [data-s=delete-everything] input')].every(b => b.getBoundingClientRect().height >= 44)`)), [await wmac.ev('document.documentElement.scrollWidth'), await wmac.ev(`[...document.querySelectorAll('[data-s=delete-everything] button, [data-s=delete-everything] input')].map(b => Math.round(b.getBoundingClientRect().height))`)]);
+  await wmac.send('Emulation.clearDeviceMetricsOverride');
+
+  console.log('  Offline: nothing is deleted');
+  await wmac.offline(true);
+  await wmac.type('#wipePhrase', 'delete everything'); await wmac.click('[data-action=wipe-go]');
+  check('offline, the page says it needs a connection and that nothing was deleted', await wmac.until(`!!document.querySelector('[data-s=wipe-problem]')`, 15000) && /needs a connection/.test(await wmac.text('[data-s=wipe-problem]')) && /Nothing was deleted/.test(await wmac.text('[data-s=wipe-problem]')), await wmac.text('[data-s=delete-everything]'));
+  await wmac.offline(false);
+  check('…and nothing is deleted anywhere: the account, R2, the backups and this device all still hold it', (await wrows()).some(x => x.kind === 'project') && (await wFiles()).length >= 1 && (await wBackups()).length >= 1 && (await wmac.data()).projects.items.some(p => p.id === PJW), await wrows());
+
+  console.log('  Delete everything on the first device');
+  await wmac.ev(`location.hash = '#today'`);
+  await wmac.ev(`location.hash = '#delete-everything'`); await wmac.until(`document.querySelector('[data-action=wipe-go]')`, 8000);
+  await wmac.ev(`sessionStorage.clear(); new MutationObserver(() => { if (document.querySelector('[data-s=wipe-steps]')) sessionStorage.setItem('sawSteps', '1'); if (document.getElementById('signInGate') || /Getting your MyDay/.test(document.body.textContent)) sessionStorage.setItem('sawGate', '1'); }).observe(document.body, { childList: true, subtree: true, characterData: true });`);
+  await wmac.type('#wipePhrase', ' Delete Everything '); await wmac.click('[data-action=wipe-go]');
+  check('the page reloads to Today with the notice "Everything was deleted."', await wmac.until(`!!document.querySelector('[data-s=wiped-notice]') && location.hash === '#today'`, 30000) && /Everything was deleted\./.test(await wmac.text('[data-s=wiped-notice]')) && !/another device/.test(await wmac.text('[data-s=wiped-notice]')), await wmac.text('#app'));
+  check('while it ran the page stayed up with the steps showing, and no sign-in or "Getting your MyDay" screen came between', (await wmac.ev(`sessionStorage.getItem('sawSteps')`)) === '1' && (await wmac.ev(`sessionStorage.getItem('sawGate')`)) === null, [await wmac.ev(`sessionStorage.getItem('sawSteps')`), await wmac.ev(`sessionStorage.getItem('sawGate')`)]);
+  const wmd = await wmac.data();
+  check('this device\'s data is a fresh start: no projects, notes, tasks or files of yours, and the starter lists are back', wmd.projects.items.length === 0 && wmd.notes.items.length === 0 && wmd.tasks.items.length === 0 && wmd.files.items.length === 0 && wmd.lists.admin.length > 0, [wmd.projects.items.length, wmd.notes.items.length]);
+  const wkeys = await wmac.ev(`Object.keys(localStorage).filter(k => k.startsWith('myday.')).sort()`);
+  check('every device-only key but the sign-in, sync\'s notes, the data and the notice is gone (sayings, Focus, the lesson step, the Arabic choice, the backup schedule)', wkeys.every(k => ['myday.sync.auth', 'myday.sync.v1', 'myday.data.v4', 'myday.wiped'].includes(k)) && wkeys.includes('myday.sync.auth') && !wkeys.includes('myday.sayings') && !wkeys.includes('myday.focus') && !wkeys.includes('myday.wipe.pending'), wkeys);
+  check('this device is still signed in and, after rejoining the account, shows saved', (await wmac.exists('#nav')) && !(await wmac.exists('#signInGate')) && await statusIs(wmac, 'synced', 30000), await diag(wmac));
+  const waft = await wrows();
+  check('the account holds nothing from before: no project, task, note or deletion marker', !waft.some(x => ['project', 'task', 'note'].includes(x.kind)) && !waft.some(x => x.deleted) && !waft.some(x => x.id === PJW || x.id === N1 || x.id === N2), waft.map(x => `${x.kind}:${x.id}`));
+  check('the account\'s wipe epoch moved on', Number((await sql(`select epoch from public.sync_accounts where user_id = $1`, [userW]))[0].epoch) === 1);
+  check('the file is gone from R2 and the backup from the backup store', (await wFiles()).length === 0 && (await wBackups()).length === 0, [await wFiles(), await wBackups()]);
+
+  console.log('  The other device clears itself');
+  await wphone.offline(false);
+  await wphone.returnToApp();
+  check('at its next sync the phone reloads, says "Everything was deleted from another device on …", and starts fresh', await wphone.until(`!!document.querySelector('[data-s=wiped-notice]')`, 40000) && /Everything was deleted from another device on /.test(await wphone.text('[data-s=wiped-notice]')), await wphone.text('#app'));
+  const wpd2 = await wphone.data();
+  check('…its data is fresh, and the change it made offline is gone', wpd2.projects.items.length === 0 && wpd2.notes.items.length === 0 && !JSON.stringify(wpd2).includes('Changed on the phone while offline'));
+  check('…and it is still signed in', (await wphone.exists('#nav')) && !(await wphone.exists('#signInGate')) && await statusIs(wphone, 'synced', 30000), await diag(wphone));
+  await sleep(1500);
+  const waft2 = await wrows();
+  check('nothing of the phone\'s old copy reaches the account: no project, no offline change, no deletion marker', !waft2.some(x => ['project', 'task', 'note'].includes(x.kind)) && !waft2.some(x => x.deleted) && !JSON.stringify(await inW(`select data from public.sync_records where user_id = $1`)).includes('Changed on the phone while offline'));
+  check('…and the first device did not get the old project back either', (await wmac.data()).projects.items.length === 0);
+  await wphone.click('[data-action=wiped-dismiss]');
+  check('OK hides the notice', !(await wphone.exists('[data-s=wiped-notice]')));
+  await wphone.open(APP + '#today'); await wphone.until(`document.getElementById('nav')`, 15000); await sleep(500);
+  check('…and it stays hidden after a reload', !(await wphone.exists('[data-s=wiped-notice]')) && (await wphone.ev(`localStorage.getItem('myday.wiped')`)) === null);
+
+  console.log('  When files cannot be deleted yet');
+  await wmac.ev(`location.hash = '#today'`); await wmac.until(`!!document.querySelector('[data-s=wiped-notice] [data-action=wiped-dismiss]')`, 8000); await wmac.click('[data-s=wiped-notice] [data-action=wiped-dismiss]');
+  await wmac.setData(`s => { s.projects.items.push({ id: 'pjWipeB', title: 'Second shed', summary: '', stage: 'capture', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${today}T09:00', updatedAt: '${today}T09:00' }); }`);
+  await synced(wmac);
+  await wmac.ev(`location.hash = '#projects/p/pjWipeB'`); await wmac.until(`document.getElementById('files-project')`, 15000);
+  await give(wmac, '#files-project input[type=file]', [fnote]);
+  await wmac.until(`document.querySelectorAll('#files-project [data-s=file][data-state=kept]').length === 1`, 20000);
+  await ctl('files-fail', { action: 'delete-all', times: 1 });
+  await wmac.ev(`location.hash = '#delete-everything'`); await wmac.until(`document.querySelector('[data-action=wipe-go]')`, 8000);
+  await wmac.type('#wipePhrase', 'delete everything'); await wmac.click('[data-action=wipe-go]');
+  check('the data is deleted and the notice says the files could not be deleted yet', await wmac.until(`!!document.querySelector('[data-s=wiped-notice]')`, 30000) && /Everything was deleted\./.test(await wmac.text('[data-s=wiped-notice]')) && /Your files couldn’t be deleted yet/.test(await wmac.text('[data-s=wiped-notice]')), [await wmac.text('[data-s=wiped-notice]'), await ctl('files-log'), await wmac.ev(`localStorage.getItem('myday.wipe.pending')`)]);
+  check('…the device remembers what is left to do (myday.wipe.pending), the account is empty, and the file is still stored for now', eq(JSON.parse(await wmac.ev(`localStorage.getItem('myday.wipe.pending')`)), { user: userW, left: ['files'] }) && (await wmac.data()).projects.items.length === 0 && (await wFiles()).length >= 1, [await wmac.ev(`localStorage.getItem('myday.wipe.pending')`), await wFiles()]);
+  check('the page shows what is left to delete, for this account', (await wmac.ev(`location.hash = '#delete-everything'; true`)) && await wmac.until(`!!document.querySelector('[data-s=wipe-pending]')`, 8000));
+  const X = { email: 'wipe-other@example.test', password: 'disposable-pass-other' };
+  const userX = await S.addUser(db, X.email, X.password);
+  await ctl('files-put', { key: `${userX}/project/flotheracct01`, size: 1234, type: 'application/pdf' });
+  await goSync(wmac);
+  await wmac.click('#syncScreen [data-action=sync-signout]');
+  await wmac.until(`document.querySelector('dialog[open]')`); await wmac.answer(true);
+  await wmac.until(`document.getElementById('signInGate')`, 15000);
+  await signIn(wmac, X);
+  await wmac.until(`!document.getElementById('signInGate') && document.getElementById('nav')`, 20000);
+  const delAllBefore = (await ctl('files-log')).filter(l => /delete-all/.test(l)).length;
+  const leftAfterSignOut = await wmac.ev(`localStorage.getItem('myday.wipe.pending')`);
+  await wmac.open(APP + '#today'); await wmac.until(`document.getElementById('nav')`, 15000);
+  await sleep(14000);
+  check('signed in as another account, the pending deletion is not run: nothing of theirs is deleted and no delete-all is sent', (await fobjects()).some(o => o.key === `${userX}/project/flotheracct01`) && (await ctl('files-log')).filter(l => /delete-all/.test(l)).length === delAllBefore, [await fobjects(), leftAfterSignOut]);
+  await wmac.ev(`location.hash = '#delete-everything'`); await sleep(500);
+  check('…and the "couldn’t be deleted yet" line is not shown to them, on the notice or on the page', !(await wmac.exists('[data-s=wipe-pending]')) && !/couldn’t be deleted yet/.test(await wmac.text('#app')), await wmac.text('#app'));
+  await wmac.ev(`location.hash = 'sync'`); await wmac.until(`document.getElementById('syncScreen')`, 10000);
+  await wmac.click('#syncScreen [data-action=sync-signout]');
+  await wmac.until(`document.querySelector('dialog[open]')`); await wmac.answer(true);
+  await wmac.until(`document.getElementById('signInGate')`, 15000);
+  await signIn(wmac, W);
+  await wmac.until(`!document.getElementById('signInGate') && document.getElementById('nav')`, 25000);
+  check('(test setup: signed back in as the first account, its pending deletion is still noted)', (await wmac.ev(`localStorage.getItem('myday.wipe.pending')`)) !== null || (await wFiles()).length === 0, await wmac.ev(`localStorage.getItem('myday.wipe.pending')`));
+  await wmac.ev(`location.hash = '#today'`);
+  await wmac.click('[data-s=wiped-notice] [data-action=wipe-retry]');
+  check('Try again deletes the files once the store works: nothing is pending and R2 is empty', await wmac.until(`localStorage.getItem('myday.wipe.pending') === null`, 15000) && (await wFiles()).length === 0 && !(await wmac.exists('[data-s=wiped-notice] [data-action=wipe-retry]')), [await wmac.ev(`localStorage.getItem('myday.wipe.pending')`), await wFiles()]);
+
+
+  console.log('  A database restored from before a wipe');
+  await sql(`update public.sync_accounts set epoch = 0 where user_id = $1`, [userW]);
+  const logN = srv.log.length;
+  await wmac.returnToApp(); await wmac.ev(`location.hash = 'sync'`);
+  check('an account whose wipe epoch is below the device\'s shows a problem ("Your account had a problem answering…", trying again later) instead of looping', await wmac.until(`/problem answering/.test(document.querySelector('#syncScreen')?.textContent || '') && /Trying again at/.test(document.querySelector('#syncScreen')?.textContent || '')`, 25000) && (await wmac.status()) !== 'synced', await diag(wmac));
+  check('…and it explains why: "Your account\'s records are older than this device\'s (it was restored from before Delete everything)."', /older than this device/.test(await wmac.text('#syncScreen')), await wmac.text('#syncScreen'));
+  await sleep(4000);
+  check('…and does not hammer the account: only a few reads of its state meanwhile', srv.log.slice(logN).filter(e => e.path === '/rest/v1/rpc/sync_state').length <= 4, srv.log.slice(logN).filter(e => e.path === '/rest/v1/rpc/sync_state').length);
+  await sql(`update public.sync_accounts set epoch = 1 where user_id = $1`, [userW]);
 
   fs.rmSync(dl, { recursive: true, force: true });
   await srv.close();

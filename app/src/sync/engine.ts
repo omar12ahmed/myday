@@ -255,7 +255,7 @@ async function runLocked(reason: Reason) {
     if (await clearAfterWipe(st, ws.data.wiped_at, 'elsewhere')) reloadAfter = true;
     return;
   }
-  if (ws.data.epoch < (link.epoch ?? 0)) { failed('server', EPOCH_BACK); return; } // the account was restored from before a wipe
+  if (ws.data.epoch < (link.epoch ?? 0)) { epochWentBack(); return; } // the account was restored from before a wipe
 
   // 2. Send them, a batch at a time. Each is noted as sent before it goes.
   const sent = new Set<string>();
@@ -278,7 +278,7 @@ async function runLocked(reason: Reason) {
     if (!res.ok) { failed(res.why, res.message); writeState(st); return; } // the changes stay noted, and are sent again with the same ids
     if (!Array.isArray(res.data)) { // wiped meanwhile: the next run hears it (1b); an epoch that went back is a problem
       writeState(st);
-      if (Number((res.data as { epoch?: unknown }).epoch) > (link.epoch ?? 0)) schedule(0); else failed('server', EPOCH_BACK);
+      if (Number((res.data as { epoch?: unknown }).epoch) > (link.epoch ?? 0)) schedule(0); else epochWentBack();
       return;
     }
     catchUp();
@@ -557,6 +557,8 @@ export const WIPED_KEY = 'myday.wiped';
 // Another tab of MyDay on this device reloads when a wipe is noted here, so nothing old stays in its memory.
 if (typeof window !== 'undefined') window.addEventListener('storage', e => { if (e.key === WIPED_KEY && e.newValue) location.reload(); });
 const EPOCH_BACK = "Your account's records are older than this device's (it was restored from before Delete everything).";
+// Tried again with the usual backoff, saying why (failed() words a 'server' problem its own way).
+function epochWentBack() { failed('server', ''); message = EPOCH_BACK; }
 export async function clearAfterWipe(st: SyncState, at: string | null, from: 'here' | 'elsewhere'): Promise<boolean> {
   if (!replaceAll(freshData())) return false;
   try {
