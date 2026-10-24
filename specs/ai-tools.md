@@ -18,7 +18,8 @@ It's built in two steps:
 
 ## 2. Step 1: one filter for everything AI sees
 
-A single module, `app/src/ai/reach.ts`, answers "what of this may reach AI?". Every request builder uses it:
+A single module, `app/src/ai/reach.ts`, answers "what of this may reach AI?". Every request builder that reads your data uses it
+(builders that send only course content or what you type, such as the tutor and "Add what's on my mind", have nothing to hold):
 - Ask MyDay (`askContext.ts`);
 - "Help me adjust today" (`context.ts`);
 - "Add what's on my mind";

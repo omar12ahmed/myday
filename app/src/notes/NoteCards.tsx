@@ -2,6 +2,7 @@ import { GraduationCap } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { removeAiCards } from '../ai/cards';
 import { addNoteCards, noteCardsContext, noteCheckContext, noteLines, readNoteCardsReply, readNoteCheck, type NoteProposedCard } from '../ai/noteCards';
+import { aiReach } from '../ai/reach';
 import { AI_MODE, askModel } from '../ai/request';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
@@ -49,9 +50,9 @@ export function NoteCards({ data, note, flush }: { data: MyDayData; note: Note; 
   const fresh = () => { request.current?.abort(); const ctrl = new AbortController(); request.current = ctrl; return ctrl; };
   async function check() {
     flush();
-    const now = getSnapshot().data.notes.items.find(n => n.id === note.id);
+    const data = getSnapshot().data, now = data.notes.items.find(n => n.id === note.id);
     const nl = now && noteLines(now);
-    if (!now || !nl || !('lines' in nl)) return;
+    if (!now || !aiReach(data).note(now) || !nl || !('lines' in nl)) return; // made private meanwhile: nothing is sent
     const ctrl = fresh();
     setPhase({ at: 'checking' });
     checkedAt.current = Date.now();
@@ -65,8 +66,9 @@ export function NoteCards({ data, note, flush }: { data: MyDayData; note: Note; 
     else void write(c, []); // nothing doubtful: straight on to the cards
   }
   async function write(c: Checked, use: number[]) {
-    const now = getSnapshot().data.notes.items.find(n => n.id === note.id);
-    if (!now || now.text !== c.text || now.title !== c.title) { setPhase({ at: 'error', message: 'Your note changed since it was checked. Check it again to make cards from it.' }); return; }
+    const data = getSnapshot().data, now = data.notes.items.find(n => n.id === note.id);
+    if (!now || !aiReach(data).note(now)) return; // made private meanwhile: nothing is sent
+    if (now.text !== c.text || now.title !== c.title) { setPhase({ at: 'error', message: 'Your note changed since it was checked. Check it again to make cards from it.' }); return; }
     const flagged = new Set(c.flags.map(f => f.line).filter(n => !use.includes(n)));
     const kept = c.lines.map((_, i) => i + 1).filter(n => !flagged.has(n));
     if (!kept.length) { setPhase({ at: 'error', message: 'Every line was left out, so there was nothing to make cards from. Your note is as it was.' }); return; }

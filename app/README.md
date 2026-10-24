@@ -363,7 +363,7 @@ From 1.19.1 both versions also keep origins for other subjects (`subject` a plai
 short plain fields), so cards from your notes — and later sources — survive a device or version that predates them.
 
 Revision cards from a note (AI roles step 3 part C, 1.20.0): with "AI help with notes" on, a note (never a private
-one) offers "Make revision cards" (`src/notes/NoteCards.tsx`, `src/ai/noteCards.ts`; the server's jobs in
+one, or one in a private project) offers "Make revision cards" (`src/notes/NoteCards.tsx`, `src/ai/noteCards.ts`; the server's jobs in
 `../supabase/functions/_shared/ai/note-cards.ts`). The note's lines (blank ones dropped, a long paragraph split into
 sentences; at most 60 lines, 6,000 characters) go to a check that flags doubtful ones with a reason — left out unless
 you tap "It's right, use it"; nothing doubtful and it goes straight on. Then only the lines you kept go to the writer,
@@ -379,7 +379,8 @@ Explain it another way (AI roles step 4, 1.22.0): under every revision question 
 concepts, Cybersecurity checks and Arabic cards — "Explain it another way" asks the AI server for a fresh explanation
 from a different angle (`src/study/AnotherWay.tsx`; the server's jobs `explain` and `explain-arabic` in
 `../supabase/functions/_shared/ai/explain.ts`). Only on your tap; sent: the question, its answer and explanation (and
-the options, for multiple choice) and your own answer — nothing else. It's shown labelled as AI-written, by which model,
+the options, for multiple choice) and your own answer — nothing else; never for a card made from a note that is now
+private or in a private project. It's shown labelled as AI-written, by which model,
 and not checked by your course. "Keep this explanation" saves it on the card (`anotherWay`: its text, the model, the
 day — kept by both versions since 1.20.2), shown there next time until you remove it; your answer and the schedule are
 untouched. Models chosen by evaluation (`../ai-eval/reviews/2026-10-16-explain-quality.md`): GLM explains Cybersecurity

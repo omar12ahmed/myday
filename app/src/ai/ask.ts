@@ -123,7 +123,8 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
   const studyCap = r.items.some(i => i.type === 'study-task') && course ? L.studyItems : L.items;
   // Milestones, pros, cons and options: only for the project on this page (never a private one), checked against what it
   // already has and its limits (30 milestones; per decision 4 options, per option 10 pros and 10 cons).
-  const pr = slice.context.project ? data.projects.items.find(x => x.id === slice.context.project!.id && aiReach(data).project(x)) ?? null : null;
+  const reach = aiReach(data);
+  const pr = slice.context.project ? data.projects.items.find(x => x.id === slice.context.project!.id && reach.project(x)) ?? null : null;
   const dc = pr && slice.context.project?.decision ? pr.decisions?.find(x => x.id === slice.context.project!.decision!.id) ?? null : null;
   let plannedMs = 0, plannedOpts = 0, plannedBeliefs = 0;
   const plannedPts: Record<string, number> = {};
@@ -230,7 +231,7 @@ const ASKS = {
 };
 function checkChanges(items: AskItem[], data: MyDayData, slice: AskSlice, k: DateKey, changed: string[], asked?: string): AskChange[] {
   const wants = (f: keyof typeof ASKS, name: string, what: string) => { if (asked === undefined || ASKS[f].test(asked)) return true; changed.push(`Left out a new ${what} for “${name}” — you didn’t ask for that.`); return false; };
-  const x = slice.context;
+  const x = slice.context, reach = aiReach(data);
   const okTasks = new Set([...(x.today?.dueToday ?? []).map(t => t.id), ...(x.project?.tasks ?? []).map(t => t.id), ...(x.task ? [x.task.id] : [])]);
   const okAppts = new Set((x.calendar?.appointments ?? []).map(a => a.id).filter((id): id is string => !!id));
   const okNotes = new Set(x.note ? [x.note.id] : []);
@@ -271,7 +272,7 @@ function checkChanges(items: AskItem[], data: MyDayData, slice: AskSlice, k: Dat
       }
       if (lines.length) out.push({ target: 'appointment', id, label: c.title, lines, patch });
     } else if (it.target === 'note') {
-      const n = okNotes.has(id) ? data.notes.items.find(y => y.id === id && aiReach(data).note(y)) : undefined;
+      const n = okNotes.has(id) ? data.notes.items.find(y => y.id === id && reach.note(y)) : undefined;
       if (!n) { changed.push('Left out a change to a note that isn’t on this page.'); continue; }
       if (title && title !== n.title && wants('title', n.title || 'this note', 'title')) { patch.title = title; lines.push({ field: 'Title', before: n.title || '(none)', after: title }); }
       if (it.projectId && open.has(it.projectId) && it.projectId !== n.projectId) { patch.projectId = it.projectId; lines.push({ field: 'Project', before: projectName(n.projectId), after: projectName(it.projectId) }); }

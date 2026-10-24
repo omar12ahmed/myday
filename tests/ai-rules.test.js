@@ -1371,12 +1371,24 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const w = K.freshState();
     w.patterns.prefs.aiNotes = true; // notes' text may go, so only the rules keep the private ones back
     const PJ = (id, title, summary, x = {}) => ({ id, title, summary, stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at, ...x });
+    const OLD = '2026-10-20T08:00', week = '2026-11-03';
+    const DEC = (id, question, opt) => ({ id, question, options: [{ id: id + 'o', text: opt, pros: [opt + '-PRO'], cons: [] }], chosen: null, why: '', decidedOn: null, createdAt: OLD, updatedAt: OLD });
+    const MODEL = (problem, belief, found) => ({ problem, who: problem + '-WHO', how: problem + '-HOW', assumptions: [{ id: 'as' + problem.length, text: belief, state: 'open', found, checkedOn: null, taskId: null }] });
     w.projects.items = [
-      PJ('pjSecret', 'SECRET-PROJECT', 'SECRET-SUMMARY', { private: true, commitmentIds: ['cSecret'], outcome: 'SECRET-OUTCOME', finishedWhen: 'SECRET-FINISHED', leftOff: { text: 'SECRET-LEFTOFF', at } }),
-      PJ('pjOpen', 'Garden shed', 'A shed for the bikes', { outcome: 'SECRET-OUTCOME-OPEN', finishedWhen: 'SECRET-FINISHED-OPEN', leftOff: { text: 'SECRET-LEFTOFF-OPEN', at } }),
+      PJ('pjSecret', 'SECRET-PROJECT', 'SECRET-SUMMARY', { private: true, commitmentIds: ['cSecret'], outcome: 'SECRET-OUTCOME', finishedWhen: 'SECRET-FINISHED', leftOff: { text: 'SECRET-LEFTOFF', at },
+        template: 'business', model: MODEL('SECRET-PROBLEM', 'SECRET-BELIEF', 'SECRET-FOUND'), milestones: [{ id: 'mS', title: 'SECRET-MILESTONE', aim: null, reachedOn: null, createdAt: OLD }],
+        decisions: [DEC('dS', 'SECRET-DECISION', 'SECRET-OPTION')], studyLinks: [{ kind: 'course', id: 'crX', title: 'SECRET-LINK', why: 'SECRET-WHY', addedOn: PD }], updatedAt: OLD }),
+      PJ('pjOpen', 'Garden shed', 'A shed for the bikes', { outcome: 'SECRET-OUTCOME-OPEN', finishedWhen: 'SECRET-FINISHED-OPEN', leftOff: { text: 'SECRET-LEFTOFF-OPEN', at },
+        template: 'business', model: MODEL('Bikes get wet', 'Fits the garden', 'SECRET-FOUND-OPEN'), decisions: [DEC('dO', 'Which wood?', 'Larch')],
+        studyLinks: [{ kind: 'course', id: 'crY', title: 'Carpentry basics', why: 'SECRET-WHY-OPEN', addedOn: PD }] }),
+      PJ('pjCase', 'Deposit dispute', 'Getting the deposit back', { template: 'case', case: {
+        timeline: [{ id: 'tl1', date: '2026-10-01', about: false, title: 'SECRET-TIMELINE', details: 'SECRET-TIMELINE-DETAILS', source: 'mine', evidenceIds: [], issueIds: [], createdAt: OLD }],
+        evidence: [{ id: 'ev1', title: 'SECRET-EVIDENCE', kind: 'document', date: null, where: 'SECRET-WHERE', status: 'have', notes: '', issueIds: [], createdAt: OLD }],
+        issues: [{ id: 'is1', title: 'SECRET-ISSUE', status: 'claiming', notes: '', createdAt: OLD }] } }),
     ];
     const TI = (id, title, x = {}) => ({ id, title, listId: '', category: 'admin', minutes: 20, due: PD, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: at, postponed: 0, blockers: [], letGoOn: null, ...x });
     w.tasks.items = [TI('tkSecret', 'SECRET-TASK', { projectId: 'pjSecret', plannedOn: PD, planUid: 'pS', notes: 'SECRET-TASK-NOTES' }), TI('tkSecretDue', 'SECRET-DUE', { projectId: 'pjSecret' }),
+      TI('tkSecretStuck', 'SECRET-STUCK', { projectId: 'pjSecret', due: week, postponed: 3, createdAt: OLD }), TI('tkSecretDone', 'SECRET-DONE', { projectId: 'pjSecret', done: true, doneOn: '2026-11-09' }),
       TI('tkOpen', 'Order the felt', { projectId: 'pjOpen', plannedOn: PD, planUid: 'pO', waiting: { on: 'SECRET-PERSON', since: PD, until: null } })];
     const PT = (uid, title) => ({ uid, taskId: null, category: 'admin', title, minutes: 20, baseMinutes: 20, done: false, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null });
     w.days[PD] = { energy: 3, rest: false, builtAt: at, checkedIn: false, tasks: [PT('pS', 'SECRET-TASK'), PT('pO', 'Order the felt')] };
@@ -1385,12 +1397,21 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     w.notes.items = [NT('nPriv', 'SECRET-NOTE-TITLE', 'SECRET-NOTE-TEXT', { private: true }), NT('nInPriv', 'SECRET-PNOTE-TITLE', 'SECRET-PNOTE-TEXT', { projectId: 'pjSecret' }),
       NT('nOpen', 'Shed sizes', 'Two metres by three', { projectId: 'pjOpen' }), NT('nLoose', 'Loose idea', 'Ask about a bike rack')];
     w.commitments = [{ id: 'cSecret', kind: 'appointment', title: 'SECRET-APPT', start: `${PD}T11:00`, end: `${PD}T12:00` }, { id: 'cOpen', kind: 'appointment', title: 'Dentist', start: `${PD}T15:00`, end: `${PD}T15:30` }];
+    w.patterns.prefs.name = 'SECRET-NAME';
+    w.finance.debts = [{ id: 'db1', direction: 'owe', person: 'SECRET-MONEY', amount: 20, note: 'SECRET-MONEY-NOTE', since: PD }];
     const data = K.normalize(w);
-    const SECRETS = ['SECRET-PROJECT', 'SECRET-SUMMARY', 'SECRET-OUTCOME', 'SECRET-FINISHED', 'SECRET-LEFTOFF', 'SECRET-TASK', 'SECRET-DUE', 'SECRET-PERSON', 'SECRET-NOTE', 'SECRET-PNOTE', 'SECRET-APPT'];
+    const SECRETS = ['SECRET-PROJECT', 'SECRET-SUMMARY', 'SECRET-OUTCOME', 'SECRET-FINISHED', 'SECRET-LEFTOFF', 'SECRET-TASK', 'SECRET-DUE', 'SECRET-STUCK', 'SECRET-DONE', 'SECRET-PERSON',
+      'SECRET-NOTE', 'SECRET-PNOTE', 'SECRET-APPT', 'SECRET-PROBLEM', 'SECRET-BELIEF', 'SECRET-FOUND', 'SECRET-MILESTONE', 'SECRET-DECISION', 'SECRET-OPTION', 'SECRET-LINK', 'SECRET-WHY',
+      'SECRET-TIMELINE', 'SECRET-EVIDENCE', 'SECRET-WHERE', 'SECRET-ISSUE', 'SECRET-NAME', 'SECRET-MONEY'];
+    check('the made-up world really holds every secret after MyDay reads it (so the checks below can\'t pass by accident)', SECRETS.every(x => JSON.stringify(data).includes(x)), SECRETS.filter(x => !JSON.stringify(data).includes(x)));
     const leaks = (req, allowed = []) => SECRETS.filter(x => !allowed.includes(x) && JSON.stringify(req).includes(x));
-    const pages = ['#today', '#calendar', '#today/tasks', '#projects', '#projects/p/pjSecret', '#projects/p/pjOpen', '#projects/p/pjOpen/model', '#projects/notes', '#projects/notes/nPriv', '#projects/notes/nInPriv', '#projects/notes/nOpen',
-      '#today/tasks/tkSecret', '#today/tasks/tkOpen', '#review', '#study', '#finance', '#health'];
+    const pages = ['#today', '#calendar', '#today/tasks', '#projects', '#projects/p/pjSecret', '#projects/p/pjSecret/model', '#projects/p/pjOpen', '#projects/p/pjOpen/model', '#projects/p/pjCase',
+      '#projects/notes', '#projects/notes/nPriv', '#projects/notes/nInPriv', '#projects/notes/nOpen', '#today/tasks/tkSecret', '#today/tasks/tkOpen', '#review', '#study', '#finance', '#health'];
     const askLeaks = pages.map(h => [h, leaks(K.askContext(K.askSlice(data, h, PD), 'what should I do next?', PD))]).filter(([, l]) => l.length);
+    const focused = [['#projects/p/pjOpen/decisions', 'dO'], ['#projects/p/pjSecret/decisions', 'dS']].map(([h, id]) => [h, leaks(K.askContext(K.askSlice(data, h, PD, { decisionId: id }), 'what am I missing?', PD))]).filter(([, l]) => l.length);
+    check('…and asking about a decision ("What am I missing?"): only an open project\'s decision goes, never a private one\'s', focused.length === 0, focused);
+    const openModel = JSON.stringify(K.askContext(K.askSlice(data, '#projects/p/pjOpen/model', PD), 'x', PD));
+    check('…an open business idea\'s one page goes from its Model tab, but never what you found', openModel.includes('Fits the garden') && !openModel.includes('SECRET-FOUND-OPEN'));
     check(`Ask MyDay, from every page (${pages.length}): nothing private and none of the never-sent fields`, askLeaks.length === 0, askLeaks);
     const plan = K.buildContext(data, PD, '');
     check('Help me adjust today: nothing private; the private project\'s task goes only as "a private task"', leaks(plan).length === 0 && plan.tasks.some(t => t.title === 'a private task') && plan.tasks.some(t => t.title === 'Order the felt'), [leaks(plan), plan.tasks.map(t => t.title)]);
@@ -1399,11 +1420,11 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
       !!filing && leaks(filing.ctx, ['SECRET-PROJECT', 'SECRET-SUMMARY']).length === 0 && filing.ctx.projects.some(p => p.id === 'pjSecret') && !filing.ctx.notes.some(n => n.id === 'nPriv' || n.id === 'nInPriv'), filing && leaks(filing.ctx, ['SECRET-PROJECT', 'SECRET-SUMMARY']));
     const mind = K.buildTasksContext('buy bike oil');
     check('Add what\'s on my mind: only what you write', leaks(mind).length === 0 && JSON.stringify(mind).includes('buy bike oil'));
-    const R = K.aiReach(data);
+    const R = K.aiReach(data), byId = (list, id) => list.find(x => x.id === id);
     check('the one filter: a private note, or a note in a private project, never reaches AI (so no revision cards or explanations from it)',
       !R.note(data.notes.items.find(n => n.id === 'nPriv')) && !R.note(data.notes.items.find(n => n.id === 'nInPriv')) && R.note(data.notes.items.find(n => n.id === 'nOpen'))
       && !R.fromNote('nInPriv') && !R.fromNote('nPriv') && R.fromNote('nOpen') && R.fromNote('gone-note'));
-    check('…a private project, its tasks and its appointments never do; others do', !R.project(data.projects.items[0]) && R.project(data.projects.items[1]) && !R.task(data.tasks.items[0]) && R.task(data.tasks.items[2])
+    check('…a private project, its tasks and its appointments never do; others do', !R.project(byId(data.projects.items, 'pjSecret')) && R.project(byId(data.projects.items, 'pjOpen')) && !R.task(byId(data.tasks.items, 'tkSecret')) && R.task(byId(data.tasks.items, 'tkOpen'))
       && !R.appointment({ id: 'cSecret' }) && R.appointment({ id: 'cOpen' }) && eq([...R.heldOnPlan(PD)], ['pS']));
     data.patterns.prefs.aiNotes = false;
     const noText = K.askContext(K.askSlice(data, '#projects/p/pjOpen', PD), 'x', PD);
