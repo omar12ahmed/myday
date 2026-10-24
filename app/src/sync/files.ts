@@ -4,7 +4,9 @@
 // is settled). The rules for what may be kept are shared with the files function
 // (supabase/functions/_shared/files/rules.ts). Never sent to AI.
 import { cleanName, FILE_TYPES, looksLike, PREVIEWABLE, refusal, THUMB_MAX_BYTES, typeOfName } from '../../../supabase/functions/_shared/files/rules';
-import { addFileRecord, dueForPurge, forgetFiles, healFiles, LISTED_AREAS, markOrphans, newFileId, setFileState, unfinished, type Owner } from '../data/files';
+import { addFileRecord, dropAdded, dueForPurge, forgetFiles, healFiles, LISTED_AREAS, markOrphans, newFileId, setFileState, unfinished, type Owner } from '../data/files';
+import { PORTFOLIO_FILES } from '../data/cybersecurity/types';
+import { clearFileCache, forgetCached } from '../data/fileCache';
 import { getSnapshot, update } from '../data/storage';
 import type { FileRecord } from '../data/types';
 import { currentSession } from './client';
@@ -162,7 +164,7 @@ export async function addFiles(owner: Owner, area: string, files: File[]): Promi
     const bytes = new Uint8Array(await file.arrayBuffer());
     const id = newFileId(), type = typeOfName(file.name)!;
     const sha256 = hex(await crypto.subtle.digest('SHA-256', bytes));
-    if (!update(d => (addFileRecord(d, owner, { id, name: cleanName(file.name), type, size: file.size, sha256, area }) ? undefined : false))) { refused.push(`${cleanName(file.name)}: a project or note keeps at most 50 files.`); continue; }
+    if (!update(d => (addFileRecord(d, owner, { id, name: cleanName(file.name), type, size: file.size, sha256, area }) ? undefined : false))) { refused.push(`${cleanName(file.name)}: ${owner.kind === 'portfolio' ? `a portfolio entry keeps at most ${PORTFOLIO_FILES} files` : 'a project or note keeps at most 50 files'}.`); continue; }
     pending.set(id, { owner, file, area });
     sent = true;
     const r = await send(id, area, file, bytes);
@@ -178,7 +180,7 @@ async function send(id: string, area: string, file: File, bytes?: Uint8Array): P
   const name = cleanName(file.name);
   setProgress(id, { name, state: 'adding', message: '' });
   const fail = (message: string, drop = false) => {
-    if (drop) { const p = pending.get(id); update(d => { d.files.items = d.files.items.filter(f => f.id !== id); const place = p && (p.owner.kind === 'project' ? d.projects.items.find(x => x.id === p.owner.id) : d.notes.items.find(x => x.id === p.owner.id)); if (place?.fileIds) { place.fileIds = place.fileIds.filter(x => x !== id); if (!place.fileIds.length) delete place.fileIds; } }); pending.delete(id); }
+    if (drop) { const p = pending.get(id); update(d => { if (p) dropAdded(d, id, p.owner); else d.files.items = d.files.items.filter(f => f.id !== id); }); pending.delete(id); }
     else update(d => (setFileState(d, id, 'failed') ? undefined : false));
     setProgress(id, drop ? null : { name, state: 'failed', message });
     return drop ? { kept: false, refused: message } : { kept: false };
@@ -250,14 +252,14 @@ export async function openFile(f: FileRecord): Promise<FilesResult> {
 export async function deleteNow(files: FileRecord[]): Promise<FilesResult> {
   if (!files.length) return 'ok';
   const r = await call('delete', { files: files.map(f => ({ fileId: f.id, area: f.area })), knows: LISTED_AREAS });
-  if (r.ok) { update(d => (forgetFiles(d, files.map(f => f.id)) ? undefined : false)); void refreshUsage(true); }
+  if (r.ok) { update(d => (forgetFiles(d, files.map(f => f.id)) ? undefined : false)); void forgetCached(files.map(f => f.id)); void refreshUsage(true); }
   return r.ok ? 'ok' : r.why;
 }
 // Every file of this account, from R2 (the true wipe of "delete everything" must call this too). Records stay until
 // the wipe clears the data.
 export async function deleteAllFiles(): Promise<FilesResult> {
   const r = await call('delete-all');
-  if (r.ok) void refreshUsage(true);
+  if (r.ok) { void clearFileCache(); void refreshUsage(true); }
   return r.ok ? 'ok' : r.why;
 }
 // The tidy, every 10 minutes while this device is fully in step with your account (nothing waiting to go, no conflict,

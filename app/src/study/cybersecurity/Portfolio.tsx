@@ -5,6 +5,7 @@ import { Card } from '../../components/Card';
 import { useConfirm } from '../../components/confirm';
 import { Field, TextArea, TextInput } from '../../components/Field';
 import { shortDate, todayKey } from '../../data/dates';
+import { filesLeaving } from '../../data/files';
 import { addEntry, editEntry, entriesFrom, EVIDENCE_MAX, NOTE_MAX, notYet, PRIVACY_CHECKS, removeEntry, TITLE_MAX, type EntryText } from '../../data/cybersecurity/portfolio';
 import type { CyberAttempt, PortfolioEntry } from '../../data/cybersecurity/types';
 import { lessonHref } from '../../data/cybersecurity/types';
@@ -14,12 +15,19 @@ import type { MyDayData } from '../../data/types';
 import { BackLink, Eyebrow, InlineLink } from '../parts';
 import { modules } from './catalogue';
 import { exportPortfolio, grouped } from './portfolioPages';
+import { PortfolioFiles, RemovedEntryFiles } from './PortfolioFiles';
 
 // The Cybersecurity portfolio (specs/study-home-and-lessons.md §10): work from your lab notebook you chose to keep, by
 // module and lesson. Self-study evidence in your own words, never a credential, and never sent to AI.
 
 export function PortfolioView({ data }: { data: MyDayData }) {
   const entries = data.cybersecurity.portfolio ?? [];
+  const [exporting, setExporting] = useState(false);
+  async function exportAll() {
+    setExporting(true);
+    try { const r = await exportPortfolio(data); toast(r.missing ? `Exported, without ${r.missing === 1 ? 'one file' : `${r.missing} files`} that couldn’t be fetched (check your connection).` : 'Portfolio exported.'); }
+    finally { setExporting(false); }
+  }
   return <>
     <Card data-cy-portfolio={entries.length}>
       <BackLink to="study/cybersecurity/notebook" label="Lab notebook" />
@@ -28,26 +36,28 @@ export function PortfolioView({ data }: { data: MyDayData }) {
       <p>Work from your lab notebook that you’ve chosen to keep: its evidence as you left it, your note and its files. It’s your own record of self-study, not a credential, and it’s never sent to AI.</p>
       {entries.length
         ? <><p className="text-[15px]">{entries.length === 1 ? '1 entry' : `${entries.length} entries`}.</p>
-          <Button inline variant="tonal" data-action="cy-pf-export" onClick={() => exportPortfolio(data)}><Download size={18} aria-hidden="true" /> Export portfolio</Button>
-          <p className="text-sm text-fg-2 mt-2 mb-0">Downloads a zip: a page you can open in any browser, with every entry. “Download a copy” (your backup) lists the entries but not their files.</p></>
+          <Button inline variant="tonal" data-action="cy-pf-export" disabled={exporting} onClick={exportAll}><Download size={18} aria-hidden="true" /> {exporting ? 'Exporting…' : 'Export portfolio'}</Button>
+          <p className="text-sm text-fg-2 mt-2 mb-0">Downloads a zip: a page you can open in any browser, with every entry and its files. “Download a copy” (your backup) lists the entries and their files’ names, not the files themselves.</p></>
         : <p className="mb-0">Nothing yet. In your <InlineLink href="#study/cybersecurity/notebook">lab notebook</InlineLink>, a handed-in attempt has “Add to portfolio”.</p>}
+      <RemovedEntryFiles data={data} />
     </Card>
     {grouped(entries).map(g => <Card key={g.moduleId ?? 'other'} aria-label={g.moduleId ? modules.get(g.moduleId)?.name : 'Other work'}>
       <h3 className="mt-0">{g.moduleId ? modules.get(g.moduleId)?.name ?? g.moduleId : 'Other work'}</h3>
       {[...g.places.values()].map(p => <section key={p.lessonId ?? p.label} className="border-t border-outline first-of-type:border-t-0 pt-3 mt-3 first-of-type:mt-0">
         <h4 className="mt-0 mb-1">{p.lessonId ? <InlineLink href={lessonHref(p.lessonId)}>{p.label}</InlineLink> : p.label}</h4>
-        {p.entries.map(e => <EntryCard key={e.id} entry={e} />)}
+        {p.entries.map(e => <EntryCard key={e.id} data={data} entry={e} />)}
       </section>)}
     </Card>)}
   </>;
 }
 
-function EntryCard({ entry: e }: { entry: PortfolioEntry }) {
+function EntryCard({ data, entry: e }: { data: MyDayData; entry: PortfolioEntry }) {
   const [editing, setEditing] = useState(false);
   const confirm = useConfirm();
   async function remove() {
-    if (!(await confirm({ title: 'Remove this entry?', body: `“${e.title}” leaves your portfolio. Its attempt stays in your lab notebook.`, confirmLabel: 'Remove it', cancelLabel: 'Keep it' }))) return;
-    if (update(d => { if (!removeEntry(d, e.id)) return false; })) toast('Removed from your portfolio.');
+    const n = e.fileIds?.length ?? 0;
+    if (!(await confirm({ title: 'Remove this entry?', body: `“${e.title}” leaves your portfolio${n ? `, and its ${n === 1 ? 'file goes' : `${n} files go`} to Recently deleted for 30 days` : ''}. Its attempt stays in your lab notebook.`, confirmLabel: 'Remove it', cancelLabel: 'Keep it' }))) return;
+    if (update(d => { filesLeaving(d, { kind: 'portfolio', id: e.id }, todayKey()); if (!removeEntry(d, e.id)) return false; })) toast('Removed from your portfolio.');
   }
   if (editing) return <EntryForm initial={{ title: e.title, evidence: e.evidence, note: e.note }} submitLabel="Save changes" onCancel={() => setEditing(false)}
     onSave={(t, checked) => { if (update(d => { if (!editEntry(d, e.id, t, checked, todayKey())) return false; })) setEditing(false); }} />;
@@ -56,6 +66,7 @@ function EntryCard({ entry: e }: { entry: PortfolioEntry }) {
     <p className="text-sm text-fg-2 m-0 mt-0.5">Reviewed {shortDate(e.reviewedOn)} · self-study evidence</p>
     {e.evidence && <p className="whitespace-pre-wrap text-[15px] mt-2 mb-0" data-cy-pf-evidence="">{e.evidence}</p>}
     {e.note && <p className="text-[15px] mt-2 mb-0"><strong>Note:</strong> <span className="whitespace-pre-wrap">{e.note}</span></p>}
+    <PortfolioFiles data={data} entryId={e.id} />
     <div className="flex flex-wrap gap-2 mt-2">
       <Button inline variant="ghost" data-action="cy-pf-edit" onClick={() => setEditing(true)}>Edit</Button>
       <Button inline variant="ghost" data-action="cy-pf-remove" onClick={remove}>Remove</Button>

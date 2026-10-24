@@ -124,27 +124,27 @@ const clone = o => JSON.parse(JSON.stringify(o));
   check('usedBy lists every project and note that lists a file', (() => { const e = world(); K.addFileRecord(e, PA, nf('flused000001')); e.projects.items[1].fileIds = ['flused000001']; e.notes.items[1].fileIds = ['flused000001']; return eq(K.usedBy(e, 'flused000001'), [PA, PB, NB]); })());
   check('sizeLabel reads KB and MB', K.sizeLabel(10) === '1 KB' && K.sizeLabel(2048) === '2 KB' && K.sizeLabel(1.5 * 1024 * 1024) === '1.5 MB');
 
-  console.log('\n[7] Files of an area this version can\'t list (a newer MyDay\'s portfolio) are left exactly as they are');
+  console.log('\n[7] Files of an area this version can\'t list (a newer MyDay\'s, say a gallery) are left exactly as they are');
   {
     const d = world();
     d.files.items = [
-      rec('flport000001', { area: 'portfolio' }),                                                    // listed by a portfolio entry this version doesn't know
-      rec('flport000002', { area: 'portfolio', deletedOn: '2026-08-01', removedFrom: { kind: 'portfolio', id: 'pe1', extra: 1 } }), // in the newer MyDay's Recently deleted, long ago
-      rec('flport000003', { area: 'portfolio', state: 'uploading', startedAt: 1 }),                   // still being added there
-      rec('flport000004', { area: 'portfolio', state: 'failed' }),
+      rec('flport000001', { area: 'gallery' }),                                                    // listed by a place this version doesn't know
+      rec('flport000002', { area: 'gallery', deletedOn: '2026-08-01', removedFrom: { kind: 'gallery', id: 'pe1', extra: 1 } }), // in the newer MyDay's Recently deleted, long ago
+      rec('flport000003', { area: 'gallery', state: 'uploading', startedAt: 1 }),                   // still being added there
+      rec('flport000004', { area: 'gallery', state: 'failed' }),
       rec('flproj000009'),                                                                            // an ordinary orphan, for comparison
     ];
     const before = clone(d.files.items.slice(0, 4));
-    check('LISTED_AREAS is project and note', eq(K.LISTED_AREAS, ['project', 'note']));
+    check('LISTED_AREAS is project, note and portfolio', eq(K.LISTED_AREAS, ['project', 'note', 'portfolio']));
     check('none of them is an orphan (only the project file is)', eq(K.orphans(d).map(f => f.id), ['flproj000009']));
     K.markOrphans(d, '2026-10-24'); K.healFiles(d);
     check('markOrphans and healFiles leave them exactly as they were', eq(d.files.items.slice(0, 4), before), d.files.items.slice(0, 4));
-    check('none is in Recently deleted here, or due to go for good, even 30+ days on', !K.recentlyDeleted(d).some(f => f.area === 'portfolio') && !K.dueForPurge(d, '2026-12-31').some(f => f.area === 'portfolio'));
+    check('none is in Recently deleted here, or due to go for good, even 30+ days on', !K.recentlyDeleted(d).some(f => f.area === 'gallery') && !K.dueForPurge(d, '2026-12-31').some(f => f.area === 'gallery'));
     check('an upload of theirs is never "unfinished" here (the tidy doesn\'t settle it)', !K.unfinished(d.files.items[2], Date.now(), '2026-12-31'));
     check('Put back can\'t put one back (its place is unknown here) and changes nothing', !K.putBack(d, 'flport000002') && eq(d.files.items[1], before[1]));
     const read = K.normalizeFiles({ items: clone(before) }, { dropped: 0 });
-    check('reading them keeps the unknown place they were removed from, with its other fields', eq(read.items[1].removedFrom, { kind: 'portfolio', id: 'pe1', extra: 1 }) && eq(read.items, before), read.items[1]);
-    check('placeExists says no for an unknown kind of place', !K.placeExists(d, { kind: 'portfolio', id: 'pe1' }) && K.placeExists(d, PA));
+    check('reading them keeps the unknown place they were removed from, with its other fields', eq(read.items[1].removedFrom, { kind: 'gallery', id: 'pe1', extra: 1 }) && eq(read.items, before), read.items[1]);
+    check('placeExists says no for an unknown kind of place', !K.placeExists(d, { kind: 'gallery', id: 'pe1' }) && K.placeExists(d, PA));
   }
   {
     // A project's file that a newer MyDay also lets a task list (listedIn: ['task']): only this version's links are its
@@ -161,6 +161,27 @@ const clone = o => JSON.parse(JSON.stringify(o));
     K.addFileRecord(f, PA, nf('fltask000003')); f.files.items[0].listedIn = ['project', 'note'];
     check('…while listedIn naming only kinds this version knows changes nothing', K.removeFile(f, 'fltask000003', PA, '2026-10-24') === 'deleted' && f.files.items[0].deletedOn === '2026-10-24');
     check('reading keeps listedIn as it is', eq(K.normalizeFiles({ items: [rec('fltask000004', { listedIn: ['task', 'portfolio'] })] }, { dropped: 0 }).items[0].listedIn, ['task', 'portfolio']));
+  }
+
+  console.log('\n[7b] A Cybersecurity portfolio entry lists its files (at most 5), like a project or a note');
+  {
+    const entry = id => ({ id, attemptId: 'caPf', activityId: 'exercise.learning-evidence', title: 'Baseline evidence', evidence: '', note: '', reviewedOn: '2026-10-20' });
+    const d = world(); d.cybersecurity.portfolio = [entry('pfentry0001')];
+    const PE = { kind: 'portfolio', id: 'pfentry0001' };
+    for (let i = 1; i <= 5; i++) { K.addFileRecord(d, PE, nf('flpf0000000' + i, { area: 'portfolio', name: 'shot' + i + '.png', type: 'image/png' })); K.setFileState(d, 'flpf0000000' + i, 'kept'); }
+    check('an entry keeps its files in order, and a sixth is refused', eq(d.cybersecurity.portfolio[0].fileIds, ['flpf00000001', 'flpf00000002', 'flpf00000003', 'flpf00000004', 'flpf00000005'])
+      && !K.addFileRecord(d, PE, nf('flpf00000006', { area: 'portfolio' })) && K.filesPerPlace(PE) === 5 && K.filesPerPlace(PA) === 50);
+    check('its files are used by it, never orphans, never in Recently deleted', eq(K.usedBy(d, 'flpf00000001'), [PE]) && !K.orphans(d).length && !K.markOrphans(d, '2026-10-24') && !K.recentlyDeleted(d).length);
+    check('removing one goes to Recently deleted from that entry, and Put back returns it', K.removeFile(d, 'flpf00000005', PE, '2026-10-24') === 'deleted' && eq(d.files.items[4].removedFrom, PE)
+      && K.recentlyDeleted(d, PE).length === 1 && K.putBack(d, 'flpf00000005') && eq(d.cybersecurity.portfolio[0].fileIds.length, 5));
+    K.filesLeaving(d, PE, '2026-10-25'); d.cybersecurity.portfolio = [];
+    check('when the entry goes, its files wait in Recently deleted for 30 days, then are due to go for good', K.recentlyDeleted(d).length === 5 && !K.dueForPurge(d, '2026-11-23').length && K.dueForPurge(d, '2026-11-24').length === 5);
+    check('…and can\'t be put back where the entry was (it isn\'t there)', !K.putBack(d, 'flpf00000001') && !K.placeExists(d, PE));
+    const o = world(); o.files.items = [rec('flpforph0001', { area: 'portfolio' })];
+    check('a portfolio file nothing lists is an orphan here, like any other (this version knows the portfolio)', eq(K.orphans(o).map(f => f.id), ['flpforph0001']));
+    const r = world(); r.cybersecurity.portfolio = [entry('pfentry0002')];
+    K.addFileRecord(r, { kind: 'portfolio', id: 'pfentry0002' }, nf('flpfdrop0001', { area: 'portfolio' })); K.dropAdded(r, 'flpfdrop0001', { kind: 'portfolio', id: 'pfentry0002' });
+    check('a file the server refused while being added comes off its entry, record and all', !r.files.items.length && !('fileIds' in r.cybersecurity.portfolio[0]));
   }
 
   fs.rmSync(dir, { recursive: true, force: true });

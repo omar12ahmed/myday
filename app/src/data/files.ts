@@ -5,13 +5,14 @@
 // or Delete now), then goes for good. Never sent to AI.
 import { KEEP_DELETED_DAYS } from '../../../supabase/functions/_shared/files/rules';
 import { isDateKey, shift, todayKey } from './dates';
+import { PORTFOLIO_FILES } from './cybersecurity/types';
 import type { DateKey, FileRecord, FilesData, MyDayData } from './types';
 import { isObj, listOf, uid } from './util';
 
 export const FILE_ID = /^fl[a-z0-9]{6,40}$/;
 export const FILES_PER_PLACE = 50;
 export const newFileId = () => 'fl' + uid();
-export type Owner = { kind: 'project' | 'note'; id: string };
+export type Owner = { kind: 'project' | 'note' | 'portfolio'; id: string }; // a portfolio entry: cybersecurity.portfolio
 type Place = { kind: string; id: string }; // an Owner, or a place a newer MyDay knows (kept, never found here)
 export const emptyFiles = (): FilesData => ({ items: [] });
 // The areas whose files this version can list, and so judge. A file of another area (a newer MyDay's portfolio, say)
@@ -20,8 +21,8 @@ export const emptyFiles = (): FilesData => ({ items: [] });
 // (`listedIn`, e.g. a task listing a project's file): only removing it from a project or note here takes that link out.
 // (A record from a newer MyDay in a shape this version doesn't read is still tidied by normalizeFiles: a bad hash,
 // day, area or state is replaced.)
-export const LISTED_AREAS: readonly string[] = ['project', 'note'];
-const PLACE_KINDS: readonly string[] = ['project', 'note'];
+export const LISTED_AREAS: readonly string[] = ['project', 'note', 'portfolio'];
+const PLACE_KINDS: readonly string[] = ['project', 'note', 'portfolio'];
 const listedHere = (f: FileRecord) => LISTED_AREAS.includes(f.area) && !(Array.isArray(f.listedIn) && f.listedIn.some(k => !PLACE_KINDS.includes(String(k))));
 
 // Reading saved file records: one without an id, a name, a type or a size is counted, never kept half-read. Fields from
@@ -54,7 +55,10 @@ export function normalizeFileIds(raw: unknown): string[] | null {
 }
 
 // ---------- Places ----------
-const place = (d: MyDayData, o: Place) => (o.kind === 'project' ? d.projects.items.find(p => p.id === o.id) : o.kind === 'note' ? d.notes.items.find(n => n.id === o.id) : undefined);
+const place = (d: MyDayData, o: Place) => (o.kind === 'project' ? d.projects.items.find(p => p.id === o.id) : o.kind === 'note' ? d.notes.items.find(n => n.id === o.id)
+  : o.kind === 'portfolio' ? d.cybersecurity.portfolio?.find(e => e.id === o.id) : undefined);
+// How many files a place keeps: a portfolio entry 5, a project or a note 50.
+export const filesPerPlace = (o: Place) => (o.kind === 'portfolio' ? PORTFOLIO_FILES : FILES_PER_PLACE);
 export const placeExists = (d: MyDayData, o: Place) => !!place(d, o);
 export const fileIdsOf = (d: MyDayData, o: Place): string[] => place(d, o)?.fileIds ?? [];
 // The files a place lists, in its order (a record that's missing is simply not shown).
@@ -62,7 +66,8 @@ export const filesOf = (d: MyDayData, o: Owner): FileRecord[] => fileIdsOf(d, o)
 // Every place that lists a file.
 export function usedBy(d: MyDayData, fileId: string): Owner[] {
   return [...d.projects.items.filter(p => p.fileIds?.includes(fileId)).map(p => ({ kind: 'project' as const, id: p.id })),
-    ...d.notes.items.filter(n => n.fileIds?.includes(fileId)).map(n => ({ kind: 'note' as const, id: n.id }))];
+    ...d.notes.items.filter(n => n.fileIds?.includes(fileId)).map(n => ({ kind: 'note' as const, id: n.id })),
+    ...(d.cybersecurity.portfolio ?? []).filter(e => e.fileIds?.includes(fileId)).map(e => ({ kind: 'portfolio' as const, id: e.id }))];
 }
 function setIds(d: MyDayData, o: Place, ids: string[]) {
   const p = place(d, o);
@@ -77,7 +82,7 @@ function setIds(d: MyDayData, o: Place, ids: string[]) {
 export interface NewFile { id: string; name: string; type: string; size: number; sha256: string; area: string }
 export function addFileRecord(d: MyDayData, o: Owner, rec: NewFile, k: DateKey = todayKey(), now = Date.now()): boolean {
   const ids = fileIdsOf(d, o);
-  if (!place(d, o) || ids.length >= FILES_PER_PLACE || d.files.items.some(f => f.id === rec.id)) return false;
+  if (!place(d, o) || ids.length >= filesPerPlace(o) || d.files.items.some(f => f.id === rec.id)) return false;
   d.files.items.push({ ...rec, state: 'uploading', addedOn: k, startedAt: now });
   return setIds(d, o, [...ids, rec.id]);
 }
@@ -99,12 +104,18 @@ export function removeFile(d: MyDayData, fileId: string, from: Owner, k: DateKey
   if (f) { f.deletedOn = k; f.removedFrom = from; }
   return 'deleted';
 }
+// A file the server refused while it was being added: its record goes, and its id comes off the place it was added to.
+export function dropAdded(d: MyDayData, fileId: string, from: Owner) {
+  d.files.items = d.files.items.filter(f => f.id !== fileId);
+  const ids = fileIdsOf(d, from);
+  if (ids.includes(fileId)) setIds(d, from, ids.filter(x => x !== fileId));
+}
 // Put a file back where it was removed from. False when it isn't in Recently deleted, or that place is gone.
 export function putBack(d: MyDayData, fileId: string): boolean {
   const f = d.files.items.find(x => x.id === fileId);
   if (!f?.deletedOn || !f.removedFrom || !place(d, f.removedFrom)) return false;
   const ids = fileIdsOf(d, f.removedFrom);
-  if (ids.length >= FILES_PER_PLACE) return false;
+  if (ids.length >= filesPerPlace(f.removedFrom)) return false;
   setIds(d, f.removedFrom, ids.includes(fileId) ? ids : [...ids, fileId]);
   delete f.deletedOn; delete f.removedFrom;
   return true;
