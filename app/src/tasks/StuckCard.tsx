@@ -23,7 +23,7 @@ export function StuckCard({ data, t, stuck }: { data: MyDayData; t: TaskItem; st
   const [text, setText] = useState(''), [until, setUntil] = useState('');
   const k = todayKey(), off = nextDayOff(data, k);
   const intro = !stuck ? null
-    : t.postponed >= 3 ? `This one has moved ${t.postponed} times.` : t.due ? `This one has been waiting since ${shortDate(t.due)}.` : null;
+    : t.postponed >= 3 ? `This one has moved ${t.postponed} times.` : t.due ? `This one was planned for ${shortDate(t.due)}.` : null;
   function go() {
     if (!reason) return;
     if (reason === 'waiting') {
@@ -66,7 +66,7 @@ export function StuckCard({ data, t, stuck }: { data: MyDayData; t: TaskItem; st
           <Button inline type="submit" variant="primary" className="mt-3" data-action="unstick" disabled={a.needsText && !text.trim()}>{a.label}</Button>
         </form>
       )}
-      <Note className="mb-0 mt-3 text-sm">Your answer is kept with the task, so MyDay can notice what usually gets in the way.</Note>
+      {reason !== 'waiting' && <Note className="mb-0 mt-3 text-sm">Your answer is kept with the task, so MyDay can notice what usually gets in the way.</Note>}
     </Card>
   );
 }

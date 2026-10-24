@@ -17,7 +17,7 @@ import { finishReview, inFocus, lastReviewDay, REVIEW_LIMITS, reviewDay, setRevi
 
 // The weekly review (#review, milestone 6 — Reflect, 1.37.0): four short steps, one at a time — what moved, what's
 // waiting, next week's focus, and a line or two if you like. Nothing changes until you tap; nothing is judged.
-const STEPS = ['What moved', "What's waiting", "Next week's focus", 'A line or two'] as const;
+const STEPS = ['What moved', 'What needs you', "Next week's focus", 'A line or two'] as const; // "What needs you" since 1.50.0, so "waiting" only means waiting on someone
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 export function ReviewScreen({ data }: { data: MyDayData }) {
@@ -64,7 +64,7 @@ export function ReviewScreen({ data }: { data: MyDayData }) {
         {step === 0 && <Moved data={data} />}
         {step === 1 && (waiting.length ? (
           <ul className="list-none p-0 m-0" data-s="review-waiting">{waiting.map(w => <WaitingRow key={w.key} w={w} k={k} onLeave={() => setLeft(new Set([...left, w.key]))} />)}</ul>
-        ) : <p className="text-[15px] text-fg-2 m-0" data-s="review-nothing-waiting">Nothing waiting on you — lovely.</p>)}
+        ) : <p className="text-[15px] text-fg-2 m-0" data-s="review-nothing-waiting">Nothing needs you right now — lovely.</p>)}
         {step === 2 && (active.length ? <>
           <p className="text-[15px] text-fg-2 m-0">Up to three projects for the week from {shortDate(start)}. Fewer is fine — their next steps lead on Today.</p>
           <ul className="list-none p-0 m-0 mt-2" data-s="review-focus">{active.map(p => {

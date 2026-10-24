@@ -57,7 +57,7 @@ export const SENDS = {
   decision: `the decision you asked about (its question, options, and the first ${L.decisionPoints} pros and ${L.decisionPoints} cons per option)`,
   onePage: 'its one page (your three answers, and what must be true with how each is turning out — not what you found)',
   note: 'this note', task: 'this task', calendar: "today's appointments",
-  review: 'your last seven days in counts (what moved in each project, other tasks, study and workouts), what’s waiting and next week’s focus — nothing of private projects',
+  review: 'your last seven days in counts (what moved in each project, other tasks, study and workouts), what needs you and next week’s focus — nothing of private projects',
 } as const;
 const HELD_WORD = { note: 'not this note, it’s private', project: 'not this project, it’s private', task: 'not this task, its project is private' } as const;
 function sendsLine(parts: string[], here: AskSlice['held']['here'] = null): string {
@@ -265,10 +265,10 @@ export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['
   }
   if (x.review) {
     const r = x.review;
-    short.push(`Your week: ${n(r.moved.length, 'project')} moved`, ...(r.waiting.length ? [`${n(r.waiting.length, 'thing')} waiting`] : []));
+    short.push(`Your week: ${n(r.moved.length, 'project')} moved`, ...(r.waiting.length ? [`${n(r.waiting.length, 'thing')} need${r.waiting.length === 1 ? 's' : ''} you`] : []));
     all.push({ label: `Your week (${r.from} to ${r.to})`, lines: [...r.moved.map(m => `${m.project}: ${[m.tasks && `${m.tasks} tasks done`, m.milestones && `${m.milestones} milestones`, m.decisions && `${m.decisions} decisions`, m.found && `${m.found} found out`, m.recorded && `${m.recorded} recorded`].filter(Boolean).join(', ')}`),
       `Other tasks done: ${r.otherTasks}`, `Study: ${r.studySessions} sessions, ${r.studyMinutes} min`, `Workouts: ${r.workouts}`] });
-    if (r.waiting.length) all.push({ label: 'What’s waiting', lines: r.waiting });
+    if (r.waiting.length) all.push({ label: 'What needs you', lines: r.waiting });
     if (r.focus.length) all.push({ label: 'Next week’s focus', lines: r.focus });
   }
   if (x.calendar) {

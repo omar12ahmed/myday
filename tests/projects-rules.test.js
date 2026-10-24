@@ -808,7 +808,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('a task still open comes first, and the limit of three leaves out the last pointer', eq(texts(wl(all)), [`Send the bundle — still open, was due ${K.shortDate('2026-10-09')}`, 'Hearing — in 2 days', '1 issue has nothing linked yet']), wl(all));
   }
 
-  console.log('\n[12] The weekly review: when, what moved, what\'s waiting, focus');
+  console.log('\n[12] The weekly review: when, what moved, what needs you, focus');
   {
     const k = '2026-10-18'; // a Sunday
     const TK = (id, pid, x = {}) => ({ id, title: 'Task ' + id, listId: '', category: 'Admin', minutes: 25, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: OLD, postponed: 0, blockers: [], letGoOn: null, projectId: pid, ...x });
@@ -888,7 +888,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     ];
     const wa = K.whatsWaiting(wt, k, 10);
     check('a task that has moved 3 times says so', wa[0].kind === 'stuck' && wa[0].text === '“Pay council tax” has moved 3 times', wa[0]);
-    check('a task a week past due says when it has been waiting since', wa[1].kind === 'stuck' && wa[1].text === `“Renew passport” has been waiting since ${K.shortDate('2026-10-10')}`, wa[1]);
+    check('a task a week past due says when it was planned for', wa[1].kind === 'stuck' && wa[1].text === `“Renew passport” was planned for ${K.shortDate('2026-10-10')}`, wa[1]);
     check('a task moved twice, one only 6 days past due, one let go of and one ticked are not stuck', wa.filter(w => w.kind === 'stuck').length === 2, wa.map(w => w.text));
     check('an active project quiet for 4 weeks says so (and a paused one is not mentioned)', wa[2].kind === 'quiet' && wa[2].text === '“Allotment plan” has been quiet for 4 weeks' && !wa.some(w => w.text.includes('Paused thing')), wa.map(w => w.text));
     check('an open decision 14 or more days old is mentioned with its project (not a newer one or a decided one)', wa[3].kind === 'decision' && wa[3].text === '“Which roaster?” is still open (Coffee subscription)' && wa.filter(w => w.kind === 'decision').length === 1, wa.map(w => w.text));
@@ -900,7 +900,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('by default no more than 5 are given, the last of the six left out', wa5.length === 5 && eq(wa5.map(w => w.kind), ['stuck', 'stuck', 'quiet', 'decision', 'found']), wa5.map(w => w.kind));
     const qb = K.freshState(); qb.projects.items = [act('pj14', { title: 'Fourteen days', updatedAt: '2026-10-04T09:00' }), act('pj13', { title: 'Thirteen days', updatedAt: '2026-10-05T09:00' })];
     check('a project is quiet at 14 days ("2 weeks") but not at 13', eq(K.whatsWaiting(qb, k).map(w => w.text), ['“Fourteen days” has been quiet for 2 weeks']), K.whatsWaiting(qb, k));
-    check('a week with nothing waiting gives an empty list', K.whatsWaiting(K.freshState(), k).length === 0);
+    check('a week with nothing that needs you gives an empty list', K.whatsWaiting(K.freshState(), k).length === 0);
 
     console.log('  Focus');
     const fp = base('pjF', { focus: '2026-10-19' });
@@ -1159,8 +1159,8 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const A = () => cw.tasks.items.find(t => t.id === 'tkA');
     const r1 = K.chaseWaiting(cw, 'tkA');
     const made = cw.tasks.items.filter(t => t.id !== 'tkA');
-    check('Chase it adds exactly one task, "Chase <who>: <title>"', typeof r1 === 'string' && made.length === 1 && made[0].id === r1 && made[0].title === 'Chase Priya: Ask about the armchair', [r1, made]);
-    check('…of 5 minutes, in the same list, category and project, to do and undated', made[0].minutes === 5 && made[0].listId === 'lsHome' && made[0].category === 'learning' && made[0].projectId === 'pjA' && !made[0].done && made[0].due === null, made[0]);
+    check('Chase it adds exactly one task, "Chase: <title>" (without who you are waiting on)', typeof r1 === 'string' && made.length === 1 && made[0].id === r1 && made[0].title === 'Chase: Ask about the armchair' && !made[0].title.includes('Priya'), [r1, made]);
+    check('…of 5 minutes, in the same list, category and project, to do and (with no day given) undated', made[0].minutes === 5 && made[0].listId === 'lsHome' && made[0].category === 'learning' && made[0].projectId === 'pjA' && !made[0].done && made[0].due === null, made[0]);
     check('…and records it on the wait as chaseTaskId, keeping the rest of the wait', A().waiting.chaseTaskId === r1 && A().waiting.on === 'Priya' && A().waiting.until === '2026-10-12' && K.chaseTask(cw, A()).id === r1, A().waiting);
     check('while that follow-up is still to do, Chase it returns "already" and adds nothing', K.chaseWaiting(cw, 'tkA') === 'already' && cw.tasks.items.length === 2);
     K.setTaskDone(cw, r1, true);
@@ -1171,6 +1171,16 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const r3 = K.chaseWaiting(cw, 'tkA');
     check('…and once that one is let go, it adds a third', typeof r3 === 'string' && r3 !== r2 && cw.tasks.items.length === 4 && A().waiting.chaseTaskId === r3);
     cw.tasks.items.push(TK('tkN', 'pjA'));
+    const dueOf = (due, label) => {
+      const dd = world(base('pjA')); dd.tasks.items = [TK('tkA', 'pjA', { title: 'Ask about the armchair', waiting: W('Priya') })];
+      const id = due === undefined ? K.chaseWaiting(dd, 'tkA') : K.chaseWaiting(dd, 'tkA', due);
+      return typeof id === 'string' ? dd.tasks.items.find(t => t.id === id) : id;
+    };
+    check('Chase it for today: the follow-up is due that day, 5 minutes, undated time', dueOf('2026-10-14').due === '2026-10-14' && dueOf('2026-10-14').time === null && dueOf('2026-10-14').minutes === 5, dueOf('2026-10-14'));
+    check('…for tomorrow: due the next day', dueOf('2026-10-15').due === '2026-10-15');
+    check('…for a day you pick: due that day', dueOf('2026-11-03').due === '2026-11-03');
+    check('…with no date (null, or left out): it has no due day', dueOf(null).due === null && dueOf(undefined).due === null);
+    check('…a day that isn\'t a date gives no date, and still adds the task', dueOf('soon').due === null && dueOf('2026-02-31').due === null && dueOf('soon').title === 'Chase: Ask about the armchair', dueOf('soon'));
     check('a task that isn\'t waiting, or isn\'t there, gets no follow-up (null)', K.chaseWaiting(cw, 'tkN') === null && K.chaseWaiting(cw, 'tkNope') === null && cw.tasks.items.length === 5);
     const np = world(base('pjA')); np.tasks.items = [TK('tkA', null, { title: 'Order the part', waiting: W('Dev') })];
     const rn = K.chaseWaiting(np, 'tkA');
@@ -1247,12 +1257,12 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('…and once its expected day has come only the waiting pointer appears for it', eq(wl(so2).map(x => x.key), ['waiting']), wl(so2));
   }
 
-  console.log('\n[16] The previous release (1.48.0) keeps a task\'s wait unchanged, with the field it does not know');
+  console.log('\n[16] The previous release (1.49.0) keeps a task\'s wait unchanged, with the field it does not know');
   {
     const git = (...a) => execFileSync('git', a, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
-    // The last release without "waiting": the one a device may go back to. Pinned, so this never compares the
+    // The last release without "waiting" (1.49.0): the one a device may go back to. Pinned, so this never compares the
     // feature with itself, whatever the working tree holds; MYDAY_PREVIOUS_WAITING_REF overrides it.
-    const BEFORE_WAITING = 'v1.48.0';
+    const BEFORE_WAITING = 'v1.49.0';
     const ref = process.env.MYDAY_PREVIOUS_WAITING_REF || BEFORE_WAITING;
     let commit = '';
     try { commit = git('rev-parse', '--verify', '--quiet', '--short', ref + '^{commit}'); } catch { /* not found */ }

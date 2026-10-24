@@ -1311,7 +1311,13 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('nothing of the private project is in the request: not its name, its tasks, its milestone, what is waiting on it or its focus', !/Surprise|cake|band|hall/i.test(text(req)), text(req));
     check('…or in the preview', !/Surprise|cake|band|hall/i.test(text(pv)), pv);
     check('what was left out is counted: the private project\'s name, its move this week and its waiting task (3)', sl.held.count === 3 && sl.held.here === null, sl.held);
-    check('the preview says "Your week: 1 project moved" and "1 thing waiting", and says 3 items from private projects were not sent', pv.short.includes('Your week: 1 project moved') && pv.short.includes('1 thing waiting') && pv.short.includes('3 items from private projects not sent'), pv.short);
+    check('the preview says "Your week: 1 project moved" and "1 thing needs you", and says 3 items from private projects were not sent', pv.short.includes('Your week: 1 project moved') && pv.short.includes('1 thing needs you') && pv.short.includes('3 items from private projects not sent'), pv.short);
+    check('…and its full list is headed "What needs you" (not "What’s waiting")', pv.all.some(x => x.label === 'What needs you') && !pv.all.some(x => /waiting/i.test(x.label)), pv.all.map(x => x.label));
+    {
+      const w2 = JSON.parse(JSON.stringify(w)); w2.tasks.items.push(TK('o3', 'Book the boiler', { postponed: 4 }));
+      const sl2 = K.askSlice(w2, '#review', D), pv2 = K.askPreview(K.askContext(sl2, 'What pattern do you see in my week?', D), sl2.privateNote, sl2.held);
+      check('with two things it says "2 things need you" (plural), and with one "1 thing needs you" (singular, above)', pv2.short.includes('2 things need you') && !pv2.short.some(x => /waiting/.test(x)), pv2.short);
+    }
     check('the preview shows the week in full, and the Sends line says what is sent', text(pv.all).includes('Hargeisa shop') && text(pv.all).includes('Allotment plan') && /seven days/.test(sl.sends), [pv.all, sl.sends]);
     check('the request passes the server\'s check', K.checkAskContext(req));
   }

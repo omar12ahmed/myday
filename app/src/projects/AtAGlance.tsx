@@ -1,7 +1,6 @@
 import { ArrowRight, LayoutDashboard, Lightbulb } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { openCapture } from '../capture/openCapture';
-import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { isBusiness, isCase, modelProgress } from '../data/businessModel';
 import { caseCounts, EVIDENCE_STATUS_LABEL, ISSUE_STATUS_LABEL, timelineInOrder } from '../data/caseFile';
@@ -9,12 +8,10 @@ import { parseKey, shortDate, todayKey } from '../data/dates';
 import { issueGrid, timelineByMonth, weeksDone, type Pointer, type Week } from '../data/projectDashboard';
 import { chosenOption, decisionsInOrder, milestoneProgress } from '../data/projectPlan';
 import { lastActivity, projectTasks } from '../data/projects';
-import { update } from '../data/storage';
-import { chaseWaiting } from '../data/tasks';
-import { toast } from '../data/toast';
 import type { MyDayData, Project } from '../data/types';
 import { NOT_ADVICE } from './CaseViews';
 import { AiHelp } from './PlanViews';
+import { ChaseIt } from '../tasks/ChaseIt';
 import { aimText, tabHref } from './planText';
 
 // "At a glance" (1.36.0): a project's summary on its Overview, one row per tool, each fact said once and each row
@@ -44,19 +41,14 @@ export function AtAGlance({ data, p }: { data: MyDayData; p: Project }) {
 
 // "Worth a look": at most three gentle pointers from real data (data/projectDashboard.ts), beside the next step. A wait
 // whose expected day has come offers "Chase it": one 5-minute follow-up task (data/tasks.ts).
-export function WorthALook({ pointers }: { pointers: Pointer[] }) {
-  function chase(taskId: string) {
-    let r = null as ReturnType<typeof chaseWaiting>;
-    if (update(d => { r = chaseWaiting(d, taskId); if (!r || r === 'already') return false; })) toast('Added a 5-minute task to chase it — it’s in this project’s tasks.');
-  }
+export function WorthALook({ data, pointers }: { data: MyDayData; pointers: Pointer[] }) {
   return (
     <Card aria-labelledby="pjWorthH" id="projectWorth" data-s="glance-pointers">
       <h3 id="pjWorthH" className="flex items-center gap-2"><Lightbulb size={18} aria-hidden="true" className="text-primary" /> Worth a look</h3>
       <ul className="list-none p-0 m-0">{pointers.map(x => (
         <li key={x.key} className="border-t border-outline first:border-t-0"><a href={x.href} className="flex items-center justify-between gap-2 min-h-11 py-2 text-fg no-underline hover:underline underline-offset-4 break-words" data-pointer={x.key}>
           <span className="min-w-0">{x.text}</span><ArrowRight size={16} aria-hidden="true" className="flex-none text-fg-3" /></a>
-          {x.chase && (x.chase.added ? <p className="m-0 pb-2 text-sm text-fg-2" data-s="chase-added">A task to chase it is in this project’s tasks.</p>
-            : <Button inline variant="ghost" className="mb-2" data-action="chase" onClick={() => chase(x.chase!.taskId)}>Chase it</Button>)}</li>))}</ul>
+          {x.chase && (() => { const t = data.tasks.items.find(y => y.id === x.chase!.taskId); return t && <div className="pb-2"><ChaseIt data={data} t={t} /></div>; })()}</li>))}</ul>
     </Card>
   );
 }

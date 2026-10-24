@@ -44,7 +44,7 @@ export function TaskRow({ data, t, hideProject = false }: { data: MyDayData; t: 
           {onTodaysPlan(data, t) && !done && <span className="text-primary font-semibold">On today's plan</span>}
           {t.letGoOn && <span data-s="let-go">Let go</span>}
           {!done && isStuck(data, t) && <span className="text-primary font-semibold" data-s="stuck">Something in the way?</span>}
-          {!done && t.waiting && <span className="text-fg-2" data-s="task-waiting">{waitingText(t)}</span>}
+          {!done && t.waiting && <span className="text-fg-2 break-words min-w-0" data-s="task-waiting">{waitingText(t)}</span>}
         </span>
       </a>
     </li>

@@ -16,10 +16,11 @@ import { isBusiness, isCase, knownTemplate, setTemplate, TEMPLATES, type Templat
 import { worthALook } from '../data/projectDashboard';
 import { comingUp, deleteProject, editProject, setProjectPrivate, linkNote, nextStep, PROJECT_LIMITS, projectById, projectNotes, projectTasks, recently, setLeftOff, setNextStep, STATUS_LABEL, stillOpen, unlinkAppointment } from '../data/projects';
 import { update } from '../data/storage';
-import { addTask, addToTodaysPlan, chaseTask, chaseWaiting, onTodaysPlan, planRoom, setTaskDone } from '../data/tasks';
+import { addTask, addToTodaysPlan, onTodaysPlan, planRoom, setTaskDone } from '../data/tasks';
 import { toast } from '../data/toast';
 import type { MyDayData, Project, TaskItem } from '../data/types';
 import { bothMention, mightBelong } from '../data/understand';
+import { ChaseIt } from '../tasks/ChaseIt';
 import { dueText, waitingText } from '../tasks/route';
 import { TaskRow } from '../tasks/TasksScreen';
 import { Progression } from './parts';
@@ -200,7 +201,7 @@ function OverviewTop({ data, p }: { data: MyDayData; p: Project }) {
     // Side by side, the two cards share a bottom edge.
     <div className={`grid gap-x-5 ${pointers.length ? 'lg:grid-cols-[minmax(0,1fr)_340px]' : ''}`} data-s="overview-top">
       <div className="min-w-0 flex flex-col *:flex-1"><NextStepCard data={data} p={p} /></div>
-      {pointers.length > 0 && <div className="min-w-0 flex flex-col *:flex-1"><WorthALook pointers={pointers} /></div>}
+      {pointers.length > 0 && <div className="min-w-0 flex flex-col *:flex-1"><WorthALook data={data} pointers={pointers} /></div>}
     </div>
   );
 }
@@ -223,12 +224,12 @@ function NextStepCard({ data, p }: { data: MyDayData; p: Project }) {
         <>
           <p className="text-[20px] font-bold leading-snug m-0 break-words" data-s="next-title">{step.title}</p>
           <p className="flex flex-wrap items-center gap-x-2 gap-y-1 m-0 mt-1.5 text-sm text-fg-3 tabular-nums">
-            {step.due && (step.due < k ? <span data-s="next-still-open">Still open · was due {shortDate(step.due)}</span> : <span>{dueText(step, k)}</span>)}<span>{step.minutes} min</span><CategoryChip kind={step.category} />
+            {step.due && (step.due < k && !step.waiting ? <span data-s="next-still-open">Still open · was due {shortDate(step.due)}</span> : <span>{dueText(step, k)}</span>)}<span>{step.minutes} min</span><CategoryChip kind={step.category} />
           </p>
           {/* A waiting step you chose stays chosen (1.50.0); it can't be done today, so it isn't offered for Today. */}
-          {step.waiting && <p className="m-0 mt-2 text-[15px] text-fg-2" data-s="next-waiting">{waitingText(step)}{open.length > 1 ? ' — while you wait, you could choose another next step below.' : '.'}</p>}
+          {step.waiting && <p className="m-0 mt-2 text-[15px] text-fg-2 break-words" data-s="next-waiting">{waitingText(step)}{open.length > 1 ? ' — while you wait, you could choose another next step below.' : '.'}</p>}
           <div className="flex flex-wrap gap-2.5 mt-4">
-            {step.waiting ? (step.waiting.until && step.waiting.until <= k && <ChaseButton data={data} t={step} />) : onTodaysPlan(data, step, k) ? <span className="inline-flex items-center min-h-11 text-primary font-semibold">On today's plan</span>
+            {step.waiting ? (step.waiting.until && step.waiting.until <= k && <ChaseIt data={data} t={step} primary />) : onTodaysPlan(data, step, k) ? <span className="inline-flex items-center min-h-11 text-primary font-semibold">On today's plan</span>
               : <Button inline variant="primary" data-action="project-step-today" onClick={() => toToday(data, step)}>Add to today</Button>}
             <Button inline data-action="project-step-done" onClick={() => { if (update(d => (setTaskDone(d, step.id, true) ? undefined : false))) toast('Done — nice. The next one is ready when you are.'); }}><Check size={18} aria-hidden="true" /> Done</Button>
             <a href={`#today/tasks/${step.id}`} className="inline-flex items-center min-h-11 px-2 text-primary font-semibold text-[15px] no-underline hover:underline underline-offset-4">Open</a>
@@ -252,11 +253,6 @@ function NextStepCard({ data, p }: { data: MyDayData; p: Project }) {
       </>)}
     </Card>
   );
-}
-// "Chase it" (1.50.0) for a waiting next step whose expected day has come: one 5-minute follow-up (data/tasks.ts).
-function ChaseButton({ data, t }: { data: MyDayData; t: TaskItem }) {
-  if (chaseTask(data, t)) return <span className="inline-flex items-center min-h-11 text-[15px] text-fg-2" data-s="chase-added">A task to chase it is in this project’s tasks.</span>;
-  return <Button inline variant="primary" data-action="chase" onClick={() => { let r = null as ReturnType<typeof chaseWaiting>; if (update(d => { r = chaseWaiting(d, t.id); if (!r || r === 'already') return false; })) toast('Added a 5-minute task to chase it — it’s in this project’s tasks.'); }}>Chase it</Button>;
 }
 function toToday(data: MyDayData, t: TaskItem) {
   const room = planRoom(data);

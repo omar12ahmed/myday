@@ -441,21 +441,24 @@ every device. A sync conflict on the project shows them. None of them is sent to
 
 **Waiting on someone or something (unreleased; `specs/projects-waiting.md`):** a task can be waiting on whom or
 what, with an optional "expected by" date, set on its page ("Waiting on someone?") or with a new choice in "What's
-getting in the way?" ("I'm waiting on someone or something", which isn't kept as a blocker reason). The task row
-reads "Waiting on Priya · expected Wed 28 Oct"; its page puts the wait first, with Got it, Change and Chase it. When
-MyDay picks a project's next step it skips waiting tasks, and Today's "From your projects" doesn't offer them; a
-waiting task you chose stays chosen and its card says what it's waiting on. From the expected day, on an active
-project, Worth a look says "Still waiting on Priya (…) — expected Wed 28 Oct" with **Chase it**, which adds one
-5-minute task "Chase Priya: …" in the same list and project (the Next step card offers it itself when the wait is
-its own task). No red, no "overdue". Saved data: an optional `waiting: { on, since, until, chaseTaskId? }` on a
-task, in the existing task record, with no schema, migration or database change (the exception in AGENTS.md: 1.48.0
-keeps unknown task fields). The conflict summary says "waiting"; nothing of it is sent to AI.
+getting in the way?" ("I'm waiting on someone or something", which isn't kept as a blocker reason). Its row, and
+Today's Due today, read "Waiting on Priya · expected Wed 28 Oct"; its page puts the wait first, with Got it, Change
+and Chase it. When MyDay picks a project's next step it skips waiting tasks, and Today's "From your projects"
+doesn't offer them; a waiting task you chose stays chosen and its card says what it's waiting on. From the expected
+day, on an active project, Worth a look says "Still waiting on Priya (…) — expected Wed 28 Oct" with **Chase it**
+(the Next step card offers it itself when the wait is its own task). Chase it asks when: Today, Tomorrow, a day you
+pick, or No date, then adds one 5-minute task "Chase: <the task>" in the same list and project. No red, no
+"overdue". Saved data: an optional `waiting: { on, since, until, chaseTaskId? }` on a task, in the existing task
+record, with no schema, migration or database change (the exception in AGENTS.md: earlier releases keep unknown task
+fields). The conflict summary says "waiting". Who you're waiting on is never sent to AI, and a chase task's title
+doesn't name them. To keep one meaning of "waiting", the weekly review's step 2 is now **What needs you** ("Nothing
+needs you right now — lovely"; a past-dated task "was planned for …").
 
 **Your week — the weekly review (1.37.0):** a short look back over the last seven days, at `#review` ("Your week"), in
 four steps, one at a time, with Back and Next. Nothing changes until you tap. **1 What moved:** each project's tasks
 done, milestones reached, decisions made, things found out, case records added (up to three done task names shown),
 other tasks done, Study sessions and minutes, and workouts as counts and names, never scores; a quiet week is called
-fine. **2 What's waiting:** at most five things from real data: a task moved three or more times or long past its
+fine. **2 What's waiting** (since 1.50.0, **What needs you**): at most five things from real data: a task moved three or more times or long past its
 date, a project quiet for two weeks, a decision open for two weeks, a done Find out not yet marked, and evidence still
 to get. Each has "Pick a next step", "What's in the way?" or "Open it", "Pause it" for a quiet project, "Let it go"
 for a stuck task, and "Leave it for now". **3 Next week's focus:** up to three active projects, from tomorrow for

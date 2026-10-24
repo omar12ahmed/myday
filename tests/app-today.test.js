@@ -702,6 +702,7 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   const reviewCard = () => exists('#reviewCard');
   await openAt(2026, 10, 18, 9); await reset(); await openAt(2026, 10, 18, 9);
   check('on a Sunday "Look back at your week" shows, with Start going to the review', (await reviewCard()) && (await text('#reviewCard h3')).includes('Look back at your week') && (await ev(`document.querySelector('#reviewCard [data-action=review-start]').getAttribute('href')`)) === '#review', await text('#reviewCard'));
+  check('…and the card says what it covers: what moved, what needs you, and next week\'s focus', (await text('#reviewCard')).includes('what moved, what needs you, and next week’s focus') && !(await text('#reviewCard')).includes('what’s waiting'), await text('#reviewCard'));
   check('…and "Not this week" is beside it', await exists('#reviewCard [data-action=review-later]'));
   await openAt(2026, 10, 19, 9);
   check('on the Monday after, the card is still there', await reviewCard());

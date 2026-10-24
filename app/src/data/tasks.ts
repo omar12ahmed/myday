@@ -299,13 +299,14 @@ export function chaseTask(data: MyDayData, t: TaskItem): TaskItem | null {
   const c = t.waiting?.chaseTaskId ? data.tasks.items.find(x => x.id === t.waiting!.chaseTaskId) : null;
   return c && !isDone(data, c) && !c.letGoOn ? c : null;
 }
-// "Chase it": one 5-minute follow-up in the same list and project, once per wait. Returns its id, 'already' when the
-// last one is still to do, or null.
-export function chaseWaiting(data: MyDayData, id: string): string | 'already' | null {
+// "Chase it": one 5-minute follow-up in the same list and project, once per wait, on the day you choose (or none). Its
+// title is "Chase: <the task>" — who you're waiting on stays in the wait, which is never sent to AI, while an ordinary
+// task's title can be. Returns its id, 'already' when the last one is still to do, or null.
+export function chaseWaiting(data: MyDayData, id: string, due: DateKey | null = null): string | 'already' | null {
   const t = data.tasks.items.find(x => x.id === id);
   if (!t?.waiting) return null;
   if (chaseTask(data, t)) return 'already';
-  const nid = addTask(data.tasks, { title: `Chase ${t.waiting.on}: ${t.title}`, listId: t.listId, category: t.category, minutes: 5 });
+  const nid = addTask(data.tasks, { title: `Chase: ${t.title}`, listId: t.listId, category: t.category, minutes: 5, due: due && isDateKey(due) ? due : null });
   if (!nid) return null;
   if (t.projectId) data.tasks.items.find(x => x.id === nid)!.projectId = t.projectId;
   t.waiting.chaseTaskId = nid;

@@ -167,6 +167,15 @@ const day = (energy, rest = false) => `s => { s.days['${K}'] = { energy: ${energ
   check('"Tomorrow" on it: tomorrow\'s date, off today\'s plan (the other one stays), and it says so', dd.tasks.items.find(x => x.id === sendForm).due === '2026-10-16' && dd.tasks.items.find(x => x.id === sendForm).plannedOn === null
     && eq(dd.days[K].tasks.map(x => x.uid), [otherUid]) && (await text('#toast')).includes("Moved to tomorrow, and off today's plan"), [dd.days[K].tasks.map(x => x.uid), otherUid, await text('#toast')]);
 
+  await editStorage(`s => { s.tasks.items.push({ id: 'tkWaitDue', title: 'Ask about the armchair', listId: '', category: 'admin', minutes: 15, due: '${K}', time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-10-14T10:00', postponed: 0, blockers: [], letGoOn: null, waiting: { on: 'Priya', since: '2026-10-12', until: '2026-10-20' } }); }`);
+  await go('today', 2026, 10, 15, 15, 8);
+  check('a task waiting on someone that is due today shows its waiting line on "Due today": "Waiting on Priya · expected Tue 20 Oct"', (await exists('#dueToday .due-li[data-id=tkWaitDue]')) && (await text('#dueToday .due-li[data-id=tkWaitDue] [data-s=task-waiting]')).replace(/\s+/g, ' ').trim() === 'Waiting on Priya · expected Tue 20 Oct', await text('#dueToday'));
+  check('…and it is the only row with a waiting line', (await ev(`document.querySelectorAll('#dueToday [data-s=task-waiting]').length`)) === 1);
+  await editStorage(`s => { s.tasks.items.find(x => x.id === 'tkWaitDue').done = true; s.tasks.items.find(x => x.id === 'tkWaitDue').doneOn = '${K}'; }`);
+  await go('today', 2026, 10, 15, 15, 9);
+  check('once it is ticked done it is no longer on "Due today", so no waiting line shows', !(await exists('#dueToday [data-s=task-waiting]')));
+  await editStorage(`s => { s.tasks.items = s.tasks.items.filter(x => x.id !== 'tkWaitDue'); }`);
+
   console.log('\n[5] A rest day');
   await editStorage(`s => { s.tasks.items.find(x => x.id === 'tkOld').done = false; s.tasks.items.find(x => x.id === 'tkOld').doneOn = null; }`);
   await editStorage(day(1, true));

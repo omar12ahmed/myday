@@ -56,14 +56,14 @@ export function whatMoved(data: MyDayData, k: DateKey = todayKey()): Week {
   };
 }
 
-// ---------- 2. What's waiting (at most five, from real data) ----------
+// ---------- 2. What needs you (at most five, from real data; "What's waiting" before 1.50.0) ----------
 export interface Waiting { key: string; kind: 'stuck' | 'quiet' | 'decision' | 'found' | 'evidence'; text: string; href: string; projectId?: string; taskId?: string }
 export function whatsWaiting(data: MyDayData, k: DateKey = todayKey(), max = REVIEW_LIMITS.waiting): Waiting[] {
   const out: Waiting[] = [], active = projectsInOrder(data, 'active');
   for (const t of data.tasks.items) {
     if (!isStuck(data, t, k)) continue;
     out.push({ key: `stuck:${t.id}`, kind: 'stuck', taskId: t.id, href: `#today/tasks/${encodeURIComponent(t.id)}`,
-      text: t.postponed >= 3 ? `“${t.title}” has moved ${t.postponed} times` : `“${t.title}” has been waiting since ${shortDate(t.due!)}` });
+      text: t.postponed >= 3 ? `“${t.title}” has moved ${t.postponed} times` : `“${t.title}” was planned for ${shortDate(t.due!)}` });
   }
   for (const p of active) {
     const quiet = days(lastActivity(data, p).slice(0, 10), k);
