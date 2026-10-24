@@ -151,7 +151,7 @@ async function signIn(d, url) {
     const sentWord = await record('arabic_word', word.id);
     await before.returnToApp();
     check('the previous release syncs normally with that record in the account', await synced(before) && (await before.status()) === 'synced');
-    if (knowsWords) check('…and takes it in like any other record (it knows this kind)', eq((await before.data()).arabic.words, [word]));
+    if (knowsWords) check('…and takes it in like any other record (it knows this kind)', await before.until(`(JSON.parse(localStorage.getItem('${KEY}')).arabic.words || []).length === 1`, 20000) && eq((await before.data()).arabic.words, [word]), (await before.data()).arabic.words);
     else check('…without taking it in: its saved data has no kept words', !('words' in (await before.data()).arabic));
     await before.setData(`s => { s.arabic.pathId = 'path.arabic-core-b2'; }`);
     check('an Arabic change on the previous release syncs as usual', await eventually(async () => (await record('arabic', 'preferences'))?.data?.pathId === 'path.arabic-core-b2') && await synced(before));
