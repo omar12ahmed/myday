@@ -2,7 +2,7 @@
 
 **Status:** approved by the owner on 24 October 2026 ("yes" to Phase 2's next part; resource links; a side-column
 card after Learning; project search finds a link's title and note). Phase 2, release 3 of `specs/projects-vision.md`
-(after Study links in 1.56.0 and 1.58.0). Not yet released.
+(after Study links in 1.56.0 and 1.58.0). Released in 1.62.0 (owner's yes to publish).
 **Based on:** source at 1.60.0, then rebased onto 1.61.0 (one AI privacy filter).
 
 ## 1. The practical problem

@@ -1,5 +1,14 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.62.0 — Projects: Resources (web links):** a project's Overview has a **Resources** card in its side column,
+after Learning. **Add a link** keeps a web page with the project: its address (typed as you like: "example.com/page"
+is fine), an optional title and an optional note. Each opens in a new tab, with its site and your note; Edit, and
+Remove after a question. Only web addresses are kept (not "javascript:", "mailto:" or an address with a password in
+it), at most 30 a project. Search this project also finds a link's title and note. No schema, sync or database
+change: 1.61.0 keeps a project's links unread, so going back is safe, but it doesn't show them, so update every
+device you use. Never sent to AI. Also: editing a Learning link's "why" keeps what you typed if the save doesn't
+happen.
+
 **1.61.0 — One privacy filter for everything AI sees:** every AI feature now asks one place what of your MyDay may
 reach AI (`src/ai/reach.ts`), instead of each deciding for itself: Ask MyDay, Help me adjust today, AI help with notes
 (its one exception stays: a private project's name and summary as a place to file a note), revision cards from a note
@@ -643,18 +652,18 @@ no lesson states yet). In Study, a course's page, a current book in Reading and 
 each opening the project. Nothing new is saved: a Cybersecurity link is a new kind in the existing `studyLinks`,
 which 1.56.0 and 1.57.0 keep unread and show as "From a newer MyDay". Never sent to AI.
 
-**Resources for a project (unreleased; `specs/projects-resources.md`):** a project's Overview has a **Resources**
-card in its side column, after Learning. **Add a link** keeps a web page with the project: its address (typed as you
+**Resources for a project (1.62.0; `specs/projects-resources.md`):** a project's Overview has a **Resources** card
+in its side column, after Learning. **Add a link** keeps a web page with the project: its address (typed as you
 like: "example.com/page" becomes "https://example.com/page"), an optional title and an optional note. Each opens in
 a new tab and shows its site (when it has a title) and your note; **Edit** and **Remove** (which asks first) change
 only the project. Only web addresses are kept (http or https with a real site name; not "javascript:", "mailto:" or
 an address with a user name or password), at most 30 a project, each once. Search this project also finds a link's
 title and note (not its address). Saved data: an optional `resources` on the project (`{ id, title, url, note?,
 addedOn }`), in the project's own synced record, with no schema, migration or database change (the exception in
-AGENTS.md: the previous release keeps the field unread, but doesn't show it); web addresses are made whole again on
-reading, and one this version doesn't accept (from a MyDay with other rules) is kept, shown as "Can't be opened
-here", so editing here never deletes it for another device. The conflict details say "Links: …". Never sent to AI:
-no request builder reads it, and the ai-rules privacy check plants a secret in each link to prove it.
+AGENTS.md: 1.61.0 keeps the field unread, but doesn't show it); web addresses are made whole again on reading, and
+one this version doesn't accept (from a MyDay with other rules) is kept, shown as "Can't be opened here", so editing
+here never deletes it for another device. The conflict details say "Links: …". Never sent to AI: no request builder
+reads it, and the ai-rules privacy check plants a secret in each link to prove it.
 
 **Your week — the weekly review (1.37.0):** a short look back over the last seven days, at `#review` ("Your week"), in
 four steps, one at a time, with Back and Next. Nothing changes until you tap. **1 What moved:** each project's tasks

@@ -182,8 +182,8 @@ export interface Project {
   // unread, so no schema change): what you're learning for it in Study — your own courses, books and
   // Arabic lessons — and why (data/studyLinks.ts). Never sent to AI.
   studyLinks?: StudyLink[];
-  // From the resources release (optional; absent = none, so a project without them is saved exactly as before; the
-  // previous release keeps them unread, so no schema change): web links you keep with it (data/projectResources.ts).
+  // From 1.62.0 (optional; absent = none, so a project without them is saved exactly as before; 1.61.0 keeps them
+  // unread, so no schema change): web links you keep with it (data/projectResources.ts).
   // Never sent to AI.
   resources?: ProjectResource[];
 }
