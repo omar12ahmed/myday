@@ -1,5 +1,14 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.61.0 — One privacy filter for everything AI sees:** every AI feature now asks one place what of your MyDay may
+reach AI (`src/ai/reach.ts`), instead of each deciding for itself: Ask MyDay, Help me adjust today, AI help with notes
+(its one exception stays: a private project's name and summary as a place to file a note), revision cards from a note
+and Explain it another way. What's sent is unchanged except two gaps now closed: Explain it another way isn't offered
+for a card made from a note that is now private or in a private project, and revision cards re-check just before
+sending (a note made private meanwhile sends nothing). A new test feeds every request one made-up world with a secret
+in every place the rules hold back, and nothing leaks. The plan for Ask MyDay's lookups is `../specs/ai-tools.md`.
+No saved-data, sync or database change; going back to 1.60.0 is safe.
+
 **1.60.0 — Study home: Browse:** Study home's third part, your map and then your subjects as tiles, is now called
 **Browse**: "Explore" keeps its meaning in Projects (a project's investigation view). The map's line says it's "for
 finding your way around and the long view". Nothing else changes. No saved-data, sync or database change; going back
