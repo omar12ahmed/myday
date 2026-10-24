@@ -23,7 +23,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     `export { freshState, normalize } from ${src('normalize')};`, `export { shift, shortDate } from ${src('dates')};`, `export * from ${src('projectDashboard')};`, `export * from ${src('weekReview')};`, `export { stepsForToday, nextStep, whyNext } from ${src('projects')};`,
     `export { searchProject, fold, matchCount, SEARCH_KIND_LABEL } from ${src('projectSearch')};`,
     `export { normalizeTasks, setWaiting, stopWaiting, isWaiting, chaseTask, chaseWaiting, isStuck, setTaskDone } from ${src('tasks')};`,
-    `export { setDone } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
+    `export { setDone, clearDay } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
   const OLD = '2026-10-01T09:00';
@@ -889,6 +889,23 @@ const clone = o => JSON.parse(JSON.stringify(o));
     lone.tasks.items = [TK('tkL', null, { title: 'Something else' })];
     K.setDone(lone, lone.days[k].tasks[0], true);
     check('ticking a plan task that came from no task in Tasks changes nothing there', lone.tasks.items[0].done === false && lone.tasks.items[0].doneOn === null);
+    const yk = K.shift(k, -1), ty = K.freshState();
+    ty.days[yk] = { energy: 3, rest: false, builtAt: yk + 'T08:00', checkedIn: false, tasks: [planTask('puY')] };
+    ty.tasks.items = [TK('tkY', 'pjT', { plannedOn: yk, planUid: 'puY' })];
+    K.setDone(ty, ty.days[yk].tasks[0], true);
+    check('ticked in the evening check-in on yesterday\'s plan: dated yesterday, the plan\'s day', ty.tasks.items[0].done && ty.tasks.items[0].doneOn === yk, ty.tasks.items[0].doneOn);
+    // "Start today over": the plan goes; a task ticked off from Tasks stays done, no longer linked, and still counts.
+    const tr = K.freshState();
+    tr.projects.items = [base('pjT', { title: 'Garden shed' })];
+    tr.days[k] = { energy: 4, rest: false, builtAt: k + 'T08:00', checkedIn: false, tasks: [planTask('puR'), planTask('puO')] };
+    tr.tasks.items = [TK('tkR', 'pjT', { plannedOn: k, planUid: 'puR' }), TK('tkO', 'pjT', { plannedOn: k, planUid: 'puO' })];
+    K.setDone(tr, tr.days[k].tasks[0], true);
+    K.clearDay(tr, k);
+    const [trDone, trOpen] = tr.tasks.items;
+    check('"Start today over" clears the plan; a task ticked off from Tasks stays done, dated that day, no longer linked', !tr.days[k] && trDone.done && trDone.doneOn === k && trDone.plannedOn === null && trDone.planUid === null, trDone);
+    check('…an open one is no longer linked either, so it is due again rather than "on today\'s plan"', !trOpen.done && trOpen.plannedOn === null && trOpen.planUid === null, trOpen);
+    check('…and that day still counts the done one once, and What moved still has it', K.doneOnDay(tr, k) === 1 && K.whatMoved(tr, k).projects[0]?.tasks === 1, [K.doneOnDay(tr, k), K.whatMoved(tr, k).projects.length]);
+    check('clearing a day with no plan changes nothing', K.clearDay(K.freshState(), k) === false);
 
     console.log('  What\'s waiting');
     const wt = K.freshState();

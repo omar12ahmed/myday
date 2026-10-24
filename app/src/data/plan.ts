@@ -200,6 +200,16 @@ export function sendToQueue(data: MyDayData, t: Task, k: DateKey) {
 }
 
 // ---------- Changing a day ----------
+// "Start today over": the day's plan goes (anything it took from the queue goes back there). A task from Inbox → Tasks
+// that was on it is no longer on a plan; one you ticked off stays done, dated that day, so this week still counts it.
+export function clearDay(data: MyDayData, k: DateKey): false | void {
+  const d = data.days[k];
+  if (!d) return false;
+  d.tasks.forEach(t => releaseTask(data, t));
+  for (const item of data.tasks.items) if (item.plannedOn === k) { item.plannedOn = null; item.planUid = null; }
+  delete data.days[k];
+}
+
 export function makeRestDay(data: MyDayData, k: DateKey, energy: Energy | null) {
   const d = data.days[k];
   if (d) d.tasks.forEach(t => releaseTask(data, t));

@@ -185,6 +185,21 @@ const day = (energy, rest = false) => `s => { s.days['${K}'] = { energy: ${energ
   check('once it is ticked done it is no longer on "Due today", so no waiting line shows', !(await exists('#dueToday [data-s=task-waiting]')));
   await editStorage(`s => { s.tasks.items = s.tasks.items.filter(x => x.id !== 'tkWaitDue'); }`);
 
+  // "Start today over" after ticking off a task from Your tasks: it stays done there.
+  await editStorage(`s => { s.tasks.items.push({ id: 'tkKeep', title: 'Post the parcel', listId: '', category: 'admin', minutes: 15, due: '${K}', time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-10-14T10:00', postponed: 0, blockers: [], letGoOn: null }); }`);
+  await editStorage(day(4));
+  await go('today', 2026, 10, 15, 15, 7);
+  await click('[data-action=due-plan][data-id=tkKeep]'); await sleep(300);
+  const keepUid = (await tasks()).items.find(x => x.id === 'tkKeep').planUid;
+  await click(`[data-action=toggle][data-uid="${keepUid}"]`); await sleep(300);
+  await click('[data-action=restart]'); await sleep(250);
+  const restartBody = await ev(`document.querySelector('dialog[open]')?.textContent || ''`);
+  check('"Start today over" says that what you ticked off from Your tasks stays done there', restartBody.includes("Today's plan will be cleared so you can choose your energy again. Anything from Your tasks that you ticked off stays done there."), restartBody);
+  await answer(true);
+  const kept = (await tasks()).items.find(x => x.id === 'tkKeep');
+  check('…and it does: still done, dated today, no longer linked to the cleared plan', kept.done === true && kept.doneOn === K && kept.plannedOn === null && kept.planUid === null && !(await data()).days[K], kept);
+  await editStorage(`s => { s.tasks.items = s.tasks.items.filter(x => x.id !== 'tkKeep'); }`);
+
   console.log('\n[5] A rest day');
   await editStorage(`s => { s.tasks.items.find(x => x.id === 'tkOld').done = false; s.tasks.items.find(x => x.id === 'tkOld').doneOn = null; }`);
   await editStorage(day(1, true));

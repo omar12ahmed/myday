@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useConfirm } from '../components/confirm';
 import { shift } from '../data/dates';
-import { findTask, makeRestDay, releaseTask, setDone, toggleRoll } from '../data/plan';
+import { clearDay, findTask, makeRestDay, setDone, toggleRoll } from '../data/plan';
 import { acceptShrink, nudgeEligible, swapInLearning } from '../data/progress';
 import { applyProposal, placeItems, proposeBuild, proposeReview, type Proposal } from '../data/proposal';
 import { contextFor, ensureContext } from '../data/schedule';
@@ -232,18 +232,20 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
     if (update(dr => makeRestDay(dr, k, day.energy))) toast('Rest day it is. Anything carried over is back in your queue.');
   }
   async function restart() {
-    const day = getSnapshot().data.days[k];
+    const now = getSnapshot().data, day = now.days[k];
     if (!day) return;
+    // A tick on a task from Your tasks is kept there (see clearDay), so say so rather than "its ticks will be cleared".
+    const ticked = day.tasks.filter(t => t.done), kept = ticked.filter(t => now.tasks.items.some(x => x.plannedOn === k && x.planUid === t.uid)).length;
     const yes = await confirm({
       title: 'Start today over?',
-      body: day.tasks.some(t => t.done)
-        ? "Today's plan and its ticks will be cleared so you can choose your energy again."
-        : "Today's plan will be cleared so you can choose your energy again.",
+      body: !ticked.length ? "Today's plan will be cleared so you can choose your energy again."
+        : !kept ? "Today's plan and its ticks will be cleared so you can choose your energy again."
+        : `${kept < ticked.length ? "Today's plan and its other ticks will be cleared" : "Today's plan will be cleared"} so you can choose your energy again. Anything from Your tasks that you ticked off stays done there.`,
       confirmLabel: 'Start today over',
       cancelLabel: 'Keep my plan',
     });
     if (!yes) return;
-    update(dr => { const dd = dr.days[k]; if (!dd) return false; dd.tasks.forEach(t => releaseTask(dr, t)); delete dr.days[k]; });
+    update(dr => clearDay(dr, k));
     setProposal(null);
   }
   async function deleteCommitment(c: Commitment) {
