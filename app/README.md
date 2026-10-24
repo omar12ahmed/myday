@@ -1,5 +1,16 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.67.0 — Progress that says what to do next (Arabic), and Your week's Study questions:** once you've begun
+Arabic, Progress & history opens with "Arabic: where you stand": how many lessons on your path are done (Ready or
+Holding), what's on your own (Holding lessons, and checks your latest answer got on your own), each lesson that needs
+revision with why (your own note, or a check that slipped after Ready), what your answers show, and a link straight
+to the step: "Do the Try" until you've done it, then "Answer its checks". It ends with the next milestone on your
+path, the course's next level with lessons left ("A1, 12 lessons to go"). Words and counts only; nothing is saved.
+In Your week, a week with any Study (a Study session, an Arabic session or a Cybersecurity attempt) also asks "What
+got easier?" and "What still feels hard?" in step 4, both optional, added to the same "Week of …" note after your
+other answers, so they follow notes' AI rules like the rest of it. No saved-data, sync or database change; going back
+to 1.66.0 is safe.
+
 **1.66.0 — Ask MyDay looks at a day:** ask "am I free on Thursday?" or "what's on tomorrow?" and, when that day isn't
 on the page, Ask MyDay looks at it on this device (from a week ago to two months ahead) and answers from it: its plan,
 what's due, when you're busy and free, and your energy. It says which day it looked at above the answer, and that
