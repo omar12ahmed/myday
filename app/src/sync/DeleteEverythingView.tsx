@@ -4,7 +4,7 @@ import { Card } from '../components/Card';
 import { Field, TextInput } from '../components/Field';
 import { BackLink, Note } from '../components/parts';
 import { useSync } from './engine';
-import { deleteEverything, pendingWipe, retryPendingWipe, type WipeStep } from './wipe';
+import { deleteEverything, pendingFor, retryPendingWipe, type WipeStep } from './wipe';
 
 // Delete everything (#delete-everything; specs/delete-everything.md): what goes and what stays, a copy first, the
 // phrase to type, then the steps as they finish. Afterwards MyDay starts again from nothing (still signed in), and
@@ -26,7 +26,7 @@ export function DeleteEverythingView({ onExport }: { onExport: () => void }) {
   const v = useSync();
   const [typed, setTyped] = useState(''), [step, setStep] = useState<WipeStep | null>(null), [done, setDone] = useState<WipeStep[]>([]);
   const [problem, setProblem] = useState(''), [busy, setBusy] = useState(false);
-  const pending = pendingWipe();
+  const pending = pendingFor(v.account?.id);
   const ready = v.phase === 'linked' && !!v.account;
   const matches = typed.trim().toLowerCase() === PHRASE;
   async function go() {
@@ -34,6 +34,7 @@ export function DeleteEverythingView({ onExport }: { onExport: () => void }) {
     setBusy(true); setProblem(''); setDone([]);
     const r = await deleteEverything(s => { setStep(s); setDone(STEPS.slice(0, STEPS.findIndex(x => x.id === s)).map(x => x.id)); });
     if (!r.ok && r.at === 'account') { setBusy(false); setStep(null); setProblem(WHY[r.why]); return; }
+    if (!r.ok && r.at === 'device') { setBusy(false); setStep(null); setProblem('Your account’s data is deleted, but this device couldn’t be cleared: its storage is full or blocked. MyDay will try again the next time it syncs.'); return; }
     // The data here is gone: start again from nothing in memory too (Today has the notice, and any files or backups
     // still to delete are tried again).
     location.hash = 'today';

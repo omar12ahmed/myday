@@ -59,12 +59,13 @@ Decided in the build (flagged to the owner):
 - **On another device**, at its next sync: its copy is cleared, everything but sign-in as in §2.4, and Today says
   "Everything was deleted from another device on 24 Oct." Anything changed there and not yet sent is gone too (that's
   the point of the wipe).
-- **On a device still running an older MyDay:** its changes, backups and uploads are refused ("Your account had a
-  problem answering."); once it updates (it does on the next open), it clears itself as above.
+- **On a device still running an older MyDay:** its changes, backups and uploads are refused ("Needs attention: The
+  cloud refused the request: This account was cleared with Delete everything. Update MyDay to sync it."); once it
+  updates (it does on the next open), it clears itself as above.
 
 ## 4. How it works
 
-### In the database (migration `2026102512xxxx_wipe.sql`)
+### In the database (migration `20261025160000_wipe.sql`)
 
 - `sync_accounts` gains `epoch integer not null default 0`, `wiped_at timestamptz` and `wiped_seq bigint`. `last_seq`
   is kept through a wipe, so change numbers keep rising and every device's cursor stays meaningful.
@@ -96,18 +97,24 @@ Decided in the build (flagged to the owner):
   - if the account's epoch is above this device's, **clear here** (`clearAfterWipe`, below), then continue (the pull
     starts at `wiped_seq`);
   - pushes go through `sync_push_v3` with the link's epoch (falling back to v2 only if v3 doesn't exist yet); a
-    `wiped` answer runs the check again at once;
+    `wiped` answer with a newer epoch runs the check again at once; an account whose epoch is below this device's
+    (restored from before a wipe) is a problem shown on the badge ("Needs attention"), retried with backoff, never a
+    loop;
   - `checkedThisLoad()`: true once a run of this page load has read the epoch and synced; the daily backup and the
     files tidy wait for it, so a device never backs up or tidies its old copy before it has heard about a wipe.
 - **`sync/wipe.ts`:**
   - `deleteEverything()`: under the sync lock: (1) `sync_wipe`; (2) clear this device (`clearAfterWipe` with the new
-    epoch and `wiped_seq`, and "here"); (3) delete every file (`files` delete-all) and every backup (`backup`
-    delete-all); (4) done. A failure at (1) changes nothing. A failure at (3) leaves `myday.wipe.pending` (which of
-    files and backups remain), retried on every open while signed in and from the page's Try again.
+    and "here"); (3) delete every file (`files` delete-all) and every backup (`backup` delete-all); (4) done. A
+    failure at (1) changes nothing, unless the answer was lost and the epoch shows it went through (asked again three
+    times). A failure at (3) leaves `myday.wipe.pending` `{ user, left }`, retried on every open (and when the page
+    is shown again, and back online) and from Try again, but only while that account is signed in. If this device
+    couldn't be cleared (storage full or blocked) the page says so and the next sync tries again. While it runs, the
+    sign-in gate stays out of the way (`sync/wiping.ts`).
   - `clearAfterWipe(state, from)`: replaces MyDay's data with a fresh start (`freshData()`); removes every
     localStorage key starting `myday.` except the sign-in (`myday.sync.auth`) and sync's notes; rewrites sync's notes
-    as a fresh link to the same account (same device id, `cursor = wiped_seq`, the new epoch, nothing kept aside);
-    clears the files cache (IndexedDB `myday-files`); sets `myday.wiped` `{ at, from }` for the notice.
+    with no link and nothing kept aside (same device id), so the device joins the account afresh, taking the
+    account's versions (the join reads the new epoch first); clears the files cache (IndexedDB `myday-files`, awaited
+    before any reload); sets `myday.wiped` `{ at, from }` for the notice. `wiped_seq` is recorded for diagnosis.
   - Uploads send `x-myday-epoch` (backups, files).
 - **The notice:** Today shows `myday.wiped` until dismissed.
 

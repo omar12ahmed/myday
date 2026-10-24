@@ -47,6 +47,8 @@ export function readState(): BackupState {
   return cached;
 }
 function writeState(s: BackupState) { cached = s; try { localStorage.setItem(KEY, JSON.stringify(s)); } catch { /* storage blocked: kept for this visit */ } }
+// After Delete everything: this device's backup notes go (they were removed with the rest; this keeps them gone).
+export function forgetBackupState() { cached = null; try { localStorage.removeItem(KEY); } catch { /* nothing to forget */ } }
 
 // Whether today's automatic backup is due: signed in and syncing, the saved data readable, and none yet today here.
 export const backupDue = (s: Pick<BackupState, 'lastDay'>, k: string, linked: boolean, readable: boolean) => linked && readable && s.lastDay !== k;

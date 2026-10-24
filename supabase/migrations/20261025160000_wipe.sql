@@ -12,6 +12,10 @@
 --                  epoch > 0, a write must come with that flag. An account never wiped behaves exactly as before, so
 --                  every released MyDay keeps working; after a wipe only a MyDay that knows its epoch can write.
 -- Nothing else changes: existing rows, sync_push_v2/sync_pull_v2, the project triggers, grants and RLS.
+-- For later work on the database: (1) a migration that rewrites rows (as the split-project one did) must, for an
+-- account with epoch > 0, set myday.epoch to that account's epoch (or disable the guard) for its writes; (2) when
+-- restoring from a backup, never lower sync_accounts.epoch: devices that heard of a wipe would otherwise stop syncing
+-- ("restored from before Delete everything") until it's raised back.
 begin;
 
 alter table public.sync_accounts
@@ -89,7 +93,10 @@ begin
   if account is distinct from v_me then
     raise exception 'These changes belong to a different account from the one signed in.' using errcode = '42501';
   end if;
-  select a.epoch into v_epoch from public.sync_accounts a where a.user_id = v_me;
+  -- The account's lock first (as sync_push_v2 and sync_wipe take it), so a wipe can't land between reading the epoch
+  -- and saving; sync_push_v2 taking it again in this transaction is a no-op.
+  insert into public.sync_accounts (user_id) values (v_me) on conflict (user_id) do nothing;
+  select a.epoch into v_epoch from public.sync_accounts a where a.user_id = v_me for update;
   if coalesce(v_epoch, 0) <> coalesce(sync_push_v3.epoch, -1) then
     return jsonb_build_object('error', 'wiped', 'epoch', coalesce(v_epoch, 0));
   end if;

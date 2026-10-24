@@ -311,7 +311,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     check('an account with nothing saved has epoch 0 and no wipe', eq(await state(W), { epoch: 0, wiped_at: null, wiped_seq: 0, last_seq: 0 }), await state(W));
     for (const who of [W, O]) {
       r = await push(who, [change('list', 'learning', 0, list(['A course'])), change('day', '2026-10-20', 0, day(2)), change('context', '2026-10-20', 0, { energy: 3 }), change('queue', 'queue', 0, { items: [] }), change('note', 'n1', 0, { id: 'n1', title: 'A note' }),
-        change('project', 'pjWipe', 0, { id: 'pjWipe', title: 'Shed', milestones: [], decisions: [] }), change('file', 'flwipe000001', 0, { ...file, id: 'flwipe000001' })]);
+        change('project', 'pjWipe', 0, { projectId: 'pjWipe', value: { ...pj, id: 'pjWipe', title: 'Shed' } }), change('file', 'flwipe000001', 0, { ...file, id: 'flwipe000001' })]);
       r = await push(who, [change('note', 'n1', 1, null, { deleted: true })]); // a deletion marker
       await sql(`insert into public.sync_project_legacy (user_id, id, version, core_version, data) values ($1, 'pjOld', 3, 1, '{"title":"Before 1.44.0"}')`, [who]);
     }
@@ -335,6 +335,9 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     r = await push3(W, [change('note', 'n4', 0, { id: 'n4', title: 'After the wipe' }), change('list', 'learning', 0, list(['Fresh']))], 1);
     check('a push with the current epoch (v3) saves as usual, numbered after the wipe', Array.isArray(r) && r.every(x => x.status === 'applied' && x.version === 1) && r[0].seq === seqBefore + 1, r);
     check('…and a device that pulls from wiped_seq gets exactly those', eq((await pull(W, seqBefore)).map(x => x.record_id ?? x.id).sort(), ['learning', 'n4'].sort()) || (await pull(W, seqBefore)).length === 2, await pull(W, seqBefore));
+    r = await push3(W, [change('project', 'pjAfter', 0, { projectId: 'pjAfter', value: { ...pj, id: 'pjAfter', title: 'After the wipe' } })], 1);
+    check('…a project too (its own triggers run under the same flag)', Array.isArray(r) && r[0].status === 'applied', r);
+    check('the database owner rewriting a wiped account\'s rows is refused too unless it sets the flag (see the migration\'s note)', /Delete everything\. Update MyDay/.test(await fails(() => sql(`update public.sync_records set data = data where user_id = $1`, [W]))));
     check('for an account never wiped, v3 with epoch 0 works like v2', Array.isArray(await push3(O, [change('note', 'n9', 0, { id: 'n9', title: 'Other' })], 0)));
     check('…and v2 keeps working there (every released MyDay)', (await push(O, [change('note', 'n10', 0, { id: 'n10', title: 'Old app' })]))[0].status === 'applied');
     check('the flag doesn\'t leak: a v2 push right after a v3 one is still refused on the wiped account', /Update MyDay/.test(await fails(() => push(W, [change('note', 'n5', 0, { id: 'n5', title: 'x' })]))));

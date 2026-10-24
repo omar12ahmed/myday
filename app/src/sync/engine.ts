@@ -252,9 +252,10 @@ async function runLocked(reason: Reason) {
   const ws = await wipeStateOf(session, link.user);
   if (!ws.ok) { failed(ws.why, ws.message); return; }
   if (ws.data.epoch > (link.epoch ?? 0)) {
-    if (clearAfterWipe(st, ws.data.wiped_at, 'elsewhere')) reloadAfter = true;
+    if (await clearAfterWipe(st, ws.data.wiped_at, 'elsewhere')) reloadAfter = true;
     return;
   }
+  if (ws.data.epoch < (link.epoch ?? 0)) { failed('server', EPOCH_BACK); return; } // the account was restored from before a wipe
 
   // 2. Send them, a batch at a time. Each is noted as sent before it goes.
   const sent = new Set<string>();
@@ -275,7 +276,11 @@ async function runLocked(reason: Reason) {
     });
     const res = await pushChanges(session, link, changes, st.device);
     if (!res.ok) { failed(res.why, res.message); writeState(st); return; } // the changes stay noted, and are sent again with the same ids
-    if (!Array.isArray(res.data)) { writeState(st); schedule(0); return; } // wiped meanwhile: the next run hears it (1b)
+    if (!Array.isArray(res.data)) { // wiped meanwhile: the next run hears it (1b); an epoch that went back is a problem
+      writeState(st);
+      if (Number((res.data as { epoch?: unknown }).epoch) > (link.epoch ?? 0)) schedule(0); else failed('server', EPOCH_BACK);
+      return;
+    }
     catchUp();
     const now = localRecords(getSnapshot().data);
     for (const r of res.data) {
@@ -551,7 +556,8 @@ export const checkedThisLoad = () => checked;
 export const WIPED_KEY = 'myday.wiped';
 // Another tab of MyDay on this device reloads when a wipe is noted here, so nothing old stays in its memory.
 if (typeof window !== 'undefined') window.addEventListener('storage', e => { if (e.key === WIPED_KEY && e.newValue) location.reload(); });
-export function clearAfterWipe(st: SyncState, at: string | null, from: 'here' | 'elsewhere'): boolean {
+const EPOCH_BACK = "Your account's records are older than this device's (it was restored from before Delete everything).";
+export async function clearAfterWipe(st: SyncState, at: string | null, from: 'here' | 'elsewhere'): Promise<boolean> {
   if (!replaceAll(freshData())) return false;
   try {
     for (const k of Object.keys(localStorage)) if (k.startsWith('myday.') && k !== AUTH_KEY && k !== SYNC_KEY && k !== STORAGE_KEY) localStorage.removeItem(k);
@@ -559,12 +565,12 @@ export function clearAfterWipe(st: SyncState, at: string | null, from: 'here' | 
   st.link = null; st.kept = []; st.before = null;
   if (!writeState(st)) return false;
   try { localStorage.setItem(WIPED_KEY, JSON.stringify({ at: at ?? new Date().toISOString(), from })); } catch { /* the notice is a courtesy */ }
-  void clearFileCache();
+  try { await clearFileCache(); } catch { /* best effort: the files function deletes the bytes anyway */ } // before any reload cancels it
   return true;
 }
 // The account's side of Delete everything, then this device: with the lock held, so no sync runs in between.
 // 'failed' changes nothing anywhere. 'cleared' = the account's data is gone (and this device's, unless 'not-here').
-export async function wipeAccount(): Promise<{ ok: true; here: boolean } | { ok: false; why: 'offline' | 'signed-out' | 'not-linked' | 'failed' }> {
+export async function wipeAccount(): Promise<{ ok: true; here: boolean; user: string } | { ok: false; why: 'offline' | 'signed-out' | 'not-linked' | 'failed' }> {
   if (!SYNC.configured) return { ok: false, why: 'not-linked' };
   return withLock(async () => {
     catchUp();
@@ -576,10 +582,14 @@ export async function wipeAccount(): Promise<{ ok: true; here: boolean } | { ok:
     const user = read.state.link.user, pre = await wipeStateOf(session, user);
     if (!pre.ok) return { ok: false, why: pre.why === 'network' ? 'offline' : 'failed' } as const;
     const r = await call<WipeState>('sync_wipe', session, { account: user });
-    if (r.ok) return { ok: true, here: clearAfterWipe(read.state, r.data.wiped_at, 'here') } as const;
-    // No answer doesn't mean it didn't happen: if the account's epoch moved on since just now, this wipe went through.
-    const ws = await wipeStateOf(session, user);
-    if (ws.ok && ws.data.epoch > pre.data.epoch) return { ok: true, here: clearAfterWipe(read.state, ws.data.wiped_at, 'here') } as const;
+    if (r.ok) return { ok: true, here: await clearAfterWipe(read.state, r.data.wiped_at, 'here'), user } as const;
+    // No answer doesn't mean it didn't happen (a big account's wipe may still be finishing): if the account's epoch
+    // moved on since just now, this wipe went through. Asked a few times, a few seconds apart.
+    for (let i = 0; i < 3; i++) {
+      await new Promise(res => setTimeout(res, 3000));
+      const ws = await wipeStateOf(session, user);
+      if (ws.ok && ws.data.epoch > pre.data.epoch) return { ok: true, here: await clearAfterWipe(read.state, ws.data.wiped_at, 'here'), user } as const;
+    }
     return { ok: false, why: r.why === 'network' ? 'offline' : 'failed' } as const;
   });
 }
