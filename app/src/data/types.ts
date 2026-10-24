@@ -207,7 +207,7 @@ export interface FileRecord {
   addedOn: DateKey;
   startedAt?: number;                 // when adding it started (ms), so a device can tell an upload that won't finish
   deletedOn?: DateKey;                // in Recently deleted since this day (30 days, then gone)
-  removedFrom?: { kind: 'project' | 'note'; id: string }; // where Put back puts it
+  removedFrom?: { kind: string; id: string }; // where Put back puts it: 'project' or 'note' (a newer MyDay's places are kept)
   [other: string]: unknown;
 }
 export interface FilesData { items: FileRecord[]; [other: string]: unknown }

@@ -40,7 +40,8 @@ const clone = o => JSON.parse(JSON.stringify(o));
   const [o1, o2, o3] = odd[0].items;
   check('fields from a newer MyDay are kept, and so is a state this version does not know', odd[0].future.a === 1 && o1.state === 'archived-in-future' && eq(o1.extra, { keep: [1] }));
   check('a bad hash becomes empty, a blank area becomes "project", a bad day is replaced by a date', o1.sha256 === '' && o1.area === 'project' && /^\d{4}-\d\d-\d\d$/.test(o1.addedOn));
-  check('a good deletedOn and removedFrom are kept; a bad day or place is dropped', o2.deletedOn === '2026-10-22' && eq(o2.removedFrom, { kind: 'note', id: 'ntA' }) && !('deletedOn' in o3) && !('removedFrom' in o3));
+  check('a good deletedOn and removedFrom are kept; a bad day is dropped; a place this version doesn\'t know (a newer MyDay\'s) is kept as it is', o2.deletedOn === '2026-10-22' && eq(o2.removedFrom, { kind: 'note', id: 'ntA' }) && !('deletedOn' in o3) && eq(o3.removedFrom, { kind: 'tree', id: 'x' }));
+  check('…but a place without a kind or an id is dropped', (() => { const [a, b] = read({ items: [rec('flbadrf0002', { removedFrom: { kind: '', id: 'x' } }), rec('flbadrf0003', { removedFrom: { kind: 'note' } })] })[0].items; return !('removedFrom' in a) && !('removedFrom' in b); })());
   check('reading again gives the same, and counts nothing (idempotent)', (() => { const again = read(odd[0]); return eq(again[0], odd[0]) && again[1] === 0; })());
   check('freshState and normalize carry a files section; data from before files reads as none', eq(K.freshState().files, { items: [] }) && eq(K.normalize(clone(K.freshState())).files, { items: [] }) && eq(K.normalize((() => { const x = clone(K.freshState()); delete x.files; return x; })()).files, { items: [] }));
   check('a damaged files section (text) is counted, not silently ignored', (() => { const x = clone(K.freshState()); x.files = 'oops'; const rep = { dropped: 0 }; K.normalize(x, rep); return rep.dropped >= 1; })());
@@ -122,6 +123,29 @@ const clone = o => JSON.parse(JSON.stringify(o));
   check('deleting a project that is not there changes nothing (false)', !K.deleteProject(d, 'pjNope'));
   check('usedBy lists every project and note that lists a file', (() => { const e = world(); K.addFileRecord(e, PA, nf('flused000001')); e.projects.items[1].fileIds = ['flused000001']; e.notes.items[1].fileIds = ['flused000001']; return eq(K.usedBy(e, 'flused000001'), [PA, PB, NB]); })());
   check('sizeLabel reads KB and MB', K.sizeLabel(10) === '1 KB' && K.sizeLabel(2048) === '2 KB' && K.sizeLabel(1.5 * 1024 * 1024) === '1.5 MB');
+
+  console.log('\n[7] Files of an area this version can\'t list (a newer MyDay\'s portfolio) are left exactly as they are');
+  {
+    const d = world();
+    d.files.items = [
+      rec('flport000001', { area: 'portfolio' }),                                                    // listed by a portfolio entry this version doesn't know
+      rec('flport000002', { area: 'portfolio', deletedOn: '2026-08-01', removedFrom: { kind: 'portfolio', id: 'pe1', extra: 1 } }), // in the newer MyDay's Recently deleted, long ago
+      rec('flport000003', { area: 'portfolio', state: 'uploading', startedAt: 1 }),                   // still being added there
+      rec('flport000004', { area: 'portfolio', state: 'failed' }),
+      rec('flproj000009'),                                                                            // an ordinary orphan, for comparison
+    ];
+    const before = clone(d.files.items.slice(0, 4));
+    check('LISTED_AREAS is project and note', eq(K.LISTED_AREAS, ['project', 'note']));
+    check('none of them is an orphan (only the project file is)', eq(K.orphans(d).map(f => f.id), ['flproj000009']));
+    K.markOrphans(d, '2026-10-24'); K.healFiles(d);
+    check('markOrphans and healFiles leave them exactly as they were', eq(d.files.items.slice(0, 4), before), d.files.items.slice(0, 4));
+    check('none is in Recently deleted here, or due to go for good, even 30+ days on', !K.recentlyDeleted(d).some(f => f.area === 'portfolio') && !K.dueForPurge(d, '2026-12-31').some(f => f.area === 'portfolio'));
+    check('an upload of theirs is never "unfinished" here (the tidy doesn\'t settle it)', !K.unfinished(d.files.items[2], Date.now(), '2026-12-31'));
+    check('Put back can\'t put one back (its place is unknown here) and changes nothing', !K.putBack(d, 'flport000002') && eq(d.files.items[1], before[1]));
+    const read = K.normalizeFiles({ items: clone(before) }, { dropped: 0 });
+    check('reading them keeps the unknown place they were removed from, with its other fields', eq(read.items[1].removedFrom, { kind: 'portfolio', id: 'pe1', extra: 1 }) && eq(read.items, before), read.items[1]);
+    check('placeExists says no for an unknown kind of place', !K.placeExists(d, { kind: 'portfolio', id: 'pe1' }) && K.placeExists(d, PA));
+  }
 
   fs.rmSync(dir, { recursive: true, force: true });
   const s = summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);

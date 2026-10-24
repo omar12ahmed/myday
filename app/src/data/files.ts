@@ -12,7 +12,13 @@ export const FILE_ID = /^fl[a-z0-9]{6,40}$/;
 export const FILES_PER_PLACE = 50;
 export const newFileId = () => 'fl' + uid();
 export type Owner = { kind: 'project' | 'note'; id: string };
+type Place = { kind: string; id: string }; // an Owner, or a place a newer MyDay knows (kept, never found here)
 export const emptyFiles = (): FilesData => ({ items: [] });
+// The areas whose files this version can list, and so judge. A file of another area (a newer MyDay's portfolio, say)
+// is left exactly as it is: never sent to Recently deleted, healed, settled or deleted for good here, since whatever
+// lists it is unknown to this version.
+export const LISTED_AREAS = ['project', 'note'];
+const listedHere = (f: FileRecord) => LISTED_AREAS.includes(f.area);
 
 // Reading saved file records: one without an id, a name, a type or a size is counted, never kept half-read. Fields from
 // a newer MyDay are kept; a state this version doesn't know is kept as it is (and such a file isn't opened).
@@ -31,7 +37,7 @@ export function normalizeFiles(raw: unknown, report: { dropped: number }): Files
     };
     if (isDateKey(f.deletedOn)) item.deletedOn = f.deletedOn; else delete item.deletedOn;
     const rf = f.removedFrom;
-    if (isObj(rf) && (rf.kind === 'project' || rf.kind === 'note') && typeof rf.id === 'string' && rf.id) item.removedFrom = { kind: rf.kind, id: rf.id }; else delete item.removedFrom;
+    if (isObj(rf) && typeof rf.kind === 'string' && rf.kind && typeof rf.id === 'string' && rf.id) item.removedFrom = { ...rf, kind: rf.kind, id: rf.id }; else delete item.removedFrom;
     out.items.push(item);
   }
   return out;
@@ -44,8 +50,9 @@ export function normalizeFileIds(raw: unknown): string[] | null {
 }
 
 // ---------- Places ----------
-const place = (d: MyDayData, o: Owner) => (o.kind === 'project' ? d.projects.items.find(p => p.id === o.id) : d.notes.items.find(n => n.id === o.id));
-export const fileIdsOf = (d: MyDayData, o: Owner): string[] => place(d, o)?.fileIds ?? [];
+const place = (d: MyDayData, o: Place) => (o.kind === 'project' ? d.projects.items.find(p => p.id === o.id) : o.kind === 'note' ? d.notes.items.find(n => n.id === o.id) : undefined);
+export const placeExists = (d: MyDayData, o: Place) => !!place(d, o);
+export const fileIdsOf = (d: MyDayData, o: Place): string[] => place(d, o)?.fileIds ?? [];
 // The files a place lists, in its order (a record that's missing is simply not shown).
 export const filesOf = (d: MyDayData, o: Owner): FileRecord[] => fileIdsOf(d, o).flatMap(id => d.files.items.filter(f => f.id === id));
 // Every place that lists a file.
@@ -53,7 +60,7 @@ export function usedBy(d: MyDayData, fileId: string): Owner[] {
   return [...d.projects.items.filter(p => p.fileIds?.includes(fileId)).map(p => ({ kind: 'project' as const, id: p.id })),
     ...d.notes.items.filter(n => n.fileIds?.includes(fileId)).map(n => ({ kind: 'note' as const, id: n.id }))];
 }
-function setIds(d: MyDayData, o: Owner, ids: string[]) {
+function setIds(d: MyDayData, o: Place, ids: string[]) {
   const p = place(d, o);
   if (!p) return false;
   if (ids.length) p.fileIds = ids; else delete p.fileIds;
@@ -108,7 +115,7 @@ export function forgetFiles(d: MyDayData, ids: string[]): boolean {
 // ---------- Reading ----------
 // In Recently deleted: a file nothing lists any more. One that a place still lists (two devices' changes crossing, say)
 // is in that place, never in Recently deleted, and never goes for good; healFiles clears its mark.
-const deleted = (d: MyDayData, f: FileRecord) => !!f.deletedOn && !usedBy(d, f.id).length;
+const deleted = (d: MyDayData, f: FileRecord) => listedHere(f) && !!f.deletedOn && !usedBy(d, f.id).length;
 // In Recently deleted from this place (or anywhere), newest first.
 export const recentlyDeleted = (d: MyDayData, from?: Owner) => d.files.items.filter(f => deleted(d, f) && (!from || (f.removedFrom?.kind === from.kind && f.removedFrom.id === from.id)))
   .sort((a, b) => (b.deletedOn ?? '').localeCompare(a.deletedOn ?? ''));
@@ -117,12 +124,12 @@ export const goneOn = (f: FileRecord) => (f.deletedOn ? shift(f.deletedOn, KEEP_
 export const dueForPurge = (d: MyDayData, k: DateKey = todayKey()) => d.files.items.filter(f => deleted(d, f) && f.deletedOn! <= shift(k, -KEEP_DELETED_DAYS));
 // A file still being added an hour after it started (or since an earlier day) won't finish: the device adding it was
 // closed or lost its connection. Its bytes may or may not have arrived; the tidy asks the server.
-export const unfinished = (f: FileRecord, now = Date.now(), k: DateKey = todayKey()) => f.state === 'uploading'
+export const unfinished = (f: FileRecord, now = Date.now(), k: DateKey = todayKey()) => listedHere(f) && f.state === 'uploading'
   && (typeof f.startedAt === 'number' ? now - f.startedAt > 60 * 60 * 1000 : f.addedOn < k);
 // A file nothing lists and that isn't in Recently deleted (e.g. its place was deleted on a device that didn't know
 // files): it goes to Recently deleted from the day it's noticed, so nothing is ever lost silently. A file still being
 // added is left alone.
-export const orphans = (d: MyDayData) => d.files.items.filter(f => !f.deletedOn && f.state !== 'uploading' && !usedBy(d, f.id).length);
+export const orphans = (d: MyDayData) => d.files.items.filter(f => listedHere(f) && !f.deletedOn && f.state !== 'uploading' && !usedBy(d, f.id).length);
 export function markOrphans(d: MyDayData, k: DateKey = todayKey()): boolean {
   const list = orphans(d);
   for (const f of list) f.deletedOn = k;
@@ -131,7 +138,7 @@ export function markOrphans(d: MyDayData, k: DateKey = todayKey()): boolean {
 // A file a place lists is never in Recently deleted: clear the mark (and where it was removed from).
 export function healFiles(d: MyDayData): boolean {
   let changed = false;
-  for (const f of d.files.items) if ((f.deletedOn || f.removedFrom) && usedBy(d, f.id).length) { delete f.deletedOn; delete f.removedFrom; changed = true; }
+  for (const f of d.files.items) if (listedHere(f) && (f.deletedOn || f.removedFrom) && usedBy(d, f.id).length) { delete f.deletedOn; delete f.removedFrom; changed = true; }
   return changed;
 }
 // When a project or note is deleted: its files that nothing else lists go to Recently deleted (from that place).

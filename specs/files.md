@@ -172,6 +172,10 @@ Also, per the other decisions on record:
     kept if its bytes arrived and pass, otherwise failed (Remove clears it);
   - files in Recently deleted for 30 days or more are deleted from R2, then their records (50 at a time).
   The day comes from the device's clock, as everywhere in MyDay.
+  - **Areas this version can't list** (a newer MyDay's portfolio, say) are left exactly as they are: such a file is
+    never sent to Recently deleted, healed, settled or deleted for good, and the place it was removed from is kept
+    as it is (`LISTED_AREAS` in `data/files.ts`; from 1.69.0, found by myday-86 before the portfolio's files). A
+    release that adds an area adds it there and teaches `place`/`usedBy` where its files are listed.
 - **The true wipe** ("delete everything", not built yet) must call `deleteAllFiles()` (and the backups' delete-all)
   before it clears the data, so no file or backup outlives it.
 

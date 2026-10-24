@@ -5,7 +5,7 @@ import { Card } from '../components/Card';
 import { useConfirm } from '../components/confirm';
 import { LinkButton, Note } from '../components/parts';
 import { shortDate } from '../data/dates';
-import { filesOf, goneOn, putBack, recentlyDeleted, removeFile, sizeLabel, unfinished, type Owner } from '../data/files';
+import { filesOf, goneOn, placeExists, putBack, recentlyDeleted, removeFile, sizeLabel, unfinished, type Owner } from '../data/files';
 import { update } from '../data/storage';
 import { toast } from '../data/toast';
 import type { FileRecord, MyDayData } from '../data/types';
@@ -135,8 +135,7 @@ export function FilesCard({ data, owner, area }: { data: MyDayData; owner: Owner
 // On the Projects home: files in Recently deleted whose project or note is gone (they can't be put back, only kept for
 // 30 days or deleted now), so a file is never lost without a trace.
 export function HomelessDeletedFiles({ data }: { data: MyDayData }) {
-  const exists = (o: Owner) => (o.kind === 'project' ? data.projects.items.some(p => p.id === o.id) : data.notes.items.some(n => n.id === o.id));
-  const list = recentlyDeleted(data).filter(f => !f.removedFrom || !exists(f.removedFrom));
+  const list = recentlyDeleted(data).filter(f => !f.removedFrom || !placeExists(data, f.removedFrom));
   if (!list.length) return null;
   return (
     <Card aria-labelledby="homelessFilesH" data-s="files-homeless">

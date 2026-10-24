@@ -4,7 +4,7 @@
 // is settled). The rules for what may be kept are shared with the files function
 // (supabase/functions/_shared/files/rules.ts). Never sent to AI.
 import { cleanName, FILE_TYPES, looksLike, PREVIEWABLE, refusal, THUMB_MAX_BYTES, typeOfName } from '../../../supabase/functions/_shared/files/rules';
-import { addFileRecord, dueForPurge, forgetFiles, healFiles, markOrphans, newFileId, setFileState, unfinished, type Owner } from '../data/files';
+import { addFileRecord, dueForPurge, forgetFiles, healFiles, LISTED_AREAS, markOrphans, newFileId, setFileState, unfinished, type Owner } from '../data/files';
 import { getSnapshot, update } from '../data/storage';
 import type { FileRecord } from '../data/types';
 import { currentSession } from './client';
@@ -256,7 +256,7 @@ export async function deleteAllFiles(): Promise<FilesResult> {
 // nothing refused), so a file is never judged on changes that have only half arrived: a file a place lists leaves
 // Recently deleted; a file nothing lists goes there; an upload that won't finish (or failed, and isn't being retried
 // here) is asked about: kept if its bytes arrived and pass the check, otherwise failed; then files whose 30 days are
-// over go for good (50 at a time).
+// over go for good (50 at a time). Files of an area this version can't list are left alone (data/files.ts).
 const TIDY_MS = 10 * 60 * 1000;
 let tidyStarted = false, lastTidy = 0, tidying = false;
 const asked = new Set<string>();
@@ -267,7 +267,7 @@ export async function tidyFiles(now = Date.now()) {
   tidying = true; lastTidy = now;
   try {
     update(d => { const healed = healFiles(d), marked = markOrphans(d); return healed || marked ? undefined : false; });
-    const check = getSnapshot().data.files.items.filter(f => !pending.has(f.id) && !asked.has(f.id) && (unfinished(f, now) || f.state === 'failed')).slice(0, 10);
+    const check = getSnapshot().data.files.items.filter(f => LISTED_AREAS.includes(f.area) && !pending.has(f.id) && !asked.has(f.id) && (unfinished(f, now) || f.state === 'failed')).slice(0, 10);
     for (const f of check) {
       asked.add(f.id);
       const r = await call<{ size: number }>('confirm', { fileId: f.id, area: f.area, name: f.name });
