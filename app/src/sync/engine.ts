@@ -549,6 +549,8 @@ export const checkedThisLoad = () => checked;
 // account's versions (so the starter lists don't clash). A note for the notice ("Everything was deleted…") is left.
 // Called with the sync lock held.
 export const WIPED_KEY = 'myday.wiped';
+// Another tab of MyDay on this device reloads when a wipe is noted here, so nothing old stays in its memory.
+if (typeof window !== 'undefined') window.addEventListener('storage', e => { if (e.key === WIPED_KEY && e.newValue) location.reload(); });
 export function clearAfterWipe(st: SyncState, at: string | null, from: 'here' | 'elsewhere'): boolean {
   if (!replaceAll(freshData())) return false;
   try {

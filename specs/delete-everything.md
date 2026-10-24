@@ -25,7 +25,8 @@ project copies all go; **your sign-in stays**. From Files and backups: **files a
 4. **On the device it's done on, everything but sign-in goes:** MyDay's data, sync's notes about it, and every
    device-only choice (theme lives in the data; sayings on/off, Focus, voice and transliteration choices, the step and
    session you were on, the one-time offers, the backup schedule) and the device's saved copies of files. Downloaded
-   lesson audio stays (it's MyDay's content, not yours).
+   lesson audio stays (it's MyDay's content, not yours; it only shows which clips were played on this device, nothing
+   typed). Another tab of MyDay open on the device reloads as soon as the wipe is noted.
 
 Decided in the build (flagged to the owner):
 - **AI usage counts stay** (`ai_usage`: counts and spending only, no content), so the daily and monthly limits keep
