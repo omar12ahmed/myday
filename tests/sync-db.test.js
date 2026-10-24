@@ -244,6 +244,19 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   r = await push(A, [change('arabic_card', 'lexeme.arabic-seed-003:recognise', 0, { id: 'lexeme.arabic-seed-003:recognise', addedOn: '2026-10-24', review: ccard.review }), change('cyber_card', 'assessment.lab-isolation-check.q3', 0, { ...ccard, id: 'assessment.lab-isolation-check.q3' })]);
   check('every earlier kind is still accepted after the kind lists change', r.every(x => x.status === 'applied'), r);
 
+  console.log('\n[16] A word you kept (Keep a word, 20261024180000_sync_arabic_words.sql)');
+  const word = { id: 'kwdbtest001', ar: 'بَيْتٌ', meaning: 'house', note: 'from the profile', from: 'asset.arabic-profile', addedOn: '2026-10-24',
+    recognise: { reps: 0, interval: 0, lapses: 0, due: '2026-10-25' }, write: null };
+  r = await push(A, [change('arabic_word', word.id, 0, word)]);
+  check('a kept word saves through sync_push_v2, its id being the word\'s own', r[0].status === 'applied' && r[0].version === 1, r);
+  check('another learner cannot read it', !(await pull(reader)).some(x => x.kind === 'arabic_word'));
+  r = await push(A, [change('arabic_word', word.id, 0, { ...word, meaning: 'home' })]);
+  check('a stale device cannot overwrite it', r[0].status === 'conflict', r);
+  r = await push(A, [change('arabic_word', word.id, 1, null, { deleted: true })]);
+  check('removing it reaches other devices as a tombstone', r[0].status === 'applied' && (await pull(A)).some(x => x.kind === 'arabic_word' && x.deleted));
+  r = await push(A, [change('arabic_lesson', 'lesson.arabic-greetings-address', 0, { id: 'lesson.arabic-greetings-address', readyOn: '2026-10-24' }), change('arabic_card', 'lexeme.arabic-seed-004:recognise', 0, { id: 'lexeme.arabic-seed-004:recognise', addedOn: '2026-10-24', review: ccard.review })]);
+  check('every earlier kind is still accepted after the kind lists change again', r.every(x => x.status === 'applied'), r);
+
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

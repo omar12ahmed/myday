@@ -39,11 +39,27 @@ export interface ArabicLesson {
   revisit?: { since: DateKey; what: string }; // your "Needs revision" flag, with what needs work (≤ 300 characters)
   marks?: Record<string, ArabicMark>;         // by check question id: your latest "How did it go?"
 }
+// A word you kept (Keep a word, specs/study-home-and-lessons.md §6): the Arabic as you met it (vowel marks as
+// written), your meaning, an optional note, where it came from, and its own revision schedules: Arabic → meaning from
+// the day after you keep it, and meaning → Arabic once you ask for it. Kept apart from cards, which older versions
+// rebuild from ids they know (and would drop), and synced as its own record.
+export type Review = ArabicCard['review'];
+export interface KeptWord {
+  id: string;              // "kw…"
+  ar: string;              // ≤ 60 characters, with at least one Arabic letter
+  meaning: string;         // your meaning, 1–120 characters
+  note?: string;           // ≤ 300 characters
+  from?: string;           // the lesson or reading text you kept it from
+  addedOn: DateKey;
+  recognise: Review;       // Arabic → meaning
+  write: Review | null;    // meaning → Arabic, once you ask for it
+}
 export interface ArabicData {
   pathId: string;
   attempts: ArabicAttempt[];
   cards: ArabicCard[]; // added after 1.16.0; absent before → nothing in revision yet
   lessons?: ArabicLesson[]; // adaptive Study; absent until you mark an answer, a lesson ready or one to revisit
+  words?: KeptWord[]; // Keep a word; absent until you keep one
   [other: string]: unknown; // anything a newer MyDay adds here is kept
 }
 export const ARABIC_VERSION = '1.1.2'; // the package version these screens show (checked against it by arabic-rules)

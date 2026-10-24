@@ -4,7 +4,8 @@
 // pointed at the stand-in). Adaptive
 // Study's `arabic_lesson` records must be left alone by a release that doesn't know them (before 1.47.0): not taken
 // in, not changed, not deleted, and never stopping it syncing. A previous release that knows them takes them in like
-// any other record; [2] and [3] check whichever applies. Made-up data only.
+// any other record; [2] and [3] check whichever applies. [6] does the same for Keep a word's `arabic_word` records
+// (Keep a word). Made-up data only.
 const fs = require('fs'), os = require('os'), path = require('path');
 const { isDeepStrictEqual: eq } = require('node:util');
 const D = require('./cdp-devices.js'), S = require('./supabase-standin.js');
@@ -136,6 +137,30 @@ async function signIn(d, url) {
     check('…with the learning links unchanged in its saved data', eq(backPl.studyLinks, studyLinks) && backPl.stage === 'understand', backPl.studyLinks);
     check('the Learning card shows the lesson\'s real title and its reason', await now.until(`document.querySelector('#projectLearning')?.textContent.includes(${JSON.stringify(ARABIC_TITLE)}) && document.querySelector('#projectLearning')?.textContent.includes('Why: For the trip next spring')`, 15000), await now.text('#projectLearning'));
     check('…the course removed since as "No longer in Study", and the newer kind as "Open it in a newer MyDay"', (await now.text('#projectLearning')).includes('No longer in Study') && (await now.text('#projectLearning')).includes('Open it in a newer MyDay'), await now.text('#projectLearning'));
+
+    console.log('\n[6] A word you kept (arabic_word) is left alone by a release that doesn\'t know it');
+    const knowsWords = fs.readdirSync(assets).some(f => f.endsWith('.js') && fs.readFileSync(path.join(assets, f), 'utf8').includes('arabic_word'));
+    console.log(`The previous release ${knowsWords ? 'knows' : 'doesn\u2019t know'} arabic_word records.`);
+    const word = { id: 'kwprevious01', ar: 'بَيْتٌ', meaning: 'house', note: 'from the profile', from: 'asset.arabic-profile', addedOn: today,
+      recognise: { reps: 0, interval: 0, lapses: 0, due: today }, write: null };
+    await now.returnToApp();
+    await now.setData(`s => { s.arabic.words = [${JSON.stringify(word)}]; }`);
+    check('this release sends the word as its own record', await eventually(async () => { const r = await record('arabic_word', word.id); return !!r && !r.deleted && eq(r.data, word); }) && await synced(now));
+    const sentWord = await record('arabic_word', word.id);
+    await before.returnToApp();
+    check('the previous release syncs normally with that record in the account', await synced(before) && (await before.status()) === 'synced');
+    if (knowsWords) check('…and takes it in like any other record (it knows this kind)', eq((await before.data()).arabic.words, [word]));
+    else check('…without taking it in: its saved data has no kept words', !('words' in (await before.data()).arabic));
+    await before.setData(`s => { s.arabic.pathId = 'path.arabic-core-b2'; }`);
+    check('an Arabic change on the previous release syncs as usual', await eventually(async () => (await record('arabic', 'preferences'))?.data?.pathId === 'path.arabic-core-b2') && await synced(before));
+    check('…and leaves the word record exactly as it was sent', eq(await record('arabic_word', word.id), sentWord));
+    await now.returnToApp();
+    check('back on this release the word is just as you kept it', await now.until(`JSON.parse(localStorage.getItem('${KEY}')).arabic.pathId === 'path.arabic-core-b2'`, 20000) && eq((await now.data()).arabic.words, [word]));
+    await now.setData(`s => { s.arabic.words = []; }`);
+    check('removing it here leaves a tombstone in the account', await eventually(async () => !!(await record('arabic_word', word.id))?.deleted) && await synced(now));
+    await before.returnToApp();
+    if (knowsWords) check('…which the previous release takes in as a removal, syncing normally', await synced(before) && await before.until(`!(JSON.parse(localStorage.getItem('${KEY}')).arabic.words || []).length`, 20000));
+    else check('…which the previous release ignores, syncing normally', await synced(before) && (await before.status()) === 'synced' && !('words' in (await before.data()).arabic));
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {

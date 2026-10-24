@@ -2,7 +2,7 @@ import { isDateKey } from '../dates';
 import { intIn, isObj } from '../util';
 import { cleanAnotherWay } from '../study/anotherWay';
 import type { Outcome, Support } from '../types';
-import { ARABIC_CORE_PATH, emptyArabic, MODALITIES, VARIANTS, type ArabicAttempt, type ArabicCard, type ArabicData, type ArabicLesson, type ArabicMark, type Help } from './types';
+import { ARABIC_CORE_PATH, emptyArabic, MODALITIES, VARIANTS, type ArabicAttempt, type ArabicCard, type ArabicData, type ArabicLesson, type ArabicMark, type Help, type KeptWord, type Review } from './types';
 
 // Arabic records are checked like everything else MyDay opens: anything malformed is dropped (and counted),
 // never guessed at, and nothing from another course can slip in. Fields a newer MyDay adds to the section are
@@ -43,6 +43,24 @@ export function cleanArabicCard(raw: unknown): ArabicCard | null {
     id: raw.id, addedOn: raw.addedOn,
     review: { reps: intIn(rv.reps, 0, 100000, 0), interval: intIn(rv.interval, 0, 365, 0), lapses: intIn(rv.lapses, 0, 100000, 0), due: isDateKey(rv.due) ? rv.due : null },
     ...(another ? { anotherWay: another } : {}),
+  };
+}
+
+const review = (rv: unknown): Review => {
+  const r = isObj(rv) ? rv : {};
+  return { reps: intIn(r.reps, 0, 100000, 0), interval: intIn(r.interval, 0, 365, 0), lapses: intIn(r.lapses, 0, 100000, 0), due: isDateKey(r.due) ? r.due : null };
+};
+// A word you kept: its id is the sync record's; the Arabic needs an Arabic letter; your meaning is required. Anything
+// else malformed is left out of the word, never the word dropped for it.
+const KEPT = /^kw[a-z0-9]{6,30}$/, FROM = /^(lesson|asset)\.arabic-[a-z0-9-]{1,80}$/, ARABIC_LETTER = /[\u0621-\u064A\u0671-\u06D3]/;
+export function cleanKeptWord(raw: unknown): KeptWord | null {
+  if (!isObj(raw) || typeof raw.id !== 'string' || !KEPT.test(raw.id) || !isDateKey(raw.addedOn)) return null;
+  const ar = str(raw.ar, 60).trim().normalize('NFC'), meaning = str(raw.meaning, 120).trim();
+  if (!ar || !ARABIC_LETTER.test(ar) || !meaning) return null;
+  const note = str(raw.note, 300).trim();
+  return {
+    id: raw.id, ar, meaning, ...(note ? { note } : {}), ...(typeof raw.from === 'string' && FROM.test(raw.from) ? { from: raw.from } : {}),
+    addedOn: raw.addedOn, recognise: review(raw.recognise), write: isObj(raw.write) ? review(raw.write) : null,
   };
 }
 
@@ -99,6 +117,17 @@ export function normalizeArabic(raw: unknown, report = { dropped: 0 }): ArabicDa
       const l = cleanArabicLesson(r);
       if (!l || lessonIds.has(l.id)) { report.dropped++; continue; }
       lessonIds.add(l.id); out.lessons.push(l);
+    }
+  }
+  delete out.words;
+  if (raw.words !== undefined) {
+    out.words = [];
+    if (!Array.isArray(raw.words)) report.dropped++;
+    const wordIds = new Set<string>();
+    for (const r of Array.isArray(raw.words) ? raw.words.slice(0, 2000) : []) {
+      const w = cleanKeptWord(r);
+      if (!w || wordIds.has(w.id)) { report.dropped++; continue; }
+      wordIds.add(w.id); out.words.push(w);
     }
   }
   return out;

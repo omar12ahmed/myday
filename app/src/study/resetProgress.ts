@@ -1,10 +1,11 @@
 // Clear learning history, including check-ins and attempt evidence. Course contents, paths,
-// concept questions and separate notes remain; review schedules begin again. Sync propagates removals.
+// concept questions, the words you kept and separate notes remain; review schedules begin again. The words you kept
+// go too only if you choose (`removeWords`). Sync propagates removals.
 import type { MyDayData } from '../data/types';
 
 const freshReview = () => ({ reps: 0, interval: 0, lapses: 0, due: null });
 
-export function resetLearningProgress(d: MyDayData): void {
+export function resetLearningProgress(d: MyDayData, { removeWords = false } = {}): void {
   for (const stage of d.study.stages)
     for (const course of stage.courses)
       for (const module of course.modules)
@@ -21,4 +22,8 @@ export function resetLearningProgress(d: MyDayData): void {
   d.cybersecurity.attempts = [];
   for (const card of d.arabic.cards) card.review = freshReview();
   for (const card of d.cybersecurity.cards) card.review = freshReview();
+  if (d.arabic.words) {
+    if (removeWords) d.arabic.words = [];
+    else for (const w of d.arabic.words) { w.recognise = freshReview(); if (w.write) w.write = freshReview(); }
+  }
 }

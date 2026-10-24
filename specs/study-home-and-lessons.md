@@ -1,7 +1,8 @@
 # Study as a learning environment: one focus, a clearer home and a guided lesson
 
 **Status:** release (a), one focus and Study home (§3, §4), published in 1.51.0 (24 October 2026); release (b),
-the lesson journey, published for Arabic in 1.53.0 and for Cybersecurity in 1.55.0; (c)–(f) planned. The owner's decisions of 24 October 2026 are in §2. This builds on
+the lesson journey, published for Arabic in 1.53.0 and for Cybersecurity in 1.55.0; release (c), Keep a word,
+built on branch `keep-a-word` (its migration not yet applied); (d)–(f) planned. The owner's decisions of 24 October 2026 are in §2. This builds on
 `specs/adaptive-study.md` (lesson states, answer marks, revision from every lesson, the next-step rules), published
 in 1.47.0; this plan is a series of later, separate releases (§14).
 **Plan date:** 24 October 2026, after release 1.44.1.
@@ -186,6 +187,16 @@ nothing lost, no questions about why.
   - The Study reset clears it only if you choose to.
 - **Not included:** roots and families for your own words (the families stay MyDay's authored file), audio for your
   own words, and AI-filled meanings.
+- **As built (release c, 24 October 2026):** the rules are `app/src/data/arabic/words.ts`; the button and picker
+  `app/src/study/arabic/KeepAWord.tsx`; "Your words" heads the Vocabulary page (add your own, both ways in revision,
+  change your meaning, remove, asked first). A reading text has one "Keep a word" whose picker lists its words
+  sentence by sentence (a button under every sentence crowded the text and its voice); a lesson's Understand step has
+  one for its headline example and the Arabic in its worked example. A starter word's meaning is filled in, yours to
+  change. Kept words are cards in the queue by id `<word id>:recognise` / `:write`, read from the word; they count in
+  the 8-a-day placement. No AI "another way" for your own words (your words and meanings never reach AI). The Study
+  reset keeps your words with their revision starting again unless you tick "Also remove the words you kept".
+  Saved data stays schema 5 (the owner's exception: an optional field in the new-app-only Arabic section, synced as a
+  new kind older releases ignore; `tests/app-sync-previous.test.js` [6]).
 
 ## 7. Eight new cards a day
 

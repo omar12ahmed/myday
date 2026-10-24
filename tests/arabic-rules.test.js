@@ -51,7 +51,7 @@ check('vowelled and unvowelled versions are both kept where the package has them
   const os = require('os'), { pathToFileURL } = require('url');
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'myday-arabic-data-'));
   const { bundle } = await import(pathToFileURL(path.join(ROOT, 'ai-eval/build.mjs')).href);
-  fs.writeFileSync(path.join(tmp, 'entry.ts'), [...['types', 'normalize', 'sessions', 'cards', 'lessons'].map(f => path.join(ROOT, 'app/src/data/arabic', f)), path.join(ROOT, 'app/src/data/study/queue'),
+  fs.writeFileSync(path.join(tmp, 'entry.ts'), [...['types', 'normalize', 'sessions', 'cards', 'lessons', 'words'].map(f => path.join(ROOT, 'app/src/data/arabic', f)), path.join(ROOT, 'app/src/data/study/queue'),
     path.join(ROOT, 'app/src/data/study/revision'), path.join(ROOT, 'app/src/data/study/mastery')].map(f => `export * from ${JSON.stringify(f)};`).join('\n'));
   const A = await import(pathToFileURL(await bundle(path.join(tmp, 'entry.ts'), path.join(tmp, 'out'))).href);
   check('the version the screens record matches the package', A.ARABIC_VERSION === source.curriculum_version);
@@ -252,6 +252,44 @@ check('vowelled and unvowelled versions are both kept where the package has them
     A.stepsFor('revision').join() === 'warmup,check' && A.stepsFor('short').join() === 'understand,check' && A.stepsFor('practical').join() === 'try,check'
     && A.stepsFor('standard').join() === 'warmup,understand,try,check' && A.stepsFor('extended').join() === 'warmup,understand,try,check');
   check('the steps have names, in order, Reflect last', A.JOURNEY.map(s => A.STEP_LABEL[s]).join() === 'Warm-up,Understand,Try,Check,Reflect');
+
+  console.log('\n[W] Keep a word: the same word, picking words, keeping, revision and saved data');
+  check('the same word ignores optional vowel marks (and the tatweel)', A.sameWord('بَيْتٌ', 'بيت') && A.sameWord('كِتَابٌ', 'كتاب') && A.sameWord('كتـاب', 'كتاب'));
+  check('…but ة and ه, ى and ي, and the hamza forms are different words', !A.sameWord('مدرسة', 'مدرسه') && !A.sameWord('على', 'علي') && !A.sameWord('أمل', 'امل') && !A.sameWord('سأل', 'سال'));
+  check('a sentence\'s words: punctuation left out, vowel marks as written, each once', JSON.stringify(A.wordsIn('أَنَا لَيْلَى. أَنَا طَالِبَةٌ، وَأَقْرَأُ؟')) === JSON.stringify(['أَنَا', 'لَيْلَى', 'طَالِبَةٌ', 'وَأَقْرَأُ']));
+  check('…and English or numbers aren\'t offered', JSON.stringify(A.wordsIn('Read كِتَابٌ (book) 12 times')) === JSON.stringify(['كِتَابٌ']));
+  check('a text splits into its sentences for the picker', A.sentencesIn('أَنَا لَيْلَى. أَنَا طَالِبَةٌ.\nأَسْكُنُ هُنَا').length === 3);
+  const wd = { study: { reviews: [], concepts: [] }, arabic: A.emptyArabic(), cybersecurity: { cards: [] } };
+  const kept = A.keepWord(wd, { ar: ' بَيْتٌ ', meaning: ' house ', note: '', from: 'asset.arabic-profile' }, '2026-10-11');
+  const w = wd.arabic.words[0];
+  check('keeping a word saves the Arabic as written, your meaning, where from and the day, back the next day Arabic → meaning', kept.added && w.ar === 'بَيْتٌ' && w.meaning === 'house' && w.from === 'asset.arabic-profile'
+    && w.addedOn === '2026-10-11' && w.recognise.due === '2026-10-12' && w.write === null && !('note' in w) && /^kw[a-z0-9]{6,30}$/.test(w.id));
+  check('the same word again (vowel marks aside) changes nothing and points at the one you have', JSON.stringify(A.keepWord(wd, { ar: 'بيت', meaning: 'home' }, '2026-10-12')) === JSON.stringify({ id: w.id, added: false }) && wd.arabic.words.length === 1 && w.meaning === 'house');
+  check('no meaning, or no Arabic letter, keeps nothing', A.keepWord(wd, { ar: 'قلم', meaning: '  ' }, '2026-10-11') === null && A.keepWord(wd, { ar: 'pen', meaning: 'pen' }, '2026-10-11') === null && wd.arabic.words.length === 1);
+  check('the meaning can change (never to empty), and a note can be added and taken away', A.editWord(wd, w.id, { meaning: 'a house', note: 'from the profile' }) && w.meaning === 'a house' && w.note === 'from the profile'
+    && !A.editWord(wd, w.id, { meaning: '', note: '' }) && A.editWord(wd, w.id, { meaning: 'a house', note: '' }) && !('note' in w));
+  check('"Also practise writing it" brings meaning → Arabic back from the next day; taking it out keeps the word', A.practiseWriting(wd, w.id, true, '2026-10-13') && w.write.due === '2026-10-14'
+    && A.practiseWriting(wd, w.id, false, '2026-10-13') && w.write === null && wd.arabic.words.length === 1 && A.practiseWriting(wd, w.id, true, '2026-10-13'));
+  check('in revision a kept word is two cards, recognising and writing, Arabic\'s and everything\'s', JSON.stringify(A.keptCards(wd).map(c => c.id)) === JSON.stringify([w.id + ':recognise', w.id + ':write'])
+    && A.dueIds(wd, '2026-10-14', 'arabic').join() === [w.id + ':recognise', w.id + ':write'].join() && A.dueIds(wd, '2026-10-14').length === 2 && A.dueIds(wd, '2026-10-11', 'arabic').length === 0);
+  check('…and a card id says which word and which way', JSON.stringify(A.cardRef(w.id + ':write')) === JSON.stringify({ kind: 'kept', wordId: w.id, side: 'write' }) && A.cardOf(wd, w.id + ':recognise').review.due === '2026-10-12');
+  check('answering it reschedules that way round and keeps the answer in your history', A.rateCard(wd, w.id + ':recognise', 'بَيْتٌ → a house', '2026-10-14', { outcome: 'right', support: 'own', chosen: null }, 'good')
+    && w.recognise.reps === 1 && w.recognise.due > '2026-10-14' && w.write.reps === 0 && wd.study.reviews.length === 1 && wd.study.reviews[0].conceptId === w.id + ':recognise');
+  // The 8-a-day count includes the words you keep (never delayed themselves).
+  const busy = { study: { reviews: [], concepts: [] }, arabic: A.emptyArabic(), cybersecurity: { cards: [] } };
+  for (let i = 0; i < 8; i++) A.keepWord(busy, { ar: 'كلمة' + 'ابتثجحخد'[i], meaning: 'word ' + i }, '2026-10-11');
+  const placed = A.addAutomatic(busy, ['assessment.arabic-fusha-register-check.q1'], '2026-10-12', '2026-10-11');
+  check('eight words kept today fill tomorrow, so a check that joins by itself goes to the day after', busy.arabic.words.length === 8 && placed[0].due === '2026-10-13');
+  check('removing a word removes it and both its cards; its answers stay in your history', A.removeWord(wd, w.id) && !wd.arabic.words.length && !A.keptCards(wd).length && wd.study.reviews.length === 1 && !A.removeWord(wd, w.id));
+  // Saved data: only well-formed words, limits kept, absent stays absent.
+  const wrep = { dropped: 0 }, wid = 'kwabc123def';
+  const nw = A.normalizeArabic({ pathId: 'path.arabic-a1', attempts: [], words: [
+    { id: wid, ar: 'بَيْتٌ', meaning: 'house', note: 'x'.repeat(400), from: 'lesson.arabic-fusha-register', addedOn: '2026-10-11', recognise: { reps: 2, interval: 4, lapses: 0, due: '2026-10-15' }, write: { reps: 0 } },
+    { id: wid, ar: 'قلم', meaning: 'pen', addedOn: '2026-10-11' }, { id: 'kwbad', ar: 'قلم', meaning: 'pen', addedOn: '2026-10-11' }, { id: 'kwnoarabic1', ar: 'pen', meaning: 'pen', addedOn: '2026-10-11' },
+    { id: 'kwnomeaning1', ar: 'قلم', meaning: '', addedOn: '2026-10-11' }, { id: 'kwbadfrom12', ar: 'قلم', meaning: 'pen', from: 'https://x', addedOn: '2026-10-11', recognise: 'soon' }] }, wrep).words;
+  check('saved words: a duplicate, a bad id, no Arabic letter and no meaning are dropped (and counted); a bad source or schedule is left out of the word', nw.length === 2 && wrep.dropped === 4
+    && nw[0].note.length === 300 && nw[0].recognise.due === '2026-10-15' && nw[0].write.due === null && !('from' in nw[1]) && nw[1].recognise.reps === 0);
+  check('no words yet stays exactly that: the field is absent, as older data was', !('words' in A.normalizeArabic({ pathId: 'path.arabic-a1', attempts: [] })));
   fs.rmSync(tmp, { recursive: true, force: true });
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

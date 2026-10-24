@@ -75,7 +75,7 @@ function described(data: MyDayData, id: string): { title: string; href: string; 
   if (cyberCardOf(data, id)) return { title: last?.title || 'Cybersecurity', href: '#study/cybersecurity/' + lessonOfCheck(id), concept: false };
   if (!cardOf(data, id)) return null;
   const ref = cardRef(id);
-  return { title: last?.title || 'Arabic', href: ref.kind === 'word' ? '#study/arabic/vocabulary' : '#study/arabic/' + ref.lessonId, concept: false };
+  return { title: last?.title || 'Arabic', href: ref.kind === 'check' ? '#study/arabic/' + ref.lessonId : '#study/arabic/vocabulary', concept: false };
 }
 const inRevision = (d: MyDayData, id: string) => d.study.concepts.some(c => c.id === id) || !!cardOf(d, id) || !!cyberCardOf(d, id);
 const opening = <Card><p role="status" className="m-0">Opening…</p></Card>;

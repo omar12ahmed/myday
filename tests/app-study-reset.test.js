@@ -46,6 +46,7 @@ async function synced(d) {
       s.arabic.cards = [{ id: 'lexeme.arabic-seed-001:recognise', addedOn: '${today}', review }];
       s.arabic.lessons = [{ id: 'lesson.arabic-fusha-register', readyOn: '${today}', revisit: { since: '${today}', what: 'Keep for the restore' } }];
       s.cybersecurity.cards = [{ id: 'assessment.learning-evidence-check.q1', addedOn: '${today}', review }];
+      s.arabic.words = [{ id: 'kwreset0001', ar: 'بَيْتٌ', meaning: 'house', addedOn: '${today}', recognise: review, write: null }];
       s.notes.items.push({ id: 'ntReset', categoryId: '', title: 'Separate note', text: 'This must stay', pinned: false, createdAt: '${today}T08:00', updatedAt: '${today}T08:00' });
     }`);
     const removed = [['session', 'ssReset'], ['review', 'rvReset'], ['arabic_attempt', 'aaReset'], ['arabic_lesson', 'lesson.arabic-fusha-register'], ['cyber_attempt', 'caReset']];
@@ -106,6 +107,8 @@ async function synced(d) {
     const reset = await mac.data();
     check('the outline, concept questions and separate notes remain', reset.study.stages[0].courses[0].modules[0].sections[0].tasks[0].done === false && reset.study.concepts[0].prompt === beforeReset.study.concepts[0].prompt && eq(reset.notes, beforeReset.notes));
     check('revision cards remain with fresh schedules', reset.arabic.cards[0].review.reps === 0 && reset.cybersecurity.cards[0].review.due === null && reset.study.concepts[0].review.reps === 0);
+    check('the words you kept remain (you didn\'t choose to remove them), their revision starting again', reset.arabic.words.length === 1 && reset.arabic.words[0].meaning === 'house' && reset.arabic.words[0].recognise.reps === 0
+      && !(await record('arabic_word', 'kwreset0001'))?.deleted);
     const unrelated = data => { const copy = { ...data }; for (const key of ['saves', 'study', 'arabic', 'cybersecurity']) delete copy[key]; return copy; };
     check('every unrelated MyDay section is unchanged', eq(unrelated(reset), unrelated(beforeReset)));
     check('all removed history becomes account deletion markers', await eventually(async () => (await Promise.all([...removed, ['session', 'ssAfterBackup'], ['session', 'ssDuringConfirm']].map(([kind, id]) => record(kind, id)))).every(r => r?.deleted)));

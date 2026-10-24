@@ -6,6 +6,7 @@ import { shift } from '../dates';
 import { DELAYED_CHECK_DAYS, lessonState, placeNewCards, struggled, type CheckAnswer, type LessonEvidence, type LessonState } from '../study/mastery';
 import type { DateKey, MyDayData, Outcome, Support } from '../types';
 import { cardOf } from './cards';
+import { keptCards } from './words';
 import type { ArabicLesson } from './types';
 
 // A lesson's check ids, from its id and how many it has ("lesson.arabic-x", 3 → "assessment.arabic-x-check.q1"…);
@@ -65,10 +66,11 @@ export const notYetIn = (d: MyDayData, attemptId: string, lessonId: string) =>
   Object.entries(marksIn(d, attemptId, lessonId)).filter(([, m]) => struggled({ date: '', ...m })).map(([q]) => q);
 
 // ---------- Cards that join revision by themselves ----------
-// Every card in revision that hasn't been answered yet, by its first day back: what the 8-a-day limit counts.
+// Every card in revision that hasn't been answered yet, by its first day back: what the 8-a-day limit counts (the
+// words you keep included: never delayed themselves, they count when MyDay places the automatic ones).
 function firstDueDays(d: MyDayData): (DateKey | null)[] {
   const fresh = (r: { reps: number; due: DateKey | null }) => (r.reps === 0 ? [r.due] : []);
-  return [...d.arabic.cards.flatMap(c => fresh(c.review)), ...d.cybersecurity.cards.flatMap(c => fresh(c.review)), ...d.study.concepts.flatMap(c => fresh(c.review))];
+  return [...d.arabic.cards.flatMap(c => fresh(c.review)), ...keptCards(d).flatMap(c => fresh(c.review)), ...d.cybersecurity.cards.flatMap(c => fresh(c.review)), ...d.study.concepts.flatMap(c => fresh(c.review))];
 }
 // Adds the checks not already in revision, first back on `from` or the next day with room. Cards already there keep
 // their schedule. Returns what was added, with the day each comes back.

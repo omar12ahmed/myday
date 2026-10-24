@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { cardRef, rateCard, removeCards, type CardRef } from '../../data/arabic/cards';
+import { keptById } from '../../data/arabic/words';
 import type { ArabicCard } from '../../data/arabic/types';
 import { update } from '../../data/storage';
 import type { MyDayData } from '../../data/types';
@@ -14,9 +15,9 @@ import { Pronunciation, PronunciationControls } from './Pronunciation';
 import checksJson from './data/checks.json';
 import texts from './data/texts.json';
 
-// An Arabic card in a revision round, asked like any other question: a starter word one way round, or a lesson
-// check. You compare your answer yourself; MyDay never marks Arabic (the course's own answers are examples, and
-// vowel marks are optional unless the question is about them).
+// An Arabic card in a revision round, asked like any other question: a starter word one way round, a lesson check,
+// or a word you kept one way round. You compare your answer yourself; MyDay never marks Arabic (the course's own
+// answers are examples, and vowel marks are optional unless the question is about them).
 type Answers = Record<string, { answer: string; variation: string }>;
 const words = new Map(texts.lexicon.map(w => [w.id, w]));
 const checks = checksJson as Record<string, { prompt: string; lesson: string }>;
@@ -31,15 +32,31 @@ export default function ArabicQuestion({ data, r, at, card }: { data: MyDayData;
     import('./data/answers.json').then(m => { if (live) setAnswers(m.default as Answers); }, () => { if (live) setFailed(true); });
     return () => { live = false; };
   }, [needsAnswers]);
-  const q = asked(card, ref, answers);
-  if (q === 'gone') return <Gone card={card} at={at} />;
+  const q = asked(data, card, ref, answers);
+  if (q === 'gone') return <Gone card={card} at={at} kept={ref.kind === 'kept'} />;
   if (!q) return <Card><p role="status" className="m-0">{failed ? 'The answers couldn’t be opened. Check your connection and try again.' : 'Opening…'}</p></Card>;
   return <Pronunciation><PronunciationControls /><Question data={data} r={r} at={at} q={q} /></Pronunciation>;
 }
 
-function asked(card: ArabicCard, ref: CardRef, answers: Answers | null): Asked | 'gone' | null {
+function asked(data: MyDayData, card: ArabicCard, ref: CardRef, answers: Answers | null): Asked | 'gone' | null {
   const base = { id: card.id, kind: 'written' as const, choices: [], correct: null, hint: '', notesUrl: '', arabic: true, interval: card.review.interval };
   const saving = (title: string): Asked['save'] => (d, k, a, rating) => rateCard(d, card.id, title, k, a, rating);
+  // A word you kept: your own meaning and note, nothing from the course, and no AI explanation (your words stay yours).
+  if (ref.kind === 'kept') {
+    const w = keptById(data, ref.wordId);
+    if (!w) return 'gone';
+    const note = w.note ? <span dir="auto">{w.note}</span> : null, back = <Note><InlineLink href="#study/arabic/vocabulary">Your words</InlineLink></Note>;
+    const notYet = <>This one hasn’t clicked yet, which is normal for a new word. Say it once more, slowly, out loud if you can, and read your note.</>;
+    if (ref.side === 'recognise') {
+      const title = `${w.ar} → ${w.meaning}`;
+      return { ...base, title, path: 'Arabic · a word you kept', notYet, save: saving(title), after: back,
+        prompt: <><Ar className="block text-[34px] leading-normal">{w.ar}</Ar>What does it mean?</>,
+        answer: w.meaning, answerLabel: 'Your meaning', explanation: note, explanationLabel: 'Your note' };
+    }
+    const title = `${w.meaning} → ${w.ar}`;
+    return { ...base, title, path: 'Arabic · a word you kept, from memory', notYet, save: saving(title), after: back,
+      prompt: <>Write it in Arabic: “{w.meaning}”</>, answer: <Ar className="text-[28px]">{w.ar}</Ar>, answerLabel: 'In Arabic', explanation: note, explanationLabel: 'Your note' };
+  }
   if (ref.kind === 'word') {
     const w = words.get(ref.lexemeId);
     if (!w) return 'gone';
@@ -69,9 +86,15 @@ function asked(card: ArabicCard, ref: CardRef, answers: Answers | null): Asked |
     after: <Note><InlineLink href={'#study/arabic/' + ref.lessonId}>Open its lesson</InlineLink></Note> };
 }
 
-// A card whose word or question an update of the course removed: nothing is lost, and it's yours to take out.
-function Gone({ card, at }: { card: ArabicCard; at: number }) {
+// A card whose word or question an update of the course removed (or a word you removed on another device): nothing
+// is lost, and a course card is yours to take out.
+function Gone({ card, at, kept }: { card: ArabicCard; at: number; kept: boolean }) {
   const remove = () => { update(d => { if (!removeCards(d, [card.id])) return false; }); skipQuestion(at); };
+  if (kept) return <Card tone="accent" data-ar-gone="">
+    <h2>This word is no longer in your words</h2>
+    <p>It was removed, perhaps on another device. Your past answers to it stay in your history.</p>
+    <Button variant="primary" data-action="ar-gone-skip" onClick={() => skipQuestion(at)}>Next question</Button>
+  </Card>;
   return <Card tone="accent" data-ar-gone="">
     <h2>This one is no longer in the course</h2>
     <p>An update to the course took it out. Your past answers to it stay in your history.</p>

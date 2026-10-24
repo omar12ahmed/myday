@@ -55,6 +55,15 @@ function check(label, ok) {
       && state.arabic.pathId === 'arabic' && state.cybersecurity.pathId === 'cyber');
     check('Other MyDay data stays', state.otherSection.preserve && state.study.settings.vault === 'Learning');
 
+    const withWords = { ...JSON.parse(JSON.stringify(state)) };
+    withWords.arabic.words = [{ id: 'kwreset0001', ar: 'بَيْتٌ', meaning: 'house', addedOn: '2026-10-01', recognise: { reps: 3, interval: 8, lapses: 0, due: '2026-11-01' }, write: { reps: 1, interval: 2, lapses: 0, due: '2026-10-28' } }];
+    const keepWords = JSON.parse(JSON.stringify(withWords));
+    rule.resetLearningProgress(keepWords);
+    check('A Study reset keeps the words you kept, their revision starting again', keepWords.arabic.words.length === 1 && keepWords.arabic.words[0].meaning === 'house'
+      && keepWords.arabic.words[0].recognise.reps === 0 && keepWords.arabic.words[0].recognise.due === null && keepWords.arabic.words[0].write.reps === 0);
+    rule.resetLearningProgress(withWords, { removeWords: true });
+    check('…and removes them only if you choose', Array.isArray(withWords.arabic.words) && withWords.arabic.words.length === 0);
+
     console.log('\n[Recommendations] Explicit choices and unfinished general courses');
     const fresh = () => { const d = rule.freshState(); d.study.stages = []; return d; };
     const clone = value => JSON.parse(JSON.stringify(value));

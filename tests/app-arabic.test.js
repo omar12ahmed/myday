@@ -351,5 +351,54 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   check('…and a step you jump to starts just below it, its heading in view', await ev(`document.querySelector('#ar-step-try h3').getBoundingClientRect().top >= document.querySelector('[data-ar-steps]').getBoundingClientRect().bottom - 1`));
   await send('Emulation.clearDeviceMetricsOverride');
 
+  console.log('\n[12] Keep a word: from a reading text, your words, and revision');
+  await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); d.arabic.cards = []; delete d.arabic.words; localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`);
+  await go('study/arabic/asset.arabic-profile'); await wait('[data-action="ar-keep-open"]');
+  await click('[data-action="ar-keep-open"]'); await sleep(150);
+  check('a reading text offers its words to keep: punctuation left out, vowel marks as written', await exists('[data-action="ar-keep-word"][data-v="أَنَا"]') && await exists('[data-action="ar-keep-word"][data-v="لَيْلَى"]')
+    && !(await ev(`[...document.querySelectorAll('[data-action="ar-keep-word"]')].some(b => /[.،؟]/.test(b.dataset.v))`)));
+  await click('[data-action="ar-keep-word"][data-v="أَنَا"]'); await sleep(150);
+  check('a starter word comes with the course\'s meaning filled in, yours to change', (await ev(`document.querySelector('[data-s="ar-keep-meaning"]').value`)) === 'I' && (await T.text('[data-ar-keep-form]')).includes('One of the starter words'));
+  await click('[data-action="ar-keep-save"]'); await sleep(250);
+  let kw = (await AR()).words;
+  check('"Keep it" saves the word as written, your meaning and where it came from, back tomorrow Arabic → meaning', kw?.length === 1 && kw[0].ar === 'أَنَا' && kw[0].meaning === 'I' && kw[0].from === 'asset.arabic-profile'
+    && kw[0].recognise.due === '2026-10-12' && kw[0].write === null && (await T.text('[data-ar-kept]')).includes('Kept'));
+  check('…and the picker marks it as yours', await ev(`document.querySelector('[data-action="ar-keep-word"][data-v="أَنَا"]').getAttribute('aria-label').includes('already in your words')`));
+  await click('[data-action="ar-keep-word"][data-v="أَنَا"]'); await sleep(150);
+  check('choosing it again says it\'s already in your words, with your meaning, and keeps nothing more', (await T.text('[data-ar-keep-already]')).includes('already in your words: I') && (await AR()).words.length === 1);
+  await go('study/arabic/vocabulary'); await wait('[data-ar-your-words]');
+  check('Vocabulary lists your words first, with where each came from and when it comes back', (await ev(`document.querySelector('[data-ar-your-words]').dataset.arYourWords`)) === '1'
+    && (await T.text(`[data-ar-kept="${kw[0].id}"]`)).includes('A short personal profile') && (await T.text(`[data-ar-kept="${kw[0].id}"]`)).includes('Recognising it'));
+  await click('[data-action="ar-word-own"]'); await sleep(150);
+  const typeIn = (sel, v) => ev(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(el, ${JSON.stringify(v)}); el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+  await typeIn('[data-s="ar-own-ar"]', 'أنا'); await sleep(150); // the same hamza, no vowel marks (انا, without it, is a different word)
+  check('adding your own word recognises one you already keep, vowel marks aside', (await T.text('[data-ar-own-word] [data-ar-keep-already]')).includes('Already in your words: I') && await ev(`document.querySelector('[data-action="ar-own-save"]').disabled`));
+  await typeIn('[data-s="ar-own-ar"]', 'بيت'); await typeIn('[data-s="ar-own-meaning"]', 'house'); await sleep(150);
+  await click('[data-action="ar-own-save"]'); await sleep(250);
+  kw = (await AR()).words;
+  check('…and keeps a new one typed in, as typed', kw.length === 2 && kw[1].ar === 'بيت' && kw[1].meaning === 'house' && !('from' in kw[1]));
+  await click(`[data-ar-kept="${kw[1].id}"] [data-action="ar-kept-write"]`); await sleep(200);
+  check('"Also practise writing it" brings it back meaning → Arabic too, from tomorrow', (await AR()).words[1].write?.due === '2026-10-12' && (await T.text(`[data-ar-kept="${kw[1].id}"]`)).includes('Writing it'));
+  await click(`[data-ar-kept="${kw[1].id}"] [data-action="ar-kept-edit"]`); await sleep(150);
+  await typeIn(`#arEditM${kw[1].id}`, 'a house'); await click('[data-action="ar-kept-save"]'); await sleep(200);
+  check('you can change your meaning', (await AR()).words[1].meaning === 'a house');
+  await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); d.study.reviews = []; localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`);
+  await on(12, 'study/arabic'); await wait('[data-action="ar-revise"]', 5000);
+  await click('[data-action="ar-revise"]'); await sleep(900);
+  check('the next day your words come back in Revise Arabic, in your words', (await T.text('.st-q')).includes('a word you kept') && (await T.text('.st-q')).includes('What does it mean?'), await T.text('.st-q'));
+  await click('[data-action="s-rev-show"]'); await sleep(200);
+  const shownAnswer = await T.text('.st-q');
+  check('…the answer is your own meaning', shownAnswer.includes('Your meaninga house') || shownAnswer.includes('Your meaningI'), shownAnswer);
+  await click('[data-action="s-rev-rate"][data-v="good"]'); await sleep(250);
+  const rated = (await AR()).words.find(w => w.recognise.reps === 1 || w.write?.reps === 1);
+  check('…and rating it reschedules that way round and keeps the answer in your history', !!rated && JSON.parse(await ev(`localStorage.getItem('myday.data.v4')`)).study.reviews.some(r => r.conceptId.startsWith(rated.id + ':')));
+  await go('study/arabic/vocabulary'); await wait('[data-ar-your-words]');
+  await click(`[data-ar-kept="${kw[1].id}"] [data-action="ar-kept-remove"]`); await sleep(200); await click('[data-action="dialog-confirm"]'); await sleep(250);
+  check('removing a word asks first, then it leaves your words and your revision', (await AR()).words.length === 1 && !(await exists(`[data-ar-kept="${kw[1].id}"]`)));
+  await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await go('study/arabic/asset.arabic-profile'); await wait('[data-action="ar-keep-open"]'); await click('[data-action="ar-keep-open"]'); await sleep(200);
+  check('on a phone the word picker fits, each word at least 44 px tall', await ev('document.documentElement.scrollWidth === innerWidth') && await ev(`[...document.querySelectorAll('[data-action="ar-keep-word"]')].every(b => b.getBoundingClientRect().height >= 44)`));
+  await send('Emulation.clearDeviceMetricsOverride');
+
   const s = T.summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
 })().catch(e => { console.error('HARNESS', e); process.exit(1); });

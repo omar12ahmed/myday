@@ -16,6 +16,8 @@ export function StudySettings({ data }: { data: MyDayData }) {
   const confirm = useConfirm();
   const [backupData, setBackupData] = useState<MyDayData | null>(null);
   const [verifiedBackup, setVerifiedBackup] = useState(false);
+  const [removeWords, setRemoveWords] = useState(false); // also remove the words you kept (otherwise they stay, their revision starting again)
+  const kept = data.arabic.words?.length ?? 0;
   const mounted = useRef(true), confirming = useRef(false);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const freshBackup = backupData === data;
@@ -37,13 +39,13 @@ export function StudySettings({ data }: { data: MyDayData }) {
     if (!canReset || confirming.current || getSnapshot().data !== backedUp) return;
     confirming.current = true;
     try {
-      if (!(await confirm({ title: 'Reset all Study progress?', body: 'This removes completion marks, Study sessions and their check-ins, Arabic answers, practice attempts and lesson states (Ready to move on, Needs revision, your marks), Cybersecurity notebook attempts and evidence, and revision history. Your course outline, concept questions, separate notes and other MyDay sections stay. The reset can reach your other devices. Your checked backup is the way to recover the removed work.', confirmLabel: 'Reset Study progress', cancelLabel: 'Keep my progress' })) || !mounted.current) return;
+      if (!(await confirm({ title: 'Reset all Study progress?', body: 'This removes completion marks, Study sessions and their check-ins, Arabic answers, practice attempts and lesson states (Ready to move on, Needs revision, your marks), Cybersecurity notebook attempts and evidence, and revision history. Your course outline, concept questions, the words you kept (unless you chose to remove them), separate notes and other MyDay sections stay. The reset can reach your other devices. Your checked backup is the way to recover the removed work.', confirmLabel: 'Reset Study progress', cancelLabel: 'Keep my progress' })) || !mounted.current) return;
       if (getSnapshot().data !== backedUp) {
         setBackupData(null); setVerifiedBackup(false);
         toast('MyDay changed since that backup. Download and check a fresh backup before resetting.');
         return;
       }
-      if (updateSaved(d => { resetLearningProgress(d); }) === 'saved') {
+      if (updateSaved(d => { resetLearningProgress(d, { removeWords }); }) === 'saved') {
         setBackupData(null); setVerifiedBackup(false);
         toast('Study progress reset. Your learning paths and materials are still here.');
       } else toast("Couldn't save the reset. Your Study progress is unchanged.");
@@ -66,6 +68,9 @@ export function StudySettings({ data }: { data: MyDayData }) {
         <h3>Start learning again from the beginning</h3>
         <p className="text-sm text-fg-2">Reset completion marks, Study sessions and check-ins, revision history, Arabic answers, attempts and lesson states, and Cybersecurity notebook attempts and evidence. Your course outline, concept questions, separate notes and other MyDay information are kept. The reset can synchronise to your other devices.</p>
         <p className="text-sm text-fg-2">First download and check a complete backup. If MyDay changes afterwards, you will need a fresh backup.</p>
+        {kept > 0 && <label className="check flex items-center gap-2.5 min-h-11 text-[15px] mb-1">
+          <input type="checkbox" data-s="study-reset-words" className="size-[22px] accent-primary flex-none" checked={removeWords} onChange={e => setRemoveWords(e.target.checked)} /> Also remove the {kept === 1 ? 'word' : `${kept} words`} you kept in Arabic (otherwise {kept === 1 ? 'it stays' : 'they stay'}, {kept === 1 ? 'its' : 'their'} revision starting again)
+        </label>}
         {backupData && !freshBackup && <p role="status" className="text-sm text-fg-2">MyDay changed since that backup. Download and check a fresh one.</p>}
         {backupData && freshBackup && <label className="check flex items-center gap-2.5 min-h-11 text-[15px] mb-3">
           <input type="checkbox" data-action="study-backup-verified" className="size-[22px] accent-primary flex-none" checked={verifiedBackup} onChange={e => setVerifiedBackup(e.target.checked)} /> I saved and checked the backup file.
