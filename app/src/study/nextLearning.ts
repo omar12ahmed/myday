@@ -44,7 +44,8 @@ export function learningOptions(data: MyDayData, generalCourseId = data.study.fo
     detail: step.kind === 'resume' ? 'Resume your open Arabic session'
       : step.kind === 'revisit' ? `Worth revisiting first: ${lessonIndex[step.because!].title} builds on it`
       : step.kind === 'revise' ? `Revision first (${step.due} ready in Arabic), then this lesson`
-      : step.kind === 'complete' ? (step.state === 'needs-revision' ? 'Every other lesson on your path is ready — this one needs revision' : 'Your path is ready to move on — revise, or revisit any lesson')
+      : step.kind === 'complete' ? (!step.waiting ? 'Your path is ready to move on — revise, or revisit any lesson'
+        : step.waiting === 1 ? 'Every other lesson on your path is ready — this one needs revision' : `${step.waiting} lessons on your path need revision — this is the first`)
       : step.state === 'practised' ? 'Practised — mark it ready when it clicks' : arabicStarted ? 'Next in your course' : 'The first lesson in your course',
     href: '#study/arabic/' + encodeURIComponent(step.lessonId),
     minutes: step.kind === 'resume' ? lessonIndex[step.lessonId].minutes : plan.length.minutes, resume: step.kind === 'resume', allComplete: plan.complete, started: arabicStarted,

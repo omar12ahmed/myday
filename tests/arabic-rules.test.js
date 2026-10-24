@@ -226,7 +226,10 @@ check('vowelled and unvowelled versions are both kept where the package has them
   st['lesson.a'] = 'needs-revision'; st['lesson.b'] = 'ready';
   check('the next lesson builds on one that needs revision: revisit that one first', JSON.stringify(A.nextStep(input())) === JSON.stringify({ kind: 'revisit', lessonId: 'lesson.a', because: 'lesson.c', state: 'needs-revision', due: 0 }));
   st['lesson.c'] = 'holding';
-  check('nothing new left: it says so, pointing at the lesson that needs revision', A.nextStep(input()).kind === 'complete' && A.nextStep(input()).lessonId === 'lesson.a');
+  check('nothing new left: it says so, pointing at the lesson that needs revision', A.nextStep(input()).kind === 'complete' && A.nextStep(input()).lessonId === 'lesson.a' && A.nextStep(input()).waiting === 1);
+  st['lesson.b'] = 'needs-revision';
+  check('…counting them when more than one needs revision, never saying "every other"', A.nextStep(input()).waiting === 2 && /^2 lessons on your path need revision/.test(A.stepReason(A.nextStep(input()), x => x)));
+  st['lesson.b'] = 'ready';
   st['lesson.a'] = 'ready';
   check('…or at the start of the path when every lesson is ready', A.nextStep(input()).kind === 'complete' && A.nextStep(input()).lessonId === 'lesson.a' && A.nextStep(input()).state === 'ready');
   check('an empty path has no next step', A.nextStep({ ...input(), path: [] }) === null);

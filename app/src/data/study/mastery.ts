@@ -57,6 +57,7 @@ export interface Step {
   because?: string;     // revisit: the lesson that builds on it
   state: LessonState;   // the lesson's state
   due: number;          // revision ready today in this subject
+  waiting?: number;     // complete: how many lessons on the path need revision
 }
 export interface StepInput {
   path: string[];                           // the lessons on your path, in course order
@@ -79,8 +80,8 @@ export function nextStep(i: StepInput): Step | null {
     if (i.due > 0 && !i.stopped) return step('revise', next);
     return step('lesson', next);
   }
-  const weak = i.path.find(id => i.state(id) === 'needs-revision');
-  return step('complete', weak ?? i.path[0]);
+  const weak = i.path.filter(id => i.state(id) === 'needs-revision');
+  return { ...step('complete', weak[0] ?? i.path[0]), waiting: weak.length };
 }
 
 // The reason, in words, for "Why this?". `title` turns a lesson id into its title; `what` is your note on a flag.
@@ -88,7 +89,9 @@ export function stepReason(s: Step, title: (lessonId: string) => string, what?: 
   if (s.kind === 'resume') return 'You have a session open on this lesson.';
   if (s.kind === 'revisit') return `${title(s.because!)} builds on this lesson, which needs revision${what ? `: ${what}` : ''}.`;
   if (s.kind === 'revise') return `${s.due} ${s.due === 1 ? 'card is' : 'cards are'} back in revision today; a few minutes keeps them. The next lesson is right underneath.`;
-  if (s.kind === 'complete') return s.state === 'needs-revision' ? 'Every other lesson on your path is ready to move on; this one needs revision.' : 'Every lesson on your path is ready to move on. Revision keeps them, or revisit any lesson.';
+  if (s.kind === 'complete') return !s.waiting ? 'Every lesson on your path is ready to move on. Revision keeps them, or revisit any lesson.'
+    : s.waiting === 1 ? 'Every other lesson on your path is ready to move on; this one needs revision.'
+    : `${s.waiting} lessons on your path need revision, and this is the first; the rest are ready to move on.`;
   return s.state === 'practised' ? 'You’ve practised this. Mark it ready when it clicks.' : 'Next on your path.';
 }
 

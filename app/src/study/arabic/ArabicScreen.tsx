@@ -116,7 +116,7 @@ const STEP_EYEBROW: Record<Exclude<StepKind, 'lesson'>, string> = {
 function NextStep({ plan, started }: { plan: ArabicPlan; started: boolean }) {
   const { step, reason, length } = plan, title = lessonIndex[step.lessonId].title;
   const eyebrow = step.kind === 'lesson' ? (started ? 'Your next small step' : 'Your first small step')
-    : step.kind === 'complete' && step.state === 'needs-revision' ? 'One lesson needs revision' : STEP_EYEBROW[step.kind];
+    : step.kind === 'complete' && step.waiting ? (step.waiting === 1 ? 'One lesson needs revision' : `${step.waiting} lessons need revision`) : STEP_EYEBROW[step.kind];
   const revise = step.kind === 'revise' || (step.kind === 'complete' && step.due > 0 && step.state !== 'needs-revision');
   return <div className="rounded-tile bg-surface p-4 border border-outline mt-4" data-ar-next={step.kind}>
     <Eyebrow>{eyebrow}</Eyebrow>
