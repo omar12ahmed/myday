@@ -1,5 +1,12 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.58.0 — Projects: Cybersecurity lessons, and "For your project" in Study:** a project's Learning card can also
+link Cybersecurity lessons from your path (grouped by module), shown in Study's own words: "Marked complete",
+"Started" or "Not started". In Study, a course's page, a book you're reading and a Cybersecurity lesson's page now
+say "For your project: …" under the title, naming each active or paused project that links it and opening it.
+Nothing new is saved: 1.57.0 keeps a Cybersecurity link unread (it shows it as "From a newer MyDay"), so going back
+is safe. Never sent to AI.
+
 **1.57.0 — Keep a word (Arabic):** under a lesson's examples (in its Understand step) and under a reading text,
 **Keep a word** lists the words of each sentence. Tap one, give its meaning in your words (a starter word's meaning
 is filled in, yours to change) and a note if you like, and it comes back in revision Arabic → meaning from the next
@@ -602,13 +609,13 @@ project's own synced record, with no schema, migration or database change (the e
 the field unread, but doesn't show it). The conflict details say "Learning: …". Never sent to AI. Cybersecurity
 lessons and a "For your project" line on the Study side are the next release (the owner's follow-ups).
 
-**Cybersecurity lessons and "For your project" (unreleased; `specs/projects-study-links.md` §7):** the Learning card
+**Cybersecurity lessons and "For your project" (1.58.0; `specs/projects-study-links.md` §7):** the Learning card
 also links Cybersecurity lessons from your path (grouped by module, optional ones marked, loaded on demand
 separately from Arabic's), with Study's own words: "Marked complete", "Started" or "Not started" (Cybersecurity has
 no lesson states yet). In Study, a course's page, a current book in Reading and a Cybersecurity lesson's page say
 "For your project: …" under the title, naming every active or paused project that links it (done ones are left out),
 each opening the project. Nothing new is saved: a Cybersecurity link is a new kind in the existing `studyLinks`,
-which 1.56.0 keeps unread and shows as "From a newer MyDay". Never sent to AI.
+which 1.56.0 and 1.57.0 keep unread and show as "From a newer MyDay". Never sent to AI.
 
 **Your week — the weekly review (1.37.0):** a short look back over the last seven days, at `#review` ("Your week"), in
 four steps, one at a time, with Back and Next. Nothing changes until you tap. **1 What moved:** each project's tasks

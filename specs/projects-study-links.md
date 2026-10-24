@@ -105,7 +105,7 @@ When the other session's Cybersecurity lesson journey is released:
 
 The journey was released in 1.55.0, so both are built in §7.
 
-## 7. Follow-up: Cybersecurity lessons and "For your project" (not yet released)
+## 7. Follow-up: Cybersecurity lessons and "For your project" (released in 1.58.0)
 
 Built after 1.56.0. The owner chose to ship it as the next release (24 October 2026) and where the Study-side line
 goes: the course page, books in Reading and the Cybersecurity lesson page. The Arabic lesson page was left out; it was
