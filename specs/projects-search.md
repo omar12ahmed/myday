@@ -17,8 +17,9 @@ nothing searches one project's own things together.
 - While there's something in it, results show above the tab, which stays as it was but hidden (so nothing being
   typed there is lost): "4 matches for “armchair”", in a fixed order by kind, each a link that opens the item.
   **Clear**, Escape or choosing another tab ends the search. A screen reader hears the count.
-- **What it searches:** the project's own words (summary, what it's aiming for, what counts as finished, where you left
-  off); its tasks (title and notes; done and let-go ones after the rest, marked); its notes (title and text); milestones;
+- **What it searches:** the project's name and own words (summary, what it's aiming for, what counts as finished, where
+  you left off); its tasks (title, notes and who they're waiting on; done and let-go ones after the rest, marked); its
+  notes (title and text); milestones;
   decisions (question, options, pros, cons, reasons and previous choices); a business idea's one page (answers and what
   must be true, with what was found); a case's timeline, evidence and issues. A kind of project's hidden tools (a
   business idea's one page kept after switching back to general) aren't searched, because their tab isn't shown.
@@ -40,13 +41,15 @@ service; it searches the data already on the device, including private notes and
 1. A visible search field on every project tab, rather than a hidden button.
 2. Results show above the tab while searching, with the tab kept but hidden (changed after review: replacing it lost
    unsaved drafts).
-3. All words must match; capitals and accents ignored; no fuzzy matching.
+3. All words must match; capitals, accents and the kind of apostrophe ignored; no fuzzy matching.
 4. Done and let-go tasks are included, after the rest, and marked.
 
 ## 5. Checks
 
-- **Rules:** each kind is found and opens the right place; all words must match; accents and capitals; hidden tools
-  aren't searched; done tasks come after open ones; an empty query finds nothing; another project's items never appear.
-- **Browser:** typing shows results and hides the tab; Clear and Escape restore it; each result opens its item; nothing
-  found; phone at 320 px; keyboard (the field is a labelled search box; results are links in reading order).
+- **Rules:** each kind is found and opens the right place; all words must match; accents, capitals and apostrophes;
+  MyDay's labels aren't searched; excerpts in other scripts and with emoji; hidden tools aren't searched; done tasks
+  come after open ones; an empty query finds nothing; another project's items never appear.
+- **Browser:** typing shows results and hides the tab (a draft there survives); Clear, Escape and another tab restore it;
+  each result opens and focuses its item; the count is announced; nothing found; phone at 320 px; keyboard (the field
+  is a labelled search box; results are links in reading order).
 - **Visual (Taste skill):** results on desktop and phone, light and dark.

@@ -12,8 +12,8 @@ export function SearchResults({ p, hits, query, onClear, onPick }: { p: Project;
   const where = `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
   return (
     <Card aria-labelledby="pjSearchH" id="projectSearchResults">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <h3 id="pjSearchH" className="m-0 min-w-0 break-words">{matchCount(hits.length, query)}</h3>
+      <div className="flex items-start justify-between gap-3">
+        <h3 id="pjSearchH" className="m-0 min-w-0 flex-1 break-words">{matchCount(hits.length, query)}</h3>
         <Button inline variant="ghost" className="flex-none -mt-2" data-action="search-clear" onClick={onClear}>Clear</Button>
       </div>
       {hits.length > 0 ? (

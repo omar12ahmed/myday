@@ -1595,6 +1595,9 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   const srLongNote = 'We talked for a long while about many other things before the electrician mentioned the old fuse board and then we moved on to something quite different at the end of the afternoon.';
   const srRows = () => ev(`[...document.querySelectorAll('#projectSearchResults [data-s=search-hit]')].map(li => li.dataset.kind + ':' + [...li.querySelectorAll('a > span')].map(x => x.textContent.trim()).join(' | '))`);
   const srHrefs = () => ev(`[...document.querySelectorAll('#projectSearchResults [data-s=search-hit] a')].map(a => a.getAttribute('href'))`);
+  const srType = async q => { await type('#projectSearch', q); await until(`(document.getElementById('pjSearchH') || {}).textContent?.includes(${JSON.stringify('“' + q.trim() + '”')})`); };
+  const srInTab = () => ev(`document.querySelector('[data-s=project-tab]').hidden`);
+  const srFocusOn = id => until(`(() => { const a = document.activeElement; return !!a && (a.dataset.id === ${JSON.stringify(id)} || !!a.closest('[data-id="${id}"]')); })()`);
   const srField = () => ev(`document.getElementById('projectSearch').value`);
   const srShowing = () => exists('#projectSearchResults');
   await go('projects', 2026, 10, 15, 9, 0); await reset(); await go('projects', 2026, 10, 15, 9, 0);
@@ -1607,94 +1610,141 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await editStorage(`s => { s.tasks.items.push(${JSON.stringify(gtk('tkQ1', 'Order the armchair cushions', 'pjQ', { done: true, doneOn: '2026-10-03' }))},
     ${JSON.stringify(gtk('tkQ2', 'Buy bolts', 'pjQ', { notes: 'Check the armchair is not in the way' }))}, ${JSON.stringify(gtk('tkQ3', 'Armchair idea for the shed', 'pjQ', { letGoOn: '2026-10-04' }))},
     ${JSON.stringify(gtk('tkQ4', 'Armchair for the other project', 'pjR'))});
-    s.notes.items.push({ id: 'ntQ', categoryId: '', title: 'Electrician', text: ${JSON.stringify(srLongNote)}, pinned: false, createdAt: '2026-10-02T09:00', updatedAt: '2026-10-02T09:00', projectId: 'pjQ' }); }`);
+    s.notes.items.push({ id: 'ntQ', categoryId: '', title: 'Electrician', text: ${JSON.stringify(srLongNote)}, pinned: false, createdAt: '2026-10-02T09:00', updatedAt: '2026-10-02T09:00', projectId: 'pjQ' },
+    { id: 'ntPv', categoryId: '', title: 'Boiler quote', text: '', pinned: false, private: true, createdAt: '2026-10-02T10:00', updatedAt: '2026-10-02T10:00', projectId: 'pjQ' }); }`);
 
   console.log('  The search box');
   await go('projects/p/pjQ', 2026, 10, 15, 9, 5);
-  check('the project page has a search form with a srField labelled "Search this project"', (await exists('form[role=search][data-s=project-search] #projectSearch')) && (await ev(`document.getElementById('projectSearch').labels[0].textContent`)) === 'Search this project' && (await ev(`document.getElementById('projectSearch').getAttribute('placeholder')`)) === 'Search this project');
-  check('nothing shows but the tab while the srField is empty', !(await srShowing()) && (await tabOf()) === 'overview' && (await exists('#projectHead')));
+  check('the project page has a search form with a field labelled "Search this project"', (await exists('form[role=search][data-s=project-search] #projectSearch')) && (await ev(`document.getElementById('projectSearch').labels[0].textContent`)) === 'Search this project' && (await ev(`document.getElementById('projectSearch').getAttribute('placeholder')`)) === 'Search this project');
+  check('nothing shows but the tab while the field is empty, and the status line is empty', !(await srShowing()) && (await tabOf()) === 'overview' && (await exists('#projectHead')) && !(await srInTab()) && (await text('[data-s=search-status]')) === '');
+  check('the field has autocomplete off and a Search key on phones, and the status line is a status region for screen readers', (await ev(`document.getElementById('projectSearch').getAttribute('autocomplete')`)) === 'off' && (await ev(`document.getElementById('projectSearch').getAttribute('enterkeyhint')`)) === 'search' && (await ev(`document.querySelector('[data-s=search-status]').getAttribute('role')`)) === 'status' && (await ev(`document.querySelector('[data-s=search-status]').classList.contains('sr-only')`)));
 
   console.log('  Typing shows results and hides the tab');
   const srSaved = await ev(`localStorage.getItem('${KEY}')`);
-  await type('#projectSearch', 'armchair'); await sleep(250);
-  check('typing replaces the Overview with the results', (await srShowing()) && !(await exists('#projectHead')) && !(await exists('#projectNext')), await text('#app'));
+  await srType('armchair');
+  check('typing shows the results above the Overview, which stays in the page but hidden', (await srShowing()) && (await srInTab()) && (await ev(`!!(document.getElementById('projectSearchResults').compareDocumentPosition(document.querySelector('[data-s=project-tab]')) & Node.DOCUMENT_POSITION_FOLLOWING)`)) && (await ev(`document.querySelector('[data-s=project-tab] #projectHead').getBoundingClientRect().height`)) === 0, await text('#app'));
   check('the heading counts the matches: "3 matches for “armchair”"', (await text('#pjSearchH')) === '3 matches for “armchair”', await text('#pjSearchH'));
+  check('the status line tells a screen reader the same: "3 matches for “armchair”"', (await text('[data-s=search-status]')) === '3 matches for “armchair”', await text('[data-s=search-status]'));
   const srR1 = await srRows();
   check('open tasks come before the done and let-go ones, which are marked, and another project\'s items are left out', eq(srR1.map(x => x.split(':')[0]), ['task', 'task', 'task']) && srR1[0].includes('Buy bolts') && srR1[0].startsWith('task:Task | ') && srR1[1].includes('Task · Done') && srR1[1].includes('Order the armchair cushions') && srR1[2].includes('Task · Let go'), srR1);
   check('a match in the notes shows an excerpt, and a match in the title does not', (await text('#projectSearchResults [data-s=search-excerpt]')) === 'Check the armchair is not in the way' && (await ev(`document.querySelectorAll('#projectSearchResults [data-s=search-excerpt]').length`)) === 1);
   check('each result is a link to its item', eq(await srHrefs(), ['#today/tasks/tkQ2', '#today/tasks/tkQ1', '#today/tasks/tkQ3']), await srHrefs());
-  await type('#projectSearch', 'ARMCHAIR   cushions'); await sleep(200);
+  await srType('ARMCHAIR   cushions');
   check('capitals and extra spaces do not matter, and every word has to match: "1 match for …" (singular)', (await text('#pjSearchH')).startsWith('1 match for “ARMCHAIR') && eq(await srRows(), ['task:Task · Done | Order the armchair cushions']), [await text('#pjSearchH'), await srRows()]);
-  await type('#projectSearch', 'electrician'); await sleep(200);
+  await srType('electrician');
   check('a note is found by its title; the excerpt is not shown when the title matches', eq(await srRows(), ['note:Note | Electrician']) && !(await exists('[data-s=search-excerpt]')), await srRows());
-  await type('#projectSearch', 'fuse board'); await sleep(200);
+  await srType('fuse board');
   const srExc = await text('#projectSearchResults [data-s=search-excerpt]');
   check('a match in the note\'s longer text shows a short excerpt around it, with ellipses', srExc.includes('fuse board') && srExc.startsWith('…') && srExc.endsWith('…') && srExc.length < srLongNote.length, srExc);
-  await type('#projectSearch', 'larch cladding'); await sleep(200);
+  await srType('larch cladding');
   check('a decision is found by its question and its options together', eq((await srRows()).map(x => x.split(':')[0]), ['decision']) && eq(await srHrefs(), ['#projects/p/pjQ/decisions']), await srRows());
   check('searching saved nothing: the saved data is byte-identical', (await ev(`localStorage.getItem('${KEY}')`)) === srSaved);
 
   console.log('  On another tab');
   await go('projects/p/pjQ/milestones', 2026, 10, 15, 9, 10);
-  check('the Milestones tab shows its list before searching', (await tabOf()) === 'milestones' && (await exists('#projectMilestones, [data-s=ms-row], [data-action=ms-add]')));
-  await type('#projectSearch', 'foundations'); await sleep(250);
-  check('typing on the Milestones tab shows the results and hides the tab\'s content too', (await srShowing()) && eq(await srRows(), ['milestone:Milestone | Foundations poured']) && !(await exists('#projectMilestones, [data-s=ms-row], [data-action=ms-add]')), await text('#app'));
+  check('the Milestones tab shows its list before searching', (await tabOf()) === 'milestones' && (await exists('#projectMilestones')) && !(await srInTab()));
+  await srType('foundations');
+  check('typing on the Milestones tab shows the results and hides the tab\'s content too', (await srShowing()) && eq(await srRows(), ['milestone:Milestone | Foundations poured']) && (await srInTab()) && (await ev(`document.getElementById('projectMilestones').getBoundingClientRect().height`)) === 0, await text('#app'));
   check('the tabs stay, with Milestones still the one you are on', (await tabOf()) === 'milestones');
 
-  console.log('  Nothing found, Clear and Escape');
-  await type('#projectSearch', 'zebra'); await sleep(250);
-  check('nothing found: "Nothing in this project matches “zebra”" and a plain hint, no results', (await text('#pjSearchH')) === 'Nothing in this project matches “zebra”' && (await ev(`document.querySelectorAll('[data-s=search-hit]').length`)) === 0 && (await text('#projectSearchResults')).includes('Every word you type has to be there'), await text('#projectSearchResults'));
+  console.log('  Drafts, other tabs, and the status line');
+  await go('projects/p/pjQ/milestones', 2026, 10, 15, 9, 12);
+  await type('#msNew', 'Draft: order the roof'); await srType('foundations');
   await click('[data-action=search-clear]');
-  check('Clear empties the srField, brings the Milestones tab back and focuses the srField', await until(`!document.getElementById('projectSearchResults') && document.activeElement && document.activeElement.id === 'projectSearch'`) && (await srField()) === '' && (await tabOf()) === 'milestones', [await srField(), await ev(`document.activeElement && document.activeElement.id`)]);
-  await type('#projectSearch', 'foundations'); await sleep(200);
+  check('what was being typed on the tab is still there after searching and clearing', (await until(`!document.getElementById('projectSearchResults')`)) && (await ev(`document.getElementById('msNew').value`)) === 'Draft: order the roof', await ev(`document.getElementById('msNew').value`));
+  await srType('foundations ');
+  check('while searching, the status line reads the count', (await text('[data-s=search-status]')) === '1 match for “foundations”', await text('[data-s=search-status]'));
+  await click('[data-tab=decisions]'); await sleep(300);
+  check('choosing another tab ends the search: the field is empty, there are no results, and that tab shows', (await tabOf()) === 'decisions' && (await srField()) === '' && !(await srShowing()) && !(await srInTab()) && (await exists('#projectDecisions')) && (await text('[data-s=search-status]')) === '', [await tabOf(), await srField()]);
+  await srType('felt'); await click('[data-action=search-clear]');
+  check('Clear leaves the status line empty again', (await until(`!document.getElementById('projectSearchResults')`)) && (await text('[data-s=search-status]')) === '');
+  await go('projects/p/pjQ/milestones', 2026, 10, 15, 9, 13);
+
+  console.log('  Nothing found, Clear and Escape');
+  await srType('zebra');
+  check('nothing found: "Nothing in this project matches “zebra”" and a plain hint, no results', (await text('#pjSearchH')) === 'Nothing in this project matches “zebra”' && (await ev(`document.querySelectorAll('[data-s=search-hit]').length`)) === 0 && (await text('#projectSearchResults')).includes('It looks at what it’s about, its tasks, notes, milestones and decisions. Every word you type has to be there'), await text('#projectSearchResults'));
+  await click('[data-action=search-clear]');
+  check('Clear empties the field, brings the Milestones tab back and focuses the field', await until(`!document.getElementById('projectSearchResults') && document.activeElement && document.activeElement.id === 'projectSearch'`) && (await srField()) === '' && (await tabOf()) === 'milestones', [await srField(), await ev(`document.activeElement && document.activeElement.id`)]);
+  await srType('foundations');
   await ev(`document.getElementById('projectSearch').focus()`);
   await T.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
   await T.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
-  check('Escape in the srField clears the search and brings the tab back', await until(`!document.getElementById('projectSearchResults')`) && (await srField()) === '', await srField());
+  check('Escape in the field clears the search and brings the tab back', await until(`!document.getElementById('projectSearchResults')`) && (await srField()) === '', await srField());
 
   console.log('  Opening a result');
   await go('projects/p/pjQ', 2026, 10, 15, 9, 15);
-  await type('#projectSearch', 'foundations'); await sleep(200);
+  await srType('foundations');
   await click('[data-s=search-hit][data-kind=milestone] a'); await sleep(300);
   check('a milestone result opens the Milestones tab with the search cleared', (await hash()) === '#projects/p/pjQ/milestones' && (await tabOf()) === 'milestones' && !(await srShowing()) && (await srField()) === '', [await hash(), await srField()]);
-  await type('#projectSearch', 'felt'); await sleep(200);
+  check('…and the keyboard is on that milestone', await srFocusOn('msQ'), await ev(`document.activeElement && document.activeElement.outerHTML.slice(0, 80)`));
+  await srType('felt');
   await click('[data-s=search-hit][data-kind=decision] a'); await sleep(300);
   check('a decision result opens the Decisions tab with the search cleared', (await hash()) === '#projects/p/pjQ/decisions' && (await tabOf()) === 'decisions' && !(await srShowing()) && (await srField()) === '', [await hash(), await srField()]);
-  await type('#projectSearch', 'bolts'); await sleep(200);
+  check('…and the keyboard is on that decision, not on the search field', await srFocusOn('dcQ') && (await ev(`document.activeElement.id`)) !== 'projectSearch', await ev(`document.activeElement && document.activeElement.outerHTML.slice(0, 80)`));
+  await srType('garden shed');
+  await click('[data-s=search-hit][data-kind=about] a');
+  check('the project\'s own words (its name) open the Overview with the keyboard on its "About this project" card', await until(`document.activeElement && document.activeElement.id === 'projectHead'`) && (await tabOf()) === 'overview' && (await srField()) === '', [await tabOf(), await ev(`document.activeElement && document.activeElement.id`)]);
+  await srType('bolts');
   await click('[data-s=search-hit][data-kind=task] a'); await sleep(400);
   check('a task result opens the task page', (await hash()) === '#today/tasks/tkQ2' && !(await srShowing()) && (await exists('#taskEditor')), await hash());
 
+  console.log('  A private note');
+  await go('projects/p/pjQ', 2026, 10, 15, 9, 18);
+  await srType('boiler');
+  check('a private note\'s result says "· Private" on its label line', eq(await srRows(), ['note:Note · Private | Boiler quote']), await srRows());
+  await srType('electrician');
+  check('a note that is not private has no "Private" on its label', eq(await srRows(), ['note:Note | Electrician']), await srRows());
+
+  console.log('  A business idea\'s hint');
+  await seed([bizObj('pjQb', 'Tea stall', { problem: 'Commuters want good tea', who: 'Station queues', how: 'A cart', assumptions: [asObj('asQ', 'People pay two pounds', 'looks-true', { found: 'Six of ten said yes' })] })]);
+  await go('projects/p/pjQb', 2026, 10, 15, 9, 19);
+  await srType('zebra');
+  check('nothing found on a business idea says "…milestones, decisions and its one page."', (await text('#projectSearchResults')).includes('It looks at what it’s about, its tasks, notes, milestones, decisions and its one page. Every word'), await text('#projectSearchResults'));
+  await srType('your answers');
+  check('MyDay\'s own label "Your answers" is not searched: it finds nothing', (await text('#pjSearchH')) === 'Nothing in this project matches “your answers”');
+  await srType('commuters');
+  check('the answers are found by what was written, as "Your answers" on the one page', eq(await srRows(), ['model:Your one page | Your answers | Commuters want good tea']), await srRows());
+  await click('[data-s=search-hit][data-kind=model] a');
+  check('picking the answers opens the Model tab and puts the keyboard on its heading', (await until(`document.activeElement && document.activeElement.id === 'pjModelH'`)) && (await tabOf()) === 'model', await ev(`document.activeElement && document.activeElement.id`));
+  await srType('two pounds'); await click('[data-s=search-hit][data-kind=model] a');
+  check('picking an assumption puts the keyboard on that assumption', await srFocusOn('asQ'), await ev(`document.activeElement && document.activeElement.outerHTML.slice(0, 80)`));
+
   console.log('  A case');
   await go('projects/p/pjQc', 2026, 10, 15, 9, 20);
-  await type('#projectSearch', 'overtime'); await sleep(250);
+  await srType('overtime');
   check('a case\'s results include evidence (title or notes)', eq((await srRows()).map(x => x.split(':')[0]), ['about', 'evidence']) && (await srHrefs())[1] === '#projects/p/pjQc/evidence', await srRows());
-  await type('#projectSearch', 'manager'); await sleep(200);
+  await srType('manager');
   check('…the timeline', eq((await srHrefs()), ['#projects/p/pjQc/timeline']) && (await text('#pjSearchH')) === '1 match for “manager”', await srHrefs());
-  await type('#projectSearch', 'hours'); await sleep(200);
+  await srType('hours');
   check('…and the issues', eq((await srHrefs()), ['#projects/p/pjQc/issues']) && (await srRows())[0].startsWith('issue:Issue | '), await srRows());
-  await type('#projectSearch', 'pay'); await sleep(200);
+  await srType('pay');
   check('a word in a timeline entry and in evidence finds both, timeline first', eq((await srRows()).map(x => x.split(':')[0]), ['timeline', 'evidence']), await srRows());
-  await type('#projectSearch', 'o'); await sleep(200);
+  await srType('o');
   check('a short word finds the project and every kind of case record, in the order about, timeline, evidence, issue', eq((await srRows()).map(x => x.split(':')[0]), ['about', 'timeline', 'evidence', 'issue']), await srRows());
   await click('[data-s=search-hit][data-kind=timeline] a'); await sleep(300);
   check('a timeline result opens the Timeline tab with the search cleared', (await hash()) === '#projects/p/pjQc/timeline' && (await tabOf()) === 'timeline' && (await srField()) === '');
+  check('…and the keyboard is on that timeline entry', await srFocusOn('tlQ'), await ev(`document.activeElement && document.activeElement.outerHTML.slice(0, 80)`));
+  await srType('payslip'); await click('[data-s=search-hit][data-kind=evidence] a');
+  check('an evidence result opens the Evidence tab, cleared, with the keyboard on that evidence', (await tabOf()) === 'evidence' && (await srField()) === '' && await srFocusOn('evQ'), [await tabOf(), await ev(`document.activeElement && document.activeElement.outerHTML.slice(0, 80)`)]);
+  await srType('unpaid'); await click('[data-s=search-hit][data-kind=issue] a');
+  check('an issue result opens the Issues tab, cleared, with the keyboard on that issue', (await tabOf()) === 'issues' && (await srField()) === '' && await srFocusOn('isQ'), [await tabOf(), await ev(`document.activeElement && document.activeElement.outerHTML.slice(0, 80)`)]);
 
   console.log('  Another project starts empty');
   await go('projects/p/pjQ', 2026, 10, 15, 9, 25);
-  await type('#projectSearch', 'armchair'); await sleep(200);
+  await srType('armchair');
   await ev(`location.hash = '#projects/p/pjR'`); await sleep(400);
   check('opening another project starts with an empty search and its own tab', (await text('#projectTitle')) === 'Another project' && (await srField()) === '' && !(await srShowing()), [await text('#projectTitle'), await srField()]);
-  await type('#projectSearch', 'armchair'); await sleep(200);
+  await srType('armchair');
   check('…and finds only that project\'s own items', eq((await srRows()).map(x => x.split(':')[0]), ['about', 'task']) && (await srHrefs()).every(h => /pjR|tkQ4/.test(h)), await srRows());
 
   console.log('  A phone');
   for (const w of [320]) {
     await T.send('Emulation.setDeviceMetricsOverride', { width: w, height: 740, deviceScaleFactor: 2, mobile: true });
     await go('projects/p/pjQ', 2026, 10, 15, 9, 30);
-    await type('#projectSearch', 'armchair'); await sleep(250);
+    await srType('armchair');
     check(`phone ${w} px: the results do not scroll sideways`, (await srShowing()) && (await ev('document.documentElement.scrollWidth')) <= w, await ev('document.documentElement.scrollWidth'));
     check(`phone ${w} px: each result and Clear is at least 44 px tall`, await ev(`[...document.querySelectorAll('#projectSearchResults [data-s=search-hit] a, [data-action=search-clear]')].every(e => e.getBoundingClientRect().height >= 44)`));
-    await type('#projectSearch', 'x'.repeat(110)); await sleep(250);
+    await srType('x'.repeat(110));
     check(`phone ${w} px: a long unbroken search does not scroll sideways, and the heading says nothing matches`, (await text('#pjSearchH')).startsWith('Nothing in this project matches') && (await ev('document.documentElement.scrollWidth')) <= w, await ev('document.documentElement.scrollWidth'));
   }
   await T.send('Emulation.clearDeviceMetricsOverride');

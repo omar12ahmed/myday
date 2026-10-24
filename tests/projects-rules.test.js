@@ -21,7 +21,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   fs.writeFileSync(path.join(dir, 'kit.ts'), [
     `export * from ${src('projectRecords')};`, `export * from ${src('projectPlan')};`, `export * from ${src('businessModel')};`, `export * from ${src('caseFile')};`, `export { normalizeProjects, deleteProject, recently, addProject, setProjectPrivate, editProject, setLeftOff, privateProjectIds, comingUp, stillOpen } from ${src('projects')};`,
     `export { freshState, normalize } from ${src('normalize')};`, `export { shift, shortDate } from ${src('dates')};`, `export * from ${src('projectDashboard')};`, `export * from ${src('weekReview')};`, `export { stepsForToday, nextStep } from ${src('projects')};`,
-    `export { searchProject, fold, SEARCH_KIND_LABEL } from ${src('projectSearch')};`,
+    `export { searchProject, fold, matchCount, SEARCH_KIND_LABEL } from ${src('projectSearch')};`,
     `export { normalizeTasks, setWaiting, stopWaiting, isWaiting, chaseTask, chaseWaiting, isStuck, setTaskDone } from ${src('tasks')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
@@ -1448,6 +1448,45 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('a word that is nowhere finds nothing', eq(find('zzzz'), []));
     check('another project\'s tasks, notes, milestones and words never appear', find('armchair').every(h => !['tkOther', 'ntT', 'ntLoose', 'msT'].includes(h.id)) && eq(find('elsewhere'), []) && eq(find('larch').map(h => h.kind), ['decision']), [find('armchair'), find('larch')]);
     check('searching the other project finds only its own', eq(find('armchair', 'pjT').map(h => h.id), ['pjT', 'tkOther', 'ntT']) && eq(find('foundations', 'pjT').map(h => h.id), ['msT']), find('armchair', 'pjT'));
+    console.log('  The heading, apostrophes, MyDay\'s own labels, private notes and the project\'s name');
+    check('matchCount reads "1 match for “q”", "2 matches for “q”" and "Nothing in this project matches “q”", with the query trimmed', K.matchCount(1, ' armchair ') === '1 match for “armchair”' && K.matchCount(2, 'armchair') === '2 matches for “armchair”' && K.matchCount(0, '  zebra  ') === 'Nothing in this project matches “zebra”', [K.matchCount(1, ' armchair '), K.matchCount(2, 'a'), K.matchCount(0, ' zebra ')]);
+    const ap = world(base('pjAp', { title: 'Apostrophes' })); ap.tasks.items = [tk('tkCurly', 'Sam’s quote', 'pjAp'), tk('tkStraight', "Joe's quote", 'pjAp')];
+    const fa = q => K.searchProject(ap, ap.projects.items[0], q).map(h => h.id);
+    check('a task titled with a curly apostrophe is found by a straight one, and the other way round', eq(fa("sam's"), ['tkCurly']) && eq(fa('joe’s'), ['tkStraight']) && eq(fa('sam’s'), ['tkCurly']) && eq(fa("joe's"), ['tkStraight']), [fa("sam's"), fa('joe’s')]);
+    check('fold makes both kinds of apostrophe the straight one', K.fold('Sam’s ‘quote’') === "sam's 'quote'", K.fold('Sam’s ‘quote’'));
+    check('a business idea\'s "Your answers" label is not searched (only the words typed in)', eq(fb('your answers'), []) && eq(fb('your'), []), fb('your answers'));
+    const wl = world(base('pjL', { title: 'Labels' })); wl.notes.items = [nt('ntBlank', '', '', 'pjL')];
+    check('an untitled note shows "Untitled note", but "untitled" does not find it', K.searchProject(wl, wl.projects.items[0], 'note untitled').length === 0 && K.searchProject(wl, wl.projects.items[0], 'untitled').length === 0);
+    check('…and its own words are still found when it has some', (() => { wl.notes.items.push(nt('ntBody', '', 'Gutter measurements', 'pjL')); const h = K.searchProject(wl, wl.projects.items[0], 'gutter'); return h.length === 1 && h[0].id === 'ntBody' && h[0].title === 'Gutter measurements'; })());
+    check('"Priya" finds a task that is waiting on Priya', eq(find('priya').map(h => h.id), ['tkWait']) && find('priya')[0].excerpt === 'Priya at the timber yard', find('priya'));
+    check('the project\'s own title is searched as part of "about", with no excerpt', eq(find('garden shed').map(h => [h.kind, h.id, h.excerpt]), [['about', 'pjS', '']]), find('garden shed'));
+    const pv = world(base('pjPv', { title: 'Privacy' })); pv.notes.items = [{ ...nt('ntPriv', 'Secret plan', '', 'pjPv'), private: true }, nt('ntPub', 'Secret garden', '', 'pjPv')];
+    const hp = K.searchProject(pv, pv.projects.items[0], 'secret');
+    check('a private note\'s hit has private: true; a note that is not private has no private key at all', hp.find(h => h.id === 'ntPriv').private === true && !('private' in hp.find(h => h.id === 'ntPub')), hp);
+
+    console.log('  Excerpts: whole words, whole characters, one line');
+    const exOf = (notes, q) => { const e = world(base('pjX', { title: 'Plain' })); e.tasks.items = [tk('tkX', 'Plain task', 'pjX', { notes })]; return K.searchProject(e, e.projects.items[0], q).find(h => h.id === 'tkX').excerpt; };
+    check('blank lines and runs of whitespace collapse to single spaces', exOf('First line\n\n\n   second\t\tline with  needle   here', 'needle') === 'First line second line with needle here', exOf('First line\n\n\n   second\t\tline with  needle   here', 'needle'));
+    const head = 'abcdefgh '.repeat(12), tail = ' ijklmnop'.repeat(30);
+    const cut = exOf(head + 'needle' + tail, 'needle');
+    check('when the start is cut, it begins with "…" and a whole word (not half of one)', /^…abcdefgh /.test(cut) && cut.includes('needle'), cut);
+    check('when the end is cut, it ends with "…" and the last word is whole', cut.endsWith('…') && /ijklmnop…$/.test(cut), cut);
+    check('text that is short enough has neither ellipsis', !/…/.test(exOf('a short note with needle in it', 'needle')));
+    const arText = 'مَرْحَبًا بِكُمْ '.repeat(12);
+    const arEx = exOf(arText + 'needle ' + arText, 'needle');
+    check('Arabic with vowel marks: the excerpt includes the match and never begins with a combining mark', arEx.includes('needle') && arEx.startsWith('…') && !/^…?\p{M}/u.test(arEx), arEx);
+    const arEx2 = exOf(arText + 'ثم كلمة مَرْحَبًا', 'كلمة');
+    check('…and a match in Arabic itself (marks ignored) is found, with the excerpt keeping its marks', arEx2.includes('كلمة') && !/^…?\p{M}/u.test(arEx2), arEx2);
+    const emo = exOf('😀 '.repeat(50) + 'needle' + ' 😀'.repeat(80), 'needle');
+    const lone = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
+    check('emoji before and after the match: the excerpt has no half an emoji', emo.includes('needle') && !lone.test(emo) && emo.isWellFormed(), emo);
+    const ko = exOf('아침에 마신 커피가 정말 맛있었다. '.repeat(6) + '그리고 커피 한 잔 더 ' + '좋은 하루 '.repeat(20), '커피');
+    check('Korean text: matching works and the excerpt contains the match, cut on whole characters', ko.includes('커피') && !lone.test(ko) && ko.isWellFormed(), ko);
+    const caf = exOf('word '.repeat(40) + 'Café au lait ' + 'more '.repeat(40), 'cafe');
+    check('accent folding still points at the right place: "cafe" gives an excerpt containing "Café"', caf.includes('Café') && caf.startsWith('…') && caf.endsWith('…'), caf);
+    const cafe2 = exOf('Zoë and the Café where we met, ' + 'ñ '.repeat(100), 'zoe cafe');
+    check('…with accents earlier in the text moving nothing', cafe2.startsWith('Zoë and the Café'), cafe2);
+
     const frozen = JSON.stringify(w);
     for (const q of ['armchair', 'fuse board', 'zzz', '']) find(q);
     check('searching changes nothing in the data (byte-identical before and after)', JSON.stringify(w) === frozen);
