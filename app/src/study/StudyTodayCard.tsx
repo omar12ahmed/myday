@@ -1,29 +1,23 @@
-import { useEffect, useState } from 'react';
 import type { LearningOption } from './nextLearning';
 import { Card } from '../components/Card';
-import { updateSaved } from '../data/storage';
 import { Button } from '../components/Button';
 import { ROUND_SIZE } from '../data/study/common';
 import { dueIds } from '../data/study/queue';
 import { DAILY_ENOUGH, reviewedOn } from '../data/study/revision';
 import { activeStudy, sessionMinutes } from '../data/study/sessions';
 import type { DateKey, MyDayData } from '../data/types';
-import { startRevision } from './actions';
+import { focusOn, startRevision } from './actions';
+import { optionAction } from './courseOption';
 import { Meta, Row, TextLink } from './parts';
+import { useNextLearning } from './useNextLearning';
 
-// On Today: a direct next lesson, an existing session to resume, and revision if due.
-// The full curriculum is loaded on demand; none of this adds tasks to Today's plan.
+const pickOptions = (m: typeof import('./nextLearning'), d: MyDayData) => m.learningOptions(d);
+
+// On Today: your focus's next step (the same as Study home's, with its "Why this?"), an existing session to resume,
+// and revision if due. The full curriculum is loaded on demand; none of this adds tasks to Today's plan.
 export function StudyTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
   const cur = activeStudy(data.study), due = dueIds(data, k).length, today = reviewedOn(data.study, k);
-  const [loaded, setLoaded] = useState<{ data: MyDayData; options: LearningOption[] } | null>(null);
-  const options = loaded?.data === data ? loaded.options : [];
-  // Load the large Arabic/Cybersecurity catalogues away from the initial Today bundle.
-  useEffect(() => {
-    let live = true;
-    import('./nextLearning').then(({ learningOptions }) => { if (live) setLoaded({ data, options: learningOptions(data) }); })
-      .catch(() => { if (live) setLoaded(null); });
-    return () => { live = false; };
-  }, [data]);
+  const options = useNextLearning(data, pickOptions) ?? [];
   if (!cur && !due && !options.length) return null;
   return (
     <Card aria-labelledby="study-card-h">
@@ -61,13 +55,19 @@ export function StudyTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
   );
 }
 
-function LessonOption({ option, primary = false }: { option: LearningOption; primary?: boolean }) {
+export function LessonOption({ option, primary = false }: { option: LearningOption; primary?: boolean }) {
   return <div className="rounded-tile border border-outline p-3" data-subject={option.subject}>
     <p className="text-xs text-fg-3 m-0">{option.label} · {option.minutes} min</p>
     <p className="font-semibold my-1">{option.title}</p>
-    <p className="text-sm text-fg-2 mt-0 mb-2">{option.detail}</p>
-    <a href={option.href} onClick={() => updateSaved(d => { d.study.settings.primarySubject = option.subject; })} className={`inline-flex items-center justify-center min-h-11 rounded-btn px-4 font-semibold no-underline ${primary ? 'bg-primary text-on-primary' : 'bg-surface-2 text-primary border border-outline'}`} data-action="continue-learning">
-      {option.resume ? 'Resume lesson' : option.allComplete ? 'Revisit lesson' : option.started ? 'Continue learning' : 'Start lesson'}
-    </a>
+    <p className="text-sm text-fg-2 mt-0 mb-2" data-s="option-detail">{option.detail}</p>
+    {primary && <details className="mb-2" data-s="option-why"><summary className="cursor-pointer min-h-11 flex items-center text-primary font-semibold text-sm">Why this?</summary>
+      <p className="text-sm text-fg-2 mt-0 mb-1">{option.why}</p></details>}
+    {option.revise ? <span className="flex flex-wrap items-center gap-x-3">
+      <button type="button" onClick={() => { focusOn(option); startRevision(option.revise); }} className={`inline-flex items-center justify-center min-h-11 rounded-btn px-4 font-semibold cursor-pointer ${primary ? 'bg-primary text-on-primary border-0' : 'bg-surface-2 text-primary border border-outline'}`} data-action="continue-learning">{optionAction(option)}</button>
+      <a href={option.href} onClick={() => focusOn(option)} className="inline-flex items-center min-h-11 text-primary font-semibold text-sm" data-action="option-lesson">Go to the lesson</a>
+    </span>
+    : <a href={option.href} onClick={() => focusOn(option)} className={`inline-flex items-center justify-center min-h-11 rounded-btn px-4 font-semibold no-underline ${primary ? 'bg-primary text-on-primary' : 'bg-surface-2 text-primary border border-outline'}`} data-action="continue-learning">
+      {optionAction(option)}
+    </a>}
   </div>;
 }

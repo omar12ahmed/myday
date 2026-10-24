@@ -123,3 +123,8 @@ export function nextLesson(data: MyDayData) {
   return { lesson, reason: allComplete ? 'Required lessons marked complete — choose a lesson to revisit'
     : 'Next in your course; check prerequisites before advanced work', code: 'ready_next_lesson' as const, allComplete };
 }
+// Your path's required lessons, and how many you've marked complete: a count, never a percentage.
+export function requiredCounts(data: MyDayData) {
+  const required = selectedPathLessons(data.cybersecurity.pathId).filter(l => !l.optional), ix = stIndex(data.study);
+  return { total: required.length, done: required.filter(l => ix.task.get(curriculumTaskId(l.id))?.node.done === true).length };
+}

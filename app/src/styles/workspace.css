@@ -110,14 +110,9 @@
 #projectsIntro h2 > svg { display: none; }
 #projectsEmpty { max-width: none; background: transparent; border-style: dashed; }
 .workspace-main :is(.section-tabs, .health-tabs) { max-width: none; }
-.study-welcome > div > h2 { font-size: 28px; font-weight: 500; }
-.study-welcome-grid { display: grid; gap: 16px; align-items: start; }
-.study-welcome-grid > div { min-width: 0; }
 .course-title-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
 .course-title-row h2 { display: flex; align-items: center; gap: 10px; font-size: 20px; margin: 0; }
 .course-title-row h2 svg { color: var(--text-3); flex: none; }
-.study-guided :is(.cyber-entry, .arabic-entry) { margin-bottom: 16px; }
-.study-setup .next-card { background: var(--surface-2); border-color: transparent; }
 #projectList { gap: 16px; }
 #projectList > section { padding: 16px; border-radius: 8px; background: var(--surface-2); }
 #projectList .project-card { border-color: transparent; box-shadow: none; }
@@ -172,7 +167,6 @@
   .greeting-panel [data-action="name-ask"] { font-size: 13px; }
   .cal-layout { column-gap: 16px; }
   .finance-layout { column-gap: 16px; }
-  .study-welcome-grid { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
   #projectsIntro { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; margin-bottom: 24px; }
   #projectsIntro form { margin-top: 0; }
 }

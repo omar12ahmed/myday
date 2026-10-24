@@ -4,6 +4,7 @@ import { fmtDuration, todayKey } from '../data/dates';
 import { completionText, stIndex, taskPath } from '../data/study/roadmap';
 import { activeStudy } from '../data/study/sessions';
 import { studiedText, topicGlance } from '../data/study/topics';
+import { courseFocus } from '../data/study/yourFocus';
 import type { MyDayData } from '../data/types';
 import { setFocus } from './actions';
 import { BackLink, Bar, Eyebrow, Note, TextLink } from './parts';
@@ -15,6 +16,8 @@ export function TopicView({ data, id, lengths, setLength }: { data: MyDayData; i
   const st = data.study, ix = stIndex(st), g = topicGlance(st, ix, id);
   if (!g) return <><BackLink to="study" label="Study" /><Card><h2>This topic isn't here</h2><Note className="m-0">It may have been removed, here or in another tab.</Note></Card></>;
   const roadmap = `#study/roadmap/${g.topic.id || 'main'}`, busy = !!activeStudy(st);
+  // Labelled your focus only while your focus is one of your courses (not Arabic or Cybersecurity).
+  const yours = courseFocus(st, ix), isFocus = !!yours && g.next?.id === yours.id;
   const stages = [...new Map(g.courses.map(x => [x.stage.id, x.stage])).values()];
   return (
     <>
@@ -28,7 +31,7 @@ export function TopicView({ data, id, lengths, setLength }: { data: MyDayData; i
 
       {g.next ? (
         <Card tone="accent" id="topicNext" className="next-card" aria-labelledby="tnext-h">
-          <Eyebrow>{g.isFocus ? 'Your current focus' : `Up next in ${g.topic.title}`}</Eyebrow>
+          <Eyebrow>{isFocus ? 'Your current focus' : `Up next in ${g.topic.title}`}</Eyebrow>
           <h2 id="tnext-h" className="st-course-title">{g.next.title}</h2>
           {busy ? <p className="text-[15px] m-0">A session is in progress — finish or resume it before starting another. <TextLink href="#study/session">Go to it</TextLink></p>
             : g.nextTask ? (
@@ -39,7 +42,7 @@ export function TopicView({ data, id, lengths, setLength }: { data: MyDayData; i
                 <StartBlock data={data} course={g.next} task={g.nextTask} lengths={lengths} setLength={setLength} />
               </>
             ) : <p className="text-[15px] m-0">{(ix.courseTasks.get(g.next.id) ?? []).length ? 'Every task in this course is marked complete.' : 'This course has no sections or tasks yet — add them in the roadmap, or start a session anyway.'}</p>}
-          {!g.isFocus && <Button inline className="mt-3" data-action="s-focus" data-id={g.next.id} onClick={() => setFocus(g.next!.id)}>Make this my focus</Button>}
+          {!isFocus && <Button inline className="mt-3" data-action="s-focus" data-id={g.next.id} onClick={() => setFocus(g.next!.id)}>Make this my focus</Button>}
         </Card>
       ) : (
         <Card tone="accent" id="topicNext">
@@ -62,7 +65,7 @@ export function TopicView({ data, id, lengths, setLength }: { data: MyDayData; i
                       <span className="block font-medium leading-snug break-words">{c.title}</span>
                       <span className="block text-sm text-fg-3 tabular-nums">{completionText(comp)}</span>
                     </a>
-                    {g.isFocus && c === g.next ? <span className="flex-none text-xs font-bold tracking-[.06em] uppercase px-2 py-0.5 rounded-full bg-primary-container text-on-primary-container">Focus</span>
+                    {isFocus && c === g.next ? <span className="flex-none text-xs font-bold tracking-[.06em] uppercase px-2 py-0.5 rounded-full bg-primary-container text-on-primary-container">Focus</span>
                       : <Button inline variant="ghost" className="flex-none" data-action="s-focus" data-id={c.id} onClick={() => setFocus(c.id)}>Focus on this</Button>}
                   </li>
                 ))}

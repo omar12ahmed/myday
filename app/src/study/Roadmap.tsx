@@ -6,6 +6,7 @@ import { CommitInput } from '../components/Field';
 import { getSnapshot, update } from '../data/storage';
 import type { Level } from '../data/study/common';
 import { addStudyItem, completion, completionText, focusCourse, moveStudyItem, nextTaskIn, stFind, stIndex, tasksUnder, type StudyIndex } from '../data/study/roadmap';
+import { courseFocus } from '../data/study/yourFocus';
 import { activeStudy, suggestLength } from '../data/study/sessions';
 import { addStageToTopic, moveStageInTopic, stagesOf, topicOfStage, topicsOf } from '../data/study/topics';
 import type { MyDayData, StudyCourse, StudyModule, StudySection, StudyStage, StudyTask } from '../data/types';
@@ -40,6 +41,7 @@ export function Roadmap({ data, state, topic: opened = null }: { data: MyDayData
   if (!st.stages.length) return <>{head}<SetupCard data={data} /></>;
 
   const ix = stIndex(st), fc = focusCourse(st, ix), next = fc ? nextTaskIn(ix, fc) : null, nextE = next ? ix.task.get(next.id) : null;
+  const yours = courseFocus(st, ix); // labelled the focus only while your focus is one of your courses
   const busy = !!activeStudy(st);
   // Topics: the one you chose, otherwise the one your focus course is in.
   const ts = topicsOf(st);
@@ -128,17 +130,17 @@ export function Roadmap({ data, state, topic: opened = null }: { data: MyDayData
     );
   };
   const courseHtml = (c: StudyCourse, i: number, sg: StudyStage, ix: StudyIndex) => {
-    const comp = completion(ix.courseTasks.get(c.id)!), isFocus = !!fc && c.id === fc.id;
+    const comp = completion(ix.courseTasks.get(c.id)!), isFocus = !!fc && c.id === fc.id, isYours = !!yours && c.id === yours.id;
     return (
       <div key={c.id}>
         {node(c.id, isFocus, (
-          <><strong>{c.title}</strong>{isFocus && <> <Chip>Current focus</Chip></>}{c.archived && <> <Chip>Archived</Chip></>}<Meta className="st-sum block">{completionText(comp)}</Meta></>
+          <><strong>{c.title}</strong>{isYours && <> <Chip>Current focus</Chip></>}{c.archived && <> <Chip>Archived</Chip></>}<Meta className="st-sum block">{completionText(comp)}</Meta></>
         ), (
           <>
             {edit && editBits('course', c, i, sg.courses.length)}
             <Bar c={comp} />
             <div className="st-actions flex flex-wrap gap-x-3.5 gap-y-1 items-center my-1">
-              {!isFocus && !c.archived && !edit && <Button inline data-action="s-focus" data-id={c.id} onClick={() => setFocus(c.id)}>Make this my focus</Button>}
+              {!isYours && !c.archived && !edit && <Button inline data-action="s-focus" data-id={c.id} onClick={() => setFocus(c.id)}>Make this my focus</Button>}
               {c.url && !edit && <ExternalLink href={c.url}>Course link</ExternalLink>}
               <TextLink href={`#study/course/${c.id}`}>Course details</TextLink>
             </div>

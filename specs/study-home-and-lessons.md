@@ -1,8 +1,9 @@
 # Study as a learning environment: one focus, a clearer home and a guided lesson
 
-**Status:** planned, not built. The owner's decisions of 24 October 2026 are in §2. This builds on
-`specs/adaptive-study.md` (lesson states, answer marks, revision from every lesson, the next-step rules). Build that
-first; this plan is a series of later, separate releases (§14).
+**Status:** release (a), one focus and Study home (§3, §4), built on branch `study-focus-home` (24 October 2026), to
+follow 1.49.0; (b)–(f) planned. The owner's decisions of 24 October 2026 are in §2. This builds on
+`specs/adaptive-study.md` (lesson states, answer marks, revision from every lesson, the next-step rules), published
+in 1.47.0; this plan is a series of later, separate releases (§14).
 **Plan date:** 24 October 2026, after release 1.44.1.
 
 ## 1. The practical problem
@@ -61,6 +62,16 @@ Cybersecurity leaves it as it is, so the classic's own dashboard doesn't change.
 **One function.** Today's Study card and Study home's top card both take the first option from `learningOptions()`.
 For a subject on the adaptive rules, that option comes from its next step (`adaptive-study.md` §7), so the reason
 ("Why this?") and the suggested length are identical on both screens. Check this with a test that compares the two.
+
+**As built (release a):** the choice and its rules are `app/src/data/study/yourFocus.ts`; every option carries its
+"Why this?" (`why`). Your focus on one of your courses follows the same rule on every screen (the labels, Today, Study
+home): the course you chose while it has a task left; a chosen course with no tasks yet stays your focus (a session
+still counts, and Study home offers its Start); a finished one gives way to your next course with work, and when none
+has any, the next step is in another subject, which Study home says ("None of your courses has a task left…") and
+Today shows without an empty course. An empty course is only offered while it's your focus. "Make this my focus" on a
+course page, and opening another subject's next step from Today or Study home, change your focus. Arabic's
+"revision first" step has the map's own button, "Revise Arabic", on both screens. The roadmap's set-up moved from
+Study home to the roadmap page, behind a "Your own courses" tile.
 
 ## 4. Study home on three levels
 

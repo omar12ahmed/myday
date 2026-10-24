@@ -5,10 +5,11 @@ import { useConfirm } from '../components/confirm';
 import { exportText, getSnapshot, updateSaved } from '../data/storage';
 import { toast } from '../data/toast';
 import { resetLearningProgress } from './resetProgress';
-import { CommitInput, Field, Select } from '../components/Field';
+import { CommitInput, Field } from '../components/Field';
 import type { MyDayData } from '../data/types';
 import { setShowClock, setVault } from './actions';
 import { BackLink, Note } from './parts';
+import { FocusSelect } from './FocusSelect';
 
 export function StudySettings({ data }: { data: MyDayData }) {
   const st = data.study.settings;
@@ -52,14 +53,8 @@ export function StudySettings({ data }: { data: MyDayData }) {
     <Card aria-labelledby="sts-h">
       <BackLink to="study" label="Study" />
       <h2 id="sts-h">Study settings</h2>
-      <Field label="Default learning subject" htmlFor="studyPrimarySubject">
-        <Select id="studyPrimarySubject" data-s="study-primary-subject" value={st.primarySubject} onChange={e => updateSaved(d => { d.study.settings.primarySubject = e.target.value as MyDayData['study']['settings']['primarySubject']; })}>
-          <option value="cybersecurity">Cybersecurity</option>
-          <option value="arabic">Arabic Fuṣḥā</option>
-          <option value="roadmap">My other courses</option>
-        </Select>
-      </Field>
-      <Note>Your selected subject stays the default on Today until you change it. Choosing another subject from Today changes this preference too.</Note>
+      <FocusSelect data={data} id="studyPrimarySubject" />
+      <Note>Today and Study home both show your focus’s next step. Choosing another subject on either of them changes your focus too.</Note>
       <Field label="Obsidian vault name (optional)" htmlFor="stVault">
         <CommitInput key={st.vault} id="stVault" type="text" maxLength={100} data-s="vault" defaultValue={st.vault} placeholder="e.g. Notes" onCommit={el => setVault(el.value)} />
       </Field>

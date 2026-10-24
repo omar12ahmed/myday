@@ -324,8 +324,8 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   await go('health/food', 2026, 11, 2, 9, 3); const pf = (await text('.next-card')).includes('Lentil soup');
   await go('health/workout', 2026, 11, 2, 9, 3); const pw = (await text('#app')).includes('Upper body');
   await go('finance', 2026, 11, 2, 9, 3); const pp = (await text('#rates summary')).includes('£13.85 an hour') && (await D()).pay.hourlyRate === 13.85; // first visit to Finance: your rates are saved
-  await go('study', 2026, 11, 2, 9, 3); const ps = (await exists('.st-setup-row')) || (await text('#app')).includes('Set up your study roadmap');
-  check('…and shows its records (Food, Workout); Finance saves your rates on its first visit; Study starts at set-up, as that release had no Study', pf && pw && pp && ps, [pf, pw, pp, ps]);
+  await go('study', 2026, 11, 2, 9, 3); const ps = (await exists('[data-s="setup-tile"]')) && (await exists('#stFocus'));
+  check('…and shows its records (Food, Workout); Finance saves your rates on its first visit; Study starts with no roadmap (a first lesson, and a tile to bring your own courses), as that release had no Study', pf && pw && pp && ps, [pf, pw, pp, ps]);
   await go('today', 2026, 11, 2, 9, 4);
   for (let i = 0; i < 3; i++) { await click('#themeBtn'); await sleep(250); }
   const N = await D();

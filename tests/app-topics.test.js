@@ -154,13 +154,13 @@ const SEED = `s => {
       { id: 'g2', title: 'Start here', topicId: 'tpAr', courses: [${JSON.stringify(course('coA', 'Madinah Arabic book 1', [task('a1', 'Lesson 1', true), task('a2', 'Lesson 2', false), task('a3', 'Lesson 3', false)]))},
         ${JSON.stringify(course('coB', 'Alphabet app', [task('b1', 'Letters 1', false)]))}] },
       { id: 'g3', title: 'Start here', topicId: 'tpBiz', courses: [] }];
-    s.study.focusCourseId = 'coC';
+    s.study.focusCourseId = 'coC'; s.study.settings.primarySubject = 'roadmap'; // your focus: your own courses
     s.study.sessions = [{ id: 'ss1', courseId: 'coA', taskId: 'a1', title: 'x', date: '2026-10-12', startedAt: '2026-10-12T19:00', plannedMin: 20, short: false, status: 'done', runningSince: null, activeMs: 1200000, endedAt: '2026-10-12T19:20', checkin: null, taskDone: true, todayUid: null }]; }`);
   await go('study', 2026, 10, 15, 13, 5);
   const savedBefore = await ev(`localStorage.getItem('${KEY}')`);
   const cards = () => ev(`[...document.querySelectorAll('#studyHome .topic-card')].map(a => ({ t: a.querySelector('.topic-title').textContent, focus: !!a.querySelector('[data-s=topic-focus]'), next: a.querySelector('[data-s=topic-next]').textContent, comp: a.querySelector('[data-s=topic-comp]')?.textContent ?? null, last: a.querySelector('[data-s=topic-last]')?.textContent ?? null, href: a.getAttribute('href') }))`);
   let cs = await cards();
-  check('the home page: the current focus, with its topic ("Current focus · Cybersecurity")', (await text('#stFocus .eyebrow')) === 'Current focus · Cybersecurity' && (await text('#stFocus')).includes('Linux 1'));
+  check('the home page: your focus, with its topic ("Your focus · Cybersecurity")', (await text('#stFocus .eyebrow')) === 'Your focus · Cybersecurity' && (await text('#stFocus')).includes('Linux 1'));
   check('…then the other topics as cards, in order, each opening its page', eq(cs.map(c => c.t), ['Arabic', 'Business']) && eq(cs.map(c => c.href), ['#study/topic/tpAr', '#study/topic/tpBiz']), cs);
   check('…each with its next step, progress and when you last studied it', cs.find(c => c.t === 'Arabic')?.next === 'Next: Lesson 2 · Madinah Arabic book 1' && cs.find(c => c.t === 'Arabic')?.comp === '1 of 4 tasks · 2 courses' && cs.find(c => c.t === 'Arabic')?.last === 'Studied 3 days ago' && !cs.some(c => c.focus), cs);
   check('…a topic with no courses says so, simply', cs.find(c => c.t === 'Business')?.next === 'No courses yet — add the first one.' && cs.find(c => c.t === 'Business')?.comp === null && cs.find(c => c.t === 'Business')?.last === null);
@@ -180,7 +180,7 @@ const SEED = `s => {
   await editStorage(`s => { s.study.sessions = s.study.sessions.filter(x => x.status !== 'active'); s.study.activeId = null; }`);
   await go('study/topic/tpAr', 2026, 10, 15, 13, 10);
   await click('#topicNext [data-action=s-focus]'); await sleep(300);
-  check('"Make this my focus" → it\'s on the home page, with its topic', (await study()).focusCourseId === 'coA' && (await ev('location.hash')) === '#study' && (await text('#stFocus .eyebrow')) === 'Current focus · Arabic' && (await cards()).find(c => c.t === 'Arabic')?.focus);
+  check('"Make this my focus" → it\'s on the home page, with its topic', (await study()).focusCourseId === 'coA' && (await ev('location.hash')) === '#study' && (await text('#stFocus .eyebrow')) === 'Your focus · Arabic' && (await cards()).find(c => c.t === 'Arabic')?.focus);
   await go('study/course/coB', 2026, 10, 15, 13, 15);
   check('a course\'s page goes back to its topic', (await ev(`document.querySelector('#app a[href="#study/topic/tpAr"]')?.textContent || ''`)).includes('Arabic'));
   await go('study/topic/tpBiz', 2026, 10, 15, 13, 20);

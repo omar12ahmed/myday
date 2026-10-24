@@ -4,7 +4,8 @@ import { AI_MODE } from '../ai/request';
 import { openCapture } from '../capture/openCapture';
 import { Card } from '../components/Card';
 import { CommitInput, Field, Select } from '../components/Field';
-import { completion, completionText, focusCourse, stIndex } from '../data/study/roadmap';
+import { completion, completionText, stIndex } from '../data/study/roadmap';
+import { courseFocus } from '../data/study/yourFocus';
 import { topicOfStage, topicPath, topicsOf } from '../data/study/topics';
 import type { MyDayData } from '../data/types';
 import { moveCourseTo, saveItemText, setArchived, setFocus } from './actions';
@@ -17,7 +18,7 @@ export function CourseDetails({ data, id }: { data: MyDayData; id: string }) {
   const remove = useRemove();
   const st = data.study, ix = stIndex(st), e = ix.course.get(id);
   if (!e) return <Card><h2>Course not found</h2><BackLink to="study/roadmap" label="Back to the roadmap" /></Card>;
-  const c = e.node, comp = completion(ix.courseTasks.get(id)!), fc = focusCourse(st, ix);
+  const c = e.node, comp = completion(ix.courseTasks.get(id)!), fc = courseFocus(st, ix);
   const listItem = c.listId ? data.lists.learning.find(l => l.id === c.listId) : null;
   return (
     <Card aria-labelledby="co-h">

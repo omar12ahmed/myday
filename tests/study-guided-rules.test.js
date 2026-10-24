@@ -15,7 +15,9 @@ function check(label, ok) {
       'export { resetLearningProgress } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/resetProgress')) + ';',
       'export { stIndex, focusCourse, nextTaskIn } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/study/roadmap')) + ';',
       'export { freshState } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/normalize')) + ';',
-      'export { learningOptions } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/nextLearning')) + ';',
+      'export { learningOptions, learningGlance } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/nextLearning')) + ';',
+      'export { optionAction } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/courseOption')) + ';',
+      'export { chooseFocus, courseFocus, focusChoices, focusValue } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/study/yourFocus')) + ';',
       'export { nextLesson, importPath, beginAttempt } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/cybersecurity/learning')) + ';',
       'export * as cyberCatalogue from ' + JSON.stringify(path.join(ROOT, 'app/src/study/cybersecurity/catalogue')) + ';',
       'export { CYBER_VERSION, curriculumTaskId } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/cybersecurity/types')) + ';',
@@ -90,12 +92,21 @@ function check(label, ok) {
     const fallbackOption = rule.learningOptions(general, 'completed').find(o => o.subject === 'roadmap');
     check('An exhausted session course falls back to the pinned available work with its actual course name', fallbackOption.href === '#study/task/pinned-task' && fallbackOption.detail === 'pinned-live');
     check('General-course recommendations leave the outline and pin byte-for-byte unchanged', JSON.stringify(general) === pinnedBefore);
-    for (const focus of ['archived', 'completed', 'cyber:1:module.learning-lab', 'empty', 'missing-course', null]) {
+    for (const focus of ['archived', 'completed', 'cyber:1:module.learning-lab', 'missing-course', null]) {
       general.study.focusCourseId = focus;
       const before = JSON.stringify(general), next = option(general, 'roadmap');
       check('A ' + (focus ?? 'missing') + ' pin falls back to the first unfinished general task', next?.href === '#study/task/first%3Aunfinished%20task' && next?.title === 'Read a Spanish dialogue' && next?.minutes === 17);
       check('Falling back from the ' + (focus ?? 'missing') + ' pin does not rewrite saved data', JSON.stringify(general) === before);
     }
+    // One focus (Today and Study home alike): a course with no tasks yet stays your focus while it's chosen, for a session.
+    general.study.focusCourseId = 'empty';
+    const emptyBefore = JSON.stringify(general), own = option(general, 'roadmap');
+    check('Your focus on a course with no tasks yet stays first, offering a session there (Study home has its Start)', rule.learningOptions(general)[0]?.courseId === 'empty' && (own?.courseId === 'empty'
+      && own?.title === 'empty' && own?.href === '#study' && own?.taskId === undefined && own?.minutes === 30 && own?.detail === 'No tasks added yet — a session still counts'));
+    check('…and reading it leaves saved data unchanged', JSON.stringify(general) === emptyBefore);
+    general.study.settings.primarySubject = 'arabic';
+    check('With another subject as your focus, an empty pinned course isn\'t offered: the first unfinished task is', option(general, 'roadmap')?.href === '#study/task/first%3Aunfinished%20task');
+    general.study.settings.primarySubject = 'roadmap'; general.study.focusCourseId = null;
     general.study.stages[0].courses = [archived, completed, imported, empty];
     general.study.stages[1].courses = [];
     check('Archived, completed, empty and imported Cybersecurity courses do not create a general-course recommendation', !option(general, 'roadmap'));
@@ -209,11 +220,43 @@ function check(label, ok) {
     why.arabic.cards.push({ id: 'lexeme.arabic-seed-001:recognise', addedOn: k, review: { reps: 0, interval: 0, lapses: 0, due: k } });
     check('with revision due, Today says revision comes first and keeps the lesson as the link', option(why, 'arabic').href === arHref('lesson.arabic-letter-joining')
       && option(why, 'arabic').detail === 'Revision first (1 ready in Arabic), then this lesson', option(why, 'arabic'));
+    check('…its button is "Revise Arabic", as on the learning map, with the map\'s own "Why this?"', option(why, 'arabic').revise === 'arabic' && rule.optionAction(option(why, 'arabic')) === 'Revise Arabic'
+      && option(why, 'arabic').why.startsWith(rule.arabicPlan(why).reason));
     why.arabic.cards = [];
     for (const id of start) if (rule.arabicState(why, id) !== 'ready') readyArabic(why, id);
     rule.flagRevisit(why, start[3], 'a note', k);
     check('a path ready except one lesson says so on Today, not that the whole path is ready', !option(why, 'arabic').allComplete && option(why, 'arabic').href === arHref(start[3])
       && option(why, 'arabic').detail === 'Every other lesson on your path is ready — this one needs revision', option(why, 'arabic'));
+
+    console.log('\n[Your focus] One choice for Today and Study home');
+    const yf = fresh();
+    const ownA = course('own-a', [task('a1', true), task('a2', false)]), ownB = course('own-b', []), ownDone = course('own-done', [task('d1', true)]);
+    const ownGone = { ...course('own-gone', [task('g1', false)]), archived: true }, guidedCopy = course('cyber:1:module.learning-lab', [task('cyber:1:lesson.learning-evidence', false)]);
+    yf.study.stages = [{ id: 'y1', title: 'Y', courses: [ownA, ownB, ownDone, ownGone, guidedCopy] }];
+    yf.study.focusCourseId = 'own-done';
+    let yix = rule.stIndex(yf.study);
+    check('The choices: Cybersecurity, Arabic, then your own live courses in roadmap order (archived ones and the guided copy aside)',
+      rule.focusChoices(yf.study, yix).map(c => c.value).join() === 'cybersecurity,arabic,course:own-a,course:own-b,course:own-done');
+    check('With Cybersecurity or Arabic as your focus, no course is labelled the focus', rule.courseFocus(yf.study, yix) === null && rule.focusValue(yf.study, yix) === 'cybersecurity');
+    check('Choosing Arabic saves only the subject: the classic MyDay\'s pinned course stays', rule.chooseFocus(yf, 'arabic') && yf.study.settings.primarySubject === 'arabic' && yf.study.focusCourseId === 'own-done');
+    check('…Today and Study home then offer Arabic first', rule.learningOptions(yf)[0].subject === 'arabic' && rule.learningGlance(yf).options[0].subject === 'arabic');
+    check('Choosing what is already your focus changes nothing', !rule.chooseFocus(yf, 'arabic'));
+    check('Choosing one of your courses saves "your courses" and that course', rule.chooseFocus(yf, 'course:own-b') && yf.study.settings.primarySubject === 'roadmap' && yf.study.focusCourseId === 'own-b');
+    yix = rule.stIndex(yf.study);
+    check('A chosen course with no tasks yet stays your focus, on the labels and the next step alike', rule.courseFocus(yf.study, yix)?.id === 'own-b' && rule.focusValue(yf.study, yix) === 'course:own-b'
+      && rule.learningOptions(yf)[0].courseId === 'own-b');
+    rule.chooseFocus(yf, 'course:own-done'); yix = rule.stIndex(yf.study);
+    check('A finished chosen course gives way to one with work left, on the labels and the next step alike', rule.courseFocus(yf.study, yix)?.id === 'own-a'
+      && rule.learningOptions(yf)[0].courseId === 'own-a' && rule.learningOptions(yf)[0].href === '#study/task/a2');
+    check('An archived or unknown course, or an unknown value, can\'t be chosen', !rule.chooseFocus(yf, 'course:own-gone') && !rule.chooseFocus(yf, 'course:nope') && !rule.chooseFocus(yf, 'nonsense'));
+    check('Choosing the Cybersecurity course\'s own roadmap copy makes Cybersecurity your focus', rule.chooseFocus(yf, 'course:cyber:1:module.learning-lab') && yf.study.settings.primarySubject === 'cybersecurity');
+    const none = fresh(); none.study.settings.primarySubject = 'roadmap';
+    const nix = rule.stIndex(none.study);
+    check('With "your courses" chosen but none added, that choice is still shown as chosen', rule.focusValue(none.study, nix) === 'roadmap' && rule.focusChoices(none.study, nix).some(c => c.value === 'roadmap'));
+    check('Every option says why, in words ("Why this?")', rule.learningOptions(yf).every(o => typeof o.why === 'string' && o.why.length > 10));
+    const glance = rule.learningGlance(why);
+    check('Study home\'s glance counts Arabic places in words and lists the lesson that needs revision', glance.arabic.ready > 0 && glance.arabic.needs.length === 1 && glance.arabic.needs[0].id === start[3]
+      && glance.cyber.total > 0 && glance.cyber.done === 0);
 
     console.log('\n[Reset preservation] Authored content, metadata and unrelated records');
     const rich = fresh();

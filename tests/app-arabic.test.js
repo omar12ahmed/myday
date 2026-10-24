@@ -88,8 +88,9 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   check('looking shows the reference beside your first answer, which is now kept as written', (await T.text(`[data-ar-question="${q1}"] [data-ar-first]`)).includes('في means in') && !(await exists(`[data-s="ar-answer"][data-q="${q1}"]`)) && (await AR()).attempts[0].revealed.includes(q1));
   await go(lesson); await wait('[data-ar-session="open"]');
   check('after a reload the session is still open, exactly as you left it', await exists(`[data-ar-question="${q1}"] [data-ar-first]`) && await ev(`document.querySelector('[data-action="ar-help"][data-v="hint"]').getAttribute('aria-pressed') === 'true'`));
-  await go('study'); await wait('.arabic-entry');
-  check('Study\'s home offers to pick up the open session', await exists('.arabic-entry [data-ar-resume][href="#study/arabic/lesson.arabic-origin-location"]'));
+  await go('study'); await wait('[data-s="worth-a-look"] a[data-ar-resume]');
+  check('Study\'s home offers to pick up the open session, under Worth a look', await exists('[data-s="worth-a-look"] a[data-ar-resume][href="#study/arabic/lesson.arabic-origin-location"]')
+    && (await T.text('[data-worth="arabic-open"]')).includes('A session is open in Arabic'));
   await go('study/arabic'); await wait('[data-ar-next]');
   check('the map says to pick up where you left off, and the module is being explored', await exists('[data-ar-next="resume"]') && await ev(`document.querySelector('[data-ar-module="arabic-first-sentences"]').dataset.place === 'exploring'`));
   await go(lesson); await wait('[data-action="ar-finish"]'); await click('[data-action="ar-finish"]'); await sleep(250);
@@ -141,7 +142,7 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   await on(12, 'today'); await wait('#slot-study');
   check('the next day, Today\'s Study card says revision is ready', (await T.text('#slot-study')).includes('Revision ready') && (await T.text('#slot-study')).includes('A round of 5'));
   await on(12, 'study'); await wait('#stRevision');
-  check('Study\'s home counts the Arabic cards without naming them', (await T.text('#stRevision')).includes('Ready to revise: 12 Arabic cards'), await T.text('#stRevision'));
+  check('Study\'s home offers a round and counts the Arabic cards without naming them', (await T.text('#stRevision')).includes('Revision ready: a round of 5') && (await T.text('#stRevision')).includes('12 Arabic cards'), await T.text('#stRevision'));
   await on(12, 'study/arabic'); await wait('[data-action="ar-revise"]');
   await click('[data-action="ar-revise"]'); await sleep(900);
   check('"Revise Arabic" starts a round of Arabic cards', (await ev('location.hash')) === '#study/revise' && (await T.text('.st-q')).includes('Question 1 of 5') && (await T.text('.st-path')) === 'Arabic · starter word');

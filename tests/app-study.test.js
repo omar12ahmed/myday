@@ -63,6 +63,8 @@ const roadmap = { stages: [{ id: 'sgF', title: 'Foundations', courses: [
   { id: 'coP', title: 'TryHackMe: Pre-Security path', url: 'https://tryhackme.com/', minutes: 30, listId: 'l1', archived: false, modules: [{ id: 'mdN', title: 'Networking basics', sections: [{ id: 'scW', title: 'How the web works', tasks: [task('tkD', 'DNS in detail', 40), task('tkH', 'HTTP in detail', 30)] }] }] },
   { id: 'coE', title: 'Empty course', url: '', minutes: 25, listId: null, archived: false, modules: [] }] }],
   concepts: [{ id: 'cpR', title: 'DNS records', taskIds: ['tkD'] }] };
+// Your focus on your own courses (study.settings.primarySubject 'roadmap'): Study home then shows your course's next task.
+const OWN = { vault: '', showClock: true, primarySubject: 'roadmap' };
 const learnTask = { uid: 'u1', taskId: 'l1', category: 'learning', title: 'TryHackMe: Pre-Security path — one section', minutes: 30, baseMinutes: 30, done: false, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null };
 const C = (id, title, more) => Object.assign({ id, title, taskIds: [], createdOn: '2026-10-01', kind: 'written', prompt: '', answer: '', explanation: '', choices: [], correct: null, hint: '', source: '', note: '', review: { reps: 0, interval: 0, lapses: 0, due: null } }, more);
 const concepts = [
@@ -95,6 +97,10 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   const before = await D();
   await go('study');
   check('navigation shows Study as moved to the new app (no "not in the new app yet")', eq(await texts('#nav .nav-item'), ['Today', 'Calendar', 'Projects', 'Finance', 'Health', 'Study']) && (await text('#nav [aria-current=page]')).trim() === 'Study' && (await ev(`document.querySelector('#nav a[href="#study"]').getAttribute('aria-label')`)) === 'Study');
+  await until(() => exists('#stFocus[data-now="cybersecurity"]'), 'the Now card');
+  check('Study home: one Now card (your focus: Cybersecurity until you choose) and a quiet tile to bring your own courses',
+    await exists('[data-s="setup-tile"][href="#study/roadmap"]') && !(await exists('.st-setup-row')));
+  await click('[data-s="setup-tile"]'); await sleep(250);
   await click('.next-card details summary');
   check('the quieter setup disclosure opens the editable course suggestions', await ev(`!!document.querySelector('.next-card details[open] .st-setup-row')`));
   const rows = await texts('.st-setup-row .check span');
@@ -113,6 +119,12 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   const after = await D();
   const others = o => { const c = JSON.parse(JSON.stringify(o)); delete c.study; delete c.saves; return c; };
   check('every existing record is unchanged (same key, learning list untouched)', eq(others(after), others(before)) && eq(await ev(`Object.keys(localStorage).filter(k => k.startsWith('myday'))`), [KEY]));
+  await nav('study');
+  await until(() => exists('#studyFocusHome'), 'the focus choice on Study home');
+  const thm = course(await SD(), 'TryHackMe: Pre-Security path');
+  check('"Your focus" on Study home lists your new courses by name', (await ev(`[...document.querySelectorAll('#studyFocusHome option')].map(o => o.textContent).join('|')`)).includes('TryHackMe: Pre-Security path'));
+  await setVal('#studyFocusHome', 'course:' + thm.id); await sleep(200);
+  check('choosing one makes it your focus (your courses, that course)', (await SD()).settings.primarySubject === 'roadmap' && (await SD()).focusCourseId === thm.id);
   check('dashboard: empty course says so, with no percentage', (await text('#stFocus')).includes('TryHackMe: Pre-Security path') && (await text('#stFocus')).includes('no sections or tasks yet') && (await text('#app')).includes('No tasks added yet') && !(await text('#app')).includes('%'));
 
   if (STOP < 41) return finish();
@@ -212,7 +224,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   const old = JSON.parse(JSON.stringify(exp)); delete old.data.study;
   fs.writeFileSync(S + '/old-export.json', JSON.stringify(old));
   await importFile(S + '/old-export.json');
-  check('a backup from before Study imports fine (Study starts empty)', (await SD()).stages.length === 0 && (await exists('.st-setup-row')));
+  check('a backup from before Study imports fine (Study starts empty)', (await SD()).stages.length === 0 && (await exists('[data-s="setup-tile"]')));
   const messy = JSON.parse(JSON.stringify(exp));
   const s0 = messy.data.study.stages[0];
   s0.courses[0].modules[0].sections[0].tasks.push({ id: 'x', title: '' }, { id: s0.courses[0].modules[0].sections[0].tasks[0].id, title: 'Same id', minutes: 'lots' });
@@ -228,7 +240,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   // ------------------------------------------------------------------
   console.log('\n[43] Learning sessions and check-in');
   await go('today', 2026, 11, 2, 9); await reset(); await go('today', 2026, 11, 2, 9);
-  await editStorage(`s => { s.study = ${JSON.stringify(roadmap)}; s.commitments = [{ id: 'c1', kind: 'appointment', title: 'GP', start: '2026-11-02T10:00', end: '2026-11-02T11:00' }]; s.context = { '2026-11-02': { energy: 4, sleep: { start: null, end: null, estimatedHours: null } } }; s.days['2026-11-02'] = { energy: 4, rest: false, builtAt: '', checkedIn: false, tasks: [${JSON.stringify(learnTask)}] }; }`);
+  await editStorage(`s => { s.study = ${JSON.stringify({ ...roadmap, settings: OWN })}; s.commitments = [{ id: 'c1', kind: 'appointment', title: 'GP', start: '2026-11-02T10:00', end: '2026-11-02T11:00' }]; s.context = { '2026-11-02': { energy: 4, sleep: { start: null, end: null, estimatedHours: null } } }; s.days['2026-11-02'] = { energy: 4, rest: false, builtAt: '', checkedIn: false, tasks: [${JSON.stringify(learnTask)}] }; }`);
   await go('study', 2026, 11, 2, 9);
   check('suggested length fits the free time before your next appointment (30 min before GP)', (await text('#stLen')) === '30' && (await text('#stFocus')).includes('30 min free before GP'), await text('#stFocus'));
   await editStorage(`s => { s.context['2026-11-02'].energy = 2; }`);
@@ -298,7 +310,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   await nav('study/roadmap');
   check('only one session at a time: no Start buttons while one is in progress', !(await exists('[data-action=s-start]')));
   await nav('study');
-  check('the dashboard shows the session in progress first', (await text('.next-card')).includes('In progress') && (await text('#stFocus')).includes('A session is in progress'));
+  check('the session in progress replaces the Now card: pick up where you left off', (await text('#stNow')).includes('Pick up where you left off') && (await text('#stNow')).includes('In progress') && !(await exists('#stFocus')));
   await nav('study/session'); await click('[data-action=s-finish]'); await sleep(250);
   await click('[data-action=s-ci-skip]'); await sleep(250);
   st2 = await SD();
@@ -348,8 +360,8 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   await go('study', 2026, 11, 2, 9);
   const secrets = concepts.flatMap(c => [c.answer, c.explanation, c.hint]).filter(Boolean);
   const leaks = () => ev(`(() => { const t = document.body.textContent; return ${JSON.stringify(secrets)}.filter(x => t.includes(x)); })()`);
-  check('dashboard previews concept names only (oldest due first) — no answers', (await text('#stRevision')).includes('Ready to revise: Packets, What DNS does, HTTPS port and more') && !(await leaks()).length, await leaks());
-  check('…says which concepts still need a revision question', (await text('#stRevision')).includes('1 concept needs a revision question'));
+  check('Study home offers revision under Worth a look, naming concepts only (oldest due first) — no answers', (await text('#stRevision')).includes('Revision ready: a round of 5') && (await text('#stRevision')).includes('Packets, What DNS does, HTTPS port and more') && !(await leaks()).length, await leaks());
+  check('…and says which concepts still need a revision question', (await text('[data-worth="questions"]')).includes('1 concept needs a revision question'));
   await click('[data-action=s-rev-start]'); await sleep(250);
   check('revision starts with one question, in a round of 5', (await ev('location.hash')) === '#study/revise' && (await text('.st-q .eyebrow')) === 'Question 1 of 5' && (await text('.st-prompt')) === 'What is a packet?');
   check('the answer, explanation and hints are not on the page yet', !(await leaks()).length, await leaks());
@@ -480,8 +492,8 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   check('revision alone stays with the other reminders', await ev(`document.querySelector('#slot-study').getBoundingClientRect().top > document.querySelector('#slot-quick').getBoundingClientRect().bottom`));
   await click('#slot-study [data-action=s-rev-start]'); await sleep(300);
   check('…and Revise goes straight to the first question', (await ev('location.hash')) === '#study/revise' && (await text('.st-prompt')) === 'What is a TTL?');
-  await go('study', 2026, 11, 2, 9);
-  await click('#stFocus [data-action=s-start]:not([data-short])'); await sleep(250);
+  await go('study/topic/main', 2026, 11, 2, 9); // your focus here is Cybersecurity (the default), so the course's own page starts it
+  await click('#topicNext [data-action=s-start]:not([data-short])'); await sleep(250);
   await nav('today'); await sleep(150);
   check('…and a session in progress, with Resume', (await text('#slot-study')).includes('Study session in progress') && (await exists('#slot-study a[href="#study/session"]')));
   check('nothing was added to today\'s task list', !(await D()).days['2026-11-02']);
@@ -572,7 +584,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   // ------------------------------------------------------------------
   console.log('\n[49] Layout');
   await reset(); await go('today', 2026, 11, 2, 15);
-  const lay = JSON.parse(JSON.stringify(roadmap));
+  const lay = JSON.parse(JSON.stringify(roadmap)); lay.settings = OWN;
   lay.concepts = concepts;
   lay.sessions = [{ id: 'ssL', courseId: 'coP', taskId: 'tkD', title: 'TryHackMe: Pre-Security path · DNS in detail', date: '2026-11-02', startedAt: '2026-11-02T09:00', plannedMin: 30, short: false, status: 'done', runningSince: null, activeMs: 600000, endedAt: '2026-11-02T09:10', checkin: { conceptIds: ['cpW'], clarity: 'partly', takeaway: '', question: '', note: '' }, taskDone: null, todayUid: null }];
   await editStorage(`s => { s.study = ${JSON.stringify(lay)}; }`);
@@ -595,7 +607,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   // ------------------------------------------------------------------
   console.log('\n[50] No duplicates: double taps, reloads and redraws');
   await go('today', 2026, 11, 2, 9); await reset(); await go('today', 2026, 11, 2, 9);
-  await editStorage(`s => { s.study = ${JSON.stringify(roadmap)}; s.days['2026-11-02'] = { energy: 3, rest: false, builtAt: '', checkedIn: false, tasks: [${JSON.stringify(learnTask)}] }; }`);
+  await editStorage(`s => { s.study = ${JSON.stringify({ ...roadmap, settings: OWN })}; s.days['2026-11-02'] = { energy: 3, rest: false, builtAt: '', checkedIn: false, tasks: [${JSON.stringify(learnTask)}] }; }`);
   await go('study', 2026, 11, 2, 9);
   await ev(`(() => { const b = document.querySelector('#stFocus [data-action=s-start]:not([data-short])'); b.click(); b.click(); b.click(); })()`); await sleep(250);
   check('three quick taps on Start make one session', (await SD()).sessions.length === 1);
@@ -623,7 +635,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   // ------------------------------------------------------------------
   console.log('\n[51] Themes');
   await go('today', 2026, 11, 2, 9); await reset(); await go('today', 2026, 11, 2, 9);
-  const th = JSON.parse(JSON.stringify(roadmap)); th.concepts = concepts;
+  const th = JSON.parse(JSON.stringify(roadmap)); th.concepts = concepts; th.settings = OWN;
   await editStorage(`s => { s.study = ${JSON.stringify(th)}; }`);
   for (const theme of ['light', 'auto', 'dark']) {
     await editStorage(`s => { s.settings.theme = '${theme}'; }`);
@@ -682,13 +694,14 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   async function screensIn(url) {
     const out = {};
     await go('today', 2026, 11, 2, 9, 0, url); await reset(); await go('today', 2026, 11, 2, 9, 0, url);
-    const both = JSON.parse(JSON.stringify(pr)); both.concepts = both.concepts.concat(concepts);
+    const both = JSON.parse(JSON.stringify(pr)); both.concepts = both.concepts.concat(concepts); both.settings = OWN;
     await editStorage(`s => { s.study = ${JSON.stringify(both)}; s.commitments = [{ id: 'c1', kind: 'appointment', title: 'GP', start: '2026-11-02T10:00', end: '2026-11-02T11:00' }]; s.context = { '2026-11-02': { energy: 2, sleep: { start: null, end: null, estimatedHours: null } } }; s.days['2026-10-31'] = { energy: 3, rest: false, builtAt: '', checkedIn: true, tasks: [${JSON.stringify(Object.assign({}, learnTask, { uid: 'u9', done: true }))}] }; }`);
     await go('today', 2026, 11, 2, 9, 0, url);
     out.streak = ((await text('#streak')).match(/Learning days in the last 7: \d+/) || [''])[0];
     await go('study', 2026, 11, 2, 9, 0, url);
     out.focus = [await text('#stFocus h2'), await text('#stFocus .st-path'), await text('#stFocus .st-next'), await text('#stLen')].map(flat);
-    out.revision = flat(await text('#stRevision'));
+    // The concepts named, oldest due first: "Ready to revise: …" in the current MyDay, under "Revision ready" on Study home.
+    out.revision = flat(url === APP ? await text('#stRevision .meta') : (await text('#stRevision')).replace(/^[\s\S]*?Ready to revise:\s*/, '').replace(/\.[\s\S]*$/, ''));
     await go('study/concepts', 2026, 11, 2, 9, 0, url);
     out.concepts = (await texts('.c-row')).map(flat);
     await go('study/progress', 2026, 11, 2, 9, 0, url);
@@ -733,7 +746,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   check('topic links appear, the current topic marked as the page', eq(await ev(`[...document.querySelectorAll('[data-s=map-topic]')].map(a => a.dataset.id + (a.getAttribute('aria-current') === 'page' ? '*' : ''))`), ['tpC*', 'tpA']) && !(await exists('[role=tablist], [role=tab]')));
   await click('[data-s=map-topic][data-id=tpA]'); await sleep(300);
   check('switching to Arabic shows its line and summary', flat(await text('#mapLine')).includes(flat('0 of 1 tasks into Arabic')) && eq(await ev(`[...document.querySelectorAll('[data-s=map-st]')].map(a => a.dataset.id + ':' + a.dataset.st)`), ['coL:now']), [await text('#mapLine')]);
-  check('the dashboard links to the map', (await go('study', 2026, 11, 2, 9), await sleep(200), (await text('.st-links')).includes('Your map')) && (await exists('.st-links a[href="#study/map"]')));
+  check('Study home links to the map, under Explore', (await go('study', 2026, 11, 2, 9), await sleep(200), (await text('#studyHome [data-s=study-map-link]')).includes('Your map')) && (await exists('#studyHome a[data-s=study-map-link][href="#study/map"]')));
 
   console.log('\n[53b] Your map: fog, reading size, no collisions, dark theme, phones, and straight into a session');
   await go('today', 2026, 11, 2, 9); await reset(); await go('today', 2026, 11, 2, 9);
@@ -887,6 +900,63 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   check('messy saved data is tidied: one good book, page pulled back to the last, one good note (its out-of-range page let go), the rest dropped — and a future field kept', rd.books.length === 1 && rd.books[0].page === 100 && rd.books[0].notes.length === 1 && rd.books[0].notes[0].page === null && rd.books[0].notes[0].text === 'Beyond the book' && eq(rd.futureReadingField, { kept: true }));
   await go('today');
   check('reading is never on Today (and never in the learning streak)', !(await text('#app')).includes('Now reading') && !(await text('#app')).includes('Plankton'));
+
+  // ------------------------------------------------------------------
+  console.log('\n[55] Study home: one focus, the same next step as Today, Worth a look, Explore and Manage');
+  await go('today', 2026, 11, 2, 9); await reset(); await go('today', 2026, 11, 2, 9);
+  const own = JSON.parse(JSON.stringify(roadmap)); own.concepts = [];
+  await editStorage(`s => { s.study = ${JSON.stringify({ ...own, settings: { ...OWN, primarySubject: 'arabic' } })}; }`);
+  const todayPick = async () => {
+    await go('today', 2026, 11, 2, 9); await until(() => exists('#slot-study [data-s="study-next-lessons"] > [data-subject] [data-s=option-why]'), 'Today’s Study card');
+    return ev(`(() => { const e = document.querySelector('#slot-study [data-s="study-next-lessons"] > [data-subject]');
+      return { subject: e.dataset.subject, title: e.querySelector('.font-semibold').textContent, detail: e.querySelector('[data-s=option-detail]').textContent,
+        why: e.querySelector('[data-s=option-why] p').textContent, action: e.querySelector('[data-action=continue-learning]').textContent.trim() }; })()`);
+  };
+  const homePick = async () => {
+    await go('study', 2026, 11, 2, 9); await until(() => exists('#stFocus [data-s=option-why]'), 'Study home’s Now card');
+    return ev(`(() => { const e = document.querySelector('#stFocus');
+      return { subject: e.dataset.now, title: e.querySelector('h2').textContent, detail: (e.querySelector('[data-s=option-detail]') || e.querySelector('.st-course-title')).textContent,
+        why: e.querySelector('[data-s=option-why] p').textContent, action: e.querySelector('[data-action=study-now], [data-action=s-start]').textContent.trim() }; })()`);
+  };
+  const t1 = await todayPick(), h1 = await homePick();
+  check('Arabic as your focus: Today and Study home show the same next step, the same "Why this?" and the same button', t1.subject === 'arabic' && eq(t1, h1), [t1, h1]);
+  await go('study/settings', 2026, 11, 2, 9);
+  check('Study settings has one "Your focus" choice: the two subjects, then your courses by name', (await text('label[for=studyPrimarySubject]')) === 'Your focus'
+    && (await ev(`[...document.querySelectorAll('#studyPrimarySubject option')].map(o => o.value).join()`)) === 'cybersecurity,arabic,course:coP,course:coE');
+  await setVal('#studyPrimarySubject', 'course:coP'); await sleep(200);
+  check('…choosing a course there saves "your courses" and that course', (await SD()).settings.primarySubject === 'roadmap' && (await SD()).focusCourseId === 'coP');
+  const t2 = await todayPick(), h2 = await homePick();
+  check('your course as your focus: Today and Study home agree on its next task, the course and the reason', t2.subject === 'roadmap' && h2.subject === 'roadmap'
+    && t2.title === (await text('#stFocus .st-next')) && t2.detail === h2.title && t2.why === h2.why, [t2, h2]);
+  check('…and the course is labelled your focus in the roadmap', (await go('study/roadmap', 2026, 11, 2, 9), (await text('#app')).includes('Current focus')));
+  await go('study', 2026, 11, 2, 9);
+  await click('#stFocus [data-s=study-other-subjects] summary'); await sleep(150);
+  const cyHref = await ev(`document.querySelector('#stFocus [data-s=study-other-subjects] [data-subject=cybersecurity] [data-action=continue-learning]').getAttribute('href')`);
+  await click('#stFocus [data-s=study-other-subjects] [data-subject=cybersecurity] [data-action=continue-learning]'); await sleep(300);
+  check('choosing another subject under the Now card opens it and makes it your focus', (await SD()).settings.primarySubject === 'cybersecurity' && (await ev('location.hash')) === cyHref);
+  check('…and then no course is labelled your focus', (await go('study/roadmap', 2026, 11, 2, 9), !(await text('#app')).includes('Current focus')));
+  await go('study', 2026, 11, 2, 9); await until(() => exists('#stFocus[data-now=cybersecurity]'), 'the Now card');
+  check('Worth a look is hidden when there\'s nothing to offer', !(await exists('[data-s=worth-a-look]')));
+  check('Explore: your map, then the subjects as tiles (Arabic, Cybersecurity, your topics, Reading)', await exists('#studyHome [data-s=study-map-link]') && await exists('#studyHome .arabic-entry')
+    && await exists('#studyHome .cyber-entry') && await exists('#studyHome [data-s=reading-tile]')
+    && (await exists('#studyHome .topic-card') || await exists('#studyHome .cyber-entry [data-cyber-saved-courses]'))); // this roadmap's one topic is taken as Cybersecurity's saved courses
+  check('Manage is folded at the bottom: the whole roadmap, concepts, progress and settings', !(await ev(`document.querySelector('[data-s=study-manage]').open`))
+    && eq(await ev(`[...document.querySelectorAll('[data-s=study-manage] a')].map(a => a.getAttribute('href'))`), ['#study/roadmap', '#study/concepts', '#study/progress', '#study/settings']));
+  await editStorage(`s => { s.study.concepts = ${JSON.stringify(concepts)};
+    s.arabic.lessons = [{ id: 'lesson.arabic-fusha-register', readyOn: '2026-10-20', revisit: { since: '2026-10-25', what: 'register words' } }];
+    s.arabic.attempts.push({ id: 'aaOpen', lessonId: 'lesson.arabic-goal-baseline', curriculumVersion: '1.1.2', variant: 'standard', startedAt: '2026-11-02T08:00:00.000Z', finishedAt: null, help: 'independent', practised: ['reading'], answers: {}, revealed: [], revisit: '' }); }`);
+  await go('study', 2026, 11, 2, 9); await until(() => exists('[data-s=worth-a-look] [data-worth]'), 'Worth a look');
+  const worth = await ev(`[...document.querySelectorAll('[data-worth]')].map(e => e.dataset.worth)`);
+  check('Worth a look offers at most three: a session open in another subject, revision ready, a lesson that needs revision (the fourth, concepts without a question, waits)',
+    eq(worth, ['arabic-open', 'revision', 'needs-lesson.arabic-fusha-register']), worth);
+  check('…in plain words, with no backlog, nothing "overdue" and no percentages', (await text('[data-s=worth-a-look]')).includes('needs revision') && !/overdue|behind|missed/i.test(await text('#app')) && !/\d+\s?%/.test(await text('#app')));
+  check('Explore counts Arabic places in words', (await text('.arabic-entry')).includes('1 needs revision'));
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await go('study', 2026, 11, 2, 9); await until(() => exists('[data-s=worth-a-look] [data-worth]'), 'Worth a look on a phone');
+  const smallH = await ev(`[...document.querySelectorAll('#app button, #app summary, #app a.btn-link, #app select, #app [data-action=study-now]')].filter(b => b.getClientRects().length && b.getBoundingClientRect().height < 44).map(b => b.textContent.trim().slice(0, 24) + ' ' + Math.round(b.getBoundingClientRect().height))`);
+  check('phone: Study home has no sideways scrolling, and every control is at least 44 px tall', !(await ev('document.documentElement.scrollWidth > innerWidth')) && !smallH.length, smallH);
+  check('phone: the Now card comes first, then Worth a look, then Explore', await ev(`(() => { const n = document.querySelector('#stFocus').getBoundingClientRect(), w = document.querySelector('[data-s=worth-a-look]').getBoundingClientRect(), x = document.querySelector('#studyHome').getBoundingClientRect(); return n.bottom <= w.top && w.bottom <= x.top; })()`));
+  await T.send('Emulation.clearDeviceMetricsOverride');
 
   finish();
 })().catch(e => { console.error('HARNESS ERROR', e); const s = T.summary(); console.log(`${s.pass} passed, ${s.fail} failed before the error`); process.exit(2); });

@@ -6,6 +6,7 @@ import { getSnapshot, update } from '../data/storage';
 import { newConcept, safeUrl } from '../data/study/common';
 import { conceptNamed, removeStudyItem, setTaskDone, stFind, stIndex } from '../data/study/roadmap';
 import { activeStudy, ensureCheckin, finishStudy, pauseStudy, resumeStudy, startStudySession, todayTaskFor } from '../data/study/sessions';
+import { chooseFocus } from '../data/study/yourFocus';
 import { toast } from '../data/toast';
 import type { Checkin, Clarity, Concept, StudyCourse, StudyData, StudySession, StudyTask } from '../data/types';
 import { intIn } from '../data/util';
@@ -82,8 +83,13 @@ export function checkinFinished(id: string, saved: boolean) {
 }
 
 // ---------- The roadmap ----------
+// Opening a subject's next step from Today or Study home makes it your focus (the course itself, for one of yours).
+export const focusOn = (option: { subject: string; courseId?: string }) => {
+  update(d => { if (!chooseFocus(d, option.courseId ? 'course:' + option.courseId : option.subject)) return false; });
+};
+// The course becomes your one focus, for Today and Study home too (data/study/yourFocus.ts).
 export function setFocus(courseId: string) {
-  if (update(d => { if (!stIndex(d.study).course.has(courseId)) return false; d.study.focusCourseId = courseId; })) toast('Focus updated.');
+  if (update(d => { if (!chooseFocus(d, 'course:' + courseId)) return false; })) toast('Focus updated.');
   go('study');
 }
 export const setDoneFor = (id: string, done: boolean) => update(d => { const t = stIndex(d.study).task.get(id); if (!t) return false; setTaskDone(t.node, done); });
