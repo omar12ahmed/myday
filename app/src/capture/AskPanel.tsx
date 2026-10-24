@@ -24,6 +24,15 @@ import { startLearning, startRevision } from '../study/actions';
 // A lookup in your notes (ai/lookup.ts): what was sent, and how many private notes matched (that count stays here).
 type Looked = ReturnType<typeof notesLookup>;
 type Shown = Exclude<AskChecked, { kind: 'lookup' }>;
+// MyDay's server keeps a few seconds between requests (AI_MIN_SECONDS_BETWEEN, 5 by default), so a lookup's second
+// request waits out the rest of them — and once more if the server still says it's too soon.
+const PACE_MS = 5500;
+const clock = () => Date.now();
+const pause = (ms: number, signal: AbortSignal) => new Promise<void>(done => {
+  if (ms <= 0 || signal.aborted) { done(); return; }
+  const t = setTimeout(done, ms);
+  signal.addEventListener('abort', () => { clearTimeout(t); done(); }, { once: true });
+});
 type Phase =
   | { at: 'idle' }
   | { at: 'asking' }
@@ -31,7 +40,7 @@ type Phase =
   | { at: 'shown'; r: Shown; model: string; followed: boolean; looked?: Looked }
   | { at: 'added'; undo: AskUndo; words: string }
   | { at: 'applied'; undo: AskChangeUndo; words: string }
-  | { at: 'error'; message: string };
+  | { at: 'error'; message: string; looked?: Looked }; // looked: what a lookup found, so trying again doesn't look twice
 
 const ICON: Record<AskProposal['type'], ReactNode> = {
   task: <ListPlus size={16} aria-hidden="true" />, note: <NotebookPen size={16} aria-hidden="true" />,
@@ -82,22 +91,32 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
     setPhase({ at: 'asking' });
     const asked = [text, followUp?.text].filter(Boolean).join('\n');
     let looked = prior;
+    const started = clock();
     let reply = await askModel(askContext(slice, text, k, undefined, followUp, looked?.lookup), ctrl.signal); // the time now (askContext reads the clock)
     if (ctrl.signal.aborted) return;
     if (!previewIsCurrent()) return;
-    if (!reply.ok) { setPhase({ at: 'error', message: reply.message }); return; }
+    if (!reply.ok) { setPhase({ at: 'error', message: reply.message, ...(looked ? { looked } : {}) }); return; }
     let r = checkAskReply(reply.text, getSnapshot().data, slice, k, asked, looked?.lookup);
     if (r?.kind === 'lookup') {
-      // It needs your notes: look on this device, through the privacy rules, and ask once more with what was found.
+      // It needs your notes: look on this device, through the privacy rules, and ask once more with what was found
+      // (after the server's pause between requests; the newest data, checked again, is what's searched).
       setPhase({ at: 'looking', query: r.query });
+      if (AI_MODE === 'edge') await pause(PACE_MS - (clock() - started), ctrl.signal);
+      if (ctrl.signal.aborted || !previewIsCurrent()) return;
       looked = notesLookup(getSnapshot().data, r.query);
-      reply = await askModel(askContext(slice, text, k, undefined, followUp, looked.lookup), ctrl.signal);
+      const again = () => askModel(askContext(slice, text, k, undefined, followUp, looked!.lookup), ctrl.signal);
+      reply = await again();
+      if (!reply.ok && reply.reason === 'too-fast') {
+        await pause(PACE_MS, ctrl.signal);
+        if (ctrl.signal.aborted || !previewIsCurrent()) return;
+        reply = await again();
+      }
       if (ctrl.signal.aborted) return;
       if (!previewIsCurrent()) return;
-      if (!reply.ok) { setPhase({ at: 'error', message: reply.message }); return; }
+      if (!reply.ok) { setPhase({ at: 'error', message: reply.message, looked }); return; }
       r = checkAskReply(reply.text, getSnapshot().data, slice, k, asked, looked.lookup);
     }
-    if (!r || r.kind === 'lookup') { setPhase({ at: 'error', message: "The answer that came back couldn't be used — nothing was added. Try again, or put it another way." }); return; }
+    if (!r || r.kind === 'lookup') { setPhase({ at: 'error', message: "The answer that came back couldn't be used — nothing was added. Try again, or put it another way.", ...(looked ? { looked } : {}) }); return; }
     if (r.kind === 'add' || r.kind === 'steps') { setPicked(r.items.map(i => !i.already)); setTitles(r.items.map(i => i.title)); setEdits({}); setEditing(null); }
     if (r.kind === 'change') setPicked(r.changes.map(() => true));
     setMore('');
@@ -128,7 +147,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
   return (
     <div className="mt-4 pt-4 border-t border-outline" data-s="ask-panel" data-phase={phase.at}>
       {(phase.at === 'idle' || phase.at === 'error') && <>
-        <Button variant="tonal" data-action="ask-go" disabled={!text.trim()} onClick={() => { void ask(); }}><Sparkles size={18} aria-hidden="true" /> Ask MyDay</Button>
+        <Button variant="tonal" data-action="ask-go" disabled={!text.trim()} onClick={() => { void ask(undefined, phase.at === 'error' ? phase.looked : undefined); }}><Sparkles size={18} aria-hidden="true" /> Ask MyDay</Button>
         {(() => { const pv = askPreview(askContext(slice, text, k, opened), slice.privateNote, slice.held); return (
           <div className="mt-2 text-xs text-fg-2" data-s="ask-sends">
             <p className="m-0 font-semibold text-fg-3">Sent to the AI with what you type:</p>

@@ -213,8 +213,9 @@ export function readAsk(textIn: string): AskReply | null {
   if (!obj(raw) || !ASK_KINDS.includes(raw.kind as AskReply['kind']) || !str(raw.message, ASK_LIMITS.messageChars)) return null;
   // A lookup: only what to look in and the words; nothing else in it is used.
   if (raw.kind === 'lookup') {
-    const lk = obj(raw.lookup) ? raw.lookup : raw, query = word(lk.query, ASK_LIMITS.lookupQueryChars), tool = ASK_TOOLS.includes(lk.tool as typeof ASK_TOOLS[number]) ? lk.tool as typeof ASK_TOOLS[number] : 'notes';
-    return query ? { kind: 'lookup', message: (raw.message as string).trim(), items: [], action: null, lookup: { tool, query } } : null;
+    const lk = obj(raw.lookup) ? raw.lookup : raw, query = word(lk.query, ASK_LIMITS.lookupQueryChars);
+    const tool = lk.tool === undefined ? 'notes' : ASK_TOOLS.includes(lk.tool as typeof ASK_TOOLS[number]) ? lk.tool as typeof ASK_TOOLS[number] : null; // nothing else can be looked in
+    return query && tool ? { kind: 'lookup', message: (raw.message as string).trim(), items: [], action: null, lookup: { tool, query } } : null;
   }
   const sources = Array.isArray(raw.sources) ? raw.sources.filter((x): x is string => typeof x === 'string' && x.length > 0 && x.length <= 64).slice(0, ASK_LIMITS.lookupSources) : [];
   const items = raw.items === undefined || raw.items === null ? [] : raw.items;

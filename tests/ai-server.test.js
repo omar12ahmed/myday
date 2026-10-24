@@ -253,10 +253,11 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     bad('search words over 60 characters', { ...base, lookup: { ...found, query: 'x'.repeat(61) } });
     const offer = A.buildAskMessages({ ...base, can: ['notes'] })[0].content, plain = A.buildAskMessages(base)[0].content, after = A.buildAskMessages({ ...base, can: ['notes'], lookup: found })[0].content;
     check('the instructions offer a lookup only when the app says it can', offer.includes('"lookup"') && offer.includes('1–4 key words') && !plain.includes('Looking in their notes'));
-    check('…and, with what was found, answer from those notes only, cite them in "sources" and never look again', after.includes('Answer from those notes only') && after.includes('"sources"') && after.includes('Never reply "lookup" again') && !after.includes('1–4 key words'));
+    check('…and, with what was found, answer from those notes only, cite them in "sources" and never look again', after.includes('Answer from those notes (and the page\'s data) only') && after.includes('"sources"') && after.includes('Never reply "lookup" again') && !after.includes('1–4 key words'));
     const lk = A.readAsk(JSON.stringify({ kind: 'lookup', message: 'Looking in your notes for that.', lookup: { tool: 'notes', query: 'bike rack' } }));
     check('a lookup reply is read: what to look in and the words', lk && lk.kind === 'lookup' && lk.lookup.tool === 'notes' && lk.lookup.query === 'bike rack' && lk.items.length === 0 && lk.action === null, lk);
     check('…but not without words', A.readAsk(JSON.stringify({ kind: 'lookup', message: 'x', lookup: { tool: 'notes', query: ' ' } })) === null);
+    check('…nor for something it can\'t look in (an unknown tool is never taken as notes)', A.readAsk(JSON.stringify({ kind: 'lookup', message: 'x', lookup: { tool: 'day', query: 'tomorrow' } })) === null);
     const ans = A.readAsk(JSON.stringify({ kind: 'answer', message: 'Your shed note mentions it.', items: [], action: null, sources: ['n1', 7, '', 'x'.repeat(65)] }));
     check('an answer\'s "sources" are read as note ids (only strings of a sensible length)', ans.sources.join() === 'n1', ans.sources);
     const m1 = JSON.parse(A.mockAsk({ ...base, can: ['notes'] }));

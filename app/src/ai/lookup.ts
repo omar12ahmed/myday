@@ -7,7 +7,7 @@
 import { ASK_LIMITS as L, type AskLookup } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
 import { noteName } from '../data/notes';
 import { excerptOf, fold, wordsOf } from '../data/projectSearch';
-import type { MyDayData } from '../data/types';
+import type { MyDayData, Note } from '../data/types';
 import { aiReach } from './reach';
 
 const cut = (s: string, n: number) => (s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s);
@@ -15,15 +15,17 @@ const cut = (s: string, n: number) => (s.length > n ? s.slice(0, n - 1).trimEnd(
 export function notesLookup(data: MyDayData, query: string): { lookup: AskLookup; leftOut: number } {
   const reach = aiReach(data), withText = !!data.patterns.prefs.aiNotes;
   const q = cut(query.trim().replace(/\s+/g, ' '), L.lookupQueryChars), words = wordsOf(q);
-  const matches = (title: string, text: string) => words.length > 0 && words.every(w => fold(withText ? `${title}\n${text}` : title).includes(w));
-  const all = data.notes.items.filter(n => matches(noteName(n), n.text));
+  // Its name: the title, or (only with notes' text shared) the first line of an untitled note; otherwise "Untitled note".
+  const name = (n: Note) => (withText ? noteName(n) : n.title.trim() || 'Untitled note');
+  const matches = (n: Note) => words.length > 0 && words.every(w => fold(withText ? `${n.title}\n${n.text}` : n.title).includes(w));
+  const all = data.notes.items.filter(matches);
   const shown = all.filter(n => reach.note(n)).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   const projectName = (id?: string | null) => { const p = id ? data.projects.items.find(x => x.id === id) : undefined; return p && reach.project(p) ? cut(p.title, L.titleChars) : null; };
   return {
     lookup: {
       tool: 'notes', query: q,
       notes: shown.slice(0, L.lookupNotes).map(n => ({
-        id: n.id, title: cut(noteName(n), L.titleChars), project: projectName(n.projectId),
+        id: n.id, title: cut(name(n), L.titleChars), project: projectName(n.projectId),
         snippet: withText ? (cut(excerptOf([n.text], words), L.lookupSnippetChars) || null) : null,
       })),
       found: shown.length, titlesOnly: !withText,
@@ -35,7 +37,7 @@ export function notesLookup(data: MyDayData, query: string): { lookup: AskLookup
 // "Looked in your notes for “van hire”: 3 notes (1 private left out)", for the panel.
 export function lookupLine(l: AskLookup, held: number): string {
   const n = l.found;
-  const found = n ? `${n === 1 ? 'one note' : `${n} notes`}${n > l.notes.length ? ` (the newest ${l.notes.length} sent)` : ''}` : 'nothing matched';
+  const found = n ? `${n === 1 ? 'one note' : `${n} notes`}${n > l.notes.length ? ` (the newest ${l.notes.length} sent)` : ''}` : held ? 'none that could be sent' : 'nothing matched';
   const extra = [held ? `${held === 1 ? 'one private note' : `${held} private notes`} left out` : '', l.titlesOnly ? 'titles only, as AI help with notes is off' : ''].filter(Boolean);
   return `Looked in your notes for “${l.query}”: ${found}${extra.length ? ` — ${extra.join('; ')}` : ''}.`;
 }

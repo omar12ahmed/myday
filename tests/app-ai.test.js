@@ -920,8 +920,8 @@ const SEED = `s => {
       await Dv.click('[data-action=capture-open]'); await Dv.until(`document.getElementById('captureText')`);
       await Dv.type('#captureText', Q); await sleep(150);
       const prev = await Dv.text('[data-s=ask-sends]');
-      await Dv.click('[data-action=ask-go]'); await Dv.until(`['shown', 'error'].includes(document.querySelector('[data-s=ask-panel]')?.dataset.phase)`, 15000);
-      return { prev, phase: await Dv.ev(`document.querySelector('[data-s=ask-panel]').dataset.phase`), looked: await Dv.text('[data-s=ask-looked]'),
+      await Dv.click('[data-action=ask-go]'); await Dv.until(`['shown', 'error'].includes(document.querySelector('[data-s=ask-panel]')?.dataset.phase)`, 25000);
+      return { prev, error: await Dv.text('[data-s=ask-panel] [role=alert]'), phase: await Dv.ev(`document.querySelector('[data-s=ask-panel]').dataset.phase`), looked: await Dv.text('[data-s=ask-looked]'),
         sources: await Dv.ev(`[...document.querySelectorAll('[data-s=ask-source]')].map(a => a.textContent + '|' + a.getAttribute('href'))`) };
     };
     await seeded(mock, MOCK); await mock.setData(lkSeed); await mock.until(`document.querySelector('#app')`);
@@ -931,15 +931,18 @@ const SEED = `s => {
     check('…and the answer links the note it used', eq(pm.sources, ['Shed sizes|#projects/notes/nLkRack']), pm.sources);
     await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
 
-    setAi({ AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_LABEL: 'Main model', AI_MIN_SECONDS_BETWEEN: '0' });
+    // At the server's real pace (5 seconds between requests): the second request waits its turn rather than being refused.
+    setAi({ AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_LABEL: 'Main model', AI_MIN_SECONDS_BETWEEN: '5' });
     await D.setData(lkSeed); await D.until(`!document.getElementById('signInGate')`, 15000);
+    await sleep(5500); // the last section's request may have been under 5 seconds ago
     const c0 = aiCalls().length;
     const pd = await runLk(D);
     const sent = aiCalls().slice(c0).filter(c => c.body?.context?.action === 'ask'), bodies = sent.map(c => JSON.stringify(c.body));
-    check('with an account, through the real server code: two requests — the question, then what was found', pd.phase === 'shown' && sent.length === 2 && !('lookup' in sent[0].body.context) && sent[1].body.context.lookup?.query === 'bike rack', sent.map(c => Object.keys(c.body.context)));
+    check('with an account, through the real server code at its 5-second pace: two requests — the question, then what was found', pd.phase === 'shown' && sent.length === 2 && !('lookup' in sent[0].body.context) && sent[1].body.context.lookup?.query === 'bike rack', [pd.error, sent.map(c => Object.keys(c.body.context))]);
     check('…the second carries the note that may reach AI, never the private ones — not even how many matched', bodies[1]?.includes('nLkRack') && bodies.every(b => !/Walrus|nLkPriv|nLkHush|leftOut|Quiet plans|worry/.test(b)), bodies[1]);
     check('…and the answer shows what it looked for and links the note it used', pd.looked.startsWith('Looked in your notes for “bike rack”') && eq(pd.sources, ['Shed sizes|#projects/notes/nLkRack']), [pd.looked, pd.sources]);
     await D.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
+    setAi({ AI_MIN_SECONDS_BETWEEN: '0' });
     await mock.ev(`location.hash = 'today'`); await D.ev(`location.hash = 'today'`); await sleep(200);
   }
 
