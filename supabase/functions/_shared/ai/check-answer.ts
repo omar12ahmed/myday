@@ -18,7 +18,7 @@ export function checkAnswerContext(raw: unknown): raw is CheckAnswerContext {
   const c = raw as Record<string, unknown>, L = CHECK_ANSWER_LIMITS;
   return Object.keys(c).every(k => KEYS.includes(k)) && c.version === CHECK_ANSWER_CONTRACT_VERSION && c.action === 'check-answer'
     && CHECK_ANSWER_SUBJECTS.includes(c.subject as CheckAnswerSubject)
-    && typeof c.lessonId === 'string' && (c.subject === 'arabic' ? /^lesson\.arabic-[a-z0-9-]{1,80}$/ : /^lesson\.[a-z0-9-]{1,80}$/).test(c.lessonId)
+    && typeof c.lessonId === 'string' && (c.subject === 'arabic' ? /^lesson\.arabic-[a-z0-9-]{1,80}$/ : /^lesson\.(?!arabic-)[a-z0-9-]{1,80}$/).test(c.lessonId)
     && text(c.objective, L.objectiveChars, false) && text(c.teaching, L.teachingChars)
     && Array.isArray(c.prerequisites) && c.prerequisites.length <= L.prerequisites && c.prerequisites.every(x => text(x, L.prerequisiteChars, false))
     && text(c.question, L.questionChars, false) && text(c.yourAnswer, L.yourAnswerChars, false)

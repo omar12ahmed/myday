@@ -30,11 +30,12 @@ const OTHER: [string, string][] = [
   ['Ask the tutor (Cybersecurity)', 'which lesson you’re on and your question'],
   ['More practice (Cybersecurity)', 'which lesson, and the questions already in your revision for it'],
   ['Explain it another way', 'the question, its answer and the explanation you’ve seen, your own answer and how it went — and, for a Cybersecurity check, which lesson — never for a card made from a private note, or a note in a private project'],
+  ['Check my answer (Arabic and Cybersecurity lessons)', 'the lesson’s objectives and teaching, the skills it builds on, the question, its reference answer and your answer to it — never an answer that looks like it holds a password or key'],
 ];
 // Which model does which job — set on the server (AI_ROUTES); keep this list aligned with the server configuration.
 const MODELS: [string, string][] = [
-  ['GLM-5.3-Flash (Z.ai)', 'Ask MyDay, Help me adjust today, Add what’s on my mind, AI help with notes, the Cybersecurity tutor, explaining Cybersecurity and your own concepts another way, writing cards from your notes, and checking Cybersecurity lesson cards'],
-  ['Gemini 3.8 Flash (Google)', 'writing Cybersecurity lesson cards, checking a note before cards are made from it, checking cards from your notes, and explaining Arabic another way'],
+  ['GLM-5.3-Flash (Z.ai)', 'Ask MyDay, Help me adjust today, Add what’s on my mind, AI help with notes, the Cybersecurity tutor, explaining Cybersecurity and your own concepts another way, checking your Cybersecurity answers, writing cards from your notes, and checking Cybersecurity lesson cards'],
+  ['Gemini 3.8 Flash (Google)', 'writing Cybersecurity lesson cards, checking a note before cards are made from it, checking cards from your notes, explaining Arabic another way, and checking your Arabic answers'],
 ];
 
 export function KnowsScreen({ data }: { data: MyDayData }) {

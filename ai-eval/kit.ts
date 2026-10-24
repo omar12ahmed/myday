@@ -76,3 +76,11 @@ export function setClock(local: string) {
   started = RealDate.now();
   (globalThis as unknown as { Date: DateConstructor }).Date = ClockDate as unknown as DateConstructor;
 }
+
+// ---------- "Check my answer" (graduated help) ----------
+export { checkAnswerRequest } from '../app/src/ai/checkAnswer';
+export { arabicCheckSource } from '../app/src/study/arabic/checkSource';
+export { cyberCheckSource } from '../app/src/study/cybersecurity/checkSource';
+export { loadAnswers as loadArabicAnswers, loadModule as loadArabicModule } from '../app/src/study/arabic/catalogue';
+export { activities as cyberActivities } from '../app/src/study/cybersecurity/catalogue';
+export { buildCheckAnswerMessages, checkAnswerContext, CHECK_ANSWER_LIMITS, mockCheckAnswer, readCheckAnswer } from '../supabase/functions/_shared/ai/check-answer.ts';

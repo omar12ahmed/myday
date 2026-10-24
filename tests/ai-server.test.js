@@ -427,6 +427,29 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
       check(`explain: ${why} — refused (400) before any model call`, e.status === 400 && finished.length === 0, e.status);
     }
   }
+  console.log('\n[2l] "Check my answer" (graduated help): one call; Arabic can go to its own model; the shared daily limit');
+  {
+    const ca = { version: 1, action: 'check-answer', subject: 'cybersecurity', lessonId: 'lesson.learning-evidence', objective: 'Explain what counts as skill evidence', teaching: 'A useful baseline records what you can demonstrate now, including uncertainty.',
+      prerequisites: [], question: 'Why record uncertainty?', yourAnswer: 'So you remember you weren\'t sure.', reference: 'It identifies what must be checked rather than guessed.', alsoCounts: '' };
+    env = { ...kbase, ...kMain, ...kLearn(), AI_ROUTES: '{"check-answer-arabic": "learn"}' };
+    let e = await kask(ca);
+    const parts = e.status === 200 ? JSON.parse(e.body.output) : {};
+    check('a Cybersecurity answer is checked (200) by the model for "check-answer" (here the main one), as JSON in parts', e.status === 200 && e.body.model === 'Main model' && ['hint', 'example', 'explanation', 'drewOn'].every(k => typeof parts[k] === 'string') && typeof parts.followUp?.question === 'string', e.body);
+    e = await kask({ ...ca, subject: 'arabic', lessonId: 'lesson.arabic-relative-clauses', question: 'What does the ه in الكتاب الذي قرأته refer to?', yourAnswer: 'The book.', reference: 'The book.', alsoCounts: 'Equivalent accurate explanations.' });
+    check('…an Arabic answer goes to the model for "check-answer-arabic" (here the learning one)', e.status === 200 && e.body.model === 'Learning model', e.body);
+    env = { ...env, AI_ROUTES: '{"explain-arabic": "learn"}' };
+    e = await kask({ ...ca, subject: 'arabic', lessonId: 'lesson.arabic-relative-clauses' });
+    check('…and stays on the main model unless AI_ROUTES names it (an Arabic explanation\'s route doesn\'t carry over)', e.status === 200 && e.body.model === 'Main model', e.body);
+    for (const [bad, why] of [[{ ...ca, yourAnswer: '  ' }, 'an empty answer'], [{ ...ca, subject: 'arabic' }, 'Arabic with a Cybersecurity lesson'], [{ ...ca, lessonId: 'lesson.arabic-relative-clauses' }, 'Cybersecurity with an Arabic lesson'],
+      [{ ...ca, subject: 'study' }, 'a subject it doesn\'t check'], [{ ...ca, yourAnswer: 'x'.repeat(1501) }, 'an answer over 1,500 characters'], [{ ...ca, notes: 'private' }, 'an extra field'], [{ ...ca, reference: '' }, 'no reference answer']]) {
+      e = await kask(bad);
+      check(`check-answer: ${why} — refused (400) before any model call`, e.status === 400 && finished.length === 0, e.status);
+    }
+    const used = Number((await sql(`select requests from public.ai_usage where user_id = $1 and day = (now() at time zone 'utc')::date`, [C]))[0]?.requests ?? 0);
+    env = { ...kbase, ...kMain, AI_DAILY_LIMIT: String(used + 1) }; // every AI request so far today, and room for one more
+    const first = await kask(ca), second = await kask(ca);
+    check('it counts against the same daily limit as every other AI request ("daily" once it\'s used)', first.status === 200 && second.status === 429 && second.body.reason === 'daily', [used, first.status, second.status, second.body]);
+  }
   console.log('\n[2g] Ask MyDay (the AI design, step 1): one call, on the main model; only the page slice the app sends');
   {
     const ak = { version: 1, action: 'ask', date: '2026-11-10', weekday: 'Tuesday', time: '10:00', page: 'project', text: 'Break this into smaller steps',
