@@ -1,5 +1,10 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.60.0 — Study home: Browse:** Study home's third part, your map and then your subjects as tiles, is now called
+**Browse**: "Explore" keeps its meaning in Projects (a project's investigation view). The map's line says it's "for
+finding your way around and the long view". Nothing else changes. No saved-data, sync or database change; going back
+to 1.59.0 is safe.
+
 **1.59.0 — Tasks keep one answer, and Private covers more AI help:** a task from Your tasks rolled to tomorrow in the
 evening check-in now follows its copy onto the next plan, so ticking it there ticks it in Your tasks (before, it came
 back unlinked and Your tasks hid it for good); ticked off or let go in Your tasks, its waiting copy leaves the queue;
