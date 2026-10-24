@@ -24,7 +24,11 @@ export function CheckMyAnswer({ answer, getSource, onUseMark, aside, render = t 
 }) {
   const [phase, setPhase] = useState<Phase>({ at: 'idle' });
   const request = useRef<AbortController | null>(null), part = useRef<HTMLDivElement>(null), moved = useRef(false);
-  useEffect(() => () => request.current?.abort(), []);
+  // A changed answer makes the help about the old one out of date: back to "Check my answer" (and a request still on its
+  // way for the old answer is stopped, as when the page closes).
+  const [askedAbout, setAskedAbout] = useState(answer);
+  if (askedAbout !== answer) { setAskedAbout(answer); if (phase.at !== 'idle') setPhase({ at: 'idle' }); }
+  useEffect(() => () => request.current?.abort(), [answer]);
   const step = phase.at === 'shown' ? phase.step : -1;
   useEffect(() => { if (moved.current) { part.current?.focus(); moved.current = false; } }, [step]);
   if (AI_MODE === 'off' || !answer.trim()) return null;
