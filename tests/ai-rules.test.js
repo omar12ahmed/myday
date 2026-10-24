@@ -1535,16 +1535,20 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
       NT('nOpen', 'Shed sizes', 'Two metres by three', { projectId: 'pjOpen', fileIds: ['flsecret0003'] }), NT('nLoose', 'Loose idea', 'Ask about a bike rack')];
     w.commitments = [{ id: 'cSecret', kind: 'appointment', title: 'SECRET-APPT', start: `${PD}T11:00`, end: `${PD}T12:00` }, { id: 'cOpen', kind: 'appointment', title: 'Dentist', start: `${PD}T15:00`, end: `${PD}T15:30` }];
     w.files = { items: [1, 2, 3].map(n => ({ id: 'flsecret000' + n, name: `SECRET-FILE-NAME-${n}.pdf`, type: 'application/pdf', size: 1234, sha256: 'd'.repeat(64), area: n === 3 ? 'note' : 'project', state: 'kept', addedOn: PD })) };
+    // The Cybersecurity portfolio never reaches AI in any form: an entry's title, evidence and note, and its file.
+    w.files.items.push({ id: 'flpfsecret01', name: 'SECRET-PF-FILE.png', type: 'image/png', size: 1234, sha256: 'd'.repeat(64), area: 'portfolio', state: 'kept', addedOn: PD });
+    w.cybersecurity.portfolio = [{ id: 'pfsecret0001', attemptId: 'caPfSecret', activityId: 'exercise.learning-evidence', title: 'SECRET-PF-TITLE', evidence: 'SECRET-PF-EVIDENCE', note: 'SECRET-PF-NOTE', reviewedOn: PD, fileIds: ['flpfsecret01'] }];
     w.patterns.prefs.name = 'SECRET-NAME';
     w.finance.debts = [{ id: 'db1', direction: 'owe', person: 'SECRET-MONEY', amount: 20, note: 'SECRET-MONEY-NOTE', since: PD }];
     const data = K.normalize(w);
     const SECRETS = ['SECRET-PROJECT', 'SECRET-SUMMARY', 'SECRET-OUTCOME', 'SECRET-FINISHED', 'SECRET-LEFTOFF', 'SECRET-TASK', 'SECRET-DUE', 'SECRET-STUCK', 'SECRET-DONE', 'SECRET-PERSON',
       'SECRET-NOTE', 'SECRET-PNOTE', 'SECRET-APPT', 'SECRET-PROBLEM', 'SECRET-BELIEF', 'SECRET-FOUND', 'SECRET-MILESTONE', 'SECRET-DECISION', 'SECRET-OPTION', 'SECRET-LINK', 'SECRET-WHY',
-      'SECRET-FILE', 'flsecret000', 'SECRET-RES-TITLE', 'SECRET-RES-URL', 'SECRET-RES-NOTE', 'SECRET-TIMELINE', 'SECRET-EVIDENCE', 'SECRET-WHERE', 'SECRET-ISSUE', 'SECRET-NAME', 'SECRET-MONEY'];
+      'SECRET-FILE', 'flsecret000', 'SECRET-RES-TITLE', 'SECRET-RES-URL', 'SECRET-RES-NOTE', 'SECRET-TIMELINE', 'SECRET-EVIDENCE', 'SECRET-WHERE', 'SECRET-ISSUE', 'SECRET-NAME', 'SECRET-MONEY', 'SECRET-PF', 'flpfsecret'];
     check('the made-up world really holds every secret after MyDay reads it (so the checks below can\'t pass by accident)', SECRETS.every(x => JSON.stringify(data).includes(x)), SECRETS.filter(x => !JSON.stringify(data).includes(x)));
     const leaks = (req, allowed = []) => SECRETS.filter(x => !allowed.includes(x) && JSON.stringify(req).includes(x));
     const pages = ['#today', '#calendar', '#today/tasks', '#projects', '#projects/p/pjSecret', '#projects/p/pjSecret/model', '#projects/p/pjOpen', '#projects/p/pjOpen/model', '#projects/p/pjCase',
-      '#projects/notes', '#projects/notes/nPriv', '#projects/notes/nInPriv', '#projects/notes/nOpen', '#today/tasks/tkSecret', '#today/tasks/tkOpen', '#review', '#study', '#finance', '#health'];
+      '#projects/notes', '#projects/notes/nPriv', '#projects/notes/nInPriv', '#projects/notes/nOpen', '#today/tasks/tkSecret', '#today/tasks/tkOpen', '#review', '#study', '#finance', '#health',
+      '#study/cybersecurity/portfolio', '#study/cybersecurity/notebook', '#study/cybersecurity/exercise.learning-evidence'];
     const askLeaks = pages.map(h => [h, leaks(K.askContext(K.askSlice(data, h, PD), 'what should I do next?', PD))]).filter(([, l]) => l.length);
     const focused = [['#projects/p/pjOpen/decisions', 'dO'], ['#projects/p/pjSecret/decisions', 'dS']].map(([h, id]) => [h, leaks(K.askContext(K.askSlice(data, h, PD, { decisionId: id }), 'what am I missing?', PD))]).filter(([, l]) => l.length);
     check('…and asking about a decision ("What am I missing?"): only an open project\'s decision goes, never a private one\'s', focused.length === 0, focused);
