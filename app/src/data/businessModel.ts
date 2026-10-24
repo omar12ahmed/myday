@@ -102,8 +102,11 @@ const as = (p: Project | null, id: string) => p?.model?.assumptions.find(a => a.
 export function setTemplate(d: MyDayData, projectId: string, to: TemplateChoice): boolean {
   const p = proj(d, projectId);
   if (!p) return false;
-  if (to === 'general') { if (p.template === undefined) return false; delete p.template; }
-  else { if (p.template === to) return false; p.template = to; }
+  const was = p.template;
+  if (to === 'general') { if (was === undefined) return false; delete p.template; }
+  else { if (was === to) return false; p.template = to; }
+  // Leaving the Research kind keeps its tab: Research stays switched on (turning it off is its own switch).
+  if (was === 'research' && !p.tools?.includes('research')) p.tools = [...(p.tools ?? []), 'research'];
   touch(p);
   return true;
 }

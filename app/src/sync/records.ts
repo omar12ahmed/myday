@@ -284,7 +284,7 @@ const MANY: Many[] = [
   // A project's research (specs/projects-research.md; from migration 20261025180000_sync_research.sql): one record per
   // question, source or finding, saying which project it belongs to.
   { kind: 'research', label: 'Research',
-    items: d => d.research.items, put: (dr, id, c) => putItem(dr.research.items, id, c),
+    items: d => d.research.items, put: (dr, id, c) => putItem(dr.research.items, id, c, (a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id)),
     clean: (id, raw) => same(id, via({ research: { items: [raw] } }).research.items[0]),
     summary: c => { const r = c as unknown as ResearchItem; const what = r.type === 'question' ? 'Question' : r.type === 'finding' ? 'Finding' : r.type === 'source' ? 'Source' : 'Research';
       const text = String((r as { text?: unknown }).text ?? (r as { title?: unknown }).title ?? ''); return `${what}${text ? `: ${text.length > 80 ? text.slice(0, 80) + '…' : text}` : ''}`; } },

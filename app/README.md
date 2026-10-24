@@ -960,7 +960,7 @@ or one of a business idea's things that must be true) and **Sources** (one of th
 nothing copied, or typed: a title, who or where it's from, its date). On the Model tab each thing that must be true
 shows "2 findings support it · 1 contradicts it"; whether it looks true stays your choice. Search this project finds
 them. Each item is one record (`research`, synced as the new kind `research`), saying which project it belongs to;
-deleting the project deletes them. Turning Research off keeps everything. Never sent to AI.
+deleting the project deletes them (also when its deletion arrives from another device). Turning Research off keeps everything. Never sent to AI.
 
 **Delete everything (1.73.0; `specs/delete-everything.md`):** at the end of Your account, **Delete everything…**
 opens a page that says what goes (your MyDay on every device and in your account, what you deleted before, your files

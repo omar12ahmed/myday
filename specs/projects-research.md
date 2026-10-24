@@ -62,16 +62,21 @@ whether it supports or contradicts what you think, or which questions are still 
   release keeps both (unknown fields; an unknown kind is kept and not offered to change).
 - **Sync:** each item is its own record of the new kind `research`, deletable (a constraints-only migration adding
   `research` to the two kind lists, as for `file`). Not a project part, so the split-project functions don't change.
-- **Deleting a project** deletes its research items with it (they belong to it). Items whose project is gone (deleted
-  by a release that didn't know Research) are deleted by the tidy, only while the device is fully in step with the
-  account (as Files' tidy).
+- **Deleting a project** deletes its research items with it (they belong to it), here or when the project's deletion
+  arrives from another device (which may not know Research): the sync engine then deletes the project's research
+  here and sends those deletions. A research deletion that arrives while its project is still here with its
+  deletion undecided (a conflict) waits. Nothing is deleted just because a project is missing (a project refused by
+  the account, say, still has its research on the device that made it).
+- **A source points only at this project's** links, files and notes (checked when it's added).
+- **Changing kind:** leaving the Research kind keeps Research switched on (`tools`), so its tab stays.
 - **Limits:** 200 questions, 300 sources and 1,000 findings per project; texts as Notes' and Resources' limits.
 - **Backups and export** include them (they're your data). Delete everything deletes them (they're records).
 
 ### In the app
 
 - `app/src/data/research.ts`: the records, normalizing, add/edit/remove, the links (sources, about), evidence for an
-  assumption, per-project lists, the tidy of items whose project is gone.
+  assumption, per-project lists. `sync/engine.ts`: research follows its project's deletion. Records are ordered by
+  when they were made, the same on every device.
 - `app/src/projects/ResearchView.tsx`: the tab; `project.tools` and the Research kind in `ProjectView.tsx`; the Model
   tab's evidence line in `ModelView.tsx`.
 - `app/src/sync/records.ts`: the `research` kind. `app/src/data/projectSearch.ts`: research text.
@@ -87,13 +92,13 @@ whether it supports or contradicts what you think, or which questions are still 
 
 - **research-rules:** normalizing (unknown kept, bad items counted, idempotent), add/edit/remove for each type,
   removing a source or question unlinks it from findings, evidence for an assumption (supports/contradicts counts),
-  limits, deleting a project deletes its items, the tidy (project gone; only when told it's safe), search text.
+  limits, deleting a project deletes its items, search hits only while Research is on.
 - **sync-records / sync-db:** the `research` kind round-trips; the migration accepts it, isolates it, tombstones it.
 - **app-projects (browser):** turn Research on/off (kept when off), the Research kind, add a question, a typed source,
   a source from Resources/Files/Notes, a finding with two sources about a question and an assumption, the conclusion
   and Answered, reopen, remove each (asked first), the Model tab's evidence line, search finds them, 320 px, keyboard.
 - **app-sync / app-sync-previous:** items sync to a second device; the previous release keeps the section, the
-  fields and the kind; deleting a project there leaves its items, which this release's tidy then removes.
+  fields and the kind; deleting a project there: this release then deletes its research as the deletion arrives.
 - **ai-rules [Privacy]:** a SECRET- value in every research field of a private and an open project; none reaches AI.
 - **Live:** after the migration (rehearsed first), on disposable account A: a made-up research project synced to a
   second device, then tidied.

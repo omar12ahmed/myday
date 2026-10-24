@@ -1702,7 +1702,8 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     // Research (specs/projects-research.md): a question, a typed source and a finding in each project, every field secret.
     const RQ = (id, pj, n) => [{ id: 'rq' + id, type: 'question', projectId: pj, text: `SECRET-RQ-TEXT-${n}`, conclusion: `SECRET-RQ-CONCL-${n}`, answeredOn: PD, createdAt: at, updatedAt: at },
       { id: 'rs' + id, type: 'source', projectId: pj, ref: null, title: `SECRET-RS-TITLE-${n}`, from: `SECRET-RS-FROM-${n}`, on: PD, createdAt: at, updatedAt: at },
-      { id: 'rf' + id, type: 'finding', projectId: pj, text: `SECRET-RF-TEXT-${n}`, limits: `SECRET-RF-LIMITS-${n}`, on: PD, sourceIds: ['rs' + id], about: [{ kind: 'question', id: 'rq' + id, stance: 'supports' }], createdAt: at, updatedAt: at }];
+      { id: 'rf' + id, type: 'finding', projectId: pj, text: `SECRET-RF-TEXT-${n}`, limits: `SECRET-RF-LIMITS-${n}`, on: PD, sourceIds: ['rs' + id, 'rr' + id], about: [{ kind: 'question', id: 'rq' + id, stance: 'supports' }], createdAt: at, updatedAt: at },
+      { id: 'rr' + id, type: 'source', projectId: pj, ref: { kind: 'resource', id: pj === 'pjSecret' ? 'rsS' : 'rsO' }, title: `SECRET-RS-REFTITLE-${n}`, from: '', on: null, createdAt: at, updatedAt: at }];
     w.research = { items: [...RQ('sec001', 'pjSecret', 1), ...RQ('opn001', 'pjOpen', 2)] };
     for (const pj of w.projects.items) if (pj.id === 'pjSecret' || pj.id === 'pjOpen') pj.tools = ['research'];
     w.files = { items: [1, 2, 3].map(n => ({ id: 'flsecret000' + n, name: `SECRET-FILE-NAME-${n}.pdf`, type: 'application/pdf', size: 1234, sha256: 'd'.repeat(64), area: n === 3 ? 'note' : 'project', state: 'kept', addedOn: PD })) };
@@ -1717,7 +1718,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
       'SECRET-FILE', 'flsecret000', 'SECRET-RQ', 'SECRET-RS', 'SECRET-RF', 'SECRET-RES-TITLE', 'SECRET-RES-URL', 'SECRET-RES-NOTE', 'SECRET-TIMELINE', 'SECRET-EVIDENCE', 'SECRET-WHERE', 'SECRET-ISSUE', 'SECRET-NAME', 'SECRET-MONEY', 'SECRET-PF', 'flpfsecret'];
     check('the made-up world really holds every secret after MyDay reads it (so the checks below can\'t pass by accident)', SECRETS.every(x => JSON.stringify(data).includes(x)), SECRETS.filter(x => !JSON.stringify(data).includes(x)));
     const leaks = (req, allowed = []) => SECRETS.filter(x => !allowed.includes(x) && JSON.stringify(req).includes(x));
-    const pages = ['#today', '#calendar', '#today/tasks', '#projects', '#projects/p/pjSecret', '#projects/p/pjSecret/model', '#projects/p/pjOpen', '#projects/p/pjOpen/model', '#projects/p/pjCase',
+    const pages = ['#today', '#calendar', '#today/tasks', '#projects', '#projects/p/pjSecret', '#projects/p/pjSecret/research', '#projects/p/pjOpen/research', '#projects/p/pjSecret/model', '#projects/p/pjOpen', '#projects/p/pjOpen/model', '#projects/p/pjCase',
       '#projects/notes', '#projects/notes/nPriv', '#projects/notes/nInPriv', '#projects/notes/nOpen', '#today/tasks/tkSecret', '#today/tasks/tkOpen', '#review', '#study', '#finance', '#health',
       '#study/cybersecurity/portfolio', '#study/cybersecurity/notebook', '#study/cybersecurity/exercise.learning-evidence'];
     const askLeaks = pages.map(h => [h, leaks(K.askContext(K.askSlice(data, h, PD), 'what should I do next?', PD))]).filter(([, l]) => l.length);

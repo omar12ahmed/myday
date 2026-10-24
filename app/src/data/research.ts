@@ -108,7 +108,6 @@ export function sourceInfo(d: MyDayData, s: ResearchSource): { name: string; det
 type Add = { ok: true; id: string } | { ok: false; why: string };
 const now = () => localStamp();
 const count = (d: MyDayData, projectId: string, type: string) => d.research.items.filter(x => x.projectId === projectId && x.type === type).length;
-const touchProject = (d: MyDayData, projectId: string) => { const p = d.projects.items.find(x => x.id === projectId); if (p) p.updatedAt = now(); };
 const known = (d: MyDayData, projectId: string) => d.projects.items.some(p => p.id === projectId);
 
 export function addQuestion(d: MyDayData, projectId: string, text: string): Add {
@@ -142,11 +141,19 @@ export function reopenQuestion(d: MyDayData, id: string): boolean {
   return true;
 }
 
+// A link, file or note of this project's (a source points only at those).
+function belongs(d: MyDayData, projectId: string, ref: { kind: string; id: string }) {
+  const p = d.projects.items.find(x => x.id === projectId);
+  if (ref.kind === 'resource') return !!p?.resources?.some(r => r.id === ref.id);
+  if (ref.kind === 'file') return !!p?.fileIds?.includes(ref.id) && d.files.items.some(f => f.id === ref.id);
+  return d.notes.items.some(n => n.id === ref.id && n.projectId === projectId);
+}
 // A source: one of yours (by its id: the same link, file or note is one source, not two) or typed.
 export interface NewSource { ref?: { kind: 'resource' | 'file' | 'note'; id: string } | null; title?: string; from?: string; on?: DateKey | null }
 export function addSource(d: MyDayData, projectId: string, s: NewSource): Add {
   if (!known(d, projectId)) return { ok: false, why: 'That project isn’t here any more.' };
   const ref = s.ref && REF_KINDS.includes(s.ref.kind) && s.ref.id ? { kind: s.ref.kind, id: s.ref.id } : null;
+  if (s.ref && (!ref || !belongs(d, projectId, ref))) return { ok: false, why: 'That isn’t one of this project’s links, files or notes.' };
   if (ref) { const same = researchOf(d, projectId).sources.find(x => x.ref?.kind === ref.kind && x.ref.id === ref.id); if (same) return { ok: true, id: same.id }; }
   const title = tidyText(s.title ?? '', RESEARCH_LIMITS.title);
   if (!ref && !title) return { ok: false, why: 'Give the source a title first.' };
@@ -170,7 +177,7 @@ export interface NewFinding { text: string; limits?: string; on?: DateKey | null
 function cleanLinks(d: MyDayData, projectId: string, f: Pick<NewFinding, 'sourceIds' | 'about'>) {
   const mine = researchOf(d, projectId);
   const p = d.projects.items.find(x => x.id === projectId);
-  const assumptions = p?.template === 'business' ? p.model?.assumptions ?? [] : []; // (businessModel.ts imports this file)
+  const assumptions = p?.model?.assumptions ?? []; // a business idea's one page, kept even while the project is another kind
   const sourceIds = [...new Set(f.sourceIds ?? [])].filter(id => mine.sources.some(s => s.id === id)).slice(0, RESEARCH_LIMITS.sourcesPerFinding);
   const about: ResearchAbout[] = [];
   for (const a of f.about ?? []) {
@@ -197,6 +204,9 @@ export function editFinding(d: MyDayData, id: string, patch: Partial<NewFinding>
     ...(patch.sourceIds === undefined && patch.about === undefined ? { sourceIds: f.sourceIds, about: f.about }
       : cleanLinks(d, f.projectId, { sourceIds: patch.sourceIds ?? f.sourceIds, about: (patch.about ?? f.about) as NewFinding['about'] })),
   };
+  // An entry of a kind or stance this version doesn't know (from a newer MyDay) is kept as it is.
+  const foreign = f.about.filter(a => !['question', 'assumption'].includes(a.kind) || !(STANCES as readonly string[]).includes(a.stance));
+  next.about = [...next.about, ...foreign.filter(a => !next.about.some(b => b.kind === a.kind && b.id === a.id))];
   if (JSON.stringify(next) === JSON.stringify({ text: f.text, limits: f.limits, on: f.on, sourceIds: f.sourceIds, about: f.about })) return false;
   Object.assign(f, next, { updatedAt: now() });
   return true;
@@ -213,7 +223,6 @@ export function removeResearch(d: MyDayData, id: string): boolean {
     if (isSource(x) && f.sourceIds.includes(id)) { f.sourceIds = f.sourceIds.filter(s => s !== id); f.updatedAt = now(); }
     if (isQuestion(x) && f.about.some(a => a.kind === 'question' && a.id === id)) { f.about = f.about.filter(a => !(a.kind === 'question' && a.id === id)); f.updatedAt = now(); }
   }
-  touchProject(d, x.projectId);
   return true;
 }
 // When one of the things that must be true is removed: findings stop pointing at it.
@@ -221,26 +230,10 @@ export function forgetAssumption(d: MyDayData, projectId: string, assumptionId: 
   for (const f of researchOf(d, projectId).findings)
     if (f.about.some(a => a.kind === 'assumption' && a.id === assumptionId)) { f.about = f.about.filter(a => !(a.kind === 'assumption' && a.id === assumptionId)); f.updatedAt = now(); }
 }
-// When the project is deleted, its research goes with it.
+// When the project is deleted (here, or its deletion arriving from another device: sync/engine.ts), its research goes
+// with it.
 export function deleteProjectResearch(d: MyDayData, projectId: string): boolean {
   const before = d.research.items.length;
   d.research.items = d.research.items.filter(x => x.projectId !== projectId);
   return d.research.items.length !== before;
-}
-// Items whose project is gone (deleted by a MyDay that didn't know Research): removed by the tidy, only while this
-// device is fully in step with your account.
-export const orphanResearch = (d: MyDayData) => d.research.items.filter(x => !d.projects.items.some(p => p.id === x.projectId));
-export function removeOrphanResearch(d: MyDayData): boolean {
-  const gone = new Set(orphanResearch(d).map(x => x.id));
-  if (!gone.size) return false;
-  d.research.items = d.research.items.filter(x => !gone.has(x.id));
-  return true;
-}
-
-// For Search this project: every piece of text, with what it is.
-export function researchText(d: MyDayData, projectId: string): { id: string; kind: 'question' | 'finding' | 'source'; text: string }[] {
-  const r = researchOf(d, projectId);
-  return [...r.questions.map(q => ({ id: q.id, kind: 'question' as const, text: [q.text, q.conclusion].filter(Boolean).join('\n') })),
-    ...r.findings.map(f => ({ id: f.id, kind: 'finding' as const, text: [f.text, f.limits].filter(Boolean).join('\n') })),
-    ...r.sources.filter(s => !s.ref).map(s => ({ id: s.id, kind: 'source' as const, text: [s.title, s.from].filter(Boolean).join('\n') }))];
 }

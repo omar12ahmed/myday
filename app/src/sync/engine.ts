@@ -23,6 +23,7 @@
 // Sync's notes are kept per account; nothing is sent or fetched while a different account is signed in, and the
 // cloud checks that too.
 import { clearFileCache } from '../data/fileCache';
+import { deleteProjectResearch } from '../data/research';
 import { useSyncExternalStore } from 'react';
 import { todayKey } from '../data/dates';
 import { freshState as freshData } from '../data/normalize';
@@ -387,13 +388,16 @@ async function applyRows(st: SyncState, link: Link, rows: Row[], lastSeq: number
           noteCloudVersion(next, key, local.get(key) ?? null, { v: row.version, del: true, content: null, by: row.updated_by, at: row.updated_at });
         }
       }
-      const ordered = [...latest.values()].sort((a, b) => projectApplyOrder([keyOf(a.kind, a.record_id), a.deleted ? null : a.data as Content], [keyOf(b.kind, b.record_id), b.deleted ? null : b.data as Content]));
+      // (Research after projects, so a project's deletion is decided before its research's: see below.)
+      const ordered = [...latest.values()].sort((a, b) => Number(a.kind === 'research') - Number(b.kind === 'research')
+        || projectApplyOrder([keyOf(a.kind, a.record_id), a.deleted ? null : a.data as Content], [keyOf(b.kind, b.record_id), b.deleted ? null : b.data as Content]));
       for (const row of ordered) {
         const key = keyOf(row.kind, row.record_id);
         const known = next.base[key];
         if (known && row.version <= known.v) continue; // already have this version (e.g. it was sent from here)
         if (next.out[key]) continue;                    // a change from here is still on its way: sorted out next time
         if (projectAncestors(key).some(parent => next.conflicts[parent] && (next.conflicts[parent].del || !local.has(parent)))) continue;
+        if (row.kind === 'research' && row.deleted && heldByProject(next, local.get(key))) continue; // its project's deletion is undecided
         const clean = row.deleted ? null : cleanRecord(key, row.data);
         if (!row.deleted && !clean) continue;           // nothing usable in it
         const cloud: Conflict = { v: row.version, del: row.deleted, content: clean, by: row.updated_by, at: row.updated_at };
@@ -410,6 +414,9 @@ async function applyRows(st: SyncState, link: Link, rows: Row[], lastSeq: number
           changed = noteCloudVersion(next, key, here, cloud, draft) || changed; // changed in both places: you decide
         }
       }
+      // A project deleted elsewhere takes its research with it here (that device may not know Research), and the
+      // deletions go to your account from here (specs/projects-research.md).
+      for (const row of latest.values()) if (row.kind === 'project' && row.deleted && !draft.projects.items.some(p => p.id === row.record_id) && deleteProjectResearch(draft, row.record_id)) changed = true;
       if (!changed) return false;
       orderProjectParts(draft, positions);
     }, () => touchesToday); // today's plan changed: anything you were in the middle of on Today was based on the older one
@@ -527,6 +534,12 @@ export async function clearThisDevice() {
   joinProblem = '';
   publish();
   void run();
+}
+
+// A research record (specs/projects-research.md) waits while its project is still here with its deletion undecided.
+function heldByProject(link: Link, here: Content | undefined): boolean {
+  const pid = here && typeof (here as { projectId?: unknown }).projectId === 'string' ? (here as { projectId: string }).projectId : null;
+  return !!pid && !!link.conflicts[keyOf('project', pid)];
 }
 
 // ---------- Delete everything (specs/delete-everything.md) ----------
@@ -695,8 +708,10 @@ export async function resolveConflicts(keys: string[], choice: 'here' | 'cloud')
       applying = true;
       let r: ReturnType<typeof updateSaved>;
       try { r = updateSaved(draft => {
-        putRecords(draft, [...todo.map(k => [k, link.conflicts[k].content] as [string, Content | null]),
-          ...subtree.map(row => [keyOf(row.kind, row.record_id), row.deleted ? null : cleanRecord(keyOf(row.kind, row.record_id), row.data)] as [string, Content | null])]);
+        const entries = [...todo.map(k => [k, link.conflicts[k].content] as [string, Content | null]),
+          ...subtree.map(row => [keyOf(row.kind, row.record_id), row.deleted ? null : cleanRecord(keyOf(row.kind, row.record_id), row.data)] as [string, Content | null])];
+        putRecords(draft, entries);
+        for (const [k, c] of entries) if (c === null && k.startsWith('project:')) deleteProjectResearch(draft, k.slice('project:'.length)); // its research goes with it
       }, touchesToday); }
       finally { applying = false; }
       if (r === 'not-saved') { st.kept.splice(st.kept.length - keep.length, keep.length); writeState(st); ok = false; return; }

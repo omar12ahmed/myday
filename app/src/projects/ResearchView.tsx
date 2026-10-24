@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type KeyboardEvent } from 'react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { useConfirm } from '../components/confirm';
@@ -52,6 +52,7 @@ function QuestionsCard({ data, p, questions }: { data: MyDayData; p: Project; qu
       <h3 id="researchQuestionsH">Questions</h3>
       <Note className="mt-0">{questions.length ? `${open} open, ${questions.length - open} answered.` : 'What do you want to find out? Each question gathers its findings, and what you concluded.'}</Note>
       {questions.length > 0 && <ul className="list-none p-0 m-0">{questionOrder(questions).map(q => <QuestionRow key={q.id} data={data} p={p} q={q} />)}</ul>}
+      {questions.length >= RESEARCH_LIMITS.questions && <Note className="mb-0 mt-3">{RESEARCH_LIMITS.questions} questions is the most a project can have.</Note>}
       {questions.length < RESEARCH_LIMITS.questions && (
         <form className="flex flex-wrap gap-2 mt-3" onSubmit={e => { e.preventDefault(); add(); }}>
           <label htmlFor="researchQuestionNew" className="sr-only">A question to find out</label>
@@ -68,7 +69,13 @@ function QuestionRow({ data, p, q }: { data: MyDayData; p: Project; q: ResearchQ
   const e = findingsAbout(data, p.id, 'question', q.id);
   async function remove() {
     if (!(await confirm({ title: 'Remove this question?', body: 'Its findings stay; they just stop pointing at it.', confirmLabel: 'Remove', cancelLabel: 'Keep it' }))) return;
-    if (apply(d => removeResearch(d, q.id))) toast('Question removed.');
+    if (apply(d => removeResearch(d, q.id))) { toast('Question removed.'); focusSoon('researchQuestionNew'); }
+  }
+  // What's typed so far counts (it's saved when the box loses focus, which a tap here may not do first).
+  function markAnswered() {
+    const typed = (document.getElementById(`rqC-${q.id}`) as HTMLTextAreaElement | null)?.value ?? q.conclusion;
+    if (!typed.trim()) { toast('Write what you concluded first.'); focusSoon(`rqC-${q.id}`); return; }
+    if (update(d => { editQuestion(d, q.id, { conclusion: typed }); return answerQuestion(d, q.id) ? undefined : false; })) toast('Answered.');
   }
   return (
     <li className="border-t border-outline first:border-t-0 py-3" data-s="research-question" data-id={q.id} data-state={q.answeredOn ? 'answered' : 'open'}>
@@ -84,8 +91,7 @@ function QuestionRow({ data, p, q }: { data: MyDayData; p: Project; q: ResearchQ
       </Field>
       <div className="flex flex-wrap gap-x-5 mt-1">
         {q.answeredOn ? <LinkButton className="text-[15px]" data-action="research-question-reopen" onClick={() => { if (apply(d => reopenQuestion(d, q.id))) toast('Open again.'); }}>Reopen</LinkButton>
-          : <LinkButton className="text-[15px]" data-action="research-question-answer" disabled={!q.conclusion}
-            onClick={() => { if (apply(d => answerQuestion(d, q.id))) toast('Answered.'); }}>{q.conclusion ? 'Mark answered' : 'Write what you concluded to mark it answered'}</LinkButton>}
+          : <LinkButton className="text-[15px]" data-action="research-question-answer" onClick={markAnswered}>Mark answered</LinkButton>}
         <LinkButton className="text-[15px]" data-action="research-question-edit" onClick={() => setEditing(true)}>Edit</LinkButton>
         <LinkButton className="text-[15px]" data-action="research-question-remove" onClick={remove}>Remove</LinkButton>
       </div>
@@ -119,7 +125,8 @@ function FindingsCard({ data, p, findings }: { data: MyDayData; p: Project; find
       {list.length ? <ul className="list-none p-0 m-0">{list.map(f => <FindingRow key={f.id} data={data} p={p} f={f} />)}</ul>
         : !adding && <Note className="mt-0">What you found out, where it came from, and how far to trust it.</Note>}
       {adding ? <FindingForm data={data} p={p} onDone={() => { setAdding(false); focusSoon('researchFindingAdd'); }} />
-        : findings.length < RESEARCH_LIMITS.findings && <Button inline id="researchFindingAdd" className={list.length ? 'mt-3' : ''} data-action="research-finding-add" onClick={() => setAdding(true)}>Add a finding</Button>}
+        : findings.length >= RESEARCH_LIMITS.findings ? <Note className="mb-0 mt-3">{RESEARCH_LIMITS.findings} findings is the most a project can have.</Note>
+        : <Button inline id="researchFindingAdd" className={list.length ? 'mt-3' : ''} data-action="research-finding-add" onClick={() => setAdding(true)}>Add a finding</Button>}
     </Card>
   );
 }
@@ -132,7 +139,7 @@ function FindingRow({ data, p, f }: { data: MyDayData; p: Project; f: ResearchFi
   };
   async function remove() {
     if (!(await confirm({ title: 'Remove this finding?', body: 'Its sources stay.', confirmLabel: 'Remove', cancelLabel: 'Keep it' }))) return;
-    if (apply(d => removeResearch(d, f.id))) toast('Finding removed.');
+    if (apply(d => removeResearch(d, f.id))) { toast('Finding removed.'); focusSoon('researchFindingAdd'); }
   }
   if (editing) return <li className="border-t border-outline first:border-t-0 py-3"><FindingForm data={data} p={p} f={f} onDone={() => setEditing(false)} /></li>;
   return (
@@ -151,7 +158,7 @@ function FindingRow({ data, p, f }: { data: MyDayData; p: Project; f: ResearchFi
 type About = NonNullable<NewFinding['about']>[number];
 function FindingForm({ data, p, f, onDone }: { data: MyDayData; p: Project; f?: ResearchFinding; onDone: () => void }) {
   const r = researchOf(data, p.id);
-  const [text, setText] = useState(f?.text ?? ''), [limits, setLimits] = useState(f?.limits ?? ''), [on, setOn] = useState(f?.on ?? todayKey());
+  const [text, setText] = useState(f?.text ?? ''), [limits, setLimits] = useState(f?.limits ?? ''), [on, setOn] = useState(f ? f.on ?? '' : todayKey());
   const [sources, setSources] = useState<string[]>(f?.sourceIds ?? []);
   const [about, setAbout] = useState<About[]>((f?.about ?? []).filter(a => (a.kind === 'question' || a.kind === 'assumption') && (STANCES as readonly string[]).includes(a.stance)) as About[]);
   const [newSource, setNewSource] = useState(false);
@@ -180,11 +187,11 @@ function FindingForm({ data, p, f, onDone }: { data: MyDayData; p: Project; f?: 
         {r.sources.length === 0 && <p className="m-0 text-sm text-fg-3">No sources yet.</p>}
         {r.sources.map(s => (
           <label key={s.id} className="flex items-center gap-2 min-h-11 text-[15px] cursor-pointer">
-            <input type="checkbox" className="w-5 h-5" checked={sources.includes(s.id)} onChange={e => setSources(l => (e.target.checked ? [...l, s.id] : l.filter(x => x !== s.id)))} />
+            <input type="checkbox" id={`${idp}-src-${s.id}`} className="w-5 h-5" checked={sources.includes(s.id)} onChange={e => setSources(l => (e.target.checked ? [...l, s.id] : l.filter(x => x !== s.id)))} />
             <span className="break-words">{sourceInfo(data, s).name}</span>
           </label>
         ))}
-        {newSource ? <SourceForm data={data} p={p} onDone={id => { setNewSource(false); if (id) setSources(l => [...l, id]); }} />
+        {newSource ? <SourceForm data={data} p={p} onDone={id => { setNewSource(false); if (id) { setSources(l => (l.includes(id) ? l : [...l, id])); focusSoon(`${idp}-src-${id}`); } }} />
           : <LinkButton className="text-[15px] justify-self-start" data-action="research-finding-new-source" onClick={() => setNewSource(true)}>Add a source</LinkButton>}
       </fieldset>
       {targets.length > 0 && (
@@ -220,7 +227,8 @@ function SourcesCard({ data, p, sources, findings }: { data: MyDayData; p: Proje
       {sources.length ? <ul className="list-none p-0 m-0">{sources.map(s => <SourceRow key={s.id} data={data} s={s} used={findings.filter(f => f.sourceIds.includes(s.id)).length} />)}</ul>
         : !adding && <Note className="mt-0">A link, file or note you already have here, or one you type: a book, a conversation, an interview.</Note>}
       {adding ? <SourceForm data={data} p={p} onDone={() => { setAdding(false); focusSoon('researchSourceAdd'); }} />
-        : sources.length < RESEARCH_LIMITS.sources && <Button inline id="researchSourceAdd" className={sources.length ? 'mt-3' : ''} data-action="research-source-add" onClick={() => setAdding(true)}>Add a source</Button>}
+        : sources.length >= RESEARCH_LIMITS.sources ? <Note className="mb-0 mt-3">{RESEARCH_LIMITS.sources} sources is the most a project can have.</Note>
+        : <Button inline id="researchSourceAdd" className={sources.length ? 'mt-3' : ''} data-action="research-source-add" onClick={() => setAdding(true)}>Add a source</Button>}
     </Card>
   );
 }
@@ -231,7 +239,7 @@ function SourceRow({ data, s, used }: { data: MyDayData; s: ResearchSource; used
   async function remove() {
     const body = `${used ? `It comes out of ${used} finding${used === 1 ? '' : 's'}, which keep their words. ` : ''}${s.ref ? 'The link, file or note itself stays where it is.' : ''}`.trim() || 'It can’t be brought back.';
     if (!(await confirm({ title: 'Remove this source?', body, confirmLabel: 'Remove', cancelLabel: 'Keep it' }))) return;
-    if (apply(d => removeResearch(d, s.id))) toast('Source removed.');
+    if (apply(d => removeResearch(d, s.id))) { toast('Source removed.'); focusSoon('researchSourceAdd'); }
   }
   async function openIt() {
     if (s.ref?.kind === 'file') { const f = data.files.items.find(x => x.id === s.ref!.id); if (f) { const r = await openFile(f); if (r !== 'ok') toast(WHY[r]); } }
@@ -262,6 +270,8 @@ function SourceForm({ data, p, s, onDone }: { data: MyDayData; p: Project; s?: R
   const [pick, setPick] = useState(s ? '' : options.length ? options[0].value : ''), [typed, setTyped] = useState(!!s || !options.length);
   const [title, setTitle] = useState(s?.title ?? ''), [from, setFrom] = useState(s?.from ?? ''), [on, setOn] = useState(s?.on ?? '');
   const idp = s ? `rsE-${s.id}` : 'rsN';
+  // This form can sit inside the finding's form: Enter here adds the source, never the finding.
+  const enter = (e: KeyboardEvent<HTMLInputElement>) => { if (e.key !== 'Enter') return; e.preventDefault(); if (typed ? title.trim() : pick) save(); };
   function save() {
     if (s) { apply(d => editSource(d, s.id, { title, from, on: isDateKey(on) ? on : null })); onDone(s.id); return; }
     const out: { r: ReturnType<typeof addSource> } = { r: { ok: false, why: '' } };
@@ -286,9 +296,9 @@ function SourceForm({ data, p, s, onDone }: { data: MyDayData; p: Project; s?: R
           <Select id={`${idp}-pick`} value={pick} onChange={e => setPick(e.target.value)}>{options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</Select>
         </Field>
       ) : <>
-        <Field label="Title" htmlFor={`${idp}-title`}><TextInput id={`${idp}-title`} value={title} maxLength={RESEARCH_LIMITS.title} placeholder="e.g. A talk with a shop owner" onChange={e => setTitle(e.target.value)} /></Field>
-        <Field label="Who or where it’s from (optional)" htmlFor={`${idp}-from`}><TextInput id={`${idp}-from`} value={from} maxLength={RESEARCH_LIMITS.from} placeholder="e.g. a market stall, a book’s author" onChange={e => setFrom(e.target.value)} /></Field>
-        <Field label="Its date (optional)" htmlFor={`${idp}-on`}><TextInput id={`${idp}-on`} type="date" className="!w-auto" value={on ?? ''} onChange={e => setOn(e.target.value)} /></Field>
+        <Field label="Title" htmlFor={`${idp}-title`}><TextInput id={`${idp}-title`} onKeyDown={enter} value={title} maxLength={RESEARCH_LIMITS.title} placeholder="e.g. A talk with a shop owner" onChange={e => setTitle(e.target.value)} /></Field>
+        <Field label="Who or where it’s from (optional)" htmlFor={`${idp}-from`}><TextInput id={`${idp}-from`} onKeyDown={enter} value={from} maxLength={RESEARCH_LIMITS.from} placeholder="e.g. a market stall, a book’s author" onChange={e => setFrom(e.target.value)} /></Field>
+        <Field label="Its date (optional)" htmlFor={`${idp}-on`}><TextInput id={`${idp}-on`} onKeyDown={enter} type="date" className="!w-auto" value={on ?? ''} onChange={e => setOn(e.target.value)} /></Field>
       </>}
       <div className="flex flex-wrap gap-2">
         <Button inline variant="primary" data-action="research-source-save" disabled={typed ? !title.trim() : !pick} onClick={save}>{s ? 'Save' : 'Add the source'}</Button>
