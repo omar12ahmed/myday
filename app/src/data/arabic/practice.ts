@@ -3,6 +3,7 @@
 // Reflect; finishing the session records the day, and when the lesson isn't in revision yet it joins as one
 // Practise again card (lessons.ts places it, within the 8 new cards a day). Only what you ticked is saved
 // (arabic.practice). Functions that change data take a draft (see storage.ts update()).
+import { keyOf } from '../dates';
 import { rateItem, type Answered } from '../study/revision';
 import type { DateKey, MyDayData, Rating } from '../types';
 import type { ArabicPractice, PracticeStep, Review } from './types';
@@ -48,12 +49,30 @@ export function tickStep(d: MyDayData, attemptId: string, step: PracticeStep, on
 export function discardTicks(d: MyDayData, attemptId: string, lessonId: string) {
   if (ticksIn(d, attemptId, lessonId).length) edit(d, lessonId, p => { delete p.open; });
 }
-// Finishing a session: its ticks become the days you did them (ticks left by another session are cleared). Returns
-// what you did, and whether the lesson should now join revision (you did one of them and it isn't there yet).
+// The ticks become the days you did them. Returns whether the lesson should now join revision (you did one of them
+// and it isn't there yet).
+function recordDays(d: MyDayData, lessonId: string, did: PracticeStep[], day: DateKey): boolean {
+  edit(d, lessonId, p => {
+    if (did.includes('try') && !(p.tried && p.tried > day)) p.tried = day;
+    if (did.includes('challenge') && !(p.challenged && p.challenged > day)) p.challenged = day;
+    delete p.open;
+  });
+  return did.length > 0 && !practiceOf(d, lessonId)?.review;
+}
+// Finishing a session: its own ticks, dated today.
 export function applyTicks(d: MyDayData, attemptId: string, lessonId: string, k: DateKey): { did: PracticeStep[]; join: boolean } {
   const did = ticksIn(d, attemptId, lessonId);
-  if (practiceOf(d, lessonId)?.open) edit(d, lessonId, p => { if (did.includes('try')) p.tried = k; if (did.includes('challenge')) p.challenged = k; delete p.open; });
-  return { did, join: did.length > 0 && !practiceOf(d, lessonId)?.review };
+  return { did, join: did.length > 0 && recordDays(d, lessonId, did, k) };
+}
+// Ticks another session left behind (not `current`): a session finished where the ticks hadn't reached (another
+// device, or an older MyDay) still counts, dated the day it finished; a session that's gone leaves nothing. Returns
+// whether the lesson should now join revision, or null when there was nothing to settle.
+export function settleOthers(d: MyDayData, lessonId: string, current: string | null): boolean | null {
+  const o = practiceOf(d, lessonId)?.open;
+  if (!o || o.attemptId === current) return null;
+  const a = d.arabic.attempts.find(x => x.id === o.attemptId);
+  if (a && !a.finishedAt) return null; // still open (on another device, say): its ticks wait for it
+  return recordDays(d, lessonId, a ? o.did : [], a ? keyOf(new Date(a.finishedAt!)) : '');
 }
 // Joins revision, first back on `due` (7 days on, or the next day with room).
 export function joinRevision(d: MyDayData, lessonId: string, due: DateKey, k: DateKey) {

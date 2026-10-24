@@ -253,7 +253,8 @@ Not everything should be a flashcard: a skill needs doing again, not just rememb
   `bringBackPractice` in `app/src/data/arabic/lessons.ts` (it places the card within the 8 a day). At Reflect,
   "Did you do its Try it or mini challenge?" offers the steps the lesson has. Finishing records the day; when the
   lesson isn't in revision it joins, about a week later, and the finish card says the day, with "Don't bring it
-  back". Discarding the session takes its ticks. The card is `<lesson id>:practise`: one per lesson, at most one per
+  back". Discarding the session takes its ticks; ticks from a session finished where they hadn't reached (another
+  device, or an older MyDay) count when you next tick or finish on that lesson, dated the day it finished. The card is `<lesson id>:practise`: one per lesson, at most one per
   round. In the round it shows the lesson's Try it and mini challenge (`app/src/study/arabic/PractiseQuestion.tsx`)
   with the explained answer hidden until you ask, then the usual marks. Its gaps are 7 → 21 → 60 → 180 on Good,
   the same gap on Hard, and back to 7 on Again. The lesson's place line says when you last did them and when it's

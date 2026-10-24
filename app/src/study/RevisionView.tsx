@@ -148,6 +148,7 @@ function RoundOver({ data, r }: { data: MyDayData; r: Round | null }) {
           <Summary>How revision is scheduled</Summary>
           <p className="text-[15px]">First review: <strong>Again</strong> → tomorrow · <strong>Hard</strong> → in 2 days · <strong>Good</strong> → in 4 days.</p>
           <p className="text-[15px]">After that: Again → tomorrow (the gap starts over) · Hard → the last gap × 1.2 · Good → the last gap × 2.5. Gaps always grow by at least a day and stop at 180 days.</p>
+          <p className="text-[15px]">A lesson to practise again (Arabic) has its own gaps: first about a week after you did it; then <strong>Good</strong> → 21 days, then 60, then 180 · <strong>Hard</strong> → the same gap · <strong>Again</strong> → a week. At most one comes up in a round.</p>
           <Note className="m-0">Dates are saved on this device. Concepts never revised come after any that are due. Arabic words and checks, and Cybersecurity checks, that you add first come back the next day.</Note>
         </details>
       </Card>
@@ -257,13 +258,14 @@ export function Question({ data, r, q, at }: { data: MyDayData; r: Round; q: Ask
 // hasn't clicked yet is better learned a different way (ideas are on its page after the round).
 function Struggle({ data, q, chosen }: { data: MyDayData; q: Asked; chosen: number | null }) {
   const st = data.study, before = conceptEvidence(st, q).own > 0, repeat = repeatedWrongChoice(st, q);
-  const again = repeat && chosen === repeat.choice ? repeat.times + 1 : null;
+  const again = (q.gap ?? nextGap)(q.interval, 'again');
+  const picked = repeat && chosen === repeat.choice ? repeat.times + 1 : null;
   return (
     <div className="bg-surface-2 rounded-tile px-3.5 py-2.5 my-2.5 text-[15px]" data-s="rev-struggle" data-v={before ? 'slipped' : 'not-yet'}>
       {before
-        ? <>You’ve recalled this on your own before, so it slipped rather than went. <strong>Again</strong> brings it back tomorrow.</>
+        ? <>You’ve recalled this on your own before, so it slipped rather than went. <strong>Again</strong> brings it back {again === 1 ? 'tomorrow' : `in ${again} days`}.</>
         : q.notYet ?? <>This one hasn’t clicked yet, which is normal for something new. Read the explanation once more, slowly; at the end of the round you’ll find ideas for learning it a different way.</>}
-      {again && <p className="mt-1.5 mb-0">You’ve picked this answer {again} times now. Working out why it seems right is often what makes it click.</p>}
+      {picked && <p className="mt-1.5 mb-0">You’ve picked this answer {picked} times now. Working out why it seems right is often what makes it click.</p>}
     </div>
   );
 }

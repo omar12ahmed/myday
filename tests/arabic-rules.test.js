@@ -343,6 +343,35 @@ check('vowelled and unvowelled versions are both kept where the package has them
   check('saved practice: a duplicate, another course\'s lesson, an empty record and a schedule without its day are dropped (and counted); a bad day or step is left out', np.length === 1 && prep.dropped === 4
     && !('challenged' in np[0]) && JSON.stringify(np[0].open) === JSON.stringify({ attemptId: 'aa1', did: ['try'] }) && np[0].review.due === '2026-11-01');
   check('no practice yet stays exactly that: the field is absent, as older data was', !('practice' in A.normalizeArabic({ pathId: 'path.arabic-a1', attempts: [] })));
+  // Ticks a session left behind: finished where they hadn't reached (another device, an older MyDay), or gone.
+  const left = { study: { reviews: [], concepts: [] }, arabic: { ...A.emptyArabic(), practice: [{ id: PL, open: { attemptId: 'aaElsewhere', did: ['challenge'] } }] }, cybersecurity: { cards: [] } };
+  left.arabic.attempts.push({ id: 'aaElsewhere', lessonId: PL, curriculumVersion: '1.1.2', variant: 'standard', startedAt: '2026-10-09T09:00:00', finishedAt: null, help: 'independent', practised: [], answers: {}, revealed: [], revisit: '' });
+  check('ticks of a session still open elsewhere wait for it', A.settleTicks(left, PL, null, '2026-10-11') === null && A.practiceOf(left, PL).open.attemptId === 'aaElsewhere');
+  left.arabic.attempts[0].finishedAt = '2026-10-09T10:00:00';
+  const ps7 = A.beginSession(left, PL, 'short');
+  check('ticks of a session finished elsewhere count, dated the day it finished, and bring the lesson back as usual', A.settleTicks(left, PL, ps7, '2026-10-11') === '2026-10-18'
+    && A.practiceOf(left, PL).challenged === '2026-10-09' && !('open' in A.practiceOf(left, PL)) && A.practiceOf(left, PL).review.due === '2026-10-18');
+  const gone = { study: { reviews: [], concepts: [] }, arabic: { ...A.emptyArabic(), practice: [{ id: PL, tried: '2026-10-01', open: { attemptId: 'aaDiscarded', did: ['try'] } }] }, cybersecurity: { cards: [] } };
+  const ps8 = A.beginSession(gone, PL, 'short'); A.finishSession(gone, ps8);
+  check('…and ticks of a session that\'s gone are cleared, the days you did it before kept', A.bringBackPractice(gone, ps8, PL, '2026-10-11') === null && JSON.stringify(A.practiceOf(gone, PL)) === JSON.stringify({ id: PL, tried: '2026-10-01' }));
+  // Practise again's answers never change a lesson's state, which comes from its checks.
+  const st8 = { study: { reviews: [], concepts: [] }, arabic: { ...A.emptyArabic(), practice: [{ id: PL, tried: '2026-10-01', addedOn: '2026-10-01', review: { reps: 0, interval: 7, lapses: 0, due: '2026-10-08' } }] }, cybersecurity: { cards: [] } };
+  const regChecks = A.checkIds(PL, 3);
+  A.markReady(st8, PL, regChecks, '2026-10-01');
+  A.rateCard(st8, pc, 'practise', '2026-10-08', { outcome: 'wrong', support: 'own', chosen: null }, 'again');
+  check('a Practise again answer that wasn\'t right leaves the lesson Ready (its state comes from its checks)', A.stateOf(st8, PL, regChecks) === 'ready' && st8.study.reviews.length === 1);
+  check('a Practise again card taken out meanwhile can\'t be answered', A.removeCards(st8, [pc]) && !A.rateCard(st8, pc, 'practise', '2026-10-08', { outcome: 'right', support: 'own', chosen: null }, 'good'));
+  check('only a lesson id with ":practise" is a lesson to practise again', A.cardRef('assessment.arabic-fusha-register-check.q1').kind === 'check' && A.cardRef('lexeme.arabic-seed-001:recognise').kind === 'word'
+    && A.cardRef('kwabc123def:write').kind === 'kept' && A.cardRef('lesson.learning-evidence:practise').kind !== 'practice' && A.cardRef(pc).kind === 'practice');
+  // Lessons to practise again count in the 8 a day for checks that join by themselves, too.
+  const lots = { study: { reviews: [], concepts: [] }, arabic: { ...A.emptyArabic(), practice: Array.from({ length: 8 }, (_, i) => ({ id: 'lesson.arabic-p' + i, tried: '2026-10-11', addedOn: '2026-10-11', review: { reps: 0, interval: 7, lapses: 0, due: '2026-10-18' } })) }, cybersecurity: { cards: [] } };
+  check('eight lessons first back on a day fill it, so a check that joins by itself goes to the next day', A.addAutomatic(lots, ['assessment.arabic-fusha-register-check.q1'], '2026-10-18', '2026-10-11')[0].due === '2026-10-19');
+  // Everything's round: concepts never revised come after what's due; still one lesson to practise again.
+  const mixed = JSON.parse(JSON.stringify(many));
+  mixed.study.concepts = [{ id: 'cpNever', kind: 'written', title: 'Never revised', prompt: 'What is it?', answer: 'It', explanation: '', choices: [], correct: null, hint: '', review: { reps: 0, interval: 0, lapses: 0, due: null } }];
+  const allRound = A.roundIds(mixed, '2026-10-10', 'all', 5);
+  check('in the all-subjects round too: one lesson to practise again, and a concept never revised waits behind what\'s due', allRound.filter(id => id.endsWith(':practise')).length === 1 && !allRound.includes('cpNever')
+    && A.roundIds(mixed, '2026-10-10', 'all', 9).at(-1) === 'cpNever');
   fs.rmSync(tmp, { recursive: true, force: true });
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

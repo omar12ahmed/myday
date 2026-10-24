@@ -13,7 +13,7 @@ import type { MyDayData } from '../../data/types';
 import { addCards, cardOf, cardRef, nextWords, removeCards, wordCard, wordInRevision, wordsAddedOn } from '../../data/arabic/cards';
 import { ADD_A_FEW, MODALITIES, NEW_WORDS_A_DAY, type ArabicAttempt, type Help, type PracticeStep, type Variant } from '../../data/arabic/types';
 import { beginSession, changeSession, discardSession, finishSession, markRevealed, openSession, sessionsFor, writeFirstAnswer } from '../../data/arabic/sessions';
-import { bringBackNotYet, bringBackPractice, clearRevisit, discardMarks, flagRevisit, lessonRecord, markCheck, markReady, marksIn, practisedUnmarked, unmarkReady } from '../../data/arabic/lessons';
+import { bringBackNotYet, bringBackPractice, settleTicks, clearRevisit, discardMarks, flagRevisit, lessonRecord, markCheck, markReady, marksIn, practisedUnmarked, unmarkReady } from '../../data/arabic/lessons';
 import { discardTicks, practiceCardId, practiceCards, practiceOf, tickStep, ticksIn } from '../../data/arabic/practice';
 import { looksReady, MODE_LABEL, modeOf, STATE_LABEL, STEP_LABEL, type JourneyStep, type LessonState, type Mode, type StepKind } from '../../data/study/mastery';
 import { OUTCOME, SUPPORT } from '../../data/study/common';
@@ -314,7 +314,7 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
         <ChecksInRevision data={data} ids={checkIds} />
       </Card>; },
     reflect: () => <div id="ar-step-reflect" className={STEP_SCROLL} data-ar-step="reflect">
-      {finished && <FinishedCard data={data} lessonId={l.id} checks={checkIds} finished={finished} next={next} onClose={() => setFinished(null)} />}
+      {finished && <FinishedCard key={finished.attemptId} data={data} lessonId={l.id} checks={checkIds} finished={finished} next={next} onClose={() => setFinished(null)} />}
       {session && <SessionFinish data={data} lesson={l} session={session} steps={[...(teaching.lesson ? ['try' as const] : []), ...(challenge ? ['challenge' as const] : [])]}
         onFinished={f => { setFinished(f); setStep('reflect'); toStep('ar', 'reflect'); }} />}
     </div>,
@@ -451,7 +451,7 @@ function SessionFinish({ data, lesson: l, session: open, steps, onFinished }: { 
     {steps.length > 0 && <div data-ar-did={did.join(' ') || 'none'}>
       <h4 className="mb-1">Did you do {steps.length === 2 ? 'its Try it or mini challenge' : steps[0] === 'try' ? 'its Try it' : 'its mini challenge'}?</h4>
       <p className="text-sm text-fg-2 mt-0">Tick what you did in this session. The first time, the lesson comes back to practise again, about a week later.</p>
-      <Choices label="Did you do them?">{steps.map(s => <Choice key={s} on={did.includes(s)} data-action="ar-did" data-v={s} onClick={() => update(d => { if (!tickStep(d, open.id, s, !did.includes(s))) return false; })}>{DID[s]}</Choice>)}</Choices>
+      <Choices label="Did you do them?">{steps.map(s => <Choice key={s} on={did.includes(s)} data-action="ar-did" data-v={s} onClick={() => update(d => { settleTicks(d, l.id, open.id, todayKey()); if (!tickStep(d, open.id, s, !did.includes(s))) return false; })}>{DID[s]}</Choice>)}</Choices>
     </div>}
     <h4 className="mb-1">How much help did you use?</h4>
     <Choices label="How much help did you use?">{(Object.keys(HELP) as Help[]).map(h => <Choice key={h} on={open.help === h} data-action="ar-help" data-v={h} onClick={() => change(a => { a.help = h; })}>{HELP[h]}</Choice>)}</Choices>

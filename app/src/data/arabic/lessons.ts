@@ -6,7 +6,7 @@ import { shift } from '../dates';
 import { DELAYED_CHECK_DAYS, lessonState, placeNewCards, struggled, type CheckAnswer, type LessonEvidence, type LessonState } from '../study/mastery';
 import type { DateKey, MyDayData, Outcome, Support } from '../types';
 import { cardOf } from './cards';
-import { applyTicks, joinRevision, practiceCards, PRACTICE_FIRST_DAYS } from './practice';
+import { applyTicks, joinRevision, practiceCards, PRACTICE_FIRST_DAYS, settleOthers } from './practice';
 import { keptCards } from './words';
 import type { ArabicLesson } from './types';
 
@@ -90,7 +90,15 @@ export const bringBackNotYet = (d: MyDayData, attemptId: string, lessonId: strin
 // …and what you did of its Try it and mini challenge is saved; the first time (or again once you've taken it out),
 // the lesson comes back to practise again about a week later. Returns that day, or null.
 export function bringBackPractice(d: MyDayData, attemptId: string, lessonId: string, k: DateKey): DateKey | null {
-  if (!applyTicks(d, attemptId, lessonId, k).join) return null;
+  const earlier = settleTicks(d, lessonId, attemptId, k);
+  return applyTicks(d, attemptId, lessonId, k).join ? joinPractice(d, lessonId, k) : earlier;
+}
+// Ticks another session left behind count before you tick or finish (practice.ts settleOthers), and bring the lesson
+// back the same way. Returns the day it comes back, or null.
+export function settleTicks(d: MyDayData, lessonId: string, current: string | null, k: DateKey): DateKey | null {
+  return settleOthers(d, lessonId, current) ? joinPractice(d, lessonId, k) : null;
+}
+function joinPractice(d: MyDayData, lessonId: string, k: DateKey): DateKey {
   const [due] = placeNewCards(firstDueDays(d), shift(k, PRACTICE_FIRST_DAYS), 1);
   joinRevision(d, lessonId, due, k);
   return due;

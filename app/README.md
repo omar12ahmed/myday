@@ -368,7 +368,8 @@ previous release).
 Practise again (Arabic): at Reflect, a session asks "Did you do its Try it or mini challenge?" (the steps the lesson
 has; tick only what you did). Finishing records the day, and the first time the lesson comes back in revision about a
 week later, within the 8 new cards a day; the finish card says the day, with "Don't bring it back". Discarding the
-session takes its ticks. In a round (at most one per round of 5) it shows the lesson's own Try it and mini challenge,
+session takes its ticks; ticks from a session finished where they hadn't reached (another device, an older MyDay)
+count when you next tick or finish on that lesson, dated the day it finished. In a round (at most one per round of 5) it shows the lesson's own Try it and mini challenge,
 never AI-written tasks, with the explained answer hidden until you ask; you compare and mark it as usual, and it comes
 back after 21 days, then 60, then 180 (Hard: the same gap again; Again: in a week). The lesson's place line says when
 you last did them and when it's back; the map's revision card counts the lessons to practise again. A Study reset
