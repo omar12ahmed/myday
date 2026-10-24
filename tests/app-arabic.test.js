@@ -407,5 +407,82 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   check('on a phone the word picker fits, each word at least 44 px tall', await ev('document.documentElement.scrollWidth === innerWidth') && await ev(`[...document.querySelectorAll('[data-action="ar-keep-word"]')].every(b => b.getBoundingClientRect().height >= 44)`));
   await send('Emulation.clearDeviceMetricsOverride');
 
+  console.log('\n[13] Practise again: tick at Reflect, the finish card, the place line, the map and revision');
+  const REG = 'lesson.arabic-fusha-register', regHash = 'study/arabic/' + REG;
+  const teachingReg = require(require('path').join(process.env.MYDAY_ROOT || require('path').resolve(__dirname, '..'), 'content/teaching/arabic-fusha.json')).lessons;
+  const regTeaching = Array.isArray(teachingReg) ? teachingReg.find(x => x.id === REG) : teachingReg[REG];
+  const beforePractice = await ev(`localStorage.getItem('myday.data.v4')`);
+  await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); d.arabic.cards = []; d.arabic.attempts = d.arabic.attempts.filter(a => a.lessonId !== ${JSON.stringify(REG)}); delete d.arabic.practice; localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`);
+  const PR = async () => (await AR()).practice;
+  const recOf = async () => ((await PR()) || []).find(p => p.id === REG);
+  const didAttr = () => ev(`document.querySelector('[data-ar-did]')?.dataset.arDid`);
+  await go(regHash); await wait('[data-action="ar-begin"]'); await click('[data-action="ar-begin"]'); await wait('[data-ar-did]');
+  const openId = (await AR()).attempts.find(a => a.lessonId === REG && !a.finishedAt).id;
+  check('on Reflect a lesson with a Try it and a mini challenge offers both to tick, none ticked yet', await didAttr() === 'none' && await exists('[data-action="ar-did"][data-v="try"]') && await exists('[data-action="ar-did"][data-v="challenge"]')
+    && (await T.text('[data-action="ar-did"][data-v="try"]')) === 'Its Try it' && (await T.text('[data-action="ar-did"][data-v="challenge"]')) === 'Its mini challenge' && !(await recOf()), [await didAttr(), await PR()]);
+  await click('[data-action="ar-did"][data-v="try"]'); await sleep(250);
+  let rec = await recOf();
+  check('ticking its Try it shows it ticked and saves it at once as the open session\'s tick', await didAttr() === 'try' && JSON.stringify(rec) === JSON.stringify({ id: REG, open: { attemptId: openId, did: ['try'] } }), [await didAttr(), rec]);
+  await click('[data-action="ar-did"][data-v="challenge"]'); await sleep(250);
+  rec = await recOf();
+  check('ticking its mini challenge too saves both, in order', await didAttr() === 'try challenge' && JSON.stringify(rec.open) === JSON.stringify({ attemptId: openId, did: ['try', 'challenge'] }), [await didAttr(), rec]);
+  await click('[data-action="ar-did"][data-v="try"]'); await sleep(250);
+  check('unticking one leaves the other saved', await didAttr() === 'challenge' && JSON.stringify((await recOf()).open.did) === '["challenge"]', [await didAttr(), await recOf()]);
+  await click('[data-action="ar-did"][data-v="challenge"]'); await sleep(250);
+  check('unticking the last one removes the record altogether', await didAttr() === 'none' && !(await recOf()), [await didAttr(), await PR()]);
+  await click('[data-action="ar-did"][data-v="try"]'); await sleep(250);
+  await click('[data-action="ar-discard"]'); await sleep(200); await click('[data-action="dialog-confirm"]'); await sleep(250);
+  check('discarding a session takes its ticks with it', !(await recOf()) && !(await AR()).attempts.some(a => a.lessonId === REG), [await PR()]);
+  await click('[data-action="ar-begin"]'); await wait('[data-ar-did]');
+  await click('[data-action="ar-did"][data-v="try"]'); await sleep(200); await click('[data-action="ar-did"][data-v="challenge"]'); await sleep(250);
+  await click('[data-action="ar-finish"]'); await wait('[data-ar-finished]'); await sleep(250);
+  rec = await recOf();
+  check('finishing turns the ticks into today\'s days, drops the open tick and puts the lesson in revision a week on', rec && rec.tried === '2026-10-11' && rec.challenged === '2026-10-11' && !('open' in rec) && rec.addedOn === '2026-10-11'
+    && JSON.stringify(rec.review) === JSON.stringify({ reps: 0, interval: 7, lapses: 0, due: '2026-10-18' }), rec);
+  check('the finish card says when you\'ll practise it again, with a way to not bring it back', await exists('[data-ar-practice-back="2026-10-18"]') && (await T.text('[data-ar-practice-back]')).includes('You’ll practise it again on') && await exists('[data-ar-practice-back] [data-action="ar-practice-out"]')
+    && (await T.text('[data-action="ar-practice-out"]')) === 'Don’t bring it back', await T.text('[data-ar-practice-back]'));
+  const placeLine = await T.text('[data-ar-place-practice]');
+  check('under the lesson\'s title: when you last did its Try it and mini challenge, and when you practise it again', await ev(`document.querySelector('[data-ar-place-practice]')?.dataset.arPlacePractice`) === '2026-10-18'
+    && placeLine.includes('You last did its Try it on') && placeLine.includes('its mini challenge on') && placeLine.includes('Practise again: first on'), placeLine);
+  await go('study/arabic'); await wait('[data-ar-revision]');
+  check('the map\'s revision card counts "1 lesson to practise again"', (await T.text('[data-ar-revision]')).includes('1 lesson to practise again'), await T.text('[data-ar-revision]'));
+  await go(regHash); await wait('[data-ar-place-practice]');
+  await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); d.arabic.attempts = d.arabic.attempts.filter(a => a.lessonId !== ${JSON.stringify(REG)}); localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`);
+  await go(regHash); await wait('[data-action="ar-begin"]'); await click('[data-action="ar-begin"]'); await wait('[data-ar-did]');
+  await click('[data-action="ar-finish"]'); await wait('[data-ar-finished]'); await sleep(250);
+  check('finishing a later session with nothing ticked does not bring the lesson back a second time or change its days', JSON.stringify(await recOf()) === JSON.stringify(rec) && !(await exists('[data-ar-practice-back]')), [await recOf()]);
+  // "Don't bring it back": do it on a fresh first finish.
+  await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); d.arabic.attempts = d.arabic.attempts.filter(a => a.lessonId !== ${JSON.stringify(REG)}); delete d.arabic.practice; localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`);
+  await go(regHash); await wait('[data-action="ar-begin"]'); await click('[data-action="ar-begin"]'); await wait('[data-ar-did]');
+  await click('[data-action="ar-did"][data-v="try"]'); await sleep(200); await click('[data-action="ar-finish"]'); await wait('[data-ar-practice-back]'); await sleep(200);
+  await click('[data-action="ar-practice-out"]'); await sleep(250);
+  rec = await recOf();
+  check('"Don\'t bring it back" takes it out of revision, keeps the day you did its Try it, and hides the block', rec && rec.tried === '2026-10-11' && !('review' in rec) && !('addedOn' in rec) && !(await exists('[data-ar-practice-back]')), rec);
+  check('…and the place line then shows no return day', await ev(`document.querySelector('[data-ar-place-practice]')?.dataset.arPlacePractice`) === 'out' && !(await T.text('[data-ar-place-practice]')).includes('Practise again:'), await T.text('[data-ar-place-practice]'));
+
+  // Revision: seed a lesson that is due today.
+  await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); d.arabic.cards = []; d.arabic.practice = [{ id: ${JSON.stringify(REG)}, tried: '2026-10-04', challenged: '2026-10-04', addedOn: '2026-10-04', review: { reps: 0, interval: 7, lapses: 0, due: '2026-10-11' } }]; d.study.reviews = []; localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`);
+  await go('study/arabic'); await wait('[data-action="ar-revise"]', 5000);
+  await click('[data-action="ar-revise"]'); await wait('[data-rev-practice]', 6000);
+  check('Revise Arabic asks for the lesson to practise again: its path line says so', (await ev('location.hash')) === '#study/revise' && (await T.text('.st-path')) === 'Arabic · practise again', await T.text('.st-path'));
+  check('…with its Try it and its mini challenge as the task', await exists(`[data-rev-practice="${REG}"]`) && (await T.text('[data-rev-practice-try]')).includes(regTeaching.practice.slice(0, 40)) && (await T.text('[data-rev-practice-challenge]')).includes('Explain which Arabic you want'), await T.text('[data-rev-practice]'));
+  check('…and the explained answer isn\'t on the page until asked for', !(await exists('.st-answer')) && !(await T.text('.st-q')).includes('Try it: the explained answer') && !(await ev(`document.body.textContent.includes(${JSON.stringify(regTeaching.solution.slice(0, 40))})`)));
+  await click('[data-action="s-rev-show"]'); await sleep(200);
+  check('asking shows it, labelled "Try it: the explained answer"', (await T.text('.st-q')).includes('Try it: the explained answer') && await ev(`document.body.textContent.includes(${JSON.stringify(regTeaching.solution.slice(0, 40))})`), await T.text('.st-q'));
+  await click('[data-action="s-rev-self"][data-v="right"]'); await sleep(100);
+  const gaps = await ev(`Object.fromEntries([...document.querySelectorAll('[data-action=s-rev-rate]')].map(b => [b.dataset.v, b.textContent]))`);
+  check('the rating buttons show Practise again\'s own gaps for a first practice: Again in 7 days, Hard in 7 days, Good in 21 days', /in 7 days/.test(gaps.again) && /in 7 days/.test(gaps.hard) && /in 21 days/.test(gaps.good), gaps);
+  await click('[data-action="s-rev-rate"][data-v="good"]'); await sleep(300);
+  d = await D(); rec = d.arabic.practice.find(p => p.id === REG); const entry = d.study.reviews.find(r => r.conceptId === REG + ':practise');
+  check('Good saves an interval of 21 days, due 21 days on, and adds a history entry for the lesson\'s practise card with a gap of 21', rec.review.interval === 21 && rec.review.due === '2026-11-01' && rec.review.reps === 1 && !!entry && entry.gap === 21, [rec.review, entry]);
+
+  await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); d.arabic.attempts = d.arabic.attempts.filter(a => a.lessonId !== ${JSON.stringify(REG)}); localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`);
+  await go(regHash); await wait('[data-action="ar-begin"]'); await click('[data-action="ar-begin"]'); await wait('[data-ar-did]'); await sleep(300);
+  check('on a phone the "did you do it" buttons fit and are each at least 44 px tall', await ev('document.documentElement.scrollWidth === innerWidth') && await count('[data-action="ar-did"]') === 2 && await ev(`[...document.querySelectorAll('[data-action="ar-did"]')].every(b => b.getBoundingClientRect().height >= 44)`),
+    await ev(`[...document.querySelectorAll('[data-action="ar-did"]')].map(b => b.getBoundingClientRect().height)`));
+  await send('Emulation.clearDeviceMetricsOverride');
+  await ev(`localStorage.setItem('myday.data.v4', ${JSON.stringify(beforePractice)})`);
+
   const s = T.summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
 })().catch(e => { console.error('HARNESS', e); process.exit(1); });
