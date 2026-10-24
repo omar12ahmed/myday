@@ -196,7 +196,7 @@ nothing lost, no questions about why.
   the 8-a-day placement. No AI "another way" for your own words (your words and meanings never reach AI). The Study
   reset keeps your words with their revision starting again unless you tick "Also remove the words you kept".
   Saved data stays schema 5 (the owner's exception: an optional field in the new-app-only Arabic section, synced as a
-  new kind older releases ignore; `tests/app-sync-previous.test.js` [6]).
+  new kind older releases ignore; `tests/app-sync-previous.test.js` [7]).
 
 ## 7. Eight new cards a day
 

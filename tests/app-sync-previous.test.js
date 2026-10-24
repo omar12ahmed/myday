@@ -4,7 +4,7 @@
 // pointed at the stand-in). Adaptive
 // Study's `arabic_lesson` records must be left alone by a release that doesn't know them (before 1.47.0): not taken
 // in, not changed, not deleted, and never stopping it syncing. A previous release that knows them takes them in like
-// any other record; [2] and [3] check whichever applies. [6] does the same for Keep a word's `arabic_word` records
+// any other record; [2] and [3] check whichever applies. [7] does the same for Keep a word's `arabic_word` records
 // (Keep a word). Made-up data only.
 const fs = require('fs'), os = require('os'), path = require('path');
 const { isDeepStrictEqual: eq } = require('node:util');
@@ -138,7 +138,7 @@ async function signIn(d, url) {
     check('the Learning card shows the lesson\'s real title and its reason', await now.until(`document.querySelector('#projectLearning')?.textContent.includes(${JSON.stringify(ARABIC_TITLE)}) && document.querySelector('#projectLearning')?.textContent.includes('Why: For the trip next spring')`, 15000), await now.text('#projectLearning'));
     check('…the course removed since as "No longer in Study", and the newer kind as "Open it in a newer MyDay"', (await now.text('#projectLearning')).includes('No longer in Study') && (await now.text('#projectLearning')).includes('Open it in a newer MyDay'), await now.text('#projectLearning'));
 
-    console.log('\n[6] A word you kept (arabic_word) is left alone by a release that doesn\'t know it');
+    console.log('\n[7] A word you kept (arabic_word) is left alone by a release that doesn\'t know it');
     const knowsWords = fs.readdirSync(assets).some(f => f.endsWith('.js') && fs.readFileSync(path.join(assets, f), 'utf8').includes('arabic_word'));
     console.log(`The previous release ${knowsWords ? 'knows' : 'doesn\u2019t know'} arabic_word records.`);
     const word = { id: 'kwprevious01', ar: 'بَيْتٌ', meaning: 'house', note: 'from the profile', from: 'asset.arabic-profile', addedOn: today,

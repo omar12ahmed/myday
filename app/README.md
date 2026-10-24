@@ -1,5 +1,20 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.57.0 — Keep a word (Arabic):** under a lesson's examples (in its Understand step) and under a reading text,
+**Keep a word** lists the words of each sentence. Tap one, give its meaning in your words (a starter word's meaning
+is filled in, yours to change) and a note if you like, and it comes back in revision Arabic → meaning from the next
+day, in "Revise Arabic" and the all-subjects round. **Your words** now heads the Vocabulary page: add a word you
+type, "Also practise writing it" (meaning → Arabic), change your meaning or note, or remove a word (asked first). A
+word you already keep is recognised ignoring vowel marks only; ة/ه, ى/ي and the hamza forms stay different words.
+Your words and meanings are never sent to AI. The Study reset keeps your words, their revision starting again,
+unless you tick "Also remove the words you kept". New optional `arabic.words`, synced as `arabic_word` (migration
+`20261024180000_sync_arabic_words.sql`); saved data stays schema 5. Going back to 1.56.0 is safe: it keeps your
+words unread and ignores the new records (checked with the actual previous release), but doesn't show them or bring
+them back in revision. Three things to know: a device which spends time on the previous release receives other
+devices' changes of that kind only when they next change (or when it signs in again); the same word kept on two
+devices before they sync shows twice in Your words (remove one); and a Study reset done on the older release leaves
+your words and their revision as they were.
+
 **1.56.0 — Projects: Learning (Study links):** a project's Overview has a **Learning** card in its side column. Link
 one of your own courses, a book in Reading or an Arabic lesson you're learning for the project, with an optional
 "why it matters". Each shows Study's own status ("3 of 8 tasks marked complete", "Page 120 of 300", or the lesson's
@@ -281,6 +296,24 @@ latest mark per check) and synced as `arabic_lesson` — migration
 `../supabase/migrations/20261024120000_sync_arabic_lessons.sql`, applied at release with my go-ahead. Older releases
 keep `arabic.lessons` unread and ignore the record kind (`tests/app-sync-previous.test.js` checks the actual previous
 release). A Study reset clears lesson places too.
+
+Keep a word (1.57.0, Arabic): under a lesson's examples (its Understand step: the headline example and the Arabic of
+its worked example) and under a reading text (one picker, sentence by sentence), **Keep a word** lists the words
+(punctuation left out, vowel marks as written). Tap one, give its meaning in your words (a starter word's meaning is
+filled in, yours to change) and an optional note; nothing is saved until "Keep it". It comes back in revision
+Arabic → meaning from the next day, in "Revise Arabic" and the all-subjects round. **Your words** heads the
+Vocabulary page: add a word you type, "Also practise writing it" (meaning → Arabic, from the next day), change your
+meaning or note, or remove it (asked first; its past answers stay in your Study history). A word you already keep is
+recognised ignoring vowel marks and the tatweel only; ة/ه, ى/ي and the hamza forms stay different words. Your own
+words are never held back, but they count when MyDay places the checks it brings back by itself (8 new a day). Your
+words and meanings are never sent to AI, so revision has no AI "another way" for them. A Study reset keeps your
+words with their revision starting again, unless you tick "Also remove the words you kept". Rules:
+`src/data/arabic/words.ts`; the button and picker: `src/study/arabic/KeepAWord.tsx`. Saved as the optional
+`arabic.words` (each word's id, the Arabic as written, your meaning and note, the lesson or text it came from, the day
+added and its two schedules; answers in `study.reviews`) and synced as `arabic_word` — migration
+`../supabase/migrations/20261024180000_sync_arabic_words.sql`, applied at release with my go-ahead. Older releases
+keep `arabic.words` unread and ignore the record kind (`tests/app-sync-previous.test.js` [7] checks the actual
+previous release).
 
 Cybersecurity in revision (the course's own checks, no AI): every lesson's knowledge-check questions (146 lessons,
 292 questions, each with the course's reference answer) can come back in Study's revision — from the lesson page or
@@ -910,6 +943,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/study/mastery.ts`, `src/data/arabic/lessons.ts`, `src/study/arabic/plan.ts`, `../content/teaching/arabic/prerequisite-kinds.json` | Adaptive Study (1.47.0): lesson states, "looks ready", the next step and its reason, the suggested session length and the 8-a-day placement (`mastery.ts`, shared); your place on each Arabic lesson and the checks that come back (`lessons.ts`); the course's facts and the Arabic next step for the map, lesson pages and Today (`plan.ts`); MyDay's list of checkpoint skills that are never catch-up (`prerequisite-kinds.json`, checked by `scripts/prepare-arabic.mjs`). |
 | `src/data/study/yourFocus.ts`, `src/study/courseOption.ts`, `src/study/nextLearning.ts`, `src/study/useNextLearning.ts`, `src/study/FocusSelect.tsx`, `src/study/Dashboard.tsx` | One focus and Study home (1.51.0): the focus choice and which course is labelled the focus (`yourFocus.ts`, in the existing `primarySubject` and `focusCourseId`); your own courses' next step (`courseOption.ts`, no catalogue needed); every subject's options with their "Why this?" and Study home's counts (`nextLearning.ts`, loaded on demand by `useNextLearning.ts`, so Today and Study home take the same first option); the control (`FocusSelect.tsx`); Study home's Now, Worth a look, Explore and Manage (`Dashboard.tsx`). Plan: `../specs/study-home-and-lessons.md` §3–§4. |
 | `src/study/journey/`, `src/study/lessonStep.ts`, `src/study/teaching/useTeaching.ts`, `src/data/study/mastery.ts` (modes and steps) | The lesson journey (Arabic 1.53.0, Cybersecurity 1.55.0): the step bar and "I got distracted — help me restart" (`journey/Journey.tsx`), moving to a step and the restart's small things (`journey/dom.ts`), your step following you and the reopen (`journey/useJourney.ts`), by prefix "ar" or "cy"; your step per session and the Cybersecurity session you chose, on this device only (`lessonStep.ts`, `myday.study.lessonStep`, `myday.study.sessionLength`); the teaching split into Understand, Try and the further material (`teaching/`); Light / Normal / Deep, the steps each session shows and the practical tier in the suggested length (`mastery.ts`). The lesson pages: `LessonView` in `src/study/arabic/ArabicScreen.tsx` and `src/study/cybersecurity/CyberScreen.tsx` (rules in `cybersecurity/learning.ts`: `sessionFor`, `sessionMode`, `warmUpLesson`, `cyberJourney`). Plan: `../specs/study-home-and-lessons.md` §5. |
+| `src/data/arabic/words.ts`, `src/study/arabic/KeepAWord.tsx`, `src/study/arabic/starter.ts`, `YourWords` in `src/study/arabic/ArabicScreen.tsx` | Keep a word (1.57.0): the rules (keeping a word, the same word ignoring vowel marks, your meaning and note, writing practice, removing, and the revision cards `<word id>:recognise` / `:write`, read from the word); the button and the picker; a starter word's course meaning; Your words on the Vocabulary page. Saved as `arabic.words` (`cleanKeptWord` in `src/data/arabic/normalize.ts`), synced as `arabic_word` (`src/sync/records.ts`). Plan: `../specs/study-home-and-lessons.md` §6. |
 | `src/study/teaching/TeachingLesson.tsx`, `src/study/arabic/transliterate.ts`, `src/study/arabic/Pronunciation.tsx`, `../content/teaching/` | Lesson teaching (1.26.0, PR #1): each course's teaching companion (`content/teaching/*.json`, generated and checked at build by `scripts/prepare-teaching.mjs`), shown above a lesson's practical tasks (`TeachingLesson`); Arabic transliteration (authored readings first, then rules; `transliterate.ts`, checked by `scripts/validate-pronunciation.mjs`) with the Show / Hide choice and the pronunciation guide (`Pronunciation.tsx`, device-only key `myday.arabic.transliteration`). |
 | `src/data/reading.ts`, `src/study/ReadingView.tsx`, `src/study/readingActions.ts`, `src/study/StudyTabs.tsx` | Study → Reading (1.24.0): checking saved books (`reading.ts`); the Reading tab — books, the page you're on, notes, Edit, Finished (`ReadingView`); what each button saves (`readingActions.ts`); Study's Courses / Reading tabs (`StudyTabs`). |
 | `src/study/` | The Study screens: `StudyScreen` (picks the screen from the address, e.g. `#study/roadmap`), `Dashboard`, `Roadmap`, `CourseDetails`, `TaskDetails`, `SessionView`, `CheckinView`, `RevisionView`, `ConceptsView`, `ConceptView`, `ProgressView`, `StudySettings` and `StudyTodayCard`; `actions.ts` (what each button saves), `round.ts` (the revision round, kept in memory), `parts.tsx` (small shared pieces). |
