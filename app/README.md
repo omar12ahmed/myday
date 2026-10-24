@@ -475,12 +475,16 @@ doesn't name them. To keep one meaning of "waiting", the weekly review's step 2 
 needs you right now — lovely"; a past-dated task "was planned for …").
 
 **Searching one project (unreleased; `specs/projects-search.md`):** every project page has "Search this project"
-under its tabs. While there's something in it, the page shows what matches instead of the tab ("2 matches for
-“armchair”"), in a fixed order by kind, each opening its item: what the project is about, its tasks (done and let go
-after the rest, marked), notes, milestones, decisions (with options, pros, cons, reasons and previous choices), a
-business idea's one page and a case's timeline, evidence and issues. Every word must appear, in any order; capitals
-and accents don't matter. Clear or Escape brings the tab back. Nothing is saved, and nothing is sent to AI or
-anywhere else (`src/data/projectSearch.ts`, `src/projects/SearchResults.tsx`).
+under its tabs. While there's something in it, the results show above the tab, which stays as it was but hidden (so
+nothing you were typing there is lost): "2 matches for “armchair”", in a fixed order by kind. It searches the
+project's name and own words (summary, what it's aiming for, what counts as finished, where you left off), its tasks
+(title, notes and who they're waiting on; done and let go after the rest, marked), notes (private ones marked),
+milestones, decisions (with options, pros, cons, reasons and previous choices), a business idea's one page and a
+case's timeline, evidence and issues; never MyDay's own labels. Every word must appear, in any order; capitals,
+accents and the kind of apostrophe don't matter, and excerpts never cut a character in half. Opening a result goes
+to the item itself (a milestone, decision or case record is brought into view and focused on its tab). Clear, Escape
+or choosing another tab ends the search. A screen reader hears the count. Nothing is saved, and nothing is sent to
+AI or anywhere else.
 
 **Your week — the weekly review (1.37.0):** a short look back over the last seven days, at `#review` ("Your week"), in
 four steps, one at a time, with Back and Next. Nothing changes until you tap. **1 What moved:** each project's tasks
@@ -830,6 +834,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/businessModel.ts`, `src/projects/ModelView.tsx` | The Business template (1.33.0): `businessModel.ts` (the kind of project and the one page: reading what's saved, the four answers, the list of what must be true with its limits, Find out, marking, counts); `ModelView.tsx` (the Model tab; its Overview summary is in At a glance). The Model tab's counts line is `progressLine` in `planText.ts`; Explore's brief from the one page is `fromOnePage` in `src/explore/content.ts`. |
 | `src/data/caseFile.ts`, `src/projects/CaseViews.tsx` | The Case template (1.35.0): `caseFile.ts` (reading what's saved, unknown fields kept, links to missing items let go; the timeline, evidence and issues with their limits, links, counts and the size guard); `CaseViews.tsx` (the Timeline, Evidence and Issues tabs, and "Add a deadline" in a case's Coming up; its Overview summary is in At a glance). |
 | `src/data/projectDashboard.ts`, `src/projects/AtAGlance.tsx` | The dashboards per kind (1.36.0): `projectDashboard.ts` (the next dates, the weeks, entries by month, each issue's links and Worth a look; Today's own dashboard numbers stay in `dashboard.ts`); `AtAGlance.tsx` (the At a glance card with one row per tool, its pictures and Summarise this, and the Worth a look card beside the next step). Still-open tasks are `stillOpen` in `src/data/projects.ts`. |
+| `src/data/projectSearch.ts`, `src/projects/SearchResults.tsx` | Searching one project: `projectSearch.ts` (what's searched, matching without capitals, accents or apostrophe differences, excerpts on whole characters, the fixed order by kind); `SearchResults.tsx` (the results card). The field and its query live in `ProjectView.tsx`. |
 | `src/data/weekReview.ts`, `src/review/ReviewScreen.tsx`, `src/today/ReviewCard.tsx` | The weekly review (1.37.0): `weekReview.ts` (when the review is due, what moved, what's waiting, focus, and saving the review); `ReviewScreen.tsx` (the four steps and See the pattern); `ReviewCard.tsx` (the card on Today). |
 | `src/study/arabic/WordFamilies.tsx`, `src/study/arabic/families.ts`, `content/teaching/arabic/word-families.json`, `scripts/validate-families.mjs` | Word families (1.38.0): the card on the vocabulary page and its notes; which family a word is in; the authored families (by word id); the build check. |
 | `src/study/arabic/voice.ts`, `src/study/arabic/Listen.tsx`, `../content/arabic-audio/`, `scripts/arabic-voice-sources.mjs`, `scripts/make-arabic-audio.mjs`, `scripts/prepare-audio.mjs`, `scripts/arabic-audio-inventory.mjs` | The Arabic course's voice (1.39.0; lessons' examples 1.40.0): the clip list (by exact text) and the one shared player with Slower (device-only key `myday.arabic.slower`); the play button, the voice note and the label; the clips and their audit; which texts have a voice; making them (by hand); the build check; what's left to voice. |

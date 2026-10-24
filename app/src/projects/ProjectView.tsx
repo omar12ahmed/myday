@@ -1,5 +1,5 @@
 import { ArrowUpRight, CalendarPlus, Check, Lock, NotebookPen, Pause, Pencil, Play, Plus, Search, Sparkles, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useDeferredValue, useEffect, useState } from 'react';
 import { exploreHref, rememberExploreEntry, restoreExploreEntry } from '../explore/route';
 import { addAppointment } from '../capture/save';
 import { loadLibs, parseCapture, type CaptureLibs } from '../capture/parse';
@@ -28,6 +28,7 @@ import { AddDeadline, EvidenceView, IssuesView, TimelineView } from './CaseViews
 import { AtAGlance, WorthALook } from './AtAGlance';
 import { ModelView } from './ModelView';
 import { DecisionsView, MilestonesView } from './PlanViews';
+import { matchCount, searchProject, type SearchHit } from '../data/projectSearch';
 import { SearchResults } from './SearchResults';
 import { tabHref } from './planText';
 
@@ -40,20 +41,27 @@ const CASE_TABS: ProjectTab[] = ['timeline', 'evidence', 'issues'];
 export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDayData; id: string; tab?: ProjectTab }) {
   useEffect(() => { restoreExploreEntry(id); }, [id]);
   // "Search this project" (specs/projects-search.md): only on this page, never saved. ProjectsScreen keys this view by
-  // the project, so another project (or coming back to this one) starts with an empty search.
-  const [query, setQuery] = useState('');
-  const clear = () => { setQuery(''); requestAnimationFrame(() => document.getElementById('projectSearch')?.focus()); };
+  // the project, so another project starts empty; it belongs to the tab too, so choosing another tab ends it.
+  const [search, setSearch] = useState({ tab: asked, q: '' });
+  const query = search.tab === asked ? search.q : '', setQuery = (q: string) => setSearch({ tab: asked, q });
+  const shown = useDeferredValue(query); // typing stays smooth in a big project
+  const clear = () => { setQuery(''); focusSoon('projectSearch'); };
+  // Opening a result ends the search and puts the keyboard on the item itself, once its tab is showing.
+  const pick = (h: SearchHit) => { setQuery(''); if (h.kind !== 'task' && h.kind !== 'note') focusItem(h); };
   const p = projectById(data, id);
   if (!p) return <><BackLink to="projects" label="Projects" /><NotFound title="This project isn't here" back="projects" label="Back to your projects" /></>;
   // The Model tab is a business idea's, and Timeline, Evidence and Issues a case's; anywhere else their address shows the
   // Overview.
   const tab = (asked === 'model' && !isBusiness(p)) || (CASE_TABS.includes(asked) && !isCase(p)) ? 'overview' : asked;
+  const hits = shown.trim() ? searchProject(data, p, shown) : [];
   return (
     <>
       <BackLink to="projects" label="Projects" />
-      <ProjectTop p={p} tab={tab} query={query} onQuery={setQuery} />
-      {query.trim() ? <SearchResults data={data} p={p} query={query} onClear={clear} />
-        : tab === 'timeline' ? <TimelineView p={p} /> : tab === 'evidence' ? <EvidenceView p={p} /> : tab === 'issues' ? <IssuesView p={p} />
+      <ProjectTop p={p} tab={tab} query={query} onQuery={setQuery} status={query.trim() ? matchCount(hits.length, query) : ''} />
+      {query.trim() && <SearchResults p={p} hits={hits} query={query} onClear={clear} onPick={pick} />}
+      {/* The tab stays as it was while results show (hidden), so nothing you were typing there is lost. */}
+      <div hidden={!!query.trim()} data-s="project-tab">
+      {tab === 'timeline' ? <TimelineView p={p} /> : tab === 'evidence' ? <EvidenceView p={p} /> : tab === 'issues' ? <IssuesView p={p} />
         : tab === 'model' ? <ModelView data={data} p={p} /> : tab === 'milestones' ? <MilestonesView p={p} /> : tab === 'decisions' ? <DecisionsView p={p} /> : <>
       <LeftOffCard p={p} />
       <OverviewTop data={data} p={p} />
@@ -71,13 +79,28 @@ export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDay
         </div>
       </div>
       </>}
+      </div>
     </>
   );
 }
 
+// After opening a search result: its item on the tab (or the Overview's About it, or the one page), in view and focused.
+function focusItem(h: SearchHit) {
+  const sel = h.kind === 'about' ? '#projectHead' : h.kind === 'model' && h.id === 'answers' ? '#pjModelH' : `[data-id="${CSS.escape(h.id)}"]`;
+  let tries = 0;
+  const look = () => {
+    const el = document.querySelector<HTMLElement>(sel);
+    if (!el) { if (++tries < 60) requestAnimationFrame(look); return; }
+    if (!el.hasAttribute('tabindex') && !el.matches('a, button, input, select, textarea')) el.tabIndex = -1;
+    el.scrollIntoView({ block: 'center' });
+    el.focus({ preventScroll: true });
+  };
+  requestAnimationFrame(look);
+}
+
 // The project's name and its sections: Overview · Milestones · Decisions, with Model after Overview for a business idea
 // (each its own address, so Back works).
-function ProjectTop({ p, tab, query, onQuery }: { p: Project; tab: ProjectTab; query: string; onQuery: (q: string) => void }) {
+function ProjectTop({ p, tab, query, onQuery, status }: { p: Project; tab: ProjectTab; query: string; onQuery: (q: string) => void; status: string }) {
   const tabClass = (on: boolean) => `seg-link flex-1 inline-flex items-center justify-center min-h-11 rounded-xl text-[15px] font-semibold no-underline ${on ? 'on bg-primary-container text-on-primary-container' : 'text-fg-2'}`;
   return (
     <Card aria-labelledby="projectTitle" id="projectTop" className="!pb-2.5">
@@ -105,13 +128,15 @@ function ProjectTop({ p, tab, query, onQuery }: { p: Project; tab: ProjectTab; q
           <a className={tabClass(tab === 'decisions')} href={tabHref(p, 'decisions')} role="tab" aria-selected={tab === 'decisions'} data-tab="decisions">Decisions</a>
         </>}
       </nav>
-      <form role="search" className="mt-3" onSubmit={e => e.preventDefault()} data-s="project-search">
+      {/* Enter just puts the keyboard away on a phone; results show as you type. */}
+      <form role="search" className="mt-3" onSubmit={e => { e.preventDefault(); (document.activeElement as HTMLElement | null)?.blur(); }} data-s="project-search">
         <label htmlFor="projectSearch" className="sr-only">Search this project</label>
         <div className="relative max-w-xl">
           <Search size={18} aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-3 pointer-events-none" />
-          <TextInput id="projectSearch" type="search" value={query} maxLength={120} placeholder="Search this project" className="!pl-10"
-            onChange={e => onQuery(e.target.value)} onKeyDown={e => { if (e.key === 'Escape') onQuery(''); }} />
+          <TextInput id="projectSearch" type="search" value={query} maxLength={120} placeholder="Search this project" className="!pl-10" autoComplete="off" enterKeyHint="search"
+            onChange={e => onQuery(e.target.value)} onKeyDown={e => { if (e.key === 'Escape' && !e.nativeEvent.isComposing) onQuery(''); }} />
         </div>
+        <p role="status" className="sr-only" data-s="search-status">{status}</p>
       </form>
     </Card>
   );

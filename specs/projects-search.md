@@ -3,7 +3,7 @@
 **Status:** built under the owner's advance approval of 24 October 2026 (build and publish, taking the
 recommended option on routine choices; stop for saved data, AI, the live database, deletion or a real product
 choice). Phase 1, release 4 of `specs/projects-vision.md`. Not yet released.
-**Based on:** source at release 1.50.0.
+**Based on:** source at release 1.51.0 (started on 1.50.0).
 
 ## 1. The practical problem
 
@@ -14,17 +14,20 @@ nothing searches one project's own things together.
 ## 2. What changes
 
 - **"Search this project"**, a search field at the top of every project page, under its tabs.
-- While there's something in it, the page shows results instead of the tab's content: "4 matches for “armchair”",
-  grouped in a fixed order, each a link that opens the item. **Clear** (or Escape) returns to the tab.
+- While there's something in it, results show above the tab, which stays as it was but hidden (so nothing being
+  typed there is lost): "4 matches for “armchair”", in a fixed order by kind, each a link that opens the item.
+  **Clear**, Escape or choosing another tab ends the search. A screen reader hears the count.
 - **What it searches:** the project's own words (summary, what it's aiming for, what counts as finished, where you left
   off); its tasks (title and notes; done and let-go ones after the rest, marked); its notes (title and text); milestones;
   decisions (question, options, pros, cons, reasons and previous choices); a business idea's one page (answers and what
   must be true, with what was found); a case's timeline, evidence and issues. A kind of project's hidden tools (a
   business idea's one page kept after switching back to general) aren't searched, because their tab isn't shown.
-- **Matching:** every word you type must appear, in any order; capitals and accents don't matter ("cafe" finds
-  "Café"). Each result shows its kind, and, when the match is in longer text, a short excerpt.
-- **Opens:** a task or note opens itself; a milestone, decision, one-page item or case record opens its tab; the
-  project's own words open the Overview.
+- **Matching:** every word you type must appear, in any order; capitals, accents and the kind of apostrophe don't
+  matter ("cafe" finds "Café", "Sam's" finds "Sam’s"). Only your own words are searched, never MyDay's labels. Each
+  result shows its kind (private notes marked) and, when the match is in longer text, a short excerpt cut on whole
+  characters and, where possible, whole words.
+- **Opens:** a task or note opens itself; a milestone, decision, one-page item or case record opens its tab with that
+  item brought into view and focused; the project's own words open the Overview at About it.
 - Calm and plain: no scores, no ranking by relevance, no counts beyond the number of matches.
 
 ## 3. Saved data, sync and AI
@@ -35,7 +38,8 @@ service; it searches the data already on the device, including private notes and
 ## 4. Decisions taken under the advance approval (recommended options)
 
 1. A visible search field on every project tab, rather than a hidden button.
-2. Results replace the tab's content while searching, rather than stacking above it.
+2. Results show above the tab while searching, with the tab kept but hidden (changed after review: replacing it lost
+   unsaved drafts).
 3. All words must match; capitals and accents ignored; no fuzzy matching.
 4. Done and let-go tasks are included, after the rest, and marked.
 
