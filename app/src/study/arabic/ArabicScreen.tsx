@@ -493,7 +493,7 @@ function SessionQuestion({ data, session, lesson: l, q }: { data: MyDayData; ses
       : <CommitTextarea key={session.id + q.id} rows={2} dir="auto" className="ar-input mb-2" aria-label="Your first answer" data-s="ar-answer" data-q={q.id} defaultValue={first} placeholder="Your answer, in Arabic or English" onCommit={el => change(a => writeFirstAnswer(a, q.id, el.value))} />}
     {revealed ? <Reference keyId={q.answer_key_id} onReady={setReferenceReady} /> : <Button inline variant="ghost" data-action="ar-reveal" onClick={() => change(a => markRevealed(a, q.id))}>Show the reference answer</Button>}
     {revealed && referenceReady && <MarkAnswer data={data} session={session} q={q} />}
-    {first && q.response_type === 'short_answer' && <CheckMyAnswer answer={first} getSource={source} render={t => <Mixed text={t} />} onUseMark={revealed && referenceReady ? takeMark : undefined} />}
+    {first && q.response_type === 'short_answer' && <CheckMyAnswer answer={first} getSource={source} alsoCounts render={t => <Mixed text={t} />} onUseMark={revealed && referenceReady ? takeMark : undefined} />}
   </div>;
 }
 

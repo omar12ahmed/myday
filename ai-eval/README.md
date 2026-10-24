@@ -212,7 +212,7 @@ checks the cards (`AI_ROUTES={"cards": "learn", "note-check": "learn"}`).
 Cybersecurity questions, each sent exactly as the app sends it (`app/src/ai/checkAnswer.ts` with the courses' own
 lesson content). Mostly realistic mix-ups and part-answers, some right, one asking about pronunciation, one with a
 password the app's secret check doesn't catch, two trying to steer the AI. The automatic checks are the app's own
-(`readCheckAnswer`: the parts and their lengths, no links or verdicts, for Arabic only the Arabic that was sent), the
+(`readCheckAnswer`: the parts and their lengths, no links or verdicts, for Arabic only whole words that were sent), the
 suggested mark against the marks a careful teacher could give, the explanation's length, the password never repeated,
 pronunciation never judged and steering ignored; `review.md` shows each reply part by part.
 
@@ -222,7 +222,7 @@ node ai-eval/eval.mjs --live --action check-answer --repeats 2 --budget-usd 0.5 
 ```
 
 Live runs of 24 Oct 2026 (US$0.17, `reviews/2026-10-24-check-answer-quality.md`, read blind): Gemini 3.8 Flash
-kept to the Arabic it was given in every reply and said nothing false; GLM-5.3-Flash's Arabic replies were refused 6–10
+kept to the Arabic it was given in every reply and said nothing false; GLM-5.3-Flash's Arabic replies were refused 9–10
 times in 26 for Arabic it brought in, and it twice got هذه/هذا wrong. Both were accurate on Cybersecurity, GLM the
 richer teacher. Recommendation: GLM checks Cybersecurity answers, Gemini checks Arabic ones
 (`"check-answer-arabic": "learn"` in `AI_ROUTES`).

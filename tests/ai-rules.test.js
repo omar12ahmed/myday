@@ -756,15 +756,35 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('…no mark, or null written as a word, is no suggestion', read({ suggestedMark: null }).suggestedMark === null && read({ suggestedMark: 'null' }).suggestedMark === null);
     const bad = [['not JSON', 'Here you go: {}'], ['a list', '[]'], ['a missing part', R({ drewOn: undefined })], ['an empty part', R({ example: '  ' })], ['a hint over its limit', R({ hint: 'h'.repeat(L.hintChars + 1) })],
       ['no follow-up answer', R({ followUp: { question: 'Q?' } })], ['an unknown mark', R({ suggestedMark: 'excellent' })], ['a link', R({ example: 'See https://example.com' })], ['"You\'ve passed"', R({ explanation: 'You\'ve passed this check.' })],
-      ['a score', R({ explanation: 'Your score is 7.' })], ['8/10', R({ hint: 'About 8/10.' })], ['a percentage', R({ hint: 'You got 50% of it.' })], ['"Well done"', R({ hint: 'Well done!' })],
-      ['Arabic that wasn\'t sent', R({ example: 'Like كِتَابٌ جَدِيدٌ.' })], ['a sent word with its vowel marks changed', R({ example: 'Like الْكِتَابِ in the lesson.' })]];
+      ['a score', R({ explanation: 'Your score is 7.' })], ['8/10', R({ hint: 'You scored 8/10.' })], ['"You’ve passed" (a curly apostrophe)', R({ hint: 'You’ve passed this one.' })], ['a percentage', R({ hint: 'You got 50% of it.' })], ['"Well done"', R({ hint: 'Well done!' })],
+      ['Arabic that wasn\'t sent', R({ example: 'Like كِتَابٌ جَدِيدٌ.' })], ['a sent word with its vowel marks changed', R({ example: 'Like الْكِتَابِ in the lesson.' })],
+      ['part of a sent word passed off as a word (قرأت from قرأته)', R({ example: 'The verb قرأت here.' })], ['presentation forms (ﻛﺘﺎﺑﻲ)', R({ example: 'Like ﻛﺘﺎﺑﻲ.' })],
+      ['a word hidden by a zero-width joiner', R({ example: 'Like كت@u200Dابي.'.replace('@u200D', String.fromCharCode(0x200D)) })], ['a Persian letter', R({ example: 'Like پ.' })]];
     const taken = bad.filter(([, t]) => K.readCheckAnswer(t, ar.ctx)).map(([why]) => why);
     check(`replies that can't be used are refused (${bad.length} kinds: shape, limits, links, verdicts, Arabic that wasn't sent or was changed)`, taken.length === 0, taken);
     const given = ar.ctx.teaching.match(/[\u0621-\u064A][\u064B-\u0652\u0621-\u064A]*/g).find(w => /[\u064B-\u0652]/.test(w) && w.length > 4);
     const bare = given.replace(/[\u064B-\u0652\u0670]/g, '');
     check('…but a sent Arabic word written exactly, or with no vowel marks at all, is fine, and so is tatweel showing a suffix (ـه)', !!read({ example: `Like ${given}.` }) && !!read({ example: `Like ${bare}.` }) && !!read({ example: 'The suffix ـه is the pronoun.' }), [given, bare]);
+    const affix = { ...ar.ctx, teaching: ar.ctx.teaching + ' إِذَا دَرَسْتَ، فَسَتَفْهَمُ.' };
+    check('…a sent word\'s beginning or end drawn with the stretching line (فَسَـ, ـتَفْهَمُ) is fine, and a word without its article; not the same piece without the line', !!read({ example: 'The prefix فَسَـ and the ending ـتَفْهَمُ.' }, affix) && !!read({ example: 'Like كتاب.' }) && !read({ example: 'The piece فَسَ.' }, affix));
     check('…and the lesson\'s own phrase "not a score of technical competence" is not a verdict', !!read({ explanation: 'Confidence is not a score of technical competence.' }, cy.ctx));
+    check('…nor "the flag you passed to chmod", "the disk is 90% full" or a range like 10.0.0.0/10 (Cybersecurity\'s own material)', ['The flag you passed to chmod matters.', 'The disk is 90% full.', 'A range like 10.0.0.0/10 is private-ish.'].every(t => !!read({ explanation: t }, cy.ctx)));
     check('…for Cybersecurity, Arabic in a reply is no concern of this check (only of Arabic\'s)', !!read({ example: 'Like كِتَابٌ.' }, cy.ctx));
+    // Every real lesson check, with the longest answer allowed: what's sent fits the server's request limit.
+    const longest = 'ل'.repeat(L.yourAnswerChars), sizes = [];
+    for (const m of K.arabicModules) {
+      const mc = await K.loadArabicModule(m.id);
+      for (const l of mc.lessons) for (const q of mc.assessments.find(a => a.id === l.knowledge_check_id)?.questions ?? []) {
+        const src = K.arabicCheckSource(l, q, answers[q.answer_key_id], AR[l.id]); if (!src) continue;
+        const r = K.checkAnswerRequest(src, longest); if (r.ok) sizes.push(JSON.stringify({ context: r.ctx }).length);
+      }
+    }
+    const cyAnswers = require(path.join(ROOT, 'app/src/study/cybersecurity/answers.json'));
+    for (const l of K.cyberLessons.values()) for (const q of K.cyberActivities.get(l.knowledge_check_id)?.questions ?? []) {
+      const src = K.cyberCheckSource(l.id, q, cyAnswers[q.id], CY[l.id]); if (!src) continue;
+      const r = K.checkAnswerRequest(src, longest); if (r.ok) sizes.push(JSON.stringify({ context: r.ctx }).length);
+    }
+    check(`every real lesson check (${sizes.length}), with the longest answer allowed, fits the server's request limit (${K.REQUEST_LIMITS.bodyBytes} characters; the largest is ${Math.max(...sizes)})`, sizes.length > 500 && Math.max(...sizes) <= K.REQUEST_LIMITS.bodyBytes);
     const mock = K.readCheckAnswer(K.mockCheckAnswer(ar.ctx), ar.ctx), mockOther = K.readCheckAnswer(K.mockCheckAnswer({ ...ar.ctx, yourAnswer: 'The teacher' }), ar.ctx);
     check('the practice helper\'s reply is usable, labelled "no AI", and suggests Right only for the reference answer word for word', !!mock && mock.hint.startsWith('Practice helper (no AI)') && mock.suggestedMark === 'right' && mockOther.suggestedMark === null);
     check('…and the rule-breaking practice reply (a verdict, a link, an Arabic word not sent) is refused', K.readCheckAnswer(K.mockCheckAnswer(ar.ctx, 'sloppy'), ar.ctx) === null && K.readCheckAnswer(K.mockCheckAnswer(cy.ctx, 'sloppy'), cy.ctx) === null);

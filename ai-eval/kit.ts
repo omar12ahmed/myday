@@ -81,6 +81,7 @@ export function setClock(local: string) {
 export { checkAnswerRequest } from '../app/src/ai/checkAnswer';
 export { arabicCheckSource } from '../app/src/study/arabic/checkSource';
 export { cyberCheckSource } from '../app/src/study/cybersecurity/checkSource';
-export { loadAnswers as loadArabicAnswers, loadModule as loadArabicModule } from '../app/src/study/arabic/catalogue';
-export { activities as cyberActivities } from '../app/src/study/cybersecurity/catalogue';
+export { loadAnswers as loadArabicAnswers, loadModule as loadArabicModule, moduleList as arabicModules } from '../app/src/study/arabic/catalogue';
+export { activities as cyberActivities, lessons as cyberLessons } from '../app/src/study/cybersecurity/catalogue';
+export { LIMITS as REQUEST_LIMITS } from '../supabase/functions/_shared/ai/schema.ts';
 export { buildCheckAnswerMessages, checkAnswerContext, CHECK_ANSWER_LIMITS, mockCheckAnswer, readCheckAnswer } from '../supabase/functions/_shared/ai/check-answer.ts';

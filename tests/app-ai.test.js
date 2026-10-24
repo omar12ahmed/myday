@@ -987,10 +987,11 @@ const SEED = `s => {
     check('Arabic check, before any answer is written: no "Check my answer"', !(await mock.exists(panel)) && !(await mock.exists(`${qSel} [data-action="ca-ask"]`)));
     await blurType(mock, ansSel, 'The book.');
     await mock.until(`document.querySelector(${JSON.stringify(panel + ' [data-action="ca-ask"]')})`, 5000);
-    check('…after writing "The book." and leaving the box, "Check my answer" appears with the line saying what it sends', (await mock.text(`${panel} [data-action="ca-ask"]`)) === 'Check my answer' && (await mock.text(panel)).includes('Sends this lesson’s teaching, the question, its reference answer and your answer — nothing else.'), await mock.text(panel));
+    check('…after writing "The book." and leaving the box, "Check my answer" appears with the line saying what it sends', (await mock.text(`${panel} [data-action="ca-ask"]`)) === 'Check my answer' && (await mock.text(panel)).includes('Sends the lesson’s objectives and teaching, the skills it builds on, the question, its reference answer (and what else counts) and your answer — nothing else.'), await mock.text(panel));
     const savedBefore = await mock.ev(`localStorage.getItem('myday.data.v4')`);
     await mock.click(`${panel} [data-action="ca-ask"]`); await waitPhase(mock, panel);
     check('asking gives a reply labelled as the practice helper, with only the hint showing', (await phaseOf(mock, panel)) === 'shown' && (await mock.text(`${panel} [data-s="ca-shown"] .lbl`)) === 'Check my answer · practice helper (no AI)' && (await partsShown(mock)) === 'hint' && (await mock.text(`${panel} [data-s="ca-hint"]`)).includes('Practice helper (no AI)'), [await phaseOf(mock, panel), await partsShown(mock)]);
+    check('…and the hint takes focus as it arrives (the button pressed has gone)', (await focused(mock)) === 'ca-hint', await focused(mock));
     const stepLog = [];
     for (let i = 1; i < 5; i++) {
       const label = await mock.text(`${panel} [data-action="ca-next"]`);
@@ -1006,7 +1007,7 @@ const SEED = `s => {
     check('practice mode sent nothing to any server for it', srv.log.length === logBefore8s);
     // Look at the reference answer, then ask again.
     await mock.click(`${panel} [data-action="ca-close"]`); await sleep(100);
-    check('"Close" puts the panel back to asking', (await phaseOf(mock, panel)) === 'idle' && await mock.exists(`${panel} [data-action="ca-ask"]`));
+    check('"Close" puts the panel back to asking, with focus on "Check my answer"', (await phaseOf(mock, panel)) === 'idle' && await mock.exists(`${panel} [data-action="ca-ask"]`) && (await mock.ev(`document.activeElement?.dataset?.action || ''`)) === 'ca-ask');
     await mock.click(`${qSel} [data-action="ar-reveal"]`); await mock.until(`document.querySelector(${JSON.stringify(qSel + ' [data-ar-mark]')})`, 8000);
     await mock.click(`${panel} [data-action="ca-ask"]`); await waitPhase(mock, panel);
     await mock.click(`${panel} [data-action="ca-next"]`); await sleep(120); await mock.click(`${panel} [data-action="ca-next"]`); await sleep(150);
@@ -1028,7 +1029,7 @@ const SEED = `s => {
     check('Cybersecurity check with an attempt begun and nothing written: no "Check my answer"', !(await mock.exists('[data-s="check-answer"]')));
     await blurType(mock, cSel, 'Evidence means something I can observe.');
     await mock.until(`document.querySelector('[data-action="ca-ask"]')`, 5000);
-    check('after writing an answer the panel appears, saying what it sends', await mock.exists('[data-s="check-answer"][data-phase="idle"]') && (await mock.text('[data-s="check-answer"]')).includes('Sends this lesson’s teaching, the question, its reference answer and your answer — nothing else.'), await mock.text('[data-s="check-answer"]'));
+    check('after writing an answer the panel appears, saying what it sends', await mock.exists('[data-s="check-answer"][data-phase="idle"]') && (await mock.text('[data-s="check-answer"]')).includes('Sends the lesson’s objectives and teaching, the skills it builds on, the question, its reference answer and your answer — nothing else.'), await mock.text('[data-s="check-answer"]'));
     const cySaved = await mock.ev(`localStorage.getItem('myday.data.v4')`);
     await mock.click('[data-action="ca-ask"]'); await waitPhase(mock, '[data-s="check-answer"]');
     check('asking gives the practice helper\'s hint, with the "Assistance used" line, and then more parts one at a time', (await phaseOf(mock, '[data-s="check-answer"]')) === 'shown' && (await mock.text('[data-s="ca-shown"]')).includes('practice helper (no AI)') && (await mock.text('[data-s="ca-shown"]')).includes('Used hints or AI help') && (await partsShown(mock)) === 'hint', await partsShown(mock));
@@ -1040,6 +1041,7 @@ const SEED = `s => {
     await mock.click('[data-action="ca-ask"]'); await waitPhase(mock, '[data-s="check-answer"]');
     const cyErr = await mock.text('[data-s="check-answer"] [role=alert]');
     check('an answer with a password written out is refused with a kind message, and no reply is shown', (await phaseOf(mock, '[data-s="check-answer"]')) === 'error' && cyErr.includes('Your answer has what looks like a password or key written out. Take it out first: your answer is sent to AI.') && !(await mock.exists('[data-s="ca-shown"]')), cyErr);
+    check('…with focus on its "Try again"', (await mock.ev(`document.activeElement?.dataset?.action || ''`)) === 'ca-ask' && (await mock.ev(`document.activeElement?.textContent || ''`)) === 'Try again');
     check('…and still nothing went to a server', srv.log.length === logBefore8s);
     await mock.ev(`location.hash = 'today'`);
 

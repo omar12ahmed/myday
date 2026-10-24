@@ -34,19 +34,51 @@ export interface CheckAnswerReply {
   suggestedMark: CheckAnswerMark | null;
 }
 
-// Arabic words in a text: a letter, then letters and marks (vowel marks), as written. Tatweel (the stretching line, as
-// in ـكَ for a suffix) is only drawn, so it's left out before comparing. A word written with no marks at all may be one
-// given with them: written bare, it can't carry a wrong vowel.
-const ARABIC_RUN = /[\u0621-\u063F\u0641-\u064A\u0671-\u06D3][\u0610-\u061A\u0621-\u063F\u0641-\u065F\u0670-\u06D3\u06D6-\u06ED]*/g;
-const MARKS = /[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g;
-const plain = (s: string) => s.normalize('NFC').replace(/\u0640/g, '');
-// Verdicts about you (the lesson's own words, such as "not a score of competence", are fine).
-const VERDICT = /\b(?:you(?:'ve| have)? (?:passed|failed|mastered)|well done|great job|excellent work|your (?:grade|score|mark) (?:is|was)|(?:grade|score)\s*[:=]|score of \d|\d+\s*\/\s*10\b)|\d+\s*%/i;
+// ---------- Arabic in a reply ----------
+// Letters (L) and marks (M: vowel marks, shadda, sukun, superscript alif and the Qur'an's marks), as the course writes
+// them. A text is folded first (NFKC: presentation forms such as ﻛ become ordinary letters) and invisible characters
+// (zero-width joiners, direction marks) go, so nothing can hide another word inside a sent one; any other character
+// from the Arabic blocks (letters of other languages' alphabets, dotless forms) isn't accepted.
+const L = '\u0621-\u063F\u0641-\u064A\u0671-\u06D3', M = '\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED';
+const WORD = new RegExp(`\u0640*[${L}][${L}${M}\u0640]*`, 'g'); // a word, with any stretching line (tatweel) drawn with it
+const MARKS = new RegExp(`[${M}]`, 'g'), TATWEEL = /\u0640/g;
+const BLOCKS = /[\u0600-\u06FF\u0750-\u077F\u0870-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/g;
+const ALLOWED = new RegExp(`^[${L}${M}\u0640\u060C\u061B\u061F\u0660-\u0669]$`); // and the comma, semicolon, question mark, digits
+const INVISIBLE = /[\u200B-\u200F\u202A-\u202E\u2060-\u2069\uFEFF]/g;
+const LETTER = /^[\u0621-\u063A\u0641-\u064A]$/; // one of Arabic's own letters, on its own
+const AL = /^\u0627\u0644[\u064B-\u0652]?/; // the article, as in الْكِتَاب
+const prep = (s: string) => s.normalize('NFKC').replace(INVISIBLE, '');
+// The words sent: each as written, without the article, and without vowel marks (written bare, a word can't carry a
+// wrong vowel).
+function sentWords(text: string) {
+  const ok = new Set<string>();
+  for (const t of prep(text).match(WORD) ?? []) {
+    const w = t.replace(TATWEEL, ''), noAl = w.replace(AL, '');
+    for (const x of noAl.replace(MARKS, '').length >= 3 ? [w, noAl] : [w]) { ok.add(x); ok.add(x.replace(MARKS, '')); }
+  }
+  return ok;
+}
+// Only Arabic that was sent: whole words as sent (or bare, or without the article), a letter on its own ("ق is a moon
+// letter"), and a sent word's beginning or end drawn with the stretching line (فَسَـ, ـكِ). Anything else — an AI's own
+// Arabic, a word with its vowel marks changed, part of a word passed off as a word — isn't trusted here.
+function onlySentArabic(reply: string, sent: string): boolean {
+  const text = prep(reply);
+  if (!(text.match(BLOCKS) ?? []).every(ch => ALLOWED.test(ch))) return false;
+  const ok = sentWords(sent), whole = [...ok];
+  return (text.match(WORD) ?? []).every(t => {
+    const w = t.replace(TATWEEL, '');
+    if (LETTER.test(w.replace(MARKS, '')) || ok.has(w)) return true;
+    const prefix = t.endsWith('\u0640'), suffix = t.startsWith('\u0640');
+    return (prefix || suffix) && whole.some(x => x !== w && (prefix ? x.startsWith(w) : x.endsWith(w)));
+  });
+}
+// Verdicts about you. The lesson's own words ("not a score of technical competence", "the flag you passed to chmod",
+// "the disk is 90% full") are fine.
+const VERDICT = /\b(?:you(?:['’]ve| have) (?:passed|failed)|you (?:passed|failed) (?:this|the|that) (?:check|test|question|quiz|lesson)|you(?:['’]ve| have)? mastered|well done|great job|excellent work|your (?:grade|score|mark) (?:is|was)|(?:grade|score)\s*[:=]|score of \d|you (?:got|scored|earned) \d)/i;
 const LINK = /\bhttps?:\/\/|\bwww\.[a-z0-9-]+\.[a-z]/i;
 const str = (v: unknown, max: number) => typeof v === 'string' && v.trim().length > 0 && v.trim().length <= max;
 
-// The reply, if it's usable: the right parts and lengths, no links, no verdicts, and for Arabic no Arabic word that
-// wasn't in what was sent (as written, or bare: an AI's own Arabic or changed vowel marks can't be trusted here).
+// The reply, if it's usable: the right parts and lengths, no links, no verdicts, and for Arabic only Arabic that was sent.
 export function readCheckAnswer(textIn: string, ctx: Pick<CheckAnswerContext, 'subject' | 'question' | 'yourAnswer' | 'reference' | 'alsoCounts' | 'teaching' | 'objective'>): CheckAnswerReply | null {
   let raw: unknown;
   try { raw = JSON.parse(textIn); } catch { return null; }
@@ -63,9 +95,6 @@ export function readCheckAnswer(textIn: string, ctx: Pick<CheckAnswerContext, 's
   };
   const all = [reply.hint, reply.example, reply.explanation, reply.followUp.question, reply.followUp.answer, reply.drewOn].join('\n');
   if (LINK.test(all) || VERDICT.test(all)) return null;
-  if (ctx.subject === 'arabic') {
-    const given = plain([ctx.question, ctx.yourAnswer, ctx.reference, ctx.alsoCounts, ctx.teaching, ctx.objective].join('\n')), bare = given.replace(MARKS, '');
-    for (const run of plain(all).match(ARABIC_RUN) ?? []) if (!given.includes(run) && !(run === run.replace(MARKS, '') && bare.includes(run))) return null;
-  }
+  if (ctx.subject === 'arabic' && !onlySentArabic(all, [ctx.question, ctx.yourAnswer, ctx.reference, ctx.alsoCounts, ctx.teaching, ctx.objective].join('\n'))) return null;
   return reply;
 }

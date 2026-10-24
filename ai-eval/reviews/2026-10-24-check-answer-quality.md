@@ -13,7 +13,7 @@ hint that doesn't give the answer away, a real example, an explanation that clea
 
 ## Round 1 — instructions v1 (`results/2026-10-24-20-37-02-live`, 22 cases × 2)
 
-Read in full: the first repeat of every case, and the second repeat's Arabic replies. (*Counted with round 2's reply
+Read in full: the first repeat of every case, and the second repeat's Arabic replies. (*Counted with the final reply
 check, below; with v1's it was 12.)
 
 | Model | Arabic: replies the app refused | Arabic: accuracy / teaching | Cybersecurity: accuracy / teaching | Something false |
@@ -29,9 +29,13 @@ words given and said nothing false in the 34 replies read.
 
 Three refusals were the reply check being too strict, so it changed before round 2 (`check-answer-shape.ts`): "score of"
 was a lesson's own phrase ("not a score of technical competence"), so only verdicts about the learner count now ("your
-score is", "score: 7", "8/10", a percentage); one model wrote the mark null as the word "null"; and tatweel (ـكَ, the
-stretching line used to show a suffix) is left out before comparing, and a given word written with no vowel marks at all
-is accepted (written bare, it can't carry a wrong vowel). A word with some marks changed is still refused.
+score is", "score: 7", "you scored 8/10"); one model wrote the mark null as the word "null"; and a suffix shown with
+tatweel (ـكَ, the stretching line) was refused. After the independent review the Arabic rule was tightened further:
+only whole words as sent count (as written, with no vowel marks at all, or without the article; written bare, a word
+can't carry a wrong vowel), plus one of Arabic's own letters on its own and a sent word's beginning or end drawn with
+the stretching line (فَسَـ, ـكِ); presentation forms are folded to ordinary letters first, and invisible joiners can't
+hide another word. Every reply in both rounds was scored again with that final check: the figures here are with it,
+and Gemini's are unchanged.
 
 ## Round 2 — instructions v2 (`results/2026-10-24-20-50-57-live`, 22 cases × 2)
 
@@ -42,7 +46,7 @@ plainly what each one means. Read in full: the first repeat of every case, and G
 | Model | Arabic: replies the app refused | Arabic: accuracy / teaching | Cybersecurity: accuracy / teaching | Something false |
 |---|---|---|---|---|
 | **Gemini 3.8 Flash** | **0 of 26** | **5.00** / 4.15 | 4.89 / 3.89 | **0** |
-| GLM-5.3-Flash | 6 of 26 | 4.73 / 4.82 | 5.00 / 4.89 | 1 (Arabic) |
+| GLM-5.3-Flash | 9 of 26 | 4.73 / 4.82 | 5.00 / 4.89 | 1 (Arabic) |
 
 GLM made the same هذه/هذا slip again ("هذه agrees with a masculine noun like كتاب, so هذا is used"). Gemini's examples
 are now examples; on ربما and بالتأكيد it still never says which means "maybe" and which "certainly" (true, but vague —
@@ -53,7 +57,7 @@ Both rounds, both models: every Cybersecurity reply usable bar one (Gemini put a
 answer; the app refuses that, which is fine there); the password was never repeated and every reply said to change it;
 the steering answers were declined or ignored, with no scanning commands; pronunciation was never judged ("compare with
 a recording or a fluent speaker"). Suggested marks matched what a careful teacher would give in 86 of 87 usable Gemini
-replies and 70 of 72 GLM ones; the misses are the right-but-brief NAT answer marked "partly", defensible.
+replies and 67 of 69 GLM ones; the misses are the right-but-brief NAT answer marked "partly", defensible.
 
 ## Conclusion
 
@@ -64,5 +68,7 @@ check with GLM, US$0.0016 with Gemini; 4–6 s.
 
 Limits: one reviewer, made-up answers, 52 Arabic replies read. The reply is an AI's help, never a mark: the suggested
 mark is only a suggestion the learner accepts or changes, it never sets a lesson's state, and the app labels it as
-AI-written. The app's Arabic check means an AI can only use Arabic it was given (or that Arabic without vowel marks);
-the English around it is the model's own, and that is where GLM's slip was.
+AI-written. The app's Arabic check means an AI can only use whole Arabic words it was given (or those words bare, or
+without the article), Arabic's letters on their own, and a given word's beginning or end drawn as such; the English
+around it is the model's own, and that is where GLM's slip was. The accuracy and teaching scores are one reviewer's,
+from replies kept outside the repository (`ai-eval/results/` is ignored).
