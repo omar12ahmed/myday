@@ -281,9 +281,13 @@ function checkChanges(items: AskItem[], data: MyDayData, slice: AskSlice, k: Dat
 }
 
 // Applies the ticked changes in one save. Undo puts back exact copies of everything it touched.
-export interface AskChangeUndo { tasks: TaskItem[]; notes: Note[]; commitments: Commitment[]; projects: Project[]; offPlan: { day: DateKey; task: Task; at: number }[] }
+// What each changed record was before (to put back) and just after (so Undo leaves alone anything you've changed since —
+// a tick on Today, an edit, a sync from another device).
+export interface AskChangeUndo { tasks: TaskItem[]; notes: Note[]; commitments: Commitment[]; projects: Project[]; offPlan: { day: DateKey; task: Task; at: number }[]; after: Record<string, string> }
+// A record's content whatever order its fields are in (a sync round trip can reorder them).
+const canon = (v: unknown) => JSON.stringify(v, (_k, x: unknown) => (x && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.keys(x).sort().map(k => [k, (x as Record<string, unknown>)[k]])) : x));
 export function applyAskChanges(changes: AskChange[]): AskChangeUndo | null {
-  const u: AskChangeUndo = { tasks: [], notes: [], commitments: [], projects: [], offPlan: [] };
+  const u: AskChangeUndo = { tasks: [], notes: [], commitments: [], projects: [], offPlan: [], after: {} };
   const r = updateSaved(d => {
     const keep = <T extends { id: string }>(list: T[], item: T | undefined) => { if (item && !list.some(y => y.id === item.id)) list.push(structuredClone(item)); };
     let any = false;
@@ -317,16 +321,36 @@ export function applyAskChanges(changes: AskChange[]): AskChangeUndo | null {
       }
     }
     if (!any) return false;
+    const note = <T extends { id: string }>(kind: string, list: T[], copies: T[]) => { for (const c of copies) { const now = list.find(y => y.id === c.id); if (now) u.after[`${kind}:${c.id}`] = canon(now); } };
+    note('task', d.tasks.items, u.tasks); note('note', d.notes.items, u.notes); note('appointment', d.commitments, u.commitments); note('project', d.projects.items, u.projects);
   });
   return r === 'saved' ? u : null;
 }
-export function undoAskChanges(u: AskChangeUndo): boolean {
-  return updateSaved(d => {
-    const put = <T extends { id: string }>(list: T[], copies: T[]) => { let n = 0; for (const c of copies) { const i = list.findIndex(y => y.id === c.id); if (i >= 0) { list[i] = structuredClone(c); n++; } } return n; };
-    let n = put(d.tasks.items, u.tasks) + put(d.notes.items, u.notes) + put(d.commitments, u.commitments) + put(d.projects.items, u.projects);
-    for (const o of u.offPlan) { const day = d.days[o.day]; if (day && !day.tasks.some(x => x.uid === o.task.uid)) { day.tasks.splice(Math.min(o.at, day.tasks.length), 0, structuredClone(o.task)); n++; } }
+// Put back what Ask changed, except anything changed since (that change is yours, so it stays): "undone", "partly"
+// (with how many were kept), "changed" (nothing left to put back) or "not-saved".
+export function undoAskChanges(u: AskChangeUndo): { result: 'undone' | 'partly' | 'changed' | 'not-saved'; kept: number } {
+  let kept = 0, n = 0;
+  const back = new Set<string>();
+  const r = updateSaved(d => {
+    kept = 0; n = 0; back.clear();
+    const put = <T extends { id: string }>(kind: string, list: T[], copies: T[]) => {
+      for (const c of copies) {
+        const i = list.findIndex(y => y.id === c.id);
+        if (i < 0) continue;
+        if (canon(list[i]) !== u.after[`${kind}:${c.id}`]) { kept++; continue; }
+        list[i] = structuredClone(c); n++; back.add(`${kind}:${c.id}`);
+      }
+    };
+    put('task', d.tasks.items, u.tasks); put('note', d.notes.items, u.notes); put('appointment', d.commitments, u.commitments); put('project', d.projects.items, u.projects);
+    // A task that came off today's plan goes back on it only if the task itself was put back.
+    for (const o of u.offPlan) {
+      const t = u.tasks.find(x => x.planUid === o.task.uid), day = d.days[o.day];
+      if (t && back.has(`task:${t.id}`) && day && !day.tasks.some(x => x.uid === o.task.uid)) { day.tasks.splice(Math.min(o.at, day.tasks.length), 0, structuredClone(o.task)); n++; }
+    }
     if (!n) return false;
-  }) === 'saved';
+  });
+  if (!n) return { result: 'changed', kept };
+  return r === 'saved' ? { result: kept ? 'partly' : 'undone', kept } : { result: 'not-saved', kept };
 }
 
 // ---------- Saving what you ticked ----------

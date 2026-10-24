@@ -200,6 +200,28 @@ const day = (energy, rest = false) => `s => { s.days['${K}'] = { energy: ${energ
   check('…and it does: still done, dated today, no longer linked to the cleared plan', kept.done === true && kept.doneOn === K && kept.plannedOn === null && kept.planUid === null && !(await data()).days[K], kept);
   await editStorage(`s => { s.tasks.items = s.tasks.items.filter(x => x.id !== 'tkKeep'); }`);
 
+  // Rolled to tomorrow in the evening check-in, then tomorrow's plan built: the task follows its copy there.
+  await editStorage(`s => { s.queue = []; s.tasks.items.push({ id: 'tkRoll', title: 'Return the library books', listId: '', category: 'admin', minutes: 15, due: '${K}', time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-10-14T10:00', postponed: 0, blockers: [], letGoOn: null }); }`);
+  await editStorage(day(4));
+  await go('today', 2026, 10, 15, 20);
+  await click('[data-action=due-plan][data-id=tkRoll]'); await sleep(300);
+  const rollUid = (await tasks()).items.find(x => x.id === 'tkRoll').planUid;
+  await click('[data-action=evening]'); await sleep(200);
+  await click(`[data-action=roll][data-uid="${rollUid}"]`); await sleep(200);
+  await click('[data-action=finish-evening]'); await sleep(300);
+  await go('today/tasks', 2026, 10, 15, 20, 5);
+  check('rolled to tomorrow in the evening check-in: it waits in the queue, not in Your tasks', !(await exists('.task-row[data-id=tkRoll]')) && (await data()).queue.some(q => q.title === 'Return the library books'));
+  const K16 = '2026-10-16';
+  await go('today', 2026, 10, 16, 9);
+  await click('[data-action=build]'); await sleep(300); await click('[data-action=prop-apply]'); await sleep(400);
+  let rd = await data();
+  const rolledItem = rd.tasks.items.find(x => x.id === 'tkRoll'), landedCopy = rd.days[K16]?.tasks.find(x => x.title === 'Return the library books');
+  check('the next morning, building the day takes it from the queue, and the task follows it onto that plan', !!landedCopy && rolledItem.plannedOn === K16 && rolledItem.planUid === landedCopy.uid, [rolledItem, landedCopy]);
+  await click(`[data-action=toggle][data-uid="${landedCopy.uid}"]`); await sleep(300);
+  rd = await data();
+  check('…so ticking it there ticks it off in Your tasks too, dated that day', rd.tasks.items.find(x => x.id === 'tkRoll').done === true && rd.tasks.items.find(x => x.id === 'tkRoll').doneOn === K16);
+  await editStorage(`s => { s.tasks.items = s.tasks.items.filter(x => x.id !== 'tkRoll'); delete s.days['${K16}']; s.queue = []; }`);
+
   console.log('\n[5] A rest day');
   await editStorage(`s => { s.tasks.items.find(x => x.id === 'tkOld').done = false; s.tasks.items.find(x => x.id === 'tkOld').doneOn = null; }`);
   await editStorage(day(1, true));

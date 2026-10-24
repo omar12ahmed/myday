@@ -173,16 +173,30 @@ export function learningForToday(data: MyDayData, k: DateKey, d: Day): Task | nu
 // ---------- The queue ----------
 export function sortQueue(q: QueueItem[]) { q.sort((a, b) => (a.queuedOn < b.queuedOn ? -1 : a.queuedOn > b.queuedOn ? 1 : 0)); }
 
-// Undo a task's effect on the queue: drop the entry it created, and return the entry it came from.
+// Undo a task's effect on the queue: drop the entry it created, and return the entry it came from. A task from
+// Inbox → Tasks goes back to waiting with it, unless you ticked it off here (that tick stays, so it doesn't return).
 export function releaseTask(data: MyDayData, t: Task) {
   if (t.rolledQid) {
     data.queue = data.queue.filter(q => !(q.qid === t.rolledQid && q.sourceUid === t.uid));
     t.rolledQid = null;
   }
-  const from = t.fromQueue;
+  const from = t.fromQueue, item = data.tasks.items.find(x => x.plannedOn && x.planUid === t.uid);
+  if (t.done && item) return;
   if (from && !data.queue.some(q => q.qid === from.qid || (q.taskId && q.taskId === from.taskId))) {
     data.queue.push({ ...from });
     sortQueue(data.queue);
+  }
+  const src = from?.sourceUid, srcDay = src ? Object.keys(data.days).find(day => data.days[day].tasks.some(x => x.uid === src)) : undefined;
+  if (item && src && srcDay) { item.plannedOn = srcDay; item.planUid = src; }
+}
+
+// A task from Inbox → Tasks follows its copy through the queue (rolled to the next day in the evening check-in): when
+// the queued copy lands on day k's plan, the task points at the new copy, so it shows as on that plan and a tick
+// there ticks it.
+export function followQueued(data: MyDayData, k: DateKey) {
+  for (const t of data.days[k]?.tasks ?? []) {
+    const src = t.fromQueue?.sourceUid, item = src ? data.tasks.items.find(x => x.planUid === src) : undefined;
+    if (item) { item.plannedOn = k; item.planUid = t.uid; }
   }
 }
 

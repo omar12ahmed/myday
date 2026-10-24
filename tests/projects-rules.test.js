@@ -23,8 +23,8 @@ const clone = o => JSON.parse(JSON.stringify(o));
     `export { freshState, normalize } from ${src('normalize')};`, `export { shift, shortDate } from ${src('dates')};`, `export * from ${src('projectDashboard')};`, `export * from ${src('weekReview')};`, `export { stepsForToday, nextStep, whyNext } from ${src('projects')};`,
     `export { normalizeStudyLinks, addStudyLink, removeStudyLink, setStudyLinkWhy, linkView, courseChoices, bookChoices, linkedFrom, LINK_LIMITS } from ${src('studyLinks')};`, `export * as Cyber from ${JSON.stringify(path.join(ROOT, 'app/src/projects/learningCyber'))};`, `export { stIndex } from ${src('study/roadmap')};`,
     `export { searchProject, fold, matchCount, SEARCH_KIND_LABEL } from ${src('projectSearch')};`,
-    `export { normalizeTasks, setWaiting, stopWaiting, isWaiting, chaseTask, chaseWaiting, isStuck, setTaskDone } from ${src('tasks')};`,
-    `export { setDone, clearDay } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
+    `export { normalizeTasks, setWaiting, stopWaiting, isWaiting, chaseTask, chaseWaiting, isStuck, setTaskDone, inQueue, onTodaysPlan } from ${src('tasks')};`,
+    `export { setDone, clearDay, toggleRoll, followQueued, taskFromQueue } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
   const OLD = '2026-10-01T09:00';
@@ -907,6 +907,32 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('…an open one is no longer linked either, so it is due again rather than "on today\'s plan"', !trOpen.done && trOpen.plannedOn === null && trOpen.planUid === null, trOpen);
     check('…and that day still counts the done one once, and What moved still has it', K.doneOnDay(tr, k) === 1 && K.whatMoved(tr, k).projects[0]?.tasks === 1, [K.doneOnDay(tr, k), K.whatMoved(tr, k).projects.length]);
     check('clearing a day with no plan changes nothing', K.clearDay(K.freshState(), k) === false);
+    // Rolled to the next day in the evening check-in: the task follows its copy through the queue.
+    const rl = K.freshState(), yd = K.shift(k, -1);
+    rl.days[yd] = { energy: 3, rest: false, builtAt: yd + 'T08:00', checkedIn: true, tasks: [planTask('puA')] };
+    rl.tasks.items = [TK('tkA', 'pjT', { plannedOn: yd, planUid: 'puA' })];
+    const ta = rl.tasks.items[0];
+    K.toggleRoll(rl, yd, rl.days[yd].tasks[0]);
+    const rolledQ = rl.queue[0];
+    check('rolled in the evening check-in: it waits in the queue, not in Tasks', !!rolledQ && rolledQ.sourceUid === 'puA' && K.inQueue(rl, ta));
+    const land = () => { const t = K.taskFromQueue(rl.queue[0]); rl.queue = []; rl.days[k] = { energy: 3, rest: false, builtAt: k + 'T08:00', checkedIn: false, tasks: [t] }; K.followQueued(rl, k); return t; };
+    let landed = land();
+    check('when it lands on the next day\'s plan the task follows it there: on that plan, no longer waiting', ta.plannedOn === k && ta.planUid === landed.uid && !K.inQueue(rl, ta) && K.onTodaysPlan(rl, ta, k), ta);
+    K.setDone(rl, landed, true);
+    check('…so ticking it there ticks the task, dated that day', ta.done && ta.doneOn === k);
+    K.setDone(rl, landed, false);
+    K.clearDay(rl, k);
+    check('"Start today over" on that day: it goes back to the queue and the task waits there again (not lost, not twice)', rl.queue.length === 1 && rl.queue[0].sourceUid === 'puA' && ta.plannedOn === yd && ta.planUid === 'puA' && K.inQueue(rl, ta), [rl.queue.length, ta.plannedOn, ta.planUid]);
+    landed = land();
+    K.setDone(rl, landed, true);
+    K.clearDay(rl, k);
+    check('ticked on the day it landed, then that day started over: it stays done and doesn\'t come back from the queue', rl.queue.length === 0 && ta.done && ta.plannedOn === null, [rl.queue.length, ta.done, ta.plannedOn]);
+    const gone = K.freshState();
+    gone.days[yd] = { energy: 3, rest: false, builtAt: yd + 'T08:00', checkedIn: true, tasks: [planTask('puG')] };
+    gone.tasks.items = [TK('tkG', 'pjT', { plannedOn: yd, planUid: 'puG' })];
+    K.toggleRoll(gone, yd, gone.days[yd].tasks[0]);
+    gone.queue = []; // taken by an older MyDay, or removed from the queue
+    check('if the queue no longer has it, the task is back in Tasks rather than hidden for good', !K.inQueue(gone, gone.tasks.items[0]));
 
     console.log('  What\'s waiting');
     const wt = K.freshState();

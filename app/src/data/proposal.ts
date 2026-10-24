@@ -3,7 +3,7 @@
 // which changes the draft passed to it.
 import { dtToMin, localStamp, minToDt, todayKey } from './dates';
 import { fitToPrefs, limitIsYours, taskLimit } from './patterns/adapt';
-import { chooseAdditional, chooseTasks, queueTask, sendToQueue } from './plan';
+import { chooseAdditional, chooseTasks, followQueued, queueTask, sendToQueue } from './plan';
 import { contextFor, ensureContext, explainNoFit, freeSegments, subtract, type Segment } from './schedule';
 import type { DateKey, MyDayData, Task } from './types';
 
@@ -158,6 +158,7 @@ export function applyProposal(data: MyDayData, proposal: Proposal): { changed: b
     data.days[k] = tasks.length
       ? { energy, rest: false, builtAt: localStamp(), checkedIn: false, tasks }
       : { energy, rest: true, builtAt: localStamp(), checkedIn: false, tasks: [] };
+    followQueued(data, k);
     return { changed: true, message: 'Your day is ready.' };
   }
 
@@ -187,5 +188,6 @@ export function applyProposal(data: MyDayData, proposal: Proposal): { changed: b
     }
   }
   d.energy = p.energy as 1 | 2 | 3 | 4 | 5;
+  followQueued(data, k);
   return { changed: true, message: 'Plan updated.' };
 }

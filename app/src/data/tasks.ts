@@ -74,8 +74,12 @@ function planCopy(data: MyDayData, t: TaskItem) {
 }
 export const isDone = (data: MyDayData, t: TaskItem) => t.done || !!planCopy(data, t)?.done;
 export const onTodaysPlan = (data: MyDayData, t: TaskItem, k: DateKey = todayKey()) => t.plannedOn === k && !!planCopy(data, t);
-// Rolled to the queue from a day's plan (the evening check-in): then it waits there, not here.
-export const inQueue = (data: MyDayData, t: TaskItem) => !!planCopy(data, t)?.rolledQid;
+// Rolled to the queue from a day's plan (the evening check-in): then it waits there, not here — while the queue still
+// has it (once taken onto a later plan the task follows it there; if it has gone from the queue, it's back here).
+export const inQueue = (data: MyDayData, t: TaskItem) => {
+  const qid = planCopy(data, t)?.rolledQid;
+  return !!qid && data.queue.some(q => q.qid === qid);
+};
 
 export type Group = 'earlier' | 'today' | 'upcoming' | 'anytime' | 'done';
 export const GROUP_LABEL: Record<Group, string> = { earlier: 'From earlier', today: 'Today', upcoming: 'Coming up', anytime: 'Any time', done: 'Done' };

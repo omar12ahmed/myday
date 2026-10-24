@@ -2,7 +2,7 @@
 // Ported from the current MyDay (same rules and wording). Nothing here ever resets to zero:
 // missed days and rest days simply slide out of the 7-day window.
 import { dtToMin, minToDt, shift, todayKey } from './dates';
-import { learningDoneOn, learningForToday, limitFor, releaseTask, shrinkTask } from './plan';
+import { followQueued, learningDoneOn, learningForToday, limitFor, releaseTask, shrinkTask } from './plan';
 import type { DateKey, MyDayData, Task } from './types';
 
 // Learning done (true/false) for the 6 days before today and today, oldest first.
@@ -59,5 +59,6 @@ export function swapInLearning(data: MyDayData, k: DateKey, replaceUid: string |
     releaseTask(data, old);
     d.tasks.splice(i, 1, lt);
   } else d.tasks.unshift(lt);
+  followQueued(data, k);
   return { changed: true, message: 'Swapped in: 15 minutes of learning.' };
 }

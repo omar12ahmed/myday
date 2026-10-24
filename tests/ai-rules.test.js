@@ -980,7 +980,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const u = K.applyAskChanges(c.changes);
     let t = K.getSnapshot().data.tasks.items.find(x => x.id === 'tkB');
     check('Apply changes it through the Tasks rules (moved later is counted, its time kept) and moves it to the other project', !!u && t.due === plus(3) && t.time === '09:30' && t.minutes === 30 && t.category === 'health' && t.title === 'Pay the council tax' && t.projectId === 'pjC' && t.postponed === 1);
-    check('Undo puts back exactly what was there (the task and both projects)', K.undoAskChanges(u) && eq(K.getSnapshot().data.tasks.items, before.tasks.items) && eq(K.getSnapshot().data.projects.items, before.projects.items));
+    check('Undo puts back exactly what was there (the task and both projects)', K.undoAskChanges(u).result === 'undone' && eq(K.getSnapshot().data.tasks.items, before.tasks.items) && eq(K.getSnapshot().data.projects.items, before.projects.items));
     check('…and nothing else was touched (notes, appointments, days)', eq(K.getSnapshot().data.notes.items, before.notes.items) && eq(K.getSnapshot().data.commitments, before.commitments) && eq(K.getSnapshot().data.days, before.days));
     w = K.getSnapshot().data;
     c = K.checkAskReply(C([ch('task', 'tkX', { date: plus(1) }), ch('task', 'tkDone', { date: plus(1) }), ch('task', 'tkNope', { date: plus(1) }), ch('note', 'n4', { title: 'x' }), ch('appointment', 'c1', { time: '16:00' })]), w, today, D);
@@ -994,11 +994,11 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     c = K.checkAskReply(C([ch('appointment', 'c1', { time: '16:00' })]), w, cal, D);
     check('an appointment on the Calendar: a new time, its length kept', c.kind === 'change' && c.changes[0].patch.start === `${D}T16:00` && c.changes[0].patch.end === `${D}T16:45` && c.changes[0].lines[0].after.endsWith('16:00'));
     const u2 = K.applyAskChanges(c.changes);
-    check('…applied, and Undo puts the old time back', u2 && K.getSnapshot().data.commitments.find(x => x.id === 'c1').start === `${D}T16:00` && K.undoAskChanges(u2) && K.getSnapshot().data.commitments.find(x => x.id === 'c1').end === `${D}T15:45`);
+    check('…applied, and Undo puts the old time back', u2 && K.getSnapshot().data.commitments.find(x => x.id === 'c1').start === `${D}T16:00` && K.undoAskChanges(u2).result === 'undone' && K.getSnapshot().data.commitments.find(x => x.id === 'c1').end === `${D}T15:45`);
     c = K.checkAskReply(C([ch('note', 'n4', { projectId: 'pjC', title: 'Roaster prices' })]), K.getSnapshot().data, note, D);
     const u3 = c && K.applyAskChanges(c.changes), n4 = K.getSnapshot().data.notes.items.find(x => x.id === 'n4');
     check('a note: its title and project, its words never touched', c.kind === 'change' && n4.title === 'Roaster prices' && n4.projectId === 'pjC' && n4.text === 'Roasters sell per kilo');
-    check('…and Undo puts it back as it was', K.undoAskChanges(u3) && eq(K.getSnapshot().data.notes.items, before.notes.items));
+    check('…and Undo puts it back as it was', K.undoAskChanges(u3).result === 'undone' && eq(K.getSnapshot().data.notes.items, before.notes.items));
     c = K.checkAskReply(C([ch('note', 'n3', { title: 'x' })]), K.getSnapshot().data, K.askSlice(K.getSnapshot().data, '#projects/notes/n3', D), D);
     check('a private note is never changed (it wasn\'t sent)', !c || c.kind !== 'change');
     c = K.checkAskReply(C([ch('task', 'tkB', { date: plus(1), category: 'learning', minutes: 90, title: 'Pay the council tax bill' })]), K.getSnapshot().data, today, D, 'move council tax to tomorrow');
@@ -1024,8 +1024,27 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     wp = K.getSnapshot().data;
     check('…applied: off the plan (the others untouched), the link cleared', eq(wp.days[D].tasks.map(t => t.uid), ['pA', 'pC']) && wp.tasks.items[0].plannedOn === null && wp.tasks.items[0].due === plus(2));
     K.update(dd => { dd.days[D].tasks[0].done = true; }); // something ticked meanwhile
-    check('…Undo puts that one task back in its place, keeps what was ticked since, and relinks it', K.undoAskChanges(up) && eq(K.getSnapshot().data.days[D].tasks.map(t => t.uid), ['pA', 'pP', 'pC'])
+    check('…Undo puts that one task back in its place, keeps what was ticked since, and relinks it', K.undoAskChanges(up).result === 'undone' && eq(K.getSnapshot().data.days[D].tasks.map(t => t.uid), ['pA', 'pP', 'pC'])
       && K.getSnapshot().data.days[D].tasks[0].done && K.getSnapshot().data.tasks.items[0].planUid === 'pP' && K.getSnapshot().data.tasks.items[0].due === D);
+    // Changed since Ask changed it (ticked off on Today, your own edit, a sync): Undo leaves that alone and says so.
+    c = K.checkAskReply(C([ch('task', 'tkP', { date: plus(1) })]), K.getSnapshot().data, K.askSlice(K.getSnapshot().data, '#today', D), D, 'move the form to tomorrow');
+    const uq = K.applyAskChanges(c.changes);
+    K.update(dd => { const x = dd.tasks.items.find(t => t.id === 'tkP'); x.done = true; x.doneOn = D; }); // ticked off since
+    const rq = K.undoAskChanges(uq), tq = K.getSnapshot().data.tasks.items.find(t => t.id === 'tkP');
+    check('a task ticked off after Ask changed it: Undo leaves it as it is now (done, on its new day, off the plan) and says nothing was put back', rq.result === 'changed' && rq.kept === 1 && tq.done && tq.due === plus(1) && !K.getSnapshot().data.days[D].tasks.some(x => x.uid === 'pP'), [rq, tq.done, tq.due]);
+    const sq = K.freshState();
+    sq.tasks.items = [TK('tkM', 'Call the bank', { due: D }), TK('tkN', 'Book the MOT', { due: D })];
+    localStorage.clear(); localStorage.setItem('myday.data.v4', JSON.stringify(sq)); K.boot();
+    let wq = K.getSnapshot().data;
+    c = K.checkAskReply(C([ch('task', 'tkM', { date: plus(1) }), ch('task', 'tkN', { date: plus(1) })]), wq, K.askSlice(wq, '#today', D), D, 'move both to tomorrow');
+    const um = K.applyAskChanges(c.changes);
+    K.update(dd => { const x = dd.tasks.items.find(t => t.id === 'tkN'); x.done = true; x.doneOn = D; });
+    const rm = K.undoAskChanges(um); wq = K.getSnapshot().data;
+    check('Undo when one of two was ticked off since: the other goes back, the ticked one stays as it is, and it says so', rm.result === 'partly' && rm.kept === 1 && wq.tasks.items.find(t => t.id === 'tkM').due === D && wq.tasks.items.find(t => t.id === 'tkN').done && wq.tasks.items.find(t => t.id === 'tkN').due === plus(1), rm);
+    c = K.checkAskReply(C([ch('task', 'tkM', { date: plus(1) })]), wq, K.askSlice(wq, '#today', D), D, 'move the bank call to tomorrow');
+    const ur = K.applyAskChanges(c.changes);
+    K.update(dd => { const i = dd.tasks.items.findIndex(t => t.id === 'tkM'); dd.tasks.items[i] = Object.fromEntries(Object.entries(dd.tasks.items[i]).reverse()); }); // a sync round trip reordering its fields
+    check('…but a record whose fields were only reordered (a sync round trip) still goes back', K.undoAskChanges(ur).result === 'undone' && K.getSnapshot().data.tasks.items.find(t => t.id === 'tkM').due === D);
     check('a reply with a target the server doesn\'t know is dropped by its reader', K.readAsk(C([ch('project', 'pjC', { title: 'x' }), ch('task', '', { title: 'x' })]))?.items.length === 0);
   }
 

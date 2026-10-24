@@ -132,7 +132,13 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
       </div>}
       {phase.at === 'applied' && <div className="flex flex-wrap items-center gap-x-3 gap-y-1" data-s="ask-applied">
         <p className="text-[15px] m-0">Changed {phase.words}.</p>
-        <LinkButton data-action="ask-undo" onClick={() => { if (undoAskChanges(phase.undo)) { toast('Put back as it was.'); setPhase({ at: 'idle' }); } }}>Undo</LinkButton>
+        <LinkButton data-action="ask-undo" onClick={() => {
+          // Anything changed since (a tick on Today, your own edit) is yours, so it stays and the message says so.
+          const r = undoAskChanges(phase.undo);
+          if (r.result === 'not-saved') { toast("Couldn't save just now."); return; }
+          toast(r.result === 'undone' ? 'Put back as it was.' : r.result === 'partly' ? `Put back, except ${r.kept === 1 ? 'one thing' : `${r.kept} things`} you've changed since.` : "Nothing put back — you've changed it since.");
+          setPhase({ at: 'idle' });
+        }}>Undo</LinkButton>
         <LinkButton data-action="ask-close" className="ml-auto" onClick={onClose}>Close</LinkButton>
       </div>}
       {phase.at === 'shown' && (() => {

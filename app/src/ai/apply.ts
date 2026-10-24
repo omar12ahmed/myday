@@ -43,7 +43,11 @@ export function toReview(data: MyDayData, k: DateKey, p: CheckedProposal): Propo
   return { mode: 'review', dayKey: k, energy: d.energy as number, items, editing: false, touched: true, stale: false };
 }
 
-export interface Undo { k: DateKey; before: { day: Day; queue: QueueItem[] }; after: string }
+// Which plan copy each task from Inbox → Tasks points at: changing the plan can move these (a queued copy taking its
+// place, or going back to the queue), so Undo puts them back too.
+type Link = { id: string; plannedOn: DateKey | null; planUid: string | null };
+const linksOf = (data: MyDayData): Link[] => data.tasks.items.map(t => ({ id: t.id, plannedOn: t.plannedOn, planUid: t.planUid }));
+export interface Undo { k: DateKey; before: { day: Day; queue: QueueItem[]; links: Link[] }; after: string }
 export type ApplyResult = { ok: true; undo: Undo; message: string } | { ok: false; reason: 'stale' | 'not-saved' };
 
 export function applyAi(k: DateKey, stamp: string, p: CheckedProposal): ApplyResult {
@@ -52,7 +56,7 @@ export function applyAi(k: DateKey, stamp: string, p: CheckedProposal): ApplyRes
   const r = updateSaved(draft => {
     const d = draft.days[k];
     if (k !== todayKey() || !d || planStamp(draft, k) !== stamp) { stale = true; return false; }
-    const before = { day: structuredClone(d), queue: structuredClone(draft.queue) };
+    const before = { day: structuredClone(d), queue: structuredClone(draft.queue), links: linksOf(draft) };
     if (p.rest && !d.rest && !d.tasks.some(t => t.done)) {
       makeRestDay(draft, k, d.energy); // anything carried over goes back to the queue
       message = "Rest day it is. Anything carried over is back in your queue.";
@@ -80,6 +84,7 @@ export function undoAi(u: Undo): 'undone' | 'changed' | 'not-saved' {
     if (undoStamp(draft, u.k) !== u.after) { changed = true; return false; }
     draft.days[u.k] = structuredClone(u.before.day);
     draft.queue = structuredClone(u.before.queue);
+    for (const l of u.before.links) { const t = draft.tasks.items.find(x => x.id === l.id); if (t) { t.plannedOn = l.plannedOn; t.planUid = l.planUid; } }
   });
   return changed ? 'changed' : r === 'saved' ? 'undone' : 'not-saved';
 }
