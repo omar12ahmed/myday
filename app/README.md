@@ -1,5 +1,11 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.46.1 — Start, then continue:** Today's Study card said "Continue learning" even when nothing had been begun
+(for example after a fresh start). Until you've begun a subject (an Arabic session; a Cybersecurity attempt, session
+or ticked task; a session or ticked task in your own course) it now says "Start learning — Your first lesson is
+ready", and the lesson's button says "Start lesson". After that it says "Continue learning" as before. No
+saved-data, sync or database change; going back to 1.46.0 is safe.
+
 **1.46.0 — Projects Overview, next step first:** a project's Overview now opens with its Next step, with Worth a
 look beside it. At a glance shows each tool's summary once, one row per tool, and the tile strip and the separate
 Milestones, Decisions, one-page, case and How it's going cards are gone. A task still to do after its date now leads
