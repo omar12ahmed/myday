@@ -8,7 +8,7 @@ the next day, and a lesson's checks a week after Ready, at most 8 new cards a da
 pages and Today, with "Why this?", catch-up only to real content (never a portfolio or checkpoint), and a shorter
 session suggested on a low-energy day. Older sessions count as Practised, with a one-time offer to mark lessons
 ready. New optional `arabic.lessons`, synced as `arabic_lesson` (migration `20261024120000_sync_arabic_lessons.sql`);
-saved data stays schema 5. Going back to 1.46.0 is safe: it keeps the lesson places unread and ignores the new
+saved data stays schema 5. Going back to 1.46.1 is safe: it keeps the lesson places unread and ignores the new
 records (checked with the actual previous release), and its next step goes back to finished sessions. Two things to
 know: a device that spends time on the older release and then updates again receives lesson places changed on other
 devices meanwhile when they next change (or when it signs in again); and a Study reset done on the older release
