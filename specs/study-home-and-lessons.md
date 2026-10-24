@@ -4,7 +4,8 @@
 the lesson journey, published for Arabic in 1.53.0 and for Cybersecurity in 1.55.0; release (c), Keep a word,
 in 1.57.0 (24 October 2026, its migration applied that day); release (d), Practise again, published in 1.64.0
 (24 October 2026, its migration applied that day), and its second half, Progress and the weekly prompts, built on
-branch `study-progress`; (e)–(f) planned. The owner's decisions of 24 October 2026 are in §2. This builds on
+branch `study-progress` and published in 1.67.0; release (e), the Cybersecurity portfolio, built on branch
+`portfolio` (its migration not yet applied); (f) planned. The owner's decisions of 24 October 2026 are in §2. This builds on
 `specs/adaptive-study.md` (lesson states, answer marks, revision from every lesson, the next-step rules), published
 in 1.47.0; this plan is a series of later, separate releases (§14).
 **Plan date:** 24 October 2026, after release 1.44.1.
@@ -303,6 +304,25 @@ portfolio's own text (titles, notes, evidence) is kept out as well.
   the new record kind (verify with `app-sync-previous`).
 - **Review:** an independent security review (Fable) before release: the area's rules, the confirm step, the cache,
   the privacy tick and scan, and that nothing reaches AI.
+
+**As built (24 October 2026):** a handed-in notebook attempt has "Add to portfolio": a title (the activity and your
+input variant), a copy of the attempt's evidence to edit or redact, an optional note, the three privacy ticks, and a
+scan of the text (`secretsIn` in `app/src/data/cybersecurity/portfolio.ts`: private-key headers, a password or key
+written out, common token formats, public IP addresses; plainly redacted values pass). The entry keeps its own copy, so
+the notebook and the Study reset (which keeps the portfolio) don't change it. The Portfolio tab
+(`app/src/study/cybersecurity/Portfolio.tsx`) lists entries by module and lesson, with Edit (checked and ticked again,
+the day reviewed moving to today) and Remove (asked first). Each entry's files (`PortfolioFiles.tsx`) are the shared
+`file` records, area 'portfolio' (`app/src/data/files.ts`: a portfolio entry is a place, at most 5 files), opened from
+this device's copy when there is one (`app/src/data/fileCache.ts`, IndexedDB; cleared on signing out and by delete
+everything, and a copy goes when its file is deleted for good, here or elsewhere). Removing a file or an entry sends
+files to Recently deleted (an entry's then wait on the portfolio page, not the Projects home). Export portfolio
+(`portfolioPages.ts`) writes a zip in the browser (`app/src/data/zip.ts`): a self-contained page (escaped, no scripts,
+nothing fetched) and each entry's files in its own folder. A project's required skills now say whether you have
+evidence (a handed-in attempt on a lesson teaching the skill), never a number. Saved data stays schema 5: the optional
+`cybersecurity.portfolio` (kept unread by older releases) syncs as the new kind `cyber_portfolio` (migration
+`20261025140000_sync_cyber_portfolio.sql`), which older releases ignore; 1.69.0 leaves a portfolio file alone
+(`LISTED_AREAS`, myday-51's guard), and the server refuses an older device's delete of one
+(`tests/app-sync-previous.test.js` [11]).
 
 **NICE Framework, a later step:** a MyDay-authored mapping file. It holds, per module, the NICE work roles and a few
 Task, Knowledge and Skill statements, checked against NIST's official NICE Framework Components (version named in the
