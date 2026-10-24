@@ -390,6 +390,13 @@ note's text does: AI help with notes when it's on, and Ask MyDay opened on that 
     per-question marks, so there it's only shown, with a reminder to set "Assistance used". Nothing is saved by
     asking. Evaluated blind (`ai-eval/reviews/2026-10-24-check-answer-quality.md`): Gemini 3.8 Flash checks Arabic
     answers (no reply refused, nothing false), GLM-5.3-Flash Cybersecurity ones (`"check-answer-arabic": "learn"`).
+  - **As built (the tutor, 25 October 2026):** the Cybersecurity tutor sends a version-2 request (the same question and
+    lesson) and shows the reply in the same parts, one at a time (`app/src/study/cybersecurity/TutorCard.tsx`, sharing
+    `app/src/study/reveal.ts` and `RevealParts.tsx` with "Check my answer"); where parts don't fit — someone else's
+    target, answer keys, a mark, a secret, a question away from the lesson — one plain reply with a next step
+    (`supabase/functions/_shared/ai/tutor-shape.ts`). Version 1, as earlier releases send, is answered exactly as before.
+    No suggested mark (the tutor sees no answer). Evaluated blind (`ai-eval/reviews/2026-10-25-tutor-steps-quality.md`):
+    the tutor stays on GLM-5.3-Flash, with instructions `myday-tutor-steps-v2`.
 - **The skills view and four Arabic tracks:** reading, writing, listening and speaking each shown in words and
   counts, with the CEFR descriptors as a guide to objectives, never a qualification. The package's 0–100 model stays
   internal.

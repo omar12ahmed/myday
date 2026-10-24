@@ -598,6 +598,16 @@ speaking or listening, and nothing is saved by asking. Models chosen by a blind 
 (`../ai-eval/reviews/2026-10-24-check-answer-quality.md`): GLM checks Cybersecurity answers, Gemini Arabic ones.
 Shown only when the app is built with AI help.
 
+The Cybersecurity tutor in parts (graduated help, `../specs/study-home-and-lessons.md` §12): "Explain this to me" on a
+lesson sends your question and the lesson (a version-2 tutor request; `src/study/cybersecurity/TutorCard.tsx`), and the
+reply comes in parts shown one at a time as you ask — a hint first (a question to think with before any explanation),
+an example, the explanation, a follow-up question and its answer — or, where parts don't fit (someone else's target,
+answer keys, a mark, a secret, a question away from the lesson), one plain reply with a next step
+(`../supabase/functions/_shared/ai/tutor-shape.ts`: used only with every part, no links and no verdicts). "Check my
+answer" and the tutor share the reveal (`src/study/reveal.ts`, `src/study/RevealParts.tsx`). A version-1 request (the
+app before it) is answered exactly as before. The tutor stays on GLM-5.3-Flash, by a blind evaluation
+(`../ai-eval/reviews/2026-10-25-tutor-steps-quality.md`). Nothing is saved; shown only when the app is built with AI help.
+
 Ask MyDay (the AI design's step 1, 1.25.0): in the + Capture sheet, below the suggestions worked out on the device,
 **✦ Ask MyDay** is for what they can't do — a question, a breakdown into steps, several things at once. Only on your
 tap, and a preview shows exactly what goes with it from the page you're on — the values themselves ("Course: …", "Next:

@@ -110,6 +110,23 @@ const same = require('node:util').isDeepStrictEqual;
   check('tutor uses authoritative lesson context, without answer keys', messages[1].content.includes('Learning through evidence') && !messages[1].content.includes('No; performance needs observable evidence.'));
   check('a bounded response for the selected lesson is accepted', !!C.tutorReply(C.mockTutor(ctx), ctx.lessonId));
   check('wrong-lesson, score-bearing and malformed responses are refused', !C.tutorReply(C.mockTutor(ctx), 'lesson.other') && !C.tutorReply(JSON.stringify({ lessonId: ctx.lessonId, explanation: 'x', nextStep: 'x', score: 100 }), ctx.lessonId) && !C.tutorReply('bad', ctx.lessonId));
+  // Graduated help (1.75.0): a version-2 request gets the reply in parts; version 1 (the published app) as before.
+  const ctx2 = { ...ctx, version: 2 };
+  check('tutor accepts version 2 as well as 1, and nothing else', C.checkTutorContext(ctx2) && !C.checkTutorContext({ ...ctx, version: 3 }) && !C.checkTutorContext({ ...ctx2, notebook: 'private work' }));
+  const m2 = C.messagesFor(ctx2);
+  check('version 2\'s instructions ask for the parts (a hint before any explanation) or a plain reply, with the same lesson and no answer keys',
+    ['"hint"', '"example"', '"explanation"', '"followUp"', '"kind": "plain"', 'never the answer itself'].every(x => m2[0].content.includes(x)) && m2[1].content === messages[1].content && m2[0].content !== messages[0].content);
+  const steps = C.readTutorSteps(C.mockTutor(ctx2), ctx.lessonId);
+  check('the practice tutor\'s version-2 reply is read as parts, and its version-1 reply is unchanged (not parts)', steps?.kind === 'steps' && steps.hint.startsWith('Practice helper (no AI)') && !!steps.followUp.answer && !!C.tutorReply(C.mockTutor(ctx), ctx.lessonId) && !C.readTutorSteps(C.mockTutor(ctx), ctx.lessonId));
+  const SR = o => JSON.stringify({ lessonId: ctx.lessonId, kind: 'steps', hint: 'What would count as evidence?', example: 'A log line you wrote.', explanation: 'Evidence is what you can show.', followUp: { question: 'Is reading evidence?', answer: 'No.' }, ...o });
+  const PR = o => JSON.stringify({ lessonId: ctx.lessonId, kind: 'plain', explanation: 'I can\'t mark this.', nextStep: 'Write your baseline.', ...o });
+  check('a plain reply (explanation and next step) is read too', C.readTutorSteps(PR(), ctx.lessonId)?.kind === 'plain' && C.readTutorSteps(PR(), ctx.lessonId).nextStep === 'Write your baseline.');
+  const refusedSteps = [['another lesson', SR({ lessonId: 'lesson.other' })], ['an unknown kind', SR({ kind: 'essay' })], ['no hint', SR({ hint: undefined })], ['no follow-up answer', SR({ followUp: { question: 'Q?' } })],
+    ['a hint over 400 characters', SR({ hint: 'h'.repeat(401) })], ['a next step over 600 characters', PR({ nextStep: 'n'.repeat(601) })], ['a link', SR({ example: 'See https://example.com.' })], ['a verdict', PR({ explanation: 'You\'ve passed this one.' })],
+    ['a score', SR({ explanation: 'You scored 8/10.' })], ['not JSON', 'Sure! Here you go.'], ['the version-1 shape', C.mockTutor(ctx)]].filter(([, t]) => C.readTutorSteps(t, ctx.lessonId)).map(([w]) => w);
+  check('a version-2 reply that isn\'t usable is refused (11 kinds: lesson, shape, lengths, links, verdicts)', refusedSteps.length === 0, refusedSteps);
+  check('…but saying it can\'t tell whether you\'ve passed is no verdict', !!C.readTutorSteps(PR({ explanation: 'I can\'t say whether you\'ve passed: I can\'t see your work.' }), ctx.lessonId));
+  check('…and the rule-breaking practice reply (a mark, a link, the question repeated) is refused', C.readTutorSteps(C.mockTutor(ctx2, 'sloppy'), ctx.lessonId) === null);
   const { handle } = await import(pathToFileURL(path.join(ROOT, 'supabase/functions/ai-plan/handler.ts')).href);
   let budgetCalls = 0;
   const env = { AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_MOCK_DELAY_MS: '0' };
@@ -118,6 +135,9 @@ const same = require('node:util').isDeepStrictEqual;
   const response = await handle(req(ctx), deps), result = await response.json();
   check('server tutor uses the authenticated, budget-limited provider path', response.status === 200 && !!C.tutorReply(result.output, ctx.lessonId) && budgetCalls === 1);
   check('unknown lessons are rejected before budget or provider use', (await handle(req({ ...ctx, lessonId: 'lesson.missing' }), deps)).status === 400 && budgetCalls === 1);
+  const r2 = await handle(req(ctx2), deps), out2 = await r2.json();
+  check('a version-2 request goes the same way and comes back in parts', r2.status === 200 && C.readTutorSteps(out2.output, ctx.lessonId)?.kind === 'steps' && budgetCalls === 2);
+  check('…and a version the server doesn\'t know is refused before any budget is used', (await handle(req({ ...ctx, version: 3 }), deps)).status === 400 && budgetCalls === 2);
 
   console.log('\n[Revision] The course\'s own knowledge checks in revision (no AI)');
   const checks = JSON.parse(fs.readFileSync(path.join(ROOT, 'app/src/study/cybersecurity/checks.json'), 'utf8'));

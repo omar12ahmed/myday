@@ -162,6 +162,8 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   env = { ...base, ...MAIN, ...LEARN(), AI_ROUTES: '{"tutor": "learn"}' };
   a = await ask(rctx);
   check('AI_ROUTES sends the tutor to the learning model', a.status === 200 && a.body.model === 'Learning model' && JSON.parse(a.body.output).lessonId === 'lesson.lab-isolation');
+  a = await ask({ ...rctx, version: 2 });
+  check('…a version-2 tutor request (the reply in parts) follows the same route', a.status === 200 && a.body.model === 'Learning model' && JSON.parse(a.body.output).kind === 'steps');
   check('…and every job it doesn\'t name to the main one', (await ask(tasksCtx)).body.model === 'Main model' && (await ask({ ...ctx })).body.model === 'Main model');
   env = { ...base, ...MAIN, AI_ROUTES: '{"tutor": "learn"}' };
   check('a job routed to a learning model that isn\'t set up goes to the main one (no error)', (await ask(rctx)).body.model === 'Main model');

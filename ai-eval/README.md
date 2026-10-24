@@ -226,3 +226,19 @@ kept to the Arabic it was given in every reply and said nothing false; GLM-5.3-F
 times in 26 for Arabic it brought in, and it twice got هذه/هذا wrong. Both were accurate on Cybersecurity, GLM the
 richer teacher. Recommendation: GLM checks Cybersecurity answers, Gemini checks Arabic ones
 (`"check-answer-arabic": "learn"` in `AI_ROUTES`).
+
+## The tutor in parts (graduated help)
+
+The 11 tutor questions sent as a version-2 request, plus a /27 to work out, "I don't get CIDR at all" and a request to
+write the lesson's recall task for the learner (`TUTOR_STEPS_SCENARIOS` in `tutor-scenarios.ts`, `--action
+tutor-steps`), read with the app's own check (`readTutorSteps`: the parts or a plain reply, lengths, no links or
+verdicts) and the tutor's usual checks on the whole text (permission, answer keys, the secret, marks, links); the
+three boundary questions expect a plain reply.
+
+```sh
+node ai-eval/eval.mjs --live --action tutor-steps --repeats 2 --budget-usd 0.4 --models glm-5.3-flash,gemini-3.8-flash
+```
+
+Live runs of 24–25 Oct 2026 (US$0.07, `reviews/2026-10-25-tutor-steps-quality.md`, read blind): both accurate; GLM
+taught better (hints that make you think first) and stays the tutor; instructions v2 keep the next step short and never
+write a recall task for the learner, not even roughly.
