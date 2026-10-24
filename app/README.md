@@ -487,7 +487,7 @@ page, Ask MyDay replies "look up" with the date (worked out from the day named);
 (`dayLookup` in `src/ai/lookup.ts`, from a week ago to two months ahead) and asks once more with that day's plan (task
 titles, minutes, done, a time), tasks due that day not on it, busy times by kind only (work, appointment, workout,
 sleep, prep — never an appointment's name), free time and energy. A private project's tasks are left out (counted only
-on the device: "— 1 private task left out"). Evaluated with `ai-eval/ask-scenarios.ts` (d01–d07).
+on the device: "— 1 private task left out"). Evaluated with `ai-eval/ask-scenarios.ts` (y01–y07).
 
 **Planning a Study course with Ask (1.26.0):** a course page has **✦ Plan this course with Ask**, which opens + already
 filled in ("Break this course into study tasks"; `src/capture/openCapture.ts`). From a course page Ask sends the
