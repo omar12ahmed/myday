@@ -110,7 +110,7 @@ const same = require('node:util').isDeepStrictEqual;
   check('tutor uses authoritative lesson context, without answer keys', messages[1].content.includes('Learning through evidence') && !messages[1].content.includes('No; performance needs observable evidence.'));
   check('a bounded response for the selected lesson is accepted', !!C.tutorReply(C.mockTutor(ctx), ctx.lessonId));
   check('wrong-lesson, score-bearing and malformed responses are refused', !C.tutorReply(C.mockTutor(ctx), 'lesson.other') && !C.tutorReply(JSON.stringify({ lessonId: ctx.lessonId, explanation: 'x', nextStep: 'x', score: 100 }), ctx.lessonId) && !C.tutorReply('bad', ctx.lessonId));
-  // Graduated help (1.75.0): a version-2 request gets the reply in parts; version 1 (the published app) as before.
+  // Graduated help: a version-2 request gets the reply in parts; version 1 (the published app) as before.
   const ctx2 = { ...ctx, version: 2 };
   check('tutor accepts version 2 as well as 1, and nothing else', C.checkTutorContext(ctx2) && !C.checkTutorContext({ ...ctx, version: 3 }) && !C.checkTutorContext({ ...ctx2, notebook: 'private work' }));
   const m2 = C.messagesFor(ctx2);

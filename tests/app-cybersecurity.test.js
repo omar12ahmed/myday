@@ -151,7 +151,7 @@ async function fill(sel, value) {
   const beforeAI = JSON.stringify((await data()).cybersecurity);
   await fill('#cyberTutorQuestion', 'What counts as evidence?'); await click('[data-action=cyber-ask]'); await sleep(850);
   check('optional tutor renders a checked explanation in practice mode', (await text('#app')).includes('Rules-only practice response'));
-  // Graduated help (1.75.0): the reply in parts, a hint first, each more only when asked.
+  // Graduated help: the reply in parts, a hint first, each more only when asked.
   const tuParts = () => ev(`['hint', 'example', 'explanation', 'follow-up', 'follow-answer'].filter(p => document.querySelector('[data-s="tu-' + p + '"]')).join()`);
   check('…in parts: the hint first, with focus, under what you asked', (await ev(`document.querySelector('[data-s="tutor-reply"]')?.dataset.kind`)) === 'steps' && (await tuParts()) === 'hint'
     && (await ev(`document.activeElement?.dataset?.s || ''`)) === 'tu-hint' && (await text('[data-s="tutor-reply"]')).includes('You asked: “What counts as evidence?”'));

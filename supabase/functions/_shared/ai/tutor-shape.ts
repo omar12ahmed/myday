@@ -3,7 +3,7 @@
 // worked explanation, then one short follow-up question with its answer — shown one at a time, only as the learner
 // asks. Where parts don't fit (a target that isn't theirs, answer keys, a mark, a question away from the lesson, a
 // secret in the question), one plain reply with a next step instead. Kept apart from tutor.ts (the instructions), so the
-// app can use it without loading them. A version-1 request (the app before 1.75.0) still gets the old one-part reply.
+// app can use it without loading them. A version-1 request (the app before graduated help) still gets the old one-part reply.
 import { LINK, VERDICT } from './check-answer-shape.ts';
 
 export const TUTOR_STEPS_LIMITS = { hintChars: 400, exampleChars: 800, explanationChars: 2400, followUpChars: 400, followAnswerChars: 600, nextStepChars: 600 };

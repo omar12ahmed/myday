@@ -1,4 +1,4 @@
-// A version-1 tutor reply, as the app before 1.75.0 showed it (TutorCard now asks for version 2: tutor-shape.ts). Kept
+// A version-1 tutor reply, as the app before graduated help showed it (TutorCard now asks for version 2: tutor-shape.ts). Kept
 // for the evaluation and the tests that show version-1 replies are unchanged for the published app.
 export function tutorReply(text: string, lessonId: string): { explanation: string; nextStep: string } | null {
   try {

@@ -7,11 +7,11 @@ export * from './tutor-shape.ts';
 // v2 (13 Oct 2026): precision, retrieval tasks left to the learner, no verdicts, secrets, placeholders, length —
 // the gaps a blind review of v1's replies found (ai-eval/reviews/2026-10-13-tutor-quality.md).
 export const TUTOR_PROMPT_VERSION = 'myday-tutor-v2';
-// A version-2 request's instructions: the same rules, one reply in parts (tutor-shape.ts; graduated help, 1.75.0).
+// A version-2 request's instructions: the same rules, one reply in parts (tutor-shape.ts; graduated help).
 // v2 (25 Oct 2026, after a blind review): a short next step; never a finished version of the lesson's recall task.
 export const TUTOR_STEPS_PROMPT_VERSION = 'myday-tutor-steps-v2';
 
-// version 1: one explanation and a next step (the app before 1.75.0, answered exactly as before); version 2: in parts.
+// version 1: one explanation and a next step (the app before graduated help, answered exactly as before); version 2: in parts.
 export interface TutorContext {
   version: 1 | 2; action: 'tutor'; curriculumVersion: '1.0.0'; lessonId: string; question: string;
 }
