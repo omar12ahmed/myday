@@ -1,5 +1,10 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.45.2 — Study counts, never percentages:** Study's completion line now reads "2 of 5 tasks marked complete"
+instead of "2 of 5 tasks complete (40%)", on Study home, the roadmap, topics, courses and Progress. The note that it
+counts ticks, not how well you know them, and the bar stay. The classic MyDay keeps its own wording. No saved-data,
+sync or database change; going back to 1.45.1 is safe.
+
 **1.45.1 — Arabic corrections:** the Arabic curriculum is version 1.1.2, with errors fixed from a review of every
 Arabic item (23 October 2026). These include a mis-vowelled word (مُلَاحَظَات), a missing فَـ before a سَـ
 result, the Form II and diptote rules, a B2 example (وِجْهَةَ النَّظَرِ), a hamza seat (أقرؤه) and the relative
