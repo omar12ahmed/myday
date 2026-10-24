@@ -21,7 +21,7 @@ status, never a guessed one.
     - what it is ("Your course", "Book", "Arabic lesson") and its title, opening it in Study;
     - its status in Study's own words;
     - "Why: …" when you wrote one;
-    - **Edit why** (or **Add why**) and **Unlink**, as quiet text buttons. Unlinking says "Unlinked — it's still in
+    - **Edit why** (or **Add why**; not on a link that's gone) and **Unlink**, as quiet text buttons. Unlinking says "Unlinked — it's still in
       Study", as unlinking an appointment does.
 - **Statuses**, never a percentage and never inferred competence:
   - **Your course:** Study's own line, e.g. "3 of 8 tasks marked complete" or "No tasks added yet". When it's
@@ -35,7 +35,9 @@ status, never a guessed one.
 - **Link something:**
   1. Choose what kind: Your course, Book or Arabic lesson.
   2. Choose which one. The list shows only those not linked yet: courses in roadmap order, books in Reading's order,
-     and Arabic lessons in your path's order. A kind with nothing in it says so (e.g. "No books in Reading yet.").
+     and Arabic lessons in your path's order, under their module's name. A kind with nothing left says so (e.g. "No
+     books left to link. Add one in Study → Reading."). If the Arabic lessons can't load, it says so, with **Try
+     again**; opening the form again also tries again.
   3. Optionally say why it matters (up to 200 characters).
   4. Press **Link**; Cancel closes the form.
 - At most 20 links a project. The same item can't be linked twice.
@@ -49,7 +51,8 @@ status, never a guessed one.
   - A project without links is saved exactly as before.
   - A kind this version doesn't know (from a newer MyDay) is kept and shown with its title and "Open it in a newer
     MyDay".
-  - A link this version can't read is counted, never kept half-read.
+  - A link this version can't read is counted, never kept half-read. A why that isn't text is simply left off.
+  - A why is trimmed after it's cut to 200 characters, so saved text reads back unchanged (found in review).
 - **Older releases:** this uses the owner's exception in AGENTS.md (optional fields inside an existing record whose
   unknown fields the previous release keeps). 1.54.0 keeps the field unread through read, edit, save and sync, which is
   proved with `app-sync-previous`. 1.54.0 doesn't show the links, so update every device you use.

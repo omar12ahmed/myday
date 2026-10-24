@@ -13,9 +13,11 @@ export const LINK_KINDS: LinkKind[] = ['course', 'book', 'arabic'];
 export const LINK_KIND_LABEL: Record<LinkKind, string> = { course: 'Your course', book: 'Book', arabic: 'Arabic lesson' };
 export const knownKind = (k: string): k is LinkKind => (LINK_KINDS as string[]).includes(k);
 const same = (l: StudyLink, kind: string, id: string) => l.kind === kind && l.id === id;
+// Why it matters, tidied the same way every time (trimmed after the cut too), so saved text reads back unchanged.
+const tidyWhy = (s: string) => s.trim().slice(0, LINK_LIMITS.why).trimEnd();
 
 // Reading saved links: kept only when there are some. A duplicate is merged; one this version can't read is counted,
-// never kept half-read. A kind from a newer MyDay is kept as it is.
+// never kept half-read. A kind from a newer MyDay is kept as it is. A why that isn't text is simply left off.
 export function normalizeStudyLinks(raw: unknown, report: { dropped: number }): StudyLink[] | null {
   if (raw === undefined || raw === null) return null;
   if (!Array.isArray(raw)) { report.dropped++; return null; }
@@ -24,8 +26,7 @@ export function normalizeStudyLinks(raw: unknown, report: { dropped: number }): 
     if (!isObj(l) || typeof l.kind !== 'string' || !l.kind || typeof l.id !== 'string' || !l.id || typeof l.title !== 'string' || !l.title.trim()) { report.dropped++; continue; }
     if (out.some(x => same(x, l.kind as string, l.id as string))) continue;
     const link: StudyLink = { ...l, kind: l.kind, id: l.id, title: l.title.slice(0, LINK_LIMITS.title), addedOn: isDateKey(l.addedOn) ? l.addedOn : todayKey() };
-    if (typeof l.why === 'string' && l.why.trim()) link.why = l.why.trim().slice(0, LINK_LIMITS.why);
-    else { if (l.why !== undefined && l.why !== null && typeof l.why !== 'string') report.dropped++; delete link.why; }
+    if (typeof l.why === 'string' && l.why.trim()) link.why = tidyWhy(l.why); else delete link.why;
     out.push(link);
   }
   return out.length ? out : null;
@@ -40,7 +41,7 @@ export function addStudyLink(d: MyDayData, projectId: string, item: { kind: Link
   if (!p || !item.id || !title || links.length >= LINK_LIMITS.links || links.some(l => same(l, item.kind, item.id))) return false;
   if (item.kind === 'course' && !stIndex(d.study).course.has(item.id)) return false;
   if (item.kind === 'book' && !d.reading.books.some(b => b.id === item.id)) return false;
-  const w = why.trim().slice(0, LINK_LIMITS.why);
+  const w = tidyWhy(why);
   p.studyLinks = [...links, { kind: item.kind, id: item.id, title, ...(w ? { why: w } : {}), addedOn: k }];
   p.updatedAt = localStamp();
   return true;
@@ -55,7 +56,7 @@ export function removeStudyLink(d: MyDayData, projectId: string, kind: string, i
 }
 // Why it matters: blank takes it away. Returns false when nothing changed.
 export function setStudyLinkWhy(d: MyDayData, projectId: string, kind: string, id: string, why: string): boolean {
-  const l = project(d, projectId)?.studyLinks?.find(x => same(x, kind, id)), w = why.trim().slice(0, LINK_LIMITS.why);
+  const l = project(d, projectId)?.studyLinks?.find(x => same(x, kind, id)), w = tidyWhy(why);
   if (!l || (l.why ?? '') === w) return false;
   if (w) l.why = w; else delete l.why;
   project(d, projectId)!.updatedAt = localStamp();

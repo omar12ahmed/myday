@@ -15,27 +15,28 @@ import type { MyDayData, Project } from '../data/types';
 const focusSoon = (id: string) => requestAnimationFrame(() => document.getElementById(id)?.focus());
 
 // The Arabic catalogue loads on demand, only when a project has an Arabic lesson or you choose to link one. Once
-// loaded it's kept; if it can't load, the card says so and tries again next time it's needed.
+// loaded it's kept; if it can't load, the card says so, and opening the form or "Try again" tries again.
 type ArabicModule = typeof import('./learningArabic');
+type Arabic = ArabicModule | null | 'failed';
 let arabicLoaded: ArabicModule | null = null;
 let arabicLoading: Promise<ArabicModule> | null = null;
-function useArabic(need: boolean): ArabicModule | null | 'failed' {
+function useArabic(need: boolean): [Arabic, () => void] {
   const [mod, setMod] = useState<ArabicModule | null>(arabicLoaded);
   const [failed, setFailed] = useState(false);
   useEffect(() => {
-    if (!need || mod) return;
+    if (!need || mod || failed) return;
     let live = true;
     (arabicLoading ??= import('./learningArabic')).then(m => { arabicLoaded = m; if (live) setMod(m); })
       .catch(() => { arabicLoading = null; if (live) setFailed(true); });
     return () => { live = false; };
-  }, [need, mod]);
-  return mod ?? (failed ? 'failed' : null);
+  }, [need, mod, failed]);
+  return [mod ?? (failed ? 'failed' : null), () => setFailed(false)];
 }
 
 export function LearningCard({ data, p }: { data: MyDayData; p: Project }) {
   const links = p.studyLinks ?? [];
   const [adding, setAdding] = useState(false), [kind, setKind] = useState<LinkKind>('course');
-  const ar = useArabic(links.some(l => l.kind === 'arabic') || (adding && kind === 'arabic'));
+  const [ar, retryArabic] = useArabic(links.some(l => l.kind === 'arabic') || (adding && kind === 'arabic'));
   const ix = useMemo(() => stIndex(data.study), [data.study]);
   const arabic = (id: string): ArabicInfo => (ar === 'failed' ? 'failed' : ar ? ar.arabicLesson(data, id) : undefined);
   const views = links.map(l => linkView(data, l, ix, l.kind === 'arabic' ? arabic(l.id) : undefined));
@@ -44,8 +45,8 @@ export function LearningCard({ data, p }: { data: MyDayData; p: Project }) {
       <h3 id="projectLearnH">Learning</h3>
       {views.length > 0 && <ul className="list-none p-0 m-0">{views.map(v => <LinkRow key={`${v.link.kind}:${v.link.id}`} p={p} v={v} />)}</ul>}
       {views.length === 0 && !adding && <Note className="mt-0">Link a course, book or Arabic lesson you’re learning for this project.</Note>}
-      {adding ? <LinkForm data={data} p={p} kind={kind} onKind={setKind} ar={ar} onDone={() => { setAdding(false); focusSoon('learningAdd'); }} />
-        : links.length < LINK_LIMITS.links ? <Button inline id="learningAdd" className={views.length ? 'mt-3' : ''} data-action="learning-add" aria-expanded={false} onClick={() => { setAdding(true); focusSoon(`learningKind-${kind}`); }}>Link something</Button>
+      {adding ? <LinkForm data={data} p={p} kind={kind} onKind={setKind} ar={ar} onRetry={retryArabic} onDone={() => { setAdding(false); focusSoon('learningAdd'); }} />
+        : links.length < LINK_LIMITS.links ? <Button inline id="learningAdd" className={views.length ? 'mt-3' : ''} data-action="learning-add" onClick={() => { setAdding(true); retryArabic(); focusSoon(`learningKind-${kind}`); }}>Link something</Button>
         : <Note className="mb-0 mt-3">{LINK_LIMITS.links} links is the most a project can have.</Note>}
     </Card>
   );
@@ -71,7 +72,7 @@ function LinkRow({ p, v }: { p: Project; v: LinkView }) {
       {why === null ? (<>
         {l.why && <p className="m-0 mt-1 text-[15px] text-fg-2 break-words" data-s="learning-why">Why: {l.why}</p>}
         <div className="flex flex-wrap gap-x-5">
-          <LinkButton className="text-[15px]" id={editId} data-action="learning-edit" aria-label={`${l.why ? 'Edit' : 'Add'} why “${v.title}” matters`} onClick={() => setWhy(l.why ?? '')}>{l.why ? 'Edit why' : 'Add why'}</LinkButton>
+          {!v.gone && <LinkButton className="text-[15px]" id={editId} data-action="learning-edit" aria-label={`${l.why ? 'Edit' : 'Add'} why “${v.title}” matters`} onClick={() => setWhy(l.why ?? '')}>{l.why ? 'Edit why' : 'Add why'}</LinkButton>}
           <LinkButton className="text-[15px]" data-action="learning-unlink" aria-label={`Unlink “${v.title}” from this project (it stays in Study)`}
             onClick={() => { if (update(d => (removeStudyLink(d, p.id, l.kind, l.id) ? undefined : false))) { toast('Unlinked — it’s still in Study.'); focusSoon('learningAdd'); } }}>Unlink</LinkButton>
         </div>
@@ -90,12 +91,19 @@ function LinkRow({ p, v }: { p: Project; v: LinkView }) {
   );
 }
 
+// Choices in order, gathered under their group (an Arabic lesson's module); courses and books have none.
+type Pick = { id: string; title: string; group?: string };
+function groups(list: Pick[]): [string, Pick[]][] {
+  const out: [string, Pick[]][] = [];
+  for (const c of list) { const g = c.group ?? '', last = out[out.length - 1]; if (last && last[0] === g) last[1].push(c); else out.push([g, [c]]); }
+  return out;
+}
 const NONE_LEFT: Record<LinkKind, string> = {
   course: 'No courses left to link. Add one on your Study roadmap.',
   book: 'No books left to link. Add one in Study → Reading.',
   arabic: 'No Arabic lessons left to link.',
 };
-function LinkForm({ data, p, kind, onKind, ar, onDone }: { data: MyDayData; p: Project; kind: LinkKind; onKind: (k: LinkKind) => void; ar: ArabicModule | null | 'failed'; onDone: () => void }) {
+function LinkForm({ data, p, kind, onKind, ar, onRetry, onDone }: { data: MyDayData; p: Project; kind: LinkKind; onKind: (k: LinkKind) => void; ar: Arabic; onRetry: () => void; onDone: () => void }) {
   const [id, setId] = useState(''), [why, setWhy] = useState('');
   const linked = (k: string, x: string) => !!p.studyLinks?.some(l => l.kind === k && l.id === x);
   const choices = kind === 'course' ? courseChoices(data, p) : kind === 'book' ? bookChoices(data, p)
@@ -111,19 +119,25 @@ function LinkForm({ data, p, kind, onKind, ar, onDone }: { data: MyDayData; p: P
       <Choices label="What are you learning for it?">
         {LINK_KINDS.map(k => <Choice key={k} id={`learningKind-${k}`} on={kind === k} data-s="learning-kind" data-id={k} onClick={() => { onKind(k); setId(''); }}>{LINK_KIND_LABEL[k]}</Choice>)}
       </Choices>
-      {choices === null ? <Note className="mt-0">{ar === 'failed' ? 'The Arabic lessons couldn’t load just now. Try again later.' : 'Loading the Arabic lessons…'}</Note>
+      <div className="grid gap-3 mb-3">
+      {choices === null ? (ar === 'failed'
+        ? <p className="text-[15px] text-fg-2 m-0" data-s="learning-arabic-failed">The Arabic lessons couldn’t load just now. <LinkButton className="text-[15px]" data-action="learning-retry" onClick={onRetry}>Try again</LinkButton></p>
+        : <Note className="m-0">Loading the Arabic lessons…</Note>)
         : choices.length ? (
           <Field label="Which one?" htmlFor="learningPick">
             <Select id="learningPick" value={id} onChange={e => setId(e.target.value)}>
               <option value="">Choose…</option>
-              {choices.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+              {groups(choices).map(([group, list]) => group
+                ? <optgroup key={group} label={group}>{list.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}</optgroup>
+                : list.map(c => <option key={c.id} value={c.id}>{c.title}</option>))}
             </Select>
           </Field>
-        ) : <Note className="mt-0">{NONE_LEFT[kind]}</Note>}
+        ) : <Note className="m-0">{NONE_LEFT[kind]}</Note>}
       <Field label="Why it matters (optional)" htmlFor="learningWhy">
         <TextInput id="learningWhy" value={why} maxLength={LINK_LIMITS.why} placeholder="e.g. To set up the shop’s Wi-Fi safely" onChange={e => setWhy(e.target.value)} />
       </Field>
-      <div className="flex flex-wrap gap-2.5 -mt-1">
+      </div>
+      <div className="flex flex-wrap gap-2.5">
         <Button inline type="submit" variant="primary" data-action="learning-link" disabled={!picked}>Link</Button>
         <Button inline variant="ghost" data-action="learning-cancel" onClick={onDone}>Cancel</Button>
       </div>
