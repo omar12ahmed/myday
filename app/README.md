@@ -603,12 +603,12 @@ the field unread, but doesn't show it). The conflict details say "Learning: …"
 lessons and a "For your project" line on the Study side are the next release (the owner's follow-ups).
 
 **Cybersecurity lessons and "For your project" (unreleased; `specs/projects-study-links.md` §7):** the Learning card
-also links Cybersecurity lessons from your path (grouped by module, loaded on demand separately from Arabic's), with
-Study's own words: "Marked complete", "Started" or "Not started" (Cybersecurity has no lesson states yet). In Study,
-a course's page, a current book in Reading and a Cybersecurity lesson's page say "For your project: …" under the
-title, naming every project that links it, each opening the project. Nothing new is saved: a Cybersecurity link is a
-new kind in the existing `studyLinks`, which 1.56.0 keeps unread and shows as "From a newer MyDay". Never sent to
-AI.
+also links Cybersecurity lessons from your path (grouped by module, optional ones marked, loaded on demand
+separately from Arabic's), with Study's own words: "Marked complete", "Started" or "Not started" (Cybersecurity has
+no lesson states yet). In Study, a course's page, a current book in Reading and a Cybersecurity lesson's page say
+"For your project: …" under the title, naming every active or paused project that links it (done ones are left out),
+each opening the project. Nothing new is saved: a Cybersecurity link is a new kind in the existing `studyLinks`,
+which 1.56.0 keeps unread and shows as "From a newer MyDay". Never sent to AI.
 
 **Your week — the weekly review (1.37.0):** a short look back over the last seven days, at `#review` ("Your week"), in
 four steps, one at a time, with Back and Next. Nothing changes until you tap. **1 What moved:** each project's tasks

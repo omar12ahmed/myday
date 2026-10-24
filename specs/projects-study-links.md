@@ -112,7 +112,8 @@ goes: the course page, books in Reading and the Cybersecurity lesson page. The A
 being changed for "Keep a word".
 
 - **Cybersecurity lessons:**
-  - Linked like Arabic lessons, from your path in course order, grouped by module.
+  - Linked like Arabic lessons, from your path in course order, grouped by module; an optional lesson is marked
+    "(optional)", as on Study's module page.
   - The status is in Study's own words, because Cybersecurity has no lesson states yet:
     - "Marked complete" when its roadmap task is ticked;
     - "Started" after an attempt on one of its activities, a Study session on it, or its task ticked;
@@ -122,7 +123,9 @@ being changed for "Keep a word".
   - The card's hint now reads "Link a course, book or lesson you're learning for this project."
 - **"For your project: …":**
   - Shown under the title of a course on its page, a current book in Reading, and a Cybersecurity lesson on its page.
-    It names every project that links it ("For your projects: A, B"), and each name opens the project.
+    It names every active or paused project that links it ("For your projects: A, B"), and each name opens the
+    project. Projects marked done are left out (owner's choice, as Today leaves them out); their links stay on the
+    project.
   - Nothing is shown when no project links it.
   - It's read from the projects' links; nothing new is saved.
 - **Saved data:** none new. A Cybersecurity link is a new `kind` value (`'cyber'`) in the existing `studyLinks`.

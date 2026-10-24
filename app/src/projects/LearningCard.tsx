@@ -96,7 +96,8 @@ function LinkRow({ p, v }: { p: Project; v: LinkView }) {
 }
 
 // Choices in order, gathered under their group (an Arabic lesson's module); courses and books have none.
-type Pick = { id: string; title: string; group?: string };
+type Pick = { id: string; title: string; group?: string; optional?: boolean };
+const option = (c: Pick) => <option key={c.id} value={c.id}>{c.title}{c.optional ? ' (optional)' : ''}</option>;
 function groups(list: Pick[]): [string, Pick[]][] {
   const out: [string, Pick[]][] = [];
   for (const c of list) { const g = c.group ?? '', last = out[out.length - 1]; if (last && last[0] === g) last[1].push(c); else out.push([g, [c]]); }
@@ -128,14 +129,14 @@ function LinkForm({ data, p, kind, onKind, lessons, retry, onDone }: { data: MyD
       <div className="grid gap-3 mb-3">
       {choices === null ? (mod === 'failed' && isLessonKind(kind)
         ? <p className="text-[15px] text-fg-2 m-0" data-s="learning-lessons-failed">The {LESSONS_NAME[kind]} lessons couldn’t load just now. <LinkButton className="text-[15px]" data-action="learning-retry" onClick={retry[kind]}>Try again</LinkButton></p>
-        : <Note className="m-0">Loading the {isLessonKind(kind) ? LESSONS_NAME[kind] : ''} lessons…</Note>)
+        : <Note className="m-0">Loading the {LESSONS_NAME[kind as LessonKind]} lessons…</Note>)
         : choices.length ? (
           <Field label="Which one?" htmlFor="learningPick">
             <Select id="learningPick" value={id} onChange={e => setId(e.target.value)}>
               <option value="">Choose…</option>
               {groups(choices).map(([group, list]) => group
-                ? <optgroup key={group} label={group}>{list.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}</optgroup>
-                : list.map(c => <option key={c.id} value={c.id}>{c.title}</option>))}
+                ? <optgroup key={group} label={group}>{list.map(option)}</optgroup>
+                : list.map(option))}
             </Select>
           </Field>
         ) : <Note className="m-0">{NONE_LEFT[kind]}</Note>}

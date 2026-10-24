@@ -1,7 +1,8 @@
 // Learning for a project (specs/projects-study-links.md): links from a project to what you're learning for it in Study —
-// your own courses, books in Reading, Arabic lessons and Cybersecurity lessons (from 1.58.0) — each shown with Study's
-// own status: never a percentage, never a guess at what you know. The links live on the project (`studyLinks`); removing one never changes Study, and an item
-// removed from Study leaves its link, marked as gone. Never sent to AI.
+// your own courses, books in Reading, Arabic lessons and (since the follow-up to 1.56.0) Cybersecurity lessons — each
+// shown with Study's own status: never a percentage, never a guess at what you know. The links live on the project
+// (`studyLinks`); removing one never changes Study, and an item removed from Study leaves its link, marked as gone.
+// Never sent to AI.
 import { isDateKey, localStamp, shortDate, todayKey } from './dates';
 import { lessonHref } from './cybersecurity/types';
 import { completion, completionText, stIndex, type StudyIndex } from './study/roadmap';
@@ -106,5 +107,7 @@ export function courseChoices(data: MyDayData, p: Project): { id: string; title:
 export function bookChoices(data: MyDayData, p: Project): { id: string; title: string }[] {
   return data.reading.books.filter(b => !p.studyLinks?.some(l => same(l, 'book', b.id))).map(b => ({ id: b.id, title: b.title }));
 }
-// For Study's side ("For your project: …" on a course, a book or a Cybersecurity lesson): the projects that link it.
-export const linkedFrom = (data: MyDayData, kind: LinkKind, id: string): Project[] => data.projects.items.filter(p => p.studyLinks?.some(l => same(l, kind, id)));
+// For Study's side ("For your project: …" on a course, a book or a Cybersecurity lesson): the projects that link it,
+// leaving out ones marked done (owner's choice, as Today does); a done project keeps its links on the project itself.
+export const linkedFrom = (data: MyDayData, kind: LinkKind, id: string): Project[] =>
+  data.projects.items.filter(p => p.status !== 'done' && p.studyLinks?.some(l => same(l, kind, id)));

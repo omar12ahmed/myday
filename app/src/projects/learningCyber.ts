@@ -14,5 +14,6 @@ export function lesson(data: MyDayData, id: string) {
   const done = stIndex(data.study).task.get(curriculumTaskId(id))?.node.done === true;
   return { title: l.title, status: done ? 'Marked complete' : practised(data, l) ? 'Started' : 'Not started' };
 }
-// Your path's lessons in course order, each with its module's name (the list groups them), for "Link something".
-export const choices = (data: MyDayData) => selectedPathLessons(data.cybersecurity.pathId).map(l => ({ id: l.id, title: l.title, group: modules.get(l.module_id)?.name ?? '' }));
+// Your path's lessons in course order, each with its module's name (the list groups them) and, as Study's module page
+// says, whether it's optional, for "Link something".
+export const choices = (data: MyDayData) => selectedPathLessons(data.cybersecurity.pathId).map(l => ({ id: l.id, title: l.title, group: modules.get(l.module_id)?.name ?? '', optional: l.optional }));
