@@ -1,5 +1,17 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.68.0 — Files:** a project's Overview has a **Files** card (after Resources) and a note has a **Files** section
+under its text. **Add a file** (or drop one) keeps photos (JPEG, PNG, HEIC, WebP), PDFs and documents (Word, Excel,
+PowerPoint, text, CSV), up to 25 MB each and 50 per project or note; a photo gets a small preview. **Open** shows a
+photo or PDF in a new tab and saves anything else under its name. **Remove** takes a file out of that project or
+note; if nothing else uses it, it waits in **Recently deleted** for 30 days (**Put back** or **Delete now**, which
+asks first), then goes for good. Files of a deleted project or note wait on the Projects home. The files are kept
+privately in your own storage, reachable only with your sign-in; adding and opening need a connection; backups list
+your files but don't hold them; never sent to AI. Saved data stays schema 5: a new `files` section and optional
+`fileIds` on projects and notes, synced as the new kind `file` (migration applied 24 Oct 2026). Going back to 1.67.0
+keeps them (it doesn't show files and syncs the rest as before); a project or note deleted there leaves its files
+listed nowhere, and this version puts them in Recently deleted the next time it tidies.
+
 **1.67.0 — Progress that says what to do next (Arabic), and Your week's Study questions:** once you've begun
 Arabic, Progress & history opens with "Arabic: where you stand": how many lessons on your path are done (Ready or
 Holding), what's on your own (Holding lessons, and checks your latest answer got on your own), each lesson that needs
@@ -776,7 +788,7 @@ is now, then goes through Import's own checks and question; signed in it replace
 it says so. The device's id, label and last result live in `myday.backup.v1` on that device only (not your data, not
 synced or exported). No saved-data, sync or database change. Never sent to AI.
 
-**Files (unreleased; `specs/files.md`):** a project's Overview has a **Files** card (after Resources) and a note has
+**Files (1.68.0; `specs/files.md`):** a project's Overview has a **Files** card (after Resources) and a note has
 a **Files** section under its text. **Add a file** (or drop one) keeps photos (JPEG, PNG, HEIC, WebP), PDFs and
 documents (Word, Excel, PowerPoint, text, CSV) up to 25 MB each; a photo gets a small preview. **Open** shows a
 photo or PDF in a new tab and saves anything else under its name. **Remove** takes it out of that project or note; if nothing
