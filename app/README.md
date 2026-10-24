@@ -551,7 +551,9 @@ at it on the device (`projectLookup` in `src/ai/lookup.ts`) and asks once more w
 AI help with notes on). Never a private project (its name is never sent, and the app refuses it), never its outcome,
 what counts as finished or where you left off, and a private note of it is counted only on the device ("— 1 private
 note left out"). Its decisions and one page stay on its page. The answer is checked as if asked on that project's page,
-so "break the flat move down" from Today puts the steps into it; the panel links the project. Evaluated with
+so "break the flat move down" from Today puts the steps into it, and changes to its tasks or milestones for it can be
+proposed as there (each still a card you tick); the panel links the project. Offered only where open projects' names
+go with the question (not Finance or Health). Evaluated with
 `ai-eval/ask-scenarios.ts` (p01–p08).
 
 **Planning a Study course with Ask (1.26.0):** a course page has **✦ Plan this course with Ask**, which opens + already
@@ -566,7 +568,7 @@ syncs with the roadmap), with Undo that also takes back the sections and modules
 
 **Revision, changes and What MyDay knows (1.27.0):** Ask (instructions `myday-ask-v12`) can **start a revision round**
 when something is due ("Revise 3 cards now" — Today and Study send how many cards are due; a round is at most 5; one
-subject when you ask about it), and can **change what's already saved** on the page you asked from: a task's day and
+subject when you ask about it), and can **change what's already saved** on the page you asked from (or in the project it looked at, v19): a task's day and
 time, title, length, list or project; an appointment's day, time or title (its length kept); a note's title or project.
 Each change is a card showing before → after, ticked to apply (**Apply**), with Undo putting back exact copies of
 everything touched. The app checks every change (`src/ai/ask.ts`): only things the page sent (their ids), not a done

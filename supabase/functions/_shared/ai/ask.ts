@@ -48,8 +48,8 @@ The app looked at one of their projects ("lookup" in the data, "tool" "project":
 send — its name, summary, stage, tasks (done or not), milestones and its notes' titles, and their text only if they
 allow it to be shared). Answer about that project as if they had asked on its page: the rules above for the project
 on this page apply to it, from that data only — never add facts, amounts or dates that aren't there. Tasks or steps for
-it get its id as "projectId". Its decisions and its one page aren't here: for those, say to ask on its page. Never
-reply "lookup" again.${quoting}`;
+it get its id as "projectId". Its tasks already exist: to suggest one, name it — never put it in "items". Its
+decisions and its one page aren't here: for those, say to ask on its page. Never reply "lookup" again.${quoting}`;
   const tools = c.can ?? [], offer: string[] = [];
   if (tools.includes('notes')) offer.push(`- In their notes: they ask what they wrote, noted or saved about something, or to find a note —
   {"kind":"lookup","message":"Looking in your notes for that.","lookup":{"tool":"notes","query":"…"}}, the query 1–4

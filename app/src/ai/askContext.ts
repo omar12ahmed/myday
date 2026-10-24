@@ -200,7 +200,8 @@ export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(
     time: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
     page: slice.page, text: cut(text.trim(), L.textChars), ...(followUp ? { followUp: { previous: cut(followUp.previous, L.previousChars), text: cut(followUp.text.trim(), L.followUpChars) } } : {}),
     context: slice.context,
-    can: ['notes', 'day', 'project'], ...(lookup ? { lookup } : {}),
+    // A project can be looked at only where your open projects' names go with the question (not Finance or Health).
+    can: slice.context.projects?.length ? ['notes', 'day', 'project'] : ['notes', 'day'], ...(lookup ? { lookup } : {}),
   };
 }
 
@@ -291,8 +292,7 @@ export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['
   if (x.projects?.length) { short.push(n(x.projects.length, 'open project name')); all.push({ label: 'Your open projects (names only)', lines: x.projects.map(p => p.title) }); }
   if (!short.length) short.push('What you typed and the date');
   if (c.can?.includes('notes')) {
-    // A project can be looked at only where your open projects' names go with the question (not Finance or Health).
-    const projects = c.can.includes('project') && !!c.context.projects?.length;
+    const projects = c.can.includes('project');
     short.push(projects ? 'If needed, a look in your notes, at a day or at one of your projects' : 'If needed, a look in your notes or at a day');
     all.push({ label: 'If it needs to: your notes', lines: ['Ask MyDay may look in your notes for words from your question, on this device, and send up to 8 that match: their titles and projects, and a short snippet only with AI help with notes on.', 'Never a private note, or a note in a private project — not even whether one matched.'] });
     if (c.can.includes('day')) all.push({ label: 'If it needs to: a day', lines: ['Or at one day you ask about (from a week ago to two months ahead): its plan’s tasks, what’s due, busy times by kind only (never an appointment’s name), free time and energy.', 'Never a private project’s tasks; its appointments only as busy time.'] });

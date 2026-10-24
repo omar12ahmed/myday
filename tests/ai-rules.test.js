@@ -1455,7 +1455,9 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     // "A project's context" (v19): one open project asked about by name, exactly as its own page sends it.
     const pw = K.normalize({ ...lw,
       projects: { ...lw.projects, items: [LP('pjShed', 'Garden shed', { summary: 'A shed for the bikes', outcome: 'OUTCOME-SHED', finishedWhen: 'FINISHED-SHED', leftOff: { text: 'LEFTOFF-SHED', at: lat },
-        milestones: [{ id: 'mS1', title: 'Base laid', aim: null, reachedOn: null, createdAt: lat }] }), LP('pjHid', 'Hidden plans', { private: true }), LP('pjOld', 'Old kitchen', { status: 'done' })] },
+        milestones: [{ id: 'mS1', title: 'Base laid', aim: null, reachedOn: null, createdAt: lat }],
+        decisions: [{ id: 'dS1', question: 'Which roof?', options: [{ id: 'oFelt', text: 'Felt', pros: [], cons: [] }, { id: 'oTin', text: 'Tin', pros: [], cons: [] }], chosen: null, why: '', decidedOn: null, createdAt: lat, updatedAt: lat }] }),
+      LP('pjHid', 'Hidden plans', { private: true }), LP('pjOld', 'Old kitchen', { status: 'done' })] },
       notes: { ...lw.notes, items: [...lw.notes.items, LN('nShedPriv', 'Shed worries', 'PRIVATE-SHED-THOUGHT', { projectId: 'pjShed', private: true })] },
       tasks: { ...lw.tasks, items: [TI2('tkS1', 'Order the felt', { projectId: 'pjShed' }), TI2('tkS2', 'Measure the wall', { projectId: 'pjShed', done: true, doneOn: '2026-11-09' }), TI2('tkH1', 'Hidden thing', { projectId: 'pjHid' })] } });
     const pr = K.projectLookup(pw, 'pjShed'), page = K.askSlice(pw, '#projects/p/pjShed', LD).context.project;
@@ -1473,6 +1475,19 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const st = K.checkAskReply(STEPS, pw, tslice, LD, 'break the garden shed down', pr.lookup);
     check('after a look at a project, steps go into it (as on its page)', st?.kind === 'steps' && st.items.length === 2 && st.items.every(i => i.projectId === 'pjShed'), st);
     check('…but without a look, steps from Today stay where they were', K.checkAskReply(STEPS, pw, tslice, LD, 'break the garden shed down')?.items.every(i => i.projectId === null));
+    const CHG = JSON.stringify({ kind: 'change', message: 'Here\'s what would change.', items: [{ type: 'change', target: 'task', targetId: 'tkS1', title: 'Order the felt', date: '2026-11-13', time: null }] });
+    const ch = K.checkAskReply(CHG, pw, tslice, LD, 'move ordering the felt to Friday', pr.lookup);
+    check('after a look at a project, a change to one of its tasks may be proposed, as on its page', ch?.kind === 'change' && ch.changes.length === 1 && ch.changes[0].id === 'tkS1', ch);
+    check('…but not without the look (that task isn\'t on Today)', K.checkAskReply(CHG, pw, tslice, LD, 'move ordering the felt to Friday')?.kind !== 'change');
+    const MS = JSON.stringify({ kind: 'add', message: 'Two milestones to steer by.', items: [{ type: 'milestone', title: 'Walls up', date: null }, { type: 'milestone', title: 'Roof on', date: null }] });
+    const ms = K.checkAskReply(MS, pw, tslice, LD, 'milestones for the garden shed', pr.lookup);
+    check('…and milestones for it (but not without the look)', ms?.kind === 'add' && ms.items.length === 2 && ms.items.every(i => i.type === 'milestone' && i.plan?.projectId === 'pjShed')
+      && !K.checkAskReply(MS, pw, tslice, LD, 'milestones for the garden shed')?.items?.length, ms);
+    const own = K.projectLookup(pw, 'pjShed'), dslice2 = K.askSlice(pw, '#projects/p/pjShed/decisions', LD, { decisionId: 'dS1' });
+    const PRO = JSON.stringify({ kind: 'add', message: 'Points to weigh — the choice is yours.', items: [{ type: 'pro', title: 'Lasts for decades', optionId: 'oTin' }] });
+    const pro = K.checkAskReply(PRO, pw, dslice2, LD, 'what am I missing?', own.lookup);
+    check('a look at the page\'s own project keeps the decision it was sent with (its pros and cons still go)', !!dslice2.context.project.decision && pro?.kind === 'add' && pro.items.length === 1 && pro.items[0].type === 'pro', pro);
+    check('Finance sends no project names, so it offers no look at a project', eq(K.askContext(K.askSlice(pw, '#finance', LD), 'x', LD).can, ['notes', 'day']));
     const pp1 = K.checkAskReply(K.mockAsk(K.askContext(tslice, pq, LD)), pw, tslice, LD);
     const pp2 = pp1?.kind === 'lookup' && pp1.tool === 'project' ? K.projectLookup(pw, pp1.query) : null;
     const pp3 = pp2 && K.checkAskReply(K.mockAsk(K.askContext(tslice, pq, LD, undefined, undefined, pp2.lookup)), pw, tslice, LD, undefined, pp2.lookup);

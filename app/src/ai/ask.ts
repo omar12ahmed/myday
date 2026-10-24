@@ -88,8 +88,11 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
     }
     return { kind: 'lookup', tool: r.lookup.tool, query: r.lookup.query };
   }
-  // After a look at a project, the answer is checked as if asked on its page (steps go into it).
-  const out = checkReply(text, data, looked?.tool === 'project' ? { ...slice, context: { ...slice.context, project: looked.project } } : slice, k, asked);
+  // After a look at a project, the answer is checked as if asked on its page: steps go into it, and changes to its tasks
+  // and milestones for it may be proposed, as there. (The page's own project, if that's the one looked at, keeps the
+  // decision or one page it was sent with.)
+  const asOnPage = looked?.tool === 'project' && slice.context.project?.id !== looked.project.id;
+  const out = checkReply(text, data, asOnPage ? { ...slice, context: { ...slice.context, project: looked.project } } : slice, k, asked);
   // Help me adjust today plans today only: not offered after a look at another day.
   if (out?.kind === 'answer' && out.action?.type === 'adjust-today' && looked?.tool === 'day' && looked.query !== k) return { ...out, action: null };
   if (!out || looked?.tool !== 'notes' || !r?.sources?.length || (out.kind !== 'answer' && out.kind !== 'add' && out.kind !== 'steps')) return out;
@@ -249,7 +252,7 @@ function checkReply(text: string, data: MyDayData, slice: AskSlice, k: DateKey, 
 }
 
 // ---------- Changes to what's already saved ----------
-// Only things on the page you asked from (their ids were sent), only the fields MyDay allows (a day and time, a title,
+// Only things on the page you asked from, or in the project Ask MyDay looked at (their ids were sent), only the fields MyDay allows (a day and time, a title,
 // a task's length or list, a task's or note's project), only real changes. Never deleting, never marking done.
 const pretty = (k?: string | null) => (k ? prettyDate(k) : 'no date');
 // The page doesn't send a task's list (nor, from Today, its length), and a model tends to fill in what it can't see: so
