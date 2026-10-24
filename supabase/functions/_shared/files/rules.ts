@@ -26,6 +26,8 @@ export const FILE_TYPES: Record<string, FileType> = {
   'text/csv': { ext: ['csv'], label: 'CSV', inline: false, magic: text },
 };
 const DOCS = Object.keys(FILE_TYPES);
+// The photos a browser can draw, so the only files that get a small preview.
+export const PREVIEWABLE = ['image/jpeg', 'image/png', 'image/webp'];
 export interface AreaRule { types: string[]; maxBytes: number; totalBytes?: number; summary: string }
 export const AREA_RULES: Record<string, AreaRule> = {
   project: { types: DOCS, maxBytes: 25 * MB, summary: 'Only photos, PDFs and documents (Word, Excel, PowerPoint, text, CSV), up to 25 MB each.' },
@@ -44,15 +46,19 @@ export function typeOfName(name: string): string | null {
 // Whether the first bytes are what the type says. Read at least 16 bytes (text: up to the first 1024).
 export const looksLike = (type: string, first: Uint8Array) => !!FILE_TYPES[type]?.magic(first);
 
-// A safe name to keep and show: no folders, no control characters, at most 200 characters, never blank.
+// A safe name to keep and show: no folders, no control characters, at most 200 characters (a long name keeps its
+// extension), never blank.
 export function cleanName(name: string): string {
   const base = name.split(/[\\/]/).pop() ?? '';
-  return Array.from(base.normalize('NFC').replace(/[\u0000-\u001f\u007f]/g, '').trim()).slice(0, 200).join('') || 'file';
+  const chars = Array.from(base.normalize('NFC').replace(/[\u0000-\u001f\u007f]/g, '').trim());
+  if (chars.length <= 200) return chars.join('') || 'file';
+  const ext = /\.[a-z0-9]{1,8}$/i.exec(chars.join(''))?.[0] ?? '';
+  return chars.slice(0, 200 - ext.length).join('').trim() + ext;
 }
 // How the file is served when opened: photos and PDFs in the browser, everything else downloaded under its name.
 export function disposition(name: string, type: string): string {
   const plain = cleanName(name).replace(/[^\x20-\x7e]/g, '_').replace(/["\\]/g, '_');
-  return `${FILE_TYPES[type]?.inline ? 'inline' : 'attachment'}; filename="${plain}"; filename*=UTF-8''${encodeURIComponent(cleanName(name))}`;
+  return `${FILE_TYPES[type]?.inline ? 'inline' : 'attachment'}; filename="${plain}"; filename*=UTF-8''${encodeURIComponent(cleanName(name)).replace(/['()*!]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase())}`;
 }
 // Why a file can't be kept in this area, or '' when it can.
 export function refusal(area: string, name: string, size: number): string {

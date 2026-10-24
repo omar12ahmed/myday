@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState, useSyncExternalStore, type DragEvent } from 'react';
-import { FILE_TYPES } from '../../../supabase/functions/_shared/files/rules';
+import { FILE_TYPES, PREVIEWABLE } from '../../../supabase/functions/_shared/files/rules';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { useConfirm } from '../components/confirm';
 import { LinkButton, Note } from '../components/parts';
 import { shortDate } from '../data/dates';
-import { filesOf, goneOn, putBack, recentlyDeleted, removeFile, sizeLabel, type Owner } from '../data/files';
+import { filesOf, goneOn, putBack, recentlyDeleted, removeFile, sizeLabel, unfinished, type Owner } from '../data/files';
 import { update } from '../data/storage';
 import { toast } from '../data/toast';
 import type { FileRecord, MyDayData } from '../data/types';
@@ -20,7 +20,7 @@ const why = (r: FilesResult) => (r === 'ok' ? '' : WHY[r]);
 
 function Preview({ f }: { f: FileRecord }) {
   const [url, setUrl] = useState<string | null>(null);
-  const canPreview = f.state === 'kept' && ['image/jpeg', 'image/png', 'image/webp'].includes(f.type);
+  const canPreview = f.state === 'kept' && PREVIEWABLE.includes(f.type);
   useEffect(() => {
     if (!canPreview) return;
     let live = true;
@@ -40,7 +40,7 @@ function FileRow({ f, owner }: { f: FileRecord; owner: Owner }) {
     if (update(d => { r = removeFile(d, f.id, owner); return r ? undefined : false; }))
       toast(r === 'removed' ? 'Removed from here — it’s still used elsewhere.' : 'Removed — it’s in Recently deleted for 30 days.');
   }
-  const status = f.state === 'uploading' ? (progress?.state === 'adding' ? 'Adding…' : 'Being added on another device')
+  const status = f.state === 'uploading' ? (progress?.state === 'adding' ? 'Adding…' : unfinished(f) ? 'It wasn’t finished.' : 'Still being added.')
     : f.state === 'failed' ? (progress?.message || 'It couldn’t be added.') : `${label} · ${sizeLabel(f.size)}`;
   return (
     <li className="flex items-start gap-3 border-t border-outline first:border-t-0 py-2" data-s="file" data-id={f.id} data-state={f.state}>

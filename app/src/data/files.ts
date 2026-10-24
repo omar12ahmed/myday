@@ -21,7 +21,7 @@ export function normalizeFiles(raw: unknown, report: { dropped: number }): Files
   const out: FilesData = { ...raw, items: [] };
   for (const f of listOf(raw.items)) {
     if (!isObj(f) || typeof f.id !== 'string' || !FILE_ID.test(f.id) || typeof f.name !== 'string' || !f.name || typeof f.type !== 'string' || !Number.isInteger(f.size) || (f.size as number) < 0) { report.dropped++; continue; }
-    if (out.items.some(x => x.id === f.id)) continue;
+    if (out.items.some(x => x.id === f.id)) { report.dropped++; continue; }
     const item: FileRecord = {
       ...f, id: f.id, name: f.name, type: f.type, size: f.size as number,
       sha256: typeof f.sha256 === 'string' && /^[0-9a-f]{64}$/.test(f.sha256) ? f.sha256 : '',
@@ -61,13 +61,13 @@ function setIds(d: MyDayData, o: Owner, ids: string[]) {
 }
 
 // ---------- Changes ----------
-// A new file, being added: its record (state 'uploading') and its place in the project or note. False when the place
-// isn't there or already has 50 files.
+// A new file, being added: its record (state 'uploading', and when it started) and its place in the project or note.
+// False when the place isn't there or already has 50 files.
 export interface NewFile { id: string; name: string; type: string; size: number; sha256: string; area: string }
-export function addFileRecord(d: MyDayData, o: Owner, rec: NewFile, k: DateKey = todayKey()): boolean {
+export function addFileRecord(d: MyDayData, o: Owner, rec: NewFile, k: DateKey = todayKey(), now = Date.now()): boolean {
   const ids = fileIdsOf(d, o);
   if (!place(d, o) || ids.length >= FILES_PER_PLACE || d.files.items.some(f => f.id === rec.id)) return false;
-  d.files.items.push({ ...rec, state: 'uploading', addedOn: k });
+  d.files.items.push({ ...rec, state: 'uploading', addedOn: k, startedAt: now });
   return setIds(d, o, [...ids, rec.id]);
 }
 export function setFileState(d: MyDayData, id: string, state: 'kept' | 'failed', size?: number): boolean {
@@ -106,12 +106,19 @@ export function forgetFiles(d: MyDayData, ids: string[]): boolean {
 }
 
 // ---------- Reading ----------
+// In Recently deleted: a file nothing lists any more. One that a place still lists (two devices' changes crossing, say)
+// is in that place, never in Recently deleted, and never goes for good; healFiles clears its mark.
+const deleted = (d: MyDayData, f: FileRecord) => !!f.deletedOn && !usedBy(d, f.id).length;
 // In Recently deleted from this place (or anywhere), newest first.
-export const recentlyDeleted = (d: MyDayData, from?: Owner) => d.files.items.filter(f => f.deletedOn && (!from || (f.removedFrom?.kind === from.kind && f.removedFrom.id === from.id)))
+export const recentlyDeleted = (d: MyDayData, from?: Owner) => d.files.items.filter(f => deleted(d, f) && (!from || (f.removedFrom?.kind === from.kind && f.removedFrom.id === from.id)))
   .sort((a, b) => (b.deletedOn ?? '').localeCompare(a.deletedOn ?? ''));
 export const goneOn = (f: FileRecord) => (f.deletedOn ? shift(f.deletedOn, KEEP_DELETED_DAYS) : null);
 // Those whose 30 days are over: their bytes can go from R2, then their records.
-export const dueForPurge = (d: MyDayData, k: DateKey = todayKey()) => d.files.items.filter(f => f.deletedOn && f.deletedOn <= shift(k, -KEEP_DELETED_DAYS));
+export const dueForPurge = (d: MyDayData, k: DateKey = todayKey()) => d.files.items.filter(f => deleted(d, f) && f.deletedOn! <= shift(k, -KEEP_DELETED_DAYS));
+// A file still being added an hour after it started (or since an earlier day) won't finish: the device adding it was
+// closed or lost its connection. Its bytes may or may not have arrived; the tidy asks the server.
+export const unfinished = (f: FileRecord, now = Date.now(), k: DateKey = todayKey()) => f.state === 'uploading'
+  && (typeof f.startedAt === 'number' ? now - f.startedAt > 60 * 60 * 1000 : f.addedOn < k);
 // A file nothing lists and that isn't in Recently deleted (e.g. its place was deleted on a device that didn't know
 // files): it goes to Recently deleted from the day it's noticed, so nothing is ever lost silently. A file still being
 // added is left alone.
@@ -120,6 +127,12 @@ export function markOrphans(d: MyDayData, k: DateKey = todayKey()): boolean {
   const list = orphans(d);
   for (const f of list) f.deletedOn = k;
   return list.length > 0;
+}
+// A file a place lists is never in Recently deleted: clear the mark (and where it was removed from).
+export function healFiles(d: MyDayData): boolean {
+  let changed = false;
+  for (const f of d.files.items) if ((f.deletedOn || f.removedFrom) && usedBy(d, f.id).length) { delete f.deletedOn; delete f.removedFrom; changed = true; }
+  return changed;
 }
 // When a project or note is deleted: its files that nothing else lists go to Recently deleted (from that place).
 export function filesLeaving(d: MyDayData, from: Owner, k: DateKey = todayKey()) {

@@ -205,6 +205,7 @@ export interface FileRecord {
   area: string;                       // where its rules come from: 'project' or 'note' (later 'portfolio')
   state: string;                      // 'uploading' until the server has checked it, then 'kept' (or 'failed')
   addedOn: DateKey;
+  startedAt?: number;                 // when adding it started (ms), so a device can tell an upload that won't finish
   deletedOn?: DateKey;                // in Recently deleted since this day (30 days, then gone)
   removedFrom?: { kind: 'project' | 'note'; id: string }; // where Put back puts it
   [other: string]: unknown;

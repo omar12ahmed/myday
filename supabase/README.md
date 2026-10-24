@@ -226,11 +226,14 @@ yet".
 3. **Supabase secrets.** Create `supabase/files.secret.env` (git ignores it) with `R2_FILES_ACCESS_KEY_ID=…`,
    `R2_FILES_SECRET_ACCESS_KEY=…` and `R2_FILES_BUCKET=myday-attachments` (`R2_ACCOUNT_ID` is already set for
    backups). Then run `npx supabase secrets set --env-file supabase/files.secret.env --project-ref <ref>`, and delete
-   the file.
+   the file. If the site's address ever changes, change it in the CORS policy above and set `FILES_ALLOWED_ORIGINS`
+   (the allowed addresses, comma-separated) for the function too.
 4. **The database** accepts file records once `migrations/20261025120000_sync_files.sql` is applied. Rehearse it in a
    transaction that rolls back first, and re-read the live kind lists before applying.
 5. **Deploy:** `npx supabase functions deploy files --use-api --project-ref <ref>` (JWT verification stays on).
-6. **Check** with a disposable account: add a photo and a PDF, open them, Remove, Put back, Delete now.
+6. **Check** with a disposable account: add a photo and a PDF, open them, Remove, Put back, Delete now. The test
+   stand-in can't catch a wrong CORS policy, so this is where the upload's preflight is proved; check too whether R2
+   refuses a body of the wrong length (the MD5 and the server's check refuse it either way).
 
 ## Where things are
 
@@ -252,6 +255,10 @@ yet".
 | `migrations/20261024120000_sync_arabic_lessons.sql` | Adaptive Study (1.47.0, applied 24 Oct 2026): `sync_records` accepts `arabic_lesson`, your place on one Arabic lesson (Ready to move on, Needs revision, your latest check marks), deletable. Only the two kind lists change; rows, RPCs, project triggers, grants and RLS are unchanged. Older clients ignore the kind (`tests/app-sync-previous.test.js`). |
 | `migrations/20261024180000_sync_arabic_words.sql` | Keep a word (1.57.0, applied 24 Oct 2026): `sync_records` accepts `arabic_word`, a word you kept in Arabic (the Arabic as written, your meaning and note, where it came from, its two revision schedules), deletable. Only the two kind lists change; rows, RPCs, project triggers, grants and RLS are unchanged. Older clients ignore the kind (`tests/app-sync-previous.test.js` [7]). |
 | `migrations/20261024200000_sync_arabic_practice.sql` | Practise again (applied 24 Oct 2026): `sync_records` accepts `arabic_practice`, one Arabic lesson to practise again (the last days you did its Try it and mini challenge, what you've ticked in a session still open, its place in revision), deletable (a Study reset clears it). Only the two kind lists change; rows, RPCs, project triggers, grants and RLS are unchanged. Older clients ignore the kind (`tests/app-sync-previous.test.js` [9]). |
+| `functions/backup/` | Automatic backups (1.65.0): `handler.ts` (the rules: signed-in accounts only, your own prefix, the 14 daily and 12 monthly copies), `index.ts` (Supabase Auth and R2). |
+| `functions/files/` | Attached files: `handler.ts` (the actions, testable as it is: signed-in accounts only, your own prefix, the type and size rules, a check of what was stored before a file counts as kept), `index.ts` (Supabase Auth, and R2's S3 API with five-minute presigned links). Optional `FILES_ALLOWED_ORIGINS` replaces its list of allowed sites. |
+| `functions/_shared/files/rules.ts` | What MyDay keeps, shared by the app and the function: the types (by name and first bytes), the sizes per area, the account's 2 GB, safe names. |
+| `migrations/20261025120000_sync_files.sql` | Files (not yet applied): `sync_records` accepts `file`, one attached file's record (its name, type, size, where it was removed from, its state; never its contents), deletable. Only the two kind lists change; rows, RPCs, project triggers, grants and RLS are unchanged. Older clients ignore the kind (`tests/app-sync-previous.test.js`). |
 | `ai-secrets.example.env` | The settings, as a template with placeholders only (fill in a copy that Git ignores; the key ends up only in Supabase). |
 
 ## Two models, one per kind of job (AI roles, step 2)

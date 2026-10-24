@@ -6,13 +6,13 @@
 //                                                type and disposition signed in (R2 refuses anything else)
 //   confirm { fileId, area, name }             → checks what was stored (size, type by its first bytes); kept, or
 //                                                deleted with the reason
-//   thumb   { fileId, area, size, md5 }        → a link to PUT its preview (a small WebP)
+//   thumb   { fileId, area, size, md5 }        → a link to PUT a photo's preview (a small WebP)
 //   open    { fileId, area, thumb? }           → a link to GET it (or its preview), valid 5 minutes
-//   delete  { files: [{ fileId, area }] }      → removes them (and their previews)
+//   delete  { files: [{ fileId, area }] }      → removes them (and their previews), at most 100 at a time
 //   delete-all                                 → every file of the account (for the true wipe)
 //   usage                                      → the account's total, against its limit
 // The logs hold the action, the outcome and the time only: never names, keys, ids or links.
-import { ACCOUNT_TOTAL_BYTES, AREA_RULES, disposition, isArea, looksLike, refusal, THUMB_MAX_BYTES, typeOfName } from '../_shared/files/rules.ts';
+import { ACCOUNT_TOTAL_BYTES, AREA_RULES, disposition, isArea, looksLike, PREVIEWABLE, refusal, THUMB_MAX_BYTES, typeOfName } from '../_shared/files/rules.ts';
 
 export interface StoredObject { key: string; size: number }
 export interface Store {
@@ -67,6 +67,7 @@ export async function handle(req: Request, d: Deps): Promise<Response> {
   const store = d.store;
   if (!store) return done(json(503, { error: 'not-configured' }));
   let body: Record<string, unknown>;
+  if (Number(req.headers.get('Content-Length')) > 64 * 1024) return done(json(413, { error: 'too-large' }));
   try {
     const text = await req.text();
     if (text.length > 64 * 1024) return done(json(413, { error: 'too-large' }));
@@ -106,7 +107,9 @@ export async function handle(req: Request, d: Deps): Promise<Response> {
       case 'thumb': {
         const key = keyOf(body.area, body.fileId), size = body.size as number, md5 = body.md5;
         if (!key || typeof md5 !== 'string' || !MD5.test(md5) || !Number.isInteger(size) || size < 1 || size > THUMB_MAX_BYTES) return done(json(400, { error: 'bad-request' }));
-        if (!(await store.head(key))) return done(json(404, { error: 'not-found' }));
+        const stored = await store.head(key);
+        if (!stored) return done(json(404, { error: 'not-found' }));
+        if (!PREVIEWABLE.includes(stored.type)) return done(json(422, { error: 'not-allowed', message: 'Only photos have previews.' }));
         const url = await store.sign('PUT', `${key}.thumb`, { 'Content-Length': String(size), 'Content-MD5': md5, 'Content-Type': 'image/webp', 'Content-Disposition': 'inline' }, LINK_SECONDS);
         return done(json(200, { ok: true, url, headers: { 'Content-MD5': md5, 'Content-Type': 'image/webp', 'Content-Disposition': 'inline' }, seconds: LINK_SECONDS }));
       }
@@ -118,7 +121,8 @@ export async function handle(req: Request, d: Deps): Promise<Response> {
         return done(json(200, { ok: true, url: await store.sign('GET', target, {}, LINK_SECONDS), seconds: LINK_SECONDS }));
       }
       case 'delete': {
-        const list = Array.isArray(body.files) ? body.files.slice(0, 100) : [];
+        const list = Array.isArray(body.files) ? body.files : [];
+        if (list.length > 100) return done(json(400, { error: 'bad-request' }));
         const keys = list.map(f => (f && typeof f === 'object' ? keyOf((f as Record<string, unknown>).area, (f as Record<string, unknown>).fileId) : null));
         if (!keys.length || keys.some(k => !k)) return done(json(400, { error: 'bad-request' }));
         await removeAll(store, (keys as string[]).flatMap(k => [k, `${k}.thumb`]));

@@ -1,9 +1,10 @@
 // Attached files on the device (specs/files.md): adding them (a record first, as 'uploading'; the bytes straight to R2
-// on a short-lived link; the server's check; then 'kept'), a photo's preview, opening, Delete now, and the daily tidy
-// (files in Recently deleted for 30 days go for good; a file nothing lists goes to Recently deleted). The rules for what
-// may be kept are shared with the files function (supabase/functions/_shared/files/rules.ts). Never sent to AI.
-import { cleanName, FILE_TYPES, looksLike, refusal, THUMB_MAX_BYTES, typeOfName } from '../../../supabase/functions/_shared/files/rules';
-import { addFileRecord, dueForPurge, forgetFiles, markOrphans, newFileId, setFileState, type Owner } from '../data/files';
+// on a short-lived link; the server's check; then 'kept'), a photo's preview, opening, Delete now, and the tidy (files
+// in Recently deleted for 30 days go for good; a file nothing lists goes to Recently deleted; an upload that won't finish
+// is settled). The rules for what may be kept are shared with the files function
+// (supabase/functions/_shared/files/rules.ts). Never sent to AI.
+import { cleanName, FILE_TYPES, looksLike, PREVIEWABLE, refusal, THUMB_MAX_BYTES, typeOfName } from '../../../supabase/functions/_shared/files/rules';
+import { addFileRecord, dueForPurge, forgetFiles, healFiles, markOrphans, newFileId, setFileState, unfinished, type Owner } from '../data/files';
 import { getSnapshot, update } from '../data/storage';
 import type { FileRecord } from '../data/types';
 import { currentSession } from './client';
@@ -44,9 +45,9 @@ const base64 = (b: Uint8Array) => btoa(Array.from(b, c => String.fromCharCode(c)
 const hex = (b: ArrayBuffer) => Array.from(new Uint8Array(b), x => x.toString(16).padStart(2, '0')).join('');
 
 // ---------- Calling the files function ----------
-export type FilesResult = 'ok' | 'not-configured' | 'signed-out' | 'offline' | 'not-allowed' | 'full' | 'not-found' | 'failed';
+export type FilesResult = 'ok' | 'not-configured' | 'signed-out' | 'offline' | 'not-allowed' | 'full' | 'not-found' | 'blocked' | 'failed';
 const offlineNow = () => typeof navigator !== 'undefined' && navigator.onLine === false;
-type Call<T> = { ok: true; data: T } | { ok: false; why: FilesResult; message?: string };
+type Call<T> = { ok: true; data: T } | { ok: false; why: FilesResult; message?: string; error?: string };
 async function call<T>(action: string, body: Record<string, unknown> = {}): Promise<Call<T>> {
   if (!SYNC.configured) return { ok: false, why: 'not-configured' };
   if (offlineNow()) return { ok: false, why: 'offline' };
@@ -63,19 +64,18 @@ async function call<T>(action: string, body: Record<string, unknown> = {}): Prom
     try { j = await res.json(); } catch { /* not JSON */ }
     if (res.ok && j.ok) return { ok: true, data: j as T };
     const error = typeof j.error === 'string' ? j.error : '', message = typeof j.message === 'string' ? j.message : undefined;
-    return { ok: false, message, why: res.status === 401 ? 'signed-out' : error === 'not-allowed' ? 'not-allowed' : error === 'full' ? 'full' : error === 'not-found' ? 'not-found'
+    return { ok: false, message, error, why: res.status === 401 ? 'signed-out' : error === 'not-allowed' ? 'not-allowed' : error === 'full' ? 'full' : error === 'not-found' ? 'not-found'
       : res.status === 404 || res.status === 503 || error === 'not-configured' ? 'not-configured' : 'failed' };
   } catch {
     return { ok: false, why: offlineNow() ? 'offline' : 'failed' };
   } finally { clearTimeout(timer); }
 }
-// A PUT straight to R2 on the short-lived link, with exactly the headers the server signed.
+// A PUT straight to R2 on the short-lived link, with exactly the headers the server signed (the browser adds the length).
 async function put(url: string, headers: Record<string, string>, body: Blob): Promise<boolean> {
   try { return (await fetch(url, { method: 'PUT', headers, body })).ok; } catch { return false; }
 }
 
 // ---------- Previews ----------
-const PREVIEWABLE = ['image/jpeg', 'image/png', 'image/webp'];
 // A small WebP of a photo (at most 320 px), or null when this browser can't make one.
 async function preview(file: Blob): Promise<Uint8Array | null> {
   try {
@@ -113,6 +113,7 @@ export const WHY: Record<Exclude<FilesResult, 'ok'>, string> = {
   'not-allowed': 'That file can’t be kept.',
   full: 'Your files are full. Remove some to make room.',
   'not-found': 'That file isn’t stored any more.',
+  blocked: 'Your browser blocked the new tab. Allow pop-ups for MyDay, then try again.',
   failed: 'That didn’t work just now. Try again.',
 };
 
@@ -141,7 +142,8 @@ export async function addFiles(owner: Owner, area: string, files: File[]): Promi
   }
   return { kept, refused };
 }
-// The upload steps for one recorded file. True when it's kept.
+// The upload steps for one recorded file. True when it's kept. When its bytes are already stored (Try again after the
+// server's check didn't answer), it goes straight to the check.
 async function send(id: string, area: string, file: File, bytes?: Uint8Array): Promise<boolean> {
   const name = cleanName(file.name);
   setProgress(id, { name, state: 'adding', message: '' });
@@ -153,8 +155,8 @@ async function send(id: string, area: string, file: File, bytes?: Uint8Array): P
     return false;
   };
   const up = await call<{ url: string; headers: Record<string, string> }>('upload', { fileId: id, area, name, size: data.length, md5: base64(md5(data)) });
-  if (!up.ok) return fail(up.message || WHY[up.why as Exclude<FilesResult, 'ok'>] || WHY.failed, up.why === 'not-allowed' || up.why === 'full');
-  if (!(await put(up.data.url, up.data.headers, new Blob([data as BlobPart], { type: up.data.headers['Content-Type'] })))) return fail(offlineNow() ? WHY.offline : WHY.failed);
+  if (!up.ok && up.error !== 'exists') return fail(up.message || WHY[up.why as Exclude<FilesResult, 'ok'>] || WHY.failed, up.why === 'not-allowed' || up.why === 'full');
+  if (up.ok && !(await put(up.data.url, up.data.headers, file))) return fail(offlineNow() ? WHY.offline : WHY.failed);
   const ok = await call<{ size: number }>('confirm', { fileId: id, area, name });
   if (!ok.ok) return fail(ok.message || WHY[ok.why as Exclude<FilesResult, 'ok'>] || WHY.failed, ok.why === 'not-allowed');
   update(d => (setFileState(d, id, 'kept', ok.data.size) ? undefined : false));
@@ -189,15 +191,28 @@ export async function linkTo(f: Pick<FileRecord, 'id' | 'area'>, thumb = false):
   links.set(key, { url: r.data.url, until: Date.now() + Math.max(30, (r.data.seconds || 300) - 60) * 1000 });
   return { ok: true, url: r.data.url };
 }
-// Open a file: photos and PDFs in a new tab, anything else downloads under its name. The tab is opened straight away
-// (so the browser allows it) and pointed at the link once it's ready.
+// Open a file: photos and PDFs in a new tab, anything else saved under its name. The tab is opened straight away (so
+// the browser allows it) and pointed at the link once it's ready; if the browser blocks it, MyDay stays as it is. A
+// document is fetched and then saved, so a failure is told here instead of replacing MyDay with an error page.
 export async function openFile(f: FileRecord): Promise<FilesResult> {
-  const inline = !!FILE_TYPES[f.type]?.inline;
-  const tab = inline ? window.open('about:blank', '_blank') : null;
+  if (FILE_TYPES[f.type]?.inline) {
+    const tab = window.open('about:blank', '_blank');
+    if (!tab) return 'blocked';
+    const r = await linkTo(f);
+    if (!r.ok) { tab.close(); return r.why; }
+    tab.opener = null; tab.location.href = r.url;
+    return 'ok';
+  }
   const r = await linkTo(f);
-  if (!r.ok) { tab?.close(); return r.why; }
-  if (tab) { tab.opener = null; tab.location.href = r.url; } else window.location.assign(r.url);
-  return 'ok';
+  if (!r.ok) return r.why;
+  try {
+    const res = await fetch(r.url);
+    if (!res.ok) { links.delete(f.id); return res.status === 404 ? 'not-found' : 'failed'; }
+    const href = URL.createObjectURL(await res.blob()), a = document.createElement('a');
+    a.href = href; a.download = f.name; document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(href), 60_000);
+    return 'ok';
+  } catch { return offlineNow() ? 'offline' : 'failed'; }
 }
 
 // ---------- Delete now, and the daily tidy ----------
@@ -213,14 +228,35 @@ export async function deleteAllFiles(): Promise<FilesResult> {
   const r = await call('delete-all');
   return r.ok ? 'ok' : r.why;
 }
-let tidied = false;
-export function startFileTidy() {
-  if (tidied || !SYNC.configured) return;
-  tidied = true;
-  setTimeout(async () => {
-    if (getView().phase !== 'linked' || getSnapshot().status.kind !== 'ok') { tidied = false; return; }
-    update(d => (markOrphans(d) ? undefined : false));
+// The tidy, every 10 minutes while this device is fully in step with your account (nothing waiting to go, no conflict,
+// nothing refused), so a file is never judged on changes that have only half arrived: a file a place lists leaves
+// Recently deleted; a file nothing lists goes there; an upload that won't finish (or failed, and isn't being retried
+// here) is asked about: kept if its bytes arrived and pass the check, otherwise failed; then files whose 30 days are
+// over go for good (50 at a time).
+const TIDY_MS = 10 * 60 * 1000;
+let tidyStarted = false, lastTidy = 0, tidying = false;
+const asked = new Set<string>();
+export async function tidyFiles(now = Date.now()) {
+  if (tidying || now - lastTidy < TIDY_MS) return;
+  const v = getView();
+  if (v.phase !== 'linked' || v.status !== 'synced' || getSnapshot().status.kind !== 'ok') return;
+  tidying = true; lastTidy = now;
+  try {
+    update(d => { const healed = healFiles(d), marked = markOrphans(d); return healed || marked ? undefined : false; });
+    const check = getSnapshot().data.files.items.filter(f => !pending.has(f.id) && !asked.has(f.id) && (unfinished(f, now) || f.state === 'failed')).slice(0, 10);
+    for (const f of check) {
+      asked.add(f.id);
+      const r = await call<{ size: number }>('confirm', { fileId: f.id, area: f.area, name: f.name });
+      if (r.ok) update(d => (setFileState(d, f.id, 'kept', r.data.size) ? undefined : false));
+      else if (r.why === 'not-found' || r.why === 'not-allowed') update(d => (setFileState(d, f.id, 'failed') ? undefined : false));
+      else { asked.delete(f.id); break; } // offline, signed out…: ask next time
+    }
     const due = dueForPurge(getSnapshot().data);
     if (due.length) await deleteNow(due.slice(0, 50));
-  }, 45_000);
+  } finally { tidying = false; }
+}
+export function startFileTidy() {
+  if (tidyStarted || !SYNC.configured) return;
+  tidyStarted = true;
+  setInterval(() => { if (document.visibilityState === 'visible') void tidyFiles(); }, 60_000);
 }

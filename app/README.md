@@ -779,12 +779,14 @@ synced or exported). No saved-data, sync or database change. Never sent to AI.
 **Files (unreleased; `specs/files.md`):** a project's Overview has a **Files** card (after Resources) and a note has
 a **Files** section under its text. **Add a file** (or drop one) keeps photos (JPEG, PNG, HEIC, WebP), PDFs and
 documents (Word, Excel, PowerPoint, text, CSV) up to 25 MB each; a photo gets a small preview. **Open** shows a
-photo or PDF in a new tab and downloads anything else. **Remove** takes it out of that project or note; if nothing
+photo or PDF in a new tab and saves anything else under its name. **Remove** takes it out of that project or note; if nothing
 else uses it, it waits in **Recently deleted** for 30 days (**Put back** or **Delete now**), then goes for good, and
 files of a deleted project or note wait on the Projects home. Each file is one record (`files`, synced as the new
 kind `file`) that projects and notes list by id (`fileIds`); the bytes go straight to your private R2 bucket on
-five-minute links that the `files` Edge Function signs with the file's exact length and MD5, and the function checks
-each file's type by its first bytes before it counts as kept. Never sent to AI. Opening and adding need a connection
+five-minute links that the `files` Edge Function signs with the file's MD5 (and its length), and the function checks
+each stored file's type and size, by its first bytes too, before it counts as kept. Every 10 minutes, while the device
+is in step with your account, a tidy settles uploads that won't finish and deletes files whose 30 days are over; a
+file a project or note still lists never goes. Never sent to AI. Opening and adding need a connection
 and your account; backups list your files, the files stay in R2.
 
 **Your week — the weekly review (1.37.0):** a short look back over the last seven days, at `#review` ("Your week"), in
