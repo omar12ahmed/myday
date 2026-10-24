@@ -111,8 +111,8 @@ Capture, Ask MyDay, "What MyDay has noticed" and "What MyDay knows".
 
 ### Naming
 
-"Explore" now names two things: a project's investigation view and a level of Study home. Choose one meaning before
-either grows.
+"Explore" named two things: a project's investigation view and a level of Study home. Decided (24 Oct 2026):
+Projects keep "Explore" (it is also a project stage); Study home's level is renamed in a Study release.
 
 ---
 
@@ -241,10 +241,10 @@ MyDay has one user, so "permissions" here means privacy rules, not access contro
   - Finance and Health records (only the page's name);
   - name and email;
   - preferences and patterns.
-- **Private projects:** Ask MyDay sends nothing of them. "AI help with notes" may offer their name and summary as a
-  place to file a note (the owner's choice, 17 Oct 2026). "Help me adjust today" sends the titles on today's plan, so
-  a private project's task title can reach AI. Both are disclosed on "What MyDay knows". Whether Private should
-  govern every AI feature is an open owner decision (`projects-vision.md` §20).
+- **Private projects (decided 24 Oct 2026): Private covers every AI feature except note filing.** Ask MyDay sends
+  nothing of them; "Help me adjust today" sends their tasks on today's plan only as "a private task" (1.58.0); no
+  revision cards are made from their notes (1.58.0). "AI help with notes" may still offer their name and summary as a
+  place to file a note (the owner's choice, 17 Oct 2026). "What MyDay knows" says all of this.
 - **A note's text** reaches Ask MyDay only when "AI help with notes" is on.
 
 **Direction:** one shared "what may reach AI" filter used by every job and every future tool. The server goes on
@@ -332,7 +332,9 @@ These kinds don't need separate copies of the same information.
   - the markers, which hold no data, are kept for good;
   - copies saved before 1.44.0 remain in `sync_project_legacy`.
 
-  **Define a complete "delete everything" before real use starts.**
+  **Decided (24 Oct 2026): "delete everything" is a true wipe** — your data on the device and in your account, the
+  deletion markers and the pre-1.44.0 project copies all go; your sign-in stays. It needs a server change, built and
+  reviewed before real use starts.
 
 ### Search
 
@@ -386,12 +388,9 @@ Build it for one useful workflow first, not as general infrastructure.
 ### Files and backups
 
 - **Not built:** automatic backups and files.
-- **One decision so far:** Cybersecurity portfolio files go in a private Supabase Storage bucket (24 Oct 2026,
-  `study-home-and-lessons.md`).
-- **A plan that disagrees:** `deploy/R2.md` still describes a Cloudflare R2 plan for attachments.
-
-Agree one storage plan, and schedule backups before files. That's the Projects vision's Phase 2 order, and an open
-owner decision there.
+- **Decided (24 Oct 2026): stored files go in Cloudflare R2** (`deploy/R2.md`), including the Cybersecurity
+  portfolio's images and PDFs, rather than Supabase Storage. Automatic backups come first, as in the Projects
+  vision's Phase 2 order.
 
 ---
 
@@ -440,10 +439,10 @@ items, rather than scattering them through the README. Update it with each relea
 | Capability | Built now (1.55.1) | Direction or next step |
 |---|---|---|
 | Idea-to-review path | Most steps (§1) | Close the gaps one at a time, starting with findings and their sources |
-| Task completion in one place | Fixed in 1.55.1: a tick on a plan marks the task itself done, dated the plan's day | Keep one answer as new views appear |
+| Task completion in one place | 1.55.1: a tick on a plan marks the task itself done, dated the plan's day; 1.58.0: a rolled task follows its copy to the next plan, and Ask's Undo keeps a tick made since | Keep one answer as new views appear |
 | Ask MyDay in context | Page slice, five reply kinds, checked proposals, one follow-up, one Undo | Read-only tools over the shared AI filter |
 | General assistant tools | Not built | Start read-only; actions only for a defined need |
-| One "what may reach AI" filter | Ask filters; other jobs filter separately | One shared function; owner decision on Private for every AI feature |
+| One "what may reach AI" filter | Ask filters; other jobs filter separately; Private covers every AI feature but note filing (1.58.0) | One shared function |
 | AI quality checks | `ai-eval` scenarios, blind reviews, budgets | Required before a model or job changes |
 | Saved records | Built | Keep sources and dates; mark summaries stale |
 | Conversation memory | Not built; nothing kept | No commitment; make the case first |
@@ -453,11 +452,11 @@ items, rather than scattering them through the README. Update it with each relea
 | Search | Notes, Tasks, one project (1.52.0), lesson finders, recipes | One search across sections |
 | Semantic search | Not built | Exploratory; separate decision |
 | Projects | Overview (1.46.0); outcome, finish line and "Where I left off" (1.48.0); waiting on (1.50.0); search (1.52.0); why this next step (1.54.0) | `projects-vision.md` Phase 2; its owner decisions open there |
-| Explore | Renderer; the Hargeisa Marketplace exploration; generated starting briefs | Sourced AI explorations need retrieval and checking first; settle the name clash with Study |
+| Explore | Renderer; the Hargeisa Marketplace exploration; generated starting briefs | Sourced AI explorations need retrieval and checking first |
 | Study | Guided paths, Start/Continue (1.46.1); adaptive Arabic (1.47.0); Your focus and a calmer home (1.51.0); Arabic lesson journey (1.53.0); Cybersecurity lesson journey (1.55.0) | Adaptive rules for Cybersecurity and your own courses; Keep a word; Practise again and Progress; portfolio files; graduated help |
-| Saving, export/import, sync | Built (schema 5) | Keep going back a release safe; define "delete everything" |
+| Saving, export/import, sync | Built (schema 5) | Keep going back a release safe; "delete everything" as a true wipe (decided) |
 | Automatic backups | Not built | Before files |
-| Files | Not built; portfolio files planned in Supabase Storage | Agree one plan with `deploy/R2.md` |
+| Files | Not built; decided: Cloudflare R2 (`deploy/R2.md`) | After automatic backups |
 | Closed-app or scheduled work | Not built | One workflow first, with limits |
 | Outside connections | Supabase, AI provider, bank holidays, TheMealDB | Decide one at a time |
 
