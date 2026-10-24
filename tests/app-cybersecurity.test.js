@@ -269,5 +269,95 @@ async function fill(sel, value) {
     && await ev(`[...document.querySelectorAll('[data-action="cy-step"]')].every(b => b.getBoundingClientRect().height >= 44)`) && await ev('document.documentElement.scrollWidth === innerWidth'));
   await T.send('Emulation.clearDeviceMetricsOverride');
 
+  console.log('\n[K] The portfolio: adding a handed-in attempt, the secrets check, edit, remove and export');
+  const pfAct = 'assessment.learning-evidence-check', pfHash = 'study/cybersecurity/' + pfAct;
+  const pfList = async () => (await data()).cybersecurity.portfolio ?? [];
+  const pfProblem = () => ev(`document.querySelector('[data-cy-pf-form] [data-cy-pf-problem]')?.textContent ?? ''`);
+  const pfSaveDisabled = () => ev(`document.querySelector('[data-action="cy-pf-save"]').disabled`);
+  const pfTick = async () => { for (let i = 0; i < 3; i++) await click(`[data-s="cy-pf-check"][data-i="${i}"]`); await sleep(100); };
+  await ev('localStorage.clear()'); await go('study'); await go(pfHash);
+  await until(() => exists('[data-action=cyber-begin]'), 'the knowledge check');
+  const pfTitle = (await text('#app h2')).trim();
+  check('before an attempt is handed in there is no "Add to portfolio"', !(await exists('[data-action="cy-pf-open"]')));
+  await click('[data-action=cyber-begin]'); await sleep(150);
+  await fill('#cyberVariant', 'Second recall');
+  for (const id of await ev('[...document.querySelectorAll("textarea[id^=assessment]")].map(e => e.id)')) await fill(`[id="${id}"]`, 'My own answer.');
+  await fill('#cyberEvidence', 'I explained the difference between reading and observable output.');
+  await fill('#cyberResume', 'Try a fresh example.'); await fill('#cyberCritical', 'true');
+  await click('[data-action=cyber-submit]'); await sleep(300);
+  check('the attempt is handed in before it can be added', !!(await data()).cybersecurity.attempts[0].submittedAt && !(await pfList()).length);
+  const pfAttempt = (await data()).cybersecurity.attempts[0];
+  await until(() => exists('[data-action="cy-pf-open"]'), 'Add to portfolio');
+  check('its notebook card offers "Add to portfolio"', (await text('[data-action="cy-pf-open"]')) === 'Add to portfolio' && (await ev(`document.querySelector('[data-cy-pf-from]').dataset.cyPfFrom`)) === '0');
+  await click('[data-action="cy-pf-open"]'); await sleep(150);
+  check('the form opens with the title and the attempt\'s evidence filled in', await exists('[data-cy-pf-form]')
+    && (await ev(`document.querySelector('[data-s="cy-pf-title"]').value`)) === `${pfTitle}: Second recall`
+    && (await ev(`document.querySelector('[data-s="cy-pf-evidence"]').value`)) === pfAttempt.evidence && (await ev(`document.querySelector('[data-s="cy-pf-note"]').value`)) === '', await ev(`document.querySelector('[data-s="cy-pf-title"]').value`));
+  check('…with three unticked privacy checks, so Save is disabled', (await ev(`document.querySelectorAll('[data-cy-pf-privacy] [data-s="cy-pf-check"]').length`)) === 3 && (await ev(`[...document.querySelectorAll('[data-s="cy-pf-check"]')].every(c => !c.checked)`)) && await pfSaveDisabled());
+  await pfTick();
+  check('ticking all three enables Save when nothing looks like a secret', !(await pfSaveDisabled()) && !(await exists('[data-cy-pf-problem]')));
+  await fill('[data-s="cy-pf-evidence"]', 'I tried to log in with password=hunter2 on my lab machine.');
+  check('evidence with a password written out shows a warning and disables Save', (await pfProblem()) === 'This looks like a password or key written out. Remove or redact it first.' && await pfSaveDisabled() && (await ev(`document.querySelector('[data-cy-pf-problem]').getAttribute('role')`)) === 'alert', await pfProblem());
+  await fill('[data-s="cy-pf-evidence"]', 'I tried to log in with password=<redacted> on my lab machine.');
+  check('redacting it clears the warning and Save works again', !(await exists('[data-cy-pf-problem]')) && !(await pfSaveDisabled()));
+  await fill('[data-s="cy-pf-note"]', '  Revisit after the scope lesson.  ');
+  await click('[data-action="cy-pf-save"]'); await sleep(300);
+  let pf = await pfList();
+  check('saving adds one portfolio entry from the attempt, with the edited evidence, a trimmed note and today\'s date', pf.length === 1 && /^pf/.test(pf[0].id) && pf[0].attemptId === pfAttempt.id && pf[0].activityId === pfAct && pf[0].title === `${pfTitle}: Second recall`
+    && pf[0].evidence === 'I tried to log in with password=<redacted> on my lab machine.' && pf[0].note === 'Revisit after the scope lesson.' && pf[0].reviewedOn === '2026-10-05' && !('fileIds' in pf[0]) , pf);
+  check('the form closes and the card says where it is, offering to add it again', !(await exists('[data-cy-pf-form]')) && (await text('[data-cy-pf-from="1"]')).includes(`In your portfolio: ${pf[0].title}.`) && (await text('[data-action="cy-pf-open"]')) === 'Add it to your portfolio again', await text('[data-cy-pf-from]'));
+
+  await click('nav[aria-label="Cybersecurity"] a[href="#study/cybersecurity/portfolio"]'); await sleep(300);
+  check('the Cybersecurity nav has a Portfolio link, marked as the current page there', (await ev('location.hash')) === '#study/cybersecurity/portfolio'
+    && (await ev(`document.querySelector('nav[aria-label="Cybersecurity"] a[aria-current="page"]')?.textContent`)) === 'Portfolio');
+  check('the page counts "1 entry." and offers Export portfolio', (await text('[data-cy-portfolio="1"]')).includes('1 entry.') && (await text('[data-action="cy-pf-export"]')).includes('Export portfolio'));
+  check('the entry sits under its module (h3) and its lesson (h4, a link to the lesson)', (await text('main h3, #app h3')).includes('Learning method, scope and lab setup')
+    && (await ev(`document.querySelector('#app h4 a')?.getAttribute('href')`)) === '#study/cybersecurity/lesson.learning-evidence' && (await text('#app h4 a')) === 'Learning through evidence');
+  const entrySel = `[data-cy-pf-entry="${pf[0].id}"]`;
+  check('the entry shows its title, review date, evidence and note', (await text(entrySel + ' h5')) === pf[0].title && /^Reviewed .*5.* · self-study evidence/.test(await text(entrySel + ' p'))
+    && (await text(entrySel + ' [data-cy-pf-evidence]')) === pf[0].evidence && (await text(entrySel)).includes('Note: Revisit after the scope lesson.'), await text(entrySel));
+
+  await click('[data-action="cy-pf-edit"]'); await sleep(150);
+  check('Edit opens the form filled in, with the privacy checks unticked and Save disabled', (await ev(`document.querySelector('[data-s="cy-pf-title"]').value`)) === pf[0].title && (await ev(`[...document.querySelectorAll('[data-s="cy-pf-check"]')].every(c => !c.checked)`)) && await pfSaveDisabled());
+  await fill('[data-s="cy-pf-title"]', 'Reading versus observable output'); await pfTick();
+  await click('[data-action="cy-pf-save"]'); await sleep(300);
+  pf = await pfList();
+  check('saving the edit changes the title in place, keeping today\'s review date', pf.length === 1 && pf[0].title === 'Reading versus observable output' && pf[0].reviewedOn === '2026-10-05' && (await text(entrySel + ' h5')) === 'Reading versus observable output' && !(await exists('[data-cy-pf-form]')));
+
+  const dl = require('path').join(__dirname, 'dl');
+  for (const f of fs.readdirSync(dl)) fs.unlinkSync(require('path').join(dl, f));
+  let pfErrors = 0; T.setHandler(m => { if (m.method === 'Runtime.exceptionThrown') pfErrors++; });
+  await click('[data-action="cy-pf-export"]');
+  let zipName = ''; for (let i = 0; i < 40 && !zipName; i++) { await sleep(150); zipName = fs.readdirSync(dl).find(f => f.endsWith('.zip')) || ''; }
+  check('Export portfolio downloads "MyDay Cybersecurity portfolio <date>.zip" without a page error', zipName === 'MyDay Cybersecurity portfolio 2026-10-05.zip' && pfErrors === 0, [zipName, pfErrors]);
+  await sleep(200);
+  const zipBytes = zipName ? fs.readFileSync(require('path').join(dl, zipName)) : Buffer.alloc(0);
+  check('…and it is a zip holding the portfolio page with the entry', zipBytes.subarray(0, 2).toString() === 'PK' && zipBytes.includes('portfolio/index.html') && zipBytes.toString('latin1').includes('Reading versus observable output'), zipBytes.length);
+  T.setHandler(null);
+  for (const f of fs.readdirSync(dl)) fs.unlinkSync(require('path').join(dl, f));
+
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
+  await go('study/cybersecurity/portfolio');
+  check('on a phone the portfolio page has no sideways scrolling', await ev('document.documentElement.scrollWidth <= innerWidth'));
+  await go(pfHash); await until(() => exists('[data-action="cy-pf-open"]'), 'Add to portfolio on a phone');
+  await click('[data-action="cy-pf-open"]'); await sleep(150);
+  check('on a phone the privacy tick rows are at least 44 px tall and the page does not scroll sideways', await ev(`[...document.querySelectorAll('[data-s="cy-pf-check"]')].every(c => c.closest('label').getBoundingClientRect().height >= 44)`) && await ev('document.documentElement.scrollWidth <= innerWidth'));
+  await T.send('Emulation.clearDeviceMetricsOverride');
+
+  await go('study/cybersecurity/portfolio'); await until(() => exists('[data-action="cy-pf-remove"]'), 'the entry again');
+  await click('[data-action="cy-pf-remove"]'); await sleep(250);
+  check('Remove asks first, and cancelling keeps the entry', await exists('[data-action="dialog-confirm"]') && (await pfList()).length === 1);
+  await click('[data-action="dialog-cancel"]'); await sleep(250);
+  check('…keeping the entry after "Keep it"', (await pfList()).length === 1 && await exists(entrySel));
+  await click('[data-action="cy-pf-remove"]'); await sleep(250); await click('[data-action="dialog-confirm"]'); await sleep(300);
+  const pfAfter = await data();
+  check('confirming removes the entry but leaves the attempt in the notebook', !(pfAfter.cybersecurity.portfolio ?? []).length && pfAfter.cybersecurity.attempts.some(a => a.id === pfAttempt.id && a.submittedAt));
+  check('an empty portfolio says "Nothing yet." with a link to the lab notebook', (await text('[data-cy-portfolio="0"]')).includes('Nothing yet.') && await exists('[data-cy-portfolio="0"] a[href="#study/cybersecurity/notebook"]') && !(await exists('[data-action="cy-pf-export"]')));
+
+  await go('study/cybersecurity/project.lab-notebook');
+  await until(() => exists('[data-cy-skill-evidence]'), 'the project\'s required skills');
+  const skillRows = await ev(`[...document.querySelectorAll('[data-cy-skill-evidence] li')].map(li => li.textContent)`);
+  check('a project page lists each required skill as "no evidence yet" or "evidence in your notebook", never as a score', skillRows.length === 5 && skillRows.every(r => /— (no evidence yet|evidence in your notebook)$/.test(r)) && !(await text('[data-cy-skill-evidence]')).includes('/100'), skillRows);
+
   const s = T.summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
 })().catch(e => { console.error('HARNESS', e); process.exit(1); });
