@@ -22,6 +22,7 @@
 // - Changed on two devices before either was saved: still a conflict for you to decide (nothing overwritten).
 // Sync's notes are kept per account; nothing is sent or fetched while a different account is signed in, and the
 // cloud checks that too.
+import { clearFileCache } from '../data/fileCache';
 import { useSyncExternalStore } from 'react';
 import { todayKey } from '../data/dates';
 import { freshState as freshData } from '../data/normalize';
@@ -532,6 +533,7 @@ export async function signOutHere(anyway = false): Promise<'done' | 'unsaved' | 
       if (st.ok) fresh.device = st.state.device;
       writeState(fresh);
     });
+    if (cleared) await clearFileCache(); // the portfolio's files kept for offline viewing go with the rest
   }
   succeeded();
   publish('signed-out');
