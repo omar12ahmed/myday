@@ -5,7 +5,7 @@
 import { awaitingAnswer, isBusiness, isCase, modelProgress } from './businessModel';
 import { caseCounts, issueLinks, timelineInOrder } from './caseFile';
 import { parseKey, shift, shortDate, todayKey } from './dates';
-import { comingUp, stillOpen } from './projects';
+import { comingUp, nextStep, stillOpen } from './projects';
 import type { DateKey, MyDayData, Project } from './types';
 
 const tab = (p: Project, t?: string) => `#projects/p/${encodeURIComponent(p.id)}${t ? '/' + t : ''}`;
@@ -58,8 +58,10 @@ export function issueGrid(p: Project) {
 export interface Pointer { key: string; text: string; href: string }
 export function worthALook(data: MyDayData, p: Project, k: DateKey = todayKey(), max = 3): Pointer[] {
   const out: Pointer[] = [];
-  // The oldest task still to do whose date has passed (Coming up lists them all).
-  const open = stillOpen(data, p, k)[0];
+  // The oldest task still to do whose date has passed, unless it's the next step (that card says so beside it),
+  // and only on an active project: a paused or finished one isn't nudged. Coming up lists them all.
+  const step = nextStep(data, p);
+  const open = p.status === 'active' ? stillOpen(data, p, k).find(t => t.id !== step?.id) : undefined;
   if (open) out.push({ key: 'still-open', text: `${open.title} — still open, was due ${shortDate(open.due!)}`, href: `#today/tasks/${encodeURIComponent(open.id)}` });
   // A date in the next week.
   const soon = nextDates(data, p, k, 1)[0];

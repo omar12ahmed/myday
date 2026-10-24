@@ -75,7 +75,7 @@ function MilestoneRoute({ p }: { p: Project }) {
     <Row title="Milestones" href={href} s="glance-route">
       {total ? <>
         <a href={href} className={lineClass} data-s="ms-summary">
-          {!next ? `All ${total} milestones reached.`
+          {!next ? `All ${total} milestones reached${list.length > shown.length ? ` (the first ${shown.length} shown)` : ''}.`
             : <>{reached} of {total} milestones reached{list.length > shown.length ? ` (the first ${shown.length} shown)` : ''} · <span className="font-semibold">Next:</span> {next.title}{next.aim ? ` (${aimText(next.aim, todayKey(), true).replace(' — change it whenever it suits', '')})` : ''}</>}
         </a>
         <ol className="list-none p-0 m-0 mt-1 mb-2 max-w-xl relative flex items-center justify-between gap-1 h-6" aria-label={`${reached} of ${total} milestones reached`}>

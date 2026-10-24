@@ -87,7 +87,7 @@ function ProjectTop({ p, tab }: { p: Project; tab: ProjectTab }) {
         <a className={tabClass(tab === 'overview')} href={`#projects/p/${encodeURIComponent(p.id)}`} role="tab" aria-selected={tab === 'overview'} data-tab="overview">Overview</a>
         {isBusiness(p) && <a className={tabClass(tab === 'model')} href={tabHref(p, 'model')} role="tab" aria-selected={tab === 'model'} data-tab="model">Model</a>}
         {isCase(p) ? <>
-          {/* A case's own tabs (only four fit on a phone): its milestones and decisions open from their Overview cards. */}
+          {/* A case's own tabs (only four fit on a phone): its milestones and decisions open from their At a glance rows. */}
           <a className={tabClass(tab === 'timeline')} href={tabHref(p, 'timeline')} role="tab" aria-selected={tab === 'timeline'} data-tab="timeline">Timeline</a>
           <a className={tabClass(tab === 'evidence')} href={tabHref(p, 'evidence')} role="tab" aria-selected={tab === 'evidence'} data-tab="evidence">Evidence</a>
           <a className={tabClass(tab === 'issues')} href={tabHref(p, 'issues')} role="tab" aria-selected={tab === 'issues'} data-tab="issues">Issues</a>
@@ -171,7 +171,7 @@ function NextStepCard({ data, p }: { data: MyDayData; p: Project }) {
         <>
           <p className="text-[20px] font-bold leading-snug m-0 break-words" data-s="next-title">{step.title}</p>
           <p className="flex flex-wrap items-center gap-x-2 gap-y-1 m-0 mt-1.5 text-sm text-fg-3 tabular-nums">
-            {step.due && <span>{dueText(step, k)}</span>}<span>{step.minutes} min</span><CategoryChip kind={step.category} />
+            {step.due && (step.due < k ? <span data-s="next-still-open">Still open · was due {shortDate(step.due)}</span> : <span>{dueText(step, k)}</span>)}<span>{step.minutes} min</span><CategoryChip kind={step.category} />
           </p>
           <div className="flex flex-wrap gap-2.5 mt-4">
             {onTodaysPlan(data, step, k) ? <span className="inline-flex items-center min-h-11 text-primary font-semibold">On today's plan</span>
@@ -299,7 +299,7 @@ function NotesCard({ data, p }: { data: MyDayData; p: Project }) {
 function ComingUpCard({ data, p }: { data: MyDayData; p: Project }) {
   const [adding, setAdding] = useState(false);
   const [f, setF] = useState({ title: '', date: todayKey(), start: '', end: '' });
-  const items = comingUp(data, p), open = stillOpen(data, p);
+  const k = todayKey(), items = comingUp(data, p, k), open = stillOpen(data, p, k);
   function add() {
     if (!f.date || !f.start) return;
     if (addAppointment(f.title || p.title, f.date, f.start, f.end || null, p.id)) {
@@ -330,7 +330,7 @@ function ComingUpCard({ data, p }: { data: MyDayData; p: Project }) {
             </li>
           ))}
         </ul>
-      ) : <Note className="mt-0">Nothing dated yet. Tasks with a date, and appointments, show here.</Note>}
+      ) : <Note className="mt-0">{isCase(p) ? 'No dates yet. A deadline is a dated task here — it reaches Today on its day.' : 'Nothing dated yet. Tasks with a date, and appointments, show here.'}</Note>}
       <div className="flex flex-wrap gap-x-2.5">
       {adding ? (
         <form className="grid gap-3 mt-3 w-full" onSubmit={e => { e.preventDefault(); add(); }} id="projectApptForm">

@@ -986,7 +986,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('…and it becomes the next date, first in Coming up', norm((await soonTasks())[0] || '').includes('16 Oct') && norm((await soonTasks())[0] || '').includes('Reply to the employer'), await soonTasks());
   await seed([caseObj('pjNd', 'Issues: no dates', {})]);
   await go('projects/p/pjNd', 2026, 10, 15, 9, 33);
-  check('a case with no dated tasks says "Nothing dated yet" in Coming up', (await text('#projectSoon')).includes('Nothing dated yet') && (await soonTasks()).length === 0, await text('#projectSoon'));
+  check('a case with no dated tasks says "No dates yet" in Coming up, and that a deadline is a dated task', (await text('#projectSoon')).includes('No dates yet. A deadline is a dated task here — it reaches Today on its day.') && (await soonTasks()).length === 0, await text('#projectSoon'));
 
   console.log('\n[33] Changing kind, privacy, deleting and phones');
   await seed([caseObj('pjKd', 'Kind: a tribunal claim', { timeline: [tlObj('tlK1', '2026-09-01', 'The first thing')], evidence: [evObj('evK1', 'A letter')], issues: [isObj('isK1', 'An issue')] })]);
@@ -1122,7 +1122,15 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('…it reads "Still open · was due <date>" and then the title', openParts.length === 2 && /^Still open · was due (Mon,? )?12 Oct$/.test(openParts[0]) && openParts[1] === 'Ring the plumber', openParts);
   check('…the task due today is an ordinary dated task, listed after it', (await soonTasksG())[0].includes('Buy washers') && (await ev(`document.querySelectorAll('#projectSoon [data-s=soon-open]').length`)) === 1, await soonTasksG());
   check('…the past appointment is not listed', !(await text('#projectSoon')).includes('Plumber visit') && !(await exists('#projectSoon [data-s=soon-appt]')), await text('#projectSoon'));
-  check('Worth a look puts it first: "<title> — still open, was due <date>"', (await pointerKeys())[0] === 'still-open' && /^Ring the plumber — still open, was due (Mon,? )?12 Oct$/.test(norm(await text('[data-pointer=still-open]'))), [await pointerKeys(), await text('#projectWorth')]);
+  check('it is the next step, so the Next step card says it: "Still open · was due <date>"', /^Still open · was due (Mon,? )?12 Oct$/.test(norm(await text('#projectNext [data-s=next-still-open]'))), await text('#projectNext'));
+  check('…and Worth a look does not repeat it beside the card', !(await pointerKeys()).includes('still-open'), await pointerKeys());
+  await type('#projectNextPick', 'tkS3'); await sleep(300);
+  check('with another next step chosen, Worth a look puts it first: "<title> — still open, was due <date>"', (await pointerKeys())[0] === 'still-open' && /^Ring the plumber — still open, was due (Mon,? )?12 Oct$/.test(norm(await text('[data-pointer=still-open]'))), [await pointerKeys(), await text('#projectWorth')]);
+  check('…and the Next step card shows the new step\'s own date, not "still open"', !(await exists('#projectNext [data-s=next-still-open]')) && (await text('#projectNext [data-s=next-title]')) === 'Fit the new tap', await text('#projectNext'));
+  await click('[data-action=project-pause]'); await sleep(300);
+  check('a paused project gets no still-open pointer, though Coming up still lists the task', !(await pointerKeys()).includes('still-open') && (await exists('#projectSoon [data-s=soon-open]')), [await pointerKeys(), await soonKinds()]);
+  await click('[data-action=project-resume]'); await sleep(300);
+  await type('#projectNextPick', 'tkS1'); await sleep(300);
   check('…and nothing says late, overdue or behind', await noBlame(), await text('#app'));
   check('the Overview runs in order: Next step, Worth a look, At a glance, About it, Tasks', eq(await ev(`[...document.querySelectorAll('#projectNext, #projectWorth, #projectGlance, #projectHead, #projectTasks')].map(e => e.id)`), ['projectNext', 'projectWorth', 'projectGlance', 'projectHead', 'projectTasks']));
   await T.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });

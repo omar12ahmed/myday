@@ -631,7 +631,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('removing the last record of a case removes the case field', !('case' in P(d)), P(d));
   }
 
-  console.log('\n[11] A project\'s dashboard: tiles, weeks, pointers');
+  console.log('\n[11] A project\'s dashboard: still open, weeks, pointers');
   {
     const k = '2026-10-14'; // a Wednesday; its Monday is the 12th
     const TK = (id, pid, x = {}) => ({ id, title: 'Task ' + id, listId: '', category: 'Admin', minutes: 25, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: OLD, postponed: 0, blockers: [], letGoOn: null, projectId: pid, ...x });
@@ -748,11 +748,20 @@ const clone = o => JSON.parse(JSON.stringify(o));
     g1.tasks.items[0].due = '2026-10-22';
     check('…but eight days away gives nothing', wl(g1).length === 0, wl(g1));
     g1.tasks.items = [TK('a', 'pjL', { title: 'Book the van', due: '2026-10-10' })];
-    check('a past dated task still to do is pointed out as still open, with the day it was due, linking to the task', eq(wl(g1).map(x => [x.key, x.text, x.href]), [['still-open', `Book the van — still open, was due ${K.shortDate('2026-10-10')}`, '#today/tasks/a']]), wl(g1));
+    check('a past dated task still to do that is also the next step is not pointed out (the Next step card says it)', wl(g1).length === 0, wl(g1));
+    g1.tasks.items.push(TK('c', 'pjL', { title: 'Pack the books' })); g1.projects.items[0].nextTaskId = 'c';
+    check('with another task chosen as the next step, it is pointed out as still open, with the day it was due, linking to the task', eq(wl(g1).map(x => [x.key, x.text, x.href]), [['still-open', `Book the van — still open, was due ${K.shortDate('2026-10-10')}`, '#today/tasks/a']]), wl(g1));
     g1.commitments = [{ id: 'cmA', kind: 'appointment', title: 'Viewing', start: '2026-10-15T10:00', end: '2026-10-15T11:00' }]; g1.projects.items[0].commitmentIds = ['cmA'];
     check('an appointment within the week is pointed out too, after the still-open task, linking to the Calendar', eq(wl(g1).map(x => [x.text, x.href]), [[`Book the van — still open, was due ${K.shortDate('2026-10-10')}`, '#today/tasks/a'], ['Viewing — tomorrow', '#calendar']]), wl(g1));
     g1.tasks.items.push(TK('b', 'pjL', { title: 'Older one', due: '2026-10-02' }));
     check('with two tasks still open, only the oldest is pointed out (Coming up lists both)', eq(wl(g1).filter(x => x.key === 'still-open').map(x => x.text), [`Older one — still open, was due ${K.shortDate('2026-10-02')}`]), wl(g1));
+    g1.projects.items[0].nextTaskId = 'b';
+    check('…and when the oldest is the next step, the next one along is pointed out instead', eq(wl(g1).filter(x => x.key === 'still-open').map(x => x.text), [`Book the van — still open, was due ${K.shortDate('2026-10-10')}`]), wl(g1));
+    for (const status of ['paused', 'done']) {
+      g1.projects.items[0].status = status;
+      check(`a ${status} project gets no still-open pointer (Coming up still lists the tasks)`, !wl(g1).some(x => x.key === 'still-open') && K.stillOpen(g1, g1.projects.items[0], k).length === 2, wl(g1));
+    }
+    g1.projects.items[0].status = 'active';
     // No "No next step yet" pointer: the Next step card beside Worth a look already asks for the smallest one.
     const ns = world(base('pjS'));
     check('an active project with no open tasks gets no pointer about its next step', wl(ns).length === 0, wl(ns));
@@ -793,7 +802,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('a case with a dated task gives the date first, then the issues pointer, then the evidence pointer', eq(texts(wl(all)), ['File the form — in 2 days', '1 issue has nothing linked yet', '1 piece of evidence still to get']), wl(all));
     all.tasks.items = []; all.commitments = [{ id: 'cmA', kind: 'appointment', title: 'Hearing', start: '2026-10-16T10:00', end: '2026-10-16T11:00' }]; all.projects.items[0].commitmentIds = ['cmA'];
     check('with a date, two case pointers and no open task, all three are kept (there is no "No next step" pointer)', eq(texts(wl(all)), ['Hearing — in 2 days', '1 issue has nothing linked yet', '1 piece of evidence still to get']), wl(all));
-    all.tasks.items = [TK('o0', 'pjO', { title: 'Send the bundle', due: '2026-10-09' })];
+    all.tasks.items = [TK('o0', 'pjO', { title: 'Send the bundle', due: '2026-10-09' }), TK('o2', 'pjO', { title: 'Draft the letter' })]; all.projects.items[0].nextTaskId = 'o2';
     check('a task still open comes first, and the limit of three leaves out the last pointer', eq(texts(wl(all)), [`Send the bundle — still open, was due ${K.shortDate('2026-10-09')}`, 'Hearing — in 2 days', '1 issue has nothing linked yet']), wl(all));
   }
 

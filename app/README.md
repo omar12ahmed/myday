@@ -1,5 +1,12 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.46.0 — Projects Overview, next step first:** a project's Overview now opens with its Next step, with Worth a
+look beside it. At a glance shows each tool's summary once, one row per tool, and the tile strip and the separate
+Milestones, Decisions, one-page, case and How it's going cards are gone. A task still to do after its date now leads
+Coming up as "Still open · was due Wed 21 Oct" until it's done or let go; the Next step card says the same when it's
+that task, and Worth a look points at another one on an active project. No red, no "overdue". No saved-data, sync or
+database change, and Ask MyDay sends the same; going back to 1.45.2 is safe.
+
 **1.45.2 — Study counts, never percentages:** Study's completion line now reads "2 of 5 tasks marked complete"
 instead of "2 of 5 tasks complete (40%)", on Study home, the roadmap, topics, courses and Progress. The note that it
 counts ticks, not how well you know them, and the bar stay. The classic MyDay keeps its own wording. No saved-data,
@@ -273,7 +280,8 @@ one has **Find out**, which adds a task "Find out: …" (15 minutes, no date) to
 chose stays as it is. You mark it **Looks true** or **Doesn't hold** yourself (Edit can set it back to Not checked
 yet) and can add what you found. Nothing is marked by itself; when a Find out task is done and it's still not checked,
 it asks "what did you find?". Overview's "Your one page" card gives counts only, e.g. "3 of 4 questions answered · 2
-still to check · 1 looks true". Recently lists what you found out, and the board labels business cards "Business
+still to check · 1 looks true" (since 1.46.0, At a glance's "Your one page" and "What must be true" rows).
+Recently lists what you found out, and the board labels business cards "Business
 idea". Explore for a business idea is built from the one page (its last chapter offers the same Find out task, never a
 second one), and each links to the other. Ask MyDay and AI help with notes send nothing from the one page, and no AI
 is used. It's saved inside the project (`template` and `model`, rules in `src/data/businessModel.ts`); a general
@@ -295,7 +303,8 @@ evaluated on six made-up business ideas (18 live calls, about US$0.01). No saved
 **The Case template (1.35.0):** a project can be a **Case**, the third kind in Start a project (General · Business
 idea · Case) and in About it → Edit → Kind of project. A case starts like any project, Private off until you switch it
 on. Its tabs are **Overview · Timeline · Evidence · Issues** (only four fit on a phone); its milestones and decisions
-open from their cards on Overview, and there's no Explore link. **Timeline** lists what happened in date order,
+open from Overview (since 1.46.0, from its At a glance rows), and there's no Explore link.
+**Timeline** lists what happened in date order,
 grouped by month. Each entry has a date ("About this date" if it's approximate), what happened, optional details, and
 where it comes from: **My account**, **Their account** or **In the evidence**, so the three never blur. Each can link
 to evidence and issues. **Evidence** records what it is, its kind (document, email or letter, message, photo or
@@ -304,9 +313,11 @@ Its status is **To get**, **Have it** or **Reviewed**, changed with a one-tap "G
 shows counts. **Issues** are what you're claiming or considering, each marked **Considering**, **Claiming** or
 **Dropped**, with "What I need to show". Each lists its linked evidence and timeline entries, and "Nothing linked yet"
 shows the gaps. **Deadlines** are the case's dated tasks and appointments: "Add a deadline" on Overview's "Your case"
-card adds a dated task, so it reaches Today and Coming up as usual, and the card leads with "Next date". MyDay never
+card (since 1.46.0, in Coming up) adds a dated task, so it reaches Today and Coming up as usual, and the card leads with
+"Next date". MyDay never
 works out legal time limits; you enter the dates. The "Your case" card gives counts only (e.g. "3 timeline entries · 2
-pieces of evidence (1 to get) · 2 issues") and says: "MyDay helps you organise your case. It doesn't give legal advice
+pieces of evidence (1 to get) · 2 issues"; since 1.46.0 in At a glance's rows) and says:
+"MyDay helps you organise your case. It doesn't give legal advice
 or say whether a claim will succeed — ACAS or Citizens Advice can help with that." **Privacy:** a case's Private
 switch works as for any project — while it's on, Ask MyDay sends nothing of it, and AI help with notes can still
 suggest it as a place for a note by its name and summary. A case's timeline, evidence and issues are never sent to AI,
@@ -327,7 +338,8 @@ recorded) as small columns you can hover or focus to read; a business idea's Wha
 case's evidence by status (one bar in three teal steps, with a legend naming and counting each), its issues and what's
 linked to each ("nothing linked yet" shows), its timeline entries by month, and its next dates. **Worth a look** gives
 at most three gentle pointers from real data: a date within the next week, a Find out task that's done, one-page
-questions still to answer, issues with nothing linked, evidence still to get, or no next step yet. It never says
+questions still to answer, issues with nothing linked, evidence still to get, or no next step yet (since 1.46.0, the
+tiles are At a glance rows, Worth a look sits beside the next step and no longer says "no next step yet"). It never says
 "overdue" or "late", and it never gives percentages or scores. **Summarise this** opens Ask MyDay with "Summarise
 where this project is, and the one next step", only on your tap and never on a private project. It uses the project
 page's usual preview (for a case, its tasks, milestones and note titles, never its timeline, evidence or issues). The
@@ -337,20 +349,21 @@ matters. Evaluated live on made-up projects (about US$0.06, `ai-eval/reviews/202
 helper (no AI) answers it too. Each picture has words for screen readers and never relies on colour alone, in light
 and dark themes.
 
-**Overview: next step first (unreleased; `specs/projects-overview.md`):** a project's Overview now opens with its
-**Next step**, with **Worth a look** beside it when there's something to point at (otherwise the next step takes the
-full width). **At a glance** follows, holding each tool's summary once, as one row per tool that opens its tab: a
+**Overview: next step first (1.46.0; `specs/projects-overview.md`):** a project's Overview now opens with its **Next
+step**, with **Worth a look** beside it when there's something to point at (otherwise the next step takes the full
+width). **At a glance** follows, holding each tool's summary once, as one row per tool that opens its tab: a
 business idea's one page ("3 of 4 questions answered") and What must be true (three counts); a case's evidence bar,
-issues and what's linked, and timeline ("4 entries · latest Mon 5 Oct", by month); then Milestones (the stations
-and "1 of 4 milestones reached · Next: …"), Decisions (up to three open questions, or the latest choice) and **What
-you did** (the 8-week columns with "3 done · 4 to go" and when it started and was last worked on). The tile strip
-and the separate Milestones, Decisions, "Your one page", "Your case" and "How it's going" cards are gone, so nothing
-is said twice. "Add a deadline" moved into a case's Coming up, and the not-legal-advice line sits under a case's At
-a glance. **Open past dates stay visible:** a task still to do whose date has passed leads Coming up as "Still open ·
-was due Wed 21 Oct", and the oldest one leads Worth a look; done or let go, it leaves. Past appointments aren't
-listed, and there's no red, no "overdue" and no count of days. Worth a look no longer says "No next step yet": the
-Next step card beside it already asks for the smallest one. Nothing new is saved, and Ask MyDay's request and
-preview are unchanged (`comingUp` is unchanged; still-open tasks come from `stillOpen`).
+issues and what's linked, and timeline ("4 entries · latest Mon 5 Oct", by month); then Milestones (the stations and
+"1 of 4 milestones reached · Next: …"), Decisions (up to three open questions, or the latest choice) and **What you
+did** (the 8-week columns with "3 done · 4 to go" and when it started and was last worked on). The tile strip and
+the separate Milestones, Decisions, "Your one page", "Your case" and "How it's going" cards are gone, so each
+summary appears once. "Add a deadline" moved into a case's Coming up, and the not-legal-advice line sits under a
+case's At a glance. **Open past dates stay visible:** a task still to do whose date has passed leads Coming up as
+"Still open · was due Wed 21 Oct"; done or let go, it leaves. When it's the next step, the Next step card says
+"Still open · was due …" itself; otherwise, on an active project, the oldest one leads Worth a look. Past
+appointments aren't listed, and there's no red, no "overdue" and no count of days. Worth a look no longer says "No
+next step yet": the Next step card beside it already asks for the smallest one. Nothing new is saved, and Ask
+MyDay's request and preview are unchanged (`comingUp` is unchanged; still-open tasks come from `stillOpen`).
 
 **Your week — the weekly review (1.37.0):** a short look back over the last seven days, at `#review` ("Your week"), in
 four steps, one at a time, with Back and Next. Nothing changes until you tap. **1 What moved:** each project's tasks
@@ -680,7 +693,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `../ai-eval/` | The evaluation of AI models on 20 synthetic days and 12 synthetic brain dumps (see its README). |
 | `src/finance/` | The Finance screen: `FinanceScreen` (with Left over), `WorkPayCard`, `ExpensesCard`, `OwedCard`, `RatesCard` (folded away), and `actions.ts` (what each button saves). |
 | `src/data/patterns/`, `src/patterns/` | What MyDay has noticed: `notice.ts` (finding patterns in your history), `saved.ts` (your preferences and answers, the `patterns` section), `adapt.ts` (using preferences in Build my day and the room on today's plan); the screen `NoticedScreen.tsx` (`#noticed`, and the quiet line on Today). `src/components/Why.tsx`: a note with a "Why?". `src/tasks/StuckCard.tsx`: "What's getting in the way?". |
-| `src/projects/`, `src/data/projects.ts` | Projects (1.12.0): `ProjectsScreen` (the Projects, Notes and Connections tabs, "Start a project", project cards), `ProjectView` (one project: what it is, the progression, the next step, tasks, notes, coming up, how it's going, pause / done / delete), `parts.tsx` (the progression steps, the project picker used by notes and tasks); the data, the next step and what's coming up in `src/data/projects.ts`. Today's "From your projects" and "Your tasks": `src/today/ProjectCards.tsx`. Older `#inbox…`/`#notes…` links: `src/shell/legacyLinks.ts`. |
+| `src/projects/`, `src/data/projects.ts` | Projects (1.12.0): `ProjectsScreen` (the Projects, Notes and Connections tabs, "Start a project", project cards), `ProjectView` (one project: the next step with Worth a look beside it, At a glance, what it is, the progression, tasks, notes, coming up, recently, pause / done / delete), `parts.tsx` (the progression steps, the project picker used by notes and tasks); the data, the next step and what's coming up in `src/data/projects.ts`. Today's "From your projects" and "Your tasks": `src/today/ProjectCards.tsx`. Older `#inbox…`/`#notes…` links: `src/shell/legacyLinks.ts`. |
 | `src/tasks/`, `src/data/tasks.ts` | Tasks (under Today since 1.12.0): `TasksScreen` (adding, the groups, lists as chips, search), `TaskEditor`, `ListsView`, `route.ts` (`#today/tasks`, `#today/tasks/<id>`, `#today/tasks/list/<id>`, `#today/tasks/lists`); the data and rules (groups, due today, room on today's plan, the link to the plan) in `src/data/tasks.ts`. Today's "Due today" card: `src/today/DueTodayCard.tsx`. |
 | `src/data/graph.ts`, `src/projects/ConnectionsView.tsx` | Connections, the knowledge graph (milestone 4): which notes and projects connect, the groups that go together and their fixed layout, fitted to a width (`graph.ts`); the screen at `#projects/connections` — the drawing, a dot's details with Keep / Undo, "What goes together" (`ConnectionsView.tsx`). Shared with Your map: `src/components/measure.ts` (drawing at the real width, names measured in the app's font). |
 | `src/data/understand.ts`, `src/shell/autoConnect.ts`, `src/notes/ConnectedCard.tsx` | Understanding notes on the device (1.13.0): the words that count, which project a note clearly belongs to, related notes, Undo / Keep (`understand.ts`); connecting a moment after changes (`autoConnect.ts`); "MyDay connected these" (`ConnectedCard.tsx`). |
@@ -692,7 +705,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/reading.ts`, `src/study/ReadingView.tsx`, `src/study/readingActions.ts`, `src/study/StudyTabs.tsx` | Study → Reading (1.24.0): checking saved books (`reading.ts`); the Reading tab — books, the page you're on, notes, Edit, Finished (`ReadingView`); what each button saves (`readingActions.ts`); Study's Courses / Reading tabs (`StudyTabs`). |
 | `src/study/` | The Study screens: `StudyScreen` (picks the screen from the address, e.g. `#study/roadmap`), `Dashboard`, `Roadmap`, `CourseDetails`, `TaskDetails`, `SessionView`, `CheckinView`, `RevisionView`, `ConceptsView`, `ConceptView`, `ProgressView`, `StudySettings` and `StudyTodayCard`; `actions.ts` (what each button saves), `round.ts` (the revision round, kept in memory), `parts.tsx` (small shared pieces). |
 | `src/knows/KnowsScreen.tsx` | What MyDay knows (1.27.0, `#knows`): what each kind of AI help sends and when (Ask's lines from `SENDS` in `src/ai/askContext.ts`), what's never sent, which model does which job (keep in step with `AI_ROUTES`), limits. |
-| `src/data/projectPlan.ts`, `src/projects/PlanViews.tsx`, `src/projects/planText.ts` | Milestones and decisions (1.31.0): `projectPlan.ts` (checking the saved lists, and adding, editing, reaching, choosing, thinking again, with the limits); `PlanViews.tsx` (the Milestones and Decisions screens and Overview's two cards); `planText.ts` (the "Aiming for" wording, which never says late or overdue). |
+| `src/data/projectPlan.ts`, `src/projects/PlanViews.tsx`, `src/projects/planText.ts` | Milestones and decisions (1.31.0): `projectPlan.ts` (checking the saved lists, and adding, editing, reaching, choosing, thinking again, with the limits); `PlanViews.tsx` (the Milestones and Decisions screens; their Overview summaries are in At a glance); `planText.ts` (the "Aiming for" wording, which never says late or overdue). |
 | `src/data/businessModel.ts`, `src/projects/ModelView.tsx` | The Business template (1.33.0): `businessModel.ts` (the kind of project and the one page: reading what's saved, the four answers, the list of what must be true with its limits, Find out, marking, counts); `ModelView.tsx` (the Model tab; its Overview summary is in At a glance). The Model tab's counts line is `progressLine` in `planText.ts`; Explore's brief from the one page is `fromOnePage` in `src/explore/content.ts`. |
 | `src/data/caseFile.ts`, `src/projects/CaseViews.tsx` | The Case template (1.35.0): `caseFile.ts` (reading what's saved, unknown fields kept, links to missing items let go; the timeline, evidence and issues with their limits, links, counts and the size guard); `CaseViews.tsx` (the Timeline, Evidence and Issues tabs, and "Add a deadline" in a case's Coming up; its Overview summary is in At a glance). |
 | `src/data/projectDashboard.ts`, `src/projects/AtAGlance.tsx` | The dashboards per kind (1.36.0): `projectDashboard.ts` (the next dates, the weeks, entries by month, each issue's links and Worth a look; Today's own dashboard numbers stay in `dashboard.ts`); `AtAGlance.tsx` (the At a glance card with one row per tool, its pictures and Summarise this, and the Worth a look card beside the next step). Still-open tasks are `stillOpen` in `src/data/projects.ts`. |

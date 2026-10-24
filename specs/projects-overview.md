@@ -71,6 +71,11 @@ full width.
 - **Worth a look** puts at most one still-open item first ("Send the deposit scheme my evidence — still open, was
   due Thu 22 Oct"), then its existing pointers, still at most three. Its "No next step yet" pointer goes: the Next
   step card beside it already asks for the smallest one.
+- After the independent review: when the still-open task is the next step (the default, since dated tasks come
+  first), the **Next step card** itself says "Still open · was due Thu 22 Oct" and Worth a look points at a different
+  still-open task, if any, rather than repeating it beside the card. The still-open pointer is for active projects
+  only; a paused or done project isn't nudged, though Coming up still lists the tasks. A case's empty Coming up keeps
+  the old card's words: "No dates yet. A deadline is a dated task here — it reaches Today on its day."
 
 ### Kept as they are
 
