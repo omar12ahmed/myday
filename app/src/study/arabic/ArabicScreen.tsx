@@ -243,7 +243,9 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
   // revision session. Always yours to change.
   const [suggested] = useState(() => lessonLength(data, id, arabicState(data, id) === 'needs-revision'));
   const [chosen, setChosen] = useState<Variant>(suggested.variant);
-  const l = content?.lessons.find(x => x.id === id), loaded = !!l;
+  // Loaded once the lesson and its teaching are here (or the teaching can't be): the step you go back to, or a link
+  // asked for, sits below the teaching, so jumping before it arrives would land too high.
+  const l = content?.lessons.find(x => x.id === id), loaded = !!l && (!!teaching.lesson || teaching.missing);
   // A just-finished session keeps its steps while its card shows.
   const length: Variant = session ? session.variant : finished ? finished.variant : l && !l.variants.some(v => v.mode === chosen) ? 'standard' : chosen;
   const shown = journeyFor(data, id, length, !!session || !!finished);

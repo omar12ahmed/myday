@@ -204,13 +204,20 @@ function check(label, ok) {
         && n.sessions === 1 && n.own === 1 && n.checks === checks.length && !n.tried && n.next === 'try' && p.ownChecks === 1, n);
       pg.arabic.practice = [{ id: first, tried: '2026-10-08' }];
       check('…and "Answer its checks" once you\'ve done its Try', rule.arabicProgress(pg).needs[0].next === 'check');
+      pg.study.reviews.push({ id: 'rvPg3', conceptId: checks[0], title: 'x', date: '2026-10-12', at: '', kind: 'written', outcome: 'wrong', graded: 'self', chosen: null, support: 'own', rating: 'again', gap: 1, due: '2026-10-13' });
+      p = rule.arabicProgress(pg);
+      check('a check whose latest answer slipped no longer counts as on your own, even if it was before', p.needs[0].own === 0 && p.ownChecks === 0, p.needs[0]);
+      check('the core path ends four of the course\'s levels', p.milestones === 4);
       rule.flagRevisit(pg, first, 'the register words', '2026-10-11');
       check('your own flag gives the reason in your words', rule.arabicProgress(pg).needs[0].flag === 'the register words');
       const all = fresh(); all.arabic.pathId = 'path.arabic-start';
       const start = rule.pathLessons(all.arabic.pathId);
       start.forEach(id => { const s2 = rule.beginSession(all, id, 'short'); rule.finishSession(all, s2); rule.markReady(all, id, rule.checksOf(id), '2026-10-01'); });
       p = rule.arabicProgress(all);
-      check('every lesson on a short path done: done counts them all, and no milestone is left on that path', p.done === start.length && p.path === start.length && p.milestone === null, p);
+      check('every lesson on a short path done: done counts them all', p.done === start.length && p.path === start.length, p);
+      const partWay = fresh(); partWay.arabic.pathId = 'path.arabic-start';
+      { const s3 = rule.beginSession(partWay, start[0], 'short'); rule.finishSession(partWay, s3); }
+      check('a path that ends none of the course\'s levels has no milestone to name, part-way or not (never a level it doesn\'t reach)', rule.arabicProgress(partWay).milestones === 0 && rule.arabicProgress(partWay).milestone === null && p.milestones === 0);
       const before = JSON.stringify(pg); rule.arabicProgress(pg);
       check('working out Progress saves nothing', JSON.stringify(pg) === before);
     }

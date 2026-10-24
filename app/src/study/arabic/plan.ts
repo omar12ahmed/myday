@@ -5,12 +5,12 @@ import { todayKey } from '../../data/dates';
 import { checkIds, evidence, lessonRecord, stateOf } from '../../data/arabic/lessons';
 import { practiceOf } from '../../data/arabic/practice';
 import type { Variant } from '../../data/arabic/types';
-import { isDone, lengthFor, nextStep, onOwn, stepReason, stepsFor, type JourneyStep, type LessonState, type Step } from '../../data/study/mastery';
+import { isDone, lengthFor, lessonState, nextStep, onOwn, stepReason, stepsFor, type JourneyStep, type LessonState, type Step } from '../../data/study/mastery';
 import { dueIds } from '../../data/study/queue';
 import { DAILY_ENOUGH, reviewedOn } from '../../data/study/revision';
 import { suggestLength } from '../../data/study/sessions';
 import type { DateKey, MyDayData } from '../../data/types';
-import { corePath, lessonIndex, milestones, moduleList, modules, paths, skills } from './catalogue';
+import { corePath, lessonIndex, milestones, moduleList, paths, skills } from './catalogue';
 
 export const checksOf = (lessonId: string) => checkIds(lessonId, lessonIndex[lessonId]?.checks ?? 0);
 // The lessons a lesson builds on directly: the ones teaching its content skills (never a checkpoint).
@@ -82,36 +82,42 @@ export function moduleProgress(d: MyDayData, lessonIds: string[]) {
 
 // ---------- Progress (specs/study-home-and-lessons.md §11) ----------
 // Where you stand on your path, in words and counts: what's done, what's on your own, what needs revision and why
-// (your flag or a check that slipped, how many checks you've recalled on your own, whether you've done its Try), and
-// the next milestone (the course's levels, each ending in a consolidation module). Never a percentage, never a streak.
+// (your flag or a check that slipped, how many checks your latest answer got on your own, whether you've done its
+// Try), and the next milestone (the course's levels, each ending in a consolidation module, counted only when that
+// module is on your path). Never a percentage, never a streak. Nothing is saved.
 export interface NeedsRevision { lessonId: string; flag: string | null; sessions: number; own: number; checks: number; tried: boolean; next: 'try' | 'check' }
 export interface ArabicProgress {
   started: boolean; path: number; done: number; holding: number; ownChecks: number; needs: NeedsRevision[];
-  milestone: { stage: string; toGo: number; last: string } | null; // null: every milestone on your path is behind you
+  milestones: number;                                              // how many of the course's levels end on your path
+  milestone: { stage: string; toGo: number; last: string } | null; // the next one; null when they're all behind you
 }
 export function arabicProgress(d: MyDayData): ArabicProgress {
-  const path = pathLessons(d.arabic.pathId), state = new Map(path.map(id => [id, arabicState(d, id)]));
+  const path = pathLessons(d.arabic.pathId), onPath = new Set(path), state = new Map<string, LessonState>();
   const needs: NeedsRevision[] = [];
   let ownChecks = 0;
   for (const id of path) {
-    const checks = checksOf(id), ev = evidence(d, id, checks), own = checks.filter(c => (ev.answers[c] ?? []).some(onOwn)).length;
+    const checks = checksOf(id), ev = evidence(d, id, checks), st = lessonState(ev);
+    state.set(id, st);
+    // On your own now: the latest answer to the check was right, on your own (a slip after it doesn't count).
+    const own = checks.filter(c => { const list = ev.answers[c] ?? []; return list.length > 0 && onOwn(list[list.length - 1]); }).length;
     ownChecks += own;
-    if (state.get(id) !== 'needs-revision') continue;
+    if (st !== 'needs-revision') continue;
     const rec = lessonRecord(d, id), tried = !!practiceOf(d, id)?.tried;
     needs.push({ lessonId: id, flag: rec?.revisit ? rec.revisit.what : null, sessions: ev.finished, own, checks: checks.length, tried, next: tried ? 'check' : 'try' });
   }
-  const states = [...state.values()];
-  // The next milestone: the first of the course's levels whose lessons on your path aren't all done.
+  // The course's levels whose consolidation module is on your path, in order; the next is the first not all done.
+  const required = new Set((paths.get(d.arabic.pathId) ?? corePath).required_module_ids);
+  const levels = milestones.map(m => ({ m, last: moduleList.find(x => x.assessment_id === m.assessment_id) }))
+    .filter((x): x is { m: (typeof milestones)[number]; last: (typeof moduleList)[number] } => !!x.last && required.has(x.last.id));
   let milestone: ArabicProgress['milestone'] = null;
-  for (const m of milestones) {
-    const lessons = pathLessons(m.path_id).filter(id => state.has(id)), toGo = lessons.filter(id => !isDone(state.get(id)!)).length;
-    if (!lessons.length || !toGo) continue;
-    const last = modules.get('module.' + m.assessment_id.replace(/^assessment\./, '').replace(/-performance$/, ''));
-    milestone = { stage: m.stage_target, toGo, last: last?.name ?? '' };
-    break;
+  for (const { m, last } of levels) {
+    const toGo = pathLessons(m.path_id).filter(id => onPath.has(id) && !isDone(state.get(id)!)).length;
+    if (toGo) { milestone = { stage: m.stage_target, toGo, last: last.name }; break; }
   }
+  const states = [...state.values()];
   return {
     started: states.some(x => x !== 'new') || d.arabic.attempts.length > 0, path: path.length,
-    done: states.filter(isDone).length, holding: states.filter(x => x === 'holding').length, ownChecks, needs, milestone,
+    done: states.filter(isDone).length, holding: states.filter(x => x === 'holding').length, ownChecks, needs,
+    milestones: levels.length, milestone,
   };
 }

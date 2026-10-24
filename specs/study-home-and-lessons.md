@@ -2,10 +2,9 @@
 
 **Status:** release (a), one focus and Study home (§3, §4), published in 1.51.0 (24 October 2026); release (b),
 the lesson journey, published for Arabic in 1.53.0 and for Cybersecurity in 1.55.0; release (c), Keep a word,
-in 1.57.0 (24 October 2026, its migration applied that day); release (d), Practise again, published in 1.64.0 (24 October 2026, its migration applied that day), and its second
-half, Progress and the weekly prompts, built on branch `study-progress`;
-(e)–(f) planned. The owner's decisions of 24 October
-2026 are in §2. This builds on
+in 1.57.0 (24 October 2026, its migration applied that day); release (d), Practise again, published in 1.64.0
+(24 October 2026, its migration applied that day), and its second half, Progress and the weekly prompts, built on
+branch `study-progress`; (e)–(f) planned. The owner's decisions of 24 October 2026 are in §2. This builds on
 `specs/adaptive-study.md` (lesson states, answer marks, revision from every lesson, the next-step rules), published
 in 1.47.0; this plan is a series of later, separate releases (§14).
 **Plan date:** 24 October 2026, after release 1.44.1.
@@ -339,16 +338,16 @@ two") offers two optional prompts: "What got easier?" and "What still feels hard
 `app/src/study/arabic/plan.ts`, shown as "Arabic: where you stand" at the top of Progress
 (`app/src/study/arabic/ArabicProgress.tsx`, loaded with Progress, and only once you've begun Arabic). Done counts the
 lessons on your path that are Ready or Holding; On your own, the Holding lessons and the checks you've recalled on your
-own at least once (in revision or as a session mark). Each lesson that needs revision says why (your flag in your
+own (your latest answer to it, in revision or as a session mark). Each lesson that needs revision says why (your flag in your
 words, or "one of its checks slipped after you marked it ready"), what your answers show ("answered 1 of its 3 checks
 on your own"), and, from Practise again's record, whether you've done its Try; its link is "Do the Try" until you
-have, then "Answer its checks", and opens the lesson at that step (a one-time request, `app/src/study/journey/
-pending.ts`; the step is unfolded when it sits under "The rest of this lesson"). The next milestone is the course's
-own: the first level (A1, A2, B1, B2) whose lessons on your path aren't all done, with how many are left and the
-consolidation module it ends with. Nothing is saved. Your week: "any Study" is a Study session, an Arabic session or a
+have, then "Answer its checks", and opens the lesson at that step (a one-time request on a plain tap, used within a few
+seconds: `app/src/study/journey/pending.ts`; the step is unfolded when it sits under "The rest of this lesson"). The next milestone is the course's
+own: the first level (A1, A2, B1, B2) whose consolidation module is on your path and whose lessons there aren't all
+done, with how many are left; a path that ends no level shows no milestone line. Nothing is saved. Your week: "any Study" is a Study session, an Arabic session or a
 Cybersecurity attempt finished that week (`studiedIn` in `app/src/data/weekReview.ts`); the two answers follow the
-first two in the "Week of …" note, so they are part of a note like any other (AI help with notes may read it when
-that's on; a private note never).
+first two in the "Week of …" note, so they are part of a note like any other and follow notes' AI rules (as any
+note's text does: AI help with notes when it's on, and Ask MyDay opened on that note).
 
 ## 12. Later, each as its own decision
 

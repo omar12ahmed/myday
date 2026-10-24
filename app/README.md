@@ -417,7 +417,8 @@ Progress that says what to do next (Arabic): Progress & history opens with "Arab
 Arabic. It counts what's done (lessons Ready or Holding, of those on your path), what's on your own (Holding lessons
 and checks recalled on your own), and lists each lesson that needs revision with why (your flag, or a check that
 slipped after Ready), what your answers show, and a link straight to the step: "Do the Try" until you've done it,
-then "Answer its checks". The next milestone is the course's next level with lessons left ("A1, 3 lessons to go").
+then "Answer its checks". The next milestone is the course's next level on your path with lessons left ("A1, 3 lessons to go"); a path that
+ends no level shows none.
 Words and counts only; nothing is saved. Rules: `arabicProgress` in `src/study/arabic/plan.ts`; the card:
 `src/study/arabic/ArabicProgress.tsx`; opening a lesson at a step: `src/study/journey/pending.ts`. Your week: in a
 week with any Study (a Study session, an Arabic session or a Cybersecurity attempt), step 4 also asks "What got

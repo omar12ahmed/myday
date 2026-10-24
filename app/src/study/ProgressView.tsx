@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { Button } from '../components/Button';
+import { ExploreBoundary } from '../explore/ExploreBoundary';
 import { Card } from '../components/Card';
 import { fmtDuration, parseKey, shift, shortDate, todayKey } from '../data/dates';
 import { windowDays } from '../data/progress';
@@ -11,7 +12,8 @@ import { sessionMinutes } from '../data/study/sessions';
 import type { Clarity, MyDayData } from '../data/types';
 import { BackLink, Bar, InlineLink, Meta, Note, Row } from './parts';
 
-// Arabic's opening (where you stand, what needs revision and why), loaded only with Progress.
+// Arabic's opening (where you stand, what needs revision and why), loaded only with Progress; if its part of the app
+// can't be fetched (an old tab after a release, say), the rest of Progress still shows.
 const ArabicProgress = lazy(() => import('./arabic/ArabicProgress'));
 
 // Progress and history: what happened, in cautious words. Time spent isn't treated as proof of
@@ -29,7 +31,7 @@ export function ProgressView({ data, historyAll, showAll }: { data: MyDayData; h
         <h2>Progress &amp; history</h2>
         <Note className="m-0">What you've done and how it went, in cautious terms. Time spent isn't treated as proof of understanding, and nothing here is ever taken away by a quieter day.</Note>
       </Card>
-      <Suspense fallback={null}><ArabicProgress data={data} /></Suspense>
+      <ExploreBoundary><Suspense fallback={null}><ArabicProgress data={data} /></Suspense></ExploreBoundary>
       <Card aria-labelledby="pg-days">
         <h3 id="pg-days">Learning days in the last 7: {n}</h3>
         <div className="week grid grid-cols-7 gap-1.5 my-3.5" aria-hidden="true">

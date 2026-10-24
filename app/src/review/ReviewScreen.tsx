@@ -33,7 +33,7 @@ export function ReviewScreen({ data }: { data: MyDayData }) {
   const waiting = whatsWaiting(data, k).filter(w => !left.has(w.key));
   function finish() {
     let r: { noteId: string | null } = { noteId: null };
-    if (!update(d => { r = finishReview(d, { day: lastReviewDay(d, k), from: week.from, start, focus, went, easier, ...(studied ? { gotEasier, stillHard } : {}) }); })) return;
+    if (!update(d => { r = finishReview(d, { day: lastReviewDay(d, k), from: week.from, start, focus, went, easier, gotEasier, stillHard }); })) return;
     const names = active.filter(p => focus.includes(p.id)).map(p => p.title);
     setDone({ names, note: !!r.noteId });
     toast('Week looked back on — thank you for taking the time.');
@@ -82,11 +82,11 @@ export function ReviewScreen({ data }: { data: MyDayData }) {
           <p className="text-[15px] text-fg-2 m-0">Only if you’d like to. It’s kept as a note, “Week of {shortDate(week.from)}”, in your Notes.</p>
           <Field label="What went well?" htmlFor="reviewWent"><TextArea id="reviewWent" rows={3} maxLength={REVIEW_LIMITS.answer} value={went} onChange={e => setWent(e.target.value)} /></Field>
           <Field label="What would make next week easier?" htmlFor="reviewEasier"><TextArea id="reviewEasier" rows={3} maxLength={REVIEW_LIMITS.answer} value={easier} onChange={e => setEasier(e.target.value)} /></Field>
-          {studied && <div className="grid gap-3 border-t border-outline pt-3" data-s="review-study">
-            <p className="text-[15px] text-fg-2 m-0">You studied this week. If you like, two more for the same note:</p>
+          {studied && <fieldset className="grid gap-3 border-0 border-t border-outline pt-3 m-0 p-0 min-w-0" data-s="review-study">
+            <legend className="text-[15px] text-fg-2 p-0 mb-1">You studied this week. If you like, two more for the same note:</legend>
             <Field label="What got easier?" htmlFor="reviewGotEasier"><TextArea id="reviewGotEasier" rows={2} maxLength={REVIEW_LIMITS.answer} value={gotEasier} onChange={e => setGotEasier(e.target.value)} /></Field>
             <Field label="What still feels hard?" htmlFor="reviewStillHard"><TextArea id="reviewStillHard" rows={2} maxLength={REVIEW_LIMITS.answer} value={stillHard} onChange={e => setStillHard(e.target.value)} /></Field>
-          </div>}
+          </fieldset>}
         </div>}
         <div className="flex flex-wrap justify-between gap-2.5 mt-5">
           {step > 0 ? <Button inline variant="ghost" data-action="review-back" onClick={() => setStep(step - 1)}><ArrowLeft size={18} aria-hidden="true" /> Back</Button> : <span />}

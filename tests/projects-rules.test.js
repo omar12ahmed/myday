@@ -1035,6 +1035,17 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('a Study session finished in the week counts; one outside it doesn\'t', K.studiedIn(sw, '2026-10-12', '2026-10-18') && !K.studiedIn(sw, '2026-10-19', '2026-10-25'));
     const aw = K.freshState(); aw.arabic.attempts.push({ id: 'aaW', lessonId: 'lesson.arabic-fusha-register', finishedAt: new Date(2026, 9, 16, 20, 0).toISOString() });
     check('…and so does an Arabic session finished in the week (by its local day)', K.studiedIn(aw, '2026-10-12', '2026-10-18') && !K.studiedIn(aw, '2026-10-17', '2026-10-18'));
+    const at = (y, mo, d, h, mi) => new Date(y, mo, d, h, mi).toISOString(); // a local time, as the app stores it
+    const edge = K.freshState(); edge.arabic.attempts.push({ id: 'aaE1', lessonId: 'lesson.arabic-fusha-register', finishedAt: at(2026, 9, 12, 0, 30) });
+    const late = K.freshState(); late.arabic.attempts.push({ id: 'aaE2', lessonId: 'lesson.arabic-fusha-register', finishedAt: at(2026, 9, 18, 23, 30) });
+    const before = K.freshState(); before.arabic.attempts.push({ id: 'aaE3', lessonId: 'lesson.arabic-fusha-register', finishedAt: at(2026, 9, 11, 23, 30) });
+    check('the week\'s edges are local days: 00:30 on its first day and 23:30 on its last count, 23:30 the day before doesn\'t', K.studiedIn(edge, '2026-10-12', '2026-10-18') && K.studiedIn(late, '2026-10-12', '2026-10-18') && !K.studiedIn(before, '2026-10-12', '2026-10-18'));
+    const cw = K.freshState(); cw.cybersecurity.attempts.push({ id: 'caW', submittedAt: at(2026, 9, 14, 10, 0) });
+    const open = K.freshState(); open.arabic.attempts.push({ id: 'aaO', lessonId: 'lesson.arabic-fusha-register', finishedAt: null }); open.cybersecurity.attempts.push({ id: 'caO', submittedAt: null });
+    open.study.sessions.push({ ...sw.study.sessions[0], id: 'ssO', status: 'active' });
+    check('a Cybersecurity attempt handed in that week counts; sessions still open and attempts not handed in don\'t', K.studiedIn(cw, '2026-10-12', '2026-10-18') && !K.studiedIn(open, '2026-10-12', '2026-10-18'));
+    f = fr(); K.finishReview(f, fin({ went: 'W', easier: 'E', gotEasier: 'G', stillHard: 'H' }));
+    check('all four answers: the first two exactly as before, then the two Study ones', f.notes.items[0].text === 'What went well:\nW\n\nWhat would make next week easier:\nE\n\nStudy, what got easier:\nG\n\nStudy, what still feels hard:\nH', f.notes.items[0].text);
 
     console.log('  Putting it off and the review day');
     f = K.freshState();

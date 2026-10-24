@@ -982,11 +982,11 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   const mile = (await line('milestone')).replace(/\s+/g, ' ');
   check('…"Next milestone" names A1, the A1 lessons still to go and the consolidation module', mile.startsWith(`Next milestone: A1, ${a1Left} lessons to go, up to and including “A1 consolidation`) && mile.endsWith('”.'), mile);
   const item = `[data-pg-lesson="${REG}"]`, itemText = async () => (await text(item)).replace(/\s+/g, ' ');
-  check('the lesson that needs revision is listed once, with its title as a link to the lesson', (await exists(item)) && (await ev(`document.querySelectorAll('[data-pg-lesson]').length`)) === 1
-    && (await ev(`document.querySelector('${item} a').getAttribute('href')`)) === '#study/arabic/' + REG && (await text(item + ' a')) === course56.lessons[REG].title, await itemText());
+  check('the lesson that needs revision is listed once, by its title, its one link going to the lesson', (await exists(item)) && (await ev(`document.querySelectorAll('[data-pg-lesson]').length`)) === 1
+    && (await text(item + ' strong')) === course56.lessons[REG].title && (await ev(`document.querySelectorAll('${item} a').length`)) === 1 && (await ev(`document.querySelector('${item} a').getAttribute('href')`)) === '#study/arabic/' + REG, await itemText());
   check('…saying a check slipped after it was marked ready, and what your answers show (one session, one of two checks on your own, no Try yet)',
     (await itemText()).includes('One of its checks slipped after you marked it ready.') && (await itemText()).includes('You’ve practised it (1 session) and answered 1 of its 2 checks on your own, but haven’t done its Try yet.'), await itemText());
-  check('…with "Do the Try" as its next step', (await ev(`document.querySelector('${item}').dataset.pgNext`)) === 'try' && (await text(item + ' [data-action=pg-step]')) === 'Do the Try' && (await ev(`document.querySelector('${item} [data-action=pg-step]').dataset.v`)) === 'try');
+  check('…with "Do the Try" as its next step', (await ev(`document.querySelector('${item}').dataset.pgNext`)) === 'try' && (await text(item + ' [data-action=pg-step]')) === 'Do the Try: ' + course56.lessons[REG].title && (await ev(`document.querySelector('${item} [data-action=pg-step]').dataset.v`)) === 'try');
   check('the card has no percentage anywhere', !(await text('[data-pg-arabic]')).includes('%'), await text('[data-pg-arabic]'));
   await editStorage(`s => { s.arabic.lessons = [{ id: '${REG}', readyOn: '2026-10-30', revisit: { since: '2026-11-01', what: 'register words' } }]; }`);
   await progress();
@@ -994,7 +994,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   await editStorage(`s => { s.arabic.lessons = [{ id: '${REG}', readyOn: '2026-10-30' }]; s.arabic.practice = [{ id: '${REG}', tried: '2026-11-01' }]; }`);
   await progress();
   check('once its Try is done, the item drops "haven’t done its Try" and offers "Answer its checks"', (await itemText()).includes('answered 1 of its 2 checks on your own.') && !(await itemText()).includes('haven’t done its Try')
-    && (await ev(`document.querySelector('${item}').dataset.pgNext`)) === 'check' && (await text(item + ' [data-action=pg-step]')) === 'Answer its checks' && (await ev(`document.querySelector('${item} [data-action=pg-step]').dataset.v`)) === 'check', await itemText());
+    && (await ev(`document.querySelector('${item}').dataset.pgNext`)) === 'check' && (await text(item + ' [data-action=pg-step]')) === 'Answer its checks: ' + course56.lessons[REG].title && (await ev(`document.querySelector('${item} [data-action=pg-step]').dataset.v`)) === 'check', await itemText());
   await editStorage(`s => { delete s.arabic.practice; }`);
   await progress();
   await click(`${item} [data-action=pg-step]`);
@@ -1004,6 +1004,8 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
     open: (d => d ? d.open : null)(document.getElementById('ar-step-try').closest('[data-ar-rest] details')), focus: document.activeElement.tagName + ' ' + document.activeElement.textContent.trim() })`);
   check('"Do the Try" opens the lesson with its Try step scrolled into view near the top and its heading focused', landed.hash === '#study/arabic/' + REG && landed.top >= 0 && landed.top < landed.vh / 2 && landed.focus.startsWith('H3'), landed);
   check('…and if the session length puts Try under "The rest of this lesson", that fold is open', !landed.inRest || landed.open === true, landed);
+  await go('study/arabic', 2026, 11, 2, 9); await sleep(300); await go('study/arabic/' + REG, 2026, 11, 2, 9); await until(() => exists('#ar-step-try'), 'the lesson again'); await sleep(700);
+  check('the request is used once: opening the lesson again from elsewhere stays at the top, focus not moved to its Try', !(await ev(`!!document.activeElement && !!document.activeElement.closest('#ar-step-try')`)) && (await ev('scrollY')) < 50, await ev('scrollY'));
   await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await progress();
   check('phone: the Arabic card does not scroll sideways, and its action is at least 44 px tall', !(await ev('document.documentElement.scrollWidth > innerWidth')) && (await ev(`document.querySelector('${item} [data-action=pg-step]').getBoundingClientRect().height`)) >= 44,

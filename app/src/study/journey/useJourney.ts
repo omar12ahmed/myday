@@ -48,7 +48,7 @@ export function useJourney({ prefix, shown, loaded, sessionId, want = null }: { 
       reopened.current = true;
       const el = document.getElementById(`${prefix}-step-${target}`);
       el?.closest('details')?.setAttribute('open', '');
-      if (asked.current) toStep(prefix, target); else el?.scrollIntoView({ block: 'start' });
+      if (asked.current) { remember(target); toStep(prefix, target); } else el?.scrollIntoView({ block: 'start' });
     }, 120);
     return () => clearTimeout(timer);
   }, [loaded, step, current, prefix]);
