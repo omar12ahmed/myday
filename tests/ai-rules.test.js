@@ -776,7 +776,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const ps = K.askSlice(w, '#projects/notes/n3', D);
     pv = K.askPreview(K.askContext(ps, 'x', D), ps.privateNote);
     check('a private note: the preview says it isn\'t sent', pv.short.includes('This note: not sent (private)') && !JSON.stringify(pv).includes('diary'));
-    check('Finance: only what you typed and the date', eq(K.askPreview(K.askContext(K.askSlice(w, '#finance', D), 'x', D)).short, ['Only what you typed and the date']));
+    check('Finance: what you typed and the date (and, if needed, a look in your notes)', eq(K.askPreview(K.askContext(K.askSlice(w, '#finance', D), 'x', D)).short, ['What you typed and the date', 'If needed, a look in your notes']));
     const cal = K.askSlice(w, '#calendar', D);
     let ctxA = K.askContext(K.askSlice(w, '#projects/p/pjC', D), '  Break this into steps  ' + 'x'.repeat(700), D, new Date(), { previous: 'Earlier answer', text: 'Smaller please' });
     check('what\'s sent passes the server\'s check: today\'s appointments, the text cut to 600, one follow-up', cal.context.calendar.appointments[0].title === 'Dentist' && ctxA.text.length === 600 && ctxA.followUp.text === 'Smaller please' && K.checkAskContext(ctxA) && K.checkAskContext(K.askContext(cal, 'hi', D)));
@@ -868,7 +868,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
     // The instructions and the practice version.
     const msgs = K.buildAskMessages(ctxA);
-    check('the instructions: five kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"change"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v16' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
+    check('the instructions: five kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"change"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v17' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
     const mk = (hash, text) => K.checkAskReply(K.mockAsk(K.askContext(K.askSlice(K.getSnapshot().data, hash, D), text, D)), K.getSnapshot().data, K.askSlice(K.getSnapshot().data, hash, D), D);
     check('practice version: steps on a project page, in that project', (r => r.kind === 'steps' && r.items.length === 3 && r.items.every(x => x.projectId === 'pjC'))(mk('#projects/p/pjC', 'Break this into smaller steps')));
     check('…several things to add', (r => r.kind === 'add' && eq(r.items.map(x => x.title), ['Call the bank', 'Renew passport', 'Email Sam']))(mk('#today', 'call the bank, renew passport and email Sam')));
@@ -1363,6 +1363,48 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('the request passes the server\'s check', K.checkAskContext(req));
   }
 
+  console.log('\n[Lookups] Ask MyDay looks in your notes when an answer needs them (specs/ai-tools.md §3)');
+  {
+    const LD = '2026-11-10', lat = `${LD}T08:00`;
+    K.setClock(`${LD}T09:30`);
+    const lw = K.freshState();
+    lw.patterns.prefs.aiNotes = true;
+    const LP = (id, title, x = {}) => ({ id, title, summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: lat, updatedAt: lat, ...x });
+    lw.projects.items = [LP('pjShed', 'Garden shed'), LP('pjHid', 'Hidden plans', { private: true })];
+    const LN = (id, title, text, x = {}) => ({ id, categoryId: '', title, text, pinned: false, createdAt: lat, updatedAt: '2026-11-01T08:00', ...x });
+    lw.notes.items = [LN('nRack', 'Shed sizes', 'Leave room for a bike rack on the left wall, by the door.', { projectId: 'pjShed', updatedAt: '2026-11-09T08:00' }),
+      LN('nRack2', 'Bike rack prices', 'A wall rack is about £20.', { updatedAt: '2026-11-08T08:00' }), LN('nPrivRack', 'Rack', 'my private bike rack thoughts', { private: true }),
+      LN('nInHid', 'Rack', 'a bike rack for the hidden plans', { projectId: 'pjHid' }), LN('nCafe', 'Café plans', 'Meet at the café on Friday')];
+    const ld = K.normalize(lw);
+    let lr = K.notesLookup(ld, 'Bike RACK');
+    check('every word, in any order, capitals ignored: the notes that may reach AI, newest first', eq(lr.lookup.notes.map(n => n.id), ['nRack', 'nRack2']) && lr.lookup.found === 2, lr.lookup.notes.map(n => n.id));
+    check('…each with its title, its project\'s name and a short snippet around the words', lr.lookup.notes[0].title === 'Shed sizes' && lr.lookup.notes[0].project === 'Garden shed' && lr.lookup.notes[0].snippet.includes('bike rack') && lr.lookup.notes[1].project === null, lr.lookup.notes[0]);
+    check('a private note, and a note in a private project, are never sent — only counted, and the count stays on the device', lr.leftOut === 2 && !('leftOut' in lr.lookup) && !/nPrivRack|nInHid|private bike|hidden plans|Hidden plans/.test(JSON.stringify(lr.lookup)));
+    check('accents don\'t matter ("cafe" finds "Café plans")', eq(K.notesLookup(ld, 'cafe').lookup.notes.map(n => n.id), ['nCafe']));
+    ld.patterns.prefs.aiNotes = false;
+    lr = K.notesLookup(ld, 'bike rack');
+    check('with AI help with notes off: titles only — only titles searched, and no snippets', lr.lookup.titlesOnly && eq(lr.lookup.notes.map(n => n.id), ['nRack2']) && lr.lookup.notes.every(n => n.snippet === null), lr.lookup);
+    ld.patterns.prefs.aiNotes = true;
+    check('what the panel says above the answer', K.lookupLine(K.notesLookup(ld, 'bike rack').lookup, 2) === 'Looked in your notes for “bike rack”: 2 notes — 2 private notes left out.', K.lookupLine(K.notesLookup(ld, 'bike rack').lookup, 2));
+    check('…and when nothing matched', K.lookupLine(K.notesLookup(ld, 'zebra').lookup, 0) === 'Looked in your notes for “zebra”: nothing matched.');
+    const lslice = K.askSlice(ld, '#today', LD), lfound = K.notesLookup(ld, 'bike rack').lookup, Q = 'What did I write about the bike rack?';
+    const lc1 = K.askContext(lslice, Q, LD);
+    check('the request says this app can look in your notes, and the server\'s check accepts it', eq(lc1.can, ['notes']) && !('lookup' in lc1) && K.checkAskContext(lc1));
+    const lc2 = K.askContext(lslice, Q, LD, undefined, undefined, lfound);
+    check('…the second request carries what was found, and is accepted too', lc2.lookup === lfound && K.checkAskContext(lc2));
+    const LKR = q => JSON.stringify({ kind: 'lookup', message: 'Looking in your notes.', lookup: { tool: 'notes', query: q } });
+    check('a lookup reply is taken as a lookup (the panel then looks)', eq(K.checkAskReply(LKR('bike rack'), ld, lslice, LD), { kind: 'lookup', query: 'bike rack' }));
+    check('…but never a second time for the same question', K.checkAskReply(LKR('bike'), ld, lslice, LD, undefined, lfound) === null);
+    const ANS = sources => JSON.stringify({ kind: 'answer', message: 'Your shed note says to leave room for it on the left wall.', items: [], action: null, sources });
+    const la = K.checkAskReply(ANS(['nRack', 'nPrivRack', 'nMadeUp', 'nRack']), ld, lslice, LD, undefined, lfound);
+    check('the notes an answer used: only ones the lookup found, once each (never a private one or a made-up id)', la.kind === 'answer' && eq(la.sources, [{ id: 'nRack', title: 'Shed sizes' }]), la.sources);
+    check('…and none without a lookup', !('sources' in K.checkAskReply(ANS(['nRack']), ld, lslice, LD)));
+    const p1 = K.checkAskReply(K.mockAsk(lc1), ld, lslice, LD);
+    const p2 = p1?.kind === 'lookup' ? K.notesLookup(ld, p1.query) : null;
+    const p3 = p2 && K.checkAskReply(K.mockAsk(K.askContext(lslice, Q, LD, undefined, undefined, p2.lookup)), ld, lslice, LD, undefined, p2.lookup);
+    check('practice mode, end to end: it looks, then answers naming the notes, with them as sources', p1?.kind === 'lookup' && p3?.kind === 'answer' && p3.message.includes('“Shed sizes”') && eq(p3.sources.map(x => x.id), ['nRack', 'nRack2']), [p1, p3]);
+  }
+
   console.log('\n[Privacy] Nothing private reaches AI, by any feature (one filter: app/src/ai/reach.ts)');
   {
     // One made-up world with something secret in every place the rules hold back, sent through every AI request.
@@ -1428,6 +1470,9 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
       && !R.fromNote('nInPriv') && !R.fromNote('nPriv') && R.fromNote('nOpen') && R.fromNote('gone-note'));
     check('…a private project, its tasks and its appointments never do; others do', !R.project(byId(data.projects.items, 'pjSecret')) && R.project(byId(data.projects.items, 'pjOpen')) && !R.task(byId(data.tasks.items, 'tkSecret')) && R.task(byId(data.tasks.items, 'tkOpen'))
       && !R.appointment({ id: 'cSecret' }) && R.appointment({ id: 'cOpen' }) && eq([...R.heldOnPlan(PD)], ['pS']));
+    const lookSecret = K.notesLookup(data, 'SECRET'), lookShed = K.notesLookup(data, 'shed');
+    const withLook = [lookSecret, lookShed].map(l => K.askContext(K.askSlice(data, '#today', PD), 'what did I write about it?', PD, undefined, undefined, l.lookup));
+    check('a lookup in your notes: nothing private in what it sends — not even how many private notes matched', withLook.every(r => leaks(r).length === 0) && lookSecret.leftOut > 0 && lookSecret.lookup.notes.length === 0 && lookShed.lookup.notes.some(n => n.id === 'nOpen'), withLook.map(r => leaks(r)));
     data.patterns.prefs.aiNotes = false;
     const noText = K.askContext(K.askSlice(data, '#projects/p/pjOpen', PD), 'x', PD);
     check('with "AI help with notes" off, no note\'s text goes at all (titles only)', !JSON.stringify(noText).includes('Two metres by three') && JSON.stringify(noText).includes('Shed sizes'));

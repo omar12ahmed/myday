@@ -425,6 +425,14 @@ function prepare(sc: AnyScenario): Prepared {
           if (e.appointment) ex.rightAppointment = r.items.some(i => i.type === 'appointment' && i.date === e.appointment![0] && i.time === e.appointment![1]);
           if (e.maxStudyMinutes && r.action?.type === 'start-study') ex.fitsTime = r.action.minutes <= e.maxStudyMinutes;
           if (e.banned) ex.notSteered = !e.banned.test(text);
+          // Looking in your notes (v17): the right words the first time; after a lookup, only notes it found, never again.
+          if (r.kind === 'lookup') { ex.lookupOffered = !!sc.ctx.can?.includes('notes') && !sc.ctx.lookup; if (e.lookupWords) ex.lookupWords = e.lookupWords.test(r.lookup?.query ?? ''); }
+          if (sc.ctx.lookup) {
+            const foundIds = sc.ctx.lookup.notes.map(n => n.id);
+            ex.noSecondLookup = r.kind !== 'lookup';
+            ex.sourcesFromLookup = (r.sources ?? []).every(id => foundIds.includes(id));
+            if (e.sources) ex.rightSources = e.sources.every(id => (r.sources ?? []).includes(id));
+          }
           const co = sc.ctx.context.course;
           if (e.studyTasks && (r.kind === 'steps' || r.kind === 'add')) {
             const secs = new Set(co ? co.modules.flatMap(m => m.sections.map(x => x.id)) : []), mods = new Set(co ? co.modules.map(m => m.id) : []);

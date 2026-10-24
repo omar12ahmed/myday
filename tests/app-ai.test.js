@@ -500,7 +500,7 @@ const SEED = `s => {
     const phaseD = await askGo(D);
     const sentA = aiCalls().slice(c0).find(c => c.body.context.action === 'ask');
     check('with an account: the server accepts the app\'s request and answers (labelled with the model)', phaseD === 'shown' && (await D.text('[data-s=ask-panel]')).includes('AI-written by Main model'), [phaseD, await D.text('[data-s=ask-panel]')]);
-    check('…it sent what you typed, the date, the page and that page\'s slice — no private note, nothing else', !!sentA && JSON.stringify(Object.keys(sentA.body.context).sort()) === JSON.stringify(['action', 'context', 'date', 'page', 'text', 'time', 'version', 'weekday'])
+    check('…it sent what you typed, the date, the page and that page\'s slice, and that it can look in your notes — no private note, nothing else', !!sentA && JSON.stringify(Object.keys(sentA.body.context).sort()) === JSON.stringify(['action', 'can', 'context', 'date', 'page', 'text', 'time', 'version', 'weekday'])
       && JSON.stringify(Object.keys(sentA.body.context.context).sort()) === JSON.stringify(['project', 'projects']) && !JSON.stringify(sentA.body).includes('private worry'), sentA && Object.keys(sentA.body.context));
     await closeSheet(D);
     await openAsk(D, 'projects/p/pjAsk', 'Break this into smaller steps');
@@ -901,6 +901,44 @@ const SEED = `s => {
     check('with an account, the request is sent and answered, and it does carry the project\'s title and summary', phase === 'shown' && !!sentWt && bodyWt.includes('Garden gate') && bodyWt.includes('A gate for the side path'), [phase, bodyWt.slice(0, 300)]);
     check('…but the request body contains neither the text of the wait nor the key "waiting"', !!sentWt && hidden(bodyWt) && !bodyWt.includes('"waiting"') && !bodyWt.includes('chaseTaskId'), bodyWt);
     check('…and the preview shown for the same request had none of it', hidden(prevD), prevD);
+    await D.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
+    await mock.ev(`location.hash = 'today'`); await D.ev(`location.hash = 'today'`); await sleep(200);
+  }
+
+  console.log('\n[8r] Ask MyDay looks in your notes when an answer needs them (practice mode, then through the real server code)');
+  {
+    const at = `${TODAY}T09:00`;
+    const NT = (id, title, text, x = {}) => ({ id, categoryId: '', title, text, pinned: false, createdAt: at, updatedAt: at, ...x });
+    const PJ = (id, title, x = {}) => ({ id, title, summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at, ...x });
+    const lkSeed = `s => { s.patterns.prefs.aiNotes = true; s.projects.items = s.projects.items.filter(p => !['pjShedLk', 'pjHushLk'].includes(p.id));
+      s.projects.items.push(${JSON.stringify(PJ('pjShedLk', 'Garden shed'))}, ${JSON.stringify(PJ('pjHushLk', 'Quiet plans', { private: true }))});
+      s.notes.items = s.notes.items.filter(n => !n.id.startsWith('nLk')); s.notes.items.push(${JSON.stringify(NT('nLkRack', 'Shed sizes', 'Leave room for a bike rack on the left wall.', { projectId: 'pjShedLk' }))},
+        ${JSON.stringify(NT('nLkPriv', 'Walrus', 'my private bike rack worry', { private: true }))}, ${JSON.stringify(NT('nLkHush', 'Walrus two', 'a bike rack in the quiet plans', { projectId: 'pjHushLk' }))}); }`;
+    const Q = 'What did I write about the bike rack?';
+    const runLk = async Dv => {
+      await Dv.ev(`location.hash = 'today'`); await sleep(300);
+      await Dv.click('[data-action=capture-open]'); await Dv.until(`document.getElementById('captureText')`);
+      await Dv.type('#captureText', Q); await sleep(150);
+      const prev = await Dv.text('[data-s=ask-sends]');
+      await Dv.click('[data-action=ask-go]'); await Dv.until(`['shown', 'error'].includes(document.querySelector('[data-s=ask-panel]')?.dataset.phase)`, 15000);
+      return { prev, phase: await Dv.ev(`document.querySelector('[data-s=ask-panel]').dataset.phase`), looked: await Dv.text('[data-s=ask-looked]'),
+        sources: await Dv.ev(`[...document.querySelectorAll('[data-s=ask-source]')].map(a => a.textContent + '|' + a.getAttribute('href'))`) };
+    };
+    await seeded(mock, MOCK); await mock.setData(lkSeed); await mock.until(`document.querySelector('#app')`);
+    const pm = await runLk(mock);
+    check('the preview says it may look in your notes if needed', pm.prev.includes('If needed, a look in your notes'), pm.prev);
+    check('practice mode: it looks, and says so above the answer — one note found, the two private ones only counted here', pm.phase === 'shown' && pm.looked === 'Looked in your notes for “bike rack”: one note — 2 private notes left out.', pm.looked);
+    check('…and the answer links the note it used', eq(pm.sources, ['Shed sizes|#projects/notes/nLkRack']), pm.sources);
+    await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
+
+    setAi({ AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_LABEL: 'Main model', AI_MIN_SECONDS_BETWEEN: '0' });
+    await D.setData(lkSeed); await D.until(`!document.getElementById('signInGate')`, 15000);
+    const c0 = aiCalls().length;
+    const pd = await runLk(D);
+    const sent = aiCalls().slice(c0).filter(c => c.body?.context?.action === 'ask'), bodies = sent.map(c => JSON.stringify(c.body));
+    check('with an account, through the real server code: two requests — the question, then what was found', pd.phase === 'shown' && sent.length === 2 && !('lookup' in sent[0].body.context) && sent[1].body.context.lookup?.query === 'bike rack', sent.map(c => Object.keys(c.body.context)));
+    check('…the second carries the note that may reach AI, never the private ones — not even how many matched', bodies[1]?.includes('nLkRack') && bodies.every(b => !/Walrus|nLkPriv|nLkHush|leftOut|Quiet plans|worry/.test(b)), bodies[1]);
+    check('…and the answer shows what it looked for and links the note it used', pd.looked.startsWith('Looked in your notes for “bike rack”') && eq(pd.sources, ['Shed sizes|#projects/notes/nLkRack']), [pd.looked, pd.sources]);
     await D.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
     await mock.ev(`location.hash = 'today'`); await D.ev(`location.hash = 'today'`); await sleep(200);
   }

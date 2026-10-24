@@ -24,11 +24,11 @@ export const matchCount = (n: number, query: string) =>
 // Without capitals or accents ("Café" → "cafe"), and with one kind of apostrophe ("Sam’s" → "Sam's"), so you find the
 // words you remember however your keyboard typed them.
 export const fold = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').replace(/[’‘]/g, "'").toLowerCase();
-const wordsOf = (q: string) => fold(q).split(/\s+/).filter(Boolean);
+export const wordsOf = (q: string) => fold(q).split(/\s+/).filter(Boolean);
 
 // A little of the longer text around the first word found, on one line. It's cut on whole characters and, where it
 // can be, at spaces: never half an emoji or a mark without its letter, whatever the script.
-function excerptOf(texts: string[], words: string[]): string {
+export function excerptOf(texts: string[], words: string[]): string {
   for (const t of texts) {
     const chars = Array.from(t.replace(/\s+/g, ' ').trim());
     let folded = '';

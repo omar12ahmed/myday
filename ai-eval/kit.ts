@@ -41,6 +41,8 @@ export { ASK_LIMITS, ASK_PROMPT_VERSION, buildAskMessages, checkAskContext, mock
 export { askContext, askPage, askPreview, askSlice, sendsFor } from '../app/src/ai/askContext';
 // What of your MyDay may reach AI help: the privacy rules every request follows (one place).
 export { aiReach } from '../app/src/ai/reach';
+// Ask MyDay's lookups: searching your notes on the device (specs/ai-tools.md §3).
+export { lookupLine, notesLookup } from '../app/src/ai/lookup';
 export { addAskItems, applyAskChanges, applyAskEdit, checkAskReply, countWords, undoAsk, undoAskChanges } from '../app/src/ai/ask';
 
 // ---------- Memory-only storage ----------

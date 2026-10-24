@@ -3,7 +3,7 @@
 // appointment only with a date and a time, sensible lengths, gentle wording — and anything that doesn't hold is
 // dropped or made safe (and said). Things to add are saved through the same rules as Capture's, all at once, with one
 // step of Undo. Nothing here talks to a model (request.ts does) and nothing is saved until you tap Add.
-import { ASK_LIMITS as L, readAsk, type AskItem } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
+import { ASK_LIMITS as L, readAsk, type AskItem, type AskLookup } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
 import { CAT_LABEL } from '../data/plan';
 import { isDateKey, keyOf, pad, prettyDate, todayKey } from '../data/dates';
 import { addNote, editNote } from '../data/notes';
@@ -50,10 +50,13 @@ const CHOOSES = /\b(is|seems|looks|would be) (the )?(best|better|right|clear|obv
 // A task or note for the project proposed in the same answer (it's created first when you tap Add).
 export const NEW_PROJECT = '@new';
 export type AskChecked =
-  | { kind: 'add' | 'steps'; message: string; items: AskProposal[]; changed: string[] }
-  | { kind: 'answer'; message: string; action: { type: 'start-study'; courseId: string; taskId: string | null; minutes: number; label: string } | { type: 'adjust-today' } | { type: 'start-revision'; scope: Scope; count: number } | null; changed: string[] }
+  | { kind: 'add' | 'steps'; message: string; items: AskProposal[]; changed: string[]; sources?: AskSource[] }
+  | { kind: 'answer'; message: string; action: { type: 'start-study'; courseId: string; taskId: string | null; minutes: number; label: string } | { type: 'adjust-today' } | { type: 'start-revision'; scope: Scope; count: number } | null; changed: string[]; sources?: AskSource[] }
   | { kind: 'cannot'; message: string; changed: string[] }
+  | { kind: 'lookup'; query: string }
   | { kind: 'change'; message: string; changes: AskChange[]; changed: string[] };
+// After a lookup, the notes an answer used (only ones the lookup found), shown as links.
+export interface AskSource { id: string; title: string }
 
 // A change to something already saved: what it is, the lines to show (before → after) and what to apply.
 export interface AskChange {
@@ -68,7 +71,17 @@ const gentle = (s: string) => !PRESSURE.test(s);
 
 // Checks a reply against your data. Returns null when nothing in it can be used.
 // `asked` is what you typed (and your follow-up): a change only touches a task's length, list or title when it asks for that.
-export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k: DateKey = todayKey(), asked?: string): AskChecked | null {
+// A reply checked against your data. `looked` is what a lookup found, when this is the answer after one: then the notes it
+// says it used must be among them, and it may not ask to look again (one lookup per question).
+export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k: DateKey = todayKey(), asked?: string, looked?: AskLookup): AskChecked | null {
+  const r = readAsk(text);
+  if (r?.kind === 'lookup') return !looked && r.lookup?.tool === 'notes' ? { kind: 'lookup', query: r.lookup.query } : null;
+  const out = checkReply(text, data, slice, k, asked);
+  if (!out || !looked || !r?.sources?.length || (out.kind !== 'answer' && out.kind !== 'add' && out.kind !== 'steps')) return out;
+  const used = [...new Set(r.sources)].map(id => looked.notes.find(n => n.id === id)).filter((x): x is AskLookup['notes'][number] => !!x).map(x => ({ id: x.id, title: x.title }));
+  return used.length ? { ...out, sources: used } : out;
+}
+function checkReply(text: string, data: MyDayData, slice: AskSlice, k: DateKey, asked?: string): AskChecked | null {
   const r = readAsk(text);
   if (!r) return null;
   const changed: string[] = [];

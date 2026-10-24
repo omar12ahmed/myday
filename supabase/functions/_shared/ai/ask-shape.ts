@@ -23,10 +23,14 @@ export const ASK_LIMITS = {
   answerChars: 1000, beliefs: 12, beliefChars: 110,
   // The weekly review (1.37.0): what moved per project, what's waiting, next week's focus.
   reviewProjects: 20, reviewWaiting: 5, reviewWaitingChars: 200, reviewFocus: 3,
+  // A lookup (specs/ai-tools.md §3): the words to search, up to 8 notes found, each with a short snippet at most.
+  lookupQueryChars: 60, lookupNotes: 8, lookupSnippetChars: 200, lookupSources: 8,
 };
 export const ASK_PAGES = ['today', 'tasks', 'task', 'calendar', 'projects', 'project', 'notes', 'note', 'study', 'course', 'health', 'finance', 'review', 'other'] as const;
 export type AskPage = typeof ASK_PAGES[number];
-export const ASK_KINDS = ['add', 'steps', 'answer', 'cannot', 'change'] as const;
+export const ASK_KINDS = ['add', 'steps', 'answer', 'cannot', 'change', 'lookup'] as const;
+// What a lookup can look in (one so far: your notes). The app says it can look things up with `can`.
+export const ASK_TOOLS = ['notes'] as const;
 export const ASK_ITEM_TYPES = ['task', 'note', 'appointment', 'project', 'study-task', 'change', 'milestone', 'pro', 'con', 'option', 'must-be-true'] as const;
 export const BELIEF_STATES = ['open', 'looks-true', 'doesnt-hold'] as const;
 export const ASK_TARGETS = ['task', 'appointment', 'note'] as const;
@@ -67,6 +71,16 @@ export interface AskContext {
   text: string;      // what you typed
   followUp?: { previous: string; text: string }; // one follow-up: the answer as it was shown, and what you added
   context: AskPageContext;
+  can?: typeof ASK_TOOLS[number][];                // what this app can look up for an answer (absent: nothing)
+  lookup?: AskLookup;                              // what it found, the second time round (one lookup per question)
+}
+// What a lookup found, on the device and through the privacy rules (app/src/ai/lookup.ts): the words searched, up to 8
+// notes that may reach AI (title, its project's name, a short snippet only with "AI help with notes" on), how many such
+// notes matched in all, and whether only titles were searched. Nothing about private notes — not even how many matched.
+export interface AskLookup {
+  tool: typeof ASK_TOOLS[number]; query: string;
+  notes: { id: string; title: string; project: string | null; snippet: string | null }[];
+  found: number; titlesOnly: boolean;
 }
 
 // What the model returns (JSON only). The app checks it all again.
@@ -89,7 +103,11 @@ export interface AskItem {
 }
 export const ASK_SCOPES = ['all', 'arabic', 'cybersecurity'] as const;
 export type AskAction = { type: 'start-study'; courseId: string; taskId: string | null; minutes: number } | { type: 'adjust-today' } | { type: 'start-revision'; scope: typeof ASK_SCOPES[number] };
-export interface AskReply { kind: typeof ASK_KINDS[number]; message: string; items: AskItem[]; action: AskAction | null }
+export interface AskReply {
+  kind: typeof ASK_KINDS[number]; message: string; items: AskItem[]; action: AskAction | null;
+  lookup?: { tool: typeof ASK_TOOLS[number]; query: string }; // kind "lookup": what to look in, and the words to search
+  sources?: string[];                                          // after a lookup: the ids of the notes the answer used
+}
 
 const obj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const str = (v: unknown, max: number, empty = true) => typeof v === 'string' && v.length <= max && (empty || v.trim().length > 0);
@@ -105,7 +123,15 @@ const word = (v: unknown, max: number) => (typeof v === 'string' && v.trim() && 
 export function checkAskContext(raw: unknown): raw is AskContext {
   if (!obj(raw)) return false;
   const L = ASK_LIMITS, c = raw;
-  if (!only(c, ['version', 'action', 'date', 'weekday', 'time', 'page', 'text', 'followUp', 'context'])) return false;
+  if (!only(c, ['version', 'action', 'date', 'weekday', 'time', 'page', 'text', 'followUp', 'context', 'can', 'lookup'])) return false;
+  if (c.can !== undefined && !(Array.isArray(c.can) && c.can.length <= ASK_TOOLS.length && c.can.every(t => ASK_TOOLS.includes(t as typeof ASK_TOOLS[number])))) return false;
+  if (c.lookup !== undefined) {
+    const lk = c.lookup, n = (v: unknown) => Number.isInteger(v) && (v as number) >= 0 && (v as number) <= 100000;
+    if (!(obj(lk) && only(lk, ['tool', 'query', 'notes', 'found', 'titlesOnly']) && ASK_TOOLS.includes(lk.tool as typeof ASK_TOOLS[number]) && str(lk.query, L.lookupQueryChars, false)
+      && Array.isArray(lk.notes) && lk.notes.length <= L.lookupNotes && lk.notes.every(x => obj(x) && only(x, ['id', 'title', 'project', 'snippet']) && str(x.id, 64, false) && str(x.title, L.titleChars, false)
+        && (x.project === null || str(x.project, L.titleChars, false)) && (x.snippet === null || str(x.snippet, L.lookupSnippetChars)))
+      && n(lk.found) && typeof lk.titlesOnly === 'boolean')) return false;
+  }
   if (c.version !== 1 || c.action !== 'ask' || !isDate(c.date) || !str(c.weekday, 12, false) || !isTime(c.time)) return false;
   if (!ASK_PAGES.includes(c.page as AskPage) || !str(c.text, L.textChars, false)) return false;
   if (c.followUp !== undefined && !(obj(c.followUp) && only(c.followUp, ['previous', 'text']) && str(c.followUp.previous, L.previousChars) && str(c.followUp.text, L.followUpChars, false))) return false;
@@ -185,6 +211,12 @@ export function readAsk(textIn: string): AskReply | null {
   let raw: unknown;
   try { raw = JSON.parse(textIn); } catch { return null; }
   if (!obj(raw) || !ASK_KINDS.includes(raw.kind as AskReply['kind']) || !str(raw.message, ASK_LIMITS.messageChars)) return null;
+  // A lookup: only what to look in and the words; nothing else in it is used.
+  if (raw.kind === 'lookup') {
+    const lk = obj(raw.lookup) ? raw.lookup : raw, query = word(lk.query, ASK_LIMITS.lookupQueryChars), tool = ASK_TOOLS.includes(lk.tool as typeof ASK_TOOLS[number]) ? lk.tool as typeof ASK_TOOLS[number] : 'notes';
+    return query ? { kind: 'lookup', message: (raw.message as string).trim(), items: [], action: null, lookup: { tool, query } } : null;
+  }
+  const sources = Array.isArray(raw.sources) ? raw.sources.filter((x): x is string => typeof x === 'string' && x.length > 0 && x.length <= 64).slice(0, ASK_LIMITS.lookupSources) : [];
   const items = raw.items === undefined || raw.items === null ? [] : raw.items;
   if (!Array.isArray(items)) return null;
   const out: AskItem[] = [];
@@ -229,5 +261,5 @@ export function readAsk(textIn: string): AskReply | null {
   else if (obj(a) && a.type === 'start-study' && typeof a.courseId === 'string' && a.courseId) {
     action = { type: 'start-study', courseId: a.courseId, taskId: typeof a.taskId === 'string' && a.taskId ? a.taskId : null, minutes: Number.isFinite(a.minutes) ? Math.round(a.minutes as number) : 15 };
   }
-  return { kind: raw.kind as AskReply['kind'], message: (raw.message as string).trim(), items: out, action };
+  return { kind: raw.kind as AskReply['kind'], message: (raw.message as string).trim(), items: out, action, ...(sources.length ? { sources } : {}) };
 }

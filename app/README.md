@@ -422,6 +422,17 @@ shows cards to tick, rename and edit — a day and time, the length and list, a 
 with one step of Undo. One follow-up ("Not quite? …") at most; nothing of the conversation is kept. Evaluated on 40
 synthetic requests (`../ai-eval/reviews/2026-10-17-ask-quality.md`). Shown only when the app is built with AI help.
 
+**Looking in your notes** (`specs/ai-tools.md` §3, step 2; instructions `myday-ask-v17`): when a question needs your
+notes ("what did I write about the bike rack?"), Ask MyDay replies "look up" with a few words; the app searches on the
+device (`src/ai/lookup.ts`: every word, any order, accents ignored; titles only unless AI help with notes is on) through
+the privacy filter (`src/ai/reach.ts`), then asks once more with up to 8 notes — title, project and a short snippet
+(only with AI help with notes on) — and how many matched. Never a private note or a note in a private project, not even
+how many of those matched: that count stays on the device for the panel's "Looked in your notes for “…”: … — 1 private
+note left out". The answer names the notes it used (`sources`, only ones found), shown as links. One lookup per
+question (the follow-up reuses it); the second request counts towards the day's limit. The request says the app can
+look things up (`can`), so the server's instructions offer a lookup only to an app that can. Evaluated with
+`ai-eval/ask-scenarios.ts` (l01–l10).
+
 **Planning a Study course with Ask (1.26.0):** a course page has **✦ Plan this course with Ask**, which opens + already
 filled in ("Break this course into study tasks"; `src/capture/openCapture.ts`). From a course page Ask sends the
 course's outline — its modules, sections and tasks: titles, lengths, kinds and done or not, no links or notes, cut to

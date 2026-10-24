@@ -2,7 +2,7 @@
 // page's name and that page's small slice of your data — the same slice the "Sends:" line describes before you tap.
 // Never a private note; Finance and Health send only the page's name; a project's notes' text only with "AI help with
 // notes" switched on. A business idea's one page only from its Model tab (1.34.0).
-import { ASK_LIMITS as L, type AskContext, type AskPage, type AskPageContext } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
+import { ASK_LIMITS as L, type AskContext, type AskLookup, type AskPage, type AskPageContext } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
 import { parseKey, prettyDate, shift, todayKey } from '../data/dates';
 import { focusProjects, whatMoved, whatsWaiting } from '../data/weekReview';
 import { noteName } from '../data/notes';
@@ -181,12 +181,15 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey(),
   return { page, context: ctx, sends: sendsLine(parts, here), privateNote, held: { here, count } };
 }
 
-export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(), now = new Date(), followUp?: { previous: string; text: string }): AskContext {
+// This app can look in your notes when an answer needs them (`can`); the second time round, `lookup` is what it found
+// (ai/lookup.ts, through the privacy rules). One lookup per question.
+export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(), now = new Date(), followUp?: { previous: string; text: string }, lookup?: AskLookup): AskContext {
   return {
     version: 1, action: 'ask', date: k, weekday: parseKey(k).toLocaleDateString('en-GB', { weekday: 'long' }),
     time: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
     page: slice.page, text: cut(text.trim(), L.textChars), ...(followUp ? { followUp: { previous: cut(followUp.previous, L.previousChars), text: cut(followUp.text.trim(), L.followUpChars) } } : {}),
     context: slice.context,
+    can: ['notes'], ...(lookup ? { lookup } : {}),
   };
 }
 
@@ -275,6 +278,10 @@ export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['
     all.push({ label: 'Today’s appointments', lines: x.calendar.appointments.length ? x.calendar.appointments.map(a => `${a.time} ${a.title}`) : ['none'] });
   }
   if (x.projects?.length) { short.push(n(x.projects.length, 'open project name')); all.push({ label: 'Your open projects (names only)', lines: x.projects.map(p => p.title) }); }
-  if (!short.length) short.push('Only what you typed and the date');
+  if (!short.length) short.push('What you typed and the date');
+  if (c.can?.includes('notes')) {
+    short.push('If needed, a look in your notes');
+    all.push({ label: 'If it needs to: your notes', lines: ['Ask MyDay may look in your notes for words from your question, on this device, and send up to 8 that match: their titles and projects, and a short snippet only with AI help with notes on.', 'Never a private note, or a note in a private project — not even whether one matched.'] });
+  }
   return { short, all };
 }
