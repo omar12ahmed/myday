@@ -8,7 +8,8 @@ import { update } from '../data/storage';
 import { toast } from '../data/toast';
 import type { DateKey, MyDayData } from '../data/types';
 
-// A compact greeting on phones; a calm workspace with a calendar on desktop.
+// A compact greeting with this week under it on phones; on wide screens the greeting alone, with the side column beside
+// it (no month calendar on Today since 1.49.0: the owner found it took space, and the Calendar is in the side menu).
 // The name and time-of-day greeting still follow the existing preferences and clock.
 type Part = 'morning' | 'afternoon' | 'evening' | 'night';
 const partOf = (m: number): Part => (m >= 300 && m < 720 ? 'morning' : m >= 720 && m < 1020 ? 'afternoon' : m >= 1020 && m < 1320 ? 'evening' : 'night');
@@ -53,7 +54,6 @@ export function GreetingCard({ data, k, onGo }: { data: MyDayData; k: DateKey; o
             </div>
           )}
         </div>
-        <div className="hidden lg:block"><MonthCard data={data} k={k} /></div>
         <div className="lg:hidden"><WeekStrip data={data} k={k} /></div>
       </div>
     </section>
@@ -66,33 +66,6 @@ function busyOn(data: MyDayData, day: DateKey) {
 }
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 const mondayOf = (k: DateKey) => shift(k, -((parseKey(k).getDay() + 6) % 7));
-
-function MonthCard({ data, k }: { data: MyDayData; k: DateKey }) {
-  const first = k.slice(0, 8) + '01', start = mondayOf(first);
-  const month = parseKey(first).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
-  const days = Array.from({ length: 42 }, (_, i) => shift(start, i)).filter((day, i) => i < 35 || day.slice(0, 7) === k.slice(0, 7));
-  return (
-    <div className="month-card" data-s="month">
-      <div className="flex items-center justify-between mb-1.5">
-        <p className="m-0 text-sm font-bold">{month}</p>
-        <a href="#calendar" className="text-sm font-semibold text-primary no-underline inline-flex items-center min-h-11 -my-2.5 px-1" data-action="greeting-calendar">Calendar ›</a>
-      </div>
-      <div className="grid grid-cols-7 gap-y-0.5 text-center tabular-nums" role="table" aria-label={`${month}: today, and days with a shift or appointment`}>
-        {WEEKDAYS.map((w, i) => <span key={i} role="columnheader" className="text-[11px] font-bold text-fg-3">{w}</span>)}
-        {days.map(day => {
-          const inMonth = day.slice(0, 7) === k.slice(0, 7), today = day === k, busy = inMonth && busyOn(data, day);
-          return (
-            <span key={day} role="cell" className={`relative mx-auto grid place-items-center size-7 rounded-full text-[13px] ${today ? 'bg-primary text-on-primary font-bold' : inMonth ? 'text-fg' : 'text-fg-3'}`}
-              aria-label={`${parseKey(day).getDate()}${today ? ', today' : ''}${busy ? ', something on' : ''}`} data-day={day}>
-              {parseKey(day).getDate()}
-              {busy && <span aria-hidden="true" className={`absolute bottom-0.5 size-1 rounded-full ${today ? 'bg-on-primary' : 'bg-primary'}`} />}
-            </span>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
 
 function WeekStrip({ data, k }: { data: MyDayData; k: DateKey }) {
   const mon = mondayOf(k);

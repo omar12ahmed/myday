@@ -751,7 +751,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/workout/` | Workout's data and rules, ported from the current MyDay: `normalize.ts` (checking saved Health data), `common.ts` (labels, units and wording), `plans.ts` (which workout is planned when, missed sessions, the sequence, Today's blocks), `propose.ts` (proposed dates around shifts), `sessions.ts` (logging, finishing, prefilling, the rest timer), `history.ts` (exercise history and chart measures). |
 | `src/data/study/` | Study's data and rules, ported from the current MyDay: `normalize.ts` (checking saved Study data), `roadmap.ts` (the outline, completion, setup, editing), `sessions.ts` (sessions, suggested length, check-ins, learning days), `revision.ts` (due concepts, review scheduling, cautious labels), `progress.ts` (progress and history), `common.ts` (labels, limits, Obsidian links). |
 | `src/components/` | Shared pieces with their styling in one place: `Button`, `Card`, `Banner`, `Field` (inputs, including ones saved as you type), `Dialog` (confirmations), `Toast`, `CategoryChip`, `EnergyMeter`, and `parts` (links, rows, chips and labels used by the section screens). |
-| `src/today/` | The Today section's cards and `TodayScreen`, which puts them together — including the dashboard's `GreetingCard` (greeting, calendar), `DashboardCards` (the ring and this week's bars, counted by `src/data/dashboard.ts`), `QuickAdd`, `FocusCard` and `FocusView` (Focus mode). |
+| `src/today/` | The Today section's cards and `TodayScreen`, which puts them together — including the dashboard's `GreetingCard` (greeting; this week on phones), `DashboardCards` (the ring and this week's bars, counted by `src/data/dashboard.ts`), `QuickAdd`, `FocusCard` and `FocusView` (Focus mode). |
 | `src/calendar/` | The Calendar: `CalendarScreen`, the month grid, agenda, selected-day panel, pattern editor and side cards. |
 | `src/ai/` | "Help me adjust today": `context.ts` (what's sent), `validate.ts` (the rules), `apply.ts` (saving, stale check, undo) and `AdjustCard.tsx` (the card on Today). "Add what's on my mind": `mind.ts` (what's sent, the checks, adding and undo) and `MindCard.tsx`. Both: `request.ts` (the Edge Function or practice mode). Since 1.40.0 a one-off can go into a Tasks list (`sameList` matches names on the device). |
 | `../ai-eval/` | The evaluation of AI models on 20 synthetic days and 12 synthetic brain dumps (see its README). |
@@ -840,8 +840,10 @@ keeps its existing look; both versions still share the font, task timeline and s
 - **Morning:** energy and Build my day share a card, just under the greeting; on phones the greeting stays compact so
   Build my day is visible without scrolling (checked by `tests/app-today`). On wide screens the greeting offers
   "Today's plan" only once there is one (before that, Build my day is the button just below).
-- **Today's dashboard:** the time-of-day greeting and optional name sit beside this month's calendar on wide
-  screens (this week on phones), with a dot on days with a shift or appointment. The plan keeps quick add,
+- **Today's dashboard:** the time-of-day greeting and optional name; on phones this week sits under it, with a dot on
+  days with a shift or appointment. On wide screens the side column (focus timer, today's ring and this week, the day
+  at a glance, learning days) starts level with the greeting: since 1.49.0 there is no month calendar on Today, as it
+  took the best space and the Calendar is one click away in the side menu. The plan keeps quick add,
   the focus timer, today's progress ring and this week's green bars — plain counts, never scores or percentages.
   Names can still be changed under Your preferences.
 - **Study on Today:** an active or paused session appears immediately above the plan (below the energy card

@@ -55,8 +55,6 @@
 .greeting-go { padding-left: 0; color: var(--primary); }
 .week-strip { padding: 4px 0; background: transparent; border-top: 1px solid var(--outline); border-bottom: 1px solid var(--outline); border-radius: 0; }
 .week-strip > span { padding-block: 3px; border-radius: 6px; }
-.month-card { padding: 0 0 0 20px; border-left: 1px solid var(--outline); }
-.month-card [role="columnheader"] { font-weight: 400; }
 
 #slot-energy { background: var(--surface); }
 #slot-energy #energyLabel { text-align: left; font-weight: 400; font-size: 24px; margin: 18px 0 2px; }
@@ -160,15 +158,15 @@
   .screen-footer { max-width: none; margin-inline: 0; }
   /* Wide screens: the header (and Capture in it) stays at the top while the page scrolls. */
   .appbar { position: sticky; top: 0; z-index: 20; }
-  .today-layout { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 16px; grid-template-areas: none; }
-  .today-hero { grid-column: 1 / -1; }
+  /* The side column starts level with the greeting (no month calendar on Today: the Calendar is in the side menu).
+     The last row is flexible, so a tall side column adds room under the footer, never a gap above your day. */
+  .today-layout { grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: auto auto 1fr; column-gap: 16px; grid-template-areas: none; }
+  .today-hero { grid-column: 1 / 9; grid-row: 1; }
   .today-main { grid-column: 1 / 9; grid-row: 2; }
-  .today-aside { grid-column: 9 / -1; grid-row: 2 / 4; }
-  .today-footer { grid-column: 1 / 9; }
+  .today-aside { grid-column: 9 / -1; grid-row: 1 / 4; }
+  .today-footer { grid-column: 1 / 9; grid-row: 3; }
   .greeting { margin-bottom: 24px; }
-  .greeting-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; align-items: center; }
-  .greeting-panel { grid-column: 1 / 9; padding-bottom: 12px; }
-  .greeting-grid > .hidden { grid-column: 9 / -1; }
+  .greeting-panel { padding-bottom: 12px; }
   #greeting-h { font-size: 32px; font-weight: 400; }
   .greeting-panel [data-s="greeting-line"] { font-size: 15px; margin-top: 10px; }
   .greeting-panel [data-action="name-ask"] { font-size: 13px; }
@@ -180,11 +178,8 @@
 }
 @media (min-width: 64rem) and (max-width: 75rem) {
   .workspace-main, .appbar-card { padding-inline: 28px; }
-  .today-main { grid-column: 1 / 8; }
+  .today-hero, .today-main, .today-footer { grid-column: 1 / 8; }
   .today-aside { grid-column: 8 / -1; }
-  .today-footer { grid-column: 1 / 8; }
-  .greeting-panel { grid-column: 1 / 8; }
-  .greeting-grid > .hidden { grid-column: 8 / -1; }
   .day-record { grid-template-columns: 1fr; }
   .day-record > .card + .card { border-left: 0; border-top: 1px solid var(--outline); }
 }

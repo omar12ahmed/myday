@@ -588,7 +588,6 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   check('phone: before the plan, no extra line in the greeting ("Build my day" is right below)', !(await ev(`document.querySelector('[data-s=greeting-line]').getClientRects().length`)));
   const strip = await ev(`[...document.querySelectorAll('[data-s=week-strip] > span')].map(s => s.getAttribute('aria-label'))`);
   check('phone: this week under the greeting, today marked, a dot on each day with a shift (3, 5, 7 and 9 May)', strip.length === 7 && strip[4].startsWith('Today, ') && strip.filter(l => l.includes('something on')).length === 4, strip);
-  check('phone: the month calendar is kept for wide screens', !(await ev(`document.querySelector('[data-s=month]').getClientRects().length`)));
   check('phone: Build my day is still fully visible without scrolling (greeting and name question included)', await ev(`document.querySelector('[data-action=build]').getBoundingClientRect().bottom <= document.getElementById('nav').getBoundingClientRect().top`));
   await click('[data-action=name-ask]'); await sleep(150);
   check('the link opens the name field, ready to type in', (await exists('#nameInput')) && (await ev(`document.activeElement.id`)) === 'nameInput');
@@ -663,9 +662,9 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
 
   await T.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
   await openAt(2027, 5, 7, 9);
-  const month = await ev(`(() => { const m = document.querySelector('[data-s=month]'); return { visible: m.getClientRects().length > 0, title: m.querySelector('p').textContent,
-    today: m.querySelector('[data-day="${K}"]').getAttribute('aria-label'), busy: [...m.querySelectorAll('[role=cell]')].filter(c => c.getAttribute('aria-label').includes('something on')).length }; })()`);
-  check('wide screens: this month beside the greeting, today marked, a dot on each day with a shift (16 in May)', month.visible && month.title === 'May 2027' && month.today === '7, today, something on' && month.busy === 16, month);
+  check('wide screens: no month calendar on Today (the Calendar is in the side menu), and the week strip is for phones only', !(await exists('[data-s=month]')) && !(await ev(`document.querySelector('[data-s=week-strip]').getClientRects().length`)));
+  const beside = await ev(`(() => { const g = document.getElementById('greeting').getBoundingClientRect(), a = document.querySelector('.today-aside').getBoundingClientRect(), f = document.getElementById('slot-focus').getBoundingClientRect(); return { g: Math.round(g.top), a: Math.round(a.top), f: Math.round(f.top), right: a.left > g.right }; })()`);
+  check('wide screens: the side column starts level with the greeting, the focus timer first', beside.right && Math.abs(beside.a - beside.g) <= 1 && Math.abs(beside.f - beside.g) <= 1, beside);
   check('wide screens: the greeting has a button to today\'s plan', (await text('[data-action=greeting-go]')).includes("Today's plan"));
   check('wide screens: the greeting says what is left today', /^You have \d+ tasks? left for today\.$|^Everything on today's plan is done — lovely\.$/.test(await text('[data-s=greeting-line]')), await text('[data-s=greeting-line]'));
   check('wide screens: the side menu has the MyDay logo, which goes to Today', (await ev(`(() => { const a = document.querySelector('#nav .nav-logo'); return !!a && a.getClientRects().length > 0 && a.getAttribute('href') === '#today'; })()`)));
