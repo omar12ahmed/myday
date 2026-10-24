@@ -20,7 +20,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   const src = p => JSON.stringify(path.join(ROOT, 'app/src/data', p));
   fs.writeFileSync(path.join(dir, 'kit.ts'), [
     `export * from ${src('projectRecords')};`, `export * from ${src('projectPlan')};`, `export * from ${src('businessModel')};`, `export * from ${src('caseFile')};`, `export { normalizeProjects, deleteProject, recently, addProject, setProjectPrivate, editProject, setLeftOff, privateProjectIds, comingUp, stillOpen } from ${src('projects')};`,
-    `export { freshState, normalize } from ${src('normalize')};`, `export { shift, shortDate } from ${src('dates')};`, `export * from ${src('projectDashboard')};`, `export * from ${src('weekReview')};`, `export { stepsForToday, nextStep } from ${src('projects')};`,
+    `export { freshState, normalize } from ${src('normalize')};`, `export { shift, shortDate } from ${src('dates')};`, `export * from ${src('projectDashboard')};`, `export * from ${src('weekReview')};`, `export { stepsForToday, nextStep, whyNext } from ${src('projects')};`,
     `export { searchProject, fold, matchCount, SEARCH_KIND_LABEL } from ${src('projectSearch')};`,
     `export { normalizeTasks, setWaiting, stopWaiting, isWaiting, chaseTask, chaseWaiting, isStuck, setTaskDone } from ${src('tasks')};`,
   ].join('\n'));
@@ -1490,6 +1490,72 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const frozen = JSON.stringify(w);
     for (const q of ['armchair', 'fuse board', 'zzz', '']) find(q);
     check('searching changes nothing in the data (byte-identical before and after)', JSON.stringify(w) === frozen);
+  }
+
+
+  console.log('\n[17] Why this next step (specs/projects-next-why.md)');
+  {
+    const tk = (id, title, x = {}) => ({ id, title, listId: '', category: 'Admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-09-20T09:00', postponed: 0, blockers: [], letGoOn: null, projectId: 'pjN', ...x });
+    const wt = on => ({ waiting: { on, since: '2026-10-01', until: null } });
+    const scene = (tasks, next = null, other = []) => { const w = world(base('pjN', { title: 'Shed', nextTaskId: next }), base('pjO', { title: 'Elsewhere' })); w.tasks.items = [...tasks, ...other]; return w; };
+    const why = (tasks, next, other, k) => { const w = scene(tasks, next, other); return K.whyNext(w, P(w), k); };
+    const D = d => K.shortDate(d);
+
+    check('with no tasks there is no reason, and no step', eq(why([]), []) && K.nextStep(scene([]), P(scene([]))) === null);
+    check('one task, not chosen: "it’s the only task still to do."', eq(why([tk('a', 'Buy bolts')]), ['MyDay’s pick: it’s the only task still to do.']), why([tk('a', 'Buy bolts')]));
+    check('one task that is not waiting plus one that is: "…the only task still to do that isn’t waiting."', eq(why([tk('a', 'Ask Sam', wt('Sam')), tk('b', 'Buy bolts')]), ['MyDay’s pick: it’s the only task still to do that isn’t waiting.']), why([tk('a', 'Ask Sam', wt('Sam')), tk('b', 'Buy bolts')]));
+    check('two dated tasks, none waiting: the earliest date', eq(why([tk('a', 'Later', { due: '2026-11-05' }), tk('b', 'Sooner', { due: '2026-10-30' })]), [`MyDay’s pick: it has the earliest date (${D('2026-10-30')}).`]));
+    check('an overdue date works the same way', eq(why([tk('a', 'Late one', { due: '2026-09-01' }), tk('b', 'Later', { due: '2026-11-05' })]), [`MyDay’s pick: it has the earliest date (${D('2026-09-01')}).`]));
+    const dw = [tk('w', 'Ask Sam about bolts', { due: '2026-10-20', ...wt('Sam') }), tk('a', 'Sooner', { due: '2026-10-30' }), tk('b', 'Later', { due: '2026-11-05' })];
+    check('a waiting task with an earlier date: the date "of the tasks that aren’t waiting", then names the one that comes first', eq(why(dw), [`MyDay’s pick: it has the earliest date (${D('2026-10-30')}) of the tasks that aren’t waiting.`, '“Ask Sam about bolts” comes first, but it’s waiting on Sam.']), why(dw));
+    const dw2 = [tk('w1', 'Ask Sam', { due: '2026-10-20', ...wt('Sam') }), tk('w2', 'Ask Priya', { due: '2026-10-22', ...wt('Priya') }), tk('a', 'Sooner', { due: '2026-10-30' }), tk('b', 'Later', { due: '2026-11-05' })];
+    check('two waiting tasks that come first: "2 tasks that come first are waiting on someone or something."', eq(why(dw2), [`MyDay’s pick: it has the earliest date (${D('2026-10-30')}) of the tasks that aren’t waiting.`, '2 tasks that come first are waiting on someone or something.']), why(dw2));
+    const un = [tk('b', 'Added second', { createdAt: '2026-09-22T09:00' }), tk('a', 'Added first', { createdAt: '2026-09-21T09:00' })];
+    check('two undated tasks: "none of the tasks still to do has a date", and the step is the one added first', eq(why(un), ['MyDay’s pick: none of the tasks still to do has a date, so it’s the one you added first.']) && K.nextStep(scene(un), P(scene(un))).id === 'a', why(un));
+    const unw = [tk('w', 'Ask Sam', { createdAt: '2026-09-20T09:00', ...wt('Sam') }), ...un];
+    check('with an undated waiting task added earlier: "none of the tasks that aren’t waiting has a date…" and the comes-first sentence', eq(why(unw), ['MyDay’s pick: none of the tasks that aren’t waiting has a date, so it’s the one you added first.', '“Ask Sam” comes first, but it’s waiting on Sam.']), why(unw));
+
+    console.log('  A step you chose');
+    const three = [tk('a', 'Sooner', { due: '2026-10-30' }), tk('b', 'Undated one', { createdAt: '2026-09-21T09:00' }), tk('c', 'Later', { due: '2026-11-05' })];
+    check('a chosen open task that is not MyDay’s pick: "You chose this step." and what MyDay would pick', eq(why(three, 'b'), ['You chose this step.', 'Left to MyDay, it would be “Sooner”.']), why(three, 'b'));
+    check('a chosen task that is also MyDay’s pick says so', eq(why(three, 'a'), ['You chose this step.', 'It’s also what MyDay would pick.']), why(three, 'a'));
+    check('a chosen waiting step when every other task is waiting too: MyDay would have no next step', eq(why([tk('a', 'Ask Sam', wt('Sam')), tk('b', 'Ask Priya', wt('Priya'))], 'a'), ['You chose this step.', 'Left to MyDay, there’d be no next step: everything here is waiting.']), why([tk('a', 'Ask Sam', wt('Sam')), tk('b', 'Ask Priya', wt('Priya'))], 'a'));
+    check('…and the same for a single waiting task that was chosen', eq(why([tk('a', 'Ask Sam', wt('Sam'))], 'a'), ['You chose this step.', 'Left to MyDay, there’d be no next step: everything here is waiting.']));
+    check('a chosen waiting step while another task is free: what MyDay would pick instead', eq(why([tk('a', 'Ask Sam', wt('Sam')), tk('b', 'Buy bolts')], 'a'), ['You chose this step.', 'Left to MyDay, it would be “Buy bolts”.']));
+
+    console.log('  A step you chose that has gone (mentioned for a week)');
+    const K0 = '2026-10-14';
+    const pick = `MyDay’s pick: it has the earliest date (${D('2026-10-30')}).`;
+    const rest = [tk('a', 'Sooner', { due: '2026-10-30' }), tk('c', 'Later', { due: '2026-11-05' })];
+    const gone = x => tk('g', 'Order the timber', x);
+    check('a chosen step done within the week: "The step you chose, “…”, is done." then MyDay’s pick', eq(why([gone({ done: true, doneOn: '2026-10-10' }), ...rest], 'g', [], K0), ['The step you chose, “Order the timber”, is done.', pick]), why([gone({ done: true, doneOn: '2026-10-10' }), ...rest], 'g', [], K0));
+    check('…exactly seven days ago still counts, and eight days ago does not', eq(why([gone({ done: true, doneOn: '2026-10-07' }), ...rest], 'g', [], K0)[0], 'The step you chose, “Order the timber”, is done.') && eq(why([gone({ done: true, doneOn: '2026-10-06' }), ...rest], 'g', [], K0), [pick]));
+    check('a chosen step done ten days before: only MyDay’s pick', eq(why([gone({ done: true, doneOn: '2026-10-04' }), ...rest], 'g', [], K0), [pick]), why([gone({ done: true, doneOn: '2026-10-04' }), ...rest], 'g', [], K0));
+    check('a chosen step let go within the week: "You let go of the step you chose, “…”." then MyDay’s pick', eq(why([gone({ letGoOn: '2026-10-10' }), ...rest], 'g', [], K0), ['You let go of the step you chose, “Order the timber”.', pick]));
+    check('…and one let go ten days before: only MyDay’s pick', eq(why([gone({ letGoOn: '2026-10-04' }), ...rest], 'g', [], K0), [pick]));
+    const onPlan = (done, on) => { const w = scene([gone({ plannedOn: on, planUid: 'u7' }), ...rest], 'g'); w.days[on] = { energy: 3, rest: false, builtAt: '', checkedIn: false, tasks: [{ uid: 'u7', taskId: 'g', category: 'admin', title: 'Order the timber', minutes: 10, baseMinutes: 10, done, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null }] }; return K.whyNext(w, P(w), K0); };
+    check('a chosen step done on a day’s plan (the task itself not ticked) within the week reads "…is done."', eq(onPlan(true, '2026-10-12'), ['The step you chose, “Order the timber”, is done.', pick]), onPlan(true, '2026-10-12'));
+    check('…done on a plan more than a week ago: only MyDay’s pick', eq(onPlan(true, '2026-10-02'), [pick]), onPlan(true, '2026-10-02'));
+    check('a chosen step in another project, or one that does not exist: only MyDay’s pick (no "no longer in this project" sentence)', eq(why(rest, 'x', [tk('x', 'Not here', { projectId: 'pjO' })], K0), [pick]) && eq(why(rest, 'tkGone', [], K0), [pick]), [why(rest, 'x', [tk('x', 'Not here', { projectId: 'pjO' })], K0), why(rest, 'tkGone', [], K0)]);
+    check('a chosen step done within the week and a single task left: the done sentence, then "the only task"', eq(why([gone({ done: true, doneOn: '2026-10-12' }), tk('a', 'Sooner')], 'g', [], K0), ['The step you chose, “Order the timber”, is done.', 'MyDay’s pick: it’s the only task still to do.']));
+
+    console.log('  The order is the Tasks screen\'s: date, then time (untimed after timed), then when added');
+    const sameDay = [tk('t', 'Order the timber', { due: '2026-10-30', createdAt: '2026-09-20T09:00' }), tk('c', 'Call the builder', { due: '2026-10-30', time: '09:00', createdAt: '2026-09-25T09:00' })];
+    check('on the same date a timed task comes before an untimed one, even if added later', K.nextStep(scene(sameDay), P(scene(sameDay))).title === 'Call the builder' && eq(why(sameDay), [`MyDay’s pick: it has the earliest date (${D('2026-10-30')}).`]), why(sameDay));
+    const tie = [tk('late', 'Added later', { due: '2026-10-30', time: '09:00', createdAt: '2026-09-25T09:00' }), tk('early', 'Added earlier', { due: '2026-10-30', time: '09:00', createdAt: '2026-09-21T09:00' })];
+    check('the same date and time: the one added earlier wins, whatever order they are stored in', K.nextStep(scene(tie), P(scene(tie))).id === 'early' && K.nextStep(scene([...tie].reverse()), P(scene([...tie].reverse()))).id === 'early');
+    check('a dated task comes before an undated one added earlier', K.nextStep(scene([tk('u', 'Undated', { createdAt: '2026-09-01T09:00' }), tk('d', 'Dated', { due: '2026-12-01' })]), P(scene([tk('u', 'Undated', { createdAt: '2026-09-01T09:00' }), tk('d', 'Dated', { due: '2026-12-01' })]))).id === 'd');
+
+    console.log('  "Left to MyDay" and writing nothing');
+    const mixes = [dw, three, un, unw, [tk('a', 'Only')]];
+    check('"Left to MyDay, it would be …" always names what nextStep gives with no choice (compared on a copy)', mixes.every((ts, i) => {
+      const chosen = ts.find(t => !t.waiting && t.id !== K.nextStep(scene(ts), P(scene(ts)))?.id) ;
+      if (!chosen) return true;
+      const w = scene(ts, chosen.id), line = K.whyNext(w, P(w))[1];
+      const w2 = clone(w); P(w2).nextTaskId = null;
+      return line === `Left to MyDay, it would be “${K.nextStep(w2, P(w2)).title}”.`;
+    }));
+    check('whyNext writes nothing: the data is deep-equal before and after, for every case above', [[], three, dw, dw2, un, unw, rest].every(ts => { const w = scene(ts, ts[0] && ts[0].id); const before = JSON.stringify(w); K.whyNext(w, P(w)); P(w).nextTaskId = null; K.whyNext(w, P(w)); P(w).nextTaskId = 'x'; K.whyNext(w, P(w)); P(w).nextTaskId = ts[0] && ts[0].id || null; return JSON.stringify(w) === before; }));
   }
 
   fs.rmSync(dir, { recursive: true, force: true });

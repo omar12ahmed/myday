@@ -1455,7 +1455,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await go('projects/p/pjW', 2026, 10, 16, 9, 35);
   check('with a task that isn\'t waiting, MyDay picks that one and skips the earlier waiting tasks', (await text('[data-s=next-title]')) === 'Measure the alcove walls' && !(await exists('[data-s=next-waiting]')) && !(await exists('[data-s=next-all-waiting]')) && (await project('Waiting: the armchair')).nextTaskId === null, await text('#projectNext'));
   check('…and it is offered "Add to today"', await exists('[data-action=project-step-today]'));
-  check('the choice list marks the waiting tasks', eq(await ev(`[...document.querySelectorAll('#projectNextPick option')].map(o => o.textContent)`), ['Ask about the armchair (waiting)', 'Measure the alcove (waiting)', 'Measure the alcove walls']), await ev(`[...document.querySelectorAll('#projectNextPick option')].map(o => o.textContent)`));
+  check('the choice list marks the waiting tasks', eq(await ev(`[...document.querySelectorAll('#projectNextPick option')].map(o => o.textContent)`), ['Let MyDay pick', 'Ask about the armchair (waiting)', 'Measure the alcove (waiting)', 'Measure the alcove walls']), await ev(`[...document.querySelectorAll('#projectNextPick option')].map(o => o.textContent)`));
   await type('#projectNextPick', 'tkA'); await sleep(300);
   check('a waiting task you choose yourself stays chosen and is labelled with who and when', (await text('[data-s=next-title]')) === 'Ask about the armchair' && norm(await text('[data-s=next-waiting]')).startsWith('Waiting on Priya · expected Tue 20 Oct'), await text('#projectNext'));
   check('…it suggests choosing another while you wait', norm(await text('[data-s=next-waiting]')).includes('while you wait, you could choose another next step below'));
@@ -1747,6 +1747,62 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
     await srType('x'.repeat(110));
     check(`phone ${w} px: a long unbroken search does not scroll sideways, and the heading says nothing matches`, (await text('#pjSearchH')).startsWith('Nothing in this project matches') && (await ev('document.documentElement.scrollWidth')) <= w, await ev('document.documentElement.scrollWidth'));
   }
+  await T.send('Emulation.clearDeviceMetricsOverride');
+
+  console.log('\n[40] Why this next step');
+  await go('projects', 2026, 10, 15, 9, 0); await reset(); await go('projects', 2026, 10, 15, 9, 0);
+  await seed([pjObj('pjNW', 'Shed doors', 'act')]);
+  await editStorage(`s => { s.tasks.items.push(${JSON.stringify(gtk('tkNw', 'Ask Sam about bolts', 'pjNW', { due: '2026-10-20', createdAt: '2026-09-20T09:00', waiting: { on: 'Sam', since: '2026-10-01', until: null } }))},
+    ${JSON.stringify(gtk('tkNd', 'Sand the door', 'pjNW', { due: '2026-10-30', createdAt: '2026-09-21T09:00' }))}, ${JSON.stringify(gtk('tkNu', 'Tidy the shed', 'pjNW', { createdAt: '2026-09-22T09:00' }))}); }`);
+  const nwSaved = () => pAt('pjNW');
+  const nwWhy = () => text('[data-s=next-why-text]').then(norm);
+  const nwNext = () => text('[data-s=next-title]');
+  const nwDated = 'MyDay’s pick: it has the earliest date (Fri 30 Oct) of the tasks that aren’t waiting. “Ask Sam about bolts” comes first, but it’s waiting on Sam.';
+  await go('projects/p/pjNW', 2026, 10, 15, 9, 5);
+  check('MyDay picks the dated task that is not waiting, passing over the waiting one', (await nwNext()) === 'Sand the door' && ((await nwSaved()).nextTaskId ?? null) === null, await nwNext());
+  check('the Next step card has a folded "Why this?" that is at least 44 px tall', (await exists('#projectNext details[data-s=next-why]')) && !(await ev(`document.querySelector('[data-s=next-why]').open`)) && (await text('[data-s=next-why] summary')) === 'Why this?' && (await ev(`document.querySelector('[data-s=next-why] summary').getBoundingClientRect().height`)) >= 44, await text('[data-s=next-why] summary'));
+  await click('[data-s=next-why] summary'); await sleep(200);
+  check('opening it shows the dated task\'s reason and who the waiting one is waiting on', (await ev(`document.querySelector('[data-s=next-why]').open`)) && (await nwWhy()) === nwDated, await nwWhy());
+  const opts = await ev(`[...document.querySelectorAll('#projectNextPick option')].map(o => [o.value, o.textContent, o.selected])`);
+  check('the picker\'s first option is "Let MyDay pick" (empty value) and it is selected while MyDay picks', eq(opts[0], ['', 'Let MyDay pick', true]) && opts.slice(1).every(o => !o[2]) && opts.length === 4, opts);
+
+  console.log('  Choosing, and handing the choice back');
+  await type('#projectNextPick', 'tkNu'); await sleep(300);
+  check('choosing the undated task saves it as the next step and shows it', (await nwSaved()).nextTaskId === 'tkNu' && (await nwNext()) === 'Tidy the shed', [(await nwSaved()).nextTaskId, await nwNext()]);
+  check('the reason then says it is your choice, and what MyDay would pick', (await nwWhy()) === 'You chose this step. Left to MyDay, it would be “Sand the door”.', await nwWhy());
+  check('…and the picker now shows that task as selected', (await ev(`document.getElementById('projectNextPick').value`)) === 'tkNu');
+  await type('#projectNextPick', ''); await sleep(300);
+  check('choosing "Let MyDay pick" clears the saved choice (null) and brings back the dated step', (await nwSaved()).nextTaskId === null && (await nwNext()) === 'Sand the door', [(await nwSaved()).nextTaskId, await nwNext()]);
+  check('…and says what MyDay picked in a toast: "MyDay’s pick: “Sand the door”."', (await toast()) === 'MyDay’s pick: “Sand the door”.', await toast());
+  check('…with its reason, and "Let MyDay pick" selected again', (await nwWhy()) === nwDated && (await ev(`document.getElementById('projectNextPick').value`)) === '', await nwWhy());
+
+  console.log('  A chosen step that is done');
+  await type('#projectNextPick', 'tkNu'); await sleep(300);
+  const planBefore = JSON.stringify((await data()).days);
+  await click('[data-action=project-step-done]'); await sleep(350);
+  check('Done on the chosen step makes MyDay\'s pick the next step', (await data()).tasks.items.find(t => t.id === 'tkNu').done && (await nwNext()) === 'Sand the door', await nwNext());
+  check('…and the reason says what happened to the chosen step, then MyDay\'s pick', (await nwWhy()) === 'The step you chose, “Tidy the shed”, is done. MyDay’s pick: it’s the only task still to do that isn’t waiting.', await nwWhy());
+  check('nothing was added to today\'s plan', JSON.stringify((await data()).days) === planBefore && (await task('Sand the door')).plannedOn === null);
+
+  console.log('  Everything waiting, and a single task');
+  await seed([pjObj('pjNX', 'All waiting', 'act', { nextTaskId: 'tkX1' }), pjObj('pjNY', 'One free task', 'act')]);
+  await editStorage(`s => { s.tasks.items.push(${JSON.stringify(gtk('tkX1', 'Ask the supplier', 'pjNX', { waiting: { on: 'Priya', since: '2026-10-01', until: null } }))}, ${JSON.stringify(gtk('tkY1', 'Measure the door', 'pjNY'))}); }`);
+  await go('projects/p/pjNX', 2026, 10, 15, 9, 8);
+  const nxOpts = await ev(`[...document.querySelectorAll('#projectNextPick option')].map(o => [o.value, o.textContent, o.selected])`);
+  check('a project whose only open task is waiting and chosen still shows the picker, with "Let MyDay pick" first', nxOpts.length === 2 && eq(nxOpts[0], ['', 'Let MyDay pick', false]) && eq(nxOpts[1], ['tkX1', 'Ask the supplier (waiting)', true]), nxOpts);
+  await click('[data-s=next-why] summary'); await sleep(150);
+  check('its reason says MyDay would have no next step', (await nwWhy()) === 'You chose this step. Left to MyDay, there’d be no next step: everything here is waiting.', await nwWhy());
+  await type('#projectNextPick', ''); await sleep(350);
+  check('choosing "Let MyDay pick" saves no choice (null), and the card asks for another small step instead', ((await pAt('pjNX')).nextTaskId ?? null) === null && (await exists('[data-s=next-all-waiting]')) && !(await exists('#projectNextPick')), [(await pAt('pjNX')).nextTaskId]);
+  check('…and the toast says "Everything here is waiting, so MyDay has no next step to pick."', (await toast()) === 'Everything here is waiting, so MyDay has no next step to pick.', await toast());
+  await go('projects/p/pjNY', 2026, 10, 15, 9, 9);
+  check('a single open task that is not waiting and not chosen shows no picker', (await nwNext()) === 'Measure the door' && !(await exists('#projectNextPick')));
+
+  console.log('  A phone');
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 320, height: 740, deviceScaleFactor: 2, mobile: true });
+  await go('projects/p/pjNW', 2026, 10, 15, 9, 10);
+  await click('[data-s=next-why] summary'); await sleep(250);
+  check('phone 320 px: the Overview with "Why this?" open does not scroll sideways', (await ev(`document.querySelector('[data-s=next-why]').open`)) && (await nwWhy()).length > 20 && (await ev('document.documentElement.scrollWidth')) <= 320, await ev('document.documentElement.scrollWidth'));
   await T.send('Emulation.clearDeviceMetricsOverride');
 
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);

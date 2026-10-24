@@ -8,12 +8,12 @@
 // listed on the project (`commitmentIds`), so the Calendar's own records — shared with the classic MyDay — never change.
 // Deleting a project never deletes its notes, tasks or appointments: they're just no longer linked to it.
 // In "Export my data", and synced with your account (one record per project; see sync/records.ts).
-import { isDateKey, isDateTime, localStamp, shift, todayKey } from './dates';
+import { isDateKey, isDateTime, localStamp, shift, shortDate, todayKey } from './dates';
 import { isBusiness, normalizeModel, normalizeTemplate, STATE_LABEL } from './businessModel';
 import { normalizeCase } from './caseFile';
 import { noteName } from './notes';
 import { chosenOption, normalizeDecisions, normalizeMilestones } from './projectPlan';
-import { isDone, onTodaysPlan } from './tasks';
+import { isDone, onTodaysPlan, taskOrder } from './tasks';
 import type { Commitment, DateKey, MyDayData, Note, Project, ProjectsData, ProjectStage, ProjectStatus, TaskItem } from './types';
 import { isObj, listOf, uid } from './util';
 
@@ -200,12 +200,10 @@ export function setNextStep(d: MyDayData, projectId: string, taskId: string | nu
 export const projectById = (data: MyDayData, id: string | undefined | null) => (id ? data.projects.items.find(p => p.id === id) ?? null : null);
 // A task still to do: not done (here or on a day's plan) and not let go.
 const toDo = (data: MyDayData, t: TaskItem) => !isDone(data, t) && !t.letGoOn;
-// Tasks in the order they'd be done: dated ones first (earliest first, then by time), then the rest as added.
-const byWhen = (a: TaskItem, b: TaskItem) => (a.due && b.due ? (a.due + (a.time ?? '')).localeCompare(b.due + (b.time ?? '')) : a.due ? -1 : b.due ? 1 : a.createdAt.localeCompare(b.createdAt));
 
 export function projectTasks(data: MyDayData, p: Project) {
   const all = data.tasks.items.filter(t => t.projectId === p.id);
-  return { open: all.filter(t => toDo(data, t)).sort(byWhen), done: all.filter(t => !toDo(data, t)) };
+  return { open: all.filter(t => toDo(data, t)).sort(taskOrder), done: all.filter(t => !toDo(data, t)) };
 }
 export function projectNotes(data: MyDayData, p: Project): Note[] {
   return data.notes.items.filter(n => n.projectId === p.id).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
@@ -219,6 +217,27 @@ export function projectAppointments(data: MyDayData, p: Project): Commitment[] {
 export function nextStep(data: MyDayData, p: Project): TaskItem | null {
   const { open } = projectTasks(data, p);
   return open.find(t => t.id === p.nextTaskId) ?? open.find(t => !t.waiting) ?? null;
+}
+// Why the next step is the one shown: the sentences under "Why this?" on the Next step card (specs/projects-next-why.md).
+// It follows nextStep exactly — the order of Tasks: by date, then time, then when added; undated ones last — and
+// writes nothing. A step you chose that was done or let go in the last week is mentioned first.
+export function whyNext(data: MyDayData, p: Project, k: DateKey = todayKey()): string[] {
+  const { open } = projectTasks(data, p), step = nextStep(data, p);
+  if (!step) return [];
+  const auto = open.find(t => !t.waiting);
+  if (step.id === p.nextTaskId) return ['You chose this step.', !auto ? 'Left to MyDay, there’d be no next step: everything here is waiting.'
+    : auto.id === step.id ? 'It’s also what MyDay would pick.' : `Left to MyDay, it would be “${auto.title}”.`];
+  const out: string[] = [];
+  const was = p.nextTaskId ? data.tasks.items.find(t => t.id === p.nextTaskId && t.projectId === p.id) : undefined;
+  const when = was && (was.letGoOn ?? was.doneOn ?? (isDone(data, was) ? was.plannedOn : null));
+  if (was && when && when >= shift(k, -7)) out.push(was.letGoOn ? `You let go of the step you chose, “${was.title}”.` : `The step you chose, “${was.title}”, is done.`);
+  const waiting = open.filter(t => t.waiting).length, before = open.slice(0, open.indexOf(step)).filter(t => t.waiting);
+  if (open.length - waiting === 1) return [...out, `MyDay’s pick: it’s the only task still to do${waiting ? ' that isn’t waiting' : ''}.`];
+  out.push(step.due ? `MyDay’s pick: it has the earliest date (${shortDate(step.due)})${before.length ? ' of the tasks that aren’t waiting' : ''}.`
+    : `MyDay’s pick: none of the tasks ${before.length ? 'that aren’t waiting' : 'still to do'} has a date, so it’s the one you added first.`);
+  if (before.length === 1) out.push(`“${before[0].title}” comes first, but it’s waiting on ${before[0].waiting!.on}.`);
+  else if (before.length) out.push(`${before.length} tasks that come first are waiting on someone or something.`);
+  return out;
 }
 // What's coming up (today onwards): dated tasks still to do and appointments, in time order.
 export function comingUp(data: MyDayData, p: Project, k: DateKey = todayKey()) {

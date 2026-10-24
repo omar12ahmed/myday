@@ -14,7 +14,7 @@ import { prettyDate, relDay, shortDate, todayKey } from '../data/dates';
 import { addNote, noteName } from '../data/notes';
 import { isBusiness, isCase, knownTemplate, setTemplate, TEMPLATES, type TemplateChoice } from '../data/businessModel';
 import { worthALook } from '../data/projectDashboard';
-import { comingUp, deleteProject, editProject, setProjectPrivate, linkNote, nextStep, PROJECT_LIMITS, projectById, projectNotes, projectTasks, recently, setLeftOff, setNextStep, STATUS_LABEL, stillOpen, unlinkAppointment } from '../data/projects';
+import { comingUp, deleteProject, editProject, setProjectPrivate, linkNote, nextStep, PROJECT_LIMITS, projectById, projectNotes, projectTasks, recently, setLeftOff, setNextStep, STATUS_LABEL, stillOpen, unlinkAppointment, whyNext } from '../data/projects';
 import { update } from '../data/storage';
 import { addTask, addToTodaysPlan, onTodaysPlan, planRoom, setTaskDone } from '../data/tasks';
 import { toast } from '../data/toast';
@@ -245,16 +245,23 @@ function OverviewTop({ data, p }: { data: MyDayData; p: Project }) {
   );
 }
 
-// The one next step: what reaches Today. With none yet, it asks for the smallest one.
+// The one next step: what reaches Today. With none yet, it asks for the smallest one. "Why this?" says why it's this
+// one, and "Let MyDay pick" hands a choice back (specs/projects-next-why.md).
 function NextStepCard({ data, p }: { data: MyDayData; p: Project }) {
   const [text, setText] = useState('');
-  const step = nextStep(data, p), open = projectTasks(data, p).open, k = todayKey();
+  const step = nextStep(data, p), open = projectTasks(data, p).open, k = todayKey(), chosen = !!step && step.id === p.nextTaskId;
   function addStep() {
     const title = text.trim();
     if (!title) return;
     if (!update(d => { const id = addTask(d.tasks, { title }); if (!id) return false; d.tasks.items.find(t => t.id === id)!.projectId = p.id; setNextStep(d, p.id, id); })) return;
     setText('');
     toast('Next step set — it can go on Today whenever you like.');
+  }
+  // Choosing a task makes it yours; "Let MyDay pick" hands the choice back and says what MyDay picks.
+  function pick(id: string | null) {
+    if (!update(d => (setNextStep(d, p.id, id) ? undefined : false)) || id) return;
+    const auto = open.find(t => !t.waiting);
+    toast(auto ? `MyDay’s pick: “${auto.title}”.` : 'Everything here is waiting, so MyDay has no next step to pick.');
   }
   return (
     <Card tone="accent" aria-labelledby="projectNextH" id="projectNext">
@@ -273,9 +280,12 @@ function NextStepCard({ data, p }: { data: MyDayData; p: Project }) {
             <Button inline data-action="project-step-done" onClick={() => { if (update(d => (setTaskDone(d, step.id, true) ? undefined : false))) toast('Done — nice. The next one is ready when you are.'); }}><Check size={18} aria-hidden="true" /> Done</Button>
             <a href={`#today/tasks/${step.id}`} className="inline-flex items-center min-h-11 px-2 text-primary font-semibold text-[15px] no-underline hover:underline underline-offset-4">Open</a>
           </div>
-          {open.length > 1 && (
-            <Field label="Or choose another next step" htmlFor="projectNextPick" className="mt-4">
-              <Select id="projectNextPick" value={step.id} onChange={e => update(d => (setNextStep(d, p.id, e.target.value) ? undefined : false))}>
+          <details className="mt-2 mb-1" data-s="next-why"><summary className="cursor-pointer min-h-11 flex items-center text-primary font-semibold text-[15px]">Why this?</summary>
+            <p className="text-[15px] text-fg-2 mt-0 mb-1 break-words" data-s="next-why-text">{whyNext(data, p).join(' ')}</p></details>
+          {(open.length > 1 || (chosen && !!step.waiting)) && (
+            <Field label="Or choose another next step" htmlFor="projectNextPick" className="mt-2">
+              <Select id="projectNextPick" value={chosen ? step.id : ''} onChange={e => pick(e.target.value || null)}>
+                <option value="">Let MyDay pick</option>
                 {open.map(t => <option key={t.id} value={t.id}>{t.title}{t.waiting ? ' (waiting)' : ''}</option>)}
               </Select>
             </Field>

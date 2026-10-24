@@ -84,13 +84,14 @@ export function groupOf(data: MyDayData, t: TaskItem, k: DateKey = todayKey()): 
   if (!t.due) return 'anytime';
   return t.due < k ? 'earlier' : t.due === k ? 'today' : 'upcoming';
 }
-// Earliest first (by date, then time, then when it was written); undated ones in the order you wrote them.
-const order = (a: TaskItem, b: TaskItem) => (a.due ?? '9999') .localeCompare(b.due ?? '9999') || (a.time ?? '99').localeCompare(b.time ?? '99') || a.createdAt.localeCompare(b.createdAt);
+// Earliest first (by date, then time, then when it was written); undated ones in the order you wrote them. Projects
+// use the same order, so a project's next step agrees with Tasks and Coming up (1.54.0).
+export const taskOrder = (a: TaskItem, b: TaskItem) => (a.due ?? '9999') .localeCompare(b.due ?? '9999') || (a.time ?? '99').localeCompare(b.time ?? '99') || a.createdAt.localeCompare(b.createdAt);
 export function tasksView(data: MyDayData, listId: string | null, query = '', k: DateKey = todayKey()): Record<Group, TaskItem[]> {
   const q = query.trim().toLowerCase();
   const out: Record<Group, TaskItem[]> = { earlier: [], today: [], upcoming: [], anytime: [], done: [] };
   const known = new Set(data.tasks.lists.map(l => l.id));
-  for (const t of [...data.tasks.items].sort(order)) {
+  for (const t of [...data.tasks.items].sort(taskOrder)) {
     if (listId !== null && (listId === '' ? known.has(t.listId) : t.listId !== listId)) continue;
     if (q && !t.title.toLowerCase().includes(q) && !t.notes.toLowerCase().includes(q)) continue;
     if (inQueue(data, t)) continue;
@@ -101,7 +102,7 @@ export function tasksView(data: MyDayData, listId: string | null, query = '', k:
 }
 // Due today or earlier, not done, not already on today's plan: what Today offers to add.
 export const dueForToday = (data: MyDayData, k: DateKey = todayKey()) =>
-  data.tasks.items.filter(t => t.due && t.due <= k && !isDone(data, t) && !t.letGoOn && !onTodaysPlan(data, t, k) && !inQueue(data, t)).sort(order);
+  data.tasks.items.filter(t => t.due && t.due <= k && !isDone(data, t) && !t.letGoOn && !onTodaysPlan(data, t, k) && !inQueue(data, t)).sort(taskOrder);
 export const listName = (d: TasksData, id: string) => d.lists.find(l => l.id === id)?.name ?? '';
 
 // ---------- Changes (each used inside update()) ----------
