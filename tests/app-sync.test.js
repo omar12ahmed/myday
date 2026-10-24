@@ -720,7 +720,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
   const BK = 'myday.backup.v1';
   const stored = () => ctl('backup-objects');
   const toastIs = (D, t, ms = 8000) => D.until(`(document.getElementById('toast') || {}).textContent === ${JSON.stringify(t)}`, ms);
-  const gunzipFrom = async (key) => { const r = await fetch(`${API}/functions/v1/backup?key=${encodeURIComponent(key)}`, { headers: { apikey: KEY, Authorization: 'Bearer ' + await token(A) } }); const buf = Buffer.from(await r.arrayBuffer()); try { return { status: r.status, text: zlib.gunzipSync(buf).toString('utf8') }; } catch { return { status: r.status, text: '{}', raw: buf.toString('utf8').slice(0, 200) }; } };
+  const gunzipFrom = async (key) => { const r = await fetch(`${API}/functions/v1/backup`, { headers: { apikey: KEY, 'x-myday-key': key, Authorization: 'Bearer ' + await token(A) } }); const buf = Buffer.from(await r.arrayBuffer()); try { return { status: r.status, text: zlib.gunzipSync(buf).toString('utf8') }; } catch { return { status: r.status, text: '{}', raw: buf.toString('utf8').slice(0, 200) }; } };
   const bk = laptop;
   const openBackups = async () => { await bk.open(APP + '#today'); await bk.until(`document.querySelector('[data-action=backups]')`, 20000); await bk.click('[data-action=backups]'); return bk.until(`document.getElementById('backups')`); };
   await ctl('backup-reset');
@@ -773,18 +773,26 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await bk.answer(false);
   await sleep(400);
   check('Cancel changes nothing', eq(withoutSaves(await bk.data()), withoutSaves(before15)));
+  check('Restore first kept a copy of this device\'s data as it was (today\'s backup exists)', (await stored()).some(o => o.key === `${userA}/${deviceId}/${todayK}.json.gz`));
   await bk.setData(`s => { s.lists.admin[0].title = 'Changed after the backup'; }`);
   check('(test setup: a change made after the backup)', (await bk.data()).lists.admin[0].title === 'Changed after the backup');
   await bk.ev(`location.hash = '#backups'`);
+  await ctl('backup-age', { seconds: 120 });
+  const keptBefore = Date.now() - 5000;
   await bk.until(`document.querySelector('[data-s=backup] [data-action=backup-restore]')`, 10000);
   await bk.click('[data-s=backup] [data-action=backup-restore]');
   await bk.until(`document.querySelector('[data-action=dialog-confirm]')`);
+  const copy = await stored(), copied = await gunzipFrom(`${userA}/${deviceId}/${todayK}.json.gz`);
+  check('before the question, the data as it is now was kept as a fresh backup (so the restore can be undone)', copy.find(o => o.key.endsWith('.json.gz')) && Date.parse(copy.find(o => o.key.endsWith('.json.gz')).modified) > keptBefore && JSON.parse(copied.text).data.lists.admin[0].title === 'Changed after the backup', copy);
   await bk.answer(true);
   check('Restore and Replace brings the backup\'s data back', await bk.until(`JSON.parse(localStorage.getItem('myday.data.v4')).lists.admin[0].title === ${JSON.stringify(title0)}`, 15000), (await bk.data()).lists.admin[0].title);
   check('…and it is saved to the account like any restore', await cloudUntil(async () => (await cloudList('admin', userA)).data.items[0].title === title0, 15000) && await synced(bk));
 
   console.log('  Delete all backups');
   await bk.ev(`location.hash = '#backups'`); await bk.until(`document.querySelector('[data-action=backup-delete-all]')`, 15000);
+  await bk.ev(`(() => { const s = JSON.parse(localStorage.getItem('${BK}')); s.failedDays = 3; s.lastFailDay = s.lastDay; localStorage.setItem('${BK}', JSON.stringify(s)); })()`);
+  await bk.open(APP + '#backups'); await bk.until(`document.querySelector('[data-action=backup-delete-all]')`, 15000);
+  check('(test setup: three failed days are showing)', await bk.exists('[data-s=backup-failing]'));
   await bk.click('[data-action=backup-delete-all]');
   await bk.until(`document.querySelector('[data-action=dialog-confirm]')`);
   check('Delete all asks first: "Delete all your backups?"', /Delete all your backups\?/.test(await bk.text('dialog[open]')), await bk.text('dialog[open]'));
@@ -795,6 +803,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await bk.until(`document.querySelector('[data-action=dialog-confirm]')`);
   await bk.answer(true);
   check('"Delete all backups" empties the store and the list says "No backups yet…"', await bk.until(`/No backups yet/.test(document.body.textContent) && !document.querySelector('[data-s=backup]')`, 10000) && (await stored()).length === 0, await bk.text('#app'));
+  check('…and the failed-days count and its note start again', (await bk.ev(`JSON.parse(localStorage.getItem('${BK}'))`)).failedDays === 0 && !(await bk.exists('[data-s=backup-failing]')));
   check('…and the page no longer says it was backed up', await bk.until(`document.querySelector('[data-s=backup-last]')?.textContent === 'Not backed up yet on this device.'`), await bk.text('[data-s=backup-last]'));
 
   console.log('  Not set up, a failing daily backup, and a phone');
@@ -803,6 +812,10 @@ function task(uid, taskId, category, title, minutes, done = false) {
   check('with the function not set up, the page says "Automatic backups aren’t set up yet."', await bk.until(`/Automatic backups aren’t set up yet\\./.test(document.body.textContent)`, 15000), await bk.text('#app'));
   await bk.click('[data-action=backup-now]');
   check('…and Back up now says the same, without saving anything', await toastIs(bk, 'Automatic backups aren’t set up yet.') && (await stored()).length === 0);
+  await bk.ev(`window.__realSetItem = Storage.prototype.setItem; Storage.prototype.setItem = () => { throw new DOMException('Synthetic blocked storage', 'SecurityError'); }`);
+  await bk.ev(`location.hash = '#today'`); await sleep(300); await bk.ev(`location.hash = '#backups'`);
+  check('when this browser blocks saving, the page says so instead of offering Back up now', await bk.until(`!!document.querySelector('[data-s=backup-blocked]')`, 8000) && !(await bk.exists('[data-action=backup-now]')), await bk.text('#backups'));
+  await bk.ev(`Storage.prototype.setItem = window.__realSetItem`);
   await ctl('backup-configured', { configured: true });
   const stateWith = x => bk.ev(`localStorage.setItem('${BK}', JSON.stringify(${JSON.stringify({ device: deviceId, label: 'Mac', lastDay: todayK, lastAt: new Date().toISOString(), failedDays: 0, lastFailDay: null, ...x })}))`);
   await stateWith({ failedDays: 3, lastFailDay: todayK });
@@ -822,17 +835,20 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await bk.send('Emulation.clearDeviceMetricsOverride');
 
   console.log('  The daily backup, by itself');
+  // (The other signed-in devices of this test make their own daily backups too, so only this device's are looked at.)
   await ctl('backup-reset');
   await bk.ev(`localStorage.removeItem('${BK}')`);
   await bk.open(APP + '#today');
-  const made = await cloudUntil(async () => (await stored()).some(o => o.key.endsWith(`/${todayK}.json.gz`)), 45000);
-  check('with nothing recorded for today, a backup appears by itself within about 30 seconds, with nothing pressed', made, await stored());
-  const afterAuto = await bk.ev(`JSON.parse(localStorage.getItem('${BK}'))`);
-  check('…and the device remembers today, so it does not do it again', afterAuto.lastDay === todayK && afterAuto.failedDays === 0, afterAuto);
+  const mine = async () => { const st = await bk.ev(`JSON.parse(localStorage.getItem('${BK}') || 'null')`); return st ? (await stored()).filter(o => o.key.startsWith(`${userA}/${st.device}/`)) : []; };
+  const made = await cloudUntil(async () => (await mine()).some(o => o.key.endsWith(`/${todayK}.json.gz`)), 50000);
+  check('with nothing recorded for today, this device\'s backup appears by itself within about 30 seconds, with nothing pressed', made, [await stored(), await bk.ev(`localStorage.getItem('${BK}')`)]);
+  await bk.until(`(JSON.parse(localStorage.getItem('${BK}') || '{}')).lastDay`, 10000);
+  const afterAuto = (await bk.ev(`JSON.parse(localStorage.getItem('${BK}'))`)) || {};
+  check('…and the device remembers today (and no failed days)', afterAuto.lastDay === todayK && afterAuto.failedDays === 0, afterAuto);
   await ctl('backup-reset');
   await bk.open(APP + '#today');
-  await sleep(36000);
-  check('with today already backed up, none is made', (await stored()).length === 0, await stored());
+  await sleep(37000);
+  check('with today already backed up on this device, none is made by it', (await mine()).length === 0, await stored());
 
   fs.rmSync(dl, { recursive: true, force: true });
   await srv.close();
