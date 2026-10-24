@@ -3,9 +3,10 @@
 // appointment only with a date and a time, sensible lengths, gentle wording — and anything that doesn't hold is
 // dropped or made safe (and said). Things to add are saved through the same rules as Capture's, all at once, with one
 // step of Undo. Nothing here talks to a model (request.ts does) and nothing is saved until you tap Add.
-import { ASK_LIMITS as L, readAsk, type AskItem, type AskLookup } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
+import { ASK_LIMITS as L, readAsk, type AskItem, type AskLookup, type AskNotesLookup } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
+import { DAY_AHEAD, DAY_BACK } from './lookup';
 import { CAT_LABEL } from '../data/plan';
-import { isDateKey, keyOf, pad, prettyDate, todayKey } from '../data/dates';
+import { isDateKey, keyOf, pad, prettyDate, shift, todayKey } from '../data/dates';
 import { addNote, editNote } from '../data/notes';
 import { addProject, linkAppointment, linkNote, linkTask } from '../data/projects';
 import { stIndex } from '../data/study/roadmap';
@@ -53,7 +54,7 @@ export type AskChecked =
   | { kind: 'add' | 'steps'; message: string; items: AskProposal[]; changed: string[]; sources?: AskSource[] }
   | { kind: 'answer'; message: string; action: { type: 'start-study'; courseId: string; taskId: string | null; minutes: number; label: string } | { type: 'adjust-today' } | { type: 'start-revision'; scope: Scope; count: number } | null; changed: string[]; sources?: AskSource[] }
   | { kind: 'cannot'; message: string; changed: string[] }
-  | { kind: 'lookup'; query: string }
+  | { kind: 'lookup'; tool: 'notes' | 'day'; query: string } // query: the words to search, or the day
   | { kind: 'change'; message: string; changes: AskChange[]; changed: string[] };
 // After a lookup, the notes an answer used (only ones the lookup found), shown as links.
 export interface AskSource { id: string; title: string }
@@ -75,10 +76,15 @@ const gentle = (s: string) => !PRESSURE.test(s);
 // says it used must be among them, and it may not ask to look again (one lookup per question).
 export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k: DateKey = todayKey(), asked?: string, looked?: AskLookup): AskChecked | null {
   const r = readAsk(text);
-  if (r?.kind === 'lookup') return !looked && r.lookup?.tool === 'notes' ? { kind: 'lookup', query: r.lookup.query } : null;
+  if (r?.kind === 'lookup') {
+    if (looked || !r.lookup) return null;
+    // A day only from a week ago to two months ahead (what the app will look at).
+    if (r.lookup.tool === 'day' && (r.lookup.query < shift(k, -DAY_BACK) || r.lookup.query > shift(k, DAY_AHEAD))) return null;
+    return { kind: 'lookup', tool: r.lookup.tool, query: r.lookup.query };
+  }
   const out = checkReply(text, data, slice, k, asked);
-  if (!out || !looked || !r?.sources?.length || (out.kind !== 'answer' && out.kind !== 'add' && out.kind !== 'steps')) return out;
-  const used = [...new Set(r.sources)].map(id => looked.notes.find(n => n.id === id)).filter((x): x is AskLookup['notes'][number] => !!x).map(x => ({ id: x.id, title: x.title }));
+  if (!out || looked?.tool !== 'notes' || !r?.sources?.length || (out.kind !== 'answer' && out.kind !== 'add' && out.kind !== 'steps')) return out;
+  const used = [...new Set(r.sources)].map(id => looked.notes.find(n => n.id === id)).filter((x): x is AskNotesLookup['notes'][number] => !!x).map(x => ({ id: x.id, title: x.title }));
   return used.length ? { ...out, sources: used } : out;
 }
 function checkReply(text: string, data: MyDayData, slice: AskSlice, k: DateKey, asked?: string): AskChecked | null {

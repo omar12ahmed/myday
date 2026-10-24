@@ -915,10 +915,10 @@ const SEED = `s => {
       s.notes.items = s.notes.items.filter(n => !n.id.startsWith('nLk')); s.notes.items.push(${JSON.stringify(NT('nLkRack', 'Shed sizes', 'Leave room for a bike rack on the left wall.', { projectId: 'pjShedLk' }))},
         ${JSON.stringify(NT('nLkPriv', 'Walrus', 'my private bike rack worry', { private: true }))}, ${JSON.stringify(NT('nLkHush', 'Walrus two', 'a bike rack in the quiet plans', { projectId: 'pjHushLk' }))}); }`;
     const Q = 'What did I write about the bike rack?';
-    const runLk = async Dv => {
+    const runLk = async (Dv, q = Q) => {
       await Dv.ev(`location.hash = 'today'`); await sleep(300);
       await Dv.click('[data-action=capture-open]'); await Dv.until(`document.getElementById('captureText')`);
-      await Dv.type('#captureText', Q); await sleep(150);
+      await Dv.type('#captureText', q); await sleep(150);
       const prev = await Dv.text('[data-s=ask-sends]');
       await Dv.click('[data-action=ask-go]'); await Dv.until(`['shown', 'error'].includes(document.querySelector('[data-s=ask-panel]')?.dataset.phase)`, 25000);
       return { prev, error: await Dv.text('[data-s=ask-panel] [role=alert]'), phase: await Dv.ev(`document.querySelector('[data-s=ask-panel]').dataset.phase`), looked: await Dv.text('[data-s=ask-looked]'),
@@ -929,6 +929,9 @@ const SEED = `s => {
     check('the preview says it may look in your notes if needed', pm.prev.includes('If needed, a look in your notes'), pm.prev);
     check('practice mode: it looks, and says so above the answer — one note found, the two private ones only counted here', pm.phase === 'shown' && pm.looked === 'Looked in your notes for “bike rack”: one note — 2 private notes left out.', pm.looked);
     check('…and the answer links the note it used', eq(pm.sources, ['Shed sizes|#projects/notes/nLkRack']), pm.sources);
+    await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
+    const pdy = await runLk(mock, 'Am I free on Thursday?');
+    check('practice mode: "Am I free on Thursday?" looks at that day and says so above the answer', pdy.phase === 'shown' && /^Looked at Thursday \d{1,2} \w+: /.test(pdy.looked) && pdy.sources.length === 0, [pdy.looked, pdy.error]);
     await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
 
     // At the server's real pace (5 seconds between requests): the second request waits its turn rather than being refused.

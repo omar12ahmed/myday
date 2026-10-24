@@ -25,12 +25,15 @@ export const ASK_LIMITS = {
   reviewProjects: 20, reviewWaiting: 5, reviewWaitingChars: 200, reviewFocus: 3,
   // A lookup (specs/ai-tools.md §3): the words to search, up to 8 notes found, each with a short snippet at most.
   lookupQueryChars: 60, lookupNotes: 8, lookupSnippetChars: 200, lookupSources: 8,
+  // "Your day" (v18): one day's plan, what's due, busy and free times — capped like the rest of a page's slice.
+  dayTasks: 20, dayBusy: 40, dayFree: 24,
 };
 export const ASK_PAGES = ['today', 'tasks', 'task', 'calendar', 'projects', 'project', 'notes', 'note', 'study', 'course', 'health', 'finance', 'review', 'other'] as const;
 export type AskPage = typeof ASK_PAGES[number];
 export const ASK_KINDS = ['add', 'steps', 'answer', 'cannot', 'change', 'lookup'] as const;
-// What a lookup can look in (one so far: your notes). The app says it can look things up with `can`.
-export const ASK_TOOLS = ['notes'] as const;
+// What a lookup can look in: your notes (v17), or one day (v18). The app says what it can look in with `can`.
+export const ASK_TOOLS = ['notes', 'day'] as const;
+export const DAY_KINDS = ['work', 'appointment', 'workout', 'sleep', 'prep'] as const;
 export const ASK_ITEM_TYPES = ['task', 'note', 'appointment', 'project', 'study-task', 'change', 'milestone', 'pro', 'con', 'option', 'must-be-true'] as const;
 export const BELIEF_STATES = ['open', 'looks-true', 'doesnt-hold'] as const;
 export const ASK_TARGETS = ['task', 'appointment', 'note'] as const;
@@ -77,11 +80,21 @@ export interface AskContext {
 // What a lookup found, on the device and through the privacy rules (app/src/ai/lookup.ts): the words searched, up to 8
 // notes that may reach AI (title, its project's name, a short snippet only with "AI help with notes" on), how many such
 // notes matched in all, and whether only titles were searched. Nothing about private notes — not even how many matched.
-export interface AskLookup {
-  tool: typeof ASK_TOOLS[number]; query: string;
+export interface AskNotesLookup {
+  tool: 'notes'; query: string;
   notes: { id: string; title: string; project: string | null; snippet: string | null }[];
   found: number; titlesOnly: boolean;
 }
+// "Your day" (v18): the day asked about (query: its date), as the app sees it — its plan (a private project's tasks left
+// out), tasks due that day that aren't on it, busy times by kind only (never an appointment's name), free time, energy.
+export interface AskDayLookup {
+  tool: 'day'; query: string; weekday: string; planned: boolean; rest: boolean; energy: number | null;
+  tasks: { title: string; minutes: number; done: boolean; time: string | null }[];
+  due: string[];
+  busy: { kind: typeof DAY_KINDS[number]; start: string; end: string }[];
+  free: { start: string; end: string }[];
+}
+export type AskLookup = AskNotesLookup | AskDayLookup;
 
 // What the model returns (JSON only). The app checks it all again.
 export interface AskItem {
@@ -105,7 +118,7 @@ export const ASK_SCOPES = ['all', 'arabic', 'cybersecurity'] as const;
 export type AskAction = { type: 'start-study'; courseId: string; taskId: string | null; minutes: number } | { type: 'adjust-today' } | { type: 'start-revision'; scope: typeof ASK_SCOPES[number] };
 export interface AskReply {
   kind: typeof ASK_KINDS[number]; message: string; items: AskItem[]; action: AskAction | null;
-  lookup?: { tool: typeof ASK_TOOLS[number]; query: string }; // kind "lookup": what to look in, and the words to search
+  lookup?: { tool: typeof ASK_TOOLS[number]; query: string }; // kind "lookup": what to look in, and the words (or the day)
   sources?: string[];                                          // after a lookup: the ids of the notes the answer used
 }
 
@@ -127,11 +140,23 @@ export function checkAskContext(raw: unknown): raw is AskContext {
   if (c.can !== undefined && !(Array.isArray(c.can) && c.can.length <= ASK_TOOLS.length && c.can.every(t => ASK_TOOLS.includes(t as typeof ASK_TOOLS[number])))) return false;
   if (c.lookup !== undefined) {
     const lk = c.lookup, n = (v: unknown) => Number.isInteger(v) && (v as number) >= 0 && (v as number) <= 100000;
-    if (!(obj(lk) && only(lk, ['tool', 'query', 'notes', 'found', 'titlesOnly']) && ASK_TOOLS.includes(lk.tool as typeof ASK_TOOLS[number]) && str(lk.query, L.lookupQueryChars, false)
-      && Array.isArray(lk.notes) && lk.notes.length <= L.lookupNotes && lk.notes.every(x => obj(x) && only(x, ['id', 'title', 'project', 'snippet']) && str(x.id, 64, false) && str(x.title, L.titleChars, false)
-        && (x.project === null || str(x.project, L.titleChars, false)) && (x.snippet === null || str(x.snippet, L.lookupSnippetChars)))
-      && n(lk.found) && typeof lk.titlesOnly === 'boolean')) return false;
+    if (!obj(lk)) return false;
+    if (lk.tool === 'notes') {
+      if (!(only(lk, ['tool', 'query', 'notes', 'found', 'titlesOnly']) && str(lk.query, L.lookupQueryChars, false)
+        && Array.isArray(lk.notes) && lk.notes.length <= L.lookupNotes && lk.notes.every(x => obj(x) && only(x, ['id', 'title', 'project', 'snippet']) && str(x.id, 64, false) && str(x.title, L.titleChars, false)
+          && (x.project === null || str(x.project, L.titleChars, false)) && (x.snippet === null || str(x.snippet, L.lookupSnippetChars)))
+        && n(lk.found) && typeof lk.titlesOnly === 'boolean')) return false;
+    } else if (lk.tool === 'day') {
+      const dt = (v: unknown) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/.test(v);
+      if (!(only(lk, ['tool', 'query', 'weekday', 'planned', 'rest', 'energy', 'tasks', 'due', 'busy', 'free']) && isDate(lk.query) && str(lk.weekday, 12, false)
+        && typeof lk.planned === 'boolean' && typeof lk.rest === 'boolean' && (lk.energy === null || (Number.isInteger(lk.energy) && (lk.energy as number) >= 1 && (lk.energy as number) <= 5))
+        && Array.isArray(lk.tasks) && lk.tasks.length <= L.dayTasks && lk.tasks.every(t => obj(t) && only(t, ['title', 'minutes', 'done', 'time']) && str(t.title, L.titleChars, false) && Number.isInteger(t.minutes) && typeof t.done === 'boolean' && (t.time === null || isTime(t.time)))
+        && Array.isArray(lk.due) && lk.due.length <= L.dayTasks && lk.due.every(t => str(t, L.titleChars, false))
+        && Array.isArray(lk.busy) && lk.busy.length <= L.dayBusy && lk.busy.every(x => obj(x) && only(x, ['kind', 'start', 'end']) && DAY_KINDS.includes(x.kind as typeof DAY_KINDS[number]) && dt(x.start) && dt(x.end))
+        && Array.isArray(lk.free) && lk.free.length <= L.dayFree && lk.free.every(x => obj(x) && only(x, ['start', 'end']) && isTime(x.start) && isTime(x.end)))) return false;
+    } else return false;
   }
+
   if (c.version !== 1 || c.action !== 'ask' || !isDate(c.date) || !str(c.weekday, 12, false) || !isTime(c.time)) return false;
   if (!ASK_PAGES.includes(c.page as AskPage) || !str(c.text, L.textChars, false)) return false;
   if (c.followUp !== undefined && !(obj(c.followUp) && only(c.followUp, ['previous', 'text']) && str(c.followUp.previous, L.previousChars) && str(c.followUp.text, L.followUpChars, false))) return false;
@@ -213,8 +238,9 @@ export function readAsk(textIn: string): AskReply | null {
   if (!obj(raw) || !ASK_KINDS.includes(raw.kind as AskReply['kind']) || !str(raw.message, ASK_LIMITS.messageChars)) return null;
   // A lookup: only what to look in and the words; nothing else in it is used.
   if (raw.kind === 'lookup') {
-    const lk = obj(raw.lookup) ? raw.lookup : raw, query = word(lk.query, ASK_LIMITS.lookupQueryChars);
+    const lk = obj(raw.lookup) ? raw.lookup : raw, query = word(lk.query ?? lk.day, ASK_LIMITS.lookupQueryChars);
     const tool = lk.tool === undefined ? 'notes' : ASK_TOOLS.includes(lk.tool as typeof ASK_TOOLS[number]) ? lk.tool as typeof ASK_TOOLS[number] : null; // nothing else can be looked in
+    if (tool === 'day' && !isDate(query)) return null; // a day is a date the model worked out
     return query && tool ? { kind: 'lookup', message: (raw.message as string).trim(), items: [], action: null, lookup: { tool, query } } : null;
   }
   const sources = Array.isArray(raw.sources) ? raw.sources.filter((x): x is string => typeof x === 'string' && x.length > 0 && x.length <= 64).slice(0, ASK_LIMITS.lookupSources) : [];

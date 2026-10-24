@@ -229,7 +229,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     bad('an extra field on the review', { ...rv, extra: 'x' });
     bad('an extra field on a project that moved', { ...rv, moved: [{ ...rv.moved[0], title: 'Task titles' }] });
     const sys = A.buildAskMessages(mk(rv)).map(m => m.content).join('\n').replace(/\s+/g, ' ');
-    check('the instructions are version myday-ask-v17', A.ASK_PROMPT_VERSION === 'myday-ask-v17', A.ASK_PROMPT_VERSION);
+    check('the instructions are version myday-ask-v18', A.ASK_PROMPT_VERSION === 'myday-ask-v18', A.ASK_PROMPT_VERSION);
     check('…and have the week-in-review part: what pattern do you see, answer with no items, "never guess why"', sys.includes('A week in review') && sys.includes('what pattern you see') && sys.includes('never guess why') && sys.includes('No items'), sys.slice(0, 200));
     const m1 = JSON.parse(A.mockAsk(mk(rv)));
     check('the practice version answers "What pattern do you see in my week?" with kind "answer" and no items', m1.kind === 'answer' && Array.isArray(m1.items) && m1.items.length === 0 && m1.action === null, m1);
@@ -251,7 +251,8 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     bad('9 notes', { ...base, lookup: { ...found, notes: Array.from({ length: 9 }, (_, i) => ({ ...found.notes[1], id: 'n' + i })) } });
     bad('a snippet over 200 characters', { ...base, lookup: { ...found, notes: [{ ...found.notes[0], snippet: 'x'.repeat(201) }] } });
     bad('search words over 60 characters', { ...base, lookup: { ...found, query: 'x'.repeat(61) } });
-    const offer = A.buildAskMessages({ ...base, can: ['notes'] })[0].content, plain = A.buildAskMessages(base)[0].content, after = A.buildAskMessages({ ...base, can: ['notes'], lookup: found })[0].content;
+    const sysOf = c => A.buildAskMessages(c)[0].content.replace(/\s+/g, ' '); // line breaks don't matter
+    const offer = sysOf({ ...base, can: ['notes'] }), plain = sysOf(base), after = sysOf({ ...base, can: ['notes'], lookup: found });
     check('the instructions offer a lookup only when the app says it can', offer.includes('"lookup"') && offer.includes('1–4 key words') && !plain.includes('Looking in their notes'));
     check('…and, with what was found, answer from those notes only, cite them in "sources" and never look again', after.includes('Answer from those notes (and the page\'s data) only') && after.includes('"sources"') && after.includes('Never reply "lookup" again') && !after.includes('1–4 key words'));
     const lk = A.readAsk(JSON.stringify({ kind: 'lookup', message: 'Looking in your notes for that.', lookup: { tool: 'notes', query: 'bike rack' } }));
@@ -267,6 +268,25 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     check('…and, with what was found, answers naming the notes, with their ids as sources', m2.kind === 'answer' && m2.message.includes('“Shed sizes”') && m2.sources.join() === 'n1,n2', m2);
     const m3 = JSON.parse(A.mockAsk({ ...base, can: ['notes'], lookup: { ...found, notes: [], found: 0 } }));
     check('…or says plainly that nothing matched', m3.kind === 'answer' && m3.message.includes('nothing in your notes matches “bike rack”'), m3.message);
+    // "Your day" (v18): one day as the app sees it — busy times by kind only, never a name.
+    const day = { tool: 'day', query: '2026-11-12', weekday: 'Thursday', planned: true, rest: false, energy: 3, tasks: [{ title: 'Order the felt', minutes: 20, done: false, time: '10:00' }],
+      due: ['Post the parcel'], busy: [{ kind: 'appointment', start: '2026-11-12T15:00', end: '2026-11-12T16:00' }, { kind: 'work', start: '2026-11-12T07:00', end: '2026-11-12T12:00' }], free: [{ start: '12:30', end: '14:30' }] };
+    check('a day lookup is accepted (the app saying it can look at a day too)', A.checkAskContext({ ...base, can: ['notes', 'day'], lookup: day }) === true);
+    bad('a busy time with a name (an appointment\'s title never goes)', { ...base, lookup: { ...day, busy: [{ ...day.busy[0], title: 'Dentist' }] } });
+    bad('a busy time of a kind it doesn\'t know', { ...base, lookup: { ...day, busy: [{ ...day.busy[0], kind: 'secret' }] } });
+    bad('a day that isn\'t a date', { ...base, lookup: { ...day, query: 'Thursday' } });
+    bad('a planned task with its id or project (only title, minutes, done, time)', { ...base, lookup: { ...day, tasks: [{ ...day.tasks[0], projectId: 'pj1' }] } });
+    const offerDay = sysOf({ ...base, can: ['notes', 'day'] }), afterDay = sysOf({ ...base, can: ['notes', 'day'], lookup: day });
+    check('the instructions offer a day lookup only when the app says it can look at a day', offerDay.includes('"tool":"day"') && !offer.includes('"tool":"day"'));
+    check('…and, with the day, answer from it only and never guess what an appointment is for', afterDay.includes('Answer from that day only') && afterDay.includes('Never guess what an appointment or a shift is for') && afterDay.includes('Never reply "lookup" again'));
+    check('…and after a notes lookup, don\'t guess why nothing matched (the quality review\'s point)', after.includes('don\'t guess why nothing matched'));
+    const dl = A.readAsk(JSON.stringify({ kind: 'lookup', message: 'Looking at that day.', lookup: { tool: 'day', query: '2026-11-12' } }));
+    check('a day lookup reply is read with its date', dl && dl.lookup.tool === 'day' && dl.lookup.query === '2026-11-12', dl);
+    check('…but not with a day that isn\'t a date', A.readAsk(JSON.stringify({ kind: 'lookup', message: 'x', lookup: { tool: 'day', query: 'Thursday' } })) === null);
+    const md1 = JSON.parse(A.mockAsk({ ...base, text: 'Am I free on Thursday?', can: ['notes', 'day'] }));
+    check('the practice version looks at Thursday (from Tuesday 10 November: the 12th)', md1.kind === 'lookup' && md1.lookup.tool === 'day' && md1.lookup.query === '2026-11-12', md1);
+    const md2 = JSON.parse(A.mockAsk({ ...base, text: 'Am I free on Thursday?', can: ['notes', 'day'], lookup: day }));
+    check('…and, with the day, says what\'s on and how much is free', md2.kind === 'answer' && md2.message.includes('Thursday has 1 task planned and 1 appointment'), md2.message);
   }
   env = { AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_MOCK_DELAY_MS: '0', AI_DAILY_LIMIT: '50', AI_MIN_SECONDS_BETWEEN: '0', AI_MONTHLY_BUDGET_USD: '1' };
 
@@ -411,7 +431,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     const r1 = A.readAsk(rep([{ type: 'must-be-true', title: 'Crews would pay' }, { type: 'must-be-true', text: 'We can cook 40 boxes a day' }]));
     check('a reply\'s must-be-true items are kept, the words read from "title" or, when it is missing, from "text"', r1 && r1.items.length === 2 && r1.items.every(i => i.type === 'must-be-true') && r1.items[0].title === 'Crews would pay' && r1.items[1].title === 'We can cook 40 boxes a day', r1);
     const sys = A.buildAskMessages(mk(page)).map(m => m.content).join('\n');
-    check('the instructions are version myday-ask-v17 and mention must-be-true and onePage', A.ASK_PROMPT_VERSION === 'myday-ask-v17' && sys.includes('must-be-true') && sys.includes('onePage'), A.ASK_PROMPT_VERSION);
+    check('the instructions are version myday-ask-v18 and mention must-be-true and onePage', A.ASK_PROMPT_VERSION === 'myday-ask-v18' && sys.includes('must-be-true') && sys.includes('onePage'), A.ASK_PROMPT_VERSION);
     const m1 = JSON.parse(A.mockAsk(mk(page)));
     check('the practice version, with a one page and "Suggest what must be true…", answers "add" with 3 must-be-true items', m1.kind === 'add' && m1.items.length === 3 && m1.items.every(i => i.type === 'must-be-true'), m1);
     const m2 = JSON.parse(A.mockAsk(mk(undefined)));
@@ -424,7 +444,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     const mk = tasks => ({ version: 1, action: 'ask', date: '2026-11-10', weekday: 'Tuesday', time: '10:00', page: 'project', text: 'Summarise where this project is, and the one next step',
       context: { project: { id: 'pjB', title: 'Lunch boxes for sites', summary: 'Hot lunches for builders', stage: 'explore', tasks, notes: [] } } });
     const sys = A.buildAskMessages(mk([])).map(m => m.content).join('\n').replace(/\s+/g, ' ');
-    check('the instructions are version myday-ask-v17', A.ASK_PROMPT_VERSION === 'myday-ask-v17', A.ASK_PROMPT_VERSION);
+    check('the instructions are version myday-ask-v18', A.ASK_PROMPT_VERSION === 'myday-ask-v18', A.ASK_PROMPT_VERSION);
     check('the summary instructions say a done "Find out" task means they looked into it, not that its answer is confirmed', sys.includes('A summary of the project on this page') && sys.includes('a done "Find out: X" means they\'ve looked into whether X') && sys.includes('never that X is confirmed or true'));
     check('…and to summarise without advising on a legal, medical or money matter', sys.includes('legal, medical or money matter, summarise without advising'));
     const withTasks = mk([{ id: 'tkA', title: 'Ring the caterer', done: true }, { id: 'tkB', title: 'Price the boxes', done: false }, { id: 'tkC', title: 'Book a stall', done: false }]);

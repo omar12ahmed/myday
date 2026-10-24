@@ -2,7 +2,8 @@ import { ArrowRight, BookOpen, CalendarPlus, FileText, Flag, FolderKanban, ListP
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { addAskItems, applyAskChanges, applyAskEdit, checkAskReply, countWords, NEW_PROJECT, undoAsk, undoAskChanges, type AskChangeUndo, type AskChecked, type AskEdit, type AskProposal, type AskUndo } from '../ai/ask';
 import { askContext, askPreview, askSlice } from '../ai/askContext';
-import { lookupLine, notesLookup } from '../ai/lookup';
+import { dayLookup, lookupLine, notesLookup } from '../ai/lookup';
+import type { AskLookup } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
 import { canAdjust, handOverToAdjust } from '../ai/handover';
 import type { AskFocus } from './openCapture';
 import { AI_MODE, askModel } from '../ai/request';
@@ -21,8 +22,8 @@ import { startLearning, startRevision } from '../study/actions';
 // (the page's slice, askContext.ts). What comes back is checked against your data (ai/ask.ts) and shown as cards:
 // things to add (tick, rename, Add — one step of Undo), steps, changes to what's already saved (before → after, tick,
 // Apply — Undo puts the old values back), a short answer with at most one action, or "can't do that here". One follow-up at most; nothing is kept of the conversation.
-// A lookup in your notes (ai/lookup.ts): what was sent, and how many private notes matched (that count stays here).
-type Looked = ReturnType<typeof notesLookup>;
+// A lookup (ai/lookup.ts): what was sent, and how many private things matched (that count stays here).
+type Looked = { lookup: AskLookup; leftOut: number };
 type Shown = Exclude<AskChecked, { kind: 'lookup' }>;
 // MyDay's server keeps a few seconds between requests (AI_MIN_SECONDS_BETWEEN, 5 by default), so a lookup's second
 // request waits out the rest of them — and once more if the server still says it's too soon.
@@ -36,7 +37,7 @@ const pause = (ms: number, signal: AbortSignal) => new Promise<void>(done => {
 type Phase =
   | { at: 'idle' }
   | { at: 'asking' }
-  | { at: 'looking'; query: string }
+  | { at: 'looking'; tool: 'notes' | 'day'; query: string }
   | { at: 'shown'; r: Shown; model: string; followed: boolean; looked?: Looked }
   | { at: 'added'; undo: AskUndo; words: string }
   | { at: 'applied'; undo: AskChangeUndo; words: string }
@@ -100,10 +101,12 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
     if (r?.kind === 'lookup') {
       // It needs your notes: look on this device, through the privacy rules, and ask once more with what was found
       // (after the server's pause between requests; the newest data, checked again, is what's searched).
-      setPhase({ at: 'looking', query: r.query });
+      setPhase({ at: 'looking', tool: r.tool, query: r.query });
       if (AI_MODE === 'edge') await pause(PACE_MS - (clock() - started), ctrl.signal);
       if (ctrl.signal.aborted || !previewIsCurrent()) return;
-      looked = notesLookup(getSnapshot().data, r.query);
+      const found = r.tool === 'day' ? dayLookup(getSnapshot().data, r.query, k) : notesLookup(getSnapshot().data, r.query);
+      if (!found) { setPhase({ at: 'error', message: 'That day is too far off to look at — ask about a day from a week ago to two months ahead.' }); return; }
+      looked = found;
       const again = () => askModel(askContext(slice, text, k, undefined, followUp, looked!.lookup), ctrl.signal);
       reply = await again();
       if (!reply.ok && reply.reason === 'too-fast') {
@@ -162,7 +165,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
       </>}
       {phase.at === 'error' && <p role="alert" className="text-[15px] bg-warn-c text-on-warn-c rounded-tile px-3 py-2 mt-2.5 mb-0">{phase.message}</p>}
       {phase.at === 'asking' && <p role="status" className="text-[15px] text-fg-2 flex items-center gap-2 my-1"><span className="size-3 rounded-full bg-primary motion-safe:animate-pulse flex-none" aria-hidden="true" /> Asking MyDay…</p>}
-      {phase.at === 'looking' && <p role="status" className="text-[15px] text-fg-2 flex items-center gap-2 my-1" data-s="ask-looking"><span className="size-3 rounded-full bg-primary motion-safe:animate-pulse flex-none" aria-hidden="true" /> Looking in your notes for “{phase.query}”…</p>}
+      {phase.at === 'looking' && <p role="status" className="text-[15px] text-fg-2 flex items-center gap-2 my-1" data-s="ask-looking"><span className="size-3 rounded-full bg-primary motion-safe:animate-pulse flex-none" aria-hidden="true" /> {phase.tool === 'day' ? `Looking at ${prettyDate(phase.query)}…` : `Looking in your notes for “${phase.query}”…`}</p>}
       {phase.at === 'added' && <div className="flex flex-wrap items-center gap-x-3 gap-y-1" data-s="ask-added">
         <p className="text-[15px] m-0">Added {phase.words}.</p>
         <LinkButton data-action="ask-undo" onClick={() => { if (undoAsk(phase.undo)) { toast('Taken back.'); setPhase({ at: 'idle' }); } }}>Undo</LinkButton>

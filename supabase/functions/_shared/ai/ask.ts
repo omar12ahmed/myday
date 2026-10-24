@@ -10,30 +10,50 @@
 import type { ChatMessage } from './prompt.ts';
 
 export const ASK_CONTRACT_VERSION = 1;
-export const ASK_PROMPT_VERSION = 'myday-ask-v17';
+export const ASK_PROMPT_VERSION = 'myday-ask-v18';
 export * from './ask-shape.ts';
 import type { AskContext, AskReply } from './ask-shape.ts';
 
-// Looking in their notes (specs/ai-tools.md §3, from v17): offered only when the app says it can (`can`), and once per
-// question — the second request carries what the app found on the device, through its privacy rules.
+// Lookups (specs/ai-tools.md §3): in their notes (v17) or at one day (v18). Offered only for what the app says it can
+// look in (`can`), and once per question — the second request carries what the app found on the device, through its
+// privacy rules.
 function lookupRules(c: AskContext): string {
-  if (c.lookup) return `
+  const quoting = ` In "message", quote a note's title or the words searched with “ and ”, never with straight double
+quotes (they would end the JSON string).`;
+  if (c.lookup?.tool === 'notes') return `
 
 The app looked in their notes ("lookup" in the data: the words searched; up to 8 notes that matched, each with its title,
 its project's name and — only if they allow their notes' text to be shared — a short snippet; "found", how many matched
-in all; "titlesOnly" when only titles could be searched). Private notes are never sent, so nothing about them is here. Answer from those notes (and the page's data) only, usually as "answer" (or "add" if they asked to turn what's there into tasks or
-notes): name the notes you used and put their ids in "sources" (["id", …], only ids from "lookup"). Never claim more
-than the titles and snippets show, and never guess what a note says beyond its snippet. If nothing matched, say so
-plainly in one sentence and suggest where else they could look. Never reply "lookup" again. In "message", quote a
-note's title or the words searched with “ and ”, never with straight double quotes (they would end the JSON string).`;
-  if (!c.can?.includes('notes')) return '';
+in all; "titlesOnly" when only titles could be searched). Private notes are never sent, so nothing about them is here.
+Answer from those notes (and the page's data) only, usually as "answer" (or "add" if they asked to turn what's there
+into tasks or notes): name the notes you used and put their ids in "sources" (["id", …], only ids from "lookup"). Never
+claim more than the titles and snippets show, and never guess what a note says beyond its snippet. If nothing matched,
+say so plainly in one sentence and suggest another word to try — don't guess why nothing matched. Never reply "lookup"
+again.${quoting}`;
+  if (c.lookup?.tool === 'day') return `
+
+The app looked at one day ("lookup" in the data, "tool" "day": "query" is the date, with its weekday; "planned" whether
+its plan is built, "rest" for a rest day, its "energy" if set; "tasks" on its plan with minutes, done and a time if
+set; "due", tasks due that day that aren't on the plan; "busy", the times taken — "work" (a shift), "appointment",
+"workout", "sleep" and "prep" (travel and preparation around an appointment) — by kind only, never what an appointment
+is; "free", the free time left for tasks). A private project's tasks are never sent. Answer from that day only, as
+"answer" (or "add" if they asked to add something to it), in two or three sentences: what's on, how busy it is and
+when they're free, warmly and without judging. Never guess what an appointment or a shift is for. Never reply "lookup"
+again.${quoting}`;
+  const tools = c.can ?? [], offer: string[] = [];
+  if (tools.includes('notes')) offer.push(`- In their notes: they ask what they wrote, noted or saved about something, or to find a note —
+  {"kind":"lookup","message":"Looking in your notes for that.","lookup":{"tool":"notes","query":"…"}}, the query 1–4
+  key words from their request (names, places, topics — no filler words).`);
+  if (tools.includes('day')) offer.push(`- At one day: they ask whether they're free, what's on, or how busy a day is, and that day isn't in the data
+  (today's plan is in "today" when it's there) — {"kind":"lookup","message":"Looking at that day.","lookup":{"tool":"day","query":"YYYY-MM-DD"}},
+  the date worked out from the given date ("tomorrow", "Thursday", "the 31st").`);
+  if (!offer.length) return '';
   return `
 
-Looking in their notes: this app can look in their notes for you. If answering needs something from their own notes
-that isn't in the data — they ask what they wrote, noted or saved about something, or to find a note — reply with kind
-"lookup": {"kind":"lookup","message":"Looking in your notes for that.","lookup":{"tool":"notes","query":"…"}}. The
-query is 1–4 key words from their request (names, places, topics — no filler words). Only when the data doesn't already
-answer it; never for the web or anything that isn't their notes; never together with items or an action.`;
+Looking things up: this app can look for you, once per question, when answering needs something that isn't in the data:
+${offer.join('\n')}
+Only when the data doesn't already answer it; never for the web or anything else; never together with items or an
+action.`;
 }
 
 export function buildAskMessages(c: AskContext): ChatMessage[] {
@@ -148,8 +168,22 @@ export function mockAsk(c: AskContext): string {
   if (/\b(delete|remove all|wipe|send (an? )?(email|text|message)|buy|pay for|order)\b/i.test(t)) {
     return reply({ kind: 'cannot', message: "Practice helper (no AI): MyDay can't do that from here — you can change or remove things on their own pages.", items: [], action: null });
   }
+  // Looking at a day: the second time round, what's on; the first time, a lookup for the day named.
+  if (c.lookup?.tool === 'day') {
+    const l = c.lookup, free = l.free.reduce((m, g) => m + (Number(g.end.slice(0, 2)) * 60 + Number(g.end.slice(3)) - Number(g.start.slice(0, 2)) * 60 - Number(g.start.slice(3))), 0);
+    const appts = l.busy.filter(b => b.kind === 'appointment').length;
+    return reply({ kind: 'answer', action: null, items: [], message: `Practice helper (no AI): ${l.weekday} has ${l.tasks.length} ${l.tasks.length === 1 ? 'task' : 'tasks'} planned and ${appts} ${appts === 1 ? 'appointment' : 'appointments'}, with about ${Math.round(free / 60)} hours free.` });
+  }
+  const dayWord = t.match(/\b(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i)?.[1]?.toLowerCase();
+  if (c.can?.includes('day') && !c.lookup && dayWord && /\b(am i free|free on|what'?s on|how busy|anything on|busy on)\b/i.test(t) && !(dayWord === 'today' && c.context.today)) {
+    const d = new Date(`${c.date}T12:00`), names = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const add = dayWord === 'today' ? 0 : dayWord === 'tomorrow' ? 1 : ((names.indexOf(dayWord) - d.getDay() + 7) % 7 || 7);
+    d.setDate(d.getDate() + add);
+    const query = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    return reply({ kind: 'lookup', message: 'Practice helper (no AI): looking at that day.', items: [], action: null, lookup: { tool: 'day', query } });
+  }
   // Looking in your notes: the second time round, an answer from what was found; the first time, a lookup.
-  if (c.lookup) {
+  if (c.lookup?.tool === 'notes') {
     const l = c.lookup, names = l.notes.slice(0, 3).map(n => `“${n.title}”`).join(', ');
     return reply({ kind: 'answer', action: null, items: [], sources: l.notes.slice(0, 3).map(n => n.id),
       message: l.notes.length ? `Practice helper (no AI): ${l.found === 1 ? 'one note matches' : `${l.found} notes match`} “${l.query}”: ${names}.`
