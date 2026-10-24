@@ -474,6 +474,14 @@ fields). The conflict summary says "waiting". Who you're waiting on is never sen
 doesn't name them. To keep one meaning of "waiting", the weekly review's step 2 is now **What needs you** ("Nothing
 needs you right now — lovely"; a past-dated task "was planned for …").
 
+**Searching one project (unreleased; `specs/projects-search.md`):** every project page has "Search this project"
+under its tabs. While there's something in it, the page shows what matches instead of the tab ("2 matches for
+“armchair”"), in a fixed order by kind, each opening its item: what the project is about, its tasks (done and let go
+after the rest, marked), notes, milestones, decisions (with options, pros, cons, reasons and previous choices), a
+business idea's one page and a case's timeline, evidence and issues. Every word must appear, in any order; capitals
+and accents don't matter. Clear or Escape brings the tab back. Nothing is saved, and nothing is sent to AI or
+anywhere else (`src/data/projectSearch.ts`, `src/projects/SearchResults.tsx`).
+
 **Your week — the weekly review (1.37.0):** a short look back over the last seven days, at `#review` ("Your week"), in
 four steps, one at a time, with Back and Next. Nothing changes until you tap. **1 What moved:** each project's tasks
 done, milestones reached, decisions made, things found out, case records added (up to three done task names shown),

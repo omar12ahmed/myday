@@ -1,4 +1,4 @@
-import { ArrowUpRight, CalendarPlus, Check, Lock, NotebookPen, Pause, Pencil, Play, Plus, Sparkles, Trash2 } from 'lucide-react';
+import { ArrowUpRight, CalendarPlus, Check, Lock, NotebookPen, Pause, Pencil, Play, Plus, Search, Sparkles, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { exploreHref, rememberExploreEntry, restoreExploreEntry } from '../explore/route';
 import { addAppointment } from '../capture/save';
@@ -28,6 +28,7 @@ import { AddDeadline, EvidenceView, IssuesView, TimelineView } from './CaseViews
 import { AtAGlance, WorthALook } from './AtAGlance';
 import { ModelView } from './ModelView';
 import { DecisionsView, MilestonesView } from './PlanViews';
+import { SearchResults } from './SearchResults';
 import { tabHref } from './planText';
 
 // One project (#projects/p/<id>). Its Overview answers "what can I do next, and does anything need me?" first: the
@@ -38,6 +39,10 @@ export type ProjectTab = 'overview' | 'model' | 'milestones' | 'decisions' | 'ti
 const CASE_TABS: ProjectTab[] = ['timeline', 'evidence', 'issues'];
 export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDayData; id: string; tab?: ProjectTab }) {
   useEffect(() => { restoreExploreEntry(id); }, [id]);
+  // "Search this project" (specs/projects-search.md): only on this page, never saved; another project starts empty.
+  const [search, setSearch] = useState({ id, q: '' });
+  const query = search.id === id ? search.q : '', setQuery = (q: string) => setSearch({ id, q });
+  const clear = () => { setQuery(''); requestAnimationFrame(() => document.getElementById('projectSearch')?.focus()); };
   const p = projectById(data, id);
   if (!p) return <><BackLink to="projects" label="Projects" /><NotFound title="This project isn't here" back="projects" label="Back to your projects" /></>;
   // The Model tab is a business idea's, and Timeline, Evidence and Issues a case's; anywhere else their address shows the
@@ -46,8 +51,9 @@ export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDay
   return (
     <>
       <BackLink to="projects" label="Projects" />
-      <ProjectTop p={p} tab={tab} />
-      {tab === 'timeline' ? <TimelineView p={p} /> : tab === 'evidence' ? <EvidenceView p={p} /> : tab === 'issues' ? <IssuesView p={p} />
+      <ProjectTop p={p} tab={tab} query={query} onQuery={setQuery} />
+      {query.trim() ? <SearchResults data={data} p={p} query={query} onClear={clear} />
+        : tab === 'timeline' ? <TimelineView p={p} /> : tab === 'evidence' ? <EvidenceView p={p} /> : tab === 'issues' ? <IssuesView p={p} />
         : tab === 'model' ? <ModelView data={data} p={p} /> : tab === 'milestones' ? <MilestonesView p={p} /> : tab === 'decisions' ? <DecisionsView p={p} /> : <>
       <LeftOffCard p={p} />
       <OverviewTop data={data} p={p} />
@@ -71,7 +77,7 @@ export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDay
 
 // The project's name and its sections: Overview · Milestones · Decisions, with Model after Overview for a business idea
 // (each its own address, so Back works).
-function ProjectTop({ p, tab }: { p: Project; tab: ProjectTab }) {
+function ProjectTop({ p, tab, query, onQuery }: { p: Project; tab: ProjectTab; query: string; onQuery: (q: string) => void }) {
   const tabClass = (on: boolean) => `seg-link flex-1 inline-flex items-center justify-center min-h-11 rounded-xl text-[15px] font-semibold no-underline ${on ? 'on bg-primary-container text-on-primary-container' : 'text-fg-2'}`;
   return (
     <Card aria-labelledby="projectTitle" id="projectTop" className="!pb-2.5">
@@ -99,6 +105,14 @@ function ProjectTop({ p, tab }: { p: Project; tab: ProjectTab }) {
           <a className={tabClass(tab === 'decisions')} href={tabHref(p, 'decisions')} role="tab" aria-selected={tab === 'decisions'} data-tab="decisions">Decisions</a>
         </>}
       </nav>
+      <form role="search" className="mt-3" onSubmit={e => e.preventDefault()} data-s="project-search">
+        <label htmlFor="projectSearch" className="sr-only">Search this project</label>
+        <div className="relative max-w-xl">
+          <Search size={18} aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-3 pointer-events-none" />
+          <TextInput id="projectSearch" type="search" value={query} maxLength={120} placeholder="Search this project" className="!pl-10"
+            onChange={e => onQuery(e.target.value)} onKeyDown={e => { if (e.key === 'Escape') onQuery(''); }} />
+        </div>
+      </form>
     </Card>
   );
 }

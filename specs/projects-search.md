@@ -1,0 +1,48 @@
+# Searching one project
+
+**Status:** built under the owner's advance approval of 24 October 2026 (build and publish, taking the
+recommended option on routine choices; stop for saved data, AI, the live database, deletion or a real product
+choice). Phase 1, release 4 of `specs/projects-vision.md`. Not yet released.
+**Based on:** source at release 1.50.0.
+
+## 1. The practical problem
+
+A project collects tasks, notes, milestones, decisions and, for a business idea or a case, its own records. Finding
+"where did I write the electrician's number?" means opening tabs one by one. Notes has a search across all notes, but
+nothing searches one project's own things together.
+
+## 2. What changes
+
+- **"Search this project"**, a search field at the top of every project page, under its tabs.
+- While there's something in it, the page shows results instead of the tab's content: "4 matches for “armchair”",
+  grouped in a fixed order, each a link that opens the item. **Clear** (or Escape) returns to the tab.
+- **What it searches:** the project's own words (summary, what it's aiming for, what counts as finished, where you left
+  off); its tasks (title and notes; done and let-go ones after the rest, marked); its notes (title and text); milestones;
+  decisions (question, options, pros, cons, reasons and previous choices); a business idea's one page (answers and what
+  must be true, with what was found); a case's timeline, evidence and issues. A kind of project's hidden tools (a
+  business idea's one page kept after switching back to general) aren't searched, because their tab isn't shown.
+- **Matching:** every word you type must appear, in any order; capitals and accents don't matter ("cafe" finds
+  "Café"). Each result shows its kind, and, when the match is in longer text, a short excerpt.
+- **Opens:** a task or note opens itself; a milestone, decision, one-page item or case record opens its tab; the
+  project's own words open the Overview.
+- Calm and plain: no scores, no ranking by relevance, no counts beyond the number of matches.
+
+## 3. Saved data, sync and AI
+
+Nothing is saved: the search lives only on the page. No sync, schema or database change. Nothing is sent to AI or any
+service; it searches the data already on the device, including private notes and projects.
+
+## 4. Decisions taken under the advance approval (recommended options)
+
+1. A visible search field on every project tab, rather than a hidden button.
+2. Results replace the tab's content while searching, rather than stacking above it.
+3. All words must match; capitals and accents ignored; no fuzzy matching.
+4. Done and let-go tasks are included, after the rest, and marked.
+
+## 5. Checks
+
+- **Rules:** each kind is found and opens the right place; all words must match; accents and capitals; hidden tools
+  aren't searched; done tasks come after open ones; an empty query finds nothing; another project's items never appear.
+- **Browser:** typing shows results and hides the tab; Clear and Escape restore it; each result opens its item; nothing
+  found; phone at 320 px; keyboard (the field is a labelled search box; results are links in reading order).
+- **Visual (Taste skill):** results on desktop and phone, light and dark.
