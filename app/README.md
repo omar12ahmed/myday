@@ -1386,7 +1386,8 @@ Off unless the app is built with `VITE_AI` (`mock` = practice mode, rules not AI
 - A secondary button on Today's plan opens a card: an optional short note, then **one** request.
 - `src/ai/context.ts` gathers what's sent, with MyDay's own rules (the energy limit counting what's done, the
   calendar's busy blocks and free time — overnight shifts and clock changes included). Appointment names, Finance,
-  Health records and Study notes are not sent.
+  Health records and Study notes are not sent, and a private project's task goes as "a private task", without its
+  title (the owner's decision of 24 Oct 2026: Private covers every AI feature except note filing).
 - `src/ai/validate.ts` checks every reply before you see it: only today's open tasks by id, energy 1–2 (or not
   recorded) one small task (≤ 20 min), 3 two, 4–5 three (minus what's done), never longer than the task's usual
   length, times only inside free time, rest always allowed, missing information named (energy, sleep), short and

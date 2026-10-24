@@ -7,7 +7,7 @@ import { Why } from '../components/Why';
 import { isTime, minToTime, rangeMin, timeToMin } from '../data/dates';
 import { intIn } from '../data/normalize';
 import { taskLimit } from '../data/patterns/adapt';
-import { minutesLabel } from '../data/plan';
+import { backToTasks, minutesLabel } from '../data/plan';
 import { propChanges, type Proposal, type ProposalItem } from '../data/proposal';
 import { conflictsFor } from '../data/schedule';
 import { toast } from '../data/toast';
@@ -76,7 +76,7 @@ function Row({ it, p, data, placed, index, animate, act }: { it: ProposalItem; p
       {it.anytime && it.status === 'today' && !it.done && <p className="why text-sm text-fg-2 mt-2 mb-0">No set time — do it whenever suits you today.</p>}
       {it.status === 'later' && (
         <>
-          <p className="why text-sm text-fg-2 mt-2 mb-2">{it.note ? it.note + ' ' : ''}It'll wait in your queue for another day.</p>
+          <p className="why text-sm text-fg-2 mt-2 mb-2">{it.note ? it.note + ' ' : ''}{backToTasks(data, p.dayKey, it.uid) ? "It'll go back to Your tasks, with its own date." : "It'll wait in your queue for another day."}</p>
           <Button inline data-action="prop-keep" data-uid={it.uid} onClick={() => act.change(q => { const x = find(q); x.status = 'today'; x.note = null; x.start = null; }, { place: true })}>Keep it today</Button>
         </>
       )}

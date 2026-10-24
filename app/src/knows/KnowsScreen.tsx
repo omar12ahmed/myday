@@ -26,7 +26,7 @@ const OTHER: [string, string][] = [
   ['Help me adjust today', 'today’s plan (task titles — a private project’s task only as “a private task” — lengths, times), your energy and sleep, busy times from your calendar (as “appointment” or “work”, without titles), your free time, how much revision is due, and what you write'],
   ['Add what’s on my mind', 'only what you write, and the date'],
   ['AI help with notes', `a few notes MyDay can’t place by itself (never the one you have open, or one changed in the last few minutes), and your open projects’ names and summaries (projects you’ve made private included — their name and summary only) — only once you switch it on, at most ${AI_CONNECT_PER_DAY} times a day on each device`],
-  ['Make revision cards (on a note)', 'that one note (lines you’ve left out replaced by a placeholder), and the questions already in your revision from it'],
+  ['Make revision cards (on a note)', 'that one note (lines you’ve left out replaced by a placeholder), and the questions already in your revision from it — never a private note, or a note in a private project'],
   ['Ask the tutor (Cybersecurity)', 'which lesson you’re on and your question'],
   ['More practice (Cybersecurity)', 'which lesson, and the questions already in your revision for it'],
   ['Explain it another way', 'the question, its answer and the explanation you’ve seen, your own answer and how it went — and, for a Cybersecurity check, which lesson'],
@@ -96,7 +96,7 @@ export function KnowsScreen({ data }: { data: MyDayData }) {
         <h3 id="knows-never-h">Never sent</h3>
         <ul className="m-0 pl-5 grid gap-1.5 text-[15px]">
           <li data-s="knows-private">Notes you’ve marked private — by any AI help, ever.{privateNotes > 0 && ` You have ${privateNotes === 1 ? 'one' : privateNotes} at the moment.`}</li>
-          <li data-s="knows-private-projects">Projects you’ve made private — by Ask MyDay: not their name, summary, milestones, decisions, one page, tasks, notes or appointments. (AI help with notes can still suggest one as a place for a note, by its name and summary — your choice.) A case’s timeline, evidence and issues are never sent, private or not.{privateProjects > 0 && ` You have ${privateProjects === 1 ? 'one' : privateProjects} at the moment.`}</li>
+          <li data-s="knows-private-projects">Projects you’ve made private — by any AI help: not their name, summary, milestones, decisions, one page, tasks, notes or appointments. Help me adjust today sends one of their tasks on today’s plan only as “a private task”, and no revision cards are made from their notes. (AI help with notes can still suggest one as a place for a note, by its name and summary — your choice.) A case’s timeline, evidence and issues are never sent, private or not.{privateProjects > 0 && ` You have ${privateProjects === 1 ? 'one' : privateProjects} at the moment.`}</li>
           <li>Your name, your account’s email address, and your preferences and patterns (What MyDay has noticed works on this device).</li>
           <li>Your Finance records, and your Health records — Help me adjust today sees only when you’re working out, as busy time.</li>
         </ul>

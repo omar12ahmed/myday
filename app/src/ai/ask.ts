@@ -337,9 +337,13 @@ export function undoAskChanges(u: AskChangeUndo): { result: 'undone' | 'partly' 
       for (const c of copies) {
         const i = list.findIndex(y => y.id === c.id);
         if (i < 0) continue;
-        // A project here only had its "updated" time touched by a link, so one changed since isn't counted as kept.
-        if (canon(list[i]) !== u.after[`${kind}:${c.id}`]) { if (kind !== 'project') kept++; continue; }
-        list[i] = structuredClone(c); n++; back.add(`${kind}:${c.id}`);
+        // A project's "updated" time alone (touched by a link, or since) isn't a change of yours; anything else is kept.
+        const now = kind === 'project' ? canon({ ...list[i], updatedAt: null }) : canon(list[i]);
+        const then = kind === 'project' ? canon({ ...JSON.parse(u.after[`${kind}:${c.id}`] ?? 'null'), updatedAt: null }) : u.after[`${kind}:${c.id}`];
+        if (now !== then) { kept++; continue; }
+        // Exactly as it was, except a project's "updated" time when something touched it since (that stays).
+        const touched = kind === 'project' && (list[i] as { updatedAt?: string }).updatedAt !== (JSON.parse(u.after[`${kind}:${c.id}`] ?? 'null') as { updatedAt?: string } | null)?.updatedAt;
+        list[i] = touched ? { ...structuredClone(c), updatedAt: (list[i] as { updatedAt?: string }).updatedAt } as T : structuredClone(c); n++; back.add(`${kind}:${c.id}`);
       }
     };
     put('task', d.tasks.items, u.tasks); put('note', d.notes.items, u.notes); put('appointment', d.commitments, u.commitments); put('project', d.projects.items, u.projects);

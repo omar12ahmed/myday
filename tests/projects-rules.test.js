@@ -947,6 +947,14 @@ const clone = o => JSON.parse(JSON.stringify(o));
     lf.days[k] = { energy: 3, rest: false, builtAt: k + 'T08:00', checkedIn: false, tasks: [planTask('puF')] };
     lf.tasks.items = [TK('tkF', 'pjT', { plannedOn: k, planUid: 'puF' })];
     K.sendToQueue(lf, lf.days[k].tasks[0], k);
+    const backQ = rolledOne('tkB2', 'puB2'), queuedCopy = K.taskFromQueue(backQ.queue[0]);
+    backQ.queue = []; backQ.days[k] = { energy: 3, rest: false, builtAt: k + 'T08:00', checkedIn: false, tasks: [queuedCopy] }; K.followQueued(backQ, k);
+    K.sendToQueue(backQ, queuedCopy, k);
+    check('"Leave for later" on a copy that came from the queue: back to the queue, and the task waits there again', backQ.queue.length === 1 && backQ.tasks.items[0].plannedOn === yd && backQ.tasks.items[0].planUid === 'puB2' && K.inQueue(backQ, backQ.tasks.items[0]), backQ.tasks.items[0]);
+    const freeQ = K.freshState();
+    freeQ.days[k] = { energy: 3, rest: false, builtAt: k + 'T08:00', checkedIn: false, tasks: [planTask('puZ')] };
+    K.sendToQueue(freeQ, freeQ.days[k].tasks[0], k);
+    check('…and a plan task that isn\'t from Your tasks still waits in the queue, as before', freeQ.queue.length === 1 && freeQ.queue[0].title === 'Order the felt', freeQ.queue);
     check('"Leave for later" on a task put straight on the plan from Your tasks: back to Your tasks with its own date, not into the queue', lf.queue.length === 0 && lf.tasks.items[0].plannedOn === null && lf.tasks.items[0].planUid === null, [lf.queue.length, lf.tasks.items[0].planUid]);
 
     console.log('  What\'s waiting');

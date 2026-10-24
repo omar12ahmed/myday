@@ -990,6 +990,11 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const u1b = K.applyAskChanges(c.changes);
     K.update(dd => { dd.projects.items.find(p => p.id === 'pjC').updatedAt = `${D}T12:00`; }); // a project only touched since
     check('a project only touched since (its updated time) doesn\'t stop the change going back, and isn\'t counted as kept', K.undoAskChanges(u1b).result === 'undone' && K.getSnapshot().data.tasks.items.find(x => x.id === 'tkB').due === D);
+    const u1c = K.applyAskChanges(c.changes), pjTitle = K.getSnapshot().data.projects.items.find(p => p.id === 'pjC').title;
+    K.update(dd => { dd.projects.items.find(p => p.id === 'pjC').title = 'Coffee for offices'; }); // a real change to a project since
+    const r1c = K.undoAskChanges(u1c);
+    check('…but a project really changed since is kept, and counted ("Put back, except one thing you\'ve changed since")', r1c.result === 'partly' && r1c.kept === 1 && K.getSnapshot().data.projects.items.find(p => p.id === 'pjC').title === 'Coffee for offices' && K.getSnapshot().data.tasks.items.find(x => x.id === 'tkB').due === D, r1c);
+    K.update(dd => { dd.projects.items.find(p => p.id === 'pjC').title = pjTitle; });
     check('…and nothing else was touched (notes, appointments, days)', eq(K.getSnapshot().data.notes.items, before.notes.items) && eq(K.getSnapshot().data.commitments, before.commitments) && eq(K.getSnapshot().data.days, before.days));
     w = K.getSnapshot().data;
     c = K.checkAskReply(C([ch('task', 'tkX', { date: plus(1) }), ch('task', 'tkDone', { date: plus(1) }), ch('task', 'tkNope', { date: plus(1) }), ch('note', 'n4', { title: 'x' }), ch('appointment', 'c1', { time: '16:00' })]), w, today, D);

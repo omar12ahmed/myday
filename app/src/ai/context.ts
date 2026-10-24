@@ -41,7 +41,7 @@ export function doneBusy(data: MyDayData, k: DateKey): Segment[] {
 
 export function buildContext(data: MyDayData, k: DateKey, note: string): PlanContext {
   // A task of a private project goes as "a private task", without its title (the owner's choice, 24 Oct 2026).
-  const priv = privateProjectIds(data), hidden = new Set(data.tasks.items.filter(x => x.planUid && x.projectId && priv.has(x.projectId)).map(x => x.planUid));
+  const priv = privateProjectIds(data), hidden = new Set(data.tasks.items.filter(x => x.plannedOn === k && x.planUid && x.projectId && priv.has(x.projectId)).map(x => x.planUid));
   const d = data.days[k];
   const energy = energyOf(data, k);
   const kinds = { work: 'work', appointment: 'appointment', workout: 'workout', sleep: 'sleep', buffer: 'prep' } as const;

@@ -6,6 +6,7 @@ import { Card } from '../components/Card';
 import { CategoryChip } from '../components/CategoryChip';
 import { Field, TextArea } from '../components/Field';
 import { LinkButton, Note } from '../components/parts';
+import { backToTasks } from '../data/plan';
 import { getSnapshot } from '../data/storage';
 import { toast } from '../data/toast';
 import type { DateKey, MyDayData } from '../data/types';
@@ -74,7 +75,7 @@ export function AdjustCard({ data, k, onClose, onApplied }: { data: MyDayData; k
           </div>
           <Note className="mt-3 mb-0 text-sm">{AI_MODE === 'mock'
             ? 'Practice mode: suggestions come from simple rules on this device, not AI. Nothing is sent anywhere.'
-            : "Sent for this suggestion only: today's tasks, energy, sleep, busy times (not appointment names) and your note. Nothing is saved there."}</Note>
+            : "Sent for this suggestion only: today's tasks (a private project's only as “a private task”), energy, sleep, busy times (not appointment names) and your note. Nothing is saved there."}</Note>
         </>
       )}
 
@@ -120,7 +121,8 @@ export function AdjustCard({ data, k, onClose, onApplied }: { data: MyDayData; k
                 {!p.priorities.length && <li className="text-[15px] text-fg-2">Nothing more today — that's fine.</li>}
               </ol>
             )}
-            {p.later.length > 0 && <p className="text-sm text-fg-2 mt-3 mb-0" id="aiLater">Waits in your queue for another day: {p.later.map(x => x.title).join(', ')}.</p>}
+            {p.later.some(x => !backToTasks(data, k, x.uid)) && <p className="text-sm text-fg-2 mt-3 mb-0" id="aiLater">Waits in your queue for another day: {p.later.filter(x => !backToTasks(data, k, x.uid)).map(x => x.title).join(', ')}.</p>}
+            {p.later.some(x => backToTasks(data, k, x.uid)) && <p className="text-sm text-fg-2 mt-3 mb-0" id="aiLaterTasks">Back in Your tasks, with its own date: {p.later.filter(x => backToTasks(data, k, x.uid)).map(x => x.title).join(', ')}.</p>}
             {p.explanation && <p className="text-[15px] mt-3 mb-0" id="aiExplanation">{p.explanation}</p>}
             {p.missing.length > 0 && (
               <div className="mt-3" id="aiMissing"><p className="text-sm font-semibold m-0">Good to know</p>

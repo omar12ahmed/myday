@@ -712,6 +712,11 @@ const SEED = `s => {
     await mock.ev(`location.hash = 'knows'`); await mock.until(`document.querySelector('[data-s=knows-private-projects]')`, 5000);
     const kp = await mock.text('[data-s=knows-private-projects]');
     check('What MyDay knows lists private projects and counts yours', kp.startsWith('Projects you’ve made private') && kp.includes('You have one at the moment'), kp);
+    // No revision cards from a note in a private project (Private covers every AI feature but note filing).
+    await mock.setData(`s => { s.patterns.prefs.aiNotes = true; s.projects.items.push({ id: 'pjHush', title: 'Quiet plans', summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-01T09:00', updatedAt: '2026-10-01T09:00', private: true }); s.notes.items.push({ id: 'ntInPriv', title: 'Hush', text: 'A line in a private project that is long enough to be a card.', categoryId: '', pinned: false, projectId: 'pjHush', createdAt: '2026-10-01T09:00', updatedAt: '2026-10-01T09:00' }); }`);
+    await mock.ev(`location.hash = 'projects/notes/ntInPriv'`); await mock.until(`document.getElementById('noteEditor')`); await sleep(300);
+    check('a note in a private project offers no revision cards', !!(await mock.exists('#noteEditor')) && !(await mock.exists('#noteCards')));
+    await mock.setData(`s => { s.projects.items = s.projects.items.filter(p => p.id !== 'pjHush'); s.notes.items = s.notes.items.filter(n => n.id !== 'ntInPriv'); }`);
     await mock.ev(`location.hash = 'today'`); await sleep(200);
   }
 

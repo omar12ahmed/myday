@@ -207,6 +207,12 @@ export function queueTask(data: MyDayData, t: Task, k: DateKey) {
   sortQueue(data.queue);
 }
 
+// "Leave for later" on this plan task sends it back to Your tasks (a task from Inbox → Tasks put straight on the plan),
+// not to the queue — so the cards can say where it goes.
+export const backToTasks = (data: MyDayData, k: DateKey, uid: string) => {
+  const t = data.days[k]?.tasks.find(x => x.uid === uid);
+  return !!t && !t.fromQueue && data.tasks.items.some(x => x.plannedOn === k && x.planUid === uid);
+};
 export function sendToQueue(data: MyDayData, t: Task, k: DateKey) {
   const cameFromQueue = !!t.fromQueue, item = data.tasks.items.find(x => x.plannedOn && x.planUid === t.uid);
   releaseTask(data, t);
