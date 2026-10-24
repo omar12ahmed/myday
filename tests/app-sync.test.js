@@ -1308,7 +1308,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await sql(`update public.sync_accounts set epoch = 0 where user_id = $1`, [userW]);
   const logN = srv.log.length;
   await wmac.returnToApp(); await wmac.ev(`location.hash = 'sync'`);
-  check('an account whose wipe epoch is below the device\'s shows a problem ("Your account had a problem answering…", trying again later) instead of looping', await wmac.until(`/problem answering/.test(document.querySelector('#syncScreen')?.textContent || '') && /Trying again at/.test(document.querySelector('#syncScreen')?.textContent || '')`, 25000) && (await wmac.status()) !== 'synced', await diag(wmac));
+  check('an account whose wipe epoch is below the device\'s shows a problem (trying again later) instead of looping', await wmac.until(`/restored from before Delete everything/.test(document.querySelector('#syncScreen')?.textContent || '') && /Trying again at/.test(document.querySelector('#syncScreen')?.textContent || '')`, 25000) && (await wmac.status()) !== 'synced', await diag(wmac));
   check('…and it explains why: "Your account\'s records are older than this device\'s (it was restored from before Delete everything)."', /older than this device/.test(await wmac.text('#syncScreen')), await wmac.text('#syncScreen'));
   await sleep(4000);
   check('…and does not hammer the account: only a few reads of its state meanwhile', srv.log.slice(logN).filter(e => e.path === '/rest/v1/rpc/sync_state').length <= 4, srv.log.slice(logN).filter(e => e.path === '/rest/v1/rpc/sync_state').length);
