@@ -30,6 +30,7 @@ import { ModelView } from './ModelView';
 import { DecisionsView, MilestonesView } from './PlanViews';
 import { matchCount, searchProject, type SearchHit } from '../data/projectSearch';
 import { LearningCard } from './LearningCard';
+import { ResourcesCard } from './ResourcesCard';
 import { SearchResults } from './SearchResults';
 import { tabHref } from './planText';
 
@@ -77,6 +78,7 @@ export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDay
           <ComingUpCard data={data} p={p} />
           <RecentlyCard data={data} p={p} />
           <LearningCard data={data} p={p} />
+          <ResourcesCard p={p} />
           <ManageCard p={p} />
         </div>
       </div>

@@ -13,6 +13,7 @@ import { isBusiness, normalizeModel, normalizeTemplate, STATE_LABEL } from './bu
 import { normalizeCase } from './caseFile';
 import { noteName } from './notes';
 import { chosenOption, normalizeDecisions, normalizeMilestones } from './projectPlan';
+import { normalizeResources } from './projectResources';
 import { normalizeStudyLinks } from './studyLinks';
 import { isDone, onTodaysPlan, taskOrder } from './tasks';
 import type { Commitment, DateKey, MyDayData, Note, Project, ProjectsData, ProjectStage, ProjectStatus, TaskItem } from './types';
@@ -81,6 +82,9 @@ export function normalizeProjects(raw: unknown, report: { dropped: number }): Pr
     // What you're learning for it in Study (data/studyLinks.ts): kept only when there are some, likewise.
     const links = normalizeStudyLinks(p.studyLinks, report);
     if (links) item.studyLinks = links; else delete item.studyLinks;
+    // Web links you keep with it (data/projectResources.ts): likewise.
+    const resources = normalizeResources(p.resources, report);
+    if (resources) item.resources = resources; else delete item.resources;
     seen.add(item.id);
     out.items.push(item);
   }

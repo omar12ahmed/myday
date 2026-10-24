@@ -8,7 +8,7 @@ import type { Project } from '../data/types';
 // "Search this project": what was found, in a fixed order by kind (data/projectSearch.ts). Shown above the tab, which
 // stays as it was but hidden; Clear (or Escape) brings it back, and opening a result goes to the item itself.
 export function SearchResults({ p, hits, query, onClear, onPick }: { p: Project; hits: SearchHit[]; query: string; onClear: () => void; onPick: (h: SearchHit) => void }) {
-  const parts = ['what it’s about', 'its tasks', 'notes', 'milestones', 'decisions', ...(isBusiness(p) ? ['its one page'] : []), ...(isCase(p) ? ['its timeline, evidence and issues'] : [])];
+  const parts = ['what it’s about', 'its tasks', 'notes', 'milestones', 'decisions', ...(isBusiness(p) ? ['its one page'] : []), ...(isCase(p) ? ['its timeline, evidence and issues'] : []), 'links'];
   const where = `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
   return (
     <Card aria-labelledby="pjSearchH" id="projectSearchResults">

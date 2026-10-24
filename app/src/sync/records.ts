@@ -31,6 +31,7 @@ import { cleanArabicAttempt, cleanArabicCard, cleanArabicLesson, cleanKeptWord, 
 import { ARABIC_CORE_PATH, type ArabicAttempt, type ArabicCard, type ArabicLesson, type KeptWord } from '../data/arabic/types';
 import { PROJECT_KINDS, splitProject, type ProjectContent, type ProjectKind } from '../data/projectRecords';
 import { cleanProjectRecord, isProjectKind, projectApplyOrder, putProjectRecord } from './projectParts';
+import { resourceName } from '../data/projectResources';
 
 export type Kind = 'list' | 'queue' | 'day' | 'context'
   | 'settings' | 'rota' | 'pay' | 'holidays' | 'finance' | 'study' | 'workout' | 'food' | 'fitness' | 'notes' | 'tasks' | 'patterns'
@@ -425,8 +426,11 @@ export function recordLines(key: string, content: Content | null): string[] {
     // A project's own outcome, finish line and where you left off (1.48.0), and what you're learning for it (Study
     // links), so a conflict shows them too.
     const learning = kind === 'project' && Array.isArray(v.studyLinks) ? (v.studyLinks as unknown[]).filter(isObj).map(l => l.title).filter((x): x is string => typeof x === 'string') : [];
+    // …and the web links kept with it, by name (their title, or their site without one).
+    const kept = kind === 'project' && Array.isArray(v.resources) ? (v.resources as unknown[]).filter(isObj).filter(r => typeof r.url === 'string')
+      .map(r => resourceName({ title: typeof r.title === 'string' ? r.title : '', url: r.url as string })) : [];
     const own = kind === 'project' ? [v.outcome ? `Aiming for: ${v.outcome}` : null, v.finishedWhen ? `Finished when: ${v.finishedWhen}` : null,
-      isObj(v.leftOff) && typeof v.leftOff.text === 'string' ? `Where I left off: ${v.leftOff.text}` : null, learning.length ? `Learning: ${learning.join('; ')}` : null] : [];
+      isObj(v.leftOff) && typeof v.leftOff.text === 'string' ? `Where I left off: ${v.leftOff.text}` : null, learning.length ? `Learning: ${learning.join('; ')}` : null, kept.length ? `Links: ${kept.join('; ')}` : null] : [];
     return [v.title, ...own, v.text, v.summary, v.details, v.notes,
       kind === 'project_choice' ? (v.why === null ? 'Reason not saved' : v.why || 'No reason given') : v.why,
       v.on, v.date ? `${v.about ? 'About ' : ''}${v.date}` : null,

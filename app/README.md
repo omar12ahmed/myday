@@ -643,6 +643,18 @@ no lesson states yet). In Study, a course's page, a current book in Reading and 
 each opening the project. Nothing new is saved: a Cybersecurity link is a new kind in the existing `studyLinks`,
 which 1.56.0 and 1.57.0 keep unread and show as "From a newer MyDay". Never sent to AI.
 
+**Resources for a project (unreleased; `specs/projects-resources.md`):** a project's Overview has a **Resources**
+card in its side column, after Learning. **Add a link** keeps a web page with the project: its address (typed as you
+like: "example.com/page" becomes "https://example.com/page"), an optional title and an optional note. Each opens in
+a new tab and shows its site and your note; **Edit** and **Remove** (which asks first) change only the project. Only
+web addresses are kept (http or https with a real site name; not "javascript:", "mailto:" or an address with a user
+name or password), at most 30 a project, each once. Search this project also finds a link's title and note (not its
+address). Saved data: an optional `resources` on the project (`{ id, title, url, note?, addedOn }`), in the
+project's own synced record, with no schema, migration or database change (the exception in AGENTS.md: the previous
+release keeps the field unread, but doesn't show it); addresses are checked again on reading. The conflict details
+say "Links: …". Never sent to AI: no request builder reads it, and the ai-rules privacy check plants a secret in
+each link to prove it.
+
 **Your week — the weekly review (1.37.0):** a short look back over the last seven days, at `#review` ("Your week"), in
 four steps, one at a time, with Back and Next. Nothing changes until you tap. **1 What moved:** each project's tasks
 done, milestones reached, decisions made, things found out, case records added (up to three done task names shown),
@@ -995,6 +1007,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/caseFile.ts`, `src/projects/CaseViews.tsx` | The Case template (1.35.0): `caseFile.ts` (reading what's saved, unknown fields kept, links to missing items let go; the timeline, evidence and issues with their limits, links, counts and the size guard); `CaseViews.tsx` (the Timeline, Evidence and Issues tabs, and "Add a deadline" in a case's Coming up; its Overview summary is in At a glance). |
 | `src/data/projectDashboard.ts`, `src/projects/AtAGlance.tsx` | The dashboards per kind (1.36.0): `projectDashboard.ts` (the next dates, the weeks, entries by month, each issue's links and Worth a look; Today's own dashboard numbers stay in `dashboard.ts`); `AtAGlance.tsx` (the At a glance card with one row per tool, its pictures and Summarise this, and the Worth a look card beside the next step). Still-open tasks are `stillOpen` in `src/data/projects.ts`. |
 | `src/data/studyLinks.ts`, `src/projects/LearningCard.tsx`, `src/projects/learningArabic.ts`, `src/projects/learningCyber.ts`, `src/projects/ForYourProject.tsx` | Learning for a project (Study links): `studyLinks.ts` (reading and changing a project's links, Study's status for each, what can still be linked, which projects link an item); `LearningCard.tsx` (the Overview's Learning card and its form); `learningArabic.ts` and `learningCyber.ts` (lesson titles and Study's status, each catalogue loaded on demand); `ForYourProject.tsx` ("For your project: …" on a course's page, a book in Reading and a Cybersecurity lesson's page). |
+| `src/data/projectResources.ts`, `src/projects/ResourcesCard.tsx` | Resources for a project (web links): `projectResources.ts` (what counts as a web address, reading and changing a project's links, a link's name and site); `ResourcesCard.tsx` (the Overview's Resources card, its form and Remove's question). |
 | `src/data/projectSearch.ts`, `src/projects/SearchResults.tsx` | Searching one project: `projectSearch.ts` (what's searched, matching without capitals, accents or apostrophe differences, excerpts on whole characters, the fixed order by kind); `SearchResults.tsx` (the results card). The field and its query live in `ProjectView.tsx`. |
 | `src/data/weekReview.ts`, `src/review/ReviewScreen.tsx`, `src/today/ReviewCard.tsx` | The weekly review (1.37.0): `weekReview.ts` (when the review is due, what moved, what's waiting, focus, and saving the review); `ReviewScreen.tsx` (the four steps and See the pattern); `ReviewCard.tsx` (the card on Today). |
 | `src/study/arabic/WordFamilies.tsx`, `src/study/arabic/families.ts`, `content/teaching/arabic/word-families.json`, `scripts/validate-families.mjs` | Word families (1.38.0): the card on the vocabulary page and its notes; which family a word is in; the authored families (by word id); the build check. |

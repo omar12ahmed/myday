@@ -1,19 +1,20 @@
-// Searching one project: its own words, tasks, notes, milestones, decisions, a business idea's one page and a case's
-// records (specs/projects-search.md). It only reads what's on this device: nothing is saved and nothing is sent anywhere.
+// Searching one project: its own words, tasks, notes, milestones, decisions, a business idea's one page, a case's
+// records and the links you keep with it (their titles and notes; specs/projects-search.md, projects-resources.md). It only reads what's on this device: nothing is saved and nothing is sent anywhere.
 // Every word must appear, in any order; capitals, accents and the kind of apostrophe don't matter. No ranking: a fixed
 // order by kind. Only your own words are searched, never MyDay's labels ("Your answers", "Untitled note").
 import { isBusiness, isCase } from './businessModel';
 import { noteName } from './notes';
 import { decisionHistory } from './projectPlan';
 import { projectNotes, projectTasks } from './projects';
+import { resourceName } from './projectResources';
 import { isDone } from './tasks';
 import type { MyDayData, Project } from './types';
 
-export type SearchKind = 'about' | 'task' | 'note' | 'milestone' | 'decision' | 'model' | 'timeline' | 'evidence' | 'issue';
+export type SearchKind = 'about' | 'task' | 'note' | 'milestone' | 'decision' | 'model' | 'timeline' | 'evidence' | 'issue' | 'resource';
 export interface SearchHit { kind: SearchKind; id: string; title: string; excerpt: string; href: string; done?: 'done' | 'let go'; private?: true }
 export const SEARCH_KIND_LABEL: Record<SearchKind, string> = {
   about: 'About it', task: 'Task', note: 'Note', milestone: 'Milestone', decision: 'Decision', model: 'Your one page',
-  timeline: 'Timeline', evidence: 'Evidence', issue: 'Issue',
+  timeline: 'Timeline', evidence: 'Evidence', issue: 'Issue', resource: 'Link',
 };
 
 // "2 matches for “armchair”": the results' heading, and what the always-present status line tells a screen reader.
@@ -78,5 +79,7 @@ export function searchProject(data: MyDayData, p: Project, query: string): Searc
     for (const e of p.case.evidence) add('evidence', e.id, e.title, e.title, [e.where, e.notes], tab('evidence'));
     for (const i of p.case.issues) add('issue', i.id, i.title, i.title, [i.notes], tab('issues'));
   }
+  // A kept link: its title (or its site, shown but not searched — the address isn't your words) and note.
+  for (const r of p.resources ?? []) add('resource', r.id, resourceName(r), r.title, [r.note], tab());
   return hits;
 }
