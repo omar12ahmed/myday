@@ -1,5 +1,14 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.70.0 — Ask MyDay looks at a project:** ask "what's next on the flat move?" or "where am I with the coffee
+subscription?" from any page and, when it's one of your open projects but not the page you're on, Ask MyDay looks at
+that project on this device and answers from what its own page would send: its name, summary, stage, tasks,
+milestones and note titles (their text only with AI help with notes on). It says which project it looked at above the
+answer, with a link to it, and that second request counts towards the day's limit. Never a private project, never a
+private note of it, and never its outcome, what counts as finished or where you left off; its decisions stay on its
+page. "Break the flat move down" from Today now puts the steps into that project. The server's instructions (v19) were
+deployed first; no saved-data, sync or database change; going back to 1.69.0 is safe.
+
 **1.69.0 — Files: 10 GB, and what's used and what's left:** your files can now take 10 GB in all (2 GB before).
 Every Files card ends with a thin bar and "Your files: 1.2 GB used, 8.8 GB left of 10 GB." (rounded down; files in
 Recently deleted count until they go). A file that doesn't fit is refused with what's left, its size and how to make
