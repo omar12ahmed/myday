@@ -89,6 +89,8 @@ function checkReply(text: string, data: MyDayData, slice: AskSlice, k: DateKey, 
   // A message that stops mid-sentence is cut back to its last whole sentence.
   if (message && !/[.!?…)"”’]$/.test(message)) {
     const whole = message.match(/^[\s\S]*[.!?…](?=\s|$)/);
+    // A message cut off mid-thought ("I searched your notes for") can't be mended: the reply isn't usable.
+    if (!whole && /\b(for|to|the|a|an|of|on|about|in|with|and|or|matched|called|named|says?|is|are|was|your)\s*$/i.test(message)) return null;
     message = whole ? whole[0].trim() : message.replace(/[\s,;:—–-]+$/, '') + '.';
   }
   if (message && !gentle(message)) { message = ''; changed.push('Left out a sentence that wasn’t gentle enough.'); }

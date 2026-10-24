@@ -24,7 +24,8 @@ its project's name and — only if they allow their notes' text to be shared —
 in all; "titlesOnly" when only titles could be searched). Private notes are never sent, so nothing about them is here. Answer from those notes (and the page's data) only, usually as "answer" (or "add" if they asked to turn what's there into tasks or
 notes): name the notes you used and put their ids in "sources" (["id", …], only ids from "lookup"). Never claim more
 than the titles and snippets show, and never guess what a note says beyond its snippet. If nothing matched, say so
-plainly in one sentence and suggest where else they could look. Never reply "lookup" again.`;
+plainly in one sentence and suggest where else they could look. Never reply "lookup" again. In "message", quote a
+note's title or the words searched with “ and ”, never with straight double quotes (they would end the JSON string).`;
   if (!c.can?.includes('notes')) return '';
   return `
 
