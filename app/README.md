@@ -488,7 +488,9 @@ page, Ask MyDay replies "look up" with the date (worked out from the day named);
 titles, minutes, done, a time), tasks due that day not on it, busy times by kind only (work, appointment, workout,
 sleep, prep — never an appointment's name; a private project's appointments count as busy time too, as in Help me adjust
 today), free time and energy. A private project's tasks are left out (counted only on the device: "— 1 private task left
-out"). A day further off gets a plain "I can only look at a day from a week ago to two months ahead". Evaluated with `ai-eval/ask-scenarios.ts` (y01–y07).
+out"). A day further off gets a plain "I can only look at a day from a week ago to two months ahead". How much is left on a
+plan (`minutesLeft`, on Today's page data too) is worked out on the device from the tasks sent: the model added up
+minutes counting ones done. Evaluated in `ai-eval/reviews/2026-10-24-ask-day-quality.md`. Evaluated with `ai-eval/ask-scenarios.ts` (y01–y07).
 
 **Planning a Study course with Ask (1.26.0):** a course page has **✦ Plan this course with Ask**, which opens + already
 filled in ("Break this course into study tasks"; `src/capture/openCapture.ts`). From a course page Ask sends the

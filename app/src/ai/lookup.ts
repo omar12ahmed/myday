@@ -46,11 +46,12 @@ export function dayLookup(data: MyDayData, day: DateKey, today: DateKey = todayK
   const reach = aiReach(data), held = reach.heldOnPlan(day), d = data.days[day], pc = buildContext(data, day, '');
   const plan = d?.tasks ?? [], dueAll = data.tasks.items.filter(t => t.due === day && !t.done && !t.letGoOn && !onTodaysPlan(data, t, day));
   const due = dueAll.filter(reach.task);
+  const tasks = plan.filter(t => !held.has(t.uid)).slice(0, L.dayTasks).map(t => ({ title: cut(t.title, L.titleChars), minutes: t.minutes, done: t.done, time: t.scheduledStart ? t.scheduledStart.slice(11, 16) : null }));
   return {
     lookup: {
       tool: 'day', query: day, weekday: parseKey(day).toLocaleDateString('en-GB', { weekday: 'long' }),
       planned: !!d && !d.rest, rest: !!d?.rest, energy: pc.energy ?? null,
-      tasks: plan.filter(t => !held.has(t.uid)).slice(0, L.dayTasks).map(t => ({ title: cut(t.title, L.titleChars), minutes: t.minutes, done: t.done, time: t.scheduledStart ? t.scheduledStart.slice(11, 16) : null })),
+      tasks, minutesLeft: tasks.reduce((sum, t) => sum + (t.done ? 0 : t.minutes), 0),
       due: due.slice(0, L.dayTasks).map(t => cut(t.title, L.titleChars)),
       busy: pc.busy.filter(b => (DAY_KINDS as readonly string[]).includes(b.kind)).slice(0, L.dayBusy).map(b => ({ kind: b.kind as AskDayLookup['busy'][number]['kind'], start: b.start, end: b.end })),
       free: pc.free.slice(0, L.dayFree),

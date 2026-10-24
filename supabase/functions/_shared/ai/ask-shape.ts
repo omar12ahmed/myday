@@ -44,7 +44,8 @@ interface Ref { id: string; title: string }
 // The slice of the page you're on (only what's listed here is ever sent; the app shows it before you tap).
 export interface AskPageContext {
   projects?: Ref[];                                                     // open projects' names (to file things into)
-  today?: { energy: number | null; freeMinutes: number | null; plan: { id: string; title: string; minutes: number; done: boolean }[]; dueToday: Ref[]; revisionDue?: number };
+  // minutesLeft: the minutes of the plan's tasks sent that aren't done (v18; an older app doesn't send it).
+  today?: { energy: number | null; freeMinutes: number | null; plan: { id: string; title: string; minutes: number; done: boolean }[]; minutesLeft?: number; dueToday: Ref[]; revisionDue?: number };
   study?: { course: Ref | null; nextTask: Ref | null; topics: string[]; revisionDue: number; energy?: number | null; freeMinutes?: number | null }; // energy and free time today, to fit a session to them
   project?: {
     id: string; title: string; summary: string; stage: typeof ASK_STAGES[number]; tasks: (Ref & { done: boolean })[]; notes: string[]; notesText?: string;
@@ -90,6 +91,7 @@ export interface AskNotesLookup {
 export interface AskDayLookup {
   tool: 'day'; query: string; weekday: string; planned: boolean; rest: boolean; energy: number | null;
   tasks: { title: string; minutes: number; done: boolean; time: string | null }[];
+  minutesLeft: number; // of those tasks, the minutes not done
   due: string[];
   busy: { kind: typeof DAY_KINDS[number]; start: string; end: string }[];
   free: { start: string; end: string }[];
@@ -152,9 +154,10 @@ export function checkAskContext(raw: unknown): raw is AskContext {
         && n(lk.found) && typeof lk.titlesOnly === 'boolean')) return false;
     } else if (lk.tool === 'day') {
       const dt = (v: unknown) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/.test(v);
-      if (!(only(lk, ['tool', 'query', 'weekday', 'planned', 'rest', 'energy', 'tasks', 'due', 'busy', 'free']) && isDate(lk.query) && str(lk.weekday, 12, false)
+      if (!(only(lk, ['tool', 'query', 'weekday', 'planned', 'rest', 'energy', 'tasks', 'minutesLeft', 'due', 'busy', 'free']) && isDate(lk.query) && str(lk.weekday, 12, false)
         && typeof lk.planned === 'boolean' && typeof lk.rest === 'boolean' && (lk.energy === null || (Number.isInteger(lk.energy) && (lk.energy as number) >= 1 && (lk.energy as number) <= 5))
         && Array.isArray(lk.tasks) && lk.tasks.length <= L.dayTasks && lk.tasks.every(t => obj(t) && only(t, ['title', 'minutes', 'done', 'time']) && str(t.title, L.titleChars, false) && Number.isInteger(t.minutes) && typeof t.done === 'boolean' && (t.time === null || isTime(t.time)))
+        && Number.isInteger(lk.minutesLeft) && (lk.minutesLeft as number) >= 0 && (lk.minutesLeft as number) <= 10000
         && Array.isArray(lk.due) && lk.due.length <= L.dayTasks && lk.due.every(t => str(t, L.titleChars, false))
         && Array.isArray(lk.busy) && lk.busy.length <= L.dayBusy && lk.busy.every(x => obj(x) && only(x, ['kind', 'start', 'end']) && DAY_KINDS.includes(x.kind as typeof DAY_KINDS[number]) && dt(x.start) && dt(x.end))
         && Array.isArray(lk.free) && lk.free.length <= L.dayFree && lk.free.every(x => obj(x) && only(x, ['start', 'end']) && isTime(x.start) && isTime(x.end)))) return false;
@@ -192,7 +195,8 @@ export function checkAskContext(raw: unknown): raw is AskContext {
   if (x.projects !== undefined && !refs(x.projects)) return false;
   if (x.today !== undefined) {
     const t = x.today;
-    if (!obj(t) || !only(t, ['energy', 'freeMinutes', 'plan', 'dueToday', 'revisionDue'])) return false;
+    if (!obj(t) || !only(t, ['energy', 'freeMinutes', 'plan', 'minutesLeft', 'dueToday', 'revisionDue'])) return false;
+    if (t.minutesLeft !== undefined && !(Number.isInteger(t.minutesLeft) && (t.minutesLeft as number) >= 0 && (t.minutesLeft as number) <= 10000)) return false;
     if (t.revisionDue !== undefined && !(Number.isInteger(t.revisionDue) && (t.revisionDue as number) >= 0)) return false;
     if (!(t.energy === null || (Number.isInteger(t.energy) && (t.energy as number) >= 1 && (t.energy as number) <= 5))) return false;
     if (!(t.freeMinutes === null || (Number.isInteger(t.freeMinutes) && (t.freeMinutes as number) >= 0 && (t.freeMinutes as number) <= 1440))) return false;

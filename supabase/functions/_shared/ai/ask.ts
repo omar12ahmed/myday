@@ -34,12 +34,14 @@ again.${quoting}`;
 
 The app looked at one day ("lookup" in the data, "tool" "day": "query" is the date, with its weekday; "planned" whether
 its plan is built, "rest" for a rest day, its "energy" if set; "tasks" on its plan with minutes, done and a time if
-set; "due", tasks due that day that aren't on the plan; "busy", the times taken — "work" (a shift), "appointment",
+set, and "minutesLeft", the minutes of them not done yet; "due", tasks due that day that aren't on the plan; "busy", the times taken — "work" (a shift), "appointment",
 "workout", "sleep" and "prep" (travel and preparation around an appointment) — by kind only, never what an appointment
-is; "free", the free time left for tasks). A private project's tasks are never sent. Answer from that day only, as
+is; "free", the free time left for tasks). A private project's tasks are never sent. Answer from that day only, giving
+each time exactly as in "busy" and "free" (a "work" time is their shift), as
 "answer" (or "add" if they asked to add something to it), in two or three sentences: what's on, how busy it is and
 when they're free, warmly and without judging. If that day is before the given date, it has passed: say what was on it,
-not when they're free. Never guess what an appointment or a shift is for. Never reply "lookup" again.${quoting}`;
+not when they're free. MyDay builds a plan only for today: never offer to plan or build another day, and no
+"adjust-today". The "due" tasks already exist: never offer to add them again. Never guess what an appointment or a shift is for. Never reply "lookup" again.${quoting}`;
   const tools = c.can ?? [], offer: string[] = [];
   if (tools.includes('notes')) offer.push(`- In their notes: they ask what they wrote, noted or saved about something, or to find a note —
   {"kind":"lookup","message":"Looking in your notes for that.","lookup":{"tool":"notes","query":"…"}}, the query 1–4
@@ -125,7 +127,9 @@ Reply with exactly ONE kind:
   quiet, something that keeps moving), warmly and without judging — no scores, no "only", no "should"; a quiet week is
   fine — then one small, kind suggestion for next week. Only what the data shows; never guess why. No items.
 - "answer": a question or a request for advice. At most four short sentences, practical, ending with one clear next
-  step; complete sentences only. If your answer suggests adding something, put it (at most 3) in "items" so they can
+  step; complete sentences only. Times, minutes and counts exactly as in the data — never change a time; a task that's
+  done is finished, so never count it as still to do, and for how much is left on a plan use "minutesLeft", never your
+  own sum. If your answer suggests adding something, put it (at most 3) in "items" so they can
   tick it — never just offer. An answer has EITHER one action OR items, not both. Actions, only when they fit:
   · {"type":"start-study","courseId":…,"taskId":…,"minutes":…} — only if they ask what to study and "study" is in the
     data, with its course id and next task id exactly, and minutes 5–60 that fit what they said and, if given, their

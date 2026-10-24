@@ -29,7 +29,7 @@ export interface AskScenario {
 const NOW = '2026-10-20T09:30'; // a Tuesday
 const PROJECTS = [{ id: 'pjCof', title: 'Coffee subscription for offices' }, { id: 'pjHar', title: 'Hargeisa marketplace' }, { id: 'pjMove', title: 'Move to a bigger flat' }];
 const TODAY: AskPageContext = { projects: PROJECTS, today: { energy: 2, freeMinutes: 150, plan: [
-  { id: 'u1', title: 'Course section: DNS in detail', minutes: 30, done: false }, { id: 'u2', title: 'Batch cook', minutes: 45, done: false }, { id: 'u3', title: 'Gym', minutes: 60, done: true }],
+  { id: 'u1', title: 'Course section: DNS in detail', minutes: 30, done: false }, { id: 'u2', title: 'Batch cook', minutes: 45, done: false }, { id: 'u3', title: 'Gym', minutes: 60, done: true }], minutesLeft: 75,
   dueToday: [{ id: 'tk1', title: 'Pay council tax' }], revisionDue: 3 } };
 const STUDY: AskPageContext = { projects: PROJECTS, study: { course: { id: 'coP', title: 'TryHackMe: Pre-Security path' }, nextTask: { id: 'tkH', title: 'HTTP in detail' }, topics: ['Cybersecurity', 'Arabic'], revisionDue: 6, energy: 2, freeMinutes: 150 } };
 const COFFEE: AskPageContext = { projects: PROJECTS, project: { id: 'pjCof', title: 'Coffee subscription for offices', summary: 'Fresh beans delivered to small offices every fortnight, priced per kilo.', stage: 'explore',
@@ -229,16 +229,16 @@ export const ASK_SCENARIOS: AskScenario[] = [
   // Looking at a day (v18). NOW is Tuesday 20 October 2026: Thursday is the 22nd, tomorrow the 21st.
   A('y01-free-thursday', 'Am I free on Thursday afternoon?', 'projects', 'Am I free on Thursday afternoon?', { projects: PROJECTS }, { kinds: ['lookup'], lookupWords: /^2026-10-22$/ }, { can: ['notes', 'day'] }),
   A('y02-tomorrow', "What's on tomorrow?", 'notes', "what's on tomorrow?", { projects: PROJECTS }, { kinds: ['lookup'], lookupWords: /^2026-10-21$/ }, { can: ['notes', 'day'] }),
-  A('y03-today-shown', 'How busy is today — already on the page', 'today', 'how busy am I today?', TODAY, { kinds: ['answer'] }, { can: ['notes', 'day'] }),
+  A('y03-today-shown', 'How busy is today — already on the page', 'today', 'how busy am I today?', TODAY, { kinds: ['answer'], banned: /\b135\b|2¼|two and a quarter|2\.25/i }, { can: ['notes', 'day'] }), // 75 minutes left (the gym is done)
   A('y04-notes-still', 'A notes question with both lookups on offer', 'today', 'What did I write about the bike rack?', TODAY, { kinds: ['lookup'], lookupWords: /bike|rack/i }, { can: ['notes', 'day'] }),
   A('y05-busy-day', 'Answer from a busy Thursday (an appointment with no name)', 'projects', 'Am I free on Thursday afternoon?', { projects: PROJECTS },
     { kinds: ['answer'], banned: /\b(dentist|doctor|GP|meeting|interview|haircut|lunch with)\b/i },
     { can: ['notes', 'day'], lookup: { tool: 'day', query: '2026-10-22', weekday: 'Thursday', planned: true, rest: false, energy: 3,
-      tasks: [{ title: 'Order the felt', minutes: 20, done: false, time: '10:00' }, { title: 'Course section: DNS in detail', minutes: 30, done: false, time: null }], due: ['Post the parcel'],
+      tasks: [{ title: 'Order the felt', minutes: 20, done: false, time: '10:00' }, { title: 'Course section: DNS in detail', minutes: 30, done: false, time: null }], minutesLeft: 50, due: ['Post the parcel'],
       busy: [{ kind: 'work', start: '2026-10-22T07:00', end: '2026-10-22T12:00' }, { kind: 'prep', start: '2026-10-22T14:30', end: '2026-10-22T15:00' }, { kind: 'appointment', start: '2026-10-22T15:00', end: '2026-10-22T16:00' }],
       free: [{ start: '12:30', end: '14:30' }, { start: '16:30', end: '21:00' }] } }),
   A('y06-empty-day', 'Answer from a day with nothing on', 'notes', "what's on tomorrow?", { projects: PROJECTS }, { kinds: ['answer'] },
-    { can: ['notes', 'day'], lookup: { tool: 'day', query: '2026-10-21', weekday: 'Wednesday', planned: false, rest: false, energy: null, tasks: [], due: [], busy: [], free: [{ start: '08:00', end: '21:00' }] } }),
+    { can: ['notes', 'day'], lookup: { tool: 'day', query: '2026-10-21', weekday: 'Wednesday', planned: false, rest: false, energy: null, tasks: [], minutesLeft: 0, due: [], busy: [], free: [{ start: '08:00', end: '21:00' }] } }),
   A('y07-rest-day', 'Answer from a rest day, gently', 'projects', 'Am I free on Thursday?', { projects: PROJECTS }, { kinds: ['answer'], banned: /\b(should|lazy|catch up|behind)\b/i },
-    { can: ['notes', 'day'], lookup: { tool: 'day', query: '2026-10-22', weekday: 'Thursday', planned: false, rest: true, energy: 1, tasks: [], due: ['Pay council tax'], busy: [], free: [{ start: '08:00', end: '21:00' }] } }),
+    { can: ['notes', 'day'], lookup: { tool: 'day', query: '2026-10-22', weekday: 'Thursday', planned: false, rest: true, energy: 1, tasks: [], minutesLeft: 0, due: ['Pay council tax'], busy: [], free: [{ start: '08:00', end: '21:00' }] } }),
 ];

@@ -269,7 +269,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     const m3 = JSON.parse(A.mockAsk({ ...base, can: ['notes'], lookup: { ...found, notes: [], found: 0 } }));
     check('…or says plainly that nothing matched', m3.kind === 'answer' && m3.message.includes('nothing in your notes matches “bike rack”'), m3.message);
     // "Your day" (v18): one day as the app sees it — busy times by kind only, never a name.
-    const day = { tool: 'day', query: '2026-11-12', weekday: 'Thursday', planned: true, rest: false, energy: 3, tasks: [{ title: 'Order the felt', minutes: 20, done: false, time: '10:00' }],
+    const day = { tool: 'day', query: '2026-11-12', weekday: 'Thursday', planned: true, rest: false, energy: 3, tasks: [{ title: 'Order the felt', minutes: 20, done: false, time: '10:00' }], minutesLeft: 20,
       due: ['Post the parcel'], busy: [{ kind: 'appointment', start: '2026-11-12T15:00', end: '2026-11-12T16:00' }, { kind: 'work', start: '2026-11-12T07:00', end: '2026-11-12T12:00' }], free: [{ start: '12:30', end: '14:30' }] };
     check('a day lookup is accepted (the app saying it can look at a day too)', A.checkAskContext({ ...base, can: ['notes', 'day'], lookup: day }) === true);
     bad('a busy time with a name (an appointment\'s title never goes)', { ...base, lookup: { ...day, busy: [{ ...day.busy[0], title: 'Dentist' }] } });
@@ -284,11 +284,18 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     bad('25 free times', { ...base, lookup: { ...day, free: Array.from({ length: 25 }, () => day.free[0]) } });
     bad('a task title over 120 characters', { ...base, lookup: { ...day, tasks: [{ ...day.tasks[0], title: 'x'.repeat(121) }] } });
     bad('an energy of 6', { ...base, lookup: { ...day, energy: 6 } });
+    bad('a day without the minutes still to do', { ...base, lookup: (({ minutesLeft, ...rest }) => rest)(day) });
+    bad('minutes still to do that aren\'t a whole number', { ...base, lookup: { ...day, minutesLeft: 12.5 } });
     check('…while 20 tasks, 40 busy times and 24 free times, energy 1 and an empty rest day are accepted', A.checkAskContext({ ...base, lookup: { ...day, energy: 1, tasks: Array.from({ length: 20 }, () => day.tasks[0]), busy: Array.from({ length: 40 }, () => day.busy[0]), free: Array.from({ length: 24 }, () => day.free[0]) } }) === true
-      && A.checkAskContext({ ...base, lookup: { ...day, planned: false, rest: true, energy: null, tasks: [], due: [], busy: [], free: [] } }) === true);
+      && A.checkAskContext({ ...base, lookup: { ...day, planned: false, rest: true, energy: null, tasks: [], minutesLeft: 0, due: [], busy: [], free: [] } }) === true);
+    const today = { energy: 2, freeMinutes: 150, plan: [{ id: 'u1', title: 'Batch cook', minutes: 45, done: false }, { id: 'u2', title: 'Gym', minutes: 60, done: true }], dueToday: [] };
+    check('Today\'s minutes still to do are accepted (v18), and Today without them too (an older app)', A.checkAskContext({ ...base, context: { today: { ...today, minutesLeft: 45 } } }) === true && A.checkAskContext({ ...base, context: { today } }) === true);
+    bad('Today\'s minutes still to do below 0', { ...base, context: { today: { ...today, minutesLeft: -5 } } });
     const offerDay = sysOf({ ...base, can: ['notes', 'day'] }), afterDay = sysOf({ ...base, can: ['notes', 'day'], lookup: day });
     check('the instructions offer a day lookup only when the app says it can look at a day', offerDay.includes('"tool":"day"') && !offer.includes('"tool":"day"'));
     check('…and, with the day, answer from it only and never guess what an appointment is for', afterDay.includes('Answer from that day only') && afterDay.includes('Never guess what an appointment or a shift is for') && afterDay.includes('Never reply "lookup" again'));
+    check('…its times exactly as sent, and MyDay plans today only: never offer to plan another day, nor to add what\'s already due', afterDay.includes('giving each time exactly as in "busy" and "free"') && afterDay.includes('MyDay builds a plan only for today: never offer to plan or build another day') && afterDay.includes('The "due" tasks already exist: never offer to add them again.'));
+    check('any answer: how much is left on a plan comes from "minutesLeft", never the model\'s own sum, and done tasks aren\'t still to do', plain.includes('a task that\'s done is finished, so never count it as still to do, and for how much is left on a plan use "minutesLeft", never your own sum.'));
     check('…and a day that has passed is told as what was on it, not when they\'re free', afterDay.includes('If that day is before the given date, it has passed: say what was on it, not when they\'re free.'));
     check('…and after a notes lookup, don\'t guess why nothing matched (the quality review\'s point)', after.includes('don\'t guess why nothing matched'));
     const dl = A.readAsk(JSON.stringify({ kind: 'lookup', message: 'Looking at that day.', lookup: { tool: 'day', query: '2026-11-12' } }));

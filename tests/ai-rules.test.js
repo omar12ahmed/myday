@@ -747,6 +747,12 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('Finance (and Health): only the page\'s name — not even project names', eq(sl.context, {}) && sl.sends === 'what you typed, the date');
     sl = K.askSlice(w, '#today', D);
     check('Today: the plan by id, energy, free time and tasks due today', eq(sl.context.today.plan.map(t => t.id), ['u1']) && sl.context.today.energy === 3 && Number.isInteger(sl.context.today.freeMinutes) && eq(sl.context.today.dueToday.map(t => t.id), ['tkB']));
+    {
+      // How much is left is worked out here (v18): models added up a plan's minutes counting the ones done.
+      const tw = { ...w, days: { ...w.days, [D]: { ...w.days[D], tasks: [...w.days[D].tasks.map(t => ({ ...t, done: false })), { ...w.days[D].tasks[0], uid: 'uDone', title: 'Gym', minutes: 60, done: true }] } } };
+      const t = K.askSlice(tw, '#today', D).context.today, open = t.plan.filter(x => !x.done);
+      check('…and the minutes of it still to do (not the ones done)', t.plan.some(x => x.done && x.minutes === 60) && open.length > 0 && t.minutesLeft === open.reduce((s, x) => s + x.minutes, 0) && K.checkAskContext(K.askContext(K.askSlice(tw, '#today', D), 'how busy am I?', D)), t);
+    }
     sl = K.askSlice(w, '#study', D);
     check('Study: the current course and its next task (not a done one), topics, revision due, and today\'s energy and free time', sl.context.study.course.id === 'coP' && sl.context.study.nextTask.id === 'tkH' && Array.isArray(sl.context.study.topics) && sl.context.study.revisionDue === 0 && sl.context.study.energy === 3 && Number.isInteger(sl.context.study.freeMinutes) && K.checkAskContext(K.askContext(sl, 'what should I study?', D)));
     let pv = K.askPreview(K.askContext(sl, 'what should I study?', D));
@@ -1426,6 +1432,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('a day: its plan without the private project\'s task, what\'s due (not the private one), its energy and weekday', eq(dr.lookup.tasks.map(t => t.title), ['Order the felt']) && dr.lookup.tasks[0].time === '10:00' && eq(dr.lookup.due, ['Post the parcel']) && dr.lookup.energy === 4 && dr.lookup.weekday === 'Thursday' && dr.lookup.planned, dr.lookup);
     check('…the appointment as busy time, by kind only — never its name', dr.lookup.busy.some(b => b.kind === 'appointment' && b.start === `${DD}T15:00`) && !/Okapi|Dentist/.test(JSON.stringify(dr.lookup)), dr.lookup.busy);
     check('…a private project\'s appointment too, as busy time only (so the day isn\'t shown free then), never its name', dr.lookup.busy.some(b => b.kind === 'appointment' && b.start === `${DD}T11:00`) && !dr.lookup.free.some(f => f.start <= '11:00' && f.end > '11:00'), [dr.lookup.busy, dr.lookup.free]);
+    check('…the minutes still to do, of the tasks sent only (not the private one\'s 30)', dr.lookup.minutesLeft === 20, dr.lookup.minutesLeft);
     check('…and the two private tasks counted only here, never sent', dr.leftOut === 2 && !/Hidden/.test(JSON.stringify(dr.lookup)) && !('leftOut' in dr.lookup));
     check('…a day further off than two months, or more than a week ago, isn\'t looked at', K.dayLookup(dw, '2027-01-12', LD) === null && K.dayLookup(dw, '2026-11-02', LD) === null && !!K.dayLookup(dw, '2026-11-03', LD));
     const dline = K.lookupLine(dr.lookup, dr.leftOut);
@@ -1433,6 +1440,9 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('the server\'s check accepts a request carrying the day', K.checkAskContext(K.askContext(lslice, 'Am I free on Thursday?', LD, undefined, undefined, dr.lookup)));
     const DLK = q => JSON.stringify({ kind: 'lookup', message: 'Looking at that day.', lookup: { tool: 'day', query: q } });
     check('a day lookup reply is taken as one', eq(K.checkAskReply(DLK(DD), dw, lslice, LD), { kind: 'lookup', tool: 'day', query: DD }));
+    const ADJ = JSON.stringify({ kind: 'answer', message: 'Thursday is wide open.', items: [], action: { type: 'adjust-today' } });
+    check('after a look at another day, no "Help me adjust today" (it plans today only)…', K.checkAskReply(ADJ, dw, lslice, LD, undefined, dr.lookup)?.action === null);
+    check('…but after a look at today it stays', K.checkAskReply(ADJ, dw, lslice, DD, undefined, dr.lookup)?.action?.type === 'adjust-today');
     const far = K.checkAskReply(DLK('2027-06-01'), dw, lslice, LD);
     check('…a day further off gets a plain answer saying which days it can look at (not "couldn\'t be used")', far?.kind === 'cannot' && far.message.includes('a week ago to two months ahead'), far);
     check('…and a day that doesn\'t exist (31 November) is unusable', K.checkAskReply(DLK('2026-11-31'), dw, lslice, LD) === null);

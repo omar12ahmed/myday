@@ -87,6 +87,8 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
     return { kind: 'lookup', tool: r.lookup.tool, query: r.lookup.query };
   }
   const out = checkReply(text, data, slice, k, asked);
+  // Help me adjust today plans today only: not offered after a look at another day.
+  if (out?.kind === 'answer' && out.action?.type === 'adjust-today' && looked?.tool === 'day' && looked.query !== k) return { ...out, action: null };
   if (!out || looked?.tool !== 'notes' || !r?.sources?.length || (out.kind !== 'answer' && out.kind !== 'add' && out.kind !== 'steps')) return out;
   const used = [...new Set(r.sources)].map(id => looked.notes.find(n => n.id === id)).filter((x): x is AskNotesLookup['notes'][number] => !!x).map(x => ({ id: x.id, title: x.title }));
   return used.length ? { ...out, sources: used } : out;

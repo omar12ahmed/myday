@@ -93,8 +93,10 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey(),
     const due = data.tasks.items.filter(t => !t.done && !t.letGoOn && t.due === k);
     const dueShown = due.filter(reach.task);
     count += pc.tasks.length - plan.length + due.length - dueShown.length;
-    ctx.today = { energy: pc.energy, freeMinutes: freeOf(pc), revisionDue: dueIds(data, k).length,
-      plan: plan.slice(0, L.list).map(t => ({ ...ref(t.id, t.title), minutes: t.minutes, done: t.done })), dueToday: dueShown.slice(0, L.list).map(t => ref(t.id, t.title)) };
+    const shownPlan = plan.slice(0, L.list).map(t => ({ ...ref(t.id, t.title), minutes: t.minutes, done: t.done }));
+    // What's left, worked out here: models add up a plan's minutes badly (counting the ones done).
+    ctx.today = { energy: pc.energy, freeMinutes: freeOf(pc), revisionDue: dueIds(data, k).length, plan: shownPlan,
+      minutesLeft: shownPlan.reduce((sum, t) => sum + (t.done ? 0 : t.minutes), 0), dueToday: dueShown.slice(0, L.list).map(t => ref(t.id, t.title)) };
     parts.push(SENDS.today);
   } else if (page === 'study') {
     const st = data.study, ix = stIndex(st), gs = topicsOf(st).map(t => topicGlance(st, ix, t.id)!).filter(Boolean);
