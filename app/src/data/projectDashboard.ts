@@ -5,7 +5,8 @@
 import { awaitingAnswer, isBusiness, isCase, modelProgress } from './businessModel';
 import { caseCounts, issueLinks, timelineInOrder } from './caseFile';
 import { parseKey, shift, shortDate, todayKey } from './dates';
-import { comingUp, nextStep, stillOpen } from './projects';
+import { comingUp, nextStep, projectTasks, stillOpen } from './projects';
+import { chaseTask } from './tasks';
 import type { DateKey, MyDayData, Project } from './types';
 
 const tab = (p: Project, t?: string) => `#projects/p/${encodeURIComponent(p.id)}${t ? '/' + t : ''}`;
@@ -55,14 +56,20 @@ export function issueGrid(p: Project) {
 }
 
 // ---------- Worth a look: at most three gentle pointers from real data ----------
-export interface Pointer { key: string; text: string; href: string }
+export interface Pointer { key: string; text: string; href: string; chase?: { taskId: string; added: boolean } }
 export function worthALook(data: MyDayData, p: Project, k: DateKey = todayKey(), max = 3): Pointer[] {
   const out: Pointer[] = [];
   // The oldest task still to do whose date has passed, unless it's the next step (that card says so beside it),
   // and only on an active project: a paused or finished one isn't nudged. Coming up lists them all.
   const step = nextStep(data, p);
-  const open = p.status === 'active' ? stillOpen(data, p, k).find(t => t.id !== step?.id) : undefined;
+  const open = p.status === 'active' ? stillOpen(data, p, k).find(t => t.id !== step?.id && !t.waiting) : undefined;
   if (open) out.push({ key: 'still-open', text: `${open.title} — still open, was due ${shortDate(open.due!)}`, href: `#today/tasks/${encodeURIComponent(open.id)}` });
+  // A wait whose expected day has come (1.50.0), oldest first, on an active project, with "Chase it" beside it —
+  // unless it's the next step: that card says so and offers Chase it itself.
+  const waited = p.status === 'active' ? projectTasks(data, p).open.filter(t => t.id !== step?.id && t.waiting?.until && t.waiting.until <= k)
+    .sort((a, b) => a.waiting!.until!.localeCompare(b.waiting!.until!))[0] : undefined;
+  if (waited) out.push({ key: 'waiting', text: `Still waiting on ${waited.waiting!.on} (${waited.title}) — expected ${shortDate(waited.waiting!.until!)}`,
+    href: `#today/tasks/${encodeURIComponent(waited.id)}`, chase: { taskId: waited.id, added: !!chaseTask(data, waited) } });
   // A date in the next week.
   const soon = nextDates(data, p, k, 1)[0];
   if (soon && days(k, soon.day) <= 7) out.push({ key: 'soon', text: `${soon.title} — ${soon.day === k ? 'today' : soon.day === shift(k, 1) ? 'tomorrow' : `in ${days(k, soon.day)} days`}`, href: soon.href });

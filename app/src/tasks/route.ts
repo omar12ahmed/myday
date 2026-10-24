@@ -14,6 +14,10 @@ export function tasksRoute(hash: string): TasksView {
 }
 
 // When a task is due, in plain words: "today 10:00", "tomorrow", "Fri 16 Oct".
+// "Waiting on Priya · expected Wed 28 Oct" (1.50.0): the same words on a task row, its page and a project's next step.
+export function waitingText(t: TaskItem): string {
+  return t.waiting ? `Waiting on ${t.waiting.on}${t.waiting.until ? ` · expected ${shortDate(t.waiting.until)}` : ''}` : '';
+}
 export function dueText(t: TaskItem, k = todayKey()) {
   if (!t.due) return '';
   const day = t.due === k ? 'today' : t.due === shift(k, 1) ? 'tomorrow' : shortDate(t.due);

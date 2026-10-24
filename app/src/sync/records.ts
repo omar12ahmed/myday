@@ -227,7 +227,7 @@ const MANY: Many[] = [
   { kind: 'task', label: 'Task',
     items: d => d.tasks.items, put: (dr, id, c) => putItem(dr.tasks.items, id, c),
     clean: (id, raw) => same(id, via({ tasks: { lists: [], items: [raw] } }).tasks.items[0]),
-    summary: c => { const t = c as unknown as TaskItem; return `${t.title}${t.due ? ` · ${shortDate(t.due)}${t.time ? ` ${t.time}` : ''}` : ''}${t.done ? ' · done' : t.letGoOn ? ' · let go' : ''}`; } },
+    summary: c => { const t = c as unknown as TaskItem; return `${t.title}${t.due ? ` · ${shortDate(t.due)}${t.time ? ` ${t.time}` : ''}` : ''}${t.done ? ' · done' : t.letGoOn ? ' · let go' : t.waiting ? ' · waiting' : ''}`; } },
   { kind: 'session', label: 'Study session',
     items: d => d.study.sessions,
     put: (dr, id, c) => { putItem(dr.study.sessions, id, c, byStart); dr.study.activeId = fixActive(dr.study.sessions, dr.study.activeId); },

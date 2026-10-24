@@ -214,10 +214,11 @@ export function projectNotes(data: MyDayData, p: Project): Note[] {
 export function projectAppointments(data: MyDayData, p: Project): Commitment[] {
   return data.commitments.filter(c => p.commitmentIds.includes(c.id)).sort((a, b) => a.start.localeCompare(b.start));
 }
-// The one next step: the task you chose (while it's still to do), otherwise the first one to do.
+// The one next step: the task you chose (while it's still to do), otherwise the first one to do that isn't waiting on
+// someone or something (1.50.0). A waiting task you chose stays chosen.
 export function nextStep(data: MyDayData, p: Project): TaskItem | null {
   const { open } = projectTasks(data, p);
-  return open.find(t => t.id === p.nextTaskId) ?? open[0] ?? null;
+  return open.find(t => t.id === p.nextTaskId) ?? open.find(t => !t.waiting) ?? null;
 }
 // What's coming up (today onwards): dated tasks still to do and appointments, in time order.
 export function comingUp(data: MyDayData, p: Project, k: DateKey = todayKey()) {
@@ -296,7 +297,7 @@ export function stepsForToday(data: MyDayData, k: DateKey = todayKey(), max = 3)
   const active = projectsInOrder(data, 'active');
   for (const p of [...active.filter(focused), ...active.filter(p => !focused(p))]) {
     const t = nextStep(data, p);
-    if (!t || onTodaysPlan(data, t, k) || (t.due && t.due <= k)) continue;
+    if (!t || t.waiting || onTodaysPlan(data, t, k) || (t.due && t.due <= k)) continue; // a waiting step can't be done today
     out.push({ project: p, task: t });
     if (out.length >= max) break;
   }

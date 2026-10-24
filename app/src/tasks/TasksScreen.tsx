@@ -14,7 +14,7 @@ import { toast } from '../data/toast';
 import type { MyDayData, TaskItem } from '../data/types';
 import { loadLibs, parseCapture, type CaptureLibs } from '../capture/parse';
 import { ListsView } from './ListsView';
-import { dueText, tasksRoute } from './route';
+import { dueText, tasksRoute, waitingText } from './route';
 import { TaskEditor } from './TaskEditor';
 
 export function TasksScreen({ data, hash }: { data: MyDayData; hash: string }) {
@@ -44,6 +44,7 @@ export function TaskRow({ data, t, hideProject = false }: { data: MyDayData; t: 
           {onTodaysPlan(data, t) && !done && <span className="text-primary font-semibold">On today's plan</span>}
           {t.letGoOn && <span data-s="let-go">Let go</span>}
           {!done && isStuck(data, t) && <span className="text-primary font-semibold" data-s="stuck">Something in the way?</span>}
+          {!done && t.waiting && <span className="text-fg-2" data-s="task-waiting">{waitingText(t)}</span>}
         </span>
       </a>
     </li>

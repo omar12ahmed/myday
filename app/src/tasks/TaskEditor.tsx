@@ -15,12 +15,13 @@ import { addToTodaysPlan, editTask, isDone, isStuck, leaveTodaysPlanIfLater, mov
 import { toast } from '../data/toast';
 import type { Category, MyDayData } from '../data/types';
 import { StuckCard } from './StuckCard';
+import { WaitingCard } from './WaitingCard';
 
 // One task: its words, list, date and time, length, which kind of task it is (for Today's plan), and notes. Each
 // change is saved when you finish it.
 export function TaskEditor({ data, id }: { data: MyDayData; id: string }) {
   const confirm = useConfirm();
-  const [ask, setAsk] = useState(false);
+  const [ask, setAsk] = useState(false), [waitAsk, setWaitAsk] = useState(false);
   const t = data.tasks.items.find(x => x.id === id);
   if (!t) return <><BackLink to="today/tasks" label="Tasks" /><Card><h2>This task isn't here</h2><Note className="m-0">It may have been deleted, here or in another tab.</Note></Card></>;
   // A new, later date takes it off today's plan too (data/tasks.ts), and says so.
@@ -47,6 +48,8 @@ export function TaskEditor({ data, id }: { data: MyDayData; id: string }) {
     <>
       {project ? <BackLink to={`projects/p/${project.id}`} label={project.title} /> : <BackLink to="today/tasks" label="Tasks" />}
       {stuck && <StuckCard data={data} t={t} stuck />}
+      {/* While it waits, that comes first; a wait you're starting opens below, beside its button. */}
+      {!done && t.waiting && <WaitingCard key="waiting" data={data} t={t} onClose={() => setWaitAsk(false)} />}
       <Card aria-label="Task" id="taskEditor">
         <div className="grid gap-3">
           <Field label="Task" htmlFor="tTitle"><CommitInput id="tTitle" type="text" key={t.title} defaultValue={t.title} maxLength={TASK_LIMITS.title} onCommit={el => { if (!el.value.trim()) { el.value = t.title; return; } save({ title: el.value }); }} /></Field>
@@ -70,7 +73,8 @@ export function TaskEditor({ data, id }: { data: MyDayData; id: string }) {
           <Button inline variant={done ? 'selected' : 'primary'} aria-pressed={done} data-action="task-toggle" onClick={() => { const v = !done; if (update(d => (setTaskDone(d, id, v) ? undefined : false))) toast(v ? 'Done — nice.' : t.letGoOn ? 'Back on your list.' : 'Not done after all.'); }}>{t.letGoOn ? 'Let go — bring it back' : done ? 'Done ✓' : 'Mark done'}</Button>
           {!done && !planned && <Button inline data-action="task-plan" disabled={!room.built || room.room <= 0} onClick={plan}>Add to today's plan</Button>}
           {!done && <Button inline variant="ghost" data-action="task-tomorrow" onClick={tomorrow}>Tomorrow</Button>}
-          {!done && !stuck && <Button inline variant="ghost" aria-expanded={ask} data-action="task-stuck" onClick={() => setAsk(!ask)}>Something in the way?</Button>}
+          {!done && !stuck && !t.waiting && <Button inline variant="ghost" aria-expanded={ask} data-action="task-stuck" onClick={() => setAsk(!ask)}>Something in the way?</Button>}
+          {!done && !t.waiting && <Button inline variant="ghost" aria-expanded={waitAsk} data-action="task-wait" onClick={() => setWaitAsk(!waitAsk)}>Waiting on someone?</Button>}
           <Button inline variant="ghost" data-action="task-delete" onClick={remove}><Trash2 size={18} aria-hidden="true" /> Delete</Button>
         </div>
         {!done && !planned && (!room.built || room.room <= 0) && <p className="text-[15px] text-fg-2 mb-0 mt-2" data-s="plan-note">{!room.built ? 'To add it to today\'s plan, build your day on Today first.' : room.rest ? 'Today is a rest day — "Tomorrow" moves it on.' : `Today's plan is full for your energy (${room.limit} task${room.limit === 1 ? '' : 's'}) — "Tomorrow" moves it on.`}</p>}
@@ -79,7 +83,8 @@ export function TaskEditor({ data, id }: { data: MyDayData; id: string }) {
         {AI_MODE !== 'off' && !done && <Button inline variant="tonal" className="mt-3" data-action="task-ask-steps" onClick={() => openCapture('Break this into smaller steps')}>
           <Sparkles size={18} aria-hidden="true" /> Break into smaller steps</Button>}
       </Card>
-      {ask && !done && !stuck && <StuckCard data={data} t={t} stuck={false} />}
+      {!done && !t.waiting && waitAsk && <WaitingCard key="asking" data={data} t={t} asking onClose={() => setWaitAsk(false)} />}
+      {ask && !done && !stuck && !t.waiting && <StuckCard data={data} t={t} stuck={false} />}
     </>
   );
 }

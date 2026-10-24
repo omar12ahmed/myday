@@ -16,11 +16,11 @@ import { isBusiness, isCase, knownTemplate, setTemplate, TEMPLATES, type Templat
 import { worthALook } from '../data/projectDashboard';
 import { comingUp, deleteProject, editProject, setProjectPrivate, linkNote, nextStep, PROJECT_LIMITS, projectById, projectNotes, projectTasks, recently, setLeftOff, setNextStep, STATUS_LABEL, stillOpen, unlinkAppointment } from '../data/projects';
 import { update } from '../data/storage';
-import { addTask, addToTodaysPlan, onTodaysPlan, planRoom, setTaskDone } from '../data/tasks';
+import { addTask, addToTodaysPlan, chaseTask, chaseWaiting, onTodaysPlan, planRoom, setTaskDone } from '../data/tasks';
 import { toast } from '../data/toast';
 import type { MyDayData, Project, TaskItem } from '../data/types';
 import { bothMention, mightBelong } from '../data/understand';
-import { dueText } from '../tasks/route';
+import { dueText, waitingText } from '../tasks/route';
 import { TaskRow } from '../tasks/TasksScreen';
 import { Progression } from './parts';
 import { AddDeadline, EvidenceView, IssuesView, TimelineView } from './CaseViews';
@@ -225,8 +225,10 @@ function NextStepCard({ data, p }: { data: MyDayData; p: Project }) {
           <p className="flex flex-wrap items-center gap-x-2 gap-y-1 m-0 mt-1.5 text-sm text-fg-3 tabular-nums">
             {step.due && (step.due < k ? <span data-s="next-still-open">Still open · was due {shortDate(step.due)}</span> : <span>{dueText(step, k)}</span>)}<span>{step.minutes} min</span><CategoryChip kind={step.category} />
           </p>
+          {/* A waiting step you chose stays chosen (1.50.0); it can't be done today, so it isn't offered for Today. */}
+          {step.waiting && <p className="m-0 mt-2 text-[15px] text-fg-2" data-s="next-waiting">{waitingText(step)}{open.length > 1 ? ' — while you wait, you could choose another next step below.' : '.'}</p>}
           <div className="flex flex-wrap gap-2.5 mt-4">
-            {onTodaysPlan(data, step, k) ? <span className="inline-flex items-center min-h-11 text-primary font-semibold">On today's plan</span>
+            {step.waiting ? (step.waiting.until && step.waiting.until <= k && <ChaseButton data={data} t={step} />) : onTodaysPlan(data, step, k) ? <span className="inline-flex items-center min-h-11 text-primary font-semibold">On today's plan</span>
               : <Button inline variant="primary" data-action="project-step-today" onClick={() => toToday(data, step)}>Add to today</Button>}
             <Button inline data-action="project-step-done" onClick={() => { if (update(d => (setTaskDone(d, step.id, true) ? undefined : false))) toast('Done — nice. The next one is ready when you are.'); }}><Check size={18} aria-hidden="true" /> Done</Button>
             <a href={`#today/tasks/${step.id}`} className="inline-flex items-center min-h-11 px-2 text-primary font-semibold text-[15px] no-underline hover:underline underline-offset-4">Open</a>
@@ -234,21 +236,27 @@ function NextStepCard({ data, p }: { data: MyDayData; p: Project }) {
           {open.length > 1 && (
             <Field label="Or choose another next step" htmlFor="projectNextPick" className="mt-4">
               <Select id="projectNextPick" value={step.id} onChange={e => update(d => (setNextStep(d, p.id, e.target.value) ? undefined : false))}>
-                {open.map(t => <option key={t.id} value={t.id}>{t.title}</option>)}
+                {open.map(t => <option key={t.id} value={t.id}>{t.title}{t.waiting ? ' (waiting)' : ''}</option>)}
               </Select>
             </Field>
           )}
         </>
-      ) : (
+      ) : (<>
+        {open.length > 0 && <p className="m-0 mb-3 text-[15px]" data-s="next-all-waiting">Everything here is waiting on someone or something. Is there another small step you could take?</p>}
         <form className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 items-end" onSubmit={e => { e.preventDefault(); addStep(); }}>
           <Field label="What's the smallest next step?" htmlFor="projectNextNew">
             <TextInput id="projectNextNew" value={text} maxLength={120} onChange={e => setText(e.target.value)} placeholder="e.g. Write down three questions" />
           </Field>
           <Button inline type="submit" variant="primary" data-action="project-step-add" disabled={!text.trim()}>Set</Button>
         </form>
-      )}
+      </>)}
     </Card>
   );
+}
+// "Chase it" (1.50.0) for a waiting next step whose expected day has come: one 5-minute follow-up (data/tasks.ts).
+function ChaseButton({ data, t }: { data: MyDayData; t: TaskItem }) {
+  if (chaseTask(data, t)) return <span className="inline-flex items-center min-h-11 text-[15px] text-fg-2" data-s="chase-added">A task to chase it is in this project’s tasks.</span>;
+  return <Button inline variant="primary" data-action="chase" onClick={() => { let r = null as ReturnType<typeof chaseWaiting>; if (update(d => { r = chaseWaiting(d, t.id); if (!r || r === 'already') return false; })) toast('Added a 5-minute task to chase it — it’s in this project’s tasks.'); }}>Chase it</Button>;
 }
 function toToday(data: MyDayData, t: TaskItem) {
   const room = planRoom(data);

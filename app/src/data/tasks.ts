@@ -15,10 +15,10 @@ import { isDateKey, isDateTime, isTime, localStamp, parseKey, shift, todayKey } 
 import { isWorkDay } from './patterns/notice';
 import { taskLimit } from './patterns/adapt';
 import { makeTask } from './plan';
-import type { Blocker, Category, DateKey, MyDayData, TaskItem, TasksData } from './types';
+import type { Blocker, Category, DateKey, MyDayData, TaskItem, TasksData, Waiting } from './types';
 import { intIn, isObj, listOf, uid } from './util';
 
-export const TASK_LIMITS = { lists: 30, listName: 40, title: 120, notes: 2000, blockers: 20 };
+export const TASK_LIMITS = { lists: 30, listName: 40, title: 120, notes: 2000, blockers: 20, waitingOn: 120 };
 const BLOCKERS: Blocker[] = ['big', 'start', 'boring', 'tired', 'info', 'notneeded', 'other'];
 export const emptyTasks = (): TasksData => ({ lists: [], items: [] });
 
@@ -56,6 +56,11 @@ export function normalizeTasks(raw: unknown, report: { dropped: number }): Tasks
       letGoOn: isDateKey(t.letGoOn) ? t.letGoOn : null,
     };
     if (typeof item.projectId !== 'string' || !item.projectId) delete item.projectId; // a project link (1.12.0), or none
+    // Waiting on someone or something (1.50.0): kept when readable; a blank one is simply absent, a shape this
+    // version can't read is counted. Anything a newer MyDay keeps beside it stays.
+    const w = t.waiting, blankWait = w === null || (isObj(w) && typeof w.on === 'string' && !w.on.trim());
+    if (isObj(w) && typeof w.on === 'string' && w.on.trim() && isDateKey(w.since)) item.waiting = { ...w, on: w.on.slice(0, TASK_LIMITS.waitingOn), since: w.since, until: isDateKey(w.until) ? w.until : null };
+    else { if (w !== undefined && !blankWait) report.dropped++; delete item.waiting; }
     seenT.add(item.id);
     out.items.push(item);
   }
@@ -188,7 +193,7 @@ export function addToTodaysPlan(data: MyDayData, id: string, k: DateKey = todayK
 // ---------- A task that keeps moving ----------
 // Stuck: moved later 3 times or more, or a week past its date — unless you said what's in the way in the last week.
 export function isStuck(data: MyDayData, t: TaskItem, k: DateKey = todayKey()): boolean {
-  if (isDone(data, t) || t.letGoOn || inQueue(data, t)) return false;
+  if (isDone(data, t) || t.letGoOn || inQueue(data, t) || t.waiting) return false; // waiting isn't being stuck
   if (t.blockers.some(b => b.on > shift(k, -7))) return false;
   return t.postponed >= 3 || (!!t.due && t.due <= shift(k, -7));
 }
@@ -269,4 +274,40 @@ export function removeList(d: TasksData, id: string): { removed: boolean; moved:
   let moved = 0;
   for (const t of d.items) if (t.listId === id) { t.listId = ''; moved++; }
   return { removed: true, moved };
+}
+
+// ---------- Waiting on someone or something (1.50.0) ----------
+// Who or what (trimmed; empty is refused), and when you expect it (optional). Starting keeps today as "since";
+// changing keeps the first day. Returns false when nothing changed.
+export function setWaiting(d: TasksData, id: string, on: string, until: DateKey | null, k: DateKey = todayKey()): boolean {
+  const t = d.items.find(x => x.id === id), who = on.trim().slice(0, TASK_LIMITS.waitingOn), by = until && isDateKey(until) ? until : null;
+  if (!t || !who || (t.waiting && t.waiting.on === who && t.waiting.until === by)) return false;
+  t.waiting = { ...t.waiting, on: who, since: t.waiting?.since ?? k, until: by };
+  return true;
+}
+// "Got it": no longer waiting.
+export function stopWaiting(d: TasksData, id: string): boolean {
+  const t = d.items.find(x => x.id === id);
+  if (!t?.waiting) return false;
+  delete t.waiting;
+  return true;
+}
+// Still waiting (on a task still to do): what the next step, Today and Worth a look go by.
+export const isWaiting = (data: MyDayData, t: TaskItem): t is TaskItem & { waiting: Waiting } => !!t.waiting && !isDone(data, t) && !t.letGoOn;
+// Its follow-up from "Chase it", while it's still to do.
+export function chaseTask(data: MyDayData, t: TaskItem): TaskItem | null {
+  const c = t.waiting?.chaseTaskId ? data.tasks.items.find(x => x.id === t.waiting!.chaseTaskId) : null;
+  return c && !isDone(data, c) && !c.letGoOn ? c : null;
+}
+// "Chase it": one 5-minute follow-up in the same list and project, once per wait. Returns its id, 'already' when the
+// last one is still to do, or null.
+export function chaseWaiting(data: MyDayData, id: string): string | 'already' | null {
+  const t = data.tasks.items.find(x => x.id === id);
+  if (!t?.waiting) return null;
+  if (chaseTask(data, t)) return 'already';
+  const nid = addTask(data.tasks, { title: `Chase ${t.waiting.on}: ${t.title}`, listId: t.listId, category: t.category, minutes: 5 });
+  if (!nid) return null;
+  if (t.projectId) data.tasks.items.find(x => x.id === nid)!.projectId = t.projectId;
+  t.waiting.chaseTaskId = nid;
+  return nid;
 }
