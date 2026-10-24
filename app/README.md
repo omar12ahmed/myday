@@ -1,5 +1,21 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.64.0 — Practise again (Arabic):** a skill needs doing again, not just remembering. At Reflect a session asks
+"Did you do its Try it or mini challenge?" (tick only what you did). Finishing records the day, and the first time
+the lesson comes back in revision about a week later, within the 8 new cards a day; the finish card says the day,
+with "Don't bring it back". In a round (at most one per round of 5) it shows the lesson's own Try it and mini
+challenge, never AI-written tasks, with the explained answer hidden until you ask; you compare and mark it as usual,
+and it comes back after 21 days, then 60, then 180 (Hard: the same gap again; Again: in a week). The lesson's place
+line says when you last did them and when it's back, and the map's revision card counts them. Nothing is sent to AI.
+A Study reset clears it. New optional `arabic.practice`, synced as `arabic_practice` (migration
+`20261024200000_sync_arabic_practice.sql`), not on the lesson's own record, which older releases rebuild from the
+fields they know; saved data stays schema 5. Going back to 1.63.0 is safe: it keeps Practise again unread and ignores
+the new records (checked with the actual previous release), but doesn't show it or bring it back in revision. Three
+things to know: a device which spends time on the previous release receives other devices' changes of that kind only
+when they next change (or when it signs in again); a session discarded on the older release loses its ticks, and one
+finished there counts them only when you next tick or finish on that lesson here; and a Study reset done on the older
+release leaves Practise again as it was.
+
 **1.63.0 — Ask MyDay looks in your notes:** when your question needs your notes ("what did I write about the bike
 rack?"), Ask MyDay looks in them on this device and answers from what it finds, naming the notes it used as links, with
 "Looked in your notes for “…”" above the answer. It sends up to 8 matching notes — titles and projects, and a short
