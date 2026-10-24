@@ -1,7 +1,7 @@
 # Study as a learning environment: one focus, a clearer home and a guided lesson
 
 **Status:** release (a), one focus and Study home (§3, §4), published in 1.51.0 (24 October 2026); release (b),
-the lesson journey, built for Arabic on branch `lesson-journey` (Cybersecurity next); (c)–(f) planned. The owner's decisions of 24 October 2026 are in §2. This builds on
+the lesson journey, published for Arabic in 1.53.0 (Cybersecurity next); (c)–(f) planned. The owner's decisions of 24 October 2026 are in §2. This builds on
 `specs/adaptive-study.md` (lesson states, answer marks, revision from every lesson, the next-step rules), published
 in 1.47.0; this plan is a series of later, separate releases (§14).
 **Plan date:** 24 October 2026, after release 1.44.1.
