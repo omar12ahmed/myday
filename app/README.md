@@ -1,5 +1,22 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.71.0 — The Cybersecurity portfolio:** a handed-in notebook attempt now has "Add to portfolio": a title, a copy
+of its evidence to edit or redact, an optional note, and up to 5 screenshots, diagrams or PDFs (PNG, JPEG, WebP or
+PDF, 2 MB each, stored privately through the shared files design). Before anything is kept you tick the privacy
+check (no passwords or keys, no real addresses or names outside your lab, no one's personal details); text that looks
+like a password, key or token is refused until you change it, and a public IP address is pointed out. The scan is a
+help, not a guarantee: the ticks are yours, and pictures can't be checked. The Portfolio tab lists entries by module
+and lesson, with Edit and Remove (its files go to Recently deleted for 30 days), and Export portfolio downloads a zip
+with a page you can open anywhere and every file. Files you open are kept on this device for viewing offline, until
+you sign out. A project's required skills now say whether you have evidence, never a number. Never sent to AI; a
+Study reset keeps the portfolio; your backup lists the entries and their files' names, not the files. New optional
+`cybersecurity.portfolio`, synced as `cyber_portfolio` (migration `20261025140000_sync_cyber_portfolio.sql`); saved
+data stays schema 5. Going back to 1.70.0 is safe: it keeps the portfolio unread, ignores its records and leaves its
+files alone (checked with the actual previous release); it doesn't show them. Two things to know: a device which
+spends time on the previous release receives other devices' changes of that kind only when they next change (or when
+it signs in again); and a device still on 1.68.0 may list a portfolio file in its Projects home's Recently deleted,
+but its delete is refused by the server and a newer device puts the file back where it belongs.
+
 **1.70.0 — Ask MyDay looks at a project:** ask "what's next on the flat move?" or "where am I with the coffee
 subscription?" from any page and, when it's one of your open projects but not the page you're on, Ask MyDay looks at
 that project on this device and answers from what its own page would send: its name, summary, stage, tasks,
