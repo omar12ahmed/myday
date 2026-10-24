@@ -27,11 +27,12 @@ lookup or none, then wording. Four live runs, about US$0.04 in all (a provider o
 ## Runs 2–4 (`18-22-55` and `18-24-06`, cut short by the provider; `18-25-33`, p05, p06, p08 and y04 × 4)
 
 - **Runs 2 and 3:** the provider failed calls in a row (timeouts and network errors) and the runs stopped themselves;
-  the one p05 answer that came back still offered the existing task. The general rule "if you suggest adding something, put
-  it in items" pulls the other way.
+  the one p05 answer that came back still offered the existing task. The general rule "if you suggest adding
+  something, put it in items" pulls the other way.
 - **Fix:** "Its tasks already exist: to suggest one, name it — never put it in "items"."
-- **Run 4:** 180 of 180, y04 looking in notes every time (the earlier failures were the provider's). No existing task offered again; every step in the project; the empty project got a sensible
-  first task. One slip, 1 of 4: "would keep things moving towards viewings" when the viewings were already booked.
+- **Run 4:** 180 of 180, y04 looking in notes every time (the earlier failures were the provider's). No existing task
+  offered again; every step in the project; the empty project got a sensible first task. One slip, 1 of 4: "would
+  keep things moving towards viewings" when the viewings were already booked.
 
 ## Left as it is
 
