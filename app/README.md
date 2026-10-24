@@ -548,6 +548,19 @@ so the next step agrees with Coming up. The board, At a glance and Today are oth
 `nextStep` exactly (`whyNext` in `src/data/projects.ts`) and write nothing; the choice is the existing `nextTaskId`,
 so there's no saved-data, sync or database change. Nothing is sent to AI.
 
+**Learning for a project (unreleased; `specs/projects-study-links.md`):** a project's Overview has a **Learning**
+card in its side column, after Recently. **Link something** links one of your own courses, a book in Reading or an
+Arabic lesson from your path, with an optional "why it matters". Each link shows Study's own status, never a
+percentage and never a guess at what you know: a course's "3 of 8 tasks marked complete" (or "Archived in Study"), a
+book's "Page 120 of 300", "Not started" or "Finished on …", and an Arabic lesson's state (New, Practised, Ready to
+move on, Holding or Needs revision, loaded on demand as on Study home). It opens the course, Reading or the lesson.
+Something removed from Study keeps its link, marked "No longer in Study". **Edit why** and **Unlink** change only
+the project; up to 20 links. Saved data: an optional `studyLinks` on the project (`{ kind, id, title, why?, addedOn
+}`), in the project's own synced record, with no schema, migration or database change (the exception in AGENTS.md:
+1.54.0 keeps the field unread, but doesn't show it). The conflict details say "Learning: …". Never sent to AI.
+Cybersecurity lessons and a "For your project" line on the Study side are follow-ups, once the Cybersecurity lesson
+pages being rebuilt are released.
+
 **Your week — the weekly review (1.37.0):** a short look back over the last seven days, at `#review` ("Your week"), in
 four steps, one at a time, with Back and Next. Nothing changes until you tap. **1 What moved:** each project's tasks
 done, milestones reached, decisions made, things found out, case records added (up to three done task names shown),
@@ -897,6 +910,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/businessModel.ts`, `src/projects/ModelView.tsx` | The Business template (1.33.0): `businessModel.ts` (the kind of project and the one page: reading what's saved, the four answers, the list of what must be true with its limits, Find out, marking, counts); `ModelView.tsx` (the Model tab; its Overview summary is in At a glance). The Model tab's counts line is `progressLine` in `planText.ts`; Explore's brief from the one page is `fromOnePage` in `src/explore/content.ts`. |
 | `src/data/caseFile.ts`, `src/projects/CaseViews.tsx` | The Case template (1.35.0): `caseFile.ts` (reading what's saved, unknown fields kept, links to missing items let go; the timeline, evidence and issues with their limits, links, counts and the size guard); `CaseViews.tsx` (the Timeline, Evidence and Issues tabs, and "Add a deadline" in a case's Coming up; its Overview summary is in At a glance). |
 | `src/data/projectDashboard.ts`, `src/projects/AtAGlance.tsx` | The dashboards per kind (1.36.0): `projectDashboard.ts` (the next dates, the weeks, entries by month, each issue's links and Worth a look; Today's own dashboard numbers stay in `dashboard.ts`); `AtAGlance.tsx` (the At a glance card with one row per tool, its pictures and Summarise this, and the Worth a look card beside the next step). Still-open tasks are `stillOpen` in `src/data/projects.ts`. |
+| `src/data/studyLinks.ts`, `src/projects/LearningCard.tsx`, `src/projects/learningArabic.ts` | Learning for a project (Study links): `studyLinks.ts` (reading and changing a project's links, Study's status for each, what can still be linked); `LearningCard.tsx` (the Overview's Learning card and its form); `learningArabic.ts` (Arabic lesson titles and states, loaded on demand). |
 | `src/data/projectSearch.ts`, `src/projects/SearchResults.tsx` | Searching one project: `projectSearch.ts` (what's searched, matching without capitals, accents or apostrophe differences, excerpts on whole characters, the fixed order by kind); `SearchResults.tsx` (the results card). The field and its query live in `ProjectView.tsx`. |
 | `src/data/weekReview.ts`, `src/review/ReviewScreen.tsx`, `src/today/ReviewCard.tsx` | The weekly review (1.37.0): `weekReview.ts` (when the review is due, what moved, what's waiting, focus, and saving the review); `ReviewScreen.tsx` (the four steps and See the pattern); `ReviewCard.tsx` (the card on Today). |
 | `src/study/arabic/WordFamilies.tsx`, `src/study/arabic/families.ts`, `content/teaching/arabic/word-families.json`, `scripts/validate-families.mjs` | Word families (1.38.0): the card on the vocabulary page and its notes; which family a word is in; the authored families (by word id); the build check. |

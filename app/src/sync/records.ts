@@ -416,9 +416,11 @@ export function recordLines(key: string, content: Content | null): string[] {
       return [`Problem: ${v.problem || 'Not written yet'}`, `Who: ${v.who || 'Not written yet'}`, `How: ${v.how || 'Not written yet'}`,
         ...assumptions.map(a => `${a.text} (${a.state})${a.found ? `: ${a.found}` : ''}`).reduce<string[]>((all, line) => [all.length ? `${all[0]}; ${line}` : line], [])];
     }
-    // A project's own outcome, finish line and where you left off (1.48.0), so a conflict shows them too.
+    // A project's own outcome, finish line and where you left off (1.48.0), and what you're learning for it (Study
+    // links), so a conflict shows them too.
+    const learning = kind === 'project' && Array.isArray(v.studyLinks) ? (v.studyLinks as unknown[]).filter(isObj).map(l => l.title).filter((x): x is string => typeof x === 'string') : [];
     const own = kind === 'project' ? [v.outcome ? `Aiming for: ${v.outcome}` : null, v.finishedWhen ? `Finished when: ${v.finishedWhen}` : null,
-      isObj(v.leftOff) && typeof v.leftOff.text === 'string' ? `Where I left off: ${v.leftOff.text}` : null] : [];
+      isObj(v.leftOff) && typeof v.leftOff.text === 'string' ? `Where I left off: ${v.leftOff.text}` : null, learning.length ? `Learning: ${learning.join('; ')}` : null] : [];
     return [v.title, ...own, v.text, v.summary, v.details, v.notes,
       kind === 'project_choice' ? (v.why === null ? 'Reason not saved' : v.why || 'No reason given') : v.why,
       v.on, v.date ? `${v.about ? 'About ' : ''}${v.date}` : null,

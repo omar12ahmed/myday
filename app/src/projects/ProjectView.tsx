@@ -29,6 +29,7 @@ import { AtAGlance, WorthALook } from './AtAGlance';
 import { ModelView } from './ModelView';
 import { DecisionsView, MilestonesView } from './PlanViews';
 import { matchCount, searchProject, type SearchHit } from '../data/projectSearch';
+import { LearningCard } from './LearningCard';
 import { SearchResults } from './SearchResults';
 import { tabHref } from './planText';
 
@@ -75,6 +76,7 @@ export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDay
         <div className="min-w-0">
           <ComingUpCard data={data} p={p} />
           <RecentlyCard data={data} p={p} />
+          <LearningCard data={data} p={p} />
           <ManageCard p={p} />
         </div>
       </div>

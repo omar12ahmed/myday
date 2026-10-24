@@ -13,6 +13,7 @@ import { isBusiness, normalizeModel, normalizeTemplate, STATE_LABEL } from './bu
 import { normalizeCase } from './caseFile';
 import { noteName } from './notes';
 import { chosenOption, normalizeDecisions, normalizeMilestones } from './projectPlan';
+import { normalizeStudyLinks } from './studyLinks';
 import { isDone, onTodaysPlan, taskOrder } from './tasks';
 import type { Commitment, DateKey, MyDayData, Note, Project, ProjectsData, ProjectStage, ProjectStatus, TaskItem } from './types';
 import { isObj, listOf, uid } from './util';
@@ -77,6 +78,9 @@ export function normalizeProjects(raw: unknown, report: { dropped: number }): Pr
     const lo = p.leftOff, blankNote = lo === null || (isObj(lo) && typeof lo.text === 'string' && !lo.text.trim());
     if (isObj(lo) && typeof lo.text === 'string' && lo.text.trim() && isDateTime(lo.at)) item.leftOff = { ...lo, text: lo.text.slice(0, PROJECT_LIMITS.leftOff), at: lo.at };
     else { if (lo !== undefined && !blankNote) report.dropped++; delete item.leftOff; }
+    // What you're learning for it in Study (data/studyLinks.ts): kept only when there are some, likewise.
+    const links = normalizeStudyLinks(p.studyLinks, report);
+    if (links) item.studyLinks = links; else delete item.studyLinks;
     seen.add(item.id);
     out.items.push(item);
   }
