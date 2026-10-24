@@ -1257,6 +1257,25 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   }
   await T.send('Emulation.clearDeviceMetricsOverride');
 
+  console.log('\n[35b] Your week, step 4: two more lines when you studied');
+  const keepRaw = await rawNow(); // the state [36] expects; put back at the end
+  const studyDone = { id: 'ssWk', courseId: 'coP', taskId: 'tkD', title: 'Pre-Security path · DNS in detail', date: '2026-10-15', startedAt: '2026-10-15T09:00', plannedMin: 30, short: false, status: 'done', runningSince: null, activeMs: 1500000, endedAt: '2026-10-15T10:00', checkin: null, taskDone: null, todayUid: null };
+  await editStorage(`s => { delete s.patterns.prefs.reviewed; s.notes.items = s.notes.items.filter(n => !n.reflectionWeek); s.study.sessions = []; s.arabic.attempts = []; s.cybersecurity.attempts = []; }`);
+  await go('review', 2026, 10, 18, 9);
+  await toStep(3);
+  check('in a week without Study, step 4 has the two usual questions and no Study block', (await stepNo()) === '3' && (await exists('#reviewWent')) && !(await exists('[data-s=review-study]')) && !(await exists('#reviewGotEasier')), await text('#reviewStep'));
+  await editStorage(`s => { s.study.sessions = [${JSON.stringify(studyDone)}]; }`);
+  await go('review', 2026, 10, 18, 9);
+  await toStep(3);
+  check('with a finished Study session in the week, step 4 adds "You studied this week" and its two text areas', (await exists('[data-s=review-study]')) && (await text('[data-s=review-study]')).includes('You studied this week. If you like, two more for the same note:')
+    && (await text('label[for=reviewGotEasier]')) === 'What got easier?' && (await text('label[for=reviewStillHard]')) === 'What still feels hard?', await text('#reviewStep'));
+  await type('#reviewWent', 'The hall is nearly done'); await type('#reviewGotEasier', 'Reading DNS records'); await type('#reviewStillHard', 'Subnet masks');
+  await click('[data-action=review-finish]'); await sleep(300);
+  const noteS = (await data()).notes.items.filter(n => n.reflectionWeek === '2026-10-12');
+  check('finishing saves the Study answers in the "Week of …" note, as their own paragraphs after the first two questions', noteS.length === 1
+    && eq(noteS[0].text.split('\n\n'), ['What went well:\nThe hall is nearly done', 'Study, what got easier:\nReading DNS records', 'Study, what still feels hard:\nSubnet masks']), noteS);
+  await ev(`localStorage.setItem('${KEY}', ${JSON.stringify(keepRaw)})`); // leave the state as it was
+
   console.log('\n[36] Decisions while the browser blocks saving');
   // Storage that can't even be read at start: MyDay keeps changes in memory until the page closes (storage.ts).
   const blocked = (await T.send('Page.addScriptToEvaluateOnNewDocument', { source: `(() => { const no = () => { throw new DOMException('Synthetic blocked storage', 'SecurityError'); };

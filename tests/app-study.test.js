@@ -960,5 +960,55 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   check('phone: the Now card comes first, then Worth a look, then Browse', await ev(`(() => { const n = document.querySelector('#stFocus').getBoundingClientRect(), w = document.querySelector('[data-s=worth-a-look]').getBoundingClientRect(), x = document.querySelector('#studyHome').getBoundingClientRect(); return n.bottom <= w.top && w.bottom <= x.top; })()`));
   await T.send('Emulation.clearDeviceMetricsOverride');
 
+  // ------------------------------------------------------------------
+  console.log('\n[56] Progress opens with Arabic: where you stand, what needs revision and why');
+  const REG = 'lesson.arabic-fusha-register', REG_CHECKS = ['assessment.arabic-fusha-register-check.q1', 'assessment.arabic-fusha-register-check.q2'];
+  // The course's own numbers, so the expected lines follow the curriculum: the lessons on the default path, and the A1 ones still to go.
+  const course56 = require(require('path').join(process.env.MYDAY_ROOT || require('path').resolve(__dirname, '..'), 'app/src/study/arabic/data/index.json'));
+  const pathOf = pid => course56.modules.filter(m => course56.paths.find(p => p.id === pid).required_module_ids.includes(m.id)).sort((a, b) => a.sequence - b.sequence).flatMap(m => m.lesson_ids.filter(id => !course56.lessons[id].optional));
+  const onPath = pathOf(course56.course.core_path_id), a1Left = pathOf('path.arabic-a1').filter(id => onPath.includes(id)).length;
+  const progress = async () => { await go('study/progress', 2026, 11, 2, 9); await until(() => exists('#pg-days'), 'Progress'); await sleep(300); };
+  const attempt56 = { id: 'aaPg', lessonId: REG, curriculumVersion: '1.1.2', variant: 'standard', startedAt: '2026-10-29T08:00:00.000Z', finishedAt: '2026-10-29T08:30:00.000Z', help: 'independent', practised: ['reading'], answers: {}, revealed: [], revisit: '' };
+  await go('study/progress', 2026, 11, 2, 9); await reset(); await progress();
+  check('with no Arabic begun, Progress has no "Arabic: where you stand" card', !(await exists('[data-pg-arabic]')) && !(await text('#app')).includes('Arabic: where you stand'));
+  await editStorage(`s => { s.study = s.study || {}; s.study.reviews = [${JSON.stringify(rv('rvQ1', REG_CHECKS[0], '2026-11-01', 'right', 'own', 'good'))}, ${JSON.stringify(rv('rvQ2', REG_CHECKS[1], '2026-11-01', 'wrong', 'own', 'again'))}];
+    s.arabic.attempts = [${JSON.stringify(attempt56)}]; s.arabic.lessons = [{ id: '${REG}', readyOn: '2026-10-30' }]; delete s.arabic.practice; }`);
+  await progress();
+  const line = k => text(`[data-pg-arabic] [data-pg="${k}"]`);
+  check('once begun, the card is headed "Arabic: where you stand"', (await exists('[data-pg-arabic]')) && (await text('[data-pg-arabic] h3')) === 'Arabic: where you stand', await text('[data-pg-arabic]'));
+  check('…"Done" counts nothing yet out of the lessons on your path', (await line('done')).replace(/\s+/g, ' ') === `Done: 0 of the ${onPath.length} lessons on your path (ready to move on or holding).`, await line('done'));
+  check('…"On your own" says no lessons holding and one check recalled on your own', (await line('own')).replace(/\s+/g, ' ') === 'On your own: 0 lessons holding · 1 check recalled on your own.', await line('own'));
+  check('…"Needs revision" counts the one lesson whose check slipped', (await line('needs')).replace(/\s+/g, ' ') === 'Needs revision: 1 lesson.', await line('needs'));
+  const mile = (await line('milestone')).replace(/\s+/g, ' ');
+  check('…"Next milestone" names A1, the A1 lessons still to go and the consolidation module', mile.startsWith(`Next milestone: A1, ${a1Left} lessons to go, up to and including “A1 consolidation`) && mile.endsWith('”.'), mile);
+  const item = `[data-pg-lesson="${REG}"]`, itemText = async () => (await text(item)).replace(/\s+/g, ' ');
+  check('the lesson that needs revision is listed once, with its title as a link to the lesson', (await exists(item)) && (await ev(`document.querySelectorAll('[data-pg-lesson]').length`)) === 1
+    && (await ev(`document.querySelector('${item} a').getAttribute('href')`)) === '#study/arabic/' + REG && (await text(item + ' a')) === course56.lessons[REG].title, await itemText());
+  check('…saying a check slipped after it was marked ready, and what your answers show (one session, one of two checks on your own, no Try yet)',
+    (await itemText()).includes('One of its checks slipped after you marked it ready.') && (await itemText()).includes('You’ve practised it (1 session) and answered 1 of its 2 checks on your own, but haven’t done its Try yet.'), await itemText());
+  check('…with "Do the Try" as its next step', (await ev(`document.querySelector('${item}').dataset.pgNext`)) === 'try' && (await text(item + ' [data-action=pg-step]')) === 'Do the Try' && (await ev(`document.querySelector('${item} [data-action=pg-step]').dataset.v`)) === 'try');
+  check('the card has no percentage anywhere', !(await text('[data-pg-arabic]')).includes('%'), await text('[data-pg-arabic]'));
+  await editStorage(`s => { s.arabic.lessons = [{ id: '${REG}', readyOn: '2026-10-30', revisit: { since: '2026-11-01', what: 'register words' } }]; }`);
+  await progress();
+  check('a lesson you marked to revisit says so, in your words', (await itemText()).includes('You marked it to revisit: register words.') && !(await itemText()).includes('One of its checks slipped'), await itemText());
+  await editStorage(`s => { s.arabic.lessons = [{ id: '${REG}', readyOn: '2026-10-30' }]; s.arabic.practice = [{ id: '${REG}', tried: '2026-11-01' }]; }`);
+  await progress();
+  check('once its Try is done, the item drops "haven’t done its Try" and offers "Answer its checks"', (await itemText()).includes('answered 1 of its 2 checks on your own.') && !(await itemText()).includes('haven’t done its Try')
+    && (await ev(`document.querySelector('${item}').dataset.pgNext`)) === 'check' && (await text(item + ' [data-action=pg-step]')) === 'Answer its checks' && (await ev(`document.querySelector('${item} [data-action=pg-step]').dataset.v`)) === 'check', await itemText());
+  await editStorage(`s => { delete s.arabic.practice; }`);
+  await progress();
+  await click(`${item} [data-action=pg-step]`);
+  await until(() => exists('#ar-step-try'), 'the lesson’s Try step');
+  await until(() => ev(`document.activeElement && document.activeElement.tagName === 'H3' && !!document.activeElement.closest('#ar-step-try')`), 'focus on the Try heading', 6000);
+  const landed = await ev(`({ hash: location.hash, top: Math.round(document.getElementById('ar-step-try').getBoundingClientRect().top), vh: innerHeight, inRest: !!document.getElementById('ar-step-try').closest('[data-ar-rest]'),
+    open: (d => d ? d.open : null)(document.getElementById('ar-step-try').closest('[data-ar-rest] details')), focus: document.activeElement.tagName + ' ' + document.activeElement.textContent.trim() })`);
+  check('"Do the Try" opens the lesson with its Try step scrolled into view near the top and its heading focused', landed.hash === '#study/arabic/' + REG && landed.top >= 0 && landed.top < landed.vh / 2 && landed.focus.startsWith('H3'), landed);
+  check('…and if the session length puts Try under "The rest of this lesson", that fold is open', !landed.inRest || landed.open === true, landed);
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await progress();
+  check('phone: the Arabic card does not scroll sideways, and its action is at least 44 px tall', !(await ev('document.documentElement.scrollWidth > innerWidth')) && (await ev(`document.querySelector('${item} [data-action=pg-step]').getBoundingClientRect().height`)) >= 44,
+    [await ev('document.documentElement.scrollWidth'), await ev(`document.querySelector('${item} [data-action=pg-step]').getBoundingClientRect().height`)]);
+  await T.send('Emulation.clearDeviceMetricsOverride');
+
   finish();
 })().catch(e => { console.error('HARNESS ERROR', e); const s = T.summary(); console.log(`${s.pass} passed, ${s.fail} failed before the error`); process.exit(2); });
