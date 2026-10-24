@@ -1825,11 +1825,11 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
 
   console.log('  The empty card');
   check('the Learning card sits in the side column after Recently and before Manage', await ev(`(() => { const a = document.getElementById('projectRecent'), b = document.getElementById('projectLearning'), c = document.getElementById('projectManage'); return !!a && !!b && !!c && !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) && !!(b.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING); })()`), await ev(`[...document.querySelectorAll('#projectSoon, #projectRecent, #projectLearning, #projectManage')].map(e => e.id)`));
-  check('with nothing linked it has one line and "Link something"', (await text('#projectLearning')).includes('Link a course, book or Arabic lesson you’re learning for this project.') && (await text('[data-action=learning-add]')) === 'Link something' && !(await exists('[data-s=learning-link]')) && !('studyLinks' in (await pAt('pjLn'))), await text('#projectLearning'));
+  check('with nothing linked it has one line and "Link something"', (await text('#projectLearning')).includes('Link a course, book or lesson you’re learning for this project.') && (await text('[data-action=learning-add]')) === 'Link something' && !(await exists('[data-s=learning-link]')) && !('studyLinks' in (await pAt('pjLn'))), await text('#projectLearning'));
 
   console.log('  Linking a course');
   await click('[data-action=learning-add]');
-  check('"Link something" puts the keyboard on the kind choices, with Course chosen', await until(`document.activeElement && document.activeElement.id === 'learningKind-course'`) && (await ev(`document.getElementById('learningKind-course').getAttribute('aria-pressed')`)) === 'true' && (await ev(`document.querySelectorAll('[data-s=learning-kind]').length`)) === 3);
+  check('"Link something" puts the keyboard on the kind choices, with Course chosen', await until(`document.activeElement && document.activeElement.id === 'learningKind-course'`) && (await ev(`document.getElementById('learningKind-course').getAttribute('aria-pressed')`)) === 'true' && (await ev(`document.querySelectorAll('[data-s=learning-kind]').length`)) === 4);
   check('courses are not grouped', (await ev(`document.querySelectorAll('#learningPick optgroup').length`)) === 0);
   check('the list offers the two courses in roadmap order', eq(await lnOpts(), [['', 'Choose…'], ['coLnA', 'Networking basics'], ['coLnB', 'Safety first']]), await lnOpts());
   check('Link waits until something is chosen', await ev(`document.querySelector('[data-action=learning-link]').disabled`));
@@ -1853,10 +1853,10 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await T.send('Network.enable'); await T.send('Network.setBypassServiceWorker', { bypass: true }); await T.send('Network.setCacheDisabled', { cacheDisabled: true });
   await T.send('Network.setBlockedURLs', { urls: ['*learningArabic*'] });
   await lnAdd('arabic');
-  check('when the Arabic lessons cannot load, the form says so with a "Try again" button, and offers no list', await until(`!!document.querySelector('[data-s=learning-arabic-failed]')`) && (await text('[data-s=learning-arabic-failed]')).includes('couldn’t load just now') && (await text('[data-action=learning-retry]')) === 'Try again' && !(await exists('#learningPick')) && await ev(`document.querySelector('[data-action=learning-link]').disabled`), await text('[data-s=learning-form]'));
+  check('when the Arabic lessons cannot load, the form says so with a "Try again" button, and offers no list', await until(`!!document.querySelector('[data-s=learning-lessons-failed]')`) && (await text('[data-s=learning-lessons-failed]')).includes('couldn’t load just now') && (await text('[data-action=learning-retry]')) === 'Try again' && !(await exists('#learningPick')) && await ev(`document.querySelector('[data-action=learning-link]').disabled`), await text('[data-s=learning-form]'));
   await T.send('Network.setBlockedURLs', { urls: [] });
   await click('[data-action=learning-retry]');
-  check('"Try again" loads them once the network lets the chunk through', await until(`!!document.getElementById('learningPick') && document.querySelectorAll('#learningPick option').length > 10`) && !(await exists('[data-s=learning-arabic-failed]')), await text('[data-s=learning-form]'));
+  check('"Try again" loads them once the network lets the chunk through', await until(`!!document.getElementById('learningPick') && document.querySelectorAll('#learningPick option').length > 10`) && !(await exists('[data-s=learning-lessons-failed]')), await text('[data-s=learning-form]'));
   await T.send('Network.setBypassServiceWorker', { bypass: false }); await T.send('Network.setCacheDisabled', { cacheDisabled: false });
   await click('[data-action=learning-cancel]'); await sleep(150);
   await lnAdd('arabic');
@@ -1911,6 +1911,67 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('phone 320 px: with three links and the form open, nothing scrolls sideways', (await exists('[data-s=learning-form]')) && (await ev(`document.querySelectorAll('[data-s=learning-link]').length`)) === 3 && (await ev('document.documentElement.scrollWidth')) <= 320, await ev('document.documentElement.scrollWidth'));
   check('phone 320 px: the Edit why and Unlink buttons are at least 44 px tall', await ev(`[...document.querySelectorAll('[data-action=learning-edit], [data-action=learning-unlink]')].every(b => b.getBoundingClientRect().height >= 44)`), await ev(`[...document.querySelectorAll('[data-action=learning-edit], [data-action=learning-unlink]')].map(b => b.getBoundingClientRect().height)`));
   check('phone 320 px: the form\'s buttons and fields are at least 44 px tall', await ev(`[...document.querySelectorAll('[data-s=learning-form] button, [data-s=learning-form] input, [data-s=learning-form] select')].every(b => b.getBoundingClientRect().height >= 44)`));
+  await T.send('Emulation.clearDeviceMetricsOverride');
+
+  console.log('\n[42] Learning: Cybersecurity lessons, and "For your project" in Study');
+  const CY = 'lesson.learning-evidence', CY_TITLE = 'Learning through evidence', CY_MODULE = 'Learning method, scope and lab setup';
+  await go('projects', 2026, 10, 15, 9, 0); await reset(); await go('projects', 2026, 10, 15, 9, 0);
+  const fl = (kind, id, title) => ({ kind, id, title, addedOn: '2026-10-14' });
+  await seed([pjObj('pjFa', 'Alpha shop', 'act', { studyLinks: [fl('course', 'coFa', 'Shop Wi-Fi course')] }), pjObj('pjFb', 'Beta shop', 'act', { studyLinks: [fl('course', 'coFa', 'Shop Wi-Fi course')] }),
+    pjObj('pjFc', 'Gamma reading', 'act', { studyLinks: [fl('book', 'bkFa', 'Bookkeeping made plain')] }), pjObj('pjFd', 'Delta security', 'act')]);
+  await editStorage(`s => { s.study.stages = [{ id: 'sgF', title: 'Stage', courses: [${JSON.stringify(lnCourse('coFa', 'Shop Wi-Fi course', 1, 2))}, ${JSON.stringify(lnCourse('coFb', 'Unlinked course', 0, 1))}] }];
+    s.reading.books = [{ id: 'bkFa', title: 'Bookkeeping made plain', author: 'A. Writer', pages: 300, page: 20, notes: [], addedOn: '2026-09-01', finishedOn: null }, { id: 'bkFb', title: 'Unlinked book', author: 'B. Writer', pages: 100, page: 0, notes: [], addedOn: '2026-09-02', finishedOn: null }]; }`);
+  const cyRow = `[data-s=learning-link][data-kind=cyber][data-id="${CY}"]`;
+  const cyStatus = () => text(`${cyRow} [data-s=learning-status]`);
+
+  console.log('  Linking a Cybersecurity lesson');
+  await go('projects/p/pjFd', 2026, 10, 15, 9, 5);
+  await T.send('Network.enable'); await T.send('Network.setBypassServiceWorker', { bypass: true }); await T.send('Network.setCacheDisabled', { cacheDisabled: true });
+  await T.send('Network.setBlockedURLs', { urls: ['*learningCyber*'] });
+  await lnAdd('cyber');
+  check('when the Cybersecurity lessons cannot load, the form says so, with "Try again" and no list', await until(`!!document.querySelector('[data-s=learning-lessons-failed]')`) && (await text('[data-s=learning-lessons-failed]')).includes('The Cybersecurity lessons couldn’t load just now.') && (await text('[data-action=learning-retry]')) === 'Try again' && !(await exists('#learningPick')), await text('[data-s=learning-form]'));
+  await T.send('Network.setBlockedURLs', { urls: [] });
+  await click('[data-action=learning-retry]');
+  check('"Try again" loads them', await until(`!!document.getElementById('learningPick') && document.querySelectorAll('#learningPick option').length > 10`) && !(await exists('[data-s=learning-lessons-failed]')), await text('[data-s=learning-form]'));
+  await T.send('Network.setBypassServiceWorker', { bypass: false }); await T.send('Network.setCacheDisabled', { cacheDisabled: false });
+  const cyGroups = await ev(`[...document.querySelectorAll('#learningPick optgroup')].map(g => [g.label, g.querySelectorAll('option').length])`);
+  check('the lessons are grouped by module, the first group being "' + CY_MODULE + '" with the evidence lesson inside it', cyGroups.length >= 3 && cyGroups[0][0] === CY_MODULE && (await ev(`document.querySelector('#learningPick optgroup').querySelector('option').value`)) === CY, cyGroups.slice(0, 3));
+  const cyOther = await ev(`[...document.querySelectorAll('#learningPick option')].map(o => o.value).filter(v => v && v !== '${CY}')[0]`);
+  await lnPick(CY, 'For the shop network');
+  check('the saved link has the lesson\'s id and title', eq((await pAt('pjFd')).studyLinks.map(l => [l.kind, l.id, l.title, l.why]), [['cyber', CY, CY_TITLE, 'For the shop network']]), (await pAt('pjFd')).studyLinks);
+  check('the row shows "Cybersecurity lesson", the title and "Not started", and opens the lesson', await until(`(document.querySelector('${cyRow} [data-s=learning-status]') || {}).textContent === 'Not started'`) && (await text(cyRow)).includes('Cybersecurity lesson') && (await text(cyRow)).includes(CY_TITLE) && (await ev(`document.querySelector('${cyRow} a').getAttribute('href')`)) === `#study/cybersecurity/${CY}`, await text(cyRow));
+  check('the list no longer offers the linked lesson', await (async () => { await lnAdd('cyber'); const gone = await until(`!!document.getElementById('learningPick')`) && !(await lnOpts()).some(o => o[0] === CY); await click('[data-action=learning-cancel]'); return gone; })());
+  await editStorage(`s => { s.cybersecurity.attempts.push({ id: 'caF', activityId: 'exercise.learning-evidence', curriculumVersion: '1.0.0', rubricVersion: '1', startedAt: '2026-10-14T09:00', submittedAt: null, inputVariant: 'standard', environmentId: '', assistance: 'independent', evidence: '', answers: {}, rubricScores: [], criticalPassed: null, resumePoint: '', answerRevealed: false, assessor: 'self', verified: false }); }`);
+  await go('projects/p/pjFd', 2026, 10, 15, 9, 6);
+  check('after an attempt on one of its activities the row says "Started"', await until(`(document.querySelector('${cyRow} [data-s=learning-status]') || {}).textContent === 'Started'`), await cyStatus());
+  await editStorage(`s => { s.study.stages.push({ id: 'sgCy', title: 'Cyber', courses: [{ id: 'coCy', title: 'Cybersecurity', url: '', minutes: 0, listId: null, archived: false, modules: [{ id: 'mCy', title: 'M', sections: [{ id: 'sCy', title: 'S', tasks: [{ id: 'cyber:1:${CY}', title: '${CY_TITLE}', minutes: 15, url: '', kind: 'learn', note: '', done: true, doneOn: '2026-10-14' }] }] }] }] }); }`);
+  await go('projects/p/pjFd', 2026, 10, 15, 9, 7);
+  check('with its roadmap task ticked it says "Marked complete"', await until(`(document.querySelector('${cyRow} [data-s=learning-status]') || {}).textContent === 'Marked complete'`), await cyStatus());
+
+  console.log('  "For your project" in Study');
+  const fp = sel => text(sel).then(norm);
+  await go('study/course/coFa', 2026, 10, 15, 9, 10);
+  await until(`!!document.getElementById('co-h')`);
+  check('a course linked by two projects says "For your projects: Alpha shop, Beta shop", right after its title', (await fp('[data-s=for-project]')) === 'For your projects: Alpha shop, Beta shop' && (await ev(`document.querySelector('[data-s=for-project]').previousElementSibling.id`)) === 'co-h', await fp('[data-s=for-project]'));
+  check('…each name a link to its project', eq(await ev(`[...document.querySelectorAll('[data-s=for-project] a')].map(a => [a.textContent, a.getAttribute('href')])`), [['Alpha shop', '#projects/p/pjFa'], ['Beta shop', '#projects/p/pjFb']]));
+  await click('[data-s=for-project] a:nth-of-type(2)'); await sleep(400);
+  check('clicking a name opens that project', (await hash()) === '#projects/p/pjFb' && (await text('#projectTitle')) === 'Beta shop', await hash());
+  await go('study/course/coFb', 2026, 10, 15, 9, 11); await until(`!!document.getElementById('co-h')`);
+  check('a course no project links shows nothing', !(await exists('[data-s=for-project]')));
+  await go('study/reading', 2026, 10, 15, 9, 12); await until(`!!document.querySelector('.book-row')`);
+  check('a linked book shows "For your project: Gamma reading" in its row, after the author', (await fp('.book-row[data-id=bkFa] [data-s=for-project]')) === 'For your project: Gamma reading' && (await ev(`document.querySelector('.book-row[data-id=bkFa] [data-s=for-project]').previousElementSibling.textContent`)).includes('A. Writer'), await fp('.book-row[data-id=bkFa]'));
+  check('…and a book no project links shows nothing', !(await exists('.book-row[data-id=bkFb] [data-s=for-project]')) && (await ev(`document.querySelectorAll('[data-s=for-project]').length`)) === 1);
+  await go(`study/cybersecurity/${CY}`, 2026, 10, 15, 9, 13); await until(`!!document.querySelector('h2')`);
+  check('a linked Cybersecurity lesson shows "For your project: Delta security" right after its title', (await fp('[data-s=for-project]')) === 'For your project: Delta security' && (await ev(`document.querySelector('[data-s=for-project]').previousElementSibling.textContent`)) === CY_TITLE, await fp('[data-s=for-project]'));
+  await click('[data-s=for-project] a'); await sleep(400);
+  check('…and its name opens the project', (await hash()) === '#projects/p/pjFd' && (await text('#projectTitle')) === 'Delta security', await hash());
+  await go(`study/cybersecurity/${cyOther}`, 2026, 10, 15, 9, 14); await until(`!!document.querySelector('h2')`);
+  check('a lesson no project links shows nothing', !(await exists('[data-s=for-project]')) && (await ev(`document.querySelectorAll('h2').length`)) > 0, cyOther);
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 320, height: 740, deviceScaleFactor: 2, mobile: true });
+  for (const [name, hashv, sel] of [['course page', 'study/course/coFa', '[data-s=for-project]'], ['Reading', 'study/reading', '[data-s=for-project]'], ['lesson page', `study/cybersecurity/${CY}`, '[data-s=for-project]']]) {
+    await go(hashv, 2026, 10, 15, 9, 20); await until(`!!document.querySelector('${sel}')`); await sleep(200);
+    check(`phone 320 px: the ${name} with "For your project" does not scroll sideways`, (await exists(sel)) && (await ev('document.documentElement.scrollWidth')) <= 320, await ev('document.documentElement.scrollWidth'));
+  }
   await T.send('Emulation.clearDeviceMetricsOverride');
 
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);

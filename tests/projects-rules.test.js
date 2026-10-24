@@ -21,7 +21,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   fs.writeFileSync(path.join(dir, 'kit.ts'), [
     `export * from ${src('projectRecords')};`, `export * from ${src('projectPlan')};`, `export * from ${src('businessModel')};`, `export * from ${src('caseFile')};`, `export { normalizeProjects, deleteProject, recently, addProject, setProjectPrivate, editProject, setLeftOff, privateProjectIds, comingUp, stillOpen } from ${src('projects')};`,
     `export { freshState, normalize } from ${src('normalize')};`, `export { shift, shortDate } from ${src('dates')};`, `export * from ${src('projectDashboard')};`, `export * from ${src('weekReview')};`, `export { stepsForToday, nextStep, whyNext } from ${src('projects')};`,
-    `export { normalizeStudyLinks, addStudyLink, removeStudyLink, setStudyLinkWhy, linkView, courseChoices, bookChoices, LINK_LIMITS } from ${src('studyLinks')};`, `export { stIndex } from ${src('study/roadmap')};`,
+    `export { normalizeStudyLinks, addStudyLink, removeStudyLink, setStudyLinkWhy, linkView, courseChoices, bookChoices, linkedFrom, LINK_LIMITS } from ${src('studyLinks')};`, `export * as Cyber from ${JSON.stringify(path.join(ROOT, 'app/src/projects/learningCyber'))};`, `export { stIndex } from ${src('study/roadmap')};`,
     `export { searchProject, fold, matchCount, SEARCH_KIND_LABEL } from ${src('projectSearch')};`,
     `export { normalizeTasks, setWaiting, stopWaiting, isWaiting, chaseTask, chaseWaiting, isStuck, setTaskDone } from ${src('tasks')};`,
     `export { setDone, clearDay } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
@@ -1680,6 +1680,43 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('an id with odd characters is encoded in the link', lv(lk('course', 'coA', 'x')).href === '#study/course/coA' && K.linkView(d2, lk('arabic', 'a b/c', 'x'), ix(), undefined).href === '#study/arabic/a%20b%2Fc');
     const nv = lv({ kind: 'video', id: 'v1', title: 'From the future', addedOn: AT });
     check('a kind this version does not know shows "From a newer MyDay", its title, "Open it in a newer MyDay", is not gone and has no link', eq(pickv(nv), ['From a newer MyDay', 'From the future', 'Open it in a newer MyDay', false, null]), pickv(nv));
+
+    console.log('  Cybersecurity lessons');
+    const CY = 'lesson.learning-evidence';
+    check('a Cybersecurity lesson is accepted with the title the caller gives, and its link opens the lesson', (() => { const e = lw(); return K.addStudyLink(e, 'pjL', { kind: 'cyber', id: CY, title: 'Learning through evidence' }, '', AT) && eq(links(e), [{ kind: 'cyber', id: CY, title: 'Learning through evidence', addedOn: AT }]); })());
+    const cv = info => K.linkView(d2, lk('cyber', CY, 'Stored title'), K.stIndex(d2.study), info);
+    check('a Cybersecurity lesson with its info shows the catalogue\'s title, Study\'s status, "Cybersecurity lesson", and links to the lesson', eq(pickv(cv({ title: 'Learning through evidence', status: 'Started' })), ['Cybersecurity lesson', 'Learning through evidence', 'Started', false, `#study/cybersecurity/${CY}`]), pickv(cv({ title: 'x', status: 'Started' })));
+    check('…gone when the lesson is not in the course (null); stored title while loading (undefined); "Open it in Study…" when it failed', eq(pickv(cv(null)), ['Cybersecurity lesson', 'Stored title', 'No longer in Study', true, null]) && eq(pickv(cv(undefined)), ['Cybersecurity lesson', 'Stored title', '', false, `#study/cybersecurity/${CY}`]) && cv('failed').status === 'Open it in Study to see how it’s going' && !cv('failed').gone);
+    check('the cyber link\'s id is encoded', K.linkView(d2, lk('cyber', 'a b/c', 'x'), K.stIndex(d2.study), undefined).href === '#study/cybersecurity/a%20b%2Fc');
+    check('the cyber kind is kept through reading, like the others', eq(nr([lk('cyber', CY, 'Kept', { why: 'For the lab' })])[0], [lk('cyber', CY, 'Kept', { why: 'For the lab' })]));
+
+    console.log('  Which projects link an item');
+    {
+      const e = world(base('pjA', { title: 'Alpha' }), base('pjB', { title: 'Beta' }), base('pjC', { title: 'Gamma' }));
+      e.projects.items[0].studyLinks = [lk('course', 'coA', 'A'), lk('cyber', CY, 'C')];
+      e.projects.items[1].studyLinks = [lk('course', 'coA', 'A'), lk('book', 'coA', 'Same id, another kind')];
+      const who = (kind, id) => K.linkedFrom(e, kind, id).map(p => p.id);
+      check('linkedFrom lists the projects that link a course: none, one or two (in project order)', eq(who('course', 'coNone'), []) && eq(who('cyber', CY), ['pjA']) && eq(who('course', 'coA'), ['pjA', 'pjB']), [who('course', 'coA'), who('cyber', CY)]);
+      check('…and another kind with the same id is not counted', eq(who('book', 'coA'), ['pjB']) && eq(who('arabic', 'coA'), []) && eq(who('book', CY), []));
+    }
+
+    console.log('  The Cybersecurity catalogue on the card');
+    {
+      const cy = K.Cyber, ID = 'lesson.learning-evidence';
+      const fresh = () => K.freshState();
+      const withTask = (e, done) => { e.study.stages = [{ id: 'sgC', title: 'Stage', courses: [{ id: 'coCy', title: 'Cyber', url: '', minutes: 0, listId: null, archived: false, modules: [{ id: 'mC', title: 'M', sections: [{ id: 'sC', title: 'S', tasks: [{ id: `cyber:1:${ID}`, title: 'Learning through evidence', minutes: 15, url: '', kind: 'learn', note: '', done, doneOn: done ? '2026-10-01' : null }] }] }] }] }]; return e; };
+      const attempt = activityId => ({ id: 'caX', activityId, curriculumVersion: '1.0.0', rubricVersion: '1', startedAt: '2026-10-01T09:00', submittedAt: null, inputVariant: 'standard', environmentId: '', assistance: 'independent', evidence: '', answers: {}, rubricScores: [], criticalPassed: null, resumePoint: '', answerRevealed: false, assessor: 'self', verified: false });
+      check('a lesson for a fresh learner is "Not started", with the catalogue\'s title', eq(cy.lesson(fresh(), ID), { title: 'Learning through evidence', status: 'Not started' }), cy.lesson(fresh(), ID));
+      check('an attempt on the lesson\'s practical, knowledge check or mini challenge makes it "Started"', ['exercise.learning-evidence', 'assessment.learning-evidence-check', 'exercise.learning-evidence-challenge'].every(a => { const e = fresh(); e.cybersecurity.attempts.push(attempt(a)); return cy.lesson(e, ID).status === 'Started'; }));
+      check('an attempt on some other activity does not', (() => { const e = fresh(); e.cybersecurity.attempts.push(attempt('exercise.something-else')); return cy.lesson(e, ID).status === 'Not started'; })());
+      check('a Study session on the lesson\'s task makes it "Started"', (() => { const e = fresh(); e.study.sessions.push({ id: 'ssX', courseId: null, taskId: `cyber:1:${ID}`, title: 'Learning through evidence', date: '2026-10-01', startedAt: '2026-10-01T09:00', plannedMin: 15, short: false, status: 'done', runningSince: null, activeMs: 0, endedAt: '2026-10-01T09:15', checkin: null, taskDone: null, todayUid: null }); return cy.lesson(e, ID).status === 'Started'; })());
+      check('its roadmap task not yet ticked is still "Not started"; ticked, it is "Marked complete"', cy.lesson(withTask(fresh(), false), ID).status === 'Not started' && cy.lesson(withTask(fresh(), true), ID).status === 'Marked complete');
+      check('"Marked complete" wins over an attempt', (() => { const e = withTask(fresh(), true); e.cybersecurity.attempts.push(attempt('exercise.learning-evidence')); return cy.lesson(e, ID).status === 'Marked complete'; })());
+      check('a lesson that is not in the course is null', cy.lesson(fresh(), 'lesson.nope') === null);
+      const ch = cy.choices(fresh());
+      check('the choices come in path order, each with a module name, the first being the evidence lesson in "Learning method, scope and lab setup"', ch.length > 20 && ch[0].id === ID && ch[0].group === 'Learning method, scope and lab setup' && ch.every(c => c.title && c.group), ch.slice(0, 2));
+      check('…and a lesson appears once', new Set(ch.map(c => c.id)).size === ch.length);
+    }
 
     console.log('  What can still be linked');
     d2 = lw();

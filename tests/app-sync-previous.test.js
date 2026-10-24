@@ -120,10 +120,11 @@ async function signIn(d, url) {
     const studyLinks = [
       { kind: 'arabic', id: ARABIC, title: ARABIC_TITLE, why: 'For the trip next spring', addedOn: today, futureBit: { keep: ['this', 1] } },
       { kind: 'course', id: 'coGoneBack', title: 'A course removed since', addedOn: today },
-      { kind: 'video', id: 'vdFuture', title: 'A kind from a newer MyDay', addedOn: today, speed: 2 }];
+      { kind: 'video', id: 'vdFuture', title: 'A kind from a newer MyDay', addedOn: today, speed: 2 },
+      { kind: 'cyber', id: 'lesson.learning-evidence', title: 'Learning through evidence', why: 'For the lab', addedOn: today, futureBit: { keep: ['cyber'] } }];
     const linksOf = r => { const v = r?.value ?? r; return v?.studyLinks; };
     await now.setData(`s => { s.projects.items.push({ id: '${PL}', title: 'Learning for the trip', summary: 'Greetings and numbers.', stage: 'capture', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}', studyLinks: ${JSON.stringify(studyLinks)} }); }`);
-    check('a project with learning links (one with an extra key, one of a newer kind) reaches the account with the links unchanged', await eventually(async () => eq(linksOf((await record('project', PL))?.data), studyLinks)) && await synced(now), linksOf((await record('project', PL))?.data));
+    check('a project with learning links (one with an extra key, one of a newer kind, and a Cybersecurity lesson) reaches the account with the links unchanged', await eventually(async () => eq(linksOf((await record('project', PL))?.data), studyLinks)) && await synced(now), linksOf((await record('project', PL))?.data));
     await before.returnToApp();
     check('the previous release receives the project', await before.until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.some(p => p.id === '${PL}')`, 20000));
     check('…and its saved data holds the links exactly, extra keys included', eq(linksOf((await before.data()).projects.items.find(p => p.id === PL)), studyLinks), linksOf((await before.data()).projects.items.find(p => p.id === PL)));
@@ -136,6 +137,7 @@ async function signIn(d, url) {
     const backPl = (await now.data()).projects.items.find(p => p.id === PL);
     check('…with the learning links unchanged in its saved data', eq(backPl.studyLinks, studyLinks) && backPl.stage === 'understand', backPl.studyLinks);
     check('the Learning card shows the lesson\'s real title and its reason', await now.until(`document.querySelector('#projectLearning')?.textContent.includes(${JSON.stringify(ARABIC_TITLE)}) && document.querySelector('#projectLearning')?.textContent.includes('Why: For the trip next spring')`, 15000), await now.text('#projectLearning'));
+    check('…and the Cybersecurity lesson with its title, "Cybersecurity lesson", its why and a status from Study', await now.until(`(() => { const t = document.querySelector('#projectLearning')?.textContent || ''; return t.includes('Cybersecurity lesson') && t.includes('Learning through evidence') && t.includes('Why: For the lab') && t.includes('Not started'); })()`, 15000), await now.text('#projectLearning'));
     check('…the course removed since as "No longer in Study", and the newer kind as "Open it in a newer MyDay"', (await now.text('#projectLearning')).includes('No longer in Study') && (await now.text('#projectLearning')).includes('Open it in a newer MyDay'), await now.text('#projectLearning'));
 
     console.log('\n[7] A word you kept (arabic_word) is left alone by a release that doesn\'t know it');
