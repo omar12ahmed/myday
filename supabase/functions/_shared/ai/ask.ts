@@ -38,8 +38,8 @@ set; "due", tasks due that day that aren't on the plan; "busy", the times taken 
 "workout", "sleep" and "prep" (travel and preparation around an appointment) — by kind only, never what an appointment
 is; "free", the free time left for tasks). A private project's tasks are never sent. Answer from that day only, as
 "answer" (or "add" if they asked to add something to it), in two or three sentences: what's on, how busy it is and
-when they're free, warmly and without judging. Never guess what an appointment or a shift is for. Never reply "lookup"
-again.${quoting}`;
+when they're free, warmly and without judging. If that day is before the given date, it has passed: say what was on it,
+not when they're free. Never guess what an appointment or a shift is for. Never reply "lookup" again.${quoting}`;
   const tools = c.can ?? [], offer: string[] = [];
   if (tools.includes('notes')) offer.push(`- In their notes: they ask what they wrote, noted or saved about something, or to find a note —
   {"kind":"lookup","message":"Looking in your notes for that.","lookup":{"tool":"notes","query":"…"}}, the query 1–4

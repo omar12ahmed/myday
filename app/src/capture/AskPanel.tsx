@@ -1,6 +1,6 @@
 import { ArrowRight, BookOpen, CalendarPlus, FileText, Flag, FolderKanban, ListPlus, Minus, NotebookPen, PencilLine, Plus, Scale, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { addAskItems, applyAskChanges, applyAskEdit, checkAskReply, countWords, NEW_PROJECT, undoAsk, undoAskChanges, type AskChangeUndo, type AskChecked, type AskEdit, type AskProposal, type AskUndo } from '../ai/ask';
+import { addAskItems, applyAskChanges, applyAskEdit, checkAskReply, countWords, DAY_TOO_FAR, NEW_PROJECT, undoAsk, undoAskChanges, type AskChangeUndo, type AskChecked, type AskEdit, type AskProposal, type AskUndo } from '../ai/ask';
 import { askContext, askPreview, askSlice } from '../ai/askContext';
 import { dayLookup, lookupLine, notesLookup } from '../ai/lookup';
 import type { AskLookup } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
@@ -105,7 +105,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
       if (AI_MODE === 'edge') await pause(PACE_MS - (clock() - started), ctrl.signal);
       if (ctrl.signal.aborted || !previewIsCurrent()) return;
       const found = r.tool === 'day' ? dayLookup(getSnapshot().data, r.query, k) : notesLookup(getSnapshot().data, r.query);
-      if (!found) { setPhase({ at: 'error', message: 'That day is too far off to look at — ask about a day from a week ago to two months ahead.' }); return; }
+      if (!found) { setPhase({ at: 'error', message: DAY_TOO_FAR }); return; }
       looked = found;
       const again = () => askModel(askContext(slice, text, k, undefined, followUp, looked!.lookup), ctrl.signal);
       reply = await again();

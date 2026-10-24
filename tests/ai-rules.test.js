@@ -1417,25 +1417,30 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     // kind only, from a week ago to two months ahead.
     const DD = '2026-11-12', TI2 = (id, title, x = {}) => ({ id, title, listId: '', category: 'admin', minutes: 20, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: lat, postponed: 0, blockers: [], letGoOn: null, ...x });
     const PT2 = (uid, title, minutes, at) => ({ uid, taskId: null, category: 'admin', title, minutes, baseMinutes: minutes, done: false, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: at ? `${DD}T${at}` : null, scheduledEnd: at ? `${DD}T${at.slice(0, 3)}${String(Number(at.slice(3)) + 20).padStart(2, '0')}` : null });
-    const dw = K.normalize({ ...lw, days: { [DD]: { energy: 4, rest: false, builtAt: `${DD}T08:00`, checkedIn: false, tasks: [PT2('pD1', 'Order the felt', 20, '10:00'), PT2('pD2', 'Hidden plan task', 30, null)] } },
+    const dw = K.normalize({ ...lw, projects: { ...lw.projects, items: lw.projects.items.map(p => (p.id === 'pjHid' ? { ...p, commitmentIds: ['cDHid'] } : p)) }, days: { [DD]: { energy: 4, rest: false, builtAt: `${DD}T08:00`, checkedIn: false, tasks: [PT2('pD1', 'Order the felt', 20, '10:00'), PT2('pD2', 'Hidden plan task', 30, null)] } },
       context: { [DD]: { energy: 4, sleep: { start: null, end: null, estimatedHours: null } } },
       tasks: { ...lw.tasks, items: [TI2('tkD2', 'Hidden plan task', { projectId: 'pjHid', plannedOn: DD, planUid: 'pD2' }), TI2('tkDue', 'Post the parcel', { due: DD }), TI2('tkDueHid', 'Hidden due thing', { due: DD, projectId: 'pjHid' })] },
-      commitments: [{ id: 'cD', kind: 'appointment', title: 'Dentist with Dr Okapi', start: `${DD}T15:00`, end: `${DD}T16:00` }] });
+      commitments: [{ id: 'cD', kind: 'appointment', title: 'Dentist with Dr Okapi', start: `${DD}T15:00`, end: `${DD}T16:00` },
+        { id: 'cDHid', kind: 'appointment', title: 'Hidden clinic visit', start: `${DD}T11:00`, end: `${DD}T11:30` }] });
     const dr = K.dayLookup(dw, DD, LD);
     check('a day: its plan without the private project\'s task, what\'s due (not the private one), its energy and weekday', eq(dr.lookup.tasks.map(t => t.title), ['Order the felt']) && dr.lookup.tasks[0].time === '10:00' && eq(dr.lookup.due, ['Post the parcel']) && dr.lookup.energy === 4 && dr.lookup.weekday === 'Thursday' && dr.lookup.planned, dr.lookup);
     check('…the appointment as busy time, by kind only — never its name', dr.lookup.busy.some(b => b.kind === 'appointment' && b.start === `${DD}T15:00`) && !/Okapi|Dentist/.test(JSON.stringify(dr.lookup)), dr.lookup.busy);
+    check('…a private project\'s appointment too, as busy time only (so the day isn\'t shown free then), never its name', dr.lookup.busy.some(b => b.kind === 'appointment' && b.start === `${DD}T11:00`) && !dr.lookup.free.some(f => f.start <= '11:00' && f.end > '11:00'), [dr.lookup.busy, dr.lookup.free]);
     check('…and the two private tasks counted only here, never sent', dr.leftOut === 2 && !/Hidden/.test(JSON.stringify(dr.lookup)) && !('leftOut' in dr.lookup));
     check('…a day further off than two months, or more than a week ago, isn\'t looked at', K.dayLookup(dw, '2027-01-12', LD) === null && K.dayLookup(dw, '2026-11-02', LD) === null && !!K.dayLookup(dw, '2026-11-03', LD));
     const dline = K.lookupLine(dr.lookup, dr.leftOut);
     check('what the panel says: the day, what\'s planned and due, and the private tasks left out', /^Looked at Thursday,? (12 November|November 12): one task planned, 1 due, /.test(dline) && dline.endsWith('— 2 private tasks left out.'), dline); // Node's own date wording; the app uses en-GB
     check('the server\'s check accepts a request carrying the day', K.checkAskContext(K.askContext(lslice, 'Am I free on Thursday?', LD, undefined, undefined, dr.lookup)));
     const DLK = q => JSON.stringify({ kind: 'lookup', message: 'Looking at that day.', lookup: { tool: 'day', query: q } });
-    check('a day lookup reply is taken as one, for a day in range only', eq(K.checkAskReply(DLK(DD), dw, lslice, LD), { kind: 'lookup', tool: 'day', query: DD }) && K.checkAskReply(DLK('2027-06-01'), dw, lslice, LD) === null);
+    check('a day lookup reply is taken as one', eq(K.checkAskReply(DLK(DD), dw, lslice, LD), { kind: 'lookup', tool: 'day', query: DD }));
+    const far = K.checkAskReply(DLK('2027-06-01'), dw, lslice, LD);
+    check('…a day further off gets a plain answer saying which days it can look at (not "couldn\'t be used")', far?.kind === 'cannot' && far.message.includes('a week ago to two months ahead'), far);
+    check('…and a day that doesn\'t exist (31 November) is unusable', K.checkAskReply(DLK('2026-11-31'), dw, lslice, LD) === null);
     const dslice = K.askSlice(dw, '#projects', LD), dq = 'Am I free on Thursday?';
     const d1 = K.checkAskReply(K.mockAsk(K.askContext(dslice, dq, LD)), dw, dslice, LD);
     const d2 = d1?.kind === 'lookup' && d1.tool === 'day' ? K.dayLookup(dw, d1.query, LD) : null;
     const d3 = d2 && K.checkAskReply(K.mockAsk(K.askContext(dslice, dq, LD, undefined, undefined, d2.lookup)), dw, dslice, LD, undefined, d2.lookup);
-    check('practice mode, end to end: "Am I free on Thursday?" looks at the 12th, then says what\'s on', d1?.query === DD && d3?.kind === 'answer' && d3.message.includes('Thursday has 1 task planned and 1 appointment'), [d1, d3]);
+    check('practice mode, end to end: "Am I free on Thursday?" looks at the 12th, then says what\'s on', d1?.query === DD && d3?.kind === 'answer' && d3.message.includes('Thursday has 1 task planned and 2 appointments'), [d1, d3]);
     check('practice mode, end to end: it looks, then answers naming the notes, with them as sources', p1?.kind === 'lookup' && p3?.kind === 'answer' && p3.message.includes('“Shed sizes”') && eq(p3.sources.map(x => x.id), ['nRack', 'nRack2']), [p1, p3]);
   }
 

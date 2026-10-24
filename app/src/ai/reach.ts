@@ -3,7 +3,8 @@
 //   - a private note, and a private project with everything of it (its tasks, notes and appointments), never reach AI —
 //     except that AI help with notes may offer a private project's name and summary as a place to file a note
 //     (17 Oct 2026), and Help me adjust today sends a private project's task on today's plan as "a private task",
-//     without its title (24 Oct 2026);
+//     without its title (24 Oct 2026); and busy time (Help me adjust today, Ask MyDay's look at a day) counts every
+//     appointment, a private project's too, by kind and time only, so a day is never shown free when it isn't;
 //   - a note's text goes only with "AI help with notes" on;
 //   - never: a project's outcome, what counts as finished and where you left off; who a task is waiting on; your name,
 //     email, preferences and patterns; Finance and Health records (each request builder simply doesn't read them).

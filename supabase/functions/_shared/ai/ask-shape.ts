@@ -124,7 +124,11 @@ export interface AskReply {
 
 const obj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const str = (v: unknown, max: number, empty = true) => typeof v === 'string' && v.length <= max && (empty || v.trim().length > 0);
-const isDate = (v: unknown) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
+// A real calendar date (not 31 November).
+const isDate = (v: unknown) => {
+  const t = typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? Date.parse(`${v}T00:00:00Z`) : NaN;
+  return !Number.isNaN(t) && new Date(t).toISOString().slice(0, 10) === v;
+};
 const isTime = (v: unknown) => typeof v === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(v);
 const refs = (v: unknown, extra?: (x: Record<string, unknown>) => boolean) =>
   Array.isArray(v) && v.length <= ASK_LIMITS.list && v.every(x => obj(x) && str(x.id, 64, false) && str(x.title, ASK_LIMITS.titleChars) && (!extra || extra(x)));

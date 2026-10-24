@@ -282,7 +282,7 @@ export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['
   if (c.can?.includes('notes')) {
     short.push('If needed, a look in your notes or at a day');
     all.push({ label: 'If it needs to: your notes', lines: ['Ask MyDay may look in your notes for words from your question, on this device, and send up to 8 that match: their titles and projects, and a short snippet only with AI help with notes on.', 'Never a private note, or a note in a private project — not even whether one matched.'] });
-    if (c.can.includes('day')) all.push({ label: 'If it needs to: a day', lines: ['Or at one day you ask about (from a week ago to two months ahead): its plan’s tasks, what’s due, busy times by kind only (never an appointment’s name), free time and energy.', 'Never a private project’s tasks.'] });
+    if (c.can.includes('day')) all.push({ label: 'If it needs to: a day', lines: ['Or at one day you ask about (from a week ago to two months ahead): its plan’s tasks, what’s due, busy times by kind only (never an appointment’s name), free time and energy.', 'Never a private project’s tasks; its appointments only as busy time.'] });
   }
   return { short, all };
 }

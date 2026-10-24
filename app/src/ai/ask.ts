@@ -50,6 +50,7 @@ const SUGGESTED_BELIEFS = 5; // a few at a time
 const CHOOSES = /\b(is|seems|looks|would be) (the )?(best|better|right|clear|obvious)( option| choice| one| fit| way to go)?\b|\bI(?:'d| would) (choose|pick|go (?:with|for))\b|\bI recommend\b|\b(?:you should|I'd suggest you) (?:choose|pick|go (?:with|for))\b|\b(?:clear|obvious) winner\b/i;
 // A task or note for the project proposed in the same answer (it's created first when you tap Add).
 export const NEW_PROJECT = '@new';
+export const DAY_TOO_FAR = 'I can only look at a day from a week ago to two months ahead — that one’s further off.';
 export type AskChecked =
   | { kind: 'add' | 'steps'; message: string; items: AskProposal[]; changed: string[]; sources?: AskSource[] }
   | { kind: 'answer'; message: string; action: { type: 'start-study'; courseId: string; taskId: string | null; minutes: number; label: string } | { type: 'adjust-today' } | { type: 'start-revision'; scope: Scope; count: number } | null; changed: string[]; sources?: AskSource[] }
@@ -78,8 +79,11 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
   const r = readAsk(text);
   if (r?.kind === 'lookup') {
     if (looked || !r.lookup) return null;
-    // A day only from a week ago to two months ahead (what the app will look at).
-    if (r.lookup.tool === 'day' && (r.lookup.query < shift(k, -DAY_BACK) || r.lookup.query > shift(k, DAY_AHEAD))) return null;
+    if (r.lookup.tool === 'day') {
+      if (!realDate(r.lookup.query)) return null;
+      // A day only from a week ago to two months ahead (what the app will look at): further off, it says so.
+      if (r.lookup.query < shift(k, -DAY_BACK) || r.lookup.query > shift(k, DAY_AHEAD)) return { kind: 'cannot', message: DAY_TOO_FAR, changed: [] };
+    }
     return { kind: 'lookup', tool: r.lookup.tool, query: r.lookup.query };
   }
   const out = checkReply(text, data, slice, k, asked);

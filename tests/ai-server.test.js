@@ -276,13 +276,25 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     bad('a busy time of a kind it doesn\'t know', { ...base, lookup: { ...day, busy: [{ ...day.busy[0], kind: 'secret' }] } });
     bad('a day that isn\'t a date', { ...base, lookup: { ...day, query: 'Thursday' } });
     bad('a planned task with its id or project (only title, minutes, done, time)', { ...base, lookup: { ...day, tasks: [{ ...day.tasks[0], projectId: 'pj1' }] } });
+    bad('a day that doesn\'t exist (31 November)', { ...base, lookup: { ...day, query: '2026-11-31' } });
+    bad('a month that doesn\'t exist (and it\'s refused, not an error)', { ...base, lookup: { ...day, query: '2026-13-01' } });
+    bad('21 planned tasks', { ...base, lookup: { ...day, tasks: Array.from({ length: 21 }, () => day.tasks[0]) } });
+    bad('21 due tasks', { ...base, lookup: { ...day, due: Array.from({ length: 21 }, (_, i) => 'Due ' + i) } });
+    bad('41 busy times', { ...base, lookup: { ...day, busy: Array.from({ length: 41 }, () => day.busy[0]) } });
+    bad('25 free times', { ...base, lookup: { ...day, free: Array.from({ length: 25 }, () => day.free[0]) } });
+    bad('a task title over 120 characters', { ...base, lookup: { ...day, tasks: [{ ...day.tasks[0], title: 'x'.repeat(121) }] } });
+    bad('an energy of 6', { ...base, lookup: { ...day, energy: 6 } });
+    check('…while 20 tasks, 40 busy times and 24 free times, energy 1 and an empty rest day are accepted', A.checkAskContext({ ...base, lookup: { ...day, energy: 1, tasks: Array.from({ length: 20 }, () => day.tasks[0]), busy: Array.from({ length: 40 }, () => day.busy[0]), free: Array.from({ length: 24 }, () => day.free[0]) } }) === true
+      && A.checkAskContext({ ...base, lookup: { ...day, planned: false, rest: true, energy: null, tasks: [], due: [], busy: [], free: [] } }) === true);
     const offerDay = sysOf({ ...base, can: ['notes', 'day'] }), afterDay = sysOf({ ...base, can: ['notes', 'day'], lookup: day });
     check('the instructions offer a day lookup only when the app says it can look at a day', offerDay.includes('"tool":"day"') && !offer.includes('"tool":"day"'));
     check('…and, with the day, answer from it only and never guess what an appointment is for', afterDay.includes('Answer from that day only') && afterDay.includes('Never guess what an appointment or a shift is for') && afterDay.includes('Never reply "lookup" again'));
+    check('…and a day that has passed is told as what was on it, not when they\'re free', afterDay.includes('If that day is before the given date, it has passed: say what was on it, not when they\'re free.'));
     check('…and after a notes lookup, don\'t guess why nothing matched (the quality review\'s point)', after.includes('don\'t guess why nothing matched'));
     const dl = A.readAsk(JSON.stringify({ kind: 'lookup', message: 'Looking at that day.', lookup: { tool: 'day', query: '2026-11-12' } }));
     check('a day lookup reply is read with its date', dl && dl.lookup.tool === 'day' && dl.lookup.query === '2026-11-12', dl);
     check('…but not with a day that isn\'t a date', A.readAsk(JSON.stringify({ kind: 'lookup', message: 'x', lookup: { tool: 'day', query: 'Thursday' } })) === null);
+    check('…nor one that doesn\'t exist', A.readAsk(JSON.stringify({ kind: 'lookup', message: 'x', lookup: { tool: 'day', query: '2026-11-31' } })) === null);
     const md1 = JSON.parse(A.mockAsk({ ...base, text: 'Am I free on Thursday?', can: ['notes', 'day'] }));
     check('the practice version looks at Thursday (from Tuesday 10 November: the 12th)', md1.kind === 'lookup' && md1.lookup.tool === 'day' && md1.lookup.query === '2026-11-12', md1);
     const md2 = JSON.parse(A.mockAsk({ ...base, text: 'Am I free on Thursday?', can: ['notes', 'day'], lookup: day }));

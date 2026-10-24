@@ -486,8 +486,9 @@ look things up (`can`), so the server's instructions offer a lookup only to an a
 page, Ask MyDay replies "look up" with the date (worked out from the day named); the app looks at it on the device
 (`dayLookup` in `src/ai/lookup.ts`, from a week ago to two months ahead) and asks once more with that day's plan (task
 titles, minutes, done, a time), tasks due that day not on it, busy times by kind only (work, appointment, workout,
-sleep, prep — never an appointment's name), free time and energy. A private project's tasks are left out (counted only
-on the device: "— 1 private task left out"). Evaluated with `ai-eval/ask-scenarios.ts` (y01–y07).
+sleep, prep — never an appointment's name; a private project's appointments count as busy time too, as in Help me adjust
+today), free time and energy. A private project's tasks are left out (counted only on the device: "— 1 private task left
+out"). A day further off gets a plain "I can only look at a day from a week ago to two months ahead". Evaluated with `ai-eval/ask-scenarios.ts` (y01–y07).
 
 **Planning a Study course with Ask (1.26.0):** a course page has **✦ Plan this course with Ask**, which opens + already
 filled in ("Break this course into study tasks"; `src/capture/openCapture.ts`). From a course page Ask sends the
