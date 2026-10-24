@@ -1,6 +1,6 @@
 # Ask MyDay: one privacy filter, then read-only lookups
 
-**Status:** agreed direction (the owner's decisions are in §6). Step 1, the filter (`app/src/ai/reach.ts`), shipped in 1.61.0; step 2's first lookup, "Search your notes", shipped in 1.63.0; the second, "Your day", in 1.66.0 (`dayLookup`; the server's instructions `myday-ask-v18` were deployed first); the third, "A project's context", in 1.70.0 (`projectLookup`; the server's instructions `myday-ask-v19` were deployed first); the fourth, "Open decisions" (`decisionsLookup`, instructions `myday-ask-v20`), is built and needs the server deployed before the app.
+**Status:** agreed direction (the owner's decisions are in §6). Step 1, the filter (`app/src/ai/reach.ts`), shipped in 1.61.0; step 2's first lookup, "Search your notes", shipped in 1.63.0; the second, "Your day", in 1.66.0 (`dayLookup`; the server's instructions `myday-ask-v18` were deployed first); the third, "A project's context", in 1.70.0 (`projectLookup`; the server's instructions `myday-ask-v19` were deployed first); the fourth, "Open decisions", in 1.72.0 (`decisionsLookup`; the server's instructions `myday-ask-v20` were deployed first).
 **Builds on:** [`myday-vision.md`](myday-vision.md) §4, and the owner's decision of 24 Oct 2026 that Private covers
 every AI feature except note filing.
 

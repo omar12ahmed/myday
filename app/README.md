@@ -1,5 +1,14 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.72.0 — Ask MyDay looks at your open decisions:** ask "which decisions am I putting off?" or "what do I still have
+to decide on the flat move?" and Ask MyDay looks, on this device, at the decisions you haven't made yet across your
+open projects (or the one you name): each one's question and options, which options have no pros or cons yet, and the
+day it was opened, plus what a business idea still has to check. It answers with the oldest first and one small next
+step, links each decision it names, and never picks an option for you. Never a private project's, never what a pro or
+con says, your reasons, earlier choices or what you found; not offered on Finance or Health. That second request
+counts towards the day's limit. The server's instructions (v20) were deployed first; no saved-data, sync or database
+change; going back to 1.71.0 is safe.
+
 **1.71.0 — The Cybersecurity portfolio:** a handed-in notebook attempt now has "Add to portfolio": a title, a copy
 of its evidence to edit or redact, an optional note, and up to 5 screenshots, diagrams or PDFs (PNG, JPEG, WebP or
 PDF, 2 MB each, stored privately through the shared files design). Before anything is kept you tick the privacy
