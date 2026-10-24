@@ -13,7 +13,8 @@ import { Switch } from '../components/Switch';
 import { prettyDate, relDay, shortDate, todayKey } from '../data/dates';
 import { addNote, noteName } from '../data/notes';
 import { isBusiness, isCase, knownTemplate, setTemplate, TEMPLATES, type TemplateChoice } from '../data/businessModel';
-import { comingUp, deleteProject, editProject, setProjectPrivate, lastActivity, linkNote, nextStep, PROJECT_LIMITS, projectById, projectNotes, projectTasks, recently, setNextStep, STATUS_LABEL, unlinkAppointment } from '../data/projects';
+import { worthALook } from '../data/projectDashboard';
+import { comingUp, deleteProject, editProject, setProjectPrivate, linkNote, nextStep, PROJECT_LIMITS, projectById, projectNotes, projectTasks, recently, setNextStep, STATUS_LABEL, stillOpen, unlinkAppointment } from '../data/projects';
 import { update } from '../data/storage';
 import { addTask, addToTodaysPlan, onTodaysPlan, planRoom, setTaskDone } from '../data/tasks';
 import { toast } from '../data/toast';
@@ -22,15 +23,16 @@ import { bothMention, mightBelong } from '../data/understand';
 import { dueText } from '../tasks/route';
 import { TaskRow } from '../tasks/TasksScreen';
 import { Progression } from './parts';
-import { CaseCard, EvidenceView, IssuesView, TimelineView } from './CaseViews';
-import { AtAGlance } from './AtAGlance';
-import { ModelCard, ModelView } from './ModelView';
-import { DecisionsCard, DecisionsView, MilestonesCard, MilestonesView } from './PlanViews';
+import { AddDeadline, EvidenceView, IssuesView, TimelineView } from './CaseViews';
+import { AtAGlance, WorthALook } from './AtAGlance';
+import { ModelView } from './ModelView';
+import { DecisionsView, MilestonesView } from './PlanViews';
 import { tabHref } from './planText';
 
-// One project (#projects/p/<id>): what it is, where it is on the progression, its one next step, and everything that
-// belongs to it — tasks, notes, what's coming up (dated tasks and appointments) and how far it has come. On wide screens
-// the doing (next step, tasks, notes) is on the left and the overview on the right.
+// One project (#projects/p/<id>). Its Overview answers "what can I do next, and does anything need me?" first: the
+// one next step beside Worth a look, then At a glance (each tool's summary, once), what it is and where it is on the
+// progression, and everything that belongs to it — tasks and notes on the left on wide screens; what's coming up
+// (including tasks still open after their date), what happened recently and its status on the right.
 export type ProjectTab = 'overview' | 'model' | 'milestones' | 'decisions' | 'timeline' | 'evidence' | 'issues';
 const CASE_TABS: ProjectTab[] = ['timeline', 'evidence', 'issues'];
 export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDayData; id: string; tab?: ProjectTab }) {
@@ -46,21 +48,16 @@ export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDay
       <ProjectTop p={p} tab={tab} />
       {tab === 'timeline' ? <TimelineView p={p} /> : tab === 'evidence' ? <EvidenceView p={p} /> : tab === 'issues' ? <IssuesView p={p} />
         : tab === 'model' ? <ModelView data={data} p={p} /> : tab === 'milestones' ? <MilestonesView p={p} /> : tab === 'decisions' ? <DecisionsView p={p} /> : <>
+      <OverviewTop data={data} p={p} />
       <AtAGlance data={data} p={p} />
       <ProjectHead p={p} />
       <div className="grid gap-x-5 lg:grid-cols-[minmax(0,1fr)_340px] items-start">
         <div className="min-w-0">
-          <NextStepCard data={data} p={p} />
           <TasksCard data={data} p={p} />
           <NotesCard data={data} p={p} />
         </div>
         <div className="min-w-0">
-          {isCase(p) && <CaseCard data={data} p={p} />}
-          {isBusiness(p) && <ModelCard data={data} p={p} />}
-          <MilestonesCard p={p} />
-          <DecisionsCard p={p} />
           <ComingUpCard data={data} p={p} />
-          <ProgressCard data={data} p={p} />
           <RecentlyCard data={data} p={p} />
           <ManageCard p={p} />
         </div>
@@ -140,6 +137,19 @@ function ProjectHead({ p }: { p: Project }) {
       <div className="mt-5"><Progression stage={p.stage} onPick={stage => save({ stage })} /></div>
       {!isCase(p) && <a id="projectExplore" href={exploreHref(p.id)} onClick={() => rememberExploreEntry(p.id)} data-action="project-explore" className="inline-flex items-center gap-2 min-h-11 mt-3 text-primary font-semibold text-[15px] no-underline hover:underline underline-offset-4">Explore this idea <ArrowUpRight size={17} aria-hidden="true" /></a>}
     </Card>
+  );
+}
+
+// The first row: the one next step, with Worth a look beside it when there's something to point at (otherwise the
+// next step has the full width).
+function OverviewTop({ data, p }: { data: MyDayData; p: Project }) {
+  const pointers = worthALook(data, p);
+  return (
+    // Side by side, the two cards share a bottom edge.
+    <div className={`grid gap-x-5 ${pointers.length ? 'lg:grid-cols-[minmax(0,1fr)_340px]' : ''}`} data-s="overview-top">
+      <div className="min-w-0 flex flex-col *:flex-1"><NextStepCard data={data} p={p} /></div>
+      {pointers.length > 0 && <div className="min-w-0 flex flex-col *:flex-1"><WorthALook pointers={pointers} /></div>}
+    </div>
   );
 }
 
@@ -284,11 +294,12 @@ function NotesCard({ data, p }: { data: MyDayData; p: Project }) {
   );
 }
 
-// What's coming up: this project's dated tasks and appointments, in time order, and a way to add an appointment.
+// What's coming up: tasks still open after their date first ("Still open · was due …", never "late"), then this
+// project's dated tasks and appointments in time order, and ways to add an appointment (and, for a case, a deadline).
 function ComingUpCard({ data, p }: { data: MyDayData; p: Project }) {
   const [adding, setAdding] = useState(false);
   const [f, setF] = useState({ title: '', date: todayKey(), start: '', end: '' });
-  const items = comingUp(data, p);
+  const items = comingUp(data, p), open = stillOpen(data, p);
   function add() {
     if (!f.date || !f.start) return;
     if (addAppointment(f.title || p.title, f.date, f.start, f.end || null, p.id)) {
@@ -299,8 +310,13 @@ function ComingUpCard({ data, p }: { data: MyDayData; p: Project }) {
   return (
     <Card aria-labelledby="projectSoonH" id="projectSoon">
       <h3 id="projectSoonH">Coming up</h3>
-      {items.length ? (
+      {items.length || open.length ? (
         <ul className="list-none p-0 m-0">
+          {open.map(t => (
+            <li key={'o' + t.id} className="border-t border-outline first:border-t-0 py-2" data-s="soon-open">
+              <a href={`#today/tasks/${t.id}`} className="block min-h-11 text-fg no-underline"><span className="block text-sm text-fg-2 tabular-nums">Still open · was due {shortDate(t.due!)}</span><span className="font-medium break-words">{t.title}</span></a>
+            </li>
+          ))}
           {items.map(x => x.kind === 'task' ? (
             <li key={'t' + x.task.id} className="border-t border-outline first:border-t-0 py-2" data-s="soon-task">
               <a href={`#today/tasks/${x.task.id}`} className="block min-h-11 text-fg no-underline"><span className="block text-sm text-fg-3 tabular-nums">{prettyDate(x.task.due!)}{x.task.time ? ` · ${x.task.time}` : ''}</span><span className="font-medium break-words">{x.task.title}</span></a>
@@ -315,8 +331,9 @@ function ComingUpCard({ data, p }: { data: MyDayData; p: Project }) {
           ))}
         </ul>
       ) : <Note className="mt-0">Nothing dated yet. Tasks with a date, and appointments, show here.</Note>}
+      <div className="flex flex-wrap gap-x-2.5">
       {adding ? (
-        <form className="grid gap-3 mt-3" onSubmit={e => { e.preventDefault(); add(); }} id="projectApptForm">
+        <form className="grid gap-3 mt-3 w-full" onSubmit={e => { e.preventDefault(); add(); }} id="projectApptForm">
           <Field label="Appointment" htmlFor="pjApptTitle"><TextInput id="pjApptTitle" value={f.title} maxLength={120} placeholder={p.title} onChange={e => setF({ ...f, title: e.target.value })} /></Field>
           <Field label="Date" htmlFor="pjApptDate"><TextInput id="pjApptDate" type="date" value={f.date} onChange={e => setF({ ...f, date: e.target.value })} /></Field>
           <div className="grid grid-cols-2 gap-3">
@@ -329,26 +346,8 @@ function ComingUpCard({ data, p }: { data: MyDayData; p: Project }) {
           </div>
         </form>
       ) : <Button inline className="mt-3" data-action="project-appt-add" onClick={() => setAdding(true)}><CalendarPlus size={18} aria-hidden="true" /> Add an appointment</Button>}
-    </Card>
-  );
-}
-
-// How far it has come, in plain counts and small squares (done ones green) — never a percentage or a score.
-function ProgressCard({ data, p }: { data: MyDayData; p: Project }) {
-  const { open, done } = projectTasks(data, p), shown = Math.min(24, open.length + done.length);
-  const dones = Math.min(done.length, shown);
-  return (
-    <Card aria-labelledby="projectProgressH" id="projectProgress">
-      <h3 id="projectProgressH">How it's going</h3>
-      {open.length + done.length > 0 ? (
-        <>
-          <div className="flex flex-wrap gap-1.5" aria-hidden="true">
-            {Array.from({ length: shown }, (_, i) => <span key={i} className={`size-4 rounded-[5px] ${i < dones ? 'bg-done' : 'bg-track'}`} />)}
-          </div>
-          <p className="text-[15px] m-0 mt-2" data-s="project-counts">{done.length} done · {open.length} to go</p>
-        </>
-      ) : <Note className="mt-0">Steps you finish will show here.</Note>}
-      <p className="text-sm text-fg-3 m-0 mt-2 tabular-nums">Started {shortDate(p.createdAt.slice(0, 10))} · last worked on {shortDate(lastActivity(data, p).slice(0, 10))}</p>
+      {isCase(p) && <AddDeadline p={p} />}
+      </div>
     </Card>
   );
 }

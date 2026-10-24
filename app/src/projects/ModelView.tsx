@@ -18,24 +18,10 @@ import { toast } from '../data/toast';
 import type { Assumption, AssumptionState, MyDayData, Project } from '../data/types';
 import { exploreHref, rememberExploreEntry } from '../explore/route';
 import { AiHelp } from './PlanViews';
-import { progressLine, tabHref } from './planText';
+import { progressLine } from './planText';
 
-// A business idea's one page (1.33.0): the Model tab, and its small card on the Overview. The rules are in
+// A business idea's one page (1.33.0): the Model tab; its summary is in At a glance. The rules are in
 // data/businessModel.ts; this is only how it looks and what the buttons do. Counts, never percentages or scores.
-
-// ---------- On the Overview ----------
-export function ModelCard({ data, p }: { data: MyDayData; p: Project }) {
-  const g = modelProgress(p), waiting = (p.model?.assumptions ?? []).filter(a => awaitingAnswer(data, a)).length;
-  return (
-    <Card aria-labelledby="pjModelCardH" id="projectModelCard">
-      <h3 id="pjModelCardH" className="flex items-center gap-2"><FileText size={18} aria-hidden="true" className="text-primary" /> Your one page</h3>
-      <a href={tabHref(p, 'model')} className="block min-h-11 py-1 text-fg no-underline hover:underline underline-offset-4" data-s="model-summary">
-        {g.answered ? progressLine(p) : <span className="text-primary font-semibold">Four simple questions put your idea on one page — start with the first</span>}
-      </a>
-      {waiting > 0 && <p className="text-sm text-fg-2 m-0 mt-1" data-s="model-waiting">{waiting === 1 ? 'A Find out task is done' : `${waiting} Find out tasks are done`} — what did you find?</p>}
-    </Card>
-  );
-}
 
 // ---------- The Model tab ----------
 export function ModelView({ data, p }: { data: MyDayData; p: Project }) {

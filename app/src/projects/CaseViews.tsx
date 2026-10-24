@@ -1,4 +1,4 @@
-import { CalendarClock, Files, Gavel, History, ListChecks, Plus, Trash2 } from 'lucide-react';
+import { Files, History, ListChecks, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
@@ -9,25 +9,24 @@ import {
   KIND_LABEL, removeEntry, removeEvidence, removeIssue, SOURCE_LABEL, timelineInOrder, toggleLink, type LinkKind,
 } from '../data/caseFile';
 import { parseKey, shortDate, todayKey } from '../data/dates';
-import { comingUp } from '../data/projects';
 import { update } from '../data/storage';
 import { addTask } from '../data/tasks';
 import { toast } from '../data/toast';
-import type { EvidenceItem, EvidenceKind, EvidenceStatus, IssueStatus, MyDayData, Project, TimelineEntry, TimelineSource } from '../data/types';
-import { tabHref } from './planText';
+import type { EvidenceItem, EvidenceKind, EvidenceStatus, IssueStatus, Project, TimelineEntry, TimelineSource } from '../data/types';
 
-// A case's Overview card and its Timeline, Evidence and Issues tabs (1.35.0). The rules are in data/caseFile.ts; this
-// is only how they look and what the buttons do. Counts, never scores: MyDay organises, and never judges a claim.
+// A case's Timeline, Evidence and Issues tabs (1.35.0), and "Add a deadline" in its Overview's Coming up. Its summary
+// is in At a glance. The rules are in data/caseFile.ts; this is only how they look and what the buttons do. Counts,
+// never scores: MyDay organises, and never judges a claim.
 
-const NOT_ADVICE = 'MyDay helps you organise your case. It doesn’t give legal advice or say whether a claim will succeed — ACAS or Citizens Advice can help with that.';
+export const NOT_ADVICE = 'MyDay helps you organise your case. It doesn’t give legal advice or say whether a claim will succeed — ACAS or Citizens Advice can help with that.';
 const BIG = 'This Case item is too large to save. Nothing changed. Shorten its notes or details and try again.';
 const said = (r: unknown, what: string, max: string) => { if (r === 'full') toast(`That's ${max} — the most a case can hold. Remove one to add another.`); else if (r === 'big') toast(BIG); else if (typeof r === 'string') toast(what); };
 const chip = 'inline-flex items-center text-xs font-semibold rounded-full px-2 py-0.5 bg-surface-2 border border-outline text-fg-2';
 const when = (t: TimelineEntry) => `${t.about ? 'About ' : ''}${shortDate(t.date)}`;
 
-// ---------- On the Overview ----------
-export function CaseCard({ data, p }: { data: MyDayData; p: Project }) {
-  const g = caseCounts(p), next = comingUp(data, p)[0] ?? null, k = todayKey();
+// ---------- On the Overview: a deadline is a dated task, so it reaches Today on its day ----------
+export function AddDeadline({ p }: { p: Project }) {
+  const k = todayKey();
   const [adding, setAdding] = useState(false), [title, setTitle] = useState(''), [date, setDate] = useState('');
   function addDeadline() {
     let id = null as string | null;
@@ -35,24 +34,13 @@ export function CaseCard({ data, p }: { data: MyDayData; p: Project }) {
     if (!saved) return;
     if (id) { setTitle(''); setDate(''); setAdding(false); toast('Deadline added — it reaches Today on its day.'); }
   }
-  const parts = [`${g.timeline} timeline ${g.timeline === 1 ? 'entry' : 'entries'}`, `${g.evidence} ${g.evidence === 1 ? 'piece' : 'pieces'} of evidence${g.toGet ? ` (${g.toGet} to get)` : ''}`, `${g.issues} ${g.issues === 1 ? 'issue' : 'issues'}`];
-  return (
-    <Card aria-labelledby="pjCaseCardH" id="projectCaseCard">
-      <h3 id="pjCaseCardH" className="flex items-center gap-2"><Gavel size={18} aria-hidden="true" className="text-primary" /> Your case</h3>
-      <p className="m-0 text-[15px]" data-s="case-next"><CalendarClock size={16} aria-hidden="true" className="inline -mt-0.5 mr-1.5 text-fg-3" />
-        {next ? <><span className="font-semibold">Next date:</span> {shortDate((next.kind === 'task' ? next.task.due! : next.appt.start.slice(0, 10)))}{next.kind === 'appointment' ? `, ${next.appt.start.slice(11, 16)}` : ''} — {next.kind === 'task' ? next.task.title : next.appt.title}</>
-          : 'No dates yet. A deadline is a dated task here — it reaches Today on its day.'}</p>
-      {adding ? (
-        <form className="grid gap-2 mt-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end" onSubmit={e => { e.preventDefault(); addDeadline(); }} data-s="case-deadline-form">
-          <Field label="Deadline" htmlFor="caseDlTitle"><TextInput id="caseDlTitle" value={title} maxLength={120} placeholder="e.g. Send my witness statement" onChange={e => setTitle(e.target.value)} /></Field>
-          <Field label="Date" htmlFor="caseDlDate"><TextInput id="caseDlDate" type="date" min={k} className="!w-auto" value={date} onChange={e => setDate(e.target.value)} /></Field>
-          <Button inline type="submit" variant="primary" data-action="case-deadline-add" disabled={!title.trim() || !date}>Add</Button>
-        </form>
-      ) : <Button inline variant="ghost" className="mt-2" data-action="case-deadline" onClick={() => setAdding(true)}><Plus size={18} aria-hidden="true" /> Add a deadline</Button>}
-      <a href={tabHref(p, 'evidence')} className="block min-h-11 py-2 mt-1 text-fg no-underline hover:underline underline-offset-4" data-s="case-summary">{parts.join(' · ')}</a>
-      <p className="text-sm text-fg-3 m-0" data-s="case-not-advice">{NOT_ADVICE}</p>
-    </Card>
-  );
+  return adding ? (
+    <form className="grid gap-2 mt-3 w-full sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end" onSubmit={e => { e.preventDefault(); addDeadline(); }} data-s="case-deadline-form">
+      <Field label="Deadline" htmlFor="caseDlTitle" className="sm:col-span-2"><TextInput id="caseDlTitle" value={title} maxLength={120} placeholder="e.g. Send my witness statement" onChange={e => setTitle(e.target.value)} /></Field>
+      <Field label="Date" htmlFor="caseDlDate"><TextInput id="caseDlDate" type="date" min={k} className="!w-auto" value={date} onChange={e => setDate(e.target.value)} /></Field>
+      <Button inline type="submit" variant="primary" data-action="case-deadline-add" disabled={!title.trim() || !date}>Add</Button>
+    </form>
+  ) : <Button inline className="mt-3" data-action="case-deadline" onClick={() => setAdding(true)}><Plus size={18} aria-hidden="true" /> Add a deadline</Button>;
 }
 
 // ---------- Timeline ----------

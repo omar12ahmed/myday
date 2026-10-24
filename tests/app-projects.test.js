@@ -93,7 +93,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await click('[data-action=project-step-done]'); await sleep(250);
   d = await data();
   check('"Done" ticks the next step off; the next one to do takes its place', d.tasks.items.find(x => x.id === t2.id).done && (await text('[data-s=next-title]')) === 'Ask three offices what they pay');
-  check('how it\'s going: plain counts, never a percentage', (await text('[data-s=project-counts]')) === '1 done · 1 to go' && !/%/.test(await text('#projectProgress')));
+  check('how it\'s going: plain counts, never a percentage', (await text('[data-s=project-counts]')) === '1 done · 1 to go' && !/%/.test(await text('#projectGlance [data-s=glance-weeks]')));
 
   console.log('\n[5] Its notes');
   await click('[data-action=project-note-new]'); await sleep(300);
@@ -359,7 +359,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
     check(`an unknown project at ${suffix || 'its Overview address'} still says "This project isn't here"`, (await text('#app')).includes("This project isn't here") && !(await exists('[data-s=project-tabs]')));
   }
 
-  console.log('\n[16] The two cards on the Overview');
+  console.log('\n[16] The Milestones and Decisions rows on the Overview');
   await seed([
     pjObj('pjCe', 'Cards: empty one', 'capture'),
     pjObj('pjCp', 'Cards: in progress', 'organise', {
@@ -373,26 +373,26 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
     pjObj('pjCa', 'Cards: next with a future date', 'organise', { milestones: [msObj('msA1', 'Choose a site', '2026-11-05')] }),
   ]);
   await go('projects/p/pjCe', 2026, 10, 15, 16, 10);
-  check('an empty project\'s Milestones card invites you to add the first one', (await text('#projectMilestonesCard [data-s=ms-summary]')) === 'Milestones are the big markers on the way — add the first one', await text('#projectMilestonesCard'));
-  check('…and its Decisions card asks "Is there a choice to make?"', (await text('#projectDecisionsCard [data-s=dc-summary]')) === 'Is there a choice to make? Add a decision', await text('#projectDecisionsCard'));
-  check('…each card links to its tab', (await ev(`document.querySelector('#projectMilestonesCard a').getAttribute('href')`)) === '#projects/p/pjCe/milestones' && (await ev(`document.querySelector('#projectDecisionsCard a').getAttribute('href')`)) === '#projects/p/pjCe/decisions');
-  await click('#projectMilestonesCard a'); await sleep(250);
-  check('…tapping the Milestones card opens the Milestones tab', (await hash()) === '#projects/p/pjCe/milestones' && (await tabOf()) === 'milestones', await hash());
+  check('an empty project\'s Milestones row invites you to add the first one', (await text('#projectGlance [data-s=glance-route] [data-s=ms-summary]')) === 'Milestones are the big markers on the way — add the first one', await text('#projectGlance [data-s=glance-route]'));
+  check('…and its Decisions row asks "Is there a choice to make?"', (await text('#projectGlance [data-s=glance-decisions] [data-s=dc-summary]')) === 'Is there a choice to make? Add a decision', await text('#projectGlance [data-s=glance-decisions]'));
+  check('…each row links to its tab', (await ev(`document.querySelector('#projectGlance [data-s=glance-route] h4 a').getAttribute('href')`)) === '#projects/p/pjCe/milestones' && (await ev(`document.querySelector('#projectGlance [data-s=glance-decisions] h4 a').getAttribute('href')`)) === '#projects/p/pjCe/decisions');
+  await click('#projectGlance [data-s=glance-route] h4 a'); await sleep(250);
+  check('…tapping the Milestones row opens the Milestones tab', (await hash()) === '#projects/p/pjCe/milestones' && (await tabOf()) === 'milestones', await hash());
   await go('projects/p/pjCe', 2026, 10, 15, 16, 11);
-  await click('#projectDecisionsCard a'); await sleep(250);
-  check('…and the Decisions card opens the Decisions tab', (await hash()) === '#projects/p/pjCe/decisions' && (await tabOf()) === 'decisions', await hash());
+  await click('#projectGlance [data-s=glance-decisions] h4 a'); await sleep(250);
+  check('…and the Decisions row opens the Decisions tab', (await hash()) === '#projects/p/pjCe/decisions' && (await tabOf()) === 'decisions', await hash());
   await go('projects/p/pjCp', 2026, 10, 15, 16, 12);
-  const msSum = await text('#projectMilestonesCard [data-s=ms-summary]');
+  const msSum = await text('#projectGlance [data-s=glance-route] [data-s=ms-summary]');
   check('in progress: "1 of 3 milestones reached · Next: <the first not reached>", with its passed date said gently', /^1 of 3 milestones reached · Next: Book the builder \(aimed for .*1 Oct\)$/.test(msSum), msSum);
-  check('…open decisions are listed (three, then "and 2 more"), each linking to the Decisions tab, in place of the summary', (await ev(`document.querySelectorAll('#projectDecisionsCard [data-s=dc-open] li a').length`)) === 3
-    && (await text('#projectDecisionsCard [data-s=dc-open]')).includes('and 2 more') && (await ev(`document.querySelector('#projectDecisionsCard [data-s=dc-open] a').getAttribute('href')`)) === '#projects/p/pjCp/decisions' && !(await exists('#projectDecisionsCard [data-s=dc-summary]')), await text('#projectDecisionsCard'));
-  check('…the newest open question comes first', (await ev(`document.querySelector('#projectDecisionsCard [data-s=dc-open] li a').textContent`)) === 'Which path?');
+  check('…open decisions are listed (three, then "and 2 more"), each linking to the Decisions tab, in place of the summary', (await ev(`document.querySelectorAll('#projectGlance [data-s=glance-decisions] [data-s=dc-open] li a').length`)) === 3
+    && (await text('#projectGlance [data-s=glance-decisions] [data-s=dc-open]')).includes('and 2 more') && (await ev(`document.querySelector('#projectGlance [data-s=glance-decisions] [data-s=dc-open] a').getAttribute('href')`)) === '#projects/p/pjCp/decisions' && !(await exists('#projectGlance [data-s=glance-decisions] [data-s=dc-summary]')), await text('#projectGlance [data-s=glance-decisions]'));
+  check('…the newest open question comes first', (await ev(`document.querySelector('#projectGlance [data-s=glance-decisions] [data-s=dc-open] li a').textContent`)) === 'Which path?');
   check('…nothing on the Overview says late, overdue or behind', await noBlame(), await text('#app'));
   await go('projects/p/pjCa', 2026, 10, 15, 16, 13);
-  check('a date still to come reads "Next: … (aiming for …)"', /^0 of 1 milestones reached · Next: Choose a site \(aiming for .*5 Nov\)$/.test(await text('#projectMilestonesCard [data-s=ms-summary]')), await text('#projectMilestonesCard [data-s=ms-summary]'));
+  check('a date still to come reads "Next: … (aiming for …)"', /^0 of 1 milestones reached · Next: Choose a site \(aiming for .*5 Nov\)$/.test(await text('#projectGlance [data-s=glance-route] [data-s=ms-summary]')), await text('#projectGlance [data-s=glance-route] [data-s=ms-summary]'));
   await go('projects/p/pjCf', 2026, 10, 15, 16, 14);
-  check('all reached: "All 2 milestones reached."', (await text('#projectMilestonesCard [data-s=ms-summary]')) === 'All 2 milestones reached.', await text('#projectMilestonesCard [data-s=ms-summary]'));
-  check('…and a decided decision: "Decided <date>: <option>"', /^Decided .*14 Oct: Small$/.test(await text('#projectDecisionsCard [data-s=dc-summary]')) && !(await exists('#projectDecisionsCard [data-s=dc-open]')), await text('#projectDecisionsCard'));
+  check('all reached: "All 2 milestones reached."', (await text('#projectGlance [data-s=glance-route] [data-s=ms-summary]')) === 'All 2 milestones reached.', await text('#projectGlance [data-s=glance-route] [data-s=ms-summary]'));
+  check('…and a decided decision: "Decided <date>: <option>"', /^Decided .*14 Oct: Small$/.test(await text('#projectGlance [data-s=glance-decisions] [data-s=dc-summary]')) && !(await exists('#projectGlance [data-s=glance-decisions] [data-s=dc-open]')), await text('#projectGlance [data-s=glance-decisions]'));
   await go('projects/p/pjCp/milestones', 2026, 10, 15, 16, 15);
   check('on the Milestones tab a passed date reads "Aimed for … — change it whenever it suits", never late, overdue or behind', (await text(`${sel('msP2').ms} [data-s=ms-when]`)).startsWith('Aimed for ') && (await text(`${sel('msP2').ms} [data-s=ms-when]`)).endsWith('change it whenever it suits') && (await noBlame()), await text(`${sel('msP2').ms} [data-s=ms-when]`));
   check('…and a date to come reads "Aiming for …"', (await text(`${sel('msP3').ms} [data-s=ms-when]`)).startsWith('Aiming for '));
@@ -418,7 +418,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('…it shows "Reached …15 Oct" and is marked reached; progress is "1 of 2 reached"; Next moves to the second', /^Reached .*15 Oct$/.test(await text(`${sel(M1).ms} [data-s=ms-when]`)) && (await ev(`document.querySelector('${sel(M1).ms}').dataset.reached`)) === 'yes'
     && (await text('[data-s=ms-progress]')) === '1 of 2 reached' && (await exists(`${sel(M2).ms} [data-s=ms-next]`)) && !(await exists(`${sel(M1).ms} [data-s=ms-next]`)));
   await go('projects/p/pjM', 2026, 10, 15, 17, 5);
-  check('the Overview card follows: "1 of 2 milestones reached · Next: Book the hall"', (await text('#projectMilestonesCard [data-s=ms-summary]')).startsWith('1 of 2 milestones reached · Next: Book the hall'), await text('#projectMilestonesCard [data-s=ms-summary]'));
+  check('the Overview row follows: "1 of 2 milestones reached · Next: Book the hall"', (await text('#projectGlance [data-s=glance-route] [data-s=ms-summary]')).startsWith('1 of 2 milestones reached · Next: Book the hall'), await text('#projectGlance [data-s=glance-route] [data-s=ms-summary]'));
   await go('projects/p/pjM/milestones', 2026, 10, 15, 17, 6);
   await click(`${sel(M1).ms} [data-action=ms-unreach]`); await sleep(300);
   check('"Not yet" undoes it: not reached, the date goes, Next is back on the first, a kind message', (await pAt('pjM')).milestones[0].reachedOn === null && (await text('[data-s=ms-progress]')) === '0 of 2 reached' && (await exists(`${sel(M1).ms} [data-s=ms-next]`)) && (await toast()) === 'Back to not reached yet.', await toast());
@@ -765,7 +765,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await go('projects/p/pjB1/model', 2026, 10, 15, 23, 10);
   check('an open assumption whose task is done asks what you found', (await text(`${rowSel(A1)} [data-s=as-waiting]`)) === 'Its Find out task is done — what did you find?', await text(`${rowSel(A1)} [data-s=as-waiting]`));
   await go('projects/p/pjB1', 2026, 10, 15, 23, 11);
-  check('…and so does the Overview', (await text('[data-s=model-waiting]')) === 'A Find out task is done — what did you find?', await text('[data-s=model-waiting]'));
+  check('…and so does the Overview, as a Worth a look pointer', (await text('#projectWorth [data-pointer=found]')) === 'A Find out task is done — what did you find?' && !(await exists('[data-s=model-waiting]')), await text('#projectWorth'));
   await go('projects/p/pjB1/model', 2026, 10, 15, 23, 12);
   await click(`${rowSel(A1)} [data-action=as-edit]`); await sleep(200);
   await click(`${rowSel(A1)} [data-action=as-remove]`); await answer(false);
@@ -776,18 +776,20 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await go('projects/p/pjFull/model', 2026, 10, 15, 23, 13);
   check('at 12 things that must be true, it says so and the add form is gone', (await exists('[data-s=model-full]')) && !(await exists('#modelAddForm')));
 
-  console.log('\n[26] The Overview card and the board');
+  console.log('\n[26] The Overview\'s one-page row and the board');
   await seed([
     bizObj('pjO', 'Overview: seed swap', { problem: 'Gardeners buy too many seeds', who: 'Allotment holders', how: '', assumptions: [asObj('asO1', 'People will swap in person', 'looks-true'), asObj('asO2', 'There is a free place to meet'), asObj('asO3', 'Swaps happen every season')] }),
     bizObj('pjOe', 'Overview: nothing yet', null),
     pjObj('pjOg', 'Overview: a general one', 'capture'),
   ]);
   await go('projects/p/pjO', 2026, 10, 15, 23, 14);
-  check('the card counts the questions answered, what is still to check and what looks true', (await text('#projectModelCard [data-s=model-summary]')) === '3 of 4 questions answered · 2 still to check · 1 looks true', await text('#projectModelCard [data-s=model-summary]'));
+  check('the one-page row counts the questions answered', (await text('#projectGlance [data-s=glance-onepage] [data-s=model-summary]')) === '3 of 4 questions answered', await text('#projectGlance [data-s=glance-onepage] [data-s=model-summary]'));
+  const belO = await ev(`[...document.querySelectorAll('#projectGlance [data-s=glance-beliefs] li')].map(li => li.textContent.trim())`);
+  check('…while what is still to check and what looks true are counted once, under "What must be true"', eq(belO, ['2Not checked yet', '1Looks true', '0Doesn’t hold']) && !(await text('#projectGlance [data-s=glance-onepage]')).includes('still to check'), belO);
   await go('projects/p/pjOe', 2026, 10, 15, 23, 15);
-  check('a business idea with no model invites you to start with the first question', (await text('#projectModelCard [data-s=model-summary]')) === 'Four simple questions put your idea on one page — start with the first', await text('#projectModelCard [data-s=model-summary]'));
+  check('a business idea with no model invites you to start with the first question', (await text('#projectGlance [data-s=glance-onepage] [data-s=model-summary]')) === 'Four simple questions put your idea on one page — start with the first', await text('#projectGlance [data-s=glance-onepage] [data-s=model-summary]'));
   await go('projects/p/pjOg', 2026, 10, 15, 23, 16);
-  check('a general project has no one-page card', (await exists('#projectHead')) && !(await exists('#projectModelCard')));
+  check('a general project has no one-page row', (await exists('#projectHead')) && (await exists('#projectGlance')) && !(await exists('[data-s=glance-onepage]')));
   await go('projects/p/pjO', 2026, 10, 15, 23, 17);
   const rec = await ev(`[...document.querySelectorAll('#projectRecent [data-s=recent]')].map(li => ({ what: li.dataset.what, text: li.textContent }))`);
   check('Recently shows what you found out, with the thing that was checked', rec.some(r => r.what === 'checked' && r.text.includes('Found out') && r.text.includes('People will swap in person')), rec);
@@ -942,7 +944,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   const after = await caseOf('pjEv');
   check('confirming removes the evidence; the timeline entry stays without that link, still linked to the other', !after.evidence.some(e => e.id === E1) && after.timeline.length === 1 && eq(after.timeline[0].evidenceIds, [E2]), after);
 
-  console.log('\n[32] Case issues, and the Overview card');
+  console.log('\n[32] Case issues, and the Overview');
   await seed([caseObj('pjIs', 'Issues: a pay claim', {
     timeline: [tlObj('tlI1', '2026-09-01', 'Told my hours were cut'), tlObj('tlI2', '2026-09-15', 'Last payslip', { source: 'evidence' })],
     evidence: [evObj('evI1', 'Payslips', 'have'), evObj('evI2', 'Contract', 'to-get'), evObj('evI3', 'Emails', 'reviewed')],
@@ -965,19 +967,26 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('the status select changes the saved status', (await caseOf('pjIs')).issues[0].status === 'claiming' && (await caseOf('pjIs')).issues[1].status === 'considering', (await caseOf('pjIs')).issues);
   await editStorage(`s => { s.tasks.items.push(${tk('tkC1', 'Send my witness statement', '2026-10-10T09:00', ", due: '2026-10-22', projectId: 'pjIs'")}, ${tk('tkC2', 'Old past deadline', '2026-10-01T09:00', ", due: '2026-10-10', projectId: 'pjIs'")}, ${tk('tkC3', 'File the claim form', '2026-10-10T09:00', ", due: '2026-10-18', projectId: 'pjIs'")}); }`);
   await go('projects/p/pjIs', 2026, 10, 15, 9, 32);
-  const nx = norm(await text('#projectCaseCard [data-s=case-next]'));
-  check('the Overview card shows "Next date:" for the earliest dated task from today, not an earlier past one', nx.startsWith('Next date:') && nx.includes('18 Oct') && nx.includes('File the claim form') && !nx.includes('Old past deadline') && !nx.includes('witness'), nx);
-  check('…and the counts line reads "2 timeline entries · 3 pieces of evidence (1 to get) · 2 issues"', norm(await text('#projectCaseCard [data-s=case-summary]')) === '2 timeline entries · 3 pieces of evidence (1 to get) · 2 issues', await text('#projectCaseCard [data-s=case-summary]'));
-  check('…with the not-legal-advice line', (await text('#projectCaseCard [data-s=case-not-advice]')).includes('doesn’t give legal advice'), await text('#projectCaseCard [data-s=case-not-advice]'));
+  const soonTasks = () => ev(`[...document.querySelectorAll('#projectSoon [data-s=soon-task]')].map(li => li.textContent.replace(/\\s+/g, ' ').trim())`);
+  const nx = norm((await soonTasks())[0] || '');
+  check('Coming up\'s first dated task is the earliest one from today (18 Oct), not an earlier past one or a later one', nx.includes('18 Oct') && nx.includes('File the claim form') && !nx.includes('Old past deadline') && !nx.includes('witness'), await soonTasks());
+  check('…and the earlier past deadline is not a dated task there, it is listed as still open', !(await soonTasks()).some(t => t.includes('Old past deadline')) && norm(await text('#projectSoon [data-s=soon-open]')).includes('Old past deadline'), await text('#projectSoon'));
+  const evCount = await ev(`[...document.querySelectorAll('#projectGlance [data-s=glance-evidence] [role=listitem]')].map(d => d.getAttribute('aria-label'))`);
+  check('the counts are in At a glance: 3 pieces of evidence, 1 of them to get', (await ev(`document.querySelector('#projectGlance [data-s=glance-evidence] [role=list]').getAttribute('aria-label')`)) === '3 pieces of evidence' && evCount.includes('To get: 1'), evCount);
+  check('…2 issues', (await ev(`document.querySelectorAll('#projectGlance [data-s=glance-issues] tbody tr').length`)) === 2);
+  const tlSum = norm(await text('#projectGlance [data-s=glance-months] [data-s=timeline-summary]'));
+  check('…and 2 timeline entries, the latest on 15 Sep', tlSum.startsWith('2 entries · latest') && tlSum.includes('15 Sep'), tlSum);
+  check('…with the not-legal-advice line', (await text('#projectGlance [data-s=case-not-advice]')).includes('doesn’t give legal advice') && !(await exists('#projectCaseCard')), await text('#projectGlance [data-s=case-not-advice]'));
+  check('"Add a deadline" is in Coming up', await exists('#projectSoon [data-action=case-deadline]'));
   await click('[data-action=case-deadline]'); await sleep(150);
   check('"Add a deadline" waits for a title and a date', await ev(`document.querySelector('[data-action=case-deadline-add]').disabled`));
   await type('#caseDlTitle', 'Reply to the employer'); await type('#caseDlDate', '2026-10-16'); await click('[data-action=case-deadline-add]'); await sleep(300);
   const dl = await task('Reply to the employer');
   check('adding a deadline makes a task with that date, in the case', dl && dl.due === '2026-10-16' && dl.projectId === 'pjIs', dl);
-  check('…and it becomes the next date', norm(await text('#projectCaseCard [data-s=case-next]')).includes('16 Oct') && norm(await text('#projectCaseCard [data-s=case-next]')).includes('Reply to the employer'), await text('#projectCaseCard [data-s=case-next]'));
+  check('…and it becomes the next date, first in Coming up', norm((await soonTasks())[0] || '').includes('16 Oct') && norm((await soonTasks())[0] || '').includes('Reply to the employer'), await soonTasks());
   await seed([caseObj('pjNd', 'Issues: no dates', {})]);
   await go('projects/p/pjNd', 2026, 10, 15, 9, 33);
-  check('a case with no dated tasks says "No dates yet"', (await text('#projectCaseCard [data-s=case-next]')).includes('No dates yet'), await text('#projectCaseCard [data-s=case-next]'));
+  check('a case with no dated tasks says "Nothing dated yet" in Coming up', (await text('#projectSoon')).includes('Nothing dated yet') && (await soonTasks()).length === 0, await text('#projectSoon'));
 
   console.log('\n[33] Changing kind, privacy, deleting and phones');
   await seed([caseObj('pjKd', 'Kind: a tribunal claim', { timeline: [tlObj('tlK1', '2026-09-01', 'The first thing')], evidence: [evObj('evK1', 'A letter')], issues: [isObj('isK1', 'An issue')] })]);
@@ -1019,10 +1028,9 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
 
   console.log('\n[34] At a glance');
   const gtk = (id, title, projectId, extra = {}) => ({ id, title, listId: '', category: 'Admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-09-20T09:00', postponed: 0, blockers: [], letGoOn: null, projectId, ...extra });
-  const tileParts = key => ev(`[...document.querySelectorAll('#projectGlance [data-tile=${key}] > span')].map(s => s.textContent.trim())`);
-  const tileKeys = () => ev(`[...document.querySelectorAll('#projectGlance [data-s=glance-tiles] [data-tile]')].map(a => a.dataset.tile)`);
-  const tileHref = key => ev(`document.querySelector('#projectGlance [data-tile=${key}]').getAttribute('href')`);
-  const pointerKeys = () => ev(`[...document.querySelectorAll('#projectGlance [data-s=glance-pointers] [data-pointer]')].map(a => a.dataset.pointer)`);
+  const rowKeys = () => ev(`[...document.querySelectorAll('#projectGlance [data-s=glance-rows] > section')].map(r => r.dataset.s)`);
+  const pointerKeys = () => ev(`[...document.querySelectorAll('[data-s=glance-pointers] [data-pointer]')].map(a => a.dataset.pointer)`);
+  const soonTasksG = () => ev(`[...document.querySelectorAll('#projectSoon [data-s=soon-task]')].map(li => li.textContent.replace(/\\s+/g, ' ').trim())`);
   await go('projects', 2026, 10, 15, 8); await reset(); await go('projects', 2026, 10, 15, 8);
   await seed([
     pjObj('pjG1', 'Glance: paint the hall', 'act', {
@@ -1044,40 +1052,40 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
     s.commitments.push({ id: 'cmG1', kind: 'appointment', title: 'Hearing at the tribunal', start: '2026-10-16T10:00', end: '2026-10-16T11:00' }); }`);
 
   await go('projects/p/pjG1', 2026, 10, 15, 8, 5);
-  check('a general project\'s At a glance has four tiles: next step, next date, milestones and decisions', eq(await tileKeys(), ['step', 'date', 'milestones', 'decisions']), await tileKeys());
-  check('…the next step tile names the task and its length', eq(await tileParts('step'), ['Next step', 'Call the supplier', '15 min']), await tileParts('step'));
-  const dateParts = await tileParts('date');
-  check('…the next date tile names the dated task and its day', dateParts[0] === 'Next date' && dateParts[1] === 'Call the supplier' && dateParts[2].includes('20 Oct'), dateParts);
-  check('…the milestones tile says 2 of 5 reached and what is next', eq(await tileParts('milestones'), ['Milestones', '2 of 5 reached', 'Next: First coat on']), await tileParts('milestones'));
-  check('…the decisions tile says 1 open and shows the question', eq(await tileParts('decisions'), ['Decisions', '1 open', 'Which colour for the hall?']), await tileParts('decisions'));
-  check('…each tile links to the right place', (await tileHref('step')) === '#today/tasks/tkG1' && (await tileHref('date')) === '#today/tasks/tkG1' && (await tileHref('milestones')) === '#projects/p/pjG1/milestones' && (await tileHref('decisions')) === '#projects/p/pjG1/decisions',
-    [await tileHref('step'), await tileHref('date'), await tileHref('milestones'), await tileHref('decisions')]);
-  check('the milestone route reads "2 of 5 reached · Next: First coat on"', norm(await text('[data-s=glance-route]')).includes('2 of 5 reached · Next: First coat on'), await text('[data-s=glance-route]'));
+  check('a general project\'s At a glance has three rows: milestones, decisions and what you did, and no tile strip', eq(await rowKeys(), ['glance-route', 'glance-decisions', 'glance-weeks']) && !(await exists('[data-s=glance-tiles]')) && !(await exists('[data-tile]')), await rowKeys());
+  check('…the next step is the Next step card, naming the task and its length', (await text('#projectNext [data-s=next-title]')) === 'Call the supplier' && norm(await text('#projectNext')).includes('15 min'), await text('#projectNext'));
+  const soonG = await soonTasksG();
+  check('…the next date is the first dated task in Coming up, with its day', soonG.length === 1 && soonG[0].includes('Call the supplier') && soonG[0].includes('20 October'), soonG);
+  check('…the milestones row says 2 of 5 reached and what is next, and links to the Milestones tab', norm(await text('[data-s=glance-route] [data-s=ms-summary]')) === '2 of 5 milestones reached · Next: First coat on' && (await ev(`document.querySelector('[data-s=glance-route] h4 a').getAttribute('href')`)) === '#projects/p/pjG1/milestones', await text('[data-s=glance-route] [data-s=ms-summary]'));
+  check('…the decisions row shows the one open question and links to the Decisions tab', (await text('[data-s=glance-decisions] [data-s=dc-open]')) === 'Which colour for the hall?' && (await ev(`document.querySelector('[data-s=glance-decisions] h4 a').getAttribute('href')`)) === '#projects/p/pjG1/decisions', await text('[data-s=glance-decisions]'));
+  check('…the next step links to its task', (await ev(`document.querySelector('#projectNext a[href^="#today/tasks/"]').getAttribute('href')`)) === '#today/tasks/tkG1' && (await ev(`document.querySelector('#projectSoon [data-s=soon-task] a').getAttribute('href')`)) === '#today/tasks/tkG1');
+  check('the milestone route has a station for each of the 5 milestones, and reads "2 of 5 reached"', (await ev(`document.querySelector('[data-s=glance-route] ol').getAttribute('aria-label')`)) === '2 of 5 milestones reached' && (await ev(`document.querySelectorAll('[data-s=glance-route] ol li').length`)) === 5);
   const cols = await ev(`[...document.querySelectorAll('[data-s=glance-weeks] [role=listitem]')].map(c => ({ label: c.getAttribute('aria-label'), tab: c.tabIndex }))`);
   check('the week-by-week chart has 8 columns, the last labelled "This week" with what happened in it', cols.length === 8 && cols[7].label === 'This week: 1 task done, 1 milestone reached' && cols.slice(0, 7).every(c => c.label.startsWith('Week of')), cols);
   check('…every column can be focused with the keyboard', cols.every(c => c.tab === 0), cols);
   check('…and a total line says "5 in the last 8 weeks" (the task from June is not counted)', norm(await text('[data-s=glance-weeks]')).includes('5 in the last 8 weeks'), await text('[data-s=glance-weeks]'));
+  check('…with the plain counts "4 done · 1 to go" and when it started and was last worked on, never a percentage', (await text('[data-s=glance-weeks] [data-s=project-counts]')) === '4 done · 1 to go' && /Started .* · last worked on /.test(await text('[data-s=glance-weeks]')) && !/%/.test(await text('[data-s=glance-weeks]')), await text('[data-s=glance-weeks]'));
   check('the pointers include the dated task coming up', (await pointerKeys()).includes('soon') && norm(await text('[data-pointer=soon]')).includes('Call the supplier — in 5 days'), await text('[data-s=glance-pointers]'));
 
   await go('projects/p/pjG2', 2026, 10, 15, 8, 6);
-  check('a project with only a name shows "None yet" on the next step, next date and milestones tiles', (await tileParts('step'))[1] === 'None yet' && (await tileParts('date'))[1] === 'None yet' && (await tileParts('milestones'))[1] === 'None yet', [await tileParts('step'), await tileParts('date'), await tileParts('milestones')]);
-  check('…and "None open" on decisions', (await tileParts('decisions'))[1] === 'None open', await tileParts('decisions'));
-  check('…no pictures are drawn', await exists('#projectGlance') && !(await exists('[data-s=glance-pictures]')));
-  check('…and its only pointer is "No next step yet"', eq(await pointerKeys(), ['step']) && (await text('[data-pointer=step]')).includes('No next step yet'), await text('[data-s=glance-pointers]'));
+  check('a project with only a name asks for the smallest step in the Next step card, and has no dates', (await exists('#projectNext #projectNextNew')) && !(await exists('[data-s=next-title]')) && (await text('#projectSoon')).includes('Nothing dated yet'), await text('#projectNext'));
+  check('…its milestones row invites the first one, and its decisions row asks "Is there a choice to make?"', (await text('[data-s=glance-route] [data-s=ms-summary]')) === 'Milestones are the big markers on the way — add the first one' && (await text('[data-s=glance-decisions] [data-s=dc-summary]')) === 'Is there a choice to make? Add a decision');
+  check('…no pictures are drawn', await exists('#projectGlance') && !(await exists('#projectGlance ol')) && !(await exists('#projectGlance [role=list]')));
+  check('…and it has no Worth a look and no "No next step yet" pointer', !(await exists('#projectWorth')) && eq(await pointerKeys(), []) && !(await text('#app')).includes('No next step yet'), await pointerKeys());
+  check('…so Next step comes straight after the title and tabs and before At a glance, About it and Tasks', eq(await ev(`[...document.querySelectorAll('#projectNext, #projectWorth, #projectGlance, #projectHead, #projectTasks')].map(e => e.id)`), ['projectNext', 'projectGlance', 'projectHead', 'projectTasks']));
 
   await go('projects/p/pjG3', 2026, 10, 15, 8, 7);
-  check('a business idea\'s tiles are next step, one page, what must be true and milestones', eq(await tileKeys(), ['step', 'one-page', 'beliefs', 'milestones']), await tileKeys());
-  check('…the one-page tile says "3 of 4 answered" (two answers, and the things that must be true count as the fourth)', (await tileParts('one-page'))[1] === '3 of 4 answered', await tileParts('one-page'));
-  check('…the must-be-true tile counts the things and how they are turning out', eq((await tileParts('beliefs')).slice(1), ['6 things', '2 to check · 1 looks true · 3 don’t hold']), await tileParts('beliefs'));
+  check('a business idea\'s rows are its one page, what must be true, milestones, decisions and what you did', eq(await rowKeys(), ['glance-onepage', 'glance-beliefs', 'glance-route', 'glance-decisions', 'glance-weeks']), await rowKeys());
+  check('…the one-page row says "3 of 4 questions answered" (two answers, and the things that must be true count as the fourth)', (await text('[data-s=glance-onepage] [data-s=model-summary]')) === '3 of 4 questions answered', await text('[data-s=glance-onepage]'));
   const bel = await ev(`[...document.querySelectorAll('[data-s=glance-beliefs] li')].map(li => li.textContent.trim())`);
-  check('the beliefs picture shows the three counts: 2 not checked yet, 1 looks true, 3 do not hold', eq(bel, ['2Not checked yet', '1Looks true', '3Doesn’t hold']), bel);
+  check('the beliefs picture shows the three counts once: 2 not checked yet, 1 looks true, 3 do not hold', eq(bel, ['2Not checked yet', '1Looks true', '3Doesn’t hold']), bel);
 
   await go('projects/p/pjG4', 2026, 10, 15, 8, 8);
-  check('a case\'s tiles are next date, evidence to get, issues with nothing linked and timeline entries', eq(await tileKeys(), ['date', 'to-get', 'bare', 'timeline']), await tileKeys());
-  check('…the next date is the dated task', (await tileParts('date'))[1] === 'Send the witness statement' && (await tileParts('date'))[2].includes('18 Oct'), await tileParts('date'));
-  check('…2 pieces of evidence to get, of 3', eq((await tileParts('to-get')).slice(1), ['2', 'of 3 pieces of evidence']), await tileParts('to-get'));
-  check('…1 issue with nothing linked, of 2', eq((await tileParts('bare')).slice(1), ['1', 'of 2 issues']), await tileParts('bare'));
-  check('…3 timeline entries, the latest on 20 Sep', (await tileParts('timeline'))[1] === '3' && (await tileParts('timeline'))[2].includes('20 Sep'), await tileParts('timeline'));
+  check('a case\'s rows are evidence, issues, timeline, milestones, decisions and what you did', eq(await rowKeys(), ['glance-evidence', 'glance-issues', 'glance-months', 'glance-route', 'glance-decisions', 'glance-weeks']), await rowKeys());
+  const soonC = await soonTasksG();
+  check('…the next date is the dated task, first in Coming up', soonC.length === 1 && soonC[0].includes('Send the witness statement') && soonC[0].includes('18 October'), soonC);
+  check('…the evidence row counts 3 pieces of evidence', (await ev(`document.querySelector('[data-s=glance-evidence] [role=list]').getAttribute('aria-label')`)) === '3 pieces of evidence');
+  check('…the timeline row says 3 entries, the latest on 20 Sep', norm(await text('[data-s=glance-months] [data-s=timeline-summary]')).startsWith('3 entries · latest') && norm(await text('[data-s=glance-months] [data-s=timeline-summary]')).includes('20 Sep'), await text('[data-s=glance-months] [data-s=timeline-summary]'));
   const evParts = await ev(`[...document.querySelectorAll('[data-s=glance-evidence] [role=listitem]')].map(d => d.getAttribute('aria-label'))`);
   check('the evidence bar\'s parts say "To get: 2" and "Have it: 1" (a part with none is not drawn)', eq(evParts, ['To get: 2', 'Have it: 1']), evParts);
   const legend = norm(await text('[data-s=glance-evidence]'));
@@ -1086,7 +1094,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('the issues table has one row per issue, and says "nothing linked yet" only for the issue without links', rowsI.length === 2 && !rowsI[0].includes('nothing linked yet') && rowsI[1].includes('nothing linked yet'), rowsI);
   const months = await ev(`[...document.querySelectorAll('[data-s=glance-months] [role=listitem]')].map(c => c.getAttribute('aria-label'))`);
   check('the timeline-by-month chart has a column for each month with entries', months.length === 2 && months[0] === 'Aug 2026: 1 entry' && /^Sept? 2026: 2 entries$/.test(months[1]), months);
-  check('"Next dates" lists the dated task', norm(await text('[data-s=glance-dates]')).includes('Send the witness statement'), await text('[data-s=glance-dates]'));
+  check('"Next dates" is gone: the dated task is in Coming up', !(await exists('[data-s=glance-dates]')) && !(await exists('[data-s=glance-pictures]')) && (await text('#projectSoon')).includes('Send the witness statement'), await text('#projectSoon'));
   const ptr = await pointerKeys(), ptrText = norm(await text('[data-s=glance-pointers]'));
   check('the pointers include "has nothing linked yet" and "still to get", and there are never more than 3', ptrText.includes('has nothing linked yet') && ptrText.includes('still to get') && ptr.length <= 3, ptr);
   await go('projects/p/pjG5', 2026, 10, 15, 8, 9);
@@ -1100,6 +1108,38 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
     check(`phone ${w} px: the case's Overview, with its At a glance, does not scroll sideways`, (await exists('#projectGlance')) && (await ev('document.documentElement.scrollWidth')) <= w, await ev('document.documentElement.scrollWidth'));
   }
   await T.send('Emulation.clearDeviceMetricsOverride');
+
+  console.log('\n[34b] Still-open dates, the order of the Overview, and a phone');
+  await go('projects', 2026, 10, 15, 8, 20); await reset(); await go('projects', 2026, 10, 15, 8, 20);
+  await seed([pjObj('pjS', 'Still open: mend the tap', 'act', { nextTaskId: 'tkS1', commitmentIds: ['cmS1'] }), pjObj('pjS2', 'Still open: only a name', 'capture')]);
+  await editStorage(`s => { s.tasks.items.push(${JSON.stringify(gtk('tkS1', 'Ring the plumber', 'pjS', { due: '2026-10-12' }))},
+    ${JSON.stringify(gtk('tkS2', 'Buy washers', 'pjS', { due: '2026-10-15' }))}, ${JSON.stringify(gtk('tkS3', 'Fit the new tap', 'pjS', { due: '2026-10-19' }))});
+    s.commitments.push({ id: 'cmS1', kind: 'appointment', title: 'Plumber visit', start: '2026-10-13T10:00', end: '2026-10-13T11:00' }); }`);
+  await go('projects/p/pjS', 2026, 10, 15, 8, 25);
+  const soonKinds = () => ev(`[...document.querySelectorAll('#projectSoon ul > li')].map(li => li.dataset.s)`);
+  check('Coming up lists the task whose date has passed first, then the dated tasks (a task due today is not still open)', eq(await soonKinds(), ['soon-open', 'soon-task', 'soon-task']), await soonKinds());
+  const openParts = await ev(`[...document.querySelectorAll('#projectSoon [data-s=soon-open] a > span')].map(x => x.textContent.trim())`);
+  check('…it reads "Still open · was due <date>" and then the title', openParts.length === 2 && /^Still open · was due (Mon,? )?12 Oct$/.test(openParts[0]) && openParts[1] === 'Ring the plumber', openParts);
+  check('…the task due today is an ordinary dated task, listed after it', (await soonTasksG())[0].includes('Buy washers') && (await ev(`document.querySelectorAll('#projectSoon [data-s=soon-open]').length`)) === 1, await soonTasksG());
+  check('…the past appointment is not listed', !(await text('#projectSoon')).includes('Plumber visit') && !(await exists('#projectSoon [data-s=soon-appt]')), await text('#projectSoon'));
+  check('Worth a look puts it first: "<title> — still open, was due <date>"', (await pointerKeys())[0] === 'still-open' && /^Ring the plumber — still open, was due (Mon,? )?12 Oct$/.test(norm(await text('[data-pointer=still-open]'))), [await pointerKeys(), await text('#projectWorth')]);
+  check('…and nothing says late, overdue or behind', await noBlame(), await text('#app'));
+  check('the Overview runs in order: Next step, Worth a look, At a glance, About it, Tasks', eq(await ev(`[...document.querySelectorAll('#projectNext, #projectWorth, #projectGlance, #projectHead, #projectTasks')].map(e => e.id)`), ['projectNext', 'projectWorth', 'projectGlance', 'projectHead', 'projectTasks']));
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+  await go('projects/p/pjS', 2026, 10, 15, 8, 26);
+  const tops = await ev(`({ next: Math.round(document.querySelector('#projectNext').getBoundingClientRect().top + scrollY), worth: Math.round(document.querySelector('#projectWorth').getBoundingClientRect().top + scrollY) })`);
+  check('at 1440 px wide, Next step and Worth a look both start within the first 900 px', tops.next < 900 && tops.worth < 900, tops);
+  await T.send('Emulation.clearDeviceMetricsOverride');
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 320, height: 740, deviceScaleFactor: 2, mobile: true });
+  for (const id of ['pjS', 'pjS2']) {
+    await go('projects/p/' + id, 2026, 10, 15, 8, 27); await sleep(200);
+    check(`phone 320 px: the general project's Overview (${id}) does not scroll sideways`, (await exists('#projectGlance')) && (await ev('document.documentElement.scrollWidth')) <= 320, await ev('document.documentElement.scrollWidth'));
+  }
+  await T.send('Emulation.clearDeviceMetricsOverride');
+  await go('projects/p/pjS', 2026, 10, 15, 8, 28);
+  await click('[data-action=project-step-done]'); await sleep(300);
+  check('ticking the task done through the Next step card takes it off Coming up', !(await exists('#projectSoon [data-s=soon-open]')) && !(await text('#projectSoon')).includes('Ring the plumber') && (await task('Ring the plumber')).done === true, await soonKinds());
+  check('…and off Worth a look, which then has no still-open pointer', !(await pointerKeys()).includes('still-open') && !(await text('#app')).includes('still open, was due'), await pointerKeys());
 
   console.log('\n[35] The weekly review');
   const rtk = (id, title, projectId, extra = {}) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-09-20T09:00', postponed: 0, blockers: [], letGoOn: null, projectId, ...extra });

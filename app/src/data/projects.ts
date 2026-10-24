@@ -195,6 +195,11 @@ export function comingUp(data: MyDayData, p: Project, k: DateKey = todayKey()) {
   const appts = projectAppointments(data, p).filter(c => c.end.slice(0, 10) >= k).map(c => ({ kind: 'appointment' as const, when: c.start, appt: c }));
   return [...tasks, ...appts].sort((a, b) => a.when.localeCompare(b.when));
 }
+// Tasks still to do whose date has passed, oldest first. They stay in sight until done or let go; the words only
+// say when each was due. Past appointments aren't here: they've happened.
+export function stillOpen(data: MyDayData, p: Project, k: DateKey = todayKey()): TaskItem[] {
+  return projectTasks(data, p).open.filter(t => !!t.due && t.due < k);
+}
 // The latest change anywhere in the project (its own details, a note, a task), for "last worked on".
 export function lastActivity(data: MyDayData, p: Project): string {
   let at = p.updatedAt;

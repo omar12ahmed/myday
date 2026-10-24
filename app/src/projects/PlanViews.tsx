@@ -16,9 +16,9 @@ import {
 import { update } from '../data/storage';
 import { toast } from '../data/toast';
 import type { DateKey, Decision, DecisionOption, Milestone, MyDayData, Project } from '../data/types';
-import { aimText, tabHref } from './planText';
+import { aimText } from './planText';
 
-// A project's Milestones and Decisions tabs (1.31.0), and their two small cards on the Overview. The rules are in
+// A project's Milestones and Decisions tabs (1.31.0); their summaries are in At a glance. The rules are in
 // data/projectPlan.ts; this is only how they look and what the buttons do. No scores, no "late": dates are guidance.
 
 // What you've typed but not added yet stays while you move between tabs (in memory, until MyDay is closed).
@@ -28,39 +28,6 @@ function useDraft(key: string): [string, (v: string) => void] {
   return [v, x => { if (x) drafts.set(key, x); else drafts.delete(key); setV(x); }];
 }
 
-
-// ---------- On the Overview ----------
-export function MilestonesCard({ p }: { p: Project }) {
-  const { reached, total, next } = milestoneProgress(p);
-  return (
-    <Card aria-labelledby="pjMsCardH" id="projectMilestonesCard">
-      <h3 id="pjMsCardH" className="flex items-center gap-2"><Flag size={18} aria-hidden="true" className="text-primary" /> Milestones</h3>
-      <a href={tabHref(p, 'milestones')} className="block min-h-11 py-1 text-fg no-underline hover:underline underline-offset-4" data-s="ms-summary">
-        {!total ? <span className="text-primary font-semibold">Milestones are the big markers on the way — add the first one</span>
-          : !next ? `All ${total} milestones reached.`
-            : <>{reached} of {total} milestones reached · <span className="font-semibold">Next:</span> {next.title}{next.aim ? ` (${aimText(next.aim, todayKey(), true).replace(' — change it whenever it suits', '')})` : ''}</>}
-      </a>
-    </Card>
-  );
-}
-export function DecisionsCard({ p }: { p: Project }) {
-  const list = decisionsInOrder(p), open = list.filter(x => !x.chosen), last = list.find(x => x.chosen);
-  return (
-    <Card aria-labelledby="pjDcCardH" id="projectDecisionsCard">
-      <h3 id="pjDcCardH" className="flex items-center gap-2"><Scale size={18} aria-hidden="true" className="text-primary" /> Decisions</h3>
-      {open.length ? (
-        <ul className="list-none p-0 m-0" data-s="dc-open">
-          {open.slice(0, 3).map(x => <li key={x.id}><a href={tabHref(p, 'decisions')} className="block min-h-11 py-2 text-fg no-underline hover:underline underline-offset-4 break-words">{x.question}</a></li>)}
-          {open.length > 3 && <li className="text-sm text-fg-3">and {open.length - 3} more</li>}
-        </ul>
-      ) : (
-        <a href={tabHref(p, 'decisions')} className="block min-h-11 py-1 text-fg no-underline hover:underline underline-offset-4 break-words" data-s="dc-summary">
-          {last ? <>Decided {shortDate(last.decidedOn!)}: {chosenOption(last)?.text}</> : <span className="text-primary font-semibold">Is there a choice to make? Add a decision</span>}
-        </a>
-      )}
-    </Card>
-  );
-}
 
 // ---------- Milestones ----------
 export function MilestonesView({ p }: { p: Project }) {

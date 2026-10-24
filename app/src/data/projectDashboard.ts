@@ -1,12 +1,11 @@
 // A project's dashboard, "At a glance" (1.36.0; Today's own dashboard numbers are in dashboard.ts): where it stands
 // and what might need you, worked out from what's already saved — nothing here is saved, and nothing is sent anywhere.
-// Counts and places, never percentages or scores; no "behind", "late" or streaks. Each kind of project (general, a
-// business idea, a case) gets its own four tiles; pictures and pointers appear only when there's something real to show.
+// Counts and places, never percentages or scores; no "behind", "late" or streaks. Each tool's summary appears once,
+// in At a glance; pointers appear only when there's something real to show.
 import { awaitingAnswer, isBusiness, isCase, modelProgress } from './businessModel';
 import { caseCounts, issueLinks, timelineInOrder } from './caseFile';
 import { parseKey, shift, shortDate, todayKey } from './dates';
-import { decisionsInOrder, milestoneProgress } from './projectPlan';
-import { comingUp, nextStep, projectTasks } from './projects';
+import { comingUp, stillOpen } from './projects';
 import type { DateKey, MyDayData, Project } from './types';
 
 const tab = (p: Project, t?: string) => `#projects/p/${encodeURIComponent(p.id)}${t ? '/' + t : ''}`;
@@ -21,38 +20,6 @@ export function nextDates(data: MyDayData, p: Project, k: DateKey = todayKey(), 
   return comingUp(data, p, k).slice(0, max).map(c => c.kind === 'task'
     ? { day: c.task.due!, time: c.task.time ?? null, title: c.task.title, href: `#today/tasks/${encodeURIComponent(c.task.id)}` }
     : { day: c.appt.start.slice(0, 10), time: c.appt.start.slice(11, 16), title: c.appt.title, href: '#calendar' });
-}
-
-// ---------- The four tiles ----------
-// `value` is the headline (a count or a name); `sub` a quiet second line; `href` where you'd act on it.
-export interface Tile { key: string; label: string; value: string; sub: string; href: string }
-export function tiles(data: MyDayData, p: Project, k: DateKey = todayKey()): Tile[] {
-  const step = nextStep(data, p), next = nextDates(data, p, k, 1)[0] ?? null, ms = milestoneProgress(p);
-  const stepTile: Tile = step ? { key: 'step', label: 'Next step', value: step.title, sub: `${step.minutes} min`, href: `#today/tasks/${encodeURIComponent(step.id)}` }
-    : { key: 'step', label: 'Next step', value: 'None yet', sub: 'What’s the smallest one?', href: tab(p) };
-  const dateTile: Tile = next ? { key: 'date', label: 'Next date', value: next.title, sub: `${shortDate(next.day)}${next.time ? ', ' + next.time : ''}`, href: next.href }
-    : { key: 'date', label: 'Next date', value: 'None yet', sub: 'Dated tasks and appointments show here', href: tab(p) };
-  const msTile: Tile = ms.total ? { key: 'milestones', label: 'Milestones', value: `${ms.reached} of ${ms.total} reached`, sub: ms.next ? `Next: ${ms.next.title}` : 'All reached', href: tab(p, 'milestones') }
-    : { key: 'milestones', label: 'Milestones', value: 'None yet', sub: 'The big markers on the way', href: tab(p, 'milestones') };
-  if (isCase(p)) {
-    // A dropped issue isn't a gap: only the ones you're claiming or considering count.
-    const g = caseCounts(p), bare = (p.case?.issues ?? []).filter(i => { if (i.status === 'dropped') return false; const l = issueLinks(p, i.id); return !l.evidence.length && !l.entries.length; }).length;
-    const last = timelineInOrder(p).at(-1);
-    return [dateTile,
-      { key: 'to-get', label: 'Evidence to get', value: String(g.toGet), sub: `of ${plural(g.evidence, 'piece')} of evidence`, href: tab(p, 'evidence') },
-      { key: 'bare', label: 'Issues with nothing linked', value: String(bare), sub: `of ${plural(g.issues, 'issue')}`, href: tab(p, 'issues') },
-      { key: 'timeline', label: 'Timeline entries', value: String(g.timeline), sub: last ? `Latest: ${shortDate(last.date)}` : 'What happened, in date order', href: tab(p, 'timeline') }];
-  }
-  if (isBusiness(p)) {
-    const g = modelProgress(p), bits = [g.open && `${g.open} to check`, g.looksTrue && `${g.looksTrue} look${g.looksTrue === 1 ? 's' : ''} true`, g.doesntHold && `${g.doesntHold} ${g.doesntHold === 1 ? 'doesn’t' : 'don’t'} hold`].filter(Boolean);
-    return [stepTile,
-      { key: 'one-page', label: 'Your one page', value: `${g.answered} of 4 answered`, sub: g.answered < 4 ? 'Four simple questions' : 'All four answered', href: tab(p, 'model') },
-      { key: 'beliefs', label: 'What must be true', value: g.assumptions ? plural(g.assumptions, 'thing') : 'None yet', sub: bits.length ? bits.join(' · ') : 'What it depends on', href: tab(p, 'model') },
-      msTile];
-  }
-  const open = decisionsInOrder(p).filter(x => !x.chosen);
-  return [stepTile, dateTile, msTile,
-    { key: 'decisions', label: 'Decisions', value: open.length ? `${open.length} open` : 'None open', sub: open[0]?.question ?? 'Is there a choice to make?', href: tab(p, 'decisions') }];
 }
 
 // ---------- What you did, week by week ----------
@@ -91,6 +58,9 @@ export function issueGrid(p: Project) {
 export interface Pointer { key: string; text: string; href: string }
 export function worthALook(data: MyDayData, p: Project, k: DateKey = todayKey(), max = 3): Pointer[] {
   const out: Pointer[] = [];
+  // The oldest task still to do whose date has passed (Coming up lists them all).
+  const open = stillOpen(data, p, k)[0];
+  if (open) out.push({ key: 'still-open', text: `${open.title} — still open, was due ${shortDate(open.due!)}`, href: `#today/tasks/${encodeURIComponent(open.id)}` });
   // A date in the next week.
   const soon = nextDates(data, p, k, 1)[0];
   if (soon && days(k, soon.day) <= 7) out.push({ key: 'soon', text: `${soon.title} — ${soon.day === k ? 'today' : soon.day === shift(k, 1) ? 'tomorrow' : `in ${days(k, soon.day)} days`}`, href: soon.href });
@@ -105,6 +75,6 @@ export function worthALook(data: MyDayData, p: Project, k: DateKey = todayKey(),
     if (bare) out.push({ key: 'bare', text: `${plural(bare, 'issue')} ${bare === 1 ? 'has' : 'have'} nothing linked yet`, href: tab(p, 'issues') });
     if (g.toGet) out.push({ key: 'to-get', text: `${plural(g.toGet, 'piece')} of evidence still to get`, href: tab(p, 'evidence') });
   }
-  if (p.status === 'active' && !projectTasks(data, p).open.length) out.push({ key: 'step', text: 'No next step yet — what’s the smallest one?', href: tab(p) });
+  // No "no next step yet" pointer: the Next step card beside it already asks for the smallest one.
   return out.slice(0, max);
 }
