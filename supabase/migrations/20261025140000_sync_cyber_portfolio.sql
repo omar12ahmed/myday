@@ -3,6 +3,7 @@
 -- `file` records and live in R2). The id is the entry's own ("pf…"), within the existing record-id rule. An entry can
 -- be removed, so it is deletable. Only the two lists of allowed kinds change: existing rows, the version-checked RPCs,
 -- the project triggers, grants and per-user RLS are unchanged. Clients that don't know this kind ignore it when pulling.
+-- Before applying, re-read the live constraints: if another kind landed first, add it here too.
 begin;
 alter table public.sync_records drop constraint sync_records_known_kind;
 alter table public.sync_records drop constraint sync_records_deletable_kind;

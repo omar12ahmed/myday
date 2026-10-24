@@ -16,38 +16,45 @@ export const PRIVACY_CHECKS = [
 ] as const;
 
 // ---------- Obvious secrets in text ----------
-// What looks like a secret, by kind: private-key headers, a password or key written out, common token formats, and
-// public IP addresses (private, loopback, link-local, shared and documentation ranges are fine). A value that's plainly
-// redacted ("<redacted>", "****", "xxx", "[REDACTED]", "…") isn't a find.
-const REDACTED = /^(<[^>]*>|\*{3,}|x{3,}|\[?redacted\]?|\.{3}|…|changeme|example|placeholder)$/i;
+// What looks like a secret, by kind: private-key headers, a password or key written out, common token and key formats,
+// and credentials in a web address. These are refused until changed. A value that's plainly redacted ("<redacted>",
+// "****", "xxx", "[REDACTED]", "…") or an ordinary word ("Password: not stored", "token: expired") isn't a find.
+const REDACTED = /^(<[^>]*>|\*{3,}|x{3,}|\[?redacted\]?|\.{3}|…|changeme|example|placeholder|none|null|nil|empty|not|no|n\/a|unset|expired|required|hidden|changed|removed|true|false|set|policy)$/i;
 const TOKENS: [RegExp, string][] = [
   [/-----BEGIN [A-Z ]*PRIVATE KEY-----/, 'a private key'],
   [/\b(?:AKIA|ASIA)[0-9A-Z]{16}\b/, 'an AWS access key'],
-  [/\bgh[pousr]_[A-Za-z0-9]{36,}\b/, 'a GitHub token'],
+  [/\baws_secret_access_key\b["']?\s*[:=]\s*["']?[A-Za-z0-9/+=]{40}/i, 'an AWS secret key'],
+  [/\bgh[pousr]_[A-Za-z0-9]{36,}\b|\bgithub_pat_[A-Za-z0-9_]{22,}/, 'a GitHub token'],
   [/\bxox[abprs]-[A-Za-z0-9-]{10,}/, 'a Slack token'],
   [/\beyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/, 'a sign-in token (JWT)'],
+  [/\bBearer\s+[A-Za-z0-9._~+/-]{20,}=*/, 'a sign-in token (Bearer)'],
   [/\bAIza[0-9A-Za-z_-]{35}\b/, 'a Google API key'],
+  [/\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}/, 'an API key'],
   [/\b[rs]k_(?:live|test)_[A-Za-z0-9]{16,}/, 'a payment service key'],
+  [/\b[a-z][a-z0-9+.-]{1,20}:\/\/[^\s/:@]+:[^\s/@]+@/i, 'a password in a web address'],
 ];
 const ASSIGNED = /\b(?:passw(?:or)?d|pwd|passphrase|secret|token|api[_-]?key|access[_-]?key|client[_-]?secret|private[_-]?key)\b["']?\s*[:=]\s*["']?([^\s"',;]+)/gi;
-function publicIp(text: string): boolean {
+export function secretsIn(text: string): string[] {
+  const found = new Set<string>();
+  for (const [re, what] of TOKENS) if (re.test(text)) found.add(what);
+  for (const m of text.matchAll(ASSIGNED)) { const v = m[1].replace(/[.)\]}:!?]+$/, ''); if (v && !REDACTED.test(v)) { found.add('a password or key written out'); break; } }
+  return [...found];
+}
+// A public IP address: worth a second look (the privacy check's second tick), but not refused, since a lab's notes
+// can hold version numbers and public resolvers that look the same. Private, loopback, link-local, shared and
+// documentation ranges, and the best-known public resolvers, aren't mentioned.
+const RESOLVERS = new Set(['8.8.8.8', '8.8.4.4', '1.1.1.1', '1.0.0.1', '9.9.9.9', '149.112.112.112']);
+export function publicAddressIn(text: string): boolean {
   // (No lookbehind: older Safari versions lack it, so the character before is matched instead.)
-  for (const m of text.matchAll(/(?:^|[^\d.])(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})(?![\d.])/g)) {
+  for (const m of text.matchAll(/(?:^|[^\d.])(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})(?!\d)(?!\.\d)/g)) {
     const [a, b, c, e] = m.slice(1, 5).map(Number);
-    if ([a, b, c, e].some(x => x > 255)) continue;
+    if ([a, b, c, e].some(x => x > 255) || RESOLVERS.has(`${a}.${b}.${c}.${e}`)) continue;
     const local = a === 10 || a === 127 || a === 0 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 169 && b === 254)
       || (a === 100 && b >= 64 && b <= 127) || (a === 192 && b === 0 && c === 2) || (a === 198 && b === 51 && c === 100) || (a === 203 && b === 0 && c === 113)
       || (a === 198 && (b === 18 || b === 19)) || a >= 224;
     if (!local) return true;
   }
   return false;
-}
-export function secretsIn(text: string): string[] {
-  const found = new Set<string>();
-  for (const [re, what] of TOKENS) if (re.test(text)) found.add(what);
-  for (const m of text.matchAll(ASSIGNED)) if (!REDACTED.test(m[1])) { found.add('a password or key written out'); break; }
-  if (publicIp(text)) found.add('a public IP address');
-  return [...found];
 }
 
 // ---------- Entries ----------

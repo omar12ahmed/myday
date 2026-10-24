@@ -145,8 +145,16 @@ const same = require('node:util').isDeepStrictEqual;
     && C.secretsIn('key AKIAIOSFODNN7EXAMPLE').includes('an AWS access key') && C.secretsIn('ghp_' + 'a'.repeat(36)).includes('a GitHub token')
     && C.secretsIn('eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U').includes('a sign-in token (JWT)'));
   check('…but a value that\'s plainly redacted isn\'t', C.secretsIn('password=<redacted>').length === 0 && C.secretsIn('password: ****').length === 0 && C.secretsIn('token=[REDACTED]').length === 0 && C.secretsIn('api_key=xxx').length === 0);
-  check('private, loopback and documentation addresses are fine; a public one is pointed out', C.secretsIn('10.0.0.5 192.168.1.20 172.16.4.1 127.0.0.1 192.0.2.10 198.51.100.7 203.0.113.9 169.254.1.1').length === 0
-    && C.secretsIn('scanned 8.8.8.8').includes('a public IP address') && C.secretsIn('version 1.2.3.4.5').length === 0 && C.secretsIn('999.1.1.1').length === 0);
+  check('private, loopback and documentation addresses aren\'t mentioned; a public one is, even at a sentence\'s end', !C.publicAddressIn('10.0.0.5 192.168.1.20 172.16.4.1 127.0.0.1 192.0.2.10 198.51.100.7 203.0.113.9 169.254.1.1')
+    && C.publicAddressIn('I scanned 45.33.32.156.') && C.publicAddressIn('(45.33.32.156)') && C.publicAddressIn('45.33.32.156\nnext') && !C.publicAddressIn('version 1.2.3.4.5') && !C.publicAddressIn('999.1.1.1')
+    && !C.publicAddressIn('dig @8.8.8.8 example.org and 1.1.1.1'));
+  check('…and it\'s a second look, never a refusal: a four-part version number doesn\'t stop an entry', C.publicAddressIn('nmap 7.94.1.2') && C.secretsIn('nmap 7.94.1.2').length === 0 && C.notYet({ title: 'T', evidence: 'scanned 45.33.32.156.', note: '' }) === '');
+  check('more key formats are found: GitHub fine-grained tokens, API keys, a password in a web address, Bearer tokens, AWS secret keys', C.secretsIn('github_pat_' + 'A'.repeat(30)).includes('a GitHub token')
+    && C.secretsIn('sk-proj-' + 'a'.repeat(30)).includes('an API key') && C.secretsIn('psql postgres://admin:hunter2@db.lab/app').includes('a password in a web address')
+    && C.secretsIn('Authorization: Bearer ' + 'a1b2'.repeat(10)).includes('a sign-in token (Bearer)') && C.secretsIn('aws_secret_access_key = ' + 'A'.repeat(40)).includes('an AWS secret key'));
+  check('ordinary words after "password" or "token" aren\'t secrets', C.secretsIn('Password: not stored. token: expired. secret = None. password policy: 12 characters').length === 0);
+  check('a file opens on this device only as a type the files function enforced; anything else is plain bytes', C.blobType('image/png') === 'image/png' && C.blobType('application/pdf') === 'application/pdf'
+    && C.blobType('text/html') === 'application/octet-stream' && C.blobType('image/svg+xml') === 'application/octet-stream' && C.blobType('') === 'application/octet-stream');
   check('nothing ordinary is a find', C.secretsIn('I listed the open ports with ss -tulpn and compared them with the baseline.').length === 0);
   const pf = C.freshState(), k = '2026-10-24';
   pf.cybersecurity.attempts.push({ id: 'caPf', activityId: 'exercise.learning-evidence', curriculumVersion: '1.0.0', rubricVersion: '1.0.0', startedAt: '2026-10-24T08:00:00.000Z', submittedAt: null, inputVariant: 'first baseline', environmentId: '', assistance: 'independent', evidence: 'Compared two runs.', answers: {}, rubricScores: [], criticalPassed: true, resumePoint: '', answerRevealed: false, assessor: 'self', verified: false });
@@ -167,6 +175,7 @@ const same = require('node:util').isDeepStrictEqual;
   check('saved entries: a duplicate, a bad id, no day or no title are dropped (and counted); evidence capped, file ids cleaned to 5', np.length === 1 && prep.dropped === 4 && np[0].evidence.length === 12000
     && JSON.stringify(np[0].fileIds) === JSON.stringify(['flaaaaaa01', 'flaaaaaa02', 'flaaaaaa03', 'flaaaaaa04', 'flaaaaaa05']));
   check('no portfolio yet stays exactly that: the field is absent, as older data was', !('portfolio' in C.normalizeCyber({ pathId: 'path.core', attempts: [] })));
+  check('a field a newer MyDay adds to an entry is kept as it is', JSON.stringify(C.normalizeCyber({ pathId: 'path.core', attempts: [], portfolio: [{ ...good, id: 'pffuture001', nice: { roles: ['PR-CDA-001'] } }] }).portfolio[0].nice) === JSON.stringify({ roles: ['PR-CDA-001'] }));
   const page = C.portfolioPage([{ ...good, title: '<script>alert(1)</script>', evidence: 'a & b', fileIds: undefined }], k);
   check('the exported page escapes every entry and runs nothing (no scripts, nothing fetched)', page.includes('&lt;script&gt;alert(1)&lt;/script&gt;') && page.includes('a &amp; b') && !/<script/i.test(page.replace(/&lt;script/g, '')) && page.includes("default-src 'none'"));
 

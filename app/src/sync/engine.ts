@@ -497,13 +497,16 @@ export async function joinAccount(): Promise<boolean> {
 
 // Clears another account's MyDay from this device (after you've downloaded a backup), so yours can come here.
 export async function clearThisDevice() {
+  let cleared = false;
   await withLock(async () => {
     if (!replaceAll(freshData())) return;
     const read = readState();
     const st = read.ok ? read.state : freshState();
     st.link = null; st.before = null; st.kept = [];
     writeState(st);
+    cleared = true;
   });
+  if (cleared) await clearFileCache(); // the other account's portfolio files kept for offline viewing go with it
   joinProblem = '';
   publish();
   void run();

@@ -1,7 +1,7 @@
 // The portfolio's places and its export: where an entry belongs in the course (module, then lesson or lab), and the
 // zip "Export portfolio" downloads (a page with every entry, and its files). Nothing here is sent anywhere; files are
 // read from this device's copy or fetched through their short-lived links.
-import { cleanName } from '../../../../supabase/functions/_shared/files/rules';
+import { AREA_RULES, cleanName } from '../../../../supabase/functions/_shared/files/rules';
 import { todayKey } from '../../data/dates';
 import type { PortfolioEntry } from '../../data/cybersecurity/types';
 import { cachedFile, cacheFile, type Cached } from '../../data/fileCache';
@@ -34,6 +34,10 @@ export function grouped(entries: PortfolioEntry[]) {
   return [...groups.values()].sort((a, b) => (order.get(a.moduleId ?? '') ?? 999) - (order.get(b.moduleId ?? '') ?? 999));
 }
 
+// The type to give a portfolio file's bytes on this device: one the files function enforced for the area (PNG, JPEG,
+// WebP or PDF), or plain bytes. Never the record's word alone: a synced record's type could say HTML or SVG, and a
+// blob of that type would run in MyDay's own origin.
+export const blobType = (type: string) => (AREA_RULES.portfolio.types.includes(type) ? type : 'application/octet-stream');
 // The file's bytes: this device's copy, or fetched once through a short-lived link and kept.
 export async function portfolioBytes(f: FileRecord): Promise<{ ok: true; c: Cached } | { ok: false; why: FilesResult }> {
   const kept = await cachedFile(f.id);
@@ -43,7 +47,7 @@ export async function portfolioBytes(f: FileRecord): Promise<{ ok: true; c: Cach
   try {
     const res = await fetch(r.url);
     if (!res.ok) return { ok: false, why: res.status === 404 ? 'not-found' : 'failed' };
-    const c = { type: f.type, bytes: await res.arrayBuffer() };
+    const c = { type: blobType(f.type), bytes: await res.arrayBuffer() };
     void cacheFile(f.id, c);
     return { ok: true, c };
   } catch { return { ok: false, why: navigator.onLine === false ? 'offline' : 'failed' }; }
@@ -54,7 +58,7 @@ type Linked = { name: string; href: string | null }; // href null: not included 
 // A page you can open anywhere: every entry by module and lesson, with links to its files beside it in the zip. No
 // scripts and nothing fetched.
 export function portfolioPage(entries: PortfolioEntry[], exportedOn: string, files: Map<string, Linked[]> = new Map()): string {
-  const fileList = (e: PortfolioEntry) => { const l = files.get(e.id) ?? []; return l.length ? `<ul>${l.map(f => `<li>${f.href ? `<a href="${esc(encodeURI(f.href))}">${esc(f.name)}</a>` : `${esc(f.name)} (not included: it couldn’t be fetched)`}</li>`).join('')}</ul>` : ''; };
+  const fileList = (e: PortfolioEntry) => { const l = files.get(e.id) ?? []; return l.length ? `<ul>${l.map(f => `<li>${f.href ? `<a href="${esc(f.href.split('/').map(encodeURIComponent).join('/'))}">${esc(f.name)}</a>` : `${esc(f.name)} (not included: it couldn’t be fetched)`}</li>`).join('')}</ul>` : ''; };
   const body = grouped(entries).map(g => `<section><h2>${esc(g.moduleId ? modules.get(g.moduleId)?.name ?? g.moduleId : 'Other work')}</h2>${[...g.places.values()].map(p =>
     `<h3>${esc(p.label)}</h3>${p.entries.map(e => `<article><h4>${esc(e.title)}</h4><p class="meta">Reviewed ${esc(e.reviewedOn)} · self-study evidence</p>${e.evidence ? `<pre>${esc(e.evidence)}</pre>` : ''}${e.note ? `<p><strong>Note:</strong> ${esc(e.note)}</p>` : ''}${fileList(e)}</article>`).join('')}`).join('')}</section>`).join('');
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'unsafe-inline'"><title>Cybersecurity portfolio</title>

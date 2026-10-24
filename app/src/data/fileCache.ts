@@ -10,7 +10,8 @@ function db(): Promise<IDBDatabase | null> {
     try {
       const req = indexedDB.open(DB, 1);
       req.onupgradeneeded = () => { if (!req.result.objectStoreNames.contains(STORE)) req.result.createObjectStore(STORE); };
-      req.onsuccess = () => resolve(req.result);
+      // Another tab clearing the cache (signing out there): let go, so the deletion isn't held up.
+      req.onsuccess = () => { req.result.onversionchange = () => { req.result.close(); opening = null; }; resolve(req.result); };
       req.onerror = () => { opening = null; resolve(null); };
       req.onblocked = () => { opening = null; resolve(null); };
     } catch { opening = null; resolve(null); }

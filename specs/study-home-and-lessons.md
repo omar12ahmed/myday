@@ -299,7 +299,7 @@ portfolio's own text (titles, notes, evidence) is kept out as well.
 - **Removing** an entry: its files go to the shared Recently deleted (30 days, with Put back and "Delete now"), as in
   every area (the owner's decision, 24 October 2026: one behaviour across MyDay, so a mistake never loses evidence).
 - **Backups:** "Download a copy" lists the files (as for every area) without their contents; files come with "Export
-  portfolio", and the backup screen says so plainly.
+  portfolio", and the portfolio page says so plainly.
 - **Going back** to an older version keeps `cybersecurity.portfolio` unread on the device, and older versions ignore
   the new record kind (verify with `app-sync-previous`).
 - **Review:** an independent security review (Fable) before release: the area's rules, the confirm step, the cache,

@@ -43,6 +43,7 @@ export interface PortfolioEntry {
   note: string;          // ≤ 1,000 characters
   reviewedOn: DateKey;   // the day you ticked the privacy check
   fileIds?: string[];    // up to PORTFOLIO_FILES
+  [other: string]: unknown; // anything a newer MyDay adds to an entry is kept
 }
 export const PORTFOLIO_FILES = 5;
 export interface CyberData {

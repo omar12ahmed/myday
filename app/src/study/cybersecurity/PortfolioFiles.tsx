@@ -8,7 +8,7 @@ import { update } from '../../data/storage';
 import { toast } from '../../data/toast';
 import type { FileRecord, MyDayData } from '../../data/types';
 import { addFiles, canRetry, getProgress, retry, subscribeFiles, WHY, type FilesResult } from '../../sync/files';
-import { portfolioBytes } from './portfolioPages';
+import { blobType, portfolioBytes } from './portfolioPages';
 import { DeletedFiles } from '../../files/FilesCard';
 
 // A portfolio entry's files (specs/study-home-and-lessons.md §10, through the shared files design, specs/files.md):
@@ -24,9 +24,9 @@ async function openPortfolioFile(f: FileRecord): Promise<FilesResult> {
   if (!tab) return 'blocked';
   const r = await portfolioBytes(f);
   if (!r.ok) { tab.close(); return r.why; }
-  const url = URL.createObjectURL(new Blob([r.c.bytes], { type: r.c.type }));
+  const url = URL.createObjectURL(new Blob([r.c.bytes], { type: blobType(r.c.type) })); // checked again: a copy cached before
   tab.location.href = url;
-  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  setTimeout(() => URL.revokeObjectURL(url), 10 * 60_000);
   return 'ok';
 }
 

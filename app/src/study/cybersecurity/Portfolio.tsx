@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { BriefcaseBusiness, Download } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
@@ -6,7 +6,7 @@ import { useConfirm } from '../../components/confirm';
 import { Field, TextArea, TextInput } from '../../components/Field';
 import { shortDate, todayKey } from '../../data/dates';
 import { filesLeaving } from '../../data/files';
-import { addEntry, editEntry, entriesFrom, EVIDENCE_MAX, NOTE_MAX, notYet, PRIVACY_CHECKS, removeEntry, TITLE_MAX, type EntryText } from '../../data/cybersecurity/portfolio';
+import { addEntry, editEntry, entriesFrom, EVIDENCE_MAX, NOTE_MAX, notYet, PRIVACY_CHECKS, publicAddressIn, removeEntry, TITLE_MAX, type EntryText } from '../../data/cybersecurity/portfolio';
 import type { CyberAttempt, PortfolioEntry } from '../../data/cybersecurity/types';
 import { lessonHref } from '../../data/cybersecurity/types';
 import { update } from '../../data/storage';
@@ -60,7 +60,8 @@ function EntryCard({ data, entry: e }: { data: MyDayData; entry: PortfolioEntry 
     if (update(d => { filesLeaving(d, { kind: 'portfolio', id: e.id }, todayKey()); if (!removeEntry(d, e.id)) return false; })) toast('Removed from your portfolio.');
   }
   if (editing) return <EntryForm initial={{ title: e.title, evidence: e.evidence, note: e.note }} submitLabel="Save changes" onCancel={() => setEditing(false)}
-    onSave={(t, checked) => { if (update(d => { if (!editEntry(d, e.id, t, checked, todayKey())) return false; })) setEditing(false); }} />;
+    onSave={(t, checked) => { if (t.title.trim() === e.title && t.evidence.trim() === e.evidence && t.note.trim() === e.note) { setEditing(false); return; }
+      if (update(d => { if (!editEntry(d, e.id, t, checked, todayKey())) return false; })) setEditing(false); }} />;
   return <article className="rounded-tile border border-outline bg-surface px-4 py-3 my-2.5" data-cy-pf-entry={e.id}>
     <h5 className="text-[17px] font-semibold m-0">{e.title}</h5>
     <p className="text-sm text-fg-2 m-0 mt-0.5">Reviewed {shortDate(e.reviewedOn)} · self-study evidence</p>
@@ -76,14 +77,17 @@ function EntryCard({ data, entry: e }: { data: MyDayData; entry: PortfolioEntry 
 
 // Under a handed-in attempt in the notebook: "Add to portfolio", and where it already is.
 export function AddToPortfolio({ data, attempt, title }: { data: MyDayData; attempt: CyberAttempt; title: string }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false), [closed, setClosed] = useState(false);
+  const wrap = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (closed && !open) wrap.current?.querySelector<HTMLButtonElement>('[data-action="cy-pf-open"]')?.focus(); }, [closed, open]); // back where you were once the form closes
+  const close = () => { setOpen(false); setClosed(true); };
   const existing = entriesFrom(data, attempt.id);
-  if (!open) return <div className="border-t border-outline pt-3 mt-3" data-cy-pf-from={existing.length}>
+  if (!open) return <div ref={wrap} className="border-t border-outline pt-3 mt-3" data-cy-pf-from={existing.length}>
     {existing.length > 0 && <p className="text-sm m-0 mb-1">In your <InlineLink href="#study/cybersecurity/portfolio">portfolio</InlineLink>: {existing.map(e => e.title).join(', ')}.</p>}
     <Button inline variant="ghost" data-action="cy-pf-open" onClick={() => setOpen(true)}>{existing.length ? 'Add it to your portfolio again' : 'Add to portfolio'}</Button>
   </div>;
-  return <EntryForm initial={{ title: title.slice(0, TITLE_MAX), evidence: attempt.evidence.slice(0, EVIDENCE_MAX), note: '' }} submitLabel="Add to portfolio" onCancel={() => setOpen(false)}
-    onSave={(t, checked) => { let id: string | null = null; if (update(d => { id = addEntry(d, attempt.id, t, checked, todayKey()); if (!id) return false; }) && id) { setOpen(false); toast('Added to your portfolio.'); } }} />;
+  return <EntryForm initial={{ title: title.slice(0, TITLE_MAX), evidence: attempt.evidence.slice(0, EVIDENCE_MAX), note: '' }} submitLabel="Add to portfolio" onCancel={close}
+    onSave={(t, checked) => { let id: string | null = null; if (update(d => { id = addEntry(d, attempt.id, t, checked, todayKey()); if (!id) return false; }) && id) { close(); toast('Added to your portfolio.'); } }} />;
 }
 
 // The entry's text and the privacy check. Text that looks like a secret is pointed out and has to change first.
@@ -103,6 +107,7 @@ function EntryForm({ initial, submitLabel, onSave, onCancel }: { initial: EntryT
       <p className="text-sm text-fg-2 m-0">Pictures and PDFs can’t be checked automatically, so the tick is yours.</p>
     </fieldset>
     {problem && t.title.trim() && <p role="alert" className="text-[15px] m-0" data-cy-pf-problem="">{problem}</p>}
+    {!problem && publicAddressIn([t.title, t.evidence, t.note].join('\n')) && <p className="text-[15px] m-0 text-fg-2" data-cy-pf-address="">This includes a public IP address. Keep it only if it’s your own lab’s or the course’s practice target (the second tick).</p>}
     <div className="flex flex-wrap gap-2">
       <Button inline type="submit" variant="primary" data-action="cy-pf-save" disabled={!!problem || !checked}>{submitLabel}</Button>
       <Button inline variant="ghost" onClick={onCancel}>Cancel</Button>

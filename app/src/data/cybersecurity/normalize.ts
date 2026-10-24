@@ -39,7 +39,8 @@ export function cleanCyberCard(raw: unknown): CyberCard | null {
 
 // Fields a newer MyDay adds to the section are kept as they are, so going back a version never loses them.
 // A portfolio entry: its id is the sync record's; it needs its attempt, its activity, a title and the day you reviewed
-// it. File ids are kept only in the shared records' form, at most 5; anything else malformed is left out of the entry.
+// it. File ids are kept only in the shared records' form, at most 5; anything else malformed is left out of the entry,
+// and fields a newer MyDay adds are kept.
 const PF = /^pf[a-z0-9]{6,30}$/, FILE_ID = /^fl[a-z0-9]{6,40}$/;
 export function cleanPortfolioEntry(raw: unknown): PortfolioEntry | null {
   if (!isObj(raw) || typeof raw.id !== 'string' || !PF.test(raw.id) || !isDateKey(raw.reviewedOn)) return null;
@@ -47,7 +48,10 @@ export function cleanPortfolioEntry(raw: unknown): PortfolioEntry | null {
   const title = str(raw.title, 120).trim();
   if (!title) return null;
   const ids = Array.isArray(raw.fileIds) ? [...new Set(raw.fileIds.filter((x): x is string => typeof x === 'string' && FILE_ID.test(x)))].slice(0, PORTFOLIO_FILES) : [];
-  return { id: raw.id, attemptId: raw.attemptId, activityId: raw.activityId, title, evidence: str(raw.evidence, 12000), note: str(raw.note, 1000), reviewedOn: raw.reviewedOn, ...(ids.length ? { fileIds: ids } : {}) };
+  // Fields a newer MyDay adds to an entry are kept as they are (so an edit here never strips them).
+  const out: PortfolioEntry = { ...raw, id: raw.id, attemptId: raw.attemptId, activityId: raw.activityId, title, evidence: str(raw.evidence, 12000), note: str(raw.note, 1000), reviewedOn: raw.reviewedOn };
+  if (ids.length) out.fileIds = ids; else delete out.fileIds;
+  return out;
 }
 
 export function normalizeCyber(raw: unknown, report = { dropped: 0 }): CyberData {

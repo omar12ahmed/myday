@@ -84,7 +84,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   // …and a Cybersecurity knowledge check in revision (after 1.17.1).
   raw.cybersecurity = { pathId: 'path.core', attempts: [], cards: [{ id: 'assessment.lab-isolation-check.q2', addedOn: '2026-10-14', review: { reps: 0, interval: 0, lapses: 0, due: '2026-10-15' }, anotherWay: { text: 'Think of DNS as a phone book: you look up a name to get the number.', by: 'Gemini 3.8 Flash', on: '2026-10-16' } }] };
   // …and a portfolio entry made from a notebook attempt, with two files listed.
-  raw.cybersecurity.portfolio = [{ id: 'pfsync00001', attemptId: 'caSync', activityId: 'exercise.learning-evidence', title: 'Baseline evidence', evidence: 'Compared two runs.', note: 'first try', reviewedOn: '2026-10-14', fileIds: ['flsync00001', 'flsync00002'] }];
+  raw.cybersecurity.portfolio = [{ id: 'pfsync00001', attemptId: 'caSync', activityId: 'exercise.learning-evidence', title: 'Baseline evidence', evidence: 'Compared two runs.', note: 'first try', reviewedOn: '2026-10-14', fileIds: ['flsync00001', 'flsync00002'], futureBit: { keep: ['nice', 1] } }];
   raw.timer = { uid: 'x', dayKey: '2026-10-04', kind: 'focus', durationSec: 1500, startedAt: 1, accumulatedMs: 0, finished: false };
   const data = R.normalize(raw);
 
@@ -114,6 +114,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('…and removes it from a device that had it', Array.isArray(has.arabic.words) && has.arabic.words.length === 0); }
   const noPortfolio = clone(raw); delete noPortfolio.cybersecurity.portfolio;
   check('MyDay data from before the portfolio sends no portfolio records', ![...R.localRecords(R.normalize(noPortfolio)).keys()].some(k => R.splitKey(k).kind === 'cyber_portfolio'));
+  check('…with a field a newer MyDay added kept exactly as it was', eq(recs.get('cyber_portfolio:pfsync00001').futureBit, { keep: ['nice', 1] }));
   check('a portfolio entry is its own record, its files listed by id (their bytes are never in it)', eq(recs.get('cyber_portfolio:pfsync00001').fileIds, ['flsync00001', 'flsync00002']) && recs.get('cyber_portfolio:pfsync00001').evidence === 'Compared two runs.');
   { const none = clone(R.freshState()); R.putRecord(none, 'cyber_portfolio:pfsync00001', null);
     check('an entry removed elsewhere leaves a device that never had a portfolio exactly as it was', !('portfolio' in none.cybersecurity)); }
