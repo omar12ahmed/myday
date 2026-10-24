@@ -16,9 +16,13 @@ type Place = { kind: string; id: string }; // an Owner, or a place a newer MyDay
 export const emptyFiles = (): FilesData => ({ items: [] });
 // The areas whose files this version can list, and so judge. A file of another area (a newer MyDay's portfolio, say)
 // is left exactly as it is: never sent to Recently deleted, healed, settled or deleted for good here, since whatever
-// lists it is unknown to this version.
-export const LISTED_AREAS = ['project', 'note'];
-const listedHere = (f: FileRecord) => LISTED_AREAS.includes(f.area);
+// lists it is unknown to this version. The same goes for a file that a newer MyDay lets another kind of place list
+// (`listedIn`, e.g. a task listing a project's file): only removing it from a project or note here takes that link out.
+// (A record from a newer MyDay in a shape this version doesn't read is still tidied by normalizeFiles: a bad hash,
+// day, area or state is replaced.)
+export const LISTED_AREAS: readonly string[] = ['project', 'note'];
+const PLACE_KINDS: readonly string[] = ['project', 'note'];
+const listedHere = (f: FileRecord) => LISTED_AREAS.includes(f.area) && !(Array.isArray(f.listedIn) && f.listedIn.some(k => !PLACE_KINDS.includes(String(k))));
 
 // Reading saved file records: one without an id, a name, a type or a size is counted, never kept half-read. Fields from
 // a newer MyDay are kept; a state this version doesn't know is kept as it is (and such a file isn't opened).
@@ -90,8 +94,8 @@ export function removeFile(d: MyDayData, fileId: string, from: Owner, k: DateKey
   const ids = fileIdsOf(d, from);
   if (!ids.includes(fileId)) return false;
   setIds(d, from, ids.filter(x => x !== fileId));
-  if (usedBy(d, fileId).length) return 'removed';
   const f = d.files.items.find(x => x.id === fileId);
+  if (usedBy(d, fileId).length || (f && !listedHere(f))) return 'removed';
   if (f) { f.deletedOn = k; f.removedFrom = from; }
   return 'deleted';
 }
@@ -145,7 +149,7 @@ export function healFiles(d: MyDayData): boolean {
 export function filesLeaving(d: MyDayData, from: Owner, k: DateKey = todayKey()) {
   for (const id of fileIdsOf(d, from)) {
     const f = d.files.items.find(x => x.id === id);
-    if (f && !f.deletedOn && usedBy(d, id).every(o => o.kind === from.kind && o.id === from.id)) { f.deletedOn = k; f.removedFrom = from; }
+    if (f && listedHere(f) && !f.deletedOn && usedBy(d, id).every(o => o.kind === from.kind && o.id === from.id)) { f.deletedOn = k; f.removedFrom = from; }
   }
 }
 export const sizeLabel = (n: number) => (n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1024 / 1024).toFixed(1)} MB`);

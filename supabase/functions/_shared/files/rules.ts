@@ -61,11 +61,17 @@ export function disposition(name: string, type: string): string {
   const plain = cleanName(name).replace(/[^\x20-\x7e]/g, '_').replace(/["\\]/g, '_');
   return `${FILE_TYPES[type]?.inline ? 'inline' : 'attachment'}; filename="${plain}"; filename*=UTF-8''${encodeURIComponent(cleanName(name)).replace(/['()*!]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase())}`;
 }
-// An amount of storage in words: "640 KB", "340 MB", "1.2 GB", "10 GB".
-export function amountLabel(n: number): string {
-  if (n >= 1000 * MB) { const g = Math.round((n / GB) * 10) / 10; return `${g % 1 ? g.toFixed(1) : g} GB`; }
-  if (n >= MB || n === 0) return `${Math.round(n / MB)} MB`;
-  return `${Math.max(1, Math.round(n / 1024))} KB`;
+// An amount of storage in words: "640 KB", "24.6 MB", "340 MB", "1.2 GB", "10 GB" (one decimal under 100 MB and in
+// GB). `round` is how: Math.floor for what's used and what's left, so neither is ever overstated (a file refused for
+// want of room never reads as if it fitted). The unit is chosen after rounding (999.6 MB is "1 GB", never "1000 MB").
+// Anything above nothing is at least "1 KB".
+export function amountLabel(n: number, round: (x: number) => number = Math.round): string {
+  if (n <= 0) return '0 MB';
+  const one = (v: number) => (v % 1 ? v.toFixed(1) : String(v)), at = (unit: number, tenths: boolean) => (tenths ? round((n / unit) * 10) / 10 : round(n / unit));
+  if (n < MB) { const k = Math.max(1, at(1024, false)); if (k < 1024) return `${k} KB`; }
+  if (n < 100 * MB) { const m = at(MB, true); if (m < 100) return `${one(m)} MB`; }
+  if (n < 1000 * MB) { const m = at(MB, false); if (m < 1000) return `${m} MB`; }
+  return `${one(at(GB, true))} GB`;
 }
 // Why a file can't be kept in this area, or '' when it can.
 export function refusal(area: string, name: string, size: number): string {

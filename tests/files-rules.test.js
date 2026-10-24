@@ -146,6 +146,22 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('reading them keeps the unknown place they were removed from, with its other fields', eq(read.items[1].removedFrom, { kind: 'portfolio', id: 'pe1', extra: 1 }) && eq(read.items, before), read.items[1]);
     check('placeExists says no for an unknown kind of place', !K.placeExists(d, { kind: 'portfolio', id: 'pe1' }) && K.placeExists(d, PA));
   }
+  {
+    // A project's file that a newer MyDay also lets a task list (listedIn: ['task']): only this version's links are its
+    // business; it's never sent to Recently deleted or deleted for good here.
+    const d = world();
+    K.addFileRecord(d, PA, nf('fltask000001')); K.setFileState(d, 'fltask000001', 'kept');
+    d.files.items[0].listedIn = ['task'];
+    check('a file a newer MyDay\'s task also lists: removing it from its project here only takes that link out ("removed")', K.removeFile(d, 'fltask000001', PA, '2026-10-24') === 'removed' && !d.files.items[0].deletedOn && !('fileIds' in d.projects.items[0]));
+    check('…it\'s no orphan, never in Recently deleted, never due to go', !K.orphans(d).length && !K.markOrphans(d) && !K.recentlyDeleted(d).length && !K.dueForPurge(d, '2026-12-31').length);
+    const e = world();
+    K.addFileRecord(e, PA, nf('fltask000002')); K.setFileState(e, 'fltask000002', 'kept'); e.files.items[0].listedIn = ['task'];
+    check('…and deleting its project leaves it alone too', K.deleteProject(e, 'pjA') && !e.files.items[0].deletedOn);
+    const f = world();
+    K.addFileRecord(f, PA, nf('fltask000003')); f.files.items[0].listedIn = ['project', 'note'];
+    check('…while listedIn naming only kinds this version knows changes nothing', K.removeFile(f, 'fltask000003', PA, '2026-10-24') === 'deleted' && f.files.items[0].deletedOn === '2026-10-24');
+    check('reading keeps listedIn as it is', eq(K.normalizeFiles({ items: [rec('fltask000004', { listedIn: ['task', 'portfolio'] })] }, { dropped: 0 }).items[0].listedIn, ['task', 'portfolio']));
+  }
 
   fs.rmSync(dir, { recursive: true, force: true });
   const s = summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);

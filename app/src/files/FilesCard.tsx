@@ -9,6 +9,7 @@ import { filesOf, goneOn, placeExists, putBack, recentlyDeleted, removeFile, siz
 import { update } from '../data/storage';
 import { toast } from '../data/toast';
 import type { FileRecord, MyDayData } from '../data/types';
+import { useSync } from '../sync/engine';
 import { addFiles, canRetry, deleteNow, getProgress, getUsage, linkTo, openFile, refreshUsage, retry, subscribeFiles, WHY, type FilesResult } from '../sync/files';
 
 // "Files" (specs/files.md): the files attached to a project (a card on its Overview) or a note (a section in its
@@ -86,15 +87,19 @@ export function DeletedFiles({ list, putBackable = true }: { list: FileRecord[];
 
 // How much of your storage is used and what's left (every file of the account, so the same on every card). Shown
 // once the files function has said (signed in, online); files in Recently deleted are still stored until they go.
+// Last in the card, so its arriving late never moves what's above it. Used and left are rounded down.
 function StorageLine({ anyDeleted }: { anyDeleted: boolean }) {
-  const u = useSyncExternalStore(subscribeFiles, getUsage);
-  useEffect(() => { void refreshUsage(); }, []);
-  if (!u) return null;
-  const left = Math.max(0, u.limit - u.bytes), pct = Math.min(100, (u.bytes / u.limit) * 100);
+  const u = useSyncExternalStore(subscribeFiles, getUsage), account = useSync().account;
+  useEffect(() => { void refreshUsage(); }, [account?.id]);
+  if (!u || u.user !== account?.id) return null;
+  const left = Math.max(0, u.limit - u.bytes), pct = Math.min(100, (u.bytes / u.limit) * 100), of = amountLabel(u.limit);
   return (
     <div className="mt-3" data-s="files-storage">
       <div className="h-2 rounded-full bg-track overflow-hidden" aria-hidden="true"><span className="block h-full bg-primary rounded-full" style={{ width: `${u.bytes ? Math.max(1, pct) : 0}%` }} /></div>
-      <p className="m-0 mt-1 text-sm text-fg-3">Your files: {amountLabel(u.bytes)} used, {amountLabel(left)} left of {amountLabel(u.limit)}.{anyDeleted ? ' Files in Recently deleted count until they go.' : ''}</p>
+      <p className="m-0 mt-1 text-sm text-fg-3">
+        {u.bytes ? `Your files: ${amountLabel(u.bytes, Math.floor)} used, ${amountLabel(left, Math.floor)} left of ${of}.` : `Your files: nothing stored yet, ${of} left.`}
+        {anyDeleted ? ' Files in Recently deleted count until they go.' : ''}
+      </p>
     </div>
   );
 }
@@ -120,8 +125,8 @@ export function FilesCard({ data, owner, area }: { data: MyDayData; owner: Owner
     {refused.length > 0 && <div className="mt-2 text-[15px] bg-warn-c text-on-warn-c rounded-tile px-3 py-2" role="alert" data-s="file-refused">{refused.map((r, i) => <p key={i} className="m-0">{r}</p>)}</div>}
     <input ref={input} type="file" multiple accept={ACCEPT} hidden onChange={e => { const l = Array.from(e.target.files ?? []); e.target.value = ''; void add(l); }} />
     <Button inline className="mt-3" data-action="file-add" disabled={busy} onClick={() => input.current?.click()}>{busy ? 'Adding…' : 'Add a file'}</Button>
-    <StorageLine anyDeleted={recentlyDeleted(data).length > 0} />
     <DeletedFiles list={deleted} />
+    <StorageLine anyDeleted={recentlyDeleted(data).length > 0} />
   </>);
   return (
     <Card aria-labelledby={hid} id={`files-${owner.kind}`} className={over ? 'outline outline-2 outline-primary' : ''} data-s="files-card"

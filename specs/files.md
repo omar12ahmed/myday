@@ -55,12 +55,16 @@ Also, per the other decisions on record:
       nothing half-done is left.
     - Offline or signed out: "Adding and opening files needs a connection." / "… needs your account. Sign in first."
     - A project or note keeps at most 50 files.
-  - **Your storage:** under the Add button, a thin bar and "Your files: 1.2 GB used, 8.8 GB left of 10 GB." It's the
-    whole account's, so every card says the same; with files in Recently deleted it adds "Files in Recently deleted
-    count until they go." Shown once the function has answered (signed in and online), and asked again after adding
-    or deleting.
-  - A file that doesn't fit is refused with what's left: "There's 3 MB left of 10 GB, not enough for this file.
-    Remove some files to make room (files in Recently deleted count until they go)."
+  - **Your storage:** last in the card (so its arriving late never moves what's above it), a thin bar and "Your
+    files: 1.2 GB used, 8.8 GB left of 10 GB." ("Your files: nothing stored yet, 10 GB left." when empty). Used and
+    left are rounded down, with one decimal under 100 MB. It's the whole account's, so every card says the same;
+    with files in Recently deleted it adds "Files in Recently deleted count until they go." Shown once the function
+    has answered for the account signed in now (online), and asked again after adding or deleting.
+  - A file that doesn't fit is refused with what's left and its size: "There's 24.6 MB left of 10 GB, and this file
+    is 24.8 MB. To make room, remove files you don't need, then use Delete now in Recently deleted." (Remove alone
+    only moves a file to Recently deleted, which still counts.)
+  - A refusal from the server (no room, or not what its name says) shows in the card with its reason, like the
+    device's own.
   - **Recently deleted (2):** a disclosure under the card, with each file's name, the day it goes for good, **Put
     back**, and **Delete now** (it asks first) for a file you want gone at once.
 - **Opening** asks the function for a link that works for a few minutes and only for that file. Nothing about files
@@ -131,7 +135,10 @@ Also, per the other decisions on record:
   - **`open`** `{ fileId, area, thumb? }`: a **presigned GET**, valid 5 minutes. The object carries the Content-Type
     and Content-Disposition fixed at upload, so photos and PDFs open inline, and anything else downloads under its
     name. R2 doesn't document overriding response headers, so nothing is overridden.
-  - **`delete`** `{ files: [{ fileId, area }] }`: removes those objects (and their previews), at most 100 at a time.
+  - **`delete`** `{ files: [{ fileId, area }], knows? }`: removes those objects (and their previews), at most 100 at
+    a time, and only in the areas the caller says it knows (`knows`; none said means project and note, as 1.68.0):
+    an older MyDay can't tell whether a newer area's file is still listed, so it can never delete one (409
+    `unknown-area`).
   - **`delete-all`**: every file of the account; for the true wipe.
   - **`usage`**: the account's total (every file, Recently deleted included; previews aren't counted) and its limit,
     for the Files card's "1.2 GB used, 8.8 GB left of 10 GB".
@@ -153,8 +160,9 @@ Also, per the other decisions on record:
 
 ### In the app
 
-- **`app/src/data/files.ts`**: the records, normalizing, add, remove, put back, purge after 30 days, usage, and the
-  type and size rules (shared with the function's rules, so device and server agree).
+- **`app/src/data/files.ts`**: the records, normalizing, add, remove, put back, purge after 30 days and the areas it
+  can judge; the type and size rules are shared with the function (`_shared/files/rules.ts`), so device and server
+  agree. Usage (what's used and left) is asked in `sync/files.ts`.
 - **`app/src/sync/files.ts`**: hashing (SHA-256 with `crypto.subtle`, and MD5 for R2), the preview (a 320 px WebP
   from a canvas), the upload steps (upload, PUT, confirm, thumb), open, delete, and the tidy.
 - **Opening:** a photo or PDF in a new tab, opened at once so the browser allows it (if it's blocked anyway, MyDay
@@ -175,9 +183,20 @@ Also, per the other decisions on record:
   - **Areas this version can't list** (a newer MyDay's portfolio, say) are left exactly as they are: such a file is
     never sent to Recently deleted, healed, settled or deleted for good, and the place it was removed from is kept
     as it is (`LISTED_AREAS` in `data/files.ts`; from 1.69.0, found by myday-86 before the portfolio's files). A
-    release that adds an area adds it there and teaches `place`/`usedBy` where its files are listed.
+    release that adds an area adds it there and teaches `place`/`usedBy` where its files are listed, and sends that
+    area in `delete`'s `knows`. A 1.68.0 device can still mark such a file (it has no guard), but the server refuses
+    its delete, so the file and its record stay, and a newer device clears the mark.
+  - **Another kind of place listing an existing file** (a task listing a project's file, say): the newer MyDay adds
+    that kind to the file's `listedIn`; this version then leaves the file alone too, and removing it from a project
+    or note here only takes that link out.
 - **The true wipe** ("delete everything", not built yet) must call `deleteAllFiles()` (and the backups' delete-all)
   before it clears the data, so no file or backup outlives it.
+
+### Known gap (noted 24 October 2026)
+
+Importing a backup made before some files existed (or a blank one) drops their records, and sync then deletes them,
+but their bytes stay in R2: they count towards what's used, with nothing listed to remove. A follow-up: the function
+lists stored files that no record names, and the app offers to delete them.
 
 ## 5. Privacy and safety
 

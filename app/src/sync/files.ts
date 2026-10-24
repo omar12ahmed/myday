@@ -112,25 +112,31 @@ function setProgress(id: string, p: Progress | null) {
 // The account's stored total (every file, Recently deleted included until they go) and its limit, from the files
 // function: asked when a Files card appears (at most once a minute) and again after adding or deleting. null until
 // known (signed out, offline, not set up).
-export interface Usage { bytes: number; limit: number }
-let usage: Usage | null = null, usageAt = 0, usageAsking: Promise<void> | null = null;
+// Kept with the account it's for, so another account signing in never sees it; only the answer to the latest question
+// counts (an older one may be from before a delete).
+export interface Usage { bytes: number; limit: number; user: string }
+let usage: Usage | null = null, usageAt = 0, usageAsks = 0, usageAsking: Promise<void> | null = null;
 export const getUsage = () => usage;
 export async function refreshUsage(force = false): Promise<void> {
-  if (usageAsking) { await usageAsking; if (!force) return; }
-  if (!force && usage && Date.now() - usageAt < 60_000) return;
-  usageAsking = (async () => {
-    const r = await call<Usage>('usage');
-    if (r.ok && Number.isFinite(r.data.bytes) && Number.isFinite(r.data.limit) && r.data.limit > 0) { usage = { bytes: r.data.bytes, limit: r.data.limit }; usageAt = Date.now(); notify(); }
-    else if (!r.ok && (r.why === 'signed-out' || r.why === 'not-configured') && usage) { usage = null; notify(); } // not this account's any more
+  const user = (await currentSession()).session?.user?.id ?? '';
+  if (usage && usage.user !== user) { usage = null; notify(); }
+  if (!force && (usageAsking || (usage && Date.now() - usageAt < 60_000))) return usageAsking ?? undefined;
+  const n = ++usageAsks;
+  const asking = (async () => {
+    const r = await call<Omit<Usage, 'user'>>('usage');
+    if (n !== usageAsks) return;
+    if (r.ok && Number.isFinite(r.data.bytes) && Number.isFinite(r.data.limit) && r.data.limit > 0) { usage = { bytes: r.data.bytes, limit: r.data.limit, user }; usageAt = Date.now(); notify(); }
+    else if (!r.ok && (r.why === 'signed-out' || r.why === 'not-configured') && usage) { usage = null; notify(); }
   })();
-  try { await usageAsking; } finally { usageAsking = null; }
+  usageAsking = asking;
+  try { await asking; } finally { if (usageAsking === asking) usageAsking = null; }
 }
 export const WHY: Record<Exclude<FilesResult, 'ok'>, string> = {
   'not-configured': 'Files aren’t set up yet.',
   'signed-out': 'Adding and opening files needs your account. Sign in first.',
   offline: 'Adding and opening files needs a connection.',
   'not-allowed': 'That file can’t be kept.',
-  full: 'Your files are full. Remove some to make room.',
+  full: 'Your files are full. To make room, remove files you don’t need, then use Delete now in Recently deleted.',
   'not-found': 'That file isn’t stored any more.',
   blocked: 'Your browser blocked the new tab. Allow pop-ups for MyDay, then try again.',
   failed: 'That didn’t work just now. Try again.',
@@ -149,7 +155,7 @@ export async function checkFile(area: string, file: File): Promise<string> {
 // its name says, or no room left) says why in its card.
 export async function addFiles(owner: Owner, area: string, files: File[]): Promise<{ kept: number; refused: string[] }> {
   const refused: string[] = [];
-  let kept = 0;
+  let kept = 0, sent = false;
   try { for (const file of files) {
     const why = await checkFile(area, file);
     if (why) { refused.push(`${cleanName(file.name)}: ${why}`); continue; }
@@ -158,9 +164,10 @@ export async function addFiles(owner: Owner, area: string, files: File[]): Promi
     const sha256 = hex(await crypto.subtle.digest('SHA-256', bytes));
     if (!update(d => (addFileRecord(d, owner, { id, name: cleanName(file.name), type, size: file.size, sha256, area }) ? undefined : false))) { refused.push(`${cleanName(file.name)}: a project or note keeps at most 50 files.`); continue; }
     pending.set(id, { owner, file, area });
+    sent = true;
     const r = await send(id, area, file, bytes);
     if (r.kept) kept++; else if (r.refused) refused.push(`${cleanName(file.name)}: ${r.refused}`);
-  } } finally { void refreshUsage(true); }
+  } } finally { if (sent) void refreshUsage(true); }
   return { kept, refused };
 }
 // The upload steps for one recorded file: kept, or not (with the server's reason when it refused the file, which then
@@ -170,13 +177,14 @@ type Sent = { kept: boolean; refused?: string };
 async function send(id: string, area: string, file: File, bytes?: Uint8Array): Promise<Sent> {
   const name = cleanName(file.name);
   setProgress(id, { name, state: 'adding', message: '' });
-  const data = bytes ?? new Uint8Array(await file.arrayBuffer());
   const fail = (message: string, drop = false) => {
     if (drop) { const p = pending.get(id); update(d => { d.files.items = d.files.items.filter(f => f.id !== id); const place = p && (p.owner.kind === 'project' ? d.projects.items.find(x => x.id === p.owner.id) : d.notes.items.find(x => x.id === p.owner.id)); if (place?.fileIds) { place.fileIds = place.fileIds.filter(x => x !== id); if (!place.fileIds.length) delete place.fileIds; } }); pending.delete(id); }
     else update(d => (setFileState(d, id, 'failed') ? undefined : false));
     setProgress(id, drop ? null : { name, state: 'failed', message });
     return drop ? { kept: false, refused: message } : { kept: false };
   };
+  let data: Uint8Array;
+  try { data = bytes ?? new Uint8Array(await file.arrayBuffer()); } catch { return fail('That file can’t be read any more. Remove it and add it again.'); }
   const up = await call<{ url: string; headers: Record<string, string> }>('upload', { fileId: id, area, name, size: data.length, md5: base64(md5(data)) });
   if (!up.ok && up.error !== 'exists') return fail(up.message || WHY[up.why as Exclude<FilesResult, 'ok'>] || WHY.failed, up.why === 'not-allowed' || up.why === 'full');
   if (up.ok && !(await put(up.data.url, up.data.headers, file))) return fail(offlineNow() ? WHY.offline : WHY.failed);
@@ -241,7 +249,7 @@ export async function openFile(f: FileRecord): Promise<FilesResult> {
 // ---------- Delete now, and the daily tidy ----------
 export async function deleteNow(files: FileRecord[]): Promise<FilesResult> {
   if (!files.length) return 'ok';
-  const r = await call('delete', { files: files.map(f => ({ fileId: f.id, area: f.area })) });
+  const r = await call('delete', { files: files.map(f => ({ fileId: f.id, area: f.area })), knows: LISTED_AREAS });
   if (r.ok) { update(d => (forgetFiles(d, files.map(f => f.id)) ? undefined : false)); void refreshUsage(true); }
   return r.ok ? 'ok' : r.why;
 }
