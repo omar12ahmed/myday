@@ -3,7 +3,7 @@
 **Status:** release (a), one focus and Study home (§3, §4), published in 1.51.0 (24 October 2026); release (b),
 the lesson journey, published for Arabic in 1.53.0 and for Cybersecurity in 1.55.0; release (c), Keep a word,
 in 1.57.0 (24 October 2026, its migration applied that day); release (d), Practise again, built on branch
-`practise-again` (its migration not yet applied), with Progress and the weekly prompts as their own release next;
+`practise-again` (its migration applied 24 October 2026), with Progress and the weekly prompts as their own release next;
 (e)–(f) planned. The owner's decisions of 24 October
 2026 are in §2. This builds on
 `specs/adaptive-study.md` (lesson states, answer marks, revision from every lesson, the next-step rules), published
