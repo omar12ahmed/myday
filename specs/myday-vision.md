@@ -441,7 +441,7 @@ items, rather than scattering them through the README. Update it with each relea
 | Idea-to-review path | Most steps (§1) | Close the gaps one at a time, starting with findings and their sources |
 | Task completion in one place | 1.55.1: a tick on a plan marks the task itself done, dated the plan's day; 1.59.0: a rolled task follows its copy to the next plan, and Ask's Undo keeps a tick made since | Keep one answer as new views appear |
 | Ask MyDay in context | Page slice, five reply kinds, checked proposals, one follow-up, one Undo | Read-only tools over the shared AI filter |
-| General assistant tools | Not built | Start read-only; actions only for a defined need |
+| General assistant tools | Search your notes (1.63.0): read-only, automatic and shown, through the filter | "Your day" next (`specs/ai-tools.md`); actions only for a defined need |
 | One "what may reach AI" filter | Built (1.61.0): `app/src/ai/reach.ts`, used by every request builder, with a leak test; Private covers every AI feature but note filing | Every future lookup goes through it (`specs/ai-tools.md`) |
 | AI quality checks | `ai-eval` scenarios, blind reviews, budgets | Required before a model or job changes |
 | Saved records | Built | Keep sources and dates; mark summaries stale |

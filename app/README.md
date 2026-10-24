@@ -1,5 +1,14 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.63.0 — Ask MyDay looks in your notes:** when your question needs your notes ("what did I write about the bike
+rack?"), Ask MyDay looks in them on this device and answers from what it finds, naming the notes it used as links, with
+"Looked in your notes for “…”" above the answer. It sends up to 8 matching notes — titles and projects, and a short
+snippet only with AI help with notes on — and never a private note or one in a private project, not even whether one
+matched (the panel shows that count only to you). One look per question; the second request counts towards the day's
+limit, and waits the server's few seconds between requests. The preview and What MyDay knows say all this. The
+server's instructions (`myday-ask-v17`, already deployed) offer a lookup only to an app that can do one, so earlier
+versions are unaffected. No saved-data, sync or database change; going back to 1.62.0 is safe.
+
 **1.62.0 — Projects: Resources (web links):** a project's Overview has a **Resources** card in its side column,
 after Learning. **Add a link** keeps a web page with the project: its address (typed as you like: "example.com/page"
 is fine), an optional title and an optional note. Each opens in a new tab, with its site and your note; Edit, and
