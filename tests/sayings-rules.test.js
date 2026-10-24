@@ -36,7 +36,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   check('all six places give a saying', PLACES.every(p => K.sayingFor(p, day0) && K.sayingFor(p, day0).id), PLACES.map(p => [p, (K.sayingFor(p, day0) || {}).id]));
 
   console.log('\n[3] Variety: every saying for a place comes round');
-  for (const p of ['today', 'projects', 'review']) {
+  for (const p of ['today', 'money', 'projects', 'review']) {
     const seen = [...idsOver(p, 60)].sort();
     check(`over 60 days, every saying listed for "${p}" appears at least once`, eq(seen, idsFor(p)), [seen, idsFor(p)]);
   }
@@ -59,7 +59,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   const by = id => K.byLine(K.SAYINGS.find(s => s.id === id));
   check('al-Shāfiʿī on the days: "al-Shāfiʿī"', by('shafii-days') === 'al-Shāfiʿī', by('shafii-days'));
   check('al-Shāfiʿī on learning is only attributed: "attributed to al-Shāfiʿī"', by('shafii-learn') === 'attributed to al-Shāfiʿī', by('shafii-learn'));
-  check('Marcus Aurelius is called a paraphrase: "Marcus Aurelius, Meditations (paraphrase)"', by('aurelius-mind') === 'Marcus Aurelius, Meditations (paraphrase)', by('aurelius-mind'));
+  check('Marcus Aurelius is attributed and called a paraphrase (the line is in no translation): "attributed to Marcus Aurelius, Meditations (paraphrase)"', by('aurelius-mind') === 'attributed to Marcus Aurelius, Meditations (paraphrase)', by('aurelius-mind'));
   check('"conceive and believe" is only attributed: "attributed to Napoleon Hill"', by('hill-conceive') === 'attributed to Napoleon Hill', by('hill-conceive'));
   check('Morgan Housel is credited with his book: "Morgan Housel, The Psychology of Money"', by('housel-money') === 'Morgan Housel, The Psychology of Money', by('housel-money'));
   check('the two lessons have no credit line', by('lesson-business') === null && by('lesson-resistance') === null, [by('lesson-business'), by('lesson-resistance')]);

@@ -291,7 +291,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
   // Wide screens: the timeline and learning count move to a second column on the right.
   // `order` only matters on phones; entrance classes remain for compatibility, without workspace animation.
   // One quiet saying under the plan, or under Build my day before there is one (so Build my day stays in view on
-  // phones): gentler on a rest day or a low-energy day.
+  // phones): gentler on a rest day or a low-energy day (today's energy, including a change made after building).
   const sayingsOn = useSayings();
   const saying = (rest: boolean, energy: number | null | undefined) => sayingsOn && <Saying place={todayPlace(rest, energy)} day={k} />;
   const slot = (order: string, node: React.ReactNode, id?: string) =>
@@ -335,7 +335,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
           onEvening={() => { setView('evening'); setEveningKey(k); }} onReview={review} onSwapRest={swapRest} onRestart={restart}
           onAdjust={AI_MODE !== 'off' && !d.rest ? () => { setProposal(null); setAiOpen(true); scrollTo('aiCard'); } : undefined}
           onMind={AI_MODE !== 'off' ? openMind : undefined} />)}
-        {slot('order-1', saying(d.rest, d.energy), 'slot-saying')}
+        {slot('order-1', saying(d.rest, contextFor(data, k).energy || d.energy), 'slot-saying')}
         {slot('order-1', aiOpen && <AdjustCard key={adjustKey} data={data} k={k} onClose={() => setAiOpen(false)} onApplied={u => { setAiOpen(false); setAiUndo(u); }} />)}
         {slot('order-1', canUndo(data, aiUndo) && (
           <Card id="aiUndo" className="!py-3">
@@ -401,8 +401,8 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
     );
   }
 
-  // Wide screens: a dashboard — the greeting across the top, your day on the left, the focus timer, today and this
-  // week, the timeline and your progress on the right. Phones: one column, in a sensible order.
+  // Wide screens: a dashboard — the greeting above your day on the left; the focus timer, today and this week, the
+  // timeline and your progress in the side column on the right, starting level with the greeting. Phones: one column, in a sensible order.
   return (
     <div className="today-layout flex flex-col lg:grid lg:items-start">
       {view !== 'auto' && <h1 className="sr-only">Today</h1>}

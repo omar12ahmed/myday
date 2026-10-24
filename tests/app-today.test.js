@@ -798,6 +798,10 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
     return { below: s.getBoundingClientRect().top >= p.getBoundingClientRect().bottom, inOrder: !!(p.compareDocumentPosition(s) & Node.DOCUMENT_POSITION_FOLLOWING) }; })()`);
   check('after building the day: one saying, sitting after the plan card and not above it', ids.length === 1 && afterPlan && afterPlan.below && afterPlan.inOrder, [ids, afterPlan]);
   check('…and with energy 4 it is an ordinary Today saying', TODAY.includes(ids[0]), ids);
+  await editStorage(`s => { s.context['${keyOf(0)}'] = { ...(s.context['${keyOf(0)}'] || {}), energy: 1 }; }`);
+  await open24(0);
+  ids = await sayingIds();
+  check('…and when today\'s energy is changed to 1 after building (in My day\'s context), the saying turns gentle', ids.length === 1 && GENTLE.includes(ids[0]), ids);
 
   // A rest day.
   await openFresh(1);
@@ -834,7 +838,7 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   // The other screens, at a wide size.
   await T.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
   await openFresh(0);
-  const expect = { '#finance': ['housel-money'], '#projects': ['shabbi-life', 'hill-conceive', 'covey-end', 'lesson-business'], '#review': ['shabbi-life', 'clear-vote', 'covey-end'], '#study': ['shafii-learn', 'clear-systems'] };
+  const expect = { '#finance': ['housel-money', 'clear-systems', 'covey-end'], '#projects': ['shabbi-life', 'hill-conceive', 'covey-end', 'lesson-business'], '#review': ['shabbi-life', 'clear-vote', 'covey-end'], '#study': ['shafii-learn', 'clear-systems'] };
   const names = { '#finance': 'Finance', '#projects': 'Projects', '#review': 'Your week', '#study': 'Study' };
   for (const [h, set] of Object.entries(expect)) {
     await visit(h);
