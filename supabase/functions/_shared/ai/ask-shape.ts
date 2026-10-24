@@ -126,6 +126,8 @@ export interface AskReply {
 
 const obj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const str = (v: unknown, max: number, empty = true) => typeof v === 'string' && v.length <= max && (empty || v.trim().length > 0);
+// The most minutes a plan can have left: 20 tasks (a day lookup's limit) of 600 minutes, the most a task can be.
+const MOST_MINUTES_LEFT = 20 * 600;
 // A real calendar date (not 31 November).
 const isDate = (v: unknown) => {
   const t = typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? Date.parse(`${v}T00:00:00Z`) : NaN;
@@ -157,7 +159,7 @@ export function checkAskContext(raw: unknown): raw is AskContext {
       if (!(only(lk, ['tool', 'query', 'weekday', 'planned', 'rest', 'energy', 'tasks', 'minutesLeft', 'due', 'busy', 'free']) && isDate(lk.query) && str(lk.weekday, 12, false)
         && typeof lk.planned === 'boolean' && typeof lk.rest === 'boolean' && (lk.energy === null || (Number.isInteger(lk.energy) && (lk.energy as number) >= 1 && (lk.energy as number) <= 5))
         && Array.isArray(lk.tasks) && lk.tasks.length <= L.dayTasks && lk.tasks.every(t => obj(t) && only(t, ['title', 'minutes', 'done', 'time']) && str(t.title, L.titleChars, false) && Number.isInteger(t.minutes) && typeof t.done === 'boolean' && (t.time === null || isTime(t.time)))
-        && Number.isInteger(lk.minutesLeft) && (lk.minutesLeft as number) >= 0 && (lk.minutesLeft as number) <= 10000
+        && Number.isInteger(lk.minutesLeft) && (lk.minutesLeft as number) >= 0 && (lk.minutesLeft as number) <= MOST_MINUTES_LEFT
         && Array.isArray(lk.due) && lk.due.length <= L.dayTasks && lk.due.every(t => str(t, L.titleChars, false))
         && Array.isArray(lk.busy) && lk.busy.length <= L.dayBusy && lk.busy.every(x => obj(x) && only(x, ['kind', 'start', 'end']) && DAY_KINDS.includes(x.kind as typeof DAY_KINDS[number]) && dt(x.start) && dt(x.end))
         && Array.isArray(lk.free) && lk.free.length <= L.dayFree && lk.free.every(x => obj(x) && only(x, ['start', 'end']) && isTime(x.start) && isTime(x.end)))) return false;
@@ -196,7 +198,7 @@ export function checkAskContext(raw: unknown): raw is AskContext {
   if (x.today !== undefined) {
     const t = x.today;
     if (!obj(t) || !only(t, ['energy', 'freeMinutes', 'plan', 'minutesLeft', 'dueToday', 'revisionDue'])) return false;
-    if (t.minutesLeft !== undefined && !(Number.isInteger(t.minutesLeft) && (t.minutesLeft as number) >= 0 && (t.minutesLeft as number) <= 10000)) return false;
+    if (t.minutesLeft !== undefined && !(Number.isInteger(t.minutesLeft) && (t.minutesLeft as number) >= 0 && (t.minutesLeft as number) <= MOST_MINUTES_LEFT)) return false;
     if (t.revisionDue !== undefined && !(Number.isInteger(t.revisionDue) && (t.revisionDue as number) >= 0)) return false;
     if (!(t.energy === null || (Number.isInteger(t.energy) && (t.energy as number) >= 1 && (t.energy as number) <= 5))) return false;
     if (!(t.freeMinutes === null || (Number.isInteger(t.freeMinutes) && (t.freeMinutes as number) >= 0 && (t.freeMinutes as number) <= 1440))) return false;

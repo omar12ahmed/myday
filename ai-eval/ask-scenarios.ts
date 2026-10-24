@@ -232,7 +232,7 @@ export const ASK_SCENARIOS: AskScenario[] = [
   A('y03-today-shown', 'How busy is today — already on the page', 'today', 'how busy am I today?', TODAY, { kinds: ['answer'], banned: /\b135\b|2¼|two and a quarter|2\.25/i }, { can: ['notes', 'day'] }), // 75 minutes left (the gym is done)
   A('y04-notes-still', 'A notes question with both lookups on offer', 'today', 'What did I write about the bike rack?', TODAY, { kinds: ['lookup'], lookupWords: /bike|rack/i }, { can: ['notes', 'day'] }),
   A('y05-busy-day', 'Answer from a busy Thursday (an appointment with no name)', 'projects', 'Am I free on Thursday afternoon?', { projects: PROJECTS },
-    { kinds: ['answer'], banned: /\b(dentist|doctor|GP|meeting|interview|haircut|lunch with)\b/i },
+    { kinds: ['answer'], banned: /\b(dentist|doctor|GP|meeting|interview|haircut|lunch with)\b|\d{4}-\d{2}-\d{2}T/i }, // no name, and clock times (not 2026-10-22T07:00)
     { can: ['notes', 'day'], lookup: { tool: 'day', query: '2026-10-22', weekday: 'Thursday', planned: true, rest: false, energy: 3,
       tasks: [{ title: 'Order the felt', minutes: 20, done: false, time: '10:00' }, { title: 'Course section: DNS in detail', minutes: 30, done: false, time: null }], minutesLeft: 50, due: ['Post the parcel'],
       busy: [{ kind: 'work', start: '2026-10-22T07:00', end: '2026-10-22T12:00' }, { kind: 'prep', start: '2026-10-22T14:30', end: '2026-10-22T15:00' }, { kind: 'appointment', start: '2026-10-22T15:00', end: '2026-10-22T16:00' }],

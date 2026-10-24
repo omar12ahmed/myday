@@ -286,6 +286,8 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     bad('an energy of 6', { ...base, lookup: { ...day, energy: 6 } });
     bad('a day without the minutes still to do', { ...base, lookup: (({ minutesLeft, ...rest }) => rest)(day) });
     bad('minutes still to do that aren\'t a whole number', { ...base, lookup: { ...day, minutesLeft: 12.5 } });
+    check('…while 20 tasks of 600 minutes (the longest a task can be) still go', A.checkAskContext({ ...base, lookup: { ...day, tasks: Array.from({ length: 20 }, () => ({ ...day.tasks[0], minutes: 600 })), minutesLeft: 12000 } }) === true);
+    bad('more minutes still to do than any plan can have', { ...base, lookup: { ...day, minutesLeft: 12001 } });
     check('…while 20 tasks, 40 busy times and 24 free times, energy 1 and an empty rest day are accepted', A.checkAskContext({ ...base, lookup: { ...day, energy: 1, tasks: Array.from({ length: 20 }, () => day.tasks[0]), busy: Array.from({ length: 40 }, () => day.busy[0]), free: Array.from({ length: 24 }, () => day.free[0]) } }) === true
       && A.checkAskContext({ ...base, lookup: { ...day, planned: false, rest: true, energy: null, tasks: [], minutesLeft: 0, due: [], busy: [], free: [] } }) === true);
     const today = { energy: 2, freeMinutes: 150, plan: [{ id: 'u1', title: 'Batch cook', minutes: 45, done: false }, { id: 'u2', title: 'Gym', minutes: 60, done: true }], dueToday: [] };
