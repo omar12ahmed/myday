@@ -149,12 +149,21 @@ const day = (energy, rest = false) => `s => { s.days['${K}'] = { energy: ${energ
   await click(`[data-action=toggle][data-uid="${pt.uid}"]`); await sleep(300);
   dd = await data();
   check('ticking it off on the plan…', dd.days[K].tasks.find(x => x.uid === pt.uid).done);
+  const tkDone = dd.tasks.items.find(x => x.id === 'tkTimed');
+  check('…marks the task itself done, dated the plan\'s day (so Your week counts it)', tkDone.done === true && tkDone.doneOn === K, tkDone);
   await ev(`location.hash = 'today/tasks'`); await sleep(300);
   check('…ticks it off in Tasks too (one task, not two): it\'s under Done there', (await text('#tasks-done')).includes('1') && !(await exists('.task-row[data-id=tkTimed]')));
   await click('[data-action=tasks-done-toggle]'); await sleep(200);
   await click('[data-s=task-done][data-id=tkTimed]'); await sleep(300);
   dd = await data();
   check('…and unticking it in Tasks unticks it on the plan too', !dd.days[K].tasks.find(x => x.uid === pt.uid).done && !dd.tasks.items.find(x => x.id === 'tkTimed').done);
+  // The other way round: ticked in Tasks, then unticked on the plan.
+  await click('[data-s=task-done][data-id=tkTimed]'); await sleep(300);
+  await go('today', 2026, 10, 15, 15, 2);
+  await click(`[data-action=toggle][data-uid="${pt.uid}"]`); await sleep(300);
+  dd = await data();
+  const tkOpen = dd.tasks.items.find(x => x.id === 'tkTimed');
+  check('ticked in Tasks, then unticked on the plan: open in both places again, not left done in Tasks', !dd.days[K].tasks.find(x => x.uid === pt.uid).done && tkOpen.done === false && tkOpen.doneOn === null, tkOpen);
   await go('today', 2026, 10, 15, 15, 5);
   await click('[data-s=due-done][data-id=tkOld]'); await sleep(300);
   t = await byTitle('Renew car tax');

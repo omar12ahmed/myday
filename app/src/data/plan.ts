@@ -225,12 +225,19 @@ export function toggleRoll(data: MyDayData, dayKey: DateKey, t: Task) {
   }
 }
 
-// Tick a task off (or untick it). A ticked task no longer rolls forward.
+// Tick a task off (or untick it). A ticked task no longer rolls forward. A task from Inbox → Tasks on this plan is
+// ticked (or unticked) there too, dated the plan's day: one task, one answer, so Tasks, Your week and this week's
+// count agree with the plan (and it counts once on that day).
 export function setDone(data: MyDayData, t: Task, done: boolean) {
   t.done = done;
   if (done && t.rolledQid) {
     data.queue = data.queue.filter(q => !(q.qid === t.rolledQid && q.sourceUid === t.uid));
     t.rolledQid = null;
+  }
+  const item = data.tasks.items.find(x => x.plannedOn && x.planUid === t.uid);
+  if (item && item.done !== done) {
+    item.done = done;
+    item.doneOn = done ? item.plannedOn : null;
   }
 }
 

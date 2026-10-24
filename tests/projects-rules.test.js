@@ -23,6 +23,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     `export { freshState, normalize } from ${src('normalize')};`, `export { shift, shortDate } from ${src('dates')};`, `export * from ${src('projectDashboard')};`, `export * from ${src('weekReview')};`, `export { stepsForToday, nextStep, whyNext } from ${src('projects')};`,
     `export { searchProject, fold, matchCount, SEARCH_KIND_LABEL } from ${src('projectSearch')};`,
     `export { normalizeTasks, setWaiting, stopWaiting, isWaiting, chaseTask, chaseWaiting, isStuck, setTaskDone } from ${src('tasks')};`,
+    `export { setDone } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
   const OLD = '2026-10-01T09:00';
@@ -870,6 +871,24 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('workouts count those not still going this week (1), not one from before', wk.workouts === 1, wk.workouts);
     const quietWeek = K.whatMoved(K.freshState(), k);
     check('a week with nothing in it is all zero and lists no projects', quietWeek.projects.length === 0 && quietWeek.otherTasks === 0 && quietWeek.studySessions === 0 && quietWeek.studyMinutes === 0 && quietWeek.workouts === 0, quietWeek);
+    // A project task ticked on a day's plan (on Today) is one task: its own record says done too, dated the plan's day.
+    const planTask = uid => ({ uid, taskId: null, category: 'admin', title: 'Order the felt', minutes: 25, baseMinutes: 25, done: false, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null });
+    const tp = K.freshState();
+    tp.projects.items = [base('pjT', { title: 'Garden shed' })];
+    tp.days[k] = { energy: 3, rest: false, builtAt: k + 'T08:00', checkedIn: false, tasks: [planTask('puT')] };
+    tp.tasks.items = [TK('tkT', 'pjT', { title: 'Order the felt', plannedOn: k, planUid: 'puT' })];
+    K.setDone(tp, tp.days[k].tasks[0], true);
+    const ti = tp.tasks.items[0];
+    check('a project task ticked on the day\'s plan is ticked in Tasks too, dated the plan\'s day', ti.done === true && ti.doneOn === k, [ti.done, ti.doneOn]);
+    check('…so What moved counts it for its project', K.whatMoved(tp, k).projects[0]?.project.id === 'pjT' && K.whatMoved(tp, k).projects[0].tasks === 1, K.whatMoved(tp, k).projects.map(m => [m.project.id, m.tasks]));
+    check('…and that day\'s count has it once, not twice (the plan and Tasks)', K.doneOnDay(tp, k) === 1, K.doneOnDay(tp, k));
+    K.setDone(tp, tp.days[k].tasks[0], false);
+    check('unticking it on the plan unticks it in Tasks too, and What moved no longer counts it', ti.done === false && ti.doneOn === null && K.whatMoved(tp, k).projects.length === 0, [ti.done, ti.doneOn]);
+    const lone = K.freshState();
+    lone.days[k] = { energy: 3, rest: false, builtAt: k + 'T08:00', checkedIn: false, tasks: [planTask('puL')] };
+    lone.tasks.items = [TK('tkL', null, { title: 'Something else' })];
+    K.setDone(lone, lone.days[k].tasks[0], true);
+    check('ticking a plan task that came from no task in Tasks changes nothing there', lone.tasks.items[0].done === false && lone.tasks.items[0].doneOn === null);
 
     console.log('  What\'s waiting');
     const wt = K.freshState();
