@@ -1,7 +1,7 @@
 # Waiting on someone or something
 
 **Status:** approved by the owner on 24 October 2026 (decisions in section 4). Phase 1, release 3 of
-`specs/projects-vision.md`. Not yet released (planned as 1.50.0).
+`specs/projects-vision.md`. Released in 1.50.0 (24 October 2026).
 **Based on:** source at release 1.49.0 (started on 1.48.0).
 
 ## 1. The practical problem

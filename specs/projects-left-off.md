@@ -1,7 +1,7 @@
 # Projects: the outcome, what counts as finished, and "Where I left off"
 
 **Status:** approved by the owner on 24 October 2026 (decisions in section 4). Phase 1, release 2 of
-`specs/projects-vision.md`. Not yet released.
+`specs/projects-vision.md`. Released in 1.48.0 (24 October 2026).
 **Based on:** source at release 1.47.0 (started on 1.46.1).
 
 ## 1. The practical problem

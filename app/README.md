@@ -1,5 +1,13 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.50.0 — Waiting on someone or something:** a task can be waiting on someone or something, with an optional
+expected date, set on its page or in "What's getting in the way?". MyDay doesn't pick a waiting task as a project's
+next step or offer it for Today (one you chose stays, labelled). From the expected day Worth a look offers **Chase
+it**, which asks when (today, tomorrow, a day you pick or no date) and adds one 5-minute "Chase: …" task. The weekly
+review's "What's waiting" is now **What needs you**, so "waiting" means one thing. No schema, sync or database
+change: 1.49.0 keeps a task's wait unread, so going back is safe, but it doesn't show it, so update every device.
+Who you're waiting on is never sent to AI.
+
 **1.49.0 — Sayings, and more room on Today:** each screen shows one quiet saying chosen for where you are: Today
 (gentler ones on a rest day or when your energy is 1 or 2), Study, Finance, Projects and Your week. It stays the
 same all day and changes on most days. Arabic verses are shown fully vowelled above their English; a saying that is
@@ -439,7 +447,7 @@ exception in AGENTS.md: 1.47.0 and earlier keep unknown project fields, so going
 sync record). A device still on an older version doesn't show them, even on its sync-conflict screen, so update
 every device. A sync conflict on the project shows them. None of them is sent to AI.
 
-**Waiting on someone or something (unreleased; `specs/projects-waiting.md`):** a task can be waiting on whom or
+**Waiting on someone or something (1.50.0; `specs/projects-waiting.md`):** a task can be waiting on whom or
 what, with an optional "expected by" date, set on its page ("Waiting on someone?") or with a new choice in "What's
 getting in the way?" ("I'm waiting on someone or something", which isn't kept as a blocker reason). Its row, and
 Today's Due today, read "Waiting on Priya · expected Wed 28 Oct"; its page puts the wait first, with Got it, Change
