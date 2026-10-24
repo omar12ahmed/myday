@@ -571,9 +571,14 @@ export async function wipeAccount(): Promise<{ ok: true; here: boolean } | { ok:
     const { session, offline } = await currentSession();
     if (offline) return { ok: false, why: 'offline' } as const;
     if (!session || accountOf(session)?.id !== read.state.link.user) return { ok: false, why: 'signed-out' } as const;
-    const r = await call<WipeState>('sync_wipe', session, { account: read.state.link.user });
-    if (!r.ok) return { ok: false, why: r.why === 'network' ? 'offline' : 'failed' } as const;
-    return { ok: true, here: clearAfterWipe(read.state, r.data.wiped_at, 'here') } as const;
+    const user = read.state.link.user, pre = await wipeStateOf(session, user);
+    if (!pre.ok) return { ok: false, why: pre.why === 'network' ? 'offline' : 'failed' } as const;
+    const r = await call<WipeState>('sync_wipe', session, { account: user });
+    if (r.ok) return { ok: true, here: clearAfterWipe(read.state, r.data.wiped_at, 'here') } as const;
+    // No answer doesn't mean it didn't happen: if the account's epoch moved on since just now, this wipe went through.
+    const ws = await wipeStateOf(session, user);
+    if (ws.ok && ws.data.epoch > pre.data.epoch) return { ok: true, here: clearAfterWipe(read.state, ws.data.wiped_at, 'here') } as const;
+    return { ok: false, why: r.why === 'network' ? 'offline' : 'failed' } as const;
   });
 }
 
