@@ -586,10 +586,11 @@ function RevisionGlance({ data }: { data: MyDayData }) {
   const k = todayKey(), refs = data.arabic.cards.map(c => cardRef(c.id));
   const due = dueIds(data, k, 'arabic').length, next = nextDueDate(data, k, 'arabic');
   const words = new Set(refs.flatMap(r => (r.kind === 'word' ? [r.lexemeId] : []))).size, checks = refs.filter(r => r.kind === 'check').length;
-  return <Card data-ar-revision={due ? 'due' : refs.length ? 'later' : 'none'}>
+  const kept = data.arabic.words?.length ?? 0, any = refs.length + kept;
+  return <Card data-ar-revision={due ? 'due' : any ? 'later' : 'none'}>
     <h3 className="flex items-center gap-2 mt-0"><RotateCcw size={20} aria-hidden="true" />Revision</h3>
-    {refs.length
-      ? <p className="text-[15px]">In your revision: {[words && plural(words, 'starter word'), checks && plural(checks, 'lesson check')].filter(Boolean).join(' and ')}. {due ? `${due} ready now.` : next ? `Next back on ${shortDate(next)}.` : ''}</p>
+    {any
+      ? <p className="text-[15px]">In your revision: {[words && plural(words, 'starter word'), kept && plural(kept, 'word') + ' you kept', checks && plural(checks, 'lesson check')].filter(Boolean).join(', ').replace(/, ([^,]*)$/, ' and $1')}. {due ? `${due} ready now.` : next ? `Next back on ${shortDate(next)}.` : ''}</p>
       : <p className="text-[15px]">Bring words and lesson checks back at growing gaps, so they stay with you. Add them from <InlineLink href="#study/arabic/vocabulary">Vocabulary</InlineLink> or a lesson’s checks.</p>}
     {due > 0 && <Button variant="primary" data-action="ar-revise" onClick={() => startRevision('arabic')}>Revise Arabic</Button>}
   </Card>;

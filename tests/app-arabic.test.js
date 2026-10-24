@@ -393,8 +393,15 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   const rated = (await AR()).words.find(w => w.recognise.reps === 1 || w.write?.reps === 1);
   check('…and rating it reschedules that way round and keeps the answer in your history', !!rated && JSON.parse(await ev(`localStorage.getItem('myday.data.v4')`)).study.reviews.some(r => r.conceptId.startsWith(rated.id + ':')));
   await go('study/arabic/vocabulary'); await wait('[data-ar-your-words]');
+  await click(`[data-ar-kept="${kw[1].id}"] [data-action="ar-kept-unwrite"]`); await sleep(200);
+  check('"Stop practising writing it" takes the writing side out and keeps the word', (await AR()).words[1].write === null && (await AR()).words.length === 2);
   await click(`[data-ar-kept="${kw[1].id}"] [data-action="ar-kept-remove"]`); await sleep(200); await click('[data-action="dialog-confirm"]'); await sleep(250);
   check('removing a word asks first, then it leaves your words and your revision', (await AR()).words.length === 1 && !(await exists(`[data-ar-kept="${kw[1].id}"]`)));
+  await go('study/arabic'); await wait('[data-ar-revision]');
+  check('the map\'s revision card counts the words you kept', (await T.text('[data-ar-revision]')).includes('1 word you kept') && (await ev(`document.querySelector('[data-ar-revision]').dataset.arRevision`)) !== 'none');
+  await go('study/arabic/lesson.arabic-fusha-register'); await wait('#ar-step-understand [data-action="ar-keep-open"]', 5000);
+  await click('#ar-step-understand [data-action="ar-keep-open"]'); await sleep(200);
+  check('a lesson\'s Understand step offers the words of its example and worked example to keep', (await count('#ar-step-understand [data-action="ar-keep-word"]')) >= 2);
   await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await go('study/arabic/asset.arabic-profile'); await wait('[data-action="ar-keep-open"]'); await click('[data-action="ar-keep-open"]'); await sleep(200);
   check('on a phone the word picker fits, each word at least 44 px tall', await ev('document.documentElement.scrollWidth === innerWidth') && await ev(`[...document.querySelectorAll('[data-action="ar-keep-word"]')].every(b => b.getBoundingClientRect().height >= 44)`));

@@ -44,6 +44,7 @@ export interface ArabicLesson {
 // the day after you keep it, and meaning → Arabic once you ask for it. Kept apart from cards, which older versions
 // rebuild from ids they know (and would drop), and synced as its own record.
 export type Review = ArabicCard['review'];
+export const KEPT_FROM = /^(lesson|asset)\.arabic-[a-z0-9-]{1,80}$/; // where a kept word came from: a lesson or a reading text
 export interface KeptWord {
   id: string;              // "kw…"
   ar: string;              // ≤ 60 characters, with at least one Arabic letter

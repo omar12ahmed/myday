@@ -6,7 +6,7 @@ import { shift } from '../dates';
 import { rateItem, type Answered } from '../study/revision';
 import type { DateKey, MyDayData, Rating } from '../types';
 import { uid } from '../util';
-import type { KeptWord, Review } from './types';
+import { KEPT_FROM, type KeptWord, type Review } from './types';
 
 export const AR_MAX = 60, MEANING_MAX = 120, NOTE_MAX = 300;
 const ARABIC_LETTER = /[ء-يٱ-ۓ]/;
@@ -27,8 +27,9 @@ export function wordsIn(text: string): string[] {
   for (const t of text.normalize('NFC').replace(PUNCT, ' ').split(/\s+/)) if (t && ARABIC_LETTER.test(t) && !out.includes(t)) out.push(t);
   return out;
 }
-// A text's sentences, for the picker: split after a full stop, question or exclamation mark, or a new line.
-export const sentencesIn = (text: string) => text.split(/(?<=[.؟!۔])\s+|\n+/).map(s => s.trim()).filter(s => ARABIC_LETTER.test(s));
+// A text's sentences, for the picker: split after a full stop, question or exclamation mark, or a new line (no
+// lookbehind: older Safari versions lack it).
+export const sentencesIn = (text: string) => text.replace(/([.؟!۔])\s+/g, '$1\n').split(/\n+/).map(s => s.trim()).filter(s => ARABIC_LETTER.test(s));
 
 // Keeps a word. The same word kept already stays exactly as it is (its id comes back, added false); null when it
 // can't be kept (no Arabic letter, or no meaning).
@@ -37,7 +38,7 @@ export function keepWord(d: MyDayData, input: { ar: string; meaning: string; not
   if (!ar || !ARABIC_LETTER.test(ar) || !meaning) return null;
   const same = keptWord(d, ar);
   if (same) return { id: same.id, added: false };
-  const w: KeptWord = { id: 'kw' + uid(), ar, meaning, ...(note ? { note } : {}), ...(input.from ? { from: input.from } : {}), addedOn: k, recognise: fresh(k), write: null };
+  const w: KeptWord = { id: 'kw' + uid(), ar, meaning, ...(note ? { note } : {}), ...(input.from && KEPT_FROM.test(input.from) ? { from: input.from } : {}), addedOn: k, recognise: fresh(k), write: null };
   (d.arabic.words ??= []).push(w);
   return { id: w.id, added: true };
 }

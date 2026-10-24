@@ -2,7 +2,7 @@ import { isDateKey } from '../dates';
 import { intIn, isObj } from '../util';
 import { cleanAnotherWay } from '../study/anotherWay';
 import type { Outcome, Support } from '../types';
-import { ARABIC_CORE_PATH, emptyArabic, MODALITIES, VARIANTS, type ArabicAttempt, type ArabicCard, type ArabicData, type ArabicLesson, type ArabicMark, type Help, type KeptWord, type Review } from './types';
+import { ARABIC_CORE_PATH, emptyArabic, MODALITIES, VARIANTS, type ArabicAttempt, type ArabicCard, type ArabicData, type ArabicLesson, type ArabicMark, type Help, type KeptWord, type Review, KEPT_FROM } from './types';
 
 // Arabic records are checked like everything else MyDay opens: anything malformed is dropped (and counted),
 // never guessed at, and nothing from another course can slip in. Fields a newer MyDay adds to the section are
@@ -52,14 +52,14 @@ const review = (rv: unknown): Review => {
 };
 // A word you kept: its id is the sync record's; the Arabic needs an Arabic letter; your meaning is required. Anything
 // else malformed is left out of the word, never the word dropped for it.
-const KEPT = /^kw[a-z0-9]{6,30}$/, FROM = /^(lesson|asset)\.arabic-[a-z0-9-]{1,80}$/, ARABIC_LETTER = /[\u0621-\u064A\u0671-\u06D3]/;
+const KEPT = /^kw[a-z0-9]{6,30}$/, ARABIC_LETTER = /[\u0621-\u064A\u0671-\u06D3]/;
 export function cleanKeptWord(raw: unknown): KeptWord | null {
   if (!isObj(raw) || typeof raw.id !== 'string' || !KEPT.test(raw.id) || !isDateKey(raw.addedOn)) return null;
   const ar = str(raw.ar, 60).trim().normalize('NFC'), meaning = str(raw.meaning, 120).trim();
   if (!ar || !ARABIC_LETTER.test(ar) || !meaning) return null;
   const note = str(raw.note, 300).trim();
   return {
-    id: raw.id, ar, meaning, ...(note ? { note } : {}), ...(typeof raw.from === 'string' && FROM.test(raw.from) ? { from: raw.from } : {}),
+    id: raw.id, ar, meaning, ...(note ? { note } : {}), ...(typeof raw.from === 'string' && KEPT_FROM.test(raw.from) ? { from: raw.from } : {}),
     addedOn: raw.addedOn, recognise: review(raw.recognise), write: isObj(raw.write) ? review(raw.write) : null,
   };
 }
