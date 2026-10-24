@@ -2,8 +2,9 @@
 // on one disposable account in the local stand-in: one runs this release, the other the actual previous release
 // (tests/run.sh builds MYDAY_PREVIOUS_SYNC_REF, by default the newest release tag before this commit, with sync
 // pointed at the stand-in). Adaptive
-// Study's `arabic_lesson` records must be left alone by the release that doesn't know them: not taken in, not
-// changed, not deleted, and never stopping it syncing. Made-up data only.
+// Study's `arabic_lesson` records must be left alone by a release that doesn't know them (before 1.47.0): not taken
+// in, not changed, not deleted, and never stopping it syncing. A previous release that knows them takes them in like
+// any other record; [2] and [3] check whichever applies. Made-up data only.
 const fs = require('fs'), os = require('os'), path = require('path');
 const { isDeepStrictEqual: eq } = require('node:util');
 const D = require('./cdp-devices.js'), S = require('./supabase-standin.js');
@@ -33,6 +34,11 @@ async function signIn(d, url) {
     await D.connect(); downloads = fs.mkdtempSync(path.join(os.tmpdir(), 'myday-going-back-'));
     const now = await D.device('this-release', path.join(downloads, 'now')), before = await D.device('previous-release', path.join(downloads, 'before'));
 
+    // Does the previous release know arabic_lesson (1.47.0 and later)? Its built code names every kind it syncs.
+    const assets = path.join('srv', 'previous-sync', 'assets');
+    const knows = fs.readdirSync(assets).some(f => f.endsWith('.js') && fs.readFileSync(path.join(assets, f), 'utf8').includes('arabic_lesson'));
+    console.log(`The previous release ${knows ? 'knows' : 'doesn\u2019t know'} arabic_lesson records.`);
+
     console.log('\n[1] This release sends your place on a lesson as its own record');
     check('this release signs in to the stand-in account', await signIn(now, NOW + '#study/arabic'));
     const today = await now.today(), L = 'lesson.arabic-fusha-register';
@@ -47,7 +53,8 @@ async function signIn(d, url) {
 
     console.log('\n[2] The previous release leaves it alone');
     check('the previous release signs in and finishes syncing with that record in the account', await signIn(before, BEFORE + '#study/arabic'));
-    check('…without taking it in: its saved data has no lesson places', !('lessons' in (await before.data()).arabic));
+    if (knows) check('…and takes it in like any other record (it knows this kind)', eq((await before.data()).arabic.lessons, [place]));
+    else check('…without taking it in: its saved data has no lesson places', !('lessons' in (await before.data()).arabic));
     check('…and it receives everything else, the session included', (await before.data()).arabic.attempts.some(a => a.id === 'aaBack'));
     check('…and leaves the record in the account exactly as it was sent', eq(await record('arabic_lesson', L), sent));
     await before.setData(`s => { s.arabic.pathId = 'path.arabic-a1'; }`);
@@ -61,7 +68,9 @@ async function signIn(d, url) {
     await now.setData(`s => { s.arabic.lessons = []; }`);
     check('removing it here leaves a tombstone in the account', await eventually(async () => !!(await record('arabic_lesson', L))?.deleted) && await synced(now));
     await before.returnToApp();
-    check('…which the previous release ignores, syncing normally', await synced(before) && (await before.status()) === 'synced' && !('lessons' in (await before.data()).arabic));
+    if (knows) check('…which the previous release takes in as a removal, syncing normally', await synced(before) && (await before.status()) === 'synced'
+      && await before.until(`!(JSON.parse(localStorage.getItem('${KEY}')).arabic.lessons || []).length`, 20000));
+    else check('…which the previous release ignores, syncing normally', await synced(before) && (await before.status()) === 'synced' && !('lessons' in (await before.data()).arabic));
 
     console.log('\n[4] A project\'s outcome, finish line and "where I left off" pass through the previous release unchanged');
     const P = 'pjLeftOff', stamp = `${today}T09:00`;
