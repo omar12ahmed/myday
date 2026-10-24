@@ -139,10 +139,18 @@ export function editTask(d: TasksData, id: string, patch: Partial<Pick<TaskItem,
   if (patch.time !== undefined) t.time = t.due && patch.time && isTime(patch.time) ? patch.time : null;
   return JSON.stringify(t) !== before;
 }
+// Rolled to the queue and then ticked off or let go here: its copy no longer waits there (as ticking it on the plan).
+function dropRolled(data: MyDayData, t: TaskItem) {
+  const copy = planCopy(data, t);
+  if (!copy?.rolledQid) return;
+  data.queue = data.queue.filter(q => !(q.qid === copy.rolledQid && q.sourceUid === copy.uid));
+  copy.rolledQid = null;
+}
 // Done or not here — and on the plan too, if it's on one.
 export function setTaskDone(data: MyDayData, id: string, done: boolean): boolean {
   const t = data.tasks.items.find(x => x.id === id);
   if (!t) return false;
+  if (done) dropRolled(data, t);
   const copy = planCopy(data, t);
   if (copy) copy.done = done;
   if (t.done === done && !(!done && t.letGoOn) && (!copy || copy.done === done)) return !!copy;
@@ -245,6 +253,7 @@ export function unstick(data: MyDayData, id: string, u: Unstuck, k: DateKey = to
       return 'Noted. It waits under Any time until you have what you need.';
     case 'notneeded':
       t.letGoOn = k;
+      dropRolled(data, t);
       return 'Let go. Deciding something doesn\'t matter any more is useful too.';
     default:
       return 'Thanks — noted. Change its date whenever it suits.';

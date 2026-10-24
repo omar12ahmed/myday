@@ -23,8 +23,8 @@ const clone = o => JSON.parse(JSON.stringify(o));
     `export { freshState, normalize } from ${src('normalize')};`, `export { shift, shortDate } from ${src('dates')};`, `export * from ${src('projectDashboard')};`, `export * from ${src('weekReview')};`, `export { stepsForToday, nextStep, whyNext } from ${src('projects')};`,
     `export { normalizeStudyLinks, addStudyLink, removeStudyLink, setStudyLinkWhy, linkView, courseChoices, bookChoices, linkedFrom, LINK_LIMITS } from ${src('studyLinks')};`, `export * as Cyber from ${JSON.stringify(path.join(ROOT, 'app/src/projects/learningCyber'))};`, `export { stIndex } from ${src('study/roadmap')};`,
     `export { searchProject, fold, matchCount, SEARCH_KIND_LABEL } from ${src('projectSearch')};`,
-    `export { normalizeTasks, setWaiting, stopWaiting, isWaiting, chaseTask, chaseWaiting, isStuck, setTaskDone, inQueue, onTodaysPlan } from ${src('tasks')};`,
-    `export { setDone, clearDay, toggleRoll, followQueued, taskFromQueue } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
+    `export { normalizeTasks, setWaiting, stopWaiting, isWaiting, chaseTask, chaseWaiting, isStuck, setTaskDone, inQueue, onTodaysPlan, unstick } from ${src('tasks')};`,
+    `export { setDone, clearDay, toggleRoll, followQueued, taskFromQueue, sendToQueue } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
   const OLD = '2026-10-01T09:00';
@@ -933,6 +933,21 @@ const clone = o => JSON.parse(JSON.stringify(o));
     K.toggleRoll(gone, yd, gone.days[yd].tasks[0]);
     gone.queue = []; // taken by an older MyDay, or removed from the queue
     check('if the queue no longer has it, the task is back in Tasks rather than hidden for good', !K.inQueue(gone, gone.tasks.items[0]));
+    const rolledOne = (id, uid) => { const s = K.freshState(); s.days[yd] = { energy: 3, rest: false, builtAt: yd + 'T08:00', checkedIn: true, tasks: [planTask(uid)] }; s.tasks.items = [TK(id, 'pjT', { plannedOn: yd, planUid: uid })]; K.toggleRoll(s, yd, s.days[yd].tasks[0]); return s; };
+    const rt = rolledOne('tkT2', 'puT2'), leftover = K.taskFromQueue(rt.queue[0]);
+    K.setTaskDone(rt, 'tkT2', true);
+    check('rolled, then ticked off in Your tasks: it no longer waits in the queue', rt.queue.length === 0 && rt.days[yd].tasks[0].rolledQid === null, rt.queue);
+    rt.days[k] = { energy: 3, rest: false, builtAt: k + 'T08:00', checkedIn: false, tasks: [leftover] };
+    K.followQueued(rt, k);
+    check('…and a copy of it landing anyway (taken by an older MyDay) never relinks the done task to an open copy', rt.tasks.items[0].planUid === 'puT2' && rt.tasks.items[0].done);
+    const lg = rolledOne('tkL2', 'puL2');
+    K.unstick(lg, 'tkL2', { reason: 'notneeded' }, k);
+    check('rolled, then let go: it no longer waits in the queue either', lg.queue.length === 0 && !!lg.tasks.items[0].letGoOn, lg.queue);
+    const lf = K.freshState();
+    lf.days[k] = { energy: 3, rest: false, builtAt: k + 'T08:00', checkedIn: false, tasks: [planTask('puF')] };
+    lf.tasks.items = [TK('tkF', 'pjT', { plannedOn: k, planUid: 'puF' })];
+    K.sendToQueue(lf, lf.days[k].tasks[0], k);
+    check('"Leave for later" on a task put straight on the plan from Your tasks: back to Your tasks with its own date, not into the queue', lf.queue.length === 0 && lf.tasks.items[0].plannedOn === null && lf.tasks.items[0].planUid === null, [lf.queue.length, lf.tasks.items[0].planUid]);
 
     console.log('  What\'s waiting');
     const wt = K.freshState();

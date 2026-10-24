@@ -10,6 +10,7 @@ import { dtToMin, minToDt, minToTime, nowMin, parseKey, shift } from '../data/da
 import { limitFor } from '../data/plan';
 import { blocksFor, contextFor, freeSegments, type Segment } from '../data/schedule';
 import { dueIds } from '../data/study/queue';
+import { privateProjectIds } from '../data/projects';
 import type { DateKey, DayContext, MyDayData } from '../data/types';
 
 // Today's energy as rated (null if not recorded). The same order of preference as "Review my plan".
@@ -39,6 +40,8 @@ export function doneBusy(data: MyDayData, k: DateKey): Segment[] {
 }
 
 export function buildContext(data: MyDayData, k: DateKey, note: string): PlanContext {
+  // A task of a private project goes as "a private task", without its title (the owner's choice, 24 Oct 2026).
+  const priv = privateProjectIds(data), hidden = new Set(data.tasks.items.filter(x => x.planUid && x.projectId && priv.has(x.projectId)).map(x => x.planUid));
   const d = data.days[k];
   const energy = energyOf(data, k);
   const kinds = { work: 'work', appointment: 'appointment', workout: 'workout', sleep: 'sleep', buffer: 'prep' } as const;
@@ -56,7 +59,7 @@ export function buildContext(data: MyDayData, k: DateKey, note: string): PlanCon
     restDay: !!d && d.rest,
     sleep: { lastNight: sleepOf(data.context[k]), tonight: sleepOf(data.context[shift(k, 1)]) },
     tasks: (d ? d.tasks : []).slice(0, LIMITS.tasks).map(t => ({
-      id: t.uid, title: t.title.slice(0, LIMITS.titleChars), category: t.category, minutes: t.minutes, plannedMinutes: t.baseMinutes || t.minutes, done: t.done, start: clock(t.scheduledStart),
+      id: t.uid, title: hidden.has(t.uid) ? 'a private task' : t.title.slice(0, LIMITS.titleChars), category: t.category, minutes: t.minutes, plannedMinutes: t.baseMinutes || t.minutes, done: t.done, start: clock(t.scheduledStart),
     })),
     busy: blocksFor(data, k).slice(0, LIMITS.busy).map(b => ({ kind: kinds[b.type], start: minToDt(b.start, k), end: minToDt(b.end, k) })),
     free: freeSegments(data, k, doneBusy(data, k)).filter(g => g.end - g.start >= 5).slice(0, LIMITS.free).map(g => ({ start: minToTime(g.start), end: minToTime(g.end) })),

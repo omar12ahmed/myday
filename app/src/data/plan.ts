@@ -195,7 +195,7 @@ export function releaseTask(data: MyDayData, t: Task) {
 // there ticks it.
 export function followQueued(data: MyDayData, k: DateKey) {
   for (const t of data.days[k]?.tasks ?? []) {
-    const src = t.fromQueue?.sourceUid, item = src ? data.tasks.items.find(x => x.planUid === src) : undefined;
+    const src = t.fromQueue?.sourceUid, item = src ? data.tasks.items.find(x => x.planUid === src && !x.done && !x.letGoOn) : undefined;
     if (item) { item.plannedOn = k; item.planUid = t.uid; }
   }
 }
@@ -208,8 +208,10 @@ export function queueTask(data: MyDayData, t: Task, k: DateKey) {
 }
 
 export function sendToQueue(data: MyDayData, t: Task, k: DateKey) {
-  const cameFromQueue = !!t.fromQueue;
+  const cameFromQueue = !!t.fromQueue, item = data.tasks.items.find(x => x.plannedOn && x.planUid === t.uid);
   releaseTask(data, t);
+  // A task from Inbox → Tasks put straight on the plan goes back to Your tasks, with its own date, not to the queue.
+  if (item && !cameFromQueue) { item.plannedOn = null; item.planUid = null; return; }
   if (!cameFromQueue) queueTask(data, t, k);
 }
 

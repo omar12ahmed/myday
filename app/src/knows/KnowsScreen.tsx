@@ -23,7 +23,7 @@ const PAGES: { label: string; page: AskPage }[] = [
 ];
 // The other AI help, each only when you tap it (the request shapes are in supabase/functions/_shared/ai/).
 const OTHER: [string, string][] = [
-  ['Help me adjust today', 'today’s plan (task titles, lengths, times), your energy and sleep, busy times from your calendar (as “appointment” or “work”, without titles), your free time, how much revision is due, and what you write'],
+  ['Help me adjust today', 'today’s plan (task titles — a private project’s task only as “a private task” — lengths, times), your energy and sleep, busy times from your calendar (as “appointment” or “work”, without titles), your free time, how much revision is due, and what you write'],
   ['Add what’s on my mind', 'only what you write, and the date'],
   ['AI help with notes', `a few notes MyDay can’t place by itself (never the one you have open, or one changed in the last few minutes), and your open projects’ names and summaries (projects you’ve made private included — their name and summary only) — only once you switch it on, at most ${AI_CONNECT_PER_DAY} times a day on each device`],
   ['Make revision cards (on a note)', 'that one note (lines you’ve left out replaced by a placeholder), and the questions already in your revision from it'],

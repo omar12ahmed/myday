@@ -337,7 +337,8 @@ export function undoAskChanges(u: AskChangeUndo): { result: 'undone' | 'partly' 
       for (const c of copies) {
         const i = list.findIndex(y => y.id === c.id);
         if (i < 0) continue;
-        if (canon(list[i]) !== u.after[`${kind}:${c.id}`]) { kept++; continue; }
+        // A project here only had its "updated" time touched by a link, so one changed since isn't counted as kept.
+        if (canon(list[i]) !== u.after[`${kind}:${c.id}`]) { if (kind !== 'project') kept++; continue; }
         list[i] = structuredClone(c); n++; back.add(`${kind}:${c.id}`);
       }
     };

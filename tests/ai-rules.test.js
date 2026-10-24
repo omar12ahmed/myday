@@ -42,6 +42,12 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   check('free time leaves out the appointment and its prep/travel time (30 min either side)', eq(ctx.free, [{ start: '09:30', end: '10:30' }, { start: '12:30', end: '21:00' }]), ctx.free);
   check('your note, trimmed and kept short (200 characters)', ctx.note.startsWith('I slept badly') && ctx.note.length === 200);
   check('nothing from other sections (no Finance, Health records or Study notes)', !('finance' in ctx) && !('health' in ctx) && typeof ctx.revisionDue === 'number');
+  ({ k, data } = day(`${D}T09:30`, 3, THREE(), s => {
+    s.projects.items.push({ id: 'pjSecret', title: 'Surprise party', summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: `${D}T08:00`, updatedAt: `${D}T08:00`, private: true });
+    s.tasks.items.push({ id: 'tkS', title: 'Batch cook', listId: '', category: 'admin', minutes: 45, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: D, planUid: 'b', createdAt: `${D}T08:00`, postponed: 0, blockers: [], letGoOn: null, projectId: 'pjSecret' });
+  }));
+  ctx = K.buildContext(data, k, '');
+  check('a private project\'s task on today\'s plan goes as "a private task", without its title; the others keep theirs', ctx.tasks.find(t => t.id === 'b').title === 'a private task' && !JSON.stringify(ctx).includes('Batch cook') && ctx.tasks.find(t => t.id === 'a').title === 'Course section', ctx.tasks.map(t => t.title));
   ({ k, data } = day(`${D}T10:00`, 2, THREE(), s => NIGHT(s, '2026-11-09')));
   ctx = K.buildContext(data, k, '');
   check('last night\'s shift (19:00–07:00) is included, crossing midnight', ctx.busy.some(b => b.kind === 'work' && b.start === '2026-11-09T19:00' && b.end === `${D}T07:00`), ctx.busy);
@@ -981,6 +987,9 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     let t = K.getSnapshot().data.tasks.items.find(x => x.id === 'tkB');
     check('Apply changes it through the Tasks rules (moved later is counted, its time kept) and moves it to the other project', !!u && t.due === plus(3) && t.time === '09:30' && t.minutes === 30 && t.category === 'health' && t.title === 'Pay the council tax' && t.projectId === 'pjC' && t.postponed === 1);
     check('Undo puts back exactly what was there (the task and both projects)', K.undoAskChanges(u).result === 'undone' && eq(K.getSnapshot().data.tasks.items, before.tasks.items) && eq(K.getSnapshot().data.projects.items, before.projects.items));
+    const u1b = K.applyAskChanges(c.changes);
+    K.update(dd => { dd.projects.items.find(p => p.id === 'pjC').updatedAt = `${D}T12:00`; }); // a project only touched since
+    check('a project only touched since (its updated time) doesn\'t stop the change going back, and isn\'t counted as kept', K.undoAskChanges(u1b).result === 'undone' && K.getSnapshot().data.tasks.items.find(x => x.id === 'tkB').due === D);
     check('…and nothing else was touched (notes, appointments, days)', eq(K.getSnapshot().data.notes.items, before.notes.items) && eq(K.getSnapshot().data.commitments, before.commitments) && eq(K.getSnapshot().data.days, before.days));
     w = K.getSnapshot().data;
     c = K.checkAskReply(C([ch('task', 'tkX', { date: plus(1) }), ch('task', 'tkDone', { date: plus(1) }), ch('task', 'tkNope', { date: plus(1) }), ch('note', 'n4', { title: 'x' }), ch('appointment', 'c1', { time: '16:00' })]), w, today, D);
