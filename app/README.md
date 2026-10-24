@@ -1,5 +1,13 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.65.0 — Automatic backups:** once a day, while MyDay is open and you're signed in, each device keeps a copy of
+everything (the same file as Export my data) privately in your own storage, kept for 14 days plus one a month for a
+year. **Your backups** in the footer shows the last one, has **Back up now**, lists every backup with **Download**
+and **Restore**, and **Delete all backups**. Restore first keeps a copy of your MyDay as it is now, then asks the
+same question as Import; signed in, it replaces your MyDay on all your devices. Backups hold everything, private
+notes and projects too, are reachable only with your sign-in, and are never sent to AI. No saved-data, sync or
+database change; going back to 1.64.0 is safe (it simply doesn't back up).
+
 **1.64.0 — Practise again (Arabic):** a skill needs doing again, not just remembering. At Reflect a session asks
 "Did you do its Try it or mini challenge?" (tick only what you did). Finishing records the day, and the first time
 the lesson comes back in revision about a week later, within the 8 new cards a day; the finish card says the day,
@@ -717,7 +725,7 @@ one this version doesn't accept (from a MyDay with other rules) is kept, shown a
 here never deletes it for another device. The conflict details say "Links: …". Never sent to AI: no request builder
 reads it, and the ai-rules privacy check plants a secret in each link to prove it.
 
-**Automatic backups (unreleased; `specs/automatic-backups.md`):** once a day, while MyDay is open and you're signed
+**Automatic backups (1.65.0; `specs/automatic-backups.md`):** once a day, while MyDay is open and you're signed
 in, each device keeps a copy of everything (the same file as Export my data, compressed) privately in your own R2
 bucket, through the `backup` Edge Function (`supabase/functions/backup`). They're kept for 14 days plus one a month
 for a year, per device (at most 10 devices). **Your backups** in the footer (`#backups`) shows this device's last

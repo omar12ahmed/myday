@@ -1,8 +1,8 @@
 # Automatic backups
 
-**Status:** started with the owner's "go ahead" on 24 October 2026; the owner's decisions are below. Not yet built or
-released. Nothing live (Cloudflare, Supabase secrets, the function deploy, publishing) happens without the owner's
-yes at each of those steps.
+**Status:** released in 1.65.0 (24 October 2026). The owner made the R2 token and set the secrets; the `backup`
+function was deployed with the owner's yes (version 1, checked against disposable account A, 10/10); the app was
+published with the owner's yes.
 **Based on:** source at 1.62.0. Plans: `specs/projects-vision.md` §12 and §17 (backups before attachments),
 `specs/myday-vision.md` (files and backups; "delete everything" a true wipe), `deploy/R2.md`.
 
