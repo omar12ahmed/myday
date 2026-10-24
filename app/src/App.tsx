@@ -16,6 +16,8 @@ import { AccountChip, FocusSwitch } from './shell/TopBar';
 import { barSection, SECTIONS, sectionFromHash, type SectionId } from './shell/sections';
 import { NoticedScreen } from './patterns/NoticedScreen';
 import { KnowsScreen } from './knows/KnowsScreen';
+import { BackupsView } from './shell/BackupsView';
+import { startDailyBackups } from './sync/backup';
 import { ReviewScreen } from './review/ReviewScreen';
 import { ProjectsScreen } from './projects/ProjectsScreen';
 import { useAiConnect } from './shell/aiConnect';
@@ -86,6 +88,8 @@ function Shell() {
 
   // A message from start-up (e.g. storage is blocked), shown once.
   useEffect(() => { const m = takeBootNotice(); if (m) toast(m); }, []);
+  // The daily backup, while MyDay is open and signed in (sync/backup.ts).
+  useEffect(() => { startDailyBackups(); }, []);
 
   // Theme and animations: set on the page so the colours and motion follow straight away.
   useEffect(() => {
@@ -117,6 +121,10 @@ function Shell() {
     if (!file) return;
     let text: string;
     try { text = await file.text(); } catch { toast("Couldn't open that file."); return; }
+    await importText(text);
+  }
+  // A backup's text, from a file or from Your backups: the same checks and the same question either way.
+  async function importText(text: string) {
     let result: ReturnType<typeof parseImport>;
     try { result = parseImport(text); } catch (err) { toast((err as Error).message + ' Nothing was changed.'); return; }
     const yes = await confirm({
@@ -149,10 +157,10 @@ function Shell() {
 
   const blocked = status.kind === 'damaged' || status.kind === 'older';
   // The screen's name, above the date (on wide screens MyDay's own name is at the top of the side menu).
-  const screenName = hash.startsWith('#sync') ? 'Your account' : hash.startsWith('#noticed') ? 'What MyDay has noticed' : hash.startsWith('#knows') ? 'What MyDay knows' : hash.startsWith('#review') ? 'Your week' : hash.startsWith('#today/tasks') ? 'Tasks' : SECTIONS.find(x => x.id === section)?.label ?? 'MyDay';
+  const screenName = hash.startsWith('#sync') ? 'Your account' : hash.startsWith('#noticed') ? 'What MyDay has noticed' : hash.startsWith('#knows') ? 'What MyDay knows' : hash.startsWith('#backups') ? 'Your backups' : hash.startsWith('#review') ? 'Your week' : hash.startsWith('#today/tasks') ? 'Tasks' : SECTIONS.find(x => x.id === section)?.label ?? 'MyDay';
   // Sign in first (when sync is set up): see sync/SignInGate.tsx.
   const gate = !blocked && signInRequired(sync) && !useHere;
-  const todayHome = !blocked && !gate && section === 'today' && !/^#(?:sync|noticed|knows|review|today\/tasks)/.test(hash);
+  const todayHome = !blocked && !gate && section === 'today' && !/^#(?:sync|noticed|knows|backups|review|today\/tasks)/.test(hash);
   const explore = exploreRoute(hash);
   const immersive = !!explore && !blocked && !gate;
   // Notes that clearly belong to a project are connected to it by themselves (with Undo): see shell/autoConnect.ts.
@@ -166,6 +174,7 @@ function Shell() {
   } else if (status.kind === 'older') content = <OlderView />;
   else if (hash.startsWith('#noticed')) content = <NoticedScreen data={data} />;
   else if (hash.startsWith('#knows')) content = <KnowsScreen data={data} />;
+  else if (hash.startsWith('#backups')) content = <div className="max-w-[720px] mx-auto"><BackupsView onRestore={importText} /></div>;
   else if (hash.startsWith('#review')) content = <ReviewScreen data={data} />;
   else if (hash.startsWith('#sync')) {
     content = SYNC.configured ? <SyncScreen onExport={exportData} /> : (
@@ -201,7 +210,7 @@ function Shell() {
             <p id="date" className="screen-date">{prettyDate(k)}</p>
           </div>
           <div className="flex items-center gap-2 lg:gap-3 flex-none">
-            {!blocked && !gate && section === 'today' && !hash.startsWith('#today/tasks') && !hash.startsWith('#noticed') && !hash.startsWith('#knows') && !hash.startsWith('#review') && !hash.startsWith('#sync') && <FocusSwitch />}
+            {!blocked && !gate && section === 'today' && !hash.startsWith('#today/tasks') && !hash.startsWith('#noticed') && !hash.startsWith('#knows') && !hash.startsWith('#backups') && !hash.startsWith('#review') && !hash.startsWith('#sync') && <FocusSwitch />}
             {!blocked && !gate && <AccountChip data={data} sync={sync} />}
             {!blocked && !gate && status.kind === 'ok' && <CaptureButton data={data} />}
             <ThemeButton theme={theme} motionAllowed={motionAllowed} onChange={next => update(d => { d.settings.theme = next; })} />
@@ -217,7 +226,7 @@ function Shell() {
         )}
         {content}
         {/* Today has these at the bottom of its own layout; every other screen (Tasks under Today too) gets them here. */}
-        {!immersive && !blocked && !gate && (section !== 'today' || hash.startsWith('#noticed') || hash.startsWith('#knows') || hash.startsWith('#review') || hash.startsWith('#today/tasks')) && !hash.startsWith('#sync') && (
+        {!immersive && !blocked && !gate && (section !== 'today' || hash.startsWith('#noticed') || hash.startsWith('#knows') || hash.startsWith('#backups') || hash.startsWith('#review') || hash.startsWith('#today/tasks')) && !hash.startsWith('#sync') && (
           <div className="screen-footer max-w-[720px] mx-auto mt-6">
             <AppFooter data={data} canSave={status.kind === 'ok'} onEdit={() => { location.hash = 'today/edit'; }} onExport={exportData} onImport={() => fileInput.current?.click()} />
           </div>

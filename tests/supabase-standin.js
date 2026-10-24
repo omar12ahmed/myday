@@ -105,10 +105,19 @@ function start(db, port = 0) {
   const aiEnv = { AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_LABEL: 'Mock planner', AI_MOCK_DELAY_MS: '150', AI_DAILY_LIMIT: '50', AI_MIN_SECONDS_BETWEEN: '0', AI_ALLOWED_ORIGINS: 'http://127.0.0.1:' + (process.env.MYDAY_HTTP_PORT || 8765) };
   const aiLog = [];
   let aiHandler = null;
+  // The backup Edge Function's store (R2 in real life): objects in memory, with their time, and a switch for "not set up".
+  const backupObjects = new Map(), backupLog = [];
+  let backupHandler = null, backupConfigured = true;
+  const backupStore = {
+    async put(key, body) { backupObjects.set(key, { body: Buffer.from(body), modified: new Date().toISOString() }); },
+    async list(prefix) { return [...backupObjects].filter(([k]) => k.startsWith(prefix)).map(([key, o]) => ({ key, size: o.body.length, modified: o.modified })); },
+    async get(key) { const o = backupObjects.get(key); return o ? new Uint8Array(o.body) : null; },
+    async remove(key) { backupObjects.delete(key); },
+  };
   const server = http.createServer((req, res) => {
-    let raw = '';
-    req.on('data', c => { raw += c; });
-    req.on('end', () => handle(req, res, raw).catch(e => send(res, 500, { message: String(e && e.message || e) })));
+    const chunks = [];
+    req.on('data', c => { chunks.push(Buffer.from(c)); });
+    req.on('end', () => { const buf = Buffer.concat(chunks); handle(req, res, buf.toString('utf8'), buf).catch(e => send(res, 500, { message: String(e && e.message || e) })); });
   });
 
   function send(res, status, body, extra = {}) {
@@ -126,18 +135,19 @@ function start(db, port = 0) {
     send(res, status, { code, details: e.detail || null, hint: e.hint || null, message: e.message });
   }
 
-  async function handle(req, res, raw) {
+  async function handle(req, res, raw, buf) {
     const url = new URL(req.url, 'http://x');
     const p = url.pathname;
     if (req.method === 'OPTIONS') {
       res.writeHead(204, {
-        'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
+        'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': req.headers['access-control-request-headers'] || '*', 'Access-Control-Max-Age': '600',
       });
       return res.end();
     }
     let body = null;
-    try { body = raw ? JSON.parse(raw) : null; } catch { return send(res, 400, { message: 'Body is not JSON' }); }
+    // (A backup's body is gzip, not JSON.)
+    try { body = raw && p !== '/functions/v1/backup' ? JSON.parse(raw) : null; } catch { return send(res, 400, { message: 'Body is not JSON' }); }
 
     // Test controls.
     if (p.startsWith('/__standin/')) {
@@ -150,6 +160,12 @@ function start(db, port = 0) {
       if (what === 'sql') { try { return send(res, 200, (await owner(db, body.sql, body.params || [])).rows); } catch (e) { return send(res, 400, { message: e.message }); } }
       if (what === 'ai-env') { Object.assign(aiEnv, body); for (const k of Object.keys(body)) if (body[k] === null) delete aiEnv[k]; return send(res, 200, aiEnv); }
       if (what === 'ai-log') return send(res, 200, aiLog);
+      // Backups: whether the function is set up, what's stored (keys, sizes, times), ageing them, and starting empty.
+      if (what === 'backup-configured') { backupConfigured = !!body.configured; return send(res, 200, { configured: backupConfigured }); }
+      if (what === 'backup-objects') return send(res, 200, [...backupObjects].map(([key, o]) => ({ key, size: o.body.length, modified: o.modified })));
+      if (what === 'backup-age') { for (const o of backupObjects.values()) o.modified = new Date(Date.parse(o.modified) - (body.seconds || 0) * 1000).toISOString(); return send(res, 200, { ok: true }); }
+      if (what === 'backup-reset') { backupObjects.clear(); backupLog.length = 0; backupConfigured = true; return send(res, 200, { ok: true }); }
+      if (what === 'backup-log') return send(res, 200, backupLog);
       return send(res, 404, { message: 'Unknown control' });
     }
 
@@ -211,6 +227,24 @@ function start(db, port = 0) {
       const out = {}; response.headers.forEach((v, k) => { out[k] = v; });
       res.writeHead(response.status, out);
       return res.end(await response.text());
+    }
+
+    // ----- The backup Edge Function (real handler code, with the store above) -----
+    if (p === '/functions/v1/backup') {
+      if (!backupHandler) backupHandler = (await import(path.join(ROOT, 'supabase/functions/backup/handler.ts'))).handle;
+      const headers = new Headers();
+      for (const [k, v] of Object.entries(req.headers)) if (typeof v === 'string') headers.set(k, v);
+      const request = new Request('http://standin' + req.url, { method: req.method, headers, body: req.method === 'PUT' ? buf : undefined });
+      const response = await backupHandler(request, {
+        env: name => (name === 'BACKUP_ALLOWED_ORIGINS' ? aiEnv.AI_ALLOWED_ORIGINS : undefined),
+        verifyUser: async token => { const c = verify(token); return c && !c.expired ? c.sub : null; },
+        store: backupConfigured ? backupStore : null,
+        log: line => backupLog.push(line),
+      });
+      entry.status = response.status;
+      const out = {}; response.headers.forEach((v, k) => { out[k] = v; });
+      res.writeHead(response.status, out);
+      return res.end(Buffer.from(await response.arrayBuffer()));
     }
 
     // ----- Data -----

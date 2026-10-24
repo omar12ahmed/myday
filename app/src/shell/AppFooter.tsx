@@ -1,4 +1,4 @@
-import { Download, FolderOpen, Lightbulb, ListTodo, ShieldCheck, Smartphone } from 'lucide-react';
+import { Download, FolderOpen, History, Lightbulb, ListTodo, ShieldCheck, Smartphone } from 'lucide-react';
 import { useSyncExternalStore } from 'react';
 import { Button } from '../components/Button';
 import { update } from '../data/storage';
@@ -32,6 +32,7 @@ export function AppFooter({ data, canSave, onEdit, onExport, onImport }: {
         <Button inline variant="quiet" className="!text-[14px]" data-action="knows" onClick={() => { location.hash = 'knows'; window.scrollTo(0, 0); }}><ShieldCheck size={16} aria-hidden="true" /> What MyDay knows</Button>
         <Button inline variant="quiet" className="!text-[14px]" data-action="export" onClick={onExport}><Download size={16} aria-hidden="true" /> Export my data</Button>
         <Button inline variant="quiet" className="!text-[14px]" data-action="import" onClick={onImport}><FolderOpen size={16} aria-hidden="true" /> Import my data</Button>
+        <Button inline variant="quiet" className="!text-[14px]" data-action="backups" onClick={() => { location.hash = 'backups'; window.scrollTo(0, 0); }}><History size={16} aria-hidden="true" /> Your backups</Button>
         <Button inline variant="quiet" className="!text-[14px]" data-action="motion" aria-pressed={!off} onClick={() => {
           update(d => { d.settings.motion = d.settings.motion === 'off' ? 'auto' : 'off'; });
           toast(!off ? 'Animations off.' : reduces ? 'Animations on — but your device asks for less motion, so they stay off.' : 'Animations on.');

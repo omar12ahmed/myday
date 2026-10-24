@@ -180,6 +180,24 @@ for **one** suggestion, checks it against MyDay's own rules, and shows it for yo
 press **Use this plan**, which saves through the same path as "Review my plan" (one step of Undo straight after).
 The model never writes anything: it only replies, and the app decides what's allowed.
 
+## Automatic backups (the `backup` function)
+
+MyDay keeps a daily copy of each device's data (the same file as Export my data, compressed) in your private R2 bucket
+`myday-backups`, through the Edge Function `supabase/functions/backup`. The spec is `../specs/automatic-backups.md`.
+Until the function is set up, MyDay just says "Automatic backups aren't set up yet".
+
+1. **Cloudflare:** R2, then Manage API Tokens, then Create API token. Choose **Object Read & Write**, limited to the
+   bucket `myday-backups` only. Keep the **Access Key ID**, the **Secret Access Key** and your **Account ID** in your
+   password manager. Never paste them into a chat, a file in this repository or a `VITE_` variable.
+2. **Supabase secrets**, typed in your own terminal (the values stay on your computer and in Supabase):
+   `npx supabase secrets set R2_ACCOUNT_ID=… R2_ACCESS_KEY_ID=… R2_SECRET_ACCESS_KEY=… R2_BACKUP_BUCKET=myday-backups --project-ref <ref>`
+3. **Deploy:** `npx supabase functions deploy backup --use-api --project-ref <ref>`.
+4. **Check** with a disposable account in a throwaway browser profile: Back up now, the list, Download, Restore on a
+   second profile, and Delete all backups.
+
+Each account reaches only its own backups (the function prefixes every key with the signed-in user's id). The logs
+hold the action, the outcome and the time only.
+
 ## Where things are
 
 | File | What it does |

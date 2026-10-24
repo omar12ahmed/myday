@@ -717,6 +717,16 @@ one this version doesn't accept (from a MyDay with other rules) is kept, shown a
 here never deletes it for another device. The conflict details say "Links: …". Never sent to AI: no request builder
 reads it, and the ai-rules privacy check plants a secret in each link to prove it.
 
+**Automatic backups (unreleased; `specs/automatic-backups.md`):** once a day, while MyDay is open and you're signed
+in, each device keeps a copy of everything (the same file as Export my data, compressed) privately in your own R2
+bucket, through the `backup` Edge Function (`supabase/functions/backup`). They're kept for 14 days plus one a month
+for a year, per device. **Your backups** in the footer (`#backups`) shows this device's last backup, **Back up
+now**, every backup with **Download** and **Restore** (through Import's own checks and question, so signed in it
+replaces your MyDay everywhere, with the usual review pause), and **Delete all backups** (the true wipe of "delete
+everything" must call it too). Signed out, offline or not set up, it says so. The device's id, label and last result
+live in `myday.backup.v1` on that device only (not your data, not synced or exported). No saved-data, sync or
+database change. Never sent to AI.
+
 **Your week — the weekly review (1.37.0):** a short look back over the last seven days, at `#review` ("Your week"), in
 four steps, one at a time, with Back and Next. Nothing changes until you tap. **1 What moved:** each project's tasks
 done, milestones reached, decisions made, things found out, case records added (up to three done task names shown),
@@ -1071,6 +1081,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/projectDashboard.ts`, `src/projects/AtAGlance.tsx` | The dashboards per kind (1.36.0): `projectDashboard.ts` (the next dates, the weeks, entries by month, each issue's links and Worth a look; Today's own dashboard numbers stay in `dashboard.ts`); `AtAGlance.tsx` (the At a glance card with one row per tool, its pictures and Summarise this, and the Worth a look card beside the next step). Still-open tasks are `stillOpen` in `src/data/projects.ts`. |
 | `src/data/studyLinks.ts`, `src/projects/LearningCard.tsx`, `src/projects/learningArabic.ts`, `src/projects/learningCyber.ts`, `src/projects/ForYourProject.tsx` | Learning for a project (Study links): `studyLinks.ts` (reading and changing a project's links, Study's status for each, what can still be linked, which projects link an item); `LearningCard.tsx` (the Overview's Learning card and its form); `learningArabic.ts` and `learningCyber.ts` (lesson titles and Study's status, each catalogue loaded on demand); `ForYourProject.tsx` ("For your project: …" on a course's page, a book in Reading and a Cybersecurity lesson's page). |
 | `src/data/projectResources.ts`, `src/projects/ResourcesCard.tsx` | Resources for a project (web links): `projectResources.ts` (what counts as a web address, reading and changing a project's links, a link's name and site); `ResourcesCard.tsx` (the Overview's Resources card, its form and Remove's question). |
+| `src/sync/backup.ts`, `src/shell/BackupsView.tsx`, `../supabase/functions/backup/` | Automatic backups: `backup.ts` (the daily check, this device's id and label, sending, listing, fetching and deleting backups, gzip); `BackupsView.tsx` (Your backups, `#backups`); the Edge Function (`handler.ts`: the rules, each account's own prefix, retention; `index.ts`: Supabase sign-in and R2). |
 | `src/data/projectSearch.ts`, `src/projects/SearchResults.tsx` | Searching one project: `projectSearch.ts` (what's searched, matching without capitals, accents or apostrophe differences, excerpts on whole characters, the fixed order by kind); `SearchResults.tsx` (the results card). The field and its query live in `ProjectView.tsx`. |
 | `src/data/weekReview.ts`, `src/review/ReviewScreen.tsx`, `src/today/ReviewCard.tsx` | The weekly review (1.37.0): `weekReview.ts` (when the review is due, what moved, what's waiting, focus, and saving the review); `ReviewScreen.tsx` (the four steps and See the pattern); `ReviewCard.tsx` (the card on Today). |
 | `src/study/arabic/WordFamilies.tsx`, `src/study/arabic/families.ts`, `content/teaching/arabic/word-families.json`, `scripts/validate-families.mjs` | Word families (1.38.0): the card on the vocabulary page and its notes; which family a word is in; the authored families (by word id); the build check. |
