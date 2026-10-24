@@ -1060,6 +1060,114 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await ctl('files-configured', { configured: true });
   await ctl('files-reset');
 
+  console.log('\n[18] Files on a Cybersecurity portfolio entry: add, refuse, five at most, open, remove, put back, remove the entry, export (specs/study-home-and-lessons.md §10)');
+  const pfSrc = path.join(fsrc, 'portfolio'); fs.mkdirSync(pfSrc, { recursive: true });
+  const pngBytes = Buffer.from(PNG_B64, 'base64');
+  // Valid PNGs that differ (made-up trailing bytes after the image), so each is its own file.
+  const pngNamed = (name, n) => { const p = path.join(pfSrc, name); fs.writeFileSync(p, Buffer.concat([pngBytes, Buffer.from('made-up trailing bytes ' + n)])); return p; };
+  const pShot = pngNamed('scan-result.png', 1), pTxt = path.join(pfSrc, 'notes.txt'), pSvg = path.join(pfSrc, 'diagram.svg'), pBig = path.join(pfSrc, 'huge-screenshot.png');
+  fs.writeFileSync(pTxt, 'Plain notes about the scan.\n'); fs.writeFileSync(pSvg, '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>');
+  fs.writeFileSync(pBig, Buffer.concat([pngBytes, Buffer.alloc(2 * 1024 * 1024 + 1)]));
+  const PF = 'pffilesa1', PF2 = 'pffilesb1', PFSEL = `[data-cy-pf-entry="${PF}"]`, PF2SEL = `[data-cy-pf-entry="${PF2}"]`;
+  const ENTRY = (id, title) => `{ id: '${id}', attemptId: 'at${id}', activityId: 'exercise.learning-evidence', title: '${title}', evidence: 'Ran a made-up scan on my own lab machine.', note: '', reviewedOn: '${today}' }`;
+  const pfEntry = async id => ((await fl.data()).cybersecurity.portfolio || []).find(e => e.id === id);
+  const pfFiles = async () => (await fl.data()).files.items.filter(f => f.area === 'portfolio');
+  const cachedIds = () => fl.ev(`new Promise(res => { const r = indexedDB.open('myday-files'); r.onerror = () => res(null); r.onsuccess = () => { const db = r.result; if (!db.objectStoreNames.contains('bytes')) { db.close(); return res([]); } const q = db.transaction('bytes').objectStore('bytes').getAllKeys(); q.onsuccess = () => { db.close(); res(q.result); }; q.onerror = () => { db.close(); res(null); }; }; })`);
+  const cachedBytes = id => fl.ev(`new Promise(res => { const r = indexedDB.open('myday-files'); r.onsuccess = () => { const db = r.result; const q = db.transaction('bytes').objectStore('bytes').get(${JSON.stringify(id)}); q.onsuccess = () => { db.close(); res(q.result ? { type: q.result.type, bytes: Array.from(new Uint8Array(q.result.bytes)) } : null); }; }; })`);
+  const pfRefused = () => fl.text(PFSEL + ' [data-s=file-refused]').then(x => x.replace(/\s+/g, ' ').trim());
+  await ctl('files-reset');
+  await fl.open(APP + '#today');
+  await fl.setData(`s => { s.files.items = []; for (const p of s.projects.items) delete p.fileIds; for (const n of s.notes.items) delete n.fileIds;
+    s.cybersecurity = s.cybersecurity || {}; s.cybersecurity.portfolio = [${ENTRY(PF, 'Reading a scan result')}]; }`);
+  await fl.ev(`location.hash = '#study/cybersecurity/portfolio'`);
+  await fl.until(`document.querySelector('${PFSEL} [data-cy-pf-files]')`, 15000);
+  await fl.ev(`window.__opened = []; window.open = () => ({ opener: 1, close() {}, location: { set href(v) { window.__opened.push(v); } } });`);
+  check('an entry on the portfolio page shows a "Files" block with its hint, "Add a file" and no file rows', (await fl.text(PFSEL + ' [data-cy-pf-files] h6')) === 'Files' && (await fl.exists(PFSEL + ' [data-cy-pf-files="0"]')) && (await fl.text(PFSEL + ' [data-action=file-add]')) === 'Add a file' && !(await fl.exists(PFSEL + ' [data-s=file]')) && (await fl.ev(`document.querySelector('${PFSEL} input[type=file]').getAttribute('accept')`)) === '.png,.jpg,.jpeg,.webp,.pdf', await fl.text(PFSEL));
+
+  console.log('  Adding a PNG, and what is refused');
+  await give(fl, PFSEL + ' input[type=file]', [pShot]);
+  check('a PNG added to the entry reaches "kept" and a toast says it was added', await fl.until(`document.querySelectorAll('${PFSEL} [data-s=file][data-state=kept]').length === 1`, 20000) && await toastIs(fl, 'File added.', 5000), await fl.text(PFSEL));
+  const pfRec = (await pfFiles())[0];
+  check('…the entry lists the file in fileIds and the record is "kept", in the portfolio area, with the PNG type, a size and a SHA-256', (await pfFiles()).length === 1 && eq((await pfEntry(PF)).fileIds, [pfRec.id]) && pfRec.name === 'scan-result.png' && pfRec.state === 'kept' && pfRec.area === 'portfolio' && pfRec.type === 'image/png' && pfRec.size === fs.statSync(pShot).size && /^[0-9a-f]{64}$/.test(pfRec.sha256) && !pfRec.deletedOn, [pfRec, await pfEntry(PF)]);
+  check('…the stand-in holds it under <account>/portfolio/<id> as an image/png', (await fobjects()).some(o => o.key === `${userA}/portfolio/${pfRec.id}` && o.type === 'image/png'), await fobjects());
+  check('…and the row shows its name and its type and size ("Photo")', (await fl.text(PFSEL + ' [data-s=file]')).includes('scan-result.png') && /Photo · \d+ KB/.test(await fl.text(PFSEL + ' [data-s=file]')) && (await fl.exists(PFSEL + ` [data-cy-pf-files="1"]`)), await fl.text(PFSEL + ' [data-s=file]'));
+  const pfBefore = JSON.stringify(await pfFiles()), pfObjects = (await fobjects()).length;
+  await give(fl, PFSEL + ' input[type=file]', [pTxt]);
+  check('a .txt file is refused with the portfolio\'s message, and nothing is added or stored', await fl.until(`!!document.querySelector('${PFSEL} [data-s=file-refused]')`, 8000) && (await pfRefused()).includes('notes.txt') && (await pfRefused()).includes('Only PNG, JPEG, WebP and PDF, up to 2 MB each.') && JSON.stringify(await pfFiles()) === pfBefore && (await fobjects()).length === pfObjects && eq((await pfEntry(PF)).fileIds, [pfRec.id]), [await pfRefused(), await pfFiles()]);
+  check('…the refusal is announced as an alert', (await fl.ev(`document.querySelector('${PFSEL} [data-s=file-refused]').getAttribute('role')`)) === 'alert');
+  await give(fl, PFSEL + ' input[type=file]', [pSvg]);
+  check('an SVG is refused with the same message, and nothing is added or stored', await fl.until(`/diagram\\.svg/.test(document.querySelector('${PFSEL} [data-s=file-refused]')?.textContent || '')`, 8000) && (await pfRefused()).includes('Only PNG, JPEG, WebP and PDF, up to 2 MB each.') && JSON.stringify(await pfFiles()) === pfBefore && (await fobjects()).length === pfObjects, [await pfRefused(), await pfFiles()]);
+  await give(fl, PFSEL + ' input[type=file]', [pBig]);
+  check('a PNG just over 2 MB is refused with the same message, and nothing is added or stored', await fl.until(`/huge-screenshot\\.png/.test(document.querySelector('${PFSEL} [data-s=file-refused]')?.textContent || '')`, 8000) && (await pfRefused()).includes('Only PNG, JPEG, WebP and PDF, up to 2 MB each.') && JSON.stringify(await pfFiles()) === pfBefore && (await fobjects()).length === pfObjects, [await pfRefused(), await pfFiles()]);
+
+  console.log('  Opening keeps a copy on this device');
+  check('before it is opened there is no copy of the file in this device\'s IndexedDB', !(await cachedIds() || []).includes(pfRec.id), await cachedIds());
+  await fl.click(PFSEL + ` [data-s=file][data-id="${pfRec.id}"] [data-action=file-open]`);
+  check('Open opens a new tab on a blob: link', await fl.until(`window.__opened.length === 1`, 10000) && (await fl.ev('window.__opened[0]')).startsWith('blob:'), await fl.ev('window.__opened'));
+  check('…and keeps a copy under the file\'s id in IndexedDB (database "myday-files", store "bytes")', await cloudUntil(async () => (await cachedIds() || []).includes(pfRec.id), 8000), await cachedIds());
+  const kept = await cachedBytes(pfRec.id);
+  check('…and the copy is the PNG as uploaded, byte for byte', !!kept && kept.type === 'image/png' && Buffer.from(kept.bytes).equals(fs.readFileSync(pShot)), kept && [kept.type, kept.bytes.length]);
+  const getsBefore = (await ctl('files-log')).length;
+  await fl.click(PFSEL + ` [data-s=file][data-id="${pfRec.id}"] [data-action=file-open]`);
+  await fl.until(`window.__opened.length === 2`, 10000);
+  check('opening it again uses the copy on the device: no new request to the files function', (await fl.ev('window.__opened.length')) === 2 && (await ctl('files-log')).length === getsBefore, [getsBefore, (await ctl('files-log')).length]);
+
+  console.log('  Exporting the portfolio');
+  for (const f of fs.readdirSync(fl.dir)) fs.rmSync(path.join(fl.dir, f), { force: true, recursive: true });
+  await fl.click('[data-action=cy-pf-export]');
+  let zipName = ''; for (let i = 0; i < 60 && !zipName; i++) { await sleep(150); zipName = fs.readdirSync(fl.dir).find(f => f.endsWith('.zip')) || ''; }
+  await sleep(300);
+  const zipBuf = zipName ? fs.readFileSync(path.join(fl.dir, zipName)) : Buffer.alloc(0);
+  const zipFiles = {}; for (let p = 0; p + 30 <= zipBuf.length && zipBuf.readUInt32LE(p) === 0x04034b50;) { const size = zipBuf.readUInt32LE(p + 18), nl = zipBuf.readUInt16LE(p + 26), xl = zipBuf.readUInt16LE(p + 28), at = p + 30 + nl + xl; zipFiles[zipBuf.toString('utf8', p + 30, p + 30 + nl)] = zipBuf.subarray(at, at + size); p = at + size; }
+  check('Export portfolio downloads "MyDay Cybersecurity portfolio <date>.zip"', /^MyDay Cybersecurity portfolio \d{4}-\d\d-\d\d\.zip$/.test(zipName) && zipBuf.subarray(0, 2).toString() === 'PK', [zipName, zipBuf.length]);
+  const pageHtml = zipFiles['portfolio/index.html'] ? zipFiles['portfolio/index.html'].toString('utf8') : '';
+  check('…the zip holds portfolio/index.html with the entry and a link to files/01/1-scan-result.png', pageHtml.includes('Reading a scan result') && pageHtml.includes('href="files/01/1-scan-result.png"'), Object.keys(zipFiles));
+  check('…and the file at portfolio/files/01/1-scan-result.png is byte-identical to what was uploaded', !!zipFiles['portfolio/files/01/1-scan-result.png'] && Buffer.from(zipFiles['portfolio/files/01/1-scan-result.png']).equals(fs.readFileSync(pShot)), Object.keys(zipFiles));
+
+  console.log('  At most five files');
+  const four = ['b', 'c', 'd', 'e'].map((x, i) => pngNamed(`scan-${x}.png`, i + 2));
+  await give(fl, PFSEL + ' input[type=file]', four);
+  check('four more PNGs make five files, all kept', await fl.until(`document.querySelectorAll('${PFSEL} [data-s=file][data-state=kept]').length === 5`, 30000) && (await pfFiles()).length === 5 && (await pfEntry(PF)).fileIds.length === 5, await fl.text(PFSEL));
+  check('with five files the "Add a file" button is gone', !(await fl.exists(PFSEL + ' [data-action=file-add]')) && (await fl.exists(PFSEL + ' [data-cy-pf-files="5"]')), await fl.text(PFSEL));
+  const five = JSON.stringify(await pfFiles()), fiveObjects = (await fobjects()).length;
+  await give(fl, PFSEL + ' input[type=file]', [pngNamed('scan-extra.png', 9)]);
+  check('choosing another file anyway is refused with "An entry keeps at most 5 files: one wasn’t added." and nothing is added or stored', await fl.until(`!!document.querySelector('${PFSEL} [data-s=file-refused]')`, 8000) && (await pfRefused()).includes('An entry keeps at most 5 files: one wasn’t added.') && JSON.stringify(await pfFiles()) === five && (await fobjects()).length === fiveObjects && (await pfEntry(PF)).fileIds.length === 5, [await pfRefused(), (await pfFiles()).length]);
+
+  console.log('  Remove and Put back');
+  await fl.click(PFSEL + ` [data-s=file][data-id="${pfRec.id}"] [data-action=file-remove]`);
+  check('Remove says it is in Recently deleted for 30 days', await toastIs(fl, 'Removed — it’s in Recently deleted for 30 days.', 5000), await fl.text('#toast'));
+  const gone = (await pfFiles()).find(f => f.id === pfRec.id);
+  check('…the row leaves the entry and waits under that entry\'s "Recently deleted (1)", with deletedOn and removedFrom the entry', !(await fl.exists(PFSEL + ` [data-s=file][data-id="${pfRec.id}"]`)) && (await fl.text(PFSEL + ' [data-s=files-deleted] summary')).includes('Recently deleted (1)') && (await fl.text(PFSEL + ' [data-s=files-deleted]')).includes('scan-result.png') && /^\d{4}-\d\d-\d\d$/.test(gone.deletedOn) && eq(gone.removedFrom, { kind: 'portfolio', id: PF }) && (await fl.exists(PFSEL + ' [data-cy-pf-files="4"]')) && (await fl.exists(PFSEL + ' [data-action=file-add]')), [gone, await fl.text(PFSEL)]);
+  check('…and its stored bytes are still there', (await fobjects()).some(o => o.key === `${userA}/portfolio/${pfRec.id}`));
+  await fl.click(PFSEL + ' [data-action=file-put-back]');
+  check('Put back returns it to the entry as kept, out of Recently deleted, with no deletedOn', await fl.until(`!!document.querySelector('${PFSEL} [data-s=file][data-id="${pfRec.id}"][data-state=kept]') && !document.querySelector('${PFSEL} [data-s=file-deleted]')`, 8000) && !('deletedOn' in (await pfFiles()).find(f => f.id === pfRec.id)) && (await pfEntry(PF)).fileIds.includes(pfRec.id) && (await fl.exists(PFSEL + ' [data-cy-pf-files="5"]')), await fl.text(PFSEL));
+
+  console.log('  Removing the entry');
+  await fl.setData(`s => { s.cybersecurity.portfolio.push(${ENTRY(PF2, 'Writing up a lab')}); }`);
+  await fl.ev(`location.hash = '#study/cybersecurity/portfolio'`);
+  await fl.until(`document.querySelector('${PF2SEL} [data-cy-pf-files]')`, 15000);
+  await give(fl, PF2SEL + ' input[type=file]', [pngNamed('lab-write-up.png', 20), pngNamed('lab-diagram.png', 21)]);
+  await fl.until(`document.querySelectorAll('${PF2SEL} [data-s=file][data-state=kept]').length === 2`, 25000);
+  const idsB = (await pfEntry(PF2)).fileIds.slice();
+  await fl.click(PF2SEL + ' [data-action=cy-pf-remove]');
+  await fl.until(`document.querySelector('[data-action=dialog-confirm]')`);
+  check('Remove on an entry with files asks first and says its 2 files go to Recently deleted for 30 days', /Remove this entry\?/.test(await fl.text('dialog[open]')) && /its 2 files go to Recently deleted for 30 days/.test(await fl.text('dialog[open]')), await fl.text('dialog[open]'));
+  await fl.answer(true);
+  await fl.until(`!document.querySelector('${PF2SEL}')`, 8000);
+  const sentAway = (await pfFiles()).filter(f => idsB.includes(f.id));
+  check('removing the entry sends both its files to Recently deleted, from that entry, and leaves the other entry\'s files alone', !(await pfEntry(PF2)) && sentAway.length === 2 && sentAway.every(f => /^\d{4}-\d\d-\d\d$/.test(f.deletedOn) && eq(f.removedFrom, { kind: 'portfolio', id: PF2 })) && (await pfFiles()).filter(f => !idsB.includes(f.id)).every(f => !f.deletedOn) && (await fobjects()).filter(o => idsB.some(i => o.key.endsWith(i))).length >= 2, sentAway);
+  check('the portfolio page lists them under "Files from entries you’ve removed", each with its day', await fl.until(`!!document.querySelector('[data-s=files-homeless]')`, 8000) && (await fl.text('[data-s=files-homeless]')).includes('lab-write-up.png') && (await fl.text('[data-s=files-homeless]')).includes('lab-diagram.png') && /Goes for good on/.test(await fl.text('[data-s=files-homeless]')) && (await fl.text('[data-s=files-homeless]')).includes('Files from entries you’ve removed'), await fl.text('[data-s=files-homeless]'));
+  check('…with Delete now but no Put back (the entry is gone)', !(await fl.exists('[data-s=files-homeless] [data-action=file-put-back]')) && (await fl.exists('[data-s=files-homeless] [data-action=file-delete-now]')));
+  await fl.ev(`location.hash = '#projects'`);
+  await fl.until(`document.querySelector('#app h1, #app h2')`, 8000); await sleep(800);
+  check('the Projects home does not list them under "Files from deleted projects and notes"', !(await fl.text('#app')).includes('lab-write-up.png') && !(await fl.text('#app')).includes('lab-diagram.png') && !(await fl.exists('[data-s=files-homeless]')), await fl.text('#app'));
+
+  console.log('  Tidying up');
+  await ctl('files-reset');
+  await fl.open(APP + '#today');
+  await fl.setData(`s => { s.files.items = s.files.items.filter(f => f.area !== 'portfolio'); if (s.cybersecurity) delete s.cybersecurity.portfolio; }`);
+  check('the portfolio entries and their files are cleared for what follows', (await fl.data()).files.items.every(f => f.area !== 'portfolio') && !((await fl.data()).cybersecurity.portfolio || []).length);
+
   fs.rmSync(dl, { recursive: true, force: true });
   await srv.close();
   const { pass, fail } = summary();
