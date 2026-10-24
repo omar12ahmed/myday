@@ -1,6 +1,6 @@
 # Ask MyDay: one privacy filter, then read-only lookups
 
-**Status:** agreed direction (the owner's decisions are in §6). Step 1, the filter (`app/src/ai/reach.ts`), shipped in 1.61.0; step 2's first lookup, "Search your notes", shipped in 1.63.0; the second, "Your day", in 1.66.0 (`dayLookup`; the server's instructions `myday-ask-v18` were deployed first); the third, "A project's context", in 1.70.0 (`projectLookup`; the server's instructions `myday-ask-v19` were deployed first); the fourth, "Open decisions", in 1.72.0 (`decisionsLookup`; the server's instructions `myday-ask-v20` were deployed first).
+**Status:** agreed direction (the owner's decisions are in §6). Step 1, the filter (`app/src/ai/reach.ts`), shipped in 1.61.0; step 2's first lookup, "Search your notes", shipped in 1.63.0; the second, "Your day", in 1.66.0 (`dayLookup`; the server's instructions `myday-ask-v18` were deployed first); the third, "A project's context", in 1.70.0 (`projectLookup`; the server's instructions `myday-ask-v19` were deployed first); the fourth, "Open decisions", in 1.72.0 (`decisionsLookup`; the server's instructions `myday-ask-v20` were deployed first); the fifth, "What you're waiting on" (`waitingLookup`, instructions `myday-ask-v21`), is built and needs the server deployed before the app.
 **Builds on:** [`myday-vision.md`](myday-vision.md) §4, and the owner's decision of 24 Oct 2026 that Private covers
 every AI feature except note filing.
 
@@ -81,8 +81,12 @@ open projects (or one), each one's question and options, which options have no p
 and when it was opened, plus a business idea's unchecked must-be-true items. Not on Finance or Health. Never a private project's, your reasons,
 earlier choices or what you found; it never picks an option for you.
 
-Later candidates, each with its own decision: waiting tasks, and the learning recommendation (`nextLearning`, the one
-authority for what to study next).
+The fifth, the owner's choice (24 Oct 2026): **What you're waiting on** — the tasks marked as waiting (not done or let
+go), oldest first, across your tasks or one project's: title, project, since when, the day expected and whether it's
+chased. Never who or what it waits on; never a private project's task; dates, never a count of days or "overdue".
+
+Later candidate, with its own decision: the learning recommendation (`nextLearning`, the one authority for what to
+study next).
 
 ## 4. Quality before it's switched on
 
@@ -120,3 +124,4 @@ authority for what to study next).
    and time only, as in Help me adjust today, so a day is never shown free when it isn't.
 6. **"A project's context" is the third lookup.**
 7. **"Open decisions" is the fourth lookup.**
+8. **"What you're waiting on" is the fifth lookup**: titles, project, since and until; never who.

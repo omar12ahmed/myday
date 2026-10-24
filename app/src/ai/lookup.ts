@@ -4,7 +4,7 @@
 // apostrophe don't matter). A note's text is searched, and a short snippet of it sent, only with "AI help with notes" on;
 // otherwise only titles. Private notes, and notes in a private project, are never sent — not even how many matched: that
 // count (`leftOut`) stays on this device, for the panel's "1 private note left out".
-import { ASK_LIMITS as L, DAY_KINDS, type AskDayLookup, type AskDecisionsLookup, type AskLookup, type AskNotesLookup, type AskProjectLookup } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
+import { ASK_LIMITS as L, DAY_KINDS, type AskDayLookup, type AskDecisionsLookup, type AskLookup, type AskNotesLookup, type AskProjectLookup, type AskWaitingLookup } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
 import { parseKey, prettyDate, shift, todayKey } from '../data/dates';
 import { noteName } from '../data/notes';
 import { excerptOf, fold, wordsOf } from '../data/projectSearch';
@@ -100,6 +100,29 @@ export function decisionsLookup(data: MyDayData, query: string): { lookup: AskDe
   };
 }
 
+// "What you're waiting on" (v21): tasks marked as waiting (not done or let go), the oldest wait first, across your tasks
+// ("all") or one open project's (its id) — the title, its project, since when, when you expect it, and whether its
+// "Chase:" task is there and still to do. Never who or what it waits on (`waiting.on`): only the fields named here are
+// picked. Never a private project's task: those are counted here only (`leftOut`). Null for a project that can't be
+// looked at.
+export function waitingLookup(data: MyDayData, query: string): { lookup: AskWaitingLookup; leftOut: number } | null {
+  const reach = aiReach(data);
+  const one = query === 'all' ? null : data.projects.items.find(p => p.id === query && p.status !== 'done' && reach.project(p));
+  if (query !== 'all' && !one) return null;
+  const open = (id?: string | null) => { const t = id ? data.tasks.items.find(x => x.id === id) : undefined; return !!t && !t.done && !t.letGoOn; };
+  const all = data.tasks.items.filter(t => t.waiting && !t.done && !t.letGoOn && (!one || t.projectId === one.id)).sort((a, b) => a.waiting!.since.localeCompare(b.waiting!.since));
+  const shown = all.filter(reach.task);
+  const projectOf = (id?: string) => (id ? data.projects.items.find(p => p.id === id) : undefined);
+  return {
+    lookup: {
+      tool: 'waiting', query: one ? one.id : 'all', found: shown.length,
+      tasks: shown.slice(0, L.lookupWaiting).map(t => { const p = projectOf(t.projectId); return { id: t.id, title: cut(t.title, L.titleChars), projectId: p ? p.id : null, project: p ? cut(p.title, L.titleChars) : null,
+        since: t.waiting!.since, until: t.waiting!.until ?? null, chased: open(t.waiting!.chaseTaskId) }; }),
+    },
+    leftOut: all.length - shown.length,
+  };
+}
+
 // What the panel says above the answer: "Looked in your notes for “van hire”: 3 notes — 1 private note left out." or
 // "Looked at Thursday 30 October: 2 tasks planned, 1 due, 3 busy times — 1 private task left out."
 export function lookupLine(l: AskLookup, held: number, projectTitle?: string): string {
@@ -107,6 +130,10 @@ export function lookupLine(l: AskLookup, held: number, projectTitle?: string): s
     const parts = [l.rest ? 'a rest day' : l.planned ? `${l.tasks.length === 1 ? 'one task' : `${l.tasks.length} tasks`} planned` : 'no plan yet',
       ...(l.due.length ? [`${l.due.length} due`] : []), l.busy.length ? `${l.busy.length === 1 ? 'one busy time' : `${l.busy.length} busy times`}` : 'nothing booked'];
     return `Looked at ${prettyDate(l.query)}: ${parts.join(', ')}${held ? ` — ${held === 1 ? 'one private task' : `${held} private tasks`} left out` : ''}.`;
+  }
+  if (l.tool === 'waiting') {
+    const where = l.query === 'all' ? 'what you’re waiting on' : `what you’re waiting on in “${l.tasks[0]?.project ?? projectTitle ?? 'that project'}”`;
+    return `Looked at ${where}: ${l.found ? (l.found === 1 ? 'one task' : `${l.found} tasks`) : 'nothing waiting'}${held ? ` — ${held === 1 ? 'one in a private project' : `${held} in private projects`} left out` : ''}.`;
   }
   if (l.tool === 'decisions') {
     const n = l.found.decisions, b = l.found.mustBeTrue, where = l.query === 'all' ? 'your open decisions' : `the open decisions in “${l.decisions[0]?.project ?? l.mustBeTrue[0]?.project ?? projectTitle ?? 'that project'}”`;

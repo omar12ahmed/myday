@@ -506,7 +506,8 @@ export interface TaskItem {
   blockers: { reason: Blocker; on: DateKey }[]; // your answers to "What's getting in the way?"
   letGoOn: DateKey | null;    // you decided it doesn't matter any more ("Let it go")
   projectId?: string;         // the project it belongs to (1.12.0; absent → none)
-  waiting?: Waiting;          // waiting on someone or something (1.50.0; absent → not waiting); never sent to AI
+  waiting?: Waiting;          // waiting on someone or something (1.50.0; absent → not waiting); who it waits on (`on`) is
+                              // never sent to AI; Ask MyDay's waiting lookup sends since and until (owner's choice, 24 Oct)
 }
 // Who or what a task is waiting on, since when, and when you expect it (optional). `chaseTaskId` is the 5-minute
 // follow-up "Chase it" added, so it's added once per wait.

@@ -46,7 +46,9 @@ lack, not whom you're waiting for.
   code (`projects-rules` [16]) and with a real previous-release device (`app-sync-previous` [5]).
 - **Sync:** inside the existing task record; no new kind, migration or database change. The conflict summary shows
   "waiting".
-- **AI:** the waiting text is never sent to AI; Ask MyDay and every other AI job are unchanged.
+- **AI:** the waiting text (who or what it waits on) is never sent to AI. Ask MyDay's look at what you're
+  waiting on (`specs/ai-tools.md` §3) sends a waiting task's title, project, since and until dates, and whether it's chased
+  (the owner's choice, 24 Oct 2026), and its answers keep this spec's tone: dates, never a count of days or "overdue".
 
 ## 4. Owner's decisions (24 October 2026)
 

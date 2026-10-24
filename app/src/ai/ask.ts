@@ -46,6 +46,8 @@ const PLAN_TYPES: AskItemType[] = ['milestone', 'pro', 'con', 'option', 'must-be
 // so is reworded (and says so).
 const JUDGES = /\b(great|good|bad|strong|weak|promising|solid|brilliant|risky|terrible) (idea|plan|business|concept)\b|\b(will|would|could|might) (definitely |probably |likely )?(fail|succeed|flop|take off)\b|\b(is|are|seems?|looks?) (likely|unlikely|probably|definitely) (true|false|right|wrong)\b|\b(likely|unlikely) to (work|fail|succeed)\b|\b(most|least|biggest|highest) risk/i;
 const SUGGESTED_BELIEFS = 5; // a few at a time
+// A wait is about the day you expect it: no count of days, no "overdue" (the owner's rule for waiting, 1.50.0).
+const WAIT_TONE = /\b(overdue|late|behind|\d+\s+(days?|weeks?|months?)|(a|one|two|three|four|five|six|several|few) (days?|weeks?|months?))\b/i;
 // Words that pick for you. A decision stays yours: a reply saying which option is best is reworded (and says so).
 const CHOOSES = /\b(is|seems|looks|would be) (the )?(best|better|right|clear|obvious)( option| choice| one| fit| way to go)?\b|\bI(?:'d| would) (choose|pick|go (?:with|for))\b|\bI recommend\b|\b(?:you should|I'd suggest you) (?:choose|pick|go (?:with|for))\b|\b(?:clear|obvious) winner\b/i;
 // A task or note for the project proposed in the same answer (it's created first when you tap Add).
@@ -55,7 +57,7 @@ export type AskChecked =
   | { kind: 'add' | 'steps'; message: string; items: AskProposal[]; changed: string[]; sources?: AskSource[] }
   | { kind: 'answer'; message: string; action: { type: 'start-study'; courseId: string; taskId: string | null; minutes: number; label: string } | { type: 'adjust-today' } | { type: 'start-revision'; scope: Scope; count: number } | null; changed: string[]; sources?: AskSource[] }
   | { kind: 'cannot'; message: string; changed: string[] }
-  | { kind: 'lookup'; tool: 'notes' | 'day' | 'project' | 'decisions'; query: string } // query: the words to search, the day, a project's id, or "all"
+  | { kind: 'lookup'; tool: 'notes' | 'day' | 'project' | 'decisions' | 'waiting'; query: string } // query: the words to search, the day, a project's id, or "all"
   | { kind: 'change'; message: string; changes: AskChange[]; changed: string[] };
 // After a lookup, the notes an answer used (only ones the lookup found), shown as links.
 export interface AskSource { id: string; title: string; href?: string } // href: where it opens (a note's own page otherwise)
@@ -82,7 +84,7 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
     // A project only by the id of one of the open projects it was given (never a private one: they aren't given).
     if (r.lookup.tool === 'project' && !slice.context.projects?.some(p => p.id === r.lookup!.query)) return null;
     // Open decisions: all of them, or one of the open projects it was given.
-    if (r.lookup.tool === 'decisions' && r.lookup.query !== 'all' && !slice.context.projects?.some(p => p.id === r.lookup!.query)) return null;
+    if ((r.lookup.tool === 'decisions' || r.lookup.tool === 'waiting') && r.lookup.query !== 'all' && !slice.context.projects?.some(p => p.id === r.lookup!.query)) return null;
     if (r.lookup.tool === 'day') {
       if (!realDate(r.lookup.query)) return null;
       // A day only from a week ago to two months ahead (what the app will look at): further off, it says so.
@@ -107,9 +109,17 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
     if (kept !== out.message.trim()) shown = { ...out, message: kept.split(/\s+/).length >= 3 ? kept : 'Here’s what’s still open — each choice is yours.', changed: [...out.changed,
       ...(parts.some(picks) ? ['MyDay left out a view on which option to choose — that’s yours to decide.'] : []), ...(parts.some(x => JUDGES.test(x)) ? ['MyDay left out a view on how it will turn out — that’s for you to find out.'] : [])] };
   }
-  if (!looked || (looked.tool !== 'notes' && looked.tool !== 'decisions') || !r?.sources?.length) return shown;
+  // After a look at what you're waiting on, days stay dates (as everywhere for a wait): a sentence that counts days or
+  // weeks, or says overdue, late or behind, is left out.
+  if (looked?.tool === 'waiting') {
+    const parts = shown.message.match(/[^.!?…]+[.!?…]+["”’)]*\s*|[^.!?…]+$/g) ?? [], counts = (x: string) => WAIT_TONE.test(x);
+    if (parts.some(counts)) { const kept = parts.filter(x => !counts(x)).join('').trim();
+      shown = { ...shown, message: kept.split(/\s+/).length >= 3 ? kept : 'Here’s what you’re waiting on.', changed: [...shown.changed, 'MyDay left out a count of days — a wait is about the day you expect it.'] }; }
+  }
+  if (!looked || (looked.tool !== 'notes' && looked.tool !== 'decisions' && looked.tool !== 'waiting') || !r?.sources?.length) return shown;
   // The records an answer says it used: only ones the lookup found, once each, as links.
   const found: AskSource[] = looked.tool === 'notes' ? looked.notes.map(x => ({ id: x.id, title: x.title }))
+    : looked.tool === 'waiting' ? looked.tasks.map(x => ({ id: x.id, title: x.title, href: `#today/tasks/${encodeURIComponent(x.id)}` }))
     : [...looked.decisions.map(x => ({ id: x.id, title: x.question, href: `#projects/p/${encodeURIComponent(x.projectId)}/decisions` })),
       ...looked.mustBeTrue.map(x => ({ id: x.id, title: x.text, href: `#projects/p/${encodeURIComponent(x.projectId)}/model` }))];
   const used = [...new Set(r.sources)].map(id => found.find(x => x.id === id)).filter((x): x is AskSource => !!x);

@@ -229,7 +229,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     bad('an extra field on the review', { ...rv, extra: 'x' });
     bad('an extra field on a project that moved', { ...rv, moved: [{ ...rv.moved[0], title: 'Task titles' }] });
     const sys = A.buildAskMessages(mk(rv)).map(m => m.content).join('\n').replace(/\s+/g, ' ');
-    check('the instructions are version myday-ask-v20', A.ASK_PROMPT_VERSION === 'myday-ask-v20', A.ASK_PROMPT_VERSION);
+    check('the instructions are version myday-ask-v21', A.ASK_PROMPT_VERSION === 'myday-ask-v21', A.ASK_PROMPT_VERSION);
     check('…and have the week-in-review part: what pattern do you see, answer with no items, "never guess why"', sys.includes('A week in review') && sys.includes('what pattern you see') && sys.includes('never guess why') && sys.includes('No items'), sys.slice(0, 200));
     const m1 = JSON.parse(A.mockAsk(mk(rv)));
     check('the practice version answers "What pattern do you see in my week?" with kind "answer" and no items', m1.kind === 'answer' && Array.isArray(m1.items) && m1.items.length === 0 && m1.action === null, m1);
@@ -348,6 +348,26 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     check('the practice version looks at your open decisions', md3.kind === 'lookup' && md3.lookup.tool === 'decisions' && md3.lookup.query === 'all', md3);
     const md4 = JSON.parse(A.mockAsk({ ...base, text: 'Which decisions am I putting off?', can: ['notes', 'day', 'project', 'decisions'], lookup: decs }));
     check('…and, with them, says how many and the oldest, citing them', md4.kind === 'answer' && md4.message.includes('one decision is open — the oldest is “Which roof?” (Garden shed), since 2026-11-01') && md4.sources.join() === 'd1', md4);
+    // "What you're waiting on" (v21): titles, projects, since and until — never who or what, never a count of days.
+    const wait = { tool: 'waiting', query: 'all', found: 2, tasks: [{ id: 't1', title: 'Deposit back', projectId: null, project: null, since: '2026-10-28', until: null, chased: false },
+      { id: 't2', title: 'Ask about the armchair', projectId: 'pj1', project: 'Garden shed', since: '2026-11-02', until: '2026-11-09', chased: true }] };
+    check('a waiting lookup is accepted (the app saying it can look at what you\'re waiting on too)', A.checkAskContext({ ...base, can: ['notes', 'day', 'project', 'decisions', 'waiting'], lookup: wait }) === true);
+    bad('a waiting task carrying who it waits on', { ...base, lookup: { ...wait, tasks: [{ ...wait.tasks[0], on: 'Priya' }] } });
+    bad('a waiting task with a project id but no project name', { ...base, lookup: { ...wait, tasks: [{ ...wait.tasks[0], projectId: 'pj1' }] } });
+    bad('9 waiting tasks', { ...base, lookup: { ...wait, found: 9, tasks: Array.from({ length: 9 }, (_, i) => ({ ...wait.tasks[0], id: 't' + i })) } });
+    bad('fewer found than sent', { ...base, lookup: { ...wait, found: 1 } });
+    bad('a task of another project than the one asked for', { ...base, lookup: { ...wait, query: 'pj1' } });
+    bad('a waiting lookup with a count of private ones', { ...base, lookup: { ...wait, leftOut: 1 } });
+    const offerWait = sysOf({ ...base, can: ['notes', 'day', 'project', 'decisions', 'waiting'] }), afterWait = sysOf({ ...base, can: ['notes', 'day', 'project', 'decisions', 'waiting'], lookup: wait });
+    check('the instructions offer a waiting lookup only when the app says it can, and decisions no longer claim "waiting"', offerWait.includes('"tool":"waiting","query":"all"') && !offerDec.includes('"tool":"waiting"') && offerWait.includes('which decisions are open or being put off'));
+    check('…and, with them, days as dates — never a count, never overdue — never guess who, a "Chase:" task only when its day has come', afterWait.includes('never count days or weeks, and never say overdue, late or behind') && afterWait.includes('Never guess who or what it\'s waiting on')
+      && afterWait.includes('titled "Chase: " and that task\'s title') && afterWait.includes('Never reply "lookup" again'));
+    const wlr = A.readAsk(JSON.stringify({ kind: 'lookup', message: 'Looking at what you’re waiting on.', lookup: { tool: 'waiting', query: 'all' } }));
+    check('a waiting lookup reply is read: all, or a project\'s id', wlr && wlr.lookup.tool === 'waiting' && wlr.lookup.query === 'all' && A.readAsk(JSON.stringify({ kind: 'lookup', message: 'x', lookup: { tool: 'waiting', query: 'who is it' } })) === null);
+    const mw1 = JSON.parse(A.mockAsk({ ...base, text: 'What am I waiting on?', can: ['notes', 'day', 'project', 'decisions', 'waiting'] }));
+    check('the practice version looks at what you\'re waiting on', mw1.kind === 'lookup' && mw1.lookup.tool === 'waiting' && mw1.lookup.query === 'all', mw1);
+    const mw2 = JSON.parse(A.mockAsk({ ...base, text: 'What am I waiting on?', can: ['notes', 'day', 'project', 'decisions', 'waiting'], lookup: wait }));
+    check('…and, with them, says how many and the oldest, citing them', mw2.kind === 'answer' && mw2.message.includes('2 tasks are waiting — the oldest is “Deposit back”, since 2026-10-28') && mw2.sources.join() === 't1,t2', mw2);
   }
   env = { AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_MOCK_DELAY_MS: '0', AI_DAILY_LIMIT: '50', AI_MIN_SECONDS_BETWEEN: '0', AI_MONTHLY_BUDGET_USD: '1' };
 
@@ -515,7 +535,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     const r1 = A.readAsk(rep([{ type: 'must-be-true', title: 'Crews would pay' }, { type: 'must-be-true', text: 'We can cook 40 boxes a day' }]));
     check('a reply\'s must-be-true items are kept, the words read from "title" or, when it is missing, from "text"', r1 && r1.items.length === 2 && r1.items.every(i => i.type === 'must-be-true') && r1.items[0].title === 'Crews would pay' && r1.items[1].title === 'We can cook 40 boxes a day', r1);
     const sys = A.buildAskMessages(mk(page)).map(m => m.content).join('\n');
-    check('the instructions are version myday-ask-v20 and mention must-be-true and onePage', A.ASK_PROMPT_VERSION === 'myday-ask-v20' && sys.includes('must-be-true') && sys.includes('onePage'), A.ASK_PROMPT_VERSION);
+    check('the instructions are version myday-ask-v21 and mention must-be-true and onePage', A.ASK_PROMPT_VERSION === 'myday-ask-v21' && sys.includes('must-be-true') && sys.includes('onePage'), A.ASK_PROMPT_VERSION);
     const m1 = JSON.parse(A.mockAsk(mk(page)));
     check('the practice version, with a one page and "Suggest what must be true…", answers "add" with 3 must-be-true items', m1.kind === 'add' && m1.items.length === 3 && m1.items.every(i => i.type === 'must-be-true'), m1);
     const m2 = JSON.parse(A.mockAsk(mk(undefined)));
@@ -528,7 +548,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     const mk = tasks => ({ version: 1, action: 'ask', date: '2026-11-10', weekday: 'Tuesday', time: '10:00', page: 'project', text: 'Summarise where this project is, and the one next step',
       context: { project: { id: 'pjB', title: 'Lunch boxes for sites', summary: 'Hot lunches for builders', stage: 'explore', tasks, notes: [] } } });
     const sys = A.buildAskMessages(mk([])).map(m => m.content).join('\n').replace(/\s+/g, ' ');
-    check('the instructions are version myday-ask-v20', A.ASK_PROMPT_VERSION === 'myday-ask-v20', A.ASK_PROMPT_VERSION);
+    check('the instructions are version myday-ask-v21', A.ASK_PROMPT_VERSION === 'myday-ask-v21', A.ASK_PROMPT_VERSION);
     check('the summary instructions say a done "Find out" task means they looked into it, not that its answer is confirmed', sys.includes('A summary of the project on this page') && sys.includes('a done "Find out: X" means they\'ve looked into whether X') && sys.includes('never that X is confirmed or true'));
     check('…and to summarise without advising on a legal, medical or money matter', sys.includes('legal, medical or money matter, summarise without advising'));
     const withTasks = mk([{ id: 'tkA', title: 'Ring the caterer', done: true }, { id: 'tkB', title: 'Price the boxes', done: false }, { id: 'tkC', title: 'Book a stall', done: false }]);

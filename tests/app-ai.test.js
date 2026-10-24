@@ -872,7 +872,10 @@ const SEED = `s => {
     const PJ = { id: 'pjWt', title: 'Garden gate', summary: 'A gate for the side path', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at };
     const TK = { id: 'tkWt', title: 'Fit the gate latch', listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: at, postponed: 0, blockers: [], letGoOn: null, projectId: 'pjWt',
       waiting: { on: ON, since: TODAY, until: '2026-12-30', chaseTaskId: 'tkChaseWt', futureBit: 'Okapi' } };
-    const hidden = t => !t.includes('Narwhal') && !t.includes('joiner') && !t.includes('Okapi') && !t.includes('tkChaseWt') && !/waiting/i.test(t);
+    // (Ask MyDay's offer to look at what you're waiting on, v21, names the lookup, never a wait: left aside here.)
+    const offer = t => t.replace(/,"waiting"\]/g, ']').replace(/If it needs to: what you’re waiting on/g, '').replace(/Or at the tasks you’ve marked as waiting[^.]*\./g, '')
+      .replace(/Never who or what it’s waiting on[^.]*\./g, '').replace(/at what you’re waiting on/g, '');
+    const hidden = t => !t.includes('Narwhal') && !t.includes('joiner') && !t.includes('Okapi') && !t.includes('tkChaseWt') && !/waiting/i.test(offer(t));
     const wtSeed = `s => { s.projects.items = s.projects.items.filter(p => p.id !== 'pjWt'); s.projects.items.push(${JSON.stringify(PJ)}); s.tasks.items = s.tasks.items.filter(t => t.id !== 'tkWt'); s.tasks.items.push(${JSON.stringify(TK)}); }`;
     const openWt = async (Dv, text) => {
       await Dv.ev(`location.hash = 'projects/p/pjWt'`); await sleep(300);
@@ -899,7 +902,7 @@ const SEED = `s => {
     const sentWt = aiCalls().slice(c0).find(c => c.body.context.action === 'ask');
     const bodyWt = JSON.stringify(sentWt && sentWt.body);
     check('with an account, the request is sent and answered, and it does carry the project\'s title and summary', phase === 'shown' && !!sentWt && bodyWt.includes('Garden gate') && bodyWt.includes('A gate for the side path'), [phase, bodyWt.slice(0, 300)]);
-    check('…but the request body contains neither the text of the wait nor the key "waiting"', !!sentWt && hidden(bodyWt) && !bodyWt.includes('"waiting"') && !bodyWt.includes('chaseTaskId'), bodyWt);
+    check('…but the request body contains neither the text of the wait nor the key "waiting"', !!sentWt && hidden(bodyWt) && !offer(bodyWt).includes('"waiting"') && !bodyWt.includes('chaseTaskId'), bodyWt);
     check('…and the preview shown for the same request had none of it', hidden(prevD), prevD);
     await D.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
     await mock.ev(`location.hash = 'today'`); await D.ev(`location.hash = 'today'`); await sleep(200);
@@ -912,6 +915,7 @@ const SEED = `s => {
     const PJ = (id, title, x = {}) => ({ id, title, summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at, ...x });
     const lkSeed = `s => { s.patterns.prefs.aiNotes = true; s.projects.items = s.projects.items.filter(p => !['pjShedLk', 'pjHushLk', 'pjKilnLk'].includes(p.id));
       s.projects.items.push(${JSON.stringify(PJ('pjShedLk', 'Garden shed'))}, ${JSON.stringify(PJ('pjHushLk', 'Quiet plans', { private: true }))}, ${JSON.stringify(PJ('pjKilnLk', 'Pottery kiln', { decisions: [{ id: 'dKilnLk', question: 'Gas or electric?', options: [{ id: 'oGas', text: 'Gas', pros: ['Hotter'], cons: [] }, { id: 'oEl', text: 'Electric', pros: [], cons: [] }], chosen: null, why: '', decidedOn: null, createdAt: '2026-01-01T08:00', updatedAt: '2026-01-01T08:00' }] }))});
+      s.tasks.items = s.tasks.items.filter(t => t.id !== 'tkWaitLk'); s.tasks.items.push({ id: 'tkWaitLk', title: 'Kiln shelves delivery', listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-01-01T08:00', postponed: 0, blockers: [], letGoOn: null, projectId: 'pjKilnLk', waiting: { on: 'WHO-COURIER', since: '2026-01-01', until: null } });
       s.notes.items = s.notes.items.filter(n => !n.id.startsWith('nLk')); s.notes.items.push(${JSON.stringify(NT('nLkRack', 'Shed sizes', 'Leave room for a bike rack on the left wall.', { projectId: 'pjShedLk' }))},
         ${JSON.stringify(NT('nLkPriv', 'Walrus', 'my private bike rack worry', { private: true }))}, ${JSON.stringify(NT('nLkHush', 'Walrus two', 'a bike rack in the quiet plans', { projectId: 'pjHushLk' }))}); }`;
     const Q = 'What did I write about the bike rack?';
@@ -936,6 +940,10 @@ const SEED = `s => {
     const pdc = await runLk(mock, 'Which decisions am I putting off?');
     check('practice mode: "Which decisions am I putting off?" looks at your open decisions, says so above the answer and links the oldest (never what its pros say)', pdc.phase === 'shown' && /^Looked at your open decisions: (one decision|\d+ decisions)/.test(pdc.looked)
       && pdc.sources.some(x => x === 'Gas or electric?|#projects/p/pjKilnLk/decisions') && pdc.prev.includes('at your open decisions'), [pdc.looked, pdc.sources, pdc.error]);
+    await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
+    const pwt = await runLk(mock, 'What am I waiting on?');
+    check('practice mode: "What am I waiting on?" looks at what you\'re waiting on, says so above the answer and links the task (never who)', pwt.phase === 'shown' && /^Looked at what you’re waiting on: (one task|\d+ tasks)/.test(pwt.looked)
+      && pwt.sources.some(x => x === 'Kiln shelves delivery|#today/tasks/tkWaitLk') && pwt.prev.includes('at what you’re waiting on') && !/WHO-COURIER/.test(pwt.looked + pwt.sources.join()), [pwt.looked, pwt.sources, pwt.error]);
     await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
     const ppj = await runLk(mock, "What's next on the pottery kiln?");
     const plink = await mock.ev(`document.querySelector('[data-s=ask-project]')?.getAttribute('href') || ''`);

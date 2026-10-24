@@ -654,6 +654,16 @@ that picks, ranks or judges is left out, as on a decision's own page ("I recomme
 with a decision or one page already on the page, nor on Finance or Health (which send no project names). Evaluated
 with `ai-eval/ask-scenarios.ts` (o01–o10) and `ai-eval/reviews/2026-10-24-ask-decisions-quality.md`.
 
+**Looking at what you're waiting on** (`myday-ask-v21`, the owner's choice of the next lookup): "what am I waiting on?"
+or "anything I should chase on the flat move?" — Ask MyDay replies "look up" with "all" (or that project's id); the
+app looks on the device (`waitingLookup` in `src/ai/lookup.ts`) at the tasks marked as waiting (not done or let go),
+oldest wait first: each one's title, its project, since when, the day you expect it and whether its Chase task is
+there. Never who or what it waits on (`waiting.on`), and never a private project's task (counted only on the device).
+Its answers keep the waiting tone (1.50.0): dates, never a count of days or "overdue" — a sentence that counts days or
+says overdue, late or behind is left out. When an expected day has come and nothing chases it, it may offer one
+5-minute "Chase: <task>" to tick, naming no one. The tasks it names are links. Not on Finance or Health. Evaluated with
+`ai-eval/ask-scenarios.ts` (w01–w08).
+
 **Planning a Study course with Ask (1.26.0):** a course page has **✦ Plan this course with Ask**, which opens + already
 filled in ("Break this course into study tasks"; `src/capture/openCapture.ts`). From a course page Ask sends the
 course's outline — its modules, sections and tasks: titles, lengths, kinds and done or not, no links or notes, cut to

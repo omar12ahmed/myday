@@ -10,7 +10,7 @@
 import type { ChatMessage } from './prompt.ts';
 
 export const ASK_CONTRACT_VERSION = 1;
-export const ASK_PROMPT_VERSION = 'myday-ask-v20';
+export const ASK_PROMPT_VERSION = 'myday-ask-v21';
 export * from './ask-shape.ts';
 import type { AskContext, AskReply } from './ask-shape.ts';
 
@@ -42,6 +42,18 @@ each time exactly as in "busy" and "free" (a "work" time is their shift), as
 when they're free, warmly and without judging. If that day is before the given date, it has passed: say what was on it,
 not when they're free. MyDay builds a plan only for today: never offer to plan or build another day, and no
 "adjust-today". The "due" tasks already exist: never offer to add them again. Never guess what an appointment or a shift is for. Never reply "lookup" again.${quoting}`;
+  if (c.lookup?.tool === 'waiting') return `
+
+The app looked at what they're waiting on ("lookup" in the data, "tool" "waiting": "tasks", the oldest few marked as
+waiting, each with its project, since when ("since"), the day they expect it ("until", or null) and whether its
+"Chase:" task is already there ("chased"); "found", how many in all). Who or what each one waits on is never sent, and
+private projects never are. Answer from those only, as "answer" in three or four short sentences: what's waiting and
+since when (the oldest first), and what's expected by when. If one's expected day has come (its "until" is on or before
+the given date) and it isn't chased, offer one 5-minute task in "items" titled "Chase: " and that task's title, with
+its project's id as "projectId" — never naming anyone. Say days as dates ("since 3 October", "expected Friday"):
+never count days or weeks, and never say overdue, late or behind. Never guess who or what it's waiting on. Put the ids
+of the tasks you name in "sources" (only ids from "lookup"). If nothing is waiting, say so plainly. Never reply
+"lookup" again.${quoting}`;
   if (c.lookup?.tool === 'decisions') return `
 
 The app looked at their open decisions ("lookup" in the data, "tool" "decisions": "decisions", the oldest few with
@@ -77,10 +89,13 @@ decisions and its one page aren't here: for those, say to ask on its page. Never
   {"kind":"lookup","message":"Looking at that project.","lookup":{"tool":"project","query":"…"}}, the query that
   project's id exactly as in "projects". If no project in "projects" matches, don't look: say you can't see one by that
   name.`);
-  if (tools.includes('decisions')) offer.push(`- At their open decisions: they ask which decisions are open, waiting or being put off, what they still have
+  if (tools.includes('decisions')) offer.push(`- At their open decisions: they ask which decisions are open or being put off, what they still have
   to decide, or what's still to check (must be true) — and neither a "decision" nor a "onePage" is in the data —
   {"kind":"lookup","message":"Looking at your open decisions.","lookup":{"tool":"decisions","query":"all"}}, or for one
   project they name, the query that project's id exactly as in "projects".`);
+  if (tools.includes('waiting')) offer.push(`- At what they're waiting on: they ask what they're waiting on or for, what's with someone else, or what to
+  chase — {"kind":"lookup","message":"Looking at what you're waiting on.","lookup":{"tool":"waiting","query":"all"}},
+  or for one project they name, the query that project's id exactly as in "projects".`);
   if (!offer.length) return '';
   return `
 
@@ -224,6 +239,15 @@ export function mockAsk(c: AskContext): string {
     return reply({ kind: 'answer', action: null, items: [], sources: l.notes.slice(0, 3).map(n => n.id),
       message: l.notes.length ? `Practice helper (no AI): ${l.found === 1 ? 'one note matches' : `${l.found} notes match`} “${l.query}”: ${names}.`
         : `Practice helper (no AI): nothing in your notes matches “${l.query}”.` });
+  }
+  // Looking at what you're waiting on: the second time round, what's waiting; the first time, a lookup.
+  if (c.lookup?.tool === 'waiting') {
+    const l = c.lookup, first = l.tasks[0];
+    return reply({ kind: 'answer', action: null, items: [], sources: l.tasks.slice(0, 3).map(x => x.id),
+      message: l.found ? `Practice helper (no AI): ${l.found === 1 ? 'one task is' : `${l.found} tasks are`} waiting — the oldest is “${first.title}”, since ${first.since}.` : 'Practice helper (no AI): nothing is waiting.' });
+  }
+  if (c.can?.includes('waiting') && !c.lookup && /\b(waiting|chase|chasing|with someone)\b/i.test(t) && !/\bdecisions?\b/i.test(t)) {
+    return reply({ kind: 'lookup', message: 'Practice helper (no AI): looking at what you\'re waiting on.', items: [], action: null, lookup: { tool: 'waiting', query: 'all' } });
   }
   // Looking at open decisions: the second time round, which are open; the first time, a lookup.
   if (c.lookup?.tool === 'decisions') {
