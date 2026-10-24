@@ -963,6 +963,108 @@ const SEED = `s => {
     await mock.ev(`location.hash = 'today'`); await D.ev(`location.hash = 'today'`); await sleep(200);
   }
 
+  console.log('\n[8s] "Check my answer" under a lesson check (practice mode, then through the real server code)');
+  {
+    const LESSON = 'lesson.arabic-relative-clauses', Q2 = 'assessment.arabic-relative-clauses-check.q2', CYB = 'assessment.learning-evidence-check';
+    const qSel = `[data-ar-question="${Q2}"]`, ansSel = `[data-s="ar-answer"][data-q="${Q2}"]`, panel = `${qSel} [data-s="check-answer"]`;
+    const blurType = (Dv, sel, value) => Dv.type(sel, value).then(() => Dv.ev(`document.querySelector(${JSON.stringify(sel)}).blur()`)).then(() => sleep(250));
+    // Opens the lesson, starts the standard session and goes to its Check step.
+    const arabicSession = async (Dv, url) => {
+      await Dv.open(url + '#study/arabic/' + LESSON); await Dv.until(`document.querySelector('[data-action="ar-begin"]')`, 15000);
+      await Dv.ev(`document.querySelector('[data-s="ar-variant"][value="standard"]')?.click()`); await sleep(150);
+      await Dv.click('[data-action="ar-begin"]'); await Dv.until(`document.querySelector('[data-ar-session="open"]')`, 10000);
+      await Dv.ev(`document.querySelector('[data-action="ar-step"][data-v="check"]')?.click()`); await sleep(400);
+      await Dv.until(`document.querySelector(${JSON.stringify(qSel)})`, 10000);
+    };
+    const partsShown = Dv => Dv.ev(`['hint', 'example', 'explanation', 'follow-up', 'follow-answer'].filter(p => document.querySelector('[data-s="ca-' + p + '"]')).join()`);
+    const focused = Dv => Dv.ev(`document.activeElement?.dataset?.s || ''`);
+    const ORDER = ['hint', 'example', 'explanation', 'follow-up', 'follow-answer'];
+    const phaseOf = (Dv, sel) => Dv.ev(`document.querySelector(${JSON.stringify(sel)})?.dataset.phase || ''`);
+    const waitPhase = (Dv, sel, ms = 15000) => Dv.until(`['shown', 'error'].includes(document.querySelector(${JSON.stringify(sel)})?.dataset.phase)`, ms);
+    const logBefore8s = srv.log.length;
+
+    await arabicSession(mock, MOCK);
+    check('Arabic check, before any answer is written: no "Check my answer"', !(await mock.exists(panel)) && !(await mock.exists(`${qSel} [data-action="ca-ask"]`)));
+    await blurType(mock, ansSel, 'The book.');
+    await mock.until(`document.querySelector(${JSON.stringify(panel + ' [data-action="ca-ask"]')})`, 5000);
+    check('…after writing "The book." and leaving the box, "Check my answer" appears with the line saying what it sends', (await mock.text(`${panel} [data-action="ca-ask"]`)) === 'Check my answer' && (await mock.text(panel)).includes('Sends this lesson’s teaching, the question, its reference answer and your answer — nothing else.'), await mock.text(panel));
+    const savedBefore = await mock.ev(`localStorage.getItem('myday.data.v4')`);
+    await mock.click(`${panel} [data-action="ca-ask"]`); await waitPhase(mock, panel);
+    check('asking gives a reply labelled as the practice helper, with only the hint showing', (await phaseOf(mock, panel)) === 'shown' && (await mock.text(`${panel} [data-s="ca-shown"] .lbl`)) === 'Check my answer · practice helper (no AI)' && (await partsShown(mock)) === 'hint' && (await mock.text(`${panel} [data-s="ca-hint"]`)).includes('Practice helper (no AI)'), [await phaseOf(mock, panel), await partsShown(mock)]);
+    const stepLog = [];
+    for (let i = 1; i < 5; i++) {
+      const label = await mock.text(`${panel} [data-action="ca-next"]`);
+      await mock.click(`${panel} [data-action="ca-next"]`); await sleep(150);
+      stepLog.push({ label, step: await mock.ev(`document.querySelector(${JSON.stringify(panel)}).dataset.step`), shown: await partsShown(mock), focus: await focused(mock) });
+    }
+    check('each "next" button reveals exactly one more part, in order (example, explanation, follow-up question, its answer)', stepLog.every((s, i) => s.step === String(i + 1) && s.shown === ORDER.slice(0, i + 2).join()), stepLog);
+    check('…the buttons read "Show an example", "Show the explanation", "Try a follow-up question", "Show its answer"', eq(stepLog.map(s => s.label), ['Show an example', 'Show the explanation', 'Try a follow-up question', 'Show its answer']), stepLog.map(s => s.label));
+    check('…focus moves to each new part as it appears', eq(stepLog.map(s => s.focus), ORDER.slice(1).map(p => 'ca-' + p)), stepLog.map(s => s.focus));
+    check('…after the last part there is no next button', !(await mock.exists(`${panel} [data-action="ca-next"]`)) && (await mock.exists(`${panel} [data-action="ca-close"]`)));
+    check('the suggested mark is "Right" (the answer equals the reference), only a suggestion, and without "Use this mark" before the reference answer is shown', (await mock.ev(`document.querySelector(${JSON.stringify(panel + ' [data-s="ca-mark"]')})?.dataset.v`)) === 'right' && (await mock.text(`${panel} [data-s="ca-mark"]`)).includes('Suggested mark: Right') && (await mock.text(`${panel} [data-s="ca-mark"]`)).includes('only a suggestion') && !(await mock.exists(`${panel} [data-action="ca-use-mark"]`)));
+    check('asking and revealing every part saved nothing: the saved data is byte-for-byte what it was', (await mock.ev(`localStorage.getItem('myday.data.v4')`)) === savedBefore);
+    check('practice mode sent nothing to any server for it', srv.log.length === logBefore8s);
+    // Look at the reference answer, then ask again.
+    await mock.click(`${panel} [data-action="ca-close"]`); await sleep(100);
+    check('"Close" puts the panel back to asking', (await phaseOf(mock, panel)) === 'idle' && await mock.exists(`${panel} [data-action="ca-ask"]`));
+    await mock.click(`${qSel} [data-action="ar-reveal"]`); await mock.until(`document.querySelector(${JSON.stringify(qSel + ' [data-ar-mark]')})`, 8000);
+    await mock.click(`${panel} [data-action="ca-ask"]`); await waitPhase(mock, panel);
+    await mock.click(`${panel} [data-action="ca-next"]`); await sleep(120); await mock.click(`${panel} [data-action="ca-next"]`); await sleep(150);
+    check('with the reference answer shown, the suggestion from the explanation step on has "Use this mark"', (await mock.ev(`document.querySelector(${JSON.stringify(panel)}).dataset.step`)) === '2' && (await mock.text(`${panel} [data-action="ca-use-mark"]`)) === 'Use this mark');
+    check('…and before tapping it the question has no mark', (await mock.ev(`document.querySelector(${JSON.stringify(qSel + ' [data-ar-mark]')}).dataset.arMark`)) === 'none');
+    await mock.click(`${panel} [data-action="ca-use-mark"]`); await sleep(300);
+    check('"Use this mark" sets the question to Right with a hint, and says so', (await mock.ev(`document.querySelector(${JSON.stringify(qSel + ' [data-ar-mark]')}).dataset.arMark`)) === 'right:hint' && (await mock.text('#toast')).includes('Marked right. You can change it under “How did it go?”.'), [await mock.ev(`document.querySelector(${JSON.stringify(qSel + ' [data-ar-mark]')}).dataset.arMark`), await mock.text('#toast')]);
+
+    // The usual build: AI off.
+    await arabicSession(plain, PLAIN);
+    await blurType(plain, ansSel, 'The book.');
+    check('in the usual build (AI off) the answer is saved but there is no "Check my answer"', ((await plain.data()).arabic.attempts.slice(-1)[0].answers[Q2] === 'The book.') && !(await plain.exists('[data-action="ca-ask"]')) && !(await plain.exists('[data-s="check-answer"]')));
+
+    // Cybersecurity notebook.
+    const cyAns = async Dv => Dv.ev(`document.querySelector('textarea[id^="assessment"]').id`);
+    await mock.ev(`location.hash = 'study/cybersecurity/${CYB}'`); await mock.until(`document.querySelector('[data-action=cyber-begin]')`, 10000);
+    await mock.click('[data-action=cyber-begin]'); await mock.until(`document.querySelector('textarea[id^="assessment"]')`, 8000);
+    const cid = await cyAns(mock), cSel = `[id="${cid}"]`;
+    check('Cybersecurity check with an attempt begun and nothing written: no "Check my answer"', !(await mock.exists('[data-s="check-answer"]')));
+    await blurType(mock, cSel, 'Evidence means something I can observe.');
+    await mock.until(`document.querySelector('[data-action="ca-ask"]')`, 5000);
+    check('after writing an answer the panel appears, saying what it sends', await mock.exists('[data-s="check-answer"][data-phase="idle"]') && (await mock.text('[data-s="check-answer"]')).includes('Sends this lesson’s teaching, the question, its reference answer and your answer — nothing else.'), await mock.text('[data-s="check-answer"]'));
+    const cySaved = await mock.ev(`localStorage.getItem('myday.data.v4')`);
+    await mock.click('[data-action="ca-ask"]'); await waitPhase(mock, '[data-s="check-answer"]');
+    check('asking gives the practice helper\'s hint, with the "Assistance used" line, and then more parts one at a time', (await phaseOf(mock, '[data-s="check-answer"]')) === 'shown' && (await mock.text('[data-s="ca-shown"]')).includes('practice helper (no AI)') && (await mock.text('[data-s="ca-shown"]')).includes('Used hints or AI help') && (await partsShown(mock)) === 'hint', await partsShown(mock));
+    await mock.click('[data-action="ca-next"]'); await sleep(150);
+    check('…"Show an example" reveals the example and moves focus to it', (await partsShown(mock)) === 'hint,example' && (await focused(mock)) === 'ca-example');
+    check('…and there is no "Use this mark" in the notebook, and nothing was saved by asking', !(await mock.exists('[data-action="ca-use-mark"]')) && (await mock.ev(`localStorage.getItem('myday.data.v4')`)) === cySaved);
+    await mock.click('[data-action="ca-close"]');
+    await blurType(mock, cSel, 'password: hunter2xyz');
+    await mock.click('[data-action="ca-ask"]'); await waitPhase(mock, '[data-s="check-answer"]');
+    const cyErr = await mock.text('[data-s="check-answer"] [role=alert]');
+    check('an answer with a password written out is refused with a kind message, and no reply is shown', (await phaseOf(mock, '[data-s="check-answer"]')) === 'error' && cyErr.includes('Your answer has what looks like a password or key written out. Take it out first: your answer is sent to AI.') && !(await mock.exists('[data-s="ca-shown"]')), cyErr);
+    check('…and still nothing went to a server', srv.log.length === logBefore8s);
+    await mock.ev(`location.hash = 'today'`);
+
+    // With an account: the real server code, a mock model.
+    setAi({ AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_LABEL: 'Main model', AI_MIN_SECONDS_BETWEEN: '0' });
+    await D.ev(`location.hash = 'today'`); await sleep(300);
+    await arabicSession(D, EDGE);
+    await blurType(D, ansSel, 'The book.');
+    await D.until(`document.querySelector(${JSON.stringify(panel + ' [data-action="ca-ask"]')})`, 8000);
+    const k0 = aiCalls().length;
+    await D.click(`${panel} [data-action="ca-ask"]`); await waitPhase(D, panel, 20000);
+    const ar8 = await D.text(`${panel} [data-s="ca-shown"] .lbl`);
+    check('with an account, an Arabic check comes back shown, labelled "AI-written by Main model, not checked by your course"', (await phaseOf(D, panel)) === 'shown' && ar8 === 'Check my answer · AI-written by Main model, not checked by your course', [await phaseOf(D, panel), ar8, await D.text(`${panel} [role=alert]`)]);
+    check('…it was one request to the server, signed in as you', aiCalls().slice(k0).length === 1 && aiCalls().slice(k0)[0].user === userA, aiCalls().slice(k0).map(c => c.user));
+    await D.ev(`location.hash = 'study/cybersecurity/${CYB}'`); await D.until(`document.querySelector('[data-action=cyber-begin]')`, 10000);
+    await D.click('[data-action=cyber-begin]'); await D.until(`document.querySelector('textarea[id^="assessment"]')`, 8000);
+    await blurType(D, `[id="${await cyAns(D)}"]`, 'Evidence means something I can observe.');
+    await D.until(`document.querySelector('[data-action="ca-ask"]')`, 5000);
+    await D.click('[data-action="ca-ask"]'); await waitPhase(D, '[data-s="check-answer"]', 20000);
+    const cy8 = await D.text('[data-s="ca-shown"] .lbl');
+    check('…and a Cybersecurity check comes back shown, labelled "AI-written by Main model, not checked by your course"', (await phaseOf(D, '[data-s="check-answer"]')) === 'shown' && cy8 === 'Check my answer · AI-written by Main model, not checked by your course', [cy8, await D.text('[data-s="check-answer"] [role=alert]')]);
+    await D.ev(`location.hash = 'today'`); await sleep(200);
+    await mock.ev(`location.hash = 'today'`);
+  }
+
   console.log('\n[9] Layout');
   await D.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await D.ev(`location.hash = 'today'`);
