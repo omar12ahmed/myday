@@ -1,6 +1,6 @@
 # Build spec: word families on the Arabic vocabulary page
 
-**Status:** spec for decision — no code written. Revised after Claude's review (17 October 2026): corrections and additions are folded in below. Build only once the owner has answered §8 question 1 (one view or a toggle).
+**Status:** built in 1.38.0 (see `app/README.md`, release 51). Below is the spec as decided, revised after Claude's review (17 October 2026), with corrections and additions folded in.
 **Date:** 17 October 2026
 **Related:** the Arabic audio proposal (kept on the owner's Mac, not in this repository; play buttons land only if that proposal is accepted)
 **Mockup:** [`vocabulary-families-mockup.html`](vocabulary-families-mockup.html), beside this file — reviewed 17 October 2026. Note: its "Full list" table is not the real page (see §4).

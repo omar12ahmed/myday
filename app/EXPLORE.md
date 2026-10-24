@@ -54,7 +54,7 @@ drawing is explicitly schematic, not a verified geographic map. The economics us
 research replaces them; changes made on the page aren't saved.
 
 There are **no new saved Explore records, localStorage keys, schema migrations, sync record kinds or database
-changes**. Curated JSON ships with the app. `myday.data.v4` remains schema version 4. The chapter, motion pause
+changes**. Curated JSON ships with the app. Explore leaves `myday.data.v4`'s schema unchanged (schema 5 since 1.44.0). The chapter, motion pause
 and economics inputs use React state; scenario edits reset on refresh and are labelled as unsaved.
 
 Only **Create this task** changes saved data. It calls the existing `addTask` through `updateSaved`, attaches

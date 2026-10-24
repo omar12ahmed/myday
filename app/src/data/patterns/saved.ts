@@ -1,6 +1,6 @@
 // What MyDay has noticed — the saved part: your preferences, and your answers to the patterns it found. Saved as the
-// top-level `patterns` section (added by the new app in 1.6.0; the classic MyDay keeps it unread). On this device
-// only, and in "Export my data".
+// top-level `patterns` section (added by the new app in 1.6.0; the classic MyDay keeps it unread). Synced with your
+// account when you're signed in (record `patterns`), and in "Export my data".
 //
 // The patterns themselves aren't saved. They're worked out afresh from your history each time (see notice.ts), so
 // they follow what you actually do — and nothing is kept about you except what's already in your plans.

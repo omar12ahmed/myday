@@ -174,9 +174,10 @@ but the older version drops the new default-subject setting, so it returns to Cy
 Rolling back the code cannot undo a reset: use **Import my data** with the checked pre-reset backup to recover the work.
 
 Explore (local implementation): projects now offer **Explore this idea**, opening a dedicated narrative at
-`#projects/p/<id>/explore`. The curated Hargeisa Marketplace example has seven scenes, with a typed and validated
-content contract, optional GSAP motion, and an explicit action that creates a normal project task. Other projects
-get a starting brief and can view the labelled example. No AI generation or new saved-data schema.
+`#projects/p/<id>/explore`. The curated exploration of the owner's Hargeisa Marketplace project (being researched,
+not a demo) has seven scenes, with a typed and validated content contract, optional GSAP motion, and an explicit
+action that creates a normal project task. Other projects get a starting brief, with a link to see how Hargeisa
+Marketplace is explored (shown for reference; the project is unchanged). No AI generation or new saved-data schema.
 See [`EXPLORE.md`](EXPLORE.md) for the architecture, file inventory, calculations and limitations.
 The Phase 2 visual upgrade uses six locally stored photographs, spatial process drawings and layered
 architecture/economics storytelling, with each section arriving as it scrolls into view. See
@@ -307,7 +308,7 @@ request that would be sent (`src/ai/askContext.ts`): what you typed, the date, t
 plan, energy, free time and tasks due on Today; the current course and next task, energy and free time on Study; a project's name, summary, stage, tasks and note titles (their text only with "AI help
 with notes" on); the open note; the open task; today's appointments on the Calendar; open projects' names; never a
 private note, and only the page's name from Health and Finance. The server's job `ask` (GLM, the main model;
-`../supabase/functions/_shared/ai/ask.ts`, instructions `myday-ask-v10`) answers with one kind: things to add (tasks,
+`../supabase/functions/_shared/ai/ask.ts`, instructions versioned by `ASK_PROMPT_VERSION` there) answers with one kind: things to add (tasks,
 notes, appointments, a project), steps, a short answer with at most one action (start a short study session; or, for
 "plan my day", open Help me adjust today already filled in — `src/ai/handover.ts`), or "MyDay can't do that from here".
 The app checks it all against your data (`src/ai/ask.ts`: real ids only, days from today on, an appointment only with
@@ -702,7 +703,7 @@ pay rules) and its settings card are gone from the screen; the rules behind them
 - **The current MyDay** keeps its full Pay screen, using the same pay settings.
 - If the tax code is one MyDay can't work out (e.g. a K code), Finance shows "—" for Income Tax and take-home rather
   than a figure without tax (the current MyDay leaves tax out instead).
-- Finance stays on each device for now (it isn't synced yet).
+- Finance (money owed and expenses) syncs with your account when you're signed in, like the rest of your data.
 
 ### Calendar and Pay: differences from the current MyDay
 
@@ -1125,7 +1126,8 @@ examples, training experience, days and equipment, pace, and a few health questi
   your goal", "Higher in calories for your goal — try a smaller portion" — never "good" or "bad"); Today's Health card
   shows "This week: 1 of 3 workouts".
 - Labelled as estimates from public guidance, not medical advice, with the sources. Saved as a top-level `fitness`
-  section (added by the new app, like Finance and Notes; the classic MyDay keeps it unread), on this device only.
+  section (added by the new app, like Finance and Notes; the classic MyDay keeps it unread), synced with your
+  account when you're signed in (record `fitness:goal`).
   Code: `src/data/goals.ts` (the figures), `src/health/GoalView.tsx`.
 
 ## Projects, Notes, Tasks and Capture
@@ -1223,8 +1225,8 @@ tasks" on Today). Older `#inbox…` and `#notes…` links are rewritten to where
   is saved as you type (after a short pause), when you leave a box and when you switch away; a new note left empty
   isn't kept; deleting asks first.
 - Saved as the `notes` section (`{ categories, items }`; a note with no collection, or one whose collection has gone,
-  is in the Inbox). Notes filed in 1.3.0 stay filed. The classic MyDay keeps the section unread. Notes stay on this
-  device (not synced) and are in "Export my data".
+  is in the Inbox). Notes filed in 1.3.0 stay filed. The classic MyDay keeps the section unread. Notes sync with
+  your account when you're signed in (one record per note) and are in "Export my data".
 
 **Capture** (the **+** button: bottom-right above the bar on phones, beside the theme button on wide screens, on every
 screen): type anything and MyDay suggests what it looks like — and does only what you tap.
