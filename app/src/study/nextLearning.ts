@@ -4,7 +4,7 @@ import type { MyDayData } from '../data/types';
 import { isDone, MODE_LABEL, modeOf } from '../data/study/mastery';
 import { stIndex } from '../data/study/roadmap';
 import { lessonIndex } from './arabic/catalogue';
-import { arabicPlan, arabicState, pathLessons } from './arabic/plan';
+import { arabicPlan, arabicState, journeyFor, pathLessons } from './arabic/plan';
 import { roadmapOption, type LearningOption } from './courseOption';
 import { nextLesson as nextCyberLesson, requiredCounts } from './cybersecurity/learning';
 
@@ -33,6 +33,7 @@ export function learningOptions(data: MyDayData, generalCourseId = data.study.fo
 
   // Arabic: the same adaptive next step as its learning map (study/arabic/plan.ts), with the length that suits today.
   const plan = arabicPlan(data)!, step = plan.step;
+  const open = step.kind === 'resume' ? data.arabic.attempts.filter(a => !a.finishedAt && a.lessonId === step.lessonId).pop() : undefined;
   const arabicStarted = data.arabic.attempts.length > 0 || !!data.arabic.lessons?.length;
   const shorter = step.kind !== 'resume' && plan.length.why.length ? ` A shorter session today: ${plan.length.why.join(', ')}.` : '';
   const arabicOption: LearningOption = {
@@ -49,6 +50,7 @@ export function learningOptions(data: MyDayData, generalCourseId = data.study.fo
     // As on the learning map: revision first when cards are back (or your path is ready and some are due).
     revise: step.kind === 'revise' || (step.kind === 'complete' && step.due > 0 && step.state !== 'needs-revision') ? 'arabic' : undefined,
     mode: step.kind === 'resume' ? undefined : MODE_LABEL[modeOf(plan.length.variant)], lessonId: step.lessonId,
+    attemptId: open?.id, steps: open ? journeyFor(data, step.lessonId, open.variant, true) : undefined,
   };
 
   // User-authored roadmap courses remain available, in the order of their stages and lessons.

@@ -24,7 +24,7 @@ function check(label, ok) {
       'export * as arabicCatalogue from ' + JSON.stringify(path.join(ROOT, 'app/src/study/arabic/catalogue')) + ';',
       'export { beginSession, finishSession } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/arabic/sessions')) + ';',
       'export { markReady, flagRevisit } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/arabic/lessons')) + ';',
-      'export { arabicPlan, arabicState, checksOf } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/arabic/plan')) + ';',
+      'export { arabicPlan, arabicState, checksOf, journeyFor, lengthOn, warmUpFrom } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/arabic/plan')) + ';',
       'export { todayKey } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/dates')) + ';',
     ].join('\n'));
     const rule = await import(pathToFileURL(await bundle(path.join(dir, 'entry.ts'), path.join(dir, 'out'))).href);
@@ -65,7 +65,7 @@ function check(label, ok) {
     check('A new learner is offered Cybersecurity first and Arabic second', initial.map(o => o.subject).join() === 'cybersecurity,arabic');
     check('A new Cybersecurity recommendation opens the first real required lesson', initial[0].href === cyHref('lesson.learning-evidence') && !initial[0].resume && !initial[0].allComplete);
     check('A new Arabic recommendation opens the first real required lesson', initial[1].href === arHref('lesson.arabic-fusha-register') && !initial[1].resume && !initial[1].allComplete);
-    check('…naming its lesson and, for the suggested length, Light, Normal or Deep (the time of day can shorten it)', initial[1].lessonId === 'lesson.arabic-fusha-register' && ['Light', 'Normal', 'Deep'].includes(initial[1].mode));
+    check('…naming its lesson and a mode for its suggested length (which one depends on the time of day)', initial[1].lessonId === 'lesson.arabic-fusha-register' && ['Light', 'Normal', 'Deep'].includes(initial[1].mode));
     check('Reading initial recommendations leaves saved data byte-for-byte unchanged', JSON.stringify(blank) === blankBefore);
     const chosen = fresh();
     chosen.study.settings.primarySubject = 'arabic';
@@ -228,6 +228,19 @@ function check(label, ok) {
     rule.flagRevisit(why, start[3], 'a note', k);
     check('a path ready except one lesson says so on Today, not that the whole path is ready', !option(why, 'arabic').allComplete && option(why, 'arabic').href === arHref(start[3])
       && option(why, 'arabic').detail === 'Every other lesson on your path is ready — this one needs revision', option(why, 'arabic'));
+
+    console.log('\n[Lesson journey] The suggested length, the warm-up and the steps each length shows');
+    const ix30 = Object.entries(rule.arabicCatalogue.lessonIndex).find(([, x]) => x.practical === 30 && x.minutes >= 45)[0];
+    const at30 = { minutes: 30, why: ['energy 3 today'] };
+    check('On a 30-minute day a new lesson gets the short session (Light): the practical one would skip the teaching', rule.lengthOn(ix30, at30, 'new', false).variant === 'short');
+    check('…a lesson you\'ve practised gets the practical one (Normal), at its own minutes', rule.lengthOn(ix30, at30, 'practised', false).variant === 'practical' && rule.lengthOn(ix30, at30, 'practised', false).minutes === 30);
+    check('…and one that needs revision the revision session', rule.lengthOn(ix30, at30, 'needs-revision', true).variant === 'revision');
+    const jw = fresh(), third = requiredArabic[2], second = requiredArabic[1]; jw.arabic.pathId = 'path.arabic-start';
+    check('The warm-up waits until you\'ve studied the lesson before (never recall what you haven\'t met)', rule.warmUpFrom(jw, third) === null && rule.journeyFor(jw, third, 'standard', false).join() === 'understand,try,check');
+    rule.finishSession(jw, rule.beginSession(jw, second, 'short'));
+    check('…then the standard session starts with it, and the short one shows Understand and Check (Reflect while a session is open)', rule.warmUpFrom(jw, third) === second
+      && rule.journeyFor(jw, third, 'standard', false).join() === 'warmup,understand,try,check' && rule.journeyFor(jw, third, 'short', true).join() === 'understand,check,reflect');
+    check('The first lesson on a path has no warm-up', rule.warmUpFrom(jw, requiredArabic[0]) === null);
 
     console.log('\n[Your focus] One choice for Today and Study home');
     const yf = fresh();

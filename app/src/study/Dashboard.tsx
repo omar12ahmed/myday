@@ -105,7 +105,8 @@ function FocusNow({ data, now, others, ix, lengths, setLength }: {
   // Your focus is your courses, but none has a task left (or you haven't added one): the next step is in another
   // subject, and says so.
   const elsewhere = st.settings.primarySubject === 'roadmap' && now.subject !== 'roadmap', noCourses = !focusableCourses(ix).length;
-  const kept = now.lessonId ? keptStep(now.lessonId) : null; // where you left off on a lesson, on this device
+  // Where you left off in the open session, on this device, if it's a step that session shows.
+  const kept = now.attemptId ? keptStep(now.attemptId) : null, place = kept && now.steps?.includes(kept) ? kept : null;
   const more = others && <OtherSubjects data={data} others={others} />;
   if (now.subject === 'roadmap') {
     const e = ix.course.get(now.courseId!), t = now.taskId ? ix.task.get(now.taskId)?.node ?? null : null;
@@ -145,7 +146,7 @@ function FocusNow({ data, now, others, ix, lengths, setLength }: {
       <p className="text-[15px] text-fg-2 m-0" data-s="option-detail">{now.detail}</p>
       {/* Only Arabic's length follows your energy and free time; a Cybersecurity lesson's is its usual length. */}
       <p className="text-sm text-fg-3 m-0 mt-1" data-s="option-length">{now.mode ? `${now.mode} · about` : 'About'} {now.minutes} min{now.subject === 'arabic' && !now.resume ? ' suits today' : ''}</p>
-      {now.resume && kept && <p className="text-sm text-fg-2 m-0 mt-1" data-s="option-kept">You were on {STEP_LABEL[kept]}; it opens there.</p>}
+      {now.resume && place && <p className="text-sm text-fg-2 m-0 mt-1" data-s="option-kept">You were on {STEP_LABEL[place]}; it opens there.</p>}
       <Why text={now.why} />
       {now.revise ? <div className="grid gap-2.5 mt-2">
           <Button variant="primary" data-action="study-now" onClick={() => { focusOn(now); startRevision(now.revise); }}><RotateCcw size={18} aria-hidden="true" /> {optionAction(now)}</Button>

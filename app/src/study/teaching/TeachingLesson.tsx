@@ -14,11 +14,11 @@ function Prose({ text, voice }: { text: string; voice?: string }) {
     : <Mixed key={i} text={part} voice={voice ? `${voice}:${i}` : undefined} />)}</>;
 }
 
-export function TeachingWaiting({ missing }: { missing: boolean }) {
-  return <Card aria-live="polite"><h3>Lesson reading</h3>
-    {missing ? <><p>The teaching material could not be loaded. Your practical tasks are still below.</p><Button onClick={() => window.location.reload()}>Reload lesson</Button></>
-      : <p>Loading the explanation and examples…</p>}
-  </Card>;
+// While the teaching loads (or if it can't): on its own card, or `bare` inside one already there.
+export function TeachingWaiting({ missing, bare = false }: { missing: boolean; bare?: boolean }) {
+  const body = missing ? <><p>The teaching material could not be loaded. Your practical tasks are still below.</p><Button onClick={() => window.location.reload()}>Reload lesson</Button></>
+    : <p>Loading the explanation and examples…</p>;
+  return bare ? <div aria-live="polite">{body}</div> : <Card aria-live="polite"><h3>Lesson reading</h3>{body}</Card>;
 }
 // Read and see it worked: the explanation and the worked example.
 export function TeachingRead({ t, label = true }: { t: TeachingParts; label?: boolean }) {

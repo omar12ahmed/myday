@@ -1,6 +1,7 @@
 // What to learn next in one of your own courses, as an option for Today's Study card and Study home's Now card. Kept
 // apart from nextLearning.ts, which loads the Arabic and Cybersecurity catalogues on demand, so Study home can show a
 // course of yours straight away. Read-only: nothing here is saved.
+import type { JourneyStep } from '../data/study/mastery';
 import { nextTaskIn, stIndex, type StudyIndex } from '../data/study/roadmap';
 import { courseFocus } from '../data/study/yourFocus';
 import type { MyDayData } from '../data/types';
@@ -21,7 +22,9 @@ export interface LearningOption {
   taskId?: string;
   revise?: 'arabic';    // the step is revision first, then the lesson (Arabic's adaptive next step)
   mode?: string;        // Light, Normal or Deep, for the suggested length (Arabic)
-  lessonId?: string;    // the lesson it opens (Arabic), for where you left off on it
+  lessonId?: string;    // the lesson it opens (Arabic)
+  attemptId?: string;   // the open session it resumes (Arabic), and the steps that session shows, for where you left off
+  steps?: JourneyStep[];
 }
 
 const ticked = (ix: StudyIndex, courseId: string) => !!ix.courseTasks.get(courseId)?.some(t => t.done);

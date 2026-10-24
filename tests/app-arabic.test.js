@@ -292,6 +292,9 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   console.log('\n[11] The lesson journey: steps, Light / Normal / Deep, your place and the restart');
   const J = 'lesson.arabic-learning-loop'; // third on the core path: the lesson before it has checks, so it has a warm-up
   await go('study/arabic/' + J); await wait('[data-ar-steps]', 5000);
+  check('the warm-up waits until you\'ve studied the lesson before', !(await ev(`document.querySelector('[data-ar-steps]').dataset.arSteps`)).includes('warmup'));
+  await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); d.arabic.attempts.push({ id: 'aaWarm', lessonId: 'lesson.arabic-goal-baseline', curriculumVersion: '1.1.2', variant: 'short', startedAt: '2026-10-11T08:00:00.000Z', finishedAt: '2026-10-11T08:15:00.000Z', help: 'independent', practised: ['reading'], answers: {}, revealed: [], revisit: '' }); localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`);
+  await go('study/arabic/' + J); await wait('[data-ar-steps]', 5000);
   const steps = () => ev(`document.querySelector('[data-ar-steps]').dataset.arSteps`);
   check('a lesson is one page in steps: with the full session chosen, Warm-up, Understand, Try and Check', (await steps()) === 'warmup understand try check', await steps());
   check('the session choice groups the lesson\'s own sessions as Light, Normal and Deep, with their real minutes',
@@ -306,14 +309,16 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   check('…Check asks one question first, the other folded away', (await count('#ar-step-check > ol > li')) === 1 && (await T.text('[data-ar-more-checks] summary')) === 'The other question');
   const withSession = await ev(`localStorage.getItem('myday.data.v4')`);
   await click('[data-action="ar-step"][data-v="check"]'); await sleep(400);
-  check('jumping to Check marks it as your step and keeps your place on this device only', (await ev(`document.querySelector('[data-action="ar-step"][aria-current="step"]').dataset.v`)) === 'check'
-    && (await ev(`JSON.parse(localStorage.getItem('myday.study.lessonStep'))['${J}']`)) === 'check' && (await ev(`localStorage.getItem('myday.data.v4')`)) === withSession);
+  const sessionId = (await AR()).attempts.find(a => a.lessonId === J && !a.finishedAt).id;
+  check('jumping to Check marks it as your step, keeps your place for this session on this device only, and moves focus there', (await ev(`document.querySelector('[data-action="ar-step"][aria-current="step"]').dataset.v`)) === 'check'
+    && (await ev(`JSON.parse(localStorage.getItem('myday.study.lessonStep'))['${sessionId}']`)) === 'check' && (await ev(`localStorage.getItem('myday.data.v4')`)) === withSession
+    && await ev(`document.activeElement === document.querySelector('#ar-step-check h3')`));
   check('…and while you check yourself, the explanation folds away', await exists('[data-ar-folded]') && !(await exists('#ar-step-understand [data-teaching]')));
   await click('[data-action="ar-explain-again"]'); await sleep(200);
   check('"Show the explanation again" brings it back', await exists('#ar-step-understand [data-teaching]') && !(await exists('[data-ar-folded]')));
   await go('study/arabic/' + J); await wait('[data-ar-steps]', 5000); await sleep(400);
   check('reopening the lesson with its session open goes back to your step', (await ev(`document.querySelector('[data-action="ar-step"][aria-current="step"]').dataset.v`)) === 'check'
-    && await ev(`(() => { const r = document.getElementById('ar-step-check').getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; })()`));
+    && await ev(`scrollY > 0 && (() => { const r = document.getElementById('ar-step-check').getBoundingClientRect(); return r.top >= 0 && r.top < 240; })()`));
   await click('[data-action="ar-restart"]'); await sleep(150);
   check('"I got distracted — help me restart" says where you were and offers one small thing', (await T.text('[data-ar-restart]')).includes('You were on Check.') && (await T.text('[data-action="ar-restart-go"]')) === 'Answer one check');
   await click('[data-action="ar-restart-go"]'); await sleep(300);
@@ -323,11 +328,27 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); d.study.settings.primarySubject = 'arabic'; localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`);
   await go('study'); await wait('#stFocus[data-now="arabic"] [data-s=option-kept]', 5000);
   check('Study home picks it up where you left off: "You were on Check; it opens there."', (await T.text('#stFocus .eyebrow')).startsWith('Pick up where you left off') && (await T.text('#stFocus [data-s=option-kept]')) === 'You were on Check; it opens there.');
+  await go('study/arabic/' + J); await wait('[data-ar-steps]', 5000); await sleep(500);
+  await click('[data-action="ar-step"][data-v="understand"]'); await sleep(1200);
+  await click('[data-action="ar-restart"]'); await sleep(150); await click('[data-action="ar-restart-go"]'); await sleep(300);
+  check('from Understand, the restart goes to the example and focus goes with it (not lost to the page)', (await T.text('[data-action="ar-restart"]')) === 'I got distracted — help me restart'
+    && await ev(`document.activeElement !== document.body && !!document.activeElement.closest('#ar-step-understand')`));
+  await click('[data-action="ar-finish"]'); await wait('[data-ar-finished]'); await sleep(300);
+  check('finishing shows how it went under Reflect, focus on it, the session\'s own steps kept', (await steps()) === 'understand check reflect' && await ev(`!!document.activeElement.closest('[data-ar-finished]')`));
+  await click('[data-s=ar-variant][value=standard]'); await sleep(150); await click('[data-action="ar-begin"]'); await wait('[data-ar-session="open"]'); await sleep(600);
+  check('starting again starts at the beginning: a full session\'s steps, the first one current, no jump to where the last session ended', (await steps()) === 'warmup understand try check reflect'
+    && (await ev(`document.querySelector('[data-action="ar-step"][aria-current="step"]').dataset.v`)) === 'warmup' && !(await T.text('[data-ar-restart], [data-action="ar-restart"]')).includes('Reflect'));
+  await go('study'); await wait('#stFocus[data-now="arabic"]', 5000); await sleep(300);
+  check('…and Study home never says where the session before ended (at most where this one is: its first step)', !(await exists('#stFocus [data-s=option-kept]'))
+    || (await T.text('#stFocus [data-s=option-kept]')) === 'You were on Warm-up; it opens there.', await T.text('#stFocus'));
   await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await go('study/arabic/' + J); await wait('[data-ar-steps]', 5000);
   await ev(`window.scrollTo(0, document.getElementById('ar-step-check').offsetTop)`); await sleep(300);
-  check('on a phone the step bar stays at the top as you scroll, its steps at least 44 px tall', await ev(`Math.round(document.querySelector('[data-ar-steps]').getBoundingClientRect().top) === 0`)
+  check('on a phone a full session\'s step bar stays at the top in one row, its steps at least 44 px tall, nothing scrolling sideways', await ev(`Math.round(document.querySelector('[data-ar-steps]').getBoundingClientRect().top) === 0`)
+    && await ev(`document.querySelector('[data-ar-steps]').getBoundingClientRect().height <= 64`)
     && await ev(`[...document.querySelectorAll('[data-action="ar-step"]')].every(b => b.getBoundingClientRect().height >= 44)`) && await ev('document.documentElement.scrollWidth === innerWidth'));
+  await click('[data-action="ar-step"][data-v="try"]'); await sleep(900);
+  check('…and a step you jump to starts just below it, its heading in view', await ev(`document.querySelector('#ar-step-try h3').getBoundingClientRect().top >= document.querySelector('[data-ar-steps]').getBoundingClientRect().bottom - 1`));
   await send('Emulation.clearDeviceMetricsOverride');
 
   const s = T.summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);

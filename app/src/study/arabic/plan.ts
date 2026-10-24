@@ -4,7 +4,7 @@
 import { todayKey } from '../../data/dates';
 import { checkIds, lessonRecord, stateOf } from '../../data/arabic/lessons';
 import type { Variant } from '../../data/arabic/types';
-import { isDone, lengthFor, nextStep, stepReason, type LessonState, type Step } from '../../data/study/mastery';
+import { isDone, lengthFor, nextStep, stepReason, stepsFor, type JourneyStep, type LessonState, type Step } from '../../data/study/mastery';
 import { dueIds } from '../../data/study/queue';
 import { DAILY_ENOUGH, reviewedOn } from '../../data/study/revision';
 import { suggestLength } from '../../data/study/sessions';
@@ -25,12 +25,31 @@ export function pathLessons(pathId: string): string[] {
 }
 
 // How long a session to suggest on a lesson: energy and free time decide (suggestLength), a lesson that needs
-// revision gets the revision session, and the practical one is offered only once you've practised the lesson. The
-// reasons are suggestLength's own ("energy 2 today").
-export function lessonLength(d: MyDayData, lessonId: string, revisit: boolean): { variant: Variant; minutes: number; why: string[] } {
-  const l = lessonIndex[lessonId], s = suggestLength(d, l.minutes), practised = arabicState(d, lessonId) !== 'new';
-  const len = lengthFor(s.minutes, { standard: l.minutes, short: l.short, practical: practised ? l.practical : undefined }, revisit);
-  return { variant: len, minutes: { standard: l.minutes, practical: l.practical, short: l.short, revision: l.revision }[len], why: s.why };
+// revision gets the revision session, and the practical one is offered only once you've practised the lesson (a new
+// lesson never gets it: it skips the teaching). The reasons are suggestLength's own ("energy 2 today").
+export function lengthOn(lessonId: string, suggested: { minutes: number; why: string[] }, state: LessonState, revisit: boolean): { variant: Variant; minutes: number; why: string[] } {
+  const l = lessonIndex[lessonId];
+  const len = lengthFor(suggested.minutes, { standard: l.minutes, short: l.short, practical: state !== 'new' ? l.practical : undefined }, revisit);
+  return { variant: len, minutes: { standard: l.minutes, practical: l.practical, short: l.short, revision: l.revision }[len], why: suggested.why };
+}
+export const lessonLength = (d: MyDayData, lessonId: string, revisit: boolean) =>
+  lengthOn(lessonId, suggestLength(d, lessonIndex[lessonId].minutes), arabicState(d, lessonId), revisit);
+
+// ---------- The lesson journey ----------
+// The warm-up is the lesson before this one on your path, when it has checks and you've studied it: its first two.
+export function warmUpFrom(d: MyDayData, lessonId: string): string | null {
+  const path = pathLessons(d.arabic.pathId), i = path.indexOf(lessonId), prev = i > 0 ? path[i - 1] : null;
+  return prev && lessonIndex[prev].checks > 0 && arabicState(d, prev) !== 'new' ? prev : null;
+}
+// The steps a lesson has (a warm-up and checks only when there are some), and the ones a session of this length
+// shows first, with Reflect while a session is open or just finished.
+export function lessonSteps(d: MyDayData, lessonId: string): JourneyStep[] {
+  const warm = !!warmUpFrom(d, lessonId), checks = (lessonIndex[lessonId]?.checks ?? 0) > 0;
+  return (['warmup', 'understand', 'try', 'check'] as const).filter(s => (s === 'warmup' ? warm : s === 'check' ? checks : true));
+}
+export function journeyFor(d: MyDayData, lessonId: string, length: string, reflect: boolean): JourneyStep[] {
+  const has = lessonSteps(d, lessonId);
+  return [...stepsFor(length).filter(s => has.includes(s)), ...(reflect ? ['reflect' as const] : [])];
 }
 
 // `complete`: every lesson on your path is ready to move on or holding (true even while a session is open).
