@@ -145,9 +145,9 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   await click(`input[data-s=task-done][data-id="${tasks[0].id}"]`); await sleep(150);
   st = await SD();
   check('ticking a task marks it complete with today\'s local date', allTasks(st)[0].done && allTasks(st)[0].doneOn === '2026-11-02');
-  check('completion: 1 of 3 (33%)', (await text('#app')).includes('1 of 3 tasks complete (33%)'));
+  check('completion is a count of ticks with no percentage: 1 of 3 tasks marked complete', (await text('#app')).includes('1 of 3 tasks marked complete') && !/\d+\s?%/.test(await text('#app')), (await text('#app')).match(/\d+\s?%/));
   await click(`input[data-s=task-done][data-id="${tasks[1].id}"]`); await sleep(150);
-  check('completion rounds down: 2 of 3 is 66%, so 100% only ever means all done', (await text('#app')).includes('2 of 3 tasks complete (66%)'));
+  check('ticking another one counts it: 2 of 3 tasks marked complete', (await text('#app')).includes('2 of 3 tasks marked complete'));
   check('the roadmap labels completion as not mastery', (await text('#app')).includes("it isn't a measure of mastery"));
   await nav('study');
   check('dashboard shows the next task with its path and time', (await text('#stFocus')).includes('Putting it together') && (await text('#stFocus')).includes('Foundations › Networking basics › How the web works') && (await text('#stFocus')).includes('About 30 min'));
@@ -458,7 +458,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   await go('study/progress', 2026, 11, 2, 9);
   const P = await text('#app');
   check('learning days: sessions on 28 Oct, 30 Oct and 1 Nov → 3 in the last 7', P.includes('Learning days in the last 7: 3'));
-  check('completion counts tracked tasks only: 2 of 3 complete (66%)', P.includes('2 of 3 tasks complete (66%)'));
+  check('completion counts tracked tasks only: 2 of 3 tasks marked complete', P.includes('2 of 3 tasks marked complete'));
   check('practical work completed is listed with its date', P.includes('Practical work completed (1)') && P.includes('Build a DNS lookup script') && P.includes('Fri 30 Oct'));
   check('after-learning clarity is your own report, counted separately', P.includes('Understand: 1 · Partly understand: 0 · Not yet: 1') && P.includes('separate from how revision went'));
   const weekRows = await ev(`[...document.querySelectorAll('.st-recall tbody tr')].map(tr => [...tr.children].map(td => td.textContent.trim()).join('|'))`);

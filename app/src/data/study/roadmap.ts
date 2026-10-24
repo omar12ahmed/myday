@@ -56,7 +56,8 @@ export function completion(tasks: StudyTask[]) {
   const total = tasks.length, done = tasks.filter(t => t.done).length;
   return { total, done, pct: total ? Math.floor((done / total) * 100) : null };
 }
-export const completionText = (c: ReturnType<typeof completion>) => (c.total ? `${c.done} of ${c.total} task${c.total === 1 ? '' : 's'} complete (${c.pct}%)` : 'No tasks added yet');
+// A count of the ticks, never a percentage (owner's decision, 24 Oct 2026): the bar beside it can still picture it.
+export const completionText = (c: ReturnType<typeof completion>) => (c.total ? `${c.done} of ${c.total} task${c.total === 1 ? '' : 's'} marked complete` : 'No tasks added yet');
 
 // The course on the dashboard: the one you chose, otherwise the first with work left.
 export function focusCourse(st: StudyData, ix: StudyIndex): StudyCourse | null {
