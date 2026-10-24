@@ -864,7 +864,7 @@ keeps its existing look; both versions still share the font, task timeline and s
 - **Focus mode:** shows only the next task with Start focus, Just start and Tick it off, or the running timer.
   Show everything brings the rest back. The choice stays on this device only (`myday.focus`).
 - **Sayings:** one quiet line per screen, never a card: under the plan on Today (under Build my day before a plan, so
-  it stays in view on phones), under Study's tabs, above Finance's work pay, in Projects' intro and in Your week's
+  it stays in view on phones; after a running or paused Study session, which keeps its place), under Study's tabs, above Finance's work pay, in Projects' intro and in Your week's
   first card. Muted text; Arabic right to left in the Arabic font. Today uses only the gentle ones (al-Shāfiʿī on
   the days, Marcus Aurelius, Viktor Frankl) on a rest day or a low-energy day, so the demanding lines never read as
   blame. A fold-out, at least 44 px to tap, gives a lesson's meaning or a note on the Arabic.

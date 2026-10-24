@@ -291,7 +291,8 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
   // Wide screens: the timeline and learning count move to a second column on the right.
   // `order` only matters on phones; entrance classes remain for compatibility, without workspace animation.
   // One quiet saying under the plan, or under Build my day before there is one (so Build my day stays in view on
-  // phones): gentler on a rest day or a low-energy day (today's energy, including a change made after building).
+  // phones), after a running or paused Study session, which stays right beside your day: gentler on a rest day or a
+  // low-energy day (today's energy, including a change made after building).
   const sayingsOn = useSayings();
   const saying = (rest: boolean, energy: number | null | undefined) => sayingsOn && <Saying place={todayPlace(rest, energy)} day={k} />;
   const slot = (order: string, node: React.ReactNode, id?: string) =>
@@ -370,8 +371,8 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
         {slot('order-1', <MorningCard key={energy} energy={energy} queue={data.queue}
           onEnergy={v => { update(dr => { ensureContext(dr, k).energy = v; }); contextChanged(); }} onBuild={build} onSkip={skip}
           onMind={AI_MODE !== 'off' ? openMind : undefined} />)}
-        {slot('order-1', saying(false, energy), 'slot-saying')}
         {slot('order-1', currentStudy && studyCard, 'slot-study')}
+        {slot('order-1', saying(false, energy), 'slot-saying')}
         {mindSlots}
         {slot('order-1', proposalCard)}
         {slot('order-1', <QuickAdd k={k} />, 'slot-quick')}
