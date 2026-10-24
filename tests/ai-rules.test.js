@@ -1638,6 +1638,17 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('…and "overdue" never stands: a message that was only that becomes a plain line', K.checkAskReply(WANS('The armchair one is overdue.', []), ww, wslice, LD, undefined, wl.lookup)?.message === 'Here’s what you’re waiting on.');
     const wc = K.checkAskReply(JSON.stringify({ kind: 'answer', message: '“Deposit back” is still waiting, since 28 October.', items: [{ type: 'task', title: 'Chase: Deposit back', minutes: 5, category: 'admin', projectId: null }], action: null }), ww, wslice, LD, undefined, wl.lookup);
     check('…a "Chase:" task it offers comes as one to tick', wc?.kind === 'add' && wc.items.length === 1 && wc.items[0].title === 'Chase: Deposit back' && !wc.items[0].already, wc);
+    // The tone filter: tied to the wait — "the late post" and "behind the sofa" stay; counts in words and a fortnight go.
+    const tone = m => K.checkAskReply(WANS(`“Deposit back” is waiting since 28 October. ${m}`, []), ww, wslice, LD, undefined, wl.lookup)?.message;
+    check('…the tone filter keeps ordinary words ("the late post", "behind the sofa", "a week from Friday") and drops spelled-out counts and "running late"',
+      ['The late post may explain it.', 'Check behind the sofa.', 'Expected a week from Friday.'].every(m => tone(m).endsWith(m)) && ['It has been thirteen days.', 'About a fortnight so far.', 'A couple of days more.', 'It is running late.'].every(m => !tone(m).includes(m)));
+    const WCH = JSON.stringify({ kind: 'answer', message: 'Two waits could use a nudge.', action: null, items: [{ type: 'task', title: 'Chase: Ask about the armchair', minutes: 5, category: 'admin', projectId: 'pjShed' }, { type: 'task', title: 'Chase: Deposit back', minutes: 5, category: 'admin', projectId: null }] });
+    const wch = K.checkAskReply(WCH, ww, wslice, LD, undefined, wl.lookup);
+    check('…a "Chase:" offer is tied to its wait, and one already chased comes back unticked', wch?.items?.[0].chaseFor === 'tkW1' && wch.items[0].already && wch.items[1].chaseFor === 'tkW2' && !wch.items[1].already, wch?.items);
+    localStorage.clear(); localStorage.setItem('myday.data.v4', JSON.stringify(ww)); K.boot();
+    const wu = K.addAskItems([wch.items[1]]), wd = K.getSnapshot().data, chase = wd.tasks.items.find(t => t.title === 'Chase: Deposit back');
+    check('…and added, it is Chase it\'s own: 5 minutes, linked as that wait\'s chase (so the next look says chased)', !!chase && chase.minutes === 5 && wd.tasks.items.find(t => t.id === 'tkW2').waiting.chaseTaskId === chase.id
+      && K.waitingLookup(wd, 'all').lookup.tasks.find(t => t.id === 'tkW2').chased && eq(wu.tasks, [chase.id]), [chase, wu]);
     const wp1 = K.checkAskReply(K.mockAsk(K.askContext(wslice, wq, LD)), ww, wslice, LD);
     const wp2 = wp1?.kind === 'lookup' && wp1.tool === 'waiting' ? K.waitingLookup(ww, wp1.query) : null;
     const wp3 = wp2 && K.checkAskReply(K.mockAsk(K.askContext(wslice, wq, LD, undefined, undefined, wp2.lookup)), ww, wslice, LD, undefined, wp2.lookup);

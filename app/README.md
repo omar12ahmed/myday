@@ -660,9 +660,11 @@ app looks on the device (`waitingLookup` in `src/ai/lookup.ts`) at the tasks mar
 oldest wait first: each one's title, its project, since when, the day you expect it and whether its Chase task is
 there. Never who or what it waits on (`waiting.on`), and never a private project's task (counted only on the device).
 Its answers keep the waiting tone (1.50.0): dates, never a count of days or "overdue" — a sentence that counts days or
-says overdue, late or behind is left out. When an expected day has come and nothing chases it, it may offer one
-5-minute "Chase: <task>" to tick, naming no one. The tasks it names are links. Not on Finance or Health. Evaluated with
-`ai-eval/ask-scenarios.ts` (w01–w08).
+is running late or behind is left out ("the late post" stays). When an expected day has come, or you asked what to
+chase, it may offer a "Chase: <task>" to tick, naming no one; added, it's Chase it's own (5 minutes, the task's list
+and project, linked to the wait), and one for a wait already chased comes back unticked. Asked who, it says that stays
+on the task. The tasks it names are links. Not on Finance or Health. Evaluated with `ai-eval/ask-scenarios.ts`
+(w01–w08) and `ai-eval/reviews/2026-10-24-ask-waiting-quality.md`.
 
 **Planning a Study course with Ask (1.26.0):** a course page has **✦ Plan this course with Ask**, which opens + already
 filled in ("Break this course into study tasks"; `src/capture/openCapture.ts`). From a course page Ask sends the

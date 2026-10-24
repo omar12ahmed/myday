@@ -13,7 +13,7 @@ import { stIndex } from '../data/study/roadmap';
 import { ROUND_SIZE } from '../data/study/common';
 import { dueIds, type Scope } from '../data/study/queue';
 import { updateSaved } from '../data/storage';
-import { addTask, editTask, inQueue, leaveTodaysPlanIfLater, onTodaysPlan } from '../data/tasks';
+import { addTask, chaseWaiting, editTask, inQueue, leaveTodaysPlanIfLater, onTodaysPlan } from '../data/tasks';
 import { addMilestone, addOption, addPoint, PLAN_LIMITS, removeMilestone, removeOption, removePoint, type Side } from '../data/projectPlan';
 import { addAssumption, isBusiness, MODEL_LIMITS, removeAssumption } from '../data/businessModel';
 import type { Category, Commitment, DateKey, MyDayData, Note, Project, StudyModule, StudySection, Task, TaskItem } from '../data/types';
@@ -34,6 +34,7 @@ export interface AskProposal {
   listId?: string;                              // steps for a task: the list that task is in (your own lists, Tasks)
   text: string;                                 // a note's text / a project's summary ('' otherwise)
   already: boolean;                             // a task with this title is already on your lists (left unticked)
+  chaseFor?: string;                            // a "Chase:" task for this waiting task (added as its chase, as Chase it does)
   // A study task (into the course on the page): its kind and where it goes — an existing section, or a new section
   // (named) in an existing module or a new module (named).
   study?: { courseId: string; kind: 'learn' | 'practical'; sectionId: string | null; section: string | null; moduleId: string | null; module: string | null };
@@ -47,7 +48,7 @@ const PLAN_TYPES: AskItemType[] = ['milestone', 'pro', 'con', 'option', 'must-be
 const JUDGES = /\b(great|good|bad|strong|weak|promising|solid|brilliant|risky|terrible) (idea|plan|business|concept)\b|\b(will|would|could|might) (definitely |probably |likely )?(fail|succeed|flop|take off)\b|\b(is|are|seems?|looks?) (likely|unlikely|probably|definitely) (true|false|right|wrong)\b|\b(likely|unlikely) to (work|fail|succeed)\b|\b(most|least|biggest|highest) risk/i;
 const SUGGESTED_BELIEFS = 5; // a few at a time
 // A wait is about the day you expect it: no count of days, no "overdue" (the owner's rule for waiting, 1.50.0).
-const WAIT_TONE = /\b(overdue|late|behind|\d+\s+(days?|weeks?|months?)|(a|one|two|three|four|five|six|several|few) (days?|weeks?|months?))\b/i;
+const WAIT_TONE = new RegExp(String.raw`\boverdue\b|\b(is|are|'s|was|were|been|running|getting|now)\s+(late|behind)\b|\bfortnight\b|\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|a couple of|several|a few|few)\s+(days?|weeks?|months?)\b`, 'i');
 // Words that pick for you. A decision stays yours: a reply saying which option is best is reworded (and says so).
 const CHOOSES = /\b(is|seems|looks|would be) (the )?(best|better|right|clear|obvious)( option| choice| one| fit| way to go)?\b|\bI(?:'d| would) (choose|pick|go (?:with|for))\b|\bI recommend\b|\b(?:you should|I'd suggest you) (?:choose|pick|go (?:with|for))\b|\b(?:clear|obvious) winner\b/i;
 // A task or note for the project proposed in the same answer (it's created first when you tap Add).
@@ -115,6 +116,12 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
     const parts = shown.message.match(/[^.!?…]+[.!?…]+["”’)]*\s*|[^.!?…]+$/g) ?? [], counts = (x: string) => WAIT_TONE.test(x);
     if (parts.some(counts)) { const kept = parts.filter(x => !counts(x)).join('').trim();
       shown = { ...shown, message: kept.split(/\s+/).length >= 3 ? kept : 'Here’s what you’re waiting on.', changed: [...shown.changed, 'MyDay left out a count of days — a wait is about the day you expect it.'] }; }
+  }
+  // A "Chase: <task>" it offers for a task it looked at is added as that wait's chase (as Chase it does); one already
+  // chased is left unticked.
+  if (looked?.tool === 'waiting' && (shown.kind === 'add' || shown.kind === 'steps')) {
+    const of = (title: string) => looked.tasks.find(x => sameTask(`Chase: ${x.title}`) === sameTask(title));
+    shown = { ...shown, items: shown.items.map(i => { const w = i.type === 'task' ? of(i.title) : undefined; return w ? { ...i, chaseFor: w.id, already: i.already || w.chased } : i; }) };
   }
   if (!looked || (looked.tool !== 'notes' && looked.tool !== 'decisions' && looked.tool !== 'waiting') || !r?.sources?.length) return shown;
   // The records an answer says it used: only ones the lookup found, once each, as links.
@@ -474,6 +481,12 @@ export function addAskItems(items: AskProposal[]): AskUndo | null {
     for (const it of items) if (it.type === 'project') { const id = addProject(d, it.title, it.text); if (id) { u.projects.push(id); created ??= id; } }
     const inProject = (pid: string | null) => (pid === NEW_PROJECT ? created : pid);
     for (const it of items) {
+      if (it.type === 'task' && it.chaseFor) {
+        // A chase for a wait it looked at: Chase it's own way (same list and project, 5 minutes, linked to the wait).
+        const id = chaseWaiting(d, it.chaseFor, it.date);
+        if (id && id !== 'already') { u.tasks.push(id); continue; }
+        if (id === 'already') continue;
+      }
       if (it.type === 'task') {
         const id = addTask(d.tasks, { title: it.title, category: it.category, due: it.date, time: it.time, minutes: it.minutes, listId: it.listId && d.tasks.lists.some(l => l.id === it.listId) ? it.listId : '' });
         if (!id) continue;

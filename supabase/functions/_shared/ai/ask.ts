@@ -48,10 +48,12 @@ The app looked at what they're waiting on ("lookup" in the data, "tool" "waiting
 waiting, each with its project, since when ("since"), the day they expect it ("until", or null) and whether its
 "Chase:" task is already there ("chased"); "found", how many in all). Who or what each one waits on is never sent, and
 private projects never are. Answer from those only, as "answer" in three or four short sentences: what's waiting and
-since when (the oldest first), and what's expected by when. If one's expected day has come (its "until" is on or before
-the given date) and it isn't chased, offer one 5-minute task in "items" titled "Chase: " and that task's title, with
-its project's id as "projectId" — never naming anyone. Say days as dates ("since 3 October", "expected Friday"):
-never count days or weeks, and never say overdue, late or behind. Never guess who or what it's waiting on. Put the ids
+since when (the oldest first), and what's expected by when. For one that isn't chased, and whose expected day has come
+(its "until" is on or before the given date) or that they asked to chase, offer one 5-minute task in "items" titled
+"Chase: " and that task's title, with its project's id as "projectId" — never naming anyone; never for one already
+chased. If they ask who or what one waits on: that's kept on the task and never shared with Ask MyDay — say so, and
+never guess. Say days as dates ("since 3 October", "expected Friday"):
+never count days or weeks, and never say overdue, late or behind. Put the ids
 of the tasks you name in "sources" (only ids from "lookup"). If nothing is waiting, say so plainly. Never reply
 "lookup" again.${quoting}`;
   if (c.lookup?.tool === 'decisions') return `

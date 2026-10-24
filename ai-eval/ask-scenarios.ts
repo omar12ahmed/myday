@@ -294,7 +294,7 @@ export const ASK_SCENARIOS: AskScenario[] = [
     { can: ['notes', 'day', 'project', 'decisions', 'waiting'], lookup: { tool: 'waiting', query: 'all', found: 3, tasks: [{ id: 'wt1', title: 'Deposit back from the old flat', projectId: 'pjMove', project: 'Move to a bigger flat', since: '2026-10-01', until: null, chased: false },
       { id: 'wt2', title: 'Quote for the van', projectId: 'pjMove', project: 'Move to a bigger flat', since: '2026-10-10', until: '2026-10-17', chased: false },
       { id: 'wt3', title: 'Reply about the market stall', projectId: 'pjCof', project: 'Coffee subscription for offices', since: '2026-10-15', until: '2026-10-25', chased: false }] } }),
-  A('w05-already-chased', 'Past its day but already chased', 'today', 'Anything I should chase?', TODAY, { kinds: ['answer'], banned: /Chase:|\b\d+\s+(days?|weeks?)\b|\boverdue\b|\blate\b/i },
+  A('w05-already-chased', 'Past its day but already chased', 'today', 'Anything I should chase?', TODAY, { kinds: ['answer'], banned: /"title":\s*"Chase:|\b\d+\s+(days?|weeks?)\b|\boverdue\b|\blate\b/i },
     { can: ['notes', 'day', 'project', 'decisions', 'waiting'], lookup: { tool: 'waiting', query: 'all', found: 1, tasks: [{ id: 'wt2', title: 'Quote for the van', projectId: 'pjMove', project: 'Move to a bigger flat', since: '2026-10-10', until: '2026-10-17', chased: true }] } }),
   A('w06-none', 'Nothing waiting', 'today', 'What am I waiting on?', TODAY, { kinds: ['answer'], banned: /\b(deposit|van|stall)\b/i },
     { can: ['notes', 'day', 'project', 'decisions', 'waiting'], lookup: { tool: 'waiting', query: 'all', found: 0, tasks: [] } }),
