@@ -121,6 +121,28 @@ const clone = o => JSON.parse(JSON.stringify(o));
   check('a practice record with nothing in it, or for another course, isn\'t taken in', R.cleanRecord('arabic_practice:lesson.arabic-origin-location', { id: 'lesson.arabic-origin-location' }) === null
     && R.cleanRecord('arabic_practice:lesson.learning-evidence', { id: 'lesson.learning-evidence', tried: '2026-10-11' }) === null);
 
+  console.log('\n[1a] Attached files (specs/files.md)');
+  {
+    const withFiles = clone(raw);
+    const rec = (id, x = {}) => ({ id, name: 'Quote.pdf', type: 'application/pdf', size: 2048, sha256: 'b'.repeat(64), area: 'project', state: 'kept', addedOn: '2026-10-20', futureBit: { keep: [1] }, ...x });
+    withFiles.files = { items: [rec('flsync00001'), rec('flsync00002', { name: 'Photo.png', type: 'image/png', deletedOn: '2026-10-22', removedFrom: { kind: 'project', id: 'pj1' } }), rec('flsync00003', { state: 'weird-new-state' })] };
+    withFiles.projects.items[0].fileIds = ['flsync00001'];
+    withFiles.notes.items[0].fileIds = ['flsync00001', 'flsync00002'];
+    const d2 = R.normalize(withFiles), r2 = R.localRecords(d2);
+    check('each file is its own "file" record, with its fields (an unknown field and an unknown state kept)', ['flsync00001', 'flsync00002', 'flsync00003'].every(id => r2.has('file:' + id)) && eq(r2.get('file:flsync00001').futureBit, { keep: [1] }) && r2.get('file:flsync00003').state === 'weird-new-state' && r2.get('file:flsync00002').deletedOn === '2026-10-22');
+    check('a file record is exactly the same when it arrives on another device (clean)', [...r2].filter(([k]) => k.startsWith('file:')).every(([k, c]) => R.fingerprint(R.cleanRecord(k, clone(c))) === R.fingerprint(c)));
+    const back = clone(R.freshState());
+    for (const [k, c] of r2) R.putRecord(back, k, clone(c));
+    check('put into a new MyDay, the files come back as they were, in the same order', eq(back.files.items.map(f => f.id), d2.files.items.map(f => f.id)) && R.fingerprint(back.files) === R.fingerprint(d2.files), back.files.items.map(f => f.id));
+    check('the project\'s and note\'s file ids travel inside their own records and come back too', eq(back.projects.items[0].fileIds, ['flsync00001']) && eq(back.notes.items[0].fileIds, ['flsync00001', 'flsync00002']));
+    check('a record that is not a file (no name, a bad id, no size) is not taken in', R.cleanRecord('file:flsync00001', { id: 'flsync00001', type: 'application/pdf', size: 1 }) === null && R.cleanRecord('file:nope', { id: 'nope', name: 'x', type: 'text/plain', size: 1 }) === null && R.cleanRecord('file:flsync00009', { id: 'flsync00009', name: 'x', type: 'text/plain', size: -1 }) === null);
+    check('its summary is the name, the size, and whether it is in Recently deleted', R.recordSummary('file:flsync00001', r2.get('file:flsync00001')) === 'Quote.pdf · 2 KB' && /Photo\.png · 2 KB · in Recently deleted/.test(R.recordSummary('file:flsync00002', r2.get('file:flsync00002'))), [R.recordSummary('file:flsync00001', r2.get('file:flsync00001')), R.recordSummary('file:flsync00002', r2.get('file:flsync00002'))]);
+    check('its label in words is "File"', R.recordLabel('file:flsync00001') === 'File', R.recordLabel('file:flsync00001'));
+    { const gone = clone(d2); R.putRecord(gone, 'file:flsync00001', null); check('a file record deleted elsewhere removes it here (and its id stays listed until the place is edited)', !gone.files.items.some(f => f.id === 'flsync00001') && gone.files.items.length === 2); }
+    const none = clone(R.freshState());
+    check('MyDay data with no files sends no file records, and one without the files section is read as none', ![...R.localRecords(R.normalize(raw)).keys()].some(k => k.startsWith('file:')) && eq(R.normalize(raw).files, { items: [] }) && eq(none.files, { items: [] }));
+  }
+
   console.log('\n[1b] A project with milestones and decisions');
   {
     const pr = clone(raw);

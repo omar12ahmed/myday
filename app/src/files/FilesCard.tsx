@@ -58,7 +58,8 @@ function FileRow({ f, owner }: { f: FileRecord; owner: Owner }) {
   );
 }
 
-export function DeletedFiles({ list }: { list: FileRecord[] }) {
+// Recently deleted: Put back (unless its place is gone: the Projects home's list) and Delete now.
+export function DeletedFiles({ list, putBackable = true }: { list: FileRecord[]; putBackable?: boolean }) {
   const confirm = useConfirm();
   if (!list.length) return null;
   async function now(f: FileRecord) {
@@ -74,7 +75,7 @@ export function DeletedFiles({ list }: { list: FileRecord[] }) {
           <span className="block font-medium break-words">{f.name}</span>
           <span className="block text-sm text-fg-3">Goes for good on {shortDate(goneOn(f)!)}</span>
           <div className="flex flex-wrap gap-x-5">
-            {f.removedFrom && <LinkButton className="text-[15px]" data-action="file-put-back" onClick={() => { if (update(d => (putBack(d, f.id) ? undefined : false))) toast('Put back.'); else toast('It can’t go back there — that place is gone.'); }}>Put back</LinkButton>}
+            {putBackable && f.removedFrom && <LinkButton className="text-[15px]" data-action="file-put-back" onClick={() => { if (update(d => (putBack(d, f.id) ? undefined : false))) toast('Put back.'); else toast('It can’t go back there — that place is gone.'); }}>Put back</LinkButton>}
             <LinkButton className="text-[15px]" data-action="file-delete-now" onClick={() => now(f)}>Delete now</LinkButton>
           </div>
         </li>))}
@@ -125,7 +126,7 @@ export function HomelessDeletedFiles({ data }: { data: MyDayData }) {
     <Card aria-labelledby="homelessFilesH" data-s="files-homeless">
       <h3 id="homelessFilesH">Files from deleted projects and notes</h3>
       <Note className="mt-0">They’re kept for 30 days in case you need them, then they go for good.</Note>
-      <DeletedFiles list={list} />
+      <DeletedFiles list={list} putBackable={false} />
     </Card>
   );
 }

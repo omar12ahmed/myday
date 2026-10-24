@@ -269,6 +269,23 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   r = await push(A, [change('arabic_word', 'kwdbtest002', 0, { ...word, id: 'kwdbtest002' }), change('arabic_lesson', 'lesson.arabic-greetings-names', 0, { id: 'lesson.arabic-greetings-names', readyOn: '2026-10-24' })]);
   check('every earlier kind is still accepted after this change too', r.every(x => x.status === 'applied'), r);
 
+  console.log('\n[18] An attached file (Files, 20261025120000_sync_files.sql)');
+  const file = { id: 'fldbtest001', name: 'Quote from the timber yard.pdf', type: 'application/pdf', size: 123456, sha256: 'a'.repeat(64), area: 'project', state: 'kept', addedOn: '2026-10-25' };
+  r = await push(A, [change('file', file.id, 0, file)]);
+  check('a file record saves through sync_push_v2, its id being the file\'s own', r[0].status === 'applied' && r[0].version === 1, r);
+  check('it comes back to the account with its name, type and size, and nothing of its bytes', await (async () => { const x = (await pull(A)).find(y => y.kind === 'file'); return !!x && x.data.name === file.name && x.data.size === file.size && !('bytes' in x.data); })());
+  check('another account cannot read it, through sync_pull or the table', !(await pull(reader)).some(x => x.kind === 'file') && (await S.as(db, reader, q => q(`select * from public.sync_records where kind = 'file'`))).rows.length === 0);
+  r = await push(A, [change('file', file.id, 0, { ...file, name: 'Renamed.pdf' })]);
+  check('a stale device cannot overwrite it', r[0].status === 'conflict', r);
+  r = await push(A, [change('file', file.id, 1, { ...file, deletedOn: '2026-10-26', removedFrom: { kind: 'project', id: 'pjX' } })]);
+  check('putting it in Recently deleted is an ordinary update', r[0].status === 'applied' && r[0].version === 2, r);
+  r = await push(A, [change('file', file.id, 2, null, { deleted: true })]);
+  check('deleting it for good reaches other devices as a tombstone (the kind is deletable)', r[0].status === 'applied' && (await pull(A)).some(x => x.kind === 'file' && x.deleted));
+  r = await push(A, [change('arabic_practice', 'lesson.arabic-greetings-address', 0, { id: 'lesson.arabic-greetings-address', tried: '2026-10-25', addedOn: '2026-10-25', review: { reps: 0, interval: 7, lapses: 0, due: '2026-11-01' } }), change('book', 'bkdbtest01', 0, { id: 'bkdbtest01', title: 'A book', author: '', pages: null, page: 0, notes: [], addedOn: '2026-10-25', finishedOn: null }), change('task', 'tkdbtest01', 0, { id: 'tkdbtest01', title: 'A task' })]);
+  check('every earlier kind is still accepted after the kind lists change again', r.every(x => x.status === 'applied'), r);
+  r = await push(A, [change('filez', 'x1', 0, {})]);
+  check('a kind that is still unknown is refused', r[0].status === 'rejected', r);
+
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

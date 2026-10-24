@@ -208,6 +208,37 @@ async function signIn(d, url) {
     await before.returnToApp();
     if (knowsPractice) check('…which the previous release takes in as a removal, syncing normally', await synced(before) && await before.until(`!(JSON.parse(localStorage.getItem('${KEY}')).arabic.practice || []).length`, 20000));
     else check('…which the previous release ignores, syncing normally', await synced(before) && (await before.status()) === 'synced' && !('practice' in (await before.data()).arabic));
+
+    console.log('\n[10] Attached files (a project\'s and a note\'s fileIds, the files section and a file record) pass through the previous release unchanged');
+    const knowsFiles = fs.readdirSync(assets).some(f => f.endsWith('.js') && /['"]file['"]\s*[,:\]]/.test(fs.readFileSync(path.join(assets, f), 'utf8')) && fs.readFileSync(path.join(assets, f), 'utf8').includes('fileIds'));
+    console.log(`The previous release ${knowsFiles ? 'knows' : 'doesn’t know'} attached files.`);
+    const PF = 'pjFilesBack', NF = 'ntFilesBack', FID = 'flback000001';
+    const fileRec = { id: FID, name: 'Timber quote.pdf', type: 'application/pdf', size: 4321, sha256: 'e'.repeat(64), area: 'project', state: 'kept', addedOn: today, futureBit: { keep: ['file', 1] } };
+    await now.returnToApp();
+    await now.setData(`s => { s.files = { items: [${JSON.stringify(fileRec)}] };
+      s.projects.items.push({ id: '${PF}', title: 'Shed papers', summary: 'With a quote attached.', stage: 'capture', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}', fileIds: ['${FID}'] });
+      s.notes.items.push({ id: '${NF}', categoryId: '', title: 'Shed notes', text: 'Measurements.', pinned: false, createdAt: '${stamp}', updatedAt: '${stamp}', fileIds: ['${FID}'] }); }`);
+    check('this release sends the file as its own record, and the project and note with their file ids', await eventually(async () => eq((await record('file', FID))?.data, fileRec) && eq(((await record('project', PF))?.data?.value ?? (await record('project', PF))?.data)?.fileIds, [FID]) && eq((await record('note', NF))?.data?.fileIds, [FID])) && await synced(now), [await record('file', FID), await record('note', NF)]);
+    const sentFile = await record('file', FID);
+    await before.returnToApp();
+    check('the previous release syncs normally with those records in the account', await synced(before) && (await before.status()) === 'synced');
+    check('…and receives the project and the note with their file ids exactly', await before.until(`(() => { const d = JSON.parse(localStorage.getItem('${KEY}')); const p = d.projects.items.find(x => x.id === '${PF}'), n = d.notes.items.find(x => x.id === '${NF}'); return !!p && !!n && JSON.stringify(p.fileIds) === '["${FID}"]' && JSON.stringify(n.fileIds) === '["${FID}"]'; })()`, 20000), JSON.stringify((await before.data()).projects.items.find(p => p.id === PF)));
+    if (knowsFiles) check('…and the file record itself (it knows this kind)', eq((await before.data()).files?.items, [fileRec]));
+    else check('…but not the file record itself: it ignores that kind (no files section of its own)', !('files' in (await before.data())) || !(await before.data()).files.items?.length);
+    await before.setData(`s => { const p = s.projects.items.find(x => x.id === '${PF}'); p.title = 'Shed papers (renamed)'; p.stage = 'understand'; p.updatedAt = '${today}T12:30'; const n = s.notes.items.find(x => x.id === '${NF}'); n.text = 'Measurements, edited on the previous release.'; n.updatedAt = '${today}T12:30'; }`);
+    check('a rename, a stage change and a note edit on the previous release reach the account', await eventually(async () => { const p = (await record('project', PF))?.data?.value, n = (await record('note', NF))?.data; return p?.title === 'Shed papers (renamed)' && /edited on the previous release/.test(n?.text || ''); }) && await synced(before));
+    check('…with the project\'s and note\'s file ids, and the file record, exactly as sent', eq((await record('project', PF))?.data?.value?.fileIds, [FID]) && eq((await record('note', NF))?.data?.fileIds, [FID]) && eq(await record('file', FID), sentFile));
+    // The previous release keeps an unknown top-level section through its own saves (a footer button saves settings).
+    await before.setData(`s => { s.files = { items: [${JSON.stringify(fileRec)}], futureSection: true }; }`);
+    await before.open(BEFORE + '#today'); await before.until(`document.querySelector('[data-action=motion]')`, 15000);
+    await before.click('[data-action=motion]'); await D.sleep(800);
+    const saved = await before.data();
+    check('a save by the previous release keeps the files section unread (its record and an unknown field) and the file ids', eq(saved.files?.items?.[0], fileRec) && saved.files?.futureSection === true && eq(saved.projects.items.find(p => p.id === PF).fileIds, [FID]), saved.files);
+    await before.click('[data-action=motion]'); await D.sleep(500);
+    await now.returnToApp();
+    check('back on this release the title and stage arrive, and the file ids and the file record are as they were', await now.until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === '${PF}')?.title === 'Shed papers (renamed)'`, 20000) && eq((await now.data()).files.items.find(f => f.id === FID), fileRec) && eq((await now.data()).projects.items.find(p => p.id === PF).fileIds, [FID]) && eq((await now.data()).notes.items.find(n => n.id === NF).fileIds, [FID]));
+    await now.open(NOW + `#projects/p/${PF}`);
+    check('the project\'s Files card lists the file, which is still in the account', await now.until(`document.querySelector('#files-project')?.textContent.includes('Timber quote.pdf')`, 15000) && eq(await record('file', FID), sentFile), await now.text('#files-project'));
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {

@@ -1469,10 +1469,12 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
       PJ('pjSecret', 'SECRET-PROJECT', 'SECRET-SUMMARY', { private: true, commitmentIds: ['cSecret'], outcome: 'SECRET-OUTCOME', finishedWhen: 'SECRET-FINISHED', leftOff: { text: 'SECRET-LEFTOFF', at },
         template: 'business', model: MODEL('SECRET-PROBLEM', 'SECRET-BELIEF', 'SECRET-FOUND'), milestones: [{ id: 'mS', title: 'SECRET-MILESTONE', aim: null, reachedOn: null, createdAt: OLD }],
         decisions: [DEC('dS', 'SECRET-DECISION', 'SECRET-OPTION')], studyLinks: [{ kind: 'course', id: 'crX', title: 'SECRET-LINK', why: 'SECRET-WHY', addedOn: PD }],
+        fileIds: ['flsecret0001'],
         resources: [{ id: 'rsS', title: 'SECRET-RES-TITLE', url: 'https://example.com/SECRET-RES-URL', note: 'SECRET-RES-NOTE', addedOn: PD }], updatedAt: OLD }),
       PJ('pjOpen', 'Garden shed', 'A shed for the bikes', { outcome: 'SECRET-OUTCOME-OPEN', finishedWhen: 'SECRET-FINISHED-OPEN', leftOff: { text: 'SECRET-LEFTOFF-OPEN', at },
         template: 'business', model: MODEL('Bikes get wet', 'Fits the garden', 'SECRET-FOUND-OPEN'), decisions: [DEC('dO', 'Which wood?', 'Larch')],
         studyLinks: [{ kind: 'course', id: 'crY', title: 'Carpentry basics', why: 'SECRET-WHY-OPEN', addedOn: PD }],
+        fileIds: ['flsecret0002'],
         resources: [{ id: 'rsO', title: 'SECRET-RES-TITLE-OPEN', url: 'https://example.org/SECRET-RES-URL-OPEN', note: 'SECRET-RES-NOTE-OPEN', addedOn: PD }] }),
       PJ('pjCase', 'Deposit dispute', 'Getting the deposit back', { template: 'case', case: {
         timeline: [{ id: 'tl1', date: '2026-10-01', about: false, title: 'SECRET-TIMELINE', details: 'SECRET-TIMELINE-DETAILS', source: 'mine', evidenceIds: [], issueIds: [], createdAt: OLD }],
@@ -1488,14 +1490,15 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     w.context[PD] = { energy: 3, sleep: { start: null, end: null, estimatedHours: 7 } };
     const NT = (id, title, text, x = {}) => ({ id, categoryId: '', title, text, pinned: false, createdAt: at, updatedAt: '2026-11-01T08:00', ...x });
     w.notes.items = [NT('nPriv', 'SECRET-NOTE-TITLE', 'SECRET-NOTE-TEXT', { private: true }), NT('nInPriv', 'SECRET-PNOTE-TITLE', 'SECRET-PNOTE-TEXT', { projectId: 'pjSecret' }),
-      NT('nOpen', 'Shed sizes', 'Two metres by three', { projectId: 'pjOpen' }), NT('nLoose', 'Loose idea', 'Ask about a bike rack')];
+      NT('nOpen', 'Shed sizes', 'Two metres by three', { projectId: 'pjOpen', fileIds: ['flsecret0003'] }), NT('nLoose', 'Loose idea', 'Ask about a bike rack')];
     w.commitments = [{ id: 'cSecret', kind: 'appointment', title: 'SECRET-APPT', start: `${PD}T11:00`, end: `${PD}T12:00` }, { id: 'cOpen', kind: 'appointment', title: 'Dentist', start: `${PD}T15:00`, end: `${PD}T15:30` }];
+    w.files = { items: [1, 2, 3].map(n => ({ id: 'flsecret000' + n, name: `SECRET-FILE-NAME-${n}.pdf`, type: 'application/pdf', size: 1234, sha256: 'd'.repeat(64), area: n === 3 ? 'note' : 'project', state: 'kept', addedOn: PD })) };
     w.patterns.prefs.name = 'SECRET-NAME';
     w.finance.debts = [{ id: 'db1', direction: 'owe', person: 'SECRET-MONEY', amount: 20, note: 'SECRET-MONEY-NOTE', since: PD }];
     const data = K.normalize(w);
     const SECRETS = ['SECRET-PROJECT', 'SECRET-SUMMARY', 'SECRET-OUTCOME', 'SECRET-FINISHED', 'SECRET-LEFTOFF', 'SECRET-TASK', 'SECRET-DUE', 'SECRET-STUCK', 'SECRET-DONE', 'SECRET-PERSON',
       'SECRET-NOTE', 'SECRET-PNOTE', 'SECRET-APPT', 'SECRET-PROBLEM', 'SECRET-BELIEF', 'SECRET-FOUND', 'SECRET-MILESTONE', 'SECRET-DECISION', 'SECRET-OPTION', 'SECRET-LINK', 'SECRET-WHY',
-      'SECRET-RES-TITLE', 'SECRET-RES-URL', 'SECRET-RES-NOTE', 'SECRET-TIMELINE', 'SECRET-EVIDENCE', 'SECRET-WHERE', 'SECRET-ISSUE', 'SECRET-NAME', 'SECRET-MONEY'];
+      'SECRET-FILE', 'flsecret000', 'SECRET-RES-TITLE', 'SECRET-RES-URL', 'SECRET-RES-NOTE', 'SECRET-TIMELINE', 'SECRET-EVIDENCE', 'SECRET-WHERE', 'SECRET-ISSUE', 'SECRET-NAME', 'SECRET-MONEY'];
     check('the made-up world really holds every secret after MyDay reads it (so the checks below can\'t pass by accident)', SECRETS.every(x => JSON.stringify(data).includes(x)), SECRETS.filter(x => !JSON.stringify(data).includes(x)));
     const leaks = (req, allowed = []) => SECRETS.filter(x => !allowed.includes(x) && JSON.stringify(req).includes(x));
     const pages = ['#today', '#calendar', '#today/tasks', '#projects', '#projects/p/pjSecret', '#projects/p/pjSecret/model', '#projects/p/pjOpen', '#projects/p/pjOpen/model', '#projects/p/pjCase',

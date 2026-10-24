@@ -119,6 +119,7 @@ function start(db, port = 0) {
   // as R2 is expected to (specs/files.md).
   const fileObjects = new Map(), fileLinks = new Map(), filesLog = [];
   let filesHandler = null, filesConfigured = true;
+  const filesFail = {}; // action -> how many more times that one files action answers 502 (to test Try again after a failed step)
   const filesStore = {
     async head(key) { const o = fileObjects.get(key); return o ? { size: o.body.length, type: o.type } : null; },
     async firstBytes(key, n) { const o = fileObjects.get(key); return new Uint8Array(o ? o.body.subarray(0, n) : []); },
@@ -205,8 +206,9 @@ function start(db, port = 0) {
       if (what === 'files-configured') { filesConfigured = !!body.configured; return send(res, 200, { configured: filesConfigured }); }
       if (what === 'files-objects') return send(res, 200, [...fileObjects].map(([key, o]) => ({ key, size: o.body.length, type: o.type, disposition: o.disposition })));
       if (what === 'files-tamper') { const o = fileObjects.get(body.key); if (o) o.body = Buffer.from(body.text || ''); return send(res, 200, { ok: !!o }); }
-      if (what === 'files-reset') { fileObjects.clear(); fileLinks.clear(); filesLog.length = 0; filesConfigured = true; return send(res, 200, { ok: true }); }
+      if (what === 'files-reset') { fileObjects.clear(); fileLinks.clear(); filesLog.length = 0; filesConfigured = true; for (const k of Object.keys(filesFail)) delete filesFail[k]; return send(res, 200, { ok: true }); }
       if (what === 'files-log') return send(res, 200, filesLog);
+      if (what === 'files-fail') { filesFail[body.action] = body.times ?? 1; return send(res, 200, { ok: true }); }
       return send(res, 404, { message: 'Unknown control' });
     }
 
@@ -273,6 +275,8 @@ function start(db, port = 0) {
     // ----- The files Edge Function (real handler code, with the store and links above) -----
     if (p === '/functions/v1/files') {
       if (!filesHandler) filesHandler = (await import(path.join(ROOT, 'supabase/functions/files/handler.ts'))).handle;
+      let said = ''; try { said = JSON.parse(raw).action; } catch { /* not JSON */ }
+      if (filesFail[said] > 0) { filesFail[said]--; entry.status = 502; return send(res, 502, { error: 'storage' }); }
       const headers = new Headers();
       for (const [k, v] of Object.entries(req.headers)) if (typeof v === 'string') headers.set(k, v);
       const request = new Request('http://standin' + req.url, { method: req.method, headers, body: req.method === 'POST' ? raw : undefined });
