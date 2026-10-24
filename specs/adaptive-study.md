@@ -1,7 +1,12 @@
 # Adaptive Study with mastery tracking: the plan
 
-**Status:** planned, not built. The owner's decisions of 23 October 2026 are in §2. Arabic comes first; Cybersecurity
-and your own courses follow as separate releases.
+**Status:** built for Arabic on branch `adaptive-study` (24 October 2026), for release 1.46.0 once the owner gives the
+go-ahead for its migration. The owner's decisions of 23 October 2026 are in §2; Cybersecurity and your own courses
+follow as separate releases. As built: the Ready and flag days are local days (`DateKey`); marking a lesson ready
+again clears your own flag; the one-time offer lists practised lessons with no record of your own yet and closes for
+good on that device (`myday.arabic.readyOffer`); each lesson's content prerequisites, check count and session
+minutes are written into the course map by `scripts/prepare-arabic.mjs`, so the next step works without opening a
+module; saved data stays schema 5 (owner's decision, 24 October 2026, recorded in AGENTS.md).
 **Plan date:** 23 October 2026, after release 1.44.0.
 
 ## 1. The practical problem

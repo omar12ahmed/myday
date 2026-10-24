@@ -197,6 +197,7 @@ The model never writes anything: it only replies, and the app decides what's all
 | `migrations/20261014120000_sync_cyber_cards.sql` | Cybersecurity in revision: `sync_records` accepts revision cards (`cyber_card`: a lesson's knowledge-check question by the course's id, with its schedule; cards can be deleted). Answers use the existing `review` kind. Nothing else changes. |
 | `migrations/20261012120000_sync_arabic_cards.sql` | Arabic in revision: `sync_records` accepts revision cards (`arabic_card`: a starter word or lesson check by the course's id, with its schedule; cards can be deleted). Answers use the existing `review` kind. Nothing else changes. |
 | `migrations/20261023120000_split_project_sync.sql` | 1.44.0 (applied 23 Oct 2026): split project items, isolated original-project recovery rows, versioned RPCs and update-required legacy endpoints. See [rollout and rollback](PROJECT_STORAGE.md). |
+| `migrations/20261024120000_sync_arabic_lessons.sql` | Adaptive Study (1.46.0, not yet applied): `sync_records` accepts `arabic_lesson`, your place on one Arabic lesson (Ready to move on, Needs revision, your latest check marks), deletable. Only the two kind lists change; rows, RPCs, project triggers, grants and RLS are unchanged. Older clients ignore the kind (`tests/app-sync-previous.test.js`). |
 | `ai-secrets.example.env` | The settings, as a template with placeholders only (fill in a copy that Git ignores; the key ends up only in Supabase). |
 
 ## Two models, one per kind of job (AI roles, step 2)

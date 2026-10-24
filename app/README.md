@@ -1,5 +1,16 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.46.0 — adaptive Study (Arabic):** a finished session is practice, not "done". Each lesson is New, Practised,
+Ready to move on (your tap), Holding (its checks recalled on your own a week or more later) or Needs revision (your
+flag, or a check that slipped). After seeing a reference answer you can mark how it went; finishing suggests "Looks
+ready to move on" only when every check was right on your own, and you decide. Checks that haven't clicked come back
+the next day, and a lesson's checks a week after Ready, at most 8 new cards a day. One next step on the map, lesson
+pages and Today, with "Why this?", catch-up only to real content (never a portfolio or checkpoint), and a shorter
+session suggested on a low-energy day. Older sessions count as Practised, with a one-time offer to mark lessons
+ready. New optional `arabic.lessons`, synced as `arabic_lesson` (migration `20261024120000_sync_arabic_lessons.sql`);
+saved data stays schema 5. Going back to 1.45.2 is safe: it keeps the lesson places unread and ignores the new
+records (checked with the actual 1.45.2), and its next step goes back to finished sessions.
+
 **1.46.1 — Start, then continue:** Today's Study card said "Continue learning" even when nothing had been begun
 (for example after a fresh start). Until you've begun a subject (an Arabic session; a Cybersecurity attempt, session
 or ticked task; a session or ticked task in your own course) it now says "Start learning — Your first lesson is
@@ -128,14 +139,14 @@ finish, help used, what you practised (ticked by you; listening and speaking are
 to the checks (kept as written once you look at the reference) and a "revisit" note, with the curriculum version.
 Saved as the new-app-only top-level section `arabic` (`src/data/arabic/`: types, cleaning, sessions); the classic
 MyDay keeps it unread. The map shows places (unexplored, exploring, visited) and your next small step along the goal
-you choose; "Your sessions" lists them all. Synced as `arabic` (the goal) and `arabic_attempt` (one per session) —
+you choose (since 1.46.0 worked out by adaptive Study, Part 4); "Your sessions" lists them all. Synced as `arabic` (the goal) and `arabic_attempt` (one per session) —
 migration `../supabase/migrations/20261011120000_sync_arabic.sql`, applied at release with my go-ahead. Fields a
 newer MyDay adds to the section are kept as they are, so going back a version never loses them.
 
-Part 3, revision: starter words and lesson checks come back in Study's revision, only when you add them — a word
-from Vocabulary ("Add to revision", or "Add the next 5"; recognising it first, writing it from memory as a second
-card you add; a gentle note after 8 new words in a day, never a block), a lesson's checks from the lesson or when
-you finish a session there. Each first comes back the next day. They're in the same rounds as your concepts
+Part 3, revision: starter words and lesson checks come back in Study's revision — a word from Vocabulary ("Add to
+revision", or "Add the next 5"; recognising it first, writing it from memory as a second card you add; a gentle note
+after 8 new words in a day, never a block), a lesson's checks from the lesson ("Bring these checks back in
+revision"). Each first comes back the next day. Since 1.46.0 some lesson checks also come back by themselves (Part 4). They're in the same rounds as your concepts
 (Study's revision, Today's Study card; "Revise Arabic" on the map for a round of Arabic alone), scheduled by the
 same rules, with "slipped" / "hasn't clicked yet", help after a wrong answer and the stop after 10 a day counting
 both. You compare your answer yourself, with the reference and the course's "what also counts": MyDay never marks
@@ -148,6 +159,29 @@ The revision screen asks either through one description of a question (`Asked` i
 Arabic cards load their words, checks (`checks.json`, from `scripts/prepare-arabic.mjs`) and answers only when a
 round reaches one (`src/study/arabic/ArabicQuestion.tsx`). Synced as `arabic_card`, one per card — migration
 `../supabase/migrations/20261012120000_sync_arabic_cards.sql`, applied at release with my go-ahead.
+
+Part 4, adaptive Study (1.46.0, `../specs/adaptive-study.md`): a finished session is practice, never by itself
+"done". Each lesson has a place in words, never a score: **New**, **Practised** (a finished session), **Ready to move
+on** (your tap), **Holding** (every one of its checks recalled on your own in revision 7 or more days after Ready) or
+**Needs revision** (your own flag with what needs work, or a check that slipped after Ready; a slip clears when you
+recall it on your own). After looking at a check's reference answer in a session you can mark **How did it go?** in
+revision's words (optional). Finishing says "Looks ready to move on" when every check was Right, on my own, or
+"Practised" otherwise, and you choose: Ready to move on / Ready anyway / Needs revision… / Not yet. Checks marked Not
+right or Not sure come back the next day by themselves ("Don't bring them back" takes them out); marking a lesson
+ready brings all its checks back a week later (the delayed check). At most 8 cards a day come back for the first
+time by themselves; your own additions are never delayed. The next step (on the map, the lesson page and Today's
+Study card) is one suggestion with a **Why this?**: resume an open session; revisit a lesson that needs revision when
+the next lesson builds on it (content prerequisites only: checkpoints such as the B1 portfolio are never catch-up,
+`../content/teaching/arabic/prerequisite-kinds.json`); revise what's due; otherwise the first New or Practised
+lesson. Its length comes from Study's own suggestion (energy and free time): the short or revision session when the
+standard one doesn't fit, with the full lesson one tap away. Lessons with sessions from before 1.46.0 count as
+Practised, with a one-time offer to mark any ready (device-only key `myday.arabic.readyOffer`). Rules:
+`src/data/study/mastery.ts` (shared, no subject in it); Arabic records: `src/data/arabic/lessons.ts`; the next step:
+`src/study/arabic/plan.ts`. Saved as the optional `arabic.lessons` (one per lesson: the Ready day, the flag, your
+latest mark per check) and synced as `arabic_lesson` — migration
+`../supabase/migrations/20261024120000_sync_arabic_lessons.sql`, applied at release with my go-ahead. Older releases
+keep `arabic.lessons` unread and ignore the record kind (`tests/app-sync-previous.test.js` checks the actual previous
+release). A Study reset clears lesson places too.
 
 Cybersecurity in revision (the course's own checks, no AI): every lesson's knowledge-check questions (146 lessons,
 292 questions, each with the course's reference answer) can come back in Study's revision — from the lesson page or
@@ -707,6 +741,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/health/food/` | The Food screens: `FoodScreen` (picks the screen from the address, e.g. `#health/food/shopping`), `FoodHome`, `RecipeCard`, `SearchBox` (with suggestions), `SearchView`, `RecipeView`, `WantView`, `ShoppingView`, `CookView`, `PrefsView`, `RecipeForm`; `actions.ts` (what each button saves) and `visit.ts` (what's kept in memory for the visit: ideas, search results, suggestions, drafts). |
 | `src/health/` | The Health screens: `HealthScreen` (the Workout and Food tabs; picks the screen from the address, e.g. `#health/workout/schedule`), `WorkoutHome`, `TemplateEditor`, `SessionView` (a workout in progress, and correcting a logged one), `SetFields` (the number boxes for a set), `HistoryViews` (history, exercises, exercise history), `Chart`, `ScheduleView` and `HealthTodayCard`; `actions.ts` (what each button saves). |
 | `src/data/health/daily.ts`, `src/health/DailyManage.tsx`, `src/health/DailyTodayCard.tsx`, `src/health/dailyActions.ts` | Daily exercises (1.23.0): checking the saved data, what's left today and this week (`daily.ts`); managing them in Health → Workout (`DailyManage`), the countdown on Today (`DailyTodayCard`) and what each button saves (`dailyActions.ts`). |
+| `src/data/study/mastery.ts`, `src/data/arabic/lessons.ts`, `src/study/arabic/plan.ts`, `../content/teaching/arabic/prerequisite-kinds.json` | Adaptive Study (1.46.0): lesson states, "looks ready", the next step and its reason, the suggested session length and the 8-a-day placement (`mastery.ts`, shared); your place on each Arabic lesson and the checks that come back (`lessons.ts`); the course's facts and the Arabic next step for the map, lesson pages and Today (`plan.ts`); MyDay's list of checkpoint skills that are never catch-up (`prerequisite-kinds.json`, checked by `scripts/prepare-arabic.mjs`). |
 | `src/study/teaching/TeachingLesson.tsx`, `src/study/arabic/transliterate.ts`, `src/study/arabic/Pronunciation.tsx`, `../content/teaching/` | Lesson teaching (1.26.0, PR #1): each course's teaching companion (`content/teaching/*.json`, generated and checked at build by `scripts/prepare-teaching.mjs`), shown above a lesson's practical tasks (`TeachingLesson`); Arabic transliteration (authored readings first, then rules; `transliterate.ts`, checked by `scripts/validate-pronunciation.mjs`) with the Show / Hide choice and the pronunciation guide (`Pronunciation.tsx`, device-only key `myday.arabic.transliteration`). |
 | `src/data/reading.ts`, `src/study/ReadingView.tsx`, `src/study/readingActions.ts`, `src/study/StudyTabs.tsx` | Study → Reading (1.24.0): checking saved books (`reading.ts`); the Reading tab — books, the page you're on, notes, Edit, Finished (`ReadingView`); what each button saves (`readingActions.ts`); Study's Courses / Reading tabs (`StudyTabs`). |
 | `src/study/` | The Study screens: `StudyScreen` (picks the screen from the address, e.g. `#study/roadmap`), `Dashboard`, `Roadmap`, `CourseDetails`, `TaskDetails`, `SessionView`, `CheckinView`, `RevisionView`, `ConceptsView`, `ConceptView`, `ProgressView`, `StudySettings` and `StudyTodayCard`; `actions.ts` (what each button saves), `round.ts` (the revision round, kept in memory), `parts.tsx` (small shared pieces). |
