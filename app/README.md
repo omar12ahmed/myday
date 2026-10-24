@@ -543,6 +543,17 @@ out"). A day further off gets a plain "I can only look at a day from a week ago 
 plan (`minutesLeft`, on Today's page data too) is worked out on the device from the tasks sent: the model added up
 minutes counting ones done. Evaluated in `ai-eval/reviews/2026-10-24-ask-day-quality.md`. Evaluated with `ai-eval/ask-scenarios.ts` (y01–y07).
 
+**Looking at a project** (`myday-ask-v19`, the owner's choice of the next lookup): "what's next on the flat move?" or
+"where am I with the coffee subscription?" from any page — when the project asked about is one of the open projects'
+names sent with the question but not the page's own, Ask MyDay replies "look up" with that project's id; the app looks
+at it on the device (`projectLookup` in `src/ai/lookup.ts`) and asks once more with exactly what its own page sends
+(`projectSlice` in `src/ai/askContext.ts`: name, summary, stage, tasks, milestones and note titles, their text only with
+AI help with notes on). Never a private project (its name is never sent, and the app refuses it), never its outcome,
+what counts as finished or where you left off, and a private note of it is counted only on the device ("— 1 private
+note left out"). Its decisions and one page stay on its page. The answer is checked as if asked on that project's page,
+so "break the flat move down" from Today puts the steps into it; the panel links the project. Evaluated with
+`ai-eval/ask-scenarios.ts` (p01–p08).
+
 **Planning a Study course with Ask (1.26.0):** a course page has **✦ Plan this course with Ask**, which opens + already
 filled in ("Break this course into study tasks"; `src/capture/openCapture.ts`). From a course page Ask sends the
 course's outline — its modules, sections and tasks: titles, lengths, kinds and done or not, no links or notes, cut to

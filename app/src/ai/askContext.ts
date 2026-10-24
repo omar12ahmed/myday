@@ -12,7 +12,7 @@ import type { AskFocus } from '../capture/openCapture';
 import { stIndex } from '../data/study/roadmap';
 import { dueIds } from '../data/study/queue';
 import { topicGlance, topicsOf } from '../data/study/topics';
-import type { DateKey, MyDayData } from '../data/types';
+import type { DateKey, MyDayData, Project } from '../data/types';
 import { notesRoute } from '../notes/route';
 import { tasksRoute } from '../tasks/route';
 import { buildContext } from './context';
@@ -135,14 +135,9 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey(),
     const p = data.projects.items.find(x => x.id === id);
     if (p && !reach.project(p)) here = 'project';
     else if (p) {
-      const notes = projectNotes(data, p).filter(reach.note), withText = !!data.patterns.prefs.aiNotes;
-      let text = '';
-      if (withText) for (const n of notes) { const add = `${noteName(n)}: ${n.text.trim()}\n`; if (text.length + add.length > L.projectNotesChars) break; text += add; }
-      ctx.project = { id: p.id, title: cut(p.title, L.titleChars), summary: cut(p.summary, L.summaryChars), stage: p.stage,
-        tasks: (({ open, done }) => [...open, ...done])(projectTasks(data, p)).slice(0, L.list).map(t => ({ ...ref(t.id, t.title), done: t.done })), notes: notes.slice(0, L.list).map(n => cut(noteName(n), L.titleChars)),
-        ...(withText && text ? { notesText: text.trim() } : {}),
-        // Its milestones (titles, reached or not, the date aimed for), and — for "What am I missing?" — the one decision.
-        ...(p.milestones?.length ? { milestones: p.milestones.slice(0, L.milestones).map(m => ({ id: m.id, title: cut(m.title, L.titleChars), reached: !!m.reachedOn, aim: m.aim })) } : {}) };
+      const withText = !!data.patterns.prefs.aiNotes;
+      ctx.project = projectSlice(data, p).project;
+      // For "What am I missing?", the one decision.
       const dc = focus?.decisionId ? p.decisions?.find(x => x.id === focus.decisionId) : undefined;
       const pt = (list: string[]) => list.slice(0, L.decisionPoints).map(t => cut(t, L.pointChars));
       if (dc) ctx.project.decision = { id: dc.id, question: cut(dc.question, L.questionChars), options: dc.options.slice(0, L.decisionOptions).map(o => ({ id: o.id, text: cut(o.text, L.titleChars), pros: pt(o.pros), cons: pt(o.cons) })) };
@@ -183,6 +178,20 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey(),
   return { page, context: ctx, sends: sendsLine(parts, here), privateNote, held: { here, count } };
 }
 
+// A project as its page sends it — and as Ask MyDay's look at a project sends it (v19): its name, summary, stage, tasks,
+// milestones (titles, reached or not, the date aimed for) and note titles, their text only with AI help with notes on;
+// never a private note of it (`heldNotes`, how many, stays on this device). Never its outcome, what counts as finished or
+// where you left off.
+export function projectSlice(data: MyDayData, p: Project): { project: NonNullable<AskPageContext['project']>; heldNotes: number } {
+  const all = projectNotes(data, p), notes = all.filter(aiReach(data).note), withText = !!data.patterns.prefs.aiNotes;
+  let text = '';
+  if (withText) for (const n of notes) { const add = `${noteName(n)}: ${n.text.trim()}\n`; if (text.length + add.length > L.projectNotesChars) break; text += add; }
+  return { heldNotes: all.length - notes.length, project: { id: p.id, title: cut(p.title, L.titleChars), summary: cut(p.summary, L.summaryChars), stage: p.stage,
+    tasks: (({ open, done }) => [...open, ...done])(projectTasks(data, p)).slice(0, L.list).map(t => ({ ...ref(t.id, t.title), done: t.done })), notes: notes.slice(0, L.list).map(n => cut(noteName(n), L.titleChars)),
+    ...(withText && text ? { notesText: text.trim() } : {}),
+    ...(p.milestones?.length ? { milestones: p.milestones.slice(0, L.milestones).map(m => ({ id: m.id, title: cut(m.title, L.titleChars), reached: !!m.reachedOn, aim: m.aim })) } : {}) } };
+}
+
 // This app can look in your notes when an answer needs them (`can`); the second time round, `lookup` is what it found
 // (ai/lookup.ts, through the privacy rules). One lookup per question.
 export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(), now = new Date(), followUp?: { previous: string; text: string }, lookup?: AskLookup): AskContext {
@@ -191,7 +200,7 @@ export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(
     time: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
     page: slice.page, text: cut(text.trim(), L.textChars), ...(followUp ? { followUp: { previous: cut(followUp.previous, L.previousChars), text: cut(followUp.text.trim(), L.followUpChars) } } : {}),
     context: slice.context,
-    can: ['notes', 'day'], ...(lookup ? { lookup } : {}),
+    can: ['notes', 'day', 'project'], ...(lookup ? { lookup } : {}),
   };
 }
 
@@ -282,9 +291,12 @@ export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['
   if (x.projects?.length) { short.push(n(x.projects.length, 'open project name')); all.push({ label: 'Your open projects (names only)', lines: x.projects.map(p => p.title) }); }
   if (!short.length) short.push('What you typed and the date');
   if (c.can?.includes('notes')) {
-    short.push('If needed, a look in your notes or at a day');
+    // A project can be looked at only where your open projects' names go with the question (not Finance or Health).
+    const projects = c.can.includes('project') && !!c.context.projects?.length;
+    short.push(projects ? 'If needed, a look in your notes, at a day or at one of your projects' : 'If needed, a look in your notes or at a day');
     all.push({ label: 'If it needs to: your notes', lines: ['Ask MyDay may look in your notes for words from your question, on this device, and send up to 8 that match: their titles and projects, and a short snippet only with AI help with notes on.', 'Never a private note, or a note in a private project — not even whether one matched.'] });
     if (c.can.includes('day')) all.push({ label: 'If it needs to: a day', lines: ['Or at one day you ask about (from a week ago to two months ahead): its plan’s tasks, what’s due, busy times by kind only (never an appointment’s name), free time and energy.', 'Never a private project’s tasks; its appointments only as busy time.'] });
+    if (projects) all.push({ label: 'If it needs to: one of your projects', lines: ['Or at one of your open projects you ask about by name: what its own page sends — its name, summary, stage, tasks, milestones and note titles (their text only with AI help with notes on).', 'Never a private project, or a private note of it; never its outcome, what counts as finished or where you left off.'] });
   }
   return { short, all };
 }

@@ -55,7 +55,7 @@ export type AskChecked =
   | { kind: 'add' | 'steps'; message: string; items: AskProposal[]; changed: string[]; sources?: AskSource[] }
   | { kind: 'answer'; message: string; action: { type: 'start-study'; courseId: string; taskId: string | null; minutes: number; label: string } | { type: 'adjust-today' } | { type: 'start-revision'; scope: Scope; count: number } | null; changed: string[]; sources?: AskSource[] }
   | { kind: 'cannot'; message: string; changed: string[] }
-  | { kind: 'lookup'; tool: 'notes' | 'day'; query: string } // query: the words to search, or the day
+  | { kind: 'lookup'; tool: 'notes' | 'day' | 'project'; query: string } // query: the words to search, the day, or a project's id
   | { kind: 'change'; message: string; changes: AskChange[]; changed: string[] };
 // After a lookup, the notes an answer used (only ones the lookup found), shown as links.
 export interface AskSource { id: string; title: string }
@@ -79,6 +79,8 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
   const r = readAsk(text);
   if (r?.kind === 'lookup') {
     if (looked || !r.lookup) return null;
+    // A project only by the id of one of the open projects it was given (never a private one: they aren't given).
+    if (r.lookup.tool === 'project' && !slice.context.projects?.some(p => p.id === r.lookup!.query)) return null;
     if (r.lookup.tool === 'day') {
       if (!realDate(r.lookup.query)) return null;
       // A day only from a week ago to two months ahead (what the app will look at): further off, it says so.
@@ -86,7 +88,8 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
     }
     return { kind: 'lookup', tool: r.lookup.tool, query: r.lookup.query };
   }
-  const out = checkReply(text, data, slice, k, asked);
+  // After a look at a project, the answer is checked as if asked on its page (steps go into it).
+  const out = checkReply(text, data, looked?.tool === 'project' ? { ...slice, context: { ...slice.context, project: looked.project } } : slice, k, asked);
   // Help me adjust today plans today only: not offered after a look at another day.
   if (out?.kind === 'answer' && out.action?.type === 'adjust-today' && looked?.tool === 'day' && looked.query !== k) return { ...out, action: null };
   if (!out || looked?.tool !== 'notes' || !r?.sources?.length || (out.kind !== 'answer' && out.kind !== 'add' && out.kind !== 'steps')) return out;

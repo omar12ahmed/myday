@@ -32,7 +32,7 @@ export const ASK_PAGES = ['today', 'tasks', 'task', 'calendar', 'projects', 'pro
 export type AskPage = typeof ASK_PAGES[number];
 export const ASK_KINDS = ['add', 'steps', 'answer', 'cannot', 'change', 'lookup'] as const;
 // What a lookup can look in: your notes (v17), or one day (v18). The app says what it can look in with `can`.
-export const ASK_TOOLS = ['notes', 'day'] as const;
+export const ASK_TOOLS = ['notes', 'day', 'project'] as const;
 export const DAY_KINDS = ['work', 'appointment', 'workout', 'sleep', 'prep'] as const;
 export const ASK_ITEM_TYPES = ['task', 'note', 'appointment', 'project', 'study-task', 'change', 'milestone', 'pro', 'con', 'option', 'must-be-true'] as const;
 export const BELIEF_STATES = ['open', 'looks-true', 'doesnt-hold'] as const;
@@ -96,7 +96,10 @@ export interface AskDayLookup {
   busy: { kind: typeof DAY_KINDS[number]; start: string; end: string }[];
   free: { start: string; end: string }[];
 }
-export type AskLookup = AskNotesLookup | AskDayLookup;
+// "A project's context" (v19): one of your open projects you asked about by name (query: its id from "projects"), as
+// its own page sends it — never a private one; its decisions and one page stay on its page.
+export interface AskProjectLookup { tool: 'project'; query: string; project: Omit<NonNullable<AskPageContext['project']>, 'decision' | 'onePage'> }
+export type AskLookup = AskNotesLookup | AskDayLookup | AskProjectLookup;
 
 // What the model returns (JSON only). The app checks it all again.
 export interface AskItem {
@@ -140,6 +143,30 @@ const only = (o: Record<string, unknown>, keys: string[]) => Object.keys(o).ever
 // A model sometimes writes the word "null" (or "none") for no value.
 const word = (v: unknown, max: number) => (typeof v === 'string' && v.trim() && !/^(null|none|undefined|n\/a)$/i.test(v.trim()) ? v.trim().slice(0, max) : null);
 
+// A project as its page sends it (the page's own, or one looked up); `focus`: the decision asked about and the one page
+// may come too (only from its own page).
+function checkProject(p: unknown, focus: boolean): boolean {
+  const L = ASK_LIMITS;
+  if (!obj(p) || !only(p, ['id', 'title', 'summary', 'stage', 'tasks', 'notes', 'notesText', 'milestones', ...(focus ? ['decision', 'onePage'] : [])])) return false;
+  if (!str(p.id, 64, false) || !str(p.title, L.titleChars, false) || !str(p.summary, L.summaryChars) || !ASK_STAGES.includes(p.stage as typeof ASK_STAGES[number])) return false;
+  if (!refs(p.tasks, t => typeof t.done === 'boolean') || !Array.isArray(p.notes) || p.notes.length > L.list || !p.notes.every(n => str(n, L.titleChars, false))) return false;
+  if (p.notesText !== undefined && !str(p.notesText, L.projectNotesChars)) return false;
+  if (p.milestones !== undefined && !(Array.isArray(p.milestones) && p.milestones.length <= L.milestones && p.milestones.every(m => obj(m) && only(m, ['id', 'title', 'reached', 'aim'])
+    && str(m.id, 64, false) && str(m.title, L.titleChars, false) && typeof m.reached === 'boolean' && (m.aim === null || isDate(m.aim))))) return false;
+  if (p.decision !== undefined) {
+    const dc = p.decision, pts = (v: unknown) => Array.isArray(v) && v.length <= L.decisionPoints && v.every(t => str(t, L.pointChars, false));
+    if (!(obj(dc) && only(dc, ['id', 'question', 'options']) && str(dc.id, 64, false) && str(dc.question, L.questionChars, false) && Array.isArray(dc.options) && dc.options.length <= L.decisionOptions
+      && dc.options.every(o => obj(o) && only(o, ['id', 'text', 'pros', 'cons']) && str(o.id, 64, false) && str(o.text, L.titleChars, false) && pts(o.pros) && pts(o.cons)))) return false;
+  }
+  if (p.onePage !== undefined) {
+    const op = p.onePage;
+    if (!(obj(op) && only(op, ['problem', 'who', 'how', 'mustBeTrue']) && str(op.problem, L.answerChars) && str(op.who, L.answerChars) && str(op.how, L.answerChars)
+      && Array.isArray(op.mustBeTrue) && op.mustBeTrue.length <= L.beliefs
+      && op.mustBeTrue.every(b => obj(b) && only(b, ['text', 'state']) && str(b.text, L.beliefChars, false) && BELIEF_STATES.includes(b.state as typeof BELIEF_STATES[number])))) return false;
+  }
+  return true;
+}
+
 // The server's check of what arrives (the app builds it; anything else is refused before a model is called).
 export function checkAskContext(raw: unknown): raw is AskContext {
   if (!obj(raw)) return false;
@@ -154,6 +181,8 @@ export function checkAskContext(raw: unknown): raw is AskContext {
         && Array.isArray(lk.notes) && lk.notes.length <= L.lookupNotes && lk.notes.every(x => obj(x) && only(x, ['id', 'title', 'project', 'snippet']) && str(x.id, 64, false) && str(x.title, L.titleChars, false)
           && (x.project === null || str(x.project, L.titleChars, false)) && (x.snippet === null || str(x.snippet, L.lookupSnippetChars)))
         && n(lk.found) && typeof lk.titlesOnly === 'boolean')) return false;
+    } else if (lk.tool === 'project') {
+      if (!(only(lk, ['tool', 'query', 'project']) && str(lk.query, 64, false) && checkProject(lk.project, false) && (lk.project as { id: unknown }).id === lk.query)) return false;
     } else if (lk.tool === 'day') {
       const dt = (v: unknown) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/.test(v);
       if (!(only(lk, ['tool', 'query', 'weekday', 'planned', 'rest', 'energy', 'tasks', 'minutesLeft', 'due', 'busy', 'free']) && isDate(lk.query) && str(lk.weekday, 12, false)
@@ -212,26 +241,7 @@ export function checkAskContext(raw: unknown): raw is AskContext {
     if (!(s.course === null || refs([s.course])) || !(s.nextTask === null || refs([s.nextTask]))) return false;
     if (!Array.isArray(s.topics) || s.topics.length > L.list || !s.topics.every(t => str(t, L.titleChars, false)) || !(Number.isInteger(s.revisionDue) && (s.revisionDue as number) >= 0)) return false;
   }
-  if (x.project !== undefined) {
-    const p = x.project;
-    if (!obj(p) || !only(p, ['id', 'title', 'summary', 'stage', 'tasks', 'notes', 'notesText', 'milestones', 'decision', 'onePage'])) return false;
-    if (!str(p.id, 64, false) || !str(p.title, L.titleChars, false) || !str(p.summary, L.summaryChars) || !ASK_STAGES.includes(p.stage as typeof ASK_STAGES[number])) return false;
-    if (!refs(p.tasks, t => typeof t.done === 'boolean') || !Array.isArray(p.notes) || p.notes.length > L.list || !p.notes.every(n => str(n, L.titleChars, false))) return false;
-    if (p.notesText !== undefined && !str(p.notesText, L.projectNotesChars)) return false;
-    if (p.milestones !== undefined && !(Array.isArray(p.milestones) && p.milestones.length <= L.milestones && p.milestones.every(m => obj(m) && only(m, ['id', 'title', 'reached', 'aim'])
-      && str(m.id, 64, false) && str(m.title, L.titleChars, false) && typeof m.reached === 'boolean' && (m.aim === null || isDate(m.aim))))) return false;
-    if (p.decision !== undefined) {
-      const dc = p.decision, pts = (v: unknown) => Array.isArray(v) && v.length <= L.decisionPoints && v.every(t => str(t, L.pointChars, false));
-      if (!(obj(dc) && only(dc, ['id', 'question', 'options']) && str(dc.id, 64, false) && str(dc.question, L.questionChars, false) && Array.isArray(dc.options) && dc.options.length <= L.decisionOptions
-        && dc.options.every(o => obj(o) && only(o, ['id', 'text', 'pros', 'cons']) && str(o.id, 64, false) && str(o.text, L.titleChars, false) && pts(o.pros) && pts(o.cons)))) return false;
-    }
-    if (p.onePage !== undefined) {
-      const op = p.onePage;
-      if (!(obj(op) && only(op, ['problem', 'who', 'how', 'mustBeTrue']) && str(op.problem, L.answerChars) && str(op.who, L.answerChars) && str(op.how, L.answerChars)
-        && Array.isArray(op.mustBeTrue) && op.mustBeTrue.length <= L.beliefs
-        && op.mustBeTrue.every(b => obj(b) && only(b, ['text', 'state']) && str(b.text, L.beliefChars, false) && BELIEF_STATES.includes(b.state as typeof BELIEF_STATES[number])))) return false;
-    }
-  }
+  if (x.project !== undefined && !checkProject(x.project, true)) return false;
   if (x.note !== undefined && !(obj(x.note) && only(x.note, ['id', 'title', 'text']) && str(x.note.id, 64, false) && str(x.note.title, L.titleChars) && str(x.note.text, L.noteTextChars))) return false;
   if (x.task !== undefined && !(obj(x.task) && only(x.task, ['id', 'title', 'due', 'minutes', 'notes']) && str(x.task.id, 64, false) && str(x.task.title, L.titleChars, false)
     && (x.task.due === null || isDate(x.task.due)) && Number.isInteger(x.task.minutes) && str(x.task.notes, L.taskNotesChars))) return false;
@@ -251,6 +261,7 @@ export function readAsk(textIn: string): AskReply | null {
     const lk = obj(raw.lookup) ? raw.lookup : raw, query = word(lk.query ?? lk.day, ASK_LIMITS.lookupQueryChars);
     const tool = lk.tool === undefined ? 'notes' : ASK_TOOLS.includes(lk.tool as typeof ASK_TOOLS[number]) ? lk.tool as typeof ASK_TOOLS[number] : null; // nothing else can be looked in
     if (tool === 'day' && !isDate(query)) return null; // a day is a date the model worked out
+    if (tool === 'project' && !/^[\w-]{1,64}$/.test(query ?? '')) return null; // a project by its id, from "projects"
     return query && tool ? { kind: 'lookup', message: (raw.message as string).trim(), items: [], action: null, lookup: { tool, query } } : null;
   }
   const sources = Array.isArray(raw.sources) ? raw.sources.filter((x): x is string => typeof x === 'string' && x.length > 0 && x.length <= 64).slice(0, ASK_LIMITS.lookupSources) : [];

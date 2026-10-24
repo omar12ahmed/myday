@@ -10,7 +10,7 @@
 import type { ChatMessage } from './prompt.ts';
 
 export const ASK_CONTRACT_VERSION = 1;
-export const ASK_PROMPT_VERSION = 'myday-ask-v18';
+export const ASK_PROMPT_VERSION = 'myday-ask-v19';
 export * from './ask-shape.ts';
 import type { AskContext, AskReply } from './ask-shape.ts';
 
@@ -42,6 +42,14 @@ each time exactly as in "busy" and "free" (a "work" time is their shift), as
 when they're free, warmly and without judging. If that day is before the given date, it has passed: say what was on it,
 not when they're free. MyDay builds a plan only for today: never offer to plan or build another day, and no
 "adjust-today". The "due" tasks already exist: never offer to add them again. Never guess what an appointment or a shift is for. Never reply "lookup" again.${quoting}`;
+  if (c.lookup?.tool === 'project') return `
+
+The app looked at one of their projects ("lookup" in the data, "tool" "project": "project" is what its own page would
+send — its name, summary, stage, tasks (done or not), milestones and its notes' titles, and their text only if they
+allow it to be shared). Answer about that project as if they had asked on its page: the rules above for the project
+on this page apply to it, from that data only — never add facts, amounts or dates that aren't there. Tasks or steps for
+it get its id as "projectId". Its decisions and its one page aren't here: for those, say to ask on its page. Never
+reply "lookup" again.${quoting}`;
   const tools = c.can ?? [], offer: string[] = [];
   if (tools.includes('notes')) offer.push(`- In their notes: they ask what they wrote, noted or saved about something, or to find a note —
   {"kind":"lookup","message":"Looking in your notes for that.","lookup":{"tool":"notes","query":"…"}}, the query 1–4
@@ -49,6 +57,11 @@ not when they're free. MyDay builds a plan only for today: never offer to plan o
   if (tools.includes('day')) offer.push(`- At one day: they ask whether they're free, what's on, or how busy a day is, and that day isn't in the data
   (today's plan is in "today" when it's there) — {"kind":"lookup","message":"Looking at that day.","lookup":{"tool":"day","query":"YYYY-MM-DD"}},
   the date worked out from the given date ("tomorrow", "Thursday", "the 31st").`);
+  if (tools.includes('project')) offer.push(`- At one of their projects: they ask about a project by name — where it's at, what's next or left, or to
+  break it down — and it's in "projects" but isn't the "project" already in the data —
+  {"kind":"lookup","message":"Looking at that project.","lookup":{"tool":"project","query":"…"}}, the query that
+  project's id exactly as in "projects". If no project in "projects" matches, don't look: say you can't see one by that
+  name.`);
   if (!offer.length) return '';
   return `
 
@@ -193,6 +206,16 @@ export function mockAsk(c: AskContext): string {
       message: l.notes.length ? `Practice helper (no AI): ${l.found === 1 ? 'one note matches' : `${l.found} notes match`} “${l.query}”: ${names}.`
         : `Practice helper (no AI): nothing in your notes matches “${l.query}”.` });
   }
+  // Looking at a project: the second time round, where it's at; the first time, a lookup for the open project named.
+  if (c.lookup?.tool === 'project') {
+    const p = c.lookup.project, done = p.tasks.filter(k => k.done).length, next = p.tasks.find(k => !k.done);
+    return reply({ kind: 'answer', action: null, items: [], message: `Practice helper (no AI): “${p.title}” is at ${p.stage}, with ${done} of ${p.tasks.length} tasks done. Next: ${next ? `“${next.title}”` : 'pick the smallest first step you can start in five minutes'}.` });
+  }
+  // (The open project sharing the most words with the question.)
+  const score = (title: string) => title.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(w => w.length > 3 && t.toLowerCase().includes(w)).length;
+  const named = c.can?.includes('project') && !c.lookup && /\b(next|where am i|where's|how'?s|status|left|summari[sz]e)\b/i.test(t)
+    ? (x.projects ?? []).filter(p => p.id !== x.project?.id && score(p.title) > 0).sort((a, b) => score(b.title) - score(a.title))[0] : undefined;
+  if (named) return reply({ kind: 'lookup', message: 'Practice helper (no AI): looking at that project.', items: [], action: null, lookup: { tool: 'project', query: named.id } });
   if (c.can?.includes('notes') && /\b(what did i (write|note|say|save)|in my notes|find (my|the|a) note|my notes? (about|on))\b/i.test(t)) {
     const about = t.match(/\b(?:about|on|for|regarding)\s+(.+)$/i)?.[1] ?? t;
     const query = about.replace(/[^\p{L}\p{N}' ]+/gu, ' ').split(/\s+/).filter(w => w.length > 2 && !/^(the|and|for|what|did|write|wrote|note|notes|about|my|any|was|that|this)$/i.test(w)).slice(0, 3).join(' ');

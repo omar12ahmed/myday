@@ -910,8 +910,8 @@ const SEED = `s => {
     const at = `${TODAY}T09:00`;
     const NT = (id, title, text, x = {}) => ({ id, categoryId: '', title, text, pinned: false, createdAt: at, updatedAt: at, ...x });
     const PJ = (id, title, x = {}) => ({ id, title, summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at, ...x });
-    const lkSeed = `s => { s.patterns.prefs.aiNotes = true; s.projects.items = s.projects.items.filter(p => !['pjShedLk', 'pjHushLk'].includes(p.id));
-      s.projects.items.push(${JSON.stringify(PJ('pjShedLk', 'Garden shed'))}, ${JSON.stringify(PJ('pjHushLk', 'Quiet plans', { private: true }))});
+    const lkSeed = `s => { s.patterns.prefs.aiNotes = true; s.projects.items = s.projects.items.filter(p => !['pjShedLk', 'pjHushLk', 'pjKilnLk'].includes(p.id));
+      s.projects.items.push(${JSON.stringify(PJ('pjShedLk', 'Garden shed'))}, ${JSON.stringify(PJ('pjHushLk', 'Quiet plans', { private: true }))}, ${JSON.stringify(PJ('pjKilnLk', 'Pottery kiln'))});
       s.notes.items = s.notes.items.filter(n => !n.id.startsWith('nLk')); s.notes.items.push(${JSON.stringify(NT('nLkRack', 'Shed sizes', 'Leave room for a bike rack on the left wall.', { projectId: 'pjShedLk' }))},
         ${JSON.stringify(NT('nLkPriv', 'Walrus', 'my private bike rack worry', { private: true }))}, ${JSON.stringify(NT('nLkHush', 'Walrus two', 'a bike rack in the quiet plans', { projectId: 'pjHushLk' }))}); }`;
     const Q = 'What did I write about the bike rack?';
@@ -933,6 +933,10 @@ const SEED = `s => {
     const pdy = await runLk(mock, 'Am I free on Thursday?');
     check('practice mode: "Am I free on Thursday?" looks at that day and says so above the answer', pdy.phase === 'shown' && /^Looked at Thursday \d{1,2} \w+: /.test(pdy.looked) && pdy.sources.length === 0, [pdy.looked, pdy.error]);
     await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
+    const ppj = await runLk(mock, "What's next on the pottery kiln?");
+    const plink = await mock.ev(`document.querySelector('[data-s=ask-project]')?.getAttribute('href') || ''`);
+    check('practice mode: "What\'s next on the pottery kiln?" from Today looks at that project, says so above the answer and links it', ppj.phase === 'shown' && /^Looked at your project “Pottery kiln”: /.test(ppj.looked) && plink === '#projects/p/pjKilnLk' && ppj.prev.includes('at one of your projects'), [ppj.looked, plink, ppj.error, ppj.prev]);
+    await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
 
     // At the server's real pace (5 seconds between requests): the second request waits its turn rather than being refused.
     setAi({ AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_LABEL: 'Main model', AI_MIN_SECONDS_BETWEEN: '5' });
@@ -944,6 +948,12 @@ const SEED = `s => {
     check('with an account, through the real server code at its 5-second pace: two requests — the question, then what was found', pd.phase === 'shown' && sent.length === 2 && !('lookup' in sent[0].body.context) && sent[1].body.context.lookup?.query === 'bike rack', [pd.error, sent.map(c => Object.keys(c.body.context))]);
     check('…the second carries the note that may reach AI, never the private ones — not even how many matched', bodies[1]?.includes('nLkRack') && bodies.every(b => !/Walrus|nLkPriv|nLkHush|leftOut|Quiet plans|worry/.test(b)), bodies[1]);
     check('…and the answer shows what it looked for and links the note it used', pd.looked.startsWith('Looked in your notes for “bike rack”') && eq(pd.sources, ['Shed sizes|#projects/notes/nLkRack']), [pd.looked, pd.sources]);
+    await D.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(5500); // the server's pace again
+    const c1 = aiCalls().length;
+    const pdp = await runLk(D, "What's next on the pottery kiln?");
+    const sentP = aiCalls().slice(c1).filter(c => c.body?.context?.action === 'ask'), bodiesP = sentP.map(c => JSON.stringify(c.body));
+    check('…and a look at a project at that pace too: two requests, the second carrying that project — never the private one, nor a private note', pdp.phase === 'shown' && sentP.length === 2 && sentP[1].body.context.lookup?.tool === 'project'
+      && sentP[1].body.context.lookup.query === 'pjKilnLk' && bodiesP.every(b => !/Walrus|nLkPriv|nLkHush|leftOut|heldNotes|Quiet plans|worry/.test(b)), [pdp.looked, pdp.error, sentP.length]);
     await D.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
     setAi({ AI_MIN_SECONDS_BETWEEN: '0' });
     await mock.ev(`location.hash = 'today'`); await D.ev(`location.hash = 'today'`); await sleep(200);

@@ -4,12 +4,13 @@
 // apostrophe don't matter). A note's text is searched, and a short snippet of it sent, only with "AI help with notes" on;
 // otherwise only titles. Private notes, and notes in a private project, are never sent — not even how many matched: that
 // count (`leftOut`) stays on this device, for the panel's "1 private note left out".
-import { ASK_LIMITS as L, DAY_KINDS, type AskDayLookup, type AskLookup, type AskNotesLookup } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
+import { ASK_LIMITS as L, DAY_KINDS, type AskDayLookup, type AskLookup, type AskNotesLookup, type AskProjectLookup } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
 import { parseKey, prettyDate, shift, todayKey } from '../data/dates';
 import { noteName } from '../data/notes';
 import { excerptOf, fold, wordsOf } from '../data/projectSearch';
 import { onTodaysPlan } from '../data/tasks';
 import type { DateKey, MyDayData, Note } from '../data/types';
+import { projectSlice } from './askContext';
 import { buildContext } from './context';
 import { aiReach } from './reach';
 
@@ -60,6 +61,16 @@ export function dayLookup(data: MyDayData, day: DateKey, today: DateKey = todayK
   };
 }
 
+// "A project's context" (v19): one of your open projects you asked about by name, exactly as its own page sends it
+// (projectSlice). Null for a private project, a finished one or one that isn't there; its private notes are counted
+// here only.
+export function projectLookup(data: MyDayData, id: string): { lookup: AskProjectLookup; leftOut: number } | null {
+  const p = data.projects.items.find(x => x.id === id);
+  if (!p || p.status === 'done' || !aiReach(data).project(p)) return null;
+  const { project, heldNotes } = projectSlice(data, p);
+  return { lookup: { tool: 'project', query: p.id, project }, leftOut: heldNotes };
+}
+
 // What the panel says above the answer: "Looked in your notes for “van hire”: 3 notes — 1 private note left out." or
 // "Looked at Thursday 30 October: 2 tasks planned, 1 due, 3 busy times — 1 private task left out."
 export function lookupLine(l: AskLookup, held: number): string {
@@ -67,6 +78,12 @@ export function lookupLine(l: AskLookup, held: number): string {
     const parts = [l.rest ? 'a rest day' : l.planned ? `${l.tasks.length === 1 ? 'one task' : `${l.tasks.length} tasks`} planned` : 'no plan yet',
       ...(l.due.length ? [`${l.due.length} due`] : []), l.busy.length ? `${l.busy.length === 1 ? 'one busy time' : `${l.busy.length} busy times`}` : 'nothing booked'];
     return `Looked at ${prettyDate(l.query)}: ${parts.join(', ')}${held ? ` — ${held === 1 ? 'one private task' : `${held} private tasks`} left out` : ''}.`;
+  }
+  if (l.tool === 'project') {
+    const t = l.project.tasks, done = t.filter(x => x.done).length, m = l.project.milestones?.length ?? 0, n = l.project.notes.length;
+    const parts = [t.length ? `${t.length === 1 ? 'one task' : `${t.length} tasks`}${done ? ` (${done} done)` : ''}` : 'no tasks yet',
+      ...(m ? [m === 1 ? 'one milestone' : `${m} milestones`] : []), ...(n ? [n === 1 ? 'one note' : `${n} notes`] : [])];
+    return `Looked at your project “${l.project.title}”: ${parts.join(', ')}${held ? ` — ${held === 1 ? 'one private note' : `${held} private notes`} left out` : ''}.`;
   }
   const n = l.found;
   const found = n ? `${n === 1 ? 'one note' : `${n} notes`}${n > l.notes.length ? ` (the newest ${l.notes.length} sent)` : ''}` : held ? 'none that could be sent' : 'nothing matched';

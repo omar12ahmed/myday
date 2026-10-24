@@ -1,6 +1,6 @@
 # Ask MyDay: one privacy filter, then read-only lookups
 
-**Status:** agreed direction (the owner's decisions are in §6). Step 1, the filter (`app/src/ai/reach.ts`), shipped in 1.61.0; step 2's first lookup, "Search your notes", shipped in 1.63.0; the second, "Your day", in 1.66.0 (`dayLookup`; the server's instructions `myday-ask-v18` were deployed first).
+**Status:** agreed direction (the owner's decisions are in §6). Step 1, the filter (`app/src/ai/reach.ts`), shipped in 1.61.0; step 2's first lookup, "Search your notes", shipped in 1.63.0; the second, "Your day", in 1.66.0 (`dayLookup`; the server's instructions `myday-ask-v18` were deployed first); the third, "A project's context" (`projectLookup`, instructions `myday-ask-v19`), is built and needs the server deployed before the app.
 **Builds on:** [`myday-vision.md`](myday-vision.md) §4, and the owner's decision of 24 Oct 2026 that Private covers
 every AI feature except note filing.
 
@@ -70,8 +70,14 @@ The first two lookups:
 | **Search your notes** | Notes matching the words: title, a short snippet (text only with "AI help with notes" on), project name | Notes search, with project search's matching (every word, any order, accents ignored) |
 | **Your day** | One day's plan (today or a named day): its tasks, appointments as busy time, energy and free time | The "Help me adjust today" context |
 
-Later candidates, each with its own decision: find projects, a project's context, open decisions and must-be-true
-items, waiting tasks, and the learning recommendation (`nextLearning`, the one authority for what to study next).
+The third, the owner's choice (24 Oct 2026): **A project's context** — one of your open projects asked about by name
+from another page ("what's next on the flat move?"), as its own page sends it: name, summary, stage, tasks, milestones
+and note titles (their text only with "AI help with notes" on). Never a private project, its outcome, what counts as
+finished or where you left off; its decisions and one page stay on its page. It also covers "find projects": open
+projects' names already go with most questions, and the model names the project by its id from them.
+
+Later candidates, each with its own decision: open decisions and must-be-true items, waiting tasks, and the learning
+recommendation (`nextLearning`, the one authority for what to study next).
 
 ## 4. Quality before it's switched on
 
@@ -105,3 +111,6 @@ items, waiting tasks, and the learning recommendation (`nextLearning`, the one a
 2. **Search your notes first.** "Your day" follows.
 3. **A lookup's second request counts towards the 20 a day.** A question with a lookup uses 2.
 4. **The filter ships first, on its own**, before any lookup, so a privacy change is never mixed with a new feature.
+5. **Busy time counts every appointment** (for "Your day"): a private project's appointments go as busy time, by kind
+   and time only, as in Help me adjust today, so a day is never shown free when it isn't.
+6. **"A project's context" is the third lookup.**
