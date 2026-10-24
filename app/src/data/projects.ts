@@ -13,6 +13,7 @@ import { isBusiness, normalizeModel, normalizeTemplate, STATE_LABEL } from './bu
 import { normalizeCase } from './caseFile';
 import { noteName } from './notes';
 import { chosenOption, normalizeDecisions, normalizeMilestones } from './projectPlan';
+import { filesLeaving, normalizeFileIds } from './files';
 import { normalizeResources } from './projectResources';
 import { normalizeStudyLinks } from './studyLinks';
 import { isDone, onTodaysPlan, taskOrder } from './tasks';
@@ -85,6 +86,9 @@ export function normalizeProjects(raw: unknown, report: { dropped: number }): Pr
     // Web links you keep with it (data/projectResources.ts): likewise.
     const resources = normalizeResources(p.resources, report);
     if (resources) item.resources = resources; else delete item.resources;
+    // Its attached files, by id (data/files.ts): likewise.
+    const fileIds = normalizeFileIds(p.fileIds);
+    if (fileIds) item.fileIds = fileIds; else delete item.fileIds;
     seen.add(item.id);
     out.items.push(item);
   }
@@ -153,6 +157,7 @@ export const privateProjectIds = (data: MyDayData) => new Set(data.projects.item
 export function deleteProject(d: MyDayData, id: string): boolean {
   const i = d.projects.items.findIndex(p => p.id === id);
   if (i < 0) return false;
+  filesLeaving(d, { kind: 'project', id }); // its files that nothing else lists go to Recently deleted
   d.projects.items.splice(i, 1);
   for (const n of d.notes.items) if (n.projectId === id) delete n.projectId;
   for (const t of d.tasks.items) if (t.projectId === id) delete t.projectId;

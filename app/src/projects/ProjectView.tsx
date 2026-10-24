@@ -31,6 +31,7 @@ import { DecisionsView, MilestonesView } from './PlanViews';
 import { matchCount, searchProject, type SearchHit } from '../data/projectSearch';
 import { LearningCard } from './LearningCard';
 import { ResourcesCard } from './ResourcesCard';
+import { FilesCard } from '../files/FilesCard';
 import { SearchResults } from './SearchResults';
 import { tabHref } from './planText';
 
@@ -79,6 +80,7 @@ export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDay
           <RecentlyCard data={data} p={p} />
           <LearningCard data={data} p={p} />
           <ResourcesCard p={p} />
+          <FilesCard data={data} owner={{ kind: 'project', id: p.id }} area="project" />
           <ManageCard p={p} />
         </div>
       </div>

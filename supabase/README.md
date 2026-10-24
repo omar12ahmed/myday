@@ -201,6 +201,37 @@ Until the function is set up, MyDay just says "Automatic backups aren't set up y
 Each account reaches only its own backups (the function prefixes every key with the signed-in user's id). The logs
 hold the action, the outcome and the time only.
 
+## Attached files (the `files` function)
+
+Projects and notes can keep photos, PDFs and documents in your private R2 bucket `myday-attachments`, through the Edge
+Function `supabase/functions/files` (spec: `../specs/files.md`). Until it's set up, MyDay says "Files aren't set up
+yet".
+
+1. **Cloudflare, a token:** R2, then Manage API tokens, then Create Account API token. Choose **Object Read & Write**,
+   **Apply to specific buckets only**, and pick `myday-attachments` (not the backups bucket). Keep its Access Key ID and
+   Secret Access Key in your password manager.
+2. **Cloudflare, the bucket's CORS:** R2, then `myday-attachments`, then Settings, then CORS Policy, then Add CORS
+   policy. On the JSON tab, paste this and save:
+   ```json
+   [
+     {
+       "AllowedOrigins": ["https://omar12ahmed.github.io", "http://localhost:5173", "http://127.0.0.1:5500"],
+       "AllowedMethods": ["GET", "PUT"],
+       "AllowedHeaders": ["Content-Type", "Content-MD5", "Content-Disposition"],
+       "ExposeHeaders": ["ETag"],
+       "MaxAgeSeconds": 3600
+     }
+   ]
+   ```
+3. **Supabase secrets.** Create `supabase/files.secret.env` (git ignores it) with `R2_FILES_ACCESS_KEY_ID=…`,
+   `R2_FILES_SECRET_ACCESS_KEY=…` and `R2_FILES_BUCKET=myday-attachments` (`R2_ACCOUNT_ID` is already set for
+   backups). Then run `npx supabase secrets set --env-file supabase/files.secret.env --project-ref <ref>`, and delete
+   the file.
+4. **The database** accepts file records once `migrations/20261025120000_sync_files.sql` is applied. Rehearse it in a
+   transaction that rolls back first, and re-read the live kind lists before applying.
+5. **Deploy:** `npx supabase functions deploy files --use-api --project-ref <ref>` (JWT verification stays on).
+6. **Check** with a disposable account: add a photo and a PDF, open them, Remove, Put back, Delete now.
+
 ## Where things are
 
 | File | What it does |

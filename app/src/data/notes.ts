@@ -7,6 +7,7 @@
 import { isDateKey, isDateTime, localStamp } from './dates';
 import type { Note, NoteCategory, NotesData } from './types';
 import { isObj, listOf, uid } from './util';
+import { normalizeFileIds } from './files';
 
 export const NOTE_LIMITS = { categories: 30, categoryName: 40, title: 120, text: 20000 };
 export const DEFAULT_CATEGORIES = ['Lifestyle', 'Business ideas', 'Health & fitness', 'Money', 'Study & career', 'Personal'];
@@ -52,6 +53,8 @@ export function normalizeNotes(raw: unknown, report: { dropped: number }): Notes
     // What AI help made of it (1.15.0): a kind from the list, and the fingerprint of the words it saw.
     if (!['idea', 'task', 'question', 'reference', 'journal', 'other'].includes(note.aiKind as string)) delete note.aiKind;
     if (typeof note.aiSeen !== 'string' || !/^[0-9a-f]{8}$/.test(note.aiSeen)) delete note.aiSeen;
+    const fileIds = normalizeFileIds(note.fileIds); // its attached files (data/files.ts), or none
+    if (fileIds) note.fileIds = fileIds; else delete note.fileIds;
     seenN.add(note.id);
     out.items.push(note);
   }
@@ -59,7 +62,7 @@ export function normalizeNotes(raw: unknown, report: { dropped: number }): Notes
 }
 
 // ---------- Reading ----------
-export const isBlank = (n: Note) => !n.title.trim() && !n.text.trim();
+export const isBlank = (n: Note) => !n.title.trim() && !n.text.trim() && !n.fileIds?.length;
 // A note's name in lists: its title, otherwise its first line.
 export const noteName = (n: Note) => n.title.trim() || n.text.trim().split('\n')[0].slice(0, 80) || 'Untitled note';
 export const categoryName = (d: NotesData, id: string) => d.categories.find(c => c.id === id)?.name ?? INBOX;

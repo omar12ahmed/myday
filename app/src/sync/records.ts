@@ -23,7 +23,7 @@ import { CATS, freshState, normalize, SCHEMA_VERSION, SEED } from '../data/norma
 import { DEFAULT_CATEGORIES } from '../data/notes';
 import { STAGES, STATUS_LABEL } from '../data/projects';
 import { CAT_LABEL, ENERGY_LABEL } from '../data/plan';
-import type { Category, Commitment, Day, DayContext, ListItem, MyDayData, Note, Project, QueueItem, Recipe, StudySession, TaskItem, WorkoutSession, Book, Review as StudyReview } from '../data/types';
+import type { Book, Category, Commitment, Day, DayContext, FileRecord, ListItem, MyDayData, Note, Project, QueueItem, Recipe, Review as StudyReview, StudySession, TaskItem, WorkoutSession } from '../data/types';
 import { isObj } from '../data/util';
 import { cleanAttempt, cleanCyberCard, normalizeCyber } from '../data/cybersecurity/normalize';
 import type { CyberAttempt, CyberCard } from '../data/cybersecurity/types';
@@ -32,11 +32,12 @@ import { ARABIC_CORE_PATH, type ArabicAttempt, type ArabicCard, type ArabicLesso
 import { PROJECT_KINDS, splitProject, type ProjectContent, type ProjectKind } from '../data/projectRecords';
 import { cleanProjectRecord, isProjectKind, projectApplyOrder, putProjectRecord } from './projectParts';
 import { resourceName } from '../data/projectResources';
+import { sizeLabel } from '../data/files';
 
 export type Kind = 'list' | 'queue' | 'day' | 'context'
   | 'settings' | 'rota' | 'pay' | 'holidays' | 'finance' | 'study' | 'workout' | 'food' | 'fitness' | 'notes' | 'tasks' | 'patterns'
   | 'commitment' | 'note' | 'task' | 'session' | 'review' | 'wsession' | 'recipe' | 'project' | 'cybersecurity' | 'cyber_attempt'
-  | 'arabic' | 'arabic_attempt' | 'arabic_card' | 'arabic_lesson' | 'arabic_word' | 'arabic_practice' | 'cyber_card' | 'daily' | 'book' | ProjectKind;
+  | 'arabic' | 'arabic_attempt' | 'arabic_card' | 'arabic_lesson' | 'arabic_word' | 'arabic_practice' | 'cyber_card' | 'daily' | 'book' | 'file' | ProjectKind;
 export type Content = Record<string, unknown>;
 
 // A record's key on this device: "list:learning", "day:2026-10-02", "note:nt8f…"…
@@ -268,6 +269,12 @@ const MANY: Many[] = [
     clean: (id, raw) => same(id, via({ projects: { items: [raw] } }).projects.items[0]),
     summary: c => { const p = c as unknown as Project; return `${p.title} · ${STAGES.find(x => x.id === p.stage)?.label ?? p.stage}${p.status === 'active' ? '' : ` · ${STATUS_LABEL[p.status].toLowerCase()}`}`; } },
   // Books in Study → Reading (1.24.0; the database accepts them from migration 20261017120000_sync_books.sql).
+  // Attached files (specs/files.md; the database accepts them from migration 20261025120000_sync_files.sql): one record
+  // per file — its name, type, size and state, never its bytes, which are in R2.
+  { kind: 'file', label: 'File',
+    items: d => d.files.items, put: (dr, id, c) => putItem(dr.files.items, id, c),
+    clean: (id, raw) => same(id, via({ files: { items: [raw] } }).files.items[0]),
+    summary: c => { const f = c as unknown as FileRecord; return `${f.name} · ${sizeLabel(f.size)}${f.deletedOn ? ' · in Recently deleted' : ''}`; } },
   { kind: 'book', label: 'Book (Reading)',
     items: d => d.reading.books, put: (dr, id, c) => putItem(dr.reading.books, id, c, (a, b) => a.addedOn.localeCompare(b.addedOn) || a.id.localeCompare(b.id)),
     clean: (id, raw) => same(id, via({ reading: { books: [raw] } }).reading.books[0]),

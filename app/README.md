@@ -776,6 +776,17 @@ is now, then goes through Import's own checks and question; signed in it replace
 it says so. The device's id, label and last result live in `myday.backup.v1` on that device only (not your data, not
 synced or exported). No saved-data, sync or database change. Never sent to AI.
 
+**Files (unreleased; `specs/files.md`):** a project's Overview has a **Files** card (after Resources) and a note has
+a **Files** section under its text. **Add a file** (or drop one) keeps photos (JPEG, PNG, HEIC, WebP), PDFs and
+documents (Word, Excel, PowerPoint, text, CSV) up to 25 MB each; a photo gets a small preview. **Open** shows a
+photo or PDF in a new tab and downloads anything else. **Remove** takes it out of that project or note; if nothing
+else uses it, it waits in **Recently deleted** for 30 days (**Put back** or **Delete now**), then goes for good, and
+files of a deleted project or note wait on the Projects home. Each file is one record (`files`, synced as the new
+kind `file`) that projects and notes list by id (`fileIds`); the bytes go straight to your private R2 bucket on
+five-minute links that the `files` Edge Function signs with the file's exact length and MD5, and the function checks
+each file's type by its first bytes before it counts as kept. Never sent to AI. Opening and adding need a connection
+and your account; backups list your files, the files stay in R2.
+
 **Your week — the weekly review (1.37.0):** a short look back over the last seven days, at `#review` ("Your week"), in
 four steps, one at a time, with Back and Next. Nothing changes until you tap. **1 What moved:** each project's tasks
 done, milestones reached, decisions made, things found out, case records added (up to three done task names shown),
@@ -1131,6 +1142,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/projectDashboard.ts`, `src/projects/AtAGlance.tsx` | The dashboards per kind (1.36.0): `projectDashboard.ts` (the next dates, the weeks, entries by month, each issue's links and Worth a look; Today's own dashboard numbers stay in `dashboard.ts`); `AtAGlance.tsx` (the At a glance card with one row per tool, its pictures and Summarise this, and the Worth a look card beside the next step). Still-open tasks are `stillOpen` in `src/data/projects.ts`. |
 | `src/data/studyLinks.ts`, `src/projects/LearningCard.tsx`, `src/projects/learningArabic.ts`, `src/projects/learningCyber.ts`, `src/projects/ForYourProject.tsx` | Learning for a project (Study links): `studyLinks.ts` (reading and changing a project's links, Study's status for each, what can still be linked, which projects link an item); `LearningCard.tsx` (the Overview's Learning card and its form); `learningArabic.ts` and `learningCyber.ts` (lesson titles and Study's status, each catalogue loaded on demand); `ForYourProject.tsx` ("For your project: …" on a course's page, a book in Reading and a Cybersecurity lesson's page). |
 | `src/data/projectResources.ts`, `src/projects/ResourcesCard.tsx` | Resources for a project (web links): `projectResources.ts` (what counts as a web address, reading and changing a project's links, a link's name and site); `ResourcesCard.tsx` (the Overview's Resources card, its form and Remove's question). |
+| `src/data/files.ts`, `src/sync/files.ts`, `src/files/FilesCard.tsx`, `../supabase/functions/files/`, `../supabase/functions/_shared/files/rules.ts` | Files: `files.ts` (records, which places list a file, Remove, Recently deleted, Put back, the 30 days); `sync/files.ts` (MD5 and SHA-256, previews, adding, opening, Delete now, the daily tidy); `FilesCard.tsx` (the card on a project and a note, and deleted files on the Projects home); the Edge Function (`handler.ts`: the rules, each account's prefix, presigned links, the check; `index.ts`: Supabase sign-in and R2); `rules.ts` (what may be kept, shared by the app and the function). |
 | `src/sync/backup.ts`, `src/shell/BackupsView.tsx`, `../supabase/functions/backup/` | Automatic backups: `backup.ts` (the daily check, this device's id and label, sending, listing, fetching and deleting backups, gzip); `BackupsView.tsx` (Your backups, `#backups`); the Edge Function (`handler.ts`: the rules, each account's own prefix, retention; `index.ts`: Supabase sign-in and R2). |
 | `src/data/projectSearch.ts`, `src/projects/SearchResults.tsx` | Searching one project: `projectSearch.ts` (what's searched, matching without capitals, accents or apostrophe differences, excerpts on whole characters, the fixed order by kind); `SearchResults.tsx` (the results card). The field and its query live in `ProjectView.tsx`. |
 | `src/data/weekReview.ts`, `src/review/ReviewScreen.tsx`, `src/today/ReviewCard.tsx` | The weekly review (1.37.0): `weekReview.ts` (when the review is due, what moved, what's waiting, focus, and saving the review); `ReviewScreen.tsx` (the four steps and See the pattern); `ReviewCard.tsx` (the card on Today). |

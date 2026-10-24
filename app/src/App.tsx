@@ -18,6 +18,7 @@ import { NoticedScreen } from './patterns/NoticedScreen';
 import { KnowsScreen } from './knows/KnowsScreen';
 import { BackupsView } from './shell/BackupsView';
 import { startDailyBackups } from './sync/backup';
+import { startFileTidy } from './sync/files';
 import { ReviewScreen } from './review/ReviewScreen';
 import { ProjectsScreen } from './projects/ProjectsScreen';
 import { useAiConnect } from './shell/aiConnect';
@@ -89,7 +90,7 @@ function Shell() {
   // A message from start-up (e.g. storage is blocked), shown once.
   useEffect(() => { const m = takeBootNotice(); if (m) toast(m); }, []);
   // The daily backup, while MyDay is open and signed in (sync/backup.ts).
-  useEffect(() => { startDailyBackups(); }, []);
+  useEffect(() => { startDailyBackups(); startFileTidy(); }, []);
 
   // Theme and animations: set on the page so the colours and motion follow straight away.
   useEffect(() => {

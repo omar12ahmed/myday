@@ -18,6 +18,8 @@ import { toast } from '../data/toast';
 import type { MyDayData } from '../data/types';
 import { AI_MODE } from '../ai/request';
 import { NoteCards } from './NoteCards';
+import { filesLeaving } from '../data/files';
+import { FilesCard } from '../files/FilesCard';
 
 // What AI help said a note is (1.15.0), in words.
 const KIND_WORDS = { idea: 'an idea', task: 'something to do', question: 'a question to find out', reference: 'something to keep for reference', journal: 'a reflection', other: 'a note' } as const;
@@ -86,7 +88,7 @@ export function NoteEditor({ data, id }: { data: MyDayData; id: string }) {
     if (!(await confirm({ title: 'Delete this note?', body: 'This can\'t be undone (a backup made with "Export my data" still has it).', confirmLabel: 'Delete', cancelLabel: 'Keep it' }))) return;
     window.clearTimeout(timer.current);
     pending.current = false;
-    if (update(d => (removeNote(d.notes, id) ? undefined : false))) toast('Note deleted.');
+    if (update(d => { filesLeaving(d, { kind: 'note', id }); return removeNote(d.notes, id) ? undefined : false; })) toast('Note deleted.');
     location.hash = project ? `projects/p/${project.id}` : 'projects/notes';
   }
 
@@ -159,6 +161,8 @@ export function NoteEditor({ data, id }: { data: MyDayData; id: string }) {
           </p>
         )}
       </Card>
+      {/* Its attached files (specs/files.md): never sent to AI, like the note itself when private. */}
+      <FilesCard data={data} owner={{ kind: 'note', id: note.id }} area="note" />
       {/* Never for a private note, or a note in a private project (Private covers every AI feature but note filing). */}
       {AI_MODE !== 'off' && data.patterns.prefs.aiNotes && aiReach(data).note(note) && <NoteCards key={note.id} data={data} note={note} flush={flush} />}
       {related.length > 0 && (

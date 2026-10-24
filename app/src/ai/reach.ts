@@ -6,8 +6,9 @@
 //     without its title (24 Oct 2026); and busy time (Help me adjust today, Ask MyDay's look at a day) counts every
 //     appointment, a private project's too, by kind and time only, so a day is never shown free when it isn't;
 //   - a note's text goes only with "AI help with notes" on;
-//   - never: a project's outcome, what counts as finished and where you left off; who a task is waiting on; your name,
-//     email, preferences and patterns; Finance and Health records (each request builder simply doesn't read them).
+//   - never: the files you attach (their names and contents); a project's outcome, what counts as finished and where you
+//     left off; who a task is waiting on; your name, email, preferences and patterns; Finance and Health records (each
+//     request builder simply doesn't read them).
 // Every request builder asks here, and tests/ai-rules.test.js feeds them all the same private data to prove none leaks.
 import { privateProjectIds } from '../data/projects';
 import type { Commitment, DateKey, MyDayData, Note, Project, TaskItem } from '../data/types';

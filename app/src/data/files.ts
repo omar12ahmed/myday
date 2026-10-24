@@ -1,0 +1,131 @@
+// Attached files (specs/files.md): each file is one record here (its name, type, size, SHA-256, area and state), and
+// a project or a note lists the ids of its files (`fileIds`), so one file can belong to several places without copies.
+// The bytes live privately in R2, reached through the files Edge Function (sync/files.ts). Removing a file from a
+// place takes its id out of that list; a file nothing lists any more waits in Recently deleted for 30 days (Put back,
+// or Delete now), then goes for good. Never sent to AI.
+import { KEEP_DELETED_DAYS } from '../../../supabase/functions/_shared/files/rules';
+import { isDateKey, shift, todayKey } from './dates';
+import type { DateKey, FileRecord, FilesData, MyDayData } from './types';
+import { isObj, listOf, uid } from './util';
+
+export const FILE_ID = /^fl[a-z0-9]{6,40}$/;
+export const FILES_PER_PLACE = 50;
+export const newFileId = () => 'fl' + uid();
+export type Owner = { kind: 'project' | 'note'; id: string };
+export const emptyFiles = (): FilesData => ({ items: [] });
+
+// Reading saved file records: one without an id, a name, a type or a size is counted, never kept half-read. Fields from
+// a newer MyDay are kept; a state this version doesn't know is kept as it is (and such a file isn't opened).
+export function normalizeFiles(raw: unknown, report: { dropped: number }): FilesData {
+  if (!isObj(raw)) return emptyFiles();
+  const out: FilesData = { ...raw, items: [] };
+  for (const f of listOf(raw.items)) {
+    if (!isObj(f) || typeof f.id !== 'string' || !FILE_ID.test(f.id) || typeof f.name !== 'string' || !f.name || typeof f.type !== 'string' || !Number.isInteger(f.size) || (f.size as number) < 0) { report.dropped++; continue; }
+    if (out.items.some(x => x.id === f.id)) continue;
+    const item: FileRecord = {
+      ...f, id: f.id, name: f.name, type: f.type, size: f.size as number,
+      sha256: typeof f.sha256 === 'string' && /^[0-9a-f]{64}$/.test(f.sha256) ? f.sha256 : '',
+      area: typeof f.area === 'string' && f.area ? f.area : 'project',
+      state: typeof f.state === 'string' && f.state ? f.state : 'kept',
+      addedOn: isDateKey(f.addedOn) ? f.addedOn : todayKey(),
+    };
+    if (isDateKey(f.deletedOn)) item.deletedOn = f.deletedOn; else delete item.deletedOn;
+    const rf = f.removedFrom;
+    if (isObj(rf) && (rf.kind === 'project' || rf.kind === 'note') && typeof rf.id === 'string' && rf.id) item.removedFrom = { kind: rf.kind, id: rf.id }; else delete item.removedFrom;
+    out.items.push(item);
+  }
+  return out;
+}
+// A place's list of file ids, read: kept only when there are some (unique, in order).
+export function normalizeFileIds(raw: unknown): string[] | null {
+  if (!Array.isArray(raw)) return null;
+  const ids = [...new Set(raw.filter((x): x is string => typeof x === 'string' && FILE_ID.test(x)))];
+  return ids.length ? ids : null;
+}
+
+// ---------- Places ----------
+const place = (d: MyDayData, o: Owner) => (o.kind === 'project' ? d.projects.items.find(p => p.id === o.id) : d.notes.items.find(n => n.id === o.id));
+export const fileIdsOf = (d: MyDayData, o: Owner): string[] => place(d, o)?.fileIds ?? [];
+// The files a place lists, in its order (a record that's missing is simply not shown).
+export const filesOf = (d: MyDayData, o: Owner): FileRecord[] => fileIdsOf(d, o).flatMap(id => d.files.items.filter(f => f.id === id));
+// Every place that lists a file.
+export function usedBy(d: MyDayData, fileId: string): Owner[] {
+  return [...d.projects.items.filter(p => p.fileIds?.includes(fileId)).map(p => ({ kind: 'project' as const, id: p.id })),
+    ...d.notes.items.filter(n => n.fileIds?.includes(fileId)).map(n => ({ kind: 'note' as const, id: n.id }))];
+}
+function setIds(d: MyDayData, o: Owner, ids: string[]) {
+  const p = place(d, o);
+  if (!p) return false;
+  if (ids.length) p.fileIds = ids; else delete p.fileIds;
+  return true;
+}
+
+// ---------- Changes ----------
+// A new file, being added: its record (state 'uploading') and its place in the project or note. False when the place
+// isn't there or already has 50 files.
+export interface NewFile { id: string; name: string; type: string; size: number; sha256: string; area: string }
+export function addFileRecord(d: MyDayData, o: Owner, rec: NewFile, k: DateKey = todayKey()): boolean {
+  const ids = fileIdsOf(d, o);
+  if (!place(d, o) || ids.length >= FILES_PER_PLACE || d.files.items.some(f => f.id === rec.id)) return false;
+  d.files.items.push({ ...rec, state: 'uploading', addedOn: k });
+  return setIds(d, o, [...ids, rec.id]);
+}
+export function setFileState(d: MyDayData, id: string, state: 'kept' | 'failed', size?: number): boolean {
+  const f = d.files.items.find(x => x.id === id);
+  if (!f || (f.state === state && (size === undefined || f.size === size))) return false;
+  f.state = state;
+  if (size !== undefined) f.size = size;
+  return true;
+}
+// Take a file out of a place. If nothing else lists it, it goes to Recently deleted ('deleted'); otherwise only this
+// link goes ('removed'). False when the place doesn't list it.
+export function removeFile(d: MyDayData, fileId: string, from: Owner, k: DateKey = todayKey()): 'removed' | 'deleted' | false {
+  const ids = fileIdsOf(d, from);
+  if (!ids.includes(fileId)) return false;
+  setIds(d, from, ids.filter(x => x !== fileId));
+  if (usedBy(d, fileId).length) return 'removed';
+  const f = d.files.items.find(x => x.id === fileId);
+  if (f) { f.deletedOn = k; f.removedFrom = from; }
+  return 'deleted';
+}
+// Put a file back where it was removed from. False when it isn't in Recently deleted, or that place is gone.
+export function putBack(d: MyDayData, fileId: string): boolean {
+  const f = d.files.items.find(x => x.id === fileId);
+  if (!f?.deletedOn || !f.removedFrom || !place(d, f.removedFrom)) return false;
+  const ids = fileIdsOf(d, f.removedFrom);
+  if (ids.length >= FILES_PER_PLACE) return false;
+  setIds(d, f.removedFrom, ids.includes(fileId) ? ids : [...ids, fileId]);
+  delete f.deletedOn; delete f.removedFrom;
+  return true;
+}
+// Forget file records once their bytes are gone from R2 (Delete now, or after 30 days).
+export function forgetFiles(d: MyDayData, ids: string[]): boolean {
+  const before = d.files.items.length;
+  d.files.items = d.files.items.filter(f => !ids.includes(f.id));
+  return d.files.items.length !== before;
+}
+
+// ---------- Reading ----------
+// In Recently deleted from this place (or anywhere), newest first.
+export const recentlyDeleted = (d: MyDayData, from?: Owner) => d.files.items.filter(f => f.deletedOn && (!from || (f.removedFrom?.kind === from.kind && f.removedFrom.id === from.id)))
+  .sort((a, b) => (b.deletedOn ?? '').localeCompare(a.deletedOn ?? ''));
+export const goneOn = (f: FileRecord) => (f.deletedOn ? shift(f.deletedOn, KEEP_DELETED_DAYS) : null);
+// Those whose 30 days are over: their bytes can go from R2, then their records.
+export const dueForPurge = (d: MyDayData, k: DateKey = todayKey()) => d.files.items.filter(f => f.deletedOn && f.deletedOn <= shift(k, -KEEP_DELETED_DAYS));
+// A file nothing lists and that isn't in Recently deleted (e.g. its place was deleted on a device that didn't know
+// files): it goes to Recently deleted from the day it's noticed, so nothing is ever lost silently. A file still being
+// added is left alone.
+export const orphans = (d: MyDayData) => d.files.items.filter(f => !f.deletedOn && f.state !== 'uploading' && !usedBy(d, f.id).length);
+export function markOrphans(d: MyDayData, k: DateKey = todayKey()): boolean {
+  const list = orphans(d);
+  for (const f of list) f.deletedOn = k;
+  return list.length > 0;
+}
+// When a project or note is deleted: its files that nothing else lists go to Recently deleted (from that place).
+export function filesLeaving(d: MyDayData, from: Owner, k: DateKey = todayKey()) {
+  for (const id of fileIdsOf(d, from)) {
+    const f = d.files.items.find(x => x.id === id);
+    if (f && !f.deletedOn && usedBy(d, id).every(o => o.kind === from.kind && o.id === from.id)) { f.deletedOn = k; f.removedFrom = from; }
+  }
+}
+export const sizeLabel = (n: number) => (n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1024 / 1024).toFixed(1)} MB`);

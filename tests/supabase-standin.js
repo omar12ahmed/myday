@@ -114,6 +114,22 @@ function start(db, port = 0) {
     async get(key) { const o = backupObjects.get(key); return o ? new Uint8Array(o.body) : null; },
     async remove(key) { backupObjects.delete(key); },
   };
+  // The files Edge Function's store and R2 (both in memory): objects with their type and disposition, and short-lived
+  // "presigned" links to the stand-in's own /__r2/ address, which checks the signed length, MD5, type and disposition
+  // as R2 is expected to (specs/files.md).
+  const fileObjects = new Map(), fileLinks = new Map(), filesLog = [];
+  let filesHandler = null, filesConfigured = true;
+  const filesStore = {
+    async head(key) { const o = fileObjects.get(key); return o ? { size: o.body.length, type: o.type } : null; },
+    async firstBytes(key, n) { const o = fileObjects.get(key); return new Uint8Array(o ? o.body.subarray(0, n) : []); },
+    async list(prefix) { return [...fileObjects].filter(([k]) => k.startsWith(prefix)).map(([key, o]) => ({ key, size: o.body.length })); },
+    async remove(key) { fileObjects.delete(key); },
+    async sign(method, key, headers, seconds) {
+      const token = require('crypto').randomUUID().replace(/-/g, '');
+      fileLinks.set(token, { method, key, headers, until: Date.now() + seconds * 1000 });
+      return `http://127.0.0.1:${server.address().port}/__r2/${token}`;
+    },
+  };
   const server = http.createServer((req, res) => {
     const chunks = [];
     req.on('data', c => { chunks.push(Buffer.from(c)); });
@@ -147,7 +163,25 @@ function start(db, port = 0) {
     }
     let body = null;
     // (A backup's body is gzip, not JSON.)
-    try { body = raw && p !== '/functions/v1/backup' ? JSON.parse(raw) : null; } catch { return send(res, 400, { message: 'Body is not JSON' }); }
+    try { body = raw && p !== '/functions/v1/backup' && !p.startsWith('/__r2/') ? JSON.parse(raw) : null; } catch { return send(res, 400, { message: 'Body is not JSON' }); }
+
+    // ----- R2 on a presigned link (no API key, as R2 itself): the signed headers must match exactly -----
+    if (p.startsWith('/__r2/')) {
+      const link = fileLinks.get(p.slice('/__r2/'.length)), cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Expose-Headers': 'ETag' };
+      if (!link || link.until < Date.now() || link.method !== req.method) { res.writeHead(403, cors); return res.end('SignatureDoesNotMatch'); }
+      if (req.method === 'PUT') {
+        const h = link.headers, md5 = require('crypto').createHash('md5').update(buf).digest('base64');
+        const same = (name, want) => (req.headers[name.toLowerCase()] || '') === want;
+        if (String(buf.length) !== h['Content-Length'] || !same('Content-MD5', h['Content-MD5']) || !same('Content-Type', h['Content-Type']) || !same('Content-Disposition', h['Content-Disposition'])) { res.writeHead(403, cors); return res.end('SignatureDoesNotMatch'); }
+        if (md5 !== h['Content-MD5']) { res.writeHead(400, cors); return res.end('BadDigest'); }
+        fileObjects.set(link.key, { body: Buffer.from(buf), type: h['Content-Type'], disposition: h['Content-Disposition'] });
+        res.writeHead(200, { ...cors, ETag: '"' + md5 + '"' }); return res.end();
+      }
+      const o = fileObjects.get(link.key);
+      if (!o) { res.writeHead(404, cors); return res.end('NoSuchKey'); }
+      res.writeHead(200, { ...cors, 'Content-Type': o.type, 'Content-Disposition': o.disposition, 'Content-Length': o.body.length });
+      return res.end(o.body);
+    }
 
     // Test controls.
     if (p.startsWith('/__standin/')) {
@@ -166,6 +200,13 @@ function start(db, port = 0) {
       if (what === 'backup-age') { for (const o of backupObjects.values()) o.modified = new Date(Date.parse(o.modified) - (body.seconds || 0) * 1000).toISOString(); return send(res, 200, { ok: true }); }
       if (what === 'backup-reset') { backupObjects.clear(); backupLog.length = 0; backupConfigured = true; return send(res, 200, { ok: true }); }
       if (what === 'backup-log') return send(res, 200, backupLog);
+      // Files: whether the function is set up, what's stored (keys, sizes, types), changing a stored file's bytes (to
+      // test the server's check), and starting empty.
+      if (what === 'files-configured') { filesConfigured = !!body.configured; return send(res, 200, { configured: filesConfigured }); }
+      if (what === 'files-objects') return send(res, 200, [...fileObjects].map(([key, o]) => ({ key, size: o.body.length, type: o.type, disposition: o.disposition })));
+      if (what === 'files-tamper') { const o = fileObjects.get(body.key); if (o) o.body = Buffer.from(body.text || ''); return send(res, 200, { ok: !!o }); }
+      if (what === 'files-reset') { fileObjects.clear(); fileLinks.clear(); filesLog.length = 0; filesConfigured = true; return send(res, 200, { ok: true }); }
+      if (what === 'files-log') return send(res, 200, filesLog);
       return send(res, 404, { message: 'Unknown control' });
     }
 
@@ -227,6 +268,24 @@ function start(db, port = 0) {
       const out = {}; response.headers.forEach((v, k) => { out[k] = v; });
       res.writeHead(response.status, out);
       return res.end(await response.text());
+    }
+
+    // ----- The files Edge Function (real handler code, with the store and links above) -----
+    if (p === '/functions/v1/files') {
+      if (!filesHandler) filesHandler = (await import(path.join(ROOT, 'supabase/functions/files/handler.ts'))).handle;
+      const headers = new Headers();
+      for (const [k, v] of Object.entries(req.headers)) if (typeof v === 'string') headers.set(k, v);
+      const request = new Request('http://standin' + req.url, { method: req.method, headers, body: req.method === 'POST' ? raw : undefined });
+      const response = await filesHandler(request, {
+        env: name => (name === 'FILES_ALLOWED_ORIGINS' ? aiEnv.AI_ALLOWED_ORIGINS : undefined),
+        verifyUser: async token => { const c = verify(token); return c && !c.expired ? c.sub : null; },
+        store: filesConfigured ? filesStore : null,
+        log: line => filesLog.push(line),
+      });
+      entry.status = response.status;
+      const out = {}; response.headers.forEach((v, k) => { out[k] = v; });
+      res.writeHead(response.status, out);
+      return res.end(Buffer.from(await response.arrayBuffer()));
     }
 
     // ----- The backup Edge Function (real handler code, with the store above) -----

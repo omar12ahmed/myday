@@ -15,6 +15,7 @@ import { NotesScreen } from '../notes/NotesScreen';
 import { ConnectionsView } from './ConnectionsView';
 import { Progression } from './parts';
 import { ProjectView, type ProjectTab } from './ProjectView';
+import { HomelessDeletedFiles } from '../files/FilesCard';
 
 // Projects (called the Inbox until 1.12.0): your projects (#projects, one project at #projects/p/<id>), your notes
 // (#projects/notes…) and how they connect (#projects/connections, the knowledge graph). A project gathers everything
@@ -101,6 +102,7 @@ function ProjectsHome({ data }: { data: MyDayData }) {
           ))}
         </div>
       )}
+      <div className="max-w-[720px] mx-auto"><HomelessDeletedFiles data={data} /></div>
     </>
   );
 }

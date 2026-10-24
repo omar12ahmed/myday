@@ -138,6 +138,10 @@ export interface MyDayData {
   // MyDay keeps it unread). Reading never counts towards the learning streak.
   reading: ReadingData;
 
+  // Attached files (data/files.ts): one record per file — the bytes are in R2 — referred to by projects and notes
+  // (`fileIds`). Older MyDays keep this section unread. Never sent to AI.
+  files: FilesData;
+
   // Anything else (e.g. a section added by a newer MyDay) is kept as it was, never dropped.
   [other: string]: unknown;
 }
@@ -186,12 +190,26 @@ export interface Project {
   // unread, so no schema change): web links you keep with it (data/projectResources.ts).
   // Never sent to AI.
   resources?: ProjectResource[];
+  // The files attached to it, in order (data/files.ts; absent → none; the previous release keeps them unread). Never
+  // sent to AI.
+  fileIds?: string[];
 }
 export interface LeftOff { text: string; at: DateTime; [other: string]: unknown }
 // `kind` is a string so a kind from a newer MyDay is kept as it is; `title` is what it was called when linked, so a
 // link still reads well once its item is gone from Study.
 export interface StudyLink { kind: string; id: string; title: string; why?: string; addedOn: DateKey; [other: string]: unknown }
 // A web link kept with a project: an http(s) address, an optional title (the site is shown without one) and note.
+// One attached file (data/files.ts): its bytes are in R2 under the account, reached through the files function.
+export interface FileRecord {
+  id: string; name: string; type: string; size: number; sha256: string;
+  area: string;                       // where its rules come from: 'project' or 'note' (later 'portfolio')
+  state: string;                      // 'uploading' until the server has checked it, then 'kept' (or 'failed')
+  addedOn: DateKey;
+  deletedOn?: DateKey;                // in Recently deleted since this day (30 days, then gone)
+  removedFrom?: { kind: 'project' | 'note'; id: string }; // where Put back puts it
+  [other: string]: unknown;
+}
+export interface FilesData { items: FileRecord[]; [other: string]: unknown }
 export interface ProjectResource { id: string; title: string; url: string; note?: string; addedOn: DateKey; [other: string]: unknown }
 export interface ProjectsData { items: Project[]; [other: string]: unknown }
 
@@ -559,6 +577,7 @@ export interface Note {
   aiKind?: 'idea' | 'task' | 'question' | 'reference' | 'journal' | 'other'; // what kind of note it seemed to be
   aiSeen?: string;           // a fingerprint of the words it saw, so it's asked again only if you change them
   reflectionWeek?: DateKey;  // 1.37.0: your weekly review's reflection, for the seven days from this day
+  fileIds?: string[];        // its attached files, in order (data/files.ts; absent → none). Never sent to AI.
 }
 export interface NotesData {
   categories: NoteCategory[];
