@@ -737,6 +737,122 @@ const importFile = async (path, yes = true) => { await setFile(path); await slee
   check('on Monday after choosing a focus, "From your projects" lists the focused project\'s step first, marked "This week’s focus"', order.length === 2 && order[0].startsWith('Sort the shed') && order[0].includes('This week’s focus') && order[1].startsWith('Paint the hall') && !order[1].includes('focus'), order);
   check('…the marker is the step-focus label, once', (await ev(`document.querySelectorAll('#projectSteps [data-s=step-focus]').length`)) === 1 && (await text('#projectSteps [data-s=step-focus]')).includes('This week’s focus'));
 
+  console.log('\n[24] Sayings: one quiet line per screen, chosen for where you are');
+  // The app's own choice of saying (app/src/data/sayings.ts, bundled for Node), to find dates and expected sayings.
+  const path = require('path'), { pathToFileURL } = require('url'), ROOT = process.env.MYDAY_ROOT || path.resolve(__dirname, '..');
+  const { bundle } = await import(pathToFileURL(path.join(ROOT, 'ai-eval/build.mjs')).href);
+  const SY = await import(pathToFileURL(await bundle(path.join(ROOT, 'app/src/data/sayings.ts'), path.join(require('os').tmpdir(), `myday-today-sayings-${process.pid}`))).href);
+  const keyOf = i => new Date(Date.UTC(2026, 9, 24 + i)).toISOString().slice(0, 10);  // i days after 24 Oct 2026
+  const dateOf = i => keyOf(i).split('-').map(Number);
+  const firstDay = (place, id) => { for (let i = 0; i < 365; i++) if (SY.sayingFor(place, keyOf(i)).id === id) return i; throw new Error('no day for ' + id); };
+  const GENTLE = ['shafii-days', 'aurelius-mind', 'frankl-change'], TODAY = ['clear-systems', 'clear-vote', 'lesson-resistance'];
+  const sayingIds = () => ev(`[...document.querySelectorAll('[data-s=saying]')].map(e => e.dataset.saying)`);
+  const sayingKey = () => ev(`localStorage.getItem('myday.sayings')`);
+  const rectOf = sel => ev(`(() => { const e = document.querySelector(${JSON.stringify(sel)}); if (!e) return null; const r = e.getBoundingClientRect(); return { top: Math.round(r.top), bottom: Math.round(r.bottom), height: Math.round(r.height) }; })()`);
+  const visit = async hash => { await ev(`location.hash = ${JSON.stringify(hash)}`); await sleep(350); };
+  const openFresh = async (i, h = 9) => { const [y, m, d] = dateOf(i); await openAt(y, m, d, h); await reset(); await ev(`localStorage.removeItem('myday.sayings')`); await openAt(y, m, d, h); };
+  const open24 = async (i, h = 9) => { const [y, m, d] = dateOf(i); await openAt(y, m, d, h); await sleep(200); };
+
+  // Morning: nothing built yet, energy 3.
+  await openFresh(0);
+  await setEnergyCommitted(3); await sleep(300);
+  let ids = await sayingIds();
+  check('morning: exactly one saying is on Today, inside the saying slot', ids.length === 1 && (await ev(`document.querySelectorAll('#slot-saying [data-s=saying]').length`)) === 1, ids);
+  check('…and at energy 3 it is one of the ordinary Today sayings (the systems line, the vote line or the resistance lesson)', TODAY.includes(ids[0]), ids);
+  const bTop = await rectOf('[data-action=build]'), sTop = await rectOf('[data-s=saying]');
+  check('…sitting below the Build my day button', sTop.top > bTop.bottom, [bTop, sTop]);
+  const morningId = ids[0];
+  await open24(0);
+  check('the same day after a reload shows the same saying', eq(await sayingIds(), [morningId]), [morningId, await sayingIds()]);
+
+  // Low energy, on a day when the gentle pick is al-Shāfiʿī.
+  const iShafii = firstDay('today-gentle', 'shafii-days');
+  await openFresh(iShafii);
+  await setEnergyCommitted(2); await sleep(300);
+  ids = await sayingIds();
+  check('low energy (2): the saying is one of the gentle three (al-Shāfiʿī on the days, Marcus Aurelius, Viktor Frankl)', ids.length === 1 && GENTLE.includes(ids[0]), ids);
+  check(`…on ${keyOf(iShafii)} it is al-Shāfiʿī's "Let the days do as they will"`, ids[0] === 'shafii-days', ids);
+  const ar = await ev(`[...document.querySelectorAll('[data-s=saying] [lang=ar][dir=rtl]')].map(e => e.textContent)`);
+  check('…its Arabic shows as two right-to-left halves, the verse itself', ar.length === 2 && eq(ar, SY.SAYINGS.find(s => s.id === 'shafii-days').ar), ar);
+  check('…with a note about the Arabic, at least 44 px tall to tap', (await text('[data-s=saying-more] summary')).trim() === 'About the Arabic' && (await rectOf('[data-s=saying-more] summary')).height >= 44, await rectOf('[data-s=saying-more] summary'));
+  check('…and the credit line is "— al-Shāfiʿī"', (await text('[data-s=saying] figcaption')) === '— al-Shāfiʿī', await text('[data-s=saying] figcaption'));
+
+  // A lesson.
+  const iLesson = firstDay('today', 'lesson-resistance');
+  await openFresh(iLesson);
+  await setEnergyCommitted(3); await sleep(300);
+  ids = await sayingIds();
+  check(`a day with the resistance lesson (${keyOf(iLesson)}) shows it on Today`, eq(ids, ['lesson-resistance']), ids);
+  check('…its caption reads "Lesson" and it has no Arabic', (await text('[data-s=saying] figcaption')) === 'Lesson' && !(await exists('[data-s=saying] [lang=ar]')), await text('[data-s=saying] figcaption'));
+  check('…its fold-out is called "Meaning"', (await text('[data-s=saying-more] summary')).trim() === 'Meaning');
+  const meaning = SY.SAYINGS.find(s => s.id === 'lesson-resistance').meaning;
+  check('…the meaning is kept out of the way until opened', !(await ev(`document.querySelector('[data-s=saying-more]').open`)));
+  await click('[data-s=saying-more] summary'); await sleep(150);
+  check('…and opening it shows the lesson\'s meaning', (await ev(`document.querySelector('[data-s=saying-more]').open`)) && (await text('[data-s=saying-more] p')) === meaning, await text('[data-s=saying-more] p'));
+
+  // After building the day, the saying follows the plan card.
+  await openFresh(0);
+  await build(4); await sleep(300);
+  ids = await sayingIds();
+  const afterPlan = await ev(`(() => { const p = document.getElementById('slot-plan'), s = document.querySelector('#slot-saying [data-s=saying]'); if (!p || !s) return null;
+    return { below: s.getBoundingClientRect().top >= p.getBoundingClientRect().bottom, inOrder: !!(p.compareDocumentPosition(s) & Node.DOCUMENT_POSITION_FOLLOWING) }; })()`);
+  check('after building the day: one saying, sitting after the plan card and not above it', ids.length === 1 && afterPlan && afterPlan.below && afterPlan.inOrder, [ids, afterPlan]);
+  check('…and with energy 4 it is an ordinary Today saying', TODAY.includes(ids[0]), ids);
+
+  // A rest day.
+  await openFresh(1);
+  await click('[data-action=skip]'); await sleep(300);
+  ids = await sayingIds();
+  const afterRest = await ev(`(() => { const p = document.getElementById('slot-plan'), s = document.querySelector('#slot-saying [data-s=saying]'); return p && s ? !!(p.compareDocumentPosition(s) & Node.DOCUMENT_POSITION_FOLLOWING) : null; })()`);
+  check('a rest day: the saying is from the gentle set and sits after the rest card', ids.length === 1 && GENTLE.includes(ids[0]) && afterRest === true, [ids, afterRest]);
+
+  // The footer switch.
+  await openFresh(0);
+  const sw = '[data-action=sayings]';
+  check('the footer switch starts on: pressed, and reads "Sayings: On"', (await ev(`document.querySelector('${sw}').getAttribute('aria-pressed')`)) === 'true' && (await text(sw)).trim() === 'Sayings: On', await text(sw));
+  const rawOn = await raw();
+  await click(sw); await sleep(300);
+  check('switching off: no saying anywhere on Today', (await sayingIds()).length === 0 && !(await exists('#slot-saying')), await sayingIds());
+  check('…the switch is no longer pressed and reads "Sayings: Off"', (await ev(`document.querySelector('${sw}').getAttribute('aria-pressed')`)) === 'false' && (await text(sw)).trim() === 'Sayings: Off', await text(sw));
+  check('…with the toast "Sayings off on this device."', (await toast()) === 'Sayings off on this device.', await toast());
+  check('…kept on this device as myday.sayings = "off"', (await sayingKey()) === 'off', await sayingKey());
+  check('…and your saved MyDay data is untouched', noSaves(await raw()) === noSaves(rawOn));
+  check('…and no other MyDay key was added', eq(await mydayKeys(), [KEY, 'myday.sayings']), await mydayKeys());
+  await open24(0);
+  check('after a reload it is still off', (await sayingIds()).length === 0 && (await text(sw)).trim() === 'Sayings: Off' && (await sayingKey()) === 'off');
+  const offSeen = {};
+  for (const h of ['#study', '#finance', '#projects', '#review']) { await visit(h); offSeen[h] = await sayingIds(); }
+  check('while off, Study, Finance, Projects and Your week show no saying either', Object.values(offSeen).every(a => a.length === 0), offSeen);
+  await visit('#today');
+  const rawOff = await raw();
+  await click(sw); await sleep(300);
+  check('switching back on says "Sayings on."', (await toast()) === 'Sayings on.', await toast());
+  check('…removes the device key (on is the default)', (await sayingKey()) === null, await sayingKey());
+  check('…the saying is back, and the switch reads "Sayings: On"', (await sayingIds()).length === 1 && (await text(sw)).trim() === 'Sayings: On' && (await ev(`document.querySelector('${sw}').getAttribute('aria-pressed')`)) === 'true', await sayingIds());
+  check('…and switching back on leaves your saved MyDay data untouched too', noSaves(await raw()) === noSaves(rawOff));
+
+  // The other screens, at a wide size.
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
+  await openFresh(0);
+  const expect = { '#finance': ['housel-money'], '#projects': ['shabbi-life', 'hill-conceive', 'covey-end', 'lesson-business'], '#review': ['shabbi-life', 'clear-vote', 'covey-end'], '#study': ['shafii-learn', 'clear-systems'] };
+  const names = { '#finance': 'Finance', '#projects': 'Projects', '#review': 'Your week', '#study': 'Study' };
+  for (const [h, set] of Object.entries(expect)) {
+    await visit(h);
+    const got = await sayingIds();
+    check(`${names[h]} shows exactly one saying, from its own set (${set.join(', ')})`, got.length === 1 && set.includes(got[0]) && (set.length > 1 || got[0] === set[0]), got);
+  }
+  await T.send('Emulation.clearDeviceMetricsOverride');
+
+  // Phone.
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await openFresh(0, 7);
+  const ph = await ev(`(() => { const r = s => { const e = document.querySelector(s); if (!e) return null; const b = e.getBoundingClientRect(); return { top: Math.round(b.top), bottom: Math.round(b.bottom) }; }; return { build: r('[data-action=build]'), nav: r('#nav'), saying: r('[data-s=saying]'), side: document.documentElement.scrollWidth > innerWidth }; })()`);
+  check('phone: Build my day is still fully visible without scrolling, with a saying on the page', !!ph.saying && ph.build.bottom <= ph.nav.top, ph);
+  check('phone: the saying is below Build my day', ph.saying.top >= ph.build.bottom, ph);
+  check('phone: no sideways scrolling with the saying', ph.side === false, ph);
+  await T.send('Emulation.clearDeviceMetricsOverride');
+  await ev(`localStorage.removeItem('myday.sayings')`);
+
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
   const sm = T.summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);
