@@ -1,6 +1,7 @@
 import { ArrowLeft, ArrowRight, FolderKanban, Lock, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../components/Button';
+import { Saying } from '../components/Saying';
 import { Card } from '../components/Card';
 import { Field, TextInput } from '../components/Field';
 import { isBusiness, isCase, setTemplate, TEMPLATES, type TemplateChoice } from '../data/businessModel';
@@ -57,6 +58,7 @@ function ProjectsHome({ data }: { data: MyDayData }) {
         <div className="projects-intro-copy">
           <h2 id="projects-h" className="flex items-center gap-2"><FolderKanban size={22} aria-hidden="true" className="text-primary" /> Your projects</h2>
           <p className="text-[15px] text-fg-2 m-0">One place for everything about one intention — from a vague idea to small steps on your days.</p>
+          <Saying place="projects" className="mt-3" />
           <a href="#review" className="inline-flex items-center min-h-11 text-primary font-semibold text-[15px] no-underline hover:underline underline-offset-4" data-action="open-review">Look back at your week</a>
         </div>
         <form className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 items-end mt-4" onSubmit={e => { e.preventDefault(); start(); }}>

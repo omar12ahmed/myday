@@ -4,6 +4,7 @@ import { Note } from '../components/parts';
 import { maybeFetchBankHolidays } from '../data/bankHolidayFetch';
 import { expensesTotal, money, setYourRates, workPay } from '../data/finance';
 import { update } from '../data/storage';
+import { Saying } from '../components/Saying';
 import { toast } from '../data/toast';
 import type { MyDayData } from '../data/types';
 import { ExpensesCard } from './ExpensesCard';
@@ -35,6 +36,7 @@ export function FinanceScreen({ data, canSave }: { data: MyDayData; canSave: boo
   return (
     <div className="finance-layout flex flex-col lg:grid lg:grid-cols-2 lg:gap-x-6 lg:items-start">
       <div className="min-w-0">
+        <Saying place="money" className="mb-5" />
         <WorkPayCard w={w} pay={data.pay} offset={offset} onMove={setOffset} />
         <Card aria-labelledby="left-h" id="leftOver" tone={known && left < 0 ? 'notice' : 'plain'}>
           <h2 id="left-h">Left over (est.)</h2>

@@ -1,6 +1,7 @@
 import { Plus, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../components/Button';
+import { Saying } from '../components/Saying';
 import { Card } from '../components/Card';
 import { Field, Select, TextInput } from '../components/Field';
 import { fmtDuration, shortDate, todayKey } from '../data/dates';
@@ -90,6 +91,7 @@ export function Dashboard({ data, lengths, setLength }: { data: MyDayData; lengt
       <div className="mb-6">
         <h2 className="text-[28px] mb-2">Make room for curiosity.</h2>
         <p className="text-fg-2 text-[15px] max-w-xl">Follow a guided path or bring a subject of your own. Pick a small next step and build from there.</p>
+        <Saying place="study" className="mt-4 max-w-xl" />
       </div>
       <div className="study-welcome-grid">
         <div className="study-guided"><CyberCard /><ArabicCard data={data} /></div>
@@ -110,6 +112,7 @@ export function Dashboard({ data, lengths, setLength }: { data: MyDayData; lengt
     <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(300px,360px)] lg:gap-x-6 lg:items-start">
       <div className="min-w-0">
         <StudyTabs on="courses" />
+        <Saying place="study" className="mb-5" />
         {cur && (
           <Card tone="accent" className="next-card">
             <Eyebrow>In progress{cur.runningSince ? '' : ' · paused'}</Eyebrow>

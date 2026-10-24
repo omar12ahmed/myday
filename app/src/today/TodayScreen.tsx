@@ -46,6 +46,9 @@ import { QuickAdd } from './QuickAdd';
 import { TodayRing, WeekCard } from './DashboardCards';
 import { FocusView } from './FocusView';
 import { setFocusMode, useFocusMode } from '../shell/focusMode';
+import { useSayings } from '../shell/sayingsMode';
+import { todayPlace } from '../data/sayings';
+import { Saying } from '../components/Saying';
 
 // The Today section. Saved data comes in as `data`; everything else here (an open proposal, the
 // evening check-in, the commitment form…) is kept only while the screen is open, as in the current
@@ -287,6 +290,10 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
   // Phones: one column, with the plan and any resumable Study before the supporting timeline.
   // Wide screens: the timeline and learning count move to a second column on the right.
   // `order` only matters on phones; entrance classes remain for compatibility, without workspace animation.
+  // One quiet saying under the plan, or under Build my day before there is one (so Build my day stays in view on
+  // phones): gentler on a rest day or a low-energy day.
+  const sayingsOn = useSayings();
+  const saying = (rest: boolean, energy: number | null | undefined) => sayingsOn && <Saying place={todayPlace(rest, energy)} day={k} />;
   const slot = (order: string, node: React.ReactNode, id?: string) =>
     node ? <div id={id} className={`min-w-0 ${order} lg:order-none${entering ? ' enter' : ''}`}>{node}</div> : null;
 
@@ -328,6 +335,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
           onEvening={() => { setView('evening'); setEveningKey(k); }} onReview={review} onSwapRest={swapRest} onRestart={restart}
           onAdjust={AI_MODE !== 'off' && !d.rest ? () => { setProposal(null); setAiOpen(true); scrollTo('aiCard'); } : undefined}
           onMind={AI_MODE !== 'off' ? openMind : undefined} />)}
+        {slot('order-1', saying(d.rest, d.energy), 'slot-saying')}
         {slot('order-1', aiOpen && <AdjustCard key={adjustKey} data={data} k={k} onClose={() => setAiOpen(false)} onApplied={u => { setAiOpen(false); setAiUndo(u); }} />)}
         {slot('order-1', canUndo(data, aiUndo) && (
           <Card id="aiUndo" className="!py-3">
@@ -362,6 +370,7 @@ export function TodayScreen({ data, generation, k, canSave, motionAllowed, onExp
         {slot('order-1', <MorningCard key={energy} energy={energy} queue={data.queue}
           onEnergy={v => { update(dr => { ensureContext(dr, k).energy = v; }); contextChanged(); }} onBuild={build} onSkip={skip}
           onMind={AI_MODE !== 'off' ? openMind : undefined} />)}
+        {slot('order-1', saying(false, energy), 'slot-saying')}
         {slot('order-1', currentStudy && studyCard, 'slot-study')}
         {mindSlots}
         {slot('order-1', proposalCard)}

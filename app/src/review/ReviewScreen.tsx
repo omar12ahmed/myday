@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { AI_MODE } from '../ai/request';
 import { openCapture } from '../capture/openCapture';
 import { Button } from '../components/Button';
+import { Saying } from '../components/Saying';
 import { Card } from '../components/Card';
 import { Field, Select, TextArea } from '../components/Field';
 import { LinkButton } from '../components/parts';
@@ -39,6 +40,7 @@ export function ReviewScreen({ data }: { data: MyDayData }) {
     <Card aria-labelledby="reviewH" id="reviewTop">
       <h2 id="reviewH" className="flex items-center gap-2"><CalendarHeart size={22} aria-hidden="true" className="text-primary" /> Your week</h2>
       <p className="text-[15px] text-fg-2 m-0">The last seven days, {shortDate(week.from)} to {shortDate(week.to)}. About five minutes — skip anything you like.</p>
+      <Saying place="review" className="mt-3" />
       {!done && <ol className="list-none p-0 m-0 mt-3 flex flex-wrap gap-1.5" aria-label="Steps">
         {STEPS.map((s, i) => <li key={s} aria-current={i === step ? 'step' : undefined} className={`text-xs font-semibold rounded-full px-2.5 py-1 ${i === step ? 'bg-primary-container text-on-primary-container' : i < step ? 'bg-surface-2 text-fg-2' : 'border border-outline text-fg-3'}`}>{i + 1}. {s}</li>)}
       </ol>}

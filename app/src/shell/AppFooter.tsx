@@ -3,6 +3,7 @@ import { useSyncExternalStore } from 'react';
 import { Button } from '../components/Button';
 import { update } from '../data/storage';
 import { toast } from '../data/toast';
+import { setSayings, useSayings } from './sayingsMode';
 import type { MyDayData } from '../data/types';
 import { useSync } from '../sync/engine';
 import { RELEASE } from '../version';
@@ -20,6 +21,7 @@ export function AppFooter({ data, canSave, onEdit, onExport, onImport }: {
   const canInstall = useInstallOffer();
   const sync = useSync();
   const off = data.settings.motion === 'off';
+  const sayings = useSayings();
   return (
     <footer id="footer" className="app-tools pb-8 mt-10 pt-4 border-t border-outline">
       {/* Quiet tools, in small pills that wrap — present on every screen without competing with it. */}
@@ -35,6 +37,11 @@ export function AppFooter({ data, canSave, onEdit, onExport, onImport }: {
           toast(!off ? 'Animations off.' : reduces ? 'Animations on — but your device asks for less motion, so they stay off.' : 'Animations on.');
         }}>
           {off ? 'Animations: Off' : reduces ? 'Animations: Off (your device asks for less motion)' : 'Animations: On'}
+        </Button>
+        <Button inline variant="quiet" className="!text-[14px]" data-action="sayings" aria-pressed={sayings} onClick={() => {
+          setSayings(!sayings); toast(sayings ? 'Sayings off on this device.' : 'Sayings on.');
+        }}>
+          {sayings ? 'Sayings: On' : 'Sayings: Off'}
         </Button>
       </div>
       <p className="storage-note text-center text-fg-3 text-[13px] mt-5">{!canSave ? 'Saving is unavailable in this browser.'
