@@ -9,6 +9,7 @@ import { buildCardsMessages, buildCheckMessages, type CardsCheckContext, type Ca
 import { buildNoteCardsCheckMessages, buildNoteCardsMessages, buildNoteCheckMessages, type NoteCardsCheckContext, type NoteCardsContext, type NoteCheckContext } from './note-cards.ts';
 import { buildExplainMessages, type ExplainContext } from './explain.ts';
 import { buildAskMessages, type AskContext } from './ask.ts';
+import { buildCheckAnswerMessages, type CheckAnswerContext } from './check-answer.ts';
 
 export const PROMPT_VERSION = 'myday-adjust-v1';
 
@@ -39,7 +40,8 @@ export interface ChatMessage { role: 'system' | 'user'; content: string }
 // note: checking the note (a NoteCheckContext), then the cards (a NoteCardsContext; its checker's half is built on the
 // server only, a NoteCardsCheckContext).
 // "Explain it another way" on a revision question: an ExplainContext. "Ask MyDay" from the + Capture sheet: an AskContext.
-export type AiContext = PlanContext | TasksContext | TutorContext | ConnectContext | CardsContext | CardsCheckContext | NoteCheckContext | NoteCardsContext | NoteCardsCheckContext | ExplainContext | AskContext;
+// "Check my answer" on a lesson check you've answered: a CheckAnswerContext.
+export type AiContext = PlanContext | TasksContext | TutorContext | ConnectContext | CardsContext | CardsCheckContext | NoteCheckContext | NoteCardsContext | NoteCardsCheckContext | ExplainContext | AskContext | CheckAnswerContext;
 export const isTasks = (ctx: AiContext): ctx is TasksContext => (ctx as TasksContext).action === 'tasks';
 export const isTutor = (ctx: AiContext): ctx is TutorContext => (ctx as TutorContext).action === 'tutor';
 export const isConnect = (ctx: AiContext): ctx is ConnectContext => (ctx as ConnectContext).action === 'connect';
@@ -50,10 +52,11 @@ export const isNoteCards = (ctx: AiContext): ctx is NoteCardsContext => (ctx as 
 export const isNoteCardsCheck = (ctx: AiContext): ctx is NoteCardsCheckContext => (ctx as NoteCardsCheckContext).action === 'note-cards-check';
 export const isExplain = (ctx: AiContext): ctx is ExplainContext => (ctx as ExplainContext).action === 'explain';
 export const isAsk = (ctx: AiContext): ctx is AskContext => (ctx as AskContext).action === 'ask';
+export const isCheckAnswer = (ctx: AiContext): ctx is CheckAnswerContext => (ctx as CheckAnswerContext).action === 'check-answer';
 
 // The messages for whichever kind of request it is.
 export function messagesFor(ctx: AiContext): ChatMessage[] {
-  return isAsk(ctx) ? buildAskMessages(ctx) : isExplain(ctx) ? buildExplainMessages(ctx) : isNoteCheck(ctx) ? buildNoteCheckMessages(ctx) : isNoteCards(ctx) ? buildNoteCardsMessages(ctx) : isNoteCardsCheck(ctx) ? buildNoteCardsCheckMessages(ctx)
+  return isAsk(ctx) ? buildAskMessages(ctx) : isCheckAnswer(ctx) ? buildCheckAnswerMessages(ctx) : isExplain(ctx) ? buildExplainMessages(ctx) : isNoteCheck(ctx) ? buildNoteCheckMessages(ctx) : isNoteCards(ctx) ? buildNoteCardsMessages(ctx) : isNoteCardsCheck(ctx) ? buildNoteCardsCheckMessages(ctx)
     : isCards(ctx) ? buildCardsMessages(ctx) : isCardsCheck(ctx) ? buildCheckMessages(ctx) : isConnect(ctx) ? buildConnectMessages(ctx)
     : isTutor(ctx) ? buildTutorMessages(ctx) : isTasks(ctx) ? buildTaskMessages(ctx) : buildMessages(ctx);
 }
