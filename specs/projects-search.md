@@ -2,7 +2,7 @@
 
 **Status:** built under the owner's advance approval of 24 October 2026 (build and publish, taking the
 recommended option on routine choices; stop for saved data, AI, the live database, deletion or a real product
-choice). Phase 1, release 4 of `specs/projects-vision.md`. Not yet released.
+choice). Phase 1, release 4 of `specs/projects-vision.md`. Released in 1.52.0.
 **Based on:** source at release 1.51.0 (started on 1.50.0).
 
 ## 1. The practical problem

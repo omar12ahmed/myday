@@ -1,5 +1,13 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.52.0 — Projects: search one project:** every project page has "Search this project" under its tabs. Results show
+above the tab, which keeps anything you were typing there, in a fixed order by kind: the project's name and own
+words, its tasks (done and let go ones after the rest, marked), notes (private ones marked), milestones, decisions,
+and a business idea's one page or a case's timeline, evidence and issues. Every word must appear, in any order;
+capitals, accents and the kind of apostrophe don't matter. Opening a result goes to the item itself; Clear, Escape
+or another tab ends the search. Nothing is saved, synced or sent to AI or anywhere else. No saved-data, sync or
+database change; going back to 1.51.0 is safe.
+
 **1.51.0 — Study: one focus, and a calmer Study home:** "Your focus" (Cybersecurity, Arabic or one of your own
 courses) is now one choice, in Study settings and under Study home's first card, and Today's Study card and Study home
 show the same next step with the same "Why this?". Study home has three levels: Now (your focus's next step, or the
@@ -474,7 +482,7 @@ fields). The conflict summary says "waiting". Who you're waiting on is never sen
 doesn't name them. To keep one meaning of "waiting", the weekly review's step 2 is now **What needs you** ("Nothing
 needs you right now — lovely"; a past-dated task "was planned for …").
 
-**Searching one project (unreleased; `specs/projects-search.md`):** every project page has "Search this project"
+**Searching one project (1.52.0; `specs/projects-search.md`):** every project page has "Search this project"
 under its tabs. While there's something in it, the results show above the tab, which stays as it was but hidden (so
 nothing you were typing there is lost): "2 matches for “armchair”", in a fixed order by kind. It searches the
 project's name and own words (summary, what it's aiming for, what counts as finished, where you left off), its tasks
