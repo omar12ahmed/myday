@@ -112,7 +112,8 @@ Capture, Ask MyDay, "What MyDay has noticed" and "What MyDay knows".
 ### Naming
 
 "Explore" named two things: a project's investigation view and a level of Study home. Decided (24 Oct 2026):
-Projects keep "Explore" (it is also a project stage); Study home's level is renamed in a Study release.
+Projects keep "Explore" (it is also a project stage); Study home's level is renamed "Browse" (the owner confirmed
+the word) in a Study release.
 
 ---
 
@@ -242,8 +243,8 @@ MyDay has one user, so "permissions" here means privacy rules, not access contro
   - name and email;
   - preferences and patterns.
 - **Private projects (decided 24 Oct 2026): Private covers every AI feature except note filing.** Ask MyDay sends
-  nothing of them; "Help me adjust today" sends their tasks on today's plan only as "a private task" (1.58.0); no
-  revision cards are made from their notes (1.58.0). "AI help with notes" may still offer their name and summary as a
+  nothing of them; "Help me adjust today" sends their tasks on today's plan only as "a private task" (1.59.0); no
+  revision cards are made from their notes (1.59.0). "AI help with notes" may still offer their name and summary as a
   place to file a note (the owner's choice, 17 Oct 2026). "What MyDay knows" says all of this.
 - **A note's text** reaches Ask MyDay only when "AI help with notes" is on.
 
@@ -439,10 +440,10 @@ items, rather than scattering them through the README. Update it with each relea
 | Capability | Built now (1.55.1) | Direction or next step |
 |---|---|---|
 | Idea-to-review path | Most steps (§1) | Close the gaps one at a time, starting with findings and their sources |
-| Task completion in one place | 1.55.1: a tick on a plan marks the task itself done, dated the plan's day; 1.58.0: a rolled task follows its copy to the next plan, and Ask's Undo keeps a tick made since | Keep one answer as new views appear |
+| Task completion in one place | 1.55.1: a tick on a plan marks the task itself done, dated the plan's day; 1.59.0: a rolled task follows its copy to the next plan, and Ask's Undo keeps a tick made since | Keep one answer as new views appear |
 | Ask MyDay in context | Page slice, five reply kinds, checked proposals, one follow-up, one Undo | Read-only tools over the shared AI filter |
 | General assistant tools | Not built | Start read-only; actions only for a defined need |
-| One "what may reach AI" filter | Ask filters; other jobs filter separately; Private covers every AI feature but note filing (1.58.0) | One shared function |
+| One "what may reach AI" filter | Ask filters; other jobs filter separately; Private covers every AI feature but note filing (1.59.0) | One shared function |
 | AI quality checks | `ai-eval` scenarios, blind reviews, budgets | Required before a model or job changes |
 | Saved records | Built | Keep sources and dates; mark summaries stale |
 | Conversation memory | Not built; nothing kept | No commitment; make the case first |

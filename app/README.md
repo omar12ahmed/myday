@@ -1,5 +1,16 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.59.0 — Tasks keep one answer, and Private covers more AI help:** a task from Your tasks rolled to tomorrow in the
+evening check-in now follows its copy onto the next plan, so ticking it there ticks it in Your tasks (before, it came
+back unlinked and Your tasks hid it for good); ticked off or let go in Your tasks, its waiting copy leaves the queue;
+"Start today over" or a rest day sends it back to waiting. Review my plan's "Leave for later" on a task put straight on
+the plan from Your tasks sends it back there with its own date (the cards say so), not into the queue. Ask MyDay's
+Undo puts back only what you haven't changed since (a tick, an edit, a sync) and says when it kept something. Your
+decision of 24 Oct: Private covers every AI feature except note filing, so Help me adjust today sends a private
+project's task as "a private task", and no revision cards are offered for a note in a private project; What MyDay
+knows says so. No schema, sync or database change; going back to 1.58.0 is safe (it shows a rolled task's waiting
+copy as before).
+
 **1.58.0 — Projects: Cybersecurity lessons, and "For your project" in Study:** a project's Learning card can also
 link Cybersecurity lessons from your path (grouped by module), shown in Study's own words: "Marked complete",
 "Started" or "Not started". In Study, a course's page, a book you're reading and a Cybersecurity lesson's page now
