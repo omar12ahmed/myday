@@ -251,6 +251,7 @@ async function fill(sel, value) {
   await until(async () => (await text('#cy-step-check [data-cy-answer]')).includes(guide[firstQ]), 'the answer guide');
   check('Check compares with the answer guide on the page (focus on it), and offers the lab notebook to keep your answers', (await text('#cy-step-check [data-cy-answer]')).includes(guide[firstQ])
     && await ev(`!!document.activeElement.closest('[data-cy-answer]')`) && await exists('#cy-step-check a[href="#study/cybersecurity/assessment.learning-evidence-check"]'));
+  await click('[data-action="cy-step"][data-v="check"]'); await sleep(400); // reading the explanation again moved your step; back to Check
   await go('study/cybersecurity/lesson.learning-evidence'); await until(() => exists('[data-cy-steps]'), 'the lesson reopened'); await sleep(900);
   check('reopening goes back to your step: Check, near the top of the screen', (await ev(`document.querySelector('[data-action="cy-step"][aria-current="step"]').dataset.v`)) === 'check'
     && await ev(`scrollY > 0 && (() => { const r = document.getElementById('cy-step-check').getBoundingClientRect(); return r.top >= 0 && r.top < innerHeight / 3; })()`));
