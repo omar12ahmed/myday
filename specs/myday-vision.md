@@ -66,7 +66,7 @@ the path exists; the gaps are specific.
 | 6. Organise the outcome | Stage, milestones, what it's aiming for, what counts as finished (1.48.0) | — |
 | 7. One manageable action for Today | The project's next step, with "Why this?" (1.54.0) → Today's "From your projects"; a weekly focus of up to three projects | — |
 | 8. Adjust around commitments and energy | Build my day (energy limits, shift and appointment times), "Help me adjust today" | — |
-| 9. Record what happened | Ticks, the evening check-in, "Where I left off", "waiting on…" (1.50.0) | **A project task ticked on Today isn't counted in Your week** (see §3) |
+| 9. Record what happened | Ticks, the evening check-in, "Where I left off", "waiting on…" (1.50.0); a tick on Today counts in Your week (1.55.1) | — |
 | 10. Resume, review or conclude | "Where I left off" at the top of the Overview, Your week, Done | — |
 
 ---
@@ -164,12 +164,9 @@ Extend what exists, in small steps.
 The same thing should not have two independent truths. Views may keep snapshots and history, as long as their
 link to the source is explicit (a plan's copy of a task, a week's reflection note).
 
-- **Task completion: fix first.** Today, a task's "done" is worked out from two flags: the task's own, and its copy
-  on a day's plan. Ticking on Today sets only the plan copy, so the task's own done date stays empty. Two results:
-  - Your week's "What moved" misses project tasks ticked on Today;
-  - unticking on the plan can leave Tasks showing the task as done.
-
-  Completion should be recorded in one place, with the plan reading it.
+- **Task completion (fixed in 1.55.1).** A task on a day's plan has a copy there. Ticking the copy now marks the
+  task itself done too, dated the plan's day, so Tasks, Your week and this week's count give one answer. Before,
+  ticking on Today set only the copy, and Your week missed project tasks ticked there.
 - **Learning records:** a Study resource linked from anywhere keeps its learning record in Study.
 - **Files:** when files arrive, each has one identity, and projects refer to it.
 
@@ -440,10 +437,10 @@ Sessions working in parallel agree release order and tell each other before and 
 Track decision status, building and verification separately. Keep this register as the one place for "not yet"
 items, rather than scattering them through the README. Update it with each release that changes a row.
 
-| Capability | Built now (1.54.0) | Direction or next step |
+| Capability | Built now (1.55.1) | Direction or next step |
 |---|---|---|
-| Idea-to-review path | Most steps (§1) | Close the gaps one at a time: findings with sources, counting what moved |
-| Task completion in one place | Two flags; Your week misses project tasks ticked on Today | Fix (no new feature needed) |
+| Idea-to-review path | Most steps (§1) | Close the gaps one at a time, starting with findings and their sources |
+| Task completion in one place | Fixed in 1.55.1: a tick on a plan marks the task itself done, dated the plan's day | Keep one answer as new views appear |
 | Ask MyDay in context | Page slice, five reply kinds, checked proposals, one follow-up, one Undo | Read-only tools over the shared AI filter |
 | General assistant tools | Not built | Start read-only; actions only for a defined need |
 | One "what may reach AI" filter | Ask filters; other jobs filter separately | One shared function; owner decision on Private for every AI feature |
@@ -457,7 +454,7 @@ items, rather than scattering them through the README. Update it with each relea
 | Semantic search | Not built | Exploratory; separate decision |
 | Projects | Overview (1.46.0); outcome, finish line and "Where I left off" (1.48.0); waiting on (1.50.0); search (1.52.0); why this next step (1.54.0) | `projects-vision.md` Phase 2; its owner decisions open there |
 | Explore | Renderer; the Hargeisa Marketplace exploration; generated starting briefs | Sourced AI explorations need retrieval and checking first; settle the name clash with Study |
-| Study | Guided paths, Start/Continue (1.46.1); adaptive Arabic (1.47.0); Your focus and a calmer home (1.51.0); Arabic lesson journey (1.53.0) | Cybersecurity journey (being built); adaptive rules for Cybersecurity and your own courses; Keep a word; Practise again and Progress; portfolio files; graduated help |
+| Study | Guided paths, Start/Continue (1.46.1); adaptive Arabic (1.47.0); Your focus and a calmer home (1.51.0); Arabic lesson journey (1.53.0); Cybersecurity lesson journey (1.55.0) | Adaptive rules for Cybersecurity and your own courses; Keep a word; Practise again and Progress; portfolio files; graduated help |
 | Saving, export/import, sync | Built (schema 5) | Keep going back a release safe; define "delete everything" |
 | Automatic backups | Not built | Before files |
 | Files | Not built; portfolio files planned in Supabase Storage | Agree one plan with `deploy/R2.md` |

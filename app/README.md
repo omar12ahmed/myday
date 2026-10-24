@@ -1,5 +1,13 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.55.1 — One task, one tick:** ticking off a task from Your tasks on a day's plan (on Today, in the evening
+check-in or by finishing its Study session) now marks the task itself done as well, dated that plan's day. Your week's
+"What moved" counts project tasks ticked on Today, this week's count has each tick once, and unticking on the plan
+unticks it in Your tasks too (before, a task ticked in Your tasks and unticked on the plan stayed done there).
+"Start today over" keeps what you ticked off from Your tasks done, and says so; the plan's other ticks are cleared as
+before. Ticks made before this release still show as done but aren't added to past weeks. No schema, sync or database
+change: the task's own done flag and date have always been saved; going back to 1.55.0 is safe.
+
 **1.55.0 — Cybersecurity lessons as a journey:** a Cybersecurity lesson is now one page in steps, as Arabic's are:
 Warm-up (the previous lesson's knowledge check, from memory, once you've begun that lesson), Understand (the
 explanation and worked example, then the assigned material), Try (Try it, Learn by doing in your lab notebook, the AI
