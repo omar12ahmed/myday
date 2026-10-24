@@ -68,14 +68,15 @@ export function normalizeProjects(raw: unknown, report: { dropped: number }): Pr
     const kase = normalizeCase(p.case, report);
     if (kase) item.case = kase; else delete item.case;
     if (isDateKey(p.focus)) item.focus = p.focus; else delete item.focus; // in your weekly focus (1.37.0)
-    // The outcome, what counts as finished and where you left off (1.47.0): kept only when written; a shape this
-    // version can't read is counted, never kept half-read.
+    // The outcome, what counts as finished and where you left off (1.48.0): kept only when written. A blank one is
+    // simply absent; a shape this version can't read is counted, never kept half-read.
     for (const [key, max] of [['outcome', PROJECT_LIMITS.outcome], ['finishedWhen', PROJECT_LIMITS.finishedWhen]] as const) {
-      if (typeof p[key] === 'string' && p[key].trim()) item[key] = p[key].slice(0, max); else { if (p[key] !== undefined && p[key] !== '') report.dropped++; delete item[key]; }
+      const v = p[key];
+      if (typeof v === 'string' && v.trim()) item[key] = v.slice(0, max); else { if (v !== undefined && v !== null && typeof v !== 'string') report.dropped++; delete item[key]; }
     }
-    const lo = p.leftOff;
+    const lo = p.leftOff, blankNote = lo === null || (isObj(lo) && typeof lo.text === 'string' && !lo.text.trim());
     if (isObj(lo) && typeof lo.text === 'string' && lo.text.trim() && isDateTime(lo.at)) item.leftOff = { ...lo, text: lo.text.slice(0, PROJECT_LIMITS.leftOff), at: lo.at };
-    else { if (lo !== undefined) report.dropped++; delete item.leftOff; }
+    else { if (lo !== undefined && !blankNote) report.dropped++; delete item.leftOff; }
     seen.add(item.id);
     out.items.push(item);
   }
@@ -117,13 +118,14 @@ export function editProject(d: MyDayData, id: string, patch: Partial<Pick<Projec
   return changed;
 }
 
-// Where you left off (1.47.0): one short note and when you wrote it. Empty clears it. Returns false when unchanged.
+// Where you left off (1.48.0): one short note and when you wrote it (anything a newer MyDay keeps beside them stays).
+// Empty clears it. Returns false when unchanged.
 export function setLeftOff(d: MyDayData, id: string, text: string): boolean {
   const p = find(d, id);
   if (!p) return false;
   const t = text.trim().slice(0, PROJECT_LIMITS.leftOff);
   if (t === (p.leftOff?.text ?? '')) return false;
-  if (t) p.leftOff = { text: t, at: localStamp() }; else delete p.leftOff;
+  if (t) p.leftOff = { ...p.leftOff, text: t, at: localStamp() }; else delete p.leftOff;
   touch(p);
   return true;
 }

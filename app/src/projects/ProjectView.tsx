@@ -123,7 +123,7 @@ function ProjectHead({ p }: { p: Project }) {
         <div className="grid gap-3 mt-3">
           <Field label="Project" htmlFor="projectTitleInput"><CommitInput id="projectTitleInput" key={p.title} defaultValue={p.title} maxLength={PROJECT_LIMITS.title} onCommit={el => { if (!el.value.trim()) { el.value = p.title; return; } save({ title: el.value }); }} /></Field>
           <Field label="What is it, and why does it matter to you?" htmlFor="projectSummary"><CommitTextarea id="projectSummary" rows={4} key={p.summary} defaultValue={p.summary} maxLength={PROJECT_LIMITS.summary} onCommit={el => save({ summary: el.value })} /></Field>
-          <Field label="What are you aiming for?" htmlFor="projectOutcome"><CommitInput id="projectOutcome" key={p.outcome ?? ''} defaultValue={p.outcome ?? ''} maxLength={PROJECT_LIMITS.outcome} placeholder="A result, e.g. A quiet corner I read in every evening" onCommit={el => save({ outcome: el.value })} /></Field>
+          <Field label="What are you aiming for?" htmlFor="projectOutcome"><CommitInput id="projectOutcome" key={p.outcome ?? ''} defaultValue={p.outcome ?? ''} maxLength={PROJECT_LIMITS.outcome} placeholder="A result, e.g. a quiet corner I read in every evening" onCommit={el => save({ outcome: el.value })} /></Field>
           <Field label="What would count as finished?" htmlFor="projectFinished"><CommitTextarea id="projectFinished" rows={2} key={p.finishedWhen ?? ''} defaultValue={p.finishedWhen ?? ''} maxLength={PROJECT_LIMITS.finishedWhen} onCommit={el => save({ finishedWhen: el.value })} /></Field>
           {knownTemplate(p) && (
             <Field label="Kind of project" htmlFor="projectKind">
@@ -139,51 +139,53 @@ function ProjectHead({ p }: { p: Project }) {
         <button type="button" className="min-h-11 mt-1 -mb-1 text-[15px] font-semibold text-primary bg-transparent border-0 p-0 cursor-pointer hover:underline underline-offset-4" data-action="project-why" onClick={() => setEditing(true)}>What is it, and why does it matter to you?</button>
       )}
       {!editing && p.finishedWhen && <p className="text-[15px] m-0 mt-3 whitespace-pre-line break-words" data-s="project-finished"><span className="font-semibold">Finished when:</span> {p.finishedWhen}</p>}
-      {!p.leftOff && (noting ? <LeftOffEditor p={p} onDone={() => setNoting(false)} />
-        : <button type="button" className="block min-h-11 mt-2 text-[15px] font-semibold text-primary bg-transparent border-0 p-0 cursor-pointer hover:underline underline-offset-4" data-action="leftoff-new" onClick={() => setNoting(true)}>Leave a note for next time</button>)}
+      {!p.leftOff && (noting ? <LeftOffEditor p={p} onDone={r => { setNoting(false); focusSoon(r === 'saved' ? 'pjLeftOffH' : 'projectLeftOffNew'); }} />
+        : <button type="button" id="projectLeftOffNew" className="block min-h-11 mt-2 text-[15px] font-semibold text-primary bg-transparent border-0 p-0 cursor-pointer hover:underline underline-offset-4" data-action="leftoff-new" onClick={() => setNoting(true)}>Leave a note for next time</button>)}
       <div className="mt-5"><Progression stage={p.stage} onPick={stage => save({ stage })} /></div>
       {!isCase(p) && <a id="projectExplore" href={exploreHref(p.id)} onClick={() => rememberExploreEntry(p.id)} data-action="project-explore" className="inline-flex items-center gap-2 min-h-11 mt-3 text-primary font-semibold text-[15px] no-underline hover:underline underline-offset-4">Explore this idea <ArrowUpRight size={17} aria-hidden="true" /></a>}
     </Card>
   );
 }
 
-// Where you left off (1.47.0): your note for next time, at the top of the Overview once written, with its day.
+// Where you left off (1.48.0): your note for next time, at the top of the Overview once written, with its day.
+// When the editor closes, the keyboard focus goes back to where you'd carry on (never left on the page itself).
+const focusSoon = (id: string) => requestAnimationFrame(() => document.getElementById(id)?.focus());
 function LeftOffCard({ p }: { p: Project }) {
   const [editing, setEditing] = useState(false);
   if (!p.leftOff) return null;
   return (
     <Card aria-labelledby="pjLeftOffH" id="projectLeftOff">
       <div className="flex items-start justify-between gap-3">
-        <h3 id="pjLeftOffH" className="m-0">Where I left off <span className="text-sm font-normal text-fg-2 tabular-nums" data-s="leftoff-day">· {shortDate(p.leftOff.at.slice(0, 10))}</span></h3>
-        {!editing && <Button inline variant="ghost" className="flex-none -mt-2" data-action="leftoff-edit" onClick={() => setEditing(true)}><Pencil size={16} aria-hidden="true" /> Edit</Button>}
+        <h3 id="pjLeftOffH" tabIndex={-1} className="m-0">Where I left off <span className="text-sm font-normal text-fg-2 tabular-nums" data-s="leftoff-day">· {shortDate(p.leftOff.at.slice(0, 10))}</span></h3>
+        {!editing && <Button inline variant="ghost" id="projectLeftOffEdit" className="flex-none -mt-2" data-action="leftoff-edit" onClick={() => setEditing(true)}><Pencil size={16} aria-hidden="true" /> Edit</Button>}
       </div>
-      {editing ? <LeftOffEditor p={p} onDone={() => setEditing(false)} />
+      {editing ? <LeftOffEditor p={p} onDone={r => { setEditing(false); focusSoon(r === 'cleared' ? 'projectLeftOffNew' : 'projectLeftOffEdit'); }} />
         : <p className="text-[16px] m-0 mt-2 whitespace-pre-line break-words" data-s="leftoff-text">{p.leftOff.text}</p>}
     </Card>
   );
 }
 // Writing it: the draft stays while you type and if saving fails (nothing is announced, and the previous note stays).
-function LeftOffEditor({ p, onDone }: { p: Project; onDone: () => void }) {
+function LeftOffEditor({ p, onDone }: { p: Project; onDone: (r: 'saved' | 'cleared' | 'cancelled') => void }) {
   const confirm = useConfirm();
   const [text, setText] = useState(p.leftOff?.text ?? '');
   function save() {
     if (!text.trim()) return;
-    if (text.trim().slice(0, PROJECT_LIMITS.leftOff) === p.leftOff?.text) { onDone(); return; }
-    if (update(d => (setLeftOff(d, p.id, text) ? undefined : false))) { toast('Saved — it’ll be here when you come back.'); onDone(); }
+    if (text.trim().slice(0, PROJECT_LIMITS.leftOff) === p.leftOff?.text) { onDone('saved'); return; }
+    if (update(d => (setLeftOff(d, p.id, text) ? undefined : false))) { toast('Saved — it’ll be here when you come back.'); onDone('saved'); }
   }
   async function clear() {
     if (!(await confirm({ title: 'Clear this note?', body: 'Where you left off will be empty again.', confirmLabel: 'Clear', cancelLabel: 'Keep it' }))) return;
-    if (update(d => (setLeftOff(d, p.id, '') ? undefined : false))) { toast('Note cleared.'); onDone(); }
+    if (update(d => (setLeftOff(d, p.id, '') ? undefined : false))) { toast('Note cleared.'); onDone('cleared'); }
   }
   return (
-    <form className="mt-3" onSubmit={e => { e.preventDefault(); save(); }} data-s="leftoff-form">
-      <Field label="Where did you leave it?" htmlFor="projectLeftOffText">
+    <form className="mt-3" onSubmit={e => { e.preventDefault(); save(); }} onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); onDone('cancelled'); } }} data-s="leftoff-form">
+      <Field label="Where I left off" htmlFor="projectLeftOffText">
         <TextArea id="projectLeftOffText" rows={4} autoFocus value={text} maxLength={PROJECT_LIMITS.leftOff} onChange={e => setText(e.target.value)}
           placeholder="What was happening, what’s unresolved, the next useful thing, and anything you’ll need to pick it up again" />
       </Field>
       <div className="flex flex-wrap gap-2.5 mt-3">
         <Button inline type="submit" variant="primary" data-action="leftoff-save" disabled={!text.trim()}>Save note</Button>
-        <Button inline variant="ghost" data-action="leftoff-cancel" onClick={onDone}>Cancel</Button>
+        <Button inline variant="ghost" data-action="leftoff-cancel" onClick={() => onDone('cancelled')}>Cancel</Button>
         {p.leftOff && <Button inline variant="ghost" data-action="leftoff-clear" onClick={() => void clear()}>Clear note</Button>}
       </div>
     </form>

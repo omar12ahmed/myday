@@ -982,6 +982,12 @@ const clone = o => JSON.parse(JSON.stringify(o));
     o1 = K.normalizeProjects({ items: [base('pjL', { outcome: '', finishedWhen: '' })] }, rp).items[0];
     check('an empty outcome or finish line is removed without being counted', !('outcome' in o1) && !('finishedWhen' in o1) && rp.dropped === 0, [o1, rp]);
     rp = { dropped: 0 };
+    o1 = K.normalizeProjects({ items: [base('pjL', { outcome: '   ', finishedWhen: null, leftOff: { text: '  ', at: AT } }), base('pjM', { leftOff: null })] }, rp).items;
+    check('blank values (spaces only, null, a note with blank text) are simply absent, not counted as unreadable', o1.every(x => !('outcome' in x) && !('finishedWhen' in x) && !('leftOff' in x)) && rp.dropped === 0, [o1, rp]);
+    rp = { dropped: 0 };
+    o1 = K.normalizeProjects({ items: [base('pjL', { leftOff: 'Waiting on the quote' })] }, rp).items[0];
+    check('a note saved as plain text (not a note with its time) is removed and counted as dropped', !('leftOff' in o1) && rp.dropped === 1, [o1, rp]);
+    rp = { dropped: 0 };
     o1 = K.normalizeProjects({ items: [base('pjL', { outcome: 42 })] }, rp).items[0];
     check('an outcome that is a number is removed and counted as dropped', !('outcome' in o1) && rp.dropped === 1, [o1, rp]);
     rp = { dropped: 0 };
@@ -1021,69 +1027,89 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('an empty text clears the note, and clearing again returns false', K.setLeftOff(d, 'pjA', '  ') && !('leftOff' in P(d)) && !K.setLeftOff(d, 'pjA', '') && !K.setLeftOff(d, 'pjNope', 'x'), P(d));
     K.setLeftOff(d, 'pjA', 'n'.repeat(900));
     check('a note over 800 characters is cut to 800', P(d).leftOff.text.length === 800);
+    P(d).leftOff.futureBit = 'kept';
+    check('editing a note keeps anything a newer MyDay saved beside its text and time', K.setLeftOff(d, 'pjA', 'Shelf bought') && P(d).leftOff.text === 'Shelf bought' && P(d).leftOff.futureBit === 'kept', P(d).leftOff);
   }
 
   console.log('\n[14] The previous release keeps all three fields (so the saved-data version stays 5)');
   {
     const git = (...a) => execFileSync('git', a, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
-    let ref = process.env.MYDAY_PREVIOUS_PROJECTS_REF;
-    if (!ref) {
-      // A tag on HEAD is that release itself, so it is skipped, unless the feature is still uncommitted on top of it
-      // (then that tagged release is the one the feature is built on, and the one to compare with).
-      const building = git('status', '--porcelain', '--', 'app/src') !== '';
-      const onHead = building ? [] : git('tag', '--points-at', 'HEAD').split('\n').filter(Boolean);
-      ref = git('tag', '--merged', 'HEAD', '--list', 'v*', '--sort=-v:refname').split('\n').filter(t => t && !onHead.includes(t))[0];
+    // The last release without these fields: the one a device may go back to. Pinned, so this never compares the
+    // feature with itself, whatever the working tree holds; MYDAY_PREVIOUS_PROJECTS_REF overrides it.
+    const BEFORE_FIELDS = 'v1.47.0';
+    const ref = process.env.MYDAY_PREVIOUS_PROJECTS_REF || BEFORE_FIELDS;
+    let commit = '';
+    try { commit = git('rev-parse', '--verify', '--quiet', '--short', ref + '^{commit}'); } catch { /* not found */ }
+    check(`the previous release to compare against (${ref}) exists in this checkout`, !!commit, ref);
+    console.log(`  Previous release used: ${ref} (${commit || 'not found'})`);
+    if (commit) {
+      const odir = path.join(os.tmpdir(), `myday-projects-prev-${process.pid}`);
+      try {
+        fs.mkdirSync(odir, { recursive: true });
+        const tarFile = path.join(odir, 'src.tar');
+        execFileSync('git', ['archive', '--format=tar', '-o', tarFile, ref, 'app/src'], { cwd: ROOT });
+        execFileSync('tar', ['-xf', tarFile, '-C', odir]);
+        const o = f => JSON.stringify(path.join(odir, 'app/src', f));
+        fs.writeFileSync(path.join(odir, 'oldkit.ts'), [
+          `export { freshState, normalize } from ${o('data/normalize')};`,
+          `export { normalizeProjects, editProject, setNextStep, addProject } from ${o('data/projects')};`,
+          `export { addMilestone } from ${o('data/projectPlan')};`,
+          `export { splitProject } from ${o('data/projectRecords')};`,
+          `export { cleanProjectRecord, putProjectRecord } from ${o('sync/projectParts')};`,
+          `export { boot, update, exportText, parseImport, replaceAll } from ${o('data/storage')};`,
+        ].join('\n'));
+        const OK = await import(pathToFileURL(await bundle(path.join(odir, 'oldkit.ts'), path.join(odir, 'out'))).href);
+        const fields = p => clone({ outcome: p.outcome, finishedWhen: p.finishedWhen, leftOff: p.leftOff });
+        const LO = { text: 'Waiting on the quote; call the builder Monday', at: '2026-10-20T18:30', futureBit: 'kept' };
+        const mine = () => base('pjP', { outcome: 'A quiet corner I read in every evening', finishedWhen: 'The chair is bought and the shelf is up', leftOff: clone(LO) });
+        const want = fields(mine());
+        const oldWorld = (...ps) => { const w = OK.freshState(); w.projects.items = ps; return w; };
+        const same = (p, why) => eq(fields(p), want) ? true : (console.log('    ' + why, fields(p)), false);
+
+        const loaded = OK.normalize(clone(oldWorld(mine())));
+        check(`${ref}: data with all three fields keeps them unchanged when loaded from storage`, same(loaded.projects.items[0], 'loaded'), fields(loaded.projects.items[0]));
+
+        const e = OK.normalize(clone(oldWorld(mine(), base('pjQ'))));
+        const tk = { id: 'tkP', title: 'Pay council tax', done: false, projectId: 'pjP' };
+        const pj = () => e.projects.items.find(x => x.id === 'pjP');
+        OK.editProject(e, 'pjP', { title: 'Reading corner' }); OK.editProject(e, 'pjP', { stage: 'decide' }); OK.editProject(e, 'pjP', { status: 'paused' });
+        check(`${ref}: its own edit of the title, stage and status changes them and keeps all three fields`, pj().title === 'Reading corner' && pj().stage === 'decide' && pj().status === 'paused' && same(pj(), 'edited'), [pj().title, pj().stage, pj().status, fields(pj())]);
+        const ms = OK.addMilestone(e, 'pjP', 'Buy the chair');
+        check(`${ref}: adding a milestone keeps all three fields`, !!ms && pj().milestones.length === 1 && same(pj(), 'milestone'), fields(pj()));
+        e.tasks.items.push({ ...tk });
+        const ns = OK.setNextStep(e, 'pjP', 'tkP');
+        check(`${ref}: setting the next step keeps all three fields`, ns && pj().nextTaskId === 'tkP' && same(pj(), 'next step'), [pj().nextTaskId, fields(pj())]);
+
+        const payload = { format: 'myday-export', schemaVersion: 5, exportedAt: '2026-10-21T09:00', data: oldWorld(mine()) };
+        const imported = OK.normalize(JSON.parse(JSON.stringify(payload, null, 2)).data);
+        check(`${ref}: a JSON export then import (normalise) keeps all three fields`, same(imported.projects.items[0], 'import'), fields(imported.projects.items[0]));
+
+        // Its own saving, export, import and restore (storage.ts), with an in-memory stand-in for the browser's storage.
+        const mem = new Map();
+        globalThis.localStorage = { getItem: k => (mem.has(k) ? mem.get(k) : null), setItem: (k, v) => { mem.set(k, String(v)); }, removeItem: k => { mem.delete(k); },
+          key: i => [...mem.keys()][i] ?? null, get length() { return mem.size; } };
+        try {
+          mem.set('myday.data.v4', JSON.stringify(oldWorld(mine())));
+          OK.boot();
+          const savedP = () => JSON.parse(mem.get('myday.data.v4')).projects.items.find(x => x.id === 'pjP');
+          const wrote = OK.update(dd => { OK.editProject(dd, 'pjP', { title: 'Saved by the previous release' }); });
+          check(`${ref}: its own save writes an edit to the browser's storage and keeps all three fields`, wrote && savedP().title === 'Saved by the previous release' && same(savedP(), 'saved'), fields(savedP()));
+          const back = OK.parseImport(OK.exportText().text);
+          check(`${ref}: its own export, read by its own import, keeps all three fields`, same(back.data.projects.items.find(x => x.id === 'pjP'), 'export/import'), fields(back.data.projects.items.find(x => x.id === 'pjP')));
+          mem.set('myday.data.v4', JSON.stringify(oldWorld(base('pjP', { title: 'Other data on this device' }))));
+          OK.boot();
+          check(`${ref}: restoring that file saves all three fields again`, OK.replaceAll(back.data) && same(savedP(), 'restored'), fields(savedP()));
+        } finally { delete globalThis.localStorage; }
+
+        const rows = OK.splitProject(mine());
+        const core = rows.find(r => r.kind === 'project');
+        const cleaned = OK.cleanProjectRecord('project', core.id, JSON.parse(JSON.stringify(core.content)));
+        check(`${ref}: the project core sync record carries all three fields through its own split and cleaning`, !!cleaned && eq(fields(cleaned.value), want) && eq(fields(core.content.value), want), cleaned);
+        const fresh = OK.freshState();
+        OK.putProjectRecord(fresh, 'project', core.id, cleaned);
+        check(`${ref}: putting that record into fresh data gives back the project with all three fields unchanged`, fresh.projects.items.length === 1 && same(fresh.projects.items[0], 'sync') && eq(fresh.projects.items[0].leftOff, LO), fresh.projects.items);
+      } finally { fs.rmSync(odir, { recursive: true, force: true }); }
     }
-    console.log(`  Previous release used: ${ref} (${git('rev-parse', '--short', ref + '^{commit}')})`);
-    check('a previous release was found to compare against', !!ref, ref);
-    const odir = path.join(os.tmpdir(), `myday-projects-prev-${process.pid}`);
-    try {
-      fs.mkdirSync(odir, { recursive: true });
-      const tarFile = path.join(odir, 'src.tar');
-      execFileSync('git', ['archive', '--format=tar', '-o', tarFile, ref, 'app/src'], { cwd: ROOT });
-      execFileSync('tar', ['-xf', tarFile, '-C', odir]);
-      const o = f => JSON.stringify(path.join(odir, 'app/src', f));
-      fs.writeFileSync(path.join(odir, 'oldkit.ts'), [
-        `export { freshState, normalize } from ${o('data/normalize')};`,
-        `export { normalizeProjects, editProject, setNextStep, addProject } from ${o('data/projects')};`,
-        `export { addMilestone } from ${o('data/projectPlan')};`,
-        `export { splitProject } from ${o('data/projectRecords')};`,
-        `export { cleanProjectRecord, putProjectRecord } from ${o('sync/projectParts')};`,
-      ].join('\n'));
-      const OK = await import(pathToFileURL(await bundle(path.join(odir, 'oldkit.ts'), path.join(odir, 'out'))).href);
-      const fields = p => clone({ outcome: p.outcome, finishedWhen: p.finishedWhen, leftOff: p.leftOff });
-      const LO = { text: 'Waiting on the quote; call the builder Monday', at: '2026-10-20T18:30', futureBit: 'kept' };
-      const mine = () => base('pjP', { outcome: 'A quiet corner I read in every evening', finishedWhen: 'The chair is bought and the shelf is up', leftOff: clone(LO) });
-      const want = fields(mine());
-      const oldWorld = (...ps) => { const w = OK.freshState(); w.projects.items = ps; return w; };
-      const same = (p, why) => eq(fields(p), want) ? true : (console.log('    ' + why, fields(p)), false);
-
-      const loaded = OK.normalize(clone(oldWorld(mine())));
-      check(`${ref}: data with all three fields keeps them unchanged when loaded from storage`, same(loaded.projects.items[0], 'loaded'), fields(loaded.projects.items[0]));
-
-      const e = OK.normalize(clone(oldWorld(mine(), base('pjQ'))));
-      const tk = { id: 'tkP', title: 'Pay council tax', done: false, projectId: 'pjP' };
-      const pj = () => e.projects.items.find(x => x.id === 'pjP');
-      OK.editProject(e, 'pjP', { title: 'Reading corner' }); OK.editProject(e, 'pjP', { stage: 'decide' }); OK.editProject(e, 'pjP', { status: 'paused' });
-      check(`${ref}: its own edit of the title, stage and status changes them and keeps all three fields`, pj().title === 'Reading corner' && pj().stage === 'decide' && pj().status === 'paused' && same(pj(), 'edited'), [pj().title, pj().stage, pj().status, fields(pj())]);
-      const ms = OK.addMilestone(e, 'pjP', 'Buy the chair');
-      check(`${ref}: adding a milestone keeps all three fields`, !!ms && pj().milestones.length === 1 && same(pj(), 'milestone'), fields(pj()));
-      e.tasks.items.push({ ...tk });
-      const ns = OK.setNextStep(e, 'pjP', 'tkP');
-      check(`${ref}: setting the next step keeps all three fields`, ns && pj().nextTaskId === 'tkP' && same(pj(), 'next step'), [pj().nextTaskId, fields(pj())]);
-
-      const payload = { format: 'myday-export', schemaVersion: 5, exportedAt: '2026-10-21T09:00', data: oldWorld(mine()) };
-      const imported = OK.normalize(JSON.parse(JSON.stringify(payload, null, 2)).data);
-      check(`${ref}: a JSON export then import (normalise) keeps all three fields`, same(imported.projects.items[0], 'import'), fields(imported.projects.items[0]));
-
-      const rows = OK.splitProject(mine());
-      const core = rows.find(r => r.kind === 'project');
-      const cleaned = OK.cleanProjectRecord('project', core.id, JSON.parse(JSON.stringify(core.content)));
-      check(`${ref}: the project core sync record carries all three fields through its own split and cleaning`, !!cleaned && eq(fields(cleaned.value), want) && eq(fields(core.content.value), want), cleaned);
-      const fresh = OK.freshState();
-      OK.putProjectRecord(fresh, 'project', core.id, cleaned);
-      check(`${ref}: putting that record into fresh data gives back the project with all three fields unchanged`, fresh.projects.items.length === 1 && same(fresh.projects.items[0], 'sync') && eq(fresh.projects.items[0].leftOff, LO), fresh.projects.items);
-    } finally { fs.rmSync(odir, { recursive: true, force: true }); }
   }
 
   fs.rmSync(dir, { recursive: true, force: true });
