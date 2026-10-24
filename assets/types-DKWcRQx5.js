@@ -1,0 +1,1 @@
+var e=()=>({pathId:`path.core`,attempts:[],cards:[]}),t=`1.0.0`,n=e=>`cyber:1:${e}`,r=e=>e?.startsWith(`cyber:1:lesson.`)?e.slice(8):null,i=e=>`#study/cybersecurity/${encodeURIComponent(e)}`;export{i as a,r as i,n,e as r,t};
