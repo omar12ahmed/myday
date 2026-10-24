@@ -1,5 +1,17 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.74.0 — Check my answer:** once you've written your own answer to a lesson check — in an Arabic session, or a
+Cybersecurity knowledge check in the notebook — "Check my answer" asks the AI for help with it, in parts you open one
+at a time: a hint first, then an example, the explanation with a suggested mark, a follow-up question and its answer.
+It's labelled as AI-written, by which model, and says which part of the lesson it drew on. Sent: the lesson's objectives
+and teaching, the skills it builds on, the question, its reference answer and your answer — nothing else, and never an
+answer that looks like it holds a password or key. In an Arabic session you can use its suggested mark ("Used a hint")
+once you can mark the question; it never sets a lesson's state and never judges speaking or listening. A reply is used
+only if its Arabic is whole words that were sent. Arabic answers go to Gemini 3.8 Flash, Cybersecurity ones to
+GLM-5.3-Flash, chosen by a blind evaluation (`../ai-eval/reviews/2026-10-24-check-answer-quality.md`); each check counts
+towards the day's limit. The server (ai-plan, with "check-answer-arabic" routed to Gemini) went first; no saved-data,
+sync or database change; going back to 1.73.0 is safe.
+
 **1.73.0 — Delete everything:** at the end of Your account, **Delete everything…** opens a page that says what goes
 (your MyDay on every device and in your account, what you deleted before, your files and your backups) and what
 stays (your sign-in), offers **Download a copy first**, and works once you type "delete everything". Your account's
