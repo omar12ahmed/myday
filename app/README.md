@@ -1,5 +1,13 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.69.0 — Files: 10 GB, and what's used and what's left:** your files can now take 10 GB in all (2 GB before).
+Every Files card ends with a thin bar and "Your files: 1.2 GB used, 8.8 GB left of 10 GB." (rounded down; files in
+Recently deleted count until they go). A file that doesn't fit is refused with what's left, its size and how to make
+room (Remove, then Delete now in Recently deleted), and a file the server refuses now says why in the card instead of
+disappearing. Ready for the portfolio's files: this version leaves alone any file of an area it can't list, and the
+files function lets an older MyDay delete only project and note files. No saved-data, sync or database change; going
+back to 1.68.0 is safe.
+
 **1.68.0 — Files:** a project's Overview has a **Files** card (after Resources) and a note has a **Files** section
 under its text. **Add a file** (or drop one) keeps photos (JPEG, PNG, HEIC, WebP), PDFs and documents (Word, Excel,
 PowerPoint, text, CSV), up to 25 MB each and 50 per project or note; a photo gets a small preview. **Open** shows a

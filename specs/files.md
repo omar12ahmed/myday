@@ -3,7 +3,8 @@
 **Status:** released in 1.68.0 (24 October 2026). Reviewed (Fable: ship with changes; the changes are in). The owner
 made the R2 token, the bucket's CORS policy and the secrets; with the owner's yes the migration was applied
 (16:43:52–55Z, after a backup and a rehearsal that rolled back) and the `files` function deployed (version 2, after a
-direct check found text files read as empty: 38/38 on disposable account A), and the app was published. Nothing live happens without the owner's yes at each step: the Cloudflare token and bucket CORS (done by the
+direct check found text files read as empty: 38/38 on disposable account A), and the app was published. 1.69.0 (owner's yes): 10 GB in all, what's used and left on every card, the review's fixes, and the guard for
+areas this version can't list (the `files` function redeployed first). Nothing live happens without the owner's yes at each step: the Cloudflare token and bucket CORS (done by the
 owner), the database migration, the function deploy, and publishing.
 **Based on:** source at 1.65.0. Plans: `specs/projects-vision.md` §12 (attachments, after backups),
 `specs/myday-vision.md` §6 ("each file has one identity, and projects refer to it"; files in R2), `deploy/R2.md`, and
