@@ -100,12 +100,13 @@ export interface AskDayLookup {
 // its own page sends it — never a private one; its decisions and one page stay on its page.
 export interface AskProjectLookup { tool: 'project'; query: string; project: Omit<NonNullable<AskPageContext['project']>, 'decision' | 'onePage'> }
 // "Open decisions" (v20): across your open projects (query "all") or one (its id), the decisions with nothing chosen
-// yet — the question, each option's text with how many pros and cons it has (never what they say), the day it was
-// opened and whether it was reopened — and what a business idea must have true that isn't checked yet (its text only,
-// never what you found). Never a private project's; never your reasons or earlier choices.
+// yet — the question, its options' text, which options have no pros or no cons yet ("gaps", worked out in the app: the
+// model misread counts), the day it was opened and whether it was reopened — and what a business idea must have true
+// that isn't checked yet (its text only, never what you found). Never what a pro or con says; never a private
+// project's; never your reasons or earlier choices.
 export interface AskDecisionsLookup {
   tool: 'decisions'; query: string;
-  decisions: { id: string; projectId: string; project: string; question: string; options: { text: string; pros: number; cons: number }[]; since: string; reopened: boolean }[];
+  decisions: { id: string; projectId: string; project: string; question: string; options: string[]; gaps: string[]; since: string; reopened: boolean }[];
   mustBeTrue: { id: string; projectId: string; project: string; text: string }[];
   found: { decisions: number; mustBeTrue: number }; // how many in all (the lists carry the oldest few)
 }
@@ -194,11 +195,13 @@ export function checkAskContext(raw: unknown): raw is AskContext {
     } else if (lk.tool === 'decisions') {
       const ref = (x: Record<string, unknown>) => str(x.id, 64, false) && str(x.projectId, 64, false) && str(x.project, L.titleChars, false);
       if (!(only(lk, ['tool', 'query', 'decisions', 'mustBeTrue', 'found']) && str(lk.query, 64, false)
-        && Array.isArray(lk.decisions) && lk.decisions.length <= L.lookupDecisions && lk.decisions.every(d => obj(d) && only(d, ['id', 'projectId', 'project', 'question', 'options', 'since', 'reopened']) && ref(d)
+        && Array.isArray(lk.decisions) && lk.decisions.length <= L.lookupDecisions && lk.decisions.every(d => obj(d) && only(d, ['id', 'projectId', 'project', 'question', 'options', 'gaps', 'since', 'reopened']) && ref(d)
           && str(d.question, L.questionChars, false) && isDate(d.since) && typeof d.reopened === 'boolean' && Array.isArray(d.options) && d.options.length <= L.decisionOptions
-          && d.options.every(o => obj(o) && only(o, ['text', 'pros', 'cons']) && str(o.text, L.titleChars, false) && n(o.pros) && n(o.cons)))
+          && d.options.every(o => str(o, L.titleChars, false)) && Array.isArray(d.gaps) && d.gaps.length <= L.decisionOptions * 2 && d.gaps.every(g => str(g, L.titleChars + 20, false)))
         && Array.isArray(lk.mustBeTrue) && lk.mustBeTrue.length <= L.lookupBeliefs && lk.mustBeTrue.every(b => obj(b) && only(b, ['id', 'projectId', 'project', 'text']) && ref(b) && str(b.text, L.beliefChars, false))
-        && obj(lk.found) && only(lk.found, ['decisions', 'mustBeTrue']) && n(lk.found.decisions) && n(lk.found.mustBeTrue))) return false;
+        && obj(lk.found) && only(lk.found, ['decisions', 'mustBeTrue']) && n(lk.found.decisions) && n(lk.found.mustBeTrue)
+        && (lk.found.decisions as number) >= lk.decisions.length && (lk.found.mustBeTrue as number) >= lk.mustBeTrue.length
+        && (lk.query === 'all' || [...lk.decisions, ...lk.mustBeTrue].every(x => (x as { projectId: unknown }).projectId === lk.query)))) return false;
     } else if (lk.tool === 'project') {
       if (!(only(lk, ['tool', 'query', 'project']) && str(lk.query, 64, false) && checkProject(lk.project, false) && (lk.project as { id: unknown }).id === lk.query)) return false;
     } else if (lk.tool === 'day') {

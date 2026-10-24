@@ -73,8 +73,8 @@ export function projectLookup(data: MyDayData, id: string): { lookup: AskProject
 }
 
 // "Open decisions" (v20): the decisions with nothing chosen yet, oldest first, across your open projects ("all") or in
-// one (its id) — the question, each option's text and how many pros and cons it has (never what they say), the day it
-// was opened and whether it was reopened — and a business idea's must-be-true items not checked yet (text only, never
+// one (its id) — the question, its options' text, which have no pros or no cons yet ("“Van” has no cons yet", worked
+// out here: the model misread counts), the day it was opened and whether it was reopened — and a business idea's must-be-true items not checked yet (text only, never
 // what you found). Only the fields named here are picked (never a whole record: unknown fields stay behind). Never a
 // private project's: those are counted here only (`leftOut`, for "all"). Null for a project that can't be looked at.
 export function decisionsLookup(data: MyDayData, query: string): { lookup: AskDecisionsLookup; leftOut: number } | null {
@@ -90,7 +90,8 @@ export function decisionsLookup(data: MyDayData, query: string): { lookup: AskDe
     lookup: {
       tool: 'decisions', query: one ? one.id : 'all',
       decisions: ds.slice(0, L.lookupDecisions).map(({ p, d }) => ({ id: d.id, projectId: p.id, project: cut(p.title, L.titleChars), question: cut(d.question, L.questionChars),
-        options: d.options.slice(0, L.decisionOptions).map(o => ({ text: cut(o.text, L.titleChars), pros: o.pros.length, cons: o.cons.length })),
+        options: d.options.slice(0, L.decisionOptions).map(o => cut(o.text, L.titleChars)),
+        gaps: d.options.slice(0, L.decisionOptions).flatMap(o => { const t = `“${cut(o.text, L.titleChars - 2)}”`; return !o.pros.length && !o.cons.length ? [`${t} has no pros or cons yet`] : !o.pros.length ? [`${t} has no pros yet`] : !o.cons.length ? [`${t} has no cons yet`] : []; }),
         since: d.createdAt.slice(0, 10), reopened: !!d.lastChoice || (d.history?.length ?? 0) > 0 })),
       mustBeTrue: bs.slice(0, L.lookupBeliefs).map(({ p, a }) => ({ id: a.id, projectId: p.id, project: cut(p.title, L.titleChars), text: cut(a.text, L.beliefChars) })),
       found: { decisions: ds.length, mustBeTrue: bs.length },
@@ -101,14 +102,14 @@ export function decisionsLookup(data: MyDayData, query: string): { lookup: AskDe
 
 // What the panel says above the answer: "Looked in your notes for “van hire”: 3 notes — 1 private note left out." or
 // "Looked at Thursday 30 October: 2 tasks planned, 1 due, 3 busy times — 1 private task left out."
-export function lookupLine(l: AskLookup, held: number): string {
+export function lookupLine(l: AskLookup, held: number, projectTitle?: string): string {
   if (l.tool === 'day') {
     const parts = [l.rest ? 'a rest day' : l.planned ? `${l.tasks.length === 1 ? 'one task' : `${l.tasks.length} tasks`} planned` : 'no plan yet',
       ...(l.due.length ? [`${l.due.length} due`] : []), l.busy.length ? `${l.busy.length === 1 ? 'one busy time' : `${l.busy.length} busy times`}` : 'nothing booked'];
     return `Looked at ${prettyDate(l.query)}: ${parts.join(', ')}${held ? ` — ${held === 1 ? 'one private task' : `${held} private tasks`} left out` : ''}.`;
   }
   if (l.tool === 'decisions') {
-    const n = l.found.decisions, b = l.found.mustBeTrue, where = l.query === 'all' ? 'your open decisions' : `the open decisions in “${l.decisions[0]?.project ?? l.mustBeTrue[0]?.project ?? 'that project'}”`;
+    const n = l.found.decisions, b = l.found.mustBeTrue, where = l.query === 'all' ? 'your open decisions' : `the open decisions in “${l.decisions[0]?.project ?? l.mustBeTrue[0]?.project ?? projectTitle ?? 'that project'}”`;
     const parts = [n ? (n === 1 ? 'one decision' : `${n} decisions`) : 'no decisions open', ...(b ? [b === 1 ? 'one thing to check' : `${b} things to check`] : [])];
     return `Looked at ${where}: ${parts.join(', ')}${held ? ` — ${held === 1 ? 'one in a private project' : `${held} in private projects`} left out` : ''}.`;
   }

@@ -77,8 +77,8 @@ finished or where you left off; its decisions and one page stay on its page. It 
 projects' names already go with most questions, and the model names the project by its id from them.
 
 The fourth, the owner's choice (24 Oct 2026): **Open decisions** — the decisions with nothing chosen yet across your
-open projects (or one), each one's question, its options with how many pros and cons each has (not what they say) and
-when it was opened, plus a business idea's unchecked must-be-true items. Never a private project's, your reasons,
+open projects (or one), each one's question and options, which options have no pros or cons yet (not what any say)
+and when it was opened, plus a business idea's unchecked must-be-true items. Not on Finance or Health. Never a private project's, your reasons,
 earlier choices or what you found; it never picks an option for you.
 
 Later candidates, each with its own decision: waiting tasks, and the learning recommendation (`nextLearning`, the one

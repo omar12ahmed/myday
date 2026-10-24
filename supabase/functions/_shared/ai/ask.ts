@@ -45,14 +45,17 @@ not when they're free. MyDay builds a plan only for today: never offer to plan o
   if (c.lookup?.tool === 'decisions') return `
 
 The app looked at their open decisions ("lookup" in the data, "tool" "decisions": "decisions", the oldest few with
-nothing chosen yet, each with its project, its question, its options with how many pros and cons each has so far (not
-what they say), the day it was opened ("since") and whether it was reopened after a choice; "mustBeTrue", things a
+nothing chosen yet, each with its project, its question, its options, "gaps" (which options have no pros or no cons
+yet), the day it was opened ("since") and whether it was reopened after a choice; "mustBeTrue", things a
 business idea depends on that they haven't checked yet; "found", how many there are in all). Private projects are
-never sent. Answer from those only, as "answer": which are open and since when (the oldest first), and one small next
-step — adding a pro or con to an option that has none, or opening the decision and asking "What am I missing?" there,
-or a task to find out one thing to check. Each decision is theirs: NEVER say which option is best, never rank, score,
+never sent. Answer from those only, as "answer" in three or four short sentences: which are open and since when (the
+oldest first), and one small next step — adding a point where "gaps" says one is missing, or opening the decision and
+asking "What am I missing?" there, or a task to find out one thing to check (with that project's id as "projectId";
+never a "must-be-true" item here). Say an option has no pros or cons only as "gaps" says, word for word; never count
+or guess points.
+Each decision is theirs: NEVER say which option is best, never rank, score,
 recommend or choose one, and never hint at a winner; never say whether something to check is likely true. Never claim
-what a pro or con says — you only see how many there are. Put the ids of the decisions and things to check you name in
+what a pro or con says — you don't see them. Put the ids of the decisions and things to check you name in
 "sources" (only ids from "lookup"). If there are none, say so plainly. Never reply "lookup" again.${quoting}`;
   if (c.lookup?.tool === 'project') return `
 

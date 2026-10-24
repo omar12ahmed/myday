@@ -189,7 +189,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
         const r = phase.r;
         return <div aria-live="polite">
           <p className="text-xs font-semibold text-fg-3 m-0 flex items-center gap-1.5"><Sparkles size={14} aria-hidden="true" /> {label(phase.model)}</p>
-          {phase.looked && <p className="text-[13px] text-fg-2 m-0 mt-1" data-s="ask-looked">{lookupLine(phase.looked.lookup, phase.looked.leftOut)}
+          {phase.looked && <p className="text-[13px] text-fg-2 m-0 mt-1" data-s="ask-looked">{lookupLine(phase.looked.lookup, phase.looked.leftOut, getSnapshot().data.projects.items.find(p => p.id === phase.looked!.lookup.query)?.title)}
             {phase.looked.lookup.tool === 'project' && <> <a className="text-primary underline inline-flex items-center min-h-11 -my-3" href={`#projects/p/${encodeURIComponent(phase.looked.lookup.query)}`} onClick={onClose} data-s="ask-project">Open the project</a></>}</p>}
           {r.message && <p className="text-[15px] mt-1.5 mb-2 whitespace-pre-wrap" data-s="ask-message">{r.message}</p>}
           {(r.kind === 'answer' || r.kind === 'add' || r.kind === 'steps') && r.sources?.length ? (

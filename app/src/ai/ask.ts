@@ -101,8 +101,11 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
   // After a look at your open decisions, each stays yours: a sentence that picks, ranks or judges is left out.
   let shown = out;
   if (looked?.tool === 'decisions') {
-    const kept = (out.message.match(/[^.!?…]+[.!?…]+["”’)]*\s*|[^.!?…]+$/g) ?? []).filter(x => !CHOOSES.test(x) && !JUDGES.test(x)).join('').trim();
-    if (kept !== out.message.trim()) shown = { ...out, message: kept.split(/\s+/).length >= 3 ? kept : 'Here’s what’s still open — each choice is yours.', changed: [...out.changed, 'MyDay left out a view on which option to choose — that’s yours to decide.'] };
+    const parts = out.message.match(/[^.!?…]+[.!?…]+["”’)]*\s*|[^.!?…]+$/g) ?? [];
+    const picks = (x: string) => CHOOSES.test(x.replace(/\bI recommend (?=\w+ing\b)/gi, '')); // "I recommend adding a con…" is a next step
+    const kept = parts.filter(x => !picks(x) && !JUDGES.test(x)).join('').trim();
+    if (kept !== out.message.trim()) shown = { ...out, message: kept.split(/\s+/).length >= 3 ? kept : 'Here’s what’s still open — each choice is yours.', changed: [...out.changed,
+      ...(parts.some(picks) ? ['MyDay left out a view on which option to choose — that’s yours to decide.'] : []), ...(parts.some(x => JUDGES.test(x)) ? ['MyDay left out a view on how it will turn out — that’s for you to find out.'] : [])] };
   }
   if (!looked || (looked.tool !== 'notes' && looked.tool !== 'decisions') || !r?.sources?.length) return shown;
   // The records an answer says it used: only ones the lookup found, once each, as links.

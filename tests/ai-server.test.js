@@ -327,14 +327,16 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     const mp2 = JSON.parse(A.mockAsk({ ...base, text: "What's next on the garden shed?", can: ['notes', 'day', 'project'], lookup: proj }));
     check('…and, with the project, says where it is and the next task', mp2.kind === 'answer' && mp2.message.includes('“Garden shed” is at explore, with 0 of 1 tasks done. Next: “Order the felt”'), mp2.message);
     // "Open decisions" (v20): questions, options with counts, when opened — never what a pro or con says, never more.
-    const decs = { tool: 'decisions', query: 'all', decisions: [{ id: 'd1', projectId: 'pj1', project: 'Garden shed', question: 'Which roof?', options: [{ text: 'Felt', pros: 1, cons: 0 }, { text: 'Tin', pros: 0, cons: 2 }], since: '2026-11-01', reopened: false }],
+    const decs = { tool: 'decisions', query: 'all', decisions: [{ id: 'd1', projectId: 'pj1', project: 'Garden shed', question: 'Which roof?', options: ['Felt', 'Tin'], gaps: ['“Felt” has no cons yet', '“Tin” has no pros yet'], since: '2026-11-01', reopened: false }],
       mustBeTrue: [{ id: 'a1', projectId: 'pj2', project: 'Corner café', text: 'People want oat milk' }], found: { decisions: 1, mustBeTrue: 1 } };
     check('a decisions lookup is accepted (the app saying it can look at open decisions too)', A.checkAskContext({ ...base, can: ['notes', 'day', 'project', 'decisions'], lookup: decs }) === true);
-    bad('an option carrying what its pros say', { ...base, lookup: { ...decs, decisions: [{ ...decs.decisions[0], options: [{ text: 'Felt', pros: ['Cheap'], cons: 0 }] }] } });
+    bad('an option carrying its pros (options are their text only)', { ...base, lookup: { ...decs, decisions: [{ ...decs.decisions[0], options: [{ text: 'Felt', pros: ['Cheap'] }] }] } });
+    bad('a decision from another project than the one asked for', { ...base, lookup: { ...decs, query: 'pj9' } });
+    bad('fewer found than sent', { ...base, lookup: { ...decs, found: { decisions: 0, mustBeTrue: 1 } } });
     bad('a decision carrying its reason', { ...base, lookup: { ...decs, decisions: [{ ...decs.decisions[0], why: 'x' }] } });
     bad('a must-be-true item carrying what was found', { ...base, lookup: { ...decs, mustBeTrue: [{ ...decs.mustBeTrue[0], found: 'x' }] } });
     bad('9 decisions', { ...base, lookup: { ...decs, decisions: Array.from({ length: 9 }, (_, i) => ({ ...decs.decisions[0], id: 'd' + i })) } });
-    bad('a decision with 5 options', { ...base, lookup: { ...decs, decisions: [{ ...decs.decisions[0], options: Array.from({ length: 5 }, () => decs.decisions[0].options[0]) }] } });
+    bad('a decision with 5 options', { ...base, lookup: { ...decs, decisions: [{ ...decs.decisions[0], options: Array.from({ length: 5 }, (_, i) => 'Option ' + i) }] } });
     bad('a decisions lookup with a count of private ones', { ...base, lookup: { ...decs, leftOut: 1 } });
     const offerDec = sysOf({ ...base, can: ['notes', 'day', 'project', 'decisions'] }), afterDec = sysOf({ ...base, can: ['notes', 'day', 'project', 'decisions'], lookup: decs });
     check('the instructions offer a decisions lookup only when the app says it can', offerDec.includes('"tool":"decisions","query":"all"') && !offerProj.includes('"tool":"decisions"'));
