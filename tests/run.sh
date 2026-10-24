@@ -62,7 +62,9 @@ fi
 # The previous release with cloud sync on, pointing at the local stand-in, for the opt-in app-sync-previous: it proves
 # that a record kind added since (arabic_lesson) is left alone by a release that doesn't know it.
 if printf '%s\n' "${SUITES[@]}" | grep -q '^app-sync-previous$'; then
-  PREVIOUS_SYNC_REF="${MYDAY_PREVIOUS_SYNC_REF:-v1.45.2}"
+  # By default the newest release tag before this commit (the release this one would follow).
+  BEFORE="HEAD"; git -C "$ROOT" describe --tags --exact-match --match 'v[0-9]*' HEAD >/dev/null 2>&1 && BEFORE="HEAD^"
+  PREVIOUS_SYNC_REF="${MYDAY_PREVIOUS_SYNC_REF:-$(git -C "$ROOT" describe --tags --abbrev=0 --match 'v[0-9]*' "$BEFORE")}"
   mkdir -p "$WORK/previous-sync-source"
   git -C "$ROOT" archive "$PREVIOUS_SYNC_REF" | tar -x -C "$WORK/previous-sync-source"
   ln -s "$ROOT/app/node_modules" "$WORK/previous-sync-source/app/node_modules"

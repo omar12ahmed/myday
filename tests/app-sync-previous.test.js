@@ -1,6 +1,7 @@
 // Going back a release with cloud sync on (opt-in: run it for a release that adds a sync record kind). Two devices
 // on one disposable account in the local stand-in: one runs this release, the other the actual previous release
-// (tests/run.sh builds MYDAY_PREVIOUS_SYNC_REF, v1.45.2 by default, with sync pointed at the stand-in). Adaptive
+// (tests/run.sh builds MYDAY_PREVIOUS_SYNC_REF, by default the newest release tag before this commit, with sync
+// pointed at the stand-in). Adaptive
 // Study's `arabic_lesson` records must be left alone by the release that doesn't know them: not taken in, not
 // changed, not deleted, and never stopping it syncing. Made-up data only.
 const fs = require('fs'), os = require('os'), path = require('path');
