@@ -58,8 +58,8 @@ export function TeachingMaterial({ t }: { t: TeachingParts }) {
   </Card>;
 }
 
-// The whole teaching in one place (the Cybersecurity lesson page). A key at the call site resets reveal state on
-// lesson navigation.
+// The whole teaching in one place: the parts the lesson journeys place under Understand and Try, together (the voice
+// check in tests/app-teaching-voice.test.js renders it). A key at the call site resets reveal state on navigation.
 export function TeachingLesson({ course, lessonId }: { course: Course; lessonId: string }) {
   const t = useTeaching(course, lessonId);
   const [revealed, setRevealed] = useState(false);

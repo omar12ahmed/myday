@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Fragment, useEffect, useState, type ReactNode } from 'react';
 import { BookOpen, Check, FlaskConical, Languages, Library, NotebookPen, RotateCcw, VolumeOff } from 'lucide-react';
 import '@fontsource-variable/noto-naskh-arabic';
 import { Button } from '../../components/Button';
@@ -30,9 +30,9 @@ import { ReadingVoice } from './ReadingVoice';
 import { Pronunciation, PronunciationControls } from './Pronunciation';
 import { TeachingMaterial, TeachingRead, TeachingTry, TeachingWaiting } from '../teaching/TeachingLesson';
 import { useTeaching } from '../teaching/useTeaching';
-import { keepStep, keptStep } from '../lessonStep';
-import { RestartOffer, StepBar } from './Journey';
-import { toStep } from './journeyDom';
+import { RestartOffer, StepBar } from '../journey/Journey';
+import { ARABIC_TINY, toStep } from '../journey/dom';
+import { useJourney } from '../journey/useJourney';
 import texts from './data/texts.json';
 import passageReadings from '../../../../content/teaching/pronunciation/passages.json';
 import {
@@ -234,9 +234,6 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
   const teaching = useTeaching('arabic-fusha', id);
   const [revealed, setRevealed] = useState(false); // Try's explained answer
   const session = openSession(data, id);
-  const [step, setStep] = useState<JourneyStep | null>(() => (session ? keptStep(session.id) : null));
-  const [checking, setChecking] = useState(() => step === 'check'); // you went to Check: the explanation folds away
-  const [explain, setExplain] = useState(false); // …until you ask for it again
   // The length that suits today (energy and free time) starts the choice; a lesson that needs revision gets the
   // revision session. Always yours to change.
   const [suggested] = useState(() => lessonLength(data, id, arabicState(data, id) === 'needs-revision'));
@@ -244,38 +241,11 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
   const l = content?.lessons.find(x => x.id === id), loaded = !!l;
   // A just-finished session keeps its steps while its card shows.
   const length: Variant = session ? session.variant : finished ? finished.variant : l && !l.variants.some(v => v.mode === chosen) ? 'standard' : chosen;
-  const shown = journeyFor(data, id, length, !!session || !!finished), stepsKey = shown.join(' ');
-  const current = step && shown.includes(step) ? step : shown[0];
-  const quiet = useRef(0); // after a jump, scrolling there doesn't move your step again
-  const remember = (s: JourneyStep) => { setStep(s); const open = openSession(getSnapshot().data, id); if (open) keepStep(open.id, s); };
-  const jump = (s: JourneyStep) => { quiet.current = Date.now() + 900; remember(s); setChecking(s === 'check'); toStep(s); };
-  // Reading down the page moves your step to the section in view.
-  useEffect(() => {
-    if (!loaded || typeof IntersectionObserver === 'undefined') return;
-    let timer = 0;
-    const io = new IntersectionObserver(entries => {
-      const hit = entries.find(e => e.isIntersecting)?.target as HTMLElement | undefined;
-      if (!hit || Date.now() < quiet.current) return;
-      clearTimeout(timer);
-      timer = window.setTimeout(() => {
-        const s = hit.dataset.arStep as JourneyStep, open = openSession(getSnapshot().data, id);
-        setStep(s); if (open) keepStep(open.id, s);
-      }, 300);
-    }, { rootMargin: '-30% 0px -65% 0px' });
-    document.querySelectorAll('[data-ar-step]').forEach(el => { if (!el.closest('[data-ar-rest]')) io.observe(el); });
-    return () => { io.disconnect(); clearTimeout(timer); };
-  }, [loaded, stepsKey, id]);
-  // Arriving with a session open: back to the step you were on, once (after the page has gone to the top). Starting a
-  // session here doesn't jump anywhere.
-  const reopened = useRef(!session);
-  useEffect(() => {
-    if (!loaded || reopened.current) return;
-    reopened.current = true;
-    if (!step) return;
-    quiet.current = Date.now() + 900;
-    const timer = setTimeout(() => document.getElementById('ar-step-' + current)?.scrollIntoView({ block: 'start' }), 120);
-    return () => clearTimeout(timer);
-  }, [loaded, step, current]);
+  const shown = journeyFor(data, id, length, !!session || !!finished);
+  const { setStep, current, remember, jump: jumpTo, hush } = useJourney({ prefix: 'ar', shown, loaded, sessionId: () => openSession(getSnapshot().data, id)?.id ?? null });
+  const [checking, setChecking] = useState(() => current === 'check'); // you went to Check: the explanation folds away
+  const [explain, setExplain] = useState(false); // …until you ask for it again
+  const jump = (s: JourneyStep) => { setChecking(s === 'check'); jumpTo(s); };
   if (!content || !l) return <><Card><BackLink to={'study/arabic/' + entry.module_id} label={modules.get(entry.module_id)!.name} /><h2>{entry.title}</h2></Card><Loading failed={failed} /></>;
   const task = content.exercises.find(e => e.id === l.practical_task_id), challenge = content.exercises.find(e => e.id === l.mini_challenge_id);
   const check = content.assessments.find(a => a.id === l.knowledge_check_id);
@@ -340,7 +310,7 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
       </Card>; },
     reflect: () => <div id="ar-step-reflect" className={STEP_SCROLL} data-ar-step="reflect">
       {finished && <FinishedCard data={data} lessonId={l.id} checks={checkIds} finished={finished} next={next} onClose={() => setFinished(null)} />}
-      {session && <SessionFinish lesson={l} session={session} onFinished={f => { setFinished(f); setStep('reflect'); toStep('reflect'); }} />}
+      {session && <SessionFinish lesson={l} session={session} onFinished={f => { setFinished(f); setStep('reflect'); toStep('ar', 'reflect'); }} />}
     </div>,
   };
 
@@ -354,8 +324,8 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
       {needsVoice && <p className="text-sm text-fg-2 flex gap-2 items-start mt-3 mb-0"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />This lesson uses listening or speaking. Use the assigned listening material where provided, or a fluent speaker. External recordings open on the provider’s site.</p>}
     </Card>
     {!session && <SessionChoice data={data} lesson={l} suggested={suggested} chosen={chosen} setChosen={setChosen} onBegin={() => { setStep(null); setChecking(false); setFinished(null); }} />}
-    <StepBar steps={shown} current={current} onPick={jump} />
-    {session && <RestartOffer step={current} onGo={s => { quiet.current = Date.now() + 900; remember(s); setChecking(s === 'check'); }} />}
+    <StepBar prefix="ar" steps={shown} current={current} onPick={jump} />
+    {session && <RestartOffer prefix="ar" tiny={ARABIC_TINY} step={current} onGo={s => { hush(); remember(s); setChecking(s === 'check'); }} />}
     {shown.map(s => <Fragment key={s}>{sections[s]()}</Fragment>)}
     {rest.length > 0 && <div className="mb-4" data-ar-rest={rest.join(' ')}><details>
       <summary className="flex items-center min-h-12 px-5 rounded-card border border-outline bg-surface text-primary font-semibold cursor-pointer">The rest of this lesson: {rest.map(s => STEP_LABEL[s]).join(', ')}</summary>

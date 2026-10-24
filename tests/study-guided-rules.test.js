@@ -18,7 +18,7 @@ function check(label, ok) {
       'export { learningOptions, learningGlance } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/nextLearning')) + ';',
       'export { optionAction } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/courseOption')) + ';',
       'export { chooseFocus, courseFocus, focusChoices, focusValue } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/study/yourFocus')) + ';',
-      'export { nextLesson, importPath, beginAttempt } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/cybersecurity/learning')) + ';',
+      'export { nextLesson, importPath, beginAttempt, cyberJourney, practised, warmUpLesson } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/cybersecurity/learning')) + ';',
       'export * as cyberCatalogue from ' + JSON.stringify(path.join(ROOT, 'app/src/study/cybersecurity/catalogue')) + ';',
       'export { CYBER_VERSION, curriculumTaskId } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/cybersecurity/types')) + ';',
       'export * as arabicCatalogue from ' + JSON.stringify(path.join(ROOT, 'app/src/study/arabic/catalogue')) + ';',
@@ -241,6 +241,12 @@ function check(label, ok) {
     check('…then the standard session starts with it, and the short one shows Understand and Check (Reflect while a session is open)', rule.warmUpFrom(jw, third) === second
       && rule.journeyFor(jw, third, 'standard', false).join() === 'warmup,understand,try,check' && rule.journeyFor(jw, third, 'short', true).join() === 'understand,check,reflect');
     check('The first lesson on a path has no warm-up', rule.warmUpFrom(jw, requiredArabic[0]) === null);
+    const cw = fresh(), cyFirst = rule.cyberCatalogue.lessons.get('lesson.learning-evidence'), cySecond = 'lesson.authorised-scope';
+    check('Cybersecurity: the second lesson\'s warm-up waits until you\'ve begun the first', !rule.practised(cw, cyFirst) && rule.warmUpLesson(cw, cySecond) === null
+      && rule.cyberJourney(cw, cySecond, 'standard', false).join() === 'understand,try,check');
+    rule.beginAttempt(cw, cyFirst.practical_task_id);
+    check('…an attempt on one of its activities counts as begun, and then it warms up with the first lesson\'s check', rule.practised(cw, cyFirst) && rule.warmUpLesson(cw, cySecond) === 'lesson.learning-evidence'
+      && rule.cyberJourney(cw, cySecond, 'standard', false).join() === 'warmup,understand,try,check' && rule.cyberJourney(cw, cySecond, 'practical', true).join() === 'try,check,reflect');
 
     console.log('\n[Your focus] One choice for Today and Study home');
     const yf = fresh();

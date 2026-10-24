@@ -9,7 +9,8 @@ const waitFor = async sel => { for (let i = 0; i < 60; i++) { if (await exists(s
   check('teaching is not fetched on Study home', await ev(`!performance.getEntriesByType('resource').some(r => r.name.includes('/cybersecurity-') || r.name.includes('/arabic-fusha-'))`));
   await go('study/cybersecurity/lesson.ip-addressing');
   check('cyber teaching loads inside its lesson', await waitFor('[data-teaching="lesson.ip-addressing"]'));
-  check('explanation, worked example and task are present', await ev(`['Read this first','Worked example','Try it'].every(t => document.querySelector('[data-teaching]').textContent.includes(t))`));
+  check('explanation, worked example and task are present: the reading under Understand, Try it under Try', await ev(`(document.querySelector('#cy-step-understand [data-teaching]')?.textContent || '').includes('Worked example')
+    && [...document.querySelectorAll('[data-teaching]')].some(e => e.closest('#cy-step-try') && e.textContent.includes('Try it'))`));
   check('its assignment is a direct page with a specific instruction', await ev(`(() => {const r = document.querySelector('[data-teaching-resource]'); return !!r && r.querySelector('a').href.startsWith('https://') && r.textContent.length > 100;})()`));
   check('answer is absent before reveal', !(await exists('[data-teaching-solution]')));
   await click('[data-teaching] button[aria-expanded]');

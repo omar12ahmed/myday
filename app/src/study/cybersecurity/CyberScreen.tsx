@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { Fragment, useState, type ReactNode } from 'react';
 import { BookOpen, FlaskConical, NotebookPen, ShieldCheck } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { Field, Select, TextInput } from '../../components/Field';
-import { update, updateSaved } from '../../data/storage';
+import { getSnapshot, update, updateSaved } from '../../data/storage';
 import type { MyDayData } from '../../data/types';
 import { toast } from '../../data/toast';
 import { curriculumTaskId, lessonHref } from '../../data/cybersecurity/types';
@@ -14,13 +14,18 @@ import { go } from '../route';
 import { BackLink, Eyebrow, ExternalLink, InlineLink } from '../parts';
 import { Lines, LinkButton } from './parts';
 import { activities, curriculum, environments, lessons, modules, resources, selectedPath, skills, type Lesson } from './catalogue';
-import { attemptsFor, importPath, nextLesson, prerequisiteGaps } from './learning';
+import { attemptsFor, cyberJourney, cyberSteps, importPath, nextLesson, prerequisiteGaps, sessionMode, suggestedSession, warmUpLesson } from './learning';
 import { ActivityView } from './Notebook';
 import { AiCards } from './AiCards';
 import { TutorCard } from './TutorCard';
 import { PracticeIndex, PracticeView, RelatedPractice } from './Practice';
 import { CheckRevision, CyberRevisionGlance } from './CheckRevision';
-import { TeachingLesson } from '../teaching/TeachingLesson';
+import { TeachingMaterial, TeachingRead, TeachingTry, TeachingWaiting } from '../teaching/TeachingLesson';
+import { useTeaching } from '../teaching/useTeaching';
+import { MODE_LABEL, modeOf, STEP_LABEL, type JourneyStep, type Mode } from '../../data/study/mastery';
+import { RestartOffer, StepBar } from '../journey/Journey';
+import { CYBER_TINY } from '../journey/dom';
+import { useJourney } from '../journey/useJourney';
 
 export function ResourceLinks({ ids }: { ids: string[] }) {
   return <div className="grid gap-3">{ids.map(id => { const r = resources.get(id); return r && <div key={id}>
@@ -37,7 +42,7 @@ export default function CyberScreen({ data, id }: { data: MyDayData; id: string 
       <a href="#study">‹ Study</a>
       {[['map', 'Learning map', ''], ['practice', 'Practice', '/practice'], ['notebook', 'Lab notebook', '/notebook'], ['toolkit', 'Toolkit', '/toolkit']].map(([key, label, path]) => <a key={key} href={'#study/cybersecurity' + path} aria-current={activeTab === key ? 'page' : undefined}>{label}</a>)}
     </nav>
-    {lesson ? <LessonView data={data} lesson={lesson} />
+    {lesson ? <LessonView key={lesson.id} data={data} lesson={lesson} />
       : module ? <ModuleView data={data} id={id} />
       : activity?.practice ? <PracticeView key={id} data={data} activity={activity} />
       : activity ? <ActivityView key={id} data={data} activity={activity} />
@@ -108,24 +113,90 @@ function ModuleView({ data, id }: { data: MyDayData; id: string }) {
     </Card><RelatedPractice data={data} ids={m.lesson_ids} /><Card><h3>Resources</h3><ResourceLinks ids={m.resource_ids} /></Card>
   </>;
 }
+// A lesson as one page in steps (specs/study-home-and-lessons.md §5), as for Arabic: Warm-up (the last lesson's
+// knowledge check, from memory), Understand, Try (Learn by doing, more practice and the tutor), Check (its knowledge
+// check: compare here, keep your answers in the lab notebook) and Reflect (while its Study timer runs: finish in the
+// session). The session you choose, Light, Normal or Deep over the lesson's own lengths, sets the timer and which
+// steps come first; the rest stay one tap away.
+const MODES: { mode: Mode; lengths: string[] }[] = [{ mode: 'light', lengths: ['revision', 'short'] }, { mode: 'normal', lengths: ['practical'] }, { mode: 'deep', lengths: ['standard', 'extended'] }];
+const cap = (x: string) => x[0].toUpperCase() + x.slice(1);
+const CY_SCROLL = 'scroll-mt-20 lg:scroll-mt-[160px]';
 function LessonView({ data, lesson: l }: { data: MyDayData; lesson: Lesson }) {
   const gaps = prerequisiteGaps(l.id), task = stIndex(data.study).task.get(curriculumTaskId(l.id));
-  const current = activeStudy(data.study);
-  const [minutes, setMinutes] = useState(15);
+  const current = activeStudy(data.study), running = current && current.taskId === curriculumTaskId(l.id) ? current : null;
+  const teaching = useTeaching('cybersecurity', l.id);
+  const [revealed, setRevealed] = useState(false);
+  const [suggested] = useState(() => suggestedSession(data, l));
+  const [chosen, setChosen] = useState<string>(suggested.mode);
+  const mode = running ? sessionMode(l, running) : chosen, variant = l.variants.find(v => v.mode === chosen);
+  const minutes = variant?.minutes ?? 15;
+  const shown = cyberJourney(data, l.id, mode, !!running);
+  const { current: step, jump, remember, hush } = useJourney({ prefix: 'cy', shown, loaded: true, sessionId: () => {
+    const c = activeStudy(getSnapshot().data.study); return c && c.taskId === curriculumTaskId(l.id) ? c.id : null;
+  } });
+  const rest = cyberSteps(data, l.id).filter(x => !shown.includes(x)), prev = warmUpLesson(data, l.id);
+  const check = activities.get(l.knowledge_check_id), qs = check?.questions ?? [];
+  const choice = <>
+    <Field label="Your session" htmlFor="cyberMinutes"><Select id="cyberMinutes" value={chosen} onChange={e => setChosen(e.target.value)}>
+      {MODES.map(g => <optgroup key={g.mode} label={MODE_LABEL[g.mode]}>{g.lengths.map(m => l.variants.find(v => v.mode === m)).filter(Boolean).map(v => <option key={v!.mode} value={v!.mode}>{cap(v!.mode)} · {v!.minutes} min</option>)}</optgroup>)}
+    </Select></Field>
+    {variant && <p className="text-sm text-fg-2 m-0" data-cy-session-note="">{MODE_LABEL[modeOf(variant.mode)]}: {variant.activity.replace(/[.;]?$/, '.')}
+      {suggested.mode === chosen && suggested.why.length ? ` Suits today (${suggested.why.join(', ')}).` : ''}
+      <span className="block text-fg-3 mt-0.5">Shows {cyberJourney(data, l.id, variant.mode, false).map(x => STEP_LABEL[x]).join(', ')} first; the rest stay one tap away.</span></p>}
+  </>;
+
+  const sections: Record<JourneyStep, () => ReactNode> = {
+    warmup: () => <Card id="cy-step-warmup" className={CY_SCROLL} data-cy-step="warmup"><Eyebrow>Warm-up · 2–3 minutes</Eyebrow>
+      <h3>From the last lesson, from memory</h3>
+      <p className="text-sm text-fg-2">Before anything new: answer in your head or on paper, then compare. Nothing here is saved.</p>
+      {prev && <><p className="text-sm m-0 mb-2">From <InlineLink href={lessonHref(prev)}>{lessons.get(prev)!.title}</InlineLink>:</p>
+        <ol className="list-decimal pl-5 grid gap-4">{(activities.get(lessons.get(prev)!.knowledge_check_id)?.questions ?? []).slice(0, 2).map(q => <li key={q.id}><CheckPrompt q={q} /></li>)}</ol></>}
+    </Card>,
+    understand: () => <>
+      <Card id="cy-step-understand" className={CY_SCROLL} data-cy-step="understand"><Eyebrow>Understand</Eyebrow>
+        <h3>Read it, and see it worked</h3>
+        <p className="text-sm text-fg-2">Key concepts: {l.key_concepts.join(' · ')}</p>
+        {teaching.lesson ? <div data-teaching={l.id} className="min-w-0 break-words"><TeachingRead t={teaching} /></div> : <TeachingWaiting missing={teaching.missing} bare />}
+      </Card>
+      {teaching.lesson && <TeachingMaterial t={teaching} />}
+    </>,
+    try: () => <div id="cy-step-try" className={CY_SCROLL} data-cy-step="try">
+      <Card><Eyebrow>Try</Eyebrow><h3>Apply it, then compare</h3>
+        {teaching.lesson && <div data-teaching={l.id} className="min-w-0 break-words"><TeachingTry t={teaching} lessonId={l.id} revealed={revealed} setRevealed={setRevealed} /></div>}
+        <h4>Learn by doing</h4>
+        <p className="text-sm text-fg-2 mt-0">Each opens in your lab notebook, where your evidence is kept.</p>
+        <div className="grid gap-3">{[l.practical_task_id, l.mini_challenge_id].map(id => <LinkButton key={id} to={'study/cybersecurity/' + id}>{activities.get(id)!.title}</LinkButton>)}</div>
+      </Card>
+      <AiCards key={'cards-' + l.id} data={data} lesson={l} coursePrompts={qs.map(q => q.prompt)} />
+      <RelatedPractice data={data} ids={[l.id]} />
+      <TutorCard key={l.id} lesson={l} />
+    </div>,
+    check: () => { const short = mode === 'short' && shown.includes('check');
+      return <Card id="cy-step-check" className={CY_SCROLL} data-cy-step="check" data-cy-check=""><Eyebrow>Check</Eyebrow><h3>Check your understanding</h3>
+        <p className="text-sm text-fg-2">Answer first, in your head or on paper, then compare. To keep your answers, answer in your lab notebook.</p>
+        <ol className="list-decimal pl-5 grid gap-4">{(short ? qs.slice(0, 1) : qs).map(q => <li key={q.id}><CheckPrompt q={q} /></li>)}</ol>
+        {short && qs.length > 1 && <details className="mt-3" data-cy-more-checks=""><summary className="cursor-pointer min-h-11 py-2 text-primary font-semibold">{qs.length === 2 ? 'The other question' : `The other ${qs.length - 1} questions`}</summary>
+          <ol start={2} className="list-decimal pl-5 grid gap-4">{qs.slice(1).map(q => <li key={q.id}><CheckPrompt q={q} /></li>)}</ol></details>}
+        {check && <div className="mt-3"><LinkButton to={'study/cybersecurity/' + check.id} primary>Answer in your lab notebook</LinkButton></div>}
+        <CheckRevision data={data} ids={qs.map(q => q.id)} />
+      </Card>; },
+    reflect: () => <Card id="cy-step-reflect" className={CY_SCROLL} data-cy-step="reflect"><Eyebrow>Reflect</Eyebrow><h3>Before you finish</h3>
+      <h4>Completion criteria</h4><Lines items={l.completion_criteria} />
+      <p className="text-sm text-fg-2">A short session is a checkpoint. Marking a roadmap task complete records your choice, not verified mastery.</p>
+      <LinkButton to="study/session" primary>Finish in your study session</LinkButton>
+    </Card>,
+  };
+
   return <>
     <Card tone="accent"><BackLink to={'study/cybersecurity/' + l.module_id} label={modules.get(l.module_id)!.name} />
       <Eyebrow>Lesson · {l.estimated_duration_minutes.standard} min{l.optional ? ' · Optional extension' : ''}</Eyebrow><h2>{l.title}</h2>
-      <Lines items={l.learning_objectives} /><p className="text-sm text-fg-2">Key concepts: {l.key_concepts.join(' · ')}</p>
-      <details className="mt-3"><summary className="cursor-pointer min-h-11 py-2 text-primary font-semibold">Prerequisites {gaps.length ? `(${gaps.length})` : '— none'}</summary>
-        {gaps.length ? <><p className="text-sm">These thresholds require demonstrated skill evidence. Your self-study scores do not unlock them automatically; you can still explore this lesson.</p>
-          <ul className="list-disc pl-5">{gaps.map(g => <li key={g.skill_id}><InlineLink href={lessonHref(skills.get(g.skill_id)!.taught_by_lesson_ids[0])}>{skills.get(g.skill_id)!.name}</InlineLink> — readiness at least {g.min_mastery}/100; not verified here</li>)}</ul></> : <p>You can start here.</p>}
-      </details>
+      <Lines items={l.learning_objectives} />
       {current ? <LinkButton to="study/session">Return to your study session</LinkButton> : task ? <div className="grid gap-3 mt-3">
-        <Field label="Time for this session" htmlFor="cyberMinutes"><Select id="cyberMinutes" value={minutes} onChange={e => setMinutes(Number(e.target.value))}>{[15,30,60,90].map(m => <option key={m} value={m}>{m} minutes</option>)}</Select></Field>
+        {choice}
         <Button onClick={() => startLearning(task.course.id, task.node.id, minutes, minutes < l.estimated_duration_minutes.standard)}>Start a study session</Button>
       </div> : selectedPath(data.cybersecurity.pathId).required_module_ids.includes(l.module_id) ? <div className="grid gap-3 mt-3">
         <p className="text-sm text-fg-2 m-0">Start from this lesson. MyDay will add your selected curriculum path to the roadmap without changing existing work.</p>
-        <Field label="Time for this session" htmlFor="cyberMinutes"><Select id="cyberMinutes" value={minutes} onChange={e => setMinutes(Number(e.target.value))}>{[15, 30, 60, 90].map(m => <option key={m} value={m}>{m} minutes</option>)}</Select></Field>
+        {choice}
         <Button data-action="cyber-start-direct" onClick={() => {
           let resume = false;
           const saved = updateSaved(d => {
@@ -141,17 +212,34 @@ function LessonView({ data, lesson: l }: { data: MyDayData; lesson: Lesson }) {
         }}>Start this lesson</Button>
       </div> : <p className="text-sm text-fg-2">You can explore the activities below now. Add this lesson’s path on the learning map to use the Study timer.</p>}
     </Card>
-    <TeachingLesson key={'teaching-' + l.id} course="cybersecurity" lessonId={l.id} />
-    <Card><h3>Choose a manageable session</h3>{l.variants.map(v => <details key={v.mode}><summary className="min-h-11 py-2 cursor-pointer capitalize text-primary">{v.mode} · {v.minutes} min</summary><p>{v.activity}</p><p className="text-sm text-fg-2">{v.evidence_scope}</p></details>)}</Card>
-    <Card><h3>Learn by doing</h3><div className="grid gap-3">{[l.practical_task_id, l.knowledge_check_id, l.mini_challenge_id].map(id => <LinkButton key={id} to={'study/cybersecurity/' + id}>{activities.get(id)!.title}</LinkButton>)}</div>
+    <StepBar prefix="cy" steps={shown} current={step} onPick={jump} />
+    {running && <RestartOffer prefix="cy" tiny={CYBER_TINY} step={step} onGo={x => { hush(); remember(x); }} />}
+    {shown.map(x => <Fragment key={x}>{sections[x]()}</Fragment>)}
+    {rest.length > 0 && <div className="mb-4" data-cy-rest={rest.join(' ')}><details>
+      <summary className="flex items-center min-h-12 px-5 rounded-card border border-outline bg-surface text-primary font-semibold cursor-pointer">The rest of this lesson: {rest.map(x => STEP_LABEL[x]).join(', ')}</summary>
+      <div className="mt-4">{rest.map(x => <Fragment key={x}>{sections[x]()}</Fragment>)}</div>
+    </details></div>}
+    <Card data-cy-more=""><details>
+      <summary className="cursor-pointer min-h-11 py-2 text-primary font-semibold">More about this lesson</summary>
+      <h3>Prerequisites {gaps.length ? `(${gaps.length})` : '— none'}</h3>
+      {gaps.length ? <><p className="text-sm">These thresholds require demonstrated skill evidence. Your self-study scores do not unlock them automatically; you can still explore this lesson.</p>
+        <ul className="list-disc pl-5">{gaps.map(g => <li key={g.skill_id}><InlineLink href={lessonHref(skills.get(g.skill_id)!.taught_by_lesson_ids[0])}>{skills.get(g.skill_id)!.name}</InlineLink> — readiness at least {g.min_mastery}/100; not verified here</li>)}</ul></> : <p>You can start here.</p>}
       <h3>Completion criteria</h3><Lines items={l.completion_criteria} /><p className="text-sm text-fg-2">A short session is a checkpoint. Marking a roadmap task complete records your choice, not verified mastery.</p>
-      <CheckRevision data={data} ids={activities.get(l.knowledge_check_id)?.questions.map(q => q.id) ?? []} />
-    </Card>
-    <AiCards key={'cards-' + l.id} data={data} lesson={l} coursePrompts={activities.get(l.knowledge_check_id)?.questions.map(q => q.prompt) ?? []} />
-    <RelatedPractice data={data} ids={[l.id]} />
-    <TutorCard key={l.id} lesson={l} />
-    <Card><details><summary className="cursor-pointer min-h-11 py-2 text-primary font-semibold">Module reference library</summary><ResourceLinks ids={l.resource_ids} /></details></Card>
+      <h3>Sessions for this lesson</h3>{l.variants.map(v => <p key={v.mode} className="text-sm"><strong>{cap(v.mode)} · {v.minutes} min</strong> ({MODE_LABEL[modeOf(v.mode)]}): {v.activity} <span className="text-fg-2">{v.evidence_scope}</span></p>)}
+      <h3>Module reference library</h3><ResourceLinks ids={l.resource_ids} />
+    </details></Card>
   </>;
+}
+// A knowledge-check question with its answer guide behind a button (the guide loads on first use).
+function CheckPrompt({ q }: { q: { id: string; prompt: string } }) {
+  const [open, setOpen] = useState(false), [answers, setAnswers] = useState<Record<string, string> | null>(null), [failed, setFailed] = useState(false);
+  const reveal = () => { setOpen(true); import('./answers.json').then(x => setAnswers(x.default)).catch(() => setFailed(true)); };
+  return <div data-cy-question={q.id}>
+    <p className="mb-1.5">{q.prompt}</p>
+    {!open ? <Button inline variant="ghost" data-action="cy-reveal" onClick={reveal}>Show the answer guide</Button>
+      : <div className="bg-surface-2 rounded-tile px-3.5 py-2.5" data-cy-answer=""><span className="text-sm text-fg-2">Answer guide</span>
+        <p className="mt-1 mb-0" role={failed || !answers ? 'status' : undefined}>{failed ? 'Couldn’t load the guide. Try again in a moment.' : !answers ? 'Opening…' : answers[q.id]}</p></div>}
+  </div>;
 }
 function NotebookIndex({ data }: { data: MyDayData }) {
   return <Card><Eyebrow><NotebookPen className="inline mr-1" size={18} aria-hidden="true" /> Lab notebook</Eyebrow><h2>Your attempts and discoveries</h2>

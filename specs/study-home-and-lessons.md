@@ -1,7 +1,8 @@
 # Study as a learning environment: one focus, a clearer home and a guided lesson
 
 **Status:** release (a), one focus and Study home (§3, §4), published in 1.51.0 (24 October 2026); release (b),
-the lesson journey, published for Arabic in 1.53.0 (Cybersecurity next); (c)–(f) planned. The owner's decisions of 24 October 2026 are in §2. This builds on
+the lesson journey, published for Arabic in 1.53.0, built for Cybersecurity on branch `cyber-journey`; (c)–(f)
+planned. The owner's decisions of 24 October 2026 are in §2. This builds on
 `specs/adaptive-study.md` (lesson states, answer marks, revision from every lesson, the next-step rules), published
 in 1.47.0; this plan is a series of later, separate releases (§14).
 **Plan date:** 24 October 2026, after release 1.44.1.
@@ -149,6 +150,16 @@ there's no previous lesson with checks. The step bar sticks at the top on a phon
 screens. **Recording the steps you did (`tried`, `challenged`) moves to release (d)**, with Practise again and
 Progress, which are what use it: it's a field on the `arabic_lesson` record that 1.47.0–1.52.0 would drop when they
 save that record, so it belongs with (d)'s sync and going-back design. This release changes no saved data.
+
+**As built (release b, Cybersecurity; 24 October 2026):** the Cybersecurity lesson page is the same journey, sharing
+the step bar, the restart and the kept place (`app/src/study/journey/`). Its session is the Study timer, so the
+choice (Light / Normal / Deep over the lesson's own lengths, `#cyberMinutes`) sets the timer's minutes, and a running
+timer on the lesson adds Reflect, which finishes in the session (Cybersecurity has no lesson states yet, so the "Ready
+to move on" card comes with its move to the adaptive rules). Warm-up: the previous lesson's knowledge check, once
+you've begun that lesson (an attempt, a session or its task ticked). Try: Try it, Learn by doing (the practical task
+and the challenge, in the lab notebook), the AI practice cards, related practice and the tutor. Check: the knowledge
+check's questions with the answer guide on the page, and "Answer in your lab notebook" to keep answers. The practical
+session is suggested only once you've begun the lesson.
 
 **"I got distracted — help me restart."** It's on the lesson page whenever a session is open, and on the Now card as
 "Pick up where you left off". It reopens the exact lesson at the step you were on (the kept place) and offers one tiny

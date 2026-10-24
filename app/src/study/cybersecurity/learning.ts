@@ -2,8 +2,11 @@ import type { MyDayData, StudyCourse, StudyStage } from '../../data/types';
 import { uid } from '../../data/util';
 import { firstTopicName } from '../../data/study/topics';
 import { stIndex } from '../../data/study/roadmap';
+import { lengthFor, stepsFor, type JourneyStep } from '../../data/study/mastery';
+import { suggestLength } from '../../data/study/sessions';
+import type { StudySession } from '../../data/types';
 import { CYBER_VERSION, curriculumTaskId, type CyberAttempt } from '../../data/cybersecurity/types';
-import { activities, curriculum, lessons, modules, selectedPath, type Activity } from './catalogue';
+import { activities, curriculum, lessons, modules, selectedPath, type Activity, type Lesson } from './catalogue';
 import { practiceProblem, setScenario } from './practiceRules';
 import { practiceById } from './practiceCatalogue';
 
@@ -127,4 +130,39 @@ export function nextLesson(data: MyDayData) {
 export function requiredCounts(data: MyDayData) {
   const required = selectedPathLessons(data.cybersecurity.pathId).filter(l => !l.optional), ix = stIndex(data.study);
   return { total: required.length, done: required.filter(l => ix.task.get(curriculumTaskId(l.id))?.node.done === true).length };
+}
+
+// ---------- The lesson journey (specs/study-home-and-lessons.md §5) ----------
+// Begun at all: an attempt on one of its activities, a Study session on it, or its roadmap task ticked.
+export function practised(data: MyDayData, l: Lesson) {
+  const ids = [l.practical_task_id, l.knowledge_check_id, l.mini_challenge_id];
+  return data.cybersecurity.attempts.some(a => ids.includes(a.activityId)) || data.study.sessions.some(s => s.taskId === curriculumTaskId(l.id))
+    || stIndex(data.study).task.get(curriculumTaskId(l.id))?.node.done === true;
+}
+// The session to suggest: energy and free time decide (suggestLength), and the practical one only once you've begun
+// the lesson (it skips the teaching). Its minutes are the lesson's own.
+export function suggestedSession(data: MyDayData, l: Lesson) {
+  const of = (mode: string) => l.variants.find(v => v.mode === mode)?.minutes;
+  const s = suggestLength(data, l.estimated_duration_minutes.standard);
+  const mode = lengthFor(s.minutes, { standard: of('standard') ?? l.estimated_duration_minutes.standard, short: of('short') ?? 15, practical: practised(data, l) ? of('practical') : undefined }, false);
+  return { mode, minutes: of(mode) ?? s.minutes, why: s.why };
+}
+// Which of the lesson's sessions a running Study timer is: the one with its planned minutes, else short or standard.
+export function sessionMode(l: Lesson, s: StudySession): string {
+  return l.variants.find(v => v.minutes === s.plannedMin)?.mode ?? (s.short ? 'short' : 'standard');
+}
+// The warm-up: the lesson before this one on your path, once you've begun it, when its knowledge check has questions.
+export function warmUpLesson(data: MyDayData, lessonId: string): string | null {
+  const path = selectedPathLessons(data.cybersecurity.pathId).filter(x => !x.optional), i = path.findIndex(x => x.id === lessonId);
+  const prev = i > 0 ? path[i - 1] : null;
+  return prev && (activities.get(prev.knowledge_check_id)?.questions.length ?? 0) > 0 && practised(data, prev) ? prev.id : null;
+}
+// The steps a lesson has, and the ones a session of this length shows first (Reflect while its timer runs).
+export function cyberSteps(data: MyDayData, lessonId: string): JourneyStep[] {
+  const l = lessons.get(lessonId)!, warm = !!warmUpLesson(data, lessonId), checks = (activities.get(l.knowledge_check_id)?.questions.length ?? 0) > 0;
+  return (['warmup', 'understand', 'try', 'check'] as const).filter(s => (s === 'warmup' ? warm : s === 'check' ? checks : true));
+}
+export function cyberJourney(data: MyDayData, lessonId: string, mode: string, reflect: boolean): JourneyStep[] {
+  const has = cyberSteps(data, lessonId);
+  return [...stepsFor(mode).filter(s => has.includes(s)), ...(reflect ? ['reflect' as const] : [])];
 }
