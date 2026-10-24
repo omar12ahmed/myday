@@ -14,7 +14,8 @@ import { getView } from './engine';
 const KEY = 'myday.backup.v1', DUE_AFTER_MS = 30_000, WAIT_MS = 60_000;
 export interface BackupState { device: string; label: string; lastDay: string | null; lastAt: string | null; failedDays: number; lastFailDay: string | null }
 export interface BackupInfo { key: string; device: string; label: string; day: string; size: number; at: string }
-export type BackupResult = 'ok' | 'not-configured' | 'signed-out' | 'offline' | 'too-fast' | 'too-large' | 'failed';
+export type BackupResult = 'ok' | 'not-configured' | 'signed-out' | 'offline' | 'too-fast' | 'too-large' | 'too-many-devices' | 'not-found'
+  | 'unsupported' | 'storage-blocked' | 'failed';
 
 // This device's name, from the browser: enough to tell your devices apart in the list, nothing more.
 export function deviceLabel(ua = typeof navigator === 'undefined' ? '' : navigator.userAgent, touch = typeof navigator !== 'undefined' && navigator.maxTouchPoints > 1): string {
@@ -28,22 +29,28 @@ export function deviceLabel(ua = typeof navigator === 'undefined' ? '' : navigat
 }
 const newDevice = () => Array.from(crypto.getRandomValues(new Uint8Array(12)), b => (b % 36).toString(36)).join('');
 
+// This device's state, read once and then kept here (one object until it changes), so the page sees a steady value —
+// also when the browser blocks storage, which would otherwise make up a new device on every read.
+let cached: BackupState | null = null;
+export const storageBlocked = () => { try { localStorage.setItem(KEY + '.probe', '1'); localStorage.removeItem(KEY + '.probe'); return false; } catch { return true; } };
 export function readState(): BackupState {
+  if (cached) return cached;
   let s: Partial<BackupState> = {};
   try { const raw = localStorage.getItem(KEY); if (raw) s = JSON.parse(raw); } catch { /* fresh below */ }
-  const state: BackupState = {
+  cached = {
     device: typeof s.device === 'string' && /^[a-z0-9]{8,40}$/.test(s.device) ? s.device : newDevice(),
     label: deviceLabel(), lastDay: typeof s.lastDay === 'string' ? s.lastDay : null, lastAt: typeof s.lastAt === 'string' ? s.lastAt : null,
     failedDays: typeof s.failedDays === 'number' && s.failedDays >= 0 ? Math.floor(s.failedDays) : 0, lastFailDay: typeof s.lastFailDay === 'string' ? s.lastFailDay : null,
   };
-  if (state.device !== s.device) writeState(state);
-  return state;
+  if (cached.device !== s.device) writeState(cached);
+  return cached;
 }
-function writeState(s: BackupState) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch { /* storage blocked: backups still work, just again tomorrow */ } }
+function writeState(s: BackupState) { cached = s; try { localStorage.setItem(KEY, JSON.stringify(s)); } catch { /* storage blocked: kept for this visit */ } }
 
 // Whether today's automatic backup is due: signed in and syncing, the saved data readable, and none yet today here.
 export const backupDue = (s: Pick<BackupState, 'lastDay'>, k: string, linked: boolean, readable: boolean) => linked && readable && s.lastDay !== k;
 
+const canCompress = () => typeof CompressionStream === 'function' && typeof DecompressionStream === 'function';
 async function gzip(text: string): Promise<Uint8Array> {
   const stream = new Blob([text]).stream().pipeThrough(new CompressionStream('gzip'));
   return new Uint8Array(await new Response(stream).arrayBuffer());
@@ -54,10 +61,13 @@ async function gunzip(bytes: ArrayBuffer): Promise<string> {
 }
 
 type Call = { ok: true; res: Response } | { ok: false; why: BackupResult };
+// "Offline" only when the browser says so; anything else that goes wrong (a timeout, a refused request) is a failure.
+const offlineNow = () => typeof navigator !== 'undefined' && navigator.onLine === false;
 async function call(method: string, query = '', body?: Uint8Array, extra: Record<string, string> = {}): Promise<Call> {
   if (!SYNC.configured) return { ok: false, why: 'not-configured' };
+  if (offlineNow()) return { ok: false, why: 'offline' };
   const { session, offline } = await currentSession();
-  if (offline) return { ok: false, why: 'offline' };
+  if (offline) return { ok: false, why: offlineNow() ? 'offline' : 'failed' };
   if (!session) return { ok: false, why: 'signed-out' };
   const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), WAIT_MS);
   try {
@@ -68,22 +78,25 @@ async function call(method: string, query = '', body?: Uint8Array, extra: Record
     if (res.ok) return { ok: true, res };
     let error = '';
     try { error = (await res.json()).error ?? ''; } catch { /* not JSON */ }
-    return { ok: false, why: res.status === 401 ? 'signed-out' : res.status === 404 || res.status === 503 || error === 'not-configured' ? 'not-configured'
-      : res.status === 429 ? 'too-fast' : res.status === 413 ? 'too-large' : 'failed' };
+    return { ok: false, why: res.status === 401 ? 'signed-out' : error === 'not-found' ? 'not-found' : res.status === 404 || res.status === 503 || error === 'not-configured' ? 'not-configured'
+      : res.status === 429 ? 'too-fast' : res.status === 413 ? 'too-large' : error === 'too-many-devices' ? 'too-many-devices' : 'failed' };
   } catch {
-    return { ok: false, why: 'offline' };
+    return { ok: false, why: offlineNow() ? 'offline' : 'failed' };
   } finally { clearTimeout(timer); }
 }
 
 // Back up now: this device's whole saved data, as "Export my data" makes it.
 export async function backUpNow(k: string = todayKey()): Promise<BackupResult> {
   if (getSnapshot().status.kind !== 'ok') return 'failed';
+  if (storageBlocked()) return 'storage-blocked';
+  if (!canCompress()) return 'unsupported';
   const s = readState();
-  const body = await gzip(exportText().text);
+  let body: Uint8Array;
+  try { body = await gzip(exportText().text); } catch { return 'failed'; }
   const r = await call('PUT', `?day=${k}&device=${s.device}`, body, { 'x-myday-device-label': s.label, 'x-myday-version': APP_VERSION });
   const next = readState();
   if (r.ok) writeState({ ...next, lastDay: k, lastAt: new Date().toISOString(), failedDays: 0, lastFailDay: null });
-  else if (r.why === 'failed' || r.why === 'too-large') writeState({ ...next, failedDays: next.lastFailDay === k ? next.failedDays : next.failedDays + 1, lastFailDay: k });
+  else if (r.why === 'failed' || r.why === 'too-large' || r.why === 'too-many-devices') writeState({ ...next, failedDays: next.lastFailDay === k ? next.failedDays : next.failedDays + 1, lastFailDay: k });
   emit();
   return r.ok ? 'ok' : r.why;
 }
@@ -95,14 +108,15 @@ export async function listBackups(): Promise<{ ok: true; backups: BackupInfo[] }
 }
 // One backup's text (the same JSON as an export), or why not.
 export async function fetchBackup(key: string): Promise<{ ok: true; text: string } | { ok: false; why: BackupResult }> {
-  const r = await call('GET', `?key=${encodeURIComponent(key)}`);
+  if (!canCompress()) return { ok: false, why: 'unsupported' };
+  const r = await call('GET', '', undefined, { 'x-myday-key': key }); // in a header, so it isn't in request addresses
   if (!r.ok) return r;
   try { return { ok: true, text: await gunzip(await r.res.arrayBuffer()) }; } catch { return { ok: false, why: 'failed' }; }
 }
 // Every backup of this account, from every device. The true wipe of "delete everything" must call this too.
 export async function deleteAllBackups(): Promise<BackupResult> {
   const r = await call('DELETE');
-  if (r.ok) { const s = readState(); writeState({ ...s, lastDay: null, lastAt: null }); emit(); }
+  if (r.ok) { const s = readState(); writeState({ ...s, lastDay: null, lastAt: null, failedDays: 0, lastFailDay: null }); emit(); }
   return r.ok ? 'ok' : r.why;
 }
 

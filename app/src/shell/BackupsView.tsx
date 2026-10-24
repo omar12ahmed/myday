@@ -5,7 +5,7 @@ import { useConfirm } from '../components/confirm';
 import { LinkButton, Note } from '../components/parts';
 import { shortDate, todayKey } from '../data/dates';
 import { toast } from '../data/toast';
-import { backUpNow, deleteAllBackups, fetchBackup, listBackups, readState, saveFile, subscribeBackups, type BackupInfo, type BackupResult } from '../sync/backup';
+import { backUpNow, deleteAllBackups, fetchBackup, listBackups, readState, saveFile, storageBlocked, subscribeBackups, type BackupInfo, type BackupResult } from '../sync/backup';
 
 // "Your backups" (#backups; specs/automatic-backups.md): this device's last backup, Back up now, every backup of your
 // account with Download and Restore (through Import's own checks and question), and Delete all backups.
@@ -16,6 +16,10 @@ const WHY: Record<Exclude<BackupResult, 'ok'>, string> = {
   offline: 'You’re offline — backups will carry on when you’re back.',
   'too-fast': 'That was backed up a moment ago.',
   'too-large': 'Your data is too large for one backup file (over 10 MB). Export my data still works.',
+  'too-many-devices': 'Backups are kept for up to 10 devices. Delete all backups to start again with the devices you use now.',
+  'not-found': 'That backup isn’t there any more.',
+  unsupported: 'This browser can’t make or open backups (it’s too old). Export my data still works.',
+  'storage-blocked': 'Backups need this browser to allow saving, and it’s blocked here.',
   failed: 'That didn’t work just now. Try again later.',
 };
 const size = (n: number) => (n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1024 / 1024).toFixed(1)} MB`);
@@ -24,8 +28,7 @@ const dayOf = (iso: string) => { const d = new Date(iso); return Number.isNaN(d.
 
 export function BackupsView({ onRestore }: { onRestore: (text: string) => Promise<void> | void }) {
   const confirm = useConfirm();
-  const state = useSyncExternalStore(subscribeBackups, () => JSON.stringify(readState()));
-  const me = JSON.parse(state) as ReturnType<typeof readState>;
+  const me = useSyncExternalStore(subscribeBackups, readState), blocked = storageBlocked();
   const [list, setList] = useState<BackupInfo[] | null>(null), [problem, setProblem] = useState<string>(''), [busy, setBusy] = useState(false);
   const [round, setRound] = useState(0); // a new round loads the list again (after Delete all)
   const show = useCallback((r: Awaited<ReturnType<typeof listBackups>>) => {
@@ -35,12 +38,12 @@ export function BackupsView({ onRestore }: { onRestore: (text: string) => Promis
     let live = true;
     listBackups().then(r => { if (live) show(r); });
     return () => { live = false; };
-  }, [show, state, round]);
+  }, [show, me, round]);
 
   async function now() {
     setBusy(true);
-    const r = await backUpNow();
-    setBusy(false);
+    let r: BackupResult = 'failed';
+    try { r = await backUpNow(); } finally { setBusy(false); }
     if (r === 'ok') toast('Backed up.'); else toast(WHY[r]);
   }
   async function download(b: BackupInfo) {
@@ -48,9 +51,12 @@ export function BackupsView({ onRestore }: { onRestore: (text: string) => Promis
     if (!r.ok) { toast(WHY[r.why as Exclude<BackupResult, 'ok'>] ?? WHY.failed); return; }
     saveFile(`myday-backup-${b.day}-${b.label.replace(/[^\p{L}\p{N}]+/gu, '-').toLowerCase()}.json`, r.text);
   }
+  // Restore keeps a copy of your MyDay as it is now first (today's backup from this device), so a restore can be undone.
   async function restore(b: BackupInfo) {
     const r = await fetchBackup(b.key);
     if (!r.ok) { toast(WHY[r.why as Exclude<BackupResult, 'ok'>] ?? WHY.failed); return; }
+    const copy = await backUpNow();
+    if (copy !== 'ok' && copy !== 'too-fast') { toast('MyDay couldn’t keep a copy of your data as it is now, so nothing was restored. ' + WHY[copy]); return; }
     await onRestore(r.text);
   }
   async function deleteAll() {
@@ -65,10 +71,11 @@ export function BackupsView({ onRestore }: { onRestore: (text: string) => Promis
     <>
       <Card aria-labelledby="backupsH" id="backups">
         <h2 id="backupsH">Your backups</h2>
-        <p className="m-0 text-[15px] text-fg-2">Once a day, while MyDay is open and you’re signed in, each device keeps a copy of everything — the same file as Export my data — privately in your own storage. They’re kept for 14 days, plus one a month for a year. They hold everything, private notes and projects too, and are never sent to AI.</p>
+        <p className="m-0 text-[15px] text-fg-2">Once a day, while MyDay is open and you’re signed in, each device keeps a copy of everything — the same file as Export my data — privately in your own storage. They’re kept for 14 days, plus one a month for a year. They hold everything, private notes and projects too, and are never sent to AI. Restoring one first keeps a copy of your MyDay as it is now, so it can be undone.</p>
         <p className="m-0 mt-3 font-medium" data-s="backup-last">{last}</p>
         {me.failedDays >= 3 && <p className="m-0 mt-2 text-[15px] bg-warn-c text-on-warn-c rounded-tile px-3 py-2" role="status" data-s="backup-failing">The daily backup hasn’t worked for {me.failedDays} days. MyDay keeps trying; Export my data still works.</p>}
-        <Button inline className="mt-3" data-action="backup-now" disabled={busy} onClick={now}>{busy ? 'Backing up…' : 'Back up now'}</Button>
+        {blocked ? <p className="m-0 mt-3 text-[15px] bg-warn-c text-on-warn-c rounded-tile px-3 py-2" role="status" data-s="backup-blocked">{WHY['storage-blocked']}</p>
+          : <Button inline className="mt-3" data-action="backup-now" disabled={busy} onClick={now}>{busy ? 'Backing up…' : 'Back up now'}</Button>}
       </Card>
       <Card aria-labelledby="backupsListH">
         <h3 id="backupsListH">Backups</h3>

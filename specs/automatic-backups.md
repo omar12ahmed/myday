@@ -34,17 +34,22 @@ back to, and daily use is about to grow (files will follow). The vision puts aut
   - "Backed up today at 09:12 from this device." (or "Not backed up yet on this device.") and **Back up now**.
   - The list, newest first: the day, the device ("This device", or the device's name such as "Mac" or "iPhone"),
     and the size. Each has **Download** (a `.json` file like "Export my data") and **Restore**.
-  - **Restore** opens the backup with the same checks and the same question as Import ("Replace your saved MyDay
-    data with this file?", with what it holds). Signed in, it replaces your MyDay on all your devices, and the
-    existing safeguard pauses sync for you to review a large change.
+  - **Restore** first keeps a copy of your MyDay as it is now (today's backup from this device), then opens the
+    backup with the same checks and the same question as Import ("Replace your saved MyDay data with this file?",
+    with what it holds). Signed in, it replaces your MyDay on all your devices. There's no sync review pause any
+    more (since 1.9.0), so the copy is what makes a restore undoable. If the copy can't be made, nothing is restored
+    (found in review).
   - **Delete all backups** asks first, then removes every backup of your account from every device.
   - It explains plainly: backups are kept privately in your own storage, for 14 days plus one a month for a year.
     They hold everything, including private notes and projects, and are never sent to AI.
 - **No backup, no fuss:**
   - Signed out, offline, or with the function not set up yet, the page says so ("Automatic backups aren't set up
     yet." / "Sign in to keep backups."), and nothing else changes.
-  - A failed daily backup tries again the next time MyDay is opened. After three failed days in a row, the page and
-    the sync status's details say so; there's no pop-up.
+  - A failed daily backup tries again the next time MyDay is opened. After three failed days in a row, the page says
+    so; there's no pop-up. "Offline" is said only when the browser says it's offline; a timeout or a refused request
+    counts as a failure.
+  - The browser blocks storage: the page says backups need it. A browser too old to compress: it says so, and Export
+    my data still works.
 
 ## 4. How it works
 
@@ -69,16 +74,21 @@ back to, and daily use is about to grow (files will follow). The vision puts aut
   verified user id, so an account can only ever reach its own backups. A user id in the request is never trusted.
 - **Where:** `myday-backups/<userId>/<deviceId>/<YYYY-MM-DD>.json.gz`, written over R2's S3 API (signed requests,
   `aws4fetch`) with the server-side secrets `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` and
-  `R2_BACKUP_BUCKET`. The object's metadata holds the device label, the app version and the time.
+  `R2_BACKUP_BUCKET`. The object's metadata holds the device label and the app version; R2 keeps the time.
+- **Sign-in first:** a sign-in token (not the public key) is checked before anything else, so nobody else learns
+  whether backups are set up.
 - **Actions:**
-  - `PUT` saves a backup. The body must be gzip (its first bytes are checked) and at most 10 MB. The day and device
-    id are checked against strict formats. Saving the same day and device again replaces it, but not within 60
-    seconds of the last save. Retention runs after each save.
+  - `PUT` saves a backup. The body must be gzip (its first bytes are checked) and at most 10 MB, counted while
+    reading, so a larger one is refused without being read in full. The day and device id are checked against
+    strict formats. Saving the same day and device again replaces it, but not within 60 seconds of the last save. At
+    most 10 devices an account. Retention runs after each save.
   - `GET` lists the account's backups.
-  - `GET ?key=` returns one, which must be under the account's prefix.
-  - `DELETE` removes all of the account's backups.
-- **Retention**, per device, after each save: keep the 14 newest days, plus the earliest day of each of the last 12
-  calendar months (by the backup's own day). Delete the rest.
+  - `GET` with the header `x-myday-key` returns one, which must be under the account's prefix. The key goes in a
+    header so it isn't in request addresses.
+  - `DELETE` removes all of the account's backups, a few at a time side by side.
+- **Retention**, for every device of the account after each save: keep the 14 newest days and the earliest day of
+  each of the last 12 calendar months (by the backup's own day), and nothing from before those 12 months. A device
+  that stops is cleared within a year, and its label goes when it has no backups left (found in review).
 - **CORS:** an allow-list from `BACKUP_ALLOWED_ORIGINS`, falling back to the site's origins, as `ai-plan` does.
 - **Logs:** the outcome and timing only. Never file names, keys, sizes per user or content.
 - **Not set up** (secrets missing): every action answers `503 {error: 'not-configured'}`, and the app shows "aren't
@@ -100,15 +110,17 @@ back to, and daily use is about to grow (files will follow). The vision puts aut
 2. Independent review (security, privacy, saved data).
 3. **The owner, in Cloudflare:** R2, then Manage API tokens, then create an **Object Read & Write** token for
    `myday-backups` only. Keep the Access Key ID, Secret Access Key and account ID in your password manager.
-4. **The owner, in a terminal:** set the four Supabase secrets with the exact command I'll give, typing the values
-   in yourself.
+4. **The owner, in a terminal:** put the four values in `supabase/backup.secret.env`, which git ignores, then
+   `npx supabase secrets set --env-file supabase/backup.secret.env --project-ref <ref>`, then delete the file. This
+   keeps them out of the shell history (found in review).
 5. **With the owner's yes:** deploy the `backup` function (`npx supabase functions deploy backup --use-api
-   --project-ref <ref>`), then check it with disposable account A from a throwaway profile: back up, list,
-   download, restore on a second profile, and delete all.
+   --project-ref <ref>`; JWT verification stays on, so no `--no-verify-jwt`). Then check it with disposable account
+   A from a throwaway profile: back up, list, download, restore on a second profile, and delete all. Before deploying,
+   `deno check` the entry (done locally).
 6. **With the owner's yes:** publish the app release, then the live check, tidied.
 
-The app release can go out before or after the function: until the function answers, the page just says backups
-aren't set up yet.
+Deploy the function before (or with) the app release, and confirm on the live site that the page reads correctly.
+Until the function answers, the page says backups aren't set up yet, or reports a failure.
 
 ## 7. Checks
 

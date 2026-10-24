@@ -189,9 +189,12 @@ Until the function is set up, MyDay just says "Automatic backups aren't set up y
 1. **Cloudflare:** R2, then Manage API Tokens, then Create API token. Choose **Object Read & Write**, limited to the
    bucket `myday-backups` only. Keep the **Access Key ID**, the **Secret Access Key** and your **Account ID** in your
    password manager. Never paste them into a chat, a file in this repository or a `VITE_` variable.
-2. **Supabase secrets**, typed in your own terminal (the values stay on your computer and in Supabase):
-   `npx supabase secrets set R2_ACCOUNT_ID=… R2_ACCESS_KEY_ID=… R2_SECRET_ACCESS_KEY=… R2_BACKUP_BUCKET=myday-backups --project-ref <ref>`
-3. **Deploy:** `npx supabase functions deploy backup --use-api --project-ref <ref>`.
+2. **Supabase secrets.** In your own editor, create `supabase/backup.secret.env`, which git ignores, with four
+   lines: `R2_ACCOUNT_ID=…`, `R2_ACCESS_KEY_ID=…`, `R2_SECRET_ACCESS_KEY=…` and `R2_BACKUP_BUCKET=myday-backups`.
+   Then run `npx supabase secrets set --env-file supabase/backup.secret.env --project-ref <ref>` and **delete the
+   file**. That keeps the values out of your shell history.
+3. **Deploy:** `npx supabase functions deploy backup --use-api --project-ref <ref>`. Leave JWT verification on (no
+   `--no-verify-jwt`).
 4. **Check** with a disposable account in a throwaway browser profile: Back up now, the list, Download, Restore on a
    second profile, and Delete all backups.
 

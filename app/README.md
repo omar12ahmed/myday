@@ -720,12 +720,12 @@ reads it, and the ai-rules privacy check plants a secret in each link to prove i
 **Automatic backups (unreleased; `specs/automatic-backups.md`):** once a day, while MyDay is open and you're signed
 in, each device keeps a copy of everything (the same file as Export my data, compressed) privately in your own R2
 bucket, through the `backup` Edge Function (`supabase/functions/backup`). They're kept for 14 days plus one a month
-for a year, per device. **Your backups** in the footer (`#backups`) shows this device's last backup, **Back up
-now**, every backup with **Download** and **Restore** (through Import's own checks and question, so signed in it
-replaces your MyDay everywhere, with the usual review pause), and **Delete all backups** (the true wipe of "delete
-everything" must call it too). Signed out, offline or not set up, it says so. The device's id, label and last result
-live in `myday.backup.v1` on that device only (not your data, not synced or exported). No saved-data, sync or
-database change. Never sent to AI.
+for a year, per device (at most 10 devices). **Your backups** in the footer (`#backups`) shows this device's last
+backup, **Back up now**, every backup with **Download** and **Restore** (it first keeps a copy of your MyDay as it
+is now, then goes through Import's own checks and question; signed in it replaces your MyDay everywhere), and
+**Delete all backups** (the true wipe of "delete everything" must call it too). Signed out, offline or not set up,
+it says so. The device's id, label and last result live in `myday.backup.v1` on that device only (not your data, not
+synced or exported). No saved-data, sync or database change. Never sent to AI.
 
 **Your week — the weekly review (1.37.0):** a short look back over the last seven days, at `#review` ("Your week"), in
 four steps, one at a time, with Back and Next. Nothing changes until you tap. **1 What moved:** each project's tasks
