@@ -11,7 +11,8 @@ import { getSnapshot, update } from '../data/storage';
 import type { FileRecord } from '../data/types';
 import { currentSession } from './client';
 import { SYNC } from './config';
-import { getView } from './engine';
+import { checkedThisLoad, getView } from './engine';
+import { knownEpoch } from './state';
 
 // ---------- MD5 (RFC 1321): only so R2 can check that an upload's bytes are the file's (Content-MD5) ----------
 const SHIFT = [7, 12, 17, 22, 5, 9, 14, 20, 4, 11, 16, 23, 6, 10, 15, 21];
@@ -60,7 +61,7 @@ async function call<T>(action: string, body: Record<string, unknown> = {}): Prom
   try {
     const res = await fetch(`${SYNC.url}/functions/v1/files`, {
       method: 'POST', signal: ctrl.signal, body: JSON.stringify({ action, ...body }),
-      headers: { apikey: SYNC.key, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+      headers: { apikey: SYNC.key, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json', 'x-myday-epoch': String(knownEpoch()) },
     });
     let j: Record<string, unknown> = {};
     try { j = await res.json(); } catch { /* not JSON */ }
@@ -273,7 +274,7 @@ const asked = new Set<string>();
 export async function tidyFiles(now = Date.now()) {
   if (tidying || now - lastTidy < TIDY_MS) return;
   const v = getView();
-  if (v.phase !== 'linked' || v.status !== 'synced' || getSnapshot().status.kind !== 'ok') return;
+  if (!checkedThisLoad() || v.phase !== 'linked' || v.status !== 'synced' || getSnapshot().status.kind !== 'ok') return;
   tidying = true; lastTidy = now;
   try {
     update(d => { const healed = healFiles(d), marked = markOrphans(d); return healed || marked ? undefined : false; });

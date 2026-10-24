@@ -156,6 +156,13 @@ export function SyncScreen({ onExport, gate = false, onUnreachable }: { onExport
         </Card>
       )}
       {v.kept > 0 && <KeptCard count={v.kept} />}
+      {v.phase === 'linked' && v.account && (
+        <Card aria-labelledby="wipe-entry-h" data-s="wipe-entry">
+          <h3 id="wipe-entry-h">Delete everything</h3>
+          <p className="text-[15px] text-fg-2">Your data on every device and in your account, your files and your backups. Your sign-in stays.</p>
+          <Button variant="ghost" data-action="wipe-open" onClick={() => { location.hash = 'delete-everything'; window.scrollTo(0, 0); }}>Delete everything…</Button>
+        </Card>
+      )}
     </div>
   );
 }

@@ -214,5 +214,18 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   }
   fs.rmSync(dir, { recursive: true, force: true });
 
+  console.log('\n[8] After Delete everything, only a MyDay that knows the wipe may save a backup (specs/delete-everything.md)');
+  store = memory();
+  const wiped = { epochOf: async () => 3 }, today = clock.toISOString().slice(0, 10);
+  const putWith = (headers, over) => call('PUT', `?day=${today}&device=${DEV1}`, { body: gz('{"data":"old copy"}'), headers, over });
+  check('the CORS preflight allows the x-myday-epoch header', /x-myday-epoch/.test((await call('OPTIONS', '', { headers: { Origin: 'https://omar12ahmed.github.io' }, token: null })).headers.get('Access-Control-Allow-Headers') || ''));
+  check('an account never wiped (epoch 0): saving needs no header, as for every released MyDay', (await putWith({}, { epochOf: async () => 0 })).status === 200);
+  store = memory();
+  check('a wiped account: a backup without the header is refused (409 wiped) and nothing is stored', (await putWith({}, wiped)).status === 409 && keysOf(`${A}/`).length === 0);
+  check('…and with an old epoch', (await putWith({ 'x-myday-epoch': '2' }, wiped)).status === 409 && keysOf(`${A}/`).length === 0);
+  check('…while the current epoch saves', (await putWith({ 'x-myday-epoch': '3' }, wiped)).status === 200 && keysOf(`${A}/`).length > 0);
+  check('listing, downloading and deleting all don\'t need it', (await call('GET', '', { over: wiped })).status === 200 && (await call('DELETE', '', { over: wiped })).status === 200 && keysOf(`${A}/`).length === 0);
+  check('the epoch can\'t be read: 502, nothing stored', (await putWith({}, { epochOf: async () => { throw new Error('db'); } })).status === 502 && keysOf(`${A}/`).length === 0);
+
   const s = summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
 })().catch(e => { console.error('HARNESS ERROR', e); const s = summary(); console.log(`${s.pass} passed, ${s.fail} failed before the error`); process.exit(2); });

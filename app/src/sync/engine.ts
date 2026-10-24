@@ -26,10 +26,10 @@ import { clearFileCache } from '../data/fileCache';
 import { useSyncExternalStore } from 'react';
 import { todayKey } from '../data/dates';
 import { freshState as freshData } from '../data/normalize';
-import { catchUp, getSnapshot, replaceAll, subscribe as onData, updateFromSync as updateSaved } from '../data/storage';
+import { catchUp, getSnapshot, replaceAll, STORAGE_KEY, subscribe as onData, updateFromSync as updateSaved } from '../data/storage';
 import { toast } from '../data/toast';
 import { mendHalves } from '../data/util';
-import { accountOf, call, client, currentSession, hadSession, signIn, signOut, type Account } from './client';
+import { accountOf, AUTH_KEY, call, client, currentSession, hadSession, signIn, signOut, type Account, type CallResult } from './client';
 import { SYNC } from './config';
 import { ALL_KINDS, cleanRecord, fingerprint, isStarter, keyOf, localRecords, putRecord, putRecords, recordLabel, sortKeys, splitKey, type Content, type Kind } from './records';
 import { freshState, newId, newLink, readState, SYNC_KEY, writeState, type Conflict, type Link, type SyncState } from './state';
@@ -189,7 +189,8 @@ export async function run(reason: Reason = 'check'): Promise<void> {
     syncing = false;
     showSyncing = false;
     publish();
-    if (again) { const r = again; again = null; schedule(300, r); }
+    if (reloadAfter) location.reload(); // a wipe cleared this device: start again from nothing in memory too
+    else if (again) { const r = again; again = null; schedule(300, r); }
   }
 }
 
@@ -246,6 +247,15 @@ async function runLocked(reason: Reason) {
   syncing = true;
   publish();
 
+  // 1b. Has the account been wiped (Delete everything) since this device last heard? Then this copy goes too, with
+  // whatever wasn't sent yet: the device is cleared and joins the account afresh.
+  const ws = await wipeStateOf(session, link.user);
+  if (!ws.ok) { failed(ws.why, ws.message); return; }
+  if (ws.data.epoch > (link.epoch ?? 0)) {
+    if (clearAfterWipe(st, ws.data.wiped_at, 'elsewhere')) reloadAfter = true;
+    return;
+  }
+
   // 2. Send them, a batch at a time. Each is noted as sent before it goes.
   const sent = new Set<string>();
   for (;;) {
@@ -263,8 +273,9 @@ async function runLocked(reason: Reason) {
       if (!o.del && o.content) mendHalves(o.content);
       return { change_id: o.id, kind, record_id: id, base_version: o.base, deleted: o.del, data: o.del ? null : o.content };
     });
-    const res = await call<Result[]>('sync_push_v2', session, { account: link.user, changes, device: st.device });
+    const res = await pushChanges(session, link, changes, st.device);
     if (!res.ok) { failed(res.why, res.message); writeState(st); return; } // the changes stay noted, and are sent again with the same ids
+    if (!Array.isArray(res.data)) { writeState(st); schedule(0); return; } // wiped meanwhile: the next run hears it (1b)
     catchUp();
     const now = localRecords(getSnapshot().data);
     for (const r of res.data) {
@@ -297,6 +308,7 @@ async function runLocked(reason: Reason) {
   }
   if (cursor > link.cursor && !(await applyRows(st, link, incoming, cursor))) { schedule(1500); return; }
   lastPullAt = Date.now();
+  checked = true;
   link.lastSynced = new Date().toISOString();
   writeState(st);
   succeeded();
@@ -512,6 +524,59 @@ export async function clearThisDevice() {
   void run();
 }
 
+// ---------- Delete everything (specs/delete-everything.md) ----------
+// The account's wipe state: its epoch moves on each time everything is deleted. Before the migration that adds it
+// there is none, and every account counts as never wiped.
+export interface WipeState { epoch: number; wiped_at: string | null; wiped_seq: number; last_seq: number }
+type Session = NonNullable<Awaited<ReturnType<typeof currentSession>>['session']>;
+const missing = (r: CallResult<unknown>) => !r.ok && r.why === 'refused' && /PGRST202|Could not find the function/i.test(r.message);
+async function wipeStateOf(session: Session, user: string): Promise<CallResult<WipeState>> {
+  const r = await call<WipeState>('sync_state', session, { account: user });
+  return missing(r) ? { ok: true, data: { epoch: 0, wiped_at: null, wiped_seq: 0, last_seq: 0 } } : r;
+}
+// Changes go with the epoch this device knows (sync_push_v3); an answer that isn't a list means the account was wiped.
+async function pushChanges(session: Session, link: Link, changes: unknown[], device: string): Promise<CallResult<Result[] | { error: string }>> {
+  const r = await call<Result[] | { error: string }>('sync_push_v3', session, { account: link.user, changes, device, epoch: link.epoch ?? 0 });
+  return missing(r) ? call<Result[]>('sync_push_v2', session, { account: link.user, changes, device }) : r;
+}
+let checked = false, reloadAfter = false;
+// True once a sync in this page load has heard the account's wipe state and caught up. The daily backup and the files
+// tidy wait for it, so a device never backs up or tidies its old copy before it has heard about a wipe.
+export const checkedThisLoad = () => checked;
+
+// Everything on this device but the sign-in goes: MyDay's data (a fresh start), every device-only key (myday.…), the
+// files cache, and sync's notes, which keep only the device id: the device then joins the account afresh, taking the
+// account's versions (so the starter lists don't clash). A note for the notice ("Everything was deleted…") is left.
+// Called with the sync lock held.
+export const WIPED_KEY = 'myday.wiped';
+export function clearAfterWipe(st: SyncState, at: string | null, from: 'here' | 'elsewhere'): boolean {
+  if (!replaceAll(freshData())) return false;
+  try {
+    for (const k of Object.keys(localStorage)) if (k.startsWith('myday.') && k !== AUTH_KEY && k !== SYNC_KEY && k !== STORAGE_KEY) localStorage.removeItem(k);
+  } catch { /* storage unavailable: nothing more to clear */ }
+  st.link = null; st.kept = []; st.before = null;
+  if (!writeState(st)) return false;
+  try { localStorage.setItem(WIPED_KEY, JSON.stringify({ at: at ?? new Date().toISOString(), from })); } catch { /* the notice is a courtesy */ }
+  void clearFileCache();
+  return true;
+}
+// The account's side of Delete everything, then this device: with the lock held, so no sync runs in between.
+// 'failed' changes nothing anywhere. 'cleared' = the account's data is gone (and this device's, unless 'not-here').
+export async function wipeAccount(): Promise<{ ok: true; here: boolean } | { ok: false; why: 'offline' | 'signed-out' | 'not-linked' | 'failed' }> {
+  if (!SYNC.configured) return { ok: false, why: 'not-linked' };
+  return withLock(async () => {
+    catchUp();
+    const read = readState();
+    if (!read.ok || !read.state.link) return { ok: false, why: 'not-linked' } as const;
+    const { session, offline } = await currentSession();
+    if (offline) return { ok: false, why: 'offline' } as const;
+    if (!session || accountOf(session)?.id !== read.state.link.user) return { ok: false, why: 'signed-out' } as const;
+    const r = await call<WipeState>('sync_wipe', session, { account: read.state.link.user });
+    if (!r.ok) return { ok: false, why: r.why === 'network' ? 'offline' : 'failed' } as const;
+    return { ok: true, here: clearAfterWipe(read.state, r.data.wiped_at, 'here') } as const;
+  });
+}
+
 // ---------- Signing out ----------
 // Signing out here: first everything is sent and checked; only when your account has all of it is MyDay's data
 // removed from this device ('done'). Something not saved yet (offline, a choice to make, a problem): 'unsaved', and
@@ -684,6 +749,7 @@ export interface Review {
   rows: Record<string, { v: number; f: string | null; index?: number }>; // every record in the account
   localF: Record<string, string | null>;   // this device's records when the review was made
   before: string | null;                   // the account this device synced with before, if different
+  epoch: number;                           // the account's wipe epoch, read before its records
 }
 
 async function fetchAll(session: NonNullable<Awaited<ReturnType<typeof currentSession>>['session']>, user: string): Promise<{ rows: Row[]; cursor: number } | { error: string }> {
@@ -710,6 +776,8 @@ export async function prepareReview(): Promise<{ ok: true; review: Review } | { 
   const read = readState();
   const st = read.ok ? read.state : freshState();
   if (st.link && st.link.user !== acct.id) return { ok: false, message: 'This device syncs with a different account. Stop syncing with it first.' };
+  const ws = await wipeStateOf(session, acct.id); // first: a wipe after this is still noticed at the next sync
+  if (!ws.ok) return { ok: false, message: ws.why === 'network' ? "Couldn't reach your account." : 'Your account had a problem answering.' };
   const all = await fetchAll(session, acct.id);
   if ('error' in all) return { ok: false, message: all.error };
   catchUp();
@@ -748,7 +816,7 @@ export async function prepareReview(): Promise<{ ok: true; review: Review } | { 
   const order = sortKeys(items.map(i => i.key));
   items.sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
   const before = !st.link && st.before && st.before.email !== acct.email ? st.before.email : null;
-  return { ok: true, review: { account: acct, items, cursor: all.cursor, rows, localF, before } };
+  return { ok: true, review: { account: acct, items, cursor: all.cursor, rows, localF, before, epoch: ws.data.epoch } };
 }
 
 // Applies a review once you've confirmed it. `choices` says which version to keep for each 'differ' item.
@@ -796,6 +864,7 @@ export async function applyReview(review: Review, choices: Record<string, 'here'
     // as on their way (so they're sent even if this is interrupted, and aren't mistaken for a surprise bulk change).
     const link = newLink(acct.id, acct.email);
     link.cursor = review.cursor;
+    link.epoch = review.epoch;
     for (const [k, b] of Object.entries(review.rows)) link.base[k] = { ...b };
     if (st.link && st.link.lastSynced) link.lastSynced = st.link.lastSynced;
     const nowLocal = localRecords(getSnapshot().data);

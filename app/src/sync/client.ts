@@ -71,9 +71,9 @@ export type CallResult<T> =
   | { ok: true; data: T }
   | { ok: false; why: 'network' | 'auth' | 'server' | 'refused'; message: string };
 
-// Calls the versioned sync functions or the project-upgrade reader with exactly this session's token (checked by the caller to be the right
+// Calls the versioned sync functions (and the account's wipe state, specs/delete-everything.md) or the project-upgrade reader with exactly this session's token (checked by the caller to be the right
 // account), never whatever session happens to be current. The database also checks `account`.
-export async function call<T>(fn: 'sync_push_v2' | 'sync_pull_v2' | 'sync_project_upgrade_rows', session: Session, args: Record<string, unknown>): Promise<CallResult<T>> {
+export async function call<T>(fn: 'sync_push_v2' | 'sync_push_v3' | 'sync_pull_v2' | 'sync_state' | 'sync_wipe' | 'sync_project_upgrade_rows', session: Session, args: Record<string, unknown>): Promise<CallResult<T>> {
   const sb = await client();
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);

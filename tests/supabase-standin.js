@@ -46,6 +46,11 @@ async function createDb({ before } = {}) {
 // Everything is undone if fn throws.
 let chain = Promise.resolve();
 function serial(fn) { const run = chain.then(fn, fn); chain = run.catch(() => {}); return run; }
+// The account's wipe epoch, as the functions read it with the user's token (sync_state); 0 before the migration.
+async function epochIn(db, user) {
+  try { return Number((await as(db, user, q => q('select public.sync_state($1) as r', [user]))).rows[0].r.epoch) || 0; }
+  catch (e) { if (/does not exist/.test(String(e))) return 0; throw e; }
+}
 async function as(db, who, fn) {
   return serial(async () => {
     await db.exec('begin');
@@ -286,6 +291,7 @@ function start(db, port = 0) {
         env: name => (name === 'FILES_ALLOWED_ORIGINS' ? aiEnv.AI_ALLOWED_ORIGINS : undefined),
         verifyUser: async token => { const c = verify(token); return c && !c.expired ? c.sub : null; },
         store: filesConfigured ? filesStore : null,
+        epochOf: (token, user) => epochIn(db, user),
         log: line => filesLog.push(line),
       });
       entry.status = response.status;
@@ -304,6 +310,7 @@ function start(db, port = 0) {
         env: name => (name === 'BACKUP_ALLOWED_ORIGINS' ? aiEnv.AI_ALLOWED_ORIGINS : undefined),
         verifyUser: async token => { const c = verify(token); return c && !c.expired ? c.sub : null; },
         store: backupConfigured ? backupStore : null,
+        epochOf: (token, user) => epochIn(db, user),
         log: line => backupLog.push(line),
       });
       entry.status = response.status;
@@ -325,6 +332,15 @@ function start(db, port = 0) {
         if (rpc[1] === 'sync_pull' || rpc[1] === 'sync_pull_v2') {
           const r = await as(db, who, q => q(`select * from public.${rpc[1]}(account => $1::uuid, since => $2::bigint, max_rows => $3::integer)`, [body.account ?? null, body.since ?? 0, body.max_rows ?? 500]));
           return reply(200, r.rows.map(x => ({ ...x, seq: Number(x.seq) })));
+        }
+        // Delete everything (specs/delete-everything.md): the account's epoch, the wipe, and pushes that know the epoch.
+        if (rpc[1] === 'sync_push_v3') {
+          const r = await as(db, who, q => q('select public.sync_push_v3(account => $1::uuid, changes => $2::jsonb, device => $3, epoch => $4::integer) as r', [body.account ?? null, JSON.stringify(body.changes), body.device ?? null, body.epoch ?? null]));
+          return reply(200, r.rows[0].r);
+        }
+        if (rpc[1] === 'sync_state' || rpc[1] === 'sync_wipe') {
+          const r = await as(db, who, q => q(`select public.${rpc[1]}(account => $1::uuid) as r`, [body.account ?? null]));
+          return reply(200, r.rows[0].r);
         }
         if (rpc[1] === 'sync_project_upgrade_rows') {
           const r = await as(db, who, q => q('select * from public.sync_project_upgrade_rows($1::uuid)', [body.account ?? null]));

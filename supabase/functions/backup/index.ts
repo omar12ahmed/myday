@@ -60,6 +60,12 @@ Deno.serve(req => handle(req, {
     const { data, error } = await asUser(token).auth.getUser(token);
     return error || !data.user ? null : data.user.id;
   },
+  // The account's wipe epoch (Delete everything), read as the user; before that migration there's none (0).
+  epochOf: async (token, user) => {
+    const { data, error } = await asUser(token).rpc('sync_state', { account: user });
+    if (error) { if (error.code === 'PGRST202' || /Could not find the function/i.test(error.message)) return 0; throw new Error('state'); }
+    return Number((data as { epoch?: unknown } | null)?.epoch) || 0;
+  },
   store: r2(),
   log: line => console.log(line),
 }));

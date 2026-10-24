@@ -29,6 +29,8 @@ export interface Deps {
   env: (name: string) => string | undefined;
   verifyUser: (token: string) => Promise<string | null>;
   store: Store | null;          // null: not set up (the R2 secrets are missing)
+  // The account's wipe epoch (Delete everything, specs/delete-everything.md); absent: never wiped.
+  epochOf?: (token: string, user: string) => Promise<number>;
   log?: (line: string) => void;
 }
 
@@ -41,7 +43,7 @@ function cors(req: Request, env: Deps['env']): Record<string, string> {
   const allowed = (env('FILES_ALLOWED_ORIGINS') || DEFAULT_ORIGINS).split(',').map(s => s.trim()).filter(Boolean);
   const h: Record<string, string> = {
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-client-info',
+    'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-client-info, x-myday-epoch',
     'Access-Control-Max-Age': '600',
     Vary: 'Origin',
   };
@@ -80,9 +82,12 @@ export async function handle(req: Request, d: Deps): Promise<Response> {
   const keyOf = (area: unknown, fileId: unknown) => (isArea(area) && typeof fileId === 'string' && FILE_ID.test(fileId) ? `${user}/${area}/${fileId}` : null);
   const all = async () => (await store.list(`${user}/`)).filter(o => o.key.startsWith(`${user}/`));
   const sizeOf = (objs: StoredObject[], area?: string) => objs.filter(o => !o.key.endsWith('.thumb') && (!area || o.key.startsWith(`${user}/${area}/`))).reduce((n, o) => n + o.size, 0);
+  // After Delete everything, only a MyDay that knows the account's wipe may add files (an older copy can't).
+  const wiped = async () => { const epoch = d.epochOf ? await d.epochOf(token, user) : 0; return epoch > 0 && req.headers.get('x-myday-epoch') !== String(epoch); };
   try {
     switch (action) {
       case 'upload': {
+        if (await wiped()) return done(json(409, { error: 'wiped' }));
         const key = keyOf(body.area, body.fileId), name = typeof body.name === 'string' ? body.name : '', size = body.size as number, md5 = body.md5;
         if (!key || typeof md5 !== 'string' || !MD5.test(md5)) return done(json(400, { error: 'bad-request' }));
         const why = refusal(body.area as string, name, size);
@@ -115,6 +120,7 @@ export async function handle(req: Request, d: Deps): Promise<Response> {
         return done(json(200, { ok: true, size: stored.size }));
       }
       case 'thumb': {
+        if (await wiped()) return done(json(409, { error: 'wiped' }));
         const key = keyOf(body.area, body.fileId), size = body.size as number, md5 = body.md5;
         if (!key || typeof md5 !== 'string' || !MD5.test(md5) || !Number.isInteger(size) || size < 1 || size > THUMB_MAX_BYTES) return done(json(400, { error: 'bad-request' }));
         const stored = await store.head(key);

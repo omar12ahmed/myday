@@ -871,6 +871,15 @@ is now, then goes through Import's own checks and question; signed in it replace
 it says so. The device's id, label and last result live in `myday.backup.v1` on that device only (not your data, not
 synced or exported). No saved-data, sync or database change. Never sent to AI.
 
+**Delete everything (unreleased; `specs/delete-everything.md`):** at the end of Your account, **Delete everything…**
+opens a page that says what goes (your MyDay on every device and in your account, what you deleted before, your files
+and your backups) and what stays (your sign-in), offers **Download a copy first**, and works once you type "delete
+everything". The account's data goes first (`sync_wipe`), then this device (everything MyDay keeps here but the
+sign-in), then every file and backup, retried until they're gone. Your other devices clear themselves at their next
+sync (the account's wipe "epoch" moved on) and say "Everything was deleted from another device on …"; an older MyDay
+can't write the wiped account back, back it up or add files (the database and both functions refuse it) until it's
+updated. Never sent to AI.
+
 **Files (1.68.0; `specs/files.md`):** a project's Overview has a **Files** card (after Resources) and a note has
 a **Files** section under its text. **Add a file** (or drop one) keeps photos (JPEG, PNG, HEIC, WebP), PDFs and
 documents (Word, Excel, PowerPoint, text, CSV) up to 25 MB each; a photo gets a small preview. **Open** shows a

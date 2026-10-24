@@ -9,7 +9,8 @@ import { todayKey } from '../data/dates';
 import { APP_VERSION } from '../version';
 import { currentSession } from './client';
 import { SYNC } from './config';
-import { getView } from './engine';
+import { checkedThisLoad, getView } from './engine';
+import { knownEpoch } from './state';
 
 const KEY = 'myday.backup.v1', DUE_AFTER_MS = 30_000, WAIT_MS = 60_000;
 export interface BackupState { device: string; label: string; lastDay: string | null; lastAt: string | null; failedDays: number; lastFailDay: string | null }
@@ -73,7 +74,7 @@ async function call(method: string, query = '', body?: Uint8Array, extra: Record
   try {
     const res = await fetch(`${SYNC.url}/functions/v1/backup${query}`, {
       method, signal: ctrl.signal, body: body as BodyInit | undefined,
-      headers: { apikey: SYNC.key, Authorization: `Bearer ${session.access_token}`, ...(body ? { 'Content-Type': 'application/gzip' } : {}), ...extra },
+      headers: { apikey: SYNC.key, Authorization: `Bearer ${session.access_token}`, 'x-myday-epoch': String(knownEpoch()), ...(body ? { 'Content-Type': 'application/gzip' } : {}), ...extra },
     });
     if (res.ok) return { ok: true, res };
     let error = '';
@@ -143,6 +144,8 @@ export function startDailyBackups() {
     timer = setTimeout(async () => {
       timer = null;
       if (running || document.visibilityState !== 'visible') return;
+      // Only once this page load's sync has heard the account's wipe state: never back up an old copy after Delete everything.
+      if (!checkedThisLoad()) { check(); return; } // asked again shortly
       if (!backupDue(readState(), todayKey(), getView().phase === 'linked', getSnapshot().status.kind === 'ok')) return;
       running = true;
       try { await backUpNow(); } finally { running = false; }

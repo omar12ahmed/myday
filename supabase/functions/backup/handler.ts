@@ -20,6 +20,8 @@ export interface Deps {
   env: (name: string) => string | undefined;
   verifyUser: (token: string) => Promise<string | null>;
   store: Store | null;          // null: not set up (the R2 secrets are missing)
+  // The account's wipe epoch (Delete everything, specs/delete-everything.md); absent: never wiped.
+  epochOf?: (token: string, user: string) => Promise<number>;
   now?: () => Date;
   log?: (line: string) => void;
 }
@@ -34,7 +36,7 @@ function cors(req: Request, env: Deps['env']): Record<string, string> {
   const allowed = (env('BACKUP_ALLOWED_ORIGINS') || DEFAULT_ORIGINS).split(',').map(s => s.trim()).filter(Boolean);
   const h: Record<string, string> = {
     'Access-Control-Allow-Methods': 'GET, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-client-info, x-myday-device-label, x-myday-version, x-myday-key',
+    'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-client-info, x-myday-device-label, x-myday-version, x-myday-key, x-myday-epoch',
     'Access-Control-Max-Age': '600',
     Vary: 'Origin',
   };
@@ -136,7 +138,9 @@ export async function handle(req: Request, d: Deps): Promise<Response> {
       await removeAll(store, all.map(o => o.key));
       return done(json(200, { ok: true, deleted: all.filter(o => parseKey(user, o.key)).length }));
     }
-    // PUT: save.
+    // PUT: save. After Delete everything, only a MyDay that knows the account's wipe can save (an older copy can't).
+    const epoch = d.epochOf ? await d.epochOf(token, user) : 0;
+    if (epoch > 0 && req.headers.get('x-myday-epoch') !== String(epoch)) return done(json(409, { error: 'wiped' }));
     const day = url.searchParams.get('day'), device = url.searchParams.get('device') || '';
     const today = now().toISOString().slice(0, 10);
     if (!isDay(day) || day < shiftDay(today, -2) || day > shiftDay(today, 2) || !DEVICE.test(device)) return done(json(400, { error: 'bad-request' }));

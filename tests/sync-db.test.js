@@ -298,6 +298,51 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   r = await push(A, [change('file', 'fldbtest003', 0, { ...file, id: 'fldbtest003', area: 'portfolio' }), change('arabic_word', 'kwdbtest003', 0, { ...word, id: 'kwdbtest003' })]);
   check('every earlier kind, a portfolio file record among them, is still accepted after this change', r.every(x => x.status === 'applied'), r);
 
+  console.log('\n[20] Delete everything (20261025160000_wipe.sql): the true wipe, and the guard against an older MyDay');
+  {
+    const canon = v => (Array.isArray(v) ? v.map(canon) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map(k => [k, canon(v[k])])) : v);
+    const eq = (a, b) => JSON.stringify(canon(a)) === JSON.stringify(canon(b)); // (jsonb orders keys its own way)
+    const W = await S.addUser(db, 'wipe@example.test', 'x'), O = await S.addUser(db, 'wipe-other@example.test', 'x');
+    const state = who => S.as(db, who, q => q('select public.sync_state($1) as r', [who])).then(x => x.rows[0].r);
+    const wipe = (who, account = who) => S.as(db, who, q => q('select public.sync_wipe($1) as r', [account])).then(x => x.rows[0].r);
+    const push3 = (who, changes, epoch, device = 'dev-3') => S.as(db, who, q => q('select public.sync_push_v3($1, $2::jsonb, $3, $4) as r', [who, JSON.stringify(changes), device, epoch])).then(x => x.rows[0].r);
+    const counts = async who => Object.fromEntries(await Promise.all(['sync_records', 'sync_changes', 'task_lists', 'task_queue', 'day_plans', 'day_context', 'sync_project_legacy']
+      .map(async t => [t, Number((await sql(`select count(*)::int as n from public.${t} where user_id = $1`, [who]))[0].n)])));
+    check('an account with nothing saved has epoch 0 and no wipe', eq(await state(W), { epoch: 0, wiped_at: null, wiped_seq: 0, last_seq: 0 }), await state(W));
+    for (const who of [W, O]) {
+      r = await push(who, [change('list', 'learning', 0, list(['A course'])), change('day', '2026-10-20', 0, day(2)), change('context', '2026-10-20', 0, { energy: 3 }), change('queue', 'queue', 0, { items: [] }), change('note', 'n1', 0, { id: 'n1', title: 'A note' }),
+        change('project', 'pjWipe', 0, { id: 'pjWipe', title: 'Shed', milestones: [], decisions: [] }), change('file', 'flwipe000001', 0, { ...file, id: 'flwipe000001' })]);
+      r = await push(who, [change('note', 'n1', 1, null, { deleted: true })]); // a deletion marker
+      await sql(`insert into public.sync_project_legacy (user_id, id, version, core_version, data) values ($1, 'pjOld', 3, 1, '{"title":"Before 1.44.0"}')`, [who]);
+    }
+    const before = await counts(W), otherBefore = await counts(O), seqBefore = (await state(W)).last_seq;
+    check('…and once used, rows in every table, including a deletion marker and a pre-1.44.0 copy', Object.values(before).every(n => n > 0) && (await pull(W)).some(x => x.deleted), before);
+    check('sync_wipe is only for the account signed in', /different account/.test(await fails(() => wipe(O, W))) && /permission denied|Sign in/.test(await fails(() => S.as(db, null, q => q('select public.sync_wipe($1)', [W])))));
+    check('only signed-in users may call sync_state, sync_wipe and sync_push_v3', (await sql(`select r, f, has_function_privilege(r, f, 'EXECUTE') as yes from unnest(array['anon','authenticated','public']) r,
+      unnest(array['public.sync_state(uuid)','public.sync_wipe(uuid)','public.sync_push_v3(uuid,jsonb,text,integer)']) f`)).every(x => x.yes === (x.r === 'authenticated')));
+    const w = await wipe(W);
+    check('the wipe moves the epoch to 1, notes when and the change number it happened at', w.epoch === 1 && !!w.wiped_at && w.wiped_seq === seqBefore && w.last_seq === seqBefore, w);
+    check('every row of the account is gone: records, deletion markers, the change log, lists, queue, days and pre-1.44.0 copies', Object.values(await counts(W)).every(n => n === 0), await counts(W));
+    check('another account is untouched', eq(await counts(O), otherBefore) && (await state(O)).epoch === 0, await counts(O));
+    check('a device pulling from anywhere gets nothing back', (await pull(W)).length === 0);
+    check('sync_state says so: epoch 1, wiped_seq, and last_seq kept', (await state(W)).epoch === 1 && (await state(W)).wiped_seq === seqBefore && (await state(W)).last_seq === seqBefore);
+    // An older MyDay (sync_push_v2) can't write the wiped account back — new records or old ones.
+    check('after the wipe, an older MyDay\'s push (v2) is refused: "update" (the guard)', /Delete everything\. Update MyDay/.test(await fails(() => push(W, [change('note', 'n2', 0, { id: 'n2', title: 'From an old copy' })]))) && (await counts(W)).sync_records === 0);
+    check('…for lists, days and the day\'s context too', /Update MyDay/.test(await fails(() => push(W, [change('list', 'learning', 0, list(['Old']))]))) && /Update MyDay/.test(await fails(() => push(W, [change('day', '2026-10-20', 0, day(1))]))) && /Update MyDay/.test(await fails(() => push(W, [change('context', '2026-10-21', 0, { energy: 2 })]))) && Object.values(await counts(W)).every(n => n === 0), await counts(W));
+    check('an older MyDay\'s change to a record it had (an old version number) gets a conflict, and writes nothing', (await push(W, [change('list', 'learning', 1, list(['Old']))]))[0].status === 'conflict' && (await counts(W)).task_lists === 0);
+    check('…and nothing was numbered for it (last_seq unchanged)', (await state(W)).last_seq === seqBefore);
+    check('a push that knows an old epoch (v3, epoch 0) is answered "wiped" with the current one, and saves nothing', eq(await push3(W, [change('note', 'n3', 0, { id: 'n3', title: 'x' })], 0), { error: 'wiped', epoch: 1 }) && (await counts(W)).sync_records === 0);
+    r = await push3(W, [change('note', 'n4', 0, { id: 'n4', title: 'After the wipe' }), change('list', 'learning', 0, list(['Fresh']))], 1);
+    check('a push with the current epoch (v3) saves as usual, numbered after the wipe', Array.isArray(r) && r.every(x => x.status === 'applied' && x.version === 1) && r[0].seq === seqBefore + 1, r);
+    check('…and a device that pulls from wiped_seq gets exactly those', eq((await pull(W, seqBefore)).map(x => x.record_id ?? x.id).sort(), ['learning', 'n4'].sort()) || (await pull(W, seqBefore)).length === 2, await pull(W, seqBefore));
+    check('for an account never wiped, v3 with epoch 0 works like v2', Array.isArray(await push3(O, [change('note', 'n9', 0, { id: 'n9', title: 'Other' })], 0)));
+    check('…and v2 keeps working there (every released MyDay)', (await push(O, [change('note', 'n10', 0, { id: 'n10', title: 'Old app' })]))[0].status === 'applied');
+    check('the flag doesn\'t leak: a v2 push right after a v3 one is still refused on the wiped account', /Update MyDay/.test(await fails(() => push(W, [change('note', 'n5', 0, { id: 'n5', title: 'x' })]))));
+    const w2 = await wipe(W);
+    check('a second wipe moves to epoch 2 and clears the new rows; v3 with epoch 1 is now "wiped"', w2.epoch === 2 && Object.values(await counts(W)).every(n => n === 0) && eq(await push3(W, [], 1), { error: 'wiped', epoch: 2 }));
+    check('the AI limits\' counts are not part of the wipe (no ai_usage rows touched)', (await sql(`select count(*)::int as n from information_schema.triggers where event_object_table = 'ai_usage' and trigger_name = 'sync_epoch_guard'`))[0].n === 0);
+  }
+
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

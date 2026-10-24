@@ -259,5 +259,20 @@ const MB = 1024 * 1024;
   }
   fs.rmSync(dir, { recursive: true, force: true });
 
+  console.log('\n[10] After Delete everything, only a MyDay that knows the wipe may add files (specs/delete-everything.md)');
+  reset();
+  const wiped = { epochOf: async () => 2 };
+  check('the CORS preflight allows the x-myday-epoch header', /x-myday-epoch/.test((await post(null, { method: 'OPTIONS', token: null, headers: { Origin: 'https://omar12ahmed.github.io' } })).headers.get('Access-Control-Allow-Headers') || ''));
+  check('an account never wiped (epoch 0): uploads need no header, as for every released MyDay', (await up({ fileId: 'flepoch00001' }, { over: { epochOf: async () => 0 } })).status === 200);
+  check('a wiped account: an upload without the header is refused (409 wiped), nothing signed', (await up({ fileId: 'flepoch00002' }, { over: wiped })).status === 409 && (await json(await up({ fileId: 'flepoch00002' }, { over: wiped }))).error === 'wiped');
+  check('…and with an old epoch', (await up({ fileId: 'flepoch00003' }, { over: wiped, headers: { 'x-myday-epoch': '1' } })).status === 409);
+  check('…while the current epoch is accepted', (await up({ fileId: 'flepoch00004' }, { over: wiped, headers: { 'x-myday-epoch': '2' } })).status === 200);
+  store.put(`${A}/project/flepoch00005`, PNG, 'image/png', 100);
+  check('a preview of a wiped account\'s photo is refused without the epoch, accepted with it', (await post({ action: 'thumb', fileId: 'flepoch00005', area: 'project', size: 10, md5: MD5 }, { over: wiped })).status === 409
+    && (await post({ action: 'thumb', fileId: 'flepoch00005', area: 'project', size: 10, md5: MD5 }, { over: wiped, headers: { 'x-myday-epoch': '2' } })).status === 200);
+  check('opening, usage and deleting don\'t need it (Delete everything deletes files itself)', (await post({ action: 'open', fileId: 'flepoch00005', area: 'project' }, { over: wiped })).status === 200
+    && (await post({ action: 'usage' }, { over: wiped })).status === 200 && (await post({ action: 'delete-all' }, { over: wiped })).status === 200);
+  check('the epoch can\'t be read: 502, nothing signed', (await up({ fileId: 'flepoch00006' }, { over: { epochOf: async () => { throw new Error('db'); } } })).status === 502);
+
   const s = summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
 })().catch(e => { console.error('HARNESS ERROR', e); const s = summary(); console.log(`${s.pass} passed, ${s.fail} failed before the error`); process.exit(2); });

@@ -37,6 +37,7 @@ export interface Link {
   rejected: Record<string, { f: string | null; reason: string }>; // changes the cloud refused (not sent again unless changed)
   review: null | 'import' | 'bulk'; // paused until the changes on this device are reviewed
   lastSynced: string | null;
+  epoch?: number;        // how many times the account had been wiped (Delete everything) when this device last heard; absent = 0
 }
 // This device's version of a record, kept when the cloud's version replaced it (download it any time).
 export interface Kept { key: string; label: string; content: Content | null; at: string; why: 'setup' | 'conflict' }
@@ -56,6 +57,9 @@ export function newId(): string {
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
 }
 
+// The account's wipe epoch as this device knows it, sent with uploads (backups, files) so the functions can refuse an
+// old copy after Delete everything (specs/delete-everything.md).
+export const knownEpoch = (): number => { const r = readState(); return r.ok ? r.state.link?.epoch ?? 0 : 0; };
 export const freshState = (): SyncState => ({ v: 1, device: 'd-' + newId().slice(0, 8), link: null, kept: [], before: null });
 export const newLink = (user: string, email: string): Link => ({
   projectProtocol: 2, user, email, linkedAt: new Date().toISOString(), cursor: 0, base: {}, out: {}, conflicts: {}, rejected: {}, review: null, lastSynced: null,
