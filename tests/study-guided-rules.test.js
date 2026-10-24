@@ -24,7 +24,7 @@ function check(label, ok) {
       'export * as arabicCatalogue from ' + JSON.stringify(path.join(ROOT, 'app/src/study/arabic/catalogue')) + ';',
       'export { beginSession, finishSession } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/arabic/sessions')) + ';',
       'export { markReady, flagRevisit } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/arabic/lessons')) + ';',
-      'export { arabicPlan, arabicState, checksOf, journeyFor, lengthOn, warmUpFrom } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/arabic/plan')) + ';',
+      'export { arabicPlan, arabicProgress, arabicState, checksOf, journeyFor, lengthOn, pathLessons, warmUpFrom } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/arabic/plan')) + ';',
       'export { todayKey } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/dates')) + ';',
     ].join('\n'));
     const rule = await import(pathToFileURL(await bundle(path.join(dir, 'entry.ts'), path.join(dir, 'out'))).href);
@@ -183,6 +183,37 @@ function check(label, ok) {
     rule.beginAttempt(cyber, optionalCyber.practical_task_id);
     check('A current optional-extension draft on the selected path can still be resumed', rule.nextLesson(cyber).lesson.id === optionalCyber.id && rule.nextLesson(cyber).code === 'user_choice');
     check('Resuming optional work keeps the completed required-path status', rule.nextLesson(cyber).allComplete && option(cyber, 'cybersecurity').allComplete && option(cyber, 'cybersecurity').resume);
+
+    console.log('\n[Progress] Arabic: where you stand, what needs revision and why, the next milestone');
+    {
+      const pg = fresh(), path = rule.pathLessons(pg.arabic.pathId), first = path[0], checks = rule.checksOf(first);
+      const a1 = rule.pathLessons('path.arabic-a1').filter(id => path.includes(id));
+      check('before any Arabic, Progress has nothing to say about it', !rule.arabicProgress(pg).started);
+      const sid = rule.beginSession(pg, first, 'standard'); rule.finishSession(pg, sid);
+      let p = rule.arabicProgress(pg);
+      check('after a session: started, nothing done yet, nothing needing revision, the next milestone A1 with all its lessons to go', p.started && p.done === 0 && p.needs.length === 0 && p.path === path.length
+        && p.milestone.stage === 'A1' && p.milestone.toGo === a1.length && /A1 consolidation/.test(p.milestone.last), p.milestone);
+      rule.markReady(pg, first, checks, '2026-10-01');
+      p = rule.arabicProgress(pg);
+      check('marking a lesson ready: done 1, and one lesson fewer to go', p.done === 1 && p.milestone.toGo === a1.length - 1);
+      pg.study.reviews.push({ id: 'rvPg1', conceptId: checks[0], title: 'x', date: '2026-10-09', at: '', kind: 'written', outcome: 'right', graded: 'self', chosen: null, support: 'own', rating: 'good', gap: 10, due: '2026-10-19' });
+      pg.study.reviews.push({ id: 'rvPg2', conceptId: checks[1], title: 'x', date: '2026-10-10', at: '', kind: 'written', outcome: 'wrong', graded: 'self', chosen: null, support: 'own', rating: 'again', gap: 1, due: '2026-10-11' });
+      p = rule.arabicProgress(pg);
+      const n = p.needs[0];
+      check('a check that slipped after Ready: it needs revision, with what your answers show and "Do the Try" while you haven\'t done it', p.done === 0 && p.needs.length === 1 && n.lessonId === first && n.flag === null
+        && n.sessions === 1 && n.own === 1 && n.checks === checks.length && !n.tried && n.next === 'try' && p.ownChecks === 1, n);
+      pg.arabic.practice = [{ id: first, tried: '2026-10-08' }];
+      check('…and "Answer its checks" once you\'ve done its Try', rule.arabicProgress(pg).needs[0].next === 'check');
+      rule.flagRevisit(pg, first, 'the register words', '2026-10-11');
+      check('your own flag gives the reason in your words', rule.arabicProgress(pg).needs[0].flag === 'the register words');
+      const all = fresh(); all.arabic.pathId = 'path.arabic-start';
+      const start = rule.pathLessons(all.arabic.pathId);
+      start.forEach(id => { const s2 = rule.beginSession(all, id, 'short'); rule.finishSession(all, s2); rule.markReady(all, id, rule.checksOf(id), '2026-10-01'); });
+      p = rule.arabicProgress(all);
+      check('every lesson on a short path done: done counts them all, and no milestone is left on that path', p.done === start.length && p.path === start.length && p.milestone === null, p);
+      const before = JSON.stringify(pg); rule.arabicProgress(pg);
+      check('working out Progress saves nothing', JSON.stringify(pg) === before);
+    }
 
     console.log('\n[Arabic] Selected required paths and open sessions');
     const arabic = fresh();

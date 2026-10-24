@@ -1024,6 +1024,17 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('both answers make one note with both parts, a blank line between', f.notes.items[0].text === 'What went well:\nA quiet week\n\nWhat would make next week easier:\nFewer meetings', f.notes.items[0].text);
     f = fr(); f.notes.categories = f.notes.categories.filter(c => c.name !== 'Personal'); K.finishReview(f, fin({ went: 'A quiet week' }));
     check('with no Personal collection the note is not filed anywhere (empty category)', f.notes.items[0].categoryId === '', f.notes.items[0]);
+    // In a week with Study: what got easier and what still feels hard, in the same note (specs/study-home-and-lessons.md §11).
+    f = fr(); K.finishReview(f, fin({ went: 'A quiet week', gotEasier: '  Reading without vowels  ', stillHard: 'The dual' }));
+    check('the Study answers follow in the same note, each with its own heading', f.notes.items.length === 1 && f.notes.items[0].text === 'What went well:\nA quiet week\n\nStudy, what got easier:\nReading without vowels\n\nStudy, what still feels hard:\nThe dual', f.notes.items[0].text);
+    f = fr(); r = K.finishReview(f, fin({ stillHard: 'The dual' }));
+    check('a Study answer alone still makes the note', !!r.noteId && f.notes.items[0].text === 'Study, what still feels hard:\nThe dual', f.notes.items[0]?.text);
+    const sw = K.freshState();
+    check('a week with no Study has no Study questions', !K.studiedIn(sw, '2026-10-12', '2026-10-18'));
+    sw.study.sessions.push({ id: 'ssW', courseId: null, taskId: null, title: 'x', date: '2026-10-14', startedAt: '2026-10-14T09:00', plannedMin: 25, short: false, status: 'done', runningSince: null, activeMs: 60000, endedAt: '2026-10-14T09:25', checkin: null, taskDone: null, todayUid: null });
+    check('a Study session finished in the week counts; one outside it doesn\'t', K.studiedIn(sw, '2026-10-12', '2026-10-18') && !K.studiedIn(sw, '2026-10-19', '2026-10-25'));
+    const aw = K.freshState(); aw.arabic.attempts.push({ id: 'aaW', lessonId: 'lesson.arabic-fusha-register', finishedAt: new Date(2026, 9, 16, 20, 0).toISOString() });
+    check('…and so does an Arabic session finished in the week (by its local day)', K.studiedIn(aw, '2026-10-12', '2026-10-18') && !K.studiedIn(aw, '2026-10-17', '2026-10-18'));
 
     console.log('  Putting it off and the review day');
     f = K.freshState();

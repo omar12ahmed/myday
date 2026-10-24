@@ -5,7 +5,7 @@
 // (`reflectionWeek` marks which week it's for). Nothing is judged: no scores, no "behind", a quiet week is fine.
 import { awaitingAnswer, isBusiness, isCase } from './businessModel';
 import { caseCounts } from './caseFile';
-import { localStamp, parseKey, shift, shortDate, todayKey } from './dates';
+import { keyOf, localStamp, parseKey, shift, shortDate, todayKey } from './dates';
 import { NOTE_LIMITS } from './notes';
 import { lastActivity, projectsInOrder } from './projects';
 import { isStuck } from './tasks';
@@ -85,9 +85,17 @@ export const inFocus = (p: Project, k: DateKey = todayKey()) => !!p.focus && p.f
 export const focusProjects = (data: MyDayData, k: DateKey = todayKey()) => data.projects.items.filter(p => p.status === 'active' && inFocus(p, k));
 
 // ---------- Saving (each used inside update(); returns whether anything changed) ----------
-// Your review: up to three projects in focus for the seven days from `start`, your two answers as a note (only if
-// you wrote something), and this review marked as done. A project's "updated" time doesn't move for its focus.
-export interface Finish { day: DateKey; from: DateKey; start: DateKey; focus: string[]; went: string; easier: string }
+// Your review: up to three projects in focus for the seven days from `start`, your answers as a note (only if you
+// wrote something), and this review marked as done. A project's "updated" time doesn't move for its focus. In a week
+// with any Study (studiedIn), two more answers go in the same note: what got easier, and what still feels hard
+// (specs/study-home-and-lessons.md §11).
+export interface Finish { day: DateKey; from: DateKey; start: DateKey; focus: string[]; went: string; easier: string; gotEasier?: string; stillHard?: string }
+// Any Study in the week: a Study session finished, an Arabic session finished or a Cybersecurity attempt handed in.
+export function studiedIn(data: MyDayData, from: DateKey, to: DateKey): boolean {
+  const on = (iso: string | null) => { if (!iso) return false; const k = keyOf(new Date(iso)); return k >= from && k <= to; };
+  return data.study.sessions.some(s => s.status === 'done' && s.date >= from && s.date <= to)
+    || data.arabic.attempts.some(a => on(a.finishedAt)) || data.cybersecurity.attempts.some(a => on(a.submittedAt));
+}
 export function finishReview(d: MyDayData, f: Finish): { noteId: string | null } {
   const keep = new Set(f.focus.slice(0, REVIEW_LIMITS.focus));
   for (const p of d.projects.items) {
@@ -95,11 +103,13 @@ export function finishReview(d: MyDayData, f: Finish): { noteId: string | null }
     else if (p.focus === f.start) delete p.focus;
   }
   const went = f.went.trim().slice(0, REVIEW_LIMITS.answer), easier = f.easier.trim().slice(0, REVIEW_LIMITS.answer);
+  const gotEasier = (f.gotEasier ?? '').trim().slice(0, REVIEW_LIMITS.answer), stillHard = (f.stillHard ?? '').trim().slice(0, REVIEW_LIMITS.answer);
   let noteId: string | null = null;
-  if (went || easier) {
+  if (went || easier || gotEasier || stillHard) {
     const cat = d.notes.categories.find(c => c.name === 'Personal')?.id ?? '', now = localStamp();
     noteId = 'nt' + uid();
-    const text = [went && `What went well:\n${went}`, easier && `What would make next week easier:\n${easier}`].filter(Boolean).join('\n\n');
+    const text = [went && `What went well:\n${went}`, easier && `What would make next week easier:\n${easier}`,
+      gotEasier && `Study, what got easier:\n${gotEasier}`, stillHard && `Study, what still feels hard:\n${stillHard}`].filter(Boolean).join('\n\n');
     d.notes.items.push({ id: noteId, categoryId: cat, title: `Week of ${shortDate(f.from)}`, text: text.slice(0, NOTE_LIMITS.text), pinned: false, createdAt: now, updatedAt: now, reflectionWeek: f.from });
   }
   d.patterns.prefs.reviewed = f.day;

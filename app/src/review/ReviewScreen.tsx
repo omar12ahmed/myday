@@ -13,7 +13,7 @@ import { update } from '../data/storage';
 import { unstick } from '../data/tasks';
 import { toast } from '../data/toast';
 import type { MyDayData } from '../data/types';
-import { finishReview, inFocus, lastReviewDay, REVIEW_LIMITS, reviewDay, setReviewDay, whatMoved, whatsWaiting, type Waiting } from '../data/weekReview';
+import { finishReview, inFocus, lastReviewDay, REVIEW_LIMITS, reviewDay, setReviewDay, studiedIn, whatMoved, whatsWaiting, type Waiting } from '../data/weekReview';
 
 // The weekly review (#review, milestone 6 — Reflect, 1.37.0): four short steps, one at a time — what moved, what's
 // waiting, next week's focus, and a line or two if you like. Nothing changes until you tap; nothing is judged.
@@ -27,11 +27,13 @@ export function ReviewScreen({ data }: { data: MyDayData }) {
   const [left, setLeft] = useState<Set<string>>(new Set()); // "leave it for now", for this review only
   const [focus, setFocus] = useState<string[]>(() => active.filter(p => inFocus(p, k) || inFocus(p, start)).map(p => p.id).slice(0, REVIEW_LIMITS.focus));
   const [went, setWent] = useState(''), [easier, setEasier] = useState('');
+  const [gotEasier, setGotEasier] = useState(''), [stillHard, setStillHard] = useState(''); // only in a week with Study
+  const studied = studiedIn(data, week.from, week.to);
   const [done, setDone] = useState<{ names: string[]; note: boolean } | null>(null);
   const waiting = whatsWaiting(data, k).filter(w => !left.has(w.key));
   function finish() {
     let r: { noteId: string | null } = { noteId: null };
-    if (!update(d => { r = finishReview(d, { day: lastReviewDay(d, k), from: week.from, start, focus, went, easier }); })) return;
+    if (!update(d => { r = finishReview(d, { day: lastReviewDay(d, k), from: week.from, start, focus, went, easier, ...(studied ? { gotEasier, stillHard } : {}) }); })) return;
     const names = active.filter(p => focus.includes(p.id)).map(p => p.title);
     setDone({ names, note: !!r.noteId });
     toast('Week looked back on — thank you for taking the time.');
@@ -80,6 +82,11 @@ export function ReviewScreen({ data }: { data: MyDayData }) {
           <p className="text-[15px] text-fg-2 m-0">Only if you’d like to. It’s kept as a note, “Week of {shortDate(week.from)}”, in your Notes.</p>
           <Field label="What went well?" htmlFor="reviewWent"><TextArea id="reviewWent" rows={3} maxLength={REVIEW_LIMITS.answer} value={went} onChange={e => setWent(e.target.value)} /></Field>
           <Field label="What would make next week easier?" htmlFor="reviewEasier"><TextArea id="reviewEasier" rows={3} maxLength={REVIEW_LIMITS.answer} value={easier} onChange={e => setEasier(e.target.value)} /></Field>
+          {studied && <div className="grid gap-3 border-t border-outline pt-3" data-s="review-study">
+            <p className="text-[15px] text-fg-2 m-0">You studied this week. If you like, two more for the same note:</p>
+            <Field label="What got easier?" htmlFor="reviewGotEasier"><TextArea id="reviewGotEasier" rows={2} maxLength={REVIEW_LIMITS.answer} value={gotEasier} onChange={e => setGotEasier(e.target.value)} /></Field>
+            <Field label="What still feels hard?" htmlFor="reviewStillHard"><TextArea id="reviewStillHard" rows={2} maxLength={REVIEW_LIMITS.answer} value={stillHard} onChange={e => setStillHard(e.target.value)} /></Field>
+          </div>}
         </div>}
         <div className="flex flex-wrap justify-between gap-2.5 mt-5">
           {step > 0 ? <Button inline variant="ghost" data-action="review-back" onClick={() => setStep(step - 1)}><ArrowLeft size={18} aria-hidden="true" /> Back</Button> : <span />}
