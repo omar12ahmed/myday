@@ -1,5 +1,13 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.66.0 — Ask MyDay looks at a day:** ask "am I free on Thursday?" or "what's on tomorrow?" and, when that day isn't
+on the page, Ask MyDay looks at it on this device (from a week ago to two months ahead) and answers from it: its plan,
+what's due, when you're busy and free, and your energy. It says which day it looked at above the answer, and that
+second request counts towards the day's limit. Busy times go by kind only (work, appointment, workout, sleep, prep),
+never an appointment's name; a private project's tasks never go, and its appointments only as busy time. How much is
+left on a plan is now worked out on the device, on Today too (the model had counted tasks already done). The server's
+instructions (v18) were deployed first; no saved-data, sync or database change; going back to 1.65.0 is safe.
+
 **1.65.0 — Automatic backups:** once a day, while MyDay is open and you're signed in, each device keeps a copy of
 everything (the same file as Export my data) privately in your own storage, kept for 14 days plus one a month for a
 year. **Your backups** in the footer shows the last one, has **Back up now**, lists every backup with **Download**
