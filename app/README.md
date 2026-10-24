@@ -1,5 +1,14 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.49.0 — Sayings, and more room on Today:** each screen shows one quiet saying chosen for where you are: Today
+(gentler ones on a rest day or when your energy is 1 or 2), Study, Finance, Projects and Your week. It stays the same
+all day and changes on most days. Arabic verses are shown fully vowelled above their English; a saying that is only
+commonly attributed says "attributed to", a well-known rendering says "(paraphrase)", and two short lessons come
+with their meaning. "Sayings: On/Off" in the footer hides them on this device only (`myday.sayings`; not part of
+your data, not synced or exported). On wide screens Today no longer shows a month calendar: the side column (focus
+timer, today and this week, the day at a glance, learning days) now starts beside the greeting. Phones keep this
+week's strip. No saved-data, sync or database change; going back to 1.48.0 is safe.
+
 **1.48.0 — Projects: the outcome, what counts as finished, and Where I left off:** a project can say what it's
 aiming for (a line under its title) and what would count as finished (in About it), and keep one short note for next
 time, "Where I left off", which sits at the top of its Overview with the day it was written. All three are optional,
@@ -724,6 +733,8 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
   (`normalize`). Neither key is part of an export, which still holds all of the MyDay data.
 - **Focus mode** (1.11.0) is a choice for one device, kept in `myday.focus` ("1" when on, read and written only by
   `src/shell/focusMode.ts`): not part of the MyDay data, not synced, not exported.
+- **Sayings** (1.49.0) work the same way: `myday.sayings` is "off" when switched off in the footer and absent when on
+  (the default), read and written only by `src/shell/sayingsMode.ts`.
 - **Nothing unreadable is left out silently.** Like the current MyDay, entries that can't be read (and whole sections
   damaged into the wrong kind of value) are left out when the app starts, and they'd be gone after the next save.
   The new app says so on every screen, with how many, and offers "Download a copy" of the saved data exactly as it
@@ -780,6 +791,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/study/arabic/ReadingVoice.tsx`, `src/study/arabic/voice.ts`, `scripts/arabic-reading-sentences.mjs`, `src/study/arabic/voice-clips.json`, `scripts/review-arabic-audio.mjs` | Reading-text voice (round three (a), 1.41.0): whole-text Listen and sentence controls; sequence support in the shared player; shared sentence boundaries; the generated `readings` list, with only checked clips playable; a local listening checklist for future clips. |
 | `src/study/arabic/arabic-runs.mjs`, `scripts/arabic-voice-sources.mjs`, `scripts/review-arabic-audio.mjs` | Teaching and check voice (round three (b), 1.42.0): shared extraction of the exact Arabic displayed; the `teaching`, `sounds-families` and `lesson-checks` sources; a local listening checklist combining sources, split into sittings with `MYDAY_AUDIO_REVIEW_BATCH`. |
 | `src/commitments/` | Work shifts and appointments: the form and list used by both Today and Calendar. |
+| `src/data/sayings.ts`, `src/components/Saying.tsx`, `src/shell/sayingsMode.ts` | Sayings (1.49.0): the sayings, which places each belongs to, the choice for a place and day, the gentle set and the credit line (`sayings.ts`); the quiet line itself (`Saying.tsx`); the footer's device-only switch (`sayingsMode.ts`). |
 | `src/shell/` | Navigation, the top bar's parts (`TopBar`: the Focus mode switch and your account; `focusMode.ts`, the device-only `myday.focus`), the theme button, the shared footer (`AppFooter`), the "couldn't be read" notice (`LoadIssue`) and the screens for unreadable or older data. |
 | `public/icon.svg` | The tab icon. |
 | `src/version.ts` | The release identifier (version, commit, build date), filled in when building (`vite.config.ts`). |
@@ -851,6 +863,11 @@ keeps its existing look; both versions still share the font, task timeline and s
   Revision-only reminders keep their existing position; nothing is added to the task list.
 - **Focus mode:** shows only the next task with Start focus, Just start and Tick it off, or the running timer.
   Show everything brings the rest back. The choice stays on this device only (`myday.focus`).
+- **Sayings:** one quiet line per screen, never a card: under the plan on Today (under Build my day before a plan, so
+  it stays in view on phones), under Study's tabs, above Finance's work pay, in Projects' intro and in Your week's
+  first card. Muted text; Arabic right to left in the Arabic font. Today uses only the gentle ones (al-Shāfiʿī on
+  the days, Marcus Aurelius, Viktor Frankl) on a rest day or a low-energy day, so the demanding lines never read as
+  blame. A fold-out, at least 44 px to tap, gives a lesson's meaning or a note on the Arabic.
 - **Study:** the first visit offers the guided cybersecurity path beside course setup. Suggested courses can be
   reviewed in a disclosure before creating the roadmap. Existing learning dashboards and records keep their
   behaviour. Cybersecurity uses a wider catalogue, narrower reading pages and tabs that identify the current
