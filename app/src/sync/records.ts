@@ -23,7 +23,7 @@ import { CATS, freshState, normalize, SCHEMA_VERSION, SEED } from '../data/norma
 import { DEFAULT_CATEGORIES } from '../data/notes';
 import { STAGES, STATUS_LABEL } from '../data/projects';
 import { CAT_LABEL, ENERGY_LABEL } from '../data/plan';
-import type { Book, Category, Commitment, Day, DayContext, FileRecord, ListItem, MyDayData, Note, Project, QueueItem, Recipe, Review as StudyReview, StudySession, TaskItem, WorkoutSession } from '../data/types';
+import type { Book, Category, Commitment, Day, DayContext, FileRecord, ListItem, MyDayData, Note, Project, QueueItem, Recipe, ResearchItem, Review as StudyReview, StudySession, TaskItem, WorkoutSession } from '../data/types';
 import { isObj } from '../data/util';
 import { cleanAttempt, cleanCyberCard, cleanPortfolioEntry, normalizeCyber } from '../data/cybersecurity/normalize';
 import type { CyberAttempt, CyberCard, PortfolioEntry } from '../data/cybersecurity/types';
@@ -37,7 +37,7 @@ import { sizeLabel } from '../data/files';
 export type Kind = 'list' | 'queue' | 'day' | 'context'
   | 'settings' | 'rota' | 'pay' | 'holidays' | 'finance' | 'study' | 'workout' | 'food' | 'fitness' | 'notes' | 'tasks' | 'patterns'
   | 'commitment' | 'note' | 'task' | 'session' | 'review' | 'wsession' | 'recipe' | 'project' | 'cybersecurity' | 'cyber_attempt'
-  | 'arabic' | 'arabic_attempt' | 'arabic_card' | 'arabic_lesson' | 'arabic_word' | 'arabic_practice' | 'cyber_card' | 'cyber_portfolio' | 'daily' | 'book' | 'file' | ProjectKind;
+  | 'arabic' | 'arabic_attempt' | 'arabic_card' | 'arabic_lesson' | 'arabic_word' | 'arabic_practice' | 'cyber_card' | 'cyber_portfolio' | 'daily' | 'book' | 'file' | 'research' | ProjectKind;
 export type Content = Record<string, unknown>;
 
 // A record's key on this device: "list:learning", "day:2026-10-02", "note:nt8f…"…
@@ -281,6 +281,13 @@ const MANY: Many[] = [
     items: d => d.files.items, put: (dr, id, c) => putItem(dr.files.items, id, c),
     clean: (id, raw) => same(id, via({ files: { items: [raw] } }).files.items[0]),
     summary: c => { const f = c as unknown as FileRecord; return `${f.name} · ${sizeLabel(f.size)}${f.deletedOn ? ' · in Recently deleted' : ''}`; } },
+  // A project's research (specs/projects-research.md; from migration 20261025180000_sync_research.sql): one record per
+  // question, source or finding, saying which project it belongs to.
+  { kind: 'research', label: 'Research',
+    items: d => d.research.items, put: (dr, id, c) => putItem(dr.research.items, id, c),
+    clean: (id, raw) => same(id, via({ research: { items: [raw] } }).research.items[0]),
+    summary: c => { const r = c as unknown as ResearchItem; const what = r.type === 'question' ? 'Question' : r.type === 'finding' ? 'Finding' : r.type === 'source' ? 'Source' : 'Research';
+      const text = String((r as { text?: unknown }).text ?? (r as { title?: unknown }).title ?? ''); return `${what}${text ? `: ${text.length > 80 ? text.slice(0, 80) + '…' : text}` : ''}`; } },
   { kind: 'book', label: 'Book (Reading)',
     items: d => d.reading.books, put: (dr, id, c) => putItem(dr.reading.books, id, c, (a, b) => a.addedOn.localeCompare(b.addedOn) || a.id.localeCompare(b.id)),
     clean: (id, raw) => same(id, via({ reading: { books: [raw] } }).reading.books[0]),

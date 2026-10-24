@@ -10,6 +10,7 @@
 //
 // The kind of project lives here too: general (no field), a business idea (1.33.0) or a case (1.35.0, data/caseFile.ts).
 import { isDateKey, isDateTime, localStamp, todayKey } from './dates';
+import { forgetAssumption } from './research';
 import { addTask, isDone } from './tasks';
 import type { Assumption, AssumptionState, BusinessModel, DateKey, MyDayData, Project, TaskItem } from './types';
 import { isObj, listOf, uid } from './util';
@@ -17,12 +18,13 @@ import { isObj, listOf, uid } from './util';
 // An assumption fits in a task's title after "Find out: " (tasks allow 120 characters).
 export const MODEL_LIMITS = { answer: 1000, assumptions: 12, assumption: 110, found: 400 };
 
-export type TemplateChoice = 'general' | 'business' | 'case';
-export const TEMPLATES: { id: TemplateChoice; label: string }[] = [{ id: 'general', label: 'General' }, { id: 'business', label: 'Business idea' }, { id: 'case', label: 'Case' }];
+export type TemplateChoice = 'general' | 'business' | 'case' | 'research';
+export const TEMPLATES: { id: TemplateChoice; label: string }[] = [{ id: 'general', label: 'General' }, { id: 'business', label: 'Business idea' }, { id: 'case', label: 'Case' }, { id: 'research', label: 'Research' }];
 export const isBusiness = (p: Project) => p.template === 'business';
 export const isCase = (p: Project) => p.template === 'case';
+export const isResearchKind = (p: Project) => p.template === 'research'; // Research always on (specs/projects-research.md)
 // A kind of project this version knows (none = general). One from a newer MyDay is kept, and not offered to change.
-export const knownTemplate = (p: Project) => p.template === undefined || p.template === 'business' || p.template === 'case';
+export const knownTemplate = (p: Project) => p.template === undefined || p.template === 'business' || p.template === 'case' || p.template === 'research';
 
 export type AnswerKey = 'problem' | 'who' | 'how';
 export const QUESTIONS: { key: AnswerKey; label: string; hint: string }[] = [
@@ -147,6 +149,7 @@ export function removeAssumption(d: MyDayData, projectId: string, id: string): b
   const p = proj(d, projectId);
   if (!p || !as(p, id)) return false;
   p.model!.assumptions = p.model!.assumptions.filter(a => a.id !== id);
+  forgetAssumption(d, projectId, id); // findings about it stop pointing at it (data/research.ts)
   tidy(p); touch(p);
   return true;
 }

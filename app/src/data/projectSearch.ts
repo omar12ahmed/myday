@@ -6,15 +6,16 @@ import { isBusiness, isCase } from './businessModel';
 import { noteName } from './notes';
 import { decisionHistory } from './projectPlan';
 import { projectNotes, projectTasks } from './projects';
+import { hasResearch, researchOf } from './research';
 import { resourceName } from './projectResources';
 import { isDone } from './tasks';
 import type { MyDayData, Project } from './types';
 
-export type SearchKind = 'about' | 'task' | 'note' | 'milestone' | 'decision' | 'model' | 'timeline' | 'evidence' | 'issue' | 'resource';
+export type SearchKind = 'about' | 'task' | 'note' | 'milestone' | 'decision' | 'model' | 'timeline' | 'evidence' | 'issue' | 'resource' | 'question' | 'finding' | 'source';
 export interface SearchHit { kind: SearchKind; id: string; title: string; excerpt: string; href: string; done?: 'done' | 'let go'; private?: true }
 export const SEARCH_KIND_LABEL: Record<SearchKind, string> = {
   about: 'About it', task: 'Task', note: 'Note', milestone: 'Milestone', decision: 'Decision', model: 'Your one page',
-  timeline: 'Timeline', evidence: 'Evidence', issue: 'Issue', resource: 'Link',
+  timeline: 'Timeline', evidence: 'Evidence', issue: 'Issue', resource: 'Link', question: 'Research question', finding: 'Finding', source: 'Source',
 };
 
 // "2 matches for “armchair”": the results' heading, and what the always-present status line tells a screen reader.
@@ -81,5 +82,13 @@ export function searchProject(data: MyDayData, p: Project, query: string): Searc
   }
   // A kept link: its title (or its site, shown but not searched — the address isn't your words) and note.
   for (const r of p.resources ?? []) add('resource', r.id, resourceName(r), r.title, [r.note], tab());
+  // Research (specs/projects-research.md), while it's on: questions and what you concluded, findings and their limits,
+  // typed sources (a link, file or note is found as itself).
+  if (hasResearch(p)) {
+    const r = researchOf(data, p.id);
+    for (const q of r.questions) add('question', q.id, q.text, q.text, [q.conclusion], tab('research'));
+    for (const f of r.findings) add('finding', f.id, f.text, f.text, [f.limits], tab('research'));
+    for (const x of r.sources) if (!x.ref) add('source', x.id, x.title, x.title, [x.from], tab('research'));
+  }
   return hits;
 }

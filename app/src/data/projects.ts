@@ -15,6 +15,7 @@ import { noteName } from './notes';
 import { chosenOption, normalizeDecisions, normalizeMilestones } from './projectPlan';
 import { filesLeaving, normalizeFileIds } from './files';
 import { normalizeResources } from './projectResources';
+import { deleteProjectResearch } from './research';
 import { normalizeStudyLinks } from './studyLinks';
 import { isDone, onTodaysPlan, taskOrder } from './tasks';
 import type { Commitment, DateKey, MyDayData, Note, Project, ProjectsData, ProjectStage, ProjectStatus, TaskItem } from './types';
@@ -89,6 +90,9 @@ export function normalizeProjects(raw: unknown, report: { dropped: number }): Pr
     // Its attached files, by id (data/files.ts): likewise.
     const fileIds = normalizeFileIds(p.fileIds);
     if (fileIds) item.fileIds = fileIds; else delete item.fileIds;
+    // Tools switched on (specs/projects-research.md): kept when there are some; one from a newer MyDay too.
+    const tools = [...new Set(listOf(p.tools).filter((t): t is string => typeof t === 'string' && !!t && t.length <= 40))];
+    if (tools.length) item.tools = tools; else delete item.tools;
     seen.add(item.id);
     out.items.push(item);
   }
@@ -158,6 +162,7 @@ export function deleteProject(d: MyDayData, id: string): boolean {
   const i = d.projects.items.findIndex(p => p.id === id);
   if (i < 0) return false;
   filesLeaving(d, { kind: 'project', id }); // its files that nothing else lists go to Recently deleted
+  deleteProjectResearch(d, id);              // its questions, sources and findings go with it
   d.projects.items.splice(i, 1);
   for (const n of d.notes.items) if (n.projectId === id) delete n.projectId;
   for (const t of d.tasks.items) if (t.projectId === id) delete t.projectId;

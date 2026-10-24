@@ -12,7 +12,8 @@ import { BackLink, Eyebrow, Note, NotFound } from '../components/parts';
 import { Switch } from '../components/Switch';
 import { prettyDate, relDay, shortDate, todayKey } from '../data/dates';
 import { addNote, noteName } from '../data/notes';
-import { isBusiness, isCase, knownTemplate, setTemplate, TEMPLATES, type TemplateChoice } from '../data/businessModel';
+import { isBusiness, isCase, isResearchKind, knownTemplate, setTemplate, TEMPLATES, type TemplateChoice } from '../data/businessModel';
+import { hasResearch, setResearch } from '../data/research';
 import { worthALook } from '../data/projectDashboard';
 import { comingUp, deleteProject, editProject, setProjectPrivate, linkNote, nextStep, PROJECT_LIMITS, projectById, projectNotes, projectTasks, recently, setLeftOff, setNextStep, STATUS_LABEL, stillOpen, unlinkAppointment, whyNext } from '../data/projects';
 import { update } from '../data/storage';
@@ -27,6 +28,7 @@ import { Progression } from './parts';
 import { AddDeadline, EvidenceView, IssuesView, TimelineView } from './CaseViews';
 import { AtAGlance, WorthALook } from './AtAGlance';
 import { ModelView } from './ModelView';
+import { ResearchView } from './ResearchView';
 import { DecisionsView, MilestonesView } from './PlanViews';
 import { matchCount, searchProject, type SearchHit } from '../data/projectSearch';
 import { LearningCard } from './LearningCard';
@@ -39,7 +41,7 @@ import { tabHref } from './planText';
 // one next step beside Worth a look, then At a glance (each tool's summary, once), what it is and where it is on the
 // progression, and everything that belongs to it — tasks and notes on the left on wide screens; what's coming up
 // (including tasks still open after their date), what happened recently and its status on the right.
-export type ProjectTab = 'overview' | 'model' | 'milestones' | 'decisions' | 'timeline' | 'evidence' | 'issues';
+export type ProjectTab = 'overview' | 'model' | 'milestones' | 'decisions' | 'timeline' | 'evidence' | 'issues' | 'research';
 const CASE_TABS: ProjectTab[] = ['timeline', 'evidence', 'issues'];
 export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDayData; id: string; tab?: ProjectTab }) {
   useEffect(() => { restoreExploreEntry(id); }, [id]);
@@ -55,7 +57,7 @@ export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDay
   if (!p) return <><BackLink to="projects" label="Projects" /><NotFound title="This project isn't here" back="projects" label="Back to your projects" /></>;
   // The Model tab is a business idea's, and Timeline, Evidence and Issues a case's; anywhere else their address shows the
   // Overview.
-  const tab = (asked === 'model' && !isBusiness(p)) || (CASE_TABS.includes(asked) && !isCase(p)) ? 'overview' : asked;
+  const tab = (asked === 'model' && !isBusiness(p)) || (CASE_TABS.includes(asked) && !isCase(p)) || (asked === 'research' && !hasResearch(p)) ? 'overview' : asked;
   const hits = shown.trim() ? searchProject(data, p, shown) : [];
   return (
     <>
@@ -64,7 +66,7 @@ export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDay
       {query.trim() && <SearchResults p={p} hits={hits} query={query} onClear={clear} onPick={pick} />}
       {/* The tab stays as it was while results show (hidden), so nothing you were typing there is lost. */}
       <div hidden={!!query.trim()} data-s="project-tab">
-      {tab === 'timeline' ? <TimelineView p={p} /> : tab === 'evidence' ? <EvidenceView p={p} /> : tab === 'issues' ? <IssuesView p={p} />
+      {tab === 'research' ? <ResearchView data={data} p={p} /> : tab === 'timeline' ? <TimelineView p={p} /> : tab === 'evidence' ? <EvidenceView p={p} /> : tab === 'issues' ? <IssuesView p={p} />
         : tab === 'model' ? <ModelView data={data} p={p} /> : tab === 'milestones' ? <MilestonesView p={p} /> : tab === 'decisions' ? <DecisionsView p={p} /> : <>
       <LeftOffCard p={p} />
       <OverviewTop data={data} p={p} />
@@ -133,6 +135,7 @@ function ProjectTop({ p, tab, query, onQuery, status }: { p: Project; tab: Proje
           <a className={tabClass(tab === 'milestones')} href={tabHref(p, 'milestones')} role="tab" aria-selected={tab === 'milestones'} data-tab="milestones">Milestones</a>
           <a className={tabClass(tab === 'decisions')} href={tabHref(p, 'decisions')} role="tab" aria-selected={tab === 'decisions'} data-tab="decisions">Decisions</a>
         </>}
+        {hasResearch(p) && <a className={tabClass(tab === 'research')} href={tabHref(p, 'research')} role="tab" aria-selected={tab === 'research'} data-tab="research">Research</a>}
       </nav>
       {/* Enter just puts the keyboard away on a phone; results show as you type. */}
       <form role="search" className="mt-3" onSubmit={e => { e.preventDefault(); (document.activeElement as HTMLElement | null)?.blur(); }} data-s="project-search">
@@ -156,7 +159,7 @@ function ProjectHead({ p }: { p: Project }) {
     if (!update(d => (setTemplate(d, p.id, to) ? undefined : false))) return;
     // What the old kind had stays, out of sight, until you switch back.
     const kept = [p.template === 'business' && p.model && 'its one page', p.template === 'case' && p.case && 'its timeline, evidence and issues'].filter(Boolean)[0];
-    const now = to === 'business' ? 'Now a business idea — its one page is on the Model tab.' : to === 'case' ? 'Now a case — its timeline, evidence and issues each have a tab.' : 'Now a general project.';
+    const now = to === 'business' ? 'Now a business idea — its one page is on the Model tab.' : to === 'case' ? 'Now a case — its timeline, evidence and issues each have a tab.' : to === 'research' ? 'Now a research project — its questions, findings and sources are on the Research tab.' : 'Now a general project.';
     toast(kept ? `${now} ${kept.charAt(0).toUpperCase() + kept.slice(1)} ${kept.includes('and') ? 'are' : 'is'} kept, out of sight — switch back any time.` : now);
   }
   return (
@@ -173,10 +176,15 @@ function ProjectHead({ p }: { p: Project }) {
           <Field label="What would count as finished?" htmlFor="projectFinished"><CommitTextarea id="projectFinished" rows={2} key={p.finishedWhen ?? ''} defaultValue={p.finishedWhen ?? ''} maxLength={PROJECT_LIMITS.finishedWhen} onCommit={el => save({ finishedWhen: el.value })} /></Field>
           {knownTemplate(p) && (
             <Field label="Kind of project" htmlFor="projectKind">
-              <Select id="projectKind" className="!w-auto" value={isBusiness(p) ? 'business' : isCase(p) ? 'case' : 'general'} onChange={e => changeKind(e.target.value as TemplateChoice)}>
+              <Select id="projectKind" className="!w-auto" value={isBusiness(p) ? 'business' : isCase(p) ? 'case' : isResearchKind(p) ? 'research' : 'general'} onChange={e => changeKind(e.target.value as TemplateChoice)}>
                 {TEMPLATES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
               </Select>
             </Field>
+          )}
+          {/* Research as a tool on any kind of project (specs/projects-research.md); a research project always has it. */}
+          {!isResearchKind(p) && (
+            <Switch on={hasResearch(p)} data-action="project-research"
+              onChange={on => { if (update(d => (setResearch(d, p.id, on) ? undefined : false))) toast(on ? 'Research is on — it has its own tab.' : 'Research is off. Everything in it is kept; switch it on to see it again.'); }}>Research</Switch>
           )}
         </div>
       ) : p.summary ? (

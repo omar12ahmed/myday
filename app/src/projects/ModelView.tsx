@@ -16,9 +16,11 @@ import { update } from '../data/storage';
 import { isDone } from '../data/tasks';
 import { toast } from '../data/toast';
 import type { Assumption, AssumptionState, MyDayData, Project } from '../data/types';
+import { LinkButton } from '../components/parts';
 import { exploreHref, rememberExploreEntry } from '../explore/route';
+import { evidenceLine, findingsAbout, hasResearch, setResearch } from '../data/research';
 import { AiHelp } from './PlanViews';
-import { progressLine } from './planText';
+import { progressLine, tabHref } from './planText';
 
 // A business idea's one page (1.33.0): the Model tab; its summary is in At a glance. The rules are in
 // data/businessModel.ts; this is only how it looks and what the buttons do. Counts, never percentages or scores.
@@ -69,6 +71,10 @@ export function ModelView({ data, p }: { data: MyDayData; p: Project }) {
               <Button inline type="submit" variant="primary" data-action="model-add" disabled={!text.trim()}><Plus size={18} aria-hidden="true" /> Add</Button>
             </form>
           )}
+          {!hasResearch(p) && (
+            <p className="text-sm text-fg-2 mb-0 mt-3 flex flex-wrap items-center gap-x-3" data-s="model-research-offer">Collect what you find out in Research: questions, findings and where they came from.
+              <LinkButton className="text-[15px]" data-action="model-research-on" onClick={() => { if (update(d => (setResearch(d, p.id, true) ? undefined : false))) toast('Research is on — it has its own tab.'); }}>Turn on</LinkButton></p>
+          )}
         </section>
       </div>
       <a href={exploreHref(p.id)} onClick={() => rememberExploreEntry(p.id)} data-action="model-explore" className="inline-flex items-center gap-2 min-h-11 mt-4 text-primary font-semibold text-[15px] no-underline hover:underline underline-offset-4">See it as a story: Explore this idea <ArrowUpRight size={17} aria-hidden="true" /></a>
@@ -76,6 +82,12 @@ export function ModelView({ data, p }: { data: MyDayData; p: Project }) {
   );
 }
 
+// Research's findings about it (specs/projects-research.md): words and counts, which open on the Research tab. Whether
+// it looks true stays your choice.
+function EvidenceLine({ data, p, a }: { data: MyDayData; p: Project; a: Assumption }) {
+  const line = evidenceLine(findingsAbout(data, p.id, 'assumption', a.id));
+  return line ? <a href={tabHref(p, 'research')} className="inline-flex min-h-11 items-center text-[15px] text-primary font-semibold no-underline hover:underline underline-offset-4" data-s="as-evidence">{line}</a> : null;
+}
 const STATE_TOAST: Record<AssumptionState, string> = { open: 'Back to not checked yet.', 'looks-true': 'Looks true — good to know.', 'doesnt-hold': 'Doesn’t hold — worth knowing early. Your idea can change with it.' };
 // One belief: how it's turning out, its "Find out" task, and — while it's not checked yet — one tap to mark it. Changing
 // a marked one (or back to not checked yet) is in Edit, so each row stays short on a phone.
@@ -101,6 +113,7 @@ function AssumptionRow({ data, p, a }: { data: MyDayData; p: Project; a: Assumpt
     <li className="border-t border-outline first:border-t-0 py-3" data-s="assumption" data-id={a.id} data-state={a.state}>
       <p className="m-0 font-semibold break-words leading-snug">{a.text}</p>
       <p className="m-0 mt-0.5 text-sm text-fg-2" data-s="as-state">{a.state === 'looks-true' && <Check size={14} aria-hidden="true" className="inline -mt-0.5 mr-1 text-done" />}{STATE_LABEL[a.state]}{a.checkedOn ? ` · ${shortDate(a.checkedOn)}` : ''}</p>
+      {hasResearch(p) && <EvidenceLine data={data} p={p} a={a} />}
       {a.found && !editing && <p className="m-0 mt-1.5 text-[15px] text-fg-2 whitespace-pre-line break-words" data-s="as-found"><span className="font-semibold text-fg">What I found:</span> {a.found}</p>}
       {waiting && <p className="m-0 mt-2 text-[15px] rounded-tile bg-surface-2 border border-outline px-3 py-2" data-s="as-waiting">Its Find out task is done — what did you find?</p>}
       <div className="flex flex-wrap items-center gap-2 mt-2">

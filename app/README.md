@@ -952,6 +952,16 @@ is now, then goes through Import's own checks and question; signed in it replace
 it says so. The device's id, label and last result live in `myday.backup.v1` on that device only (not your data, not
 synced or exported). No saved-data, sync or database change. Never sent to AI.
 
+**Research (unreleased; `specs/projects-research.md`):** a project can switch on **Research** (About it → Edit; a
+"Research" kind has it from the start; a business idea's Model tab offers it). Its tab has **Questions** (open first;
+each gathers its findings as supports / contradicts / relates to, and **What you concluded**, then Mark answered or
+Reopen), **Findings** (what you found, from which sources, the day, its **Limits**, and what it bears on: a question,
+or one of a business idea's things that must be true) and **Sources** (one of the project's links, files or notes,
+nothing copied, or typed: a title, who or where it's from, its date). On the Model tab each thing that must be true
+shows "2 findings support it · 1 contradicts it"; whether it looks true stays your choice. Search this project finds
+them. Each item is one record (`research`, synced as the new kind `research`), saying which project it belongs to;
+deleting the project deletes them. Turning Research off keeps everything. Never sent to AI.
+
 **Delete everything (1.73.0; `specs/delete-everything.md`):** at the end of Your account, **Delete everything…**
 opens a page that says what goes (your MyDay on every device and in your account, what you deleted before, your files
 and your backups) and what stays (your sign-in), offers **Download a copy first**, and works once you type "delete

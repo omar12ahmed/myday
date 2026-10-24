@@ -7,6 +7,7 @@ import { cleanName, FILE_TYPES, looksLike, PREVIEWABLE, refusal, THUMB_MAX_BYTES
 import { addFileRecord, dropAdded, dueForPurge, forgetFiles, healFiles, LISTED_AREAS, markOrphans, newFileId, setFileState, unfinished, type Owner } from '../data/files';
 import { PORTFOLIO_FILES } from '../data/cybersecurity/types';
 import { clearFileCache, forgetCached, forgetCachedExcept } from '../data/fileCache';
+import { removeOrphanResearch } from '../data/research';
 import { getSnapshot, update } from '../data/storage';
 import type { FileRecord } from '../data/types';
 import { currentSession } from './client';
@@ -277,7 +278,8 @@ export async function tidyFiles(now = Date.now()) {
   if (!checkedThisLoad() || v.phase !== 'linked' || v.status !== 'synced' || getSnapshot().status.kind !== 'ok') return;
   tidying = true; lastTidy = now;
   try {
-    update(d => { const healed = healFiles(d), marked = markOrphans(d); return healed || marked ? undefined : false; });
+    // (Also research whose project is gone, deleted by a MyDay that didn't know Research: specs/projects-research.md.)
+    update(d => { const healed = healFiles(d), marked = markOrphans(d), research = removeOrphanResearch(d); return healed || marked || research ? undefined : false; });
     const check = getSnapshot().data.files.items.filter(f => LISTED_AREAS.includes(f.area) && !pending.has(f.id) && !asked.has(f.id) && (unfinished(f, now) || f.state === 'failed')).slice(0, 10);
     for (const f of check) {
       asked.add(f.id);

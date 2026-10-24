@@ -141,6 +141,7 @@ export interface MyDayData {
   // Attached files (data/files.ts): one record per file — the bytes are in R2 — referred to by projects and notes
   // (`fileIds`). Older MyDays keep this section unread. Never sent to AI.
   files: FilesData;
+  research: ResearchData;
 
   // Anything else (e.g. a section added by a newer MyDay) is kept as it was, never dropped.
   [other: string]: unknown;
@@ -193,6 +194,9 @@ export interface Project {
   // The files attached to it, in order (data/files.ts; absent → none; the previous release keeps them unread). Never
   // sent to AI.
   fileIds?: string[];
+  // Tools switched on beyond its kind's own (optional; absent = none): 'research' (specs/projects-research.md). A tool
+  // from a newer MyDay is kept as it is. Switching one off keeps its records.
+  tools?: string[];
 }
 export interface LeftOff { text: string; at: DateTime; [other: string]: unknown }
 // `kind` is a string so a kind from a newer MyDay is kept as it is; `title` is what it was called when linked, so a
@@ -212,6 +216,21 @@ export interface FileRecord {
   [other: string]: unknown;
 }
 export interface FilesData { items: FileRecord[]; [other: string]: unknown }
+// Research (specs/projects-research.md): a project's questions, sources and findings, one record each, saying which
+// project it belongs to. A type, kind or stance from a newer MyDay is kept as it is. Never sent to AI.
+interface ResearchBase { id: string; projectId: string; createdAt: DateTime; updatedAt: DateTime; [other: string]: unknown }
+// What you want to find out; `conclusion` is what you concluded, `answeredOn` the day you said so (null while open).
+export interface ResearchQuestion extends ResearchBase { type: 'question'; text: string; conclusion: string; answeredOn: DateKey | null }
+// Where something came from: a link, file or note of yours (`ref`; `title` is what it was called when added), or typed
+// (`ref` null: a title, who or where it's from, and its date).
+export interface ResearchSource extends ResearchBase { type: 'source'; ref: { kind: string; id: string } | null; title: string; from: string; on: DateKey | null }
+// What a finding says about a question, or (on a business idea) one of the things that must be true.
+export interface ResearchAbout { kind: string; id: string; stance: string; [other: string]: unknown } // kind 'question' | 'assumption'; stance 'supports' | 'contradicts' | 'relates'
+// What you found, from which sources, the day, and how far to trust it (`limits`).
+export interface ResearchFinding extends ResearchBase { type: 'finding'; text: string; limits: string; on: DateKey | null; sourceIds: string[]; about: ResearchAbout[] }
+export interface ResearchOther extends ResearchBase { type: string } // a type from a newer MyDay: kept as it is
+export type ResearchItem = ResearchQuestion | ResearchSource | ResearchFinding | ResearchOther;
+export interface ResearchData { items: ResearchItem[]; [other: string]: unknown }
 export interface ProjectResource { id: string; title: string; url: string; note?: string; addedOn: DateKey; [other: string]: unknown }
 export interface ProjectsData { items: Project[]; [other: string]: unknown }
 
