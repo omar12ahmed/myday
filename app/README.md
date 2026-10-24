@@ -793,7 +793,8 @@ a **Files** section under its text. **Add a file** (or drop one) keeps photos (J
 documents (Word, Excel, PowerPoint, text, CSV) up to 25 MB each; a photo gets a small preview. **Open** shows a
 photo or PDF in a new tab and saves anything else under its name. **Remove** takes it out of that project or note; if nothing
 else uses it, it waits in **Recently deleted** for 30 days (**Put back** or **Delete now**), then goes for good, and
-files of a deleted project or note wait on the Projects home. Each file is one record (`files`, synced as the new
+files of a deleted project or note wait on the Projects home. Each card shows your storage: "Your files: 1.2 GB used,
+8.8 GB left of 10 GB." Each file is one record (`files`, synced as the new
 kind `file`) that projects and notes list by id (`fileIds`); the bytes go straight to your private R2 bucket on
 five-minute links that the `files` Edge Function signs with the file's MD5 (and its length), and the function checks
 each stored file's type and size, by its first bytes too, before it counts as kept. Every 10 minutes, while the device

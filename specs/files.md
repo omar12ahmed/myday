@@ -32,6 +32,8 @@ recovery, kept privately in R2.
    - If something else still uses it, only this link goes.
 4. **Backups list your files** (names, types, sizes, where they belong); the files themselves stay in your private R2
    bucket. **Opening a file needs a connection.**
+5. **10 GB in all** for your files (after 1.68.0, which had 2 GB), and the Files card shows **what's used and what's
+   left**.
 
 Also, per the other decisions on record:
 - **Never sent to AI**, neither names nor contents.
@@ -53,6 +55,12 @@ Also, per the other decisions on record:
       nothing half-done is left.
     - Offline or signed out: "Adding and opening files needs a connection." / "… needs your account. Sign in first."
     - A project or note keeps at most 50 files.
+  - **Your storage:** under the Add button, a thin bar and "Your files: 1.2 GB used, 8.8 GB left of 10 GB." It's the
+    whole account's, so every card says the same; with files in Recently deleted it adds "Files in Recently deleted
+    count until they go." Shown once the function has answered (signed in and online), and asked again after adding
+    or deleting.
+  - A file that doesn't fit is refused with what's left: "There's 3 MB left of 10 GB, not enough for this file.
+    Remove some files to make room (files in Recently deleted count until they go)."
   - **Recently deleted (2):** a disclosure under the card, with each file's name, the day it goes for good, **Put
     back**, and **Delete now** (it asks first) for a file you want gone at once.
 - **Opening** asks the function for a link that works for a few minutes and only for that file. Nothing about files
@@ -99,7 +107,9 @@ Also, per the other decisions on record:
   - **Removing** goes to Recently deleted in every area by default. That's one behaviour across MyDay, and a mistake
     never loses a file. An area may choose otherwise (the hook stays). The portfolio's choice goes to the owner when
     it starts, with myday-86 recommending this default (24 October 2026).
-  - **Every account:** 2 GB in all (an adjustable default, well inside R2's free 10 GB).
+  - **Every account:** 10 GB in all (the owner's choice; 2 GB in 1.68.0). R2's free allowance is 10 GB of storage
+    for the whole Cloudflare account, backups and any public assets included; past it, R2 charges for each GB stored
+    a month (see Cloudflare's R2 pricing page).
 - **Actions:**
   Every action is a POST with a JSON body `{ action, … }` (at most 64 KB).
   - **`upload`** `{ fileId, area, name, size, md5 }`: checks the rules (the type comes from the name) and the
@@ -123,7 +133,8 @@ Also, per the other decisions on record:
     name. R2 doesn't document overriding response headers, so nothing is overridden.
   - **`delete`** `{ files: [{ fileId, area }] }`: removes those objects (and their previews), at most 100 at a time.
   - **`delete-all`**: every file of the account; for the true wipe.
-  - **`usage`**: the account's total and its limit, for "1.2 GB of 2 GB" (not shown yet).
+  - **`usage`**: the account's total (every file, Recently deleted included; previews aren't counted) and its limit,
+    for the Files card's "1.2 GB used, 8.8 GB left of 10 GB".
   - The account and area totals are read from a listing just before signing, so two uploads at the same moment can
     pass the same total: at most one file per upload over, which is fine for one owner.
   - Word, Excel and PowerPoint files are checked as zip files only, so a renamed zip passes. It's only ever

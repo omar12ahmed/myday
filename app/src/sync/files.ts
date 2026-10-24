@@ -101,10 +101,29 @@ const listeners = new Set<() => void>();
 export const subscribeFiles = (fn: () => void) => { listeners.add(fn); return () => { listeners.delete(fn); }; };
 let progressSnapshot: ReadonlyMap<string, Progress> = new Map();
 export const getProgress = () => progressSnapshot;
+const notify = () => { for (const fn of listeners) fn(); };
 function setProgress(id: string, p: Progress | null) {
   if (p) progress.set(id, p); else progress.delete(id);
   progressSnapshot = new Map(progress);
-  for (const fn of listeners) fn();
+  notify();
+}
+
+// ---------- How much is used ----------
+// The account's stored total (every file, Recently deleted included until they go) and its limit, from the files
+// function: asked when a Files card appears (at most once a minute) and again after adding or deleting. null until
+// known (signed out, offline, not set up).
+export interface Usage { bytes: number; limit: number }
+let usage: Usage | null = null, usageAt = 0, usageAsking: Promise<void> | null = null;
+export const getUsage = () => usage;
+export async function refreshUsage(force = false): Promise<void> {
+  if (usageAsking) { await usageAsking; if (!force) return; }
+  if (!force && usage && Date.now() - usageAt < 60_000) return;
+  usageAsking = (async () => {
+    const r = await call<Usage>('usage');
+    if (r.ok && Number.isFinite(r.data.bytes) && Number.isFinite(r.data.limit) && r.data.limit > 0) { usage = { bytes: r.data.bytes, limit: r.data.limit }; usageAt = Date.now(); notify(); }
+    else if (!r.ok && (r.why === 'signed-out' || r.why === 'not-configured') && usage) { usage = null; notify(); } // not this account's any more
+  })();
+  try { await usageAsking; } finally { usageAsking = null; }
 }
 export const WHY: Record<Exclude<FilesResult, 'ok'>, string> = {
   'not-configured': 'Files aren’t set up yet.',
@@ -126,11 +145,12 @@ export async function checkFile(area: string, file: File): Promise<string> {
   return looksLike(type, first) ? '' : refusal(area, '', 0) || 'That file isn’t what its name says.';
 }
 
-// Add files to a project or a note. Returns how many were kept; anything refused says why in its card.
+// Add files to a project or a note. Returns how many were kept; anything refused (here, or by the server: not what
+// its name says, or no room left) says why in its card.
 export async function addFiles(owner: Owner, area: string, files: File[]): Promise<{ kept: number; refused: string[] }> {
   const refused: string[] = [];
   let kept = 0;
-  for (const file of files) {
+  try { for (const file of files) {
     const why = await checkFile(area, file);
     if (why) { refused.push(`${cleanName(file.name)}: ${why}`); continue; }
     const bytes = new Uint8Array(await file.arrayBuffer());
@@ -138,21 +158,24 @@ export async function addFiles(owner: Owner, area: string, files: File[]): Promi
     const sha256 = hex(await crypto.subtle.digest('SHA-256', bytes));
     if (!update(d => (addFileRecord(d, owner, { id, name: cleanName(file.name), type, size: file.size, sha256, area }) ? undefined : false))) { refused.push(`${cleanName(file.name)}: a project or note keeps at most 50 files.`); continue; }
     pending.set(id, { owner, file, area });
-    if (await send(id, area, file, bytes)) kept++;
-  }
+    const r = await send(id, area, file, bytes);
+    if (r.kept) kept++; else if (r.refused) refused.push(`${cleanName(file.name)}: ${r.refused}`);
+  } } finally { void refreshUsage(true); }
   return { kept, refused };
 }
-// The upload steps for one recorded file. True when it's kept. When its bytes are already stored (Try again after the
-// server's check didn't answer), it goes straight to the check.
-async function send(id: string, area: string, file: File, bytes?: Uint8Array): Promise<boolean> {
+// The upload steps for one recorded file: kept, or not (with the server's reason when it refused the file, which then
+// isn't kept at all). When its bytes are already stored (Try again after the server's check didn't answer), it goes
+// straight to the check.
+type Sent = { kept: boolean; refused?: string };
+async function send(id: string, area: string, file: File, bytes?: Uint8Array): Promise<Sent> {
   const name = cleanName(file.name);
   setProgress(id, { name, state: 'adding', message: '' });
   const data = bytes ?? new Uint8Array(await file.arrayBuffer());
   const fail = (message: string, drop = false) => {
     if (drop) { const p = pending.get(id); update(d => { d.files.items = d.files.items.filter(f => f.id !== id); const place = p && (p.owner.kind === 'project' ? d.projects.items.find(x => x.id === p.owner.id) : d.notes.items.find(x => x.id === p.owner.id)); if (place?.fileIds) { place.fileIds = place.fileIds.filter(x => x !== id); if (!place.fileIds.length) delete place.fileIds; } }); pending.delete(id); }
     else update(d => (setFileState(d, id, 'failed') ? undefined : false));
-    setProgress(id, { name, state: 'failed', message });
-    return false;
+    setProgress(id, drop ? null : { name, state: 'failed', message });
+    return drop ? { kept: false, refused: message } : { kept: false };
   };
   const up = await call<{ url: string; headers: Record<string, string> }>('upload', { fileId: id, area, name, size: data.length, md5: base64(md5(data)) });
   if (!up.ok && up.error !== 'exists') return fail(up.message || WHY[up.why as Exclude<FilesResult, 'ok'>] || WHY.failed, up.why === 'not-allowed' || up.why === 'full');
@@ -169,15 +192,15 @@ async function send(id: string, area: string, file: File, bytes?: Uint8Array): P
       if (t.ok) await put(t.data.url, t.data.headers, new Blob([thumb as BlobPart], { type: 'image/webp' }));
     }
   }
-  return true;
+  return { kept: true };
 }
 // Try a failed file again (while this page still has it).
 export const canRetry = (id: string) => pending.has(id);
-export async function retry(id: string): Promise<boolean> {
+export async function retry(id: string): Promise<Sent> {
   const p = pending.get(id);
-  if (!p) return false;
+  if (!p) return { kept: false };
   update(d => { const f = d.files.items.find(x => x.id === id); if (!f || f.state === 'uploading') return false; f.state = 'uploading'; });
-  return send(id, p.area, p.file);
+  try { return await send(id, p.area, p.file); } finally { void refreshUsage(true); }
 }
 
 // ---------- Opening ----------
@@ -219,13 +242,14 @@ export async function openFile(f: FileRecord): Promise<FilesResult> {
 export async function deleteNow(files: FileRecord[]): Promise<FilesResult> {
   if (!files.length) return 'ok';
   const r = await call('delete', { files: files.map(f => ({ fileId: f.id, area: f.area })) });
-  if (r.ok) update(d => (forgetFiles(d, files.map(f => f.id)) ? undefined : false));
+  if (r.ok) { update(d => (forgetFiles(d, files.map(f => f.id)) ? undefined : false)); void refreshUsage(true); }
   return r.ok ? 'ok' : r.why;
 }
 // Every file of this account, from R2 (the true wipe of "delete everything" must call this too). Records stay until
 // the wipe clears the data.
 export async function deleteAllFiles(): Promise<FilesResult> {
   const r = await call('delete-all');
+  if (r.ok) void refreshUsage(true);
   return r.ok ? 'ok' : r.why;
 }
 // The tidy, every 10 minutes while this device is fully in step with your account (nothing waiting to go, no conflict,

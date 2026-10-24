@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useSyncExternalStore, type DragEvent } from 'react';
-import { FILE_TYPES, PREVIEWABLE } from '../../../supabase/functions/_shared/files/rules';
+import { amountLabel, FILE_TYPES, PREVIEWABLE } from '../../../supabase/functions/_shared/files/rules';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { useConfirm } from '../components/confirm';
@@ -9,7 +9,7 @@ import { filesOf, goneOn, putBack, recentlyDeleted, removeFile, sizeLabel, unfin
 import { update } from '../data/storage';
 import { toast } from '../data/toast';
 import type { FileRecord, MyDayData } from '../data/types';
-import { addFiles, canRetry, deleteNow, getProgress, linkTo, openFile, retry, subscribeFiles, WHY, type FilesResult } from '../sync/files';
+import { addFiles, canRetry, deleteNow, getProgress, getUsage, linkTo, openFile, refreshUsage, retry, subscribeFiles, WHY, type FilesResult } from '../sync/files';
 
 // "Files" (specs/files.md): the files attached to a project (a card on its Overview) or a note (a section in its
 // editor). Add (or drop) photos, PDFs and documents; Open; Remove (to Recently deleted for 30 days, unless something else
@@ -50,7 +50,7 @@ function FileRow({ f, owner }: { f: FileRecord; owner: Owner }) {
         <span className={`block text-sm ${f.state === 'failed' ? 'text-on-warn-c' : 'text-fg-3'}`} data-s="file-status">{status}</span>
         <div className="flex flex-wrap gap-x-5">
           {f.state === 'kept' && <LinkButton className="text-[15px]" data-action="file-open" aria-label={`Open “${f.name}”`} onClick={open}>Open</LinkButton>}
-          {f.state === 'failed' && canRetry(f.id) && <LinkButton className="text-[15px]" data-action="file-retry" onClick={() => { void retry(f.id); }}>Try again</LinkButton>}
+          {f.state === 'failed' && canRetry(f.id) && <LinkButton className="text-[15px]" data-action="file-retry" onClick={() => { void retry(f.id).then(r => { if (r.refused) toast(`${f.name}: ${r.refused}`); }); }}>Try again</LinkButton>}
           {(f.state !== 'uploading' || progress?.state !== 'adding') && <LinkButton className="text-[15px]" data-action="file-remove" aria-label={`Remove “${f.name}”`} onClick={remove}>Remove</LinkButton>}
         </div>
       </div>
@@ -84,6 +84,21 @@ export function DeletedFiles({ list, putBackable = true }: { list: FileRecord[];
   );
 }
 
+// How much of your storage is used and what's left (every file of the account, so the same on every card). Shown
+// once the files function has said (signed in, online); files in Recently deleted are still stored until they go.
+function StorageLine({ anyDeleted }: { anyDeleted: boolean }) {
+  const u = useSyncExternalStore(subscribeFiles, getUsage);
+  useEffect(() => { void refreshUsage(); }, []);
+  if (!u) return null;
+  const left = Math.max(0, u.limit - u.bytes), pct = Math.min(100, (u.bytes / u.limit) * 100);
+  return (
+    <div className="mt-3" data-s="files-storage">
+      <div className="h-2 rounded-full bg-track overflow-hidden" aria-hidden="true"><span className="block h-full bg-primary rounded-full" style={{ width: `${u.bytes ? Math.max(1, pct) : 0}%` }} /></div>
+      <p className="m-0 mt-1 text-sm text-fg-3">Your files: {amountLabel(u.bytes)} used, {amountLabel(left)} left of {amountLabel(u.limit)}.{anyDeleted ? ' Files in Recently deleted count until they go.' : ''}</p>
+    </div>
+  );
+}
+
 export function FilesCard({ data, owner, area }: { data: MyDayData; owner: Owner; area: 'project' | 'note' }) {
   const files = filesOf(data, owner), deleted = recentlyDeleted(data, owner);
   const [refused, setRefused] = useState<string[]>([]), [busy, setBusy] = useState(false), [over, setOver] = useState(false);
@@ -105,6 +120,7 @@ export function FilesCard({ data, owner, area }: { data: MyDayData; owner: Owner
     {refused.length > 0 && <div className="mt-2 text-[15px] bg-warn-c text-on-warn-c rounded-tile px-3 py-2" role="alert" data-s="file-refused">{refused.map((r, i) => <p key={i} className="m-0">{r}</p>)}</div>}
     <input ref={input} type="file" multiple accept={ACCEPT} hidden onChange={e => { const l = Array.from(e.target.files ?? []); e.target.value = ''; void add(l); }} />
     <Button inline className="mt-3" data-action="file-add" disabled={busy} onClick={() => input.current?.click()}>{busy ? 'Adding…' : 'Add a file'}</Button>
+    <StorageLine anyDeleted={recentlyDeleted(data).length > 0} />
     <DeletedFiles list={deleted} />
   </>);
   return (

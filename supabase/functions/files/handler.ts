@@ -12,7 +12,7 @@
 //   delete-all                                 → every file of the account (for the true wipe)
 //   usage                                      → the account's total, against its limit
 // The logs hold the action, the outcome and the time only: never names, keys, ids or links.
-import { ACCOUNT_TOTAL_BYTES, AREA_RULES, disposition, isArea, looksLike, PREVIEWABLE, refusal, THUMB_MAX_BYTES, typeOfName } from '../_shared/files/rules.ts';
+import { ACCOUNT_TOTAL_BYTES, amountLabel, AREA_RULES, disposition, isArea, looksLike, PREVIEWABLE, refusal, THUMB_MAX_BYTES, typeOfName } from '../_shared/files/rules.ts';
 
 export interface StoredObject { key: string; size: number }
 export interface Store {
@@ -87,7 +87,10 @@ export async function handle(req: Request, d: Deps): Promise<Response> {
         if (why) return done(json(422, { error: 'not-allowed', message: why }));
         const objs = await all(), rule = AREA_RULES[body.area as string];
         if (objs.some(o => o.key === key)) return done(json(409, { error: 'exists' }));
-        if (sizeOf(objs) + size > ACCOUNT_TOTAL_BYTES || (rule.totalBytes && sizeOf(objs, body.area as string) + size > rule.totalBytes)) return done(json(422, { error: 'full', message: 'Your files are full. Remove some to make room.' }));
+        // Too big for what's left: say how much is left (files in Recently deleted are still stored, so they count).
+        const roomIn = (total: number, used: number) => (used + size > total ? `There’s ${amountLabel(Math.max(0, total - used))} left of ${amountLabel(total)}, not enough for this file. Remove some files to make room (files in Recently deleted count until they go).` : '');
+        const full = roomIn(ACCOUNT_TOTAL_BYTES, sizeOf(objs)) || (rule.totalBytes ? roomIn(rule.totalBytes, sizeOf(objs, body.area as string)) : '');
+        if (full) return done(json(422, { error: 'full', message: full }));
         const type = typeOfName(name)!;
         const headers = { 'Content-Length': String(size), 'Content-MD5': md5, 'Content-Type': type, 'Content-Disposition': disposition(name, type) };
         const url = await store.sign('PUT', key, headers, LINK_SECONDS);

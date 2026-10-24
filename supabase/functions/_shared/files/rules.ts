@@ -4,7 +4,8 @@
 // Never SVG, HTML or anything that runs.
 
 export const MB = 1024 * 1024;
-export const ACCOUNT_TOTAL_BYTES = 2 * 1024 * MB;   // every file of an account together (an adjustable default)
+export const GB = 1024 * MB;
+export const ACCOUNT_TOTAL_BYTES = 10 * GB;         // every file of an account together (the owner's choice, 24 Oct 2026)
 export const THUMB_MAX_BYTES = 200 * 1024;          // a photo's small preview
 export const KEEP_DELETED_DAYS = 30;                // Recently deleted, then gone for good
 
@@ -59,6 +60,12 @@ export function cleanName(name: string): string {
 export function disposition(name: string, type: string): string {
   const plain = cleanName(name).replace(/[^\x20-\x7e]/g, '_').replace(/["\\]/g, '_');
   return `${FILE_TYPES[type]?.inline ? 'inline' : 'attachment'}; filename="${plain}"; filename*=UTF-8''${encodeURIComponent(cleanName(name)).replace(/['()*!]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase())}`;
+}
+// An amount of storage in words: "640 KB", "340 MB", "1.2 GB", "10 GB".
+export function amountLabel(n: number): string {
+  if (n >= 1000 * MB) { const g = Math.round((n / GB) * 10) / 10; return `${g % 1 ? g.toFixed(1) : g} GB`; }
+  if (n >= MB || n === 0) return `${Math.round(n / MB)} MB`;
+  return `${Math.max(1, Math.round(n / 1024))} KB`;
 }
 // Why a file can't be kept in this area, or '' when it can.
 export function refusal(area: string, name: string, size: number): string {
