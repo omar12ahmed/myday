@@ -21,6 +21,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   fs.writeFileSync(path.join(dir, 'kit.ts'), [
     `export * from ${src('projectRecords')};`, `export * from ${src('projectPlan')};`, `export * from ${src('businessModel')};`, `export * from ${src('caseFile')};`, `export { normalizeProjects, deleteProject, recently, addProject, setProjectPrivate, editProject, setLeftOff, privateProjectIds, comingUp, stillOpen } from ${src('projects')};`,
     `export { freshState, normalize } from ${src('normalize')};`, `export { shift, shortDate } from ${src('dates')};`, `export * from ${src('projectDashboard')};`, `export * from ${src('weekReview')};`, `export { stepsForToday, nextStep } from ${src('projects')};`,
+    `export { searchProject, fold, SEARCH_KIND_LABEL } from ${src('projectSearch')};`,
     `export { normalizeTasks, setWaiting, stopWaiting, isWaiting, chaseTask, chaseWaiting, isStuck, setTaskDone } from ${src('tasks')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
@@ -1333,6 +1334,123 @@ const clone = o => JSON.parse(JSON.stringify(o));
         check(`${ref}: a task record edited (title and date) and cleaned still has the wait unchanged`, !!cleaned2 && cleaned2.title === 'Edited elsewhere' && same(cleaned2, 'cleaned edit'), wt(cleaned2));
       } finally { fs.rmSync(odir, { recursive: true, force: true }); }
     }
+  }
+
+
+  console.log('\n[5b] Searching one project (specs/projects-search.md)');
+  {
+    const tk = (id, title, pj, x = {}) => ({ id, title, listId: '', category: 'Admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-09-20T09:00', postponed: 0, blockers: [], letGoOn: null, projectId: pj, ...x });
+    const nt = (id, title, text, pj, at = '2026-10-02T09:00') => ({ id, categoryId: '', title, text, pinned: false, createdAt: at, updatedAt: at, projectId: pj });
+    const long = 'We talked for a long while about many other things before the electrician mentioned the old fuse board and then we moved on to something quite different at the end of the afternoon.';
+    const S = base('pjS', {
+      title: 'Garden shed rebuild', summary: 'A dry shed for the bikes', outcome: 'A shed that keeps the rain out', finishedWhen: 'The door shuts properly', leftOff: { text: 'Measured the base slab', at: OLD },
+      milestones: [{ id: 'msS', title: 'Foundations poured', aim: null, reachedOn: null, createdAt: OLD }],
+      decisions: [{ id: 'dcS', question: 'Which cladding?', options: [{ id: 'oS1', text: 'Larch boards', pros: ['Lasts for decades'], cons: ['Costs more upfront'] }, { id: 'oS2', text: 'Felt panels', pros: [], cons: [] }], chosen: 'oS1', why: 'Neighbour recommended it', decidedOn: '2026-10-05', createdAt: OLD, updatedAt: OLD,
+        history: [{ id: 'dh1', text: 'Corrugated sheets', on: '2026-09-20', why: 'Too noisy in the rain' }] }],
+    });
+    const mk = () => {
+      const w = world(S, base('pjT', { title: 'Other project', summary: 'Mentions larch and armchair too', milestones: [{ id: 'msT', title: 'Foundations elsewhere', aim: null, reachedOn: null, createdAt: OLD }] }));
+      w.tasks.items = [
+        tk('tkDone', 'Order the armchair cushions', 'pjS', { done: true, doneOn: '2026-10-03' }),
+        tk('tkGone', 'Armchair idea for shed', 'pjS', { letGoOn: '2026-10-04' }),
+        tk('tkOpen', 'Buy bolts', 'pjS', { notes: 'Check the armchair is not in the way' }),
+        tk('tkWait', 'Ring the supplier', 'pjS', { waiting: { on: 'Priya at the timber yard', since: '2026-10-01', until: null } }),
+        tk('tkOther', 'Armchair for the other project', 'pjT'),
+      ];
+      w.notes.items = [nt('ntS', 'Electrician', long, 'pjS'), nt('ntT', 'Armchair note elsewhere', 'larch', 'pjT'), nt('ntLoose', 'Loose armchair', 'no project', undefined)];
+      return w;
+    };
+    let w = mk();
+    const find = (q, pid = 'pjS') => K.searchProject(w, w.projects.items.find(x => x.id === pid), q);
+    const kinds = hs => hs.map(h => h.kind);
+
+    const about = find('slab')[0], aboutAll = ['dry shed', 'rain out', 'door shuts', 'slab'].map(q => find(q).map(h => h.kind).join());
+    check('a word in the project\'s own summary, outcome, finished-when and left-off text finds the project as "about", opening its Overview', eq(aboutAll, ['about', 'about', 'about', 'about']) && about.href === '#projects/p/pjS' && about.id === 'pjS', [aboutAll, about]);
+    const tkHit = find('bolts')[0];
+    check('a task is found by its title, opening its own page', eq(kinds(find('bolts')), ['task']) && tkHit.href === '#today/tasks/tkOpen' && tkHit.id === 'tkOpen', tkHit);
+    check('a task is found by its notes, and by who it is waiting on', eq(find('in the way').map(h => h.id), ['tkOpen']) && eq(find('timber yard').map(h => h.id), ['tkWait']), [find('in the way'), find('timber yard')]);
+    const nHit = find('electrician')[0];
+    check('a note is found by its title and by its text, opening the note', eq(find('electrician').map(h => h.kind), ['note']) && nHit.href === '#projects/notes/ntS' && eq(find('fuse board').map(h => h.id), ['ntS']), [nHit, find('fuse board')]);
+    const mHit = find('foundations')[0];
+    check('a milestone is found, opening the Milestones tab', eq(kinds(find('foundations')), ['milestone']) && mHit.href === '#projects/p/pjS/milestones' && mHit.id === 'msS', mHit);
+    const dH = ['cladding', 'felt', 'decades', 'upfront', 'neighbour', 'corrugated', 'noisy'].map(q => find(q).map(h => h.kind + ':' + h.href).join());
+    check('a decision is found by its question, options, pros, cons, reasons and previous choices (text and why), opening the Decisions tab', dH.every(x => x === 'decision:#projects/p/pjS/decisions'), dH);
+
+    console.log('  Business idea and case');
+    check('a general project does not search a business model it keeps out of sight', (() => {
+      const g = base('pjG', { model: { problem: 'zebra stripes', who: '', how: '', assumptions: [{ id: 'asG', text: 'Zebra buyers exist', state: 'open', found: '', checkedOn: null, taskId: null, createdAt: OLD }] } });
+      return eq(K.searchProject(world(g), g, 'zebra'), []);
+    })());
+    check('a general project does not search a case it keeps out of sight', (() => {
+      const g = base('pjG', { case: { timeline: [{ id: 'tlG', date: '2026-10-01', about: false, title: 'Hidden event', details: '', source: 'mine', evidenceIds: [], issueIds: [], createdAt: OLD }], evidence: [], issues: [] } });
+      return eq(K.searchProject(world(g), g, 'hidden'), []);
+    })());
+    const B = base('pjB2', { template: 'business', title: 'Tea stall', model: { problem: 'Commuters want good tea', who: 'Station queues', how: 'A cart', assumptions: [{ id: 'asB', text: 'People pay two pounds', state: 'looks-true', found: 'Six of ten said yes', checkedOn: '2026-10-02', taskId: null, createdAt: OLD }] } });
+    const wb = world(B), fb = q => K.searchProject(wb, B, q);
+    check('a business idea\'s answers are found as one "model" hit, opening the Model tab', eq(fb('commuters').map(h => [h.kind, h.id, h.href]), [['model', 'answers', '#projects/p/pjB2/model']]), fb('commuters'));
+    check('…and an assumption is found by its text and by what was found', eq(fb('two pounds').map(h => [h.kind, h.id]), [['model', 'asB']]) && eq(fb('six of ten').map(h => h.id), ['asB']), [fb('two pounds'), fb('six of ten')]);
+    B.template = 'general';
+    check('switching it back to general keeps the one page but stops searching it', eq(fb('commuters'), []) && eq(fb('six of ten'), []) && !!B.model);
+    B.template = 'business';
+    const C = base('pjC', { template: 'case', title: 'Overtime dispute', case: {
+      timeline: [{ id: 'tlC', date: '2026-10-01', about: false, title: 'Asked about pay', details: 'Spoke to the manager by the lift', source: 'mine', evidenceIds: [], issueIds: [], createdAt: OLD }],
+      evidence: [{ id: 'evC', title: 'Payslip', kind: 'document', date: null, where: 'Blue folder', status: 'have', notes: 'Shows no overtime line', issueIds: [], createdAt: OLD }],
+      issues: [{ id: 'isC', title: 'Unpaid hours', status: 'considering', notes: 'Roughly six hours a week', createdAt: OLD }] } });
+    const wc = world(C), fc = q => K.searchProject(wc, C, q);
+    check('a case\'s timeline is found by title and details, opening the Timeline tab', eq(fc('asked about').map(h => [h.kind, h.href]), [['timeline', '#projects/p/pjC/timeline']]) && eq(fc('lift').map(h => h.id), ['tlC']), fc('asked about'));
+    check('…its evidence by title, where and notes, opening the Evidence tab', eq(fc('payslip').map(h => h.href), ['#projects/p/pjC/evidence']) && eq(fc('blue folder').map(h => h.id), ['evC']) && eq(fc('overtime line').map(h => h.id), ['evC']), fc('payslip'));
+    check('…and its issues by title and notes, opening the Issues tab', eq(fc('unpaid').map(h => h.href), ['#projects/p/pjC/issues']) && eq(fc('six hours').map(h => h.id), ['isC']), fc('unpaid'));
+    C.template = 'general';
+    check('a case switched back to general keeps its records but stops searching them', eq(fc('payslip'), []) && eq(fc('lift'), []) && !!C.case);
+
+    console.log('  Matching');
+    check('every word has to match, in any order', find('armchair cushions').length === 1 && find('cushions armchair').length === 1 && eq(find('armchair cushions').map(h => h.id), ['tkDone']), find('cushions armchair'));
+    check('…and one word that is missing finds nothing', eq(find('armchair giraffe'), []) && eq(find('bolts giraffe'), []));
+    check('words may be found in different fields of the same thing (title and notes)', eq(find('bolts armchair').map(h => h.id), ['tkOpen']), find('bolts armchair'));
+    const cafe = world(base('pjF', { title: 'Opening', summary: '' })); cafe.tasks.items = [tk('tkF1', 'Visit the Café on the corner', 'pjF'), tk('tkF2', 'ask the café about beans', 'pjF'), tk('tkF3', 'Naïve résumé for Zoë', 'pjF')];
+    const ff = q => K.searchProject(cafe, cafe.projects.items[0], q).map(h => h.id);
+    check('"cafe" finds "Café" and "café"', eq(ff('cafe'), ['tkF1', 'tkF2']), ff('cafe'));
+    check('"CAFÉ" finds "Café" and "café", and capitals do not matter', eq(ff('CAFÉ'), ['tkF1', 'tkF2']) && eq(ff('cAfÉ'), ['tkF1', 'tkF2']), ff('CAFÉ'));
+    check('accents in the query are ignored against plain text, and several accents work', eq(ff('naive resume zoe'), ['tkF3']) && eq(ff('Zoë'), ['tkF3']), ff('naive resume zoe'));
+    check('fold takes off capitals and accents', K.fold('Café ÉCOLE Zoë') === 'cafe ecole zoe', K.fold('Café ÉCOLE Zoë'));
+
+    console.log('  Excerpts');
+    const ex = find('fuse board')[0];
+    check('a match in longer text shows an excerpt around it, shortened with an ellipsis, on one line', ex.excerpt.includes('fuse board') && ex.excerpt.startsWith('…') && ex.excerpt.endsWith('…') && ex.excerpt.length < long.length && !/\n/.test(ex.excerpt), ex.excerpt);
+    check('a match in a note\'s text shows the excerpt but the title stays as the title', ex.title === 'Electrician' && ex.excerpt !== '');
+    check('a match in the title alone has no excerpt', find('electrician').length === 1 && find('electrician')[0].excerpt === '' && find('bolts')[0].excerpt === '' && find('foundations')[0].excerpt === '');
+    check('a short matching text is shown whole, with no ellipsis', find('in the way')[0].excerpt === 'Check the armchair is not in the way', find('in the way')[0].excerpt);
+    check('text that is already in the title is not repeated when the notes also match', (() => { const h = find('armchair').find(x => x.id === 'tkOpen'); return h.excerpt === 'Check the armchair is not in the way'; })());
+    check('a match across title and notes (words in both) shows the notes as the excerpt', find('bolts armchair')[0].excerpt === 'Check the armchair is not in the way');
+
+    console.log('  Done and let-go tasks, and the fixed order');
+    const ar = find('armchair');
+    check('open tasks come before done and let-go ones, and those are marked', eq(ar.filter(h => h.kind === 'task').map(h => [h.id, h.done ?? null]), [['tkOpen', null], ['tkDone', 'done'], ['tkGone', 'let go']]), ar);
+    check('an open task has no "done" mark at all', !('done' in ar.find(h => h.id === 'tkOpen')));
+    check('a task done on today\'s plan (not on the task) is also marked done', (() => {
+      const d2 = mk(); d2.days['2026-10-10'] = { energy: 3, rest: false, builtAt: '', checkedIn: false, tasks: [{ uid: 'u9', taskId: 'tkOpen', category: 'admin', title: 'Buy bolts', minutes: 10, baseMinutes: 10, done: true, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null }] };
+      d2.tasks.items.find(t => t.id === 'tkOpen').plannedOn = '2026-10-10'; d2.tasks.items.find(t => t.id === 'tkOpen').planUid = 'u9';
+      return K.searchProject(d2, d2.projects.items[0], 'bolts')[0].done === 'done';
+    })());
+    check('the labels say "About it", "Task", "Note", "Milestone", "Decision", "Your one page", "Timeline", "Evidence" and "Issue"', eq(Object.values(K.SEARCH_KIND_LABEL), ['About it', 'Task', 'Note', 'Milestone', 'Decision', 'Your one page', 'Timeline', 'Evidence', 'Issue']), K.SEARCH_KIND_LABEL);
+    const everything = world(base('pjE', { template: 'case', title: 'Zed everything', summary: 'zed', milestones: [{ id: 'm1', title: 'zed ms', aim: null, reachedOn: null, createdAt: OLD }], decisions: [{ id: 'd1', question: 'zed?', options: [], chosen: null, why: '', decidedOn: null, createdAt: OLD, updatedAt: OLD }],
+      case: { timeline: [{ id: 't1', date: '2026-10-01', about: false, title: 'zed t', details: '', source: 'mine', evidenceIds: [], issueIds: [], createdAt: OLD }], evidence: [{ id: 'e1', title: 'zed e', kind: 'document', date: null, where: '', status: 'have', notes: '', issueIds: [], createdAt: OLD }], issues: [{ id: 'i1', title: 'zed i', status: 'considering', notes: '', createdAt: OLD }] } }));
+    everything.tasks.items = [tk('tz', 'zed task', 'pjE')]; everything.notes.items = [nt('nz', 'zed note', '', 'pjE')];
+    const eh = K.searchProject(everything, everything.projects.items[0], 'zed');
+    check('results come in the fixed order: about, task, note, milestone, decision, timeline, evidence, issue', eq(kinds(eh), ['about', 'task', 'note', 'milestone', 'decision', 'timeline', 'evidence', 'issue']), kinds(eh));
+    const eb = base('pjE2', { template: 'business', title: 'zed biz', model: { problem: 'zed', who: '', how: '', assumptions: [{ id: 'a1', text: 'zed a', state: 'open', found: '', checkedOn: null, taskId: null, createdAt: OLD }] }, decisions: [{ id: 'd1', question: 'zed?', options: [], chosen: null, why: '', decidedOn: null, createdAt: OLD, updatedAt: OLD }] });
+    check('a business idea\'s one page comes after its decisions', eq(kinds(K.searchProject(world(eb), eb, 'zed')), ['about', 'decision', 'model', 'model']), kinds(K.searchProject(world(eb), eb, 'zed')));
+
+    console.log('  Empty queries, other projects, and nothing changed');
+    check('an empty query finds nothing', eq(find(''), []));
+    check('a query of only spaces, tabs or new lines finds nothing', eq(find('   '), []) && eq(find('\t \n'), []));
+    check('spaces around and between words do not matter', eq(find('  armchair    cushions  ').map(h => h.id), ['tkDone']));
+    check('a word that is nowhere finds nothing', eq(find('zzzz'), []));
+    check('another project\'s tasks, notes, milestones and words never appear', find('armchair').every(h => !['tkOther', 'ntT', 'ntLoose', 'msT'].includes(h.id)) && eq(find('elsewhere'), []) && eq(find('larch').map(h => h.kind), ['decision']), [find('armchair'), find('larch')]);
+    check('searching the other project finds only its own', eq(find('armchair', 'pjT').map(h => h.id), ['pjT', 'tkOther', 'ntT']) && eq(find('foundations', 'pjT').map(h => h.id), ['msT']), find('armchair', 'pjT'));
+    const frozen = JSON.stringify(w);
+    for (const q of ['armchair', 'fuse board', 'zzz', '']) find(q);
+    check('searching changes nothing in the data (byte-identical before and after)', JSON.stringify(w) === frozen);
   }
 
   fs.rmSync(dir, { recursive: true, force: true });

@@ -39,9 +39,9 @@ export type ProjectTab = 'overview' | 'model' | 'milestones' | 'decisions' | 'ti
 const CASE_TABS: ProjectTab[] = ['timeline', 'evidence', 'issues'];
 export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDayData; id: string; tab?: ProjectTab }) {
   useEffect(() => { restoreExploreEntry(id); }, [id]);
-  // "Search this project" (specs/projects-search.md): only on this page, never saved; another project starts empty.
-  const [search, setSearch] = useState({ id, q: '' });
-  const query = search.id === id ? search.q : '', setQuery = (q: string) => setSearch({ id, q });
+  // "Search this project" (specs/projects-search.md): only on this page, never saved. ProjectsScreen keys this view by
+  // the project, so another project (or coming back to this one) starts with an empty search.
+  const [query, setQuery] = useState('');
   const clear = () => { setQuery(''); requestAnimationFrame(() => document.getElementById('projectSearch')?.focus()); };
   const p = projectById(data, id);
   if (!p) return <><BackLink to="projects" label="Projects" /><NotFound title="This project isn't here" back="projects" label="Back to your projects" /></>;
