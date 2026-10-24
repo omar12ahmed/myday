@@ -36,6 +36,7 @@ import { AR_MAX, editWord, keepWord, keptCardId, keptWord, MEANING_MAX, NOTE_MAX
 import { KeepAWord } from './KeepAWord';
 import { starterFor } from './starter';
 import { ARABIC_TINY, toStep } from '../journey/dom';
+import { takeStep } from '../journey/pending';
 import { useJourney } from '../journey/useJourney';
 import texts from './data/texts.json';
 import passageReadings from '../../../../content/teaching/pronunciation/passages.json';
@@ -246,7 +247,8 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
   // A just-finished session keeps its steps while its card shows.
   const length: Variant = session ? session.variant : finished ? finished.variant : l && !l.variants.some(v => v.mode === chosen) ? 'standard' : chosen;
   const shown = journeyFor(data, id, length, !!session || !!finished);
-  const { step, setStep, current, remember, jump: jumpTo, hush } = useJourney({ prefix: 'ar', shown, loaded, sessionId: () => openSession(getSnapshot().data, id)?.id ?? null });
+  const [want] = useState(() => takeStep(id)); // a step a link asked for (Progress's "Do the Try")
+  const { step, setStep, current, remember, jump: jumpTo, hush } = useJourney({ prefix: 'ar', shown, loaded, want, sessionId: () => openSession(getSnapshot().data, id)?.id ?? null });
   const [checking, setChecking] = useState(() => step === 'check'); // you went to Check (or reopened there): the explanation folds away
   const [explain, setExplain] = useState(false); // …until you ask for it again
   const jump = (s: JourneyStep) => { setChecking(s === 'check'); jumpTo(s); };

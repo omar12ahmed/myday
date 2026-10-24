@@ -2,14 +2,15 @@
 // facts from the catalogue, your records (data/arabic/lessons.ts) and the shared rules (data/study/mastery.ts).
 // Worked out on the device each time; nothing here is saved and nothing is sent.
 import { todayKey } from '../../data/dates';
-import { checkIds, lessonRecord, stateOf } from '../../data/arabic/lessons';
+import { checkIds, evidence, lessonRecord, stateOf } from '../../data/arabic/lessons';
+import { practiceOf } from '../../data/arabic/practice';
 import type { Variant } from '../../data/arabic/types';
-import { isDone, lengthFor, nextStep, stepReason, stepsFor, type JourneyStep, type LessonState, type Step } from '../../data/study/mastery';
+import { isDone, lengthFor, nextStep, onOwn, stepReason, stepsFor, type JourneyStep, type LessonState, type Step } from '../../data/study/mastery';
 import { dueIds } from '../../data/study/queue';
 import { DAILY_ENOUGH, reviewedOn } from '../../data/study/revision';
 import { suggestLength } from '../../data/study/sessions';
 import type { DateKey, MyDayData } from '../../data/types';
-import { corePath, lessonIndex, moduleList, paths, skills } from './catalogue';
+import { corePath, lessonIndex, milestones, moduleList, modules, paths, skills } from './catalogue';
 
 export const checksOf = (lessonId: string) => checkIds(lessonId, lessonIndex[lessonId]?.checks ?? 0);
 // The lessons a lesson builds on directly: the ones teaching its content skills (never a checkpoint).
@@ -77,4 +78,40 @@ export function moduleProgress(d: MyDayData, lessonIds: string[]) {
   const touched = states.some(s => s !== 'new') || d.arabic.attempts.some(a => lessonIds.includes(a.lessonId));
   const place: Place = !touched ? 'unexplored' : core.length > 0 && core.every(id => isDone(arabicState(d, id))) ? 'visited' : 'exploring';
   return { place, ready, needs };
+}
+
+// ---------- Progress (specs/study-home-and-lessons.md §11) ----------
+// Where you stand on your path, in words and counts: what's done, what's on your own, what needs revision and why
+// (your flag or a check that slipped, how many checks you've recalled on your own, whether you've done its Try), and
+// the next milestone (the course's levels, each ending in a consolidation module). Never a percentage, never a streak.
+export interface NeedsRevision { lessonId: string; flag: string | null; sessions: number; own: number; checks: number; tried: boolean; next: 'try' | 'check' }
+export interface ArabicProgress {
+  started: boolean; path: number; done: number; holding: number; ownChecks: number; needs: NeedsRevision[];
+  milestone: { stage: string; toGo: number; last: string } | null; // null: every milestone on your path is behind you
+}
+export function arabicProgress(d: MyDayData): ArabicProgress {
+  const path = pathLessons(d.arabic.pathId), state = new Map(path.map(id => [id, arabicState(d, id)]));
+  const needs: NeedsRevision[] = [];
+  let ownChecks = 0;
+  for (const id of path) {
+    const checks = checksOf(id), ev = evidence(d, id, checks), own = checks.filter(c => (ev.answers[c] ?? []).some(onOwn)).length;
+    ownChecks += own;
+    if (state.get(id) !== 'needs-revision') continue;
+    const rec = lessonRecord(d, id), tried = !!practiceOf(d, id)?.tried;
+    needs.push({ lessonId: id, flag: rec?.revisit ? rec.revisit.what : null, sessions: ev.finished, own, checks: checks.length, tried, next: tried ? 'check' : 'try' });
+  }
+  const states = [...state.values()];
+  // The next milestone: the first of the course's levels whose lessons on your path aren't all done.
+  let milestone: ArabicProgress['milestone'] = null;
+  for (const m of milestones) {
+    const lessons = pathLessons(m.path_id).filter(id => state.has(id)), toGo = lessons.filter(id => !isDone(state.get(id)!)).length;
+    if (!lessons.length || !toGo) continue;
+    const last = modules.get('module.' + m.assessment_id.replace(/^assessment\./, '').replace(/-performance$/, ''));
+    milestone = { stage: m.stage_target, toGo, last: last?.name ?? '' };
+    break;
+  }
+  return {
+    started: states.some(x => x !== 'new') || d.arabic.attempts.length > 0, path: path.length,
+    done: states.filter(isDone).length, holding: states.filter(x => x === 'holding').length, ownChecks, needs, milestone,
+  };
 }

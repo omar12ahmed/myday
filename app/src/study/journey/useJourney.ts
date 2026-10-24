@@ -4,11 +4,12 @@ import { keepStep, keptStep } from '../lessonStep';
 import { toStep } from './dom';
 
 // Your step on a lesson journey: it follows you as you read and jump; with a session open it's kept on this device
-// for that session (lessonStep.ts), and arriving with that session open takes you back to it, once. `sessionId` is
+// for that session (lessonStep.ts), and arriving with that session open takes you back to it, once. A link that asks
+// for a step (`want`, journey/pending.ts) opens that one instead, unfolding "the rest" if it's there. `sessionId` is
 // read when needed (the open session's id, or null). Sections are `${prefix}-step-${step}` with data-${prefix}-step;
 // the folded "rest" is data-${prefix}-rest.
-export function useJourney({ prefix, shown, loaded, sessionId }: { prefix: string; shown: JourneyStep[]; loaded: boolean; sessionId: () => string | null }) {
-  const [step, setStep] = useState<JourneyStep | null>(() => { const id = sessionId(); return id ? keptStep(id) : null; });
+export function useJourney({ prefix, shown, loaded, sessionId, want = null }: { prefix: string; shown: JourneyStep[]; loaded: boolean; sessionId: () => string | null; want?: JourneyStep | null }) {
+  const [step, setStep] = useState<JourneyStep | null>(() => { const id = sessionId(); return want ?? (id ? keptStep(id) : null); });
   const current = step && shown.includes(step) ? step : shown[0];
   const session = useRef(sessionId);
   useEffect(() => { session.current = sessionId; });
@@ -34,14 +35,21 @@ export function useJourney({ prefix, shown, loaded, sessionId }: { prefix: strin
     document.querySelectorAll(`[data-${prefix}-step]`).forEach(el => { if (!el.closest(`[data-${prefix}-rest]`)) io.observe(el); });
     return () => { io.disconnect(); clearTimeout(timer); };
   }, [loaded, stepsKey, prefix]);
-  // Arriving with a session open: back to the step you were on, once (after the page has gone to the top). Starting a
-  // session on the page doesn't jump anywhere.
-  const reopened = useRef(!sessionId());
+  // Arriving with a session open: back to the step you were on, once (after the page has gone to the top); a step a
+  // link asked for, likewise, with "the rest" unfolded when it's there. Starting a session on the page doesn't jump.
+  const reopened = useRef(!sessionId() && !want);
+  const asked = useRef(want);
   useEffect(() => {
     if (!loaded || reopened.current) return;
     if (!step) { reopened.current = true; return; }
     hush();
-    const timer = setTimeout(() => { reopened.current = true; document.getElementById(`${prefix}-step-${current}`)?.scrollIntoView({ block: 'start' }); }, 120);
+    const target = asked.current ?? current;
+    const timer = setTimeout(() => {
+      reopened.current = true;
+      const el = document.getElementById(`${prefix}-step-${target}`);
+      el?.closest('details')?.setAttribute('open', '');
+      if (asked.current) toStep(prefix, target); else el?.scrollIntoView({ block: 'start' });
+    }, 120);
     return () => clearTimeout(timer);
   }, [loaded, step, current, prefix]);
   return { step, setStep, current, remember, jump, hush };

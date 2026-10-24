@@ -7,6 +7,7 @@ export const course = raw.course, version = raw.curriculum_version;
 export type Module = typeof raw.modules[number];
 export type Path = typeof raw.paths[number];
 export const modules = new Map(raw.modules.map(m => [m.id, m]));
+export const milestones = raw.milestones; // the course's levels (A1–B2), each its path and closing assessment
 export const moduleList = raw.modules;
 export const paths = new Map(raw.paths.map(p => [p.id, p]));
 export const topics = new Map(raw.topics.map(t => [t.id, t]));

@@ -24,7 +24,7 @@ export interface LessonEvidence {
   answers: Record<string, CheckAnswer[]>;   // by check id, oldest first
 }
 export const struggled = (a: CheckAnswer) => a.outcome === 'wrong' || a.outcome === 'notsure' || a.rating === 'again';
-const onOwn = (a: CheckAnswer) => a.outcome === 'right' && a.support === 'own';
+export const onOwn = (a: CheckAnswer) => a.outcome === 'right' && a.support === 'own';
 
 // The first that applies: Needs revision, Holding, Ready, Practised, New. Only answers from after the Ready day count
 // for a lesson marked ready: a mark made earlier that day was before you decided. A check slips when, since then, it
