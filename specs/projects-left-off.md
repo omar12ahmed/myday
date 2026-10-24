@@ -2,7 +2,7 @@
 
 **Status:** approved by the owner on 24 October 2026 (decisions in section 4). Phase 1, release 2 of
 `specs/projects-vision.md`. Not yet released.
-**Based on:** source at release 1.46.1.
+**Based on:** source at release 1.47.0 (started on 1.46.1).
 
 ## 1. The practical problem
 
@@ -32,8 +32,9 @@ Three optional fields on a project. A project with none of them is saved exactly
 ## 3. Saved data, sync and AI
 
 - **No schema change** (the owner's exception, recorded in `AGENTS.md`). The fields live inside the project's own
-  record. Released 1.46.x already keeps unknown project fields when it reads saved data, edits a project, exports,
-  imports and syncs the project core record, so a device that goes back to 1.46.1 keeps the fields unread and passes
+  record. Released 1.47.0 and earlier already keep unknown project fields when they read saved data, edit a project,
+  save, export, import and sync the project core record, so a device that goes back to 1.47.0 keeps the fields unread
+  and passes
   them on unchanged. The classic MyDay keeps the whole Projects section unread.
 - **Sync:** no new record kind, no migration, no database change. The fields travel in the existing project record.
 - **AI:** never sent in this release. Ask MyDay's project context and preview, AI note filing and every other AI job
@@ -55,7 +56,11 @@ Three optional fields on a project. A project with none of them is saved exactly
   (asking first); the note card's place and date; the outcome line on every tab; failed save keeps the draft;
   export and import keep all three; phone at 320 px with no sideways scroll; nothing new in Ask's preview or request
   (`app-ai`).
-- **Previous release:** data with all three fields, opened in the built 1.46.1, edited and saved, keeps them unchanged,
-  and the 1.46.1 project sync record keeps them through a round trip.
+- **Previous release** (`projects-rules` [14], pinned to `v1.47.0`, the last release without the fields): with that
+  release's own code, data with all three fields keeps them unchanged when loaded, edited, saved to the browser's
+  storage, exported, imported and restored, and through the project sync record both ways.
+- **Mixed versions:** a device still on 1.47.0 or earlier keeps the fields but doesn't show them, including on its
+  sync-conflict screen, so choosing "this device's" version there could set aside a newer note. The release note says
+  to update every device.
 - **Visual (Taste skill, app-screen workflow):** the Overview with and without a note, 1440, 768 and 390 px, light and
   dark, compared with the 1.46.0 screenshots.

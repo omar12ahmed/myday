@@ -1,5 +1,12 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.48.0 — Projects: the outcome, what counts as finished, and Where I left off:** a project can say what it's
+aiming for (a line under its title) and what would count as finished (in About it), and keep one short note for next
+time, "Where I left off", which sits at the top of its Overview with the day it was written. All three are optional,
+written in About it, and never sent to AI. No schema, sync or database change: 1.47.0 keeps the new fields unread,
+so going back to 1.47.0 is safe, but it doesn't show them, even on its sync-conflict screen, so update every device
+you use.
+
 **1.47.0 — adaptive Study (Arabic):** a finished session is practice, not "done". Each lesson is New, Practised,
 Ready to move on (your tap), Holding (its checks recalled on your own a week or more later) or Needs revision (your
 flag, or a check that slipped). After seeing a reference answer you can mark how it went; finishing suggests "Looks
@@ -408,7 +415,7 @@ appointments aren't listed, and there's no red, no "overdue" and no count of day
 next step yet": the Next step card beside it already asks for the smallest one. Nothing new is saved, and Ask
 MyDay's request and preview are unchanged (`comingUp` is unchanged; still-open tasks come from `stillOpen`).
 
-**The outcome, what counts as finished, and where you left off (unreleased; `specs/projects-left-off.md`):** a
+**The outcome, what counts as finished, and where you left off (1.48.0; `specs/projects-left-off.md`):** a
 project can say what it's aiming for ("Aiming for: …", a line under its title on every tab) and what would count as
 finished ("Finished when: …" in About it), both written in About it → Edit. **Where I left off** is one short note
 for next time, with prompts (what was happening, what's unresolved, the next useful thing, anything needed to pick
@@ -417,8 +424,10 @@ Edit; clearing it asks first. Without one, About it offers "Leave a note for nex
 marks the outcome as reached, and paused or done projects keep their note. Saved data: three optional fields on the
 project (`outcome`, `finishedWhen`, `leftOff: { text, at }`), absent when empty, in the existing project record and
 sync record, with no new record kind, migration or database change. There's no schema change, by the owner's
-exception in AGENTS.md: 1.46.x keeps unknown project fields, so going back keeps them unread, which `projects-rules`
-proves with the previous release's own code. A sync conflict on the project shows them. None of them is sent to AI.
+exception in AGENTS.md: 1.47.0 and earlier keep unknown project fields, so going back keeps them unread, which
+`projects-rules` proves with 1.47.0's own code (loading, editing, saving, export, import, restore and the project
+sync record). A device still on an older version doesn't show them, even on its sync-conflict screen, so update
+every device. A sync conflict on the project shows them. None of them is sent to AI.
 
 **Your week — the weekly review (1.37.0):** a short look back over the last seven days, at `#review` ("Your week"), in
 four steps, one at a time, with Back and Next. Nothing changes until you tap. **1 What moved:** each project's tasks
@@ -1028,7 +1037,8 @@ tasks" on Today). Older `#inbox…` and `#notes…` links are rewritten to where
 - A task or a note can be put in a project (or taken out) from its own screen ("Project"); its way back then leads to
   the project. In Tasks, a task in a project shows the project's name.
 - Saved as the `projects` section (`{ items }`; each with `title`, `summary`, `stage`, `status`, `nextTaskId`,
-  `commitmentIds`, `createdAt`, `updatedAt`). Notes and tasks gain an optional `projectId` (left out when there isn't
+  `commitmentIds`, `createdAt`, `updatedAt`, and from 1.48.0 the optional `outcome`, `finishedWhen` and
+  `leftOff: { text, at }`). Notes and tasks gain an optional `projectId` (left out when there isn't
   one, so nothing else changes; from 1.13.0 a note can also have `linkedBy` 'rules' | 'ai', `linkWhy`, `notProjects` and
   `private`, and from 1.15.0 `aiKind` and `aiSeen`, each left out when not set; `patterns.prefs.aiNotes` is the switch); appointments are listed on the project (`commitmentIds`) so the Calendar's own records,
   shared with the classic MyDay, never change. Added in 1.12.0; the classic MyDay keeps all of it unread. Synced with
