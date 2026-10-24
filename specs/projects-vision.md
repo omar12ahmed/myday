@@ -1,9 +1,10 @@
 # MyDay Projects: revised vision and feature specification
 
-**Status:** proposed vision for the owner's review, 24 October 2026. This is the owner's draft with review
-corrections folded in (listed in section 21). It describes direction, not approval to build. Each increment in
-section 17 needs its own short specification and the owner's sign-off before work starts.
-**Based on:** source at release 1.45.1.
+**Status:** the owner's vision of 24 October 2026, with review corrections folded in (listed in section 21). It
+describes direction, not approval to build: each increment in section 17 needs its own short specification and the
+owner's sign-off before work starts. **Phase 1 is delivered** (1.46.0, 1.48.0, 1.50.0, 1.52.0 and 1.54.0, each with
+its own specification; see section 17). Phase 2 isn't specified or approved yet.
+**Based on:** source at release 1.45.1 (Phase 1 status updated at 1.54.0).
 
 ## 1. Purpose
 
@@ -505,13 +506,15 @@ The objective is easier understanding and resumption of existing projects. Deliv
 first, each with its own specification:
 
 1. **Overview tidy-up and unresolved dates.** Reduce repetition on Overview and At a glance, and keep open past
-   dates visible. Display only: no saved-data change.
+   dates visible. Display only: no saved-data change. *Released in 1.46.0 (`specs/projects-overview.md`).*
 2. **Outcome and "Where I left off".** The optional intended outcome, what counts as finished, and the handoff note,
-   together in one schema change.
-3. **Waiting information.** What a task or project is waiting on, from whom, and until when.
-4. **Project search.** Built on the Notes search.
+   together in one schema change. *Released in 1.48.0 (`specs/projects-left-off.md`), without a schema change under
+   the owner's exception in AGENTS.md.*
+3. **Waiting information.** What a task or project is waiting on, from whom, and until when. *Released in 1.50.0
+   for tasks (`specs/projects-waiting.md`).*
+4. **Project search.** Built on the Notes search. *Released in 1.52.0 (`specs/projects-search.md`).*
 5. **Next-action explanation.** Why the next step was chosen, and an easy way to choose another, without
-   dependencies.
+   dependencies. *Released in 1.54.0 (`specs/projects-next-why.md`).*
 
 ### Phase 2: Strengthen shared connections
 
@@ -601,7 +604,6 @@ Rules for using it here:
 - Whether "Where I left off" text may ever be included in an AI request, and if so, with what preview.
 - Whether the Private switch should govern every AI feature, including note filing, "Help me adjust today" and
   revision cards.
-- Which Phase 1 release to specify first (the review recommends the Overview tidy-up, which changes no saved data).
 - Whether automatic backups are scheduled before any attachment work.
 
 ## 21. Review notes
