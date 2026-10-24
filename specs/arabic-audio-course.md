@@ -3,7 +3,8 @@
 **Status:** the owner accepted questions 1–6 on 20 October 2026. Round two shipped in 1.40.0. Round three (a) is
 shipped in 1.41.0 (21 October 2026): 55 new clips generated, independently transcribed
 and listened to on 21 October 2026 ("all fine"). Round three (b) shipped in 1.42.0 (21 October 2026): the owner
-approved all 357 eligible clips ("both fine"); six uncertain recordings remain held for a fluent reviewer. Unvowelled material
+approved all 357 eligible clips ("both fine"); six uncertain recordings were held. Curriculum 1.1.2 (1.44.2, 24 October
+2026) corrected six voiced sentences and replaced every held recording; 654 checked clips ship. Unvowelled material
 also waits for fluent review. Build/lint and all 54 default suites passed after two affected-suite reruns
 (4,956 checks); 24/24 live checks passed.
 **Date:** 20 October 2026, after release 1.39.0.
@@ -95,8 +96,10 @@ whose vowel the voice repeatedly read differently. The authored text stays uncha
 
 **Curriculum 1.1.2 (24 October 2026):** the course review found that held sentence's text was itself wrong (the
 voice had been reading the correct مُلَاحَظَاتٍ). It was corrected, with five other voiced sentences, and their six clips
-were removed (`audio-audit.json`, `removed`): 638 checked clips ship and five recordings stay held. The corrected
-sentences and other new voiced texts get new clips made, transcribed blind and listened to as in every round.
+were removed (`audio-audit.json`, `removed`). Sixteen new clips (11 corrected or new texts, 5 held retakes) were
+made in the same voice, transcribed blind (`cross-check-1.1.2.json`) and listened to by the owner, who reads Arabic
+("all fine", 24 October 2026). Four short forms were still heard differently by the transcription and were approved
+by ear. 654 checked clips ship (released in 1.44.2) and none are held.
 
 The owner listened to all 357 eligible clips, split into 179 and 178, and confirmed "both fine" on 21 October 2026. All decode in the browser: 679 seconds
 (11 min 19 s) of audio, roughly 28 minutes of listening with repeats. Generate the two local pages with

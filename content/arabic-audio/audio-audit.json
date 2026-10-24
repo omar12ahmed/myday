@@ -67,6 +67,21 @@
    },
    "reported_usage_usd": 0.041874,
    "charged_or_reserved_usd": 0.051885
+  },
+  {
+   "round": "1.1.2 corrections",
+   "sources": [
+    "lesson-examples",
+    "reading-texts",
+    "teaching",
+    "lesson-checks"
+   ],
+   "release": "1.44.2",
+   "made": "2026-10-24",
+   "generated": 16,
+   "retakes": 4,
+   "listening": "All 16 new clips (11 corrected or new texts, 5 earlier holds retaken) listened to by ear by the owner, who reads Arabic, on 2026-10-24 — “all fine”; not yet by an Arabic teacher. No recordings remain held.",
+   "cross_check": "Every new recording transcribed blind with Gemini 3.8 Flash and every transcript read by the main session (cross-check-1.1.2.json). Four short forms were heard differently even after retakes (سَاعَة، الْكِتَابَ، فَعَّلَ، دَعَا); the owner approved them by ear."
   }
  ],
  "clips": {
@@ -2356,8 +2371,9 @@
    "voice": "ar-XA-Chirp3-HD-Charon",
    "made": "2026-10-23",
    "spoken": "هَلِ.",
-   "check": "to check",
-   "earlier": "An isolated liaison form; both blind transcriptions heard حَلِي. Keep its complete sentence available; defer this isolated form for a fluent reviewer."
+   "check": "checked",
+   "earlier": "An isolated liaison form; both blind transcriptions heard حَلِي. Keep its complete sentence available; defer this isolated form for a fluent reviewer.",
+   "checked": "2026-10-24"
   },
   "مَا": {
    "file": "29462064cc432ee3.mp3",
@@ -2862,7 +2878,8 @@
    "voice": "ar-XA-Chirp3-HD-Charon",
    "made": "2026-10-23",
    "spoken": "سَاعَة.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-24"
   },
   "السَّاعَةُ": {
    "file": "40da179cda1abb84.mp3",
@@ -3370,7 +3387,8 @@
    "voice": "ar-XA-Chirp3-HD-Charon",
    "made": "2026-10-23",
    "spoken": "الْكِتَابَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-24"
   },
   "فِي الْبَيْتِ": {
    "file": "6e784d5217219717.mp3",
@@ -3666,7 +3684,8 @@
    "voice": "ar-XA-Chirp3-HD-Charon",
    "made": "2026-10-23",
    "spoken": "دَعَا.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-24"
   },
   "يَدْعُو": {
    "file": "835e344bc0f0dc14.mp3",
@@ -3849,8 +3868,9 @@
    "voice": "ar-XA-Chirp3-HD-Charon",
    "made": "2026-10-23",
    "spoken": "إِنْ.",
-   "check": "to check",
-   "earlier": "Three blind transcriptions did not settle on the authored form (latest: “أَنْ”). No play button; defer this isolated form for a fluent reviewer."
+   "check": "checked",
+   "earlier": "Three blind transcriptions did not settle on the authored form (latest: “أَنْ”). No play button; defer this isolated form for a fluent reviewer.",
+   "checked": "2026-10-24"
   },
   "لَوْ": {
    "file": "99bd02a138976e4d.mp3",
@@ -4565,77 +4585,88 @@
    "voice": "ar-XA-Chirp3-HD-Charon",
    "made": "2026-10-23",
    "spoken": "أَتَفَهَّمُ وِجْهَةَ النَّظَرِ هَذِهِ، وَلَكِنْ...",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-24"
   },
   "سَأَتَأَكَّدُ مِنْ وَقْتِ فَتْحِ أَبْوَابِهَا قَبْلَ الزِّيَارَةِ.": {
    "file": "f32f3a21bb10a706.mp3",
    "voice": "ar-XA-Chirp3-HD-Charon",
    "made": "2026-10-23",
    "spoken": "سَأَتَأَكَّدُ مِنْ وَقْتِ فَتْحِ أَبْوَابِهَا قَبْلَ الزِّيَارَةِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-24"
   },
   "عَفْوًا، مَا اسْمُكَ؟": {
    "file": "4e6796ac3e844190.mp3",
    "voice": "ar-XA-Chirp3-HD-Charon",
    "made": "2026-10-23",
    "spoken": "عَفْوًا، مَا اسْمُكَ؟",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-24"
   },
   "أَدْرُسُ صَبَاحًا، ثُمَّ أَقْرَأُ، وَأَكْتُبُ مُلَاحَظَاتٍ": {
    "file": "6dc6b0ab3b26ec9e.mp3",
    "voice": "ar-XA-Chirp3-HD-Charon",
    "made": "2026-10-23",
    "spoken": "أَدْرُسُ صَبَاحًا، ثُمَّ أَقْرَأُ، وَأَكْتُبُ مُلَاحَظَاتٍ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-24"
   },
   "فَعَّلَ": {
    "file": "6db942aaa8784c11.mp3",
    "voice": "ar-XA-Chirp3-HD-Charon",
    "made": "2026-10-23",
    "spoken": "فَعَّلَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-24"
   },
   "كِتَابٌ قَرَأْتُهُ": {
    "file": "1359db2807ba3723.mp3",
    "voice": "ar-XA-Chirp3-HD-Charon",
    "made": "2026-10-23",
    "spoken": "كِتَابٌ قَرَأْتُهُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-24"
   },
   "إِذَا وَجَدْتُ وَقْتًا، فَسَأَقْرَأُ": {
    "file": "fff4427247316bc6.mp3",
    "voice": "ar-XA-Chirp3-HD-Charon",
    "made": "2026-10-23",
    "spoken": "إِذَا وَجَدْتُ وَقْتًا، فَسَأَقْرَأُ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-24"
   },
   "إِذَا وَجَدْتُ وَقْتًا، فَسَأَدْرُسُ الْعَرَبِيَّةَ": {
    "file": "d35815bbe8365ec7.mp3",
    "voice": "ar-XA-Chirp3-HD-Charon",
    "made": "2026-10-23",
    "spoken": "إِذَا وَجَدْتُ وَقْتًا، فَسَأَدْرُسُ الْعَرَبِيَّةَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-24"
   },
   "بِأَحْمَدَ، فِي مَكَّةَ": {
    "file": "b0824e08ff4d1d26.mp3",
    "voice": "ar-XA-Chirp3-HD-Charon",
    "made": "2026-10-23",
    "spoken": "بِأَحْمَدَ، فِي مَكَّةَ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-24"
   },
   "بِسَامِرٍ": {
    "file": "a6d2370473ada8f0.mp3",
    "voice": "ar-XA-Chirp3-HD-Charon",
    "made": "2026-10-23",
    "spoken": "بِسَامِرٍ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-24"
   },
   "دَرَسْتُ أَمْسِ": {
    "file": "f6cb390f58be3a67.mp3",
    "voice": "ar-XA-Chirp3-HD-Charon",
    "made": "2026-10-23",
    "spoken": "دَرَسْتُ أَمْسِ.",
-   "check": "to check"
+   "check": "checked",
+   "checked": "2026-10-24"
   }
  },
  "removed": [

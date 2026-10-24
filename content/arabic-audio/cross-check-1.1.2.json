@@ -31,7 +31,8 @@
     ],
     "thoughtsTokenCount": 307,
     "serviceTier": "standard"
-   }
+   },
+   "review": "transcript reviewed and owner listened — all fine; not teacher-checked"
   },
   "سَاعَة": {
    "file": "ac341c69a4eeb001.mp3",
@@ -53,7 +54,8 @@
     ],
     "thoughtsTokenCount": 156,
     "serviceTier": "standard"
-   }
+   },
+   "review": "transcript reviewed and owner listened — all fine; not teacher-checked; the transcription heard it differently, approved by ear"
   },
   "الْكِتَابَ": {
    "file": "a6ac4e56d7be88e2.mp3",
@@ -75,7 +77,8 @@
     ],
     "thoughtsTokenCount": 114,
     "serviceTier": "standard"
-   }
+   },
+   "review": "transcript reviewed and owner listened — all fine; not teacher-checked; the transcription heard it differently, approved by ear"
   },
   "دَعَا": {
    "file": "9d2c9d40d57958dc.mp3",
@@ -97,7 +100,8 @@
     ],
     "thoughtsTokenCount": 536,
     "serviceTier": "standard"
-   }
+   },
+   "review": "transcript reviewed and owner listened — all fine; not teacher-checked; the transcription heard it differently, approved by ear"
   },
   "إِنْ": {
    "file": "7bd1ab964585c6b6.mp3",
@@ -119,7 +123,8 @@
     ],
     "thoughtsTokenCount": 97,
     "serviceTier": "standard"
-   }
+   },
+   "review": "transcript reviewed and owner listened — all fine; not teacher-checked"
   },
   "أَتَفَهَّمُ وِجْهَةَ النَّظَرِ هَذِهِ، وَلَكِنْ...": {
    "file": "9c0c9840c4af89ba.mp3",
@@ -141,7 +146,8 @@
     ],
     "thoughtsTokenCount": 179,
     "serviceTier": "standard"
-   }
+   },
+   "review": "transcript reviewed and owner listened — all fine; not teacher-checked"
   },
   "سَأَتَأَكَّدُ مِنْ وَقْتِ فَتْحِ أَبْوَابِهَا قَبْلَ الزِّيَارَةِ.": {
    "file": "f32f3a21bb10a706.mp3",
@@ -162,7 +168,8 @@
      }
     ],
     "serviceTier": "standard"
-   }
+   },
+   "review": "transcript reviewed and owner listened — all fine; not teacher-checked"
   },
   "عَفْوًا، مَا اسْمُكَ؟": {
    "file": "4e6796ac3e844190.mp3",
@@ -184,7 +191,8 @@
     ],
     "thoughtsTokenCount": 192,
     "serviceTier": "standard"
-   }
+   },
+   "review": "transcript reviewed and owner listened — all fine; not teacher-checked"
   },
   "أَدْرُسُ صَبَاحًا، ثُمَّ أَقْرَأُ، وَأَكْتُبُ مُلَاحَظَاتٍ": {
    "file": "6dc6b0ab3b26ec9e.mp3",
@@ -206,7 +214,8 @@
     ],
     "thoughtsTokenCount": 177,
     "serviceTier": "standard"
-   }
+   },
+   "review": "transcript reviewed and owner listened — all fine; not teacher-checked"
   },
   "فَعَّلَ": {
    "file": "6db942aaa8784c11.mp3",
@@ -228,7 +237,8 @@
     ],
     "thoughtsTokenCount": 64,
     "serviceTier": "standard"
-   }
+   },
+   "review": "transcript reviewed and owner listened — all fine; not teacher-checked; the transcription heard it differently, approved by ear"
   },
   "كِتَابٌ قَرَأْتُهُ": {
    "file": "1359db2807ba3723.mp3",
@@ -250,7 +260,8 @@
     ],
     "thoughtsTokenCount": 80,
     "serviceTier": "standard"
-   }
+   },
+   "review": "transcript reviewed and owner listened — all fine; not teacher-checked"
   },
   "إِذَا وَجَدْتُ وَقْتًا، فَسَأَقْرَأُ": {
    "file": "fff4427247316bc6.mp3",
@@ -272,7 +283,8 @@
     ],
     "thoughtsTokenCount": 190,
     "serviceTier": "standard"
-   }
+   },
+   "review": "transcript reviewed and owner listened — all fine; not teacher-checked"
   },
   "إِذَا وَجَدْتُ وَقْتًا، فَسَأَدْرُسُ الْعَرَبِيَّةَ": {
    "file": "d35815bbe8365ec7.mp3",
@@ -294,7 +306,8 @@
     ],
     "thoughtsTokenCount": 273,
     "serviceTier": "standard"
-   }
+   },
+   "review": "transcript reviewed and owner listened — all fine; not teacher-checked"
   },
   "بِأَحْمَدَ، فِي مَكَّةَ": {
    "file": "b0824e08ff4d1d26.mp3",
@@ -316,7 +329,8 @@
     ],
     "thoughtsTokenCount": 178,
     "serviceTier": "standard"
-   }
+   },
+   "review": "transcript reviewed and owner listened — all fine; not teacher-checked"
   },
   "بِسَامِرٍ": {
    "file": "a6d2370473ada8f0.mp3",
@@ -338,7 +352,8 @@
     ],
     "thoughtsTokenCount": 41,
     "serviceTier": "standard"
-   }
+   },
+   "review": "transcript reviewed and owner listened — all fine; not teacher-checked"
   },
   "دَرَسْتُ أَمْسِ": {
    "file": "f6cb390f58be3a67.mp3",
@@ -360,7 +375,8 @@
     ],
     "thoughtsTokenCount": 118,
     "serviceTier": "standard"
-   }
+   },
+   "review": "transcript reviewed and owner listened — all fine; not teacher-checked"
   }
  },
  "earlier": {
@@ -436,5 +452,11 @@
     }
    }
   ]
+ },
+ "owner_listening": {
+  "date": "2026-10-24",
+  "answer": "all fine",
+  "approved_clips": 16,
+  "held_clips": 0
  }
 }

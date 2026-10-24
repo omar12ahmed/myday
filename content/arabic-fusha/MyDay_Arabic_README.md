@@ -130,8 +130,8 @@ result, Form II, the diptote rule (many names are diptotes, not all), the relati
 one never does), and names glossed as Sāmir. Prepared transliterations add the helping vowel where a word ending in a
 consonant without a case ending meets the article (mina al-, ʿani al-, kānati al-, lam yuḥaddidi al-), correct
 al-mushattitāt, and hyphenate joined prefixes consistently. The six voice clips whose sentences changed were
-removed; each corrected sentence has no play button until its new clip has been made and listened to, and the
-weekend text's "Listen to the whole text" returns once its changed sentence has a clip.
+replaced: new clips in the same voice, with retakes of the five recordings held since 1.42.0, were transcribed blind
+and listened to on 24 October 2026 ("all fine"). Every fully vowelled text has a voice again.
 
 ## Version 1.1.1 correction
 

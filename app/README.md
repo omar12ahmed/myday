@@ -407,11 +407,11 @@ ordinary lessons and sessions. Revision cards stay as they are. Isolated letters
 words, unvowelled pieces and pieces marked only with shadda are held back. The same Charon voice, shared player,
 **Slower**, offline cache and synthesised-voice label apply; only checked clips enter the app. The 363 new clips have
 been transcribed blind, with 27 retakes. You listened to all 357 eligible clips ("both fine"); six uncertain
-recordings were held for a fluent reviewer. Curriculum 1.1.2 and its teaching companion corrected six voiced
-sentences (one of them a held recording) and removed their clips, since a clip belongs to its exact text: 638 checked
-clips ship, five recordings stay held, and the corrected sentences have no play button until new clips are made and
-listened to (`content/arabic-audio/audio-audit.json`, `removed`). Until then the weekend reading text has no
-"Listen to the whole text", because one of its sentences changed.
+recordings were held for a fluent reviewer. Curriculum 1.1.2 and its teaching companion (1.44.2) corrected six voiced
+sentences, one of them a held recording, and their clips were replaced, since a clip belongs to its exact text
+(`content/arabic-audio/audio-audit.json`, `removed`). Sixteen new clips cover the corrected and new texts and
+retakes of the five other holds. They were transcribed blind (`cross-check-1.1.2.json`) and you listened to them
+("all fine"). 654 checked clips ship, and every fully vowelled text has a voice.
 `scripts/review-arabic-audio.mjs teaching sounds-families lesson-checks` makes a local listening checklist;
 `MYDAY_AUDIO_REVIEW_BATCH` splits it into manageable sittings. No saved-data change.
 
