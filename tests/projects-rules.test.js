@@ -21,8 +21,8 @@ const clone = o => JSON.parse(JSON.stringify(o));
   fs.writeFileSync(path.join(dir, 'kit.ts'), [
     `export * from ${src('projectRecords')};`, `export * from ${src('projectPlan')};`, `export * from ${src('businessModel')};`, `export * from ${src('caseFile')};`, `export { normalizeProjects, deleteProject, recently, addProject, setProjectPrivate, editProject, setLeftOff, privateProjectIds, comingUp, stillOpen } from ${src('projects')};`,
     `export { freshState, normalize } from ${src('normalize')};`, `export { shift, shortDate } from ${src('dates')};`, `export * from ${src('projectDashboard')};`, `export * from ${src('weekReview')};`, `export { stepsForToday, nextStep, whyNext } from ${src('projects')};`,
-    `export { normalizeStudyLinks, addStudyLink, removeStudyLink, setStudyLinkWhy, linkView, courseChoices, bookChoices, linkedFrom, LINK_LIMITS } from ${src('studyLinks')};`, `export * as Cyber from ${JSON.stringify(path.join(ROOT, 'app/src/projects/learningCyber'))};`, `export { stIndex } from ${src('study/roadmap')};`,
-    `export { webAddress, siteOf, resourceName, normalizeResources, addResource, editResource, removeResource, RESOURCE_LIMITS } from ${src('projectResources')};`,
+    `export { normalizeStudyLinks, addStudyLink, removeStudyLink, setStudyLinkWhy, linkView, courseChoices, bookChoices, linkedFrom, tidyWhy, LINK_LIMITS } from ${src('studyLinks')};`, `export * as Cyber from ${JSON.stringify(path.join(ROOT, 'app/src/projects/learningCyber'))};`, `export { stIndex } from ${src('study/roadmap')};`,
+    `export { webAddress, siteOf, resourceName, normalizeResources, addResource, editResource, removeResource, canOpen, tidyText, RESOURCE_LIMITS } from ${src('projectResources')};`,
     `export { searchProject, fold, matchCount, SEARCH_KIND_LABEL } from ${src('projectSearch')};`,
     `export { normalizeTasks, setWaiting, stopWaiting, isWaiting, chaseTask, chaseWaiting, isStuck, setTaskDone, inQueue, onTodaysPlan, unstick } from ${src('tasks')};`,
     `export { setDone, clearDay, toggleRoll, followQueued, taskFromQueue, sendToQueue } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
@@ -1807,7 +1807,10 @@ const clone = o => JSON.parse(JSON.stringify(o));
     console.log('  Reading saved links');
     check('absent or null reads as none (nothing counted); a non-list is counted once; an empty list reads as none', eq(nr(undefined), [null, 0]) && eq(nr(null), [null, 0]) && eq(nr('oops'), [null, 1]) && eq(nr([]), [null, 0]));
     const bad = nr([rs('rsOk', 'example.com/ok'), { title: 'No id', url: 'example.com/a' }, { id: 'rsNoUrl', title: 'No address' }, rs('rsBad', 'javascript:alert(1)'), rs('rsPw', 'https://u:p@example.com'), 'text', null]);
-    check('a link without an id or a web address (or not an object) is counted and left out; the good one stays, its address made whole', bad[1] === 6 && eq(bad[0].map(r => [r.id, r.url]), [['rsOk', 'https://example.com/ok']]), bad);
+    check('a link without an id, without an address, or not an object is counted and left out; a web address is made whole', bad[1] === 4 && bad[0].map(r => r.id).join() === 'rsOk,rsBad,rsPw' && bad[0][0].url === 'https://example.com/ok', bad);
+    check('an address that is not a web address (javascript:, a user name and password) is kept as it is and not counted, and cannot be opened; a web address can', eq(bad[0].map(r => [r.url, K.canOpen(r)]), [['https://example.com/ok', true], ['javascript:alert(1)', false], ['https://u:p@example.com', false]]), bad[0].map(r => [r.url, K.canOpen(r)]));
+    check('…reading again gives the same, with nothing counted (idempotent), for the web address and the kept one alike', eq(nr(bad[0]), [bad[0], 0]));
+    check('a blank or non-text address is still counted and left out; mailto: is kept and cannot be opened', (() => { const r = nr([rs('rsBlank', '   '), { id: 'rsNum', url: 42, addedOn: AT }, rs('rsMail', 'mailto:x@example.com')]); return r[1] === 2 && eq(r[0].map(x => [x.id, x.url, K.canOpen(x)]), [['rsMail', 'mailto:x@example.com', false]]); })());
     const dup = nr([rs('rsA', 'example.com/a', { title: 'First' }), rs('rsA', 'example.org/b', { title: 'Second' })]);
     check('a duplicate id is merged silently (the first stays)', dup[1] === 0 && eq(dup[0].map(r => r.title), ['First']));
     const unk = nr([{ ...rs('rsA', 'example.com/a'), future: { a: [1] }, pin: true }]);
@@ -1815,6 +1818,11 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const tt = nr([rs('rsA', 'example.com/a', { title: '  ' + 'T'.repeat(200) + '  ', note: 'N'.repeat(400) }), rs('rsB', 'example.com/b', { title: 'Q'.repeat(119) + ' ' + 'z'.repeat(50), note: 'x'.repeat(299) + ' ' + 'y'.repeat(50) }), rs('rsC', 'example.com/c', { note: '   ' }), rs('rsD', 'example.com/d', { title: 42, note: 42 })]);
     check('title and note are trimmed and capped at 120 and 300; a blank or non-text note is left off; a non-text title is empty', tt[0][0].title.length === 120 && tt[0][0].note.length === 300 && !('note' in tt[0][2]) && !('note' in tt[0][3]) && tt[0][3].title === '', tt[0].map(r => [r.title.length, r.note && r.note.length]));
     check('a cut that ends on a space is tidied, and a second read gives the same (idempotent)', !/\s$/.test(tt[0][1].title) && !/\s$/.test(tt[0][1].note) && eq(nr(tt[0]), [tt[0], 0]), [tt[0][1].title.length, tt[0][1].note.length]);
+    const lone = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
+    const em = nr([rs('rsE', 'example.com/e', { title: 'a'.repeat(119) + '😀' + 'b'.repeat(40), note: 'n'.repeat(299) + '😀' + 'm'.repeat(40) })]);
+    check('text is cut on whole characters: a title and note whose cut falls on an emoji keep it whole (no half emoji), and read back unchanged', em[0][0].title === 'a'.repeat(119) + '😀' && em[0][0].note === 'n'.repeat(299) + '😀' && !lone.test(em[0][0].title + em[0][0].note) && eq(nr(em[0]), [em[0], 0]), [em[0][0].title.length, em[0][0].note.length]);
+    check('tidyText and the Learning why use the same whole-character cut', K.tidyText('😀'.repeat(150), 120) === '😀'.repeat(120) && K.tidyWhy('😀'.repeat(300)) === '😀'.repeat(200) && !lone.test(K.tidyWhy('x'.repeat(199) + '😀😀')) && K.tidyWhy('x'.repeat(199) + '😀😀') === 'x'.repeat(199) + '😀');
+    check('a link added with an emoji at the cut keeps it whole too', (() => { const e = rw(); K.addResource(e, 'pjR', { url: 'example.com', title: 'a'.repeat(119) + '😀😀', note: 'n'.repeat(299) + '😀😀' }); return R(e)[0].title === 'a'.repeat(119) + '😀' && R(e)[0].note === 'n'.repeat(299) + '😀'; })());
     const dt = nr([rs('rsA', 'example.com/a', { addedOn: 'last week' }), rs('rsB', 'example.com/b', { addedOn: undefined })]);
     check('an invalid or missing addedOn is replaced by a date (nothing counted)', dt[1] === 0 && dt[0].length === 2 && dt[0].every(r => /^\d{4}-\d\d-\d\d$/.test(r.addedOn)));
     const many = nr(Array.from({ length: 35 }, (_, i) => rs('rs' + i, `example.com/p${i}`)));

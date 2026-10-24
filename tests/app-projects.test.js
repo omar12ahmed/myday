@@ -1714,7 +1714,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await srType('overtime');
   check('a case\'s results include evidence (title or notes)', eq((await srRows()).map(x => x.split(':')[0]), ['about', 'evidence']) && (await srHrefs())[1] === '#projects/p/pjQc/evidence', await srRows());
   await srType('zebra');
-  check('nothing found on a case says "…decisions, its timeline, evidence and issues and links."', (await text('#projectSearchResults')).includes('It looks at what it’s about, its tasks, notes, milestones, decisions, its timeline, evidence and issues and links. Every word'), await text('#projectSearchResults'));
+  check('nothing found on a case says "…decisions, its timeline, evidence, issues and links."', (await text('#projectSearchResults')).includes('It looks at what it’s about, its tasks, notes, milestones, decisions, its timeline, evidence, issues and links. Every word'), await text('#projectSearchResults'));
   await srType('manager');
   check('…the timeline', eq((await srHrefs()), ['#projects/p/pjQc/timeline']) && (await text('#pjSearchH')) === '1 match for “manager”', await srHrefs());
   await srType('hours');
@@ -2010,6 +2010,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   const row1 = rsRow(rs1.id);
   check('the row shows the title with ↗, the site in small text, and "Note: …"', (await text(`${row1} [data-s=resource-link]`)).replace(/\s+/g, ' ').startsWith('Timber merchant ↗') && (await text(`${row1} [data-s=resource-site]`)) === 'example-timber.co.uk' && (await text(`${row1} [data-s=resource-note]`)) === 'Note: Ask about offcuts');
   check('its link opens in a new tab with rel noopener, announces that for screen readers, and goes to the address', await ev(`(() => { const a = document.querySelector('${row1} a'); return a.getAttribute('href') === 'https://example-timber.co.uk/oak' && a.target === '_blank' && a.rel.split(' ').includes('noopener') && a.querySelector('.sr-only').textContent === '(opens in a new tab)'; })()`));
+  check('the link\'s text reads title, site, then "(opens in a new tab)" last', await ev(`(() => { const a = document.querySelector('${row1} a'), sr = a.querySelector('.sr-only'), site = a.querySelector('[data-s=resource-site]'); return !!sr && !!site && !!(site.compareDocumentPosition(sr) & Node.DOCUMENT_POSITION_FOLLOWING) && a.lastElementChild === sr; })()`));
   check('after adding, the keyboard goes back to "Add a link"', await until(`document.activeElement && document.activeElement.id === 'resourceAdd'`));
   await rsAdd('https://www.example.org/guide');
   const rs2 = (await rsList('pjRe'))[1];
@@ -2046,6 +2047,57 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('"Remove" takes it out of the project, with the toast "Link removed."', (await rsList('pjRe')).length === 1 && !(await exists(rsRow(rs2.id))) && (await toast()) === 'Link removed.', [await toast(), (await rsList('pjRe')).length]);
   await click(`${row1} [data-action=resource-remove]`); await answer(true);
   check('when the last link goes the project has no resources key again', !('resources' in (await pAt('pjRe'))));
+
+  console.log('  Saving that does not happen, and a link this MyDay does not open');
+  await seed([pjObj('pjRx', 'Odd links', 'act', { resources: [{ id: 'rsOdd', title: '', url: 'javascript:alert(1)', addedOn: '2026-10-10' }, { id: 'rsMail', title: 'Email the yard', url: 'mailto:yard@example.com', note: 'Written elsewhere', addedOn: '2026-10-10' }, { id: 'rsOk', title: 'Timber merchant', url: 'https://example-timber.co.uk/oak', addedOn: '2026-10-10' }] })]);
+  await go('projects/p/pjRx', 2026, 10, 15, 9, 6);
+  await until(`!!document.querySelector('[data-s=resource][data-id=rsOk]')`);
+  check('a saved address this MyDay does not open is kept and shown as text with "Can’t be opened here", and has no link', (await text(`${rsRow('rsOdd')} [data-s=resource-closed]`)).includes('Can’t be opened here') && !(await exists(`${rsRow('rsOdd')} a`)) && !(await exists(`${rsRow('rsMail')} a`)), await text(rsRow('rsOdd')));
+  check('…and an untitled one shows its raw address as its name', (await text(`${rsRow('rsOdd')} [data-s=resource-closed]`)).includes('javascript:alert(1)'), await text(`${rsRow('rsOdd')} [data-s=resource-closed]`));
+  check('…a titled one shows its title with the same words, and its note; an ordinary one still opens', (await text(`${rsRow('rsMail')} [data-s=resource-closed]`)).includes('Email the yard') && (await text(rsRow('rsMail'))).includes('Note: Written elsewhere') && (await exists(`${rsRow('rsOk')} a[target=_blank]`)) && (await rsList('pjRx')).length === 3);
+  await click(`${rsRow('rsOdd')} [data-action=resource-edit]`); await sleep(200);
+  check('Edit works on it, showing the raw address', (await ev(`document.getElementById('resourceUrl-rsOdd').value`)) === 'javascript:alert(1)');
+  await type('#resourceUrl-rsOdd', 'example.com/fixed'); await click('[data-action=resource-save]'); await sleep(300);
+  check('giving it a web address saves it made whole and makes it openable', (await rsList('pjRx'))[0].url === 'https://example.com/fixed' && (await exists(`${rsRow('rsOdd')} a[target=_blank]`)) && !(await exists(`${rsRow('rsOdd')} [data-s=resource-closed]`)), (await rsList('pjRx'))[0]);
+  await click(`${rsRow('rsMail')} [data-action=resource-remove]`); await answer(true);
+  check('Remove works on one that cannot be opened', !(await exists(rsRow('rsMail'))) && (await rsList('pjRx')).length === 2 && (await toast()) === 'Link removed.');
+
+  await go('projects/p/pjRx', 2026, 10, 15, 9, 7); await until(`!!document.querySelector('[data-s=resource][data-id=rsOk]')`);
+  await click(`${rsRow('rsOk')} [data-action=resource-edit]`); await sleep(200);
+  await click('[data-action=resource-save]'); await sleep(300);
+  check('editing and saving with nothing changed closes the form quietly, with no toast and nothing rewritten', !(await exists('[data-s=resource-form]')) && (await toast()) !== 'Saved.' && JSON.stringify((await rsList('pjRx'))[1]) === JSON.stringify({ id: 'rsOk', title: 'Timber merchant', url: 'https://example-timber.co.uk/oak', addedOn: '2026-10-10' }), await toast());
+  await click(`${rsRow('rsOk')} [data-action=resource-edit]`); await sleep(200);
+  await type('#resourceNote-rsOk', 'Closed on Sundays'); await click('[data-action=resource-save]'); await sleep(300);
+  check('a change saves, says "Saved." and closes', (await toast()) === 'Saved.' && !(await exists('[data-s=resource-form]')) && (await rsList('pjRx'))[1].note === 'Closed on Sundays', await toast());
+
+  await go('projects/p/pjRx', 2026, 10, 15, 9, 8); await until(`!!document.querySelector('[data-s=resource][data-id=rsOk]')`);
+  await click(`${rsRow('rsOk')} [data-action=resource-edit]`); await sleep(200);
+  await type('#resourceTitle-rsOk', 'Typed but not saved');
+  await editStorage(`s => { s.projects.items.find(p => p.id === 'pjRs').summary = 'Changed in another tab'; }`);
+  await click('[data-action=resource-save]'); await sleep(400);
+  check('when the save is refused (the data was changed in another tab), the form stays open with what was typed, and nothing says "Saved."', (await exists('[data-s=resource-form]')) && (await ev(`(document.getElementById('resourceTitle-rsOk') || {}).value`)) === 'Typed but not saved' && (await toast()) !== 'Saved.', [await exists('[data-s=resource-form]'), await ev(`(document.getElementById('resourceTitle-rsOk') || {}).value`), await toast()]);
+
+  await go('projects/p/pjRe', 2026, 10, 15, 9, 9); await until(`!!document.querySelector('[data-action=resource-add]')`);
+  await click('[data-action=resource-add]'); await until(`!!document.getElementById('resourceUrl-new')`);
+  await type('#resourceUrl-new', 'example.com/the-31st');
+  await editStorage(`s => { const p = s.projects.items.find(x => x.id === 'pjRe'); p.resources = Array.from({ length: 30 }, (_, i) => ({ id: 'rsFull' + i, title: 'Link ' + i, url: 'https://example.com/p' + i, addedOn: '2026-10-10' })); }`);
+  await click('[data-action=resource-save]'); await sleep(400);
+  check('an add that does not happen says so: "That link couldn’t be kept just now. This project may already have 30 links.", and the form stays open', (await text('[data-s=resource-error]')) === 'That link couldn’t be kept just now. This project may already have 30 links.' && (await exists('[data-s=resource-form]')) && (await ev(`document.getElementById('resourceUrl-new').value`)) === 'example.com/the-31st', await text('[data-s=resource-error]'));
+
+  console.log('  Learning\'s why form');
+  await seed([pjObj('pjLw', 'Why form', 'act', { studyLinks: [fl('book', 'bkLw', 'Bookkeeping made plain')] })]);
+  await editStorage(`s => { s.reading.books.push({ id: 'bkLw', title: 'Bookkeeping made plain', author: '', pages: 300, page: 0, notes: [], addedOn: '2026-09-01', finishedOn: null }); }`);
+  const lwEdit = '[data-s=learning-link][data-kind=book][data-id=bkLw] [data-action=learning-edit]', lwField = '#learningWhy-book-bkLw';
+  await go('projects/p/pjLw', 2026, 10, 15, 9, 10); await until(`!!document.querySelector('[data-action=learning-edit]')`);
+  await click(lwEdit); await sleep(200); await click('[data-action=learning-why-save]'); await sleep(300);
+  check('Learning\'s why: saving with nothing changed closes quietly, with no toast', !(await exists(lwField)) && (await toast()) !== 'Saved.' && !('why' in (await pAt('pjLw')).studyLinks[0]), await toast());
+  await click(lwEdit); await sleep(200); await type(lwField, 'To keep the books'); await click('[data-action=learning-why-save]'); await sleep(300);
+  check('…a change saves, says "Saved." and closes', (await toast()) === 'Saved.' && !(await exists(lwField)) && (await pAt('pjLw')).studyLinks[0].why === 'To keep the books', await toast());
+  await go('projects/p/pjLw', 2026, 10, 15, 9, 11); await until(`!!document.querySelector('[data-action=learning-edit]')`);
+  await click(lwEdit); await sleep(200); await type(lwField, 'Typed but not saved');
+  await editStorage(`s => { s.projects.items.find(p => p.id === 'pjRs').summary = 'Changed again in another tab'; }`);
+  await click('[data-action=learning-why-save]'); await sleep(400);
+  check('…and when the save is refused the field stays open with what was typed', (await exists(lwField)) && (await ev(`document.querySelector('${lwField}').value`)) === 'Typed but not saved' && (await toast()) !== 'Saved.', [await exists(lwField), await toast()]);
 
   console.log('  Project search');
   await go('projects/p/pjRs', 2026, 10, 15, 9, 10);

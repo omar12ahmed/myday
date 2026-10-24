@@ -23,7 +23,8 @@ export function webAddress(raw: string): string {
   } catch { return ''; }
 }
 // The site, for the small line under a link: "example-timber.co.uk" (without "www.").
-export const siteOf = (url: string) => { try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url; } };
+// An address with no site name (e.g. "mailto:…" kept from elsewhere) is shown as it is.
+export const siteOf = (url: string) => { try { return new URL(url).hostname.replace(/^www\./, '') || url; } catch { return url; } };
 // What a link is called: its title, or its site when it has none.
 export const resourceName = (r: Pick<ProjectResource, 'title' | 'url'>) => r.title || siteOf(r.url);
 // Whether this MyDay opens it: a saved address another MyDay accepted but this one doesn't is kept (so editing the
