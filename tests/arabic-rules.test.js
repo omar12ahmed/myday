@@ -173,6 +173,25 @@ check('vowelled and unvowelled versions are both kept where the package has them
   check('marking it ready again starts afresh from that day and clears your flag', A.lessonRecord(s1, L).readyOn === '2026-11-07' && !A.lessonRecord(s1, L).revisit && A.stateOf(s1, L, qs) === 'ready');
   check('Not ready after all takes back the day and leaves its cards in revision', A.unmarkReady(s1, L) && !A.lessonRecord(s1, L).readyOn && !!A.cardOf(s1, Q(2)) && A.stateOf(s1, L, qs) === 'practised');
 
+  // The independent review's cases (24 Oct 2026): the same day as Ready, a slip that isn't cleared by help, and session marks.
+  const s6 = stub(), a6 = A.beginSession(s6, L, 'standard');
+  A.markCheck(s6, a6, Q(1), 'notsure', 'own', k); A.finishSession(s6, a6); A.markReady(s6, L, qs, k);
+  check('"Not sure" in a session, then Ready anyway the same day: Ready to move on, not Needs revision', A.stateOf(s6, L, qs) === 'ready');
+  review(s6, Q(1), '2026-10-28', 'wrong', 'own', 'again');
+  check('a slip on a later day needs revision', A.stateOf(s6, L, qs) === 'needs-revision');
+  review(s6, Q(1), '2026-10-29', 'partly', 'notes', 'good');
+  check('…and stays until you recall it on your own: partly right with notes isn\'t enough', A.stateOf(s6, L, qs) === 'needs-revision');
+  review(s6, Q(1), '2026-10-30', 'right', 'hint', 'good');
+  check('…nor right with a hint', A.stateOf(s6, L, qs) === 'needs-revision');
+  review(s6, Q(1), '2026-10-31', 'right');
+  check('…right on your own clears it', A.stateOf(s6, L, qs) === 'ready');
+  const s7 = stub(), a7 = A.beginSession(s7, L, 'standard'); A.finishSession(s7, a7); A.markReady(s7, L, qs, k);
+  const a7b = A.beginSession(s7, L, 'revision');
+  for (const q of qs) A.markCheck(s7, a7b, q, 'right', 'own', '2026-10-28');
+  check('Holding comes from revision, not from session marks (all right on your own 8 days later is still Ready)', A.stateOf(s7, L, qs) === 'ready');
+  for (const q of qs) review(s7, q, '2026-10-28', 'right');
+  check('…the same answers in revision make it Holding', A.stateOf(s7, L, qs) === 'holding');
+
   const s2 = stub(), a2 = A.beginSession(s2, L, 'short');
   A.markCheck(s2, a2, Q(1), 'wrong', 'own', k); A.markCheck(s2, a2, Q(2), 'notsure', 'notes', k); A.markCheck(s2, a2, Q(3), 'partly', 'own', k);
   s2.arabic.cards.push({ id: Q(2), addedOn: '2026-10-01', review: { reps: 2, interval: 4, lapses: 0, due: '2026-10-30' } });

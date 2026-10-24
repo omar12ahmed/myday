@@ -14,7 +14,7 @@ import { addCards, cardOf, cardRef, nextWords, removeCards, wordCard, wordInRevi
 import { ADD_A_FEW, MODALITIES, NEW_WORDS_A_DAY, type ArabicAttempt, type Help, type Variant } from '../../data/arabic/types';
 import { beginSession, changeSession, discardSession, finishSession, markRevealed, openSession, sessionsFor, writeFirstAnswer } from '../../data/arabic/sessions';
 import { bringBackNotYet, clearRevisit, discardMarks, flagRevisit, lessonRecord, markCheck, markReady, marksIn, practisedUnmarked, unmarkReady } from '../../data/arabic/lessons';
-import { DELAYED_CHECK_DAYS, looksReady, STATE_LABEL, type LessonState, type StepKind } from '../../data/study/mastery';
+import { looksReady, STATE_LABEL, type LessonState, type StepKind } from '../../data/study/mastery';
 import { OUTCOME, SUPPORT } from '../../data/study/common';
 import type { Outcome, Support } from '../../data/types';
 import { arabicPlan, arabicState, checksOf, lessonLength, moduleProgress, type ArabicPlan, type Place } from './plan';
@@ -115,7 +115,8 @@ const STEP_EYEBROW: Record<Exclude<StepKind, 'lesson'>, string> = {
 };
 function NextStep({ plan, started }: { plan: ArabicPlan; started: boolean }) {
   const { step, reason, length } = plan, title = lessonIndex[step.lessonId].title;
-  const eyebrow = step.kind === 'lesson' ? (started ? 'Your next small step' : 'Your first small step') : STEP_EYEBROW[step.kind];
+  const eyebrow = step.kind === 'lesson' ? (started ? 'Your next small step' : 'Your first small step')
+    : step.kind === 'complete' && step.state === 'needs-revision' ? 'One lesson needs revision' : STEP_EYEBROW[step.kind];
   const revise = step.kind === 'revise' || (step.kind === 'complete' && step.due > 0 && step.state !== 'needs-revision');
   return <div className="rounded-tile bg-surface p-4 border border-outline mt-4" data-ar-next={step.kind}>
     <Eyebrow>{eyebrow}</Eyebrow>
@@ -145,7 +146,7 @@ function ReadyOffer({ data }: { data: MyDayData }) {
   const markTicked = () => { const k = todayKey(); if (update(d => { for (const id of ticked) markReady(d, id, checksOf(id), k); })) close(); };
   return <Card data-ar-ready-offer="">
     <h3 className="mt-0">Lessons you’ve practised</h3>
-    <p className="text-[15px]">You’ve finished sessions on {plural(ids.length, 'lesson')}. A finished session now counts as practice, so your next step stays on a lesson until you say it’s ready. Mark any you’re ready to move on from; their checks come back in a week.</p>
+    <p className="text-[15px]">You’ve finished sessions on {plural(ids.length, 'lesson')} without saying yet whether you’re ready to move on. A finished session counts as practice, so your next step stays on a lesson until you do. Mark any you’re ready to move on from; their checks come back in a week.</p>
     <div className="grid gap-1 mb-3">{ids.map(id => <label key={id} className="flex gap-3 items-center min-h-11 cursor-pointer">
       <input type="checkbox" className="size-5 flex-none accent-primary" data-s="ar-offer-lesson" value={id} checked={ticked.includes(id)} onChange={e => setTicked(t => e.target.checked ? [...t, id] : t.filter(x => x !== id))} />
       <span>{lessonIndex[id].title}</span></label>)}</div>
@@ -508,7 +509,7 @@ function UpNextLink({ next }: { next: UpNext }) {
 }
 function FinishedCard({ data, lessonId, checks, finished, next, onClose }: { data: MyDayData; lessonId: string; checks: string[]; finished: Finished; next: UpNext; onClose: () => void }) {
   const [back, setBack] = useState(finished.notYet), [readyNote, setReadyNote] = useState<string | null>(null), [asking, setAsking] = useState(false);
-  const state = arabicState(data, lessonId), ready = looksReady(checks, marksIn(data, finished.attemptId, lessonId));
+  const state = arabicState(data, lessonId), ready = looksReady(checks, marksIn(data, finished.attemptId, lessonId)), flagged = !!lessonRecord(data, lessonId)?.revisit;
   const done = state === 'ready' || state === 'holding';
   const markIt = () => { let added: { id: string; due: string }[] = []; const k = todayKey(); if (update(d => { added = markReady(d, lessonId, checks, k); })) setReadyNote(added.length ? `Its ${plural(added.length, 'check')} will come back ${backWhen(added.map(a => a.due))}.` : 'Its checks are already in your revision.'); };
   const keepOut = () => { const ids = back.map(b => b.id); if (update(d => { if (!removeCards(d, ids)) return false; })) setBack([]); };
@@ -522,7 +523,8 @@ function FinishedCard({ data, lessonId, checks, finished, next, onClose }: { dat
     {!done && !asking && <div className="flex flex-wrap gap-2">
       <Button variant={ready ? 'primary' : 'ghost'} data-action="ar-ready" onClick={markIt}>{ready ? 'Ready to move on' : 'Ready anyway'}</Button>
       {ready ? <Button variant="ghost" data-action="ar-not-yet" onClick={onClose}>Not yet</Button>
-        : <><Button variant="ghost" data-action="ar-needs-revision" onClick={() => setAsking(true)}>Needs revision…</Button><Button variant="ghost" data-action="ar-finished-close" onClick={onClose}>Close</Button></>}
+        : <>{flagged ? <Button variant="ghost" data-action="ar-finished-revisited" onClick={() => update(d => { if (!clearRevisit(d, lessonId)) return false; })}>Done revisiting</Button>
+            : <Button variant="ghost" data-action="ar-needs-revision" onClick={() => setAsking(true)}>Needs revision…</Button>}<Button variant="ghost" data-action="ar-finished-close" onClick={onClose}>Close</Button></>}
     </div>}
     {asking && <RevisitForm lessonId={lessonId} onDone={() => setAsking(false)} />}
     <UpNextLink next={next} />
@@ -545,9 +547,11 @@ function LessonPlace({ data, lessonId, checks }: { data: MyDayData; lessonId: st
   const [asking, setAsking] = useState(false), [note, setNote] = useState<string | null>(null);
   const state: LessonState = arabicState(data, lessonId), rec = lessonRecord(data, lessonId);
   const sessions = sessionsFor(data, lessonId).filter(a => a.finishedAt).length;
+  // When its checks really come back: the earliest due day among them (the 8-a-day limit and earlier schedules included).
+  const nextBack = checks.map(id => cardOf(data, id)?.review.due).filter((x): x is string => !!x).sort()[0];
   const line = state === 'new' ? 'New: no session yet.'
     : state === 'practised' ? `Practised: ${plural(sessions, 'session')}. Mark it ready to move on when it clicks.`
-    : state === 'ready' ? `Ready to move on since ${shortDate(rec!.readyOn!)}. Its checks come back from ${shortDate(shift(rec!.readyOn!, DELAYED_CHECK_DAYS))}.`
+    : state === 'ready' ? `Ready to move on since ${shortDate(rec!.readyOn!)}.${nextBack ? ` Its checks are in your revision: the next is ${backOn(nextBack)}.` : ''}`
     : state === 'holding' ? 'Holding: you recalled its checks on your own a week or more after marking it ready.'
     : rec?.revisit ? `Needs revision${rec.revisit.what ? `: ${rec.revisit.what}` : ''}.` : 'Needs revision: one of its checks slipped after you marked it ready. Recalling it on your own clears this.';
   const ready = () => { let added: { id: string; due: string }[] = []; const k = todayKey(); if (update(d => { added = markReady(d, lessonId, checks, k); })) setNote(added.length ? `Its ${plural(added.length, 'check')} will come back ${backWhen(added.map(a => a.due))}.` : null); };

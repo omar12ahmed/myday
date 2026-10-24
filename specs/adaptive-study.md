@@ -1,6 +1,6 @@
 # Adaptive Study with mastery tracking: the plan
 
-**Status:** built for Arabic on branch `adaptive-study` (24 October 2026), for release 1.46.0 once the owner gives the
+**Status:** built for Arabic on branch `adaptive-study` (24 October 2026), for release 1.47.0 once the owner gives the
 go-ahead for its migration. The owner's decisions of 23 October 2026 are in §2; Cybersecurity and your own courses
 follow as separate releases. As built: the Ready and flag days are local days (`DateKey`); marking a lesson ready
 again clears your own flag; the one-time offer lists practised lessons with no record of your own yet and closes for

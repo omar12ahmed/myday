@@ -21,7 +21,7 @@ function check(label, ok) {
       'export { CYBER_VERSION, curriculumTaskId } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/cybersecurity/types')) + ';',
       'export * as arabicCatalogue from ' + JSON.stringify(path.join(ROOT, 'app/src/study/arabic/catalogue')) + ';',
       'export { beginSession, finishSession } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/arabic/sessions')) + ';',
-      'export { markReady } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/arabic/lessons')) + ';',
+      'export { markReady, flagRevisit } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/arabic/lessons')) + ';',
       'export { arabicPlan, arabicState, checksOf } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/arabic/plan')) + ';',
       'export { todayKey } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/dates')) + ';',
     ].join('\n'));
@@ -198,6 +198,22 @@ function check(label, ok) {
     check('Unfinished optional Arabic extensions do not prevent required-path completion', rule.arabicState(extension, 'lesson.arabic-technical-terminology') === 'new' && option(extension, 'arabic').allComplete);
     rule.beginSession(extension, 'lesson.arabic-technical-terminology', 'standard');
     check('An optional Arabic extension session does not replace the completed required-path recommendation', option(extension, 'arabic').allComplete && !option(extension, 'arabic').resume);
+    console.log('\n[Arabic] Today says why: revisit, revise, and a path with one lesson to revisit');
+    const why = fresh(); why.arabic.pathId = 'path.arabic-start';
+    const start = requiredArabic, k = rule.todayKey(), joining = start.indexOf('lesson.arabic-letter-joining');
+    for (const id of start.slice(0, joining)) readyArabic(why, id);
+    rule.flagRevisit(why, 'lesson.arabic-letter-families', 'dot positions', k);
+    check('Today offers to revisit a lesson the next one builds on, naming that next lesson', option(why, 'arabic').href === arHref('lesson.arabic-letter-families')
+      && option(why, 'arabic').detail === 'Worth revisiting first: ' + rule.arabicCatalogue.lessonIndex['lesson.arabic-letter-joining'].title + ' builds on it', option(why, 'arabic'));
+    rule.markReady(why, 'lesson.arabic-letter-families', rule.checksOf('lesson.arabic-letter-families'), k);
+    why.arabic.cards.push({ id: 'lexeme.arabic-seed-001:recognise', addedOn: k, review: { reps: 0, interval: 0, lapses: 0, due: k } });
+    check('with revision due, Today says revision comes first and keeps the lesson as the link', option(why, 'arabic').href === arHref('lesson.arabic-letter-joining')
+      && option(why, 'arabic').detail === 'Revision first (1 ready in Arabic), then this lesson', option(why, 'arabic'));
+    why.arabic.cards = [];
+    for (const id of start) if (rule.arabicState(why, id) !== 'ready') readyArabic(why, id);
+    rule.flagRevisit(why, start[3], 'a note', k);
+    check('a path ready except one lesson says so on Today, not that the whole path is ready', !option(why, 'arabic').allComplete && option(why, 'arabic').href === arHref(start[3])
+      && option(why, 'arabic').detail === 'Every other lesson on your path is ready — this one needs revision', option(why, 'arabic'));
 
     console.log('\n[Reset preservation] Authored content, metadata and unrelated records');
     const rich = fresh();

@@ -26,15 +26,19 @@ export interface LessonEvidence {
 export const struggled = (a: CheckAnswer) => a.outcome === 'wrong' || a.outcome === 'notsure' || a.rating === 'again';
 const onOwn = (a: CheckAnswer) => a.outcome === 'right' && a.support === 'own';
 
-// The first that applies: Needs revision, Holding, Ready, Practised, New. A slip after Ready (the latest answer to one
-// of its checks, since that day, wasn't right) needs revision, and clears by itself once you recall it on your own.
+// The first that applies: Needs revision, Holding, Ready, Practised, New. Only answers from after the Ready day count
+// for a lesson marked ready: a mark made earlier that day was before you decided. A check slips when, since then, it
+// was answered Not right, Not sure or Again; it stays slipped until you recall it on your own (a right answer with a
+// hint isn't enough). Holding needs each check recalled on your own in revision (not a session mark) a week or more
+// after Ready, with no slip since.
 export function lessonState(e: LessonEvidence): LessonState {
   if (e.flagged) return 'needs-revision';
   if (e.readyOn) {
-    const ready = e.readyOn, since = (id: string) => (e.answers[id] ?? []).filter(a => a.date >= ready);
-    if (e.checks.some(id => { const last = since(id).at(-1); return !!last && struggled(last); })) return 'needs-revision';
+    const ready = e.readyOn, after = (id: string) => (e.answers[id] ?? []).filter(a => a.date > ready);
+    const slipped = (id: string) => { const list = after(id), i = list.map(struggled).lastIndexOf(true); return i >= 0 && !list.slice(i + 1).some(onOwn); };
+    if (e.checks.some(slipped)) return 'needs-revision';
     const holdFrom = shift(ready, DELAYED_CHECK_DAYS);
-    if (e.checks.length > 0 && e.checks.every(id => since(id).some(a => a.date >= holdFrom && onOwn(a)))) return 'holding';
+    if (e.checks.length > 0 && e.checks.every(id => after(id).some(a => a.rating !== undefined && a.date >= holdFrom && onOwn(a)))) return 'holding';
     return 'ready';
   }
   return e.finished > 0 ? 'practised' : 'new';
