@@ -1,5 +1,15 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.45.1 — Arabic corrections:** the Arabic curriculum is version 1.1.2, with errors fixed from a review of every
+Arabic item (23 October 2026). These include a mis-vowelled word (مُلَاحَظَات), a missing فَـ before a سَـ
+result, the Form II and diptote rules, a B2 example (وِجْهَةَ النَّظَرِ), a hamza seat (أقرؤه) and the relative
+clause after an indefinite noun. Check prompts are vowelled or reworded where they could mislead. Answers accept more
+correct alternatives, three reading texts are reworded, and transliterations gain helping vowels and consistent
+prefixes. IDs and question meanings are unchanged, and earlier sessions keep their curriculum version. The six
+clips whose sentences changed were replaced. With five earlier holds retaken, 16 new clips were transcribed blind
+and listened to ("all fine"): 654 checked clips ship and none are held. No saved-data, sync or database change;
+going back to 1.45.0 is safe.
+
 **1.45.0 — the open paper workspace:** a calmer redesign of every screen (details under "Design" below). The page
 is a low-chroma sage paper (#f4f5f2; dark mode a neutral charcoal, #151716), with flat panels, smaller corners and
 teal kept for key actions, next steps and where you are. Wide screens use a 12-column grid: Today puts the plan in
@@ -407,7 +417,7 @@ ordinary lessons and sessions. Revision cards stay as they are. Isolated letters
 words, unvowelled pieces and pieces marked only with shadda are held back. The same Charon voice, shared player,
 **Slower**, offline cache and synthesised-voice label apply; only checked clips enter the app. The 363 new clips have
 been transcribed blind, with 27 retakes. You listened to all 357 eligible clips ("both fine"); six uncertain
-recordings were held for a fluent reviewer. Curriculum 1.1.2 and its teaching companion (1.44.2) corrected six voiced
+recordings were held for a fluent reviewer. Curriculum 1.1.2 and its teaching companion (1.45.1) corrected six voiced
 sentences, one of them a held recording, and their clips were replaced, since a clip belongs to its exact text
 (`content/arabic-audio/audio-audit.json`, `removed`). Sixteen new clips cover the corrected and new texts and
 retakes of the five other holds. They were transcribed blind (`cross-check-1.1.2.json`) and you listened to them
