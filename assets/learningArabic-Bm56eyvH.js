@@ -1,1 +1,0 @@
-import{w as e}from"./index-DFc9u3Dw.js";import{T as t,c as n,n as r,x as i}from"./plan-BrL42Aqu.js";var a=(t,n)=>i[n]?{title:i[n].title,status:e[r(t,n)]}:null,o=e=>n(e.arabic.pathId).map(e=>({id:e,title:i[e].title,group:t.get(i[e].module_id)?.name??``}));export{o as arabicChoices,a as arabicLesson};
