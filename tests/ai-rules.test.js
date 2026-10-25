@@ -1637,6 +1637,11 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
       && wa.message === '“Deposit back” has been waiting since 28 October. “Ask about the armchair” was expected on 9 November.' && wa.changed.some(c => /count of days/.test(c)), wa);
     check('…and "overdue" never stands: a message that was only that becomes a plain line', K.checkAskReply(WANS('The armchair one is overdue.', []), ww, wslice, LD, undefined, wl.lookup)?.message === 'Here’s what you’re waiting on.');
     const wc = K.checkAskReply(JSON.stringify({ kind: 'answer', message: '“Deposit back” is still waiting, since 28 October.', items: [{ type: 'task', title: 'Chase: Deposit back', minutes: 5, category: 'admin', projectId: null }], action: null }), ww, wslice, LD, undefined, wl.lookup);
+    // (1.75.1) With no open projects, a wait needn't be in one: Today still offers the waiting look (and decisions), not a
+    // project's; Finance still offers neither.
+    const nw = K.normalize({ ...ww, projects: { ...ww.projects, items: [] } });
+    check('with no open projects, Today still offers what you\'re waiting on and your decisions (not a project); Finance neither', eq(K.askContext(K.askSlice(nw, '#today', LD), 'x', LD).can, ['notes', 'day', 'decisions', 'waiting'])
+      && eq(K.askContext(K.askSlice(nw, '#finance', LD), 'x', LD).can, ['notes', 'day']) && K.waitingLookup(nw, 'all').lookup.tasks.some(t => t.id === 'tkW2'));
     check('…a "Chase:" task it offers comes as one to tick', wc?.kind === 'add' && wc.items.length === 1 && wc.items[0].title === 'Chase: Deposit back' && !wc.items[0].already, wc);
     // The tone filter: tied to the wait — "the late post" and "behind the sofa" stay; counts in words and a fortnight go.
     const tone = m => K.checkAskReply(WANS(`“Deposit back” is waiting since 28 October. ${m}`, []), ww, wslice, LD, undefined, wl.lookup)?.message;

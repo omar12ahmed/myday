@@ -1,5 +1,10 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.76.1 — Ask MyDay looks at what you're waiting on, with no projects too:** in 1.75.0 the looks at what you're
+waiting on and at your open decisions were offered only when you had an open project, so with waiting tasks but no
+projects, "what am I waiting on?" searched your notes instead. Both are now offered everywhere but Finance and Health
+(a look at a project still needs a project). No other change; going back to 1.76.0 is safe.
+
 **1.76.0 — The tutor in parts:** "Explain this to me" on a Cybersecurity lesson now answers in parts you open one at
 a time, as "Check my answer" does: a hint first — a question to think with before any explanation (for subnetting, how
 many bits a /27 leaves, before any sums) — then an example, the explanation, a follow-up question and its answer. Where

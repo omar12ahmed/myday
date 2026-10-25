@@ -2,7 +2,7 @@
 // page's name and that page's small slice of your data — the same slice the "Sends:" line describes before you tap.
 // Never a private note; Finance and Health send only the page's name; a project's notes' text only with "AI help with
 // notes" switched on. A business idea's one page only from its Model tab (1.34.0).
-import { ASK_LIMITS as L, type AskContext, type AskLookup, type AskPage, type AskPageContext } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
+import { ASK_LIMITS as L, ASK_TOOLS, type AskContext, type AskLookup, type AskPage, type AskPageContext } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
 import { parseKey, prettyDate, shift, todayKey } from '../data/dates';
 import { focusProjects, whatMoved, whatsWaiting } from '../data/weekReview';
 import { noteName } from '../data/notes';
@@ -200,9 +200,10 @@ export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(
     time: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
     page: slice.page, text: cut(text.trim(), L.textChars), ...(followUp ? { followUp: { previous: cut(followUp.previous, L.previousChars), text: cut(followUp.text.trim(), L.followUpChars) } } : {}),
     context: slice.context,
-    // A project can be looked at only where your open projects' names go with the question (not Finance or Health).
-    // (So are your open decisions, which carry project names.)
-    can: slice.context.projects?.length ? ['notes', 'day', 'project', 'decisions', 'waiting'] : ['notes', 'day'], ...(lookup ? { lookup } : {}),
+    // A project can be looked at only where open projects' names go with the question (one of them is named by its id).
+    // Your open decisions and what you're waiting on carry project names, so they aren't offered on Finance or Health —
+    // but they are with no open projects (a wait needn't be in one).
+    can: [...ASK_TOOLS].filter(t => t === 'project' ? !!slice.context.projects?.length : t === 'decisions' || t === 'waiting' ? slice.page !== 'finance' && slice.page !== 'health' : true), ...(lookup ? { lookup } : {}),
   };
 }
 
