@@ -1,6 +1,6 @@
 {
  "about": "Course words: an authored word list per Arabic lesson (MyDay's own, not part of the supplied package), each word with its meaning, root, an example and a short note, beside the package's starter words (listed by id under \"seed\", not repeated). Fully vowelled. Each module is checked by the owner before it ships.",
- "status": "modules 4–16: checked by the owner (reads Arabic) on 2026-10-25, after independent cross-checks, and voiced (rounds four to eight). Modules 17–19: drafted, not yet checked or voiced",
+ "status": "modules 4–19: checked by the owner (reads Arabic) on 2026-10-25, after independent cross-checks, and voiced (rounds four to nine)",
  "version": "1.5",
  "lessons": {
   "lesson.arabic-greetings-address": {
@@ -6021,7 +6021,7 @@
      "root_reading": "ṣ-ḥ-ḥ",
      "example_ar": "هَذَا صَحِيحٌ، لَكِنَّ الْوَقْتَ قَصِيرٌ.",
      "example_meaning_en": "That’s true, but time is short.",
-     "note": "The same root as صِحَّة, “health”."
+     "note": "The same root as the word for “health”, as in صِحَّتُهُ جَيِّدَةٌ, “his health is good”."
     },
     {
      "id": "lexeme.arabic-opinion-repair-7",
@@ -6232,8 +6232,8 @@
      "part_of_speech": "adjective",
      "root_ar": "ر-ف-ق",
      "root_reading": "r-f-q",
-     "example_ar": "تَجِدُونَ الْمَلَفَّ مُرْفَقًا.",
-     "example_meaning_en": "You will find the file attached.",
+     "example_ar": "تَجِدُونَ الصُّورَةَ مُرْفَقَةً.",
+     "example_meaning_en": "You will find the picture attached.",
      "note": "Plural مُرْفَقَات, “attachments”."
     },
     {
@@ -6409,7 +6409,7 @@
      "root_reading": "kh-ṭ-ʾ",
      "example_ar": "فِي هَذِهِ الْجُمْلَةِ خَطَأٌ وَاحِدٌ.",
      "example_meaning_en": "There’s one mistake in this sentence.",
-     "note": "Plural أَخْطَاء. The hamza sits on alif after a fatḥa."
+     "note": "The hamza sits on alif after a fatḥa. In the plural, as in أَخْطَاءٌ كَثِيرَةٌ, “many mistakes”, it stands on the line after a long ā."
     },
     {
      "id": "lexeme.arabic-orthography-editing-7",
@@ -6598,8 +6598,8 @@
      "part_of_speech": "chunk",
      "root_ar": "و-ح-د",
      "root_reading": "w-ḥ-d",
-     "example_ar": "سَافَرَ وَحْدَهُ.",
-     "example_meaning_en": "He travelled alone.",
+     "example_ar": "سَافَرَ أَخِي وَحْدَهُ.",
+     "example_meaning_en": "My brother travelled alone.",
      "note": "With other endings: وَحْدِي, “on my own”, and وَحْدَهَا, “by herself”."
     },
     {
