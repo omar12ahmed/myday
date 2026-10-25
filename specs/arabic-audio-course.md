@@ -4,8 +4,9 @@
 shipped in 1.41.0 (21 October 2026): 55 new clips generated, independently transcribed
 and listened to on 21 October 2026 ("all fine"). Round three (b) shipped in 1.42.0 (21 October 2026): the owner
 approved all 357 eligible clips ("both fine"); six uncertain recordings were held. Curriculum 1.1.2 (1.45.1, 24 October
-2026) corrected six voiced sentences and replaced every held recording; 654 checked clips ship. Unvowelled material
-also waits for fluent review. Build/lint and all 54 default suites passed after two affected-suite reruns
+2026) corrected six voiced sentences and replaced every held recording; 654 checked clips ship. Text without vowel
+marks no longer waits for a teacher: see the decision of 25 October 2026 in §6. Round ten (1.94.0) voiced the six
+unmarked reading texts from MyDay's checked scripts and moved all fourteen reading texts to a new voice. Build/lint and all 54 default suites passed after two affected-suite reruns
 (4,956 checks); 24/24 live checks passed.
 **Date:** 20 October 2026, after release 1.39.0.
 **The numbers:** from `app/scripts/arabic-audio-inventory.mjs`. Run it by hand, with `--rounds` for the sizes in §4.
@@ -129,6 +130,11 @@ Round nine (course words for modules 17–19): 267 new clips, transcribed blind;
 texts the voice read wrongly on every take or another way are now said in context (الصُّورَة for الْمَلَفّ, read
 milaff; سَافَرَ أَخِي وَحْدَهُ; صِحَّتُهُ جَيِّدَةٌ; أَخْطَاءٌ كَثِيرَةٌ); five short forms still heard differently were
 approved by ear in three batches ("all good"). The key was deleted.
+Round ten (the reading texts, 1.94.0): the six unmarked texts' scripts were cross-checked (one change, the accusative
+after لَيْسَ … بَلْ) and approved by the owner's fluent checker. Then 98 sentence clips and 14 whole-text clips were made in
+WaveNet B with pause forms, transcribed blind (no letter differences beyond pause forms spelled another way) and
+approved in two batches ("all good"). The owner asked for one more take (كُرْسِيّ): a final ـِيّ or ـُوّ at a pause is now
+said ī or ū, and the four clips that changed were made again and approved. The temporary keys were deleted.
 
 **Each round works like round one.**
 - **On the Mac:**
@@ -181,6 +187,22 @@ This covers the 6 B1–B2 reading texts and 358 other pieces, mostly check quest
 
 **Recommendation: A for now.** Then D for the 6 B1–B2 texts if a fluent speaker becomes available, and B for the rest
 at that point. Don't use an AI-vowelled copy without a teacher's review: it would look checked when it isn't.
+
+**Decision (owner, 25 October 2026), replacing A:** voice all of it, as the owner has a fluent checker: "all including
+the 400 as i have someone who can check it", and "dont rely on the fluent checker the indendent fable checker should
+also check". So it's option C, with the owner's checker in place of a teacher. MyDay keeps its own fully vowelled copy
+of each unmarked piece (`content/teaching/arabic/voice-scripts.json`); the course text never changes and the app shows
+it as it is. Each copy is cross-checked by an independent reviewer first, then by the fluent checker, with the
+reviewer's changes marked; anything they disagree on goes to the owner. Only then are clips made, transcribed blind and
+listened to. The build refuses a copy whose letters differ from the course text. Order: the six reading texts first
+(round ten, 1.94.0), then the short pieces in two or three batches. Pieces unmarked on purpose (كتب on its own, single
+letters, endings, drills) stay without a voice, each listed with its reason for the checker.
+
+**Voice and pause forms (owner, 25 October 2026, after a listening trial):** WaveNet B (`ar-XA-Wavenet-B`) with pause
+forms. It is used for the reading texts and for every new clip from now on; older clips keep Chirp 3 HD Charon until
+each is redone (the audit lists it under `earlier_voices`). Pause forms are for connected reading only, because in a
+short example the last word's ending is often the point of the lesson. Each reading text also has one clip read in one
+go, for "Listen to the whole text".
 
 ## 7. Questions for you
 

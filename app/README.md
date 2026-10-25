@@ -1,5 +1,18 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.94.0 — The reading texts in a new voice, read more naturally, and all fourteen voiced:** the six B1–B2 reading
+texts the course gives without vowel marks now have a voice too. It reads from MyDay's own fully vowelled copy of each
+(`content/teaching/arabic/voice-scripts.json`), which an independent reviewer cross-checked and the owner's fluent
+checker approved. The page still shows the course's text, and a line under the player says the voice reads MyDay's
+vowelled copy; the build refuses a copy whose letters differ from the course text. All fourteen texts are now read in
+a new voice, WaveNet B, chosen by ear in a listening trial, and in pause forms: at a comma or full stop a word drops its
+last short vowel, as a natural reader does (a final -ki or -ti that shows who is speaking or spoken to stays). "Listen
+to the whole text" now plays each text read in one go; tapping a sentence still plays just that sentence. Short
+examples elsewhere keep the earlier voice and every ending, since there the ending is often what the lesson teaches;
+new clips from now on use the new voice. 112 clips (98 sentences and 14 whole texts), transcribed blind and listened
+to. No saved-data, sync or database change, and nothing new goes to AI. Going back to 1.93.0 is safe: it brings back
+the earlier reading voice, without the six unmarked texts.
+
 **1.93.0 — Words for Arabic modules 17–19, the rest of B1:** longer listening and unrehearsed interaction:
 listening passes, connected speech, follow-up questions, giving an opinion and putting things right, and the words for
 Standard Arabic, dialect and accent (module 17); paragraphs, formal emails, summaries, the names of the spelling and
@@ -1419,6 +1432,23 @@ retakes of the five other holds. They were transcribed blind (`cross-check-1.1.2
 `scripts/review-arabic-audio.mjs teaching sounds-families lesson-checks` makes a local listening checklist;
 `MYDAY_AUDIO_REVIEW_BATCH` splits it into manageable sittings. No saved-data change.
 
+**A new voice for the reading texts (round ten, 1.94.0):** the audio plan's "text without vowel marks waits for a
+teacher" is replaced by the owner's decision of 25 October 2026: such text is voiced from MyDay's own vowelled copy,
+checked first by an independent reviewer and by the owner's fluent checker, then listened to. The first part is the
+six unmarked reading texts (`../content/teaching/arabic/voice-scripts.json`). `readingPassages`
+(`scripts/arabic-reading-sentences.mjs`) uses a text's script for the voice and the course text for the page, and stops
+the build if a script's letters or sentences differ from the course text, if the course already vowels that text, or
+if no such text exists. A listening trial compared the earlier voice (full endings, pause forms, no marks) with
+WaveNet B and C; the owner chose WaveNet B (`ar-XA-Wavenet-B`) with pause forms, for connected reading only
+(`pauseForms`: a final short vowel or tanween becomes a sukūn at a pause, -an becomes ā, a final ة is said -a, a
+doubled letter stays doubled, ـِيّ and ـُوّ are said ī and ū, and a final vowel on ت or ك stays, as it can mark who
+is speaking). The audit names WaveNet B as the voice for new clips and lists Charon under `earlier_voices`; clips in
+either voice ship. Each text also has a whole clip (the `reading-wholes` source, found by `wholeText` and listed under
+`wholes` in `voice-clips.json`), which "Listen to the whole text" plays; without a checked one, the sentences play in
+turn. 112 new clips; the 78 earlier sentence clips they replace, and four first takes the owner asked to redo, were removed
+(`removed` in the audit), and the transcriptions are in `cross-check-voice-scripts.json`. The roughly 450 short unmarked pieces (check questions,
+answers, key concepts and tasks) follow in batches; pieces unmarked on purpose stay without a voice.
+
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.
 
@@ -1688,7 +1718,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/weekReview.ts`, `src/review/ReviewScreen.tsx`, `src/today/ReviewCard.tsx` | The weekly review (1.37.0): `weekReview.ts` (when the review is due, what moved, what's waiting, focus, and saving the review); `ReviewScreen.tsx` (the four steps and See the pattern); `ReviewCard.tsx` (the card on Today). |
 | `src/study/arabic/WordFamilies.tsx`, `src/study/arabic/families.ts`, `content/teaching/arabic/word-families.json`, `scripts/validate-families.mjs` | Word families (1.38.0): the card on the vocabulary page and its notes; which family a word is in; the authored families (by word id); the build check. |
 | `src/study/arabic/voice.ts`, `src/study/arabic/Listen.tsx`, `../content/arabic-audio/`, `scripts/arabic-voice-sources.mjs`, `scripts/make-arabic-audio.mjs`, `scripts/prepare-audio.mjs`, `scripts/arabic-audio-inventory.mjs` | The Arabic course's voice (1.39.0; lessons' examples 1.40.0): the clip list (by exact text) and the one shared player with Slower (device-only key `myday.arabic.slower`); the play button, the voice note and the label; the clips and their audit; which texts have a voice; making them (by hand); the build check; what's left to voice. |
-| `src/study/arabic/ReadingVoice.tsx`, `src/study/arabic/voice.ts`, `scripts/arabic-reading-sentences.mjs`, `src/study/arabic/voice-clips.json`, `scripts/review-arabic-audio.mjs` | Reading-text voice (round three (a), 1.41.0): whole-text Listen and sentence controls; sequence support in the shared player; shared sentence boundaries; the generated `readings` list, with only checked clips playable; a local listening checklist for future clips. |
+| `src/study/arabic/ReadingVoice.tsx`, `src/study/arabic/voice.ts`, `scripts/arabic-reading-sentences.mjs`, `src/study/arabic/voice-clips.json`, `scripts/review-arabic-audio.mjs`, `../content/teaching/arabic/voice-scripts.json` | Reading-text voice (round three (a), 1.41.0; round ten, 1.94.0: the six unmarked texts from MyDay's vowelled scripts, pause forms, a whole clip per text): whole-text Listen and sentence controls; sequence support in the shared player; shared sentence boundaries; the generated `readings` list, with only checked clips playable; a local listening checklist for future clips. |
 | `src/study/arabic/arabic-runs.mjs`, `scripts/arabic-voice-sources.mjs`, `scripts/review-arabic-audio.mjs` | Teaching and check voice (round three (b), 1.42.0): shared extraction of the exact Arabic displayed; the `teaching`, `sounds-families` and `lesson-checks` sources; a local listening checklist combining sources, split into sittings with `MYDAY_AUDIO_REVIEW_BATCH`. |
 | `src/commitments/` | Work shifts and appointments: the form and list used by both Today and Calendar. |
 | `src/data/sayings.ts`, `src/components/Saying.tsx`, `src/shell/sayingsMode.ts` | Sayings (1.49.0): the sayings, which places each belongs to, the choice for a place and day, the gentle set and the credit line (`sayings.ts`); the quiet line itself (`Saying.tsx`); the footer's device-only switch (`sayingsMode.ts`). |
