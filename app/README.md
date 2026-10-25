@@ -1096,7 +1096,7 @@ Recently, Learning, Resources and Files only when they hold something; empty one
 the Overview**, a switch for each, to hide one on that project; a hidden one that holds something is named under
 **Hidden here** ("Show Resources (2)"), one tap from showing again. Where you left off, the next step, Worth a look,
 At a glance, About it, Tasks, Coming up and the status always show, in the same order on every project. Saved data:
-an optional `hidden` list on the project, synced with it (no schema, migration or database change; earlier releases
+an optional `hiddenSections` list on the project, synced with it (no schema, migration or database change; earlier releases
 keep the field unread and show every card). Never sent to AI.
 
 **Searching one project (1.52.0; `specs/projects-search.md`):** every project page has "Search this project"

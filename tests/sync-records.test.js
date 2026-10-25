@@ -353,6 +353,12 @@ const clone = o => JSON.parse(JSON.stringify(o));
   check('a task with steps: "· 1 of 2 steps" at the end of its summary, and its steps (ticked ones marked) and "Starts after 2 tasks" as its lines',
     / · 1 of 2 steps$/.test(R.recordSummary('task:tk1', stepped)) && eq(R.recordLines('task:tk1', stepped), ['✓ Measure the wall', 'Order the boards', 'Starts after 2 tasks']), [R.recordSummary('task:tk1', stepped), R.recordLines('task:tk1', stepped)]);
   check('…and a task without them has no lines, and its summary as before', eq(R.recordLines('task:tk1', recs.get('task:tk1')), []) && !/steps/.test(R.recordSummary('task:tk1', recs.get('task:tk1'))));
+  // A project's tools and the Overview sections hidden on it (specs/projects-sections.md), likewise.
+  const pj = [...recs.keys()].find(k => k.startsWith('project:'));
+  if (pj) {
+    const pv = recs.get(pj), pc = { ...pv, value: { ...pv.value, tools: ['research'], hiddenSections: ['files', 'notes', 'newer-thing'] } };
+    check('a project\'s lines name its tools and the Overview cards hidden on it ("Hidden on the Overview: Files; Notes; newer-thing")', R.recordLines(pj, pc).includes('Tools: research') && R.recordLines(pj, pc).includes('Hidden on the Overview: Files; Notes; newer-thing') && !R.recordLines(pj, pv).some(l => /^Tools|^Hidden on/.test(l)), R.recordLines(pj, pc));
+  } else check('(test setup: a project record to show the lines of)', false, [...recs.keys()].slice(0, 20));
 
   fs.rmSync(dir, { recursive: true, force: true });
   const sm = summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);

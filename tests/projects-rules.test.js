@@ -28,7 +28,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     `export { stepsText, allStepsDone, addStep, editStep, tickStep, moveStep, removeStep, startsAfter, startsAfterText, afterChoices, setStartsAfter, removeTask, TASK_LIMITS } from ${src('tasks')};`,
     `export { linkTask, heldBack } from ${src('projects')};`,
     `export { needsYou, GROUP_LABEL as NEED_GROUP_LABEL } from ${src('attention')};`,
-    `export { SECTIONS, isHidden, sectionContent, overviewSections, setHidden, openOnArrival, arriving, arrived } from ${src('projectSections')};`,
+    `export { SECTIONS, isHidden, sectionContent, overviewSections, setHidden, hiddenWords, openOnArrival, arriving, arrived } from ${src('projectSections')};`,
     `export { setDone, clearDay, toggleRoll, followQueued, taskFromQueue, sendToQueue } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
@@ -2096,8 +2096,9 @@ const clone = o => JSON.parse(JSON.stringify(o));
   {
     const k = '2026-10-14', at = '2026-10-10T09:00';
     const rdp = (extra, r = { dropped: 0 }) => K.normalizeProjects({ items: [base('pjS', extra)] }, r).items[0];
-    check('reading: "hidden" keeps section ids once each, a newer MyDay\'s too; nothing else', eq(rdp({ hidden: ['files', 'files', 'notes', 'newer-thing', 5, '', 'x'.repeat(41)] }).hidden, ['files', 'notes', 'newer-thing']));
-    check('…an empty list, or one that isn\'t a list, is simply absent; at most 20', !('hidden' in rdp({ hidden: [] })) && !('hidden' in rdp({ hidden: 'files' })) && rdp({ hidden: Array.from({ length: 25 }, (_, i) => 's' + i) }).hidden.length === 20);
+    check('reading: "hiddenSections" keeps section ids once each, a newer MyDay\'s too; nothing else', eq(rdp({ hiddenSections: ['files', 'files', 'notes', 'newer-thing', 5, '', 'x'.repeat(41)] }).hiddenSections, ['files', 'notes', 'newer-thing']));
+    const r25 = { dropped: 0 };
+    check('…an empty list, or one that isn\'t a list, is simply absent; at most 20, the rest counted', !('hiddenSections' in rdp({ hiddenSections: [] })) && !('hiddenSections' in rdp({ hiddenSections: 'files' })) && rdp({ hiddenSections: Array.from({ length: 25 }, (_, i) => 's' + i) }, r25).hiddenSections.length === 20 && r25.dropped === 5, r25);
     const TK = (id, x = {}) => ({ id, title: 'Task ' + id, listId: '', category: 'admin', minutes: 20, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-01-01T09:00', postponed: 0, blockers: [], letGoOn: null, projectId: 'pjS', ...x });
     const fresh = (x = {}) => { const w = world(base('pjS', { title: 'Renew the passport', updatedAt: '2026-01-01T09:00', ...x })); w.tasks.items = []; return w; }; // (Recently lists a project's latest changes, however old: none here)
     const view = (w, opened) => { const v = K.overviewSections(w, P(w), opened); return { show: [...v.show], fold: v.fold, hidden: v.hiddenWith.map(h => `${h.id}:${h.count}`) }; };
@@ -2116,22 +2117,25 @@ const clone = o => JSON.parse(JSON.stringify(o));
     console.log('  hiding');
     w = fresh({ resources: [{ id: 'rs1', title: 'A', url: 'https://example.com/a', addedOn: k }, { id: 'rs2', title: 'B', url: 'https://example.com/b', addedOn: k }] });
     const was = P(w).updatedAt;
-    check('hiding Resources saves it on the project (and counts as a change to it)', K.setHidden(w, 'pjS', 'resources', true) === true && eq(P(w).hidden, ['resources']) && P(w).updatedAt !== was && K.isHidden(P(w), 'resources'));
-    check('…it no longer shows, and with something in it it\'s named: "Resources (2)"', !view(w).show.includes('resources') && eq(view(w).hidden, ['resources:2']) && !view(w).fold.includes('resources'), view(w));
+    check('hiding Resources saves it on the project, without counting as work on it (its updated time, and so its place in Projects, stay)', K.setHidden(w, 'pjS', 'resources', true) === true && eq(P(w).hiddenSections, ['resources']) && P(w).updatedAt === was && K.isHidden(P(w), 'resources'));
+    check('…and it goes inside the project\'s own sync record', K.splitProject(P(w)).some(r => r.kind === 'project' && eq(r.content.value.hiddenSections, ['resources'])), K.splitProject(P(w)).map(r => r.kind));
+    check('…it no longer shows, and with something in it it\'s named: "Resources (2)"', !view(w).show.includes('resources') && eq(view(w).hidden, ['resources:2']) && !view(w).fold.includes('resources') && K.hiddenWords(K.overviewSections(w, P(w)).hiddenWith[0]) === 'Resources (2)', view(w));
     check('hiding it again changes nothing; an unknown section or project is refused', K.setHidden(w, 'pjS', 'resources', true) === false && K.setHidden(w, 'pjS', 'calendar', true) === false && K.setHidden(w, 'pjNope', 'files', true) === false);
     K.setHidden(w, 'pjS', 'files', true);
     check('a hidden card with nothing in it is neither named nor offered to add', !view(w).hidden.some(x => x.startsWith('files')) && !view(w).fold.includes('files'), view(w));
     w.tasks.items = [TK('t1', { createdAt: '2026-10-12T09:00' })]; K.setHidden(w, 'pjS', 'recently', true);
     check('a hidden Recently isn\'t named (it\'s only a view of changes)', !view(w).show.includes('recently') && !view(w).hidden.some(x => x.startsWith('recently')), view(w));
     check('opened on this visit (from the row, or a search result in it), a card shows whether hidden or folded', view(w, new Set(['resources', 'notes'])).show.includes('resources') && view(w, new Set(['resources', 'notes'])).show.includes('notes') && !view(w, new Set(['resources'])).hidden.some(x => x.startsWith('resources')));
-    check('showing it again; when none is hidden the project has no "hidden" key', K.setHidden(w, 'pjS', 'resources', false) && K.setHidden(w, 'pjS', 'files', false) && K.setHidden(w, 'pjS', 'recently', false) && !('hidden' in P(w)) && K.setHidden(w, 'pjS', 'files', false) === false);
-    w = fresh({ hidden: ['newer-thing'] });
-    check('a section id from a newer MyDay in "hidden" is kept and changes nothing here', eq(view(w).fold, ['notes', 'learning', 'resources', 'files']) && K.setHidden(w, 'pjS', 'notes', true) && eq(P(w).hidden, ['newer-thing', 'notes']));
+    check('showing it again; when none is hidden the project has no "hiddenSections" key', K.setHidden(w, 'pjS', 'resources', false) && K.setHidden(w, 'pjS', 'files', false) && K.setHidden(w, 'pjS', 'recently', false) && !('hiddenSections' in P(w)) && K.setHidden(w, 'pjS', 'files', false) === false);
+    w = fresh({ hiddenSections: ['newer-thing'] });
+    check('a section id from a newer MyDay is kept and changes nothing here; an unknown id among the opened ones is ignored', eq(view(w).fold, ['notes', 'learning', 'resources', 'files']) && eq(view(w, new Set(['calendar'])), view(w)) && K.setHidden(w, 'pjS', 'notes', true) && eq(P(w).hiddenSections, ['newer-thing', 'notes']));
+    w = fresh({ hiddenSections: ['files'] }); w.files = { items: [1, 2].map(n => ({ id: 'flsec00000' + n, name: n + '.pdf', type: 'application/pdf', size: 10, sha256: 'd'.repeat(64), area: 'project', state: 'kept', addedOn: k, deletedOn: k, removedFrom: { kind: 'project', id: 'pjS' } })) };
+    check('a hidden Files whose files are all in Recently deleted is named as such: "Files (2 recently deleted)" (they go for good after 30 days)', K.hiddenWords(K.overviewSections(w, P(w)).hiddenWith[0]) === 'Files (2 recently deleted)', K.overviewSections(w, P(w)).hiddenWith);
 
     console.log('  opening on arrival');
     K.openOnArrival('pjS', 'resources'); K.openOnArrival('pjS', 'files');
     check('openOnArrival notes the cards for that project\'s next Overview; arrived clears it', eq(K.arriving('pjS'), ['resources', 'files']) && eq(K.arriving('pjOther'), []) && (K.arrived('pjS'), eq(K.arriving('pjS'), [])));
-    w = fresh({ hidden: ['resources'] });
+    w = fresh({ hiddenSections: ['resources'] });
     const before = JSON.stringify(w); K.overviewSections(w, P(w)); K.overviewSections(w, P(w), new Set(['files'])); K.SECTIONS.forEach(s => K.sectionContent(w, P(w), s.id));
     check('working out what shows writes nothing', JSON.stringify(w) === before);
   }

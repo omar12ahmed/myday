@@ -23,6 +23,7 @@ import { CATS, freshState, normalize, SCHEMA_VERSION, SEED } from '../data/norma
 import { DEFAULT_CATEGORIES } from '../data/notes';
 import { STAGES, STATUS_LABEL } from '../data/projects';
 import { stepsText } from '../data/tasks';
+import { SECTIONS } from '../data/projectSections';
 import { CAT_LABEL, ENERGY_LABEL } from '../data/plan';
 import type { Book, Category, Commitment, Day, DayContext, FileRecord, ListItem, MyDayData, Note, Project, QueueItem, Recipe, ResearchItem, Review as StudyReview, StudySession, TaskItem, WorkoutSession } from '../data/types';
 import { isObj } from '../data/util';
@@ -465,7 +466,9 @@ export function recordLines(key: string, content: Content | null): string[] {
     const kept = kind === 'project' && Array.isArray(v.resources) ? (v.resources as unknown[]).filter(isObj).filter(r => typeof r.url === 'string')
       .map(r => resourceName({ title: typeof r.title === 'string' ? r.title : '', url: r.url as string })) : [];
     const own = kind === 'project' ? [v.outcome ? `Aiming for: ${v.outcome}` : null, v.finishedWhen ? `Finished when: ${v.finishedWhen}` : null,
-      isObj(v.leftOff) && typeof v.leftOff.text === 'string' ? `Where I left off: ${v.leftOff.text}` : null, learning.length ? `Learning: ${learning.join('; ')}` : null, kept.length ? `Links: ${kept.join('; ')}` : null] : [];
+      isObj(v.leftOff) && typeof v.leftOff.text === 'string' ? `Where I left off: ${v.leftOff.text}` : null, learning.length ? `Learning: ${learning.join('; ')}` : null, kept.length ? `Links: ${kept.join('; ')}` : null,
+      // …and its tools and the Overview sections hidden on it, so two versions that differ only there can be told apart.
+      words(v.tools) ? `Tools: ${words(v.tools)}` : null, words(v.hiddenSections) ? `Hidden on the Overview: ${words((v.hiddenSections as unknown[]).map(x => SECTIONS.find(s => s.id === x)?.label ?? x))}` : null] : [];
     return [v.title, ...own, v.text, v.summary, v.details, v.notes,
       kind === 'project_choice' ? (v.why === null ? 'Reason not saved' : v.why || 'No reason given') : v.why,
       v.on, v.date ? `${v.about ? 'About ' : ''}${v.date}` : null,

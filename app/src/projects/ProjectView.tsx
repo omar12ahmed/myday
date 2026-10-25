@@ -15,7 +15,7 @@ import { addNote, noteName } from '../data/notes';
 import { isBusiness, isCase, isResearchKind, knownTemplate, setTemplate, TEMPLATES, type TemplateChoice } from '../data/businessModel';
 import { hasResearch, setResearch } from '../data/research';
 import { worthALook } from '../data/projectDashboard';
-import { arrived, arriving, isHidden, overviewSections, SECTIONS, setHidden, type Section } from '../data/projectSections';
+import { arrived, arriving, hiddenWords, isHidden, overviewSections, SECTIONS, setHidden, type HiddenWith, type Section } from '../data/projectSections';
 import { comingUp, deleteProject, editProject, heldBack, setProjectPrivate, linkNote, nextStep, PROJECT_LIMITS, projectById, projectNotes, projectTasks, recently, setLeftOff, setNextStep, STATUS_LABEL, stillOpen, unlinkAppointment, whyNext } from '../data/projects';
 import { update } from '../data/storage';
 import { addTask, addToTodaysPlan, onTodaysPlan, planRoom, setTaskDone, stepsText, startsAfterText } from '../data/tasks';
@@ -112,12 +112,18 @@ function startAdding(s: Section) {
 // What's folded or hidden on the Overview (specs/projects-sections.md): "Add to this project: a note · …" for the
 // optional cards with nothing in them, and "Hidden here: Files (3)" for hidden ones that hold something — one tap
 // from each. Nothing when there's neither.
-function MoreCard({ p, fold, hiddenWith, onOpen }: { p: Project; fold: Section[]; hiddenWith: { id: Section; label: string; count: number }[]; onOpen: (s: Section) => void }) {
+const CARD_ID: Record<Section, string> = { notes: 'projectNotes', recently: 'projectRecent', learning: 'projectLearning', resources: 'projectResources', files: 'files-project' };
+function MoreCard({ p, fold, hiddenWith, onOpen }: { p: Project; fold: Section[]; hiddenWith: HiddenWith[]; onOpen: (s: Section) => void }) {
   if (!fold.length && !hiddenWith.length) return null;
-  function show(s: Section, label: string) { if (update(d => (setHidden(d, p.id, s, false) ? undefined : false))) toast(`${label} shown again.`); }
+  // Shown again: the keyboard goes to the card itself (the button you pressed goes with the line).
+  function show(s: Section, label: string) {
+    if (!update(d => (setHidden(d, p.id, s, false) ? undefined : false))) return;
+    toast(`${label} shown again.`);
+    requestAnimationFrame(() => { const el = document.getElementById(CARD_ID[s]); if (el) { el.tabIndex = -1; el.focus(); } });
+  }
   const first = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
   return (
-    <Card aria-labelledby={fold.length ? 'projectMoreH' : 'projectHiddenH'} id="projectMore">
+    <Card aria-labelledby={[fold.length ? 'projectMoreH' : '', hiddenWith.length ? 'projectHiddenH' : ''].filter(Boolean).join(' ')} id="projectMore">
       {fold.length > 0 && <>
         <h3 id="projectMoreH" className="m-0">Add to this project</h3>
         <div className="flex flex-wrap gap-x-5" data-s="sections-fold">
@@ -127,7 +133,7 @@ function MoreCard({ p, fold, hiddenWith, onOpen }: { p: Project; fold: Section[]
       {hiddenWith.length > 0 && <>
         <h3 id="projectHiddenH" className={`m-0 ${fold.length ? 'mt-3' : ''}`}>Hidden here</h3>
         <div className="flex flex-wrap gap-x-5" data-s="sections-hidden">
-          {hiddenWith.map(h => <LinkButton key={h.id} className="text-[15px]" aria-label={`Show ${h.label} (${h.count}) on the Overview`} data-action="section-show" data-id={h.id} onClick={() => show(h.id, h.label)}>Show {h.label} ({h.count})</LinkButton>)}
+          {hiddenWith.map(h => <LinkButton key={h.id} className="text-[15px]" aria-label={`Show ${hiddenWords(h)} on the Overview`} data-action="section-show" data-id={h.id} onClick={() => show(h.id, h.label)}>Show {hiddenWords(h)}</LinkButton>)}
         </div>
       </>}
     </Card>

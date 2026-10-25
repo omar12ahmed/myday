@@ -93,9 +93,11 @@ export function normalizeProjects(raw: unknown, report: { dropped: number }): Pr
     // Tools switched on (specs/projects-research.md): kept when there are some; one from a newer MyDay too.
     const tools = [...new Set(listOf(p.tools).filter((t): t is string => typeof t === 'string' && !!t && t.length <= 40))];
     if (tools.length) item.tools = tools; else delete item.tools;
-    // Overview sections hidden on it (specs/projects-sections.md): kept when there are some; one from a newer MyDay too.
-    const hidden = [...new Set(listOf(p.hidden).filter((t): t is string => typeof t === 'string' && !!t && t.length <= 40))].slice(0, 20);
-    if (hidden.length) item.hidden = hidden; else delete item.hidden;
+    // Overview sections hidden on it (specs/projects-sections.md): kept when there are some, one from a newer MyDay too;
+    // past 20 they're counted.
+    const sections = [...new Set(listOf(p.hiddenSections).filter((t): t is string => typeof t === 'string' && !!t && t.length <= 40))];
+    report.dropped += Math.max(0, sections.length - 20);
+    if (sections.length) item.hiddenSections = sections.slice(0, 20); else delete item.hiddenSections;
     seen.add(item.id);
     out.items.push(item);
   }
