@@ -1,5 +1,23 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.77.0 — Research, and stored files nothing lists:** a project can switch on **Research** (About it → Edit; the
+new "Research" kind has it from the start, and a business idea's Model tab offers it). Its tab has **Questions** (open
+ones first; each gathers its findings as supports, contradicts or relates to, and what you concluded, then Mark answered
+or Reopen), **Findings** (what you found, from which sources, the day, its limits, and what it bears on: a question, or
+one of a business idea's things that must be true) and **Sources** (one of the project's links, files or notes, nothing
+copied, or one you type). On the Model tab each thing that must be true shows "2 findings support it · 1 contradicts
+it"; whether it looks true stays your choice. Search this project finds them; deleting a project deletes its research
+(on every device); turning Research off keeps it. Never sent to AI. The Files card now finds stored files that nothing
+in your MyDay lists any more (left by importing an older backup, say) and offers **Delete them…**, asked first; the
+`files` function was updated first. Also: a new device, or one cleared by Delete everything, takes your account's
+version of the starter lists it hasn't touched instead of asking you to choose; text fields and Capture show a focus
+ring you can see (3:1 or more). Each research item is a record in the new optional `research` section, synced as the
+new kind `research` (migration `20261025180000_sync_research.sql`); a project's tools are a new optional field; saved
+data stays schema 5. Going back to 1.76.1 is safe: it keeps the research section and a project's tools and kind
+unread, and ignores the research records (checked with the actual previous release); it doesn't show them. A device
+which spends time on the previous release receives other devices' changes of that kind only when they next change (or
+when it signs in again).
+
 **1.76.1 — Ask MyDay looks at what you're waiting on, with no projects too:** in 1.75.0 the looks at what you're
 waiting on and at your open decisions were offered only when you had an open project, so with waiting tasks but no
 projects, "what am I waiting on?" searched your notes instead. Both are now offered everywhere but Finance and Health
@@ -952,7 +970,7 @@ is now, then goes through Import's own checks and question; signed in it replace
 it says so. The device's id, label and last result live in `myday.backup.v1` on that device only (not your data, not
 synced or exported). No saved-data, sync or database change. Never sent to AI.
 
-**Research (unreleased; `specs/projects-research.md`):** a project can switch on **Research** (About it → Edit; a
+**Research (1.77.0; `specs/projects-research.md`):** a project can switch on **Research** (About it → Edit; a
 "Research" kind has it from the start; a business idea's Model tab offers it). Its tab has **Questions** (open first;
 each gathers its findings as supports / contradicts / relates to, and **What you concluded**, then Mark answered or
 Reopen), **Findings** (what you found, from which sources, the day, its **Limits**, and what it bears on: a question,
@@ -960,7 +978,8 @@ or one of a business idea's things that must be true) and **Sources** (one of th
 nothing copied, or typed: a title, who or where it's from, its date). On the Model tab each thing that must be true
 shows "2 findings support it · 1 contradicts it"; whether it looks true stays your choice. Search this project finds
 them. Each item is one record (`research`, synced as the new kind `research`), saying which project it belongs to;
-deleting the project deletes them (also when its deletion arrives from another device). Turning Research off keeps everything. Never sent to AI.
+deleting the project deletes them (also when its deletion arrives from another device). Turning Research off keeps
+everything. Never sent to AI.
 
 **Delete everything (1.73.0; `specs/delete-everything.md`):** at the end of Your account, **Delete everything…**
 opens a page that says what goes (your MyDay on every device and in your account, what you deleted before, your files
@@ -982,7 +1001,9 @@ kind `file`) that projects and notes list by id (`fileIds`); the bytes go straig
 five-minute links that the `files` Edge Function signs with the file's MD5 (and its length), and the function checks
 each stored file's type and size, by its first bytes too, before it counts as kept. Every 10 minutes, while the device
 is in step with your account, a tidy settles uploads that won't finish and deletes files whose 30 days are over; a
-file a project or note still lists never goes. Never sent to AI. Opening and adding need a connection
+file a project or note still lists never goes. Stored files that nothing lists any more (left by importing an
+older backup, say) are found once the device is in step and offered under the storage line with **Delete them…**
+(1.77.0; `specs/files.md`, "Stored files nothing lists"). Never sent to AI. Opening and adding need a connection
 and your account; backups list your files, the files stay in R2.
 
 **Your week — the weekly review (1.37.0):** a short look back over the last seven days, at `#review` ("Your week"), in

@@ -1,7 +1,8 @@
 # Projects: Research (Phase 3, first workflow)
 
 **Status:** the owner chose Research as Phase 3's first workflow and made the decisions in §2 (24 October 2026).
-Being built on branch `research`. Nothing live (the migration, publishing) happens without the owner's yes.
+Released in 1.77.0 (25 Oct 2026, the owner's advance yes): the migration `20261025180000_sync_research.sql` was applied
+after a backup and a rehearsal that rolled back, and the app was published.
 **Based on:** source at 1.73.0. Plan: `specs/projects-vision.md` §6 (templates choose tools), §10 ("Research and
 investigation"), §12 (notes, resources, files), §17 (Phase 3).
 

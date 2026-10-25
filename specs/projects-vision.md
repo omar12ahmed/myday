@@ -4,7 +4,7 @@
 describes direction, not approval to build: each increment in section 17 needs its own short specification and the
 owner's sign-off before work starts. **Phase 1 is delivered** (1.46.0, 1.48.0, 1.50.0, 1.52.0 and 1.54.0, each with
 its own specification; see section 17). **Phase 2 is delivered** (1.56.0 and 1.58.0 Study links, 1.62.0 Resources,
-1.65.0 automatic backups, 1.68.0 and 1.69.0 files). **Phase 3 has started:** Research (`specs/projects-research.md`),
+1.65.0 automatic backups, 1.68.0 and 1.69.0 files). **Phase 3 has started:** Research (1.77.0, `specs/projects-research.md`),
 then steps inside a task and "waits for" (`specs/projects-steps.md`).
 **Based on:** source at release 1.45.1 (status updated at 1.75.0).
 
