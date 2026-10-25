@@ -348,6 +348,11 @@ const clone = o => JSON.parse(JSON.stringify(o));
   check('…and a one-line summary', [...recs].every(([k, c]) => typeof R.recordSummary(k, c) === 'string' && R.recordSummary(k, c).length > 0), [...recs].filter(([k, c]) => !R.recordSummary(k, c)).map(([k]) => k));
   check('e.g. a note by its first line, a task with its date, Finance by what\'s in it', R.recordSummary('note:nt1', recs.get('note:nt1')) === 'Budget for the van' && /^Book a van · Sat.*\b10\b/.test(R.recordSummary('task:tk1', recs.get('task:tk1'))) /* the date in this device's format */ && R.recordSummary('finance:finance', recs.get('finance:finance')) === '1 money-owed entry · 1 expense',
     ['note:nt1', 'task:tk1', 'finance:finance'].map(k => R.recordSummary(k, recs.get(k))));
+  // A task's steps and what it waits for (specs/projects-steps.md): two versions that differ only there can be told apart.
+  const stepped = { ...recs.get('task:tk1'), steps: [{ id: 'ts1', text: 'Measure the wall', done: true }, { id: 'ts2', text: 'Order the boards', done: false }], after: ['tkX', 'tkY'] };
+  check('a task with steps: "· 1 of 2 steps" at the end of its summary, and its steps (ticked ones marked) and "Waits for 2 tasks" as its lines',
+    / · 1 of 2 steps$/.test(R.recordSummary('task:tk1', stepped)) && eq(R.recordLines('task:tk1', stepped), ['✓ Measure the wall', 'Order the boards', 'Waits for 2 tasks']), [R.recordSummary('task:tk1', stepped), R.recordLines('task:tk1', stepped)]);
+  check('…and a task without them has no lines, and its summary as before', eq(R.recordLines('task:tk1', recs.get('task:tk1')), []) && !/steps/.test(R.recordSummary('task:tk1', recs.get('task:tk1'))));
 
   fs.rmSync(dir, { recursive: true, force: true });
   const sm = summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);

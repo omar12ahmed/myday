@@ -22,6 +22,7 @@ import { prettyDate, shortDate } from '../data/dates';
 import { CATS, freshState, normalize, SCHEMA_VERSION, SEED } from '../data/normalize';
 import { DEFAULT_CATEGORIES } from '../data/notes';
 import { STAGES, STATUS_LABEL } from '../data/projects';
+import { stepsText } from '../data/tasks';
 import { CAT_LABEL, ENERGY_LABEL } from '../data/plan';
 import type { Book, Category, Commitment, Day, DayContext, FileRecord, ListItem, MyDayData, Note, Project, QueueItem, Recipe, ResearchItem, Review as StudyReview, StudySession, TaskItem, WorkoutSession } from '../data/types';
 import { isObj } from '../data/util';
@@ -253,7 +254,9 @@ const MANY: Many[] = [
   { kind: 'task', label: 'Task',
     items: d => d.tasks.items, put: (dr, id, c) => putItem(dr.tasks.items, id, c),
     clean: (id, raw) => same(id, via({ tasks: { lists: [], items: [raw] } }).tasks.items[0]),
-    summary: c => { const t = c as unknown as TaskItem; return `${t.title}${t.due ? ` · ${shortDate(t.due)}${t.time ? ` ${t.time}` : ''}` : ''}${t.done ? ' · done' : t.letGoOn ? ' · let go' : t.waiting ? ' · waiting' : ''}`; } },
+    summary: c => { const t = c as unknown as TaskItem; return `${t.title}${t.due ? ` · ${shortDate(t.due)}${t.time ? ` ${t.time}` : ''}` : ''}${t.done ? ' · done' : t.letGoOn ? ' · let go' : t.waiting ? ' · waiting' : ''}${t.steps?.length ? ` · ${stepsText(t)}` : ''}`; },
+    // Its steps and how many tasks it waits for (specs/projects-steps.md), so two versions that differ only there can be told apart.
+    lines: c => { const t = c as unknown as TaskItem; return [...(t.steps ?? []).map(x => `${x.done ? '✓ ' : ''}${x.text}`), ...(t.after?.length ? [`Waits for ${plural(t.after.length, 'task')}`] : [])]; } },
   { kind: 'session', label: 'Study session',
     items: d => d.study.sessions,
     put: (dr, id, c) => { putItem(dr.study.sessions, id, c, byStart); dr.study.activeId = fixActive(dr.study.sessions, dr.study.activeId); },
