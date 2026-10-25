@@ -3,8 +3,10 @@
 **Status:** the owner's vision of 24 October 2026, with review corrections folded in (listed in section 21). It
 describes direction, not approval to build: each increment in section 17 needs its own short specification and the
 owner's sign-off before work starts. **Phase 1 is delivered** (1.46.0, 1.48.0, 1.50.0, 1.52.0 and 1.54.0, each with
-its own specification; see section 17). Phase 2 isn't specified or approved yet.
-**Based on:** source at release 1.45.1 (Phase 1 status updated at 1.54.0).
+its own specification; see section 17). **Phase 2 is delivered** (1.56.0 and 1.58.0 Study links, 1.62.0 Resources,
+1.65.0 automatic backups, 1.68.0 and 1.69.0 files). **Phase 3 has started:** Research (`specs/projects-research.md`),
+then steps inside a task and "waits for" (`specs/projects-steps.md`).
+**Based on:** source at release 1.45.1 (status updated at 1.75.0).
 
 ## 1. Purpose
 
@@ -521,7 +523,9 @@ first, each with its own specification:
 Add structured Study references and related-resource links. Add automatic backups, then dependable attachment
 support. Define ownership, deletion and restoration behaviour.
 
-The objective is connected information with clear sources of truth.
+The objective is connected information with clear sources of truth. *Delivered:* `specs/projects-study-links.md`,
+`specs/projects-resources.md`, `specs/automatic-backups.md` and `specs/files.md`; "delete everything" as a true wipe
+(`specs/delete-everything.md`, 1.73.0) covers the deletion and restoration side.
 
 ### Phase 3: Develop specialist workflows
 
