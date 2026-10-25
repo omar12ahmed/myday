@@ -89,7 +89,7 @@ const openLesson = async d => { await d.open(BASE + '#' + HASH); return d.until(
   await phone.open(BASE + '#study'); await synced(phone);
   check('phone: receives the 16 cards exactly', await phone.until(`(JSON.parse(localStorage.getItem('${KEY}')).arabic.cards || []).filter(c => ${JSON.stringify(ALL)}.includes(c.id)).length === 16`, 30000) && same(await cardsOf(phone), added));
   await phone.open(BASE + '#study/arabic/vocabulary');
-  const cwFile = JSON.parse(require('fs').readFileSync(path.join(__dirname, '../../content/teaching/arabic/course-words.json'), 'utf8')).lessons;
+  const cwFile = JSON.parse(require('fs').readFileSync(path.join(process.env.MYDAY_ROOT || path.join(__dirname, '../..'), 'content/teaching/arabic/course-words.json'), 'utf8')).lessons;
   const cwLessons = Object.keys(cwFile).length, cwWords = Object.values(cwFile).reduce((n, l) => n + l.words.length, 0);
   check(`phone: Vocabulary has "Words from the lessons", ${cwLessons} lessons, ${cwWords} words`, await phone.until(`document.querySelector('[data-ar-course-words="${cwLessons}"] h2')?.textContent === 'Words from the lessons'`, 60000)
     && await phone.ev(`document.querySelectorAll('[data-ar-course-words] li[data-ar-word]').length === ${cwWords}`));
