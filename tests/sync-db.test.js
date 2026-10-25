@@ -346,6 +346,35 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     check('the AI limits\' counts are not part of the wipe (no ai_usage rows touched)', (await sql(`select count(*)::int as n from information_schema.triggers where event_object_table = 'ai_usage' and trigger_name = 'sync_epoch_guard'`))[0].n === 0);
   }
 
+  console.log('\n[21] A project\'s research (Projects → Research, 20261025180000_sync_research.sql)');
+  {
+    const RA = await S.addUser(db, 'research-a@example.test', 'x'), RB = await S.addUser(db, 'research-b@example.test', 'x');
+    const rpush = (who, changes, device = 'dev-r') => S.as(db, who, q => q('select public.sync_push_v2($1, $2::jsonb, $3) as r', [who, JSON.stringify(changes), device])).then(x => x.rows[0].r);
+    const rpull = who => S.as(db, who, q => q('select * from public.sync_pull_v2($1, 0, 500)', [who])).then(x => x.rows);
+    const q1 = { id: 'rqdbtest0001', type: 'question', projectId: 'pjdbtest', text: 'Do commuters buy tea?', conclusion: '', answeredOn: null, createdAt: '2026-10-25T09:00', updatedAt: '2026-10-25T09:00', futureBit: { keep: [1] } };
+    const f1 = { id: 'rfdbtest0001', type: 'finding', projectId: 'pjdbtest', text: 'Three of five said yes', limits: 'Small sample', on: '2026-10-25', sourceIds: [], about: [{ kind: 'question', id: q1.id, stance: 'supports' }], createdAt: '2026-10-25T09:00', updatedAt: '2026-10-25T09:00' };
+    let r2 = await rpush(RA, [change('research', q1.id, 0, q1), change('research', f1.id, 0, f1)]);
+    check('research records save through sync_push_v2, each its own record', r2.every(x => x.status === 'applied' && x.version === 1), r2);
+    const got = (await rpull(RA)).filter(x => x.kind === 'research');
+    check('they come back with their fields, including ones a newer MyDay added', got.length === 2 && got.find(x => x.record_id === q1.id || x.id === q1.id)?.data.futureBit?.keep?.[0] === 1, got.map(x => x.kind));
+    check('another account cannot read them, through sync_pull or the table', !(await rpull(RB)).some(x => x.kind === 'research') && (await S.as(db, RB, q => q(`select * from public.sync_records where kind = 'research'`))).rows.length === 0);
+    r2 = await rpush(RA, [change('research', q1.id, 0, { ...q1, text: 'Stale' })]);
+    check('a stale device cannot overwrite one (conflict)', r2[0].status === 'conflict', r2);
+    r2 = await rpush(RA, [change('research', q1.id, 1, { ...q1, conclusion: 'Yes, most do.', answeredOn: '2026-10-25' })]);
+    check('an update with the right version is applied', r2[0].status === 'applied' && r2[0].version === 2, r2);
+    r2 = await rpush(RA, [change('research', f1.id, 1, null, { deleted: true })]);
+    check('removing one reaches other devices as a tombstone (the kind is deletable)', r2[0].status === 'applied' && (await rpull(RA)).some(x => x.kind === 'research' && x.deleted), r2);
+    r2 = await rpush(RA, [change('file', 'fldbresearch1', 0, { id: 'fldbresearch1', name: 'A.pdf', type: 'application/pdf', size: 1, sha256: 'a'.repeat(64), area: 'project', state: 'kept', addedOn: '2026-10-25' }), change('cyber_portfolio', 'pfdbresearch1', 0, { id: 'pfdbresearch1', title: 'x' }), change('note', 'ntdbresearch1', 0, { id: 'ntdbresearch1', title: 'x' })]);
+    check('every earlier kind is still accepted after the kind lists change again', r2.every(x => x.status === 'applied'), r2);
+    r2 = await rpush(RA, [change('researches', 'x1', 0, {})]);
+    check('a kind that is still unknown is refused', r2[0].status === 'rejected', r2);
+    const wiped = await S.as(db, RA, q => q('select public.sync_wipe($1) as r', [RA])).then(x => x.rows[0].r);
+    check('Delete everything deletes research rows too (records and tombstones), leaving another account\'s alone', wiped.epoch >= 1 && (await sql(`select count(*)::int as n from public.sync_records where user_id = $1`, [RA]))[0].n === 0);
+    check('…and after the wipe an older MyDay (v2) cannot write research back', /Delete everything\. Update MyDay/.test(await fails(() => rpush(RA, [change('research', 'rqdbtest0002', 0, { ...q1, id: 'rqdbtest0002' })]))));
+    r2 = await S.as(db, RA, q => q('select public.sync_push_v3($1, $2::jsonb, $3, $4) as r', [RA, JSON.stringify([change('research', 'rqdbtest0003', 0, { ...q1, id: 'rqdbtest0003' })]), 'dev-r3', wiped.epoch])).then(x => x.rows[0].r);
+    check('a device that knows the new epoch (v3) can write research again', Array.isArray(r2) && r2[0].status === 'applied', r2);
+  }
+
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

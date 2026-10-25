@@ -275,7 +275,7 @@ async function signIn(d, url) {
     await now.returnToApp();
     check('back on this release the entry still lists its file, and the file is there', await now.until(`(() => { const d = JSON.parse(localStorage.getItem('${KEY}')); return (d.cybersecurity.portfolio || []).some(e => e.id === '${PE}' && (e.fileIds || []).includes('${PFID}')) && d.files.items.some(f => f.id === '${PFID}'); })()`, 20000));
 
-    console.log('\n[11] Delete everything: a release that does not know it cannot write back to a wiped account (specs/delete-everything.md)');
+    console.log('\n[12] Delete everything: an older release cannot write back to a wiped account (one that knows the wipe clears itself instead) (specs/delete-everything.md)');
     const knowsWipe = fs.readdirSync(assets).some(f => f.endsWith('.js') && fs.readFileSync(path.join(assets, f), 'utf8').includes('sync_push_v3'));
     console.log(`The previous release ${knowsWipe ? 'knows' : 'doesn’t know'} Delete everything.`);
     const ctl = async (name, body = {}) => (await fetch(`http://127.0.0.1:${SUPA}/__standin/${name}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).json();
@@ -286,23 +286,83 @@ async function signIn(d, url) {
     check('(test setup: the account holds records from the earlier sections)', wasHolding > 3, wasHolding);
     await S.as(db, user, q => q('select public.sync_wipe($1::uuid)', [user]));
     check('(test setup: the account was wiped with Delete everything; it holds nothing now)', (await rowsOf()).length === 0 && Number((await S.owner(db, 'select epoch from public.sync_accounts where user_id = $1', [user])).rows[0].epoch) === 1);
-    await before.setData(`s => { s.projects.items.push({ id: 'pjOldCopy', title: 'Old copy on the previous release', summary: '', stage: 'capture', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}' }); }`);
-    await before.open(BEFORE + '#sync');
-    check('the previous release\'s next push is refused, with a message that says to update (not "sign in again")', await before.until(`/This account was cleared with Delete everything\\. Update MyDay to sync it\\./.test(document.body.textContent)`, 40000), await before.text('#syncScreen'));
-    check('…it shows as a problem to fix, and does not ask to sign in again', /The cloud refused the request/.test(await before.text('#syncScreen')) && !/Please sign in again/i.test(await before.text('#syncScreen')), await before.text('#syncScreen'));
-    await D.sleep(1500);
-    check('nothing of its copy reaches the account: no project, note, task or day, and not the old project (the only rows are the other device\'s fresh start)', !(await rowsOf()).some(x => ['project', 'note', 'task', 'day', 'session'].includes(x.kind) || x.id === 'pjOldCopy') && !(await rowsOf()).some(x => x.deleted), (await rowsOf()).map(x => `${x.kind}:${x.id}`));
-    await before.open(BEFORE + '#backups'); await before.until(`document.querySelector('[data-action=backup-now]')`, 15000);
-    await before.click('[data-action=backup-now]'); await D.sleep(2500);
-    const bk = await ctl('backup-objects');
-    check('its backup is refused (409) and stores nothing', Array.isArray(bk) && bk.filter(o => o.key.startsWith(user + '/')).length === 0 && !(await before.text('#toast')).includes('Backed up'), [bk, await before.text('#toast')]);
-    await before.open(NOW + '#today');
-    check('this release, on the same device profile, clears the old copy and says so', await before.until(`!!document.querySelector('[data-s=wiped-notice]')`, 40000) && /Everything was deleted from another device on /.test(await before.text('[data-s=wiped-notice]')), await before.text('#app'));
-    check('…its data is a fresh start (the old project is gone) and it rejoins the account', (await before.data()).projects.items.every(p => p.id !== 'pjOldCopy') && await synced(before) && (await before.status()) === 'synced', await before.status());
-    check('…and now it can write: its starter records reach the account, but never the old project', await eventually(async () => (await rowsOf()).length > 0) && !(await rowsOf()).some(x => x.id === 'pjOldCopy'));
+    // The two devices rejoin the emptied account one after the other: this release first, then the previous release once
+    // this one is synced. (Releases 1.73.0 to 1.75.0 could show a conflict over the starter note collections when two
+    // devices rejoined at the same moment — each uploads fresh starters with random ids; fixed from 1.76.0, so a race
+    // is tested in app-sync, with both devices on this release.)
+    await now.returnToApp();
+    await now.until(`!!document.querySelector('[data-s=wiped-notice]')`, 40000);
+    await synced(now);
+    if (knowsWipe) {
+      await before.setData(`s => { s.projects.items.push({ id: 'pjOldCopy', title: 'Old copy on the previous release', summary: '', stage: 'capture', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}' }); }`);
+      await before.open(BEFORE + '#today');
+      check('a previous release that knows Delete everything clears itself at its next sync and says so', await before.until(`!!document.querySelector('[data-s=wiped-notice]')`, 40000) && /Everything was deleted from another device on /.test(await before.text('[data-s=wiped-notice]')), await before.text('#app'));
+      check('…its old copy is gone, and nothing of it reaches the account', (await before.data()).projects.items.every(p => p.id !== 'pjOldCopy') && !(await rowsOf()).some(x => ['project', 'note', 'task', 'day', 'session'].includes(x.kind) || x.id === 'pjOldCopy'), (await rowsOf()).map(x => `${x.kind}:${x.id}`));
+    } else {
+      await before.setData(`s => { s.projects.items.push({ id: 'pjOldCopy', title: 'Old copy on the previous release', summary: '', stage: 'capture', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}' }); }`);
+      await before.open(BEFORE + '#sync');
+      check('the previous release\'s next push is refused, with a message that says to update (not "sign in again")', await before.until(`/This account was cleared with Delete everything\\. Update MyDay to sync it\\./.test(document.body.textContent)`, 40000), await before.text('#syncScreen'));
+      check('…it shows as a problem to fix, and does not ask to sign in again', /The cloud refused the request/.test(await before.text('#syncScreen')) && !/Please sign in again/i.test(await before.text('#syncScreen')), await before.text('#syncScreen'));
+      await D.sleep(1500);
+      check('nothing of its copy reaches the account: no project, note, task or day, and not the old project (the only rows are the other device\'s fresh start)', !(await rowsOf()).some(x => ['project', 'note', 'task', 'day', 'session'].includes(x.kind) || x.id === 'pjOldCopy') && !(await rowsOf()).some(x => x.deleted), (await rowsOf()).map(x => `${x.kind}:${x.id}`));
+      await before.open(BEFORE + '#backups'); await before.until(`document.querySelector('[data-action=backup-now]')`, 15000);
+      await before.click('[data-action=backup-now]'); await D.sleep(2500);
+      const bk = await ctl('backup-objects');
+      check('its backup is refused (409) and stores nothing', Array.isArray(bk) && bk.filter(o => o.key.startsWith(user + '/')).length === 0 && !(await before.text('#toast')).includes('Backed up'), [bk, await before.text('#toast')]);
+    }
+    if (!knowsWipe) {
+      await before.open(NOW + '#today');
+      check('this release, on the same device profile, clears the old copy and says so', await before.until(`!!document.querySelector('[data-s=wiped-notice]')`, 40000) && /Everything was deleted from another device on /.test(await before.text('[data-s=wiped-notice]')), await before.text('#app'));
+      check('…its data is a fresh start (the old project is gone) and it rejoins the account', (await before.data()).projects.items.every(p => p.id !== 'pjOldCopy') && await synced(before) && (await before.status()) === 'synced', await before.status());
+      check('…and now it can write: its starter records reach the account, but never the old project', await eventually(async () => (await rowsOf()).length > 0) && !(await rowsOf()).some(x => x.id === 'pjOldCopy'));
+    } else await before.open(NOW + '#today');
     await before.open(NOW + '#backups'); await before.until(`document.querySelector('[data-action=backup-now]')`, 15000);
     await before.click('[data-action=backup-now]');
     check('and its backup works again (it sends the account\'s epoch)', await eventually(async () => ((await ctl('backup-objects')) || []).some(o => o.key.startsWith(user + '/')), 15000));
+
+    check('after the wipe section, this release is fully in step (the two devices rejoined one after the other: no conflict over starter records)', await synced(now) && (await now.status()) === 'synced', { status: await now.status(), sync: await now.ev(`(() => { const l = JSON.parse(localStorage.getItem('myday.sync.v1') || '{}').link || {}; return { out: Object.keys(l.out || {}), conflicts: Object.fromEntries(Object.entries(l.conflicts || {}).map(([k, c]) => [k, JSON.stringify(c.content).slice(0, 300)])) }; })()`) });
+    console.log('\n[13] A project\'s research (its tools, its Research kind, the research section and the research records) passes through the previous release unchanged');
+    const knowsResearch = fs.readdirSync(assets).some(f => f.endsWith('.js') && fs.readFileSync(path.join(assets, f), 'utf8').includes('projectResearch') || fs.readFileSync(path.join(assets, f), 'utf8').includes('"research"'));
+    console.log(`The previous release ${knowsResearch ? 'might know' : 'doesn’t know'} research.`);
+    const PRS = 'pjResBack', RQB = 'rqback000001', RFB = 'rfback000001';
+    const rq = { id: RQB, type: 'question', projectId: PRS, text: 'Do commuters buy tea?', conclusion: '', answeredOn: null, createdAt: stamp, updatedAt: stamp, futureBit: { keep: ['research', 1] } };
+    const rf = { id: RFB, type: 'finding', projectId: PRS, text: 'Three of five said yes', limits: 'Small sample', on: today, sourceIds: [], about: [{ kind: 'question', id: RQB, stance: 'supports' }, { kind: 'newer', id: 'z1', stance: 'doubts' }], createdAt: stamp, updatedAt: stamp };
+    const canon = v => (Array.isArray(v) ? v.map(canon) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map(k => [k, canon(v[k])])) : v);
+    const same = (a, b) => JSON.stringify(canon(a)) === JSON.stringify(canon(b));
+    const rrecord = async id => (await S.owner(db, `select data, deleted from public.sync_records where user_id = $1 and kind = 'research' and id = $2`, [user, id])).rows[0];
+    await before.open(BEFORE + '#today'); await before.until(`!!document.querySelector('#nav')`, 20000); // (the previous release, again: the section before ended on this one)
+    await now.returnToApp();
+    await now.setData(`s => { s.projects.items.push({ id: '${PRS}', title: 'Researching a tea cart', summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}', template: 'research', tools: ['research', 'future-tool'] });
+      s.research.items.push(${JSON.stringify(rq)}, ${JSON.stringify(rf)}); }`);
+    check('this release sends the research as its own records, and the project with its kind and tools', await eventually(async () => same((await rrecord(RQB))?.data, rq) && same((await rrecord(RFB))?.data, rf)) && await eventually(async () => { const p = (await record('project', PRS))?.data?.value ?? (await record('project', PRS))?.data; return p?.template === 'research' && eq(p?.tools, ['research', 'future-tool']); }), [await rrecord(RQB), await rrecord(RFB), await record('project', PRS), await now.status()]);
+    const sentQ = await rrecord(RQB), sentF = await rrecord(RFB);
+    await before.returnToApp();
+    check('the previous release syncs normally with those records in the account', await synced(before) && (await before.status()) === 'synced');
+    check('…and receives the project with its kind and tools exactly (a kind it does not know is kept)', await before.until(`(() => { const p = JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(x => x.id === '${PRS}'); return !!p && p.template === 'research' && JSON.stringify(p.tools) === '["research","future-tool"]'; })()`, 25000), JSON.stringify((await before.data()).projects.items.find(p => p.id === PRS)));
+    check('…but not the research records themselves: it ignores that kind', !(((await before.data()).research?.items) || []).some(x => x.projectId === PRS), (await before.data()).research);
+    await before.setData(`s => { const p = s.projects.items.find(x => x.id === '${PRS}'); p.title = 'Researching a tea cart (renamed)'; p.stage = 'understand'; p.updatedAt = '${today}T12:45'; }`);
+    check('a rename and stage change on the previous release reach the account, with the kind and tools as they were', await eventually(async () => { const p = (await record('project', PRS))?.data?.value ?? (await record('project', PRS))?.data; return p?.title === 'Researching a tea cart (renamed)' && p?.template === 'research' && eq(p?.tools, ['research', 'future-tool']); }) && await synced(before), (await record('project', PRS))?.data);
+    check('…and the research records in the account are exactly as sent', same((await rrecord(RQB))?.data, sentQ.data) && same((await rrecord(RFB))?.data, sentF.data) && !(await rrecord(RQB)).deleted);
+    await before.setData(`s => { s.research = { items: [${JSON.stringify(rq)}], futureSection: true }; }`);
+    await before.open(BEFORE + '#today'); await before.until(`document.querySelector('[data-action=motion]')`, 15000);
+    await before.click('[data-action=motion]'); await D.sleep(800);
+    const keptSection = await before.data();
+    check('a save by the previous release keeps a research section unread (its items and an unknown field) and the project\'s tools', same(keptSection.research?.items?.[0], rq) && keptSection.research?.futureSection === true && eq(keptSection.projects.items.find(p => p.id === PRS).tools, ['research', 'future-tool']), keptSection.research);
+    await before.click('[data-action=motion]'); await D.sleep(500);
+    await before.setData(`s => { delete s.research; }`);
+    await now.returnToApp();
+    check('back on this release the title and stage arrive, and the kind, tools and research are as they were', await now.until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === '${PRS}')?.title === 'Researching a tea cart (renamed)'`, 25000) && same((await now.data()).research.items.find(x => x.id === RQB), rq) && same((await now.data()).research.items.find(x => x.id === RFB), rf) && same((await now.data()).projects.items.find(p => p.id === PRS).tools, ['research', 'future-tool']), (await now.data()).research.items.map(x => x.id));
+    await now.open(NOW + `#projects/p/${PRS}/research`);
+    check('its Research tab shows the question and the finding (a Research kind has the tab without the switch)', await now.until(`/Do commuters buy tea\\?/.test(document.querySelector('[data-s=research-questions]')?.textContent || '') && /Three of five said yes/.test(document.querySelector('[data-s=research-findings]')?.textContent || '')`, 15000), await now.text('#app'));
+
+    console.log('  Deleting the project on the previous release');
+    await before.open(BEFORE + '#projects/p/' + PRS); await before.until(`document.querySelector('[data-action=project-delete]')`, 15000);
+    await before.click('[data-action=project-delete]'); await before.until(`document.querySelector('[data-action=dialog-confirm]')`); await before.answer(true);
+    check('the previous release deletes the project; its research records stay in the account (it does not know them)', await eventually(async () => (await S.owner(db, `select deleted from public.sync_records where user_id = $1 and kind = 'project' and id = $2`, [user, PRS])).rows[0]?.deleted === true) && await synced(before) && !(await rrecord(RQB)).deleted && !(await rrecord(RFB)).deleted);
+    await now.returnToApp();
+    check('back on this release the project\'s deletion arrives and its research goes with it', await now.until(`(() => { const d = JSON.parse(localStorage.getItem('${KEY}')); return !d.projects.items.some(p => p.id === '${PRS}') && !d.research.items.some(x => x.projectId === '${PRS}'); })()`, 30000), (await now.data()).research.items.length);
+    check('…and its research deletions are sent, so the account holds no live research for it', await eventually(async () => (await rrecord(RQB))?.deleted === true && (await rrecord(RFB))?.deleted === true, 25000), [await rrecord(RQB), await rrecord(RFB), await now.status()]);
+    check('…and this release is fully in step again afterwards (nothing waiting, no conflict)', await synced(now) && (await now.status()) === 'synced', { status: await now.status(), sync: await now.ev(`(() => { const l = JSON.parse(localStorage.getItem('myday.sync.v1') || '{}').link || {}; return { out: Object.keys(l.out || {}), conflicts: Object.keys(l.conflicts || {}), rejected: Object.keys(l.rejected || {}) }; })()`) });
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {

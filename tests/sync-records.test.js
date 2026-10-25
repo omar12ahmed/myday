@@ -153,6 +153,33 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('MyDay data with no files sends no file records, and one without the files section is read as none', ![...R.localRecords(R.normalize(raw)).keys()].some(k => k.startsWith('file:')) && eq(R.normalize(raw).files, { items: [] }) && eq(none.files, { items: [] }));
   }
 
+  console.log('\n[1c] A project\'s research (specs/projects-research.md)');
+  {
+    const withResearch = clone(raw);
+    const at = { createdAt: '2026-10-20T09:00', updatedAt: '2026-10-20T09:00' };
+    withResearch.research = { items: [
+      { id: 'rqsync00001', type: 'question', projectId: 'pj1', text: 'Do commuters buy tea?', conclusion: 'Mostly mint', answeredOn: '2026-10-22', futureBit: { keep: [1] }, ...at },
+      { id: 'rssync00001', type: 'source', projectId: 'pj1', ref: { kind: 'resource', id: 'rsrc1' }, title: 'Timber merchant', from: '', on: null, ...at },
+      { id: 'rssync00002', type: 'source', projectId: 'pj1', ref: null, title: 'Interview with Priya', from: 'Market stall', on: '2026-10-10', ...at },
+      { id: 'rfsync00001', type: 'finding', projectId: 'pj1', text: 'Three of five said yes', limits: 'Small sample', on: '2026-10-12', sourceIds: ['rssync00002'], about: [{ kind: 'question', id: 'rqsync00001', stance: 'supports' }, { kind: 'newer', id: 'z', stance: 'doubts' }], ...at },
+      { id: 'xsync000001', type: 'sketch', projectId: 'pj1', strokes: [1, 2], ...at }] };
+    const d3 = R.normalize(withResearch), r3 = R.localRecords(d3);
+    check('each question, source and finding is its own "research" record (a type from a newer MyDay too), with its fields', ['rqsync00001', 'rssync00001', 'rssync00002', 'rfsync00001', 'xsync000001'].every(id => r3.has('research:' + id)) && eq(r3.get('research:rqsync00001').futureBit, { keep: [1] }) && r3.get('research:rfsync00001').about[1].stance === 'doubts' && r3.get('research:xsync000001').type === 'sketch');
+    check('a research record is exactly the same when it arrives on another device (clean)', [...r3].filter(([k]) => k.startsWith('research:')).every(([k, c]) => R.fingerprint(R.cleanRecord(k, clone(c))) === R.fingerprint(c)));
+    const back = clone(R.freshState());
+    for (const [k, c] of r3) R.putRecord(back, k, clone(c));
+    const byOrder = items => [...items].sort((x, y) => x.createdAt.localeCompare(y.createdAt) || x.id.localeCompare(y.id)).map(x => x.id);
+    check('put into a new MyDay, the research comes back with every field, ordered by when it was made and then its id (the same on every device, whatever order the records arrive in)', eq(back.research.items.map(x => x.id), byOrder(d3.research.items)) && eq(byOrder(back.research.items), back.research.items.map(x => x.id)) && eq(back.research.items.map(x => JSON.stringify(x)).sort(), d3.research.items.map(x => JSON.stringify(x)).sort()), back.research.items.map(x => x.id));
+    { const rev = clone(R.freshState()); for (const [k, c] of [...r3].reverse()) R.putRecord(rev, k, clone(c)); check('…including when the records arrive in the opposite order', eq(rev.research.items.map(x => x.id), back.research.items.map(x => x.id))); }
+    check('a record that is not research (no project, no type, a bad id) is not taken in', R.cleanRecord('research:rqsync00001', { id: 'rqsync00001', type: 'question', text: 'x' }) === null && R.cleanRecord('research:rqsync00001', { id: 'rqsync00001', projectId: 'pj1', text: 'x' }) === null && R.cleanRecord('research:bad id!', { id: 'bad id!', type: 'question', projectId: 'pj1' }) === null);
+    check('its summary says what it is and its words: "Question: …", "Finding: …", "Source: …"', R.recordSummary('research:rqsync00001', r3.get('research:rqsync00001')) === 'Question: Do commuters buy tea?' && R.recordSummary('research:rfsync00001', r3.get('research:rfsync00001')) === 'Finding: Three of five said yes' && R.recordSummary('research:rssync00002', r3.get('research:rssync00002')) === 'Source: Interview with Priya' && R.recordSummary('research:xsync000001', r3.get('research:xsync000001')) === 'Research', [R.recordSummary('research:rqsync00001', r3.get('research:rqsync00001')), R.recordSummary('research:xsync000001', r3.get('research:xsync000001'))]);
+    check('a long finding is shortened in its summary', R.recordSummary('research:rfsync00001', { ...r3.get('research:rfsync00001'), text: 'w'.repeat(200) }).length <= 'Finding: '.length + 81);
+    check('its label in words is "Research"', R.recordLabel('research:rqsync00001') === 'Research', R.recordLabel('research:rqsync00001'));
+    { const gone = clone(d3); R.putRecord(gone, 'research:rqsync00001', null); check('a research record deleted elsewhere removes it here', !gone.research.items.some(x => x.id === 'rqsync00001') && gone.research.items.length === 4); }
+    check('MyDay data with no research sends no research records, and one without the section reads as none', ![...R.localRecords(R.normalize(raw)).keys()].some(k => k.startsWith('research:')) && eq(R.normalize(raw).research, { items: [] }));
+    check('a project with tools and the Research kind keeps both in its own record', (() => { const w = clone(raw); w.projects.items[0].tools = ['research']; w.projects.items[0].template = 'research'; const rec = [...R.localRecords(R.normalize(w))].filter(([k]) => k === 'project:' + w.projects.items[0].id)[0][1]; const v = rec.value ?? rec; return eq(v.tools, ['research']) && v.template === 'research'; })());
+  }
+
   console.log('\n[1b] A project with milestones and decisions');
   {
     const pr = clone(raw);

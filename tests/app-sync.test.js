@@ -1314,6 +1314,68 @@ function task(uid, taskId, category, title, minutes, done = false) {
   check('…and does not hammer the account: only a few reads of its state meanwhile', srv.log.slice(logN).filter(e => e.path === '/rest/v1/rpc/sync_state').length <= 4, srv.log.slice(logN).filter(e => e.path === '/rest/v1/rpc/sync_state').length);
   await sql(`update public.sync_accounts set epoch = 1 where user_id = $1`, [userW]);
 
+
+  console.log('\n[19b] Two devices rejoining a wiped account at the same moment end in step (no conflict over starter records)');
+  {
+    const RACE = { email: 'wipe-race@example.test', password: 'disposable-pass-race' };
+    const userG = await S.addUser(db, RACE.email, RACE.password);
+    const gA = await T.device('race-a', path.join(dl, 'race-a')), gB = await T.device('race-b', path.join(dl, 'race-b'));
+    for (const D of [gA, gB]) { await D.open(APP + '#today'); await signIn(D, RACE); await D.until(`!document.getElementById('signInGate') && document.getElementById('nav')`, 20000); await synced(D); }
+    check('(test setup: two devices of one fresh account, both in step)', (await gA.status()) === 'synced' && (await gB.status()) === 'synced');
+    const cats = async D => (await D.data()).notes.categories.map(c => c.name);
+    const confl = async D => Object.keys(((await D.notes()) || {}).link?.conflicts || {});
+    let lastRound = null;
+    for (let round = 1; round <= 3; round++) {
+      await S.as(db, userG, q => q('select public.sync_wipe($1::uuid)', [userG]));
+      // Both pages are reloaded at once: each hears of the wipe and rejoins the empty account together.
+      await Promise.all([gA.ev(`location.reload()`), gB.ev(`location.reload()`)]);
+      const ok = await Promise.all([gA, gB].map(D => D.until(`!!document.querySelector('[data-s=wiped-notice]')`, 40000)));
+      await Promise.all([gA, gB].map(D => synced(D, 30000)));
+      lastRound = { round, notice: ok, status: [await gA.status(), await gB.status()], conflicts: [await confl(gA), await confl(gB)], same: eq(await cats(gA), await cats(gB)) };
+      check(`round ${round}: both devices cleared themselves, and end synced with no conflicts and the same note categories`, ok.every(Boolean) && eq(lastRound.status, ['synced', 'synced']) && lastRound.conflicts.every(c => c.length === 0) && lastRound.same, lastRound);
+      for (const D of [gA, gB]) { if (await D.exists('[data-action=wiped-dismiss]')) await D.click('[data-action=wiped-dismiss]'); }
+    }
+    check('the account holds one set of note categories, and each device has exactly it', (await sql(`select count(*)::int as n from public.sync_records where user_id = $1 and kind = 'notes' and id = 'collections'`, [userG]))[0].n === 1 && eq((await sql(`select data from public.sync_records where user_id = $1 and kind = 'notes' and id = 'collections'`, [userG]))[0].data.categories.map(c => c.name), await cats(gA)), await cats(gA));
+  }
+
+  console.log('\n[20] A project\'s research reaches the other device, and goes with the project (specs/projects-research.md)');
+  const RS = { email: 'research@example.test', password: 'disposable-pass-research' };
+  const userR = await S.addUser(db, RS.email, RS.password);
+  const rmac = await T.device('research-mac', path.join(dl, 'research-mac')), rphone = await T.device('research-phone', path.join(dl, 'research-phone'));
+  const rrows = async () => sql(`select id, kind, deleted from public.sync_records where user_id = $1 and kind = 'research'`, [userR]);
+  for (const D of [rmac, rphone]) { await D.open(APP + '#today'); await signIn(D, RS); await D.until(`!document.getElementById('signInGate') && document.getElementById('nav')`, 20000); await synced(D); }
+  const PR = 'pjResSync', RQ = 'rqsyncdev001', RSRC = 'rssyncdev001', RF = 'rfsyncdev001', RF2 = 'rfsyncdev002';
+  const stamp0 = `${today}T09:00`;
+  await rmac.setData(`s => { s.projects.items.push({ id: '${PR}', title: 'Researching a tea cart', summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${stamp0}', updatedAt: '${stamp0}', tools: ['research'] });
+    s.research.items.push({ id: '${RQ}', type: 'question', projectId: '${PR}', text: 'Do commuters buy tea?', conclusion: '', answeredOn: null, createdAt: '${stamp0}', updatedAt: '${stamp0}' },
+      { id: '${RSRC}', type: 'source', projectId: '${PR}', ref: null, title: 'Interview with Priya', from: 'Market stall', on: null, createdAt: '${stamp0}', updatedAt: '${stamp0}' },
+      { id: '${RF}', type: 'finding', projectId: '${PR}', text: 'Three of five said yes', limits: 'Small sample', on: '${today}', sourceIds: ['${RSRC}'], about: [{ kind: 'question', id: '${RQ}', stance: 'supports' }], createdAt: '${stamp0}', updatedAt: '${stamp0}' },
+      { id: '${RF2}', type: 'finding', projectId: '${PR}', text: 'A second finding', limits: '', on: '${today}', sourceIds: [], about: [], createdAt: '${today}T09:05', updatedAt: '${today}T09:05' }); }`);
+  await synced(rmac);
+  check('the project and its four research records reach the account (as their own records)', await cloudUntil(async () => (await rrows()).filter(x => !x.deleted).length === 4 && (await sql(`select count(*)::int as n from public.sync_records where user_id = $1 and kind = 'project' and id = $2`, [userR, PR]))[0].n === 1, 20000), await rrows());
+  await rphone.returnToApp();
+  check('the second device receives them', await rphone.until(`JSON.parse(localStorage.getItem('myday.data.v4')).research.items.length === 4`, 25000), (await rphone.data()).research.items.length);
+  await rphone.open(APP + '#projects/p/' + PR + '/research'); await rphone.until(`!!document.querySelector('[data-s=research]')`, 15000);
+  check('…and its Research tab shows the question with "Supports (1)", the finding and the source', /Do commuters buy tea\?/.test(await rphone.text('[data-s=research-questions]')) && /Supports \(1\)/.test(await rphone.text('[data-s=research-questions]')) && /Three of five said yes/.test(await rphone.text('[data-s=research-findings]')) && /Interview with Priya/.test(await rphone.text('[data-s=research-sources]')) && (await rphone.exists('[data-tab=research]')), await rphone.text('[data-s=research]'));
+  await rphone.click(`[data-s=research-finding][data-id="${RF2}"] [data-action=research-finding-remove]`);
+  await rphone.until(`document.querySelector('[data-action=dialog-confirm]')`); await rphone.answer(true);
+  check('removing a finding on the phone', await rphone.until(`!JSON.parse(localStorage.getItem('myday.data.v4')).research.items.some(x => x.id === '${RF2}')`, 10000));
+  await synced(rphone);
+  await rmac.returnToApp();
+  check('…reaches the first device (it is gone there too) and the account holds it as a deletion marker', await rmac.until(`!JSON.parse(localStorage.getItem('myday.data.v4')).research.items.some(x => x.id === '${RF2}')`, 25000) && (await rrows()).some(x => x.id === RF2 && x.deleted) && (await rmac.data()).research.items.length === 3, await rrows());
+  await rmac.setData(`s => { s.research.items.find(x => x.id === '${RQ}').conclusion = 'Yes, mostly mint.'; s.research.items.find(x => x.id === '${RQ}').answeredOn = '${today}'; s.research.items.find(x => x.id === '${RQ}').updatedAt = '${today}T10:00'; }`);
+  await synced(rmac); await rphone.returnToApp();
+  check('a change on the first device (the question answered) reaches the second', await rphone.until(`JSON.parse(localStorage.getItem('myday.data.v4')).research.items.find(x => x.id === '${RQ}')?.answeredOn === '${today}'`, 25000));
+
+  console.log('  Deleting the project takes its research with it, on every device');
+  await rphone.open(APP + '#projects/p/' + PR); await rphone.until(`!!document.querySelector('[data-action=project-delete]')`, 15000);
+  await rphone.click('[data-action=project-delete]'); await rphone.until(`document.querySelector('[data-action=dialog-confirm]')`); await rphone.answer(true);
+  check('on the phone the project and its research are gone', await rphone.until(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); return !d.projects.items.some(p => p.id === '${PR}') && !d.research.items.some(x => x.projectId === '${PR}'); })()`, 10000));
+  await synced(rphone);
+  check('the account holds the project as deleted and no live research', await cloudUntil(async () => (await rrows()).every(x => x.deleted) && (await sql(`select deleted from public.sync_records where user_id = $1 and kind = 'project' and id = $2`, [userR, PR]))[0]?.deleted === true, 20000), await rrows());
+  await rmac.returnToApp();
+  check('the first device drops the project and its research too, and sends nothing back to the account', await rmac.until(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); return !d.projects.items.some(p => p.id === '${PR}') && !d.research.items.some(x => x.projectId === '${PR}'); })()`, 25000) && await synced(rmac) && (await rrows()).every(x => x.deleted), [await rrows(), (await rmac.data()).research.items.length]);
+
   fs.rmSync(dl, { recursive: true, force: true });
   await srv.close();
   const { pass, fail } = summary();
