@@ -1,5 +1,14 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.82.0 — Steps in Ask MyDay:** on a task's page, **Break into smaller steps** now fills that task's checklist: Ask
+MyDay is sent the task's steps (their words, done or not) and suggests the steps still to do, carrying on from those
+(one the task already has is left out); **Add** puts them into the task's Steps card (up to 30) and **Undo** takes
+them back, with no new tasks made. On a project's page, and when Ask MyDay looks at a project, it now also sees each
+task's steps (at most 10 a task and 40 in all) and the tasks it starts after, by title, so "what's next?" can name the
+next step inside a task and keep the order ("starts after" is never called waiting). Never a private project's tasks
+or steps. The server's instructions (v23) were deployed first, and an older app still gets separate tasks; no
+saved-data, sync or database change; going back to 1.81.0 is safe.
+
 **1.81.0 — Steps inside a task, and "Starts after":** a task's page has a **Steps** card: a short checklist ("Measure
 the wall", "Order the boards"; up to 30) you tick as you go, with **Change steps** to edit, reorder and remove them.
 The task stays the one thing you plan; wherever it's listed (Tasks, Today's Due today and plan, a project's next step)
