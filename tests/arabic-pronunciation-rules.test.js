@@ -107,12 +107,15 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
   fixtureJson('content/arabic-fusha/MyDay_Arabic_Assessment_Keys.json', { answer_keys: [{ expected_answer: 'Compare كِتَابٌ / قَلَمٌ.' }] });
   fixtureJson('content/teaching/arabic-fusha.json', { lessons: { example: { explanation: 'A fragment ـكَ.', example: 'Read كِتَابٌ.', practice: 'Try قَلَمٌ / كِتَابٌ.', solution: 'Answer قَلَمٌ.' } } });
   fixtureJson('content/teaching/arabic/word-families.json', { families: [{ pattern_en: 'Root ك-ت-ب; pattern مَـ; form مَكْتَب.', word_notes: { sample: 'Again كِتَابٌ.' }, also_in_examples: [{ form_ar: 'مَكْتَب', note_en: 'Study يَكْتُبُ.' }] }] });
+  fixtureJson('content/teaching/arabic/course-words.json', { lessons: { 'lesson.arabic-example': { words: [{ form_ar: 'كِتَاب', example_ar: 'هَذَا كِتَابٌ.', note: 'Plural كُتُبٌ; the ending ـكَ is a suffix.' }] } } });
   const fixtureSources = sourceMod.voiceSources(pathToFileURL(fixtureRoot + path.sep));
   const fixtureSource = id => fixtureSources.find(s => s.id === id);
   check('teaching sources include practice and solution runs once, while excluding the unfinished affix', JSON.stringify(fixtureSource('teaching').texts) === JSON.stringify(['كِتَابٌ', 'قَلَمٌ']));
   check('sound and family sources include complete forms and notes while excluding roots and prefixes', JSON.stringify(fixtureSource('sounds-families').texts) === JSON.stringify(['قَلْب', 'كَلْب', 'مَكْتَب', 'كِتَابٌ', 'يَكْتُبُ']));
   check('lesson-check sources include prompts and expected answers without inventing missing vowel marks', JSON.stringify(fixtureSource('lesson-checks').texts) === JSON.stringify(['كِتَابٌ', 'قَلَمٌ']));
   check('the same exact text can be reused by all three new sources', ['teaching', 'sounds-families', 'lesson-checks'].every(id => fixtureSource(id).texts.includes('كِتَابٌ')));
+  check('the course-words source has each word, its example and its note\'s complete forms, never a suffix on its own', JSON.stringify(fixtureSource('course-words').texts) === JSON.stringify(['كِتَاب', 'هَذَا كِتَابٌ.', 'كُتُبٌ']), fixtureSource('course-words').texts);
+  check('the real course-words source (round four) has unique, complete, fully marked texts', src('course-words')?.round === 4 && src('course-words').texts.length >= 100 && new Set(src('course-words').texts).size === src('course-words').texts.length && src('course-words').texts.every(sourceMod.voiceable));
   check('all three real round-three sources contain unique, complete, fully marked texts', ['teaching', 'sounds-families', 'lesson-checks'].every(id => src(id)?.round === 3 && src(id).texts.length > 0 && new Set(src(id).texts).size === src(id).texts.length && src(id).texts.every(sourceMod.voiceable)));
   const seed = new Map(course.lexicon_seed.map(w => [w.id, w]));
   check('the course has 48 starter words', seed.size === 48);
