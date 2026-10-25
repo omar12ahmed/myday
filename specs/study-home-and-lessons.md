@@ -415,6 +415,17 @@ note's text does: AI help with notes when it's on, and Ask MyDay opened on that 
     work (the package's adaptation rule), and nothing records listening from audio you played.
 - **Course words with roots:** authored word lists per lesson (word, meaning, root, example, voice), checked by you,
   beside your kept words. That's content work, with the teaching-depth plan.
+  - **As built (25 October 2026), module 4 first; owner's choices: module 4 first, words join revision with Ready,
+    clips after approval:** `content/teaching/arabic/course-words.json` (MyDay's own, not the package's): 48 words for
+    module 4's five lessons, each fully vowelled with meaning, part of speech, root (or none, for particles and names),
+    an example and a note, plus each lesson's starter words by id. Drafted, cross-checked twice by an independent
+    reviewer (one factual fix, gaps filled), checked by the owner ("seems good"), then voiced: 133 clips in the same
+    voice, transcribed blind, eleven isolated forms remade, listened to ("all good"). The lesson's Understand step has
+    "Words in this lesson" (folded away with the explanation while you check yourself); Vocabulary has "Words from the
+    lessons". Marking a lesson ready brings its words (its own and the starter words it uses) into revision from the
+    next day, Arabic → meaning, within the 8 a day, before its checks a week later. Revision cards are the starter
+    words' kind (`lexeme.arabic-<lesson>-<n>:recognise`), so no saved-data change; an older release keeps them but
+    can't show them. Next: modules 5–7, then the rest of A1, each checked by the owner before it ships.
 - **Recording yourself:** not now (decision 7). Speech recognition: not planned, as there's no dependable
   validation for MSA.
 - **Course projects:** kept inside their course and called "course projects", because "Projects" is MyDay's spine.

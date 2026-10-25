@@ -612,6 +612,17 @@ revision to write from memory. A session's Reflect says which skills the lesson 
 asks for is in the generated lesson index (`modalities`, from the course's input requirements,
 `scripts/prepare-arabic.mjs`). Nothing saved, nothing sent to AI.
 
+Course words (Arabic, `../specs/study-home-and-lessons.md` §12): each lesson's own words, from MyDay's
+`../content/teaching/arabic/course-words.json` (module 4 so far: 48 words), each fully vowelled with its meaning, the
+root it comes from, an example and a note, all voiced. A lesson's Understand step has "Words in this lesson" (its
+words, then the starter words it uses), folded away with the explanation while you check yourself; Vocabulary has
+"Words from the lessons". Marking a lesson ready brings its words into revision from the next day (Arabic → meaning,
+any not there already, within the 8 a day) before its checks a week later; you can add any sooner. Their revision
+cards are the starter words' kind (`lexeme.arabic-<lesson>-<n>:recognise`). Keep a word fills in a lesson word's
+meaning too. Checked at every build by `scripts/prepare-arabic.mjs` (ids, lessons, starter words, vowels, roots) and
+written beside the starter words in `src/study/arabic/data/texts.json`; lookups in `src/study/arabic/courseWords.ts`.
+Each module's list is checked by the owner, and its clips listened to, before it ships.
+
 Keep a word (1.57.0, Arabic): under a lesson's examples (its Understand step: the headline example and the Arabic of
 its worked example) and under a reading text (one picker, sentence by sentence), **Keep a word** lists the words
 (punctuation left out, vowel marks as written). Tap one, give its meaning in your words (a starter word's meaning is

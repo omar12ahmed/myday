@@ -107,6 +107,11 @@ The owner listened to all 357 eligible clips, split into 179 and 178, and confir
 The checklist cannot approve a clip or change MyDay. The 357 approved clips ship alongside the earlier 286; the six held recordings have no play controls.
 See `content/arabic-audio/cross-check-teaching.json` for current and earlier transcriptions, holds and usage.
 
+Round four (course words, 25 October 2026): each course word, its example and the Arabic in its note
+(`course-words` in `app/scripts/arabic-voice-sources.mjs`): 133 new clips (20 texts already had one), transcribed blind
+(`content/arabic-audio/cross-check-course-words.json`); eleven isolated forms heard as other words were remade; five
+were still heard differently and the owner approved them by ear ("all good"). The temporary key was deleted.
+
 **Each round works like round one.**
 - **On the Mac:**
   1. a Text-to-Speech-only key is made, and deleted afterwards;
