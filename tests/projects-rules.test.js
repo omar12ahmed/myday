@@ -25,6 +25,8 @@ const clone = o => JSON.parse(JSON.stringify(o));
     `export { webAddress, siteOf, resourceName, normalizeResources, addResource, editResource, removeResource, canOpen, tidyText, RESOURCE_LIMITS } from ${src('projectResources')};`,
     `export { searchProject, fold, matchCount, SEARCH_KIND_LABEL } from ${src('projectSearch')};`,
     `export { normalizeTasks, setWaiting, stopWaiting, isWaiting, chaseTask, chaseWaiting, isStuck, setTaskDone, inQueue, onTodaysPlan, unstick } from ${src('tasks')};`,
+    `export { stepsText, allStepsDone, addStep, editStep, tickStep, moveStep, removeStep, waitsFor, waitsForText, waitChoices, setWaitsFor, removeTask, TASK_LIMITS } from ${src('tasks')};`,
+    `export { linkTask, heldBack } from ${src('projects')};`,
     `export { setDone, clearDay, toggleRoll, followQueued, taskFromQueue, sendToQueue } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
@@ -1886,6 +1888,119 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const ord = world(base('pjR', { title: 'Order shed', resources: [rs('rs1', 'https://example.com/a', { title: 'Order link' })], milestones: [{ id: 'm1', title: 'Order timber', aim: null, reachedOn: null, createdAt: OLD }] })); ord.tasks.items = [{ id: 'tk1', title: 'Order bolts', listId: '', category: 'Admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-09-20T09:00', postponed: 0, blockers: [], letGoOn: null, projectId: 'pjR' }];
     check('links come last, after every other kind', eq(K.searchProject(ord, P(ord), 'order').map(h => h.kind), ['about', 'task', 'milestone', 'resource']), K.searchProject(ord, P(ord), 'order').map(h => h.kind));
     check('searching writes nothing', (() => { const j = JSON.stringify(sd); sf('merchant'); sf('portal'); return JSON.stringify(sd) === j; })());
+  }
+
+  console.log('\n[20] Steps inside a task, and "Waits for" (specs/projects-steps.md)');
+  {
+    const k = '2026-10-14';
+    const TK = (id, title, pid, x = {}) => ({ id, title, listId: '', category: 'admin', minutes: 20, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: OLD, postponed: 0, blockers: [], letGoOn: null, ...(pid ? { projectId: pid } : {}), ...x });
+    const ST = (id, text, done = false, x = {}) => ({ id, text, done, ...x });
+    const rd = (items, r = { dropped: 0 }) => ({ items: K.normalizeTasks({ lists: [], items: clone(items) }, r).items, r });
+
+    console.log('  reading');
+    const steps = [ST('s1', 'Measure the wall', true, { futureBit: { a: 1 } }), ST('s2', 'Order the boards')];
+    let got = rd([TK('a', 'Build the shed base', 'pjS', { steps, after: ['b', 'c'] })]);
+    check('steps and "waits for" are kept exactly, with a newer MyDay\'s field on a step, and nothing counted as dropped', eq(got.items[0].steps, steps) && eq(got.items[0].after, ['b', 'c']) && got.r.dropped === 0, [got.items[0].steps, got.items[0].after, got.r]);
+    got = rd([TK('a', 'x', null)]);
+    check('a task without them has neither key', !('steps' in got.items[0]) && !('after' in got.items[0]) && got.r.dropped === 0);
+    got = rd([TK('a', 'x', null, { steps: [ST('s1', 'y'.repeat(130)), ST('s1', 'Same id again'), ST('', 'No id'), ST('s4', 'Not a yes', 'yes')] })]);
+    const ids = got.items[0].steps.map(x => x.id);
+    check('a step\'s words are cut to 120; a repeated or missing id gets a new one; "done" is true only when it is true', got.items[0].steps[0].text.length === 120 && new Set(ids).size === 4 && ids[0] === 's1' && ids[1] !== 's1' && !!ids[2] && got.items[0].steps[3].done === false && got.r.dropped === 0, [ids, got.items[0].steps.map(x => x.done), got.r]);
+    got = rd([TK('a', 'x', null, { steps: ['oops', 5, null, ST('s1', '   '), { id: 's2' }, ST('s3', 'Kept')] })]);
+    check('a step it can\'t read (not an object, no words, blank words) is left out and counted, once each', eq(got.items[0].steps.map(x => x.text), ['Kept']) && got.r.dropped === 5, [got.items[0].steps, got.r]);
+    got = rd([TK('a', 'x', null, { steps: Array.from({ length: 33 }, (_, i) => ST('s' + i, 'Step ' + i)) })]);
+    check('30 steps at most: the rest are left out and counted', got.items[0].steps.length === 30 && got.items[0].steps[29].text === 'Step 29' && got.r.dropped === 3, [got.items[0].steps.length, got.r]);
+    got = rd([TK('a', 'x', null, { steps: [] }), TK('b', 'x', null, { steps: { s1: 'Measure' } }), TK('c', 'x', null, { steps: ['bad'] })]);
+    check('no steps (an empty list) is simply absent; steps that aren\'t a list, or have none it can read, are absent too and counted', got.items.every(t => !('steps' in t)) && got.r.dropped === 2, [got.items.map(t => t.steps), got.r]);
+    got = rd([TK('a', 'x', 'pjS', { after: ['b', 'b', 'a', 5, '', null, 'c', 'nowhere'] })]);
+    check('"waits for" keeps task ids once each, never its own, and keeps one that points at no task (it may arrive from another device)', eq(got.items[0].after, ['b', 'c', 'nowhere']) && got.r.dropped === 0, [got.items[0].after, got.r]);
+    got = rd([TK('a', 'x', 'pjS', { after: Array.from({ length: 12 }, (_, i) => 't' + i) }), TK('b', 'x', 'pjS', { after: [] }), TK('c', 'x', 'pjS', { after: 'b' }), TK('d', 'x', 'pjS', { after: ['d'] })]);
+    check('at most 10; an empty list, or only its own id, is absent; one that isn\'t a list is absent and counted', got.items[0].after.length === 10 && ['b', 'c', 'd'].every(id => !('after' in got.items.find(t => t.id === id))) && got.r.dropped === 1, [got.items.map(t => t.after), got.r]);
+
+    console.log('  steps');
+    let w = K.freshState(); w.tasks.items = [TK('tkS', 'Build the shed base', null)];
+    const T = () => w.tasks.items[0];
+    const s1 = K.addStep(w.tasks, 'tkS', '  Measure the wall  '), s2 = K.addStep(w.tasks, 'tkS', 'Order the boards'), s3 = K.addStep(w.tasks, 'tkS', 'Level the ground');
+    check('adding trims the words and puts each step at the end, not ticked', !!s1 && !!s2 && eq(T().steps.map(x => [x.text, x.done]), [['Measure the wall', false], ['Order the boards', false], ['Level the ground', false]]), T().steps);
+    check('empty words, or a task that isn\'t there, are refused', K.addStep(w.tasks, 'tkS', '   ') === null && K.addStep(w.tasks, 'tkNope', 'x') === null && T().steps.length === 3);
+    check('"0 of 3 steps", and not all done', K.stepsText(T()) === '0 of 3 steps' && !K.allStepsDone(T()));
+    check('ticking a step (false when it already is)', K.tickStep(w.tasks, 'tkS', s1, true) && !K.tickStep(w.tasks, 'tkS', s1, true) && T().steps[0].done && K.stepsText(T()) === '1 of 3 steps');
+    check('new words for a step; empty or the same words are refused', K.editStep(w.tasks, 'tkS', s2, ' Order the larch boards ') && T().steps[1].text === 'Order the larch boards' && !K.editStep(w.tasks, 'tkS', s2, '  ') && !K.editStep(w.tasks, 'tkS', s2, 'Order the larch boards'));
+    check('moving a step up and down (false at either end)', K.moveStep(w.tasks, 'tkS', s3, -1) && eq(T().steps.map(x => x.id), [s1, s3, s2]) && !K.moveStep(w.tasks, 'tkS', s1, -1) && !K.moveStep(w.tasks, 'tkS', s2, 1) && K.moveStep(w.tasks, 'tkS', s3, 1) && eq(T().steps.map(x => x.id), [s1, s2, s3]));
+    K.tickStep(w.tasks, 'tkS', s2, true); K.tickStep(w.tasks, 'tkS', s3, true);
+    check('every step ticked: all done, "3 of 3 steps" — and the task is not marked done by itself', K.allStepsDone(T()) && K.stepsText(T()) === '3 of 3 steps' && T().done === false && T().doneOn === null);
+    check('removing a step; once the last goes the task has no steps key again', K.removeStep(w.tasks, 'tkS', s1) && K.removeStep(w.tasks, 'tkS', s2) && !K.removeStep(w.tasks, 'tkS', s2) && K.stepsText(T()) === '1 of 1 step' && K.removeStep(w.tasks, 'tkS', s3) && !('steps' in T()) && K.stepsText(T()) === '' && !K.allStepsDone(T()));
+    for (let i = 0; i < 30; i++) K.addStep(w.tasks, 'tkS', 'Step ' + i);
+    check('30 steps at most', T().steps.length === 30 && K.addStep(w.tasks, 'tkS', 'One more') === null && T().steps.length === 30);
+
+    console.log('  "Waits for"');
+    // The shed: order the boards → build the frame → paint it; measure has no wait; "Book a skip" is in another project.
+    const shed = () => { const d = world(base('pjS', { title: 'Shed' }), base('pjO', { title: 'Elsewhere' }));
+      d.tasks.items = [TK('m', 'Measure the wall', 'pjS', { createdAt: '2026-09-20T09:00' }), TK('b', 'Order the boards', 'pjS', { createdAt: '2026-09-21T09:00' }), TK('f', 'Build the frame', 'pjS', { createdAt: '2026-09-19T09:00', after: ['b'] }),
+        TK('p', 'Paint it', 'pjS', { createdAt: '2026-09-18T09:00', after: ['f'] }), TK('o', 'Book a skip', 'pjO'), TK('l', 'Loose task', null)]; return d; };
+    const tk = (d, id) => d.tasks.items.find(t => t.id === id);
+    const titles = list => list.map(t => t.title);
+    let d = shed();
+    check('waitsFor: the tasks it still waits for, of its project and still to do', eq(titles(K.waitsFor(d, tk(d, 'f'))), ['Order the boards']) && eq(titles(K.waitsFor(d, tk(d, 'p'))), ['Build the frame']) && eq(K.waitsFor(d, tk(d, 'm')), []));
+    check('"Waits for: Order the boards"; nothing when it waits for none', K.waitsForText(d, tk(d, 'f')) === 'Waits for: Order the boards' && K.waitsForText(d, tk(d, 'm')) === '');
+    K.setTaskDone(d, 'b', true);
+    check('once the task it waits for is done it waits for nothing (and "after" is left as it is, so undoing brings it back)', eq(K.waitsFor(d, tk(d, 'f')), []) && eq(tk(d, 'f').after, ['b']) && (K.setTaskDone(d, 'b', false), K.waitsFor(d, tk(d, 'f')).length === 1));
+    tk(d, 'b').letGoOn = k;
+    check('…and the same once it is let go', eq(K.waitsFor(d, tk(d, 'f')), []));
+    d = shed(); tk(d, 'f').after = ['b', 'o', 'l', 'gone'];
+    check('one in another project, with no project, or not there at all, doesn\'t count', eq(titles(K.waitsFor(d, tk(d, 'f'))), ['Order the boards']));
+    d = shed(); delete tk(d, 'f').projectId;
+    check('a task with no project waits for nothing, whatever it says', eq(K.waitsFor(d, tk(d, 'f')), []));
+    d = shed(); tk(d, 'b').after = ['p'];
+    check('a circle (two devices each adding half of one) means none of the tasks in it waits', [tk(d, 'b'), tk(d, 'f'), tk(d, 'p')].every(t => K.waitsFor(d, t).length === 0));
+    d = shed(); tk(d, 'f').after = ['b', 'm'];
+    check('"Waits for: Order the boards and 1 more", in the order chosen', K.waitsForText(d, tk(d, 'f')) === 'Waits for: Order the boards and 1 more');
+
+    console.log('  choosing what it waits for');
+    d = shed();
+    check('the choices: the project\'s other tasks still to do, never itself, never one that waits for it (directly or further along)', eq(K.waitChoices(d, tk(d, 'b')).map(t => t.id).sort(), ['m']) && eq(K.waitChoices(d, tk(d, 'p')).map(t => t.id).sort(), ['b', 'f', 'm']), [K.waitChoices(d, tk(d, 'b')).map(t => t.id), K.waitChoices(d, tk(d, 'p')).map(t => t.id)]);
+    K.setTaskDone(d, 'm', true);
+    check('…and not a done task; none for a task with no project', !K.waitChoices(d, tk(d, 'b')).some(t => t.id === 'm') && eq(K.waitChoices(d, tk(d, 'l')), []));
+    d = shed();
+    check('adding a wait for one of its choices', K.setWaitsFor(d, 'b', 'm', true) === true && eq(tk(d, 'b').after, ['m']));
+    check('…the same again, itself, a task in another project, or a circle (the frame waits for the boards) are refused', K.setWaitsFor(d, 'b', 'm', true) === false && K.setWaitsFor(d, 'b', 'b', true) === false && K.setWaitsFor(d, 'b', 'o', true) === false && K.setWaitsFor(d, 'b', 'f', true) === false && K.setWaitsFor(d, 'b', 'p', true) === false && eq(tk(d, 'b').after, ['m']));
+    check('taking a wait off; when none is left the task has no "after" key', K.setWaitsFor(d, 'b', 'm', false) === true && !('after' in tk(d, 'b')) && K.setWaitsFor(d, 'b', 'm', false) === false);
+    d = shed(); for (let i = 0; i < 11; i++) d.tasks.items.push(TK('x' + i, 'Extra ' + i, 'pjS'));
+    const adds = Array.from({ length: 11 }, (_, i) => K.setWaitsFor(d, 'm', 'x' + i, true));
+    check('10 at most: the eleventh says "full"', adds.slice(0, 10).every(r => r === true) && adds[10] === 'full' && tk(d, 'm').after.length === 10, adds);
+    tk(d, 'm').after = [...tk(d, 'm').after.slice(0, 9), 'gone'];
+    check('…ids that point at nothing of the project are tidied away when adding, making room', K.setWaitsFor(d, 'm', 'x9', true) === true && !tk(d, 'm').after.includes('gone') && tk(d, 'm').after.length === 10);
+
+    console.log('  deleting a task, moving it, deleting the project');
+    d = shed();
+    check('deleting a task frees the ones that waited for it (their "after" no longer names it)', K.removeTask(d.tasks, 'b') && !('after' in tk(d, 'f')) && eq(tk(d, 'p').after, ['f']));
+    d = shed();
+    check('moving a task to another project leaves its own waits and the others\' waits for it behind', K.linkTask(d, 'f', 'pjO') && !('after' in tk(d, 'f')) && !('after' in tk(d, 'p')) && eq(K.waitsFor(d, tk(d, 'f')), []));
+    d = shed();
+    check('…and taking it out of any project does the same', K.linkTask(d, 'f', null) && !('after' in tk(d, 'f')) && !('after' in tk(d, 'p')));
+    d = shed();
+    check('deleting the project: its tasks stay, with no project and no waits', K.deleteProject(d, 'pjS') && ['m', 'b', 'f', 'p'].every(id => !('projectId' in tk(d, id)) && !('after' in tk(d, id))) && tk(d, 'o').projectId === 'pjO');
+
+    console.log('  the next step and "Why this?"');
+    const P2 = (dd, id = 'pjS') => dd.projects.items.find(p => p.id === id);
+    d = shed();
+    check('MyDay\'s pick skips a task that waits: "Paint it" and "Build the frame" were added first but wait, so "Measure the wall"', K.nextStep(d, P2(d)).id === 'm' && K.heldBack(d, tk(d, 'p')) && K.heldBack(d, tk(d, 'f')) && !K.heldBack(d, tk(d, 'm')), K.nextStep(d, P2(d)).title);
+    check('"Why this?": the pick, then the task that comes first and what it waits for… (with two: "wait for other tasks")', eq(K.whyNext(d, P2(d)), ['MyDay’s pick: none of the tasks that aren’t waiting has a date, so it’s the one you added first.', '2 tasks that come first wait for other tasks.']), K.whyNext(d, P2(d)));
+    tk(d, 'p').after = []; delete tk(d, 'p').after; K.setTaskDone(d, 'p', true);
+    check('…with one: "“Build the frame” comes first, but it waits for “Order the boards”."', eq(K.whyNext(d, P2(d)), ['MyDay’s pick: none of the tasks that aren’t waiting has a date, so it’s the one you added first.', '“Build the frame” comes first, but it waits for “Order the boards”.']), K.whyNext(d, P2(d)));
+    tk(d, 'm').waiting = { on: 'Sam', since: '2026-10-01', until: null }; d.tasks.items.push(TK('z', 'Sweep the floor', 'pjS', { createdAt: '2026-09-25T09:00' }));
+    check('waiting on someone and waiting for a task are both held back, and said together when both come first', K.nextStep(d, P2(d)).id === 'b' && eq(K.whyNext(d, P2(d)).slice(1), ['2 tasks that come first are waiting: on someone or something, or for another task.']), K.whyNext(d, P2(d)));
+    d = shed(); K.setTaskDone(d, 'm', true); K.setTaskDone(d, 'b', true);
+    check('once what it waits for is done, a task is picked again in its usual order ("Paint it" still waits for the frame)', K.nextStep(d, P2(d)).id === 'f' && eq(K.whyNext(d, P2(d)), ['MyDay’s pick: it’s the only task still to do that isn’t waiting.']), [K.nextStep(d, P2(d)).title, K.whyNext(d, P2(d))]);
+    d = shed(); P2(d).nextTaskId = 'f';
+    check('a step you chose that waits stays chosen, and "Why this?" says what it waits for and what MyDay would pick', K.nextStep(d, P2(d)).id === 'f' && eq(K.whyNext(d, P2(d)), ['You chose this step.', 'It waits for “Order the boards”; you can still do it any time.', 'Left to MyDay, it would be “Measure the wall”.']), K.whyNext(d, P2(d)));
+    check('Today\'s next steps leave out a project whose step waits for another task', !K.stepsForToday(d, k).some(x => x.project.id === 'pjS') && (P2(d).nextTaskId = null, K.stepsForToday(d, k).some(x => x.project.id === 'pjS' && x.task.id === 'm')));
+    d = shed(); Object.assign(tk(d, 'f'), { due: '2026-10-01', postponed: 4 });
+    check('a task that waits for another isn\'t "stuck" however often it moved; once the other is done it can be again', !K.isStuck(d, tk(d, 'f'), k) && (K.setTaskDone(d, 'b', true), K.isStuck(d, tk(d, 'f'), k)));
+    d = shed();
+    const before = JSON.stringify(d);
+    ['m', 'b', 'f', 'p', 'o', 'l'].forEach(id => { K.waitsFor(d, tk(d, id)); K.waitsForText(d, tk(d, id)); K.waitChoices(d, tk(d, id)); K.heldBack(d, tk(d, id)); }); K.nextStep(d, P2(d)); K.whyNext(d, P2(d)); K.stepsForToday(d, k);
+    check('reading what a task waits for, its choices, the next step and "Why this?" writes nothing', JSON.stringify(d) === before);
   }
 
   fs.rmSync(dir, { recursive: true, force: true });

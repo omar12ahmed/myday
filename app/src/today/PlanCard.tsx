@@ -2,6 +2,7 @@ import { Check, ListPlus, Moon, Sparkles, WandSparkles } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { EnergyMeter } from '../components/EnergyMeter';
+import { stepsText } from '../data/tasks';
 import { daySummary, energyLine, nextTask, planWarnings, progressNote, sortedTasks } from '../data/today';
 import type { Day, MyDayData, Task } from '../data/types';
 import { QueueNote } from './QueueNote';
@@ -28,7 +29,10 @@ export function DayTasks({ data, k, d, mode, justDoneUid, onToggle, onTimer, onR
   const { timed, untimed } = sortedTasks(d);
   const nextUid = mode === 'plan' ? nextTask(k, d)?.uid ?? null : null;
   const warnings = mode === 'plan' ? planWarnings(data, k, d) : {};
-  const common = { dayKey: k, nextUid, justDoneUid, warnings, mode, onToggle, onTimer, onRoll };
+  // A task from Tasks on the plan shows how far its steps are ("2 of 5 steps"); the plan's copy has none of its own.
+  const steps: Record<string, string> = {};
+  for (const x of data.tasks.items) if (x.plannedOn === k && x.planUid && stepsText(x)) steps[x.planUid] = stepsText(x);
+  const common = { dayKey: k, nextUid, justDoneUid, warnings, steps, mode, onToggle, onTimer, onRoll };
   return (
     <>
       {timed.length > 0 && <TaskList tasks={timed} joined {...common} />}

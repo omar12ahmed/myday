@@ -16,6 +16,7 @@ export interface TaskListProps {
   nextUid?: string | null;
   justDoneUid?: string | null;
   warnings?: Record<string, string>;      // task uid → overlap warning
+  steps?: Record<string, string>;         // task uid → "2 of 5 steps" (a task from Tasks with steps)
   mode: 'plan' | 'evening';               // plan: timer buttons; evening: "Roll to tomorrow"
   onToggle: (t: Task, done: boolean) => void;
   onTimer?: (t: Task, kind: 'start' | 'focus') => void;
@@ -32,7 +33,7 @@ function Marker({ done, next }: { done: boolean; next: boolean }) {
   );
 }
 
-export function TaskList({ tasks, dayKey, joined = false, nextUid = null, justDoneUid = null, warnings = {}, mode, onToggle, onTimer, onRoll }: TaskListProps) {
+export function TaskList({ tasks, dayKey, joined = false, nextUid = null, justDoneUid = null, warnings = {}, steps = {}, mode, onToggle, onTimer, onRoll }: TaskListProps) {
   const List = joined ? 'ol' : 'ul';
   return (
     <List className="tasks space-y-3 mt-3.5">
@@ -57,6 +58,7 @@ export function TaskList({ tasks, dayKey, joined = false, nextUid = null, justDo
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-2 text-sm text-fg-3 tabular-nums">
                   <CategoryChip kind={t.category} />
                   <span className="meta">{taskDetails(t)}</span>
+                  {steps[t.uid] && <span data-s="task-steps">{steps[t.uid]}</span>}
                 </div>
                 {warnings[t.uid] && (
                   <p className="warn flex gap-1.5 items-start m-0 mt-2 px-2.5 py-1 rounded-lg bg-warn-c text-on-warn-c text-sm w-fit">

@@ -15,10 +15,10 @@ import { isDateKey, isDateTime, isTime, localStamp, parseKey, shift, todayKey } 
 import { isWorkDay } from './patterns/notice';
 import { taskLimit } from './patterns/adapt';
 import { makeTask } from './plan';
-import type { Blocker, Category, DateKey, MyDayData, TaskItem, TasksData, Waiting } from './types';
+import type { Blocker, Category, DateKey, MyDayData, TaskItem, TasksData, TaskStep, Waiting } from './types';
 import { intIn, isObj, listOf, uid } from './util';
 
-export const TASK_LIMITS = { lists: 30, listName: 40, title: 120, notes: 2000, blockers: 20, waitingOn: 120 };
+export const TASK_LIMITS = { lists: 30, listName: 40, title: 120, notes: 2000, blockers: 20, waitingOn: 120, steps: 30, step: 120, after: 10 };
 const BLOCKERS: Blocker[] = ['big', 'start', 'boring', 'tired', 'info', 'notneeded', 'other'];
 export const emptyTasks = (): TasksData => ({ lists: [], items: [] });
 
@@ -61,6 +61,26 @@ export function normalizeTasks(raw: unknown, report: { dropped: number }): Tasks
     const w = t.waiting, blankWait = w === null || (isObj(w) && typeof w.on === 'string' && !w.on.trim());
     if (isObj(w) && typeof w.on === 'string' && w.on.trim() && isDateKey(w.since)) item.waiting = { ...w, on: w.on.slice(0, TASK_LIMITS.waitingOn), since: w.since, until: isDateKey(w.until) ? w.until : null };
     else { if (w !== undefined && !blankWait) report.dropped++; delete item.waiting; }
+    // Steps and "Waits for" (specs/projects-steps.md): kept when readable. A step without words is counted and left
+    // out, a repeated id gets a new one, anything a newer MyDay keeps on a step stays. "Waits for" keeps task ids (never
+    // its own) whatever they point at now: what they mean is read through waitsFor, so a task that arrives later from
+    // another device still counts. An empty list is simply absent; a shape this version can't read is counted.
+    if (t.steps !== undefined) {
+      const steps: TaskStep[] = [], ids = new Set<string>();
+      if (!Array.isArray(t.steps)) report.dropped++;
+      for (const st of listOf(t.steps)) {
+        if (!isObj(st) || typeof st.text !== 'string' || !st.text.trim() || steps.length >= TASK_LIMITS.steps) { report.dropped++; continue; }
+        const sid = typeof st.id === 'string' && st.id && !ids.has(st.id) ? st.id : 'ts' + uid();
+        ids.add(sid);
+        steps.push({ ...st, id: sid, text: st.text.slice(0, TASK_LIMITS.step), done: st.done === true });
+      }
+      if (steps.length) item.steps = steps; else delete item.steps;
+    }
+    if (t.after !== undefined) {
+      if (!Array.isArray(t.after)) report.dropped++;
+      const after = [...new Set(listOf(t.after).filter((x): x is string => typeof x === 'string' && !!x && x !== item.id))].slice(0, TASK_LIMITS.after);
+      if (after.length) item.after = after; else delete item.after;
+    }
     seenT.add(item.id);
     out.items.push(item);
   }
@@ -163,6 +183,7 @@ export function removeTask(d: TasksData, id: string): boolean {
   const i = d.items.findIndex(x => x.id === id);
   if (i < 0) return false;
   d.items.splice(i, 1);
+  forgetWaitsFor(d, id); // the tasks that waited for it don't any more
   return true;
 }
 export function moveToTomorrow(d: TasksData, id: string): boolean { return editTask(d, id, { due: shift(todayKey(), 1) }); }
@@ -206,7 +227,7 @@ export function addToTodaysPlan(data: MyDayData, id: string, k: DateKey = todayK
 // ---------- A task that keeps moving ----------
 // Stuck: moved later 3 times or more, or a week past its date — unless you said what's in the way in the last week.
 export function isStuck(data: MyDayData, t: TaskItem, k: DateKey = todayKey()): boolean {
-  if (isDone(data, t) || t.letGoOn || inQueue(data, t) || t.waiting) return false; // waiting isn't being stuck
+  if (isDone(data, t) || t.letGoOn || inQueue(data, t) || t.waiting || waitsFor(data, t).length) return false; // waiting isn't being stuck
   if (t.blockers.some(b => b.on > shift(k, -7))) return false;
   return t.postponed >= 3 || (!!t.due && t.due <= shift(k, -7));
 }
@@ -325,4 +346,105 @@ export function chaseWaiting(data: MyDayData, id: string, due: DateKey | null = 
   if (t.projectId) data.tasks.items.find(x => x.id === nid)!.projectId = t.projectId;
   t.waiting.chaseTaskId = nid;
   return nid;
+}
+
+// ---------- Steps inside a task (specs/projects-steps.md) ----------
+// A short checklist on the task. The task stays the one thing you plan: steps are never scheduled on their own.
+// "2 of 5 steps" under the title wherever the task is listed; nothing when it has none.
+export const stepsText = (t: TaskItem) => (t.steps?.length ? `${t.steps.filter(x => x.done).length} of ${t.steps.length} step${t.steps.length === 1 ? '' : 's'}` : '');
+// Every step ticked: the task's page offers to mark the task done — one tap, never by itself.
+export const allStepsDone = (t: TaskItem) => !!t.steps?.length && t.steps.every(x => x.done);
+const stepOf = (d: TasksData, id: string, stepId: string) => { const t = d.items.find(x => x.id === id); return { t, st: t?.steps?.find(x => x.id === stepId) }; };
+// A new step at the end (words trimmed; up to 30). Returns its id, or null.
+export function addStep(d: TasksData, id: string, text: string): string | null {
+  const t = d.items.find(x => x.id === id), words = text.trim().slice(0, TASK_LIMITS.step);
+  if (!t || !words || (t.steps?.length ?? 0) >= TASK_LIMITS.steps) return null;
+  const sid = 'ts' + uid();
+  t.steps = [...(t.steps ?? []), { id: sid, text: words, done: false }];
+  return sid;
+}
+// New words for a step (empty words are refused: remove the step instead). Returns false when nothing changed.
+export function editStep(d: TasksData, id: string, stepId: string, text: string): boolean {
+  const { st } = stepOf(d, id, stepId), words = text.trim().slice(0, TASK_LIMITS.step);
+  if (!st || !words || words === st.text) return false;
+  st.text = words;
+  return true;
+}
+export function tickStep(d: TasksData, id: string, stepId: string, done: boolean): boolean {
+  const { st } = stepOf(d, id, stepId);
+  if (!st || st.done === done) return false;
+  st.done = done;
+  return true;
+}
+// One place up (-1) or down (1).
+export function moveStep(d: TasksData, id: string, stepId: string, dir: -1 | 1): boolean {
+  const steps = d.items.find(x => x.id === id)?.steps, i = steps?.findIndex(x => x.id === stepId) ?? -1, j = i + dir;
+  if (!steps || i < 0 || j < 0 || j >= steps.length) return false;
+  [steps[i], steps[j]] = [steps[j], steps[i]];
+  return true;
+}
+export function removeStep(d: TasksData, id: string, stepId: string): boolean {
+  const t = d.items.find(x => x.id === id);
+  if (!t?.steps?.some(x => x.id === stepId)) return false;
+  t.steps = t.steps.filter(x => x.id !== stepId);
+  if (!t.steps.length) delete t.steps;
+  return true;
+}
+
+// ---------- "Waits for": the tasks of its project it can't start before ----------
+// Until those are done (or let go) it isn't picked as its project's next step and says "Waits for: …"; you can still
+// do it any time. Only tasks of the same project, never itself, at most 10, and never a circle.
+//
+// The tasks it still waits for, in the order chosen: in its project, still to do, and not waiting for it in turn
+// (directly or further along — two devices could each add one half of a circle; then neither waits). One done, let
+// go, deleted or moved to another project no longer counts.
+export function waitsFor(data: MyDayData, t: TaskItem): TaskItem[] {
+  if (!t.projectId || !t.after?.length) return [];
+  const byId = new Map(data.tasks.items.map(x => [x.id, x]));
+  return t.after.map(id => byId.get(id)).filter((x): x is TaskItem => !!x && x.id !== t.id && x.projectId === t.projectId && !isDone(data, x) && !x.letGoOn && !reaches(byId, x, t.id));
+}
+// Whether `from` waits for the task `target`, directly or further along (through tasks of its project).
+function reaches(byId: Map<string, TaskItem>, from: TaskItem, target: string): boolean {
+  const seen = new Set<string>([from.id]), stack = [from];
+  while (stack.length) {
+    for (const id of stack.pop()!.after ?? []) {
+      if (id === target) return true;
+      const y = byId.get(id);
+      if (y && y.projectId === from.projectId && !seen.has(id)) { seen.add(id); stack.push(y); }
+    }
+  }
+  return false;
+}
+// "Waits for: Order the boards", or "Waits for: Order the boards and 2 more"; nothing when it waits for none.
+export function waitsForText(data: MyDayData, t: TaskItem): string {
+  const w = waitsFor(data, t);
+  return w.length ? `Waits for: ${w[0].title}${w.length > 1 ? ` and ${w.length - 1} more` : ''}` : '';
+}
+// What it may wait for (the choices on its page): its project's other tasks still to do that don't wait for it,
+// directly or further along. In the order of Tasks.
+export function waitChoices(data: MyDayData, t: TaskItem): TaskItem[] {
+  if (!t.projectId) return [];
+  const byId = new Map(data.tasks.items.map(x => [x.id, x]));
+  return data.tasks.items.filter(x => x.id !== t.id && x.projectId === t.projectId && !isDone(data, x) && !x.letGoOn && !reaches(byId, x, t.id)).sort(taskOrder);
+}
+// Waits for `otherId` (on) or not (off). Adding takes only one of its choices, at most 10 ('full' past that); ids that
+// point at nothing of its project any more are tidied away then. Returns false when nothing changed.
+export function setWaitsFor(data: MyDayData, id: string, otherId: string, on: boolean): boolean | 'full' {
+  const t = data.tasks.items.find(x => x.id === id);
+  if (!t) return false;
+  if (!on) {
+    if (!t.after?.includes(otherId)) return false;
+    t.after = t.after.filter(x => x !== otherId);
+    if (!t.after.length) delete t.after;
+    return true;
+  }
+  if (t.after?.includes(otherId) || !waitChoices(data, t).some(x => x.id === otherId)) return false;
+  const mine = (t.after ?? []).filter(x => data.tasks.items.some(y => y.id === x && y.projectId === t.projectId));
+  if (mine.length >= TASK_LIMITS.after) return 'full';
+  t.after = [...mine, otherId];
+  return true;
+}
+// A task gone (deleted) or moved out of the project: no task waits for it any more.
+export function forgetWaitsFor(d: TasksData, id: string) {
+  for (const x of d.items) if (x.after?.includes(id)) { x.after = x.after.filter(a => a !== id); if (!x.after.length) delete x.after; }
 }

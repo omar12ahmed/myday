@@ -15,9 +15,9 @@ import { addNote, noteName } from '../data/notes';
 import { isBusiness, isCase, isResearchKind, knownTemplate, setTemplate, TEMPLATES, type TemplateChoice } from '../data/businessModel';
 import { hasResearch, setResearch } from '../data/research';
 import { worthALook } from '../data/projectDashboard';
-import { comingUp, deleteProject, editProject, setProjectPrivate, linkNote, nextStep, PROJECT_LIMITS, projectById, projectNotes, projectTasks, recently, setLeftOff, setNextStep, STATUS_LABEL, stillOpen, unlinkAppointment, whyNext } from '../data/projects';
+import { comingUp, deleteProject, editProject, heldBack, setProjectPrivate, linkNote, nextStep, PROJECT_LIMITS, projectById, projectNotes, projectTasks, recently, setLeftOff, setNextStep, STATUS_LABEL, stillOpen, unlinkAppointment, whyNext } from '../data/projects';
 import { update } from '../data/storage';
-import { addTask, addToTodaysPlan, onTodaysPlan, planRoom, setTaskDone } from '../data/tasks';
+import { addTask, addToTodaysPlan, onTodaysPlan, planRoom, setTaskDone, stepsText, waitsForText } from '../data/tasks';
 import { toast } from '../data/toast';
 import type { MyDayData, Project, TaskItem } from '../data/types';
 import { bothMention, mightBelong } from '../data/understand';
@@ -264,6 +264,7 @@ function OverviewTop({ data, p }: { data: MyDayData; p: Project }) {
 function NextStepCard({ data, p }: { data: MyDayData; p: Project }) {
   const [text, setText] = useState('');
   const step = nextStep(data, p), open = projectTasks(data, p).open, k = todayKey(), chosen = !!step && step.id === p.nextTaskId;
+  const waits = step ? waitsForText(data, step) : '';
   function addStep() {
     const title = text.trim();
     if (!title) return;
@@ -274,7 +275,7 @@ function NextStepCard({ data, p }: { data: MyDayData; p: Project }) {
   // Choosing a task makes it yours; "Let MyDay pick" hands the choice back and says what MyDay picks.
   function pick(id: string | null) {
     if (!update(d => (setNextStep(d, p.id, id) ? undefined : false)) || id) return;
-    const auto = open.find(t => !t.waiting);
+    const auto = open.find(t => !heldBack(data, t));
     toast(auto ? `MyDay’s pick: “${auto.title}”.` : 'Everything here is waiting, so MyDay has no next step to pick.');
   }
   return (
@@ -285,9 +286,12 @@ function NextStepCard({ data, p }: { data: MyDayData; p: Project }) {
           <p className="text-[20px] font-bold leading-snug m-0 break-words" data-s="next-title">{step.title}</p>
           <p className="flex flex-wrap items-center gap-x-2 gap-y-1 m-0 mt-1.5 text-sm text-fg-3 tabular-nums">
             {step.due && (step.due < k && !step.waiting ? <span data-s="next-still-open">Still open · was due {shortDate(step.due)}</span> : <span>{dueText(step, k)}</span>)}<span>{step.minutes} min</span><CategoryChip kind={step.category} />
+            {stepsText(step) && <span data-s="next-steps">{stepsText(step)}</span>}
           </p>
           {/* A waiting step you chose stays chosen (1.50.0); it can't be done today, so it isn't offered for Today. */}
           {step.waiting && <p className="m-0 mt-2 text-[15px] text-fg-2 break-words" data-s="next-waiting">{waitingText(step)}{open.length > 1 ? ' — while you wait, you could choose another next step below.' : '.'}</p>}
+          {/* A step you chose that waits for another task stays chosen too; you can still do it any time. */}
+          {waits && <p className="m-0 mt-2 text-[15px] text-fg-2 break-words" data-s="next-waits-for">{waits}. You can still do it any time.</p>}
           <div className="flex flex-wrap gap-2.5 mt-4">
             {step.waiting ? (step.waiting.until && step.waiting.until <= k && <ChaseIt data={data} t={step} primary />) : onTodaysPlan(data, step, k) ? <span className="inline-flex items-center min-h-11 text-primary font-semibold">On today's plan</span>
               : <Button inline variant="primary" data-action="project-step-today" onClick={() => toToday(data, step)}>Add to today</Button>}
@@ -296,11 +300,11 @@ function NextStepCard({ data, p }: { data: MyDayData; p: Project }) {
           </div>
           <details className="mt-2 mb-1" data-s="next-why"><summary className="cursor-pointer min-h-11 flex items-center text-primary font-semibold text-[15px]">Why this?</summary>
             <p className="text-[15px] text-fg-2 mt-0 mb-1 break-words" data-s="next-why-text">{whyNext(data, p).join(' ')}</p></details>
-          {(open.length > 1 || (chosen && !!step.waiting)) && (
+          {(open.length > 1 || (chosen && heldBack(data, step))) && (
             <Field label="Or choose another next step" htmlFor="projectNextPick" className="mt-2">
               <Select id="projectNextPick" value={chosen ? step.id : ''} onChange={e => pick(e.target.value || null)}>
                 <option value="">Let MyDay pick</option>
-                {open.map(t => <option key={t.id} value={t.id}>{t.title}{t.waiting ? ' (waiting)' : ''}</option>)}
+                {open.map(t => <option key={t.id} value={t.id}>{t.title}{heldBack(data, t) ? ' (waiting)' : ''}</option>)}
               </Select>
             </Field>
           )}

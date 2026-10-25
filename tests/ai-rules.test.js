@@ -1716,9 +1716,12 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
         issues: [{ id: 'is1', title: 'SECRET-ISSUE', status: 'claiming', notes: '', createdAt: OLD }] } }),
     ];
     const TI = (id, title, x = {}) => ({ id, title, listId: '', category: 'admin', minutes: 20, due: PD, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: at, postponed: 0, blockers: [], letGoOn: null, ...x });
-    w.tasks.items = [TI('tkSecret', 'SECRET-TASK', { projectId: 'pjSecret', plannedOn: PD, planUid: 'pS', notes: 'SECRET-TASK-NOTES' }), TI('tkSecretDue', 'SECRET-DUE', { projectId: 'pjSecret', waiting: { on: 'SECRET-WAITER', since: '2026-11-01', until: '2026-11-08' } }),
+    w.tasks.items = [TI('tkSecret', 'SECRET-TASK', { projectId: 'pjSecret', plannedOn: PD, planUid: 'pS', notes: 'SECRET-TASK-NOTES', steps: [{ id: 'tsS1', text: 'SECRET-STEP-PRIVATE', done: false }] }), TI('tkSecretDue', 'SECRET-DUE', { projectId: 'pjSecret', waiting: { on: 'SECRET-WAITER', since: '2026-11-01', until: '2026-11-08' } }),
       TI('tkSecretStuck', 'SECRET-STUCK', { projectId: 'pjSecret', due: week, postponed: 3, createdAt: OLD }), TI('tkSecretDone', 'SECRET-DONE', { projectId: 'pjSecret', done: true, doneOn: '2026-11-09' }),
-      TI('tkOpen', 'Order the felt', { projectId: 'pjOpen', plannedOn: PD, planUid: 'pO', waiting: { on: 'SECRET-PERSON', since: PD, until: null } })];
+      // An open project's task on today's plan: its steps and what it waits for stay on the device (specs/projects-steps.md);
+      // the wait points at no task, so nothing else about it changes.
+      TI('tkOpen', 'Order the felt', { projectId: 'pjOpen', plannedOn: PD, planUid: 'pO', waiting: { on: 'SECRET-PERSON', since: PD, until: null },
+        steps: [{ id: 'tsO1', text: 'SECRET-STEP-OPEN', done: true }, { id: 'tsO2', text: 'SECRET-STEP-OPEN-2', done: false }], after: ['SECRET-AFTER-ID'] })];
     const PT = (uid, title) => ({ uid, taskId: null, category: 'admin', title, minutes: 20, baseMinutes: 20, done: false, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null });
     w.days[PD] = { energy: 3, rest: false, builtAt: at, checkedIn: false, tasks: [PT('pS', 'SECRET-TASK'), PT('pO', 'Order the felt')] };
     w.context[PD] = { energy: 3, sleep: { start: null, end: null, estimatedHours: 7 } };
@@ -1742,7 +1745,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const data = K.normalize(w);
     const SECRETS = ['SECRET-PROJECT', 'SECRET-SUMMARY', 'SECRET-OUTCOME', 'SECRET-FINISHED', 'SECRET-LEFTOFF', 'SECRET-TASK', 'SECRET-DUE', 'SECRET-STUCK', 'SECRET-DONE', 'SECRET-PERSON', 'SECRET-WAITER',
       'SECRET-NOTE', 'SECRET-PNOTE', 'SECRET-APPT', 'SECRET-PROBLEM', 'SECRET-BELIEF', 'SECRET-FOUND', 'SECRET-MILESTONE', 'SECRET-DECISION', 'SECRET-OPTION', 'SECRET-LINK', 'SECRET-WHY',
-      'SECRET-FILE', 'flsecret000', 'SECRET-RQ', 'SECRET-RS', 'SECRET-RF', 'SECRET-RES-TITLE', 'SECRET-RES-URL', 'SECRET-RES-NOTE', 'SECRET-TIMELINE', 'SECRET-EVIDENCE', 'SECRET-WHERE', 'SECRET-ISSUE', 'SECRET-NAME', 'SECRET-MONEY', 'SECRET-PF', 'flpfsecret'];
+      'SECRET-FILE', 'flsecret000', 'SECRET-RQ', 'SECRET-RS', 'SECRET-RF', 'SECRET-RES-TITLE', 'SECRET-RES-URL', 'SECRET-RES-NOTE', 'SECRET-TIMELINE', 'SECRET-EVIDENCE', 'SECRET-WHERE', 'SECRET-ISSUE', 'SECRET-NAME', 'SECRET-MONEY', 'SECRET-PF', 'flpfsecret', 'SECRET-STEP', 'SECRET-AFTER'];
     check('the made-up world really holds every secret after MyDay reads it (so the checks below can\'t pass by accident)', SECRETS.every(x => JSON.stringify(data).includes(x)), SECRETS.filter(x => !JSON.stringify(data).includes(x)));
     const leaks = (req, allowed = []) => SECRETS.filter(x => !allowed.includes(x) && JSON.stringify(req).includes(x));
     const pages = ['#today', '#calendar', '#today/tasks', '#projects', '#projects/p/pjSecret', '#projects/p/pjSecret/research', '#projects/p/pjOpen/research', '#projects/p/pjSecret/model', '#projects/p/pjOpen', '#projects/p/pjOpen/model', '#projects/p/pjCase',
