@@ -13,10 +13,12 @@
 //                                                so an older MyDay can never delete a newer area's file
 //   delete-all                                 → every file of the account (for the true wipe)
 //   usage                                      → the account's total, against its limit
+//   stored                                     → the account's stored files (id, area, size, when), for finding
+//                                                any that nothing in MyDay lists any more (specs/files.md)
 // The logs hold the action, the outcome and the time only: never names, keys, ids or links.
 import { ACCOUNT_TOTAL_BYTES, amountLabel, AREA_RULES, disposition, isArea, looksLike, PREVIEWABLE, refusal, THUMB_MAX_BYTES, typeOfName } from '../_shared/files/rules.ts';
 
-export interface StoredObject { key: string; size: number }
+export interface StoredObject { key: string; size: number; modified?: string } // modified: when it was stored (ISO), where the store says
 export interface Store {
   head(key: string): Promise<{ size: number; type: string } | null>;
   firstBytes(key: string, n: number): Promise<Uint8Array>;
@@ -157,6 +159,14 @@ export async function handle(req: Request, d: Deps): Promise<Response> {
       case 'usage': {
         const objs = await all();
         return done(json(200, { ok: true, bytes: sizeOf(objs), limit: ACCOUNT_TOTAL_BYTES }));
+      }
+      case 'stored': {
+        // Ids and sizes only (never names, which aren't stored here anyway); previews are counted with their file.
+        const files = (await all()).flatMap(o => {
+          const [, area, id] = o.key.slice(user.length).split('/');
+          return !o.key.endsWith('.thumb') && isArea(area) && FILE_ID.test(id ?? '') ? [{ fileId: id, area, size: o.size, modified: o.modified ?? null }] : [];
+        });
+        return done(json(200, { ok: true, files }));
       }
       default: return done(json(400, { error: 'bad-request' }));
     }

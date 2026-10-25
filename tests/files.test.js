@@ -24,10 +24,10 @@ const MB = 1024 * 1024;
     const objects = new Map();   // key -> { bytes, size, type }
     return {
       objects,
-      put(key, bytes, type = 'application/octet-stream', size = bytes.length) { objects.set(key, { bytes: Buffer.from(bytes), size, type }); },
+      put(key, bytes, type = 'application/octet-stream', size = bytes.length, modified = '2026-10-20T10:00:00.000Z') { objects.set(key, { bytes: Buffer.from(bytes), size, type, modified }); },
       async head(key) { const o = objects.get(key); return o ? { size: o.size, type: o.type } : null; },
       async firstBytes(key, n) { const o = objects.get(key); return new Uint8Array(o ? o.bytes.subarray(0, n) : []); },
-      async list(prefix) { return [...objects].filter(([k]) => k.startsWith(prefix)).map(([key, o]) => ({ key, size: o.size })); },
+      async list(prefix) { return [...objects].filter(([k]) => k.startsWith(prefix)).map(([key, o]) => ({ key, size: o.size, modified: o.modified })); },
       async remove(key) { objects.delete(key); },
       async sign(method, key, headers, seconds) { signed.push({ method, key, headers, seconds }); return `https://r2.example/${method}/${signed.length}`; },
     };
@@ -273,6 +273,23 @@ const MB = 1024 * 1024;
   check('opening, usage and deleting don\'t need it (Delete everything deletes files itself)', (await post({ action: 'open', fileId: 'flepoch00005', area: 'project' }, { over: wiped })).status === 200
     && (await post({ action: 'usage' }, { over: wiped })).status === 200 && (await post({ action: 'delete-all' }, { over: wiped })).status === 200);
   check('the epoch can\'t be read: 502, nothing signed', (await up({ fileId: 'flepoch00006' }, { over: { epochOf: async () => { throw new Error('db'); } } })).status === 502);
+
+  console.log('\n[11] stored: the account\'s stored files (to find any that nothing in MyDay lists)');
+  reset();
+  store.put(`${A}/project/flstored0001`, PDF, 'application/pdf', 1234, '2026-10-01T09:00:00.000Z');
+  store.put(`${A}/project/flstored0001.thumb`, PDF, 'image/webp', 99);
+  store.put(`${A}/note/flstored0002`, PDF, 'text/plain', 55);
+  store.put(`${A}/gallery/flstored0003`, PDF, 'image/png', 7);
+  store.put(`${A}/project/not-a-file-id`, PDF, 'application/pdf', 8);
+  store.put(`${B}/project/flstored0009`, PDF, 'application/pdf', 4321);
+  r = await post({ action: 'stored' });
+  j = await json(r);
+  check('it lists this account\'s files with their area, size and when stored (previews and other accounts\' left out)', r.status === 200 && j.ok
+    && eq(j.files.map(f => [f.fileId, f.area, f.size, f.modified]).sort(), [['flstored0001', 'project', 1234, '2026-10-01T09:00:00.000Z'], ['flstored0002', 'note', 55, '2026-10-20T10:00:00.000Z']]), j);
+  check('…an area or id this version doesn\'t know is left out, never offered to delete', !j.files.some(f => f.area === 'gallery' || f.fileId === 'not-a-file-id'));
+  check('…no names: only ids, areas, sizes and dates', j.files.every(f => eq(Object.keys(f).sort(), ['area', 'fileId', 'modified', 'size'])));
+  check('…and signed out: refused first', (await post({ action: 'stored' }, { token: null })).status === 401);
+  check('…its log line holds no ids', logs.every(l => /^files [a-z-]+ \d{3} \d+ms$/.test(l)), logs);
 
   const s = summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
 })().catch(e => { console.error('HARNESS ERROR', e); const s = summary(); console.log(`${s.pass} passed, ${s.fail} failed before the error`); process.exit(2); });

@@ -10,7 +10,7 @@ import { update } from '../data/storage';
 import { toast } from '../data/toast';
 import type { FileRecord, MyDayData } from '../data/types';
 import { useSync } from '../sync/engine';
-import { addFiles, canRetry, deleteNow, getProgress, getUsage, linkTo, openFile, refreshUsage, retry, subscribeFiles, WHY, type FilesResult } from '../sync/files';
+import { addFiles, canRetry, checkUnlisted, deleteNow, deleteUnlisted, getProgress, getUnlisted, getUsage, linkTo, openFile, refreshUsage, retry, subscribeFiles, WHY, type FilesResult } from '../sync/files';
 
 // "Files" (specs/files.md): the files attached to a project (a card on its Overview) or a note (a section in its
 // editor). Add (or drop) photos, PDFs and documents; Open; Remove (to Recently deleted for 30 days, unless something else
@@ -89,8 +89,16 @@ export function DeletedFiles({ list, putBackable = true }: { list: FileRecord[];
 // once the files function has said (signed in, online); files in Recently deleted are still stored until they go.
 // Last in the card, so its arriving late never moves what's above it. Used and left are rounded down.
 function StorageLine({ anyDeleted }: { anyDeleted: boolean }) {
-  const u = useSyncExternalStore(subscribeFiles, getUsage), account = useSync().account;
-  useEffect(() => { void refreshUsage(); }, [account?.id]);
+  const u = useSyncExternalStore(subscribeFiles, getUsage), account = useSync().account, extra = useSyncExternalStore(subscribeFiles, getUnlisted);
+  const confirm = useConfirm();
+  useEffect(() => { void refreshUsage(); void checkUnlisted(); }, [account?.id]);
+  async function clearExtra() {
+    const n = extra?.length ?? 0, size = amountLabel((extra ?? []).reduce((t, f) => t + f.size, 0));
+    if (!n || !(await confirm({ title: `Delete ${n} stored file${n === 1 ? '' : 's'} nothing in your MyDay lists?`,
+      body: `They take ${size}. If another of your devices added files while offline and hasn’t synced since, open it first. They can’t be brought back.`, confirmLabel: 'Delete them', cancelLabel: 'Keep them' }))) return;
+    const r = await deleteUnlisted();
+    toast(r === 'ok' ? 'Deleted. That space is free again.' : WHY[r]);
+  }
   if (!u || u.user !== account?.id) return null;
   const left = Math.max(0, u.limit - u.bytes), pct = Math.min(100, (u.bytes / u.limit) * 100), of = amountLabel(u.limit);
   return (
@@ -100,6 +108,12 @@ function StorageLine({ anyDeleted }: { anyDeleted: boolean }) {
         {u.bytes ? `Your files: ${amountLabel(u.bytes, Math.floor)} used, ${amountLabel(left, Math.floor)} left of ${of}.` : `Your files: nothing stored yet, ${of} left.`}
         {anyDeleted ? ' Files in Recently deleted count until they go.' : ''}
       </p>
+      {!!extra?.length && (
+        <p className="m-0 mt-1 text-sm text-fg-2 flex flex-wrap items-center gap-x-3" data-s="files-unlisted">
+          {extra.length} stored file{extra.length === 1 ? '' : 's'} ({amountLabel(extra.reduce((t, f) => t + f.size, 0), Math.ceil)}) {extra.length === 1 ? 'isn’t' : 'aren’t'} in your MyDay any more, left by importing an older backup, say.
+          <LinkButton className="text-[15px]" data-action="files-unlisted-delete" onClick={clearExtra}>Delete them…</LinkButton>
+        </p>
+      )}
     </div>
   );
 }

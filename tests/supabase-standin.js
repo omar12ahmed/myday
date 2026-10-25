@@ -128,7 +128,7 @@ function start(db, port = 0) {
   const filesStore = {
     async head(key) { const o = fileObjects.get(key); return o ? { size: o.size ?? o.body.length, type: o.type } : null; },
     async firstBytes(key, n) { const o = fileObjects.get(key); return new Uint8Array(o ? o.body.subarray(0, n) : []); },
-    async list(prefix) { return [...fileObjects].filter(([k]) => k.startsWith(prefix)).map(([key, o]) => ({ key, size: o.size ?? o.body.length })); },
+    async list(prefix) { return [...fileObjects].filter(([k]) => k.startsWith(prefix)).map(([key, o]) => ({ key, size: o.size ?? o.body.length, modified: o.modified })); },
     async remove(key) { fileObjects.delete(key); },
     async sign(method, key, headers, seconds) {
       const token = require('crypto').randomUUID().replace(/-/g, '');
@@ -180,7 +180,7 @@ function start(db, port = 0) {
         const same = (name, want) => (req.headers[name.toLowerCase()] || '') === want;
         if (String(buf.length) !== h['Content-Length'] || !same('Content-MD5', h['Content-MD5']) || !same('Content-Type', h['Content-Type']) || !same('Content-Disposition', h['Content-Disposition'])) { res.writeHead(403, cors); return res.end('SignatureDoesNotMatch'); }
         if (md5 !== h['Content-MD5']) { res.writeHead(400, cors); return res.end('BadDigest'); }
-        fileObjects.set(link.key, { body: Buffer.from(buf), type: h['Content-Type'], disposition: h['Content-Disposition'] });
+        fileObjects.set(link.key, { body: Buffer.from(buf), type: h['Content-Type'], disposition: h['Content-Disposition'], modified: new Date().toISOString() });
         res.writeHead(200, { ...cors, ETag: '"' + md5 + '"' }); return res.end();
       }
       const o = fileObjects.get(link.key);
@@ -214,7 +214,8 @@ function start(db, port = 0) {
       if (what === 'files-reset') { fileObjects.clear(); fileLinks.clear(); filesLog.length = 0; filesConfigured = true; for (const k of Object.keys(filesFail)) delete filesFail[k]; return send(res, 200, { ok: true }); }
       if (what === 'files-log') return send(res, 200, filesLog);
       // (Test only) stores an object that reports a size it doesn't have, so usage and the account's room can be tested: { key, size, type }.
-      if (what === 'files-put') { fileObjects.set(body.key, { body: Buffer.from('x'), size: body.size, type: body.type || 'application/pdf', disposition: 'inline' }); return send(res, 200, { ok: true }); }
+      // (…and, with `modified`, when it was stored: to test what's offered as stored files nothing lists.)
+      if (what === 'files-put') { fileObjects.set(body.key, { body: Buffer.from('x'), size: body.size, type: body.type || 'application/pdf', disposition: 'inline', modified: body.modified || new Date().toISOString() }); return send(res, 200, { ok: true }); }
       if (what === 'files-fail') { filesFail[body.action] = body.times ?? 1; return send(res, 200, { ok: true }); }
       return send(res, 404, { message: 'Unknown control' });
     }

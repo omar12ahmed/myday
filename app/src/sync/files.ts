@@ -249,6 +249,36 @@ export async function openFile(f: FileRecord): Promise<FilesResult> {
   } catch { return offlineNow() ? 'offline' : 'failed'; }
 }
 
+// ---------- Stored files nothing lists (specs/files.md) ----------
+// Files in your storage that no record in your MyDay names, e.g. left by importing an older backup: they count
+// towards what's used but nothing shows them. Asked only while this device is fully in step (so a record still on its
+// way isn't mistaken for missing), at most every 10 minutes, and only for files stored a day ago or more (so another
+// device's fresh upload, whose record hasn't arrived, is left alone), in the areas this version knows. Deleting them
+// is your choice, asked first.
+export interface Unlisted { fileId: string; area: string; size: number }
+let unlisted: Unlisted[] | null = null, unlistedAt = 0;
+export const getUnlisted = () => unlisted;
+export async function checkUnlisted(now = Date.now()): Promise<void> {
+  const v = getView();
+  if (!checkedThisLoad() || v.phase !== 'linked' || v.status !== 'synced' || now - unlistedAt < 10 * 60 * 1000) return;
+  unlistedAt = now;
+  const r = await call<{ files: { fileId: string; area: string; size: number; modified: string | null }[] }>('stored');
+  if (!r.ok || !Array.isArray(r.data.files)) { unlistedAt = 0; return; }
+  const known = new Set(getSnapshot().data.files.items.map(f => f.id)), DAY = 24 * 60 * 60 * 1000;
+  unlisted = r.data.files.filter(f => LISTED_AREAS.includes(f.area) && !known.has(f.fileId) && !!f.modified && now - Date.parse(f.modified) > DAY)
+    .map(f => ({ fileId: f.fileId, area: f.area, size: f.size }));
+  notify();
+}
+export async function deleteUnlisted(): Promise<FilesResult> {
+  const list = unlisted ?? [];
+  for (let i = 0; i < list.length; i += 100) {
+    const r = await call('delete', { files: list.slice(i, i + 100).map(f => ({ fileId: f.fileId, area: f.area })), knows: LISTED_AREAS });
+    if (!r.ok) return r.why;
+  }
+  unlisted = []; notify(); void refreshUsage(true);
+  return 'ok';
+}
+
 // ---------- Delete now, and the daily tidy ----------
 export async function deleteNow(files: FileRecord[]): Promise<FilesResult> {
   if (!files.length) return 'ok';

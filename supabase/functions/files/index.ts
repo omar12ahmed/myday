@@ -49,7 +49,7 @@ function r2(): Store | null {
       do {
         const q = new URLSearchParams({ 'list-type': '2', prefix, ...(token ? { 'continuation-token': token } : {}) });
         const xml = await (await ok(await aws.fetch(`${base}?${q}`))).text();
-        for (const c of xml.match(/<Contents>[\s\S]*?<\/Contents>/g) ?? []) out.push({ key: unxml(tag(c, 'Key')), size: Number(tag(c, 'Size')) || 0 });
+        for (const c of xml.match(/<Contents>[\s\S]*?<\/Contents>/g) ?? []) out.push({ key: unxml(tag(c, 'Key')), size: Number(tag(c, 'Size')) || 0, modified: tag(c, 'LastModified') || undefined });
         token = tag(xml, 'IsTruncated') === 'true' ? unxml(tag(xml, 'NextContinuationToken')) : '';
       } while (token);
       return out;

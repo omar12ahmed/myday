@@ -145,6 +145,8 @@ Also, per the other decisions on record:
     an older MyDay can't tell whether a newer area's file is still listed, so it can never delete one (409
     `unknown-area`).
   - **`delete-all`**: every file of the account; for the true wipe.
+  - **`stored`**: the account's stored files (id, area, size, when stored; never names), for finding any that nothing
+    in MyDay lists ("Stored files nothing lists", below).
   - **`usage`**: the account's total (every file, Recently deleted included; previews aren't counted) and its limit,
     for the Files card's "1.2 GB used, 8.8 GB left of 10 GB".
   - The account and area totals are read from a listing just before signing, so two uploads at the same moment can
@@ -198,11 +200,14 @@ Also, per the other decisions on record:
 - **The true wipe** ("delete everything", not built yet) must call `deleteAllFiles()` (and the backups' delete-all)
   before it clears the data, so no file or backup outlives it.
 
-### Known gap (noted 24 October 2026)
+### Stored files nothing lists
 
 Importing a backup made before some files existed (or a blank one) drops their records, and sync then deletes them,
-but their bytes stay in R2: they count towards what's used, with nothing listed to remove. A follow-up: the function
-lists stored files that no record names, and the app offers to delete them.
+but their bytes stay in R2: they count towards what's used, with nothing listed to remove. The function's `stored`
+action lists the account's stored files (id, area, size, when stored; never names), and the Files card's storage line
+says "3 stored files (12 MB) aren't in your MyDay any more…" with **Delete them…** (asked first, warning that a device
+which added files offline should be opened first). Only files stored a day ago or more, in areas this version knows,
+and only while the device is fully in step, so a record still on its way is never mistaken for missing.
 
 ## 5. Privacy and safety
 
