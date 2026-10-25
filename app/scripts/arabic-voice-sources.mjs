@@ -6,7 +6,7 @@
 // a voice (the marks are how a listener and the cross-check know it was read right), never a letter drill (it would
 // be read as letter names).
 import { readFileSync } from 'node:fs';
-import { readingPassages, voiceable } from './arabic-reading-sentences.mjs';
+import { readingPassages, voiceable, wholeText } from './arabic-reading-sentences.mjs';
 import { arabicRuns } from '../src/study/arabic/arabic-runs.mjs';
 export { LETTER, letters, vowelling, kind, voiceable, markedThrough } from './arabic-reading-sentences.mjs';
 import { kind, letters, markedThrough, voiceable as voiceableText } from './arabic-reading-sentences.mjs';
@@ -34,7 +34,9 @@ export function voiceSources(root) {
     { id: 'starter-words', round: 1, label: 'starter words and their examples', texts: uniq(course.lexicon_seed.flatMap(w => [w.form_ar, w.example_ar])) },
     // Round two (1.40.0): each lesson's headline example, where it's fully vowelled and not a letter drill.
     { id: 'lesson-examples', round: 2, label: 'lessons’ headline examples', texts: uniq(course.lessons.map(l => l.example?.text_ar).filter(voiceable)) },
-    { id: 'reading-texts', round: 3, label: 'vowelled reading texts, by sentence', texts: uniq(Object.values(readingPassages(root)).flatMap(parts => parts.map(p => p.spoken))) },
+    // The reading texts, by sentence, in pause forms (from round ten; a text the course gives without marks is read from
+    // MyDay's vowelled script, voice-scripts.json).
+    { id: 'reading-texts', round: 3, label: 'reading texts, by sentence', texts: uniq(Object.values(readingPassages(root)).flatMap(parts => parts.map(p => p.spoken))) },
     { id: 'teaching', round: 3, label: 'teaching examples, practice and solutions', texts: mixed(Object.values(teaching.lessons).flatMap(l => [l.example, l.practice, l.solution, l.explanation])) },
     { id: 'sounds-families', round: 3, label: 'sound pairs and word families', texts: mixed([
       ...course.assets.flatMap(a => (a.pairs || []).flatMap(p => [p.a, p.b])),
@@ -46,5 +48,7 @@ export function voiceSources(root) {
     // Round four: the course words (content/teaching/arabic/course-words.json), each word, its example and the Arabic
     // in its note, once the owner has checked the list.
     { id: 'course-words', round: 4, label: 'course words, their examples and notes', texts: uniq([...words.flatMap(w => [w.form_ar, w.example_ar]).filter(courseVoiceable), ...mixed(words.map(w => w.note))]) },
+    // Round ten: each reading text read in one go, for “Listen to the whole text”.
+    { id: 'reading-wholes', round: 10, label: 'reading texts, whole', texts: uniq(Object.values(readingPassages(root)).map(wholeText)) },
   ];
 }

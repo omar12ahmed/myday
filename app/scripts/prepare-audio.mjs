@@ -12,7 +12,7 @@
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { spokenText, voiceSources } from './arabic-voice-sources.mjs';
-import { readingPassages } from './arabic-reading-sentences.mjs';
+import { readingPassages, wholeText } from './arabic-reading-sentences.mjs';
 
 const root = new URL('../../', import.meta.url);
 const fail = message => { throw new Error('Arabic audio: ' + message); };
@@ -23,6 +23,8 @@ const audit = JSON.parse(readFileSync(new URL('audio-audit.json', dir), 'utf8'))
 const sources = voiceSources(root);
 const CHECKS = ['to check', 'checked', 'redo', 'left out'];
 if (!audit.voice?.name || !audit.label) fail('the audit needs its voice and its label');
+// New clips are made with the audit's voice; clips made earlier with a voice listed under earlier_voices still ship.
+const VOICES = [audit.voice.name, ...(audit.earlier_voices ?? []).map(v => v.name)];
 
 const used = new Set(), shipped = {};
 const count = Object.fromEntries(CHECKS.map(c => [c, 0]));
@@ -31,7 +33,7 @@ for (const [text, c] of Object.entries(audit.clips ?? {})) {
   if (!sources.some(s => s.texts.includes(text))) fail(`${short}: its text is no longer in any voiced part of the course. Make the new text's clip with make-arabic-audio.mjs and take this one out.`);
   if (!CHECKS.includes(c.check)) fail(`${short}: unknown check “${c.check}”`);
   if (c.spoken !== undefined && c.spoken !== spokenText(text)) fail(`${short}: the spoken text changes more than its pause punctuation`);
-  if (c.voice !== audit.voice.name) fail(`${short}: made with another voice (${c.voice})`);
+  if (!VOICES.includes(c.voice)) fail(`${short}: made with a voice the audit doesn't list (${c.voice})`);
   if (!/^[0-9a-f]{16}\.mp3$/.test(c.file ?? '')) fail(`${short}: a clip is named by its contents (16 hex + .mp3)`);
   const at = new URL(c.file, clipsDir);
   if (!existsSync(at)) fail(`${short}: ${c.file} is missing`);
@@ -52,7 +54,9 @@ if (!process.argv[2]) {
   rmSync(out, { recursive: true, force: true });
   mkdirSync(out, { recursive: true });
   for (const file of Object.values(shipped)) copyFileSync(new URL(file, clipsDir), new URL(file, out));
-  writeFileSync(new URL('app/src/study/arabic/voice-clips.json', root), JSON.stringify({ voice: audit.voice.name, label: audit.label, clips: shipped, readings: readingPassages(root) }));
+  // A reading text's whole clip is found by its whole text (wholeText), for “Listen to the whole text”.
+  const readings = readingPassages(root);
+  writeFileSync(new URL('app/src/study/arabic/voice-clips.json', root), JSON.stringify({ voice: audit.voice.name, label: audit.label, clips: shipped, readings, wholes: Object.fromEntries(Object.entries(readings).map(([id, parts]) => [id, wholeText(parts)])) }));
 }
 const per = sources.map(s => `${s.label} ${s.texts.filter(t => shipped[t]).length} of ${s.texts.length}`).join('; ');
 console.log(`Arabic audio: ${count.checked} clips listened to and shipped; ${count['to check'] + count.redo} not yet listened to, ${count['left out']} left out (no button). With a voice: ${per}.`);

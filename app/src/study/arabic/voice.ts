@@ -14,6 +14,10 @@ export interface ReadingSentence { text: string; plain: string; spoken: string; 
 const readings = audio.readings as Record<string, ReadingSentence[]>;
 export const readingFor = (id: string): ReadingSentence[] | null => readings[id] ?? null;
 export const hasReadingVoice = Object.values(readings).some(parts => parts.some(p => clipFor(p.spoken)));
+// A reading text read in one go (round ten), found by its whole text: “Listen to the whole text” plays it when it has
+// a checked clip, and the sentences in turn when it hasn't.
+const wholes = (audio as { wholes?: Record<string, string> }).wholes ?? {};
+export const wholeClipFor = (id: string): string | null => (wholes[id] ? clipFor(wholes[id]) : null);
 
 export const SLOWER_KEY = 'myday.arabic.slower';
 function initialSlower() { try { return localStorage.getItem(SLOWER_KEY) === 'yes'; } catch { return false; } }

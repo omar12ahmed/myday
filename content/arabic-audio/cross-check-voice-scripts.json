@@ -1,0 +1,3358 @@
+{
+ "model": "gemini-3.8-flash",
+ "date": "2026-10-25",
+ "method": "Blind audio-only transcription of the clips made from MyDay’s vowelled voice scripts (the six unmarked reading passages, by sentence). Main session read every transcript against the authored text; punctuation and pausal endings can differ. This does not approve a clip.",
+ "prompt": "Transcribe only the speech you hear, in Arabic with full vowel marks. Do not translate, explain, add speaker labels, or guess any extra words. Return just the Arabic transcription.",
+ "request_cap": 60,
+ "requests": 152,
+ "usage_tokens": {
+  "text": 5624,
+  "audio": 29634,
+  "output": 69776
+ },
+ "results": {
+  "كَانَ سَامِي يَدْرُسُ كَلِمَاتٍ جَدِيدَةً كُلَّ مَسَاءٍ، لَكِنَّهُ كَانَ يَنْسَى كَثِيرًا مِنْهَا بَعْدَ أَيَّامٍ قَلِيلَةٍ.": {
+   "file": "76076782ecd82ef0.mp3",
+   "heard": "كَانَ سَامِي يَدْرُسُ كَلِمَاتٍ جَدِيدَةً كُلَّ مَسَاءٍ، لَكِنَّهُ كَانَ يَنْسَى كَثِيرًا مِنْهَا بَعْدَ أَيَّامٍ قَلِيلَةٍ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 247,
+    "candidatesTokenCount": 70,
+    "totalTokenCount": 712,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 210
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 395,
+    "serviceTier": "standard"
+   }
+  },
+  "لِذَلِكَ قَرَّرَ أَنْ يُغَيِّرَ طَرِيقَتَهُ.": {
+   "file": "9c4944d09173a5de.mp3",
+   "heard": "لِذَلِكَ قَرَّرَ أَنْ يُغَيِّرَ طَرِيقَتَهُ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 122,
+    "candidatesTokenCount": 26,
+    "totalTokenCount": 461,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 85
+     }
+    ],
+    "thoughtsTokenCount": 313,
+    "serviceTier": "standard"
+   }
+  },
+  "بَدَأَ يَقْرَأُ نُصُوصًا قَصِيرَةً عَنِ الْمَوْضُوعَاتِ الَّتِي يُحِبُّهَا، ثُمَّ يَخْتَارُ مِنْ كُلِّ نَصٍّ كَلِمَاتٍ قَلِيلَةً يَحْتَاجُ إِلَيْهَا.": {
+   "file": "bf00bc6347d6b5ae.mp3",
+   "heard": "بَدَأَ يَقْرَأُ نُصُوصًا قَصِيرَةً عَنِ الْمَوْضُوعَاتِ الَّتِي يُحِبُّهَا، ثُمَّ يَخْتَارُ مِنْ كُلِّ نَصٍّ كَلِمَاتٍ قَلِيلَةً يَحْتَاجُ إِلَيْهَا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 275,
+    "candidatesTokenCount": 80,
+    "totalTokenCount": 355,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 238
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "لَمْ يَكْتَفِ بِكِتَابَةِ مَعَانِيهَا، بَلْ كَتَبَ جُمَلًا مِنْ عِنْدِهِ وَاسْتَعْمَلَ الْكَلِمَاتِ فِي حَدِيثِهِ مَعَ صَدِيقٍ.": {
+   "file": "39f431e4b2530e36.mp3",
+   "heard": "لَمْ يَكْتَفِ بِكِتَابَةِ مَعَانِيهَا، بَلْ كَتَبَ جُمَلًا مِنْ عِنْدِهِ، وَاسْتَعْمَلَ الْكَلِمَاتِ فِي حَدِيثِهِ مَعَ صَدِيقٍ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 223,
+    "candidatesTokenCount": 69,
+    "totalTokenCount": 794,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 186
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 502,
+    "serviceTier": "standard"
+   }
+  },
+  "فِي نِهَايَةِ الْأُسْبُوعِ عَادَ إِلَى النَّصِّ الْأَوَّلِ وَحَاوَلَ تَلْخِيصَهُ دُونَ النَّظَرِ إِلَيْهِ.": {
+   "file": "2127d50aa384a493.mp3",
+   "heard": "فِي نِهَايَةِ الْأُسْبُوعِ، عَادَ إِلَى النَّصِّ الْأَوَّلِ وَحَاوَلَ تَلْخِيصَهُ دُونَ النَّظَرِ إِلَيْهِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 195,
+    "candidatesTokenCount": 57,
+    "totalTokenCount": 593,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 158
+     }
+    ],
+    "thoughtsTokenCount": 341,
+    "serviceTier": "standard"
+   }
+  },
+  "وَجَدَ أَنَّهُ يَتَذَكَّرُ بَعْضَ الْكَلِمَاتِ بِسُهُولَةٍ، وَأَنَّ كَلِمَاتٍ أُخْرَى مَا زَالَتْ تَحْتَاجُ إِلَى مُرَاجَعَةٍ.": {
+   "file": "9c3f7c98aa5fa112.mp3",
+   "heard": "وَجَدَ أَنَّهُ يَتَذَكَّرُ بَعْضَ الْكَلِمَاتِ بِسُهُولَةٍ، وَأَنَّ كَلِمَاتٍ أُخْرَى مَا زَالَتْ تَحْتَاجُ إِلَى مُرَاجَعَةٍ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 234,
+    "candidatesTokenCount": 71,
+    "totalTokenCount": 701,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 197
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 396,
+    "serviceTier": "standard"
+   }
+  },
+  "لَمْ يَعْتَبِرْ ذَلِكَ فَشَلًا؛ فَقَدْ سَاعَدَهُ عَلَى مَعْرِفَةِ مَا يَنْبَغِي أَنْ يَدْرُسَهُ فِي الْأُسْبُوعِ التَّالِي.": {
+   "file": "46adfde8402b3551.mp3",
+   "heard": "لَمْ يَعْتَبِرْ ذَٰلِكَ فَشَلًا، فَقَدْ سَاعَدَهُ عَلَى مَعْرِفَةِ مَا يَنْبَغِي أَنْ يَدْرُسَهُ فِي الْأُسْبُوعِ التَّالِي.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 219,
+    "candidatesTokenCount": 67,
+    "totalTokenCount": 818,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 182
+     }
+    ],
+    "thoughtsTokenCount": 532,
+    "serviceTier": "standard"
+   }
+  },
+  "أَعْلَنَتْ مَكْتَبَةُ الْحَيِّ عَنْ مَشْرُوعٍ جَدِيدٍ لِتَشْجِيعِ الْقِرَاءَةِ بَيْنَ الْكِبَارِ.": {
+   "file": "49f3da6e952ef25e.mp3",
+   "heard": "أَعْلَنَتْ مَكْتَبَةُ الْحَيِّ عَنْ مَشْرُوعٍ جَدِيدٍ لِتَشْجِيعِ الْقِرَاءَةِ بَيْنَ الْكِبَارِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 172,
+    "candidatesTokenCount": 58,
+    "totalTokenCount": 543,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 135
+     }
+    ],
+    "thoughtsTokenCount": 313,
+    "serviceTier": "standard"
+   }
+  },
+  "سَيَجْتَمِعُ الْمُشَارِكُونَ مَرَّةً كُلَّ أُسْبُوعٍ لِقِرَاءَةِ قِصَّةٍ قَصِيرَةٍ وَمُنَاقَشَتِهَا.": {
+   "file": "bf9820cfd3a9e7a7.mp3",
+   "heard": "سَيَجْتَمِعُ الْمُشَارِكُونَ مَرَّةً كُلَّ أُسْبُوعٍ لِقِرَاءَةِ قِصَّةٍ قَصِيرَةٍ وَمُنَاقَشَتِهَا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 201,
+    "candidatesTokenCount": 60,
+    "totalTokenCount": 643,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 164
+     }
+    ],
+    "thoughtsTokenCount": 382,
+    "serviceTier": "standard"
+   }
+  },
+  "وَقَالَتْ مُنَسِّقَةُ الْمَشْرُوعِ إِنَّ الْهَدَفَ لَيْسَ قِرَاءَةَ أَكْبَرِ عَدَدٍ مِنَ الصَّفَحَاتِ، بَلْ فَهْمَ النَّصِّ وَتَبَادُلَ الْآرَاءِ حَوْلَهُ.": {
+   "file": "1af1496c70c40a73.mp3",
+   "heard": "وَقَالَتْ مُنَسِّقَةُ الْمَشْرُوعِ إِنَّ الْهَدَفَ لَيْسَ قِرَاءَةَ أَكْبَرِ عَدَدٍ مِنَ الصَّفَحَاتِ، بَلْ فَهْمَ النَّصِّ وَتَبَادُلَ الْآرَاءِ حَوْلَهُ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 256,
+    "candidatesTokenCount": 82,
+    "totalTokenCount": 921,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 219
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 583,
+    "serviceTier": "standard"
+   }
+  },
+  "يَسْتَطِيعُ الْمُشَارِكُ أَنْ يَخْتَارَ نُسْخَةً مَطْبُوعَةً أَوْ إِلِكْتْرُونِيَّةً، كَمَا يُمْكِنُهُ الِاسْتِمَاعُ إِلَى تَسْجِيلٍ لِلْقِصَّةِ إِذَا كَانَ مُتَاحًا بِصُورَةٍ قَانُونِيَّةٍ.": {
+   "file": "643447b0ad74d697.mp3",
+   "heard": "يَسْتَطِيعُ الْمُشَارِكُ أَنْ يَخْتَارَ نُسْخَةً مَطْبُوعَةً أَوْ إِلِكْتِرُونِيَّةً، كَمَا يُمْكِنُهُ الِاسْتِمَاعُ إِلَى تَسْجِيلٍ لِلْقِصَّةِ إِذَا كَانَ مُتَاحًا بِصُورَةٍ قَانُونِيَّةٍ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 312,
+    "candidatesTokenCount": 112,
+    "totalTokenCount": 949,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 275
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 525,
+    "serviceTier": "standard"
+   }
+  },
+  "لَا يَشْتَرِطُ الْمَشْرُوعُ مَعْرِفَةً سَابِقَةً بِالْأَدَبِ، لَكِنَّهُ يَطْلُبُ مِنْ كُلِّ مُشَارِكٍ أَنْ يَأْتِيَ بِسُؤَالٍ وَاحِدٍ عَلَى الْأَقَلِّ.": {
+   "file": "babbf2a355074f58.mp3",
+   "heard": "لَا يَشْتَرِطُ الْمَشْرُوعُ مَعْرِفَةً سَابِقَةً بِالْأَدَبِ، لَكِنَّهُ يَطْلُبُ مِنْ كُلِّ مُشَارِكٍ أَنْ يَأْتِيَ بِسُؤَالٍ وَاحِدٍ عَلَى الْأَقَلِّ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 246,
+    "candidatesTokenCount": 85,
+    "totalTokenCount": 727,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 209
+     }
+    ],
+    "thoughtsTokenCount": 396,
+    "serviceTier": "standard"
+   }
+  },
+  "وَسَيُجَرِّبُ الْفَرِيقُ هَذَا النِّظَامَ لِمُدَّةِ شَهْرٍ، ثُمَّ يَجْمَعُ الْمُلَاحَظَاتِ قَبْلَ أَنْ يُقَرِّرَ الِاسْتِمْرَارَ فِيهِ.": {
+   "file": "9f2e17419361da43.mp3",
+   "heard": "وَسَيُجَرِّبُ الْفَرِيقُ هَذَا النِّظَامَ لِمُدَّةِ شَهْرٍ، ثُمَّ يَجْمَعُ الْمُلَاحَظَاتِ قَبْلَ أَنْ يُقَرِّرَ الِاسْتِمْرَارَ فِيهِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 247,
+    "candidatesTokenCount": 78,
+    "totalTokenCount": 860,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 210
+     }
+    ],
+    "thoughtsTokenCount": 535,
+    "serviceTier": "standard"
+   }
+  },
+  "لَمْ يُحَدِّدِ الْإِعْلَانُ بَعْدُ عَدَدَ الْمُشَارِكِينَ أَوْ مَوْعِدَ الِاجْتِمَاعِ الْأَوَّلِ.": {
+   "file": "bda445ea38c821cb.mp3",
+   "heard": "لَمْ يُحَدِّدِ الْإِعْلَانُ بَعْدُ عَدَدَ الْمُشَارِكِينَ أَوْ مَوْعِدَ الِاجْتِمَاعِ الْأَوَّلِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 165,
+    "candidatesTokenCount": 53,
+    "totalTokenCount": 589,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 128
+     }
+    ],
+    "thoughtsTokenCount": 371,
+    "serviceTier": "standard"
+   }
+  },
+  "قَالَتْ بَلَدِيَّةُ مَدِينَةٍ خَيَالِيَّةٍ إِنَّ عَدَدَ مُسْتَخْدِمِي الْحَافِلَاتِ ارْتَفَعَ مِنْ عَشَرَةِ آلَافٍ إِلَى اثْنَيْ عَشَرَ أَلْفًا فِي الشَّهْرِ الْمَاضِي، بَعْدَ تَخْفِيضِ سِعْرِ التَّذْكِرَةِ.": {
+   "file": "3b338d66a1ba7fbf.mp3",
+   "heard": "قَالَتْ بَلَدِيَّةُ مَدِينَةٍ خَيَالِيَّةٍ إِنَّ عَدَدَ مُسْتَخْدِمِي الْحَافِلَاتِ ارْتَفَعَ مِنْ عَشَرَةِ آلَافٍ إِلَى اثْنَيْ عَشَرَ أَلْفًا فِي الشَّهْرِ الْمَاضِي بَعْدَ تَخْفِيضِ سِعْرِ التَّذْكِرَةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 335,
+    "candidatesTokenCount": 103,
+    "totalTokenCount": 1084,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 298
+     }
+    ],
+    "thoughtsTokenCount": 646,
+    "serviceTier": "standard"
+   }
+  },
+  "وَوَصَفَتِ الْبَلَدِيَّةُ الزِّيَادَةَ بِأَنَّهَا دَلِيلٌ عَلَى نَجَاحِ التَّخْفِيضِ.": {
+   "file": "1826cddd78085426.mp3",
+   "heard": "وَوَصَفَتِ الْبَلَدِيَّةُ الزِّيَادَةَ بِأَنَّهَا دَلِيلٌ عَلَى نَجَاحِ التَّخْفِيضِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 161,
+    "candidatesTokenCount": 46,
+    "totalTokenCount": 546,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 124
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 339,
+    "serviceTier": "standard"
+   }
+  },
+  "غَيْرَ أَنَّ بَاحِثَةً فِي النَّقْلِ أَشَارَتْ إِلَى أَنَّ الْأَرْقَامَ وَحْدَهَا لَا تَكْفِي لِتَحْدِيدِ السَّبَبِ؛ فَقَدِ افْتَتَحَتِ الْمَدِينَةُ فِي الشَّهْرِ نَفْسِهِ خَطَّيْنِ جَدِيدَيْنِ، كَمَا أَغْلَقَتْ بَعْضَ الشَّوَارِعِ لِأَعْمَالِ الصِّيَانَةِ.": {
+   "file": "6f3152e6f90df7ed.mp3",
+   "heard": "غَيْرَ أَنَّ بَاحِثَةً فِي النَّقْلِ أَشَارَتْ إِلَى أَنَّ الْأَرْقَامَ وَحْدَهَا لَا تَكْفِي لِتَحْدِيدِ السَّبَبِ، فَقَدِ افْتَتَحَتِ الْمَدِينَةُ فِي الشَّهْرِ نَفْسِهِ خَطَّيْنِ جَدِيدَيْنِ، كَمَا أَغْلَقَتْ بَعْضَ الشَّوَارِعِ لِأَعْمَالِ الصِّيَانَةِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 354,
+    "candidatesTokenCount": 140,
+    "totalTokenCount": 1009,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 317
+     }
+    ],
+    "thoughtsTokenCount": 515,
+    "serviceTier": "standard"
+   }
+  },
+  "وَطَالَبَتِ الْبَاحِثَةُ بِمُقَارَنَةِ الْأَعْدَادِ عَلَى مَدَى فَتْرَةٍ أَطْوَلَ وَبِمَعْرِفَةِ مَا إِذَا كَانَ الرُّكَّابُ الْجُدُدُ قَدْ تَوَقَّفُوا عَنِ اسْتِخْدَامِ سَيَّارَاتِهِمْ.": {
+   "file": "24a3623f2332e354.mp3",
+   "heard": "وَطَالَبَتِ الْبَاحِثَةُ بِمُقَارَنَةِ الْأَعْدَادِ عَلَى مَدَى فَتْرَةٍ أَطْوَلَ، وَبِمَعْرِفَةِ مَا إِذَا كَانَ الرُّكَّابُ الْجُدُدُ قَدْ تَوَقَّفُوا عَنِ اسْتِخْدَامِ سَيَّارَاتِهِمْ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 300,
+    "candidatesTokenCount": 106,
+    "totalTokenCount": 406,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 263
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "وَاتَّفَقَ الطَّرَفَانِ عَلَى ضَرُورَةِ تَحْسِينِ الْخِدْمَةِ، لَكِنَّهُمَا اخْتَلَفَا فِي تَفْسِيرِ الزِّيَادَةِ.": {
+   "file": "5d3088a76741d84b.mp3",
+   "heard": "وَاتَّفَقَ الطَّرَفَانِ عَلَى ضَرُورَةِ تَحْسِينِ الْخِدْمَةِ، لَكِنَّهُمَا اخْتَلَفَا فِي تَفْسِيرِ الزِّيَادَةِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 199,
+    "candidatesTokenCount": 60,
+    "totalTokenCount": 599,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 162
+     }
+    ],
+    "thoughtsTokenCount": 340,
+    "serviceTier": "standard"
+   }
+  },
+  "هَذِهِ بَيَانَاتٌ تَعْلِيمِيَّةٌ مُخْتَلَقَةٌ، وَلَا تَصِفُ مَدِينَةً حَقِيقِيَّةً.": {
+   "file": "fdaa7a82275a162e.mp3",
+   "heard": "هَذِهِ بَيَانَاتٌ تَعْلِيمِيَّةٌ مُخْتَلَقَةٌ وَلَا تَصِفُ مَدِينَةً حَقِيقِيَّةً.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 172,
+    "candidatesTokenCount": 45,
+    "totalTokenCount": 512,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 135
+     }
+    ],
+    "thoughtsTokenCount": 295,
+    "serviceTier": "standard"
+   }
+  },
+  "يَرَى بَعْضُ الْقُرَّاءِ أَنَّ الْكُتُبَ الْإِلِكْتْرُونِيَّةَ تُسَهِّلُ الْوُصُولَ إِلَى الْمَعْرِفَةِ، لِأَنَّهَا تُتِيحُ حَمْلَ مَكْتَبَةٍ كَبِيرَةٍ وَالْبَحْثَ دَاخِلَ النَّصِّ بِسُرْعَةٍ.": {
+   "file": "881b99d115dd89a7.mp3",
+   "heard": "يَرَى بَعْضُ الْقُرَّاءِ أَنَّ الْكُتُبَ الْإِلِكْتْرُونِيَّةَ تُسَهِّلُ الْوُصُولَ إِلَى الْمَعْرِفَةِ، لِأَنَّهَا تُتِيحُ حَمْلَ مَكْتَبَةٍ كَبِيرَةٍ، وَالْبَحْثَ دَاخِلَ النَّصِّ بِسُرْعَةٍ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 280,
+    "candidatesTokenCount": 109,
+    "totalTokenCount": 831,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 243
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 442,
+    "serviceTier": "standard"
+   }
+  },
+  "وَيَخْشَى آخَرُونَ أَنْ تُؤَدِّيَ كَثْرَةُ الْإِشْعَارَاتِ وَالرَّوَابِطِ إِلَى تَشَتُّتِ الِانْتِبَاهِ.": {
+   "file": "6b08ca9365ca8ffd.mp3",
+   "heard": "وَيَخْشَى آخَرُونَ أَنْ تُؤَدِّيَ كَثْرَةُ الْإِشْعَارَاتِ وَالرَّوَابِطِ إِلَى تَشَتُّتِ الِانْتِبَاهِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 185,
+    "candidatesTokenCount": 59,
+    "totalTokenCount": 593,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 148
+     }
+    ],
+    "thoughtsTokenCount": 349,
+    "serviceTier": "standard"
+   }
+  },
+  "لَا يَبْدُو أَنَّ السُّؤَالَ الْمُفِيدَ هُوَ أَيُّ النَّوْعَيْنِ أَفْضَلُ فِي جَمِيعِ الْأَحْوَالِ، بَلْ أَيُّهُمَا أَنْسَبُ لِلْقَارِئِ وَلِلْمُهِمَّةِ.": {
+   "file": "3ac13158b814ba9a.mp3",
+   "heard": "لَا يَبْدُو أَنَّ السُّؤَالَ الْمُفِيدَ هُوَ أَيُّ النَّوْعَيْنِ أَفْضَلُ فِي جَمِيعِ الْأَحْوَالِ، بَلْ أَيُّهُمَا أَنْسَبُ لِلْقَارِئِ وَلِلْمُهِمَّةِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 222,
+    "candidatesTokenCount": 85,
+    "totalTokenCount": 727,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 185
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 420,
+    "serviceTier": "standard"
+   }
+  },
+  "فَمَنْ يُرِيدُ الْعُثُورَ عَلَى مَعْلُومَةٍ مُحَدَّدَةٍ قَدْ يَسْتَفِيدُ مِنَ الْبَحْثِ الرَّقْمِيِّ، بَيْنَمَا قَدْ يُفَضِّلُ قَارِئٌ آخَرُ نُسْخَةً وَرَقِيَّةً خِلَالَ جَلْسَةٍ طَوِيلَةٍ.": {
+   "file": "aca65c48abe8ebed.mp3",
+   "heard": "فَمَنْ يُرِيدُ الْعُثُورَ عَلَى مَعْلُومَةٍ مُحَدَّدَةٍ قَدْ يَسْتَفِيدُ مِنَ الْبَحْثِ الرَّقْمِيِّ بَيْنَمَا قَدْ يُفَضِّلُ قَارِئٌ آخَرُ نُسْخَةً وَرَقِيَّةً خِلَالَ جَلْسَةٍ طَوِيلَةٍ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 329,
+    "candidatesTokenCount": 109,
+    "totalTokenCount": 866,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 292
+     }
+    ],
+    "thoughtsTokenCount": 428,
+    "serviceTier": "standard"
+   }
+  },
+  "وَيُمْكِنُ تَقْلِيلُ الْمُشَتِّتَاتِ بِإِغْلَاقِ الْإِشْعَارَاتِ وَاخْتِيَارِ وَقْتٍ مُنَاسِبٍ لِلْقِرَاءَةِ.": {
+   "file": "6888e20a2ceacdcd.mp3",
+   "heard": "وَيُمْكِنُ تَقْلِيلُ الْمُشَتِّتَاتِ بِإِغْلَاقِ الْإِشْعَارَاتِ وَاخْتِيَارِ وَقْتٍ مُنَاسِبٍ لِلْقِرَاءَةِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 196,
+    "candidatesTokenCount": 64,
+    "totalTokenCount": 612,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 159
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 352,
+    "serviceTier": "standard"
+   }
+  },
+  "وَمَعَ ذَلِكَ، فَإِنَّ تَفْضِيلَ وَسِيلَةٍ مُعَيَّنَةٍ لَا يُثْبِتُ وَحْدَهُ أَنَّهَا تُحَسِّنُ فَهْمَ كُلِّ قَارِئٍ.": {
+   "file": "15167f8b557611f6.mp3",
+   "heard": "وَمَعَ ذَلِكَ، فَإِنَّ تَفْضِيلَ وَسِيلَةٍ مُعَيَّنَةٍ لَا يُثْبِتُ وَحْدَهُ أَنَّهَا تُحَسِّنُ فَهْمَ كُلِّ قَارِئٍ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 226,
+    "candidatesTokenCount": 69,
+    "totalTokenCount": 673,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 189
+     }
+    ],
+    "thoughtsTokenCount": 378,
+    "serviceTier": "standard"
+   }
+  },
+  "يَنْبَغِي أَنْ يُقَارِنَ الشَّخْصُ أَدَاءَهُ فِي مَهَامَّ مُتَشَابِهَةٍ، وَأَنْ يَخْتَارَ الْوَسِيلَةَ الَّتِي تُسَاعِدُهُ عَلَى تَحْقِيقِ غَرَضِهِ.": {
+   "file": "223e0b1c7e7771ae.mp3",
+   "heard": "يَنْبَغِي أَنْ يُقَارِنَ الشَّخْصُ أَدَاءَهُ فِي مَهَامَّ مُتَشَابِهَةٍ، وَأَنْ يَخْتَارَ الْوَسِيلَةَ الَّتِي تُسَاعِدُهُ عَلَى تَحْقِيقِ غَرَضِهِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 251,
+    "candidatesTokenCount": 81,
+    "totalTokenCount": 332,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 214
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "السَّيِّدَةُ الْمُحْتَرَمَةُ،": {
+   "file": "64ccb826e2a1acf1.mp3",
+   "heard": "السَّيِّدَةُ الْمُحْتَرَمَةُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 90,
+    "candidatesTokenCount": 15,
+    "totalTokenCount": 486,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 53
+     }
+    ],
+    "thoughtsTokenCount": 381,
+    "serviceTier": "standard"
+   }
+  },
+  "أَرْغَبُ فِي الْحُصُولِ عَلَى مَعْلُومَاتٍ عَنْ دَوْرَةِ اللُّغَةِ الْعَرَبِيَّةِ الَّتِي سَتَبْدَأُ الشَّهْرَ الْقَادِمَ.": {
+   "file": "6d50fb430da8a64d.mp3",
+   "heard": "أَرْغَبُ فِي الْحُصُولِ عَلَى مَعْلُومَاتٍ عَنْ دَوْرَةِ اللُّغَةِ الْعَرَبِيَّةِ الَّتِي سَتَبْدَأُ الشَّهْرَ الْقَادِمَ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 207,
+    "candidatesTokenCount": 63,
+    "totalTokenCount": 740,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 170
+     }
+    ],
+    "thoughtsTokenCount": 470,
+    "serviceTier": "standard"
+   }
+  },
+  "هَلْ يُمْكِنُكُمْ تَوْضِيحُ مَوَاعِيدِ الدُّرُوسِ وَعَدَدِ الْمُشَارِكِينَ الْمُتَوَقَّعِ؟": {
+   "file": "2a0cc689b7ced139.mp3",
+   "heard": "هَلْ يُمْكِنُكُمْ تَوْضِيحُ مَوَاعِيدِ الدُّرُوسِ وَعَدَدِ الْمُشَارِكِينَ الْمُتَوَقَّعِ؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 160,
+    "candidatesTokenCount": 51,
+    "totalTokenCount": 511,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 123
+     }
+    ],
+    "thoughtsTokenCount": 300,
+    "serviceTier": "standard"
+   }
+  },
+  "أَعْمَلُ فِي الْمَسَاءِ، وَلِذَلِكَ أَبْحَثُ عَنْ مَجْمُوعَةٍ تَلْتَقِي فِي الصَّبَاحِ.": {
+   "file": "cee70a81ef16c928.mp3",
+   "heard": "أَعْمَلُ فِي الْمَسَاءِ، وَلِذَلِكَ أَبْحَثُ عَنْ مَجْمُوعَةٍ تَلْتَقِي فِي الصَّبَاحِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 170,
+    "candidatesTokenCount": 48,
+    "totalTokenCount": 478,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 133
+     }
+    ],
+    "thoughtsTokenCount": 260,
+    "serviceTier": "standard"
+   }
+  },
+  "أَوَدُّ أَيْضًا مَعْرِفَةَ مَا إِذَا كَانَتِ الدَّوْرَةُ تَتَضَمَّنُ تَدْرِيبَاتٍ عَلَى الْمُحَادَثَةِ بِالْفُصْحَى، وَمَا إِذَا كَانَ هُنَاكَ اخْتِبَارٌ لِتَحْدِيدِ الْمُسْتَوَى قَبْلَ التَّسْجِيلِ.": {
+   "file": "35a432d38986dcc2.mp3",
+   "heard": "أَوَدُّ أَيْضًا مَعْرِفَةَ مَا إِذَا كَانَتِ الدَّوْرَةُ تَتَضَمَّنُ تَدْرِيبَاتٍ عَلَى الْمُحَادَثَةِ بِالْفُصْحَى، وَمَا إِذَا كَانَ هُنَاكَ اخْتِبَارٌ لِتَحْدِيدِ الْمُسْتَوَى قَبْلَ التَّسْجِيلِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 311,
+    "candidatesTokenCount": 115,
+    "totalTokenCount": 735,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 274
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 309,
+    "serviceTier": "standard"
+   }
+  },
+  "أَشْكُرُكُمْ عَلَى مُسَاعَدَتِكُمْ، وَأَتَطَلَّعُ إِلَى رَدِّكُمْ.": {
+   "file": "481785e05cf4f352.mp3",
+   "heard": "أَشْكُرُكُمْ عَلَى مُسَاعَدَتِكُمْ، وَأَتَطَلَّعُ إِلَى رَدِّكُمْ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 146,
+    "candidatesTokenCount": 35,
+    "totalTokenCount": 407,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 109
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 226,
+    "serviceTier": "standard"
+   }
+  },
+  "مَعَ خَالِصِ التَّحِيَّةِ،": {
+   "file": "8eabda8d9be4d781.mp3",
+   "heard": "مَعَ خَالِصِ التَّحِيَّةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 80,
+    "candidatesTokenCount": 14,
+    "totalTokenCount": 383,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 43
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 289,
+    "serviceTier": "standard"
+   }
+  },
+  "فِي السَّاعَةِ التَّاسِعَةِ صَبَاحًا، أَفَادَ مُسْتَخْدِمٌ فِي شَرِكَةٍ خَيَالِيَّةٍ بِأَنَّهُ لَمْ يَتَمَكَّنْ مِنَ الدُّخُولِ إِلَى حِسَابِهِ.": {
+   "file": "10689ab4639f35b1.mp3",
+   "heard": "فِي السَّاعَةِ التَّاسِعَةِ صَبَاحًا، أَفَادَ مُسْتَخْدِمٌ فِي شَرِكَةٍ خَيَالِيَّةٍ بِأَنَّهُ لَمْ يَتَمَكَّنْ مِنَ الدُّخُولِ إِلَى حِسَابِهِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 248,
+    "candidatesTokenCount": 77,
+    "totalTokenCount": 713,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 211
+     }
+    ],
+    "thoughtsTokenCount": 388,
+    "serviceTier": "standard"
+   }
+  },
+  "أَظْهَرَتِ السِّجِلَّاتُ خَمْسَ مُحَاوَلَاتِ دُخُولٍ غَيْرِ نَاجِحَةٍ خِلَالَ عَشْرِ دَقَائِقَ، ثُمَّ تَمَّ قَفْلُ الْحِسَابِ مُؤَقَّتًا.": {
+   "file": "f5cf2ee9b7a13420.mp3",
+   "heard": "أَظْهَرَتِ السِّجِلِّاتُ خَمْسَ مُحَاوَلَاتِ دُخُولٍ غَيْرِ نَاجِحَةٍ خِلَالَ عَشْرِ دَقَائِقَ، ثُمَّ تَمَّ قَفْلُ الْحِسَابِ مُؤَقَّتًا.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 254,
+    "candidatesTokenCount": 76,
+    "totalTokenCount": 775,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 217
+     }
+    ],
+    "thoughtsTokenCount": 445,
+    "serviceTier": "standard"
+   }
+  },
+  "لَمْ تَتَوَفَّرْ بَعْدُ مَعْلُومَاتٌ كَافِيَةٌ لِمَعْرِفَةِ مَا إِذَا كَانَتِ الْمُحَاوَلَاتُ صَادِرَةً عَنِ الْمُسْتَخْدِمِ نَفْسِهِ أَوْ عَنْ شَخْصٍ آخَرَ.": {
+   "file": "9b8a35b11b7d3315.mp3",
+   "heard": "لَمْ تَتَوَفَّرْ بَعْدُ مَعْلُومَاتٌ كَافِيَةٌ لِمَعْرِفَةِ مَا إِذَا كَانَتِ الْمُحَاوَلَاتُ صَادِرَةً عَنِ الْمُسْتَخْدِمِ نَفْسِهِ أَوْ عَنْ شَخْصٍ آخَرَ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 254,
+    "candidatesTokenCount": 90,
+    "totalTokenCount": 901,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 217
+     }
+    ],
+    "thoughtsTokenCount": 557,
+    "serviceTier": "standard"
+   }
+  },
+  "اِتَّصَلَ فَرِيقُ الدَّعْمِ بِالْمُسْتَخْدِمِ عَبْرَ وَسِيلَةٍ مَعْرُوفَةٍ، وَطَلَبَ مِنْهُ تَأْكِيدَ آخِرِ مُحَاوَلَةٍ قَامَ بِهَا.": {
+   "file": "5141fa5999970b2a.mp3",
+   "heard": "اتَّصَلَ فَرِيقُ الدَّعْمِ بِالْمُسْتَخْدِمِ عَبْرَ وَسِيلَةٍ مَعْرُوفَةٍ، وَطَلَبَ مِنْهُ تَأْكِيدَ آخِرِ مُحَاوَلَةٍ قَامَ بِهَا.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 244,
+    "candidatesTokenCount": 76,
+    "totalTokenCount": 659,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 207
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 339,
+    "serviceTier": "standard"
+   }
+  },
+  "سَيُقَارِنُ الْفَرِيقُ الْإِجَابَةَ بِالسِّجِلَّاتِ قَبْلَ اتِّخَاذِ الْخُطْوَةِ التَّالِيَةِ.": {
+   "file": "6253b58594c11dd2.mp3",
+   "heard": "سَيُقَارِنُ الْفَرِيقُ الْإِجَابَةَ بِالسِّجِلَّاتِ قَبْلَ اتِّخَاذِ الْخُطْوَةِ التَّالِيَةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 163,
+    "candidatesTokenCount": 53,
+    "totalTokenCount": 550,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 126
+     }
+    ],
+    "thoughtsTokenCount": 334,
+    "serviceTier": "standard"
+   }
+  },
+  "لَا تَتَضَمَّنُ هَذِهِ الْحَالَةُ التَّعْلِيمِيَّةُ أَيَّ بَيَانَاتٍ حَقِيقِيَّةٍ أَوْ كَلِمَاتِ مُرُورٍ.": {
+   "file": "05ce45762e250b50.mp3",
+   "heard": "لَا تَتَضَمَّنُ هَذِهِ الْحَالَةُ التَّعْلِيمِيَّةُ أَيَّ بَيَانَاتٍ حَقِيقِيَّةٍ أَوْ كَلِمَاتِ مُرُورٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 195,
+    "candidatesTokenCount": 55,
+    "totalTokenCount": 654,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 158
+     }
+    ],
+    "thoughtsTokenCount": 404,
+    "serviceTier": "standard"
+   }
+  },
+  "أَنَا لَيْلَى.": {
+   "file": "b0c7cef8f3b6c0ee.mp3",
+   "heard": "أَنَا لَيْلَى",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 67,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 151,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 30
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 77,
+    "serviceTier": "standard"
+   }
+  },
+  "هَذَا كِتَابُ لَيْلَى، وَذَلِكَ كِتَابُ سَامِي.": {
+   "file": "747b93e323fbd2e4.mp3",
+   "heard": "هَذَا كِتَابُ لَيْلَى، وَذَلِكَ كِتَابُ سَامِي.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 129,
+    "candidatesTokenCount": 29,
+    "totalTokenCount": 378,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 92
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 220,
+    "serviceTier": "standard"
+   }
+  },
+  "مَا اسْمُكِ؟": {
+   "file": "39995ddf6f1862f4.mp3",
+   "heard": "مَا اسْمُكِ؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 185,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     }
+    ],
+    "thoughtsTokenCount": 113,
+    "serviceTier": "standard"
+   }
+  },
+  "اسْمِي لَيْلَى.": {
+   "file": "107f5a52d063b678.mp3",
+   "heard": "اِسْمِي لَيْلَى",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 69,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 170,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 32
+     }
+    ],
+    "thoughtsTokenCount": 93,
+    "serviceTier": "standard"
+   }
+  },
+  "وَمَا اسْمُكَ؟": {
+   "file": "17ff759a6f02b068.mp3",
+   "heard": "وَمَا اسْمُكَ؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 70,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 250,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 33
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 172,
+    "serviceTier": "standard"
+   }
+  },
+  "اسْمِي سَامِي.": {
+   "file": "0a6ec10fd00c5a8e.mp3",
+   "heard": "اِسْمِي سَامِي",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 69,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 170,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 32
+     }
+    ],
+    "thoughtsTokenCount": 93,
+    "serviceTier": "standard"
+   }
+  },
+  "نَعَمْ.": {
+   "file": "714155d202c1d937.mp3",
+   "heard": "نَعَمْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 57,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 188,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 20
+     }
+    ],
+    "thoughtsTokenCount": 127,
+    "serviceTier": "standard"
+   }
+  },
+  "مَرْحَبًا يَا سَامِي.": {
+   "file": "64e2ab8f4d27286e.mp3",
+   "heard": "مَرْحَبًا يَا سَامِي",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 77,
+    "candidatesTokenCount": 11,
+    "totalTokenCount": 184,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 40
+     }
+    ],
+    "thoughtsTokenCount": 96,
+    "serviceTier": "standard"
+   }
+  },
+  "لَيْلَى": {
+   "file": "8da3806ebb445c1e.mp3",
+   "heard": "لَيْلَى",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 58,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 141,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 21
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 79,
+    "serviceTier": "standard"
+   }
+  },
+  "فِي يَوْمِ السَّبْتِ زُرْتُ صَدِيقِي سَامِي.": {
+   "file": "33e26f327c84eb77.mp3",
+   "heard": "فِي يَوْمِ السَّبْتِ زُرْتُ صَدِيقِي سَامِي",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 108,
+    "candidatesTokenCount": 24,
+    "totalTokenCount": 362,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 71
+     }
+    ],
+    "thoughtsTokenCount": 230,
+    "serviceTier": "standard"
+   }
+  },
+  "أَيْنَ سَنَلْتَقِي؟": {
+   "file": "287c12616597faed.mp3",
+   "heard": "أَيْنَ سَنَلْتَقِي؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 75,
+    "candidatesTokenCount": 10,
+    "totalTokenCount": 214,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 38
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 129,
+    "serviceTier": "standard"
+   }
+  },
+  "تُغْلَقُ يَوْمَ السَّبْتِ.": {
+   "file": "01032c1204b75bb2.mp3",
+   "heard": "تُغْلَقُ يَوْمَ السَّبْتِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 81,
+    "candidatesTokenCount": 15,
+    "totalTokenCount": 270,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 44
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 174,
+    "serviceTier": "standard"
+   }
+  },
+  "أَنَا طَالِبَة.": {
+   "file": "5a4a6a9a99b4e115.mp3",
+   "heard": "أَنَا طَالِبَةٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 76,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 237,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 39
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 153,
+    "serviceTier": "standard"
+   }
+  },
+  "أَسْكُنُ فِي مَدِينَةٍ صَغِيرَة.": {
+   "file": "11051bf006ff6b61.mp3",
+   "heard": "أَسْكُنُ فِي مَدِينَةٍ صَغِيرَةٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 93,
+    "candidatesTokenCount": 19,
+    "totalTokenCount": 575,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 56
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 463,
+    "serviceTier": "standard"
+   }
+  },
+  "بَيْتِي قَرِيبٌ مِنَ الْمَدْرَسَة.": {
+   "file": "a4aacb6ffeab66f4.mp3",
+   "heard": "بَيْتِي قَرِيبٌ مِنَ الْمَدْرَسَةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 91,
+    "candidatesTokenCount": 17,
+    "totalTokenCount": 349,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 54
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 241,
+    "serviceTier": "standard"
+   }
+  },
+  "أَدْرُسُ الْعَرَبِيَّةَ فِي الصَّبَاحْ، وَأَقْرَأُ فِي الْمَسَاءْ.": {
+   "file": "ef3ce255a53e70e3.mp3",
+   "heard": "أَدْرُسُ الْعَرَبِيَّةَ فِي الصَّبَاحِ، وَأَقْرَأُ فِي الْمَسَاءِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 134,
+    "candidatesTokenCount": 34,
+    "totalTokenCount": 523,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 97
+     }
+    ],
+    "thoughtsTokenCount": 355,
+    "serviceTier": "standard"
+   }
+  },
+  "عِنْدِي كِتَابٌ جَدِيدٌ وَدَفْتَرٌ صَغِيرْ.": {
+   "file": "55a0e2efdce4d929.mp3",
+   "heard": "عِنْدِي كِتَابٌ جَدِيدٌ وَدَفْتَرٌ صَغِيرٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 115,
+    "candidatesTokenCount": 26,
+    "totalTokenCount": 471,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 78
+     }
+    ],
+    "thoughtsTokenCount": 330,
+    "serviceTier": "standard"
+   }
+  },
+  "هَذِهِ غُرْفَةٌ صَغِيرَة.": {
+   "file": "f592043f5e9fdd2e.mp3",
+   "heard": "هَذِهِ غُرْفَةٌ صَغِيرَةٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 88,
+    "candidatesTokenCount": 18,
+    "totalTokenCount": 454,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 51
+     }
+    ],
+    "thoughtsTokenCount": 348,
+    "serviceTier": "standard"
+   }
+  },
+  "فِي الْغُرْفَةِ مَكْتَبٌ وَكُرْسِيّ.": {
+   "file": "6326f395fc1268bb.mp3",
+   "heard": "فِي الْغُرْفَةِ مَكْتَبٌ وَكُرْسِيٌّ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 96,
+    "candidatesTokenCount": 22,
+    "totalTokenCount": 335,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 59
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 217,
+    "serviceTier": "standard"
+   }
+  },
+  "عَلَى الْمَكْتَبِ ثَلَاثَةُ كُتُبْ.": {
+   "file": "343757a9f075a87e.mp3",
+   "heard": "عَلَى الْمَكْتَبِ ثَلَاثَةُ كُتُبٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 91,
+    "candidatesTokenCount": 21,
+    "totalTokenCount": 657,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 54
+     }
+    ],
+    "thoughtsTokenCount": 545,
+    "serviceTier": "standard"
+   }
+  },
+  "الْكُتُبُ جَدِيدَة.": {
+   "file": "f9e0437ba80f7605.mp3",
+   "heard": "الْكُتُبُ جَدِيدَةٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 76,
+    "candidatesTokenCount": 14,
+    "totalTokenCount": 2681,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 39
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 2591,
+    "serviceTier": "standard"
+   }
+  },
+  "بَابُ الْغُرْفَةِ مَفْتُوحْ.": {
+   "file": "44c8988f21244db2.mp3",
+   "heard": "بَابُ الْغُرْفَةِ مَفْتُوحٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 85,
+    "candidatesTokenCount": 16,
+    "totalTokenCount": 449,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 48
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 348,
+    "serviceTier": "standard"
+   }
+  },
+  "مَرْحَبَا.": {
+   "file": "355723eaab74646d.mp3",
+   "heard": "مَرْحَبًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 62,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 177,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 25
+     }
+    ],
+    "thoughtsTokenCount": 110,
+    "serviceTier": "standard"
+   }
+  },
+  "هَلْ أَنْتِ طَالِبَة؟": {
+   "file": "b11807ac7a86d157.mp3",
+   "heard": "هَلْ أَنْتِ طَالِبَةٌ؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 84,
+    "candidatesTokenCount": 13,
+    "totalTokenCount": 217,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 47
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 120,
+    "serviceTier": "standard"
+   }
+  },
+  "نَعَمْ، أَنَا طَالِبَة.": {
+   "file": "72e682d651fee47d.mp3",
+   "heard": "نَعَمْ، أَنَا طَالِبَةٌ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 89,
+    "candidatesTokenCount": 14,
+    "totalTokenCount": 298,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 52
+     }
+    ],
+    "thoughtsTokenCount": 195,
+    "serviceTier": "standard"
+   }
+  },
+  "هَلْ تَدْرُسُ الْعَرَبِيَّة؟": {
+   "file": "0512db864bc935c6.mp3",
+   "heard": "هَلْ تَدْرُسُ الْعَرَبِيَّةَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 82,
+    "candidatesTokenCount": 16,
+    "totalTokenCount": 233,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 45
+     }
+    ],
+    "thoughtsTokenCount": 135,
+    "serviceTier": "standard"
+   }
+  },
+  "أَدْرُسُ الْعَرَبِيَّةَ فِي الْمَسَاءْ.": {
+   "file": "6d008cccd7b21298.mp3",
+   "heard": "أَدْرُسُ الْعَرَبِيَّةَ فِي الْمَسَاءِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 94,
+    "candidatesTokenCount": 18,
+    "totalTokenCount": 249,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 57
+     }
+    ],
+    "thoughtsTokenCount": 137,
+    "serviceTier": "standard"
+   }
+  },
+  "أَنَا أَدْرُسُ فِي الصَّبَاحْ.": {
+   "file": "3d07c69b46aeb03f.mp3",
+   "heard": "أَنَا أَدْرُسُ فِي الصَّبَاحِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 85,
+    "candidatesTokenCount": 16,
+    "totalTokenCount": 245,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 48
+     }
+    ],
+    "thoughtsTokenCount": 144,
+    "serviceTier": "standard"
+   }
+  },
+  "مَوْعِدُنَا يَوْمَ الثُّلَاثَاءِ فِي السَّاعَةِ الثَّالِثَة.": {
+   "file": "a1c210e18a432fa5.mp3",
+   "heard": "مَوْعِدُنَا يَوْمَ الثُّلَاثَاءِ فِي السَّاعَةِ الثَّالِثَةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 123,
+    "candidatesTokenCount": 30,
+    "totalTokenCount": 353,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 86
+     }
+    ],
+    "thoughtsTokenCount": 200,
+    "serviceTier": "standard"
+   }
+  },
+  "الْمَكْتَبَةُ بِجَانِبِ الْمَدْرَسَة.": {
+   "file": "9f952a01b2bef8db.mp3",
+   "heard": "اَلْمَكْتَبَةُ بِجَانِبِ الْمَدْرَسَةِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 94,
+    "candidatesTokenCount": 21,
+    "totalTokenCount": 328,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 57
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 213,
+    "serviceTier": "standard"
+   }
+  },
+  "أَنَا فِي الْمَكْتَبَةِ فِي السَّاعَةِ الثَّانِيَة.": {
+   "file": "58884e47cafbce60.mp3",
+   "heard": "أَنَا فِي الْمَكْتَبَةِ فِي السَّاعَةِ الثَّانِيَةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 109,
+    "candidatesTokenCount": 23,
+    "totalTokenCount": 317,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 72
+     }
+    ],
+    "thoughtsTokenCount": 185,
+    "serviceTier": "standard"
+   }
+  },
+  "إِلَى اللِّقَاءْ!": {
+   "file": "0976688c4c408924.mp3",
+   "heard": "إِلَى اللِّقَاءِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 67,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 147,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 30
+     }
+    ],
+    "thoughtsTokenCount": 72,
+    "serviceTier": "standard"
+   }
+  },
+  "أَسْتَيْقِظُ فِي الصَّبَاحْ.": {
+   "file": "0f9b781bdb7fd5ff.mp3",
+   "heard": "أَسْتَيْقِظُ فِي الصَّبَاحِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 81,
+    "candidatesTokenCount": 15,
+    "totalTokenCount": 278,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 44
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 182,
+    "serviceTier": "standard"
+   }
+  },
+  "أَشْرَبُ الْمَاءْ، ثُمَّ أَقْرَأُ كِتَابَا.": {
+   "file": "b1fb466f7b04a290.mp3",
+   "heard": "أَشْرَبُ الْمَاءَ، ثُمَّ أَقْرَأُ كِتَابًا.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 112,
+    "candidatesTokenCount": 26,
+    "totalTokenCount": 414,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 75
+     }
+    ],
+    "thoughtsTokenCount": 276,
+    "serviceTier": "standard"
+   }
+  },
+  "أَدْرُسُ الْعَرَبِيَّةَ نِصْفَ سَاعَة.": {
+   "file": "800c51f509907fd6.mp3",
+   "heard": "أَدْرُسُ الْعَرَبِيَّةَ نِصْفَ سَاعَةٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 97,
+    "candidatesTokenCount": 24,
+    "totalTokenCount": 610,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 60
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 489,
+    "serviceTier": "standard"
+   }
+  },
+  "بَعْدَ ذَلِكَ أَذْهَبُ إِلَى الْعَمَلْ.": {
+   "file": "80c255ecb6a55461.mp3",
+   "heard": "بَعْدَ ذَلِكَ أَذْهَبُ إِلَى الْعَمَلِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 102,
+    "candidatesTokenCount": 22,
+    "totalTokenCount": 389,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 65
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 265,
+    "serviceTier": "standard"
+   }
+  },
+  "فِي الْمَسَاءِ أَكْتُبُ جُمَلًا قَصِيرَة.": {
+   "file": "9e206ceff96bd219.mp3",
+   "heard": "فِي الْمَسَاءِ أَكْتُبُ جُمَلًا قَصِيرَةً",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 106,
+    "candidatesTokenCount": 22,
+    "totalTokenCount": 374,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 69
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 246,
+    "serviceTier": "standard"
+   }
+  },
+  "أَنَا أُحِبُّ الْقِرَاءَة، وَلَكِنَّ الْكِتَابَةَ صَعْبَةٌ أَحْيَانَا.": {
+   "file": "20c99cd7c513c3d6.mp3",
+   "heard": "أَنَا أُحِبُّ الْقِرَاءَةَ، وَلَكِنَّ الْكِتَابَةَ صَعْبَةٌ أَحْيَانًا.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 150,
+    "candidatesTokenCount": 41,
+    "totalTokenCount": 515,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 113
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 324,
+    "serviceTier": "standard"
+   }
+  },
+  "كَانَ الْجَوُّ جَمِيلَا، فَذَهَبْنَا إِلَى الْحَدِيقَة.": {
+   "file": "5235be657df39426.mp3",
+   "heard": "كَانَ الْجَوُّ جَمِيلًا، فَذَهَبْنَا إِلَى الْحَدِيقَةِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 125,
+    "candidatesTokenCount": 30,
+    "totalTokenCount": 291,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 88
+     }
+    ],
+    "thoughtsTokenCount": 136,
+    "serviceTier": "standard"
+   }
+  },
+  "جَلَسْنَا تَحْتَ شَجَرَةٍ وَتَحَدَّثْنَا عَنِ الدِّرَاسَة.": {
+   "file": "f64cef6e339c42e8.mp3",
+   "heard": "جَلَسْنَا تَحْتَ شَجَرَةٍ وَتَحَدَّثْنَا عَنِ الدِّرَاسَةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 132,
+    "candidatesTokenCount": 33,
+    "totalTokenCount": 361,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 95
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 196,
+    "serviceTier": "standard"
+   }
+  },
+  "بَعْدَ ذَلِكَ أَرَدْنَا أَنْ نَذْهَبَ إِلَى الْمَكْتَبَة، وَلَكِنَّهَا كَانَتْ مُغْلَقَة.": {
+   "file": "c2276faa5bd28136.mp3",
+   "heard": "بَعْدَ ذَلِكَ أَرَدْنَا أَنْ نَذْهَبَ إِلَى الْمَكْتَبَةِ وَلَكِنَّهَا كَانَتْ مُغْلَقَةً",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 167,
+    "candidatesTokenCount": 48,
+    "totalTokenCount": 978,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 130
+     }
+    ],
+    "thoughtsTokenCount": 763,
+    "serviceTier": "standard"
+   }
+  },
+  "لَمْ نَدْخُلِ الْمَكْتَبَة.": {
+   "file": "a4250e3d02dfada7.mp3",
+   "heard": "لَمْ نَدْخُلِ الْمَكْتَبَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 79,
+    "candidatesTokenCount": 15,
+    "totalTokenCount": 433,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 42
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 339,
+    "serviceTier": "standard"
+   }
+  },
+  "عُدْنَا إِلَى الْبَيْتِ وَقَرَأْنَا قِصَّةً قَصِيرَة.": {
+   "file": "145d0223c15d6c5d.mp3",
+   "heard": "عُدْنَا إِلَى الْبَيْتِ وَقَرَأْنَا قِصَّةً قَصِيرَةً",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 122,
+    "candidatesTokenCount": 29,
+    "totalTokenCount": 425,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 85
+     }
+    ],
+    "thoughtsTokenCount": 274,
+    "serviceTier": "standard"
+   }
+  },
+  "فِي الْأُسْبُوعِ الْقَادِمِ سَنَزُورُ الْمَكْتَبَةَ يَوْمَ الْجُمُعَة.": {
+   "file": "6c364ca0ef788bb2.mp3",
+   "heard": "فِي الْأُسْبُوعِ الْقَادِمِ سَنَزُورُ الْمَكْتَبَةَ يَوْمَ الْجُمُعَةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 136,
+    "candidatesTokenCount": 41,
+    "totalTokenCount": 544,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 99
+     }
+    ],
+    "thoughtsTokenCount": 367,
+    "serviceTier": "standard"
+   }
+  },
+  "سَأَتَأَكَّدُ مِنْ وَقْتِ فَتْحِ أَبْوَابِهَا قَبْلَ الزِّيَارَة.": {
+   "file": "a6f3c315deead7b9.mp3",
+   "heard": "سَأَتَأَكَّدُ مِنْ وَقْتِ فَتْحِ أَبْوَابِهَا قَبْلَ الزِّيَارَةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 136,
+    "candidatesTokenCount": 39,
+    "totalTokenCount": 552,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 99
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 377,
+    "serviceTier": "standard"
+   }
+  },
+  "أُرِيدُ أَنْ أَدْرُسَ مَعَكِ يَوْمَ الثُّلَاثَاءْ.": {
+   "file": "97ec9dca297e343c.mp3",
+   "heard": "أُرِيدُ أَنْ أَدْرُسَ مَعَكِ يَوْمَ الثُّلَاثَاءِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 115,
+    "candidatesTokenCount": 30,
+    "totalTokenCount": 388,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 78
+     }
+    ],
+    "thoughtsTokenCount": 243,
+    "serviceTier": "standard"
+   }
+  },
+  "هَلْ تَسْتَطِيعِينَ أَنْ تَحْضُرِي فِي السَّاعَةِ الثَّالِثَة؟": {
+   "file": "d7c826d5eb26720a.mp3",
+   "heard": "هَلْ تَسْتَطِيعِينَ أَنْ تَحْضُرِي فِي السَّاعَةِ الثَّالِثَةِ؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 124,
+    "candidatesTokenCount": 33,
+    "totalTokenCount": 421,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 87
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 264,
+    "serviceTier": "standard"
+   }
+  },
+  "لَا أَسْتَطِيعْ، لِأَنَّ عِنْدِي مَوْعِدَا.": {
+   "file": "b8755a4f2a606d3b.mp3",
+   "heard": "لَا أَسْتَطِيعُ لِأَنَّ عِنْدِي مَوْعِدًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 110,
+    "candidatesTokenCount": 24,
+    "totalTokenCount": 134,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 73
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "أَسْتَطِيعُ أَنْ أَحْضُرَ يَوْمَ الْأَرْبِعَاءْ.": {
+   "file": "d6c7eeb2d253158f.mp3",
+   "heard": "أَسْتَطِيعُ أَنْ أَحْضُرَ يَوْمَ الْأَرْبِعَاءِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 108,
+    "candidatesTokenCount": 28,
+    "totalTokenCount": 326,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 71
+     }
+    ],
+    "thoughtsTokenCount": 190,
+    "serviceTier": "standard"
+   }
+  },
+  "هَلْ تُنَاسِبُكِ السَّاعَةُ الرَّابِعَة؟": {
+   "file": "bfaf92f84bec3648.mp3",
+   "heard": "هَلْ تُنَاسِبُكِ السَّاعَةُ الرَّابِعَةُ؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 100,
+    "candidatesTokenCount": 24,
+    "totalTokenCount": 551,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 63
+     }
+    ],
+    "thoughtsTokenCount": 427,
+    "serviceTier": "standard"
+   }
+  },
+  "فِي الْمَكْتَبَة.": {
+   "file": "b1b153a8587db137.mp3",
+   "heard": "فِي الْمَكْتَبَةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 66,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 251,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 29
+     }
+    ],
+    "thoughtsTokenCount": 176,
+    "serviceTier": "standard"
+   }
+  },
+  "سَأُرْسِلُ إِلَيْكِ الْعُنْوَانْ.": {
+   "file": "0d8fd56df2cd4da8.mp3",
+   "heard": "سَأُرْسِلُ إِلَيْكِ الْعُنْوَانَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 88,
+    "candidatesTokenCount": 18,
+    "totalTokenCount": 281,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 51
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 175,
+    "serviceTier": "standard"
+   }
+  },
+  "شُكْرَا.": {
+   "file": "12f65410af0e56a8.mp3",
+   "heard": "شُكْرًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 58,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 131,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 21
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 68,
+    "serviceTier": "standard"
+   }
+  },
+  "إِذَنْ مَوْعِدُنَا يَوْمَ الْأَرْبِعَاءِ فِي السَّاعَةِ الرَّابِعَة.": {
+   "file": "da0dbf926dd9683d.mp3",
+   "heard": "إِذَنْ مَوْعِدُنَا يَوْمَ الْأَرْبِعَاءِ فِي السَّاعَةِ الرَّابِعَةِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 130,
+    "candidatesTokenCount": 36,
+    "totalTokenCount": 508,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 93
+     }
+    ],
+    "thoughtsTokenCount": 342,
+    "serviceTier": "standard"
+   }
+  },
+  "تَفْتَحُ الْمَكْتَبَةُ أَبْوَابَهَا مِنَ السَّاعَةِ التَّاسِعَةِ صَبَاحًا إِلَى السَّاعَةِ الْخَامِسَةِ مَسَاءَا.": {
+   "file": "1b6d2ade30a25dfe.mp3",
+   "heard": "تَفْتَحُ الْمَكْتَبَةُ أَبْوَابَهَا مِنَ السَّاعَةِ التَّاسِعَةِ صَبَاحًا إِلَى السَّاعَةِ الْخَامِسَةِ مَسَاءً",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 196,
+    "candidatesTokenCount": 57,
+    "totalTokenCount": 564,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 159
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 311,
+    "serviceTier": "standard"
+   }
+  },
+  "يَسْتَطِيعُ الْقُرَّاءُ اسْتِعَارَةَ ثَلَاثَةِ كُتُبٍ لِمُدَّةِ أُسْبُوعَيْنْ.": {
+   "file": "ebb5cd0b908ba5a9.mp3",
+   "heard": "يَسْتَطِيعُ الْقُرَّاءُ اسْتِعَارَةَ ثَلَاثَةِ كُتُبٍ لِمُدَّةِ أُسْبُوعَيْنِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 156,
+    "candidatesTokenCount": 49,
+    "totalTokenCount": 478,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 119
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 273,
+    "serviceTier": "standard"
+   }
+  },
+  "لَا يُسْمَحُ بِالطَّعَامِ فِي غُرْفَةِ الْقِرَاءَة.": {
+   "file": "112cadcdc3bc7e31.mp3",
+   "heard": "لَا يُسْمَحُ بِالطَّعَامِ فِي غُرْفَةِ الْقِرَاءَةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 118,
+    "candidatesTokenCount": 28,
+    "totalTokenCount": 146,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 81
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "لِطَلَبِ الْمُسَاعَدَة، يُرْجَى سُؤَالُ الْمُوَظَّفِ عِنْدَ الْمَدْخَلْ.": {
+   "file": "84984daa00ce1242.mp3",
+   "heard": "لِطَلَبِ الْمُسَاعَدَةِ، يُرْجَى سُؤَالُ الْمُوَظَّفِ عِنْدَ الْمَدْخَلِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 144,
+    "candidatesTokenCount": 43,
+    "totalTokenCount": 465,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 107
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 278,
+    "serviceTier": "standard"
+   }
+  },
+  "كَانَ سَامِي يَدْرُسُ كَلِمَاتٍ جَدِيدَةً كُلَّ مَسَاءْ، لَكِنَّهُ كَانَ يَنْسَى كَثِيرًا مِنْهَا بَعْدَ أَيَّامٍ قَلِيلَة.": {
+   "file": "fbd6fc2dc90d3f21.mp3",
+   "heard": "كَانَ سَامِي يَدْرُسُ كَلِمَاتٍ جَدِيدَةً كُلَّ مَسَاءٍ، لَكِنَّهُ كَانَ يَنْسَى كَثِيرًا مِنْهَا بَعْدَ أَيَّامٍ قَلِيلَةٍ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 244,
+    "candidatesTokenCount": 70,
+    "totalTokenCount": 856,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 207
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 542,
+    "serviceTier": "standard"
+   }
+  },
+  "لِذَلِكَ قَرَّرَ أَنْ يُغَيِّرَ طَرِيقَتَهْ.": {
+   "file": "647c6dadaa072eb2.mp3",
+   "heard": "لِذَلِكَ قَرَّرَ أَنْ يُغَيِّرَ طَرِيقَتَهُ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 113,
+    "candidatesTokenCount": 26,
+    "totalTokenCount": 355,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 76
+     }
+    ],
+    "thoughtsTokenCount": 216,
+    "serviceTier": "standard"
+   }
+  },
+  "لَمْ يَكْتَفِ بِكِتَابَةِ مَعَانِيهَا، بَلْ كَتَبَ جُمَلًا مِنْ عِنْدِهِ وَاسْتَعْمَلَ الْكَلِمَاتِ فِي حَدِيثِهِ مَعَ صَدِيقْ.": {
+   "file": "8ce0705f77e8cc30.mp3",
+   "heard": "لَمْ يَكْتَفِ بِكِتَابَةِ مَعَانِيهَا بَلْ كَتَبَ جُمَلًا مِنْ عِنْدِهِ وَاسْتَعْمَلَ الكَلِمَاتِ فِي حَدِيثِهِ مَعَ صَدِيقْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 231,
+    "candidatesTokenCount": 65,
+    "totalTokenCount": 296,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 194
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "فِي نِهَايَةِ الْأُسْبُوعِ عَادَ إِلَى النَّصِّ الْأَوَّلِ وَحَاوَلَ تَلْخِيصَهُ دُونَ النَّظَرِ إِلَيْهْ.": {
+   "file": "f202c0d243ecb014.mp3",
+   "heard": "فِي نِهَايَةِ الْأُسْبُوعِ عَادَ إِلَى النَّصِّ الْأَوَّلِ وَحَاوَلَ تَلْخِيصَهُ دُونَ النَّظَرِ إِلَيْهِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 192,
+    "candidatesTokenCount": 56,
+    "totalTokenCount": 520,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 155
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 272,
+    "serviceTier": "standard"
+   }
+  },
+  "وَجَدَ أَنَّهُ يَتَذَكَّرُ بَعْضَ الْكَلِمَاتِ بِسُهُولَة، وَأَنَّ كَلِمَاتٍ أُخْرَى مَا زَالَتْ تَحْتَاجُ إِلَى مُرَاجَعَة.": {
+   "file": "1ff1eeed9d380c0d.mp3",
+   "heard": "وَجَدَ أَنَّهُ يَتَذَكَّرُ بَعْضَ الْكَلِمَاتِ بِسُهُولَةٍ، وَأَنَّ كَلِمَاتٍ أُخْرَى مَا زَالَتْ تَحْتَاجُ إِلَى مُرَاجَعَةٍ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 238,
+    "candidatesTokenCount": 71,
+    "totalTokenCount": 736,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 201
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 427,
+    "serviceTier": "standard"
+   }
+  },
+  "لَمْ يَعْتَبِرْ ذَلِكَ فَشَلَا؛ فَقَدْ سَاعَدَهُ عَلَى مَعْرِفَةِ مَا يَنْبَغِي أَنْ يَدْرُسَهُ فِي الْأُسْبُوعِ التَّالِي.": {
+   "file": "4834b5cac9976d74.mp3",
+   "heard": "لَمْ يَعْتَبِرْ ذَلِكَ فَشَلًا، فَقَدْ سَاعَدَهُ عَلَى مَعْرِفَةِ مَا يَنْبَغِي أَنْ يَدْرُسَهُ فِي الْأُسْبُوعِ التَّالِي.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 220,
+    "candidatesTokenCount": 65,
+    "totalTokenCount": 687,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 183
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 402,
+    "serviceTier": "standard"
+   }
+  },
+  "أَعْلَنَتْ مَكْتَبَةُ الْحَيِّ عَنْ مَشْرُوعٍ جَدِيدٍ لِتَشْجِيعِ الْقِرَاءَةِ بَيْنَ الْكِبَارْ.": {
+   "file": "5735d12814fb4a43.mp3",
+   "heard": "أَعْلَنَتْ مَكْتَبَةُ الْحَيِّ عَنْ مَشْرُوعٍ جَدِيدٍ لِتَشْجِيعِ الْقِرَاءَةِ بَيْنَ الْكِبَارِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 174,
+    "candidatesTokenCount": 57,
+    "totalTokenCount": 685,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 137
+     }
+    ],
+    "thoughtsTokenCount": 454,
+    "serviceTier": "standard"
+   }
+  },
+  "وَقَالَتْ مُنَسِّقَةُ الْمَشْرُوعِ إِنَّ الْهَدَفَ لَيْسَ قِرَاءَةَ أَكْبَرِ عَدَدٍ مِنَ الصَّفَحَاتِ، بَلْ فَهْمَ النَّصِّ وَتَبَادُلَ الْآرَاءِ حَوْلَهْ.": {
+   "file": "92389df3aa1a353a.mp3",
+   "heard": "وَقَالَتْ مُنَسِّقَةُ الْمَشْرُوعِ إِنَّ الْهَدَفَ لَيْسَ قِرَاءَةَ أَكْبَرِ عَدَدٍ مِنَ الصَّفَحَاتِ بَلْ فَهْمَ النَّصِّ وَتَبَادُلَ الْآرَاءِ حَوْلَهُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 271,
+    "candidatesTokenCount": 80,
+    "totalTokenCount": 715,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 234
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 364,
+    "serviceTier": "standard"
+   }
+  },
+  "يَسْتَطِيعُ الْمُشَارِكُ أَنْ يَخْتَارَ نُسْخَةً مَطْبُوعَةً أَوْ إِلِكْتْرُونِيَّة، كَمَا يُمْكِنُهُ الِاسْتِمَاعُ إِلَى تَسْجِيلٍ لِلْقِصَّةِ إِذَا كَانَ مُتَاحًا بِصُورَةٍ قَانُونِيَّة.": {
+   "file": "2f861214558367db.mp3",
+   "heard": "يَسْتَطِيعُ الْمُشَارِكُ أَنْ يَخْتَارَ نُسْخَةً مَطْبُوعَةً أَوْ إِلِكْتْرُونِيَّةً كَمَا يُمْكِنُهُ الِاسْتِمَاعُ إِلَى تَسْجِيلٍ لِلْقِصَّةِ إِذَا كَانَ مُتَاحًا بِصُورَةٍ قَانُونِيَّةٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 315,
+    "candidatesTokenCount": 109,
+    "totalTokenCount": 1070,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 278
+     }
+    ],
+    "thoughtsTokenCount": 646,
+    "serviceTier": "standard"
+   }
+  },
+  "لَا يَشْتَرِطُ الْمَشْرُوعُ مَعْرِفَةً سَابِقَةً بِالْأَدَبْ، لَكِنَّهُ يَطْلُبُ مِنْ كُلِّ مُشَارِكٍ أَنْ يَأْتِيَ بِسُؤَالٍ وَاحِدٍ عَلَى الْأَقَلّ.": {
+   "file": "d9ba43edd31dbaf4.mp3",
+   "heard": "لَا يَشْتَرِطُ الْمَشْرُوعُ مَعْرِفَةً سَابِقَةً بِالْأَدَبِ، لَكِنَّهُ يَطْلُبُ مِنْ كُلِّ مُشَارِكٍ أَنْ يَأْتِيَ بِسُؤَالٍ وَاحِدٍ عَلَى الْأَقَلِّ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 272,
+    "candidatesTokenCount": 85,
+    "totalTokenCount": 660,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 235
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 303,
+    "serviceTier": "standard"
+   }
+  },
+  "وَسَيُجَرِّبُ الْفَرِيقُ هَذَا النِّظَامَ لِمُدَّةِ شَهْرْ، ثُمَّ يَجْمَعُ الْمُلَاحَظَاتِ قَبْلَ أَنْ يُقَرِّرَ الِاسْتِمْرَارَ فِيهْ.": {
+   "file": "529fde787ae63d0f.mp3",
+   "heard": "وَسَيُجَرِّبُ الْفَرِيقُ هَذَا النِّظَامَ لِمُدَّةِ شَهْرٍ، ثُمَّ يَجْمَعُ الْمُلَاحَظَاتِ قَبْلَ أَنْ يُقَرِّرَ الِاسْتِمْرَارَ فِيهِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 240,
+    "candidatesTokenCount": 78,
+    "totalTokenCount": 702,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 203
+     }
+    ],
+    "thoughtsTokenCount": 384,
+    "serviceTier": "standard"
+   }
+  },
+  "لَمْ يُحَدِّدِ الْإِعْلَانُ بَعْدُ عَدَدَ الْمُشَارِكِينَ أَوْ مَوْعِدَ الِاجْتِمَاعِ الْأَوَّلْ.": {
+   "file": "bfeba8d49aea605a.mp3",
+   "heard": "لَمْ يُحَدِّدِ الْإِعْلَانُ بَعْدُ عَدَدَ الْمُشَارِكِينَ أَوْ مَوْعِدَ الِاجْتِمَاعِ الْأَوَّلِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 166,
+    "candidatesTokenCount": 54,
+    "totalTokenCount": 220,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 129
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "قَالَتْ بَلَدِيَّةُ مَدِينَةٍ خَيَالِيَّةٍ إِنَّ عَدَدَ مُسْتَخْدِمِي الْحَافِلَاتِ ارْتَفَعَ مِنْ عَشَرَةِ آلَافٍ إِلَى اثْنَيْ عَشَرَ أَلْفًا فِي الشَّهْرِ الْمَاضِي، بَعْدَ تَخْفِيضِ سِعْرِ التَّذْكِرَة.": {
+   "file": "ade42535a2ffbcfe.mp3",
+   "heard": "قَالَتْ بَلَدِيَّةُ مَدِينَةٍ خَيَالِيَّةٍ إِنَّ عَدَدَ مُسْتَخْدِمِي الْحَافِلَاتِ ارْتَفَعَ مِنْ عَشَرَةِ آلَافٍ إِلَى اثْنَيْ عَشَرَ أَلْفًا فِي الشَّهْرِ الْمَاضِي، بَعْدَ تَخْفِيضِ سِعْرِ التَّذْكِرَةِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 327,
+    "candidatesTokenCount": 105,
+    "totalTokenCount": 1077,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 290
+     }
+    ],
+    "thoughtsTokenCount": 645,
+    "serviceTier": "standard"
+   }
+  },
+  "وَوَصَفَتِ الْبَلَدِيَّةُ الزِّيَادَةَ بِأَنَّهَا دَلِيلٌ عَلَى نَجَاحِ التَّخْفِيضْ.": {
+   "file": "825788769e6529b5.mp3",
+   "heard": "وَوَصَفَتِ الْبَلَدِيَّةُ الزِّيَادَةَ بِأَنَّهَا دَلِيلٌ عَلَى نَجَاحِ التَّخْفِيضِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 163,
+    "candidatesTokenCount": 46,
+    "totalTokenCount": 533,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 126
+     }
+    ],
+    "thoughtsTokenCount": 324,
+    "serviceTier": "standard"
+   }
+  },
+  "غَيْرَ أَنَّ بَاحِثَةً فِي النَّقْلِ أَشَارَتْ إِلَى أَنَّ الْأَرْقَامَ وَحْدَهَا لَا تَكْفِي لِتَحْدِيدِ السَّبَبْ؛ فَقَدِ افْتَتَحَتِ الْمَدِينَةُ فِي الشَّهْرِ نَفْسِهِ خَطَّيْنِ جَدِيدَيْنْ، كَمَا أَغْلَقَتْ بَعْضَ الشَّوَارِعِ لِأَعْمَالِ الصِّيَانَة.": {
+   "file": "512fe361bc63f552.mp3",
+   "heard": "غَيْرَ أَنَّ بَاحِثَةً فِي النَّقْلِ أَشَارَتْ إِلَى أَنَّ الْأَرْقَامَ وَحْدَهَا لَا تَكْفِي لِتَحْدِيدِ السَّبَبِ، فَقَدِ افْتَتَحَتِ الْمَدِينَةُ فِي الشَّهْرِ نَفْسِهِ خَطَّيْنِ جَدِيدَيْنِ، كَمَا أَغْلَقَتْ بَعْضَ الشَّوَارِعِ لِأَعْمَالِ الصِّيَانَةِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 391,
+    "candidatesTokenCount": 140,
+    "totalTokenCount": 989,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 354
+     }
+    ],
+    "thoughtsTokenCount": 458,
+    "serviceTier": "standard"
+   }
+  },
+  "وَاتَّفَقَ الطَّرَفَانِ عَلَى ضَرُورَةِ تَحْسِينِ الْخِدْمَة، لَكِنَّهُمَا اخْتَلَفَا فِي تَفْسِيرِ الزِّيَادَة.": {
+   "file": "9d5e9861c813524e.mp3",
+   "heard": "وَاتَّفَقَ الطَّرَفَانِ عَلَى ضَرُورَةِ تَحْسِينِ الْخِدْمَةِ، لَكِنَّهُمَا اخْتَلَفَا فِي تَفْسِيرِ الزِّيَادَةِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 207,
+    "candidatesTokenCount": 60,
+    "totalTokenCount": 672,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 170
+     }
+    ],
+    "thoughtsTokenCount": 405,
+    "serviceTier": "standard"
+   }
+  },
+  "هَذِهِ بَيَانَاتٌ تَعْلِيمِيَّةٌ مُخْتَلَقَة، وَلَا تَصِفُ مَدِينَةً حَقِيقِيَّة.": {
+   "file": "f266ca0c68092ae2.mp3",
+   "heard": "هَذِهِ بَيَانَاتٌ تَعْلِيمِيَّةٌ مُخْتَلَقَةٌ، وَلَا تَصِفُ مَدِينَةً حَقِيقِيَّةً.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 182,
+    "candidatesTokenCount": 46,
+    "totalTokenCount": 518,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 145
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 290,
+    "serviceTier": "standard"
+   }
+  },
+  "يَرَى بَعْضُ الْقُرَّاءِ أَنَّ الْكُتُبَ الْإِلِكْتْرُونِيَّةَ تُسَهِّلُ الْوُصُولَ إِلَى الْمَعْرِفَة، لِأَنَّهَا تُتِيحُ حَمْلَ مَكْتَبَةٍ كَبِيرَةٍ وَالْبَحْثَ دَاخِلَ النَّصِّ بِسُرْعَة.": {
+   "file": "105f13a5fb60edd6.mp3",
+   "heard": "يَرَى بَعْضُ الْقُرَّاءِ أَنَّ الْكُتُبَ الْإِلِكْتْرُونِيَّةَ تُسَهِّلُ الْوُصُولَ إِلَى الْمَعْرِفَةِ لِأَنَّهَا تُتِيحُ حَمْلَ مَكْتَبَةٍ كَبِيرَةٍ وَالْبَحْثَ دَاخِلَ النَّصِّ بِسُرْعَةٍ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 308,
+    "candidatesTokenCount": 107,
+    "totalTokenCount": 415,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 271
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "وَيَخْشَى آخَرُونَ أَنْ تُؤَدِّيَ كَثْرَةُ الْإِشْعَارَاتِ وَالرَّوَابِطِ إِلَى تَشَتُّتِ الِانْتِبَاهْ.": {
+   "file": "06589892ca78b722.mp3",
+   "heard": "وَيَخْشَى آخَرُونَ أَنْ تُؤَدِّيَ كَثْرَةُ الْإِشْعَارَاتِ وَالرَّوَابِطِ إِلَى تَشَتُّتِ الِانْتِبَاهِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 184,
+    "candidatesTokenCount": 61,
+    "totalTokenCount": 594,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 147
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 349,
+    "serviceTier": "standard"
+   }
+  },
+  "لَا يَبْدُو أَنَّ السُّؤَالَ الْمُفِيدَ هُوَ أَيُّ النَّوْعَيْنِ أَفْضَلُ فِي جَمِيعِ الْأَحْوَالْ، بَلْ أَيُّهُمَا أَنْسَبُ لِلْقَارِئِ وَلِلْمُهِمَّة.": {
+   "file": "c16d37ae38b90ef1.mp3",
+   "heard": "لَا يَبْدُو أَنَّ السُّؤَالَ الْمُفِيدَ هُوَ أَيُّ النَّوْعَيْنِ أَفْضَلُ فِي جَمِيعِ الْأَحْوَالِ، بَلْ أَيُّهُمَا أَنْسَبُ لِلْقَارِئِ وَلِلْمُهِمَّةِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 251,
+    "candidatesTokenCount": 85,
+    "totalTokenCount": 888,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 214
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 552,
+    "serviceTier": "standard"
+   }
+  },
+  "فَمَنْ يُرِيدُ الْعُثُورَ عَلَى مَعْلُومَةٍ مُحَدَّدَةٍ قَدْ يَسْتَفِيدُ مِنَ الْبَحْثِ الرَّقْمِيّ، بَيْنَمَا قَدْ يُفَضِّلُ قَارِئٌ آخَرُ نُسْخَةً وَرَقِيَّةً خِلَالَ جَلْسَةٍ طَوِيلَة.": {
+   "file": "ead2ce63655cb907.mp3",
+   "heard": "فَمَنْ يُرِيدُ الْعُثُورَ عَلَى مَعْلُومَةٍ مُحَدَّدَةٍ قَدْ يَسْتَفِيدُ مِنَ الْبَحْثِ الرَّقْمِيِّ، بَيْنَمَا قَدْ يُفَضِّلُ قَارِئٌ آخَرُ نُسْخَةً وَرَقِيَّةً خِلَالَ جَلْسَةٍ طَوِيلَةٍ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 318,
+    "candidatesTokenCount": 110,
+    "totalTokenCount": 947,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 281
+     }
+    ],
+    "thoughtsTokenCount": 519,
+    "serviceTier": "standard"
+   }
+  },
+  "وَيُمْكِنُ تَقْلِيلُ الْمُشَتِّتَاتِ بِإِغْلَاقِ الْإِشْعَارَاتِ وَاخْتِيَارِ وَقْتٍ مُنَاسِبٍ لِلْقِرَاءَة.": {
+   "file": "519d4d443242f524.mp3",
+   "heard": "وَيُمْكِنُ تَقْلِيلُ الْمُشَتِّتَاتِ بِإِغْلَاقِ الْإِشْعَارَاتِ وَاخْتِيَارِ وَقْتٍ مُنَاسِبٍ لِلْقِرَاءَةِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 197,
+    "candidatesTokenCount": 64,
+    "totalTokenCount": 633,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 160
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 372,
+    "serviceTier": "standard"
+   }
+  },
+  "وَمَعَ ذَلِكَ، فَإِنَّ تَفْضِيلَ وَسِيلَةٍ مُعَيَّنَةٍ لَا يُثْبِتُ وَحْدَهُ أَنَّهَا تُحَسِّنُ فَهْمَ كُلِّ قَارِئْ.": {
+   "file": "04d7daba5bbac57e.mp3",
+   "heard": "وَمَعَ ذَلِكَ، فَإِنَّ تَفْضِيلَ وَسِيلَةٍ مُعَيَّنَةٍ لَا يُثْبِتُ وَحْدَهُ أَنَّهَا تُحَسِّنُ فَهْمَ كُلِّ قَارِئٍ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 237,
+    "candidatesTokenCount": 69,
+    "totalTokenCount": 589,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 200
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 283,
+    "serviceTier": "standard"
+   }
+  },
+  "يَنْبَغِي أَنْ يُقَارِنَ الشَّخْصُ أَدَاءَهُ فِي مَهَامَّ مُتَشَابِهَة، وَأَنْ يَخْتَارَ الْوَسِيلَةَ الَّتِي تُسَاعِدُهُ عَلَى تَحْقِيقِ غَرَضِهْ.": {
+   "file": "2fd1cc48fb406fdd.mp3",
+   "heard": "يَنْبَغِي أَنْ يُقَارِنَ الشَّخْصُ أَدَاءَهُ فِي مَهَامَّ مُتَشَابِهَةٍ، وَأَنْ يَخْتَارَ الْوَسِيلَةَ الَّتِي تُسَاعِدُهُ عَلَى تَحْقِيقِ غَرَضِهِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 256,
+    "candidatesTokenCount": 82,
+    "totalTokenCount": 688,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 219
+     }
+    ],
+    "thoughtsTokenCount": 350,
+    "serviceTier": "standard"
+   }
+  },
+  "السَّيِّدَةُ الْمُحْتَرَمَة،": {
+   "file": "2578a4f1660eb1a6.mp3",
+   "heard": "السَّيِّدَةُ الْمُحْتَرَمَةُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 81,
+    "candidatesTokenCount": 15,
+    "totalTokenCount": 280,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 44
+     }
+    ],
+    "thoughtsTokenCount": 184,
+    "serviceTier": "standard"
+   }
+  },
+  "أَرْغَبُ فِي الْحُصُولِ عَلَى مَعْلُومَاتٍ عَنْ دَوْرَةِ اللُّغَةِ الْعَرَبِيَّةِ الَّتِي سَتَبْدَأُ الشَّهْرَ الْقَادِمْ.": {
+   "file": "152090fcfe06c127.mp3",
+   "heard": "أَرْغَبُ فِي الْحُصُولِ عَلَى مَعْلُومَاتٍ عَنْ دَوْرَةِ اللُّغَةِ الْعَرَبِيَّةِ الَّتِي سَتَبْدَأُ الشَّهْرَ الْقَادِمَ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 205,
+    "candidatesTokenCount": 63,
+    "totalTokenCount": 597,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 168
+     }
+    ],
+    "thoughtsTokenCount": 329,
+    "serviceTier": "standard"
+   }
+  },
+  "هَلْ يُمْكِنُكُمْ تَوْضِيحُ مَوَاعِيدِ الدُّرُوسِ وَعَدَدِ الْمُشَارِكِينَ الْمُتَوَقَّعْ؟": {
+   "file": "aa87b596a386c3e4.mp3",
+   "heard": "هَلْ يُمْكِنُكُمْ تَوْضِيحُ مَوَاعِيدِ الدُّرُوسِ وَعَدَدِ الْمُشَارِكِينَ الْمُتَوَقَّعْ؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 170,
+    "candidatesTokenCount": 51,
+    "totalTokenCount": 600,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 133
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 379,
+    "serviceTier": "standard"
+   }
+  },
+  "أَعْمَلُ فِي الْمَسَاءْ، وَلِذَلِكَ أَبْحَثُ عَنْ مَجْمُوعَةٍ تَلْتَقِي فِي الصَّبَاحْ.": {
+   "file": "ccc30cc9a11cb8b5.mp3",
+   "heard": "أَعْمَلُ فِي الْمَسَاءِ، وَلِذَلِكَ أَبْحَثُ عَنْ مَجْمُوعَةٍ تَلْتَقِي فِي الصَّبَاحِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 166,
+    "candidatesTokenCount": 48,
+    "totalTokenCount": 533,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 129
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 319,
+    "serviceTier": "standard"
+   }
+  },
+  "أَوَدُّ أَيْضًا مَعْرِفَةَ مَا إِذَا كَانَتِ الدَّوْرَةُ تَتَضَمَّنُ تَدْرِيبَاتٍ عَلَى الْمُحَادَثَةِ بِالْفُصْحَى، وَمَا إِذَا كَانَ هُنَاكَ اخْتِبَارٌ لِتَحْدِيدِ الْمُسْتَوَى قَبْلَ التَّسْجِيلْ.": {
+   "file": "7ced68409487820e.mp3",
+   "heard": "أَوَدُّ أَيْضًا مَعْرِفَةَ مَا إِذَا كَانَتِ الدَّوْرَةُ تَتَضَمَّنُ تَدْرِيبَاتٍ عَلَى الْمُحَادَثَةِ بِالْفُصْحَى، وَمَا إِذَا كَانَ هُنَاكَ اخْتِبَارٌ لِتَحْدِيدِ الْمُسْتَوَى قَبْلَ التَّسْجِيلِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 321,
+    "candidatesTokenCount": 115,
+    "totalTokenCount": 966,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 284
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 530,
+    "serviceTier": "standard"
+   }
+  },
+  "مَعَ خَالِصِ التَّحِيَّة،": {
+   "file": "51c247827b1087d9.mp3",
+   "heard": "مَعَ خَالِصِ التَّحِيَّةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 84,
+    "candidatesTokenCount": 14,
+    "totalTokenCount": 696,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 47
+     }
+    ],
+    "thoughtsTokenCount": 598,
+    "serviceTier": "standard"
+   }
+  },
+  "فِي السَّاعَةِ التَّاسِعَةِ صَبَاحَا، أَفَادَ مُسْتَخْدِمٌ فِي شَرِكَةٍ خَيَالِيَّةٍ بِأَنَّهُ لَمْ يَتَمَكَّنْ مِنَ الدُّخُولِ إِلَى حِسَابِهْ.": {
+   "file": "a8d5644b453b8fe5.mp3",
+   "heard": "فِي السَّاعَةِ التَّاسِعَةِ صَبَاحًا، أَفَادَ مُسْتَخْدِمٌ فِي شَرِكَةٍ خَيَالِيَّةٍ بِأَنَّهُ لَمْ يَتَمَكَّنْ مِنَ الدُّخُولِ إِلَى حِسَابِهِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 255,
+    "candidatesTokenCount": 77,
+    "totalTokenCount": 725,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 218
+     }
+    ],
+    "thoughtsTokenCount": 393,
+    "serviceTier": "standard"
+   }
+  },
+  "أَظْهَرَتِ السِّجِلَّاتُ خَمْسَ مُحَاوَلَاتِ دُخُولٍ غَيْرِ نَاجِحَةٍ خِلَالَ عَشْرِ دَقَائِقْ، ثُمَّ تَمَّ قَفْلُ الْحِسَابِ مُؤَقَّتَا.": {
+   "file": "9ef8ec43edbde943.mp3",
+   "heard": "أَظْهَرَتِ السِّجِلَّاتُ خَمْسَ مُحَاوَلَاتِ دُخُولٍ غَيْرِ نَاجِحَةٍ خِلَالَ عَشْرِ دَقَائِقَ، ثُمَّ تَمَّ قَفْلُ الحِسَابِ مُؤَقَّتًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 261,
+    "candidatesTokenCount": 75,
+    "totalTokenCount": 336,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 224
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "لَمْ تَتَوَفَّرْ بَعْدُ مَعْلُومَاتٌ كَافِيَةٌ لِمَعْرِفَةِ مَا إِذَا كَانَتِ الْمُحَاوَلَاتُ صَادِرَةً عَنِ الْمُسْتَخْدِمِ نَفْسِهِ أَوْ عَنْ شَخْصٍ آخَرْ.": {
+   "file": "b07285e5c12ba265.mp3",
+   "heard": "لَمْ تَتَوَفَّرْ بَعْدُ مَعْلُومَاتٌ كَافِيَةٌ لِمَعْرِفَةِ مَا إِذَا كَانَتِ الْمُحَاوَلَاتُ صَادِرَةً عَنِ الْمُسْتَخْدِمِ نَفْسِهِ أَوْ عَنْ شَخْصٍ آخَرَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 273,
+    "candidatesTokenCount": 89,
+    "totalTokenCount": 804,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 236
+     }
+    ],
+    "thoughtsTokenCount": 442,
+    "serviceTier": "standard"
+   }
+  },
+  "اِتَّصَلَ فَرِيقُ الدَّعْمِ بِالْمُسْتَخْدِمِ عَبْرَ وَسِيلَةٍ مَعْرُوفَة، وَطَلَبَ مِنْهُ تَأْكِيدَ آخِرِ مُحَاوَلَةٍ قَامَ بِهَا.": {
+   "file": "cc9d5c990efd4a6c.mp3",
+   "heard": "اِتَّصَلَ فَرِيقُ الدَّعْمِ بِالْمُسْتَخْدِمِ عَبْرَ وَسِيلَةٍ مَعْرُوفَةٍ، وَطَلَبَ مِنْهُ تَأْكِيدَ آخِرِ مُحَاوَلَةٍ قَامَ بِهَا.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 252,
+    "candidatesTokenCount": 78,
+    "totalTokenCount": 682,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 215
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 352,
+    "serviceTier": "standard"
+   }
+  },
+  "سَيُقَارِنُ الْفَرِيقُ الْإِجَابَةَ بِالسِّجِلَّاتِ قَبْلَ اتِّخَاذِ الْخُطْوَةِ التَّالِيَة.": {
+   "file": "0103bbc65b6f29dd.mp3",
+   "heard": "سَيُقَارِنُ الْفَرِيقُ الْإِجَابَةَ بِالسِّجِلَّاتِ قَبْلَ اتِّخَاذِ الْخُطْوَةِ التَّالِيَةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 170,
+    "candidatesTokenCount": 53,
+    "totalTokenCount": 223,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 133
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "لَا تَتَضَمَّنُ هَذِهِ الْحَالَةُ التَّعْلِيمِيَّةُ أَيَّ بَيَانَاتٍ حَقِيقِيَّةٍ أَوْ كَلِمَاتِ مُرُورْ.": {
+   "file": "98acd0af9ea17575.mp3",
+   "heard": "لَا تَتَضَمَّنُ هَذِهِ الحَالَةُ التَّعْلِيمِيَّةُ أَيَّ بَيَانَاتٍ حَقِيقِيَّةٍ أَوْ كَلِمَاتِ مُرُورٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 195,
+    "candidatesTokenCount": 54,
+    "totalTokenCount": 249,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 158
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "أَنَا لَيْلَى. أَنَا طَالِبَة. أَسْكُنُ فِي مَدِينَةٍ صَغِيرَة. بَيْتِي قَرِيبٌ مِنَ الْمَدْرَسَة. أَدْرُسُ الْعَرَبِيَّةَ فِي الصَّبَاحْ، وَأَقْرَأُ فِي الْمَسَاءْ. عِنْدِي كِتَابٌ جَدِيدٌ وَدَفْتَرٌ صَغِيرْ.": {
+   "file": "4845d5c02a6ee0ee.mp3",
+   "heard": "أَنَا لَيْلَى، أَنَا طَالِبَةٌ، أَسْكُنُ فِي مَدِينَةٍ صَغِيرَةٍ، بَيْتِي قَرِيبٌ مِنَ الْمَدْرَسَةِ، أَدْرُسُ الْعَرَبِيَّةَ فِي الصَّبَاحِ، وَأَقْرَأُ فِي الْمَسَاءِ، عِنْدِي كِتَابٌ جَدِيدٌ وَدَفْتَرٌ صَغِيرٌ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 378,
+    "candidatesTokenCount": 116,
+    "totalTokenCount": 1067,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 341
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 573,
+    "serviceTier": "standard"
+   }
+  },
+  "هَذِهِ غُرْفَةٌ صَغِيرَة. فِي الْغُرْفَةِ مَكْتَبٌ وَكُرْسِيّ. عَلَى الْمَكْتَبِ ثَلَاثَةُ كُتُبْ. الْكُتُبُ جَدِيدَة. هَذَا كِتَابُ لَيْلَى، وَذَلِكَ كِتَابُ سَامِي. بَابُ الْغُرْفَةِ مَفْتُوحْ.": {
+   "file": "1f5eeec47fc4beca.mp3",
+   "heard": "هَذِهِ غُرْفَةٌ صَغِيرَةٌ، فِي الْغُرْفَةِ مَكْتَبٌ وَكُرْسِيٌّ، عَلَى الْمَكْتَبِ ثَلَاثَةُ كُتُبٍ، اَلْكُتُبُ جَدِيدَةٌ، هَذَا كِتَابُ لَيْلَى، وَذَلِكَ كِتَابُ سَامِي، بَابُ الْغُرْفَةِ مَفْتُوحٌ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 368,
+    "candidatesTokenCount": 124,
+    "totalTokenCount": 968,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 331
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 476,
+    "serviceTier": "standard"
+   }
+  },
+  "مَرْحَبَا. مَا اسْمُكِ؟\nاسْمِي لَيْلَى. وَمَا اسْمُكَ؟\nاسْمِي سَامِي. هَلْ أَنْتِ طَالِبَة؟\nنَعَمْ، أَنَا طَالِبَة. هَلْ تَدْرُسُ الْعَرَبِيَّة؟\nنَعَمْ. أَدْرُسُ الْعَرَبِيَّةَ فِي الْمَسَاءْ.\nأَنَا أَدْرُسُ فِي الصَّبَاحْ.": {
+   "file": "2e860fe15e261fd7.mp3",
+   "heard": "مَرْحَبًا، مَا اسْمُكِ؟ اِسْمِي لَيْلَى، وَمَا اسْمُكَ؟ اِسْمِي سَامِي، هَلْ أَنْتِ طَالِبَةٌ؟ نَعَمْ، أَنَا طَالِبَةٌ، هَلْ تَدْرُسُ الْعَرَبِيَّةَ؟ نَعَمْ، أَدْرُسُ الْعَرَبِيَّةَ فِي الْمَسَاءِ، أَنَا أَدْرُسُ فِي الصَّبَاحِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 429,
+    "candidatesTokenCount": 124,
+    "totalTokenCount": 1276,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 392
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 723,
+    "serviceTier": "standard"
+   }
+  },
+  "مَرْحَبًا يَا سَامِي. مَوْعِدُنَا يَوْمَ الثُّلَاثَاءِ فِي السَّاعَةِ الثَّالِثَة. الْمَكْتَبَةُ بِجَانِبِ الْمَدْرَسَة. أَنَا فِي الْمَكْتَبَةِ فِي السَّاعَةِ الثَّانِيَة. إِلَى اللِّقَاءْ!\nلَيْلَى": {
+   "file": "b2130b103b6181a5.mp3",
+   "heard": "مَرْحَبًا يَا سَامِي، مَوْعِدُنَا يَوْمَ الثُّلَاثَاءِ فِي السَّاعَةِ الثَّالِثَةِ. الْمَكْتَبَةُ بِجَانِبِ الْمَدْرَسَةِ. أَنَا فِي الْمَكْتَبَةِ فِي السَّاعَةِ الثَّانِيَةِ. إِلَى اللِّقَاءِ. لَيْلَى",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 331,
+    "candidatesTokenCount": 98,
+    "totalTokenCount": 853,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 294
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 424,
+    "serviceTier": "standard"
+   }
+  },
+  "أَسْتَيْقِظُ فِي الصَّبَاحْ. أَشْرَبُ الْمَاءْ، ثُمَّ أَقْرَأُ كِتَابَا. أَدْرُسُ الْعَرَبِيَّةَ نِصْفَ سَاعَة. بَعْدَ ذَلِكَ أَذْهَبُ إِلَى الْعَمَلْ. فِي الْمَسَاءِ أَكْتُبُ جُمَلًا قَصِيرَة. أَنَا أُحِبُّ الْقِرَاءَة، وَلَكِنَّ الْكِتَابَةَ صَعْبَةٌ أَحْيَانَا.": {
+   "file": "2044a959bda84824.mp3",
+   "heard": "أَسْتَيْقِظُ فِي الصَّبَاحِ، أَشْرَبُ الْمَاءَ، ثُمَّ أَقْرَأُ كِتَابًا. أَدْرُسُ الْعَرَبِيَّةَ نِصْفَ سَاعَةٍ. بَعْدَ ذَلِكَ أَذْهَبُ إِلَى الْعَمَلِ. فِي الْمَسَاءِ أَكْتُبُ جُمَلًا قَصِيرَةً. أَنَا أُحِبُّ الْقِرَاءَةَ، وَلَكِنَّ الْكِتَابَةَ صَعْبَةٌ أَحْيَانًا.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 450,
+    "candidatesTokenCount": 151,
+    "totalTokenCount": 1219,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 413
+     }
+    ],
+    "thoughtsTokenCount": 618,
+    "serviceTier": "standard"
+   }
+  },
+  "فِي يَوْمِ السَّبْتِ زُرْتُ صَدِيقِي سَامِي. كَانَ الْجَوُّ جَمِيلَا، فَذَهَبْنَا إِلَى الْحَدِيقَة. جَلَسْنَا تَحْتَ شَجَرَةٍ وَتَحَدَّثْنَا عَنِ الدِّرَاسَة. بَعْدَ ذَلِكَ أَرَدْنَا أَنْ نَذْهَبَ إِلَى الْمَكْتَبَة، وَلَكِنَّهَا كَانَتْ مُغْلَقَة. لَمْ نَدْخُلِ الْمَكْتَبَة. عُدْنَا إِلَى الْبَيْتِ وَقَرَأْنَا قِصَّةً قَصِيرَة. فِي الْأُسْبُوعِ الْقَادِمِ سَنَزُورُ الْمَكْتَبَةَ يَوْمَ الْجُمُعَة. سَأَتَأَكَّدُ مِنْ وَقْتِ فَتْحِ أَبْوَابِهَا قَبْلَ الزِّيَارَة.": {
+   "file": "5740179a96d363d2.mp3",
+   "heard": "فِي يَوْمِ السَّبْتِ زُرْتُ صَدِيقِي سَامِي، كَانَ الْجَوُّ جَمِيلًا، فَذَهَبْنَا إِلَى الْحَدِيقَةِ. جَلَسْنَا تَحْتَ شَجَرَةٍ وَتَحَدَّثْنَا عَنِ الدِّرَاسَةِ. بَعْدَ ذَلِكَ أَرَدْنَا أَنْ نَذْهَبَ إِلَى الْمَكْتَبَةِ، وَلَكِنَّهَا كَانَتْ مُغْلَقَةً. لَمْ نَدْخُلِ الْمَكْتَبَةَ، عُدْنَا إِلَى الْبَيْتِ وَقَرَأْنَا قِصَّةً قَصِيرَةً. فِي الْأُسْبُوعِ الْقَادِمِ سَنَزُورُ الْمَكْتَبَةَ يَوْمَ الْجُمُعَةِ. سَأَتَأَكَّدُ مِنْ وَقْتِ فَتْحِ أَبْوَابِهَا قَبْلَ الزِّيَارَةِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 728,
+    "candidatesTokenCount": 267,
+    "totalTokenCount": 2704,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 691
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 1709,
+    "serviceTier": "standard"
+   }
+  },
+  "أُرِيدُ أَنْ أَدْرُسَ مَعَكِ يَوْمَ الثُّلَاثَاءْ. هَلْ تَسْتَطِيعِينَ أَنْ تَحْضُرِي فِي السَّاعَةِ الثَّالِثَة؟\nلَا أَسْتَطِيعْ، لِأَنَّ عِنْدِي مَوْعِدَا. أَسْتَطِيعُ أَنْ أَحْضُرَ يَوْمَ الْأَرْبِعَاءْ.\nهَلْ تُنَاسِبُكِ السَّاعَةُ الرَّابِعَة؟\nنَعَمْ. أَيْنَ سَنَلْتَقِي؟\nفِي الْمَكْتَبَة. سَأُرْسِلُ إِلَيْكِ الْعُنْوَانْ.\nشُكْرَا. إِذَنْ مَوْعِدُنَا يَوْمَ الْأَرْبِعَاءِ فِي السَّاعَةِ الرَّابِعَة.": {
+   "file": "d1b15ec54d469c8b.mp3",
+   "heard": "أُرِيدُ أَنْ أَدْرُسَ مَعَكِ يَوْمَ الثُّلَاثَاءِ، هَلْ تَسْتَطِيعِينَ أَنْ تَحْضُرِي فِي السَّاعَةِ الثَّالِثَةِ؟ لَا أَسْتَطِيعُ، لِأَنَّ عِنْدِي مَوْعِدًا. أَسْتَطِيعُ أَنْ أَحْضُرَ يَوْمَ الْأَرْبِعَاءِ، هَلْ تُنَاسِبُكِ السَّاعَةُ الرَّابِعَةُ؟ نَعَمْ، أَيْنَ سَنَلْتَقِي؟ فِي الْمَكْتَبَةِ، سَأُرْسِلُ إِلَيْكِ الْعُنْوَانَ. شُكْرًا، إِذَنْ مَوْعِدُنَا يَوْمَ الْأَرْبِعَاءِ فِي السَّاعَةِ الرَّابِعَةِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 637,
+    "candidatesTokenCount": 227,
+    "totalTokenCount": 1504,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 600
+     }
+    ],
+    "thoughtsTokenCount": 640,
+    "serviceTier": "standard"
+   }
+  },
+  "تَفْتَحُ الْمَكْتَبَةُ أَبْوَابَهَا مِنَ السَّاعَةِ التَّاسِعَةِ صَبَاحًا إِلَى السَّاعَةِ الْخَامِسَةِ مَسَاءَا. تُغْلَقُ يَوْمَ السَّبْتِ. يَسْتَطِيعُ الْقُرَّاءُ اسْتِعَارَةَ ثَلَاثَةِ كُتُبٍ لِمُدَّةِ أُسْبُوعَيْنْ. لَا يُسْمَحُ بِالطَّعَامِ فِي غُرْفَةِ الْقِرَاءَة. لِطَلَبِ الْمُسَاعَدَة، يُرْجَى سُؤَالُ الْمُوَظَّفِ عِنْدَ الْمَدْخَلْ.": {
+   "file": "999e2a5718ecf06b.mp3",
+   "heard": "تَفْتَحُ الْمَكْتَبَةُ أَبْوَابَهَا مِنَ السَّاعَةِ التَّاسِعَةِ صَبَاحًا إِلَى السَّاعَةِ الْخَامِسَةِ مَسَاءً، تُغْلَقُ يَوْمَ السَّبْتِ، يَسْتَطِيعُ الْقُرَّاءُ اسْتِعَارَةَ ثَلَاثَةِ كُتُبٍ لِمُدَّةِ أُسْبُوعَيْنِ، لَا يُسْمَحُ بِالطَّعَامِ فِي غُرْفَةِ الْقِرَاءَةِ، لِطَلَبِ الْمُسَاعَدَةِ يُرْجَى سُؤَالُ الْمُوَظَّفِ عِنْدَ الْمَدْخَلِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 537,
+    "candidatesTokenCount": 194,
+    "totalTokenCount": 1418,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 500
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 687,
+    "serviceTier": "standard"
+   }
+  },
+  "كَانَ سَامِي يَدْرُسُ كَلِمَاتٍ جَدِيدَةً كُلَّ مَسَاءْ، لَكِنَّهُ كَانَ يَنْسَى كَثِيرًا مِنْهَا بَعْدَ أَيَّامٍ قَلِيلَة. لِذَلِكَ قَرَّرَ أَنْ يُغَيِّرَ طَرِيقَتَهْ. بَدَأَ يَقْرَأُ نُصُوصًا قَصِيرَةً عَنِ الْمَوْضُوعَاتِ الَّتِي يُحِبُّهَا، ثُمَّ يَخْتَارُ مِنْ كُلِّ نَصٍّ كَلِمَاتٍ قَلِيلَةً يَحْتَاجُ إِلَيْهَا. لَمْ يَكْتَفِ بِكِتَابَةِ مَعَانِيهَا، بَلْ كَتَبَ جُمَلًا مِنْ عِنْدِهِ وَاسْتَعْمَلَ الْكَلِمَاتِ فِي حَدِيثِهِ مَعَ صَدِيقْ. فِي نِهَايَةِ الْأُسْبُوعِ عَادَ إِلَى النَّصِّ الْأَوَّلِ وَحَاوَلَ تَلْخِيصَهُ دُونَ النَّظَرِ إِلَيْهْ. وَجَدَ أَنَّهُ يَتَذَكَّرُ بَعْضَ الْكَلِمَاتِ بِسُهُولَة، وَأَنَّ كَلِمَاتٍ أُخْرَى مَا زَالَتْ تَحْتَاجُ إِلَى مُرَاجَعَة. لَمْ يَعْتَبِرْ ذَلِكَ فَشَلَا؛ فَقَدْ سَاعَدَهُ عَلَى مَعْرِفَةِ مَا يَنْبَغِي أَنْ يَدْرُسَهُ فِي الْأُسْبُوعِ التَّالِي.": {
+   "file": "350c26a0685dbba1.mp3",
+   "heard": "كَانَ سَامِي يَدْرُسُ كَلِمَاتٍ جَدِيدَةً كُلَّ مَسَاءٍ، لَكِنَّهُ كَانَ يَنْسَى كَثِيرًا مِنْهَا بَعْدَ أَيَّامٍ قَلِيلَةٍ. لِذَلِكَ قَرَّرَ أَنْ يُغَيِّرَ طَرِيقَتَهُ. بَدَأَ يَقْرَأُ نُصُوصًا قَصِيرَةً عَنِ الْمَوْضُوعَاتِ الَّتِي يُحِبُّهَا، ثُمَّ يَخْتَارُ مِنْ كُلِّ نَصٍّ كَلِمَاتٍ قَلِيلَةً يَحْتَاجُ إِلَيْهَا. لَمْ يَكْتَفِ بِكِتَابَةِ مَعَانِيهَا، بَلْ كَتَبَ جُمَلًا مِنْ عِنْدِهِ وَاسْتَعْمَلَ الْكَلِمَاتِ فِي حَدِيثِهِ مَعَ صَدِيقٍ. فِي نِهَايَةِ الْأُسْبُوعِ عَادَ إِلَى النَّصِّ الْأَوَّلِ وَحَاوَلَ تَلْخِيصَهُ دُونَ النَّظَرِ إِلَيْهِ. وَجَدَ أَنَّهُ يَتَذَكَّرُ بَعْضَ الْكَلِمَاتِ بِسُهُولَةٍ، وَأَنَّ كَلِمَاتٍ أُخْرَى مَا زَالَتْ تَحْتَاجُ إِلَى مُرَاجَعَةٍ. لَمْ يَعْتَبِرْ ذَلِكَ فَشَلًا، فَقَدْ سَاعَدَهُ عَلَى مَعْرِفَةِ مَا يَنْبَغِي أَنْ يَدْرُسَهُ فِي الْأُسْبُوعِ التَّالِي.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 1275,
+    "candidatesTokenCount": 436,
+    "totalTokenCount": 2786,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 1238
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 1075,
+    "serviceTier": "standard"
+   }
+  },
+  "أَعْلَنَتْ مَكْتَبَةُ الْحَيِّ عَنْ مَشْرُوعٍ جَدِيدٍ لِتَشْجِيعِ الْقِرَاءَةِ بَيْنَ الْكِبَارْ. سَيَجْتَمِعُ الْمُشَارِكُونَ مَرَّةً كُلَّ أُسْبُوعٍ لِقِرَاءَةِ قِصَّةٍ قَصِيرَةٍ وَمُنَاقَشَتِهَا. وَقَالَتْ مُنَسِّقَةُ الْمَشْرُوعِ إِنَّ الْهَدَفَ لَيْسَ قِرَاءَةَ أَكْبَرِ عَدَدٍ مِنَ الصَّفَحَاتِ، بَلْ فَهْمَ النَّصِّ وَتَبَادُلَ الْآرَاءِ حَوْلَهْ. يَسْتَطِيعُ الْمُشَارِكُ أَنْ يَخْتَارَ نُسْخَةً مَطْبُوعَةً أَوْ إِلِكْتْرُونِيَّة، كَمَا يُمْكِنُهُ الِاسْتِمَاعُ إِلَى تَسْجِيلٍ لِلْقِصَّةِ إِذَا كَانَ مُتَاحًا بِصُورَةٍ قَانُونِيَّة. لَا يَشْتَرِطُ الْمَشْرُوعُ مَعْرِفَةً سَابِقَةً بِالْأَدَبْ، لَكِنَّهُ يَطْلُبُ مِنْ كُلِّ مُشَارِكٍ أَنْ يَأْتِيَ بِسُؤَالٍ وَاحِدٍ عَلَى الْأَقَلّ. وَسَيُجَرِّبُ الْفَرِيقُ هَذَا النِّظَامَ لِمُدَّةِ شَهْرْ، ثُمَّ يَجْمَعُ الْمُلَاحَظَاتِ قَبْلَ أَنْ يُقَرِّرَ الِاسْتِمْرَارَ فِيهْ. لَمْ يُحَدِّدِ الْإِعْلَانُ بَعْدُ عَدَدَ الْمُشَارِكِينَ أَوْ مَوْعِدَ الِاجْتِمَاعِ الْأَوَّلْ.": {
+   "file": "8cd6309cb6d6c112.mp3",
+   "heard": "أَعْلَنَتْ مَكْتَبَةُ الْحَيِّ عَنْ مَشْرُوعٍ جَدِيدٍ لِتَشْجِيعِ الْقِرَاءَةِ بَيْنَ الْكِبَارِ. سَيَجْتَمِعُ الْمُشَارِكُونَ مَرَّةً كُلَّ أُسْبُوعٍ لِقِرَاءَةِ قِصَّةٍ قَصِيرَةٍ وَمُنَاقَشَتِهَا. وَقَالَتْ مُنَسِّقَةُ الْمَشْرُوعِ إِنَّ الْهَدَفَ لَيْسَ قِرَاءَةَ أَكْبَرِ عَدَدٍ مِنَ الصَّفَحَاتِ، بَلْ فَهْمَ النَّصِّ وَتَبَادُلَ الْآرَاءِ حَوْلَهُ. يَسْتَطِيعُ الْمُشَارِكُ أَنْ يَخْتَارَ نُسْخَةً مَطْبُوعَةً أَوْ إِلِكْتْرُونِيَّةً، كَمَا يُمْكِنُهُ الِاسْتِمَاعُ إِلَى تَسْجِيلٍ لِلْقِصَّةِ إِذَا كَانَ مُتَاحًا بِصُورَةٍ قَانُونِيَّةٍ. لَا يَشْتَرِطُ الْمَشْرُوعُ مَعْرِفَةً سَابِقَةً بِالْأَدَبِ، لَكِنَّهُ يَطْلُبُ مِنْ كُلِّ مُشَارِكٍ أَنْ يَأْتِيَ بِسُؤَالٍ وَاحِدٍ عَلَى الْأَقَلِّ. وَسَيُجَرِّبُ الْفَرِيقُ هَذَا النِّظَامَ لِمُدَّةِ شَهْرٍ، ثُمَّ يَجْمَعُ الْمُلَاحَظَاتِ قَبْلَ أَنْ يُقَرِّرَ الِاسْتِمْرَارَ فِيهِ. لَمْ يُحَدِّدِ الْإِعْلَانُ بَعْدُ عَدَدَ الْمُشَارِكِينَ أَوْ مَوْعِدَ الِاجْتِمَاعِ الْأَوَّلِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 1403,
+    "candidatesTokenCount": 531,
+    "totalTokenCount": 3423,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 1366
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 1489,
+    "serviceTier": "standard"
+   }
+  },
+  "قَالَتْ بَلَدِيَّةُ مَدِينَةٍ خَيَالِيَّةٍ إِنَّ عَدَدَ مُسْتَخْدِمِي الْحَافِلَاتِ ارْتَفَعَ مِنْ عَشَرَةِ آلَافٍ إِلَى اثْنَيْ عَشَرَ أَلْفًا فِي الشَّهْرِ الْمَاضِي، بَعْدَ تَخْفِيضِ سِعْرِ التَّذْكِرَة. وَوَصَفَتِ الْبَلَدِيَّةُ الزِّيَادَةَ بِأَنَّهَا دَلِيلٌ عَلَى نَجَاحِ التَّخْفِيضْ. غَيْرَ أَنَّ بَاحِثَةً فِي النَّقْلِ أَشَارَتْ إِلَى أَنَّ الْأَرْقَامَ وَحْدَهَا لَا تَكْفِي لِتَحْدِيدِ السَّبَبْ؛ فَقَدِ افْتَتَحَتِ الْمَدِينَةُ فِي الشَّهْرِ نَفْسِهِ خَطَّيْنِ جَدِيدَيْنْ، كَمَا أَغْلَقَتْ بَعْضَ الشَّوَارِعِ لِأَعْمَالِ الصِّيَانَة. وَطَالَبَتِ الْبَاحِثَةُ بِمُقَارَنَةِ الْأَعْدَادِ عَلَى مَدَى فَتْرَةٍ أَطْوَلَ وَبِمَعْرِفَةِ مَا إِذَا كَانَ الرُّكَّابُ الْجُدُدُ قَدْ تَوَقَّفُوا عَنِ اسْتِخْدَامِ سَيَّارَاتِهِمْ. وَاتَّفَقَ الطَّرَفَانِ عَلَى ضَرُورَةِ تَحْسِينِ الْخِدْمَة، لَكِنَّهُمَا اخْتَلَفَا فِي تَفْسِيرِ الزِّيَادَة. هَذِهِ بَيَانَاتٌ تَعْلِيمِيَّةٌ مُخْتَلَقَة، وَلَا تَصِفُ مَدِينَةً حَقِيقِيَّة.": {
+   "file": "76bd8b236f431771.mp3",
+   "heard": "قَالَتْ بَلَدِيَّةُ مَدِينَةٍ خَيَالِيَّةٍ إِنَّ عَدَدَ مُسْتَخْدِمِي الْحَافِلَاتِ ارْتَفَعَ مِنْ عَشَرَةِ آلَافٍ إِلَى اثْنَيْ عَشَرَ أَلْفًا فِي الشَّهْرِ الْمَاضِي بَعْدَ تَخْفِيضِ سِعْرِ التَّذْكِرَةِ، وَوَصَفَتِ الْبَلَدِيَّةُ الزِّيَادَةَ بِأَنَّهَا دَلِيلٌ عَلَى نَجَاحِ التَّخْفِيضِ، غَيْرَ أَنَّ بَاحِثَةً فِي النَّقْلِ أَشَارَتْ إِلَى أَنَّ الْأَرْقَامَ وَحْدَهَا لَا تَكْفِي لِتَحْدِيدِ السَّبَبِ، فَقَدِ افْتَتَحَتِ الْمَدِينَةُ فِي الشَّهْرِ نَفْسِهِ خَطَّيْنِ جَدِيدَيْنِ، كَمَا أَغْلَقَتْ بَعْضَ الشَّوَارِعِ لِأَعْمَالِ الصِّيَانَةِ. وَطَالَبَتِ الْبَاحِثَةُ بِمُقَارَنَةِ الْأَعْدَادِ عَلَى مَدَى فَتْرَةٍ أَطْوَلَ وَبِمَعْرِفَةِ مَا إِذَا كَانَ الرُّكَّابُ الْجُدُدُ قَدْ تَوَقَّفُوا عَنِ اسْتِخْدَامِ سَيَّارَاتِهِمْ. وَاتَّفَقَ الطَّرَفَانِ عَلَى ضَرُورَةِ تَحْسِينِ الْخِدْمَةِ، لَكِنَّهُمَا اخْتَلَفَا فِي تَفْسِيرِ الزِّيَادَةِ. هَذِهِ بَيَانَاتٌ تَعْلِيمِيَّةٌ مُخْتَلَقَةٌ، وَلَا تَصِفُ مَدِينَةً حَقِيقِيَّةً.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 1372,
+    "candidatesTokenCount": 503,
+    "totalTokenCount": 3520,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 1335
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 1645,
+    "serviceTier": "standard"
+   }
+  },
+  "يَرَى بَعْضُ الْقُرَّاءِ أَنَّ الْكُتُبَ الْإِلِكْتْرُونِيَّةَ تُسَهِّلُ الْوُصُولَ إِلَى الْمَعْرِفَة، لِأَنَّهَا تُتِيحُ حَمْلَ مَكْتَبَةٍ كَبِيرَةٍ وَالْبَحْثَ دَاخِلَ النَّصِّ بِسُرْعَة. وَيَخْشَى آخَرُونَ أَنْ تُؤَدِّيَ كَثْرَةُ الْإِشْعَارَاتِ وَالرَّوَابِطِ إِلَى تَشَتُّتِ الِانْتِبَاهْ. لَا يَبْدُو أَنَّ السُّؤَالَ الْمُفِيدَ هُوَ أَيُّ النَّوْعَيْنِ أَفْضَلُ فِي جَمِيعِ الْأَحْوَالْ، بَلْ أَيُّهُمَا أَنْسَبُ لِلْقَارِئِ وَلِلْمُهِمَّة. فَمَنْ يُرِيدُ الْعُثُورَ عَلَى مَعْلُومَةٍ مُحَدَّدَةٍ قَدْ يَسْتَفِيدُ مِنَ الْبَحْثِ الرَّقْمِيّ، بَيْنَمَا قَدْ يُفَضِّلُ قَارِئٌ آخَرُ نُسْخَةً وَرَقِيَّةً خِلَالَ جَلْسَةٍ طَوِيلَة. وَيُمْكِنُ تَقْلِيلُ الْمُشَتِّتَاتِ بِإِغْلَاقِ الْإِشْعَارَاتِ وَاخْتِيَارِ وَقْتٍ مُنَاسِبٍ لِلْقِرَاءَة. وَمَعَ ذَلِكَ، فَإِنَّ تَفْضِيلَ وَسِيلَةٍ مُعَيَّنَةٍ لَا يُثْبِتُ وَحْدَهُ أَنَّهَا تُحَسِّنُ فَهْمَ كُلِّ قَارِئْ. يَنْبَغِي أَنْ يُقَارِنَ الشَّخْصُ أَدَاءَهُ فِي مَهَامَّ مُتَشَابِهَة، وَأَنْ يَخْتَارَ الْوَسِيلَةَ الَّتِي تُسَاعِدُهُ عَلَى تَحْقِيقِ غَرَضِهْ.": {
+   "file": "12a4d304071f3234.mp3",
+   "heard": "يَرَى بَعْضُ الْقُرَّاءِ أَنَّ الْكُتُبَ الْإِلِكْتْرُونِيَّةَ تُسَهِّلُ الْوُصُولَ إِلَى الْمَعْرِفَةِ، لِأَنَّهَا تُتِيحُ حَمْلَ مَكْتَبَةٍ كَبِيرَةٍ وَالْبَحْثَ دَاخِلَ النَّصِّ بِسُرْعَةٍ. وَيَخْشَى آخَرُونَ أَنْ تُؤَدِّيَ كَثْرَةُ الْإِشْعَارَاتِ وَالرَّوَابِطِ إِلَى تَشَتُّتِ الِانْتِبَاهِ. لَا يَبْدُو أَنَّ السُّؤَالَ الْمُفِيدَ هُوَ أَيُّ النَّوْعَيْنِ أَفْضَلُ فِي جَمِيعِ الْأَحْوَالِ، بَلْ أَيُّهُمَا أَنْسَبُ لِلْقَارِئِ وَلِلْمُهِمَّةِ. فَمَنْ يُرِيدُ الْعُثُورَ عَلَى مَعْلُومَةٍ مُحَدَّدَةٍ قَدْ يَسْتَفِيدُ مِنَ الْبَحْثِ الرَّقْمِيِّ، بَيْنَمَا قَدْ يُفَضِّلُ قَارِئٌ آخَرُ نُسْخَةً وَرَقِيَّةً خِلَالَ جَلْسَةٍ طَوِيلَةٍ. وَيُمْكِنُ تَقْلِيلُ الْمُشَتِّتَاتِ بِإِغْلَاقِ الْإِشْعَارَاتِ وَاخْتِيَارِ وَقْتٍ مُنَاسِبٍ لِلْقِرَاءَةِ. وَمَعَ ذَلِكَ، فَإِنَّ تَفْضِيلَ وَسِيلَةٍ مُعَيَّنَةٍ لَا يُثْبِتُ وَحْدَهُ أَنَّهَا تُحَسِّنُ فَهْمَ كُلِّ قَارِئٍ. يَنْبَغِي أَنْ يُقَارِنَ الشَّخْصُ أَدَاءَهُ فِي مَهَامَّ مُتَشَابِهَةٍ، وَأَنْ يَخْتَارَ الْوَسِيلَةَ الَّتِي تُسَاعِدُهُ عَلَى تَحْقِيقِ غَرَضِهِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 1515,
+    "candidatesTokenCount": 580,
+    "totalTokenCount": 4070,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 1478
+     }
+    ],
+    "thoughtsTokenCount": 1975,
+    "serviceTier": "standard"
+   }
+  },
+  "السَّيِّدَةُ الْمُحْتَرَمَة،\nأَرْغَبُ فِي الْحُصُولِ عَلَى مَعْلُومَاتٍ عَنْ دَوْرَةِ اللُّغَةِ الْعَرَبِيَّةِ الَّتِي سَتَبْدَأُ الشَّهْرَ الْقَادِمْ. هَلْ يُمْكِنُكُمْ تَوْضِيحُ مَوَاعِيدِ الدُّرُوسِ وَعَدَدِ الْمُشَارِكِينَ الْمُتَوَقَّعْ؟ أَعْمَلُ فِي الْمَسَاءْ، وَلِذَلِكَ أَبْحَثُ عَنْ مَجْمُوعَةٍ تَلْتَقِي فِي الصَّبَاحْ. أَوَدُّ أَيْضًا مَعْرِفَةَ مَا إِذَا كَانَتِ الدَّوْرَةُ تَتَضَمَّنُ تَدْرِيبَاتٍ عَلَى الْمُحَادَثَةِ بِالْفُصْحَى، وَمَا إِذَا كَانَ هُنَاكَ اخْتِبَارٌ لِتَحْدِيدِ الْمُسْتَوَى قَبْلَ التَّسْجِيلْ.\nأَشْكُرُكُمْ عَلَى مُسَاعَدَتِكُمْ، وَأَتَطَلَّعُ إِلَى رَدِّكُمْ.\nمَعَ خَالِصِ التَّحِيَّة،\nلَيْلَى": {
+   "file": "16e024dcca68fa37.mp3",
+   "heard": "اَلسَّيِّدَةُ الْمُحْتَرَمَةُ، أَرْغَبُ فِي الْحُصُولِ عَلَى مَعْلُومَاتٍ عَنْ دَوْرَةِ اللُّغَةِ الْعَرَبِيَّةِ الَّتِي سَتَبْدَأُ الشَّهْرَ الْقَادِمَ. هَلْ يُمْكِنُكُمْ تَوْضِيحُ مَوَاعِيدِ الدُّرُوسِ وَعَدَدِ الْمُشَارِكِينَ الْمُتَوَقَّعِ؟ أَعْمَلُ فِي الْمَسَاءِ، وَلِذٰلِكَ أَبْحَثُ عَنْ مَجْمُوعَةٍ تَلْتَقِي فِي الصَّبَاحِ. أَوَدُّ أَيْضًا مَعْرِفَةَ مَا إِذَا كَانَتِ الدَّوْرَةُ تَتَضَمَّنُ تَدْرِيبَاتٍ عَلَى الْمُحَادَثَةِ بِالْفُصْحَى، وَمَا إِذَا كَانَ هُنَاكَ اخْتِبَارٌ لِتَحْدِيدِ الْمُسْتَوَى قَبْلَ التَّسْجِيلِ. أَشْكُرُكُمْ عَلَى مُسَاعَدَتِكُمْ، وَأَتَطَلَّعُ إِلَى رَدِّكُمْ. مَعَ خَالِصِ التَّحِيَّةِ، لَيْلَى.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 947,
+    "candidatesTokenCount": 349,
+    "totalTokenCount": 2428,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 910
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 1132,
+    "serviceTier": "standard"
+   }
+  },
+  "فِي السَّاعَةِ التَّاسِعَةِ صَبَاحَا، أَفَادَ مُسْتَخْدِمٌ فِي شَرِكَةٍ خَيَالِيَّةٍ بِأَنَّهُ لَمْ يَتَمَكَّنْ مِنَ الدُّخُولِ إِلَى حِسَابِهْ. أَظْهَرَتِ السِّجِلَّاتُ خَمْسَ مُحَاوَلَاتِ دُخُولٍ غَيْرِ نَاجِحَةٍ خِلَالَ عَشْرِ دَقَائِقْ، ثُمَّ تَمَّ قَفْلُ الْحِسَابِ مُؤَقَّتَا. لَمْ تَتَوَفَّرْ بَعْدُ مَعْلُومَاتٌ كَافِيَةٌ لِمَعْرِفَةِ مَا إِذَا كَانَتِ الْمُحَاوَلَاتُ صَادِرَةً عَنِ الْمُسْتَخْدِمِ نَفْسِهِ أَوْ عَنْ شَخْصٍ آخَرْ. اِتَّصَلَ فَرِيقُ الدَّعْمِ بِالْمُسْتَخْدِمِ عَبْرَ وَسِيلَةٍ مَعْرُوفَة، وَطَلَبَ مِنْهُ تَأْكِيدَ آخِرِ مُحَاوَلَةٍ قَامَ بِهَا. سَيُقَارِنُ الْفَرِيقُ الْإِجَابَةَ بِالسِّجِلَّاتِ قَبْلَ اتِّخَاذِ الْخُطْوَةِ التَّالِيَة. لَا تَتَضَمَّنُ هَذِهِ الْحَالَةُ التَّعْلِيمِيَّةُ أَيَّ بَيَانَاتٍ حَقِيقِيَّةٍ أَوْ كَلِمَاتِ مُرُورْ.": {
+   "file": "62f780b56ae600a0.mp3",
+   "heard": "فِي السَّاعَةِ التَّاسِعَةِ صَبَاحًا، أَفَادَ مُسْتَخْدِمٌ فِي شَرِكَةٍ خَيَالِيَّةٍ بِأَنَّهُ لَمْ يَتَمَكَّنْ مِنَ الدُّخُولِ إِلَى حِسَابِهِ. أَظْهَرَتِ السِّجِلَّاتُ خَمْسَ مُحَاوَلَاتِ دُخُولٍ غَيْرِ نَاجِحَةٍ خِلَالَ عَشْرِ دَقَائِقَ، ثُمَّ تَمَّ قَفْلُ الْحِسَابِ مُؤَقَّتًا. لَمْ تَتَوَفَّرْ بَعْدُ مَعْلُومَاتٌ كَافِيَةٌ لِمَعْرِفَةِ مَا إِذَا كَانَتِ الْمُحَاوَلَاتُ صَادِرَةً عَنِ الْمُسْتَخْدِمِ نَفْسِهِ أَوْ عَنْ شَخْصٍ آخَرَ. اتَّصَلَ فَرِيقُ الدَّعْمِ بِالْمُسْتَخْدِمِ عَبْرَ وَسِيلَةٍ مَعْرُوفَةٍ، وَطَلَبَ مِنْهُ تَأْكِيدَ آخِرِ مُحَاوَلَةٍ قَامَ بِهَا. سَيُقَارِنُ الْفَرِيقُ الْإِجَابَةَ بِالسِّجِلَّاتِ قَبْلَ اتِّخَاذِ الْخُطْوَةِ التَّالِيَةِ. لَا تَتَضَمَّنُ هَذِهِ الْحَالَةُ التَّعْلِيمِيَّةُ أَيَّ بَيَانَاتٍ حَقِيقِيَّةٍ أَوْ كَلِمَاتِ مُرُورٍ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 1209,
+    "candidatesTokenCount": 429,
+    "totalTokenCount": 3128,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 1172
+     }
+    ],
+    "thoughtsTokenCount": 1490,
+    "serviceTier": "standard"
+   }
+  }
+ },
+ "earlier": {
+  "بَدَأَ يَقْرَأُ نُصُوصًا قَصِيرَةً عَنِ الْمَوْضُوعَاتِ الَّتِي يُحِبُّهَا، ثُمَّ يَخْتَارُ مِنْ كُلِّ نَصٍّ كَلِمَاتٍ قَلِيلَةً يَحْتَاجُ إِلَيْهَا.": [
+   {
+    "file": "73a5a9a1b0bfb3ff.mp3",
+    "heard": "بَدَأَ يَقْرَأُ نُصُوصًا قَصِيرَةً عَنِ الْمَوْضُوعَاتِ الَّتِي يُحِبُّهَا، ثُمَّ يَخْتَارُ مِنْ كُلِّ نَصٍّ كَلِمَاتٍ قَلِيلَةً يَحْتَاجُ إِلَيْهَا.",
+    "finish": "STOP",
+    "usage": {
+     "promptTokenCount": 256,
+     "candidatesTokenCount": 81,
+     "totalTokenCount": 784,
+     "promptTokensDetails": [
+      {
+       "modality": "TEXT",
+       "tokenCount": 37
+      },
+      {
+       "modality": "AUDIO",
+       "tokenCount": 219
+      }
+     ],
+     "thoughtsTokenCount": 447,
+     "serviceTier": "standard"
+    }
+   }
+  ],
+  "سَيَجْتَمِعُ الْمُشَارِكُونَ مَرَّةً كُلَّ أُسْبُوعٍ لِقِرَاءَةِ قِصَّةٍ قَصِيرَةٍ وَمُنَاقَشَتِهَا.": [
+   {
+    "file": "ab56e838727af3b9.mp3",
+    "heard": "سَيَجْتَمِعُ الْمُشَارِكُونَ مَرَّةً كُلَّ أُسْبُوعٍ لِقِرَاءَةِ قِصَّةٍ قَصِيرَةٍ وَمُنَاقَشَتِهَا.",
+    "finish": "STOP",
+    "usage": {
+     "promptTokenCount": 194,
+     "candidatesTokenCount": 61,
+     "totalTokenCount": 556,
+     "promptTokensDetails": [
+      {
+       "modality": "TEXT",
+       "tokenCount": 37
+      },
+      {
+       "modality": "AUDIO",
+       "tokenCount": 157
+      }
+     ],
+     "thoughtsTokenCount": 301,
+     "serviceTier": "standard"
+    }
+   }
+  ],
+  "وَطَالَبَتِ الْبَاحِثَةُ بِمُقَارَنَةِ الْأَعْدَادِ عَلَى مَدَى فَتْرَةٍ أَطْوَلَ وَبِمَعْرِفَةِ مَا إِذَا كَانَ الرُّكَّابُ الْجُدُدُ قَدْ تَوَقَّفُوا عَنِ اسْتِخْدَامِ سَيَّارَاتِهِمْ.": [
+   {
+    "file": "d344e692b32bb08a.mp3",
+    "heard": "وَطَالَبَتِ الْبَاحِثَةُ بِمُقَارَنَةِ الْأَعْدَادِ عَلَى مَدَى فَتْرَةٍ أَطْوَلَ وَبِمَعْرِفَةِ مَا إِذَا كَانَ الرُّكَّابُ الْجُدُدُ قَدْ تَوَقَّفُوا عَنِ اسْتِخْدَامِ سَيَّارَاتِهِمْ.",
+    "finish": "STOP",
+    "usage": {
+     "promptTokenCount": 298,
+     "candidatesTokenCount": 105,
+     "totalTokenCount": 982,
+     "promptTokensDetails": [
+      {
+       "modality": "AUDIO",
+       "tokenCount": 261
+      },
+      {
+       "modality": "TEXT",
+       "tokenCount": 37
+      }
+     ],
+     "thoughtsTokenCount": 579,
+     "serviceTier": "standard"
+    }
+   }
+  ],
+  "أَشْكُرُكُمْ عَلَى مُسَاعَدَتِكُمْ، وَأَتَطَلَّعُ إِلَى رَدِّكُمْ.": [
+   {
+    "file": "ceb0dea53c288031.mp3",
+    "heard": "أَشْكُرُكُمْ عَلَى مُسَاعَدَتِكُمْ، وَأَتَطَلَّعُ إِلَى رَدِّكُمْ.",
+    "finish": "STOP",
+    "usage": {
+     "promptTokenCount": 139,
+     "candidatesTokenCount": 35,
+     "totalTokenCount": 398,
+     "promptTokensDetails": [
+      {
+       "modality": "TEXT",
+       "tokenCount": 37
+      },
+      {
+       "modality": "AUDIO",
+       "tokenCount": 102
+      }
+     ],
+     "thoughtsTokenCount": 224,
+     "serviceTier": "standard"
+    }
+   }
+  ]
+ }
+}

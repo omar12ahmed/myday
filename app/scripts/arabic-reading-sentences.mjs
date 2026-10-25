@@ -34,6 +34,28 @@ export const voiceable = s => typeof s === 'string' && !s.includes('ـ') && /[ً
 const sentences = line => line.trim().split(/(?<=[.؟!?])\s+/u).filter(Boolean);
 // The letters alone, every vowel mark taken off.
 export const unmarked = s => s.replace(/[\u064B-\u0652\u0670]/g, '');
+// Pause forms (waqf), for connected reading only (owner's decision, 25 October 2026): before a comma, full stop or
+// other pause, and at the end, a word drops its final short vowel or tanween, as a natural reader does: -an becomes \u0101,
+// a final \u0629 is said -a, a doubled letter stays doubled. A final vowel on \u062A or \u0643 stays, because it can be the only sign
+// of who is speaking or spoken to (\u0623\u064E\u0646\u0652\u062A\u0650, \u0627\u0633\u0652\u0645\u064F\u0643\u0650, \u062F\u064E\u0631\u064E\u0633\u0652\u062A\u0650). Short examples elsewhere keep every ending: there the
+// ending is often what the lesson teaches.
+const LETTER_OR_MARK = /[\u0621-\u064A\u064B-\u0652\u0670\u0671]/;
+const pauseWord = word => {
+  let end = word.length;
+  while (end > 0 && !LETTER_OR_MARK.test(word[end - 1])) end--;
+  const w = word.slice(0, end), tail = word.slice(end);
+  if (/\u064B\u0627$/.test(w)) return w.slice(0, -2) + '\u064E\u0627' + tail; // \u0640\u064B\u0627: \u0101
+  if (/\u0621\u064B$/.test(w)) return w.slice(0, -1) + '\u064E\u0627' + tail; // \u0640\u0621\u064B: \u02BE\u0101
+  if (/\u064B\u0649$/.test(w)) return w.slice(0, -2) + '\u064E\u0649' + tail; // \u0640\u064B\u0649: \u0101
+  const marks = w.match(/[\u064B-\u0652\u0670]*$/)[0], base = w.slice(0, w.length - marks.length);
+  if (!/[\u064B-\u0650]/.test(marks)) return word; // already a long vowel or a suk\u016Bn
+  if (base.endsWith('\u0629')) return base + tail;
+  if (/[\u062A\u0643]$/.test(base) && !/[\u064B-\u064D]/.test(marks)) return word;
+  return base + (marks.includes('\u0651') ? '\u0651' : '\u0652') + tail;
+};
+export const pauseForms = sentence => sentence.split(' ').map((w, i, all) => (i === all.length - 1 || /[\u060C.\u061B\u061F!:]$/.test(w) ? pauseWord(w) : w)).join(' ');
+// A whole reading text as the voice reads it in one go: its sentences as voiced, each line on its own line.
+export const wholeText = parts => [...new Set(parts.map(p => p.line))].map(line => parts.filter(p => p.line === line).map(p => p.spoken).join(' ')).join('\n');
 // Voice scripts (content/teaching/arabic/voice-scripts.json, MyDay's own; owner's decision, 25 October 2026): a fully
 // vowelled copy of a passage the course gives without marks, for the voice only. The page still shows the course's
 // text. Each sentence's script must have exactly that sentence's letters, so a script adds marks and never changes a word.
@@ -59,7 +81,7 @@ export function readingPassages(root) {
       if (said.length !== texts.length) throw new Error(`Arabic voice script ${a.id}: its sentences do not match the course text's on line ${i + 1}`);
       return texts.map((text, j) => {
         if (unmarked(said[j]) !== unmarked(text)) throw new Error(`Arabic voice script ${a.id}: line ${i + 1}, sentence ${j + 1} has other letters than the course text`);
-        return { text, plain: bare[j], spoken: said[j].replace(/^[^:：]+[:：]\s*/u, ''), line: i };
+        return { text, plain: bare[j], spoken: pauseForms(said[j].replace(/^[^:：]+[:：]\s*/u, '')), line: i };
       });
     });
     return [a.id, parts];
