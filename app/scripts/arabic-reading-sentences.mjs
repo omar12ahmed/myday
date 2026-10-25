@@ -50,6 +50,7 @@ const pauseWord = word => {
   const marks = w.match(/[\u064B-\u0652\u0670]*$/)[0], base = w.slice(0, w.length - marks.length);
   if (!/[\u064B-\u0650]/.test(marks)) return word; // already a long vowel or a suk\u016Bn
   if (base.endsWith('\u0629')) return base + tail;
+  if (/\u0650\u064a$|\u064f\u0648$/.test(base) && marks.includes('\u0651')) return base + tail; // \u0640\u0650\u064a\u0651, \u0640\u064f\u0648\u0651: said \u012b, \u016b (\u0643\u064f\u0631\u0652\u0633\u0650\u064a)
   if (/[\u062A\u0643]$/.test(base) && !/[\u064B-\u064D]/.test(marks)) return word;
   return base + (marks.includes('\u0651') ? '\u0651' : '\u0652') + tail;
 };
