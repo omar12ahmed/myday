@@ -400,6 +400,17 @@ note's text does: AI help with notes when it's on, and Ask MyDay opened on that 
 - **The skills view and four Arabic tracks:** reading, writing, listening and speaking each shown in words and
   counts, with the CEFR descriptors as a guide to objectives, never a qualification. The package's 0–100 model stays
   internal.
+  - **As built (25 October 2026), owner's choices: the course's own wording as the guide, and a line in Reflect:**
+    Progress's "Arabic: four skills" card, after "Arabic: where you stand" (`app/src/study/arabic/ArabicProgress.tsx`,
+    rules in `arabicSkills`, `app/src/study/arabic/plan.ts`). For each of reading, writing, speaking and listening:
+    the finished sessions where you ticked it in "What did you practise?" and how many were on your own, the last
+    day; how many lessons on your path ask for it (the course's input modalities, now in the lesson index) and how many
+    of those you've practised it in; the first that asks for it where you haven't; and, as a guide, the next
+    milestone's own sample task for that skill (stages are approximate targets, not CEFR levels; the official CEFR
+    lines aren't quoted). Listening and speaking are only what you ticked, with a line saying so; writing also counts
+    your kept words you practise writing from memory. Reflect says which skills the lesson asks for, ticking nothing.
+    No saved-data change; nothing is sent to AI. Not done: the next step doesn't yet balance receptive and productive
+    work (the package's adaptation rule), and nothing records listening from audio you played.
 - **Course words with roots:** authored word lists per lesson (word, meaning, root, example, voice), checked by you,
   beside your kept words. That's content work, with the teaching-depth plan.
 - **Recording yourself:** not now (decision 7). Speech recognition: not planned, as there's no dependable

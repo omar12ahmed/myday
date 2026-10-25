@@ -554,6 +554,16 @@ optional `cybersecurity.lessons` (the Ready day when there's no roadmap path, an
 `cyber_lesson` — migration `../supabase/migrations/20261026120000_sync_cyber_lessons.sql`, applied at release with
 the owner's go-ahead; older releases ignore the kind. A Study reset clears them.
 
+Four skills (Arabic, `../specs/study-home-and-lessons.md` §12): Progress has "Arabic: four skills" after "where you
+stand": reading, writing, speaking and listening, each on its own, in words and counts — the finished sessions where you
+ticked it in "What did you practise?" (how many on your own, the last day), how many lessons on your path ask for it
+and how many of those you've practised it in, a link to the next, and the next milestone's own sample task for that
+skill as a guide (the course's stages are approximate targets, not CEFR levels or a qualification). Listening and
+speaking are only what you ticked; writing also counts the kept words you practise writing from memory. A session's
+Reflect says which skills the lesson asks for, ticking nothing. Rules: `arabicSkills` in `src/study/arabic/plan.ts`;
+the card: `src/study/arabic/ArabicProgress.tsx`; which skills a lesson asks for is in the generated lesson index
+(`modalities`, from the course's input requirements, `scripts/prepare-arabic.mjs`). Nothing saved, nothing sent to AI.
+
 Keep a word (1.57.0, Arabic): under a lesson's examples (its Understand step: the headline example and the Arabic of
 its worked example) and under a reading text (one picker, sentence by sentence), **Keep a word** lists the words
 (punctuation left out, vowel marks as written). Tap one, give its meaning in your words (a starter word's meaning is
