@@ -19,7 +19,7 @@ function check(label, ok) {
       'export { optionAction } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/courseOption')) + ';',
       'export { chooseFocus, courseFocus, focusChoices, focusValue } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/study/yourFocus')) + ';',
       'export { importPath, beginAttempt, cyberJourney, practised, sessionFor, sessionMode, warmUpLesson } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/cybersecurity/learning')) + ';',
-      'export { cyberPlan, cyberGlance, cyberState, factsOf } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/cybersecurity/plan')) + ';',
+      'export { buildsOn, cyberPlan, cyberGlance, cyberState, factsOf, pathIds as cyberPathIds } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/cybersecurity/plan')) + ';',
       'export { markCyberReady, unmarkCyberReady, flagCyberRevisit, clearCyberRevisit, readyDay } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/cybersecurity/lessons')) + ';',
       'export * as cyberCatalogue from ' + JSON.stringify(path.join(ROOT, 'app/src/study/cybersecurity/catalogue')) + ';',
       'export { CYBER_VERSION, curriculumTaskId } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/cybersecurity/types')) + ';',
@@ -346,6 +346,38 @@ function check(label, ok) {
     const nix = rule.stIndex(none.study);
     check('With "your courses" chosen but none added, that choice is still shown as chosen', rule.focusValue(none.study, nix) === 'roadmap' && rule.focusChoices(none.study, nix).some(c => c.value === 'roadmap'));
     check('Every option says why, in words ("Why this?")', rule.learningOptions(yf).every(o => typeof o.why === 'string' && o.why.length > 10));
+    check('…and every option has a reason that may reach AI, the same as "Why this?" when that holds nothing of yours', rule.learningOptions(yf).every(o => typeof o.aiWhy === 'string' && o.aiWhy.length > 10)
+      && rule.learningOptions(yf).filter(o => o.subject === 'roadmap').every(o => o.aiWhy === o.why));
+
+    console.log('\n[AI reason] What may reach AI says why without your own "Needs revision" words or the name of what comes next');
+    // A fixed clock (10:00 on a Tuesday), so the free time before the next block is known; restored afterwards.
+    const RealDate = Date, at = new RealDate('2026-11-10T10:00').getTime(), began = RealDate.now();
+    globalThis.Date = class extends RealDate { constructor(...a) { if (a.length) super(...a); else super(at + (RealDate.now() - began)); } static now() { return at + (RealDate.now() - began); } };
+    try {
+      const ak = rule.todayKey();
+      // Energy 3 (sessions up to 30 minutes) and an appointment at 10:50 whose prep/travel starts 10:20: 20 minutes free.
+      const busy = d => { d.context[ak] = { energy: 3, sleep: { start: null, end: null, estimatedHours: 7 } };
+        d.commitments.push({ id: 'appt-secret', kind: 'appointment', title: 'SECRET-APPT', start: `${ak}T10:50`, end: `${ak}T11:30` }); };
+      const ar = fresh(); ar.arabic.pathId = 'path.arabic-start';
+      for (const id of start.slice(0, joining)) readyArabic(ar, id);
+      rule.flagRevisit(ar, 'lesson.arabic-letter-families', 'SECRET-FLAG-AR', ak); busy(ar);
+      const ao = option(ar, 'arabic'), ap = rule.arabicPlan(ar);
+      check('Arabic: a lesson to revisit, flagged in your words, with a shorter session for energy and the appointment', ap.step.kind === 'revisit' && ao.why.includes('SECRET-FLAG-AR') && ao.why.includes('energy 3 today') && ao.why.includes('20 min free before SECRET-APPT'), ao.why);
+      check('…what may reach AI says it needs revision without your words', ap.aiReason.endsWith('which needs revision.') && ao.aiWhy.startsWith(ap.aiReason) && !ao.aiWhy.includes('SECRET-FLAG-AR'), ao.aiWhy);
+      check('…and the free time as "before your next plan", never the appointment', ao.aiWhy.includes('energy 3 today') && ao.aiWhy.includes('20 min free before your next plan') && !ao.aiWhy.includes('SECRET-APPT'), ao.aiWhy);
+      check('…title, label and detail hold neither', !JSON.stringify([ao.title, ao.label, ao.detail]).includes('SECRET'), [ao.title, ao.detail]);
+      const cy = fresh(), cyPath = rule.cyberPathIds(cy);
+      const i = cyPath.findIndex((id, n) => rule.buildsOn(id).some(b => cyPath.indexOf(b) > -1 && cyPath.indexOf(b) < n)), weak = rule.buildsOn(cyPath[i]).find(b => cyPath.indexOf(b) > -1 && cyPath.indexOf(b) < i);
+      for (const id of cyPath.slice(0, i)) rule.markCyberReady(cy, rule.factsOf(id), ak);
+      rule.flagCyberRevisit(cy, weak, 'SECRET-FLAG-CY', ak); busy(cy);
+      const co = option(cy, 'cybersecurity'), cpl = rule.cyberPlan(cy);
+      check('Cybersecurity: the same, for a lesson the next one builds on, flagged in your words', i > 0 && cpl.step.kind === 'revisit' && cpl.step.lessonId === weak && co.why.includes('SECRET-FLAG-CY') && co.why.includes('SECRET-APPT'), co.why);
+      check('…what may reach AI has neither your words nor the appointment, and keeps the rest', cpl.aiReason.endsWith('which needs revision.') && co.aiWhy.startsWith(cpl.aiReason)
+        && co.aiWhy.includes('20 min free before your next plan') && !co.aiWhy.includes('SECRET'), co.aiWhy);
+      check('…title, label and detail hold neither', !JSON.stringify([co.title, co.label, co.detail]).includes('SECRET'), [co.title, co.detail]);
+      const quiet = fresh(); quiet.arabic.pathId = 'path.arabic-start';
+      check('With nothing of yours in it, what may reach AI is "Why this?" word for word', rule.learningOptions(quiet).every(o => o.aiWhy === o.why));
+    } finally { globalThis.Date = RealDate; }
     const glance = rule.learningGlance(why);
     check('Study home\'s glance counts Arabic places in words and lists the lesson that needs revision', glance.arabic.ready > 0 && glance.arabic.needs.length === 1 && glance.arabic.needs[0].id === start[3]
       && glance.cyber.total > 0 && glance.cyber.done === 0);

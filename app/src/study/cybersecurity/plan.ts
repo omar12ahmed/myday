@@ -42,16 +42,18 @@ export function openLesson(d: MyDayData, path: string[]): string | null {
 }
 
 // How long a session to suggest: energy and free time decide (suggestLength); a lesson to revisit gets the revision
-// session when the standard one doesn't fit, and the practical one only once you've practised it.
-export function cyberLength(d: MyDayData, lessonId: string, state: LessonState, revisit: boolean): { mode: Length; minutes: number; why: string[] } {
+// session when the standard one doesn't fit, and the practical one only once you've practised it. `plain`: the
+// reasons naming no shift, appointment or task (suggestLength).
+export function cyberLength(d: MyDayData, lessonId: string, state: LessonState, revisit: boolean): { mode: Length; minutes: number; why: string[]; plain: string[] } {
   const l = lessons.get(lessonId)!, of = (m: string) => l.variants.find(v => v.mode === m)?.minutes;
   const s = suggestLength(d, of('standard') ?? l.estimated_duration_minutes.standard);
   const mode = lengthFor(s.minutes, { standard: of('standard') ?? l.estimated_duration_minutes.standard, short: of('short') ?? 15, practical: state !== 'new' ? of('practical') : undefined }, revisit);
-  return { mode, minutes: of(mode) ?? s.minutes, why: s.why };
+  return { mode, minutes: of(mode) ?? s.minutes, why: s.why, plain: s.plain };
 }
 
-// The next step, its reason, the length that suits today, and whether your whole path is ready to move on.
-export interface CyberPlan { step: Step; reason: string; length: { mode: Length; minutes: number; why: string[] }; complete: boolean }
+// The next step, its reason (and `aiReason`, without your own "Needs revision" words, as it may reach AI), the length
+// that suits today, and whether your whole path is ready to move on.
+export interface CyberPlan { step: Step; reason: string; aiReason: string; length: { mode: Length; minutes: number; why: string[]; plain: string[] }; complete: boolean }
 export function cyberPlan(d: MyDayData, k: DateKey = todayKey()): CyberPlan | null {
   const path = pathIds(d), cache = new Map<string, LessonState>();
   const state = (id: string) => { if (!cache.has(id)) cache.set(id, cyberState(d, id)); return cache.get(id)!; };
@@ -62,7 +64,7 @@ export function cyberPlan(d: MyDayData, k: DateKey = todayKey()): CyberPlan | nu
   if (!step) return null;
   const what = cyberLessonRecord(d, step.lessonId)?.revisit?.what;
   return {
-    step, reason: stepReason(step, id => lessons.get(id)?.title ?? id, what),
+    step, reason: stepReason(step, id => lessons.get(id)?.title ?? id, what), aiReason: stepReason(step, id => lessons.get(id)?.title ?? id),
     length: cyberLength(d, step.lessonId, step.state, step.kind === 'revisit' || step.state === 'needs-revision'),
     complete: path.every(id => isDone(state(id))),
   };
