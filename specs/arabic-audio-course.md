@@ -125,6 +125,10 @@ Round eight (course words for modules 14–16): 276 new clips, transcribed blind
 voice gives the same audio for the same text, so five came back unchanged: rewording, not retaking, fixes those); three
 note pieces voiced wrongly on every take are now said in context (الشِّعْرُ الْعَرَبِيُّ، شَعَرَ بِالْبَرْدِ، يَقْضِي وَقْتًا);
 nine short forms still heard differently were approved by ear in three batches ("all good"). The key was deleted.
+Round nine (course words for modules 17–19): 267 new clips, transcribed blind; 16 remade, four of them twice; four
+texts the voice read wrongly on every take or another way are now said in context (الصُّورَة for الْمَلَفّ, read
+milaff; سَافَرَ أَخِي وَحْدَهُ; صِحَّتُهُ جَيِّدَةٌ; أَخْطَاءٌ كَثِيرَةٌ); five short forms still heard differently were
+approved by ear in three batches ("all good"). The key was deleted.
 
 **Each round works like round one.**
 - **On the Mac:**

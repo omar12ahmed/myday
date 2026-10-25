@@ -1,5 +1,16 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.93.0 — Words for Arabic modules 17–19, the rest of B1:** longer listening and unrehearsed interaction:
+listening passes, connected speech, follow-up questions, giving an opinion and putting things right, and the words for
+Standard Arabic, dialect and accent (module 17); paragraphs, formal emails, summaries, the names of the spelling and
+punctuation marks, and revising with feedback (module 18); and B1 consolidation: comparing sources, explaining clearly,
+answering the unexpected, independent study and a portfolio (module 19) — 100 words, fully vowelled, each with its
+meaning, root, an example and a note, voiced where a form can be read aloud. The Vocabulary page's "Words from the
+lessons" now has 80 lessons and 577 words. Cross-checked twice by an independent reviewer, then checked by the owner;
+its 267 new clips were listened to, and four texts the voice read wrongly are now said in context. No saved-data, sync
+or database change, and no new kind of information goes to AI. Going back to 1.92.0 is safe, with the usual note: a
+lesson word's card that comes up in its revision shows as "no longer in the course"; choose "Skip for now".
+
 **1.92.0 — Words for Arabic modules 14–16, and possessives in search:** the first B1 words: the derived verb forms
 II–X, hollow, final-weak, initial-weak, doubled and hamzated verbs, the moods and the passive (module 14); relative
 pronouns, إِنَّ and its sisters, reporting verbs, conditions, and the words for cause, purpose and contrast (module 15);
@@ -734,7 +745,7 @@ asks for is in the generated lesson index (`modalities`, from the course's input
 `scripts/prepare-arabic.mjs`). Nothing saved, nothing sent to AI.
 
 Course words (Arabic, `../specs/study-home-and-lessons.md` §12): each lesson's own words, from MyDay's
-`../content/teaching/arabic/course-words.json` (modules 4–16 so far: 477 words for 65 lessons), each fully vowelled
+`../content/teaching/arabic/course-words.json` (modules 4–19 so far: 577 words for 80 lessons), each fully vowelled
 with its meaning, the root it comes from, an example and a note, voiced where a form can be read aloud (a lone letter
 like وَ isn't). A lesson's Understand step has "Words in this lesson" (its words, then the starter words it uses),
 folded away with the explanation while you check yourself; Vocabulary has "Words from the lessons". Marking a lesson

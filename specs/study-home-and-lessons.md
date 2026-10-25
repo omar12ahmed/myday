@@ -433,7 +433,9 @@ note's text does: AI help with notes when it's on, and Ask MyDay opened on that 
     dictionary, A2 consolidation; 103 words) followed, cross-checked twice, checked by the owner and voiced (251
     clips, round seven), in 1.90.0. Modules 14–16 (the wider verb system, clause building and independent
     reading: the first B1 words, 104) followed, cross-checked twice, checked by the owner and voiced (276 clips, round
-    eight), in 1.92.0. Next: module 17 on, each checked by the owner before it ships.
+    eight), in 1.92.0. Modules 17–19 (longer listening and interaction, connected writing, B1 consolidation; 100
+    words) followed, cross-checked twice, checked by the owner and voiced (267 clips, round nine), in 1.93.0, which
+    completes B1. Next: B2 (module 20 on), each checked by the owner before it ships.
 - **Recording yourself:** not now (decision 7). Speech recognition: not planned, as there's no dependable
   validation for MSA.
 - **Course projects:** kept inside their course and called "course projects", because "Projects" is MyDay's spine.
