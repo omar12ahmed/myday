@@ -10,7 +10,7 @@
 import type { ChatMessage } from './prompt.ts';
 
 export const ASK_CONTRACT_VERSION = 1;
-export const ASK_PROMPT_VERSION = 'myday-ask-v23';
+export const ASK_PROMPT_VERSION = 'myday-ask-v24';
 export * from './ask-shape.ts';
 import { readAsk, type AskContext, type AskReply } from './ask-shape.ts';
 
@@ -30,6 +30,18 @@ into tasks or notes): name the notes you used and put their ids in "sources" (["
 claim more than the titles and snippets show, and never guess what a note says beyond its snippet. If nothing matched,
 say so plainly in one sentence and suggest another word to try — don't guess why nothing matched. Never reply "lookup"
 again.${quoting}`;
+  if (c.lookup?.tool === 'search') return `
+
+The app looked across MyDay for the words ("lookup" in the data, "tool" "search": "query", the words; "found", up to 12
+things that matched, each with "ref", its "kind", its name ("title"), where it is ("where": its project, list, course or
+module, or an appointment's day and time) and "state" (done, let go, paused, past, archived or finished, or null);
+"total", how many matched in all; "titlesOnly" when notes could be searched by title only). Only names are sent, never
+what a note, task or anything else says, and nothing private, so nothing about private things is here. Answer from
+those only, usually as "answer": say what was found and where, and put the refs you used in "sources" (["r1", …], only
+refs from "lookup"); they show as links to open. Never claim what's inside a thing (a note's text, a task's notes, a
+number, an address, a date it doesn't show): say they can open it to see. If things share a name, say where each is.
+If nothing matched, say so plainly in one sentence and suggest another word to try; don't guess why. Never reply
+"lookup" again.${quoting}`;
   if (c.lookup?.tool === 'day') return `
 
 The app looked at one day ("lookup" in the data, "tool" "day": "query" is the date, with its weekday; "planned" whether
@@ -94,6 +106,11 @@ on this page apply to it, from that data only — never add facts, amounts or da
 it get its id as "projectId". Its tasks already exist: to suggest one, name it — never put it in "items". Its
 decisions and its one page aren't here: for those, say to ask on its page. Never reply "lookup" again.${quoting}`;
   const tools = c.can ?? [], offer: string[] = [];
+  if (tools.includes('search')) offer.push(`- Across MyDay: they ask where something is, what they wrote, noted or saved about something, or to find a
+  task, project, note, appointment, course, lesson or book by its words —
+  {"kind":"lookup","message":"Looking across MyDay for that.","lookup":{"tool":"search","query":"…"}}, the query 1–4 key
+  words from their request (names, places, topics — no filler words). When the question is about a day, one project by
+  name, their open decisions, what they're waiting on or what to study next, use that lookup instead (when it's here).`);
   if (tools.includes('notes')) offer.push(`- In their notes: they ask what they wrote, noted or saved about something, or to find a note —
   {"kind":"lookup","message":"Looking in your notes for that.","lookup":{"tool":"notes","query":"…"}}, the query 1–4
   key words from their request (names, places, topics — no filler words).`);
@@ -268,6 +285,13 @@ export function mockAsk(c: AskContext): string {
     const query = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     return reply({ kind: 'lookup', message: 'Practice helper (no AI): looking at that day.', items: [], action: null, lookup: { tool: 'day', query } });
   }
+  // Looking across MyDay: the second time round, an answer naming what was found and where; the first time, a lookup.
+  if (c.lookup?.tool === 'search') {
+    const l = c.lookup, top = l.found.slice(0, 3);
+    return reply({ kind: 'answer', action: null, items: [], sources: top.map(f => f.ref),
+      message: top.length ? `Practice helper (no AI): ${l.total === 1 ? 'one thing matches' : `${l.total} things match`} “${l.query}”: ${top.map(f => `the ${f.kind} “${f.title}”${f.where ? ` (${f.where})` : ''}`).join(', ')}.`
+        : `Practice helper (no AI): nothing in MyDay matches “${l.query}”.` });
+  }
   // Looking in your notes: the second time round, an answer from what was found; the first time, a lookup.
   if (c.lookup?.tool === 'notes') {
     const l = c.lookup, names = l.notes.slice(0, 3).map(n => `“${n.title}”`).join(', ');
@@ -313,10 +337,13 @@ export function mockAsk(c: AskContext): string {
   const named = c.can?.includes('project') && !c.lookup && /\b(next|where am i|where's|how'?s|status|left|summari[sz]e)\b/i.test(t)
     ? (x.projects ?? []).filter(p => p.id !== x.project?.id && score(p.title) > 0).sort((a, b) => score(b.title) - score(a.title))[0] : undefined;
   if (named) return reply({ kind: 'lookup', message: 'Practice helper (no AI): looking at that project.', items: [], action: null, lookup: { tool: 'project', query: named.id } });
-  if (c.can?.includes('notes') && /\b(what did i (write|note|say|save)|in my notes|find (my|the|a) note|my notes? (about|on))\b/i.test(t)) {
+  // Finding something by its words: across MyDay where the app can (v24), otherwise in your notes.
+  const search = c.can?.includes('search');
+  if ((search || c.can?.includes('notes')) && /\b(what did i (write|note|say|save)|in my notes|find (my|the|a) note|my notes? (about|on))\b/i.test(t)
+    || (search && !c.lookup && /\b(where (did|is|are|was) (i|my|the)|where'?s my|find (my|the)|look for|search for|do i have (a|any))\b/i.test(t))) {
     const about = t.match(/\b(?:about|on|for|regarding)\s+(.+)$/i)?.[1] ?? t;
-    const query = about.replace(/[^\p{L}\p{N}' ]+/gu, ' ').split(/\s+/).filter(w => w.length > 2 && !/^(the|and|for|what|did|write|wrote|note|notes|about|my|any|was|that|this)$/i.test(w)).slice(0, 3).join(' ');
-    if (query) return reply({ kind: 'lookup', message: 'Practice helper (no AI): looking in your notes.', items: [], action: null, lookup: { tool: 'notes', query } });
+    const query = about.replace(/[^\p{L}\p{N}' ]+/gu, ' ').split(/\s+/).map(w => w.replace(/'s$/i, '')).filter(w => w.length > 2 && !/^(the|and|for|what|did|write|wrote|note|notes|about|my|any|was|that|this|where|put|find|look|search|have|i'd|is|are|keep)$/i.test(w)).slice(0, 3).join(' ');
+    if (query) return reply({ kind: 'lookup', message: search ? 'Practice helper (no AI): looking across MyDay.' : 'Practice helper (no AI): looking in your notes.', items: [], action: null, lookup: { tool: search ? 'search' : 'notes', query } });
   }
   const moveTo = /\b(move|push|reschedule|put off)\b.*\b(tomorrow)\b/i.test(t);
   const first = x.task ?? x.today?.dueToday[0] ?? null;

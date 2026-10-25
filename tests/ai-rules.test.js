@@ -869,7 +869,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const ps = K.askSlice(w, '#projects/notes/n3', D);
     pv = K.askPreview(K.askContext(ps, 'x', D), ps.privateNote);
     check('a private note: the preview says it isn\'t sent', pv.short.includes('This note: not sent (private)') && !JSON.stringify(pv).includes('diary'));
-    check('Finance: what you typed and the date (and, if needed, a look in your notes)', eq(K.askPreview(K.askContext(K.askSlice(w, '#finance', D), 'x', D)).short, ['What you typed and the date', 'If needed, a look in your notes, at a day or at what to study next']));
+    check('Finance: what you typed and the date (and, if needed, a look across MyDay)', eq(K.askPreview(K.askContext(K.askSlice(w, '#finance', D), 'x', D)).short, ['What you typed and the date', 'If needed, a look across MyDay, at a day or at what to study next']));
     const cal = K.askSlice(w, '#calendar', D);
     let ctxA = K.askContext(K.askSlice(w, '#projects/p/pjC', D), '  Break this into steps  ' + 'x'.repeat(700), D, new Date(), { previous: 'Earlier answer', text: 'Smaller please' });
     check('what\'s sent passes the server\'s check: today\'s appointments, the text cut to 600, one follow-up', cal.context.calendar.appointments[0].title === 'Dentist' && ctxA.text.length === 600 && ctxA.followUp.text === 'Smaller please' && K.checkAskContext(ctxA) && K.checkAskContext(K.askContext(cal, 'hi', D)));
@@ -961,7 +961,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
     // The instructions and the practice version.
     const msgs = K.buildAskMessages(ctxA);
-    check('the instructions: five kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"change"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v23' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
+    check('the instructions: five kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"change"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v24' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
     const mk = (hash, text) => K.checkAskReply(K.mockAsk(K.askContext(K.askSlice(K.getSnapshot().data, hash, D), text, D)), K.getSnapshot().data, K.askSlice(K.getSnapshot().data, hash, D), D);
     check('practice version: steps on a project page, in that project', (r => r.kind === 'steps' && r.items.length === 3 && r.items.every(x => x.projectId === 'pjC'))(mk('#projects/p/pjC', 'Break this into smaller steps')));
     check('…several things to add', (r => r.kind === 'add' && eq(r.items.map(x => x.title), ['Call the bank', 'Renew passport', 'Email Sam']))(mk('#today', 'call the bank, renew passport and email Sam')));
@@ -1528,11 +1528,11 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('more than 8 found: the newest 8 are sent, and "found" still says how many matched', mr.lookup.notes.length === 8 && mr.lookup.found === 11 && K.lookupLine(mr.lookup, 0).includes('11 notes (the newest 8 sent)'), [mr.lookup.notes.length, mr.lookup.found]);
     const lslice = K.askSlice(ld, '#today', LD), lfound = K.notesLookup(ld, 'bike rack').lookup, Q = 'What did I write about the bike rack?';
     const lc1 = K.askContext(lslice, Q, LD);
-    check('the request says this app can look in your notes, at a day, at a project, at your open decisions or at what you\'re waiting on, and the server\'s check accepts it', eq(lc1.can, ['notes', 'day', 'project', 'decisions', 'waiting', 'study']) && !('lookup' in lc1) && K.checkAskContext(lc1));
+    check('the request says this app can look at a day, a project, your open decisions, what you\'re waiting on, what to study next and across MyDay (v24: in place of your notes), and the server\'s check accepts it', eq(lc1.can, ['day', 'project', 'decisions', 'waiting', 'study', 'search']) && !('lookup' in lc1) && K.checkAskContext(lc1));
     const lc2 = K.askContext(lslice, Q, LD, undefined, undefined, lfound);
     check('…the second request carries what was found, and is accepted too', lc2.lookup === lfound && K.checkAskContext(lc2));
     const LKR = q => JSON.stringify({ kind: 'lookup', message: 'Looking in your notes.', lookup: { tool: 'notes', query: q } });
-    check('a lookup reply is taken as a lookup (the panel then looks)', eq(K.checkAskReply(LKR('bike rack'), ld, lslice, LD), { kind: 'lookup', tool: 'notes', query: 'bike rack' }));
+    check('a lookup reply is taken as a lookup (the panel then looks) — one still asking for your notes gets the look across MyDay', eq(K.checkAskReply(LKR('bike rack'), ld, lslice, LD), { kind: 'lookup', tool: 'search', query: 'bike rack' }));
     check('…but never a second time for the same question', K.checkAskReply(LKR('bike'), ld, lslice, LD, undefined, lfound) === null);
     const ANS = sources => JSON.stringify({ kind: 'answer', message: 'Your shed note says to leave room for it on the left wall.', items: [], action: null, sources });
     const la = K.checkAskReply(ANS(['nRack', 'nPrivRack', 'nMadeUp', 'nRack']), ld, lslice, LD, undefined, lfound);
@@ -1612,13 +1612,13 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const PRO = JSON.stringify({ kind: 'add', message: 'Points to weigh — the choice is yours.', items: [{ type: 'pro', title: 'Lasts for decades', optionId: 'oTin' }] });
     const pro = K.checkAskReply(PRO, pw, dslice2, LD, 'what am I missing?', own.lookup);
     check('a look at the page\'s own project keeps the decision it was sent with (its pros and cons still go)', !!dslice2.context.project.decision && pro?.kind === 'add' && pro.items.length === 1 && pro.items[0].type === 'pro', pro);
-    check('Finance sends no project names, so it offers no look at a project or your decisions (which carry them)', eq(K.askContext(K.askSlice(pw, '#finance', LD), 'x', LD).can, ['notes', 'day', 'study']));
+    check('Finance sends no project names, so it offers no look at a project or your decisions (which carry them)', eq(K.askContext(K.askSlice(pw, '#finance', LD), 'x', LD).can, ['day', 'study', 'search']));
     const pp1 = K.checkAskReply(K.mockAsk(K.askContext(tslice, pq, LD)), pw, tslice, LD);
     const pp2 = pp1?.kind === 'lookup' && pp1.tool === 'project' ? K.projectLookup(pw, pp1.query) : null;
     const pp3 = pp2 && K.checkAskReply(K.mockAsk(K.askContext(tslice, pq, LD, undefined, undefined, pp2.lookup)), pw, tslice, LD, undefined, pp2.lookup);
     check('practice mode, end to end: "What\'s next on the garden shed?" from Today looks at it, then says where it is', pp1?.query === 'pjShed' && pp3?.kind === 'answer' && pp3.message.includes('“Garden shed” is at explore, with 1 of 2 tasks done. Next: “Order the felt”'), [pp1, pp3]);
     const tpv = K.askPreview(K.askContext(tslice, pq, LD));
-    check('the preview says it may look at one of your projects, and what it would send', tpv.short.includes('If needed, a look in your notes, at a day, at one of your projects, at your open decisions, at what you’re waiting on or at what to study next') && tpv.all.some(x => x.label === 'If it needs to: one of your projects' && x.lines.join(' ').includes('never its outcome')), tpv);
+    check('the preview says it may look at one of your projects, and what it would send', tpv.short.includes('If needed, a look across MyDay, at a day, at one of your projects, at your open decisions, at what you’re waiting on or at what to study next') && tpv.all.some(x => x.label === 'If it needs to: one of your projects' && x.lines.join(' ').includes('never its outcome')), tpv);
     // "Open decisions" (v20): nothing chosen yet, oldest first, across open projects (or one) — never a private one's.
     const DC = (id, question, x = {}) => ({ id, question, options: [{ id: id + 'a', text: 'Felt', pros: ['PRO-TEXT-A'], cons: [] }, { id: id + 'b', text: 'Tin', pros: [], cons: ['CON-TEXT-B', 'CON-TEXT-C'] }], chosen: null, why: '', decidedOn: null, createdAt: lat, updatedAt: lat, ...x });
     const AS = (id, text, state) => ({ id, text, state, found: 'FOUND-TEXT', checkedOn: null, taskId: null, createdAt: lat });
@@ -1687,8 +1687,8 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     // (1.75.1) With no open projects, a wait needn't be in one: Today still offers the waiting look (and decisions), not a
     // project's; Finance still offers neither.
     const nw = K.normalize({ ...ww, projects: { ...ww.projects, items: [] } });
-    check('with no open projects, Today still offers what you\'re waiting on and your decisions (not a project); Finance neither', eq(K.askContext(K.askSlice(nw, '#today', LD), 'x', LD).can, ['notes', 'day', 'decisions', 'waiting', 'study'])
-      && eq(K.askContext(K.askSlice(nw, '#finance', LD), 'x', LD).can, ['notes', 'day', 'study']) && K.waitingLookup(nw, 'all').lookup.tasks.some(t => t.id === 'tkW2'));
+    check('with no open projects, Today still offers what you\'re waiting on and your decisions (not a project); Finance neither', eq(K.askContext(K.askSlice(nw, '#today', LD), 'x', LD).can, ['day', 'decisions', 'waiting', 'study', 'search'])
+      && eq(K.askContext(K.askSlice(nw, '#finance', LD), 'x', LD).can, ['day', 'study', 'search']) && K.waitingLookup(nw, 'all').lookup.tasks.some(t => t.id === 'tkW2'));
     check('…a "Chase:" task it offers comes as one to tick', wc?.kind === 'add' && wc.items.length === 1 && wc.items[0].title === 'Chase: Deposit back' && !wc.items[0].already, wc);
     // The tone filter: tied to the wait — "the late post" and "behind the sofa" stay; counts in words and a fortnight go.
     const tone = m => K.checkAskReply(WANS(`“Deposit back” is waiting since 28 October. ${m}`, []), ww, wslice, LD, undefined, wl.lookup)?.message;
@@ -1724,6 +1724,92 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const sp3 = sp2 && K.checkAskReply(K.mockAsk(K.askContext(sTo, 'What should I study next?', LD, undefined, undefined, sp2.lookup)), sw, sTo, LD, undefined, sp2.lookup, sp2.hrefs);
     check('practice mode, end to end: "What should I study next?" from Today looks, then names the focus\'s next step, linked', sp1?.query === 'all' && sp3?.kind === 'answer' && sp3.message.includes(`“${so[0].title}” (${so[0].label})`) && sp3.sources?.[0]?.href === so[0].href, [sp1, sp3]);
     check('the preview says it may look at what to study next', K.askPreview(K.askContext(sTo, 'x', LD)).all.some(x => x.label === 'If it needs to: what to study next' && x.lines.join(' ').includes('No percentages')));
+  }
+
+  console.log('\n[Lookups: across MyDay] Ask MyDay looks across MyDay (v24; specs/ai-tools.md §6.11)');
+  {
+    const SD = '2026-11-10', at = `${SD}T08:00`;
+    const P = (id, title, x = {}) => ({ id, title, summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: at, updatedAt: at, ...x });
+    const T = (id, title, x = {}) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: at, postponed: 0, blockers: [], letGoOn: null, ...x });
+    const N = (id, title, text, x = {}) => ({ id, title, text, categoryId: 'inbox', createdAt: at, updatedAt: at, ...x });
+    const world = () => {
+      const d = K.freshState();
+      d.patterns.prefs.aiNotes = false;
+      d.projects.items = [
+        P('pjShed', 'Garden shed', { summary: 'Wired by the electrician', outcome: 'OUTCOMEWORD', finishedWhen: 'FINISHWORD', leftOff: { text: 'LEFTWORD', on: SD }, tools: ['research'],
+          milestones: [{ id: 'msE', title: 'Electrician signs off', reached: false, aim: null }],
+          decisions: [{ id: 'dcE', question: 'Which electrician to book?', options: [{ id: 'oD', text: 'Dave the sparky', pros: ['PROWORD'], cons: [] }], chosen: null, why: 'WHYWORD', decidedOn: null, createdAt: at, updatedAt: at }],
+          resources: [{ id: 'rsE', url: 'https://example.com/r', title: 'RESWORD shop', note: '', addedOn: SD }] }),
+        P('pjOld', 'Old kitchen electrician job', { status: 'paused' }),
+        P('pjHush', 'Hush electrician plan', { private: true, summary: 'electrician', commitmentIds: ['cmHush'] }),
+      ];
+      d.research.items = [{ id: 'rqE', type: 'question', projectId: 'pjShed', text: 'RESEARCHWORD electrician', conclusion: '', answeredOn: null, createdAt: at, updatedAt: at }];
+      d.tasks.lists = [{ id: 'tlH', name: 'Home jobs' }];
+      d.tasks.items = [
+        T('tkRing', 'Ring the electrician', { listId: 'tlH', notes: 'His number is on the van' }),
+        T('tkPaid', 'Pay the electrician', { done: true, doneOn: SD }),
+        T('tkWire', 'Wire the shed', { projectId: 'pjShed', steps: [{ id: 'st1', text: 'Buy cable for the electrician', done: false }] }),
+        T('tkCert', 'Get the certificate', { waiting: { on: 'ZEDWORD', since: SD, until: null } }),
+        T('tkHush', 'Hush electrician task', { projectId: 'pjHush' }),
+      ];
+      d.notes.items = [N('nEl', 'Electrician', 'Dave 07700 900123 TEXTWORD'), N('nUntitled', '', 'electrician spur idea'), N('nPriv', 'Private electrician', 'x', { private: true }), N('nHush', 'Hush electrician note', 'x', { projectId: 'pjHush' })];
+      d.commitments = [{ id: 'cmSoon', kind: 'appointment', title: 'Electrician visit', start: '2026-11-12T10:00', end: '2026-11-12T11:00' }, { id: 'cmPast', kind: 'work', title: 'Electrician quote', start: '2026-11-01T09:00', end: '2026-11-01T10:00' },
+        { id: 'cmHush', kind: 'appointment', title: 'Electrician hush', start: '2026-11-13T09:00', end: '2026-11-13T10:00' }];
+      d.study.topics = [{ id: 'tpE', title: 'Electrics' }];
+      d.study.stages = [{ id: 'stE', title: 'Basics', topicId: 'tpE', courses: [{ id: 'crE', title: 'Home electrics', url: '', minutes: 0, listId: null, archived: false, modules: [{ id: 'mdE', title: 'Circuits', sections: [{ id: 'scE', title: 'Ring mains', tasks: [
+        { id: 'stkE', title: 'Watch the electrician video', minutes: 20, url: '', kind: 'learn', note: 'STUDYNOTEWORD', done: false, doneOn: null }] }] }] }] }];
+      d.study.concepts = [{ id: 'cpE', title: 'CONCEPTWORD', taskIds: [], createdOn: SD, kind: 'written', prompt: 'p', answer: 'a', explanation: '', choices: [], correct: null, hint: '', source: '', note: '', review: { reps: 0, interval: 0, lapses: 0, due: null } }];
+      d.study.sessions = [{ id: 'ssE', courseId: 'crE', taskId: 'stkE', title: 'Watch', date: SD, startedAt: at, plannedMin: 20, short: false, status: 'done', runningSince: null, activeMs: 0, endedAt: at, checkin: { conceptIds: [], clarity: 'partly', takeaway: 'CHECKINWORD', question: '', note: '' }, taskDone: null, todayUid: null }];
+      d.reading.books = [{ id: 'bkE', title: 'Wiring explained', author: 'Ann Volt', pages: null, page: 0, notes: [{ id: 'bn', page: 1, text: 'BOOKNOTEWORD', addedOn: SD }], addedOn: SD, finishedOn: null }];
+      d.arabic.words = [{ id: 'kwE', ar: 'كِتَاب', meaning: 'KEPTWORD', note: 'KEPTNOTEWORD', addedOn: SD, recognise: { reps: 0, interval: 0, lapses: 0, due: SD }, write: null }];
+      d.arabic.lessons = [{ id: 'lesson.arabic-fusha-register', revisit: { since: SD, what: 'REVISITWORD' } }];
+      d.arabic.attempts = [{ id: 'aaE', lessonId: 'lesson.arabic-fusha-register', curriculumVersion: '1', variant: 'standard', startedAt: at, finishedAt: null, help: 'none', practised: [], answers: { q1: 'ANSWERWORD' }, revealed: [], revisit: '' }];
+      d.cybersecurity.attempts = [{ id: 'caE', activityId: 'x', startedAt: at, submittedAt: null, evidence: 'NOTEBOOKWORD', answers: {}, resumePoint: '' }];
+      d.cybersecurity.portfolio = [{ id: 'pfE', attemptId: 'caE', activityId: 'x', title: 'PORTFOLIOWORD', evidence: 'e', note: '', reviewedOn: SD }];
+      d.finance.debts = [{ id: 'dbE', direction: 'owe', person: 'FINWORD', amount: 1, note: '', since: SD }];
+      d.health.workout.exercises = [{ id: 'exE', name: 'HEALTHWORD', archived: false }];
+      return d;
+    };
+    const COURSES = K.courseIndex(), look = (q, d = world()) => K.searchLookup(d, q, COURSES, SD);
+    const el = look('electrician'), f = el.lookup.found, kinds = f.map(x => x.kind), byTitle = t => f.find(x => x.title === t);
+    check('across MyDay, "electrician" finds tasks (by title, notes and steps), projects, milestones, decisions, notes, the calendar and study, in that order', eq([...new Set(kinds)], ['task', 'project', 'milestone', 'decision', 'note', 'appointment', 'work', 'study task']) && !!byTitle('Wire the shed'), f.map(x => [x.ref, x.kind, x.title]));
+    check('…each with its reference, name, where it is and its state; its link stays on the device', eq(f.map(x => x.ref), f.map((_, i) => `r${i + 1}`)) && byTitle('Wire the shed').where === 'in “Garden shed”' && byTitle('Pay the electrician').state === 'done'
+      && byTitle('Old kitchen electrician job').state === 'paused' && byTitle('Electrician quote').state === 'past' && byTitle('Electrician visit').where.endsWith(', 10:00') && el.hrefs.r1 === '#today/tasks/tkRing' && !JSON.stringify(el.lookup).includes('#'), f);
+    check('…open things before done ones in each part', kinds.indexOf('task') === 0 && f.findIndex(x => x.title === 'Pay the electrician') > f.findIndex(x => x.title === 'Wire the shed'));
+    check('a task by its notes or a step; a decision by an option; a book by its author; a topic and a course by name', look('van number').lookup.found.some(x => x.title === 'Ring the electrician') && look('cable').lookup.found.some(x => x.title === 'Wire the shed')
+      && look('sparky').lookup.found.some(x => x.kind === 'decision') && look('ann volt').lookup.found.some(x => x.kind === 'book' && x.where === 'Ann Volt') && look('electrics').lookup.found.some(x => x.kind === 'topic') && look('electrics').lookup.found.some(x => x.kind === 'course'));
+    const held = ['ZEDWORD', 'OUTCOMEWORD', 'FINISHWORD', 'LEFTWORD', 'RESWORD', 'RESEARCHWORD', 'PROWORD', 'WHYWORD', 'STUDYNOTEWORD', 'CONCEPTWORD', 'CHECKINWORD', 'BOOKNOTEWORD', 'KEPTWORD', 'KEPTNOTEWORD', 'REVISITWORD', 'ANSWERWORD', 'NOTEBOOKWORD', 'PORTFOLIOWORD', 'FINWORD', 'HEALTHWORD'];
+    const matchedHeld = held.filter(w => look(w).lookup.total > 0 || look(w).leftOut > 0);
+    check('it never matches on what isn\'t sent (who a task waits on, outcome, where you left off, links, research, pros, reasons, a study task\'s note, revision cards, check-ins, book notes, kept words, revision notes, answers, the notebook and portfolio, Finance, Health)', matchedHeld.length === 0, matchedHeld);
+    const kw = look('كتاب');
+    check('…and the kept Arabic word isn\'t found by its Arabic either (Keep a word: never sent to AI); only the course\'s own word is', !kw.lookup.found.some(x => x.title === 'كِتَاب' || x.kind !== 'course word') && !JSON.stringify(kw.lookup).includes('KEPT') && kw.leftOut === 0, kw.lookup.found);
+    const hush = look('hush');
+    check('nothing private: a private project, its task, note and appointment, and a private note never go — counted only here', hush.lookup.total === 0 && hush.leftOut === 4 && !/hush/i.test(JSON.stringify(el.lookup)) && !JSON.stringify(el.lookup).includes('Private electrician') && el.leftOut === 5, [hush, el.leftOut]);
+    check('notes by title only while AI help with notes is off (an untitled note isn\'t found by its first line)', el.lookup.titlesOnly && look('textword').lookup.total === 0 && !f.some(x => x.title === 'Untitled note'));
+    const on = world(); on.patterns.prefs.aiNotes = true;
+    const tx = look('textword', on), sp = look('spur', on);
+    check('…with it on, its text is searched — but only the name goes, never the text', tx.lookup.total === 1 && tx.lookup.found[0].title === 'Electrician' && !JSON.stringify(tx.lookup).includes('07700') && !tx.lookup.titlesOnly && sp.lookup.found[0]?.title === 'electrician spur idea', [tx.lookup, sp.lookup]);
+    check('the course lessons and words: a real lesson by title, a real word by its Arabic without vowels, each with where', look('What Fuṣḥā means').lookup.found.some(x => x.kind === 'lesson' && x.where.startsWith('Arabic · ')) && look('مرحبا').lookup.found.some(x => x.kind === 'course word' && x.title.includes('hello') && x.where === 'Arabic'));
+    const many = world(); many.tasks.items = Array.from({ length: 20 }, (_, i) => T('tkM' + i, 'Batch job ' + i));
+    const ml = look('batch job', many);
+    check('at most 12 go, and "total" says how many matched', ml.lookup.found.length === 12 && ml.lookup.total === 20 && Object.keys(ml.hrefs).length === 12);
+    check('what the panel says above the answer', K.lookupLine(el.lookup, el.leftOut) === `Looked across MyDay for “electrician”: ${el.lookup.total} things — 5 private things left out; notes by title only, as AI help with notes is off.` && K.lookupLine(ml.lookup, 0) === 'Looked across MyDay for “batch job”: 20 things (the first 12 sent) — notes by title only, as AI help with notes is off.'
+      && K.lookupLine(look('zebra', on).lookup, 0) === 'Looked across MyDay for “zebra”: nothing matched.' && K.lookupLine(hush.lookup, 4) === 'Looked across MyDay for “hush”: none that could be sent — 4 private things left out; notes by title only, as AI help with notes is off.', [K.lookupLine(el.lookup, el.leftOut), K.lookupLine(hush.lookup, 4)]);
+    const d = world(), sl = K.askSlice(d, '#today', SD), Q = 'Where did I put the electrician\'s number?';
+    const c1 = K.askContext(sl, Q, SD), c2 = K.askContext(sl, Q, SD, undefined, undefined, el.lookup);
+    check('the request offers it (not your notes) and the server\'s check takes both requests', c1.can.includes('search') && !c1.can.includes('notes') && K.checkAskContext(c1) && K.checkAskContext(c2));
+    check('…but not a lookup carrying an id, a link, text or more than 12', !K.checkAskContext({ ...c2, lookup: { ...el.lookup, found: [{ ...el.lookup.found[0], id: 'tkRing' }] } }) && !K.checkAskContext({ ...c2, lookup: { ...el.lookup, found: [{ ...el.lookup.found[0], href: '#today' }] } })
+      && !K.checkAskContext({ ...c2, lookup: { ...el.lookup, found: [{ ...el.lookup.found[0], text: 'x' }] } }) && !K.checkAskContext({ ...c2, lookup: { ...ml.lookup, found: [...ml.lookup.found, { ...ml.lookup.found[0], ref: 'r13' }] } })
+      && !K.checkAskContext({ ...c2, lookup: { ...el.lookup, found: [el.lookup.found[0], el.lookup.found[0]] } }));
+    const ANS = refs => JSON.stringify({ kind: 'answer', message: 'Your task “Ring the electrician” says where.', items: [], action: null, sources: refs });
+    const a = K.checkAskReply(ANS(['r1', 'r99', 'r1']), d, sl, SD, undefined, el.lookup, el.hrefs);
+    check('an answer\'s sources become links to what was found (once each; a reference it wasn\'t given is dropped)', eq(a.sources, [{ id: 'r1', title: 'Ring the electrician', href: '#today/tasks/tkRing' }]), a.sources);
+    const p1 = K.checkAskReply(K.mockAsk(c1), d, sl, SD);
+    const p2 = p1?.kind === 'lookup' ? K.searchLookup(d, p1.query, COURSES, SD) : null;
+    const p3 = p2 && K.checkAskReply(K.mockAsk(K.askContext(sl, Q, SD, undefined, undefined, p2.lookup)), d, sl, SD, undefined, p2.lookup, p2.hrefs);
+    check('practice mode, end to end: "Where did I put the electrician\'s number?" looks across MyDay, then names what it found, linked', p1?.tool === 'search' && /electrician/.test(p1.query) && p3?.kind === 'answer' && p3.sources?.length > 0 && p3.sources.every(x => x.href?.startsWith('#')), [p1, p3]);
+    check('…and "What did I write about…" is a look across MyDay too', K.checkAskReply(K.mockAsk(K.askContext(sl, 'What did I write about the electrician?', SD)), d, sl, SD)?.tool === 'search');
+    check('the preview says it may look across MyDay, and what it never sends', K.askPreview(c1).all.some(x => x.label === 'If it needs to: across MyDay' && x.lines.join(' ').includes('Never what one says') && x.lines.join(' ').includes('kept words')));
   }
 
   console.log('\n[Privacy] Nothing private reaches AI, by any feature (one filter: app/src/ai/reach.ts)');
@@ -1816,6 +1902,15 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const titleOnly = K.notesLookup(data, 'note-title'); // matches the private note's title, without being a secret itself
     check('…with AI help with notes off, a private note whose title matches: still nothing of it sent', leaks(titleOnly.lookup).length === 0 && titleOnly.leftOut === 2 && titleOnly.lookup.found === 0, titleOnly);
     data.patterns.prefs.aiNotes = true;
+    // A look across MyDay (v24): every secret's word searched, one by one and all at once — nothing private and none of
+    // the never-sent fields in what goes (it matches only on what may be sent), with or without AI help with notes.
+    const across = [false, true].flatMap(on => { data.patterns.prefs.aiNotes = on; return ['SECRET', ...SECRETS].map(q => [q, on, K.searchLookup(data, q, K.courseIndex(), PD)]); });
+    data.patterns.prefs.aiNotes = true;
+    // (The words searched come back as "query" — what you typed, not something found — so they're set aside here.)
+    const acrossLeaks = across.map(([q, on, l]) => { const lk = { ...l.lookup, query: 'x' }; return [q, on, leaks(lk), leaks(K.askContext(K.askSlice(data, '#today', PD), 'where is it?', PD, undefined, undefined, lk))]; }).filter(([, , a, b]) => a.length || b.length);
+    check('a look across MyDay: nothing private and none of the never-sent fields, searching any secret\'s words (notes\' text shared or not)', acrossLeaks.length === 0 && across.some(([, , l]) => l.leftOut > 0), acrossLeaks.slice(0, 4));
+    const acrossOpen = K.searchLookup(data, 'felt', null, PD);
+    check('…while the open project\'s things are found (so the check sees something)', acrossOpen.lookup.found.length > 0 && leaks(acrossOpen.lookup).length === 0, acrossOpen.lookup.found);
     const daySecret = K.dayLookup(data, PD, PD);
     check('a look at the day: nothing private in what it sends (the private project\'s task and due one, the appointment\'s name)', leaks(daySecret.lookup).length === 0 && daySecret.leftOut >= 2 && leaks(K.askContext(K.askSlice(data, '#projects', PD), 'am I free today?', PD, undefined, undefined, daySecret.lookup)).length === 0, [leaks(daySecret.lookup), daySecret.leftOut]);
     // A look at each project: never the private one, and of the others nothing held back (outcome, finished-when, left off,

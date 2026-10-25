@@ -9,6 +9,8 @@
 //   - a task's steps (its checklist's words, done or not) go with it — on its own page, its project's page and Ask
 //     MyDay's look at a project — and what it starts after by title, never by id (25 Oct 2026); never a private
 //     project's;
+//   - Ask MyDay's look across MyDay (v24, 25 Oct 2026) searches and sends only what may go (names, kinds and where;
+//     ai/lookup.ts searchLookup), so a match never hints at what's held back; it never reads kept Arabic words;
 //   - never: a case's timeline, evidence and issues; the files you attach (their names and contents); a project's
 //     research (questions, findings, sources and conclusions, specs/projects-research.md); a project's outcome, what
 //     counts as finished and where you left off; who a task is waiting on (Ask MyDay's waiting lookup sends only that

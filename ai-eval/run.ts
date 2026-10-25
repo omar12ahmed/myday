@@ -463,9 +463,9 @@ function prepare(sc: AnyScenario): Prepared {
           // Steps inside a task (v23): only checklist steps, none repeating one it has.
           if (e.stepsOf) { ex.stepsOnly = r.items.length > 0 && r.items.every(i => i.type === 'step'); ex.noRepeatStep = r.items.every(i => !e.stepsOf!.existing.some(t => t.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim() === i.title.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim())); }
           // Looking in your notes (v17): the right words the first time; after a lookup, only notes it found, never again.
-          if (r.kind === 'lookup') { ex.lookupOffered = !!sc.ctx.can?.includes('notes') && !sc.ctx.lookup; if (e.lookupWords) ex.lookupWords = e.lookupWords.test(r.lookup?.query ?? ''); }
+          if (r.kind === 'lookup') { ex.lookupOffered = !!(sc.ctx.can?.includes('notes') || sc.ctx.can?.includes('search')) && !sc.ctx.lookup; if (e.lookupWords) ex.lookupWords = e.lookupWords.test(r.lookup?.query ?? ''); if (e.lookupTool) ex.lookupTool = r.lookup?.tool === e.lookupTool; }
           if (sc.ctx.lookup) {
-            const l = sc.ctx.lookup, foundIds = l.tool === 'notes' ? l.notes.map(n => n.id) : l.tool === 'decisions' ? [...l.decisions.map(d => d.id), ...l.mustBeTrue.map(b => b.id)] : l.tool === 'waiting' ? l.tasks.map(t => t.id) : l.tool === 'study' ? l.options.map(o => o.subject) : [];
+            const l = sc.ctx.lookup, foundIds = l.tool === 'notes' ? l.notes.map(n => n.id) : l.tool === 'decisions' ? [...l.decisions.map(d => d.id), ...l.mustBeTrue.map(b => b.id)] : l.tool === 'waiting' ? l.tasks.map(t => t.id) : l.tool === 'study' ? l.options.map(o => o.subject) : l.tool === 'search' ? l.found.map(f => f.ref) : [];
             if (l.tool === 'decisions') ex.neverChooses = !CHOOSES.test(r.message); // each decision stays theirs (v20)
             ex.noSecondLookup = r.kind !== 'lookup';
             ex.sourcesFromLookup = (r.sources ?? []).every(id => foundIds.includes(id));

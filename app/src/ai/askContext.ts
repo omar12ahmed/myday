@@ -203,8 +203,9 @@ export function projectSlice(data: MyDayData, p: Project): { project: NonNullabl
     ...(p.milestones?.length ? { milestones: p.milestones.slice(0, L.milestones).map(m => ({ id: m.id, title: cut(m.title, L.titleChars), reached: !!m.reachedOn, aim: m.aim })) } : {}) } };
 }
 
-// This app can look in your notes when an answer needs them (`can`); the second time round, `lookup` is what it found
-// (ai/lookup.ts, through the privacy rules). One lookup per question.
+// What this app can look at when an answer needs it (`can`: across MyDay, a day, a project, open decisions, what you're
+// waiting on, what to study next); the second time round, `lookup` is what it found (ai/lookup.ts, through the privacy
+// rules). One lookup per question.
 export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(), now = new Date(), followUp?: { previous: string; text: string }, lookup?: AskLookup): AskContext {
   return {
     version: 1, action: 'ask', date: k, weekday: parseKey(k).toLocaleDateString('en-GB', { weekday: 'long' }),
@@ -215,7 +216,8 @@ export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(
     // Your open decisions and what you're waiting on carry project names, so they aren't offered on Finance or Health —
     // but they are with no open projects (a wait needn't be in one).
     // What to study next: not on Study or a course, which send their own.
-    can: [...ASK_TOOLS].filter(t => t === 'project' ? !!slice.context.projects?.length : t === 'decisions' || t === 'waiting' ? slice.page !== 'finance' && slice.page !== 'health'
+    // Across MyDay (v24) stands in for "in your notes": it finds notes too, with the same rules.
+    can: [...ASK_TOOLS].filter(t => t === 'notes' ? false : t === 'project' ? !!slice.context.projects?.length : t === 'decisions' || t === 'waiting' ? slice.page !== 'finance' && slice.page !== 'health'
       : t === 'study' ? !slice.context.study && !slice.context.course : true), ...(lookup ? { lookup } : {}),
   };
 }
@@ -309,11 +311,13 @@ export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['
   }
   if (x.projects?.length) { short.push(n(x.projects.length, 'open project name')); all.push({ label: 'Your open projects (names only)', lines: x.projects.map(p => p.title) }); }
   if (!short.length) short.push('What you typed and the date');
-  if (c.can?.includes('notes')) {
-    const projects = c.can.includes('project');
-    const looks = ['in your notes', ...(c.can.includes('day') ? ['at a day'] : []), ...(projects ? ['at one of your projects'] : []), ...(c.can.includes('decisions') ? ['at your open decisions'] : []), ...(c.can.includes('waiting') ? ['at what you’re waiting on'] : []), ...(c.can.includes('study') ? ['at what to study next'] : [])];
+  if (c.can?.includes('search') || c.can?.includes('notes')) {
+    const projects = c.can.includes('project'), across = c.can.includes('search');
+    const looks = [across ? 'across MyDay' : 'in your notes', ...(c.can.includes('day') ? ['at a day'] : []), ...(projects ? ['at one of your projects'] : []), ...(c.can.includes('decisions') ? ['at your open decisions'] : []), ...(c.can.includes('waiting') ? ['at what you’re waiting on'] : []), ...(c.can.includes('study') ? ['at what to study next'] : [])];
     short.push(`If needed, a look ${looks.length > 1 ? `${looks.slice(0, -1).join(', ')} or ${looks[looks.length - 1]}` : looks[0]}`);
-    all.push({ label: 'If it needs to: your notes', lines: ['Ask MyDay may look in your notes for words from your question, on this device, and send up to 8 that match: their titles and projects, and a short snippet only with AI help with notes on.', 'Never a private note, or a note in a private project — not even whether one matched.'] });
+    if (across) all.push({ label: 'If it needs to: across MyDay', lines: ['Ask MyDay may look across MyDay for words from your question, on this device — your tasks (titles, notes and steps), projects (names, summaries, milestones and decisions), note titles (their text only with AI help with notes on), the calendar and your study (your courses, topics, books, and the course lessons and words) — and send up to 12 that match: what each is, its name and where it is. Never what one says; its link stays here.',
+      'Never anything private — not even whether it matched — nor Finance, Health, who a task waits on, research, case records, your kept words, revision cards, answers or your notebook.'] });
+    else all.push({ label: 'If it needs to: your notes', lines: ['Ask MyDay may look in your notes for words from your question, on this device, and send up to 8 that match: their titles and projects, and a short snippet only with AI help with notes on.', 'Never a private note, or a note in a private project — not even whether one matched.'] });
     if (c.can.includes('day')) all.push({ label: 'If it needs to: a day', lines: ['Or at one day you ask about (from a week ago to two months ahead): its plan’s tasks, what’s due, busy times by kind only (never an appointment’s name), free time and energy.', 'Never a private project’s tasks; its appointments only as busy time.'] });
     if (projects) all.push({ label: 'If it needs to: one of your projects', lines: ['Or at one of your open projects you ask about by name: what its own page sends — its name, summary, stage, tasks, milestones and note titles (their text only with AI help with notes on).', 'Never a private project, or a private note of it; never its outcome, what counts as finished or where you left off.'] });
     if (c.can.includes('decisions')) all.push({ label: 'If it needs to: your open decisions', lines: ['Or at your open decisions (across your open projects, or one you name): each one’s question and options, which options have no pros or cons yet (never what any say) and the day it was opened; and what a business idea still has to check.', 'Never a private project’s; never your reasons, earlier choices or what you found.'] });

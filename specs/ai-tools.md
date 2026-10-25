@@ -133,3 +133,21 @@ project links it, the project's name or the "For your project" line.
 10. **Steps reach Ask MyDay** (25 Oct 2026, with myday-51's steps and "Starts after"): on a task's page its steps go
     (words and done) and a breakdown fills its checklist; a project's page and the project lookup send each task's
     steps (words included) and what it starts after, by title. Never a private project's.
+11. **"Look across MyDay" replaces "Search your notes"** (25 Oct 2026, after Search everywhere, 1.87.0): Ask MyDay's
+    seventh lookup reuses Search everywhere's matching through the privacy filter. It searches only:
+    - **tasks and projects:** task titles, notes and steps; project names and summaries, milestones and decisions
+      (question and options);
+    - **notes:** titles — their text only with "AI help with notes" on, as "Search your notes" did;
+    - **the calendar:** appointment and work titles, with their day and time;
+    - **study:** your own courses and their tasks, topics, books by title and author, and the Arabic and Cybersecurity
+      modules, lessons and course words.
+
+    Each match sends **its name, kind and where** (a project, a course, a module, a day and time) and whether it's done,
+    paused or past — never its text — with a reference ("r1"), and the answer cites the references; the links stay on
+    the device and show under the answer. It matches only on what may be sent, so a match never hints at anything held
+    back. Never: anything private, Finance, Health, who a task waits on, a deadline's source or who checked it, a case's
+    records, research, files, links kept on a project, outcome or where you left off, your kept words (Keep a word
+    promises they're never sent), revision cards, check-ins, session or notebook answers, the portfolio, or "Needs
+    revision" notes. The new app offers it instead of "Search your notes"; the server keeps "Search your notes" for an
+    older app. Approvals: the live evaluation (up to US$0.07, US$0.12 with a fix run), the server deploy (Ask
+    instructions v24), and publishing when good.

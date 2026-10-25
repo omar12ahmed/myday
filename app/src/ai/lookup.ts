@@ -4,11 +4,13 @@
 // apostrophe don't matter). A note's text is searched, and a short snippet of it sent, only with "AI help with notes" on;
 // otherwise only titles. Private notes, and notes in a private project, are never sent — not even how many matched: that
 // count (`leftOut`) stays on this device, for the panel's "1 private note left out".
-import { ASK_LIMITS as L, DAY_KINDS, type AskDayLookup, type AskDecisionsLookup, type AskLookup, type AskNotesLookup, type AskProjectLookup, type AskStudyLookup, type AskWaitingLookup } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
-import { parseKey, prettyDate, shift, todayKey } from '../data/dates';
+import { ASK_LIMITS as L, DAY_KINDS, type AskDayLookup, type AskDecisionsLookup, type AskLookup, type AskNotesLookup, type AskProjectLookup, type AskSearchLookup, type AskStudyLookup, type AskWaitingLookup, type SEARCH_KINDS, type SEARCH_STATES } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
+import { parseKey, prettyDate, shift, shortDate, todayKey } from '../data/dates';
+import { lessonHref } from '../data/cybersecurity/types';
+import type { CourseIndex } from '../data/searchAll';
 import { noteName } from '../data/notes';
 import { excerptOf, fold, wordsOf } from '../data/projectSearch';
-import { onTodaysPlan } from '../data/tasks';
+import { isDone, onTodaysPlan } from '../data/tasks';
 import type { DateKey, MyDayData, Note } from '../data/types';
 import { isBusiness } from '../data/businessModel';
 import { dueIds } from '../data/study/queue';
@@ -39,6 +41,79 @@ export function notesLookup(data: MyDayData, query: string): { lookup: AskNotesL
     },
     leftOut: all.length - shown.length,
   };
+}
+
+// "Look across MyDay" (v24, the owner's choices of 25 Oct 2026; specs/ai-tools.md §6.11): Search everywhere's matching,
+// through the privacy rules, in only what may be sent — so a match never hints at anything held back (who a task waits
+// on, a deadline's source, a case's records, research, a project's links, outcome or where you left off, your kept
+// words, revision cards, answers, the notebook, Finance, Health). It searches task titles, notes and steps; project
+// names and summaries, milestones and decisions (question and options); note titles (their text only with "AI help with
+// notes" on); appointment and work titles; your own courses and their tasks, topics, books (title and author), and the
+// two courses' modules, lessons and course words (`courses`, loaded when it's needed). Each match goes as its kind,
+// name, where it is and its state, with a reference ("r1"…) the answer cites; its link stays here (`hrefs`). In a fixed
+// order (tasks, projects, notes, calendar, study; open things first), up to 12. `leftOut` counts the private things that
+// matched — for the panel's "2 private things left out" only, never sent.
+type SearchKind = typeof SEARCH_KINDS[number];
+type SearchState = typeof SEARCH_STATES[number];
+export function searchLookup(data: MyDayData, query: string, courses: CourseIndex | null, today: DateKey = todayKey()): { lookup: AskSearchLookup; leftOut: number; hrefs: Record<string, string> } {
+  const reach = aiReach(data), withText = !!data.patterns.prefs.aiNotes;
+  const q = cut(query.trim().replace(/\s+/g, ' '), L.lookupQueryChars), words = wordsOf(q);
+  const has = (texts: (string | null | undefined)[]) => { const hay = fold(texts.filter(Boolean).join('\n')); return words.length > 0 && words.every(w => hay.includes(w)); };
+  type Hit = { kind: SearchKind; title: string; where: string | null; state: SearchState | null; href: string; rank: number };
+  const hits: Hit[] = [];
+  let held = 0;
+  const add = (ok: boolean, h: Omit<Hit, 'rank' | 'state'> & { state?: SearchState | null }) => { if (ok) hits.push({ state: null, ...h, rank: h.state ? (h.state === 'paused' ? 1 : 2) : 0 }); else held++; };
+  const enc = encodeURIComponent, projects = new Map(data.projects.items.map(p => [p.id, p]));
+  const inProject = (id?: string | null) => { const p = id ? projects.get(id) : undefined; return p ? `in “${p.title}”` : null; };
+  // Tasks: title, notes and steps (never who it waits on, or a deadline's source).
+  for (const t of data.tasks.items) {
+    if (!has([t.title, t.notes, ...(t.steps ?? []).map(s => s.text)])) continue;
+    add(reach.task(t), { kind: 'task', title: t.title, where: inProject(t.projectId), href: `#today/tasks/${enc(t.id)}`, state: t.letGoOn ? 'let go' : isDone(data, t) ? 'done' : null });
+  }
+  // Projects: name and summary, milestones, decisions (question and options).
+  for (const p of data.projects.items) {
+    const ok = reach.project(p), state: SearchState | null = p.status === 'paused' ? 'paused' : p.status === 'done' ? 'done' : null, at = `#projects/p/${enc(p.id)}`;
+    if (has([p.title, p.summary])) add(ok, { kind: 'project', title: p.title, where: null, href: at, state });
+    for (const m of p.milestones ?? []) if (has([m.title])) add(ok, { kind: 'milestone', title: m.title, where: `in “${p.title}”`, href: `${at}/milestones`, state: m.reached ? 'done' : state });
+    for (const d of p.decisions ?? []) if (has([d.question, ...d.options.map(o => o.text)])) add(ok, { kind: 'decision', title: d.question, where: `in “${p.title}”`, href: `${at}/decisions`, state });
+  }
+  // Notes: titles (their text, and an untitled note's first line, only with AI help with notes on).
+  for (const n of data.notes.items) {
+    if (!has(withText ? [n.title, n.text] : [n.title])) continue;
+    add(reach.note(n), { kind: 'note', title: withText ? noteName(n) : n.title.trim() || 'Untitled note', where: inProject(n.projectId), href: `#projects/notes/${enc(n.id)}` });
+  }
+  // The calendar: appointment and work titles, with their day and time.
+  for (const c of data.commitments) {
+    if (!has([c.title])) continue;
+    const day = c.start.slice(0, 10);
+    add(reach.appointment(c), { kind: c.kind === 'work' ? 'work' : 'appointment', title: c.title, where: `${shortDate(day)}, ${c.start.slice(11, 16)}`, href: `#calendar/${day}`, state: day < today ? 'past' : null });
+  }
+  // Study: your own courses and their tasks (not the guided Cybersecurity course: its lessons are found as lessons),
+  // topics, books, and the two courses' modules, lessons and words.
+  for (const tp of data.study.topics ?? []) if (has([tp.title])) add(true, { kind: 'topic', title: tp.title, where: null, href: `#study/topic/${enc(tp.id)}` });
+  for (const st of data.study.stages) for (const c of st.courses) {
+    if (c.id.startsWith('cyber:1:')) continue;
+    const arch: SearchState | null = c.archived ? 'archived' : null;
+    if (has([c.title])) add(true, { kind: 'course', title: c.title, where: null, href: `#study/course/${enc(c.id)}`, state: arch });
+    for (const m of c.modules) for (const s of m.sections) for (const t of s.tasks) {
+      if (has([t.title])) add(true, { kind: 'study task', title: t.title, where: `in “${c.title}”`, href: `#study/task/${enc(t.id)}`, state: t.done ? 'done' : arch });
+    }
+  }
+  for (const b of data.reading.books) if (has([b.title, b.author])) add(true, { kind: 'book', title: b.title, where: b.author.trim() || null, href: '#study/reading', state: b.finishedOn ? 'finished' : null });
+  if (courses) {
+    const arModule = new Map(courses.arabic.modules.map(m => [m.id, m.name])), cyModule = new Map(courses.cyber.modules.map(m => [m.id, m.name]));
+    for (const m of courses.arabic.modules) if (has([m.name, m.purpose])) add(true, { kind: 'module', title: m.name, where: 'Arabic', href: `#study/arabic/${enc(m.id)}` });
+    for (const l of courses.arabic.lessons) if (has([l.title])) add(true, { kind: 'lesson', title: l.title, where: `Arabic · ${arModule.get(l.moduleId) ?? 'course'}`, href: `#study/arabic/${enc(l.id)}` });
+    for (const m of courses.cyber.modules) if (has([m.name, m.purpose])) add(true, { kind: 'module', title: m.name, where: 'Cybersecurity', href: lessonHref(m.id) });
+    for (const l of courses.cyber.lessons) if (has([l.title])) add(true, { kind: 'lesson', title: l.title, where: `Cybersecurity · ${cyModule.get(l.moduleId) ?? 'course'}`, href: lessonHref(l.id) });
+    for (const w of courses.arabic.words ?? []) if (has([w.ar, w.meaning])) add(true, { kind: 'course word', title: `${w.ar} — ${w.meaning}`, where: 'Arabic', href: w.lessonId ? `#study/arabic/${enc(w.lessonId)}` : '#study/arabic/vocabulary' });
+  }
+  const order: SearchKind[][] = [['task'], ['project', 'milestone', 'decision'], ['note'], ['appointment', 'work'], ['topic', 'course', 'study task', 'book', 'module', 'lesson', 'course word']];
+  const section = (k: SearchKind) => order.findIndex(g => g.includes(k));
+  const sorted = hits.map((h, i) => [h, i] as const).sort((a, b) => section(a[0].kind) - section(b[0].kind) || a[0].rank - b[0].rank || a[1] - b[1]).map(([h]) => h);
+  const shown = sorted.slice(0, L.lookupSearch), hrefs: Record<string, string> = {};
+  const found = shown.map((h, i) => { const ref = `r${i + 1}`; hrefs[ref] = h.href; return { ref, kind: h.kind, title: cut(h.title, L.titleChars), where: h.where ? cut(h.where, L.searchWhereChars) : null, state: h.state }; });
+  return { lookup: { tool: 'search', query: q, found, total: hits.length, titlesOnly: !withText }, leftOut: held, hrefs };
 }
 
 // "Your day" (v18): one day as the app sees it — from a week ago to two months ahead (null outside that). Its plan, with
@@ -167,6 +242,12 @@ export function lookupLine(l: AskLookup, held: number, projectTitle?: string): s
     const parts = [t.length ? `${t.length === 1 ? 'one task' : `${t.length} tasks`}${done ? ` (${done} done)` : ''}` : 'no tasks yet',
       ...(m ? [m === 1 ? 'one milestone' : `${m} milestones`] : []), ...(n ? [n === 1 ? 'one note' : `${n} notes`] : [])];
     return `Looked at your project “${l.project.title}”: ${parts.join(', ')}${held ? ` — ${held === 1 ? 'one private note' : `${held} private notes`} left out` : ''}.`;
+  }
+  if (l.tool === 'search') {
+    const n = l.total;
+    const found = n ? `${n === 1 ? 'one thing' : `${n} things`}${n > l.found.length ? ` (the first ${l.found.length} sent)` : ''}` : held ? 'none that could be sent' : 'nothing matched';
+    const extra = [held ? `${held === 1 ? 'one private thing' : `${held} private things`} left out` : '', l.titlesOnly ? 'notes by title only, as AI help with notes is off' : ''].filter(Boolean);
+    return `Looked across MyDay for “${l.query}”: ${found}${extra.length ? ` — ${extra.join('; ')}` : ''}.`;
   }
   const n = l.found;
   const found = n ? `${n === 1 ? 'one note' : `${n} notes`}${n > l.notes.length ? ` (the newest ${l.notes.length} sent)` : ''}` : held ? 'none that could be sent' : 'nothing matched';

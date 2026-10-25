@@ -42,7 +42,8 @@ export { askContext, askPage, askPreview, askSlice, sendsFor } from '../app/src/
 // What of your MyDay may reach AI help: the privacy rules every request follows (one place).
 export { aiReach } from '../app/src/ai/reach';
 // Ask MyDay's lookups: searching your notes on the device (specs/ai-tools.md §3).
-export { dayLookup, decisionsLookup, lookupLine, notesLookup, projectLookup, studyLookup, waitingLookup } from '../app/src/ai/lookup';
+export { dayLookup, decisionsLookup, lookupLine, notesLookup, projectLookup, searchLookup, studyLookup, waitingLookup } from '../app/src/ai/lookup';
+export { courseIndex } from '../app/src/search/courseIndex';
 export { addAskItems, applyAskChanges, applyAskEdit, checkAskReply, countWords, undoAsk, undoAskChanges } from '../app/src/ai/ask';
 
 // ---------- Memory-only storage ----------
