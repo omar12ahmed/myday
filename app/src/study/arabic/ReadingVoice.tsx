@@ -15,6 +15,8 @@ export function ReadingVoice({ id, full, plain, vowels, prepared }: { id: string
   const all = state.sequence === group;
   const keyFor = (i: number) => group + ':' + i;
   const failed = parts?.some((_, i) => state.failed === keyFor(i));
+  // A text the course gives without vowel marks is voiced from MyDay's own vowelled copy (content/teaching/arabic/voice-scripts.json).
+  const scripted = parts?.some(p => /[\u064B-\u0652]/.test(p.spoken) && !/[\u064B-\u0652]/.test(p.text)) ?? false;
   return <>
     {complete && <Button inline variant="ghost" className="mb-3" data-action="ar-read-all" data-ar-clip={group}
       data-state={all ? state.loading ? 'loading' : 'playing' : 'idle'} aria-pressed={all}
@@ -45,7 +47,7 @@ export function ReadingVoice({ id, full, plain, vowels, prepared }: { id: string
       })}
     </div>
     {failed && <p role="status" className="text-sm text-fg-2">Couldn’t play it. The first time, it needs a connection.</p>}
-    {voiced ? <p className="text-xs text-fg-2 mt-2" data-ar-voice-label="">{voiceLabel} Tap a sentence to hear it. Slower playback: Study → Arabic → Vocabulary.</p>
+    {voiced ? <p className="text-xs text-fg-2 mt-2" data-ar-voice-label="">{voiceLabel}{scripted && <span data-ar-voice-script=""> It reads MyDay’s vowelled copy of this text; the page keeps the course’s spelling without marks.</span>} Tap a sentence to hear it. Slower playback: Study → Arabic → Vocabulary.</p>
       : <p className="text-sm text-fg-2 flex gap-2 items-start mb-0"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />No recording included. Read it aloud yourself, or ask a fluent speaker to.</p>}
   </>;
 }

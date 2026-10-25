@@ -1,6 +1,6 @@
 // Text boundaries shared by authoring, the audio audit and the app's generated reading list.
 // The curriculum stays untouched. Dialogue names remain on screen but are not spoken.
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 export const LETTER = /[\u0621-\u063F\u0641-\u064A\u0671]/g; // U+0640 is a joining mark, not a letter.
 export const letters = s => (s.match(LETTER) || []).length;
@@ -32,15 +32,35 @@ export const markedThrough = s => typeof s === 'string' && s.split(/\s+/).filter
 export const voiceable = s => typeof s === 'string' && !s.includes('ـ') && /[ً-ِْٰ]/.test(s) && letters(s) >= 2 && vowelling(s) === 'full' && kind(s) !== 'letters';
 
 const sentences = line => line.trim().split(/(?<=[.؟!?])\s+/u).filter(Boolean);
+// The letters alone, every vowel mark taken off.
+export const unmarked = s => s.replace(/[\u064B-\u0652\u0670]/g, '');
+// Voice scripts (content/teaching/arabic/voice-scripts.json, MyDay's own; owner's decision, 25 October 2026): a fully
+// vowelled copy of a passage the course gives without marks, for the voice only. The page still shows the course's
+// text. Each sentence's script must have exactly that sentence's letters, so a script adds marks and never changes a word.
+const voiceScripts = root => {
+  const at = new URL('content/teaching/arabic/voice-scripts.json', root);
+  return existsSync(at) ? JSON.parse(readFileSync(at, 'utf8')) : {};
+};
 export function readingPassages(root) {
   const course = JSON.parse(readFileSync(new URL('content/arabic-fusha/MyDay_Arabic_Fusha_Curriculum.json', root), 'utf8'));
-  return Object.fromEntries(course.assets.filter(a => a.type === 'original_text' && voiceable(a.text_ar)).map(a => {
-    const full = a.text_ar.split('\n'), plain = (a.text_unvowelled || a.text_ar).split('\n');
+  const scripts = voiceScripts(root).readings ?? {};
+  for (const id of Object.keys(scripts)) {
+    const a = course.assets.find(x => x.id === id && x.type === 'original_text');
+    if (!a) throw new Error(`Arabic voice script ${id}: the course has no reading text with that id`);
+    if (voiceable(a.text_ar)) throw new Error(`Arabic voice script ${id}: the course already gives this text with vowel marks`);
+  }
+  return Object.fromEntries(course.assets.filter(a => a.type === 'original_text' && (voiceable(a.text_ar) || scripts[a.id])).map(a => {
+    const full = a.text_ar.split('\n'), plain = (a.text_unvowelled || a.text_ar).split('\n'), voice = (scripts[a.id] ?? a.text_ar).split('\n');
     if (full.length !== plain.length) throw new Error(`Arabic reading ${a.id}: vowelled and plain lines do not match`);
+    if (voice.length !== full.length) throw new Error(`Arabic voice script ${a.id}: its lines do not match the course text's`);
     const parts = full.flatMap((line, i) => {
-      const texts = sentences(line), bare = sentences(plain[i]);
+      const texts = sentences(line), bare = sentences(plain[i]), said = sentences(voice[i]);
       if (texts.length !== bare.length) throw new Error(`Arabic reading ${a.id}: vowelled and plain sentences do not match on line ${i + 1}`);
-      return texts.map((text, j) => ({ text, plain: bare[j], spoken: text.replace(/^[^:：]+[:：]\s*/u, ''), line: i }));
+      if (said.length !== texts.length) throw new Error(`Arabic voice script ${a.id}: its sentences do not match the course text's on line ${i + 1}`);
+      return texts.map((text, j) => {
+        if (unmarked(said[j]) !== unmarked(text)) throw new Error(`Arabic voice script ${a.id}: line ${i + 1}, sentence ${j + 1} has other letters than the course text`);
+        return { text, plain: bare[j], spoken: said[j].replace(/^[^:：]+[:：]\s*/u, ''), line: i };
+      });
     });
     return [a.id, parts];
   }));

@@ -65,9 +65,11 @@ if (process.argv.includes('--rounds')) {
   const pick = (values, whole) => [...new Set(values.filter(v => typeof v === 'string').flatMap(v => whole ? [v.trim()] : arabicRuns(v).map(m => m.text.trim())))]
     .filter(voiceable);
   const passages = readingPassages(root);
+  // A reading text the course gives without marks is voiced from MyDay's vowelled script (voice-scripts.json), if it has one.
+  const unvowelled = course.assets.filter(a => a.text_ar && vowelling(a.text_ar) !== 'full'), scripted = unvowelled.filter(a => passages[a.id]);
   const rounds = [
     ['Round two: the lessons’ headline examples', pick(course.lessons.map(l => l.example?.text_ar), true)],
-    [`Round three: the ${Object.keys(passages).length} vowelled reading texts, by sentence`, [...new Set(Object.values(passages).flatMap(parts => parts.map(p => p.spoken)))]],
+    [`Round three: the ${Object.keys(passages).length} reading texts, by sentence (${scripted.length} read from MyDay’s vowelled scripts)`, [...new Set(Object.values(passages).flatMap(parts => parts.map(p => p.spoken)))]],
     ['Round three: teaching examples, practice and solutions', pick(Object.values(teaching.lessons).flatMap(l => [l.example, l.practice, l.solution, l.explanation]), false)],
     ['Round three: the sound pairs and the word families’ forms', pick([...course.assets.flatMap(a => (a.pairs || []).flatMap(p => [p.a, p.b])), ...families.families.flatMap(f => [f.pattern_en, ...Object.values(f.word_notes || {}), ...(f.also_in_examples || []).flatMap(x => [x.form_ar, x.note_en])])], false)],
     ['Round three: lesson checks and answers, voiced only once the answer is shown', pick([...course.assessments.flatMap(a => (a.questions || []).map(q => q.prompt)), ...keys.answer_keys.map(k => k.expected_answer)], false)],
@@ -82,7 +84,7 @@ if (process.argv.includes('--rounds')) {
   const held = everything.filter(p => !seen.has(p));
   const why = p => p.includes('ـ') ? 'an affix or unfinished word' : kind(p) === 'letters' ? 'a letter drill' : vowelling(p) === 'none' ? 'no vowel marks' : vowelling(p) === 'partial' ? 'partly vowelled' : 'one or two letters';
   const counts = held.reduce((a, p) => (a[why(p)] = (a[why(p)] || 0) + 1, a), {});
-  console.log(`\nHeld back: ${held.length} pieces (${Object.entries(counts).map(([k, v]) => `${v} ${k}`).join(', ')}), plus the ${course.assets.filter(a => a.text_ar && vowelling(a.text_ar) !== 'full').length} reading texts without vowel marks.`);
+  console.log(`\nHeld back: ${held.length} pieces (${Object.entries(counts).map(([k, v]) => `${v} ${k}`).join(', ')}), plus the ${unvowelled.length - scripted.length} reading texts without vowel marks or a script.`);
   process.exit(0);
 }
 console.log('| Field | Shown | Pieces | Distinct | Characters | Letters · word · phrase · sentence · passage | Full · partial · none |');
