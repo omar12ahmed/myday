@@ -1,6 +1,6 @@
 {
  "about": "Course words: an authored word list per Arabic lesson (MyDay's own, not part of the supplied package), each word with its meaning, root, an example and a short note, beside the package's starter words (listed by id under \"seed\", not repeated). Fully vowelled. Each module is checked by the owner before it ships.",
- "status": "modules 4–7: checked by the owner and voiced; modules 8–10: draft, awaiting the cross-check and the owner's check",
+ "status": "modules 4–7: checked by the owner and voiced; modules 8–10: draft, cross-checked twice, awaiting the owner's check",
  "version": "1.1",
  "lessons": {
   "lesson.arabic-greetings-address": {
@@ -1780,7 +1780,7 @@
      "root_reading": "th-l-th",
      "example_ar": "الدَّرْسُ يَوْمَ الثُّلَاثَاءِ.",
      "example_meaning_en": "The lesson is on Tuesday.",
-     "note": "Literally “the day of the three”: from the root of ثَلَاثَة."
+     "note": "From the root of ثَلَاثَة, “three”: the third day of the week."
     },
     {
      "id": "lexeme.arabic-clock-calendar-10",
@@ -2106,9 +2106,9 @@
      "part_of_speech": "adverb",
      "root_ar": "م-ر-ر",
      "root_reading": "m-r-r",
-     "example_ar": "أَسْمَعُ الْمُحَادَثَةَ مَرَّتَيْنِ.",
+     "example_ar": "أَسْتَمِعُ إِلَى الْمُحَادَثَةِ مَرَّتَيْنِ.",
      "example_meaning_en": "I listen to the conversation twice.",
-     "note": "“Two times”: مَرَّة, “a time”, with the ending for two."
+     "note": "“Two times”: مَرَّة, “a time”, with the ending for two. أَسْتَمِعُ إِلَى is “I listen to”."
     },
     {
      "id": "lexeme.arabic-a1-listening-3",
@@ -2171,7 +2171,7 @@
      "root_reading": "f-t-ḥ",
      "example_ar": "الْمَكْتَبَةُ مَفْتُوحَةٌ.",
      "example_meaning_en": "The library is open.",
-     "note": "For a feminine noun: مَفْتُوحَة, as here. The root of مِفْتَاح, “key”."
+     "note": "For a feminine noun: مَفْتُوحَة, as here. The same root as مِفْتَاح, “key”."
     },
     {
      "id": "lexeme.arabic-a1-reading-2",
@@ -2209,7 +2209,7 @@
     {
      "id": "lexeme.arabic-a1-reading-5",
      "form_ar": "مَمْنُوع",
-     "meaning_en": "not allowed",
+     "meaning_en": "not allowed, forbidden",
      "part_of_speech": "adjective",
      "root_ar": "م-ن-ع",
      "root_reading": "m-n-ʿ",
@@ -2390,7 +2390,7 @@
      "root_reading": "ʿ-l-m",
      "example_ar": "أَتَعَلَّمُ الْعَرَبِيَّةَ.",
      "example_meaning_en": "I am learning Arabic.",
-     "note": "The root of مُعَلِّم, “teacher”."
+     "note": "The same root as مُعَلِّم, “teacher”."
     },
     {
      "id": "lexeme.arabic-a1-portfolio-2",
@@ -2520,7 +2520,7 @@
      "root_reading": "ʾ-k-l",
      "example_ar": "أَكَلْنَا فِي الْبَيْتِ.",
      "example_meaning_en": "We ate at home.",
-     "note": "The past of آكُلُ, “I eat”."
+     "note": "The same verb as آكُلُ, “I eat”; “I ate” is أَكَلْتُ."
     },
     {
      "id": "lexeme.arabic-past-suffixes-7",
@@ -2532,6 +2532,17 @@
      "example_ar": "الْآنَ فَهِمْتُ.",
      "example_meaning_en": "Now I understand.",
      "note": "Arabic often uses the past here: “now I've understood”."
+    },
+    {
+     "id": "lexeme.arabic-past-suffixes-8",
+     "form_ar": "دَرَسْتِ",
+     "meaning_en": "you studied (to a woman)",
+     "part_of_speech": "verb",
+     "root_ar": "د-ر-س",
+     "root_reading": "d-r-s",
+     "example_ar": "أَيْنَ دَرَسْتِ أَمْسِ؟",
+     "example_meaning_en": "Where did you study yesterday?",
+     "note": "ـتِ at the end: “you (a woman)”; ـتَ is “you (a man)”, ـتُ is “I”."
     }
    ]
   },
@@ -2557,7 +2568,7 @@
     {
      "id": "lexeme.arabic-past-questions-2",
      "form_ar": "حَدَثَ",
-     "meaning_en": "happened",
+     "meaning_en": "it happened",
      "part_of_speech": "verb",
      "root_ar": "ح-د-ث",
      "root_reading": "ḥ-d-th",
@@ -2607,7 +2618,7 @@
      "root_reading": "z-w-r",
      "example_ar": "زُرْتُ صَدِيقِي أَمْسِ.",
      "example_meaning_en": "I visited my friend yesterday.",
-     "note": "“He visited” is زَارَ: the long ā shortens when an ending like ـتُ follows."
+     "note": "“He visited” is زَارَ: the long ā becomes a short u when an ending like ـتُ follows."
     }
    ]
   },
@@ -2660,14 +2671,14 @@
     },
     {
      "id": "lexeme.arabic-kana-background-5",
-     "form_ar": "الْجَوّ",
-     "meaning_en": "the weather",
+     "form_ar": "جَوّ",
+     "meaning_en": "weather; air",
      "part_of_speech": "noun",
      "root_ar": "ج-و-و",
      "root_reading": "j-w-w",
      "example_ar": "الْجَوُّ بَارِدٌ الْيَوْمَ.",
      "example_meaning_en": "The weather is cold today.",
-     "note": "In this sense it's always with the article."
+     "note": "Usually said with the article: الْجَوُّ بَارِدٌ, “the weather is cold”."
     },
     {
      "id": "lexeme.arabic-kana-background-6",
@@ -2771,7 +2782,7 @@
      "id": "lexeme.arabic-story-connectors-6",
      "form_ar": "عِنْدَمَا",
      "meaning_en": "when (as a link)",
-     "part_of_speech": "particle",
+     "part_of_speech": "connector",
      "root_ar": null,
      "root_reading": null,
      "example_ar": "عِنْدَمَا وَصَلْتُ، كَانَ الْبَابُ مُغْلَقًا.",
@@ -2797,7 +2808,7 @@
     {
      "id": "lexeme.arabic-story-retell-2",
      "form_ar": "حَكَى",
-     "meaning_en": "told (a story)",
+     "meaning_en": "he told (a story)",
      "part_of_speech": "verb",
      "root_ar": "ح-ك-ي",
      "root_reading": "ḥ-k-y",
@@ -2936,7 +2947,7 @@
      "root_reading": null,
      "example_ar": "لَمْ أَذْهَبْ إِلَى الْعَمَلِ.",
      "example_meaning_en": "I didn't go to work.",
-     "note": "The verb after it ends in sukūn: أَذْهَبْ."
+     "note": "The verb after it ends in sukūn: أَذْهَبْ. You may also meet مَا before a past verb with the same meaning: مَا ذَهَبْتُ."
     },
     {
      "id": "lexeme.arabic-negation-system-2",
@@ -2954,8 +2965,8 @@
      "form_ar": "لَيْسَ",
      "meaning_en": "is not (he, it)",
      "part_of_speech": "verb",
-     "root_ar": null,
-     "root_reading": null,
+     "root_ar": "ل-ي-س",
+     "root_reading": "l-y-s",
      "example_ar": "هُوَ لَيْسَ هُنَا.",
      "example_meaning_en": "He isn't here.",
      "note": "For “she”: لَيْسَتْ."
@@ -2965,8 +2976,8 @@
      "form_ar": "لَسْتُ",
      "meaning_en": "I am not",
      "part_of_speech": "verb",
-     "root_ar": null,
-     "root_reading": null,
+     "root_ar": "ل-ي-س",
+     "root_reading": "l-y-s",
      "example_ar": "لَسْتُ مُتْعَبًا.",
      "example_meaning_en": "I'm not tired.",
      "note": "What you are not takes -an: مُتْعَبًا."
@@ -2985,8 +2996,8 @@
     {
      "id": "lexeme.arabic-negation-system-6",
      "form_ar": "شَيْئًا",
-     "meaning_en": "anything",
-     "part_of_speech": "noun",
+     "meaning_en": "anything (after a negative)",
+     "part_of_speech": "chunk",
      "root_ar": "ش-ي-أ",
      "root_reading": "sh-y-ʾ",
      "example_ar": "لَمْ أَفْهَمْ شَيْئًا.",
@@ -3220,7 +3231,7 @@
      "root_reading": "r-b-ʿ",
      "example_ar": "الدَّرْسُ يَوْمَ الْأَرْبِعَاءِ.",
      "example_meaning_en": "The lesson is on Wednesday.",
-     "note": "Literally “the day of the four”: from the root of أَرْبَعَة."
+     "note": "From the root of أَرْبَعَة, “four”: the fourth day of the week."
     },
     {
      "id": "lexeme.arabic-plans-dialogue-7",
@@ -3232,6 +3243,17 @@
      "example_ar": "نَلْتَقِي صَبَاحًا بَدَلًا مِنَ الْمَسَاءِ.",
      "example_meaning_en": "We'll meet in the morning instead of the evening.",
      "note": "مِنْ becomes مِنَ before the article."
+    },
+    {
+     "id": "lexeme.arabic-plans-dialogue-8",
+     "form_ar": "إِذَنْ",
+     "meaning_en": "so, then",
+     "part_of_speech": "particle",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "إِذَنْ، نَلْتَقِي يَوْمَ الْأَرْبِعَاءِ.",
+     "example_meaning_en": "So we meet on Wednesday.",
+     "note": "Sums up what's been agreed."
     }
    ]
   }
