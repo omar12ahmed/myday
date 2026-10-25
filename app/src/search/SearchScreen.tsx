@@ -3,6 +3,7 @@ import { Card } from '../components/Card';
 import { Field, TextInput } from '../components/Field';
 import { Note } from '../components/parts';
 import { todayKey } from '../data/dates';
+import { openOnArrival } from '../data/projectSections';
 import { foundCount, searchEverywhere, type CourseIndex, type Found } from '../data/searchAll';
 import type { MyDayData } from '../data/types';
 
@@ -89,7 +90,11 @@ function Hit({ f }: { f: Found }) {
   const excerpt = f.excerpt && f.excerpt !== f.where ? f.excerpt : ''; // (a kept word's meaning is already its "where")
   return (
     <li className="border-t border-outline first:border-t-0" data-s="search-hit" data-kind={f.kind}>
-      <a href={f.href} onClick={e => { if (f.focus && !e.metaKey && !e.ctrlKey && !e.shiftKey && e.button === 0) focusWhenThere(f.focus); }}
+      <a href={f.href} onClick={e => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return; // (opening it elsewhere: just the link)
+        if (f.opens) openOnArrival(f.opens.projectId, f.opens.section); // a link in a folded or hidden Resources card
+        if (f.focus) focusWhenThere(f.focus);
+      }}
         className="block min-h-11 py-2.5 text-fg no-underline hover:bg-surface-2 rounded-tile -mx-2 px-2">
         <span className="block text-sm text-fg-2 break-words" dir="auto">{meta}</span>
         {/* An Arabic word reads right to left but sits where every other title starts. */}

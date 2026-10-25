@@ -11,6 +11,7 @@ import { lessonHref } from './cybersecurity/types';
 import { shortDate } from './dates';
 import { categoryName, noteName } from './notes';
 import { CAT_LABEL } from './plan';
+import type { Section } from './projectSections';
 import { privateProjectIds } from './projects';
 import { excerptOf, fold, SEARCH_KIND_LABEL, searchProject, wordsOf } from './projectSearch';
 import { isDone, listName } from './tasks';
@@ -27,6 +28,7 @@ export const PER_SECTION = 50;
 export interface Found {
   kind: string; id: string; title: string; where: string; excerpt: string; href: string;
   tags: string[]; focus?: string; lang?: 'ar';
+  opens?: { projectId: string; section: Section }; // a project's card to open for the visit, even folded or hidden (a link)
   rank: number; // 0 open, 1 paused, 2 done, let go, archived, finished or past (the order within a section)
 }
 export interface FoundSection { section: SearchSection; label: string; items: Found[]; more: number }
@@ -92,7 +94,7 @@ export function searchEverywhere(data: MyDayData, query: string, courses: Course
       // focusItem: the head, the one page's answers, or the row with its data-id).
       const focus = h.kind === 'about' ? '#projectHead' : h.kind === 'model' && h.id === 'answers' ? '#pjModelH' : `[data-id="${attr(h.id)}"]`;
       found.projects.push({ kind: h.kind === 'about' ? 'Project' : SEARCH_KIND_LABEL[h.kind], id: `${p.id}:${h.kind}:${h.id}`, title: h.title, where: h.kind === 'about' ? '' : `in ${quote(p.title)}`,
-        excerpt: h.excerpt, href: h.href, tags: state ? [state] : [], rank, focus });
+        excerpt: h.excerpt, href: h.href, tags: state ? [state] : [], rank, focus, ...(h.kind === 'resource' ? { opens: { projectId: p.id, section: 'resources' as const } } : {}) });
     }
   }
 
