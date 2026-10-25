@@ -981,6 +981,20 @@ fields). The conflict summary says "waiting". Who you're waiting on is never sen
 doesn't name them. To keep one meaning of "waiting", the weekly review's step 2 is now **What needs you** ("Nothing
 needs you right now — lovely"; a past-dated task "was planned for …").
 
+**Steps inside a task, and "Starts after" (unreleased; `specs/projects-steps.md`):** a task's page has a **Steps**
+card: a short checklist ("Measure the wall", "Order the boards"; up to 30) you tick as you go, with **Change steps** to
+edit, reorder and remove them. The task stays the one thing you plan; wherever it's listed (Tasks, Today's Due today
+and plan, a project's next step) it says "2 of 5 steps". Once every step is ticked the card asks "All 5 steps done —
+mark the task done?" and one tap does it; nothing happens by itself. On a project's task, a **Starts after** card lets
+you choose the project's other tasks still to do that it can't start before (up to 10; never one that starts after it,
+so no circles). Until those are done or let go it says "Starts after: Order the boards", MyDay doesn't pick it as the
+project's next step or offer it on Today, and it isn't "stuck"; you can still do it any time, and a step you chose
+stays chosen. "Why this?" says so ("“Build the frame” comes first, but it starts after “Order the boards”."). Not
+"waiting": that word stays for waiting on someone or something (the owner's choice). Deleting a task, or moving it to
+another project, frees the ones that started after it. Saved data: optional `steps` and `after` on a task, in its
+existing record (no schema, migration or database change; earlier releases keep unknown task fields). A sync conflict
+shows the steps. Never sent to AI in this release.
+
 **Searching one project (1.52.0; `specs/projects-search.md`):** every project page has "Search this project"
 under its tabs. While there's something in it, the results show above the tab, which stays as it was but hidden (so
 nothing you were typing there is lost): "2 matches for “armchair”", in a fixed order by kind. It searches the
@@ -1416,7 +1430,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/finance/` | The Finance screen: `FinanceScreen` (with Left over), `WorkPayCard`, `ExpensesCard`, `OwedCard`, `RatesCard` (folded away), and `actions.ts` (what each button saves). |
 | `src/data/patterns/`, `src/patterns/` | What MyDay has noticed: `notice.ts` (finding patterns in your history), `saved.ts` (your preferences and answers, the `patterns` section), `adapt.ts` (using preferences in Build my day and the room on today's plan); the screen `NoticedScreen.tsx` (`#noticed`, and the quiet line on Today). `src/components/Why.tsx`: a note with a "Why?". `src/tasks/StuckCard.tsx`: "What's getting in the way?". |
 | `src/projects/`, `src/data/projects.ts` | Projects (1.12.0): `ProjectsScreen` (the Projects, Notes and Connections tabs, "Start a project", project cards), `ProjectView` (one project: where you left off, the next step with Worth a look beside it, At a glance, what it is, what it's aiming for and what counts as finished, the progression, tasks, notes, coming up, recently, pause / done / delete), `parts.tsx` (the progression steps, the project picker used by notes and tasks); the data, the next step (with why it's that one, `whyNext`) and what's coming up in `src/data/projects.ts`. Today's "From your projects" and "Your tasks": `src/today/ProjectCards.tsx`. Older `#inbox…`/`#notes…` links: `src/shell/legacyLinks.ts`. |
-| `src/tasks/`, `src/data/tasks.ts` | Tasks (under Today since 1.12.0): `TasksScreen` (adding, the groups, lists as chips, search), `TaskEditor`, `WaitingCard` (waiting on someone or something, Got it, Chase it; 1.50.0), `ListsView`, `route.ts` (`#today/tasks`, `#today/tasks/<id>`, `#today/tasks/list/<id>`, `#today/tasks/lists`); the data and rules (groups, due today, room on today's plan, the link to the plan) in `src/data/tasks.ts`. Today's "Due today" card: `src/today/DueTodayCard.tsx`. |
+| `src/tasks/`, `src/data/tasks.ts` | Tasks (under Today since 1.12.0): `TasksScreen` (adding, the groups, lists as chips, search), `TaskEditor`, `WaitingCard` (waiting on someone or something, Got it, Chase it; 1.50.0), `StepsCard` and `StartsAfterCard` (steps inside a task, and the tasks of its project it starts after; `specs/projects-steps.md`), `ListsView`, `route.ts` (`#today/tasks`, `#today/tasks/<id>`, `#today/tasks/list/<id>`, `#today/tasks/lists`); the data and rules (groups, due today, room on today's plan, the link to the plan) in `src/data/tasks.ts`. Today's "Due today" card: `src/today/DueTodayCard.tsx`. |
 | `src/data/graph.ts`, `src/projects/ConnectionsView.tsx` | Connections, the knowledge graph (milestone 4): which notes and projects connect, the groups that go together and their fixed layout, fitted to a width (`graph.ts`); the screen at `#projects/connections` — the drawing, a dot's details with Keep / Undo, "What goes together" (`ConnectionsView.tsx`). Shared with Your map: `src/components/measure.ts` (drawing at the real width, names measured in the app's font). |
 | `src/data/understand.ts`, `src/shell/autoConnect.ts`, `src/notes/ConnectedCard.tsx` | Understanding notes on the device (1.13.0): the words that count, which project a note clearly belongs to, related notes, Undo / Keep (`understand.ts`); connecting a moment after changes (`autoConnect.ts`); "MyDay connected these" (`ConnectedCard.tsx`). |
 | `src/notes/`, `src/capture/` | Notes, in the Projects section (`NotesScreen`: search, Inbox, collections; `NoteEditor`; `CategoriesView`; `route.ts` — `#projects/notes`, `#projects/notes/<id>`, `#projects/notes/in/<id>`, `#projects/notes/collections`), and Capture (`parse.ts`, `save.ts`, `CaptureSheet.tsx`). The notes data: `src/data/notes.ts`. |
