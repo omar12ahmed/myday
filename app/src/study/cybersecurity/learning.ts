@@ -87,6 +87,9 @@ export function submitAttempt(data: MyDayData, id: string): string | null {
   a.submittedAt = new Date().toISOString();
   return null;
 }
+// The help you used on an attempt, in the words you chose it by.
+export const ASSISTANCE: Record<string, string> = { independent: 'On my own', hint: 'Used hints or AI help', guided: 'Followed notes or a walkthrough' };
+export const assistanceWords = (a: string) => ASSISTANCE[a] ?? a;
 // A rubric's levels, in words. Your ratings are saved as these numbers (0, 25, 50, 75, 100), as they always were; MyDay
 // shows only the words and never adds them up (no scores).
 export const RATINGS = [[0, 'Not demonstrated yet'], [25, 'Limited evidence'], [50, 'Partly demonstrated'], [75, 'Mostly demonstrated'], [100, 'Fully demonstrated']] as const;

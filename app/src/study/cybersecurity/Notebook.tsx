@@ -9,7 +9,7 @@ import type { CyberAttempt } from '../../data/cybersecurity/types';
 import { CYBER_VERSION, lessonHref } from '../../data/cybersecurity/types';
 import { BackLink, Eyebrow, InlineLink } from '../parts';
 import { curriculum, environments, lessons, skills, type Activity } from './catalogue';
-import { attemptRatings, beginAttempt, RATINGS, submitAttempt } from './learning';
+import { assistanceWords, attemptRatings, beginAttempt, RATINGS, submitAttempt } from './learning';
 import { Lines } from './parts';
 import { RelatedPractice } from './Practice';
 import { CheckRevision } from './CheckRevision';
@@ -87,13 +87,13 @@ export function ActivityView({ data, activity }: { data: MyDayData; activity: Ac
 function Result({ data, attempt: a, activity }: { data: MyDayData; attempt: CyberAttempt; activity: Activity }) {
   const rated = attemptRatings(a, activity);
   return <Card><Eyebrow>Notebook entry · {new Date(a.submittedAt!).toLocaleDateString('en-GB')}</Eyebrow><h3>{a.inputVariant}</h3>
-    <p className="text-sm text-fg-2">{a.assistance} · self-assessed · curriculum {a.curriculumVersion} · rubric {a.rubricVersion}</p>
+    <p className="text-sm text-fg-2">{assistanceWords(a.assistance)} · self-assessed · curriculum {a.curriculumVersion} · rubric {a.rubricVersion}</p>
     <p className="whitespace-pre-wrap">{a.evidence}</p>
     {activity.questions.map(q => <div key={q.id}><h4>{q.prompt}</h4><p className="whitespace-pre-wrap">{a.answers[q.id] ?? 'No answer recorded'}</p></div>)}
     {rated && <div data-cy-rated="">
       <h4 className="mb-1">How you rated it</h4>
       <ul className="list-none p-0 m-0 grid gap-1">{rated.map(r => <li key={r.criterion}><span className="font-semibold">{r.criterion}:</span> {r.words}</li>)}</ul>
-      {activity.practical && a.assistance !== 'independent' && <p className="text-sm text-fg-2" data-cy-rated-help="">Done with help, so it shows practice, not yet that you can do it on your own.</p>}
+      {activity.practical && a.assistance !== 'independent' && <p className="text-sm text-fg-2 mt-2" data-cy-rated-help="">Done with help, so it shows practice, not yet that you can do it on your own.</p>}
       <p className="text-sm text-fg-2">Your own assessment: it doesn’t verify the skill or meet a lesson’s prerequisites.</p>
     </div>}
     <p className="text-sm text-fg-2" data-cy-scope={a.criticalPassed ? 'passed' : 'unresolved'}>Scope and evidence checks: {a.criticalPassed ? 'recorded as passed.' : 'unresolved, so this attempt doesn’t count as demonstrated, whatever the ratings say.'}</p>

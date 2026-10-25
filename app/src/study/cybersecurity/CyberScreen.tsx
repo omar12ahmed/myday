@@ -14,7 +14,7 @@ import { go } from '../route';
 import { BackLink, Eyebrow, ExternalLink, InlineLink } from '../parts';
 import { Lines, LinkButton } from './parts';
 import { activities, curriculum, environments, lessons, modules, resources, selectedPath, skills, type Lesson } from './catalogue';
-import { attemptsFor, cyberJourney, cyberSteps, importPath, prerequisiteGaps, sessionMode, suggestedSession, warmUpLesson } from './learning';
+import { assistanceWords, attemptsFor, cyberJourney, cyberSteps, importPath, prerequisiteGaps, sessionMode, suggestedSession, warmUpLesson } from './learning';
 import { cyberModuleProgress, cyberPlan } from './plan';
 import { CyberPlace } from './CyberPlace';
 import { ActivityView } from './Notebook';
@@ -277,7 +277,7 @@ function NotebookIndex({ data }: { data: MyDayData }) {
     {!data.cybersecurity.attempts.length && <p>Open a lesson and choose its practical task to make your first entry.</p>}
     <ul className="list-none p-0 divide-y divide-outline">{[...data.cybersecurity.attempts].reverse().map(a => <li key={a.id} className="py-3">
       <InlineLink href={lessonHref(a.activityId)}>{activities.get(a.activityId)?.practice ? activities.get(a.activityId)!.title : activities.get(a.activityId)?.instruction ?? a.activityId}</InlineLink>
-      <p className="text-sm text-fg-2 m-0">{a.submittedAt ? 'Submitted' : 'In progress'} · {a.assistance} · {new Date(a.startedAt).toLocaleDateString('en-GB')} · curriculum {a.curriculumVersion}</p>
+      <p className="text-sm text-fg-2 m-0">{a.submittedAt ? 'Submitted' : 'In progress'} · {assistanceWords(a.assistance)} · {new Date(a.startedAt).toLocaleDateString('en-GB')} · curriculum {a.curriculumVersion}</p>
       {a.resumePoint && <p className="text-sm m-0">Next: {a.resumePoint}</p>}
     </li>)}</ul>
   </Card>;

@@ -8,7 +8,7 @@ import { CYBER_VERSION, lessonHref, type CyberAttempt } from '../../data/cyberse
 import { toast } from '../../data/toast';
 import { Eyebrow, InlineLink } from '../parts';
 import { activities, lessons, type Activity } from './catalogue';
-import { beginAttempt, submitAttempt } from './learning';
+import { assistanceWords, beginAttempt, submitAttempt } from './learning';
 import { Lines, LinkButton } from './parts';
 import { accessLabel, practiceActivities, practiceCheckedOn, practiceVersion, relatedPractice, type Practice } from './practiceCatalogue';
 import { answer, answerKey, authRows, logQuestions, networkConfig, networkScenarios, networkSignature, outcomes, practiceChecks, scopeCases, scopeChoices, setScenario, simulateNetwork } from './practiceRules';
@@ -134,7 +134,7 @@ function PracticeResult({ a, p }: { a: CyberAttempt; p: Practice }) {
   const current = currentAttempt(a), checks = current && a.submittedAt ? practiceChecks(a, p) : [];
   return <Card><Eyebrow>Notebook entry · {new Date(a.submittedAt ?? a.startedAt).toLocaleDateString('en-GB')}</Eyebrow>
     <h3>{p.kind === 'external' ? outcomes[answer(a, 'outcome') as keyof typeof outcomes] ?? 'Saved attempt' : a.inputVariant}</h3>
-    <p className="text-sm text-fg-2">{p.kind === 'external' ? 'Reported by you · provider progress not verified' : 'Local practice · does not award verified mastery'} · {a.assistance} · {a.rubricVersion}</p>
+    <p className="text-sm text-fg-2">{p.kind === 'external' ? 'Reported by you · provider progress not verified' : 'Local practice · does not award verified mastery'} · {assistanceWords(a.assistance)} · {a.rubricVersion}</p>
     <p className="whitespace-pre-wrap">{a.evidence}</p><p className="text-sm text-fg-2">Scope and evidence check: {a.criticalPassed === true ? 'recorded as passed' : 'unresolved'}.</p>
     {a.resumePoint && <p>Next step: {a.resumePoint}</p>}
     {!current && <p>This entry uses an earlier activity version. Its original inputs are kept below and have not been regraded.</p>}

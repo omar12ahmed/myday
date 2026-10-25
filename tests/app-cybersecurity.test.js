@@ -516,6 +516,7 @@ async function fill(sel, value) {
     && (await text('[data-cy-scope]')).includes('doesn’t count as demonstrated'));
   const rCard = await ev(`document.querySelector('[data-cy-rated]').closest('.rounded-card, [class*=card], section, article')?.textContent ?? document.querySelector('[data-cy-rated]').parentElement.textContent`);
   check('the entry has no score, total or "/100" anywhere', !/score|\/100|provisional|calculation/i.test(rCard), rCard.slice(0, 300));
+  check('…and names the help you used in the words you chose it by', rCard.includes('Used hints or AI help · self-assessed') && !/\bhint ·/.test(rCard), rCard.slice(0, 200));
   await go('study/cybersecurity');
   check('the map\'s footnote speaks of your notebook ratings, not scores', !/score/i.test(await text('#app')) && (await text('#app')).includes('Your notebook ratings are your own assessment'));
   await go('study/cybersecurity/lesson.authorised-scope');
