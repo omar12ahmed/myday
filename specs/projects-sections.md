@@ -1,7 +1,7 @@
 # Projects: optional sections on a project's Overview (Phase 4, second part)
 
-**Status:** the owner's decisions in §2 (25 October 2026); being built on branch `sections`. Nothing live without the
-owner's yes.
+**Status:** the owner's decisions in §2 (25 October 2026); released in 1.85.0 (with the owner's yes). No schema,
+migration or server change.
 **Based on:** source at 1.83.0. Plan: `specs/projects-vision.md` §5 ("A useful default should work without
 configuration. Early customisation should support showing, hiding and ordering sections … Essential actions and
 unresolved firm deadlines must remain discoverable even when sections are hidden"), §17 (Phase 4), §19 (Taste skill).

@@ -1,5 +1,16 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.85.0 — Optional sections on a project:** a project's Overview now shows Notes, Recently, Learning, Resources and
+Files only when they hold something. Empty ones fold into **Add to this project** (A note · Something to learn · A link
+· A file), each opening that card's first step. About it → Edit has **Show on the Overview**, a switch for each, to
+hide one on that project; a hidden one that holds something is named under **Hidden here** ("Show Resources (2)"), one
+tap from showing again. Where you left off, the next step, Worth a look, At a glance, About it, Tasks, Coming up and
+the status always show, in the same order on every project, so a date that's still ahead is never hidden. Hiding a
+card isn't counted as work on the project (its place in Projects stays). A sync conflict on a project now names its
+hidden cards and its tools. Saved data stays schema 5: `hiddenSections` is an optional field inside the project's own
+record, which 1.84.0 keeps unread (checked with the actual previous release: it receives it, renames the project and
+saves without touching it); there every card shows. No migration or server change; nothing of it is sent to AI.
+
 **1.84.0 — Words for each Arabic lesson, and notebook ratings in words:** module 4's five lessons (greetings, saying
 what something is, questions, where you're from, asking again) now each have their own words, 48 in all: fully
 vowelled, each with its meaning, the root it comes from, an example and a note, voiced where a form can be read aloud.
@@ -1090,7 +1101,7 @@ look and Your week's What needs you now use the same rules (`data/attention.ts`)
 board, **Board · List**: the list has one row per active project (stage, kind, next step, "3 need you"), most
 recently worked on first; the choice is kept on this device only (`myday.projects.view`).
 
-**Optional sections on a project (unreleased; `specs/projects-sections.md`):** a project's Overview shows Notes,
+**Optional sections on a project (1.85.0; `specs/projects-sections.md`):** a project's Overview shows Notes,
 Recently, Learning, Resources and Files only when they hold something; empty ones fold into **Add to this project**
 (A note · Something to learn · A link · A file), each opening that card's first step. About it → Edit has **Show on
 the Overview**, a switch for each, to hide one on that project; a hidden one that holds something is named under
