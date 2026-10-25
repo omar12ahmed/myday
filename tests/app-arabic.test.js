@@ -137,7 +137,7 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   cards = (await D()).arabic.cards.filter(c => c.id.startsWith('assessment.'));
   check('one tap under the checks adds them, first back tomorrow, and the lesson says so', cards.length === 2 && cards.every(c => c.id.startsWith('assessment.arabic-fusha-register-check.q') && c.review.due === '2026-10-12') && await exists('[data-ar-checks="in"]'));
   await on(11, 'study/arabic'); await wait('[data-ar-revision]');
-  check('on the day they\'re added nothing is due: the map says when they come back', await ev(`document.querySelector('[data-ar-revision]').dataset.arRevision === 'later'`) && (await T.text('[data-ar-revision]')).includes('9 starter words and 2 lesson checks') && !(await exists('[data-action="ar-revise"]')));
+  check('on the day they\'re added nothing is due: the map says when they come back', await ev(`document.querySelector('[data-ar-revision]').dataset.arRevision === 'later'`) && (await T.text('[data-ar-revision]')).includes('9 course words and 2 lesson checks') && !(await exists('[data-action="ar-revise"]')));
 
   await on(12, 'today'); await wait('#slot-study');
   check('the next day, Today\'s Study card says revision is ready', (await T.text('#slot-study')).includes('Revision ready') && (await T.text('#slot-study')).includes('A round of 5'));
@@ -264,7 +264,7 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   await click('[data-ar-finished] [data-action="ar-ready"]'); await sleep(300);
   ar = await AR();
   check('Ready to move on saves the day and brings its 3 checks back a week later, saying when', ar.lessons[0].readyOn === '2026-10-11' && ar.cards.filter(nominal).length === 3 && ar.cards.filter(nominal).every(c => c.review.due === '2026-10-18')
-    && (await T.text('[data-ar-finished]')).includes('will come back on'));
+    && new RegExp(`Its ${ar.cards.filter(c => c.id.startsWith('lexeme.')).length} words will come back (tomorrow|from [^,]+), and its 3 checks on `).test(await T.text('[data-ar-finished]')), await T.text('[data-ar-finished]'));
   check('…and the lesson says Ready to move on, with when its checks come back', await place() === 'ready' && (await T.text('[data-ar-place]')).includes('Ready to move on since'));
   await click('[data-action="ar-place-unready"]'); await sleep(200);
   check('Not ready after all takes the day back and leaves its checks in revision', !('readyOn' in (await AR()).lessons[0]) && (await AR()).cards.filter(nominal).length === 3 && await place() === 'practised');
@@ -483,6 +483,83 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
     await ev(`[...document.querySelectorAll('[data-action="ar-did"]')].map(b => b.getBoundingClientRect().height)`));
   await send('Emulation.clearDeviceMetricsOverride');
   await ev(`localStorage.setItem('myday.data.v4', ${JSON.stringify(beforePractice)})`);
+
+  console.log('\n[14] Course words: the lesson\'s words, Vocabulary, Ready and revision');
+  const GA = 'lesson.arabic-greetings-address', gaHash = 'study/arabic/' + GA, gaIds = n => `lexeme.arabic-greetings-address-${n}`;
+  const fresh = async hash => { await go(hash); await ev('localStorage.clear()'); await go(hash); };
+  const shortOf = (y, m, dd) => ev(`new Date(${y}, ${m - 1}, ${dd}).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })`);
+  const rowIds = () => ev(`[...document.querySelectorAll('[data-ar-lesson-words] li[data-ar-word]')].map(e => e.dataset.arWord)`);
+  await fresh(gaHash); await wait('[data-ar-lesson-words]', 5000);
+  check('the lesson\'s Understand step has a closed list of its 9 words, saying how many starter words it uses', await ev(`(() => { const e = document.querySelector('#ar-step-understand details[data-ar-lesson-words="9"]'); return !!e && !e.open && e.querySelector('summary').textContent.trim() === 'Words in this lesson: 9, and 4 starter words it uses'; })()`),
+    await ev(`document.querySelector('[data-ar-lesson-words] summary')?.textContent`));
+  await ev(`document.querySelector('[data-ar-lesson-words]').open = true`); await sleep(200);
+  const wantIds = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(gaIds).concat(['001', '002', '003', '026'].map(n => `lexeme.arabic-seed-${n}`));
+  const gotIds = await rowIds();
+  check('opened, it lists the 9 words in order, then the 4 starter words it uses', gotIds.join() === wantIds.join(), gotIds);
+  const row1 = `[data-ar-word="${gaIds(1)}"]`;
+  check('the first word shows its Arabic, meaning, root, example with its English, and its note', await ev(`(() => { const r = document.querySelector(${JSON.stringify(row1)}); const t = r.textContent; return t.includes('مَرْحَبًا') && t.includes('hello · chunk') && !!r.querySelector('[data-ar-root="ر-ح-ب"]') && t.includes('مَرْحَبًا، أَنَا سَارَةُ.') && t.includes('Hello, I am Sarah.') && (r.querySelector('[data-ar-word-note]')?.textContent || '').startsWith('A greeting for anyone'); })()`),
+    await T.text(row1));
+  check('the first word has play buttons for the word and for its example', await exists(`[data-ar-clip="${gaIds(1)}:word"]`) && await exists(`[data-ar-clip="${gaIds(1)}:example"]`));
+  check('before Ready, the list says none of them are in revision yet and when they join', await ev(`document.querySelector('[data-ar-lesson-words-in="0"]')?.textContent`) === 'They join your revision when you mark the lesson ready to move on, a few a day.',
+    await ev(`document.querySelector('[data-ar-lesson-words-in]')?.textContent`));
+  await click('[data-action="ar-begin"]'); await wait('[data-ar-session="open"]');
+  await click('[data-action="ar-step"][data-v="check"]'); await sleep(400);
+  check('while you check yourself, with the explanation folded away, the word list isn\'t shown', await exists('[data-ar-folded]') && !(await exists('[data-ar-lesson-words]')));
+  await click('[data-action="ar-discard"]'); await sleep(200); await click('[data-action="dialog-confirm"]'); await sleep(250);
+  await go(gaHash); await wait('[data-ar-place]');
+  await click('[data-action="ar-place-ready"]'); await sleep(300);
+  cards = (await AR()).cards;
+  const gaWordCards = cards.filter(c => c.id.startsWith('lexeme.')), gaCheckCards = cards.filter(c => c.id.startsWith('assessment.'));
+  const wantWordCards = wantIds.map(i => i + ':recognise');
+  const tomorrow = '2026-10-12', afterTomorrow = '2026-10-13', weekOn = '2026-10-18';
+  check('marking it ready brings its 13 words into revision (own and starter), added today: 8 due tomorrow and 5 the day after', gaWordCards.length === 13 && gaWordCards.map(c => c.id).sort().join() === [...wantWordCards].sort().join()
+    && gaWordCards.every(c => c.addedOn === '2026-10-11') && gaWordCards.filter(c => c.review.due === tomorrow).length === 8 && gaWordCards.filter(c => c.review.due === afterTomorrow).length === 5, gaWordCards.map(c => c.id + '@' + c.review.due));
+  check('…and its 3 checks come back 7 days on', gaCheckCards.map(c => c.id).sort().join() === [1, 2, 3].map(n => `assessment.arabic-greetings-address-check.q${n}`).join() && gaCheckCards.every(c => c.addedOn === '2026-10-11' && c.review.due === weekOn), gaCheckCards.map(c => c.id + '@' + c.review.due));
+  const fromDay = await shortOf(2026, 10, 12), onDay = await shortOf(2026, 10, 18);
+  check('the note says when the 13 words and the 3 checks come back', await T.text('[data-ar-place-note]') === `Its 13 words will come back from ${fromDay}, and its 3 checks on ${onDay}.`, await T.text('[data-ar-place-note]'));
+  await ev(`document.querySelector('[data-ar-lesson-words]').open = true`); await sleep(200);
+  check('the open word list then says all of them are in revision', await ev(`document.querySelector('[data-ar-lesson-words-in="13"]')?.textContent`) === 'All of them are in your revision.', await ev(`document.querySelector('[data-ar-lesson-words-in]')?.textContent`));
+  await click('[data-action="ar-place-unready"]'); await sleep(250); await click('[data-action="ar-place-ready"]'); await sleep(300);
+  cards = (await AR()).cards;
+  check('marking it ready again adds no second copy of any card', cards.length === 16 && new Set(cards.map(c => c.id)).size === 16, cards.map(c => c.id));
+
+  await fresh('study/arabic/vocabulary'); await wait('[data-ar-course-words]', 5000);
+  const cwLessons = ['greetings-address', 'nominal-sentences', 'simple-questions', 'origin-location', 'repair-phrases'].map(s => 'lesson.arabic-' + s);
+  const cwInfo = await ev(`(() => { const c = document.querySelector('[data-ar-course-words="5"]'); return !c ? null : { head: c.querySelector('h2').textContent, ids: [...c.querySelectorAll('[data-ar-course-lesson]')].map(s => s.dataset.arCourseLesson), links: [...c.querySelectorAll('[data-ar-course-lesson]')].map(s => s.querySelector('h3 a')?.getAttribute('href')), rows: c.querySelectorAll('li[data-ar-word]').length }; })()`);
+  check('Vocabulary has "Words from the lessons": five lessons in order, each headed by a link to it, 48 word rows in all', !!cwInfo && cwInfo.head === 'Words from the lessons' && cwInfo.ids.join() === cwLessons.join() && cwInfo.links.join() === cwLessons.map(l => '#study/arabic/' + l).join() && cwInfo.rows === 48, cwInfo);
+  const nom2 = '[data-ar-word="lexeme.arabic-nominal-sentences-2"]';
+  await click(nom2 + ' [data-action="ar-word-add"]'); await sleep(250);
+  cards = (await AR()).cards;
+  check('"Add to revision" on a course word adds just its recognise card, and the row then shows where it stands with a Take it out button', cards.length === 1 && cards[0].id === 'lexeme.arabic-nominal-sentences-2:recognise'
+    && (await T.text(nom2)).includes('Recognising it:') && (await T.text(nom2 + ' [data-action="ar-word-remove"]')) === 'Take it out', cards.map(c => c.id));
+
+  await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); d.arabic.cards = [{ id: 'lexeme.arabic-greetings-address-1:recognise', addedOn: '2026-10-04', review: { reps: 0, interval: 1, lapses: 0, due: '2026-10-11' } }]; localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`);
+  await on(11, 'study/arabic'); await wait('[data-action="ar-revise"]', 5000);
+  await click('[data-action="ar-revise"]'); await sleep(900);
+  check('Revise Arabic asks a course word due today: the word is shown, and its path says it is from a lesson', await ev(`document.querySelector('.st-prompt [lang="ar"]')?.textContent`) === 'مَرْحَبًا' && (await T.text('.st-path')) === 'Arabic · a word from a lesson', await T.text('.st-path'));
+  await click('[data-action="s-rev-show"]'); await sleep(200);
+  const shownWord = await T.text('.st-q');
+  check('…and showing the answer gives the example\'s English and the word\'s note', shownWord.includes('Hello, I am Sarah.') && shownWord.includes('A greeting for anyone'), shownWord);
+
+  await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); d.arabic.cards = [{ id: 'lexeme.arabic-not-in-this-version-1:recognise', addedOn: '2026-10-04', review: { reps: 0, interval: 1, lapses: 0, due: '2026-10-11' } }]; localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`);
+  await on(11, 'study/arabic'); await wait('[data-action="ar-revise"]', 5000);
+  await click('[data-action="ar-revise"]'); await wait('[data-ar-gone]', 4000);
+  check('a card for a word this version doesn\'t know says so, with "Skip for now" as its first button', await exists('[data-ar-gone]') && (await T.text('[data-ar-gone] h2')) === 'This one isn’t in this version of the course'
+    && (await ev(`document.querySelector('[data-ar-gone] button')?.textContent`)) === 'Skip for now', await T.text('[data-ar-gone]'));
+  await click('[data-action="ar-gone-skip"]'); await sleep(300);
+  check('skipping it leaves that card in saved data', (await AR()).cards.some(c => c.id === 'lexeme.arabic-not-in-this-version-1:recognise'), (await AR()).cards.map(c => c.id));
+
+  await fresh(gaHash); await wait('#ar-step-understand [data-action="ar-keep-open"]', 5000);
+  await click('#ar-step-understand [data-action="ar-keep-open"]'); await sleep(200);
+  await click('#ar-step-understand [data-action="ar-keep-word"][data-v="مَرْحَبًا"]'); await sleep(200);
+  check('keeping مَرْحَبًا from the greetings lesson\'s example offers the meaning "hello"', await ev(`document.querySelector('[data-s="ar-keep-meaning"]')?.value`) === 'hello', await ev(`document.querySelector('[data-s="ar-keep-meaning"]')?.value`));
+
+  await send('Emulation.setDeviceMetricsOverride', { width: 360, height: 800, deviceScaleFactor: 2, mobile: true });
+  await go(gaHash); await wait('[data-ar-lesson-words]', 5000);
+  await ev(`document.querySelector('[data-ar-lesson-words]').open = true`); await sleep(400);
+  const tall = await ev(`(() => { const a = [...document.querySelectorAll('[data-ar-lesson-words] [data-ar-clip], [data-ar-lesson-words] [data-action="ar-word-add"]')]; return { n: a.length, small: a.filter(b => b.getBoundingClientRect().height < 44).length }; })()`);
+  check('at 360 px the open word list doesn\'t scroll sideways, and its play and Add to revision buttons are at least 44 px tall', await ev('document.documentElement.scrollWidth === innerWidth') && tall.n > 0 && tall.small === 0, [await ev('[document.documentElement.scrollWidth, innerWidth]'), tall]);
+  await send('Emulation.clearDeviceMetricsOverride');
 
   const s = T.summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
 })().catch(e => { console.error('HARNESS', e); process.exit(1); });
