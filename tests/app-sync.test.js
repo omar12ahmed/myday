@@ -1060,6 +1060,38 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await ctl('files-configured', { configured: true });
   await ctl('files-reset');
 
+  console.log('\n[17b] Stored files nothing lists: found, offered, and deleted only when asked (specs/files.md)');
+  {
+    await ctl('files-reset');
+    await fl.open(APP + '#today');
+    const PJN = 'pjUnlisted', NAMED = 'flnamed00001', ORPHAN = 'florphan0001', FRESH = 'flfresh00001';
+    const twoDaysAgo = new Date(Date.now() - 2 * 86400000).toISOString(), anHourAgo = new Date(Date.now() - 3600000).toISOString();
+    await fl.setData(`s => { s.files.items = [{ id: '${NAMED}', name: 'named.pdf', type: 'application/pdf', size: 2048, sha256: '', area: 'project', state: 'kept', addedOn: '${today}' }];
+      for (const p of s.projects.items) delete p.fileIds; for (const n of s.notes.items) delete n.fileIds;
+      s.projects.items.push({ id: '${PJN}', title: 'Unlisted files', summary: '', stage: 'capture', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${today}T09:00', updatedAt: '${today}T09:00', fileIds: ['${NAMED}'] }); }`);
+    // Left over (stored two days ago, nothing names it), with its preview; one stored an hour ago (another device's
+    // upload whose record may still be on its way); one a record names; one in an area this version doesn't know.
+    await ctl('files-put', { key: `${userA}/project/${ORPHAN}`, size: 5 * 1024 * 1024, type: 'application/pdf', modified: twoDaysAgo });
+    await ctl('files-put', { key: `${userA}/project/${ORPHAN}.thumb`, size: 1000, type: 'image/webp', modified: twoDaysAgo });
+    await ctl('files-put', { key: `${userA}/note/${FRESH}`, size: 1024 * 1024, type: 'text/plain', modified: anHourAgo });
+    await ctl('files-put', { key: `${userA}/project/${NAMED}`, size: 2048, type: 'application/pdf', modified: twoDaysAgo });
+    await ctl('files-put', { key: `${userA}/gallery/flgallery001`, size: 4096, type: 'image/png', modified: twoDaysAgo });
+    await fl.open(APP + '#projects/p/' + PJN); await fl.until(`document.getElementById('files-project')`, 15000);
+    const unlistedText = () => fl.ev(`(document.querySelector('#files-project [data-s=files-unlisted]')?.textContent || '').replace(/\\s+/g, ' ').trim()`);
+    check('once this device is in step, the storage line says one stored file (5 MB) isn\'t in your MyDay any more', await synced(fl) && await fl.until(`/^1 stored file \\(5 MB\\) isn’t in your MyDay any more/.test((document.querySelector('#files-project [data-s=files-unlisted]')?.textContent || '').trim())`, 20000), await unlistedText());
+    check('…only the old one: not the one stored an hour ago, not the one a record names, not an area this version doesn\'t know', /^1 stored file/.test(await unlistedText()));
+    await fl.click('#files-project [data-action=files-unlisted-delete]');
+    check('Delete them… asks first, saying how much and to open a device that added files offline', await fl.until(`/Delete 1 stored file nothing in your MyDay lists\\?/.test(document.querySelector('dialog[open]')?.textContent || '') && /open it first/.test(document.querySelector('dialog[open]')?.textContent || '')`, 5000));
+    await fl.answer(false);
+    check('…Keep them keeps them', (await fobjects()).some(o => o.key.endsWith(ORPHAN)) && /^1 stored file/.test(await unlistedText()));
+    await fl.click('#files-project [data-action=files-unlisted-delete]');
+    await fl.until(`document.querySelector('[data-action=dialog-confirm]')`, 5000); await fl.answer(true);
+    check('…Delete them deletes it and its preview, and nothing else', await cloudUntil(async () => { const keys = (await fobjects()).map(o => o.key); return !keys.some(k => k.includes(ORPHAN)) && keys.some(k => k.endsWith(FRESH)) && keys.some(k => k.endsWith(NAMED)) && keys.some(k => k.endsWith('flgallery001')); }, 15000), (await fobjects()).map(o => o.key.split('/').slice(1).join('/')));
+    check('…and the line goes', await fl.until(`!document.querySelector('#files-project [data-s=files-unlisted]')`, 10000));
+    await fl.setData(`s => { s.projects.items = s.projects.items.filter(p => p.id !== '${PJN}'); s.files.items = []; }`);
+    await ctl('files-reset');
+  }
+
   console.log('\n[18] Files on a Cybersecurity portfolio entry: add, refuse, five at most, open, remove, put back, remove the entry, export (specs/study-home-and-lessons.md §10)');
   const pfSrc = path.join(fsrc, 'portfolio'); fs.mkdirSync(pfSrc, { recursive: true });
   const pngBytes = Buffer.from(PNG_B64, 'base64');

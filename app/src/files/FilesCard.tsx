@@ -89,9 +89,11 @@ export function DeletedFiles({ list, putBackable = true }: { list: FileRecord[];
 // once the files function has said (signed in, online); files in Recently deleted are still stored until they go.
 // Last in the card, so its arriving late never moves what's above it. Used and left are rounded down.
 function StorageLine({ anyDeleted }: { anyDeleted: boolean }) {
-  const u = useSyncExternalStore(subscribeFiles, getUsage), account = useSync().account, extra = useSyncExternalStore(subscribeFiles, getUnlisted);
+  const sync = useSync(), account = sync.account, u = useSyncExternalStore(subscribeFiles, getUsage), extra = useSyncExternalStore(subscribeFiles, getUnlisted);
   const confirm = useConfirm();
-  useEffect(() => { void refreshUsage(); void checkUnlisted(); }, [account?.id]);
+  useEffect(() => { void refreshUsage(); }, [account?.id]);
+  // Asked once this device is fully in step (it waits for this page load's first sync; at most every 10 minutes).
+  useEffect(() => { if (sync.status === 'synced') void checkUnlisted(); }, [account?.id, sync.status]);
   async function clearExtra() {
     const n = extra?.length ?? 0, size = amountLabel((extra ?? []).reduce((t, f) => t + f.size, 0));
     if (!n || !(await confirm({ title: `Delete ${n} stored file${n === 1 ? '' : 's'} nothing in your MyDay lists?`,
