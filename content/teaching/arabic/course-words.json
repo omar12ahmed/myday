@@ -1,7 +1,7 @@
 {
  "about": "Course words: an authored word list per Arabic lesson (MyDay's own, not part of the supplied package), each word with its meaning, root, an example and a short note, beside the package's starter words (listed by id under \"seed\", not repeated). Fully vowelled. Each module is checked by the owner before it ships.",
- "status": "modules 4–16: checked by the owner (reads Arabic) on 2026-10-25, after independent cross-checks, and voiced (rounds four to eight)",
- "version": "1.4",
+ "status": "modules 4–16: checked by the owner (reads Arabic) on 2026-10-25, after independent cross-checks, and voiced (rounds four to eight). Modules 17–19: drafted, not yet checked or voiced",
+ "version": "1.5",
  "lessons": {
   "lesson.arabic-greetings-address": {
    "seed": [
@@ -5716,6 +5716,1181 @@
      "example_ar": "قَضَيْنَا وَقْتًا جَمِيلًا مَعَ الْأُسْرَةِ.",
      "example_meaning_en": "We had a lovely time with the family.",
      "note": "In the present: يَقْضِي وَقْتًا, “he spends time”. Spending money is أَنْفَقَ."
+    }
+   ]
+  },
+  "lesson.arabic-listening-passes": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-listening-passes-1",
+     "form_ar": "اِسْتَمَعَ",
+     "meaning_en": "he listened",
+     "part_of_speech": "verb",
+     "root_ar": "س-م-ع",
+     "root_reading": "s-m-ʿ",
+     "example_ar": "اِسْتَمَعْتُ إِلَى التَّسْجِيلِ مَرَّتَيْنِ.",
+     "example_meaning_en": "I listened to the recording twice.",
+     "note": "Form VIII of the root of أَسْمَعُ, “I hear”: listening on purpose. It takes إِلَى."
+    },
+    {
+     "id": "lexeme.arabic-listening-passes-2",
+     "form_ar": "تَفَاصِيل",
+     "meaning_en": "details",
+     "part_of_speech": "noun (plural)",
+     "root_ar": "ف-ص-ل",
+     "root_reading": "f-ṣ-l",
+     "example_ar": "لَا أَتَذَكَّرُ التَّفَاصِيلَ.",
+     "example_meaning_en": "I don’t remember the details.",
+     "note": "Singular تَفْصِيل."
+    },
+    {
+     "id": "lexeme.arabic-listening-passes-3",
+     "form_ar": "أَوْقَفَ",
+     "meaning_en": "he stopped (something), he paused",
+     "part_of_speech": "verb",
+     "root_ar": "و-ق-ف",
+     "root_reading": "w-q-f",
+     "example_ar": "أَوْقَفْتُ التَّسْجِيلَ بَعْدَ الْجُمْلَةِ الْأُولَى.",
+     "example_meaning_en": "I paused the recording after the first sentence.",
+     "note": "Form IV of وَقَفَ, “he stopped”: to stop something."
+    },
+    {
+     "id": "lexeme.arabic-listening-passes-4",
+     "form_ar": "مَقْطَع",
+     "meaning_en": "section (of a recording or text); syllable",
+     "part_of_speech": "noun",
+     "root_ar": "ق-ط-ع",
+     "root_reading": "q-ṭ-ʿ",
+     "example_ar": "أَعَدْتُ الِاسْتِمَاعَ إِلَى الْمَقْطَعِ الصَّعْبِ.",
+     "example_meaning_en": "I listened to the difficult section again.",
+     "note": "Plural مَقَاطِع."
+    },
+    {
+     "id": "lexeme.arabic-listening-passes-5",
+     "form_ar": "فَهْم",
+     "meaning_en": "understanding",
+     "part_of_speech": "noun",
+     "root_ar": "ف-ه-م",
+     "root_reading": "f-h-m",
+     "example_ar": "الْفَهْمُ أَهَمُّ مِنَ السُّرْعَةِ.",
+     "example_meaning_en": "Understanding matters more than speed.",
+     "note": "The verbal noun of فَهِمَ, “he understood”."
+    },
+    {
+     "id": "lexeme.arabic-listening-passes-6",
+     "form_ar": "بِمُفْرَدِي",
+     "meaning_en": "on my own",
+     "part_of_speech": "chunk",
+     "root_ar": "ف-ر-د",
+     "root_reading": "f-r-d",
+     "example_ar": "فَهِمْتُ الْخَبَرَ بِمُفْرَدِي.",
+     "example_meaning_en": "I understood the news item on my own.",
+     "note": "Without help. “On your own” is بِمُفْرَدِكَ."
+    }
+   ]
+  },
+  "lesson.arabic-connected-listening": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-connected-listening-1",
+     "form_ar": "سُرْعَة",
+     "meaning_en": "speed",
+     "part_of_speech": "noun",
+     "root_ar": "س-ر-ع",
+     "root_reading": "s-r-ʿ",
+     "example_ar": "يَتَكَلَّمُ بِسُرْعَةٍ كَبِيرَةٍ.",
+     "example_meaning_en": "He speaks very fast.",
+     "note": "بِسُرْعَةٍ is “quickly”; its opposite is بِبُطْءٍ, “slowly”."
+    },
+    {
+     "id": "lexeme.arabic-connected-listening-2",
+     "form_ar": "طَبِيعِيّ",
+     "meaning_en": "natural, normal",
+     "part_of_speech": "adjective",
+     "root_ar": "ط-ب-ع",
+     "root_reading": "ṭ-b-ʿ",
+     "example_ar": "أُرِيدُ أَنْ أَفْهَمَ الْكَلَامَ بِسُرْعَتِهِ الطَّبِيعِيَّةِ.",
+     "example_meaning_en": "I want to understand speech at its natural speed.",
+     "note": "The same root as طَبْعًا, “of course”."
+    },
+    {
+     "id": "lexeme.arabic-connected-listening-3",
+     "form_ar": "كَلَام",
+     "meaning_en": "speech, talk",
+     "part_of_speech": "noun",
+     "root_ar": "ك-ل-م",
+     "root_reading": "k-l-m",
+     "example_ar": "كَلَامُهُ وَاضِحٌ.",
+     "example_meaning_en": "His speech is clear.",
+     "note": "The same root as كَلِمَة, “word”, and يَتَكَلَّمُ, “he speaks”."
+    },
+    {
+     "id": "lexeme.arabic-connected-listening-4",
+     "form_ar": "مُتَحَدِّث",
+     "meaning_en": "speaker",
+     "part_of_speech": "noun",
+     "root_ar": "ح-د-ث",
+     "root_reading": "ḥ-d-th",
+     "example_ar": "فِي التَّسْجِيلِ مُتَحَدِّثَانِ.",
+     "example_meaning_en": "There are two speakers in the recording.",
+     "note": "The same root as مُحَادَثَة, “conversation”. A woman speaker is مُتَحَدِّثَة."
+    },
+    {
+     "id": "lexeme.arabic-connected-listening-5",
+     "form_ar": "كَرَّرَ",
+     "meaning_en": "he repeated",
+     "part_of_speech": "verb",
+     "root_ar": "ك-ر-ر",
+     "root_reading": "k-r-r",
+     "example_ar": "كَرَّرْتُ الْجُمْلَةَ بَعْدَ الْمُتَحَدِّثِ.",
+     "example_meaning_en": "I repeated the sentence after the speaker.",
+     "note": "Form II. “Repetition” is تَكْرَار."
+    },
+    {
+     "id": "lexeme.arabic-connected-listening-6",
+     "form_ar": "نَبْرَة",
+     "meaning_en": "tone (of voice)",
+     "part_of_speech": "noun",
+     "root_ar": "ن-ب-ر",
+     "root_reading": "n-b-r",
+     "example_ar": "نَبْرَةُ صَوْتِهَا هَادِئَةٌ.",
+     "example_meaning_en": "Her tone of voice is calm.",
+     "note": "In phonetics, نَبْر is the stress on a syllable."
+    },
+    {
+     "id": "lexeme.arabic-connected-listening-7",
+     "form_ar": "هَمْزَةُ الْوَصْلِ",
+     "meaning_en": "the joining hamza",
+     "part_of_speech": "chunk",
+     "root_ar": "ه-م-ز",
+     "root_reading": "h-m-z",
+     "example_ar": "لَا تُنْطَقُ هَمْزَةُ الْوَصْلِ فِي وَسَطِ الْكَلَامِ.",
+     "example_meaning_en": "The joining hamza isn’t said in the middle of speech.",
+     "note": "The first vowel of the article and of words like اِسْم, dropped after another word."
+    }
+   ]
+  },
+  "lesson.arabic-follow-up-questions": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-follow-up-questions-1",
+     "form_ar": "مِثَال",
+     "meaning_en": "example",
+     "part_of_speech": "noun",
+     "root_ar": "م-ث-ل",
+     "root_reading": "m-th-l",
+     "example_ar": "هَذَا مِثَالٌ جَيِّدٌ.",
+     "example_meaning_en": "This is a good example.",
+     "note": "Plural أَمْثِلَة. “For example” is مَثَلًا."
+    },
+    {
+     "id": "lexeme.arabic-follow-up-questions-2",
+     "form_ar": "مُنْذُ مَتَى؟",
+     "meaning_en": "since when? how long?",
+     "part_of_speech": "question",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "مُنْذُ مَتَى تَعْمَلُ هُنَا؟",
+     "example_meaning_en": "How long have you worked here?",
+     "note": "On its own, مُنْذُ is “since” or “ago”: مُنْذُ سَنَةٍ, “a year ago”."
+    },
+    {
+     "id": "lexeme.arabic-follow-up-questions-3",
+     "form_ar": "مَاذَا تَقْصِدُ؟",
+     "meaning_en": "what do you mean? (to a man)",
+     "part_of_speech": "chunk",
+     "root_ar": "ق-ص-د",
+     "root_reading": "q-ṣ-d",
+     "example_ar": "مَاذَا تَقْصِدُ بِهَذِهِ الْكَلِمَةِ؟",
+     "example_meaning_en": "What do you mean by this word?",
+     "note": "To a woman: مَاذَا تَقْصِدِينَ؟"
+    },
+    {
+     "id": "lexeme.arabic-follow-up-questions-4",
+     "form_ar": "يَعْنِي",
+     "meaning_en": "it means; that is",
+     "part_of_speech": "verb",
+     "root_ar": "ع-ن-ي",
+     "root_reading": "ʿ-n-y",
+     "example_ar": "مَاذَا يَعْنِي هَذَا؟",
+     "example_meaning_en": "What does this mean?",
+     "note": "The same root as مَعْنَى, “meaning”. In speech it’s also a filler, “I mean”."
+    },
+    {
+     "id": "lexeme.arabic-follow-up-questions-5",
+     "form_ar": "حَقًّا؟",
+     "meaning_en": "really?",
+     "part_of_speech": "chunk",
+     "root_ar": "ح-ق-ق",
+     "root_reading": "ḥ-q-q",
+     "example_ar": "حَقًّا؟ مَتَى حَدَثَ ذَلِكَ؟",
+     "example_meaning_en": "Really? When did that happen?",
+     "note": "Shows you’re listening, and invites more."
+    },
+    {
+     "id": "lexeme.arabic-follow-up-questions-6",
+     "form_ar": "أَيّ",
+     "meaning_en": "which",
+     "part_of_speech": "question",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "أَيَّ مَدِينَةٍ زُرْتَ؟",
+     "example_meaning_en": "Which city did you visit?",
+     "note": "The noun after it is genitive and has no article."
+    },
+    {
+     "id": "lexeme.arabic-follow-up-questions-7",
+     "form_ar": "كَيْفَ ذَلِكَ؟",
+     "meaning_en": "how so?",
+     "part_of_speech": "question",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "قُلْتَ إِنَّ الدَّرْسَ سَهْلٌ. كَيْفَ ذَلِكَ؟",
+     "example_meaning_en": "You said the lesson is easy. How so?",
+     "note": "Asks how or why something just said is so."
+    }
+   ]
+  },
+  "lesson.arabic-opinion-repair": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-opinion-repair-1",
+     "form_ar": "فِي رَأْيِي",
+     "meaning_en": "in my opinion",
+     "part_of_speech": "chunk",
+     "root_ar": "ر-أ-ي",
+     "root_reading": "r-ʾ-y",
+     "example_ar": "فِي رَأْيِي، الْفِيلْمُ طَوِيلٌ جِدًّا.",
+     "example_meaning_en": "In my opinion, the film is very long.",
+     "note": "رَأْي is “opinion”. To ask for one: مَا رَأْيُكَ؟"
+    },
+    {
+     "id": "lexeme.arabic-opinion-repair-2",
+     "form_ar": "أَقْصِدُ",
+     "meaning_en": "I mean",
+     "part_of_speech": "verb",
+     "root_ar": "ق-ص-د",
+     "root_reading": "q-ṣ-d",
+     "example_ar": "لَا أَقْصِدُ الْيَوْمَ، أَقْصِدُ غَدًا.",
+     "example_meaning_en": "I don’t mean today, I mean tomorrow.",
+     "note": "Puts right what you said, or what someone understood."
+    },
+    {
+     "id": "lexeme.arabic-opinion-repair-3",
+     "form_ar": "لَا أُوَافِقُ",
+     "meaning_en": "I don’t agree",
+     "part_of_speech": "chunk",
+     "root_ar": "و-ف-ق",
+     "root_reading": "w-f-q",
+     "example_ar": "أَفْهَمُ رَأْيَكَ، لَكِنْ لَا أُوَافِقُ.",
+     "example_meaning_en": "I understand your view, but I don’t agree.",
+     "note": "Softer: لَا أُوَافِقُ تَمَامًا, “I don’t quite agree”."
+    },
+    {
+     "id": "lexeme.arabic-opinion-repair-4",
+     "form_ar": "بِعِبَارَةٍ أُخْرَى",
+     "meaning_en": "in other words",
+     "part_of_speech": "chunk",
+     "root_ar": "ع-ب-ر",
+     "root_reading": "ʿ-b-r",
+     "example_ar": "بِعِبَارَةٍ أُخْرَى، نَحْتَاجُ إِلَى وَقْتٍ أَكْثَرَ.",
+     "example_meaning_en": "In other words, we need more time.",
+     "note": "Introduces a paraphrase. عِبَارَة is “expression, phrase”."
+    },
+    {
+     "id": "lexeme.arabic-opinion-repair-5",
+     "form_ar": "تَقْرِيبًا",
+     "meaning_en": "about, roughly",
+     "part_of_speech": "adverb",
+     "root_ar": "ق-ر-ب",
+     "root_reading": "q-r-b",
+     "example_ar": "تَسْتَغْرِقُ الرِّحْلَةُ سَاعَتَيْنِ تَقْرِيبًا.",
+     "example_meaning_en": "The trip takes about two hours.",
+     "note": "The same root as قَرِيب, “near”."
+    },
+    {
+     "id": "lexeme.arabic-opinion-repair-6",
+     "form_ar": "صَحِيح",
+     "meaning_en": "true, right, correct",
+     "part_of_speech": "adjective",
+     "root_ar": "ص-ح-ح",
+     "root_reading": "ṣ-ḥ-ḥ",
+     "example_ar": "هَذَا صَحِيحٌ، لَكِنَّ الْوَقْتَ قَصِيرٌ.",
+     "example_meaning_en": "That’s true, but time is short.",
+     "note": "The same root as صِحَّة, “health”."
+    },
+    {
+     "id": "lexeme.arabic-opinion-repair-7",
+     "form_ar": "عَلَى الْأَقَلِّ",
+     "meaning_en": "at least",
+     "part_of_speech": "chunk",
+     "root_ar": "ق-ل-ل",
+     "root_reading": "q-l-l",
+     "example_ar": "أَقْرَأُ صَفْحَةً وَاحِدَةً عَلَى الْأَقَلِّ كُلَّ يَوْمٍ.",
+     "example_meaning_en": "I read at least one page a day.",
+     "note": "The same root as قَلِيلًا, “a little”."
+    }
+   ]
+  },
+  "lesson.arabic-speaker-variety": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-speaker-variety-1",
+     "form_ar": "الْفُصْحَى",
+     "meaning_en": "Standard Arabic (formal Arabic)",
+     "part_of_speech": "noun",
+     "root_ar": "ف-ص-ح",
+     "root_reading": "f-ṣ-ḥ",
+     "example_ar": "يَتَكَلَّمُ الْمُذِيعُ بِالْفُصْحَى.",
+     "example_meaning_en": "The newsreader speaks in Standard Arabic.",
+     "note": "Short for الْعَرَبِيَّةُ الْفُصْحَى, “the most eloquent Arabic”."
+    },
+    {
+     "id": "lexeme.arabic-speaker-variety-2",
+     "form_ar": "لَهْجَة",
+     "meaning_en": "dialect",
+     "part_of_speech": "noun",
+     "root_ar": "ل-ه-ج",
+     "root_reading": "l-h-j",
+     "example_ar": "يَتَكَلَّمُ جَدِّي بِلَهْجَةِ قَرْيَتِهِ.",
+     "example_meaning_en": "My grandfather speaks in his village’s dialect.",
+     "note": "Plural لَهَجَات."
+    },
+    {
+     "id": "lexeme.arabic-speaker-variety-3",
+     "form_ar": "لَكْنَة",
+     "meaning_en": "accent",
+     "part_of_speech": "noun",
+     "root_ar": "ل-ك-ن",
+     "root_reading": "l-k-n",
+     "example_ar": "لَهُ لَكْنَةٌ خَفِيفَةٌ.",
+     "example_meaning_en": "He has a slight accent.",
+     "note": "Plural لَكَنَات."
+    },
+    {
+     "id": "lexeme.arabic-speaker-variety-4",
+     "form_ar": "الْعَامِّيَّة",
+     "meaning_en": "colloquial Arabic",
+     "part_of_speech": "noun",
+     "root_ar": "ع-م-م",
+     "root_reading": "ʿ-m-m",
+     "example_ar": "نَتَكَلَّمُ الْعَامِّيَّةَ فِي الْبَيْتِ.",
+     "example_meaning_en": "We speak colloquial Arabic at home.",
+     "note": "The everyday spoken language, as against الْفُصْحَى."
+    },
+    {
+     "id": "lexeme.arabic-speaker-variety-5",
+     "form_ar": "رَسْمِيّ",
+     "meaning_en": "formal, official",
+     "part_of_speech": "adjective",
+     "root_ar": "ر-س-م",
+     "root_reading": "r-s-m",
+     "example_ar": "هَذِهِ رِسَالَةٌ رَسْمِيَّةٌ.",
+     "example_meaning_en": "This is a formal letter.",
+     "note": "The opposite is غَيْرُ رَسْمِيٍّ, “informal”."
+    },
+    {
+     "id": "lexeme.arabic-speaker-variety-6",
+     "form_ar": "مُذِيع",
+     "meaning_en": "newsreader, broadcaster",
+     "part_of_speech": "noun",
+     "root_ar": "ذ-ي-ع",
+     "root_reading": "dh-y-ʿ",
+     "example_ar": "صَوْتُ الْمُذِيعِ وَاضِحٌ.",
+     "example_meaning_en": "The newsreader’s voice is clear.",
+     "note": "A woman newsreader is مُذِيعَة."
+    },
+    {
+     "id": "lexeme.arabic-speaker-variety-7",
+     "form_ar": "اِخْتِلَاف",
+     "meaning_en": "difference",
+     "part_of_speech": "noun",
+     "root_ar": "خ-ل-ف",
+     "root_reading": "kh-l-f",
+     "example_ar": "لَاحَظْتُ اخْتِلَافًا فِي النُّطْقِ.",
+     "example_meaning_en": "I noticed a difference in pronunciation.",
+     "note": "Plural اِخْتِلَافَات. “Different” is مُخْتَلِف."
+    }
+   ]
+  },
+  "lesson.arabic-paragraph-design": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-paragraph-design-1",
+     "form_ar": "عَلَى سَبِيلِ الْمِثَالِ",
+     "meaning_en": "for example",
+     "part_of_speech": "chunk",
+     "root_ar": "م-ث-ل",
+     "root_reading": "m-th-l",
+     "example_ar": "عَلَى سَبِيلِ الْمِثَالِ، أَسْتَمِعُ إِلَى الْأَخْبَارِ كُلَّ صَبَاحٍ.",
+     "example_meaning_en": "For example, I listen to the news every morning.",
+     "note": "More formal than مَثَلًا."
+    },
+    {
+     "id": "lexeme.arabic-paragraph-design-2",
+     "form_ar": "مُقَدِّمَة",
+     "meaning_en": "introduction",
+     "part_of_speech": "noun",
+     "root_ar": "ق-د-م",
+     "root_reading": "q-d-m",
+     "example_ar": "كَتَبْتُ مُقَدِّمَةً قَصِيرَةً.",
+     "example_meaning_en": "I wrote a short introduction.",
+     "note": "The same root as قَدَّمَ, “he presented”."
+    },
+    {
+     "id": "lexeme.arabic-paragraph-design-3",
+     "form_ar": "خَاتِمَة",
+     "meaning_en": "conclusion, ending",
+     "part_of_speech": "noun",
+     "root_ar": "خ-ت-م",
+     "root_reading": "kh-t-m",
+     "example_ar": "الْجُمْلَةُ الْأَخِيرَةُ خَاتِمَةُ الْفِقْرَةِ.",
+     "example_meaning_en": "The last sentence is the paragraph’s conclusion.",
+     "note": "From خَتَمَ, “he concluded, he sealed”."
+    },
+    {
+     "id": "lexeme.arabic-paragraph-design-4",
+     "form_ar": "هَكَذَا",
+     "meaning_en": "thus, in this way",
+     "part_of_speech": "adverb",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "هَكَذَا أَتَعَلَّمُ كَلِمَاتٍ جَدِيدَةً كُلَّ يَوْمٍ.",
+     "example_meaning_en": "This is how I learn new words every day.",
+     "note": "Often closes a paragraph by linking back to its point."
+    },
+    {
+     "id": "lexeme.arabic-paragraph-design-5",
+     "form_ar": "مُتَرَابِط",
+     "meaning_en": "connected, coherent",
+     "part_of_speech": "adjective",
+     "root_ar": "ر-ب-ط",
+     "root_reading": "r-b-ṭ",
+     "example_ar": "الْجُمَلُ فِي هَذِهِ الْفِقْرَةِ مُتَرَابِطَةٌ.",
+     "example_meaning_en": "The sentences in this paragraph hang together.",
+     "note": "The same root as رَبَطَ, “he tied, he linked”."
+    },
+    {
+     "id": "lexeme.arabic-paragraph-design-6",
+     "form_ar": "أَيْ",
+     "meaning_en": "that is, i.e.",
+     "part_of_speech": "particle",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "أَدْرُسُ يَوْمِيًّا، أَيْ سَبْعَةَ أَيَّامٍ فِي الْأُسْبُوعِ.",
+     "example_meaning_en": "I study daily, that is, seven days a week.",
+     "note": "Explains or restates what came before. Not أَيّ, “which”."
+    }
+   ]
+  },
+  "lesson.arabic-formal-email": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-formal-email-1",
+     "form_ar": "مُحْتَرَم",
+     "meaning_en": "respected (in a formal address)",
+     "part_of_speech": "adjective",
+     "root_ar": "ح-ر-م",
+     "root_reading": "ḥ-r-m",
+     "example_ar": "السَّيِّدُ الْمُدِيرُ الْمُحْتَرَمُ،",
+     "example_meaning_en": "Dear Director, (literally “the respected Mr Director”)",
+     "note": "After the name or title in a formal letter. For a woman: مُحْتَرَمَة."
+    },
+    {
+     "id": "lexeme.arabic-formal-email-2",
+     "form_ar": "أَرْجُو",
+     "meaning_en": "I hope; please (formal)",
+     "part_of_speech": "verb",
+     "root_ar": "ر-ج-و",
+     "root_reading": "r-j-w",
+     "example_ar": "أَرْجُو الرَّدَّ فِي أَقْرَبِ وَقْتٍ.",
+     "example_meaning_en": "Please reply as soon as possible.",
+     "note": "Formal “please”, followed by what you ask for, as a noun or with أَنْ."
+    },
+    {
+     "id": "lexeme.arabic-formal-email-3",
+     "form_ar": "بَرِيد إِلِكْتْرُونِيّ",
+     "meaning_en": "email",
+     "part_of_speech": "noun",
+     "root_ar": "ب-ر-د",
+     "root_reading": "b-r-d",
+     "example_ar": "مَا عُنْوَانُ بَرِيدِكَ الْإِلِكْتْرُونِيِّ؟",
+     "example_meaning_en": "What’s your email address?",
+     "note": "On its own, بَرِيد is “post, mail”."
+    },
+    {
+     "id": "lexeme.arabic-formal-email-4",
+     "form_ar": "مُرْفَق",
+     "meaning_en": "attached; an attachment",
+     "part_of_speech": "adjective",
+     "root_ar": "ر-ف-ق",
+     "root_reading": "r-f-q",
+     "example_ar": "تَجِدُونَ الْمَلَفَّ مُرْفَقًا.",
+     "example_meaning_en": "You will find the file attached.",
+     "note": "Plural مُرْفَقَات, “attachments”."
+    },
+    {
+     "id": "lexeme.arabic-formal-email-5",
+     "form_ar": "اِسْتِفْسَار",
+     "meaning_en": "enquiry",
+     "part_of_speech": "noun",
+     "root_ar": "ف-س-ر",
+     "root_reading": "f-s-r",
+     "example_ar": "لَدَيَّ اسْتِفْسَارٌ عَنِ الدَّوْرَةِ.",
+     "example_meaning_en": "I have an enquiry about the course.",
+     "note": "Asking for an explanation. The same root as تَفْسِير, “explanation”."
+    },
+    {
+     "id": "lexeme.arabic-formal-email-6",
+     "form_ar": "تَحِيَّة",
+     "meaning_en": "greeting; regards",
+     "part_of_speech": "noun",
+     "root_ar": "ح-ي-ي",
+     "root_reading": "ḥ-y-y",
+     "example_ar": "أَبْدَأُ الرِّسَالَةَ بِتَحِيَّةٍ قَصِيرَةٍ.",
+     "example_meaning_en": "I begin the letter with a short greeting.",
+     "note": "A usual opening is تَحِيَّةً طَيِّبَةً, and a usual closing is مَعَ التَّحِيَّةِ, “with regards”."
+    },
+    {
+     "id": "lexeme.arabic-formal-email-7",
+     "form_ar": "مُسْبَقًا",
+     "meaning_en": "in advance",
+     "part_of_speech": "adverb",
+     "root_ar": "س-ب-ق",
+     "root_reading": "s-b-q",
+     "example_ar": "شُكْرًا مُسْبَقًا عَلَى مُسَاعَدَتِكُمْ.",
+     "example_meaning_en": "Thank you in advance for your help.",
+     "note": "A polite close to a request."
+    }
+   ]
+  },
+  "lesson.arabic-summary-notes": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-summary-notes-1",
+     "form_ar": "مَقَالَة",
+     "meaning_en": "article",
+     "part_of_speech": "noun",
+     "root_ar": "ق-و-ل",
+     "root_reading": "q-w-l",
+     "example_ar": "قَرَأْتُ مَقَالَةً عَنِ التَّعْلِيمِ.",
+     "example_meaning_en": "I read an article about education.",
+     "note": "Also مَقَال. The same root as قَالَ, “he said”."
+    },
+    {
+     "id": "lexeme.arabic-summary-notes-2",
+     "form_ar": "لَخَّصَ",
+     "meaning_en": "he summarised",
+     "part_of_speech": "verb",
+     "root_ar": "ل-خ-ص",
+     "root_reading": "l-kh-ṣ",
+     "example_ar": "لَخَّصْتُ الْمَقَالَةَ فِي ثَلَاثِ جُمَلٍ.",
+     "example_meaning_en": "I summarised the article in three sentences.",
+     "note": "Form II. “A summary” is مُلَخَّص."
+    },
+    {
+     "id": "lexeme.arabic-summary-notes-3",
+     "form_ar": "أَشَارَ إِلَى",
+     "meaning_en": "pointed to, mentioned",
+     "part_of_speech": "chunk",
+     "root_ar": "ش-و-ر",
+     "root_reading": "sh-w-r",
+     "example_ar": "أَشَارَ الْكَاتِبُ إِلَى مُشْكِلَةِ الْمُرُورِ.",
+     "example_meaning_en": "The writer pointed to the traffic problem.",
+     "note": "A reporting verb: it keeps the point the writer’s."
+    },
+    {
+     "id": "lexeme.arabic-summary-notes-4",
+     "form_ar": "نُقْطَة",
+     "meaning_en": "point; full stop",
+     "part_of_speech": "noun",
+     "root_ar": "ن-ق-ط",
+     "root_reading": "n-q-ṭ",
+     "example_ar": "كَتَبْتُ النِّقَاطَ الْمُهِمَّةَ فَقَطْ.",
+     "example_meaning_en": "I wrote down only the important points.",
+     "note": "Plural نِقَاط. In punctuation, the full stop."
+    },
+    {
+     "id": "lexeme.arabic-summary-notes-5",
+     "form_ar": "أَضَافَ",
+     "meaning_en": "he added",
+     "part_of_speech": "verb",
+     "root_ar": "ض-ي-ف",
+     "root_reading": "ḍ-y-f",
+     "example_ar": "لَا تُضِفْ شَيْئًا لَيْسَ فِي النَّصِّ.",
+     "example_meaning_en": "Don’t add anything that isn’t in the text.",
+     "note": "Form IV, hollow: “he adds” is يُضِيفُ. After لَا, “don’t”, it shortens to تُضِفْ."
+    },
+    {
+     "id": "lexeme.arabic-summary-notes-6",
+     "form_ar": "بِشَكْلٍ عَامٍّ",
+     "meaning_en": "in general",
+     "part_of_speech": "chunk",
+     "root_ar": "ش-ك-ل",
+     "root_reading": "sh-k-l",
+     "example_ar": "بِشَكْلٍ عَامٍّ، النَّصُّ وَاضِحٌ.",
+     "example_meaning_en": "In general, the text is clear.",
+     "note": "Sums up the whole, without the details."
+    }
+   ]
+  },
+  "lesson.arabic-orthography-editing": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-orthography-editing-1",
+     "form_ar": "هَمْزَة",
+     "meaning_en": "hamza",
+     "part_of_speech": "noun",
+     "root_ar": "ه-م-ز",
+     "root_reading": "h-m-z",
+     "example_ar": "فِي «سُؤَال» هَمْزَةٌ عَلَى الْوَاوِ.",
+     "example_meaning_en": "In سُؤَال the hamza sits on a wāw.",
+     "note": "Its seat depends on the vowels around it."
+    },
+    {
+     "id": "lexeme.arabic-orthography-editing-2",
+     "form_ar": "تَاءٌ مَرْبُوطَةٌ",
+     "meaning_en": "tāʾ marbūṭa (ة)",
+     "part_of_speech": "chunk",
+     "root_ar": "ر-ب-ط",
+     "root_reading": "r-b-ṭ",
+     "example_ar": "تَنْتَهِي «غُرْفَة» بِتَاءٍ مَرْبُوطَةٍ.",
+     "example_meaning_en": "غُرْفَة ends in a tāʾ marbūṭa.",
+     "note": "Literally “tied tāʾ”: said -a at a pause, -at before another word."
+    },
+    {
+     "id": "lexeme.arabic-orthography-editing-3",
+     "form_ar": "أَلِفٌ مَقْصُورَةٌ",
+     "meaning_en": "alif maqṣūra (ى)",
+     "part_of_speech": "chunk",
+     "root_ar": "ق-ص-ر",
+     "root_reading": "q-ṣ-r",
+     "example_ar": "تُكْتَبُ «عَلَى» بِأَلِفٍ مَقْصُورَةٍ.",
+     "example_meaning_en": "عَلَى is written with an alif maqṣūra.",
+     "note": "It looks like ي without dots, and is said ā."
+    },
+    {
+     "id": "lexeme.arabic-orthography-editing-4",
+     "form_ar": "عَلَامَةُ الِاسْتِفْهَامِ",
+     "meaning_en": "question mark",
+     "part_of_speech": "chunk",
+     "root_ar": "ع-ل-م",
+     "root_reading": "ʿ-l-m",
+     "example_ar": "ضَعْ عَلَامَةَ الِاسْتِفْهَامِ فِي آخِرِ السُّؤَالِ.",
+     "example_meaning_en": "Put a question mark at the end of the question.",
+     "note": "In Arabic it faces the other way: ؟"
+    },
+    {
+     "id": "lexeme.arabic-orthography-editing-5",
+     "form_ar": "فَاصِلَة",
+     "meaning_en": "comma",
+     "part_of_speech": "noun",
+     "root_ar": "ف-ص-ل",
+     "root_reading": "f-ṣ-l",
+     "example_ar": "لَا تَضَعْ فَاصِلَةً هُنَا.",
+     "example_meaning_en": "Don’t put a comma here.",
+     "note": "In Arabic it’s written ، turned the other way."
+    },
+    {
+     "id": "lexeme.arabic-orthography-editing-6",
+     "form_ar": "خَطَأ",
+     "meaning_en": "mistake, error",
+     "part_of_speech": "noun",
+     "root_ar": "خ-ط-أ",
+     "root_reading": "kh-ṭ-ʾ",
+     "example_ar": "فِي هَذِهِ الْجُمْلَةِ خَطَأٌ وَاحِدٌ.",
+     "example_meaning_en": "There’s one mistake in this sentence.",
+     "note": "Plural أَخْطَاء. The hamza sits on alif after a fatḥa."
+    },
+    {
+     "id": "lexeme.arabic-orthography-editing-7",
+     "form_ar": "إِمْلَاء",
+     "meaning_en": "spelling; dictation",
+     "part_of_speech": "noun",
+     "root_ar": "م-ل-و",
+     "root_reading": "m-l-w",
+     "example_ar": "رَاجَعْتُ الْإِمْلَاءَ قَبْلَ أَنْ أُرْسِلَ الرِّسَالَةَ.",
+     "example_meaning_en": "I checked the spelling before I sent the message.",
+     "note": "The verbal noun of أَمْلَى, “he dictated”."
+    }
+   ]
+  },
+  "lesson.arabic-feedback-rewrite": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-feedback-rewrite-1",
+     "form_ar": "صَحَّحَ",
+     "meaning_en": "he corrected",
+     "part_of_speech": "verb",
+     "root_ar": "ص-ح-ح",
+     "root_reading": "ṣ-ḥ-ḥ",
+     "example_ar": "صَحَّحَتِ الْمُعَلِّمَةُ أَخْطَائِي.",
+     "example_meaning_en": "The teacher corrected my mistakes.",
+     "note": "Form II of the root of صَحِيح, “correct”."
+    },
+    {
+     "id": "lexeme.arabic-feedback-rewrite-2",
+     "form_ar": "مُسَوَّدَة",
+     "meaning_en": "draft",
+     "part_of_speech": "noun",
+     "root_ar": "س-و-د",
+     "root_reading": "s-w-d",
+     "example_ar": "اِحْتَفِظْ بِالْمُسَوَّدَةِ الْأُولَى.",
+     "example_meaning_en": "Keep the first draft.",
+     "note": "The same root as أَسْوَد, “black”."
+    },
+    {
+     "id": "lexeme.arabic-feedback-rewrite-3",
+     "form_ar": "تَعْلِيق",
+     "meaning_en": "comment",
+     "part_of_speech": "noun",
+     "root_ar": "ع-ل-ق",
+     "root_reading": "ʿ-l-q",
+     "example_ar": "شُكْرًا عَلَى تَعْلِيقَاتِكَ.",
+     "example_meaning_en": "Thank you for your comments.",
+     "note": "Plural تَعْلِيقَات, as here."
+    },
+    {
+     "id": "lexeme.arabic-feedback-rewrite-4",
+     "form_ar": "أَعَادَ",
+     "meaning_en": "he did again; he gave back",
+     "part_of_speech": "verb",
+     "root_ar": "ع-و-د",
+     "root_reading": "ʿ-w-d",
+     "example_ar": "أَعَدْتُ كِتَابَةَ الْفِقْرَةِ.",
+     "example_meaning_en": "I rewrote the paragraph.",
+     "note": "With a verbal noun it means “do again”: أَعَادَ الْقِرَاءَةَ, “he read it again”."
+    },
+    {
+     "id": "lexeme.arabic-feedback-rewrite-5",
+     "form_ar": "تَحَسَّنَ",
+     "meaning_en": "it improved (got better)",
+     "part_of_speech": "verb",
+     "root_ar": "ح-س-ن",
+     "root_reading": "ḥ-s-n",
+     "example_ar": "تَحَسَّنَتْ كِتَابَتِي كَثِيرًا.",
+     "example_meaning_en": "My writing has improved a lot.",
+     "note": "Form V. The same root as أَحْسَن, “better”."
+    },
+    {
+     "id": "lexeme.arabic-feedback-rewrite-6",
+     "form_ar": "مُذَكَّر",
+     "meaning_en": "masculine",
+     "part_of_speech": "adjective",
+     "root_ar": "ذ-ك-ر",
+     "root_reading": "dh-k-r",
+     "example_ar": "«قَلَمٌ» اسْمٌ مُذَكَّرٌ.",
+     "example_meaning_en": "قَلَم is a masculine noun.",
+     "note": "Feminine is مُؤَنَّث."
+    }
+   ]
+  },
+  "lesson.arabic-b1-source-task": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-b1-source-task-1",
+     "form_ar": "قَارَنَ",
+     "meaning_en": "he compared",
+     "part_of_speech": "verb",
+     "root_ar": "ق-ر-ن",
+     "root_reading": "q-r-n",
+     "example_ar": "قَارَنْتُ بَيْنَ النَّصَّيْنِ.",
+     "example_meaning_en": "I compared the two texts.",
+     "note": "Form III, often with بَيْنَ. “Comparison” is مُقَارَنَة."
+    },
+    {
+     "id": "lexeme.arabic-b1-source-task-2",
+     "form_ar": "مُشْتَرَك",
+     "meaning_en": "shared, common",
+     "part_of_speech": "adjective",
+     "root_ar": "ش-ر-ك",
+     "root_reading": "sh-r-k",
+     "example_ar": "لِلْمَصْدَرَيْنِ مَوْضُوعٌ مُشْتَرَكٌ.",
+     "example_meaning_en": "The two sources share a topic.",
+     "note": "The same root as شَارَكَ فِي, “took part in”."
+    },
+    {
+     "id": "lexeme.arabic-b1-source-task-3",
+     "form_ar": "اِتَّفَقَ",
+     "meaning_en": "he agreed",
+     "part_of_speech": "verb",
+     "root_ar": "و-ف-ق",
+     "root_reading": "w-f-q",
+     "example_ar": "يَتَّفِقُ الْمَصْدَرَانِ عَلَى الْفِكْرَةِ الْعَامَّةِ.",
+     "example_meaning_en": "The two sources agree on the general idea.",
+     "note": "Form VIII, from the root of مُوَافِق, “agreed”. It takes عَلَى."
+    },
+    {
+     "id": "lexeme.arabic-b1-source-task-4",
+     "form_ar": "اِخْتَلَفَ",
+     "meaning_en": "he differed",
+     "part_of_speech": "verb",
+     "root_ar": "خ-ل-ف",
+     "root_reading": "kh-l-f",
+     "example_ar": "يَخْتَلِفُ الْمَصْدَرُ الثَّانِي عَنِ الْأَوَّلِ.",
+     "example_meaning_en": "The second source differs from the first.",
+     "note": "“Differs from” is اِخْتَلَفَ عَنْ."
+    },
+    {
+     "id": "lexeme.arabic-b1-source-task-5",
+     "form_ar": "غَيْر",
+     "meaning_en": "not, un-; other than",
+     "part_of_speech": "noun",
+     "root_ar": "غ-ي-ر",
+     "root_reading": "gh-y-r",
+     "example_ar": "سَبَبُ الْمُشْكِلَةِ غَيْرُ وَاضِحٍ.",
+     "example_meaning_en": "The cause of the problem is unclear.",
+     "note": "Makes an opposite with the word after it, as in غَيْرُ مُمْكِنٍ, “impossible”."
+    },
+    {
+     "id": "lexeme.arabic-b1-source-task-6",
+     "form_ar": "مَوْثُوق",
+     "meaning_en": "reliable",
+     "part_of_speech": "adjective",
+     "root_ar": "و-ث-ق",
+     "root_reading": "w-th-q",
+     "example_ar": "هَلْ هَذَا الْمَصْدَرُ مَوْثُوقٌ؟",
+     "example_meaning_en": "Is this source reliable?",
+     "note": "From وَثِقَ, “he trusted”."
+    }
+   ]
+  },
+  "lesson.arabic-b1-explainer": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-b1-explainer-1",
+     "form_ar": "شَرَحَ",
+     "meaning_en": "he explained",
+     "part_of_speech": "verb",
+     "root_ar": "ش-ر-ح",
+     "root_reading": "sh-r-ḥ",
+     "example_ar": "شَرَحَ لَنَا الْمُعَلِّمُ الدَّرْسَ بِأَمْثِلَةٍ.",
+     "example_meaning_en": "The teacher explained the lesson to us with examples.",
+     "note": "“An explanation” is شَرْح."
+    },
+    {
+     "id": "lexeme.arabic-b1-explainer-2",
+     "form_ar": "يَكْفِي",
+     "meaning_en": "it is enough",
+     "part_of_speech": "verb",
+     "root_ar": "ك-ف-ي",
+     "root_reading": "k-f-y",
+     "example_ar": "هَلْ يَكْفِي الْوَقْتُ؟",
+     "example_meaning_en": "Is there enough time?",
+     "note": "Past كَفَى. “It isn’t enough” is لَا يَكْفِي."
+    },
+    {
+     "id": "lexeme.arabic-b1-explainer-3",
+     "form_ar": "وَحْدَهُ",
+     "meaning_en": "alone, by himself",
+     "part_of_speech": "chunk",
+     "root_ar": "و-ح-د",
+     "root_reading": "w-ḥ-d",
+     "example_ar": "سَافَرَ وَحْدَهُ.",
+     "example_meaning_en": "He travelled alone.",
+     "note": "With other endings: وَحْدِي, “on my own”, and وَحْدَهَا, “by herself”."
+    },
+    {
+     "id": "lexeme.arabic-b1-explainer-4",
+     "form_ar": "بَسِيط",
+     "meaning_en": "simple",
+     "part_of_speech": "adjective",
+     "root_ar": "ب-س-ط",
+     "root_reading": "b-s-ṭ",
+     "example_ar": "سَأَشْرَحُ الْفِكْرَةَ بِكَلِمَاتٍ بَسِيطَةٍ.",
+     "example_meaning_en": "I’ll explain the idea in simple words.",
+     "note": "The opposite is مُعَقَّد, “complicated”."
+    },
+    {
+     "id": "lexeme.arabic-b1-explainer-5",
+     "form_ar": "فِي الْخِتَامِ",
+     "meaning_en": "in conclusion",
+     "part_of_speech": "chunk",
+     "root_ar": "خ-ت-م",
+     "root_reading": "kh-t-m",
+     "example_ar": "فِي الْخِتَامِ، أَشْكُرُكُمْ عَلَى الِاسْتِمَاعِ.",
+     "example_meaning_en": "In conclusion, thank you for listening.",
+     "note": "Closes a talk or a piece of writing."
+    },
+    {
+     "id": "lexeme.arabic-b1-explainer-6",
+     "form_ar": "هَلْ هَذَا وَاضِحٌ؟",
+     "meaning_en": "is that clear?",
+     "part_of_speech": "question",
+     "root_ar": "و-ض-ح",
+     "root_reading": "w-ḍ-ḥ",
+     "example_ar": "إِذَا لَمْ يَكُنْ هَذَا وَاضِحًا فَاسْأَلُونِي.",
+     "example_meaning_en": "If that isn’t clear, ask me.",
+     "note": "Checks that your listeners have followed."
+    },
+    {
+     "id": "lexeme.arabic-b1-explainer-7",
+     "form_ar": "مُسْتَمِع",
+     "meaning_en": "listener",
+     "part_of_speech": "noun",
+     "root_ar": "س-م-ع",
+     "root_reading": "s-m-ʿ",
+     "example_ar": "سَأَلَنِي أَحَدُ الْمُسْتَمِعِينَ سُؤَالًا.",
+     "example_meaning_en": "One of the listeners asked me a question.",
+     "note": "From اِسْتَمَعَ, “he listened”."
+    }
+   ]
+  },
+  "lesson.arabic-b1-unprepared": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-b1-unprepared-1",
+     "form_ar": "مُتَأَكِّد",
+     "meaning_en": "sure",
+     "part_of_speech": "adjective",
+     "root_ar": "أ-ك-د",
+     "root_reading": "ʾ-k-d",
+     "example_ar": "هَلْ أَنْتَ مُتَأَكِّدٌ؟",
+     "example_meaning_en": "Are you sure?",
+     "note": "For a woman: مُتَأَكِّدَة. The same root as أَكَّدَ, “he confirmed”."
+    },
+    {
+     "id": "lexeme.arabic-b1-unprepared-2",
+     "form_ar": "دَعْنِي أُفَكِّرُ",
+     "meaning_en": "let me think",
+     "part_of_speech": "chunk",
+     "root_ar": "ف-ك-ر",
+     "root_reading": "f-k-r",
+     "example_ar": "سُؤَالٌ صَعْبٌ، دَعْنِي أُفَكِّرُ قَلِيلًا.",
+     "example_meaning_en": "A hard question; let me think a little.",
+     "note": "دَعْنِي is “let me”. The same root as فِكْرَة, “idea”."
+    },
+    {
+     "id": "lexeme.arabic-b1-unprepared-3",
+     "form_ar": "فِي الْحَقِيقَةِ",
+     "meaning_en": "actually, in fact",
+     "part_of_speech": "chunk",
+     "root_ar": "ح-ق-ق",
+     "root_reading": "ḥ-q-q",
+     "example_ar": "فِي الْحَقِيقَةِ، لَمْ أَقْرَأْ هَذَا الْكِتَابَ.",
+     "example_meaning_en": "Actually, I haven’t read this book.",
+     "note": "حَقِيقَة is “truth, fact”."
+    },
+    {
+     "id": "lexeme.arabic-b1-unprepared-4",
+     "form_ar": "عَلَى حَدِّ عِلْمِي",
+     "meaning_en": "as far as I know",
+     "part_of_speech": "chunk",
+     "root_ar": "ع-ل-م",
+     "root_reading": "ʿ-l-m",
+     "example_ar": "عَلَى حَدِّ عِلْمِي، الْمَكْتَبَةُ مَفْتُوحَةٌ يَوْمَ السَّبْتِ.",
+     "example_meaning_en": "As far as I know, the library is open on Saturday.",
+     "note": "Marks the limit of what you know."
+    },
+    {
+     "id": "lexeme.arabic-b1-unprepared-5",
+     "form_ar": "بِصَرَاحَةٍ",
+     "meaning_en": "honestly, frankly",
+     "part_of_speech": "chunk",
+     "root_ar": "ص-ر-ح",
+     "root_reading": "ṣ-r-ḥ",
+     "example_ar": "بِصَرَاحَةٍ، لَمْ أُفَكِّرْ فِي ذَلِكَ.",
+     "example_meaning_en": "Honestly, I hadn’t thought about that.",
+     "note": "صَرِيح is “frank”."
+    },
+    {
+     "id": "lexeme.arabic-b1-unprepared-6",
+     "form_ar": "اِخْتَارَ",
+     "meaning_en": "he chose",
+     "part_of_speech": "verb",
+     "root_ar": "خ-ي-ر",
+     "root_reading": "kh-y-r",
+     "example_ar": "اِخْتَرْتُ هَذِهِ الدَّوْرَةَ لِأَنَّهَا مَسَائِيَّةٌ.",
+     "example_meaning_en": "I chose this course because it’s in the evening.",
+     "note": "Form VIII, hollow: “he chooses” is يَخْتَارُ."
+    },
+    {
+     "id": "lexeme.arabic-b1-unprepared-7",
+     "form_ar": "يَعْتَمِدُ عَلَى",
+     "meaning_en": "it depends on",
+     "part_of_speech": "chunk",
+     "root_ar": "ع-م-د",
+     "root_reading": "ʿ-m-d",
+     "example_ar": "يَعْتَمِدُ ذَلِكَ عَلَى الْوَقْتِ.",
+     "example_meaning_en": "That depends on the time.",
+     "note": "Also “relies on”."
+    }
+   ]
+  },
+  "lesson.arabic-b1-independent-cycle": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-b1-independent-cycle-1",
+     "form_ar": "تَعَلُّم",
+     "meaning_en": "learning",
+     "part_of_speech": "noun",
+     "root_ar": "ع-ل-م",
+     "root_reading": "ʿ-l-m",
+     "example_ar": "التَّعَلُّمُ مِنَ الْأَخْطَاءِ مُفِيدٌ.",
+     "example_meaning_en": "Learning from mistakes is useful.",
+     "note": "The verbal noun of تَعَلَّمَ, “he learned”."
+    },
+    {
+     "id": "lexeme.arabic-b1-independent-cycle-2",
+     "form_ar": "صَبْر",
+     "meaning_en": "patience",
+     "part_of_speech": "noun",
+     "root_ar": "ص-ب-ر",
+     "root_reading": "ṣ-b-r",
+     "example_ar": "تَعَلُّمُ لُغَةٍ يَحْتَاجُ إِلَى صَبْرٍ.",
+     "example_meaning_en": "Learning a language takes patience.",
+     "note": "“Patient” is صَبُور."
+    },
+    {
+     "id": "lexeme.arabic-b1-independent-cycle-3",
+     "form_ar": "مُنَاسِب",
+     "meaning_en": "suitable",
+     "part_of_speech": "adjective",
+     "root_ar": "ن-س-ب",
+     "root_reading": "n-s-b",
+     "example_ar": "أَبْحَثُ عَنْ كِتَابٍ مُنَاسِبٍ لِمُسْتَوَايَ.",
+     "example_meaning_en": "I’m looking for a book that suits my level.",
+     "note": "The same root as يُنَاسِبُكَ, “it suits you”."
+    },
+    {
+     "id": "lexeme.arabic-b1-independent-cycle-4",
+     "form_ar": "سِجِلّ",
+     "meaning_en": "record, log",
+     "part_of_speech": "noun",
+     "root_ar": "س-ج-ل",
+     "root_reading": "s-j-l",
+     "example_ar": "أَكْتُبُ فِي سِجِلٍّ مَا أَقْرَأُ كُلَّ يَوْمٍ.",
+     "example_meaning_en": "I write what I read each day in a log.",
+     "note": "The same root as تَسْجِيل, “recording”."
+    },
+    {
+     "id": "lexeme.arabic-b1-independent-cycle-5",
+     "form_ar": "أَوْلَوِيَّة",
+     "meaning_en": "priority",
+     "part_of_speech": "noun",
+     "root_ar": "و-ل-ي",
+     "root_reading": "w-l-y",
+     "example_ar": "أَوْلَوِيَّتِي الْآنَ هِيَ الِاسْتِمَاعُ.",
+     "example_meaning_en": "My priority now is listening.",
+     "note": "Plural أَوْلَوِيَّات."
+    },
+    {
+     "id": "lexeme.arabic-b1-independent-cycle-6",
+     "form_ar": "تَمْرِين",
+     "meaning_en": "exercise",
+     "part_of_speech": "noun",
+     "root_ar": "م-ر-ن",
+     "root_reading": "m-r-n",
+     "example_ar": "أَحُلُّ تَمْرِينًا وَاحِدًا كُلَّ صَبَاحٍ.",
+     "example_meaning_en": "I do one exercise every morning.",
+     "note": "Plural تَمَارِين."
+    },
+    {
+     "id": "lexeme.arabic-b1-independent-cycle-7",
+     "form_ar": "تَدْرِيجِيًّا",
+     "meaning_en": "gradually",
+     "part_of_speech": "adverb",
+     "root_ar": "د-ر-ج",
+     "root_reading": "d-r-j",
+     "example_ar": "يَتَحَسَّنُ مُسْتَوَايَ تَدْرِيجِيًّا.",
+     "example_meaning_en": "My level is improving gradually.",
+     "note": "From دَرَجَة, “step, degree”."
+    }
+   ]
+  },
+  "lesson.arabic-b1-portfolio": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-b1-portfolio-1",
+     "form_ar": "مَهَارَة",
+     "meaning_en": "skill",
+     "part_of_speech": "noun",
+     "root_ar": "م-ه-ر",
+     "root_reading": "m-h-r",
+     "example_ar": "الِاسْتِمَاعُ مَهَارَةٌ مُهِمَّةٌ.",
+     "example_meaning_en": "Listening is an important skill.",
+     "note": "Plural مَهَارَات. The four: الْقِرَاءَةُ، الْكِتَابَةُ، الِاسْتِمَاعُ، الْمُحَادَثَةُ."
+    },
+    {
+     "id": "lexeme.arabic-b1-portfolio-2",
+     "form_ar": "نُقْطَةُ قُوَّةٍ",
+     "meaning_en": "a strength (strong point)",
+     "part_of_speech": "chunk",
+     "root_ar": "ق-و-ي",
+     "root_reading": "q-w-y",
+     "example_ar": "نُقْطَةُ قُوَّتِي هِيَ الْقِرَاءَةُ.",
+     "example_meaning_en": "My strong point is reading.",
+     "note": "A weak point is نُقْطَةُ ضَعْفٍ."
+    },
+    {
+     "id": "lexeme.arabic-b1-portfolio-3",
+     "form_ar": "دَلِيل",
+     "meaning_en": "evidence; guide",
+     "part_of_speech": "noun",
+     "root_ar": "د-ل-ل",
+     "root_reading": "d-l-l",
+     "example_ar": "هَذَا التَّسْجِيلُ دَلِيلٌ عَلَى تَقَدُّمِي.",
+     "example_meaning_en": "This recording is evidence of my progress.",
+     "note": "Plural أَدِلَّة. Also a guidebook."
+    },
+    {
+     "id": "lexeme.arabic-b1-portfolio-4",
+     "form_ar": "مُسْتَقِلّ",
+     "meaning_en": "independent",
+     "part_of_speech": "adjective",
+     "root_ar": "ق-ل-ل",
+     "root_reading": "q-l-l",
+     "example_ar": "أَصْبَحْتُ أَقْرَأُ بِشَكْلٍ مُسْتَقِلٍّ.",
+     "example_meaning_en": "I’ve started reading independently.",
+     "note": "“Independence” is اِسْتِقْلَال."
+    },
+    {
+     "id": "lexeme.arabic-b1-portfolio-5",
+     "form_ar": "تَخَصُّص",
+     "meaning_en": "specialism; (university) major",
+     "part_of_speech": "noun",
+     "root_ar": "خ-ص-ص",
+     "root_reading": "kh-ṣ-ṣ",
+     "example_ar": "مَا تَخَصُّصُكَ؟",
+     "example_meaning_en": "What’s your field?",
+     "note": "The same root as خَاصّ, “particular”."
+    },
+    {
+     "id": "lexeme.arabic-b1-portfolio-6",
+     "form_ar": "مَرْحَلَة",
+     "meaning_en": "stage",
+     "part_of_speech": "noun",
+     "root_ar": "ر-ح-ل",
+     "root_reading": "r-ḥ-l",
+     "example_ar": "أَنْهَيْتُ الْمَرْحَلَةَ الْأُولَى.",
+     "example_meaning_en": "I’ve finished the first stage.",
+     "note": "Plural مَرَاحِل. The same root as رِحْلَة, “trip”."
+    },
+    {
+     "id": "lexeme.arabic-b1-portfolio-7",
+     "form_ar": "قَادِر عَلَى",
+     "meaning_en": "able to",
+     "part_of_speech": "chunk",
+     "root_ar": "ق-د-ر",
+     "root_reading": "q-d-r",
+     "example_ar": "أَنَا قَادِرٌ عَلَى فَهْمِ الْأَخْبَارِ الْبَسِيطَةِ.",
+     "example_meaning_en": "I’m able to understand simple news.",
+     "note": "Like أَسْتَطِيعُ, but with عَلَى and a noun."
     }
    ]
   }
