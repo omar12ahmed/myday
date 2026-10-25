@@ -119,6 +119,8 @@ Round six (course words for modules 8–10, the same day): 236 new clips, transc
 and saved nothing, so the script now skips and saves as it goes); twelve remade; a note that ran two Arabic pieces
 together reworded and its merged clip removed; the owner asked for another take of one example (مَا اسْمُ الْمَكَانِ؟),
 then approved all. The temporary key was deleted.
+Round seven (course words for modules 11–13): 251 new clips, transcribed blind; eight short forms remade; three still
+heard differently (ذَهَاب، فِقْرَات، يَعْرِفُنَا) and approved by ear in three batches ("all good"). The key was deleted.
 
 **Each round works like round one.**
 - **On the Mac:**
