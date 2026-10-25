@@ -93,6 +93,9 @@ export function normalizeProjects(raw: unknown, report: { dropped: number }): Pr
     // Tools switched on (specs/projects-research.md): kept when there are some; one from a newer MyDay too.
     const tools = [...new Set(listOf(p.tools).filter((t): t is string => typeof t === 'string' && !!t && t.length <= 40))];
     if (tools.length) item.tools = tools; else delete item.tools;
+    // Overview sections hidden on it (specs/projects-sections.md): kept when there are some; one from a newer MyDay too.
+    const hidden = [...new Set(listOf(p.hidden).filter((t): t is string => typeof t === 'string' && !!t && t.length <= 40))].slice(0, 20);
+    if (hidden.length) item.hidden = hidden; else delete item.hidden;
     seen.add(item.id);
     out.items.push(item);
   }

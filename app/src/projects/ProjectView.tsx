@@ -8,13 +8,14 @@ import { Card } from '../components/Card';
 import { CategoryChip } from '../components/CategoryChip';
 import { useConfirm } from '../components/confirm';
 import { CommitInput, CommitTextarea, Field, Select, TextArea, TextInput } from '../components/Field';
-import { BackLink, Eyebrow, Note, NotFound } from '../components/parts';
+import { BackLink, Eyebrow, LinkButton, Note, NotFound } from '../components/parts';
 import { Switch } from '../components/Switch';
 import { prettyDate, relDay, shortDate, todayKey } from '../data/dates';
 import { addNote, noteName } from '../data/notes';
 import { isBusiness, isCase, isResearchKind, knownTemplate, setTemplate, TEMPLATES, type TemplateChoice } from '../data/businessModel';
 import { hasResearch, setResearch } from '../data/research';
 import { worthALook } from '../data/projectDashboard';
+import { arrived, arriving, isHidden, overviewSections, SECTIONS, setHidden, type Section } from '../data/projectSections';
 import { comingUp, deleteProject, editProject, heldBack, setProjectPrivate, linkNote, nextStep, PROJECT_LIMITS, projectById, projectNotes, projectTasks, recently, setLeftOff, setNextStep, STATUS_LABEL, stillOpen, unlinkAppointment, whyNext } from '../data/projects';
 import { update } from '../data/storage';
 import { addTask, addToTodaysPlan, onTodaysPlan, planRoom, setTaskDone, stepsText, startsAfterText } from '../data/tasks';
@@ -52,13 +53,19 @@ export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDay
   const shown = useDeferredValue(query); // typing stays smooth in a big project
   const clear = () => { setQuery(''); focusSoon('projectSearch'); };
   // Opening a result ends the search and puts the keyboard on the item itself, once its tab is showing.
-  const pick = (h: SearchHit) => { setQuery(''); if (h.kind !== 'task' && h.kind !== 'note') focusItem(h); };
+  // Optional Overview sections opened on this visit (from "Add to this project", or a search result inside one), shown
+  // whatever else applies (specs/projects-sections.md).
+  const [opened, setOpened] = useState<ReadonlySet<Section>>(() => new Set(arriving(id)));
+  useEffect(() => { arrived(id); }, [id]); // (openOnArrival is used once, on arrival)
+  const open = (s: Section) => setOpened(o => new Set([...o, s]));
+  const pick = (h: SearchHit) => { setQuery(''); if (h.kind === 'resource') open('resources'); if (h.kind !== 'task' && h.kind !== 'note') focusItem(h); };
   const p = projectById(data, id);
   if (!p) return <><BackLink to="projects" label="Projects" /><NotFound title="This project isn't here" back="projects" label="Back to your projects" /></>;
   // The Model tab is a business idea's, and Timeline, Evidence and Issues a case's; anywhere else their address shows the
   // Overview.
   const tab = (asked === 'model' && !isBusiness(p)) || (CASE_TABS.includes(asked) && !isCase(p)) || (asked === 'research' && !hasResearch(p)) ? 'overview' : asked;
   const hits = shown.trim() ? searchProject(data, p, shown) : [];
+  const sec = overviewSections(data, p, opened);
   return (
     <>
       <BackLink to="projects" label="Projects" />
@@ -75,20 +82,55 @@ export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDay
       <div className="grid gap-x-5 lg:grid-cols-[minmax(0,1fr)_340px] items-start">
         <div className="min-w-0">
           <TasksCard data={data} p={p} />
-          <NotesCard data={data} p={p} />
+          {sec.show.has('notes') && <NotesCard data={data} p={p} />}
         </div>
         <div className="min-w-0">
           <ComingUpCard data={data} p={p} />
-          <RecentlyCard data={data} p={p} />
-          <LearningCard data={data} p={p} />
-          <ResourcesCard p={p} />
-          <FilesCard data={data} owner={{ kind: 'project', id: p.id }} area="project" />
+          {sec.show.has('recently') && <RecentlyCard data={data} p={p} />}
+          {sec.show.has('learning') && <LearningCard data={data} p={p} />}
+          {sec.show.has('resources') && <ResourcesCard p={p} />}
+          {sec.show.has('files') && <FilesCard data={data} owner={{ kind: 'project', id: p.id }} area="project" />}
+          <MoreCard p={p} fold={sec.fold} hiddenWith={sec.hiddenWith} onOpen={s => { open(s); startAdding(s); }} />
           <ManageCard p={p} />
         </div>
       </div>
       </>}
       </div>
     </>
+  );
+}
+
+// Opened from "Add to this project": its own first step — a link's or a lesson's form opens; a note's and a file's
+// buttons get the keyboard (a file picker opens only on your own tap).
+function startAdding(s: Section) {
+  setTimeout(() => {
+    if (s === 'resources' || s === 'learning') document.getElementById(s === 'resources' ? 'resourceAdd' : 'learningAdd')?.click();
+    else document.querySelector<HTMLElement>(s === 'notes' ? '[data-action=project-note-new]' : '#files-project [data-action=file-add]')?.focus();
+  }, 0);
+}
+
+// What's folded or hidden on the Overview (specs/projects-sections.md): "Add to this project: a note · …" for the
+// optional cards with nothing in them, and "Hidden here: Files (3)" for hidden ones that hold something — one tap
+// from each. Nothing when there's neither.
+function MoreCard({ p, fold, hiddenWith, onOpen }: { p: Project; fold: Section[]; hiddenWith: { id: Section; label: string; count: number }[]; onOpen: (s: Section) => void }) {
+  if (!fold.length && !hiddenWith.length) return null;
+  function show(s: Section, label: string) { if (update(d => (setHidden(d, p.id, s, false) ? undefined : false))) toast(`${label} shown again.`); }
+  const first = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+  return (
+    <Card aria-labelledby={fold.length ? 'projectMoreH' : 'projectHiddenH'} id="projectMore">
+      {fold.length > 0 && <>
+        <h3 id="projectMoreH" className="m-0">Add to this project</h3>
+        <div className="flex flex-wrap gap-x-5" data-s="sections-fold">
+          {fold.map(s => <LinkButton key={s} className="text-[15px]" data-action="section-open" data-id={s} onClick={() => onOpen(s)}>{first(SECTIONS.find(x => x.id === s)!.add!)}</LinkButton>)}
+        </div>
+      </>}
+      {hiddenWith.length > 0 && <>
+        <h3 id="projectHiddenH" className={`m-0 ${fold.length ? 'mt-3' : ''}`}>Hidden here</h3>
+        <div className="flex flex-wrap gap-x-5" data-s="sections-hidden">
+          {hiddenWith.map(h => <LinkButton key={h.id} className="text-[15px]" aria-label={`Show ${h.label} (${h.count}) on the Overview`} data-action="section-show" data-id={h.id} onClick={() => show(h.id, h.label)}>Show {h.label} ({h.count})</LinkButton>)}
+        </div>
+      </>}
+    </Card>
   );
 }
 
@@ -186,6 +228,15 @@ function ProjectHead({ p }: { p: Project }) {
             <Switch on={hasResearch(p)} data-action="project-research"
               onChange={on => { if (update(d => (setResearch(d, p.id, on) ? undefined : false))) toast(on ? 'Research is on — it has its own tab.' : 'Research is off. Everything in it is kept; switch it on to see it again.'); }}>Research</Switch>
           )}
+          {/* Optional Overview cards (specs/projects-sections.md): empty ones fold away by themselves; any can be hidden here. */}
+          <fieldset className="border-0 p-0 m-0" data-s="sections-shown">
+            <legend className="text-sm font-semibold mb-1.5">Show on the Overview</legend>
+            <div className="flex flex-wrap gap-2">
+              {SECTIONS.map(x => <Switch key={x.id} on={!isHidden(p, x.id)} data-action={`section-${x.id}`}
+                onChange={on => { if (update(d => (setHidden(d, p.id, x.id, !on) ? undefined : false))) toast(on ? `${x.label} shown again.` : `${x.label} hidden on this project.`); }}>{x.label}</Switch>)}
+            </div>
+            <p className="text-sm text-fg-3 m-0 mt-1.5">Ones with nothing in them fold away by themselves.</p>
+          </fieldset>
         </div>
       ) : p.summary ? (
         <p className="text-[16px] text-fg-2 m-0 mt-2 whitespace-pre-line" data-s="project-summary">{p.summary}</p>

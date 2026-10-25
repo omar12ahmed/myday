@@ -197,6 +197,9 @@ export interface Project {
   // Tools switched on beyond its kind's own (optional; absent = none): 'research' (specs/projects-research.md). A tool
   // from a newer MyDay is kept as it is. Switching one off keeps its records.
   tools?: string[];
+  // Optional Overview sections hidden on this project (optional; absent = none): 'notes', 'recently', 'learning',
+  // 'resources', 'files' (specs/projects-sections.md). One from a newer MyDay is kept as it is.
+  hidden?: string[];
 }
 export interface LeftOff { text: string; at: DateTime; [other: string]: unknown }
 // `kind` is a string so a kind from a newer MyDay is kept as it is; `title` is what it was called when linked, so a
