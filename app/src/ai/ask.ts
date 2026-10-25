@@ -13,7 +13,7 @@ import { stIndex } from '../data/study/roadmap';
 import { ROUND_SIZE } from '../data/study/common';
 import { dueIds, type Scope } from '../data/study/queue';
 import { updateSaved } from '../data/storage';
-import { addTask, chaseWaiting, editTask, inQueue, leaveTodaysPlanIfLater, onTodaysPlan } from '../data/tasks';
+import { addStep, addTask, chaseWaiting, editTask, inQueue, leaveTodaysPlanIfLater, onTodaysPlan, removeStep, TASK_LIMITS } from '../data/tasks';
 import { addMilestone, addOption, addPoint, PLAN_LIMITS, removeMilestone, removeOption, removePoint, type Side } from '../data/projectPlan';
 import { addAssumption, isBusiness, MODEL_LIMITS, removeAssumption } from '../data/businessModel';
 import type { Category, Commitment, DateKey, MyDayData, Note, Project, StudyModule, StudySection, Task, TaskItem } from '../data/types';
@@ -35,6 +35,7 @@ export interface AskProposal {
   text: string;                                 // a note's text / a project's summary ('' otherwise)
   already: boolean;                             // a task with this title is already on your lists (left unticked)
   chaseFor?: string;                            // a "Chase:" task for this waiting task (added as its chase, as Chase it does)
+  stepFor?: string;                             // a step: the task whose checklist it goes into (v23)
   // A study task (into the course on the page): its kind and where it goes — an existing section, or a new section
   // (named) in an existing module or a new module (named).
   study?: { courseId: string; kind: 'learn' | 'practical'; sectionId: string | null; section: string | null; moduleId: string | null; module: string | null };
@@ -196,15 +197,29 @@ function checkReply(text: string, data: MyDayData, slice: AskSlice, k: DateKey, 
   const dc = pr && slice.context.project?.decision ? pr.decisions?.find(x => x.id === slice.context.project!.decision!.id) ?? null : null;
   let plannedMs = 0, plannedOpts = 0, plannedBeliefs = 0;
   const plannedPts: Record<string, number> = {};
+  // On a task's page with its checklist sent (v23): a breakdown is steps inside that task, within addStep's limits.
+  const stepTask = slice.context.task?.steps !== undefined ? data.tasks.items.find(t => t.id === slice.context.task!.id) ?? null : null;
+  const haveSteps = new Set((stepTask?.steps ?? []).map(st => sameTask(st.text)));
+  let stepRoom = stepTask ? TASK_LIMITS.steps - (stepTask.steps?.length ?? 0) : 0;
   for (const it of r.items) {
     if (items.length >= studyCap) break;
     let type: AskItemType = PLAN_TYPES.includes(it.type) ? it.type : course && r.kind === 'steps' ? 'study-task' : r.kind === 'steps' ? 'task' : it.type;
+    // A step goes into the checklist of the task on the page; anywhere else it's a task.
+    if (it.type === 'step' || (stepTask && r.kind === 'steps' && type === 'task')) type = stepTask ? 'step' : 'task';
     if (type === 'study-task' && !course) type = 'task'; // only on a course page
     if (type !== 'study-task' && items.length >= L.items) continue;
     if (r.kind === 'answer' && items.length >= 3) break; // an answer suggests at most three
     const title = it.title.replace(/\s+/g, ' ').trim().slice(0, L.titleChars);
     if (!title || seen.has(type + ':' + sameTask(title))) continue;
     seen.add(type + ':' + sameTask(title));
+    if (type === 'step') {
+      const words = title.slice(0, TASK_LIMITS.step);
+      if (haveSteps.has(sameTask(words))) { changed.push(`“${words}”: already one of its steps.`); continue; }
+      if (stepRoom <= 0) { changed.push(`Left out more steps — ${TASK_LIMITS.steps} is the most for a task.`); continue; }
+      stepRoom--;
+      items.push({ type: 'step', title: words, date: null, time: null, minutes: 0, category: 'admin', projectId: null, text: '', already: false, stepFor: stepTask!.id });
+      continue;
+    }
     if (PLAN_TYPES.includes(type)) {
       const base = { title, date: null, time: null, minutes: 0, category: 'admin' as Category, text: '', already: false };
       if (!pr) { changed.push(`“${title}”: left out — it's for a project that isn't on this page.`); continue; }
@@ -431,6 +446,7 @@ export function undoAskChanges(u: AskChangeUndo): { result: 'undone' | 'partly' 
 // ---------- Saving what you ticked ----------
 export interface AskUndo {
   tasks: string[]; notes: string[]; appointments: string[]; projects: string[]; study?: { tasks: string[]; sections: string[]; modules: string[] };
+  steps?: { taskId: string; id: string }[]; // steps it put into a task's checklist (v23)
   // Milestones, options and pros/cons it added to a project (1.32.0).
   plan?: ({ kind: 'milestone'; projectId: string; id: string } | { kind: 'assumption'; projectId: string; id: string } | { kind: 'option'; projectId: string; decisionId: string; id: string } | { kind: 'point'; projectId: string; decisionId: string; optionId: string; side: Side; text: string })[];
 }
@@ -483,6 +499,12 @@ export function addAskItems(items: AskProposal[]): AskUndo | null {
     for (const it of items) if (it.type === 'project') { const id = addProject(d, it.title, it.text); if (id) { u.projects.push(id); created ??= id; } }
     const inProject = (pid: string | null) => (pid === NEW_PROJECT ? created : pid);
     for (const it of items) {
+      if (it.type === 'step') {
+        // A step into the task's checklist (v23), with its own limits; undone like the rest.
+        const id = it.stepFor ? addStep(d.tasks, it.stepFor, it.title) : null;
+        if (id) (u.steps ??= []).push({ taskId: it.stepFor!, id });
+        continue;
+      }
       if (it.type === 'task' && it.chaseFor) {
         // A chase for a wait it looked at: Chase it's own way (same list and project, 5 minutes, linked to the wait).
         const id = chaseWaiting(d, it.chaseFor, it.date);
@@ -510,7 +532,7 @@ export function addAskItems(items: AskProposal[]): AskUndo | null {
         u.appointments.push(id);
       }
     }
-    if (!u.tasks.length && !u.notes.length && !u.appointments.length && !u.projects.length && !u.study!.tasks.length && !u.plan!.length) return false;
+    if (!u.tasks.length && !u.notes.length && !u.appointments.length && !u.projects.length && !u.study!.tasks.length && !u.plan!.length && !u.steps?.length) return false;
   });
   return r === 'saved' ? u : null;
 }
@@ -535,6 +557,9 @@ export function undoAsk(u: AskUndo): boolean {
         c.modules = c.modules.filter(m => !(sm.has(m.id) && !m.sections.length));
       }
     }
+    // Steps it put into a task's checklist (one you've already removed stays removed).
+    let stepsGone = 0;
+    for (const x of u.steps ?? []) stepsGone += removeStep(d.tasks, x.taskId, x.id) ? 1 : 0;
     // Milestones, options and pros/cons it added (newest first; one you've already removed stays removed).
     let planGone = 0;
     for (const x of [...(u.plan ?? [])].reverse()) {
@@ -550,7 +575,7 @@ export function undoAsk(u: AskUndo): boolean {
         if (i >= 0) planGone += removePoint(d, x.projectId, x.decisionId, x.optionId, x.side, i) ? 1 : 0;
       }
     }
-    if (d.tasks.items.length + d.notes.items.length + d.commitments.length + d.projects.items.length === before && !studyGone && !planGone) return false;
+    if (d.tasks.items.length + d.notes.items.length + d.commitments.length + d.projects.items.length === before && !studyGone && !planGone && !stepsGone) return false;
   }) === 'saved';
 }
 
@@ -559,7 +584,7 @@ export function countWords(items: { type: AskItemType }[]): string {
   const n = (t: AskItemType) => items.filter(i => i.type === t).length;
   const w = (c: number, one: string, many: string) => (c === 1 ? `a${/^[aeiou]/.test(one) ? 'n' : ''} ${one}` : `${c} ${many}`);
   const parts = [[n('study-task'), 'study task', 'study tasks'], [n('task'), 'task', 'tasks'], [n('note'), 'note', 'notes'], [n('appointment'), 'appointment', 'appointments'], [n('project'), 'project', 'projects'],
-    [n('milestone'), 'milestone', 'milestones'], [n('option'), 'option', 'options'], [n('pro'), 'pro', 'pros'], [n('con'), 'con', 'cons'], [n('must-be-true'), 'thing that must be true', 'things that must be true']]
+    [n('step'), 'step', 'steps'], [n('milestone'), 'milestone', 'milestones'], [n('option'), 'option', 'options'], [n('pro'), 'pro', 'pros'], [n('con'), 'con', 'cons'], [n('must-be-true'), 'thing that must be true', 'things that must be true']]
     .filter(([c]) => (c as number) > 0).map(([c, one, many]) => w(c as number, one as string, many as string));
   return parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : parts[0] ?? 'nothing';
 }

@@ -231,7 +231,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     bad('an extra field on the review', { ...rv, extra: 'x' });
     bad('an extra field on a project that moved', { ...rv, moved: [{ ...rv.moved[0], title: 'Task titles' }] });
     const sys = A.buildAskMessages(mk(rv)).map(m => m.content).join('\n').replace(/\s+/g, ' ');
-    check('the instructions are version myday-ask-v22', A.ASK_PROMPT_VERSION === 'myday-ask-v22', A.ASK_PROMPT_VERSION);
+    check('the instructions are version myday-ask-v23', A.ASK_PROMPT_VERSION === 'myday-ask-v23', A.ASK_PROMPT_VERSION);
     check('…and have the week-in-review part: what pattern do you see, answer with no items, "never guess why"', sys.includes('A week in review') && sys.includes('what pattern you see') && sys.includes('never guess why') && sys.includes('No items'), sys.slice(0, 200));
     const m1 = JSON.parse(A.mockAsk(mk(rv)));
     check('the practice version answers "What pattern do you see in my week?" with kind "answer" and no items', m1.kind === 'answer' && Array.isArray(m1.items) && m1.items.length === 0 && m1.action === null, m1);
@@ -389,6 +389,28 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     check('the practice version looks at what to study next', ms1.kind === 'lookup' && ms1.lookup.tool === 'study', ms1);
     const ms2 = JSON.parse(A.mockAsk({ ...base, text: 'What should I study next?', can: ['notes', 'day', 'project', 'decisions', 'waiting', 'study'], lookup: study }));
     check('…and, with them, names the focus\'s next step and its reason, citing it', ms2.kind === 'answer' && ms2.message.includes('next is “How the web works” (Cybersecurity), about 25 minutes. It builds on what you finished last.') && ms2.sources.join() === 'cybersecurity', ms2);
+    // Steps (v23, the owner's choice): a task's checklist on its page, and with each of a project's tasks.
+    const taskCtx = { id: 't9', title: 'Book the van', due: null, minutes: 30, notes: '', steps: [{ text: 'Get three quotes', done: true }, { text: 'Pick a date', done: false }] };
+    check('a task page carrying its checklist is accepted, and one without (an older app)', A.checkAskContext({ ...base, page: 'task', context: { task: taskCtx } }) === true && A.checkAskContext({ ...base, page: 'task', context: { task: (({ steps, ...t }) => t)(taskCtx) } }) === true);
+    bad('a step carrying more than its words and done', { ...base, page: 'task', context: { task: { ...taskCtx, steps: [{ text: 'x', done: false, id: 'ts1' }] } } });
+    bad('31 steps on a task', { ...base, page: 'task', context: { task: { ...taskCtx, steps: Array.from({ length: 31 }, (_, i) => ({ text: 'Step ' + i, done: false })) } } });
+    bad('a step over 120 characters', { ...base, page: 'task', context: { task: { ...taskCtx, steps: [{ text: 'x'.repeat(121), done: false }] } } });
+    const pjTasks = [{ id: 't1', title: 'Book the van', done: false, steps: [{ text: 'Get three quotes', done: true }], stepsTotal: 12, after: ['Choose the flat'] }, { id: 't2', title: 'Choose the flat', done: false }];
+    check('a project\'s tasks with their steps, how many in all, and what each starts after are accepted', A.checkAskContext({ ...base, page: 'project', context: { project: { id: 'pj1', title: 'Move', summary: '', stage: 'act', tasks: pjTasks, notes: [] } } }) === true
+      && A.checkAskContext({ ...base, lookup: { ...proj, project: { ...proj.project, tasks: pjTasks } } }) === true);
+    bad('a project task carrying anything else (who it waits on)', { ...base, page: 'project', context: { project: { id: 'pj1', title: 'Move', summary: '', stage: 'act', tasks: [{ ...pjTasks[0], waiting: 'Priya' }], notes: [] } } });
+    bad('11 steps on one of a project\'s tasks', { ...base, page: 'project', context: { project: { id: 'pj1', title: 'Move', summary: '', stage: 'act', tasks: [{ ...pjTasks[0], steps: Array.from({ length: 11 }, (_, i) => ({ text: 'S' + i, done: false })) }], notes: [] } } });
+    bad('more than 40 steps across a project', { ...base, page: 'project', context: { project: { id: 'pj1', title: 'Move', summary: '', stage: 'act', tasks: Array.from({ length: 5 }, (_, k) => ({ id: 't' + k, title: 'Task ' + k, done: false, steps: Array.from({ length: 9 }, (_, i) => ({ text: 'S' + i, done: false })) })), notes: [] } } });
+    const sysTask = sysOf({ ...base, page: 'task', context: { task: taskCtx } });
+    check('the instructions: on a task page with its checklist, a breakdown is "step" items into it, never repeating one; a task\'s steps and "starts after" read in a project, never as waiting',
+      sysTask.includes('On a task page whose "task" has "steps" (its checklist, even an empty one), breaking that task down is "steps" with items of type "step"') && sysTask.includes('never repeating one it already has (by meaning)')
+      && sysTask.includes('the next step inside a task is its first one not done') && sysTask.includes('never call that waiting'));
+    const sr = A.readAsk(JSON.stringify({ kind: 'steps', message: 'Steps.', action: null, items: [{ type: 'step', title: 'Ring the van firm' }, { type: 'step', text: 'Words in text' }] }));
+    check('a "step" item is read (its words in "title", or in "text")', sr && sr.items.length === 2 && sr.items.every(x => x.type === 'step') && sr.items[1].title === 'Words in text', sr);
+    const mst = JSON.parse(A.mockAsk({ ...base, page: 'task', text: 'Break this into smaller steps', context: { task: taskCtx } }));
+    check('the practice version, on a task page with its checklist, gives steps for it', mst.kind === 'steps' && mst.items.length === 3 && mst.items.every(x => x.type === 'step'), mst);
+    const mso = JSON.parse(A.mockAsk({ ...base, page: 'task', text: 'Break this into smaller steps', context: { task: (({ steps, ...t }) => t)(taskCtx) } }));
+    check('…and without it (an older app) tasks, as before', mso.kind === 'steps' && mso.items.every(x => x.type === 'task'), mso);
   }
   env = { AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_MOCK_DELAY_MS: '0', AI_DAILY_LIMIT: '50', AI_MIN_SECONDS_BETWEEN: '0', AI_MONTHLY_BUDGET_USD: '1' };
 
@@ -556,7 +578,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     const r1 = A.readAsk(rep([{ type: 'must-be-true', title: 'Crews would pay' }, { type: 'must-be-true', text: 'We can cook 40 boxes a day' }]));
     check('a reply\'s must-be-true items are kept, the words read from "title" or, when it is missing, from "text"', r1 && r1.items.length === 2 && r1.items.every(i => i.type === 'must-be-true') && r1.items[0].title === 'Crews would pay' && r1.items[1].title === 'We can cook 40 boxes a day', r1);
     const sys = A.buildAskMessages(mk(page)).map(m => m.content).join('\n');
-    check('the instructions are version myday-ask-v22 and mention must-be-true and onePage', A.ASK_PROMPT_VERSION === 'myday-ask-v22' && sys.includes('must-be-true') && sys.includes('onePage'), A.ASK_PROMPT_VERSION);
+    check('the instructions are version myday-ask-v23 and mention must-be-true and onePage', A.ASK_PROMPT_VERSION === 'myday-ask-v23' && sys.includes('must-be-true') && sys.includes('onePage'), A.ASK_PROMPT_VERSION);
     const m1 = JSON.parse(A.mockAsk(mk(page)));
     check('the practice version, with a one page and "Suggest what must be true…", answers "add" with 3 must-be-true items', m1.kind === 'add' && m1.items.length === 3 && m1.items.every(i => i.type === 'must-be-true'), m1);
     const m2 = JSON.parse(A.mockAsk(mk(undefined)));
@@ -569,7 +591,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     const mk = tasks => ({ version: 1, action: 'ask', date: '2026-11-10', weekday: 'Tuesday', time: '10:00', page: 'project', text: 'Summarise where this project is, and the one next step',
       context: { project: { id: 'pjB', title: 'Lunch boxes for sites', summary: 'Hot lunches for builders', stage: 'explore', tasks, notes: [] } } });
     const sys = A.buildAskMessages(mk([])).map(m => m.content).join('\n').replace(/\s+/g, ' ');
-    check('the instructions are version myday-ask-v22', A.ASK_PROMPT_VERSION === 'myday-ask-v22', A.ASK_PROMPT_VERSION);
+    check('the instructions are version myday-ask-v23', A.ASK_PROMPT_VERSION === 'myday-ask-v23', A.ASK_PROMPT_VERSION);
     check('the summary instructions say a done "Find out" task means they looked into it, not that its answer is confirmed', sys.includes('A summary of the project on this page') && sys.includes('a done "Find out: X" means they\'ve looked into whether X') && sys.includes('never that X is confirmed or true'));
     check('…and to summarise without advising on a legal, medical or money matter', sys.includes('legal, medical or money matter, summarise without advising'));
     const withTasks = mk([{ id: 'tkA', title: 'Ring the caterer', done: true }, { id: 'tkB', title: 'Price the boxes', done: false }, { id: 'tkC', title: 'Book a stall', done: false }]);

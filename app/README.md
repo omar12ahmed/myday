@@ -809,6 +809,16 @@ not a course it points at). Never a percentage; no "start" action (the link open
 may offer the revision round. Evaluated with `ai-eval/ask-scenarios.ts` (n01–n07) and
 `ai-eval/reviews/2026-10-25-ask-study-quality.md`.
 
+**Steps in Ask MyDay** (`myday-ask-v23`, the owner's choices of 25 Oct 2026, on myday-51's steps and "Starts after"):
+on a task's page, "Break into smaller steps" now fills that task's checklist — Ask's request carries the task's steps
+(their words and whether done; even none), and a breakdown comes back as "step" items you tick, added with `addStep`
+(at most 30 a task, 120 characters each, none repeating one it has) and taken out again by Undo; a request without the
+checklist (an older app) still gets separate tasks. A project's page and Ask's look at a project now send each task's
+steps (at most 10 a task and 40 in all, with how many in all when more) and the project's tasks it starts after, by
+title — so "what's next" can name the next step inside a task, and a task that starts after another comes second
+("starts after" is never called waiting). Never a private project's task or steps, and never a "starts after" id.
+Evaluated with `ai-eval/ask-scenarios.ts` (t01–t06).
+
 **Planning a Study course with Ask (1.26.0):** a course page has **✦ Plan this course with Ask**, which opens + already
 filled in ("Break this course into study tasks"; `src/capture/openCapture.ts`). From a course page Ask sends the
 course's outline — its modules, sections and tasks: titles, lengths, kinds and done or not, no links or notes, cut to

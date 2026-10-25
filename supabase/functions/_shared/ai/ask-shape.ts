@@ -25,6 +25,7 @@ export const ASK_LIMITS = {
   reviewProjects: 20, reviewWaiting: 5, reviewWaitingChars: 200, reviewFocus: 3,
   // A lookup (specs/ai-tools.md §3): the words to search, up to 8 notes found, each with a short snippet at most.
   lookupQueryChars: 60, lookupNotes: 8, lookupSnippetChars: 200, lookupSources: 8, lookupDecisions: 8, lookupBeliefs: 8, lookupWaiting: 8, lookupStudy: 3, studyWhyChars: 400, studyDetailChars: 200,
+  taskSteps: 30, stepChars: 120, projectTaskSteps: 10, projectSteps: 40, taskAfter: 5, // a task's checklist and what it starts after (v23)
   // "Your day" (v18): one day's plan, what's due, busy and free times — capped like the rest of a page's slice.
   dayTasks: 20, dayBusy: 40, dayFree: 24,
 };
@@ -34,7 +35,7 @@ export const ASK_KINDS = ['add', 'steps', 'answer', 'cannot', 'change', 'lookup'
 // What a lookup can look in: your notes (v17), or one day (v18). The app says what it can look in with `can`.
 export const ASK_TOOLS = ['notes', 'day', 'project', 'decisions', 'waiting', 'study'] as const;
 export const DAY_KINDS = ['work', 'appointment', 'workout', 'sleep', 'prep'] as const;
-export const ASK_ITEM_TYPES = ['task', 'note', 'appointment', 'project', 'study-task', 'change', 'milestone', 'pro', 'con', 'option', 'must-be-true'] as const;
+export const ASK_ITEM_TYPES = ['task', 'note', 'appointment', 'project', 'study-task', 'change', 'milestone', 'pro', 'con', 'option', 'must-be-true', 'step'] as const;
 export const BELIEF_STATES = ['open', 'looks-true', 'doesnt-hold'] as const;
 export const ASK_TARGETS = ['task', 'appointment', 'note'] as const;
 export const ASK_CATEGORIES = ['learning', 'admin', 'health'] as const;
@@ -48,7 +49,9 @@ export interface AskPageContext {
   today?: { energy: number | null; freeMinutes: number | null; plan: { id: string; title: string; minutes: number; done: boolean }[]; minutesLeft?: number; dueToday: Ref[]; revisionDue?: number };
   study?: { course: Ref | null; nextTask: Ref | null; topics: string[]; revisionDue: number; energy?: number | null; freeMinutes?: number | null }; // energy and free time today, to fit a session to them
   project?: {
-    id: string; title: string; summary: string; stage: typeof ASK_STAGES[number]; tasks: (Ref & { done: boolean })[]; notes: string[]; notesText?: string;
+    // A task's checklist (v23, the owner's choice: its steps' words, done or not, in order — at most 10 a task and 40 in
+    // all, with stepsTotal when more) and the project's tasks it starts after, by title.
+    id: string; title: string; summary: string; stage: typeof ASK_STAGES[number]; tasks: (Ref & { done: boolean; steps?: { text: string; done: boolean }[]; stepsTotal?: number; after?: string[] })[]; notes: string[]; notesText?: string;
     milestones?: { id: string; title: string; reached: boolean; aim: string | null }[];   // its milestones (1.32.0)
     decision?: { id: string; question: string; options: { id: string; text: string; pros: string[]; cons: string[] }[] }; // the one you asked about
     // A business idea's one page, only from its Model tab (1.34.0): what problem, for whom, how it works and pays, and
@@ -56,7 +59,7 @@ export interface AskPageContext {
     onePage?: { problem: string; who: string; how: string; mustBeTrue: { text: string; state: typeof BELIEF_STATES[number] }[] };
   };
   note?: { id: string; title: string; text: string };
-  task?: { id: string; title: string; due: string | null; minutes: number; notes: string };
+  task?: { id: string; title: string; due: string | null; minutes: number; notes: string; steps?: { text: string; done: boolean }[] }; // steps: its checklist (v23; an older app sends none)
   calendar?: { day: string; appointments: { id?: string; title: string; time: string }[] }; // id: so a change can name one
   // A course on your Study roadmap, as an outline (titles, lengths, kinds, done or not — no links, notes or concepts).
   // The weekly review (#review, 1.37.0): the last seven days in counts, what's waiting and the focus — never anything of
@@ -171,13 +174,19 @@ const only = (o: Record<string, unknown>, keys: string[]) => Object.keys(o).ever
 // A model sometimes writes the word "null" (or "none") for no value.
 const word = (v: unknown, max: number) => (typeof v === 'string' && v.trim() && !/^(null|none|undefined|n\/a)$/i.test(v.trim()) ? v.trim().slice(0, max) : null);
 
+// A task's checklist as it's sent: its steps' words and done, nothing more.
+const stepsOk = (v: unknown, max: number) => Array.isArray(v) && v.length <= max && v.every(st => obj(st) && only(st, ['text', 'done']) && str(st.text, ASK_LIMITS.stepChars, false) && typeof st.done === 'boolean');
+
 // A project as its page sends it (the page's own, or one looked up); `focus`: the decision asked about and the one page
 // may come too (only from its own page).
 function checkProject(p: unknown, focus: boolean): boolean {
   const L = ASK_LIMITS;
   if (!obj(p) || !only(p, ['id', 'title', 'summary', 'stage', 'tasks', 'notes', 'notesText', 'milestones', ...(focus ? ['decision', 'onePage'] : [])])) return false;
   if (!str(p.id, 64, false) || !str(p.title, L.titleChars, false) || !str(p.summary, L.summaryChars) || !ASK_STAGES.includes(p.stage as typeof ASK_STAGES[number])) return false;
-  if (!refs(p.tasks, t => typeof t.done === 'boolean') || !Array.isArray(p.notes) || p.notes.length > L.list || !p.notes.every(n => str(n, L.titleChars, false))) return false;
+  if (!refs(p.tasks, t => typeof t.done === 'boolean' && only(t, ['id', 'title', 'done', 'steps', 'stepsTotal', 'after']) && (t.steps === undefined || stepsOk(t.steps, L.projectTaskSteps))
+    && (t.stepsTotal === undefined || (Number.isInteger(t.stepsTotal) && (t.stepsTotal as number) >= 0 && (t.stepsTotal as number) <= L.taskSteps))
+    && (t.after === undefined || (Array.isArray(t.after) && t.after.length <= L.taskAfter && t.after.every(a => str(a, L.titleChars, false)))))
+    || ((p.tasks as { steps?: unknown[] }[]).reduce((m, t) => m + (t.steps?.length ?? 0), 0) > L.projectSteps) || !Array.isArray(p.notes) || p.notes.length > L.list || !p.notes.every(n => str(n, L.titleChars, false))) return false;
   if (p.notesText !== undefined && !str(p.notesText, L.projectNotesChars)) return false;
   if (p.milestones !== undefined && !(Array.isArray(p.milestones) && p.milestones.length <= L.milestones && p.milestones.every(m => obj(m) && only(m, ['id', 'title', 'reached', 'aim'])
     && str(m.id, 64, false) && str(m.title, L.titleChars, false) && typeof m.reached === 'boolean' && (m.aim === null || isDate(m.aim))))) return false;
@@ -292,7 +301,7 @@ export function checkAskContext(raw: unknown): raw is AskContext {
   }
   if (x.project !== undefined && !checkProject(x.project, true)) return false;
   if (x.note !== undefined && !(obj(x.note) && only(x.note, ['id', 'title', 'text']) && str(x.note.id, 64, false) && str(x.note.title, L.titleChars) && str(x.note.text, L.noteTextChars))) return false;
-  if (x.task !== undefined && !(obj(x.task) && only(x.task, ['id', 'title', 'due', 'minutes', 'notes']) && str(x.task.id, 64, false) && str(x.task.title, L.titleChars, false)
+  if (x.task !== undefined && !(obj(x.task) && only(x.task, ['id', 'title', 'due', 'minutes', 'notes', 'steps']) && (x.task.steps === undefined || stepsOk(x.task.steps, L.taskSteps)) && str(x.task.id, 64, false) && str(x.task.title, L.titleChars, false)
     && (x.task.due === null || isDate(x.task.due)) && Number.isInteger(x.task.minutes) && str(x.task.notes, L.taskNotesChars))) return false;
   if (x.calendar !== undefined && !(obj(x.calendar) && only(x.calendar, ['day', 'appointments']) && isDate(x.calendar.day) && Array.isArray(x.calendar.appointments)
     && x.calendar.appointments.length <= L.list && x.calendar.appointments.every(a => obj(a) && only(a, ['id', 'title', 'time']) && (a.id === undefined || str(a.id, 64, false)) && str(a.title, L.titleChars) && isTime(a.time)))) return false;
@@ -333,7 +342,7 @@ export function readAsk(textIn: string): AskReply | null {
     // A step with no type is a task (a study task when it says where in a course it goes): steps are nothing else.
     const type = obj(it) && it.type === undefined && raw.kind === 'steps' ? (it.sectionId || it.section || it.moduleId || it.module ? 'study-task' : 'task') : obj(it) ? it.type : null;
     // A milestone, pro, con, option or belief whose words came in "text" rather than "title" is read the same.
-    const title = obj(it) && !str(it.title, ASK_LIMITS.titleChars, false) && ['milestone', 'pro', 'con', 'option', 'must-be-true'].includes(type as string) && str(it.text, ASK_LIMITS.titleChars, false) ? it.text : obj(it) ? it.title : null;
+    const title = obj(it) && !str(it.title, ASK_LIMITS.titleChars, false) && ['milestone', 'pro', 'con', 'option', 'must-be-true', 'step'].includes(type as string) && str(it.text, ASK_LIMITS.titleChars, false) ? it.text : obj(it) ? it.title : null;
     if (!obj(it) || !ASK_ITEM_TYPES.includes(type as AskItem['type']) || type === 'change' || !str(title, ASK_LIMITS.titleChars, false)) continue;
     out.push({
       type: type as AskItem['type'], title: (title as string).trim(),

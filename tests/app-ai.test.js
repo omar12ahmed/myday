@@ -627,13 +627,12 @@ const SEED = `s => {
     await mock.click('[data-action=task-ask-steps]'); await mock.until(`document.getElementById('captureText')`, 5000);
     check('…which opens + with the request already typed, and nothing sent or added yet', (await mock.ev(`document.getElementById('captureText').value`)) === 'Break this into smaller steps' && (await tasks()).length === nBefore && !(await mock.exists('[data-s=ask-item]')));
     await mock.click('[data-action=ask-go]'); await mock.until(`['shown', 'error'].includes(document.querySelector('[data-s=ask-panel]')?.dataset.phase)`, 10000);
-    check('Ask MyDay answers with step cards, and says they go in the same list and project as the task, which stays as it is', (await mock.ev(`document.querySelectorAll('[data-s=ask-item]').length`)) === 3 && (await mock.text('[data-s=ask-steps-where]')).includes('“Book the removal van”'), await mock.text('[data-s=ask-panel]'));
-    check('…each step shows the list it goes in', (await mock.ev(`[...document.querySelectorAll('[data-s=ask-item]')].every(x => x.textContent.includes('list “Work”'))`)) === true);
+    check('Ask MyDay answers with step cards for the task\'s checklist (v23), and says they go into it', (await mock.ev(`[...document.querySelectorAll('[data-s=ask-item]')].filter(x => x.dataset.type === 'step').length`)) === 3 && (await mock.text('[data-s=ask-steps-where]')).includes('checklist of “Book the removal van”'), await mock.text('[data-s=ask-panel]'));
+    check('…a step shows no list or minutes (it lives inside the task)', (await mock.ev(`[...document.querySelectorAll('[data-s=ask-item]')].every(x => !x.textContent.includes('list “Work”') && !/\\d+ min/.test(x.textContent))`)) === true);
     await mock.click('[data-action=ask-add]'); await sleep(250);
-    const now = await tasks();
-    const newOnes = now.slice(nBefore);
-    check('Add saves the steps as tasks in that list and project', newOnes.length === 3 && newOnes.every(t => t.listId === 'tlW' && t.projectId === 'pjSt'), newOnes);
-    check('…and the task itself is unchanged', JSON.stringify(now.find(t => t.id === 'tkSt')) === parentBefore);
+    const now = await tasks(), parentNow = now.find(t => t.id === 'tkSt');
+    check('Add puts the steps into that task\'s checklist — no new tasks', now.length === nBefore && (parentNow.steps ?? []).length === 3 && parentNow.steps.every(st => !st.done), parentNow.steps);
+    check('…and the task is otherwise unchanged', JSON.stringify((({ steps, updatedAt, ...t }) => t)(parentNow)) === JSON.stringify((({ steps, updatedAt, ...t }) => t)(JSON.parse(parentBefore))));
     await mock.click('[data-action=ask-undo]'); await sleep(250);
     check('Undo takes the steps back', (await tasks()).length === nBefore && JSON.stringify((await tasks()).find(t => t.id === 'tkSt')) === parentBefore);
     await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(150);
@@ -949,6 +948,15 @@ const SEED = `s => {
     const pst = await runLk(mock, 'What should I study next?');
     check('practice mode: "What should I study next?" from Today looks at the same next steps as the Study card, says so above the answer and links the next step', pst.phase === 'shown' && /^Looked at what to study next: /.test(pst.looked)
       && pst.sources.length > 0 && pst.sources.every(x => /\|#study/.test(x)) && pst.prev.includes('at what to study next'), [pst.looked, pst.sources, pst.error]);
+    await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
+    // (v23) The task page's "Break into smaller steps" fills that task's checklist (practice mode): steps to tick, added there.
+    await mock.ev(`location.hash = 'today/tasks/tkWaitLk'`); await mock.until(`!!document.querySelector('[data-action=task-ask-steps]')`, 15000);
+    await mock.click('[data-action=task-ask-steps]'); await mock.until(`!!document.querySelector('[data-action=ask-go]')`, 10000); await sleep(200);
+    await mock.click('[data-action=ask-go]'); await mock.until(`['shown', 'error'].includes(document.querySelector('[data-s=ask-panel]')?.dataset.phase)`, 25000);
+    const stepItems = await mock.ev(`[...document.querySelectorAll('[data-s=ask-item]')].map(li => li.dataset.type)`);
+    await mock.click('[data-action=ask-add]'); await sleep(400);
+    const kiln = (await mock.data()).tasks.items.find(t => t.id === 'tkWaitLk');
+    check('practice mode: "Break into smaller steps" on a task offers steps for its checklist, and Add puts them there (no new tasks)', stepItems.length === 3 && stepItems.every(t => t === 'step') && (kiln.steps ?? []).length === 3, [stepItems, kiln.steps]);
     await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
     const ppj = await runLk(mock, "What's next on the pottery kiln?");
     const plink = await mock.ev(`document.querySelector('[data-s=ask-project]')?.getAttribute('href') || ''`);

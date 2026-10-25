@@ -4,7 +4,7 @@
 // Node has no browser storage and its own clock, so this also provides an in-memory localStorage (nothing is ever
 // written to disk, and real MyDay data is never read) and a settable clock for each synthetic scenario.
 export { freshState, normalize } from '../app/src/data/normalize';
-export { boot, getSnapshot, update } from '../app/src/data/storage';
+export { boot, getSnapshot, update, updateSaved } from '../app/src/data/storage';
 export { todayKey } from '../app/src/data/dates';
 export { blocksFor, freeSegments } from '../app/src/data/schedule';
 export { buildContext, missingInfo, roomToday } from '../app/src/ai/context';

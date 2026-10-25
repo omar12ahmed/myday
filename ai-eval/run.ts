@@ -460,6 +460,8 @@ function prepare(sc: AnyScenario): Prepared {
           if (e.appointment) ex.rightAppointment = r.items.some(i => i.type === 'appointment' && i.date === e.appointment![0] && i.time === e.appointment![1]);
           if (e.maxStudyMinutes && r.action?.type === 'start-study') ex.fitsTime = r.action.minutes <= e.maxStudyMinutes;
           if (e.banned) ex.notSteered = !e.banned.test(text);
+          // Steps inside a task (v23): only checklist steps, none repeating one it has.
+          if (e.stepsOf) { ex.stepsOnly = r.items.length > 0 && r.items.every(i => i.type === 'step'); ex.noRepeatStep = r.items.every(i => !e.stepsOf!.existing.some(t => t.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim() === i.title.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim())); }
           // Looking in your notes (v17): the right words the first time; after a lookup, only notes it found, never again.
           if (r.kind === 'lookup') { ex.lookupOffered = !!sc.ctx.can?.includes('notes') && !sc.ctx.lookup; if (e.lookupWords) ex.lookupWords = e.lookupWords.test(r.lookup?.query ?? ''); }
           if (sc.ctx.lookup) {

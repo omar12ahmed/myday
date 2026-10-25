@@ -130,3 +130,6 @@ project links it, the project's name or the "For your project" line.
 7. **"Open decisions" is the fourth lookup.**
 8. **"What you're waiting on" is the fifth lookup**: titles, project, since and until; never who.
 9. **"What to study next" is the sixth lookup** (the owner's "continue", 25 Oct 2026).
+10. **Steps reach Ask MyDay** (25 Oct 2026, with myday-51's steps and "Starts after"): on a task's page its steps go
+    (words and done) and a breakdown fills its checklist; a project's page and the project lookup send each task's
+    steps (words included) and what it starts after, by title. Never a private project's.

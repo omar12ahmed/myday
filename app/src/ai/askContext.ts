@@ -8,6 +8,7 @@ import { focusProjects, whatMoved, whatsWaiting } from '../data/weekReview';
 import { noteName } from '../data/notes';
 import { isBusiness } from '../data/businessModel';
 import { projectNotes, projectTasks } from '../data/projects';
+import { startsAfter } from '../data/tasks';
 import type { AskFocus } from '../capture/openCapture';
 import { stIndex } from '../data/study/roadmap';
 import { dueIds } from '../data/study/queue';
@@ -54,10 +55,10 @@ export const SENDS = {
   today: "today's plan, your energy, your free time, tasks due today and how much revision is due",
   study: 'your current course and next task, your topics, how much revision is due, and your energy and free time today',
   course: 'this course’s outline (its modules, sections and tasks — titles and lengths only)',
-  project: (withText: boolean) => `this project’s name, summary, stage, tasks, milestones and note titles${withText ? ' and text (not private ones)' : ''}`,
+  project: (withText: boolean) => `this project’s name, summary, stage, tasks (with their steps and what each starts after), milestones and note titles${withText ? ' and text (not private ones)' : ''}`,
   decision: `the decision you asked about (its question, options, and the first ${L.decisionPoints} pros and ${L.decisionPoints} cons per option)`,
   onePage: 'its one page (your three answers, and what must be true with how each is turning out — not what you found)',
-  note: 'this note', task: 'this task', calendar: "today's appointments",
+  note: 'this note', task: 'this task and its steps', calendar: "today's appointments",
   review: 'your last seven days in counts (what moved in each project, other tasks, study and workouts), what needs you and next week’s focus — nothing of private projects',
 } as const;
 const HELD_WORD = { note: 'not this note, it’s private', project: 'not this project, it’s private', task: 'not this task, its project is private' } as const;
@@ -156,7 +157,9 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey(),
   } else if (page === 'task' && id) {
     const t = data.tasks.items.find(x => x.id === id);
     if (t && !reach.task(t)) here = 'task';
-    else if (t) { ctx.task = { id: t.id, title: cut(t.title, L.titleChars), due: t.due, minutes: t.minutes, notes: cut(t.notes, L.taskNotesChars) }; parts.push(SENDS.task); }
+    // Its checklist goes too (v23, the owner's choice), even an empty one: so a breakdown can be steps inside it.
+    else if (t) { ctx.task = { id: t.id, title: cut(t.title, L.titleChars), due: t.due, minutes: t.minutes, notes: cut(t.notes, L.taskNotesChars),
+      steps: (t.steps ?? []).slice(0, L.taskSteps).map(st => ({ text: cut(st.text, L.stepChars), done: st.done })) }; parts.push(SENDS.task); }
   } else if (page === 'review') {
     // The weekly review (1.37.0): counts and names only, and nothing of a project you've made private.
     const w = whatMoved(data, k), wait = whatsWaiting(data, k);
@@ -184,10 +187,18 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey(),
 // where you left off.
 export function projectSlice(data: MyDayData, p: Project): { project: NonNullable<AskPageContext['project']>; heldNotes: number } {
   const all = projectNotes(data, p), notes = all.filter(aiReach(data).note), withText = !!data.patterns.prefs.aiNotes;
+  let budget = L.projectSteps;
   let text = '';
   if (withText) for (const n of notes) { const add = `${noteName(n)}: ${n.text.trim()}\n`; if (text.length + add.length > L.projectNotesChars) break; text += add; }
   return { heldNotes: all.length - notes.length, project: { id: p.id, title: cut(p.title, L.titleChars), summary: cut(p.summary, L.summaryChars), stage: p.stage,
-    tasks: (({ open, done }) => [...open, ...done])(projectTasks(data, p)).slice(0, L.list).map(t => ({ ...ref(t.id, t.title), done: t.done })), notes: notes.slice(0, L.list).map(n => cut(noteName(n), L.titleChars)),
+    // Each task's checklist (its steps' words, in order: at most 10 a task and 40 in all, with stepsTotal when more) and
+    // the project's open tasks it starts after, by title (v23, the owner's choice).
+    tasks: (({ open, done }) => [...open, ...done])(projectTasks(data, p)).slice(0, L.list).map(t => {
+      const st = t.steps ?? [], shown = st.slice(0, Math.min(L.projectTaskSteps, budget)), after = startsAfter(data, t).slice(0, L.taskAfter).map(x => cut(x.title, L.titleChars));
+      budget -= shown.length;
+      return { ...ref(t.id, t.title), done: t.done, ...(shown.length ? { steps: shown.map(s => ({ text: cut(s.text, L.stepChars), done: s.done })) } : {}),
+        ...(st.length > shown.length ? { stepsTotal: Math.min(st.length, L.taskSteps) } : {}), ...(after.length ? { after } : {}) };
+    }), notes: notes.slice(0, L.list).map(n => cut(noteName(n), L.titleChars)),
     ...(withText && text ? { notesText: text.trim() } : {}),
     ...(p.milestones?.length ? { milestones: p.milestones.slice(0, L.milestones).map(m => ({ id: m.id, title: cut(m.title, L.titleChars), reached: !!m.reachedOn, aim: m.aim })) } : {}) } };
 }
@@ -249,7 +260,9 @@ export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['
     const p = x.project;
     short.push(`Project: ${clip(p.title, 40)}`, `${n(p.tasks.length, 'task')}, ${n(p.notes.length, 'note title')}${p.notesText ? ' and their text' : ''}`);
     all.push({ label: 'This project', lines: [`Name: ${p.title}`, `Summary: ${p.summary ? clip(p.summary) : '(none)'}`, `Stage: ${p.stage.charAt(0).toUpperCase() + p.stage.slice(1)}`] });
-    if (p.tasks.length) all.push({ label: 'Its tasks', lines: p.tasks.map(t => `${t.done ? '✓ ' : ''}${t.title}`) });
+    if (p.tasks.length) all.push({ label: 'Its tasks', lines: p.tasks.map(t => `${t.done ? '✓ ' : ''}${t.title}${t.steps || t.stepsTotal ? ` (${t.steps?.filter(s => s.done).length ?? 0} of ${t.stepsTotal ?? t.steps!.length} steps)` : ''}${t.after?.length ? ` — starts after ${t.after.join(', ')}` : ''}`) });
+    const stepLines = p.tasks.flatMap(t => (t.steps ?? []).map(s => `${t.title}: ${s.done ? '✓ ' : ''}${s.text}`));
+    if (stepLines.length) all.push({ label: 'Their steps', lines: stepLines });
     if (p.notes.length) all.push({ label: 'Its notes (titles)', lines: p.notes });
     if (p.notesText) all.push({ label: 'Its notes’ text (AI help with notes is on; private notes left out)', lines: [clip(p.notesText, 300)] });
     if (p.milestones?.length) {
@@ -280,6 +293,7 @@ export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['
   if (x.task) {
     short.push(`Task: ${clip(x.task.title, 40)}`);
     all.push({ label: 'This task', lines: [`Title: ${x.task.title}`, `Due: ${x.task.due ?? 'no date'}`, `About ${x.task.minutes} min`, ...(x.task.notes ? [`Notes: ${clip(x.task.notes)}`] : [])] });
+    if (x.task.steps?.length) all.push({ label: 'Its steps', lines: x.task.steps.map(s => `${s.done ? '✓ ' : ''}${s.text}`) });
   }
   if (x.review) {
     const r = x.review;

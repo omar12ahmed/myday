@@ -961,7 +961,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
     // The instructions and the practice version.
     const msgs = K.buildAskMessages(ctxA);
-    check('the instructions: five kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"change"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v22' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
+    check('the instructions: five kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"change"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v23' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
     const mk = (hash, text) => K.checkAskReply(K.mockAsk(K.askContext(K.askSlice(K.getSnapshot().data, hash, D), text, D)), K.getSnapshot().data, K.askSlice(K.getSnapshot().data, hash, D), D);
     check('practice version: steps on a project page, in that project', (r => r.kind === 'steps' && r.items.length === 3 && r.items.every(x => x.projectId === 'pjC'))(mk('#projects/p/pjC', 'Break this into smaller steps')));
     check('…several things to add', (r => r.kind === 'add' && eq(r.items.map(x => x.title), ['Call the bank', 'Renew passport', 'Email Sam']))(mk('#today', 'call the bank, renew passport and email Sam')));
@@ -1168,17 +1168,21 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const w = K.getSnapshot().data;
     const S = (...titles) => JSON.stringify({ kind: 'steps', message: 'Here are some smaller steps.', action: null, items: titles.map(t => (typeof t === 'string' ? { type: 'task', title: t } : { type: 'task', ...t })) });
     const slice = id => K.askSlice(w, `#today/tasks/${id}`, D);
-    let c = K.checkAskReply(S('Get three quotes', { title: 'Choose a date', projectId: 'pjB' }, { title: 'Pack the kitchen', projectId: 'pjOld' }), w, slice('tkL'), D);
+    // (v23) A request without the task's checklist — as the published app sends — keeps its breakdown as separate tasks;
+    // with it, a breakdown is steps inside the task (the checks after these).
+    const older = sl0 => { const { steps, ...task } = sl0.context.task; return { ...sl0, context: { ...sl0.context, task } }; };
+    const oslice = id => older(slice(id));
+    let c = K.checkAskReply(S('Get three quotes', { title: 'Choose a date', projectId: 'pjB' }, { title: 'Pack the kitchen', projectId: 'pjOld' }), w, oslice('tkL'), D);
     check('a steps reply on a task page: every step gets the task\'s list and its open project, whatever project the model gave', c.kind === 'steps' && c.items.length === 3 && c.items.every(i => i.listId === 'tlW' && i.projectId === 'pjA'), c.items);
-    c = K.checkAskReply(S('Gather the paperwork', { title: 'Phone the bank', projectId: 'pjA' }), w, slice('tkOld'), D);
+    c = K.checkAskReply(S('Gather the paperwork', { title: 'Phone the bank', projectId: 'pjA' }), w, oslice('tkOld'), D);
     check('a task whose project is done: the steps go in its list but in no project', c.items.length === 2 && c.items.every(i => i.listId === 'tlW' && i.projectId === null), c.items);
-    c = K.checkAskReply(S('Gather the post', { title: 'Open the letters', projectId: 'pjB' }), w, slice('tkNone'), D);
+    c = K.checkAskReply(S('Gather the post', { title: 'Open the letters', projectId: 'pjB' }), w, oslice('tkNone'), D);
     check('a task with no project: the steps get no project, even when the model named one', c.items.length === 2 && c.items.every(i => i.projectId === null), c.items);
-    c = K.checkAskReply(S('Clear the floor', 'Sort the tools'), w, slice('tkBare'), D);
+    c = K.checkAskReply(S('Clear the floor', 'Sort the tools'), w, oslice('tkBare'), D);
     check('a task with no list: the steps have no list id at all', c.items.length === 2 && c.items.every(i => !('listId' in i)), c.items);
-    c = K.checkAskReply(S('Book the removal van', 'Get three quotes'), w, slice('tkL'), D);
+    c = K.checkAskReply(S('Book the removal van', 'Get three quotes'), w, oslice('tkL'), D);
     check('a step with the same title as the task is marked as already there (so it starts unticked)', c.items.find(i => i.title === 'Book the removal van').already === true && c.items.find(i => i.title === 'Get three quotes').already === false, c.items);
-    c = K.checkAskReply(S('Get three quotes', 'Choose a date', 'Pack the kitchen'), w, slice('tkL'), D);
+    c = K.checkAskReply(S('Get three quotes', 'Choose a date', 'Pack the kitchen'), w, oslice('tkL'), D);
     const before = JSON.parse(JSON.stringify(K.getSnapshot().data));
     const u = K.addAskItems(c.items);
     const d = K.getSnapshot().data;
@@ -1187,9 +1191,30 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('…and leaves the task itself exactly as it was', eq(d.tasks.items.find(t => t.id === 'tkL'), before.tasks.items.find(t => t.id === 'tkL')));
     const undone = K.undoAsk(u), after = K.getSnapshot().data, noStamp = ps => ps.map(({ updatedAt, ...x }) => x);
     check('Undo takes all the steps back (the project is as it was, apart from its "updated" time)', undone && eq(after.tasks.items, before.tasks.items) && eq(noStamp(after.projects.items), noStamp(before.projects.items)));
-    const sl = slice('tkL');
+    const sl = oslice('tkL');
     c = K.checkAskReply(K.mockAsk(K.askContext(sl, 'Break this into smaller steps', D)), K.getSnapshot().data, sl, D);
     check('the practice helper, asked for smaller steps on a task page, gives steps that pass the checks (in its list and project)', c.kind === 'steps' && c.items.length === 3 && c.items.every(i => i.type === 'task' && i.listId === 'tlW' && i.projectId === 'pjA' && !i.already), c);
+    // (v23) With the task's checklist sent: a breakdown is steps inside that task — added to its checklist, undone the same.
+    const nslice = id => K.askSlice(K.getSnapshot().data, `#today/tasks/${id}`, D), nsl = nslice('tkL');
+    check('the task page now sends its checklist (empty here), and the server\'s check accepts it', Array.isArray(nsl.context.task.steps) && K.checkAskContext(K.askContext(nsl, 'Break this into smaller steps', D)));
+    c = K.checkAskReply(S('Get three quotes', { title: 'Choose a date', projectId: 'pjB' }), K.getSnapshot().data, nsl, D);
+    check('a breakdown on a task page with its checklist is steps for that task (no project, no list, no minutes)', c.kind === 'steps' && c.items.length === 2 && c.items.every(i => i.type === 'step' && i.stepFor === 'tkL' && i.projectId === null), c.items);
+    const b2 = JSON.parse(JSON.stringify(K.getSnapshot().data)), u2 = K.addAskItems(c.items), d2 = K.getSnapshot().data, tl = d2.tasks.items.find(t => t.id === 'tkL');
+    check('Add puts them in its checklist, in order, not done — and adds no task', eq((tl.steps ?? []).map(x => [x.text, x.done]), [['Get three quotes', false], ['Choose a date', false]]) && d2.tasks.items.length === b2.tasks.items.length && eq(u2.steps.map(x => x.taskId), ['tkL', 'tkL']), [tl.steps, u2]);
+    const sl2 = nslice('tkL');
+    check('…the next request sends them', eq(sl2.context.task.steps, [{ text: 'Get three quotes', done: false }, { text: 'Choose a date', done: false }]));
+    c = K.checkAskReply(JSON.stringify({ kind: 'steps', message: 'More steps.', action: null, items: [{ type: 'step', title: 'get three quotes' }, { type: 'step', title: 'Ring the van firm' }] }), K.getSnapshot().data, sl2, D);
+    check('…a step it already has is left out (whatever its capitals), with a note', c.items.length === 1 && c.items[0].title === 'Ring the van firm' && c.changed.some(x => /already one of its steps/.test(x)), c);
+    check('Undo takes the steps back out, and the task is as it was', K.undoAsk(u2) && eq(K.getSnapshot().data.tasks.items.find(t => t.id === 'tkL'), b2.tasks.items.find(t => t.id === 'tkL')));
+    // The checklist's limit (30): with 29, one more fits.
+    K.updateSaved(dd => { const t = dd.tasks.items.find(x => x.id === 'tkL'); t.steps = Array.from({ length: 29 }, (_, i) => ({ id: 'tsF' + i, text: 'Step ' + i, done: false })); });
+    c = K.checkAskReply(JSON.stringify({ kind: 'steps', message: 'More.', action: null, items: [{ type: 'step', title: 'One more' }, { type: 'step', title: 'And another' }] }), K.getSnapshot().data, nslice('tkL'), D);
+    check('…a checklist holds at most 30 steps: the rest is left out, with a note', c.items.length === 1 && c.changed.some(x => /30 is the most/.test(x)), c);
+    K.updateSaved(dd => { delete dd.tasks.items.find(x => x.id === 'tkL').steps; });
+    const pc = K.checkAskReply(K.mockAsk(K.askContext(slice('tkL'), 'Break this into smaller steps', D)), K.getSnapshot().data, nslice('tkL'), D);
+    check('the practice helper gives steps for the checklist that pass the checks', pc.kind === 'steps' && pc.items.length === 3 && pc.items.every(i => i.type === 'step' && i.stepFor === 'tkL'), pc);
+    const off = K.checkAskReply(JSON.stringify({ kind: 'add', message: 'One to add.', action: null, items: [{ type: 'step', title: 'Measure the van', minutes: 10, category: 'admin' }] }), K.getSnapshot().data, K.askSlice(K.getSnapshot().data, '#today', D), D);
+    check('a "step" anywhere but a task page with its checklist is a task', off.kind === 'add' && off.items[0].type === 'task' && !off.items[0].stepFor, off);
   }
 
   console.log('\n[12e] Ask MyDay with milestones and decisions; private projects');
@@ -1745,7 +1770,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const data = K.normalize(w);
     const SECRETS = ['SECRET-PROJECT', 'SECRET-SUMMARY', 'SECRET-OUTCOME', 'SECRET-FINISHED', 'SECRET-LEFTOFF', 'SECRET-TASK', 'SECRET-DUE', 'SECRET-STUCK', 'SECRET-DONE', 'SECRET-PERSON', 'SECRET-WAITER',
       'SECRET-NOTE', 'SECRET-PNOTE', 'SECRET-APPT', 'SECRET-PROBLEM', 'SECRET-BELIEF', 'SECRET-FOUND', 'SECRET-MILESTONE', 'SECRET-DECISION', 'SECRET-OPTION', 'SECRET-LINK', 'SECRET-WHY',
-      'SECRET-FILE', 'flsecret000', 'SECRET-RQ', 'SECRET-RS', 'SECRET-RF', 'SECRET-RES-TITLE', 'SECRET-RES-URL', 'SECRET-RES-NOTE', 'SECRET-TIMELINE', 'SECRET-EVIDENCE', 'SECRET-WHERE', 'SECRET-ISSUE', 'SECRET-NAME', 'SECRET-MONEY', 'SECRET-PF', 'flpfsecret', 'SECRET-STEP', 'SECRET-AFTER'];
+      'SECRET-FILE', 'flsecret000', 'SECRET-RQ', 'SECRET-RS', 'SECRET-RF', 'SECRET-RES-TITLE', 'SECRET-RES-URL', 'SECRET-RES-NOTE', 'SECRET-TIMELINE', 'SECRET-EVIDENCE', 'SECRET-WHERE', 'SECRET-ISSUE', 'SECRET-NAME', 'SECRET-MONEY', 'SECRET-PF', 'flpfsecret', 'SECRET-STEP-PRIVATE', 'SECRET-AFTER'];
     check('the made-up world really holds every secret after MyDay reads it (so the checks below can\'t pass by accident)', SECRETS.every(x => JSON.stringify(data).includes(x)), SECRETS.filter(x => !JSON.stringify(data).includes(x)));
     const leaks = (req, allowed = []) => SECRETS.filter(x => !allowed.includes(x) && JSON.stringify(req).includes(x));
     const pages = ['#today', '#calendar', '#today/tasks', '#projects', '#projects/p/pjSecret', '#projects/p/pjSecret/research', '#projects/p/pjOpen/research', '#projects/p/pjSecret/model', '#projects/p/pjOpen', '#projects/p/pjOpen/model', '#projects/p/pjCase',
@@ -1817,6 +1842,11 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
           && leaks(K.askContext(K.askSlice(z, '#today', PD), 'what should I study?', PD, undefined, undefined, zl.lookup)).length === 0 && /needs revision/.test(zl.lookup.options[0].why), [zo.why, zl.lookup.options[0]?.why]);
       K.setClock(`${PD}T09:30`);
     }
+    // (v23, the owner's choice) An open project's task's steps go — on its page, its project's page and the project lookup —
+    // while a private project's steps never do (SECRET-STEP-PRIVATE is in SECRETS), nor a "starts after" id.
+    const openTaskPage = K.askSlice(data, '#today/tasks/tkOpen', PD).context, openLook = K.projectLookup(data, 'pjOpen').lookup;
+    check('an open project\'s task\'s steps do go (its page, its project and the lookup), never an id it starts after', JSON.stringify(openTaskPage).includes('SECRET-STEP-OPEN')
+      && JSON.stringify(openLook).includes('SECRET-STEP-OPEN') && !JSON.stringify([openTaskPage, openLook]).includes('SECRET-AFTER'), [openTaskPage.task?.steps, openLook.project.tasks.map(t => t.steps)]);
     check('a lookup in your notes: nothing private in what it sends — not even how many private notes matched', withLook.every(r => leaks(r).length === 0) && lookSecret.leftOut > 0 && lookSecret.lookup.notes.length === 0 && lookShed.lookup.notes.some(n => n.id === 'nOpen'), withLook.map(r => leaks(r)));
     data.patterns.prefs.aiNotes = false;
     const noText = K.askContext(K.askSlice(data, '#projects/p/pjOpen', PD), 'x', PD);

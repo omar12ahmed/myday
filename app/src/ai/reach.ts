@@ -6,6 +6,9 @@
 //     without its title (24 Oct 2026); and busy time (Help me adjust today, Ask MyDay's look at a day) counts every
 //     appointment, a private project's too, by kind and time only, so a day is never shown free when it isn't;
 //   - a note's text goes only with "AI help with notes" on;
+//   - a task's steps (its checklist's words, done or not) go with it — on its own page, its project's page and Ask
+//     MyDay's look at a project — and what it starts after by title, never by id (25 Oct 2026); never a private
+//     project's;
 //   - never: a case's timeline, evidence and issues; the files you attach (their names and contents); a project's
 //     research (questions, findings, sources and conclusions, specs/projects-research.md); a project's outcome, what
 //     counts as finished and where you left off; who a task is waiting on (Ask MyDay's waiting lookup sends only that

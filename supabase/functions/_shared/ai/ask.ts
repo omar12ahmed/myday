@@ -10,7 +10,7 @@
 import type { ChatMessage } from './prompt.ts';
 
 export const ASK_CONTRACT_VERSION = 1;
-export const ASK_PROMPT_VERSION = 'myday-ask-v22';
+export const ASK_PROMPT_VERSION = 'myday-ask-v23';
 export * from './ask-shape.ts';
 import type { AskContext, AskReply } from './ask-shape.ts';
 
@@ -142,7 +142,10 @@ Reply with exactly ONE kind:
   this is "add": propose it as a task for them, and say in the message that MyDay can't do it for them.
 - "steps": they want something broken down — the project or task on this page, or one they name. Up to 8 tasks in
   order, each one sitting (5–60 minutes), the first the smallest and easiest to start. For the project on this page,
-  set "projectId" to its id on every step.
+  set "projectId" to its id on every step. On a task page whose "task" has "steps" (its checklist, even an empty one),
+  breaking that task down is "steps" with items of type "step" instead: one step's words in "title" (under 120
+  characters; no minutes, dates or list), up to 8, the first the smallest, never repeating one it already has (by
+  meaning); they go into that task's checklist.
 - On a course page ("course" in the data: a course on their Study roadmap, as an outline), breaking the course down
   or planning it is "steps" with up to 12 items of type "study-task": "title" (what to study or do, specific),
   "minutes" 10–90, "kind" "learn" or "practical", and where it goes — "sectionId" of an existing section, or a new
@@ -182,7 +185,9 @@ Reply with exactly ONE kind:
   likely or risky, and never judge the idea: the message is one sentence saying these are things to check.
 - A summary of the project on this page (they ask where it is, or to summarise it): "answer" in two or three sentences
   from the data only — what's done, what's still open, the next milestone — then the one next step: one of its open
-  tasks by name, or the smallest first step if it has none. Say only what the data shows: a done task means it was
+  tasks by name, or the smallest first step if it has none. A task's "steps" are its checklist (done or not, in order;
+  "stepsTotal" when not all are listed) — the next step inside a task is its first one not done — and "after" names the
+  project's tasks it starts after, which come first; never call that waiting. Say only what the data shows: a done task means it was
   done, not how it turned out — a done "Find out: X" means they've looked into whether X, so say exactly that, never
   that X is confirmed or true; never add facts, amounts or dates that aren't there. If it's about a legal, medical or
   money matter, summarise without advising.
@@ -338,6 +343,12 @@ export function mockAsk(c: AskContext): string {
   if (x.project && /\bmilestones?\b/i.test(t)) {
     return reply({ kind: 'add', message: `Practice helper (no AI): three milestones for “${x.project.title}”.`, action: null, items: [
       { type: 'milestone', title: 'Clear on what “done” looks like', date: null }, { type: 'milestone', title: 'The first real piece finished', date: null }, { type: 'milestone', title: 'Everything wrapped up', date: null }] });
+  }
+  // On a task's page with its checklist: steps inside it (v23).
+  if (/\b(break|steps|smaller|split)\b/i.test(t) && x.task?.steps) {
+    const have = new Set(x.task.steps.map(s => s.text.toLowerCase()));
+    return reply({ kind: 'steps', message: `Practice helper (no AI): a few small steps for “${x.task.title}”.`, action: null,
+      items: ['Get what you need for it together', 'Do the first five minutes', 'Check it over'].filter(s => !have.has(s.toLowerCase())).map(title => ({ type: 'step', title, date: null, time: null, minutes: null, category: null, projectId: null, text: null })) });
   }
   if (/\b(break|steps|smaller|split|plan (this|the) project)\b/i.test(t) && (x.project || x.task)) {
     const what = x.project?.title ?? x.task!.title, projectId = x.project?.id ?? null;

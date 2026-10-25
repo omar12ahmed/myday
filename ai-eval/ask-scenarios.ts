@@ -24,6 +24,7 @@ export interface AskScenario {
     beliefs?: { existing: string[] };                // what must be true only: 3-5, short statements, none repeating these, no judging (1.34.0)
     lookupWords?: RegExp;                            // a lookup in your notes, searching words like these (v17)
     sources?: string[];                              // after a lookup: the answer names (at least) these notes (v17)
+    stepsOf?: { existing: string[] };                // a task's breakdown: only checklist steps, none repeating these (v23)
   };
 }
 const NOW = '2026-10-20T09:30'; // a Tuesday
@@ -316,4 +317,16 @@ export const ASK_SCENARIOS: AskScenario[] = [
         { subject: 'arabic', label: 'Arabic Fuṣḥā', title: 'The sun letters', detail: 'Next in your course', why: 'The next lesson on your path.', minutes: 15, mode: 'Light', started: true, resume: false, reviseFirst: false, allComplete: false }] } }),
   A('n07-nothing', 'Nothing set up yet', 'today', 'What should I study next?', TODAY, { kinds: ['answer'], banned: /How the web works|sun letters/i },
     { can: ['notes', 'day', 'project', 'decisions', 'waiting', 'study'], lookup: { tool: 'study', query: 'all', revisionDue: 0, options: [] } }),
+  // Steps inside a task (v23): a task page's breakdown fills its checklist; a project's tasks show steps and "starts after".
+  A('t01-task-steps', 'Break a task into checklist steps', 'task', 'Break this into smaller steps', { projects: PROJECTS, task: { ...TASK.task!, steps: [] } }, { kinds: ['steps'], stepsOf: { existing: [] } }, { can: ['notes', 'day', 'project', 'decisions', 'waiting', 'study'] }),
+  A('t02-task-steps-existing', 'Steps for a task that has some already', 'task', 'Break this into smaller steps', { projects: PROJECTS, task: { ...TASK.task!, steps: [{ text: 'Draft the personal statement', done: true }, { text: 'Ask two referees', done: false }] } },
+    { kinds: ['steps'], stepsOf: { existing: ['Draft the personal statement', 'Ask two referees'] } }, { can: ['notes', 'day', 'project', 'decisions', 'waiting', 'study'] }),
+  A('t03-older-app', 'A task page from an older app (no checklist): separate tasks, as before', 'task', 'Break this into smaller steps', TASK, { kinds: ['steps'], banned: /"type":\s*"step"/ }, { can: ['notes', 'day', 'project', 'decisions', 'waiting', 'study'] }),
+  A('t04-next-inside', 'Where a project is, with steps inside its tasks', 'project', "What's next on this project?", { projects: PROJECTS, project: { ...MOVE.project!,
+    tasks: [{ id: 'm1', title: 'Sort out the move', done: false, steps: [{ text: 'Get three removal quotes', done: true }, { text: 'Book the van', done: false }, { text: 'Pack the kitchen', done: false }] }] } }, { kinds: ['answer'] }, { can: ['notes', 'day', 'project', 'decisions', 'waiting', 'study'] }),
+  A('t05-starts-after', 'A task that starts after another', 'project', 'What should I do first on this project?', { projects: PROJECTS, project: { ...MOVE.project!,
+    tasks: [{ id: 'm2', title: 'Book the van', done: false, after: ['Choose the moving date'] }, { id: 'm3', title: 'Choose the moving date', done: false }] } }, { kinds: ['answer'], banned: /\bwait(ing)?\b/i }, { can: ['notes', 'day', 'project', 'decisions', 'waiting', 'study'] }),
+  A('t06-lookup-steps', 'A looked-at project with steps', 'today', "What's next on the flat move?", TODAY, { kinds: ['answer'] },
+    { can: ['notes', 'day', 'project', 'decisions', 'waiting', 'study'], lookup: { tool: 'project', query: 'pjMove', project: { id: 'pjMove', title: 'Move to a bigger flat', summary: 'A two-bedroom flat near the station before March.', stage: 'act',
+      tasks: [{ id: 'mv1', title: 'Ring the letting agent', done: false, steps: [{ text: 'Find their number', done: true }, { text: 'Ask about viewings this week', done: false }] }, { id: 'mv3', title: 'Sort out the move', done: false, after: ['Ring the letting agent'] }], notes: [] } } }),
 ];
