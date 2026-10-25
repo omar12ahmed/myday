@@ -12,7 +12,8 @@
 //   - never: a case's timeline, evidence and issues; the files you attach (their names and contents); a project's
 //     research (questions, findings, sources and conclusions, specs/projects-research.md); a project's outcome, what
 //     counts as finished and where you left off; who a task is waiting on (Ask MyDay's waiting lookup sends only that
-//     it waits, since and until); your name, email, preferences and patterns; Finance and Health records (each
+//     it waits, since and until); where a deadline's date comes from and who checked it (specs/projects-deadlines.md;
+//     a task's date goes as it always has); your name, email, preferences and patterns; Finance and Health records (each
 //     request builder simply doesn't read them).
 // Every request builder asks here, and tests/ai-rules.test.js feeds them all the same private data to prove none leaks.
 import { privateProjectIds } from '../data/projects';

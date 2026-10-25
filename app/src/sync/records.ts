@@ -22,7 +22,7 @@ import { prettyDate, shortDate } from '../data/dates';
 import { CATS, freshState, normalize, SCHEMA_VERSION, SEED } from '../data/normalize';
 import { DEFAULT_CATEGORIES } from '../data/notes';
 import { STAGES, STATUS_LABEL } from '../data/projects';
-import { stepsText } from '../data/tasks';
+import { deadlineLabel, stepsText } from '../data/tasks';
 import { SECTIONS } from '../data/projectSections';
 import { CAT_LABEL, ENERGY_LABEL } from '../data/plan';
 import type { Book, Category, Commitment, Day, DayContext, FileRecord, ListItem, MyDayData, Note, Project, QueueItem, Recipe, ResearchItem, Review as StudyReview, StudySession, TaskItem, WorkoutSession } from '../data/types';
@@ -259,7 +259,7 @@ const MANY: Many[] = [
     // Its steps and how many tasks it starts after (specs/projects-steps.md), so two versions that differ only there can be told apart.
     lines: c => { const t = c as unknown as TaskItem, dl = t.deadline; return [...(t.steps ?? []).map(x => `${x.done ? '✓ ' : ''}${x.text}`), ...(t.after?.length ? [`Starts after ${plural(t.after.length, 'task')}`] : []),
       // …and its deadline details (specs/projects-deadlines.md).
-      ...(dl ? [[dl.kind === 'aim' ? 'Date to aim for' : 'Firm deadline', dl.from ? `from ${dl.from}` : '', dl.checkedBy || dl.checkedOn ? `checked${dl.checkedBy ? ` by ${dl.checkedBy}` : ''}${dl.checkedOn ? ` on ${dl.checkedOn}` : ''}` : ''].filter(Boolean).join(' · ')] : [])]; } },
+      ...(dl ? [[deadlineLabel(dl), dl.from ? `from ${dl.from}` : '', dl.checkedBy || dl.checkedOn ? `checked${dl.checkedBy ? ` by ${dl.checkedBy}` : ''}${dl.checkedOn ? ` on ${shortDate(dl.checkedOn)}` : ''}` : ''].filter(Boolean).join(' · ')] : [])]; } },
   { kind: 'session', label: 'Study session',
     items: d => d.study.sessions,
     put: (dr, id, c) => { putItem(dr.study.sessions, id, c, byStart); dr.study.activeId = fixActive(dr.study.sessions, dr.study.activeId); },

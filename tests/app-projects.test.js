@@ -2622,6 +2622,132 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('phone 390 px: the edit view with the five switches does not scroll sideways, and each switch is at least 44 px tall', (await ev(`document.querySelectorAll('[data-s=sections-shown] [role=switch]').length`)) === 5 && (await ev('document.documentElement.scrollWidth')) <= 390 && eq(await sx_small('[data-s=sections-shown] [role=switch], [data-action=project-edit]'), []), [await ev('document.documentElement.scrollWidth'), await sx_small('[data-s=sections-shown] [role=switch], [data-action=project-edit]')]);
   await T.send('Emulation.clearDeviceMetricsOverride');
 
+  console.log('\n[48] Deadlines you can trust');
+  await go('projects', 2026, 10, 15, 11); await reset(); await go('projects', 2026, 10, 15, 11);
+  const dk = (id, title, extra = {}) => ({ id, title, listId: '', category: 'Admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-10-10T09:00', postponed: 0, blockers: [], letGoOn: null, ...extra });
+  const dlOf = async id => (await data()).tasks.items.find(t => t.id === id);
+  const dlFmt = key => ev(`(() => { const [y, m, d] = ${JSON.stringify(key)}.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }); })()`);
+  const dlTask = async (id, min) => { await go('today/tasks/' + id, 2026, 10, 15, 11, min); await until(`!!document.querySelector('#app h2, #app h1')`); await sleep(200); };
+  await seed([pjObj('pjDlG', 'Deadlines: move house', 'act'), caseObj('pjDlC', 'Deadlines: a tribunal claim', { timeline: [tlObj('tlDl1', '2026-09-01', 'The first thing')] })]);
+  await editStorage(`s => { s.tasks.items.push(...${JSON.stringify([
+    dk('tkDl1', 'Send the form to the council', { due: '2026-10-20', projectId: 'pjDlG' }),
+    dk('tkDl2', 'Pay council tax', { due: '2026-10-20' }),
+    dk('tkDl3', 'Think about the garden', { projectId: 'pjDlG' }),
+    dk('tkDl4', 'Book the survey', { due: '2026-10-10', projectId: 'pjDlG', deadline: { kind: 'aim', from: '', checkedBy: '', checkedOn: null } }),
+    dk('tkDl5', 'Send my witness statement', { due: '2026-10-15', projectId: 'pjDlC', deadline: { kind: 'firm', from: "The tribunal's letter", checkedBy: '', checkedOn: null } }),
+    dk('tkDl6', 'File the claim form', { due: '2026-10-14', projectId: 'pjDlC', done: true, doneOn: '2026-10-14', deadline: { kind: 'firm', from: '', checkedBy: '', checkedOn: null } }),
+    dk('tkDl7', 'Return the keys', { due: '2026-10-13', projectId: 'pjDlG', done: true, doneOn: '2026-10-13', deadline: { kind: 'firm', from: '', checkedBy: '', checkedOn: null } }),
+  ])}); }`);
+
+  console.log('  The Deadline card on a task\'s page');
+  await dlTask('tkDl1', 1);
+  check('a dated task in a project has a "Deadline" card with three choices, "Not a deadline" pressed', (await exists('#taskDeadline')) && (await text('#taskDeadline h3')) === 'Deadline'
+    && eq(await ev(`[...document.querySelectorAll('#taskDeadline [data-action=deadline-kind]')].map(b => b.dataset.id + ':' + b.textContent.trim() + ':' + b.getAttribute('aria-pressed'))`), ['firm:Firm deadline:false', 'aim:Date to aim for:false', 'none:Not a deadline:true']), await text('#taskDeadline'));
+  check('…and no from / checked-by fields until it is a deadline', !(await exists('#tDlFrom')) && !(await exists('#tDlBy')) && !(await exists('#tDlOn')));
+  await click('[data-action=deadline-kind][data-id=firm]');
+  await until(`JSON.parse(localStorage.getItem('${KEY}')).tasks.items.find(t => t.id === 'tkDl1').deadline`);
+  check('choosing "Firm deadline" saves a firm deadline on the task', (await dlOf('tkDl1')).deadline?.kind === 'firm', (await dlOf('tkDl1')).deadline);
+  check('…says "Marked as a firm deadline."', await until(`document.getElementById('toast').textContent.includes('Marked as a firm deadline.')`), await toast());
+  check('…presses "Firm deadline" and shows the three fields with their labels and the not-legal-advice note', await until(`!!document.getElementById('tDlFrom')`)
+    && (await ev(`document.querySelector('[data-action=deadline-kind][data-id=firm]').getAttribute('aria-pressed')`)) === 'true'
+    && (await text('label[for=tDlFrom]')).includes('Where does this date come from? (optional)') && (await text('label[for=tDlBy]')).includes('Checked by (optional)') && (await exists('#tDlOn'))
+    && (await text('#taskDeadline')).includes("MyDay doesn't work out legal deadlines; it keeps the ones you enter."), await text('#taskDeadline'));
+  check('…the day is "Checked on (optional)", and "Checked by" suggests "e.g. Me"', (await text('label[for=tDlOn]')).includes('Checked on (optional)') && (await ev(`document.getElementById('tDlBy').placeholder`)) === 'e.g. Me', await text('#taskDeadline'));
+  await type('#tDlFrom', "The council's letter of 3 Oct");
+  await until(`JSON.parse(localStorage.getItem('${KEY}')).tasks.items.find(t => t.id === 'tkDl1').deadline.from`);
+  await type('#tDlBy', 'My adviser');
+  await until(`JSON.parse(localStorage.getItem('${KEY}')).tasks.items.find(t => t.id === 'tkDl1').deadline.checkedBy`);
+  await type('#tDlOn', '2026-10-14');
+  await until(`JSON.parse(localStorage.getItem('${KEY}')).tasks.items.find(t => t.id === 'tkDl1').deadline.checkedOn`);
+  let dl1 = (await dlOf('tkDl1')).deadline;
+  check('where the date comes from, who checked it and the day are saved on the deadline', dl1.kind === 'firm' && dl1.from === "The council's letter of 3 Oct" && dl1.checkedBy === 'My adviser' && dl1.checkedOn === '2026-10-14', dl1);
+  await click('[data-action=deadline-kind][data-id=aim]');
+  await until(`JSON.parse(localStorage.getItem('${KEY}')).tasks.items.find(t => t.id === 'tkDl1').deadline.kind === 'aim'`);
+  dl1 = (await dlOf('tkDl1')).deadline;
+  check('"Date to aim for" changes the kind and keeps the details', dl1.kind === 'aim' && dl1.from === "The council's letter of 3 Oct" && dl1.checkedBy === 'My adviser' && dl1.checkedOn === '2026-10-14', dl1);
+  check('…and says "Marked as a date to aim for."', await until(`document.getElementById('toast').textContent.includes('Marked as a date to aim for.')`), await toast());
+  await click('[data-action=deadline-kind][data-id=none]');
+  await until(`!JSON.parse(localStorage.getItem('${KEY}')).tasks.items.find(t => t.id === 'tkDl1').deadline`);
+  check('"Not a deadline" removes the deadline from the task altogether', !('deadline' in (await dlOf('tkDl1'))), await dlOf('tkDl1'));
+  check('…says "Just a date now." and the fields go', await until(`document.getElementById('toast').textContent.includes('Just a date now.')`) && await until(`!document.getElementById('tDlFrom')`), await toast());
+  await dlTask('tkDl2', 2);
+  check('a task with no project has no Deadline card', !(await exists('#taskDeadline')) && (await ev(`document.getElementById('tTitle').value`)) === 'Pay council tax');
+  await dlTask('tkDl3', 3);
+  check('a task in a project but with no date has no Deadline card', !(await exists('#taskDeadline')) && (await ev(`document.getElementById('tTitle').value`)) === 'Think about the garden');
+
+  console.log('  Rows on Tasks and Today');
+  await editStorage(`s => { s.tasks.items.find(t => t.id === 'tkDl1').deadline = { kind: 'firm', from: '', checkedBy: '', checkedOn: null }; }`);
+  await go('today/tasks', 2026, 10, 15, 11, 4);
+  const rowDl = id => ev(`(document.querySelector('.task-li[data-id="${id}"] [data-s=task-deadline]') || {}).textContent || null`);
+  await until(`!!document.querySelector('.task-li[data-id="tkDl1"]')`);
+  check('on Tasks a firm deadline says "Firm deadline"', (await rowDl('tkDl1')) === 'Firm deadline', await rowDl('tkDl1'));
+  const d10 = await dlFmt('2026-10-10');
+  check('…and a date to aim for that has passed and is still to do says "Still open, was aimed for <date>"', (await rowDl('tkDl4')) === `Still open, was aimed for ${d10}`, [await rowDl('tkDl4'), d10]);
+  check('…a task with only a date has no deadline words', (await rowDl('tkDl2')) === null && (await exists('.task-li[data-id="tkDl2"]')));
+  await editStorage(`s => { s.tasks.items.find(t => t.id === 'tkDl4').deadline.kind = 'firm'; }`);
+  await go('today/tasks', 2026, 10, 15, 11, 5); await until(`!!document.querySelector('.task-li[data-id="tkDl4"]')`);
+  check('…a firm one that has passed says "Still open, was due <date>"', (await rowDl('tkDl4')) === `Still open, was due ${d10}`, await rowDl('tkDl4'));
+  check('…without the date beside it again (one still ahead keeps its date)', !(await exists('.task-li[data-id="tkDl4"] [data-s=task-due]')) && (await exists('.task-li[data-id="tkDl1"] [data-s=task-due]')), await text('.task-li[data-id="tkDl4"]'));
+  await editStorage(`s => { s.tasks.items.find(t => t.id === 'tkDl4').deadline.kind = 'aim'; }`);
+  await go('today', 2026, 10, 15, 11, 6); await until(`!!document.querySelector('#dueToday')`);
+  const dueDl = id => ev(`(document.querySelector('#dueToday .due-li[data-id="${id}"] [data-s=task-deadline]') || {}).textContent || null`);
+  check('on Today, "Due today" shows a deadline due today as "Firm deadline"', (await dueDl('tkDl5')) === 'Firm deadline', [await dueDl('tkDl5'), await text('#dueToday')]);
+  check('…and a past one still to do as "Still open, was aimed for <date>"', (await dueDl('tkDl4')) === `Still open, was aimed for ${d10}`, await dueDl('tkDl4'));
+  check('…and a done deadline is not on Today or among the open rows', !(await exists('#dueToday .due-li[data-id="tkDl6"]')));
+
+  console.log('  Coming up and the next step');
+  await editStorage(`s => { s.projects.items.find(p => p.id === 'pjDlG').nextTaskId = 'tkDl1'; }`);
+  await go('projects/p/pjDlG', 2026, 10, 15, 11, 7); await until(`!!document.querySelector('#projectSoon')`);
+  const soonOf = sel => ev(`[...document.querySelectorAll('#projectSoon ${sel}')].map(li => li.textContent.replace(/\\s+/g, ' ').trim())`);
+  check('Coming up adds " · Firm deadline" to a firm deadline\'s date', (await soonOf('[data-s=soon-task]')).some(t => t.includes('Send the form to the council') && t.includes(' · Firm deadline')), await soonOf('[data-s=soon-task]'));
+  check('…a date to aim for that has passed is "Still open · was aimed for <date>"', (await soonOf('[data-s=soon-open]')).some(t => t.includes(`Still open · was aimed for ${d10}`) && t.includes('Book the survey')), await soonOf('[data-s=soon-open]'));
+  check('the Next step card says "Firm deadline" when the next step is one', (await text('[data-s=next-deadline]')) === 'Firm deadline' && (await text('[data-s=next-title]')) === 'Send the form to the council', await text('#projectNext'));
+
+  console.log('  A Case\'s "Add a deadline"');
+  await go('projects/p/pjDlC', 2026, 10, 15, 11, 8); await until(`!!document.querySelector('[data-action=case-deadline]')`);
+  await click('[data-action=case-deadline]'); await until(`!!document.getElementById('caseDlTitle')`);
+  check('the form asks for the deadline, where its date comes from (optional) and the date, and waits for a title and a date', (await text('label[for=caseDlFrom]')).includes('Where does this date come from? (optional)') && (await exists('#caseDlDate')) && await ev(`document.querySelector('[data-action=case-deadline-add]').disabled`));
+  await type('#caseDlTitle', 'Reply to the employer'); await type('#caseDlFrom', "The tribunal's letter of 3 Oct"); await type('#caseDlDate', '2026-10-21'); await click('[data-action=case-deadline-add]');
+  await until(`JSON.parse(localStorage.getItem('${KEY}')).tasks.items.some(t => t.title === 'Reply to the employer')`);
+  const cdl = await task('Reply to the employer');
+  check('adding it saves a dated task in the case with a firm deadline and where its date comes from', cdl && cdl.projectId === 'pjDlC' && cdl.due === '2026-10-21' && cdl.deadline?.kind === 'firm' && cdl.deadline.from === "The tribunal's letter of 3 Oct", cdl);
+  check('…says "Firm deadline added — it reaches Today on its day."', await until(`document.getElementById('toast').textContent.includes('Firm deadline added — it reaches Today on its day.')`), await toast());
+  check('…and it is in Coming up as a firm deadline', (await soonOf('[data-s=soon-task]')).some(t => t.includes('Reply to the employer') && t.includes(' · Firm deadline')), await soonOf('[data-s=soon-task]'));
+
+  console.log('  Once a Case\'s deadline is done');
+  await dlTask('tkDl6', 9);
+  check('a done deadline of a Case offers "It\'s done — note it on the case\'s timeline?"', await until(`!!document.querySelector('[data-s=deadline-offer]')`) && (await text('[data-s=deadline-offer]')).includes("It's done — note it on the case's timeline?") && (await exists('[data-action=deadline-note]')), await text('#taskDeadline'));
+  await go('projects/p/pjDlC', 2026, 10, 15, 11, 10); await until(`!!document.querySelector('#projectGlance')`);
+  check('…and the case\'s "Worth a look" offered it before', await until(`!!document.querySelector('[data-pointer=deadline-done]')`) && (await text('[data-pointer=deadline-done]')).includes('File the claim form'), await text('#app'));
+  const tl0 = (await caseOf('pjDlC')).timeline.length;
+  await dlTask('tkDl6', 11);
+  await until(`!!document.querySelector('[data-action=deadline-note]')`);
+  await click('[data-action=deadline-note]');
+  await until(`!!JSON.parse(localStorage.getItem('${KEY}')).tasks.items.find(t => t.id === 'tkDl6').deadline.noted`);
+  const tl1 = (await caseOf('pjDlC')).timeline, ent = tl1.find(e => e.title === 'Done: File the claim form');
+  check('"Note it on the timeline" adds one entry "Done: File the claim form", from me, on the day it was done', tl1.length === tl0 + 1 && ent && ent.date === '2026-10-14' && ent.source === 'mine', tl1);
+  check('…remembers it on the deadline so it is not offered twice', (await dlOf('tkDl6')).deadline.noted === ent.id, (await dlOf('tkDl6')).deadline);
+  check('…says "Noted on the timeline."; the offer goes and the card says it is noted', await until(`document.getElementById('toast').textContent.includes('Noted on the timeline.')`) && await until(`!document.querySelector('[data-s=deadline-offer]') && !!document.querySelector('[data-s=deadline-noted]')`), [await toast(), await text('#taskDeadline')]);
+  check('…and the keyboard moves to that line (the button has gone)', await until(`document.activeElement?.id === 'deadlineNoted'`), await ev('document.activeElement?.id || document.activeElement?.tagName'));
+  await go('projects/p/pjDlC', 2026, 10, 15, 11, 12); await until(`!!document.querySelector('#projectGlance')`);
+  check('…and "Worth a look" no longer offers it', !(await exists('[data-pointer=deadline-done]')), await text('#projectGlance'));
+  await dlTask('tkDl7', 13);
+  check('a done deadline in a project that is not a Case never offers to note it', (await exists('#taskDeadline')) && !(await exists('[data-s=deadline-offer]')) && !(await exists('[data-action=deadline-note]')), await text('#taskDeadline'));
+  await go('projects/p/pjDlG', 2026, 10, 15, 11, 14); await until(`!!document.querySelector('#projectGlance')`);
+  check('…nor does its Overview', !(await exists('[data-pointer=deadline-done]')));
+
+  console.log('  A phone');
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await editStorage(`s => { s.tasks.items.find(t => t.id === 'tkDl1').deadline = { kind: 'firm', from: "The council's letter of 3 Oct, which is a rather long way of saying where this date came from", checkedBy: 'My adviser', checkedOn: '2026-10-14' }; }`);
+  await dlTask('tkDl1', 15); await until(`!!document.getElementById('tDlFrom')`); await sleep(300);
+  const dlSmall = ev(`[...document.querySelectorAll('#taskDeadline button, #taskDeadline input')].filter(b => b.getBoundingClientRect().height < 44).map(b => (b.dataset.action || b.id || b.tagName) + ':' + Math.round(b.getBoundingClientRect().height))`);
+  check('phone 390 px: the task page with its Deadline card does not scroll sideways', (await ev('document.documentElement.scrollWidth')) <= 390 && (await ev(`document.getElementById('taskDeadline').getBoundingClientRect().right`)) <= 390, [await ev('document.documentElement.scrollWidth'), await ev(`document.getElementById('taskDeadline').getBoundingClientRect().right`)]);
+  check('…and its three choices and three fields are at least 44 px tall', (await ev(`document.querySelectorAll('#taskDeadline [data-action=deadline-kind]').length`)) === 3 && (await ev(`document.querySelectorAll('#taskDeadline input').length`)) === 3 && eq(await dlSmall, []), await dlSmall);
+  await T.send('Emulation.clearDeviceMetricsOverride');
+  await editStorage(`s => { delete s.tasks.items.find(t => t.id === 'tkDl7').deadline; }`);
+  await dlTask('tkDl7', 16);
+  check('a done task with a date and no deadline isn\'t asked whether it\'s one', !(await exists('#taskDeadline')) && (await ev(`document.getElementById('tTitle').value`)) === 'Return the keys');
+
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
   const sm = T.summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);

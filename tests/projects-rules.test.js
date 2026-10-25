@@ -29,7 +29,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     `export { linkTask, heldBack } from ${src('projects')};`,
     `export { needsYou, GROUP_LABEL as NEED_GROUP_LABEL } from ${src('attention')};`,
     `export { SECTIONS, isHidden, sectionContent, overviewSections, setHidden, hiddenWords, openOnArrival, arriving, arrived } from ${src('projectSections')};`,
-    `export { setDeadline, deadlineWords, DEADLINE_LABEL } from ${src('tasks')};`, `export { deadlineToNote, noteDeadlineDone } from ${src('deadlines')};`,
+    `export { setDeadline, deadlineWords, deadlineLabel } from ${src('tasks')};`, `export { deadlineToNote, deadlineNoted, noteDeadlineDone } from ${src('deadlines')};`,
     `export { setDone, clearDay, toggleRoll, followQueued, taskFromQueue, sendToQueue } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
@@ -2153,8 +2153,12 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('a deadline is kept exactly, with a newer MyDay\'s field beside it', eq(got.items[0].deadline, DL({ futureBit: { keep: 1 } })) && got.r.dropped === 0, got.items[0].deadline);
     got = rd([TK('a', 'x', { deadline: { kind: 'aim', from: 5, checkedBy: 'y'.repeat(90), checkedOn: 'soon', noted: 'tl1' } })]);
     check('…its words are cut (who checked: 80) and a date that isn\'t one becomes null; a timeline note is kept', eq(got.items[0].deadline, { kind: 'aim', from: '', checkedBy: 'y'.repeat(80), checkedOn: null, noted: 'tl1' }) && got.r.dropped === 0, got.items[0].deadline);
-    got = rd([TK('a', 'x', { deadline: { kind: 'statutory' } }), TK('b', 'x', { deadline: 'firm' }), TK('c', 'x', { deadline: null }), TK('d', 'x')]);
-    check('a kind this version doesn\'t know, or a shape it can\'t read, is left out and counted; null or none is simply absent', got.items.every(t => !('deadline' in t)) && got.r.dropped === 2, got.r);
+    got = rd([TK('a', 'x', { deadline: { kind: 'firm', noted: 5 } }), TK('b', 'x', { deadline: { kind: 'aim', noted: '' } })]);
+    check('…a timeline note that isn\'t an entry\'s id is left off', got.items.every(t => t.deadline && !('noted' in t.deadline)) && got.r.dropped === 0, got.items.map(t => t.deadline));
+    got = rd([TK('a', 'x', { due: day(-1), deadline: { kind: 'statutory', from: 'The rules', futureBit: 1 } }), TK('b', 'x', { deadline: 'firm' }), TK('c', 'x', { deadline: { kind: '' } }), TK('d', 'x', { deadline: null }), TK('e', 'x')]);
+    check('a kind from a newer MyDay is kept as it is, shown as "Deadline" ("Still open, was due …" once passed); a shape this version can\'t read is left out and counted; null or none is simply absent',
+      eq(got.items[0].deadline, { kind: 'statutory', from: 'The rules', futureBit: 1, checkedBy: '', checkedOn: null }) && K.deadlineLabel(got.items[0].deadline) === 'Deadline' && K.deadlineWords(K.freshState(), got.items[0], k) === `Still open, was due ${D(day(-1))}`
+      && got.items.slice(1).every(t => !('deadline' in t)) && got.r.dropped === 2, [got.items.map(t => t.deadline), got.r]);
 
     console.log('  setting it');
     const w = world(base('pjD', { title: 'Deposit dispute', template: 'case', case: { timeline: [], evidence: [], issues: [] } }), base('pjG', { title: 'Passport' }));
@@ -2178,6 +2182,10 @@ const clone = o => JSON.parse(JSON.stringify(o));
     // (Worth a look leaves out the next step, which its own card shows: choose another one on the passport.)
     w.tasks.items.push(TK('t3', 'Book the photo', { projectId: 'pjG' })); w.projects.items.find(p => p.id === 'pjG').nextTaskId = 't3';
     check('Worth a look: "— still open, was aimed for …"; and a firm one ahead "— firm deadline, in 5 days"', wl('pjG').includes(`Renew the passport — still open, was aimed for ${D(day(-3))}`) && wl('pjD').includes('Send my witness statement — firm deadline, in 5 days'), [wl('pjG'), wl('pjD')]);
+    K.setDeadline(w.tasks, 't1', { kind: 'aim' });
+    const aimWhy = K.needsYou(w, k).find(n => n.key === 'date:t1')?.why;
+    check('…a date to aim for ahead says so in both: "date to aim for · on …" and "— date to aim for, in 5 days"', aimWhy === `date to aim for · on ${D(day(5))}` && wl('pjD').includes('Send my witness statement — date to aim for, in 5 days'), [aimWhy, wl('pjD')]);
+    K.setDeadline(w.tasks, 't1', { kind: 'firm' });
 
     console.log('  done, and noted on the timeline (a Case)');
     check('not offered while it\'s still to do', !K.deadlineToNote(w, T('t1')) && K.noteDeadlineDone(w, 't1') === null);
@@ -2185,7 +2193,19 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('done: offered once — on its page and in Worth a look ("… is done — note it on the timeline?")', K.deadlineToNote(w, T('t1')) && wl('pjD').includes('“Send my witness statement” is done — note it on the timeline?'), wl('pjD'));
     const id = K.noteDeadlineDone(w, 't1'), entry = w.projects.items.find(p => p.id === 'pjD').case.timeline.find(e => e.id === id);
     check('one tap adds "Done: …" on the day it was done, as your account, and remembers it (not offered again)', !!entry && entry.title === 'Done: Send my witness statement' && entry.date === day(-1) && entry.source === 'mine' && T('t1').deadline.noted === id
-      && !K.deadlineToNote(w, T('t1')) && K.noteDeadlineDone(w, 't1') === null && !wl('pjD').some(x => x.includes('note it on the timeline')), entry);
+      && K.deadlineNoted(w, T('t1')) && !K.deadlineToNote(w, T('t1')) && K.noteDeadlineDone(w, 't1') === null && !wl('pjD').some(x => x.includes('note it on the timeline')), entry);
+    const pD = () => w.projects.items.find(p => p.id === 'pjD');
+    pD().case.timeline = pD().case.timeline.filter(e => e.id !== id);
+    check('once that entry is removed from the timeline, it isn\'t "noted" any more and is offered again', !K.deadlineNoted(w, T('t1')) && K.deadlineToNote(w, T('t1')));
+    pD().case.timeline = Array.from({ length: 150 }, (_, i) => ({ id: `tlF${i}`, date: '2026-09-01', about: false, title: 'Made up', details: '', source: 'mine', evidenceIds: [], issueIds: [], createdAt: '2026-09-01T09:00' }));
+    const was = JSON.stringify(w);
+    check('a full timeline (150 entries): "full", nothing is written, and it\'s still offered', K.noteDeadlineDone(w, 't1') === 'full' && JSON.stringify(w) === was && K.deadlineToNote(w, T('t1')));
+    pD().case.timeline = [];
+    // (Ticked on the day's plan: the plan's copy is done before the task's own is.)
+    w.tasks.items.push(TK('t4', 'File the claim form', { due: day(-2), plannedOn: day(-2), planUid: 'puDl', deadline: DL() }));
+    w.days[day(-2)] = { energy: 3, rest: false, builtAt: day(-2) + 'T08:00', checkedIn: true, tasks: [{ uid: 'puDl', taskId: null, category: 'admin', title: 'File the claim form', minutes: 15, baseMinutes: 15, done: true, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null }] };
+    const id4 = K.noteDeadlineDone(w, 't4'), e4 = pD().case.timeline.find(e => e.id === id4);
+    check('done on the day\'s plan only: the entry is dated the day it was planned', !T('t4').done && T('t4').doneOn === null && !!e4 && e4.date === day(-2) && T('t4').deadline.noted === id4, e4);
     K.setTaskDone(w, 't2', true);
     check('a deadline of a project that isn\'t a Case is never offered', !K.deadlineToNote(w, T('t2')) && K.noteDeadlineDone(w, 't2') === null);
   }

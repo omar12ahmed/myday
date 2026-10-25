@@ -5,7 +5,7 @@ import { CategoryChip } from '../components/CategoryChip';
 import { Card } from '../components/Card';
 import { Field, TextInput } from '../components/Field';
 import { BackLink, Note } from '../components/parts';
-import { prettyDate } from '../data/dates';
+import { prettyDate, todayKey } from '../data/dates';
 import { CAT_LABEL } from '../data/plan';
 import { projectById } from '../data/projects';
 import { update } from '../data/storage';
@@ -28,6 +28,8 @@ export function TasksScreen({ data, hash }: { data: MyDayData; hash: string }) {
 export function TaskRow({ data, t, hideProject = false }: { data: MyDayData; t: TaskItem; hideProject?: boolean }) {
   const done = isDone(data, t) || !!t.letGoOn, list = listName(data.tasks, t.listId), project = hideProject ? null : projectById(data, t.projectId);
   const steps = stepsText(t), waits = done ? '' : startsAfterText(data, t);
+  // (A deadline still open after its date says the date itself: "Still open, was due Thu 6 Nov".)
+  const dl = done || !t.deadline ? '' : deadlineWords(data, t), dlSaysDate = !!dl && !!t.due && t.due < todayKey();
   return (
     <li className="task-li flex items-start gap-1 border-t border-outline first:border-t-0 py-2" data-id={t.id}>
       <label className="tick flex-none grid place-items-center size-11 -ml-2.5 mt-0.5 cursor-pointer">
@@ -37,8 +39,8 @@ export function TaskRow({ data, t, hideProject = false }: { data: MyDayData; t: 
       <a href={`#today/tasks/${t.id}`} className="task-row flex-1 min-w-0 block py-1.5 min-h-11 text-fg no-underline hover:bg-surface-2 rounded-tile -mx-1 px-1" data-id={t.id}>
         <span className={`block font-medium leading-snug break-words ${done ? 'line-through text-fg-3' : ''}`}>{t.title}</span>
         <span className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-sm text-fg-3 tabular-nums">
-          {t.due && <span className="inline-flex items-center gap-1" data-s="task-due"><CalendarDays size={14} aria-hidden="true" /> {dueText(t)}</span>}
-          {!done && t.deadline && <span className="text-fg-2" data-s="task-deadline">{deadlineWords(data, t)}</span>}
+          {t.due && !dlSaysDate && <span className="inline-flex items-center gap-1" data-s="task-due"><CalendarDays size={14} aria-hidden="true" /> {dueText(t)}</span>}
+          {dl && <span className="text-fg-2" data-s="task-deadline">{dl}</span>}
           {project && <span className="inline-flex items-center gap-1 text-fg-2" data-s="task-project"><FolderKanban size={14} aria-hidden="true" /> {project.title}</span>}
           {list && <span>{list}</span>}
           <span>{t.minutes} min</span>

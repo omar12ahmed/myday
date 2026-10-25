@@ -8,7 +8,7 @@ import { issueLinks, timelineInOrder } from './caseFile';
 import { parseKey, shift, shortDate, todayKey } from './dates';
 import { comingUp, nextStep } from './projects';
 import { deadlineToNote } from './deadlines';
-import { chaseTask } from './tasks';
+import { chaseTask, deadlineLabel } from './tasks';
 import type { DateKey, MyDayData, Project } from './types';
 
 const tab = (p: Project, t?: string) => `#projects/p/${encodeURIComponent(p.id)}${t ? '/' + t : ''}`;
@@ -74,8 +74,9 @@ export function worthALook(data: MyDayData, p: Project, k: DateKey = todayKey(),
   // A date in the next week (the same rule as Needs you: an appointment under way since before today isn't one).
   const ahead = datesAhead(data, p, k)[0], soon = ahead && (ahead.kind === 'task' ? { day: ahead.task.due!, title: ahead.task.title, href: `#today/tasks/${encodeURIComponent(ahead.task.id)}` }
     : { day: ahead.appt.start.slice(0, 10), title: ahead.appt.title, href: '#calendar' });
-  const firm = ahead?.kind === 'task' && ahead.task.deadline?.kind === 'firm' ? 'firm deadline, ' : '';
-  if (soon) out.push({ key: 'soon', text: `${soon.title} — ${firm}${soon.day === k ? 'today' : soon.day === shift(k, 1) ? 'tomorrow' : `in ${days(k, soon.day)} days`}`, href: soon.href });
+  // (A deadline says which kind, as Needs you does: "— date to aim for, in 5 days".)
+  const kind = ahead?.kind === 'task' && ahead.task.deadline ? `${deadlineLabel(ahead.task.deadline).toLowerCase()}, ` : '';
+  if (soon) out.push({ key: 'soon', text: `${soon.title} — ${kind}${soon.day === k ? 'today' : soon.day === shift(k, 1) ? 'tomorrow' : `in ${days(k, soon.day)} days`}`, href: soon.href });
   if (isBusiness(p)) {
     const waiting = findOutsDone(data, p);
     if (waiting) out.push({ key: 'found', text: waiting === 1 ? 'A Find out task is done — what did you find?' : `${waiting} Find out tasks are done — what did you find?`, href: tab(p, 'model') });

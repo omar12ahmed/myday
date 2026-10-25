@@ -84,13 +84,15 @@ export function normalizeTasks(raw: unknown, report: { dropped: number }): Tasks
       report.dropped += all.length - after.length; // past 10: counted, as steps past 30 are
       if (after.length) item.after = after; else delete item.after;
     }
-    // A deadline's details (specs/projects-deadlines.md): kept when its kind is one this version knows, anything a newer
-    // MyDay keeps beside it too; a shape it can't read is counted.
+    // A deadline's details (specs/projects-deadlines.md): kept when it says what kind it is — a kind from a newer MyDay
+    // as it is, with anything that MyDay keeps beside it; a shape this version can't read is counted.
     const dl = t.deadline;
-    if (isObj(dl) && (dl.kind === 'firm' || dl.kind === 'aim')) item.deadline = { ...dl, kind: dl.kind, from: typeof dl.from === 'string' ? dl.from.slice(0, TASK_LIMITS.deadlineFrom) : '',
-      checkedBy: typeof dl.checkedBy === 'string' ? dl.checkedBy.slice(0, TASK_LIMITS.checkedBy) : '', checkedOn: isDateKey(dl.checkedOn) ? dl.checkedOn : null,
-      ...(typeof dl.noted === 'string' && dl.noted ? { noted: dl.noted } : {}) };
-    else { if (dl !== undefined && dl !== null) report.dropped++; delete item.deadline; }
+    if (isObj(dl) && typeof dl.kind === 'string' && dl.kind) {
+      const keep: TaskDeadline = { ...dl, kind: dl.kind, from: typeof dl.from === 'string' ? dl.from.slice(0, TASK_LIMITS.deadlineFrom) : '',
+        checkedBy: typeof dl.checkedBy === 'string' ? dl.checkedBy.slice(0, TASK_LIMITS.checkedBy) : '', checkedOn: isDateKey(dl.checkedOn) ? dl.checkedOn : null };
+      if (typeof dl.noted !== 'string' || !dl.noted) delete keep.noted;
+      item.deadline = keep;
+    } else { if (dl !== undefined && dl !== null) report.dropped++; delete item.deadline; }
     seenT.add(item.id);
     out.items.push(item);
   }
@@ -467,7 +469,8 @@ export function forgetStartsAfter(d: TasksData, id: string) {
 // A dated task can say it's a firm deadline or a date to aim for, where the date comes from, and who checked it and
 // when. It stays a task: Today, Coming up, Needs you and the plan keep working. MyDay keeps the deadlines you enter;
 // it never works one out.
-export const DEADLINE_LABEL: Record<TaskDeadline['kind'], string> = { firm: 'Firm deadline', aim: 'Date to aim for' };
+// "Firm deadline", "Date to aim for", or "Deadline" for a kind from a newer MyDay.
+export const deadlineLabel = (dl: TaskDeadline): string => dl.kind === 'firm' ? 'Firm deadline' : dl.kind === 'aim' ? 'Date to aim for' : 'Deadline';
 // Sets a task's deadline details (merging), or with null makes it an ordinary date again. Returns false when nothing
 // changed.
 export function setDeadline(d: TasksData, id: string, patch: Partial<Pick<TaskDeadline, 'kind' | 'from' | 'checkedBy' | 'checkedOn'>> | null): boolean {
@@ -488,5 +491,5 @@ export function setDeadline(d: TasksData, id: string, patch: Partial<Pick<TaskDe
 export function deadlineWords(data: MyDayData, t: TaskItem, k: DateKey = todayKey()): string {
   if (!t.deadline || !t.due) return '';
   if (t.due < k && !isDone(data, t) && !t.letGoOn) return `Still open, was ${t.deadline.kind === 'aim' ? 'aimed for' : 'due'} ${shortDate(t.due)}`;
-  return DEADLINE_LABEL[t.deadline.kind];
+  return deadlineLabel(t.deadline);
 }

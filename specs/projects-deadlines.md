@@ -25,19 +25,26 @@ checked it.
 
 ## 3. What you see
 
-- On the task's page, a **Deadline** card (shown when it has a date): Firm deadline · Date to aim for · Not a deadline;
-  "Where does this date come from?" (e.g. "The tribunal's letter of 3 Oct"); "Checked by" and the day ("Me", "My
-  adviser"). A line: "MyDay doesn't work out legal deadlines; it keeps the ones you enter."
-- Wherever it's listed: "Firm deadline · Thu 6 Nov" or "Aiming for Thu 6 Nov"; after its date, while still to do,
-  "Still open, was due Thu 6 Nov" (firm) or "Still open, was aimed for …" (aim) — never "overdue", never red.
+- On the task's page, a **Deadline** card (shown when it has a date and belongs to a project; a done or let-go task
+  is only shown one it already has): Firm deadline · Date to aim for · Not a deadline; "Where does this date come
+  from?" (e.g. "The tribunal's letter of 3 Oct"); "Checked by" and "Checked on" ("Me", "My adviser"). A line: "MyDay
+  doesn't work out legal deadlines; it keeps the ones you enter."
+- Wherever it's listed (Tasks, Due today, Coming up, the Next step, Needs you, Worth a look): "Firm deadline" or "Date
+  to aim for" beside the date; after its date, while still to do, "Still open, was due Thu 6 Nov" (firm) or "Still
+  open, was aimed for …" (aim) in place of the date — never "overdue", never red.
+- On a Case, once it's done: "It's done — note it on the case's timeline?" on its page and in Worth a look; one tap
+  adds "Done: …" and the keyboard goes to "Noted on the case's timeline."
 - "Add a deadline" on a Case makes a firm one, asking where the date comes from.
 
 ## 4. How it works
 
 - Saved data (schema stays 5): an optional `deadline: { kind: 'firm' | 'aim', from: string, checkedBy: string,
   checkedOn: DateKey | null, noted?: string }` on a task (`noted`: the timeline entry made from it, so it's offered
-  once), kept by earlier releases (their task reader keeps unknown fields; the
-  AGENTS.md exception), synced inside the task record. An older release shows it as a plain dated task.
+  once — offered again only if that entry is removed from the timeline), kept by earlier releases (their task reader
+  keeps unknown fields; the AGENTS.md exception), synced inside the task record. An older release shows it as a plain
+  dated task. `kind` is a string: one from a newer MyDay is kept as it is, with its other fields, and shown as
+  "Deadline". Taking a task's date away keeps its deadline (unseen) in case the date comes back. A sync conflict on
+  the task names its deadline ("Firm deadline · from … · checked by … on …").
 - The dates' windows are unchanged (7 days). Where the date comes from and who checked it are never sent to AI.
 
 ## 5. Checks

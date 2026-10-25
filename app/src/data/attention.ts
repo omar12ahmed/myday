@@ -13,7 +13,7 @@ import { awaitingAnswer, isBusiness, isCase } from './businessModel';
 import { caseCounts } from './caseFile';
 import { parseKey, shift, shortDate, todayKey } from './dates';
 import { comingUp, heldBack, projectsInOrder, projectTasks, stillOpen } from './projects';
-import { chaseTask, DEADLINE_LABEL, isStuck } from './tasks';
+import { chaseTask, deadlineLabel, isStuck } from './tasks';
 import type { DateKey, MyDayData, Project, TaskItem } from './types';
 
 const days = (a: DateKey, b: DateKey) => Math.round((parseKey(b).getTime() - parseKey(a).getTime()) / 86_400_000);
@@ -84,7 +84,7 @@ export function needsYou(data: MyDayData, k: DateKey = todayKey()): Need[] {
         if (seen.has(c.task.id)) continue;
         seen.add(c.task.id);
         // (A deadline says which kind: "firm deadline · tomorrow".)
-        const kind = c.task.deadline ? `${DEADLINE_LABEL[c.task.deadline.kind].toLowerCase()} · ` : '';
+        const kind = c.task.deadline ? `${deadlineLabel(c.task.deadline).toLowerCase()} · ` : '';
         add({ key: `date:${c.task.id}`, reason: day === k ? 'today' : 'soon', title: c.task.title, href: taskHref(c.task), when: c.when, why: `${kind}${dayWords(day, k)}${c.task.time ? ` at ${c.task.time}` : ''}` });
       } else add({ key: `date:${p.id}:${c.appt.id}`, reason: day === k ? 'today' : 'soon', title: c.appt.title, href: '#calendar', when: c.when, why: `${dayWords(day, k)} at ${c.appt.start.slice(11, 16)}` });
     }

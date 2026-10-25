@@ -18,7 +18,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   const dir = path.join(os.tmpdir(), `myday-sync-records-${process.pid}`);
   fs.mkdirSync(dir, { recursive: true });
   const src = p => JSON.stringify(path.join(ROOT, 'app/src', p));
-  fs.writeFileSync(path.join(dir, 'kit.ts'), [`export * from ${src('sync/records')};`, `export { freshState, normalize } from ${src('data/normalize')};`].join('\n'));
+  fs.writeFileSync(path.join(dir, 'kit.ts'), [`export * from ${src('sync/records')};`, `export { freshState, normalize } from ${src('data/normalize')};`, `export { shortDate } from ${src('data/dates')};`].join('\n'));
   const R = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
 
   const project = (records, id, clean = false) => {
@@ -355,8 +355,12 @@ const clone = o => JSON.parse(JSON.stringify(o));
   check('…and a task without them has no lines, and its summary as before', eq(R.recordLines('task:tk1', recs.get('task:tk1')), []) && !/steps/.test(R.recordSummary('task:tk1', recs.get('task:tk1'))));
   // A task's deadline details (specs/projects-deadlines.md), likewise.
   const dated = { ...recs.get('task:tk1'), deadline: { kind: 'firm', from: 'The tribunal letter', checkedBy: 'My adviser', checkedOn: '2026-10-12' } };
-  check('a task with a deadline lists "Firm deadline · from … · checked by … on …" (an aim one "Date to aim for")', R.recordLines('task:tk1', dated).includes('Firm deadline · from The tribunal letter · checked by My adviser on 2026-10-12')
-    && R.recordLines('task:tk1', { ...dated, deadline: { kind: 'aim', from: '', checkedBy: '', checkedOn: null } }).includes('Date to aim for'), R.recordLines('task:tk1', dated));
+  const lineOf = deadline => R.recordLines('task:tk1', { ...dated, deadline });
+  check('a task with a deadline lists "Firm deadline · from … · checked by … on …" (an aim one "Date to aim for"; a newer MyDay\'s kind "Deadline")', R.recordLines('task:tk1', dated).includes(`Firm deadline · from The tribunal letter · checked by My adviser on ${R.shortDate('2026-10-12')}`)
+    && lineOf({ kind: 'aim', from: '', checkedBy: '', checkedOn: null }).includes('Date to aim for') && lineOf({ kind: 'statutory', from: '', checkedBy: '', checkedOn: null }).includes('Deadline'), R.recordLines('task:tk1', dated));
+  const newerDl = { kind: 'statutory', from: 'The rules', checkedBy: '', checkedOn: null, futureBit: 1 }, gotDl = R.cleanRecord('task:tk1', { ...recs.get('task:tk1'), deadline: newerDl })?.deadline;
+  check('a task record whose deadline is of a newer MyDay\'s kind is read with it kept as it is', eq(gotDl, newerDl), gotDl);
+  check('…checked on a day, by no one named: "checked on …"', lineOf({ kind: 'firm', from: '', checkedBy: '', checkedOn: '2026-10-12' }).includes(`Firm deadline · checked on ${R.shortDate('2026-10-12')}`), lineOf({ kind: 'firm', from: '', checkedBy: '', checkedOn: '2026-10-12' }));
   // A project's tools and the Overview sections hidden on it (specs/projects-sections.md), likewise.
   const pj = [...recs.keys()].find(k => k.startsWith('project:'));
   if (pj) {

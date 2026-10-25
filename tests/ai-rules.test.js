@@ -1785,7 +1785,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const data = K.normalize(w);
     const SECRETS = ['SECRET-PROJECT', 'SECRET-SUMMARY', 'SECRET-OUTCOME', 'SECRET-FINISHED', 'SECRET-LEFTOFF', 'SECRET-TASK', 'SECRET-DUE', 'SECRET-STUCK', 'SECRET-DONE', 'SECRET-PERSON', 'SECRET-WAITER',
       'SECRET-NOTE', 'SECRET-PNOTE', 'SECRET-APPT', 'SECRET-PROBLEM', 'SECRET-BELIEF', 'SECRET-FOUND', 'SECRET-MILESTONE', 'SECRET-DECISION', 'SECRET-OPTION', 'SECRET-LINK', 'SECRET-WHY',
-      'SECRET-FILE', 'flsecret000', 'SECRET-RQ', 'SECRET-RS', 'SECRET-RF', 'SECRET-RES-TITLE', 'SECRET-RES-URL', 'SECRET-RES-NOTE', 'SECRET-TIMELINE', 'SECRET-EVIDENCE', 'SECRET-WHERE', 'SECRET-ISSUE', 'SECRET-NAME', 'SECRET-MONEY', 'SECRET-PF', 'flpfsecret', 'SECRET-STEP-PRIVATE', 'SECRET-AFTER', 'SECRET-DL'];
+      'SECRET-FILE', 'flsecret000', 'SECRET-RQ', 'SECRET-RS', 'SECRET-RF', 'SECRET-RES-TITLE', 'SECRET-RES-URL', 'SECRET-RES-NOTE', 'SECRET-TIMELINE', 'SECRET-EVIDENCE', 'SECRET-WHERE', 'SECRET-ISSUE', 'SECRET-NAME', 'SECRET-MONEY', 'SECRET-PF', 'flpfsecret', 'SECRET-STEP-PRIVATE', 'SECRET-AFTER', 'SECRET-DL-FROM', 'SECRET-DL-BY'];
     check('the made-up world really holds every secret after MyDay reads it (so the checks below can\'t pass by accident)', SECRETS.every(x => JSON.stringify(data).includes(x)), SECRETS.filter(x => !JSON.stringify(data).includes(x)));
     const leaks = (req, allowed = []) => SECRETS.filter(x => !allowed.includes(x) && JSON.stringify(req).includes(x));
     const pages = ['#today', '#calendar', '#today/tasks', '#projects', '#projects/p/pjSecret', '#projects/p/pjSecret/research', '#projects/p/pjOpen/research', '#projects/p/pjSecret/model', '#projects/p/pjOpen', '#projects/p/pjOpen/model', '#projects/p/pjCase',
