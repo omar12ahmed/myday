@@ -20,8 +20,8 @@ import { CARDS_LIMITS, checkCardsContext, readDraft, readVerdicts, type CardsChe
 import { checkNoteCardsContext, checkNoteCheckContext, readNoteDraft, type NoteCardsCheckContext, type NoteCardsContext } from '../_shared/ai/note-cards.ts';
 import { checkExplainContext } from '../_shared/ai/explain.ts';
 import { checkAnswerContext } from '../_shared/ai/check-answer.ts';
-import { checkAskContext } from '../_shared/ai/ask.ts';
-import { isCards, isNoteCards, type AiContext } from '../_shared/ai/prompt.ts';
+import { askOutput, checkAskContext } from '../_shared/ai/ask.ts';
+import { isAsk, isCards, isNoteCards, type AiContext } from '../_shared/ai/prompt.ts';
 
 export interface Deps {
   env: (name: string) => string | undefined;
@@ -141,7 +141,7 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
   if (!result.ok) return reply(502, { ok: false, error: 'unavailable', detail: result.error }, `model-${result.error}:${via}`);
   return reply(200, {
     ok: true,
-    output: result.text.slice(0, 8000),
+    output: (isAsk(ctx) ? askOutput(ctx, result.text) : result.text).slice(0, 8000), // (an older app never meets a "step")
     model: used.cfg.label,
     ...(fellBack ? { fallback: true } : {}),
     usage: { inputTokens: result.inputTokens, outputTokens: result.outputTokens, costUsd: costUsd(used.cfg, result.inputTokens, result.outputTokens), latencyMs: result.latencyMs },

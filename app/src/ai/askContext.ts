@@ -260,7 +260,7 @@ export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['
     const p = x.project;
     short.push(`Project: ${clip(p.title, 40)}`, `${n(p.tasks.length, 'task')}, ${n(p.notes.length, 'note title')}${p.notesText ? ' and their text' : ''}`);
     all.push({ label: 'This project', lines: [`Name: ${p.title}`, `Summary: ${p.summary ? clip(p.summary) : '(none)'}`, `Stage: ${p.stage.charAt(0).toUpperCase() + p.stage.slice(1)}`] });
-    if (p.tasks.length) all.push({ label: 'Its tasks', lines: p.tasks.map(t => `${t.done ? '✓ ' : ''}${t.title}${t.steps || t.stepsTotal ? ` (${t.steps?.filter(s => s.done).length ?? 0} of ${t.stepsTotal ?? t.steps!.length} steps)` : ''}${t.after?.length ? ` — starts after ${t.after.join(', ')}` : ''}`) });
+    if (p.tasks.length) all.push({ label: 'Its tasks', lines: p.tasks.map(t => `${t.done ? '✓ ' : ''}${t.title}${t.steps ? ` (${t.steps.filter(s => s.done).length} of ${t.stepsTotal ?? t.steps.length} steps${t.stepsTotal ? ', some not listed' : ''})` : t.stepsTotal ? ` (${t.stepsTotal} steps)` : ''}${t.after?.length ? ` — starts after ${t.after.join(', ')}` : ''}`) });
     const stepLines = p.tasks.flatMap(t => (t.steps ?? []).map(s => `${t.title}: ${s.done ? '✓ ' : ''}${s.text}`));
     if (stepLines.length) all.push({ label: 'Their steps', lines: stepLines });
     if (p.notes.length) all.push({ label: 'Its notes (titles)', lines: p.notes });

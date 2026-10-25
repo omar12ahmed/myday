@@ -402,9 +402,14 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     bad('11 steps on one of a project\'s tasks', { ...base, page: 'project', context: { project: { id: 'pj1', title: 'Move', summary: '', stage: 'act', tasks: [{ ...pjTasks[0], steps: Array.from({ length: 11 }, (_, i) => ({ text: 'S' + i, done: false })) }], notes: [] } } });
     bad('more than 40 steps across a project', { ...base, page: 'project', context: { project: { id: 'pj1', title: 'Move', summary: '', stage: 'act', tasks: Array.from({ length: 5 }, (_, k) => ({ id: 't' + k, title: 'Task ' + k, done: false, steps: Array.from({ length: 9 }, (_, i) => ({ text: 'S' + i, done: false })) })), notes: [] } } });
     const sysTask = sysOf({ ...base, page: 'task', context: { task: taskCtx } });
-    check('the instructions: on a task page with its checklist, a breakdown is "step" items into it, never repeating one; a task\'s steps and "starts after" read in a project, never as waiting',
-      sysTask.includes('On a task page whose "task" has "steps" (its checklist, even an empty one), breaking that task down is "steps" with items of type "step"') && sysTask.includes('never repeating one it already has (by meaning)')
-      && sysTask.includes('the next step inside a task is its first one not done') && sysTask.includes('never call that waiting'));
+    const sysOld = sysOf({ ...base, page: 'task', context: { task: (({ steps, ...t }) => t)(taskCtx) } });
+    check('the instructions: on a task page with its checklist, a breakdown is "step" items into it, carrying on from what\'s done; a task\'s steps and "starts after" read in a project, never as waiting',
+      sysTask.includes('This task page sends the task\'s checklist ("steps", even an empty one): breaking it down is "steps" with items of type "step"') && sysTask.includes('a done one is finished, so never suggest it again or any part of it')
+      && sysTask.includes('|must-be-true|step"') && sysTask.includes('the next step inside a task is its first one not done') && sysTask.includes('never call that waiting'));
+    check('…and without a checklist (an older app) no "step" is offered at all', !sysOld.includes('items of type "step"') && !sysOld.includes('|step"'));
+    const stray = JSON.stringify({ kind: 'steps', message: 'Steps.', action: null, items: [{ type: 'step', title: 'Ring the van firm' }, { type: 'task', title: 'Pack', minutes: 20, category: 'admin' }] });
+    const outOld = JSON.parse(A.askOutput({ ...base, page: 'task', context: { task: (({ steps, ...t }) => t)(taskCtx) } }, stray)), outNew = A.askOutput({ ...base, page: 'task', context: { task: taskCtx } }, stray);
+    check('a stray "step" for a request without a checklist goes back as a task (an older app never meets one); with one it\'s left as it is', outOld.items.every(i => i.type === 'task') && outOld.items.length === 2 && outNew === stray, outOld);
     const sr = A.readAsk(JSON.stringify({ kind: 'steps', message: 'Steps.', action: null, items: [{ type: 'step', title: 'Ring the van firm' }, { type: 'step', text: 'Words in text' }] }));
     check('a "step" item is read (its words in "title", or in "text")', sr && sr.items.length === 2 && sr.items.every(x => x.type === 'step') && sr.items[1].title === 'Words in text', sr);
     const mst = JSON.parse(A.mockAsk({ ...base, page: 'task', text: 'Break this into smaller steps', context: { task: taskCtx } }));

@@ -1746,7 +1746,8 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
       // An open project's task on today's plan: its steps and what it waits for stay on the device (specs/projects-steps.md);
       // the wait points at no task, so nothing else about it changes.
       TI('tkOpen', 'Order the felt', { projectId: 'pjOpen', plannedOn: PD, planUid: 'pO', waiting: { on: 'SECRET-PERSON', since: PD, until: null },
-        steps: [{ id: 'tsO1', text: 'SECRET-STEP-OPEN', done: true }, { id: 'tsO2', text: 'SECRET-STEP-OPEN-2', done: false }], after: ['SECRET-AFTER-ID'] })];
+        steps: [{ id: 'tsO1', text: 'SECRET-STEP-OPEN', done: true }, { id: 'tsO2', text: 'SECRET-STEP-OPEN-2', done: false }], after: ['SECRET-AFTER-ID', 'tkOpenFirst', 'tkSecret'] }),
+      TI('tkOpenFirst', 'Measure the shed base', { projectId: 'pjOpen', due: null })];
     const PT = (uid, title) => ({ uid, taskId: null, category: 'admin', title, minutes: 20, baseMinutes: 20, done: false, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null });
     w.days[PD] = { energy: 3, rest: false, builtAt: at, checkedIn: false, tasks: [PT('pS', 'SECRET-TASK'), PT('pO', 'Order the felt')] };
     w.context[PD] = { energy: 3, sleep: { start: null, end: null, estimatedHours: 7 } };
@@ -1847,6 +1848,9 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const openTaskPage = K.askSlice(data, '#today/tasks/tkOpen', PD).context, openLook = K.projectLookup(data, 'pjOpen').lookup;
     check('an open project\'s task\'s steps do go (its page, its project and the lookup), never an id it starts after', JSON.stringify(openTaskPage).includes('SECRET-STEP-OPEN')
       && JSON.stringify(openLook).includes('SECRET-STEP-OPEN') && !JSON.stringify([openTaskPage, openLook]).includes('SECRET-AFTER'), [openTaskPage.task?.steps, openLook.project.tasks.map(t => t.steps)]);
+    const tkOpenLook = openLook.project.tasks.find(t => t.id === 'tkOpen');
+    check('…what it starts after goes by its title (a task of its own project), never by id, and never a private project\'s task', eq(tkOpenLook?.after, ['Measure the shed base'])
+      && !/SECRET-TASK|tkSecret/.test(JSON.stringify(openLook)), tkOpenLook);
     check('a lookup in your notes: nothing private in what it sends — not even how many private notes matched', withLook.every(r => leaks(r).length === 0) && lookSecret.leftOut > 0 && lookSecret.lookup.notes.length === 0 && lookShed.lookup.notes.some(n => n.id === 'nOpen'), withLook.map(r => leaks(r)));
     data.patterns.prefs.aiNotes = false;
     const noText = K.askContext(K.askSlice(data, '#projects/p/pjOpen', PD), 'x', PD);
