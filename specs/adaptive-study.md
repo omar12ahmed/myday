@@ -9,6 +9,24 @@ minutes are written into the course map by `scripts/prepare-arabic.mjs`, so the 
 module; saved data stays schema 5 (owner's decision, 24 October 2026, recorded in AGENTS.md).
 **Plan date:** 23 October 2026, after release 1.44.0.
 
+**As built for Cybersecurity (25 October 2026; owner's decisions that day: its own lesson records, checks back a
+week after Ready, the next step following the states):** the same five states and rules (`app/src/data/study/
+mastery.ts`), with Cybersecurity's evidence (`app/src/data/cybersecurity/lessons.ts`, `app/src/study/cybersecurity/
+plan.ts`): **Practised** is a handed-in notebook attempt on one of the lesson's activities (its practical task,
+knowledge check or mini challenge) or a finished Study session on it; **Ready to move on** is the lesson's roadmap
+tick when the path is in your roadmap (as before: ticked in the roadmap, from a Study check-in, or with the lesson
+page's "Ready to move on"), and otherwise the day in your lesson record, `cybersecurity.lessons` (synced as its own
+kind, `cyber_lesson`, with your "Needs revision" flag and what needs work); either counts, and adding the path later
+moves a record's day to its tick. Marking it ready, from anywhere, brings its knowledge checks back in revision about
+a week later (within the 8 a day) and clears your flag. **Holding** and a **slip** come from your revision answers to
+those checks, as for Arabic. There are no "How did it go?" marks in a Cybersecurity session (the notebook keeps
+answers, not marks), so nothing comes back the next day and there's no "looks ready" suggestion. The next step (the
+map, Today and Study home) follows the shared rules: resume a notebook draft (optional lessons on your path too), then
+revisit a lesson the next one builds on that needs revision, then revision due ("Revise Cybersecurity"), then the
+next lesson that's New or Practised, each with "Why this?"; the length follows your energy and free time. The map's
+modules and a module's lessons show places and states in words and counts; Progress has "Cybersecurity: where you
+stand"; Worth a look offers a lesson that needs revision; the Study reset clears the records.
+
 ## 1. The practical problem
 
 Take a short Arabic session on nominal sentences. You read the explanation, try two examples, and still aren't

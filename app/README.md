@@ -509,6 +509,22 @@ latest mark per check) and synced as `arabic_lesson` — migration
 keep `arabic.lessons` unread and ignore the record kind (`tests/app-sync-previous.test.js` checks the actual previous
 release). A Study reset clears lesson places too.
 
+Adaptive Study for Cybersecurity (`../specs/adaptive-study.md`, "As built for Cybersecurity"): the same five places
+on the shared rules. **Practised** is a handed-in notebook attempt on one of the lesson's activities or a finished
+Study session on it; **Ready to move on** is the lesson's roadmap tick when the path is in your roadmap (ticked there,
+in a Study check-in or with the lesson page's button, as before) and otherwise the day in your own lesson record;
+marking it ready, from anywhere, brings its knowledge checks back about a week later (within the 8 a day) and clears
+your flag; **Holding** and slips come from your revision answers to those checks. No session marks, so no "looks
+ready" suggestion. The lesson page shows its place under the title with Ready to move on / Not ready after all /
+Needs revision… / Done revisiting (`src/study/cybersecurity/CyberPlace.tsx`); the map's module tiles and a module's
+lessons show places and states; the next step on the map, Today and Study home follows the shared rules with **Why
+this?** and a length that suits today, including "Revise Cybersecurity"; Progress has "Cybersecurity: where you
+stand" (`CyberProgress.tsx`); Worth a look offers a lesson that needs revision. Records:
+`src/data/cybersecurity/lessons.ts`; the next step and places: `src/study/cybersecurity/plan.ts`. Saved as the
+optional `cybersecurity.lessons` (the Ready day when there's no roadmap path, and your flag) and synced as
+`cyber_lesson` — migration `../supabase/migrations/20261026120000_sync_cyber_lessons.sql`, applied at release with
+the owner's go-ahead; older releases ignore the kind. A Study reset clears them.
+
 Keep a word (1.57.0, Arabic): under a lesson's examples (its Understand step: the headline example and the Arabic of
 its worked example) and under a reading text (one picker, sentence by sentence), **Keep a word** lists the words
 (punctuation left out, vowel marks as written). Tap one, give its meaning in your words (a starter word's meaning is
