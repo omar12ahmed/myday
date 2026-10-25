@@ -5864,8 +5864,8 @@
      "form_ar": "هَمْزَةُ الْوَصْلِ",
      "meaning_en": "the joining hamza",
      "part_of_speech": "chunk",
-     "root_ar": "ه-م-ز",
-     "root_reading": "h-m-z",
+     "root_ar": "و-ص-ل",
+     "root_reading": "w-ṣ-l",
      "example_ar": "لَا تُنْطَقُ هَمْزَةُ الْوَصْلِ فِي وَسَطِ الْكَلَامِ.",
      "example_meaning_en": "The joining hamza isn’t said in the middle of speech.",
      "note": "The first vowel of the article and of words like اِسْم, dropped after another word."
@@ -5988,7 +5988,7 @@
      "root_reading": "w-f-q",
      "example_ar": "أَفْهَمُ رَأْيَكَ، لَكِنْ لَا أُوَافِقُ.",
      "example_meaning_en": "I understand your view, but I don’t agree.",
-     "note": "Softer: لَا أُوَافِقُ تَمَامًا, “I don’t quite agree”."
+     "note": "Softer: أُوَافِقُ جُزْئِيًّا, “I partly agree”."
     },
     {
      "id": "lexeme.arabic-opinion-repair-4",
@@ -6063,14 +6063,14 @@
     },
     {
      "id": "lexeme.arabic-speaker-variety-3",
-     "form_ar": "لَكْنَة",
+     "form_ar": "لُكْنَة",
      "meaning_en": "accent",
      "part_of_speech": "noun",
      "root_ar": "ل-ك-ن",
      "root_reading": "l-k-n",
-     "example_ar": "لَهُ لَكْنَةٌ خَفِيفَةٌ.",
+     "example_ar": "لَهُ لُكْنَةٌ خَفِيفَةٌ.",
      "example_meaning_en": "He has a slight accent.",
-     "note": "Plural لَكَنَات."
+     "note": "Plural لُكْنَات. You’ll also hear it said with a, لَكْنَة."
     },
     {
      "id": "lexeme.arabic-speaker-variety-4",
@@ -6161,8 +6161,8 @@
      "part_of_speech": "adverb",
      "root_ar": null,
      "root_reading": null,
-     "example_ar": "هَكَذَا أَتَعَلَّمُ كَلِمَاتٍ جَدِيدَةً كُلَّ يَوْمٍ.",
-     "example_meaning_en": "This is how I learn new words every day.",
+     "example_ar": "هَكَذَا أُرَاجِعُ الدَّرْسَ كُلَّ مَسَاءٍ.",
+     "example_meaning_en": "This is how I revise the lesson every evening.",
      "note": "Often closes a paragraph by linking back to its point."
     },
     {
@@ -6256,7 +6256,7 @@
      "root_reading": "ḥ-y-y",
      "example_ar": "أَبْدَأُ الرِّسَالَةَ بِتَحِيَّةٍ قَصِيرَةٍ.",
      "example_meaning_en": "I begin the letter with a short greeting.",
-     "note": "A usual opening is تَحِيَّةً طَيِّبَةً, and a usual closing is مَعَ التَّحِيَّةِ, “with regards”."
+     "note": "A usual opening is تَحِيَّةً طَيِّبَةً وَبَعْدُ, and a usual closing is مَعَ التَّحِيَّةِ, “with regards”."
     },
     {
      "id": "lexeme.arabic-formal-email-7",
@@ -6365,7 +6365,7 @@
      "root_reading": "r-b-ṭ",
      "example_ar": "تَنْتَهِي «غُرْفَة» بِتَاءٍ مَرْبُوطَةٍ.",
      "example_meaning_en": "غُرْفَة ends in a tāʾ marbūṭa.",
-     "note": "Literally “tied tāʾ”: said -a at a pause, -at before another word."
+     "note": "Literally “tied tāʾ”: said -a at a pause, and -at when its ending is said, as in غُرْفَةُ النَّوْمِ."
     },
     {
      "id": "lexeme.arabic-orthography-editing-3",
@@ -6383,8 +6383,8 @@
      "form_ar": "عَلَامَةُ الِاسْتِفْهَامِ",
      "meaning_en": "question mark",
      "part_of_speech": "chunk",
-     "root_ar": "ع-ل-م",
-     "root_reading": "ʿ-l-m",
+     "root_ar": "ف-ه-م",
+     "root_reading": "f-h-m",
      "example_ar": "ضَعْ عَلَامَةَ الِاسْتِفْهَامِ فِي آخِرِ السُّؤَالِ.",
      "example_meaning_en": "Put a question mark at the end of the question.",
      "note": "In Arabic it faces the other way: ؟"
@@ -6562,7 +6562,7 @@
      "root_reading": "w-th-q",
      "example_ar": "هَلْ هَذَا الْمَصْدَرُ مَوْثُوقٌ؟",
      "example_meaning_en": "Is this source reliable?",
-     "note": "From وَثِقَ, “he trusted”."
+     "note": "From وَثِقَ, “he trusted”; in full, مَوْثُوق بِهِ."
     }
    ]
   },
@@ -6824,7 +6824,7 @@
      "root_reading": "m-h-r",
      "example_ar": "الِاسْتِمَاعُ مَهَارَةٌ مُهِمَّةٌ.",
      "example_meaning_en": "Listening is an important skill.",
-     "note": "Plural مَهَارَات. The four: الْقِرَاءَةُ، الْكِتَابَةُ، الِاسْتِمَاعُ، الْمُحَادَثَةُ."
+     "note": "Plural مَهَارَات. The four: الْقِرَاءَة, الْكِتَابَة, الِاسْتِمَاع and الْمُحَادَثَة."
     },
     {
      "id": "lexeme.arabic-b1-portfolio-2",
