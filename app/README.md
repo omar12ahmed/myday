@@ -1,5 +1,20 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.84.0 — Words for each Arabic lesson, and notebook ratings in words:** module 4's five lessons (greetings, saying
+what something is, questions, where you're from, asking again) now each have their own words, 48 in all: fully
+vowelled, each with its meaning, the root it comes from, an example and a note, voiced where a form can be read aloud.
+They're in the lesson's Understand step ("Words in this lesson", with the starter words it uses), folded away while
+you check yourself, and on the Vocabulary page under "Words from the lessons". Marking a lesson ready to move on
+brings its words into revision from the next day (Arabic → meaning, within the 8 new a day), before its checks a week
+later; you can add any sooner. Keep a word fills in a lesson word's meaning too. The list was checked by the owner and
+its 133 new clips listened to. The Cybersecurity notebook's rubric is now rated in words, criterion by criterion, and
+a handed-in entry shows those words instead of "Provisional task score: n/100"; a lesson's prerequisites no longer
+show a readiness number, and the help you used shows in the words you chose. Your saved ratings are unchanged. No
+saved-data, sync or database change; nothing new is sent to AI. Going back to 1.83.0 is safe, with one thing to know:
+a lesson word's card that comes up in its revision shows as "no longer in the course" with "Take it out of revision"
+first; choose "Skip for now", or the card is removed on every device (checked with the actual previous release: it
+keeps the cards and syncs normally). The notebook shows its score again there.
+
 **1.83.0 — Needs you, across projects:** the Projects home now opens with **Needs you**: what needs you across your
 active projects, each line saying what and why and opening the thing itself ("Order the boards" / "still open, was
 due Thu 22 Oct · Garden shed"). It counts a date today or in the next 7 days, a task still open after its date (not
@@ -620,14 +635,17 @@ asks for is in the generated lesson index (`modalities`, from the course's input
 
 Course words (Arabic, `../specs/study-home-and-lessons.md` §12): each lesson's own words, from MyDay's
 `../content/teaching/arabic/course-words.json` (module 4 so far: 48 words), each fully vowelled with its meaning, the
-root it comes from, an example and a note, all voiced. A lesson's Understand step has "Words in this lesson" (its
-words, then the starter words it uses), folded away with the explanation while you check yourself; Vocabulary has
-"Words from the lessons". Marking a lesson ready brings its words into revision from the next day (Arabic → meaning,
-any not there already, within the 8 a day) before its checks a week later; you can add any sooner. Their revision
-cards are the starter words' kind (`lexeme.arabic-<lesson>-<n>:recognise`). Keep a word fills in a lesson word's
-meaning too. Checked at every build by `scripts/prepare-arabic.mjs` (ids, lessons, starter words, vowels, roots) and
-written beside the starter words in `src/study/arabic/data/texts.json`; lookups in `src/study/arabic/courseWords.ts`.
-Each module's list is checked by the owner, and its clips listened to, before it ships.
+root it comes from, an example and a note, voiced where a form can be read aloud (a lone letter like وَ isn't). A
+lesson's Understand step has "Words in this lesson" (its words, then the starter words it uses), folded away with the
+explanation while you check yourself; Vocabulary has "Words from the lessons". Marking a lesson ready brings its words
+into revision from the next day (Arabic → meaning, any not there already, within the 8 a day) before its checks a week
+later; you can add any sooner. Their revision cards are the starter words' kind
+(`lexeme.arabic-<lesson>-<n>:recognise`). Keep a word fills in a lesson word's meaning too. Checked at every build by
+`scripts/prepare-arabic.mjs` (ids, lessons, starter words, vowels, roots) and written beside the starter words in
+`src/study/arabic/data/texts.json`; lookups in `src/study/arabic/courseWords.ts`. Each module's list is checked by the
+owner, and its clips listened to, before it ships. An older release keeps these cards but can't show them: in its
+revision such a card says "no longer in the course" with "Take it out of revision" first, which would remove it on
+every device; "Skip for now" keeps it.
 
 Keep a word (1.57.0, Arabic): under a lesson's examples (its Understand step: the headline example and the Arabic of
 its worked example) and under a reading text (one picker, sentence by sentence), **Keep a word** lists the words

@@ -425,7 +425,7 @@ note's text does: AI help with notes when it's on, and Ask MyDay opened on that 
     lessons". Marking a lesson ready brings its words (its own and the starter words it uses) into revision from the
     next day, Arabic → meaning, within the 8 a day, before its checks a week later. Revision cards are the starter
     words' kind (`lexeme.arabic-<lesson>-<n>:recognise`), so no saved-data change; an older release keeps them but
-    can't show them. Next: modules 5–7, then the rest of A1, each checked by the owner before it ships.
+    can't show them (its revision says "no longer in the course" with "Take it out" first; Skip keeps them). Next: modules 5–7, then the rest of A1, each checked by the owner before it ships.
 - **Recording yourself:** not now (decision 7). Speech recognition: not planned, as there's no dependable
   validation for MSA.
 - **Course projects:** kept inside their course and called "course projects", because "Projects" is MyDay's spine.

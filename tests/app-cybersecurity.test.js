@@ -514,8 +514,8 @@ async function fill(sel, value) {
   check('…says practical work done with help shows practice, not yet doing it on your own', (await text('[data-cy-rated-help]')).includes('Done with help, so it shows practice'));
   check('…and an unresolved scope or evidence check means it doesn\'t count as demonstrated', (await ev(`document.querySelector('[data-cy-scope]')?.dataset.cyScope`)) === 'unresolved'
     && (await text('[data-cy-scope]')).includes('doesn’t count as demonstrated'));
-  const rCard = await ev(`document.querySelector('[data-cy-rated]').closest('.rounded-card, [class*=card], section, article')?.textContent ?? document.querySelector('[data-cy-rated]').parentElement.textContent`);
-  check('the entry has no score, total or "/100" anywhere', !/score|\/100|provisional|calculation/i.test(rCard), rCard.slice(0, 300));
+  const rCard = await ev(`document.querySelector('[data-cy-rated]').closest('section.card')?.textContent ?? ''`);
+  check('the entry has no score, total or "/100" anywhere', rCard.includes('How you rated it') && !/score|\/100|provisional|calculation/i.test(rCard), rCard.slice(0, 300));
   check('…and names the help you used in the words you chose it by', rCard.includes('Used hints or AI help · self-assessed') && !/\bhint ·/.test(rCard), rCard.slice(0, 200));
   await go('study/cybersecurity');
   check('the map\'s footnote speaks of your notebook ratings, not scores', !/score/i.test(await text('#app')) && (await text('#app')).includes('Your notebook ratings are your own assessment'));

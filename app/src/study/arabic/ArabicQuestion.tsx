@@ -16,6 +16,7 @@ import { PractiseQuestion } from './PractiseQuestion';
 import { Pronunciation, PronunciationControls } from './Pronunciation';
 import checksJson from './data/checks.json';
 import { isCourseWord, wordById } from './courseWords';
+import { WordNote } from './WordNote';
 
 // An Arabic card in a revision round, asked like any other question: a word (a starter word or one from a lesson) one way round, a lesson check,
 // a word you kept one way round, or a lesson to practise again (PractiseQuestion.tsx). You compare your answer yourself; MyDay never marks Arabic (the course's own
@@ -65,7 +66,7 @@ function asked(data: MyDayData, card: ArabicCard, ref: Exclude<CardRef, { kind: 
     const w = wordById(ref.lexemeId);
     if (!w) return 'gone';
     const course = isCourseWord(w) ? w : null;
-    const example = <><Ar>{w.example_ar}</Ar>{'\n'}{w.example_meaning_en}{course && <>{'\n'}<Mixed text={course.note} /></>}</>, exampleText = `${w.example_ar} — ${w.example_meaning_en}`;
+    const example = <><Ar>{w.example_ar}</Ar>{'\n'}{w.example_meaning_en}{course && <>{'\n'}<WordNote text={course.note} /></>}</>, exampleText = `${w.example_ar} — ${w.example_meaning_en}`;
     const notYet = <>This one hasn’t clicked yet, which is normal for a new word. Read its example once more, slowly, out loud if you can; at the end of the round there’s a link back to the starter words.</>;
     if (ref.side === 'recognise') {
       const title = `${w.form_ar} → ${w.meaning_en}`;

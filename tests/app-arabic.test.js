@@ -540,6 +540,10 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   await click('[data-action="s-rev-show"]'); await sleep(200);
   const shownWord = await T.text('.st-q');
   check('…and showing the answer gives the example\'s English and the word\'s note', shownWord.includes('Hello, I am Sarah.') && shownWord.includes('A greeting for anyone'), shownWord);
+  await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); d.arabic.cards = [{ id: 'lexeme.arabic-greetings-address-3:recognise', addedOn: '2026-10-04', review: { reps: 0, interval: 1, lapses: 0, due: '2026-10-11' } }]; localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`);
+  await on(11, 'study/arabic'); await wait('[data-action="ar-revise"]', 5000);
+  await click('[data-action="ar-revise"]'); await sleep(900); await click('[data-action="s-rev-show"]'); await sleep(200);
+  check('…and a root in a word\'s note stays whole and in order there (خ-ي-ر as one right-to-left piece)', await ev(`[...document.querySelectorAll('.st-q bdi[dir="rtl"]')].some(b => b.textContent === 'خ-ي-ر')`), await T.text('.st-q'));
 
   await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); d.arabic.cards = [{ id: 'lexeme.arabic-not-in-this-version-1:recognise', addedOn: '2026-10-04', review: { reps: 0, interval: 1, lapses: 0, due: '2026-10-11' } }]; localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`);
   await on(11, 'study/arabic'); await wait('[data-action="ar-revise"]', 5000);

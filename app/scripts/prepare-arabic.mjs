@@ -8,6 +8,7 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { vowelling } from './arabic-reading-sentences.mjs';
 
 const source = fileURLToPath(new URL('../../content/arabic-fusha/', import.meta.url));
 const target = fileURLToPath(new URL('../src/study/arabic/data/', import.meta.url));
@@ -85,11 +86,11 @@ for (const m of c.modules) {
 // id is the lesson's own name and a number, within revision's card-id rule (so an older release keeps its cards).
 const words = JSON.parse(readFileSync(fileURLToPath(new URL('../../content/teaching/arabic/course-words.json', import.meta.url)), 'utf8'));
 const lessonIds = new Set(c.lessons.map(l => l.id)), seedIds = new Set(c.lexicon_seed.map(w => w.id)), wordIds = new Set();
+const forms = new Map(c.lexicon_seed.map(w => [w.form_ar, w.id]));
 const ARABIC = /[\u0621-\u064A]/, MARKS = /[\u064B-\u0652]/, ROOT_FORM = /^[\u0621-\u064A](-[\u0621-\u064A]){2,3}$/;
 for (const [lessonId, entry] of Object.entries(words.lessons)) {
   if (!lessonIds.has(lessonId)) fail(`course words for an unknown lesson ${lessonId}`);
   for (const s of entry.seed ?? []) if (!seedIds.has(s)) fail(`${lessonId}: unknown starter word ${s}`);
-  const forms = new Set();
   entry.words.forEach((w, i) => {
     const want = `lexeme.arabic-${lessonId.slice('lesson.arabic-'.length)}-${i + 1}`;
     if (w.id !== want) fail(`${lessonId}: word ${i + 1} should have the id ${want}, not ${w.id}`);
@@ -97,10 +98,10 @@ for (const [lessonId, entry] of Object.entries(words.lessons)) {
     if (wordIds.has(w.id) || seedIds.has(w.id)) fail(`${w.id}: used twice`);
     wordIds.add(w.id);
     for (const f of ['form_ar', 'meaning_en', 'part_of_speech', 'example_ar', 'example_meaning_en', 'note']) if (typeof w[f] !== 'string' || !w[f].trim()) fail(`${w.id}: no ${f}`);
-    if (!ARABIC.test(w.form_ar) || !MARKS.test(w.form_ar) || !ARABIC.test(w.example_ar) || !MARKS.test(w.example_ar)) fail(`${w.id}: the word and its example must be vowelled Arabic`);
+    if (!ARABIC.test(w.form_ar) || !MARKS.test(w.form_ar) || vowelling(w.form_ar) !== 'full' || !ARABIC.test(w.example_ar) || vowelling(w.example_ar) !== 'full') fail(`${w.id}: the word and its example must be fully vowelled Arabic`);
     if ((w.root_ar === null) !== (w.root_reading === null) || (w.root_ar !== null && (!ROOT_FORM.test(w.root_ar) || typeof w.root_reading !== 'string' || !w.root_reading.trim()))) fail(`${w.id}: a root is written like ك-ت-ب, with its reading, or both are null`);
-    if (forms.has(w.form_ar)) fail(`${lessonId}: ${w.form_ar} twice`);
-    forms.add(w.form_ar);
+    if (forms.has(w.form_ar)) fail(`${w.id}: ${w.form_ar} is already ${forms.get(w.form_ar)} (list it once, or under "seed")`);
+    forms.set(w.form_ar, w.id);
   });
 }
 writeFileSync(target + 'texts.json', JSON.stringify({ assets: c.assets, lexicon: c.lexicon_seed, course: words.lessons }));

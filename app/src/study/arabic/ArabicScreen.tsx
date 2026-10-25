@@ -37,6 +37,7 @@ import { arabicCheckSource } from './checkSource';
 import { RestartOffer, StepBar } from '../journey/Journey';
 import { AR_MAX, editWord, keepWord, keptCardId, keptWord, MEANING_MAX, NOTE_MAX, practiseWriting, removeWord, sentencesIn } from '../../data/arabic/words';
 import { KeepAWord } from './KeepAWord';
+import { WordNote } from './WordNote';
 import { courseLessons, isCourseWord, lessonWordIds, lessonWords, type AnyWord } from './courseWords';
 import { starterFor } from './starter';
 import { ARABIC_TINY, toStep } from '../journey/dom';
@@ -159,7 +160,7 @@ function ReadyOffer({ data }: { data: MyDayData }) {
   const markTicked = () => { const k = todayKey(); if (update(d => { for (const id of ticked) markReady(d, id, checksOf(id), k, lessonWordIds(id)); })) close(); };
   return <Card data-ar-ready-offer="">
     <h3 className="mt-0">Lessons you’ve practised</h3>
-    <p className="text-[15px]">You’ve finished sessions on {plural(ids.length, 'lesson')} without saying yet whether you’re ready to move on. A finished session counts as practice, so your next step stays on a lesson until you do. Mark any you’re ready to move on from; their checks come back in a week.</p>
+    <p className="text-[15px]">You’ve finished sessions on {plural(ids.length, 'lesson')} without saying yet whether you’re ready to move on. A finished session counts as practice, so your next step stays on a lesson until you do. Mark any you’re ready to move on from: their words come back from tomorrow, a few a day, and their checks in a week.</p>
     <div className="grid gap-1 mb-3">{ids.map(id => <label key={id} className="flex gap-3 items-center min-h-11 cursor-pointer">
       <input type="checkbox" className="size-5 flex-none accent-primary" data-s="ar-offer-lesson" value={id} checked={ticked.includes(id)} onChange={e => setTicked(t => e.target.checked ? [...t, id] : t.filter(x => x !== id))} />
       <span>{lessonIndex[id].title}</span></label>)}</div>
@@ -829,19 +830,6 @@ function useTakeOut() {
     if (await confirm({ title: 'Take this word out of revision?', body: `“${w.meaning_en}”: your past answers stay in your history. If you add it again, it starts afresh.`, confirmLabel: 'Take it out', cancelLabel: 'Keep it' }))
       outOfRevision([wordCard(w.id, 'recognise'), wordCard(w.id, 'write')]);
   };
-}
-// A word's note: English with Arabic in it, each Arabic piece with its voice, and a root written like ك-ت-ب kept whole.
-const ROOT_IN_NOTE = /[\u0621-\u064A](?:-[\u0621-\u064A]){2,3}/g;
-function WordNote({ text, voice }: { text: string; voice: string }) {
-  const out: ReactNode[] = [];
-  let last = 0;
-  for (const m of text.matchAll(ROOT_IN_NOTE)) {
-    if (m.index > last) out.push(<Mixed key={last} text={text.slice(last, m.index)} voice={`${voice}:${last}`} />);
-    out.push(<Root key={'r' + m.index} f={{ root_ar: m[0], root_reading: '' }} reading={false} />);
-    last = m.index + m[0].length;
-  }
-  if (last < text.length) out.push(<Mixed key={last} text={text.slice(last)} voice={`${voice}:${last}`} />);
-  return <>{out}</>;
 }
 // One word: the Arabic, its meaning (a course word's root too), its example, each with its voice; a course word's note;
 // where it stands in revision, and adding it, practising writing it, or taking it out.
