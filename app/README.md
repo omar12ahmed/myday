@@ -1,5 +1,14 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.76.0 — The tutor in parts:** "Explain this to me" on a Cybersecurity lesson now answers in parts you open one at
+a time, as "Check my answer" does: a hint first — a question to think with before any explanation (for subnetting, how
+many bits a /27 leaves, before any sums) — then an example, the explanation, a follow-up question and its answer. Where
+parts don't fit — a target that isn't yours, an answer key, a mark, a password in the question, or something away from
+the lesson — it's one plain reply with a next step. It's labelled as AI-written, by which model, under the question you
+asked; still sent: only your question and the lesson. The tutor stays on GLM-5.3-Flash, chosen by a blind evaluation
+(`../ai-eval/reviews/2026-10-25-tutor-steps-quality.md`). The server (ai-plan) went first and answers the earlier app's
+tutor exactly as before; no saved-data, sync or database change; going back to 1.75.0 is safe.
+
 **1.75.0 — Ask MyDay looks at what you're waiting on:** ask "what am I waiting on?" or "anything I should chase on
 the flat move?" and Ask MyDay looks, on this device, at the tasks you've marked as waiting: each one's title, its
 project, since when and the day you expect it, oldest first, with links to them. Who or what a task waits on is never
