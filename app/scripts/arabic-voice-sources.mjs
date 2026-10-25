@@ -23,6 +23,7 @@ export function voiceSources(root) {
   const teaching = read('content/teaching/arabic-fusha.json');
   const families = read('content/teaching/arabic/word-families.json');
   const keys = read('content/arabic-fusha/MyDay_Arabic_Assessment_Keys.json');
+  const words = Object.values(read('content/teaching/arabic/course-words.json').lessons).flatMap(l => l.words);
   const uniq = xs => [...new Set(xs)];
   const mixed = values => uniq(values.filter(v => typeof v === 'string').flatMap(v => arabicRuns(v).map(p => p.text.trim())).filter(voiceable));
   return [
@@ -39,5 +40,8 @@ export function voiceSources(root) {
     { id: 'lesson-checks', round: 3, label: 'lesson checks and answers, only after reveal', texts: mixed([
       ...course.assessments.flatMap(a => (a.questions || []).map(q => q.prompt)), ...keys.answer_keys.map(k => k.expected_answer),
     ]) },
+    // Round four: the course words (content/teaching/arabic/course-words.json), each word, its example and the Arabic
+    // in its note, once the owner has checked the list.
+    { id: 'course-words', round: 4, label: 'course words, their examples and notes', texts: uniq([...words.flatMap(w => [w.form_ar, w.example_ar]).filter(voiceable), ...mixed(words.map(w => w.note))]) },
   ];
 }

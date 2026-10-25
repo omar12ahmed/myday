@@ -1,7 +1,7 @@
 {
- "about": "Course words: an authored word list per Arabic lesson (MyDay's own, not part of the supplied package), each word with its meaning, root, an example and a short note, beside the package's starter words (listed by id under \"seed\", not repeated). Fully vowelled. Checked by the owner before it ships; until then it is a draft.",
- "status": "draft: module 4, cross-checked twice, awaiting the owner's check",
- "version": "0.2",
+ "about": "Course words: an authored word list per Arabic lesson (MyDay's own, not part of the supplied package), each word with its meaning, root, an example and a short note, beside the package's starter words (listed by id under \"seed\", not repeated). Fully vowelled. Each module is checked by the owner before it ships.",
+ "status": "module 4: checked by the owner (reads Arabic) on 2026-10-25, after two independent cross-checks; voiced (round four)",
+ "version": "1.0",
  "lessons": {
   "lesson.arabic-greetings-address": {
    "seed": [
@@ -64,7 +64,7 @@
      "root_reading": "ḥ-w-l",
      "example_ar": "كَيْفَ حَالُكَ يَا سَامِرُ؟",
      "example_meaning_en": "How are you, Sāmir?",
-     "note": "To a woman: كَيْفَ حَالُكِ؟ حَال is “state, condition”."
+     "note": "To a woman: كَيْفَ حَالُكِ؟ The word حَال means “state, condition”."
     },
     {
      "id": "lexeme.arabic-greetings-address-6",
