@@ -249,8 +249,8 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   await go('today', 2026, 11, 2, 9, 3);
   await ev('document.activeElement && document.activeElement.blur(); window.scrollTo(0, 0)');
   const order = [];
-  for (let i = 0; i < 10; i++) { await press('Tab'); order.push(await focused()); }
-  check('Tab reaches Skip to content, Focus, Capture, theme and every section', order[0] === '#app' && order[1] === 'focus-mode' && order[2] === 'capture-open' && order[3] === 'themeBtn' && eq(order.slice(4, 10), ['#today', '#calendar', '#projects', '#finance', '#health', '#study']), order);
+  for (let i = 0; i < 11; i++) { await press('Tab'); order.push(await focused()); }
+  check('Tab reaches Skip to content, Focus, Search, Capture, theme and every section', order[0] === '#app' && order[1] === 'focus-mode' && order[2] === 'search-open' && order[3] === 'capture-open' && order[4] === 'themeBtn' && eq(order.slice(5, 11), ['#today', '#calendar', '#projects', '#finance', '#health', '#study']), order);
   check('…with a visible focus outline', (await ev(`getComputedStyle(document.activeElement).outlineStyle`)) !== 'none');
   await ev(`document.querySelector('#nav a[href="#finance"]').focus()`); await press('Enter'); await sleep(250);
   check('Enter on a navigation link opens that section', (await ev('location.hash')) === '#finance');
