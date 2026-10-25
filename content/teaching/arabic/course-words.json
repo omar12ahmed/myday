@@ -5033,8 +5033,8 @@
      "form_ar": "مَا زَالَ",
      "meaning_en": "still (is)",
      "part_of_speech": "chunk",
-     "root_ar": "ز-و-ل",
-     "root_reading": "z-w-l",
+     "root_ar": "ز-ي-ل",
+     "root_reading": "z-y-l",
      "example_ar": "مَا زَالَتْ أُخْتِي فِي الْجَامِعَةِ.",
      "example_meaning_en": "My sister is still at university.",
      "note": "Literally “hasn’t stopped”. In the present: لَا يَزَالُ."
@@ -5130,7 +5130,7 @@
      "root_reading": "z-ʿ-m",
      "example_ar": "زَعَمَ أَنَّهُ لَمْ يَرَ الرِّسَالَةَ.",
      "example_meaning_en": "He claimed he hadn’t seen the message.",
-     "note": "Used when the writer doubts the claim."
+     "note": "Often used when the writer doubts the claim."
     }
    ]
   },
@@ -5226,7 +5226,7 @@
      "part_of_speech": "particle",
      "root_ar": null,
      "root_reading": null,
-     "example_ar": "أَسْتَيْقِظُ مُبَكِّرًا لِكَيْ أَصِلَ فِي الْوَقْتِ.",
+     "example_ar": "أَسْتَيْقِظُ مُبَكِّرًا لِكَيْ أَصِلَ فِي الْمَوْعِدِ.",
      "example_meaning_en": "I get up early so that I arrive on time.",
      "note": "The verb after it ends in fatḥa: أَصِلَ."
     },
@@ -5691,7 +5691,7 @@
      "part_of_speech": "chunk",
      "root_ar": "ش-ر-ك",
      "root_reading": "sh-r-k",
-     "example_ar": "شَارَكْتُ فِي مُسَابَقَةٍ لِلْقِرَاءَةِ.",
+     "example_ar": "شَارَكْتُ فِي مُسَابَقَةِ قِرَاءَةٍ.",
      "example_meaning_en": "I took part in a reading competition.",
      "note": "“Taking part” is مُشَارَكَة."
     },
