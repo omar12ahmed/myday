@@ -1,5 +1,19 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.91.0 — Ask MyDay looks across MyDay:** ask "where did I put the electrician's number?", "what did I write about
+the bike rack?" or "do I have a lesson on greetings?" and Ask MyDay looks across MyDay, on this device, with Search
+everywhere's matching — your tasks (titles, notes and steps), projects (names, summaries, milestones and decisions),
+note titles (their text only with AI help with notes on), the calendar, and your study (your courses and their tasks,
+topics, books, and the Arabic and Cybersecurity lessons and course words) — and answers from up to 12 things it found,
+each sent as its name, what it is and where it is, never what it says. The answer names them and links each one (the
+links stay on the device); it says what it looked for, and how many private things were left out, above the answer. It
+stands in for "Search your notes", and a day, a named project, your open decisions, what you're waiting on and what to
+study next keep their own looks. It matches only on what may be sent, so a match never hints at anything held back:
+never anything private, Finance, Health, who a task waits on, research, case records, a project's links, outcome or
+where you left off, your kept words, revision cards, answers or your notebook. That second request counts towards the
+day's limit. The server's instructions (v24) were deployed first, and an older app still looks in its notes; no
+saved-data, sync or database change; going back to 1.90.0 is safe (`specs/ai-tools.md` §6.11).
+
 **1.90.0 — Words for Arabic modules 11–13:** attached pronouns, the grammar words for case roles, longer possession
 phrases, the dual and regular plurals and comparisons (module 11); roots, patterns, splitting a written word into its
 parts, dictionaries, participles and verbal nouns, and words for learning vocabulary (module 12); and A2
