@@ -370,5 +370,129 @@ async function fill(sel, value) {
   const skillRows = await ev(`[...document.querySelectorAll('[data-cy-skill-evidence] li')].map(li => li.textContent)`);
   check('a project page lists each required skill as "no evidence yet" or "evidence in your notebook", never as a score', skillRows.length === 5 && skillRows.every(r => /— (no evidence yet|evidence in your notebook)$/.test(r)) && !(await text('[data-cy-skill-evidence]')).includes('/100'), skillRows);
 
+  console.log('\n[States] Lesson states: New, Ready to move on, Needs revision, and where they show');
+  const SL = 'lesson.learning-evidence', SL2 = 'lesson.authorised-scope', SH = 'study/cybersecurity/' + SL, SMOD = 'module.learning-lab';
+  const SQ = ['assessment.learning-evidence-check.q1', 'assessment.learning-evidence-check.q2'];
+  const SWORDS = 'NAT versus host-only';
+  const sPlace = () => ev(`document.querySelector('[data-cy-place]')?.dataset.cyPlace ?? null`);
+  const sOpen = async (hash = SH) => { await go(hash); await until(() => exists('[data-cy-place]'), 'the lesson\'s place line'); };
+  const sEdit = fn => ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); (${fn})(d); localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`);
+  const sTask = (d, id) => { const walk = o => { if (o && typeof o === 'object') { if (o.id === id && 'done' in o) return o; for (const v of Object.values(o)) { const r = walk(v); if (r) return r; } } return null; }; return walk(d.study.stages); };
+  // Everything except the roadmap's tasks, the lesson checks in revision and the lesson records.
+  const sOutside = d => JSON.stringify({ ...d, study: { ...d.study, stages: null }, cybersecurity: { ...d.cybersecurity, cards: null, lessons: null }, saves: null });
+  const sCards = d => (d.cybersecurity.cards || []).map(c => `${c.id}@${c.addedOn}>${c.review.due}`).join();
+  const sDue = `${SQ[0]}@2026-10-05>2026-10-12,${SQ[1]}@2026-10-05>2026-10-12`;
+
+  // a and d: a new lesson without the path in the roadmap
+  await ev('localStorage.clear()'); await go('study'); await sOpen();
+  const sBase = await data();
+  check('a new lesson shows the place "new" with its first line in words', (await sPlace()) === 'new' && (await text('[data-cy-place] p')).startsWith('New: nothing handed in or studied yet.'), [await sPlace(), await text('[data-cy-place]')]);
+  check('…offering "Ready to move on" and "Needs revision…" but not "Not ready after all" or "Done revisiting"', await exists('[data-action="cy-place-ready"]') && await exists('[data-action="cy-place-revisit"]') && !(await exists('[data-action="cy-place-unready"]')) && !(await exists('[data-action="cy-place-revisited"]')));
+  check('this fresh lesson has no path in the roadmap and no lesson records or checks in revision yet', !(await data()).study.stages.length && !(await data()).cybersecurity.lessons?.length && !(await data()).cybersecurity.cards.length);
+  await click('[data-action="cy-place-revisit"]');
+  await until(() => exists('[data-cy-revisit-form] #cyRevisitWhat'), 'the revision form');
+  await fill('#cyRevisitWhat', SWORDS); await click('[data-action="cy-revisit-save"]');
+  await until(async () => (await sPlace()) === 'needs-revision', 'the lesson to need revision');
+  let sRec = (await data()).cybersecurity.lessons;
+  check('"Needs revision…" with "NAT versus host-only" saved makes the place "needs-revision" with those words', (await text('[data-cy-place] p')).startsWith('Needs revision: ' + SWORDS + '.') && !(await exists('[data-cy-revisit-form]')), await text('[data-cy-place]'));
+  check('…keeping a lesson record with your words and today, and no Ready day', sRec.length === 1 && sRec[0].id === SL && sRec[0].revisit.what === SWORDS && sRec[0].revisit.since === '2026-10-05' && !sRec[0].readyOn, sRec);
+  check('…now offering "Done revisiting" and "Ready to move on", and not "Needs revision…"', await exists('[data-action="cy-place-revisited"]') && await exists('[data-action="cy-place-ready"]') && !(await exists('[data-action="cy-place-revisit"]')));
+  await sOpen();
+  check('the flagged lesson survives a reload with the same words', (await sPlace()) === 'needs-revision' && (await text('[data-cy-place] p')).includes(SWORDS));
+  await click('[data-action="cy-place-revisited"]');
+  await until(async () => (await sPlace()) === 'new', 'Done revisiting');
+  check('"Done revisiting" returns the lesson to "new" and removes its record', !(await data()).cybersecurity.lessons?.length && (await text('[data-cy-place] p')).startsWith('New:'), [(await data()).cybersecurity.lessons, await text('[data-cy-place]')]);
+
+  // c: Ready without the path
+  await click('[data-action="cy-place-ready"]');
+  await until(async () => (await sPlace()) === 'ready', 'the lesson to be ready');
+  let sd = await data();
+  check('without the path, "Ready to move on" makes the place "ready" and says its 2 checks come back from 12 Oct', (await text('[data-cy-place] p')).startsWith('Ready to move on since') && (await text('[data-cy-place-note]')).startsWith('Its 2 checks will come back from') && (await text('[data-cy-place-note]')).includes('12'), [await text('[data-cy-place]'), await text('[data-cy-place-note]')]);
+  check('…the lesson record holds only the id and today\'s Ready day', require('node:util').isDeepStrictEqual(sd.cybersecurity.lessons, [{ id: SL, readyOn: '2026-10-05' }]), sd.cybersecurity.lessons);
+  check('…and its 2 checks are in revision, added today and due 7 days on', sCards(sd) === sDue, sCards(sd));
+  check('…now offering "Not ready after all" and not "Ready to move on"', await exists('[data-action="cy-place-unready"]') && !(await exists('[data-action="cy-place-ready"]')));
+  check('marking it ready changed nothing else in your saved data', sOutside(sd) === sOutside(sBase));
+  await sOpen();
+  check('the Ready mark survives a reload', (await sPlace()) === 'ready');
+  await click('[data-action="cy-place-unready"]');
+  await until(async () => (await sPlace()) === 'new', '"Not ready after all"');
+  sd = await data();
+  check('without the path, "Not ready after all" removes the lesson record and the place is "new" again', !sd.cybersecurity.lessons?.length, sd.cybersecurity.lessons);
+  check('…the 2 checks stay in revision, and nothing else in your saved data changed', sCards(sd) === sDue && sOutside(sd) === sOutside(sBase), sCards(sd));
+
+  // b: Ready with the path in the roadmap
+  await ev('localStorage.clear()'); await go('study/cybersecurity');
+  await click('[data-action=cyber-import]'); await until(async () => (await data()).study.stages.length > 0, 'the path to be imported');
+  const sBaseP = await data(), sTid = 'cyber:1:' + SL;
+  check('with the path imported the lesson\'s roadmap task exists and is not ticked', !!sTask(sBaseP, sTid) && sTask(sBaseP, sTid).done === false);
+  await sOpen();
+  check('with the path in the roadmap a new lesson still shows "new"', (await sPlace()) === 'new');
+  await click('[data-action="cy-place-ready"]');
+  await until(async () => (await sPlace()) === 'ready', 'the lesson to be ready (path)');
+  sd = await data();
+  const sT = sTask(sd, sTid);
+  check('with the path, Ready shows the place "ready" with the note about its checks', (await text('[data-cy-place-note]')).startsWith('Its 2 checks will come back from'), await text('[data-cy-place]'));
+  check('…the lesson\'s roadmap task is ticked with today\'s day, and no lesson record is kept', sT.done === true && sT.doneOn === '2026-10-05' && !sd.cybersecurity.lessons?.length, [sT, sd.cybersecurity.lessons]);
+  check('…its 2 checks are in revision, due 7 days on', sCards(sd) === sDue, sCards(sd));
+  check('…and nothing outside the roadmap, the checks and the lesson records changed', sOutside(sd) === sOutside(sBaseP));
+  await click('[data-action="cy-place-unready"]');
+  await until(async () => (await sPlace()) === 'new', '"Not ready after all" (path)');
+  sd = await data();
+  check('"Not ready after all" unticks the roadmap task and leaves the 2 checks in revision', sTask(sd, sTid).done === false && !sTask(sd, sTid).doneOn && sCards(sd) === sDue && sOutside(sd) === sOutside(sBaseP), [sTask(sd, sTid), sCards(sd)]);
+
+  // e: a roadmap tick makes the lesson ready, and its checks come into revision a moment later
+  await sEdit(`d => { d.cybersecurity.cards = []; }`);
+  await go('study/roadmap');
+  await until(() => exists(`[data-s="task-done"][data-id="${sTid}"]`), 'the lesson\'s task on the roadmap');
+  await click(`[data-s="task-done"][data-id="${sTid}"]`);
+  await until(async () => (await data()).cybersecurity.cards.length === 2, 'the checks to come into revision after the tick', 8000);
+  sd = await data();
+  check('ticking the lesson\'s task on the roadmap brings its 2 checks into revision, due 7 days on', sTask(sd, sTid).done === true && sCards(sd) === sDue, [sTask(sd, sTid), sCards(sd)]);
+  await sOpen();
+  check('…and the lesson page then reads "ready" with the task\'s day', (await sPlace()) === 'ready' && (await text('[data-cy-place] p')).startsWith('Ready to move on since'), await text('[data-cy-place]'));
+
+  // f: the map and the module page
+  await go('study/cybersecurity'); await until(() => exists(`a[href$="${SMOD}"]`), 'the module tiles');
+  const tile = `a[href$="#study/cybersecurity/${SMOD}"]`;
+  check('the map tile for the lesson\'s module says "exploring" and "1 ready"', (await ev(`document.querySelector('${tile}').dataset.cyModule`)) === 'exploring' && (await text(tile)).includes('Exploring') && (await text(tile)).includes('· 1 ready'), await text(tile));
+  check('"Your next small step" names the next lesson, as a lesson, with its reason', (await ev(`document.querySelector('[data-cy-next]')?.dataset.cyNext`)) === 'lesson' && (await text('[data-cy-next]')).length > 5 && (await ev(`document.querySelector('[data-cy-next]').previousElementSibling.textContent`)) === 'Permission, boundaries and stop conditions', [await ev(`document.querySelector('[data-cy-next]')?.dataset.cyNext`), await text('[data-cy-next]'), await ev(`document.querySelector('[data-cy-next]').previousElementSibling.textContent`)]);
+  await go('study/cybersecurity/' + SMOD); await until(() => exists(`[data-cy-lesson-state="ready"]`), 'the module page row');
+  check('the module page row for the lesson says "Ready to move on", and the others are new', (await text(`[data-cy-lesson-state="ready"]`)).includes('Ready to move on') && (await ev(`[...document.querySelectorAll('[data-cy-lesson-state]')].map(e => e.dataset.cyLessonState).join()`)) === 'ready,new,new,new,new');
+
+  // g: Progress, with one lesson flagged
+  await sOpen('study/cybersecurity/' + SL2);
+  await click('[data-action="cy-place-revisit"]'); await until(() => exists('#cyRevisitWhat'), 'the revision form');
+  await fill('#cyRevisitWhat', SWORDS); await click('[data-action="cy-revisit-save"]');
+  await until(async () => (await sPlace()) === 'needs-revision', 'the second lesson to be flagged');
+  await go('study/progress'); await until(() => exists('[data-pg-cyber]'), 'Cybersecurity on Progress');
+  check('Progress shows "Cybersecurity: where you stand" with the flagged lesson and your words', (await text('[data-pg-cyber] h3')) === 'Cybersecurity: where you stand' && (await text(`[data-pg-lesson="${SL2}"]`)).includes('Permission, boundaries and stop conditions') && (await text(`[data-pg-lesson="${SL2}"]`)).includes('You marked it to revisit: ' + SWORDS + '.'), await text('[data-pg-cyber]'));
+  check('…counting 1 done lesson (the ready one) and 1 needing revision, in words', (await text('[data-pg="done"]')).startsWith('Done: 1 of the ') && (await text('[data-pg="needs"]')).includes('1 lesson.') && !/%/.test(await text('[data-pg-cyber]')), [await text('[data-pg="done"]'), await text('[data-pg="needs"]')]);
+  check('…with "Answer its checks: <title>" linking to that lesson', (await text(`[data-pg-lesson="${SL2}"] [data-action="pg-step"]`)) === 'Answer its checks: Permission, boundaries and stop conditions' && (await ev(`document.querySelector('[data-pg-lesson="${SL2}"] [data-action="pg-step"]').getAttribute('href')`)) === '#study/cybersecurity/' + SL2);
+  await click(`[data-pg-lesson="${SL2}"] [data-action="pg-step"]`);
+  await until(() => exists('[data-cy-steps]'), 'the lesson opened from Progress'); await sleep(900);
+  check('clicking it opens that lesson at its Check step', (await ev('location.hash')) === '#study/cybersecurity/' + SL2 && (await ev(`document.querySelector('[data-action="cy-step"][aria-current="step"]')?.dataset.v`)) === 'check', [await ev('location.hash'), await ev(`document.querySelector('[data-action="cy-step"][aria-current="step"]')?.dataset.v`)]);
+  await sEdit(`d => { (d.cybersecurity.lessons ??= []).push({ id: 'lesson.help-and-debugging', revisit: { since: '2026-10-05', what: 'reading stack traces' } }); }`);
+  await go('study'); await until(() => exists('#stFocus'), 'Study home');
+  check('Study home\'s Now card is the first flagged lesson, and "Worth a look" offers another flagged lesson as "<title> needs revision"', (await text('#stFocus')).includes('Permission, boundaries and stop conditions') && (await text('[data-s="worth-a-look"]')).includes('Read errors and ask useful questions needs revision') && !(await text('[data-s="worth-a-look"]')).includes('Permission, boundaries and stop conditions needs revision'), await text('[data-s="worth-a-look"]'));
+  const sTile = await text('#app');
+  check('…and the Cybersecurity tile counts "1 ready to move on" among its lessons', /146 lessons · 1 ready to move on/.test(sTile), sTile.slice(0, 400));
+
+  // h: Study home with a Cybersecurity check due today
+  await ev('localStorage.clear()'); await sOpen();
+  await click('[data-action="cy-place-ready"]'); await until(async () => (await sPlace()) === 'ready', 'the lesson to be ready (due-today setup)');
+  await sEdit(`d => { for (const c of d.cybersecurity.cards) c.review.due = '2026-10-05'; }`);
+  await go('study'); await until(() => exists('[data-action="study-now"]'), 'the Now card');
+  check('with a Cybersecurity check due today and no revision done today, the Now button reads "Revise Cybersecurity"', (await text('[data-action="study-now"]')).trim() === 'Revise Cybersecurity', await text('#stFocus'));
+  check('…and "Worth a look" does not offer the same revision again', (await ev(`[...document.querySelectorAll('#app button, #app a')].filter(e => /Revise Cybersecurity/.test(e.textContent)).length`)) === 1);
+
+  // i: a phone
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
+  await sOpen();
+  const sHeights = () => ev(`[...document.querySelectorAll('[data-cy-place] button')].map(b => Math.round(b.getBoundingClientRect().height))`);
+  check('on a phone the place\'s buttons are at least 44 px tall and nothing scrolls sideways', (await sHeights()).length > 0 && (await sHeights()).every(h => h >= 44) && await ev('document.documentElement.scrollWidth <= innerWidth'), await sHeights());
+  await click('[data-action="cy-place-revisit"]'); await until(() => exists('#cyRevisitWhat'), 'the revision form on a phone');
+  check('…also with the revision form open (its buttons too)', (await ev(`[...document.querySelectorAll('[data-cy-place] button')].every(b => b.getBoundingClientRect().height >= 44)`)) && await ev('document.documentElement.scrollWidth <= innerWidth'));
+  await T.send('Emulation.clearDeviceMetricsOverride');
+
   const s = T.summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
 })().catch(e => { console.error('HARNESS', e); process.exit(1); });

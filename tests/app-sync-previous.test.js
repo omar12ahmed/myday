@@ -5,7 +5,8 @@
 // Study's `arabic_lesson` records must be left alone by a release that doesn't know them (before 1.47.0): not taken
 // in, not changed, not deleted, and never stopping it syncing. A previous release that knows them takes them in like
 // any other record; [2] and [3] check whichever applies. [7] does the same for Keep a word's `arabic_word` records
-// (Keep a word), [9] for Practise again's `arabic_practice` records, and [11] for the portfolio's entries and files.
+// (Keep a word), [9] for Practise again's `arabic_practice` records, [11] for the portfolio's entries and files, and
+// [14] for Cybersecurity's lesson records (`cyber_lesson`).
 // Made-up data only.
 const fs = require('fs'), os = require('os'), path = require('path');
 const { isDeepStrictEqual: eq } = require('node:util');
@@ -274,6 +275,30 @@ async function signIn(d, url) {
     else check('…and left the portfolio file exactly as it was 40 days on: not deleted for good, not forgotten, its mark untouched', !!kept && kept.deletedOn === oldDay && kept.state === 'kept' && !(await record('file', PFID))?.deleted, kept);
     await now.returnToApp();
     check('back on this release the entry still lists its file, and the file is there', await now.until(`(() => { const d = JSON.parse(localStorage.getItem('${KEY}')); return (d.cybersecurity.portfolio || []).some(e => e.id === '${PE}' && (e.fileIds || []).includes('${PFID}')) && d.files.items.some(f => f.id === '${PFID}'); })()`, 20000));
+
+    console.log('\n[14] Cybersecurity lesson records (cyber_lesson) are left alone by a release that doesn\u2019t know them');
+    const knowsCyberLessons = /[`'"]cyber_lesson[`'"]/.test(builtText);
+    console.log(`The previous release ${knowsCyberLessons ? 'knows' : 'doesn\u2019t know'} cyber_lesson records.`);
+    const CL = 'lesson.authorised-scope';
+    const cyberLesson = { id: CL, readyOn: today, revisit: { since: today, what: 'stop conditions' } };
+    await now.returnToApp();
+    await now.setData(`s => { s.cybersecurity.lessons = [${JSON.stringify(cyberLesson)}]; }`);
+    check('this release sends the lesson record (Ready day and your flag) as its own record', await eventually(async () => { const r = await record('cyber_lesson', CL); return !!r && !r.deleted && eq(r.data, cyberLesson); }) && await synced(now), await record('cyber_lesson', CL));
+    const sentCyberLesson = await record('cyber_lesson', CL);
+    await before.returnToApp();
+    check('the previous release syncs normally with that record in the account', await synced(before) && (await before.status()) === 'synced');
+    if (knowsCyberLessons) check('\u2026and takes it in like any other record (it knows this kind)', await before.until(`(JSON.parse(localStorage.getItem('${KEY}')).cybersecurity.lessons || []).length === 1`, 20000) && eq((await before.data()).cybersecurity.lessons, [cyberLesson]), (await before.data()).cybersecurity.lessons);
+    else check('\u2026without taking it in: its saved data has no Cybersecurity lesson records', !((await before.data()).cybersecurity.lessons || []).length, (await before.data()).cybersecurity.lessons);
+    await before.setData(`s => { s.cybersecurity.pathId = 'path.soc'; }`);
+    check('a Cybersecurity change on the previous release (its learning path) syncs as usual', await eventually(async () => (await record('cybersecurity', 'preferences'))?.data?.pathId === 'path.soc') && await synced(before));
+    check('\u2026and leaves the lesson record exactly as it was sent: same data, not deleted', eq(await record('cyber_lesson', CL), sentCyberLesson) && !(await record('cyber_lesson', CL)).deleted, await record('cyber_lesson', CL));
+    await now.returnToApp();
+    check('back on this release the learning path change arrives and the lesson is just as you left it', await now.until(`JSON.parse(localStorage.getItem('${KEY}')).cybersecurity.pathId === 'path.soc'`, 20000) && eq((await now.data()).cybersecurity.lessons, [cyberLesson]), (await now.data()).cybersecurity.lessons);
+    await now.setData(`s => { s.cybersecurity.lessons = []; }`);
+    check('removing the record here leaves a tombstone in the account', await eventually(async () => !!(await record('cyber_lesson', CL))?.deleted) && await synced(now));
+    await before.returnToApp();
+    if (knowsCyberLessons) check('\u2026which the previous release takes in as a removal, syncing normally', await synced(before) && await before.until(`!(JSON.parse(localStorage.getItem('${KEY}')).cybersecurity.lessons || []).length`, 20000));
+    else check('\u2026which the previous release ignores, syncing normally', await synced(before) && (await before.status()) === 'synced' && !((await before.data()).cybersecurity.lessons || []).length);
 
     console.log('\n[12] Delete everything: an older release cannot write back to a wiped account (one that knows the wipe clears itself instead) (specs/delete-everything.md)');
     const knowsWipe = fs.readdirSync(assets).some(f => f.endsWith('.js') && fs.readFileSync(path.join(assets, f), 'utf8').includes('sync_push_v3'));

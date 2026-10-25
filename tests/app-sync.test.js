@@ -1415,6 +1415,51 @@ function task(uid, taskId, category, title, minutes, done = false) {
   check('the account holds the project as deleted and no live research', await cloudUntil(async () => (await rrows()).every(x => x.deleted) && (await sql(`select deleted from public.sync_records where user_id = $1 and kind = 'project' and id = $2`, [userR, PR]))[0]?.deleted === true, 20000), await rrows());
   await rmac.returnToApp();
   check('the first device drops the project and its research too, and sends nothing back to the account', await rmac.until(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); return !d.projects.items.some(p => p.id === '${PR}') && !d.research.items.some(x => x.projectId === '${PR}'); })()`, 25000) && await synced(rmac) && (await rrows()).every(x => x.deleted), [await rrows(), (await rmac.data()).research.items.length]);
+  console.log('\n[21] Cybersecurity lesson states between two devices (no path in the roadmap): cyber_lesson records');
+  const E = { email: 'lesson-states@example.test', password: 'disposable-pass-states' };
+  const userE = await S.addUser(db, E.email, E.password);
+  const emac = await T.device('states-mac', path.join(dl, 'states-mac')), ephone = await T.device('states-phone', path.join(dl, 'states-phone'));
+  const CL = 'lesson.learning-evidence', CHASH = `#study/cybersecurity/${CL}`, WORDS = 'NAT versus host-only';
+  const same = require('node:util').isDeepStrictEqual;   // key order does not matter
+  const lessonRow = async () => (await sql(`select data, deleted from public.sync_records where user_id = $1 and kind = 'cyber_lesson' and id = $2`, [userE, CL]))[0];
+  const placeOf = D => D.ev(`document.querySelector('[data-cy-place]')?.dataset.cyPlace ?? null`);
+  const placeIs = (D, st, ms = 20000) => D.until(`document.querySelector('[data-cy-place]')?.dataset.cyPlace === '${st}'`, ms);
+  const showLesson = async D => { await D.ev(`location.hash = 'sync'`); await sleep(150); await D.ev(`location.hash = '${CHASH}'`); };
+  for (const D of [emac, ephone]) { await D.open(APP + '#today'); await signIn(D, E); await D.until(`!document.getElementById('signInGate') && document.getElementById('nav')`, 20000); await synced(D); }
+  const eToday = await emac.today();
+  await showLesson(emac); await showLesson(ephone);
+  await Promise.all([emac.until(`!!document.querySelector('[data-cy-place]')`, 20000), ephone.until(`!!document.querySelector('[data-cy-place]')`, 20000)]);
+  check('(test setup: two devices signed in to one fresh account, no path in the roadmap, both showing the lesson as "new")', (await placeOf(emac)) === 'new' && (await placeOf(ephone)) === 'new' && !(await emac.data()).study.stages.length && !(await ephone.data()).study.stages.length && !(await lessonRow()));
+
+  console.log('  Ready to move on');
+  await emac.click('[data-action=cy-place-ready]');
+  check('marking the lesson ready on the Mac sends a cyber_lesson record with its id and today as the Ready day', await cloudUntil(async () => { const r = await lessonRow(); return !!r && !r.deleted && same(r.data, { id: CL, readyOn: eToday }); }) && await synced(emac), await lessonRow());
+  await ephone.returnToApp();
+  check('the phone shows the lesson as ready', await placeIs(ephone, 'ready'), await placeOf(ephone));
+  check('…with the lesson record in its saved data exactly as sent, and the lesson\'s 2 checks in its revision too', same((await ephone.data()).cybersecurity.lessons, [{ id: CL, readyOn: eToday }]) && (await ephone.data()).cybersecurity.cards.length === 2 && /^Ready to move on since/.test(await ephone.text('[data-cy-place] p')), [(await ephone.data()).cybersecurity.lessons, await ephone.text('[data-cy-place] p')]);
+
+  console.log('  Needs revision, with your words');
+  await ephone.click('[data-action=cy-place-revisit]');
+  await ephone.until(`!!document.querySelector('#cyRevisitWhat')`, 8000);
+  await ephone.type('#cyRevisitWhat', WORDS); await ephone.click('[data-action=cy-revisit-save]');
+  check('flagging the lesson on the phone with those words updates the same record, which keeps the Ready day', await cloudUntil(async () => { const r = await lessonRow(); return !!r && !r.deleted && same(r.data, { id: CL, readyOn: eToday, revisit: { since: eToday, what: WORDS } }); }) && await synced(ephone), await lessonRow());
+  await emac.returnToApp();
+  check('the Mac shows the lesson as needing revision, in the phone\'s words', await placeIs(emac, 'needs-revision') && (await emac.text('[data-cy-place] p')).startsWith('Needs revision: ' + WORDS + '.'), await emac.text('[data-cy-place]'));
+  check('…and holds the flag in its saved data exactly as sent', same((await emac.data()).cybersecurity.lessons, [{ id: CL, readyOn: eToday, revisit: { since: eToday, what: WORDS } }]));
+
+  console.log('  Done revisiting');
+  await emac.click('[data-action=cy-place-revisited]');
+  check('"Done revisiting" on the Mac sends the record without the flag', await cloudUntil(async () => { const r = await lessonRow(); return !!r && !r.deleted && same(r.data, { id: CL, readyOn: eToday }); }) && await synced(emac), await lessonRow());
+  await ephone.returnToApp();
+  check('the phone shows the lesson as ready again, without the flag', await placeIs(ephone, 'ready') && same((await ephone.data()).cybersecurity.lessons, [{ id: CL, readyOn: eToday }]), [await placeOf(ephone), (await ephone.data()).cybersecurity.lessons]);
+
+  console.log('  Not ready after all');
+  await ephone.click('[data-action=cy-place-unready]');
+  check('"Not ready after all" on the phone leaves a deletion marker for cyber_lesson:' + CL + ' in the account', await cloudUntil(async () => !!(await lessonRow())?.deleted) && await synced(ephone), await lessonRow());
+  await emac.returnToApp();
+  check('the Mac shows the lesson as new again, with no lesson records of its own', await placeIs(emac, 'new') && !((await emac.data()).cybersecurity.lessons || []).length, [await placeOf(emac), (await emac.data()).cybersecurity.lessons]);
+  check('…while the 2 checks stay in revision on both devices (taking a lesson back does not remove them)', (await emac.data()).cybersecurity.cards.length === 2 && (await ephone.data()).cybersecurity.cards.length === 2);
+  check('the account holds exactly one cyber_lesson row for this account, and it is a deletion marker', (await sql(`select deleted from public.sync_records where user_id = $1 and kind = 'cyber_lesson'`, [userE])).map(r => r.deleted).join() === 'true');
 
   fs.rmSync(dl, { recursive: true, force: true });
   await srv.close();
