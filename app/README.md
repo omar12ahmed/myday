@@ -1,5 +1,19 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.81.0 — Steps inside a task, and "Starts after":** a task's page has a **Steps** card: a short checklist ("Measure
+the wall", "Order the boards"; up to 30) you tick as you go, with **Change steps** to edit, reorder and remove them.
+The task stays the one thing you plan; wherever it's listed (Tasks, Today's Due today and plan, a project's next step)
+it says "2 of 5 steps". Once every step is ticked the card asks "All 5 steps done — mark the task done?"; one tap does
+it, and nothing happens by itself. On a project's task a **Starts after** card chooses the project's other tasks it
+can't start before (up to 10, never a circle): until they're done or let go it says "Starts after: Order the boards",
+isn't MyDay's pick for the project's next step or for Today, and isn't "stuck"; you can still do it any time, a step
+you chose stays chosen, and "Why this?" says why ("“Build the frame” comes first, but it starts after “Order the
+boards”."). "Waiting" still means waiting on someone or something only. A sync conflict on a task now shows its
+steps. Saved data stays schema 5: `steps` and `after` are optional fields inside the task record, which 1.80.0 keeps
+unread (checked with the actual previous release: it receives them, renames the task and saves without touching
+them); there such a task may be picked as a project's next step, and deleting a task there leaves its id in the
+other's `after`, which this release doesn't count. No migration or server change; nothing of it is sent to AI.
+
 **1.80.0 — Arabic's four skills:** Progress has a new card, "Arabic: four skills", after "where you stand": reading,
 writing, speaking and listening, each on its own, in words and counts. For each: the finished sessions where you
 ticked it in "What did you practise?" (how many without help, and the last day), how many lessons on your path ask for
@@ -981,7 +995,7 @@ fields). The conflict summary says "waiting". Who you're waiting on is never sen
 doesn't name them. To keep one meaning of "waiting", the weekly review's step 2 is now **What needs you** ("Nothing
 needs you right now — lovely"; a past-dated task "was planned for …").
 
-**Steps inside a task, and "Starts after" (unreleased; `specs/projects-steps.md`):** a task's page has a **Steps**
+**Steps inside a task, and "Starts after" (1.81.0; `specs/projects-steps.md`):** a task's page has a **Steps**
 card: a short checklist ("Measure the wall", "Order the boards"; up to 30) you tick as you go, with **Change steps** to
 edit, reorder and remove them. The task stays the one thing you plan; wherever it's listed (Tasks, Today's Due today
 and plan, a project's next step) it says "2 of 5 steps". Once every step is ticked the card asks "All 5 steps done —

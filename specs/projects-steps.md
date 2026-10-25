@@ -1,7 +1,7 @@
 # Projects: steps inside a task, and "Starts after" (Phase 3)
 
-**Status:** the owner chose this as Phase 3's next part and made the decisions in §2 (25 October 2026). Built on
-branch `steps` after Research (1.77.0); not released yet. Nothing live without the owner's yes.
+**Status:** the owner chose this as Phase 3's next part and made the decisions in §2 (25 October 2026). Released in
+1.81.0 (25 October 2026, with the owner's yes): no saved-data version, sync kind, migration or server change.
 **Based on:** source at 1.75.0. Plan: `specs/projects-vision.md` §7 (tasks and next actions) and §17 (Phase 3:
 "structured dependencies and subtasks"); `specs/projects-next-why.md` (how the next step is chosen and explained).
 
@@ -25,7 +25,7 @@ task you can't do yet.
    steps and what it starts after, never a private project's), after this release, with its usual check of the answers.
    This release adds them on the device only.
 
-## 3. What you see (proposed)
+## 3. What you see
 
 - **On a task** (the task editor): **Steps**: add, tick, edit, reorder, remove (up to 30). Under the title on lists and
   on Today: "2 of 5 steps". Ticking the last one shows the offer to mark the task done.
@@ -37,7 +37,7 @@ task you can't do yet.
   and then speaks of "the tasks that can start now". Such a task isn't "stuck" either.
 - **Words and counts only.**
 
-## 4. How it works (proposed)
+## 4. How it works
 
 - **Saved data (schema stays 5):** optional fields on a task: `steps: { id, text, done }[]` and `after: string[]`
   (ids of the tasks it starts after). The task reader keeps unknown fields, so an older release keeps both; tasks
@@ -51,7 +51,7 @@ task you can't do yet.
   deleting a task there leaves its id in others' `after`, which this release doesn't count.
 - **Sync conflicts:** a task's summary ends "· 2 of 5 steps" and Compare lists its steps and "Starts after 2 tasks".
 
-## 5. Checks (proposed)
+## 5. Checks
 
 Rules for steps (add, tick, all-ticked offer, limits, normalizing) and "starts after" (no circles, same project only,
 freed when done or let go, next step and "Why this?"); browser checks on the task editor, lists, Today and the
