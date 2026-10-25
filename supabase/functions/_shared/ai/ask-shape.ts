@@ -24,7 +24,7 @@ export const ASK_LIMITS = {
   // The weekly review (1.37.0): what moved per project, what's waiting, next week's focus.
   reviewProjects: 20, reviewWaiting: 5, reviewWaitingChars: 200, reviewFocus: 3,
   // A lookup (specs/ai-tools.md §3): the words to search, up to 8 notes found, each with a short snippet at most.
-  lookupQueryChars: 60, lookupNotes: 8, lookupSnippetChars: 200, lookupSources: 8, lookupDecisions: 8, lookupBeliefs: 8, lookupWaiting: 8,
+  lookupQueryChars: 60, lookupNotes: 8, lookupSnippetChars: 200, lookupSources: 8, lookupDecisions: 8, lookupBeliefs: 8, lookupWaiting: 8, lookupStudy: 3, studyWhyChars: 400, studyDetailChars: 200,
   // "Your day" (v18): one day's plan, what's due, busy and free times — capped like the rest of a page's slice.
   dayTasks: 20, dayBusy: 40, dayFree: 24,
 };
@@ -32,7 +32,7 @@ export const ASK_PAGES = ['today', 'tasks', 'task', 'calendar', 'projects', 'pro
 export type AskPage = typeof ASK_PAGES[number];
 export const ASK_KINDS = ['add', 'steps', 'answer', 'cannot', 'change', 'lookup'] as const;
 // What a lookup can look in: your notes (v17), or one day (v18). The app says what it can look in with `can`.
-export const ASK_TOOLS = ['notes', 'day', 'project', 'decisions', 'waiting'] as const;
+export const ASK_TOOLS = ['notes', 'day', 'project', 'decisions', 'waiting', 'study'] as const;
 export const DAY_KINDS = ['work', 'appointment', 'workout', 'sleep', 'prep'] as const;
 export const ASK_ITEM_TYPES = ['task', 'note', 'appointment', 'project', 'study-task', 'change', 'milestone', 'pro', 'con', 'option', 'must-be-true'] as const;
 export const BELIEF_STATES = ['open', 'looks-true', 'doesnt-hold'] as const;
@@ -118,7 +118,16 @@ export interface AskWaitingLookup {
   tasks: { id: string; title: string; projectId: string | null; project: string | null; since: string; until: string | null; chased: boolean }[];
   found: number; // how many are waiting in all (the list carries the oldest few)
 }
-export type AskLookup = AskNotesLookup | AskDayLookup | AskProjectLookup | AskDecisionsLookup | AskWaitingLookup;
+// "What to study next" (v22): the same next steps as Today's Study card (the app's learningOptions), your focus first —
+// each subject's lesson or task, its detail line and "Why this?", the suggested minutes and length, whether it's begun,
+// a session to resume, revision first, or the whole path ready — and how much revision is due. No ids or links go.
+export const STUDY_SUBJECTS = ['cybersecurity', 'arabic', 'roadmap'] as const;
+export interface AskStudyLookup {
+  tool: 'study'; query: string; // "all"
+  options: { subject: typeof STUDY_SUBJECTS[number]; label: string; title: string; detail: string; why: string; minutes: number; mode: string | null; started: boolean; resume: boolean; reviseFirst: boolean; allComplete: boolean }[];
+  revisionDue: number;
+}
+export type AskLookup = AskNotesLookup | AskDayLookup | AskProjectLookup | AskDecisionsLookup | AskWaitingLookup | AskStudyLookup;
 
 // What the model returns (JSON only). The app checks it all again.
 export interface AskItem {
@@ -200,6 +209,12 @@ export function checkAskContext(raw: unknown): raw is AskContext {
         && Array.isArray(lk.notes) && lk.notes.length <= L.lookupNotes && lk.notes.every(x => obj(x) && only(x, ['id', 'title', 'project', 'snippet']) && str(x.id, 64, false) && str(x.title, L.titleChars, false)
           && (x.project === null || str(x.project, L.titleChars, false)) && (x.snippet === null || str(x.snippet, L.lookupSnippetChars)))
         && n(lk.found) && typeof lk.titlesOnly === 'boolean')) return false;
+    } else if (lk.tool === 'study') {
+      if (!(only(lk, ['tool', 'query', 'options', 'revisionDue']) && lk.query === 'all' && n(lk.revisionDue) && Array.isArray(lk.options) && lk.options.length <= L.lookupStudy
+        && lk.options.every(o => obj(o) && only(o, ['subject', 'label', 'title', 'detail', 'why', 'minutes', 'mode', 'started', 'resume', 'reviseFirst', 'allComplete'])
+          && STUDY_SUBJECTS.includes(o.subject as typeof STUDY_SUBJECTS[number]) && str(o.label, L.titleChars, false) && str(o.title, L.titleChars, false) && str(o.detail, L.studyDetailChars)
+          && str(o.why, L.studyWhyChars) && Number.isInteger(o.minutes) && (o.minutes as number) >= 0 && (o.minutes as number) <= 600 && (o.mode === null || str(o.mode, 20, false))
+          && typeof o.started === 'boolean' && typeof o.resume === 'boolean' && typeof o.reviseFirst === 'boolean' && typeof o.allComplete === 'boolean'))) return false;
     } else if (lk.tool === 'waiting') {
       if (!(only(lk, ['tool', 'query', 'tasks', 'found']) && str(lk.query, 64, false) && n(lk.found) && Array.isArray(lk.tasks) && lk.tasks.length <= L.lookupWaiting && (lk.found as number) >= lk.tasks.length
         && lk.tasks.every(t => obj(t) && only(t, ['id', 'title', 'projectId', 'project', 'since', 'until', 'chased']) && str(t.id, 64, false) && str(t.title, L.titleChars, false)
@@ -296,6 +311,7 @@ export function readAsk(textIn: string): AskReply | null {
     const tool = lk.tool === undefined ? 'notes' : ASK_TOOLS.includes(lk.tool as typeof ASK_TOOLS[number]) ? lk.tool as typeof ASK_TOOLS[number] : null; // nothing else can be looked in
     if (tool === 'day' && !isDate(query)) return null; // a day is a date the model worked out
     if ((tool === 'project' || tool === 'decisions' || tool === 'waiting') && !/^[\w-]{1,64}$/.test(query ?? '')) return null; // a project by its id, from "projects" (or "all")
+    if (tool === 'study') return { kind: 'lookup', message: (raw.message as string).trim(), items: [], action: null, lookup: { tool, query: 'all' } }; // what to study next: always all of it
     return query && tool ? { kind: 'lookup', message: (raw.message as string).trim(), items: [], action: null, lookup: { tool, query } } : null;
   }
   const sources = Array.isArray(raw.sources) ? raw.sources.filter((x): x is string => typeof x === 'string' && x.length > 0 && x.length <= 64).slice(0, ASK_LIMITS.lookupSources) : [];

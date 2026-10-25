@@ -42,7 +42,7 @@ export { askContext, askPage, askPreview, askSlice, sendsFor } from '../app/src/
 // What of your MyDay may reach AI help: the privacy rules every request follows (one place).
 export { aiReach } from '../app/src/ai/reach';
 // Ask MyDay's lookups: searching your notes on the device (specs/ai-tools.md §3).
-export { dayLookup, decisionsLookup, lookupLine, notesLookup, projectLookup, waitingLookup } from '../app/src/ai/lookup';
+export { dayLookup, decisionsLookup, lookupLine, notesLookup, projectLookup, studyLookup, waitingLookup } from '../app/src/ai/lookup';
 export { addAskItems, applyAskChanges, applyAskEdit, checkAskReply, countWords, undoAsk, undoAskChanges } from '../app/src/ai/ask';
 
 // ---------- Memory-only storage ----------
@@ -85,3 +85,4 @@ export { loadAnswers as loadArabicAnswers, loadModule as loadArabicModule, modul
 export { activities as cyberActivities, lessons as cyberLessons } from '../app/src/study/cybersecurity/catalogue';
 export { LIMITS as REQUEST_LIMITS } from '../supabase/functions/_shared/ai/schema.ts';
 export { buildCheckAnswerMessages, checkAnswerContext, CHECK_ANSWER_LIMITS, mockCheckAnswer, readCheckAnswer } from '../supabase/functions/_shared/ai/check-answer.ts';
+export { learningOptions } from '../app/src/study/nextLearning';

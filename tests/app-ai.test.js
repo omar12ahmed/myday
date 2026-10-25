@@ -874,7 +874,7 @@ const SEED = `s => {
     const TK = { id: 'tkWt', title: 'Fit the gate latch', listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: at, postponed: 0, blockers: [], letGoOn: null, projectId: 'pjWt',
       waiting: { on: ON, since: TODAY, until: '2026-12-30', chaseTaskId: 'tkChaseWt', futureBit: 'Okapi' } };
     // (Ask MyDay's offer to look at what you're waiting on, v21, names the lookup, never a wait: left aside here.)
-    const offer = t => t.replace(/,"waiting"\]/g, ']').replace(/If it needs to: what you’re waiting on/g, '').replace(/Or at the tasks you’ve marked as waiting[^.]*\./g, '')
+    const offer = t => t.replace(/"can":\[[^\]]*\]/g, '"can":[]').replace(/If it needs to: what you’re waiting on/g, '').replace(/Or at the tasks you’ve marked as waiting[^.]*\./g, '')
       .replace(/Never who or what it’s waiting on[^.]*\./g, '').replace(/at what you’re waiting on/g, '');
     const hidden = t => !t.includes('Narwhal') && !t.includes('joiner') && !t.includes('Okapi') && !t.includes('tkChaseWt') && !/waiting/i.test(offer(t));
     const wtSeed = `s => { s.projects.items = s.projects.items.filter(p => p.id !== 'pjWt'); s.projects.items.push(${JSON.stringify(PJ)}); s.tasks.items = s.tasks.items.filter(t => t.id !== 'tkWt'); s.tasks.items.push(${JSON.stringify(TK)}); }`;
@@ -945,6 +945,10 @@ const SEED = `s => {
     const pwt = await runLk(mock, 'What am I waiting on?');
     check('practice mode: "What am I waiting on?" looks at what you\'re waiting on, says so above the answer and links the task (never who)', pwt.phase === 'shown' && /^Looked at what you’re waiting on: (one task|\d+ tasks)/.test(pwt.looked)
       && pwt.sources.some(x => x === 'Kiln shelves delivery|#today/tasks/tkWaitLk') && pwt.prev.includes('at what you’re waiting on') && !/WHO-COURIER/.test(pwt.looked + pwt.sources.join()), [pwt.looked, pwt.sources, pwt.error]);
+    await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
+    const pst = await runLk(mock, 'What should I study next?');
+    check('practice mode: "What should I study next?" from Today looks at the same next steps as the Study card, says so above the answer and links the next step', pst.phase === 'shown' && /^Looked at what to study next: /.test(pst.looked)
+      && pst.sources.length > 0 && pst.sources.every(x => /\|#study/.test(x)) && pst.prev.includes('at what to study next'), [pst.looked, pst.sources, pst.error]);
     await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
     const ppj = await runLk(mock, "What's next on the pottery kiln?");
     const plink = await mock.ev(`document.querySelector('[data-s=ask-project]')?.getAttribute('href') || ''`);

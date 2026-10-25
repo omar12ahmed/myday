@@ -4,13 +4,15 @@
 // apostrophe don't matter). A note's text is searched, and a short snippet of it sent, only with "AI help with notes" on;
 // otherwise only titles. Private notes, and notes in a private project, are never sent — not even how many matched: that
 // count (`leftOut`) stays on this device, for the panel's "1 private note left out".
-import { ASK_LIMITS as L, DAY_KINDS, type AskDayLookup, type AskDecisionsLookup, type AskLookup, type AskNotesLookup, type AskProjectLookup, type AskWaitingLookup } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
+import { ASK_LIMITS as L, DAY_KINDS, type AskDayLookup, type AskDecisionsLookup, type AskLookup, type AskNotesLookup, type AskProjectLookup, type AskStudyLookup, type AskWaitingLookup } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
 import { parseKey, prettyDate, shift, todayKey } from '../data/dates';
 import { noteName } from '../data/notes';
 import { excerptOf, fold, wordsOf } from '../data/projectSearch';
 import { onTodaysPlan } from '../data/tasks';
 import type { DateKey, MyDayData, Note } from '../data/types';
 import { isBusiness } from '../data/businessModel';
+import { dueIds } from '../data/study/queue';
+import { learningOptions } from '../study/nextLearning';
 import { projectSlice } from './askContext';
 import { buildContext } from './context';
 import { aiReach } from './reach';
@@ -123,6 +125,21 @@ export function waitingLookup(data: MyDayData, query: string): { lookup: AskWait
   };
 }
 
+// "What to study next" (v22): the same next steps as Today's Study card (learningOptions), your focus first — each one's
+// subject, lesson or task, detail and "Why this?", minutes and length, begun or not, a session to resume, revision first
+// or the path ready — and how much is due to revise. Only these fields (no ids, links or open sessions' steps).
+export function studyLookup(data: MyDayData, today: DateKey = todayKey()): { lookup: AskStudyLookup; leftOut: number; hrefs: Record<string, string> } {
+  const options = learningOptions(data).slice(0, L.lookupStudy);
+  return {
+    lookup: {
+      tool: 'study', query: 'all', revisionDue: dueIds(data, today).length,
+      options: options.map(o => ({ subject: o.subject, label: cut(o.label, L.titleChars), title: cut(o.title, L.titleChars), detail: cut(o.detail, L.studyDetailChars), why: cut(o.why, L.studyWhyChars),
+        minutes: Math.max(0, Math.min(600, Math.round(o.minutes))), mode: o.mode ?? null, started: o.started, resume: o.resume, reviseFirst: !!o.revise, allComplete: o.allComplete })),
+    },
+    leftOut: 0, hrefs: Object.fromEntries(options.map(o => [o.subject, o.href])), // where each opens, kept on the device
+  };
+}
+
 // What the panel says above the answer: "Looked in your notes for “van hire”: 3 notes — 1 private note left out." or
 // "Looked at Thursday 30 October: 2 tasks planned, 1 due, 3 busy times — 1 private task left out."
 export function lookupLine(l: AskLookup, held: number, projectTitle?: string): string {
@@ -130,6 +147,11 @@ export function lookupLine(l: AskLookup, held: number, projectTitle?: string): s
     const parts = [l.rest ? 'a rest day' : l.planned ? `${l.tasks.length === 1 ? 'one task' : `${l.tasks.length} tasks`} planned` : 'no plan yet',
       ...(l.due.length ? [`${l.due.length} due`] : []), l.busy.length ? `${l.busy.length === 1 ? 'one busy time' : `${l.busy.length} busy times`}` : 'nothing booked'];
     return `Looked at ${prettyDate(l.query)}: ${parts.join(', ')}${held ? ` — ${held === 1 ? 'one private task' : `${held} private tasks`} left out` : ''}.`;
+  }
+  if (l.tool === 'study') {
+    const [first, ...rest] = l.options;
+    if (!first) return 'Looked at what to study next: nothing set up yet.';
+    return `Looked at what to study next: ${first.label} first${rest.length ? `, then ${rest.map(o => o.label).join(' and ')}` : ''}${l.revisionDue ? ` — ${l.revisionDue === 1 ? 'one thing' : `${l.revisionDue} things`} to revise` : ''}.`;
   }
   if (l.tool === 'waiting') {
     const where = l.query === 'all' ? 'what you’re waiting on' : `what you’re waiting on in “${l.tasks[0]?.project ?? projectTitle ?? 'that project'}”`;

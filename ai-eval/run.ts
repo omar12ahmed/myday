@@ -463,7 +463,7 @@ function prepare(sc: AnyScenario): Prepared {
           // Looking in your notes (v17): the right words the first time; after a lookup, only notes it found, never again.
           if (r.kind === 'lookup') { ex.lookupOffered = !!sc.ctx.can?.includes('notes') && !sc.ctx.lookup; if (e.lookupWords) ex.lookupWords = e.lookupWords.test(r.lookup?.query ?? ''); }
           if (sc.ctx.lookup) {
-            const l = sc.ctx.lookup, foundIds = l.tool === 'notes' ? l.notes.map(n => n.id) : l.tool === 'decisions' ? [...l.decisions.map(d => d.id), ...l.mustBeTrue.map(b => b.id)] : l.tool === 'waiting' ? l.tasks.map(t => t.id) : [];
+            const l = sc.ctx.lookup, foundIds = l.tool === 'notes' ? l.notes.map(n => n.id) : l.tool === 'decisions' ? [...l.decisions.map(d => d.id), ...l.mustBeTrue.map(b => b.id)] : l.tool === 'waiting' ? l.tasks.map(t => t.id) : l.tool === 'study' ? l.options.map(o => o.subject) : [];
             if (l.tool === 'decisions') ex.neverChooses = !CHOOSES.test(r.message); // each decision stays theirs (v20)
             ex.noSecondLookup = r.kind !== 'lookup';
             ex.sourcesFromLookup = (r.sources ?? []).every(id => foundIds.includes(id));

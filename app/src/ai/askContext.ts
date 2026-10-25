@@ -203,7 +203,9 @@ export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(
     // A project can be looked at only where open projects' names go with the question (one of them is named by its id).
     // Your open decisions and what you're waiting on carry project names, so they aren't offered on Finance or Health —
     // but they are with no open projects (a wait needn't be in one).
-    can: [...ASK_TOOLS].filter(t => t === 'project' ? !!slice.context.projects?.length : t === 'decisions' || t === 'waiting' ? slice.page !== 'finance' && slice.page !== 'health' : true), ...(lookup ? { lookup } : {}),
+    // What to study next: not on Study or a course, which send their own.
+    can: [...ASK_TOOLS].filter(t => t === 'project' ? !!slice.context.projects?.length : t === 'decisions' || t === 'waiting' ? slice.page !== 'finance' && slice.page !== 'health'
+      : t === 'study' ? !slice.context.study && !slice.context.course : true), ...(lookup ? { lookup } : {}),
   };
 }
 
@@ -295,13 +297,14 @@ export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['
   if (!short.length) short.push('What you typed and the date');
   if (c.can?.includes('notes')) {
     const projects = c.can.includes('project');
-    const looks = ['in your notes', ...(c.can.includes('day') ? ['at a day'] : []), ...(projects ? ['at one of your projects'] : []), ...(c.can.includes('decisions') ? ['at your open decisions'] : []), ...(c.can.includes('waiting') ? ['at what you’re waiting on'] : [])];
+    const looks = ['in your notes', ...(c.can.includes('day') ? ['at a day'] : []), ...(projects ? ['at one of your projects'] : []), ...(c.can.includes('decisions') ? ['at your open decisions'] : []), ...(c.can.includes('waiting') ? ['at what you’re waiting on'] : []), ...(c.can.includes('study') ? ['at what to study next'] : [])];
     short.push(`If needed, a look ${looks.length > 1 ? `${looks.slice(0, -1).join(', ')} or ${looks[looks.length - 1]}` : looks[0]}`);
     all.push({ label: 'If it needs to: your notes', lines: ['Ask MyDay may look in your notes for words from your question, on this device, and send up to 8 that match: their titles and projects, and a short snippet only with AI help with notes on.', 'Never a private note, or a note in a private project — not even whether one matched.'] });
     if (c.can.includes('day')) all.push({ label: 'If it needs to: a day', lines: ['Or at one day you ask about (from a week ago to two months ahead): its plan’s tasks, what’s due, busy times by kind only (never an appointment’s name), free time and energy.', 'Never a private project’s tasks; its appointments only as busy time.'] });
     if (projects) all.push({ label: 'If it needs to: one of your projects', lines: ['Or at one of your open projects you ask about by name: what its own page sends — its name, summary, stage, tasks, milestones and note titles (their text only with AI help with notes on).', 'Never a private project, or a private note of it; never its outcome, what counts as finished or where you left off.'] });
     if (c.can.includes('decisions')) all.push({ label: 'If it needs to: your open decisions', lines: ['Or at your open decisions (across your open projects, or one you name): each one’s question and options, which options have no pros or cons yet (never what any say) and the day it was opened; and what a business idea still has to check.', 'Never a private project’s; never your reasons, earlier choices or what you found.'] });
     if (c.can.includes('waiting')) all.push({ label: 'If it needs to: what you’re waiting on', lines: ['Or at the tasks you’ve marked as waiting (all of them, or one project’s): each one’s title, its project, since when and the day you expect it, and whether its Chase task is there.', 'Never who or what it’s waiting on, and never a private project’s.'] });
+    if (c.can.includes('study')) all.push({ label: 'If it needs to: what to study next', lines: ['Or at the same next steps as your Today card (your focus first): each subject’s lesson or task, its reason, the suggested minutes and length, and how much is due to revise.', 'No percentages, and nothing else of your Study.'] });
   }
   return { short, all };
 }

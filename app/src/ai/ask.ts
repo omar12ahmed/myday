@@ -58,7 +58,7 @@ export type AskChecked =
   | { kind: 'add' | 'steps'; message: string; items: AskProposal[]; changed: string[]; sources?: AskSource[] }
   | { kind: 'answer'; message: string; action: { type: 'start-study'; courseId: string; taskId: string | null; minutes: number; label: string } | { type: 'adjust-today' } | { type: 'start-revision'; scope: Scope; count: number } | null; changed: string[]; sources?: AskSource[] }
   | { kind: 'cannot'; message: string; changed: string[] }
-  | { kind: 'lookup'; tool: 'notes' | 'day' | 'project' | 'decisions' | 'waiting'; query: string } // query: the words to search, the day, a project's id, or "all"
+  | { kind: 'lookup'; tool: 'notes' | 'day' | 'project' | 'decisions' | 'waiting' | 'study'; query: string } // query: the words to search, the day, a project's id, or "all"
   | { kind: 'change'; message: string; changes: AskChange[]; changed: string[] };
 // After a lookup, the notes an answer used (only ones the lookup found), shown as links.
 export interface AskSource { id: string; title: string; href?: string } // href: where it opens (a note's own page otherwise)
@@ -78,7 +78,8 @@ const gentle = (s: string) => !PRESSURE.test(s);
 // `asked` is what you typed (and your follow-up): a change only touches a task's length, list or title when it asks for that.
 // A reply checked against your data. `looked` is what a lookup found, when this is the answer after one: then the notes it
 // says it used must be among them, and it may not ask to look again (one lookup per question).
-export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k: DateKey = todayKey(), asked?: string, looked?: AskLookup): AskChecked | null {
+// `studyHrefs`: where each subject's next step opens (kept on the device by the study lookup), for its link.
+export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k: DateKey = todayKey(), asked?: string, looked?: AskLookup, studyHrefs?: Record<string, string>): AskChecked | null {
   const r = readAsk(text);
   if (r?.kind === 'lookup') {
     if (looked || !r.lookup) return null;
@@ -123,10 +124,11 @@ export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k:
     const of = (title: string) => looked.tasks.find(x => sameTask(`Chase: ${x.title}`) === sameTask(title));
     shown = { ...shown, items: shown.items.map(i => { const w = i.type === 'task' ? of(i.title) : undefined; return w ? { ...i, chaseFor: w.id, already: i.already || w.chased } : i; }) };
   }
-  if (!looked || (looked.tool !== 'notes' && looked.tool !== 'decisions' && looked.tool !== 'waiting') || !r?.sources?.length) return shown;
+  if (!looked || (looked.tool !== 'notes' && looked.tool !== 'decisions' && looked.tool !== 'waiting' && looked.tool !== 'study') || !r?.sources?.length) return shown;
   // The records an answer says it used: only ones the lookup found, once each, as links.
   const found: AskSource[] = looked.tool === 'notes' ? looked.notes.map(x => ({ id: x.id, title: x.title }))
     : looked.tool === 'waiting' ? looked.tasks.map(x => ({ id: x.id, title: x.title, href: `#today/tasks/${encodeURIComponent(x.id)}` }))
+    : looked.tool === 'study' ? looked.options.map(x => ({ id: x.subject, title: `${x.label}: ${x.title}`, href: studyHrefs?.[x.subject] ?? '#study' }))
     : [...looked.decisions.map(x => ({ id: x.id, title: x.question, href: `#projects/p/${encodeURIComponent(x.projectId)}/decisions` })),
       ...looked.mustBeTrue.map(x => ({ id: x.id, title: x.text, href: `#projects/p/${encodeURIComponent(x.projectId)}/model` }))];
   const used = [...new Set(r.sources)].map(id => found.find(x => x.id === id)).filter((x): x is AskSource => !!x);

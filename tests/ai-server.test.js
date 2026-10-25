@@ -231,7 +231,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     bad('an extra field on the review', { ...rv, extra: 'x' });
     bad('an extra field on a project that moved', { ...rv, moved: [{ ...rv.moved[0], title: 'Task titles' }] });
     const sys = A.buildAskMessages(mk(rv)).map(m => m.content).join('\n').replace(/\s+/g, ' ');
-    check('the instructions are version myday-ask-v21', A.ASK_PROMPT_VERSION === 'myday-ask-v21', A.ASK_PROMPT_VERSION);
+    check('the instructions are version myday-ask-v22', A.ASK_PROMPT_VERSION === 'myday-ask-v22', A.ASK_PROMPT_VERSION);
     check('…and have the week-in-review part: what pattern do you see, answer with no items, "never guess why"', sys.includes('A week in review') && sys.includes('what pattern you see') && sys.includes('never guess why') && sys.includes('No items'), sys.slice(0, 200));
     const m1 = JSON.parse(A.mockAsk(mk(rv)));
     check('the practice version answers "What pattern do you see in my week?" with kind "answer" and no items', m1.kind === 'answer' && Array.isArray(m1.items) && m1.items.length === 0 && m1.action === null, m1);
@@ -370,6 +370,25 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     check('the practice version looks at what you\'re waiting on', mw1.kind === 'lookup' && mw1.lookup.tool === 'waiting' && mw1.lookup.query === 'all', mw1);
     const mw2 = JSON.parse(A.mockAsk({ ...base, text: 'What am I waiting on?', can: ['notes', 'day', 'project', 'decisions', 'waiting'], lookup: wait }));
     check('…and, with them, says how many and the oldest, citing them', mw2.kind === 'answer' && mw2.message.includes('2 tasks are waiting — the oldest is “Deposit back”, since 2026-10-28') && mw2.sources.join() === 't1,t2', mw2);
+    // "What to study next" (v22): the Today card's options — no ids or links, never a percentage.
+    const study = { tool: 'study', query: 'all', revisionDue: 3, options: [{ subject: 'cybersecurity', label: 'Cybersecurity', title: 'How the web works', detail: 'Next in your course', why: 'It builds on what you finished last.', minutes: 25, mode: 'Normal', started: true, resume: false, reviseFirst: false, allComplete: false },
+      { subject: 'arabic', label: 'Arabic Fuṣḥā', title: 'The sun letters', detail: 'Next in your course', why: 'Next on your path.', minutes: 15, mode: 'Light', started: true, resume: false, reviseFirst: true, allComplete: false }] };
+    check('a study lookup is accepted (the app saying it can look at what to study next too)', A.checkAskContext({ ...base, can: ['notes', 'day', 'project', 'decisions', 'waiting', 'study'], lookup: study }) === true);
+    bad('an option carrying its link', { ...base, lookup: { ...study, options: [{ ...study.options[0], href: '#study/cybersecurity/x' }] } });
+    bad('an option of a subject it doesn\'t know', { ...base, lookup: { ...study, options: [{ ...study.options[0], subject: 'astrology' }] } });
+    bad('4 options', { ...base, lookup: { ...study, options: Array.from({ length: 4 }, () => study.options[0]) } });
+    bad('a study lookup for something other than all of it', { ...base, lookup: { ...study, query: 'arabic' } });
+    bad('a reason over 400 characters', { ...base, lookup: { ...study, options: [{ ...study.options[0], why: 'x'.repeat(401) }] } });
+    const offerStudy = sysOf({ ...base, can: ['notes', 'day', 'project', 'decisions', 'waiting', 'study'] }), afterStudy = sysOf({ ...base, can: ['notes', 'day', 'project', 'decisions', 'waiting', 'study'], lookup: study });
+    check('the instructions offer a study lookup only when the app says it can', offerStudy.includes('"tool":"study","query":"all"') && !offerWait.includes('"tool":"study"'));
+    check('…and, with them, the focus first with its reason and minutes, revision first if so, never invented or a percentage, cited', afterStudy.includes('the first option — their focus — with its reason in your own words and its minutes')
+      && afterStudy.includes('if "reviseFirst", say revision comes first') && afterStudy.includes('never give a percentage') && afterStudy.includes('Never reply "lookup" again'));
+    check('a study lookup reply is read as all of it, whatever words came with it', A.readAsk(JSON.stringify({ kind: 'lookup', message: 'x', lookup: { tool: 'study', query: 'what to study' } }))?.lookup.query === 'all'
+      && A.readAsk(JSON.stringify({ kind: 'lookup', message: 'x', lookup: { tool: 'study' } }))?.lookup.query === 'all');
+    const ms1 = JSON.parse(A.mockAsk({ ...base, text: 'What should I study next?', can: ['notes', 'day', 'project', 'decisions', 'waiting', 'study'] }));
+    check('the practice version looks at what to study next', ms1.kind === 'lookup' && ms1.lookup.tool === 'study', ms1);
+    const ms2 = JSON.parse(A.mockAsk({ ...base, text: 'What should I study next?', can: ['notes', 'day', 'project', 'decisions', 'waiting', 'study'], lookup: study }));
+    check('…and, with them, names the focus\'s next step and its reason, citing it', ms2.kind === 'answer' && ms2.message.includes('next is “How the web works” (Cybersecurity), about 25 minutes. It builds on what you finished last.') && ms2.sources.join() === 'cybersecurity', ms2);
   }
   env = { AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_MOCK_DELAY_MS: '0', AI_DAILY_LIMIT: '50', AI_MIN_SECONDS_BETWEEN: '0', AI_MONTHLY_BUDGET_USD: '1' };
 
@@ -537,7 +556,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     const r1 = A.readAsk(rep([{ type: 'must-be-true', title: 'Crews would pay' }, { type: 'must-be-true', text: 'We can cook 40 boxes a day' }]));
     check('a reply\'s must-be-true items are kept, the words read from "title" or, when it is missing, from "text"', r1 && r1.items.length === 2 && r1.items.every(i => i.type === 'must-be-true') && r1.items[0].title === 'Crews would pay' && r1.items[1].title === 'We can cook 40 boxes a day', r1);
     const sys = A.buildAskMessages(mk(page)).map(m => m.content).join('\n');
-    check('the instructions are version myday-ask-v21 and mention must-be-true and onePage', A.ASK_PROMPT_VERSION === 'myday-ask-v21' && sys.includes('must-be-true') && sys.includes('onePage'), A.ASK_PROMPT_VERSION);
+    check('the instructions are version myday-ask-v22 and mention must-be-true and onePage', A.ASK_PROMPT_VERSION === 'myday-ask-v22' && sys.includes('must-be-true') && sys.includes('onePage'), A.ASK_PROMPT_VERSION);
     const m1 = JSON.parse(A.mockAsk(mk(page)));
     check('the practice version, with a one page and "Suggest what must be true…", answers "add" with 3 must-be-true items', m1.kind === 'add' && m1.items.length === 3 && m1.items.every(i => i.type === 'must-be-true'), m1);
     const m2 = JSON.parse(A.mockAsk(mk(undefined)));
@@ -550,7 +569,7 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     const mk = tasks => ({ version: 1, action: 'ask', date: '2026-11-10', weekday: 'Tuesday', time: '10:00', page: 'project', text: 'Summarise where this project is, and the one next step',
       context: { project: { id: 'pjB', title: 'Lunch boxes for sites', summary: 'Hot lunches for builders', stage: 'explore', tasks, notes: [] } } });
     const sys = A.buildAskMessages(mk([])).map(m => m.content).join('\n').replace(/\s+/g, ' ');
-    check('the instructions are version myday-ask-v21', A.ASK_PROMPT_VERSION === 'myday-ask-v21', A.ASK_PROMPT_VERSION);
+    check('the instructions are version myday-ask-v22', A.ASK_PROMPT_VERSION === 'myday-ask-v22', A.ASK_PROMPT_VERSION);
     check('the summary instructions say a done "Find out" task means they looked into it, not that its answer is confirmed', sys.includes('A summary of the project on this page') && sys.includes('a done "Find out: X" means they\'ve looked into whether X') && sys.includes('never that X is confirmed or true'));
     check('…and to summarise without advising on a legal, medical or money matter', sys.includes('legal, medical or money matter, summarise without advising'));
     const withTasks = mk([{ id: 'tkA', title: 'Ring the caterer', done: true }, { id: 'tkB', title: 'Price the boxes', done: false }, { id: 'tkC', title: 'Book a stall', done: false }]);

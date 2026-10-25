@@ -754,6 +754,14 @@ and project, linked to the wait), and one for a wait already chased comes back u
 on the task. The tasks it names are links. Not on Finance or Health. Evaluated with `ai-eval/ask-scenarios.ts`
 (w01–w08) and `ai-eval/reviews/2026-10-24-ask-waiting-quality.md`.
 
+**Looking at what to study next** (`myday-ask-v22`, the last lookup in the AI plan): "what should I study next?" from
+any page but Study (which sends its own course and next task) — Ask MyDay replies "look up"; the app looks on the device
+(`studyLookup` in `src/ai/lookup.ts`) at the same next steps as Today's Study card (`learningOptions`), your focus
+first, at most three: each subject's name, lesson or task, detail line and "Why this?", the suggested minutes and
+length, begun or not, a session to resume, revision first, or the path ready — and how much is due to revise. No ids,
+links or open sessions' steps go; each subject's link stays on the device and the answer links the ones it names.
+Never a percentage. Evaluated with `ai-eval/ask-scenarios.ts` (n01–n07).
+
 **Planning a Study course with Ask (1.26.0):** a course page has **✦ Plan this course with Ask**, which opens + already
 filled in ("Break this course into study tasks"; `src/capture/openCapture.ts`). From a course page Ask sends the
 course's outline — its modules, sections and tasks: titles, lengths, kinds and done or not, no links or notes, cut to

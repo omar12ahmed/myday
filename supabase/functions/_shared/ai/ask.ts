@@ -10,7 +10,7 @@
 import type { ChatMessage } from './prompt.ts';
 
 export const ASK_CONTRACT_VERSION = 1;
-export const ASK_PROMPT_VERSION = 'myday-ask-v21';
+export const ASK_PROMPT_VERSION = 'myday-ask-v22';
 export * from './ask-shape.ts';
 import type { AskContext, AskReply } from './ask-shape.ts';
 
@@ -42,6 +42,17 @@ each time exactly as in "busy" and "free" (a "work" time is their shift), as
 when they're free, warmly and without judging. If that day is before the given date, it has passed: say what was on it,
 not when they're free. MyDay builds a plan only for today: never offer to plan or build another day, and no
 "adjust-today". The "due" tasks already exist: never offer to add them again. Never guess what an appointment or a shift is for. Never reply "lookup" again.${quoting}`;
+  if (c.lookup?.tool === 'study') return `
+
+The app looked at what they could study next ("lookup" in the data, "tool" "study": "options", the same next steps as
+their Today card, their focus first — each with its subject's name ("label"), the lesson or task ("title"), "detail",
+"why" (MyDay's own reason), the suggested "minutes" and length ("mode": Light, Normal or Deep), "started", "resume" (a
+session to pick up), "reviseFirst" (revision before the lesson) and "allComplete" (their path is ready to move on);
+"revisionDue", how many things are due to revise). Answer from those only, as "answer" in two or three short
+sentences: the first option — their focus — with its reason in your own words and its minutes; if "reviseFirst", say
+revision comes first. Mention another option only if they asked for a choice or to switch. Never invent a lesson, a
+task or progress, never give a percentage, and never press. Put the subjects you name in "sources" (only "subject"
+values from "lookup"). Never reply "lookup" again.${quoting}`;
   if (c.lookup?.tool === 'waiting') return `
 
 The app looked at what they're waiting on ("lookup" in the data, "tool" "waiting": "tasks", the oldest few marked as
@@ -98,6 +109,8 @@ decisions and its one page aren't here: for those, say to ask on its page. Never
   if (tools.includes('waiting')) offer.push(`- At what they're waiting on: they ask what they're waiting on or for, what's with someone else, or what to
   chase — {"kind":"lookup","message":"Looking at what you're waiting on.","lookup":{"tool":"waiting","query":"all"}},
   or for one project they name, the query that project's id exactly as in "projects".`);
+  if (tools.includes('study')) offer.push(`- At what to study next: they ask what to study, learn or practise next, or where they're up to in their learning —
+  {"kind":"lookup","message":"Looking at what to study next.","lookup":{"tool":"study","query":"all"}}.`);
   if (!offer.length) return '';
   return `
 
@@ -241,6 +254,15 @@ export function mockAsk(c: AskContext): string {
     return reply({ kind: 'answer', action: null, items: [], sources: l.notes.slice(0, 3).map(n => n.id),
       message: l.notes.length ? `Practice helper (no AI): ${l.found === 1 ? 'one note matches' : `${l.found} notes match`} “${l.query}”: ${names}.`
         : `Practice helper (no AI): nothing in your notes matches “${l.query}”.` });
+  }
+  // Looking at what to study next: the second time round, your focus's next step; the first time, a lookup.
+  if (c.lookup?.tool === 'study') {
+    const o = c.lookup.options[0];
+    return reply({ kind: 'answer', action: null, items: [], sources: o ? [o.subject] : [],
+      message: o ? `Practice helper (no AI): next is “${o.title}” (${o.label}), about ${o.minutes} minutes. ${o.why}`.trim() : 'Practice helper (no AI): nothing to study is set up yet.' });
+  }
+  if (c.can?.includes('study') && !c.lookup && /\b(what should i (study|learn|practi[sc]e)|study next|learn next|where am i up to)\b/i.test(t)) {
+    return reply({ kind: 'lookup', message: 'Practice helper (no AI): looking at what to study next.', items: [], action: null, lookup: { tool: 'study', query: 'all' } });
   }
   // Looking at what you're waiting on: the second time round, what's waiting; the first time, a lookup.
   if (c.lookup?.tool === 'waiting') {
