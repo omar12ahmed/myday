@@ -71,7 +71,8 @@ Saved data is a high-risk area. Before changing it, inspect the current types, n
 - Exception (owner's decision, 24 Oct 2026): an optional field added inside an existing record whose unknown fields the previous release already keeps (on the device, in export/import and through its sync record), such as a project's own fields, keeps the current schema. Prove it against the actual previous release (read, edit, save, sync), and say in the release note that the previous release keeps the field unread.
 - Keep package release versions, saved-data schema versions and sync protocol versions distinct. A schema change must cover types, normalisers, both apps, import/export and migration tests together; changing a version number alone is insufficient. A wire-only sync change does not by itself change the local saved-data schema.
 - Never split a UTF-16 character. Keep `mendHalves` in the save, parse and sync paths.
-- Sync record definitions live in `app/src/sync/records.ts`; split project records also use `app/src/data/projectRecords.ts`, `app/src/sync/projectParts.ts` and `app/src/sync/projectUpgrade.ts`. Every synced record must survive a round trip unchanged. A new sync kind requires a new migration. Never edit an applied migration. Follow `supabase/PROJECT_STORAGE.md` before changing project wire format, upgrade or rollback behaviour.
+- Delete everything (`specs/delete-everything.md`) clears every localStorage key starting `myday.` except the sign-in, sync's notes and the data, so name any new device-only key `myday.…`. It relies on the account's wipe epoch: the app pushes through `sync_push_v3`; when restoring the database, never lower `sync_accounts.epoch`; a migration that rewrites a wiped account's rows must set `myday.epoch` for them, or the guard triggers refuse the writes.
+- Sync record definitions live in `app/src/sync/records.ts`; split project records also use `app/src/data/projectRecords.ts`, `app/src/sync/projectParts.ts` and `app/src/sync/projectUpgrade.ts`. Every synced record must survive a round trip unchanged. A new sync kind requires a new migration, built from the live kind lists re-read just before applying (other work may have added kinds in between). Never edit an applied migration. Follow `supabase/PROJECT_STORAGE.md` before changing project wire format, upgrade or rollback behaviour.
 - Keep Row Level Security enabled, grants minimal, and account records isolated. Only a publishable key may enter the client. Secret, service-role, provider and signing keys never belong in `VITE_` variables, client code, logs, fixtures, or Git.
 - The Supabase URL and publishable key are public by design and stay committed in `app/.env.production` (owner's decision, 23 Oct 2026), so every build from Git syncs. Keep everything else deployment-specific (secrets, tokens, other project identifiers) in ignored local files or deployment settings; public documentation and committed templates use placeholders. Do not read or print local secrets just to review instructions or run mocked tests.
 - Tests use disposable accounts and made-up data. Local sync tests use the stand-in; do not claim the real project was tested unless the explicit live check ran.
@@ -79,11 +80,11 @@ Saved data is a high-risk area. Before changing it, inspect the current types, n
 ## AI boundaries
 
 - AI replies are proposals. The app validates them and saves only after the user confirms. Models never write directly to storage or the database.
-- Respect the privacy rules documented in `app/README.md` and represented by the current request-building code. Private notes are never sent. Case timelines, evidence and issues are never sent. Do not broaden any AI payload without an explicit product decision, visible preview, validation and tests.
-- Check each AI job's actual request builder; the project's Private switch is not currently a guarantee across every AI tool. Previews must describe the actual payload, and changes to source data or privacy settings must invalidate stale previews, replies and proposals.
+- Every AI request goes through `app/src/ai/reach.ts`; its header is the one list of what may and may never be sent. Among the never: private notes, a private project's contents, case timelines, evidence and issues, attached files, research, a project's outcome and "where I left off", who a task waits on, and Finance and Health records. Do not broaden any AI payload without an explicit product decision, visible preview, validation, and the ai-rules [Privacy] check planting a secret in every new field.
+- Private covers every AI feature except note filing, which may offer a private project's name and summary as a place for a note (owner's decision, 24 Oct 2026). Check each AI job's actual request builder; previews must describe the actual payload, and changes to source data or privacy settings must invalidate stale previews, replies and proposals.
 - AI/provider keys stay in server secrets. Logs contain no user content. Evaluations use synthetic material; live evaluations require an explicit `--live` run and a budget.
 - Keep request schemas, server instructions, client validation and tests aligned. Use current official provider documentation when changing model identifiers, prices, endpoints or supported settings.
-- Do not deploy `ai-plan`, change its secrets, apply migrations, or make live provider calls unless the user explicitly requests that external action.
+- Do not deploy any Edge Function (`ai-plan`, `backup`, `files`), change their secrets, apply migrations, or make live provider calls unless the user explicitly requests that external action.
 
 ## Design and accessibility
 
@@ -118,10 +119,19 @@ When a release is requested:
 2. Bump `app/package.json`, keep its lockfile version aligned, and update relevant documentation.
 3. Run build, lint and justified checks; report the actual scope rather than implying a full pass.
 4. Ensure each required migration or server deployment has the owner's explicit go-ahead; do not ask again for an action already authorised in the session.
-5. Follow `deploy/README.md` for building and publishing `main`.
+5. When the app depends on a changed Edge Function (a new header, action or rule), deploy and check the function first, then publish the app. Follow `deploy/README.md` for building and publishing `main`.
 6. Perform only the authorised live checks with disposable accounts and throwaway browser profiles, then remove them.
 
 Never claim something is deployed, published, live-tested, backed up or rolled back unless it was actually verified.
+
+## Working alongside other sessions
+
+Several sessions may work at once, each in its own worktree with its own four test ports; never touch another session's worktree or ports.
+
+- Before applying a migration, deploying a function or running `deploy/publish-main.sh`, tell the other sessions (START) and wait for their acknowledgement; afterwards tell them what was published (FINISH: commits, tags, the Pages run, what a live check left behind).
+- One publish at a time. The next release number goes to whichever release is ready first; the other rebases onto it and takes the number after.
+- Agree which disposable account a live check uses, and tidy it afterwards. Tell the others before anything that wipes or fills an account they use.
+- When work changes something another session relies on (sync, the engine, shared data, the AI request filter), say so before building, and send the diff of their area for review.
 
 ## Completion
 
