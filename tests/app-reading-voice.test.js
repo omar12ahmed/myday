@@ -29,6 +29,8 @@ const shownReadings = async () => (await ev(`[...document.querySelectorAll('[dat
     if (checkedFiles.length !== 3) throw new Error('The fixture needs three existing checked clips');
     const spoken = [...new Set(Object.values(audio.readings).flat().map(p => p.spoken))];
     const fixtureClips = Object.fromEntries(spoken.map((text, i) => [text, checkedFiles[i % checkedFiles.length]]));
+    // One text (the notice) also has a whole clip, read in one go (round ten); the others play their sentences in turn.
+    fixtureClips[audio.wholes['asset.arabic-notice']] = checkedFiles[1];
     const manifest = { ...audio, clips: fixtureClips };
     const fixtureDir = path.join(__dirname, 'srv', 'reading-voice');
     const source = path.join(temp, 'reading-fixture.tsx');
@@ -113,18 +115,19 @@ const shownReadings = async () => (await ev(`[...document.querySelectorAll('[dat
     const saved = await ev('localStorage.getItem("myday.data.v4")');
 
     check('opening a reading fetches no clip and leaves every sentence idle', (await fetches()).length === 0 && await ev(`[...document.querySelectorAll('[data-ar-clip]')].every(b => b.getAttribute('data-state') === 'idle')`), await fetches());
-    const vowelled = originals.filter(a => audio.readings[a.id]), bare = originals.filter(a => !audio.readings[a.id]);
+    const vowelled = originals.filter(a => audio.readings[a.id]), scripted = vowelled.filter(a => !/[\u064B-\u0652]/.test(a.text_ar));
     for (const asset of vowelled) {
       await show(asset.id);
       check(`${asset.title}: a fully checked text has Listen, one button per sentence and its unchanged Arabic`, await count(whole) === 1 && await count(sentence) === audio.readings[asset.id].length && await shownText() === spaces(asset.text_ar), { whole: await count(whole), sentences: await count(sentence), text: await shownText() });
       check(`${asset.title}: its authored transliteration stays on the original lines`, await shownReadings() === prepared[asset.id].latin);
     }
-    check('all eight vowelled readings were exercised without fetching audio', vowelled.length === 8 && (await fetches()).length === 0, { texts: vowelled.length, requests: await fetches() });
-    for (const asset of bare) {
+    check('all fourteen readings were exercised without fetching audio: the eight the course vowels and the six read from MyDay\'s vowelled scripts', vowelled.length === 14 && scripted.length === 6 && (await fetches()).length === 0, { texts: vowelled.length, scripted: scripted.length, requests: await fetches() });
+    for (const asset of scripted) {
       await show(asset.id);
-      check(`${asset.title}: an unvowelled reading has no audio controls and keeps its original text`, await count(whole) === 0 && await count(sentence) === 0 && await shownText() === spaces(asset.text_ar) && (await T.text('#fixture')).includes('No recording included.'), { whole: await count(whole), sentences: await count(sentence), text: await shownText() });
+      check(`${asset.title}: an unmarked reading keeps the course's text without marks and says the voice reads MyDay's vowelled copy`, await shownText() === spaces(asset.text_ar) && !/[\u064B-\u0652]/.test(await shownText()) && (await T.text('[data-ar-voice-script]')).includes('It reads MyDay’s vowelled copy of this text'), await shownText());
     }
-    check('all six bare B1 and B2 readings were exercised without fetching audio', bare.length === 6 && (await fetches()).length === 0, { texts: bare.length, requests: await fetches() });
+    await show('asset.arabic-profile');
+    check('a reading the course vowels says nothing about a vowelled copy', !(await exists('[data-ar-voice-script]')));
 
     const profile = originals.find(a => a.id === 'asset.arabic-profile');
     await show(profile.id, 'partial');
@@ -164,6 +167,16 @@ const shownReadings = async () => (await ev(`[...document.querySelectorAll('[dat
     await click(whole); await currentPlaying(group + ':0');
     await ev('window.fixture.unmount()');
     check('unmounting the actual reading component stops its whole-text playback', (await playerState()).sequence === null && (await playerState()).playing === null, await playerState());
+    const notice = originals.find(a => a.id === 'asset.arabic-notice'), noticeGroup = notice.id + ':reading';
+    await show(notice.id); await show(profile.id); await show(notice.id);
+    check('a text with a checked whole clip has Listen marked "one clip"; one without plays its sentences', await ev(`document.querySelector('${whole}').getAttribute('data-ar-whole')`) === 'one clip');
+    const beforeOne = (await fetches()).length;
+    await click(whole);
+    check('Listen plays the text read in one go: one request, for the whole clip, and no sentence marked as playing', await currentPlaying(noticeGroup + ':whole') && JSON.stringify((await fetches()).slice(beforeOne)) === JSON.stringify(['arabic-audio/' + checkedFiles[1]]) && await count('[data-ar-sentence][data-state="playing"]') === 0 && await ev(`document.querySelector('${whole}').textContent.includes('Stop the whole text')`), { state: await playerState(), fetches: (await fetches()).slice(beforeOne) });
+    await ev('window.fixture.end()');
+    check('at the end of the whole clip Listen returns to idle without asking for anything else', await until(async () => (await playerState()).sequence === null) && (await fetches()).length === beforeOne + 1 && await ev(`document.querySelector('${whole}').getAttribute('aria-pressed') === 'false'`), { state: await playerState() });
+    await show(profile.id);
+    check('a text without a whole clip still plays its sentences in turn', await ev(`document.querySelector('${whole}').getAttribute('data-ar-whole')`) === 'sentences');
 
     await send('Emulation.setDeviceMetricsOverride', { width: 375, height: 812, deviceScaleFactor: 1, mobile: true });
     let small = [], overflow = [];
@@ -176,7 +189,7 @@ const shownReadings = async () => (await ev(`[...document.querySelectorAll('[dat
       if (!(await ev('document.documentElement.scrollWidth === innerWidth'))) overflow.push(asset.id + ':plain');
     }
     check('at 375 px every reading audio button is named and at least 44 px in each direction', small.length === 0, small);
-    check('at 375 px all eight readings fit with vowel marks shown or hidden', overflow.length === 0, overflow);
+    check('at 375 px all fourteen readings fit with vowel marks shown or hidden', overflow.length === 0, overflow);
     if (process.env.MYDAY_READING_SCREENSHOTS) {
       await show(dialogue.id);
       for (const width of [375, 1024]) {

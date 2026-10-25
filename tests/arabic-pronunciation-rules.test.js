@@ -124,7 +124,9 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
   check('every starter word and every starter example text has a clip in the audit', starterTexts.every(x => audit.clips[x] && audit.clips[x].file), starterTexts.filter(x => !audit.clips[x]));
   const allSourceTexts = new Set(sources.flatMap(s => s.texts));
   check('every text in the audit is in one of the voice sources', auditTexts.every(x => allSourceTexts.has(x)), auditTexts.filter(x => !allSourceTexts.has(x)));
-  check('every clip was made with the audit\'s own voice', auditTexts.every(x => audit.clips[x].voice === audit.voice.name));
+  const voices = [audit.voice.name, ...(audit.earlier_voices || []).map(v => v.name)];
+  check('every clip was made with the audit\'s voice or one it lists as earlier, and the voice for new clips is WaveNet B', audit.voice.name === 'ar-XA-Wavenet-B' && voices.includes('ar-XA-Chirp3-HD-Charon') && auditTexts.every(x => voices.includes(audit.clips[x].voice)), [...new Set(auditTexts.map(x => audit.clips[x].voice))]);
+  check('every reading-text clip, by sentence and whole, is in the voice for new clips', [...src('reading-texts').texts, ...src('reading-wholes').texts].every(x => audit.clips[x]?.voice === audit.voice.name));
   check('every clip has one of the four known checks', auditTexts.every(x => Object.keys(audit.checks).includes(audit.clips[x].check)), [...new Set(auditTexts.map(x => audit.clips[x].check))]);
   check('the label says what the voice is and that no teacher has checked it', audit.label === 'Synthesised voice — a model to copy; checked by ear, not yet by a teacher.');
   const auditText = fs.readFileSync(path.join(audioDir, 'audio-audit.json'), 'utf8');
@@ -140,13 +142,14 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
   // Reading texts (round three): sentence boundaries preserve the authored reading, including dialogue labels.
   const { readingPassages } = await import(pathToFileURL(path.join(ROOT, 'app/scripts/arabic-reading-sentences.mjs')));
   const passages = readingPassages(pathToFileURL(ROOT + path.sep));
-  const readingIds = ['profile', 'room', 'introduction-dialogue', 'appointment', 'routine', 'weekend', 'changed-plan', 'notice'].map(id => 'asset.arabic-' + id);
+  const vowelledIds = ['profile', 'room', 'introduction-dialogue', 'appointment', 'routine', 'weekend', 'changed-plan', 'notice'].map(id => 'asset.arabic-' + id);
   const originalTexts = starter.assets.filter(a => a.type === 'original_text');
-  const bareTexts = originalTexts.filter(a => !readingIds.includes(a.id));
+  const bareTexts = originalTexts.filter(a => !vowelledIds.includes(a.id)), readingIds = originalTexts.map(a => a.id);
+  const voiceScripts = json('content/teaching/arabic/voice-scripts.json').readings, unmarked = s => s.replace(/[\u064B-\u0652\u0670]/g, '');
   const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   const spaces = s => s.replace(/\s+/g, ' ').trim();
-  check('only the eight vowelled original reading texts have sentence passages', same(Object.keys(passages).sort(), [...readingIds].sort()));
-  check('all six unvowelled B1 and B2 reading texts wait without sentence audio', bareTexts.length === 6 && bareTexts.every(a => !passages[a.id]));
+  check('all fourteen original reading texts have sentence passages: the eight the course vowels and the six read from MyDay\'s voice scripts', readingIds.length === 14 && same(Object.keys(passages).sort(), [...readingIds].sort()) && same(Object.keys(voiceScripts).sort(), bareTexts.map(a => a.id).sort()));
+  check('the six unmarked texts keep the course\'s own text on the page, and each script has exactly its letters', bareTexts.length === 6 && bareTexts.every(a => unmarked(voiceScripts[a.id]) === a.text_ar && passages[a.id].every(s => !/[\u064B-\u0652]/.test(s.text) && sourceMod.voiceable(s.spoken))));
   check('reading sentences preserve every character of the original displayed text in order', readingIds.every(id => {
     const a = originalTexts.find(a => a.id === id);
     return spaces(passages[id].map(s => s.text).join(' ')) === spaces(a.text_ar);
@@ -163,17 +166,36 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
   }));
   const introduction = passages['asset.arabic-introduction-dialogue'];
   check('the introduction splits its six dialogue turns into eleven sentences without merging speakers', introduction.length === 11 && same(introduction.map(s => s.line), [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5]));
-  check('a dialogue sentence shows its speaker but its clip speaks only the words after the colon', introduction[0].text === 'سَامِي: مَرْحَبًا.' && introduction[0].plain === 'سامي: مرحبا.' && introduction[0].spoken === 'مَرْحَبًا.' && introduction[1].text === 'مَا اسْمُكِ؟' && introduction[1].spoken === 'مَا اسْمُكِ؟');
+  check('a dialogue sentence shows its speaker but its clip speaks only the words after the colon, in pause forms (مَرْحَبَا), keeping the -ki of اسْمُكِ', introduction[0].text === 'سَامِي: مَرْحَبًا.' && introduction[0].plain === 'سامي: مرحبا.' && introduction[0].spoken === 'مَرْحَبَا.' && introduction[1].text === 'مَا اسْمُكِ؟' && introduction[1].spoken === 'مَا اسْمُكِ؟');
   const appointment = passages['asset.arabic-appointment'];
   check('the appointment keeps its exclamation and final signature as separate sentences', appointment.length === 6 && appointment[4].text === 'إِلَى اللِّقَاءِ!' && appointment[5].text === 'لَيْلَى' && appointment[5].plain === 'ليلى' && appointment[5].spoken === 'لَيْلَى' && appointment[5].line === 1);
   check('the changed-plan dialogue keeps both short replies and their following questions separate', passages['asset.arabic-changed-plan'].length === 11 && passages['asset.arabic-changed-plan'][5].text === 'نُور: نَعَمْ.' && passages['asset.arabic-changed-plan'][6].text === 'أَيْنَ سَنَلْتَقِي؟');
   const readingSource = src('reading-texts');
   const spokenSentences = [...new Set(Object.values(passages).flat().map(s => s.spoken))];
   check('the round-three reading source contains each spoken sentence once, with no speaker labels', !!readingSource && readingSource.round === 3 && same([...readingSource.texts].sort(), [...spokenSentences].sort()) && new Set(readingSource.texts).size === readingSource.texts.length && readingSource.texts.every(s => !s.includes(':')));
-  check('every spoken reading sentence is fully vowelled and has a complete pronunciation reading', spokenSentences.length > 50 && spokenSentences.every(s => sourceMod.voiceable(s) && !t(s).incomplete));
+  check('every spoken reading sentence is fully vowelled, and every sentence the eight vowelled texts show has a complete pronunciation reading', spokenSentences.length > 50 && spokenSentences.every(s => sourceMod.voiceable(s)) && vowelledIds.every(id => passages[id].every(s => !t(s.text).incomplete)));
   const preparedAudio = json('app/src/study/arabic/voice-clips.json');
   check('the prepared voice data preserves the same reading sentences, plain text and line positions', same(preparedAudio.readings, passages));
   check('a reading sentence gets a shipped clip only when that exact spoken text was checked', spokenSentences.every(s => preparedAudio.clips[s] ? audit.clips[s]?.check === 'checked' && preparedAudio.clips[s] === audit.clips[s].file : audit.clips[s]?.check !== 'checked'));
+  // Round ten (owner's decision, 25 October 2026): connected reading in pause forms, the unmarked texts from MyDay's
+  // vowelled scripts, and each text read whole.
+  const { pauseForms, wholeText } = await import(pathToFileURL(path.join(ROOT, 'app/scripts/arabic-reading-sentences.mjs')));
+  check('pause forms: at a comma or the end a final vowel or tanween goes (sukūn), -an is ā, ة is said -a, a doubled letter stays doubled, ـِيّ is ī; words between pauses keep their endings',
+    pauseForms('كُلَّ مَسَاءٍ، بَعْدَ أَيَّامٍ قَلِيلَةٍ.') === 'كُلَّ مَسَاءْ، بَعْدَ أَيَّامٍ قَلِيلَة.' && pauseForms('قَرَأَ كَثِيرًا.') === 'قَرَأَ كَثِيرَا.' && pauseForms('جَاءَ مَسَاءً.') === 'جَاءَ مَسَاءَا.'
+    && pauseForms('فِي النَّصِّ.') === 'فِي النَّصّ.' && pauseForms('مَكْتَبٌ وَكُرْسِيٌّ.') === 'مَكْتَبٌ وَكُرْسِي.' && pauseForms('هَذَا بَيْتٌ.') === 'هَذَا بَيْتْ.');
+  check('pause forms keep a final vowel on ت or ك, which can be the only sign of who is speaking or spoken to', pauseForms('مَا اسْمُكِ؟') === 'مَا اسْمُكِ؟' && pauseForms('هَلْ دَرَسْتِ؟') === 'هَلْ دَرَسْتِ؟' && pauseForms('أَنَا دَرَسْتُ.') === 'أَنَا دَرَسْتُ.');
+  check('pause forms leave a word ending in a long vowel or a sukūn as it is', pauseForms('أَيْنَ سَنَلْتَقِي؟') === 'أَيْنَ سَنَلْتَقِي؟' && pauseForms('نَعَمْ.') === 'نَعَمْ.' && pauseForms('لَيْلَى') === 'لَيْلَى');
+  const scriptRoot = path.join(temp, 'voice-scripts');
+  const scriptJson = (file, value) => { const at = path.join(scriptRoot, file); fs.mkdirSync(path.dirname(at), { recursive: true }); fs.writeFileSync(at, JSON.stringify(value)); };
+  scriptJson('content/arabic-fusha/MyDay_Arabic_Fusha_Curriculum.json', { assets: [{ id: 'asset.bare', type: 'original_text', text_ar: 'كتب سامي رسالة. قرأها صديقه.' }, { id: 'asset.marked', type: 'original_text', text_ar: 'كَتَبَ سَامِي رِسَالَةً.' }] });
+  const scriptPassages = readings => { scriptJson('content/teaching/arabic/voice-scripts.json', { readings }); try { return readingPassages(pathToFileURL(scriptRoot + path.sep)); } catch (e) { return e.message; } };
+  const scripted = scriptPassages({ 'asset.bare': 'كَتَبَ سَامِي رِسَالَةً. قَرَأَهَا صَدِيقُهُ.' });
+  check('a voice script voices an unmarked text by sentence: the page keeps the course text, the voice gets the script in pause forms', typeof scripted === 'object' && same(scripted['asset.bare'].map(x => [x.text, x.plain, x.spoken]), [['كتب سامي رسالة.', 'كتب سامي رسالة.', 'كَتَبَ سَامِي رِسَالَة.'], ['قرأها صديقه.', 'قرأها صديقه.', 'قَرَأَهَا صَدِيقُهْ.']]) && !!scripted['asset.marked'], scripted);
+  check('a voice script whose letters or sentences differ from the course text stops the build', String(scriptPassages({ 'asset.bare': 'كَتَبَ سَامِي رِسَالَةً. قَرَأَتْهَا صَدِيقَتُهُ.' })).includes('other letters than the course text') && String(scriptPassages({ 'asset.bare': 'كَتَبَ سَامِي رِسَالَةً قَرَأَهَا صَدِيقُهُ.' })).includes('its sentences do not match'));
+  check('a voice script for a text the course already vowels, or for no such text, stops the build', String(scriptPassages({ 'asset.marked': 'كَتَبَ سَامِي رِسَالَةً.' })).includes('already gives this text with vowel marks') && String(scriptPassages({ 'asset.none': 'كَتَبَ.' })).includes('no reading text with that id'));
+  const wholeSource = src('reading-wholes');
+  check('the round-ten source has each reading text read whole once: its sentences as voiced, line by line', !!wholeSource && wholeSource.round === 10 && same([...wholeSource.texts].sort(), Object.values(passages).map(wholeText).sort()) && wholeText(passages['asset.arabic-changed-plan']).split('\n').length === 6);
+  check('the prepared voice data names each reading text\'s whole text, and a whole clip ships only once checked', same(preparedAudio.wholes, Object.fromEntries(Object.entries(passages).map(([id, parts]) => [id, wholeText(parts)]))) && Object.values(preparedAudio.wholes).every(w => (preparedAudio.clips[w] ? audit.clips[w]?.check === 'checked' : audit.clips[w]?.check !== 'checked')));
   // Broken copies of the whole folder fail the build, each for its own reason.
   const brokenAudio = (name, mutate, message, expected) => {
     const dir = path.join(temp, `audio-${name}`);
