@@ -1070,17 +1070,17 @@ function task(uid, taskId, category, title, minutes, done = false) {
     await ctl('files-reset');
     await fl.open(APP + '#today');
     const PJN = 'pjUnlisted', NAMED = 'flnamed00001', ORPHAN = 'florphan0001', FRESH = 'flfresh00001';
-    const twoDaysAgo = new Date(Date.now() - 8 * 86400000).toISOString(), anHourAgo = new Date(Date.now() - 2 * 86400000).toISOString(); // (over a week; under a week)
+    const overAWeek = new Date(Date.now() - 8 * 86400000).toISOString(), twoDays = new Date(Date.now() - 2 * 86400000).toISOString();
     await fl.setData(`s => { s.files.items = [{ id: '${NAMED}', name: 'named.pdf', type: 'application/pdf', size: 2048, sha256: '', area: 'project', state: 'kept', addedOn: '${today}' }];
       for (const p of s.projects.items) delete p.fileIds; for (const n of s.notes.items) delete n.fileIds;
       s.projects.items.push({ id: '${PJN}', title: 'Unlisted files', summary: '', stage: 'capture', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${today}T09:00', updatedAt: '${today}T09:00', fileIds: ['${NAMED}'] }); }`);
     // Left over (stored over a week ago, nothing names it), with its preview; one stored two days ago (another device's
     // upload whose record may still be on its way); one a record names; one in an area this version doesn't know.
-    await ctl('files-put', { key: `${userA}/project/${ORPHAN}`, size: 5 * 1024 * 1024, type: 'application/pdf', modified: twoDaysAgo });
-    await ctl('files-put', { key: `${userA}/project/${ORPHAN}.thumb`, size: 1000, type: 'image/webp', modified: twoDaysAgo });
-    await ctl('files-put', { key: `${userA}/note/${FRESH}`, size: 1024 * 1024, type: 'text/plain', modified: anHourAgo });
-    await ctl('files-put', { key: `${userA}/project/${NAMED}`, size: 2048, type: 'application/pdf', modified: twoDaysAgo });
-    await ctl('files-put', { key: `${userA}/gallery/flgallery001`, size: 4096, type: 'image/png', modified: twoDaysAgo });
+    await ctl('files-put', { key: `${userA}/project/${ORPHAN}`, size: 5 * 1024 * 1024, type: 'application/pdf', modified: overAWeek });
+    await ctl('files-put', { key: `${userA}/project/${ORPHAN}.thumb`, size: 1000, type: 'image/webp', modified: overAWeek });
+    await ctl('files-put', { key: `${userA}/note/${FRESH}`, size: 1024 * 1024, type: 'text/plain', modified: twoDays });
+    await ctl('files-put', { key: `${userA}/project/${NAMED}`, size: 2048, type: 'application/pdf', modified: overAWeek });
+    await ctl('files-put', { key: `${userA}/gallery/flgallery001`, size: 4096, type: 'image/png', modified: overAWeek });
     await fl.open(APP + '#projects/p/' + PJN); await fl.until(`document.getElementById('files-project')`, 15000);
     const unlistedText = () => fl.ev(`(document.querySelector('#files-project [data-s=files-unlisted]')?.textContent || '').replace(/\\s+/g, ' ').trim()`);
     check('once this device is in step, the storage line says one stored file (5 MB) isn\'t in your MyDay any more', await synced(fl) && await fl.until(`/^1 stored file \\(5 MB\\) isn’t in your MyDay any more/.test((document.querySelector('#files-project [data-s=files-unlisted]')?.textContent || '').trim())`, 20000), await unlistedText());

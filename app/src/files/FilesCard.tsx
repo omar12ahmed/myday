@@ -93,8 +93,9 @@ function StorageLine({ anyDeleted }: { anyDeleted: boolean }) {
   const extra = found && found.user === account?.id ? found.files : null; // never another account's
   const confirm = useConfirm();
   useEffect(() => { void refreshUsage(); }, [account?.id]);
-  // Asked once this device is fully in step (it waits for this page load's first sync; at most every 10 minutes).
-  useEffect(() => { if (sync.status === 'synced') void checkUnlisted(); }, [account?.id, sync.status]);
+  // Asked once this device is fully in step (it waits for this page load's first sync; at most every 10 minutes). Each
+  // sync that finishes asks again: one too quick to show "Syncing" leaves the status as it was, but not lastSynced.
+  useEffect(() => { if (sync.status === 'synced') void checkUnlisted(); }, [account?.id, sync.status, sync.lastSynced]);
   async function clearExtra() {
     const shown = extra ?? [], n = shown.length, size = amountLabel(shown.reduce((t, f) => t + f.size, 0), Math.ceil);
     if (!n || !(await confirm({ title: `Delete ${n} stored file${n === 1 ? '' : 's'} that nothing in your MyDay lists?`,

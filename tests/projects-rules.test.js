@@ -447,7 +447,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const caseOf = (d, id = 'pjA') => d.projects.items.find(p => p.id === id).case;
 
     // Kinds
-    check('the kinds of project are General, Business idea and Case, in that order', eq(K.TEMPLATES.map(t => t.id), ['general', 'business', 'case']), K.TEMPLATES);
+    check('the kinds of project are General, Business idea, Case and Research, in that order', eq(K.TEMPLATES.map(t => t.id), ['general', 'business', 'case', 'research']) && eq(K.TEMPLATES.map(t => t.label), ['General', 'Business idea', 'Case', 'Research']), K.TEMPLATES);
     let d = world(base(), base('pjO'));
     const otherBefore10 = clone(d.projects.items[1]);
     check('isCase is true for a case and false for a general or business project', K.isCase(base('p', { template: 'case' })) && !K.isCase(base()) && !K.isCase(base('p', { template: 'business' })));
@@ -1541,7 +1541,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
       d2.tasks.items.find(t => t.id === 'tkOpen').plannedOn = '2026-10-10'; d2.tasks.items.find(t => t.id === 'tkOpen').planUid = 'u9';
       return K.searchProject(d2, d2.projects.items[0], 'bolts')[0].done === 'done';
     })());
-    check('the labels say "About it", "Task", "Note", "Milestone", "Decision", "Your one page", "Timeline", "Evidence", "Issue" and "Link"', eq(Object.values(K.SEARCH_KIND_LABEL), ['About it', 'Task', 'Note', 'Milestone', 'Decision', 'Your one page', 'Timeline', 'Evidence', 'Issue', 'Link']), K.SEARCH_KIND_LABEL);
+    check('the labels say "About it", "Task", "Note", "Milestone", "Decision", "Your one page", "Timeline", "Evidence", "Issue", "Link", "Research question", "Finding" and "Source"', eq(Object.values(K.SEARCH_KIND_LABEL), ['About it', 'Task', 'Note', 'Milestone', 'Decision', 'Your one page', 'Timeline', 'Evidence', 'Issue', 'Link', 'Research question', 'Finding', 'Source']), K.SEARCH_KIND_LABEL);
     const everything = world(base('pjE', { template: 'case', title: 'Zed everything', summary: 'zed', milestones: [{ id: 'm1', title: 'zed ms', aim: null, reachedOn: null, createdAt: OLD }], decisions: [{ id: 'd1', question: 'zed?', options: [], chosen: null, why: '', decidedOn: null, createdAt: OLD, updatedAt: OLD }],
       case: { timeline: [{ id: 't1', date: '2026-10-01', about: false, title: 'zed t', details: '', source: 'mine', evidenceIds: [], issueIds: [], createdAt: OLD }], evidence: [{ id: 'e1', title: 'zed e', kind: 'document', date: null, where: '', status: 'have', notes: '', issueIds: [], createdAt: OLD }], issues: [{ id: 'i1', title: 'zed i', status: 'considering', notes: '', createdAt: OLD }] } }));
     everything.tasks.items = [tk('tz', 'zed task', 'pjE')]; everything.notes.items = [nt('nz', 'zed note', '', 'pjE')];
