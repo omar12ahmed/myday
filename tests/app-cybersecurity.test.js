@@ -49,7 +49,7 @@ async function fill(sel, value) {
     await go('study/cybersecurity/lesson.' + id);
     check('lesson renders its real activities: ' + id, (await text('#app')).includes('Completion criteria') && await exists('a[href="#study/cybersecurity/exercise.' + id + '"]'));
   }
-  await go('study/cybersecurity/lesson.learning-evidence'); await click('.cyber-workshop button'); await sleep(200);
+  await go('study/cybersecurity/lesson.learning-evidence'); await click('[data-action=cyber-start]'); await sleep(200);
   check('a curriculum lesson starts the existing Study timer', (await ev('location.hash')) === '#study/session' && (await data()).study.sessions[0].taskId === 'cyber:1:lesson.learning-evidence');
   check('the timer links back to the actual lesson', await exists('a[href="#study/cybersecurity/lesson.learning-evidence"]'));
   await go('study/cybersecurity/assessment.learning-evidence-check');

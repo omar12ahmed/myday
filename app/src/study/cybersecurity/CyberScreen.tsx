@@ -214,7 +214,7 @@ function LessonView({ data, lesson: l }: { data: MyDayData; lesson: Lesson }) {
       <Lines items={l.learning_objectives} />
       {current ? <LinkButton to="study/session">Return to your study session</LinkButton> : task ? <div className="grid gap-3 mt-3">
         {choice}
-        <Button onClick={() => { startLearning(task.course.id, task.node.id, minutes, minutes < l.estimated_duration_minutes.standard); rememberMode(); }}>Start a study session</Button>
+        <Button data-action="cyber-start" onClick={() => { startLearning(task.course.id, task.node.id, minutes, minutes < l.estimated_duration_minutes.standard); rememberMode(); }}>Start a study session</Button>
       </div> : selectedPath(data.cybersecurity.pathId).required_module_ids.includes(l.module_id) ? <div className="grid gap-3 mt-3">
         <p className="text-sm text-fg-2 m-0">Start from this lesson. MyDay will add your selected curriculum path to the roadmap without changing existing work.</p>
         {choice}

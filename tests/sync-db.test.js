@@ -298,6 +298,18 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
   r = await push(A, [change('file', 'fldbtest003', 0, { ...file, id: 'fldbtest003', area: 'portfolio' }), change('arabic_word', 'kwdbtest003', 0, { ...word, id: 'kwdbtest003' })]);
   check('every earlier kind, a portfolio file record among them, is still accepted after this change', r.every(x => x.status === 'applied'), r);
 
+  console.log('\n[19b] Your place on a Cybersecurity lesson (lesson states, 20261026120000_sync_cyber_lessons.sql)');
+  const cyPlace = { id: 'lesson.lab-isolation', readyOn: '2026-10-25', revisit: { since: '2026-10-26', what: 'NAT versus host-only' } };
+  r = await push(A, [change('cyber_lesson', cyPlace.id, 0, cyPlace)]);
+  check('a Cybersecurity lesson record saves through sync_push_v2, its id being the lesson\'s', r[0].status === 'applied' && r[0].version === 1, r);
+  check('another account cannot read it', !(await pull(reader)).some(x => x.kind === 'cyber_lesson'));
+  r = await push(A, [change('cyber_lesson', cyPlace.id, 0, { ...cyPlace, readyOn: '2026-10-01' })]);
+  check('a stale device cannot overwrite it', r[0].status === 'conflict', r);
+  r = await push(A, [change('cyber_lesson', cyPlace.id, 1, null, { deleted: true })]);
+  check('taking it back reaches other devices as a tombstone (the kind is deletable)', r[0].status === 'applied' && (await pull(A)).some(x => x.kind === 'cyber_lesson' && x.deleted));
+  r = await push(A, [change('cyber_portfolio', 'pfdbtest009', 0, { ...entry, id: 'pfdbtest009' }), change('arabic_lesson', 'lesson.arabic-origin-location', 0, { id: 'lesson.arabic-origin-location', readyOn: '2026-10-25' })]);
+  check('every earlier kind, the portfolio and Arabic\'s lesson records among them, is still accepted after this change', r.every(x => x.status === 'applied'), r);
+
   console.log('\n[20] Delete everything (20261025160000_wipe.sql): the true wipe, and the guard against an older MyDay');
   {
     const canon = v => (Array.isArray(v) ? v.map(canon) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map(k => [k, canon(v[k])])) : v);
