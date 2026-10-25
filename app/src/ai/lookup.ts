@@ -126,14 +126,14 @@ export function waitingLookup(data: MyDayData, query: string): { lookup: AskWait
 }
 
 // "What to study next" (v22): the same next steps as Today's Study card (learningOptions), your focus first — each one's
-// subject, lesson or task, detail and "Why this?", minutes and length, begun or not, a session to resume, revision first
+// subject, lesson or task, detail and "Why this?" (its AI-safe wording, `aiWhy`), minutes and length, begun or not, a session to resume, revision first
 // or the path ready — and how much is due to revise. Only these fields (no ids, links or open sessions' steps).
 export function studyLookup(data: MyDayData, today: DateKey = todayKey()): { lookup: AskStudyLookup; leftOut: number; hrefs: Record<string, string> } {
   const options = learningOptions(data).slice(0, L.lookupStudy);
   return {
     lookup: {
       tool: 'study', query: 'all', revisionDue: dueIds(data, today).length,
-      options: options.map(o => ({ subject: o.subject, label: cut(o.label, L.titleChars), title: cut(o.title, L.titleChars), detail: cut(o.detail, L.studyDetailChars), why: cut(o.why, L.studyWhyChars),
+      options: options.map(o => ({ subject: o.subject, label: cut(o.label, L.titleChars), title: cut(o.title, L.titleChars), detail: cut(o.detail, L.studyDetailChars), why: cut(o.aiWhy, L.studyWhyChars), // aiWhy: never your own revision note or a calendar block's name
         minutes: Math.max(0, Math.min(600, Math.round(o.minutes))), mode: o.mode ?? null, started: o.started, resume: o.resume, reviseFirst: !!o.revise, allComplete: o.allComplete })),
     },
     leftOut: 0, hrefs: Object.fromEntries(options.map(o => [o.subject, o.href])), // where each opens, kept on the device

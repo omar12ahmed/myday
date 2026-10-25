@@ -1671,7 +1671,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     // "What to study next" (v22): the same next steps as Today's Study card, focus first — no ids, links or open steps.
     const sw = K.normalize(K.freshState()), sk = K.studyLookup(sw, LD), so = K.learningOptions(sw), sj = JSON.stringify(sk.lookup);
     check('what to study next: the Today card\'s options, focus first — subject, lesson, reason, minutes, length', sk.lookup.options.length === Math.min(3, so.length) && sk.lookup.options.length >= 2
-      && sk.lookup.options.every((o, i) => o.subject === so[i].subject && o.title === so[i].title && o.why === so[i].why && o.minutes === so[i].minutes && o.reviseFirst === !!so[i].revise) && Number.isInteger(sk.lookup.revisionDue), sk.lookup.options);
+      && sk.lookup.options.every((o, i) => o.subject === so[i].subject && o.title === so[i].title && o.why === so[i].aiWhy && o.minutes === so[i].minutes && o.reviseFirst === !!so[i].revise) && Number.isInteger(sk.lookup.revisionDue), sk.lookup.options);
     check('…never an id, a link or an open session\'s steps (the links stay on the device)', !/"(href|lessonId|attemptId|steps|courseId|taskId)"/.test(sj) && !sj.includes('#study') && sk.hrefs[so[0].subject] === so[0].href && sk.leftOut === 0, sj.slice(0, 200));
     check('what the panel says: the focus first, then the others', K.lookupLine(sk.lookup, 0) === `Looked at what to study next: ${so[0].label} first, then ${so.slice(1, 3).map(o => o.label).join(' and ')}${sk.lookup.revisionDue ? ` — ${sk.lookup.revisionDue === 1 ? 'one thing' : `${sk.lookup.revisionDue} things`} to revise` : ''}.`, K.lookupLine(sk.lookup, 0));
     const sTo = K.askSlice(sw, '#today', LD), sSt = K.askSlice(sw, '#study', LD);
@@ -1796,6 +1796,24 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const studyLook = K.studyLookup(data, PD);
     check('a look at what to study next: nothing private in what it sends', studyLook.lookup.options.length > 0 && leaks(studyLook.lookup).length === 0
       && leaks(K.askContext(K.askSlice(data, '#today', PD), 'what should I study?', PD, undefined, undefined, studyLook.lookup)).length === 0, leaks(studyLook.lookup));
+    // …and at its riskiest (myday-86's recipe): a lesson flagged for revision with your own note, and a short session
+    // before a private project's appointment — the screen's "Why this?" holds both, what goes to AI neither.
+    {
+      const z = JSON.parse(JSON.stringify(data)); K.setClock(`${PD}T10:00`);
+      const path = K.pathIds(z), i = path.findIndex((id, n) => K.buildsOn(id).some(b => path.indexOf(b) > -1 && path.indexOf(b) < n));
+      const weak = K.buildsOn(path[i]).find(b => path.indexOf(b) > -1 && path.indexOf(b) < i);
+      for (const id of path.slice(0, i)) K.markCyberReady(z, K.factsOf(id), PD);
+      K.flagCyberRevisit(z, weak, 'SECRET-FLAG', PD);
+      z.context[PD] = { energy: 3, sleep: { start: null, end: null, estimatedHours: 7 } };
+      z.commitments.push({ id: 'cSecret2', kind: 'appointment', title: 'SECRET-APPT', start: `${PD}T10:50`, end: `${PD}T11:30` });
+      z.projects.items.find(p => p.id === 'pjSecret').commitmentIds.push('cSecret2');
+      z.study.settings.primarySubject = 'cybersecurity';
+      const zo = K.learningOptions(z).find(o => o.subject === 'cybersecurity'), zl = K.studyLookup(z, PD), zs = JSON.stringify(zl.lookup);
+      check('…and at its riskiest — your own revision note, and a short session before a private appointment: the screen\'s reason holds both, what goes to AI neither',
+        zo.why.includes('SECRET-FLAG') && zo.why.includes('SECRET-APPT') && !zs.includes('SECRET-FLAG') && leaks(zl.lookup).length === 0
+          && leaks(K.askContext(K.askSlice(z, '#today', PD), 'what should I study?', PD, undefined, undefined, zl.lookup)).length === 0 && /needs revision/.test(zl.lookup.options[0].why), [zo.why, zl.lookup.options[0]?.why]);
+      K.setClock(`${PD}T09:30`);
+    }
     check('a lookup in your notes: nothing private in what it sends — not even how many private notes matched', withLook.every(r => leaks(r).length === 0) && lookSecret.leftOut > 0 && lookSecret.lookup.notes.length === 0 && lookShed.lookup.notes.some(n => n.id === 'nOpen'), withLook.map(r => leaks(r)));
     data.patterns.prefs.aiNotes = false;
     const noText = K.askContext(K.askSlice(data, '#projects/p/pjOpen', PD), 'x', PD);

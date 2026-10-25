@@ -86,3 +86,5 @@ export { activities as cyberActivities, lessons as cyberLessons } from '../app/s
 export { LIMITS as REQUEST_LIMITS } from '../supabase/functions/_shared/ai/schema.ts';
 export { buildCheckAnswerMessages, checkAnswerContext, CHECK_ANSWER_LIMITS, mockCheckAnswer, readCheckAnswer } from '../supabase/functions/_shared/ai/check-answer.ts';
 export { learningOptions } from '../app/src/study/nextLearning';
+export { buildsOn, factsOf, pathIds } from '../app/src/study/cybersecurity/plan';
+export { flagCyberRevisit, markCyberReady } from '../app/src/data/cybersecurity/lessons';
