@@ -6,6 +6,9 @@ Use the relevant storage, project, sync and AI suites alongside these. Synthetic
 
 # MyDay checks
 
+These suites run locally against a stand-in for Supabase. Checks against the real services (the published site,
+the live database, the Edge Functions and R2) are in `tests/live/` and need the owner's yes for each run.
+
 Cybersecurity: `tests/run.sh cybersecurity-rules app-cybersecurity sync-db sync-records` checks the package
 import, notebook, answer release, tutor boundaries, mobile layouts and account record contracts.
 `app-cybersecurity` also builds a rules-only AI preview; no live model is called. Application builds validate

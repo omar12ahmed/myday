@@ -120,7 +120,7 @@ When a release is requested:
 3. Run build, lint and justified checks; report the actual scope rather than implying a full pass.
 4. Ensure each required migration or server deployment has the owner's explicit go-ahead; do not ask again for an action already authorised in the session.
 5. When the app depends on a changed Edge Function (a new header, action or rule), deploy and check the function first, then publish the app. Follow `deploy/README.md` for building and publishing `main`.
-6. Perform only the authorised live checks with disposable accounts and throwaway browser profiles, then remove them.
+6. Perform only the authorised live checks with disposable accounts and throwaway browser profiles, then remove them. Use and extend the shared checks in `tests/live/` (README there), and run them against a local production build first (`--local`) whenever the release depends on a changed Edge Function, a migration or storage.
 
 Never claim something is deployed, published, live-tested, backed up or rolled back unless it was actually verified.
 
