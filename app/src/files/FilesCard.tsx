@@ -89,17 +89,18 @@ export function DeletedFiles({ list, putBackable = true }: { list: FileRecord[];
 // once the files function has said (signed in, online); files in Recently deleted are still stored until they go.
 // Last in the card, so its arriving late never moves what's above it. Used and left are rounded down.
 function StorageLine({ anyDeleted }: { anyDeleted: boolean }) {
-  const sync = useSync(), account = sync.account, u = useSyncExternalStore(subscribeFiles, getUsage), extra = useSyncExternalStore(subscribeFiles, getUnlisted);
+  const sync = useSync(), account = sync.account, u = useSyncExternalStore(subscribeFiles, getUsage), found = useSyncExternalStore(subscribeFiles, getUnlisted);
+  const extra = found && found.user === account?.id ? found.files : null; // never another account's
   const confirm = useConfirm();
   useEffect(() => { void refreshUsage(); }, [account?.id]);
   // Asked once this device is fully in step (it waits for this page load's first sync; at most every 10 minutes).
   useEffect(() => { if (sync.status === 'synced') void checkUnlisted(); }, [account?.id, sync.status]);
   async function clearExtra() {
-    const n = extra?.length ?? 0, size = amountLabel((extra ?? []).reduce((t, f) => t + f.size, 0));
-    if (!n || !(await confirm({ title: `Delete ${n} stored file${n === 1 ? '' : 's'} nothing in your MyDay lists?`,
-      body: `They take ${size}. If another of your devices added files while offline and hasn’t synced since, open it first. They can’t be brought back.`, confirmLabel: 'Delete them', cancelLabel: 'Keep them' }))) return;
-    const r = await deleteUnlisted();
-    toast(r === 'ok' ? 'Deleted. That space is free again.' : WHY[r]);
+    const shown = extra ?? [], n = shown.length, size = amountLabel(shown.reduce((t, f) => t + f.size, 0), Math.ceil);
+    if (!n || !(await confirm({ title: `Delete ${n} stored file${n === 1 ? '' : 's'} that nothing in your MyDay lists?`,
+      body: `They take ${size}. If another of your devices added files and hasn’t synced since, or has a choice to make, open it first. They can’t be brought back.`, confirmLabel: 'Delete them', cancelLabel: 'Keep them' }))) return;
+    const r = await deleteUnlisted(shown);
+    toast(r.result !== 'ok' ? WHY[r.result] : r.kept ? `${r.deleted ? `Deleted ${r.deleted}. ` : ''}${r.kept} turned out to be in your MyDay after all, so ${r.kept === 1 ? 'it was' : 'they were'} kept.` : 'Deleted. That space is free again.');
   }
   if (!u || u.user !== account?.id) return null;
   const left = Math.max(0, u.limit - u.bytes), pct = Math.min(100, (u.bytes / u.limit) * 100), of = amountLabel(u.limit);

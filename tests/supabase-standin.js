@@ -293,6 +293,7 @@ function start(db, port = 0) {
         verifyUser: async token => { const c = verify(token); return c && !c.expired ? c.sub : null; },
         store: filesConfigured ? filesStore : null,
         epochOf: (token, user) => epochIn(db, user),
+        liveFileIds: async (token, user) => new Set((await as(db, user, q => q("select id from public.sync_records where user_id = $1 and kind = 'file' and not deleted", [user]))).rows.map(r => r.id)),
         log: line => filesLog.push(line),
       });
       entry.status = response.status;

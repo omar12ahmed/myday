@@ -11,7 +11,7 @@ import { getSnapshot, update } from '../data/storage';
 import type { FileRecord } from '../data/types';
 import { currentSession } from './client';
 import { SYNC } from './config';
-import { checkedThisLoad, getView } from './engine';
+import { checkedThisLoad, getView, syncNow } from './engine';
 import { knownEpoch } from './state';
 
 // ---------- MD5 (RFC 1321): only so R2 can check that an upload's bytes are the file's (Content-MD5) ----------
@@ -250,33 +250,46 @@ export async function openFile(f: FileRecord): Promise<FilesResult> {
 }
 
 // ---------- Stored files nothing lists (specs/files.md) ----------
-// Files in your storage that no record in your MyDay names, e.g. left by importing an older backup: they count
-// towards what's used but nothing shows them. Asked only while this device is fully in step (so a record still on its
-// way isn't mistaken for missing), at most every 10 minutes, and only for files stored a day ago or more (so another
-// device's fresh upload, whose record hasn't arrived, is left alone), in the areas this version knows. Deleting them
-// is your choice, asked first.
+// Files in your storage that no record names, e.g. left by importing an older backup: they count towards what's used
+// but nothing shows them. The server leaves out any file a record in your account still names; this device also leaves
+// out any it has a record of, any in an area it doesn't know, and any stored less than a week ago by the server's
+// clock (another device's upload whose record hasn't been sent yet). Asked only while this device is fully in step,
+// at most every 10 minutes, and kept with the account it's for. Deleting asks first, and looks again at that moment.
 export interface Unlisted { fileId: string; area: string; size: number }
-let unlisted: Unlisted[] | null = null, unlistedAt = 0;
+const WEEK = 7 * 24 * 60 * 60 * 1000;
+let unlisted: { user: string; files: Unlisted[] } | null = null, unlistedAt = 0;
 export const getUnlisted = () => unlisted;
-export async function checkUnlisted(now = Date.now()): Promise<void> {
-  const v = getView();
-  if (!checkedThisLoad() || v.phase !== 'linked' || v.status !== 'synced' || now - unlistedAt < 10 * 60 * 1000) return;
-  unlistedAt = now;
-  const r = await call<{ files: { fileId: string; area: string; size: number; modified: string | null }[] }>('stored');
-  if (!r.ok || !Array.isArray(r.data.files)) { unlistedAt = 0; return; }
-  const known = new Set(getSnapshot().data.files.items.map(f => f.id)), DAY = 24 * 60 * 60 * 1000;
-  unlisted = r.data.files.filter(f => LISTED_AREAS.includes(f.area) && !known.has(f.fileId) && !!f.modified && now - Date.parse(f.modified) > DAY)
-    .map(f => ({ fileId: f.fileId, area: f.area, size: f.size }));
-  notify();
+async function lookForUnlisted(): Promise<{ user: string; files: Unlisted[] } | null> {
+  const user = (await currentSession()).session?.user?.id;
+  const r = await call<{ files: { fileId: string; area: string; size: number; modified: string | null }[]; now?: string }>('stored');
+  if (!user || !r.ok || !Array.isArray(r.data.files)) return null;
+  const known = new Set(getSnapshot().data.files.items.map(f => f.id)), now = Date.parse(r.data.now ?? '') || Date.now();
+  return { user, files: r.data.files.filter(f => LISTED_AREAS.includes(f.area) && !known.has(f.fileId) && !!f.modified && now - Date.parse(f.modified) > WEEK)
+    .map(f => ({ fileId: f.fileId, area: f.area, size: f.size })) };
 }
-export async function deleteUnlisted(): Promise<FilesResult> {
-  const list = unlisted ?? [];
-  for (let i = 0; i < list.length; i += 100) {
-    const r = await call('delete', { files: list.slice(i, i + 100).map(f => ({ fileId: f.fileId, area: f.area })), knows: LISTED_AREAS });
-    if (!r.ok) return r.why;
+const inStep = () => { const v = getView(); return checkedThisLoad() && v.phase === 'linked' && v.status === 'synced'; };
+export async function checkUnlisted(now = Date.now()): Promise<void> {
+  if (!inStep() || now - unlistedAt < 10 * 60 * 1000) return;
+  unlistedAt = now;
+  const found = await lookForUnlisted();
+  if (!found) { unlistedAt = 0; return; }
+  unlisted = found; notify();
+}
+// Deletes those you were shown, if they're still unlisted once this device has synced again (a record may have
+// arrived since): 'ok' with how many went, and how many turned out to be named after all.
+export async function deleteUnlisted(shown: Unlisted[]): Promise<{ result: FilesResult; deleted: number; kept: number }> {
+  await syncNow();
+  if (!inStep()) return { result: 'failed', deleted: 0, kept: shown.length };
+  const fresh = await lookForUnlisted();
+  if (!fresh) return { result: 'failed', deleted: 0, kept: shown.length };
+  const still = shown.filter(f => fresh.files.some(x => x.fileId === f.fileId));
+  for (let i = 0; i < still.length; i += 100) {
+    const r = await call('delete', { files: still.slice(i, i + 100).map(f => ({ fileId: f.fileId, area: f.area })), knows: LISTED_AREAS });
+    if (!r.ok) return { result: r.why, deleted: i, kept: shown.length - still.length };
   }
-  unlisted = []; notify(); void refreshUsage(true);
-  return 'ok';
+  unlisted = { user: fresh.user, files: fresh.files.filter(f => !still.some(x => x.fileId === f.fileId)) }; unlistedAt = Date.now(); notify();
+  void refreshUsage(true);
+  return { result: 'ok', deleted: still.length, kept: shown.length - still.length };
 }
 
 // ---------- Delete now, and the daily tidy ----------

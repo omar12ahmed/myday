@@ -205,9 +205,13 @@ Also, per the other decisions on record:
 Importing a backup made before some files existed (or a blank one) drops their records, and sync then deletes them,
 but their bytes stay in R2: they count towards what's used, with nothing listed to remove. The function's `stored`
 action lists the account's stored files (id, area, size, when stored; never names), and the Files card's storage line
-says "3 stored files (12 MB) aren't in your MyDay any more…" with **Delete them…** (asked first, warning that a device
-which added files offline should be opened first). Only files stored a day ago or more, in areas this version knows,
-and only while the device is fully in step, so a record still on its way is never mistaken for missing.
+says "3 stored files (12 MB) aren't in your MyDay any more…" with **Delete them…** (asked first: "If another of your
+devices added files and hasn't synced since, or has a choice to make, open it first"). What's offered: files the
+server finds no live record for in your account, that this device has no record of either, in areas it knows, stored
+a week ago or more by the server's clock, looked for only while the device is fully in step. At Delete, MyDay syncs
+and asks again, and deletes only those still unlisted. What a week doesn't cover: a device that added a file and then
+stayed closed for more than a week before its record was sent; that file's bytes could be offered (the warning says
+to open your other devices first).
 
 ## 5. Privacy and safety
 

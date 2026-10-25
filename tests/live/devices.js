@@ -53,11 +53,13 @@ async function device(name, dir) {
     async open(u = url) {
       url = u;
       const [base, hash] = u.split('#');
+      // The page already open must never count as the new one: mark it, and wait for a document without the mark.
+      await s('Runtime.evaluate', { expression: 'window.__oldDocument = true', returnByValue: true }).catch(() => {});
       for (let attempt = 1; ; attempt++) {
         try { await s('Page.navigate', { url: `${base}${base.includes('?') ? '&' : '?'}r=${++nav}${hash ? '#' + hash : ''}` }); break; }
         catch (e) { if (attempt >= 4 || !/navigate timeout/.test(e.message)) throw e; console.log(`(slow page load on ${name}, stopped and retried: ${attempt})`); await s('Page.stopLoading').catch(() => {}); }
       }
-      await D.until(`document.readyState === 'complete' && !!document.querySelector('#app')`, 15000);
+      await D.until(`!window.__oldDocument && document.readyState === 'complete' && !!document.querySelector('#app')`, 30000);
       await sleep(300);
     },
     async ev(expr) {

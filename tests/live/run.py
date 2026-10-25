@@ -24,6 +24,7 @@ ap.add_argument('--account', default=os.environ.get('MYDAY_LIVE_ACCOUNT', 'A'));
 ap.add_argument('--local', action='store_true'); ap.add_argument('--base', default='https://omar12ahmed.github.io/myday/')
 ap.add_argument('--cdp-port', default=os.environ.get('MYDAY_LIVE_CDP_PORT', '9587'))
 a = ap.parse_args()
+if a.account.upper() == a.other.upper(): raise SystemExit('--other must be a different account from --account')
 script = here / a.check
 if not script.is_file() or script.parent != here: raise SystemExit('No such live check here: ' + a.check)
 

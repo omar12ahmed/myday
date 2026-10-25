@@ -33,6 +33,9 @@ export interface Deps {
   store: Store | null;          // null: not set up (the R2 secrets are missing)
   // The account's wipe epoch (Delete everything, specs/delete-everything.md); absent: never wiped.
   epochOf?: (token: string, user: string) => Promise<number>;
+  // The ids of the account's file records still in sync (not deleted), read as the user: a stored file one of them
+  // names is never offered as "nothing lists it". Absent: none known (the app's own check still applies).
+  liveFileIds?: (token: string, user: string) => Promise<Set<string>>;
   log?: (line: string) => void;
 }
 
@@ -161,12 +164,15 @@ export async function handle(req: Request, d: Deps): Promise<Response> {
         return done(json(200, { ok: true, bytes: sizeOf(objs), limit: ACCOUNT_TOTAL_BYTES }));
       }
       case 'stored': {
-        // Ids and sizes only (never names, which aren't stored here anyway); previews are counted with their file.
+        // Ids and sizes only (never names, which aren't stored here anyway); previews are counted with their file. A
+        // file the account's records still name (in sync, even if this device hasn't pulled it yet) is left out, and
+        // the time is the server's, so a device with a wrong clock can't make a fresh upload look old.
+        const named = d.liveFileIds ? await d.liveFileIds(token, user) : new Set<string>();
         const files = (await all()).flatMap(o => {
-          const [, area, id] = o.key.slice(user.length).split('/');
-          return !o.key.endsWith('.thumb') && isArea(area) && FILE_ID.test(id ?? '') ? [{ fileId: id, area, size: o.size, modified: o.modified ?? null }] : [];
+          const parts = o.key.slice(user.length).split('/'), [, area, id] = parts;
+          return parts.length === 3 && !o.key.endsWith('.thumb') && isArea(area) && FILE_ID.test(id ?? '') && !named.has(id) ? [{ fileId: id, area, size: o.size, modified: o.modified ?? null }] : [];
         });
-        return done(json(200, { ok: true, files }));
+        return done(json(200, { ok: true, files, now: new Date().toISOString() }));
       }
       default: return done(json(400, { error: 'bad-request' }));
     }

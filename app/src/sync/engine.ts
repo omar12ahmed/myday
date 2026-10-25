@@ -339,10 +339,11 @@ const baseline = (v: number, content: Content | null) => ({ v, f: fingerprint(co
 function noteCloudVersion(link: Link, key: string, here: Content | null, cloud: Conflict, draft?: MyDayData): boolean {
   const cf = fingerprint(cloud.content);
   if (fingerprint(here) === cf) { link.base[key] = baseline(cloud.v, cloud.content); delete link.conflicts[key]; return false; }
-  // An untouched starter record here (a fresh device's starter lists or note categories, when two devices start at
-  // once, e.g. both rejoining after Delete everything) takes the account's version: nothing of yours is in it, so
-  // nothing is lost and there's nothing to choose.
-  if (here && !cloud.del && cloud.content && isStarter(key, here)) {
+  // A starter record this device never had in step with the account (any kind with a starter: the lists, note
+  // categories, settings…, made fresh here when two devices start at once, e.g. both rejoining after Delete everything)
+  // takes the account's version: nothing of yours is in it. One you emptied or reset here after it was in step is
+  // yours, and stays a choice.
+  if (here && !cloud.del && cloud.content && !link.base[key] && isStarter(key, here)) {
     const content = cloud.content;
     if (draft) putRecord(draft, key, content);
     else if (updateSaved(d => { putRecord(d, key, content); }) === 'not-saved') { link.conflicts[key] = cloud; return false; }

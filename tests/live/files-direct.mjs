@@ -9,6 +9,8 @@ const env = process.env, URL_ = (env.SUPABASE_URL || '').replace(/\/+$/, ''), KE
 if (!process.argv.includes('--live') || !env.MYDAY_LIVE_EMAIL?.endsWith('@example.com') || !env.MYDAY_LIVE_OTHER_EMAIL?.endsWith('@example.com') || !KEY.startsWith('sb_publishable_')) {
   console.log('Refused: run it through tests/live/run.py (two disposable accounts and the publishable key).'); process.exit(2);
 }
+// Any error is printed without the accounts' details.
+process.on('unhandledRejection', e => { let m = String(e?.message || e); for (const v of [env.MYDAY_LIVE_EMAIL, env.MYDAY_LIVE_PASSWORD, env.MYDAY_LIVE_OTHER_EMAIL, env.MYDAY_LIVE_OTHER_PASSWORD]) if (v) m = m.split(v).join('[redacted]'); console.log('HARNESS ' + m); process.exit(1); });
 let pass = 0, fail = 0;
 const check = (name, ok, extra = '') => { ok ? pass++ : fail++; console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${ok || !extra ? '' : '  — ' + extra}`); };
 

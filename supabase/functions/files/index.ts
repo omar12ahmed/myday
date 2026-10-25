@@ -77,6 +77,17 @@ Deno.serve(req => handle(req, {
     if (error) { if (error.code === 'PGRST202' || /Could not find the function/i.test(error.message)) return 0; throw new Error('state'); }
     return Number((data as { epoch?: unknown } | null)?.epoch) || 0;
   },
+  // The account's live file records' ids (sync_records, read as the user under RLS), a page at a time.
+  liveFileIds: async (token, user) => {
+    const ids = new Set<string>();
+    for (let from = 0; ; from += 1000) {
+      const { data, error } = await asUser(token).from('sync_records').select('id').eq('user_id', user).eq('kind', 'file').eq('deleted', false).range(from, from + 999);
+      if (error) throw new Error('records');
+      for (const r of data ?? []) ids.add(String((r as { id: unknown }).id));
+      if (!data || data.length < 1000) break;
+    }
+    return ids;
+  },
   store: r2(),
   log: line => console.log(line),
 }));

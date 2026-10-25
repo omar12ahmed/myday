@@ -27,3 +27,6 @@ supabase/.temp/
 
 # The Arabic clips copied for the build from content/arabic-audio/ by app/scripts/prepare-audio.mjs
 app/public/arabic-audio/
+
+# Python byte-code (tests/live/run.py)
+__pycache__/

@@ -6,7 +6,7 @@
 //     without its title (24 Oct 2026); and busy time (Help me adjust today, Ask MyDay's look at a day) counts every
 //     appointment, a private project's too, by kind and time only, so a day is never shown free when it isn't;
 //   - a note's text goes only with "AI help with notes" on;
-//   - never: the files you attach (their names and contents); a project's research (questions, findings, sources and
+//   - never: a case's timeline, evidence and issues; the files you attach (their names and contents); a project's research (questions, findings, sources and
 //     conclusions, specs/projects-research.md); a project's outcome, what counts as finished and where you
 //     left off; who a task is waiting on (Ask MyDay's waiting lookup sends only that it waits, since and until); your name, email, preferences and patterns; Finance and Health records (each
 //     request builder simply doesn't read them).

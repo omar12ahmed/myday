@@ -86,7 +86,7 @@
   :focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
   /* Boxes you type in: the border turns teal with a soft glow around it (still clearly visible). */
   input:not([type="checkbox"], [type="radio"], [type="range"]):focus-visible, select:focus-visible, textarea:focus-visible {
-    outline: 2px solid var(--primary); outline-offset: 2px; border-color: var(--primary); box-shadow: 0 0 0 6px var(--focus-glow); /* the ring is the 2px teal (5:1 or more on both themes); the glow is softness */
+    outline: 2px solid var(--primary); outline-offset: 2px; border-color: var(--primary); box-shadow: 0 0 0 6px var(--focus-glow); /* the ring is the 2px teal (4.5:1 or more on every surface, both themes); the glow is softness */
   }
   input, select, textarea { transition: border-color .15s, box-shadow .15s; }
   ::selection { background: var(--primary-container); color: var(--on-primary-container); }

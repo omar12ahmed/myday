@@ -40,8 +40,9 @@ python3 -I tests/live/run.py live-files.js --version 1.77.0 --src <commit> --loc
   nothing to be waiting (`link.out` empty). Read the account only after that.
 - Never ask the page anything while it may be reloading itself (after a wipe, say): wait, then `open()` again.
 - Return plain values from `ev()` (`!!document.querySelector(…)`, never an element).
-- `devices.js` is `tests/cdp-devices.js` with one difference: a page load that stalls (the live site sometimes does,
-  from here) is stopped and retried, up to four times.
+- `devices.js` is `tests/cdp-devices.js` with two differences: a page load that stalls (the live site sometimes does,
+  from here) is stopped and retried, up to four times; and `open()` marks the page already open, so it never mistakes
+  it for the new one (it waits up to 30 s for a document without the mark).
 - Pull rows carry `record_id` (not `id`); keep the newest row per record.
 - A text box that saves when you leave it (`CommitTextarea`, `CommitInput`) saves on the native `change` event: after
   typing into one, dispatch `change` (or blur it), or nothing is saved.

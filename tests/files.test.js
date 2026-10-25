@@ -288,6 +288,12 @@ const MB = 1024 * 1024;
     && eq(j.files.map(f => [f.fileId, f.area, f.size, f.modified]).sort(), [['flstored0001', 'project', 1234, '2026-10-01T09:00:00.000Z'], ['flstored0002', 'note', 55, '2026-10-20T10:00:00.000Z']]), j);
   check('…an area or id this version doesn\'t know is left out, never offered to delete', !j.files.some(f => f.area === 'gallery' || f.fileId === 'not-a-file-id'));
   check('…no names: only ids, areas, sizes and dates', j.files.every(f => eq(Object.keys(f).sort(), ['area', 'fileId', 'modified', 'size'])));
+  check('…with the server\'s own time, so a device\'s clock can\'t make a fresh upload look old', typeof j.now === 'string' && !isNaN(Date.parse(j.now)));
+  store.put(`${A}/project/flstored0001/extra`, PDF, 'application/pdf', 3);
+  check('…a key with more parts than area and id is left out', !(await json(await post({ action: 'stored' }))).files.some(f => f.size === 3));
+  j = await json(await post({ action: 'stored' }, { over: { liveFileIds: async () => new Set(['flstored0001']) } }));
+  check('…and a file a record in the account still names is never in the list (even if the device hasn\'t pulled it)', !j.files.some(f => f.fileId === 'flstored0001') && j.files.some(f => f.fileId === 'flstored0002'), j.files);
+  check('…if the records can\'t be read, nothing is listed (502)', (await post({ action: 'stored' }, { over: { liveFileIds: async () => { throw new Error('db'); } } })).status === 502);
   check('…and signed out: refused first', (await post({ action: 'stored' }, { token: null })).status === 401);
   check('…its log line holds no ids', logs.every(l => /^files [a-z-]+ \d{3} \d+ms$/.test(l)), logs);
 
