@@ -403,12 +403,14 @@ note's text does: AI help with notes when it's on, and Ask MyDay opened on that 
   - **As built (25 October 2026), owner's choices: the course's own wording as the guide, and a line in Reflect:**
     Progress's "Arabic: four skills" card, after "Arabic: where you stand" (`app/src/study/arabic/ArabicProgress.tsx`,
     rules in `arabicSkills`, `app/src/study/arabic/plan.ts`). For each of reading, writing, speaking and listening:
-    the finished sessions where you ticked it in "What did you practise?" and how many were on your own, the last
-    day; how many lessons on your path ask for it (the course's input modalities, now in the lesson index) and how many
-    of those you've practised it in; the first that asks for it where you haven't; and, as a guide, the next
+    the finished sessions where you ticked it in "What did you practise?" and how many were without help (the
+    session's help choice), the last day; how many lessons on your path ask for it (the course's input modalities, now
+    in the lesson index) and how many of those you've practised it in; "Not yet ticked in:" the first that asks for it
+    where you haven't (it can be one behind you, so it isn't called the next lesson); and, as a guide, the next
     milestone's own sample task for that skill (stages are approximate targets, not CEFR levels; the official CEFR
-    lines aren't quoted). Listening and speaking are only what you ticked, with a line saying so; writing also counts
-    your kept words you practise writing from memory. Reflect says which skills the lesson asks for, ticking nothing.
+    lines aren't quoted). Listening and speaking are only what you ticked, each with a line saying so (listening on its
+    own only when you understood without reading along, since MyDay's clips play beside their text); writing also
+    says how many kept words are in your revision to write from memory. Reflect says which skills the lesson asks for, ticking nothing.
     No saved-data change; nothing is sent to AI. Not done: the next step doesn't yet balance receptive and productive
     work (the package's adaptation rule), and nothing records listening from audio you played.
 - **Course words with roots:** authored word lists per lesson (word, meaning, root, example, voice), checked by you,

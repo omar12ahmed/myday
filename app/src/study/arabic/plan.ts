@@ -127,10 +127,11 @@ export function arabicProgress(d: MyDayData): ArabicProgress {
 // ---------- The four skills ----------
 // Reading, writing, listening and speaking, each in words and counts (never a percentage, a score or a level): the
 // finished sessions where you ticked it in "What did you practise?" and how many of those were on your own; the lessons
-// on your path that ask for it, how many you've practised it in, and the first that asks for it where you haven't yet;
+// on your path that ask for it, how many you've practised it in, and the first that asks for it where you haven't yet
+// (it can be one behind you: it's where the skill hasn't been ticked, not the next step);
 // and, as a guide, what the course's next milestone asks of that skill (the package's own sample task; its stages are
 // approximate targets, not CEFR levels). Listening and speaking are only what you ticked: typed work never counts
-// for them. `writeWords`: your kept words you also practise writing from memory, in revision. Nothing is saved.
+// for them. `writeWords`: your kept words in revision to write from memory. Nothing is saved.
 export interface ArabicSkill { modality: Modality; sessions: number; own: number; last: DateKey | null; asks: number; practisedIn: number; next: string | null; guide: { stage: string; task: string } | null }
 export function arabicSkills(d: MyDayData, progress: ArabicProgress = arabicProgress(d)): { skills: ArabicSkill[]; writeWords: number } {
   const path = pathLessons(d.arabic.pathId), finished = d.arabic.attempts.filter(a => a.finishedAt);

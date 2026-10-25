@@ -228,10 +228,10 @@ function check(label, ok) {
 
     console.log('\n[Four skills] Reading, writing, speaking and listening, each in words and counts');
     {
-      const g = fresh(), route = rule.pathLessons(g.arabic.pathId), idx = rule.arabicCatalogue.lessonIndex, four = ['reading', 'writing', 'listening', 'speaking'];
+      const g = fresh(), route = rule.pathLessons(g.arabic.pathId), idx = rule.arabicCatalogue.lessonIndex, four = ['reading', 'writing', 'speaking', 'listening'];
       const asks = m => route.filter(id => idx[id].modalities.includes(m)), sk = (d, m) => rule.arabicSkills(d).skills.find(s => s.modality === m);
       const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'content/arabic-fusha/MyDay_Arabic_Fusha_Curriculum.json'), 'utf8'));
-      check('The lesson index says which of the four skills each lesson asks for, as the course does', pkg.lessons.every(l => JSON.stringify(idx[l.id].modalities) === JSON.stringify(four.filter(m => l.input_requirements.modalities.includes(m)))));
+      check('The lesson index says which of the four skills each lesson asks for, as the course does, in Reflect\'s order', pkg.lessons.every(l => JSON.stringify(idx[l.id].modalities) === JSON.stringify(four.filter(m => l.input_requirements.modalities.includes(m)))));
       check('Before any session: the four skills in Reflect\'s order, none practised, each with how many lessons on your path ask for it and the first of them',
         JSON.stringify(rule.arabicSkills(g).skills.map(s => s.modality)) === '["reading","writing","speaking","listening"]'
         && rule.arabicSkills(g).skills.every(s => s.sessions === 0 && s.own === 0 && s.last === null && s.practisedIn === 0 && s.asks === asks(s.modality).length && s.asks > 0 && s.next === asks(s.modality)[0]));
@@ -255,6 +255,27 @@ function check(label, ok) {
       const rv = { reps: 0, interval: 0, lapses: 0, due: null };
       g.arabic.words = [{ id: 'kw4sk1', ar: 'بَيْتٌ', meaning: 'house', addedOn: '2026-10-01', recognise: rv, write: rv }, { id: 'kw4sk2', ar: 'بَابٌ', meaning: 'door', addedOn: '2026-10-01', recognise: rv, write: null }];
       check('Writing also counts your kept words you practise writing from memory (and only those)', rule.arabicSkills(g).writeWords === 1);
+      const att = (id, lessonId, finishedAt, practised, help = 'independent') => ({ id, lessonId, curriculumVersion: '1.1.2', variant: 'short', startedAt: finishedAt, finishedAt, help, practised, answers: {}, revealed: [], revisit: '' });
+      const zone = process.env.TZ; process.env.TZ = 'Europe/London';
+      try {
+        const lt = fresh();
+        // Out of order, on different days; the latest is 00:30 on 21 Oct in London (23:30 on the 20th in UTC).
+        lt.arabic.attempts = [att('aaLt2', r1, '2026-10-18T10:00:00.000Z', ['reading']), att('aaLt3', r1, '2026-10-20T23:30:00.000Z', ['reading']), att('aaLt1', r1, '2026-10-15T10:00:00.000Z', ['reading'])];
+        check('The last day is the latest session\'s, in your own time zone, whatever order they were saved in', sk(lt, 'reading').last === '2026-10-21', sk(lt, 'reading').last);
+        check('…and all three, all without help, count', sk(lt, 'reading').sessions === 3 && sk(lt, 'reading').own === 3);
+      } finally { if (zone === undefined) delete process.env.TZ; else process.env.TZ = zone; }
+      const off = fresh(), optional = Object.keys(idx).find(id => idx[id].optional && idx[id].modalities.includes('reading'));
+      off.arabic.attempts = [att('aaOff1', 'lesson.arabic-no-longer-here', '2026-10-15T10:00:00.000Z', ['reading']), att('aaOff2', optional, '2026-10-16T10:00:00.000Z', ['reading'])];
+      check('Sessions on a lesson that\'s gone, or an optional one, count as sessions but not as lessons on your path', !!optional && sk(off, 'reading').sessions === 2 && sk(off, 'reading').practisedIn === 0 && sk(off, 'reading').next === asks('reading')[0]);
+      const every = fresh(); every.arabic.pathId = 'path.arabic-start';
+      const spk = rule.pathLessons(every.arabic.pathId).filter(id => idx[id].modalities.includes('speaking'));
+      every.arabic.attempts = spk.map((id, n) => att('aaEv' + n, id, '2026-10-15T10:00:00.000Z', ['speaking']));
+      check('Ticked in every lesson on your path that asks for it: all of them counted, and no lesson left to point to', spk.length > 0 && sk(every, 'speaking').practisedIn === spk.length && sk(every, 'speaking').asks === spk.length && sk(every, 'speaking').next === null);
+      const a2 = fresh(); a2.arabic.attempts = [att('aaA2', r1, '2026-10-15T10:00:00.000Z', ['reading'])];
+      for (const id of rule.pathLessons('path.arabic-a1').filter(id => route.includes(id))) rule.markReady(a2, id, rule.checksOf(id), '2026-10-01');
+      const ms2 = rule.arabicCatalogue.milestones.find(m => m.id === 'milestone.arabic-a2');
+      check('With A1\'s lessons done, the guide moves on to what the A2 milestone asks', rule.arabicProgress(a2).milestone.stage === 'A2'
+        && rule.arabicSkills(a2).skills.every(s => s.guide && s.guide.stage === 'A2' && s.guide.task === ms2.sample_tasks[s.modality]));
       const before = JSON.stringify(g); rule.arabicSkills(g);
       check('working out the four skills saves nothing', JSON.stringify(g) === before);
     }

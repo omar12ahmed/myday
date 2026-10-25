@@ -1,4 +1,5 @@
 import { Card } from '../../components/Card';
+import { ExploreBoundary } from '../../explore/ExploreBoundary';
 import type { Modality } from '../../data/arabic/types';
 import { shortDate } from '../../data/dates';
 import type { MyDayData } from '../../data/types';
@@ -30,7 +31,7 @@ export default function ArabicProgress({ data }: { data: MyDayData }) {
         : 'every milestone on your path is behind you.'}</p>}
       <Note className="mt-2 mb-0">Built from your answers and marks. Holding needs a lesson’s checks recalled on your own a week or more after Ready; listening and speaking aren’t part of them.</Note>
     </Card>
-    <FourSkills data={data} progress={p} />
+    <ExploreBoundary><FourSkills data={data} progress={p} /></ExploreBoundary>
   </>;
 }
 
@@ -38,7 +39,7 @@ export default function ArabicProgress({ data }: { data: MyDayData }) {
 // finished sessions, how far your path's lessons that ask for it go, the next one, and what the next milestone asks.
 const LABEL: Record<Modality, string> = { reading: 'Reading', writing: 'Writing', speaking: 'Speaking', listening: 'Listening' };
 const ABOUT: Partial<Record<Modality, string>> = {
-  listening: 'It counts when you understood the audio without reading along.',
+  listening: 'This is what you ticked. MyDay’s clips play beside their text, so it shows listening on its own only when you understood without reading along.',
   speaking: 'MyDay can’t hear you, so this is what you ticked. A teacher or a fluent listener can tell you about your pronunciation.',
 };
 function FourSkills({ data, progress }: { data: MyDayData; progress: Progress }) {
@@ -46,20 +47,20 @@ function FourSkills({ data, progress }: { data: MyDayData; progress: Progress })
   return <Card aria-labelledby="pg-arabic-skills" data-pg-arabic-skills="" className="break-words">
     <h3 id="pg-arabic-skills">Arabic: four skills</h3>
     <ul className="list-none p-0 m-0 grid sm:grid-cols-2 gap-x-6">{skills.map(s => <Skill key={s.modality} s={s} words={s.modality === 'writing' ? writeWords : 0} />)}</ul>
-    <Note className="mt-2 mb-0">Your own record of what you practised in the sessions you finished, each skill on its own. Not a level: the course’s stages are approximate targets, not CEFR levels or a qualification.</Note>
+    <Note className="mt-2 mb-0">Your own record of what you practised in the sessions you finished, each skill on its own. Not a level: the course’s stages (A1, A2 …) are targets informed by the CEFR, not a level you’ve reached or a qualification.</Note>
   </Card>;
 }
 function Skill({ s, words }: { s: ArabicSkill; words: number }) {
   const title = s.next ? lessonIndex[s.next]?.title ?? s.next : null;
-  const own = s.own === s.sessions ? (s.sessions === 1 ? 'on your own' : 'all on your own') : s.own ? `${s.own} on your own` : 'none on your own';
+  const own = s.own === s.sessions ? (s.sessions === 1 ? 'without help' : 'all without help') : s.own ? `${s.own} without help` : 'none without help';
   return <li className="py-2.5 border-t border-outline" data-pg-skill={s.modality}>
     <h4 className="m-0">{LABEL[s.modality]}</h4>
     <p className="text-[15px] m-0 mt-1" data-pg-skill-done="">{s.sessions && s.last ? `Practised in ${plural(s.sessions, 'session')} (${own}), last on ${shortDate(s.last)}.` : 'Not ticked in a finished session yet.'}
-      {words ? ` In revision you also write ${plural(words, 'kept word')} from memory.` : ''}</p>
+      {words ? ` ${plural(words, 'kept word')} ${words === 1 ? 'is' : 'are'} in your revision to write from memory.` : ''}</p>
     <p className="text-[15px] m-0 mt-1" data-pg-skill-path="">{!s.asks ? 'No lesson on your path asks for it.'
       : s.practisedIn === s.asks ? `You’ve practised it in every lesson on your path that asks for it (${s.asks}).`
-      : `Your path asks for it in ${plural(s.asks, 'lesson')}; you’ve practised it in ${s.practisedIn ? `${s.practisedIn} of them` : 'none of them yet'}.`}</p>
-    {title && <a href={'#study/arabic/' + s.next} className={LINK} data-action="pg-skill-next" data-v={s.modality}>Next lesson that asks for it: {title}</a>}
+      : `Your path asks for it in ${plural(s.asks, 'lesson')}; you’ve practised it in ${s.practisedIn ? `${s.practisedIn} of those` : 'none of those yet'}.`}</p>
+    {title && <a href={'#study/arabic/' + s.next} className={LINK} data-action="pg-skill-next" data-v={s.modality}><span className="sr-only">{LABEL[s.modality]}, </span>Not yet ticked in: {title}</a>}
     {s.guide && <p className="text-sm text-fg-2 m-0 mt-1" data-pg-skill-guide="">The course’s {s.guide.stage} milestone asks for: {s.guide.task}.</p>}
     {ABOUT[s.modality] && <p className="text-sm text-fg-2 m-0 mt-1">{ABOUT[s.modality]}</p>}
   </li>;

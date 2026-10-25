@@ -52,6 +52,11 @@ for (const l of c.lessons) {
   if (ids.some((id, i) => id !== `assessment.${l.id.slice('lesson.'.length)}-check.q${i + 1}`)) fail(`${l.id}: its check ids don't follow the lesson's own id`);
 }
 
+for (const l of c.lessons) {
+  const odd = l.input_requirements.modalities.filter(m => !['reading', 'writing', 'speaking', 'listening', 'understanding'].includes(m));
+  if (odd.length) fail(`${l.id}: unknown modalities ${odd.join(', ')}`);
+}
+
 // The map: everything needed to choose where to go, without any lesson content. `builds_on` lists the content
 // skills a lesson needs (checkpoints left out, short names: "past-suffixes" for skill.arabic-past-suffixes) and
 // `checks` how many check questions it has; `short`, `revision` and `practical` are those sessions' minutes. All feed
@@ -63,7 +68,7 @@ const index = {
   lessons: Object.fromEntries(c.lessons.map(l => [l.id, { title: l.title, module_id: l.module_id, topic_id: l.topic_id, optional: l.optional, stage_target: l.stage_target, minutes: l.estimated_duration_minutes.standard,
     builds_on: l.prerequisites.all.filter(s => !checkpoint.has(s)).map(s => s.replace(/^skill\.arabic-/, '')), checks: (checksOf[l.id] ?? []).length,
     short: minutesOf(l, 'short'), revision: minutesOf(l, 'revision'), practical: minutesOf(l, 'practical'),
-    modalities: ['reading', 'writing', 'listening', 'speaking'].filter(m => l.input_requirements.modalities.includes(m)) }])),
+    modalities: ['reading', 'writing', 'speaking', 'listening'].filter(m => l.input_requirements.modalities.includes(m)) }])),
   skills: Object.fromEntries(c.skills.map(s => [s.id, { name: s.name, module_id: s.module_id, taught_by_lesson_ids: s.taught_by_lesson_ids }])),
   projects: c.projects,
 };
