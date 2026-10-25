@@ -59,8 +59,9 @@ async function device(name, dir) {
         try { await s('Page.navigate', { url: `${base}${base.includes('?') ? '&' : '?'}r=${++nav}${hash ? '#' + hash : ''}` }); break; }
         catch (e) { if (attempt >= 4 || !/navigate timeout/.test(e.message)) throw e; console.log(`(slow page load on ${name}, stopped and retried: ${attempt})`); await s('Page.stopLoading').catch(() => {}); }
       }
-      await D.until(`!window.__oldDocument && document.readyState === 'complete' && !!document.querySelector('#app')`, 30000);
-      await sleep(300);
+      // A new document that has loaded and drawn the app, with no start-up or "Opening…" notice of a screen still arriving.
+      await D.until(`!window.__oldDocument && document.readyState === 'complete' && !!document.querySelector('#app') && ![...document.querySelectorAll('[role=status]')].some(e => /^(Opening|Loading|Getting)/.test(e.textContent.trim()))`, 30000);
+      await sleep(100);
     },
     async ev(expr) {
       const r = await s('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true });
