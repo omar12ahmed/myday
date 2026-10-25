@@ -35,7 +35,8 @@ export interface SearchResult { query: string; total: number; sections: FoundSec
 // The Arabic and Cybersecurity courses' modules and lessons by title (search/courseIndex.ts builds it from the two
 // catalogues, loaded only when Search opens).
 export interface CourseIndex {
-  arabic: { modules: { id: string; name: string; purpose: string }[]; lessons: { id: string; title: string; moduleId: string }[] };
+  // words: the course's own (each lesson's, and the starter words, which have no lesson) — 1.84.0 on.
+  arabic: { modules: { id: string; name: string; purpose: string }[]; lessons: { id: string; title: string; moduleId: string }[]; words?: { id: string; ar: string; meaning: string; example: string; exampleMeaning: string; lessonId: string | null }[] };
   cyber: { modules: { id: string; name: string; purpose: string }[]; lessons: { id: string; title: string; moduleId: string }[]; activities: { id: string; title: string }[] };
 }
 
@@ -162,6 +163,12 @@ export function searchEverywhere(data: MyDayData, query: string, courses: Course
     const arModule = new Map(courses.arabic.modules.map(m => [m.id, m.name])), cyModule = new Map(courses.cyber.modules.map(m => [m.id, m.name]));
     for (const m of courses.arabic.modules) add('study', { kind: 'Arabic module', id: m.id, title: m.name, href: arHref(m.id) }, m.name, [m.purpose]);
     for (const l of courses.arabic.lessons) add('study', { kind: 'Arabic lesson', id: l.id, title: l.title, where: arModule.get(l.moduleId) ?? '', href: arHref(l.id) }, l.title);
+    // The course's own words (the owner's yes, 25 Oct 2026): by the Arabic, its meaning or its example; a lesson's word
+    // opens its lesson, a starter word Vocabulary at that word.
+    for (const w of courses.arabic.words ?? []) {
+      add('study', { kind: 'Course word', id: w.id, title: w.ar, where: w.meaning, href: w.lessonId ? arHref(w.lessonId) : '#study/arabic/vocabulary', lang: 'ar',
+        ...(w.lessonId ? {} : { focus: `[data-ar-word="${w.id.replace(/["\\]/g, '\\$&')}"]` }) }, w.ar, [w.meaning, w.example, w.exampleMeaning]);
+    }
     for (const m of courses.cyber.modules) add('study', { kind: 'Cybersecurity module', id: m.id, title: m.name, href: lessonHref(m.id) }, m.name, [m.purpose]);
     for (const l of courses.cyber.lessons) add('study', { kind: 'Cybersecurity lesson', id: l.id, title: l.title, where: cyModule.get(l.moduleId) ?? '', href: lessonHref(l.id) }, l.title);
   }

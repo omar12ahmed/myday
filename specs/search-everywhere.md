@@ -1,6 +1,6 @@
 # Search everywhere
 
-**Status:** being built (owner's choice of 25 October 2026: "Search across MyDay"). The next step named in
+**Status:** built on branch `search-everywhere`; not yet released (owner's choice of 25 October 2026: "Search across MyDay"). The next step named in
 `specs/myday-vision.md` §5. Built by myday-83, with myday-51 (Projects) and myday-86 (Study) agreeing the parts that
 read their records.
 **Based on:** source at release 1.83.0.
@@ -18,7 +18,10 @@ Cybersecurity. "Where did I write the electrician's number?" still means guessin
    calendar, your learning records, the course lesson titles, Finance and Health.
 3. **Private:** private projects (with their tasks and notes) aren't searched here; you search inside one from its
    own page. A note marked private is left out too (its own page is Notes, which searches it). The page says so.
-4. **Ask MyDay:** later, as its own step — this search becomes Ask MyDay's lookup through the privacy filter (never
+4. **Course words:** yes — once 1.84.0's course words shipped, the course's own Arabic words are found too (the
+   word with or without vowel marks, its meaning, its example), each opening its lesson (a starter word: Vocabulary,
+   at that word). Your kept words stay listed as your own.
+5. **Ask MyDay:** later, as its own step — this search becomes Ask MyDay's lookup through the privacy filter (never
    anything private), with an evaluation and the owner's OK. Not in this release.
 
 ## 3. What changes
@@ -46,13 +49,21 @@ Cybersecurity. "Where did I write the electrician's number?" still means guessin
   nothing shows twice. A link opens the way Search this project opens it (a folded or hidden Resources card is opened
   for the visit, with myday-51's `openOnArrival`).
 - **Notes:** title and text, not private, not in a private project.
-- **Calendar:** appointment and work titles, with their day and time; opens the calendar on that day.
+- **Calendar:** appointment and work titles, with their day and time (coming ones first, soonest first, then past
+  ones, marked); opens the calendar on that day (`#calendar/<day>`, new: the Calendar opens on a linked day). A private
+  project's appointments aren't searched.
 - **Study:** your own courses (stage, course, module, section and task titles, task notes), topics, Reading (book
   title, author, your book notes), Arabic kept words (the word — with or without vowel marks — your meaning and your
-  note), Cybersecurity notebook answers and portfolio items; and the Arabic and Cybersecurity module and lesson titles
-  (and a module's purpose), as their "Find a module or lesson" boxes do.
-- **Finance:** the names and notes you gave debts and expenses.
-- **Health:** recipe and meal names, workout and exercise names, daily exercises.
+  note), your "Needs revision" notes and session answers, revision cards (one an AI wrote is marked "AI-made"; its
+  explanation isn't searched), check-ins, Cybersecurity notebook answers and portfolio items; the Arabic and
+  Cybersecurity module and lesson titles (and a module's purpose), as their "Find a module or lesson" boxes do; and the
+  course's own Arabic words. The two course catalogues are loaded only when Search opens.
+- **Never searched** (myday-86): a lesson check's reference answers (searching them would give them away), a kept
+  "another way" explanation or other AI-written text, and revision cards' schedules.
+- **Finance:** the names and notes you gave money owed and monthly expenses (Finance has one page: the card is brought
+  into view).
+- **Health:** recipes (with their ingredients and tags), the shopping list, exercises, workouts and daily exercises.
+- **Tasks** also: your task lists by name, and the items on Today's task lists ("Your task lists").
 
 ## 5. Saved data, sync and AI
 

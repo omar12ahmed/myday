@@ -25,7 +25,9 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   const T = (id, title, x = {}) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: AT, postponed: 0, blockers: [], letGoOn: null, ...x });
   const N = (id, title, text, x = {}) => ({ id, title, text, categoryId: 'inbox', createdAt: AT, updatedAt: AT, ...x });
   const COURSES = {
-    arabic: { modules: [{ id: 'module.ar-x', name: 'Greetings and courtesy', purpose: 'Say hello politely' }], lessons: [{ id: 'lesson.ar-x1', title: 'Saying goodbye', moduleId: 'module.ar-x' }] },
+    arabic: { modules: [{ id: 'module.ar-x', name: 'Greetings and courtesy', purpose: 'Say hello politely' }], lessons: [{ id: 'lesson.ar-x1', title: 'Saying goodbye', moduleId: 'module.ar-x' }],
+      words: [{ id: 'lexeme.x-1', ar: 'مَدْرَسَة', meaning: 'school', example: 'ذَهَبْتُ إِلَى الْمَدْرَسَةِ.', exampleMeaning: 'I went to the school.', lessonId: 'lesson.ar-x1' },
+        { id: 'lexeme.seed-1', ar: 'بَيْت', meaning: 'house', example: 'هَذَا بَيْتٌ.', exampleMeaning: 'This is a house.', lessonId: null }] },
     cyber: { modules: [{ id: 'module.cy-x', name: 'Networks', purpose: 'How packets travel' }], lessons: [{ id: 'lesson.cy-x1', title: 'How DNS finds a name', moduleId: 'module.cy-x' }], activities: [{ id: 'act.cy-x1', title: 'Practical task · How DNS finds a name' }] },
   };
   const world = () => {
@@ -135,6 +137,10 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   check('your "Needs revision" notes and session answers, by the lesson\'s title', sec(S('goodbye forms'), 'study')[0]?.title === 'Saying goodbye' && sec(S('salama'), 'study')[0]?.href === '#study/arabic/lesson.ar-x1' && sec(S('resolver caching'), 'study')[0]?.href === '#study/cybersecurity/lesson.cy-x1');
   check('your notebook and portfolio, by their words', sec(S('ttl'), 'study')[0]?.title === 'Practical task · How DNS finds a name' && sec(S('nslookup'), 'study')[0]?.href === '#study/cybersecurity/portfolio');
   check('the course lessons and modules by title (and a module\'s purpose), linking to them', sec(S('goodbye'), 'study').some(f => f.kind === 'Arabic lesson' && f.where === 'Greetings and courtesy') && sec(S('packets'), 'study').some(f => f.kind === 'Cybersecurity module' && f.href === '#study/cybersecurity/module.cy-x') && sec(S('dns'), 'study').some(f => f.kind === 'Cybersecurity lesson'));
+  const cw = sec(S('مدرسة'), 'study').find(f => f.kind === 'Course word'), sw = sec(S('house'), 'study').find(f => f.kind === 'Course word');
+  check('the course\'s own words: by the Arabic without vowels, the meaning or the example; a lesson\'s word opens its lesson', !!cw && cw.href === '#study/arabic/lesson.ar-x1' && cw.where === 'school' && cw.lang === 'ar' && !cw.focus
+    && sec(S('school'), 'study').some(f => f.id === 'lexeme.x-1') && sec(S('went'), 'study').some(f => f.id === 'lexeme.x-1' && f.excerpt.includes('went')), cw);
+  check('…a starter word opens Vocabulary and brings that word into view', !!sw && sw.href === '#study/arabic/vocabulary' && sw.focus === '[data-ar-word="lexeme.seed-1"]', sw);
   check('…without the course index (still loading), everything else is still found', S('goodbye', world(), null).sections.length > 0 && !all(S('goodbye', world(), null)).some(f => f.kind === 'Arabic lesson') && S('ring mains', world(), null).total === 1);
 
   console.log('\n[7] Finance and Health');
@@ -158,6 +164,9 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   const real = K.courseIndex();
   check('the index holds both courses\' modules and lessons, and a notebook activity named with its lesson', real.arabic.lessons.length > 50 && real.cyber.lessons.length > 50 && real.arabic.modules.length > 5 && real.cyber.activities.some(a => / · /.test(a.title)));
   const blank = K.freshState(), arL = real.arabic.lessons[0];
+  check('the real course words are there: the starter words (no lesson) and each lesson\'s', real.arabic.words.filter(w => !w.lessonId).length >= 40 && real.arabic.words.filter(w => w.lessonId).length >= 40 && real.arabic.words.every(w => w.ar && w.meaning));
+  const hello = K.searchEverywhere(blank, 'مرحبا', real, TODAY).sections.flatMap(s => s.items).find(f => f.kind === 'Course word');
+  check('…a real one is found by its Arabic without vowels and opens its lesson', !!hello && hello.href === '#study/arabic/lesson.arabic-greetings-address' && hello.where === 'hello', hello);
   check('a real Arabic lesson is found by its title and links to it', K.searchEverywhere(blank, arL.title, real, TODAY).sections.flatMap(s => s.items).some(f => f.id === arL.id && f.href === `#study/arabic/${encodeURIComponent(arL.id)}`), arL);
   const answers = JSON.parse(fs.readFileSync(path.join(ROOT, 'app/src/study/arabic/data/answers.json'), 'utf8'));
   const longest = Object.values(answers).map(a => a.answer).sort((a, b) => b.length - a.length)[0], phrase = longest.split(/\s+/).slice(0, 6).join(' ');
