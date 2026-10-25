@@ -2341,6 +2341,27 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await click('[data-action=project-delete]'); await answer(true); await sleep(400);
   check('deleting a project deletes its research and only that project\'s', rc_before44 >= 3 && !(await rc_rItems()).some(x => x.projectId === 'pjRsA') && (await rc_rItems()).some(x => x.projectId === 'pjRsB') && (await rc_rItems()).some(x => x.projectId === 'pjRsC') && !(await projects()).some(x => x.id === 'pjRsA'), (await rc_rItems()).map(x => x.projectId));
 
+  console.log('\n[45] A task that starts after another is not the next step');
+  await go('projects', 2026, 10, 15, 20); await reset(); await go('projects', 2026, 10, 15, 20);
+  await click('#themeBtn'); await sleep(300); // any change saves, so there is saved data to edit
+  const wt = (id, title, at, extra = {}) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-10-14T10:0' + at, postponed: 0, blockers: [], letGoOn: null, projectId: 'pjWait', ...extra });
+  const wtSeed = (n1, n3) => editStorage(`s => { s.projects.items = [${JSON.stringify(pjObj('pjWait', 'Garden bench', 'act'))}]; s.tasks.items = ${JSON.stringify([wt('tkN1', 'Build the frame', 0, n1), wt('tkN2', 'Measure the wall', 1), wt('tkN3', 'Order the boards', 2, n3)])}; }`);
+  await wtSeed({ after: ['tkN3'] }, {});
+  await go('projects/p/pjWait', 2026, 10, 15, 20, 5);
+  check('"Build the frame" starts after "Order the boards", so the next step is "Measure the wall", not "Build the frame"', (await text('[data-s=next-title]')) === 'Measure the wall', await text('#projectNext'));
+  await click('[data-s=next-why] summary'); await until(`document.querySelector('[data-s=next-why]').open`);
+  check('"Why this?" opens and says “Build the frame” comes first, but it starts after “Order the boards”.', (await ev(`document.querySelector('[data-s=next-why]').open`)) && (await text('[data-s=next-why-text]')).includes('“Build the frame” comes first, but it starts after “Order the boards”.'), await text('[data-s=next-why-text]'));
+  await wtSeed({ after: ['tkN3'] }, { done: true, doneOn: K });
+  await go('projects/p/pjWait', 2026, 10, 15, 20, 6);
+  check('once "Order the boards" is done, the next step is "Build the frame"', (await text('[data-s=next-title]')) === 'Build the frame' && !(await exists('[data-s=next-starts-after]')), await text('#projectNext'));
+  await wtSeed({ after: ['tkN3'], steps: [{ id: 'sw1', text: 'Cut the legs', done: true }, { id: 'sw2', text: 'Cut the slats', done: false }] }, {});
+  await go('projects/p/pjWait', 2026, 10, 15, 20, 7);
+  check('before choosing, the next step is still "Measure the wall", with no steps shown', (await text('[data-s=next-title]')) === 'Measure the wall' && !(await exists('[data-s=next-steps]')));
+  await type('#projectNextPick', 'tkN1'); await until(`document.querySelector('[data-s=next-title]')?.textContent === 'Build the frame' && !!document.querySelector('[data-s=next-starts-after]')`);
+  check('choosing "Build the frame" while it starts after another task makes it the next step, saved as the project\'s choice', (await text('[data-s=next-title]')) === 'Build the frame' && (await pAt('pjWait')).nextTaskId === 'tkN1', [await text('[data-s=next-title]'), (await pAt('pjWait')).nextTaskId]);
+  check('…and says "Starts after: Order the boards. You can still do it any time."', (await text('[data-s=next-starts-after]')).replace(/\s+/g, ' ').trim() === 'Starts after: Order the boards. You can still do it any time.', await text('[data-s=next-starts-after]'));
+  check('…and a next step with steps shows "1 of 2 steps"', (await text('[data-s=next-steps]')).trim() === '1 of 2 steps', await text('#projectNext'));
+
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
   const sm = T.summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);

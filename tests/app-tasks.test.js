@@ -275,6 +275,115 @@ const day = (energy, rest = false) => `s => { s.days['${K}'] = { energy: ${energ
   check('phone: "Due today" — the tick boxes and rows are at least 44 × 44 px', (await exists('#dueToday')) && smallDue.length === 0, smallDue.slice(0, 5));
   await T.send('Emulation.clearDeviceMetricsOverride');
 
+  console.log('\n[8] Steps inside a task, and "Starts after"');
+  const SHOTS = '/private/tmp/claude-501/-Users-nrt-Documents-Myday/a6442316-d8d8-4894-9d77-f6f490e34a76/scratchpad/steps-shots';
+  fs.mkdirSync(SHOTS, { recursive: true });
+  const mkT = (id, title, extra = {}) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-10-14T10:00', postponed: 0, blockers: [], letGoOn: null, ...extra });
+  const mkP = (id, title) => ({ id, title, summary: '', stage: 'act', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-10T09:00', updatedAt: '2026-10-10T09:00' });
+  const seedTasks = (items, projs = []) => editStorage(`s => { s.tasks = { lists: [], items: ${JSON.stringify(items)} }; s.projects.items.push(...${JSON.stringify(projs)}); }`);
+  const stepsOf = async id => (await tasks()).items.find(x => x.id === id).steps || [];
+  const stepRows = () => ev(`[...document.querySelectorAll('#taskSteps [data-s=step]')].map(r => r.dataset.id)`);
+  const mkSteps = (...ws) => ws.map((w, i) => ({ id: 'st' + (i + 1), text: w, done: false }));
+  await go('today/tasks', 2026, 10, 15, 18); await reset(); await go('today/tasks', 2026, 10, 15, 18);
+  await click('#themeBtn'); await sleep(300); // any change saves, so there is saved data to edit
+  await seedTasks([mkT('tkS1', 'Build the shelf'), mkT('tkS2', 'Call the plumber', { steps: [{ id: 'sa', text: 'Ring the plumber', done: true }] }),
+    mkT('tkS3', 'Sort the garage', { steps: Array.from({ length: 30 }, (_, i) => ({ id: 'sg' + i, text: 'Box ' + (i + 1), done: false })) }),
+    mkT('tkS4', 'Paint the fence', { due: K, steps: [{ id: 'sp1', text: 'Sand it', done: true }, { id: 'sp2', text: 'Prime it', done: false }, { id: 'sp3', text: 'Paint it', done: false }] })]);
+
+  console.log('  Steps on a task\'s page');
+  await go('today/tasks/tkS1', 2026, 10, 15, 18, 5);
+  check('a task with no steps: the Steps card says to break it into small steps if it helps, and the task stays the one thing you plan', (await text('#taskSteps h3')).trim() === 'Steps' && (await text('#taskSteps')).includes('If it helps, break it into small steps. The task stays the one thing you plan.'), await text('#taskSteps'));
+  check('…it has the add form with the Add button waiting for some words, and no "Change steps" yet', (await exists('#stepNew')) && (await ev(`document.querySelector('[data-action=step-add]').disabled`)) && !(await exists('[data-action=steps-change]')));
+  for (const w of ['Measure the wall', 'Order the boards', 'Level the ground']) {
+    const n = (await stepsOf('tkS1')).length;
+    await type('#stepNew', w); await click('[data-action=step-add]');
+    await until(`(JSON.parse(localStorage.getItem('${KEY}')).tasks.items.find(x => x.id === 'tkS1').steps || []).length > ${n}`); await sleep(150);
+  }
+  let ss = await stepsOf('tkS1');
+  check('adding three steps shows three rows in that order, reading "0 of 3 steps"', eq(await ev(`[...document.querySelectorAll('#taskSteps [data-s=step]')].map(r => r.textContent.trim())`), ['Measure the wall', 'Order the boards', 'Level the ground']) && (await text('[data-s=steps-count]')).trim() === '0 of 3 steps', [await text('#taskSteps')]);
+  check('…the add box is empty again, and the task has exactly those three steps, none done', (await ev(`document.getElementById('stepNew').value`)) === '' && eq(ss.map(x => [x.text, x.done]), [['Measure the wall', false], ['Order the boards', false], ['Level the ground', false]]), ss);
+  const [s1, s2, s3] = ss.map(x => x.id);
+  await click(`#taskSteps [data-s=step][data-id="${s1}"] [data-s=step-done]`);
+  await until(`(JSON.parse(localStorage.getItem('${KEY}')).tasks.items.find(x => x.id === 'tkS1').steps || [])[0]?.done === true && document.querySelector('[data-s=steps-count]')?.textContent.trim() === '1 of 3 steps'`);
+  ss = await stepsOf('tkS1');
+  check('ticking the first step reads "1 of 3 steps", marks that row done, and saves it done for that step only', (await text('[data-s=steps-count]')).trim() === '1 of 3 steps' && (await ev(`document.querySelector('#taskSteps [data-s=step][data-id="${s1}"]').dataset.done`)) === 'yes' && eq(ss.map(x => x.done), [true, false, false]), ss);
+  check('…and the task is not done, and no offer to finish it yet', !(await tasks()).items.find(x => x.id === 'tkS1').done && !(await exists('[data-s=steps-all-done]')));
+  await click('[data-action=steps-change]'); await until(`!!document.querySelector('#taskSteps [data-s=step] input[type=text]')`);
+  check('"Change steps" is pressed, and the rows become text inputs with up, down and remove buttons', (await ev(`document.querySelector('[data-action=steps-change]').getAttribute('aria-pressed')`)) === 'true' && (await text('[data-action=steps-change]')).trim() === 'Done changing'
+    && (await ev(`[...document.querySelectorAll('#taskSteps [data-s=step]')].every(r => r.querySelector('input[type=text]') && r.querySelector('[data-action=step-up]') && r.querySelector('[data-action=step-down]') && r.querySelector('[data-action=step-remove]'))`)) && eq(await ev(`[...document.querySelectorAll('#taskSteps [data-s=step] input')].map(i => i.id)`), [s1, s2, s3].map(x => 'step-' + x)));
+  check('…the add form is hidden, the first row\'s up button and the last row\'s down button are disabled', !(await exists('#stepNew')) && !(await exists('[data-action=step-add]'))
+    && (await ev(`document.querySelector('#taskSteps [data-s=step]:first-child [data-action=step-up]').disabled`)) && (await ev(`document.querySelector('#taskSteps [data-s=step]:last-child [data-action=step-down]').disabled`)) && !(await ev(`document.querySelector('#taskSteps [data-s=step]:first-child [data-action=step-down]').disabled`)));
+  await type(`#step-${s2}`, 'Order the long boards');
+  await until(`JSON.parse(localStorage.getItem('${KEY}')).tasks.items.find(x => x.id === 'tkS1').steps[1].text === 'Order the long boards'`);
+  ss = await stepsOf('tkS1');
+  check('changing the second step\'s words saves them (the other steps are untouched)', eq(ss.map(x => x.text), ['Measure the wall', 'Order the long boards', 'Level the ground']) && ss[0].done === true, ss);
+  await click(`#taskSteps [data-s=step][data-id="${s3}"] [data-action=step-up]`);
+  await until(`JSON.parse(localStorage.getItem('${KEY}')).tasks.items.find(x => x.id === 'tkS1').steps[1].id === '${s3}' && document.querySelectorAll('#taskSteps [data-s=step]')[1]?.dataset.id === '${s3}'`);
+  check('moving the last step up saves the new order', eq((await stepsOf('tkS1')).map(x => x.id), [s1, s3, s2]) && eq(await stepRows(), [s1, s3, s2]), [await stepsOf('tkS1'), await stepRows()]);
+  await click(`#taskSteps [data-s=step][data-id="${s3}"] [data-action=step-remove]`);
+  await until(`document.querySelectorAll('#taskSteps [data-s=step]').length === 2 && document.activeElement?.id === 'step-${s2}'`);
+  check('removing a step says "Step removed.", takes it off the screen and out of the saved task', (await text('#toast')).includes('Step removed.') && eq(await stepRows(), [s1, s2]) && eq((await stepsOf('tkS1')).map(x => x.id), [s1, s2]), [await text('#toast'), await stepRows()]);
+  check('…and focus moves to the next step\'s input', (await ev(`document.activeElement && document.activeElement.id`)) === 'step-' + s2, await ev(`document.activeElement && document.activeElement.id`));
+  await click('[data-action=steps-change]'); await until(`!!document.querySelector('#stepNew')`);
+  check('pressing it again ("Done changing") goes back to ticking, with the add form back', (await text('[data-action=steps-change]')).trim() === 'Change steps' && (await ev(`document.querySelector('[data-action=steps-change]').getAttribute('aria-pressed')`)) === 'false' && (await exists('[data-s=step-done]')) && (await exists('#stepNew')));
+  await click(`#taskSteps [data-s=step][data-id="${s2}"] [data-s=step-done]`); await until(`!!document.querySelector('[data-s=steps-all-done]')`);
+  check('ticking every remaining step offers "All 2 steps done — mark the task done?" with a button for it', (await text('[data-s=steps-all-done]')).replace(/\s+/g, ' ').includes('All 2 steps done — mark the task done?') && (await exists('[data-action=steps-mark-done]')), await text('[data-s=steps-all-done]'));
+  check('…and the task is still not done in the saved data before you tap it', !(await tasks()).items.find(x => x.id === 'tkS1').done);
+  await click('[data-action=steps-mark-done]');
+  await until(`JSON.parse(localStorage.getItem('${KEY}')).tasks.items.find(x => x.id === 'tkS1').done === true && !document.querySelector('[data-s=steps-all-done]')`);
+  t = (await tasks()).items.find(x => x.id === 'tkS1');
+  check('tapping it marks the task done, says "Done — nice.", and the offer goes', t.done === true && (await text('#toast')).includes('Done — nice.') && !(await exists('[data-s=steps-all-done]')), [t.done, await text('#toast')]);
+  await go('today/tasks/tkS2', 2026, 10, 15, 18, 10);
+  check('a task whose only step is ticked says "Its step is done — mark the task done?"', (await text('[data-s=steps-all-done]')).replace(/\s+/g, ' ').includes('Its step is done — mark the task done?'), await text('[data-s=steps-all-done]'));
+  await go('today/tasks/tkS3', 2026, 10, 15, 18, 11);
+  check('a task with 30 steps has no add box, and says "30 steps is the most a task can have."', !(await exists('#stepNew')) && (await text('#taskSteps')).includes('30 steps is the most a task can have.') && (await ev(`document.querySelectorAll('#taskSteps [data-s=step]').length`)) === 30);
+  await go('today/tasks', 2026, 10, 15, 18, 12);
+  check('on Tasks the row of a task with steps shows "1 of 3 steps"', (await text('.task-row[data-id=tkS4] [data-s=task-steps]')).trim() === '1 of 3 steps' && (await text('.task-row[data-id=tkS2] [data-s=task-steps]')).trim() === '1 of 1 step', [await text('.task-row[data-id=tkS4]')]);
+  await go('today', 2026, 10, 15, 18, 13);
+  check('on Today, a task due today with steps shows "1 of 3 steps" on "Due today"', (await text('#dueToday .due-li[data-id=tkS4] [data-s=task-steps]')).trim() === '1 of 3 steps', await text('#dueToday'));
+  await editStorage(day(4));
+  await go('today', 2026, 10, 15, 18, 14);
+  await click('[data-action=due-plan][data-id=tkS4]'); await until(`!!document.querySelector('#app .task [data-s=task-steps]')`);
+  check('after "Add to plan" the plan row on Today shows the same "1 of 3 steps"', (await data()).days[K].tasks.length === 1 && (await text('#app .task [data-s=task-steps]')).trim() === '1 of 3 steps', await text('#app'));
+
+  console.log('  "Starts after" on a project\'s task');
+  await go('today/tasks', 2026, 10, 15, 19); await reset(); await go('today/tasks', 2026, 10, 15, 19);
+  await click('#themeBtn'); await sleep(300);
+  await seedTasks([mkT('tkLone', 'Water the plants'), mkT('tkB1', 'Build the frame', { projectId: 'pjW', createdAt: '2026-10-14T10:00' }), mkT('tkB2', 'Measure the wall', { projectId: 'pjW', createdAt: '2026-10-14T10:01' }),
+    mkT('tkB3', 'Order the boards', { projectId: 'pjW', createdAt: '2026-10-14T10:02' }), mkT('tkBD', 'Paint the shed', { projectId: 'pjW', createdAt: '2026-10-14T09:00', done: true, doneOn: K })], [mkP('pjW', 'Garden bench')]);
+  await go('today/tasks/tkLone', 2026, 10, 15, 19, 5);
+  check('a task that is not in a project has no "Starts after" card', !(await exists('#taskStartsAfter')));
+  await go('today/tasks/tkBD', 2026, 10, 15, 19, 6);
+  check('a task that is done has no "Starts after" card', !(await exists('#taskStartsAfter')));
+  await go('today/tasks/tkB1', 2026, 10, 15, 19, 7);
+  check('"Build the frame" has a "Starts after" card saying "Nothing: it can start any time." and offering "Choose tasks"', (await text('#taskStartsAfter h3')).trim() === 'Starts after' && (await text('[data-s=startsafter-line]')).trim() === 'Nothing: it can start any time.' && (await text('[data-action=startsafter-choose]')).trim() === 'Choose tasks', await text('#taskStartsAfter'));
+  await click('[data-action=startsafter-choose]'); await until(`!!document.querySelector('[data-s=startsafter-choices]')`);
+  check('pressing it lists exactly the project\'s other two tasks still to do', eq((await ev(`[...document.querySelectorAll('[data-s=startsafter-choices] [data-s=startsafter-choice]')].map(c => c.dataset.id)`)).sort(), ['tkB2', 'tkB3']), await text('[data-s=startsafter-choices]'));
+  await click('[data-s=startsafter-choice][data-id=tkB3]');
+  await until(`(JSON.parse(localStorage.getItem('${KEY}')).tasks.items.find(x => x.id === 'tkB1').after || []).includes('tkB3') && document.querySelector('[data-s=startsafter-line]')?.textContent.startsWith('It starts after')`);
+  check('ticking "Order the boards" makes the line read "It starts after “Order the boards”." and saves its id', (await text('[data-s=startsafter-line]')).trim() === 'It starts after “Order the boards”.' && eq((await tasks()).items.find(x => x.id === 'tkB1').after, ['tkB3']), [await text('[data-s=startsafter-line]'), (await tasks()).items.find(x => x.id === 'tkB1').after]);
+  await go('today/tasks/tkB3', 2026, 10, 15, 19, 8);
+  await click('[data-action=startsafter-choose]'); await until(`!!document.querySelector('[data-s=startsafter-choices]')`);
+  check('on "Order the boards" the choices do not include "Build the frame" (it starts after this one: no circles)', eq(await ev(`[...document.querySelectorAll('[data-s=startsafter-choice]')].map(c => c.dataset.id)`), ['tkB2']), await text('[data-s=startsafter-choices]'));
+  await go('today/tasks', 2026, 10, 15, 19, 9);
+  check('on Tasks, "Build the frame" shows "Starts after: Order the boards"', (await text('.task-row[data-id=tkB1] [data-s=task-starts-after]')).trim() === 'Starts after: Order the boards' && !(await exists('.task-row[data-id=tkB2] [data-s=task-starts-after]')), await text('.task-row[data-id=tkB1]'));
+  await click('[data-s=task-done][data-id=tkB3]'); await until(`!document.querySelector('.task-row[data-id=tkB1] [data-s=task-starts-after]')`);
+  check('once "Order the boards" is done, "Build the frame" no longer shows what it starts after', (await exists('.task-row[data-id=tkB1]')) && !(await exists('.task-row[data-id=tkB1] [data-s=task-starts-after]')), await text('.task-row[data-id=tkB1]'));
+
+  console.log('  Layout with steps and "Starts after"');
+  await editStorage(`s => { const a = s.tasks.items.find(x => x.id === 'tkB3'); a.done = false; a.doneOn = null; const b = s.tasks.items.find(x => x.id === 'tkB1'); delete b.after; b.steps = ${JSON.stringify(mkSteps('Measure the wall', 'Order the boards', 'Level the ground'))}; }`);
+  const shot = async name => { await ev(`document.getElementById('taskSteps').scrollIntoView(); window.scrollBy(0, -8)`); await sleep(300); const r = await T.send('Page.captureScreenshot', { format: 'png' }); fs.writeFileSync(`${SHOTS}/${name}.png`, Buffer.from(r.data, 'base64')); };
+  const openBoth = async () => { await click('[data-action=steps-change]'); await click('[data-action=startsafter-choose]'); await until(`!!document.querySelector('#taskSteps [data-action=step-up]') && !!document.querySelector('[data-s=startsafter-choices]')`); };
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
+  await go('today/tasks/tkB1', 2026, 10, 15, 19, 20); await openBoth(); await shot('task-steps-desktop-1280');
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 360, height: 740, deviceScaleFactor: 2, mobile: true });
+  await go('today/tasks/tkB1', 2026, 10, 15, 19, 21); await openBoth();
+  check('phone 360 px: the task page with steps being changed and the "Starts after" choices open does not scroll sideways', (await ev('document.documentElement.scrollWidth <= innerWidth')), await ev('[document.documentElement.scrollWidth, innerWidth]'));
+  const smallS = await ev(`[...document.querySelectorAll('#taskSteps button, #taskSteps label, #taskSteps input:not([type=checkbox]), #taskStartsAfter button, #taskStartsAfter label')].filter(b => b.offsetParent !== null).map(b => ({ t: (b.getAttribute('aria-label') || b.textContent || b.id).trim().slice(0, 24), h: Math.round(b.getBoundingClientRect().height) })).filter(x => x.h < 44)`);
+  check('phone 360 px: every button and tick-box label in the Steps and "Starts after" cards is at least 44 px tall', (await ev(`document.querySelectorAll('#taskSteps [data-action=step-up], #taskStartsAfter label').length`)) >= 5 && smallS.length === 0, smallS.slice(0, 6));
+  await shot('task-steps-phone-360');
+  await T.send('Emulation.clearDeviceMetricsOverride');
+
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
   const sm = T.summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);
