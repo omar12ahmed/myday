@@ -1,5 +1,19 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.83.0 — Needs you, across projects:** the Projects home now opens with **Needs you**: what needs you across your
+active projects, each line saying what and why and opening the thing itself ("Order the boards" / "still open, was
+due Thu 22 Oct · Garden shed"). It counts a date today or in the next 7 days, a task still open after its date (not
+one waiting on someone or starting after another task), a wait whose expected day has come (with Chase it), a task
+that keeps moving, a decision open 14 days or more, a business idea's Find out results and a case's evidence still
+to get; not quiet projects (Your week keeps those), nor paused or finished ones. The five that matter soonest come
+first, then "Show N more"; chips filter by reason and a picker by project. Above the board, **Board · List** shows
+your active projects as a list (stage, next step, "3 need you"), kept on this device only. Each project's Worth a look
+now uses the same date rule, so an appointment under way since yesterday no longer reads "in -1 days". Also in this
+release (myday-83's, with the owner's yes): when Ask MyDay offers a task that's already an open step inside one of
+your tasks, it now starts unticked and says "already a step of “Lay the shed base”", so one tap doesn't add it twice
+(found in 1.82.0's live check). No saved-data, sync, database or server change, and nothing new is sent to AI; going
+back to 1.82.0 is safe (it ignores this device's Board · List choice).
+
 **1.82.0 — Steps in Ask MyDay:** on a task's page, **Break into smaller steps** now fills that task's checklist: Ask
 MyDay is sent the task's steps (their words, done or not) and suggests the steps still to do, carrying on from those
 (one the task already has is left out); **Add** puts them into the task's Steps card (up to 30) and **Undo** takes
@@ -1028,7 +1042,7 @@ another project, frees the ones that started after it. Saved data: optional `ste
 existing record (no schema, migration or database change; earlier releases keep unknown task fields). A sync conflict
 shows the steps. Never sent to AI in this release.
 
-**Needs you, across projects (unreleased; `specs/projects-attention.md`):** the Projects home opens with **Needs
+**Needs you, across projects (1.83.0; `specs/projects-attention.md`):** the Projects home opens with **Needs
 you**: what needs you across your active projects, each line saying what and why and opening the thing itself
 ("Order the boards" / "still open, was due Thu 22 Oct · Garden shed"). It counts a date today or in the next 7 days,
 a task still open after its date (not one waiting on someone or starting after another task), a wait whose expected

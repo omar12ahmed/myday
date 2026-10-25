@@ -1,7 +1,7 @@
 # Projects: what needs you, across projects (Phase 4, first part)
 
-**Status:** the owner's decisions in §2 (25 October 2026); being built on branch `attention`. Nothing live without the
-owner's yes.
+**Status:** the owner's decisions in §2 (25 October 2026); released in 1.83.0 (25 October 2026, the owner's yes). No
+saved-data, sync, database or server change.
 **Based on:** source at 1.81.0. Plan: `specs/projects-vision.md` §1 ("What needs attention?"), §13 (the homepage:
 "Projects needing a decision or an unblocking action", "Important unresolved dates"; filters and an optional list
 view, the board kept; "Attention prompts should explain the underlying reason"), §17 (Phase 4), §19 (Taste skill for
