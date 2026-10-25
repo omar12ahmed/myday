@@ -77,12 +77,14 @@ const openProgress = async d => { await d.open(BASE + '#study/progress'); return
   check('the live account holds them as arabic_attempt records, exactly as on the Mac', mine.length === 2 && mine.every(a => !row(rows, 'arabic_attempt', a.id)?.deleted && same(body(row(rows, 'arabic_attempt', a.id)), a)), mine.map(a => row(rows, 'arabic_attempt', a.id)?.version));
   check('mac: Progress shows "Arabic: four skills"', await openProgress(mac) && (await mac.text('[data-pg-arabic-skills] h3')) === 'Arabic: four skills');
   const reading = await skill(mac, 'reading', 'done');
-  check('mac: Reading counts the two sessions with the ones before, and which were on your own', reading.startsWith(`Practised in ${prior + 2} sessions (${priorOwn + 1 === prior + 2 ? 'all on your own' : (priorOwn + 1) + ' on your own'}), last on `), reading);
+  check('mac: Reading counts the two sessions with the ones before, and how many were without help', reading.startsWith(`Practised in ${prior + 2} sessions (${priorOwn + 1 === prior + 2 ? 'all without help' : (priorOwn + 1) + ' without help'}), last on `), reading);
   check('mac: each skill has the course’s A1 guide and no percentage; the card says it isn’t a level', await mac.ev(`document.querySelectorAll('[data-pg-arabic-skills] [data-pg-skill-guide]').length === 4`) && !(await card(mac)).includes('%') && (await card(mac)).includes('Not a level'), await card(mac));
   const macCard = await card(mac);
 
   // Phone: receives the sessions and shows the same card.
-  check('phone: receives the sessions exactly', await phone.until(`(JSON.parse(localStorage.getItem('${KEY}')).arabic.attempts || []).filter(a => ${JSON.stringify(IDS)}.includes(a.id)).length === 2`, 30000) && same(await record(phone), mine));
+  await phone.open(BASE + '#study'); await synced(phone); // (a page left open fetches on its own schedule; opening it fetches now)
+  const arrived = await phone.until(`(JSON.parse(localStorage.getItem('${KEY}')).arabic.attempts || []).filter(a => ${JSON.stringify(IDS)}.includes(a.id)).length === 2`, 30000), theirs = await record(phone);
+  check('phone: receives the sessions exactly', arrived && same(theirs, mine), { arrived, differs: mine.map((a, n) => Object.keys({ ...a, ...theirs[n] }).filter(k => !same(a[k], theirs[n]?.[k])).map(k => [k, a[k], theirs[n]?.[k]])) });
   check('phone: Progress shows the same four skills, word for word', await openProgress(phone) && (await card(phone)).replace(/\s+/g, ' ') === macCard.replace(/\s+/g, ' '), await card(phone));
   check('phone at 320 px: nothing scrolls sideways, and the next-lesson links are at least 44 px', await phone.ev(`document.documentElement.scrollWidth <= innerWidth`)
     && await phone.ev(`[...document.querySelectorAll('[data-action="pg-skill-next"]')].every(a => a.getBoundingClientRect().height >= 44)`),
