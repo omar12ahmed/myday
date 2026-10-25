@@ -1,5 +1,25 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.78.0 — Cybersecurity lessons have places, as Arabic's do:** under a Cybersecurity lesson's title it now says
+where it stands: **New**, **Practised** (you've handed in one of its notebook activities or finished a Study session on
+it), **Ready to move on**, **Holding** (its knowledge checks came back right on your own a week or more after Ready) or
+**Needs revision** (your own flag, with what needs work, or a check that slipped after Ready), with Ready to move on /
+Not ready after all / Needs revision… / Done revisiting. Ready is still the lesson's roadmap tick when your path is in
+the roadmap (ticked there, in a Study check-in or with the lesson's button); without the path it's kept in the
+lesson's own record. Marking it ready, from anywhere, brings its knowledge checks back in revision about a week later
+(within the 8 new a day) and clears your flag; Not ready after all leaves them in revision. The next step on the map,
+Today and Study home follows the places, as Arabic's does: an open notebook draft first; then a lesson that needs
+revision when the next one builds on it; "Revise Cybersecurity" when cards are due; then the first lesson that's New
+or Practised, with **Why this?** and a length that suits today. The map's module tiles say how many lessons are ready
+or need revision, a module lists each lesson's place, Progress has "Cybersecurity: where you stand", and Worth a look
+offers a lesson that needs revision. Never a score or a percentage; nothing new is sent to AI. Lessons you'd already
+ticked stay Ready. Saved as the optional `cybersecurity.lessons`, synced as the new kind `cyber_lesson` (migration
+`20261026120000_sync_cyber_lessons.sql`); saved data stays schema 5. Going back to 1.77.0 is safe: it keeps the lesson
+records unread and ignores the `cyber_lesson` records (checked with the actual previous release); it doesn't show
+places, so a lesson marked ready without your path in the roadmap isn't done there, and its next lesson is again the
+first one not ticked; the checks that came back stay in revision. A device which spends time on the previous release
+receives other devices' changes of that kind only when they next change (or when it signs in again).
+
 **1.77.0 — Research, and stored files nothing lists:** a project can switch on **Research** (About it → Edit; the
 new "Research" kind has it from the start, and a business idea's Model tab offers it). Its tab has **Questions** (open
 ones first; each gathers its findings as supports, contradicts or relates to, and what you concluded, then Mark answered
