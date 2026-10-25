@@ -1,5 +1,18 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.92.0 — Words for Arabic modules 14–16, and possessives in search:** the first B1 words: the derived verb forms
+II–X, hollow, final-weak, initial-weak, doubled and hamzated verbs, the moods and the passive (module 14); relative
+pronouns, إِنَّ and its sisters, reporting verbs, conditions, and the words for cause, purpose and contrast (module 15);
+and the vowel marks by name, words that share an unvowelled spelling, paragraph connectors, words for reading and
+common word pairs (module 16) — 104 words, fully vowelled, each with its meaning, root, an example and a note, voiced
+where a form can be read aloud. The Vocabulary page's "Words from the lessons" now has 65 lessons and 477 words.
+Cross-checked twice by an independent reviewer, then checked by the owner; its 276 new clips were listened to, and
+three note pieces the voice got wrong on every take are now said in context. Also, a possessive you type finds the
+plain word in Search this project, Search everywhere and Ask MyDay's look across MyDay ("electrician's" finds "Ring
+the electrician"; a short word like "it's" stays as typed). No saved-data, sync or database change, and no new kind of
+information goes to AI. Going back to 1.91.0 is safe, with the usual note: a lesson word's card that comes up in its
+revision shows as "no longer in the course"; choose "Skip for now".
+
 **1.91.0 — Ask MyDay looks across MyDay:** ask "where did I put the electrician's number?", "what did I write about
 the bike rack?" or "do I have a lesson on greetings?" and Ask MyDay looks across MyDay, on this device, with Search
 everywhere's matching — your tasks (titles, notes and steps), projects (names, summaries, milestones and decisions),
@@ -721,7 +734,7 @@ asks for is in the generated lesson index (`modalities`, from the course's input
 `scripts/prepare-arabic.mjs`). Nothing saved, nothing sent to AI.
 
 Course words (Arabic, `../specs/study-home-and-lessons.md` §12): each lesson's own words, from MyDay's
-`../content/teaching/arabic/course-words.json` (modules 4–13 so far: 373 words for 50 lessons), each fully vowelled
+`../content/teaching/arabic/course-words.json` (modules 4–16 so far: 477 words for 65 lessons), each fully vowelled
 with its meaning, the root it comes from, an example and a note, voiced where a form can be read aloud (a lone letter
 like وَ isn't). A lesson's Understand step has "Words in this lesson" (its words, then the starter words it uses),
 folded away with the explanation while you check yourself; Vocabulary has "Words from the lessons". Marking a lesson

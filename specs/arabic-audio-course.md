@@ -121,6 +121,10 @@ together reworded and its merged clip removed; the owner asked for another take 
 then approved all. The temporary key was deleted.
 Round seven (course words for modules 11–13): 251 new clips, transcribed blind; eight short forms remade; three still
 heard differently (ذَهَاب، فِقْرَات، يَعْرِفُنَا) and approved by ear in three batches ("all good"). The key was deleted.
+Round eight (course words for modules 14–16): 276 new clips, transcribed blind; 23 remade, ten of them twice (the
+voice gives the same audio for the same text, so five came back unchanged: rewording, not retaking, fixes those); three
+note pieces voiced wrongly on every take are now said in context (الشِّعْرُ الْعَرَبِيُّ، شَعَرَ بِالْبَرْدِ، يَقْضِي وَقْتًا);
+nine short forms still heard differently were approved by ear in three batches ("all good"). The key was deleted.
 
 **Each round works like round one.**
 - **On the Mac:**
