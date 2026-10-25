@@ -1,7 +1,7 @@
 // Direct check of the files Edge Function and the real R2 bucket (tests/live/run.py files-direct.mjs): sign-in
 // first, the signed links (length, MD5, type, disposition), the bucket's CORS for the site, R2 refusing a wrong body,
-// the server's check of what was stored, previews only for photos, isolation (a second disposable account only asks
-// for the first's ids), delete's known areas, and usage. Made-up files only; everything is deleted at the end.
+// the server's check of what was stored, its list of stored files (`stored`), previews only for photos, isolation (a
+// second disposable account only asks for the first's ids), delete's known areas, and usage. Made-up files only; everything is deleted at the end.
 // Never prints the accounts' details, tokens or links. Only with the owner's yes.
 import { createHash } from 'node:crypto';
 
@@ -131,6 +131,16 @@ check('an .svg → refused at upload (422)', svg.status === 422);
 const B = await signIn(env.MYDAY_LIVE_OTHER_EMAIL, env.MYDAY_LIVE_OTHER_PASSWORD);
 check('account B opening A\'s file → 404', (await fn(B, { action: 'open', ...p })).status === 404);
 check('account B confirming A\'s file → 404', (await fn(B, { action: 'confirm', ...p, name: 'Made-up quote (check).pdf' })).status === 404);
+
+// 6b. Stored files nothing lists: the server lists what's stored (ids, area, size, when; never names; previews only
+// with their file) with its own time, and only the account's own. These have no sync record, so all three are listed.
+const st = await fn(A, { action: 'stored' }), listed = Array.isArray(st.j.files) ? st.j.files : [];
+const kept = [[p, pdf.length], [t, txt.length], [g, png.length]];
+check('stored → 200 with the server\'s time, listing the three kept files with their area, size and when stored', st.status === 200 && !isNaN(Date.parse(st.j.now))
+  && kept.every(([x, n]) => listed.some(m => m.fileId === x.fileId && m.area === x.area && m.size === n && !isNaN(Date.parse(m.modified)))), JSON.stringify({ s: st.status, n: listed.length, e: st.j.error }));
+check('…never a name, never the preview on its own, and not the refused file', listed.every(m => !('name' in m) && !String(m.fileId).includes('thumb')) && !listed.some(m => m.fileId === f.fileId));
+const stB = await fn(B, { action: 'stored' });
+check('account B\'s stored lists none of A\'s files', stB.status === 200 && Array.isArray(stB.j.files) && !stB.j.files.some(m => kept.some(([x]) => x.fileId === m.fileId)), `${stB.status}`);
 
 // 7. Usage, delete, delete-all
 const u1 = await fn(A, { action: 'usage' });
