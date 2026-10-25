@@ -14,6 +14,7 @@ import { update } from '../data/storage';
 import { addToTodaysPlan, editTask, isDone, isStuck, leaveTodaysPlanIfLater, moveToTomorrow, onTodaysPlan, planRoom, removeTask, setTaskDone, TASK_LIMITS } from '../data/tasks';
 import { toast } from '../data/toast';
 import type { Category, MyDayData } from '../data/types';
+import { DeadlineCard } from './DeadlineCard';
 import { StepsCard } from './StepsCard';
 import { StuckCard } from './StuckCard';
 import { WaitingCard } from './WaitingCard';
@@ -87,6 +88,7 @@ export function TaskEditor({ data, id }: { data: MyDayData; id: string }) {
       </Card>
       {!done && !t.waiting && waitAsk && <WaitingCard key="asking" data={data} t={t} asking onClose={() => setWaitAsk(false)} />}
       {ask && !done && !stuck && !t.waiting && <StuckCard data={data} t={t} stuck={false} />}
+      <DeadlineCard data={data} t={t} />
       <StepsCard data={data} t={t} />
       <StartsAfterCard data={data} t={t} />
     </>

@@ -7,6 +7,7 @@ import { isBusiness, isCase, modelProgress } from './businessModel';
 import { issueLinks, timelineInOrder } from './caseFile';
 import { parseKey, shift, shortDate, todayKey } from './dates';
 import { comingUp, nextStep } from './projects';
+import { deadlineToNote } from './deadlines';
 import { chaseTask } from './tasks';
 import type { DateKey, MyDayData, Project } from './types';
 
@@ -64,7 +65,7 @@ export function worthALook(data: MyDayData, p: Project, k: DateKey = todayKey(),
   // and only on an active project: a paused or finished one isn't nudged. Coming up lists them all.
   const step = nextStep(data, p);
   const open = p.status === 'active' ? pastOpen(data, p, k).find(t => t.id !== step?.id) : undefined; // (waiting, or starting after another task, isn't nudged)
-  if (open) out.push({ key: 'still-open', text: `${open.title} — still open, was due ${shortDate(open.due!)}`, href: `#today/tasks/${encodeURIComponent(open.id)}` });
+  if (open) out.push({ key: 'still-open', text: `${open.title} — still open, was ${open.deadline?.kind === 'aim' ? 'aimed for' : 'due'} ${shortDate(open.due!)}`, href: `#today/tasks/${encodeURIComponent(open.id)}` });
   // A wait whose expected day has come (1.50.0), oldest first, on an active project, with "Chase it" beside it —
   // unless it's the next step: that card says so and offers Chase it itself.
   const waited = p.status === 'active' ? waitsDue(data, p, k).find(t => t.id !== step?.id) : undefined;
@@ -73,7 +74,8 @@ export function worthALook(data: MyDayData, p: Project, k: DateKey = todayKey(),
   // A date in the next week (the same rule as Needs you: an appointment under way since before today isn't one).
   const ahead = datesAhead(data, p, k)[0], soon = ahead && (ahead.kind === 'task' ? { day: ahead.task.due!, title: ahead.task.title, href: `#today/tasks/${encodeURIComponent(ahead.task.id)}` }
     : { day: ahead.appt.start.slice(0, 10), title: ahead.appt.title, href: '#calendar' });
-  if (soon) out.push({ key: 'soon', text: `${soon.title} — ${soon.day === k ? 'today' : soon.day === shift(k, 1) ? 'tomorrow' : `in ${days(k, soon.day)} days`}`, href: soon.href });
+  const firm = ahead?.kind === 'task' && ahead.task.deadline?.kind === 'firm' ? 'firm deadline, ' : '';
+  if (soon) out.push({ key: 'soon', text: `${soon.title} — ${firm}${soon.day === k ? 'today' : soon.day === shift(k, 1) ? 'tomorrow' : `in ${days(k, soon.day)} days`}`, href: soon.href });
   if (isBusiness(p)) {
     const waiting = findOutsDone(data, p);
     if (waiting) out.push({ key: 'found', text: waiting === 1 ? 'A Find out task is done — what did you find?' : `${waiting} Find out tasks are done — what did you find?`, href: tab(p, 'model') });
@@ -83,6 +85,9 @@ export function worthALook(data: MyDayData, p: Project, k: DateKey = todayKey(),
   if (isCase(p)) {
     const toGet = evidenceToGet(p), bare = issueGrid(p).filter(i => !i.evidence && !i.entries && i.status !== 'dropped').length;
     if (bare) out.push({ key: 'bare', text: `${plural(bare, 'issue')} ${bare === 1 ? 'has' : 'have'} nothing linked yet`, href: tab(p, 'issues') });
+    // A deadline that's done, not yet noted on the timeline (specs/projects-deadlines.md): one tap from its page.
+    const done = data.tasks.items.find(t => t.projectId === p.id && deadlineToNote(data, t));
+    if (done) out.push({ key: 'deadline-done', text: `“${done.title}” is done — note it on the timeline?`, href: `#today/tasks/${encodeURIComponent(done.id)}` });
     if (toGet) out.push({ key: 'to-get', text: `${plural(toGet, 'piece')} of evidence still to get`, href: tab(p, 'evidence') });
   }
   // No "no next step yet" pointer: the Next step card beside it already asks for the smallest one.

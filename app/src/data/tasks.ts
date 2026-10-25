@@ -11,14 +11,14 @@
 // A task that keeps moving (its date moved later 3 times, or a week overdue) is "stuck": MyDay asks what's getting in
 // the way — not to push harder, but to change the task so it's easier to start (see unstick). Your answers are kept
 // on the task (`blockers`), and What MyDay has noticed looks for a pattern in them.
-import { isDateKey, isDateTime, isTime, localStamp, parseKey, shift, todayKey } from './dates';
+import { isDateKey, isDateTime, isTime, localStamp, parseKey, shift, shortDate, todayKey } from './dates';
 import { isWorkDay } from './patterns/notice';
 import { taskLimit } from './patterns/adapt';
 import { makeTask } from './plan';
-import type { Blocker, Category, DateKey, MyDayData, TaskItem, TasksData, TaskStep, Waiting } from './types';
+import type { Blocker, Category, DateKey, MyDayData, TaskDeadline, TaskItem, TasksData, TaskStep, Waiting } from './types';
 import { intIn, isObj, listOf, uid } from './util';
 
-export const TASK_LIMITS = { lists: 30, listName: 40, title: 120, notes: 2000, blockers: 20, waitingOn: 120, steps: 30, step: 120, after: 10 };
+export const TASK_LIMITS = { lists: 30, listName: 40, title: 120, notes: 2000, blockers: 20, waitingOn: 120, steps: 30, step: 120, after: 10, deadlineFrom: 200, checkedBy: 80 };
 const BLOCKERS: Blocker[] = ['big', 'start', 'boring', 'tired', 'info', 'notneeded', 'other'];
 export const emptyTasks = (): TasksData => ({ lists: [], items: [] });
 
@@ -84,6 +84,13 @@ export function normalizeTasks(raw: unknown, report: { dropped: number }): Tasks
       report.dropped += all.length - after.length; // past 10: counted, as steps past 30 are
       if (after.length) item.after = after; else delete item.after;
     }
+    // A deadline's details (specs/projects-deadlines.md): kept when its kind is one this version knows, anything a newer
+    // MyDay keeps beside it too; a shape it can't read is counted.
+    const dl = t.deadline;
+    if (isObj(dl) && (dl.kind === 'firm' || dl.kind === 'aim')) item.deadline = { ...dl, kind: dl.kind, from: typeof dl.from === 'string' ? dl.from.slice(0, TASK_LIMITS.deadlineFrom) : '',
+      checkedBy: typeof dl.checkedBy === 'string' ? dl.checkedBy.slice(0, TASK_LIMITS.checkedBy) : '', checkedOn: isDateKey(dl.checkedOn) ? dl.checkedOn : null,
+      ...(typeof dl.noted === 'string' && dl.noted ? { noted: dl.noted } : {}) };
+    else { if (dl !== undefined && dl !== null) report.dropped++; delete item.deadline; }
     seenT.add(item.id);
     out.items.push(item);
   }
@@ -454,4 +461,32 @@ export function setStartsAfter(data: MyDayData, id: string, otherId: string, on:
 // A task gone (deleted) or moved out of the project: no task starts after it any more.
 export function forgetStartsAfter(d: TasksData, id: string) {
   for (const x of d.items) if (x.after?.includes(id)) { x.after = x.after.filter(a => a !== id); if (!x.after.length) delete x.after; }
+}
+
+// ---------- Deadlines you can trust (specs/projects-deadlines.md) ----------
+// A dated task can say it's a firm deadline or a date to aim for, where the date comes from, and who checked it and
+// when. It stays a task: Today, Coming up, Needs you and the plan keep working. MyDay keeps the deadlines you enter;
+// it never works one out.
+export const DEADLINE_LABEL: Record<TaskDeadline['kind'], string> = { firm: 'Firm deadline', aim: 'Date to aim for' };
+// Sets a task's deadline details (merging), or with null makes it an ordinary date again. Returns false when nothing
+// changed.
+export function setDeadline(d: TasksData, id: string, patch: Partial<Pick<TaskDeadline, 'kind' | 'from' | 'checkedBy' | 'checkedOn'>> | null): boolean {
+  const t = d.items.find(x => x.id === id);
+  if (!t) return false;
+  if (patch === null) { if (!t.deadline) return false; delete t.deadline; return true; }
+  const was = JSON.stringify(t.deadline ?? null);
+  const next: TaskDeadline = { kind: 'firm', from: '', checkedBy: '', checkedOn: null, ...t.deadline };
+  if (patch.kind === 'firm' || patch.kind === 'aim') next.kind = patch.kind;
+  if (patch.from !== undefined) next.from = patch.from.trim().slice(0, TASK_LIMITS.deadlineFrom);
+  if (patch.checkedBy !== undefined) next.checkedBy = patch.checkedBy.trim().slice(0, TASK_LIMITS.checkedBy);
+  if (patch.checkedOn !== undefined) next.checkedOn = patch.checkedOn && isDateKey(patch.checkedOn) ? patch.checkedOn : null;
+  t.deadline = next;
+  return JSON.stringify(next) !== was;
+}
+// The words beside a dated task with a deadline: "Firm deadline" or "Date to aim for"; once its date has passed and
+// it's still to do, "Still open, was due Thu 6 Nov" or "Still open, was aimed for Thu 6 Nov" — calm, never "overdue".
+export function deadlineWords(data: MyDayData, t: TaskItem, k: DateKey = todayKey()): string {
+  if (!t.deadline || !t.due) return '';
+  if (t.due < k && !isDone(data, t) && !t.letGoOn) return `Still open, was ${t.deadline.kind === 'aim' ? 'aimed for' : 'due'} ${shortDate(t.due)}`;
+  return DEADLINE_LABEL[t.deadline.kind];
 }

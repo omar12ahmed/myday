@@ -1759,7 +1759,8 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
       // An open project's task on today's plan: its steps and what it waits for stay on the device (specs/projects-steps.md);
       // the wait points at no task, so nothing else about it changes.
       TI('tkOpen', 'Order the felt', { projectId: 'pjOpen', plannedOn: PD, planUid: 'pO', waiting: { on: 'SECRET-PERSON', since: PD, until: null },
-        steps: [{ id: 'tsO1', text: 'SECRET-STEP-OPEN', done: true }, { id: 'tsO2', text: 'SECRET-STEP-OPEN-2', done: false }], after: ['SECRET-AFTER-ID', 'tkOpenFirst', 'tkSecret'] }),
+        steps: [{ id: 'tsO1', text: 'SECRET-STEP-OPEN', done: true }, { id: 'tsO2', text: 'SECRET-STEP-OPEN-2', done: false }], after: ['SECRET-AFTER-ID', 'tkOpenFirst', 'tkSecret'],
+        deadline: { kind: 'firm', from: 'SECRET-DL-FROM', checkedBy: 'SECRET-DL-BY', checkedOn: PD } }), // (where a deadline's date comes from, and who checked it, never go: specs/projects-deadlines.md)
       TI('tkOpenFirst', 'Measure the shed base', { projectId: 'pjOpen', due: null })];
     const PT = (uid, title) => ({ uid, taskId: null, category: 'admin', title, minutes: 20, baseMinutes: 20, done: false, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null });
     w.days[PD] = { energy: 3, rest: false, builtAt: at, checkedIn: false, tasks: [PT('pS', 'SECRET-TASK'), PT('pO', 'Order the felt')] };
@@ -1784,7 +1785,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const data = K.normalize(w);
     const SECRETS = ['SECRET-PROJECT', 'SECRET-SUMMARY', 'SECRET-OUTCOME', 'SECRET-FINISHED', 'SECRET-LEFTOFF', 'SECRET-TASK', 'SECRET-DUE', 'SECRET-STUCK', 'SECRET-DONE', 'SECRET-PERSON', 'SECRET-WAITER',
       'SECRET-NOTE', 'SECRET-PNOTE', 'SECRET-APPT', 'SECRET-PROBLEM', 'SECRET-BELIEF', 'SECRET-FOUND', 'SECRET-MILESTONE', 'SECRET-DECISION', 'SECRET-OPTION', 'SECRET-LINK', 'SECRET-WHY',
-      'SECRET-FILE', 'flsecret000', 'SECRET-RQ', 'SECRET-RS', 'SECRET-RF', 'SECRET-RES-TITLE', 'SECRET-RES-URL', 'SECRET-RES-NOTE', 'SECRET-TIMELINE', 'SECRET-EVIDENCE', 'SECRET-WHERE', 'SECRET-ISSUE', 'SECRET-NAME', 'SECRET-MONEY', 'SECRET-PF', 'flpfsecret', 'SECRET-STEP-PRIVATE', 'SECRET-AFTER'];
+      'SECRET-FILE', 'flsecret000', 'SECRET-RQ', 'SECRET-RS', 'SECRET-RF', 'SECRET-RES-TITLE', 'SECRET-RES-URL', 'SECRET-RES-NOTE', 'SECRET-TIMELINE', 'SECRET-EVIDENCE', 'SECRET-WHERE', 'SECRET-ISSUE', 'SECRET-NAME', 'SECRET-MONEY', 'SECRET-PF', 'flpfsecret', 'SECRET-STEP-PRIVATE', 'SECRET-AFTER', 'SECRET-DL'];
     check('the made-up world really holds every secret after MyDay reads it (so the checks below can\'t pass by accident)', SECRETS.every(x => JSON.stringify(data).includes(x)), SECRETS.filter(x => !JSON.stringify(data).includes(x)));
     const leaks = (req, allowed = []) => SECRETS.filter(x => !allowed.includes(x) && JSON.stringify(req).includes(x));
     const pages = ['#today', '#calendar', '#today/tasks', '#projects', '#projects/p/pjSecret', '#projects/p/pjSecret/research', '#projects/p/pjOpen/research', '#projects/p/pjSecret/model', '#projects/p/pjOpen', '#projects/p/pjOpen/model', '#projects/p/pjCase',

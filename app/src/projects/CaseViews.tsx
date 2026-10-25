@@ -10,7 +10,7 @@ import {
 } from '../data/caseFile';
 import { parseKey, shortDate, todayKey } from '../data/dates';
 import { update } from '../data/storage';
-import { addTask } from '../data/tasks';
+import { addTask, setDeadline, TASK_LIMITS } from '../data/tasks';
 import { toast } from '../data/toast';
 import type { EvidenceItem, EvidenceKind, EvidenceStatus, IssueStatus, Project, TimelineEntry, TimelineSource } from '../data/types';
 
@@ -27,16 +27,18 @@ const when = (t: TimelineEntry) => `${t.about ? 'About ' : ''}${shortDate(t.date
 // ---------- On the Overview: a deadline is a dated task, so it reaches Today on its day ----------
 export function AddDeadline({ p }: { p: Project }) {
   const k = todayKey();
-  const [adding, setAdding] = useState(false), [title, setTitle] = useState(''), [date, setDate] = useState('');
+  const [adding, setAdding] = useState(false), [title, setTitle] = useState(''), [date, setDate] = useState(''), [from, setFrom] = useState('');
+  // A firm deadline (specs/projects-deadlines.md), with where its date comes from; its page can say who checked it.
   function addDeadline() {
     let id = null as string | null;
-    const saved = update(d => { id = addTask(d.tasks, { title, due: date, minutes: 15, category: 'admin' }); if (!id) return false; d.tasks.items.find(t => t.id === id)!.projectId = p.id; });
+    const saved = update(d => { id = addTask(d.tasks, { title, due: date, minutes: 15, category: 'admin' }); if (!id) return false; d.tasks.items.find(t => t.id === id)!.projectId = p.id; setDeadline(d.tasks, id, { kind: 'firm', from }); });
     if (!saved) return;
-    if (id) { setTitle(''); setDate(''); setAdding(false); toast('Deadline added — it reaches Today on its day.'); }
+    if (id) { setTitle(''); setDate(''); setFrom(''); setAdding(false); toast('Firm deadline added — it reaches Today on its day.'); }
   }
   return adding ? (
     <form className="grid gap-2 mt-3 w-full sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end" onSubmit={e => { e.preventDefault(); addDeadline(); }} data-s="case-deadline-form">
       <Field label="Deadline" htmlFor="caseDlTitle" className="sm:col-span-2"><TextInput id="caseDlTitle" value={title} maxLength={120} placeholder="e.g. Send my witness statement" onChange={e => setTitle(e.target.value)} /></Field>
+      <Field label="Where does this date come from? (optional)" htmlFor="caseDlFrom" className="sm:col-span-2"><TextInput id="caseDlFrom" value={from} maxLength={TASK_LIMITS.deadlineFrom} placeholder="e.g. The tribunal's letter of 3 Oct" onChange={e => setFrom(e.target.value)} /></Field>
       <Field label="Date" htmlFor="caseDlDate"><TextInput id="caseDlDate" type="date" min={k} className="!w-auto" value={date} onChange={e => setDate(e.target.value)} /></Field>
       <Button inline type="submit" variant="primary" data-action="case-deadline-add" disabled={!title.trim() || !date}>Add</Button>
     </form>

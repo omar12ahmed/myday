@@ -9,7 +9,7 @@ import { prettyDate } from '../data/dates';
 import { CAT_LABEL } from '../data/plan';
 import { projectById } from '../data/projects';
 import { update } from '../data/storage';
-import { addTask, GROUP_LABEL, isDone, isStuck, listName, onTodaysPlan, setTaskDone, stepsText, tasksView, startsAfterText, type Group } from '../data/tasks';
+import { addTask, deadlineWords, GROUP_LABEL, isDone, isStuck, listName, onTodaysPlan, setTaskDone, stepsText, tasksView, startsAfterText, type Group } from '../data/tasks';
 import { toast } from '../data/toast';
 import type { MyDayData, TaskItem } from '../data/types';
 import { loadLibs, parseCapture, type CaptureLibs } from '../capture/parse';
@@ -38,6 +38,7 @@ export function TaskRow({ data, t, hideProject = false }: { data: MyDayData; t: 
         <span className={`block font-medium leading-snug break-words ${done ? 'line-through text-fg-3' : ''}`}>{t.title}</span>
         <span className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-sm text-fg-3 tabular-nums">
           {t.due && <span className="inline-flex items-center gap-1" data-s="task-due"><CalendarDays size={14} aria-hidden="true" /> {dueText(t)}</span>}
+          {!done && t.deadline && <span className="text-fg-2" data-s="task-deadline">{deadlineWords(data, t)}</span>}
           {project && <span className="inline-flex items-center gap-1 text-fg-2" data-s="task-project"><FolderKanban size={14} aria-hidden="true" /> {project.title}</span>}
           {list && <span>{list}</span>}
           <span>{t.minutes} min</span>

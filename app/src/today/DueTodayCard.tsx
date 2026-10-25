@@ -4,7 +4,7 @@ import { Card } from '../components/Card';
 import { CategoryChip } from '../components/CategoryChip';
 import { shortDate } from '../data/dates';
 import { update } from '../data/storage';
-import { addToTodaysPlan, dueForToday, isStuck, isWaiting, planRoom, setTaskDone, stepsText, startsAfterText } from '../data/tasks';
+import { addToTodaysPlan, deadlineWords, dueForToday, isStuck, isWaiting, planRoom, setTaskDone, stepsText, startsAfterText } from '../data/tasks';
 import { waitingText } from '../tasks/route';
 import { toast } from '../data/toast';
 import type { DateKey, MyDayData } from '../data/types';
@@ -33,7 +33,7 @@ export function DueTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
             <a href={`#today/tasks/${t.id}`} className="flex-1 min-w-0 min-h-11 py-1 text-fg no-underline">
               <span className="block font-medium leading-snug break-words">{t.title}</span>
               <span className="flex flex-wrap items-center gap-2 mt-0.5 text-sm text-fg-3 tabular-nums">
-                {t.due! < k ? <span>from {shortDate(t.due!)}</span> : t.time ? <span>{t.time}</span> : null}
+                {t.deadline ? <span className="text-fg-2" data-s="task-deadline">{deadlineWords(data, t, k)}</span> : t.due! < k ? <span>from {shortDate(t.due!)}</span> : t.time ? <span>{t.time}</span> : null}{t.deadline && t.time && t.due === k ? <span>{t.time}</span> : null}
                 <span>{t.minutes} min</span><CategoryChip kind={t.category} />
                 {isStuck(data, t, k) && <span className="text-primary font-semibold" data-s="stuck">Something in the way?</span>}
                 {stepsText(t) && <span data-s="task-steps">{stepsText(t)}</span>}

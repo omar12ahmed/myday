@@ -18,7 +18,7 @@ import { worthALook } from '../data/projectDashboard';
 import { arrived, arriving, hiddenWords, isHidden, overviewSections, SECTIONS, setHidden, type HiddenWith, type Section } from '../data/projectSections';
 import { comingUp, deleteProject, editProject, heldBack, setProjectPrivate, linkNote, nextStep, PROJECT_LIMITS, projectById, projectNotes, projectTasks, recently, setLeftOff, setNextStep, STATUS_LABEL, stillOpen, unlinkAppointment, whyNext } from '../data/projects';
 import { update } from '../data/storage';
-import { addTask, addToTodaysPlan, onTodaysPlan, planRoom, setTaskDone, stepsText, startsAfterText } from '../data/tasks';
+import { addTask, addToTodaysPlan, DEADLINE_LABEL, onTodaysPlan, planRoom, setTaskDone, stepsText, startsAfterText } from '../data/tasks';
 import { toast } from '../data/toast';
 import type { MyDayData, Project, TaskItem } from '../data/types';
 import { bothMention, mightBelong } from '../data/understand';
@@ -344,7 +344,7 @@ function NextStepCard({ data, p }: { data: MyDayData; p: Project }) {
         <>
           <p className="text-[20px] font-bold leading-snug m-0 break-words" data-s="next-title">{step.title}</p>
           <p className="flex flex-wrap items-center gap-x-2 gap-y-1 m-0 mt-1.5 text-sm text-fg-3 tabular-nums">
-            {step.due && (step.due < k && !heldBack(data, step) ? <span data-s="next-still-open">Still open · was due {shortDate(step.due)}</span> : <span>{dueText(step, k)}</span>)}<span>{step.minutes} min</span><CategoryChip kind={step.category} />
+            {step.due && (step.due < k && !heldBack(data, step) ? <span data-s="next-still-open">Still open · was {step.deadline?.kind === 'aim' ? 'aimed for' : 'due'} {shortDate(step.due)}</span> : <span>{dueText(step, k)}</span>)}{step.deadline && !(step.due && step.due < k) && <span data-s="next-deadline">{DEADLINE_LABEL[step.deadline.kind]}</span>}<span>{step.minutes} min</span><CategoryChip kind={step.category} />
             {stepsText(step) && <span data-s="next-steps">{stepsText(step)}</span>}
           </p>
           {/* A waiting step you chose stays chosen (1.50.0); it can't be done today, so it isn't offered for Today. */}
@@ -496,12 +496,12 @@ function ComingUpCard({ data, p }: { data: MyDayData; p: Project }) {
         <ul className="list-none p-0 m-0">
           {open.map(t => (
             <li key={'o' + t.id} className="border-t border-outline first:border-t-0 py-2" data-s="soon-open">
-              <a href={`#today/tasks/${t.id}`} className="block min-h-11 text-fg no-underline"><span className="block text-sm text-fg-2 tabular-nums">Still open · was due {shortDate(t.due!)}</span><span className="font-medium break-words">{t.title}</span></a>
+              <a href={`#today/tasks/${t.id}`} className="block min-h-11 text-fg no-underline"><span className="block text-sm text-fg-2 tabular-nums">Still open · was {t.deadline?.kind === 'aim' ? 'aimed for' : 'due'} {shortDate(t.due!)}</span><span className="font-medium break-words">{t.title}</span></a>
             </li>
           ))}
           {items.map(x => x.kind === 'task' ? (
             <li key={'t' + x.task.id} className="border-t border-outline first:border-t-0 py-2" data-s="soon-task">
-              <a href={`#today/tasks/${x.task.id}`} className="block min-h-11 text-fg no-underline"><span className="block text-sm text-fg-3 tabular-nums">{prettyDate(x.task.due!)}{x.task.time ? ` · ${x.task.time}` : ''}</span><span className="font-medium break-words">{x.task.title}</span></a>
+              <a href={`#today/tasks/${x.task.id}`} className="block min-h-11 text-fg no-underline"><span className="block text-sm text-fg-3 tabular-nums">{prettyDate(x.task.due!)}{x.task.time ? ` · ${x.task.time}` : ''}{x.task.deadline ? <span data-s="soon-deadline"> · {DEADLINE_LABEL[x.task.deadline.kind]}</span> : null}</span><span className="font-medium break-words">{x.task.title}</span></a>
             </li>
           ) : (
             <li key={'a' + x.appt.id} className="border-t border-outline first:border-t-0 py-2 flex items-start justify-between gap-2" data-s="soon-appt">

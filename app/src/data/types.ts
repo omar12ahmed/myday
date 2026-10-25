@@ -531,9 +531,13 @@ export interface TaskItem {
   waiting?: Waiting;          // waiting on someone or something (1.50.0; absent → not waiting); who it waits on (`on`) is
                               // never sent to AI; Ask MyDay's waiting lookup sends since and until (owner's choice, 24 Oct)
   steps?: TaskStep[];         // a short checklist inside the task (specs/projects-steps.md; absent → none)
-  after?: string[];           // the tasks of its project it starts after, by id ("Starts after"; absent → none). Read through
+  after?: string[];
+  deadline?: TaskDeadline;    // a dated task's deadline details (specs/projects-deadlines.md; absent → an ordinary date)           // the tasks of its project it starts after, by id ("Starts after"; absent → none). Read through
                               // startsAfter (data/tasks.ts): one done, let go, deleted or in another project no longer counts
 }
+// A dated task's deadline details (specs/projects-deadlines.md): firm, or a date to aim for; where the date comes from;
+// who checked it and when. `noted`: the case timeline entry made from it once done (so that's offered once).
+export interface TaskDeadline { kind: 'firm' | 'aim'; from: string; checkedBy: string; checkedOn: DateKey | null; noted?: string; [other: string]: unknown }
 // One step inside a task: its words and whether it's ticked. Not planned on its own; the task is what you plan.
 export interface TaskStep { id: string; text: string; done: boolean; [other: string]: unknown }
 // Who or what a task is waiting on, since when, and when you expect it (optional). `chaseTaskId` is the 5-minute
