@@ -1,7 +1,7 @@
 {
  "about": "Course words: an authored word list per Arabic lesson (MyDay's own, not part of the supplied package), each word with its meaning, root, an example and a short note, beside the package's starter words (listed by id under \"seed\", not repeated). Fully vowelled. Each module is checked by the owner before it ships.",
- "status": "modules 4–7: checked by the owner and voiced; modules 8–10: draft, cross-checked twice, awaiting the owner's check",
- "version": "1.1",
+ "status": "modules 4–10: checked by the owner (reads Arabic) on 2026-10-25, after independent cross-checks, and voiced (rounds four to six)",
+ "version": "1.2",
  "lessons": {
   "lesson.arabic-greetings-address": {
    "seed": [
@@ -3187,7 +3187,7 @@
      "root_reading": "r-ʾ-y",
      "example_ar": "مَا رَأْيُكَ فِي هَذِهِ الْفِكْرَةِ؟",
      "example_meaning_en": "What do you think of this idea?",
-     "note": "To a woman: مَا رَأْيُكِ؟ رَأْي is “opinion”."
+     "note": "To a woman: مَا رَأْيُكِ؟ The word رَأْي means “opinion”."
     },
     {
      "id": "lexeme.arabic-plans-dialogue-3",
