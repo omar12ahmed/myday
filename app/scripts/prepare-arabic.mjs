@@ -8,7 +8,7 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { vowelling } from './arabic-reading-sentences.mjs';
+import { markedThrough } from './arabic-reading-sentences.mjs';
 
 const source = fileURLToPath(new URL('../../content/arabic-fusha/', import.meta.url));
 const target = fileURLToPath(new URL('../src/study/arabic/data/', import.meta.url));
@@ -98,7 +98,7 @@ for (const [lessonId, entry] of Object.entries(words.lessons)) {
     if (wordIds.has(w.id) || seedIds.has(w.id)) fail(`${w.id}: used twice`);
     wordIds.add(w.id);
     for (const f of ['form_ar', 'meaning_en', 'part_of_speech', 'example_ar', 'example_meaning_en', 'note']) if (typeof w[f] !== 'string' || !w[f].trim()) fail(`${w.id}: no ${f}`);
-    if (!ARABIC.test(w.form_ar) || !MARKS.test(w.form_ar) || vowelling(w.form_ar) !== 'full' || !ARABIC.test(w.example_ar) || vowelling(w.example_ar) !== 'full') fail(`${w.id}: the word and its example must be fully vowelled Arabic`);
+    if (!ARABIC.test(w.form_ar) || !MARKS.test(w.form_ar) || !markedThrough(w.form_ar) || !ARABIC.test(w.example_ar) || !markedThrough(w.example_ar)) fail(`${w.id}: the word and its example must be fully vowelled Arabic`);
     if ((w.root_ar === null) !== (w.root_reading === null) || (w.root_ar !== null && (!ROOT_FORM.test(w.root_ar) || typeof w.root_reading !== 'string' || !w.root_reading.trim()))) fail(`${w.id}: a root is written like ك-ت-ب, with its reading, or both are null`);
     if (forms.has(w.form_ar)) fail(`${w.id}: ${w.form_ar} is already ${forms.get(w.form_ar)} (list it once, or under "seed")`);
     forms.set(w.form_ar, w.id);

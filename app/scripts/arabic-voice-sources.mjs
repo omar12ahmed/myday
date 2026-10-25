@@ -8,7 +8,10 @@
 import { readFileSync } from 'node:fs';
 import { readingPassages, voiceable } from './arabic-reading-sentences.mjs';
 import { arabicRuns } from '../src/study/arabic/arabic-runs.mjs';
-export { LETTER, letters, vowelling, kind, voiceable } from './arabic-reading-sentences.mjs';
+export { LETTER, letters, vowelling, kind, voiceable, markedThrough } from './arabic-reading-sentences.mjs';
+import { kind, letters, markedThrough, voiceable as voiceableText } from './arabic-reading-sentences.mjs';
+// A course word or its example: the shared rule, or marked all through (short words like مَاء).
+export const courseVoiceable = s => voiceableText(s) || (typeof s === 'string' && !s.includes('ـ') && letters(s) >= 2 && markedThrough(s) && kind(s) !== 'letters');
 
 // Punctuation helps the voice pause between alternatives and finish an isolated form. No letters or marks change.
 export function spokenText(text) {
@@ -42,6 +45,6 @@ export function voiceSources(root) {
     ]) },
     // Round four: the course words (content/teaching/arabic/course-words.json), each word, its example and the Arabic
     // in its note, once the owner has checked the list.
-    { id: 'course-words', round: 4, label: 'course words, their examples and notes', texts: uniq([...words.flatMap(w => [w.form_ar, w.example_ar]).filter(voiceable), ...mixed(words.map(w => w.note))]) },
+    { id: 'course-words', round: 4, label: 'course words, their examples and notes', texts: uniq([...words.flatMap(w => [w.form_ar, w.example_ar]).filter(courseVoiceable), ...mixed(words.map(w => w.note))]) },
   ];
 }
