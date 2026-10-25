@@ -448,12 +448,14 @@ function SessionFinish({ data, lesson: l, session: open, steps, onFinished }: { 
       onFinished({ attemptId: open.id, notYet, variant: open.variant, practice });
   }
   const did = ticksIn(data, open.id, l.id);
+  const asks = MODALITIES.filter(m => lessonIndex[l.id]?.modalities.includes(m)); // the skills this lesson asks for, from the course
   return <Card tone="accent" data-ar-session="open">
     <Eyebrow><NotebookPen className="inline mr-1" size={16} aria-hidden="true" /> {MODE_LABEL[modeOf(open.variant)]} · {cap(open.variant)}{v ? ` · ${v.minutes} min` : ''} · started {when(open.startedAt)}</Eyebrow>
     <h3>Reflect</h3>
     {v && v.mode !== 'extended' && <p className="text-sm text-fg-2"><Mixed text={v.activity} /></p>}
     <h4 className="mb-1">What did you practise?</h4>
     <p className="text-sm text-fg-2 mt-0">Tick only what you actually did. Listening and speaking need a recording or a person.</p>
+    {asks.length > 0 && <p className="text-sm text-fg-2 mt-0" data-ar-asks={asks.join(' ')}>This lesson asks for {asks.length === 1 ? asks[0] : asks.slice(0, -1).join(', ') + ' and ' + asks[asks.length - 1]}.</p>}
     <Choices label="What did you practise?">{MODALITIES.map(m => <Choice key={m} on={open.practised.includes(m)} data-action="ar-practised" data-v={m} onClick={() => change(a => { a.practised = a.practised.includes(m) ? a.practised.filter(x => x !== m) : [...a.practised, m]; })}>{cap(m)}</Choice>)}</Choices>
     {steps.length > 0 && <div data-ar-did={did.join(' ') || 'none'}>
       <h4 className="mb-1">Did you do {steps.length === 2 ? 'its Try it or mini challenge' : steps[0] === 'try' ? 'its Try it' : 'its mini challenge'}?</h4>

@@ -1,10 +1,10 @@
 // The Arabic course's adaptive next step, for the learning map, a lesson page and Today's Study card: the course's
 // facts from the catalogue, your records (data/arabic/lessons.ts) and the shared rules (data/study/mastery.ts).
 // Worked out on the device each time; nothing here is saved and nothing is sent.
-import { todayKey } from '../../data/dates';
+import { keyOf, todayKey } from '../../data/dates';
 import { checkIds, evidence, lessonRecord, stateOf } from '../../data/arabic/lessons';
 import { practiceOf } from '../../data/arabic/practice';
-import type { Variant } from '../../data/arabic/types';
+import { MODALITIES, type Modality, type Variant } from '../../data/arabic/types';
 import { isDone, lengthFor, lessonState, nextStep, onOwn, stepReason, stepsFor, type JourneyStep, type LessonState, type Step } from '../../data/study/mastery';
 import { dueIds } from '../../data/study/queue';
 import { DAILY_ENOUGH, reviewedOn } from '../../data/study/revision';
@@ -91,7 +91,7 @@ export interface NeedsRevision { lessonId: string; flag: string | null; sessions
 export interface ArabicProgress {
   started: boolean; path: number; done: number; holding: number; ownChecks: number; needs: NeedsRevision[];
   milestones: number;                                              // how many of the course's levels end on your path
-  milestone: { stage: string; toGo: number; last: string } | null; // the next one; null when they're all behind you
+  milestone: { id: string; stage: string; toGo: number; last: string } | null; // the next one; null when they're all behind you
 }
 export function arabicProgress(d: MyDayData): ArabicProgress {
   const path = pathLessons(d.arabic.pathId), onPath = new Set(path), state = new Map<string, LessonState>();
@@ -114,7 +114,7 @@ export function arabicProgress(d: MyDayData): ArabicProgress {
   let milestone: ArabicProgress['milestone'] = null;
   for (const { m, last } of levels) {
     const toGo = pathLessons(m.path_id).filter(id => onPath.has(id) && !isDone(state.get(id)!)).length;
-    if (toGo) { milestone = { stage: m.stage_target, toGo, last: last.name }; break; }
+    if (toGo) { milestone = { id: m.id, stage: m.stage_target, toGo, last: last.name }; break; }
   }
   const states = [...state.values()];
   return {
@@ -122,4 +122,28 @@ export function arabicProgress(d: MyDayData): ArabicProgress {
     done: states.filter(isDone).length, holding: states.filter(x => x === 'holding').length, ownChecks, needs,
     milestones: levels.length, milestone,
   };
+}
+
+// ---------- The four skills ----------
+// Reading, writing, listening and speaking, each in words and counts (never a percentage, a score or a level): the
+// finished sessions where you ticked it in "What did you practise?" and how many of those were on your own; the lessons
+// on your path that ask for it, how many you've practised it in, and the first that asks for it where you haven't yet;
+// and, as a guide, what the course's next milestone asks of that skill (the package's own sample task; its stages are
+// approximate targets, not CEFR levels). Listening and speaking are only what you ticked: typed work never counts
+// for them. `writeWords`: your kept words you also practise writing from memory, in revision. Nothing is saved.
+export interface ArabicSkill { modality: Modality; sessions: number; own: number; last: DateKey | null; asks: number; practisedIn: number; next: string | null; guide: { stage: string; task: string } | null }
+export function arabicSkills(d: MyDayData, progress: ArabicProgress = arabicProgress(d)): { skills: ArabicSkill[]; writeWords: number } {
+  const path = pathLessons(d.arabic.pathId), finished = d.arabic.attempts.filter(a => a.finishedAt);
+  const ms = progress.milestone ? milestones.find(m => m.id === progress.milestone!.id) : undefined;
+  const skills = MODALITIES.map((m): ArabicSkill => {
+    const by = finished.filter(a => a.practised.includes(m)), inLesson = new Set(by.map(a => a.lessonId));
+    const asks = path.filter(id => lessonIndex[id].modalities.includes(m)), task = ms?.sample_tasks[m];
+    return {
+      modality: m, sessions: by.length, own: by.filter(a => a.help === 'independent').length,
+      last: by.map(a => keyOf(new Date(a.finishedAt!))).sort().pop() ?? null,
+      asks: asks.length, practisedIn: asks.filter(id => inLesson.has(id)).length, next: asks.find(id => !inLesson.has(id)) ?? null,
+      guide: ms && task ? { stage: ms.stage_target, task } : null,
+    };
+  });
+  return { skills, writeWords: (d.arabic.words ?? []).filter(w => w.write).length };
 }

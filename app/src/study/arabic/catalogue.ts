@@ -1,6 +1,7 @@
 // Arabic Fuṣḥā: the course map (loaded with the Arabic screen), each module's lessons and activities (loaded
 // when you open the module) and the reference answers (loaded only when you ask to see one). Generated from
 // content/arabic-fusha by app/scripts/prepare-arabic.mjs; nothing here is learner data.
+import type { Modality } from '../../data/arabic/types';
 import raw from './data/index.json';
 
 export const course = raw.course, version = raw.curriculum_version;
@@ -14,8 +15,9 @@ export const topics = new Map(raw.topics.map(t => [t.id, t]));
 export const resources = new Map(raw.resources.map(r => [r.id, r]));
 export const projects = new Map(raw.projects.map(p => [p.id, p]));
 // builds_on: the content skills a lesson needs (short names, checkpoints left out); checks: how many check questions;
-// minutes / short / revision / practical: its standard, short, revision and practical sessions' lengths.
-export const lessonIndex: Record<string, { title: string; module_id: string; topic_id: string; optional: boolean; stage_target: string; minutes: number; builds_on: string[]; checks: number; short: number; revision: number; practical: number }> = raw.lessons;
+// minutes / short / revision / practical: its standard, short, revision and practical sessions' lengths; modalities:
+// which of the four skills it asks for.
+export const lessonIndex = raw.lessons as Record<string, { title: string; module_id: string; topic_id: string; optional: boolean; stage_target: string; minutes: number; builds_on: string[]; checks: number; short: number; revision: number; practical: number; modalities: Modality[] }>; // (modalities: only those four names, as prepare-arabic.mjs writes them)
 export const skills: Record<string, { name: string; module_id: string; taught_by_lesson_ids: string[] }> = raw.skills;
 export const corePath = paths.get(raw.course.core_path_id)!;
 export const short = (id: string) => id.split('.').pop()!;

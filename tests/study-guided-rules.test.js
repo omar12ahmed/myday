@@ -26,7 +26,7 @@ function check(label, ok) {
       'export * as arabicCatalogue from ' + JSON.stringify(path.join(ROOT, 'app/src/study/arabic/catalogue')) + ';',
       'export { beginSession, finishSession } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/arabic/sessions')) + ';',
       'export { markReady, flagRevisit } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/arabic/lessons')) + ';',
-      'export { arabicPlan, arabicProgress, arabicState, checksOf, journeyFor, lengthOn, pathLessons, warmUpFrom } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/arabic/plan')) + ';',
+      'export { arabicPlan, arabicProgress, arabicSkills, arabicState, checksOf, journeyFor, lengthOn, pathLessons, warmUpFrom } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/arabic/plan')) + ';',
       'export { todayKey } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/dates')) + ';',
     ].join('\n'));
     const rule = await import(pathToFileURL(await bundle(path.join(dir, 'entry.ts'), path.join(dir, 'out'))).href);
@@ -224,6 +224,39 @@ function check(label, ok) {
       check('a path that ends none of the course\'s levels has no milestone to name, part-way or not (never a level it doesn\'t reach)', rule.arabicProgress(partWay).milestones === 0 && rule.arabicProgress(partWay).milestone === null && p.milestones === 0);
       const before = JSON.stringify(pg); rule.arabicProgress(pg);
       check('working out Progress saves nothing', JSON.stringify(pg) === before);
+    }
+
+    console.log('\n[Four skills] Reading, writing, speaking and listening, each in words and counts');
+    {
+      const g = fresh(), route = rule.pathLessons(g.arabic.pathId), idx = rule.arabicCatalogue.lessonIndex, four = ['reading', 'writing', 'listening', 'speaking'];
+      const asks = m => route.filter(id => idx[id].modalities.includes(m)), sk = (d, m) => rule.arabicSkills(d).skills.find(s => s.modality === m);
+      const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'content/arabic-fusha/MyDay_Arabic_Fusha_Curriculum.json'), 'utf8'));
+      check('The lesson index says which of the four skills each lesson asks for, as the course does', pkg.lessons.every(l => JSON.stringify(idx[l.id].modalities) === JSON.stringify(four.filter(m => l.input_requirements.modalities.includes(m)))));
+      check('Before any session: the four skills in Reflect\'s order, none practised, each with how many lessons on your path ask for it and the first of them',
+        JSON.stringify(rule.arabicSkills(g).skills.map(s => s.modality)) === '["reading","writing","speaking","listening"]'
+        && rule.arabicSkills(g).skills.every(s => s.sessions === 0 && s.own === 0 && s.last === null && s.practisedIn === 0 && s.asks === asks(s.modality).length && s.asks > 0 && s.next === asks(s.modality)[0]));
+      const r1 = asks('reading').find(id => !idx[id].modalities.includes('listening')), l1 = asks('listening')[0];
+      const tick = (id, practised, help = 'independent', finish = true) => { const sid = rule.beginSession(g, id, 'short'), a = g.arabic.attempts.find(x => x.id === sid); a.practised = practised; a.help = help; if (finish) rule.finishSession(g, sid); };
+      tick(r1, ['reading', 'listening']);
+      check('A finished session counts for each skill you ticked, on your own, dated today; not for the others', sk(g, 'reading').sessions === 1 && sk(g, 'reading').own === 1 && sk(g, 'reading').last === rule.todayKey()
+        && sk(g, 'listening').sessions === 1 && sk(g, 'writing').sessions === 0 && sk(g, 'writing').last === null);
+      check('…the lesson counts as practised for reading, and the next lesson that asks for reading moves on', sk(g, 'reading').practisedIn === 1 && sk(g, 'reading').next === (asks('reading').find(id => id !== r1) ?? null));
+      check('…listening ticked on a lesson that doesn\'t ask for it counts the session, not a lesson that asks for it', sk(g, 'listening').practisedIn === 0 && sk(g, 'listening').next === l1);
+      tick(r1, ['reading'], 'hint');
+      check('A session with a hint counts, but not as on your own; the same lesson isn\'t counted twice', sk(g, 'reading').sessions === 2 && sk(g, 'reading').own === 1 && sk(g, 'reading').practisedIn === 1);
+      tick(l1, ['speaking'], 'independent', false);
+      check('A session still open counts for nothing yet', sk(g, 'speaking').sessions === 0 && sk(g, 'speaking').last === null);
+      const ms = rule.arabicCatalogue.milestones.find(m => m.id === rule.arabicProgress(g).milestone.id);
+      check('Each skill shows what the next milestone asks of it, in the course\'s own words, with its stage', ms.stage_target === 'A1'
+        && rule.arabicSkills(g).skills.every(s => s.guide && s.guide.stage === 'A1' && s.guide.task === ms.sample_tasks[s.modality]));
+      const st = fresh(); st.arabic.pathId = 'path.arabic-start';
+      { const x = rule.beginSession(st, rule.pathLessons(st.arabic.pathId)[0], 'short'); rule.finishSession(st, x); }
+      check('A path that ends none of the course\'s levels has no guide to show', rule.arabicSkills(st).skills.every(s => s.guide === null));
+      const rv = { reps: 0, interval: 0, lapses: 0, due: null };
+      g.arabic.words = [{ id: 'kw4sk1', ar: 'بَيْتٌ', meaning: 'house', addedOn: '2026-10-01', recognise: rv, write: rv }, { id: 'kw4sk2', ar: 'بَابٌ', meaning: 'door', addedOn: '2026-10-01', recognise: rv, write: null }];
+      check('Writing also counts your kept words you practise writing from memory (and only those)', rule.arabicSkills(g).writeWords === 1);
+      const before = JSON.stringify(g); rule.arabicSkills(g);
+      check('working out the four skills saves nothing', JSON.stringify(g) === before);
     }
 
     console.log('\n[Arabic] Selected required paths and open sessions');
