@@ -1,6 +1,6 @@
 {
  "about": "Course words: an authored word list per Arabic lesson (MyDay's own, not part of the supplied package), each word with its meaning, root, an example and a short note, beside the package's starter words (listed by id under \"seed\", not repeated). Fully vowelled. Each module is checked by the owner before it ships.",
- "status": "modules 4–7: checked by the owner (reads Arabic) on 2026-10-25, after independent cross-checks, and voiced (rounds four and five)",
+ "status": "modules 4–7: checked by the owner and voiced; modules 8–10: draft, awaiting the cross-check and the owner's check",
  "version": "1.1",
  "lessons": {
   "lesson.arabic-greetings-address": {
@@ -2078,6 +2078,1160 @@
      "example_ar": "أَنَا آسِفٌ.",
      "example_meaning_en": "I am sorry.",
      "note": "A woman says أَنَا آسِفَةٌ."
+    }
+   ]
+  },
+  "lesson.arabic-a1-listening": {
+   "seed": [
+    "lexeme.arabic-seed-022",
+    "lexeme.arabic-seed-023",
+    "lexeme.arabic-seed-024"
+   ],
+   "words": [
+    {
+     "id": "lexeme.arabic-a1-listening-1",
+     "form_ar": "مُحَادَثَة",
+     "meaning_en": "conversation",
+     "part_of_speech": "noun",
+     "root_ar": "ح-د-ث",
+     "root_reading": "ḥ-d-th",
+     "example_ar": "الْمُحَادَثَةُ قَصِيرَةٌ.",
+     "example_meaning_en": "The conversation is short.",
+     "note": "Plural مُحَادَثَات."
+    },
+    {
+     "id": "lexeme.arabic-a1-listening-2",
+     "form_ar": "مَرَّتَيْنِ",
+     "meaning_en": "twice",
+     "part_of_speech": "adverb",
+     "root_ar": "م-ر-ر",
+     "root_reading": "m-r-r",
+     "example_ar": "أَسْمَعُ الْمُحَادَثَةَ مَرَّتَيْنِ.",
+     "example_meaning_en": "I listen to the conversation twice.",
+     "note": "“Two times”: مَرَّة, “a time”, with the ending for two."
+    },
+    {
+     "id": "lexeme.arabic-a1-listening-3",
+     "form_ar": "صَوْت",
+     "meaning_en": "voice; sound",
+     "part_of_speech": "noun",
+     "root_ar": "ص-و-ت",
+     "root_reading": "ṣ-w-t",
+     "example_ar": "صَوْتُهُ جَمِيلٌ.",
+     "example_meaning_en": "His voice is beautiful.",
+     "note": "Plural أَصْوَات."
+    },
+    {
+     "id": "lexeme.arabic-a1-listening-4",
+     "form_ar": "وَاضِح",
+     "meaning_en": "clear",
+     "part_of_speech": "adjective",
+     "root_ar": "و-ض-ح",
+     "root_reading": "w-ḍ-ḥ",
+     "example_ar": "الْكَلِمَةُ وَاضِحَةٌ.",
+     "example_meaning_en": "The word is clear.",
+     "note": "For a feminine noun: وَاضِحَة, as here."
+    },
+    {
+     "id": "lexeme.arabic-a1-listening-5",
+     "form_ar": "مَكَان",
+     "meaning_en": "place",
+     "part_of_speech": "noun",
+     "root_ar": "ك-و-ن",
+     "root_reading": "k-w-n",
+     "example_ar": "مَا اسْمُ الْمَكَانِ؟",
+     "example_meaning_en": "What is the place called?",
+     "note": "Plural أَمَاكِن."
+    },
+    {
+     "id": "lexeme.arabic-a1-listening-6",
+     "form_ar": "مِهْنَة",
+     "meaning_en": "job, occupation",
+     "part_of_speech": "noun",
+     "root_ar": "م-ه-ن",
+     "root_reading": "m-h-n",
+     "example_ar": "مَا مِهْنَتُكَ؟",
+     "example_meaning_en": "What is your job?",
+     "note": "To a woman: مَا مِهْنَتُكِ؟"
+    }
+   ]
+  },
+  "lesson.arabic-a1-reading": {
+   "seed": [
+    "lexeme.arabic-seed-011",
+    "lexeme.arabic-seed-012"
+   ],
+   "words": [
+    {
+     "id": "lexeme.arabic-a1-reading-1",
+     "form_ar": "مَفْتُوح",
+     "meaning_en": "open",
+     "part_of_speech": "adjective",
+     "root_ar": "ف-ت-ح",
+     "root_reading": "f-t-ḥ",
+     "example_ar": "الْمَكْتَبَةُ مَفْتُوحَةٌ.",
+     "example_meaning_en": "The library is open.",
+     "note": "For a feminine noun: مَفْتُوحَة, as here. The root of مِفْتَاح, “key”."
+    },
+    {
+     "id": "lexeme.arabic-a1-reading-2",
+     "form_ar": "مُغْلَق",
+     "meaning_en": "closed",
+     "part_of_speech": "adjective",
+     "root_ar": "غ-ل-ق",
+     "root_reading": "gh-l-q",
+     "example_ar": "الْبَابُ مُغْلَقٌ.",
+     "example_meaning_en": "The door is closed.",
+     "note": "For a feminine noun: مُغْلَقَة."
+    },
+    {
+     "id": "lexeme.arabic-a1-reading-3",
+     "form_ar": "مَدْخَل",
+     "meaning_en": "entrance",
+     "part_of_speech": "noun",
+     "root_ar": "د-خ-ل",
+     "root_reading": "d-kh-l",
+     "example_ar": "الْمَدْخَلُ عَلَى الْيَمِينِ.",
+     "example_meaning_en": "The entrance is on the right.",
+     "note": "مَـ “place of” + د-خ-ل, “going in”."
+    },
+    {
+     "id": "lexeme.arabic-a1-reading-4",
+     "form_ar": "مَخْرَج",
+     "meaning_en": "exit",
+     "part_of_speech": "noun",
+     "root_ar": "خ-ر-ج",
+     "root_reading": "kh-r-j",
+     "example_ar": "أَيْنَ الْمَخْرَجُ؟",
+     "example_meaning_en": "Where is the exit?",
+     "note": "مَـ “place of” + خ-ر-ج, “going out”."
+    },
+    {
+     "id": "lexeme.arabic-a1-reading-5",
+     "form_ar": "مَمْنُوع",
+     "meaning_en": "not allowed",
+     "part_of_speech": "adjective",
+     "root_ar": "م-ن-ع",
+     "root_reading": "m-n-ʿ",
+     "example_ar": "التَّدْخِينُ مَمْنُوعٌ.",
+     "example_meaning_en": "Smoking is not allowed.",
+     "note": "A word you'll see on signs. التَّدْخِين is “smoking”."
+    },
+    {
+     "id": "lexeme.arabic-a1-reading-6",
+     "form_ar": "لَافِتَة",
+     "meaning_en": "sign, notice",
+     "part_of_speech": "noun",
+     "root_ar": "ل-ف-ت",
+     "root_reading": "l-f-t",
+     "example_ar": "عَلَى اللَّافِتَةِ: مَفْتُوحٌ.",
+     "example_meaning_en": "On the sign: Open.",
+     "note": "Plural لَافِتَات."
+    }
+   ]
+  },
+  "lesson.arabic-a1-speaking": {
+   "seed": [
+    "lexeme.arabic-seed-002",
+    "lexeme.arabic-seed-003",
+    "lexeme.arabic-seed-025"
+   ],
+   "words": [
+    {
+     "id": "lexeme.arabic-a1-speaking-1",
+     "form_ar": "وَأَنْتَ؟",
+     "meaning_en": "and you? (to a man)",
+     "part_of_speech": "chunk",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "أَنَا مِنْ مِصْرَ، وَأَنْتَ؟",
+     "example_meaning_en": "I am from Egypt, and you?",
+     "note": "To a woman: وَأَنْتِ؟ It turns a statement into an exchange."
+    },
+    {
+     "id": "lexeme.arabic-a1-speaking-2",
+     "form_ar": "أَيْضًا",
+     "meaning_en": "also, too",
+     "part_of_speech": "adverb",
+     "root_ar": "أ-ي-ض",
+     "root_reading": "ʾ-y-ḍ",
+     "example_ar": "أَنَا طَالِبٌ أَيْضًا.",
+     "example_meaning_en": "I am a student too.",
+     "note": "Usually at the end."
+    },
+    {
+     "id": "lexeme.arabic-a1-speaking-3",
+     "form_ar": "طَبْعًا",
+     "meaning_en": "of course",
+     "part_of_speech": "adverb",
+     "root_ar": "ط-ب-ع",
+     "root_reading": "ṭ-b-ʿ",
+     "example_ar": "هَلْ تَفْهَمُ؟ — طَبْعًا.",
+     "example_meaning_en": "Do you understand? — Of course.",
+     "note": "A friendly yes."
+    },
+    {
+     "id": "lexeme.arabic-a1-speaking-4",
+     "form_ar": "رُبَّمَا",
+     "meaning_en": "maybe, perhaps",
+     "part_of_speech": "particle",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "رُبَّمَا غَدًا.",
+     "example_meaning_en": "Maybe tomorrow.",
+     "note": "Useful when you're not sure."
+    },
+    {
+     "id": "lexeme.arabic-a1-speaking-5",
+     "form_ar": "حَسَنًا",
+     "meaning_en": "all right, OK",
+     "part_of_speech": "adverb",
+     "root_ar": "ح-س-ن",
+     "root_reading": "ḥ-s-n",
+     "example_ar": "حَسَنًا، شُكْرًا.",
+     "example_meaning_en": "All right, thank you.",
+     "note": "Agrees without saying much more."
+    },
+    {
+     "id": "lexeme.arabic-a1-speaking-6",
+     "form_ar": "إِلَى اللِّقَاءِ",
+     "meaning_en": "see you, goodbye",
+     "part_of_speech": "chunk",
+     "root_ar": "ل-ق-ي",
+     "root_reading": "l-q-y",
+     "example_ar": "شُكْرًا، إِلَى اللِّقَاءِ.",
+     "example_meaning_en": "Thank you, see you.",
+     "note": "Literally “until the meeting”."
+    }
+   ]
+  },
+  "lesson.arabic-a1-writing": {
+   "seed": [
+    "lexeme.arabic-seed-001"
+   ],
+   "words": [
+    {
+     "id": "lexeme.arabic-a1-writing-1",
+     "form_ar": "عُمْر",
+     "meaning_en": "age",
+     "part_of_speech": "noun",
+     "root_ar": "ع-م-ر",
+     "root_reading": "ʿ-m-r",
+     "example_ar": "كَمْ عُمْرُكَ؟",
+     "example_meaning_en": "How old are you?",
+     "note": "To a woman: كَمْ عُمْرُكِ؟ “My age” is عُمْرِي."
+    },
+    {
+     "id": "lexeme.arabic-a1-writing-2",
+     "form_ar": "سَنَة",
+     "meaning_en": "year",
+     "part_of_speech": "noun",
+     "root_ar": "س-ن-و",
+     "root_reading": "s-n-w",
+     "example_ar": "أَدْرُسُ الْعَرَبِيَّةَ مُنْذُ سَنَةٍ.",
+     "example_meaning_en": "I've been studying Arabic for a year.",
+     "note": "مُنْذُ is “since, for”. Plural سَنَوَات."
+    },
+    {
+     "id": "lexeme.arabic-a1-writing-3",
+     "form_ar": "هِوَايَة",
+     "meaning_en": "hobby",
+     "part_of_speech": "noun",
+     "root_ar": "ه-و-ي",
+     "root_reading": "h-w-y",
+     "example_ar": "هِوَايَتِي الْقِرَاءَةُ.",
+     "example_meaning_en": "My hobby is reading.",
+     "note": "Plural هِوَايَات."
+    },
+    {
+     "id": "lexeme.arabic-a1-writing-4",
+     "form_ar": "أَعْمَلُ",
+     "meaning_en": "I work",
+     "part_of_speech": "verb",
+     "root_ar": "ع-م-ل",
+     "root_reading": "ʿ-m-l",
+     "example_ar": "أَعْمَلُ فِي مَدْرَسَةٍ.",
+     "example_meaning_en": "I work in a school.",
+     "note": "The same verb as يَعْمَلُ, “he works”."
+    },
+    {
+     "id": "lexeme.arabic-a1-writing-5",
+     "form_ar": "مُتَزَوِّج",
+     "meaning_en": "married",
+     "part_of_speech": "adjective",
+     "root_ar": "ز-و-ج",
+     "root_reading": "z-w-j",
+     "example_ar": "أَخِي مُتَزَوِّجٌ.",
+     "example_meaning_en": "My brother is married.",
+     "note": "For a woman: مُتَزَوِّجَة. أَخِي is “my brother”."
+    },
+    {
+     "id": "lexeme.arabic-a1-writing-6",
+     "form_ar": "لُغَة",
+     "meaning_en": "language",
+     "part_of_speech": "noun",
+     "root_ar": "ل-غ-و",
+     "root_reading": "l-gh-w",
+     "example_ar": "الْعَرَبِيَّةُ لُغَةٌ جَمِيلَةٌ.",
+     "example_meaning_en": "Arabic is a beautiful language.",
+     "note": "Plural لُغَات."
+    }
+   ]
+  },
+  "lesson.arabic-a1-portfolio": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-a1-portfolio-1",
+     "form_ar": "أَتَعَلَّمُ",
+     "meaning_en": "I learn",
+     "part_of_speech": "verb",
+     "root_ar": "ع-ل-م",
+     "root_reading": "ʿ-l-m",
+     "example_ar": "أَتَعَلَّمُ الْعَرَبِيَّةَ.",
+     "example_meaning_en": "I am learning Arabic.",
+     "note": "The root of مُعَلِّم, “teacher”."
+    },
+    {
+     "id": "lexeme.arabic-a1-portfolio-2",
+     "form_ar": "هَدَف",
+     "meaning_en": "goal",
+     "part_of_speech": "noun",
+     "root_ar": "ه-د-ف",
+     "root_reading": "h-d-f",
+     "example_ar": "هَذَا هَدَفٌ جَيِّدٌ.",
+     "example_meaning_en": "This is a good goal.",
+     "note": "Plural أَهْدَاف."
+    },
+    {
+     "id": "lexeme.arabic-a1-portfolio-3",
+     "form_ar": "مُرَاجَعَة",
+     "meaning_en": "review, revision",
+     "part_of_speech": "noun",
+     "root_ar": "ر-ج-ع",
+     "root_reading": "r-j-ʿ",
+     "example_ar": "الْمُرَاجَعَةُ مُفِيدَةٌ.",
+     "example_meaning_en": "Revision is useful.",
+     "note": "The same root as أَرْجِعُ, “I come back”: you come back to what you learned."
+    },
+    {
+     "id": "lexeme.arabic-a1-portfolio-4",
+     "form_ar": "تَقَدُّم",
+     "meaning_en": "progress",
+     "part_of_speech": "noun",
+     "root_ar": "ق-د-م",
+     "root_reading": "q-d-m",
+     "example_ar": "هَذَا تَقَدُّمٌ جَيِّدٌ.",
+     "example_meaning_en": "This is good progress.",
+     "note": "The same root as قَدِيم, “old”."
+    },
+    {
+     "id": "lexeme.arabic-a1-portfolio-5",
+     "form_ar": "ضَعِيف",
+     "meaning_en": "weak",
+     "part_of_speech": "adjective",
+     "root_ar": "ض-ع-ف",
+     "root_reading": "ḍ-ʿ-f",
+     "example_ar": "كِتَابَتِي ضَعِيفَةٌ.",
+     "example_meaning_en": "My writing is weak.",
+     "note": "For a feminine noun: ضَعِيفَة, as here. كِتَابَة is “writing”."
+    },
+    {
+     "id": "lexeme.arabic-a1-portfolio-6",
+     "form_ar": "قَوِيّ",
+     "meaning_en": "strong",
+     "part_of_speech": "adjective",
+     "root_ar": "ق-و-ي",
+     "root_reading": "q-w-y",
+     "example_ar": "قِرَاءَتِي قَوِيَّةٌ.",
+     "example_meaning_en": "My reading is strong.",
+     "note": "For a feminine noun: قَوِيَّة, as here."
+    }
+   ]
+  },
+  "lesson.arabic-past-suffixes": {
+   "seed": [
+    "lexeme.arabic-seed-034",
+    "lexeme.arabic-seed-036",
+    "lexeme.arabic-seed-038"
+   ],
+   "words": [
+    {
+     "id": "lexeme.arabic-past-suffixes-1",
+     "form_ar": "دَرَسْتُ",
+     "meaning_en": "I studied",
+     "part_of_speech": "verb",
+     "root_ar": "د-ر-س",
+     "root_reading": "d-r-s",
+     "example_ar": "دَرَسْتُ الْعَرَبِيَّةَ سَاعَةً.",
+     "example_meaning_en": "I studied Arabic for an hour.",
+     "note": "ـتُ at the end: “I”, in the past."
+    },
+    {
+     "id": "lexeme.arabic-past-suffixes-2",
+     "form_ar": "ذَهَبْنَا",
+     "meaning_en": "we went",
+     "part_of_speech": "verb",
+     "root_ar": "ذ-ه-ب",
+     "root_reading": "dh-h-b",
+     "example_ar": "ذَهَبْنَا إِلَى الْمَدِينَةِ.",
+     "example_meaning_en": "We went to the city.",
+     "note": "ـنَا at the end: “we”."
+    },
+    {
+     "id": "lexeme.arabic-past-suffixes-3",
+     "form_ar": "رَجَعَتْ",
+     "meaning_en": "she came back",
+     "part_of_speech": "verb",
+     "root_ar": "ر-ج-ع",
+     "root_reading": "r-j-ʿ",
+     "example_ar": "رَجَعَتْ لَيْلَى إِلَى الْبَيْتِ.",
+     "example_meaning_en": "Laylā came back home.",
+     "note": "ـَتْ at the end: “she”."
+    },
+    {
+     "id": "lexeme.arabic-past-suffixes-4",
+     "form_ar": "عَمِلُوا",
+     "meaning_en": "they worked",
+     "part_of_speech": "verb",
+     "root_ar": "ع-م-ل",
+     "root_reading": "ʿ-m-l",
+     "example_ar": "عَمِلُوا فِي الْمَكْتَبِ.",
+     "example_meaning_en": "They worked in the office.",
+     "note": "ـُوا at the end: “they”; the final alif isn't said."
+    },
+    {
+     "id": "lexeme.arabic-past-suffixes-5",
+     "form_ar": "شَرِبْتَ",
+     "meaning_en": "you drank (to a man)",
+     "part_of_speech": "verb",
+     "root_ar": "ش-ر-ب",
+     "root_reading": "sh-r-b",
+     "example_ar": "هَلْ شَرِبْتَ الْقَهْوَةَ؟",
+     "example_meaning_en": "Did you drink the coffee?",
+     "note": "ـتَ: “you (a man)”; ـتِ: “you (a woman)”."
+    },
+    {
+     "id": "lexeme.arabic-past-suffixes-6",
+     "form_ar": "أَكَلْنَا",
+     "meaning_en": "we ate",
+     "part_of_speech": "verb",
+     "root_ar": "أ-ك-ل",
+     "root_reading": "ʾ-k-l",
+     "example_ar": "أَكَلْنَا فِي الْبَيْتِ.",
+     "example_meaning_en": "We ate at home.",
+     "note": "The past of آكُلُ, “I eat”."
+    },
+    {
+     "id": "lexeme.arabic-past-suffixes-7",
+     "form_ar": "فَهِمْتُ",
+     "meaning_en": "I understood",
+     "part_of_speech": "verb",
+     "root_ar": "ف-ه-م",
+     "root_reading": "f-h-m",
+     "example_ar": "الْآنَ فَهِمْتُ.",
+     "example_meaning_en": "Now I understand.",
+     "note": "Arabic often uses the past here: “now I've understood”."
+    }
+   ]
+  },
+  "lesson.arabic-past-questions": {
+   "seed": [
+    "lexeme.arabic-seed-022",
+    "lexeme.arabic-seed-023",
+    "lexeme.arabic-seed-024",
+    "lexeme.arabic-seed-031"
+   ],
+   "words": [
+    {
+     "id": "lexeme.arabic-past-questions-1",
+     "form_ar": "مَاذَا فَعَلْتَ؟",
+     "meaning_en": "what did you do? (to a man)",
+     "part_of_speech": "chunk",
+     "root_ar": "ف-ع-ل",
+     "root_reading": "f-ʿ-l",
+     "example_ar": "مَاذَا فَعَلْتَ أَمْسِ؟",
+     "example_meaning_en": "What did you do yesterday?",
+     "note": "To a woman: مَاذَا فَعَلْتِ؟"
+    },
+    {
+     "id": "lexeme.arabic-past-questions-2",
+     "form_ar": "حَدَثَ",
+     "meaning_en": "happened",
+     "part_of_speech": "verb",
+     "root_ar": "ح-د-ث",
+     "root_reading": "ḥ-d-th",
+     "example_ar": "مَاذَا حَدَثَ؟",
+     "example_meaning_en": "What happened?",
+     "note": "The same root as مُحَادَثَة, “conversation”."
+    },
+    {
+     "id": "lexeme.arabic-past-questions-3",
+     "form_ar": "مَعَ مَنْ؟",
+     "meaning_en": "with whom?",
+     "part_of_speech": "chunk",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "مَعَ مَنْ ذَهَبْتَ؟",
+     "example_meaning_en": "Who did you go with?",
+     "note": "مَعَ, “with”, and مَنْ, “who”."
+    },
+    {
+     "id": "lexeme.arabic-past-questions-4",
+     "form_ar": "لِمَاذَا",
+     "meaning_en": "why",
+     "part_of_speech": "question",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "لِمَاذَا رَجَعْتَ؟",
+     "example_meaning_en": "Why did you come back?",
+     "note": "The answer often starts with لِأَنَّ, “because”."
+    },
+    {
+     "id": "lexeme.arabic-past-questions-5",
+     "form_ar": "وَجَدْتُ",
+     "meaning_en": "I found",
+     "part_of_speech": "verb",
+     "root_ar": "و-ج-د",
+     "root_reading": "w-j-d",
+     "example_ar": "وَجَدْتُ الْمِفْتَاحَ.",
+     "example_meaning_en": "I found the key.",
+     "note": "“He found” is وَجَدَ."
+    },
+    {
+     "id": "lexeme.arabic-past-questions-6",
+     "form_ar": "زُرْتُ",
+     "meaning_en": "I visited",
+     "part_of_speech": "verb",
+     "root_ar": "ز-و-ر",
+     "root_reading": "z-w-r",
+     "example_ar": "زُرْتُ صَدِيقِي أَمْسِ.",
+     "example_meaning_en": "I visited my friend yesterday.",
+     "note": "“He visited” is زَارَ: the long ā shortens when an ending like ـتُ follows."
+    }
+   ]
+  },
+  "lesson.arabic-kana-background": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-kana-background-1",
+     "form_ar": "كَانَ",
+     "meaning_en": "was (he, it)",
+     "part_of_speech": "verb",
+     "root_ar": "ك-و-ن",
+     "root_reading": "k-w-n",
+     "example_ar": "كَانَ الْبَيْتُ صَغِيرًا.",
+     "example_meaning_en": "The house was small.",
+     "note": "What it was takes -an: صَغِيرًا."
+    },
+    {
+     "id": "lexeme.arabic-kana-background-2",
+     "form_ar": "كُنْتُ",
+     "meaning_en": "I was",
+     "part_of_speech": "verb",
+     "root_ar": "ك-و-ن",
+     "root_reading": "k-w-n",
+     "example_ar": "كُنْتُ مَشْغُولًا أَمْسِ.",
+     "example_meaning_en": "I was busy yesterday.",
+     "note": "كُنْتُ أَدْرُسُ is “I was studying” or “I used to study”."
+    },
+    {
+     "id": "lexeme.arabic-kana-background-3",
+     "form_ar": "كَانَتْ",
+     "meaning_en": "was (she, it)",
+     "part_of_speech": "verb",
+     "root_ar": "ك-و-ن",
+     "root_reading": "k-w-n",
+     "example_ar": "كَانَتِ الْمَدِينَةُ هَادِئَةً.",
+     "example_meaning_en": "The city was quiet.",
+     "note": "Before the article it's said kānati."
+    },
+    {
+     "id": "lexeme.arabic-kana-background-4",
+     "form_ar": "هَادِئ",
+     "meaning_en": "quiet, calm",
+     "part_of_speech": "adjective",
+     "root_ar": "ه-د-أ",
+     "root_reading": "h-d-ʾ",
+     "example_ar": "الشَّارِعُ هَادِئٌ.",
+     "example_meaning_en": "The street is quiet.",
+     "note": "For a feminine noun: هَادِئَة."
+    },
+    {
+     "id": "lexeme.arabic-kana-background-5",
+     "form_ar": "الْجَوّ",
+     "meaning_en": "the weather",
+     "part_of_speech": "noun",
+     "root_ar": "ج-و-و",
+     "root_reading": "j-w-w",
+     "example_ar": "الْجَوُّ بَارِدٌ الْيَوْمَ.",
+     "example_meaning_en": "The weather is cold today.",
+     "note": "In this sense it's always with the article."
+    },
+    {
+     "id": "lexeme.arabic-kana-background-6",
+     "form_ar": "مُتْعَب",
+     "meaning_en": "tired",
+     "part_of_speech": "adjective",
+     "root_ar": "ت-ع-ب",
+     "root_reading": "t-ʿ-b",
+     "example_ar": "كُنْتُ مُتْعَبًا.",
+     "example_meaning_en": "I was tired.",
+     "note": "A woman says كُنْتُ مُتْعَبَةً."
+    },
+    {
+     "id": "lexeme.arabic-kana-background-7",
+     "form_ar": "بَارِد",
+     "meaning_en": "cold",
+     "part_of_speech": "adjective",
+     "root_ar": "ب-ر-د",
+     "root_reading": "b-r-d",
+     "example_ar": "كَانَ الْمَاءُ بَارِدًا.",
+     "example_meaning_en": "The water was cold.",
+     "note": "For a feminine noun: بَارِدَة."
+    },
+    {
+     "id": "lexeme.arabic-kana-background-8",
+     "form_ar": "حَارّ",
+     "meaning_en": "hot",
+     "part_of_speech": "adjective",
+     "root_ar": "ح-ر-ر",
+     "root_reading": "ḥ-r-r",
+     "example_ar": "الشَّايُ حَارٌّ.",
+     "example_meaning_en": "The tea is hot.",
+     "note": "For a feminine noun: حَارَّة."
+    }
+   ]
+  },
+  "lesson.arabic-story-connectors": {
+   "seed": [
+    "lexeme.arabic-seed-043",
+    "lexeme.arabic-seed-044",
+    "lexeme.arabic-seed-045",
+    "lexeme.arabic-seed-046"
+   ],
+   "words": [
+    {
+     "id": "lexeme.arabic-story-connectors-1",
+     "form_ar": "أَوَّلًا",
+     "meaning_en": "first, firstly",
+     "part_of_speech": "adverb",
+     "root_ar": "أ-و-ل",
+     "root_reading": "ʾ-w-l",
+     "example_ar": "أَوَّلًا أَشْرَبُ الْقَهْوَةَ.",
+     "example_meaning_en": "First I drink coffee.",
+     "note": "Starts a list of steps."
+    },
+    {
+     "id": "lexeme.arabic-story-connectors-2",
+     "form_ar": "قَبْلَ",
+     "meaning_en": "before",
+     "part_of_speech": "preposition",
+     "root_ar": "ق-ب-ل",
+     "root_reading": "q-b-l",
+     "example_ar": "قَبْلَ الدَّرْسِ أَقْرَأُ.",
+     "example_meaning_en": "Before the lesson I read.",
+     "note": "The noun after it ends in -i."
+    },
+    {
+     "id": "lexeme.arabic-story-connectors-3",
+     "form_ar": "بَعْدَ",
+     "meaning_en": "after",
+     "part_of_speech": "preposition",
+     "root_ar": "ب-ع-د",
+     "root_reading": "b-ʿ-d",
+     "example_ar": "بَعْدَ الْعَمَلِ أَرْجِعُ إِلَى الْبَيْتِ.",
+     "example_meaning_en": "After work I go back home.",
+     "note": "As in بَعْدَ ذَلِكَ, “after that”."
+    },
+    {
+     "id": "lexeme.arabic-story-connectors-4",
+     "form_ar": "أَخِيرًا",
+     "meaning_en": "finally, at last",
+     "part_of_speech": "adverb",
+     "root_ar": "أ-خ-ر",
+     "root_reading": "ʾ-kh-r",
+     "example_ar": "أَخِيرًا وَصَلْتُ.",
+     "example_meaning_en": "At last I arrived.",
+     "note": "The same root as أُخْرَى and مُتَأَخِّر."
+    },
+    {
+     "id": "lexeme.arabic-story-connectors-5",
+     "form_ar": "عُدْتُ",
+     "meaning_en": "I came back, I returned",
+     "part_of_speech": "verb",
+     "root_ar": "ع-و-د",
+     "root_reading": "ʿ-w-d",
+     "example_ar": "عُدْتُ مِنَ الْعَمَلِ مُتَأَخِّرًا.",
+     "example_meaning_en": "I came back from work late.",
+     "note": "“He came back” is عَادَ."
+    },
+    {
+     "id": "lexeme.arabic-story-connectors-6",
+     "form_ar": "عِنْدَمَا",
+     "meaning_en": "when (as a link)",
+     "part_of_speech": "particle",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "عِنْدَمَا وَصَلْتُ، كَانَ الْبَابُ مُغْلَقًا.",
+     "example_meaning_en": "When I arrived, the door was closed.",
+     "note": "Joins two events; for a question, “when?” is مَتَى."
+    }
+   ]
+  },
+  "lesson.arabic-story-retell": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-story-retell-1",
+     "form_ar": "قِصَّة",
+     "meaning_en": "story",
+     "part_of_speech": "noun",
+     "root_ar": "ق-ص-ص",
+     "root_reading": "q-ṣ-ṣ",
+     "example_ar": "هَذِهِ قِصَّةٌ قَصِيرَةٌ.",
+     "example_meaning_en": "This is a short story.",
+     "note": "Plural قِصَص."
+    },
+    {
+     "id": "lexeme.arabic-story-retell-2",
+     "form_ar": "حَكَى",
+     "meaning_en": "told (a story)",
+     "part_of_speech": "verb",
+     "root_ar": "ح-ك-ي",
+     "root_reading": "ḥ-k-y",
+     "example_ar": "حَكَى سَامِرٌ قِصَّةً.",
+     "example_meaning_en": "Sāmir told a story.",
+     "note": "“He tells” is يَحْكِي."
+    },
+    {
+     "id": "lexeme.arabic-story-retell-3",
+     "form_ar": "فِي الْبِدَايَةِ",
+     "meaning_en": "at the beginning",
+     "part_of_speech": "chunk",
+     "root_ar": "ب-د-أ",
+     "root_reading": "b-d-ʾ",
+     "example_ar": "فِي الْبِدَايَةِ كَانَ الْجَوُّ بَارِدًا.",
+     "example_meaning_en": "At the beginning the weather was cold.",
+     "note": "Opens a story."
+    },
+    {
+     "id": "lexeme.arabic-story-retell-4",
+     "form_ar": "فِي النِّهَايَةِ",
+     "meaning_en": "in the end",
+     "part_of_speech": "chunk",
+     "root_ar": "ن-ه-ي",
+     "root_reading": "n-h-y",
+     "example_ar": "فِي النِّهَايَةِ رَجَعَ إِلَى الْبَيْتِ.",
+     "example_meaning_en": "In the end he went back home.",
+     "note": "Closes a story."
+    },
+    {
+     "id": "lexeme.arabic-story-retell-5",
+     "form_ar": "ذَاتَ يَوْمٍ",
+     "meaning_en": "one day",
+     "part_of_speech": "chunk",
+     "root_ar": "ي-و-م",
+     "root_reading": "y-w-m",
+     "example_ar": "ذَاتَ يَوْمٍ ذَهَبَ سَامِرٌ إِلَى الْمَدِينَةِ.",
+     "example_meaning_en": "One day Sāmir went to the city.",
+     "note": "A usual way to start a story."
+    },
+    {
+     "id": "lexeme.arabic-story-retell-6",
+     "form_ar": "مُلَخَّص",
+     "meaning_en": "summary",
+     "part_of_speech": "noun",
+     "root_ar": "ل-خ-ص",
+     "root_reading": "l-kh-ṣ",
+     "example_ar": "هَذَا مُلَخَّصُ الْقِصَّةِ.",
+     "example_meaning_en": "This is the summary of the story.",
+     "note": "A summary keeps what happened and leaves out what didn't."
+    }
+   ]
+  },
+  "lesson.arabic-future-plans": {
+   "seed": [
+    "lexeme.arabic-seed-032"
+   ],
+   "words": [
+    {
+     "id": "lexeme.arabic-future-plans-1",
+     "form_ar": "سَأَذْهَبُ",
+     "meaning_en": "I will go",
+     "part_of_speech": "verb",
+     "root_ar": "ذ-ه-ب",
+     "root_reading": "dh-h-b",
+     "example_ar": "سَأَذْهَبُ إِلَى الْمَكْتَبَةِ غَدًا.",
+     "example_meaning_en": "I will go to the library tomorrow.",
+     "note": "سَـ joined to a present verb points to the future."
+    },
+    {
+     "id": "lexeme.arabic-future-plans-2",
+     "form_ar": "سَوْفَ",
+     "meaning_en": "will (before a verb)",
+     "part_of_speech": "particle",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "سَوْفَ أَكْتُبُ لَكَ.",
+     "example_meaning_en": "I will write to you.",
+     "note": "A separate word with the same meaning as سَـ."
+    },
+    {
+     "id": "lexeme.arabic-future-plans-3",
+     "form_ar": "الْأُسْبُوعَ الْقَادِمَ",
+     "meaning_en": "next week",
+     "part_of_speech": "chunk",
+     "root_ar": "ق-د-م",
+     "root_reading": "q-d-m",
+     "example_ar": "الْمَوْعِدُ الْأُسْبُوعَ الْقَادِمَ.",
+     "example_meaning_en": "The appointment is next week.",
+     "note": "Literally “the coming week”."
+    },
+    {
+     "id": "lexeme.arabic-future-plans-4",
+     "form_ar": "بَعْدَ غَدٍ",
+     "meaning_en": "the day after tomorrow",
+     "part_of_speech": "chunk",
+     "root_ar": "غ-د-و",
+     "root_reading": "gh-d-w",
+     "example_ar": "سَأَعْمَلُ بَعْدَ غَدٍ.",
+     "example_meaning_en": "I'll work the day after tomorrow.",
+     "note": "غَد is “tomorrow” as a noun; غَدًا is “tomorrow” as a time."
+    },
+    {
+     "id": "lexeme.arabic-future-plans-5",
+     "form_ar": "خُطَّة",
+     "meaning_en": "plan",
+     "part_of_speech": "noun",
+     "root_ar": "خ-ط-ط",
+     "root_reading": "kh-ṭ-ṭ",
+     "example_ar": "مَا خُطَّتُكَ لِلْغَدِ؟",
+     "example_meaning_en": "What's your plan for tomorrow?",
+     "note": "Plural خُطَط."
+    },
+    {
+     "id": "lexeme.arabic-future-plans-6",
+     "form_ar": "أَنْوِي",
+     "meaning_en": "I intend, I plan to",
+     "part_of_speech": "verb",
+     "root_ar": "ن-و-ي",
+     "root_reading": "n-w-y",
+     "example_ar": "أَنْوِي أَنْ أَدْرُسَ كُلَّ يَوْمٍ.",
+     "example_meaning_en": "I intend to study every day.",
+     "note": "An intention, which can change; followed by أَنْ."
+    }
+   ]
+  },
+  "lesson.arabic-negation-system": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-negation-system-1",
+     "form_ar": "لَمْ",
+     "meaning_en": "didn't (before a present form)",
+     "part_of_speech": "particle",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "لَمْ أَذْهَبْ إِلَى الْعَمَلِ.",
+     "example_meaning_en": "I didn't go to work.",
+     "note": "The verb after it ends in sukūn: أَذْهَبْ."
+    },
+    {
+     "id": "lexeme.arabic-negation-system-2",
+     "form_ar": "لَنْ",
+     "meaning_en": "won't (before a present form)",
+     "part_of_speech": "particle",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "لَنْ أَتَأَخَّرَ.",
+     "example_meaning_en": "I won't be late.",
+     "note": "The verb after it ends in -a: أَتَأَخَّرَ."
+    },
+    {
+     "id": "lexeme.arabic-negation-system-3",
+     "form_ar": "لَيْسَ",
+     "meaning_en": "is not (he, it)",
+     "part_of_speech": "verb",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "هُوَ لَيْسَ هُنَا.",
+     "example_meaning_en": "He isn't here.",
+     "note": "For “she”: لَيْسَتْ."
+    },
+    {
+     "id": "lexeme.arabic-negation-system-4",
+     "form_ar": "لَسْتُ",
+     "meaning_en": "I am not",
+     "part_of_speech": "verb",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "لَسْتُ مُتْعَبًا.",
+     "example_meaning_en": "I'm not tired.",
+     "note": "What you are not takes -an: مُتْعَبًا."
+    },
+    {
+     "id": "lexeme.arabic-negation-system-5",
+     "form_ar": "أَبَدًا",
+     "meaning_en": "never, not at all",
+     "part_of_speech": "adverb",
+     "root_ar": "أ-ب-د",
+     "root_reading": "ʾ-b-d",
+     "example_ar": "لَا أَشْرَبُ الْقَهْوَةَ أَبَدًا.",
+     "example_meaning_en": "I never drink coffee.",
+     "note": "With a negative before it."
+    },
+    {
+     "id": "lexeme.arabic-negation-system-6",
+     "form_ar": "شَيْئًا",
+     "meaning_en": "anything",
+     "part_of_speech": "noun",
+     "root_ar": "ش-ي-أ",
+     "root_reading": "sh-y-ʾ",
+     "example_ar": "لَمْ أَفْهَمْ شَيْئًا.",
+     "example_meaning_en": "I didn't understand anything.",
+     "note": "شَيْء, “thing”, with -an; after a negative it means “anything”."
+    }
+   ]
+  },
+  "lesson.arabic-requests-imperatives": {
+   "seed": [
+    "lexeme.arabic-seed-027",
+    "lexeme.arabic-seed-028"
+   ],
+   "words": [
+    {
+     "id": "lexeme.arabic-requests-imperatives-1",
+     "form_ar": "اِفْتَحْ",
+     "meaning_en": "open! (to a man)",
+     "part_of_speech": "verb",
+     "root_ar": "ف-ت-ح",
+     "root_reading": "f-t-ḥ",
+     "example_ar": "اِفْتَحِ الْبَابَ، مِنْ فَضْلِكَ.",
+     "example_meaning_en": "Open the door, please.",
+     "note": "Before the article it's said iftaḥi. To a woman: اِفْتَحِي."
+    },
+    {
+     "id": "lexeme.arabic-requests-imperatives-2",
+     "form_ar": "اُدْخُلْ",
+     "meaning_en": "come in! (to a man)",
+     "part_of_speech": "verb",
+     "root_ar": "د-خ-ل",
+     "root_reading": "d-kh-l",
+     "example_ar": "تَفَضَّلْ، اُدْخُلْ.",
+     "example_meaning_en": "Please, come in.",
+     "note": "To a woman: اُدْخُلِي."
+    },
+    {
+     "id": "lexeme.arabic-requests-imperatives-3",
+     "form_ar": "اِجْلِسْ",
+     "meaning_en": "sit down! (to a man)",
+     "part_of_speech": "verb",
+     "root_ar": "ج-ل-س",
+     "root_reading": "j-l-s",
+     "example_ar": "اِجْلِسْ هُنَا.",
+     "example_meaning_en": "Sit here.",
+     "note": "To a woman: اِجْلِسِي."
+    },
+    {
+     "id": "lexeme.arabic-requests-imperatives-4",
+     "form_ar": "اِسْمَعِي",
+     "meaning_en": "listen! (to a woman)",
+     "part_of_speech": "verb",
+     "root_ar": "س-م-ع",
+     "root_reading": "s-m-ʿ",
+     "example_ar": "اِسْمَعِي، مِنْ فَضْلِكِ.",
+     "example_meaning_en": "Listen, please.",
+     "note": "To a man: اِسْمَعْ."
+    },
+    {
+     "id": "lexeme.arabic-requests-imperatives-5",
+     "form_ar": "اِنْتَظِرْ",
+     "meaning_en": "wait! (to a man)",
+     "part_of_speech": "verb",
+     "root_ar": "ن-ظ-ر",
+     "root_reading": "n-ẓ-r",
+     "example_ar": "اِنْتَظِرْ قَلِيلًا.",
+     "example_meaning_en": "Wait a little.",
+     "note": "To a woman: اِنْتَظِرِي."
+    },
+    {
+     "id": "lexeme.arabic-requests-imperatives-6",
+     "form_ar": "أَغْلِقْ",
+     "meaning_en": "close! (to a man)",
+     "part_of_speech": "verb",
+     "root_ar": "غ-ل-ق",
+     "root_reading": "gh-l-q",
+     "example_ar": "أَغْلِقِ الْبَابَ، مِنْ فَضْلِكَ.",
+     "example_meaning_en": "Close the door, please.",
+     "note": "It starts with أَ, a hamza that's always said. To a woman: أَغْلِقِي."
+    },
+    {
+     "id": "lexeme.arabic-requests-imperatives-7",
+     "form_ar": "لَا تَتَأَخَّرْ",
+     "meaning_en": "don't be late (to a man)",
+     "part_of_speech": "chunk",
+     "root_ar": "أ-خ-ر",
+     "root_reading": "ʾ-kh-r",
+     "example_ar": "لَا تَتَأَخَّرْ غَدًا.",
+     "example_meaning_en": "Don't be late tomorrow.",
+     "note": "“Don't …” is لَا with a present form ending in sukūn; to a woman: لَا تَتَأَخَّرِي."
+    }
+   ]
+  },
+  "lesson.arabic-modal-complements": {
+   "seed": [
+    "lexeme.arabic-seed-040"
+   ],
+   "words": [
+    {
+     "id": "lexeme.arabic-modal-complements-1",
+     "form_ar": "أَنْ",
+     "meaning_en": "to (before a verb)",
+     "part_of_speech": "particle",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "أُرِيدُ أَنْ أَشْرَبَ الشَّايَ.",
+     "example_meaning_en": "I want to drink tea.",
+     "note": "The verb after it ends in -a: أَشْرَبَ."
+    },
+    {
+     "id": "lexeme.arabic-modal-complements-2",
+     "form_ar": "أَسْتَطِيعُ",
+     "meaning_en": "I can, I am able to",
+     "part_of_speech": "verb",
+     "root_ar": "ط-و-ع",
+     "root_reading": "ṭ-w-ʿ",
+     "example_ar": "أَسْتَطِيعُ أَنْ أَكْتُبَ اسْمِي.",
+     "example_meaning_en": "I can write my name.",
+     "note": "Followed by أَنْ and a verb."
+    },
+    {
+     "id": "lexeme.arabic-modal-complements-3",
+     "form_ar": "يَجِبُ أَنْ",
+     "meaning_en": "must, have to",
+     "part_of_speech": "chunk",
+     "root_ar": "و-ج-ب",
+     "root_reading": "w-j-b",
+     "example_ar": "يَجِبُ أَنْ أَذْهَبَ الْآنَ.",
+     "example_meaning_en": "I have to go now.",
+     "note": "Literally “it is necessary that”; the person is in the verb after it."
+    },
+    {
+     "id": "lexeme.arabic-modal-complements-4",
+     "form_ar": "يُمْكِنُ",
+     "meaning_en": "can, it's possible",
+     "part_of_speech": "verb",
+     "root_ar": "م-ك-ن",
+     "root_reading": "m-k-n",
+     "example_ar": "يُمْكِنُكَ أَنْ تَجْلِسَ هُنَا.",
+     "example_meaning_en": "You can sit here.",
+     "note": "With ـكَ: “you can”; on its own: “it's possible”."
+    },
+    {
+     "id": "lexeme.arabic-modal-complements-5",
+     "form_ar": "أُحَاوِلُ",
+     "meaning_en": "I try",
+     "part_of_speech": "verb",
+     "root_ar": "ح-و-ل",
+     "root_reading": "ḥ-w-l",
+     "example_ar": "أُحَاوِلُ أَنْ أَفْهَمَ.",
+     "example_meaning_en": "I'm trying to understand.",
+     "note": "Followed by أَنْ and a verb."
+    },
+    {
+     "id": "lexeme.arabic-modal-complements-6",
+     "form_ar": "أُفَضِّلُ",
+     "meaning_en": "I prefer",
+     "part_of_speech": "verb",
+     "root_ar": "ف-ض-ل",
+     "root_reading": "f-ḍ-l",
+     "example_ar": "أُفَضِّلُ الشَّايَ.",
+     "example_meaning_en": "I prefer tea.",
+     "note": "The same root as مِنْ فَضْلِكَ and تَفَضَّلْ."
+    }
+   ]
+  },
+  "lesson.arabic-plans-dialogue": {
+   "seed": [],
+   "words": [
+    {
+     "id": "lexeme.arabic-plans-dialogue-1",
+     "form_ar": "نَلْتَقِي",
+     "meaning_en": "we meet",
+     "part_of_speech": "verb",
+     "root_ar": "ل-ق-ي",
+     "root_reading": "l-q-y",
+     "example_ar": "نَلْتَقِي فِي الْمَكْتَبَةِ.",
+     "example_meaning_en": "We meet in the library.",
+     "note": "The same root as إِلَى اللِّقَاءِ."
+    },
+    {
+     "id": "lexeme.arabic-plans-dialogue-2",
+     "form_ar": "مَا رَأْيُكَ؟",
+     "meaning_en": "what do you think? (to a man)",
+     "part_of_speech": "chunk",
+     "root_ar": "ر-أ-ي",
+     "root_reading": "r-ʾ-y",
+     "example_ar": "مَا رَأْيُكَ فِي هَذِهِ الْفِكْرَةِ؟",
+     "example_meaning_en": "What do you think of this idea?",
+     "note": "To a woman: مَا رَأْيُكِ؟ رَأْي is “opinion”."
+    },
+    {
+     "id": "lexeme.arabic-plans-dialogue-3",
+     "form_ar": "مُوَافِق",
+     "meaning_en": "agreed, OK",
+     "part_of_speech": "adjective",
+     "root_ar": "و-ف-ق",
+     "root_reading": "w-f-q",
+     "example_ar": "مُوَافِقٌ، نَلْتَقِي غَدًا.",
+     "example_meaning_en": "Agreed, we meet tomorrow.",
+     "note": "A woman says مُوَافِقَةٌ."
+    },
+    {
+     "id": "lexeme.arabic-plans-dialogue-4",
+     "form_ar": "لِلْأَسَفِ",
+     "meaning_en": "unfortunately",
+     "part_of_speech": "chunk",
+     "root_ar": "أ-س-ف",
+     "root_reading": "ʾ-s-f",
+     "example_ar": "لِلْأَسَفِ، أَنَا مَشْغُولٌ غَدًا.",
+     "example_meaning_en": "Unfortunately, I'm busy tomorrow.",
+     "note": "The same root as آسِف, “sorry”."
+    },
+    {
+     "id": "lexeme.arabic-plans-dialogue-5",
+     "form_ar": "أَحْضُرُ",
+     "meaning_en": "I attend, I come to",
+     "part_of_speech": "verb",
+     "root_ar": "ح-ض-ر",
+     "root_reading": "ḥ-ḍ-r",
+     "example_ar": "أَحْضُرُ الدَّرْسَ كُلَّ يَوْمٍ.",
+     "example_meaning_en": "I come to the lesson every day.",
+     "note": "What you attend comes straight after the verb."
+    },
+    {
+     "id": "lexeme.arabic-plans-dialogue-6",
+     "form_ar": "يَوْمُ الْأَرْبِعَاءِ",
+     "meaning_en": "Wednesday",
+     "part_of_speech": "chunk",
+     "root_ar": "ر-ب-ع",
+     "root_reading": "r-b-ʿ",
+     "example_ar": "الدَّرْسُ يَوْمَ الْأَرْبِعَاءِ.",
+     "example_meaning_en": "The lesson is on Wednesday.",
+     "note": "Literally “the day of the four”: from the root of أَرْبَعَة."
+    },
+    {
+     "id": "lexeme.arabic-plans-dialogue-7",
+     "form_ar": "بَدَلًا مِنْ",
+     "meaning_en": "instead of",
+     "part_of_speech": "chunk",
+     "root_ar": "ب-د-ل",
+     "root_reading": "b-d-l",
+     "example_ar": "نَلْتَقِي صَبَاحًا بَدَلًا مِنَ الْمَسَاءِ.",
+     "example_meaning_en": "We'll meet in the morning instead of the evening.",
+     "note": "مِنْ becomes مِنَ before the article."
     }
    ]
   }
