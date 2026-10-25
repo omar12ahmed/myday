@@ -26,7 +26,11 @@ export const matchCount = (n: number, query: string) =>
 // "Sam's") and without the Arabic stretching line (tatweel), so you find the words you remember however your keyboard
 // typed them.
 export const fold = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').replace(/\u0640/g, '').replace(/[’‘]/g, "'").toLowerCase();
-export const wordsOf = (q: string) => fold(q).split(/\s+/).filter(Boolean);
+// A possessive you type finds the plain word too ("electrician's" finds "Ring the electrician", "drivers'" finds
+// "drivers", "1990's" finds "the 1990s"): after fold (so ’ is ' by then), a trailing 's or ' is left off when at least
+// three characters are left ("it's" stays as it is; one in the middle, as in "o'brien", isn't trailing).
+const plain = (w: string) => { const stem = w.replace(/'s?$/, ''); return stem !== w && Array.from(stem).length >= 3 ? stem : w; };
+export const wordsOf = (q: string) => fold(q).split(/\s+/).filter(Boolean).map(plain);
 
 // A little of the longer text around the first word found, on one line. It's cut on whole characters and, where it
 // can be, at spaces: never half an emoji or a mark without its letter, whatever the script.

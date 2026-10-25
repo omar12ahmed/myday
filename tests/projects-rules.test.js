@@ -23,7 +23,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     `export { freshState, normalize } from ${src('normalize')};`, `export { shift, shortDate } from ${src('dates')};`, `export * from ${src('projectDashboard')};`, `export * from ${src('weekReview')};`, `export { stepsForToday, nextStep, whyNext } from ${src('projects')};`,
     `export { normalizeStudyLinks, addStudyLink, removeStudyLink, setStudyLinkWhy, linkView, courseChoices, bookChoices, linkedFrom, tidyWhy, LINK_LIMITS } from ${src('studyLinks')};`, `export * as Cyber from ${JSON.stringify(path.join(ROOT, 'app/src/projects/learningCyber'))};`, `export { stIndex } from ${src('study/roadmap')};`,
     `export { webAddress, siteOf, resourceName, normalizeResources, addResource, editResource, removeResource, canOpen, tidyText, RESOURCE_LIMITS } from ${src('projectResources')};`,
-    `export { searchProject, fold, matchCount, SEARCH_KIND_LABEL } from ${src('projectSearch')};`,
+    `export { searchProject, fold, wordsOf, matchCount, SEARCH_KIND_LABEL } from ${src('projectSearch')};`,
     `export { normalizeTasks, setWaiting, stopWaiting, isWaiting, chaseTask, chaseWaiting, isStuck, setTaskDone, inQueue, onTodaysPlan, unstick } from ${src('tasks')};`,
     `export { stepsText, allStepsDone, addStep, editStep, tickStep, moveStep, removeStep, startsAfter, startsAfterText, afterChoices, setStartsAfter, removeTask, TASK_LIMITS } from ${src('tasks')};`,
     `export { linkTask, heldBack } from ${src('projects')};`,
@@ -1568,6 +1568,11 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const fa = q => K.searchProject(ap, ap.projects.items[0], q).map(h => h.id);
     check('a task titled with a curly apostrophe is found by a straight one, and the other way round', eq(fa("sam's"), ['tkCurly']) && eq(fa('joe’s'), ['tkStraight']) && eq(fa('sam’s'), ['tkCurly']) && eq(fa("joe's"), ['tkStraight']), [fa("sam's"), fa('joe’s')]);
     check('fold makes both kinds of apostrophe the straight one', K.fold('Sam’s ‘quote’') === "sam's 'quote'", K.fold('Sam’s ‘quote’'));
+    const po = world(base('pjPo', { title: 'Possessives' })); po.tasks.items = [tk('tkEl', 'Ring the electrician', 'pjPo'), tk('tkDr', 'Check the drivers rota', 'pjPo'), tk('tkIt', "It's done", 'pjPo'), tk('tkOb', "Call O’Brien", 'pjPo'), tk('tk90', 'Photos from the 1990s', 'pjPo')];
+    const fp = q => K.searchProject(po, po.projects.items[0], q).filter(h => h.kind === 'task').map(h => h.id);
+    check('a possessive you type finds the plain word ("electrician\'s" and "electrician’s" find "Ring the electrician"; "drivers\'" finds "drivers")', eq(fp("electrician's number"), []) && eq(fp("electrician's"), ['tkEl']) && eq(fp('electrician’s'), ['tkEl']) && eq(fp("drivers'"), ['tkDr']), [fp("electrician's"), fp("drivers'")]);
+    check('…but a short word keeps its apostrophe ("it\'s" isn\'t "it"), and the words themselves are kept as typed otherwise', eq(K.wordsOf("it's"), ["it's"]) && eq(K.wordsOf("Electrician's DRIVERS' rota"), ['electrician', 'drivers', 'rota']) && eq(fp("it's"), ['tkIt']), K.wordsOf("Electrician's DRIVERS' rota"));
+    check('…one in the middle isn\'t trailing ("o\'brien" finds "O’Brien" as before), and "1990\'s" finds "the 1990s" (characters, not letters, are counted)', eq(K.wordsOf("o'brien"), ["o'brien"]) && eq(fp("o'brien"), ['tkOb']) && eq(fp("1990's"), ['tk90']), [K.wordsOf("o'brien"), fp("1990's")]);
     check('a business idea\'s "Your answers" label is not searched (only the words typed in)', eq(fb('your answers'), []) && eq(fb('your'), []), fb('your answers'));
     const wl = world(base('pjL', { title: 'Labels' })); wl.notes.items = [nt('ntBlank', '', '', 'pjL')];
     check('an untitled note shows "Untitled note", but "untitled" does not find it', K.searchProject(wl, wl.projects.items[0], 'note untitled').length === 0 && K.searchProject(wl, wl.projects.items[0], 'untitled').length === 0);

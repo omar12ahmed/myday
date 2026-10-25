@@ -99,6 +99,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   console.log('\n[1] Matching');
   check('nothing typed (or only spaces) finds nothing', S('').total === 0 && S('   ').sections.length === 0);
   check('every word must be there, in any order, whatever the capitals', eq(ids(S('ELECTRICIAN ring'), 'tasks'), ['tkRing']) && ids(S('ring zebra'), 'tasks').length === 0);
+  check('a possessive you type finds the plain word ("electrician\'s" finds "Ring the electrician", with his number in its notes)', ids(S("electrician's number"), 'tasks').includes('tkRing') && ids(S('electrician’s'), 'tasks').includes('tkRing'));
   check('accents and the kind of apostrophe don\'t matter ("cafe" finds "Café", "sam\'s" finds "Sam’s")', eq(ids(S('cafe'), 'notes'), ['nEl']) && eq(ids(S("sam's"), 'notes'), ['nEl']));
   check('Arabic: vowel marks and tatweel don\'t matter (كتاب finds كِتَاب, قلم finds قلــم)', eq(ids(S('كتاب'), 'study'), ['kwK']) && eq(ids(S('قلم'), 'study'), ['kwT']));
   check('MyDay\'s own labels aren\'t searched: an empty note shows as "Untitled note" but isn\'t found by it; "note" doesn\'t find a note', S('untitled note').total === 0 && !all(S('note')).some(f => f.id === 'nShed') && sec(S('shopping'), 'notes').length === 1);
