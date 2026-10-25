@@ -37,7 +37,7 @@ export const evidenceToGet = (p: Project) => (isCase(p) ? caseCounts(p).toGet : 
 export type NeedReason = 'today' | 'past' | 'waiting' | 'stuck' | 'soon' | 'decision' | 'found' | 'evidence';
 export type NeedGroup = 'dates' | 'waiting' | 'stuck' | 'decisions' | 'tools';
 export const GROUP_OF: Record<NeedReason, NeedGroup> = { today: 'dates', past: 'dates', soon: 'dates', waiting: 'waiting', stuck: 'stuck', decision: 'decisions', found: 'tools', evidence: 'tools' };
-export const GROUP_LABEL: Record<NeedGroup, string> = { dates: 'Dates', waiting: 'Waiting', stuck: 'In the way', decisions: 'Decisions', tools: 'Find out and evidence' };
+export const GROUP_LABEL: Record<NeedGroup, string> = { dates: 'Dates', waiting: 'Waiting', stuck: 'In the way', decisions: 'Decisions', tools: 'Findings and evidence' };
 // What matters soonest comes first: today's dates, then dates passed (oldest first), waits that are due, tasks that
 // keep moving, the coming week's dates, decisions open longest, then a project's own tools.
 const RANK: Record<NeedReason, number> = { today: 0, past: 1, waiting: 2, stuck: 3, soon: 4, decision: 5, found: 6, evidence: 7 };

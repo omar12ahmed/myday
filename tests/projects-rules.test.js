@@ -27,6 +27,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     `export { normalizeTasks, setWaiting, stopWaiting, isWaiting, chaseTask, chaseWaiting, isStuck, setTaskDone, inQueue, onTodaysPlan, unstick } from ${src('tasks')};`,
     `export { stepsText, allStepsDone, addStep, editStep, tickStep, moveStep, removeStep, startsAfter, startsAfterText, afterChoices, setStartsAfter, removeTask, TASK_LIMITS } from ${src('tasks')};`,
     `export { linkTask, heldBack } from ${src('projects')};`,
+    `export { needsYou, needsYouOn, GROUP_LABEL as NEED_GROUP_LABEL } from ${src('attention')};`,
     `export { setDone, clearDay, toggleRoll, followQueued, taskFromQueue, sendToQueue } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
@@ -2017,6 +2018,59 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const before = JSON.stringify(d);
     ['m', 'b', 'f', 'p', 'o', 'l'].forEach(id => { K.startsAfter(d, tk(d, id)); K.startsAfterText(d, tk(d, id)); K.afterChoices(d, tk(d, id)); K.heldBack(d, tk(d, id)); }); K.nextStep(d, P2(d)); K.whyNext(d, P2(d)); K.stepsForToday(d, k);
     check('reading what a task starts after, its choices, the next step and "Why this?" writes nothing', JSON.stringify(d) === before);
+  }
+
+  console.log('\n[21] Needs you, across projects (specs/projects-attention.md)');
+  {
+    const k = '2026-10-14', D = d => K.shortDate(d), day = n => K.shift(k, n);
+    const TK = (id, title, pid, x = {}) => ({ id, title, listId: '', category: 'admin', minutes: 20, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-09-20T09:00', postponed: 0, blockers: [], letGoOn: null, ...(pid ? { projectId: pid } : {}), ...x });
+    const AS = (id, x = {}) => ({ id, text: 'Offices pay monthly', state: 'open', found: '', checkedOn: null, taskId: null, createdAt: OLD, ...x });
+    const DC = (id, q, opened, x = {}) => ({ id, question: q, options: [{ id: id + 'a', text: 'Local', pros: [], cons: [] }, { id: id + 'b', text: 'Online', pros: [], cons: [] }], chosen: null, why: '', decidedOn: null, createdAt: `${opened}T09:00`, ...x });
+    const EV = (id, status) => ({ id, title: 'Check-in photos', kind: 'photo', date: null, where: '', status, notes: '', issueIds: [], createdAt: OLD });
+    const build = () => {
+      const w = world(base('pjShed', { title: 'Garden shed', stage: 'act', updatedAt: '2026-10-13T09:00', commitmentIds: ['cmAppt'] }),
+        base('pjCoffee', { title: 'Coffee subscription', template: 'business', updatedAt: '2026-10-12T09:00', model: { problem: 'p', who: 'w', how: 'h', assumptions: [AS('asF', { taskId: 'tkFind' }), AS('asNo', { taskId: 'tkFindOpen' })] },
+          decisions: [DC('dcOld', 'Which roaster?', day(-23)), DC('dcNew', 'Which cups?', day(-10)), DC('dcDone', 'Which name?', day(-30), { chosen: 'dcDonea', decidedOn: day(-1) })] }),
+        base('pjCase', { title: 'Deposit dispute', template: 'case', updatedAt: '2026-10-11T09:00', case: { timeline: [], evidence: [EV('ev1', 'to-get'), EV('ev2', 'to-get'), EV('ev3', 'have')], issues: [] } }),
+        base('pjPriv', { title: 'Moving flat', private: true, updatedAt: '2026-10-10T09:00' }),
+        base('pjPaused', { title: 'Paused one', status: 'paused' }), base('pjDone', { title: 'Done one', status: 'done' }));
+      w.tasks.items = [
+        TK('tToday', 'Measure the alcove', 'pjShed', { due: k, time: '17:30' }), TK('tPast', 'Order the boards', 'pjShed', { due: day(-3) }),
+        TK('tPastWait', 'Ask Sam', 'pjShed', { due: day(-2), waiting: { on: 'Sam', since: day(-9), until: null } }),
+        TK('tPastAfter', 'Build the frame', 'pjShed', { due: day(-2), after: ['tPast'] }),
+        TK('tWait', 'Get the quote back', 'pjShed', { waiting: { on: 'Priya', since: day(-6), until: day(-1) } }), TK('tWaitToday', 'Hear about the van', 'pjShed', { waiting: { on: 'the van hire', since: day(-6), until: k } }),
+        TK('tStuck', 'Book the skip', 'pjShed', { due: day(1), postponed: 4 }), TK('tWeek', 'Clear the corner', 'pjShed', { due: day(-8) }),
+        TK('tSoon', 'Send the letter', 'pjCase', { due: day(3) }), TK('tTomorrow', 'Phone the agent', 'pjCase', { due: day(1) }), TK('tFar', 'Too far ahead', 'pjCase', { due: day(8) }),
+        TK('tDoneToday', 'Already done', 'pjShed', { due: k, done: true, doneOn: k }), TK('tPriv', 'Book the van', 'pjPriv', { due: day(2) }),
+        TK('tPaused', 'Paused task', 'pjPaused', { due: k }), TK('tDoneP', 'Done project task', 'pjDone', { due: k }), TK('tLoose', 'No project', null, { due: k }),
+        TK('tkFind', 'Find out: Offices pay monthly', 'pjCoffee', { done: true, doneOn: day(-2) }), TK('tkFindOpen', 'Find out: still open', 'pjCoffee')];
+      w.commitments = [{ id: 'cmAppt', kind: 'appointment', title: 'Timber yard visit', start: `${day(2)}T10:00`, end: `${day(2)}T11:00` }];
+      return w;
+    };
+    let w = build();
+    const N = K.needsYou(w, k), keys = N.map(n => n.key), by = key => N.find(n => n.key === key);
+    check('the order: today\'s dates, dates passed (oldest first), waits that are due, tasks that keep moving, the coming week, decisions, then Find out and evidence', eq(keys, [
+      'date:tToday', 'past:tPast', 'waiting:tWait', 'waiting:tWaitToday', 'stuck:tWeek', 'stuck:tStuck', 'date:tTomorrow', 'date:cmAppt', 'date:tPriv', 'date:tSoon', 'decision:pjCoffee:dcOld', 'found:pjCoffee', 'evidence:pjCase']), keys);
+    check('a date today: "today at 17:30", opening the task', eq([by('date:tToday').title, by('date:tToday').why, by('date:tToday').href, by('date:tToday').reason, by('date:tToday').group], ['Measure the alcove', 'today at 17:30', '#today/tasks/tToday', 'today', 'dates']));
+    check('a date passed: "still open, was due …"; never one that\'s waiting on someone or starts after another task', by('past:tPast').why === `still open, was due ${D(day(-3))}` && !keys.some(x => x.endsWith(':tPastWait') || x.endsWith(':tPastAfter')));
+    check('a wait whose expected day has come: "waiting on Priya — expected …" ("expected today" on the day), with Chase it', by('waiting:tWait').why === `waiting on Priya — expected ${D(day(-1))}` && by('waiting:tWaitToday').why === 'waiting on the van hire — expected today' && eq(by('waiting:tWait').chase, { taskId: 'tWait', added: false }) && by('waiting:tWait').group === 'waiting');
+    check('a task that keeps moving: "moved 4 times — something in the way?", or a week past its date: "planned for … — something in the way?"; each only once (not also as a date)', by('stuck:tStuck').why === 'moved 4 times — something in the way?' && by('stuck:tWeek').why === `planned for ${D(day(-8))} — something in the way?` && !keys.includes('date:tStuck') && !keys.includes('past:tWeek'));
+    check('the coming week: "tomorrow", "on …", an appointment with its time (opening the Calendar); eight days on, nothing', by('date:tTomorrow').why === 'tomorrow' && by('date:tSoon').why === `on ${D(day(3))}` && by('date:cmAppt').why === `on ${D(day(2))} at 10:00` && by('date:cmAppt').href === '#calendar' && !keys.includes('date:tFar'));
+    check('a decision open 14 days or more: "open 3 weeks", opening Decisions; one opened 10 days ago, or one made, isn\'t', by('decision:pjCoffee:dcOld').title === 'Which roaster?' && by('decision:pjCoffee:dcOld').why === 'open 3 weeks' && by('decision:pjCoffee:dcOld').href === '#projects/p/pjCoffee/decisions' && keys.filter(x => x.startsWith('decision:')).length === 1);
+    check('a business idea\'s Find out results ("A Find out task is done" — "what did you find?") and a case\'s evidence ("2 pieces of evidence" — "still to get")', eq([by('found:pjCoffee').title, by('found:pjCoffee').why, by('found:pjCoffee').href], ['A Find out task is done', 'what did you find?', '#projects/p/pjCoffee/model'])
+      && eq([by('evidence:pjCase').title, by('evidence:pjCase').why, by('evidence:pjCase').href, by('evidence:pjCase').group], ['2 pieces of evidence', 'still to get', '#projects/p/pjCase/evidence', 'tools']));
+    check('every line names its project; a private project\'s items show (on this device)', N.every(n => n.project === w.projects.items.find(p => p.id === n.projectId).title) && by('date:tPriv').project === 'Moving flat');
+    check('not: a done task, a paused or finished project\'s, or a task in no project', !keys.some(x => /tDoneToday|tPaused|tDoneP|tLoose/.test(x)));
+    check('how many need you on each project', K.needsYouOn(w, w.projects.items.find(p => p.id === 'pjShed'), k) === 7 && K.needsYouOn(w, w.projects.items.find(p => p.id === 'pjCoffee'), k) === 2 && K.needsYouOn(w, w.projects.items.find(p => p.id === 'pjPaused'), k) === 0);
+    check('the reasons\' groups and their names', eq(Object.keys(K.NEED_GROUP_LABEL), ['dates', 'waiting', 'stuck', 'decisions', 'tools']) && eq(Object.values(K.NEED_GROUP_LABEL), ['Dates', 'Waiting', 'In the way', 'Decisions', 'Findings and evidence']));
+    const before = JSON.stringify(w); K.needsYou(w, k); K.needsYouOn(w, w.projects.items[0], k);
+    check('working it out writes nothing', JSON.stringify(w) === before);
+    w = build(); K.setTaskDone(w, 'tPast', true);
+    check('dealt with, it goes: the boards done, they leave; the frame (which started after them) is still open after its date, so it\'s there now', !K.needsYou(w, k).some(n => n.key === 'past:tPast') && K.needsYou(w, k).some(n => n.key === 'past:tPastAfter'));
+    w = build(); w.projects.items.find(p => p.id === 'pjCoffee').decisions[0].chosen = 'dcOlda';
+    check('…a decision made, it goes', !K.needsYou(w, k).some(n => n.key.startsWith('decision:')));
+    w = build(); w.projects.items = w.projects.items.filter(p => p.id === 'pjPaused'); w.tasks.items = [];
+    check('with nothing to show, there\'s nothing', eq(K.needsYou(w, k), []));
   }
 
   fs.rmSync(dir, { recursive: true, force: true });
