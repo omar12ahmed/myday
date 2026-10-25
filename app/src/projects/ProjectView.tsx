@@ -127,13 +127,13 @@ function MoreCard({ p, fold, hiddenWith, onOpen }: { p: Project; fold: Section[]
       {fold.length > 0 && <>
         <h3 id="projectMoreH" className="m-0">Add to this project</h3>
         <div className="flex flex-wrap gap-x-5" data-s="sections-fold">
-          {fold.map(s => <LinkButton key={s} className="text-[15px]" data-action="section-open" data-id={s} onClick={() => onOpen(s)}>{first(SECTIONS.find(x => x.id === s)!.add!)}</LinkButton>)}
+          {fold.map(s => <LinkButton key={s} className="text-[15px] min-w-11 justify-center" data-action="section-open" data-id={s} onClick={() => onOpen(s)}>{first(SECTIONS.find(x => x.id === s)!.add!)}</LinkButton>)}
         </div>
       </>}
       {hiddenWith.length > 0 && <>
         <h3 id="projectHiddenH" className={`m-0 ${fold.length ? 'mt-3' : ''}`}>Hidden here</h3>
         <div className="flex flex-wrap gap-x-5" data-s="sections-hidden">
-          {hiddenWith.map(h => <LinkButton key={h.id} className="text-[15px]" aria-label={`Show ${hiddenWords(h)} on the Overview`} data-action="section-show" data-id={h.id} onClick={() => show(h.id, h.label)}>Show {hiddenWords(h)}</LinkButton>)}
+          {hiddenWith.map(h => <LinkButton key={h.id} className="text-[15px] min-w-11 justify-center" aria-label={`Show ${hiddenWords(h)} on the Overview`} data-action="section-show" data-id={h.id} onClick={() => show(h.id, h.label)}>Show {hiddenWords(h)}</LinkButton>)}
         </div>
       </>}
     </Card>

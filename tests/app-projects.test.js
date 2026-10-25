@@ -24,6 +24,9 @@ const projects = async () => (await data()).projects.items;
 const project = async title => (await projects()).find(p => p.title === title);
 const task = async title => (await data()).tasks.items.find(t => t.title === title);
 const toast = () => text('#toast');
+// An optional card with nothing in it is folded into "Add to this project" (specs/projects-sections.md): ask for it, and (for the
+// ones that open an add form) close the form again so the card is as it is when empty.
+const unfold = async (id, card, cancel) => { await click(`[data-action=section-open][data-id=${id}]`); await until(`!!document.getElementById('${card}')`); if (cancel) { await until(`!!document.querySelector('[data-action=${cancel}]')`); await click(`[data-action=${cancel}]`); await until(`!document.querySelector('[data-action=${cancel}]')`); } };
 const K = '2026-10-15'; // a Thursday
 const day = (energy, tasks = '[]') => `s => { s.days['${K}'] = { energy: ${energy}, rest: false, builtAt: '${K}T08:00', checkedIn: false, tasks: ${tasks} }; }`;
 async function capture(textIn) {
@@ -96,6 +99,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('how it\'s going: plain counts, never a percentage', (await text('[data-s=project-counts]')) === '1 done · 1 to go' && !/%/.test(await text('#projectGlance [data-s=glance-weeks]')));
 
   console.log('\n[5] Its notes');
+  await click('[data-action=section-open][data-id=notes]'); await until(`!!document.querySelector('[data-action=project-note-new]')`); // (a project with no notes folds the Notes card until you ask for it)
   await click('[data-action=project-note-new]'); await sleep(300);
   const nid = (await hash()).split('/')[2];
   check('"New note" opens a note in this project', /^#projects\/notes\/nt/.test(await hash()) && (await data()).notes.items.find(n => n.id === nid)?.projectId === PID
@@ -1840,12 +1844,13 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   const lnRow = (kind, id) => `[data-s=learning-link][data-kind=${kind}][data-id="${id}"]`;
   const lnStudy = async () => JSON.stringify([(await data()).study.stages, (await data()).reading.books]);
   const lnOpts = () => ev(`[...document.querySelectorAll('#learningPick option')].map(o => [o.value, o.textContent])`);
-  const lnAdd = async kind => { if (!(await exists('[data-s=learning-form]'))) await click('[data-action=learning-add]'); await until(`!!document.getElementById('learningKind-course')`); await click(`#learningKind-${kind}`); await sleep(150); };
+  const lnAdd = async kind => { if (!(await exists('[data-s=learning-form]'))) await click((await exists('[data-action=learning-add]')) ? '[data-action=learning-add]' : '[data-action=section-open][data-id=learning]'); await until(`!!document.getElementById('learningKind-course')`); await click(`#learningKind-${kind}`); await sleep(150); };
   const lnPick = async (id, why = '') => { await type('#learningPick', id); if (why) await type('#learningWhy', why); await click('[data-action=learning-link]'); await sleep(300); };
   let studyBefore = '';
   await go('projects/p/pjLn', 2026, 10, 15, 9, 5);
 
   console.log('  The empty card');
+  await unfold('learning', 'projectLearning', 'learning-cancel');
   check('the Learning card sits in the side column after Recently and before Manage', await ev(`(() => { const a = document.getElementById('projectRecent'), b = document.getElementById('projectLearning'), c = document.getElementById('projectManage'); return !!a && !!b && !!c && !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) && !!(b.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING); })()`), await ev(`[...document.querySelectorAll('#projectSoon, #projectRecent, #projectLearning, #projectManage')].map(e => e.id)`));
   check('with nothing linked it has one line and "Link something"', (await text('#projectLearning')).includes('Link a course, book or lesson you’re learning for this project.') && (await text('[data-action=learning-add]')) === 'Link something' && !(await exists('[data-s=learning-link]')) && !('studyLinks' in (await pAt('pjLn'))), await text('#projectLearning'));
 
@@ -2012,10 +2017,11 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await seed([pjObj('pjRs', 'Garden shed', 'act', { resources: [{ id: 'rsSeed', title: 'Planning portal', url: 'https://example.co.uk/planning', note: 'Form for outbuildings', addedOn: '2026-10-10' }] }), pjObj('pjRe', 'Empty links', 'act')]);
   const rsList = async id => (await pAt(id)).resources;
   const rsRow = id => `[data-s=resource][data-id="${id}"]`;
-  const rsAdd = async (url, title = '', note = '') => { if (!(await exists('[data-s=resource-form]'))) await click('[data-action=resource-add]'); await until(`!!document.getElementById('resourceUrl-new')`); await type('#resourceUrl-new', url); if (title) await type('#resourceTitle-new', title); if (note) await type('#resourceNote-new', note); await click('[data-action=resource-save]'); await sleep(300); };
+  const rsAdd = async (url, title = '', note = '') => { if (!(await exists('[data-s=resource-form]'))) await click((await exists('[data-action=resource-add]')) ? '[data-action=resource-add]' : '[data-action=section-open][data-id=resources]'); await until(`!!document.getElementById('resourceUrl-new')`); await type('#resourceUrl-new', url); if (title) await type('#resourceTitle-new', title); if (note) await type('#resourceNote-new', note); await click('[data-action=resource-save]'); await sleep(300); };
 
   console.log('  The empty card');
   await go('projects/p/pjRe', 2026, 10, 15, 9, 5);
+  await unfold('learning', 'projectLearning', 'learning-cancel'); await unfold('resources', 'projectResources', 'resource-cancel');
   check('the Resources card sits after Learning and before Manage', await ev(`(() => { const a = document.getElementById('projectLearning'), b = document.getElementById('projectResources'), c = document.getElementById('projectManage'); return !!a && !!b && !!c && !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) && !!(b.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING); })()`));
   check('empty, it has the hint and "Add a link", and the project has no resources key', (await text('#projectResources')).includes('Keep the links you need for this project: a supplier’s page, a guide, a form.') && (await text('[data-action=resource-add]')) === 'Add a link' && !(await exists('[data-s=resource]')) && !('resources' in (await pAt('pjRe'))), await text('#projectResources'));
 
@@ -2097,8 +2103,8 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await click('[data-action=resource-save]'); await sleep(400);
   check('when the save is refused (the data was changed in another tab), the form stays open with what was typed, and nothing says "Saved."', (await exists('[data-s=resource-form]')) && (await ev(`(document.getElementById('resourceTitle-rsOk') || {}).value`)) === 'Typed but not saved' && (await toast()) !== 'Saved.', [await exists('[data-s=resource-form]'), await ev(`(document.getElementById('resourceTitle-rsOk') || {}).value`), await toast()]);
 
-  await go('projects/p/pjRe', 2026, 10, 15, 9, 9); await until(`!!document.querySelector('[data-action=resource-add]')`);
-  await click('[data-action=resource-add]'); await until(`!!document.getElementById('resourceUrl-new')`);
+  await go('projects/p/pjRe', 2026, 10, 15, 9, 9); await until(`!!document.querySelector('[data-action=section-open][data-id=resources]')`);
+  await click('[data-action=section-open][data-id=resources]'); await until(`!!document.getElementById('resourceUrl-new')`);
   await type('#resourceUrl-new', 'example.com/the-31st');
   await editStorage(`s => { const p = s.projects.items.find(x => x.id === 'pjRe'); p.resources = Array.from({ length: 30 }, (_, i) => ({ id: 'rsFull' + i, title: 'Link ' + i, url: 'https://example.com/p' + i, addedOn: '2026-10-10' })); }`);
   await click('[data-action=resource-save]'); await sleep(400);
@@ -2502,6 +2508,111 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('phone 390 px: the list does not scroll sideways and its rows are at least 44 px tall', (await ev('document.documentElement.scrollWidth')) <= 390 && (await ev(`[...document.querySelectorAll('#projectsList a')].every(a => a.getBoundingClientRect().height >= 44)`)), await ev('document.documentElement.scrollWidth'));
   await T.send('Emulation.clearDeviceMetricsOverride');
   await ev(`localStorage.removeItem('myday.projects.view')`);
+
+  console.log('\n[47] Optional sections on a project\'s Overview');
+  const sx_tk = (id, title, projectId, extra = {}) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-10-10T09:00', postponed: 0, blockers: [], letGoOn: null, projectId, ...extra });
+  const sx_rs = (id, title, url) => ({ id, title, url, addedOn: '2026-10-10' });
+  await go('projects', 2026, 10, 15, 9, 0); await reset(); await go('projects', 2026, 10, 15, 9, 0);
+  await seed([
+    pjObj('pjSxSmall', 'Renew the passport', 'act'),
+    pjObj('pjSxFull', 'Fit the new shelves', 'act', { resources: [sx_rs('rsSx1', 'Timber merchant', 'https://example.com/oak'), sx_rs('rsSx2', 'Bracket guide', 'https://example.com/brackets')],
+      studyLinks: [{ kind: 'course', id: 'coSx1', title: 'Basic woodwork', addedOn: '2026-10-10' }], fileIds: ['flsx0000001'] }),
+    pjObj('pjSxLinks', 'Plan the garden', 'act', { resources: [sx_rs('rsSx3', 'Seed supplier', 'https://example.com/seeds'), sx_rs('rsSx4', 'Compost guide', 'https://example.com/compost')] }),
+  ]);
+  await editStorage(`s => { s.tasks.items.push(${JSON.stringify(sx_tk('tkSx1', 'Book the photo booth', 'pjSxSmall'))}, ${JSON.stringify(sx_tk('tkSx2', 'Measure the wall', 'pjSxFull'))}, ${JSON.stringify(sx_tk('tkSx3', 'Dig the border', 'pjSxLinks'))});
+    s.files.items.push({ id: 'flsx0000001', name: 'Shelf plan.pdf', type: 'application/pdf', size: 1024, sha256: '${'b'.repeat(64)}', area: 'project', state: 'kept', addedOn: '2026-10-10' });
+    s.notes.items.push({ id: 'ntSx1', categoryId: '', title: 'Wall notes', text: 'Brick, not plasterboard.', pinned: false, createdAt: '2026-10-10T10:00', updatedAt: '2026-10-10T10:00', projectId: 'pjSxFull' }); }`);
+  const sx_open = async (id, m) => { await go(`projects/p/${id}`, 2026, 10, 15, 9, m); await until(`!!document.getElementById('projectHead')`); };
+  const sx_ids = ids => ev(`${JSON.stringify(ids)}.filter(i => !!document.getElementById(i))`);
+  const sx_active = () => ev(`(document.activeElement.dataset.action || document.activeElement.id || document.activeElement.tagName)`);
+  const sx_fold = () => ev(`[...document.querySelectorAll('#projectMore [data-action=section-open]')].map(b => b.dataset.id + ':' + b.textContent.trim())`);
+  const sx_hidden = () => ev(`[...document.querySelectorAll('#projectMore [data-action=section-show]')].map(b => b.dataset.id + ':' + b.textContent.trim())`);
+  const sx_sw = () => ev(`[...document.querySelectorAll('[data-s=sections-shown] [role=switch]')].map(b => b.dataset.action.slice(8) + ':' + b.getAttribute('aria-checked'))`);
+  const OPTIONAL = ['projectNotes', 'projectRecent', 'projectLearning', 'projectResources', 'files-project'];
+  const ALWAYS = ['projectNext', 'projectGlance', 'projectHead', 'projectTasks', 'projectSoon', 'projectManage'];
+
+  console.log('  A small project');
+  await sx_open('pjSxSmall', 1);
+  let got47 = await sx_ids(OPTIONAL);
+  check('a small project with one task shows no Notes, Learning, Resources or Files card (only Recently, which has its task being added)', eq(got47, ['projectRecent']), got47);
+  check('…and has the four "Add to this project" buttons, in order: A note, Something to learn, A link, A file', (await text('#projectMore h3')) === 'Add to this project' && eq(await sx_fold(), ['notes:A note', 'learning:Something to learn', 'resources:A link', 'files:A file']), await sx_fold());
+  check('…while the next step, At a glance, About it, Tasks, Coming up and Manage are all there', eq(await sx_ids(ALWAYS), ALWAYS), await sx_ids(ALWAYS));
+
+  console.log('  Each "Add" button');
+  await click('[data-action=section-open][data-id=resources]');
+  check('"A link" shows the Resources card with its add form open', await until(`!!document.getElementById('projectResources') && !!document.getElementById('resourceUrl-new')`), await text('#app'));
+  check('…and the Notes, Learning and Files cards are still folded', eq(await sx_ids(['projectNotes', 'projectLearning', 'files-project']), []) && !(await exists('[data-action=section-open][data-id=resources]')), await sx_fold());
+  await sx_open('pjSxSmall', 2);
+  await click('[data-action=section-open][data-id=learning]');
+  check('"Something to learn" shows the Learning card with its kind choices', await until(`!!document.getElementById('projectLearning') && document.querySelectorAll('#projectLearning [data-s=learning-kind]').length > 1`), await text('#projectLearning'));
+  await sx_open('pjSxSmall', 3);
+  await click('[data-action=section-open][data-id=notes]');
+  check('"A note" shows the Notes card with the keyboard on its "New note" button', await until(`!!document.getElementById('projectNotes') && document.activeElement === document.querySelector('[data-action=project-note-new]')`), [await sx_active(), await exists('#projectNotes')]);
+  await sx_open('pjSxSmall', 4);
+  await click('[data-action=section-open][data-id=files]');
+  check('"A file" shows the Files card with the keyboard on "Add a file"', await until(`!!document.getElementById('files-project') && document.activeElement === document.querySelector('#files-project [data-action=file-add]')`) && (await text('#files-project [data-action=file-add]')) === 'Add a file', [await sx_active(), await exists('#files-project')]);
+  await sx_open('pjSxSmall', 5);
+  check('opening the project again, everything is folded as before (the choice lasts one visit)', eq(await sx_ids(['projectNotes', 'projectLearning', 'projectResources', 'files-project']), []) && (await sx_fold()).length === 4, await sx_fold());
+
+  console.log('  A project with something in each');
+  await sx_open('pjSxFull', 6);
+  got47 = await sx_ids(OPTIONAL);
+  check('with two links, a note, a file and a course, the Notes, Recently, Learning, Resources and Files cards all show', eq(got47, OPTIONAL), got47);
+  check('…and nothing is folded, so there is no "Add to this project" card', !(await exists('#projectMore')), await text('#projectMore'));
+
+  console.log('  Hiding and showing a card');
+  await sx_open('pjSxLinks', 7);
+  await click('[data-action=project-edit]');
+  await until(`!!document.querySelector('[data-s=sections-shown]')`);
+  check('About it → Edit has "Show on the Overview" with a switch each for Notes, Recently, Learning, Resources and Files, all on', (await text('[data-s=sections-shown] legend')) === 'Show on the Overview' && eq(await sx_sw(), ['notes:true', 'recently:true', 'learning:true', 'resources:true', 'files:true']), await sx_sw());
+  check('a project with only links: Notes, Learning and Files are folded away by themselves', eq(await sx_ids(['projectNotes', 'projectLearning', 'files-project']), []) && (await sx_fold()).length === 3, await sx_fold());
+  const sx_upd = (await pAt('pjSxLinks')).updatedAt;
+  await click('[data-action=section-resources]');
+  await until(`!!JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === 'pjSxLinks').hiddenSections`);
+  check('switching Resources off saves hiddenSections: ["resources"] on the project', eq((await pAt('pjSxLinks')).hiddenSections, ['resources']), (await pAt('pjSxLinks')).hiddenSections);
+  check('hiding it does not change the project\'s last-changed time', (await pAt('pjSxLinks')).updatedAt === sx_upd, [(await pAt('pjSxLinks')).updatedAt, sx_upd]);
+  check('…says "Resources hidden on this project."', await until(`document.getElementById('toast').textContent.includes('Resources hidden on this project.')`), await toast());
+  check('…and the Resources card is gone, with its switch off', !(await exists('#projectResources')) && eq(await sx_sw(), ['notes:true', 'recently:true', 'learning:true', 'resources:false', 'files:true']), await sx_sw());
+  check('"Hidden here" names it: "Show Resources (2)"', (await text('#projectHiddenH')) === 'Hidden here' && eq(await sx_hidden(), ['resources:Show Resources (2)']), await sx_hidden());
+  await click('[data-action=section-learning]');
+  await until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === 'pjSxLinks').hiddenSections?.length === 2`);
+  check('hiding the empty Learning card saves it too, and says "Learning hidden on this project."', eq((await pAt('pjSxLinks')).hiddenSections, ['resources', 'learning']) && (await until(`document.getElementById('toast').textContent.includes('Learning hidden on this project.')`)), [(await pAt('pjSxLinks')).hiddenSections, await toast()]);
+  check('…but an empty hidden Learning is not named under "Hidden here" and not offered under "Add to this project"', eq(await sx_hidden(), ['resources:Show Resources (2)']) && eq(await sx_fold(), ['notes:A note', 'files:A file']), [await sx_hidden(), await sx_fold()]);
+  await click('[data-action=section-show][data-id=resources]');
+  await until(`!!document.getElementById('projectResources')`);
+  check('pressing "Show Resources (2)" brings the card back', await exists('#projectResources') && (await sx_hidden()).length === 0 && (await sx_sw()).includes('resources:true'), [await sx_hidden(), await sx_sw()]);
+  check('…and the keyboard moves to the Resources card itself', await until(`document.activeElement === document.getElementById('projectResources')`), await ev(`document.activeElement.id || document.activeElement.tagName`));
+  check('…saves it without Resources in hiddenSections (Learning stays hidden), and says "Resources shown again."', eq((await pAt('pjSxLinks')).hiddenSections, ['learning']) && (await until(`document.getElementById('toast').textContent.includes('Resources shown again.')`)), [(await pAt('pjSxLinks')).hiddenSections, await toast()]);
+  await click('[data-action=section-learning]');
+  await until(`!JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === 'pjSxLinks').hiddenSections`);
+  check('switching Learning on again removes the hiddenSections list altogether and says "Learning shown again."', !('hiddenSections' in (await pAt('pjSxLinks'))) && (await until(`document.getElementById('toast').textContent.includes('Learning shown again.')`)) && (await sx_fold()).includes('learning:Something to learn'), [await pAt('pjSxLinks'), await toast()]);
+
+  await editStorage(`s => { const p = s.projects.items.find(x => x.id === 'pjSxLinks'); p.hiddenSections = ['files']; p.fileIds = ['flsx0000002', 'flsx0000003']; for (const id of p.fileIds) s.files.items.push({ id, name: id + '.pdf', type: 'application/pdf', size: 1024, sha256: '${'c'.repeat(64)}', area: 'project', state: 'kept', addedOn: '2026-10-10', deletedOn: '2026-10-14', removedFrom: { kind: 'project', id: 'pjSxLinks' } }); p.fileIds = []; }`);
+  await sx_open('pjSxLinks', 11);
+  check('a hidden Files card whose two files are all in Recently deleted is named "Show Files (2 recently deleted)"', eq(await sx_hidden(), ['files:Show Files (2 recently deleted)']), await sx_hidden());
+
+  console.log('  A search result inside a hidden card');
+  await editStorage(`s => { s.projects.items.find(p => p.id === 'pjSxLinks').hiddenSections = ['resources']; }`);
+  await sx_open('pjSxLinks', 8);
+  check('with Resources hidden, the card is not on the Overview', !(await exists('#projectResources')) && eq(await sx_hidden(), ['resources:Show Resources (2)']), await sx_hidden());
+  await type('#projectSearch', 'Compost guide');
+  await until(`!!document.querySelector('#projectSearchResults [data-s=search-hit][data-kind=resource]')`);
+  await click('#projectSearchResults [data-s=search-hit][data-kind=resource] a');
+  check('opening the link in the results shows the Resources card for this visit and puts the keyboard on that link\'s row', await until(`!!document.getElementById('projectResources') && document.activeElement && document.activeElement.dataset.id === 'rsSx4'`), [await exists('#projectResources'), await ev(`document.activeElement.dataset.id || document.activeElement.tagName`)]);
+  check('…while the project still has Resources hidden in its saved data', eq((await pAt('pjSxLinks')).hiddenSections, ['resources']), (await pAt('pjSxLinks')).hiddenSections);
+
+  console.log('  A phone');
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await editStorage(`s => { s.projects.items.find(p => p.id === 'pjSxFull').hiddenSections = ['files']; }`);
+  await sx_open('pjSxFull', 9); await sleep(300);
+  const sx_small = sel => ev(`[...document.querySelectorAll(${JSON.stringify(sel)})].filter(b => b.getBoundingClientRect().height < 44).map(b => (b.dataset.action || b.id || b.tagName) + ':' + Math.round(b.getBoundingClientRect().height))`);
+  check('phone 390 px: the Overview with "Hidden here" does not scroll sideways, and its button is at least 44 px tall', (await exists('#projectHiddenH')) && (await ev('document.documentElement.scrollWidth')) <= 390 && eq(await sx_small('#projectMore button'), []), [await ev('document.documentElement.scrollWidth'), await sx_small('#projectMore button')]);
+  await sx_open('pjSxSmall', 10); await sleep(300);
+  check('phone 390 px: the Overview with "Add to this project" does not scroll sideways, and its four buttons are at least 44 px tall', (await ev(`document.querySelectorAll('#projectMore button').length`)) === 4 && (await ev('document.documentElement.scrollWidth')) <= 390 && eq(await sx_small('#projectMore button'), []), [await ev('document.documentElement.scrollWidth'), await sx_small('#projectMore button')]);
+  await click('[data-action=project-edit]');
+  await until(`!!document.querySelector('[data-s=sections-shown]')`);
+  check('phone 390 px: the edit view with the five switches does not scroll sideways, and each switch is at least 44 px tall', (await ev(`document.querySelectorAll('[data-s=sections-shown] [role=switch]').length`)) === 5 && (await ev('document.documentElement.scrollWidth')) <= 390 && eq(await sx_small('[data-s=sections-shown] [role=switch], [data-action=project-edit]'), []), [await ev('document.documentElement.scrollWidth'), await sx_small('[data-s=sections-shown] [role=switch], [data-action=project-edit]')]);
+  await T.send('Emulation.clearDeviceMetricsOverride');
 
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
