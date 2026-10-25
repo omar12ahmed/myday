@@ -494,5 +494,34 @@ async function fill(sel, value) {
   check('…also with the revision form open (its buttons too)', (await ev(`[...document.querySelectorAll('[data-cy-place] button')].every(b => b.getBoundingClientRect().height >= 44)`)) && await ev('document.documentElement.scrollWidth <= innerWidth'));
   await T.send('Emulation.clearDeviceMetricsOverride');
 
+  console.log('\n[Ratings] The notebook rates each criterion in words, never a score');
+  const WORDS = ['Not demonstrated yet', 'Limited evidence', 'Partly demonstrated', 'Mostly demonstrated', 'Fully demonstrated'];
+  await ev('localStorage.clear()'); await go('study/cybersecurity/exercise.learning-evidence');
+  await click('[data-action=cyber-begin]'); await sleep(200);
+  const rOpts = await ev(`[...document.querySelectorAll('select[id^=cyberScore]')].map(s => [...s.options].map(o => o.textContent))`);
+  const rLabels = await ev(`[...document.querySelectorAll('select[id^=cyberScore]')].map(s => s.labels[0].textContent.trim())`);
+  const rForm = await ev(`document.querySelector('select[id^=cyberScore]').closest('fieldset').textContent`);
+  check('each criterion is rated in words only: no numbers in the choices, no weights, no "score"', rOpts.length >= 2 && rOpts.every(o => JSON.stringify(o) === JSON.stringify(WORDS))
+    && !/weight|\/100|score/i.test(rForm) && rForm.includes('How you’d rate it'), [rOpts[0], rForm.slice(0, 200)]);
+  await fill('#cyberVariant', 'Scenario (made up)'); await fill('#cyberEvidence', 'What I observed, and one check that failed (made up).');
+  await fill('#cyberResume', 'Redo the scope check.'); await fill('#cyberAssistance', 'hint'); await fill('#cyberCritical', 'false');
+  await fill('#cyberScore0', '75'); await fill('#cyberScore1', '50');
+  await click('[data-action=cyber-submit]'); await sleep(300);
+  const rSaved = (await data()).cybersecurity.attempts[0];
+  check('handing it in keeps your ratings saved as before (the same numbers), and keeps the attempt', !!rSaved.submittedAt && JSON.stringify(rSaved.rubricScores) === JSON.stringify([75, 50, ...rLabels.slice(2).map(() => 0)]), rSaved.rubricScores);
+  const rItems = await ev(`[...document.querySelectorAll('[data-cy-rated] li')].map(li => li.textContent.replace(/\\s+/g, ' ').trim())`);
+  check('the entry shows how you rated each criterion, in words, in the rubric\'s order', JSON.stringify(rItems) === JSON.stringify(rLabels.map((l, i) => `${l}: ${i === 0 ? WORDS[3] : i === 1 ? WORDS[2] : WORDS[0]}`)), [rItems, rLabels]);
+  check('…says practical work done with help shows practice, not yet doing it on your own', (await text('[data-cy-rated-help]')).includes('Done with help, so it shows practice'));
+  check('…and an unresolved scope or evidence check means it doesn\'t count as demonstrated', (await ev(`document.querySelector('[data-cy-scope]')?.dataset.cyScope`)) === 'unresolved'
+    && (await text('[data-cy-scope]')).includes('doesn’t count as demonstrated'));
+  const rCard = await ev(`document.querySelector('[data-cy-rated]').closest('.rounded-card, [class*=card], section, article')?.textContent ?? document.querySelector('[data-cy-rated]').parentElement.textContent`);
+  check('the entry has no score, total or "/100" anywhere', !/score|\/100|provisional|calculation/i.test(rCard), rCard.slice(0, 300));
+  await go('study/cybersecurity');
+  check('the map\'s footnote speaks of your notebook ratings, not scores', !/score/i.test(await text('#app')) && (await text('#app')).includes('Your notebook ratings are your own assessment'));
+  await go('study/cybersecurity/lesson.authorised-scope');
+  await ev(`document.querySelector('[data-cy-more] details').open = true`); await sleep(100);
+  const rMore = await text('[data-cy-more]');
+  check('a lesson\'s prerequisites list the skills it builds on, with no readiness number', rMore.includes('This lesson builds on these skills') && !/\/100|readiness|score/i.test(rMore), rMore.slice(0, 300));
+
   const s = T.summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
 })().catch(e => { console.error('HARNESS', e); process.exit(1); });

@@ -101,7 +101,7 @@ function MapView({ data }: { data: MyDayData }) {
       })}
     </section>
     <Card><h3>Your path’s projects</h3><div className="grid gap-2">{path.required_project_ids.map(id => <InlineLink key={id} href={lessonHref(id)}>{curriculum.projects.find(p => p.id === id)!.name}</InlineLink>)}</div></Card>
-    <p className="text-xs text-fg-3">Curriculum {curriculum.curriculum_version} · Proposed tutor policy kept separately. Self-study scores are provisional; verified mastery and automatic advancement are not yet enabled.</p>
+    <p className="text-xs text-fg-3">Curriculum {curriculum.curriculum_version} · Proposed tutor policy kept separately. Your notebook ratings are your own assessment; verified mastery and automatic advancement are not enabled.</p>
   </>;
 }
 function ModuleView({ data, id }: { data: MyDayData; id: string }) {
@@ -244,8 +244,8 @@ function LessonView({ data, lesson: l }: { data: MyDayData; lesson: Lesson }) {
     <Card data-cy-more=""><details>
       <summary className="cursor-pointer min-h-11 py-2 text-primary font-semibold">More about this lesson</summary>
       <h3>Prerequisites {gaps.length ? `(${gaps.length})` : '— none'}</h3>
-      {gaps.length ? <><p className="text-sm">These thresholds require demonstrated skill evidence. Your self-study scores do not unlock them automatically; you can still explore this lesson.</p>
-        <ul className="list-disc pl-5">{gaps.map(g => <li key={g.skill_id}><InlineLink href={lessonHref(skills.get(g.skill_id)!.taught_by_lesson_ids[0])}>{skills.get(g.skill_id)!.name}</InlineLink> — readiness at least {g.min_mastery}/100; not verified here</li>)}</ul></> : <p>You can start here.</p>}
+      {gaps.length ? <><p className="text-sm">This lesson builds on these skills. MyDay doesn’t check them for you, and nothing is locked: you can explore this lesson anyway.</p>
+        <ul className="list-disc pl-5">{gaps.map(g => <li key={g.skill_id}><InlineLink href={lessonHref(skills.get(g.skill_id)!.taught_by_lesson_ids[0])}>{skills.get(g.skill_id)!.name}</InlineLink></li>)}</ul></> : <p>You can start here.</p>}
       <h3>Completion criteria</h3><Lines items={l.completion_criteria} /><p className="text-sm text-fg-2">A short session is a checkpoint. Marking a roadmap task complete records your choice, not verified mastery.</p>
       <h3>Sessions for this lesson</h3>{l.variants.map(v => <p key={v.mode} className="text-sm"><strong>{cap(v.mode)} · {v.minutes} min</strong> ({MODE_LABEL[modeOf(v.mode)]}): {v.activity} <span className="text-fg-2">{v.evidence_scope}</span></p>)}
       <h3>Module reference library</h3><ResourceLinks ids={l.resource_ids} />

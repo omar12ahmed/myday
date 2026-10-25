@@ -9,7 +9,7 @@ import type { CyberAttempt } from '../../data/cybersecurity/types';
 import { CYBER_VERSION, lessonHref } from '../../data/cybersecurity/types';
 import { BackLink, Eyebrow, InlineLink } from '../parts';
 import { curriculum, environments, lessons, skills, type Activity } from './catalogue';
-import { attemptScore, beginAttempt, submitAttempt } from './learning';
+import { attemptRatings, beginAttempt, RATINGS, submitAttempt } from './learning';
 import { Lines } from './parts';
 import { RelatedPractice } from './Practice';
 import { CheckRevision } from './CheckRevision';
@@ -65,10 +65,10 @@ export function ActivityView({ data, activity }: { data: MyDayData; activity: Ac
           {isCheck && <CheckMyAnswer answer={draft.answers[q.id] ?? ''} getSource={() => checkSource(lesson.id, q)} aside="If you use it, set “Assistance used” to “Used hints or AI help”." />}
         </div>)}
         <Field label="Observed result, evidence and limitations" htmlFor="cyberEvidence"><CommitTextarea id="cyberEvidence" rows={6} maxLength={12000} defaultValue={draft.evidence} onCommit={el => save(a => { a.evidence = el.value; })} placeholder="What happened? What did you check? What failed or remains uncertain? A redacted file reference can help." /></Field>
-        {!!activity.rubric.length && <fieldset className="border border-outline rounded-tile p-3 grid gap-3"><legend className="px-1 font-semibold">Your provisional rubric assessment</legend>
-          <p className="text-sm text-fg-2 m-0">Score the observable evidence for each criterion. This is a self-assessment, not verified skill mastery.</p>
-          {activity.rubric.map((r, i) => <Field key={r.criterion} label={`${r.criterion} (weight ${r.weight})`} htmlFor={'cyberScore' + i}><Select id={'cyberScore' + i} value={draft.rubricScores[i] ?? 0} onChange={e => save(a => { a.rubricScores[i] = Number(e.target.value); })}>
-            <option value={0}>0 — not demonstrated yet</option><option value={25}>25 — limited evidence</option><option value={50}>50 — partly demonstrated</option><option value={75}>75 — mostly demonstrated</option><option value={100}>100 — fully demonstrated</option>
+        {!!activity.rubric.length && <fieldset className="border border-outline rounded-tile p-3 grid gap-3"><legend className="px-1 font-semibold">How you’d rate it</legend>
+          <p className="text-sm text-fg-2 m-0">Rate the evidence you can point to, criterion by criterion. It’s your own assessment, not verified skill mastery.</p>
+          {activity.rubric.map((r, i) => <Field key={r.criterion} label={r.criterion} htmlFor={'cyberScore' + i}><Select id={'cyberScore' + i} value={draft.rubricScores[i] ?? 0} onChange={e => save(a => { a.rubricScores[i] = Number(e.target.value); })}>
+            {RATINGS.map(([v, words]) => <option key={v} value={v}>{words}</option>)}
           </Select></Field>)}
         </fieldset>}
         <Field label="Did all scope and evidence checks pass?" htmlFor="cyberCritical"><Select id="cyberCritical" value={draft.criticalPassed === null ? '' : String(draft.criticalPassed)} onChange={e => save(a => { a.criticalPassed = e.target.value === '' ? null : e.target.value === 'true'; })}>
@@ -85,13 +85,18 @@ export function ActivityView({ data, activity }: { data: MyDayData; activity: Ac
   </>;
 }
 function Result({ data, attempt: a, activity }: { data: MyDayData; attempt: CyberAttempt; activity: Activity }) {
-  const score = attemptScore(a, activity);
+  const rated = attemptRatings(a, activity);
   return <Card><Eyebrow>Notebook entry · {new Date(a.submittedAt!).toLocaleDateString('en-GB')}</Eyebrow><h3>{a.inputVariant}</h3>
     <p className="text-sm text-fg-2">{a.assistance} · self-assessed · curriculum {a.curriculumVersion} · rubric {a.rubricVersion}</p>
     <p className="whitespace-pre-wrap">{a.evidence}</p>
     {activity.questions.map(q => <div key={q.id}><h4>{q.prompt}</h4><p className="whitespace-pre-wrap">{a.answers[q.id] ?? 'No answer recorded'}</p></div>)}
-    {score !== null && <><p className="font-semibold">Provisional task score: {Math.round(score)}/100</p><p className="text-sm text-fg-2">Sum of each criterion score × its weight ÷ 100.{activity.practical && a.assistance !== 'independent' ? ' Assisted practical work is capped at 60.' : ''}{!a.criticalPassed ? ' An unresolved scope or evidence check makes the result 0.' : ''} This does not award mastery or satisfy prerequisite thresholds.</p><details><summary className="min-h-11 py-2 cursor-pointer text-primary">Show calculation</summary><Lines items={activity.rubric.map((r, i) => `${r.criterion}: ${a.rubricScores[i] ?? 0} × ${r.weight} ÷ 100 = ${((a.rubricScores[i] ?? 0) * r.weight / 100).toFixed(2)}`)} /></details></>}
-    <p className="text-sm text-fg-2">Scope and evidence checks: {a.criticalPassed ? 'recorded as passed' : 'unresolved'}.</p>
+    {rated && <div data-cy-rated="">
+      <h4 className="mb-1">How you rated it</h4>
+      <ul className="list-none p-0 m-0 grid gap-1">{rated.map(r => <li key={r.criterion}><span className="font-semibold">{r.criterion}:</span> {r.words}</li>)}</ul>
+      {activity.practical && a.assistance !== 'independent' && <p className="text-sm text-fg-2" data-cy-rated-help="">Done with help, so it shows practice, not yet that you can do it on your own.</p>}
+      <p className="text-sm text-fg-2">Your own assessment: it doesn’t verify the skill or meet a lesson’s prerequisites.</p>
+    </div>}
+    <p className="text-sm text-fg-2" data-cy-scope={a.criticalPassed ? 'passed' : 'unresolved'}>Scope and evidence checks: {a.criticalPassed ? 'recorded as passed.' : 'unresolved, so this attempt doesn’t count as demonstrated, whatever the ratings say.'}</p>
     {a.resumePoint && <p>Next step: {a.resumePoint}</p>}
     {!!activity.questions.length && a.curriculumVersion === CYBER_VERSION && <>
       {a.answerRevealed ? <AnswerGuide activity={activity} /> : <Button data-action="cyber-answers" onClick={() => update(d => {

@@ -87,12 +87,15 @@ export function submitAttempt(data: MyDayData, id: string): string | null {
   a.submittedAt = new Date().toISOString();
   return null;
 }
-// Transparent task-rubric result, not a mastery score. Failed attempts are retained, and assistance is capped.
-export function attemptScore(a: CyberAttempt, activity: Activity): number | null {
+// A rubric's levels, in words. Your ratings are saved as these numbers (0, 25, 50, 75, 100), as they always were; MyDay
+// shows only the words and never adds them up (no scores).
+export const RATINGS = [[0, 'Not demonstrated yet'], [25, 'Limited evidence'], [50, 'Partly demonstrated'], [75, 'Mostly demonstrated'], [100, 'Fully demonstrated']] as const;
+export const ratingWords = (v: number) => [...RATINGS].reverse().find(([n]) => v >= n)?.[1] ?? RATINGS[0][1];
+// Your ratings on a handed-in attempt, criterion by criterion, in words; null when the activity has no rubric or the
+// attempt was rated against another version of it (never re-read against today's criteria). Failed attempts are kept.
+export function attemptRatings(a: CyberAttempt, activity: Activity): { criterion: string; words: string }[] | null {
   if (!a.submittedAt || !activity.rubric.length || a.curriculumVersion !== CYBER_VERSION || a.rubricVersion !== CYBER_VERSION) return null;
-  if (a.criticalPassed !== true) return 0;
-  const score = activity.rubric.reduce((s, row, i) => s + row.weight * (a.rubricScores[i] ?? 0) / 100, 0);
-  return Math.min(activity.practical && a.assistance !== 'independent' ? 60 : 100, score);
+  return activity.rubric.map((r, i) => ({ criterion: r.criterion, words: ratingWords(a.rubricScores[i] ?? 0) }));
 }
 export function attemptsFor(data: MyDayData, activityId: string) {
   return data.cybersecurity.attempts.filter(a => a.activityId === activityId && a.curriculumVersion === CYBER_VERSION);

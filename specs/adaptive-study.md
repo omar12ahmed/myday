@@ -61,7 +61,7 @@ know, and never move on just because time was spent.
 | Subject | "Done" means | Evidence kept | Where |
 |---|---|---|---|
 | Arabic | any finished session (`lessonDone` in `app/src/data/arabic/sessions.ts`) | sessions: length, help, what you practised, first answers, which answers you looked at, a "revisit" note | `arabic.attempts`, synced as `arabic_attempt` |
-| Cybersecurity | you marked the lesson complete (its roadmap task is done) | notebook attempts with self-assessed rubric scores and help | `cybersecurity.attempts`, `cyber_attempt` |
+| Cybersecurity | you marked the lesson complete (its roadmap task is done) | notebook attempts with self-assessed rubric ratings (shown in words) and help | `cybersecurity.attempts`, `cyber_attempt` |
 | Your own courses | you ticked the task | concepts with revision answers (outcome and support) | `study`, shared with the classic MyDay |
 
 Lesson checks you add to revision are cards (`arabic.cards`); their answers go into `study.reviews` with an outcome

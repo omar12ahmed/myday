@@ -525,6 +525,12 @@ The Practice shelf adds 12 free-first external assignments (including specific T
 labs) and three local interactives. Each records resumable attempts through the existing notebook; no API
 keys or MCP connection are required. Provider completion is self-reported. The separate activities JSON
 is validated at build time, including lesson mappings, allowed provider URLs and free alternatives.
+The notebook's rubric is rated in words, criterion by criterion (Not demonstrated yet, Limited evidence, Partly,
+Mostly, Fully demonstrated), and a handed-in entry shows those words, never a total or "/100": practical work done
+with help says it shows practice, and an unresolved scope or evidence check says the attempt doesn't count as
+demonstrated. The ratings are still saved as 0, 25, 50, 75 and 100 (`rubricScores`, unchanged); `attemptRatings` and
+`ratingWords` in `src/study/cybersecurity/learning.ts`. A lesson's prerequisites list the skills it builds on, with no
+readiness number.
 
 Arabic Fuṣḥā in Study (part 1, reading only): the supplied package in `../content/arabic-fusha` (30 modules,
 152 lessons) is validated with its own Python checker on a temporary copy, so builds never change it, then split by
