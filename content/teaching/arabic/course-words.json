@@ -1,6 +1,6 @@
 {
  "about": "Course words: an authored word list per Arabic lesson (MyDay's own, not part of the supplied package), each word with its meaning, root, an example and a short note, beside the package's starter words (listed by id under \"seed\", not repeated). Fully vowelled. Each module is checked by the owner before it ships.",
- "status": "module 4: checked by the owner on 2026-10-25 and voiced; modules 5–7: draft, awaiting the cross-check and the owner's check",
+ "status": "module 4: checked by the owner on 2026-10-25 and voiced; modules 5–7: draft, cross-checked twice, awaiting the owner's check",
  "version": "1.1-draft",
  "lessons": {
   "lesson.arabic-greetings-address": {
@@ -614,7 +614,7 @@
      "root_reading": "q-m-r",
      "example_ar": "الْقَمَرُ جَمِيلٌ.",
      "example_meaning_en": "The moon is beautiful.",
-     "note": "Masculine. With the article the ل is said: الْقَمَر, al-qamar (ق keeps it; ش takes it, as in الشَّمْس)."
+     "note": "Masculine. ق is a “moon letter”, so the ل of the article is heard: الْقَمَر, al-qamar. ش is a “sun letter” and swallows it: الشَّمْس, ash-shams."
     },
     {
      "id": "lexeme.arabic-gender-definiteness-3",
@@ -647,7 +647,7 @@
      "root_reading": "ʾ-m-m",
      "example_ar": "أُمِّي فِي الْبَيْتِ.",
      "example_meaning_en": "My mother is at home.",
-     "note": "Feminine by meaning, with no ة. “My mother” is أُمِّي."
+     "note": "Feminine by meaning, with no ة. “My mother” is أُمِّي. Plural أُمَّهَات."
     },
     {
      "id": "lexeme.arabic-gender-definiteness-6",
@@ -658,7 +658,7 @@
      "root_reading": "ʾ-b-w",
      "example_ar": "أَبِي مُهَنْدِسٌ.",
      "example_meaning_en": "My father is an engineer.",
-     "note": "“My father” is أَبِي."
+     "note": "Masculine, with no ة. “My father” is أَبِي."
     },
     {
      "id": "lexeme.arabic-gender-definiteness-7",
@@ -709,9 +709,9 @@
      "part_of_speech": "adjective",
      "root_ar": "ق-د-م",
      "root_reading": "q-d-m",
-     "example_ar": "هَذَا بَيْتٌ قَدِيمٌ.",
-     "example_meaning_en": "This is an old house.",
-     "note": "For a feminine noun: قَدِيمَة. For people, “old” is usually كَبِير."
+     "example_ar": "الْبَيْتُ الْقَدِيمُ كَبِيرٌ.",
+     "example_meaning_en": "The old house is big.",
+     "note": "Here it follows its noun with the article too: الْبَيْتُ الْقَدِيمُ, “the old house”. For a feminine noun: قَدِيمَة. For people, “old” is usually كَبِير."
     },
     {
      "id": "lexeme.arabic-adjective-agreement-2",
@@ -808,7 +808,7 @@
      "root_reading": "ṭ-l-b",
      "example_ar": "الطُّلَّابُ فِي الْمَدْرَسَةِ.",
      "example_meaning_en": "The students are at school.",
-     "note": "The plural of طَالِب, reshaped. For people, words agree in the plural: هُمْ."
+     "note": "The plural of طَالِب, reshaped. People in the plural take plural words: هُمْ طُلَّابٌ."
     },
     {
      "id": "lexeme.arabic-plural-basics-2",
@@ -830,7 +830,7 @@
      "root_reading": "b-y-t",
      "example_ar": "الْبُيُوتُ قَدِيمَةٌ.",
      "example_meaning_en": "The houses are old.",
-     "note": "The plural of بَيْت; things in the plural take قَدِيمَةٌ, not قَدِيمُونَ."
+     "note": "The plural of بَيْت. Things in the plural take the feminine singular: قَدِيمَةٌ."
     },
     {
      "id": "lexeme.arabic-plural-basics-4",
@@ -841,7 +841,7 @@
      "root_reading": "ʿ-l-m",
      "example_ar": "الْمُعَلِّمُونَ هُنَا.",
      "example_meaning_en": "The teachers are here.",
-     "note": "A regular plural: add ـُونَ (ـِينَ after a preposition: مَعَ الْمُعَلِّمِينَ)."
+     "note": "A regular plural: add ـُونَ (ـِينَ after a preposition or as the object: مَعَ الْمُعَلِّمِينَ)."
     },
     {
      "id": "lexeme.arabic-plural-basics-5",
@@ -874,7 +874,7 @@
      "root_reading": "ṣ-d-q",
      "example_ar": "هُمْ أَصْدِقَاءُ.",
      "example_meaning_en": "They are friends.",
-     "note": "The plural of صَدِيق. It never takes the -un ending: أَصْدِقَاءُ."
+     "note": "The plural of صَدِيق. Like مِصْر, it doesn't take the -un ending: أَصْدِقَاءُ."
     },
     {
      "id": "lexeme.arabic-plural-basics-8",
@@ -968,6 +968,17 @@
      "example_ar": "مَا هَذَا الشَّيْءُ؟",
      "example_meaning_en": "What is this thing?",
      "note": "Plural أَشْيَاء."
+    },
+    {
+     "id": "lexeme.arabic-demonstratives-8",
+     "form_ar": "هَذَا الْبَيْتُ",
+     "meaning_en": "this house",
+     "part_of_speech": "chunk",
+     "root_ar": "ب-ي-ت",
+     "root_reading": "b-y-t",
+     "example_ar": "هَذَا الْبَيْتُ كَبِيرٌ.",
+     "example_meaning_en": "This house is big.",
+     "note": "هَذَا بَيْتٌ is “this is a house”. With the article, هَذَا الْبَيْتُ is “this house”, and it needs more to be a sentence: كَبِيرٌ."
     }
    ]
   },
@@ -1008,7 +1019,7 @@
      "root_reading": "b-y-t",
      "example_ar": "بَيْتُهُ كَبِيرٌ.",
      "example_meaning_en": "His house is big.",
-     "note": "“Her house” is بَيْتُهَا."
+     "note": "“Her house” is بَيْتُهَا; “our house” is بَيْتُنَا."
     },
     {
      "id": "lexeme.arabic-idafa-possession-4",
@@ -1052,7 +1063,7 @@
      "root_reading": "ʿ-n-w-n",
      "example_ar": "مَا عُنْوَانُ الْمَدْرَسَةِ؟",
      "example_meaning_en": "What is the school's address?",
-     "note": "Also “title” (of a book). A four-letter root."
+     "note": "Also “title” (of a book). Plural عَنَاوِين. A four-letter root."
     },
     {
      "id": "lexeme.arabic-idafa-possession-8",
@@ -1149,7 +1160,7 @@
      "root_reading": "s-k-n",
      "example_ar": "هُوَ يَسْكُنُ فِي الْقَاهِرَةِ.",
      "example_meaning_en": "He lives in Cairo.",
-     "note": "The same root as أَسْكُنُ, “I live”."
+     "note": "The same verb as أَسْكُنُ, “I live”."
     },
     {
      "id": "lexeme.arabic-present-person-8",
@@ -1318,7 +1329,7 @@
      "root_reading": "r-ʾ-y",
      "example_ar": "أَرَى الْبَيْتَ.",
      "example_meaning_en": "I see the house.",
-     "note": "“He sees” is يَرَى: the root's hamza isn't written in these forms."
+     "note": "“He sees” is يَرَى: the root's hamza drops out in these forms."
     },
     {
      "id": "lexeme.arabic-objects-prepositions-6",
@@ -1352,6 +1363,17 @@
      "example_ar": "أَدْرُسُ مَعَ صَدِيقِي.",
      "example_meaning_en": "I study with my friend.",
      "note": "As in مَعَ السَّلَامَةِ, “goodbye” (with safety)."
+    },
+    {
+     "id": "lexeme.arabic-objects-prepositions-9",
+     "form_ar": "أَقْرَؤُهُ",
+     "meaning_en": "I read it",
+     "part_of_speech": "verb",
+     "root_ar": "ق-ر-أ",
+     "root_reading": "q-r-ʾ",
+     "example_ar": "عِنْدِي كِتَابٌ جَدِيدٌ، أَقْرَؤُهُ الْيَوْمَ.",
+     "example_meaning_en": "I have a new book; I'm reading it today.",
+     "note": "ـهُ on a verb is “him” or “it”. The hamza carries a ḍamma, so it sits on و: أَقْرَؤُهُ."
     }
    ]
   },
@@ -1388,8 +1410,8 @@
      "form_ar": "عِنْدَكَ",
      "meaning_en": "you have (to a man)",
      "part_of_speech": "chunk",
-     "root_ar": "ع-ن-د",
-     "root_reading": "ʿ-n-d",
+     "root_ar": null,
+     "root_reading": null,
      "example_ar": "هَلْ عِنْدَكَ سُؤَالٌ؟",
      "example_meaning_en": "Do you have a question?",
      "note": "To a woman: عِنْدَكِ. “He has” is عِنْدَهُ."
@@ -1407,14 +1429,14 @@
     },
     {
      "id": "lexeme.arabic-preference-existence-5",
-     "form_ar": "الْقِرَاءَة",
+     "form_ar": "قِرَاءَة",
      "meaning_en": "reading",
      "part_of_speech": "noun",
      "root_ar": "ق-ر-أ",
      "root_reading": "q-r-ʾ",
      "example_ar": "الْقِرَاءَةُ مُفِيدَةٌ.",
      "example_meaning_en": "Reading is useful.",
-     "note": "From the root of قَرَأَ, “read”."
+     "note": "From the root of قَرَأَ, “read”. After أُحِبُّ it takes the article: أُحِبُّ الْقِرَاءَةَ."
     },
     {
      "id": "lexeme.arabic-preference-existence-6",
@@ -1512,7 +1534,7 @@
      "root_reading": "b-ʿ-d",
      "example_ar": "أَعْمَلُ، وَبَعْدَ ذَلِكَ أَقْرَأُ.",
      "example_meaning_en": "I work, and after that I read.",
-     "note": "Like ثُمَّ, it puts what follows later."
+     "note": "Like ثُمَّ, it marks the next step."
     },
     {
      "id": "lexeme.arabic-routine-sequence-6",
@@ -1639,6 +1661,17 @@
      "example_ar": "هَذَا بِخَمْسَةِ جُنَيْهَاتٍ.",
      "example_meaning_en": "This costs five pounds.",
      "note": "A borrowed word (from “guinea”), used in Egypt. Plural جُنَيْهَات."
+    },
+    {
+     "id": "lexeme.arabic-digits-prices-9",
+     "form_ar": "خَمْسَة",
+     "meaning_en": "five",
+     "part_of_speech": "number",
+     "root_ar": "خ-م-س",
+     "root_reading": "kh-m-s",
+     "example_ar": "هَذِهِ خَمْسَةُ كُتُبٍ.",
+     "example_meaning_en": "These are five books.",
+     "note": "The digit is ٥ (5). Like ثَلَاثَة, the noun after it is plural."
     }
    ]
   },
@@ -1725,7 +1758,7 @@
      "root_reading": "s-b-ʿ",
      "example_ar": "الْمَوْعِدُ بَعْدَ أُسْبُوعٍ.",
      "example_meaning_en": "The appointment is in a week.",
-     "note": "From the root of سَبْعَة, “seven”."
+     "note": "From the root of سَبْعَة, “seven”. Plural أَسَابِيع."
     },
     {
      "id": "lexeme.arabic-clock-calendar-8",
@@ -1737,6 +1770,28 @@
      "example_ar": "السَّاعَةُ الثَّالِثَةُ وَالنِّصْفُ.",
      "example_meaning_en": "It's half past three.",
      "note": "وَالنِّصْفُ after a time: “and a half”."
+    },
+    {
+     "id": "lexeme.arabic-clock-calendar-9",
+     "form_ar": "يَوْمُ الثُّلَاثَاءِ",
+     "meaning_en": "Tuesday",
+     "part_of_speech": "chunk",
+     "root_ar": "ث-ل-ث",
+     "root_reading": "th-l-th",
+     "example_ar": "الدَّرْسُ يَوْمَ الثُّلَاثَاءِ.",
+     "example_meaning_en": "The lesson is on Tuesday.",
+     "note": "Literally “the day of the three”: from the root of ثَلَاثَة."
+    },
+    {
+     "id": "lexeme.arabic-clock-calendar-10",
+     "form_ar": "بَعْدَ الظُّهْرِ",
+     "meaning_en": "in the afternoon",
+     "part_of_speech": "chunk",
+     "root_ar": "ظ-ه-ر",
+     "root_reading": "ẓ-h-r",
+     "example_ar": "الْمَوْعِدُ بَعْدَ الظُّهْرِ.",
+     "example_meaning_en": "The appointment is in the afternoon.",
+     "note": "Literally “after noon” (الظُّهْر). “In the evening” is مَسَاءً."
     }
    ]
   },
@@ -1894,8 +1949,8 @@
      "part_of_speech": "noun",
      "root_ar": "ت-ف-ح",
      "root_reading": "t-f-ḥ",
-     "example_ar": "كَمْ سِعْرُ التُّفَّاحِ؟",
-     "example_meaning_en": "How much are the apples?",
+     "example_ar": "مَا سِعْرُ التُّفَّاحِ؟",
+     "example_meaning_en": "What is the price of the apples?",
      "note": "One apple is تُفَّاحَة."
     },
     {
@@ -1927,8 +1982,8 @@
      "part_of_speech": "chunk",
      "root_ar": "ف-ض-ل",
      "root_reading": "f-ḍ-l",
-     "example_ar": "تَفَضَّلْ، هَذَا الشَّايُ.",
-     "example_meaning_en": "Here you are, this is the tea.",
+     "example_ar": "تَفَضَّلْ، هَذَا شَايُكَ.",
+     "example_meaning_en": "Here you are, this is your tea.",
      "note": "To a woman: تَفَضَّلِي. The same root as مِنْ فَضْلِكَ."
     }
    ]
@@ -1978,7 +2033,7 @@
      "root_reading": "h-t-f",
      "example_ar": "مَا رَقْمُ هَاتِفِكَ؟",
      "example_meaning_en": "What is your phone number?",
-     "note": "“Your phone” (to a man) is هَاتِفُكَ; here it ends in -ik after رَقْمُ."
+     "note": "“Your phone” (to a man) is هَاتِفُكَ; after رَقْمُ it is هَاتِفِكَ, with -i before ـكَ because it is the second noun of the pair."
     },
     {
      "id": "lexeme.arabic-messages-needs-5",
