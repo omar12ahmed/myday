@@ -48,7 +48,7 @@ const sent = (D, key, ms = 10000) => D.until(`(() => { const n = JSON.parse(loca
 // What a device's sync is doing, for failure messages.
 const diag = D => D.ev(`(() => { const n = JSON.parse(localStorage.getItem('myday.sync.v1') || 'null'); return { status: (document.getElementById('syncBadge') || {}).dataset?.status, phase: (document.getElementById('syncScreen') || {}).dataset?.phase, line: (document.getElementById('syncLine') || {}).textContent, out: n && n.link ? Object.keys(n.link.out) : null, conflicts: n && n.link ? Object.keys(n.link.conflicts) : null, review: n && n.link ? n.link.review : null, user: n && n.link ? n.link.user : null }; })()`);
 async function syncNowWhenReady(D) { await goSync(D); await D.until(`document.querySelector('[data-action=sync-now]') && !document.querySelector('[data-action=sync-now]').disabled`); await D.click('[data-action=sync-now]'); }
-async function cloudUntil(fn, ms = 10000) { const t0 = Date.now(); while (Date.now() - t0 < ms) { if (await fn()) return true; await sleep(150); } return false; }
+async function cloudUntil(fn, ms = 20000) { const t0 = Date.now(); while (Date.now() - t0 < ms) { if (await fn()) return true; await sleep(150); } return false; }
 const statusIs = (D, s, ms = 12000) => D.until(`document.getElementById('syncBadge') && document.getElementById('syncBadge').dataset.status === '${s}'`, ms);
 // Today's screen opens the list editor when it's opened at #today/edit, so come from another screen.
 async function openEditor(D) { await D.ev(`location.hash = 'sync'`); await sleep(150); await D.ev(`location.hash = 'today/edit'`); return D.until(`document.querySelector('.edit-row')`); }
@@ -123,14 +123,17 @@ function task(uid, taskId, category, title, minutes, done = false) {
   const tab = await T.device('tablet', path.join(dl, 'tablet'));
   await tab.open(APP + '#today');
   await tab.setData(`s => { s.lists.admin[0].title = 'Tablet: water the plants'; }`);
+  await tab.until(`document.getElementById('signInGate')`, 20000);
   check('a new device shows the sign-in screen, with no way round it while your account can be reached', (await tab.exists('#signInGate')) && !(await tab.exists('#gateOffline')));
   await tab.offline(true);
-  await tab.until(`document.getElementById('gateOffline')`, 5000);
+  await tab.until(`document.getElementById('gateOffline')`, 30000);
   check('offline: "Use MyDay on this device for now" is offered', (await tab.text('#gateOffline')).includes("Can't reach your account right now?"));
-  await tab.click('[data-action=gate-use-here]'); await sleep(300);
+  await tab.click('[data-action=gate-use-here]');
+  await tab.until(`!document.getElementById('signInGate') && document.getElementById('nav')`, 20000);
   check('…and opens MyDay with what\'s on this device', !(await tab.exists('#signInGate')) && (await tab.exists('#nav')) && (await tab.data()).lists.admin[0].title === 'Tablet: water the plants');
   await tab.offline(false);
   await tab.open(APP + '#today');
+  await tab.until(`document.getElementById('signInGate')`, 20000);
   check('…only until MyDay is next opened: then it asks again', await tab.exists('#signInGate'));
   srv.faults.push({ path: '/auth/v1/token', mode: 'error', times: 1 });
   await tab.type('#syncEmailInput', A.email); await tab.type('#syncPassword', A.password); await tab.click('[data-action=sync-signin]');
@@ -701,11 +704,13 @@ function task(uid, taskId, category, title, minutes, done = false) {
   srv.faults.push({ path: '/rest/v1/rpc/sync_push_v3', mode: 'error', times: 99 });
   await mac.setData(`s => { s.tasks.items.find(t => t.id === 'tkH9').title = 'Book dentist'; s.tasks.items.find(t => t.id === 'tkH1').title = 'Renew passport online'; }`);
   await sent(mac, 'task:tkH9'); await sent(mac, 'task:tkH1');
-  await mac.ev(`(() => { const n = JSON.parse(localStorage.getItem('myday.sync.v1')); n.link.out['task:tkH9'].content.title = 'Book dentist 😀' + ${HALF}; localStorage.setItem('myday.sync.v1', JSON.stringify(n)); })()`);
-  const noted = (await mac.notes()).link.out['task:tkH9'];
+  // The half character is written into sync's notes and the page reloaded in one go: nothing of the app can run in
+  // between and write its own copy of the notes over it, or send the change (the faults are lifted once it has reloaded).
+  const noted = await mac.ev(`(() => { const n = JSON.parse(localStorage.getItem('myday.sync.v1')); n.link.out['task:tkH9'].content.title = 'Book dentist 😀' + ${HALF}; localStorage.setItem('myday.sync.v1', JSON.stringify(n));
+    const written = JSON.parse(localStorage.getItem('myday.sync.v1')).link.out['task:tkH9']; window.__oldDocument = true; location.reload(); return written; })()`);
   check('(test setup: a change waiting to be sent holds half a character)', !!noted && hasHalf(noted.content.title), noted && JSON.stringify(noted.content.title));
+  await mac.until(`!window.__oldDocument && document.readyState === 'complete' && !!document.querySelector('#app')`, 30000);
   srv.faults.length = 0;
-  await mac.open(APP + '#today');
   await syncNowWhenReady(mac);
   await synced(mac);
   const n9 = await cloudRecord(userA, 'task', 'tkH9'), n1 = await cloudRecord(userA, 'task', 'tkH1');
@@ -903,7 +908,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
   const txtId = recs.find(f => f.name === 'measurements.txt').id, hashBefore = await fl.ev('location.href');
   for (const f of fs.readdirSync(fl.dir)) fs.unlinkSync(path.join(fl.dir, f));
   await fl.click(`#files-project [data-s=file][data-id="${txtId}"] [data-action=file-open]`);
-  await sleep(1800);
+  await cloudUntil(async () => fs.existsSync(path.join(fl.dir, 'measurements.txt')) && !fs.readdirSync(fl.dir).some(x => x.endsWith('.crdownload')), 20000);
   check('Open on a text file saves it under its name, with its contents, and MyDay stays where it is', fs.existsSync(path.join(fl.dir, 'measurements.txt')) && fs.readFileSync(path.join(fl.dir, 'measurements.txt'), 'utf8') === 'Shed base: two by three metres.\n' && (await fl.ev('location.href')) === hashBefore && (await fl.exists('#files-project')), fs.readdirSync(fl.dir));
   await fl.ev(`window.open = () => null`);
   await fl.click(`#files-project [data-s=file][data-id="${pdfId}"] [data-action=file-open]`);
@@ -936,7 +941,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await fl.until(`document.querySelector('[data-action=dialog-confirm]')`);
   await fl.answer(true);
   check('"Delete for good" removes the stored object and the record', await toastIs(fl, 'Deleted for good.', 8000) && !(await fobjects()).some(o => o.key.endsWith(pdfId)) && !(await fdata()).some(f => f.id === pdfId) && !(await fl.exists('#files-project [data-s=files-deleted]')), await fobjects());
-  check('…the project no longer lists it, and the removal reaches the account as a deleted record', !(await fl.data()).projects.items.find(p => p.id === PJ).fileIds.includes(pdfId) && await cloudUntil(async () => (await sql(`select deleted from public.sync_records where user_id = $1 and kind = 'file' and id = $2`, [userA, pdfId]))[0]?.deleted === true, 15000));
+  check('…the project no longer lists it, and the removal reaches the account as a deleted record', !(await fl.data()).projects.items.find(p => p.id === PJ).fileIds.includes(pdfId) && await cloudUntil(async () => (await sql(`select deleted from public.sync_records where user_id = $1 and kind = 'file' and id = $2`, [userA, pdfId]))[0]?.deleted === true, 30000));
 
   console.log('  A note\'s files, and deleting the note');
   await fl.ev(`location.hash = '#projects/notes/${NT}'`);
@@ -1161,7 +1166,10 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await give(fl, PFSEL + ' input[type=file]', four);
   check('four more PNGs make five files, all kept', await fl.until(`document.querySelectorAll('${PFSEL} [data-s=file][data-state=kept]').length === 5`, 30000) && (await pfFiles()).length === 5 && (await pfEntry(PF)).fileIds.length === 5, await fl.text(PFSEL));
   check('with five files the "Add a file" button is gone', !(await fl.exists(PFSEL + ' [data-action=file-add]')) && (await fl.exists(PFSEL + ' [data-cy-pf-files="5"]')), await fl.text(PFSEL));
-  const five = JSON.stringify(await pfFiles()), fiveObjects = (await fobjects()).length;
+  // (Previews of the photos are stored a moment after the photos are kept: take the count once it has stopped changing.)
+  let fiveObjects = (await fobjects()).length;
+  for (let steady = 0, t0 = Date.now(); steady < 3 && Date.now() - t0 < 20000; await sleep(300)) { const n = (await fobjects()).length; if (n === fiveObjects) steady++; else { steady = 0; fiveObjects = n; } }
+  const five = JSON.stringify(await pfFiles());
   await give(fl, PFSEL + ' input[type=file]', [pngNamed('scan-extra.png', 9)]);
   check('choosing another file anyway is refused with "An entry keeps at most 5 files: one wasn’t added." and nothing is added or stored', await fl.until(`!!document.querySelector('${PFSEL} [data-s=file-refused]')`, 8000) && (await pfRefused()).includes('An entry keeps at most 5 files: one wasn’t added.') && JSON.stringify(await pfFiles()) === five && (await fobjects()).length === fiveObjects && (await pfEntry(PF)).fileIds.length === 5, [await pfRefused(), (await pfFiles()).length]);
 

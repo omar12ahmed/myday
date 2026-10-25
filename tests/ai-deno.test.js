@@ -29,7 +29,10 @@ const FAKE_KEY = 'zai-made-up-key-for-deno-test';
 (async () => {
   const deno = findDeno();
   if (!deno) { console.log('Not run: needs Deno. See the top of tests/ai-deno.test.js.'); process.exit(2); }
-  const denoDir = process.env.DENO_DIR || path.join(os.tmpdir(), 'myday-deno-cache');
+  // A cache of its own for this run unless one is given: a cache shared between runs and worktrees can be left half
+  // written ("Cannot find module …@supabase/supabase-js/…/index.js") and then break every later run.
+  const ownDenoDir = !process.env.DENO_DIR;
+  const denoDir = process.env.DENO_DIR || fs.mkdtempSync(path.join(os.tmpdir(), 'myday-deno-cache-'));
   const version = execFileSync(deno, ['--version'], { encoding: 'utf8' }).split('\n')[0];
 
   // ---- The stand-in Supabase, and disposable accounts ----
@@ -176,6 +179,7 @@ const FAKE_KEY = 'zai-made-up-key-for-deno-test';
     await srv.close(); fake.close();
   }
 
+  if (ownDenoDir) fs.rmSync(denoDir, { recursive: true, force: true });
   const { pass, fail } = summary();
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

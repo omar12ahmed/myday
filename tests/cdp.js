@@ -6,9 +6,10 @@ let URL_ = `http://localhost:${HTTP_PORT}/index.html`;
 const setUrl = u => { URL_ = /^(https?|file):/.test(u) ? u : `http://localhost:${HTTP_PORT}/` + u; };
 let handler = null; const setHandler = f => { handler = f; };
 let ws, id = 0; const pending = new Map(); const events = [];
+let lastMethod = '';
 function send(method, params = {}) {
   return new Promise((res, rej) => {
-    const i = ++id;
+    const i = ++id; lastMethod = method;
     const t = setTimeout(() => { console.log(`HARNESS: no reply to ${method} after 60 s`); process.exit(4); }, 60000);
     pending.set(i, { res: v => { clearTimeout(t); res(v); }, rej: e => { clearTimeout(t); rej(e); } });
     ws.send(JSON.stringify({ id: i, method, params }));
@@ -34,7 +35,7 @@ async function connect() {
   const page = targets.find(t => t.type === 'page');
   ws = new WebSocket(page.webSocketDebuggerUrl);
   await new Promise(r => ws.onopen = r);
-  ws.onclose = e => { console.log(`HARNESS: browser connection closed (code ${e.code}${e.reason ? ', ' + e.reason : ''})`); process.exit(3); };
+  ws.onclose = e => { console.log(`HARNESS: browser connection closed (code ${e.code}${e.reason ? ', ' + e.reason : ''}) while waiting for ${[...pending.keys()].length ? 'an answer to ' + lastMethod : 'nothing (idle)'} — the browser or the page it was showing stopped, usually because the machine was out of memory or very busy`); process.exit(3); };
   ws.onerror = e => console.log('HARNESS: connection error', e && (e.message || e.type));
   ws.onmessage = m => { const d = JSON.parse(m.data); if (d.id && pending.has(d.id)) { const p = pending.get(d.id); pending.delete(d.id); d.error ? p.rej(new Error(JSON.stringify(d.error))) : p.res(d.result); } else { events.push(d); if (handler) handler(d); } };
   await send('Page.enable'); await send('Runtime.enable'); await send('DOM.enable'); await send('Page.bringToFront');
@@ -54,8 +55,25 @@ async function openAt(y, mo, d, h = 9, mi = 0, confirmAnswer = true) {
   clockScript = (await send('Page.addScriptToEvaluateOnNewDocument', { source: src })).identifier;
   // A unique query string forces a real reload even when only the #section differs.
   const [base, hash] = URL_.split('#');
+  await ev(`window.__oldDocument = true`).catch(() => {}); // (gone once the new document is there)
   await send('Page.navigate', { url: `${base}${base.includes('?') ? '&' : '?'}r=${++navCount}${hash ? '#' + hash : ''}` });
-  await sleep(400);
+  await drawn();
+}
+// Waits until the page just navigated to has loaded and drawn something (not a fixed pause: under load a page can take
+// seconds to paint, and a check that reads at once would see an empty page). It is a new document (not the one that was
+// open), complete, with text on it, and the app's start-up message and any "Opening…" / "Loading…" notice of a screen still arriving gone; a page that never draws is
+// reported plainly instead of letting later checks fail one by one.
+async function drawn(ms = 60000) {
+  const want = `(() => !window.__oldDocument && document.readyState === 'complete' && document.body && document.body.innerText.trim().length > 0 && !/^Getting your MyDay/.test(document.body.innerText.trim()) && ![...document.querySelectorAll('[role=status]')].some(e => /^(Opening|Loading|Getting)/.test(e.textContent.trim())))()`;
+  const t0 = Date.now();
+  for (;;) {
+    let ok = false;
+    try { ok = await ev(want); } catch { /* the page is still being replaced */ }
+    if (ok) break;
+    if (Date.now() - t0 > ms) { const why = await ev(`JSON.stringify({ old: !!window.__oldDocument, ready: document.readyState, url: location.href.slice(0, 80), text: (document.body && document.body.innerText || '').trim().slice(0, 80) })`).catch(() => 'no page'); console.log(`HARNESS: the page was not drawn within ${ms / 1000} s of opening: ${why} (going on; the checks that follow will say what is missing)`); break; }
+    await sleep(50);
+  }
+  await sleep(100); // (effects that run just after the first paint)
 }
 async function ev(expr) {
   const r = await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true });

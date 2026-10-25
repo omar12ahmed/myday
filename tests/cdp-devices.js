@@ -51,9 +51,11 @@ async function device(name, dir) {
     async open(u = url) {
       url = u;
       const [base, hash] = u.split('#');
+      await D.ev(`window.__oldDocument = true`).catch(() => {}); // (gone once the new document is there: a page already open must not count as the new one)
       await s('Page.navigate', { url: `${base}${base.includes('?') ? '&' : '?'}r=${++nav}${hash ? '#' + hash : ''}` });
-      await D.until(`document.readyState === 'complete' && !!document.querySelector('#app')`, 15000);
-      await sleep(300);
+      // A new document that has loaded and drawn the app, with no start-up or "Opening…" notice of a screen still arriving.
+      await D.until(`!window.__oldDocument && document.readyState === 'complete' && !!document.querySelector('#app') && ![...document.querySelectorAll('[role=status]')].some(e => /^(Opening|Loading|Getting)/.test(e.textContent.trim()))`, 30000);
+      await sleep(100);
     },
     async ev(expr) {
       const r = await s('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true });

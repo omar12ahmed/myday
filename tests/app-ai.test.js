@@ -64,7 +64,8 @@ const SEED = `s => {
   console.log('\n[2] Practice mode (no account, no AI, nothing sent)');
   const mock = await device('mock');
   await seeded(mock, MOCK);
-  const logBefore = srv.log.length;
+  // (Only calls to the AI function count: another tab's background sync also reaches the stand-in, and is not what these checks are about.)
+  const logBefore = aiCalls().length;
   check('"Help me adjust today" is on the plan, as a secondary action', await mock.ev(`(() => { const b = document.querySelector('[data-action=ai-open]'); return !!b && b.dataset.variant !== 'primary'; })()`));
   await mock.click('[data-action=ai-open]'); await mock.until(`document.getElementById('aiNote')`);
   check('it explains it\'s practice mode and nothing is sent anywhere', (await mock.text('#aiCard')).includes('Practice mode') && (await mock.text('#aiCard')).includes('Nothing is sent anywhere'));
@@ -81,7 +82,7 @@ const SEED = `s => {
   await mock.click('[data-action=ai-undo]'); await sleep(300);
   after = await mock.data();
   check('Undo puts the plan and the queue back exactly', eq(after.days[TODAY], before.days[TODAY]) && eq(after.queue, before.queue) && (await mock.text('#toast')).includes('Put back'));
-  check('practice mode contacted no server', srv.log.length === logBefore);
+  check('practice mode made no AI request', aiCalls().length === logBefore);
 
   console.log('\n[2b] "Add what\'s on my mind" (practice mode)');
   const MIND_SEED = SEED.replace(/}$/, `  s.lists.admin.push({ id: 'a-gp', title: 'Call the GP', minutes: 10 });\n}`);
@@ -109,7 +110,7 @@ const SEED = `s => {
   check('Undo takes back exactly what was added', eq(afterMind.lists, beforeMind.lists) && eq(afterMind.queue, beforeMind.queue) && (await mock.text('#toast')).includes('Taken back'));
   await mock.setData(`s => { delete s.days['${TODAY}']; }`); await mock.until(`document.querySelector('[data-action=build]')`);
   check('before the day is built it\'s there too (queued tasks are picked first when you build)', await mock.exists('#slot-energy [data-action=mind-open]'));
-  check('practice mode still contacted no server', srv.log.length === logBefore);
+  check('practice mode still made no AI request', aiCalls().length === logBefore);
 
   console.log('\n[2d] "Add what\'s on my mind" can put tasks into a list in Tasks (practice mode)');
   {
@@ -162,7 +163,7 @@ const SEED = `s => {
     after = await mock.data();
     check('Add: just that one goes to the queue; the other goes into Errands', after.queue.length === 1 && /post the parcel/i.test(after.queue[0].title) && after.tasks.items.length === 1 && /buy stamps/i.test(after.tasks.items[0].title) && after.tasks.items[0].listId === 'tlErr', [after.queue, after.tasks.items]);
     await mock.click('[data-action=mind-undo]'); await sleep(300);
-    check('practice mode still contacted no server', srv.log.length === logBefore);
+    check('practice mode still made no AI request', aiCalls().length === logBefore);
   }
 
   console.log('\n[3] With an account: the ai-plan Edge Function (its real code, a mock model)');
@@ -253,9 +254,9 @@ const SEED = `s => {
   console.log('\n[8b] AI help with notes (understand & connect, part 2)');
   setAi({ AI_MODEL: 'mock:good', AI_MIN_SECONDS_BETWEEN: '0' });
   const NP = (id, title, summary) => ({ id, title, summary, stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: TODAY + 'T08:00', updatedAt: TODAY + 'T08:00' });
-  // Made-up notes written an hour before the page's clock: AI help with notes leaves alone a note changed in the
+  // Made-up notes written a few hours before the page's clock: AI help with notes leaves alone a note changed in the
   // last 5 minutes, and before 08:05 "today at 08:00" would still be to come (so this suite failed when run after midnight).
-  const pad = n => String(n).padStart(2, '0'), hourBefore = new Date(base - 3600000);
+  const pad = n => String(n).padStart(2, '0'), hourBefore = new Date(base - 3 * 3600000); // (three hours, not one: when the clocks go back, the hour from 01:00 to 02:00 happens twice, and a written time one hour before "now" reads the same as now)
   const WRITTEN = `${hourBefore.getFullYear()}-${pad(hourBefore.getMonth() + 1)}-${pad(hourBefore.getDate())}T${pad(hourBefore.getHours())}:${pad(hourBefore.getMinutes())}`;
   const NN = (id, text, x = {}) => ({ id, categoryId: '', title: '', text, pinned: false, createdAt: WRITTEN, updatedAt: WRITTEN, ...x });
   await D.ev(`localStorage.removeItem('myday.ai.connect')`);
@@ -270,7 +271,7 @@ const SEED = `s => {
   check('the card says exactly what would be sent, and how often', (await D.text('#aiNotes')).includes("never ones you've marked private") && (await D.text('#aiNotes')).includes('At most 2 times a day'));
   await D.click('[data-action=ai-notes]'); await sleep(200);
   check('switching it on is saved with your preferences (so it follows your account)', (await D.data()).patterns.prefs.aiNotes === true);
-  const sawIt = await D.until(`(JSON.parse(localStorage.getItem('myday.data.v4')).notes.items.find(n => n.id === 'nA') || {}).aiSeen`, 15000);
+  const sawIt = await D.until(`(JSON.parse(localStorage.getItem('myday.data.v4')).notes.items.find(n => n.id === 'nA') || {}).aiSeen`, 45000);
   const toastC = await D.text('#toast');
   const sentC = aiCalls().slice(c0);
   const ctxC = sentC[0] && sentC[0].body.context;
@@ -436,7 +437,7 @@ const SEED = `s => {
     const askGo = async Dv => { await Dv.click('[data-action=ask-go]'); await Dv.until(`['shown', 'error'].includes(document.querySelector('[data-s=ask-panel]')?.dataset.phase)`, 15000); return Dv.ev(`document.querySelector('[data-s=ask-panel]').dataset.phase`); };
     const closeSheet = Dv => Dv.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`);
     await seeded(mock, MOCK); await mock.setData(askSeed); await mock.until(`document.querySelector('#app')`);
-    const logAsk = srv.log.length;
+    const logAsk = aiCalls().length;
     await openAsk(mock, 'projects/p/pjAsk', 'Break this into smaller steps');
     check('the + sheet offers Ask MyDay, showing what it sends from this page before you tap (the values themselves)', await mock.exists('[data-action=ask-go]') && (await mock.text('[data-s=ask-sends]')).includes('Project: Coffee subscription') && (await mock.text('[data-s=ask-sends]')).includes('0 tasks, 1 note title') && (await mock.text('#captureSheet')).includes('nothing you type is sent unless you tap Ask MyDay'));
     await mock.ev(`document.querySelector('[data-s=ask-sends-all] summary').click()`); await sleep(150);
@@ -491,7 +492,7 @@ const SEED = `s => {
     const smallAsk = await mock.ev(`[...document.querySelectorAll('[data-s=ask-panel] button, [data-s=ask-panel] input')].filter(b => b.offsetParent !== null && b.getBoundingClientRect().height < 44 && b.type !== 'checkbox').map(b => b.textContent.trim() || b.getAttribute('aria-label'))`);
     check('phone: the answer fits (nothing sideways) and its buttons are easy to tap', !(await mock.ev('document.documentElement.scrollWidth > innerWidth')) && !smallAsk.length, smallAsk);
     await closeSheet(mock); await mock.send('Emulation.clearDeviceMetricsOverride');
-    check('practice mode sent nothing anywhere', srv.log.length === logAsk);
+    check('practice mode made no AI request for it', aiCalls().length === logAsk);
     // Through the server's real code (the stand-in), signed in: the app's request must be one the server accepts.
     setAi({ AI_PROVIDER: 'mock', AI_MODEL: 'mock:good', AI_LABEL: 'Main model', AI_MIN_SECONDS_BETWEEN: '0' });
     await D.setData(askSeed); await D.until(`!document.getElementById('signInGate')`, 15000);
@@ -989,7 +990,7 @@ const SEED = `s => {
     const ORDER = ['hint', 'example', 'explanation', 'follow-up', 'follow-answer'];
     const phaseOf = (Dv, sel) => Dv.ev(`document.querySelector(${JSON.stringify(sel)})?.dataset.phase || ''`);
     const waitPhase = (Dv, sel, ms = 15000) => Dv.until(`['shown', 'error'].includes(document.querySelector(${JSON.stringify(sel)})?.dataset.phase)`, ms);
-    const logBefore8s = srv.log.length;
+    const logBefore8s = aiCalls().length;
 
     await arabicSession(mock, MOCK);
     check('Arabic check, before any answer is written: no "Check my answer"', !(await mock.exists(panel)) && !(await mock.exists(`${qSel} [data-action="ca-ask"]`)));
@@ -1012,7 +1013,7 @@ const SEED = `s => {
     check('…after the last part there is no next button', !(await mock.exists(`${panel} [data-action="ca-next"]`)) && (await mock.exists(`${panel} [data-action="ca-close"]`)));
     check('the suggested mark is "Right" (the answer equals the reference), only a suggestion, and without "Use this mark" before the reference answer is shown', (await mock.ev(`document.querySelector(${JSON.stringify(panel + ' [data-s="ca-mark"]')})?.dataset.v`)) === 'right' && (await mock.text(`${panel} [data-s="ca-mark"]`)).includes('Suggested mark: Right') && (await mock.text(`${panel} [data-s="ca-mark"]`)).includes('only a suggestion') && !(await mock.exists(`${panel} [data-action="ca-use-mark"]`)));
     check('asking and revealing every part saved nothing: the saved data is byte-for-byte what it was', (await mock.ev(`localStorage.getItem('myday.data.v4')`)) === savedBefore);
-    check('practice mode sent nothing to any server for it', srv.log.length === logBefore8s);
+    check('practice mode made no AI request for it', aiCalls().length === logBefore8s);
     // Look at the reference answer, then ask again.
     await mock.click(`${panel} [data-action="ca-close"]`); await sleep(100);
     check('"Close" puts the panel back to asking, with focus on "Check my answer"', (await phaseOf(mock, panel)) === 'idle' && await mock.exists(`${panel} [data-action="ca-ask"]`) && (await mock.ev(`document.activeElement?.dataset?.action || ''`)) === 'ca-ask');
@@ -1050,7 +1051,7 @@ const SEED = `s => {
     const cyErr = await mock.text('[data-s="check-answer"] [role=alert]');
     check('an answer with a password written out is refused with a kind message, and no reply is shown', (await phaseOf(mock, '[data-s="check-answer"]')) === 'error' && cyErr.includes('Your answer has what looks like a password or key written out. Take it out first: your answer is sent to AI.') && !(await mock.exists('[data-s="ca-shown"]')), cyErr);
     check('…with focus on its "Try again"', (await mock.ev(`document.activeElement?.dataset?.action || ''`)) === 'ca-ask' && (await mock.ev(`document.activeElement?.textContent || ''`)) === 'Try again');
-    check('…and still nothing went to a server', srv.log.length === logBefore8s);
+    check('…and still no AI request', aiCalls().length === logBefore8s);
     await mock.ev(`location.hash = 'today'`);
 
     // With an account: the real server code, a mock model.

@@ -12,7 +12,16 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
 (async () => {
   const { bundle } = await import(pathToFileURL(path.join(ROOT, 'ai-eval/build.mjs')).href);
-  const K = await import(pathToFileURL(await bundle(path.join(ROOT, 'ai-eval/kit.ts'), path.join(os.tmpdir(), `myday-aikit-${process.pid}`))).href);
+  // The app's code is bundled from app/src and the curriculum files the app's own build writes. If a build is running in
+  // this worktree (its preparation steps rewrite those files), the bundle can find one half written: try again a few
+  // times, and if it still can't, say so plainly rather than stopping without a word.
+  let built = null;
+  for (let attempt = 1; attempt <= 4 && !built; attempt++) {
+    try { built = await bundle(path.join(ROOT, 'ai-eval/kit.ts'), path.join(os.tmpdir(), `myday-aikit-${process.pid}`)); }
+    catch (e) { console.log(`  (bundling the app's code failed, attempt ${attempt} of 4: ${String(e && e.message || e).split('\n')[0].slice(0, 200)})`); if (attempt < 4) await new Promise(r => setTimeout(r, 5000)); }
+  }
+  if (!built) { console.log('HARNESS: the app\'s code could not be bundled — built or generated files changed under it (is a build running in this worktree?). Run this suite again when it has finished.'); process.exit(2); }
+  const K = await import(pathToFileURL(built).href);
   K.useMemoryStorage();
   const task = (uid, title, category, minutes, x = {}) => ({ uid, taskId: 'l-' + uid, category, title, minutes, baseMinutes: minutes, done: false, shrunk: false, fromQueue: null, rolledQid: null, scheduledStart: null, scheduledEnd: null, ...x });
   // A day at a given time, built from the app's defaults (and saved to the memory-only storage).

@@ -549,6 +549,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('…removing it takes the list away again', !('decisions' in (await pAt('pjDx'))) && (await toast()) === 'Decision removed.', await pAt('pjDx'));
   await seed([pjObj('pjD12', 'Decisions: twelve', 'decide', { decisions: Array.from({ length: 12 }, (_, i) => dcObj('dcT' + i, 'Question ' + (i + 1), [])) })]);
   await go('projects/p/pjD12/decisions', 2026, 10, 15, 18, 10);
+  await until(`!!document.querySelector('[data-s=dc-full]')`);
   check('at 12 decisions: "That\'s 12 decisions — plenty for one project. Remove one to add another." and no add form', (await text('[data-s=dc-full]')) === "That's 12 decisions — plenty for one project. Remove one to add another." && !(await exists('#dcNew')) && (await ev(`document.querySelectorAll('[data-s=decision]').length`)) === 12, await text('[data-s=dc-full]'));
 
   await seed([pjObj('pjD10', 'Decisions: reading corner', 'decide', { decisions: [dcObj('dc10', 'Which chair?', [

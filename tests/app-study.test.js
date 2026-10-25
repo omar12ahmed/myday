@@ -257,6 +257,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   await ev('window.__setNow(2026, 11, 2, 9, 10)'); await sleep(1300);
   check('the clock keeps time (10 min later)', near(await text('#stClock'), 10), await text('#stClock'));
   await go('study/session', 2026, 11, 2, 9, 12);
+  await until(() => exists('#stClock'), 'the session clock');
   check('a refresh keeps the session running (12 min)', near(await text('#stClock'), 12), await text('#stClock'));
   await click('[data-action=s-pause]'); await sleep(150);
   let a = (await SD()).sessions[0];
@@ -264,6 +265,7 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
   await ev('window.__setNow(2026, 11, 2, 9, 40)'); await sleep(1300);
   check('…and it stays stopped while paused', near(await text('#stClock'), 12));
   await go('study/session', 2026, 11, 2, 9, 41);
+  await until(async () => (await exists('#stClock')) && (await exists('[data-action=s-resume]')), 'the paused session');
   check('…even after a refresh while paused', near(await text('#stClock'), 12) && (await exists('[data-action=s-resume]')));
   await click('[data-action=s-resume]'); await sleep(150);
   await ev('window.__setNow(2026, 11, 2, 9, 55)'); await sleep(1300);

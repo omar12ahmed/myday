@@ -9,7 +9,15 @@ const KEY = 'myday.data.v4';
 const APP = 'app/dist/index.html';
 const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const reset = () => ev('localStorage.clear()');
-const go = async (hash, y, m, d, h = 9, mi = 0, url = APP) => { T.setUrl(url + '#' + hash); await openAt(y, m, d, h, mi); };
+// Waits until what a check means to be true is there (up to ms): under load a screen, or the guided subjects it loads
+// on demand, can arrive a moment after the page has opened.
+const until = async (js, ms = 20000) => { const t0 = Date.now(); for (;;) { let v = false; try { v = await ev(js); } catch { /* still arriving */ } if (v) return true; if (Date.now() - t0 > ms) return false; await sleep(100); } };
+const go = async (hash, y, m, d, h = 9, mi = 0, url = APP) => {
+  T.setUrl(url + '#' + hash); await openAt(y, m, d, h, mi);
+  // Study home: its topic cards, or its first-use tile, and the guided subject's entry (loaded on demand) have arrived.
+  if (hash === 'study') await until(`!!document.querySelector('#studyHome') && (!!document.querySelector('#studyHome .topic-card') || !!document.querySelector('#studyHome [data-s="setup-tile"]')) && (!!document.querySelector('.cyber-entry') || !!document.querySelector('#stFocus') || !document.querySelector('#studyHome [data-cyber-saved-courses]'))`);
+  if (hash.startsWith('study/topic/') && !hash.endsWith('/nope')) await until(`!!document.querySelector('#topic-h')`);
+};
 const editStorage = fn => ev(`(() => { const s = JSON.parse(localStorage.getItem('${KEY}')); (${fn})(s); localStorage.setItem('${KEY}', JSON.stringify(s)); })()`);
 const type = (sel, v) => ev(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); if (!el) throw new Error('missing ${sel.replace(/'/g, '')}');
   const proto = el instanceof HTMLSelectElement ? HTMLSelectElement.prototype : HTMLInputElement.prototype;

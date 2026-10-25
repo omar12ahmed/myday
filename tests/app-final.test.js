@@ -22,6 +22,8 @@ const D = () => ev(`JSON.parse(localStorage.getItem('${KEY}'))`);
 const editStorage = fn => ev(`(() => { const s = JSON.parse(localStorage.getItem('${KEY}')); (${fn})(s); localStorage.setItem('${KEY}', JSON.stringify(s)); })()`);
 const go = async (hash, y = 2026, m = 11, d = 2, h = 9, mi = 0, url = APP) => { T.setUrl(url + '#' + hash); await openAt(y, m, d, h, mi); };
 const nav = async hash => { await ev(`location.hash = ${JSON.stringify(hash)}`); await sleep(250); };
+// Waits for what a check means to be true (up to ms), rather than reading once: under load a screen, a save or a colour change can take a moment. Returns whether it became true.
+const eventually = async (fn, ms = 10000) => { const t0 = Date.now(); for (;;) { let v = false; try { v = await fn(); } catch { /* still arriving */ } if (v) return true; if (Date.now() - t0 > ms) return false; await sleep(100); } };
 const texts = sel => ev(`[...document.querySelectorAll(${JSON.stringify(sel)})].map(e => e.textContent.trim())`);
 const setVal = (sel, v, evt = 'change') => ev(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); if (!el) throw new Error('missing ${sel.replace(/'/g, '')}');
   const proto = el instanceof HTMLSelectElement ? HTMLSelectElement.prototype : el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
@@ -97,7 +99,7 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   await go('today'); await reset(); await go('today');
   for (const sec of ['today', 'calendar', 'finance', 'health', 'study']) {
     await nav(sec);
-    const ok = (await exists('#footer [data-action=export]')) && (await exists('#footer [data-action=import]')) && (await exists('#footer [data-action=edit]')) && (await exists('#footer [data-action=motion]')) && (await text('#footer .storage-note')) === 'Saved only in this browser.';
+    const ok = await eventually(async () => (await exists('#footer [data-action=export]')) && (await exists('#footer [data-action=import]')) && (await exists('#footer [data-action=edit]')) && (await exists('#footer [data-action=motion]')) && (await text('#footer .storage-note')) === 'Saved only in this browser.');
     check(`#${sec}: Edit task lists, Export, Import, Animations and the storage note are at the bottom`, ok);
   }
   await nav('calendar'); await click('#footer [data-action=edit]'); await sleep(300);
@@ -284,7 +286,7 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
     const bad = [];
     for (const r of ['today', 'calendar', 'finance', 'health/workout', 'health/food', 'study']) {
       await go(r, 2026, 11, 2, 15);
-      const ok = (await ev('document.documentElement.dataset.theme')) === theme && (await contrastOf('#app h2')) >= 4.5 && (await contrastOf('#footer [data-action=export]')) >= 4.5;
+      const ok = await eventually(async () => (await ev('document.documentElement.dataset.theme')) === theme && (await contrastOf('#app h2')) >= 4.5 && (await contrastOf('#footer [data-action=export]')) >= 4.5);
       if (!ok) bad.push(r);
     }
     check(`theme "${theme}": applied on every section, headings and buttons readable`, bad.length === 0, bad);
@@ -321,17 +323,19 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   const P = await D();
   check('setup: the previous release saved its data (shifts, pay, workouts, recipes, shopping)', P.schemaVersion === 4 && P.rota.patterns.length === 1 && P.pay.hourlyRate === 15.5 && P.health.workout.templates.length === 1 && !!P.health.food.recipes.rOwn && P.health.food.shopping.length === 2 && !('study' in P));
   await go('today', 2026, 11, 2, 9, 2);
+  await eventually(() => exists('#energy'));
   check('the new app opens it with nothing unreadable (no notice)', !(await exists('.load-issue')) && (await exists('#energy')));
-  await go('health/food', 2026, 11, 2, 9, 3); const pf = (await text('.next-card')).includes('Lentil soup');
-  await go('health/workout', 2026, 11, 2, 9, 3); const pw = (await text('#app')).includes('Upper body');
-  await go('finance', 2026, 11, 2, 9, 3); const pp = (await text('#rates summary')).includes('£13.85 an hour') && (await D()).pay.hourlyRate === 13.85; // first visit to Finance: your rates are saved
+  await go('health/food', 2026, 11, 2, 9, 3); const pf = await eventually(async () => (await text('.next-card')).includes('Lentil soup'));
+  await go('health/workout', 2026, 11, 2, 9, 3); const pw = await eventually(async () => (await text('#app')).includes('Upper body'));
+  await go('finance', 2026, 11, 2, 9, 3); const pp = await eventually(async () => (await text('#rates summary')).includes('£13.85 an hour') && (await D()).pay.hourlyRate === 13.85); // first visit to Finance: your rates are saved
   await go('study', 2026, 11, 2, 9, 3);
-  for (let i = 0; i < 50 && !(await exists('#stFocus[data-now="cybersecurity"]')); i++) await sleep(100); // the guided subjects load on demand
-  const ps = (await exists('[data-s="setup-tile"]')) && (await exists('#stFocus[data-now="cybersecurity"]'));
+  const ps = await eventually(async () => (await exists('[data-s="setup-tile"]')) && (await exists('#stFocus[data-now="cybersecurity"]'))); // the guided subjects load on demand
   check('…and shows its records (Food, Workout); Finance saves your rates on its first visit; Study starts with no roadmap (a first lesson, and a tile to bring your own courses), as that release had no Study', pf && pw && pp && ps, [pf, pw, pp, ps]);
   await go('today', 2026, 11, 2, 9, 4);
   for (let i = 0; i < 3; i++) { await click('#themeBtn'); await sleep(250); }
-  const N = await D();
+  // (Read what was saved once it has stopped changing: three theme changes and the first visit to Finance each save.)
+  let N = await D();
+  for (let stable = 0, t0 = Date.now(); stable < 3 && Date.now() - t0 < 15000; await sleep(200)) { const again = await D(); if (JSON.stringify(again) === JSON.stringify(N)) stable++; else { stable = 0; N = again; } }
   // (Opening Pay may have added the bank holiday list from gov.uk; that downloaded copy isn't a record of yours.)
   const without = (o, keys) => { const c = JSON.parse(noSaves(o)); for (const k of keys) delete c[k]; delete c.bankHolidays.divisions; delete c.bankHolidays.fetchedAt; if (c.health) delete c.health.daily; return canon(c); };
   const d70 = (a, b, path = '') => { if (JSON.stringify(a) === JSON.stringify(b)) return []; if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return [path]; return [...new Set(Object.keys(a).concat(Object.keys(b)))].flatMap(k => d70(a[k], b[k], path + '.' + k)); };
@@ -346,6 +350,7 @@ const TODAY_PARTS = `s.lists.admin.push({ id: 'a9', title: 'Post office', minute
   // data rather than opening it, and never saves over it (before, its next save quietly left Study out).
   const savedByNew = await ev(`localStorage.getItem('${KEY}')`);
   await go('health/workout', 2026, 11, 2, 9, 5, PREV);
+  await eventually(async () => (await text('#app')).includes('saved by a newer version of MyDay'));
   check('going back: the previous release says the data is from a newer MyDay instead of opening it', (await text('#app')).includes('saved by a newer version of MyDay') && !(await text('#app')).includes('Upper body'));
   await go('today', 2026, 11, 2, 9, 6, PREV);
   // Try to make it save (the theme button saves). Reduced motion: that release's theme cross-fade doesn't handle an
