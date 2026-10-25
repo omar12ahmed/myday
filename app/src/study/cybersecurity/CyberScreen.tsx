@@ -14,7 +14,9 @@ import { go } from '../route';
 import { BackLink, Eyebrow, ExternalLink, InlineLink } from '../parts';
 import { Lines, LinkButton } from './parts';
 import { activities, curriculum, environments, lessons, modules, resources, selectedPath, skills, type Lesson } from './catalogue';
-import { attemptsFor, cyberJourney, cyberSteps, importPath, nextLesson, prerequisiteGaps, sessionMode, suggestedSession, warmUpLesson } from './learning';
+import { attemptsFor, cyberJourney, cyberSteps, importPath, prerequisiteGaps, sessionMode, suggestedSession, warmUpLesson } from './learning';
+import { cyberModuleProgress, cyberPlan } from './plan';
+import { CyberPlace } from './CyberPlace';
 import { ActivityView } from './Notebook';
 import { PortfolioView } from './Portfolio';
 import { AiCards } from './AiCards';
@@ -23,10 +25,11 @@ import { PracticeIndex, PracticeView, RelatedPractice } from './Practice';
 import { CheckRevision, CyberRevisionGlance } from './CheckRevision';
 import { TeachingMaterial, TeachingRead, TeachingTry, TeachingWaiting } from '../teaching/TeachingLesson';
 import { useTeaching } from '../teaching/useTeaching';
-import { MODE_LABEL, modeOf, STEP_LABEL, type JourneyStep, type Mode } from '../../data/study/mastery';
+import { MODE_LABEL, modeOf, STATE_LABEL, STEP_LABEL, type JourneyStep, type Mode } from '../../data/study/mastery';
 import { RestartOffer, StepBar } from '../journey/Journey';
 import { CYBER_TINY } from '../journey/dom';
 import { useJourney } from '../journey/useJourney';
+import { takeStep } from '../journey/pending';
 import { keepSessionMode, keptSessionMode } from '../lessonStep';
 import { ForYourProject } from '../../projects/ForYourProject';
 
@@ -58,7 +61,7 @@ export default function CyberScreen({ data, id }: { data: MyDayData; id: string 
   </div>;
 }
 function MapView({ data }: { data: MyDayData }) {
-  const path = selectedPath(data.cybersecurity.pathId), next = nextLesson(data);
+  const path = selectedPath(data.cybersecurity.pathId), plan = cyberPlan(data), next = plan ? lessons.get(plan.step.lessonId) : null;
   const [search, setSearch] = useState('');
   const visible = curriculum.modules.filter(m => path.required_module_ids.includes(m.id) || path.recommended_optional_module_ids.includes(m.id));
   const submitted = data.cybersecurity.attempts.filter(a => a.submittedAt).length;
@@ -73,8 +76,8 @@ function MapView({ data }: { data: MyDayData }) {
       <p>Follow the foundations, choose a specialism, and keep the evidence from each attempt. Pick up wherever you left off.</p>
       <p className="text-sm text-fg-2">{submitted ? `${submitted} submitted attempt${submitted === 1 ? '' : 's'} in your notebook` : 'Your notebook is ready for your first discovery'}. Reading and time spent do not award mastery.</p>
       <div className="rounded-tile bg-surface p-4 border border-outline mt-4">
-        <Eyebrow>Your next small step</Eyebrow><h3>{next.lesson.title}</h3><p className="text-sm text-fg-2">{next.reason}.</p>
-        <div className="grid sm:grid-cols-2 gap-3"><LinkButton to={'study/cybersecurity/' + next.lesson.id} primary>Open lesson</LinkButton><LinkButton to="study/cybersecurity/practice">Explore practice activities</LinkButton></div>
+        <Eyebrow>Your next small step</Eyebrow>{next && plan && <><h3>{next.title}</h3><p className="text-sm text-fg-2" data-cy-next={plan.step.kind}>{plan.reason}</p></>}
+        <div className="grid sm:grid-cols-2 gap-3">{next && <LinkButton to={'study/cybersecurity/' + next.id} primary>Open lesson</LinkButton>}<LinkButton to="study/cybersecurity/practice">Explore practice activities</LinkButton></div>
       </div>
       <CyberRevisionGlance data={data} />
     </Card>
@@ -89,10 +92,11 @@ function MapView({ data }: { data: MyDayData }) {
     </Card>
     <section aria-label="Modules on your learning map" className="grid sm:grid-cols-2 gap-3 mb-4">
       {visible.filter(m => !search || [m.name, m.purpose, ...m.lesson_ids.map(id => lessons.get(id)!.title)].join(' ').toLowerCase().includes(search.toLowerCase())).map(m => {
-        const touched = m.exercise_ids.some(id => attemptsFor(data, id).length);
-        return <a key={m.id} href={lessonHref(m.id)} className="block no-underline text-fg rounded-card border border-outline bg-surface shadow-card p-4 hover:border-outline-strong focus-visible:outline-2 focus-visible:outline-primary">
-          <span className="text-xs font-bold text-primary uppercase tracking-wide">{String(m.sequence).padStart(2, '0')} · {touched ? 'Exploring' : 'Unexplored'}{path.recommended_optional_module_ids.includes(m.id) ? ' · Optional' : ''}</span>
-          <h3 className="mt-2 mb-1">{m.name}</h3><p className="text-sm text-fg-2 m-0">{m.purpose}</p><p className="text-sm text-fg-3 mb-0">{m.lesson_ids.length} lessons · {m.lab_ids.length} labs</p>
+        const touched = m.exercise_ids.some(id => attemptsFor(data, id).length), mp = cyberModuleProgress(data, m.lesson_ids, touched);
+        return <a key={m.id} href={lessonHref(m.id)} data-cy-module={mp.place} className="block no-underline text-fg rounded-card border border-outline bg-surface shadow-card p-4 hover:border-outline-strong focus-visible:outline-2 focus-visible:outline-primary">
+          <span className="text-xs font-bold text-primary uppercase tracking-wide">{String(m.sequence).padStart(2, '0')} · {mp.place === 'visited' ? 'Visited' : mp.place === 'exploring' ? 'Exploring' : 'Unexplored'}{path.recommended_optional_module_ids.includes(m.id) ? ' · Optional' : ''}</span>
+          <h3 className="mt-2 mb-1">{m.name}</h3><p className="text-sm text-fg-2 m-0">{m.purpose}</p>
+          <p className="text-sm text-fg-3 mb-0">{m.lesson_ids.length} lessons · {m.lab_ids.length} labs{mp.ready ? ` · ${mp.ready} ready` : ''}{mp.needs ? ` · ${mp.needs} ${mp.needs === 1 ? 'needs' : 'need'} revision` : ''}</p>
         </a>;
       })}
     </section>
@@ -101,12 +105,12 @@ function MapView({ data }: { data: MyDayData }) {
   </>;
 }
 function ModuleView({ data, id }: { data: MyDayData; id: string }) {
-  const m = modules.get(id)!;
+  const m = modules.get(id)!, { states } = cyberModuleProgress(data, m.lesson_ids, true);
   return <>
     <Card><Eyebrow>Module {m.sequence} · {m.path_class.replaceAll('_', ' ')}</Eyebrow><h2>{m.name}</h2><p>{m.purpose}</p><Lines items={m.learning_objectives} /></Card>
     <Card><h3><BookOpen className="inline mr-2" size={20} aria-hidden="true" />Lessons</h3>
-      <ol className="list-none p-0 divide-y divide-outline">{m.lesson_ids.map(id => { const l = lessons.get(id)!; return <li key={id} className="py-3">
-        <InlineLink href={lessonHref(id)}>{l.title}{l.optional ? ' (optional)' : ''}</InlineLink>
+      <ol className="list-none p-0 divide-y divide-outline">{m.lesson_ids.map(id => { const l = lessons.get(id)!, st = states.get(id)!; return <li key={id} className="py-3" data-cy-lesson-state={st}>
+        <InlineLink href={lessonHref(id)}>{l.title}{l.optional ? ' (optional)' : ''}</InlineLink> <span className="text-sm text-fg-2">· {STATE_LABEL[st]}</span>
         <p className="text-sm text-fg-2 m-0">{l.estimated_duration_minutes.standard} min · {attemptsFor(data, l.practical_task_id).length ? 'Work in your notebook' : l.prerequisites.all.length ? `${l.prerequisites.all.length} prerequisite skills to check` : 'No prerequisite skills'}</p>
       </li>; })}</ol>
     </Card>
@@ -137,7 +141,8 @@ function LessonView({ data, lesson: l }: { data: MyDayData; lesson: Lesson }) {
   const shown = cyberJourney(data, l.id, mode, !!running);
   const runningHere = () => { const c = activeStudy(getSnapshot().data.study); return c && c.taskId === curriculumTaskId(l.id) ? c.id : null; };
   // The teaching loads after the page: reopening at your step waits for it, so the page doesn't move under you.
-  const { step: kept, current: step, jump: jumpTo, remember, hush } = useJourney({ prefix: 'cy', shown, loaded: !!teaching.lesson || teaching.missing, sessionId: runningHere });
+  const [want] = useState(() => takeStep(l.id)); // a step a link asked for (Progress's "Answer its checks")
+  const { step: kept, current: step, jump: jumpTo, remember, hush } = useJourney({ prefix: 'cy', shown, loaded: !!teaching.lesson || teaching.missing, sessionId: runningHere, want });
   const [checking, setChecking] = useState(() => kept === 'check'); // you went to Check: the explanation folds away
   const [explain, setExplain] = useState(false); // …until you ask for it again
   const jump = (x: JourneyStep) => { setChecking(x === 'check'); jumpTo(x); };
@@ -205,6 +210,7 @@ function LessonView({ data, lesson: l }: { data: MyDayData; lesson: Lesson }) {
     <Card tone="accent"><BackLink to={'study/cybersecurity/' + l.module_id} label={modules.get(l.module_id)!.name} />
       <Eyebrow>Lesson · {l.estimated_duration_minutes.standard} min{l.optional ? ' · Optional extension' : ''}</Eyebrow><h2>{l.title}</h2>
       <ForYourProject data={data} kind="cyber" id={l.id} className="-mt-1 mb-2" />
+      <CyberPlace data={data} lessonId={l.id} />
       <Lines items={l.learning_objectives} />
       {current ? <LinkButton to="study/session">Return to your study session</LinkButton> : task ? <div className="grid gap-3 mt-3">
         {choice}

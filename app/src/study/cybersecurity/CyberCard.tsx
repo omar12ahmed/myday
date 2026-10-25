@@ -3,7 +3,8 @@ import { Card } from '../../components/Card';
 import { topicPath, type TopicGlance } from '../../data/study/topics';
 
 // On Study's home page: the way into the guided Cybersecurity course, with how many of your path's required lessons
-// you've marked complete once that's loaded (a count, never a percentage), and older saved courses kept inside it.
+// are ready to move on (or holding) once that's loaded (a count, never a percentage), and older saved courses kept
+// inside it.
 export function CyberCard({ roadmaps = [], counts }: { roadmaps?: TopicGlance[]; counts?: { done: number; total: number } }) {
   return <Card className="cyber-entry" aria-labelledby="cyber-card-title">
     <div className="course-title-row">
@@ -11,7 +12,7 @@ export function CyberCard({ roadmaps = [], counts }: { roadmaps?: TopicGlance[];
       <span className="text-xs text-fg-3">Guided learning path</span>
     </div>
     <p className="text-[15px] text-fg-2">From first principles to hands-on practice. Your lessons, experiments and discoveries, in one place.</p>
-    <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-fg-2 mt-5 mb-5"><span className="inline-flex gap-2 items-center"><BookOpen size={16} aria-hidden="true" />27 modules</span><span className="inline-flex gap-2 items-center"><FlaskConical size={16} aria-hidden="true" />146 lessons{counts?.done ? ` · ${counts.done} marked complete` : ''}</span></div>
+    <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-fg-2 mt-5 mb-5"><span className="inline-flex gap-2 items-center"><BookOpen size={16} aria-hidden="true" />27 modules</span><span className="inline-flex gap-2 items-center"><FlaskConical size={16} aria-hidden="true" />146 lessons{counts?.done ? ` · ${counts.done} ready to move on` : ''}</span></div>
     <a href="#study/cybersecurity" className="flex items-center justify-between gap-3 min-h-12 text-primary font-semibold text-sm no-underline border-t border-outline pt-4">Open cybersecurity <ArrowUpRight size={19} aria-hidden="true" /></a>
     {roadmaps.map(g => <a key={g.topic.id || 'main'} href={'#' + topicPath(g.topic.id)} data-cyber-saved-courses={g.topic.id || 'main'} className="block min-h-11 py-3 mt-2 text-primary text-sm no-underline border-t border-outline">
       <span className="block font-semibold">Your saved courses</span>

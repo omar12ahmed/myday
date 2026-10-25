@@ -46,11 +46,22 @@ export interface PortfolioEntry {
   [other: string]: unknown; // anything a newer MyDay adds to an entry is kept
 }
 export const PORTFOLIO_FILES = 5;
+// Your place on one Cybersecurity lesson (adaptive Study, specs/adaptive-study.md): the day you marked it ready to move
+// on and your own "Needs revision" flag, with what needs work. States are worked out from these, your notebook and your
+// revision answers (data/cybersecurity/lessons.ts); nothing else is saved. Synced as its own record, `cyber_lesson`, so
+// an older MyDay (which doesn't know the kind) leaves it alone; fields a newer MyDay adds are kept.
+export interface CyberLesson {
+  id: string;                                 // the lesson's id
+  readyOn?: DateKey;                          // the day you marked it ready to move on; gone if you take it back
+  revisit?: { since: DateKey; what: string }; // your "Needs revision" flag (what ≤ 300 characters)
+  [other: string]: unknown;
+}
 export interface CyberData {
   pathId: string;
   attempts: CyberAttempt[];
   cards: CyberCard[]; // added after 1.17.1; absent before → nothing in revision yet
   portfolio?: PortfolioEntry[]; // the portfolio; absent until you add an entry
+  lessons?: CyberLesson[];      // your place on lessons; absent until you mark one
   [other: string]: unknown; // anything a newer MyDay adds here is kept
 }
 export const emptyCyber = (): CyberData => ({ pathId: 'path.core', attempts: [], cards: [] });

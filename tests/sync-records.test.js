@@ -85,13 +85,15 @@ const clone = o => JSON.parse(JSON.stringify(o));
   raw.cybersecurity = { pathId: 'path.core', attempts: [], cards: [{ id: 'assessment.lab-isolation-check.q2', addedOn: '2026-10-14', review: { reps: 0, interval: 0, lapses: 0, due: '2026-10-15' }, anotherWay: { text: 'Think of DNS as a phone book: you look up a name to get the number.', by: 'Gemini 3.8 Flash', on: '2026-10-16' } }] };
   // …and a portfolio entry made from a notebook attempt, with two files listed.
   raw.cybersecurity.portfolio = [{ id: 'pfsync00001', attemptId: 'caSync', activityId: 'exercise.learning-evidence', title: 'Baseline evidence', evidence: 'Compared two runs.', note: 'first try', reviewedOn: '2026-10-14', fileIds: ['flsync00001', 'flsync00002'], futureBit: { keep: ['nice', 1] } }];
+  // …and your place on a Cybersecurity lesson: ready to move on (no roadmap path) and a flag, with a newer field.
+  raw.cybersecurity.lessons = [{ id: 'lesson.lab-isolation', readyOn: '2026-10-12', revisit: { since: '2026-10-13', what: 'NAT versus host-only' }, futureBit: { keep: true } }];
   raw.timer = { uid: 'x', dayKey: '2026-10-04', kind: 'focus', durationSec: 1500, startedAt: 1, accumulatedMs: 0, finished: false };
   const data = R.normalize(raw);
 
   console.log('\n[1] Every record survives the trip unchanged');
   const recs = R.localRecords(data);
   const kinds = [...new Set([...recs.keys()].map(k => R.splitKey(k).kind))].sort();
-  check('every kind of record is there', eq(kinds, ['arabic', 'arabic_attempt', 'arabic_card', 'arabic_lesson', 'arabic_practice', 'arabic_word', 'book', 'commitment', 'context', 'cyber_card', 'cyber_portfolio', 'cybersecurity', 'daily', 'day', 'finance', 'fitness', 'food', 'holidays', 'list', 'note', 'notes', 'pay', 'patterns', 'project', 'queue', 'recipe', 'review', 'rota', 'session', 'settings', 'study', 'task', 'tasks', 'workout', 'wsession'].filter(k => k !== 'context' && k !== 'day').sort()), kinds);
+  check('every kind of record is there', eq(kinds, ['arabic', 'arabic_attempt', 'arabic_card', 'arabic_lesson', 'arabic_practice', 'arabic_word', 'book', 'commitment', 'context', 'cyber_card', 'cyber_lesson', 'cyber_portfolio', 'cybersecurity', 'daily', 'day', 'finance', 'fitness', 'food', 'holidays', 'list', 'note', 'notes', 'pay', 'patterns', 'project', 'queue', 'recipe', 'review', 'rota', 'session', 'settings', 'study', 'task', 'tasks', 'workout', 'wsession'].filter(k => k !== 'context' && k !== 'day').sort()), kinds);
   const changedOnTheWay = [...recs].filter(([key, c]) => R.fingerprint(R.cleanRecord(key, clone(c))) !== R.fingerprint(c)).map(([k]) => k);
   check('checked as it arrives on another device, every record is exactly the same (so devices never drift apart)', changedOnTheWay.length === 0, changedOnTheWay);
   const putBack = clone(R.freshState());
@@ -120,6 +122,15 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('an entry removed elsewhere leaves a device that never had a portfolio exactly as it was', !('portfolio' in none.cybersecurity)); }
   { const has = clone(R.normalize(raw)); R.putRecord(has, 'cyber_portfolio:pfsync00001', null);
     check('…and removes it from a device that had it', Array.isArray(has.cybersecurity.portfolio) && has.cybersecurity.portfolio.length === 0); }
+  const noCyberLessons = clone(raw); delete noCyberLessons.cybersecurity.lessons;
+  check('MyDay data from before Cybersecurity lesson states sends no lesson records for it', ![...R.localRecords(R.normalize(noCyberLessons)).keys()].some(k => R.splitKey(k).kind === 'cyber_lesson'));
+  check('your place on a Cybersecurity lesson is its own record: Ready, your flag, and a field a newer MyDay added', recs.get('cyber_lesson:lesson.lab-isolation').readyOn === '2026-10-12'
+    && recs.get('cyber_lesson:lesson.lab-isolation').revisit.what === 'NAT versus host-only' && eq(recs.get('cyber_lesson:lesson.lab-isolation').futureBit, { keep: true }));
+  { const none = clone(R.freshState()); R.putRecord(none, 'cyber_lesson:lesson.lab-isolation', null);
+    check('a Cybersecurity lesson record removed elsewhere leaves a device that never had one exactly as it was', !('lessons' in none.cybersecurity)); }
+  { const has = clone(R.normalize(raw)); R.putRecord(has, 'cyber_lesson:lesson.lab-isolation', null);
+    check('…and removes it from a device that had it', Array.isArray(has.cybersecurity.lessons) && has.cybersecurity.lessons.length === 0); }
+  check('an Arabic lesson\'s id is never a Cybersecurity lesson record', R.cleanRecord('cyber_lesson:lesson.arabic-origin-location', { id: 'lesson.arabic-origin-location', readyOn: '2026-10-12' }) === null);
   const noPractice = clone(raw); delete noPractice.arabic.practice;
   check('MyDay data from before Practise again sends no practice records', ![...R.localRecords(R.normalize(noPractice)).keys()].some(k => R.splitKey(k).kind === 'arabic_practice'));
   check('each lesson to practise again is its own record: its days, its place in revision, and ticks in a session still open', recs.get('arabic_practice:lesson.arabic-origin-location').review.due === '2026-11-01'

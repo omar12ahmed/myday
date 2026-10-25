@@ -7,7 +7,7 @@ const same = require('node:util').isDeepStrictEqual;
 (async () => {
   const { bundle } = await import(pathToFileURL(path.join(ROOT, 'ai-eval/build.mjs')).href);
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'myday-cyber-rules-'));
-  const files = ['app/src/study/cybersecurity/catalogue', 'app/src/study/cybersecurity/learning', 'app/src/study/cybersecurity/practiceCatalogue', 'app/src/study/cybersecurity/practiceRules', 'app/src/study/cybersecurity/tutorReply', 'app/src/data/cybersecurity/normalize', 'app/src/data/cybersecurity/types', 'app/src/data/normalize', 'app/src/sync/records', 'app/src/study/route', 'supabase/functions/_shared/ai/tutor', 'supabase/functions/_shared/ai/prompt', 'app/src/data/cybersecurity/cards', 'app/src/data/study/queue', 'app/src/data/cybersecurity/portfolio', 'app/src/study/cybersecurity/portfolioPages'];
+  const files = ['app/src/study/cybersecurity/catalogue', 'app/src/study/cybersecurity/learning', 'app/src/study/cybersecurity/practiceCatalogue', 'app/src/study/cybersecurity/practiceRules', 'app/src/study/cybersecurity/tutorReply', 'app/src/data/cybersecurity/normalize', 'app/src/data/cybersecurity/types', 'app/src/data/normalize', 'app/src/sync/records', 'app/src/study/route', 'supabase/functions/_shared/ai/tutor', 'supabase/functions/_shared/ai/prompt', 'app/src/data/cybersecurity/cards', 'app/src/data/study/queue', 'app/src/data/cybersecurity/portfolio', 'app/src/study/cybersecurity/portfolioPages', 'app/src/data/cybersecurity/lessons', 'app/src/study/cybersecurity/plan', 'app/src/data/study/roadmap', 'app/src/study/resetProgress'];
   fs.writeFileSync(path.join(dir, 'kit.ts'), files.map(f => `export * from ${JSON.stringify(path.join(ROOT, f))};`).join('\n'));
   const C = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
   const d = C.freshState();
@@ -203,6 +203,86 @@ const same = require('node:util').isDeepStrictEqual;
   check('a field a newer MyDay adds to an entry is kept as it is', JSON.stringify(C.normalizeCyber({ pathId: 'path.core', attempts: [], portfolio: [{ ...good, id: 'pffuture001', nice: { roles: ['PR-CDA-001'] } }] }).portfolio[0].nice) === JSON.stringify({ roles: ['PR-CDA-001'] }));
   const page = C.portfolioPage([{ ...good, title: '<script>alert(1)</script>', evidence: 'a & b', fileIds: undefined }], k);
   check('the exported page escapes every entry and runs nothing (no scripts, nothing fetched)', page.includes('&lt;script&gt;alert(1)&lt;/script&gt;') && page.includes('a &amp; b') && !/<script/i.test(page.replace(/&lt;script/g, '')) && page.includes("default-src 'none'"));
+
+  console.log('\n[States] Your place on each lesson: Practised, Ready to move on, Holding, Needs revision, and the next step');
+  {
+    const L = 'lesson.lab-isolation', F = C.factsOf(L);
+    check('a lesson\'s facts: its practical task, knowledge check and mini challenge, and its knowledge-check questions', F.activityIds.length === 3 && F.activityIds.includes('assessment.lab-isolation-check') && same(F.checks, ['assessment.lab-isolation-check.q1', 'assessment.lab-isolation-check.q2']));
+    const d = C.freshState();
+    check('with nothing done it\'s New', C.cyberState(d, L) === 'new');
+    const draft = C.beginAttempt(d, 'exercise.lab-isolation');
+    check('…and an attempt not yet handed in doesn\'t make it Practised', C.cyberState(d, L) === 'new');
+    d.cybersecurity.attempts.find(a => a.id === draft).submittedAt = '2026-10-10T10:00:00Z';
+    check('a handed-in attempt on one of its activities makes it Practised', C.cyberState(d, L) === 'practised');
+    const s2 = C.freshState(); s2.study.sessions.push({ id: 'ssX', courseId: 'cyber:1:module.x', taskId: C.curriculumTaskId(L), title: 'x', date: '2026-10-10', startedAt: '2026-10-10T09:00', plannedMin: 15, short: true, status: 'done', runningSince: null, activeMs: 900000, endedAt: '2026-10-10T09:15', checkin: null, taskDone: null, todayUid: null });
+    check('…and so does a finished Study session on it (one still running doesn\'t)', C.cyberState(s2, L) === 'practised' && (s2.study.sessions[0].status = 'active', C.cyberState(s2, L) === 'new'));
+
+    // Ready, without the path in the roadmap: the record holds the day.
+    const added = C.markCyberReady(d, F, '2026-10-10');
+    check('Ready to move on (no roadmap path): saved in your lesson record, its day kept', C.cyberState(d, L) === 'ready' && C.readyDay(d, L) === '2026-10-10' && same(d.cybersecurity.lessons, [{ id: L, readyOn: '2026-10-10' }]));
+    check('…and its two checks join revision a week later, by themselves', added.length === 2 && added.every(a => a.due === '2026-10-17') && F.checks.every(id => C.cyberCardOf(d, id)?.review.due === '2026-10-17'));
+    check('…a check already in revision keeps its own schedule', (() => { const e = C.freshState(); C.addCyberCards(e, [F.checks[0]], '2026-10-01'); const a = C.markCyberReady(e, F, '2026-10-10'); return a.length === 1 && C.cyberCardOf(e, F.checks[0]).review.due === '2026-10-02'; })());
+    const rv = (id, date, outcome, support, rating = 'good') => d.study.reviews.push({ id: 'rv' + d.study.reviews.length, conceptId: id, title: 'q', date, at: date + 'T10:00', kind: 'written', outcome, graded: 'self', chosen: null, support, rating, gap: 1, due: null });
+    rv(F.checks[0], '2026-10-16', 'right', 'own'); rv(F.checks[1], '2026-10-16', 'right', 'own');
+    check('both checks recalled on your own six days after Ready: still Ready, not yet Holding', C.cyberState(d, L) === 'ready');
+    rv(F.checks[0], '2026-10-17', 'right', 'own'); rv(F.checks[1], '2026-10-17', 'right', 'own');
+    check('…a week after Ready: Holding', C.cyberState(d, L) === 'holding');
+    rv(F.checks[1], '2026-10-20', 'wrong', 'own', 'again');
+    check('a check that slips after Ready: Needs revision', C.cyberState(d, L) === 'needs-revision');
+    rv(F.checks[1], '2026-10-21', 'right', 'hint');
+    check('…a right answer with a hint isn\'t enough to clear it', C.cyberState(d, L) === 'needs-revision');
+    rv(F.checks[1], '2026-10-22', 'right', 'own');
+    check('…recalling it on your own clears it', C.cyberState(d, L) === 'holding');
+    C.flagCyberRevisit(d, L, '  NAT versus host-only  ', '2026-10-23');
+    check('your own flag, with what needs work (trimmed): Needs revision, whatever the answers say, and Progress lists it with your words', C.cyberState(d, L) === 'needs-revision' && C.cyberLessonRecord(d, L).revisit.what === 'NAT versus host-only'
+      && C.pathIds(d).includes(L) && C.cyberGlance(d).needs.some(n => n.id === L && n.flag === 'NAT versus host-only'));
+    check('Done revisiting takes the flag off', C.clearCyberRevisit(d, L) && C.cyberState(d, L) === 'holding' && !C.clearCyberRevisit(d, L));
+    C.flagCyberRevisit(d, L, 'again', '2026-10-24'); C.markCyberReady(d, F, '2026-10-24');
+    check('marking it ready again takes your flag off too', !C.cyberLessonRecord(d, L).revisit && C.readyDay(d, L) === '2026-10-24');
+    check('Not ready after all: the day goes and the record with it; the checks stay in revision', C.unmarkCyberReady(d, L) && !d.cybersecurity.lessons.length && C.cyberState(d, L) === 'practised' && F.checks.every(id => C.cyberCardOf(d, id)) && !C.unmarkCyberReady(d, L));
+
+    // With the path in your roadmap: the roadmap's tick is Ready, as before.
+    const r = C.freshState(); C.importPath(r, 'path.core');
+    const task = () => C.stIndex(r.study).task.get(C.curriculumTaskId(L)).node;
+    C.markCyberReady(r, F, '2026-10-11');
+    check('with the path in your roadmap, Ready ticks the lesson\'s task (no record of your own needed)', task().done && C.readyDay(r, L) === task().doneOn && !(r.cybersecurity.lessons ?? []).some(x => x.readyOn));
+    check('…and Not ready after all unticks it', C.unmarkCyberReady(r, L) && !task().done && C.cyberState(r, L) === 'new');
+    task().done = true; task().doneOn = '2026-10-05';
+    check('a lesson ticked in your roadmap (before or elsewhere) is Ready from its day', C.cyberState(r, L) === 'ready' && C.readyDay(r, L) === '2026-10-05');
+    task().doneOn = null;
+    check('…one ticked with no day kept (older data) is Ready all the same', C.cyberState(r, L) === 'ready' && C.readyDay(r, L) === C.READY_LONG_AGO);
+    const m = C.freshState(); C.markCyberReady(m, F, '2026-10-12'); C.importPath(m, 'path.core');
+    const mt = C.stIndex(m.study).task.get(C.curriculumTaskId(L)).node;
+    check('adding the path later moves your Ready day to its task (ticked, that day), and the record goes', mt.done && mt.doneOn === '2026-10-12' && !(m.cybersecurity.lessons ?? []).length && C.cyberState(m, L) === 'ready');
+
+    // Saved data
+    const nl = C.normalizeCyber({ pathId: 'path.core', attempts: [], cards: [], lessons: [{ id: L, readyOn: '2026-10-12', revisit: { since: '2026-10-13', what: 'x'.repeat(400) }, futureBit: 1 }, { id: 'lesson.arabic-origin-location', readyOn: '2026-10-12' }, { id: 'lesson.other', readyOn: 'soon' }, { id: L }] });
+    check('read back: a record keeps its day, its flag (what up to 300 characters) and a newer field; an Arabic id, a duplicate and a bad day are left out', nl.lessons.length === 2 && nl.lessons[0].futureBit === 1 && nl.lessons[0].revisit.what.length === 300 && !('readyOn' in nl.lessons[1]) && nl.lessons[1].id === 'lesson.other');
+    check('…and data without any stays without (older data unchanged)', !('lessons' in C.normalizeCyber({ pathId: 'path.core', attempts: [], cards: [] })));
+    const reset = C.freshState(); C.markCyberReady(reset, F, '2026-10-12'); C.resetLearningProgress(reset);
+    check('the Study reset clears your place on Cybersecurity lessons too', same(reset.cybersecurity.lessons, []) && C.cyberState(reset, L) === 'new');
+
+    // The next step
+    const p = C.freshState(); C.importPath(p, 'path.core');
+    const first = C.cyberPlan(p, '2026-10-12');
+    check('the next step starts at the first lesson on your path, as New', first.step.kind === 'lesson' && first.step.lessonId === C.pathIds(p)[0] && first.step.state === 'new' && first.reason === 'Next on your path.');
+    const path = C.pathIds(p), a0 = path[0], a1 = path[1];
+    C.markCyberReady(p, C.factsOf(a0), '2026-10-01');
+    const afterReady = C.cyberPlan(p, '2026-10-12');
+    check('once it\'s ready, the next lesson; with its checks back in revision, revision first', afterReady.step.lessonId === a1 && afterReady.step.kind === 'revise' && afterReady.step.due === C.factsOf(a0).checks.length && /back in revision today/.test(afterReady.reason));
+    check('…today\'s gentle stop reached: the lesson itself', (() => { const q = JSON.parse(JSON.stringify(p)); for (let i = 0; i < 10; i++) q.study.reviews.push({ id: 'g' + i, conceptId: 'x' + i, title: 'x', date: '2026-10-12', at: '2026-10-12T09:00', kind: 'written', outcome: 'right', graded: 'self', chosen: null, support: 'own', rating: 'good', gap: 1, due: null }); return C.cyberPlan(q, '2026-10-12').step.kind === 'lesson'; })());
+    const weak = C.buildsOn(a1).find(id => path.includes(id));
+    if (weak) {
+      C.flagCyberRevisit(p, weak, 'the boundary', '2026-10-12');
+      const rp = C.cyberPlan(p, '2026-10-12');
+      check('a lesson the next one builds on that needs revision comes first, saying why in your words', rp.step.kind === 'revisit' && rp.step.lessonId === weak && rp.reason.includes('the boundary') && rp.length.mode !== 'practical');
+      C.clearCyberRevisit(p, weak);
+    } else check('(the second lesson builds on the first)', false, C.buildsOn(a1));
+    for (const id of path) C.markCyberReady(p, C.factsOf(id), '2026-10-01');
+    const done = C.cyberPlan(p, '2026-11-30');
+    check('every lesson on your path ready: complete, and Study says so', done.complete && done.step.kind === 'complete' && C.cyberGlance(p).done === path.length);
+    check('the glance counts in words: done, holding, needs revision, never a percentage', C.cyberGlance(p).path === path.length && C.cyberGlance(p).holding === 0 && C.cyberGlance(p).needs.length === 0);
+  }
 
   fs.rmSync(dir, { recursive: true, force: true });
   const s = summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);

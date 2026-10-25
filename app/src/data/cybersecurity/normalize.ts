@@ -1,7 +1,7 @@
 import { isDateKey } from '../dates';
 import { intIn, isObj } from '../util';
 import { cleanAnotherWay } from '../study/anotherWay';
-import { emptyCyber, PORTFOLIO_FILES, type CyberAttempt, type CyberCard, type CyberData, type PortfolioEntry } from './types';
+import { emptyCyber, PORTFOLIO_FILES, type CyberAttempt, type CyberCard, type CyberData, type CyberLesson, type PortfolioEntry } from './types';
 
 const str = (v: unknown, max: number) => typeof v === 'string' ? v.slice(0, max) : '';
 const date = (v: unknown): v is string => typeof v === 'string' && /^\d{4}-\d\d-\d\dT/.test(v) && Number.isFinite(Date.parse(v));
@@ -54,6 +54,18 @@ export function cleanPortfolioEntry(raw: unknown): PortfolioEntry | null {
   return out;
 }
 
+// Your place on a lesson: its id is the lesson's (a Cybersecurity one, the sync record's id). A Ready day and a flag
+// are kept only when well formed; fields a newer MyDay adds are kept as they are.
+const CYBER_LESSON = /^lesson\.(?!arabic-)[a-z0-9-]{1,80}$/;
+export function cleanCyberLesson(raw: unknown): CyberLesson | null {
+  if (!isObj(raw) || typeof raw.id !== 'string' || !CYBER_LESSON.test(raw.id)) return null;
+  const out: CyberLesson = { ...raw, id: raw.id };
+  if (isDateKey(raw.readyOn)) out.readyOn = raw.readyOn; else delete out.readyOn;
+  const rv = raw.revisit;
+  if (isObj(rv) && isDateKey(rv.since)) out.revisit = { since: rv.since, what: str(rv.what, 300) }; else delete out.revisit;
+  return out;
+}
+
 export function normalizeCyber(raw: unknown, report = { dropped: 0 }): CyberData {
   if (raw === undefined) return emptyCyber();
   if (!isObj(raw)) { report.dropped++; return emptyCyber(); }
@@ -83,6 +95,17 @@ export function normalizeCyber(raw: unknown, report = { dropped: 0 }): CyberData
       const e = cleanPortfolioEntry(r);
       if (!e || entryIds.has(e.id)) { report.dropped++; continue; }
       entryIds.add(e.id); out.portfolio.push(e);
+    }
+  }
+  delete out.lessons;
+  if (raw.lessons !== undefined) {
+    out.lessons = [];
+    if (!Array.isArray(raw.lessons)) report.dropped++;
+    const lessonIds = new Set<string>();
+    for (const r of Array.isArray(raw.lessons) ? raw.lessons.slice(0, 500) : []) {
+      const l = cleanCyberLesson(r);
+      if (!l || lessonIds.has(l.id)) { report.dropped++; continue; }
+      lessonIds.add(l.id); out.lessons.push(l);
     }
   }
   return out;

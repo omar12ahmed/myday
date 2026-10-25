@@ -23,6 +23,8 @@ export function resetLearningProgress(d: MyDayData, { removeWords = false } = {}
   if (d.arabic.lessons) d.arabic.lessons = [];
   if (d.arabic.practice) d.arabic.practice = [];
   d.cybersecurity.attempts = [];
+  // …and your place on each Cybersecurity lesson (Ready to move on, Needs revision): its roadmap ticks go above.
+  if (d.cybersecurity.lessons) d.cybersecurity.lessons = [];
   for (const card of d.arabic.cards) card.review = freshReview();
   for (const card of d.cybersecurity.cards) card.review = freshReview();
   if (d.arabic.words) {

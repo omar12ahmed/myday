@@ -7,6 +7,7 @@ import { newConcept, safeUrl } from '../data/study/common';
 import { conceptNamed, removeStudyItem, setTaskDone, stFind, stIndex } from '../data/study/roadmap';
 import { activeStudy, ensureCheckin, finishStudy, pauseStudy, resumeStudy, startStudySession, todayTaskFor } from '../data/study/sessions';
 import { chooseFocus } from '../data/study/yourFocus';
+import { lessonFromTask } from '../data/cybersecurity/types';
 import { toast } from '../data/toast';
 import type { Checkin, Clarity, Concept, StudyCourse, StudyData, StudySession, StudyTask } from '../data/types';
 import { intIn } from '../data/util';
@@ -40,13 +41,19 @@ function withSession(id: string, fn: (s: StudySession, st: StudyData) => void | 
   return update(d => { const s = d.study.sessions.find(x => x.id === id); if (!s) return false; return fn(s, d.study); });
 }
 // "Is the task complete?" — sets the task's own completion too (kept separate from clarity).
-export const checkinTask = (id: string, done: boolean) => withSession(id, (s, st) => {
-  const t = s.taskId ? stIndex(st).task.get(s.taskId) : null;
-  if (!t) return false;
-  s.taskDone = done;
-  t.node.done = done;
-  t.node.doneOn = done ? t.node.doneOn || todayKey() : null;
-});
+export const checkinTask = (id: string, done: boolean) => {
+  let taskId: string | null = null;
+  const ok = withSession(id, (s, st) => {
+    const t = s.taskId ? stIndex(st).task.get(s.taskId) : null;
+    if (!t) return false;
+    taskId = t.node.id;
+    s.taskDone = done;
+    t.node.done = done;
+    t.node.doneOn = done ? t.node.doneOn || todayKey() : null;
+  });
+  if (ok && done && taskId) afterCyberTick(taskId);
+  return ok;
+};
 export const checkinConcept = (id: string, conceptId: string) => withSession(id, s => {
   const ci = ensureCheckin(s);
   ci.conceptIds = ci.conceptIds.includes(conceptId) ? ci.conceptIds.filter(x => x !== conceptId) : ci.conceptIds.concat(conceptId);
@@ -92,7 +99,20 @@ export function setFocus(courseId: string) {
   if (update(d => { if (!chooseFocus(d, 'course:' + courseId)) return false; })) toast('Focus updated.');
   go('study');
 }
-export const setDoneFor = (id: string, done: boolean) => update(d => { const t = stIndex(d.study).task.get(id); if (!t) return false; setTaskDone(t.node, done); });
+export const setDoneFor = (id: string, done: boolean) => {
+  const ok = update(d => { const t = stIndex(d.study).task.get(id); if (!t) return false; setTaskDone(t.node, done); });
+  if (ok && done) afterCyberTick(id);
+  return ok;
+};
+// A Cybersecurity lesson ticked in the roadmap is Ready to move on: as from its lesson page, its checks come back about
+// a week later and your own flag goes (data/cybersecurity/lessons.ts). The course is loaded only then (it's large).
+function afterCyberTick(taskId: string) {
+  const lessonId = lessonFromTask(taskId);
+  if (!lessonId) return;
+  void Promise.all([import('./cybersecurity/plan'), import('../data/cybersecurity/lessons')]).then(([{ factsOf }, L]) => {
+    update(d => { const flagged = !!L.cyberLessonRecord(d, lessonId)?.revisit; if (!L.afterReady(d, factsOf(lessonId)).length && !flagged) return false; });
+  }, () => { /* the course didn't load (offline): the checks can be brought back from the lesson */ });
+}
 // Removing is asked first by the screen. Returns true if something was removed.
 export const removeItem = (id: string) => update(d => { if (!removeStudyItem(d.study, id)) return false; });
 

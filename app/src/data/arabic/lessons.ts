@@ -77,11 +77,13 @@ function firstDueDays(d: MyDayData): (DateKey | null)[] {
 }
 // Adds the checks not already in revision, first back on `from` or the next day with room. Cards already there keep
 // their schedule. Returns what was added, with the day each comes back.
-export function addAutomatic(d: MyDayData, ids: string[], from: DateKey, k: DateKey): { id: string; due: DateKey }[] {
-  const fresh = [...new Set(ids)].filter(id => !cardOf(d, id));
+// The same for a Cybersecurity lesson's knowledge checks (`subject`), sharing the one 8-a-day count.
+export function addAutomatic(d: MyDayData, ids: string[], from: DateKey, k: DateKey, subject: 'arabic' | 'cybersecurity' = 'arabic'): { id: string; due: DateKey }[] {
+  const cards = subject === 'arabic' ? d.arabic.cards : d.cybersecurity.cards;
+  const fresh = [...new Set(ids)].filter(id => (subject === 'arabic' ? !cardOf(d, id) : !cards.some(c => c.id === id)));
   const days = placeNewCards(firstDueDays(d), from, fresh.length);
   const added = fresh.map((id, i) => ({ id, due: days[i] }));
-  for (const { id, due } of added) d.arabic.cards.push({ id, addedOn: k, review: { reps: 0, interval: 0, lapses: 0, due } });
+  for (const { id, due } of added) cards.push({ id, addedOn: k, review: { reps: 0, interval: 0, lapses: 0, due } });
   return added;
 }
 // After a session: the checks that haven't clicked yet come back from the next day.

@@ -25,8 +25,8 @@ import { STAGES, STATUS_LABEL } from '../data/projects';
 import { CAT_LABEL, ENERGY_LABEL } from '../data/plan';
 import type { Book, Category, Commitment, Day, DayContext, FileRecord, ListItem, MyDayData, Note, Project, QueueItem, Recipe, ResearchItem, Review as StudyReview, StudySession, TaskItem, WorkoutSession } from '../data/types';
 import { isObj } from '../data/util';
-import { cleanAttempt, cleanCyberCard, cleanPortfolioEntry, normalizeCyber } from '../data/cybersecurity/normalize';
-import type { CyberAttempt, CyberCard, PortfolioEntry } from '../data/cybersecurity/types';
+import { cleanAttempt, cleanCyberCard, cleanCyberLesson, cleanPortfolioEntry, normalizeCyber } from '../data/cybersecurity/normalize';
+import type { CyberAttempt, CyberCard, CyberLesson, PortfolioEntry } from '../data/cybersecurity/types';
 import { cleanArabicAttempt, cleanArabicCard, cleanArabicLesson, cleanArabicPractice, cleanKeptWord, normalizeArabic } from '../data/arabic/normalize';
 import { ARABIC_CORE_PATH, type ArabicAttempt, type ArabicCard, type ArabicLesson, type ArabicPractice, type KeptWord } from '../data/arabic/types';
 import { PROJECT_KINDS, splitProject, type ProjectContent, type ProjectKind } from '../data/projectRecords';
@@ -37,7 +37,7 @@ import { sizeLabel } from '../data/files';
 export type Kind = 'list' | 'queue' | 'day' | 'context'
   | 'settings' | 'rota' | 'pay' | 'holidays' | 'finance' | 'study' | 'workout' | 'food' | 'fitness' | 'notes' | 'tasks' | 'patterns'
   | 'commitment' | 'note' | 'task' | 'session' | 'review' | 'wsession' | 'recipe' | 'project' | 'cybersecurity' | 'cyber_attempt'
-  | 'arabic' | 'arabic_attempt' | 'arabic_card' | 'arabic_lesson' | 'arabic_word' | 'arabic_practice' | 'cyber_card' | 'cyber_portfolio' | 'daily' | 'book' | 'file' | 'research' | ProjectKind;
+  | 'arabic' | 'arabic_attempt' | 'arabic_card' | 'arabic_lesson' | 'arabic_word' | 'arabic_practice' | 'cyber_card' | 'cyber_portfolio' | 'cyber_lesson' | 'daily' | 'book' | 'file' | 'research' | ProjectKind;
 export type Content = Record<string, unknown>;
 
 // A record's key on this device: "list:learning", "day:2026-10-02", "note:nt8f…"…
@@ -231,6 +231,12 @@ const MANY: Many[] = [
     items: d => d.cybersecurity.portfolio ?? [], put: (d, id, c) => { if (c || d.cybersecurity.portfolio) putItem(d.cybersecurity.portfolio ??= [], id, c); },
     clean: (id, raw) => same(id, cleanPortfolioEntry(raw)),
     summary: c => { const x = c as unknown as PortfolioEntry; return [x.title, `reviewed ${prettyDate(x.reviewedOn)}`, x.fileIds?.length ? plural(x.fileIds.length, 'file') : ''].filter(Boolean).join(' · '); } },
+  // Your place on one Cybersecurity lesson (adaptive Study): Ready to move on and your Needs revision flag. Its own
+  // record, so an older MyDay (which doesn't know this kind) leaves it alone.
+  { kind: 'cyber_lesson', label: 'Cybersecurity lesson: your place',
+    items: d => d.cybersecurity.lessons ?? [], put: (d, id, c) => { if (c || d.cybersecurity.lessons) putItem(d.cybersecurity.lessons ??= [], id, c); },
+    clean: (id, raw) => same(id, cleanCyberLesson(raw)),
+    summary: c => { const x = c as unknown as CyberLesson; return [x.id, x.readyOn ? `ready since ${prettyDate(x.readyOn)}` : '', x.revisit ? 'to revisit' : ''].filter(Boolean).join(' · '); } },
   { kind: 'cyber_attempt', label: 'Cybersecurity notebook attempt',
     items: d => d.cybersecurity.attempts, put: (d, id, c) => putItem(d.cybersecurity.attempts, id, c, (a, b) => a.startedAt.localeCompare(b.startedAt)),
     clean: (id, raw) => same(id, cleanAttempt(raw) ?? undefined),

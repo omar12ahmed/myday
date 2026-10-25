@@ -18,7 +18,9 @@ function check(label, ok) {
       'export { learningOptions, learningGlance } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/nextLearning')) + ';',
       'export { optionAction } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/courseOption')) + ';',
       'export { chooseFocus, courseFocus, focusChoices, focusValue } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/study/yourFocus')) + ';',
-      'export { nextLesson, importPath, beginAttempt, cyberJourney, practised, sessionFor, sessionMode, warmUpLesson } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/cybersecurity/learning')) + ';',
+      'export { importPath, beginAttempt, cyberJourney, practised, sessionFor, sessionMode, warmUpLesson } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/cybersecurity/learning')) + ';',
+      'export { cyberPlan, cyberGlance, cyberState, factsOf } from ' + JSON.stringify(path.join(ROOT, 'app/src/study/cybersecurity/plan')) + ';',
+      'export { markCyberReady, unmarkCyberReady, flagCyberRevisit, clearCyberRevisit, readyDay } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/cybersecurity/lessons')) + ';',
       'export * as cyberCatalogue from ' + JSON.stringify(path.join(ROOT, 'app/src/study/cybersecurity/catalogue')) + ';',
       'export { CYBER_VERSION, curriculumTaskId } from ' + JSON.stringify(path.join(ROOT, 'app/src/data/cybersecurity/types')) + ';',
       'export * as arabicCatalogue from ' + JSON.stringify(path.join(ROOT, 'app/src/study/arabic/catalogue')) + ';',
@@ -131,58 +133,60 @@ function check(label, ok) {
     rule.importPath(cyber, 'path.appsec');
     const cyberTask = id => rule.stIndex(cyber.study).task.get(rule.curriculumTaskId(id)).node;
     const markCyber = (id, done) => { const t = cyberTask(id); t.done = done; t.doneOn = done ? '2026-10-01' : null; };
-    check('The selected real Cybersecurity path starts with its first unfinished lesson', rule.nextLesson(cyber).lesson.id === 'lesson.learning-evidence' && !rule.nextLesson(cyber).allComplete);
+    // The next step as the lesson map shows it (study/cybersecurity/plan.ts), in the shape these checks were written for.
+    const nextOf = d => { const p = rule.cyberPlan(d); return { lesson: { id: p.step.lessonId }, code: p.step.kind === 'resume' ? 'user_choice' : 'ready_next_lesson', allComplete: p.complete }; };
+    check('The selected real Cybersecurity path starts with its first unfinished lesson', nextOf(cyber).lesson.id === 'lesson.learning-evidence' && !nextOf(cyber).allComplete);
     const practicalId = rule.beginAttempt(cyber, 'exercise.learning-evidence');
     const practical = cyber.cybersecurity.attempts.find(a => a.id === practicalId);
     Object.assign(practical, { submittedAt: '2026-10-01T11:00:00Z', evidence: 'Observed a result.', criticalPassed: true, rubricScores: [100, 100, 100, 100] });
-    check('Submitting a successful practical alone does not finish its lesson', rule.nextLesson(cyber).lesson.id === 'lesson.learning-evidence' && !cyberTask('lesson.learning-evidence').done);
+    check('Submitting a successful practical alone does not finish its lesson', nextOf(cyber).lesson.id === 'lesson.learning-evidence' && !cyberTask('lesson.learning-evidence').done);
     practical.criticalPassed = false;
-    check('A submitted failed practical cannot skip the unfinished lesson', rule.nextLesson(cyber).lesson.id === 'lesson.learning-evidence');
+    check('A submitted failed practical cannot skip the unfinished lesson', nextOf(cyber).lesson.id === 'lesson.learning-evidence');
     practical.curriculumVersion = '0.9.0';
-    check('An older submitted practical cannot skip the unfinished lesson', rule.nextLesson(cyber).lesson.id === 'lesson.learning-evidence');
+    check('An older submitted practical cannot skip the unfinished lesson', nextOf(cyber).lesson.id === 'lesson.learning-evidence');
     markCyber('lesson.learning-evidence', true);
-    check('An explicitly completed roadmap lesson advances to the next required lesson', rule.nextLesson(cyber).lesson.id === 'lesson.authorised-scope');
+    check('An explicitly completed roadmap lesson advances to the next required lesson', nextOf(cyber).lesson.id === 'lesson.authorised-scope');
     markCyber('lesson.learning-evidence', false);
-    check('Reopening a roadmap lesson makes it the earliest unfinished recommendation again', rule.nextLesson(cyber).lesson.id === 'lesson.learning-evidence');
+    check('Reopening a roadmap lesson makes it the earliest unfinished recommendation again', nextOf(cyber).lesson.id === 'lesson.learning-evidence');
     cyber.cybersecurity.attempts = [];
     const olderId = rule.beginAttempt(cyber, 'exercise.technical-notes');
     cyber.cybersecurity.attempts.find(a => a.id === olderId).curriculumVersion = '0.9.0';
-    check('An open attempt from an earlier curriculum does not override the next required lesson', rule.nextLesson(cyber).lesson.id === 'lesson.learning-evidence' && rule.nextLesson(cyber).code !== 'user_choice');
+    check('An open attempt from an earlier curriculum does not override the next required lesson', nextOf(cyber).lesson.id === 'lesson.learning-evidence' && nextOf(cyber).code !== 'user_choice');
     const oldRubricId = rule.beginAttempt(cyber, 'exercise.technical-notes');
     cyber.cybersecurity.attempts.find(a => a.id === oldRubricId).rubricVersion = '0.9.0';
-    check('An open attempt using an obsolete activity rubric does not override required lessons', rule.nextLesson(cyber).lesson.id === 'lesson.learning-evidence' && rule.nextLesson(cyber).code !== 'user_choice');
+    check('An open attempt using an obsolete activity rubric does not override required lessons', nextOf(cyber).lesson.id === 'lesson.learning-evidence' && nextOf(cyber).code !== 'user_choice');
     cyber.cybersecurity.attempts.push({ ...clone(practical), id: 'unknown-activity', activityId: 'exercise.missing-example', curriculumVersion: rule.CYBER_VERSION, rubricVersion: rule.CYBER_VERSION, submittedAt: null });
-    check('An unknown saved activity does not create a resumable lesson', rule.nextLesson(cyber).lesson.id === 'lesson.learning-evidence' && rule.nextLesson(cyber).code !== 'user_choice');
+    check('An unknown saved activity does not create a resumable lesson', nextOf(cyber).lesson.id === 'lesson.learning-evidence' && nextOf(cyber).code !== 'user_choice');
     const outsideId = rule.beginAttempt(cyber, 'exercise.exploit-reliability');
-    check('A current open attempt outside the selected path does not override its required lessons', !!outsideId && rule.nextLesson(cyber).lesson.id === 'lesson.learning-evidence');
+    check('A current open attempt outside the selected path does not override its required lessons', !!outsideId && nextOf(cyber).lesson.id === 'lesson.learning-evidence');
     const resumeId = rule.beginAttempt(cyber, 'assessment.technical-notes-check');
-    const resumeBefore = JSON.stringify(cyber), resuming = rule.nextLesson(cyber);
+    const resumeBefore = JSON.stringify(cyber), resuming = nextOf(cyber);
     check('A current knowledge-check draft resumes its lesson before unfinished earlier work', resuming.lesson.id === 'lesson.technical-notes' && resuming.code === 'user_choice' && !resuming.allComplete);
     check('Finding a Cybersecurity draft does not mutate completion, attempts or paths', JSON.stringify(cyber) === resumeBefore);
     cyber.cybersecurity.attempts.find(a => a.id === resumeId).submittedAt = '2026-10-01T12:00:00Z';
-    check('A submitted knowledge check does not remain a resumable draft or finish the lesson', rule.nextLesson(cyber).lesson.id === 'lesson.learning-evidence' && rule.nextLesson(cyber).code !== 'user_choice');
+    check('A submitted knowledge check does not remain a resumable draft or finish the lesson', nextOf(cyber).lesson.id === 'lesson.learning-evidence' && nextOf(cyber).code !== 'user_choice');
     cyber.cybersecurity.attempts = [];
     const practiceId = rule.beginAttempt(cyber, 'interactive.network');
     const practice = cyber.cybersecurity.attempts.find(a => a.id === practiceId);
-    check('An independently versioned current practice draft resumes a real related lesson on the path', practice.rubricVersion === rule.cyberCatalogue.activities.get('interactive.network').version && practice.rubricVersion !== rule.CYBER_VERSION && rule.nextLesson(cyber).lesson.id === 'lesson.network-models' && rule.nextLesson(cyber).code === 'user_choice');
+    check('An independently versioned current practice draft resumes a real related lesson on the path', practice.rubricVersion === rule.cyberCatalogue.activities.get('interactive.network').version && practice.rubricVersion !== rule.CYBER_VERSION && nextOf(cyber).lesson.id === 'lesson.network-models' && nextOf(cyber).code === 'user_choice');
     practice.rubricVersion = 'practice-0.0.0';
-    check('An obsolete practice-overlay draft does not resume under the current activity rubric', rule.nextLesson(cyber).lesson.id === 'lesson.learning-evidence' && rule.nextLesson(cyber).code !== 'user_choice');
+    check('An obsolete practice-overlay draft does not resume under the current activity rubric', nextOf(cyber).lesson.id === 'lesson.learning-evidence' && nextOf(cyber).code !== 'user_choice');
     const replacementPracticeId = rule.beginAttempt(cyber, 'interactive.network');
-    check('A fresh practice-overlay draft resumes while its older draft stays preserved', replacementPracticeId !== practiceId && cyber.cybersecurity.attempts.includes(practice) && rule.nextLesson(cyber).lesson.id === 'lesson.network-models' && rule.nextLesson(cyber).code === 'user_choice');
+    check('A fresh practice-overlay draft resumes while its older draft stays preserved', replacementPracticeId !== practiceId && cyber.cybersecurity.attempts.includes(practice) && nextOf(cyber).lesson.id === 'lesson.network-models' && nextOf(cyber).code === 'user_choice');
     cyber.cybersecurity.attempts = [];
     const appsecPath = rule.cyberCatalogue.paths.get('path.appsec');
     const pathLessons = appsecPath.required_module_ids.flatMap(id => rule.cyberCatalogue.modules.get(id).lesson_ids).map(id => rule.cyberCatalogue.lessons.get(id));
     const requiredCyber = pathLessons.filter(l => !l.optional), optionalCyber = rule.cyberCatalogue.lessons.get('lesson.ai-application-security');
     check('The real selected path contains required lessons and the optional AI-security extension', requiredCyber.length > 0 && pathLessons.includes(optionalCyber) && optionalCyber.optional);
     requiredCyber.forEach(l => markCyber(l.id, true));
-    const exhaustedBefore = JSON.stringify(cyber), exhausted = rule.nextLesson(cyber);
+    const exhaustedBefore = JSON.stringify(cyber), exhausted = nextOf(cyber);
     check('All required Cybersecurity lessons can be complete while an optional extension remains unfinished', exhausted.allComplete && !cyberTask(optionalCyber.id).done);
     check('An exhausted Cybersecurity path offers its first required lesson to revisit', exhausted.lesson.id === 'lesson.learning-evidence' && exhausted.code === 'ready_next_lesson');
     check('The combined recommendations show the selected Cybersecurity path as complete', option(cyber, 'cybersecurity').allComplete && !option(cyber, 'cybersecurity').resume);
     check('Reading an exhausted path does not write a cursor or auto-complete optional work', JSON.stringify(cyber) === exhaustedBefore);
     rule.beginAttempt(cyber, optionalCyber.practical_task_id);
-    check('A current optional-extension draft on the selected path can still be resumed', rule.nextLesson(cyber).lesson.id === optionalCyber.id && rule.nextLesson(cyber).code === 'user_choice');
-    check('Resuming optional work keeps the completed required-path status', rule.nextLesson(cyber).allComplete && option(cyber, 'cybersecurity').allComplete && option(cyber, 'cybersecurity').resume);
+    check('A current optional-extension draft on the selected path can still be resumed', nextOf(cyber).lesson.id === optionalCyber.id && nextOf(cyber).code === 'user_choice');
+    check('Resuming optional work keeps the completed required-path status', nextOf(cyber).allComplete && option(cyber, 'cybersecurity').allComplete && option(cyber, 'cybersecurity').resume);
 
     console.log('\n[Progress] Arabic: where you stand, what needs revision and why, the next milestone');
     {

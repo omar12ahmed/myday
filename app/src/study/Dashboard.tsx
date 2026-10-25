@@ -144,8 +144,8 @@ function FocusNow({ data, now, others, ix, lengths, setLength }: {
       <h2 id="focus-h">{now.title}</h2>
       {elsewhere && <p className="text-[15px] m-0 mb-2" data-s="focus-elsewhere">{noCourses ? 'You haven’t added a course of your own yet' : 'None of your courses has a task left to do'}, so here’s your next lesson in {now.label}. <InlineLink href="#study/roadmap">{noCourses ? 'Add a course' : 'Add tasks'}</InlineLink></p>}
       <p className="text-[15px] text-fg-2 m-0" data-s="option-detail">{now.detail}</p>
-      {/* Only Arabic's length follows your energy and free time; a Cybersecurity lesson's is its usual length. */}
-      <p className="text-sm text-fg-3 m-0 mt-1" data-s="option-length">{now.mode ? `${now.mode} · about` : 'About'} {now.minutes} min{now.subject === 'arabic' && !now.resume ? ' suits today' : ''}</p>
+      {/* Arabic's and Cybersecurity's lengths follow your energy and free time (your own course's card is above). */}
+      <p className="text-sm text-fg-3 m-0 mt-1" data-s="option-length">{now.mode ? `${now.mode} · about` : 'About'} {now.minutes} min{!now.resume ? ' suits today' : ''}</p>
       {now.resume && place && <p className="text-sm text-fg-2 m-0 mt-1" data-s="option-kept">You were on {STEP_LABEL[place]}; it opens there.</p>}
       <Why text={now.why} />
       {now.revise ? <div className="grid gap-2.5 mt-2">
@@ -160,7 +160,7 @@ function FocusNow({ data, now, others, ix, lengths, setLength }: {
 
 // ---------- Worth a look: at most three gentle offers, none when there's nothing ----------
 // Never a backlog, nothing "overdue": revision ready (unless today's gentle stop is reached), a session left open in
-// another subject, an Arabic lesson that needs revision, concepts still without a question.
+// another subject, an Arabic or Cybersecurity lesson that needs revision, concepts still without a question.
 interface Offer { key: string; title: string; detail?: string; href?: string; run?: () => void; label: string }
 function offers(data: MyDayData, glance: LearningGlance | null, now: LearningOption | null, k: string): Offer[] {
   const st = data.study, out: Offer[] = [];
@@ -169,10 +169,11 @@ function offers(data: MyDayData, glance: LearningGlance | null, now: LearningOpt
     out.push({ key: 'arabic-open', title: 'A session is open in Arabic', detail: glance.arabic.open.title, href: '#study/arabic/' + encodeURIComponent(glance.arabic.open.id), label: 'Pick it up' });
   const cyber = glance?.options.find(o => o.subject === 'cybersecurity' && o.resume);
   if (cyber && !isNow(cyber.href)) out.push({ key: 'cyber-open', title: 'A session is open in Cybersecurity', detail: cyber.title, href: cyber.href, label: 'Pick it up' });
-  // When the Now card is Arabic revision, its cards aren't offered again here.
-  const arabic = now?.revise ? 0 : dueIds(data, k, 'arabic').length, due = dueIds(data, k).length - (now?.revise ? dueIds(data, k, 'arabic').length : 0);
+  // When the Now card is a subject's revision, its cards aren't offered again here.
+  const arabic = now?.revise === 'arabic' ? 0 : dueIds(data, k, 'arabic').length, cyberDue = now?.revise === 'cybersecurity' ? 0 : dueIds(data, k, 'cybersecurity').length;
+  const due = dueIds(data, k).length - (now?.revise ? dueIds(data, k, now.revise).length : 0);
   if (due > 0 && reviewedOn(st, k) < DAILY_ENOUGH) {
-    const concepts = dueConcepts(st, k), cyberDue = dueIds(data, k, 'cybersecurity').length;
+    const concepts = dueConcepts(st, k);
     const names = concepts.slice(0, 3).map(c => c.title).join(', ') + (concepts.length > 3 ? ' and more' : '');
     const cards = [arabic && `${arabic} Arabic card${arabic === 1 ? '' : 's'}`, cyberDue && `${cyberDue} Cybersecurity check${cyberDue === 1 ? '' : 's'}`].filter(Boolean).join(' and ');
     out.push({ key: 'revision', title: `Revision ready: ${due > ROUND_SIZE ? `a round of ${ROUND_SIZE}` : `${due} question${due === 1 ? '' : 's'}`}`,
@@ -180,6 +181,8 @@ function offers(data: MyDayData, glance: LearningGlance | null, now: LearningOpt
   }
   for (const l of glance?.arabic.needs ?? []) if (!isNow('#study/arabic/' + encodeURIComponent(l.id)))
     out.push({ key: 'needs-' + l.id, title: `${l.title} needs revision`, href: '#study/arabic/' + encodeURIComponent(l.id), label: 'Open lesson' });
+  for (const l of glance?.cyber.needs ?? []) if (!isNow('#study/cybersecurity/' + encodeURIComponent(l.id)))
+    out.push({ key: 'needs-' + l.id, title: `${l.title} needs revision`, href: '#study/cybersecurity/' + encodeURIComponent(l.id), label: 'Open lesson' });
   const needQ = st.concepts.filter(c => !questionReady(c)).length;
   if (needQ) out.push({ key: 'questions', title: `${needQ} concept${needQ === 1 ? ' needs' : 's need'} a revision question`, href: '#study/concepts', label: 'Add questions' });
   return out.slice(0, 3);

@@ -5,9 +5,9 @@ import { stIndex } from '../../data/study/roadmap';
 import { lengthFor, stepsFor, type JourneyStep } from '../../data/study/mastery';
 import { suggestLength } from '../../data/study/sessions';
 import { CYBER_VERSION, curriculumTaskId, type CyberAttempt } from '../../data/cybersecurity/types';
+import { settleReadyHome } from '../../data/cybersecurity/lessons';
 import { activities, curriculum, lessons, modules, selectedPath, type Activity, type Lesson } from './catalogue';
 import { practiceProblem, setScenario } from './practiceRules';
-import { practiceById } from './practiceCatalogue';
 
 // Import is additive and repeatable. Stable content IDs preserve edits, completion and session links.
 // It never writes to Today, removes an old path, or changes an existing course's contents.
@@ -47,6 +47,7 @@ export function importPath(data: MyDayData, pathId: string): number {
     stage.courses.push(course); added++;
   }
   data.cybersecurity.pathId = path.id;
+  settleReadyHome(data); // a lesson you'd marked ready keeps its day, now as its roadmap tick
   return added;
 }
 
@@ -104,32 +105,7 @@ export function selectedPathLessons(pathId: string) {
   return selectedPath(pathId).required_module_ids.flatMap(id => modules.get(id)!.lesson_ids)
     .map(id => lessons.get(id)!);
 }
-export function nextLesson(data: MyDayData) {
-  const ordered = selectedPathLessons(data.cybersecurity.pathId);
-  const required = ordered.filter(l => !l.optional);
-  const ix = stIndex(data.study);
-  // A submitted activity is evidence of that attempt, not a whole lesson's completion.
-  const complete = (l: typeof ordered[number]) => ix.task.get(curriculumTaskId(l.id))?.node.done === true;
-  const allComplete = required.length > 0 && required.every(complete);
-  // Resume a saved activity before suggesting new work.
-  const resume = data.cybersecurity.attempts.filter(a => {
-    const activity = activities.get(a.activityId);
-    return activity && !a.submittedAt && a.curriculumVersion === CYBER_VERSION
-      && a.rubricVersion === (activity.version ?? CYBER_VERSION);
-  })
-    .flatMap(a => ordered.filter(l => [l.practical_task_id, l.knowledge_check_id, l.mini_challenge_id].includes(a.activityId) ||
-      practiceById.get(a.activityId)?.lessonIds.includes(l.id)))[0];
-  if (resume) return { lesson: resume, reason: 'Resume your saved attempt', code: 'user_choice' as const, allComplete };
-  // Completion records a learner's choice to finish the lesson, not verified mastery.
-  const lesson = required.find(l => !complete(l)) ?? required[0];
-  return { lesson, reason: allComplete ? 'Required lessons marked complete — choose a lesson to revisit'
-    : 'Next in your course; check prerequisites before advanced work', code: 'ready_next_lesson' as const, allComplete };
-}
-// Your path's required lessons, and how many you've marked complete: a count, never a percentage.
-export function requiredCounts(data: MyDayData) {
-  const required = selectedPathLessons(data.cybersecurity.pathId).filter(l => !l.optional), ix = stIndex(data.study);
-  return { total: required.length, done: required.filter(l => ix.task.get(curriculumTaskId(l.id))?.node.done === true).length };
-}
+// The next step and your place on each lesson: study/cybersecurity/plan.ts (adaptive Study).
 
 // ---------- The lesson journey (specs/study-home-and-lessons.md §5) ----------
 // Begun at all: an attempt on one of its activities, a Study session on it, or its roadmap task ticked.

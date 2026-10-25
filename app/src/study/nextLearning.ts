@@ -6,29 +6,36 @@ import { stIndex } from '../data/study/roadmap';
 import { lessonIndex } from './arabic/catalogue';
 import { arabicPlan, arabicState, journeyFor, pathLessons } from './arabic/plan';
 import { roadmapOption, type LearningOption } from './courseOption';
-import { nextLesson as nextCyberLesson, requiredCounts } from './cybersecurity/learning';
+import { lessons as cyberLessons } from './cybersecurity/catalogue';
+import { cyberGlance, cyberPlan } from './cybersecurity/plan';
 
 export type { LearningOption, LearningSubject } from './courseOption';
 
 // An active general/Cyber study timer always takes priority over new lessons.
 // A finished general Study session can keep its own course ahead of Today's pinned course.
 export function learningOptions(data: MyDayData, generalCourseId = data.study.focusCourseId): LearningOption[] {
-  const cyber = nextCyberLesson(data);
+  // Cybersecurity: the same adaptive next step as its learning map (study/cybersecurity/plan.ts), with the length
+  // that suits today; resuming means a notebook attempt still open.
   const ix = stIndex(data.study);
   const ticked = (courseId: string) => !!ix.courseTasks.get(courseId)?.some(t => t.done);
   const cyberStarted = data.cybersecurity.attempts.length > 0 || data.study.sessions.some(s => !!s.courseId?.startsWith('cyber:1:'))
-    || [...ix.course.keys()].some(id => id.startsWith('cyber:1:') && ticked(id));
+    || [...ix.course.keys()].some(id => id.startsWith('cyber:1:') && ticked(id)) || !!data.cybersecurity.lessons?.length;
+  const cp = cyberPlan(data)!, cs = cp.step, cyberTitle = (id: string) => cyberLessons.get(id)?.title ?? id;
+  const cyberShorter = cs.kind !== 'resume' && cp.length.why.length ? ` A shorter session today: ${cp.length.why.join(', ')}.` : '';
   const cyberOption: LearningOption = {
-    subject: 'cybersecurity', label: 'Cybersecurity', title: cyber.lesson.title,
-    detail: cyber.code === 'user_choice' ? 'Resume your saved attempt'
-      : cyber.allComplete ? 'Required lessons marked complete — revisit any lesson' : cyberStarted ? 'Next in your course' : 'The first lesson in your course',
-    why: cyber.code === 'user_choice' ? 'You have a saved attempt on this lesson.'
-      : cyber.allComplete ? 'Every required lesson on your path is marked complete. Revisit any lesson, or revise.'
-      : cyberStarted ? 'The next lesson on your path you haven’t marked complete. Check its prerequisites before advanced work.'
-      : 'The first lesson on your path.',
-    href: '#study/cybersecurity/' + encodeURIComponent(cyber.lesson.id),
-    minutes: cyber.lesson.estimated_duration_minutes.standard,
-    resume: cyber.code === 'user_choice', allComplete: cyber.allComplete, started: cyberStarted,
+    subject: 'cybersecurity', label: 'Cybersecurity', title: cyberTitle(cs.lessonId),
+    detail: cs.kind === 'resume' ? 'Resume your saved attempt'
+      : cs.kind === 'revisit' ? `Worth revisiting first: ${cyberTitle(cs.because!)} builds on it`
+      : cs.kind === 'revise' ? `Revision first (${cs.due} ready in Cybersecurity), then this lesson`
+      : cs.kind === 'complete' ? (!cs.waiting ? 'Your path is ready to move on — revise, or revisit any lesson'
+        : cs.waiting === 1 ? 'Every other lesson on your path is ready — this one needs revision' : `${cs.waiting} lessons on your path need revision — this is the first`)
+      : cs.state === 'practised' ? 'Practised — mark it ready when it clicks' : cyberStarted ? 'Next in your course' : 'The first lesson in your course',
+    why: cs.kind === 'resume' ? 'You have a saved attempt on this lesson.' : cp.reason + cyberShorter,
+    href: '#study/cybersecurity/' + encodeURIComponent(cs.lessonId),
+    minutes: cs.kind === 'resume' ? cyberLessons.get(cs.lessonId)?.estimated_duration_minutes.standard ?? cp.length.minutes : cp.length.minutes,
+    resume: cs.kind === 'resume', allComplete: cp.complete, started: cyberStarted,
+    revise: cs.kind === 'revise' || (cs.kind === 'complete' && cs.due > 0 && cs.state !== 'needs-revision') ? 'cybersecurity' : undefined,
+    mode: cs.kind === 'resume' ? undefined : MODE_LABEL[modeOf(cp.length.mode)], lessonId: cs.lessonId,
   };
 
   // Arabic: the same adaptive next step as its learning map (study/arabic/plan.ts), with the length that suits today.
@@ -70,7 +77,7 @@ export function learningOptions(data: MyDayData, generalCourseId = data.study.fo
 export interface LearningGlance {
   options: LearningOption[];
   arabic: { ready: number; needs: { id: string; title: string }[]; open: { id: string; title: string } | null };
-  cyber: { done: number; total: number };
+  cyber: { done: number; total: number; needs: { id: string; title: string }[] };
 }
 export function learningGlance(data: MyDayData): LearningGlance {
   const options = learningOptions(data), path = pathLessons(data.arabic.pathId), states = path.map(id => [id, arabicState(data, id)] as const);
@@ -82,6 +89,6 @@ export function learningGlance(data: MyDayData): LearningGlance {
       needs: states.filter(([, s]) => s === 'needs-revision').map(([id]) => ({ id, title: lessonIndex[id].title })),
       open: open ? { id: open.lessonId, title: lessonIndex[open.lessonId].title } : null,
     },
-    cyber: requiredCounts(data),
+    cyber: (() => { const g = cyberGlance(data); return { done: g.done, total: g.path, needs: g.needs.map(n => ({ id: n.id, title: n.title })) }; })(),
   };
 }

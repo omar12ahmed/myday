@@ -20,9 +20,9 @@ export interface LearningOption {
   started: boolean;     // begun at all (a session, attempt or ticked task): Today says "Start" until then
   courseId?: string;    // one of your courses: which, and its next task
   taskId?: string;
-  revise?: 'arabic';    // the step is revision first, then the lesson (Arabic's adaptive next step)
-  mode?: string;        // Light, Normal or Deep, for the suggested length (Arabic)
-  lessonId?: string;    // the lesson it opens (Arabic)
+  revise?: 'arabic' | 'cybersecurity'; // the step is revision first, then the lesson (the adaptive next step)
+  mode?: string;        // Light, Normal or Deep, for the suggested length (Arabic, Cybersecurity)
+  lessonId?: string;    // the lesson it opens (Arabic, Cybersecurity)
   attemptId?: string;   // the open session it resumes (Arabic), and the steps that session shows, for where you left off
   steps?: JourneyStep[];
 }
@@ -55,4 +55,4 @@ export function roadmapOption(data: MyDayData, generalCourseId = data.study.focu
 
 // The button's words for an option.
 export const optionAction = (option: LearningOption) =>
-  option.revise ? 'Revise Arabic' : option.resume ? 'Resume lesson' : option.allComplete ? 'Revisit lesson' : option.started ? 'Continue learning' : 'Start lesson';
+  option.revise ? `Revise ${option.revise === 'arabic' ? 'Arabic' : 'Cybersecurity'}` : option.resume ? 'Resume lesson' : option.allComplete ? 'Revisit lesson' : option.started ? 'Continue learning' : 'Start lesson';
