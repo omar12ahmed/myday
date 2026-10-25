@@ -1,5 +1,16 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.86.0 — Words for modules 5–7 of Arabic:** the fifteen lessons after the first sentences (nouns and description,
+plurals, this and that, possession; present actions, likes and routines; numbers, times, directions, shopping and
+messages) now each have their own words, 125 in all, like module 4's: fully vowelled, each with its meaning, the root
+it comes from, an example and a note, voiced where a form can be read aloud. They appear in each lesson's "Words in
+this lesson" and on the Vocabulary page under "Words from the lessons" (now 20 lessons, 173 words), and join revision
+when you mark the lesson ready. The list was checked twice by an independent reviewer, which also added words that
+three lessons' checks rely on ("I read it", "this house", Tuesday and "in the afternoon"), then by the owner; its 310
+new clips were listened to. No saved-data, sync or database change; nothing new is sent to AI. Going back to 1.85.0 is
+safe, with the same note as 1.84.0: a lesson word's card that comes up in its revision shows as "no longer in the
+course"; choose "Skip for now", or the card is removed on every device.
+
 **1.85.0 — Optional sections on a project:** a project's Overview now shows Notes, Recently, Learning, Resources and
 Files only when they hold something. Empty ones fold into **Add to this project** (A note · Something to learn · A link
 · A file), each opening that card's first step. About it → Edit has **Show on the Overview**, a switch for each, to
@@ -645,12 +656,12 @@ asks for is in the generated lesson index (`modalities`, from the course's input
 `scripts/prepare-arabic.mjs`). Nothing saved, nothing sent to AI.
 
 Course words (Arabic, `../specs/study-home-and-lessons.md` §12): each lesson's own words, from MyDay's
-`../content/teaching/arabic/course-words.json` (module 4 so far: 48 words), each fully vowelled with its meaning, the
-root it comes from, an example and a note, voiced where a form can be read aloud (a lone letter like وَ isn't). A
-lesson's Understand step has "Words in this lesson" (its words, then the starter words it uses), folded away with the
-explanation while you check yourself; Vocabulary has "Words from the lessons". Marking a lesson ready brings its words
-into revision from the next day (Arabic → meaning, any not there already, within the 8 a day) before its checks a week
-later; you can add any sooner. Their revision cards are the starter words' kind
+`../content/teaching/arabic/course-words.json` (modules 4–7 so far: 173 words for 20 lessons), each fully vowelled
+with its meaning, the root it comes from, an example and a note, voiced where a form can be read aloud (a lone letter
+like وَ isn't). A lesson's Understand step has "Words in this lesson" (its words, then the starter words it uses),
+folded away with the explanation while you check yourself; Vocabulary has "Words from the lessons". Marking a lesson
+ready brings its words into revision from the next day (Arabic → meaning, any not there already, within the 8 a day)
+before its checks a week later; you can add any sooner. Their revision cards are the starter words' kind
 (`lexeme.arabic-<lesson>-<n>:recognise`). Keep a word fills in a lesson word's meaning too. Checked at every build by
 `scripts/prepare-arabic.mjs` (ids, lessons, starter words, vowels, roots) and written beside the starter words in
 `src/study/arabic/data/texts.json`; lookups in `src/study/arabic/courseWords.ts`. Each module's list is checked by the

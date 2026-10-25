@@ -111,6 +111,10 @@ Round four (course words, 25 October 2026): each course word, its example and th
 (`course-words` in `app/scripts/arabic-voice-sources.mjs`): 133 new clips (20 texts already had one), transcribed blind
 (`content/arabic-audio/cross-check-course-words.json`); eleven isolated forms heard as other words were remade; five
 were still heard differently and the owner approved them by ear ("all good"). The temporary key was deleted.
+Round five (course words for modules 5–7, the same day): 310 new clips, transcribed blind; twelve remade; three short
+forms still heard differently (أَسْمَعُ، مَاء، مَاءً) and approved by ear in three listening batches ("all done"). A course word
+is voiced when it's marked all through (`markedThrough`), so short words like مَاء, which the shared ratio calls partial,
+get a clip. The temporary key was deleted.
 
 **Each round works like round one.**
 - **On the Mac:**

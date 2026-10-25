@@ -417,15 +417,18 @@ note's text does: AI help with notes when it's on, and Ask MyDay opened on that 
   beside your kept words. That's content work, with the teaching-depth plan.
   - **As built (25 October 2026), module 4 first; owner's choices: module 4 first, words join revision with Ready,
     clips after approval:** `content/teaching/arabic/course-words.json` (MyDay's own, not the package's): 48 words for
-    module 4's five lessons, each fully vowelled with meaning, part of speech, root (or none, for particles and names),
-    an example and a note, plus each lesson's starter words by id. Drafted, cross-checked twice by an independent
-    reviewer (one factual fix, gaps filled), checked by the owner ("seems good"), then voiced: 133 clips in the same
-    voice, transcribed blind, eleven isolated forms remade, listened to ("all good"). The lesson's Understand step has
-    "Words in this lesson" (folded away with the explanation while you check yourself); Vocabulary has "Words from the
-    lessons". Marking a lesson ready brings its words (its own and the starter words it uses) into revision from the
-    next day, Arabic → meaning, within the 8 a day, before its checks a week later. Revision cards are the starter
-    words' kind (`lexeme.arabic-<lesson>-<n>:recognise`), so no saved-data change; an older release keeps them but
-    can't show them (its revision says "no longer in the course" with "Take it out" first; Skip keeps them). Next: modules 5–7, then the rest of A1, each checked by the owner before it ships.
+    module 4's five lessons, each fully vowelled with meaning, part of speech, root (or none, for particles and
+    names), an example and a note, plus each lesson's starter words by id. Drafted, cross-checked twice by an
+    independent reviewer (one factual fix, gaps filled), checked by the owner ("seems good"), then voiced: 133 clips
+    in the same voice, transcribed blind, eleven isolated forms remade, listened to ("all good"). The lesson's
+    Understand step has "Words in this lesson" (folded away with the explanation while you check yourself); Vocabulary
+    has "Words from the lessons". Marking a lesson ready brings its words (its own and the starter words it uses) into
+    revision from the next day, Arabic → meaning, within the 8 a day, before its checks a week later. Revision cards
+    are the starter words' kind (`lexeme.arabic-<lesson>-<n>:recognise`), so no saved-data change; an older release
+    keeps them but can't show them (its revision says "no longer in the course" with "Take it out" first; Skip keeps
+    them). Modules 5–7 followed the same day (125 words for 15 lessons; cross-checked twice, with words added where
+    three lessons' checks rely on them; checked by the owner; 310 clips, round five), in 1.86.0. Next: the rest of A1
+    and beyond, each module checked by the owner before it ships.
 - **Recording yourself:** not now (decision 7). Speech recognition: not planned, as there's no dependable
   validation for MSA.
 - **Course projects:** kept inside their course and called "course projects", because "Projects" is MyDay's spine.
