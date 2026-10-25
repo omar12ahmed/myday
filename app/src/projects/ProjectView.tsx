@@ -276,7 +276,8 @@ function NextStepCard({ data, p }: { data: MyDayData; p: Project }) {
   function pick(id: string | null) {
     if (!update(d => (setNextStep(d, p.id, id) ? undefined : false)) || id) return;
     const auto = open.find(t => !heldBack(data, t));
-    toast(auto ? `MyDay’s pick: “${auto.title}”.` : 'Everything here is waiting, so MyDay has no next step to pick.');
+    toast(auto ? `MyDay’s pick: “${auto.title}”.` : open.every(t => t.waiting) ? 'Everything here is waiting, so MyDay has no next step to pick.'
+      : 'Nothing here can start yet, so MyDay has no next step to pick.');
   }
   return (
     <Card tone="accent" aria-labelledby="projectNextH" id="projectNext">
@@ -285,7 +286,7 @@ function NextStepCard({ data, p }: { data: MyDayData; p: Project }) {
         <>
           <p className="text-[20px] font-bold leading-snug m-0 break-words" data-s="next-title">{step.title}</p>
           <p className="flex flex-wrap items-center gap-x-2 gap-y-1 m-0 mt-1.5 text-sm text-fg-3 tabular-nums">
-            {step.due && (step.due < k && !step.waiting ? <span data-s="next-still-open">Still open · was due {shortDate(step.due)}</span> : <span>{dueText(step, k)}</span>)}<span>{step.minutes} min</span><CategoryChip kind={step.category} />
+            {step.due && (step.due < k && !heldBack(data, step) ? <span data-s="next-still-open">Still open · was due {shortDate(step.due)}</span> : <span>{dueText(step, k)}</span>)}<span>{step.minutes} min</span><CategoryChip kind={step.category} />
             {stepsText(step) && <span data-s="next-steps">{stepsText(step)}</span>}
           </p>
           {/* A waiting step you chose stays chosen (1.50.0); it can't be done today, so it isn't offered for Today. */}
@@ -310,7 +311,7 @@ function NextStepCard({ data, p }: { data: MyDayData; p: Project }) {
           )}
         </>
       ) : (<>
-        {open.length > 0 && <p className="m-0 mb-3 text-[15px]" data-s="next-all-waiting">Everything here is waiting on someone or something. Is there another small step you could take?</p>}
+        {open.length > 0 && <p className="m-0 mb-3 text-[15px]" data-s="next-all-waiting">{open.every(t => t.waiting) ? 'Everything here is waiting on someone or something.' : 'Nothing here can start yet: each task is waiting on someone or something, or starts after another task.'} Is there another small step you could take?</p>}
         <form className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 items-end" onSubmit={e => { e.preventDefault(); addStep(); }}>
           <Field label="What's the smallest next step?" htmlFor="projectNextNew">
             <TextInput id="projectNextNew" value={text} maxLength={120} onChange={e => setText(e.target.value)} placeholder="e.g. Write down three questions" />

@@ -68,9 +68,11 @@ export function normalizeTasks(raw: unknown, report: { dropped: number }): Tasks
     if (t.steps !== undefined) {
       const steps: TaskStep[] = [], ids = new Set<string>();
       if (!Array.isArray(t.steps)) report.dropped++;
-      for (const st of listOf(t.steps)) {
+      for (const [i, st] of listOf(t.steps).entries()) {
         if (!isObj(st) || typeof st.text !== 'string' || !st.text.trim() || steps.length >= TASK_LIMITS.steps) { report.dropped++; continue; }
-        const sid = typeof st.id === 'string' && st.id && !ids.has(st.id) ? st.id : 'ts' + uid();
+        // (A missing or repeated id gets one from its place, the same on every load, so the record doesn't change by itself.)
+        let sid = typeof st.id === 'string' && st.id && !ids.has(st.id) ? st.id : `ts-${i + 1}`;
+        while (ids.has(sid)) sid += '-';
         ids.add(sid);
         steps.push({ ...st, id: sid, text: st.text.slice(0, TASK_LIMITS.step), done: st.done === true });
       }
@@ -78,7 +80,8 @@ export function normalizeTasks(raw: unknown, report: { dropped: number }): Tasks
     }
     if (t.after !== undefined) {
       if (!Array.isArray(t.after)) report.dropped++;
-      const after = [...new Set(listOf(t.after).filter((x): x is string => typeof x === 'string' && !!x && x !== item.id))].slice(0, TASK_LIMITS.after);
+      const all = [...new Set(listOf(t.after).filter((x): x is string => typeof x === 'string' && !!x && x !== item.id))], after = all.slice(0, TASK_LIMITS.after);
+      report.dropped += all.length - after.length; // past 10: counted, as steps past 30 are
       if (after.length) item.after = after; else delete item.after;
     }
     seenT.add(item.id);
@@ -402,16 +405,17 @@ export function removeStep(d: TasksData, id: string, stepId: string): boolean {
 export function startsAfter(data: MyDayData, t: TaskItem): TaskItem[] {
   if (!t.projectId || !t.after?.length) return [];
   const byId = new Map(data.tasks.items.map(x => [x.id, x]));
-  return t.after.map(id => byId.get(id)).filter((x): x is TaskItem => !!x && x.id !== t.id && x.projectId === t.projectId && !isDone(data, x) && !x.letGoOn && !reaches(byId, x, t.id));
+  return t.after.map(id => byId.get(id)).filter((x): x is TaskItem => !!x && x.id !== t.id && x.projectId === t.projectId && !isDone(data, x) && !x.letGoOn && !reaches(data, byId, x, t.id));
 }
-// Whether `from` starts after the task `target`, directly or further along (through tasks of its project).
-function reaches(byId: Map<string, TaskItem>, from: TaskItem, target: string): boolean {
+// Whether `from` starts after the task `target`, directly or further along, through its project's tasks still to do
+// (a done or let-go task holds nothing, so a chain through one is broken).
+function reaches(data: MyDayData, byId: Map<string, TaskItem>, from: TaskItem, target: string): boolean {
   const seen = new Set<string>([from.id]), stack = [from];
   while (stack.length) {
     for (const id of stack.pop()!.after ?? []) {
       if (id === target) return true;
       const y = byId.get(id);
-      if (y && y.projectId === from.projectId && !seen.has(id)) { seen.add(id); stack.push(y); }
+      if (y && y.projectId === from.projectId && !isDone(data, y) && !y.letGoOn && !seen.has(id)) { seen.add(id); stack.push(y); }
     }
   }
   return false;
@@ -426,10 +430,11 @@ export function startsAfterText(data: MyDayData, t: TaskItem): string {
 export function afterChoices(data: MyDayData, t: TaskItem): TaskItem[] {
   if (!t.projectId) return [];
   const byId = new Map(data.tasks.items.map(x => [x.id, x]));
-  return data.tasks.items.filter(x => x.id !== t.id && x.projectId === t.projectId && !isDone(data, x) && !x.letGoOn && !reaches(byId, x, t.id)).sort(taskOrder);
+  return data.tasks.items.filter(x => x.id !== t.id && x.projectId === t.projectId && !isDone(data, x) && !x.letGoOn && !reaches(data, byId, x, t.id)).sort(taskOrder);
 }
 // Starts after `otherId` (on) or not (off). Adding takes only one of its choices, at most 10 ('full' past that); ids that
-// point at nothing of its project any more are tidied away then. Returns false when nothing changed.
+// point at nothing of its project any more are tidied away then, and, only when that's still 10, ids of its tasks done
+// or let go (otherwise they're kept, so bringing one back brings the link back). Returns false when nothing changed.
 export function setStartsAfter(data: MyDayData, id: string, otherId: string, on: boolean): boolean | 'full' {
   const t = data.tasks.items.find(x => x.id === id);
   if (!t) return false;
@@ -440,7 +445,8 @@ export function setStartsAfter(data: MyDayData, id: string, otherId: string, on:
     return true;
   }
   if (t.after?.includes(otherId) || !afterChoices(data, t).some(x => x.id === otherId)) return false;
-  const mine = (t.after ?? []).filter(x => data.tasks.items.some(y => y.id === x && y.projectId === t.projectId));
+  let mine = (t.after ?? []).filter(x => data.tasks.items.some(y => y.id === x && y.projectId === t.projectId));
+  if (mine.length >= TASK_LIMITS.after) mine = mine.filter(x => { const y = data.tasks.items.find(z => z.id === x)!; return !isDone(data, y) && !y.letGoOn; });
   if (mine.length >= TASK_LIMITS.after) return 'full';
   t.after = [...mine, otherId];
   return true;

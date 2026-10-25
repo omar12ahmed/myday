@@ -28,6 +28,12 @@ export function StepsCard({ data, t }: { data: MyDayData; t: TaskItem }) {
     focusSoon(next ? `step-${next.id}` : 'stepNew');
     if (steps.length === 1) setChanging(false);
   }
+  // Moved to the top or the bottom, the arrow you pressed is switched off: focus goes to the row's other arrow.
+  function move(i: number, dir: -1 | 1) {
+    if (!update(d => (moveStep(d.tasks, t.id, steps[i].id, dir) ? undefined : false))) return;
+    const j = i + dir;
+    if (j === 0 || j === steps.length - 1) focusSoon(`step-${dir < 0 ? 'down' : 'up'}-${steps[i].id}`);
+  }
   function markDone() {
     if (update(d => (setTaskDone(d, t.id, true) ? undefined : false))) toast('Done — nice.');
   }
@@ -35,7 +41,7 @@ export function StepsCard({ data, t }: { data: MyDayData; t: TaskItem }) {
     <Card aria-labelledby="steps-h" id="taskSteps">
       <div className="flex flex-wrap justify-between items-baseline gap-x-3">
         <h3 id="steps-h" className="m-0">Steps{steps.length > 0 && <span className="text-fg-3 font-normal text-[15px] tabular-nums ml-2" data-s="steps-count">{stepsText(t)}</span>}</h3>
-        {steps.length > 0 && <LinkButton className="text-[15px]" aria-pressed={changing} data-action="steps-change" onClick={() => setChanging(!changing)}>{changing ? 'Done changing' : 'Change steps'}</LinkButton>}
+        {steps.length > 0 && <LinkButton className="text-[15px]" data-action="steps-change" onClick={() => setChanging(!changing)}>{changing ? 'Done changing' : 'Change steps'}</LinkButton>}
       </div>
       {!steps.length && <Note className="mt-1 mb-0">If it helps, break it into small steps. The task stays the one thing you plan.</Note>}
       {steps.length > 0 && (
@@ -45,8 +51,8 @@ export function StepsCard({ data, t }: { data: MyDayData; t: TaskItem }) {
               <CommitInput id={`step-${st.id}`} type="text" defaultValue={st.text} key={st.text} maxLength={TASK_LIMITS.step} aria-label={`Step ${i + 1}`}
                 onCommit={el => { if (!update(d => (editStep(d.tasks, t.id, st.id, el.value) ? undefined : false))) el.value = st.text; }} />
               <span className="flex gap-1.5">
-                <Button inline className="!px-3" aria-label={`Move “${st.text}” up`} disabled={i === 0} data-action="step-up" onClick={() => update(d => (moveStep(d.tasks, t.id, st.id, -1) ? undefined : false))}><ArrowUp size={18} aria-hidden="true" /></Button>
-                <Button inline className="!px-3" aria-label={`Move “${st.text}” down`} disabled={i === steps.length - 1} data-action="step-down" onClick={() => update(d => (moveStep(d.tasks, t.id, st.id, 1) ? undefined : false))}><ArrowDown size={18} aria-hidden="true" /></Button>
+                <Button inline className="!px-3" id={`step-up-${st.id}`} aria-label={`Move “${st.text}” up`} disabled={i === 0} data-action="step-up" onClick={() => move(i, -1)}><ArrowUp size={18} aria-hidden="true" /></Button>
+                <Button inline className="!px-3" id={`step-down-${st.id}`} aria-label={`Move “${st.text}” down`} disabled={i === steps.length - 1} data-action="step-down" onClick={() => move(i, 1)}><ArrowDown size={18} aria-hidden="true" /></Button>
                 <Button inline className="!px-3" aria-label={`Remove “${st.text}”`} data-action="step-remove" onClick={() => remove(i)}><X size={18} aria-hidden="true" /></Button>
               </span>
             </li>

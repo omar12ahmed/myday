@@ -241,6 +241,9 @@ export function nextStep(data: MyDayData, p: Project): TaskItem | null {
   const { open } = projectTasks(data, p);
   return open.find(t => t.id === p.nextTaskId) ?? open.find(t => !heldBack(data, t)) ?? null;
 }
+// When every task still to do is held back: said as waiting only when that's all it is (one meaning of "waiting").
+export const nothingFree = (data: MyDayData, open: TaskItem[]) => open.every(t => t.waiting || !heldBack(data, t)) ? 'everything here is waiting'
+  : 'nothing here can start yet (each task is waiting on someone or something, or starts after another task)';
 const afterWords = (w: TaskItem[]) => `“${w[0].title}”${w.length > 1 ? ` and ${w.length - 1} more` : ''}`;
 // Why the next step is the one shown: the sentences under "Why this?" on the Next step card (specs/projects-next-why.md).
 // It follows nextStep exactly — the order of Tasks: by date, then time, then when added; undated ones last — and
@@ -250,7 +253,7 @@ export function whyNext(data: MyDayData, p: Project, k: DateKey = todayKey()): s
   if (!step) return [];
   const auto = open.find(t => !heldBack(data, t)), mine = startsAfter(data, step);
   if (step.id === p.nextTaskId) return ['You chose this step.', ...(mine.length ? [`It starts after ${afterWords(mine)}; you can still do it any time.`] : []),
-    !auto ? 'Left to MyDay, there’d be no next step: everything here is waiting.'
+    !auto ? `Left to MyDay, there’d be no next step: ${nothingFree(data, open)}.`
     : auto.id === step.id ? 'It’s also what MyDay would pick.' : `Left to MyDay, it would be “${auto.title}”.`];
   const out: string[] = [];
   const was = p.nextTaskId ? data.tasks.items.find(t => t.id === p.nextTaskId && t.projectId === p.id) : undefined;

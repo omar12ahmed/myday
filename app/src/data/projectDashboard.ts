@@ -5,7 +5,7 @@
 import { awaitingAnswer, isBusiness, isCase, modelProgress } from './businessModel';
 import { caseCounts, issueLinks, timelineInOrder } from './caseFile';
 import { parseKey, shift, shortDate, todayKey } from './dates';
-import { comingUp, nextStep, projectTasks, stillOpen } from './projects';
+import { comingUp, heldBack, nextStep, projectTasks, stillOpen } from './projects';
 import { chaseTask } from './tasks';
 import type { DateKey, MyDayData, Project } from './types';
 
@@ -62,7 +62,7 @@ export function worthALook(data: MyDayData, p: Project, k: DateKey = todayKey(),
   // The oldest task still to do whose date has passed, unless it's the next step (that card says so beside it),
   // and only on an active project: a paused or finished one isn't nudged. Coming up lists them all.
   const step = nextStep(data, p);
-  const open = p.status === 'active' ? stillOpen(data, p, k).find(t => t.id !== step?.id && !t.waiting) : undefined;
+  const open = p.status === 'active' ? stillOpen(data, p, k).find(t => t.id !== step?.id && !heldBack(data, t)) : undefined; // (waiting, or starting after another task, isn't nudged)
   if (open) out.push({ key: 'still-open', text: `${open.title} — still open, was due ${shortDate(open.due!)}`, href: `#today/tasks/${encodeURIComponent(open.id)}` });
   // A wait whose expected day has come (1.50.0), oldest first, on an active project, with "Chase it" beside it —
   // unless it's the next step: that card says so and offers Chase it itself.
