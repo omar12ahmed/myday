@@ -60,7 +60,7 @@ export function SearchScreen({ data, hash }: { data: MyDayData; hash: string }) 
         <p role="status" className={`m-0 mt-2 ${typed ? 'font-semibold text-fg' : 'text-[15px] text-fg-2'}`} id="searchCount">
           {typed ? foundCount(result.total, q) : 'Your tasks, projects, notes, calendar, study, finance and health. Every word you type has to be there, in any order.'}
         </p>
-        {result.leftOut && <Note className="mb-0 mt-2" data-s="search-private">Private projects and notes aren’t searched here. Search inside them on their own pages.</Note>}
+        {result.leftOut && <div data-s="search-private"><Note className="mb-0 mt-2">Private projects and notes aren’t searched here. Search inside them on their own pages.</Note></div>}
         {typed && !courses && !coursesFailed && <p className="text-sm text-fg-2 m-0 mt-1" data-s="search-courses-loading">Still looking in the course lessons…</p>}
         {coursesFailed && <p className="text-sm text-fg-2 m-0 mt-1" data-s="search-courses-failed">The course lessons couldn’t be searched just now — everything else was.</p>}
       </Card>
@@ -68,7 +68,7 @@ export function SearchScreen({ data, hash }: { data: MyDayData; hash: string }) 
         <Card key={s.section} aria-labelledby={`searchH-${s.section}`} data-s="search-section" data-section={s.section}>
           <h3 id={`searchH-${s.section}`} className="m-0">{s.label} <span className="text-fg-2 font-normal">· {s.items.length + s.more}</span></h3>
           <ul className="list-none p-0 m-0 mt-2">{s.items.map(f => <Hit key={`${f.kind}:${f.id}`} f={f} />)}</ul>
-          {s.more > 0 && <Note className="mb-0 mt-2" data-s="search-more">And {s.more} more — add a word to narrow it down.</Note>}
+          {s.more > 0 && <div data-s="search-more"><Note className="mb-0 mt-2">And {s.more} more — add a word to narrow it down.</Note></div>}
         </Card>
       ))}
     </div>
@@ -77,13 +77,15 @@ export function SearchScreen({ data, hash }: { data: MyDayData; hash: string }) 
 
 function Hit({ f }: { f: Found }) {
   const meta = [f.kind, f.where, ...f.tags].filter(Boolean).join(' · ');
+  const excerpt = f.excerpt && f.excerpt !== f.where ? f.excerpt : ''; // (a kept word's meaning is already its "where")
   return (
     <li className="border-t border-outline first:border-t-0" data-s="search-hit" data-kind={f.kind}>
       <a href={f.href} onClick={e => { if (f.focus && !e.metaKey && !e.ctrlKey && !e.shiftKey && e.button === 0) focusWhenThere(f.focus); }}
         className="block min-h-11 py-2.5 text-fg no-underline hover:bg-surface-2 rounded-tile -mx-2 px-2">
         <span className="block text-sm text-fg-2 break-words">{meta}</span>
-        <span className="block font-medium break-words" {...(f.lang ? { lang: f.lang, dir: 'rtl' } : {})}>{f.title}</span>
-        {f.excerpt && <span className="block text-sm text-fg-2 break-words mt-0.5" data-s="search-excerpt" dir="auto">{f.excerpt}</span>}
+        {/* An Arabic word reads right to left but sits where every other title starts. */}
+        <span className="block font-medium break-words">{f.lang ? <bdi lang={f.lang} dir="rtl" className="ar-inline">{f.title}</bdi> : f.title}</span>
+        {excerpt && <span className="block text-sm text-fg-2 break-words mt-0.5" data-s="search-excerpt" dir="auto">{excerpt}</span>}
       </a>
     </li>
   );
