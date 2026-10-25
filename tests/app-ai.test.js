@@ -930,8 +930,8 @@ const SEED = `s => {
     };
     await seeded(mock, MOCK); await mock.setData(lkSeed); await mock.until(`document.querySelector('#app')`);
     const pm = await runLk(mock);
-    check('the preview says it may look in your notes if needed', pm.prev.includes('If needed, a look in your notes'), pm.prev);
-    check('practice mode: it looks, and says so above the answer — one note found, the two private ones only counted here', pm.phase === 'shown' && pm.looked === 'Looked in your notes for “bike rack”: one note — 2 private notes left out.', pm.looked);
+    check('the preview says it may look across MyDay if needed (v24: in place of your notes)', pm.prev.includes('If needed, a look across MyDay'), pm.prev);
+    check('practice mode: it looks across MyDay, and says so above the answer — one thing found, the two private ones only counted here', pm.phase === 'shown' && pm.looked === 'Looked across MyDay for “bike rack”: one thing — 2 private things left out.', pm.looked);
     check('…and the answer links the note it used', eq(pm.sources, ['Shed sizes|#projects/notes/nLkRack']), pm.sources);
     await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
     const pdy = await runLk(mock, 'Am I free on Thursday?');
@@ -971,8 +971,9 @@ const SEED = `s => {
     const pd = await runLk(D);
     const sent = aiCalls().slice(c0).filter(c => c.body?.context?.action === 'ask'), bodies = sent.map(c => JSON.stringify(c.body));
     check('with an account, through the real server code at its 5-second pace: two requests — the question, then what was found', pd.phase === 'shown' && sent.length === 2 && !('lookup' in sent[0].body.context) && sent[1].body.context.lookup?.query === 'bike rack', [pd.error, sent.map(c => Object.keys(c.body.context))]);
-    check('…the second carries the note that may reach AI, never the private ones — not even how many matched', bodies[1]?.includes('nLkRack') && bodies.every(b => !/Walrus|nLkPriv|nLkHush|leftOut|Quiet plans|worry/.test(b)), bodies[1]);
-    check('…and the answer shows what it looked for and links the note it used', pd.looked.startsWith('Looked in your notes for “bike rack”') && eq(pd.sources, ['Shed sizes|#projects/notes/nLkRack']), [pd.looked, pd.sources]);
+    check('…the second carries the note that may reach AI by name and reference (never its id or link), never the private ones — not even how many matched', bodies[1]?.includes('Shed sizes') && bodies[1]?.includes('"ref":"r1"') && !bodies[1]?.includes('nLkRack') && !bodies[1]?.includes('#projects/notes')
+      && bodies.every(b => !/Walrus|nLkPriv|nLkHush|leftOut|Quiet plans|worry/.test(b)), bodies[1]);
+    check('…and the answer shows what it looked for and links the note it used (its link kept on the device)', pd.looked.startsWith('Looked across MyDay for “bike rack”') && eq(pd.sources, ['Shed sizes|#projects/notes/nLkRack']), [pd.looked, pd.sources]);
     await D.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(5500); // the server's pace again
     const c1 = aiCalls().length;
     const pdp = await runLk(D, "What's next on the pottery kiln?");
