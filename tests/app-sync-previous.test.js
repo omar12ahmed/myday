@@ -454,6 +454,28 @@ async function signIn(d, url) {
     check('taking it out here leaves a deletion marker in the account', await eventually(async () => !!(await record('arabic_card', CW))?.deleted) && await synced(now));
     await before.returnToApp();
     check('…which the previous release takes in, syncing normally', await synced(before) && await before.until(`!(JSON.parse(localStorage.getItem('${KEY}')).arabic.cards || []).some(c => c.id === '${CW}')`, 20000));
+
+    console.log('\n[17] The Overview cards hidden on a project (hiddenSections) pass through the previous release unchanged (specs/projects-sections.md)');
+    const knowsSections = builtText.includes('section-open');
+    console.log(`The previous release ${knowsSections ? 'knows' : 'doesn’t know'} optional sections.`);
+    const PH = 'pjHideBack', hiddenSections = ['resources', 'newer-section'];
+    const hideLinks = [{ id: 'rsHide01', title: 'Timber merchant', url: 'https://example.com/timber', addedOn: today }];
+    const valueOf = r => r?.data?.value ?? r?.data;
+    await now.returnToApp();
+    await now.setData(`s => { s.projects.items.push({ id: '${PH}', title: 'Shed with a hidden card', summary: '', stage: 'act', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}', resources: ${JSON.stringify(hideLinks)}, hiddenSections: ${JSON.stringify(hiddenSections)} }); }`);
+    check('this release sends the project with the cards hidden on it (one from a newer MyDay too) inside its own record', await eventually(async () => eq(valueOf(await record('project', PH))?.hiddenSections, hiddenSections)) && await synced(now), valueOf(await record('project', PH)));
+    await before.returnToApp();
+    check('the previous release syncs normally and receives the project with hiddenSections exactly', await synced(before) && await before.until(`JSON.stringify(JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === '${PH}')?.hiddenSections) === '${JSON.stringify(hiddenSections)}'`, 20000), (await before.data()).projects.items.find(p => p.id === PH));
+    // The previous release's own project page: a new title (its box saves when you leave it).
+    await before.open(BEFORE + `#projects/p/${PH}`); await before.until(`!!document.querySelector('[data-action=project-edit]')`, 15000);
+    await before.click('[data-action=project-edit]'); await before.until(`!!document.querySelector('#projectTitleInput')`, 5000);
+    await before.type('#projectTitleInput', 'Shed with a hidden card (renamed)');
+    check('a rename on the previous release reaches the account with hiddenSections as they were', await eventually(async () => valueOf(await record('project', PH))?.title === 'Shed with a hidden card (renamed)' && eq(valueOf(await record('project', PH))?.hiddenSections, hiddenSections)) && await synced(before), valueOf(await record('project', PH)));
+    await now.returnToApp();
+    await now.open(NOW + `#projects/p/${PH}`);
+    check('back on this release the new title arrives, Resources is still hidden ("Show Resources (1)"), and the newer id is kept', await now.until(`document.querySelector('#projectTitle')?.textContent === 'Shed with a hidden card (renamed)' && !document.querySelector('#projectResources') && (document.querySelector('[data-action=section-show][data-id=resources]')?.textContent || '') === 'Show Resources (1)'`, 20000)
+      && eq((await now.data()).projects.items.find(p => p.id === PH).hiddenSections, hiddenSections), await now.text('#projectMore'));
+    check('…and this release is fully in step afterwards (nothing waiting, no conflict)', await synced(now) && (await now.status()) === 'synced', { status: await now.status() });
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {
