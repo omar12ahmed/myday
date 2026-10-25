@@ -1,5 +1,13 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.79.0 — Ask MyDay looks at what to study next:** ask "what should I study next?" from any page but Study, and
+Ask MyDay looks, on this device, at the same next steps as your Today card — your focus first — and answers with its
+lesson or task, its reason and the suggested minutes, saying when revision comes first (and offering the round). It
+links the lesson, never gives a percentage, and never sends your own "needs revision" notes or a calendar block's name
+(the reason goes in a safe wording, thanks to Study's `aiWhy`). That second request counts towards the day's limit.
+The server's instructions (v22) were deployed first; no saved-data, sync or database change; going back to 1.78.0 is
+safe. This is the last lookup on the AI plan (`specs/ai-tools.md`).
+
 **1.78.0 — Cybersecurity lessons have places, as Arabic's do:** under a Cybersecurity lesson's title it now says
 where it stands: **New**, **Practised** (you've handed in one of its notebook activities or finished a Study session on
 it), **Ready to move on**, **Holding** (its knowledge checks came back right on your own a week or more after Ready) or
