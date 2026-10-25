@@ -353,6 +353,10 @@ const clone = o => JSON.parse(JSON.stringify(o));
   check('a task with steps: "· 1 of 2 steps" at the end of its summary, and its steps (ticked ones marked) and "Starts after 2 tasks" as its lines',
     / · 1 of 2 steps$/.test(R.recordSummary('task:tk1', stepped)) && eq(R.recordLines('task:tk1', stepped), ['✓ Measure the wall', 'Order the boards', 'Starts after 2 tasks']), [R.recordSummary('task:tk1', stepped), R.recordLines('task:tk1', stepped)]);
   check('…and a task without them has no lines, and its summary as before', eq(R.recordLines('task:tk1', recs.get('task:tk1')), []) && !/steps/.test(R.recordSummary('task:tk1', recs.get('task:tk1'))));
+  // A task's deadline details (specs/projects-deadlines.md), likewise.
+  const dated = { ...recs.get('task:tk1'), deadline: { kind: 'firm', from: 'The tribunal letter', checkedBy: 'My adviser', checkedOn: '2026-10-12' } };
+  check('a task with a deadline lists "Firm deadline · from … · checked by … on …" (an aim one "Date to aim for")', R.recordLines('task:tk1', dated).includes('Firm deadline · from The tribunal letter · checked by My adviser on 2026-10-12')
+    && R.recordLines('task:tk1', { ...dated, deadline: { kind: 'aim', from: '', checkedBy: '', checkedOn: null } }).includes('Date to aim for'), R.recordLines('task:tk1', dated));
   // A project's tools and the Overview sections hidden on it (specs/projects-sections.md), likewise.
   const pj = [...recs.keys()].find(k => k.startsWith('project:'));
   if (pj) {

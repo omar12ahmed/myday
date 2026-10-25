@@ -29,6 +29,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     `export { linkTask, heldBack } from ${src('projects')};`,
     `export { needsYou, GROUP_LABEL as NEED_GROUP_LABEL } from ${src('attention')};`,
     `export { SECTIONS, isHidden, sectionContent, overviewSections, setHidden, hiddenWords, openOnArrival, arriving, arrived } from ${src('projectSections')};`,
+    `export { setDeadline, deadlineWords, DEADLINE_LABEL } from ${src('tasks')};`, `export { deadlineToNote, noteDeadlineDone } from ${src('deadlines')};`,
     `export { setDone, clearDay, toggleRoll, followQueued, taskFromQueue, sendToQueue } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
@@ -2138,6 +2139,55 @@ const clone = o => JSON.parse(JSON.stringify(o));
     w = fresh({ hiddenSections: ['resources'] });
     const before = JSON.stringify(w); K.overviewSections(w, P(w)); K.overviewSections(w, P(w), new Set(['files'])); K.SECTIONS.forEach(s => K.sectionContent(w, P(w), s.id));
     check('working out what shows writes nothing', JSON.stringify(w) === before);
+  }
+
+  console.log('\n[23] Deadlines you can trust (specs/projects-deadlines.md)');
+  {
+    const k = '2026-10-14', D = d => K.shortDate(d), day = n => K.shift(k, n);
+    const TK = (id, title, x = {}) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-09-20T09:00', postponed: 0, blockers: [], letGoOn: null, projectId: 'pjD', ...x });
+    const DL = (x = {}) => ({ kind: 'firm', from: 'The tribunal\'s letter of 3 Oct', checkedBy: 'Me', checkedOn: day(-2), ...x });
+    const rd = (items, r = { dropped: 0 }) => ({ items: K.normalizeTasks({ lists: [], items: clone(items) }, r).items, r });
+
+    console.log('  reading');
+    let got = rd([TK('a', 'Send my witness statement', { due: day(5), deadline: DL({ futureBit: { keep: 1 } }) })]);
+    check('a deadline is kept exactly, with a newer MyDay\'s field beside it', eq(got.items[0].deadline, DL({ futureBit: { keep: 1 } })) && got.r.dropped === 0, got.items[0].deadline);
+    got = rd([TK('a', 'x', { deadline: { kind: 'aim', from: 5, checkedBy: 'y'.repeat(90), checkedOn: 'soon', noted: 'tl1' } })]);
+    check('…its words are cut (who checked: 80) and a date that isn\'t one becomes null; a timeline note is kept', eq(got.items[0].deadline, { kind: 'aim', from: '', checkedBy: 'y'.repeat(80), checkedOn: null, noted: 'tl1' }) && got.r.dropped === 0, got.items[0].deadline);
+    got = rd([TK('a', 'x', { deadline: { kind: 'statutory' } }), TK('b', 'x', { deadline: 'firm' }), TK('c', 'x', { deadline: null }), TK('d', 'x')]);
+    check('a kind this version doesn\'t know, or a shape it can\'t read, is left out and counted; null or none is simply absent', got.items.every(t => !('deadline' in t)) && got.r.dropped === 2, got.r);
+
+    console.log('  setting it');
+    const w = world(base('pjD', { title: 'Deposit dispute', template: 'case', case: { timeline: [], evidence: [], issues: [] } }), base('pjG', { title: 'Passport' }));
+    w.tasks.items = [TK('t1', 'Send my witness statement', { due: day(5) }), TK('t2', 'Renew the passport', { due: day(-3), projectId: 'pjG' })];
+    const T = id => w.tasks.items.find(t => t.id === id);
+    check('making a date a firm deadline, with where it comes from (trimmed)', K.setDeadline(w.tasks, 't1', { kind: 'firm', from: '  The tribunal\'s letter of 3 Oct  ' }) && eq(T('t1').deadline, { kind: 'firm', from: 'The tribunal\'s letter of 3 Oct', checkedBy: '', checkedOn: null }));
+    check('…who checked it and when (merging; the same again changes nothing)', K.setDeadline(w.tasks, 't1', { checkedBy: 'My adviser', checkedOn: day(-1) }) && T('t1').deadline.checkedBy === 'My adviser' && T('t1').deadline.checkedOn === day(-1) && T('t1').deadline.kind === 'firm' && !K.setDeadline(w.tasks, 't1', { checkedBy: 'My adviser' }));
+    check('…a date that isn\'t one is stored as none; "not a deadline" takes the details off', K.setDeadline(w.tasks, 't1', { checkedOn: 'soon' }) && T('t1').deadline.checkedOn === null && K.setDeadline(w.tasks, 't2', { kind: 'aim' }) && K.setDeadline(w.tasks, 't2', null) && !('deadline' in T('t2')) && !K.setDeadline(w.tasks, 't2', null));
+
+    console.log('  the words');
+    K.setDeadline(w.tasks, 't2', { kind: 'aim' });
+    check('"Firm deadline" ahead; "Still open, was aimed for …" for an aim date passed', K.deadlineWords(w, T('t1'), k) === 'Firm deadline' && K.deadlineWords(w, T('t2'), k) === `Still open, was aimed for ${D(day(-3))}`);
+    K.setDeadline(w.tasks, 't2', { kind: 'firm' });
+    check('…"Still open, was due …" for a firm one passed; done, it\'s just "Firm deadline"; an undated or ordinary task has no words', K.deadlineWords(w, T('t2'), k) === `Still open, was due ${D(day(-3))}` && (K.setTaskDone(w, 't2', true), K.deadlineWords(w, T('t2'), k) === 'Firm deadline')
+      && K.deadlineWords(w, TK('x', 'x'), k) === '' && K.deadlineWords(w, TK('y', 'y', { due: day(1) }), k) === '');
+    K.setTaskDone(w, 't2', false);
+    const N = K.needsYou(w, k);
+    check('Needs you: "firm deadline · on …" ahead, and "still open, was due …" passed (an aim one: "was aimed for")', N.find(n => n.key === 'date:t1')?.why === `firm deadline · on ${D(day(5))}` && N.find(n => n.key === 'past:t2')?.why === `still open, was due ${D(day(-3))}`
+      && (K.setDeadline(w.tasks, 't2', { kind: 'aim' }), K.needsYou(w, k).find(n => n.key === 'past:t2')?.why === `still open, was aimed for ${D(day(-3))}`), N.map(n => [n.key, n.why]));
+    const wl = id => K.worthALook(w, w.projects.items.find(p => p.id === id), k).map(x => x.text);
+    // (Worth a look leaves out the next step, which its own card shows: choose another one on the passport.)
+    w.tasks.items.push(TK('t3', 'Book the photo', { projectId: 'pjG' })); w.projects.items.find(p => p.id === 'pjG').nextTaskId = 't3';
+    check('Worth a look: "— still open, was aimed for …"; and a firm one ahead "— firm deadline, in 5 days"', wl('pjG').includes(`Renew the passport — still open, was aimed for ${D(day(-3))}`) && wl('pjD').includes('Send my witness statement — firm deadline, in 5 days'), [wl('pjG'), wl('pjD')]);
+
+    console.log('  done, and noted on the timeline (a Case)');
+    check('not offered while it\'s still to do', !K.deadlineToNote(w, T('t1')) && K.noteDeadlineDone(w, 't1') === null);
+    K.setTaskDone(w, 't1', true); T('t1').doneOn = day(-1);
+    check('done: offered once — on its page and in Worth a look ("… is done — note it on the timeline?")', K.deadlineToNote(w, T('t1')) && wl('pjD').includes('“Send my witness statement” is done — note it on the timeline?'), wl('pjD'));
+    const id = K.noteDeadlineDone(w, 't1'), entry = w.projects.items.find(p => p.id === 'pjD').case.timeline.find(e => e.id === id);
+    check('one tap adds "Done: …" on the day it was done, as your account, and remembers it (not offered again)', !!entry && entry.title === 'Done: Send my witness statement' && entry.date === day(-1) && entry.source === 'mine' && T('t1').deadline.noted === id
+      && !K.deadlineToNote(w, T('t1')) && K.noteDeadlineDone(w, 't1') === null && !wl('pjD').some(x => x.includes('note it on the timeline')), entry);
+    K.setTaskDone(w, 't2', true);
+    check('a deadline of a project that isn\'t a Case is never offered', !K.deadlineToNote(w, T('t2')) && K.noteDeadlineDone(w, 't2') === null);
   }
 
   fs.rmSync(dir, { recursive: true, force: true });
