@@ -37,7 +37,8 @@ export function DeadlineCard({ data, t }: { data: MyDayData; t: TaskItem }) {
           <Field label="Where does this date come from? (optional)" htmlFor="tDlFrom">
             <CommitInput id="tDlFrom" key={`f${dl.from}`} defaultValue={dl.from} maxLength={TASK_LIMITS.deadlineFrom} placeholder="e.g. The tribunal's letter of 3 Oct" onCommit={el => save({ from: el.value }, 'Saved.')} />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          {/* (Side by side from 380 px; below that the day wouldn't fit.) */}
+          <div className="grid min-[380px]:grid-cols-2 gap-3">
             <Field label="Checked by (optional)" htmlFor="tDlBy" className="min-w-0"><CommitInput id="tDlBy" className="min-w-0" key={`b${dl.checkedBy}`} defaultValue={dl.checkedBy} maxLength={TASK_LIMITS.checkedBy} placeholder="e.g. Me" onCommit={el => save({ checkedBy: el.value }, 'Saved.')} /></Field>
             <Field label="Checked on (optional)" htmlFor="tDlOn" className="min-w-0"><CommitInput id="tDlOn" type="date" className="min-w-0" key={`o${dl.checkedOn}`} defaultValue={dl.checkedOn ?? ''} onCommit={el => save({ checkedOn: el.value || null }, 'Saved.')} /></Field>
           </div>
