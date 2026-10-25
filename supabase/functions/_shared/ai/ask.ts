@@ -35,13 +35,14 @@ again.${quoting}`;
 The app looked across MyDay for the words ("lookup" in the data, "tool" "search": "query", the words; "found", up to 12
 things that matched, each with "ref", its "kind", its name ("title"), where it is ("where": its project, list, course or
 module, or an appointment's day and time) and "state" (done, let go, paused, past, archived or finished, or null);
-"total", how many matched in all; "titlesOnly" when notes could be searched by title only). Only names are sent, never
+"total", how many matched in all; "titlesOnly" when notes, and only notes, could be searched by their titles alone —
+everything else was searched as usual). Only names are sent, never
 what a note, task or anything else says, and nothing private, so nothing about private things is here. Answer from
 those only, usually as "answer": say what was found and where, and put the refs you used in "sources" (["r1", …], only
 refs from "lookup"); they show as links to open. Never claim what's inside a thing (a note's text, a task's notes, a
 number, an address, a date it doesn't show): say they can open it to see. If things share a name, say where each is.
-If nothing matched, say so plainly in one sentence and suggest another word to try; don't guess why. Never reply
-"lookup" again.${quoting}`;
+If nothing matched, say so plainly in one sentence and suggest another word to try; don't guess why, or where else
+it might be. Never reply "lookup" again.${quoting}`;
   if (c.lookup?.tool === 'day') return `
 
 The app looked at one day ("lookup" in the data, "tool" "day": "query" is the date, with its weekday; "planned" whether
@@ -129,7 +130,8 @@ decisions and its one page aren't here: for those, say to ask on its page. Never
   if (tools.includes('waiting')) offer.push(`- At what they're waiting on: they ask what they're waiting on or for, what's with someone else, or what to
   chase — {"kind":"lookup","message":"Looking at what you're waiting on.","lookup":{"tool":"waiting","query":"all"}},
   or for one project they name, the query that project's id exactly as in "projects".`);
-  if (tools.includes('study')) offer.push(`- At what to study next: they ask what to study, learn or practise next, or where they're up to in their learning —
+  if (tools.includes('study')) offer.push(`- At what to study next: they ask what to study, learn or practise next, or where they're up to in their learning
+  (not to find a lesson, course or word by what it's about: that's a look across MyDay, when it's here) —
   {"kind":"lookup","message":"Looking at what to study next.","lookup":{"tool":"study","query":"all"}}.`);
   if (!offer.length) return '';
   return `
