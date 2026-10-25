@@ -452,7 +452,7 @@ function prepare(sc: AnyScenario): Prepared {
           }
           if (e.action !== undefined) ex.rightAction = (r.action?.type ?? null) === e.action;
           if (e.scope && r.action?.type === 'start-revision') ex.rightScope = r.action.scope === e.scope;
-          const due = sc.ctx.context.study?.revisionDue ?? sc.ctx.context.today?.revisionDue;
+          const due = sc.ctx.context.study?.revisionDue ?? sc.ctx.context.today?.revisionDue ?? (sc.ctx.lookup?.tool === 'study' ? sc.ctx.lookup.revisionDue : undefined);
           if (r.action?.type === 'start-revision') ex.revisionWhenDue = (due ?? 0) > 0;
           if (r.action?.type === 'start-study' && /\brevis/i.test(r.message) && !/\b(lesson|next task|new)\b/i.test(r.message)) ex.lessonNotRevision = false;
           if (e.projectId && (r.kind === 'add' || r.kind === 'steps')) ex.inProject = r.items.every(i => i.type === 'project' || i.projectId === e.projectId);

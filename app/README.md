@@ -760,7 +760,11 @@ any page but Study (which sends its own course and next task) — Ask MyDay repl
 first, at most three: each subject's name, lesson or task, detail line and "Why this?", the suggested minutes and
 length, begun or not, a session to resume, revision first, or the path ready — and how much is due to revise. No ids,
 links or open sessions' steps go; each subject's link stays on the device and the answer links the ones it names.
-Never a percentage. Evaluated with `ai-eval/ask-scenarios.ts` (n01–n07).
+The reason goes as `aiWhy` (never your own "needs revision" note, never a calendar block's name). A course a private
+project links still goes by its own title and tasks (the owner's reading: a private project hides itself and its link,
+not a course it points at). Never a percentage; no "start" action (the link opens the lesson), though revision first
+may offer the revision round. Evaluated with `ai-eval/ask-scenarios.ts` (n01–n07) and
+`ai-eval/reviews/2026-10-25-ask-study-quality.md`.
 
 **Planning a Study course with Ask (1.26.0):** a course page has **✦ Plan this course with Ask**, which opens + already
 filled in ("Break this course into study tasks"; `src/capture/openCapture.ts`). From a course page Ask sends the

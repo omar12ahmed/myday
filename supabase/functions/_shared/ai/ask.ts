@@ -50,9 +50,12 @@ their Today card, their focus first — each with its subject's name ("label"), 
 session to pick up), "reviseFirst" (revision before the lesson) and "allComplete" (their path is ready to move on);
 "revisionDue", how many things are due to revise). Answer from those only, as "answer" in two or three short
 sentences: the first option — their focus — with its reason in your own words and its minutes; if "reviseFirst", say
-revision comes first. Mention another option only if they asked for a choice or to switch. Never invent a lesson, a
-task or progress, never give a percentage, and never press. Put the subjects you name in "sources" (only "subject"
-values from "lookup"). Never reply "lookup" again.${quoting}`;
+revision comes first, and you may offer {"type":"start-revision","scope":"arabic"} or "cybersecurity" for that subject.
+No "start-study" action here: its link opens the lesson. Mention another option only if they asked for a choice or to
+switch. Never invent a lesson, a task or progress, never give a percentage, and never press. Put the subjects you name
+in "sources" as their "subject" values exactly ("cybersecurity", "arabic", "roadmap"). If "options" is empty, say
+plainly that nothing is set up to study yet and that they can choose a focus in Study (no "sources"). Never reply
+"lookup" again.${quoting}`;
   if (c.lookup?.tool === 'waiting') return `
 
 The app looked at what they're waiting on ("lookup" in the data, "tool" "waiting": "tasks", the oldest few marked as
