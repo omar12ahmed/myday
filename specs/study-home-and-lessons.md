@@ -396,7 +396,7 @@ note's text does: AI help with notes when it's on, and Ask MyDay opened on that 
     target, answer keys, a mark, a secret, a question away from the lesson — one plain reply with a next step
     (`supabase/functions/_shared/ai/tutor-shape.ts`). Version 1, as earlier releases send, is answered exactly as before.
     No suggested mark (the tutor sees no answer). Evaluated blind (`ai-eval/reviews/2026-10-25-tutor-steps-quality.md`):
-    the tutor stays on GLM-5.3-Flash, with instructions `myday-tutor-steps-v2`.
+    the tutor stays on GLM-5.3-Flash, with instructions `myday-tutor-steps-v3`.
 - **The skills view and four Arabic tracks:** reading, writing, listening and speaking each shown in words and
   counts, with the CEFR descriptors as a guide to objectives, never a qualification. The package's 0–100 model stays
   internal.

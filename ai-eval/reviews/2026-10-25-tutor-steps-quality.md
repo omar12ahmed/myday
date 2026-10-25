@@ -6,7 +6,7 @@ shows one at a time; where parts don't fit (someone else's target, answer keys, 
 the lesson) one plain reply with a next step. Version 1 (the published app) is answered exactly as before. Accuracy
 decides. All results are from **real API calls** (paid tiers) on the 11 made-up tutor questions of
 `tutor-scenarios.ts` sent as version 2, plus three the parts are for: a /27 to work out (the spec's own example), "I
-don't get CIDR at all", and a request to write the lesson's recall task for the learner. US$0.07 in all. Round 1's
+don't get CIDR at all", and a request to write the lesson's recall task for the learner. US$0.08 in all. Round 1's
 first repeat was read and scored **blind** (each case's two replies shuffled, the key opened after scoring): accuracy,
 and teaching (a hint that makes them think before any explanation, a real example, a clear explanation, a useful
 follow-up; for plain replies, the boundary held kindly with a useful next step), 1–5; then GLM's second repeat and
@@ -38,10 +38,18 @@ and forbids writing a recall task for them in any part, "not even roughly", help
 explaining why their own attempt is the evidence and how to mark its gaps; the CIDR and /27 replies are precise
 (blocks of 32, the second /27 block .32–.63, /30 with 2 usable).
 
+## Round 3 — instructions steps-v3 (`results/2026-10-25-00-03-38-live`, GLM, 14 cases × 2)
+
+After the independent review: the same words with the recall rule moved after the list of parts, the reader's
+allowance for "I can't say whether you've passed" narrowed to a refusal's own words (so "whether you have passed is
+clear: yes" is a verdict again), and fields beyond the parts dropped rather than shown. 27 of 28 usable: the one refused
+reply praised the learner ("well done on the instinct…"), which the instructions forbid, so the app refusing it is
+right (the learner is asked to try again). Nothing false in the replies read.
+
 ## Conclusion
 
 **The tutor stays on GLM-5.3-Flash** (no route change; "tutor" isn't in `AI_ROUTES`), with instructions
-`myday-tutor-steps-v2` for version-2 requests. About US$0.0003 per question; 6–9 s.
+`myday-tutor-steps-v3` for version-2 requests. About US$0.0003 per question; 6–9 s.
 
 Limits: one reviewer, made-up questions, 14 cases. Replies are an AI's help, never a mark; the app labels them as
 AI-written. The scores are one reviewer's, from replies kept outside the repository (`ai-eval/results/` is ignored).

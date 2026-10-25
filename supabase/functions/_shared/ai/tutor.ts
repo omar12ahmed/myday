@@ -9,7 +9,8 @@ export * from './tutor-shape.ts';
 export const TUTOR_PROMPT_VERSION = 'myday-tutor-v2';
 // A version-2 request's instructions: the same rules, one reply in parts (tutor-shape.ts; graduated help).
 // v2 (25 Oct 2026, after a blind review): a short next step; never a finished version of the lesson's recall task.
-export const TUTOR_STEPS_PROMPT_VERSION = 'myday-tutor-steps-v2';
+// v3: the same words, the recall rule moved after the list of parts.
+export const TUTOR_STEPS_PROMPT_VERSION = 'myday-tutor-steps-v3';
 
 // version 1: one explanation and a next step (the app before graduated help, answered exactly as before); version 2: in parts.
 export interface TutorContext {
@@ -66,10 +67,10 @@ sense after the ones before it:
   restatement of the question). Two to four sentences.
 - "explanation": the worked explanation that answers what was asked, usually in 80 to 200 words (shorter if they ask
   for short). Precise words: say bits when you mean bits.
+- "followUp": one short question that checks the same idea from a slightly different side, with its answer.
 If the lesson's task asks them to explain or recall something from memory and they ask you to write it for them, don't
 write it in any part, not even "roughly" or as a list of steps: help them attempt it themselves, and say why their own
 attempt is the evidence.
-- "followUp": one short question that checks the same idea from a slightly different side, with its answer.
 Reply with "kind": "plain" instead (an "explanation" and one "nextStep" of one or two sentences) when parts don't fit: a target that isn't
 theirs (talk about permission and scope, and suggest their own isolated lab; no attack steps), a request for answer
 keys, a mark or a verdict, or a question away from the lesson (gently return to its objectives). If the question
@@ -84,6 +85,9 @@ or {"lessonId":"${c.lessonId}","kind":"plain","explanation":"…","nextStep":"�
 export function mockTutor(c: TutorContext, variant: 'good' | 'sloppy' = 'good'): string {
   const l = tutorLessons[c.lessonId];
   if (c.version === 2) {
+    if (variant === 'good' && /\b(?:score|grade|mark|pass(?:ed)?|answer key|password)\b/i.test(c.question)) return JSON.stringify({ lessonId: c.lessonId, kind: 'plain',
+      explanation: 'Practice helper (no AI): I can’t mark your work, give answer keys or keep secrets — this lesson is about what you can show yourself.',
+      nextStep: `Practice helper (no AI): ${l.objectives[0].slice(0, 300)}` });
     if (variant === 'sloppy') return JSON.stringify({ lessonId: c.lessonId, kind: 'steps', hint: 'You\'ve passed: 9/10.', example: `You asked: ${c.question.slice(0, 200)}`, explanation: 'See https://example.com/answers for more.', followUp: { question: '?', answer: 'Read the answer key.' } });
     const steps: TutorSteps = {
       kind: 'steps', hint: `Practice helper (no AI): which of ${l.concepts.slice(0, 2).join(' and ')} does your question turn on?`,

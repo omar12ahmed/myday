@@ -12,11 +12,13 @@ export type TutorSteps =
   | { kind: 'plain'; explanation: string; nextStep: string };
 
 const str = (v: unknown, max: number): v is string => typeof v === 'string' && v.trim().length > 0 && v.trim().length <= max;
-// Saying it can't tell ("I can't say whether you've passed") isn't a verdict.
-const REFUSING = /\b(?:whether|if)\s+(?:or not\s+)?you(?:['’]ve| have)?\s+\w+/gi;
+// Saying it can't tell ("I can't say whether you've passed") isn't a verdict; "whether you have passed is clear: yes"
+// still is, so only a refusal's own words are left out of the check.
+const REFUSING = /\b(?:can(?:['’]t| ?not)|won['’]t|unable to|not able to|no way to)\s+(?:say|tell|judge|know|see|confirm)\s+(?:whether|if)\s+(?:or not\s+)?you(?:['’]ve| have)?\s+\w+/gi;
 
 // The reply, if it's usable: for the lesson asked about, one of the two shapes with every part and within its length,
-// and no links or verdicts.
+// and no links or verdicts. Fields beyond those (a model adds a "note" now and then) are left out: only these are kept,
+// and only these are ever shown.
 export function readTutorSteps(text: string, lessonId: string): TutorSteps | null {
   let raw: unknown;
   try { raw = JSON.parse(text); } catch { return null; }
