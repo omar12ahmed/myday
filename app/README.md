@@ -1,5 +1,15 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.80.0 — Arabic's four skills:** Progress has a new card, "Arabic: four skills", after "where you stand": reading,
+writing, speaking and listening, each on its own, in words and counts. For each: the finished sessions where you
+ticked it in "What did you practise?" (how many without help, and the last day), how many lessons on your path ask for
+it and how many of those you've practised it in, a link to the first where it isn't ticked yet, and, as a guide, what
+the course's next milestone asks of that skill, in the course's own words (its stages are targets informed by the
+CEFR, not a level you've reached). Listening and speaking are only what you ticked, and the card says so; writing also
+says how many kept words are in your revision to write from memory. A session's Reflect step now says which skills the
+lesson asks for, ticking nothing. Never a percentage, a score or a level; nothing new is saved or sent to AI; no sync
+or database change; going back to 1.79.0 is safe.
+
 **1.79.0 — Ask MyDay looks at what to study next:** ask "what should I study next?" from any page but Study, and
 Ask MyDay looks, on this device, at the same next steps as your Today card — your focus first — and answers with its
 lesson or task, its reason and the suggested minutes, saying when revision comes first (and offering the round). It
