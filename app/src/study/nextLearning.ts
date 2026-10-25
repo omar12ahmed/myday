@@ -21,7 +21,8 @@ export function learningOptions(data: MyDayData, generalCourseId = data.study.fo
   const cyberStarted = data.cybersecurity.attempts.length > 0 || data.study.sessions.some(s => !!s.courseId?.startsWith('cyber:1:'))
     || [...ix.course.keys()].some(id => id.startsWith('cyber:1:') && ticked(id)) || !!data.cybersecurity.lessons?.length;
   const cp = cyberPlan(data)!, cs = cp.step, cyberTitle = (id: string) => cyberLessons.get(id)?.title ?? id;
-  const cyberShorter = cs.kind !== 'resume' && cp.length.why.length ? ` A shorter session today: ${cp.length.why.join(', ')}.` : '';
+  const shorterOf = (why: string[]) => (why.length ? ` A shorter session today: ${why.join(', ')}.` : '');
+  const cyberShorter = cs.kind !== 'resume' ? shorterOf(cp.length.why) : '', cyberShorterAi = cs.kind !== 'resume' ? shorterOf(cp.length.plain) : '';
   const cyberOption: LearningOption = {
     subject: 'cybersecurity', label: 'Cybersecurity', title: cyberTitle(cs.lessonId),
     detail: cs.kind === 'resume' ? 'Resume your saved attempt'
@@ -31,6 +32,7 @@ export function learningOptions(data: MyDayData, generalCourseId = data.study.fo
         : cs.waiting === 1 ? 'Every other lesson on your path is ready — this one needs revision' : `${cs.waiting} lessons on your path need revision — this is the first`)
       : cs.state === 'practised' ? 'Practised — mark it ready when it clicks' : cyberStarted ? 'Next in your course' : 'The first lesson in your course',
     why: cs.kind === 'resume' ? 'You have a saved attempt on this lesson.' : cp.reason + cyberShorter,
+    aiWhy: cs.kind === 'resume' ? 'You have a saved attempt on this lesson.' : cp.aiReason + cyberShorterAi,
     href: '#study/cybersecurity/' + encodeURIComponent(cs.lessonId),
     minutes: cs.kind === 'resume' ? cyberLessons.get(cs.lessonId)?.estimated_duration_minutes.standard ?? cp.length.minutes : cp.length.minutes,
     resume: cs.kind === 'resume', allComplete: cp.complete, started: cyberStarted,
@@ -42,7 +44,7 @@ export function learningOptions(data: MyDayData, generalCourseId = data.study.fo
   const plan = arabicPlan(data)!, step = plan.step;
   const open = step.kind === 'resume' ? data.arabic.attempts.filter(a => !a.finishedAt && a.lessonId === step.lessonId).pop() : undefined;
   const arabicStarted = data.arabic.attempts.length > 0 || !!data.arabic.lessons?.length;
-  const shorter = step.kind !== 'resume' && plan.length.why.length ? ` A shorter session today: ${plan.length.why.join(', ')}.` : '';
+  const shorter = step.kind !== 'resume' ? shorterOf(plan.length.why) : '', shorterAi = step.kind !== 'resume' ? shorterOf(plan.length.plain) : '';
   const arabicOption: LearningOption = {
     subject: 'arabic', label: 'Arabic Fuṣḥā', title: lessonIndex[step.lessonId].title,
     detail: step.kind === 'resume' ? 'Resume your open Arabic session'
@@ -51,7 +53,7 @@ export function learningOptions(data: MyDayData, generalCourseId = data.study.fo
       : step.kind === 'complete' ? (!step.waiting ? 'Your path is ready to move on — revise, or revisit any lesson'
         : step.waiting === 1 ? 'Every other lesson on your path is ready — this one needs revision' : `${step.waiting} lessons on your path need revision — this is the first`)
       : step.state === 'practised' ? 'Practised — mark it ready when it clicks' : arabicStarted ? 'Next in your course' : 'The first lesson in your course',
-    why: plan.reason + shorter,
+    why: plan.reason + shorter, aiWhy: plan.aiReason + shorterAi,
     href: '#study/arabic/' + encodeURIComponent(step.lessonId),
     minutes: step.kind === 'resume' ? lessonIndex[step.lessonId].minutes : plan.length.minutes, resume: step.kind === 'resume', allComplete: plan.complete, started: arabicStarted,
     // As on the learning map: revision first when cards are back (or your path is ready and some are due).

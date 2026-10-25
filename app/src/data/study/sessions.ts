@@ -18,22 +18,25 @@ export const fmtElapsed = (ms: number) => {
 
 // A suggested length for right now: the estimate, trimmed for low energy and to fit the free time before
 // your next shift, appointment or planned task (from Today and the Calendar). Always yours to change.
-export function suggestLength(data: MyDayData, base: number): { minutes: number; why: string[] } {
-  const k = todayKey(), why: string[] = [];
+// `plain` is the same reasons naming no shift, appointment or task ("40 min free before your next plan"): what may
+// reach AI (a private project's appointment goes by kind and time only, ai/reach.ts).
+export function suggestLength(data: MyDayData, base: number): { minutes: number; why: string[]; plain: string[] } {
+  const k = todayKey(), why: string[] = [], plain: string[] = [];
   let m = base;
   const energy = contextFor(data, k).energy || (data.days[k] && data.days[k].energy) || null;
   const cap = energy ? ({ 1: 15, 2: 20, 3: 30 } as Record<number, number>)[energy] : undefined;
-  if (cap && m > cap) { m = cap; why.push(`energy ${energy} today`); }
+  if (cap && m > cap) { m = cap; why.push(`energy ${energy} today`); plain.push(`energy ${energy} today`); }
   const d = data.days[k], now = nowMin(k);
   const busy = d ? d.tasks.filter(t => t.scheduledStart && !t.done).map(t => { const s = dtToMin(t.scheduledStart!, k); return { start: s, end: s + t.minutes }; }) : [];
   const seg = freeSegments(data, k, busy).find(g => g.start <= now + 5 && g.end > now);
   if (seg) {
     const free = seg.end - Math.max(now, seg.start);
     const next = blocksFor(data, k).find(b => b.start === seg.end);
-    const before = next ? next.label.replace(/^Prep\/travel for /, '') : seg.end === timeToMin(data.settings.latestTime) ? `${data.settings.latestTime}, your usual finish time` : 'your next plan';
-    if (free < m) { m = Math.max(10, Math.floor(free / 5) * 5); why.push(`${fmtDuration(free)} free before ${before}`); }
+    const finish = seg.end === timeToMin(data.settings.latestTime) ? `${data.settings.latestTime}, your usual finish time` : 'your next plan';
+    const before = next ? next.label.replace(/^Prep\/travel for /, '') : finish;
+    if (free < m) { m = Math.max(10, Math.floor(free / 5) * 5); why.push(`${fmtDuration(free)} free before ${before}`); plain.push(`${fmtDuration(free)} free before ${next ? 'your next plan' : finish}`); }
   }
-  return { minutes: Math.max(5, Math.round(m / 5) * 5 || 5), why };
+  return { minutes: Math.max(5, Math.round(m / 5) * 5 || 5), why, plain };
 }
 
 // Starts a session for a course (and task, if any). Returns the session in progress — the existing one

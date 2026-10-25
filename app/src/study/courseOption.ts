@@ -13,6 +13,9 @@ export interface LearningOption {
   title: string;
   detail: string;
   why: string;          // "Why this?", the same words on Today and Study home
+  // "Why this?" as it may reach AI: without your own "Needs revision" words, and naming no shift, appointment or task
+  // (the free time says "before your next plan"). `title` and `detail` never hold either.
+  aiWhy: string;
   href: string;
   minutes: number;
   resume: boolean;
@@ -43,11 +46,12 @@ export function roadmapOption(data: MyDayData, generalCourseId = data.study.focu
   const course = work.find(e => e.node.id === generalCourseId) ?? yours ?? pinned ?? work[0];
   if (!course) return null;
   const c = course.node, task = nextTaskIn(ix, c);
+  const why = task ? `The next task you haven’t ticked in ${c.title}, in your roadmap’s order.`
+    : `${c.title} is your focus. It has no tasks yet: you can start a session and add them as you go.`;
   return {
     subject: 'roadmap', label: 'Your courses', title: task ? task.title : c.title,
     detail: task ? c.title : 'No tasks added yet — a session still counts',
-    why: task ? `The next task you haven’t ticked in ${c.title}, in your roadmap’s order.`
-      : `${c.title} is your focus. It has no tasks yet: you can start a session and add them as you go.`,
+    why, aiWhy: why, // (no flags or block names in a course's reason)
     href: task ? '#study/task/' + encodeURIComponent(task.id) : '#study', minutes: task ? task.minutes : c.minutes, resume: false, allComplete: false,
     started: begun(data, ix, c.id), courseId: c.id, taskId: task?.id,
   };

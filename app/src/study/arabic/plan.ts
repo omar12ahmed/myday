@@ -27,11 +27,12 @@ export function pathLessons(pathId: string): string[] {
 
 // How long a session to suggest on a lesson: energy and free time decide (suggestLength), a lesson that needs
 // revision gets the revision session, and the practical one is offered only once you've practised the lesson (a new
-// lesson never gets it: it skips the teaching). The reasons are suggestLength's own ("energy 2 today").
-export function lengthOn(lessonId: string, suggested: { minutes: number; why: string[] }, state: LessonState, revisit: boolean): { variant: Variant; minutes: number; why: string[] } {
+// lesson never gets it: it skips the teaching). The reasons are suggestLength's own ("energy 2 today"), and `plain`
+// its reasons naming no shift, appointment or task.
+export function lengthOn(lessonId: string, suggested: { minutes: number; why: string[]; plain?: string[] }, state: LessonState, revisit: boolean): { variant: Variant; minutes: number; why: string[]; plain: string[] } {
   const l = lessonIndex[lessonId];
   const len = lengthFor(suggested.minutes, { standard: l.minutes, short: l.short, practical: state !== 'new' ? l.practical : undefined }, revisit);
-  return { variant: len, minutes: { standard: l.minutes, practical: l.practical, short: l.short, revision: l.revision }[len], why: suggested.why };
+  return { variant: len, minutes: { standard: l.minutes, practical: l.practical, short: l.short, revision: l.revision }[len], why: suggested.why, plain: suggested.plain ?? [] };
 }
 export const lessonLength = (d: MyDayData, lessonId: string, revisit: boolean) =>
   lengthOn(lessonId, suggestLength(d, lessonIndex[lessonId].minutes), arabicState(d, lessonId), revisit);
@@ -54,7 +55,8 @@ export function journeyFor(d: MyDayData, lessonId: string, length: string, refle
 }
 
 // `complete`: every lesson on your path is ready to move on or holding (true even while a session is open).
-export interface ArabicPlan { step: Step; reason: string; length: { variant: Variant; minutes: number; why: string[] }; complete: boolean }
+// `aiReason`: the reason without your own "Needs revision" words, as it may reach AI.
+export interface ArabicPlan { step: Step; reason: string; aiReason: string; length: { variant: Variant; minutes: number; why: string[]; plain: string[] }; complete: boolean }
 export function arabicPlan(d: MyDayData, k: DateKey = todayKey()): ArabicPlan | null {
   const path = pathLessons(d.arabic.pathId), cache = new Map<string, LessonState>();
   const state = (id: string) => { if (!cache.has(id)) cache.set(id, arabicState(d, id)); return cache.get(id)!; };
@@ -63,7 +65,7 @@ export function arabicPlan(d: MyDayData, k: DateKey = todayKey()): ArabicPlan | 
   if (!step) return null;
   const what = lessonRecord(d, step.lessonId)?.revisit?.what;
   return {
-    step, reason: stepReason(step, id => lessonIndex[id]?.title ?? id, what),
+    step, reason: stepReason(step, id => lessonIndex[id]?.title ?? id, what), aiReason: stepReason(step, id => lessonIndex[id]?.title ?? id),
     length: lessonLength(d, step.lessonId, step.kind === 'revisit' || step.state === 'needs-revision'),
     complete: path.every(id => isDone(state(id))),
   };
