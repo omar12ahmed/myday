@@ -398,9 +398,9 @@ async function signIn(d, url) {
     check(knowsResearch ? '…and the account holds no live research for it' : '…and its research deletions are sent, so the account holds no live research for it', await eventually(async () => (await rrecord(RQB))?.deleted === true && (await rrecord(RFB))?.deleted === true, 25000), [await rrecord(RQB), await rrecord(RFB), await now.status()]);
     check('…and this release is fully in step again afterwards (nothing waiting, no conflict)', await synced(now) && (await now.status()) === 'synced', { status: await now.status(), sync: await now.ev(`(() => { const l = JSON.parse(localStorage.getItem('myday.sync.v1') || '{}').link || {}; return { out: Object.keys(l.out || {}), conflicts: Object.keys(l.conflicts || {}), rejected: Object.keys(l.rejected || {}) }; })()`) });
 
-    console.log('\n[15] A task\'s steps and "Waits for" pass through the previous release unchanged (specs/projects-steps.md)');
+    console.log('\n[15] A task\'s steps and "Starts after" pass through the previous release unchanged (specs/projects-steps.md)');
     const knowsSteps = builtText.includes('steps-mark-done');
-    console.log(`The previous release ${knowsSteps ? 'knows' : 'doesn’t know'} steps and "Waits for".`);
+    console.log(`The previous release ${knowsSteps ? 'knows' : 'doesn’t know'} steps and "Starts after".`);
     const PST = 'pjStepsBack', TB = 'tkBoardsBack', TF = 'tkFrameBack';
     const stepsF = [{ id: 'tsback000001', text: 'Measure the wall', done: true, futureBit: { keep: ['step', 1] } }, { id: 'tsback000002', text: 'Cut the boards', done: false }];
     const TK15 = (id, title, x = {}) => ({ id, title, listId: '', category: 'admin', minutes: 20, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: stamp, postponed: 0, blockers: [], letGoOn: null, projectId: PST, ...x });
@@ -408,7 +408,7 @@ async function signIn(d, url) {
     await now.setData(`s => { s.projects.items.push({ id: '${PST}', title: 'Shed with steps', summary: '', stage: 'act', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}' });
       s.tasks.items.push(${JSON.stringify(TK15(TB, 'Order the boards', { createdAt: `${today}T09:05` }))}, ${JSON.stringify(TK15(TF, 'Build the frame', { steps: stepsF, after: [TB] }))}); }`);
     const stepFields = r => ({ steps: r?.steps, after: r?.after });
-    check('this release sends the task with its steps (one with an extra key) and what it waits for, inside its task record', await eventually(async () => eq(stepFields((await record('task', TF))?.data), { steps: stepsF, after: [TB] })) && await synced(now), (await record('task', TF))?.data);
+    check('this release sends the task with its steps (one with an extra key) and what it starts after, inside its task record', await eventually(async () => eq(stepFields((await record('task', TF))?.data), { steps: stepsF, after: [TB] })) && await synced(now), (await record('task', TF))?.data);
     await before.returnToApp();
     check('the previous release syncs normally and receives the task', await synced(before) && await before.until(`JSON.parse(localStorage.getItem('${KEY}')).tasks.items.some(t => t.id === '${TF}')`, 20000));
     const heldF = async () => (await before.data()).tasks.items.find(t => t.id === TF);
@@ -417,18 +417,18 @@ async function signIn(d, url) {
     await before.open(BEFORE + `#today/tasks/${TF}`); await before.until(`!!document.querySelector('#tTitle')`, 15000);
     await before.type('#tTitle', 'Build the frame (renamed)');
     check('a rename on the previous release\'s task page reaches the account', await eventually(async () => (await record('task', TF))?.data?.title === 'Build the frame (renamed)') && await synced(before), (await record('task', TF))?.data);
-    check('…with the steps and what it waits for still exactly as sent', eq(stepFields((await record('task', TF))?.data), { steps: stepsF, after: [TB] }), stepFields((await record('task', TF))?.data));
-    // Deleting the task it waits for, there: a release that doesn't know "Waits for" leaves the id behind.
+    check('…with the steps and what it starts after still exactly as sent', eq(stepFields((await record('task', TF))?.data), { steps: stepsF, after: [TB] }), stepFields((await record('task', TF))?.data));
+    // Deleting the task it starts after, there: a release that doesn't know "Starts after" leaves the id behind.
     await before.open(BEFORE + `#today/tasks/${TB}`); await before.until(`!!document.querySelector('[data-action=task-delete]')`, 15000);
     await before.click('[data-action=task-delete]'); await before.until(`!!document.querySelector('[data-action=dialog-confirm]')`, 5000); await before.answer(true);
     check('deleting "Order the boards" on the previous release reaches the account', await eventually(async () => (await record('task', TB))?.deleted === true) && await synced(before), await record('task', TB));
-    if (knowsSteps) check('…which (knowing "Waits for") frees the frame: it no longer names it', await eventually(async () => !(await record('task', TF))?.data?.after));
-    else check('…which (not knowing "Waits for") leaves the frame\'s wait naming it', eq((await record('task', TF))?.data?.after, [TB]), (await record('task', TF))?.data?.after);
+    if (knowsSteps) check('…which (knowing "Starts after") frees the frame: it no longer names it', await eventually(async () => !(await record('task', TF))?.data?.after));
+    else check('…which (not knowing "Starts after") leaves the frame\'s `after` naming it', eq((await record('task', TF))?.data?.after, [TB]), (await record('task', TF))?.data?.after);
     await now.returnToApp();
     check('back on this release the new title arrives and the deleted task is gone; the steps are as they were', await now.until(`(() => { const d = JSON.parse(localStorage.getItem('${KEY}')); return d.tasks.items.find(t => t.id === '${TF}')?.title === 'Build the frame (renamed)' && !d.tasks.items.some(t => t.id === '${TB}'); })()`, 20000)
       && eq((await now.data()).tasks.items.find(t => t.id === TF).steps, stepsF), (await now.data()).tasks.items.find(t => t.id === TF));
     await now.open(NOW + '#today/tasks');
-    check('…and the frame waits for nothing now (a wait for a task that\'s gone doesn\'t count): no "Waits for" on its row, and it shows "1 of 2 steps"', await now.until(`(() => { const row = document.querySelector('.task-li[data-id="${TF}"]'); return !!row && !row.querySelector('[data-s=task-waits-for]') && row.querySelector('[data-s=task-steps]')?.textContent === '1 of 2 steps'; })()`, 10000), await now.text(`.task-li[data-id="${TF}"]`));
+    check('…and nothing holds the frame now (a task that\'s gone doesn\'t count): no "Starts after" on its row, and it shows "1 of 2 steps"', await now.until(`(() => { const row = document.querySelector('.task-li[data-id="${TF}"]'); return !!row && !row.querySelector('[data-s=task-starts-after]') && row.querySelector('[data-s=task-steps]')?.textContent === '1 of 2 steps'; })()`, 10000), await now.text(`.task-li[data-id="${TF}"]`));
     await now.open(NOW + `#projects/p/${PST}`);
     check('…and it is the project\'s next step', await now.until(`document.querySelector('[data-s=next-title]')?.textContent === 'Build the frame (renamed)'`, 10000), await now.text('#projectNext'));
     check('…and this release is fully in step afterwards (nothing waiting, no conflict)', await synced(now) && (await now.status()) === 'synced', { status: await now.status() });

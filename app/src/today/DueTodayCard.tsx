@@ -4,7 +4,7 @@ import { Card } from '../components/Card';
 import { CategoryChip } from '../components/CategoryChip';
 import { shortDate } from '../data/dates';
 import { update } from '../data/storage';
-import { addToTodaysPlan, dueForToday, isStuck, isWaiting, planRoom, setTaskDone, stepsText, waitsForText } from '../data/tasks';
+import { addToTodaysPlan, dueForToday, isStuck, isWaiting, planRoom, setTaskDone, stepsText, startsAfterText } from '../data/tasks';
 import { waitingText } from '../tasks/route';
 import { toast } from '../data/toast';
 import type { DateKey, MyDayData } from '../data/types';
@@ -38,7 +38,7 @@ export function DueTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
                 {isStuck(data, t, k) && <span className="text-primary font-semibold" data-s="stuck">Something in the way?</span>}
                 {stepsText(t) && <span data-s="task-steps">{stepsText(t)}</span>}
                 {isWaiting(data, t) && <span className="text-fg-2 break-words min-w-0" data-s="task-waiting">{waitingText(t)}</span>}
-                {waitsForText(data, t) && <span className="text-fg-2 break-words min-w-0" data-s="task-waits-for">{waitsForText(data, t)}</span>}
+                {startsAfterText(data, t) && <span className="text-fg-2 break-words min-w-0" data-s="task-starts-after">{startsAfterText(data, t)}</span>}
               </span>
             </a>
             {room.built && room.room > 0 && <Button inline data-action="due-plan" data-id={t.id} onClick={() => plan(t.id)}>Add to plan</Button>}

@@ -61,9 +61,9 @@ export function normalizeTasks(raw: unknown, report: { dropped: number }): Tasks
     const w = t.waiting, blankWait = w === null || (isObj(w) && typeof w.on === 'string' && !w.on.trim());
     if (isObj(w) && typeof w.on === 'string' && w.on.trim() && isDateKey(w.since)) item.waiting = { ...w, on: w.on.slice(0, TASK_LIMITS.waitingOn), since: w.since, until: isDateKey(w.until) ? w.until : null };
     else { if (w !== undefined && !blankWait) report.dropped++; delete item.waiting; }
-    // Steps and "Waits for" (specs/projects-steps.md): kept when readable. A step without words is counted and left
-    // out, a repeated id gets a new one, anything a newer MyDay keeps on a step stays. "Waits for" keeps task ids (never
-    // its own) whatever they point at now: what they mean is read through waitsFor, so a task that arrives later from
+    // Steps and "Starts after" (specs/projects-steps.md): kept when readable. A step without words is counted and left
+    // out, a repeated id gets a new one, anything a newer MyDay keeps on a step stays. `after` keeps task ids (never
+    // its own) whatever they point at now: what they mean is read through startsAfter, so a task that arrives later from
     // another device still counts. An empty list is simply absent; a shape this version can't read is counted.
     if (t.steps !== undefined) {
       const steps: TaskStep[] = [], ids = new Set<string>();
@@ -183,7 +183,7 @@ export function removeTask(d: TasksData, id: string): boolean {
   const i = d.items.findIndex(x => x.id === id);
   if (i < 0) return false;
   d.items.splice(i, 1);
-  forgetWaitsFor(d, id); // the tasks that waited for it don't any more
+  forgetStartsAfter(d, id); // the tasks that started after it don't any more
   return true;
 }
 export function moveToTomorrow(d: TasksData, id: string): boolean { return editTask(d, id, { due: shift(todayKey(), 1) }); }
@@ -227,7 +227,7 @@ export function addToTodaysPlan(data: MyDayData, id: string, k: DateKey = todayK
 // ---------- A task that keeps moving ----------
 // Stuck: moved later 3 times or more, or a week past its date — unless you said what's in the way in the last week.
 export function isStuck(data: MyDayData, t: TaskItem, k: DateKey = todayKey()): boolean {
-  if (isDone(data, t) || t.letGoOn || inQueue(data, t) || t.waiting || waitsFor(data, t).length) return false; // waiting isn't being stuck
+  if (isDone(data, t) || t.letGoOn || inQueue(data, t) || t.waiting || startsAfter(data, t).length) return false; // waiting, or starting after another task, isn't being stuck
   if (t.blockers.some(b => b.on > shift(k, -7))) return false;
   return t.postponed >= 3 || (!!t.due && t.due <= shift(k, -7));
 }
@@ -391,19 +391,20 @@ export function removeStep(d: TasksData, id: string, stepId: string): boolean {
   return true;
 }
 
-// ---------- "Waits for": the tasks of its project it can't start before ----------
-// Until those are done (or let go) it isn't picked as its project's next step and says "Waits for: …"; you can still
-// do it any time. Only tasks of the same project, never itself, at most 10, and never a circle.
+// ---------- "Starts after": the tasks of its project it can't start before (`after`) ----------
+// Until those are done (or let go) it isn't picked as its project's next step and says "Starts after: …"; you can
+// still do it any time. Only tasks of the same project, never itself, at most 10, and never a circle. (Not "waiting":
+// that word stays for waiting on someone or something, 1.50.0; the owner's choice of 25 Oct 2026.)
 //
-// The tasks it still waits for, in the order chosen: in its project, still to do, and not waiting for it in turn
-// (directly or further along — two devices could each add one half of a circle; then neither waits). One done, let
-// go, deleted or moved to another project no longer counts.
-export function waitsFor(data: MyDayData, t: TaskItem): TaskItem[] {
+// The tasks it still starts after, in the order chosen: in its project, still to do, and not starting after it in
+// turn (directly or further along — two devices could each add one half of a circle; then none of it counts). One
+// done, let go, deleted or moved to another project no longer counts.
+export function startsAfter(data: MyDayData, t: TaskItem): TaskItem[] {
   if (!t.projectId || !t.after?.length) return [];
   const byId = new Map(data.tasks.items.map(x => [x.id, x]));
   return t.after.map(id => byId.get(id)).filter((x): x is TaskItem => !!x && x.id !== t.id && x.projectId === t.projectId && !isDone(data, x) && !x.letGoOn && !reaches(byId, x, t.id));
 }
-// Whether `from` waits for the task `target`, directly or further along (through tasks of its project).
+// Whether `from` starts after the task `target`, directly or further along (through tasks of its project).
 function reaches(byId: Map<string, TaskItem>, from: TaskItem, target: string): boolean {
   const seen = new Set<string>([from.id]), stack = [from];
   while (stack.length) {
@@ -415,21 +416,21 @@ function reaches(byId: Map<string, TaskItem>, from: TaskItem, target: string): b
   }
   return false;
 }
-// "Waits for: Order the boards", or "Waits for: Order the boards and 2 more"; nothing when it waits for none.
-export function waitsForText(data: MyDayData, t: TaskItem): string {
-  const w = waitsFor(data, t);
-  return w.length ? `Waits for: ${w[0].title}${w.length > 1 ? ` and ${w.length - 1} more` : ''}` : '';
+// "Starts after: Order the boards", or "Starts after: Order the boards and 2 more"; nothing when there are none.
+export function startsAfterText(data: MyDayData, t: TaskItem): string {
+  const w = startsAfter(data, t);
+  return w.length ? `Starts after: ${w[0].title}${w.length > 1 ? ` and ${w.length - 1} more` : ''}` : '';
 }
-// What it may wait for (the choices on its page): its project's other tasks still to do that don't wait for it,
+// What it may start after (the choices on its page): its project's other tasks still to do that don't start after it,
 // directly or further along. In the order of Tasks.
-export function waitChoices(data: MyDayData, t: TaskItem): TaskItem[] {
+export function afterChoices(data: MyDayData, t: TaskItem): TaskItem[] {
   if (!t.projectId) return [];
   const byId = new Map(data.tasks.items.map(x => [x.id, x]));
   return data.tasks.items.filter(x => x.id !== t.id && x.projectId === t.projectId && !isDone(data, x) && !x.letGoOn && !reaches(byId, x, t.id)).sort(taskOrder);
 }
-// Waits for `otherId` (on) or not (off). Adding takes only one of its choices, at most 10 ('full' past that); ids that
+// Starts after `otherId` (on) or not (off). Adding takes only one of its choices, at most 10 ('full' past that); ids that
 // point at nothing of its project any more are tidied away then. Returns false when nothing changed.
-export function setWaitsFor(data: MyDayData, id: string, otherId: string, on: boolean): boolean | 'full' {
+export function setStartsAfter(data: MyDayData, id: string, otherId: string, on: boolean): boolean | 'full' {
   const t = data.tasks.items.find(x => x.id === id);
   if (!t) return false;
   if (!on) {
@@ -438,13 +439,13 @@ export function setWaitsFor(data: MyDayData, id: string, otherId: string, on: bo
     if (!t.after.length) delete t.after;
     return true;
   }
-  if (t.after?.includes(otherId) || !waitChoices(data, t).some(x => x.id === otherId)) return false;
+  if (t.after?.includes(otherId) || !afterChoices(data, t).some(x => x.id === otherId)) return false;
   const mine = (t.after ?? []).filter(x => data.tasks.items.some(y => y.id === x && y.projectId === t.projectId));
   if (mine.length >= TASK_LIMITS.after) return 'full';
   t.after = [...mine, otherId];
   return true;
 }
-// A task gone (deleted) or moved out of the project: no task waits for it any more.
-export function forgetWaitsFor(d: TasksData, id: string) {
+// A task gone (deleted) or moved out of the project: no task starts after it any more.
+export function forgetStartsAfter(d: TasksData, id: string) {
   for (const x of d.items) if (x.after?.includes(id)) { x.after = x.after.filter(a => a !== id); if (!x.after.length) delete x.after; }
 }

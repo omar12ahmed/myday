@@ -17,7 +17,7 @@ import { hasResearch, setResearch } from '../data/research';
 import { worthALook } from '../data/projectDashboard';
 import { comingUp, deleteProject, editProject, heldBack, setProjectPrivate, linkNote, nextStep, PROJECT_LIMITS, projectById, projectNotes, projectTasks, recently, setLeftOff, setNextStep, STATUS_LABEL, stillOpen, unlinkAppointment, whyNext } from '../data/projects';
 import { update } from '../data/storage';
-import { addTask, addToTodaysPlan, onTodaysPlan, planRoom, setTaskDone, stepsText, waitsForText } from '../data/tasks';
+import { addTask, addToTodaysPlan, onTodaysPlan, planRoom, setTaskDone, stepsText, startsAfterText } from '../data/tasks';
 import { toast } from '../data/toast';
 import type { MyDayData, Project, TaskItem } from '../data/types';
 import { bothMention, mightBelong } from '../data/understand';
@@ -264,7 +264,7 @@ function OverviewTop({ data, p }: { data: MyDayData; p: Project }) {
 function NextStepCard({ data, p }: { data: MyDayData; p: Project }) {
   const [text, setText] = useState('');
   const step = nextStep(data, p), open = projectTasks(data, p).open, k = todayKey(), chosen = !!step && step.id === p.nextTaskId;
-  const waits = step ? waitsForText(data, step) : '';
+  const waits = step ? startsAfterText(data, step) : '';
   function addStep() {
     const title = text.trim();
     if (!title) return;
@@ -290,8 +290,8 @@ function NextStepCard({ data, p }: { data: MyDayData; p: Project }) {
           </p>
           {/* A waiting step you chose stays chosen (1.50.0); it can't be done today, so it isn't offered for Today. */}
           {step.waiting && <p className="m-0 mt-2 text-[15px] text-fg-2 break-words" data-s="next-waiting">{waitingText(step)}{open.length > 1 ? ' — while you wait, you could choose another next step below.' : '.'}</p>}
-          {/* A step you chose that waits for another task stays chosen too; you can still do it any time. */}
-          {waits && <p className="m-0 mt-2 text-[15px] text-fg-2 break-words" data-s="next-waits-for">{waits}. You can still do it any time.</p>}
+          {/* A step you chose that starts after another task stays chosen too; you can still do it any time. */}
+          {waits && <p className="m-0 mt-2 text-[15px] text-fg-2 break-words" data-s="next-starts-after">{waits}. You can still do it any time.</p>}
           <div className="flex flex-wrap gap-2.5 mt-4">
             {step.waiting ? (step.waiting.until && step.waiting.until <= k && <ChaseIt data={data} t={step} primary />) : onTodaysPlan(data, step, k) ? <span className="inline-flex items-center min-h-11 text-primary font-semibold">On today's plan</span>
               : <Button inline variant="primary" data-action="project-step-today" onClick={() => toToday(data, step)}>Add to today</Button>}
@@ -304,7 +304,7 @@ function NextStepCard({ data, p }: { data: MyDayData; p: Project }) {
             <Field label="Or choose another next step" htmlFor="projectNextPick" className="mt-2">
               <Select id="projectNextPick" value={chosen ? step.id : ''} onChange={e => pick(e.target.value || null)}>
                 <option value="">Let MyDay pick</option>
-                {open.map(t => <option key={t.id} value={t.id}>{t.title}{heldBack(data, t) ? ' (waiting)' : ''}</option>)}
+                {open.map(t => <option key={t.id} value={t.id}>{t.title}{t.waiting ? ' (waiting)' : heldBack(data, t) ? ' (starts after another task)' : ''}</option>)}
               </Select>
             </Field>
           )}

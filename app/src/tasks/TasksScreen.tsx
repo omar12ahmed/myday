@@ -9,7 +9,7 @@ import { prettyDate } from '../data/dates';
 import { CAT_LABEL } from '../data/plan';
 import { projectById } from '../data/projects';
 import { update } from '../data/storage';
-import { addTask, GROUP_LABEL, isDone, isStuck, listName, onTodaysPlan, setTaskDone, stepsText, tasksView, waitsForText, type Group } from '../data/tasks';
+import { addTask, GROUP_LABEL, isDone, isStuck, listName, onTodaysPlan, setTaskDone, stepsText, tasksView, startsAfterText, type Group } from '../data/tasks';
 import { toast } from '../data/toast';
 import type { MyDayData, TaskItem } from '../data/types';
 import { loadLibs, parseCapture, type CaptureLibs } from '../capture/parse';
@@ -27,7 +27,7 @@ export function TasksScreen({ data, hash }: { data: MyDayData; hash: string }) {
 // One task in a list. Its project is named (unless the list is that project's own).
 export function TaskRow({ data, t, hideProject = false }: { data: MyDayData; t: TaskItem; hideProject?: boolean }) {
   const done = isDone(data, t) || !!t.letGoOn, list = listName(data.tasks, t.listId), project = hideProject ? null : projectById(data, t.projectId);
-  const steps = stepsText(t), waits = done ? '' : waitsForText(data, t);
+  const steps = stepsText(t), waits = done ? '' : startsAfterText(data, t);
   return (
     <li className="task-li flex items-start gap-1 border-t border-outline first:border-t-0 py-2" data-id={t.id}>
       <label className="tick flex-none grid place-items-center size-11 -ml-2.5 mt-0.5 cursor-pointer">
@@ -47,7 +47,7 @@ export function TaskRow({ data, t, hideProject = false }: { data: MyDayData; t: 
           {!done && isStuck(data, t) && <span className="text-primary font-semibold" data-s="stuck">Something in the way?</span>}
           {steps && <span data-s="task-steps">{steps}</span>}
           {!done && t.waiting && <span className="text-fg-2 break-words min-w-0" data-s="task-waiting">{waitingText(t)}</span>}
-          {waits && <span className="text-fg-2 break-words min-w-0" data-s="task-waits-for">{waits}</span>}
+          {waits && <span className="text-fg-2 break-words min-w-0" data-s="task-starts-after">{waits}</span>}
         </span>
       </a>
     </li>

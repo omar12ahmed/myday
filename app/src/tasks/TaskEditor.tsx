@@ -17,10 +17,10 @@ import type { Category, MyDayData } from '../data/types';
 import { StepsCard } from './StepsCard';
 import { StuckCard } from './StuckCard';
 import { WaitingCard } from './WaitingCard';
-import { WaitsForCard } from './WaitsForCard';
+import { StartsAfterCard } from './StartsAfterCard';
 
 // One task: its words, list, date and time, length, which kind of task it is (for Today's plan), and notes; then its
-// steps, and (in a project) the tasks it waits for. Each change is saved when you finish it.
+// steps, and (in a project) the tasks it starts after. Each change is saved when you finish it.
 export function TaskEditor({ data, id }: { data: MyDayData; id: string }) {
   const confirm = useConfirm();
   const [ask, setAsk] = useState(false), [waitAsk, setWaitAsk] = useState(false);
@@ -88,7 +88,7 @@ export function TaskEditor({ data, id }: { data: MyDayData; id: string }) {
       {!done && !t.waiting && waitAsk && <WaitingCard key="asking" data={data} t={t} asking onClose={() => setWaitAsk(false)} />}
       {ask && !done && !stuck && !t.waiting && <StuckCard data={data} t={t} stuck={false} />}
       <StepsCard data={data} t={t} />
-      <WaitsForCard data={data} t={t} />
+      <StartsAfterCard data={data} t={t} />
     </>
   );
 }

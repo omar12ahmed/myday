@@ -17,7 +17,7 @@ import { filesLeaving, normalizeFileIds } from './files';
 import { normalizeResources } from './projectResources';
 import { deleteProjectResearch } from './research';
 import { normalizeStudyLinks } from './studyLinks';
-import { forgetWaitsFor, isDone, onTodaysPlan, taskOrder, waitsFor } from './tasks';
+import { forgetStartsAfter, isDone, onTodaysPlan, taskOrder, startsAfter } from './tasks';
 import type { Commitment, DateKey, MyDayData, Note, Project, ProjectsData, ProjectStage, ProjectStatus, TaskItem } from './types';
 import { isObj, listOf, uid } from './util';
 
@@ -165,7 +165,7 @@ export function deleteProject(d: MyDayData, id: string): boolean {
   deleteProjectResearch(d, id);              // its questions, sources and findings go with it
   d.projects.items.splice(i, 1);
   for (const n of d.notes.items) if (n.projectId === id) delete n.projectId;
-  for (const t of d.tasks.items) if (t.projectId === id) { delete t.projectId; delete t.after; } // ("Waits for" is within a project)
+  for (const t of d.tasks.items) if (t.projectId === id) { delete t.projectId; delete t.after; } // ("Starts after" is within a project)
   return true;
 }
 
@@ -175,8 +175,8 @@ export function linkTask(d: MyDayData, taskId: string, projectId: string | null)
   if (!t || (t.projectId ?? null) === projectId || (projectId && !find(d, projectId))) return false;
   const was = t.projectId;
   if (projectId) t.projectId = projectId; else delete t.projectId;
-  // "Waits for" is between tasks of one project: moving it leaves its waits, and the others' waits for it, behind.
-  delete t.after; forgetWaitsFor(d.tasks, taskId);
+  // "Starts after" is between tasks of one project: moving it leaves what it starts after, and the others' links to it, behind.
+  delete t.after; forgetStartsAfter(d.tasks, taskId);
   for (const id of [was, projectId]) { const p = id ? find(d, id) : null; if (p) { if (p.nextTaskId === taskId && id === was) p.nextTaskId = null; touch(p); } }
   return true;
 }
@@ -232,39 +232,41 @@ export function projectNotes(data: MyDayData, p: Project): Note[] {
 export function projectAppointments(data: MyDayData, p: Project): Commitment[] {
   return data.commitments.filter(c => p.commitmentIds.includes(c.id)).sort((a, b) => a.start.localeCompare(b.start));
 }
-// Held back from MyDay's pick: waiting on someone or something (1.50.0), or for another of its project's tasks
-// ("Waits for", specs/projects-steps.md). You can still do it any time.
-export const heldBack = (data: MyDayData, t: TaskItem) => !!t.waiting || waitsFor(data, t).length > 0;
+// Held back from MyDay's pick: waiting on someone or something (1.50.0), or starting after another of its project's
+// tasks still to do ("Starts after", specs/projects-steps.md). You can still do it any time.
+export const heldBack = (data: MyDayData, t: TaskItem) => !!t.waiting || startsAfter(data, t).length > 0;
 // The one next step: the task you chose (while it's still to do), otherwise the first one to do that isn't held back.
 // A waiting task you chose stays chosen.
 export function nextStep(data: MyDayData, p: Project): TaskItem | null {
   const { open } = projectTasks(data, p);
   return open.find(t => t.id === p.nextTaskId) ?? open.find(t => !heldBack(data, t)) ?? null;
 }
-const waitsForWords = (w: TaskItem[]) => `“${w[0].title}”${w.length > 1 ? ` and ${w.length - 1} more` : ''}`;
+const afterWords = (w: TaskItem[]) => `“${w[0].title}”${w.length > 1 ? ` and ${w.length - 1} more` : ''}`;
 // Why the next step is the one shown: the sentences under "Why this?" on the Next step card (specs/projects-next-why.md).
 // It follows nextStep exactly — the order of Tasks: by date, then time, then when added; undated ones last — and
 // writes nothing. A step you chose that was done or let go in the last week is mentioned first.
 export function whyNext(data: MyDayData, p: Project, k: DateKey = todayKey()): string[] {
   const { open } = projectTasks(data, p), step = nextStep(data, p);
   if (!step) return [];
-  const auto = open.find(t => !heldBack(data, t)), mine = waitsFor(data, step);
-  if (step.id === p.nextTaskId) return ['You chose this step.', ...(mine.length ? [`It waits for ${waitsForWords(mine)}; you can still do it any time.`] : []),
+  const auto = open.find(t => !heldBack(data, t)), mine = startsAfter(data, step);
+  if (step.id === p.nextTaskId) return ['You chose this step.', ...(mine.length ? [`It starts after ${afterWords(mine)}; you can still do it any time.`] : []),
     !auto ? 'Left to MyDay, there’d be no next step: everything here is waiting.'
     : auto.id === step.id ? 'It’s also what MyDay would pick.' : `Left to MyDay, it would be “${auto.title}”.`];
   const out: string[] = [];
   const was = p.nextTaskId ? data.tasks.items.find(t => t.id === p.nextTaskId && t.projectId === p.id) : undefined;
   const when = was && (was.letGoOn ?? was.doneOn ?? (isDone(data, was) ? was.plannedOn : null));
   if (was && when && when >= shift(k, -7)) out.push(was.letGoOn ? `You let go of the step you chose, “${was.title}”.` : `The step you chose, “${was.title}”, is done.`);
-  const waiting = open.filter(t => heldBack(data, t)).length, before = open.slice(0, open.indexOf(step)).filter(t => heldBack(data, t));
-  if (open.length - waiting === 1) return [...out, `MyDay’s pick: it’s the only task still to do${waiting ? ' that isn’t waiting' : ''}.`];
-  out.push(step.due ? `MyDay’s pick: it has the earliest date (${shortDate(step.due)})${before.length ? ' of the tasks that aren’t waiting' : ''}.`
-    : `MyDay’s pick: none of the tasks ${before.length ? 'that aren’t waiting' : 'still to do'} has a date, so it’s the one you added first.`);
+  // Held back only by waiting on someone: "aren’t waiting" (as since 1.54.0); once one starts after another task, "can start now".
+  const held = open.filter(t => heldBack(data, t)), before = open.slice(0, open.indexOf(step)).filter(t => heldBack(data, t));
+  const free = held.every(t => t.waiting) ? ['that isn’t waiting', 'that aren’t waiting'] : ['that can start now', 'that can start now'];
+  if (open.length - held.length === 1) return [...out, `MyDay’s pick: it’s the only task still to do${held.length ? ` ${free[0]}` : ''}.`];
+  out.push(step.due ? `MyDay’s pick: it has the earliest date (${shortDate(step.due)})${before.length ? ` of the tasks ${free[1]}` : ''}.`
+    : `MyDay’s pick: none of the tasks ${before.length ? free[1] : 'still to do'} has a date, so it’s the one you added first.`);
   const on = before.filter(t => t.waiting).length;
   if (before.length === 1) out.push(before[0].waiting ? `“${before[0].title}” comes first, but it’s waiting on ${before[0].waiting.on}.`
-    : `“${before[0].title}” comes first, but it waits for ${waitsForWords(waitsFor(data, before[0]))}.`);
+    : `“${before[0].title}” comes first, but it starts after ${afterWords(startsAfter(data, before[0]))}.`);
   else if (before.length) out.push(on === before.length ? `${before.length} tasks that come first are waiting on someone or something.`
-    : on ? `${before.length} tasks that come first are waiting: on someone or something, or for another task.` : `${before.length} tasks that come first wait for other tasks.`);
+    : on ? `${before.length} tasks that come first can’t start yet: they’re waiting on someone or something, or start after another task.` : `${before.length} tasks that come first start after other tasks.`);
   return out;
 }
 // What's coming up (today onwards): dated tasks still to do and appointments, in time order.
