@@ -1,0 +1,589 @@
+{
+ "about": "Course words: an authored word list per Arabic lesson (MyDay's own, not part of the supplied package), each word with its meaning, root, an example and a short note, beside the package's starter words (listed by id under \"seed\", not repeated). Fully vowelled. Checked by the owner before it ships; until then it is a draft.",
+ "status": "draft: module 4, cross-checked twice, awaiting the owner's check",
+ "version": "0.2",
+ "lessons": {
+  "lesson.arabic-greetings-address": {
+   "seed": [
+    "lexeme.arabic-seed-001",
+    "lexeme.arabic-seed-002",
+    "lexeme.arabic-seed-003",
+    "lexeme.arabic-seed-026"
+   ],
+   "words": [
+    {
+     "id": "lexeme.arabic-greetings-address-1",
+     "form_ar": "مَرْحَبًا",
+     "meaning_en": "hello",
+     "part_of_speech": "chunk",
+     "root_ar": "ر-ح-ب",
+     "root_reading": "r-ḥ-b",
+     "example_ar": "مَرْحَبًا، أَنَا سَارَةُ.",
+     "example_meaning_en": "Hello, I am Sarah.",
+     "note": "A greeting for anyone; a common reply is مَرْحَبًا بِكَ (to a man) or مَرْحَبًا بِكِ (to a woman)."
+    },
+    {
+     "id": "lexeme.arabic-greetings-address-2",
+     "form_ar": "السَّلَامُ عَلَيْكُمْ",
+     "meaning_en": "peace be upon you (a greeting)",
+     "part_of_speech": "chunk",
+     "root_ar": "س-ل-م",
+     "root_reading": "s-l-m",
+     "example_ar": "السَّلَامُ عَلَيْكُمْ. — وَعَلَيْكُمُ السَّلَامُ.",
+     "example_meaning_en": "Peace be upon you. — And upon you peace.",
+     "note": "Heard everywhere in the Arab world. The reply turns it round: وَعَلَيْكُمُ السَّلَامُ. عَلَيْكُمْ is plural but is used for one person too."
+    },
+    {
+     "id": "lexeme.arabic-greetings-address-3",
+     "form_ar": "صَبَاحُ الْخَيْرِ",
+     "meaning_en": "good morning",
+     "part_of_speech": "chunk",
+     "root_ar": "ص-ب-ح",
+     "root_reading": "ṣ-b-ḥ",
+     "example_ar": "صَبَاحُ الْخَيْرِ. — صَبَاحُ النُّورِ.",
+     "example_meaning_en": "Good morning. — Good morning (lit. morning of light).",
+     "note": "The usual reply is صَبَاحُ النُّورِ. صَبَاح is “morning”; الْخَيْر is from the root خ-ي-ر, “good”."
+    },
+    {
+     "id": "lexeme.arabic-greetings-address-4",
+     "form_ar": "اِسْم",
+     "meaning_en": "name",
+     "part_of_speech": "noun",
+     "root_ar": "س-م-و",
+     "root_reading": "s-m-w",
+     "example_ar": "مَا اسْمُكَ؟ — اِسْمِي سَامِرٌ.",
+     "example_meaning_en": "What is your name? — My name is Sāmir.",
+     "note": "After another word its first vowel isn't pronounced: مَا اسْمُكَ. اِسْمِي is “my name”. Plural أَسْمَاء. Classical dictionaries list it under س-م-و; Hans Wehr has it under alif."
+    },
+    {
+     "id": "lexeme.arabic-greetings-address-5",
+     "form_ar": "كَيْفَ حَالُكَ؟",
+     "meaning_en": "how are you? (to a man)",
+     "part_of_speech": "chunk",
+     "root_ar": "ح-و-ل",
+     "root_reading": "ḥ-w-l",
+     "example_ar": "كَيْفَ حَالُكَ يَا سَامِرُ؟",
+     "example_meaning_en": "How are you, Sāmir?",
+     "note": "To a woman: كَيْفَ حَالُكِ؟ حَال is “state, condition”."
+    },
+    {
+     "id": "lexeme.arabic-greetings-address-6",
+     "form_ar": "بِخَيْرٍ",
+     "meaning_en": "well, fine",
+     "part_of_speech": "chunk",
+     "root_ar": "خ-ي-ر",
+     "root_reading": "kh-y-r",
+     "example_ar": "أَنَا بِخَيْرٍ، شُكْرًا.",
+     "example_meaning_en": "I am fine, thank you.",
+     "note": "The answer to كَيْفَ حَالُكَ؟ The same for a man or a woman."
+    },
+    {
+     "id": "lexeme.arabic-greetings-address-7",
+     "form_ar": "تَشَرَّفْنَا",
+     "meaning_en": "pleased to meet you",
+     "part_of_speech": "chunk",
+     "root_ar": "ش-ر-ف",
+     "root_reading": "sh-r-f",
+     "example_ar": "اِسْمِي لَيْلَى. — تَشَرَّفْنَا!",
+     "example_meaning_en": "My name is Laylā. — Pleased to meet you!",
+     "note": "Literally “we are honoured”. Said after names are exchanged."
+    },
+    {
+     "id": "lexeme.arabic-greetings-address-8",
+     "form_ar": "مَعَ السَّلَامَةِ",
+     "meaning_en": "goodbye",
+     "part_of_speech": "chunk",
+     "root_ar": "س-ل-م",
+     "root_reading": "s-l-m",
+     "example_ar": "شُكْرًا، مَعَ السَّلَامَةِ.",
+     "example_meaning_en": "Thank you, goodbye.",
+     "note": "Literally “with safety”: the same root as السَّلَام."
+    },
+    {
+     "id": "lexeme.arabic-greetings-address-9",
+     "form_ar": "مَسَاءُ الْخَيْرِ",
+     "meaning_en": "good evening",
+     "part_of_speech": "chunk",
+     "root_ar": "م-س-و",
+     "root_reading": "m-s-w",
+     "example_ar": "مَسَاءُ الْخَيْرِ. — مَسَاءُ النُّورِ.",
+     "example_meaning_en": "Good evening. — Good evening (lit. evening of light).",
+     "note": "Like صَبَاحُ الْخَيْرِ, with the starter word مَسَاء, “evening”."
+    }
+   ]
+  },
+  "lesson.arabic-nominal-sentences": {
+   "seed": [
+    "lexeme.arabic-seed-001",
+    "lexeme.arabic-seed-004",
+    "lexeme.arabic-seed-005",
+    "lexeme.arabic-seed-007",
+    "lexeme.arabic-seed-009",
+    "lexeme.arabic-seed-013",
+    "lexeme.arabic-seed-014",
+    "lexeme.arabic-seed-015",
+    "lexeme.arabic-seed-017"
+   ],
+   "words": [
+    {
+     "id": "lexeme.arabic-nominal-sentences-1",
+     "form_ar": "مُعَلِّم",
+     "meaning_en": "teacher (male)",
+     "part_of_speech": "noun",
+     "root_ar": "ع-ل-م",
+     "root_reading": "ʿ-l-m",
+     "example_ar": "سَامِرٌ مُعَلِّمٌ وَلَيْلَى طَالِبَةٌ.",
+     "example_meaning_en": "Sāmir is a teacher and Laylā is a student.",
+     "note": "A woman teacher is مُعَلِّمَة. The root ع-ل-م is about knowing."
+    },
+    {
+     "id": "lexeme.arabic-nominal-sentences-2",
+     "form_ar": "طَبِيب",
+     "meaning_en": "doctor (male)",
+     "part_of_speech": "noun",
+     "root_ar": "ط-ب-ب",
+     "root_reading": "ṭ-b-b",
+     "example_ar": "سَامِرٌ طَبِيبٌ.",
+     "example_meaning_en": "Sāmir is a doctor.",
+     "note": "A woman doctor is طَبِيبَة."
+    },
+    {
+     "id": "lexeme.arabic-nominal-sentences-3",
+     "form_ar": "مُهَنْدِس",
+     "meaning_en": "engineer (male)",
+     "part_of_speech": "noun",
+     "root_ar": "ه-ن-د-س",
+     "root_reading": "h-n-d-s",
+     "example_ar": "أَنَا مُهَنْدِسٌ.",
+     "example_meaning_en": "I am an engineer.",
+     "note": "A woman engineer is مُهَنْدِسَة. A four-letter root."
+    },
+    {
+     "id": "lexeme.arabic-nominal-sentences-4",
+     "form_ar": "صَدِيق",
+     "meaning_en": "friend (male)",
+     "part_of_speech": "noun",
+     "root_ar": "ص-د-ق",
+     "root_reading": "ṣ-d-q",
+     "example_ar": "لَيْلَى صَدِيقَتِي.",
+     "example_meaning_en": "Laylā is my friend.",
+     "note": "A woman friend is صَدِيقَة; صَدِيقَتِي is “my (female) friend”, with ـِي as in اِسْمِي. Plural أَصْدِقَاء."
+    },
+    {
+     "id": "lexeme.arabic-nominal-sentences-5",
+     "form_ar": "رَجُل",
+     "meaning_en": "man",
+     "part_of_speech": "noun",
+     "root_ar": "ر-ج-ل",
+     "root_reading": "r-j-l",
+     "example_ar": "الرَّجُلُ مُعَلِّمٌ.",
+     "example_meaning_en": "The man is a teacher.",
+     "note": "Plural رِجَال."
+    },
+    {
+     "id": "lexeme.arabic-nominal-sentences-6",
+     "form_ar": "اِمْرَأَة",
+     "meaning_en": "woman",
+     "part_of_speech": "noun",
+     "root_ar": "م-ر-أ",
+     "root_reading": "m-r-ʾ",
+     "example_ar": "الْمَرْأَةُ طَبِيبَةٌ.",
+     "example_meaning_en": "The woman is a doctor.",
+     "note": "With the article the first alif goes: الْمَرْأَة. Plural نِسَاء, from another root."
+    },
+    {
+     "id": "lexeme.arabic-nominal-sentences-7",
+     "form_ar": "جَمِيل",
+     "meaning_en": "beautiful, nice",
+     "part_of_speech": "adjective",
+     "root_ar": "ج-م-ل",
+     "root_reading": "j-m-l",
+     "example_ar": "الْبَيْتُ جَمِيلٌ.",
+     "example_meaning_en": "The house is beautiful.",
+     "note": "For a feminine noun: جَمِيلَة."
+    },
+    {
+     "id": "lexeme.arabic-nominal-sentences-8",
+     "form_ar": "مَشْغُول",
+     "meaning_en": "busy",
+     "part_of_speech": "adjective",
+     "root_ar": "ش-غ-ل",
+     "root_reading": "sh-gh-l",
+     "example_ar": "أَنَا مَشْغُولٌ الْيَوْمَ.",
+     "example_meaning_en": "I am busy today.",
+     "note": "A woman says أَنَا مَشْغُولَةٌ."
+    },
+    {
+     "id": "lexeme.arabic-nominal-sentences-9",
+     "form_ar": "وَ",
+     "meaning_en": "and",
+     "part_of_speech": "particle",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "أَنَا طَالِبٌ وَهُوَ مُعَلِّمٌ.",
+     "example_meaning_en": "I am a student and he is a teacher.",
+     "note": "Written joined to the word after it: وَهُوَ, وَلَيْلَى."
+    }
+   ]
+  },
+  "lesson.arabic-simple-questions": {
+   "seed": [
+    "lexeme.arabic-seed-022",
+    "lexeme.arabic-seed-023",
+    "lexeme.arabic-seed-024",
+    "lexeme.arabic-seed-025"
+   ],
+   "words": [
+    {
+     "id": "lexeme.arabic-simple-questions-1",
+     "form_ar": "مَا",
+     "meaning_en": "what (before a noun or pronoun)",
+     "part_of_speech": "question",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "مَا هَذَا؟ — هَذَا كِتَابٌ.",
+     "example_meaning_en": "What is this? — This is a book.",
+     "note": "Before a verb, use مَاذَا instead."
+    },
+    {
+     "id": "lexeme.arabic-simple-questions-2",
+     "form_ar": "مَاذَا",
+     "meaning_en": "what (before a verb)",
+     "part_of_speech": "question",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "مَاذَا تَدْرُسُ؟ — أَدْرُسُ الْعَرَبِيَّةَ.",
+     "example_meaning_en": "What do you study? — I study Arabic.",
+     "note": "To a woman: مَاذَا تَدْرُسِينَ؟"
+    },
+    {
+     "id": "lexeme.arabic-simple-questions-3",
+     "form_ar": "كَيْفَ",
+     "meaning_en": "how",
+     "part_of_speech": "question",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "كَيْفَ الْبَيْتُ الْجَدِيدُ؟",
+     "example_meaning_en": "How is the new house?",
+     "note": "Also in كَيْفَ حَالُكَ؟, “how are you?”."
+    },
+    {
+     "id": "lexeme.arabic-simple-questions-4",
+     "form_ar": "نَعَمْ",
+     "meaning_en": "yes",
+     "part_of_speech": "particle",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "هَلْ أَنْتَ طَالِبٌ؟ — نَعَمْ، أَنَا طَالِبٌ.",
+     "example_meaning_en": "Are you a student? — Yes, I am a student.",
+     "note": "The usual answer to a هَلْ question."
+    },
+    {
+     "id": "lexeme.arabic-simple-questions-5",
+     "form_ar": "لَا",
+     "meaning_en": "no",
+     "part_of_speech": "particle",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "هَلْ هِيَ فِي الْبَيْتِ؟ — لَا، هِيَ فِي الْمَدْرَسَةِ.",
+     "example_meaning_en": "Is she at home? — No, she is at school.",
+     "note": "Also “not” before a present verb, as you'll see later."
+    },
+    {
+     "id": "lexeme.arabic-simple-questions-6",
+     "form_ar": "حَقِيبَة",
+     "meaning_en": "bag",
+     "part_of_speech": "noun",
+     "root_ar": "ح-ق-ب",
+     "root_reading": "ḥ-q-b",
+     "example_ar": "أَيْنَ الْحَقِيبَةُ؟ — فِي الْبَيْتِ.",
+     "example_meaning_en": "Where is the bag? — At home.",
+     "note": "Plural حَقَائِب."
+    },
+    {
+     "id": "lexeme.arabic-simple-questions-7",
+     "form_ar": "غُرْفَة",
+     "meaning_en": "room",
+     "part_of_speech": "noun",
+     "root_ar": "غ-ر-ف",
+     "root_reading": "gh-r-f",
+     "example_ar": "هَذِهِ غُرْفَةٌ كَبِيرَةٌ.",
+     "example_meaning_en": "This is a big room.",
+     "note": "Plural غُرَف."
+    },
+    {
+     "id": "lexeme.arabic-simple-questions-8",
+     "form_ar": "مَكْتَب",
+     "meaning_en": "desk; office",
+     "part_of_speech": "noun",
+     "root_ar": "ك-ت-ب",
+     "root_reading": "k-t-b",
+     "example_ar": "الْمَكْتَبُ فِي الْغُرْفَةِ.",
+     "example_meaning_en": "The desk is in the room.",
+     "note": "The root of كِتَاب, “book”; مَـ makes “a place for”, as in مَكْتَبَة and مَدْرَسَة."
+    },
+    {
+     "id": "lexeme.arabic-simple-questions-9",
+     "form_ar": "هَذَا",
+     "meaning_en": "this (masculine)",
+     "part_of_speech": "pronoun",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "مَنْ هَذَا؟ — هَذَا سَامِرٌ.",
+     "example_meaning_en": "Who is this? — This is Sāmir.",
+     "note": "For a masculine noun or a man. You'll meet “that” and “these” in a later lesson."
+    },
+    {
+     "id": "lexeme.arabic-simple-questions-10",
+     "form_ar": "هَذِهِ",
+     "meaning_en": "this (feminine)",
+     "part_of_speech": "pronoun",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "هَذِهِ حَقِيبَةٌ.",
+     "example_meaning_en": "This is a bag.",
+     "note": "For a feminine noun or a woman."
+    }
+   ]
+  },
+  "lesson.arabic-origin-location": {
+   "seed": [
+    "lexeme.arabic-seed-018",
+    "lexeme.arabic-seed-019",
+    "lexeme.arabic-seed-020",
+    "lexeme.arabic-seed-021"
+   ],
+   "words": [
+    {
+     "id": "lexeme.arabic-origin-location-1",
+     "form_ar": "أَسْكُنُ",
+     "meaning_en": "I live (somewhere)",
+     "part_of_speech": "verb",
+     "root_ar": "س-ك-ن",
+     "root_reading": "s-k-n",
+     "example_ar": "أَسْكُنُ فِي لَنْدَنَ.",
+     "example_meaning_en": "I live in London.",
+     "note": "“You live” to a man is تَسْكُنُ, as in أَيْنَ تَسْكُنُ؟"
+    },
+    {
+     "id": "lexeme.arabic-origin-location-2",
+     "form_ar": "بَلَد",
+     "meaning_en": "country",
+     "part_of_speech": "noun",
+     "root_ar": "ب-ل-د",
+     "root_reading": "b-l-d",
+     "example_ar": "مِنْ أَيِّ بَلَدٍ أَنْتِ؟",
+     "example_meaning_en": "Which country are you from? (to a woman)",
+     "note": "Plural بُلْدَان or بِلَاد."
+    },
+    {
+     "id": "lexeme.arabic-origin-location-3",
+     "form_ar": "مَدِينَة",
+     "meaning_en": "city",
+     "part_of_speech": "noun",
+     "root_ar": "م-د-ن",
+     "root_reading": "m-d-n",
+     "example_ar": "أَسْكُنُ فِي مَدِينَةٍ صَغِيرَةٍ.",
+     "example_meaning_en": "I live in a small city.",
+     "note": "Plural مُدُن."
+    },
+    {
+     "id": "lexeme.arabic-origin-location-4",
+     "form_ar": "مِصْر",
+     "meaning_en": "Egypt",
+     "part_of_speech": "name",
+     "root_ar": "م-ص-ر",
+     "root_reading": "m-ṣ-r",
+     "example_ar": "أَنَا مِنْ مِصْرَ.",
+     "example_meaning_en": "I am from Egypt.",
+     "note": "Learn country names as whole words. In Modern Standard Arabic مِصْر doesn't take the -un ending: مِنْ مِصْرَ."
+    },
+    {
+     "id": "lexeme.arabic-origin-location-5",
+     "form_ar": "مِصْرِيّ",
+     "meaning_en": "Egyptian (male)",
+     "part_of_speech": "adjective",
+     "root_ar": "م-ص-ر",
+     "root_reading": "m-ṣ-r",
+     "example_ar": "هُوَ مِصْرِيٌّ وَهِيَ مِصْرِيَّةٌ.",
+     "example_meaning_en": "He is Egyptian and she is Egyptian.",
+     "note": "Adding ـِيّ to a place makes “from there”; for a woman, ـِيَّة."
+    },
+    {
+     "id": "lexeme.arabic-origin-location-6",
+     "form_ar": "هُنَاكَ",
+     "meaning_en": "there",
+     "part_of_speech": "adverb",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "الْمَدْرَسَةُ هُنَاكَ.",
+     "example_meaning_en": "The school is over there.",
+     "note": "“Here” is هُنَا."
+    },
+    {
+     "id": "lexeme.arabic-origin-location-7",
+     "form_ar": "قَرِيب",
+     "meaning_en": "near",
+     "part_of_speech": "adjective",
+     "root_ar": "ق-ر-ب",
+     "root_reading": "q-r-b",
+     "example_ar": "الْبَيْتُ قَرِيبٌ مِنَ الْمَدْرَسَةِ.",
+     "example_meaning_en": "The house is near the school.",
+     "note": "“Near to” is قَرِيبٌ مِنْ; مِنْ becomes مِنَ before the article."
+    },
+    {
+     "id": "lexeme.arabic-origin-location-8",
+     "form_ar": "بَعِيد",
+     "meaning_en": "far",
+     "part_of_speech": "adjective",
+     "root_ar": "ب-ع-د",
+     "root_reading": "b-ʿ-d",
+     "example_ar": "الْمَدِينَةُ بَعِيدَةٌ عَنِ الْبَيْتِ.",
+     "example_meaning_en": "The city is far from the house.",
+     "note": "“Far from” is بَعِيدٌ عَنْ; عَنْ becomes عَنِ before the article."
+    },
+    {
+     "id": "lexeme.arabic-origin-location-9",
+     "form_ar": "مِنْ أَيْنَ أَنْتَ؟",
+     "meaning_en": "where are you from? (to a man)",
+     "part_of_speech": "chunk",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "مِنْ أَيْنَ أَنْتَ؟ — مِنْ لُبْنَانَ.",
+     "example_meaning_en": "Where are you from? — From Lebanon.",
+     "note": "To a woman: مِنْ أَيْنَ أَنْتِ؟ Like مِصْر, لُبْنَان doesn't take the -un ending."
+    },
+    {
+     "id": "lexeme.arabic-origin-location-10",
+     "form_ar": "بِرِيطَانِيَا",
+     "meaning_en": "Britain",
+     "part_of_speech": "name",
+     "root_ar": null,
+     "root_reading": null,
+     "example_ar": "أَسْكُنُ فِي بِرِيطَانِيَا.",
+     "example_meaning_en": "I live in Britain.",
+     "note": "A borrowed name with no Arabic root. Names ending in ـا (بِرِيطَانِيَا، سُورِيَا، كَنَدَا) never change their ending."
+    }
+   ]
+  },
+  "lesson.arabic-repair-phrases": {
+   "seed": [
+    "lexeme.arabic-seed-027",
+    "lexeme.arabic-seed-028",
+    "lexeme.arabic-seed-048"
+   ],
+   "words": [
+    {
+     "id": "lexeme.arabic-repair-phrases-1",
+     "form_ar": "لَمْ أَفْهَمْ",
+     "meaning_en": "I didn't understand",
+     "part_of_speech": "chunk",
+     "root_ar": "ف-ه-م",
+     "root_reading": "f-h-m",
+     "example_ar": "عَفْوًا، لَمْ أَفْهَمْ.",
+     "example_meaning_en": "Sorry, I didn't understand.",
+     "note": "Learn it whole for now; لَمْ makes a past “not”."
+    },
+    {
+     "id": "lexeme.arabic-repair-phrases-2",
+     "form_ar": "أَفْهَمُ",
+     "meaning_en": "I understand",
+     "part_of_speech": "verb",
+     "root_ar": "ف-ه-م",
+     "root_reading": "f-h-m",
+     "example_ar": "أَفْهَمُ، شُكْرًا.",
+     "example_meaning_en": "I understand, thank you.",
+     "note": "The same root as لَمْ أَفْهَمْ."
+    },
+    {
+     "id": "lexeme.arabic-repair-phrases-3",
+     "form_ar": "أَعِدْ",
+     "meaning_en": "repeat! (to a man)",
+     "part_of_speech": "verb",
+     "root_ar": "ع-و-د",
+     "root_reading": "ʿ-w-d",
+     "example_ar": "أَعِدْ، مِنْ فَضْلِكَ.",
+     "example_meaning_en": "Repeat, please.",
+     "note": "To a woman: أَعِيدِي، مِنْ فَضْلِكِ."
+    },
+    {
+     "id": "lexeme.arabic-repair-phrases-4",
+     "form_ar": "بِبُطْءٍ",
+     "meaning_en": "slowly",
+     "part_of_speech": "chunk",
+     "root_ar": "ب-ط-ء",
+     "root_reading": "b-ṭ-ʾ",
+     "example_ar": "أَعِدْ بِبُطْءٍ، مِنْ فَضْلِكَ.",
+     "example_meaning_en": "Repeat slowly, please.",
+     "note": "Literally “with slowness”. To a woman: أَعِيدِي بِبُطْءٍ، مِنْ فَضْلِكِ."
+    },
+    {
+     "id": "lexeme.arabic-repair-phrases-5",
+     "form_ar": "عَفْوًا",
+     "meaning_en": "excuse me; sorry; you're welcome",
+     "part_of_speech": "chunk",
+     "root_ar": "ع-ف-و",
+     "root_reading": "ʿ-f-w",
+     "example_ar": "عَفْوًا، مَا اسْمُكَ؟",
+     "example_meaning_en": "Excuse me, what is your name?",
+     "note": "Also the reply to شُكْرًا: “you're welcome”."
+    },
+    {
+     "id": "lexeme.arabic-repair-phrases-6",
+     "form_ar": "كَلِمَة",
+     "meaning_en": "word",
+     "part_of_speech": "noun",
+     "root_ar": "ك-ل-م",
+     "root_reading": "k-l-m",
+     "example_ar": "هَذِهِ كَلِمَةٌ جَدِيدَةٌ.",
+     "example_meaning_en": "This is a new word.",
+     "note": "Plural كَلِمَات."
+    },
+    {
+     "id": "lexeme.arabic-repair-phrases-7",
+     "form_ar": "مَرَّةً أُخْرَى",
+     "meaning_en": "once more, again",
+     "part_of_speech": "chunk",
+     "root_ar": "م-ر-ر",
+     "root_reading": "m-r-r",
+     "example_ar": "أَعِدْ مَرَّةً أُخْرَى، مِنْ فَضْلِكَ.",
+     "example_meaning_en": "Repeat once more, please.",
+     "note": "مَرَّة is “a time, once”; أُخْرَى is “another”."
+    },
+    {
+     "id": "lexeme.arabic-repair-phrases-8",
+     "form_ar": "قَلِيلًا",
+     "meaning_en": "a little",
+     "part_of_speech": "adverb",
+     "root_ar": "ق-ل-ل",
+     "root_reading": "q-l-l",
+     "example_ar": "أَفْهَمُ الْعَرَبِيَّةَ قَلِيلًا.",
+     "example_meaning_en": "I understand Arabic a little.",
+     "note": "Comes after the verb."
+    },
+    {
+     "id": "lexeme.arabic-repair-phrases-9",
+     "form_ar": "لَا أَعْرِفُ",
+     "meaning_en": "I don't know",
+     "part_of_speech": "chunk",
+     "root_ar": "ع-ر-ف",
+     "root_reading": "ʿ-r-f",
+     "example_ar": "مَا مَعْنَى هَذِهِ الْكَلِمَةِ؟ — لَا أَعْرِفُ.",
+     "example_meaning_en": "What does this word mean? — I don't know.",
+     "note": "Saying so keeps the exchange honest: better than guessing."
+    },
+    {
+     "id": "lexeme.arabic-repair-phrases-10",
+     "form_ar": "الْعَرَبِيَّة",
+     "meaning_en": "Arabic (the language)",
+     "part_of_speech": "noun",
+     "root_ar": "ع-ر-ب",
+     "root_reading": "ʿ-r-b",
+     "example_ar": "الْعَرَبِيَّةُ جَمِيلَةٌ.",
+     "example_meaning_en": "Arabic is beautiful.",
+     "note": "Short for اللُّغَةُ الْعَرَبِيَّةُ, “the Arabic language”. It takes feminine words: جَمِيلَةٌ."
+    }
+   ]
+  }
+ }
+}
