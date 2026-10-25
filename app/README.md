@@ -1,5 +1,14 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.75.0 — Ask MyDay looks at what you're waiting on:** ask "what am I waiting on?" or "anything I should chase on
+the flat move?" and Ask MyDay looks, on this device, at the tasks you've marked as waiting: each one's title, its
+project, since when and the day you expect it, oldest first, with links to them. Who or what a task waits on is never
+sent, and asked who, it says that stays on the task. It keeps the waiting tone: dates, never a count of days or
+"overdue". When an expected day has come, or you asked what to chase, it can offer a 5-minute "Chase:" task, added just
+as Chase it adds one. Never a private project's task; not offered on Finance or Health. That second request counts
+towards the day's limit. The server's instructions (v21) were deployed first; no saved-data, sync or database change;
+going back to 1.74.0 is safe.
+
 **1.74.0 — Check my answer:** once you've written your own answer to a lesson check — in an Arabic session, or a
 Cybersecurity knowledge check in the notebook — "Check my answer" asks the AI for help with it, in parts you open one
 at a time: a hint first, then an example, the explanation with a suggested mark, a follow-up question and its answer.
