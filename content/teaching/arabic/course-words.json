@@ -1,6 +1,6 @@
 {
  "about": "Course words: an authored word list per Arabic lesson (MyDay's own, not part of the supplied package), each word with its meaning, root, an example and a short note, beside the package's starter words (listed by id under \"seed\", not repeated). Fully vowelled. Each module is checked by the owner before it ships.",
- "status": "modules 4–10: checked by the owner and voiced; modules 11–13: draft, awaiting the cross-check and the owner's check",
+ "status": "modules 4–10: checked by the owner and voiced; modules 11–13: draft, cross-checked twice, awaiting the owner's check",
  "version": "1.2",
  "lessons": {
   "lesson.arabic-greetings-address": {
@@ -3315,7 +3315,7 @@
      "root_reading": null,
      "example_ar": "هَذَا الْكِتَابُ لَهَا.",
      "example_meaning_en": "This book is hers.",
-     "note": "لِ, “for”, with ـهَا; before a suffix لِ becomes لَ."
+     "note": "لِ, “for”, with ـهَا. Before a suffix لِ becomes لَ (لَهُ، لَهَا، لَكَ); only لِي, “for me”, keeps the kasra."
     },
     {
      "id": "lexeme.arabic-pronoun-attachment-6",
@@ -3348,7 +3348,7 @@
      "root_reading": "k-t-b",
      "example_ar": "كِتَابُنَا جَدِيدٌ.",
      "example_meaning_en": "Our book is new.",
-     "note": "ـنَا on a noun is “our”; on a past verb it's “we” (ذَهَبْنَا)."
+     "note": "ـنَا on a noun is “our”. On a verb it's the subject “we” (ذَهَبْنَا) or the object “us” (يَعْرِفُنَا)."
     }
    ]
   },
@@ -3373,12 +3373,12 @@
     {
      "id": "lexeme.arabic-case-roles-2",
      "form_ar": "فَاعِل",
-     "meaning_en": "subject (the doer)",
+     "meaning_en": "subject of a verb (the doer)",
      "part_of_speech": "noun",
      "root_ar": "ف-ع-ل",
      "root_reading": "f-ʿ-l",
-     "example_ar": "الطَّالِبُ فَاعِلٌ فِي هَذِهِ الْجُمْلَةِ.",
-     "example_meaning_en": "The student is the subject in this sentence.",
+     "example_ar": "«سَامِرٌ» فَاعِلٌ فِي «كَتَبَ سَامِرٌ رِسَالَةً».",
+     "example_meaning_en": "سَامِرٌ is the subject in “Sāmir wrote a letter”.",
      "note": "A grammar word: the one who does the action."
     },
     {
@@ -3470,7 +3470,7 @@
     {
      "id": "lexeme.arabic-idafa-chains-3",
      "form_ar": "مُدِيرُ الْمَدْرَسَةِ",
-     "meaning_en": "head teacher",
+     "meaning_en": "the head of the school, head teacher",
      "part_of_speech": "chunk",
      "root_ar": "د-و-ر",
      "root_reading": "d-w-r",
@@ -3521,6 +3521,28 @@
      "example_ar": "مَكْتَبَةُ الْجَامِعَةِ كَبِيرَةٌ.",
      "example_meaning_en": "The university library is big.",
      "note": "The same root as يَوْمُ الْجُمُعَةِ: “gathering”."
+    },
+    {
+     "id": "lexeme.arabic-idafa-chains-8",
+     "form_ar": "مَكْتَبُ مُدِيرِ الْمَدْرَسَةِ",
+     "meaning_en": "the head teacher's office",
+     "part_of_speech": "chunk",
+     "root_ar": "ك-ت-ب",
+     "root_reading": "k-t-b",
+     "example_ar": "مَكْتَبُ مُدِيرِ الْمَدْرَسَةِ هُنَاكَ.",
+     "example_meaning_en": "The head teacher's office is over there.",
+     "note": "Three nouns in a chain: only the last has the article."
+    },
+    {
+     "id": "lexeme.arabic-idafa-chains-9",
+     "form_ar": "بَيْتُ الْمُعَلِّمِ الْجَدِيدُ",
+     "meaning_en": "the teacher's new house",
+     "part_of_speech": "chunk",
+     "root_ar": "ب-ي-ت",
+     "root_reading": "b-y-t",
+     "example_ar": "بَيْتُ الْمُعَلِّمِ الْجَدِيدُ كَبِيرٌ.",
+     "example_meaning_en": "The teacher's new house is big.",
+     "note": "The adjective comes after the whole chain. الْجَدِيدُ, with a ḍamma like بَيْتُ, describes the house; الْجَدِيدِ would describe the teacher."
     }
    ]
   },
@@ -3584,7 +3606,7 @@
      "root_reading": "ṭ-l-b",
      "example_ar": "الطَّالِبَاتُ فِي الْمَكْتَبَةِ.",
      "example_meaning_en": "The (women) students are in the library.",
-     "note": "A regular plural for women: ة becomes ـَات."
+     "note": "A regular plural for women: ة becomes ـَات. As the object it takes kasra, not fatḥa: رَأَيْتُ الطَّالِبَاتِ."
     },
     {
      "id": "lexeme.arabic-dual-sound-plurals-6",
@@ -3618,7 +3640,7 @@
     },
     {
      "id": "lexeme.arabic-quantity-comparison-2",
-     "form_ar": "أَصْغَرُ",
+     "form_ar": "أَصْغَر",
      "meaning_en": "smaller; younger",
      "part_of_speech": "adjective",
      "root_ar": "ص-غ-ر",
@@ -3629,7 +3651,7 @@
     },
     {
      "id": "lexeme.arabic-quantity-comparison-3",
-     "form_ar": "أَكْثَرُ",
+     "form_ar": "أَكْثَر",
      "meaning_en": "more",
      "part_of_speech": "adjective",
      "root_ar": "ك-ث-ر",
@@ -3640,7 +3662,7 @@
     },
     {
      "id": "lexeme.arabic-quantity-comparison-4",
-     "form_ar": "أَقَلُّ",
+     "form_ar": "أَقَلّ",
      "meaning_en": "less",
      "part_of_speech": "adjective",
      "root_ar": "ق-ل-ل",
@@ -3651,14 +3673,14 @@
     },
     {
      "id": "lexeme.arabic-quantity-comparison-5",
-     "form_ar": "أَحْسَنُ",
+     "form_ar": "أَحْسَن",
      "meaning_en": "better",
      "part_of_speech": "adjective",
      "root_ar": "ح-س-ن",
      "root_reading": "ḥ-s-n",
      "example_ar": "هَذَا الْكِتَابُ أَحْسَنُ.",
      "example_meaning_en": "This book is better.",
-     "note": "The same root as حَسَنًا, “all right”."
+     "note": "The same root as حَسَنًا, “all right”. أَفْضَل is also very common for “better”."
     },
     {
      "id": "lexeme.arabic-quantity-comparison-6",
@@ -3768,7 +3790,7 @@
      "root_reading": "d-r-s",
      "example_ar": "الْمُدَرِّسُ هُنَا.",
      "example_meaning_en": "The teacher is here.",
-     "note": "Like مُعَلِّم, from another root. For a woman: مُدَرِّسَة."
+     "note": "Means the same as مُعَلِّم, which comes from another root (ع-ل-م). For a woman: مُدَرِّسَة."
     },
     {
      "id": "lexeme.arabic-root-pattern-7",
@@ -3838,7 +3860,7 @@
      "root_ar": "ذ-ه-ب",
      "root_reading": "dh-h-b",
      "example_ar": "كَانَ الْبَابُ مُغْلَقًا، فَذَهَبْتُ.",
-     "example_meaning_en": "The door was closed, so I left.",
+     "example_meaning_en": "The door was closed, so I went away.",
      "note": "فَـ is “so, and then”, joined to the next word."
     },
     {
@@ -3881,7 +3903,7 @@
      "root_reading": "q-m-s",
      "example_ar": "أَبْحَثُ عَنِ الْكَلِمَةِ فِي الْقَامُوسِ.",
      "example_meaning_en": "I look the word up in the dictionary.",
-     "note": "Plural قَوَامِيس."
+     "note": "Plural قَوَامِيس. مُعْجَم is the other common word for a dictionary."
     },
     {
      "id": "lexeme.arabic-dictionary-method-2",
@@ -3936,7 +3958,7 @@
      "root_reading": "t-r-j-m",
      "example_ar": "التَّرْجَمَةُ الْآلِيَّةُ لَيْسَتْ كَافِيَةً.",
      "example_meaning_en": "Machine translation isn't enough.",
-     "note": "A four-letter root. الْآلِيَّة is “by machine”."
+     "note": "A four-letter root. الْآلِيَّة is “automatic, by machine”."
     },
     {
      "id": "lexeme.arabic-dictionary-method-7",
@@ -3983,8 +4005,8 @@
      "part_of_speech": "noun",
      "root_ar": "د-ر-س",
      "root_reading": "d-r-s",
-     "example_ar": "الدِّرَاسَةُ فِي الْمَسَاءِ.",
-     "example_meaning_en": "Studying is in the evening.",
+     "example_ar": "أُفَضِّلُ الدِّرَاسَةَ فِي الْمَسَاءِ.",
+     "example_meaning_en": "I prefer studying in the evening.",
      "note": "A verbal noun: the action of يَدْرُسُ."
     },
     {
@@ -3994,8 +4016,8 @@
      "part_of_speech": "noun",
      "root_ar": "ذ-ه-ب",
      "root_reading": "dh-h-b",
-     "example_ar": "الذَّهَابُ إِلَى الْعَمَلِ بِالْحَافِلَةِ.",
-     "example_meaning_en": "Going to work is by bus.",
+     "example_ar": "الذَّهَابُ إِلَى الْعَمَلِ بِالْحَافِلَةِ سَهْلٌ.",
+     "example_meaning_en": "Going to work by bus is easy.",
      "note": "A verbal noun: the action of يَذْهَبُ."
     },
     {
@@ -4005,8 +4027,8 @@
      "part_of_speech": "noun",
      "root_ar": "ل-ع-ب",
      "root_reading": "l-ʿ-b",
-     "example_ar": "أَخِي لَاعِبٌ.",
-     "example_meaning_en": "My brother is a player.",
+     "example_ar": "أَخِي لَاعِبٌ جَيِّدٌ.",
+     "example_meaning_en": "My brother is a good player.",
      "note": "The فَاعِل pattern of لَعِبَ, “he played”."
     },
     {
@@ -4030,6 +4052,28 @@
      "example_ar": "هُوَ سَاكِنٌ فِي هَذَا الشَّارِعِ.",
      "example_meaning_en": "He lives in this street.",
      "note": "The فَاعِل pattern of سَكَنَ, “he lived (somewhere)”."
+    },
+    {
+     "id": "lexeme.arabic-participles-masdar-8",
+     "form_ar": "كِتَابَة",
+     "meaning_en": "writing (the activity)",
+     "part_of_speech": "noun",
+     "root_ar": "ك-ت-ب",
+     "root_reading": "k-t-b",
+     "example_ar": "الْكِتَابَةُ تَحْتَاجُ إِلَى وَقْتٍ.",
+     "example_meaning_en": "Writing takes time.",
+     "note": "A verbal noun: the action of يَكْتُبُ."
+    },
+    {
+     "id": "lexeme.arabic-participles-masdar-9",
+     "form_ar": "مَصْدَر",
+     "meaning_en": "verbal noun",
+     "part_of_speech": "noun",
+     "root_ar": "ص-د-ر",
+     "root_reading": "ṣ-d-r",
+     "example_ar": "«دِرَاسَة» مَصْدَرٌ.",
+     "example_meaning_en": "دِرَاسَة is a verbal noun.",
+     "note": "A grammar word: a noun naming the action, like دِرَاسَة or كِتَابَة. Also “source”; plural مَصَادِر."
     }
    ]
   },
@@ -4043,7 +4087,7 @@
      "id": "lexeme.arabic-vocabulary-records-1",
      "form_ar": "مُفْرَدَات",
      "meaning_en": "vocabulary",
-     "part_of_speech": "noun",
+     "part_of_speech": "noun (plural)",
      "root_ar": "ف-ر-د",
      "root_reading": "f-r-d",
      "example_ar": "أُرَاجِعُ الْمُفْرَدَاتِ كُلَّ يَوْمٍ.",
@@ -4226,7 +4270,7 @@
      "root_reading": "ʿ-l-n",
      "example_ar": "قَرَأْتُ الْإِعْلَانَ عَلَى الْبَابِ.",
      "example_meaning_en": "I read the notice on the door.",
-     "note": "Plural إِعْلَانَات."
+     "note": "Plural إِعْلَانَات. On notices you'll see تَفْتَحُ, “it opens”, and تُغْلِقُ, “it closes” (these forms are for a feminine noun like الْمَكْتَبَة)."
     },
     {
      "id": "lexeme.arabic-a2-reading-5",
@@ -4370,7 +4414,7 @@
      "root_reading": null,
      "example_ar": "تَأَخَّرْتُ لِأَنَّنِي كُنْتُ مَشْغُولًا.",
      "example_meaning_en": "I was late because I was busy.",
-     "note": "لِأَنَّ, “because”, with ـنِي, “me”."
+     "note": "لِأَنَّ, “because”, with ـنِي, “me”. The shorter لِأَنِّي is also common."
     },
     {
      "id": "lexeme.arabic-a2-composition-5",
