@@ -16,6 +16,8 @@ import { AccountChip, FocusSwitch } from './shell/TopBar';
 import { barSection, SECTIONS, sectionFromHash, type SectionId } from './shell/sections';
 import { NoticedScreen } from './patterns/NoticedScreen';
 import { KnowsScreen } from './knows/KnowsScreen';
+import { SearchButton } from './search/SearchButton';
+import { SearchScreen } from './search/SearchScreen';
 import { BackupsView } from './shell/BackupsView';
 import { startDailyBackups } from './sync/backup';
 import { startFileTidy } from './sync/files';
@@ -161,10 +163,10 @@ function Shell() {
 
   const blocked = status.kind === 'damaged' || status.kind === 'older';
   // The screen's name, above the date (on wide screens MyDay's own name is at the top of the side menu).
-  const screenName = hash.startsWith('#sync') ? 'Your account' : hash.startsWith('#delete-everything') ? 'Delete everything' : hash.startsWith('#noticed') ? 'What MyDay has noticed' : hash.startsWith('#knows') ? 'What MyDay knows' : hash.startsWith('#backups') ? 'Your backups' : hash.startsWith('#review') ? 'Your week' : hash.startsWith('#today/tasks') ? 'Tasks' : SECTIONS.find(x => x.id === section)?.label ?? 'MyDay';
+  const screenName = hash.startsWith('#search') ? 'Search' : hash.startsWith('#sync') ? 'Your account' : hash.startsWith('#delete-everything') ? 'Delete everything' : hash.startsWith('#noticed') ? 'What MyDay has noticed' : hash.startsWith('#knows') ? 'What MyDay knows' : hash.startsWith('#backups') ? 'Your backups' : hash.startsWith('#review') ? 'Your week' : hash.startsWith('#today/tasks') ? 'Tasks' : SECTIONS.find(x => x.id === section)?.label ?? 'MyDay';
   // Sign in first (when sync is set up): see sync/SignInGate.tsx.
   const gate = !blocked && signInRequired(sync) && !useHere;
-  const todayHome = !blocked && !gate && section === 'today' && !/^#(?:sync|noticed|knows|backups|review|today\/tasks)/.test(hash);
+  const todayHome = !blocked && !gate && section === 'today' && !/^#(?:sync|noticed|knows|backups|review|search|today\/tasks)/.test(hash);
   const explore = exploreRoute(hash);
   const immersive = !!explore && !blocked && !gate;
   // Notes that clearly belong to a project are connected to it by themselves (with Undo): see shell/autoConnect.ts.
@@ -178,6 +180,7 @@ function Shell() {
   } else if (status.kind === 'older') content = <OlderView />;
   else if (hash.startsWith('#noticed')) content = <NoticedScreen data={data} />;
   else if (hash.startsWith('#knows')) content = <KnowsScreen data={data} />;
+  else if (hash.startsWith('#search')) content = <SearchScreen data={data} hash={hash} />;
   else if (hash.startsWith('#backups')) content = <div className="max-w-[720px] mx-auto"><BackupsView onRestore={importText} /></div>;
   else if (hash.startsWith('#review')) content = <ReviewScreen data={data} />;
   else if (hash.startsWith('#delete-everything')) content = <div className="max-w-[720px] mx-auto">{SYNC.configured ? <DeleteEverythingView onExport={exportData} /> : <Card><h2>Delete everything</h2><p className="text-[15px] text-fg-2">Sync isn't set up in this copy of MyDay, so there's no account to delete from. Import a blank file to start again here.</p></Card>}</div>;
@@ -215,8 +218,9 @@ function Shell() {
             <p id="date" className="screen-date">{prettyDate(k)}</p>
           </div>
           <div className="flex items-center gap-2 lg:gap-3 flex-none">
-            {!blocked && !gate && section === 'today' && !hash.startsWith('#today/tasks') && !hash.startsWith('#noticed') && !hash.startsWith('#knows') && !hash.startsWith('#backups') && !hash.startsWith('#review') && !hash.startsWith('#sync') && !hash.startsWith('#delete-everything') && <FocusSwitch />}
+            {!blocked && !gate && section === 'today' && !hash.startsWith('#today/tasks') && !hash.startsWith('#noticed') && !hash.startsWith('#knows') && !hash.startsWith('#backups') && !hash.startsWith('#review') && !hash.startsWith('#search') && !hash.startsWith('#sync') && !hash.startsWith('#delete-everything') && <FocusSwitch />}
             {!blocked && !gate && <AccountChip data={data} sync={sync} />}
+            {!blocked && !gate && <SearchButton current={hash.startsWith('#search')} />}
             {!blocked && !gate && status.kind === 'ok' && <CaptureButton data={data} />}
             <ThemeButton theme={theme} motionAllowed={motionAllowed} onChange={next => update(d => { d.settings.theme = next; })} />
           </div>
@@ -232,7 +236,7 @@ function Shell() {
         )}
         {content}
         {/* Today has these at the bottom of its own layout; every other screen (Tasks under Today too) gets them here. */}
-        {!immersive && !blocked && !gate && (section !== 'today' || hash.startsWith('#noticed') || hash.startsWith('#knows') || hash.startsWith('#backups') || hash.startsWith('#review') || hash.startsWith('#today/tasks')) && !hash.startsWith('#sync') && (
+        {!immersive && !blocked && !gate && (section !== 'today' || hash.startsWith('#noticed') || hash.startsWith('#knows') || hash.startsWith('#backups') || hash.startsWith('#review') || hash.startsWith('#search') || hash.startsWith('#today/tasks')) && !hash.startsWith('#sync') && (
           <div className="screen-footer max-w-[720px] mx-auto mt-6">
             <AppFooter data={data} canSave={status.kind === 'ok'} onEdit={() => { location.hash = 'today/edit'; }} onExport={exportData} onImport={() => fileInput.current?.click()} />
           </div>

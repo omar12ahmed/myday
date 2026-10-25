@@ -5,7 +5,7 @@ import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { useConfirm } from '../components/confirm';
 import { maybeFetchBankHolidays } from '../data/bankHolidayFetch';
-import { shift, shortDate, todayKey } from '../data/dates';
+import { isDateKey, shift, shortDate, todayKey } from '../data/dates';
 import { shiftMonth } from '../data/pay';
 import { update } from '../data/storage';
 import type { Commitment, MyDayData } from '../data/types';
@@ -22,10 +22,12 @@ import { BankHolidayCard, ColoursCard, LegendCard, RotaCard } from './SideCards'
 export function CalendarScreen({ data, canSave, motionAllowed }: { data: MyDayData; canSave: boolean; motionAllowed: boolean }) {
   const confirm = useConfirm();
   const k = todayKey();
-  const [month, setMonth] = useState(k.slice(0, 7));
-  const [selected, setSelected] = useState(k);
+  // A link to one day ("#calendar/2026-10-30", from Search) opens on it; otherwise today.
+  const [linked] = useState(() => { const d = /^#calendar\/(\d{4}-\d{2}-\d{2})$/.exec(location.hash)?.[1]; return d && isDateKey(d) ? d : null; });
+  const [month, setMonth] = useState((linked ?? k).slice(0, 7));
+  const [selected, setSelected] = useState(linked ?? k);
   const [view, setView] = useState<'month' | 'agenda'>('month');
-  const [agendaStart, setAgendaStart] = useState(k);
+  const [agendaStart, setAgendaStart] = useState(linked ?? k);
   const [pattern, setPattern] = useState<PatternForm | null>(null);
   const [entry, setEntry] = useState<EntryForm | null>(null);
   const [appt, setAppt] = useState<CommitForm | null>(null);
