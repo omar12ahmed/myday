@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowRight, FolderKanban, Lock, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Button } from '../components/Button';
 import { Saying } from '../components/Saying';
 import { Card } from '../components/Card';
@@ -17,6 +17,7 @@ import { Progression } from './parts';
 import { ProjectView, type ProjectTab } from './ProjectView';
 import { HomelessDeletedFiles } from '../files/FilesCard';
 import { NeedsYouCard, ProjectList } from './NeedsYou';
+import { needsYou } from '../data/attention';
 
 // Projects (called the Inbox until 1.12.0): your projects (#projects, one project at #projects/p/<id>), your notes
 // (#projects/notes…) and how they connect (#projects/connections, the knowledge graph). A project gathers everything
@@ -48,6 +49,7 @@ function ProjectsHome({ data }: { data: MyDayData }) {
   const [kind, setKind] = useState<TemplateChoice>('general');
   const active = projectsInOrder(data, 'active'), paused = projectsInOrder(data, 'paused'), done = projectsInOrder(data, 'done');
   const [view, setView] = useState<'board' | 'list'>(savedView);
+  const needs = useMemo(() => needsYou(data), [data]); // once per change of your data, for the card and the list
   const show = (v: 'board' | 'list') => { setView(v); try { localStorage.setItem(VIEW_KEY, v); } catch { /* storage unavailable: kept for this visit */ } };
   function start() {
     let id: string | null = null;
@@ -61,7 +63,7 @@ function ProjectsHome({ data }: { data: MyDayData }) {
   }
   return (
     <>
-      {active.length > 0 && <NeedsYouCard data={data} />}
+      {active.length > 0 && <NeedsYouCard data={data} all={needs} />}
       <Card aria-labelledby="projects-h" id="projectsIntro" className="max-w-[720px] mx-auto">
         <div className="projects-intro-copy">
           <h2 id="projects-h" className="flex items-center gap-2"><FolderKanban size={22} aria-hidden="true" className="text-primary" /> Your projects</h2>
@@ -91,7 +93,7 @@ function ProjectsHome({ data }: { data: MyDayData }) {
           {(['board', 'list'] as const).map(v => <Button key={v} inline variant={view === v ? 'selected' : 'ghost'} aria-pressed={view === v} className="!min-h-11" data-action="projects-view" data-id={v} onClick={() => show(v)}>{v === 'board' ? 'Board' : 'List'}</Button>)}
         </div>
       )}
-      {active.length > 0 ? (view === 'list' ? <ProjectList data={data} /> : <Board data={data} />) : (
+      {active.length > 0 ? (view === 'list' ? <ProjectList data={data} all={needs} /> : <Board data={data} />) : (
         <Card id="projectsEmpty" className="max-w-[720px] mx-auto">
           <h3>No projects yet</h3>
           <p className="text-[15px] text-fg-2 m-0">Anything you'd like to make happen can be one — "Start a podcast", "Move house",

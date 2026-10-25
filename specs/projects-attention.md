@@ -42,8 +42,10 @@ projects, or wait for the weekly review. The board shows each project's next ste
 - One rule set, `data/attention.ts`, that both each project's Worth a look and this card read (and Your week's step 2
   where it overlaps), so a reason is worded and decided once. Nothing saved; nothing sent to AI (a private project's
   items show here, on this device, as they do on its own page).
-- The order: by when it matters (today's dates first, then past dates oldest first, then due waits, then the rest by
-  how long it's been open), with each project's items together within a reason.
+- The order: by when it matters — today's dates, dates passed (oldest first), waits that are due, tasks that keep
+  moving, the coming week's dates (soonest first), decisions (open longest first), then a project's Find out results
+  and evidence; ties go by project, most recently worked on first. Each task appears once, under the first of: keeps
+  moving, wait due, date passed, date ahead. The same 7-day dates rule feeds each project's Worth a look.
 - No saved-data, sync or database change (the List choice, if any, is a device-only `myday.*` key).
 
 ## 5. Checks

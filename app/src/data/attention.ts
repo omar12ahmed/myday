@@ -26,6 +26,9 @@ export const pastOpen = (data: MyDayData, p: Project, k: DateKey = todayKey()) =
 // Waits whose expected day has come, oldest expected day first.
 export const waitsDue = (data: MyDayData, p: Project, k: DateKey = todayKey()) => projectTasks(data, p).open
   .filter(t => t.waiting?.until && t.waiting.until <= k).sort((a, b) => a.waiting!.until!.localeCompare(b.waiting!.until!));
+// Dated tasks still to do and appointments from today to 7 days on, soonest first (an appointment that began before
+// today and runs into it isn't one: it's under way).
+export const datesAhead = (data: MyDayData, p: Project, k: DateKey = todayKey()) => comingUp(data, p, k).filter(c => { const day = c.when.slice(0, 10); return day >= k && days(k, day) <= 7; });
 // A decision is "still open" for this card and Your week once it's been open 14 days.
 export const DECISION_OPEN_DAYS = 14;
 export const decisionsOpen = (p: Project, k: DateKey = todayKey()) => (p.decisions ?? []).filter(x => !x.chosen && days(x.createdAt.slice(0, 10), k) >= DECISION_OPEN_DAYS);
@@ -52,8 +55,9 @@ export interface Need {
 const taskHref = (t: TaskItem) => `#today/tasks/${enc(t.id)}`;
 const dayWords = (day: DateKey, k: DateKey) => day === k ? 'today' : day === shift(k, 1) ? 'tomorrow' : `on ${shortDate(day)}`;
 
-// Everything that needs you across your active projects, in order. Each task appears once, under its first reason
-// here: keeps moving, then a wait that's due, then a date passed, then a date in the coming week.
+// Everything that needs you across your active projects, in order (ties: the project you worked on most recently
+// first). Each task appears once, under its first reason here: keeps moving, then a wait that's due, then a date
+// passed, then a date in the coming week. Worked out once per change of your data (the Projects home memoises it).
 export function needsYou(data: MyDayData, k: DateKey = todayKey()): Need[] {
   const out: Need[] = [];
   const projects = projectsInOrder(data, 'active'), order = new Map(projects.map((p, i) => [p.id, i]));
@@ -74,15 +78,13 @@ export function needsYou(data: MyDayData, k: DateKey = todayKey()): Need[] {
       seen.add(t.id);
       add({ key: `past:${t.id}`, reason: 'past', title: t.title, href: taskHref(t), when: t.due!, why: `still open, was due ${shortDate(t.due!)}` });
     }
-    for (const c of comingUp(data, p, k)) {
+    for (const c of datesAhead(data, p, k)) {
       const day = c.when.slice(0, 10);
-      if (days(k, day) > 7) break;
-      if (day < k) continue; // (an appointment that began before today and runs into it)
       if (c.kind === 'task') {
         if (seen.has(c.task.id)) continue;
         seen.add(c.task.id);
         add({ key: `date:${c.task.id}`, reason: day === k ? 'today' : 'soon', title: c.task.title, href: taskHref(c.task), when: c.when, why: `${dayWords(day, k)}${c.task.time ? ` at ${c.task.time}` : ''}` });
-      } else add({ key: `date:${c.appt.id}`, reason: day === k ? 'today' : 'soon', title: c.appt.title, href: '#calendar', when: c.when, why: `${dayWords(day, k)} at ${c.appt.start.slice(11, 16)}` });
+      } else add({ key: `date:${p.id}:${c.appt.id}`, reason: day === k ? 'today' : 'soon', title: c.appt.title, href: '#calendar', when: c.when, why: `${dayWords(day, k)} at ${c.appt.start.slice(11, 16)}` });
     }
     for (const x of decisionsOpen(p, k)) {
       add({ key: `decision:${p.id}:${x.id}`, reason: 'decision', title: x.question, href: `#projects/p/${enc(p.id)}/decisions`, when: x.createdAt,
@@ -95,5 +97,3 @@ export function needsYou(data: MyDayData, k: DateKey = todayKey()): Need[] {
   }
   return out.sort((a, b) => RANK[a.reason] - RANK[b.reason] || a.when.localeCompare(b.when) || order.get(a.projectId)! - order.get(b.projectId)! || a.title.localeCompare(b.title));
 }
-// How many things need you on one project (the list's "2 need you").
-export const needsYouOn = (data: MyDayData, p: Project, k: DateKey = todayKey()) => needsYou(data, k).filter(n => n.projectId === p.id).length;

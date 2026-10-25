@@ -27,7 +27,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     `export { normalizeTasks, setWaiting, stopWaiting, isWaiting, chaseTask, chaseWaiting, isStuck, setTaskDone, inQueue, onTodaysPlan, unstick } from ${src('tasks')};`,
     `export { stepsText, allStepsDone, addStep, editStep, tickStep, moveStep, removeStep, startsAfter, startsAfterText, afterChoices, setStartsAfter, removeTask, TASK_LIMITS } from ${src('tasks')};`,
     `export { linkTask, heldBack } from ${src('projects')};`,
-    `export { needsYou, needsYouOn, GROUP_LABEL as NEED_GROUP_LABEL } from ${src('attention')};`,
+    `export { needsYou, GROUP_LABEL as NEED_GROUP_LABEL } from ${src('attention')};`,
     `export { setDone, clearDay, toggleRoll, followQueued, taskFromQueue, sendToQueue } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
@@ -2050,27 +2050,45 @@ const clone = o => JSON.parse(JSON.stringify(o));
     let w = build();
     const N = K.needsYou(w, k), keys = N.map(n => n.key), by = key => N.find(n => n.key === key);
     check('the order: today\'s dates, dates passed (oldest first), waits that are due, tasks that keep moving, the coming week, decisions, then Find out and evidence', eq(keys, [
-      'date:tToday', 'past:tPast', 'waiting:tWait', 'waiting:tWaitToday', 'stuck:tWeek', 'stuck:tStuck', 'date:tTomorrow', 'date:cmAppt', 'date:tPriv', 'date:tSoon', 'decision:pjCoffee:dcOld', 'found:pjCoffee', 'evidence:pjCase']), keys);
+      'date:tToday', 'past:tPast', 'waiting:tWait', 'waiting:tWaitToday', 'stuck:tWeek', 'stuck:tStuck', 'date:tTomorrow', 'date:pjShed:cmAppt', 'date:tPriv', 'date:tSoon', 'decision:pjCoffee:dcOld', 'found:pjCoffee', 'evidence:pjCase']), keys);
     check('a date today: "today at 17:30", opening the task', eq([by('date:tToday').title, by('date:tToday').why, by('date:tToday').href, by('date:tToday').reason, by('date:tToday').group], ['Measure the alcove', 'today at 17:30', '#today/tasks/tToday', 'today', 'dates']));
     check('a date passed: "still open, was due …"; never one that\'s waiting on someone or starts after another task', by('past:tPast').why === `still open, was due ${D(day(-3))}` && !keys.some(x => x.endsWith(':tPastWait') || x.endsWith(':tPastAfter')));
     check('a wait whose expected day has come: "waiting on Priya — expected …" ("expected today" on the day), with Chase it', by('waiting:tWait').why === `waiting on Priya — expected ${D(day(-1))}` && by('waiting:tWaitToday').why === 'waiting on the van hire — expected today' && eq(by('waiting:tWait').chase, { taskId: 'tWait', added: false }) && by('waiting:tWait').group === 'waiting');
     check('a task that keeps moving: "moved 4 times — something in the way?", or a week past its date: "planned for … — something in the way?"; each only once (not also as a date)', by('stuck:tStuck').why === 'moved 4 times — something in the way?' && by('stuck:tWeek').why === `planned for ${D(day(-8))} — something in the way?` && !keys.includes('date:tStuck') && !keys.includes('past:tWeek'));
-    check('the coming week: "tomorrow", "on …", an appointment with its time (opening the Calendar); eight days on, nothing', by('date:tTomorrow').why === 'tomorrow' && by('date:tSoon').why === `on ${D(day(3))}` && by('date:cmAppt').why === `on ${D(day(2))} at 10:00` && by('date:cmAppt').href === '#calendar' && !keys.includes('date:tFar'));
+    check('the coming week: "tomorrow", "on …", an appointment with its time (opening the Calendar); eight days on, nothing', by('date:tTomorrow').why === 'tomorrow' && by('date:tSoon').why === `on ${D(day(3))}` && by('date:pjShed:cmAppt').why === `on ${D(day(2))} at 10:00` && by('date:pjShed:cmAppt').href === '#calendar' && !keys.includes('date:tFar'));
     check('a decision open 14 days or more: "open 3 weeks", opening Decisions; one opened 10 days ago, or one made, isn\'t', by('decision:pjCoffee:dcOld').title === 'Which roaster?' && by('decision:pjCoffee:dcOld').why === 'open 3 weeks' && by('decision:pjCoffee:dcOld').href === '#projects/p/pjCoffee/decisions' && keys.filter(x => x.startsWith('decision:')).length === 1);
     check('a business idea\'s Find out results ("A Find out task is done" — "what did you find?") and a case\'s evidence ("2 pieces of evidence" — "still to get")', eq([by('found:pjCoffee').title, by('found:pjCoffee').why, by('found:pjCoffee').href], ['A Find out task is done', 'what did you find?', '#projects/p/pjCoffee/model'])
       && eq([by('evidence:pjCase').title, by('evidence:pjCase').why, by('evidence:pjCase').href, by('evidence:pjCase').group], ['2 pieces of evidence', 'still to get', '#projects/p/pjCase/evidence', 'tools']));
     check('every line names its project; a private project\'s items show (on this device)', N.every(n => n.project === w.projects.items.find(p => p.id === n.projectId).title) && by('date:tPriv').project === 'Moving flat');
     check('not: a done task, a paused or finished project\'s, or a task in no project', !keys.some(x => /tDoneToday|tPaused|tDoneP|tLoose/.test(x)));
-    check('how many need you on each project', K.needsYouOn(w, w.projects.items.find(p => p.id === 'pjShed'), k) === 7 && K.needsYouOn(w, w.projects.items.find(p => p.id === 'pjCoffee'), k) === 2 && K.needsYouOn(w, w.projects.items.find(p => p.id === 'pjPaused'), k) === 0);
+    const on = id => N.filter(n => n.projectId === id).length;
+    check('how many need you on each project (the List\'s "7 need you")', on('pjShed') === 7 && on('pjCoffee') === 2 && on('pjCase') === 3 && on('pjPaused') === 0, [on('pjShed'), on('pjCoffee'), on('pjCase')]);
     check('the reasons\' groups and their names', eq(Object.keys(K.NEED_GROUP_LABEL), ['dates', 'waiting', 'stuck', 'decisions', 'tools']) && eq(Object.values(K.NEED_GROUP_LABEL), ['Dates', 'Waiting', 'In the way', 'Decisions', 'Findings and evidence']));
-    const before = JSON.stringify(w); K.needsYou(w, k); K.needsYouOn(w, w.projects.items[0], k);
+    const before = JSON.stringify(w); K.needsYou(w, k);
     check('working it out writes nothing', JSON.stringify(w) === before);
     w = build(); K.setTaskDone(w, 'tPast', true);
     check('dealt with, it goes: the boards done, they leave; the frame (which started after them) is still open after its date, so it\'s there now', !K.needsYou(w, k).some(n => n.key === 'past:tPast') && K.needsYou(w, k).some(n => n.key === 'past:tPastAfter'));
     w = build(); w.projects.items.find(p => p.id === 'pjCoffee').decisions[0].chosen = 'dcOlda';
     check('…a decision made, it goes', !K.needsYou(w, k).some(n => n.key.startsWith('decision:')));
-    w = build(); w.projects.items = w.projects.items.filter(p => p.id === 'pjPaused'); w.tasks.items = [];
-    check('with nothing to show, there\'s nothing', eq(K.needsYou(w, k), []));
+    w = build(); w.projects.items = w.projects.items.filter(p => p.id === 'pjPriv' || p.id === 'pjPaused'); w.tasks.items = [TK('tLater', 'Later', 'pjPriv', { due: day(9) }), TK('tUndated', 'Some day', 'pjPriv')];
+    check('an active project with nothing that needs you gives nothing', eq(K.needsYou(w, k), []));
+
+    console.log('  more cases');
+    w = build(); w.tasks.items.push(TK('tPast2', 'Older one', 'pjShed', { due: day(-5) }), TK('tCasePast', 'Same day, other project', 'pjCase', { due: day(-3) }), TK('tLetGo', 'Let go of', 'pjShed', { due: day(-1), letGoOn: day(-1) }),
+      TK('tSeven', 'Seven days on', 'pjCase', { due: day(7) }), TK('tBlocked', 'Said what was in the way', 'pjShed', { due: day(-9), blockers: [{ reason: 'tired', on: day(-2) }] }));
+    w.projects.items.find(p => p.id === 'pjCoffee').decisions.push(DC('dc14', 'Exactly two weeks?', day(-14)));
+    w.commitments.push({ id: 'cmToday', kind: 'appointment', title: 'Builder visit', start: `${k}T09:00`, end: `${k}T10:00` }, { id: 'cmAway', kind: 'appointment', title: 'Away', start: `${day(-1)}T09:00`, end: `${day(1)}T17:00` });
+    w.projects.items.find(p => p.id === 'pjShed').commitmentIds.push('cmToday', 'cmAway');
+    w.tasks.items.push(TK('tChase', 'Chase: Get the quote back', 'pjShed')); w.tasks.items.find(t => t.id === 'tWait').waiting.chaseTaskId = 'tChase';
+    const M = K.needsYou(w, k), mk = M.map(n => n.key), at = key => mk.indexOf(key);
+    check('dates passed come oldest first, and on the same day the project worked on most recently first', at('past:tBlocked') < at('past:tPast2') && at('past:tPast2') < at('past:tPast') && at('past:tPast') < at('past:tCasePast'), mk.filter(x => x.startsWith('past:')));
+    check('a task a week past its date that you said was in the way (in the last week) isn\'t "stuck": it\'s a date passed', mk.includes('past:tBlocked') && !mk.includes('stuck:tBlocked'));
+    check('a task you let go isn\'t there', !mk.some(x => x.endsWith(':tLetGo')));
+    check('exactly 7 days on is still in the coming week', mk.includes('date:tSeven'));
+    check('a decision open exactly 14 days counts', mk.includes('decision:pjCoffee:dc14'));
+    check('an appointment today: "today at 09:00", first; one under way since yesterday isn\'t a date', M.find(n => n.key === 'date:pjShed:cmToday')?.why === 'today at 09:00' && at('date:pjShed:cmToday') < at('date:tToday') && !mk.includes('date:pjShed:cmAway'), mk.slice(0, 3));
+    check('a wait whose Chase task is still to do says so (added)', eq(M.find(n => n.key === 'waiting:tWait').chase, { taskId: 'tWait', added: true }));
+    check('Worth a look uses the same 7-day rule: the appointment under way since yesterday is never "in -1 days"', !K.worthALook(w, w.projects.items.find(p => p.id === 'pjShed'), k).some(x => /-\d+ days|Away/.test(x.text)), K.worthALook(w, w.projects.items.find(p => p.id === 'pjShed'), k).map(x => x.text));
   }
 
   fs.rmSync(dir, { recursive: true, force: true });
