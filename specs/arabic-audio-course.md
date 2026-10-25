@@ -115,6 +115,10 @@ Round five (course words for modules 5–7, the same day): 310 new clips, transc
 forms still heard differently (أَسْمَعُ، مَاء، مَاءً) and approved by ear in three listening batches ("all done"). A course word
 is voiced when it's marked all through (`markedThrough`), so short words like مَاء, which the shared ratio calls partial,
 get a clip. The temporary key was deleted.
+Round six (course words for modules 8–10, the same day): 236 new clips, transcribed blind (one run stopped on a timeout
+and saved nothing, so the script now skips and saves as it goes); twelve remade; a note that ran two Arabic pieces
+together reworded and its merged clip removed; the owner asked for another take of one example (مَا اسْمُ الْمَكَانِ؟),
+then approved all. The temporary key was deleted.
 
 **Each round works like round one.**
 - **On the Mac:**

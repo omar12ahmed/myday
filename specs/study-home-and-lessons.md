@@ -427,8 +427,10 @@ note's text does: AI help with notes when it's on, and Ask MyDay opened on that 
     are the starter words' kind (`lexeme.arabic-<lesson>-<n>:recognise`), so no saved-data change; an older release
     keeps them but can't show them (its revision says "no longer in the course" with "Take it out" first; Skip keeps
     them). Modules 5–7 followed the same day (125 words for 15 lessons; cross-checked twice, with words added where
-    three lessons' checks rely on them; checked by the owner; 310 clips, round five), in 1.86.0. Next: the rest of A1
-    and beyond, each module checked by the owner before it ships.
+    three lessons' checks rely on them; checked by the owner; 310 clips, round five), in 1.86.0. Modules 8–10 (A1
+    consolidation, past stories, plans and negation; 97 words) followed the same day, cross-checked twice, checked by
+    the owner and voiced (236 clips, round six), in 1.88.0. Next: modules 11–13 and beyond, each checked by the owner
+    before it ships.
 - **Recording yourself:** not now (decision 7). Speech recognition: not planned, as there's no dependable
   validation for MSA.
 - **Course projects:** kept inside their course and called "course projects", because "Projects" is MyDay's spine.

@@ -1,5 +1,16 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.88.0 — Words for Arabic modules 8–10:** the A1 consolidation lessons (listening, signs, conversation, a profile,
+reviewing), past events and stories (past endings, past questions, كَانَ, linking events, retelling) and plans,
+negation and requests (the future, لَمْ / لَنْ / لَيْسَ, instructions, "want / can / must", agreeing a plan) now each
+have their own words, 97 in all, fully vowelled, each with its meaning, root, an example and a note, and voiced where
+a form can be read aloud. The Vocabulary page's "Words from the lessons" now has 35 lessons and 270 words.
+Cross-checked twice by an independent reviewer (which added words two lessons' checks rely on: "you studied" to a
+woman, and إِذَنْ for confirming a plan), then checked by the owner; its 236 new clips were listened to. Also: the
+Tuesday note says "the third day of the week". No saved-data, sync or database change; nothing new is sent to AI.
+Going back to 1.87.0 is safe, with the usual note: a lesson word's card that comes up in its revision shows as "no
+longer in the course"; choose "Skip for now".
+
 **1.87.0 — Search everywhere:** a magnifier beside + in the header (and the / key on a computer, never while you're
 typing) opens **Search**: one field that looks across your tasks and lists, projects (everything "Search this project"
 finds), notes, the calendar, your learning (your own courses, revision cards, check-ins, books, kept words, your
@@ -672,7 +683,7 @@ asks for is in the generated lesson index (`modalities`, from the course's input
 `scripts/prepare-arabic.mjs`). Nothing saved, nothing sent to AI.
 
 Course words (Arabic, `../specs/study-home-and-lessons.md` §12): each lesson's own words, from MyDay's
-`../content/teaching/arabic/course-words.json` (modules 4–7 so far: 173 words for 20 lessons), each fully vowelled
+`../content/teaching/arabic/course-words.json` (modules 4–10 so far: 270 words for 35 lessons), each fully vowelled
 with its meaning, the root it comes from, an example and a note, voiced where a form can be read aloud (a lone letter
 like وَ isn't). A lesson's Understand step has "Words in this lesson" (its words, then the starter words it uses),
 folded away with the explanation while you check yourself; Vocabulary has "Words from the lessons". Marking a lesson
