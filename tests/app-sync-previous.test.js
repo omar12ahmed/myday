@@ -432,6 +432,28 @@ async function signIn(d, url) {
     await now.open(NOW + `#projects/p/${PST}`);
     check('…and it is the project\'s next step', await now.until(`document.querySelector('[data-s=next-title]')?.textContent === 'Build the frame (renamed)'`, 10000), await now.text('#projectNext'));
     check('…and this release is fully in step afterwards (nothing waiting, no conflict)', await synced(now) && (await now.status()) === 'synced', { status: await now.status() });
+
+    console.log('\n[16] A course word’s revision card (lexeme.arabic-<lesson>-<n>) passes through a release that doesn’t have the word');
+    const knowsCourseWords = builtText.includes('lexeme.arabic-greetings-address-1');
+    console.log(`The previous release ${knowsCourseWords ? 'has' : 'doesn’t have'} the course words.`);
+    const CW = 'lexeme.arabic-greetings-address-1:recognise', cwCard = { id: CW, addedOn: today, review: { reps: 0, interval: 0, lapses: 0, due: today } };
+    const cwIn = d => (d.arabic.cards || []).find(c => c.id === CW);
+    await now.returnToApp();
+    await now.setData(`s => { s.arabic.cards = (s.arabic.cards || []).filter(c => c.id !== '${CW}'); s.arabic.cards.push(${JSON.stringify(cwCard)}); }`);
+    check('this release sends the course word’s card as an ordinary arabic_card record', await eventually(async () => { const r = await record('arabic_card', CW); return !!r && !r.deleted && eq(r.data, cwCard); }) && await synced(now), await record('arabic_card', CW));
+    const sentCw = await record('arabic_card', CW);
+    await before.returnToApp();
+    check('the previous release syncs normally with it in the account, and takes the card in like any other', await synced(before) && (await before.status()) === 'synced'
+      && await before.until(`(JSON.parse(localStorage.getItem('${KEY}')).arabic.cards || []).some(c => c.id === '${CW}')`, 20000) && eq(cwIn(await before.data()), cwCard), cwIn(await before.data()));
+    await before.setData(`s => { s.arabic.pathId = 'path.arabic-start'; }`);
+    check('an Arabic change on the previous release (its learning path) syncs as usual', await eventually(async () => (await record('arabic', 'preferences'))?.data?.pathId === 'path.arabic-start') && await synced(before));
+    check('…and leaves the card exactly as it was sent: not deleted, not changed', eq(await record('arabic_card', CW), sentCw), await record('arabic_card', CW));
+    await now.returnToApp();
+    check('back on this release the path change arrives and the card is as it was', await now.until(`JSON.parse(localStorage.getItem('${KEY}')).arabic.pathId === 'path.arabic-start'`, 20000) && eq(cwIn(await now.data()), cwCard), cwIn(await now.data()));
+    await now.setData(`s => { s.arabic.cards = (s.arabic.cards || []).filter(c => c.id !== '${CW}'); }`);
+    check('taking it out here leaves a deletion marker in the account', await eventually(async () => !!(await record('arabic_card', CW))?.deleted) && await synced(now));
+    await before.returnToApp();
+    check('…which the previous release takes in, syncing normally', await synced(before) && await before.until(`!(JSON.parse(localStorage.getItem('${KEY}')).arabic.cards || []).some(c => c.id === '${CW}')`, 20000));
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {
