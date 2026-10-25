@@ -36,6 +36,7 @@ export interface AskProposal {
   already: boolean;                             // a task with this title is already on your lists (left unticked)
   chaseFor?: string;                            // a "Chase:" task for this waiting task (added as its chase, as Chase it does)
   stepFor?: string;                             // a step: the task whose checklist it goes into (v23)
+  stepOf?: string;                              // a task that's already an open step of this task (so already, unticked)
   // A study task (into the course on the page): its kind and where it goes — an existing section, or a new section
   // (named) in an existing module or a new module (named).
   study?: { courseId: string; kind: 'learn' | 'practical'; sectionId: string | null; section: string | null; moduleId: string | null; module: string | null };
@@ -184,6 +185,9 @@ function checkReply(text: string, data: MyDayData, slice: AskSlice, k: DateKey, 
   const parentProject = parent?.projectId && open.has(parent.projectId) ? parent.projectId : null;
   // Already there: open tasks, today's plan and the project's tasks (left unticked, so nothing is added twice by accident).
   const onLists = new Set([...data.tasks.items.filter(t => !t.done && !t.letGoOn).map(t => t.title), ...(data.days[k]?.tasks ?? []).filter(t => !t.done).map(t => t.title)].map(sameTask));
+  // …and open steps inside open tasks: an answer that names a task's next step may offer it as a task of its own.
+  const inSteps = new Map<string, string>();
+  for (const t of data.tasks.items) if (!t.done && !t.letGoOn) for (const st of t.steps ?? []) if (!st.done && !inSteps.has(sameTask(st.text))) inSteps.set(sameTask(st.text), t.title);
   const seen = new Set<string>();
   const items: AskProposal[] = [];
   // On a course page, a plan for the course is study tasks in that course (checked against its real outline).
@@ -289,7 +293,8 @@ function checkReply(text: string, data: MyDayData, slice: AskSlice, k: DateKey, 
       projectId: type === 'project' ? null : projectId,
       ...(r.kind === 'steps' && parent && type === 'task' && parent.listId ? { listId: parent.listId } : {}),
       text: type === 'note' ? (it.text?.trim() || title).slice(0, L.itemTextChars) : type === 'project' ? (it.text?.trim() ?? '').slice(0, L.itemTextChars) : '',
-      already: type === 'task' && onLists.has(sameTask(title)),
+      already: type === 'task' && (onLists.has(sameTask(title)) || inSteps.has(sameTask(title))),
+      ...(type === 'task' && !onLists.has(sameTask(title)) && inSteps.has(sameTask(title)) ? { stepOf: inSteps.get(sameTask(title)) } : {}),
     });
   }
   // With a decision on the page, the choice stays yours: a message that picks one is reworded.

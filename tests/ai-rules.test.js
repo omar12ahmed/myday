@@ -1215,6 +1215,19 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('the practice helper gives steps for the checklist that pass the checks', pc.kind === 'steps' && pc.items.length === 3 && pc.items.every(i => i.type === 'step' && i.stepFor === 'tkL'), pc);
     const off = K.checkAskReply(JSON.stringify({ kind: 'add', message: 'One to add.', action: null, items: [{ type: 'step', title: 'Measure the van', minutes: 10, category: 'admin' }] }), K.getSnapshot().data, K.askSlice(K.getSnapshot().data, '#today', D), D);
     check('a "step" anywhere but a task page with its checklist is a task', off.kind === 'add' && off.items[0].type === 'task' && !off.items[0].stepFor, off);
+    // An answer naming a task's next step may offer that step as a task (seen live on 1.82.0): it starts unticked,
+    // saying whose step it is. A done step, or a step of a done task, doesn't count; a task on your lists says so.
+    K.updateSaved(dd => { dd.tasks.items.find(x => x.id === 'tkL').steps = [{ id: 'tsQ', text: 'Get three quotes', done: false }, { id: 'tsH', text: 'Measure the hall', done: true }, { id: 'tsP', text: 'Sort the post', done: false }]; });
+    const ans = () => K.checkAskReply(JSON.stringify({ kind: 'answer', message: 'Next is getting three quotes for the van.', action: null,
+      items: ['get three quotes', 'Measure the hall', 'Sort the post'].map(title => ({ type: 'task', title })) }), K.getSnapshot().data, K.askSlice(K.getSnapshot().data, '#projects/p/pjA', D), D);
+    const a1 = ans(), ai = n => a1.items.find(x => x.title === n);
+    check('a task it offers that\'s already an open step of a task starts unticked, saying whose (whatever its capitals)', ai('get three quotes')?.already === true && ai('get three quotes')?.stepOf === 'Book the removal van', a1.items);
+    check('…a done step doesn\'t count, and one on your lists says so (not a step)', ai('Measure the hall')?.already === false && !ai('Measure the hall')?.stepOf
+      && ai('Sort the post')?.already === true && !ai('Sort the post')?.stepOf, a1.items);
+    K.updateSaved(dd => { const t = dd.tasks.items.find(x => x.id === 'tkL'); t.done = true; t.doneOn = D; });
+    const a2 = ans();
+    check('…a step of a task that\'s done doesn\'t count', a2.items.find(x => x.title === 'get three quotes')?.already === false, a2.items);
+    K.updateSaved(dd => { const t = dd.tasks.items.find(x => x.id === 'tkL'); t.done = false; t.doneOn = null; delete t.steps; });
   }
 
   console.log('\n[12e] Ask MyDay with milestones and decisions; private projects');

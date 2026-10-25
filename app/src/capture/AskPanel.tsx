@@ -215,7 +215,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
                         : `a new section “${it.study.section}”${it.study.module ? ` (new module “${it.study.module}”)` : ''}`}</span>}
                       {it.projectId && <span>· in “{it.projectId === NEW_PROJECT ? r.items.find(x => x.type === 'project')?.title : data.projects.items.find(p => p.id === it.projectId)?.title}”</span>}
                       {it.listId && <span>· list “{data.tasks.lists.find(l => l.id === it.listId)?.name}”</span>}
-                      {it.already && <span>· already on your lists</span>}
+                      {it.already && <span>· {it.stepOf ? `already a step of “${it.stepOf}”` : 'already on your lists'}</span>}
                     </p>
                     {(it.type === 'note' || it.type === 'project') && it.text && it.text !== it.title && editing !== i && <p className="text-[13px] text-fg-2 m-0 mt-1 line-clamp-3">{it.text}</p>}
                     {editing === i ? (
