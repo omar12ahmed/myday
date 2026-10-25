@@ -48,6 +48,12 @@ const sent = (D, key, ms = 10000) => D.until(`(() => { const n = JSON.parse(loca
 // What a device's sync is doing, for failure messages.
 const diag = D => D.ev(`(() => { const n = JSON.parse(localStorage.getItem('myday.sync.v1') || 'null'); return { status: (document.getElementById('syncBadge') || {}).dataset?.status, phase: (document.getElementById('syncScreen') || {}).dataset?.phase, line: (document.getElementById('syncLine') || {}).textContent, out: n && n.link ? Object.keys(n.link.out) : null, conflicts: n && n.link ? Object.keys(n.link.conflicts) : null, review: n && n.link ? n.link.review : null, user: n && n.link ? n.link.user : null }; })()`);
 async function syncNowWhenReady(D) { await goSync(D); await D.until(`document.querySelector('[data-action=sync-now]') && !document.querySelector('[data-action=sync-now]').disabled`); await D.click('[data-action=sync-now]'); }
+// A project with no files folds its Files card into "Add to this project" (1.85.0): open it as you would.
+async function openFiles(D) {
+  await D.until(`document.getElementById('files-project') || document.querySelector('[data-action=section-open][data-id=files]')`, 15000);
+  if (await D.exists('[data-action=section-open][data-id=files]')) await D.click('[data-action=section-open][data-id=files]');
+  return D.until(`document.getElementById('files-project')`, 15000);
+}
 async function cloudUntil(fn, ms = 20000) { const t0 = Date.now(); while (Date.now() - t0 < ms) { if (await fn()) return true; await sleep(150); } return false; }
 const statusIs = (D, s, ms = 12000) => D.until(`document.getElementById('syncBadge') && document.getElementById('syncBadge').dataset.status === '${s}'`, ms);
 // Today's screen opens the list editor when it's opened at #today/edit, so come from another screen.
@@ -873,6 +879,10 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await fl.setData(`s => { s.projects.items.push({ id: '${PJ}', title: 'Shed files', summary: 'Papers for the shed.', stage: 'capture', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${today}T09:00', updatedAt: '${today}T09:00' });
     s.notes.items.push({ id: '${NT}', categoryId: '', title: 'Shed measurements', text: 'Two by three.', pinned: false, createdAt: '${today}T09:00', updatedAt: '${today}T09:00' }); }`);
   await fl.ev(`location.hash = '#projects/p/${PJ}'`);
+  // (A project with no links or files folds those cards into "Add to this project" since 1.85.0: open both, as you would.)
+  await fl.until(`!!document.querySelector('[data-action=section-open][data-id=files]')`, 15000);
+  await fl.click('[data-action=section-open][data-id=resources]'); await fl.until(`!!document.getElementById('projectResources')`, 5000);
+  await fl.click('[data-action=section-open][data-id=files]');
   await fl.until(`document.getElementById('files-project')`, 15000);
   check('the Files card is in the project\'s side column after Resources', await fl.ev(`(() => { const a = document.getElementById('projectResources'), b = document.getElementById('files-project'); return !!a && !!b && !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING); })()`));
   check('empty, it has the hint and "Add a file"', (await fl.text('#files-project')).includes('Keep photos, PDFs and documents with this project.') && (await fl.text('#files-project [data-action=file-add]')) === 'Add a file' && !(await fl.exists('#files-project [data-s=file]')));
@@ -1010,7 +1020,10 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await fl.open(APP + '#today');
   await fl.setData(`s => { s.files.items = []; for (const p of s.projects.items) delete p.fileIds; for (const n of s.notes.items) delete n.fileIds;
     s.projects.items.push({ id: '${PJ2}', title: 'Storage line', summary: '', stage: 'capture', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${today}T09:00', updatedAt: '${today}T09:00' }); }`);
-  const open2 = async () => { await fl.open(APP + '#projects/p/' + PJ2); await fl.until(`document.getElementById('files-project')`, 15000); };
+  // (With no files the card folds into "Add to this project" since 1.85.0: open it as you would.)
+  const open2 = async () => { await fl.open(APP + '#projects/p/' + PJ2); await fl.until(`document.getElementById('files-project') || document.querySelector('[data-action=section-open][data-id=files]')`, 15000);
+    if (await fl.exists('[data-action=section-open][data-id=files]')) await fl.click('[data-action=section-open][data-id=files]');
+    await fl.until(`document.getElementById('files-project')`, 15000); };
   await open2();
   check('the account\'s limit is 10 GB, and with nothing stored the line says so: "Your files: nothing stored yet, 10 GB left."', await fl.until(`!!document.querySelector('#files-project [data-s=files-storage]')`, 15000) && (await line()) === 'Your files: nothing stored yet, 10 GB left.' && (await usageNow()).limit === 10 * 1024 * 1024 * 1024, await line());
   check('…last in the card, after the Add button, with a bar', await fl.ev(`(() => { const b = document.querySelector('#files-project [data-action=file-add]'), l = document.querySelector('#files-project [data-s=files-storage]'); return !!(b.compareDocumentPosition(l) & Node.DOCUMENT_POSITION_FOLLOWING) && !!l.querySelector('[aria-hidden=true]') && document.querySelector('#files-project').lastElementChild === l; })()`));
@@ -1227,7 +1240,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await wmac.setData(`s => { s.notes.items = s.notes.items.filter(n => n.id !== '${N2}'); }`);
   await synced(wmac);
   check('(test setup: the account holds the project, the task, a note, and a deletion marker for the deleted note)', await cloudUntil(async () => { const r = await wrows(); return r.some(x => x.kind === 'project' && x.id === PJW) && r.some(x => x.kind === 'note' && x.id === N2 && x.deleted) && r.some(x => x.kind === 'task'); }, 15000), await wrows());
-  await wmac.ev(`location.hash = '#projects/p/${PJW}'`); await wmac.until(`document.getElementById('files-project')`, 15000);
+  await wmac.ev(`location.hash = '#projects/p/${PJW}'`); await openFiles(wmac);
   await give(wmac, '#files-project input[type=file]', [ftxt]);
   await wmac.until(`document.querySelectorAll('#files-project [data-s=file][data-state=kept]').length === 1`, 20000);
   await wmac.ev(`location.hash = '#backups'`); await wmac.until(`document.querySelector('[data-action=backup-now]')`, 15000);
@@ -1307,7 +1320,7 @@ function task(uid, taskId, category, title, minutes, done = false) {
   await wmac.ev(`location.hash = '#today'`); await wmac.until(`!!document.querySelector('[data-s=wiped-notice] [data-action=wiped-dismiss]')`, 8000); await wmac.click('[data-s=wiped-notice] [data-action=wiped-dismiss]');
   await wmac.setData(`s => { s.projects.items.push({ id: 'pjWipeB', title: 'Second shed', summary: '', stage: 'capture', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${today}T09:00', updatedAt: '${today}T09:00' }); }`);
   await synced(wmac);
-  await wmac.ev(`location.hash = '#projects/p/pjWipeB'`); await wmac.until(`document.getElementById('files-project')`, 15000);
+  await wmac.ev(`location.hash = '#projects/p/pjWipeB'`); await openFiles(wmac);
   await give(wmac, '#files-project input[type=file]', [fnote]);
   await wmac.until(`document.querySelectorAll('#files-project [data-s=file][data-state=kept]').length === 1`, 20000);
   await ctl('files-fail', { action: 'delete-all', times: 1 });
