@@ -80,7 +80,30 @@ for (const m of c.modules) {
     module_id: m.id, lessons: lessonsOf(m.id), exercises: exercisesOf(m.id), labs: labsOf(m.id), assessments: assessmentsOf(m.id),
   }));
 }
-writeFileSync(target + 'texts.json', JSON.stringify({ assets: c.assets, lexicon: c.lexicon_seed }));
+// Course words (MyDay's own, content/teaching/arabic/course-words.json): each lesson's words with meaning, root, example
+// and note, beside the starter words it uses (by id). Checked here so a word can't be lost, doubled or misfiled: its
+// id is the lesson's own name and a number, within revision's card-id rule (so an older release keeps its cards).
+const words = JSON.parse(readFileSync(fileURLToPath(new URL('../../content/teaching/arabic/course-words.json', import.meta.url)), 'utf8'));
+const lessonIds = new Set(c.lessons.map(l => l.id)), seedIds = new Set(c.lexicon_seed.map(w => w.id)), wordIds = new Set();
+const ARABIC = /[\u0621-\u064A]/, MARKS = /[\u064B-\u0652]/, ROOT_FORM = /^[\u0621-\u064A](-[\u0621-\u064A]){2,3}$/;
+for (const [lessonId, entry] of Object.entries(words.lessons)) {
+  if (!lessonIds.has(lessonId)) fail(`course words for an unknown lesson ${lessonId}`);
+  for (const s of entry.seed ?? []) if (!seedIds.has(s)) fail(`${lessonId}: unknown starter word ${s}`);
+  const forms = new Set();
+  entry.words.forEach((w, i) => {
+    const want = `lexeme.arabic-${lessonId.slice('lesson.arabic-'.length)}-${i + 1}`;
+    if (w.id !== want) fail(`${lessonId}: word ${i + 1} should have the id ${want}, not ${w.id}`);
+    if (!/^lexeme\.arabic-[a-z0-9-]{1,40}$/.test(w.id)) fail(`${w.id}: too long for revision's card ids`);
+    if (wordIds.has(w.id) || seedIds.has(w.id)) fail(`${w.id}: used twice`);
+    wordIds.add(w.id);
+    for (const f of ['form_ar', 'meaning_en', 'part_of_speech', 'example_ar', 'example_meaning_en', 'note']) if (typeof w[f] !== 'string' || !w[f].trim()) fail(`${w.id}: no ${f}`);
+    if (!ARABIC.test(w.form_ar) || !MARKS.test(w.form_ar) || !ARABIC.test(w.example_ar) || !MARKS.test(w.example_ar)) fail(`${w.id}: the word and its example must be vowelled Arabic`);
+    if ((w.root_ar === null) !== (w.root_reading === null) || (w.root_ar !== null && (!ROOT_FORM.test(w.root_ar) || typeof w.root_reading !== 'string' || !w.root_reading.trim()))) fail(`${w.id}: a root is written like ك-ت-ب, with its reading, or both are null`);
+    if (forms.has(w.form_ar)) fail(`${lessonId}: ${w.form_ar} twice`);
+    forms.add(w.form_ar);
+  });
+}
+writeFileSync(target + 'texts.json', JSON.stringify({ assets: c.assets, lexicon: c.lexicon_seed, course: words.lessons }));
 // The lesson checks as revision shows them (loaded only when a round reaches one): the question and its lesson's
 // title, by question id. A check's answer has the question's own id (revision relies on it).
 const lessonTitle = Object.fromEntries(c.lessons.map(l => [l.id, l.title]));

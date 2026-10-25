@@ -15,13 +15,12 @@ import { lessonIndex } from './catalogue';
 import { PractiseQuestion } from './PractiseQuestion';
 import { Pronunciation, PronunciationControls } from './Pronunciation';
 import checksJson from './data/checks.json';
-import texts from './data/texts.json';
+import { isCourseWord, wordById } from './courseWords';
 
-// An Arabic card in a revision round, asked like any other question: a starter word one way round, a lesson check,
+// An Arabic card in a revision round, asked like any other question: a word (a starter word or one from a lesson) one way round, a lesson check,
 // a word you kept one way round, or a lesson to practise again (PractiseQuestion.tsx). You compare your answer yourself; MyDay never marks Arabic (the course's own
 // answers are examples, and vowel marks are optional unless the question is about them).
 type Answers = Record<string, { answer: string; variation: string }>;
-const words = new Map(texts.lexicon.map(w => [w.id, w]));
 const checks = checksJson as Record<string, { prompt: string; lesson: string }>;
 
 export default function ArabicQuestion({ data, r, at, card }: { data: MyDayData; r: Round; at: number; card: ArabicCard }) {
@@ -63,13 +62,14 @@ function asked(data: MyDayData, card: ArabicCard, ref: Exclude<CardRef, { kind: 
       prompt: <>Write it in Arabic: “{w.meaning}”</>, answer: <Ar className="text-[28px]">{w.ar}</Ar>, answerLabel: 'In Arabic', explanation: note, explanationLabel: 'Your note' };
   }
   if (ref.kind === 'word') {
-    const w = words.get(ref.lexemeId);
+    const w = wordById(ref.lexemeId);
     if (!w) return 'gone';
-    const example = <><Ar>{w.example_ar}</Ar>{'\n'}{w.example_meaning_en}</>, exampleText = `${w.example_ar} — ${w.example_meaning_en}`;
+    const course = isCourseWord(w) ? w : null;
+    const example = <><Ar>{w.example_ar}</Ar>{'\n'}{w.example_meaning_en}{course && <>{'\n'}<Mixed text={course.note} /></>}</>, exampleText = `${w.example_ar} — ${w.example_meaning_en}`;
     const notYet = <>This one hasn’t clicked yet, which is normal for a new word. Read its example once more, slowly, out loud if you can; at the end of the round there’s a link back to the starter words.</>;
     if (ref.side === 'recognise') {
       const title = `${w.form_ar} → ${w.meaning_en}`;
-      return { ...base, title, path: 'Arabic · starter word', notYet, save: saving(title), explain: { subject: 'arabic', question: `What does ${w.form_ar} mean?`, answer: `${w.meaning_en} (${w.part_of_speech.replace('_', ' ')})`, explanation: exampleText },
+      return { ...base, title, path: course ? 'Arabic · a word from a lesson' : 'Arabic · starter word', notYet, save: saving(title), explain: { subject: 'arabic', question: `What does ${w.form_ar} mean?`, answer: `${w.meaning_en} (${w.part_of_speech.replace('_', ' ')})`, explanation: exampleText },
         prompt: <><Ar className="block text-[34px] leading-normal">{w.form_ar}</Ar>What does it mean?</>,
         answer: `${w.meaning_en} · ${w.part_of_speech.replace('_', ' ')}`, answerLabel: 'Meaning', explanation: example, explanationLabel: 'Example' };
     }
@@ -100,12 +100,14 @@ function Gone({ card, at, kept }: { card: ArabicCard; at: number; kept: boolean 
     <p>It was removed, perhaps on another device. Your past answers to it stay in your history.</p>
     <Button variant="primary" data-action="ar-gone-skip" onClick={() => skipQuestion(at)}>Next question</Button>
   </Card>;
+  // Either an update took it out, or a newer MyDay on another device added it (a word from a lesson this version
+  // doesn't have yet): skipping keeps it for that device, so Skip comes first.
   return <Card tone="accent" data-ar-gone="">
-    <h2>This one is no longer in the course</h2>
-    <p>An update to the course took it out. Your past answers to it stay in your history.</p>
+    <h2>This one isn’t in this version of the course</h2>
+    <p>An update may have taken it out, or a newer version of MyDay on another device added it. Skip it to keep it for that device; your past answers to it stay in your history either way.</p>
     <div className="grid sm:grid-cols-2 gap-3">
-      <Button variant="primary" data-action="ar-gone-remove" onClick={remove}>Take it out of revision</Button>
-      <Button variant="ghost" data-action="ar-gone-skip" onClick={() => skipQuestion(at)}>Skip for now</Button>
+      <Button variant="primary" data-action="ar-gone-skip" onClick={() => skipQuestion(at)}>Skip for now</Button>
+      <Button variant="ghost" data-action="ar-gone-remove" onClick={remove}>Take it out of revision</Button>
     </div>
   </Card>;
 }

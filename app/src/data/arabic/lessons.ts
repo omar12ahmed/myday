@@ -5,7 +5,7 @@
 import { shift } from '../dates';
 import { DELAYED_CHECK_DAYS, lessonState, placeNewCards, struggled, type CheckAnswer, type LessonEvidence, type LessonState } from '../study/mastery';
 import type { DateKey, MyDayData, Outcome, Support } from '../types';
-import { cardOf } from './cards';
+import { cardOf, wordCard, wordInRevision } from './cards';
 import { applyTicks, joinRevision, practiceCards, PRACTICE_FIRST_DAYS, settleOthers } from './practice';
 import { keptCards } from './words';
 import type { ArabicLesson } from './types';
@@ -107,11 +107,14 @@ function joinPractice(d: MyDayData, lessonId: string, k: DateKey): DateKey {
 }
 
 // ---------- Ready to move on, and Needs revision ----------
-// Saves the day and brings the lesson's checks back a week later (the delayed check). Marking it ready again starts
-// afresh from today, and clears your own flag: you've said it's fine now.
-export function markReady(d: MyDayData, lessonId: string, checks: string[], k: DateKey) {
+// Saves the day, brings the lesson's words (its course words and the starter words it uses, by id) into revision from
+// the next day — Arabic → meaning, any not already there — and its checks back a week later (the delayed check), all
+// within the 8 new a day. Marking it ready again starts afresh from today, and clears your own flag: you've said it's
+// fine now. Returns what it added: word cards ("lexeme.…:recognise") first, then checks.
+export function markReady(d: MyDayData, lessonId: string, checks: string[], k: DateKey, words: string[] = []) {
   edit(d, lessonId, l => { l.readyOn = k; delete l.revisit; });
-  return addAutomatic(d, checks, shift(k, DELAYED_CHECK_DAYS), k);
+  const fresh = words.filter(id => !wordInRevision(d, id)).map(id => wordCard(id, 'recognise'));
+  return [...addAutomatic(d, fresh, shift(k, 1), k), ...addAutomatic(d, checks, shift(k, DELAYED_CHECK_DAYS), k)];
 }
 // "Not ready after all": the cards stay in revision; you can take them out as before.
 export function unmarkReady(d: MyDayData, lessonId: string): boolean {

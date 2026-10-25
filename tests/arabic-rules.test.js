@@ -29,6 +29,11 @@ check('every lesson, exercise, lab and assessment is in exactly one module file'
 check('each lesson\'s task, check and challenge are in its own module file', all('lessons').every(l => { const c = chunks[l.module_id.split('.').pop()]; return c.exercises.some(e => e.id === l.practical_task_id) && c.exercises.some(e => e.id === l.mini_challenge_id) && c.assessments.some(a => a.id === l.knowledge_check_id); }));
 check('every lesson on the map points at a module that lists it', Object.entries(index.lessons).every(([id, l]) => index.modules.find(m => m.id === l.module_id)?.lesson_ids.includes(id)));
 check('the reading texts and starter words are all there', texts.assets.length === 16 && texts.lexicon.length === 48);
+const courseWords = JSON.parse(read(path.join(ROOT, 'content/teaching/arabic/course-words.json')));
+check('the app has the course words exactly as checked (MyDay\'s own list, beside the package\'s starter words)', JSON.stringify(texts.course) === JSON.stringify(courseWords.lessons) && Object.keys(texts.course).length >= 5);
+const shipped = JSON.parse(read(path.join(ROOT, 'app/src/study/arabic/voice-clips.json'))).clips;
+const spoken = Object.values(courseWords.lessons).flatMap(l => l.words).flatMap(w => [w.form_ar, w.example_ar]).filter(s => s.replace(/[\u064B-\u0652]/g, '').length > 1);
+check('every course word and its example (but a lone letter like وَ) has a voice that was listened to', spoken.length >= 90 && spoken.every(s => shipped[s]), spoken.filter(s => !shipped[s]));
 
 console.log('\n[3] Answers only where they belong');
 check('no reference answer appears in the map, the module files or the texts', ![read(path.join(out, 'index.json')), read(path.join(out, 'texts.json')), ...fs.readdirSync(path.join(out, 'modules')).map(f => read(path.join(out, 'modules', f)))].some(s => /expected_answer|"answer":/.test(s)));
@@ -205,6 +210,17 @@ check('vowelled and unvowelled versions are both kept where the package has them
   check('at most 8 cards come back for the first time on one day: a full day moves the rest to the next', A.markReady(s3, L, qs, k).every(p => p.due === '2026-10-28'));
   check('…counting every card not yet answered, in course order', JSON.stringify(A.placeNewCards(['2026-10-27', '2026-10-27', null], '2026-10-27', 3, 3)) === JSON.stringify(['2026-10-27', '2026-10-28', '2026-10-28']));
   check('cards you add yourself are never delayed by it', A.addCards(s3, ['lexeme.arabic-seed-040:recognise'], k) === 1 && A.cardOf(s3, 'lexeme.arabic-seed-040:recognise').review.due === '2026-10-21');
+
+  // Course words: marking a lesson ready brings its words (its own and the starter words it uses) back too.
+  const s8 = stub(), W = ['lexeme.arabic-greetings-address-1', 'lexeme.arabic-greetings-address-2', 'lexeme.arabic-seed-002'];
+  s8.arabic.cards.push({ id: 'lexeme.arabic-seed-002:write', addedOn: '2026-10-01', review: { reps: 1, interval: 3, lapses: 0, due: '2026-11-01' } });
+  const got = A.markReady(s8, L, qs, k, W);
+  check('Ready brings the lesson\'s words into revision from the next day (Arabic → meaning), then its checks a week later', JSON.stringify(got.map(a => a.id)) === JSON.stringify(['lexeme.arabic-greetings-address-1:recognise', 'lexeme.arabic-greetings-address-2:recognise', Q(1), Q(2), Q(3)])
+    && got.slice(0, 2).every(a => a.due === '2026-10-21') && got.slice(2).every(a => a.due === '2026-10-27'));
+  check('…leaving a word already in revision either way round as it was', !A.cardOf(s8, 'lexeme.arabic-seed-002:recognise') && A.cardOf(s8, 'lexeme.arabic-seed-002:write').review.due === '2026-11-01');
+  check('…and marking it ready again adds nothing twice', A.markReady(s8, L, qs, '2026-10-22', W).length === 0);
+  const s9 = stub(), wordsBack = A.markReady(s9, L, [], k, Array.from({ length: 10 }, (_, i) => `lexeme.arabic-greetings-address-${i + 1}`));
+  check('…within the 8 new a day: ten words come back eight the next day and two the day after', wordsBack.filter(a => a.due === '2026-10-21').length === 8 && wordsBack.filter(a => a.due === '2026-10-22').length === 2);
 
   const s4 = stub(), a4 = A.beginSession(s4, L, 'standard');
   A.markCheck(s4, a4, Q(1), 'right', 'own', k); A.discardMarks(s4, a4, L); A.discardSession(s4, a4);

@@ -37,6 +37,7 @@ import { arabicCheckSource } from './checkSource';
 import { RestartOffer, StepBar } from '../journey/Journey';
 import { AR_MAX, editWord, keepWord, keptCardId, keptWord, MEANING_MAX, NOTE_MAX, practiseWriting, removeWord, sentencesIn } from '../../data/arabic/words';
 import { KeepAWord } from './KeepAWord';
+import { courseLessons, isCourseWord, lessonWordIds, lessonWords, type AnyWord } from './courseWords';
 import { starterFor } from './starter';
 import { ARABIC_TINY, toStep } from '../journey/dom';
 import { takeStep } from '../journey/pending';
@@ -155,7 +156,7 @@ function ReadyOffer({ data }: { data: MyDayData }) {
   const ids = practisedUnmarked(data).filter(id => lessonIndex[id]);
   if (gone || !ids.length) return null;
   const close = () => { try { localStorage.setItem(OFFER_KEY, 'done'); } catch { /* still closes for this visit */ } setGone(true); };
-  const markTicked = () => { const k = todayKey(); if (update(d => { for (const id of ticked) markReady(d, id, checksOf(id), k); })) close(); };
+  const markTicked = () => { const k = todayKey(); if (update(d => { for (const id of ticked) markReady(d, id, checksOf(id), k, lessonWordIds(id)); })) close(); };
   return <Card data-ar-ready-offer="">
     <h3 className="mt-0">Lessons you’ve practised</h3>
     <p className="text-[15px]">You’ve finished sessions on {plural(ids.length, 'lesson')} without saying yet whether you’re ready to move on. A finished session counts as practice, so your next step stays on a lesson until you do. Mark any you’re ready to move on from; their checks come back in a week.</p>
@@ -291,6 +292,7 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
             </div>}
             {teaching.lesson ? <div data-teaching={l.id} className="min-w-0 break-words"><TeachingRead t={teaching} /></div> : <TeachingWaiting missing={teaching.missing} bare />}
             <KeepAWord data={data} from={l.id} sentences={[l.example?.text_ar ?? '', ...arabicRuns(teaching.lesson?.example ?? '')]} />
+            <LessonWords data={data} lessonId={l.id} />
           </>}
       </Card>
       {teaching.lesson && !folded && <TeachingMaterial t={teaching} />}
@@ -620,7 +622,7 @@ function RevisionGlance({ data }: { data: MyDayData }) {
   return <Card data-ar-revision={due ? 'due' : any ? 'later' : 'none'}>
     <h3 className="flex items-center gap-2 mt-0"><RotateCcw size={20} aria-hidden="true" />Revision</h3>
     {any
-      ? <p className="text-[15px]">In your revision: {[words && plural(words, 'starter word'), kept && plural(kept, 'word') + ' you kept', checks && plural(checks, 'lesson check'), practice && plural(practice, 'lesson') + ' to practise again'].filter(Boolean).join(', ').replace(/, ([^,]*)$/, ' and $1')}. {due ? `${due} ready now.` : next ? `Next back on ${shortDate(next)}.` : ''}</p>
+      ? <p className="text-[15px]">In your revision: {[words && plural(words, 'course word'), kept && plural(kept, 'word') + ' you kept', checks && plural(checks, 'lesson check'), practice && plural(practice, 'lesson') + ' to practise again'].filter(Boolean).join(', ').replace(/, ([^,]*)$/, ' and $1')}. {due ? `${due} ready now.` : next ? `Next back on ${shortDate(next)}.` : ''}</p>
       : <p className="text-[15px]">Bring words and lesson checks back at growing gaps, so they stay with you. Add them from <InlineLink href="#study/arabic/vocabulary">Vocabulary</InlineLink> or a lesson’s checks.</p>}
     {due > 0 && <Button variant="primary" data-action="ar-revise" onClick={() => startRevision('arabic')}>Revise Arabic</Button>}
   </Card>;
@@ -632,6 +634,16 @@ function backWhen(days: string[]): string {
   const sorted = [...new Set(days)].sort();
   if (sorted.length > 1) return `from ${shortDate(sorted[0])}`;
   return sorted[0] === shift(todayKey(), 1) ? 'tomorrow' : `on ${shortDate(sorted[0])}`;
+}
+// What marking a lesson ready brought into revision, in a sentence: its words (from the next day) and its checks (a
+// week later), "Its 10 words will come back tomorrow, and its 2 checks on 2 Nov." Null when all were there already.
+function readyBack(added: { id: string; due: string }[]): string | null {
+  const words = added.filter(a => a.id.startsWith('lexeme.')), checks = added.filter(a => !a.id.startsWith('lexeme.'));
+  const w = words.length ? [plural(words.length, 'word'), backWhen(words.map(a => a.due))] : null;
+  const c = checks.length ? [plural(checks.length, 'check'), backWhen(checks.map(a => a.due))] : null;
+  if (w && c) return `Its ${w[0]} will come back ${w[1]}, and its ${c[0]} ${c[1]}.`;
+  const one = w ?? c;
+  return one ? `Its ${one[0]} will come back ${one[1]}.` : null;
 }
 
 // After finishing a session: whether it looks ready to move on (from your marks), the checks that haven't clicked yet
@@ -648,7 +660,7 @@ function FinishedCard({ data, lessonId, checks, finished, next, onClose }: { dat
   const [back, setBack] = useState(finished.notYet), [readyNote, setReadyNote] = useState<string | null>(null), [asking, setAsking] = useState(false);
   const state = arabicState(data, lessonId), ready = looksReady(checks, marksIn(data, finished.attemptId, lessonId)), flagged = !!lessonRecord(data, lessonId)?.revisit;
   const done = state === 'ready' || state === 'holding';
-  const markIt = () => { let added: { id: string; due: string }[] = []; const k = todayKey(); if (update(d => { added = markReady(d, lessonId, checks, k); })) setReadyNote(added.length ? `Its ${plural(added.length, 'check')} will come back ${backWhen(added.map(a => a.due))}.` : 'Its checks are already in your revision.'); };
+  const markIt = () => { let added: { id: string; due: string }[] = []; const k = todayKey(); if (update(d => { added = markReady(d, lessonId, checks, k, lessonWordIds(lessonId)); })) setReadyNote(readyBack(added) ?? 'Its checks are already in your revision.'); };
   const keepOut = () => { const ids = back.map(b => b.id); if (update(d => { if (!removeCards(d, ids)) return false; })) setBack([]); };
   const [practice, setPractice] = useState(finished.practice);
   const practiceOut = () => { if (update(d => { if (!removeCards(d, [practiceCardId(lessonId)])) return false; })) setPractice(null); };
@@ -698,7 +710,7 @@ function LessonPlace({ data, lessonId, checks }: { data: MyDayData; lessonId: st
     : state === 'ready' ? `Ready to move on since ${shortDate(rec!.readyOn!)}.${nextBack ? ` Its checks are in your revision: the next is ${backOn(nextBack)}.` : ''}`
     : state === 'holding' ? 'Holding: you recalled its checks on your own a week or more after marking it ready.'
     : rec?.revisit ? `Needs revision${rec.revisit.what ? `: ${rec.revisit.what}` : ''}.` : 'Needs revision: one of its checks slipped after you marked it ready. Recalling it on your own clears this.';
-  const ready = () => { let added: { id: string; due: string }[] = []; const k = todayKey(); if (update(d => { added = markReady(d, lessonId, checks, k); })) setNote(added.length ? `Its ${plural(added.length, 'check')} will come back ${backWhen(added.map(a => a.due))}.` : null); };
+  const ready = () => { let added: { id: string; due: string }[] = []; const k = todayKey(); if (update(d => { added = markReady(d, lessonId, checks, k, lessonWordIds(lessonId)); })) setNote(readyBack(added)); };
   return <div className="rounded-tile bg-surface border border-outline px-4 py-3 my-3" data-ar-place={state}>
     <p className="m-0 font-semibold"><span dir="auto">{line}</span></p>
     {note && <p className="text-sm text-fg-2 m-0 mt-1" data-ar-place-note="">{note}</p>}
@@ -791,13 +803,9 @@ function YourWords({ data }: { data: MyDayData }) {
 }
 
 function Vocabulary({ data }: { data: MyDayData }) {
-  const confirm = useConfirm();
+  const takeOut = useTakeOut();
   const k = todayKey(), ids = texts.lexicon.map(w => w.id), next = nextWords(data, ids, ADD_A_FEW), today = wordsAddedOn(data, k);
   const inRev = ids.filter(id => wordInRevision(data, id)).length, plenty = today >= NEW_WORDS_A_DAY;
-  async function takeOut(w: (typeof texts.lexicon)[number]) {
-    if (await confirm({ title: 'Take this word out of revision?', body: `“${w.meaning_en}”: your past answers stay in your history. If you add it again, it starts afresh.`, confirmLabel: 'Take it out', cancelLabel: 'Keep it' }))
-      outOfRevision([wordCard(w.id, 'recognise'), wordCard(w.id, 'write')]);
-  }
   return <>
     <YourWords data={data} />
     <Card><Eyebrow>Vocabulary</Eyebrow><h2>Starter words</h2>
@@ -809,24 +817,81 @@ function Vocabulary({ data }: { data: MyDayData }) {
       {hasVoice ? <VoiceNote /> : <p className="text-sm text-fg-2 flex gap-2 items-start mt-3 mb-0"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />Revision covers reading and writing. Without recordings, listening and speaking stay untested.</p>}
     </Card>
     <WordFamilies />
-    <Card><ul className="list-none p-0 m-0 divide-y divide-outline" data-ar-vocabulary="">{texts.lexicon.map(w => {
-      const recognise = cardState(data, wordCard(w.id, 'recognise')), write = cardState(data, wordCard(w.id, 'write')), fam = familyOf(w.id);
-      return <li key={w.id} data-ar-word={w.id} tabIndex={-1} data-in={recognise || write ? 'yes' : 'no'} className="py-3 grid gap-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-4 items-baseline focus:outline-2 focus:outline-primary focus:outline-offset-4 rounded-sm">
-        <div className="flex items-start gap-2"><div className="min-w-0 flex-1"><Ar block className="text-[26px] font-medium m-0">{w.form_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.meaning_en} · {w.part_of_speech.replace('_', ' ')}</p>
-          {fam && <p className="text-xs text-fg-2 m-0 mt-1" data-ar-family-badge={fam.id}><span className="inline-flex items-center gap-1 rounded-full bg-surface-2 border border-outline px-2 py-0.5"><Root f={fam} reading={false} /> family</span></p>}</div>
-          <PlayButton text={w.form_ar} name={`${w.id}:word`} label={w.form_ar} /></div>
-        <div className="flex items-start gap-2"><div className="min-w-0 flex-1"><Ar block className="text-[20px] m-0">{w.example_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.example_meaning_en}</p></div>
-          <PlayButton text={w.example_ar} name={`${w.id}:example`} label={`the example for ${w.form_ar}`} /></div>
-        <div className="sm:col-span-2 mt-1">
-          {(recognise || write) && <p className="text-sm m-0 mb-1.5">{recognise && <span className="block">Recognising it: {recognise}</span>}{write && <span className="block">Writing it: {write}</span>}</p>}
-          <div className="flex flex-wrap gap-2">
-            {!recognise && <Button inline variant="ghost" data-action="ar-word-add" onClick={() => addToRevision([wordCard(w.id, 'recognise')])}>Add to revision</Button>}
-            {recognise && !write && <Button inline variant="ghost" data-action="ar-word-write" onClick={() => addToRevision([wordCard(w.id, 'write')])}>Also practise writing it</Button>}
-            {(recognise || write) && <Button inline variant="ghost" data-action="ar-word-remove" onClick={() => takeOut(w)}>Take it out</Button>}
-          </div>
-        </div>
-      </li>;
-    })}</ul></Card>
+    <Card><ul className="list-none p-0 m-0 divide-y divide-outline" data-ar-vocabulary="">{texts.lexicon.map(w => <WordRow key={w.id} data={data} w={w} takeOut={takeOut} />)}</ul></Card>
+    <CourseWords data={data} takeOut={takeOut} />
   </>;
+}
+
+// Taking a word out of revision, asked first (both its sides; its past answers stay in your history).
+function useTakeOut() {
+  const confirm = useConfirm();
+  return async (w: AnyWord) => {
+    if (await confirm({ title: 'Take this word out of revision?', body: `“${w.meaning_en}”: your past answers stay in your history. If you add it again, it starts afresh.`, confirmLabel: 'Take it out', cancelLabel: 'Keep it' }))
+      outOfRevision([wordCard(w.id, 'recognise'), wordCard(w.id, 'write')]);
+  };
+}
+// A word's note: English with Arabic in it, each Arabic piece with its voice, and a root written like ك-ت-ب kept whole.
+const ROOT_IN_NOTE = /[\u0621-\u064A](?:-[\u0621-\u064A]){2,3}/g;
+function WordNote({ text, voice }: { text: string; voice: string }) {
+  const out: ReactNode[] = [];
+  let last = 0;
+  for (const m of text.matchAll(ROOT_IN_NOTE)) {
+    if (m.index > last) out.push(<Mixed key={last} text={text.slice(last, m.index)} voice={`${voice}:${last}`} />);
+    out.push(<Root key={'r' + m.index} f={{ root_ar: m[0], root_reading: '' }} reading={false} />);
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) out.push(<Mixed key={last} text={text.slice(last)} voice={`${voice}:${last}`} />);
+  return <>{out}</>;
+}
+// One word: the Arabic, its meaning (a course word's root too), its example, each with its voice; a course word's note;
+// where it stands in revision, and adding it, practising writing it, or taking it out.
+function WordRow({ data, w, takeOut }: { data: MyDayData; w: AnyWord; takeOut: (w: AnyWord) => void }) {
+  const recognise = cardState(data, wordCard(w.id, 'recognise')), write = cardState(data, wordCard(w.id, 'write')), fam = familyOf(w.id);
+  const course = isCourseWord(w) ? w : null;
+  return <li data-ar-word={w.id} tabIndex={-1} data-in={recognise || write ? 'yes' : 'no'} className="py-3 grid gap-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-4 items-baseline focus:outline-2 focus:outline-primary focus:outline-offset-4 rounded-sm">
+    <div className="flex items-start gap-2"><div className="min-w-0 flex-1"><Ar block className="text-[26px] font-medium m-0">{w.form_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.meaning_en} · {w.part_of_speech.replace('_', ' ')}</p>
+      {fam && <p className="text-xs text-fg-2 m-0 mt-1" data-ar-family-badge={fam.id}><span className="inline-flex items-center gap-1 rounded-full bg-surface-2 border border-outline px-2 py-0.5"><Root f={fam} reading={false} /> family</span></p>}
+      {course?.root_ar && <p className="text-xs text-fg-2 m-0 mt-1" data-ar-root={course.root_ar}>Root: <Root f={{ root_ar: course.root_ar, root_reading: course.root_reading ?? '' }} /></p>}</div>
+      <PlayButton text={w.form_ar} name={`${w.id}:word`} label={w.form_ar} /></div>
+    <div className="flex items-start gap-2"><div className="min-w-0 flex-1"><Ar block className="text-[20px] m-0">{w.example_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.example_meaning_en}</p></div>
+      <PlayButton text={w.example_ar} name={`${w.id}:example`} label={`the example for ${w.form_ar}`} /></div>
+    {course && <p className="text-sm m-0 sm:col-span-2 min-w-0 break-words" data-ar-word-note=""><WordNote text={course.note} voice={`${w.id}:note`} /></p>}
+    <div className="sm:col-span-2 mt-1">
+      {(recognise || write) && <p className="text-sm m-0 mb-1.5">{recognise && <span className="block">Recognising it: {recognise}</span>}{write && <span className="block">Writing it: {write}</span>}</p>}
+      <div className="flex flex-wrap gap-2">
+        {!recognise && <Button inline variant="ghost" data-action="ar-word-add" onClick={() => addToRevision([wordCard(w.id, 'recognise')])}>Add to revision</Button>}
+        {recognise && !write && <Button inline variant="ghost" data-action="ar-word-write" onClick={() => addToRevision([wordCard(w.id, 'write')])}>Also practise writing it</Button>}
+        {(recognise || write) && <Button inline variant="ghost" data-action="ar-word-remove" onClick={() => takeOut(w)}>Take it out</Button>}
+      </div>
+    </div>
+  </li>;
+}
+// Vocabulary's course words: each lesson's own words, in the course's order, with a link to the lesson.
+function CourseWords({ data, takeOut }: { data: MyDayData; takeOut: (w: AnyWord) => void }) {
+  const lessons = courseLessons.filter(id => lessonIndex[id] && lessonWords(id).own.length);
+  if (!lessons.length) return null;
+  return <Card data-ar-course-words={lessons.length}><Eyebrow>Vocabulary</Eyebrow><h2>Words from the lessons</h2>
+    <p>Each lesson’s words, with the root they come from, an example and a note. A lesson’s words join your revision when you mark it ready to move on, a few a day; you can add any of them sooner here.</p>
+    {lessons.map(id => <section key={id} data-ar-course-lesson={id} className="mt-4">
+      <h3 className="mb-1"><InlineLink href={'#study/arabic/' + id}>{lessonIndex[id].title}</InlineLink></h3>
+      <ul className="list-none p-0 m-0 divide-y divide-outline">{lessonWords(id).own.map(w => <WordRow key={w.id} data={data} w={w} takeOut={takeOut} />)}</ul>
+    </section>)}
+  </Card>;
+}
+// A lesson's words under its explanation (folded away with it while you check yourself): its own words, then the
+// starter words it uses. They join revision when you mark the lesson ready to move on (markReady).
+function LessonWords({ data, lessonId }: { data: MyDayData; lessonId: string }) {
+  const takeOut = useTakeOut(), { own, starter } = lessonWords(lessonId);
+  if (!own.length) return null;
+  const all = [...own, ...starter], inRev = all.filter(w => wordInRevision(data, w.id)).length;
+  return <details className="mt-4 rounded-tile border border-outline bg-surface px-4 py-2" data-ar-lesson-words={own.length}>
+    <summary className="cursor-pointer min-h-11 py-2 font-semibold text-primary">Words in this lesson: {own.length}{starter.length ? `, and ${plural(starter.length, 'starter word')} it uses` : ''}</summary>
+    <p className="text-sm text-fg-2 mt-1" data-ar-lesson-words-in={inRev}>{inRev === all.length ? 'All of them are in your revision.'
+      : inRev ? `${inRev} of ${all.length} are in your revision; the rest join when you mark the lesson ready to move on.`
+      : 'They join your revision when you mark the lesson ready to move on, a few a day.'}</p>
+    <ul className="list-none p-0 m-0 divide-y divide-outline">{own.map(w => <WordRow key={w.id} data={data} w={w} takeOut={takeOut} />)}</ul>
+    {starter.length > 0 && <><h4 className="mb-0 mt-3">Starter words it uses</h4>
+      <ul className="list-none p-0 m-0 divide-y divide-outline">{starter.map(w => <WordRow key={w.id} data={data} w={w} takeOut={takeOut} />)}</ul></>}
+  </details>;
 }
 
