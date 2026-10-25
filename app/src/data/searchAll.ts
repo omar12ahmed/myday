@@ -45,6 +45,7 @@ const fold2 = (s: string) => fold(s).replace(/ـ/g, '');
 const texts = (xs: unknown[]): string[] => xs.flatMap(x => Array.isArray(x) ? texts(x) : typeof x === 'string' && x.trim() ? [x] : []);
 const enc = encodeURIComponent;
 const quote = (s: string) => `“${s}”`;
+const attr = (id: string) => id.replace(/["\\]/g, '\\$&'); // an id inside [data-…="…"]
 
 export const foundCount = (n: number, query: string) =>
   n ? `${n} ${n === 1 ? 'match' : 'matches'} for “${query.trim()}”` : `Nothing in MyDay matches “${query.trim()}”`;
@@ -86,8 +87,11 @@ export function searchEverywhere(data: MyDayData, query: string, courses: Course
     const state = p.status === 'paused' ? 'Paused' : p.status === 'done' ? 'Done' : null, rank = p.status === 'paused' ? 1 : p.status === 'done' ? 2 : 0;
     for (const h of searchProject(data, p, query)) {
       if (h.kind === 'task' || h.kind === 'note') continue;
+      // Arriving, the item itself is brought into view and focused, as Search this project's pick does (ProjectView's
+      // focusItem: the head, the one page's answers, or the row with its data-id).
+      const focus = h.kind === 'about' ? '#projectHead' : h.kind === 'model' && h.id === 'answers' ? '#pjModelH' : `[data-id="${attr(h.id)}"]`;
       found.projects.push({ kind: h.kind === 'about' ? 'Project' : SEARCH_KIND_LABEL[h.kind], id: `${p.id}:${h.kind}:${h.id}`, title: h.title, where: h.kind === 'about' ? '' : `in ${quote(p.title)}`,
-        excerpt: h.excerpt, href: h.href, tags: state ? [state] : [], rank });
+        excerpt: h.excerpt, href: h.href, tags: state ? [state] : [], rank, focus });
     }
   }
 
@@ -142,7 +146,7 @@ export function searchEverywhere(data: MyDayData, query: string, courses: Course
   const cyLesson = new Map([...(courses?.cyber.lessons ?? []), ...(courses?.cyber.activities ?? [])].map(l => [l.id, l.title]));
   const arHref = (id: string) => `#study/arabic/${enc(id)}`;
   for (const w of data.arabic.words ?? []) {
-    add('study', { kind: 'Kept word', id: w.id, title: w.ar, where: w.meaning, href: '#study/arabic/vocabulary', focus: `[data-ar-kept="${w.id.replace(/["\\]/g, "\\$&")}"]`, lang: 'ar' }, w.ar, [w.meaning, w.note]);
+    add('study', { kind: 'Kept word', id: w.id, title: w.ar, where: w.meaning, href: '#study/arabic/vocabulary', focus: `[data-ar-kept="${attr(w.id)}"]`, lang: 'ar' }, w.ar, [w.meaning, w.note]);
   }
   for (const l of data.arabic.lessons ?? []) {
     if (l.revisit?.what) add('study', { kind: 'Needs revision', id: `ar:${l.id}`, title: arLesson.get(l.id) ?? 'Arabic lesson', where: 'Arabic', href: arHref(l.id) }, '', [l.revisit.what]);
@@ -167,7 +171,7 @@ export function searchEverywhere(data: MyDayData, query: string, courses: Course
     // opens its lesson, a starter word Vocabulary at that word.
     for (const w of courses.arabic.words ?? []) {
       add('study', { kind: 'Course word', id: w.id, title: w.ar, where: w.meaning, href: w.lessonId ? arHref(w.lessonId) : '#study/arabic/vocabulary', lang: 'ar',
-        ...(w.lessonId ? {} : { focus: `[data-ar-word="${w.id.replace(/["\\]/g, '\\$&')}"]` }) }, w.ar, [w.meaning, w.example, w.exampleMeaning]);
+        ...(w.lessonId ? {} : { focus: `[data-ar-word="${attr(w.id)}"]` }) }, w.ar, [w.meaning, w.example, w.exampleMeaning]);
     }
     for (const m of courses.cyber.modules) add('study', { kind: 'Cybersecurity module', id: m.id, title: m.name, href: lessonHref(m.id) }, m.name, [m.purpose]);
     for (const l of courses.cyber.lessons) add('study', { kind: 'Cybersecurity lesson', id: l.id, title: l.title, where: cyModule.get(l.moduleId) ?? '', href: lessonHref(l.id) }, l.title);

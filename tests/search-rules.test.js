@@ -114,6 +114,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   check('a project\'s tasks and notes are under Tasks and Notes, never twice', !pj.some(f => f.kind === 'Task' || f.kind === 'Note') && ids(el, 'tasks').includes('tkShedWire') && ids(el, 'notes').includes('nShed'));
   check('open projects first, then paused (marked), then done (marked)', eq(pj.map(f => f.tags.join() || 'open'), ['open', 'Paused', 'Done']), pj.map(f => [f.title, f.tags]));
   check('…links open the project the way Search this project does', pj.find(f => f.kind === 'Milestone').href === '#projects/p/pjKitchen/milestones' && pj.find(f => f.kind === 'Project').href === '#projects/p/pjShed');
+  check('…and arriving brings the item itself into view (its head, or its row by data-id)', pj.find(f => f.kind === 'Project').focus === '#projectHead' && pj.find(f => f.kind === 'Milestone').focus === '[data-id="msK"]' && pj.find(f => f.kind === 'Decision').focus === '[data-id="dcF"]');
 
   console.log('\n[4] Notes');
   const nt = sec(el, 'notes');

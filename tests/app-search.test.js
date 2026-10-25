@@ -32,7 +32,7 @@ const TK = (id, title, x = {}) => ({ id, title, listId: '', category: 'admin', m
 const world = s => {
   s.tasks.lists = [{ id: 'tlH', name: 'Home jobs' }];
   s.projects.items = [
-    P('pjShed', 'Garden shed', { summary: 'Lighting the shed with a lantern' }),
+    P('pjShed', 'Garden shed', { summary: 'Lighting the shed with a lantern', milestones: [{ id: 'msHook', title: 'Lantern hooks fitted', reached: false, aim: null }] }),
     P('pjHush', 'Hush plans', { private: true, summary: 'Order quokka paint' }),
   ];
   s.tasks.items = [
@@ -97,10 +97,10 @@ const WORD = 'lantern';
   const h0 = await ev('history.length');
   for (const part of ['l', 'la', 'lan', 'lant', 'lante', 'lanter', 'lantern']) await type('#searchAll', part);
   await until(`document.querySelectorAll('[data-s=search-hit]').length > 0`);
-  check('the heading counts every match and quotes the word', (await text('#searchCount')).trim() === '9 matches for “lantern”', await text('#searchCount'));
+  check('the heading counts every match and quotes the word', (await text('#searchCount')).trim() === '10 matches for “lantern”', await text('#searchCount'));
   const secs = await sections();
   check('sections come in the fixed order, only those with matches', eq(secs.map(s => s.section), ['tasks', 'projects', 'notes', 'calendar', 'study', 'finance', 'health']), secs);
-  check('each heading reads like "Tasks · 3"', eq(secs.map(s => s.head), ['Tasks · 3', 'Projects · 1', 'Notes · 1', 'Calendar · 1', 'Study · 1', 'Finance · 1', 'Health · 1']), secs);
+  check('each heading reads like "Tasks · 3"', eq(secs.map(s => s.head), ['Tasks · 3', 'Projects · 2', 'Notes · 1', 'Calendar · 1', 'Study · 1', 'Finance · 1', 'Health · 1']), secs);
   check('the address becomes #search?q=lantern', (await hash()) === '#search?q=lantern', await hash());
   check('typing several letters added no history entries', (await ev('history.length')) === h0, [h0, await ev('history.length')]);
 
@@ -110,7 +110,14 @@ const WORD = 'lantern';
   check('…and its page shows', await until(`!!document.getElementById('taskEditor')`));
   await ev('history.back()');
   check('Back returns to #search?q=lantern', await until(`location.hash === '#search?q=lantern'`), await hash());
-  check('…the field holds the word and the results are shown again', await until(`document.getElementById('searchAll') && document.getElementById('searchAll').value === 'lantern' && document.querySelectorAll('[data-s=search-hit]').length === 9`), [await ev(`(document.getElementById('searchAll')||{}).value`), await hits()]);
+  check('…the field holds the word and the results are shown again', await until(`document.getElementById('searchAll') && document.getElementById('searchAll').value === 'lantern' && document.querySelectorAll('[data-s=search-hit]').length === 10`), [await ev(`(document.getElementById('searchAll')||{}).value`), await hits()]);
+
+  console.log('\n[4b] A project\'s milestone');
+  await click('[data-s=search-hit][data-kind="Milestone"] a');
+  check('the milestone result opens its project\'s Milestones tab', await until(`location.hash === '#projects/p/pjShed/milestones'`), await hash());
+  check('…and that milestone itself is brought into view and focused', await until(`document.activeElement && document.activeElement.getAttribute('data-id') === 'msHook'`, 4500), await ev(`document.activeElement ? document.activeElement.outerHTML.slice(0, 120) : ''`));
+  await ev('history.back()');
+  await until(`location.hash === '#search?q=lantern'`);
 
   console.log('\n[5] Calendar');
   await click('[data-s=search-hit] a[href="#calendar/2026-11-03"]');
@@ -158,11 +165,11 @@ const WORD = 'lantern';
   console.log('\n[11] Phones');
   await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await go(`search?q=${WORD}`);
-  await until(`document.querySelectorAll('[data-s=search-hit]').length === 9`);
+  await until(`document.querySelectorAll('[data-s=search-hit]').length === 10`);
   const w = await ev(`({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth })`);
   check('phone: with results on screen nothing scrolls sideways', w.sw <= w.cw, w);
   const small = await ev(`[...document.querySelectorAll('[data-s=search-hit] a')].map(a => ({ t: a.textContent.trim().slice(0, 30), h: Math.round(a.getBoundingClientRect().height) })).filter(x => x.h < 44)`);
-  check('phone: every result link is at least 44 px tall', (await hits()) === 9 && small.length === 0, small);
+  check('phone: every result link is at least 44 px tall', (await hits()) === 10 && small.length === 0, small);
 
   if (SHOTS) console.log('\n[screenshots] (not checks)');
   if (SHOTS) for (const [name, w2, h2, dsf, mobile] of [['desktop', 1366, 900, 1, false], ['phone', 390, 844, 2, true]]) {
@@ -170,7 +177,7 @@ const WORD = 'lantern';
     for (const theme of ['light', 'dark']) {
       await editStorage(`s => { s.settings.theme = '${theme}'; }`);
       await go(`search?q=${WORD}`);
-      await until(`document.querySelectorAll('[data-s=search-hit]').length === 9`);
+      await until(`document.querySelectorAll('[data-s=search-hit]').length === 10`);
       await shot(`${name}-${theme}`);
       console.log(`  saved ${SHOTS}/${name}-${theme}.png`);
     }
