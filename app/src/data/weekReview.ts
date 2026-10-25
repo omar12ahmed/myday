@@ -3,8 +3,8 @@
 // choose is saved where it belongs: a project's `focus` (the day its focus week starts), your review day and the
 // review you've done or put off (with your other preferences), and your reflection as an ordinary note
 // (`reflectionWeek` marks which week it's for). Nothing is judged: no scores, no "behind", a quiet week is fine.
-import { awaitingAnswer, isBusiness, isCase } from './businessModel';
-import { caseCounts } from './caseFile';
+import { decisionsOpen, evidenceToGet, findOutsDone } from './attention';
+import { isBusiness, isCase } from './businessModel';
 import { keyOf, localStamp, parseKey, shift, shortDate, todayKey } from './dates';
 import { NOTE_LIMITS } from './notes';
 import { lastActivity, projectsInOrder } from './projects';
@@ -69,12 +69,12 @@ export function whatsWaiting(data: MyDayData, k: DateKey = todayKey(), max = REV
     const quiet = days(lastActivity(data, p).slice(0, 10), k);
     if (quiet >= 14) out.push({ key: `quiet:${p.id}`, kind: 'quiet', projectId: p.id, href: `#projects/p/${encodeURIComponent(p.id)}`, text: `“${p.title}” has been quiet for ${Math.floor(quiet / 7)} weeks` });
   }
-  for (const p of active) for (const x of p.decisions ?? []) {
-    if (!x.chosen && days(x.createdAt.slice(0, 10), k) >= 14) out.push({ key: `decision:${p.id}:${x.id}`, kind: 'decision', projectId: p.id, href: `#projects/p/${encodeURIComponent(p.id)}/decisions`, text: `“${x.question}” is still open (${p.title})` });
+  for (const p of active) for (const x of decisionsOpen(p, k)) {
+    out.push({ key: `decision:${p.id}:${x.id}`, kind: 'decision', projectId: p.id, href: `#projects/p/${encodeURIComponent(p.id)}/decisions`, text: `“${x.question}” is still open (${p.title})` });
   }
   for (const p of active) {
-    if (isBusiness(p)) { const n = (p.model?.assumptions ?? []).filter(a => awaitingAnswer(data, a)).length; if (n) out.push({ key: `found:${p.id}`, kind: 'found', projectId: p.id, href: `#projects/p/${encodeURIComponent(p.id)}/model`, text: `${p.title}: ${n === 1 ? 'a Find out task is' : `${n} Find out tasks are`} done — what did you find?` }); }
-    if (isCase(p)) { const n = caseCounts(p).toGet; if (n) out.push({ key: `evidence:${p.id}`, kind: 'evidence', projectId: p.id, href: `#projects/p/${encodeURIComponent(p.id)}/evidence`, text: `${p.title}: ${n} ${n === 1 ? 'piece' : 'pieces'} of evidence still to get` }); }
+    if (isBusiness(p)) { const n = findOutsDone(data, p); if (n) out.push({ key: `found:${p.id}`, kind: 'found', projectId: p.id, href: `#projects/p/${encodeURIComponent(p.id)}/model`, text: `${p.title}: ${n === 1 ? 'a Find out task is' : `${n} Find out tasks are`} done — what did you find?` }); }
+    if (isCase(p)) { const n = evidenceToGet(p); if (n) out.push({ key: `evidence:${p.id}`, kind: 'evidence', projectId: p.id, href: `#projects/p/${encodeURIComponent(p.id)}/evidence`, text: `${p.title}: ${n} ${n === 1 ? 'piece' : 'pieces'} of evidence still to get` }); }
   }
   return out.slice(0, max);
 }

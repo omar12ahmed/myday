@@ -2,10 +2,11 @@
 // and what might need you, worked out from what's already saved — nothing here is saved, and nothing is sent anywhere.
 // Counts and places, never percentages or scores; no "behind", "late" or streaks. Each tool's summary appears once,
 // in At a glance; pointers appear only when there's something real to show.
-import { awaitingAnswer, isBusiness, isCase, modelProgress } from './businessModel';
-import { caseCounts, issueLinks, timelineInOrder } from './caseFile';
+import { evidenceToGet, findOutsDone, pastOpen, waitsDue } from './attention';
+import { isBusiness, isCase, modelProgress } from './businessModel';
+import { issueLinks, timelineInOrder } from './caseFile';
 import { parseKey, shift, shortDate, todayKey } from './dates';
-import { comingUp, heldBack, nextStep, projectTasks, stillOpen } from './projects';
+import { comingUp, nextStep } from './projects';
 import { chaseTask } from './tasks';
 import type { DateKey, MyDayData, Project } from './types';
 
@@ -62,27 +63,26 @@ export function worthALook(data: MyDayData, p: Project, k: DateKey = todayKey(),
   // The oldest task still to do whose date has passed, unless it's the next step (that card says so beside it),
   // and only on an active project: a paused or finished one isn't nudged. Coming up lists them all.
   const step = nextStep(data, p);
-  const open = p.status === 'active' ? stillOpen(data, p, k).find(t => t.id !== step?.id && !heldBack(data, t)) : undefined; // (waiting, or starting after another task, isn't nudged)
+  const open = p.status === 'active' ? pastOpen(data, p, k).find(t => t.id !== step?.id) : undefined; // (waiting, or starting after another task, isn't nudged)
   if (open) out.push({ key: 'still-open', text: `${open.title} — still open, was due ${shortDate(open.due!)}`, href: `#today/tasks/${encodeURIComponent(open.id)}` });
   // A wait whose expected day has come (1.50.0), oldest first, on an active project, with "Chase it" beside it —
   // unless it's the next step: that card says so and offers Chase it itself.
-  const waited = p.status === 'active' ? projectTasks(data, p).open.filter(t => t.id !== step?.id && t.waiting?.until && t.waiting.until <= k)
-    .sort((a, b) => a.waiting!.until!.localeCompare(b.waiting!.until!))[0] : undefined;
+  const waited = p.status === 'active' ? waitsDue(data, p, k).find(t => t.id !== step?.id) : undefined;
   if (waited) out.push({ key: 'waiting', text: `Still waiting on ${waited.waiting!.on} (${waited.title}) — expected ${shortDate(waited.waiting!.until!)}`,
     href: `#today/tasks/${encodeURIComponent(waited.id)}`, chase: { taskId: waited.id, added: !!chaseTask(data, waited) } });
   // A date in the next week.
   const soon = nextDates(data, p, k, 1)[0];
   if (soon && days(k, soon.day) <= 7) out.push({ key: 'soon', text: `${soon.title} — ${soon.day === k ? 'today' : soon.day === shift(k, 1) ? 'tomorrow' : `in ${days(k, soon.day)} days`}`, href: soon.href });
   if (isBusiness(p)) {
-    const waiting = (p.model?.assumptions ?? []).filter(a => awaitingAnswer(data, a)).length;
+    const waiting = findOutsDone(data, p);
     if (waiting) out.push({ key: 'found', text: waiting === 1 ? 'A Find out task is done — what did you find?' : `${waiting} Find out tasks are done — what did you find?`, href: tab(p, 'model') });
     const g = modelProgress(p);
     if (g.answered < 3) out.push({ key: 'one-page', text: `Your one page has ${plural(4 - g.answered, 'question')} still to answer`, href: tab(p, 'model') });
   }
   if (isCase(p)) {
-    const g = caseCounts(p), bare = issueGrid(p).filter(i => !i.evidence && !i.entries && i.status !== 'dropped').length;
+    const toGet = evidenceToGet(p), bare = issueGrid(p).filter(i => !i.evidence && !i.entries && i.status !== 'dropped').length;
     if (bare) out.push({ key: 'bare', text: `${plural(bare, 'issue')} ${bare === 1 ? 'has' : 'have'} nothing linked yet`, href: tab(p, 'issues') });
-    if (g.toGet) out.push({ key: 'to-get', text: `${plural(g.toGet, 'piece')} of evidence still to get`, href: tab(p, 'evidence') });
+    if (toGet) out.push({ key: 'to-get', text: `${plural(toGet, 'piece')} of evidence still to get`, href: tab(p, 'evidence') });
   }
   // No "no next step yet" pointer: the Next step card beside it already asks for the smallest one.
   return out.slice(0, max);
