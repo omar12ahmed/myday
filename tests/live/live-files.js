@@ -67,7 +67,7 @@ const P = {}; for (const k of Object.keys(NAMES)) { P[k] = path.join(dir, NAMES[
   const hasP = d => d.ev(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.some(p => p.title === ${JSON.stringify(TITLE)})`);
   const deleteProject = async (d, id) => { await d.open(BASE + `#projects/p/${id}`); await d.until(`!!document.querySelector('[data-action=project-delete]')`); await d.click('[data-action=project-delete]'); await D.sleep(250); await d.click('[data-action=dialog-confirm]'); await D.sleep(500); };
 
-  // Tidy first: anything left by an earlier stopped run (the made-up project, its file records, account A's files).
+  // Tidy first: anything left by an earlier stopped run (the made-up project, its file records, the account's files).
   for (const id of (await mac.data()).projects.items.filter(p => p.title === TITLE).map(p => p.id)) await deleteProject(mac, id);
   await files(who, { action: 'delete-all' });
 
@@ -94,7 +94,7 @@ const P = {}; for (const k of Object.keys(NAMES)) { P[k] = path.join(dir, NAMES[
   check('the account holds the three file records (names, types, sizes; no contents)', rows.length === 3 && rows.every(r => r.data.state === 'kept' && !JSON.stringify(r.data).includes('Larch boards')), rows.map(r => [r.data.name, r.data.state, r.version, r.seq]), recs.map(f => [f.name, f.state]));
   if (!(rows.length === 3 && rows.every(r => r.data.state === 'kept'))) { await D.sleep(5000); console.log('  (5 s later the account has:', JSON.stringify((await pullAll(who)).filter(r => r.kind === 'file' && recs.some(f => f.id === r.record_id)).map(r => [r.data?.name, r.data?.state, r.version])), '; the Mac\'s badge:', await mac.ev(`document.querySelector('#syncBadge')?.dataset.status`), ')'); }
   const usage = await files(who, { action: 'usage' });
-  check('R2 holds the three files for account A', usage.j.bytes === BYTES.png.length + BYTES.pdf.length + BYTES.txt.length, usage.j);
+  check('R2 holds the three files for the account', usage.j.bytes === BYTES.png.length + BYTES.pdf.length + BYTES.txt.length, usage.j);
 
   // Open: the PDF in a new tab on a short-lived R2 link; the text file saved under its name, MyDay staying put.
   await mac.ev(`window.__opened = []; window.open = () => ({ opener: 1, close() {}, location: { set href(v) { window.__opened.push(v); } } }); true`);
@@ -151,7 +151,7 @@ const P = {}; for (const k of Object.keys(NAMES)) { P[k] = path.join(dir, NAMES[
   }
   check('tidy: the project and its file records are gone and saved', !(await hasP(mac)) && (await mac.data()).files.items.every(f => !Object.values(NAMES).includes(f.name)) && await synced(mac));
   const left = await files(who, { action: 'usage' });
-  check('tidy: nothing of account A is left in R2', left.j.bytes === 0, left.j);
+  check('tidy: nothing of the account is left in R2', left.j.bytes === 0, left.j);
   const live = (await pullAll(who)).filter(r => r.kind === 'file' && !r.deleted);
   check('tidy: no live file record is left in the account', live.length === 0, live.map(r => [r.record_id.slice(0, 6), r.seq, r.data?.state, r.data?.deletedOn]));
   await phone.open(BASE + '#projects'); await synced(phone);

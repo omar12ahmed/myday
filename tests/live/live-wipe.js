@@ -101,7 +101,7 @@ const myKeys = d => d.ev(`Object.keys(localStorage).filter(k => k.startsWith('my
   let rows = await pullAll(who);
   check('the account holds nothing of before: no project, no deletion markers, no file records', !rows.some(r => JSON.stringify(r.data || {}).includes('Live check Wipe')) && !rows.some(r => r.deleted) && !rows.some(r => r.kind === 'file'), rows.map(r => r.kind));
   const left = (await backups(who)).backups || [];
-  check('R2: no files, and no backup from before the wipe, left for account A (a new backup of the empty MyDay may follow)', (await files(who, { action: 'usage' })).j.bytes === 0 && left.every(b => new Date(b.at) > new Date(st.wiped_at)), left.map(b => b.at));
+  check('R2: no files, and no backup from before the wipe, left for the account (a new backup of the empty MyDay may follow)', (await files(who, { action: 'usage' })).j.bytes === 0 && left.every(b => new Date(b.at) > new Date(st.wiped_at)), left.map(b => b.at));
 
   // The phone comes back online: it clears itself, and its unsent change never arrives.
   await phone.send('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });

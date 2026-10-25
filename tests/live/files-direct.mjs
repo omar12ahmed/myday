@@ -36,7 +36,7 @@ const made = []; // { fileId, area } to delete at the end
 check('no token → 401', (await fn('', { action: 'usage' })).status === 401);
 check('publishable key as the token → 401', (await fn(KEY, { action: 'usage' })).status === 401);
 const u0 = await fn(A, { action: 'usage' });
-check('usage on account A → 200, the 10 GB limit', u0.status === 200 && u0.j.limit === 10 * 1024 ** 3, JSON.stringify(u0));
+check('usage on the account → 200, the 10 GB limit', u0.status === 200 && u0.j.limit === 10 * 1024 ** 3, JSON.stringify(u0));
 check('the function allows the site as origin', u0.acao === SITE, String(u0.acao));
 const evil = await fn(A, { action: 'usage' }, { Origin: 'https://evil.example' });
 check('…and not another site', !evil.acao, String(evil.acao));
@@ -147,7 +147,7 @@ const tooMany = await fn(A, { action: 'delete', files: Array.from({ length: 101 
 check('delete of 101 → 400', tooMany.status === 400);
 const all = await fn(A, { action: 'delete-all' });
 const u2 = await fn(A, { action: 'usage' });
-check('delete-all → nothing left on account A', all.status === 200 && u2.j.bytes === 0, JSON.stringify({ all: all.j, bytes: u2.j.bytes }));
+check('delete-all → nothing left on the account', all.status === 200 && u2.j.bytes === 0, JSON.stringify({ all: all.j, bytes: u2.j.bytes }));
 check('…the preview too', (await fn(A, { action: 'open', ...g, thumb: true })).status === 404);
 
 console.log(`\n${pass} passed, ${fail} failed`);

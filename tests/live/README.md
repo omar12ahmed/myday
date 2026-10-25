@@ -31,6 +31,7 @@ python3 -I tests/live/run.py live-files.js --version 1.77.0 --src <commit> --loc
 |---|---|
 | `live-files.js` | Files on two devices: add a photo, a PDF and a text file (kept in R2), the preview, Open (a PDF inline; a document saved under its name), an SVG refused, the phone at 320 px, Remove / Recently deleted / Put back / Delete now, the storage line, then the project deleted and nothing left in R2. |
 | `files-direct.mjs` | The files function and R2 directly: sign-in first, the signed headers and five-minute links, R2 refusing a longer body, other bytes or another type, the bucket's CORS for the site, the server's check of what was stored, previews only for photos, isolation from another account, delete's known areas, usage. |
+| `live-research.js` | Research on two devices: switched on (the project's tools saved), a question, a typed source and a finding supporting it, the live database holding them as `research` records exactly, the phone receiving them at 320 px and marking the question answered, the Mac receiving that, then the project deleted and its research with it, in the account and on the phone. |
 | `live-wipe.js` | Delete everything on two devices. **It wipes the whole account.** |
 
 ## Writing one
