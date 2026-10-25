@@ -347,8 +347,10 @@ async function signIn(d, url) {
 
     check('after the wipe section, this release is fully in step (the two devices rejoined one after the other: no conflict over starter records)', await synced(now) && (await now.status()) === 'synced', { status: await now.status(), sync: await now.ev(`(() => { const l = JSON.parse(localStorage.getItem('myday.sync.v1') || '{}').link || {}; return { out: Object.keys(l.out || {}), conflicts: Object.fromEntries(Object.entries(l.conflicts || {}).map(([k, c]) => [k, JSON.stringify(c.content).slice(0, 300)])) }; })()`) });
     console.log('\n[13] A project\'s research (its tools, its Research kind, the research section and the research records) passes through the previous release unchanged');
-    const knowsResearch = fs.readdirSync(assets).some(f => f.endsWith('.js') && fs.readFileSync(path.join(assets, f), 'utf8').includes('projectResearch') || fs.readFileSync(path.join(assets, f), 'utf8').includes('"research"'));
-    console.log(`The previous release ${knowsResearch ? 'might know' : 'doesn’t know'} research.`);
+    // (The bundler may write the kind in backticks: look for it quoted any way, as [14] does.) A release that knows
+    // research (1.77.0 on) takes the records in, saves the section itself and deletes a project's research with it.
+    const knowsResearch = /[`'"]research[`'"]/.test(builtText);
+    console.log(`The previous release ${knowsResearch ? 'knows' : 'doesn’t know'} research.`);
     const PRS = 'pjResBack', RQB = 'rqback000001', RFB = 'rfback000001';
     const rq = { id: RQB, type: 'question', projectId: PRS, text: 'Do commuters buy tea?', conclusion: '', answeredOn: null, createdAt: stamp, updatedAt: stamp, futureBit: { keep: ['research', 1] } };
     const rf = { id: RFB, type: 'finding', projectId: PRS, text: 'Three of five said yes', limits: 'Small sample', on: today, sourceIds: [], about: [{ kind: 'question', id: RQB, stance: 'supports' }, { kind: 'newer', id: 'z1', stance: 'doubts' }], createdAt: stamp, updatedAt: stamp };
@@ -364,17 +366,22 @@ async function signIn(d, url) {
     await before.returnToApp();
     check('the previous release syncs normally with those records in the account', await synced(before) && (await before.status()) === 'synced');
     check('…and receives the project with its kind and tools exactly (a kind it does not know is kept)', await before.until(`(() => { const p = JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(x => x.id === '${PRS}'); return !!p && p.template === 'research' && JSON.stringify(p.tools) === '["research","future-tool"]'; })()`, 25000), JSON.stringify((await before.data()).projects.items.find(p => p.id === PRS)));
-    check('…but not the research records themselves: it ignores that kind', !(((await before.data()).research?.items) || []).some(x => x.projectId === PRS), (await before.data()).research);
+    if (knowsResearch) check('…and the research records too, exactly as sent (it knows that kind)', await before.until(`(() => { const r = JSON.parse(localStorage.getItem('${KEY}')).research?.items || []; return r.some(x => x.id === '${RQB}') && r.some(x => x.id === '${RFB}'); })()`, 25000)
+      && same((await before.data()).research.items.find(x => x.id === RQB), rq) && same((await before.data()).research.items.find(x => x.id === RFB), rf), (await before.data()).research);
+    else check('…but not the research records themselves: it ignores that kind', !(((await before.data()).research?.items) || []).some(x => x.projectId === PRS), (await before.data()).research);
     await before.setData(`s => { const p = s.projects.items.find(x => x.id === '${PRS}'); p.title = 'Researching a tea cart (renamed)'; p.stage = 'understand'; p.updatedAt = '${today}T12:45'; }`);
     check('a rename and stage change on the previous release reach the account, with the kind and tools as they were', await eventually(async () => { const p = (await record('project', PRS))?.data?.value ?? (await record('project', PRS))?.data; return p?.title === 'Researching a tea cart (renamed)' && p?.template === 'research' && eq(p?.tools, ['research', 'future-tool']); }) && await synced(before), (await record('project', PRS))?.data);
     check('…and the research records in the account are exactly as sent', same((await rrecord(RQB))?.data, sentQ.data) && same((await rrecord(RFB))?.data, sentF.data) && !(await rrecord(RQB)).deleted);
-    await before.setData(`s => { s.research = { items: [${JSON.stringify(rq)}], futureSection: true }; }`);
+    // A save by the previous release keeps an unknown field of the section: one that knows research saves the section
+    // itself (both records as they are); one that doesn't keeps the whole section unread (here, the question alone).
+    await before.setData(knowsResearch ? `s => { s.research.futureSection = true; }` : `s => { s.research = { items: [${JSON.stringify(rq)}], futureSection: true }; }`);
     await before.open(BEFORE + '#today'); await before.until(`document.querySelector('[data-action=motion]')`, 15000);
     await before.click('[data-action=motion]'); await D.sleep(800);
     const keptSection = await before.data();
-    check('a save by the previous release keeps a research section unread (its items and an unknown field) and the project\'s tools', same(keptSection.research?.items?.[0], rq) && keptSection.research?.futureSection === true && eq(keptSection.projects.items.find(p => p.id === PRS).tools, ['research', 'future-tool']), keptSection.research);
+    check(knowsResearch ? 'a save by the previous release keeps both research records exactly, the section\'s unknown field and the project\'s tools' : 'a save by the previous release keeps a research section unread (its items and an unknown field) and the project\'s tools',
+      same(keptSection.research?.items?.find(x => x.id === RQB), rq) && (!knowsResearch || same(keptSection.research?.items?.find(x => x.id === RFB), rf)) && keptSection.research?.futureSection === true && eq(keptSection.projects.items.find(p => p.id === PRS).tools, ['research', 'future-tool']), keptSection.research);
     await before.click('[data-action=motion]'); await D.sleep(500);
-    await before.setData(`s => { delete s.research; }`);
+    await before.setData(knowsResearch ? `s => { delete s.research.futureSection; }` : `s => { delete s.research; }`); // (on a release that knows research, deleting the section would delete its records)
     await now.returnToApp();
     check('back on this release the title and stage arrive, and the kind, tools and research are as they were', await now.until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === '${PRS}')?.title === 'Researching a tea cart (renamed)'`, 25000) && same((await now.data()).research.items.find(x => x.id === RQB), rq) && same((await now.data()).research.items.find(x => x.id === RFB), rf) && same((await now.data()).projects.items.find(p => p.id === PRS).tools, ['research', 'future-tool']), (await now.data()).research.items.map(x => x.id));
     await now.open(NOW + `#projects/p/${PRS}/research`);
@@ -383,10 +390,12 @@ async function signIn(d, url) {
     console.log('  Deleting the project on the previous release');
     await before.open(BEFORE + '#projects/p/' + PRS); await before.until(`document.querySelector('[data-action=project-delete]')`, 15000);
     await before.click('[data-action=project-delete]'); await before.until(`document.querySelector('[data-action=dialog-confirm]')`); await before.answer(true);
-    check('the previous release deletes the project; its research records stay in the account (it does not know them)', await eventually(async () => (await S.owner(db, `select deleted from public.sync_records where user_id = $1 and kind = 'project' and id = $2`, [user, PRS])).rows[0]?.deleted === true) && await synced(before) && !(await rrecord(RQB)).deleted && !(await rrecord(RFB)).deleted);
+    const projectGone = async () => (await S.owner(db, `select deleted from public.sync_records where user_id = $1 and kind = 'project' and id = $2`, [user, PRS])).rows[0]?.deleted === true;
+    if (knowsResearch) check('the previous release deletes the project and its research with it (it knows that kind)', await eventually(projectGone) && await eventually(async () => (await rrecord(RQB))?.deleted === true && (await rrecord(RFB))?.deleted === true, 25000) && await synced(before), [await rrecord(RQB), await rrecord(RFB)]);
+    else check('the previous release deletes the project; its research records stay in the account (it does not know them)', await eventually(projectGone) && await synced(before) && !(await rrecord(RQB)).deleted && !(await rrecord(RFB)).deleted);
     await now.returnToApp();
     check('back on this release the project\'s deletion arrives and its research goes with it', await now.until(`(() => { const d = JSON.parse(localStorage.getItem('${KEY}')); return !d.projects.items.some(p => p.id === '${PRS}') && !d.research.items.some(x => x.projectId === '${PRS}'); })()`, 30000), (await now.data()).research.items.length);
-    check('…and its research deletions are sent, so the account holds no live research for it', await eventually(async () => (await rrecord(RQB))?.deleted === true && (await rrecord(RFB))?.deleted === true, 25000), [await rrecord(RQB), await rrecord(RFB), await now.status()]);
+    check(knowsResearch ? '…and the account holds no live research for it' : '…and its research deletions are sent, so the account holds no live research for it', await eventually(async () => (await rrecord(RQB))?.deleted === true && (await rrecord(RFB))?.deleted === true, 25000), [await rrecord(RQB), await rrecord(RFB), await now.status()]);
     check('…and this release is fully in step again afterwards (nothing waiting, no conflict)', await synced(now) && (await now.status()) === 'synced', { status: await now.status(), sync: await now.ev(`(() => { const l = JSON.parse(localStorage.getItem('myday.sync.v1') || '{}').link || {}; return { out: Object.keys(l.out || {}), conflicts: Object.keys(l.conflicts || {}), rejected: Object.keys(l.rejected || {}) }; })()`) });
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
