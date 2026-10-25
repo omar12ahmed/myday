@@ -34,36 +34,59 @@ export const voiceable = s => typeof s === 'string' && !s.includes('ـ') && /[ً
 const sentences = line => line.trim().split(/(?<=[.؟!?])\s+/u).filter(Boolean);
 // The letters alone, every vowel mark taken off.
 export const unmarked = s => s.replace(/[\u064B-\u0652\u0670]/g, '');
-// Pause forms (waqf), for connected reading only (owner's decision, 25 October 2026): before a comma, full stop or
-// other pause, and at the end, a word drops its final short vowel or tanween, as a natural reader does: -an becomes \u0101,
-// a final \u0629 is said -a, a doubled letter stays doubled. A final vowel on \u062A or \u0643 stays, because it can be the only sign
-// of who is speaking or spoken to (\u0623\u064E\u0646\u0652\u062A\u0650, \u0627\u0633\u0652\u0645\u064F\u0643\u0650, \u062F\u064E\u0631\u064E\u0633\u0652\u062A\u0650). Short examples elsewhere keep every ending: there the
-// ending is often what the lesson teaches.
-const LETTER_OR_MARK = /[\u0621-\u064A\u064B-\u0652\u0670\u0671]/;
+// Pause forms (waqf), for connected reading only (owner's decision, 25 October 2026): at a pause (a comma, full stop or
+// other stop after the word, or the end) a word drops its final short vowel or tanween, as a natural reader does: -an
+// becomes ā, a final ة is said -a, a doubled letter stays doubled, ـِيّ and ـُوّ are said ī and ū. A final vowel on ت
+// or ك stays, because it can be the only sign of who is speaking or spoken to (أَنْتِ, اسْمُكِ, دَرَسْتِ). Short
+// examples elsewhere keep every ending: there the ending is often what the lesson teaches.
+const LETTER_OR_MARK = /[\u0621-\u064A\u064B-\u0652\u0670\u0671]/, PAUSE = /[\u060C\u061B\u061F.!?:,]/;
 const pauseWord = word => {
   let end = word.length;
   while (end > 0 && !LETTER_OR_MARK.test(word[end - 1])) end--;
   const w = word.slice(0, end), tail = word.slice(end);
-  if (/\u064B\u0627$/.test(w)) return w.slice(0, -2) + '\u064E\u0627' + tail; // \u0640\u064B\u0627: \u0101
-  if (/\u0621\u064B$/.test(w)) return w.slice(0, -1) + '\u064E\u0627' + tail; // \u0640\u0621\u064B: \u02BE\u0101
-  if (/\u064B\u0649$/.test(w)) return w.slice(0, -2) + '\u064E\u0649' + tail; // \u0640\u064B\u0649: \u0101
+  // -an before a written alif or ى, in either order of marks (ـًا ـًّا ـاً ـًى ـىً): ā, a doubling kept (vowel first, as the course writes it).
+  const an = w.match(/^(.*[^\u064B-\u0652\u0670])([\u064B-\u0652\u0670]*)([\u0627\u0649])([\u064B-\u0652\u0670]*)$/u);
+  if (an && (an[2] + an[4]).includes('\u064B')) return an[1] + '\u064E' + (an[2].includes('\u0651') ? '\u0651' : '') + an[3] + tail;
+  // -an on a hamza with no alif after it (ءً، أً): ʾā.
+  const hamza = w.match(/^(.*[\u0621\u0623\u0624\u0626])([\u064B-\u0652\u0670]*)$/u);
+  if (hamza && hamza[2].includes('\u064B')) return hamza[1] + '\u064E\u0627' + tail;
   const marks = w.match(/[\u064B-\u0652\u0670]*$/)[0], base = w.slice(0, w.length - marks.length);
-  if (!/[\u064B-\u0650]/.test(marks)) return word; // already a long vowel or a suk\u016Bn
+  if (!/[\u064B-\u0650]/.test(marks)) return word; // already a long vowel or a sukūn
   if (base.endsWith('\u0629')) return base + tail;
-  if (/\u0650\u064a$|\u064f\u0648$/.test(base) && marks.includes('\u0651')) return base + tail; // \u0640\u0650\u064a\u0651, \u0640\u064f\u0648\u0651: said \u012b, \u016b (\u0643\u064f\u0631\u0652\u0633\u0650\u064a)
+  if (/\u0650\u064A$|\u064F\u0648$/.test(base) && marks.includes('\u0651')) return base + tail;
   if (/[\u062A\u0643]$/.test(base) && !/[\u064B-\u064D]/.test(marks)) return word;
   return base + (marks.includes('\u0651') ? '\u0651' : '\u0652') + tail;
 };
-export const pauseForms = sentence => sentence.split(' ').map((w, i, all) => (i === all.length - 1 || /[\u060C.\u061B\u061F!:]$/.test(w) ? pauseWord(w) : w)).join(' ');
+// A word is at a pause when a stop follows it (also inside a closing quote, or as the next token) or it's the last word.
+export const pauseForms = sentence => {
+  const words = sentence.split(' '), lettered = words.map(w => LETTER_OR_MARK.test(w)), last = lettered.lastIndexOf(true);
+  return words.map((w, i) => {
+    if (!lettered[i]) return w;
+    let end = w.length;
+    while (end > 0 && !LETTER_OR_MARK.test(w[end - 1])) end--;
+    const next = words[i + 1];
+    return i === last || PAUSE.test(w.slice(end)) || (next !== undefined && !lettered[i + 1] && PAUSE.test(next)) ? pauseWord(w) : w;
+  }).join(' ');
+};
 // A whole reading text as the voice reads it in one go: its sentences as voiced, each line on its own line.
 export const wholeText = parts => [...new Set(parts.map(p => p.line))].map(line => parts.filter(p => p.line === line).map(p => p.spoken).join(' ')).join('\n');
 // Voice scripts (content/teaching/arabic/voice-scripts.json, MyDay's own; owner's decision, 25 October 2026): a fully
 // vowelled copy of a passage the course gives without marks, for the voice only. The page still shows the course's
-// text. Each sentence's script must have exactly that sentence's letters, so a script adds marks and never changes a word.
+// text. Each sentence's script must have exactly that sentence's letters, keep every mark the course shows and be
+// marked all through, so a script adds marks and never changes a word.
 const voiceScripts = root => {
   const at = new URL('content/teaching/arabic/voice-scripts.json', root);
   return existsSync(at) ? JSON.parse(readFileSync(at, 'utf8')) : {};
 };
+export const scriptedReadings = root => Object.keys(voiceScripts(root).readings ?? {});
+const clusters = s => [...s.matchAll(/([^\u064B-\u0652\u0670])([\u064B-\u0652\u0670]*)/gu)].map(m => [m[1], m[2]]);
+const keepsMarks = (course, script) => {
+  const a = clusters(course), b = clusters(script);
+  return a.length === b.length && a.every(([letter, marks], i) => b[i][0] === letter && [...marks].every(x => b[i][1].includes(x)));
+};
+// A dialogue line opens with its speaker's name (one or two words) and a colon: shown, never spoken. Only a text
+// whose every line opens that way is a dialogue, so a colon in prose is read as written.
+const SPEAKER = /^[^\s:：]+(?:\s[^\s:：]+)?[:：]\s*/u;
 export function readingPassages(root) {
   const course = JSON.parse(readFileSync(new URL('content/arabic-fusha/MyDay_Arabic_Fusha_Curriculum.json', root), 'utf8'));
   const scripts = voiceScripts(root).readings ?? {};
@@ -74,6 +97,7 @@ export function readingPassages(root) {
   }
   return Object.fromEntries(course.assets.filter(a => a.type === 'original_text' && (voiceable(a.text_ar) || scripts[a.id])).map(a => {
     const full = a.text_ar.split('\n'), plain = (a.text_unvowelled || a.text_ar).split('\n'), voice = (scripts[a.id] ?? a.text_ar).split('\n');
+    const dialogue = full.every(line => SPEAKER.test(line.trim()));
     if (full.length !== plain.length) throw new Error(`Arabic reading ${a.id}: vowelled and plain lines do not match`);
     if (voice.length !== full.length) throw new Error(`Arabic voice script ${a.id}: its lines do not match the course text's`);
     const parts = full.flatMap((line, i) => {
@@ -81,8 +105,13 @@ export function readingPassages(root) {
       if (texts.length !== bare.length) throw new Error(`Arabic reading ${a.id}: vowelled and plain sentences do not match on line ${i + 1}`);
       if (said.length !== texts.length) throw new Error(`Arabic voice script ${a.id}: its sentences do not match the course text's on line ${i + 1}`);
       return texts.map((text, j) => {
-        if (unmarked(said[j]) !== unmarked(text)) throw new Error(`Arabic voice script ${a.id}: line ${i + 1}, sentence ${j + 1} has other letters than the course text`);
-        return { text, plain: bare[j], spoken: pauseForms(said[j].replace(/^[^:：]+[:：]\s*/u, '')), line: i };
+        if (scripts[a.id]) {
+          const where = `Arabic voice script ${a.id}: line ${i + 1}, sentence ${j + 1}`;
+          if (unmarked(said[j]) !== unmarked(text)) throw new Error(`${where} has other letters than the course text`);
+          if (!keepsMarks(text, said[j])) throw new Error(`${where} contradicts a vowel mark the course shows`);
+          if (!markedThrough(said[j])) throw new Error(`${where} is not fully vowelled`);
+        }
+        return { text, plain: bare[j], spoken: pauseForms(dialogue && j === 0 ? said[j].replace(SPEAKER, '') : said[j]), line: i };
       });
     });
     return [a.id, parts];

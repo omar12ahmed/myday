@@ -74,8 +74,9 @@ const shownReadings = async () => (await ev(`[...document.querySelectorAll('[dat
         show(id, availability = 'all') {
           stopVoiceFor(id + ':reading');
           for (const text of Object.keys(audio.clips)) delete audio.clips[text];
-          if (availability !== 'none') Object.assign(audio.clips, allClips);
+          if (availability !== 'none' && availability !== 'whole') Object.assign(audio.clips, allClips);
           if (availability === 'partial') delete audio.clips[audio.readings[id][0].spoken];
+          if (availability === 'whole') for (const key of Object.values(audio.wholes)) if (allClips[key]) audio.clips[key] = allClips[key];
           flushSync(() => root.render(<Harness key={id + ':' + availability} id={id} />));
         },
         end() { const player = players[players.length - 1]; if (!player?.onended) throw new Error('No playing fixture clip'); player.onended(); },
@@ -175,6 +176,8 @@ const shownReadings = async () => (await ev(`[...document.querySelectorAll('[dat
     check('Listen plays the text read in one go: one request, for the whole clip, and no sentence marked as playing', await currentPlaying(noticeGroup + ':whole') && JSON.stringify((await fetches()).slice(beforeOne)) === JSON.stringify(['arabic-audio/' + checkedFiles[1]]) && await count('[data-ar-sentence][data-state="playing"]') === 0 && await ev(`document.querySelector('${whole}').textContent.includes('Stop the whole text')`), { state: await playerState(), fetches: (await fetches()).slice(beforeOne) });
     await ev('window.fixture.end()');
     check('at the end of the whole clip Listen returns to idle without asking for anything else', await until(async () => (await playerState()).sequence === null) && (await fetches()).length === beforeOne + 1 && await ev(`document.querySelector('${whole}').getAttribute('aria-pressed') === 'false'`), { state: await playerState() });
+    await show(notice.id, 'whole');
+    check('a text with only its whole clip checked has Listen, no sentence buttons, and the voice label rather than "No recording included"', await count(whole) === 1 && await count(sentence) === 0 && await exists('[data-ar-voice-label]') && !(await T.text('#fixture')).includes('No recording included.'), { whole: await count(whole), sentences: await count(sentence) });
     await show(profile.id);
     check('a text without a whole clip still plays its sentences in turn', await ev(`document.querySelector('${whole}').getAttribute('data-ar-whole')`) === 'sentences');
 

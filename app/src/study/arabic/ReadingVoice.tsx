@@ -2,7 +2,7 @@ import { LoaderCircle, Square, Volume2, VolumeOff } from 'lucide-react';
 import { useEffect, useSyncExternalStore } from 'react';
 import { Button } from '../../components/Button';
 import { Ar, Reading } from './Ar';
-import { clipFor, playOrStop, playSequenceOrStop, readingFor, stopVoiceFor, subscribe, voiceLabel, voiceState, wholeClipFor } from './voice';
+import { clipFor, isScripted, playOrStop, playSequenceOrStop, readingFor, stopVoiceFor, subscribe, voiceLabel, voiceState, wholeClipFor } from './voice';
 
 // Display and audio always use the same prepared sentence positions. Hiding vowel marks changes only the display.
 export function ReadingVoice({ id, full, plain, vowels, prepared }: { id: string; full: string; plain: string | null; vowels: boolean; prepared?: string }) {
@@ -10,14 +10,14 @@ export function ReadingVoice({ id, full, plain, vowels, prepared }: { id: string
   const group = id + ':reading', parts = readingFor(id);
   useEffect(() => () => stopVoiceFor(group), [group]);
   const shown = vowels || !plain ? full : plain;
-  const voiced = parts?.some(p => clipFor(p.spoken)) ?? false;
-  const complete = !!parts?.length && parts.every(p => clipFor(p.spoken));
   const whole = wholeClipFor(id), wholeKey = group + ':whole';
+  const voiced = !!whole || (parts?.some(p => clipFor(p.spoken)) ?? false);
+  const complete = !!parts?.length && parts.every(p => clipFor(p.spoken));
   const all = state.sequence === group;
   const keyFor = (i: number) => group + ':' + i;
   const failed = state.failed === wholeKey || parts?.some((_, i) => state.failed === keyFor(i));
   // A text the course gives without vowel marks is voiced from MyDay's own vowelled copy (content/teaching/arabic/voice-scripts.json).
-  const scripted = parts?.some(p => /[\u064B-\u0652]/.test(p.spoken) && !/[\u064B-\u0652]/.test(p.text)) ?? false;
+  const scripted = isScripted(id);
   return <>
     {(whole || complete) && <Button inline variant="ghost" className="mb-3" data-action="ar-read-all" data-ar-clip={group} data-ar-whole={whole ? 'one clip' : 'sentences'}
       data-state={all ? state.loading ? 'loading' : 'playing' : 'idle'} aria-pressed={all}
