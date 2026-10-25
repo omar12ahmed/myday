@@ -524,9 +524,10 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   check('marking it ready again adds no second copy of any card', cards.length === 16 && new Set(cards.map(c => c.id)).size === 16, cards.map(c => c.id));
 
   await fresh('study/arabic/vocabulary'); await wait('[data-ar-course-words]', 5000);
-  const cwLessons = ['greetings-address', 'nominal-sentences', 'simple-questions', 'origin-location', 'repair-phrases'].map(s => 'lesson.arabic-' + s);
-  const cwInfo = await ev(`(() => { const c = document.querySelector('[data-ar-course-words="5"]'); return !c ? null : { head: c.querySelector('h2').textContent, ids: [...c.querySelectorAll('[data-ar-course-lesson]')].map(s => s.dataset.arCourseLesson), links: [...c.querySelectorAll('[data-ar-course-lesson]')].map(s => s.querySelector('h3 a')?.getAttribute('href')), rows: c.querySelectorAll('li[data-ar-word]').length }; })()`);
-  check('Vocabulary has "Words from the lessons": five lessons in order, each headed by a link to it, 48 word rows in all', !!cwInfo && cwInfo.head === 'Words from the lessons' && cwInfo.ids.join() === cwLessons.join() && cwInfo.links.join() === cwLessons.map(l => '#study/arabic/' + l).join() && cwInfo.rows === 48, cwInfo);
+  const cwFile = JSON.parse(require('fs').readFileSync(require('path').join(__dirname, '../content/teaching/arabic/course-words.json'), 'utf8')).lessons;
+  const cwLessons = Object.keys(cwFile), cwWords = Object.values(cwFile).reduce((n, l) => n + l.words.length, 0);
+  const cwInfo = await ev(`(() => { const c = document.querySelector('[data-ar-course-words="${cwLessons.length}"]'); return !c ? null : { head: c.querySelector('h2').textContent, ids: [...c.querySelectorAll('[data-ar-course-lesson]')].map(s => s.dataset.arCourseLesson), links: [...c.querySelectorAll('[data-ar-course-lesson]')].map(s => s.querySelector('h3 a')?.getAttribute('href')), rows: c.querySelectorAll('li[data-ar-word]').length }; })()`);
+  check(`Vocabulary has "Words from the lessons": all ${cwLessons.length} lessons with words, in order, each headed by a link to it, ${cwWords} word rows in all`, !!cwInfo && cwInfo.head === 'Words from the lessons' && cwInfo.ids.join() === cwLessons.join() && cwInfo.links.join() === cwLessons.map(l => '#study/arabic/' + l).join() && cwInfo.rows === cwWords && cwLessons.length >= 20, cwInfo);
   const nom2 = '[data-ar-word="lexeme.arabic-nominal-sentences-2"]';
   await click(nom2 + ' [data-action="ar-word-add"]'); await sleep(250);
   cards = (await AR()).cards;

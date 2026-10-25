@@ -89,8 +89,10 @@ const openLesson = async d => { await d.open(BASE + '#' + HASH); return d.until(
   await phone.open(BASE + '#study'); await synced(phone);
   check('phone: receives the 16 cards exactly', await phone.until(`(JSON.parse(localStorage.getItem('${KEY}')).arabic.cards || []).filter(c => ${JSON.stringify(ALL)}.includes(c.id)).length === 16`, 30000) && same(await cardsOf(phone), added));
   await phone.open(BASE + '#study/arabic/vocabulary');
-  check('phone: Vocabulary has "Words from the lessons", five lessons, 48 words', await phone.until(`document.querySelector('[data-ar-course-words="5"] h2')?.textContent === 'Words from the lessons'`, 60000)
-    && await phone.ev(`document.querySelectorAll('[data-ar-course-words] li[data-ar-word]').length === 48`));
+  const cwFile = JSON.parse(require('fs').readFileSync(path.join(__dirname, '../../content/teaching/arabic/course-words.json'), 'utf8')).lessons;
+  const cwLessons = Object.keys(cwFile).length, cwWords = Object.values(cwFile).reduce((n, l) => n + l.words.length, 0);
+  check(`phone: Vocabulary has "Words from the lessons", ${cwLessons} lessons, ${cwWords} words`, await phone.until(`document.querySelector('[data-ar-course-words="${cwLessons}"] h2')?.textContent === 'Words from the lessons'`, 60000)
+    && await phone.ev(`document.querySelectorAll('[data-ar-course-words] li[data-ar-word]').length === ${cwWords}`));
   check('phone at 320 px: nothing scrolls sideways, and the word rows’ buttons are at least 44 px', await phone.ev(`document.documentElement.scrollWidth <= innerWidth`)
     && await phone.ev(`[...document.querySelectorAll('[data-ar-course-words] button')].every(b => b.getBoundingClientRect().height >= 44)`),
     [await phone.ev(`document.documentElement.scrollWidth + '/' + innerWidth`), await phone.ev(`[...document.querySelectorAll('[data-ar-course-words] button')].filter(b => b.getBoundingClientRect().height < 44).length`)]);
