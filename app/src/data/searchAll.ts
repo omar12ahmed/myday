@@ -40,8 +40,6 @@ export interface CourseIndex {
   cyber: { modules: { id: string; name: string; purpose: string }[]; lessons: { id: string; title: string; moduleId: string }[]; activities: { id: string; title: string }[] };
 }
 
-// Tatweel (the Arabic stretching line) is left out as well, so a word found with or without it is the same word.
-const fold2 = (s: string) => fold(s).replace(/ـ/g, '');
 const texts = (xs: unknown[]): string[] => xs.flatMap(x => Array.isArray(x) ? texts(x) : typeof x === 'string' && x.trim() ? [x] : []);
 const enc = encodeURIComponent;
 const quote = (s: string) => `“${s}”`;
@@ -51,17 +49,20 @@ export const foundCount = (n: number, query: string) =>
   n ? `${n} ${n === 1 ? 'match' : 'matches'} for “${query.trim()}”` : `Nothing in MyDay matches “${query.trim()}”`;
 
 export function searchEverywhere(data: MyDayData, query: string, courses: CourseIndex | null, today: DateKey): SearchResult {
-  const words = wordsOf(query).map(w => w.replace(/ـ/g, '')).filter(Boolean);
+  const words = wordsOf(query);
   const priv = privateProjectIds(data);
   const leftOut = priv.size > 0 || data.notes.items.some(n => n.private);
   if (!words.length) return { query, total: 0, sections: [], leftOut };
   const found: Record<SearchSection, Found[]> = { tasks: [], projects: [], notes: [], calendar: [], study: [], finance: [], health: [] };
-  // Found when every word is somewhere in its own words; the excerpt only when they aren't all in `own` (its name).
+  // Found when every word is somewhere in its own words. Its excerpt (only when they aren't all in `own`, its name) is
+  // worked out later, for the ones shown: with thousands of matches, cutting an excerpt for each would slow typing.
+  const later = new Map<Found, { own: string; others: string[] }>();
   const add = (section: SearchSection, f: Omit<Found, 'excerpt' | 'tags' | 'rank' | 'where'> & { where?: string; tags?: string[]; rank?: number }, own: string, rest: unknown[] = []) => {
-    const others = texts(rest);
-    if (!words.every(w => fold2([own, ...others].join('\n')).includes(w))) return;
-    const excerpt = own && words.every(w => fold2(own).includes(w)) ? '' : excerptOf(others, words);
-    found[section].push({ where: '', tags: [], rank: 0, ...f, excerpt });
+    const others = texts(rest), hay = fold([own, ...others].join('\n'));
+    if (!words.every(w => hay.includes(w))) return;
+    const item: Found = { where: '', tags: [], rank: 0, ...f, excerpt: '' };
+    later.set(item, { own, others });
+    found[section].push(item);
   };
   const projects = new Map(data.projects.items.map(p => [p.id, p]));
   const inProject = (id?: string) => { const p = id ? projects.get(id) : undefined; return p ? `in ${quote(p.title)}` : ''; };
@@ -199,7 +200,9 @@ export function searchEverywhere(data: MyDayData, query: string, courses: Course
     const all = found[s].map((f, i) => [f, i] as const).sort((a, b) => a[0].rank - b[0].rank || a[1] - b[1]).map(([f]) => f); // stable
     if (!all.length) continue;
     total += all.length;
-    sections.push({ section: s, label: SECTION_LABEL[s], items: all.slice(0, PER_SECTION), more: Math.max(0, all.length - PER_SECTION) });
+    const shown = all.slice(0, PER_SECTION);
+    for (const f of shown) { const x = later.get(f); if (x) f.excerpt = x.own && words.every(w => fold(x.own).includes(w)) ? '' : excerptOf(x.others, words); }
+    sections.push({ section: s, label: SECTION_LABEL[s], items: shown, more: Math.max(0, all.length - PER_SECTION) });
   }
   return { query, total, sections, leftOut };
 }

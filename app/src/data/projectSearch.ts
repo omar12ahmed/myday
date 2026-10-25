@@ -22,9 +22,10 @@ export const SEARCH_KIND_LABEL: Record<SearchKind, string> = {
 export const matchCount = (n: number, query: string) =>
   n ? `${n} ${n === 1 ? 'match' : 'matches'} for “${query.trim()}”` : `Nothing in this project matches “${query.trim()}”`;
 
-// Without capitals or accents ("Café" → "cafe"), and with one kind of apostrophe ("Sam’s" → "Sam's"), so you find the
-// words you remember however your keyboard typed them.
-export const fold = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').replace(/[’‘]/g, "'").toLowerCase();
+// Without capitals or accents ("Café" → "cafe"; Arabic vowel marks too), with one kind of apostrophe ("Sam’s" →
+// "Sam's") and without the Arabic stretching line (tatweel), so you find the words you remember however your keyboard
+// typed them.
+export const fold = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').replace(/\u0640/g, '').replace(/[’‘]/g, "'").toLowerCase();
 export const wordsOf = (q: string) => fold(q).split(/\s+/).filter(Boolean);
 
 // A little of the longer text around the first word found, on one line. It's cut on whole characters and, where it

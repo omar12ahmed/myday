@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { Card } from '../components/Card';
 import { Field, TextInput } from '../components/Field';
 import { Note } from '../components/parts';
@@ -35,6 +35,13 @@ export function SearchScreen({ data, hash }: { data: MyDayData; hash: string }) 
   const [coursesFailed, setCoursesFailed] = useState(false);
   const field = useRef<HTMLInputElement>(null);
   useEffect(() => { field.current?.focus(); }, []);
+  // Going to Search again while it's open (the header's button, or Back to a search's address) takes that address's
+  // words — App's own hash doesn't change for it, since typing only replaces the address.
+  useEffect(() => {
+    const onHash = () => { if (location.hash.startsWith('#search')) { setQ(queryOf(location.hash)); field.current?.focus(); } };
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
   // The course lessons' titles come from the two course catalogues, which are only loaded now.
   useEffect(() => {
     let live = true;
@@ -46,8 +53,10 @@ export function SearchScreen({ data, hash }: { data: MyDayData; hash: string }) 
     const want = q.trim() ? `#search?q=${encodeURIComponent(q)}` : '#search';
     if (location.hash !== want) history.replaceState(history.state, '', want);
   }, [q]);
-  const result = useMemo(() => searchEverywhere(data, q, courses, todayKey()), [data, q, courses]);
-  const typed = q.trim().length > 0;
+  // The field keeps up with your typing; the search follows when it can (a big account can take a moment).
+  const asked = useDeferredValue(q);
+  const result = useMemo(() => searchEverywhere(data, asked, courses, todayKey()), [data, asked, courses]);
+  const typed = asked.trim().length > 0;
 
   return (
     <div className="max-w-[720px] mx-auto" id="search">
@@ -58,7 +67,7 @@ export function SearchScreen({ data, hash }: { data: MyDayData; hash: string }) 
             onChange={e => setQ(e.target.value)} onKeyDown={e => { if (e.key === 'Escape' && q) { e.preventDefault(); setQ(''); } }} />
         </Field>
         <p role="status" className={`m-0 mt-2 ${typed ? 'font-semibold text-fg' : 'text-[15px] text-fg-2'}`} id="searchCount">
-          {typed ? foundCount(result.total, q) : 'Your tasks, projects, notes, calendar, study, finance and health. Every word you type has to be there, in any order.'}
+          {typed ? foundCount(result.total, asked) : 'Your tasks, projects, notes, calendar, study, finance and health. Every word you type has to be there, in any order.'}
         </p>
         {result.leftOut && <div data-s="search-private"><Note className="mb-0 mt-2">Private projects and notes aren’t searched here. Search inside them on their own pages.</Note></div>}
         {typed && !courses && !coursesFailed && <p className="text-sm text-fg-2 m-0 mt-1" data-s="search-courses-loading">Still looking in the course lessons…</p>}
@@ -82,7 +91,7 @@ function Hit({ f }: { f: Found }) {
     <li className="border-t border-outline first:border-t-0" data-s="search-hit" data-kind={f.kind}>
       <a href={f.href} onClick={e => { if (f.focus && !e.metaKey && !e.ctrlKey && !e.shiftKey && e.button === 0) focusWhenThere(f.focus); }}
         className="block min-h-11 py-2.5 text-fg no-underline hover:bg-surface-2 rounded-tile -mx-2 px-2">
-        <span className="block text-sm text-fg-2 break-words">{meta}</span>
+        <span className="block text-sm text-fg-2 break-words" dir="auto">{meta}</span>
         {/* An Arabic word reads right to left but sits where every other title starts. */}
         <span className="block font-medium break-words">{f.lang ? <bdi lang={f.lang} dir="rtl" className="ar-inline">{f.title}</bdi> : f.title}</span>
         {excerpt && <span className="block text-sm text-fg-2 break-words mt-0.5" data-s="search-excerpt" dir="auto">{excerpt}</span>}

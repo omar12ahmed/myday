@@ -37,7 +37,9 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
       P('pjShed', 'Garden shed', { summary: 'A wooden shed with lights wired by the electrician', milestones: [{ id: 'msS', title: 'Walls up', reached: false, aim: null }], resources: [{ id: 'rsS', url: 'https://example.com/shed', title: 'Shed kit page', note: 'Seller of the zinc roof', addedOn: '2026-10-01' }] }),
       P('pjKitchen', 'Kitchen refit', { status: 'paused', milestones: [{ id: 'msK', title: 'Electrician signs off the wiring', reached: false, aim: null }] }),
       P('pjFlat', 'Old flat', { status: 'done', decisions: [{ id: 'dcF', question: 'Which electrician to keep?', options: [], chosen: null, why: '', decidedOn: null, createdAt: AT, updatedAt: AT }] }),
-      P('pjHush', 'Hush plans', { private: true, summary: 'electrician SECRETWORD', commitmentIds: ['cmHush'] }),
+      P('pjHush', 'Hush plans', { private: true, summary: 'electrician SECRETWORD', commitmentIds: ['cmHush'], tools: ['research'],
+        milestones: [{ id: 'msH', title: 'SECRETWORD milestone', reached: false, aim: null }], resources: [{ id: 'rsH', url: 'https://example.com/h', title: 'SECRETWORD link', note: '', addedOn: '2026-10-01' }],
+        decisions: [{ id: 'dcH', question: 'SECRETWORD choice?', options: [{ id: 'opH', text: 'SECRETWORD option', pros: [], cons: [] }], chosen: null, why: '', decidedOn: null, createdAt: AT, updatedAt: AT }] }),
     ];
     d.tasks.items = [
       T('tkRing', 'Ring the electrician', { listId: 'tlH', notes: 'His number is on the van' }),
@@ -48,9 +50,11 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
       T('tkHush', 'Hush electrician SECRETWORD', { projectId: 'pjHush' }),
     ];
     d.lists.admin = [{ id: 'aBill', title: 'Check the electrician bill', minutes: 10 }];
+    d.research.items = [{ id: 'rqH', type: 'question', projectId: 'pjHush', text: 'SECRETWORD question', conclusion: '', answeredOn: null, createdAt: AT, updatedAt: AT }];
     d.notes.items = [
       N('nEl', 'Electrician', 'Dave Café — 07700 900123, Sam’s friend'), N('nShed', '', 'Shed: ask the electrician about a fused spur', { projectId: 'pjShed' }),
       N('nPriv', 'Private electrician SECRETWORD', 'x', { private: true }), N('nHush', 'Hush note', 'electrician SECRETWORD', { projectId: 'pjHush' }),
+      N('nBlank', '', ''), N('nPen', 'Shopping', 'I bought a قــلم today'),
     ];
     d.commitments = [
       { id: 'cmPast', kind: 'appointment', title: 'Electrician quote', start: '2026-10-01T09:00', end: '2026-10-01T10:00' },
@@ -97,7 +101,9 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   check('every word must be there, in any order, whatever the capitals', eq(ids(S('ELECTRICIAN ring'), 'tasks'), ['tkRing']) && ids(S('ring zebra'), 'tasks').length === 0);
   check('accents and the kind of apostrophe don\'t matter ("cafe" finds "Café", "sam\'s" finds "Sam’s")', eq(ids(S('cafe'), 'notes'), ['nEl']) && eq(ids(S("sam's"), 'notes'), ['nEl']));
   check('Arabic: vowel marks and tatweel don\'t matter (كتاب finds كِتَاب, قلم finds قلــم)', eq(ids(S('كتاب'), 'study'), ['kwK']) && eq(ids(S('قلم'), 'study'), ['kwT']));
-  check('MyDay\'s own labels aren\'t searched ("task", "note", "untitled" find nothing of these)', S('untitled').total === 0 && !all(S('note')).some(f => f.id === 'nShed'));
+  check('MyDay\'s own labels aren\'t searched: an empty note shows as "Untitled note" but isn\'t found by it; "note" doesn\'t find a note', S('untitled note').total === 0 && !all(S('note')).some(f => f.id === 'nShed') && sec(S('shopping'), 'notes').length === 1);
+  check('a match in its name has no excerpt; one in its text shows the words there, tatweel and all', sec(S('electrician'), 'notes').find(f => f.id === 'nEl')?.excerpt === '' && sec(S('قلم'), 'notes')[0]?.excerpt.includes('قــلم'), sec(S('قلم'), 'notes'));
+  check('…and a project\'s own words are found with tatweel too (the shared matching leaves it out)', (() => { const d = world(); d.projects.items[0].summary = 'A قـلم for the shed'; return sec(S('قلم', d), 'projects').some(f => f.title === 'Garden shed'); })());
   check('the heading counts what was found', K.foundCount(3, ' lentils ') === '3 matches for “lentils”' && K.foundCount(1, 'x') === '1 match for “x”' && K.foundCount(0, 'x') === 'Nothing in MyDay matches “x”');
 
   console.log('\n[2] Tasks');
@@ -151,7 +157,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   check('…each links to its screen', sec(S('lentil soup'), 'health')[0].href === '#health/food/recipe/rcE' && sq[0].href === '#health/workout/exercise/exSq' && sq[1].href === '#health/workout/template/wtA');
 
   console.log('\n[8] Private');
-  check('nothing private is ever found: a private project, its tasks, notes and appointments, or a private note', S('secretword').total === 0 && !all(el).some(f => /hush|private/i.test(f.title) || f.id === 'nPriv' || f.id === 'cmHush'), all(S('secretword')));
+  check('nothing private is ever found: a private project (its words, milestones, decisions, links, research), its tasks, notes and appointments, or a private note', S('secretword').total === 0 && !all(el).some(f => /hush|private/i.test(f.title) || f.id === 'nPriv' || f.id === 'cmHush'), all(S('secretword')));
   check('the page is told something was left out (to say so), and not when nothing is private', S('x').leftOut === true && (() => { const d = world(); d.projects.items = d.projects.items.filter(p => !p.private); d.notes.items = d.notes.items.filter(n => !n.private); return S('x', d).leftOut === false; })());
 
   console.log('\n[9] Order and the cap');

@@ -35,19 +35,23 @@ Cybersecurity. "Where did I write the electrician's number?" still means guessin
 - Each result says what it is ("Task", "Decision", "Kept word", "Lesson"…), where it is when that helps ("in
   “Garden shed”", "Arabic · Module 4"), and, when the match is in longer text, a short excerpt, as project search
   does. It's a link that opens the item (or its screen, where there's no page for the one item).
-- **Nothing found:** "Nothing in MyDay matches “…”." plus the private line when anything private exists.
-- **Matching** is project search's: every word must appear, in any order; capitals, accents and the kind of
-  apostrophe don't matter. Only your own words are searched, never MyDay's labels — except the course lesson and module
+- **Nothing found:** "Nothing in MyDay matches “…”.". Whenever anything private exists, the page says under the field
+  that private projects and notes aren't searched here.
+- **Matching** is project search's: every word must appear, in any order; capitals, accents (Arabic vowel marks too),
+  the Arabic stretching line (tatweel, now also in project search) and the kind of apostrophe don't matter. Only your own words are searched, never MyDay's labels — except the course lesson and module
   titles, which you asked to find.
-- At most 50 results a section are shown, with "and 12 more — narrow your search" when there are more.
+- At most 50 results a section are shown, with "And 12 more — add a word to narrow it down." when there are more.
+  Excerpts are cut only for what's shown, and the search follows your typing when it can, so a large account stays
+  quick.
 
 ## 4. What each section searches
 
 - **Tasks:** title, notes, who or what it waits on, its steps. In a project: "in “Project”". Its own page opens.
 - **Projects:** each open, paused or done project (not private) through `searchProject` — its own words, milestones,
   decisions, one page, case records, links and research. Its tasks and notes are under Tasks and Notes instead, so
-  nothing shows twice. A link opens the way Search this project opens it (a folded or hidden Resources card is opened
-  for the visit, with myday-51's `openOnArrival`).
+  nothing shows twice. A link opens the way Search this project opens it, and the item itself is brought into view and
+  focused (as ProjectView's `focusItem` does). Once myday-51's optional Overview sections ship (1.85.0), a link in a
+  folded or hidden Resources card opens that card for the visit (`openOnArrival`).
 - **Notes:** title and text, not private, not in a private project.
 - **Calendar:** appointment and work titles, with their day and time (coming ones first, soonest first, then past
   ones, marked); opens the calendar on that day (`#calendar/<day>`, new: the Calendar opens on a linked day). A private

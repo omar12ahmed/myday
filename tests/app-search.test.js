@@ -91,6 +91,10 @@ const WORD = 'lantern';
   await ev(`document.getElementById('captureText').focus()`);
   await slash();
   check('typing in + Capture\'s text area, / types a slash and the page stays', (await ev(`document.getElementById('captureText').value`)) === '/' && (await hash()) === '#today', [await ev(`document.getElementById('captureText').value`), await hash()]);
+  await ev(`(() => { const b = [...document.querySelectorAll('dialog[open] button')].find(x => x.offsetParent); b && b.focus(); })()`);
+  const onButton = await ev(`document.activeElement && document.activeElement.tagName === 'BUTTON' && !!document.activeElement.closest('dialog[open]')`);
+  await slash();
+  check('with + Capture open and a button in it focused, / does nothing (the dialog stays, the page stays)', onButton && (await hash()) === '#today' && (await exists('dialog[open]')), [onButton, await hash()]);
 
   console.log('\n[3] Results');
   await go('search');
@@ -103,6 +107,10 @@ const WORD = 'lantern';
   check('each heading reads like "Tasks · 3"', eq(secs.map(s => s.head), ['Tasks · 3', 'Projects · 2', 'Notes · 1', 'Calendar · 1', 'Study · 1', 'Finance · 1', 'Health · 1']), secs);
   check('the address becomes #search?q=lantern', (await hash()) === '#search?q=lantern', await hash());
   check('typing several letters added no history entries', (await ev('history.length')) === h0, [h0, await ev('history.length')]);
+  await click('[data-action=search-open]');
+  check('the header\'s Search button on the Search page starts a new search: the address is #search, the field empty and focused', await until(`location.hash === '#search' && document.getElementById('searchAll').value === '' && document.activeElement && document.activeElement.id === 'searchAll' && !document.querySelector('[data-s=search-hit]')`), [await hash(), await ev(`document.getElementById('searchAll').value`)]);
+  await type('#searchAll', 'lantern');
+  await until(`location.hash === '#search?q=lantern' && document.querySelectorAll('[data-s=search-hit]').length === 10`);
 
   console.log('\n[4] Opening a result, and Back');
   await click('[data-s=search-hit] a[href="#today/tasks/tkOil"]');
