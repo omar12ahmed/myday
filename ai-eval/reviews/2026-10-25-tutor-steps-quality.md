@@ -44,7 +44,8 @@ After the independent review: the same words with the recall rule moved after th
 allowance for "I can't say whether you've passed" narrowed to a refusal's own words (so "whether you have passed is
 clear: yes" is a verdict again), and fields beyond the parts dropped rather than shown. 27 of 28 usable: the one refused
 reply praised the learner ("well done on the instinct…"), which the instructions forbid, so the app refusing it is
-right (the learner is asked to try again). Nothing false in the replies read.
+right (the learner is asked to try again). The first repeat, read in full, was accurate apart from one slip of wording
+in a follow-up's answer ("26 host bits removed from 32" for the network bits; the sum and the 62 hosts right).
 
 ## Conclusion
 
