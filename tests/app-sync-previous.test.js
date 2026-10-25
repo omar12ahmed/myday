@@ -476,6 +476,27 @@ async function signIn(d, url) {
     check('back on this release the new title arrives, Resources is still hidden ("Show Resources (1)"), and the newer id is kept', await now.until(`document.querySelector('#projectTitle')?.textContent === 'Shed with a hidden card (renamed)' && !document.querySelector('#projectResources') && (document.querySelector('[data-action=section-show][data-id=resources]')?.textContent || '') === 'Show Resources (1)'`, 20000)
       && eq((await now.data()).projects.items.find(p => p.id === PH).hiddenSections, hiddenSections), await now.text('#projectMore'));
     check('…and this release is fully in step afterwards (nothing waiting, no conflict)', await synced(now) && (await now.status()) === 'synced', { status: await now.status() });
+
+    console.log('\n[18] A task\'s deadline details pass through the previous release unchanged (specs/projects-deadlines.md)');
+    const knowsDeadlines = builtText.includes('deadline-kind');
+    console.log(`The previous release ${knowsDeadlines ? 'knows' : 'doesn’t know'} deadline details.`);
+    const PDL = 'pjDeadlineBack', TDL = 'tkDeadlineBack';
+    const deadline = { kind: 'firm', from: 'The tribunal’s letter of 3 Oct', checkedBy: 'My adviser', checkedOn: today, futureBit: { keep: ['deadline', 1] } };
+    await now.returnToApp();
+    await now.setData(`s => { s.projects.items.push({ id: '${PDL}', title: 'Deposit dispute (deadline)', summary: '', stage: 'act', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}', template: 'case', case: { timeline: [], evidence: [], issues: [] } });
+      s.tasks.items.push({ id: '${TDL}', title: 'Send my witness statement', listId: '', category: 'admin', minutes: 15, due: '2026-12-20', time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '${stamp}', postponed: 0, blockers: [], letGoOn: null, projectId: '${PDL}', deadline: ${JSON.stringify(deadline)} }); }`);
+    check('this release sends the task with its deadline details (one with an extra key) inside its task record', await eventually(async () => same((await record('task', TDL))?.data?.deadline, deadline)) && await synced(now), (await record('task', TDL))?.data);
+    await before.returnToApp();
+    check('the previous release syncs normally and receives the task with its deadline exactly', await synced(before) && await before.until(`!!JSON.parse(localStorage.getItem('${KEY}')).tasks.items.find(t => t.id === '${TDL}')?.deadline`, 20000)
+      && same((await before.data()).tasks.items.find(t => t.id === TDL).deadline, deadline), (await before.data()).tasks.items.find(t => t.id === TDL)?.deadline);
+    await before.open(BEFORE + `#today/tasks/${TDL}`); await before.until(`!!document.querySelector('#tTitle')`, 15000);
+    await before.type('#tTitle', 'Send my witness statement (renamed)');
+    check('a rename on the previous release\'s task page reaches the account with the deadline as it was', await eventually(async () => (await record('task', TDL))?.data?.title === 'Send my witness statement (renamed)' && same((await record('task', TDL))?.data?.deadline, deadline)) && await synced(before), (await record('task', TDL))?.data);
+    await now.returnToApp();
+    await now.open(NOW + `#today/tasks/${TDL}`);
+    check('back on this release the title arrives and the Deadline card shows it firm, with where it comes from and who checked it', await now.until(`document.querySelector('#tTitle')?.value === 'Send my witness statement (renamed)' && document.querySelector('[data-action=deadline-kind][data-id=firm]')?.getAttribute('aria-pressed') === 'true' && document.querySelector('#tDlFrom')?.value === 'The tribunal’s letter of 3 Oct' && document.querySelector('#tDlBy')?.value === 'My adviser'`, 20000)
+      && same((await now.data()).tasks.items.find(t => t.id === TDL).deadline, deadline), await now.text('#taskDeadline'));
+    check('…and this release is fully in step afterwards (nothing waiting, no conflict)', await synced(now) && (await now.status()) === 'synced', { status: await now.status() });
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {
