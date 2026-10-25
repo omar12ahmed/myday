@@ -1014,5 +1014,63 @@ pr.concepts = [C('cpX', 'Name resolution', { prompt: 'What resolves names?', ans
     [await ev('document.documentElement.scrollWidth'), await ev(`document.querySelector('${item} [data-action=pg-step]').getBoundingClientRect().height`)]);
   await T.send('Emulation.clearDeviceMetricsOverride');
 
+  // ------------------------------------------------------------------
+  console.log('\n[57] Progress shows Arabic: four skills, each on its own; a lesson says which it asks for');
+  const JOIN = 'lesson.arabic-letter-joining', NONE = onPath.find(id => !course56.lessons[id].modalities.length);
+  const askingOn = m => onPath.filter(id => course56.lessons[id].modalities.includes(m));
+  const tasks57 = course56.milestones.find(m => m.id === 'milestone.arabic-a1').sample_tasks;
+  const at57 = (id, lessonId, finishedAt, practised, help) => ({ id, lessonId, curriculumVersion: '1.1.2', variant: 'standard', startedAt: '2026-11-02T08:00:00.000Z', finishedAt, help, practised, answers: {}, revealed: [], revisit: '' });
+  const skillsCard = '[data-pg-arabic-skills]', skill = (m, k) => text(`${skillsCard} [data-pg-skill="${m}"] [data-pg-skill-${k}]`);
+  const today57 = await ev(`new Date(2026, 10, 2).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })`);
+  await go('study/progress', 2026, 11, 2, 9); await reset(); await progress();
+  check('with no Arabic begun, Progress has no "Arabic: four skills" card', !(await exists(skillsCard)) && !(await text('#app')).includes('Arabic: four skills'));
+  await editStorage(`s => { s.study = s.study || {}; s.arabic.lessons = []; delete s.arabic.practice; s.arabic.attempts = [
+    ${JSON.stringify(at57('aaS1', JOIN, '2026-11-02T08:30:00.000Z', ['reading', 'writing'], 'independent'))},
+    ${JSON.stringify(at57('aaS2', JOIN, '2026-11-02T08:40:00.000Z', ['reading'], 'hint'))},
+    ${JSON.stringify(at57('aaS3', onPath.find(id => id !== JOIN && course56.lessons[id].modalities.length), null, ['speaking'], 'independent'))}]; }`);
+  const storedBefore = await ev(`localStorage.getItem('${KEY}')`);
+  await progress();
+  const order57 = await ev(`(() => { const c = document.querySelector('${skillsCard}'), p = document.querySelector('[data-pg-arabic]'); return { after: !!p && !!c && !!(p.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING) }; })()`);
+  const nextSib = await ev(`(() => { let e = document.querySelector('[data-pg-arabic]'); while (e && e.parentElement && e.parentElement.id !== 'app' && !e.nextElementSibling) e = e.parentElement; return e && e.nextElementSibling ? !!(e.nextElementSibling.matches('${skillsCard}') || e.nextElementSibling.querySelector('${skillsCard}')) : false; })()`);
+  const order = await ev(`[...document.querySelectorAll('${skillsCard} li[data-pg-skill]')].map(l => l.dataset.pgSkill)`);
+  const heads = await texts(`${skillsCard} li h4`);
+  check('with Arabic begun, the card "Arabic: four skills" comes right after "where you stand" and lists reading, writing, speaking, listening in that order',
+    (await exists(skillsCard)) && (await text(`${skillsCard} h3`)) === 'Arabic: four skills' && order57.after && nextSib && eq(order, ['reading', 'writing', 'speaking', 'listening']) && eq(heads, ['Reading', 'Writing', 'Speaking', 'Listening']), [order, heads, order57, nextSib]);
+  const doneR = await skill('reading', 'done'), doneW = await skill('writing', 'done');
+  check('Reading says it was practised in 2 sessions, 1 on your own, last on today', doneR.replace(/\s+/g, ' ') === `Practised in 2 sessions (1 on your own), last on ${today57}.`, [doneR, today57]);
+  check('Writing says it was practised in 1 session, on your own, last on today', doneW.replace(/\s+/g, ' ') === `Practised in 1 session (on your own), last on ${today57}.`, [doneW, today57]);
+  check('Speaking and Listening say nothing is ticked in a finished session yet (the open session does not count)',
+    (await skill('speaking', 'done')) === 'Not ticked in a finished session yet.' && (await skill('listening', 'done')) === 'Not ticked in a finished session yet.', [await skill('speaking', 'done'), await skill('listening', 'done')]);
+  check('Reading’s path line counts the lessons on your path that ask for it and the 1 you practised it in', (await skill('reading', 'path')).replace(/\s+/g, ' ') === `Your path asks for it in ${askingOn('reading').length} lessons; you’ve practised it in 1 of them.`, [await skill('reading', 'path'), askingOn('reading').length]);
+  check('Speaking’s path line says you’ve practised it in none of them yet', (await skill('speaking', 'path')).replace(/\s+/g, ' ') === `Your path asks for it in ${askingOn('speaking').length} lessons; you’ve practised it in none of them yet.`, await skill('speaking', 'path'));
+  const guides = [];
+  for (const m of ['reading', 'writing', 'speaking', 'listening']) guides.push(await skill(m, 'guide'));
+  check('each skill shows what the A1 milestone asks for, from the course’s sample task for it', ['reading', 'writing', 'speaking', 'listening'].every((m, i) => guides[i].replace(/\s+/g, ' ') === `The course’s A1 milestone asks for: ${tasks57[m]}.`), guides);
+  const sp = (await text(`${skillsCard} [data-pg-skill="speaking"]`)).replace(/\s+/g, ' '), li = (await text(`${skillsCard} [data-pg-skill="listening"]`)).replace(/\s+/g, ' ');
+  check('Speaking says MyDay can’t hear you, and Listening says it counts when you understood the audio without reading along', sp.includes('MyDay can’t hear you') && li.includes('It counts when you understood the audio without reading along.'), [sp, li]);
+  const nextR = askingOn('reading').find(id => id !== JOIN), linkR = `${skillsCard} [data-pg-skill="reading"] [data-action="pg-skill-next"]`;
+  check('Reading’s next link goes to the first other lesson on your path that asks for reading, named by its title', (await ev(`document.querySelector('${linkR}').getAttribute('href')`)) === '#study/arabic/' + nextR
+    && (await text(linkR)).replace(/\s+/g, ' ') === 'Next lesson that asks for it: ' + course56.lessons[nextR].title, [await ev(`document.querySelector('${linkR}').getAttribute('href')`), await text(linkR)]);
+  const card57 = await text(skillsCard);
+  check('the card says “Not a level” and “not CEFR levels or a qualification”, with no percentage anywhere', card57.includes('Not a level') && card57.includes('not CEFR levels or a qualification') && !card57.includes('%'), card57);
+  await click(linkR);
+  await until(() => ev(`location.hash === '#study/arabic/${nextR}'`), 'the lesson page'); await until(() => exists('[data-ar-lesson], #app h2, #app h1'), 'the lesson');
+  check('clicking the next link opens that lesson’s page', (await ev('location.hash')) === '#study/arabic/' + nextR && (await text('#app')).includes(course56.lessons[nextR].title), await ev('location.hash'));
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 360, height: 780, deviceScaleFactor: 2, mobile: true });
+  await progress();
+  const links = await ev(`[...document.querySelectorAll('[data-action="pg-skill-next"]')].map(a => Math.round(a.getBoundingClientRect().height))`);
+  check('phone (360 px): Progress does not scroll sideways, and every skill’s next link is at least 44 px tall', !(await ev('document.documentElement.scrollWidth > innerWidth')) && links.length > 0 && links.every(h => h >= 44), [await ev('document.documentElement.scrollWidth'), links]);
+  await T.send('Emulation.clearDeviceMetricsOverride');
+  await progress();
+  check('working the skills out saves nothing: the saved data is byte-identical after opening Progress', (await ev(`localStorage.getItem('${KEY}')`)) === storedBefore);
+  await editStorage(`s => { s.arabic.attempts = [${JSON.stringify(at57('aaR1', JOIN, null, [], 'independent'))}]; }`);
+  await go('study/arabic/' + JOIN, 2026, 11, 2, 9); await until(() => exists('[data-ar-session="open"]'), 'Reflect');
+  check('Reflect on a lesson that asks for reading and writing says so, and none of the four choices is pressed',
+    (await exists('p[data-ar-asks="reading writing"]')) && (await text('p[data-ar-asks]')) === 'This lesson asks for reading and writing.'
+    && eq(await ev(`[...document.querySelectorAll('[data-action="ar-practised"]')].map(b => b.getAttribute('aria-pressed'))`), ['false', 'false', 'false', 'false']), [await text('[data-ar-session="open"]')]);
+  await editStorage(`s => { s.arabic.attempts = [${JSON.stringify(at57('aaR2', NONE, null, [], 'independent'))}]; }`);
+  await go('study/arabic/' + NONE, 2026, 11, 2, 9); await until(() => exists('[data-ar-session="open"]'), 'Reflect on a lesson that asks for none');
+  check('Reflect on a lesson that asks for none of the four has no “This lesson asks for” line', !(await exists('[data-ar-asks]')) && !(await text('[data-ar-session="open"]')).includes('This lesson asks for'), await text('[data-ar-session="open"]'));
+
   finish();
 })().catch(e => { console.error('HARNESS ERROR', e); const s = T.summary(); console.log(`${s.pass} passed, ${s.fail} failed before the error`); process.exit(2); });
