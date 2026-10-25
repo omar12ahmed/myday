@@ -130,7 +130,8 @@ Several sessions may work at once, each in its own worktree with its own four te
 
 - Before applying a migration, deploying a function or running `deploy/publish-main.sh`, tell the other sessions (START) and wait for their acknowledgement; afterwards tell them what was published (FINISH: commits, tags, the Pages run, what a live check left behind).
 - One publish at a time. The next release number goes to whichever release is ready first; the other rebases onto it and takes the number after.
-- Agree which disposable account a live check uses, and tidy it afterwards. Tell the others before anything that wipes or fills an account they use.
+- Fewer, larger releases: batch small changes, aiming at most one publish per session every few hours. A small fix rides with the next release unless it's urgent (data safety, a broken screen, a security or privacy fault).
+- Each session uses its own disposable account (A, B, C, …, in the ignored `supabase/live-check*.secret.env`); use only yours, and tidy it after a live check. Tell the others before anything that touches an account they use.
 - When work changes something another session relies on (sync, the engine, shared data, the AI request filter), say so before building, and send the diff of their area for review.
 
 ## Completion
