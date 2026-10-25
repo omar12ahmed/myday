@@ -1,6 +1,6 @@
 {
  "about": "Course words: an authored word list per Arabic lesson (MyDay's own, not part of the supplied package), each word with its meaning, root, an example and a short note, beside the package's starter words (listed by id under \"seed\", not repeated). Fully vowelled. Each module is checked by the owner before it ships.",
- "status": "modules 4–13: checked by the owner (reads Arabic) on 2026-10-25, after independent cross-checks, and voiced (rounds four to seven). Modules 14–16: drafted, not yet checked or voiced",
+ "status": "modules 4–16: checked by the owner (reads Arabic) on 2026-10-25, after independent cross-checks, and voiced (rounds four to eight)",
  "version": "1.4",
  "lessons": {
   "lesson.arabic-greetings-address": {
@@ -5425,7 +5425,7 @@
      "root_reading": "sh-ʿ-r",
      "example_ar": "شَعْرُهَا طَوِيلٌ.",
      "example_meaning_en": "Her hair is long.",
-     "note": "Unvowelled شعر can also be شِعْر, “poetry”, or شَعَرَ, “he felt”."
+     "note": "Unvowelled شعر can also be “poetry”, as in الشِّعْرُ الْعَرَبِيُّ, “Arabic poetry”, or the verb in شَعَرَ بِالْبَرْدِ, “he felt cold”."
     },
     {
      "id": "lexeme.arabic-context-ambiguity-4",
@@ -5715,7 +5715,7 @@
      "root_reading": "q-ḍ-y",
      "example_ar": "قَضَيْنَا وَقْتًا جَمِيلًا مَعَ الْأُسْرَةِ.",
      "example_meaning_en": "We had a lovely time with the family.",
-     "note": "“He spends” is يَقْضِي. Spending money is أَنْفَقَ."
+     "note": "In the present: يَقْضِي وَقْتًا, “he spends time”. Spending money is أَنْفَقَ."
     }
    ]
   }
