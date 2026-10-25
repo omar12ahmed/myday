@@ -1,6 +1,6 @@
 # Projects: deadlines you can trust (Phase 3, Case deadlines)
 
-**Status:** the owner's decisions in §2 (25 October 2026); for 1.88.0 (branch `case-deadlines`). Nothing live without
+**Status:** the owner's decisions in §2 (25 October 2026); for 1.89.0 (branch `case-deadlines`). Nothing live without
 the owner's yes. No schema, migration or server change.
 **Based on:** source at 1.85.0. Plan: `specs/projects-vision.md` §10 "Case or formal matter" (deadline records that
 distinguish a firm deadline from a date to aim for, the date's source, whether it was checked, by whom and when, and
