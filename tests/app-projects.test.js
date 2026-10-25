@@ -2601,6 +2601,14 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('opening the link in the results shows the Resources card for this visit and puts the keyboard on that link\'s row', await until(`!!document.getElementById('projectResources') && document.activeElement && document.activeElement.dataset.id === 'rsSx4'`), [await exists('#projectResources'), await ev(`document.activeElement.dataset.id || document.activeElement.tagName`)]);
   check('…while the project still has Resources hidden in its saved data', eq((await pAt('pjSxLinks')).hiddenSections, ['resources']), (await pAt('pjSxLinks')).hiddenSections);
 
+  console.log('  Switched off after opening it on this visit');
+  await sx_open('pjSxSmall', 9);
+  await click('[data-action=section-open][data-id=resources]'); await until(`!!document.getElementById('projectResources')`);
+  await click('[data-action=project-edit]'); await until(`!!document.querySelector('[data-action=section-resources]')`);
+  await click('[data-action=section-resources]');
+  check('a card opened from "Add to this project" and then switched off leaves the page straight away (and is saved hidden)', await until(`!document.getElementById('projectResources')`) && eq((await pAt('pjSxSmall')).hiddenSections, ['resources']), [await exists('#projectResources'), (await pAt('pjSxSmall')).hiddenSections]);
+  await click('[data-action=section-resources]'); await until(`!JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === 'pjSxSmall').hiddenSections`);
+
   console.log('  A phone');
   await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await editStorage(`s => { s.projects.items.find(p => p.id === 'pjSxFull').hiddenSections = ['files']; }`);

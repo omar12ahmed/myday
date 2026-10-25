@@ -69,8 +69,9 @@ const hiddenOn = (d, id) => d.ev(`JSON.stringify(JSON.parse(localStorage.getItem
   // Hide Resources: About it → Edit → Show on the Overview.
   await mac.click('[data-action=project-edit]'); await mac.until(`!!document.querySelector('[data-action=section-resources]')`, 5000);
   await mac.click('[data-action=section-resources]');
-  check('mac: hiding Resources saves hiddenSections ["resources"], and it\'s in the project\'s record in the account', await mac.until(`!document.querySelector('#projectResources')`, 5000) && (await hiddenOn(mac, pid)) === '["resources"]' && await synced(mac)
-    && JSON.stringify(((await pullAll(who)).find(r => r.kind === 'project' && r.record_id === pid)?.data?.value ?? {}).hiddenSections) === '["resources"]');
+  const gone = await mac.until(`!document.querySelector('#projectResources')`, 5000), savedHere = await mac.until(`JSON.stringify(JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === '${pid}')?.hiddenSections ?? null) === '["resources"]'`, 5000), sent = await synced(mac);
+  const row = (await pullAll(who)).find(r => r.kind === 'project' && r.record_id === pid), inAccount = JSON.stringify((row?.data?.value ?? row?.data ?? {}).hiddenSections);
+  check('mac: hiding Resources saves hiddenSections ["resources"], and it\'s in the project\'s record in the account', gone && savedHere && sent && inAccount === '["resources"]', { gone, savedHere, sent, inAccount, keys: Object.keys(row?.data ?? {}) });
 
   // Phone: receives the hiding; shows it again there.
   await phone.open(BASE + `#projects/p/${pid}`); await synced(phone);

@@ -78,7 +78,7 @@ export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDay
       <LeftOffCard p={p} />
       <OverviewTop data={data} p={p} />
       <AtAGlance data={data} p={p} />
-      <ProjectHead p={p} />
+      <ProjectHead p={p} onHide={s => setOpened(o => { const n = new Set(o); n.delete(s); return n; })} />
       <div className="grid gap-x-5 lg:grid-cols-[minmax(0,1fr)_340px] items-start">
         <div className="min-w-0">
           <TasksCard data={data} p={p} />
@@ -199,7 +199,8 @@ function ProjectTop({ p, tab, query, onQuery, status }: { p: Project; tab: Proje
   );
 }
 
-function ProjectHead({ p }: { p: Project }) {
+// `onHide`: a card you switch off leaves the page now, even one you opened on this visit.
+function ProjectHead({ p, onHide }: { p: Project; onHide: (s: Section) => void }) {
   const [editing, setEditing] = useState(false), [noting, setNoting] = useState(false);
   const save = (patch: Partial<Pick<Project, 'title' | 'summary' | 'stage' | 'outcome' | 'finishedWhen'>>) => update(d => (editProject(d, p.id, patch) ? undefined : false));
   // A business idea has a one page (the Model tab). Back to general keeps it, out of sight.
@@ -239,7 +240,7 @@ function ProjectHead({ p }: { p: Project }) {
             <legend className="text-sm font-semibold mb-1.5">Show on the Overview</legend>
             <div className="flex flex-wrap gap-2">
               {SECTIONS.map(x => <Switch key={x.id} on={!isHidden(p, x.id)} data-action={`section-${x.id}`}
-                onChange={on => { if (update(d => (setHidden(d, p.id, x.id, !on) ? undefined : false))) toast(on ? `${x.label} shown again.` : `${x.label} hidden on this project.`); }}>{x.label}</Switch>)}
+                onChange={on => { if (!update(d => (setHidden(d, p.id, x.id, !on) ? undefined : false))) return; if (!on) onHide(x.id); toast(on ? `${x.label} shown again.` : `${x.label} hidden on this project.`); }}>{x.label}</Switch>)}
             </div>
             <p className="text-sm text-fg-3 m-0 mt-1.5">Ones with nothing in them fold away by themselves.</p>
           </fieldset>
