@@ -16,8 +16,9 @@ plan.ts`): **Practised** is a handed-in notebook attempt on one of the lesson's 
 knowledge check or mini challenge) or a finished Study session on it; **Ready to move on** is the lesson's roadmap
 tick when the path is in your roadmap (as before: ticked in the roadmap, from a Study check-in, or with the lesson
 page's "Ready to move on"), and otherwise the day in your lesson record, `cybersecurity.lessons` (synced as its own
-kind, `cyber_lesson`, with your "Needs revision" flag and what needs work); either counts, and adding the path later
-moves a record's day to its tick. Marking it ready, from anywhere, brings its knowledge checks back in revision about
+kind, `cyber_lesson`, with your "Needs revision" flag and what needs work); either counts, and once the roadmap has the
+lesson its tick is Ready's home (adding the path later, or ticking it, takes the day out of the record; a tick that
+already has a day keeps it). Marking it ready again after a slip dates it today, as for Arabic. Marking it ready, from anywhere, brings its knowledge checks back in revision about
 a week later (within the 8 a day) and clears your flag. **Holding** and a **slip** come from your revision answers to
 those checks, as for Arabic. There are no "How did it go?" marks in a Cybersecurity session (the notebook keeps
 answers, not marks), so nothing comes back the next day and there's no "looks ready" suggestion. The next step (the

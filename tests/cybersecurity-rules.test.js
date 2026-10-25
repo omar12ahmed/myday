@@ -255,6 +255,29 @@ const same = require('node:util').isDeepStrictEqual;
     const mt = C.stIndex(m.study).task.get(C.curriculumTaskId(L)).node;
     check('adding the path later moves your Ready day to its task (ticked, that day), and the record goes', mt.done && mt.doneOn === '2026-10-12' && !(m.cybersecurity.lessons ?? []).length && C.cyberState(m, L) === 'ready');
 
+    // Marking it ready again after a slip, with the path in your roadmap, dates it today (as for Arabic).
+    const sl = C.freshState(); C.importPath(sl, 'path.core');
+    const slt = () => C.stIndex(sl.study).task.get(C.curriculumTaskId(L)).node;
+    C.markCyberReady(sl, F, '2026-10-01');
+    sl.study.reviews.push({ id: 'rvS', conceptId: F.checks[0], title: 'q', date: '2026-10-05', at: '2026-10-05T10:00', kind: 'written', outcome: 'wrong', graded: 'self', chosen: null, support: 'own', rating: 'again', gap: 1, due: null });
+    check('(a check slipped after Ready: Needs revision)', C.cyberState(sl, L) === 'needs-revision');
+    C.markCyberReady(sl, F, '2026-10-06');
+    check('marking it ready again after a slip moves the tick to today, so it\'s Ready again (the slip was before)', slt().doneOn === '2026-10-06' && C.cyberState(sl, L) === 'ready');
+    // A day in your record from a device without the path, then a tick on one with it: the tick takes over.
+    const both = C.freshState(); C.markCyberReady(both, F, '2026-10-02');
+    both.study.stages = C.freshState().study.stages; C.importPath(both, 'path.core');
+    check('(adding the path moved the record\'s day to the tick)', C.stIndex(both.study).task.get(C.curriculumTaskId(L)).node.doneOn === '2026-10-02');
+    const two = C.freshState(); C.importPath(two, 'path.core');
+    two.cybersecurity.lessons = [{ id: L, readyOn: '2026-10-02' }]; // arrived by sync from a device without the path
+    const tt = C.stIndex(two.study).task.get(C.curriculumTaskId(L)).node; C.setTaskDone(tt, true); C.afterReady(two, F, '2026-10-03');
+    check('a tick beside a record\'s day takes the day out of the record…', !(two.cybersecurity.lessons ?? []).some(x => x.readyOn));
+    C.setTaskDone(tt, false);
+    check('…so unticking in the roadmap really takes Ready back', C.cyberState(two, L) !== 'ready' && C.readyDay(two, L) === null);
+    const legacy = C.freshState(); C.importPath(legacy, 'path.core');
+    const lt = C.stIndex(legacy.study).task.get(C.curriculumTaskId(L)).node; lt.done = true; lt.doneOn = null;
+    legacy.cybersecurity.lessons = [{ id: L, readyOn: '2026-10-04' }]; C.settleReadyHome(legacy);
+    check('a tick with no day of its own takes the record\'s day when they meet', lt.doneOn === '2026-10-04' && C.readyDay(legacy, L) === '2026-10-04');
+
     // Saved data
     const nl = C.normalizeCyber({ pathId: 'path.core', attempts: [], cards: [], lessons: [{ id: L, readyOn: '2026-10-12', revisit: { since: '2026-10-13', what: 'x'.repeat(400) }, futureBit: 1 }, { id: 'lesson.arabic-origin-location', readyOn: '2026-10-12' }, { id: 'lesson.other', readyOn: 'soon' }, { id: L }] });
     check('read back: a record keeps its day, its flag (what up to 300 characters) and a newer field; an Arabic id, a duplicate and a bad day are left out', nl.lessons.length === 2 && nl.lessons[0].futureBit === 1 && nl.lessons[0].revisit.what.length === 300 && !('readyOn' in nl.lessons[1]) && nl.lessons[1].id === 'lesson.other');

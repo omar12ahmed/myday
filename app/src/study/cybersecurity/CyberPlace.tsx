@@ -30,7 +30,8 @@ export function CyberPlace({ data, lessonId }: { data: MyDayData; lessonId: stri
     : rec?.revisit ? `Needs revision${rec.revisit.what ? `: ${rec.revisit.what}` : ''}.` : 'Needs revision: one of its checks slipped after you marked it ready. Recalling it on your own clears this.';
   const ready = () => {
     let added: { id: string; due: string }[] = [];
-    if (update(d => { added = markCyberReady(d, facts); })) setNote(added.length ? `Its ${plural(added.length, 'check')} will come back from ${shortDate(added.map(a => a.due).sort()[0])}.` : null);
+    if (update(d => { added = markCyberReady(d, facts); })) setNote(added.length ? `Its ${plural(added.length, 'check')} will come back from ${shortDate(added.map(a => a.due).sort()[0])}.`
+      : facts.checks.length ? 'Its checks are already in your revision.' : null);
   };
   return <div className="rounded-tile bg-surface border border-outline px-4 py-3 my-3" data-cy-place={state}>
     <p className="m-0 font-semibold">{line}</p>

@@ -512,7 +512,8 @@ release). A Study reset clears lesson places too.
 Adaptive Study for Cybersecurity (`../specs/adaptive-study.md`, "As built for Cybersecurity"): the same five places
 on the shared rules. **Practised** is a handed-in notebook attempt on one of the lesson's activities or a finished
 Study session on it; **Ready to move on** is the lesson's roadmap tick when the path is in your roadmap (ticked there,
-in a Study check-in or with the lesson page's button, as before) and otherwise the day in your own lesson record;
+in a Study check-in or with the lesson page's button, as before; marking it again after a slip dates it today) and
+otherwise the day in your own lesson record, which the tick replaces once the roadmap has the lesson;
 marking it ready, from anywhere, brings its knowledge checks back about a week later (within the 8 a day) and clears
 your flag; **Holding** and slips come from your revision answers to those checks. No session marks, so no "looks
 ready" suggestion. The lesson page shows its place under the title with Ready to move on / Not ready after all /

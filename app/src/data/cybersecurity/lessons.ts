@@ -44,7 +44,7 @@ export function settleReadyHome(d: MyDayData): boolean {
   for (const r of [...(d.cybersecurity.lessons ?? [])]) {
     const t = r.readyOn ? roadmapTask(d, r.id) : null;
     if (!t || !r.readyOn) continue;
-    if (!t.done) { t.done = true; t.doneOn = r.readyOn; }
+    if (!t.done || !t.doneOn) { t.done = true; t.doneOn = r.readyOn; } // a tick with its own day keeps it
     edit(d, r.id, x => { delete x.readyOn; });
     moved = true;
   }
@@ -65,17 +65,20 @@ export function cyberEvidence(d: MyDayData, l: CyberLessonFacts): LessonEvidence
 export const cyberStateOf = (d: MyDayData, l: CyberLessonFacts): LessonState => lessonState(cyberEvidence(d, l));
 
 // ---------- Ready to move on, and taking it back ----------
-// Ready: the roadmap's tick when the path is in your roadmap, otherwise your lesson record; your own flag goes; and
-// its checks not already in revision come back about a week later (the 8-a-day limit applies). Returns what was added.
+// Ready: the roadmap's tick when the path is in your roadmap, otherwise your lesson record, dated today either way (so
+// marking it ready again after a slip starts afresh, as for Arabic); your own flag goes; and its checks not already in
+// revision come back about a week later (the 8-a-day limit applies). Returns what was added.
 export function markCyberReady(d: MyDayData, l: CyberLessonFacts, k: DateKey = todayKey()): { id: string; due: DateKey }[] {
   const t = roadmapTask(d, l.id);
-  if (t) { if (!t.done) setTaskDone(t, true); }
-  edit(d, l.id, r => { if (!t) r.readyOn = k; else delete r.readyOn; delete r.revisit; });
+  if (t) { t.done = true; t.doneOn = k; }
+  else edit(d, l.id, r => { r.readyOn = k; });
   return afterReady(d, l, k);
 }
-// The checks a Ready brings back, and the flag it clears — also when the roadmap's tick did it (study/actions.ts).
+// The checks a Ready brings back, and the flag it clears — also when the roadmap's tick did it (study/actions.ts). With
+// the tick there, a day in the record goes (the tick is its home now), so unticking later really takes Ready back.
 export function afterReady(d: MyDayData, l: CyberLessonFacts, k: DateKey = todayKey()): { id: string; due: DateKey }[] {
-  edit(d, l.id, r => { delete r.revisit; });
+  const ticked = !!roadmapTask(d, l.id)?.done;
+  edit(d, l.id, r => { delete r.revisit; if (ticked) delete r.readyOn; });
   return addAutomatic(d, l.checks, shift(k, DELAYED_CHECK_DAYS), k, 'cybersecurity');
 }
 // "Not ready after all": the roadmap task unticked and the record's day removed. The checks stay in revision.
