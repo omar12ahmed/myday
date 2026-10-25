@@ -1,5 +1,21 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.87.0 — Search everywhere:** a magnifier beside + in the header (and the / key on a computer, never while you're
+typing) opens **Search**: one field that looks across your tasks and lists, projects (everything "Search this project"
+finds), notes, the calendar, your learning (your own courses, revision cards, check-ins, books, kept words, your
+session answers and "Needs revision" notes, the notebook and portfolio), the Arabic and Cybersecurity modules and
+lessons by title and the course's own Arabic words, Finance and Health. Results come grouped by section in a fixed
+order, open things before paused, done or past ones (marked), at most 50 a section, each a link that opens the item
+and brings it into view (a milestone on its tab, a kept word on Vocabulary, the calendar on the appointment's day —
+the Calendar now opens on a linked day). Matching is project search's: every word, in any order; capitals, accents,
+Arabic vowel marks and the stretching line (tatweel, now ignored in project search too) and the kind of apostrophe
+don't matter. What you type stays in the address, so Back returns to your results. Private projects (with their tasks,
+notes and appointments) and private notes aren't searched here — the page says so; search inside them on their own
+pages. Never searched: a lesson check's reference answers, a kept "another way" explanation or other AI-written text
+(an AI-made revision card is found by its own words and marked). Everything stays on this device: nothing is saved but
+the words in the address, nothing is sent anywhere, no sync or database change; going back to 1.86.0 is safe
+(`specs/search-everywhere.md`). Ask MyDay will use it later, as its own step.
+
 **1.86.0 — Words for modules 5–7 of Arabic:** the fifteen lessons after the first sentences (nouns and description,
 plurals, this and that, possession; present actions, likes and routines; numbers, times, directions, shopping and
 messages) now each have their own words, 125 in all, like module 4's: fully vowelled, each with its meaning, the root
