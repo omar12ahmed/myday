@@ -85,15 +85,17 @@ const taskBy = (d, title) => d.ev(`JSON.parse(localStorage.getItem('${KEY}')).ta
   const fNow = await taskBy(mac, TF), rowF = (await pullAll(who)).find(r => r.kind === 'task' && r.record_id === f.id);
   check('the live account holds the task with its steps and what it starts after, exactly as on the Mac', !!rowF && !rowF.deleted && same(rowF.data.steps, fNow.steps) && same(rowF.data.after, [b.id]) && fNow.steps.length === 2, rowF?.data && { steps: rowF.data.steps?.length, after: rowF.data.after });
   await mac.open(BASE + `#projects/p/${pid}`);
-  check('mac: the project\'s next step is now the boards, and "Why this?" says the frame starts after them', await mac.until(`document.querySelector('[data-s=next-title]')?.textContent === ${JSON.stringify(TB)}`, 10000)
-    && (await mac.ev(`document.querySelector('[data-s=next-why-text]')?.textContent || ''`)).includes(`“${TF}” comes first, but it starts after “${TB}”.`), await mac.text('#projectNext'));
+  // (With one other task, "Why this?" says it's the only one that can start now; the frame is listed "(starts after another task)".)
+  check('mac: the project\'s next step is now the boards: "the only task still to do that can start now", the frame "(starts after another task)"', await mac.until(`document.querySelector('[data-s=next-title]')?.textContent === ${JSON.stringify(TB)}`, 10000)
+    && (await mac.ev(`document.querySelector('[data-s=next-why-text]')?.textContent || ''`)) === 'MyDay’s pick: it’s the only task still to do that can start now.'
+    && await mac.ev(`[...document.querySelectorAll('#projectNextPick option')].some(o => o.textContent === ${JSON.stringify(`${TF} (starts after another task)`)})`), await mac.text('#projectNext'));
 
   // Phone: receives it; ticks the last step (the offer appears; nothing is marked by itself); marks the boards done.
   await phone.open(BASE + `#today/tasks/${f.id}`); await synced(phone);
   check('phone: receives the steps ("1 of 2 steps") and what it starts after', await phone.until(`document.querySelector('[data-s=steps-count]')?.textContent.trim() === '1 of 2 steps' && document.querySelector('[data-s=startsafter-line]')?.textContent.includes(${JSON.stringify(TB)})`, 30000), await phone.text('#taskSteps'));
   check('phone: exactly the same task as the Mac', same(await taskBy(phone, TF), fNow));
   check('phone at 320 px: nothing scrolls sideways, and the step tick boxes are at least 44 px', await phone.ev(`document.documentElement.scrollWidth <= innerWidth`)
-    && await phone.ev(`[...document.querySelectorAll('#taskSteps label')].every(l => l.getBoundingClientRect().height >= 44)`));
+    && await phone.ev(`[...document.querySelectorAll('#taskSteps [data-s=step] label')].every(l => l.getBoundingClientRect().height >= 44)`), await phone.ev(`[document.documentElement.scrollWidth, innerWidth, [...document.querySelectorAll('#taskSteps [data-s=step] label')].map(l => Math.round(l.getBoundingClientRect().height))]`));
   await phone.click('#taskSteps [data-s=step]:last-child [data-s=step-done]');
   check('phone: ticking the last step offers to mark the task done — and doesn\'t do it by itself', await phone.until(`(document.querySelector('[data-s=steps-all-done]')?.textContent || '').includes('All 2 steps done — mark the task done?')`, 10000)
     && (await taskBy(phone, TF)).done === false && await synced(phone));
