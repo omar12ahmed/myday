@@ -2362,6 +2362,147 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('…and says "Starts after: Order the boards. You can still do it any time."', (await text('[data-s=next-starts-after]')).replace(/\s+/g, ' ').trim() === 'Starts after: Order the boards. You can still do it any time.', await text('[data-s=next-starts-after]'));
   check('…and a next step with steps shows "1 of 2 steps"', (await text('[data-s=next-steps]')).trim() === '1 of 2 steps', await text('#projectNext'));
 
+  console.log('\n[46] Needs you, across projects, and Board · List');
+  await go('projects', 2026, 10, 15, 9); await reset(); await go('projects', 2026, 10, 15, 9);
+  await click('#themeBtn'); await sleep(300); // any change saves, so there is saved data to edit
+  const ny_pj = (id, title, stage, extra = {}) => ({ id, title, summary: '', stage, status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '2026-10-01T09:00', updatedAt: '2026-10-01T09:00', ...extra });
+  const ny_tk = (id, title, projectId, extra = {}) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-10-01T09:00', postponed: 0, blockers: [], letGoOn: null, projectId, ...extra });
+  const ny_projects = [
+    ny_pj('pjNyShed', 'Shed', 'act', { updatedAt: '2026-10-14T12:00', nextTaskId: 'tkNyToday' }),
+    ny_pj('pjNyCoffee', 'Coffee', 'explore', { template: 'business', updatedAt: '2026-10-13T12:00',
+      decisions: [{ id: 'dcNy', question: 'Which roaster?', options: [], chosen: null, why: '', decidedOn: null, createdAt: '2026-09-22T09:00', updatedAt: '2026-09-22T09:00' }] }),
+    ny_pj('pjNyPriv', 'Private plan', 'organise', { private: true, updatedAt: '2026-10-12T12:00', nextTaskId: 'tkNyPriv' }),
+    ny_pj('pjNyPaused', 'Paused plan', 'act', { status: 'paused', updatedAt: '2026-10-11T12:00' }),
+  ];
+  const ny_tasks = [
+    ny_tk('tkNyToday', 'Buy the screws', 'pjNyShed', { due: '2026-10-15', time: '17:30' }),
+    ny_tk('tkNyPast', 'Paint the door', 'pjNyShed', { due: '2026-10-12' }),
+    ny_tk('tkNyWait', 'Hear back on the quote', 'pjNyShed', { waiting: { on: 'Priya', since: '2026-10-10', until: '2026-10-14' } }),
+    ny_tk('tkNyPriv', 'Renew the licence', 'pjNyPriv', { due: '2026-10-17' }),
+    ny_tk('tkNyPaused', 'Sand the bench', 'pjNyPaused', { due: '2026-10-15' }),
+  ];
+  const ny_seed = (projs, tasks) => editStorage(`s => { s.projects.items = ${JSON.stringify(projs)}; s.tasks.items = ${JSON.stringify(tasks)}; }`);
+  const ny_ids = () => ev(`[...document.querySelectorAll('#needsYou [data-s=need]')].map(li => li.dataset.id)`);
+  const ny_lines = id => ev(`[...document.querySelectorAll('#needsYou [data-s=need][data-id="${id}"] [data-s=need-link] > span')].map(s => s.textContent)`);
+  const ny_open = async (m = 0) => { await go('projects', 2026, 10, 15, 9, m); await until(`!!document.querySelector('#needsYou')`); };
+  await ny_seed(ny_projects, ny_tasks);
+  await ny_open(1);
+  const ny_rows = ['date:tkNyToday', 'past:tkNyPast', 'waiting:tkNyWait', 'date:tkNyPriv', 'decision:pjNyCoffee:dcNy'];
+  let got = await ny_ids();
+  check('"Needs you" is at the top of the Projects home, above the intro and the board, with the title and a count of 5', (await text('#needsYou h2')).startsWith('Needs you') && (await text('[data-s=needs-count]')) === '5' && (await ev(`document.getElementById('needsYou').compareDocumentPosition(document.getElementById('projectsIntro')) & Node.DOCUMENT_POSITION_FOLLOWING`)) > 0 && (await ev(`document.getElementById('needsYou').compareDocumentPosition(document.getElementById('projectList') || document.body) & Node.DOCUMENT_POSITION_FOLLOWING`)) > 0, [await text('#needsYou h2'), await text('[data-s=needs-count]')]);
+  check('the rows come in order: today, a date passed, a wait that is due, the coming date, the open decision', eq(got, ny_rows), got);
+  check('the paused project\'s task due today is not there', !got.some(x => x.includes('tkNyPaused')), got);
+  const ny_dateWords = await ev(`new Date(2026, 9, 12).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })`);
+  const ny_soonWords = await ev(`new Date(2026, 9, 17).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })`);
+  const ny_expWords = await ev(`new Date(2026, 9, 14).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })`);
+  let l = await ny_lines('date:tkNyToday');
+  check('the task due today says "Buy the screws" and "today at 17:30 · Shed"', eq(l, ['Buy the screws', 'today at 17:30 · Shed']), l);
+  l = await ny_lines('past:tkNyPast');
+  check('the task whose date has passed says "Paint the door" and "still open, was due <its date> · Shed", the date written like the other rows\'', l[0] === 'Paint the door' && l[1] === `still open, was due ${ny_dateWords} · Shed`, [l, ny_dateWords]);
+  l = await ny_lines('waiting:tkNyWait');
+  check('the wait says "Hear back on the quote" and "waiting on Priya — expected <yesterday> · Shed"', l[0] === 'Hear back on the quote' && l[1] === `waiting on Priya — expected ${ny_expWords} · Shed`, [l, ny_expWords]);
+  l = await ny_lines('date:tkNyPriv');
+  check('the date in two days says "on <its date> · Private plan", and that project shows a lock marked "Private"', l[0] === 'Renew the licence' && l[1] === `on ${ny_soonWords} · Private plan` && (await ev(`!!document.querySelector('[data-id="date:tkNyPriv"] svg[aria-label=Private]')`)), l);
+  check('only the private project\'s row has a lock', (await ev(`document.querySelectorAll('#needsYou [data-s=need] svg[aria-label=Private]').length`)) === 1);
+  l = await ny_lines('decision:pjNyCoffee:dcNy');
+  check('the decision open 23 days says "Which roaster?" and "open 3 weeks · Coffee"', eq(l, ['Which roaster?', 'open 3 weeks · Coffee']), l);
+  const ny_hrefs = await ev(`[...document.querySelectorAll('#needsYou [data-s=need-link]')].map(a => a.getAttribute('href'))`);
+  check('each row\'s link goes to the right place: the task pages, and the project\'s decisions', eq(ny_hrefs, ['#today/tasks/tkNyToday', '#today/tasks/tkNyPast', '#today/tasks/tkNyWait', '#today/tasks/tkNyPriv', '#projects/p/pjNyCoffee/decisions']), ny_hrefs);
+  await click('[data-id="past:tkNyPast"] [data-s=need-link]');
+  check('opening the past one goes to its task page', await until(`location.hash === '#today/tasks/tkNyPast'`), await hash());
+  await ev('history.back()');
+  check('going back returns to the Projects home with the card', await until(`!!document.querySelector('#needsYou') && location.hash === '#projects'`), await hash());
+
+  console.log('  Chase it');
+  check('only the wait has "Chase it"', (await ev(`[...document.querySelectorAll('#needsYou [data-action=chase]')].map(b => b.closest('[data-s=need]').dataset.id)`)).join() === 'waiting:tkNyWait');
+  await click('[data-id="waiting:tkNyWait"] [data-action=chase]');
+  check('"Chase it" under the wait opens "When would you like to chase it?"', await until(`!!document.querySelector('[data-id="waiting:tkNyWait"] [data-s=chase-when]')`) && (await text('[data-id="waiting:tkNyWait"] [data-s=chase-when]')).includes('When would you like to chase it?'), await text('[data-id="waiting:tkNyWait"]'));
+
+  console.log('  Filters');
+  await ny_open(2);
+  const ny_chips = () => ev(`[...document.querySelectorAll('#needsYou [data-s=needs-filter]')].map(b => b.dataset.id + ':' + b.textContent.replace(/\\s+/g, ' ').trim() + ':' + b.getAttribute('aria-pressed'))`);
+  let chips = await ny_chips();
+  check('the filters are All 5, Dates 3, Waiting 1, Decisions 1 (no group with nothing in it), with All pressed', eq(chips, ['all:All 5:true', 'dates:Dates 3:false', 'waiting:Waiting 1:false', 'decisions:Decisions 1:false']), chips);
+  const ny_opts = await ev(`[...document.querySelectorAll('#needsProject option')].map(o => o.value + ':' + o.textContent)`);
+  check('the project picker offers "All projects" and each project with something, most recently worked on first (not the paused one)', eq(ny_opts, [':All projects', 'pjNyShed:Shed', 'pjNyCoffee:Coffee', 'pjNyPriv:Private plan']), ny_opts);
+  await click('[data-s=needs-filter][data-id=decisions]');
+  await until(`document.querySelectorAll('#needsYou [data-s=need]').length === 1`);
+  got = await ny_ids();
+  check('"Decisions" shows only the decision, and is pressed', eq(got, ['decision:pjNyCoffee:dcNy']) && (await ev(`document.querySelector('[data-s=needs-filter][data-id=decisions]').getAttribute('aria-pressed')`)) === 'true' && (await ev(`document.querySelector('[data-s=needs-filter][data-id=all]').getAttribute('aria-pressed')`)) === 'false', got);
+  await click('[data-s=needs-filter][data-id=all]');
+  await until(`document.querySelectorAll('#needsYou [data-s=need]').length === 5`);
+  check('"All" brings every row back', eq(await ny_ids(), ny_rows), await ny_ids());
+  await type('#needsProject', 'pjNyShed');
+  await until(`document.querySelectorAll('#needsYou [data-s=need]').length === 3`);
+  got = await ny_ids();
+  chips = await ny_chips();
+  check('choosing Shed in the picker shows only Shed\'s rows (today, past, waiting)', eq(got, ['date:tkNyToday', 'past:tkNyPast', 'waiting:tkNyWait']), got);
+  check('…and the filters count only Shed\'s: All 3, Dates 2, Waiting 1', eq(chips, ['all:All 3:true', 'dates:Dates 2:false', 'waiting:Waiting 1:false']), chips);
+
+  console.log('  Five at a time');
+  await editStorage(`s => { s.tasks.items.push(${JSON.stringify(ny_tk('tkNyMore1', 'Oil the hinges', 'pjNyShed', { due: '2026-10-18' }))}, ${JSON.stringify(ny_tk('tkNyMore2', 'Hang the shelf', 'pjNyShed', { due: '2026-10-19' }))}); }`);
+  await ny_open(3);
+  check('with 7 things, only 5 show and the total says 7', (await ny_ids()).length === 5 && (await text('[data-s=needs-count]')) === '7', [await ny_ids(), await text('[data-s=needs-count]')]);
+  check('…with "Show 2 more", not expanded', (await text('[data-action=needs-more]')) === 'Show 2 more' && (await ev(`document.querySelector('[data-action=needs-more]').getAttribute('aria-expanded')`)) === 'false');
+  await click('[data-action=needs-more]');
+  await until(`document.querySelectorAll('#needsYou [data-s=need]').length === 7`);
+  check('"Show 2 more" shows all 7, and the button becomes "Show fewer"', (await ny_ids()).length === 7 && (await text('[data-action=needs-more]')) === 'Show fewer' && (await ev(`document.querySelector('[data-action=needs-more]').getAttribute('aria-expanded')`)) === 'true', [await ny_ids(), await text('[data-action=needs-more]')]);
+  await click('[data-action=needs-more]');
+  check('"Show fewer" goes back to 5', await until(`document.querySelectorAll('#needsYou [data-s=need]').length === 5`) && (await text('[data-action=needs-more]')) === 'Show 2 more');
+
+  console.log('  Dealt with');
+  await editStorage(`s => { const t = s.tasks.items.find(x => x.id === 'tkNyPast'); t.done = true; t.doneOn = '2026-10-15'; }`);
+  await ny_open(4);
+  got = await ny_ids();
+  check('once the passed task is done, its row is gone (6 things now, 5 shown)', !got.includes('past:tkNyPast') && (await text('[data-s=needs-count]')) === '6' && got.length === 5 && (await text('[data-action=needs-more]')) === 'Show 1 more', [got, await text('[data-s=needs-count]')]);
+
+  console.log('  Nothing, and no projects');
+  await ny_seed([ny_pj('pjNyEmpty', 'Quiet project', 'capture')], []);
+  await ny_open(5);
+  check('a project with nothing to show: "Nothing needs you right now." with no rows, count or filters', (await text('[data-s=needs-none]')) === 'Nothing needs you right now.' && (await ny_ids()).length === 0 && !(await exists('[data-s=needs-count]')) && !(await exists('[data-s=needs-filters]')));
+  await ny_seed([], []);
+  await go('projects', 2026, 10, 15, 9, 6); await until(`!!document.querySelector('#projectsEmpty')`);
+  check('with no projects at all there is no "Needs you" card, and no Board · List switch', !(await exists('#needsYou')) && !(await exists('[data-s=projects-view]')));
+
+  console.log('  Board · List');
+  await ny_seed(ny_projects, ny_tasks);
+  await ny_open(7);
+  const ny_vw = () => ev(`[...document.querySelectorAll('[data-action=projects-view]')].map(b => b.dataset.id + ':' + b.getAttribute('aria-pressed'))`);
+  check('the Projects home starts on the board, with Board pressed', (await exists('#projectList')) && !(await exists('#projectsList')) && eq(await ny_vw(), ['board:true', 'list:false']), await ny_vw());
+  await click('[data-action=projects-view][data-id=list]');
+  await until(`!!document.getElementById('projectsList')`);
+  check('"List" shows the list instead of the board, with List pressed', !(await exists('#projectList')) && eq(await ny_vw(), ['board:false', 'list:true']), await ny_vw());
+  const ny_rowsList = () => ev(`[...document.querySelectorAll('#projectsList [data-s=project-row]')].map(li => li.dataset.id + '|' + li.querySelector('a').getAttribute('href') + '|' + li.querySelector('a > span > span:nth-child(2)').textContent + '|' + li.querySelector('[data-s=project-needs]').textContent)`);
+  const ny_rl = await ny_rowsList();
+  check('the list has one row per active project, most recently worked on first, each linking to the project', eq(ny_rl.map(x => x.split('|').slice(0, 2).join('|')), ['pjNyShed|#projects/p/pjNyShed', 'pjNyCoffee|#projects/p/pjNyCoffee', 'pjNyPriv|#projects/p/pjNyPriv']), ny_rl);
+  check('…each says its stage, its kind and next step, or "No next step yet"', eq(ny_rl.map(x => x.split('|')[2]), ['Act · Next: Buy the screws', 'Explore · Business idea · No next step yet', 'Organise · Next: Renew the licence']), ny_rl);
+  check('…and how many things need you: "3 need you", "1 needs you", "1 needs you"', eq(ny_rl.map(x => x.split('|')[3]), ['3 need you', '1 needs you', '1 needs you']), ny_rl);
+  const ny_sum = await ev(`[...document.querySelectorAll('[data-s=project-needs]')].reduce((n, e) => n + (parseInt(e.textContent) || 0), 0)`);
+  check('the list\'s numbers add up to the card\'s total (5)', ny_sum === 5 && (await text('[data-s=needs-count]')) === '5', [ny_sum, await text('[data-s=needs-count]')]);
+  await editStorage(`s => { s.projects.items.find(x => x.id === 'pjNyPriv').updatedAt = '2026-10-14T18:00'; s.projects.items.push(${JSON.stringify(ny_pj('pjNyQuiet', 'Quiet project', 'capture', { updatedAt: '2026-10-09T09:00' }))}); }`);
+  await ny_open(8);
+  const ny_rl2 = await ny_rowsList();
+  check('a project worked on more recently moves up; one with nothing needing you has an empty count', eq(ny_rl2.map(x => x.split('|')[0]), ['pjNyPriv', 'pjNyShed', 'pjNyCoffee', 'pjNyQuiet']) && ny_rl2[3].endsWith('|'), ny_rl2);
+  check('the choice is saved on this device as myday.projects.view = list, not in the saved data', (await ev(`localStorage.getItem('myday.projects.view')`)) === 'list' && !JSON.stringify(await data()).includes('projects.view'));
+  check('after a reload it is still the list', (await exists('#projectsList')) && !(await exists('#projectList')) && eq(await ny_vw(), ['board:false', 'list:true']), await ny_vw());
+  await click('[data-action=projects-view][data-id=board]');
+  await until(`!!document.getElementById('projectList')`);
+  check('"Board" brings the board back, and the choice is remembered', !(await exists('#projectsList')) && (await ev(`localStorage.getItem('myday.projects.view')`)) === 'board' && eq(await ny_vw(), ['board:true', 'list:false']), await ny_vw());
+
+  console.log('  A phone');
+  await ny_seed(ny_projects, [...ny_tasks, ny_tk('tkNyMore1', 'Oil the hinges', 'pjNyShed', { due: '2026-10-18' }), ny_tk('tkNyMore2', 'Hang the shelf', 'pjNyShed', { due: '2026-10-19' })]);
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await ny_open(9); await sleep(300);
+  const ny_small = () => ev(`[...document.querySelectorAll('#needsYou button, #needsYou select, #needsYou a, [data-s=projects-view] button')].filter(b => b.getBoundingClientRect().height < 44).map(b => (b.dataset.action || b.dataset.id || b.id || b.tagName) + ':' + Math.round(b.getBoundingClientRect().height))`);
+  check('phone 390 px: the Projects home with the card and its filters does not scroll sideways', (await ev('document.documentElement.scrollWidth')) <= 390, await ev('document.documentElement.scrollWidth'));
+  check('phone 390 px: every button, picker and link in the card, and the Board · List buttons, is at least 44 px tall', (await exists('#needsProject')) && (await exists('[data-action=chase]')) && eq(await ny_small(), []), await ny_small());
+  await click('[data-action=needs-more]'); await until(`document.querySelectorAll('#needsYou [data-s=need]').length === 7`);
+  check('phone 390 px: with all 7 rows shown, still no sideways scroll and every control 44 px tall', (await ev('document.documentElement.scrollWidth')) <= 390 && eq(await ny_small(), []), [await ev('document.documentElement.scrollWidth'), await ny_small()]);
+  await click('[data-action=projects-view][data-id=list]'); await until(`!!document.getElementById('projectsList')`);
+  check('phone 390 px: the list does not scroll sideways and its rows are at least 44 px tall', (await ev('document.documentElement.scrollWidth')) <= 390 && (await ev(`[...document.querySelectorAll('#projectsList a')].every(a => a.getBoundingClientRect().height >= 44)`)), await ev('document.documentElement.scrollWidth'));
+  await T.send('Emulation.clearDeviceMetricsOverride');
+  await ev(`localStorage.removeItem('myday.projects.view')`);
+
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
   const sm = T.summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);
