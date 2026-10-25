@@ -1139,6 +1139,19 @@ look and Your week's What needs you now use the same rules (`data/attention.ts`)
 board, **Board · List**: the list has one row per active project (stage, kind, next step, "3 need you"), most
 recently worked on first; the choice is kept on this device only (`myday.projects.view`).
 
+**Deadlines you can trust (unreleased; `specs/projects-deadlines.md`):** a project's dated task can say whether its
+date is a **Firm deadline** or a **Date to aim for**, where the date comes from ("The tribunal's letter of 3 Oct") and
+who checked it and when: the **Deadline** card on its page (Firm deadline · Date to aim for · Not a deadline), with
+"MyDay doesn't work out legal deadlines; it keeps the ones you enter." It stays a task, so Today, Coming up, Needs you
+and the plan work as before, 7 days ahead like any date. The kind shows wherever it's listed (Tasks, Due today, Coming
+up, the Next step, Needs you, Worth a look); after its date, while still to do, "Still open, was due Thu 6 Nov" (or
+"was aimed for") — never "overdue", never red. A Case's **Add a deadline** makes a firm one and asks where the date
+comes from. Once a Case's deadline is done, its page and Worth a look offer to note it on the timeline ("Done: …", on
+the day it was done, as your account): one tap, offered once, never by itself. Saved data: an optional `deadline` on
+the task, synced with it (no schema, migration or database change; earlier releases keep it unread and show a plain
+dated task; a kind from a newer MyDay is kept and shown as "Deadline"). Where the date comes from and who checked it
+are never sent to AI.
+
 **Optional sections on a project (1.85.0; `specs/projects-sections.md`):** a project's Overview shows Notes,
 Recently, Learning, Resources and Files only when they hold something; empty ones fold into **Add to this project**
 (A note · Something to learn · A link · A file), each opening that card's first step. About it → Edit has **Show on
