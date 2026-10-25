@@ -33,7 +33,7 @@ again.${quoting}`;
   if (c.lookup?.tool === 'search') return `
 
 The app looked across MyDay for the words ("lookup" in the data, "tool" "search": "query", the words; "found", up to 12
-things that matched, each with "ref", its "kind", its name ("title"), where it is ("where": its project, list, course or
+things that matched, each with "ref", its "kind", its name ("title"), where it is ("where": its project, course or
 module, or an appointment's day and time) and "state" (done, let go, paused, past, archived or finished, or null);
 "total", how many matched in all; "titlesOnly" when notes, and only notes, could be searched by their titles alone —
 everything else was searched as usual). Only names are sent, never
@@ -130,8 +130,8 @@ decisions and its one page aren't here: for those, say to ask on its page. Never
   if (tools.includes('waiting')) offer.push(`- At what they're waiting on: they ask what they're waiting on or for, what's with someone else, or what to
   chase — {"kind":"lookup","message":"Looking at what you're waiting on.","lookup":{"tool":"waiting","query":"all"}},
   or for one project they name, the query that project's id exactly as in "projects".`);
-  if (tools.includes('study')) offer.push(`- At what to study next: they ask what to study, learn or practise next, or where they're up to in their learning
-  (not to find a lesson, course or word by what it's about: that's a look across MyDay, when it's here) —
+  if (tools.includes('study')) offer.push(`- At what to study next: they ask what to study, learn or practise next, or where they're up to in their learning${tools.includes('search') ? `
+  (not to find a lesson, course or word by what it's about: that's a look across MyDay)` : ''} —
   {"kind":"lookup","message":"Looking at what to study next.","lookup":{"tool":"study","query":"all"}}.`);
   if (!offer.length) return '';
   return `
@@ -147,6 +147,12 @@ const hasChecklist = (c: AskContext) => Array.isArray(c.context.task?.steps);
 // The reply as it goes back to the app: for a request without a checklist (an older app), a stray "step" is a task, so
 // that app never meets a kind of item it doesn't know.
 export function askOutput(c: AskContext, text: string): string {
+  // An older app (v23 and before: "notes" offered, no "search") can't read a look across MyDay: a stray one becomes a
+  // look in its notes, the nearest thing it can do.
+  if (c.can?.includes('notes') && !c.can.includes('search') && /"search"/.test(text)) {
+    const r = readAsk(text);
+    if (r?.kind === 'lookup' && r.lookup?.tool === 'search') return JSON.stringify({ ...r, lookup: { tool: 'notes', query: r.lookup.query } });
+  }
   if (hasChecklist(c) || !/"step"/.test(text)) return text;
   const r = readAsk(text);
   if (!r || !r.items.some(i => i.type === 'step')) return text;
@@ -280,7 +286,7 @@ export function mockAsk(c: AskContext): string {
     return reply({ kind: 'answer', action: null, items: [], message: `Practice helper (no AI): ${l.weekday} has ${l.tasks.length} ${l.tasks.length === 1 ? 'task' : 'tasks'} planned and ${appts} ${appts === 1 ? 'appointment' : 'appointments'}, with about ${Math.round(free / 60)} hours free.` });
   }
   const dayWord = t.match(/\b(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i)?.[1]?.toLowerCase();
-  if (c.can?.includes('day') && !c.lookup && dayWord && /\b(am i free|free on|what'?s on|how busy|anything on|busy on)\b/i.test(t) && !(dayWord === 'today' && c.context.today)) {
+  if (c.can?.includes('day') && !c.lookup && dayWord && /\b(am i free|free on|what'?s on|how busy|anything on|busy on|do i have)\b/i.test(t) && !(dayWord === 'today' && c.context.today)) {
     const d = new Date(`${c.date}T12:00`), names = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     const add = dayWord === 'today' ? 0 : dayWord === 'tomorrow' ? 1 : ((names.indexOf(dayWord) - d.getDay() + 7) % 7 || 7);
     d.setDate(d.getDate() + add);
@@ -336,7 +342,7 @@ export function mockAsk(c: AskContext): string {
   }
   // (The open project sharing the most words with the question.)
   const score = (title: string) => title.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(w => w.length > 3 && t.toLowerCase().includes(w)).length;
-  const named = c.can?.includes('project') && !c.lookup && /\b(next|where am i|where's|how'?s|status|left|summari[sz]e)\b/i.test(t)
+  const named = c.can?.includes('project') && !c.lookup && /\b(next|where am i|where's|where (is|are)|how'?s|status|left|summari[sz]e)\b/i.test(t)
     ? (x.projects ?? []).filter(p => p.id !== x.project?.id && score(p.title) > 0).sort((a, b) => score(b.title) - score(a.title))[0] : undefined;
   if (named) return reply({ kind: 'lookup', message: 'Practice helper (no AI): looking at that project.', items: [], action: null, lookup: { tool: 'project', query: named.id } });
   // Finding something by its words: across MyDay where the app can (v24), otherwise in your notes.

@@ -416,6 +416,15 @@ const fails = async fn => { try { await fn(); return null; } catch (e) { return 
     check('the practice version looks across MyDay, with the key words', mq1.kind === 'lookup' && mq1.lookup.tool === 'search' && mq1.lookup.query === 'electrician number', mq1);
     const mq2 = JSON.parse(A.mockAsk({ ...base, text: "Where did I put the electrician's number?", can: CAN, lookup: srch }));
     check('…and, with what was found, names them with where they are, citing them', mq2.kind === 'answer' && mq2.message.includes('the milestone “Electrician signs off” (in “Garden shed”)') && mq2.sources.join() === 'r1,r2,r3', mq2);
+    // An older app (notes, no search) never gets a lookup it can't read; the study offer mentions the look across MyDay
+    // only where it's offered.
+    const SR = JSON.stringify({ kind: 'lookup', message: 'Looking across MyDay for that.', lookup: { tool: 'search', query: 'electrician' } });
+    const OLD = ['notes', 'day', 'project', 'decisions', 'waiting', 'study'];
+    check('a stray look across MyDay for an older app becomes a look in its notes; the new app keeps it; an app with no lookups is left alone', JSON.parse(A.askOutput({ ...base, can: OLD }, SR)).lookup.tool === 'notes' && JSON.parse(A.askOutput({ ...base, can: OLD }, SR)).lookup.query === 'electrician'
+      && A.askOutput({ ...base, can: CAN }, SR) === SR && A.askOutput({ ...base }, SR) === SR);
+    check('…and the study offer points to the look across MyDay only where it\'s offered', offerSearch.includes("that's a look across MyDay)") && !offerOld.includes('look across MyDay'));
+    const md = JSON.parse(A.mockAsk({ ...base, text: 'Do I have a dentist appointment on Thursday?', can: CAN })), mp = JSON.parse(A.mockAsk({ ...base, text: 'Where is the garden shed project at?', can: CAN, context: { projects: [{ id: 'pjShed', title: 'Garden shed' }] } }));
+    check('the practice version keeps a day question a day look, and "where is" a named project a project look', md.lookup?.tool === 'day' && mp.lookup?.tool === 'project' && mp.lookup.query === 'pjShed', [md, mp]);
     const mq3 = JSON.parse(A.mockAsk({ ...base, text: 'What did I write about the boiler?', can: ['notes', 'day'] }));
     check('…while an older app\'s "What did I write about…" still looks in its notes', mq3.kind === 'lookup' && mq3.lookup.tool === 'notes', mq3);
     // Steps (v23, the owner's choice): a task's checklist on its page, and with each of a project's tasks.

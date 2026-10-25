@@ -61,32 +61,33 @@ export function searchLookup(data: MyDayData, query: string, courses: CourseInde
   const has = (texts: (string | null | undefined)[]) => { const hay = fold(texts.filter(Boolean).join('\n')); return words.length > 0 && words.every(w => hay.includes(w)); };
   type Hit = { kind: SearchKind; title: string; where: string | null; state: SearchState | null; href: string; rank: number };
   const hits: Hit[] = [];
-  let held = 0;
-  const add = (ok: boolean, h: Omit<Hit, 'rank' | 'state'> & { state?: SearchState | null }) => { if (ok) hits.push({ state: null, ...h, rank: h.state ? (h.state === 'paused' ? 1 : 2) : 0 }); else held++; };
+  const held = new Set<string>(); // the private records that matched (a private project once, however many of its parts)
+  const add = (ok: boolean, h: Omit<Hit, 'rank' | 'state'> & { state?: SearchState | null }, record = '') => { if (ok) hits.push({ state: null, ...h, rank: h.state ? (h.state === 'paused' ? 1 : 2) : 0 }); else held.add(record); };
   const enc = encodeURIComponent, projects = new Map(data.projects.items.map(p => [p.id, p]));
   const inProject = (id?: string | null) => { const p = id ? projects.get(id) : undefined; return p ? `in “${p.title}”` : null; };
   // Tasks: title, notes and steps (never who it waits on, or a deadline's source).
   for (const t of data.tasks.items) {
     if (!has([t.title, t.notes, ...(t.steps ?? []).map(s => s.text)])) continue;
-    add(reach.task(t), { kind: 'task', title: t.title, where: inProject(t.projectId), href: `#today/tasks/${enc(t.id)}`, state: t.letGoOn ? 'let go' : isDone(data, t) ? 'done' : null });
+    add(reach.task(t), { kind: 'task', title: t.title, where: inProject(t.projectId), href: `#today/tasks/${enc(t.id)}`, state: t.letGoOn ? 'let go' : isDone(data, t) ? 'done' : null }, `task:${t.id}`);
   }
   // Projects: name and summary, milestones, decisions (question and options).
   for (const p of data.projects.items) {
     const ok = reach.project(p), state: SearchState | null = p.status === 'paused' ? 'paused' : p.status === 'done' ? 'done' : null, at = `#projects/p/${enc(p.id)}`;
-    if (has([p.title, p.summary])) add(ok, { kind: 'project', title: p.title, where: null, href: at, state });
-    for (const m of p.milestones ?? []) if (has([m.title])) add(ok, { kind: 'milestone', title: m.title, where: `in “${p.title}”`, href: `${at}/milestones`, state: m.reached ? 'done' : state });
-    for (const d of p.decisions ?? []) if (has([d.question, ...d.options.map(o => o.text)])) add(ok, { kind: 'decision', title: d.question, where: `in “${p.title}”`, href: `${at}/decisions`, state });
+    const rec = `project:${p.id}`;
+    if (has([p.title, p.summary])) add(ok, { kind: 'project', title: p.title, where: null, href: at, state }, rec);
+    for (const m of p.milestones ?? []) if (has([m.title])) add(ok, { kind: 'milestone', title: m.title, where: `in “${p.title}”`, href: `${at}/milestones`, state: m.reachedOn ? 'done' : state }, rec);
+    for (const d of p.decisions ?? []) if (has([d.question, ...d.options.map(o => o.text)])) add(ok, { kind: 'decision', title: d.question, where: `in “${p.title}”`, href: `${at}/decisions`, state }, rec);
   }
   // Notes: titles (their text, and an untitled note's first line, only with AI help with notes on).
   for (const n of data.notes.items) {
     if (!has(withText ? [n.title, n.text] : [n.title])) continue;
-    add(reach.note(n), { kind: 'note', title: withText ? noteName(n) : n.title.trim() || 'Untitled note', where: inProject(n.projectId), href: `#projects/notes/${enc(n.id)}` });
+    add(reach.note(n), { kind: 'note', title: withText ? noteName(n) : n.title.trim() || 'Untitled note', where: inProject(n.projectId), href: `#projects/notes/${enc(n.id)}` }, `note:${n.id}`);
   }
   // The calendar: appointment and work titles, with their day and time.
   for (const c of data.commitments) {
     if (!has([c.title])) continue;
     const day = c.start.slice(0, 10);
-    add(reach.appointment(c), { kind: c.kind === 'work' ? 'work' : 'appointment', title: c.title, where: `${shortDate(day)}, ${c.start.slice(11, 16)}`, href: `#calendar/${day}`, state: day < today ? 'past' : null });
+    add(reach.appointment(c), { kind: c.kind === 'work' ? 'work' : 'appointment', title: c.title, where: `${shortDate(day)}, ${c.start.slice(11, 16)}`, href: `#calendar/${day}`, state: day < today ? 'past' : null }, `appointment:${c.id}`);
   }
   // Study: your own courses and their tasks (not the guided Cybersecurity course: its lessons are found as lessons),
   // topics, books, and the two courses' modules, lessons and words.
@@ -113,7 +114,7 @@ export function searchLookup(data: MyDayData, query: string, courses: CourseInde
   const sorted = hits.map((h, i) => [h, i] as const).sort((a, b) => section(a[0].kind) - section(b[0].kind) || a[0].rank - b[0].rank || a[1] - b[1]).map(([h]) => h);
   const shown = sorted.slice(0, L.lookupSearch), hrefs: Record<string, string> = {};
   const found = shown.map((h, i) => { const ref = `r${i + 1}`; hrefs[ref] = h.href; return { ref, kind: h.kind, title: cut(h.title, L.titleChars), where: h.where ? cut(h.where, L.searchWhereChars) : null, state: h.state }; });
-  return { lookup: { tool: 'search', query: q, found, total: hits.length, titlesOnly: !withText }, leftOut: held, hrefs };
+  return { lookup: { tool: 'search', query: q, found, total: hits.length, titlesOnly: !withText }, leftOut: held.size, hrefs };
 }
 
 // "Your day" (v18): one day as the app sees it — from a week ago to two months ahead (null outside that). Its plan, with

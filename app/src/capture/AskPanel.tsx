@@ -99,16 +99,19 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
     if (!reply.ok) { setPhase({ at: 'error', message: reply.message, ...(looked ? { looked } : {}) }); return; }
     let r = checkAskReply(reply.text, getSnapshot().data, slice, k, asked, looked?.lookup, looked?.hrefs);
     if (r?.kind === 'lookup') {
-      // It needs your notes: look on this device, through the privacy rules, and ask once more with what was found
+      // It needs something more: look on this device, through the privacy rules, and ask once more with what was found
       // (after the server's pause between requests; the newest data, checked again, is what's searched).
       // (While looking, a project is shown by its title.)
       const q = r.query;
       setPhase({ at: 'looking', tool: r.tool, query: r.tool === 'project' || ((r.tool === 'decisions' || r.tool === 'waiting') && q !== 'all') ? getSnapshot().data.projects.items.find(p => p.id === q)?.title ?? 'that project' : q });
+      // (A look across MyDay loads the courses' titles only now — before the check below, so what's searched and sent is
+      // the newest data, checked, however long they take to arrive.)
+      const courses = r.tool === 'search' ? await import('../search/courseIndex').then(m => m.courseIndex()).catch(() => null) : null;
       if (AI_MODE === 'edge') await pause(PACE_MS - (clock() - started), ctrl.signal);
       if (ctrl.signal.aborted || !previewIsCurrent()) return;
       const now = getSnapshot().data;
       const found = r.tool === 'day' ? dayLookup(now, r.query, k) : r.tool === 'project' ? projectLookup(now, r.query) : r.tool === 'decisions' ? decisionsLookup(now, r.query) : r.tool === 'waiting' ? waitingLookup(now, r.query) : r.tool === 'study' ? studyLookup(now, k)
-        : searchLookup(now, r.query, await import('../search/courseIndex').then(m => m.courseIndex()).catch(() => null), k); // (the courses' titles load only now)
+        : searchLookup(now, r.query, courses, k);
       if (!found) { setPhase({ at: 'error', message: r.tool === 'day' ? DAY_TOO_FAR : 'That project can’t be looked at now — it may have been finished or made private.' }); return; }
       looked = found;
       const again = () => askModel(askContext(slice, text, k, undefined, followUp, looked!.lookup), ctrl.signal);

@@ -1737,11 +1737,11 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
       d.patterns.prefs.aiNotes = false;
       d.projects.items = [
         P('pjShed', 'Garden shed', { summary: 'Wired by the electrician', outcome: 'OUTCOMEWORD', finishedWhen: 'FINISHWORD', leftOff: { text: 'LEFTWORD', on: SD }, tools: ['research'],
-          milestones: [{ id: 'msE', title: 'Electrician signs off', reached: false, aim: null }],
+          milestones: [{ id: 'msE', title: 'Electrician signs off', reachedOn: null, aim: null }, { id: 'msZ', title: 'Zinc roof on', reachedOn: SD, aim: null }],
           decisions: [{ id: 'dcE', question: 'Which electrician to book?', options: [{ id: 'oD', text: 'Dave the sparky', pros: ['PROWORD'], cons: [] }], chosen: null, why: 'WHYWORD', decidedOn: null, createdAt: at, updatedAt: at }],
           resources: [{ id: 'rsE', url: 'https://example.com/r', title: 'RESWORD shop', note: '', addedOn: SD }] }),
         P('pjOld', 'Old kitchen electrician job', { status: 'paused' }),
-        P('pjHush', 'Hush electrician plan', { private: true, summary: 'electrician', commitmentIds: ['cmHush'] }),
+        P('pjHush', 'Hush electrician plan', { private: true, summary: 'electrician', commitmentIds: ['cmHush'], milestones: [{ id: 'msH', title: 'Hush electrician milestone', reachedOn: null, aim: null }] }),
       ];
       d.research.items = [{ id: 'rqE', type: 'question', projectId: 'pjShed', text: 'RESEARCHWORD electrician', conclusion: '', answeredOn: null, createdAt: at, updatedAt: at }];
       d.tasks.lists = [{ id: 'tlH', name: 'Home jobs' }];
@@ -1751,16 +1751,20 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
         T('tkWire', 'Wire the shed', { projectId: 'pjShed', steps: [{ id: 'st1', text: 'Buy cable for the electrician', done: false }] }),
         T('tkCert', 'Get the certificate', { waiting: { on: 'ZEDWORD', since: SD, until: null } }),
         T('tkHush', 'Hush electrician task', { projectId: 'pjHush' }),
+        T('tkZGone', 'Zinc paint', { letGoOn: SD }), T('tkZLong', 'Zinc ' + 'x'.repeat(200)),
       ];
-      d.notes.items = [N('nEl', 'Electrician', 'Dave 07700 900123 TEXTWORD'), N('nUntitled', '', 'electrician spur idea'), N('nPriv', 'Private electrician', 'x', { private: true }), N('nHush', 'Hush electrician note', 'x', { projectId: 'pjHush' })];
+      d.notes.items = [N('nZ', 'Zinc offcuts', '', { projectId: 'pjShed' }), N('nEl', 'Electrician', 'Dave 07700 900123 TEXTWORD'), N('nUntitled', '', 'electrician spur idea'), N('nPriv', 'Private electrician', 'x', { private: true }), N('nHush', 'Hush electrician note', 'x', { projectId: 'pjHush' })];
       d.commitments = [{ id: 'cmSoon', kind: 'appointment', title: 'Electrician visit', start: '2026-11-12T10:00', end: '2026-11-12T11:00' }, { id: 'cmPast', kind: 'work', title: 'Electrician quote', start: '2026-11-01T09:00', end: '2026-11-01T10:00' },
         { id: 'cmHush', kind: 'appointment', title: 'Electrician hush', start: '2026-11-13T09:00', end: '2026-11-13T10:00' }];
       d.study.topics = [{ id: 'tpE', title: 'Electrics' }];
       d.study.stages = [{ id: 'stE', title: 'Basics', topicId: 'tpE', courses: [{ id: 'crE', title: 'Home electrics', url: '', minutes: 0, listId: null, archived: false, modules: [{ id: 'mdE', title: 'Circuits', sections: [{ id: 'scE', title: 'Ring mains', tasks: [
-        { id: 'stkE', title: 'Watch the electrician video', minutes: 20, url: '', kind: 'learn', note: 'STUDYNOTEWORD', done: false, doneOn: null }] }] }] }] }];
+        { id: 'stkE', title: 'Watch the electrician video', minutes: 20, url: '', kind: 'learn', note: 'STUDYNOTEWORD', done: false, doneOn: null },
+        { id: 'stkZ', title: 'Zinc reading', minutes: 20, url: '', kind: 'learn', note: '', done: true, doneOn: SD }] }] }] },
+        { id: 'crZ', title: 'Zinc course', url: '', minutes: 0, listId: null, archived: true, modules: [] }] }];
       d.study.concepts = [{ id: 'cpE', title: 'CONCEPTWORD', taskIds: [], createdOn: SD, kind: 'written', prompt: 'p', answer: 'a', explanation: '', choices: [], correct: null, hint: '', source: '', note: '', review: { reps: 0, interval: 0, lapses: 0, due: null } }];
       d.study.sessions = [{ id: 'ssE', courseId: 'crE', taskId: 'stkE', title: 'Watch', date: SD, startedAt: at, plannedMin: 20, short: false, status: 'done', runningSince: null, activeMs: 0, endedAt: at, checkin: { conceptIds: [], clarity: 'partly', takeaway: 'CHECKINWORD', question: '', note: '' }, taskDone: null, todayUid: null }];
-      d.reading.books = [{ id: 'bkE', title: 'Wiring explained', author: 'Ann Volt', pages: null, page: 0, notes: [{ id: 'bn', page: 1, text: 'BOOKNOTEWORD', addedOn: SD }], addedOn: SD, finishedOn: null }];
+      d.reading.books = [{ id: 'bkE', title: 'Wiring explained', author: 'Ann Volt', pages: null, page: 0, notes: [{ id: 'bn', page: 1, text: 'BOOKNOTEWORD', addedOn: SD }], addedOn: SD, finishedOn: null },
+        { id: 'bkZ', title: 'Zinc memoir', author: '', pages: null, page: 0, notes: [], addedOn: SD, finishedOn: SD }];
       d.arabic.words = [{ id: 'kwE', ar: 'كِتَاب', meaning: 'KEPTWORD', note: 'KEPTNOTEWORD', addedOn: SD, recognise: { reps: 0, interval: 0, lapses: 0, due: SD }, write: null }];
       d.arabic.lessons = [{ id: 'lesson.arabic-fusha-register', revisit: { since: SD, what: 'REVISITWORD' } }];
       d.arabic.attempts = [{ id: 'aaE', lessonId: 'lesson.arabic-fusha-register', curriculumVersion: '1', variant: 'standard', startedAt: at, finishedAt: null, help: 'none', practised: [], answers: { q1: 'ANSWERWORD' }, revealed: [], revisit: '' }];
@@ -1775,6 +1779,10 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('across MyDay, "electrician" finds tasks (by title, notes and steps), projects, milestones, decisions, notes, the calendar and study, in that order', eq([...new Set(kinds)], ['task', 'project', 'milestone', 'decision', 'note', 'appointment', 'work', 'study task']) && !!byTitle('Wire the shed'), f.map(x => [x.ref, x.kind, x.title]));
     check('…each with its reference, name, where it is and its state; its link stays on the device', eq(f.map(x => x.ref), f.map((_, i) => `r${i + 1}`)) && byTitle('Wire the shed').where === 'in “Garden shed”' && byTitle('Pay the electrician').state === 'done'
       && byTitle('Old kitchen electrician job').state === 'paused' && byTitle('Electrician quote').state === 'past' && byTitle('Electrician visit').where.endsWith(', 10:00') && el.hrefs.r1 === '#today/tasks/tkRing' && !JSON.stringify(el.lookup).includes('#'), f);
+    const z = look('zinc').lookup.found, zOf = t => z.find(x => x.title.startsWith(t));
+    check('each kind\'s state: a task let go, a milestone reached, a study task done, a course archived, a book finished', zOf('Zinc paint')?.state === 'let go' && zOf('Zinc roof on')?.state === 'done' && zOf('Zinc reading')?.state === 'done'
+      && zOf('Zinc course')?.state === 'archived' && zOf('Zinc memoir')?.state === 'finished' && zOf('Zinc memoir')?.where === null, z);
+    check('…a note\'s "where" is its project; a long name is cut to 120 characters on a whole character', zOf('Zinc offcuts')?.where === 'in “Garden shed”' && zOf('Zinc xx')?.title.length === 120 && zOf('Zinc xx')?.title.endsWith('…'), z.map(x => [x.title.slice(0, 20), x.where]));
     check('…open things before done ones in each part', kinds.indexOf('task') === 0 && f.findIndex(x => x.title === 'Pay the electrician') > f.findIndex(x => x.title === 'Wire the shed'));
     check('a task by its notes or a step; a decision by an option; a book by its author; a topic and a course by name', look('van number').lookup.found.some(x => x.title === 'Ring the electrician') && look('cable').lookup.found.some(x => x.title === 'Wire the shed')
       && look('sparky').lookup.found.some(x => x.kind === 'decision') && look('ann volt').lookup.found.some(x => x.kind === 'book' && x.where === 'Ann Volt') && look('electrics').lookup.found.some(x => x.kind === 'topic') && look('electrics').lookup.found.some(x => x.kind === 'course'));
@@ -1784,12 +1792,12 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const kw = look('كتاب');
     check('…and the kept Arabic word isn\'t found by its Arabic either (Keep a word: never sent to AI); only the course\'s own word is', !kw.lookup.found.some(x => x.title === 'كِتَاب' || x.kind !== 'course word') && !JSON.stringify(kw.lookup).includes('KEPT') && kw.leftOut === 0, kw.lookup.found);
     const hush = look('hush');
-    check('nothing private: a private project, its task, note and appointment, and a private note never go — counted only here', hush.lookup.total === 0 && hush.leftOut === 4 && !/hush/i.test(JSON.stringify(el.lookup)) && !JSON.stringify(el.lookup).includes('Private electrician') && el.leftOut === 5, [hush, el.leftOut]);
+    check('nothing private: a private project, its task, note and appointment, and a private note never go — counted only here, a private project once however many of its parts matched', hush.lookup.total === 0 && hush.leftOut === 4 && !/hush/i.test(JSON.stringify(el.lookup)) && !JSON.stringify(el.lookup).includes('Private electrician') && el.leftOut === 5, [hush, el.leftOut]);
     check('notes by title only while AI help with notes is off (an untitled note isn\'t found by its first line)', el.lookup.titlesOnly && look('textword').lookup.total === 0 && !f.some(x => x.title === 'Untitled note'));
     const on = world(); on.patterns.prefs.aiNotes = true;
     const tx = look('textword', on), sp = look('spur', on);
     check('…with it on, its text is searched — but only the name goes, never the text', tx.lookup.total === 1 && tx.lookup.found[0].title === 'Electrician' && !JSON.stringify(tx.lookup).includes('07700') && !tx.lookup.titlesOnly && sp.lookup.found[0]?.title === 'electrician spur idea', [tx.lookup, sp.lookup]);
-    check('the course lessons and words: a real lesson by title, a real word by its Arabic without vowels, each with where', look('What Fuṣḥā means').lookup.found.some(x => x.kind === 'lesson' && x.where.startsWith('Arabic · ')) && look('مرحبا').lookup.found.some(x => x.kind === 'course word' && x.title.includes('hello') && x.where === 'Arabic'));
+    check('the course lessons and words: a real lesson by title (where: its course and module), a real word by its Arabic without vowels, each with where', look('What Fuṣḥā means').lookup.found.some(x => x.kind === 'lesson' && x.where === 'Arabic · Orientation, placement and learning habits') && look('مرحبا').lookup.found.some(x => x.kind === 'course word' && x.title.includes('hello') && x.where === 'Arabic'));
     const many = world(); many.tasks.items = Array.from({ length: 20 }, (_, i) => T('tkM' + i, 'Batch job ' + i));
     const ml = look('batch job', many);
     check('at most 12 go, and "total" says how many matched', ml.lookup.found.length === 12 && ml.lookup.total === 20 && Object.keys(ml.hrefs).length === 12);
