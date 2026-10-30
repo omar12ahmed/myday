@@ -1,0 +1,5916 @@
+{
+ "model": "gemini-3.8-flash",
+ "date": "2026-10-30",
+ "method": "Blind audio-only transcription of the clips made from MyDay's vowelled scripts of the short unmarked pieces (batch one: lesson checks and answers). The main session read every transcript against the script the voice was given; punctuation and pausal endings can differ. This does not approve a clip.",
+ "prompt": "Transcribe only the speech you hear, in Arabic with full vowel marks. Do not translate, explain, add speaker labels, or guess any extra words. Return just the Arabic transcription.",
+ "request_cap": 320,
+ "requests": 268,
+ "usage_tokens": {
+  "text": 9916,
+  "audio": 13071,
+  "output": 49637
+ },
+ "results": {
+  "باب": {
+   "file": "81f640a25c1486a0.mp3",
+   "heard": "بَابْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 58,
+    "candidatesTokenCount": 3,
+    "totalTokenCount": 136,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 21
+     }
+    ],
+    "thoughtsTokenCount": 75,
+    "serviceTier": "standard"
+   }
+  },
+  "مدرسة": {
+   "file": "733f15a5dd5712df.mp3",
+   "heard": "مَدْرَسَة",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 62,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 190,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 25
+     }
+    ],
+    "thoughtsTokenCount": 123,
+    "serviceTier": "standard"
+   }
+  },
+  "على": {
+   "file": "30a12cc58939f14e.mp3",
+   "heard": "عَلَى",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 57,
+    "candidatesTokenCount": 3,
+    "totalTokenCount": 97,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 20
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 37,
+    "serviceTier": "standard"
+   }
+  },
+  "هو": {
+   "file": "c1bbc5f14e04aa4c.mp3",
+   "heard": "هُوَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 55,
+    "candidatesTokenCount": 2,
+    "totalTokenCount": 123,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 18
+     }
+    ],
+    "thoughtsTokenCount": 66,
+    "serviceTier": "standard"
+   }
+  },
+  "قمر": {
+   "file": "291118541155c99f.mp3",
+   "heard": "قَمَرٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 60,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 153,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 23
+     }
+    ],
+    "thoughtsTokenCount": 89,
+    "serviceTier": "standard"
+   }
+  },
+  "أنتَ": {
+   "file": "3ec778f089f30019.mp3",
+   "heard": "أَنْتَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 57,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 106,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 20
+     }
+    ],
+    "thoughtsTokenCount": 45,
+    "serviceTier": "standard"
+   }
+  },
+  "أنتِ": {
+   "file": "d0db58908dd8a1cf.mp3",
+   "heard": "أَنْتِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 58,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 277,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 21
+     }
+    ],
+    "thoughtsTokenCount": 215,
+    "serviceTier": "standard"
+   }
+  },
+  "هو طالب": {
+   "file": "35cd405e5b633969.mp3",
+   "heard": "هُوَ طَالِبٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 72,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 154,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 35
+     }
+    ],
+    "thoughtsTokenCount": 76,
+    "serviceTier": "standard"
+   }
+  },
+  "هي": {
+   "file": "aa001da94c01a53b.mp3",
+   "heard": "هِيَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 56,
+    "candidatesTokenCount": 3,
+    "totalTokenCount": 144,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 19
+     }
+    ],
+    "thoughtsTokenCount": 85,
+    "serviceTier": "standard"
+   }
+  },
+  "طالبة": {
+   "file": "eccad809a916ecaf.mp3",
+   "heard": "طَالِبَة",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 62,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 129,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 25
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 63,
+    "serviceTier": "standard"
+   }
+  },
+  "أين": {
+   "file": "682c229c4dbbe1af.mp3",
+   "heard": "أَيْنَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 57,
+    "candidatesTokenCount": 3,
+    "totalTokenCount": 105,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 20
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 45,
+    "serviceTier": "standard"
+   }
+  },
+  "هل": {
+   "file": "d45750d391707270.mp3",
+   "heard": "هَلْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 56,
+    "candidatesTokenCount": 3,
+    "totalTokenCount": 269,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 19
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 210,
+    "serviceTier": "standard"
+   }
+  },
+  "الكتاب؟": {
+   "file": "bf35194389305269.mp3",
+   "heard": "الْكِتَابُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 66,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 223,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 29
+     }
+    ],
+    "thoughtsTokenCount": 150,
+    "serviceTier": "standard"
+   }
+  },
+  "على المكتب": {
+   "file": "be0fe4088fa96211.mp3",
+   "heard": "عَلَى الْمَكْتَبِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 69,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 166,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 32
+     }
+    ],
+    "thoughtsTokenCount": 88,
+    "serviceTier": "standard"
+   }
+  },
+  "في": {
+   "file": "37caf0dc466905fc.mp3",
+   "heard": "فِي",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 56,
+    "candidatesTokenCount": 2,
+    "totalTokenCount": 192,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 19
+     }
+    ],
+    "thoughtsTokenCount": 134,
+    "serviceTier": "standard"
+   }
+  },
+  "أنا من مصر": {
+   "file": "aea65f64933ddef5.mp3",
+   "heard": "أَنَا مِنْ مِصْرَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 70,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 215,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 33
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 136,
+    "serviceTier": "standard"
+   }
+  },
+  "أنا في مصر": {
+   "file": "bf7170760755c26c.mp3",
+   "heard": "أَنَا فِي مِصْرَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 70,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 243,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 33
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 164,
+    "serviceTier": "standard"
+   }
+  },
+  "كتاب": {
+   "file": "d89486a2753cf53a.mp3",
+   "heard": "كِتَابٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 58,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 189,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 21
+     }
+    ],
+    "thoughtsTokenCount": 126,
+    "serviceTier": "standard"
+   }
+  },
+  "شمس": {
+   "file": "ce76166b044ac884.mp3",
+   "heard": "شَمْسُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 59,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 179,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 22
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 116,
+    "serviceTier": "standard"
+   }
+  },
+  "البيت الكبير": {
+   "file": "1284f388c964ee34.mp3",
+   "heard": "اَلْبَيْتُ الْكَبِيرُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 75,
+    "candidatesTokenCount": 12,
+    "totalTokenCount": 196,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 38
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 109,
+    "serviceTier": "standard"
+   }
+  },
+  "البيت كبير": {
+   "file": "58172f5a147e2997.mp3",
+   "heard": "الْبَيْتُ كَبِيرٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 76,
+    "candidatesTokenCount": 10,
+    "totalTokenCount": 224,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 39
+     }
+    ],
+    "thoughtsTokenCount": 138,
+    "serviceTier": "standard"
+   }
+  },
+  "جديد": {
+   "file": "635dfd825fe4cd97.mp3",
+   "heard": "جَدِيد",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 60,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 195,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 23
+     }
+    ],
+    "thoughtsTokenCount": 131,
+    "serviceTier": "standard"
+   }
+  },
+  "هذا البيت": {
+   "file": "cf12e6aaac8feed1.mp3",
+   "heard": "هَذَا الْبَيْتُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 70,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 211,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 33
+     }
+    ],
+    "thoughtsTokenCount": 132,
+    "serviceTier": "standard"
+   }
+  },
+  "هذا بيت": {
+   "file": "84debb93f3d9d6fb.mp3",
+   "heard": "هَذَا بَيْتٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 71,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 185,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 34
+     }
+    ],
+    "thoughtsTokenCount": 106,
+    "serviceTier": "standard"
+   }
+  },
+  "هذه": {
+   "file": "8ed0be6e9b199df5.mp3",
+   "heard": "هَذِهِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 61,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 174,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 24
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 108,
+    "serviceTier": "standard"
+   }
+  },
+  "هؤلاء": {
+   "file": "b5f2232126972b0f.mp3",
+   "heard": "هَؤُلَاءِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 67,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 154,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 30
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 81,
+    "serviceTier": "standard"
+   }
+  },
+  "الكتب جديدة؛": {
+   "file": "dc38876fcedb1f6c.mp3",
+   "heard": "الْكُتُبُ جَدِيدَةٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 81,
+    "candidatesTokenCount": 14,
+    "totalTokenCount": 247,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 44
+     }
+    ],
+    "thoughtsTokenCount": 152,
+    "serviceTier": "standard"
+   }
+  },
+  "الطلاب هنا": {
+   "file": "fda84ac6b6a374e5.mp3",
+   "heard": "اَلطُّلَّابُ هُنَا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 73,
+    "candidatesTokenCount": 11,
+    "totalTokenCount": 211,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 36
+     }
+    ],
+    "thoughtsTokenCount": 127,
+    "serviceTier": "standard"
+   }
+  },
+  "كتاب الطالب": {
+   "file": "2ee1ddc6f7495e49.mp3",
+   "heard": "كِتَابُ الطَّالِبِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 75,
+    "candidatesTokenCount": 10,
+    "totalTokenCount": 237,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 38
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 152,
+    "serviceTier": "standard"
+   }
+  },
+  "أنا": {
+   "file": "fc6cf9a1fdf572cd.mp3",
+   "heard": "أَنَا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 56,
+    "candidatesTokenCount": 3,
+    "totalTokenCount": 186,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 19
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 127,
+    "serviceTier": "standard"
+   }
+  },
+  "العربية": {
+   "file": "6935647b721d61a5.mp3",
+   "heard": "اَلْعَرَبِيَّةُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 66,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 405,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 29
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 331,
+    "serviceTier": "standard"
+   }
+  },
+  "درس": {
+   "file": "442fe15c0d48ff9d.mp3",
+   "heard": "دَرَسَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 60,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 139,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 23
+     }
+    ],
+    "thoughtsTokenCount": 75,
+    "serviceTier": "standard"
+   }
+  },
+  "ندرس": {
+   "file": "6a9776e3c84f8113.mp3",
+   "heard": "نَدْرُسُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 61,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 203,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 24
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 136,
+    "serviceTier": "standard"
+   }
+  },
+  "هو يدرس": {
+   "file": "d16d0c58d32689f2.mp3",
+   "heard": "هُوَ يَدْرُسُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 70,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 211,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 33
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 133,
+    "serviceTier": "standard"
+   }
+  },
+  "أذهب": {
+   "file": "ff511ba95f9170e7.mp3",
+   "heard": "أَذْهَبُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 60,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 122,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 23
+     }
+    ],
+    "thoughtsTokenCount": 55,
+    "serviceTier": "standard"
+   }
+  },
+  "المدرسة": {
+   "file": "ec586da3a4448bf0.mp3",
+   "heard": "اَلْمَدْرَسَةُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 65,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 265,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 28
+     }
+    ],
+    "thoughtsTokenCount": 192,
+    "serviceTier": "standard"
+   }
+  },
+  "أقرأ": {
+   "file": "b0d90caeb6dcbdec.mp3",
+   "heard": "أَقْرَأُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 61,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 196,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 24
+     }
+    ],
+    "thoughtsTokenCount": 129,
+    "serviceTier": "standard"
+   }
+  },
+  "الكتاب": {
+   "file": "4e0aa0824944c769.mp3",
+   "heard": "الْكِتَابُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 475,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 405,
+    "serviceTier": "standard"
+   }
+  },
+  "أريد": {
+   "file": "8779f6b70bc238cc.mp3",
+   "heard": "أُرِيدُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 61,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 313,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 24
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 247,
+    "serviceTier": "standard"
+   }
+  },
+  "عندي": {
+   "file": "69bafc5fb829b81b.mp3",
+   "heard": "عِنْدِي",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 59,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 276,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 22
+     }
+    ],
+    "thoughtsTokenCount": 213,
+    "serviceTier": "standard"
+   }
+  },
+  "ثم": {
+   "file": "c3400ef522ef8499.mp3",
+   "heard": "ثُمَّ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 57,
+    "candidatesTokenCount": 3,
+    "totalTokenCount": 127,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 20
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 67,
+    "serviceTier": "standard"
+   }
+  },
+  "متى المحادثة؟": {
+   "file": "b5b462f5e15367a7.mp3",
+   "heard": "مَتَى الْمُحَادَثَةُ؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 78,
+    "candidatesTokenCount": 13,
+    "totalTokenCount": 416,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 41
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 325,
+    "serviceTier": "standard"
+   }
+  },
+  "المكتبة بجانب المدرسة": {
+   "file": "1a9509af433d5cbd.mp3",
+   "heard": "اَلْمَكْتَبَةُ بِجَانِبِ الْمَدْرَسَةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 97,
+    "candidatesTokenCount": 20,
+    "totalTokenCount": 263,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 60
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 146,
+    "serviceTier": "standard"
+   }
+  },
+  "موعدنا يوم الثلاثاء في المكتبة": {
+   "file": "b3b20f3e8dbeed6e.mp3",
+   "heard": "مَوْعِدُنَا يَوْمَ الثُّلَاثَاءِ فِي الْمَكْتَبَةِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 114,
+    "candidatesTokenCount": 26,
+    "totalTokenCount": 360,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 77
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 220,
+    "serviceTier": "standard"
+   }
+  },
+  "أنا ليلى": {
+   "file": "e3bf8c631841f21b.mp3",
+   "heard": "أَنَا لَيْلَى",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 67,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 157,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 30
+     }
+    ],
+    "thoughtsTokenCount": 83,
+    "serviceTier": "standard"
+   }
+  },
+  "أدرس العربية في الصباح": {
+   "file": "ae82422c9754e9c6.mp3",
+   "heard": "أَدْرُسُ الْعَرَبِيَّةَ فِي الصَّبَاحِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 97,
+    "candidatesTokenCount": 20,
+    "totalTokenCount": 318,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 60
+     }
+    ],
+    "thoughtsTokenCount": 201,
+    "serviceTier": "standard"
+   }
+  },
+  "ما اسم المتحدثة؟": {
+   "file": "ea8f2c2b7b6c6da5.mp3",
+   "heard": "مَا اسْمُ الْمُتَحَدِّثَةِ؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 83,
+    "candidatesTokenCount": 15,
+    "totalTokenCount": 545,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 46
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 447,
+    "serviceTier": "standard"
+   }
+  },
+  "متى تدرس العربية؟": {
+   "file": "f24ae6d80fa0f267.mp3",
+   "heard": "مَتَى تَدْرُسُ الْعَرَبِيَّةَ؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 88,
+    "candidatesTokenCount": 17,
+    "totalTokenCount": 305,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 51
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 200,
+    "serviceTier": "standard"
+   }
+  },
+  "أسكن في": {
+   "file": "97969fa8d57e32d9.mp3",
+   "heard": "أَسْكُنُ فِي",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 66,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 159,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 29
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 86,
+    "serviceTier": "standard"
+   }
+  },
+  "قرأ سامي كتابًا أمس": {
+   "file": "08aa4c27646fcfa4.mp3",
+   "heard": "قَرَأَ سَامِي كِتَابًا أَمْسِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 94,
+    "candidatesTokenCount": 17,
+    "totalTokenCount": 276,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 57
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 165,
+    "serviceTier": "standard"
+   }
+  },
+  "الجو جميل": {
+   "file": "3acb4af75c3de2e1.mp3",
+   "heard": "اَلْجَوُّ جَمِيلٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 76,
+    "candidatesTokenCount": 12,
+    "totalTokenCount": 288,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 39
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 200,
+    "serviceTier": "standard"
+   }
+  },
+  "جميل": {
+   "file": "bc18e7ef35137c14.mp3",
+   "heard": "جَمِيلْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 61,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 244,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 24
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 178,
+    "serviceTier": "standard"
+   }
+  },
+  "زرت المكتبة": {
+   "file": "13387ec1604e39b2.mp3",
+   "heard": "زُرْتُ الْمَكْتَبَةَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 76,
+    "candidatesTokenCount": 11,
+    "totalTokenCount": 402,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 39
+     }
+    ],
+    "thoughtsTokenCount": 315,
+    "serviceTier": "standard"
+   }
+  },
+  "عدت إلى البيت": {
+   "file": "85b40f72aa03711b.mp3",
+   "heard": "عُدْتُ إِلَى الْبَيْتِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 76,
+    "candidatesTokenCount": 12,
+    "totalTokenCount": 305,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 39
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 217,
+    "serviceTier": "standard"
+   }
+  },
+  "زارت ليلى المكتبة، لكنها لم تجد الكتاب": {
+   "file": "8d77b5fe186d6532.mp3",
+   "heard": "زَارَتْ لَيْلَى الْمَكْتَبَةَ، لَكِنَّهَا لَمْ تَجِدِ الْكِتَابَ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 144,
+    "candidatesTokenCount": 37,
+    "totalTokenCount": 418,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 107
+     }
+    ],
+    "thoughtsTokenCount": 237,
+    "serviceTier": "standard"
+   }
+  },
+  "أدرس اليوم": {
+   "file": "b2c98208fad8e6f0.mp3",
+   "heard": "أَدْرُسُ الْيَوْمَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 70,
+    "candidatesTokenCount": 11,
+    "totalTokenCount": 170,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 33
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 89,
+    "serviceTier": "standard"
+   }
+  },
+  "لم": {
+   "file": "5c7548aae661bec8.mp3",
+   "heard": "لَمْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 57,
+    "candidatesTokenCount": 2,
+    "totalTokenCount": 151,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 20
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 92,
+    "serviceTier": "standard"
+   }
+  },
+  "أريد أن أدرس": {
+   "file": "3820d284888fc37e.mp3",
+   "heard": "أُرِيدُ أَنْ أَدْرُسَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 76,
+    "candidatesTokenCount": 12,
+    "totalTokenCount": 179,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 39
+     }
+    ],
+    "thoughtsTokenCount": 91,
+    "serviceTier": "standard"
+   }
+  },
+  "أتعلم": {
+   "file": "dbf5b2edc746fdfb.mp3",
+   "heard": "أَتَعَلَّمُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 66,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 206,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 29
+     }
+    ],
+    "thoughtsTokenCount": 133,
+    "serviceTier": "standard"
+   }
+  },
+  "هل تستطيع أن تحضر يوم الثلاثاء؟": {
+   "file": "2dfdf164b0116302.mp3",
+   "heard": "هَلْ تَسْتَطِيعُ أَنْ تَحْضُرَ يَوْمَ الثُّلَاثَاءِ؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 118,
+    "candidatesTokenCount": 31,
+    "totalTokenCount": 467,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 81
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 318,
+    "serviceTier": "standard"
+   }
+  },
+  "قرأها": {
+   "file": "ab4d038f82010356.mp3",
+   "heard": "قَرَأَهَا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 187,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 119,
+    "serviceTier": "standard"
+   }
+  },
+  "الرسالة": {
+   "file": "be583b4cde62a95a.mp3",
+   "heard": "الرِّسَالَة",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 420,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     }
+    ],
+    "thoughtsTokenCount": 350,
+    "serviceTier": "standard"
+   }
+  },
+  "قرأ الطالبُ الكتابَ في البيتِ": {
+   "file": "22106dc00462d3eb.mp3",
+   "heard": "قَرَأَ الطَّالِبُ الْكِتَابَ فِي الْبَيْتِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 104,
+    "candidatesTokenCount": 21,
+    "totalTokenCount": 290,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 67
+     }
+    ],
+    "thoughtsTokenCount": 165,
+    "serviceTier": "standard"
+   }
+  },
+  "الطالب": {
+   "file": "4bdca06d3397312d.mp3",
+   "heard": "الطَّالِبُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 62,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 198,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 25
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 131,
+    "serviceTier": "standard"
+   }
+  },
+  "البيت": {
+   "file": "78e1d513d9f3f020.mp3",
+   "heard": "الْبَيْتَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 62,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 226,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 25
+     }
+    ],
+    "thoughtsTokenCount": 159,
+    "serviceTier": "standard"
+   }
+  },
+  "باب بيت الطالب": {
+   "file": "83c565f37ad12f96.mp3",
+   "heard": "بَابُ بَيْتِ الطَّالِبِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 82,
+    "candidatesTokenCount": 12,
+    "totalTokenCount": 236,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 45
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 142,
+    "serviceTier": "standard"
+   }
+  },
+  "كتابان": {
+   "file": "59eceeb1f743b662.mp3",
+   "heard": "كِتَابَانِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 65,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 242,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 28
+     }
+    ],
+    "thoughtsTokenCount": 171,
+    "serviceTier": "standard"
+   }
+  },
+  "كتابين": {
+   "file": "1e7ae240500e7c23.mp3",
+   "heard": "كِتَابَيْنِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 66,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 211,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 29
+     }
+    ],
+    "thoughtsTokenCount": 138,
+    "serviceTier": "standard"
+   }
+  },
+  "رأيت": {
+   "file": "b5dae06163be91de.mp3",
+   "heard": "رَأَيْتُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 61,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 382,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 24
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 315,
+    "serviceTier": "standard"
+   }
+  },
+  "كاتب": {
+   "file": "4a6c02566859755f.mp3",
+   "heard": "كَاتِبٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 134,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 67,
+    "serviceTier": "standard"
+   }
+  },
+  "مكتوب": {
+   "file": "ca2c18243b23a46c.mp3",
+   "heard": "مَكْتُوبُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 339,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     }
+    ],
+    "thoughtsTokenCount": 269,
+    "serviceTier": "standard"
+   }
+  },
+  "مكتبة": {
+   "file": "4d75784ee5086565.mp3",
+   "heard": "مَكْتَبَة",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 61,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 154,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 24
+     }
+    ],
+    "thoughtsTokenCount": 87,
+    "serviceTier": "standard"
+   }
+  },
+  "وبالكتاب": {
+   "file": "752cf125d5f8ed20.mp3",
+   "heard": "وَبِالْكِتَابِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 70,
+    "candidatesTokenCount": 10,
+    "totalTokenCount": 186,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 33
+     }
+    ],
+    "thoughtsTokenCount": 106,
+    "serviceTier": "standard"
+   }
+  },
+  "عين": {
+   "file": "f461603583337420.mp3",
+   "heard": "عَيْنْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 58,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 249,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 21
+     }
+    ],
+    "thoughtsTokenCount": 187,
+    "serviceTier": "standard"
+   }
+  },
+  "كتابة": {
+   "file": "091e23983724cafe.mp3",
+   "heard": "كِتَابَةْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 61,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 396,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 24
+     }
+    ],
+    "thoughtsTokenCount": 329,
+    "serviceTier": "standard"
+   }
+  },
+  "قرأ": {
+   "file": "dbba5e65a7181b06.mp3",
+   "heard": "قَرَأَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 59,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 134,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 22
+     }
+    ],
+    "thoughtsTokenCount": 71,
+    "serviceTier": "standard"
+   }
+  },
+  "المكتبة مغلقة يوم السبت": {
+   "file": "6c520d6e2f4c84d0.mp3",
+   "heard": "اَلْمَكْتَبَةُ مُغْلَقَةٌ يَوْمَ السَّبْتِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 102,
+    "candidatesTokenCount": 23,
+    "totalTokenCount": 293,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 65
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 168,
+    "serviceTier": "standard"
+   }
+  },
+  "تفتح يوم الأحد": {
+   "file": "566c05c49ce13f67.mp3",
+   "heard": "تَفْتَحُ يَوْمَ الْأَحَدِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 81,
+    "candidatesTokenCount": 14,
+    "totalTokenCount": 218,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 44
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 123,
+    "serviceTier": "standard"
+   }
+  },
+  "قال": {
+   "file": "a942354ca29d4c92.mp3",
+   "heard": "قَالَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 57,
+    "candidatesTokenCount": 2,
+    "totalTokenCount": 149,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 20
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 90,
+    "serviceTier": "standard"
+   }
+  },
+  "قلت": {
+   "file": "b9c5abf26ece02ff.mp3",
+   "heard": "قُلْتُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 58,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 166,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 21
+     }
+    ],
+    "thoughtsTokenCount": 104,
+    "serviceTier": "standard"
+   }
+  },
+  "يدعو": {
+   "file": "b9b12a2fb6a541c1.mp3",
+   "heard": "يَضَعُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 60,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 126,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 23
+     }
+    ],
+    "thoughtsTokenCount": 61,
+    "serviceTier": "standard"
+   }
+  },
+  "يدرسون": {
+   "file": "43489efffb6bc886.mp3",
+   "heard": "يَدْرُسُونَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 67,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 123,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 30
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 50,
+    "serviceTier": "standard"
+   }
+  },
+  "لن": {
+   "file": "edbd92c2a58a81fb.mp3",
+   "heard": "لَنْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 57,
+    "candidatesTokenCount": 2,
+    "totalTokenCount": 165,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 20
+     }
+    ],
+    "thoughtsTokenCount": 106,
+    "serviceTier": "standard"
+   }
+  },
+  "هم يدرسون": {
+   "file": "83d4c2c510ce8860.mp3",
+   "heard": "هُمْ يَدْرُسُونَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 72,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 144,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 35
+     }
+    ],
+    "thoughtsTokenCount": 64,
+    "serviceTier": "standard"
+   }
+  },
+  "الذي": {
+   "file": "4b676b0c107854d5.mp3",
+   "heard": "الَّذِي",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 60,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 124,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 23
+     }
+    ],
+    "thoughtsTokenCount": 60,
+    "serviceTier": "standard"
+   }
+  },
+  "الكتاب الذي قرأته": {
+   "file": "40071722487811c5.mp3",
+   "heard": "اَلْكِتَابُ الَّذِي قَرَأْتُهُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 87,
+    "candidatesTokenCount": 16,
+    "totalTokenCount": 103,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 50
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "إنّ": {
+   "file": "3c2d77c1430fc1f0.mp3",
+   "heard": "إِنَّ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 56,
+    "candidatesTokenCount": 3,
+    "totalTokenCount": 144,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 19
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 85,
+    "serviceTier": "standard"
+   }
+  },
+  "الطالبُ مجتهدٌ": {
+   "file": "da5df0d187a24b00.mp3",
+   "heard": "الطَّالِبُ مُجْتَهِدٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 82,
+    "candidatesTokenCount": 12,
+    "totalTokenCount": 246,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 45
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 152,
+    "serviceTier": "standard"
+   }
+  },
+  "أنّ": {
+   "file": "d9ab99c792d807d5.mp3",
+   "heard": "أَنَّ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 57,
+    "candidatesTokenCount": 3,
+    "totalTokenCount": 104,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 20
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 44,
+    "serviceTier": "standard"
+   }
+  },
+  "أنا متعب": {
+   "file": "bfbee8e940d1e482.mp3",
+   "heard": "أَنَا مُتْعَبٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 73,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 163,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 36
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 82,
+    "serviceTier": "standard"
+   }
+  },
+  "إذا": {
+   "file": "c87599618492670e.mp3",
+   "heard": "إِذًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 56,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 346,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 19
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 286,
+    "serviceTier": "standard"
+   }
+  },
+  "إذا درستَ، فستفهم": {
+   "file": "b273edd361f77e52.mp3",
+   "heard": "إِذَا دَرَسْتَ فَسَتَفْهَمُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 93,
+    "candidatesTokenCount": 17,
+    "totalTokenCount": 228,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 56
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 118,
+    "serviceTier": "standard"
+   }
+  },
+  "أقرأ لأن الكتاب مفيد": {
+   "file": "ad6ad13a2fdc6a13.mp3",
+   "heard": "أَقْرَأُ لِأَنَّ الْكِتَابَ مُفِيدٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 100,
+    "candidatesTokenCount": 22,
+    "totalTokenCount": 342,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 63
+     }
+    ],
+    "thoughtsTokenCount": 220,
+    "serviceTier": "standard"
+   }
+  },
+  "أقرأ لكي أتعلم": {
+   "file": "e9c58ee6ea1f114f.mp3",
+   "heard": "أَقْرَأُ لِكَيْ أَتَعَلَّمَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 87,
+    "candidatesTokenCount": 17,
+    "totalTokenCount": 312,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 50
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 208,
+    "serviceTier": "standard"
+   }
+  },
+  "هذا": {
+   "file": "b8dfa9127243c770.mp3",
+   "heard": "هَذَا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 58,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 175,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 21
+     }
+    ],
+    "thoughtsTokenCount": 113,
+    "serviceTier": "standard"
+   }
+  },
+  "سامي بالخبر": {
+   "file": "0d02bdb9bda14b02.mp3",
+   "heard": "سَامِي بِالْخَبَرِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 74,
+    "candidatesTokenCount": 11,
+    "totalTokenCount": 322,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 237,
+    "serviceTier": "standard"
+   }
+  },
+  "لم يجد سامي الكتاب في المكتبة": {
+   "file": "544acc6e961430a6.mp3",
+   "heard": "لَمْ يَجِدْ سَامِي الْكِتَابَ فِي الْمَكْتَبَةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 111,
+    "candidatesTokenCount": 25,
+    "totalTokenCount": 136,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 74
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "لذلك اشتراه": {
+   "file": "e8c3e5c82a45aa9b.mp3",
+   "heard": "لِذَلِكَ اشْتَرَاهُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 78,
+    "candidatesTokenCount": 11,
+    "totalTokenCount": 416,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 41
+     }
+    ],
+    "thoughtsTokenCount": 327,
+    "serviceTier": "standard"
+   }
+  },
+  "اتخذ": {
+   "file": "d00c341e7beb00bf.mp3",
+   "heard": "اِتَّخَذَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 65,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 143,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 28
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 70,
+    "serviceTier": "standard"
+   }
+  },
+  "أدرس العربية لأنني أحب القراءة": {
+   "file": "ede6c4dac3355638.mp3",
+   "heard": "أَدْرُسُ الْعَرَبِيَّةَ لِأَنَّنِي أُحِبُّ الْقِرَاءَةَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 124,
+    "candidatesTokenCount": 32,
+    "totalTokenCount": 354,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 87
+     }
+    ],
+    "thoughtsTokenCount": 198,
+    "serviceTier": "standard"
+   }
+  },
+  "القراءة مفيدة": {
+   "file": "b25d5f5d4b391c6d.mp3",
+   "heard": "اَلْقِرَاءَةُ مُفِيدَةٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 84,
+    "candidatesTokenCount": 14,
+    "totalTokenCount": 294,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 47
+     }
+    ],
+    "thoughtsTokenCount": 196,
+    "serviceTier": "standard"
+   }
+  },
+  "على سبيل المثال": {
+   "file": "d3de840e4727ac3e.mp3",
+   "heard": "عَلَى سَبِيلِ الْمِثَالِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 81,
+    "candidatesTokenCount": 13,
+    "totalTokenCount": 240,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 44
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 146,
+    "serviceTier": "standard"
+   }
+  },
+  "هل يمكنكم": {
+   "file": "396d387382af536c.mp3",
+   "heard": "هَلْ يُمْكِنُكُمْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 74,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 133,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 37
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 50,
+    "serviceTier": "standard"
+   }
+  },
+  "ستبدأ الدورة يوم الاثنين": {
+   "file": "51c7c62c9f1fabb2.mp3",
+   "heard": "سَتَبْدَأُ الدَّوْرَةُ يَوْمَ الِاثْنَيْنِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 99,
+    "candidatesTokenCount": 24,
+    "totalTokenCount": 434,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 62
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 311,
+    "serviceTier": "standard"
+   }
+  },
+  "سيشارك فيها عشرة طلاب": {
+   "file": "0d5867b7aa3bffd6.mp3",
+   "heard": "سَيُشَارِكُ فِيهَا عَشَرَةُ طُلَّابٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 107,
+    "candidatesTokenCount": 23,
+    "totalTokenCount": 369,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 70
+     }
+    ],
+    "thoughtsTokenCount": 239,
+    "serviceTier": "standard"
+   }
+  },
+  "لست متأكدًا": {
+   "file": "7aac167a8160fa9d.mp3",
+   "heard": "لَسْتُ مُتَأَكِّدًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 79,
+    "candidatesTokenCount": 13,
+    "totalTokenCount": 240,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 42
+     }
+    ],
+    "thoughtsTokenCount": 148,
+    "serviceTier": "standard"
+   }
+  },
+  "لست متأكدة": {
+   "file": "6256e3735e314415.mp3",
+   "heard": "لَسْتُ مُتَأَكِّدَةً",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 82,
+    "candidatesTokenCount": 14,
+    "totalTokenCount": 171,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 45
+     }
+    ],
+    "thoughtsTokenCount": 75,
+    "serviceTier": "standard"
+   }
+  },
+  "أفاد مسؤول": {
+   "file": "ec926fe4ffb577f8.mp3",
+   "heard": "أَفَادَ مَسْؤُولٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 76,
+    "candidatesTokenCount": 11,
+    "totalTokenCount": 87,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 39
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "بحسب التقرير": {
+   "file": "659955b22633d666.mp3",
+   "heard": "بِحَسَبِ التَّقْرِيرِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 78,
+    "candidatesTokenCount": 12,
+    "totalTokenCount": 191,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 41
+     }
+    ],
+    "thoughtsTokenCount": 101,
+    "serviceTier": "standard"
+   }
+  },
+  "بحسب التقرير، ارتفع العدد": {
+   "file": "2d924c8f6b6fb206.mp3",
+   "heard": "بِحَسَبِ التَّقْرِيرِ ارْتَفَعَ العَدَدُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 110,
+    "candidatesTokenCount": 21,
+    "totalTokenCount": 131,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 73
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "لم نحدد الموعد بعد": {
+   "file": "9adccb25cae923a6.mp3",
+   "heard": "لَمْ نُحَدِّدِ الْمَوْعِدَ بَعْدُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 91,
+    "candidatesTokenCount": 19,
+    "totalTokenCount": 307,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 54
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 197,
+    "serviceTier": "standard"
+   }
+  },
+  "سيبدأ المشروع في يناير": {
+   "file": "d448907f0873450e.mp3",
+   "heard": "سَيَبْدَأُ الْمَشْرُوعُ فِي يَنَايِرَ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 95,
+    "candidatesTokenCount": 22,
+    "totalTokenCount": 238,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 58
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 121,
+    "serviceTier": "standard"
+   }
+  },
+  "لم يحدد الموعد بعد": {
+   "file": "c7a9aff59843232c.mp3",
+   "heard": "لَمْ يُحَدَّدِ الْمَوْعِدُ بَعْدُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 91,
+    "candidatesTokenCount": 18,
+    "totalTokenCount": 211,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 54
+     }
+    ],
+    "thoughtsTokenCount": 102,
+    "serviceTier": "standard"
+   }
+  },
+  "القراءة اليومية مفيدة؛ فقد ساعدتني على تعلم كلمات جديدة": {
+   "file": "fc2c79fc66369825.mp3",
+   "heard": "الْقِرَاءَةُ الْيَوْمِيَّةُ مُفِيدَةٌ، فَقَدْ سَاعَدَتْنِي عَلَى تَعَلُّمِ كَلِمَاتٍ جَدِيدَةٍ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 189,
+    "candidatesTokenCount": 53,
+    "totalTokenCount": 650,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 152
+     }
+    ],
+    "thoughtsTokenCount": 408,
+    "serviceTier": "standard"
+   }
+  },
+  "بالتأكيد": {
+   "file": "dfbf2a57786eaed1.mp3",
+   "heard": "بِالتَّأْكِيدِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 67,
+    "candidatesTokenCount": 10,
+    "totalTokenCount": 126,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 30
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 49,
+    "serviceTier": "standard"
+   }
+  },
+  "سيبدأ المشروع غدًا": {
+   "file": "e5b93ca397163bd2.mp3",
+   "heard": "سَيَبْدَأُ الْمَشْرُوعُ غَدًا.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 87,
+    "candidatesTokenCount": 18,
+    "totalTokenCount": 375,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 50
+     }
+    ],
+    "thoughtsTokenCount": 270,
+    "serviceTier": "standard"
+   }
+  },
+  "لم يجب عن السؤال، بل غيّر الموضوع": {
+   "file": "8cdd09b17caa2506.mp3",
+   "heard": "لَمْ يُجِبْ عَنِ السُّؤَالِ بَلْ غَيَّرَ الْمَوْضُوعَ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 124,
+    "candidatesTokenCount": 30,
+    "totalTokenCount": 365,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 87
+     }
+    ],
+    "thoughtsTokenCount": 211,
+    "serviceTier": "standard"
+   }
+  },
+  "الكتب الإلكترونية مريحة": {
+   "file": "82eaa714f7b009b7.mp3",
+   "heard": "الْكُتُبُ الْإِلِكْتْرُونِيَّةُ مُرِيحَةٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 103,
+    "candidatesTokenCount": 25,
+    "totalTokenCount": 519,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 66
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 391,
+    "serviceTier": "standard"
+   }
+  },
+  "قد تشتت الإشعارات الانتباه": {
+   "file": "0e693ad15f6b3574.mp3",
+   "heard": "قَدْ تُشَتِّتُ الْإِشْعَارَاتُ الِانْتِبَاهَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 100,
+    "candidatesTokenCount": 26,
+    "totalTokenCount": 355,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 63
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 229,
+    "serviceTier": "standard"
+   }
+  },
+  "حضر الطلاب": {
+   "file": "70911bd54caf9694.mp3",
+   "heard": "حَضَرَ الطُّلَّابُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 75,
+    "candidatesTokenCount": 10,
+    "totalTokenCount": 206,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 38
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 121,
+    "serviceTier": "standard"
+   }
+  },
+  "متعبا": {
+   "file": "6bc0d037ec24c337.mp3",
+   "heard": "مُتْعَبًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 212,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     }
+    ],
+    "thoughtsTokenCount": 142,
+    "serviceTier": "standard"
+   }
+  },
+  "عاد الطالب متعبا": {
+   "file": "f982afde41667559.mp3",
+   "heard": "عَادَ الطَّالِبُ مُتْعَبًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 86,
+    "candidatesTokenCount": 14,
+    "totalTokenCount": 247,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 49
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 147,
+    "serviceTier": "standard"
+   }
+  },
+  "عاد الطالب متعبًا": {
+   "file": "caa7d8b854ef6f6f.mp3",
+   "heard": "عَادَ الطَّالِبُ مُتْعَبًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 86,
+    "candidatesTokenCount": 14,
+    "totalTokenCount": 225,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 49
+     }
+    ],
+    "thoughtsTokenCount": 125,
+    "serviceTier": "standard"
+   }
+  },
+  "عشرون كتابًا": {
+   "file": "5fd54bf5afda84e2.mp3",
+   "heard": "عِشْرُونَ كِتَابًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 78,
+    "candidatesTokenCount": 10,
+    "totalTokenCount": 88,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 41
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "كتابًا": {
+   "file": "05d7e592df2ac029.mp3",
+   "heard": "كِتَابًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 158,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 89,
+    "serviceTier": "standard"
+   }
+  },
+  "رسالة": {
+   "file": "8385af9e8964e5dc.mp3",
+   "heard": "رِسَالَةٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 61,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 378,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 24
+     }
+    ],
+    "thoughtsTokenCount": 313,
+    "serviceTier": "standard"
+   }
+  },
+  "لم يقرأ إلا كتابًا واحدًا": {
+   "file": "730ea2af534f85e2.mp3",
+   "heard": "لَمْ يَقْرَأْ إِلَّا كِتَابًا وَاحِدًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 106,
+    "candidatesTokenCount": 21,
+    "totalTokenCount": 257,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 69
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 130,
+    "serviceTier": "standard"
+   }
+  },
+  "في الختام": {
+   "file": "ba8b61afb9a8be2b.mp3",
+   "heard": "فِي الْخِتَامِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 67,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 237,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 30
+     }
+    ],
+    "thoughtsTokenCount": 161,
+    "serviceTier": "standard"
+   }
+  },
+  "سأتناول": {
+   "file": "0ad184d4a3ca7cff.mp3",
+   "heard": "سَأَتَنَاوَلُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 69,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 242,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 32
+     }
+    ],
+    "thoughtsTokenCount": 164,
+    "serviceTier": "standard"
+   }
+  },
+  "هل تقصد أن": {
+   "file": "892c6b86480b3f88.mp3",
+   "heard": "هَلْ تَقْصِدُ أَنَّ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 76,
+    "candidatesTokenCount": 12,
+    "totalTokenCount": 192,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 39
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 104,
+    "serviceTier": "standard"
+   }
+  },
+  "ينبغي التحقق من المعلومات قبل نشرها": {
+   "file": "278065b5cf4bbf8b.mp3",
+   "heard": "يَنْبَغِي التَّحَقُّقُ مِنَ الْمَعْلُومَاتِ قَبْلَ نَشْرِهَا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 127,
+    "candidatesTokenCount": 32,
+    "totalTokenCount": 368,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 90
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 209,
+    "serviceTier": "standard"
+   }
+  },
+  "تشير النتائج الأولية إلى تحسن محتمل": {
+   "file": "c40b4bb46102af6d.mp3",
+   "heard": "تُشِيرُ النَّتَائِجُ الْأَوَّلِيَّةُ إِلَى تَحَسُّنٍ مُحْتَمَلٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 137,
+    "candidatesTokenCount": 36,
+    "totalTokenCount": 418,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 100
+     }
+    ],
+    "thoughtsTokenCount": 245,
+    "serviceTier": "standard"
+   }
+  },
+  "سأعرض أولًا تعريف المصطلح، ثم مثالين": {
+   "file": "2317368bd32bc4f8.mp3",
+   "heard": "سَأَعْرِضُ أَوَّلًا تَعْرِيفَ الْمُصْطَلَحِ ثُمَّ مِثَالَيْنِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 141,
+    "candidatesTokenCount": 37,
+    "totalTokenCount": 531,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 104
+     }
+    ],
+    "thoughtsTokenCount": 353,
+    "serviceTier": "standard"
+   }
+  },
+  "اتفق الباحثان على النتيجة": {
+   "file": "3f6f74ca7486c6de.mp3",
+   "heard": "اتَّفَقَ الْبَاحِثَانِ عَلَى النَّتِيجَةِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 105,
+    "candidatesTokenCount": 23,
+    "totalTokenCount": 315,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 68
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 187,
+    "serviceTier": "standard"
+   }
+  },
+  "اختلفا في تفسيرها": {
+   "file": "e5487ab7e5346469.mp3",
+   "heard": "اُخْتُلِفَ فِي تَفْسِيرِهَا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 87,
+    "candidatesTokenCount": 16,
+    "totalTokenCount": 290,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 50
+     }
+    ],
+    "thoughtsTokenCount": 187,
+    "serviceTier": "standard"
+   }
+  },
+  "قالت ليلى": {
+   "file": "8fdfa79059098082.mp3",
+   "heard": "قَالَتْ لَيْلَى",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 69,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 164,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 32
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 87,
+    "serviceTier": "standard"
+   }
+  },
+  "هذه المدينة جميلة": {
+   "file": "0f85786f55b5b491.mp3",
+   "heard": "هَذِهِ الْمَدِينَةُ جَمِيلَةٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 94,
+    "candidatesTokenCount": 16,
+    "totalTokenCount": 313,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 57
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 203,
+    "serviceTier": "standard"
+   }
+  },
+  "المعرفة نور": {
+   "file": "2025fcad469444de.mp3",
+   "heard": "اَلْمَعْرِفَةُ نُورٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 77,
+    "candidatesTokenCount": 13,
+    "totalTokenCount": 204,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 40
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 114,
+    "serviceTier": "standard"
+   }
+  },
+  "لم يبدأ المشروع بعد": {
+   "file": "710a393fecaf0600.mp3",
+   "heard": "لَمْ يَبْدَأِ الْمَشْرُوعُ بَعْدُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 90,
+    "candidatesTokenCount": 19,
+    "totalTokenCount": 371,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 53
+     }
+    ],
+    "thoughtsTokenCount": 262,
+    "serviceTier": "standard"
+   }
+  },
+  "قد يتغير الموعد": {
+   "file": "40e89362557ae7ca.mp3",
+   "heard": "قَدْ يَتَغَيَّرُ الْمَوْعِدُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 82,
+    "candidatesTokenCount": 16,
+    "totalTokenCount": 206,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 45
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 108,
+    "serviceTier": "standard"
+   }
+  },
+  "حضر عشرون طالبًا": {
+   "file": "10a439258746a87a.mp3",
+   "heard": "حَضَرَ عِشْرُونَ طَالِبًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 88,
+    "candidatesTokenCount": 13,
+    "totalTokenCount": 217,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 51
+     }
+    ],
+    "thoughtsTokenCount": 116,
+    "serviceTier": "standard"
+   }
+  },
+  "الاجتماع يوم الأربعاء في الساعة الرابعة": {
+   "file": "21146f9306105542.mp3",
+   "heard": "الِاجْتِمَاعُ يَوْمَ الْأَرْبِعَاءِ فِي السَّاعَةِ الرَّابِعَةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 128,
+    "candidatesTokenCount": 33,
+    "totalTokenCount": 576,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 91
+     }
+    ],
+    "thoughtsTokenCount": 415,
+    "serviceTier": "standard"
+   }
+  },
+  "أمن المعلومات": {
+   "file": "69bb51925b41c565.mp3",
+   "heard": "أَمْنُ الْمَعْلُومَاتِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 76,
+    "candidatesTokenCount": 11,
+    "totalTokenCount": 308,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 39
+     }
+    ],
+    "thoughtsTokenCount": 221,
+    "serviceTier": "standard"
+   }
+  },
+  "احفظ الملف قبل إغلاق النافذة": {
+   "file": "09707ae8aab3c49d.mp3",
+   "heard": "اِحْفَظِ الْمَلَفَّ قَبْلَ إِغْلَاقِ النَّافِذَةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 116,
+    "candidatesTokenCount": 29,
+    "totalTokenCount": 464,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 79
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 319,
+    "serviceTier": "standard"
+   }
+  },
+  "المصادقة متعددة العوامل": {
+   "file": "507b57fee677d212.mp3",
+   "heard": "اَلْمُصَادَقَةُ مُتَعَدِّدَةُ الْعَوَامِلِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 105,
+    "candidatesTokenCount": 25,
+    "totalTokenCount": 349,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 68
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 219,
+    "serviceTier": "standard"
+   }
+  },
+  "لم تتوفر بعد معلومات كافية لمعرفة السبب": {
+   "file": "66cbc2c5bd6bfa32.mp3",
+   "heard": "لَمْ تَتَوَفَّرْ بَعْدُ مَعْلُومَاتٌ كَافِيَةٌ لِمَعْرِفَةِ السَّبَبِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 147,
+    "candidatesTokenCount": 41,
+    "totalTokenCount": 567,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 110
+     }
+    ],
+    "thoughtsTokenCount": 379,
+    "serviceTier": "standard"
+   }
+  },
+  "لدي": {
+   "file": "1da11e526e6667db.mp3",
+   "heard": "لَدَيَّ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 60,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 125,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 23
+     }
+    ],
+    "thoughtsTokenCount": 61,
+    "serviceTier": "standard"
+   }
+  },
+  "سأدرس": {
+   "file": "49fde456ee00e862.mp3",
+   "heard": "سَأَدْرُسُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 295,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     }
+    ],
+    "thoughtsTokenCount": 223,
+    "serviceTier": "standard"
+   }
+  },
+  "سوف أدرس": {
+   "file": "5d6db8382d0eb7e7.mp3",
+   "heard": "سَوْفَ أَدْرُسُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 73,
+    "candidatesTokenCount": 10,
+    "totalTokenCount": 144,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 36
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 61,
+    "serviceTier": "standard"
+   }
+  },
+  "لا تكتبون": {
+   "file": "f4996353d520bae1.mp3",
+   "heard": "لَا تَكْتُبْنَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 70,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 245,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 33
+     }
+    ],
+    "thoughtsTokenCount": 167,
+    "serviceTier": "standard"
+   }
+  },
+  "لا تكتبوا": {
+   "file": "1e453732781a6a5d.mp3",
+   "heard": "لَا تَكْتُبُوا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 66,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 197,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 29
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 123,
+    "serviceTier": "standard"
+   }
+  },
+  "لا تكتبين": {
+   "file": "491abcbabdc6e71a.mp3",
+   "heard": "لَا تَكْتُبِينَا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 70,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 286,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 33
+     }
+    ],
+    "thoughtsTokenCount": 207,
+    "serviceTier": "standard"
+   }
+  },
+  "لا تكتبي": {
+   "file": "ed40f037b7405028.mp3",
+   "heard": "لَا تَكْتُبِي",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 67,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 241,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 30
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 166,
+    "serviceTier": "standard"
+   }
+  },
+  "وعد": {
+   "file": "767efe41b8d9ea47.mp3",
+   "heard": "وَعَدَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 60,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 222,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 23
+     }
+    ],
+    "thoughtsTokenCount": 158,
+    "serviceTier": "standard"
+   }
+  },
+  "يدرسوا": {
+   "file": "bd5eb2c3ad33d91c.mp3",
+   "heard": "يَدْرُسُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 252,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 183,
+    "serviceTier": "standard"
+   }
+  },
+  "كتاب قرأته": {
+   "file": "9a09d28976b7a0d0.mp3",
+   "heard": "كِتَابٌ قَرَأْتُهُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 78,
+    "candidatesTokenCount": 11,
+    "totalTokenCount": 234,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 41
+     }
+    ],
+    "thoughtsTokenCount": 145,
+    "serviceTier": "standard"
+   }
+  },
+  "في المساجدِ": {
+   "file": "7fd5dda0d9b7a827.mp3",
+   "heard": "فِي الْمَسَاجِدِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 70,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 279,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 33
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 201,
+    "serviceTier": "standard"
+   }
+  },
+  "في مساجدَ": {
+   "file": "5279e9fcf4804605.mp3",
+   "heard": "فِي مَسَاجِدَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 70,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 249,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 33
+     }
+    ],
+    "thoughtsTokenCount": 171,
+    "serviceTier": "standard"
+   }
+  },
+  "القمر": {
+   "file": "86b2011fa0f5dc14.mp3",
+   "heard": "اَلْقَمَرُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 60,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 212,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 23
+     }
+    ],
+    "thoughtsTokenCount": 145,
+    "serviceTier": "standard"
+   }
+  },
+  "الشمس": {
+   "file": "b4a805bea9fd0617.mp3",
+   "heard": "الشَّمْسُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 60,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 308,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 23
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 243,
+    "serviceTier": "standard"
+   }
+  },
+  "ما اسمكِ؟": {
+   "file": "1db8cf6c2427f058.mp3",
+   "heard": "مَا اسْمُكِ؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 244,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     }
+    ],
+    "thoughtsTokenCount": 172,
+    "serviceTier": "standard"
+   }
+  },
+  "اسمكَ": {
+   "file": "4b431ad003ff9a0e.mp3",
+   "heard": "اِسْمُكَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 62,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 135,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 25
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 68,
+    "serviceTier": "standard"
+   }
+  },
+  "هي طالبة": {
+   "file": "d08dc3257ec9d513.mp3",
+   "heard": "هِيَ طَالِبَةٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 77,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 229,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 40
+     }
+    ],
+    "thoughtsTokenCount": 144,
+    "serviceTier": "standard"
+   }
+  },
+  "أين الكتاب؟ الكتاب على المكتب": {
+   "file": "b9cccb6db25e166b.mp3",
+   "heard": "أَيْنَ الْكِتَابُ؟ الْكِتَابُ عَلَى الْمَكْتَبِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 115,
+    "candidatesTokenCount": 25,
+    "totalTokenCount": 471,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 78
+     }
+    ],
+    "thoughtsTokenCount": 331,
+    "serviceTier": "standard"
+   }
+  },
+  "لم أفهم": {
+   "file": "87ec75f96ebf2072.mp3",
+   "heard": "لَمْ أَفْهَمْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 66,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 148,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 29
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 73,
+    "serviceTier": "standard"
+   }
+  },
+  "من فضلك، أعد ببطء": {
+   "file": "269b3dbf68c91eae.mp3",
+   "heard": "مِنْ فَضْلِكَ، أَعِدْ بِبُطْءٍ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 99,
+    "candidatesTokenCount": 21,
+    "totalTokenCount": 281,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 62
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 161,
+    "serviceTier": "standard"
+   }
+  },
+  "كتب جديدة": {
+   "file": "16aeff9182708229.mp3",
+   "heard": "كُتُبٌ جَدِيدَةٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 78,
+    "candidatesTokenCount": 12,
+    "totalTokenCount": 188,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 41
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 98,
+    "serviceTier": "standard"
+   }
+  },
+  "هذه الكتب جديدة؛ هؤلاء الطلاب هنا": {
+   "file": "ff9a601623ecac6d.mp3",
+   "heard": "هَذِهِ الْكُتُبُ جَدِيدَةٌ، هَؤُلَاءِ الطُّلَّابُ هُنَا.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 139,
+    "candidatesTokenCount": 35,
+    "totalTokenCount": 497,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 102
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 323,
+    "serviceTier": "standard"
+   }
+  },
+  "كتاب الطالب؛ كتابي": {
+   "file": "fa7ab5623a58031e.mp3",
+   "heard": "كِتَابُ الطَّالِبِ كِتَابِي",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 91,
+    "candidatesTokenCount": 15,
+    "totalTokenCount": 559,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 54
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 453,
+    "serviceTier": "standard"
+   }
+  },
+  "أنا أدرس العربية؛ هي تدرس العربية": {
+   "file": "f175bc1ef5780502.mp3",
+   "heard": "أَنَا أَدْرُسُ الْعَرَبِيَّةَ، هِيَ تَدْرُسُ الْعَرَبِيَّةَ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 136,
+    "candidatesTokenCount": 34,
+    "totalTokenCount": 412,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 99
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 242,
+    "serviceTier": "standard"
+   }
+  },
+  "نحن ندرس؛ هم يدرسون": {
+   "file": "93386229057bea68.mp3",
+   "heard": "نَحْنُ نَدْرُسُ، هُمْ يَدْرُسُونَ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 103,
+    "candidatesTokenCount": 20,
+    "totalTokenCount": 341,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 66
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 218,
+    "serviceTier": "standard"
+   }
+  },
+  "أذهب إلى المدرسة؛ أقرؤه": {
+   "file": "be22883054356e34.mp3",
+   "heard": "أَذْهَبُ إِلَى الْمَدْرَسَةِ أَقْرَأُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 108,
+    "candidatesTokenCount": 21,
+    "totalTokenCount": 895,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 71
+     }
+    ],
+    "thoughtsTokenCount": 766,
+    "serviceTier": "standard"
+   }
+  },
+  "أقرأه": {
+   "file": "0d22b34e94dec7fe.mp3",
+   "heard": "أَقْرَأُهُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 428,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     }
+    ],
+    "thoughtsTokenCount": 357,
+    "serviceTier": "standard"
+   }
+  },
+  "عندي كتاب؛ أريد ماءً": {
+   "file": "5eb2bdc3b3aed0b9.mp3",
+   "heard": "عِنْدِي كِتَابٌ أُرِيدُ مَاءً",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 102,
+    "candidatesTokenCount": 18,
+    "totalTokenCount": 327,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 65
+     }
+    ],
+    "thoughtsTokenCount": 207,
+    "serviceTier": "standard"
+   }
+  },
+  "ماء": {
+   "file": "5f73afa912f345c1.mp3",
+   "heard": "مَعًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 60,
+    "candidatesTokenCount": 3,
+    "totalTokenCount": 126,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 23
+     }
+    ],
+    "thoughtsTokenCount": 63,
+    "serviceTier": "standard"
+   }
+  },
+  "أقرأ ثم أكتب": {
+   "file": "4cb07e955bd6e3fe.mp3",
+   "heard": "أَقْرَأُ ثُمَّ أَكْتُبُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 82,
+    "candidatesTokenCount": 15,
+    "totalTokenCount": 228,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 45
+     }
+    ],
+    "thoughtsTokenCount": 131,
+    "serviceTier": "standard"
+   }
+  },
+  "المحادثة يوم الثلاثاء في الساعة الثالثة بعد الظهر": {
+   "file": "6d5a744f91e76852.mp3",
+   "heard": "اَلْمُحَادَثَةُ يَوْمَ الثُّلَاثَاءِ فِي السَّاعَةِ الثَّالِثَةِ بَعْدَ الظُّهْرِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 151,
+    "candidatesTokenCount": 45,
+    "totalTokenCount": 482,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 114
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 286,
+    "serviceTier": "standard"
+   }
+  },
+  "المكتبة": {
+   "file": "b47981a29d1db690.mp3",
+   "heard": "اَلْمَكْتَبَةُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 249,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 176,
+    "serviceTier": "standard"
+   }
+  },
+  "أريد ماءً، من فضلك": {
+   "file": "20acfbda22dd4c75.mp3",
+   "heard": "أُرِيدُ مَاءً مِنْ فَضْلِكَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 97,
+    "candidatesTokenCount": 15,
+    "totalTokenCount": 112,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 60
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "أريد ماء، من فضلك": {
+   "file": "69764914d4faf0ab.mp3",
+   "heard": "أُرِيدُ مَاءً مِنْ فَضْلِكَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 97,
+    "candidatesTokenCount": 15,
+    "totalTokenCount": 251,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 60
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 139,
+    "serviceTier": "standard"
+   }
+  },
+  "يوم الثلاثاء؛ في المكتبة": {
+   "file": "06e3059ab1c905ba.mp3",
+   "heard": "يَوْمَ الثُّلَاثَاءِ فِي الْمَكْتَبَةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 103,
+    "candidatesTokenCount": 19,
+    "totalTokenCount": 279,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 66
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 157,
+    "serviceTier": "standard"
+   }
+  },
+  "ليلى؛ في الصباح": {
+   "file": "e8af2260d84c3c2b.mp3",
+   "heard": "لَيْلًا، فِي الصَّبَاحِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 83,
+    "candidatesTokenCount": 12,
+    "totalTokenCount": 372,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 46
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 277,
+    "serviceTier": "standard"
+   }
+  },
+  "المتحدثة": {
+   "file": "627736dbf0cdc574.mp3",
+   "heard": "الْمُتَحَدِّثَةُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 71,
+    "candidatesTokenCount": 10,
+    "totalTokenCount": 262,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 34
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 181,
+    "serviceTier": "standard"
+   }
+  },
+  "هل أنت طالب؟": {
+   "file": "d31ee4e2d5fda57b.mp3",
+   "heard": "هَلْ أَنْتَ طَالِبٌ؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 81,
+    "candidatesTokenCount": 12,
+    "totalTokenCount": 178,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 44
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 85,
+    "serviceTier": "standard"
+   }
+  },
+  "هل أنتَ طالبٌ؟": {
+   "file": "b9eab8d05984daee.mp3",
+   "heard": "هَلْ أَنْتَ طَالِبٌ؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 81,
+    "candidatesTokenCount": 12,
+    "totalTokenCount": 142,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 44
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 49,
+    "serviceTier": "standard"
+   }
+  },
+  "أنا طالب": {
+   "file": "8c8ee8b140c01d2a.mp3",
+   "heard": "أَنَا طَالِبٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 72,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 154,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 35
+     }
+    ],
+    "thoughtsTokenCount": 75,
+    "serviceTier": "standard"
+   }
+  },
+  "أسكن في لندن": {
+   "file": "22dabc44f7fdbcc7.mp3",
+   "heard": "أَسْكُنُ فِي لَنْدَنَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 76,
+    "candidatesTokenCount": 12,
+    "totalTokenCount": 247,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 39
+     }
+    ],
+    "thoughtsTokenCount": 159,
+    "serviceTier": "standard"
+   }
+  },
+  "ماذا قرأ سامي؟": {
+   "file": "32fc7c3a4711e83f.mp3",
+   "heard": "مَاذَا قَرَأَ سَامِي؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 79,
+    "candidatesTokenCount": 13,
+    "totalTokenCount": 224,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 42
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 132,
+    "serviceTier": "standard"
+   }
+  },
+  "ما الذي قرأه سامي؟": {
+   "file": "8c9e3a6f025a7940.mp3",
+   "heard": "مَا الَّذِي قَرَأَهُ سَامِي؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 87,
+    "candidatesTokenCount": 14,
+    "totalTokenCount": 289,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 50
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 188,
+    "serviceTier": "standard"
+   }
+  },
+  "زرت المكتبة ثم عدت إلى البيت": {
+   "file": "5e3c4b64f0c3017a.mp3",
+   "heard": "زُرْتُ الْمَكْتَبَةَ ثُمَّ عُدْتُ إِلَى الْبَيْتِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 115,
+    "candidatesTokenCount": 26,
+    "totalTokenCount": 141,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 78
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "بعد ذلك": {
+   "file": "8d7a103d75abcfbc.mp3",
+   "heard": "بَعْدَ ذَلِكَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 72,
+    "candidatesTokenCount": 8,
+    "totalTokenCount": 225,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 35
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 145,
+    "serviceTier": "standard"
+   }
+  },
+  "زارت ليلى المكتبة؛ لم تجد الكتاب": {
+   "file": "f5967da4c9f7539e.mp3",
+   "heard": "زَارَتْ لَيْلَى المَكْتَبَةَ، لَمْ تَجِدِ الكِتَابَ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 127,
+    "candidatesTokenCount": 30,
+    "totalTokenCount": 157,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 90
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "سأدرس غدًا": {
+   "file": "30269264735388d1.mp3",
+   "heard": "سَأَدْرُسُ غَدًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 75,
+    "candidatesTokenCount": 11,
+    "totalTokenCount": 351,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 38
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 265,
+    "serviceTier": "standard"
+   }
+  },
+  "سأدرس غدا": {
+   "file": "ef5f3352efb246b5.mp3",
+   "heard": "سَأَدْرُسُ غَدًا.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 75,
+    "candidatesTokenCount": 12,
+    "totalTokenCount": 238,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 38
+     }
+    ],
+    "thoughtsTokenCount": 151,
+    "serviceTier": "standard"
+   }
+  },
+  "لم أدرسْ أمس": {
+   "file": "fb2ad1f8b59d7b4b.mp3",
+   "heard": "لَمْ أَدْرُسْ أَمْسِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 75,
+    "candidatesTokenCount": 13,
+    "totalTokenCount": 226,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 38
+     }
+    ],
+    "thoughtsTokenCount": 138,
+    "serviceTier": "standard"
+   }
+  },
+  "لم أدرس أمس": {
+   "file": "91332b1087bba8f0.mp3",
+   "heard": "لَمْ أَدْرُسْ أَمْسِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 75,
+    "candidatesTokenCount": 13,
+    "totalTokenCount": 187,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 38
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 99,
+    "serviceTier": "standard"
+   }
+  },
+  "أدرس": {
+   "file": "3d9c2f3be3be1112.mp3",
+   "heard": "قُدْسْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 58,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 565,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 21
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 502,
+    "serviceTier": "standard"
+   }
+  },
+  "اكتب؛ لا تكتب": {
+   "file": "8ac32d7589d886ed.mp3",
+   "heard": "اُكْتُبْ، لَا تَكْتُبْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 79,
+    "candidatesTokenCount": 16,
+    "totalTokenCount": 220,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 42
+     }
+    ],
+    "thoughtsTokenCount": 125,
+    "serviceTier": "standard"
+   }
+  },
+  "أريد أن أَتَعَلَّمَ العربية": {
+   "file": "cf74c075cd0e0eb7.mp3",
+   "heard": "أُرِيدُ أَنْ أَتَعَلَّمَ الْعَرَبِيَّةَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 97,
+    "candidatesTokenCount": 21,
+    "totalTokenCount": 378,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 60
+     }
+    ],
+    "thoughtsTokenCount": 260,
+    "serviceTier": "standard"
+   }
+  },
+  "لا أستطيع أن أحضر يوم الثلاثاء": {
+   "file": "4bfaa34c6b2f65c6.mp3",
+   "heard": "لَا أَسْتَطِيعُ أَنْ أَحْضُرَ يَوْمَ الثُّلَاثَاءِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 116,
+    "candidatesTokenCount": 29,
+    "totalTokenCount": 357,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 79
+     }
+    ],
+    "thoughtsTokenCount": 212,
+    "serviceTier": "standard"
+   }
+  },
+  "هل يناسبك يوم الأربعاء؟": {
+   "file": "e91d95419c05f774.mp3",
+   "heard": "هَلْ يُنَاسِبُكَ يَوْمُ الْأَرْبِعَاءِ؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 101,
+    "candidatesTokenCount": 23,
+    "totalTokenCount": 288,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 64
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 164,
+    "serviceTier": "standard"
+   }
+  },
+  "مدرستها": {
+   "file": "78a3dae62a781e47.mp3",
+   "heard": "مَدْرَسَتُهَا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 69,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 168,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 32
+     }
+    ],
+    "thoughtsTokenCount": 93,
+    "serviceTier": "standard"
+   }
+  },
+  "كتابان؛ رأيت كتابين": {
+   "file": "79553c0c2225f5b7.mp3",
+   "heard": "كِتَابَانِ رَأَيْتُ كِتَابَيْنِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 102,
+    "candidatesTokenCount": 19,
+    "totalTokenCount": 326,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 65
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 205,
+    "serviceTier": "standard"
+   }
+  },
+  "ثلاثة كتب": {
+   "file": "1828c3c2e7bd1bd8.mp3",
+   "heard": "ثَلَاثَةُ كُتُبٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 78,
+    "candidatesTokenCount": 12,
+    "totalTokenCount": 194,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 41
+     }
+    ],
+    "thoughtsTokenCount": 104,
+    "serviceTier": "standard"
+   }
+  },
+  "يقرأ كتابًا": {
+   "file": "0cf288c594b2caf4.mp3",
+   "heard": "يَقْرَأُ كِتَابًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 76,
+    "candidatesTokenCount": 11,
+    "totalTokenCount": 161,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 39
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 74,
+    "serviceTier": "standard"
+   }
+  },
+  "يوم السبت؛ يوم الأحد": {
+   "file": "e7a3401947643874.mp3",
+   "heard": "يَوْمَ السَّبْتِ، يَوْمَ الْأَحَدِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 98,
+    "candidatesTokenCount": 19,
+    "totalTokenCount": 312,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 61
+     }
+    ],
+    "thoughtsTokenCount": 195,
+    "serviceTier": "standard"
+   }
+  },
+  "لا أستطيع يوم الثلاثاء": {
+   "file": "02cad74d7d6472cf.mp3",
+   "heard": "لَا أَسْتَطِيعُ يَوْمَ الثُّلَاثَاءِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 96,
+    "candidatesTokenCount": 21,
+    "totalTokenCount": 239,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 59
+     }
+    ],
+    "thoughtsTokenCount": 122,
+    "serviceTier": "standard"
+   }
+  },
+  "أستطيع يوم الأربعاء": {
+   "file": "7358339160ddbb27.mp3",
+   "heard": "أَسْتَطِيعُ يَوْمَ الْأَرْبِعَاءِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 91,
+    "candidatesTokenCount": 20,
+    "totalTokenCount": 111,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 54
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "هل تناسبك الساعة الثالثة؟": {
+   "file": "8c0464cf09a4d43b.mp3",
+   "heard": "هَلْ تُنَاسِبُكَ السَّاعَةُ الثَّالِثَةُ؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 105,
+    "candidatesTokenCount": 23,
+    "totalTokenCount": 334,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 68
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 206,
+    "serviceTier": "standard"
+   }
+  },
+  "قرأت كتابًا أمس، وسأكتب رسالة غدًا": {
+   "file": "9097df81eba905d6.mp3",
+   "heard": "قَرَأْتُ كِتَابًا أَمْسِ، وَسَأَكْتُبُ رِسَالَةً غَدًا.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 138,
+    "candidatesTokenCount": 34,
+    "totalTokenCount": 467,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 101
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 295,
+    "serviceTier": "standard"
+   }
+  },
+  "قلت؛ لم يدع": {
+   "file": "92ca836c119b9c8d.mp3",
+   "heard": "قُلْتُ لَمْ يَدْعُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 81,
+    "candidatesTokenCount": 11,
+    "totalTokenCount": 272,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 44
+     }
+    ],
+    "thoughtsTokenCount": 180,
+    "serviceTier": "standard"
+   }
+  },
+  "هم لن يدرسوا": {
+   "file": "687adad06e2dd528.mp3",
+   "heard": "هُمْ لَنْ يَدْرُسُوا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 74,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 208,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 125,
+    "serviceTier": "standard"
+   }
+  },
+  "قال إنه متعب": {
+   "file": "8152cc3685d5d1bb.mp3",
+   "heard": "قَالَ إِنَّهُ مُتْعَبٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 84,
+    "candidatesTokenCount": 10,
+    "totalTokenCount": 223,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 47
+     }
+    ],
+    "thoughtsTokenCount": 129,
+    "serviceTier": "standard"
+   }
+  },
+  "اتخذ قرارًا": {
+   "file": "2674a60abeba1f22.mp3",
+   "heard": "اِتَّخَذَ قَرَارًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 78,
+    "candidatesTokenCount": 12,
+    "totalTokenCount": 268,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 41
+     }
+    ],
+    "thoughtsTokenCount": 178,
+    "serviceTier": "standard"
+   }
+  },
+  "اتخذ سامي قرارًا جديدًا": {
+   "file": "efe97d2e90cad41f.mp3",
+   "heard": "اِتَّخَذَ سَامِي قَرَارًا جَدِيدًا.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 102,
+    "candidatesTokenCount": 22,
+    "totalTokenCount": 347,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 65
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 223,
+    "serviceTier": "standard"
+   }
+  },
+  "ماذا تحب أن تقرأ؟": {
+   "file": "20927e1e62fc99e3.mp3",
+   "heard": "مَاذَا تُحِبُّ أَنْ تَقْرَأَ؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 87,
+    "candidatesTokenCount": 17,
+    "totalTokenCount": 351,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 50
+     }
+    ],
+    "thoughtsTokenCount": 247,
+    "serviceTier": "standard"
+   }
+  },
+  "مكان نقرأ فيه الكتب أو نستعيرها": {
+   "file": "40bab9ebfaa03cda.mp3",
+   "heard": "مَكَانٌ نَقْرَأُ فِيهِ الْكُتُبَ أَوْ نَسْتَعِيرُهَا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 125,
+    "candidatesTokenCount": 32,
+    "totalTokenCount": 387,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 88
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 230,
+    "serviceTier": "standard"
+   }
+  },
+  "على سبيل المثال، أتعلم كلمات جديدة عندما أقرأ": {
+   "file": "1b6b393b0d430e0c.mp3",
+   "heard": "عَلَى سَبِيلِ الْمِثَالِ، أَتَعَلَّمُ كَلِمَاتٍ جَدِيدَةً عِنْدَمَا أَقْرَأُ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 165,
+    "candidatesTokenCount": 44,
+    "totalTokenCount": 446,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 128
+     }
+    ],
+    "thoughtsTokenCount": 237,
+    "serviceTier": "standard"
+   }
+  },
+  "هل يمكنكم توضيح مواعيد الدروس؟": {
+   "file": "e9ae75f58983c620.mp3",
+   "heard": "هَلْ يُمْكِنُكُمْ تَوْضِيحُ مَوَاعِيدِ الدُّرُوسِ؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 119,
+    "candidatesTokenCount": 28,
+    "totalTokenCount": 314,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 82
+     }
+    ],
+    "thoughtsTokenCount": 167,
+    "serviceTier": "standard"
+   }
+  },
+  "تبدأ الدورة يوم الاثنين بمشاركة عشرة طلاب": {
+   "file": "a671501d9c9c2a58.mp3",
+   "heard": "تَبْدَأُ الدَّوْرَةُ يَوْمَ الِاثْنَيْنِ بِمُشَارَكَةِ عَشَرَةِ طُلَّابٍ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 149,
+    "candidatesTokenCount": 43,
+    "totalTokenCount": 572,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 112
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 380,
+    "serviceTier": "standard"
+   }
+  },
+  "هذه مدرسة جميلة": {
+   "file": "b8f963fb53915842.mp3",
+   "heard": "هَذِهِ مَدْرَسَةٌ جَمِيلَةٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 95,
+    "candidatesTokenCount": 17,
+    "totalTokenCount": 112,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 58
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "هذا كتاب جديد": {
+   "file": "1f8ba639bf93f539.mp3",
+   "heard": "هَذَا كِتَابٌ جَدِيدٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 88,
+    "candidatesTokenCount": 14,
+    "totalTokenCount": 337,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 51
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 235,
+    "serviceTier": "standard"
+   }
+  },
+  "هذه مدرسة جديدة": {
+   "file": "78776c9413ea7397.mp3",
+   "heard": "هَذِهِ مَدْرَسَةٌ جَدِيدَةٌ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 96,
+    "candidatesTokenCount": 17,
+    "totalTokenCount": 244,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 59
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 131,
+    "serviceTier": "standard"
+   }
+  },
+  "أولًا": {
+   "file": "efbe6c188ebaf380.mp3",
+   "heard": "أَوَّلًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 129,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     }
+    ],
+    "thoughtsTokenCount": 60,
+    "serviceTier": "standard"
+   }
+  },
+  "ثانيًا": {
+   "file": "3ae92243b40461ac.mp3",
+   "heard": "ثَانِيًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 65,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 116,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 28
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 47,
+    "serviceTier": "standard"
+   }
+  },
+  "في البداية": {
+   "file": "b37d806e5e3d4e40.mp3",
+   "heard": "فِي الْبِدَايَةِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 70,
+    "candidatesTokenCount": 9,
+    "totalTokenCount": 152,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 33
+     }
+    ],
+    "thoughtsTokenCount": 73,
+    "serviceTier": "standard"
+   }
+  },
+  "لست متأكدًا من المقصود": {
+   "file": "ed77776cf77e8096.mp3",
+   "heard": "لَسْتُ مُتَأَكِّدًا مِنَ الْمَقْصُودِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 98,
+    "candidatesTokenCount": 22,
+    "totalTokenCount": 276,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 61
+     }
+    ],
+    "thoughtsTokenCount": 156,
+    "serviceTier": "standard"
+   }
+  },
+  "هل يمكنك أن توضح السؤال؟": {
+   "file": "1ba1f2eb94f3c2b8.mp3",
+   "heard": "هَلْ يُمْكِنُكَ أَنْ تُوَضِّحَ السُّؤَالَ؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 106,
+    "candidatesTokenCount": 23,
+    "totalTokenCount": 298,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 69
+     }
+    ],
+    "thoughtsTokenCount": 169,
+    "serviceTier": "standard"
+   }
+  },
+  "الموعد لم يُحدَّد بعد": {
+   "file": "e6bd0085236ea07c.mp3",
+   "heard": "اَلْمَوْعِدُ لَمْ يُحَدَّدْ بَعْدُ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 90,
+    "candidatesTokenCount": 21,
+    "totalTokenCount": 340,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 53
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 229,
+    "serviceTier": "standard"
+   }
+  },
+  "لم يحددوا الموعد بعد": {
+   "file": "fca1d61df95ecfeb.mp3",
+   "heard": "لَمْ يُحَدَّدِ الْمَوْعِدُ بَعْدُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 93,
+    "candidatesTokenCount": 18,
+    "totalTokenCount": 576,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 56
+     }
+    ],
+    "thoughtsTokenCount": 465,
+    "serviceTier": "standard"
+   }
+  },
+  "يقول المصدر الأول إن المشروع سيبدأ في يناير، بينما يقول المصدر الثاني إن الموعد لم يحدد بعد": {
+   "file": "deff2fb1827f02bb.mp3",
+   "heard": "يَقُولُ الْمَصْدَرُ الْأَوَّلُ أَنَّ الْمَشْرُوعَ سَيَبْدَأُ فِي يَنَايِرَ بَيْنَمَا يَقُولُ الْمَصْدَرُ الثَّانِي أَنَّ الْمَوْعِدَ لَمْ يُحَدَّدْ بَعْدُ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 259,
+    "candidatesTokenCount": 79,
+    "totalTokenCount": 766,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 222
+     }
+    ],
+    "thoughtsTokenCount": 428,
+    "serviceTier": "standard"
+   }
+  },
+  "ربما يبدأ المشروع غدًا": {
+   "file": "23e93b370bb9f43b.mp3",
+   "heard": "رُبَّمَا يَبْدَأُ الْمَشْرُوعُ غَدًا.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 95,
+    "candidatesTokenCount": 23,
+    "totalTokenCount": 344,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 58
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 226,
+    "serviceTier": "standard"
+   }
+  },
+  "ربما سيبدأ المشروع غدًا": {
+   "file": "6b9dad6396b71f29.mp3",
+   "heard": "رُبَّمَا سَيَبْدَأُ الْمَشْرُوعُ غَدًا.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 99,
+    "candidatesTokenCount": 24,
+    "totalTokenCount": 318,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 62
+     }
+    ],
+    "thoughtsTokenCount": 195,
+    "serviceTier": "standard"
+   }
+  },
+  "الكتب الإلكترونية مريحة، لكن الإشعارات قد تشتت الانتباه": {
+   "file": "5f3f47d4c8e91ae3.mp3",
+   "heard": "اَلْكُتُبُ الْإِلِكْتُرُونِيَّةُ مُرِيحَةٌ، لَكِنَّ الْإِشْعَارَاتِ قَدْ تُشَتِّتُ الِانْتِبَاهَ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 178,
+    "candidatesTokenCount": 60,
+    "totalTokenCount": 446,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 141
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 208,
+    "serviceTier": "standard"
+   }
+  },
+  "أتفهم وجهة النظر هذه، ولكنني أرى أن القراءة الورقية أنسب لهذه المهمة": {
+   "file": "1dec31ef915d73aa.mp3",
+   "heard": "أَتَفَهَّمُ وِجْهَةَ النَّظَرِ هَذِهِ، وَلَكِنَّنِي أَرَى أَنَّ الْقِرَاءَةَ الْوَرَقِيَّةَ أَنْسَبُ لِهَذِهِ الْمُهِمَّةِ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 231,
+    "candidatesTokenCount": 71,
+    "totalTokenCount": 579,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 194
+     }
+    ],
+    "thoughtsTokenCount": 277,
+    "serviceTier": "standard"
+   }
+  },
+  "الطلاب حضروا": {
+   "file": "fe68db7a33a73111.mp3",
+   "heard": "الطُّلَّابُ حَضَرُوا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 75,
+    "candidatesTokenCount": 11,
+    "totalTokenCount": 169,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 38
+     }
+    ],
+    "thoughtsTokenCount": 83,
+    "serviceTier": "standard"
+   }
+  },
+  "متعبًا": {
+   "file": "0337b2b832af6e81.mp3",
+   "heard": "مُتْعَبًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 64,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 126,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 27
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 56,
+    "serviceTier": "standard"
+   }
+  },
+  "ثلاثة عشر كتابًا؛ ثلاث عشرة رسالة": {
+   "file": "b1bdb0890d5b73f0.mp3",
+   "heard": "ثَلَاثَةَ عَشَرَ كِتَابًا، ثَلَاثَ عَشْرَةَ رِسَالَةً.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 139,
+    "candidatesTokenCount": 31,
+    "totalTokenCount": 418,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 102
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 248,
+    "serviceTier": "standard"
+   }
+  },
+  "قرأ كتابًا واحدًا فقط": {
+   "file": "f21cb2c1ac386144.mp3",
+   "heard": "قَرَأَ كِتَابًا وَاحِدًا فَقَطْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 96,
+    "candidatesTokenCount": 18,
+    "totalTokenCount": 254,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 59
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 140,
+    "serviceTier": "standard"
+   }
+  },
+  "الطلاب يدرسون العربية": {
+   "file": "da04b90e3d04434e.mp3",
+   "heard": "الطُّلَّابُ يَدْرُسُونَ الْعَرَبِيَّةَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 99,
+    "candidatesTokenCount": 19,
+    "totalTokenCount": 174,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 62
+     }
+    ],
+    "thoughtsTokenCount": 56,
+    "serviceTier": "standard"
+   }
+  },
+  "يدرس الطلابُ العربية": {
+   "file": "43a6747c8e308f96.mp3",
+   "heard": "يَدْرُسُ الطُّلَّابُ الْعَرَبِيَّةَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 94,
+    "candidatesTokenCount": 19,
+    "totalTokenCount": 210,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 57
+     }
+    ],
+    "thoughtsTokenCount": 97,
+    "serviceTier": "standard"
+   }
+  },
+  "في الختام، أرى أن اختيار وسيلة القراءة ينبغي أن يعتمد على هدف القارئ": {
+   "file": "864f23dd86678880.mp3",
+   "heard": "فِي الْخِتَامِ، أَرَى أَنَّ اخْتِيَارَ وَسِيلَةِ الْقِرَاءَةِ يَنْبَغِي أَنْ يَعْتَمِدَ عَلَى هَدَفِ الْقَارِئِ،",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 207,
+    "candidatesTokenCount": 62,
+    "totalTokenCount": 597,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 170
+     }
+    ],
+    "thoughtsTokenCount": 328,
+    "serviceTier": "standard"
+   }
+  },
+  "سأتناول ثلاث نقاط": {
+   "file": "f68fef21d0f19faf.mp3",
+   "heard": "سَأَتَنَاوَلُ ثَلَاثَ نِقَاطٍ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 97,
+    "candidatesTokenCount": 21,
+    "totalTokenCount": 233,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 60
+     }
+    ],
+    "thoughtsTokenCount": 115,
+    "serviceTier": "standard"
+   }
+  },
+  "نقطة": {
+   "file": "5e00fbebbd1ae766.mp3",
+   "heard": "نُقْطَة",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 58,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 125,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 21
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 61,
+    "serviceTier": "standard"
+   }
+  },
+  "ثلاث": {
+   "file": "99948fb769f32de4.mp3",
+   "heard": "ثَلَاثْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 59,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 141,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 22
+     }
+    ],
+    "thoughtsTokenCount": 77,
+    "serviceTier": "standard"
+   }
+  },
+  "هل تقصد أن الموعد قد تغير؟": {
+   "file": "c4ba09a9220f0e3d.mp3",
+   "heard": "هَلْ تَقْصِدُ أَنَّ الْمَوْعِدَ قَدْ تَغَيَّرَ؟",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 110,
+    "candidatesTokenCount": 27,
+    "totalTokenCount": 320,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 73
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 183,
+    "serviceTier": "standard"
+   }
+  },
+  "يجب أن نتأكد من صحة المعلومات قبل أن ننشرها": {
+   "file": "2d954f1c0d9d623c.mp3",
+   "heard": "يَجِبُ أَنْ نَتَأَكَّدَ مِنْ صِحَّةِ الْمَعْلُومَاتِ قَبْلَ أَنْ نَنْشُرَهَا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 149,
+    "candidatesTokenCount": 40,
+    "totalTokenCount": 541,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 112
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 352,
+    "serviceTier": "standard"
+   }
+  },
+  "مثالان": {
+   "file": "18b36d39b1f4ec09.mp3",
+   "heard": "مِثَالَانِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 66,
+    "candidatesTokenCount": 6,
+    "totalTokenCount": 218,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 29
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 146,
+    "serviceTier": "standard"
+   }
+  },
+  "اتفق الباحثان على النتيجة، لكنهما اختلفا في تفسيرها": {
+   "file": "c0a5ff34c332b9c3.mp3",
+   "heard": "اِتَّفَقَ الْبَاحِثَانِ عَلَى النَّتِيجَةِ، لَكِنَّهُمَا اخْتَلَفَا فِي تَفْسِيرِهَا.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 169,
+    "candidatesTokenCount": 47,
+    "totalTokenCount": 492,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 132
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 276,
+    "serviceTier": "standard"
+   }
+  },
+  "أوصي بتجربة الخطة لمدة أسبوع لأنها تسمح لنا بجمع الملاحظات": {
+   "file": "512f73378e00580b.mp3",
+   "heard": "أُوصِي بِتَجْرِبَةِ الْخُطَّةِ لِمُدَّةِ أُسْبُوعٍ لِأَنَّهَا تَسْمَحُ لَنَا بِجَمْعِ الْمُلَاحَظَاتِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 189,
+    "candidatesTokenCount": 58,
+    "totalTokenCount": 631,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 152
+     }
+    ],
+    "thoughtsTokenCount": 384,
+    "serviceTier": "standard"
+   }
+  },
+  "شعري": {
+   "file": "6efba4041d8b4a87.mp3",
+   "heard": "شَعْرِي",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 58,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 202,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 21
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 140,
+    "serviceTier": "standard"
+   }
+  },
+  "بيت": {
+   "file": "8a0163030d12d092.mp3",
+   "heard": "بَيْتْ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 58,
+    "candidatesTokenCount": 4,
+    "totalTokenCount": 167,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 21
+     }
+    ],
+    "thoughtsTokenCount": 105,
+    "serviceTier": "standard"
+   }
+  },
+  "وكتابها": {
+   "file": "5b1562062cc63d06.mp3",
+   "heard": "وَكِتَابُهَا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 69,
+    "candidatesTokenCount": 7,
+    "totalTokenCount": 275,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 32
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 199,
+    "serviceTier": "standard"
+   }
+  },
+  "عشرون": {
+   "file": "a09c607fb0cd4807.mp3",
+   "heard": "عِشْرُونَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 63,
+    "candidatesTokenCount": 5,
+    "totalTokenCount": 184,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 26
+     }
+    ],
+    "thoughtsTokenCount": 116,
+    "serviceTier": "standard"
+   }
+  },
+  "أمن المعلومات هو حماية المعلومات من الوصول أو الاستخدام غير المصرح به": {
+   "file": "1239d99eee6f86bd.mp3",
+   "heard": "أَمْنُ الْمَعْلُومَاتِ هُوَ حِمَايَةُ الْمَعْلُومَاتِ مِنَ الْوُصُولِ أَوِ الِاسْتِخْدَامِ غَيْرِ الْمُصَرَّحِ بِهِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 203,
+    "candidatesTokenCount": 61,
+    "totalTokenCount": 264,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 166
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "تستخدم المصادقة متعددة العوامل أكثر من نوع من الأدلة للتحقق من هوية المستخدم": {
+   "file": "9313d870e9fad2c7.mp3",
+   "heard": "تَسْتَخْدِمُ الْمُصَادَقَةُ مُتَعَدِّدَةُ الْعَوَامِلِ أَكْثَرَ مِنْ نَوْعٍ مِنَ الْأَدِلَّةِ لِلتَّحَقُّقِ مِنْ هُوِيَّةِ الْمُسْتَخْدِمِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 234,
+    "candidatesTokenCount": 73,
+    "totalTokenCount": 624,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 197
+     }
+    ],
+    "thoughtsTokenCount": 317,
+    "serviceTier": "standard"
+   }
+  },
+  "سبب الحادثة غير معروف بعد لعدم توفر معلومات كافية": {
+   "file": "5ae1251c6fc389e7.mp3",
+   "heard": "سَبَبُ الْحَادِثَةِ غَيْرُ مَعْرُوفٍ بَعْدُ لِعَدَمِ تَوَفُّرِ مَعْلُومَاتٍ كَافِيَةٍ.",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 178,
+    "candidatesTokenCount": 52,
+    "totalTokenCount": 510,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 141
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 280,
+    "serviceTier": "standard"
+   }
+  },
+  "أحتاج إلى التحقق من هذه المعلومة قبل أن أجيب": {
+   "file": "7571e6d1144b3947.mp3",
+   "heard": "أَحْتَاجُ إِلَى التَّحَقُّقِ مِنْ هَذِهِ الْمَعْلُومَةِ قَبْلَ أَنْ أُجِيبَ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 148,
+    "candidatesTokenCount": 40,
+    "totalTokenCount": 502,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 111
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 314,
+    "serviceTier": "standard"
+   }
+  }
+ },
+ "earlier": {
+  "يدعو": [
+   {
+    "file": "2ef488267041f9c7.mp3",
+    "heard": "يَضَعُ",
+    "finish": "STOP",
+    "usage": {
+     "promptTokenCount": 60,
+     "candidatesTokenCount": 5,
+     "totalTokenCount": 289,
+     "promptTokensDetails": [
+      {
+       "modality": "TEXT",
+       "tokenCount": 37
+      },
+      {
+       "modality": "AUDIO",
+       "tokenCount": 23
+      }
+     ],
+     "thoughtsTokenCount": 224,
+     "serviceTier": "standard"
+    }
+   },
+   {
+    "file": "367acb08a32d5bea.mp3",
+    "heard": "يَضَعُ",
+    "finish": "STOP",
+    "usage": {
+     "promptTokenCount": 60,
+     "candidatesTokenCount": 5,
+     "totalTokenCount": 144,
+     "promptTokensDetails": [
+      {
+       "modality": "TEXT",
+       "tokenCount": 37
+      },
+      {
+       "modality": "AUDIO",
+       "tokenCount": 23
+      }
+     ],
+     "thoughtsTokenCount": 79,
+     "serviceTier": "standard"
+    }
+   }
+  ],
+  "يدرسوا": [
+   {
+    "file": "00d5ca2a6f9c7e08.mp3",
+    "heard": "يَدْرُسُ",
+    "finish": "STOP",
+    "usage": {
+     "promptTokenCount": 63,
+     "candidatesTokenCount": 6,
+     "totalTokenCount": 182,
+     "promptTokensDetails": [
+      {
+       "modality": "AUDIO",
+       "tokenCount": 26
+      },
+      {
+       "modality": "TEXT",
+       "tokenCount": 37
+      }
+     ],
+     "thoughtsTokenCount": 113,
+     "serviceTier": "standard"
+    }
+   },
+   {
+    "file": "bc17bcb084db7c4e.mp3",
+    "heard": "يَدْرُسُ",
+    "finish": "STOP",
+    "usage": {
+     "promptTokenCount": 63,
+     "candidatesTokenCount": 6,
+     "totalTokenCount": 124,
+     "promptTokensDetails": [
+      {
+       "modality": "AUDIO",
+       "tokenCount": 26
+      },
+      {
+       "modality": "TEXT",
+       "tokenCount": 37
+      }
+     ],
+     "thoughtsTokenCount": 55,
+     "serviceTier": "standard"
+    }
+   }
+  ],
+  "أذهب إلى المدرسة؛ أقرؤه": [
+   {
+    "file": "5ac8c989d2f5d53d.mp3",
+    "heard": "أَذْهَبُ إِلَى الْمَدْرَسَةِ، أَقْرَأُ",
+    "finish": "STOP",
+    "usage": {
+     "promptTokenCount": 108,
+     "candidatesTokenCount": 22,
+     "totalTokenCount": 699,
+     "promptTokensDetails": [
+      {
+       "modality": "AUDIO",
+       "tokenCount": 71
+      },
+      {
+       "modality": "TEXT",
+       "tokenCount": 37
+      }
+     ],
+     "thoughtsTokenCount": 569,
+     "serviceTier": "standard"
+    }
+   }
+  ],
+  "ليلى؛ في الصباح": [
+   {
+    "file": "bd16a1808b51206a.mp3",
+    "heard": "لَيْلًا، فِي الصَّبَاحِ",
+    "finish": "STOP",
+    "usage": {
+     "promptTokenCount": 83,
+     "candidatesTokenCount": 12,
+     "totalTokenCount": 338,
+     "promptTokensDetails": [
+      {
+       "modality": "AUDIO",
+       "tokenCount": 46
+      },
+      {
+       "modality": "TEXT",
+       "tokenCount": 37
+      }
+     ],
+     "thoughtsTokenCount": 243,
+     "serviceTier": "standard"
+    }
+   }
+  ],
+  "أدرس": [
+   {
+    "file": "592b049fa9422200.mp3",
+    "heard": "أَدُوسُ",
+    "finish": "STOP",
+    "usage": {
+     "promptTokenCount": 58,
+     "candidatesTokenCount": 5,
+     "totalTokenCount": 480,
+     "promptTokensDetails": [
+      {
+       "modality": "AUDIO",
+       "tokenCount": 21
+      },
+      {
+       "modality": "TEXT",
+       "tokenCount": 37
+      }
+     ],
+     "thoughtsTokenCount": 417,
+     "serviceTier": "standard"
+    }
+   }
+  ],
+  "شعري": [
+   {
+    "file": "6efba4041d8b4a87.mp3",
+    "heard": "شَعْرِي",
+    "finish": "STOP",
+    "usage": {
+     "promptTokenCount": 58,
+     "candidatesTokenCount": 4,
+     "totalTokenCount": 129,
+     "promptTokensDetails": [
+      {
+       "modality": "AUDIO",
+       "tokenCount": 21
+      },
+      {
+       "modality": "TEXT",
+       "tokenCount": 37
+      }
+     ],
+     "thoughtsTokenCount": 67,
+     "serviceTier": "standard"
+    }
+   },
+   {
+    "file": "c4816a46659cb3bc.mp3",
+    "heard": "شَعْرِي",
+    "finish": "STOP",
+    "usage": {
+     "promptTokenCount": 58,
+     "candidatesTokenCount": 4,
+     "totalTokenCount": 191,
+     "promptTokensDetails": [
+      {
+       "modality": "TEXT",
+       "tokenCount": 37
+      },
+      {
+       "modality": "AUDIO",
+       "tokenCount": 21
+      }
+     ],
+     "thoughtsTokenCount": 129,
+     "serviceTier": "standard"
+    }
+   }
+  ],
+  "ماء": [
+   {
+    "file": "0cfbb9e79fd7c5a3.mp3",
+    "heard": "مَعًا",
+    "finish": "STOP",
+    "usage": {
+     "promptTokenCount": 60,
+     "candidatesTokenCount": 3,
+     "totalTokenCount": 130,
+     "promptTokensDetails": [
+      {
+       "modality": "TEXT",
+       "tokenCount": 37
+      },
+      {
+       "modality": "AUDIO",
+       "tokenCount": 23
+      }
+     ],
+     "thoughtsTokenCount": 67,
+     "serviceTier": "standard"
+    }
+   }
+  ]
+ }
+}
