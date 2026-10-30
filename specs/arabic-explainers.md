@@ -1,7 +1,8 @@
 # Proposal: Arabic explainers ("How this works")
 
-**Status:** decided by the owner on 30 October 2026 (§6). Nothing is built in the app yet. The first ten explainers
-are drafted and have had an independent cross-check; they're waiting for the owner's fluent checker.
+**Status:** decided by the owner on 30 October 2026 (§6). Built on branch `explainers`, not released yet: How it
+works in the lesson's Understand step and the link from course words, as in §2. The first ten explainers have had an
+independent cross-check and are waiting for the owner's fluent checker.
 **Content:** `content/teaching/arabic/explainers.json`. **Check:** `app/scripts/validate-explainers.mjs`.
 **Related:** `specs/arabic-audio-course.md` (the voice), `specs/study-home-and-lessons.md` (lesson steps, course words).
 

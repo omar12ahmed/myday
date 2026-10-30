@@ -809,6 +809,21 @@ owner, and its clips listened to, before it ships. An older release keeps these 
 revision such a card says "no longer in the course" with "Take it out of revision" first, which would remove it on
 every device; "Skip for now" keeps it.
 
+Explainers (Arabic, `../specs/arabic-explainers.md`; not released yet): a lesson's Understand step can have **How it
+works**, under its teaching: one closed card per family of forms (module 14 so far: ten, for weak, irregular and
+derived verbs). Each has the family as a table (form, Arabic, meaning; on a phone the form sits under the meaning),
+short steps, two or three sentences broken down word by word, a "why" question, and three questions whose answer shows
+when you choose (focus moves to the explanation). Nothing is saved, and it folds away with the explanation while you
+check yourself. A course word with an explainer has "How this verb works, step by step" (or "How it works"): on its
+lesson's page it opens the card there; from Vocabulary it opens the lesson at Understand with the card open (an
+in-memory request, like a step a link asks for). The voice shows only where a clip has been listened to, for the
+forms, sentences and steps. MyDay's own file, `../content/teaching/arabic/explainers.json`, loaded on demand like the
+teaching; only the Arabic is stored, and the app adds the transliteration. `scripts/validate-explainers.mjs` checks it
+at every build: shape, full vowelling with endings in phrases, the house spelling, no two Arabic pieces run together,
+each sentence the sum of its words, and nothing that gives away the lesson check's answer. `--readings` also checks
+that the app can read every piece completely (the rules test runs it). Each batch is cross-checked independently and
+then checked by the owner's fluent checker.
+
 Keep a word (1.57.0, Arabic): under a lesson's examples (its Understand step: the headline example and the Arabic of
 its worked example) and under a reading text (one picker, sentence by sentence), **Keep a word** lists the words
 (punctuation left out, vowel marks as written). Tap one, give its meaning in your words (a starter word's meaning is
@@ -1780,6 +1795,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/projectSearch.ts`, `src/projects/SearchResults.tsx` | Searching one project: `projectSearch.ts` (what's searched, matching without capitals, accents or apostrophe differences, excerpts on whole characters, the fixed order by kind); `SearchResults.tsx` (the results card). The field and its query live in `ProjectView.tsx`. |
 | `src/data/weekReview.ts`, `src/review/ReviewScreen.tsx`, `src/today/ReviewCard.tsx` | The weekly review (1.37.0): `weekReview.ts` (when the review is due, what moved, what's waiting, focus, and saving the review); `ReviewScreen.tsx` (the four steps and See the pattern); `ReviewCard.tsx` (the card on Today). |
 | `src/study/arabic/WordFamilies.tsx`, `src/study/arabic/families.ts`, `content/teaching/arabic/word-families.json`, `scripts/validate-families.mjs` | Word families (1.38.0): the card on the vocabulary page and its notes; which family a word is in; the authored families (by word id); the build check. |
+| `src/study/arabic/Explainers.tsx`, `src/study/arabic/explainerData.ts`, `../content/teaching/arabic/explainers.json`, `scripts/validate-explainers.mjs` | Explainers: How it works in a lesson's Understand step, its questions and the link under a course word; loading on demand, the explainer for a word and the link's open request; the authored explainers (by lesson id); the build check (`--readings` for the app's transliteration). |
 | `src/study/arabic/voice.ts`, `src/study/arabic/Listen.tsx`, `../content/arabic-audio/`, `scripts/arabic-voice-sources.mjs`, `scripts/make-arabic-audio.mjs`, `scripts/prepare-audio.mjs`, `scripts/arabic-audio-inventory.mjs` | The Arabic course's voice (1.39.0; lessons' examples 1.40.0): the clip list (by exact text) and the one shared player with Slower (device-only key `myday.arabic.slower`); the play button, the voice note and the label; the clips and their audit; which texts have a voice; making them (by hand); the build check; what's left to voice. |
 | `src/study/arabic/ReadingVoice.tsx`, `src/study/arabic/voice.ts`, `scripts/arabic-reading-sentences.mjs`, `src/study/arabic/voice-clips.json`, `scripts/review-arabic-audio.mjs`, `../content/teaching/arabic/voice-scripts.json` | Reading-text voice (round three (a), 1.41.0; round ten, 1.94.0: the six unmarked texts from MyDay's vowelled scripts, pause forms, a whole clip per text): whole-text Listen and sentence controls; sequence support in the shared player; shared sentence boundaries; the generated `readings` list, with only checked clips playable; a local listening checklist for future clips. |
 | `src/study/arabic/arabic-runs.mjs`, `scripts/arabic-voice-sources.mjs`, `scripts/review-arabic-audio.mjs` | Teaching and check voice (round three (b), 1.42.0): shared extraction of the exact Arabic displayed; the `teaching`, `sounds-families` and `lesson-checks` sources; a local listening checklist combining sources, split into sittings with `MYDAY_AUDIO_REVIEW_BATCH`. |
