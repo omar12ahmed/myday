@@ -97,7 +97,7 @@ const tealAction = () => ev(`(() => {
     await send('Emulation.setDeviceMetricsOverride', { width: 360, height: 740, deviceScaleFactor: 2, mobile: true });
     await go('projects/p/pjSoup');
     const tabs = await ev(`(() => { const row = [...document.querySelectorAll('.seg')].find(s => s.getClientRects().length); const rr = row.getBoundingClientRect(); const links = [...row.querySelectorAll('a')].map(a => { const r = a.getBoundingClientRect(); return { t: a.textContent.trim(), l: r.left, r: r.right }; }); return { names: links.map(x => x.t), rowL: rr.left, rowR: rr.right, links, sw: row.scrollWidth, cw: row.clientWidth, docSw: document.documentElement.scrollWidth, iw: innerWidth }; })()`);
-    check('the business project shows four tabs: Overview, Model, Milestones, Decisions', tabs.names.join(',') === 'Overview,Model,Milestones,Decisions', tabs.names);
+    check('the business project shows five tabs: Overview, Model, Money, Milestones, Decisions', tabs.names.join(',') === 'Overview,Model,Money,Milestones,Decisions', tabs.names);
     check('on a phone every project tab is fully inside the tab row', tabs.links.every(x => x.l >= tabs.rowL - 1 && x.r <= tabs.rowR + 1), tabs);
     check('on a phone the project tab row does not scroll sideways', tabs.sw <= tabs.cw + 1, tabs);
     check('on a phone the project page does not scroll sideways', tabs.docSw <= tabs.iw, tabs);
