@@ -21,6 +21,9 @@ export const hasReadingVoice = Object.entries(readings).some(([id, parts]) => !!
 // The texts the course gives without vowel marks, voiced from MyDay's vowelled copy (content/teaching/arabic/voice-scripts.json).
 const scripted = new Set((audio as { scripted?: string[] }).scripted ?? []);
 export const isScripted = (id: string) => scripted.has(id);
+// Short pieces shown without marks and voiced from MyDay's vowelled copy (voice-scripts.json "pieces").
+const scriptedPieces = new Set((audio as { scriptedPieces?: string[] }).scriptedPieces ?? []);
+export const isScriptedPiece = (text: string) => scriptedPieces.has(text);
 
 export const SLOWER_KEY = 'myday.arabic.slower';
 function initialSlower() { try { return localStorage.getItem(SLOWER_KEY) === 'yes'; } catch { return false; } }

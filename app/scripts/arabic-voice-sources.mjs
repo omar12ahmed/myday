@@ -6,7 +6,7 @@
 // a voice (the marks are how a listener and the cross-check know it was read right), never a letter drill (it would
 // be read as letter names).
 import { readFileSync } from 'node:fs';
-import { readingPassages, voiceable, wholeText } from './arabic-reading-sentences.mjs';
+import { readingPassages, voiceable, voicePieces, wholeText } from './arabic-reading-sentences.mjs';
 import { arabicRuns } from '../src/study/arabic/arabic-runs.mjs';
 export { LETTER, letters, vowelling, kind, voiceable, markedThrough } from './arabic-reading-sentences.mjs';
 import { kind, letters, markedThrough, voiceable as voiceableText } from './arabic-reading-sentences.mjs';
@@ -20,6 +20,9 @@ export function spokenText(text) {
 }
 
 // The voiced sources, in the order of the rounds. Each gives the exact texts it voices (as the app shows them).
+// What the voice is given for a text: its voice script if it has one (a piece shown without marks), the text itself
+// otherwise, with spokenText's pause punctuation.
+export const spokenFor = root => { const { pieces } = voicePieces(root); return text => spokenText(pieces[text] ?? text); };
 export function voiceSources(root) {
   const read = p => JSON.parse(readFileSync(new URL(p, root), 'utf8'));
   const course = read('content/arabic-fusha/MyDay_Arabic_Fusha_Curriculum.json');
@@ -28,8 +31,10 @@ export function voiceSources(root) {
   const keys = read('content/arabic-fusha/MyDay_Arabic_Assessment_Keys.json');
   const words = Object.values(read('content/teaching/arabic/course-words.json').lessons).flatMap(l => l.words);
   const uniq = xs => [...new Set(xs)];
-  const mixed = values => uniq(values.filter(v => typeof v === 'string').flatMap(v => arabicRuns(v).map(p => p.text.trim())).filter(voiceable));
-  return [
+  // Arabic inside English: each run that is fully vowelled, or that has a voice script (voice-scripts.json "pieces").
+  const { pieces } = voicePieces(root);
+  const mixed = values => uniq(values.filter(v => typeof v === 'string').flatMap(v => arabicRuns(v).map(p => p.text.trim())).filter(t => voiceable(t) || pieces[t]));
+  const sources = [
     // Round one (1.39.0): the 48 starter words and their example sentences, all of them.
     { id: 'starter-words', round: 1, label: 'starter words and their examples', texts: uniq(course.lexicon_seed.flatMap(w => [w.form_ar, w.example_ar])) },
     // Round two (1.40.0): each lesson's headline example, where it's fully vowelled and not a letter drill.
@@ -51,4 +56,7 @@ export function voiceSources(root) {
     // Round ten: each reading text read in one go, for “Listen to the whole text”.
     { id: 'reading-wholes', round: 10, label: 'reading texts, whole', texts: uniq(Object.values(readingPassages(root)).map(wholeText)) },
   ];
+  const shown = new Set(sources.flatMap(x => x.texts));
+  for (const text of Object.keys(pieces)) if (!shown.has(text)) throw new Error(`Arabic voice script for “${text}”: no voiced place in the course shows it`);
+  return sources;
 }

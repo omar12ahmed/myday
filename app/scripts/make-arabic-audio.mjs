@@ -9,7 +9,7 @@
 // never written anywhere.
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { spokenText, voiceSources } from './arabic-voice-sources.mjs';
+import { spokenFor, voiceSources } from './arabic-voice-sources.mjs';
 
 const root = new URL('../../', import.meta.url);
 const dir = new URL('content/arabic-audio/', root), clips = new URL('clips/', dir), auditFile = new URL('audio-audit.json', dir);
@@ -25,7 +25,7 @@ const today = new Date().toISOString().slice(0, 10);
 // What the voice is given: the text as shown, except that a slash between alternatives ("مَلِك / مَالِك") is spoken as
 // a short pause (an Arabic comma) — read aloud, the slash came out as a stray word.
 // A final full stop makes an isolated form a complete utterance, without changing any of its letters or marks.
-const spoken = spokenText;
+const spoken = spokenFor(root);
 let made = 0, chars = 0;
 for (const text of source.texts) {
   const entry = audit.clips[text];

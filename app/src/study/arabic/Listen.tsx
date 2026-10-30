@@ -1,7 +1,7 @@
 import { LoaderCircle, Square, Volume2 } from 'lucide-react';
 import { useEffect, useSyncExternalStore } from 'react';
 import { Switch } from '../../components/Switch';
-import { clipFor, playOrStop, setSlower, stopVoiceFor, subscribe, voiceLabel, voiceState } from './voice';
+import { clipFor, isScriptedPiece, playOrStop, setSlower, stopVoiceFor, subscribe, voiceLabel, voiceState } from './voice';
 import { arabicRuns } from './arabic-runs.mjs';
 
 // A play button for a piece of Arabic: `text` exactly as shown (its clip is found by it). Nothing at all when that text
@@ -25,8 +25,11 @@ export function PlayButton({ text, name, label }: { text: string; name: string; 
 
 // A single honest label for a section of mixed prose, only if it has a playable run.
 export function MixedVoiceLabel({ texts }: { texts: string[] }) {
-  if (!texts.some(t => arabicRuns(t).some(p => clipFor(p.text.trim())))) return null;
-  return <p className="text-xs text-fg-2 m-0 mt-2" data-ar-voice-label="">{voiceLabel} Slower playback: Study → Arabic → Vocabulary.</p>;
+  const voiced = texts.flatMap(t => arabicRuns(t).map(p => p.text.trim())).filter(t => clipFor(t));
+  if (!voiced.length) return null;
+  // Arabic shown without marks is voiced from MyDay's vowelled copy (voice-scripts.json "pieces"): say so.
+  const scripted = voiced.some(isScriptedPiece);
+  return <p className="text-xs text-fg-2 m-0 mt-2" data-ar-voice-label="">{voiceLabel}{scripted && <span data-ar-voice-script=""> Where the Arabic has no vowel marks, it reads MyDay’s vowelled copy.</span>} Slower playback: Study → Arabic → Vocabulary.</p>;
 }
 
 // The honest label under a piece of Arabic that has a voice, away from the Vocabulary card (e.g. a lesson's example).
