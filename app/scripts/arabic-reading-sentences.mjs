@@ -20,14 +20,14 @@ export const kind = s => {
 };
 // Marked all through: every letter carries its vowel mark except those that never take one in the course's writing — a
 // long-vowel alif (ا ى آ ٱ), و or ي after a matching vowel, the article's ل before a doubled (sun) letter (also after
-// لِ, which takes the article's alif: لِلتَّحَقُّقِ), and a word's
+// لِ, which takes the article's alif, with وَ or فَ before it or not: لِلتَّحَقُّقِ، وَلِلشَّمْسِ), and a word's
 // last letter in its dictionary form. Stricter than vowelling()'s ratio for short words like مَاء, which it calls partial.
 const MARK = /[\u064B-\u0652\u0670]/, ALIF = '\u0627\u0649\u0622\u0671', SHADDA = '\u0651';
 export const markedThrough = s => typeof s === 'string' && s.split(/\s+/).filter(w => letters(w)).every(word => {
   const c = [...word].filter(x => /[\u0621-\u064A\u0671]/.test(x) || MARK.test(x)), at = c.map((x, i) => (MARK.test(x) ? -1 : i)).filter(i => i >= 0);
   return at.every((i, n) => MARK.test(c[i + 1] ?? '') || ALIF.includes(c[i]) || n === at.length - 1
     || (c[i] === '\u0648' && [c[i - 1], c[i - 2]].includes('\u064F')) || (c[i] === '\u064A' && [c[i - 1], c[i - 2]].includes('\u0650'))
-    || (c[i] === '\u0644' && n > 0 && (ALIF.includes(c[at[n - 1]]) || (n === 1 && c[at[0]] === '\u0644')) && [c[at[n + 1] + 1], c[at[n + 1] + 2]].includes(SHADDA)));
+    || (c[i] === '\u0644' && n > 0 && (ALIF.includes(c[at[n - 1]]) || (c[at[n - 1]] === '\u0644' && c[at[n - 1] + 1] === '\u0650' && (n === 1 || (n === 2 && '\u0648\u0641'.includes(c[at[0]]))))) && [c[at[n + 1] + 1], c[at[n + 1] + 2]].includes(SHADDA)));
 });
 // A joining mark here denotes an affix or an unfinished practice word, not a whole word to imitate.
 export const voiceable = s => typeof s === 'string' && !s.includes('ـ') && /[ً-ِْٰ]/.test(s) && letters(s) >= 2 && vowelling(s) === 'full' && kind(s) !== 'letters';
@@ -88,6 +88,7 @@ export function voicePieces(root) {
   for (const [text, script] of Object.entries(pieces)) {
     const where = `Arabic voice script for “${text}”`;
     if (left_out[text]) throw new Error(`${where}: it is also listed as left out`);
+    if (voiceable(text)) throw new Error(`${where}: the course already gives it with vowel marks`);
     if (unmarked(script) !== unmarked(text)) throw new Error(`${where} has other letters than the course text`);
     if (!keepsMarks(text, script)) throw new Error(`${where} contradicts a vowel mark the course shows`);
     if (!markedThrough(script)) throw new Error(`${where} is not fully vowelled`);

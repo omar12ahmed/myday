@@ -31,9 +31,18 @@ export function voiceSources(root) {
   const keys = read('content/arabic-fusha/MyDay_Arabic_Assessment_Keys.json');
   const words = Object.values(read('content/teaching/arabic/course-words.json').lessons).flatMap(l => l.words);
   const uniq = xs => [...new Set(xs)];
-  // Arabic inside English: each run that is fully vowelled, or that has a voice script (voice-scripts.json "pieces").
-  const { pieces } = voicePieces(root);
-  const mixed = values => uniq(values.filter(v => typeof v === 'string').flatMap(v => arabicRuns(v).map(p => p.text.trim())).filter(t => voiceable(t) || pieces[t]));
+  // Arabic inside English: each run that is fully vowelled. In the lesson checks, also each run that has a voice script
+  // (voice-scripts.json "pieces", round eleven): the pieces were scripted and checked in their check, nowhere else.
+  const { pieces, left_out } = voicePieces(root);
+  const runsOf = values => uniq(values.filter(v => typeof v === 'string').flatMap(v => arabicRuns(v).map(p => p.text.trim())));
+  const mixed = (values, withPieces = false) => runsOf(values).filter(t => voiceable(t) || (withPieces && pieces[t]));
+  const teachingValues = Object.values(teaching.lessons).flatMap(l => [l.example, l.practice, l.solution, l.explanation]);
+  const familyValues = [
+    ...course.assets.flatMap(a => (a.pairs || []).flatMap(p => [p.a, p.b])),
+    ...families.families.flatMap(f => [f.pattern_en, ...Object.values(f.word_notes || {}), ...(f.also_in_examples || []).flatMap(x => [x.form_ar, x.note_en])]),
+  ];
+  const checkValues = [...course.assessments.flatMap(a => (a.questions || []).map(q => q.prompt)), ...keys.answer_keys.map(k => k.expected_answer)];
+  const noteValues = words.map(w => w.note);
   const sources = [
     // Round one (1.39.0): the 48 starter words and their example sentences, all of them.
     { id: 'starter-words', round: 1, label: 'starter words and their examples', texts: uniq(course.lexicon_seed.flatMap(w => [w.form_ar, w.example_ar])) },
@@ -42,21 +51,21 @@ export function voiceSources(root) {
     // The reading texts, by sentence, in pause forms (from round ten; a text the course gives without marks is read from
     // MyDay's vowelled script, voice-scripts.json).
     { id: 'reading-texts', round: 3, label: 'reading texts, by sentence', texts: uniq(Object.values(readingPassages(root)).flatMap(parts => parts.map(p => p.spoken))) },
-    { id: 'teaching', round: 3, label: 'teaching examples, practice and solutions', texts: mixed(Object.values(teaching.lessons).flatMap(l => [l.example, l.practice, l.solution, l.explanation])) },
-    { id: 'sounds-families', round: 3, label: 'sound pairs and word families', texts: mixed([
-      ...course.assets.flatMap(a => (a.pairs || []).flatMap(p => [p.a, p.b])),
-      ...families.families.flatMap(f => [f.pattern_en, ...Object.values(f.word_notes || {}), ...(f.also_in_examples || []).flatMap(x => [x.form_ar, x.note_en])]),
-    ]) },
-    { id: 'lesson-checks', round: 3, label: 'lesson checks and answers, only after reveal', texts: mixed([
-      ...course.assessments.flatMap(a => (a.questions || []).map(q => q.prompt)), ...keys.answer_keys.map(k => k.expected_answer),
-    ]) },
+    { id: 'teaching', round: 3, label: 'teaching examples, practice and solutions', texts: mixed(teachingValues) },
+    { id: 'sounds-families', round: 3, label: 'sound pairs and word families', texts: mixed(familyValues) },
+    { id: 'lesson-checks', round: 3, label: 'lesson checks and answers, only after reveal', texts: mixed(checkValues, true) },
     // Round four: the course words (content/teaching/arabic/course-words.json), each word, its example and the Arabic
     // in its note, once the owner has checked the list.
-    { id: 'course-words', round: 4, label: 'course words, their examples and notes', texts: uniq([...words.flatMap(w => [w.form_ar, w.example_ar]).filter(courseVoiceable), ...mixed(words.map(w => w.note))]) },
+    { id: 'course-words', round: 4, label: 'course words, their examples and notes', texts: uniq([...words.flatMap(w => [w.form_ar, w.example_ar]).filter(courseVoiceable), ...mixed(noteValues)]) },
     // Round ten: each reading text read in one go, for “Listen to the whole text”.
     { id: 'reading-wholes', round: 10, label: 'reading texts, whole', texts: uniq(Object.values(readingPassages(root)).map(wholeText)) },
   ];
-  const shown = new Set(sources.flatMap(x => x.texts));
-  for (const text of Object.keys(pieces)) if (!shown.has(text)) throw new Error(`Arabic voice script for “${text}”: no voiced place in the course shows it`);
+  const inChecks = new Set(runsOf(checkValues));
+  const elsewhere = [['teaching', teachingValues], ['sound pairs and word families', familyValues], ['course-word notes', noteValues]].map(([where, values]) => [where, new Set(runsOf(values))]);
+  for (const text of Object.keys(pieces)) {
+    if (!inChecks.has(text)) throw new Error(`Arabic voice script for “${text}”: no voiced place in the course shows it`);
+    for (const [where, runs] of elsewhere) if (runs.has(text)) throw new Error(`Arabic voice script for “${text}”: it is also shown in ${where}, where its script hasn't been checked`);
+  }
+  for (const text of Object.keys(left_out)) if (!inChecks.has(text)) throw new Error(`Arabic voice script left out “${text}”: no check shows it any more`);
   return sources;
 }

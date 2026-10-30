@@ -20,7 +20,7 @@ const fail = message => { throw new Error('Arabic audio: ' + message); };
 const dir = process.argv[2] ? new URL('file://' + process.argv[2].replace(/\/?$/, '/')) : new URL('content/arabic-audio/', root);
 const clipsDir = new URL('clips/', dir);
 const audit = JSON.parse(readFileSync(new URL('audio-audit.json', dir), 'utf8'));
-const sources = voiceSources(root), say = spokenFor(root);
+const sources = voiceSources(root), say = spokenFor(root), { pieces } = voicePieces(root);
 const CHECKS = ['to check', 'checked', 'redo', 'left out'];
 if (!audit.voice?.name || !audit.label) fail('the audit needs its voice and its label');
 // New clips are made with the audit's voice; clips made earlier with a voice listed under earlier_voices still ship.
@@ -34,6 +34,7 @@ for (const [text, c] of Object.entries(audit.clips ?? {})) {
   if (!sources.some(s => s.texts.includes(text))) fail(`${short}: its text is no longer in any voiced part of the course. Make the new text's clip with make-arabic-audio.mjs and take this one out.`);
   if (!CHECKS.includes(c.check)) fail(`${short}: unknown check “${c.check}”`);
   if (c.spoken !== undefined && c.spoken !== say(text)) fail(`${short}: the spoken text changes more than its pause punctuation`);
+  if (pieces[text] && c.spoken === undefined) fail(`${short}: a scripted piece's clip must record the script it was made from`);
   if (!VOICES.includes(c.voice)) fail(`${short}: made with a voice the audit doesn't list (${c.voice ?? 'none recorded'})`);
   if (!/^[0-9a-f]{16}\.mp3$/.test(c.file ?? '')) fail(`${short}: a clip is named by its contents (16 hex + .mp3)`);
   const at = new URL(c.file, clipsDir);

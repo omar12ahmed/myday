@@ -11,8 +11,10 @@ const sources = voiceSources(root), requested = process.argv.slice(2);
 if (!requested.length || requested.some(id => !sources.some(s => s.id === id))) throw new Error('Name voiced sources, for example teaching sounds-families lesson-checks.');
 const selected = sources.filter(s => requested.includes(s.id));
 const audit = JSON.parse(readFileSync(new URL('content/arabic-audio/audio-audit.json', root), 'utf8'));
+// What the voice was given, when it isn't the text on the page (a voice script, or pause forms): shown first on its card.
+const said = text => { const s = audit.clips[text]?.spoken; return s && s.replace(/[.]$/, '') !== text.replace(/[.]$/, '') ? s : null; };
 const pending = [...new Set(selected.flatMap(s => s.texts))].filter(t => ['to check', 'redo'].includes(audit.clips[t]?.check))
-  .map((text, i) => ({ text, file: audit.clips[text].file, number: i + 1 }));
+  .map((text, i) => ({ text, file: audit.clips[text].file, number: i + 1, ...(said(text) ? { said: said(text) } : {}) }));
 if (!pending.length) throw new Error('These sources have no clips waiting to be listened to.');
 const batchSize = Number(process.env.MYDAY_AUDIO_REVIEW_BATCH || pending.length);
 if (!Number.isInteger(batchSize) || batchSize < 1) throw new Error('MYDAY_AUDIO_REVIEW_BATCH must be a positive whole number.');
@@ -30,7 +32,7 @@ const html = `<!doctype html>
 <html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MyDay — Arabic audio to listen to</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f7f5ef;color:#212a25;font:16px/1.55 system-ui,sans-serif}main{max-width:820px;margin:auto;padding:24px 18px 64px}h1{line-height:1.2;font-size:30px}p{margin:12px 0}.tools{position:sticky;top:0;background:#f7f5ef;padding:12px 0;border-bottom:1px solid #d4d8d3;z-index:1;display:flex;flex-wrap:wrap;gap:8px;align-items:center}button,.choice{min-height:44px;padding:9px 14px;border:1px solid #b5c0b9;border-radius:8px;background:white;color:#155e52;font:inherit;cursor:pointer}button:focus-visible,input:focus-visible{outline:3px solid #0f766e;outline-offset:3px}article{background:white;border:1px solid #d4d8d3;border-radius:12px;padding:18px;margin:16px 0}article[data-choice="redo"]{border-color:#a34b23}.arabic{font-family:"Noto Naskh Arabic","Geeza Pro",serif;font-size:29px;line-height:1.9;overflow-wrap:anywhere}audio{width:100%;margin:8px 0}fieldset{border:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}legend{font-size:14px;color:#526158}.choice{display:inline-flex;gap:8px;align-items:center;color:#212a25}small{color:#526158}#progress{font-size:14px}#playing{font-weight:600;min-height:25px}
+*{box-sizing:border-box}body{margin:0;background:#f7f5ef;color:#212a25;font:16px/1.55 system-ui,sans-serif}main{max-width:820px;margin:auto;padding:24px 18px 64px}h1{line-height:1.2;font-size:30px}p{margin:12px 0}.tools{position:sticky;top:0;background:#f7f5ef;padding:12px 0;border-bottom:1px solid #d4d8d3;z-index:1;display:flex;flex-wrap:wrap;gap:8px;align-items:center}button,.choice{min-height:44px;padding:9px 14px;border:1px solid #b5c0b9;border-radius:8px;background:white;color:#155e52;font:inherit;cursor:pointer}button:focus-visible,input:focus-visible{outline:3px solid #0f766e;outline-offset:3px}article{background:white;border:1px solid #d4d8d3;border-radius:12px;padding:18px;margin:16px 0}article[data-choice="redo"]{border-color:#a34b23}.arabic{font-family:"Noto Naskh Arabic","Geeza Pro",serif;font-size:29px;line-height:1.9;overflow-wrap:anywhere}audio{width:100%;margin:8px 0}fieldset{border:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}legend{font-size:14px;color:#526158}.choice{display:inline-flex;gap:8px;align-items:center;color:#212a25}small{color:#526158}#progress{font-size:14px}#playing{font-weight:600;min-height:25px}.shown{font-size:14px;color:#526158}.shown span{font-size:18px}
 </style>
 <main><h1>Arabic audio — ${batches.length > 1 ? 'batch ' + (batch + 1) + ' of ' + batches.length : 'listening check'}</h1>
 <p>${batches.map((_, i) => '<a href="' + (i === 0 ? 'index.html' : 'batch-' + (i + 1) + '.html') + '">Batch ' + (i + 1) + '</a>').join(' · ')}</p>
@@ -45,7 +47,8 @@ const list=document.getElementById('clips');
 review.clips.forEach((clip,i)=>{
  const card=document.createElement('article');card.id='clip-'+i;
  const num=document.createElement('small');num.textContent='Clip '+clip.number+' — '+(i+1)+' of '+review.clips.length+' in this batch';card.append(num);
- const text=document.createElement('p');text.className='arabic';text.lang='ar';text.dir='rtl';text.textContent=clip.text;card.append(text);
+ const text=document.createElement('p');text.className='arabic';text.lang='ar';text.dir='rtl';text.textContent=clip.said||clip.text;card.append(text);
+ if(clip.said){const shown=document.createElement('p');shown.className='shown';shown.append('What the voice reads, above. On the page, as the course writes it: ');const ar=document.createElement('span');ar.lang='ar';ar.dir='rtl';ar.textContent=clip.text;shown.append(ar);card.append(shown);}
  const audio=document.createElement('audio');audio.controls=true;audio.preload='none';audio.src='clips/'+clip.file;audio.setAttribute('aria-label','Listen to clip '+clip.number);card.append(audio);
  const field=document.createElement('fieldset'),legend=document.createElement('legend');legend.textContent='How did it sound?';field.append(legend);
  [['checked','Sounds fine'],['redo','Another take']].forEach(([value,label])=>{
