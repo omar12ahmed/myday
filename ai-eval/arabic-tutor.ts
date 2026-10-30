@@ -128,29 +128,33 @@ const COLLOQUIAL = ['تعبان', 'عايز', 'عاوز', 'بدي', 'بدك', '�
 type Check = { id: string; questions?: { prompt?: string; answer_key_id?: string }[] };
 const checks = new Map((curriculum as unknown as { assessments: Check[] }).assessments.map(a => [a.id, a]));
 const answers = new Map((keysFile as unknown as { answer_keys: { id: string; expected_answer?: string }[] }).answer_keys.map(k => [k.id, k.expected_answer ?? '']));
-export function checkPhrases(sc: ArabicTutorScenario): string[] {
+// Both kinds are reported: one the lesson doesn't teach (a giveaway), and one it already teaches (for the reviewer: a
+// self-test that asks exactly the check's question is still too close).
+export function checkPhrases(sc: ArabicTutorScenario): { taught: string[]; notTaught: string[] } {
   const l = lessons.get(sc.lessonId), a = l?.knowledge_check_id ? checks.get(l.knowledge_check_id) : undefined;
   const given = bare(JSON.stringify(lessonFor(sc)) + ' ' + sc.question);
-  const found = new Set<string>();
-  for (const q of a?.questions ?? []) for (const s of [answers.get(q.answer_key_id ?? '') ?? '']) for (const m of s.matchAll(ARABIC_RUN)) {
+  const taught = new Set<string>(), notTaught = new Set<string>();
+  for (const q of a?.questions ?? []) for (const m of (answers.get(q.answer_key_id ?? '') ?? '').matchAll(ARABIC_RUN)) {
     const b = bare(m[0]).trim();
-    if (b.length >= 3 && !given.includes(b)) found.add(b);
+    if (b.length >= 3) (given.includes(b) ? taught : notTaught).add(b);
   }
-  return [...found];
+  return { taught: [...taught], notTaught: [...notTaught] };
 }
-export interface TutorChecks { usable: boolean; arabicPieces: number; notVowelled: string[]; colloquial: string[]; latinTransliteration: string[]; religious: boolean; checkPhrasesUsed: string[]; words: number }
+export interface TutorChecks { usable: boolean; arabicPieces: number; notVowelled: string[]; colloquial: string[]; latinTransliteration: string[]; religious: boolean; checkPhrasesUsed: string[]; checkPhrasesTaughtUsed: string[]; words: number }
 export function autoChecks(sc: ArabicTutorScenario, text: string): TutorChecks {
   const r = readTutor(text);
-  if (!r) return { usable: false, arabicPieces: 0, notVowelled: [], colloquial: [], latinTransliteration: [], religious: false, checkPhrasesUsed: [], words: 0 };
+  if (!r) return { usable: false, arabicPieces: 0, notVowelled: [], colloquial: [], latinTransliteration: [], religious: false, checkPhrasesUsed: [], checkPhrasesTaughtUsed: [], words: 0 };
   const ar = allArabic(r), flat = JSON.stringify(r);
   const notVowelled = [...new Set(ar.filter(x => transliterate(x).incomplete))];
   const tokens = new Set(ar.flatMap(x => bare(x).split(/\s+/)).map(w => w.replace(/^(ال|و|ف|ب|ل|ك)/, '')));
   const colloquial = COLLOQUIAL.filter(w => ar.some(x => bare(x).split(/\s+/).includes(w)) || tokens.has(w));
-  const latinTransliteration = [...new Set(flat.match(/\b[a-zA-Z'ʾʿ-]*[āīūḥṣḍṭẓʿʾ][a-zA-Z'ʾʿāīūḥṣḍṭẓ-]*\b/g) ?? [])];
+  // A transliteration written next to its Arabic ("قَالَ (qāla)", "قَالَ — qāla"); grammar terms (sukūn, maṣdar) are fine.
+  const latinTransliteration = [...new Set([...flat.matchAll(/[\u0621-\u064A][\u064B-\u065F\u0670]*\s*(?:[(\[]|[—–-]\s|:\s)\s*([a-zA-Z'ʾʿāīūḥṣḍṭẓ-]*[āīūḥṣḍṭẓʿʾ][a-zA-Z'ʾʿāīūḥṣḍṭẓ -]*)/g)].map(m => m[1].trim()))];
   const religious = /\b(qur'?ān|qur'?an|koran|allah|islam(ic)?|mosque|hadith|prophet|prayer)\b|القرآن|الله/i.test(flat);
-  const checkPhrasesUsed = checkPhrases(sc).filter(p => bare(ar.join(' ')).includes(p));
+  const cp = checkPhrases(sc), inReply = bare(ar.join(' '));
+  const checkPhrasesUsed = cp.notTaught.filter(p => inReply.includes(p)), checkPhrasesTaughtUsed = cp.taught.filter(p => inReply.includes(p));
   const words = flat.replace(/[{}\[\]":,]/g, ' ').split(/\s+/).filter(Boolean).length;
-  return { usable: true, arabicPieces: ar.length, notVowelled, colloquial, latinTransliteration, religious, checkPhrasesUsed, words };
+  return { usable: true, arabicPieces: ar.length, notVowelled, colloquial, latinTransliteration, religious, checkPhrasesUsed, checkPhrasesTaughtUsed, words };
 }
 
 // ---------- One call with these messages (the server's own call, but with the study's instructions) ----------

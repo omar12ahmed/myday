@@ -129,7 +129,7 @@ if (stage === 'tutor') {
   const c = ok.map(r => r.checks);
   lines.push(`- Arabic pieces: ${sum(r => r.checks?.arabicPieces)}; not fully vowelled: ${c.reduce((a, x) => a + x.notVowelled.length, 0)} in ${c.filter(x => x.notVowelled.length).length} replies.`,
     `- Colloquial words: ${c.filter(x => x.colloquial.length).length} replies; Latin transliteration written anyway: ${c.filter(x => x.latinTransliteration.length).length}; religious framing: ${c.filter(x => x.religious).length}.`,
-    `- A lesson check's own answer phrase used (for the reviewer to judge): ${c.filter(x => x.checkPhrasesUsed.length).length} replies.`, '');
+    `- A lesson check's own answer phrase used (for the reviewer to judge): ${c.filter(x => x.checkPhrasesUsed.length).length} replies not taught by the lesson; ${c.filter(x => x.checkPhrasesTaughtUsed.length).length} already taught by it.`, '');
   const drafts = ['# Drafts, as MyDay would show them (its own transliteration from the vowels)', ''];
   for (const r of ok) {
     const sc = K.ARABIC_TUTOR_SCENARIOS.find(s => s.id === r.scenario);
