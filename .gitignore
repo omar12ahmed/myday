@@ -30,3 +30,4 @@ app/public/arabic-audio/
 
 # Python byte-code (tests/live/run.py)
 __pycache__/
+ai-eval/.build-tutor/
