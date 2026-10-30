@@ -212,19 +212,20 @@ export const removeReal = (month: string): Change => m => {
 };
 
 // ---------- Words ----------
-// Amounts as plain numbers: whole when they are, otherwise two decimals ("1,365", "1.80").
-export function amountText(n: number): string {
-  const r = round2(n), whole = Number.isInteger(r);
-  return r.toLocaleString(undefined, { minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: whole ? 0 : 2 });
+// Amounts as plain numbers: whole when they are, otherwise two decimals ("1,365", "1.80"); with `cents`, always two
+// (a sale's small amounts side by side: "costs 2.00 — leaves 1.90").
+export function amountText(n: number, cents = false): string {
+  const r = round2(n), d = cents || !Number.isInteger(r) ? 2 : 0;
+  return r.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
 }
-export const withCurrency = (m: BusinessMoney, n: number) => `${m.currency ? `${m.currency} ` : ''}${n < 0 ? '−' : ''}${amountText(Math.abs(n))}`;
+export const withCurrency = (m: BusinessMoney, n: number, cents = false) => `${m.currency ? `${m.currency} ` : ''}${n < 0 ? '−' : ''}${amountText(Math.abs(n), cents)}`;
 export const monthText = (month: string) => { const [y, mo] = month.split('-').map(Number); return new Date(y, mo - 1, 1).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }); };
 export const saleWord = (m: BusinessMoney, n = 1) => { const w = m.sale || 'sale'; return n === 1 ? w : `${w}s`; };
 // The break-even in words, for the Money tab and At a glance.
 export function breakEvenText(m: BusinessMoney): string {
   const b = breakEven(m), s = sums(m);
   if (b.kind === 'empty') return 'Add what each sale brings in and costs to see your break-even.';
-  if (b.kind === 'never') return s.leaves === 0 ? `Each ${saleWord(m)} leaves nothing — no number of ${saleWord(m, 2)} breaks even.` : `Each ${saleWord(m)} loses ${withCurrency(m, b.loses)} — no number of ${saleWord(m, 2)} breaks even.`;
+  if (b.kind === 'never') return s.leaves === 0 ? `Each ${saleWord(m)} leaves nothing — no number of ${saleWord(m, 2)} breaks even.` : `Each ${saleWord(m)} loses ${withCurrency(m, b.loses, true)} — no number of ${saleWord(m, 2)} breaks even.`;
   if (b.kind === 'covered') return 'The running costs are covered without any sales.';
   return `Break-even: ${b.n.toLocaleString()} ${saleWord(m, b.n)} a month`;
 }

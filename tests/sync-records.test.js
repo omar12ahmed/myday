@@ -18,7 +18,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   const dir = path.join(os.tmpdir(), `myday-sync-records-${process.pid}`);
   fs.mkdirSync(dir, { recursive: true });
   const src = p => JSON.stringify(path.join(ROOT, 'app/src', p));
-  fs.writeFileSync(path.join(dir, 'kit.ts'), [`export * from ${src('sync/records')};`, `export { freshState, normalize } from ${src('data/normalize')};`, `export { shortDate } from ${src('data/dates')};`].join('\n'));
+  fs.writeFileSync(path.join(dir, 'kit.ts'), [`export * from ${src('sync/records')};`, `export { freshState, normalize } from ${src('data/normalize')};`, `export { shortDate } from ${src('data/dates')};`, `export { monthText } from ${src('data/businessMoney')};`, `export { projectPartId } from ${src('data/projectRecords')};`].join('\n'));
   const R = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
 
   const project = (records, id, clean = false) => {
@@ -360,6 +360,22 @@ const clone = o => JSON.parse(JSON.stringify(o));
     && lineOf({ kind: 'aim', from: '', checkedBy: '', checkedOn: null }).includes('Date to aim for') && lineOf({ kind: 'statutory', from: '', checkedBy: '', checkedOn: null }).includes('Deadline'), R.recordLines('task:tk1', dated));
   const newerDl = { kind: 'statutory', from: 'The rules', checkedBy: '', checkedOn: null, futureBit: 1 }, gotDl = R.cleanRecord('task:tk1', { ...recs.get('task:tk1'), deadline: newerDl })?.deadline;
   check('a task record whose deadline is of a newer MyDay\'s kind is read with it kept as it is', eq(gotDl, newerDl), gotDl);
+  // A business idea's experiments and money (specs/projects-business-tools.md).
+  const exp = { id: 'resync00001', type: 'experiment', projectId: 'pj1', title: 'Ask 20 shops', tests: [{ kind: 'assumption', id: 'as1' }, { kind: 'customer', id: 'c1', futureBit: 1 }], how: 'Two market days', expect: 'Fewer than 5 say yes',
+    status: 'done', startedOn: '2026-10-01', doneOn: '2026-10-08', result: '7 of 20 said yes', conclusion: 'Try a lower price', taskId: null, findingId: 'rfsync00009', futureBit: { keep: 1 }, createdAt: '2026-10-01T09:00', updatedAt: '2026-10-08T09:00' };
+  check('an experiment is a "research" record taken in exactly as it is, with a newer MyDay\'s fields and kind of test', R.fingerprint(R.cleanRecord('research:resync00001', clone(exp))) === R.fingerprint(exp));
+  check('…its summary: "Experiment: Ask 20 shops · Done"; its lines say how, what would change my mind, what happened and what I conclude', R.recordSummary('research:resync00001', exp) === 'Experiment: Ask 20 shops · Done'
+    && eq(R.recordLines('research:resync00001', exp), ['How: Two market days', 'What would change my mind: Fewer than 5 say yes', 'What happened: 7 of 20 said yes', 'What I conclude: Try a lower price', 'Tests 2 things'])
+    && R.recordSummary('research:resync00001', { ...exp, status: 'running' }) === 'Experiment: Ask 20 shops · Running' && eq(R.recordLines('research:rqsync00001', { id: 'rqsync00001', type: 'question', projectId: 'pj1', text: 'x' }), []),
+    [R.recordSummary('research:resync00001', exp), R.recordLines('research:resync00001', exp)]);
+  const ML = (id, label, dir, amount, x = {}) => ({ id, label, dir, amount, per: 'fixed', basis: 'guess', note: '', ...x });
+  const money = { currency: 'USD', sale: 'order', saleValue: 30, perSale: [ML('l1', 'Commission', 'in', 8, { per: 'percent' }), ML('l2', 'Delivery fee', 'in', 1.5), ML('l3', 'Rider', 'out', 1.8)], monthly: [ML('m1', 'Office', 'out', 900)],
+    startup: [ML('s1', 'Motorbike', 'out', 3000)], atSales: 600, forecast: { from: '2027-01', sales: [100, 120] }, actual: [{ month: '2027-01', sales: 85, in: 280, out: 1050, note: '' }], futureBit: { keep: 1 } };
+  const model = { projectId: 'pj1', value: { problem: 'p', who: 'w', how: 'h', assumptions: [], money } };
+  const modelKey = 'project_model:' + R.projectPartId?.('pj1');
+  check('a one page\'s money travels inside its model record exactly as it is', R.fingerprint(R.cleanRecord(modelKey, clone(model))) === R.fingerprint(model), R.cleanRecord(modelKey, clone(model)));
+  check('…and a conflict names it: "Money: Break-even: 429 orders a month · forecast from … · 1 real month", then each line with its amount', R.recordLines(modelKey, model).includes(`Money: Break-even: 429 orders a month · forecast from ${R.monthText('2027-01')} · 1 real month`)
+    && R.recordLines(modelKey, model).includes('Commission 8%; Delivery fee 1.50; Rider −1.80; Office −900; Motorbike −3,000'), R.recordLines(modelKey, model));
   check('…checked on a day, by no one named: "checked on …"', lineOf({ kind: 'firm', from: '', checkedBy: '', checkedOn: '2026-10-12' }).includes(`Firm deadline · checked on ${R.shortDate('2026-10-12')}`), lineOf({ kind: 'firm', from: '', checkedBy: '', checkedOn: '2026-10-12' }));
   // A project's tools and the Overview sections hidden on it (specs/projects-sections.md), likewise.
   const pj = [...recs.keys()].find(k => k.startsWith('project:'));

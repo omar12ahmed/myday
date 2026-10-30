@@ -497,6 +497,39 @@ async function signIn(d, url) {
     check('back on this release the title arrives and the Deadline card shows it firm, with where it comes from and who checked it', await now.until(`document.querySelector('#tTitle')?.value === 'Send my witness statement (renamed)' && document.querySelector('[data-action=deadline-kind][data-id=firm]')?.getAttribute('aria-pressed') === 'true' && document.querySelector('#tDlFrom')?.value === 'The tribunal’s letter of 3 Oct' && document.querySelector('#tDlBy')?.value === 'My adviser'`, 20000)
       && same((await now.data()).tasks.items.find(t => t.id === TDL).deadline, deadline), await now.text('#taskDeadline'));
     check('…and this release is fully in step afterwards (nothing waiting, no conflict)', await synced(now) && (await now.status()) === 'synced', { status: await now.status() });
+    console.log('\n[19] A business idea\'s experiments and money pass through the previous release unchanged (specs/projects-business-tools.md)');
+    const knowsMoney = builtText.includes('money-line-add');
+    console.log(`The previous release ${knowsMoney ? 'knows' : 'doesn’t know'} experiments and money.`);
+    const PBZ = 'pjBizBack', hex = id => Buffer.from(id, 'utf8').toString('hex');
+    const ML = (id, label, dir, amount, x = {}) => ({ id, label, dir, amount, per: 'fixed', basis: 'guess', note: '', ...x });
+    const money = { currency: 'USD', sale: 'order', saleValue: 30, perSale: [ML('mlB1', 'Commission', 'in', 8, { per: 'percent' }), ML('mlB2', 'Rider', 'out', 1.8, { basis: 'measured', futureBit: 1 })],
+      monthly: [ML('mlB3', 'Office', 'out', 900)], startup: [ML('mlB4', 'Motorbike', 'out', 3000)], atSales: 600, forecast: { from: '2027-01', sales: [100, 120] },
+      actual: [{ month: '2027-01', sales: 85, in: 280, out: 1050, note: 'rains' }], futureBit: { keep: ['money', 1] } };
+    const experiment = { id: 'reBizBack', type: 'experiment', projectId: PBZ, title: 'Ask 20 shops (made up)', tests: [{ kind: 'assumption', id: 'asBack1' }], how: 'Two market days', expect: 'Fewer than 5 say yes',
+      status: 'done', startedOn: today, doneOn: today, result: '7 of 20 said yes', conclusion: 'Try a lower price', taskId: null, findingId: 'rfBizBack', createdAt: stamp, updatedAt: stamp, futureBit: { keep: ['experiment', 1] } };
+    const finding = { id: 'rfBizBack', type: 'finding', projectId: PBZ, text: '7 of 20 said yes', limits: '', on: today, sourceIds: [], about: [{ kind: 'assumption', id: 'asBack1', stance: 'contradicts' }], experimentId: 'reBizBack', createdAt: stamp, updatedAt: stamp };
+    await now.returnToApp();
+    await now.setData(`s => { s.projects.items.push({ id: '${PBZ}', title: 'Market delivery (made up)', summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}', template: 'business', tools: ['research'],
+      model: { problem: 'Buyers can’t see stock', who: 'Offices', how: 'Commission', assumptions: [{ id: 'asBack1', text: 'Shops would pay to be listed', state: 'open', found: '', checkedOn: null, taskId: null, createdAt: '${stamp}' }], money: ${JSON.stringify(money)} } });
+      s.research.items.push(${JSON.stringify(experiment)}, ${JSON.stringify(finding)}); }`);
+    const modelOf = async () => (await record('project_model', hex(PBZ)))?.data?.value;
+    check('this release sends the money inside the one page\'s record, the experiment as a research record and the finding with the experiment it came from', await eventually(async () => same((await modelOf())?.money, money)
+      && same((await record('research', 'reBizBack'))?.data, experiment) && (await record('research', 'rfBizBack'))?.data?.experimentId === 'reBizBack') && await synced(now), { money: (await modelOf())?.money, exp: (await record('research', 'reBizBack'))?.data });
+    await before.returnToApp();
+    check('the previous release syncs normally and receives all three exactly', await synced(before) && await before.until(`!!JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === '${PBZ}')?.model?.money`, 20000)
+      && same((await before.data()).projects.items.find(p => p.id === PBZ).model.money, money) && same((await before.data()).research.items.find(x => x.id === 'reBizBack'), experiment)
+      && (await before.data()).research.items.find(x => x.id === 'rfBizBack')?.experimentId === 'reBizBack', (await before.data()).projects.items.find(p => p.id === PBZ)?.model);
+    await before.open(BEFORE + `#projects/p/${PBZ}/model`); await before.until(`!!document.querySelector('#model-problem')`, 15000);
+    await before.type('#model-problem', 'Buyers can’t see what shops have in stock');
+    check('an edit on the previous release\'s Model tab reaches the account with the money as it was', await eventually(async () => (await modelOf())?.problem === 'Buyers can’t see what shops have in stock' && same((await modelOf())?.money, money)) && await synced(before), await modelOf());
+    check('…and the experiment and finding are untouched in the account', same((await record('research', 'reBizBack'))?.data, experiment) && (await record('research', 'rfBizBack'))?.data?.experimentId === 'reBizBack');
+    await now.returnToApp();
+    await now.open(NOW + `#projects/p/${PBZ}/money`);
+    check('back on this release: the edit arrives, and the Money tab works it out from the plan as it was ("1,500 orders a month": each leaves 0.60)', await now.until(`(document.querySelector('[data-s=break-even]')?.textContent || '') === '1,500 orders a month'`, 30000)
+      && (await now.data()).projects.items.find(p => p.id === PBZ).model.problem === 'Buyers can’t see what shops have in stock' && same((await now.data()).projects.items.find(p => p.id === PBZ).model.money, money), await now.text('[data-s=money-break-even]'));
+    await now.open(NOW + `#projects/p/${PBZ}/model`);
+    check('…the experiment shows on the Model tab with its result, and its finding is there (no offer to save it again)', await now.until(`!!document.querySelector('[data-s=experiment][data-id=reBizBack] [data-s=experiment-result]') && !!document.querySelector('[data-s=experiment][data-id=reBizBack] [data-s=experiment-finding]') && !document.querySelector('[data-s=experiment-offer]')`, 15000), await now.text('#projectExperiments'));
+    check('…and this release is fully in step afterwards (nothing waiting, no conflict)', await synced(now) && (await now.status()) === 'synced', { status: await now.status() });
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {

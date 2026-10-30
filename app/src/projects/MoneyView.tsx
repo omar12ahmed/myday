@@ -48,7 +48,7 @@ export function MoneyView({ p }: { p: Project }) {
         </div>
         <LinesSection m={m} list="perSale" change={change} title={`Each ${saleWord(m)}`}
           hint={`What one ${saleWord(m)} brings in and costs: an amount, or a share of its average value (a commission, card fees).`}
-          total={s => `Each ${saleWord(m)} brings in ${withCurrency(m, s.perSaleIn)} and costs ${withCurrency(m, s.perSaleOut)} — ${s.leaves < 0 ? `loses ${withCurrency(m, -s.leaves)}` : `leaves ${withCurrency(m, s.leaves)}`}.`} />
+          total={s => `Each ${saleWord(m)} brings in ${withCurrency(m, s.perSaleIn, true)} and costs ${withCurrency(m, s.perSaleOut, true)} — ${s.leaves < 0 ? `loses ${withCurrency(m, -s.leaves, true)}` : `leaves ${withCurrency(m, s.leaves, true)}`}.`} />
         <LinesSection m={m} list="monthly" change={change} title="Each month" hint="What runs every month whatever you sell: rent, wages, the website (and any money in each month)."
           total={s => `Each month: ${withCurrency(m, s.monthlyOut)} out${s.monthlyIn ? `, ${withCurrency(m, s.monthlyIn)} in` : ''}.`} />
         <LinesSection m={m} list="startup" change={change} title="To start" hint="One-off costs before you begin: equipment, a deposit, the first stock (and any one-off money in)."
@@ -62,6 +62,8 @@ export function MoneyView({ p }: { p: Project }) {
 }
 
 type Change = (c: MoneyChange) => boolean;
+// A month's money in whole numbers (cents in a forecast are noise).
+const whole = (n: number) => amountText(Math.round(n));
 // The forecast's columns: month and sales on a phone (the sums on a line below), all five from a wider screen.
 const GRID = 'grid grid-cols-[minmax(0,1fr)_7rem] sm:grid-cols-[8rem_7rem_1fr_1fr_1fr] gap-x-3';
 type Sums = ReturnType<typeof sums>;
@@ -91,7 +93,7 @@ function LineRow({ m, list, l, change }: { m: BusinessMoney; list: MoneyList; l:
     if (change(removeLine(list, l.id))) { toast('Removed.'); focusSoon(`money-${list}-add`); }
   }
   if (editing) return <li className="border-t border-outline first:border-t-0 py-2"><LineForm m={m} list={list} l={l} change={change} onDone={() => { setEditing(false); focusSoon(`ml-${l.id}`); }} onRemove={remove} /></li>;
-  const amount = l.per === 'percent' ? `${amountText(l.amount)}%` : amountText(l.amount);
+  const amount = l.per === 'percent' ? `${amountText(l.amount)}%` : amountText(l.amount, list === 'perSale');
   return (
     <li className="border-t border-outline first:border-t-0" data-s="money-line" data-id={l.id} data-dir={l.dir}>
       <button type="button" id={`ml-${l.id}`} className="w-full min-h-11 py-2 flex items-start gap-3 text-left bg-transparent border-0 p-0 cursor-pointer rounded-tile hover:bg-surface-2 text-fg" data-action="money-line-edit"
@@ -162,7 +164,7 @@ function BreakEvenCard({ m, change }: { m: BusinessMoney; change: Change }) {
     <Card aria-labelledby="pjBreakEvenH" id="projectBreakEven" data-s="money-break-even">
       <h3 id="pjBreakEvenH">Break-even</h3>
       <p className="m-0 text-[22px] font-bold leading-snug" data-s="break-even">{b.kind === 'sales' ? `${b.n.toLocaleString()} ${saleWord(m, b.n)} a month` : breakEvenText(m)}</p>
-      {b.kind !== 'empty' && <p className="m-0 mt-1 text-[15px] text-fg-2">Each {saleWord(m)} {s.leaves < 0 ? `loses ${withCurrency(m, -s.leaves)}` : `leaves ${withCurrency(m, s.leaves)}`}; running costs are {withCurrency(m, s.monthlyNet)} a month.</p>}
+      {b.kind !== 'empty' && <p className="m-0 mt-1 text-[15px] text-fg-2">Each {saleWord(m)} {s.leaves < 0 ? `loses ${withCurrency(m, -s.leaves, true)}` : `leaves ${withCurrency(m, s.leaves, true)}`}; running costs are {withCurrency(m, s.monthlyNet)} a month.</p>}
       {s.needsSaleValue && <p className="m-0 mt-2 text-[15px]" data-s="money-needs-value">Add the average value of one {saleWord(m)} to count the percentages.</p>}
       {s.startupNet > 0 && b.kind !== 'empty' && (
         <div className="flex flex-wrap items-end gap-x-3 gap-y-2 mt-4">
@@ -199,7 +201,7 @@ function ForecastCard({ m, change }: { m: BusinessMoney; change: Change }) {
           <Select aria-label="Add as" className="!w-auto" value={mode} onChange={ev => setMode(ev.target.value as 'percent' | 'add')}><option value="percent">%</option><option value="add">{sales}</option></Select>
           <Button inline type="submit" data-action="money-fill" disabled={numberOf(start) === null}>Fill</Button>
         </form>
-        <p className="m-0 mt-4 text-[15px] tabular-nums" data-s="forecast-opening">Start: {withCurrency(m, f.opening)}{f.opening < 0 ? ' (start-up costs)' : ''}</p>
+        <p className="m-0 mt-4 text-[15px] tabular-nums" data-s="forecast-opening">Start: {withCurrency(m, Math.round(f.opening))}{f.opening < 0 ? ' (start-up costs)' : ''}</p>
         {/* A phone shows each month on two lines; a wider screen as a table, the column names once. */}
         <div className={`${GRID} hidden sm:grid text-sm text-fg-2 mt-2 pb-1`} aria-hidden="true">
           <span>Month</span><span>{sales[0].toUpperCase() + sales.slice(1)}</span><span className="text-right">Money in</span><span className="text-right">Money out</span><span className="text-right">Running total</span>
@@ -213,9 +215,9 @@ function ForecastCard({ m, change }: { m: BusinessMoney; change: Change }) {
                 <CommitInput aria-label={`${sales} in ${monthText(r.month)}`} key={`${r.month}-${r.sales}`} type="number" inputMode="numeric" min={0} step={1} defaultValue={shown(r.sales)} placeholder="0"
                   data-s="forecast-sales" onCommit={el => change(setForecastSales(i, numberOf(el.value)))} />
                 <span className="col-span-2 sm:contents text-sm text-fg-2" data-s="forecast-sums">
-                  <span className="sm:text-right sm:text-[15px] sm:text-fg"><span className="sm:sr-only">In </span>{amountText(r.in)}</span><span className="sm:hidden"> · </span>
-                  <span className="sm:text-right sm:text-[15px] sm:text-fg"><span className="sm:sr-only">Out </span>{amountText(r.out)}</span><span className="sm:hidden"> · </span>
-                  <span className={`sm:text-right sm:text-[15px] ${r.total < 0 ? 'sm:text-fg' : 'text-fg font-semibold'}`}><span className="sm:sr-only">Running total </span>{r.total < 0 ? '−' : ''}{amountText(Math.abs(r.total))}</span>
+                  <span className="sm:text-right sm:text-[15px] sm:text-fg"><span className="sm:sr-only">In </span>{whole(r.in)}</span><span className="sm:hidden"> · </span>
+                  <span className="sm:text-right sm:text-[15px] sm:text-fg"><span className="sm:sr-only">Out </span>{whole(r.out)}</span><span className="sm:hidden"> · </span>
+                  <span className={`sm:text-right sm:text-[15px] ${r.total < 0 ? 'sm:text-fg' : 'text-fg font-semibold'}`}><span className="sm:sr-only">Running total </span>{r.total < 0 ? '−' : ''}{whole(Math.abs(r.total))}</span>
                 </span>
                 {got && <span className="col-span-2 sm:col-span-5 text-sm" data-s="forecast-real">Real: {[got.sales !== null && `${got.sales} ${saleWord(m, got.sales)}`, got.in !== null && `in ${amountText(got.in)}`, got.out !== null && `out ${amountText(got.out)}`].filter(Boolean).join(' · ') || 'nothing entered yet'}</span>}
               </li>
@@ -223,7 +225,7 @@ function ForecastCard({ m, change }: { m: BusinessMoney; change: Change }) {
           })}
         </ol>
         <ul className="list-none p-0 m-0 mt-3 grid gap-1 text-[15px]" data-s="forecast-summary">
-          <li>Lowest point: <span className="font-semibold tabular-nums">{withCurrency(m, f.lowest.value)}</span>{f.lowest.month ? ` in ${monthText(f.lowest.month)}` : ' at the start'}</li>
+          <li>Lowest point: <span className="font-semibold tabular-nums">{withCurrency(m, Math.round(f.lowest.value))}</span>{f.lowest.month ? ` in ${monthText(f.lowest.month)}` : ' at the start'}</li>
           <li>{f.blackFrom ? `In the black from ${monthText(f.blackFrom)}` : 'Not in the black within these 12 months'}</li>
           {f.opening < 0 && <li>{f.backBy ? `Start-up costs back by ${monthText(f.backBy)}` : 'Start-up costs not back within these 12 months'}</li>}
         </ul>
@@ -263,7 +265,7 @@ function RealCard({ m, change }: { m: BusinessMoney; change: Change }) {
                 <Field label="Money out" htmlFor={`real-${real.month}-out`} className="min-w-0"><CommitInput id={`real-${real.month}-out`} key={`o${real.out}`} type="number" inputMode="decimal" min={0} step="any" className="min-w-0" defaultValue={shown(real.out)} onCommit={el => change(setReal(real.month, { out: numberOf(el.value) }))} /></Field>
               </div>
               <Field label="Note (optional)" htmlFor={`real-${real.month}-note`} className="mt-2"><CommitInput id={`real-${real.month}-note`} key={`n${real.note}`} maxLength={MONEY_LIMITS.note} defaultValue={real.note} onCommit={el => change(setReal(real.month, { note: el.value }))} /></Field>
-              <p className="m-0 mt-1 text-sm text-fg-2 tabular-nums" data-s="real-plan">{plan ? `Plan: ${plan.sales ?? 0} ${saleWord(m, plan.sales ?? 0)} · in ${withCurrency(m, plan.in)} · out ${withCurrency(m, plan.out)}` : 'Not in the forecast’s 12 months.'}</p>
+              <p className="m-0 mt-1 text-sm text-fg-2 tabular-nums" data-s="real-plan">{plan ? `Plan: ${plan.sales ?? 0} ${saleWord(m, plan.sales ?? 0)} · in ${withCurrency(m, Math.round(plan.in))} · out ${withCurrency(m, Math.round(plan.out))}` : 'Not in the forecast’s 12 months.'}</p>
             </li>
           ))}
         </ul>

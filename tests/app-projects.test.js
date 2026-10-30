@@ -709,7 +709,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   let bz = await project('Bakery bread-share app');
   check('a business idea is saved with template business and no model yet', bz && bz.template === 'business' && !('model' in bz), bz);
   check('…it opens on its Model tab', (await hash()) === `#projects/p/${bz.id}/model` && (await tabOf()) === 'model', await hash());
-  check('…the tabs are Overview, Model, Milestones, Decisions', eq(await tabsOf(), ['overview', 'model', 'milestones', 'decisions']), await tabsOf());
+  check('…the tabs are Overview, Model, Money, Milestones, Decisions', eq(await tabsOf(), ['overview', 'model', 'money', 'milestones', 'decisions']), await tabsOf());
   await go('projects', 2026, 10, 15, 22, 5);
   check('back on the projects page the kind choice is on General again', (await kindNow()) === 'general', await kindNow());
   await type('#projectNew', 'Plain garden tidy'); await click('[data-action=project-add]'); await sleep(400);
@@ -834,7 +834,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
     await T.send('Emulation.setDeviceMetricsOverride', { width: w, height: 740, deviceScaleFactor: 2, mobile: true });
     await go('projects/p/pjPm/model', 2026, 10, 15, 23, 30); await sleep(200);
     const tabs = await ev(`[...document.querySelectorAll('[data-s=project-tabs] a')].map(a => ({ t: a.textContent.trim(), sw: a.scrollWidth, cw: a.clientWidth }))`);
-    check(`phone ${w} px: every tab link fits its own width`, tabs.length === 4 && tabs.every(x => x.sw <= x.cw), tabs);
+    check(`phone ${w} px: every tab link fits its own width (five, with Money)`, tabs.length === 5 && tabs.every(x => x.sw <= x.cw), tabs);
     check(`phone ${w} px: the Model tab does not scroll sideways`, (await ev('document.documentElement.scrollWidth')) <= w, await ev('document.documentElement.scrollWidth'));
   }
   await T.send('Emulation.clearDeviceMetricsOverride');
@@ -1080,7 +1080,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('…so Next step comes straight after the title and tabs and before At a glance, About it and Tasks', eq(await ev(`[...document.querySelectorAll('#projectNext, #projectWorth, #projectGlance, #projectHead, #projectTasks')].map(e => e.id)`), ['projectNext', 'projectGlance', 'projectHead', 'projectTasks']));
 
   await go('projects/p/pjG3', 2026, 10, 15, 8, 7);
-  check('a business idea\'s rows are its one page, what must be true, milestones, decisions and what you did', eq(await rowKeys(), ['glance-onepage', 'glance-beliefs', 'glance-route', 'glance-decisions', 'glance-weeks']), await rowKeys());
+  check('a business idea\'s rows are its one page, what must be true, money, milestones, decisions and what you did', eq(await rowKeys(), ['glance-onepage', 'glance-beliefs', 'glance-money', 'glance-route', 'glance-decisions', 'glance-weeks']), await rowKeys());
   check('…the one-page row says "3 of 4 questions answered" (two answers, and the things that must be true count as the fourth)', (await text('[data-s=glance-onepage] [data-s=model-summary]')) === '3 of 4 questions answered', await text('[data-s=glance-onepage]'));
   const bel = await ev(`[...document.querySelectorAll('[data-s=glance-beliefs] li')].map(li => li.textContent.trim())`);
   check('the beliefs picture shows the three counts once: 2 not checked yet, 1 looks true, 3 do not hold', eq(bel, ['2Not checked yet', '1Looks true', '3Doesn’t hold']), bel);
@@ -2747,6 +2747,175 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   await editStorage(`s => { delete s.tasks.items.find(t => t.id === 'tkDl7').deadline; }`);
   await dlTask('tkDl7', 16);
   check('a done task with a date and no deadline isn\'t asked whether it\'s one', !(await exists('#taskDeadline')) && (await ev(`document.getElementById('tTitle').value`)) === 'Return the keys');
+
+  console.log('\n[49] Experiments and money');
+  const ex_as = (id, text) => ({ id, text, state: 'open', found: '', checkedOn: null, taskId: null, createdAt: '2026-10-10T09:00' });
+  await go('projects', 2026, 10, 15, 9, 0); await reset(); await go('projects', 2026, 10, 15, 9, 0);
+  await seed([
+    pjObj('pjEx', 'Experiments: market delivery', 'explore', { template: 'business', model: { problem: 'x', who: 'y', how: 'z', assumptions: [ex_as('asE1', 'Shops would pay to be listed'), ex_as('asE2', 'Buyers will pay a delivery fee')] } }),
+    pjObj('pjExG', 'Experiments: a plain project', 'explore'),
+  ]);
+  const ex_open = async (suffix, m) => { await go(`projects/p/pjEx${suffix}`, 2026, 10, 15, 9, m); await until(`!!document.querySelector('[data-s=project-tabs]')`); await sleep(150); };
+  const ex_items = async () => (await data()).research.items;
+  const ex_one = async () => (await ex_items()).find(i => i.type === 'experiment');
+  const ex_row = '[data-s=experiment]';
+  const ex_toast = async s => until(`document.getElementById('toast').textContent.includes(${JSON.stringify(s)})`);
+
+  console.log('  Planning an experiment from a thing that must be true');
+  await ex_open('/model', 1);
+  check('the Model tab has an Experiments card, and each thing that must be true offers "Plan an experiment"', (await exists('#projectExperiments')) && (await exists(`${rowSel('asE1')} [data-action=as-plan-experiment]`)) && (await text(`${rowSel('asE1')} [data-action=as-plan-experiment]`)) === 'Plan an experiment', await text('#projectExperiments'));
+  await click(`${rowSel('asE1')} [data-action=as-plan-experiment]`);
+  await until(`!!document.querySelector('[data-s=experiment-form]')`);
+  check('"Plan an experiment" under a thing opens the form with that thing already ticked (and the other not)', (await ev(`document.querySelector('[data-s=experiment-test][data-id=asE1]').checked`)) === true && (await ev(`document.querySelector('[data-s=experiment-test][data-id=asE2]').checked`)) === false);
+  check('"Plan it" waits for a title', await ev(`document.querySelector('[data-action=experiment-save]').disabled`));
+  await type('#exN-title', 'Ask 20 shops (made up)'); await type('#exN-how', 'Visit on two market days; same three questions each time'); await type('#exN-expect', 'Fewer than 5 say yes');
+  await click('[data-action=experiment-save]');
+  check('planning it says "Planned. Start it whenever you’re ready."', await ex_toast('Planned. Start it whenever you’re ready.'), await toast());
+  await until(`!!document.querySelector('${ex_row}[data-status=planned]')`);
+  let ex = await ex_one();
+  check('…and saves a planned experiment in this project that tests the thing', ex && ex.projectId === 'pjEx' && ex.status === 'planned' && eq(ex.tests, [{ kind: 'assumption', id: 'asE1' }]) && ex.title === 'Ask 20 shops (made up)' && ex.expect === 'Fewer than 5 say yes', ex);
+  check('…its row shows the title, and the thing it tests now says "1 experiment: 1 planned"', (await text(`${ex_row}[data-status=planned]`)).includes('Ask 20 shops (made up)') && (await text(`${rowSel('asE1')} [data-action=as-experiments]`)) === '1 experiment: 1 planned', await text(`${rowSel('asE1')} [data-s=as-experiments]`));
+  check('…and the other thing has no experiments yet', !(await exists(`${rowSel('asE2')} [data-action=as-experiments]`)));
+
+  console.log('  Start it, add its task, tick the task');
+  await click('[data-action=experiment-start]');
+  check('"Start it" says "Started."', await ex_toast('Started.'), await toast());
+  await until(`!!document.querySelector('${ex_row}[data-status=running]')`);
+  ex = await ex_one();
+  check('…the row says "Running since" and the experiment is saved as running with its start day', (await text('[data-s=experiment-when]')).startsWith('Running since') && ex.status === 'running' && ex.startedOn === '2026-10-15', [await text('[data-s=experiment-when]'), ex]);
+  await click('[data-action=experiment-task]');
+  await until(`!!document.querySelector('[data-s=experiment-task]')`);
+  ex = await ex_one();
+  const exTask = await task('Test: Ask 20 shops (made up)');
+  check('"Add a task to run it" adds a 30-minute task "Test: Ask 20 shops (made up)" in this project, linked from the experiment', exTask && exTask.projectId === 'pjEx' && exTask.minutes === 30 && ex.taskId === exTask.id, [exTask, ex]);
+  check('…and the row says "Test task added"', (await text('[data-s=experiment-task]')).trim() === 'Test task added', await text('[data-s=experiment-task]'));
+  check('…while it is not done, nothing asks what happened', !(await exists('[data-s=experiment-waiting]')));
+  await editStorage(`s => { const t = s.tasks.items.find(x => x.title === 'Test: Ask 20 shops (made up)'); t.done = true; t.doneOn = '2026-10-15'; }`);
+  await ex_open('/model', 3);
+  check('with its task done, the row asks "Its Test task is done — what happened?"', await until(`!!document.querySelector('[data-s=experiment-waiting]')`) && (await text('[data-s=experiment-waiting]')).trim() === 'Its Test task is done — what happened?', await text(ex_row));
+  check('…and the experiment is still running (ticking the task records nothing)', (await ex_one()).status === 'running' && (await text('[data-s=experiment-task]')).includes('Test task done'));
+  await ex_open('', 4);
+  check('the Overview\'s Worth a look points to it: "“Test: Ask 20 shops (made up)” is done — what happened?"', await until(`!!document.querySelector('#projectWorth [data-pointer=tested]')`) && (await text('#projectWorth [data-pointer=tested]')).includes('“Test: Ask 20 shops (made up)” is done — what happened?'), await text('#projectWorth'));
+
+  console.log('  Record what happened, and save it as a finding');
+  await ex_open('/model', 5);
+  await click('[data-action=experiment-record]'); await until(`!!document.querySelector('[data-s=experiment-record-form]')`);
+  check('"What happened?" is needed before the result can be saved', await ev(`document.querySelector('[data-action=experiment-record-save]').disabled`));
+  await type(`#exR-${ex.id}`, '7 of 20 said yes; most wanted a month free'); await type(`#exC-${ex.id}`, 'Try a free month before charging');
+  check('…and typing it lets you save', await until(`!document.querySelector('[data-action=experiment-record-save]').disabled`));
+  await click('[data-action=experiment-record-save]');
+  check('recording says "Recorded — it’s done."', await ex_toast('Recorded — it’s done.'), await toast());
+  await until(`!!document.querySelector('[data-s=experiment-offer]')`);
+  ex = await ex_one();
+  check('…the experiment is done today with its result and conclusion, shown on the row', ex.status === 'done' && ex.doneOn === '2026-10-15' && ex.result === '7 of 20 said yes; most wanted a month free' && ex.conclusion === 'Try a free month before charging' && (await text('[data-s=experiment-result]')).includes('7 of 20 said yes; most wanted a month free'), ex);
+  check('…and offers "Save it as a finding?" with a choice of how it bears on the thing tested', (await text('[data-s=experiment-offer]')).includes('Save it as a finding?') && (await exists('[data-s=experiment-stance][data-id=asE1]')) && !(await exists('[data-s=experiment-waiting]')));
+  check('Research is off before the finding is saved', !(await exists('[data-tab=research]')) && !((await pAt('pjEx')).tools || []).includes('research'));
+  await type('[data-s=experiment-stance][data-id=asE1]', 'contradicts');
+  await click('[data-action=experiment-finding]');
+  check('saving it says "Saved as a finding — Research is on now, with its own tab."', await ex_toast('Saved as a finding — Research is on now, with its own tab.'), await toast());
+  await until(`!!document.querySelector('[data-s=experiment-finding]')`);
+  ex = await ex_one();
+  const exFinds = (await ex_items()).filter(i => i.type === 'finding');
+  const exFind = exFinds.find(f => f.experimentId === ex.id);
+  check('…a finding is saved from this experiment: its result, about the thing, saying it contradicts it', exFind && exFind.text === ex.result && eq(exFind.about, [{ kind: 'assumption', id: 'asE1', stance: 'contradicts' }]) && ex.findingId === exFind.id, [exFinds, ex]);
+  check('…Research is switched on for the project', ((await pAt('pjEx')).tools || []).includes('research') && (await exists('[data-s=project-tabs] [data-tab=research]')), (await pAt('pjEx')).tools);
+  check('…the offer is replaced by "Saved as a finding — see Research"', !(await exists('[data-s=experiment-offer]')) && (await text('[data-s=experiment-finding]')).trim() === 'Saved as a finding — see Research');
+  check('…and the thing it tested is still open (a result never marks it by itself)', (await pAt('pjEx')).model.assumptions.find(a => a.id === 'asE1').state === 'open');
+  await ex_open('/research', 6);
+  check('the Research tab shows the finding "From the experiment “Ask 20 shops (made up)”"', await until(`!!document.querySelector('[data-s=research-finding]')`) && (await text('[data-s=research-finding]')).includes('From the experiment “Ask 20 shops (made up)”'), await text('[data-s=research-finding]'));
+  check('…and the same Experiments card is there too, with this experiment', (await exists('#projectExperiments')) && (await text('#projectExperiments')).includes('Ask 20 shops (made up)'));
+
+  console.log('  Removing one');
+  await ex_open('/model', 7);
+  await click('[data-action=experiment-edit]'); await until(`!!document.querySelector('[data-action=experiment-remove]')`);
+  check('editing an experiment offers "Remove"', await exists('[data-action=experiment-remove]'));
+  await click('[data-action=experiment-remove]'); await answer(true);
+  check('removing it (after asking) says so and takes it off the card', await ex_toast('Experiment removed.') && await until(`!document.querySelector('${ex_row}')`), await toast());
+  check('…its Test task and the finding saved from it stay', !!(await task('Test: Ask 20 shops (made up)')) && (await ex_items()).some(i => i.type === 'finding' && i.id === exFind.id) && !(await ex_items()).some(i => i.type === 'experiment'));
+
+  console.log('  Money: the tab, the lines and the break-even');
+  await ex_open('', 8);
+  check('a business idea has a Money tab', await exists('[data-s=project-tabs] [data-tab=money]'));
+  await go('projects/p/pjExG', 2026, 10, 15, 9, 9); await until(`!!document.querySelector('[data-s=project-tabs]')`);
+  check('…and a general project does not', !(await exists('[data-tab=money]')));
+  await ex_open('/money', 10); await until(`!!document.getElementById('moneyCurrency')`);
+  const mn = async () => ((await pAt('pjEx')).model || {}).money || {};
+  await type('#moneyCurrency', 'usd'); await until(`true`); await sleep(250);
+  await type('#moneySale', 'order'); await sleep(250);
+  await type('#moneySaleValue', '30'); await sleep(250);
+  check('the currency is saved in capitals, and what one sale is called and its average value too', (await mn()).currency === 'USD' && (await mn()).sale === 'order' && (await mn()).saleValue === 30, await mn());
+  const mn_add = async (list, label, dir, amount, per) => {
+    await click(`[data-action=money-line-add][data-list=${list}]`); await until(`!!document.getElementById('mlN-${list}-label')`);
+    await type(`#mlN-${list}-label`, label); await click(`[data-action=money-dir][data-id=${dir}]`); await type(`#mlN-${list}-amount`, String(amount));
+    if (per) await type(`#mlN-${list}-per`, per);
+    await click('[data-action=money-line-save]'); await until(`!document.getElementById('mlN-${list}-label')`);
+  };
+  await mn_add('perSale', 'Commission', 'in', 8, 'percent');
+  await mn_add('perSale', 'Delivery fee', 'in', 1.5);
+  await mn_add('perSale', 'Rider', 'out', 1.8);
+  await mn_add('monthly', 'Office', 'out', 900);
+  await mn_add('startup', 'Motorbike', 'out', 3000);
+  const mnTotal = list => text(`[data-s=money-lines][data-list=${list}] [data-s=money-total]`);
+  const mnRider = ((await mn()).perSale || []).find(l => l.label === 'Rider');
+  check('five lines are saved: three for each order, one monthly and one to start', ((await mn()).perSale || []).length === 3 && ((await mn()).monthly || []).length === 1 && ((await mn()).startup || []).length === 1 && mnRider && mnRider.dir === 'out' && mnRider.amount === 1.8, await mn());
+  check('each order\'s total reads "Each order brings in USD 3.90 and costs USD 1.80 — leaves USD 2.10."', await until(`document.querySelector('[data-s=money-lines][data-list=perSale] [data-s=money-total]')?.textContent === 'Each order brings in USD 3.90 and costs USD 1.80 — leaves USD 2.10.'`), await mnTotal('perSale'));
+  check('the break-even reads "429 orders a month" (900 ÷ 2.10, rounded up)', await until(`document.querySelector('[data-s=break-even]')?.textContent === '429 orders a month'`), await text('[data-s=break-even]'));
+  await ex_open('', 11);
+  check('At a glance on the Overview says "Break-even: 429 orders a month"', await until(`document.querySelector('[data-s=money-summary]')?.textContent.trim() === 'Break-even: 429 orders a month'`), await text('[data-s=money-summary]'));
+
+  console.log('  Money: payback, forecast and real months');
+  await ex_open('/money', 12); await until(`!!document.getElementById('moneyAtSales')`);
+  await type('#moneyAtSales', '600');
+  check('at 600 orders a month the start-up costs are back in about 9 months', await until(`document.querySelector('[data-s=payback]')?.textContent === 'Start-up costs (USD 3,000) back in about 9 months.'`), await text('[data-s=payback]'));
+  await type('#moneyFrom', '2027-01');
+  await until(`!!document.getElementById('moneyFillStart')`);
+  await type('#moneyFillStart', '100'); await type('#moneyFillStep', '20'); await type('[aria-label="Add as"]', 'percent');
+  await click('[data-action=money-fill]');
+  check('filling from 100 orders, adding 20% a month, gives twelve months', await until(`document.querySelectorAll('[data-s=forecast-month]').length === 12`), await ev(`document.querySelectorAll('[data-s=forecast-month]').length`));
+  const fcSales = i => ev(`document.querySelectorAll('[data-s=forecast-month]')[${i}].querySelector('[data-s=forecast-sales]').value`);
+  check('…starting at 2027-01 with 100 orders, then 120', (await ev(`document.querySelector('[data-s=forecast-month]').dataset.month`)) === '2027-01' && (await fcSales(0)) === '100' && (await fcSales(1)) === '120', [await fcSales(0), await fcSales(1)]);
+  const fcNums = await ev(`(document.querySelector('[data-s=forecast-month][data-month="2027-01"] [data-s=forecast-sums]').textContent.match(/[−-]?\\d[\\d,.]*/g) || [])`);
+  check('…the first month has USD 390 in, 1,080 out (100 × 1.80 + 900) and a running total of −3,690', eq(fcNums, ['390', '1,080', '−3,690']), fcNums);
+  check('…and the forecast\'s summary gives its lowest point', (await text('[data-s=forecast-summary]')).includes('Lowest point:'), await text('[data-s=forecast-summary]'));
+  await type('#moneyRealMonth', '2027-01'); await click('[data-action=real-add]');
+  await until(`!!document.getElementById('real-2027-01-sales')`);
+  await type('#real-2027-01-sales', '85');
+  await until(`document.querySelector('[data-s=forecast-month][data-month="2027-01"] [data-s=forecast-real]')?.textContent.startsWith('Real: 85 orders')`);
+  const mnAct = ((await mn()).actual || []).find(a => a.month === '2027-01');
+  check('a real month is saved with its 85 orders', mnAct && mnAct.sales === 85, (await mn()).actual);
+  check('…it sits beside its plan: "Plan: 100 orders · in USD 390 · out USD 1,080"', (await text('[data-s=real-plan]')) === 'Plan: 100 orders · in USD 390 · out USD 1,080', await text('[data-s=real-plan]'));
+  check('…the forecast row for that month says "Real: 85 orders"', (await text('[data-s=forecast-month][data-month="2027-01"] [data-s=forecast-real]')).startsWith('Real: 85 orders'));
+  check('…and the plan is unchanged (still 100 orders in the forecast)', (await fcSales(0)) === '100' && ((await mn()).forecast.sales || [])[0] === 100, (await mn()).forecast);
+
+  console.log('  Searching a project finds experiments and money');
+  await ex_open('', 13);
+  await editStorage(`s => { s.research.items.push({ id: 'exSrch1', type: 'experiment', projectId: 'pjEx', title: 'Ask 20 shops (made up)', tests: [], how: '', expect: '', status: 'planned', startedOn: null, doneOn: null, result: '', conclusion: '', taskId: null, createdAt: '2026-10-15T09:00', updatedAt: '2026-10-15T09:00' }); }`);
+  await ex_open('', 14);
+  await srType('Ask 20 shops');
+  check('Search this project finds the experiment, labelled "Experiment"', (await srRows()).some(r => r.startsWith('experiment:') && r.includes('Ask 20 shops (made up)')) && (await text('#projectSearchResults')).includes('Experiment'), await srRows());
+  await srType('Motorbike');
+  check('…and a money line, labelled "Money"', (await srRows()).some(r => r.startsWith('money:') && r.includes('Motorbike')) && (await text('#projectSearchResults')).includes('Money'), await srRows());
+  await editStorage(`s => { s.research.items = s.research.items.filter(i => i.id !== 'exSrch1'); }`);
+
+  console.log('  Money: changing and removing a line');
+  await ex_open('/money', 15); await until(`!!document.getElementById('moneyCurrency')`);
+  await click(`[data-s=money-line][data-id="${mnRider.id}"] [data-action=money-line-edit]`);
+  await until(`!!document.getElementById('mlE-${mnRider.id}-amount')`);
+  await type(`#mlE-${mnRider.id}-amount`, '2'); await click('[data-action=money-line-save]');
+  check('changing the Rider to 2 updates the total to "… costs USD 2.00 — leaves USD 1.90." (a sale\'s amounts always with cents)', await until(`document.querySelector('[data-s=money-lines][data-list=perSale] [data-s=money-total]')?.textContent === 'Each order brings in USD 3.90 and costs USD 2.00 — leaves USD 1.90.'`), await mnTotal('perSale'));
+  const mnOffice = ((await mn()).monthly || [])[0];
+  await click(`[data-s=money-line][data-id="${mnOffice.id}"] [data-action=money-line-edit]`);
+  await until(`!!document.querySelector('[data-action=money-line-remove]')`);
+  await click('[data-action=money-line-remove]'); await answer(true);
+  check('removing the Office line (after asking) takes it away', await until(`!document.querySelector('[data-s=money-line][data-id="${mnOffice.id}"]')`) && ((await mn()).monthly || []).length === 0, await mn());
+
+  console.log('  Money on a phone');
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await ex_open('/money', 16); await until(`!!document.querySelector('[data-s=money] [data-s=forecast-month]')`); await sleep(300);
+  const mnSmall = ev(`[...document.querySelectorAll('[data-s=money] button, [data-s=money] input')].filter(b => b.getBoundingClientRect().height < 44).map(b => (b.dataset.action || b.id || b.tagName) + ':' + Math.round(b.getBoundingClientRect().height))`);
+  check('phone 390 px: the Money tab does not scroll sideways', (await ev('document.documentElement.scrollWidth')) <= 390, await ev('document.documentElement.scrollWidth'));
+  check('…and every button and field on it is at least 44 px tall', (await ev(`document.querySelectorAll('[data-s=money] button, [data-s=money] input').length`)) > 20 && eq(await mnSmall, []), await mnSmall);
+  await T.send('Emulation.clearDeviceMetricsOverride');
 
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
