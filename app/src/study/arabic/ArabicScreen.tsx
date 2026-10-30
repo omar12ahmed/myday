@@ -848,7 +848,7 @@ function WordRow({ data, w, takeOut, explainer = null }: { data: MyDayData; w: A
     <div className="flex items-start gap-2"><div className="min-w-0 flex-1"><Ar block className="text-[20px] m-0">{w.example_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.example_meaning_en}</p></div>
       <PlayButton text={w.example_ar} name={`${w.id}:example`} label={`the example for ${w.form_ar}`} /></div>
     {course && <p className="text-sm m-0 sm:col-span-2 min-w-0 break-words" data-ar-word-note=""><WordNote text={course.note} voice={`${w.id}:note`} /></p>}
-    {explainer && <div className="sm:col-span-2 text-[15px]"><ExplainerLink found={explainer} verb={w.part_of_speech === 'verb'} /></div>}
+    {explainer && <div className="sm:col-span-2 text-[15px]"><ExplainerLink found={explainer} verb={w.part_of_speech === 'verb'} word={w.form_ar} /></div>}
     <div className="sm:col-span-2 mt-1">
       {(recognise || write) && <p className="text-sm m-0 mb-1.5">{recognise && <span className="block">Recognising it: {recognise}</span>}{write && <span className="block">Writing it: {write}</span>}</p>}
       <div className="flex flex-wrap gap-2">

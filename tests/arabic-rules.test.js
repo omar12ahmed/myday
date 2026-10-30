@@ -413,6 +413,10 @@ check('vowelled and unvowelled versions are both kept where the package has them
   badExp('word-order', f => { const w = sayOf(f).examples[0].words; [w[0], w[1]] = [w[1], w[0]]; }, 'spell the sentence exactly', 'a sentence\'s words out of order');
   badExp('answer', f => { sayOf(f).selftest[1].answer = 'they say'; }, 'the answer must be one of the choices', 'an answer that isn\'t one of the choices');
   badExp('course-word', f => { sayOf(f).course_words = ['lexeme.arabic-nope-1']; }, "isn't a course word", 'an unknown course word');
+  badExp('sukun-ending', f => { sayOf(f).examples[0].ar = 'هُوَ يَقُولُ الْحَقْ.'; sayOf(f).examples[0].words[2].ar = 'الْحَقْ'; }, 'the ending of', 'a noun in a sentence with a sukūn, a pause form, where its case ending belongs');
+  badExp('jussive-alone', f => { f.lessons['lesson.arabic-weak-verbs'][3].table.push({ form_en: 'after lam: he', ar: 'يَدْعُ', en: 'he didn\'t invite' }); }, 'gives away the lesson check', 'the check\'s answer form on its own, without لَمْ, as a table row');
+  badExp('linked-check', f => { const be = f.lessons['lesson.arabic-weak-verbs'][1]; be.steps[0] += ' Compare هُمْ لَنْ يَدْرُسُوا here.'; be.phrases_ar.push('هُمْ لَنْ يَدْرُسُوا'); }, 'gives away the lesson check', 'the answer to the check of a lesson whose word links here (verb moods, through لَمْ يَكُنْ)');
+  badExp('linked-twice', f => { f.lessons['lesson.arabic-weak-verbs'][1].course_words.push('lexeme.arabic-weak-verbs-1'); }, 'already links to', 'a course word linked to two explainers');
   fs.rmSync(expTemp, { recursive: true, force: true });
   fs.rmSync(tmp, { recursive: true, force: true });
   console.log(`\n${pass} passed, ${fail} failed`);

@@ -572,7 +572,7 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   await fresh(wvHash); await wait(exSel, 5000);
   const exInfo = await ev(`(() => { const s = document.querySelector('#ar-step-understand [data-ar-explainers="5"]'); return !s ? null : { head: s.querySelector('h4')?.textContent, ids: [...s.querySelectorAll('details[data-ar-explainer]')].map(d => d.dataset.arExplainer), open: [...s.querySelectorAll('details[data-ar-explainer]')].filter(d => d.open).length }; })()`);
   check('the weak verbs lesson has "How it works" in its Understand step, with five explainers in order (say, be, live, invite, walk), all closed', !!exInfo && exInfo.head === 'How it works' && exInfo.ids.join() === exWantIds.join() && exInfo.open === 0, exInfo);
-  const savedBefore = await ev(`localStorage.getItem('myday.data.v4')`);
+  const savedBefore = await ev(`JSON.stringify(Object.keys(localStorage).filter(k => k.startsWith('myday.')).sort().map(k => [k, localStorage.getItem(k)]))`);
   const sayEx = 'details[data-ar-explainer="explainer.arabic-say"]';
   await ev(`document.querySelector('${sayEx}').open = true`); await sleep(300);
   const sayCounts = await ev(`(() => { const d = document.querySelector('${sayEx}'), t = d.querySelector('[data-ar-explainer-table]'), ar = [...t.querySelectorAll('[lang="ar"]')]; return { rows: d.querySelectorAll('[data-ar-explainer-row]').length, steps: d.querySelectorAll('[data-ar-explainer-step]').length, sentences: d.querySelectorAll('[data-ar-explainer-sentence]').length, qs: d.querySelectorAll('[data-ar-explainer-q]').length, arN: ar.length, arOk: ar.every(e => e.dir === 'rtl') }; })()`);
@@ -582,8 +582,8 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   await click(`${exQ1} [data-action="ar-explainer-choose"]:nth-of-type(2)`); await sleep(300);
   const focusedWhy = await ev(`(() => { const w = document.querySelector('${exQ1} [data-ar-explainer-why]'); return !!w && document.activeElement === w; })()`);
   await click(`${exQ2} [data-action="ar-explainer-choose"]:nth-of-type(1)`); await sleep(300);
-  const savedAfter = await ev(`localStorage.getItem('myday.data.v4')`);
-  check('choosing answers in the questions saves nothing: saved data is identical before and after', savedAfter === savedBefore, [savedBefore && savedBefore.length, savedAfter && savedAfter.length]);
+  const savedAfter = await ev(`JSON.stringify(Object.keys(localStorage).filter(k => k.startsWith('myday.')).sort().map(k => [k, localStorage.getItem(k)]))`);
+  check('choosing answers in the questions saves nothing: every myday. key in this browser is identical before and after', savedAfter === savedBefore, [savedBefore && savedBefore.length, savedAfter && savedAfter.length]);
   const wrongInfo = await ev(`(() => { const q = document.querySelector('${exQ1}'), w = q.querySelector('[data-ar-explainer-why]'); return { state: q.dataset.state, right: q.querySelector('[data-ar-explainer-choice="right"]')?.textContent, wrong: q.querySelector('[data-ar-explainer-choice="wrong"]')?.textContent, why: w?.textContent, focused: !!w && document.activeElement === w }; })()`);
   check('a wrong choice marks question 1 wrong, shows قُلْ as the right one, labels "(your choice)" and says "Not quite."', wrongInfo.state === 'wrong' && wrongInfo.right.includes('قُلْ') && wrongInfo.wrong.includes('(your choice)') && (wrongInfo.why || '').startsWith('Not quite.'), wrongInfo);
   check('…and focus moves to its explanation', focusedWhy, wrongInfo);
@@ -598,15 +598,34 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   check('Vocabulary has 13 links to explainers under course words', linkCount === 13, linkCount);
   check('a verb\'s link reads "How this verb works, step by step"', await linkText('lexeme.arabic-weak-verbs-1') === 'How this verb works, step by step', await linkText('lexeme.arabic-weak-verbs-1'));
   check('a phrase\'s link reads "How it works, step by step"', await linkText('lexeme.arabic-verb-moods-4') === 'How it works, step by step', await linkText('lexeme.arabic-verb-moods-4'));
+  check('…and each link\'s accessible name adds its word, so the list of links can be told apart', await ev(`document.querySelector('[data-ar-word="lexeme.arabic-weak-verbs-1"] [data-ar-explainer-link]')?.getAttribute('aria-label')`) === 'How this verb works, step by step: قَالَ');
+
+  // Wide, where the app bar and the lesson's step bar stay at the top: the opened card's title must clear both.
+  await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
+  await go('study/arabic/vocabulary'); await wait('[data-ar-explainer-link]', 5000);
 
   await click('[data-ar-word="lexeme.arabic-irregular-families-5"] [data-ar-explainer-link]');
   let follow = null;
   for (let t = 0; t < 3000; t += 100) {
-    follow = await ev(`(() => { const d = document.querySelector('details[data-ar-explainer="explainer.arabic-take"]'); const top = d ? d.getBoundingClientRect().top : null; return { hash: location.hash, open: !!d && d.open, top, h: innerHeight }; })()`);
-    if (follow.hash === '#study/arabic/lesson.arabic-irregular-families' && follow.open && follow.top >= 0 && follow.top < follow.h) break;
+    follow = await ev(`(() => { const d = document.querySelector('details[data-ar-explainer="explainer.arabic-take"]'), s = d?.querySelector('summary'), bar = document.querySelector('nav.journey-steps'); const top = d ? d.getBoundingClientRect().top : null; return { hash: location.hash, open: !!d && d.open, top, h: innerHeight, title: s ? Math.round(s.getBoundingClientRect().top) : null, bar: bar ? Math.round(bar.getBoundingClientRect().bottom) : null, focused: !!s && document.activeElement === s }; })()`);
+    if (follow.hash === '#study/arabic/lesson.arabic-irregular-families' && follow.open && follow.top >= 0 && follow.top < follow.h && follow.title >= follow.bar) break;
     await sleep(100);
   }
   check('following a link from Vocabulary goes to that lesson with the Take explainer open and in view', follow.hash === '#study/arabic/lesson.arabic-irregular-families' && follow.open && follow.top >= 0 && follow.top < follow.h, follow);
+  check('…at 1280 px its title, which has focus, sits below the sticky step bar, not under it', follow.focused && follow.bar !== null && follow.title >= follow.bar, follow);
+  await send('Emulation.clearDeviceMetricsOverride');
+
+  // A word from another lesson links to the explainer where it lives: لَمْ يَكُنْ (verb moods) to Be (weak verbs).
+  await fresh('study/arabic/lesson.arabic-verb-moods'); await wait('[data-ar-lesson-words]', 5000);
+  await ev(`document.querySelector('[data-ar-lesson-words]').open = true`); await sleep(300);
+  await click('[data-ar-word="lexeme.arabic-verb-moods-4"] [data-ar-explainer-link]');
+  let across = null;
+  for (let t = 0; t < 3000; t += 100) {
+    across = await ev(`({ hash: location.hash, open: !!document.querySelector('details[data-ar-explainer="explainer.arabic-be"]')?.open })`);
+    if (across.hash === '#study/arabic/lesson.arabic-weak-verbs' && across.open) break;
+    await sleep(100);
+  }
+  check('a word in another lesson\'s list opens the explainer in its own lesson: from verb moods to Be, open', across.hash === '#study/arabic/lesson.arabic-weak-verbs' && across.open, across);
 
   await fresh(wvHash); await wait('[data-ar-lesson-words]', 5000);
   await ev(`document.querySelector('[data-ar-lesson-words]').open = true`); await sleep(300);

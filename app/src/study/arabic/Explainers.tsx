@@ -13,40 +13,46 @@ import { askStep } from '../journey/pending';
 // explainerData.ts). They sit in a lesson's Understand step, so they fold away with it while you check yourself, and a
 // course word links to the one that explains it. Nothing here is saved.
 const anchor = (id: string) => 'ar-explainer-' + id.replaceAll('.', '-');
-// Open an explainer on this page and bring it into view; false if it isn't here.
+// Open an explainer on this page (and anything folded around it) and bring it into view, its title taking focus;
+// false if it isn't here. Smooth only when motion is on, in MyDay and on the device.
 function openHere(id: string) {
   const el = document.getElementById(anchor(id)) as HTMLDetailsElement | null;
   if (!el) return false;
-  el.open = true;
-  el.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  for (let d: HTMLElement | null = el; d; d = d.parentElement?.closest('details') ?? null) (d as HTMLDetailsElement).open = true;
+  const calm = document.documentElement.dataset.motion === 'off' || matchMedia('(prefers-reduced-motion: reduce)').matches;
+  el.scrollIntoView({ block: 'start', behavior: calm ? 'auto' : 'smooth' });
   el.querySelector('summary')?.focus({ preventScroll: true });
   return true;
 }
 
 // Under a course word: a link to the explainer for it. On its lesson's page it opens there; elsewhere it opens the
 // lesson at its Understand step, with the explainer open.
-export function ExplainerLink({ found, verb }: { found: { lessonId: string; e: Explainer } | null; verb: boolean }) {
+// Its accessible name adds the word, so a list of these links can be told apart.
+export function ExplainerLink({ found, verb, word }: { found: { lessonId: string; e: Explainer } | null; verb: boolean; word: string }) {
   if (!found) return null;
-  const { lessonId, e } = found;
-  return <p className="m-0"><InlineLink href={'#study/arabic/' + lessonId} data-ar-explainer-link={e.id} className="inline-flex items-center min-h-11 text-primary font-semibold underline-offset-2 hover:underline"
+  const { lessonId, e } = found, label = `${verb ? 'How this verb works' : 'How it works'}, step by step`;
+  return <p className="m-0"><InlineLink href={'#study/arabic/' + lessonId} data-ar-explainer-link={e.id} aria-label={`${label}: ${word}`}
+    className="inline-flex items-center min-h-11 text-primary font-semibold underline-offset-2 hover:underline"
     onClick={ev => {
       if (ev.button !== 0 || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
       if (openHere(e.id)) { ev.preventDefault(); return; }
       askStep(lessonId, 'understand');
-      askExplainer(e.id);
-    }}>{verb ? 'How this verb works' : 'How it works'}, step by step</InlineLink></p>;
+      askExplainer(lessonId, e.id);
+    }}>{label}</InlineLink></p>;
 }
 
-// A lesson's explainers, in its Understand step. `ready` is when the lesson page has settled (its teaching is here),
-// so an explainer a link asked for opens after the page has gone to the step.
+// A lesson's explainers, in its Understand step. An explainer a link asked for is taken as the page opens (like the
+// step it asked for); it opens once the page has settled (`ready`: its teaching is here) and the explainers have
+// loaded, after the page's own jump to the step (useJourney: a timer, then a frame).
 export function LessonExplainers({ lessonId, ready }: { lessonId: string; ready: boolean }) {
   const b = useExplainers(), list = b?.[lessonId] ?? [];
+  const [want] = useState(() => takeExplainer(lessonId)), opened = useRef(false);
   useEffect(() => {
-    const id = ready ? takeExplainer((b?.[lessonId] ?? []).map(e => e.id)) : null;
-    if (!id) return;
-    const timer = setTimeout(() => openHere(id), 400); // after the page's own jump to the step (useJourney)
-    return () => clearTimeout(timer);
-  }, [ready, b, lessonId]);
+    if (!want || opened.current || !ready || !b?.[lessonId]?.some(e => e.id === want)) return;
+    let frame = 0;
+    const timer = setTimeout(() => { frame = requestAnimationFrame(() => { opened.current = true; openHere(want); }); }, 400);
+    return () => { clearTimeout(timer); cancelAnimationFrame(frame); };
+  }, [want, ready, b, lessonId]);
   if (!list.length) return null;
   return <section className="mt-5" data-ar-explainers={list.length} aria-labelledby={`ar-explainers-${lessonId}`}>
     <h4 id={`ar-explainers-${lessonId}`} className="mb-1">How it works</h4>
@@ -55,14 +61,14 @@ export function LessonExplainers({ lessonId, ready }: { lessonId: string; ready:
   </section>;
 }
 
-const H = ({ children }: { children: string }) => <h5 className="text-[15px] font-semibold mt-5 mb-2">{children}</h5>;
+const H = ({ children }: { children: string }) => <h6 className="text-[15px] font-semibold mt-5 mb-2">{children}</h6>;
 // The voice, where a clip has been listened to (only then does a play button show), for the forms, the sentences and
 // the Arabic in the steps (the owner's choice, 30 October 2026). The word-by-word pieces, the "why" and the questions
 // stay silent.
 function ExplainerCard({ e }: { e: Explainer }) {
   const voice = e.id;
-  return <details id={anchor(e.id)} data-ar-explainer={e.id} className="mt-3 rounded-tile border border-outline bg-surface px-4 py-2 scroll-mt-20">
-    <summary className="cursor-pointer min-h-11 py-2 font-semibold text-primary"><WordNote text={e.title_en} /></summary>
+  return <details id={anchor(e.id)} data-ar-explainer={e.id} className="mt-3 rounded-tile border border-outline bg-surface px-4 py-2 scroll-mt-20 lg:scroll-mt-[160px]">
+    <summary className="cursor-pointer min-h-11 py-2 font-semibold text-primary"><h5 className="inline m-0 text-[length:inherit] font-semibold"><WordNote text={e.title_en} /></h5></summary>
     <p className="text-sm text-fg-2 mt-1 mb-0">{e.family_en}{e.root_ar && <>. Root: <Root f={{ root_ar: e.root_ar, root_reading: e.root_reading ?? '' }} /></>}</p>
 
     <H>The family</H>

@@ -31,12 +31,12 @@ export const explainerFor = (b: Explainers | null, wordId: string) => {
   return null;
 };
 
-// An explainer a link asked to open (from Vocabulary): kept in memory only, used once, within a few seconds of the tap,
-// like a step a link asks for (journey/pending.ts).
-let pending: { id: string; at: number } | null = null;
-export const askExplainer = (id: string) => { pending = { id, at: Date.now() }; };
-export const takeExplainer = (ids: string[]) => {
-  const id = pending && Date.now() - pending.at < 5000 && ids.includes(pending.id) ? pending.id : null;
-  if (id) pending = null;
+// An explainer a link asked to open (from another page): kept in memory only, used once by the next page for that lesson,
+// and only within a few seconds of the tap, exactly like a step a link asks for (journey/pending.ts).
+let pending: { lessonId: string; id: string; at: number } | null = null;
+export const askExplainer = (lessonId: string, id: string) => { pending = { lessonId, id, at: Date.now() }; };
+export function takeExplainer(lessonId: string): string | null {
+  const id = pending?.lessonId === lessonId && Date.now() - pending.at < 5000 ? pending.id : null;
+  pending = null;
   return id;
-};
+}

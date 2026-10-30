@@ -815,8 +815,8 @@ derived verbs). Each has the family as a table (form, Arabic, meaning; on a phon
 short steps, two or three sentences broken down word by word, a "why" question, and three questions whose answer shows
 when you choose (focus moves to the explanation). Nothing is saved, and it folds away with the explanation while you
 check yourself. A course word with an explainer has "How this verb works, step by step" (or "How it works"): on its
-lesson's page it opens the card there; from Vocabulary it opens the lesson at Understand with the card open (an
-in-memory request, like a step a link asks for). The voice shows only where a clip has been listened to, for the
+lesson's page it opens the card there; from Vocabulary, or from another lesson's word list, it opens the lesson at
+Understand with the card open (an in-memory request, like a step a link asks for), its title clear of the step bar. The voice shows only where a clip has been listened to, for the
 forms, sentences and steps. MyDay's own file, `../content/teaching/arabic/explainers.json`, loaded on demand like the
 teaching; only the Arabic is stored, and the app adds the transliteration. `scripts/validate-explainers.mjs` checks it
 at every build: shape, full vowelling with endings in phrases, the house spelling, no two Arabic pieces run together,

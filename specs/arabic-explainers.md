@@ -113,6 +113,10 @@ Only Arabic is stored, never a transliteration. The file is MyDay's own; the cur
 
 **For topics beyond verbs:** the root becomes optional, and the table can hold any set of forms.
 
+**As the course fills:** one file loaded on demand is fine for the first batches (about 4 KB per explainer). Before it
+grows to the whole course, split it by module, with a small map from course word to explainer built once, so a lesson
+loads only its module's explainers.
+
 ## 6. Decisions (owner, 30 October 2026)
 
 1. **The whole course, not just some sections.** Every lesson gets explainers, including the reading, listening,
