@@ -566,5 +566,66 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   check('at 360 px the open word list doesn\'t scroll sideways, and its play and Add to revision buttons are at least 44 px tall', await ev('document.documentElement.scrollWidth === innerWidth') && tall.n > 0 && tall.small === 0, [await ev('[document.documentElement.scrollWidth, innerWidth]'), tall]);
   await send('Emulation.clearDeviceMetricsOverride');
 
+  console.log('\n[15] Explainers: How it works, the questions, the links, nothing saved');
+  const wvHash = 'study/arabic/lesson.arabic-weak-verbs', exSel = '#ar-step-understand [data-ar-explainers="5"]';
+  const exWantIds = ['say', 'be', 'live', 'invite', 'walk'].map(n => 'explainer.arabic-' + n);
+  await fresh(wvHash); await wait(exSel, 5000);
+  const exInfo = await ev(`(() => { const s = document.querySelector('#ar-step-understand [data-ar-explainers="5"]'); return !s ? null : { head: s.querySelector('h4')?.textContent, ids: [...s.querySelectorAll('details[data-ar-explainer]')].map(d => d.dataset.arExplainer), open: [...s.querySelectorAll('details[data-ar-explainer]')].filter(d => d.open).length }; })()`);
+  check('the weak verbs lesson has "How it works" in its Understand step, with five explainers in order (say, be, live, invite, walk), all closed', !!exInfo && exInfo.head === 'How it works' && exInfo.ids.join() === exWantIds.join() && exInfo.open === 0, exInfo);
+  const savedBefore = await ev(`localStorage.getItem('myday.data.v4')`);
+  const sayEx = 'details[data-ar-explainer="explainer.arabic-say"]';
+  await ev(`document.querySelector('${sayEx}').open = true`); await sleep(300);
+  const sayCounts = await ev(`(() => { const d = document.querySelector('${sayEx}'), t = d.querySelector('[data-ar-explainer-table]'), ar = [...t.querySelectorAll('[lang="ar"]')]; return { rows: d.querySelectorAll('[data-ar-explainer-row]').length, steps: d.querySelectorAll('[data-ar-explainer-step]').length, sentences: d.querySelectorAll('[data-ar-explainer-sentence]').length, qs: d.querySelectorAll('[data-ar-explainer-q]').length, arN: ar.length, arOk: ar.every(e => e.dir === 'rtl') }; })()`);
+  check('opening the Say explainer shows 10 table rows, 5 steps, 3 sentences and 3 questions', sayCounts.rows === 10 && sayCounts.steps === 5 && sayCounts.sentences === 3 && sayCounts.qs === 3, sayCounts);
+  check('…and its table\'s Arabic is marked as Arabic, right to left', sayCounts.arN > 0 && sayCounts.arOk, sayCounts);
+  const exQ1 = `${sayEx} [data-ar-explainer-q="1"]`, exQ2 = `${sayEx} [data-ar-explainer-q="2"]`;
+  await click(`${exQ1} [data-action="ar-explainer-choose"]:nth-of-type(2)`); await sleep(300);
+  const focusedWhy = await ev(`(() => { const w = document.querySelector('${exQ1} [data-ar-explainer-why]'); return !!w && document.activeElement === w; })()`);
+  await click(`${exQ2} [data-action="ar-explainer-choose"]:nth-of-type(1)`); await sleep(300);
+  const savedAfter = await ev(`localStorage.getItem('myday.data.v4')`);
+  check('choosing answers in the questions saves nothing: saved data is identical before and after', savedAfter === savedBefore, [savedBefore && savedBefore.length, savedAfter && savedAfter.length]);
+  const wrongInfo = await ev(`(() => { const q = document.querySelector('${exQ1}'), w = q.querySelector('[data-ar-explainer-why]'); return { state: q.dataset.state, right: q.querySelector('[data-ar-explainer-choice="right"]')?.textContent, wrong: q.querySelector('[data-ar-explainer-choice="wrong"]')?.textContent, why: w?.textContent, focused: !!w && document.activeElement === w }; })()`);
+  check('a wrong choice marks question 1 wrong, shows قُلْ as the right one, labels "(your choice)" and says "Not quite."', wrongInfo.state === 'wrong' && wrongInfo.right.includes('قُلْ') && wrongInfo.wrong.includes('(your choice)') && (wrongInfo.why || '').startsWith('Not quite.'), wrongInfo);
+  check('…and focus moves to its explanation', focusedWhy, wrongInfo);
+  const rightInfo = await ev(`(() => { const q = document.querySelector('${exQ2}'); return { state: q.dataset.state, why: q.querySelector('[data-ar-explainer-why]')?.textContent }; })()`);
+  check('a right choice marks question 2 right and its explanation starts "Right."', rightInfo.state === 'right' && (rightInfo.why || '').startsWith('Right.'), rightInfo);
+  await click('[data-action="ar-step"][data-v="check"]'); await sleep(400);
+  check('while you check yourself, the explainers fold away with the explanation', await exists('[data-ar-folded]') && !(await exists('[data-ar-explainers]')));
+
+  await fresh('study/arabic/vocabulary'); await wait('[data-ar-course-words]', 5000);
+  const linkText = id => ev(`document.querySelector('[data-ar-word="${id}"] [data-ar-explainer-link]')?.textContent`);
+  const linkCount = await count('[data-ar-explainer-link]');
+  check('Vocabulary has 13 links to explainers under course words', linkCount === 13, linkCount);
+  check('a verb\'s link reads "How this verb works, step by step"', await linkText('lexeme.arabic-weak-verbs-1') === 'How this verb works, step by step', await linkText('lexeme.arabic-weak-verbs-1'));
+  check('a phrase\'s link reads "How it works, step by step"', await linkText('lexeme.arabic-verb-moods-4') === 'How it works, step by step', await linkText('lexeme.arabic-verb-moods-4'));
+
+  await click('[data-ar-word="lexeme.arabic-irregular-families-5"] [data-ar-explainer-link]');
+  let follow = null;
+  for (let t = 0; t < 3000; t += 100) {
+    follow = await ev(`(() => { const d = document.querySelector('details[data-ar-explainer="explainer.arabic-take"]'); const top = d ? d.getBoundingClientRect().top : null; return { hash: location.hash, open: !!d && d.open, top, h: innerHeight }; })()`);
+    if (follow.hash === '#study/arabic/lesson.arabic-irregular-families' && follow.open && follow.top >= 0 && follow.top < follow.h) break;
+    await sleep(100);
+  }
+  check('following a link from Vocabulary goes to that lesson with the Take explainer open and in view', follow.hash === '#study/arabic/lesson.arabic-irregular-families' && follow.open && follow.top >= 0 && follow.top < follow.h, follow);
+
+  await fresh(wvHash); await wait('[data-ar-lesson-words]', 5000);
+  await ev(`document.querySelector('[data-ar-lesson-words]').open = true`); await sleep(300);
+  const hashBefore = await ev('location.hash');
+  await click('[data-ar-word="lexeme.arabic-weak-verbs-4"] [data-ar-explainer-link]');
+  let inPlace = false;
+  for (let t = 0; t < 3000 && !inPlace; t += 100) { inPlace = await ev(`!!document.querySelector('details[data-ar-explainer="explainer.arabic-invite"]')?.open`); if (!inPlace) await sleep(100); }
+  check('a link inside the lesson opens its explainer in place, and the address stays the same', inPlace && await ev('location.hash') === hashBefore, [hashBefore, await ev('location.hash')]);
+
+  await fresh('study/arabic/lesson.arabic-origin-location'); await wait('[data-ar-check]', 5000);
+  check('a lesson without explainers shows no "How it works" section', !(await exists('[data-ar-explainers]')));
+
+  await send('Emulation.setDeviceMetricsOverride', { width: 360, height: 800, deviceScaleFactor: 2, mobile: true });
+  await go(wvHash); await wait(exSel, 5000);
+  await ev(`document.querySelector('details[data-ar-explainer="explainer.arabic-walk"]').open = true`); await sleep(400);
+  const narrow = await ev(`(() => { const d = document.querySelector('details[data-ar-explainer="explainer.arabic-walk"]'), th = d.querySelector('[data-ar-explainer-table] thead th'), row = d.querySelector('[data-ar-explainer-row="مَشَيْتُ"]'), cell = row && row.lastElementChild; const lab = cell && cell.querySelector('span'); return { th: th.textContent, thDisplay: getComputedStyle(th).display, rowCell: cell && cell.textContent, labShown: !!lab && getComputedStyle(lab).display !== 'none' && lab.getBoundingClientRect().height > 0, sw: document.documentElement.scrollWidth, iw: innerWidth }; })()`);
+  check('at 360 px the open explainer doesn\'t scroll sideways', narrow.sw === narrow.iw, narrow);
+  check('…its "Form" column is hidden, and each row\'s meaning cell shows its form instead, e.g. "past: I" for مَشَيْتُ', narrow.th === 'Form' && narrow.thDisplay === 'none' && narrow.labShown && (narrow.rowCell || '').includes('past: I'), narrow);
+  await send('Emulation.clearDeviceMetricsOverride');
+
   const s = T.summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
 })().catch(e => { console.error('HARNESS', e); process.exit(1); });

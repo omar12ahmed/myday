@@ -388,6 +388,32 @@ check('vowelled and unvowelled versions are both kept where the package has them
   const allRound = A.roundIds(mixed, '2026-10-10', 'all', 5);
   check('in the all-subjects round too: one lesson to practise again, and a concept never revised waits behind what\'s due', allRound.filter(id => id.endsWith(':practise')).length === 1 && !allRound.includes('cpNever')
     && A.roundIds(mixed, '2026-10-10', 'all', 9).at(-1) === 'cpNever');
+  console.log('\n[E] Explainers: the authored file, its checks and the build');
+  const expPath = path.join(ROOT, 'content/teaching/arabic/explainers.json');
+  const runExp = (file, extra = []) => { try { return { code: 0, out: execFileSync('node', [path.join(ROOT, 'app/scripts/validate-explainers.mjs'), ...(file ? [file] : []), ...extra], { stdio: 'pipe' }).toString() }; } catch (e) { return { code: e.status || 1, out: `${e.stdout || ''}${e.stderr || ''}` }; } };
+  const realExp = runExp(expPath, ['--readings']);
+  check('the real explainers file passes with its readings: 10 explainers in 3 lessons', realExp.code === 0 && realExp.out.includes('10 explainers in 3 lessons'));
+  check('the build checks the explainers: curriculum:prepare runs validate-explainers.mjs', (JSON.parse(read(path.join(ROOT, 'app/package.json'))).scripts['curriculum:prepare'] || '').includes('node scripts/validate-explainers.mjs'));
+  const expSource = JSON.parse(read(expPath));
+  const expTemp = fs.mkdtempSync(path.join(os.tmpdir(), 'myday-explainers-'));
+  const badExp = (name, mutate, message, expected) => {
+    const copy = JSON.parse(JSON.stringify(expSource)); mutate(copy);
+    const file = path.join(expTemp, `bad-${name}.json`); fs.writeFileSync(file, JSON.stringify(copy));
+    const r = runExp(file);
+    check(`${expected}: a bad copy fails the build and says "${message}"`, r.code !== 0 && r.out.includes(message));
+  };
+  const sayOf = f => f.lessons['lesson.arabic-weak-verbs'][0];
+  badExp('side-by-side', f => { sayOf(f).steps[1] = 'Compare قَالَ يَقُولُ here.'; }, 'reads as one piece', 'two Arabic pieces side by side in a step');
+  badExp('comma', f => { sayOf(f).steps[1] = 'Compare قَالَ، يَقُولُ here.'; }, 'reads as one piece', 'two Arabic pieces joined only by an Arabic comma');
+  badExp('vowel', f => { sayOf(f).table[1].ar = 'قلْتُ'; }, 'is not fully vowelled', 'a table form missing a vowel');
+  badExp('ending', f => { sayOf(f).examples[0].ar = 'هُوَ يَقُولُ الْحَقّ.'; sayOf(f).examples[0].words[2].ar = 'الْحَقّ'; }, 'the ending of', 'a sentence whose last word lost its ending');
+  badExp('gives-away', f => { sayOf(f).steps[0] += ' For example, لَمْ يَدْعُ.'; }, 'gives away the lesson check', 'a step that gives away the lesson check\'s answer');
+  badExp('derived-away', f => { f.lessons['lesson.arabic-derived-forms'][0].steps[0] += ' See عَلَّمَ سَامِي الطَّالِبَ here.'; }, 'gives away the lesson check', 'a step that uses the derived-forms check\'s own sentence');
+  badExp('hamzat-wasl', f => { sayOf(f).steps[0] += ' Then امْشِ here.'; }, 'writes it اِ or اُ', 'a piece starting with a bare hamzat al-waṣl');
+  badExp('word-order', f => { const w = sayOf(f).examples[0].words; [w[0], w[1]] = [w[1], w[0]]; }, 'spell the sentence exactly', 'a sentence\'s words out of order');
+  badExp('answer', f => { sayOf(f).selftest[1].answer = 'they say'; }, 'the answer must be one of the choices', 'an answer that isn\'t one of the choices');
+  badExp('course-word', f => { sayOf(f).course_words = ['lexeme.arabic-nope-1']; }, "isn't a course word", 'an unknown course word');
+  fs.rmSync(expTemp, { recursive: true, force: true });
   fs.rmSync(tmp, { recursive: true, force: true });
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);
