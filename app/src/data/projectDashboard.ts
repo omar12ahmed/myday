@@ -8,6 +8,7 @@ import { issueLinks, timelineInOrder } from './caseFile';
 import { parseKey, shift, shortDate, todayKey } from './dates';
 import { comingUp, nextStep } from './projects';
 import { deadlineToNote } from './deadlines';
+import { experimentsHome, testsDone } from './experiments';
 import { chaseTask, deadlineLabel } from './tasks';
 import type { DateKey, MyDayData, Project } from './types';
 
@@ -77,6 +78,9 @@ export function worthALook(data: MyDayData, p: Project, k: DateKey = todayKey(),
   // (A deadline says which kind, as Needs you does: "— date to aim for, in 5 days".)
   const kind = ahead?.kind === 'task' && ahead.task.deadline ? `${deadlineLabel(ahead.task.deadline).toLowerCase()}, ` : '';
   if (soon) out.push({ key: 'soon', text: `${soon.title} — ${kind}${soon.day === k ? 'today' : soon.day === shift(k, 1) ? 'tomorrow' : `in ${days(k, soon.day)} days`}`, href: soon.href });
+  // An experiment's "Test: …" task done, its result not recorded yet (specs/projects-business-tools.md).
+  const tested = testsDone(data, p)[0];
+  if (tested) out.push({ key: 'tested', text: `“Test: ${tested.title}” is done — what happened?`, href: experimentsHome(p) });
   if (isBusiness(p)) {
     const waiting = findOutsDone(data, p);
     if (waiting) out.push({ key: 'found', text: waiting === 1 ? 'A Find out task is done — what did you find?' : `${waiting} Find out tasks are done — what did you find?`, href: tab(p, 'model') });

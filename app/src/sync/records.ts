@@ -24,8 +24,10 @@ import { DEFAULT_CATEGORIES } from '../data/notes';
 import { STAGES, STATUS_LABEL } from '../data/projects';
 import { deadlineLabel, stepsText } from '../data/tasks';
 import { SECTIONS } from '../data/projectSections';
+import { amountText, breakEvenText, monthText, normalizeMoney } from '../data/businessMoney';
+import { STATUS_LABEL as EXPERIMENT_STATUS, statusOf } from '../data/experiments';
 import { CAT_LABEL, ENERGY_LABEL } from '../data/plan';
-import type { Book, Category, Commitment, Day, DayContext, FileRecord, ListItem, MyDayData, Note, Project, QueueItem, Recipe, ResearchItem, Review as StudyReview, StudySession, TaskItem, WorkoutSession } from '../data/types';
+import type { Book, Category, Commitment, Day, DayContext, FileRecord, ListItem, MyDayData, Note, Project, QueueItem, Recipe, ResearchExperiment, ResearchItem, Review as StudyReview, StudySession, TaskItem, WorkoutSession } from '../data/types';
 import { isObj } from '../data/util';
 import { cleanAttempt, cleanCyberCard, cleanCyberLesson, cleanPortfolioEntry, normalizeCyber } from '../data/cybersecurity/normalize';
 import type { CyberAttempt, CyberCard, CyberLesson, PortfolioEntry } from '../data/cybersecurity/types';
@@ -298,8 +300,13 @@ const MANY: Many[] = [
   { kind: 'research', label: 'Research',
     items: d => d.research.items, put: (dr, id, c) => putItem(dr.research.items, id, c, (a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id)),
     clean: (id, raw) => same(id, via({ research: { items: [raw] } }).research.items[0]),
-    summary: c => { const r = c as unknown as ResearchItem; const what = r.type === 'question' ? 'Question' : r.type === 'finding' ? 'Finding' : r.type === 'source' ? 'Source' : 'Research';
-      const text = String((r as { text?: unknown }).text ?? (r as { title?: unknown }).title ?? ''); return `${what}${text ? `: ${text.length > 80 ? text.slice(0, 80) + '…' : text}` : ''}`; } },
+    summary: c => { const r = c as unknown as ResearchItem; const what = r.type === 'question' ? 'Question' : r.type === 'finding' ? 'Finding' : r.type === 'source' ? 'Source' : r.type === 'experiment' ? 'Experiment' : 'Research';
+      const text = String((r as { text?: unknown }).text ?? (r as { title?: unknown }).title ?? ''), status = r.type === 'experiment' ? ` · ${EXPERIMENT_STATUS[statusOf(r as ResearchExperiment)]}` : '';
+      return `${what}${text ? `: ${text.length > 80 ? text.slice(0, 80) + '…' : text}` : ''}${status}`; },
+    // An experiment's own words (specs/projects-business-tools.md), so two versions that differ only there can be told apart.
+    lines: c => { const r = c as unknown as ResearchItem; if (r.type !== 'experiment') return []; const e = r as ResearchExperiment;
+      return [e.how && `How: ${e.how}`, e.expect && `What would change my mind: ${e.expect}`, e.result && `What happened: ${e.result}`, e.conclusion && `What I conclude: ${e.conclusion}`,
+        e.tests.length ? `Tests ${e.tests.length === 1 ? '1 thing' : `${e.tests.length} things`}` : ''].filter((x): x is string => !!x); } },
   { kind: 'book', label: 'Book (Reading)',
     items: d => d.reading.books, put: (dr, id, c) => putItem(dr.reading.books, id, c, (a, b) => a.addedOn.localeCompare(b.addedOn) || a.id.localeCompare(b.id)),
     clean: (id, raw) => same(id, via({ reading: { books: [raw] } }).reading.books[0]),
@@ -458,8 +465,12 @@ export function recordLines(key: string, content: Content | null): string[] {
     }
     if (kind === 'project_model') {
       const assumptions = (Array.isArray(v.assumptions) ? v.assumptions : []) as { text: string; state: string; found: string }[];
+      // …and its money (specs/projects-business-tools.md): the break-even, then each line with its amount.
+      const m = normalizeMoney(v.money, { dropped: 0 }), lines = m ? [...m.perSale, ...m.monthly, ...m.startup] : [];
+      const money = m ? [`Money: ${breakEvenText(m)}${m.forecast.from ? ` · forecast from ${monthText(m.forecast.from)}` : ''}${m.actual.length ? ` · ${m.actual.length === 1 ? '1 real month' : `${m.actual.length} real months`}` : ''}`,
+        ...(lines.length ? [lines.map(l => `${l.label} ${l.dir === 'out' ? '−' : ''}${amountText(l.amount)}${l.per === 'percent' ? '%' : ''}`).join('; ')] : [])] : [];
       return [`Problem: ${v.problem || 'Not written yet'}`, `Who: ${v.who || 'Not written yet'}`, `How: ${v.how || 'Not written yet'}`,
-        ...assumptions.map(a => `${a.text} (${a.state})${a.found ? `: ${a.found}` : ''}`).reduce<string[]>((all, line) => [all.length ? `${all[0]}; ${line}` : line], [])];
+        ...assumptions.map(a => `${a.text} (${a.state})${a.found ? `: ${a.found}` : ''}`).reduce<string[]>((all, line) => [all.length ? `${all[0]}; ${line}` : line], []), ...money];
     }
     // A project's own outcome, finish line and where you left off (1.48.0), and what you're learning for it (Study
     // links), so a conflict shows them too.

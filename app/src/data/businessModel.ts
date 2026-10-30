@@ -10,6 +10,7 @@
 //
 // The kind of project lives here too: general (no field), a business idea (1.33.0) or a case (1.35.0, data/caseFile.ts).
 import { isDateKey, isDateTime, localStamp, todayKey } from './dates';
+import { emptyMoney, moneyIsEmpty, normalizeMoney, type MoneyChange } from './businessMoney';
 import { forgetAssumption } from './research';
 import { addTask, isDone } from './tasks';
 import type { Assumption, AssumptionState, BusinessModel, DateKey, MyDayData, Project, TaskItem } from './types';
@@ -35,7 +36,7 @@ export const QUESTIONS: { key: AnswerKey; label: string; hint: string }[] = [
 export const MUST_BE_TRUE = { label: 'What must be true for it to work?', hint: "Things you believe but haven't checked yet. One at a time is plenty." };
 export const STATE_LABEL: Record<AssumptionState, string> = { open: 'Not checked yet', 'looks-true': 'Looks true', 'doesnt-hold': 'Doesn’t hold' };
 const STATES = Object.keys(STATE_LABEL) as AssumptionState[];
-const OWN_KEYS = ['problem', 'who', 'how', 'assumptions'];
+const OWN_KEYS = ['problem', 'who', 'how', 'assumptions', 'money'];
 
 // ---------- Reading what's saved (unknown fields kept; anything unreadable counted, never dropped silently) ----------
 const line = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : '');
@@ -64,10 +65,13 @@ export function normalizeModel(raw: unknown, report: { dropped: number }): Busin
     });
   }
   const m: BusinessModel = { ...raw, problem: answer(raw.problem), who: answer(raw.who), how: answer(raw.how), assumptions };
+  // Its money (specs/projects-business-tools.md), when there's something in it.
+  const money = normalizeMoney(raw.money, report);
+  if (money) m.money = money; else delete m.money;
   return isEmpty(m) ? undefined : m;
 }
 // Nothing written (and nothing a newer MyDay added): the project is saved as if it never had one.
-const isEmpty = (m: BusinessModel) => !m.problem.trim() && !m.who.trim() && !m.how.trim() && !m.assumptions.length && Object.keys(m).every(k => OWN_KEYS.includes(k));
+const isEmpty = (m: BusinessModel) => !m.problem.trim() && !m.who.trim() && !m.how.trim() && !m.assumptions.length && !m.money && Object.keys(m).every(k => OWN_KEYS.includes(k));
 
 // ---------- Looking at it ----------
 export interface ModelProgress { answered: number; assumptions: number; open: number; looksTrue: number; doesntHold: number }
@@ -95,6 +99,19 @@ const proj = (d: MyDayData, id: string) => d.projects.items.find(p => p.id === i
 const touch = (p: Project) => { p.updatedAt = localStamp(); };
 const modelOf = (p: Project): BusinessModel => (p.model ??= { problem: '', who: '', how: '', assumptions: [] });
 function tidy(p: Project) { if (p.model && isEmpty(p.model)) delete p.model; }
+// A change to the money (data/businessMoney.ts): an empty plan isn't kept, nor a one page left with nothing in it.
+// Returns whether anything changed; the project's "updated" time moves on when it did.
+export function changeMoney(d: MyDayData, projectId: string, change: MoneyChange): boolean {
+  const p = proj(d, projectId);
+  if (!p) return false;
+  const before = JSON.stringify(p.model ?? null);
+  change(modelOf(p).money ??= emptyMoney());
+  if (p.model?.money && moneyIsEmpty(p.model.money)) delete p.model.money;
+  tidy(p);
+  if (JSON.stringify(p.model ?? null) === before) return false;
+  touch(p);
+  return true;
+}
 const as = (p: Project | null, id: string) => p?.model?.assumptions.find(a => a.id === id) ?? null;
 
 // General, a business idea or a case. Changing kind keeps what the other kind had (a one page, a case's records), out

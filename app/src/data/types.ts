@@ -230,9 +230,18 @@ export interface ResearchSource extends ResearchBase { type: 'source'; ref: { ki
 // What a finding says about a question, or (on a business idea) one of the things that must be true.
 export interface ResearchAbout { kind: string; id: string; stance: string; [other: string]: unknown } // kind 'question' | 'assumption'; stance 'supports' | 'contradicts' | 'relates'
 // What you found, from which sources, the day, and how far to trust it (`limits`).
-export interface ResearchFinding extends ResearchBase { type: 'finding'; text: string; limits: string; on: DateKey | null; sourceIds: string[]; about: ResearchAbout[] }
+export interface ResearchFinding extends ResearchBase { type: 'finding'; text: string; limits: string; on: DateKey | null; sourceIds: string[]; about: ResearchAbout[]; experimentId?: string }
+// A test of something you believe (specs/projects-business-tools.md): what you'll try, what it tests (things that must
+// be true, research questions; a kind from a newer MyDay kept), how, what result would change your mind, and once it's
+// done what happened and what you conclude. `status` 'planned' | 'running' | 'done' (a newer one kept); `taskId` its
+// "Test: …" task; `findingId` the finding saved from its result. Never sent to AI.
+export interface ResearchTest { kind: string; id: string; [other: string]: unknown }
+export interface ResearchExperiment extends ResearchBase {
+  type: 'experiment'; title: string; tests: ResearchTest[]; how: string; expect: string; status: string;
+  startedOn: DateKey | null; doneOn: DateKey | null; result: string; conclusion: string; taskId: string | null; findingId?: string;
+}
 export interface ResearchOther extends ResearchBase { type: string } // a type from a newer MyDay: kept as it is
-export type ResearchItem = ResearchQuestion | ResearchSource | ResearchFinding | ResearchOther;
+export type ResearchItem = ResearchQuestion | ResearchSource | ResearchFinding | ResearchExperiment | ResearchOther;
 export interface ResearchData { items: ResearchItem[]; [other: string]: unknown }
 export interface ProjectResource { id: string; title: string; url: string; note?: string; addedOn: DateKey; [other: string]: unknown }
 export interface ProjectsData { items: Project[]; [other: string]: unknown }
@@ -269,7 +278,22 @@ export interface Assumption {
   createdAt: DateTime;
   [other: string]: unknown;
 }
-export interface BusinessModel { problem: string; who: string; how: string; assumptions: Assumption[]; [other: string]: unknown }
+export interface BusinessModel { problem: string; who: string; how: string; assumptions: Assumption[]; money?: BusinessMoney; [other: string]: unknown }
+// A business idea's money plan (specs/projects-business-tools.md): its numbers — per sale, each month, to start — each
+// saying where it's from, the sales a month expected over 12 months, and the real months beside them (never mixed into
+// the plan; never connected to personal Finance). The sums are worked out from these each time, never saved. Never
+// sent to AI.
+export type MoneyBasis = 'guess' | 'quote' | 'measured';
+export interface MoneyLine { id: string; label: string; dir: 'in' | 'out'; amount: number; per: 'fixed' | 'percent'; basis: string; note: string; [other: string]: unknown }
+export interface MoneyMonth { month: string; sales: number | null; in: number | null; out: number | null; note: string; [other: string]: unknown } // month 'YYYY-MM'
+export interface BusinessMoney {
+  currency: string; sale: string; saleValue: number | null;
+  perSale: MoneyLine[]; monthly: MoneyLine[]; startup: MoneyLine[];
+  atSales: number | null;                                   // "At [700] a month…"
+  forecast: { from: string | null; sales: (number | null)[]; [other: string]: unknown }; // from 'YYYY-MM'; 12 months
+  actual: MoneyMonth[];
+  [other: string]: unknown;
+}
 // A case (1.35.0): what happened (the timeline, each entry saying where it comes from — your account, their account or
 // the evidence), the evidence (where it's kept: MyDay doesn't store files) and the issues you're claiming or considering,
 // linked to each other. MyDay organises; it never says whether a claim is good, and never works out legal time limits.

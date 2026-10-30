@@ -1,4 +1,4 @@
-// Searching one project: its own words, tasks, notes, milestones, decisions, a business idea's one page, a case's
+// Searching one project: its own words, tasks, notes, milestones, decisions, a business idea's one page and money, experiments, a case's
 // records and the links you keep with it (their titles and notes; specs/projects-search.md, projects-resources.md). It only reads what's on this device: nothing is saved and nothing is sent anywhere.
 // Every word must appear, in any order; capitals, accents and the kind of apostrophe don't matter. No ranking: a fixed
 // order by kind. Only your own words are searched, never MyDay's labels ("Your answers", "Untitled note").
@@ -11,10 +11,10 @@ import { resourceName } from './projectResources';
 import { isDone } from './tasks';
 import type { MyDayData, Project } from './types';
 
-export type SearchKind = 'about' | 'task' | 'note' | 'milestone' | 'decision' | 'model' | 'timeline' | 'evidence' | 'issue' | 'resource' | 'question' | 'finding' | 'source';
+export type SearchKind = 'about' | 'task' | 'note' | 'milestone' | 'decision' | 'model' | 'money' | 'experiment' | 'timeline' | 'evidence' | 'issue' | 'resource' | 'question' | 'finding' | 'source';
 export interface SearchHit { kind: SearchKind; id: string; title: string; excerpt: string; href: string; done?: 'done' | 'let go'; private?: true }
 export const SEARCH_KIND_LABEL: Record<SearchKind, string> = {
-  about: 'About it', task: 'Task', note: 'Note', milestone: 'Milestone', decision: 'Decision', model: 'Your one page',
+  about: 'About it', task: 'Task', note: 'Note', milestone: 'Milestone', decision: 'Decision', model: 'Your one page', money: 'Money', experiment: 'Experiment',
   timeline: 'Timeline', evidence: 'Evidence', issue: 'Issue', resource: 'Link', question: 'Research question', finding: 'Finding', source: 'Source',
 };
 
@@ -79,6 +79,13 @@ export function searchProject(data: MyDayData, p: Project, query: string): Searc
   if (isBusiness(p) && p.model) {
     add('model', 'answers', 'Your answers', '', [p.model.problem, p.model.who, p.model.how], tab('model'));
     for (const a of p.model.assumptions) add('model', a.id, a.text, a.text, [a.found], tab('model'));
+    // Its money (specs/projects-business-tools.md): each line's name and note.
+    const money = p.model.money;
+    if (money) for (const l of [...money.perSale, ...money.monthly, ...money.startup]) add('money', l.id, l.label, l.label, [l.note], tab('money'));
+  }
+  // Experiments: on a business idea's Model tab, otherwise (with Research on) its Research tab.
+  if (isBusiness(p) || hasResearch(p)) {
+    for (const e of researchOf(data, p.id).experiments) add('experiment', e.id, e.title, e.title, [e.how, e.expect, e.result, e.conclusion], tab(isBusiness(p) ? 'model' : 'research'));
   }
   if (isCase(p) && p.case) {
     for (const t of p.case.timeline) add('timeline', t.id, t.title, t.title, [t.details], tab('timeline'));

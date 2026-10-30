@@ -5,10 +5,10 @@
 // relates to; deciding whether something "looks true" stays yours. Words and counts only. Never sent to AI.
 import { isDateKey, isDateTime, localStamp, todayKey } from './dates';
 import { tidyText } from './projectResources';
-import type { DateKey, MyDayData, Project, ResearchAbout, ResearchData, ResearchFinding, ResearchItem, ResearchQuestion, ResearchSource } from './types';
+import type { DateKey, MyDayData, Project, ResearchAbout, ResearchData, ResearchExperiment, ResearchFinding, ResearchItem, ResearchQuestion, ResearchSource, ResearchTest } from './types';
 import { isObj, listOf, uid } from './util';
 
-export const RESEARCH_LIMITS = { questions: 200, sources: 300, findings: 1000, text: 1000, conclusion: 2000, limits: 500, title: 160, from: 160, sourcesPerFinding: 10, aboutPerFinding: 10 };
+export const RESEARCH_LIMITS = { questions: 200, sources: 300, findings: 1000, experiments: 100, text: 1000, conclusion: 2000, limits: 500, title: 160, from: 160, sourcesPerFinding: 10, aboutPerFinding: 10, testsPerExperiment: 5 };
 export const STANCES = ['supports', 'contradicts', 'relates'] as const;
 export type Stance = typeof STANCES[number];
 const REF_KINDS = ['resource', 'file', 'note'];
@@ -18,6 +18,7 @@ const ID = /^[A-Za-z0-9_-]{1,64}$/;
 export const isQuestion = (x: ResearchItem): x is ResearchQuestion => x.type === 'question';
 export const isSource = (x: ResearchItem): x is ResearchSource => x.type === 'source';
 export const isFinding = (x: ResearchItem): x is ResearchFinding => x.type === 'finding';
+export const isExperiment = (x: ResearchItem): x is ResearchExperiment => x.type === 'experiment';
 
 // ---------- Reading ----------
 const str = (v: unknown, max: number) => (typeof v === 'string' ? tidyText(v, max) : '');
@@ -40,7 +41,18 @@ export function normalizeResearch(raw: unknown, report: { dropped: number }): Re
       const sourceIds = [...new Set(listOf(x.sourceIds).filter((v): v is string => typeof v === 'string' && ID.test(v)))];
       const about: ResearchAbout[] = [];
       for (const a of listOf(x.about)) if (isObj(a) && typeof a.kind === 'string' && a.kind && typeof a.id === 'string' && a.id && typeof a.stance === 'string' && a.stance && !about.some(b => b.kind === a.kind && b.id === a.id)) about.push({ ...a, kind: a.kind, id: a.id, stance: a.stance });
-      out.items.push({ ...base, type: 'finding', text: str(x.text, RESEARCH_LIMITS.text), limits: str(x.limits, RESEARCH_LIMITS.limits), on: day(x.on), sourceIds, about });
+      const f: ResearchFinding = { ...base, type: 'finding', text: str(x.text, RESEARCH_LIMITS.text), limits: str(x.limits, RESEARCH_LIMITS.limits), on: day(x.on), sourceIds, about };
+      if (typeof x.experimentId !== 'string' || !x.experimentId) delete f.experimentId; // (saved from an experiment's result)
+      out.items.push(f);
+    } else if (x.type === 'experiment') {
+      // (specs/projects-business-tools.md) What it tests keeps a kind from a newer MyDay; a status too.
+      const tests: ResearchTest[] = [];
+      for (const t of listOf(x.tests)) if (isObj(t) && typeof t.kind === 'string' && t.kind && typeof t.id === 'string' && t.id && !tests.some(b => b.kind === t.kind && b.id === t.id)) tests.push({ ...t, kind: t.kind, id: t.id });
+      const e: ResearchExperiment = { ...base, type: 'experiment', title: str(x.title, RESEARCH_LIMITS.title), tests, how: str(x.how, RESEARCH_LIMITS.text), expect: str(x.expect, RESEARCH_LIMITS.text),
+        status: typeof x.status === 'string' && x.status ? x.status : 'planned', startedOn: day(x.startedOn), doneOn: day(x.doneOn), result: str(x.result, RESEARCH_LIMITS.conclusion),
+        conclusion: str(x.conclusion, RESEARCH_LIMITS.conclusion), taskId: typeof x.taskId === 'string' && x.taskId ? x.taskId : null };
+      if (typeof x.findingId !== 'string' || !x.findingId) delete e.findingId;
+      out.items.push(e);
     } else out.items.push(base); // a type from a newer MyDay
   }
   return out;
@@ -60,10 +72,10 @@ export function setResearch(d: MyDayData, projectId: string, on: boolean): boole
 }
 
 // ---------- A project's research ----------
-export interface ProjectResearch { questions: ResearchQuestion[]; sources: ResearchSource[]; findings: ResearchFinding[] }
+export interface ProjectResearch { questions: ResearchQuestion[]; sources: ResearchSource[]; findings: ResearchFinding[]; experiments: ResearchExperiment[] }
 export function researchOf(d: MyDayData, projectId: string): ProjectResearch {
   const mine = d.research.items.filter(x => x.projectId === projectId);
-  return { questions: mine.filter(isQuestion), sources: mine.filter(isSource), findings: mine.filter(isFinding) };
+  return { questions: mine.filter(isQuestion), sources: mine.filter(isSource), findings: mine.filter(isFinding), experiments: mine.filter(isExperiment) };
 }
 export const itemOf = (d: MyDayData, id: string) => d.research.items.find(x => x.id === id);
 // Open questions first (in the order you added them), then answered ones (latest answer first).
@@ -219,16 +231,24 @@ export function removeResearch(d: MyDayData, id: string): boolean {
   if (!x) return false;
   d.research.items = d.research.items.filter(i => i.id !== id);
   for (const f of d.research.items) {
-    if (!isFinding(f) || f.projectId !== x.projectId) continue;
+    if (f.projectId !== x.projectId) continue;
+    if (isQuestion(x) && isExperiment(f)) forgetTest(f, 'question', id);
+    if (!isFinding(f)) continue;
     if (isSource(x) && f.sourceIds.includes(id)) { f.sourceIds = f.sourceIds.filter(s => s !== id); f.updatedAt = now(); }
     if (isQuestion(x) && f.about.some(a => a.kind === 'question' && a.id === id)) { f.about = f.about.filter(a => !(a.kind === 'question' && a.id === id)); f.updatedAt = now(); }
   }
   return true;
 }
-// When one of the things that must be true is removed: findings stop pointing at it.
+// (An experiment that tested it no longer does; it keeps everything else.)
+function forgetTest(e: ResearchExperiment, kind: string, id: string) {
+  if (e.tests.some(t => t.kind === kind && t.id === id)) { e.tests = e.tests.filter(t => !(t.kind === kind && t.id === id)); e.updatedAt = now(); }
+}
+// When one of the things that must be true is removed: findings and experiments stop pointing at it.
 export function forgetAssumption(d: MyDayData, projectId: string, assumptionId: string) {
-  for (const f of researchOf(d, projectId).findings)
+  const mine = researchOf(d, projectId);
+  for (const f of mine.findings)
     if (f.about.some(a => a.kind === 'assumption' && a.id === assumptionId)) { f.about = f.about.filter(a => !(a.kind === 'assumption' && a.id === assumptionId)); f.updatedAt = now(); }
+  for (const e of mine.experiments) forgetTest(e, 'assumption', assumptionId);
 }
 // When the project is deleted (here, or its deletion arriving from another device: sync/engine.ts), its research goes
 // with it.

@@ -12,7 +12,8 @@
 //   - Ask MyDay's look across MyDay (v24, 25 Oct 2026) searches and sends only what may go (names, kinds and where;
 //     ai/lookup.ts searchLookup), so a match never hints at what's held back; it never reads kept Arabic words;
 //   - never: a case's timeline, evidence and issues; the files you attach (their names and contents); a project's
-//     research (questions, findings, sources and conclusions, specs/projects-research.md); a project's outcome, what
+//     research (questions, findings, sources, conclusions and experiments, specs/projects-research.md and
+//     projects-business-tools.md); a business idea's money (its numbers, forecast and real months); a project's outcome, what
 //     counts as finished and where you left off; who a task is waiting on (Ask MyDay's waiting lookup sends only that
 //     it waits, since and until); where a deadline's date comes from and who checked it (specs/projects-deadlines.md;
 //     a task's date goes as it always has); your name, email, preferences and patterns; Finance and Health records (each

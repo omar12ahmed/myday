@@ -11,6 +11,7 @@
 // ones, so a reason is decided once (each keeps its own wording for where it's shown).
 import { awaitingAnswer, isBusiness, isCase } from './businessModel';
 import { caseCounts } from './caseFile';
+import { experimentsHome, testsDone } from './experiments';
 import { parseKey, shift, shortDate, todayKey } from './dates';
 import { comingUp, heldBack, projectsInOrder, projectTasks, stillOpen } from './projects';
 import { chaseTask, deadlineLabel, isStuck } from './tasks';
@@ -94,6 +95,9 @@ export function needsYou(data: MyDayData, k: DateKey = todayKey()): Need[] {
     }
     const found = findOutsDone(data, p);
     if (found) add({ key: `found:${p.id}`, reason: 'found', title: found === 1 ? 'A Find out task is done' : `${found} Find out tasks are done`, why: 'what did you find?', href: `#projects/p/${enc(p.id)}/model`, when: '' });
+    // An experiment's "Test: …" task done with no result recorded yet (specs/projects-business-tools.md).
+    const tested = testsDone(data, p);
+    if (tested.length) add({ key: `tested:${p.id}`, reason: 'found', title: tested.length === 1 ? `“Test: ${tested[0].title}” is done` : `${tested.length} Test tasks are done`, why: 'what happened?', href: experimentsHome(p), when: '' });
     const toGet = evidenceToGet(p);
     if (toGet) add({ key: `evidence:${p.id}`, reason: 'evidence', title: `${toGet} ${toGet === 1 ? 'piece' : 'pieces'} of evidence`, why: 'still to get', href: `#projects/p/${enc(p.id)}/evidence`, when: '' });
   }
