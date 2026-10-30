@@ -64,6 +64,35 @@ Report only real problems you are sure of. Don't report style, or a correct alte
 Return only JSON: {"problems":[{"where":"e.g. step 2 table row 3, self-test 1","arabic":"the Arabic concerned, as written","kind":"form|vowels|register|meaning|claim|answer|other","fix":"the corrected Arabic or statement","why":"one short reason"}]}
 An empty list when nothing is wrong.`;
 
+// v2 (after run 1, ai-eval/reviews/2026-10-30-arabic-tutor-quality.md): the tutor's slips were tidy rules a common verb
+// breaks, tables padded with forms it couldn't vouch for, loose labels and suffix notation; and most drafts reached for
+// the textbook example its lesson's own check uses. The checker looked at spelling but not at claims or whether a form
+// exists.
+export const TUTOR_V2_RULES = `
+
+Accuracy rules, checked before you answer:
+- Before you state a rule about why a form looks as it does, think of a common verb or word that breaks it. If there is
+  one, state the rule with its limit, or give the rule that is actually true. Never leave a follow-up that invites the
+  learner to apply a rule to its exception.
+- Every form in a table or example must be one you are certain is in common use with that meaning. Fewer rows are better
+  than one you can't vouch for; never fill a row to complete a pattern.
+- Name grammar plainly and correctly: a particle written as its own word is not a prefix; say "definite" when
+  definiteness is the condition (الـ is one way, a possessive, a name or an iḍāfa are others).
+- Write endings as Arabic writes them: the vowel sits on the letter before a long-vowel letter (ـُوا), a long-vowel letter
+  takes no sukūn, and a joining hamza (the article's alif) inside a phrase takes no vowel mark.
+- "checkQuestions" are the lesson's own knowledge-check questions. Don't ask them, answer them, or use their example words
+  in your self-test, "why" or follow-up: the learner should meet them fresh. Teach the idea with other words.`;
+export const CHECKER_V2_RULES = `
+
+Also, one by one:
+- every statement about why a form looks as it does, or how a pattern works: is there a common counterexample? An
+  over-general rule is a problem (kind "claim"); so is a follow-up that invites the learner to apply a rule to its exception;
+- every table row and every word: is it a real form in common use, with that meaning? A form that isn't used, or doesn't
+  exist, is a problem (kind "form");
+- grammar labels: a particle called a prefix, or "with الـ" where the condition is definiteness, is a problem (kind "claim").
+Go through every table row, example, word gloss, claim and self-test answer before you answer. Report each problem once.`;
+export type Variant = 'v1' | 'v2';
+
 // ---------- The lesson, as the learner has met it (never its checks, practice or solution) ----------
 type Lesson = { id: string; title: string; learning_objectives?: string[]; key_concepts?: string[]; knowledge_check_id?: string };
 const lessons = new Map((curriculum as unknown as { lessons: Lesson[] }).lessons.map(l => [l.id, l]));
@@ -76,12 +105,17 @@ export function lessonFor(sc: ArabicTutorScenario) {
   return { title: l.title, objectives: l.learning_objectives ?? [], keyConcepts: l.key_concepts ?? [], explanation: t.explanation ?? '', example: t.example ?? '',
     words: wordsOf(sc.lessonId).map(w => ({ ar: w.form_ar, meaning: w.meaning_en })) };
 }
-export const tutorMessages = (sc: ArabicTutorScenario): Msg[] => [
-  { role: 'system', content: TUTOR_SYSTEM },
-  { role: 'user', content: JSON.stringify({ lesson: lessonFor(sc), question: sc.question }) },
+// The lesson's own check questions (never their answers), for v2's "don't ask or answer these".
+export function checkQuestions(sc: ArabicTutorScenario): string[] {
+  const l = lessons.get(sc.lessonId), a = l?.knowledge_check_id ? checks.get(l.knowledge_check_id) : undefined;
+  return (a?.questions ?? []).map(q => q.prompt ?? '').filter(Boolean);
+}
+export const tutorMessages = (sc: ArabicTutorScenario, variant: Variant = 'v1'): Msg[] => [
+  { role: 'system', content: variant === 'v2' ? TUTOR_SYSTEM + TUTOR_V2_RULES : TUTOR_SYSTEM },
+  { role: 'user', content: JSON.stringify({ lesson: lessonFor(sc), question: sc.question, ...(variant === 'v2' ? { checkQuestions: checkQuestions(sc) } : {}) }) },
 ];
-export const checkerMessages = (question: string, draft: string): Msg[] => [
-  { role: 'system', content: CHECKER_SYSTEM },
+export const checkerMessages = (question: string, draft: string, variant: Variant = 'v1'): Msg[] => [
+  { role: 'system', content: variant === 'v2' ? CHECKER_SYSTEM + CHECKER_V2_RULES : CHECKER_SYSTEM },
   { role: 'user', content: JSON.stringify({ question, explanation: draft }) },
 ];
 

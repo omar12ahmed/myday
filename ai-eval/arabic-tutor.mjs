@@ -18,7 +18,8 @@ import { bundle } from './build.mjs';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
 const opt = (name, fallback) => { const i = args.indexOf(name); return i >= 0 && args[i + 1] !== undefined ? args[i + 1] : fallback; };
-const live = args.includes('--live'), stage = opt('--stage', 'tutor');
+const live = args.includes('--live'), stage = opt('--stage', 'tutor'), variant = opt('--variant', 'v1');
+if (!['v1', 'v2'].includes(variant)) { console.log('--variant v1|v2'); process.exit(2); }
 if (!['tutor', 'check'].includes(stage)) { console.log('--stage tutor|check'); process.exit(2); }
 const env = { ...process.env };
 const localEnv = path.join(here, '.env.local');
@@ -57,14 +58,14 @@ if (stage === 'tutor') {
   const scs = K.ARABIC_TUTOR_SCENARIOS.filter(s => !ids || ids.includes(s.id));
   if (ids && scs.length !== ids.length) { console.log('Unknown scenario in --scenarios'); process.exit(2); }
   jobs = [];
-  for (let rep = 1; rep <= repeats; rep++) for (const sc of scs) jobs.push({ key: `${sc.id}#${rep}`, scenario: sc.id, rep, messages: K.tutorMessages(sc), sc, mock: MOCK_TUTOR });
+  for (let rep = 1; rep <= repeats; rep++) for (const sc of scs) jobs.push({ key: `${sc.id}#${rep}`, scenario: sc.id, rep, messages: K.tutorMessages(sc, variant), sc, mock: MOCK_TUTOR });
 } else {
   const dir = opt('--drafts', null);
   if (!dir) { console.log('--stage check needs --drafts <tutor results folder>'); process.exit(2); }
   const tutorRun = JSON.parse(fs.readFileSync(path.join(path.resolve(dir), 'runs.json'), 'utf8'));
   jobs = tutorRun.runs.filter(r => r.checks?.usable).map(r => {
     const sc = K.ARABIC_TUTOR_SCENARIOS.find(s => s.id === r.scenario);
-    return { key: `${r.scenario}#${r.rep}`, scenario: r.scenario, rep: r.rep, messages: K.checkerMessages(sc.question, r.reply), sc, draftOf: path.basename(path.resolve(dir)), mock: '{"problems":[]}' };
+    return { key: `${r.scenario}#${r.rep}`, scenario: r.scenario, rep: r.rep, messages: K.checkerMessages(sc.question, r.reply, variant), sc, draftOf: path.basename(path.resolve(dir)), mock: '{"problems":[]}' };
   });
 }
 
@@ -118,9 +119,9 @@ for (const j of jobs) {
 // Results: the runs, readable drafts or checks, and a summary.
 const mode = live ? 'live' : 'mock';
 const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-const out = path.join(outRoot, `${stamp}-arabic-${stage === 'tutor' ? 'tutor' : 'tutor-check'}-${mode}`);
+const out = path.join(outRoot, `${stamp}-arabic-${stage === 'tutor' ? 'tutor' : 'tutor-check'}${variant === 'v2' ? '-v2' : ''}-${mode}`);
 fs.mkdirSync(out, { recursive: true });
-const meta = { date: new Date().toISOString(), stage, mode, version: stage === 'tutor' ? K.TUTOR_VERSION : K.CHECKER_VERSION, models: configs.map(c => c.id), repeats, budgetUsd: budget, spentUsd: Math.round(spent * 1e6) / 1e6, stoppedForBudget: stopped };
+const meta = { date: new Date().toISOString(), stage, mode, variant, version: `${stage === 'tutor' ? K.TUTOR_VERSION : K.CHECKER_VERSION}${variant === 'v2' ? '+v2' : ''}`, models: configs.map(c => c.id), repeats, budgetUsd: budget, spentUsd: Math.round(spent * 1e6) / 1e6, stoppedForBudget: stopped };
 fs.writeFileSync(path.join(out, 'runs.json'), JSON.stringify({ meta, runs }, null, 2));
 const ok = runs.filter(r => r.outcome === 'ok'), sum = (f) => runs.reduce((a, r) => a + (f(r) ?? 0), 0);
 const lines = [`# Arabic tutor study — ${stage} stage (${mode})`, '', `${meta.version}; models ${meta.models.join(', ')}; ${runs.length} calls, ${ok.length} usable; spent US$${meta.spentUsd.toFixed(4)}${stopped ? ' (stopped at the budget)' : ''}.`,
