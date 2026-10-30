@@ -2776,6 +2776,11 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('…and saves a planned experiment in this project that tests the thing', ex && ex.projectId === 'pjEx' && ex.status === 'planned' && eq(ex.tests, [{ kind: 'assumption', id: 'asE1' }]) && ex.title === 'Ask 20 shops (made up)' && ex.expect === 'Fewer than 5 say yes', ex);
   check('…its row shows the title, and the thing it tests now says "1 experiment: 1 planned"', (await text(`${ex_row}[data-status=planned]`)).includes('Ask 20 shops (made up)') && (await text(`${rowSel('asE1')} [data-action=as-experiments]`)) === '1 experiment: 1 planned', await text(`${rowSel('asE1')} [data-s=as-experiments]`));
   check('…and the other thing has no experiments yet', !(await exists(`${rowSel('asE2')} [data-action=as-experiments]`)));
+  // (The form, opened from one thing and then from another, follows the second.)
+  await click(`${rowSel('asE1')} [data-action=as-plan-experiment]`); await until(`!!document.querySelector('[data-s=experiment-form] [data-s=experiment-test][data-id=asE1]:checked')`);
+  await click(`${rowSel('asE2')} [data-action=as-plan-experiment]`);
+  check('"Plan an experiment" under another thing while the form is open: the form now tests that one', await until(`!!document.querySelector('[data-s=experiment-test][data-id=asE2]:checked') && !document.querySelector('[data-s=experiment-test][data-id=asE1]:checked')`));
+  await click('[data-action=experiment-cancel]'); await until(`!document.querySelector('[data-s=experiment-form]')`);
 
   console.log('  Start it, add its task, tick the task');
   await click('[data-action=experiment-start]');
@@ -2865,6 +2870,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
 
   console.log('  Money: payback, forecast and real months');
   await ex_open('/money', 12); await until(`!!document.getElementById('moneyAtSales')`);
+  check('with no level entered, payback asks for one (none is assumed)', (await ev(`document.getElementById('moneyAtSales').value`)) === '' && (await text('[data-s=payback]')).startsWith('How many orders a month do you expect?'), await text('[data-s=payback]'));
   await type('#moneyAtSales', '600');
   check('at 600 orders a month the start-up costs are back in about 9 months', await until(`document.querySelector('[data-s=payback]')?.textContent === 'Start-up costs (USD 3,000) back in about 9 months.'`), await text('[data-s=payback]'));
   await type('#moneyFrom', '2027-01');
@@ -2876,7 +2882,7 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('…starting at 2027-01 with 100 orders, then 120', (await ev(`document.querySelector('[data-s=forecast-month]').dataset.month`)) === '2027-01' && (await fcSales(0)) === '100' && (await fcSales(1)) === '120', [await fcSales(0), await fcSales(1)]);
   const fcNums = await ev(`(document.querySelector('[data-s=forecast-month][data-month="2027-01"] [data-s=forecast-sums]').textContent.match(/[−-]?\\d[\\d,.]*/g) || [])`);
   check('…the first month has USD 390 in, 1,080 out (100 × 1.80 + 900) and a running total of −3,690', eq(fcNums, ['390', '1,080', '−3,690']), fcNums);
-  check('…and the forecast\'s summary gives its lowest point', (await text('[data-s=forecast-summary]')).includes('Lowest point:'), await text('[data-s=forecast-summary]'));
+  check('…and the forecast\'s summary gives its lowest point and the first month that pays for itself', (await text('[data-s=forecast-summary]')).includes('Lowest point:') && (await text('[data-s=forecast-summary]')).includes('First month that pays for itself:'), await text('[data-s=forecast-summary]'));
   await type('#moneyRealMonth', '2027-01'); await click('[data-action=real-add]');
   await until(`!!document.getElementById('real-2027-01-sales')`);
   await type('#real-2027-01-sales', '85');
@@ -2915,6 +2921,12 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   const mnSmall = ev(`[...document.querySelectorAll('[data-s=money] button, [data-s=money] input')].filter(b => b.getBoundingClientRect().height < 44).map(b => (b.dataset.action || b.id || b.tagName) + ':' + Math.round(b.getBoundingClientRect().height))`);
   check('phone 390 px: the Money tab does not scroll sideways', (await ev('document.documentElement.scrollWidth')) <= 390, await ev('document.documentElement.scrollWidth'));
   check('…and every button and field on it is at least 44 px tall', (await ev(`document.querySelectorAll('[data-s=money] button, [data-s=money] input').length`)) > 20 && eq(await mnSmall, []), await mnSmall);
+  // With Research on (switched on by the finding), a business idea has six tabs; at 320 px they wrap, each fitting.
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 320, height: 740, deviceScaleFactor: 2, mobile: true });
+  await ex_open('/money', 17); await sleep(300);
+  const six = await ev(`[...document.querySelectorAll('[data-s=project-tabs] a')].map(a => ({ t: a.dataset.tab, sw: a.scrollWidth, cw: a.clientWidth, h: a.getBoundingClientRect().height }))`);
+  check('phone 320 px: the six tabs (Research on) each fit, at least 44 px tall, and the page doesn\'t scroll sideways', six.map(x => x.t).join() === 'overview,model,money,milestones,decisions,research' && six.every(x => x.sw <= x.cw && x.h >= 44)
+    && (await ev('document.documentElement.scrollWidth')) <= 320, six);
   await T.send('Emulation.clearDeviceMetricsOverride');
 
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);

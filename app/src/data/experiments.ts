@@ -55,11 +55,13 @@ export const experimentsHome = (p: Project) => `#projects/p/${encodeURIComponent
 // Its "Test: …" task, while it's still there.
 export const experimentTask = (data: MyDayData, e: ResearchExperiment): TaskItem | null => (e.taskId ? data.tasks.items.find(t => t.id === e.taskId) ?? null : null);
 // Its task is done but the result isn't recorded yet (so Worth a look and Needs you ask what happened).
+// (One reopened with its result kept isn't asked again.)
 export function awaitingResult(data: MyDayData, e: ResearchExperiment): boolean {
   const t = experimentTask(data, e);
-  return statusOf(e) !== 'done' && !!t && isDone(data, t);
+  return statusOf(e) !== 'done' && !e.result && !!t && isDone(data, t);
 }
-export const testsDone = (data: MyDayData, p: Project) => researchOf(data, p.id).experiments.filter(e => awaitingResult(data, e));
+// Only where its experiments show: a business idea, or a project with Research on (one switched off keeps them, unseen).
+export const testsDone = (data: MyDayData, p: Project) => (isBusiness(p) || hasResearch(p) ? researchOf(data, p.id).experiments.filter(e => awaitingResult(data, e)) : []);
 // The finding saved from its result, while it's still there.
 export const savedFinding = (d: MyDayData, e: ResearchExperiment) => (e.findingId ? researchOf(d, e.projectId).findings.find(f => f.id === e.findingId) ?? null : null);
 // Offered once it's done with a result, while no finding from it is there.
@@ -101,7 +103,7 @@ export function editExperiment(d: MyDayData, id: string, patch: ExperimentPatch)
     tests: patch.tests === undefined ? e.tests : [...cleanTests(d, e.projectId, patch.tests), ...foreign],
     how: patch.how === undefined ? e.how : tidyText(patch.how, RESEARCH_LIMITS.text),
     expect: patch.expect === undefined ? e.expect : tidyText(patch.expect, RESEARCH_LIMITS.text),
-    result: patch.result === undefined ? e.result : tidyText(patch.result, RESEARCH_LIMITS.conclusion),
+    result: patch.result === undefined ? e.result : tidyText(patch.result, RESEARCH_LIMITS.text),
     conclusion: patch.conclusion === undefined ? e.conclusion : tidyText(patch.conclusion, RESEARCH_LIMITS.conclusion),
   };
   if (JSON.stringify(next) === JSON.stringify({ title: e.title, tests: e.tests, how: e.how, expect: e.expect, result: e.result, conclusion: e.conclusion })) return false;
@@ -115,9 +117,10 @@ export function startExperiment(d: MyDayData, id: string, k: DateKey = todayKey(
   e.status = 'running'; e.startedOn = k; e.updatedAt = now();
   return true;
 }
-// What happened (it needs a few words) and what you conclude: done, today. A planned one can be recorded straight away.
+// What happened (it needs a few words; as long as a finding can be, so saving it as one keeps all of it) and what you
+// conclude: done, today. A planned one can be recorded straight away.
 export function recordResult(d: MyDayData, id: string, result: string, conclusion: string, k: DateKey = todayKey()): boolean {
-  const e = exp(d, id), r = tidyText(result, RESEARCH_LIMITS.conclusion);
+  const e = exp(d, id), r = tidyText(result, RESEARCH_LIMITS.text);
   if (!e || !r || statusOf(e) === 'done') return false;
   Object.assign(e, { status: 'done', doneOn: k, result: r, conclusion: tidyText(conclusion, RESEARCH_LIMITS.conclusion), updatedAt: now() });
   return true;

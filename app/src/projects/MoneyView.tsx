@@ -35,7 +35,7 @@ export function MoneyView({ p }: { p: Project }) {
         <div className="grid gap-3 sm:grid-cols-3 mt-4" data-s="money-basics">
           <Field label="Currency" htmlFor="moneyCurrency">
             <CommitInput id="moneyCurrency" key={`c${m.currency}`} defaultValue={m.currency} list="moneyCurrencies" maxLength={MONEY_LIMITS.currency} placeholder="e.g. USD" autoCapitalize="characters"
-              onCommit={el => change(setFields({ currency: el.value.toUpperCase() }))} />
+              onCommit={el => change(setFields({ currency: /^[a-z]{3}$/i.test(el.value.trim()) ? el.value.trim().toUpperCase() : el.value }))} />
             <datalist id="moneyCurrencies">{CURRENCIES.map(c => <option key={c} value={c} />)}</datalist>
           </Field>
           <Field label="One sale is called" htmlFor="moneySale">
@@ -62,6 +62,8 @@ export function MoneyView({ p }: { p: Project }) {
 }
 
 type Change = (c: MoneyChange) => boolean;
+// "Where it's from": the three, and one from a newer MyDay as itself (so what's shown is what's kept).
+const basisOptions = (basis: string) => [...BASES, ...((BASES as readonly string[]).includes(basis) ? [] : [basis])].map(b => <option key={b} value={b}>{BASIS_LABEL[b] ?? b}</option>);
 // A month's money in whole numbers (cents in a forecast are noise).
 const whole = (n: number) => amountText(Math.round(n));
 // The forecast's columns: month and sales on a phone (the sums on a line below), all five from a wider screen.
@@ -137,13 +139,13 @@ function LineForm({ m, list, l, change, onDone, onRemove }: { m: BusinessMoney; 
           </Field>
         ) : (
           <Field label="Where it’s from" htmlFor={`${idp}-basis`} className="min-w-0">
-            <Select id={`${idp}-basis`} className="min-w-0" value={basis} onChange={ev => setBasis(ev.target.value)}>{BASES.map(b => <option key={b} value={b}>{BASIS_LABEL[b]}</option>)}</Select>
+            <Select id={`${idp}-basis`} className="min-w-0" value={basis} onChange={ev => setBasis(ev.target.value)}>{basisOptions(basis)}</Select>
           </Field>
         )}
       </div>
       {list === 'perSale' && (
         <Field label="Where it’s from" htmlFor={`${idp}-basis`}>
-          <Select id={`${idp}-basis`} className="!w-auto" value={basis} onChange={ev => setBasis(ev.target.value)}>{BASES.map(b => <option key={b} value={b}>{BASIS_LABEL[b]}</option>)}</Select>
+          <Select id={`${idp}-basis`} className="!w-auto" value={basis} onChange={ev => setBasis(ev.target.value)}>{basisOptions(basis)}</Select>
         </Field>
       )}
       {per === 'percent' && m.saleValue === null && <p className="m-0 text-sm text-fg-2">Add the average value of one {saleWord(m)} above to count this.</p>}
@@ -159,7 +161,8 @@ function LineForm({ m, list, l, change, onDone, onRemove }: { m: BusinessMoney; 
 
 // The break-even and how long to win back the start-up costs, in words.
 function BreakEvenCard({ m, change }: { m: BusinessMoney; change: Change }) {
-  const s = sums(m), b = breakEven(m), at = m.atSales ?? (b.kind === 'sales' ? b.n : null), pb = at === null ? null : payback(m, at);
+  // (No level is assumed: at break-even itself the start-up costs never come back, so the number is yours to try.)
+  const s = sums(m), b = breakEven(m), at = m.atSales, pb = at === null ? null : payback(m, at);
   return (
     <Card aria-labelledby="pjBreakEvenH" id="projectBreakEven" data-s="money-break-even">
       <h3 id="pjBreakEvenH">Break-even</h3>
@@ -171,7 +174,9 @@ function BreakEvenCard({ m, change }: { m: BusinessMoney; change: Change }) {
           <Field label={`${saleWord(m, 2)[0].toUpperCase()}${saleWord(m, 2).slice(1)} a month`} htmlFor="moneyAtSales">
             <CommitInput id="moneyAtSales" key={`a${m.atSales}`} type="number" inputMode="numeric" min={0} step={1} className="!w-32" defaultValue={shown(at)} onCommit={el => change(setFields({ atSales: numberOf(el.value) }))} />
           </Field>
-          <p className="m-0 text-[15px] pb-3" data-s="payback">{!pb ? '' : pb.kind === 'months' ? `Start-up costs (${withCurrency(m, s.startupNet)}) back in about ${pb.n} ${pb.n === 1 ? 'month' : 'months'}.` : pb.kind === 'never' ? 'At that level the running costs aren’t covered, so the start-up costs don’t come back.' : ''}</p>
+          <p className="m-0 text-[15px] pb-3" data-s="payback">{!pb ? `How many ${saleWord(m, 2)} a month do you expect? See how long until the start-up costs (${withCurrency(m, s.startupNet)}) are back.`
+            : pb.kind === 'months' ? `Start-up costs (${withCurrency(m, s.startupNet)}) back in about ${pb.n.toLocaleString()} ${pb.n === 1 ? 'month' : 'months'}.`
+            : pb.kind === 'never' ? (pb.even ? 'At that level each month only just covers its running costs, so the start-up costs don’t come back.' : 'At that level the running costs aren’t covered, so the start-up costs don’t come back.') : ''}</p>
         </div>
       )}
       <Note className="mb-0 mt-3">Worked out from your numbers — as good as they are. Where each comes from is beside it.</Note>
@@ -219,14 +224,14 @@ function ForecastCard({ m, change }: { m: BusinessMoney; change: Change }) {
                   <span className="sm:text-right sm:text-[15px] sm:text-fg"><span className="sm:sr-only">Out </span>{whole(r.out)}</span><span className="sm:hidden"> · </span>
                   <span className={`sm:text-right sm:text-[15px] ${r.total < 0 ? 'sm:text-fg' : 'text-fg font-semibold'}`}><span className="sm:sr-only">Running total </span>{r.total < 0 ? '−' : ''}{whole(Math.abs(r.total))}</span>
                 </span>
-                {got && <span className="col-span-2 sm:col-span-5 text-sm" data-s="forecast-real">Real: {[got.sales !== null && `${got.sales} ${saleWord(m, got.sales)}`, got.in !== null && `in ${amountText(got.in)}`, got.out !== null && `out ${amountText(got.out)}`].filter(Boolean).join(' · ') || 'nothing entered yet'}</span>}
+                {got && <span className="col-span-2 sm:col-span-5 text-sm" data-s="forecast-real">Real: {[got.sales !== null && `${got.sales} ${saleWord(m, got.sales)}`, got.in !== null && `in ${withCurrency(m, got.in)}`, got.out !== null && `out ${withCurrency(m, got.out)}`].filter(Boolean).join(' · ') || 'nothing entered yet'}</span>}
               </li>
             );
           })}
         </ol>
         <ul className="list-none p-0 m-0 mt-3 grid gap-1 text-[15px]" data-s="forecast-summary">
           <li>Lowest point: <span className="font-semibold tabular-nums">{withCurrency(m, Math.round(f.lowest.value))}</span>{f.lowest.month ? ` in ${monthText(f.lowest.month)}` : ' at the start'}</li>
-          <li>{f.blackFrom ? `In the black from ${monthText(f.blackFrom)}` : 'Not in the black within these 12 months'}</li>
+          <li>{f.blackFrom ? `First month that pays for itself: ${monthText(f.blackFrom)}` : 'No month pays for itself within these 12'}</li>
           {f.opening < 0 && <li>{f.backBy ? `Start-up costs back by ${monthText(f.backBy)}` : 'Start-up costs not back within these 12 months'}</li>}
         </ul>
       </>}

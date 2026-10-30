@@ -39,7 +39,7 @@ export function ExperimentsCard({ data, p, planning, setPlanning }: { data: MyDa
       <Note className="mt-0">{list.length ? experimentsLine(list) : 'Test something you believe before you build on it: what you’ll try, and what result would change your mind.'}</Note>
       {list.length > 0 && <ul className="list-none p-0 m-0" aria-label="Experiments">{list.map(e => <ExperimentRow key={e.id} data={data} p={p} e={e} />)}</ul>}
       {full ? <Note className="mb-0 mt-3">{RESEARCH_LIMITS.experiments} experiments is the most a project can have.</Note>
-        : planning ? <div className="mt-3 rounded-tile bg-surface-2 border border-outline p-3"><ExperimentForm data={data} p={p} tests={planning} onDone={() => { setPlanning(null); focusSoon('experimentPlan'); }} /></div>
+        : planning ? <div className="mt-3 rounded-tile bg-surface-2 border border-outline p-3"><ExperimentForm key={planning.map(testKey).join()} data={data} p={p} tests={planning} onDone={() => { setPlanning(null); focusSoon('experimentPlan'); }} /></div>
         : <Button inline className="mt-3" id="experimentPlan" data-action="experiment-plan" onClick={() => setPlanning([])}><FlaskConical size={18} aria-hidden="true" /> Plan an experiment</Button>}
     </Card>
   );
@@ -111,13 +111,13 @@ function ExperimentRow({ data, p, e }: { data: MyDayData; p: Project; e: Researc
       {waiting && !recording && <p className="m-0 mt-2 text-[15px] rounded-tile bg-surface-2 border border-outline px-3 py-2" data-s="experiment-waiting">Its Test task is done — what happened?</p>}
       {recording ? <RecordForm e={e} onDone={done => { setRecording(false); focusSoon(done ? `ex-${e.id}` : `exRecord-${e.id}`); }} /> : (
         <div className="flex flex-wrap items-center gap-2 mt-2">
-          {status === 'planned' && <Button inline variant="tonal" data-action="experiment-start" onClick={() => { if (apply(d => startExperiment(d, e.id))) toast('Started.'); }}>Start it</Button>}
+          {status === 'planned' && <Button inline variant="tonal" data-action="experiment-start" onClick={() => { if (apply(d => startExperiment(d, e.id))) { toast('Started.'); focusSoon(`ex-${e.id}`); } }}>Start it</Button>}
           {status !== 'done' && <Button inline id={`exRecord-${e.id}`} variant={waiting ? 'primary' : 'ghost'} data-action="experiment-record" onClick={() => setRecording(true)}>Record what happened</Button>}
           {task ? <a href={`#today/tasks/${encodeURIComponent(task.id)}`} className="inline-flex items-center gap-1.5 min-h-11 px-1 text-primary font-semibold text-[15px] no-underline hover:underline underline-offset-4" data-s="experiment-task">
             {isDone(data, task) ? <><Check size={16} aria-hidden="true" /> Test task done</> : 'Test task added'}</a>
             : status !== 'done' && <Button inline variant="ghost" data-action="experiment-task" onClick={addTask}>Add a task to run it</Button>}
           <Button inline variant="ghost" data-action="experiment-edit" onClick={() => setEditing(true)}>Edit</Button>
-          {status === 'done' && <Button inline variant="ghost" data-action="experiment-reopen" onClick={() => { if (apply(d => reopenExperiment(d, e.id))) toast('Running again — change what happened whenever you like.'); }}>Reopen</Button>}
+          {status === 'done' && <Button inline variant="ghost" data-action="experiment-reopen" onClick={() => { if (apply(d => reopenExperiment(d, e.id))) { toast('Running again — change what happened whenever you like.'); focusSoon(`ex-${e.id}`); } }}>Reopen</Button>}
         </div>
       )}
       {offered && <FindingOffer data={data} p={p} e={e} />}
@@ -134,7 +134,7 @@ function RecordForm({ e, onDone }: { e: ResearchExperiment; onDone: (done: boole
   }
   return (
     <form className="grid gap-3 mt-2 rounded-tile bg-surface-2 border border-outline p-3" data-s="experiment-record-form" onSubmit={ev => { ev.preventDefault(); save(); }}>
-      <Field label="What happened?" htmlFor={`exR-${e.id}`}><TextArea id={`exR-${e.id}`} rows={3} value={result} maxLength={RESEARCH_LIMITS.conclusion} autoFocus placeholder="e.g. 7 of 20 said yes; most wanted to try a month free" onChange={ev => setResult(ev.target.value)} /></Field>
+      <Field label="What happened?" htmlFor={`exR-${e.id}`}><TextArea id={`exR-${e.id}`} rows={3} value={result} maxLength={RESEARCH_LIMITS.text} autoFocus placeholder="e.g. 7 of 20 said yes; most wanted to try a month free" onChange={ev => setResult(ev.target.value)} /></Field>
       <Field label="What do you conclude, and what will you do next? (optional)" htmlFor={`exC-${e.id}`}><TextArea id={`exC-${e.id}`} rows={2} value={conclusion} maxLength={RESEARCH_LIMITS.conclusion} onChange={ev => setConclusion(ev.target.value)} /></Field>
       <div className="flex flex-wrap gap-2">
         <Button inline type="submit" variant="primary" data-action="experiment-record-save" disabled={!result.trim()}>Save the result</Button>
@@ -175,13 +175,13 @@ function FindingOffer({ data, p, e }: { data: MyDayData; p: Project; e: Research
 
 // Under a thing that must be true: its experiments in words, which go to the card, and "Plan an experiment".
 export function AssumptionExperiments({ data, p, id, setPlanning }: { data: MyDayData; p: Project; id: string; setPlanning: Planning['setPlanning'] }) {
-  const list = experimentsOf(data, p.id).filter(e => e.tests.some(t => t.kind === 'assumption' && t.id === id));
+  const all = experimentsOf(data, p.id), list = all.filter(e => e.tests.some(t => t.kind === 'assumption' && t.id === id));
   const go = () => { const h = document.getElementById('pjExperimentsH'); h?.scrollIntoView({ block: 'start' }); h?.focus(); };
   const planFor = (t: Test) => { setPlanning([t]); requestAnimationFrame(() => document.getElementById('projectExperiments')?.scrollIntoView({ block: 'start' })); };
   return (
     <p className="m-0 mt-1 flex flex-wrap items-center gap-x-4 text-[15px]" data-s="as-experiments">
       {list.length > 0 && <LinkButton className="text-[15px]" data-action="as-experiments" onClick={go}>{experimentsLine(list)}</LinkButton>}
-      <LinkButton className="text-[15px]" data-action="as-plan-experiment" onClick={() => planFor({ kind: 'assumption', id })}>Plan an experiment</LinkButton>
+      {all.length < RESEARCH_LIMITS.experiments && <LinkButton className="text-[15px]" data-action="as-plan-experiment" onClick={() => planFor({ kind: 'assumption', id })}>Plan an experiment</LinkButton>}
     </p>
   );
 }

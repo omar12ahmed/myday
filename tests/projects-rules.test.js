@@ -2264,7 +2264,8 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('…not offered again while that finding is there; offered again once it\'s removed', !K.X.findingOffered(w, E(id)) && !K.X.saveAsFinding(w, id).ok && K.R.removeResearch(w, r.id) && K.X.findingOffered(w, E(id)));
     const r2 = K.X.saveAsFinding(w, id);
     check('…a stance you didn\'t choose is "relates to"', r2.ok && eq(w.research.items.find(x => x.id === r2.id).about, [{ kind: 'assumption', id: 'as1', stance: 'relates' }]));
-    check('reopening: running again, its words kept', K.X.reopenExperiment(w, id) && E(id).status === 'running' && E(id).doneOn === null && E(id).result === '7 of 20 said yes' && !K.X.reopenExperiment(w, id));
+    check('reopening: running again, its words kept; its ticked task doesn\'t ask "what happened?" again', K.X.reopenExperiment(w, id) && E(id).status === 'running' && E(id).doneOn === null && E(id).result === '7 of 20 said yes' && !K.X.reopenExperiment(w, id)
+      && !K.X.awaitingResult(w, E(id)) && !wl().some(x => x.includes('what happened')));
 
     console.log('  experiments: questions, order, editing and removing');
     const q = K.R.addQuestion(w, 'pjB', 'Who sells this now?').id;
@@ -2285,6 +2286,18 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('removing the experiment leaves its task and its finding', !!kept && K.R.removeResearch(w, id) && !E(id) && w.tasks.items.some(t => t.id === tid) && !!w.research.items.find(x => x.id === kept.id));
     const hits = K.searchProject(w, P('pjB'), 'planned one');
     check('Search this project finds an experiment, labelled "Experiment", on the Model tab', hits.some(h => h.kind === 'experiment' && h.id === pl && h.href === '#projects/p/pjB/model') && K.SEARCH_KIND_LABEL.experiment === 'Experiment', hits);
+    const long = K.X.addExperiment(w, 'pjB', { title: 'Long one' }).id;
+    K.X.recordResult(w, long, 'w'.repeat(1500), '', k);
+    const lf = K.X.saveAsFinding(w, long);
+    check('a result is kept to 1,000 characters — what a finding holds — so saving it as one keeps all of it', E(long).result.length === 1000 && lf.ok && w.research.items.find(x => x.id === lf.id).text === E(long).result);
+    const own = K.R.normalizeResearch({ items: w.research.items }, { dropped: 0 });
+    check('experiments and findings MyDay wrote read back exactly as they are (nothing changes by itself on load)', JSON.stringify(own.items) === JSON.stringify(w.research.items));
+    // A general project with Research switched off keeps its experiments, unseen: nothing points at a tab it hasn't got.
+    const wg = world(base('pjQ', { title: 'Garden shed', tools: ['research'] })); wg.tasks.items = []; wg.research = { items: [] };
+    const gq = K.X.addExperiment(wg, 'pjQ', { title: 'Try larch' }).id, gt = K.X.addExperimentTask(wg, gq);
+    K.setTaskDone(wg, gt, true);
+    const asks = () => K.worthALook(wg, wg.projects.items[0], k).some(x => x.key === 'tested') || K.needsYou(wg, k).some(n => n.key === 'tested:pjQ');
+    check('a project with Research asks what happened (on its Research tab); with Research switched off it doesn\'t', asks() && K.X.experimentsHome(wg.projects.items[0]) === '#projects/p/pjQ/research' && K.R.setResearch(wg, 'pjQ', false) && !asks());
     for (let i = 0; i < 100; i++) K.X.addExperiment(w, 'pjB', { title: 'E' + i });
     check('a project keeps at most 100 experiments', !K.X.addExperiment(w, 'pjB', { title: 'one more' }).ok && K.R.researchOf(w, 'pjB').experiments.length === 100);
 
@@ -2301,6 +2314,11 @@ const clone = o => JSON.parse(JSON.stringify(o));
       mm.futureBit === 1 && mm.perSale.map(l => l.id).join() === 'l1,l2,l3,lp' && mm.perSale[0].futureBit === 2 && mm.perSale[1].amount === 1e9 && mm.perSale[2].amount === 0 && mm.perSale[3].amount === 100
       && mm.monthly[0].per === 'fixed' && mm.monthly[0].basis === 'rumour' && eq(mm.actual.map(a => [a.month, a.sales, a.in, a.out]), [['2027-01', null, null, null], ['2027-02', 3, null, 4]])
       && mm.forecast.from === null && mm.forecast.sales.length === 12 && mm.forecast.sales[1] === null && mm.forecast.sales[2] === null && mm.forecast.futureF === 1 && rr.dropped === 4, [mm, rr]);
+    const roundTrip = K.M.normalizeMoney(clone(mm), { dropped: 0 });
+    check('a plan MyDay has read reads back exactly as it is (nothing changes by itself on load)', JSON.stringify(roundTrip) === JSON.stringify(mm));
+    rr = { dropped: 0 };
+    const many = K.M.normalizeMoney(M({ actual: Array.from({ length: 62 }, (_, i) => ({ month: K.M.addMonths('2020-01', i), sales: i, in: null, out: null, note: '' })) }), rr);
+    check('at most 60 real months are kept — the latest — the rest counted', many.actual.length === 60 && many.actual[0].month === '2020-03' && many.actual[59].month === '2025-02' && rr.dropped === 2, [many.actual.length, many.actual[0]?.month, rr]);
     check('an empty plan isn\'t kept; one with only a currency is', K.M.normalizeMoney(M({ currency: '', sale: '', saleValue: null, perSale: [], monthly: [], startup: [] }), { dropped: 0 }) === undefined && !!K.M.normalizeMoney({ currency: 'USD' }, { dropped: 0 }));
     rr = { dropped: 0 };
     check('the one page reads its money (kept even when that\'s all there is); money it can\'t read is counted', !!K.normalizeModel({ problem: '', who: '', how: '', assumptions: [], money: M() }, { dropped: 0 })?.money
@@ -2311,11 +2329,15 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const s = K.M.sums(m);
     check('each order: in 2.40 (8% of 30) + 1.50, out 1.80 — leaves 2.10; running costs 900; to start 3,000', s.perSaleIn === 3.9 && s.perSaleOut === 1.8 && s.leaves === 2.1 && s.monthlyNet === 900 && s.startupNet === 3000, s);
     check('break-even: 429 orders a month (900 / 2.10, rounded up), in words', eq(K.M.breakEven(m), { kind: 'sales', n: 429 }) && K.M.breakEvenText(m) === 'Break-even: 429 orders a month', K.M.breakEvenText(m));
-    check('payback at 600 a month: 9 months (3,000 / 360, rounded up); at 400 never; with nothing to win back, none', eq(K.M.payback(m, 600), { kind: 'months', n: 9 }) && eq(K.M.payback(m, 400), { kind: 'never' }) && eq(K.M.payback(N({ startup: [] }), 600), { kind: 'none' }));
+    check('payback at 600 a month: 9 months (3,000 / 360, rounded up); at 400 never; with nothing to win back, none', eq(K.M.payback(m, 600), { kind: 'months', n: 9 }) && eq(K.M.payback(m, 400), { kind: 'never', even: false }) && eq(K.M.payback(N({ startup: [] }), 600), { kind: 'none' }));
+    check('…at exactly break-even the month only just covers itself ("even"), floating point or not (1,000 sales leaving 0.70 against 700)', eq(K.M.payback(N({ perSale: [L('a', 'Fee', 'in', 2), L('b', 'Rider', 'out', 1.3)], monthly: [L('m1', 'Office', 'out', 700)] }), 1000), { kind: 'never', even: true }));
     // (700 / 0.7 is 1000.0000000000001 in floating point.)
     check('an exact break-even isn\'t rounded past itself (700 a month, each sale leaving 0.70: 1,000)', eq(K.M.breakEven(N({ perSale: [L('a', 'Fee', 'in', 2), L('b', 'Rider', 'out', 1.3)], monthly: [L('m1', 'Office', 'out', 700)] })), { kind: 'sales', n: 1000 }));
     const loses = N({ perSale: [L('l1', 'Fee', 'in', 1), L('l2', 'Rider', 'out', 1.2)] });
     check('a sale that loses money: "Each order loses USD 0.20 — no number of orders breaks even."', K.M.breakEven(loses).kind === 'never' && K.M.breakEvenText(loses) === 'Each order loses USD 0.20 — no number of orders breaks even.', K.M.breakEvenText(loses));
+    check('running costs covered by the month\'s own money are covered even when each sale loses money (no sales needed)', K.M.breakEven(N({ perSale: [L('a', 'Fee', 'in', 1), L('b', 'Rider', 'out', 1.2)], monthly: [L('m1', 'Office', 'out', 100), L('m2', 'Sponsor', 'in', 100)] })).kind === 'covered');
+    check('only percentages and no average value: it asks for the value, rather than "leaves nothing"', K.M.breakEvenText(N({ saleValue: null, perSale: [L('l1', 'Commission', 'in', 8, { per: 'percent' })] })) === 'Add the average value of one order to count the percentages.');
+    check('a sale\'s name in the plural: orders, deliveries, boxes', K.M.saleWord(N(), 2) === 'orders' && K.M.saleWord(N({ sale: 'delivery' }), 2) === 'deliveries' && K.M.saleWord(N({ sale: 'box' }), 2) === 'boxes' && K.M.saleWord(N({ sale: 'day' }), 2) === 'days');
     check('…one that leaves nothing says so; running costs covered by the month\'s own money: covered; no per-sale lines: what\'s missing',
       K.M.breakEvenText(N({ perSale: [L('a', 'In', 'in', 1), L('b', 'Out', 'out', 1)] })) === 'Each order leaves nothing — no number of orders breaks even.'
       && K.M.breakEven(N({ monthly: [L('m1', 'Office', 'out', 100), L('m2', 'Sponsor', 'in', 100)] })).kind === 'covered'
@@ -2329,7 +2351,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const F = K.M.forecast(N({ forecast: { from: '2027-11', sales: K.M.fillSales(100, 20, 'percent') } }));
     check('12 months from the first, across the year\'s end (Nov 2027 → Oct 2028)', F.rows.length === 12 && F.rows[0].month === '2027-11' && F.rows[2].month === '2028-01' && F.rows[11].month === '2028-10');
     check('month 1: in 390, out 1,080 (100 × 1.80 + 900), running total −3,690 from −3,000', F.opening === -3000 && F.rows[0].in === 390 && F.rows[0].out === 1080 && F.rows[0].total === -3690, F.rows[0]);
-    check('lowest point −6,735 in Jun 2028; in the black from Jul 2028 (430 orders leave 3); start-up costs not back within the 12 months', F.lowest.value === -6735 && F.lowest.month === '2028-06' && F.blackFrom === '2028-07' && F.backBy === null, [F.lowest, F.blackFrom, F.backBy]);
+    check('lowest point −6,735 in Jun 2028; the first month that pays for itself Jul 2028 (430 orders leave 3); start-up costs not back within the 12 months', F.lowest.value === -6735 && F.lowest.month === '2028-06' && F.blackFrom === '2028-07' && F.backBy === null, [F.lowest, F.blackFrom, F.backBy]);
     const G = K.M.forecast(N({ startup: [L('s1', 'Bike', 'out', 300)], forecast: { from: '2027-01', sales: [600, 600] } }));
     check('a month with no sales entered still has its running costs; start-up costs back the month the total reaches zero', G.rows[2].sales === null && G.rows[2].out === 900 && G.rows[2].in === 0 && G.backBy === '2027-01' && G.rows[0].total === 60, G.rows.slice(0, 3));
 
@@ -2352,6 +2374,9 @@ const clone = o => JSON.parse(JSON.stringify(o));
       && !K.changeMoney(w2, 'pjM', K.M.setReal('2027-01', { sales: 85 })) && eq(PM().model.money.actual.map(a => [a.month, a.sales, a.in, a.out]), [['2027-01', 85, 280, null]]));
     const beside = K.M.realBesidePlan(PM().model.money);
     check('…it sits beside its month\'s plan, and the plan\'s own figures don\'t change', beside.length === 1 && beside[0].plan?.month === '2027-01' && beside[0].plan.sales === 100 && PM().model.money.forecast.sales[0] === 100);
+    const w3 = world(base('pjR', { template: 'business' }));
+    for (let i = 0; i < 60; i++) K.changeMoney(w3, 'pjR', K.M.setReal(K.M.addMonths('2020-01', i), { sales: 1 }));
+    check('a 61st real month isn\'t added', w3.projects.items[0].model.money.actual.length === 60 && !K.changeMoney(w3, 'pjR', K.M.setReal('2030-01', { sales: 1 })));
     check('…a month outside the forecast has no plan beside it; removing a real month', K.changeMoney(w2, 'pjM', K.M.setReal('2026-05', { out: 10 })) && K.M.realBesidePlan(PM().model.money)[0].plan === null
       && PM().model.money.actual[0].month === '2026-05' && K.changeMoney(w2, 'pjM', K.M.removeReal('2026-05')) && PM().model.money.actual.length === 1);
     const mh = K.searchProject(w2, PM(), 'commission');

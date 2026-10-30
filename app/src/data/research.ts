@@ -49,7 +49,7 @@ export function normalizeResearch(raw: unknown, report: { dropped: number }): Re
       const tests: ResearchTest[] = [];
       for (const t of listOf(x.tests)) if (isObj(t) && typeof t.kind === 'string' && t.kind && typeof t.id === 'string' && t.id && !tests.some(b => b.kind === t.kind && b.id === t.id)) tests.push({ ...t, kind: t.kind, id: t.id });
       const e: ResearchExperiment = { ...base, type: 'experiment', title: str(x.title, RESEARCH_LIMITS.title), tests, how: str(x.how, RESEARCH_LIMITS.text), expect: str(x.expect, RESEARCH_LIMITS.text),
-        status: typeof x.status === 'string' && x.status ? x.status : 'planned', startedOn: day(x.startedOn), doneOn: day(x.doneOn), result: str(x.result, RESEARCH_LIMITS.conclusion),
+        status: typeof x.status === 'string' && x.status ? x.status : 'planned', startedOn: day(x.startedOn), doneOn: day(x.doneOn), result: str(x.result, RESEARCH_LIMITS.text),
         conclusion: str(x.conclusion, RESEARCH_LIMITS.conclusion), taskId: typeof x.taskId === 'string' && x.taskId ? x.taskId : null };
       if (typeof x.findingId !== 'string' || !x.findingId) delete e.findingId;
       out.items.push(e);

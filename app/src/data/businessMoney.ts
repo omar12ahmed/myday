@@ -76,17 +76,17 @@ export type BreakEven = { kind: 'empty' } | { kind: 'never'; loses: number } | {
 export function breakEven(m: BusinessMoney): BreakEven {
   const s = sums(m);
   if (!m.perSale.length) return { kind: 'empty' };
-  if (s.monthlyNet <= 0 && s.leaves >= 0) return { kind: 'covered' };
+  if (s.monthlyNet <= 0) return { kind: 'covered' };
   if (s.leaves <= 0) return { kind: 'never', loses: -s.leaves };
   return { kind: 'sales', n: Math.ceil(s.monthlyNet / s.leaves - 1e-9) };
 }
-// At a number of sales a month, the months to win back the start-up costs: nothing to win back; never at that level;
-// or a number of months.
-export type Payback = { kind: 'none' } | { kind: 'never' } | { kind: 'months'; n: number };
+// At a number of sales a month, the months to win back the start-up costs: nothing to win back; never at that level
+// (`even`: the month only just covers its running costs); or a number of months.
+export type Payback = { kind: 'none' } | { kind: 'never'; even: boolean } | { kind: 'months'; n: number };
 export function payback(m: BusinessMoney, perMonth: number): Payback {
-  const s = sums(m), profit = perMonth * s.leaves - s.monthlyNet;
+  const s = sums(m), profit = round2(perMonth * s.leaves - s.monthlyNet);
   if (s.startupNet <= 0) return { kind: 'none' };
-  if (profit <= 0) return { kind: 'never' };
+  if (profit <= 0) return { kind: 'never', even: profit === 0 };
   return { kind: 'months', n: Math.ceil(s.startupNet / profit - 1e-9) };
 }
 export const addMonths = (month: string, n: number) => { const [y, mo] = month.split('-').map(Number), i = y * 12 + mo - 1 + n; return `${Math.floor(i / 12)}-${String((i % 12) + 1).padStart(2, '0')}`; };
@@ -220,11 +220,16 @@ export function amountText(n: number, cents = false): string {
 }
 export const withCurrency = (m: BusinessMoney, n: number, cents = false) => `${m.currency ? `${m.currency} ` : ''}${n < 0 ? '−' : ''}${amountText(Math.abs(n), cents)}`;
 export const monthText = (month: string) => { const [y, mo] = month.split('-').map(Number); return new Date(y, mo - 1, 1).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }); };
-export const saleWord = (m: BusinessMoney, n = 1) => { const w = m.sale || 'sale'; return n === 1 ? w : `${w}s`; };
+// "order"/"orders"; "delivery"/"deliveries"; "box"/"boxes".
+export const saleWord = (m: BusinessMoney, n = 1) => {
+  const w = m.sale || 'sale';
+  return n === 1 ? w : /[^aeiou]y$/i.test(w) ? `${w.slice(0, -1)}ies` : /(s|x|z|ch|sh)$/i.test(w) ? `${w}es` : `${w}s`;
+};
 // The break-even in words, for the Money tab and At a glance.
 export function breakEvenText(m: BusinessMoney): string {
   const b = breakEven(m), s = sums(m);
   if (b.kind === 'empty') return 'Add what each sale brings in and costs to see your break-even.';
+  if (b.kind === 'never' && s.needsSaleValue && s.leaves <= 0) return `Add the average value of one ${saleWord(m)} to count the percentages.`;
   if (b.kind === 'never') return s.leaves === 0 ? `Each ${saleWord(m)} leaves nothing — no number of ${saleWord(m, 2)} breaks even.` : `Each ${saleWord(m)} loses ${withCurrency(m, b.loses, true)} — no number of ${saleWord(m, 2)} breaks even.`;
   if (b.kind === 'covered') return 'The running costs are covered without any sales.';
   return `Break-even: ${b.n.toLocaleString()} ${saleWord(m, b.n)} a month`;
