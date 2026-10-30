@@ -1,5 +1,19 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.98.0 — Arabic explainers: How it works, step by step:** module 14's lessons on weak, irregular and derived verbs
+now have **How it works** in their Understand step: ten closed cards, one per verb family (say, be, live, invite,
+walk; stand, reply, take, ask; and عَلِمَ, عَلَّمَ, تَعَلَّمَ). Each starts from the root with the family as a table
+(form, Arabic and meaning, with the transliteration when it's on), explains the forms that trip learners up in short
+steps (why قُلْتُ and قُلْ lose the long vowel of قَالَ), breaks two or three short sentences down word by word, answers
+the natural "why" question, and ends with three questions whose answers show, with why, when you choose. Nothing is
+saved, and the cards fold away with the explanation while you check yourself. Under a course word that has one (13 of
+them), "How this verb works, step by step" opens it, on the lesson's page or from Vocabulary. They're MyDay's own,
+written once, cross-checked by an independent reviewer and approved by the owner's fluent checker; they never show a
+lesson check's answer. The build refuses an explainer with a missing vowel mark, two Arabic pieces run together, or a
+check's answer in it. The app now reads دَعَوْا and مَشَوْا completely (daʿaw, mashaw). The voice comes in a later
+release. No saved-data, sync or database change, and nothing goes to AI. Going back to 1.97.0 is safe: the cards and
+links simply aren't there.
+
 **1.97.0 — Experiments and money for a business idea:** each thing that must be true on a business idea's one page can
 now have **experiments** (so can any project with Research, testing its questions): what you'll try, how, and what
 result would change your mind. Start it, add a "Test: …" task (ticking it records nothing: Worth a look and Needs you
@@ -809,7 +823,7 @@ owner, and its clips listened to, before it ships. An older release keeps these 
 revision such a card says "no longer in the course" with "Take it out of revision" first, which would remove it on
 every device; "Skip for now" keeps it.
 
-Explainers (Arabic, `../specs/arabic-explainers.md`; not released yet): a lesson's Understand step can have **How it
+Explainers (Arabic, 1.98.0, `../specs/arabic-explainers.md`): a lesson's Understand step can have **How it
 works**, under its teaching: one closed card per family of forms (module 14 so far: ten, for weak, irregular and
 derived verbs). Each has the family as a table (form, Arabic, meaning; on a phone the form sits under the meaning),
 short steps, two or three sentences broken down word by word, a "why" question, and three questions whose answer shows
@@ -1795,7 +1809,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/projectSearch.ts`, `src/projects/SearchResults.tsx` | Searching one project: `projectSearch.ts` (what's searched, matching without capitals, accents or apostrophe differences, excerpts on whole characters, the fixed order by kind); `SearchResults.tsx` (the results card). The field and its query live in `ProjectView.tsx`. |
 | `src/data/weekReview.ts`, `src/review/ReviewScreen.tsx`, `src/today/ReviewCard.tsx` | The weekly review (1.37.0): `weekReview.ts` (when the review is due, what moved, what's waiting, focus, and saving the review); `ReviewScreen.tsx` (the four steps and See the pattern); `ReviewCard.tsx` (the card on Today). |
 | `src/study/arabic/WordFamilies.tsx`, `src/study/arabic/families.ts`, `content/teaching/arabic/word-families.json`, `scripts/validate-families.mjs` | Word families (1.38.0): the card on the vocabulary page and its notes; which family a word is in; the authored families (by word id); the build check. |
-| `src/study/arabic/Explainers.tsx`, `src/study/arabic/explainerData.ts`, `../content/teaching/arabic/explainers.json`, `scripts/validate-explainers.mjs` | Explainers: How it works in a lesson's Understand step, its questions and the link under a course word; loading on demand, the explainer for a word and the link's open request; the authored explainers (by lesson id); the build check (`--readings` for the app's transliteration). |
+| `src/study/arabic/Explainers.tsx`, `src/study/arabic/explainerData.ts`, `../content/teaching/arabic/explainers.json`, `scripts/validate-explainers.mjs` | Explainers (1.98.0): How it works in a lesson's Understand step, its questions and the link under a course word; loading on demand, the explainer for a word and the link's open request; the authored explainers (by lesson id); the build check (`--readings` for the app's transliteration). |
 | `src/study/arabic/voice.ts`, `src/study/arabic/Listen.tsx`, `../content/arabic-audio/`, `scripts/arabic-voice-sources.mjs`, `scripts/make-arabic-audio.mjs`, `scripts/prepare-audio.mjs`, `scripts/arabic-audio-inventory.mjs` | The Arabic course's voice (1.39.0; lessons' examples 1.40.0): the clip list (by exact text) and the one shared player with Slower (device-only key `myday.arabic.slower`); the play button, the voice note and the label; the clips and their audit; which texts have a voice; making them (by hand); the build check; what's left to voice. |
 | `src/study/arabic/ReadingVoice.tsx`, `src/study/arabic/voice.ts`, `scripts/arabic-reading-sentences.mjs`, `src/study/arabic/voice-clips.json`, `scripts/review-arabic-audio.mjs`, `../content/teaching/arabic/voice-scripts.json` | Reading-text voice (round three (a), 1.41.0; round ten, 1.94.0: the six unmarked texts from MyDay's vowelled scripts, pause forms, a whole clip per text): whole-text Listen and sentence controls; sequence support in the shared player; shared sentence boundaries; the generated `readings` list, with only checked clips playable; a local listening checklist for future clips. |
 | `src/study/arabic/arabic-runs.mjs`, `scripts/arabic-voice-sources.mjs`, `scripts/review-arabic-audio.mjs` | Teaching and check voice (round three (b), 1.42.0): shared extraction of the exact Arabic displayed; the `teaching`, `sounds-families` and `lesson-checks` sources; a local listening checklist combining sources, split into sittings with `MYDAY_AUDIO_REVIEW_BATCH`. |
