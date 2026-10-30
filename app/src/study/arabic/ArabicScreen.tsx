@@ -38,6 +38,8 @@ import { RestartOffer, StepBar } from '../journey/Journey';
 import { AR_MAX, editWord, keepWord, keptCardId, keptWord, MEANING_MAX, NOTE_MAX, practiseWriting, removeWord, sentencesIn } from '../../data/arabic/words';
 import { KeepAWord } from './KeepAWord';
 import { WordNote } from './WordNote';
+import { ExplainerLink, LessonExplainers } from './Explainers';
+import { explainerFor, useExplainers, type Explainer } from './explainerData';
 import { courseLessons, isCourseWord, lessonWordIds, lessonWords, type AnyWord } from './courseWords';
 import { starterFor } from './starter';
 import { ARABIC_TINY, toStep } from '../journey/dom';
@@ -293,6 +295,7 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
             </div>}
             {teaching.lesson ? <div data-teaching={l.id} className="min-w-0 break-words"><TeachingRead t={teaching} /></div> : <TeachingWaiting missing={teaching.missing} bare />}
             <KeepAWord data={data} from={l.id} sentences={[l.example?.text_ar ?? '', ...arabicRuns(teaching.lesson?.example ?? '')]} />
+            <LessonExplainers lessonId={l.id} ready={loaded} />
             <LessonWords data={data} lessonId={l.id} />
           </>}
       </Card>
@@ -831,9 +834,10 @@ function useTakeOut() {
       outOfRevision([wordCard(w.id, 'recognise'), wordCard(w.id, 'write')]);
   };
 }
-// One word: the Arabic, its meaning (a course word's root too), its example, each with its voice; a course word's note;
-// where it stands in revision, and adding it, practising writing it, or taking it out.
-function WordRow({ data, w, takeOut }: { data: MyDayData; w: AnyWord; takeOut: (w: AnyWord) => void }) {
+// One word: the Arabic, its meaning (a course word's root too), its example, each with its voice; a course word's note
+// and the explainer for it, if there is one; where it stands in revision, and adding it, practising writing it, or
+// taking it out.
+function WordRow({ data, w, takeOut, explainer = null }: { data: MyDayData; w: AnyWord; takeOut: (w: AnyWord) => void; explainer?: { lessonId: string; e: Explainer } | null }) {
   const recognise = cardState(data, wordCard(w.id, 'recognise')), write = cardState(data, wordCard(w.id, 'write')), fam = familyOf(w.id);
   const course = isCourseWord(w) ? w : null;
   return <li data-ar-word={w.id} tabIndex={-1} data-in={recognise || write ? 'yes' : 'no'} className="py-3 grid gap-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-4 items-baseline focus:outline-2 focus:outline-primary focus:outline-offset-4 rounded-sm">
@@ -844,6 +848,7 @@ function WordRow({ data, w, takeOut }: { data: MyDayData; w: AnyWord; takeOut: (
     <div className="flex items-start gap-2"><div className="min-w-0 flex-1"><Ar block className="text-[20px] m-0">{w.example_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.example_meaning_en}</p></div>
       <PlayButton text={w.example_ar} name={`${w.id}:example`} label={`the example for ${w.form_ar}`} /></div>
     {course && <p className="text-sm m-0 sm:col-span-2 min-w-0 break-words" data-ar-word-note=""><WordNote text={course.note} voice={`${w.id}:note`} /></p>}
+    {explainer && <div className="sm:col-span-2 text-[15px]"><ExplainerLink found={explainer} verb={w.part_of_speech === 'verb'} /></div>}
     <div className="sm:col-span-2 mt-1">
       {(recognise || write) && <p className="text-sm m-0 mb-1.5">{recognise && <span className="block">Recognising it: {recognise}</span>}{write && <span className="block">Writing it: {write}</span>}</p>}
       <div className="flex flex-wrap gap-2">
@@ -856,20 +861,20 @@ function WordRow({ data, w, takeOut }: { data: MyDayData; w: AnyWord; takeOut: (
 }
 // Vocabulary's course words: each lesson's own words, in the course's order, with a link to the lesson.
 function CourseWords({ data, takeOut }: { data: MyDayData; takeOut: (w: AnyWord) => void }) {
-  const lessons = courseLessons.filter(id => lessonIndex[id] && lessonWords(id).own.length);
+  const lessons = courseLessons.filter(id => lessonIndex[id] && lessonWords(id).own.length), explainers = useExplainers();
   if (!lessons.length) return null;
   return <Card data-ar-course-words={lessons.length}><Eyebrow>Vocabulary</Eyebrow><h2>Words from the lessons</h2>
     <p>Each lesson’s words, with the root they come from, an example and a note. A lesson’s words join your revision when you mark it ready to move on, a few a day; you can add any of them sooner here.</p>
     {lessons.map(id => <section key={id} data-ar-course-lesson={id} className="mt-4">
       <h3 className="mb-1"><InlineLink href={'#study/arabic/' + id}>{lessonIndex[id].title}</InlineLink></h3>
-      <ul className="list-none p-0 m-0 divide-y divide-outline">{lessonWords(id).own.map(w => <WordRow key={w.id} data={data} w={w} takeOut={takeOut} />)}</ul>
+      <ul className="list-none p-0 m-0 divide-y divide-outline">{lessonWords(id).own.map(w => <WordRow key={w.id} data={data} w={w} takeOut={takeOut} explainer={explainerFor(explainers, w.id)} />)}</ul>
     </section>)}
   </Card>;
 }
 // A lesson's words under its explanation (folded away with it while you check yourself): its own words, then the
 // starter words it uses. They join revision when you mark the lesson ready to move on (markReady).
 function LessonWords({ data, lessonId }: { data: MyDayData; lessonId: string }) {
-  const takeOut = useTakeOut(), { own, starter } = lessonWords(lessonId);
+  const takeOut = useTakeOut(), { own, starter } = lessonWords(lessonId), explainers = useExplainers();
   if (!own.length) return null;
   const all = [...own, ...starter], inRev = all.filter(w => wordInRevision(data, w.id)).length;
   return <details className="mt-4 rounded-tile border border-outline bg-surface px-4 py-2" data-ar-lesson-words={own.length}>
@@ -877,7 +882,7 @@ function LessonWords({ data, lessonId }: { data: MyDayData; lessonId: string }) 
     <p className="text-sm text-fg-2 mt-1" data-ar-lesson-words-in={inRev}>{inRev === all.length ? 'All of them are in your revision.'
       : inRev ? `${inRev} of ${all.length} are in your revision; the rest join when you mark the lesson ready to move on.`
       : 'They join your revision when you mark the lesson ready to move on, a few a day.'}</p>
-    <ul className="list-none p-0 m-0 divide-y divide-outline">{own.map(w => <WordRow key={w.id} data={data} w={w} takeOut={takeOut} />)}</ul>
+    <ul className="list-none p-0 m-0 divide-y divide-outline">{own.map(w => <WordRow key={w.id} data={data} w={w} takeOut={takeOut} explainer={explainerFor(explainers, w.id)} />)}</ul>
     {starter.length > 0 && <><h4 className="mb-0 mt-3">Starter words it uses</h4>
       <ul className="list-none p-0 m-0 divide-y divide-outline">{starter.map(w => <WordRow key={w.id} data={data} w={w} takeOut={takeOut} />)}</ul></>}
   </details>;

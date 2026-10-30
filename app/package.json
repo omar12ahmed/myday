@@ -7,7 +7,7 @@
     "node": "^20.19.0 || >=22.12.0"
   },
   "scripts": {
-    "curriculum:prepare": "node scripts/prepare-teaching.mjs && node scripts/validate-pronunciation.mjs && node scripts/validate-families.mjs && node scripts/prepare-curriculum.mjs && node scripts/prepare-arabic.mjs && node scripts/prepare-audio.mjs",
+    "curriculum:prepare": "node scripts/prepare-teaching.mjs && node scripts/validate-pronunciation.mjs && node scripts/validate-families.mjs && node scripts/validate-explainers.mjs && node scripts/prepare-curriculum.mjs && node scripts/prepare-arabic.mjs && node scripts/prepare-audio.mjs",
     "prebuild": "npm run curriculum:prepare",
     "dev": "vite",
     "build": "tsc -b && vite build",

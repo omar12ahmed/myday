@@ -3,7 +3,7 @@
 // self-test. This checks the file's shape and the house rules for its Arabic, so a draft can't reach the fluent checker
 // or the voice with a missing vowel mark, two Arabic pieces run together, or a lesson check's answer given away.
 //   node app/scripts/validate-explainers.mjs [file] [--readings]
-// --readings also runs the app's own transliteration over every piece and fails on an incomplete reading (it bundles
+// --readings also runs the app's own transliteration over every piece shown, and fails on an incomplete reading (it bundles
 // transliterate.ts with Vite, so it needs app/node_modules).
 import { readFileSync } from 'node:fs';
 import { mkdtempSync } from 'node:fs';
@@ -93,7 +93,7 @@ const contains = (run, secret) => {
 const lessonIds = new Set(course.lessons.map(l => l.id));
 const allWords = new Set(Object.values(courseWords).flatMap(l => l.words.map(w => w.id)));
 const ENTRY = ['id', 'title_en', 'family_en', 'root_ar', 'root_reading', 'course_words', 'table', 'steps', 'examples', 'why', 'selftest', 'phrases_ar'];
-const ids = new Set(), voiced = new Set();
+const ids = new Set(), voiced = new Set(), shown = new Set();
 let count = 0;
 if (!file || typeof file.lessons !== 'object') fail('the file', 'no lessons');
 for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
@@ -158,7 +158,7 @@ for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
       if (!Array.isArray(q.choices) || q.choices.length < 2 || q.choices.length > 4 || new Set(q.choices).size !== q.choices.length) fail(where, 'two to four different choices');
       else if (!q.choices.includes(q.answer)) fail(where, 'the answer must be one of the choices');
       for (const c of q.choices ?? []) if (text(c) && onePiece(c)) {
-        checkRun(where, runs(c)[0]);
+        checkRun(where, runs(c)[0]); shown.add(runs(c)[0]);
         if (c === q.answer) voiced.add(runs(c)[0]);
       }
     });
@@ -169,7 +169,7 @@ for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
     for (const [where, s] of mixed) {
       if (!text(s)) continue;
       for (const run of runs(s)) {
-        checkRun(`${at}, ${where}`, run);
+        checkRun(`${at}, ${where}`, run); shown.add(run);
         if (wordsOf(run).length > 1) {
           if (phrases.has(run)) used.add(run);
           else if (!forms.has(run) && !sentences.has(run)) fail(`${at}, ${where}`, `${run} reads as one piece: put English, a full stop, a colon or an ASCII comma between two pieces, or list it under phrases_ar if it is one phrase`);
@@ -189,7 +189,8 @@ if (withReadings && !problems.length) {
   const { bundle } = await import(pathToFileURL(path.join(new URL('../../', import.meta.url).pathname, 'ai-eval/build.mjs')).href);
   const out = await bundle(new URL('../src/study/arabic/transliterate.ts', import.meta.url).pathname, mkdtempSync(path.join(tmpdir(), 'myday-explainers-')));
   const { transliterate } = await import(pathToFileURL(out).href);
-  for (const piece of voiced) {
+  // Every piece the app shows gets its reading, a cited letter or affix too, so each must read completely.
+  for (const piece of new Set([...voiced, ...shown])) {
     const r = transliterate(piece);
     console.log(`  ${piece} → ${r.text}`);
     if (r.incomplete) fail('reading', `the app can't read ${piece} completely (${r.text})`);
