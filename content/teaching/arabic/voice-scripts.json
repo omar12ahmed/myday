@@ -1,6 +1,6 @@
 {
  "about": "Voice scripts: MyDay’s own fully vowelled copy of course text the course leaves without vowel marks, for the synthesised voice to read (owner’s decision, 25 October 2026). The course text itself never changes and the app shows it as the course has it; the build refuses a script whose letters differ from the course text, that drops a mark the course shows, or that isn’t vowelled all through. Each script is cross-checked by an independent reviewer and by a fluent checker before its clips are made. \"readings\": whole reading texts, by asset id. \"pieces\": short Arabic the course shows inside English (checks, answers and so on), by the exact text shown. \"left_out\": pieces kept without a voice on purpose, with the reason.",
- "status": "readings: the six B1–B2 reading passages, cross-checked (one change) and approved by the owner’s fluent checker on 2026-10-25, voiced in 1.94.0. pieces: the lesson checks and answers (batch one of the short pieces), drafted, not yet checked",
+ "status": "readings: the six B1–B2 reading passages, cross-checked (one change) and approved by the owner’s fluent checker on 2026-10-25, voiced in 1.94.0. pieces: the lesson checks and answers (batch one of the short pieces), cross-checked by an independent reviewer (no errors; one optional change), not yet checked by the fluent checker",
  "version": "1.1",
  "readings": {
   "asset.arabic-study-method": "كَانَ سَامِي يَدْرُسُ كَلِمَاتٍ جَدِيدَةً كُلَّ مَسَاءٍ، لَكِنَّهُ كَانَ يَنْسَى كَثِيرًا مِنْهَا بَعْدَ أَيَّامٍ قَلِيلَةٍ. لِذَلِكَ قَرَّرَ أَنْ يُغَيِّرَ طَرِيقَتَهُ. بَدَأَ يَقْرَأُ نُصُوصًا قَصِيرَةً عَنِ الْمَوْضُوعَاتِ الَّتِي يُحِبُّهَا، ثُمَّ يَخْتَارُ مِنْ كُلِّ نَصٍّ كَلِمَاتٍ قَلِيلَةً يَحْتَاجُ إِلَيْهَا. لَمْ يَكْتَفِ بِكِتَابَةِ مَعَانِيهَا، بَلْ كَتَبَ جُمَلًا مِنْ عِنْدِهِ وَاسْتَعْمَلَ الْكَلِمَاتِ فِي حَدِيثِهِ مَعَ صَدِيقٍ. فِي نِهَايَةِ الْأُسْبُوعِ عَادَ إِلَى النَّصِّ الْأَوَّلِ وَحَاوَلَ تَلْخِيصَهُ دُونَ النَّظَرِ إِلَيْهِ. وَجَدَ أَنَّهُ يَتَذَكَّرُ بَعْضَ الْكَلِمَاتِ بِسُهُولَةٍ، وَأَنَّ كَلِمَاتٍ أُخْرَى مَا زَالَتْ تَحْتَاجُ إِلَى مُرَاجَعَةٍ. لَمْ يَعْتَبِرْ ذَلِكَ فَشَلًا؛ فَقَدْ سَاعَدَهُ عَلَى مَعْرِفَةِ مَا يَنْبَغِي أَنْ يَدْرُسَهُ فِي الْأُسْبُوعِ التَّالِي.",
@@ -110,7 +110,7 @@
   "لم": "لَمْ",
   "لم أدرسْ أمس": "لَمْ أَدْرُسْ أَمْسِ",
   "لم أدرس أمس": "لَمْ أَدْرُسْ أَمْسِ",
-  "أدرس": "أَدْرُس",
+  "أدرس": "أَدْرُسْ",
   "لا تكتبون": "لَا تَكْتُبُونَ",
   "لا تكتبوا": "لَا تَكْتُبُوا",
   "لا تكتبين": "لَا تَكْتُبِينَ",
