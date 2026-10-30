@@ -53,8 +53,8 @@ function word(written: string): Reading {
   let out = prefix, incomplete = false;
   for (let i = start; i < a.length; i++) {
     const { c, m } = a[i], next = a[i + 1];
-    // Silent plural alif after wāw, and alternative placement of fatḥatan on alif.
-    if (c === 'ا' && i === a.length - 1 && a[i - 1]?.c === 'و' && out.endsWith('ū')) continue;
+    // Silent plural alif after wāw (-ū, or -aw as in دَعَوْا), and alternative placement of fatḥatan on alif.
+    if (c === 'ا' && i === a.length - 1 && a[i - 1]?.c === 'و' && (out.endsWith('ū') || a[i - 1].m.includes('ْ'))) continue;
     if (c === 'ا' && m.includes('ً')) { out += 'an'; continue; }
     if (c === 'آ') { out += (i === start ? '' : 'ʾ') + 'ā'; continue; }
     let consonant = letters[c] ?? (c === 'ة' ? (hasVowel(m) ? 't' : '') : c === 'ى' ? 'ā' : '');
