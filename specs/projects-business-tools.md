@@ -1,6 +1,6 @@
 # Projects: experiments and money for a business idea (Phase 3, Business)
 
-**Status:** the owner's decisions in §2 (30 October 2026); for 1.95.0 (branch `business-experiments`). Nothing live
+**Status:** the owner's decisions in §2 (30 October 2026); for 1.97.0 (branch `business-experiments`). Nothing live
 without the owner's yes. No schema, migration or server change.
 **Based on:** source at 1.94.0. Plan: `specs/projects-vision.md` §10 "Business" (extend the one page with Research and
 Experiment tools: the assumption tested, the proposed test, the expected observation, the actual result, supporting
