@@ -1,7 +1,7 @@
 # Proposal: Arabic explainers ("How this works")
 
-**Status:** proposed, 30 October 2026. Nothing is built in the app yet. The first ten explainers are drafted, have had an
-independent cross-check, and are waiting for the owner's fluent checker. Decisions needed are in §6.
+**Status:** decided by the owner on 30 October 2026 (§6). Nothing is built in the app yet. The first ten explainers
+are drafted and have had an independent cross-check; they're waiting for the owner's fluent checker.
 **Content:** `content/teaching/arabic/explainers.json`. **Check:** `app/scripts/validate-explainers.mjs`.
 **Related:** `specs/arabic-audio-course.md` (the voice), `specs/study-home-and-lessons.md` (lesson steps, course words).
 
@@ -112,23 +112,19 @@ Only Arabic is stored, never a transliteration. The file is MyDay's own; the cur
 
 **For topics beyond verbs:** the root becomes optional, and the table can hold any set of forms.
 
-## 6. Questions for the owner (recommendation first)
+## 6. Decisions (owner, 30 October 2026)
 
-1. **Use explainers across the whole course, or only in some sections?**
-   - **Recommended:** every lesson that teaches a pattern or a contrast, which is about 45–55 of the 152 lessons
-     (mostly modules 4–7, 9–12, 14, 15 and 22).
-   - **How:** module by module, starting after this first set is checked and you've seen it in the app.
-   - **Where they don't fit:** the reading, listening, writing, speaking, consolidation and translation lessons, where
-     the lesson is the practice itself.
-2. **Where should they appear?**
-   - **Recommended:** in the lesson's Understand step as fold-out cards, linked from their course words (§2).
-   - **Alternative:** only under the course words.
-3. **What should be voiced?**
-   - **Recommended:** the table's forms, the sentences and the Arabic in the steps, planned with myday-5a once your
-     checker has approved the text.
-4. **The article after a vowel ("quli al-ḥaqqa"):**
-   - **Recommended:** fix it in the app's transliteration as its own small change, planned with myday-5a. It changes
-     readings across the whole course, so it shouldn't ride with this one.
-5. **The self-test:**
-   - **Recommended:** nothing saved and no scores; the answers show on request.
-   - **Alternative:** feed it into revision. That would mean a saved-data change.
+1. **The whole course, not just some sections.** Every lesson gets explainers, including the reading, listening,
+   writing, speaking, consolidation and translation lessons.
+   - **Pace:** module by module, with each batch cross-checked and then checked by the owner's checker. The next
+     batches start once this first set is checked and the owner has seen it in the app.
+   - **Skills lessons:** where the lesson is mostly practice, the explainer explains its technique with a worked
+     example. Its shape (the root optional, perhaps the table too) is proposed with the first such batch.
+2. **Where they appear:** in the lesson's Understand step as fold-out cards, folded away during the Check, and linked
+   from their course words (§2).
+3. **Voicing:** the table's forms, the sentences and the Arabic in the steps, once the checker has approved the text,
+   planned with myday-5a. The word-by-word pieces and the wrong quiz answers aren't voiced.
+4. **The article after a vowel ("quli al-ḥaqqa"):** to be fixed in the app's transliteration, separately from this
+   work and planned with myday-5a, because it changes readings across the whole course.
+5. **The self-test:** nothing is saved and there are no scores; the answers show on request. This is the default,
+   because it needs no saved-data change.
