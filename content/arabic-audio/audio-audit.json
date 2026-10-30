@@ -169,10 +169,10 @@
     "lesson-checks"
    ],
    "made": "2026-10-30",
-   "generated": 258,
-   "retakes": 12,
+   "generated": 257,
+   "retakes": 15,
    "voice": "ar-XA-Wavenet-B",
-   "listening": "All 258 clips (the Arabic shown without marks inside lesson-check questions and answers, read from MyDay’s vowelled scripts in voice-scripts.json “pieces”, which an independent reviewer cross-checked and the owner’s fluent checker approved, with 12 pieces left without a voice on purpose) listened to by ear by the owner on 2026-10-30, in three batches — “all good”, including eight short forms pointed out for a close listen (يدعو، إذا، يدرسوا، أقرؤه، ماء، ليلى، أدرس، شعري). They play only once the check’s answer is shown. Not yet by an Arabic teacher. No recordings held.",
+   "listening": "All 258 clips (the Arabic shown without marks inside lesson-check questions and answers, read from MyDay’s vowelled scripts in voice-scripts.json “pieces”, which an independent reviewer cross-checked and the owner’s fluent checker approved, with 12 pieces left without a voice on purpose) listened to by ear by the owner on 2026-10-30, in three batches — “all good”, including eight short forms pointed out for a close listen (يدعو، إذا، يدرسوا، أقرؤه، ماء، ليلى، أدرس، شعري). They play only once the check’s answer is shown. Not yet by an Arabic teacher. No recordings held. Because the listening page then showed only the unmarked text, the owner re-listened to the eight with the vowelled scripts shown (the page now shows them): seven were confirmed; شعري was still read as شَعْرِي after three more takes and a marked variant, so it was left out (removed below).",
    "cross_check": "Every new recording transcribed blind with Gemini 3.8 Flash (temperature 0; 268 requests, cross-check-voice-pieces.json), and the doubtful ones three more times at temperature 1 (69 requests); every transcript read by the main session. Twelve clips were made again (seven once, five twice; WaveNet gives new audio for the same text, except twice). Five isolated words were still transcribed differently on every take (يَدْعُو، يَدْرُسُوا، مَاء، أَدْرُسْ، شِعْرِيّ) and the owner approved them by ear; the rest were mis-hearings that repeated hearings settled."
   }
  ],
@@ -19114,14 +19114,6 @@
    "check": "checked",
    "checked": "2026-10-30"
   },
-  "شعري": {
-   "file": "6efba4041d8b4a87.mp3",
-   "voice": "ar-XA-Wavenet-B",
-   "made": "2026-10-30",
-   "spoken": "شِعْرِيّ.",
-   "check": "checked",
-   "checked": "2026-10-30"
-  },
   "بيت": {
    "file": "8a0163030d12d092.mp3",
    "voice": "ar-XA-Wavenet-B",
@@ -19312,6 +19304,13 @@
     "ead2ce63655cb907.mp3",
     "1f5eeec47fc4beca.mp3",
     "12a4d304071f3234.mp3"
+   ]
+  },
+  {
+   "date": "2026-10-30",
+   "reason": "The owner asked for شعري (“poetic”) again on the re-listen with the scripts shown; the voice read it as شَعْرِي (“my hair”) on every take, also with the ending, so it is left out of voice-scripts.json with that reason.",
+   "files": [
+    "6efba4041d8b4a87.mp3"
    ]
   }
  ],

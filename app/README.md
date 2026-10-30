@@ -1,14 +1,15 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
 **1.96.0 — The Arabic in lesson checks, voiced:** the short pieces of Arabic that lesson-check questions and answers
-show without vowel marks now have a voice once the answer is shown: 258 of them, from قال and قلت to whole model
+show without vowel marks now have a voice once the answer is shown: 257 of them, from قال and قلت to whole model
 answers. The voice (WaveNet B) reads MyDay's own vowelled copy of each (`content/teaching/arabic/voice-scripts.json`),
 which an independent reviewer cross-checked and the owner's fluent checker approved; the page keeps the course's
 spelling, and the label under the voice says it reads MyDay's vowelled copy. A word quoted on its own is read in its
-dictionary form, a phrase with every ending. Twelve pieces stay silent on purpose: where the reading is the check's
+dictionary form, a phrase with every ending. Thirteen pieces stay silent on purpose: where the reading is the check's
 answer, where the answer says a form can be read either way, deliberate mistakes to correct, an unfinished frame,
-numbers written as digits and a word ending. The build refuses a script that changes a letter, contradicts a mark the
-course shows or leaves a letter unmarked. 258 clips, transcribed blind and listened to. No saved-data, sync or
+numbers written as digits, a word ending, and one word the voice couldn't say right (شِعْرِيّ). The build refuses a script that changes a letter, contradicts a mark the
+course shows or leaves a letter unmarked. 257 clips, transcribed blind and listened to (the doubtful ones again
+with their vowelled forms shown). No saved-data, sync or
 database change, and no new kind of information goes to AI. Going back to 1.95.0 is safe: those pieces lose their
 voice again.
 **1.95.0 — Ask MyDay's Undo stays for the day:** what Ask MyDay last added or changed can still be undone after you

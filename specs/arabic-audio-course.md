@@ -139,7 +139,10 @@ Round eleven (the unmarked Arabic in lesson checks and answers, 1.96.0): 258 pie
 purpose, with reasons) were cross-checked (no errors; one optional change, أَدْرُسْ) and approved by the owner's fluent
 checker. Then 258 clips were made in WaveNet B, transcribed blind and approved in three batches ("all good"). Twelve
 were made again; WaveNet usually gives new audio for the same text. Five isolated words were still transcribed
-differently (يَدْعُو، يَدْرُسُوا، مَاء، أَدْرُسْ، شِعْرِيّ) and were approved by ear. The key was deleted.
+differently (يَدْعُو، يَدْرُسُوا، مَاء، أَدْرُسْ، شِعْرِيّ) and were approved by ear. The listening page had shown only the
+unmarked text, so the owner re-listened to the eight doubtful clips with their scripts shown (the page now shows a
+script first): seven were confirmed, and شِعْرِيّ, still read as شَعْرِي ("my hair") after more takes and a marked
+variant, was left out with its reason. 257 clips ship; 13 pieces stay silent on purpose. The keys were deleted.
 
 **Each round works like round one.**
 - **On the Mac:**
