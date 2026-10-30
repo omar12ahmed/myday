@@ -23,6 +23,7 @@
 // Sync's notes are kept per account; nothing is sent or fetched while a different account is signed in, and the
 // cloud checks that too.
 import { clearFileCache } from '../data/fileCache';
+import { LAST_ASK_KEY } from '../ai/lastAskKey';
 import { deleteProjectResearch } from '../data/research';
 import { useSyncExternalStore } from 'react';
 import { todayKey } from '../data/dates';
@@ -539,6 +540,7 @@ export async function clearThisDevice() {
     const st = read.ok ? read.state : freshState();
     st.link = null; st.before = null; st.kept = [];
     writeState(st);
+    forgetLastAsk();
     cleared = true;
   });
   if (cleared) await clearFileCache(); // the other account's portfolio files kept for offline viewing go with it
@@ -625,6 +627,8 @@ export async function wipeAccount(): Promise<{ ok: true; here: boolean; user: st
 // removed from this device ('done'). Something not saved yet (offline, a choice to make, a problem): 'unsaved', and
 // nothing changes — unless `anyway` (after you've downloaded a backup). Signed in without this device joining your
 // account (or as a different account from its MyDay's): just signs out, leaving the device's data as it is.
+// Ask MyDay's last Undo holds copies of what it added or changed, so it leaves the device with the data.
+function forgetLastAsk() { try { localStorage.removeItem(LAST_ASK_KEY); } catch { /* storage unavailable: nothing kept */ } }
 export async function signOutHere(anyway = false): Promise<'done' | 'unsaved' | 'failed'> {
   const read = readState();
   const mine = read.ok && !!read.state.link && !!account && read.state.link.user === account.id;
@@ -643,6 +647,7 @@ export async function signOutHere(anyway = false): Promise<'done' | 'unsaved' | 
       const fresh = freshState();
       if (st.ok) fresh.device = st.state.device;
       writeState(fresh);
+      forgetLastAsk();
     });
     if (cleared) await clearFileCache(); // the portfolio's files kept for offline viewing go with the rest
   }

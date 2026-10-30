@@ -40,8 +40,8 @@ type Phase =
   | { at: 'asking' }
   | { at: 'looking'; tool: 'day' | 'project' | 'decisions' | 'waiting' | 'study' | 'search'; query: string }
   | { at: 'shown'; r: Shown; model: string; followed: boolean; looked?: Looked }
-  | { at: 'added'; undo: AskUndo; words: string }
-  | { at: 'applied'; undo: AskChangeUndo; words: string }
+  | { at: 'added'; undo: AskUndo; words: string; id: string } // id: how it's kept for Undo from + later (ai/lastAsk.ts)
+  | { at: 'applied'; undo: AskChangeUndo; words: string; id: string }
   | { at: 'error'; message: string; looked?: Looked }; // looked: what a lookup found, so trying again doesn't look twice
 
 const ICON: Record<AskProposal['type'], ReactNode> = {
@@ -61,6 +61,9 @@ function shownText(r: Shown): string {
   if (r.kind === 'answer' && r.action) parts.push(r.action.type === 'adjust-today' ? '(offered: Help me adjust today)' : r.action.type === 'start-revision' ? `(offered: revise ${r.action.count} cards)` : `(offered: start ${r.action.minutes} minutes on ${r.action.label})`);
   return parts.filter(Boolean).join('\n');
 }
+
+// After Undo the button that was focused goes, so focus goes back to the text field (a screen reader keeps its place).
+const backToField = () => document.getElementById('captureText')?.focus();
 
 export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text: string; focus?: AskFocus; onClose: () => void }) {
   const [phase, setPhase] = useState<Phase>({ at: 'idle' });
@@ -141,8 +144,8 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
     if (!undo) { toast("Couldn't save just now — nothing was added."); return; }
     const words = countWords(chosen);
     toast(`Added ${words}.`);
-    rememberAsk({ kind: 'added', undo, words }); // undoable from + until midnight, after this panel has closed
-    setPhase({ at: 'added', undo, words });
+    const id = rememberAsk({ kind: 'added', undo, words }); // undoable from + until midnight, after this panel has closed
+    setPhase({ at: 'added', undo, words, id });
   }
   function apply(r: Extract<AskChecked, { kind: 'change' }>) {
     if (!previewIsCurrent()) return;
@@ -152,8 +155,8 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
     if (!undo) { toast("Couldn't save just now — nothing was changed."); return; }
     const words = chosen.length === 1 ? `“${chosen[0].label}”` : `${chosen.length} things`;
     toast(`Changed ${words}.`);
-    rememberAsk({ kind: 'changed', undo, words });
-    setPhase({ at: 'applied', undo, words });
+    const id = rememberAsk({ kind: 'changed', undo, words });
+    setPhase({ at: 'applied', undo, words, id });
   }
 
   const label = (model: string) => (AI_MODE === 'mock' ? 'Ask MyDay · practice helper (no AI)' : `Ask MyDay · AI-written by ${model} — check before adding`);
@@ -178,14 +181,14 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
       {phase.at === 'looking' && <p role="status" className="text-[15px] text-fg-2 flex items-center gap-2 my-1" data-s="ask-looking"><span className="size-3 rounded-full bg-primary motion-safe:animate-pulse flex-none" aria-hidden="true" /> {phase.tool === 'day' ? `Looking at ${prettyDate(phase.query)}…` : phase.tool === 'project' ? `Looking at your project “${phase.query}”…` : phase.tool === 'decisions' ? (phase.query === 'all' ? 'Looking at your open decisions…' : `Looking at the open decisions in “${phase.query}”…`) : phase.tool === 'waiting' ? (phase.query === 'all' ? 'Looking at what you’re waiting on…' : `Looking at what you’re waiting on in “${phase.query}”…`) : phase.tool === 'study' ? 'Looking at what to study next…' : `Looking across MyDay for “${phase.query}”…`}</p>}
       {phase.at === 'added' && <div className="flex flex-wrap items-center gap-x-3 gap-y-1" data-s="ask-added">
         <p className="text-[15px] m-0">Added {phase.words}.</p>
-        <LinkButton data-action="ask-undo" onClick={() => { const r = undoNow({ kind: 'added', undo: phase.undo }); toast(r.message); if (r.done) setPhase({ at: 'idle' }); }}>Undo</LinkButton>
+        <LinkButton data-action="ask-undo" onClick={() => { const r = undoNow({ kind: 'added', undo: phase.undo, id: phase.id }); toast(r.message); if (r.done) { setPhase({ at: 'idle' }); backToField(); } }}>Undo</LinkButton>
         <LinkButton data-action="ask-close" className="ml-auto" onClick={onClose}>Close</LinkButton>
       </div>}
       {phase.at === 'applied' && <div className="flex flex-wrap items-center gap-x-3 gap-y-1" data-s="ask-applied">
         <p className="text-[15px] m-0">Changed {phase.words}.</p>
         <LinkButton data-action="ask-undo" onClick={() => {
           // Anything changed since (a tick on Today, your own edit) is yours, so it stays and the message says so.
-          const r = undoNow({ kind: 'changed', undo: phase.undo }); toast(r.message); if (r.done) setPhase({ at: 'idle' });
+          const r = undoNow({ kind: 'changed', undo: phase.undo, id: phase.id }); toast(r.message); if (r.done) { setPhase({ at: 'idle' }); backToField(); }
         }}>Undo</LinkButton>
         <LinkButton data-action="ask-close" className="ml-auto" onClick={onClose}>Close</LinkButton>
       </div>}

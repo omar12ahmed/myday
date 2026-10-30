@@ -584,9 +584,12 @@ function task(uid, taskId, category, title, minutes, done = false) {
     (await rest('/rest/v1/rpc/sync_push_v2', tC, { method: 'POST', body: JSON.stringify({ account: userA, changes: [] }) })).status === 403);
   check('signed-out visitors (publishable key only) get nothing', (await rest('/rest/v1/task_lists?select=*', null)).status === 401 && (await rest('/rest/v1/rpc/sync_pull_v2', null, { method: 'POST', body: JSON.stringify({ account: userA }) })).status === 401);
   await goSync(mac);
+  // Ask MyDay's last Undo holds copies of what it added or changed (ai/lastAsk.ts): it leaves the device with the data.
+  await mac.ev(`localStorage.setItem('myday.ask.lastUndo', JSON.stringify({ kind: 'added', id: 'x1', words: 'a task', on: '2026-01-01', at: '10:00', undo: { tasks: ['tkAskGone'], notes: [], appointments: [], projects: [], after: { 'task:tkAskGone': '{"title":"A plan of mine"}' } } }))`);
   await mac.click('#syncScreen [data-action=sync-signout]');
   await mac.until(`document.querySelector('dialog[open]')`); await mac.answer(true);
   await mac.until(`document.getElementById('signInGate')`, 15000);
+  check('signing out also forgets Ask MyDay\'s last Undo on this device (it holds copies of what it added)', (await mac.ev(`localStorage.getItem('myday.ask.lastUndo')`)) === null);
   await signIn(mac, A);
   check('signing back in as you brings your MyDay back from your account', await mac.until(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); return d.days['${Y}'] && d.lists.learning[0].title === 'Mac: Networking basics' && d.lists.admin.find(i => i.id === 'a3').title === 'Clean room (offline)'; })()`, 15000));
   check('…your Study, notes and Finance too', await mac.until(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); return d.study.topics?.[0]?.title === 'Arabic' && d.notes.items.some(n => n.id === 'ntPhone') && d.finance.expenses.some(e => e.name === 'Rent'); })()`, 15000));

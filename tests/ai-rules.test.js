@@ -972,7 +972,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     cu = K.addAskItems(K.checkAskReply(cookReply, K.getSnapshot().data, home, D).items);
     K.updateSaved(d => { const t = d.tasks.items.find(x => x.title === 'Buy flour'); t.done = true; t.doneOn = D; });
     tb = K.takeBackAsk(cu);
-    check('…and with one of its own tasks ticked since: that task and the project stay (never a task left in a project that\'s gone)', tb.result === 'partly' && !!bake() && ids().t.includes('Buy flour') && !ids().t.includes('Feed the starter')
+    check('…and with one of its own tasks ticked since: that task and the project stay (never a task left in a project that\'s gone), counted once', tb.result === 'partly' && tb.kept === 1 && !!bake() && ids().t.includes('Buy flour') && !ids().t.includes('Feed the starter')
       && K.getSnapshot().data.tasks.items.filter(t => t.title === 'Buy flour').every(t => K.getSnapshot().data.projects.items.some(p => p.id === t.projectId)), tb);
     K.updateSaved(d => { d.tasks.items = d.tasks.items.filter(x => x.title !== 'Buy flour'); d.projects.items = d.projects.items.filter(p => p.title !== 'Learn to bake'); });
     // The last one, kept on this device until midnight (or until Ask adds or changes something else).
@@ -992,6 +992,54 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('Undo from + says what happened, and the last one is forgotten', un.done && un.message === "Taken back, except one thing you've changed since." && K.lastAsk(K.getSnapshot().data, D) === null && told.length >= 4, [un, told.length]);
     off();
     K.updateSaved(d => { d.tasks.items = d.tasks.items.filter(x => x.title !== 'Email the roaster'); });
+    // The review's cases (Fable, 30 Oct 2026).
+    const roaster = () => K.getSnapshot().data.tasks.items.some(x => x.title === 'Email the roaster');
+    const cleanAll = () => K.updateSaved(d => { d.tasks.items = d.tasks.items.filter(x => x.title !== 'Email the roaster'); d.notes.items = d.notes.items.filter(x => x.text !== 'Charge per kilo'); d.commitments = d.commitments.filter(x => x.title !== 'Roastery visit'); d.projects.items = d.projects.items.filter(x => x.title !== 'Office tasting day'); for (const p of d.projects.items) p.commitmentIds = p.commitmentIds.filter(id => d.commitments.some(cm => cm.id === id)); });
+    ul = addAll(); let lid = K.rememberAsk({ kind: 'added', undo: ul, words: 'a task' });
+    const other = JSON.parse(localStorage.getItem('myday.data.v4')); other.tasks.items.push({ ...other.tasks.items[0], id: 'tkOtherTab', title: 'From another tab' });
+    localStorage.setItem('myday.data.v4', JSON.stringify(other)); // another tab saved first
+    let un2 = K.undoNow({ kind: 'added', undo: ul, id: lid });
+    check('another tab saved first: "Couldn\'t save just now." — not "you\'ve changed it", nothing lost, and the Undo is still kept', !un2.done && un2.message === "Couldn't save just now." && roaster() === true && localStorage.getItem('myday.ask.lastUndo') !== null, un2);
+    K.boot(); un2 = K.undoNow({ kind: 'added', undo: ul, id: lid });
+    check('…and trying again once MyDay has caught up takes it back', un2.done && un2.message === 'Taken back.' && !roaster(), un2);
+    K.updateSaved(d => { d.tasks.items = d.tasks.items.filter(x => x.id !== 'tkOtherTab'); });
+    for (const bad of ['{"kind":"added","id":"x","words":"x","on":"' + D + '","at":"10:00","undo":{"tasks":[],"notes":[]}}', '{"kind":"changed","id":"x","words":"x","on":"' + D + '","at":"10:00","undo":{"tasks":[],"notes":[]}}', '{"kind":"added"', '[1,2]']) {
+      localStorage.setItem('myday.ask.lastUndo', bad);
+      let threw = null, got;
+      try { got = K.lastAsk(K.getSnapshot().data, D); } catch (e) { threw = String(e); }
+      check(`a stored value not shaped like one (${bad.slice(0, 28)}…) is never offered, never breaks +, and is forgotten`, threw === null && got === null && localStorage.getItem('myday.ask.lastUndo') === null, threw);
+    }
+    const idA = K.rememberAsk({ kind: 'added', undo: addAll(), words: 'a' }), idB = K.rememberAsk({ kind: 'added', undo: K.addAskItems([{ ...c.items[0], title: 'Ring the roaster' }]), words: 'b' });
+    K.forgetAsk(idA);
+    check('forgetting one forgets only that one (another tab may have kept a newer one since)', JSON.parse(localStorage.getItem('myday.ask.lastUndo')).id === idB && idA !== idB);
+    K.forgetAsk(); cleanAll(); K.updateSaved(d => { d.tasks.items = d.tasks.items.filter(x => x.title !== 'Ring the roaster'); });
+    const realSet = localStorage.setItem;
+    K.rememberAsk({ kind: 'added', undo: addAll(), words: 'older' });
+    localStorage.setItem = () => { throw new Error('quota'); };
+    try { K.rememberAsk({ kind: 'added', undo: { tasks: [], notes: [], appointments: [], projects: [] }, words: 'newer' }); } finally { localStorage.setItem = realSet; }
+    check('when keeping a new one fails, the older one isn\'t offered instead (one step of Undo)', localStorage.getItem('myday.ask.lastUndo') === null && K.lastAsk(K.getSnapshot().data, D) === null);
+    cleanAll();
+    // An appointment Ask added that you then linked to a project of yours stays, and so does your link.
+    const apReply = R({ kind: 'add', items: [{ type: 'appointment', title: 'Kiln delivery', date: '2026-11-15', time: '09:00' }] });
+    const au = K.addAskItems(K.checkAskReply(apReply, K.getSnapshot().data, home, D).items);
+    const apId = au.appointments[0];
+    K.updateSaved(d => { d.projects.items.find(x => x.id === 'pjC').commitmentIds.push(apId); });
+    tb = K.takeBackAsk(au);
+    check('an appointment it added that you linked to a project since: it stays, and so does your link', tb.result === 'changed' && tb.kept === 1 && K.getSnapshot().data.commitments.some(x => x.id === apId) && K.getSnapshot().data.projects.items.find(x => x.id === 'pjC').commitmentIds.includes(apId), tb);
+    K.updateSaved(d => { d.commitments = d.commitments.filter(x => x.id !== apId); const pc = d.projects.items.find(x => x.id === 'pjC'); pc.commitmentIds = pc.commitmentIds.filter(x => x !== apId); });
+    // A task of yours set to start after one Ask added: once that's taken back, it no longer does.
+    ul = addAll();
+    const rid = K.getSnapshot().data.tasks.items.find(x => x.title === 'Email the roaster').id;
+    K.updateSaved(d => { d.tasks.items.push({ ...d.tasks.items.find(x => x.id === rid), id: 'tkAfterMine', title: 'Taste the samples', after: [rid] }); });
+    K.takeBackAsk(ul);
+    check('…a task of yours that started after one it added no longer does once that\'s taken back', !roaster() && !(K.getSnapshot().data.tasks.items.find(x => x.id === 'tkAfterMine').after ?? []).includes(rid));
+    K.updateSaved(d => { d.tasks.items = d.tasks.items.filter(x => x.id !== 'tkAfterMine'); });
+    // Changes (kind "changed") through Undo from +.
+    const firstTask = K.getSnapshot().data.tasks.items[0];
+    const cu2 = K.applyAskChanges([{ target: 'task', id: firstTask.id, label: firstTask.title, lines: [], patch: { title: `${firstTask.title} (renamed by Ask)` } }]);
+    const cid = cu2 && K.rememberAsk({ kind: 'changed', undo: cu2, words: '“x”' });
+    const cl = K.lastAsk(K.getSnapshot().data, D), cun = cl && K.undoNow(cl);
+    check('a change it made, from +: "Put back as it was.", and forgotten', !!cu2 && cl?.id === cid && cun?.done && cun.message === 'Put back as it was.' && K.getSnapshot().data.tasks.items[0].title === firstTask.title && K.lastAsk(K.getSnapshot().data, D) === null, cun);
     const base = { type: 'task', title: 'Dentist', date: null, time: null, minutes: 15, category: 'admin', projectId: null, text: '', already: false };
     let ed = K.applyAskEdit(base, { date: '2026-11-12', time: '09:15', minutes: '300', category: 'health' }, D);
     check('your edits to a proposal: a day and time, the length (kept within 5–120), the list', ed.date === '2026-11-12' && ed.time === '09:15' && ed.minutes === 120 && ed.category === 'health');

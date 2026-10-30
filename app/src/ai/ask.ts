@@ -8,12 +8,12 @@ import { DAY_AHEAD, DAY_BACK } from './lookup';
 import { CAT_LABEL } from '../data/plan';
 import { isDateKey, keyOf, pad, prettyDate, shift, todayKey } from '../data/dates';
 import { addNote, editNote } from '../data/notes';
-import { addProject, linkAppointment, linkNote, linkTask } from '../data/projects';
+import { addProject, deleteProject, linkAppointment, linkNote, linkTask } from '../data/projects';
 import { stIndex } from '../data/study/roadmap';
 import { ROUND_SIZE } from '../data/study/common';
 import { dueIds, type Scope } from '../data/study/queue';
 import { updateSaved } from '../data/storage';
-import { addStep, addTask, chaseWaiting, editTask, inQueue, leaveTodaysPlanIfLater, onTodaysPlan, removeStep, TASK_LIMITS } from '../data/tasks';
+import { addStep, addTask, chaseWaiting, editTask, inQueue, leaveTodaysPlanIfLater, onTodaysPlan, removeStep, removeTask, TASK_LIMITS } from '../data/tasks';
 import { addMilestone, addOption, addPoint, PLAN_LIMITS, removeMilestone, removeOption, removePoint, type Side } from '../data/projectPlan';
 import { addAssumption, isBusiness, MODEL_LIMITS, removeAssumption } from '../data/businessModel';
 import type { Category, Commitment, DateKey, MyDayData, Note, Project, StudyModule, StudySection, Task, TaskItem } from '../data/types';
@@ -448,8 +448,9 @@ export function undoAskChanges(u: AskChangeUndo): { result: 'undone' | 'partly' 
     }
     if (!n) return false;
   });
+  if (r === 'not-saved') return { result: 'not-saved', kept }; // (another tab saved first: nothing was looked at — try again)
   if (!n) return { result: 'changed', kept };
-  return r === 'saved' ? { result: kept ? 'partly' : 'undone', kept } : { result: 'not-saved', kept };
+  return { result: kept ? 'partly' : 'undone', kept };
 }
 
 // ---------- Saving what you ticked ----------
@@ -467,11 +468,18 @@ function addedNow(d: MyDayData, u: AskUndo): Map<string, unknown> {
   const now = new Map<string, unknown>();
   for (const id of u.tasks) now.set(`task:${id}`, d.tasks.items.find(x => x.id === id) ?? null);
   for (const id of u.notes) now.set(`note:${id}`, d.notes.items.find(x => x.id === id) ?? null);
-  for (const id of u.appointments) now.set(`appointment:${id}`, d.commitments.find(x => x.id === id) ?? null);
+  for (const id of u.appointments) {
+    const a = d.commitments.find(x => x.id === id) ?? null;
+    // Its link to a project lives on the project, so which projects list it counts as part of it (one you linked it to since).
+    now.set(`appointment:${id}`, a && { ...a, inProjects: d.projects.items.filter(p => p.commitmentIds.includes(id)).map(p => p.id).sort() });
+  }
   // A project's "updated" time alone isn't a change of yours (linking what Ask added in it touches it).
   for (const id of u.projects) { const p = d.projects.items.find(x => x.id === id); now.set(`project:${id}`, p ? { ...p, updatedAt: null } : null); }
   const studyTasks = new Map(d.study.stages.flatMap(sg => sg.courses.flatMap(c => c.modules.flatMap(m => m.sections.flatMap(sc => sc.tasks.map(t => [t.id, t] as const))))));
   for (const id of u.study?.tasks ?? []) now.set(`study:${id}`, studyTasks.get(id) ?? null);
+  const mods = d.study.stages.flatMap(sg => sg.courses.flatMap(c => c.modules)), secs = mods.flatMap(m => m.sections);
+  for (const id of u.study?.sections ?? []) now.set(`section:${id}`, secs.find(x => x.id === id)?.title ?? null);
+  for (const id of u.study?.modules ?? []) now.set(`module:${id}`, mods.find(x => x.id === id)?.title ?? null);
   for (const x of u.steps ?? []) now.set(`step:${x.taskId}:${x.id}`, d.tasks.items.find(t => t.id === x.taskId)?.steps?.find(s => s.id === x.id) ?? null);
   for (const x of u.plan ?? []) {
     const p = d.projects.items.find(y => y.id === x.projectId);
@@ -580,20 +588,27 @@ export function takeBackAsk(u: AskUndo): { result: 'undone' | 'partly' | 'change
     const now = addedNow(d, u), mine = (key: string) => !!u.after && key in u.after && now.get(key) != null && canon(now.get(key)) !== u.after[key];
     const keep = (key: string) => { if (mine(key)) { kept++; return true; } return false; };
     const t = new Set(u.tasks.filter(id => !keep(`task:${id}`))), n = new Set(u.notes.filter(id => !keep(`note:${id}`))), a = new Set(u.appointments.filter(id => !keep(`appointment:${id}`)));
-    // A project it made stays while anything that stays is in it — yours, or something of its own you've changed.
-    const staysIn = (pid: string) => d.tasks.items.some(x => x.projectId === pid && !t.has(x.id)) || d.notes.items.some(x => x.projectId === pid && !n.has(x.id))
-      || (d.projects.items.find(x => x.id === pid)?.commitmentIds ?? []).some(id => !a.has(id));
-    const p = new Set(u.projects.filter(id => { if (keep(`project:${id}`)) return false; if (staysIn(id)) { kept++; return false; } return true; }));
+    // A project it made stays while anything that stays is in it: something of yours (counted as kept — you've added to
+    // it), or something of its own you've changed (already counted, so not twice).
+    const own = new Set([...u.tasks, ...u.notes, ...u.appointments]);
+    const staying = (pid: string) => [...d.tasks.items.filter(x => x.projectId === pid && !t.has(x.id)).map(x => x.id), ...d.notes.items.filter(x => x.projectId === pid && !n.has(x.id)).map(x => x.id),
+      ...(d.projects.items.find(x => x.id === pid)?.commitmentIds ?? []).filter(id => !a.has(id))];
+    const p = new Set(u.projects.filter(id => {
+      if (keep(`project:${id}`)) return false;
+      const st = staying(id);
+      if (st.some(x => !own.has(x))) { kept++; return false; }
+      return !st.length;
+    }));
     const before = d.tasks.items.length + d.notes.items.length + d.commitments.length + d.projects.items.length;
-    d.tasks.items = d.tasks.items.filter(x => !t.has(x.id));
+    for (const id of t) removeTask(d.tasks, id); // (so a task that started after it no longer does)
     d.notes.items = d.notes.items.filter(x => !n.has(x.id));
     d.commitments = d.commitments.filter(x => !a.has(x.id));
     for (const pr of d.projects.items) if (pr.commitmentIds.some(id => a.has(id))) pr.commitmentIds = pr.commitmentIds.filter(id => !a.has(id));
-    d.projects.items = d.projects.items.filter(x => !p.has(x.id));
+    for (const id of p) deleteProject(d, id); // (its research and files go with it, as when you delete one)
     // Study tasks it added, then the sections and modules it made (only if nothing else has been put in them since).
     let studyGone = 0;
     if (u.study) {
-      const st = new Set(u.study.tasks.filter(id => !keep(`study:${id}`))), ss = new Set(u.study.sections), sm = new Set(u.study.modules);
+      const st = new Set(u.study.tasks.filter(id => !keep(`study:${id}`))), ss = new Set(u.study.sections.filter(id => !keep(`section:${id}`))), sm = new Set(u.study.modules.filter(id => !keep(`module:${id}`)));
       for (const sg of d.study.stages) for (const c of sg.courses) {
         for (const m of c.modules) for (const sc of m.sections) { const n = sc.tasks.length; sc.tasks = sc.tasks.filter(t => !st.has(t.id)); studyGone += n - sc.tasks.length; }
         for (const m of c.modules) m.sections = m.sections.filter(sc => !(ss.has(sc.id) && !sc.tasks.length));
@@ -622,8 +637,9 @@ export function takeBackAsk(u: AskUndo): { result: 'undone' | 'partly' | 'change
     gone = before - (d.tasks.items.length + d.notes.items.length + d.commitments.length + d.projects.items.length) + studyGone + planGone + stepsGone;
     if (!gone) return false;
   });
+  if (r === 'not-saved') return { result: 'not-saved', kept }; // (another tab saved first: nothing was looked at — try again)
   if (!gone) return { result: 'changed', kept };
-  return r === 'saved' ? { result: kept ? 'partly' : 'undone', kept } : { result: 'not-saved', kept };
+  return { result: kept ? 'partly' : 'undone', kept };
 }
 // The same, said as whether anything was taken back.
 export const undoAsk = (u: AskUndo): boolean => { const r = takeBackAsk(u).result; return r === 'undone' || r === 'partly'; };
