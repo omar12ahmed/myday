@@ -177,6 +177,16 @@ const button = '[data-action="ar-play"]';
     }
     await send('Emulation.clearDeviceMetricsOverride');
     check('the fixture began with ordinary saved data', !!saved && JSON.parse(saved).schemaVersion === 5);
+    // Round eleven: Arabic shown without marks in a check plays from MyDay's checked script, only once the answer is shown.
+    const weak = 'lesson.arabic-weak-verbs', weakQ = '[data-ar-question="assessment.arabic-weak-verbs-check.q1"]';
+    await show(weak); await until(() => exists(weakQ));
+    check('an unmarked word in a check question has no play control before its answer is shown', !(await exists(weakQ + ' [aria-label="Play قال"]')) && (await T.text(weakQ)).includes('قال'));
+    await click(weakQ + ' [data-action="ar-reveal"]');
+    check('after reveal its unmarked words play from their scripts, and the label says it reads MyDay\'s vowelled copy', await until(() => exists(weakQ + ' [aria-label="Play قال"]')) && await exists(weakQ + ' [aria-label="Play قلت"]') && (await T.text(weakQ + ' [data-ar-voice-script]')).includes('it reads MyDay’s vowelled copy'));
+    const impQ = '[data-ar-question="assessment.arabic-requests-imperatives-check.q1"]';
+    await show('lesson.arabic-requests-imperatives'); await until(() => exists(impQ));
+    await click(impQ + ' [data-action="ar-reveal"]');
+    check('a piece left without a voice on purpose (لا تكتب) stays silent beside its voiced neighbours', await until(() => exists(impQ + ' [aria-label="Play لا تكتبون"]')) && !(await exists(impQ + ' [aria-label="Play لا تكتب"]')) && (await T.text(impQ)).includes('can be either'), { buttons: await ev(`[...document.querySelectorAll('[data-ar-question="assessment.arabic-requests-imperatives-check.q1"] [aria-label^="Play "]')].map(b => b.getAttribute('aria-label'))`), text: (await T.text(impQ)).slice(0, 300) });
     result = T.summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
   } finally { fs.rmSync(temp, { recursive: true, force: true }); }
   process.exit(result.fail ? 1 : 0);
