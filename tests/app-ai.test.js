@@ -472,6 +472,35 @@ const SEED = `s => {
     check('…and Add saves it as edited', edited.length === 1 && edited[0].title === 'Renew passport' && edited[0].due === PLUS3 && edited[0].time === '10:30' && edited[0].minutes === 45 && edited[0].category === 'learning', edited);
     await mock.click('[data-action=ask-undo]'); await sleep(200);
     await closeSheet(mock); await sleep(200);
+    // Undo later, from + (the owner's choices of 30 Oct 2026): the last thing Ask did stays undoable at the top of + until
+    // midnight, kept on this device; Undo then takes back only what's as Ask left it.
+    check('with nothing from Ask today, + has no "last from Ask MyDay" line', await (async () => { await mock.click('[data-action=capture-open]'); await mock.until(`document.getElementById('captureText')`); const none = !(await mock.exists('[data-s=ask-last]')); await closeSheet(mock); await sleep(150); return none; })());
+    await openAsk(mock, 'today', 'call the bank, renew passport and email Sam');
+    await askGo(mock);
+    const beforeLast = (await mock.data()).tasks.items.length;
+    await mock.click('[data-action=ask-add]'); await sleep(250);
+    check('…while + is open after adding, the panel has its own Undo and the top line doesn\'t repeat it', await mock.exists('[data-s=ask-added] [data-action=ask-undo]') && !(await mock.exists('[data-s=ask-last]')));
+    await closeSheet(mock); await sleep(200);
+    await mock.setData(`s => { const t = s.tasks.items.find(x => x.title === 'Call the bank'); t.done = true; t.doneOn = '${TODAY}'; }`); // ticked since (and a reload)
+    await mock.until(`document.querySelector('[data-action=capture-open]')`);
+    await mock.click('[data-action=capture-open]'); await mock.until(`document.getElementById('captureText')`); await sleep(150);
+    const lastLine = await mock.text('[data-s=ask-last]');
+    check('reopening + (after a reload too): "Last from Ask MyDay, at HH:MM: added 3 tasks." with Undo, above the text field', /^Last from Ask MyDay, at \d\d:\d\d: added 3 tasks\./.test(lastLine) && await mock.exists('[data-s=ask-last] [data-action=ask-last-undo]')
+      && await mock.ev(`!!(document.querySelector('[data-s=ask-last]').compareDocumentPosition(document.getElementById('captureText')) & Node.DOCUMENT_POSITION_FOLLOWING)`), lastLine);
+    await mock.click('[data-action=ask-last-undo]'); await sleep(250);
+    const afterLast = (await mock.data()).tasks.items;
+    check('…Undo takes back what\'s as Ask left it and keeps the one you ticked, saying so', afterLast.length === beforeLast + 1 && afterLast.some(t => t.title === 'Call the bank' && t.done) && !afterLast.some(t => t.title === 'Renew passport' || t.title === 'Email Sam')
+      && (await mock.text('#toast')).includes("Taken back, except one thing you've changed since."), [afterLast.slice(beforeLast).map(t => t.title), await mock.text('#toast')]);
+    check('…and the line goes (one step of Undo)', !(await mock.exists('[data-s=ask-last]')));
+    await closeSheet(mock); await sleep(150);
+    await mock.setData(`s => { s.tasks.items = s.tasks.items.filter(t => t.title !== 'Call the bank'); }`);
+    await openAsk(mock, 'today', 'call the bank, renew passport and email Sam');
+    await askGo(mock); await mock.click('[data-action=ask-add]'); await sleep(250); await closeSheet(mock); await sleep(150);
+    await mock.ev(`(() => { const x = JSON.parse(localStorage.getItem('myday.ask.lastUndo')); x.on = '2000-01-01'; localStorage.setItem('myday.ask.lastUndo', JSON.stringify(x)); })()`);
+    await mock.click('[data-action=capture-open]'); await mock.until(`document.getElementById('captureText')`); await sleep(150);
+    check('…kept only until midnight: from another day, no line (and it\'s forgotten)', !(await mock.exists('[data-s=ask-last]')) && (await mock.ev(`localStorage.getItem('myday.ask.lastUndo')`)) === null);
+    await closeSheet(mock); await sleep(150);
+    await mock.setData(`s => { s.tasks.items = s.tasks.items.filter(t => !['Call the bank', 'Renew passport', 'Email Sam'].includes(t.title)); }`);
     await openAsk(mock, 'today', 'call the bank, renew passport and email Sam');
     await askGo(mock);
     await mock.type('[data-s=ask-more]', 'and they are all for this week'); await mock.click('[data-action=ask-again]');

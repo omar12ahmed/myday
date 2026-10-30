@@ -12,6 +12,7 @@ import type { Category, MyDayData } from '../data/types';
 import { loadLibs, parseCapture, type Capture, type CaptureLibs } from './parse';
 import { addAppointment, addCapturedTask, appointmentEnd, saveNote, startProject } from './save';
 import { AskPanel } from './AskPanel';
+import { LastAskLine } from './LastAskLine';
 import { CAPTURE_EVENT, type AskFocus } from './openCapture';
 import { AI_MODE } from '../ai/request';
 
@@ -85,6 +86,7 @@ export function CaptureSheet({ data, initialText = '', focus, onClose }: { data:
       className="m-auto mt-[max(16px,env(safe-area-inset-top))] w-[min(560px,calc(100%-24px))] p-0 rounded-card border border-outline bg-surface text-fg shadow-card backdrop:bg-[rgba(42,31,26,.45)] backdrop:backdrop-blur-[3px]">
       <form className="p-5" onSubmit={e => { e.preventDefault(); if (text.trim()) ordered[0].run(); }}>
         <h2 id="capture-h" className="flex items-center gap-2"><Plus size={20} aria-hidden="true" className="text-primary" /> Capture</h2>
+        {AI_MODE !== 'off' && <LastAskLine data={data} />}
         <Field label="Anything on your mind — a task, a time, an idea or a thought" htmlFor="captureText">
           <TextArea id="captureText" rows={3} autoFocus value={text} maxLength={2000} onChange={e => setText(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); if (text.trim()) ordered[0].run(); } }}

@@ -1,6 +1,7 @@
 import { ArrowRight, BookOpen, CalendarPlus, FileText, Flag, FolderKanban, ListChecks, ListPlus, Minus, NotebookPen, PencilLine, Plus, Scale, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { addAskItems, applyAskChanges, applyAskEdit, checkAskReply, countWords, DAY_TOO_FAR, NEW_PROJECT, undoAsk, undoAskChanges, type AskChangeUndo, type AskChecked, type AskEdit, type AskProposal, type AskUndo } from '../ai/ask';
+import { rememberAsk, undoNow } from '../ai/lastAsk';
+import { addAskItems, applyAskChanges, applyAskEdit, checkAskReply, countWords, DAY_TOO_FAR, NEW_PROJECT, type AskChangeUndo, type AskChecked, type AskEdit, type AskProposal, type AskUndo } from '../ai/ask';
 import { askContext, askPreview, askSlice } from '../ai/askContext';
 import { dayLookup, decisionsLookup, lookupLine, projectLookup, searchLookup, studyLookup, waitingLookup } from '../ai/lookup';
 import type { AskLookup } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
@@ -140,6 +141,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
     if (!undo) { toast("Couldn't save just now — nothing was added."); return; }
     const words = countWords(chosen);
     toast(`Added ${words}.`);
+    rememberAsk({ kind: 'added', undo, words }); // undoable from + until midnight, after this panel has closed
     setPhase({ at: 'added', undo, words });
   }
   function apply(r: Extract<AskChecked, { kind: 'change' }>) {
@@ -150,6 +152,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
     if (!undo) { toast("Couldn't save just now — nothing was changed."); return; }
     const words = chosen.length === 1 ? `“${chosen[0].label}”` : `${chosen.length} things`;
     toast(`Changed ${words}.`);
+    rememberAsk({ kind: 'changed', undo, words });
     setPhase({ at: 'applied', undo, words });
   }
 
@@ -175,17 +178,14 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
       {phase.at === 'looking' && <p role="status" className="text-[15px] text-fg-2 flex items-center gap-2 my-1" data-s="ask-looking"><span className="size-3 rounded-full bg-primary motion-safe:animate-pulse flex-none" aria-hidden="true" /> {phase.tool === 'day' ? `Looking at ${prettyDate(phase.query)}…` : phase.tool === 'project' ? `Looking at your project “${phase.query}”…` : phase.tool === 'decisions' ? (phase.query === 'all' ? 'Looking at your open decisions…' : `Looking at the open decisions in “${phase.query}”…`) : phase.tool === 'waiting' ? (phase.query === 'all' ? 'Looking at what you’re waiting on…' : `Looking at what you’re waiting on in “${phase.query}”…`) : phase.tool === 'study' ? 'Looking at what to study next…' : `Looking across MyDay for “${phase.query}”…`}</p>}
       {phase.at === 'added' && <div className="flex flex-wrap items-center gap-x-3 gap-y-1" data-s="ask-added">
         <p className="text-[15px] m-0">Added {phase.words}.</p>
-        <LinkButton data-action="ask-undo" onClick={() => { if (undoAsk(phase.undo)) { toast('Taken back.'); setPhase({ at: 'idle' }); } }}>Undo</LinkButton>
+        <LinkButton data-action="ask-undo" onClick={() => { const r = undoNow({ kind: 'added', undo: phase.undo }); toast(r.message); if (r.done) setPhase({ at: 'idle' }); }}>Undo</LinkButton>
         <LinkButton data-action="ask-close" className="ml-auto" onClick={onClose}>Close</LinkButton>
       </div>}
       {phase.at === 'applied' && <div className="flex flex-wrap items-center gap-x-3 gap-y-1" data-s="ask-applied">
         <p className="text-[15px] m-0">Changed {phase.words}.</p>
         <LinkButton data-action="ask-undo" onClick={() => {
           // Anything changed since (a tick on Today, your own edit) is yours, so it stays and the message says so.
-          const r = undoAskChanges(phase.undo);
-          if (r.result === 'not-saved') { toast("Couldn't save just now."); return; }
-          toast(r.result === 'undone' ? 'Put back as it was.' : r.result === 'partly' ? `Put back, except ${r.kept === 1 ? 'one thing' : `${r.kept} things`} you've changed since.` : "Nothing put back — you've changed it since.");
-          setPhase({ at: 'idle' });
+          const r = undoNow({ kind: 'changed', undo: phase.undo }); toast(r.message); if (r.done) setPhase({ at: 'idle' });
         }}>Undo</LinkButton>
         <LinkButton data-action="ask-close" className="ml-auto" onClick={onClose}>Close</LinkButton>
       </div>}

@@ -458,6 +458,28 @@ export interface AskUndo {
   steps?: { taskId: string; id: string }[]; // steps it put into a task's checklist (v23)
   // Milestones, options and pros/cons it added to a project (1.32.0).
   plan?: ({ kind: 'milestone'; projectId: string; id: string } | { kind: 'assumption'; projectId: string; id: string } | { kind: 'option'; projectId: string; decisionId: string; id: string } | { kind: 'point'; projectId: string; decisionId: string; optionId: string; side: Side; text: string })[];
+  // Each thing as it was just after Ask added it (its content, in any key order), so Undo — later too, from + — takes back
+  // only what's as Ask left it: anything you've changed since (ticked, renamed, planned, added to) is yours and stays.
+  after?: Record<string, string>;
+}
+// Where each added thing is now (null when it's gone), by the keys of `after`.
+function addedNow(d: MyDayData, u: AskUndo): Map<string, unknown> {
+  const now = new Map<string, unknown>();
+  for (const id of u.tasks) now.set(`task:${id}`, d.tasks.items.find(x => x.id === id) ?? null);
+  for (const id of u.notes) now.set(`note:${id}`, d.notes.items.find(x => x.id === id) ?? null);
+  for (const id of u.appointments) now.set(`appointment:${id}`, d.commitments.find(x => x.id === id) ?? null);
+  // A project's "updated" time alone isn't a change of yours (linking what Ask added in it touches it).
+  for (const id of u.projects) { const p = d.projects.items.find(x => x.id === id); now.set(`project:${id}`, p ? { ...p, updatedAt: null } : null); }
+  const studyTasks = new Map(d.study.stages.flatMap(sg => sg.courses.flatMap(c => c.modules.flatMap(m => m.sections.flatMap(sc => sc.tasks.map(t => [t.id, t] as const))))));
+  for (const id of u.study?.tasks ?? []) now.set(`study:${id}`, studyTasks.get(id) ?? null);
+  for (const x of u.steps ?? []) now.set(`step:${x.taskId}:${x.id}`, d.tasks.items.find(t => t.id === x.taskId)?.steps?.find(s => s.id === x.id) ?? null);
+  for (const x of u.plan ?? []) {
+    const p = d.projects.items.find(y => y.id === x.projectId);
+    if (x.kind === 'milestone') now.set(`milestone:${x.projectId}:${x.id}`, p?.milestones?.find(m => m.id === x.id) ?? null);
+    else if (x.kind === 'assumption') now.set(`assumption:${x.projectId}:${x.id}`, p?.model?.assumptions.find(a => a.id === x.id) ?? null);
+    else if (x.kind === 'option') now.set(`option:${x.projectId}:${x.id}`, p?.decisions?.find(dc => dc.id === x.decisionId)?.options.find(o => o.id === x.id) ?? null);
+  }
+  return now;
 }
 const end30 = (date: DateKey, time: string) => { const t = new Date(`${date}T${time}`); t.setMinutes(t.getMinutes() + 30); return `${keyOf(t)}T${pad(t.getHours())}:${pad(t.getMinutes())}`; };
 
@@ -542,14 +564,26 @@ export function addAskItems(items: AskProposal[]): AskUndo | null {
       }
     }
     if (!u.tasks.length && !u.notes.length && !u.appointments.length && !u.projects.length && !u.study!.tasks.length && !u.plan!.length && !u.steps?.length) return false;
+    u.after = {};
+    for (const [key, x] of addedNow(d, u)) if (x) u.after[key] = canon(x);
   });
   return r === 'saved' ? u : null;
 }
 
-// Takes back what Ask MyDay just added (anything you've already removed stays removed).
-export function undoAsk(u: AskUndo): boolean {
-  return updateSaved(d => {
-    const t = new Set(u.tasks), n = new Set(u.notes), a = new Set(u.appointments), p = new Set(u.projects);
+// Takes back what Ask MyDay added (anything you've already removed stays removed), except what you've changed since:
+// "undone", "partly" (with how many were kept), "changed" (nothing left to take back) or "not-saved". A project it made
+// stays too while anything of yours is in it (a task, note or appointment it didn't add).
+export function takeBackAsk(u: AskUndo): { result: 'undone' | 'partly' | 'changed' | 'not-saved'; kept: number } {
+  let kept = 0, gone = 0;
+  const r = updateSaved(d => {
+    kept = 0; gone = 0;
+    const now = addedNow(d, u), mine = (key: string) => !!u.after && key in u.after && now.get(key) != null && canon(now.get(key)) !== u.after[key];
+    const keep = (key: string) => { if (mine(key)) { kept++; return true; } return false; };
+    const t = new Set(u.tasks.filter(id => !keep(`task:${id}`))), n = new Set(u.notes.filter(id => !keep(`note:${id}`))), a = new Set(u.appointments.filter(id => !keep(`appointment:${id}`)));
+    // A project it made stays while anything that stays is in it — yours, or something of its own you've changed.
+    const staysIn = (pid: string) => d.tasks.items.some(x => x.projectId === pid && !t.has(x.id)) || d.notes.items.some(x => x.projectId === pid && !n.has(x.id))
+      || (d.projects.items.find(x => x.id === pid)?.commitmentIds ?? []).some(id => !a.has(id));
+    const p = new Set(u.projects.filter(id => { if (keep(`project:${id}`)) return false; if (staysIn(id)) { kept++; return false; } return true; }));
     const before = d.tasks.items.length + d.notes.items.length + d.commitments.length + d.projects.items.length;
     d.tasks.items = d.tasks.items.filter(x => !t.has(x.id));
     d.notes.items = d.notes.items.filter(x => !n.has(x.id));
@@ -559,7 +593,7 @@ export function undoAsk(u: AskUndo): boolean {
     // Study tasks it added, then the sections and modules it made (only if nothing else has been put in them since).
     let studyGone = 0;
     if (u.study) {
-      const st = new Set(u.study.tasks), ss = new Set(u.study.sections), sm = new Set(u.study.modules);
+      const st = new Set(u.study.tasks.filter(id => !keep(`study:${id}`))), ss = new Set(u.study.sections), sm = new Set(u.study.modules);
       for (const sg of d.study.stages) for (const c of sg.courses) {
         for (const m of c.modules) for (const sc of m.sections) { const n = sc.tasks.length; sc.tasks = sc.tasks.filter(t => !st.has(t.id)); studyGone += n - sc.tasks.length; }
         for (const m of c.modules) m.sections = m.sections.filter(sc => !(ss.has(sc.id) && !sc.tasks.length));
@@ -568,10 +602,11 @@ export function undoAsk(u: AskUndo): boolean {
     }
     // Steps it put into a task's checklist (one you've already removed stays removed).
     let stepsGone = 0;
-    for (const x of u.steps ?? []) stepsGone += removeStep(d.tasks, x.taskId, x.id) ? 1 : 0;
+    for (const x of u.steps ?? []) if (!keep(`step:${x.taskId}:${x.id}`)) stepsGone += removeStep(d.tasks, x.taskId, x.id) ? 1 : 0;
     // Milestones, options and pros/cons it added (newest first; one you've already removed stays removed).
     let planGone = 0;
     for (const x of [...(u.plan ?? [])].reverse()) {
+      if (x.kind !== 'point' && keep(`${x.kind}:${x.projectId}:${x.id}`)) continue;
       if (x.kind === 'milestone') planGone += removeMilestone(d, x.projectId, x.id) ? 1 : 0;
       else if (x.kind === 'assumption') planGone += removeAssumption(d, x.projectId, x.id) ? 1 : 0;
       else if (x.kind === 'option') {
@@ -584,9 +619,14 @@ export function undoAsk(u: AskUndo): boolean {
         if (i >= 0) planGone += removePoint(d, x.projectId, x.decisionId, x.optionId, x.side, i) ? 1 : 0;
       }
     }
-    if (d.tasks.items.length + d.notes.items.length + d.commitments.length + d.projects.items.length === before && !studyGone && !planGone && !stepsGone) return false;
-  }) === 'saved';
+    gone = before - (d.tasks.items.length + d.notes.items.length + d.commitments.length + d.projects.items.length) + studyGone + planGone + stepsGone;
+    if (!gone) return false;
+  });
+  if (!gone) return { result: 'changed', kept };
+  return r === 'saved' ? { result: kept ? 'partly' : 'undone', kept } : { result: 'not-saved', kept };
 }
+// The same, said as whether anything was taken back.
+export const undoAsk = (u: AskUndo): boolean => { const r = takeBackAsk(u).result; return r === 'undone' || r === 'partly'; };
 
 // How many of each, in words ("2 tasks and a note").
 export function countWords(items: { type: AskItemType }[]): string {
