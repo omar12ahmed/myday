@@ -19,6 +19,7 @@ import type { Assumption, AssumptionState, MyDayData, Project } from '../data/ty
 import { LinkButton } from '../components/parts';
 import { exploreHref, rememberExploreEntry } from '../explore/route';
 import { evidenceLine, findingsAbout, hasResearch, setResearch } from '../data/research';
+import { AssumptionExperiments, ExperimentsCard, type Planning, type Test } from './ExperimentsCard';
 import { AiHelp } from './PlanViews';
 import { progressLine, tabHref } from './planText';
 
@@ -29,6 +30,7 @@ import { progressLine, tabHref } from './planText';
 export function ModelView({ data, p }: { data: MyDayData; p: Project }) {
   const m = p.model, list = m?.assumptions ?? [];
   const [text, setText] = useState('');
+  const [planning, setPlanning] = useState<Test[] | null>(null); // the Experiments card's form (specs/projects-business-tools.md)
   const full = list.length >= MODEL_LIMITS.assumptions;
   // AI help (1.34.0, only on your tap): once the first three questions are answered, Ask MyDay can suggest what else must
   // be true — sending this one page (never what you found), and never saying whether the idea will work.
@@ -40,6 +42,7 @@ export function ModelView({ data, p }: { data: MyDayData; p: Project }) {
     if (r && r !== 'full') { setText(''); toast('Added. Find out whenever you’re ready.'); }
   }
   return (
+    <>
     <Card aria-labelledby="pjModelH" id="projectModel">
       <h2 id="pjModelH" className="flex items-center gap-2"><FileText size={22} aria-hidden="true" className="text-primary" /> Your business on one page</h2>
       <p className="text-[15px] text-fg-2 m-0" data-s="model-progress">{modelProgress(p).answered ? progressLine(p) : 'Four simple questions, in your words. Rough is fine — change it whenever your thinking moves on.'}</p>
@@ -57,7 +60,7 @@ export function ModelView({ data, p }: { data: MyDayData; p: Project }) {
           <p className="text-sm text-fg-2 m-0 mt-1.5">{MUST_BE_TRUE.hint}</p>
           {list.length > 0 && (
             <ul className="list-none p-0 m-0 mt-3" aria-label="What must be true">
-              {list.map(a => <AssumptionRow key={a.id} data={data} p={p} a={a} />)}
+              {list.map(a => <AssumptionRow key={a.id} data={data} p={p} a={a} setPlanning={setPlanning} />)}
             </ul>
           )}
           {!full && AI_MODE !== 'off' && (answered || p.private
@@ -79,6 +82,8 @@ export function ModelView({ data, p }: { data: MyDayData; p: Project }) {
       </div>
       <a href={exploreHref(p.id)} onClick={() => rememberExploreEntry(p.id)} data-action="model-explore" className="inline-flex items-center gap-2 min-h-11 mt-4 text-primary font-semibold text-[15px] no-underline hover:underline underline-offset-4">See it as a story: Explore this idea <ArrowUpRight size={17} aria-hidden="true" /></a>
     </Card>
+    <ExperimentsCard data={data} p={p} planning={planning} setPlanning={setPlanning} />
+    </>
   );
 }
 
@@ -91,7 +96,7 @@ function EvidenceLine({ data, p, a }: { data: MyDayData; p: Project; a: Assumpti
 const STATE_TOAST: Record<AssumptionState, string> = { open: 'Back to not checked yet.', 'looks-true': 'Looks true — good to know.', 'doesnt-hold': 'Doesn’t hold — worth knowing early. Your idea can change with it.' };
 // One belief: how it's turning out, its "Find out" task, and — while it's not checked yet — one tap to mark it. Changing
 // a marked one (or back to not checked yet) is in Edit, so each row stays short on a phone.
-function AssumptionRow({ data, p, a }: { data: MyDayData; p: Project; a: Assumption }) {
+function AssumptionRow({ data, p, a, setPlanning }: { data: MyDayData; p: Project; a: Assumption; setPlanning: Planning['setPlanning'] }) {
   const confirm = useConfirm();
   const [editing, setEditing] = useState(false);
   const task = assumptionTask(data, a), waiting = awaitingAnswer(data, a);
@@ -114,6 +119,7 @@ function AssumptionRow({ data, p, a }: { data: MyDayData; p: Project; a: Assumpt
       <p className="m-0 font-semibold break-words leading-snug">{a.text}</p>
       <p className="m-0 mt-0.5 text-sm text-fg-2" data-s="as-state">{a.state === 'looks-true' && <Check size={14} aria-hidden="true" className="inline -mt-0.5 mr-1 text-done" />}{STATE_LABEL[a.state]}{a.checkedOn ? ` · ${shortDate(a.checkedOn)}` : ''}</p>
       {hasResearch(p) && <EvidenceLine data={data} p={p} a={a} />}
+      <AssumptionExperiments data={data} p={p} id={a.id} setPlanning={setPlanning} />
       {a.found && !editing && <p className="m-0 mt-1.5 text-[15px] text-fg-2 whitespace-pre-line break-words" data-s="as-found"><span className="font-semibold text-fg">What I found:</span> {a.found}</p>}
       {waiting && <p className="m-0 mt-2 text-[15px] rounded-tile bg-surface-2 border border-outline px-3 py-2" data-s="as-waiting">Its Find out task is done — what did you find?</p>}
       <div className="flex flex-wrap items-center gap-2 mt-2">

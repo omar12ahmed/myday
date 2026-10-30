@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { openCapture } from '../capture/openCapture';
 import { Card } from '../components/Card';
 import { isBusiness, isCase, modelProgress } from '../data/businessModel';
+import { breakEven, breakEvenText } from '../data/businessMoney';
 import { caseCounts, EVIDENCE_STATUS_LABEL, ISSUE_STATUS_LABEL, timelineInOrder } from '../data/caseFile';
 import { parseKey, shortDate, todayKey } from '../data/dates';
 import { issueGrid, timelineByMonth, weeksDone, type Pointer, type Week } from '../data/projectDashboard';
@@ -26,6 +27,7 @@ export function AtAGlance({ data, p }: { data: MyDayData; p: Project }) {
       <div className="divide-y divide-outline" data-s="glance-rows">
         {isBusiness(p) && <OnePage p={p} />}
         {isBusiness(p) && <Beliefs p={p} />}
+        {isBusiness(p) && <Money p={p} />}
         {isCase(p) && <EvidenceBar p={p} />}
         {isCase(p) && <IssueTable p={p} />}
         {isCase(p) && <MonthBars p={p} />}
@@ -162,6 +164,17 @@ function OnePage({ p }: { p: Project }) {
     <Row title="Your one page" href={href} s="glance-onepage">
       {g.answered ? <a href={href} className={lineClass} data-s="model-summary">{g.answered === 4 ? 'All four questions answered' : `${g.answered} of 4 questions answered`}</a>
         : <Empty href={href} s="model-summary">Four simple questions put your idea on one page — start with the first</Empty>}
+    </Row>
+  );
+}
+
+// Its money (specs/projects-business-tools.md): the break-even in words, a link to the Money tab.
+function Money({ p }: { p: Project }) {
+  const m = p.model?.money, href = tabHref(p, 'money');
+  return (
+    <Row title="Money" href={href} s="glance-money">
+      {m && breakEven(m).kind !== 'empty' ? <a href={href} className={lineClass} data-s="money-summary">{breakEvenText(m)}</a>
+        : <Empty href={href} s="money-summary">What does each sale leave, and how many cover the month? Add your numbers</Empty>}
     </Row>
   );
 }

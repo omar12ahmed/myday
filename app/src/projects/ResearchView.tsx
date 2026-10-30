@@ -17,6 +17,7 @@ import { update } from '../data/storage';
 import { toast } from '../data/toast';
 import type { MyDayData, Project, ResearchFinding, ResearchQuestion, ResearchSource } from '../data/types';
 import { openFile, WHY } from '../sync/files';
+import { ExperimentsCard, type Test } from './ExperimentsCard';
 
 // The Research tab (specs/projects-research.md): what you want to find out (questions, open first), what you found
 // (findings: from which sources, the day, how far to trust it, and what it bears on), and where it came from (sources:
@@ -28,9 +29,12 @@ const apply = (fn: (d: MyDayData) => boolean) => update(d => (fn(d) ? undefined 
 
 export function ResearchView({ data, p }: { data: MyDayData; p: Project }) {
   const r = researchOf(data, p.id);
+  const [planning, setPlanning] = useState<Test[] | null>(null);
   return (
     <div className="grid gap-4" data-s="research">
       <QuestionsCard data={data} p={p} questions={r.questions} />
+      {/* (A business idea's experiments are on its Model tab too: the same records.) */}
+      <ExperimentsCard data={data} p={p} planning={planning} setPlanning={setPlanning} />
       <FindingsCard data={data} p={p} findings={r.findings} />
       <SourcesCard data={data} p={p} sources={r.sources} findings={r.findings} />
     </div>
@@ -130,6 +134,12 @@ function FindingsCard({ data, p, findings }: { data: MyDayData; p: Project; find
     </Card>
   );
 }
+// Where a finding came from: its sources, and the experiment it was saved from (specs/projects-business-tools.md).
+function from(data: MyDayData, f: ResearchFinding): string {
+  const ex = f.experimentId ? data.research.items.find(x => x.id === f.experimentId) : undefined;
+  const names = [...(f.experimentId ? [ex ? `the experiment “${String(ex.title || 'An experiment')}”` : 'an experiment no longer here'] : []), ...f.sourceIds.map(id => sourceName(data, id))];
+  return names.length ? `From ${names.join(', ')}` : 'No source yet';
+}
 function FindingRow({ data, p, f }: { data: MyDayData; p: Project; f: ResearchFinding }) {
   const confirm = useConfirm();
   const [editing, setEditing] = useState(false);
@@ -145,7 +155,7 @@ function FindingRow({ data, p, f }: { data: MyDayData; p: Project; f: ResearchFi
   return (
     <li className="border-t border-outline first:border-t-0 py-3" data-s="research-finding" data-id={f.id}>
       <p className="m-0 break-words whitespace-pre-line">{f.text}</p>
-      <p className="m-0 text-sm text-fg-3">{[f.on && `Found ${shortDate(f.on)}`, f.sourceIds.length ? `From ${f.sourceIds.map(id => sourceName(data, id)).join(', ')}` : 'No source yet'].filter(Boolean).join(' · ')}</p>
+      <p className="m-0 text-sm text-fg-3">{[f.on && `Found ${shortDate(f.on)}`, from(data, f)].filter(Boolean).join(' · ')}</p>
       {f.limits && <p className="m-0 text-sm text-fg-2 break-words" data-s="research-limits"><span className="font-semibold">Limits:</span> {f.limits}</p>}
       {f.about.length > 0 && <ul className="list-none p-0 m-0 mt-1">{f.about.map(a => <li key={a.kind + a.id} className="text-sm text-fg-2 break-words">{STANCE_WORD[(STANCES as readonly string[]).includes(a.stance) ? a.stance as Stance : 'relates']} “{what(a)}”</li>)}</ul>}
       <div className="flex flex-wrap gap-x-5 mt-1">

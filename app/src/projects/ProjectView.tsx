@@ -29,6 +29,7 @@ import { Progression } from './parts';
 import { AddDeadline, EvidenceView, IssuesView, TimelineView } from './CaseViews';
 import { AtAGlance, WorthALook } from './AtAGlance';
 import { ModelView } from './ModelView';
+import { MoneyView } from './MoneyView';
 import { ResearchView } from './ResearchView';
 import { DecisionsView, MilestonesView } from './PlanViews';
 import { matchCount, searchProject, type SearchHit } from '../data/projectSearch';
@@ -42,7 +43,7 @@ import { tabHref } from './planText';
 // one next step beside Worth a look, then At a glance (each tool's summary, once), what it is and where it is on the
 // progression, and everything that belongs to it — tasks and notes on the left on wide screens; what's coming up
 // (including tasks still open after their date), what happened recently and its status on the right.
-export type ProjectTab = 'overview' | 'model' | 'milestones' | 'decisions' | 'timeline' | 'evidence' | 'issues' | 'research';
+export type ProjectTab = 'overview' | 'model' | 'money' | 'milestones' | 'decisions' | 'timeline' | 'evidence' | 'issues' | 'research';
 const CASE_TABS: ProjectTab[] = ['timeline', 'evidence', 'issues'];
 export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDayData; id: string; tab?: ProjectTab }) {
   useEffect(() => { restoreExploreEntry(id); }, [id]);
@@ -61,9 +62,9 @@ export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDay
   const pick = (h: SearchHit) => { setQuery(''); if (h.kind === 'resource') open('resources'); if (h.kind !== 'task' && h.kind !== 'note') focusItem(h); };
   const p = projectById(data, id);
   if (!p) return <><BackLink to="projects" label="Projects" /><NotFound title="This project isn't here" back="projects" label="Back to your projects" /></>;
-  // The Model tab is a business idea's, and Timeline, Evidence and Issues a case's; anywhere else their address shows the
-  // Overview.
-  const tab = (asked === 'model' && !isBusiness(p)) || (CASE_TABS.includes(asked) && !isCase(p)) || (asked === 'research' && !hasResearch(p)) ? 'overview' : asked;
+  // The Model and Money tabs are a business idea's, and Timeline, Evidence and Issues a case's; anywhere else their
+  // address shows the Overview.
+  const tab = ((asked === 'model' || asked === 'money') && !isBusiness(p)) || (CASE_TABS.includes(asked) && !isCase(p)) || (asked === 'research' && !hasResearch(p)) ? 'overview' : asked;
   const hits = shown.trim() ? searchProject(data, p, shown) : [];
   const sec = overviewSections(data, p, opened);
   return (
@@ -74,7 +75,7 @@ export function ProjectView({ data, id, tab: asked = 'overview' }: { data: MyDay
       {/* The tab stays as it was while results show (hidden), so nothing you were typing there is lost. */}
       <div hidden={!!query.trim()} data-s="project-tab">
       {tab === 'research' ? <ResearchView data={data} p={p} /> : tab === 'timeline' ? <TimelineView p={p} /> : tab === 'evidence' ? <EvidenceView p={p} /> : tab === 'issues' ? <IssuesView p={p} />
-        : tab === 'model' ? <ModelView data={data} p={p} /> : tab === 'milestones' ? <MilestonesView p={p} /> : tab === 'decisions' ? <DecisionsView p={p} /> : <>
+        : tab === 'model' ? <ModelView data={data} p={p} /> : tab === 'money' ? <MoneyView p={p} /> : tab === 'milestones' ? <MilestonesView p={p} /> : tab === 'decisions' ? <DecisionsView p={p} /> : <>
       <LeftOffCard p={p} />
       <OverviewTop data={data} p={p} />
       <AtAGlance data={data} p={p} />
@@ -173,7 +174,10 @@ function ProjectTop({ p, tab, query, onQuery, status }: { p: Project; tab: Proje
       {p.private && <p className="text-sm text-fg-2 m-0 mt-2" data-s="project-private-hint">Ask MyDay sends nothing of this project. AI help with notes can still suggest it as a place for a note (its name and summary only).</p>}
       <nav className="seg flex gap-1.5 mt-3" role="tablist" aria-label="Project sections" data-s="project-tabs">
         <a className={tabClass(tab === 'overview')} href={`#projects/p/${encodeURIComponent(p.id)}`} role="tab" aria-selected={tab === 'overview'} data-tab="overview">Overview</a>
-        {isBusiness(p) && <a className={tabClass(tab === 'model')} href={tabHref(p, 'model')} role="tab" aria-selected={tab === 'model'} data-tab="model">Model</a>}
+        {isBusiness(p) && <>
+          <a className={tabClass(tab === 'model')} href={tabHref(p, 'model')} role="tab" aria-selected={tab === 'model'} data-tab="model">Model</a>
+          <a className={tabClass(tab === 'money')} href={tabHref(p, 'money')} role="tab" aria-selected={tab === 'money'} data-tab="money">Money</a>
+        </>}
         {isCase(p) ? <>
           {/* A case's own tabs (only four fit on a phone): its milestones and decisions open from their At a glance rows. */}
           <a className={tabClass(tab === 'timeline')} href={tabHref(p, 'timeline')} role="tab" aria-selected={tab === 'timeline'} data-tab="timeline">Timeline</a>
