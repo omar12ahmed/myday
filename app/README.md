@@ -1,5 +1,16 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.96.0 — The Arabic in lesson checks, voiced:** the short pieces of Arabic that lesson-check questions and answers
+show without vowel marks now have a voice once the answer is shown: 258 of them, from قال and قلت to whole model
+answers. The voice (WaveNet B) reads MyDay's own vowelled copy of each (`content/teaching/arabic/voice-scripts.json`),
+which an independent reviewer cross-checked and the owner's fluent checker approved; the page keeps the course's
+spelling, and the label under the voice says it reads MyDay's vowelled copy. A word quoted on its own is read in its
+dictionary form, a phrase with every ending. Twelve pieces stay silent on purpose: where the reading is the check's
+answer, where the answer says a form can be read either way, deliberate mistakes to correct, an unfinished frame,
+numbers written as digits and a word ending. The build refuses a script that changes a letter, contradicts a mark the
+course shows or leaves a letter unmarked. 258 clips, transcribed blind and listened to. No saved-data, sync or
+database change, and no new kind of information goes to AI. Going back to 1.95.0 is safe: those pieces lose their
+voice again.
 **1.95.0 — Ask MyDay's Undo stays for the day:** what Ask MyDay last added or changed can still be undone after you
 close +: open + again and it says, above the text field, "Last from Ask MyDay, at 14:05: added 2 tasks" with Undo —
 until midnight, or until Ask adds or changes something else (one step of Undo). Undo takes back only what's as Ask
@@ -1458,6 +1469,16 @@ either voice ship. Each text also has a whole clip (the `reading-wholes` source,
 turn. 112 new clips; the 78 earlier sentence clips they replace, and four first takes the owner asked to redo, were removed
 (`removed` in the audit), and the transcriptions are in `cross-check-voice-scripts.json`. The roughly 450 short unmarked pieces (check questions,
 answers, key concepts and tasks) follow in batches; pieces unmarked on purpose stay without a voice.
+
+**The unmarked Arabic in checks (round eleven, 1.96.0):** the first batch of the short pieces. `voice-scripts.json`
+gains "pieces" (the exact text shown → its vowelled script) and "left_out" (pieces kept silent on purpose, each with
+its reason). `voicePieces` (`scripts/arabic-reading-sentences.mjs`) checks each script like a reading script (same
+letters, every mark the course shows kept, marked all through, not also left out). A run with a script joins the voiced
+source of the place that shows it (the shared `mixed` in `scripts/arabic-voice-sources.mjs`), and the build stops on a
+script no voiced place shows. `spokenFor` gives the voice the script, and `voice-clips.json` lists the
+`scriptedPieces` that ship, so the label under Arabic in English (`MixedVoiceLabel`) can say it reads MyDay's vowelled
+copy. Check audio still plays only once the answer is shown. Next: the key concepts, tasks, objectives, timetable and
+teaching pieces (about 130), which also need play controls where they appear.
 
 This is MyDay being rebuilt in React, one milestone at a time. The current MyDay (`../index.html`) stays live
 and unchanged until this version can do everything it does.

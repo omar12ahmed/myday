@@ -135,6 +135,11 @@ after لَيْسَ … بَلْ) and approved by the owner's fluent checker. The
 WaveNet B with pause forms, transcribed blind (no letter differences beyond pause forms spelled another way) and
 approved in two batches ("all good"). The owner asked for one more take (كُرْسِيّ): a final ـِيّ or ـُوّ at a pause is now
 said ī or ū, and the four clips that changed were made again and approved. The temporary keys were deleted.
+Round eleven (the unmarked Arabic in lesson checks and answers, 1.96.0): 258 piece scripts (12 pieces left out on
+purpose, with reasons) were cross-checked (no errors; one optional change, أَدْرُسْ) and approved by the owner's fluent
+checker. Then 258 clips were made in WaveNet B, transcribed blind and approved in three batches ("all good"). Twelve
+were made again; WaveNet usually gives new audio for the same text. Five isolated words were still transcribed
+differently (يَدْعُو، يَدْرُسُوا، مَاء، أَدْرُسْ، شِعْرِيّ) and were approved by ear. The key was deleted.
 
 **Each round works like round one.**
 - **On the Mac:**
