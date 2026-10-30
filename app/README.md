@@ -1,5 +1,15 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.95.0 — Ask MyDay's Undo stays for the day:** what Ask MyDay last added or changed can still be undone after you
+close +: open + again and it says, above the text field, "Last from Ask MyDay, at 14:05: added 2 tasks" with Undo —
+until midnight, or until Ask adds or changes something else (one step of Undo). Undo takes back only what's as Ask
+left it: anything you've ticked, renamed, planned or added to since stays ("Taken back, except one thing you've
+changed since."), a project it made stays while anything of yours is in it, and an appointment you've linked to a
+project stays with its link. The same rule now holds for Undo straight after adding. It's kept on this device only
+(not synced or exported), so a reload doesn't lose it; signing out or Delete everything forgets it. If another tab of
+MyDay saved first, Undo says "Couldn't save just now." and can be tried again. No saved-data, sync or server change;
+going back to 1.94.0 is safe.
+
 **1.94.0 — The reading texts in a new voice, read more naturally, and all fourteen voiced:** the six B1–B2 reading
 texts the course gives without vowel marks now have a voice too. It reads from MyDay's own fully vowelled copy of each
 (`content/teaching/arabic/voice-scripts.json`), which an independent reviewer cross-checked and the owner's fluent
