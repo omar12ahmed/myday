@@ -1,5 +1,21 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.95.0 — Experiments and money for a business idea:** each thing that must be true on a business idea's one page can
+now have **experiments** (so can any project with Research, testing its questions): what you'll try, how, and what
+result would change your mind. Start it, add a "Test: …" task (ticking it records nothing: Worth a look and Needs you
+ask "what happened?"), record what happened and what you conclude, then — one tap, never by itself — save it as a
+Research finding that supports, contradicts or relates to what it tested (Research switches on). Whether something
+looks true stays your call. A business idea also gains a **Money** tab: a currency, what a sale is called and its
+average value; what each sale brings in and costs (an amount or a share of it), each month and to start, each line
+saying where it's from (a guess · a quote · measured); the **break-even** ("500 orders a month") and, at a level you
+enter, how long to win back the start-up costs; a **12-month forecast** (fill from a start and a growth, then any month
+by hand) with each month's money, the running total, the lowest point, the first month that pays for itself and when
+start-up costs are back; and **real months** beside the plan, never mixed into it. At a glance gains a Money row; search
+finds both. None of it touches your personal Finance or is sent to AI. Saved data stays schema 5: an experiment is a
+Research item (synced as a `research` record) and the money an optional field inside the one page, which 1.94.0 keeps
+unread (checked with the actual previous release: it receives both, edits the one page and saves without touching
+them); there it shows neither. No migration or server change.
+
 **1.96.0 — The Arabic in lesson checks, voiced:** the short pieces of Arabic that lesson-check questions and answers
 show without vowel marks now have a voice once the answer is shown: 257 of them, from قال and قلت to whole model
 answers. The voice (WaveNet B) reads MyDay's own vowelled copy of each (`content/teaching/arabic/voice-scripts.json`),
@@ -1236,7 +1252,7 @@ look and Your week's What needs you now use the same rules (`data/attention.ts`)
 board, **Board · List**: the list has one row per active project (stage, kind, next step, "3 need you"), most
 recently worked on first; the choice is kept on this device only (`myday.projects.view`).
 
-**Experiments and money for a business idea (unreleased; `specs/projects-business-tools.md`):** each thing that must
+**Experiments and money for a business idea (1.95.0; `specs/projects-business-tools.md`):** each thing that must
 be true on a business idea's one page can have **experiments** (also on any project with Research, testing its
 questions): what you'll try, how, and what result would change your mind. **Start it**, **Add a task to run it**
 ("Test: …"; ticking it records nothing — Worth a look and Needs you ask "what happened?"), **Record what happened** and
