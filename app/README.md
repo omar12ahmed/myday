@@ -1236,6 +1236,21 @@ look and Your week's What needs you now use the same rules (`data/attention.ts`)
 board, **Board · List**: the list has one row per active project (stage, kind, next step, "3 need you"), most
 recently worked on first; the choice is kept on this device only (`myday.projects.view`).
 
+**Experiments and money for a business idea (unreleased; `specs/projects-business-tools.md`):** each thing that must
+be true on a business idea's one page can have **experiments** (also on any project with Research, testing its
+questions): what you'll try, how, and what result would change your mind. **Start it**, **Add a task to run it**
+("Test: …"; ticking it records nothing — Worth a look and Needs you ask "what happened?"), **Record what happened** and
+what you conclude; then **Save it as a finding?** — supports, contradicts or relates to what it tested, from that
+experiment, switching Research on; marking the thing "looks true" stays yours. A business idea gains a **Money** tab:
+the currency, what a sale is called and its average value; what each sale brings in and costs (an amount or a share of
+it), each month and to start, each line saying where it's from (a guess · a quote · measured); the **break-even**
+("500 orders a month") and how long to win back the start-up costs at a level you enter; a **12-month forecast** (fill
+by a start and a growth, then any month by hand) with each month's money, the running total, the lowest point, the
+first month in the black and when start-up costs are back; and **real months** beside the plan, never mixed into it.
+At a glance gains a Money row; search finds both. Never part of personal Finance, never sent to AI. Saved data:
+experiments are Research items (synced as `research` records), the money an optional field inside the one page (no
+schema, migration or database change; earlier releases keep both unread).
+
 **Deadlines you can trust (1.89.0; `specs/projects-deadlines.md`):** a project's dated task can say whether its
 date is a **Firm deadline** or a **Date to aim for**, where the date comes from ("The tribunal's letter of 3 Oct") and
 who checked it and when: the **Deadline** card on its page (Firm deadline · Date to aim for · Not a deadline), with
