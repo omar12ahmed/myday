@@ -1,8 +1,8 @@
 # Proposal: Arabic explainers ("How this works")
 
-**Status:** decided by the owner on 30 October 2026 (§6). Built on branch `explainers`, not released yet: How it
-works in the lesson's Understand step and the link from course words, as in §2. The first ten explainers have had an
-independent cross-check and are waiting for the owner's fluent checker.
+**Status:** decided by the owner on 30 October 2026 (§6). Built as in §2. The first ten explainers (module 14) were
+cross-checked independently and approved by the owner's fluent checker on 30 October 2026. Voicing (§3) follows the
+release, with myday-5a.
 **Content:** `content/teaching/arabic/explainers.json`. **Check:** `app/scripts/validate-explainers.mjs`.
 **Related:** `specs/arabic-audio-course.md` (the voice), `specs/study-home-and-lessons.md` (lesson steps, course words).
 
