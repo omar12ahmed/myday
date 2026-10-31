@@ -567,6 +567,42 @@ async function signIn(d, url) {
     check('back on this release: the task\'s new title arrives with its milestone, the decision is open, with no evidence shown for a choice', await now.until(`!!document.querySelector('[data-action=opt-choose]')`, 30000)
       && (await now.data()).tasks.items.find(t => t.id === TEV).title === 'Pour the slab (renamed)' && (await now.data()).tasks.items.find(t => t.id === TEV).milestoneId === 'mEvBack' && !(await now.exists('[data-s=dc-evidence]')));
     check('…the decision reads exactly as the previous release saved it (loading rewrote nothing), and this release is in step', same((await now.data()).projects.items.find(p => p.id === PEV).decisions[0], afterBefore) && await synced(now) && (await now.status()) === 'synced', { status: await now.status() });
+
+    console.log('\n[21] A project\'s area and how it ended pass through the previous release unchanged (specs/projects-areas-archive.md)');
+    const PAR = 'pjAreaBack', PAD = 'pjDoneBack';
+    const ending = { how: 'stopped', note: 'Too costly (made up)', on: today, futureBit: 1 };
+    const areaBits = p => p && { area: p.area, areaColour: p.areaColour, finished: p.finished };
+    const areaKept = { area: 'Home', areaColour: 'rose' }, areaDone = { ...areaKept, finished: ending };
+    const pjOf = async id => (await record('project', id))?.data?.value;
+    await now.returnToApp();
+    await now.setData(`s => { s.projects.items.push({ id: '${PAR}', title: 'Kitchen shelves (made up)', summary: '', stage: 'organise', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}', area: 'Home', areaColour: 'rose' },
+      { id: '${PAD}', title: 'Weekend stall (made up)', summary: '', stage: 'organise', status: 'done', nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}', area: 'Home', areaColour: 'rose', finished: ${JSON.stringify(ending)} }); }`);
+    check('this release sends a project\'s area, its colour and how it ended (with a newer MyDay\'s extra key) in the project\'s record', await eventually(async () => same(areaBits(await pjOf(PAR)), areaKept) && same(areaBits(await pjOf(PAD)), areaDone)) && await synced(now), [areaBits(await pjOf(PAR)), areaBits(await pjOf(PAD))]);
+    await before.returnToApp();
+    check('the previous release syncs normally and holds all three exactly in its saved data', await synced(before) && await before.until(`!!JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === '${PAD}')?.finished`, 20000)
+      && same(areaBits((await before.data()).projects.items.find(p => p.id === PAR)), areaKept) && same(areaBits((await before.data()).projects.items.find(p => p.id === PAD)), areaDone), areaBits((await before.data()).projects.items.find(p => p.id === PAD)));
+    await before.open(BEFORE + `#projects/p/${PAR}`); await before.until(`!!document.querySelector('[data-action=project-edit]')`, 15000);
+    await before.click('[data-action=project-edit]'); await before.until(`!!document.querySelector('#projectTitleInput')`, 5000);
+    await before.type('#projectTitleInput', 'Kitchen shelves (renamed)');
+    check('a rename on the previous release\'s project page reaches the account with the area and colour as they were', await eventually(async () => (await pjOf(PAR))?.title === 'Kitchen shelves (renamed)' && same(areaBits(await pjOf(PAR)), areaKept)) && await synced(before), await pjOf(PAR));
+    // The previous release's "Open it again" knows nothing of the ending, so leaves it behind on an active project:
+    // this release reads that as it is (nothing rewritten on load) and shows no ending for a project that isn't finished.
+    await before.open(BEFORE + `#projects/p/${PAD}`); await before.until(`!!document.querySelector('[data-action=project-resume]')`, 15000);
+    await before.click('[data-action=project-resume]');
+    check('"Open it again" on the previous release reaches the account: active, with the area, colour and ending as they were', await eventually(async () => (await pjOf(PAD))?.status === 'active' && same(areaBits(await pjOf(PAD)), areaDone)) && await synced(before), await pjOf(PAD));
+    const reopened = (await before.data()).projects.items.find(p => p.id === PAD);
+    await now.returnToApp();
+    await now.open(NOW + `#projects/p/${PAD}`);
+    check('back on this release: the project is active again in Home, with no ending shown and no "In the archive"', await now.until(`(document.querySelector('#projectTitle')?.textContent || '') === 'Weekend stall (made up)' && !!document.querySelector('#projectTop [data-s=area-label]')`, 30000)
+      && (await now.data()).projects.items.find(p => p.id === PAD).status === 'active' && !(await now.exists('[data-s=project-ended]')) && !(await now.text('#projectTop')).includes('In the archive'), await now.text('#projectTop'));
+    check('…it reads exactly as the previous release saved it (loading rewrote nothing), the rename arrived with its area, and this release is in step', same((await now.data()).projects.items.find(p => p.id === PAD), reopened)
+      && (await now.data()).projects.items.find(p => p.id === PAR).title === 'Kitchen shelves (renamed)' && same(areaBits((await now.data()).projects.items.find(p => p.id === PAR)), areaKept) && await synced(now) && (await now.status()) === 'synced', { status: await now.status() });
+    await now.open(NOW + '#projects'); await now.until(`!!document.querySelector('[data-s=project-areas]')`, 15000);
+    const homeChip = (await now.text('[data-action=area-pick][data-id=Home]')).replace(/\s+/g, ' ').trim();
+    await now.click('[data-action=area-pick][data-id=Home]'); await now.until(`document.querySelector('[data-action=area-pick][data-id=Home]')?.getAttribute('aria-pressed') === 'true'`, 5000);
+    check('…and the Projects home shows the area with its two projects, both on the board, and nothing in the archive from these', homeChip === 'Home 2'
+      && await now.exists(`.project-card[data-id=${PAR}]`) && await now.exists(`.project-card[data-id=${PAD}]`) && !(await now.ev(`[...document.querySelectorAll('#projects-archive [data-s=archive-row]')].some(r => /Weekend stall|Kitchen shelves/.test(r.textContent))`)), homeChip);
+    await now.click('[data-action=area-pick][data-id=all]');
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {
