@@ -18,7 +18,7 @@ import { normalizeResources } from './projectResources';
 import { deleteProjectResearch } from './research';
 import { normalizeStudyLinks } from './studyLinks';
 import { forgetStartsAfter, isDone, onTodaysPlan, taskOrder, startsAfter } from './tasks';
-import type { Commitment, DateKey, MyDayData, Note, Project, ProjectsData, ProjectStage, ProjectStatus, TaskItem } from './types';
+import type { Commitment, DateKey, Finished, MyDayData, Note, Project, ProjectsData, ProjectStage, ProjectStatus, TaskItem } from './types';
 import { isObj, listOf, uid } from './util';
 
 export const PROJECT_LIMITS = { projects: 200, title: 120, summary: 4000, commitments: 200, outcome: 200, finishedWhen: 600, leftOff: 800, area: 40, finishedNote: 400 };
@@ -98,14 +98,19 @@ export function normalizeProjects(raw: unknown, report: { dropped: number }): Pr
     const sections = [...new Set(listOf(p.hiddenSections).filter((t): t is string => typeof t === 'string' && !!t && t.length <= 40))];
     report.dropped += Math.max(0, sections.length - 20);
     if (sections.length) item.hiddenSections = sections.slice(0, 20); else delete item.hiddenSections;
-    // Its area and colour, and how it ended (specs/projects-areas-archive.md): kept when there's one (a colour or an
-    // ending from a newer MyDay as it is); a shape this version can't read is counted.
-    const area = typeof p.area === 'string' ? p.area.replace(/\s+/g, ' ').trim().slice(0, PROJECT_LIMITS.area) : '';
+    // Its area and colour, and how it ended (specs/projects-areas-archive.md): kept as written when there's one (a
+    // colour or an ending from a newer MyDay as it is), so reading never rewrites another device's record; a shape this
+    // version can't read is counted.
+    const area = typeof p.area === 'string' && p.area.trim() ? p.area.slice(0, PROJECT_LIMITS.area) : '';
     if (area) item.area = area; else { if (p.area !== undefined && p.area !== null && typeof p.area !== 'string') report.dropped++; delete item.area; }
     if (area && typeof p.areaColour === 'string' && p.areaColour) item.areaColour = p.areaColour; else delete item.areaColour;
     const f = p.finished;
-    if (isObj(f) && typeof f.how === 'string' && f.how) item.finished = { ...f, how: f.how, note: typeof f.note === 'string' ? f.note.slice(0, PROJECT_LIMITS.finishedNote) : '', on: isDateKey(f.on) ? f.on : null };
-    else { if (f !== undefined && f !== null) report.dropped++; delete item.finished; }
+    if (isObj(f) && typeof f.how === 'string' && f.how) {
+      const ending: Finished = { ...f, how: f.how };
+      if (typeof f.note === 'string') ending.note = f.note.slice(0, PROJECT_LIMITS.finishedNote); else if (f.note !== undefined) { report.dropped++; delete ending.note; }
+      if (f.on !== undefined && f.on !== null && !isDateKey(f.on)) { report.dropped++; delete ending.on; }
+      item.finished = ending;
+    } else { if (f !== undefined && f !== null) report.dropped++; delete item.finished; }
     seen.add(item.id);
     out.items.push(item);
   }

@@ -25,7 +25,8 @@ export function AreaField({ data, p }: { data: MyDayData; p: Project }) {
   }
   return (
     <Field label="Area (optional)" htmlFor="projectArea">
-      <CommitInput id="projectArea" key={p.area ?? ''} defaultValue={p.area ?? ''} list="projectAreas" maxLength={PROJECT_LIMITS.area} placeholder="e.g. Home, Work, Study" autoComplete="off" onCommit={commit} />
+      <CommitInput id="projectArea" key={p.area ?? ''} defaultValue={p.area ?? ''} list="projectAreas" maxLength={PROJECT_LIMITS.area} placeholder="e.g. Home, Work, Study" autoComplete="off" aria-describedby="projectAreaHint" onCommit={commit} />
+      <p id="projectAreaHint" className="text-sm text-fg-3 m-0 mt-1">Pick one you've used or type a new one. Empty is no area.</p>
       <datalist id="projectAreas">{areas.map(a => <option key={a.name} value={a.name} />)}</datalist>
     </Field>
   );

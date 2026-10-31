@@ -19,7 +19,7 @@ import { HomelessDeletedFiles } from '../files/FilesCard';
 import { NeedsYouCard, ProjectList } from './NeedsYou';
 import { needsYou } from '../data/attention';
 import { awayFor, awayWords, isAway } from '../data/welcomeBack';
-import { archive, AREA_COLOURS, areaOfProject, areasOf, areaVar, COLOUR_LABEL, finishedLabel, recolourArea, renameArea, type Area } from '../data/areas';
+import { archive, AREA_COLOURS, areaOfProject, areasOf, areaVar, COLOUR_LABEL, finishedLabel, recolourArea, renameArea, sameArea, tidyArea, type Area } from '../data/areas';
 import { editProject } from '../data/projects';
 import { CommitInput } from '../components/Field';
 import { AreaDot, AreaLabel } from './AreaBits';
@@ -53,14 +53,15 @@ const savedView = (): 'board' | 'list' => { try { return localStorage.getItem(VI
 // or an area's name; an area no longer used reads as all.
 const AREA_KEY = 'myday.projects.area';
 const savedArea = () => { try { return localStorage.getItem(AREA_KEY) || 'all'; } catch { return 'all'; } };
-const sameName = (a: string, b: string) => a.toLocaleLowerCase() === b.toLocaleLowerCase();
+// Puts focus back after a change took away what had it (and only then: a change made by moving on leaves focus be).
+const refocus = (find: () => HTMLElement | null | undefined) => requestAnimationFrame(() => { if (!document.activeElement || document.activeElement === document.body) find()?.focus(); });
 function ProjectsHome({ data }: { data: MyDayData }) {
   const [text, setText] = useState('');
   const [kind, setKind] = useState<TemplateChoice>('general');
   const [view, setView] = useState<'board' | 'list'>(savedView);
   const [areaPick, setAreaPick] = useState(savedArea), [managing, setManaging] = useState(false);
-  const areas = areasOf(data), pick = areaPick === 'all' || areaPick === 'none' || areas.some(a => sameName(a.name, areaPick)) ? areaPick : 'all';
-  const fits = (p: Project) => (pick === 'all' ? true : pick === 'none' ? !p.area : !!p.area && sameName(p.area, pick));
+  const areas = areasOf(data), pick = areaPick === 'all' || areaPick === 'none' || areas.some(a => sameArea(a.name, areaPick)) ? areaPick : 'all';
+  const fits = (p: Project) => (pick === 'all' ? true : pick === 'none' ? !p.area : !!p.area && sameArea(p.area, pick));
   const showArea = (a: string) => { setAreaPick(a); try { localStorage.setItem(AREA_KEY, a); } catch { /* kept for this visit */ } };
   const allActive = projectsInOrder(data, 'active'), active = allActive.filter(fits), paused = projectsInOrder(data, 'paused').filter(fits), done = archive(data);
   const noArea = allActive.filter(p => !p.area).length;
@@ -108,7 +109,7 @@ function ProjectsHome({ data }: { data: MyDayData }) {
           <div className="flex flex-wrap gap-2" role="group" aria-label="Show an area">
             <Button inline variant={pick === 'all' ? 'selected' : 'ghost'} aria-pressed={pick === 'all'} className="!min-h-11" data-action="area-pick" data-id="all" onClick={() => showArea('all')}>All <span className="tabular-nums text-fg-2">{allActive.length}</span></Button>
             {areas.map(a => (
-              <Button key={a.name} inline variant={pick !== 'all' && pick !== 'none' && sameName(pick, a.name) ? 'selected' : 'ghost'} aria-pressed={pick !== 'all' && pick !== 'none' && sameName(pick, a.name)} className="!min-h-11" data-action="area-pick" data-id={a.name} onClick={() => showArea(a.name)}>
+              <Button key={a.name} inline variant={pick !== 'all' && pick !== 'none' && sameArea(pick, a.name) ? 'selected' : 'ghost'} aria-pressed={pick !== 'all' && pick !== 'none' && sameArea(pick, a.name)} className="!min-h-11" data-action="area-pick" data-id={a.name} onClick={() => showArea(a.name)}>
                 <AreaDot colour={a.colour} /> {a.name} <span className="tabular-nums text-fg-2">{a.count}</span>
               </Button>
             ))}
@@ -124,7 +125,7 @@ function ProjectsHome({ data }: { data: MyDayData }) {
           {(['board', 'list'] as const).map(v => <Button key={v} inline variant={view === v ? 'selected' : 'ghost'} aria-pressed={view === v} className="!min-h-11" data-action="projects-view" data-id={v} onClick={() => show(v)}>{v === 'board' ? 'Board' : 'List'}</Button>)}
         </div>
       )}
-      {allActive.length > 0 && !active.length && <Card className="max-w-[720px] mx-auto" data-s="area-empty"><p className="m-0 text-[15px] text-fg-2">No active projects in {pick === 'none' ? 'no area' : `“${pick}”`} right now.</p></Card>}
+      {allActive.length > 0 && !active.length && <Card className="max-w-[720px] mx-auto" data-s="area-empty"><p className="m-0 text-[15px] text-fg-2">{pick === 'none' ? 'No active projects without an area right now.' : `No active projects in “${pick}” right now.`}</p></Card>}
       {active.length > 0 ? (view === 'list' ? <ProjectList data={data} all={needs} fits={fits} grouped={pick === 'all' && areas.length > 0} /> : <Board data={data} fits={fits} />) : allActive.length > 0 ? null : (
         <Card id="projectsEmpty" className="max-w-[720px] mx-auto">
           <h3>No projects yet</h3>
@@ -162,13 +163,19 @@ const moved = (to: BoardColumn) => COLUMNS.find(c => c.id === to)!.label;
 // The archive (specs/projects-areas-archive.md): finished projects, the most recently finished first, each with its
 // area and how it ended; one tap brings one back.
 function ArchiveCard({ data, list }: { data: MyDayData; list: Project[] }) {
-  function back(p: Project) { if (update(d => (editProject(d, p.id, { status: 'active' }) ? undefined : false))) toast(`“${p.title}” is back in your projects.`); }
+  function back(p: Project, i: number) {
+    if (!update(d => (editProject(d, p.id, { status: 'active' }) ? undefined : false))) return;
+    toast(`“${p.title}” is back in your projects.`);
+    // Focus stays in the archive (the next one along, or its heading's toggle), or goes to the project brought back.
+    refocus(() => { const rest = document.querySelectorAll<HTMLElement>('#projects-archive [data-action=archive-back]');
+      return rest[Math.min(i, rest.length - 1)] ?? document.querySelector<HTMLElement>('#projects-archive summary') ?? document.querySelector<HTMLElement>(`.project-card[data-id="${p.id}"] a`); });
+  }
   return (
     <Card aria-labelledby="pj-archive" id="projects-archive">
       <details>
         <summary className="flex justify-between items-center min-h-11 list-none"><h3 id="pj-archive" className="m-0">Archive <span className="text-fg-3 font-normal tabular-nums">{list.length}</span></h3><span className="text-primary font-semibold text-[15px]">Show</span></summary>
         <ul className="list-none p-0 m-0 mt-1">
-          {list.map(p => {
+          {list.map((p, i) => {
             const a = areaOfProject(data, p);
             return (
               <li key={p.id} className="border-t border-outline first:border-t-0 flex flex-wrap items-center gap-x-3 py-1" data-s="archive-row" data-id={p.id}>
@@ -176,7 +183,7 @@ function ArchiveCard({ data, list }: { data: MyDayData; list: Project[] }) {
                   <span className="block font-medium break-words">{p.title}{p.private && <Lock size={13} aria-label="Private" className="inline ml-1.5 text-fg-3 align-[-1px]" />}</span>
                   <span className="flex flex-wrap items-center gap-x-2 text-sm text-fg-2">{a && <AreaLabel name={a.name} colour={a.colour} />}<span data-s="archive-how">{finishedLabel(p)}{p.finished?.on ? ` · ${shortDate(p.finished.on)}` : ''}</span></span>
                 </a>
-                <Button inline variant="ghost" data-action="archive-back" aria-label={`Bring back “${p.title}”`} onClick={() => back(p)}>Bring back</Button>
+                <Button inline variant="ghost" data-action="archive-back" aria-label={`Bring back “${p.title}”`} onClick={() => back(p, i)}>Bring back</Button>
               </li>
             );
           })}
@@ -190,12 +197,15 @@ function ArchiveCard({ data, list }: { data: MyDayData; list: Project[] }) {
 function AreasPanel({ areas }: { areas: Area[] }) {
   return (
     <ul className="list-none p-0 m-0 mt-3 grid gap-3 rounded-tile bg-surface-2 border border-outline p-3" data-s="areas-panel" aria-label="Your areas">
-      {areas.map(a => (
+      {areas.map((a, i) => (
         <li key={a.name} className="grid gap-2 sm:grid-cols-[minmax(0,18rem)_1fr] sm:items-end sm:gap-x-4" data-s="area-row" data-id={a.name}>
-          <Field label={`Area: ${a.name}`} htmlFor={`area-${a.name}`}>
-            <CommitInput id={`area-${a.name}`} key={a.name} defaultValue={a.name} maxLength={PROJECT_LIMITS.area}
-              onCommit={el => { const to = el.value.trim(); if (!to) { el.value = a.name; return; } const into = areas.find(x => sameName(x.name, to) && !sameName(x.name, a.name));
-                if (update(d => (renameArea(d, a.name, to) ? undefined : false))) toast(into ? `Merged into “${into.name}”.` : `Renamed to “${to}”.`); }} />
+          <Field label={`Area: ${a.name}`} htmlFor={`area-${i}`}>
+            <CommitInput id={`area-${i}`} key={a.name} defaultValue={a.name} maxLength={PROJECT_LIMITS.area}
+              onCommit={el => { const to = tidyArea(el.value); if (!to) { el.value = a.name; return; } const into = areas.find(x => sameArea(x.name, to) && !sameArea(x.name, a.name));
+                if (!update(d => (renameArea(d, a.name, to) ? undefined : false))) return;
+                toast(into ? `Merged into “${into.name}”.` : `Renamed to “${to}”.`);
+                // (the row is drawn again under its new name: focus goes back to its name)
+                refocus(() => [...document.querySelectorAll<HTMLElement>('[data-s=area-row]')].find(r => sameArea(r.dataset.id ?? '', into?.name ?? to))?.querySelector('input')); }} />
           </Field>
           <div className="flex flex-wrap gap-1.5" role="group" aria-label={`Colour for ${a.name}`}>
             {AREA_COLOURS.map(c => (
@@ -214,20 +224,21 @@ function AreasPanel({ areas }: { areas: Area[] }) {
 
 function Board({ data, fits }: { data: MyDayData; fits: (p: Project) => boolean }) {
   const all = board(data), cols = { ideas: all.ideas.filter(fits), exploring: all.exploring.filter(fits), doing: all.doing.filter(fits) };
+  // (Your rule of thumb is for you, not for each area: shown one area, a column still counts all of them.)
   function move(p: Project, to: BoardColumn) {
     if (!update(d => (moveToColumn(d, p.id, to) ? undefined : false))) return;
-    const col = COLUMNS.find(c => c.id === to)!, n = cols[to].length + 1;
+    const col = COLUMNS.find(c => c.id === to)!, n = all[to].length + 1;
     toast(col.most && n > col.most ? `Moved to ${moved(to)} — that's ${n} there now. ${col.most === 3 ? 'Three' : 'Two'} at a time is plenty; pausing one is fine.` : `Moved to ${moved(to)}.`);
   }
   return (
     <div className="grid gap-x-4 gap-y-2 lg:grid-cols-3 items-start mb-4" id="projectList">
       {COLUMNS.map((c, i) => {
-        const list = cols[c.id], many = c.most !== null && list.length > c.most;
+        const list = cols[c.id], total = all[c.id].length, many = c.most !== null && total > c.most;
         return (
           <section key={c.id} aria-labelledby={`col-${c.id}`} className="min-w-0" data-column={c.id}>
             <h3 id={`col-${c.id}`} className="flex items-baseline gap-2 m-0 mt-2">{c.label} <span className="text-fg-3 font-normal tabular-nums">{list.length}</span></h3>
             <p className="text-sm text-fg-3 m-0 mb-2.5">{c.hint}</p>
-            {many && <p className="text-sm rounded-tile bg-surface-2 border border-outline px-3 py-2 m-0 mb-2.5" data-s="column-many">{list.length} here at once. Your rule of thumb is {c.most === 3 ? 'three' : 'two'} at a time — pausing one is fine, it'll keep.</p>}
+            {many && <p className="text-sm rounded-tile bg-surface-2 border border-outline px-3 py-2 m-0 mb-2.5" data-s="column-many">{total} here at once{total > list.length ? ' across your areas' : ''}. Your rule of thumb is {c.most === 3 ? 'three' : 'two'} at a time — pausing one is fine, it'll keep.</p>}
             {list.length ? (
               <div className="project-cards grid gap-3">
                 {list.map(p => <ProjectCard key={p.id} data={data} p={p} back={i > 0 ? COLUMNS[i - 1].id : null} on={i < COLUMNS.length - 1 ? COLUMNS[i + 1].id : null} onMove={to => move(p, to)} />)}

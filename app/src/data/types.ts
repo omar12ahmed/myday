@@ -210,7 +210,7 @@ export interface Project {
 }
 export interface LeftOff { text: string; at: DateTime; [other: string]: unknown }
 // How a project ended (specs/projects-areas-archive.md): 'achieved' | 'stopped' (one from a newer MyDay kept).
-export interface Finished { how: string; note: string; on: DateKey | null; [other: string]: unknown }
+export interface Finished { how: string; note?: string; on?: DateKey | null; [other: string]: unknown }
 // `kind` is a string so a kind from a newer MyDay is kept as it is; `title` is what it was called when linked, so a
 // link still reads well once its item is gone from Study.
 export interface StudyLink { kind: string; id: string; title: string; why?: string; addedOn: DateKey; [other: string]: unknown }

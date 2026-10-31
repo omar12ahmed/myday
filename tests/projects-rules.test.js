@@ -2531,9 +2531,18 @@ const clone = o => JSON.parse(JSON.stringify(o));
     let r = { dropped: 0 };
     const read = K.normalizeProjects({ items: [base('a', { area: '  Home   sweet  home ', areaColour: 'ochre', finished: { how: 'merged', note: 5, on: 'soon', futureBit: 1 } }), base('b', { area: 'x'.repeat(50), areaColour: 'sage' }),
       base('c', { area: 7, areaColour: 'sage', finished: 'yes' }), base('d', { area: '   ', areaColour: 'sky' })] }, r).items;
-    check('an area is kept tidied and cut to 40; a newer MyDay\'s colour and ending kept as they are; one that isn\'t text counted; a colour without an area left off',
-      read[0].area === 'Home sweet home' && read[0].areaColour === 'ochre' && eq(read[0].finished, { how: 'merged', note: '', on: null, futureBit: 1 }) && read[1].area.length === 40
-      && !('area' in read[2]) && !('areaColour' in read[2]) && !('finished' in read[2]) && !('area' in read[3]) && !('areaColour' in read[3]) && r.dropped === 2, [read.map(p => [p.area, p.areaColour, p.finished]), r]);
+    check('an area is kept as written, cut to 40 (shown tidied); a newer MyDay\'s colour and ending kept as they are, with a note or day it can\'t read counted; one that isn\'t text counted; a colour without an area left off',
+      read[0].area === '  Home   sweet  home ' && K.AR.areaOfProject(world(read[0]), read[0]).name === 'Home sweet home' && read[0].areaColour === 'ochre' && eq(read[0].finished, { how: 'merged', futureBit: 1 }) && K.AR.finishedLabel(read[0]) === 'Finished'
+      && read[1].area.length === 40 && !('area' in read[2]) && !('areaColour' in read[2]) && !('finished' in read[2]) && !('area' in read[3]) && !('areaColour' in read[3]) && r.dropped === 4, [read.map(p => [p.area, p.areaColour, p.finished]), r]);
+    // Reading never rewrites what another device wrote: a project with all three, one finished with nothing but how,
+    // and one 1.103.0 opened again (active, its ending left behind) read exactly as they are, twice over.
+    const asWritten = [base('e', { area: 'Home  ', areaColour: 'rose', status: 'done', finished: { how: 'stopped', note: 'Too costly', on: k } }), base('f', { area: 'home', status: 'done', finished: { how: 'achieved' } }),
+      base('g', { area: 'Work', areaColour: 'sky', status: 'active', finished: { how: 'achieved', note: '', on: k } })];
+    r = { dropped: 0 };
+    const again = K.normalizeProjects(K.normalizeProjects({ items: structuredClone(asWritten) }, r), r).items;
+    check('…and reads a project with an area, a colour and an ending (or just how it ended) exactly as written, twice over, with nothing counted', eq(again, asWritten) && r.dropped === 0, again);
+    check('…a project opened again on 1.103.0 (active, its ending left behind) isn\'t in the archive and its area counts it; names match whatever the spacing', eq(K.AR.archive(world(...again)).map(p => p.id), ['e', 'f'])
+      && eq(K.AR.areasOf(world(...again)).map(a => [a.name, a.count]), [['Home', 0], ['Work', 1]]) && K.AR.sameArea(' home ', 'HOME'), K.AR.areasOf(world(...again)));
 
     console.log('  areas');
     const w = world(base('p1', { title: 'Garden shed', updatedAt: OLD }), base('p2', { title: 'Passport' }), base('p3', { title: 'Report' }), base('p4', { title: 'Old car', status: 'done' }), base('p5', { title: 'Podcast' }));
@@ -2552,6 +2561,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     K.AR.setArea(w, 'p5', 'House');
     check('renaming an area renames it on every project', K.AR.renameArea(w, 'House', 'Cottage') && P('p5').area === 'Cottage' && !K.AR.renameArea(w, 'Nowhere', 'X') && !K.AR.renameArea(w, 'Cottage', '  '));
     check('…to a name already used (any capitals), the two become one, with that area\'s colour', K.AR.renameArea(w, 'Cottage', 'HOME') && P('p5').area === 'Home' && P('p5').areaColour === 'teal' && eq(K.AR.areasOf(w).map(a => a.name), ['Home']));
+    check('…and to the same name with other capitals, every project takes it, colour kept', K.AR.renameArea(w, 'home', 'HOME') && ['p1', 'p2', 'p4', 'p5'].every(id => P(id).area === 'HOME' && P(id).areaColour === 'teal') && K.AR.renameArea(w, 'HOME', 'Home'));
     check('a project\'s area as shown: its name and its area\'s colour', eq(K.AR.areaOfProject(w, P('p1')), { name: 'Home', colour: 'teal' }) && K.AR.areaOfProject(w, P('p3')) === null);
 
     console.log('  finishing and the archive');
@@ -2560,6 +2570,10 @@ const clone = o => JSON.parse(JSON.stringify(o));
     K.AR.finishProject(w, 'p2', 'stopped', '', '2026-11-05');
     check('the archive: finished projects, most recently finished first (one finished before by when it last changed); "Stopped on purpose"; one from before reads "Finished"',
       eq(K.AR.archive(w).map(p => p.id), ['p2', 'p1', 'p4']) && K.AR.finishedLabel(P('p2')) === 'Stopped on purpose' && K.AR.finishedLabel(P('p4')) === 'Finished');
+    check('…on the same day, the most recently changed first; a note cut to 400', (() => { const v = world(base('t1', { updatedAt: '2026-11-05T09:00' }), base('t2', { updatedAt: '2026-11-05T09:00' }));
+      K.AR.finishProject(v, 't1', 'achieved', 'n'.repeat(500), '2026-11-05'); v.projects.items[0].updatedAt = '2026-11-05T08:00';
+      K.AR.finishProject(v, 't2', 'achieved', '', '2026-11-05'); v.projects.items[1].updatedAt = '2026-11-05T10:00';
+      return eq(K.AR.archive(v).map(p => p.id), ['t2', 't1']) && v.projects.items[0].finished.note.length === 400; })());
     check('bringing one back: active again, its ending gone', K.editProject(w, 'p1', { status: 'active' }) && P('p1').status === 'active' && !('finished' in P('p1')) && eq(K.AR.archive(w).map(p => p.id), ['p2', 'p4']));
   }
 

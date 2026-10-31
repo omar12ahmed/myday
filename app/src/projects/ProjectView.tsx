@@ -170,7 +170,7 @@ function ProjectTop({ data, p, tab, query, onQuery, status }: { data: MyDayData;
           <h2 id="projectTitle" tabIndex={-1} className="text-[26px] tracking-[-.02em] m-0 break-words">{p.title}</h2>
           {/* Its area (specs/projects-areas-archive.md), and once finished how it ended. */}
           <ProjectArea data={data} p={p} className="mt-1 text-sm font-semibold text-fg-2" />
-          {p.status === 'done' && <p className="m-0 mt-1 text-[15px] break-words" data-s="project-finished"><span className="font-semibold">{finishedLabel(p)}</span>{p.finished?.on ? ` · ${shortDate(p.finished.on)}` : ''}{p.finished?.note ? ` — ${p.finished.note}` : ''}</p>}
+          {p.status === 'done' && <p className="m-0 mt-1 text-[15px] break-words" data-s="project-ended"><span className="font-semibold">{finishedLabel(p)}</span>{p.finished?.on ? ` · ${shortDate(p.finished.on)}` : ''}{p.finished?.note ? ` — ${p.finished.note}` : ''}</p>}
           {p.outcome && <p className="m-0 mt-1 text-[15px] text-fg-2 break-words" data-s="project-outcome"><span className="font-semibold text-fg">Aiming for:</span> {p.outcome}</p>}
         </div>
         {/* Private (your choice): Ask MyDay sends nothing of this project. */}
@@ -659,7 +659,7 @@ function ManageCard({ p }: { p: Project }) {
               <Button inline variant="ghost" data-action="finish-cancel" onClick={() => { setFinishing(false); focusSoon('projectFinishBtn'); }}>Cancel</Button>
             </div>
           </form>
-        ) : <Button inline variant="ghost" className="w-full" id="projectFinishBtn" data-action="project-finish" aria-expanded={false} onClick={() => setFinishing(true)}><Check size={18} aria-hidden="true" /> Mark as done</Button>)}
+        ) : <Button inline variant="ghost" className="w-full" id="projectFinishBtn" data-action="project-finish" onClick={() => setFinishing(true)}><Check size={18} aria-hidden="true" /> Mark as done</Button>)}
         <Button inline variant="ghost" className="w-full" data-action="project-delete" onClick={remove}><Trash2 size={18} aria-hidden="true" /> Delete project</Button>
       </div>
     </Card>

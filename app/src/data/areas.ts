@@ -10,12 +10,15 @@ import type { DateKey, MyDayData, Project } from './types';
 export const AREA_COLOURS = ['sage', 'sky', 'sand', 'rose', 'lilac', 'teal', 'clay', 'slate'] as const;
 export type AreaColour = typeof AREA_COLOURS[number];
 export const COLOUR_LABEL: Record<AreaColour, string> = { sage: 'Sage', sky: 'Sky', sand: 'Sand', rose: 'Rose', lilac: 'Lilac', teal: 'Teal', clay: 'Clay', slate: 'Slate' };
-const tidy = (name: string) => name.replace(/\s+/g, ' ').trim().slice(0, PROJECT_LIMITS.area);
-// Names match whatever the capitals ("home" is Home).
-const same = (a: string, b: string) => a.toLocaleLowerCase() === b.toLocaleLowerCase();
+// An area's name as written: single spaces, up to 40 characters.
+export const tidyArea = (name: string) => name.replace(/\s+/g, ' ').trim().slice(0, PROJECT_LIMITS.area);
+const tidy = tidyArea;
+// Names match whatever the capitals and spacing ("home" is Home), the same on every device.
+export const sameArea = (a: string, b: string) => tidy(a).toLowerCase() === tidy(b).toLowerCase();
+const same = sameArea;
 const known = (c: unknown): c is AreaColour => AREA_COLOURS.includes(c as AreaColour);
-// The colour itself, from styles/tokens.css (made for light and dark): the edge, or with `tint` the chip's background.
-export const areaVar = (c: AreaColour, tint = false) => `var(--area-${c}${tint ? '-c' : ''})`;
+// The colour itself, from styles/tokens.css (made for light and dark).
+export const areaVar = (c: AreaColour) => `var(--area-${c})`;
 
 // ---------- Looking at them ----------
 export interface Area { name: string; colour: AreaColour; count: number }
@@ -31,7 +34,7 @@ export function colourOf(data: MyDayData, name: string): AreaColour {
 // The areas in use, in name order, with their colour and how many projects (not finished ones) each has.
 export function areasOf(data: MyDayData): Area[] {
   const names = new Map<string, string>();
-  for (const p of data.projects.items) if (p.area && !names.has(p.area.toLocaleLowerCase())) names.set(p.area.toLocaleLowerCase(), p.area);
+  for (const p of data.projects.items) if (p.area && !names.has(tidy(p.area).toLowerCase())) names.set(tidy(p.area).toLowerCase(), tidy(p.area));
   return [...names.values()].sort((a, b) => a.localeCompare(b))
     .map(name => ({ name, colour: colourOf(data, name), count: data.projects.items.filter(p => p.status !== 'done' && p.area && same(p.area, name)).length }));
 }
@@ -41,7 +44,7 @@ export function nextColour(data: MyDayData): AreaColour {
   return AREA_COLOURS.find(c => !used.includes(c)) ?? [...AREA_COLOURS].sort((a, b) => used.filter(x => x === a).length - used.filter(x => x === b).length)[0];
 }
 // A project's area as shown: its name and its area's colour (null when it has none).
-export const areaOfProject = (data: MyDayData, p: Project): { name: string; colour: AreaColour } | null => (p.area ? { name: p.area, colour: colourOf(data, p.area) } : null);
+export const areaOfProject = (data: MyDayData, p: Project): { name: string; colour: AreaColour } | null => (p.area ? { name: tidy(p.area), colour: colourOf(data, p.area) } : null);
 
 // ---------- Changing them (each returns whether anything changed) ----------
 // Puts a project in an area — one already used (whatever the capitals: its name and colour), or a new one (the next

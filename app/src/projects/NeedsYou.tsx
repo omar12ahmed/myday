@@ -11,7 +11,7 @@ import type { MyDayData, Project } from '../data/types';
 import { inFocus } from '../data/weekReview';
 import { ChaseIt } from '../tasks/ChaseIt';
 import { awayFor, awayWords, isAway } from '../data/welcomeBack';
-import { areasOf, type Area } from '../data/areas';
+import { areasOf, sameArea, type Area } from '../data/areas';
 import { AreaLabel } from './AreaBits';
 
 // "Needs you" (specs/projects-attention.md): what needs you across your active projects, at the top of the Projects
@@ -83,7 +83,7 @@ export function ProjectList({ data, all, fits = () => true, grouped = false }: {
   for (const n of all) count.set(n.projectId, (count.get(n.projectId) ?? 0) + 1);
   const list = projectsInOrder(data, 'active').filter(fits);
   const groups: { area: Area | null; items: Project[] }[] = grouped
-    ? [...areasOf(data).map(a => ({ area: a, items: list.filter(p => p.area?.toLocaleLowerCase() === a.name.toLocaleLowerCase()) })), { area: null, items: list.filter(p => !p.area) }].filter(g => g.items.length)
+    ? [...areasOf(data).map(a => ({ area: a, items: list.filter(p => !!p.area && sameArea(p.area, a.name)) })), { area: null, items: list.filter(p => !p.area) }].filter(g => g.items.length)
     : [{ area: null, items: list }];
   return (
     <Card id="projectsList" aria-label="Your active projects">
