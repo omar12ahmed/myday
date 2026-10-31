@@ -31,7 +31,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     `export { SECTIONS, isHidden, sectionContent, overviewSections, setHidden, hiddenWords, openOnArrival, arriving, arrived } from ${src('projectSections')};`,
     `export { setDeadline, deadlineWords, deadlineLabel, setMilestone } from ${src('tasks')};`, `export { deadlineToNote, deadlineNoted, noteDeadlineDone } from ${src('deadlines')};`,
     `export { setDone, clearDay, toggleRoll, followQueued, taskFromQueue, sendToQueue } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
-    `export * as X from ${src('experiments')};`, `export * as W from ${src('welcomeBack')};`, `export { lastActivity as lastActivityOf, nextStep as nextStepOf } from ${src('projects')};`, `export * as M from ${src('businessMoney')};`, `export * as R from ${src('research')};`,
+    `export * as X from ${src('experiments')};`, `export * as AR from ${src('areas')};`, `export * as W from ${src('welcomeBack')};`, `export { lastActivity as lastActivityOf, nextStep as nextStepOf } from ${src('projects')};`, `export * as M from ${src('businessMoney')};`, `export * as R from ${src('research')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
   const OLD = '2026-10-01T09:00';
@@ -2522,6 +2522,45 @@ const clone = o => JSON.parse(JSON.stringify(o));
     check('"none" takes it off', K.setMilestone(w, 't2', null) && !('milestoneId' in w.tasks.items.find(t => t.id === 't2')));
     const rt = K.normalizeTasks({ lists: [], items: [TK('a', 'x', { milestoneId: 'm9' }), TK('b', 'x', { milestoneId: 5 }), TK('c', 'x', { milestoneId: '' })] }, { dropped: 0 }).items;
     check('reading a task: its milestone kept as written; one that isn\'t an id left off', rt[0].milestoneId === 'm9' && !('milestoneId' in rt[1]) && !('milestoneId' in rt[2]));
+  }
+
+  console.log('\n[27] Areas, and an archive of finished projects (specs/projects-areas-archive.md)');
+  {
+    const k = '2026-11-02';
+    console.log('  reading');
+    let r = { dropped: 0 };
+    const read = K.normalizeProjects({ items: [base('a', { area: '  Home   sweet  home ', areaColour: 'ochre', finished: { how: 'merged', note: 5, on: 'soon', futureBit: 1 } }), base('b', { area: 'x'.repeat(50), areaColour: 'sage' }),
+      base('c', { area: 7, areaColour: 'sage', finished: 'yes' }), base('d', { area: '   ', areaColour: 'sky' })] }, r).items;
+    check('an area is kept tidied and cut to 40; a newer MyDay\'s colour and ending kept as they are; one that isn\'t text counted; a colour without an area left off',
+      read[0].area === 'Home sweet home' && read[0].areaColour === 'ochre' && eq(read[0].finished, { how: 'merged', note: '', on: null, futureBit: 1 }) && read[1].area.length === 40
+      && !('area' in read[2]) && !('areaColour' in read[2]) && !('finished' in read[2]) && !('area' in read[3]) && !('areaColour' in read[3]) && r.dropped === 2, [read.map(p => [p.area, p.areaColour, p.finished]), r]);
+
+    console.log('  areas');
+    const w = world(base('p1', { title: 'Garden shed', updatedAt: OLD }), base('p2', { title: 'Passport' }), base('p3', { title: 'Report' }), base('p4', { title: 'Old car', status: 'done' }), base('p5', { title: 'Podcast' }));
+    const P = id => w.projects.items.find(p => p.id === id);
+    check('a new area takes the first colour no area uses; the same name again (any capitals) joins it, with its name and colour; choosing isn\'t work on the project',
+      K.AR.setArea(w, 'p1', 'Home') && P('p1').areaColour === 'sage' && K.AR.setArea(w, 'p2', '  home ') && P('p2').area === 'Home' && P('p2').areaColour === 'sage'
+      && K.AR.setArea(w, 'p3', 'Work') && P('p3').areaColour === 'sky' && P('p1').updatedAt === OLD && !K.AR.setArea(w, 'p1', 'Home'));
+    K.AR.setArea(w, 'p4', 'Home');
+    check('the areas in name order, each with its colour and how many projects still on the go (not finished ones)', eq(K.AR.areasOf(w).map(a => [a.name, a.colour, a.count]), [['Home', 'sage', 2], ['Work', 'sky', 1]]));
+    check('none takes the area and colour off; a project that isn\'t there changes nothing', K.AR.setArea(w, 'p3', null) && !('area' in P('p3')) && !('areaColour' in P('p3')) && !K.AR.setArea(w, 'p3', '') && !K.AR.setArea(w, 'nope', 'Home'));
+    check('…and with every colour taken, the least used', (() => { const v = world(...K.AR.AREA_COLOURS.map((c, i) => base('q' + i, { area: 'A' + i, areaColour: c })), base('q9', { area: 'A9', areaColour: 'sage' }), base('qn'));
+      return K.AR.nextColour(v) === 'sky'; })());
+    P('p2').areaColour = 'rose'; P('p4').areaColour = 'rose';
+    check('an area\'s colour is its projects\' most common (two devices chose differently)', K.AR.colourOf(w, 'home') === 'rose');
+    check('recolouring an area changes every project in it', K.AR.recolourArea(w, 'Home', 'teal') && ['p1', 'p2', 'p4'].every(id => P(id).areaColour === 'teal') && !K.AR.recolourArea(w, 'Home', 'teal') && !K.AR.recolourArea(w, 'Home', 'ochre'));
+    K.AR.setArea(w, 'p5', 'House');
+    check('renaming an area renames it on every project', K.AR.renameArea(w, 'House', 'Cottage') && P('p5').area === 'Cottage' && !K.AR.renameArea(w, 'Nowhere', 'X') && !K.AR.renameArea(w, 'Cottage', '  '));
+    check('…to a name already used (any capitals), the two become one, with that area\'s colour', K.AR.renameArea(w, 'Cottage', 'HOME') && P('p5').area === 'Home' && P('p5').areaColour === 'teal' && eq(K.AR.areasOf(w).map(a => a.name), ['Home']));
+    check('a project\'s area as shown: its name and its area\'s colour', eq(K.AR.areaOfProject(w, P('p1')), { name: 'Home', colour: 'teal' }) && K.AR.areaOfProject(w, P('p3')) === null);
+
+    console.log('  finishing and the archive');
+    check('finishing: achieved, with a note, today — it\'s done and counts as work', K.AR.finishProject(w, 'p1', 'achieved', '  Two coats  ', k) && P('p1').status === 'done' && eq(P('p1').finished, { how: 'achieved', note: 'Two coats', on: k }) && P('p1').updatedAt !== OLD
+      && K.AR.finishedLabel(P('p1')) === 'Achieved' && !K.AR.finishProject(w, 'p2', 'abandoned'));
+    K.AR.finishProject(w, 'p2', 'stopped', '', '2026-11-05');
+    check('the archive: finished projects, most recently finished first (one finished before by when it last changed); "Stopped on purpose"; one from before reads "Finished"',
+      eq(K.AR.archive(w).map(p => p.id), ['p2', 'p1', 'p4']) && K.AR.finishedLabel(P('p2')) === 'Stopped on purpose' && K.AR.finishedLabel(P('p4')) === 'Finished');
+    check('bringing one back: active again, its ending gone', K.editProject(w, 'p1', { status: 'active' }) && P('p1').status === 'active' && !('finished' in P('p1')) && eq(K.AR.archive(w).map(p => p.id), ['p2', 'p4']));
   }
 
   fs.rmSync(dir, { recursive: true, force: true });
