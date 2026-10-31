@@ -8202,7 +8202,7 @@
      "root_reading": "ḍ-d-d",
      "example_ar": "رَدَّ الْكَاتِبُ عَلَى الْحُجَّةِ الْمُضَادَّةِ.",
      "example_meaning_en": "The writer answered the counterargument.",
-     "note": "مُضَادّ means “opposing, anti-”."
+     "note": "The adjective on its own, as in رَأْيٌ مُضَادٌّ, “an opposing view”."
     }
    ]
   },
@@ -8539,9 +8539,9 @@
    "words": [
     {
      "id": "lexeme.arabic-b2-listening-reading-1",
-     "form_ar": "مَغْزَى",
-     "meaning_en": "point, underlying message",
-     "part_of_speech": "noun",
+     "form_ar": "مَغْزَى الْكَلَامِ",
+     "meaning_en": "the point of what is said",
+     "part_of_speech": "chunk",
      "root_ar": "غ-ز-و",
      "root_reading": "gh-z-w",
      "example_ar": "فَهِمْتُ مَغْزَى الْقِصَّةِ.",
@@ -8626,8 +8626,8 @@
      "part_of_speech": "adverb",
      "root_ar": "ر-ج-ل",
      "root_reading": "r-j-l",
-     "example_ar": "تَكَلَّمَتِ ارْتِجَالًا عَنِ الْمَوْضُوعِ.",
-     "example_meaning_en": "She spoke off the cuff about the topic.",
+     "example_ar": "تَكَلَّمَتْ عَنِ الْمَوْضُوعِ ارْتِجَالًا.",
+     "example_meaning_en": "She spoke about the topic off the cuff.",
      "note": "From اِرْتَجَلَ, “to improvise”."
     },
     {

@@ -4,11 +4,11 @@
  "method": "Blind audio-only transcription of the clips made for the course words (module 4). Main session read every transcript against the authored text; punctuation and pausal endings can differ. This does not approve a clip.",
  "prompt": "Transcribe only the speech you hear, in Arabic with full vowel marks. Do not translate, explain, add speaker labels, or guess any extra words. Return just the Arabic transcription.",
  "request_cap": 2250,
- "requests": 2100,
+ "requests": 2103,
  "usage_tokens": {
-  "text": 77700,
-  "audio": 91725,
-  "output": 409779
+  "text": 77811,
+  "audio": 91862,
+  "output": 410421
  },
  "results": {
   "مَرْحَبًا، أَنَا سَارَةُ.": {
@@ -44183,6 +44183,71 @@
      }
     ],
     "thoughtsTokenCount": 179,
+    "serviceTier": "standard"
+   }
+  },
+  "مَغْزَى الْكَلَامِ": {
+   "file": "5023c8b6736d844a.mp3",
+   "heard": "مَغْزَى الكَلَامِ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 72,
+    "candidatesTokenCount": 11,
+    "totalTokenCount": 83,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 35
+     }
+    ],
+    "serviceTier": "standard"
+   }
+  },
+  "تَكَلَّمَتْ عَنِ الْمَوْضُوعِ ارْتِجَالًا.": {
+   "file": "b31dad790f84770f.mp3",
+   "heard": "تَكَلَّمَتْ عَنِ الْمَوْضُوعِ ارْتِجَالًا",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 99,
+    "candidatesTokenCount": 23,
+    "totalTokenCount": 338,
+    "promptTokensDetails": [
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     },
+     {
+      "modality": "AUDIO",
+      "tokenCount": 62
+     }
+    ],
+    "thoughtsTokenCount": 216,
+    "serviceTier": "standard"
+   }
+  },
+  "رَأْيٌ مُضَادٌّ": {
+   "file": "feb43469de7c055b.mp3",
+   "heard": "رَأْيٌ مُضَادٌّ",
+   "finish": "STOP",
+   "usage": {
+    "promptTokenCount": 77,
+    "candidatesTokenCount": 12,
+    "totalTokenCount": 469,
+    "promptTokensDetails": [
+     {
+      "modality": "AUDIO",
+      "tokenCount": 40
+     },
+     {
+      "modality": "TEXT",
+      "tokenCount": 37
+     }
+    ],
+    "thoughtsTokenCount": 380,
     "serviceTier": "standard"
    }
   }

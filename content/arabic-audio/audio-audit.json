@@ -26856,13 +26856,6 @@
    "spoken": "يَحْتَاجُ الْكَاتِبُ إِلَى ثَرْوَةٍ لُغَوِيَّةٍ وَاسِعَةٍ.",
    "check": "to check"
   },
-  "مَغْزَى": {
-   "file": "6a9848d37d19b419.mp3",
-   "voice": "ar-XA-Wavenet-B",
-   "made": "2026-10-31",
-   "spoken": "مَغْزَى.",
-   "check": "to check"
-  },
   "فَهِمْتُ مَغْزَى الْقِصَّةِ.": {
    "file": "4554deb12f22125c.mp3",
    "voice": "ar-XA-Wavenet-B",
@@ -26952,13 +26945,6 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "اِرْتِجَالًا.",
-   "check": "to check"
-  },
-  "تَكَلَّمَتِ ارْتِجَالًا عَنِ الْمَوْضُوعِ.": {
-   "file": "4db730f57b68684c.mp3",
-   "voice": "ar-XA-Wavenet-B",
-   "made": "2026-10-31",
-   "spoken": "تَكَلَّمَتِ ارْتِجَالًا عَنِ الْمَوْضُوعِ.",
    "check": "to check"
   },
   "مَأْلُوف": {
@@ -27386,13 +27372,6 @@
    "voice": "ar-XA-Wavenet-B",
    "made": "2026-10-31",
    "spoken": "اِسْتَنْتَجَ.",
-   "check": "to check"
-  },
-  "مُضَادّ": {
-   "file": "06bc74ea1b6948ae.mp3",
-   "voice": "ar-XA-Wavenet-B",
-   "made": "2026-10-31",
-   "spoken": "مُضَادّ.",
    "check": "to check"
   },
   "عُرُوض": {
@@ -27842,6 +27821,27 @@
    "made": "2026-10-31",
    "spoken": "عَلَى الْمَدَى الْقَرِيبِ.",
    "check": "to check"
+  },
+  "مَغْزَى الْكَلَامِ": {
+   "file": "5023c8b6736d844a.mp3",
+   "voice": "ar-XA-Wavenet-B",
+   "made": "2026-10-31",
+   "spoken": "مَغْزَى الْكَلَامِ.",
+   "check": "to check"
+  },
+  "تَكَلَّمَتْ عَنِ الْمَوْضُوعِ ارْتِجَالًا.": {
+   "file": "b31dad790f84770f.mp3",
+   "voice": "ar-XA-Wavenet-B",
+   "made": "2026-10-31",
+   "spoken": "تَكَلَّمَتْ عَنِ الْمَوْضُوعِ ارْتِجَالًا.",
+   "check": "to check"
+  },
+  "رَأْيٌ مُضَادٌّ": {
+   "file": "feb43469de7c055b.mp3",
+   "voice": "ar-XA-Wavenet-B",
+   "made": "2026-10-31",
+   "spoken": "رَأْيٌ مُضَادٌّ.",
+   "check": "to check"
   }
  },
  "removed": [
@@ -27998,6 +27998,27 @@
    "reason": "The owner heard the jīm of حُجَّةً slightly off in قَدَّمَتِ الْكَاتِبَةُ حُجَّةً قَوِيَّةً. WaveNet gave the same audio on a retake, so the example is now لِلْكَاتِبَةِ حُجَّةٌ قَوِيَّةٌ.",
    "files": [
     "1f085e9069e88a97.mp3"
+   ]
+  },
+  {
+   "date": "2026-10-31",
+   "reason": "The owner heard the غ of مَغْزَى (said alone) as a z; a retake was no better, so the headword is now the phrase مَغْزَى الْكَلَامِ (heard right in context).",
+   "files": [
+    "6a9848d37d19b419.mp3"
+   ]
+  },
+  {
+   "date": "2026-10-31",
+   "reason": "The owner found تَكَلَّمَتِ ارْتِجَالًا عَنِ الْمَوْضُوعِ too quick (its -ati ran into ارْتِجَالًا and was heard as تَكَلَّمَ); the example is now تَكَلَّمَتْ عَنِ الْمَوْضُوعِ ارْتِجَالًا.",
+   "files": [
+    "4db730f57b68684c.mp3"
+   ]
+  },
+  {
+   "date": "2026-10-31",
+   "reason": "The owner heard مُضَادّ (said alone, in a note) slightly off; WaveNet gave the same audio on a retake, so the note now says it in a phrase, رَأْيٌ مُضَادٌّ.",
+   "files": [
+    "06bc74ea1b6948ae.mp3"
    ]
   }
  ],
