@@ -5,7 +5,7 @@ voiced in 1.102.0; module 15 (eight) and modules 4–5 (thirteen) ship with thei
 are cross-checked and checked by the owner's checker (31 October), to be voiced. Modules 8–9 (nine) are cross-checked and with
 the owner's checker. Module 8's skills lessons get a card on the language their task uses, the portfolio
 lesson included (the owner's choice). Modules 10–11 (eleven) are cross-checked and with the owner's checker. Modules 12–13 (ten) too; with them, modules 4 to 15 all
-have explainers. Modules 16–17 and 18–19 (ten each, B1 skills lessons) are cross-checked and with the owner's checker. Each batch: drafted, validated, cross-checked independently (fixes re-checked), checked by the owner's
+have explainers. Modules 16–17 and 18–19 (ten each, B1 skills lessons) and 20–21 (ten, B2) are cross-checked and with the owner's checker. Each batch: drafted, validated, cross-checked independently (fixes re-checked), checked by the owner's
 checker, voiced and listened to, then released.
 **Content:** `content/teaching/arabic/explainers.json`. **Check:** `app/scripts/validate-explainers.mjs`.
 **Related:** `specs/arabic-audio-course.md` (the voice), `specs/study-home-and-lessons.md` (lesson steps, course words).
