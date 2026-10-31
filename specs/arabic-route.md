@@ -51,7 +51,7 @@ route out on the device each time. Lessons don't change and nothing is locked. G
 safe (the route and the line simply aren't there).
 
 **General Goals:** built as Ambitions (`specs/projects-ambitions.md`, myday-af). An ambition links "the Arabic route"
-(`{ kind: 'arabic' }`, whichever goal you've chosen here) and calls `arabicRoute` for where you are and what you'll be
+(`{ id, kind: 'arabic' }` — no ref: whichever goal you've chosen here) and calls `arabicRoute` for where you are and what you'll be
 able to do; nothing moves or is copied (agreed with myday-af and myday-94, 31 October 2026).
 
 ## The options (31 October 2026)
