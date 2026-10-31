@@ -1,5 +1,23 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.115.0 — Ask MyDay helps you think:** level 3 of "How MyDay should think" (helping you think, rather than handing
+you answers). Ask MyDay something open — a goal, an idea or a big decision ("I want to start an online business",
+"Should I change jobs?") — and it asks before it offers ideas:
+- **One question at a time**, saying why it asks, with up to four short choices to tap, or your own words.
+- **Only what it needs, up to your limit:** 5 unless you change it, in What MyDay has noticed → Your preferences
+  ("Questions Ask MyDay may ask before it offers something", 1 to 5). Then it sums up your thinking in your words and
+  offers one step you can add or leave. MyDay keeps to the limit itself, and carrying on today's conversation from +
+  keeps counting.
+- **"Just give me ideas"** gets ideas at once, and plain requests ("add a task to ring the bank") are answered as
+  before. It never decides for you, and medication, symptoms, legal trouble, debts or investments get a kind pointer
+  to who to ask.
+
+Each Ask request now also carries how many questions it has asked and your limit (the "Sent to the AI" preview lists
+both); nothing else new about you is sent. Ask's model stays GLM-5.3-Flash: read blind against Gemini 3.5 Flash-Lite
+and Gemini 3.8 Flash, it was close to 3.8 Flash at a fifth of the cost (`ai-eval/reviews/2026-10-31-ask-think-quality.md`).
+The server's instructions (ai-plan, `myday-ask-v27`) go live first. The limit is saved with your preferences (synced;
+older versions keep it). Going back to 1.114.0 is safe: Ask simply stops asking first (`specs/ask-help-you-think.md`).
+
 **1.114.0 — Content projects: plan, make and post your videos:** a new kind of project, **Content**, for a channel or
 a series. Its **Videos** tab keeps an **Ideas** bank (rough ideas; **Make this a video** when you're ready; also from
 Capture: "Keep as a video idea — <channel>") and your videos by step — Planning · Filming · Editing · Posted. A video's
