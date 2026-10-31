@@ -40,8 +40,9 @@ translation, technology and cybersecurity, academic and professional). This adds
    show it again: Arabic, under Your route."); **"Show the next step's goal on Study home"** under
    "Your route" on the map brings it back (or hides it). The choice is remembered on this device only
    (`myday.arabic.towardshome`, `towards.ts`), like Slower; it's not part of your data. Today's Study card, which shares
-   the same options, doesn't show it (option 3), and nothing about it reaches Ask MyDay (`learningGlance` is Study
-   home's alone).
+   the same options, doesn't show this route line (option 3); since Ambitions (`specs/projects-ambitions.md`) it says
+   "A step towards “<ambition>”" when an ambition links the Arabic route — the same words as every other section.
+   Nothing about it reaches Ask MyDay (`learningGlance` is Study home's alone).
 
 ## What it doesn't touch
 
@@ -49,9 +50,9 @@ No new saved data, no sync change and nothing sent: it reads "Your goal" and you
 route out on the device each time. Lessons don't change and nothing is locked. Going back to an earlier release is
 safe (the route and the line simply aren't there).
 
-**General Goals, later:** if MyDay gets general Goals across sections (proposed in the vision, not built), a Goal
-would point at this path by its id and call `arabicRoute` for its stages; nothing moves (agreed with myday-af and
-myday-94, 31 October 2026).
+**General Goals:** built as Ambitions (`specs/projects-ambitions.md`, myday-af). An ambition links "the Arabic route"
+(`{ kind: 'arabic' }`, whichever goal you've chosen here) and calls `arabicRoute` for where you are and what you'll be
+able to do; nothing moves or is copied (agreed with myday-af and myday-94, 31 October 2026).
 
 ## The options (31 October 2026)
 
@@ -59,6 +60,8 @@ myday-94, 31 October 2026).
 2. Where the line shows (the owner's choice): the lesson, the map's next-step card, **and Study home's Arabic card,
    with the option to remove it** there.
 3. Today's plan: not yet; wait for general Goals so every section says it the same way. Recommended; none ticked.
+   *Since Ambitions:* Today says "A step towards “<ambition>”" for a lesson whose path an ambition links — the
+   ambition's words, not this route line.
 
 ## Levels 5 and 6 together
 

@@ -10,6 +10,7 @@ import { focusOn, startRevision } from './actions';
 import { optionAction } from './courseOption';
 import { Meta, Row, TextLink } from './parts';
 import { useNextLearning } from './useNextLearning';
+import { ambitionsOfLesson, towardsLine } from '../data/ambitions';
 
 const pickOptions = (m: typeof import('./nextLearning'), d: MyDayData) => m.learningOptions(d);
 
@@ -32,10 +33,10 @@ export function StudyTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
         {options[0].started || options[0].resume || options[0].allComplete
           ? <div><strong>Continue learning</strong><p className="text-sm text-fg-2 m-0">Your next lesson is ready — or choose another subject.</p></div>
           : <div><strong>Start learning</strong><p className="text-sm text-fg-2 m-0">Your first lesson is ready — or choose another subject.</p></div>}
-        <LessonOption option={options[0]} primary />
+        <LessonOption option={options[0]} primary towards={towardsLine(ambitionsOfLesson(data, options[0].subject, options[0].courseId))} />
         {options.length > 1 && <details className="rounded-tile border border-outline p-3" data-s="study-other-subjects">
           <summary className="cursor-pointer min-h-11 flex items-center text-primary font-semibold">Choose another subject</summary>
-          <div className="grid gap-2 mt-2">{options.slice(1).map(option => <LessonOption key={option.subject} option={option} />)}</div>
+          <div className="grid gap-2 mt-2">{options.slice(1).map(option => <LessonOption key={option.subject} option={option} towards={towardsLine(ambitionsOfLesson(data, option.subject, option.courseId))} />)}</div>
         </details>}
         <a href="#study" className="text-primary font-semibold text-sm min-h-11 inline-flex items-center">Browse all courses and lessons</a>
       </div>}
@@ -55,11 +56,13 @@ export function StudyTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
   );
 }
 
-export function LessonOption({ option, primary = false }: { option: LearningOption; primary?: boolean }) {
+// `towards`: on Today, which ambition the lesson is a step towards (specs/projects-ambitions.md).
+export function LessonOption({ option, primary = false, towards = '' }: { option: LearningOption; primary?: boolean; towards?: string }) {
   return <div className="rounded-tile border border-outline p-3" data-subject={option.subject}>
     <p className="text-xs text-fg-3 m-0">{option.label} · {option.minutes} min</p>
     <p className="font-semibold my-1">{option.title}</p>
     <p className="text-sm text-fg-2 mt-0 mb-2" data-s="option-detail">{option.detail}</p>
+    {towards && <p className="text-sm text-fg-2 mt-0 mb-2 break-words" data-s="option-towards">{towards}</p>}
     {primary && <details className="mb-2" data-s="option-why"><summary className="cursor-pointer min-h-11 flex items-center text-primary font-semibold text-sm">Why this?</summary>
       <p className="text-sm text-fg-2 mt-0 mb-1">{option.why}</p></details>}
     {option.revise ? <span className="flex flex-wrap items-center gap-x-3">

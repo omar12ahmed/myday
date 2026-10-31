@@ -8,6 +8,7 @@ import { addToTodaysPlan, deadlineWords, dueForToday, isStuck, isWaiting, planRo
 import { waitingText } from '../tasks/route';
 import { toast } from '../data/toast';
 import type { DateKey, MyDayData } from '../data/types';
+import { ambitionsOfTask, towardsLine } from '../data/ambitions';
 
 // Tasks due today (or still to do from before), from Tasks: tick one off, or add it to today's plan in one
 // tap while there's room for your energy. Nothing is added by itself.
@@ -40,6 +41,7 @@ export function DueTodayCard({ data, k }: { data: MyDayData; k: DateKey }) {
                 {isWaiting(data, t) && <span className="text-fg-2 break-words min-w-0" data-s="task-waiting">{waitingText(t)}</span>}
                 {startsAfterText(data, t) && <span className="text-fg-2 break-words min-w-0" data-s="task-starts-after">{startsAfterText(data, t)}</span>}
               </span>
+              {towardsLine(ambitionsOfTask(data, t)) && <span className="block mt-0.5 text-sm text-fg-2 break-words" data-s="task-towards">{towardsLine(ambitionsOfTask(data, t))}</span>}
             </a>
             {room.built && room.room > 0 && <Button inline data-action="due-plan" data-id={t.id} onClick={() => plan(t.id)}>Add to plan</Button>}
           </li>

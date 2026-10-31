@@ -5,6 +5,7 @@
 // moved, copied or told. Words and counts only; never sent to AI.
 import { isDateTime, localStamp } from './dates';
 import { tidyText } from './projectResources';
+import { topicOfStage } from './study/topics';
 import type { Ambition, AmbitionLink, AmbitionsData, AmbitionStep, MyDayData, Project, TaskItem } from './types';
 import { isObj, listOf, uid } from './util';
 
@@ -50,6 +51,14 @@ export const taskOfPlanRow = (data: MyDayData, k: string, uid: string) => data.t
 // Study: a link to the Cybersecurity path, the Arabic route, a topic or a course.
 export const ambitionsOfStudy = (data: MyDayData, kind: 'cyber' | 'arabic' | 'topic' | 'course', ref?: string) =>
   ambitionsInOrder(data).filter(a => linksOf(a).some(l => l.kind === kind && (kind === 'cyber' || kind === 'arabic' || l.ref === ref)));
+// A lesson on Today: its path (Arabic, Cybersecurity), or one of your courses — linked itself, or through its topic.
+export function ambitionsOfLesson(data: MyDayData, subject: string, courseId?: string): Ambition[] {
+  if (subject === 'arabic') return ambitionsOfStudy(data, 'arabic');
+  if (subject === 'cybersecurity') return ambitionsOfStudy(data, 'cyber');
+  if (!courseId) return [];
+  const stage = data.study.stages.find(sg => sg.courses.some(c => c.id === courseId)), topic = stage ? topicOfStage(data.study, stage) : '';
+  return ambitionsInOrder(data).filter(a => linksOf(a).some(l => (l.kind === 'course' && l.ref === courseId) || (!!topic && l.kind === 'topic' && l.ref === topic)));
+}
 // "A step towards “Work in cybersecurity”" (two: "“A” and “B”"; more: "“A” and 2 more").
 export function towardsLine(list: Ambition[]): string {
   if (!list.length) return '';

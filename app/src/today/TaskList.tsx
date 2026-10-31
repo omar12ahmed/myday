@@ -17,6 +17,7 @@ export interface TaskListProps {
   justDoneUid?: string | null;
   warnings?: Record<string, string>;      // task uid → overlap warning
   steps?: Record<string, string>;         // task uid → "2 of 5 steps" (a task from Tasks with steps)
+  towards?: Record<string, string>;       // task uid → "A step towards “…”" (its project's ambition)
   mode: 'plan' | 'evening';               // plan: timer buttons; evening: "Roll to tomorrow"
   onToggle: (t: Task, done: boolean) => void;
   onTimer?: (t: Task, kind: 'start' | 'focus') => void;
@@ -33,7 +34,7 @@ function Marker({ done, next }: { done: boolean; next: boolean }) {
   );
 }
 
-export function TaskList({ tasks, dayKey, joined = false, nextUid = null, justDoneUid = null, warnings = {}, steps = {}, mode, onToggle, onTimer, onRoll }: TaskListProps) {
+export function TaskList({ tasks, dayKey, joined = false, nextUid = null, justDoneUid = null, warnings = {}, steps = {}, towards = {}, mode, onToggle, onTimer, onRoll }: TaskListProps) {
   const List = joined ? 'ol' : 'ul';
   return (
     <List className="tasks space-y-3 mt-3.5">
@@ -60,6 +61,7 @@ export function TaskList({ tasks, dayKey, joined = false, nextUid = null, justDo
                   <span className="meta">{taskDetails(t)}</span>
                   {steps[t.uid] && <span data-s="task-steps">{steps[t.uid]}</span>}
                 </div>
+                {towards[t.uid] && <p className="m-0 mt-1 text-sm text-fg-2 break-words" data-s="task-towards">{towards[t.uid]}</p>}
                 {warnings[t.uid] && (
                   <p className="warn flex gap-1.5 items-start m-0 mt-2 px-2.5 py-1 rounded-lg bg-warn-c text-on-warn-c text-sm w-fit">
                     <TriangleAlert size={16} className="flex-none mt-0.5" aria-hidden="true" />

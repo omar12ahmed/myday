@@ -7,6 +7,7 @@ import { daySummary, energyLine, nextTask, planWarnings, progressNote, sortedTas
 import type { Day, MyDayData, Task } from '../data/types';
 import { QueueNote } from './QueueNote';
 import { TaskList } from './TaskList';
+import { ambitionsOfTask, towardsLine } from '../data/ambitions';
 
 // What a rest day shows in place of tasks.
 export function RestDayCard() {
@@ -32,7 +33,10 @@ export function DayTasks({ data, k, d, mode, justDoneUid, onToggle, onTimer, onR
   // A task from Tasks on the plan shows how far its steps are ("2 of 5 steps"); the plan's copy has none of its own.
   const steps: Record<string, string> = {};
   for (const x of data.tasks.items) if (x.plannedOn === k && x.planUid && stepsText(x)) steps[x.planUid] = stepsText(x);
-  const common = { dayKey: k, nextUid, justDoneUid, warnings, steps, mode, onToggle, onTimer, onRoll };
+  // …and which ambition it's a step towards, through its project (specs/projects-ambitions.md).
+  const towards: Record<string, string> = {};
+  for (const x of data.tasks.items) if (x.plannedOn === k && x.planUid && x.projectId) { const w = towardsLine(ambitionsOfTask(data, x)); if (w) towards[x.planUid] = w; }
+  const common = { dayKey: k, nextUid, justDoneUid, warnings, steps, towards, mode, onToggle, onTimer, onRoll };
   return (
     <>
       {timed.length > 0 && <TaskList tasks={timed} joined {...common} />}

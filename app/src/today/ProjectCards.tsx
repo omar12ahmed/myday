@@ -9,6 +9,7 @@ import { addToTodaysPlan, isDone, planRoom } from '../data/tasks';
 import { toast } from '../data/toast';
 import type { DateKey, MyDayData } from '../data/types';
 import { dueText } from '../tasks/route';
+import { ambitionsOfProject, towardsLine } from '../data/ambitions';
 
 // "From your projects": each active project's one next step (not already on today's plan or due today — those are
 // under Due today). One tap adds it to today's plan while there's room for your energy — the same rule as Due today.
@@ -34,6 +35,7 @@ export function ProjectStepsCard({ data, k }: { data: MyDayData; k: DateKey }) {
               <span className="flex flex-wrap items-center gap-2 mt-0.5 text-sm text-fg-3 tabular-nums">
                 {task.due && <span>{dueText(task, k)}</span>}<span>{task.minutes} min</span><CategoryChip kind={task.category} />
               </span>
+              {towardsLine(ambitionsOfProject(data, project.id)) && <span className="block mt-0.5 text-sm text-fg-2 break-words" data-s="task-towards">{towardsLine(ambitionsOfProject(data, project.id))}</span>}
             </a>
             {room.built && room.room > 0 && <Button inline data-action="step-plan" data-id={task.id} onClick={() => plan(task.id)}>Add to plan</Button>}
           </li>

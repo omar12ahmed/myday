@@ -14,7 +14,8 @@
 //   - never: a case's timeline, evidence and issues; the files you attach (their names and contents); a project's
 //     research (questions, findings, sources, conclusions and experiments, specs/projects-research.md and
 //     projects-business-tools.md); a business idea's money (its numbers, forecast and real months); a project's outcome, what
-//     counts as finished and where you left off; a Content project's ideas and videos (their planning, script,
+//     counts as finished and where you left off; your ambitions (their titles, why, steps and links,
+//     specs/projects-ambitions.md; Today's "A step towards …" lines are display only); a Content project's ideas and videos (their planning, script,
 //     transcript, links, posts and results, specs/projects-content.md; the tasks you make from them — "Post: …",
 //     "Film: …" — are ordinary tasks and go as tasks always have); who a task is waiting on (Ask MyDay's waiting lookup sends only that
 //     it waits, since and until); where a deadline's date comes from and who checked it (specs/projects-deadlines.md;
