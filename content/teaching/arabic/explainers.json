@@ -10774,7 +10774,7 @@
     ],
     "steps": [
      "Most Arabic words are built on a root: usually three letters that carry a general idea. د-ر-س is about studying.",
-     "A pattern of vowels and extra letters goes around the root and adds a role. Patterns are named with ف-ع-ل as a stand-in root: مَفْعَلَة often makes a place, so د-ر-س gives مَدْرَسَة, a school.",
+     "A pattern of vowels and extra letters goes around the root and adds a role. Patterns are named with ف-ع-ل as a stand-in root: مَفْعَلَة often makes a place, so د-ر-س gives مَدْرَسَة, a school; مَفْعَل does the same without ـَة: مَطْعَم, a restaurant.",
      "Not every letter belongs to the root: in مَدْرَسَة, the مَـ and the ـَة come from the pattern.",
      "A shared root isn't a shared meaning. عِلْم, knowledge, and عَالَم, the world, both come from ع-ل-م. Check each word in its sentence or in a dictionary."
     ],
@@ -10937,7 +10937,7 @@
      }
     ],
     "steps": [
-     "Some short words are written joined to the next word: وَ, and; فَ, so; بِـ, with or by; لِـ, for; كَـ, like; and الْـ, the. Endings like ـهُ join at the back.",
+     "Some short words are written joined to the next word: وَ, and; فَـ, so; بِـ, with or by; لِـ, for or to; كَـ, like; and الْـ, the. Endings like ـهُ join at the back.",
      "To look a word up, peel these off first: وَبَيْتُهُ is وَ, and, then بَيْت, house, then ـهُ, his.",
      "لِـ before الْـ drops the alif: لِـ with الْمَدْرَسَة is written لِلْمَدْرَسَةِ.",
      "Be careful: a و or ب at the start may belong to the word itself. In وَصَلَ, he arrived, and بَحَثَ, he searched, they're root letters.",
@@ -11002,7 +11002,7 @@
        },
        {
         "ar": "لِلْمُعَلِّمَةِ",
-        "en": "for the teacher (لِـ + الْـ + مُعَلِّمَة)"
+        "en": "for the teacher, a woman (لِـ + الْـ + مُعَلِّمَة)"
        }
       ]
      }
@@ -11095,7 +11095,7 @@
      "Some Arabic dictionaries list words by spelling, like an English one. Others list them by root: to find مَدْرَسَة, you look under د-ر-س. The first pages tell you which.",
      "To find the root, take off any joined words and endings, then the pattern's extra letters: الْمَدَارِسُ is الْـ with مَدَارِس, the plural of مَدْرَسَة, root د-ر-س.",
      "An entry gives more than a meaning: the plural of a noun, the present of a verb, and examples. Note the ones you need.",
-     "Many words have several senses. Start from the sentence, try a sense, and keep it only if it fits: حَرْف is a letter in a word about spelling, and a small grammar word like فِي in a grammar book.",
+     "Many words have several senses. Start from the sentence, try a sense, and keep it only if it fits: حَرْف is a letter in a text about spelling, and a small grammar word like فِي in a grammar book.",
      "A translation app can suggest a meaning, but check it the same way."
     ],
     "examples": [
@@ -11233,7 +11233,7 @@
      {
       "form_en": "done to, from قَرَأَ",
       "ar": "مَقْرُوء",
-      "en": "read, readable"
+      "en": "readable, legible; (that has been) read"
      },
      {
       "form_en": "the action, from قَرَأَ",
@@ -11319,7 +11319,7 @@
       ]
      },
      {
-      "ar": "ذَهَابِي إِلَى الْعَمَلِ يَأْخُذُ سَاعَةً.",
+      "ar": "ذَهَابِي إِلَى الْعَمَلِ يَسْتَغْرِقُ سَاعَةً.",
       "en": "Getting to work takes me an hour.",
       "words": [
        {
@@ -11335,8 +11335,8 @@
         "en": "work"
        },
        {
-        "ar": "يَأْخُذُ",
-        "en": "takes"
+        "ar": "يَسْتَغْرِقُ",
+        "en": "takes (time)"
        },
        {
         "ar": "سَاعَةً",
@@ -11347,7 +11347,7 @@
     ],
     "why": {
      "q_en": "Why is the action قِرَاءَة for قَرَأَ, but ذَهَاب for ذَهَبَ?",
-     "a_en": "The doer and done-to patterns are regular for verbs like these, but the verbal noun has many patterns, and each verb has its own. Learn it with the verb: قَرَأَ, قِرَاءَة; ذَهَبَ, ذَهَاب."
+     "a_en": "The doer and done-to patterns are regular for verbs like these, but the verbal noun has many patterns, and you can't tell from the verb which one it uses. Learn it with the verb: قَرَأَ, قِرَاءَة; ذَهَبَ, ذَهَاب."
     },
     "selftest": [
      {
@@ -11444,7 +11444,7 @@
     ],
     "steps": [
      "A word on its own is easy to recognise and hard to use. Record it in a short phrase you might say: أَشْرَبُ الشَّايَ صَبَاحًا.",
-     "For a verb, note the past and the present together, شَرِبَ / يَشْرَبُ: the present's middle vowel can't be guessed.",
+     "For a verb, note the past and the present together, شَرِبَ / يَشْرَبُ: the present's middle vowel usually can't be guessed from the past.",
      "For a noun, note the plural, since most plurals can't be guessed either: بَيْت, بُيُوت.",
      "Add how it sounds, and where you met it, so that an old or rare sense doesn't pass for everyday Arabic.",
      "Review by recalling, not rereading: cover the Arabic, say it from the English, then use it in a new sentence."
@@ -11531,7 +11531,7 @@
     ],
     "why": {
      "q_en": "Why note يَشْرَبُ as well as شَرِبَ?",
-     "a_en": "The present's middle vowel changes from verb to verb: شَرِبَ, يَشْرَبُ; جَلَسَ, يَجْلِسُ; دَخَلَ, يَدْخُلُ. It can't be worked out from the past, so it's part of learning the verb."
+     "a_en": "The present's middle vowel changes from verb to verb: جَلَسَ, يَجْلِسُ; دَخَلَ, يَدْخُلُ; ذَهَبَ, يَذْهَبُ. Three verbs that look alike in the past take three different vowels, so the present is part of learning the verb."
     },
     "selftest": [
      {
@@ -11857,7 +11857,7 @@
        },
        {
         "ar": "بِنَا",
-        "en": "us"
+        "en": "(with) us: اِتَّصَلَ takes بِـ"
        },
        {
         "ar": "لِلْمَزِيدِ",
@@ -11880,13 +11880,13 @@
     },
     "selftest": [
      {
-      "q_en": "A notice says تَبْدَأُ الدَّوْرَةُ يَوْمَ الْأَحَدِ. What does it tell you?",
+      "q_en": "A notice says تَبْدَأُ الدَّوْرَةُ يَوْمَ الْخَمِيسِ. What does it tell you?",
       "choices": [
-       "the course starts on Sunday",
-       "the course ends on Sunday",
-       "registration closes on Sunday"
+       "the course starts on Thursday",
+       "the course ends on Thursday",
+       "registration closes on Thursday"
       ],
-      "answer": "the course starts on Sunday",
+      "answer": "the course starts on Thursday",
       "why_en": "تَبْدَأُ is \"starts\". It says nothing about the end or registration."
      },
      {
@@ -11912,7 +11912,7 @@
     ],
     "phrases_ar": [
      "يَبْدَأُ الدَّرْسُ",
-     "تَبْدَأُ الدَّوْرَةُ يَوْمَ الْأَحَدِ"
+     "تَبْدَأُ الدَّوْرَةُ يَوْمَ الْخَمِيسِ"
     ]
    }
   ],
@@ -12066,7 +12066,7 @@
     ],
     "why": {
      "q_en": "Why أَكْبَرُ, with no -un, in غُرْفَةٌ أَكْبَرُ?",
-     "a_en": "Words on the أَفْعَل pattern, like أَكْبَر, never take -un, even without الْـ: غُرْفَةٌ أَكْبَرُ, a bigger room. They're one of a few kinds of word that end in a plain -u."
+     "a_en": "Words on the أَفْعَل pattern, like أَكْبَر and أَحْسَن, never take -un, -an or -in, even without الْـ. After a word with -un they end in a plain -u, غُرْفَةٌ أَكْبَرُ, a bigger room; where other words would have -an or -in, they end in -a: فِي غُرْفَةٍ أَكْبَرَ, in a bigger room."
     },
     "selftest": [
      {
@@ -12105,7 +12105,8 @@
      "هَلْ مِنَ الْمُمْكِنِ",
      "هَلْ يُنَاسِبُكَ الْمَوْعِدُ؟",
      "هَلْ تَعْنِي",
-     "غُرْفَةٌ أَكْبَرُ"
+     "غُرْفَةٌ أَكْبَرُ",
+     "فِي غُرْفَةٍ أَكْبَرَ"
     ]
    }
   ],
@@ -12260,7 +12261,7 @@
     ],
     "why": {
      "q_en": "Why لِأَنَّنِي and لِأَنَّهُ, but لِأَنَّ الطَّقْسَ?",
-     "a_en": "لِأَنَّ is followed either by a noun ending in -a, لِأَنَّ الطَّقْسَ, or by a pronoun ending joined to it: لِأَنَّهُ, because he; لِأَنَّنِي, because I (also written لِأَنِّي)."
+     "a_en": "لِأَنَّ is followed either by a noun with the object ending, -a or -an, لِأَنَّ الطَّقْسَ, or by a pronoun ending joined to it: لِأَنَّهُ, because he; لِأَنَّنِي, because I (also written لِأَنِّي)."
     },
     "selftest": [
      {
@@ -12344,7 +12345,7 @@
      "To describe your level, say what you can do and with what help: أَفْهَمُ الْأَخْبَارَ الْقَصِيرَةَ بِمُسَاعَدَةِ الْقَامُوسِ, I understand short news with the help of a dictionary.",
      "مُسْتَوَى, level, ends in a long ā written ى. Before \"my\" it becomes مُسْتَوَايَ.",
      "أَحْيَانًا, sometimes, and دَائِمًا, always, say how often.",
-     "Then name one next step: الْخُطْوَةُ التَّالِيَةُ الِاسْتِمَاعُ, the next step is listening."
+     "Then name one next step: الْخُطْوَةُ التَّالِيَةُ هِيَ الِاسْتِمَاعُ, the next step is listening."
     ],
     "examples": [
      {
@@ -12444,7 +12445,7 @@
     ],
     "why": {
      "q_en": "Why مُسْتَوَايَ, with an alif and ـيَ, and not مُسْتَوَى with ـِي?",
-     "a_en": "\"My\" can't follow a long ā as plain ـِي, so it becomes ـيَ, and the ى is written as an alif: مُسْتَوَى, مُسْتَوَايَ."
+     "a_en": "After a long ā there's nowhere for the -i of ـِي to sit, so \"my\" becomes ـيَ, said -ya, and the ى is written as a plain alif: مُسْتَوَى, مُسْتَوَايَ."
     },
     "selftest": [
      {
@@ -12480,7 +12481,7 @@
     ],
     "phrases_ar": [
      "أَفْهَمُ الْأَخْبَارَ الْقَصِيرَةَ بِمُسَاعَدَةِ الْقَامُوسِ",
-     "الْخُطْوَةُ التَّالِيَةُ الِاسْتِمَاعُ"
+     "الْخُطْوَةُ التَّالِيَةُ هِيَ الِاسْتِمَاعُ"
     ]
    }
   ]
