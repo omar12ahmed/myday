@@ -60,8 +60,14 @@ Rules for every lookup:
 - **Shown, not hidden.** The panel says "Looked in your notes for 'van hire': 3 notes (1 private left out)" before the
   answer, and each record the answer used is a link.
 - **Small.** At most 8 records, each cut to a few hundred characters, within the existing 16 KB request limit.
+  *(Later lookups set their own limits: up to 12 things across MyDay, a day's plan up to 20 tasks, a project as its
+  page sends it.)*
 - **Honest gaps.** If nothing is found, or things were left out (private, switched off, too many), the answer says so.
   It never guesses.
+  *Since 1.99.0 the panel's line says it too, counted on the device and never sent: private things, notes by
+  title only (AI help with notes off, or too much text), how many there were when more than the limit went ("23 tasks
+  planned (the first 20 sent)"), courses that couldn't be searched, and when it was read ("Checked at 10:42."; an
+  answer to a follow-up, or a second try, uses what was read the first time).*
 
 The first two lookups:
 

@@ -5,7 +5,8 @@
 [`study-home-and-lessons.md`](study-home-and-lessons.md)) and links to them rather than repeating them.
 
 **Checked against:** the source at MyDay 1.53.0 (`e50f9c2`) on 24 October 2026, by reading the code and docs, with
-1.54.0's next-step explanation added afterwards.
+1.54.0's next-step explanation added afterwards. The capability register (§8) and the notes marked *Built* were
+brought up to 1.99.0 on 31 October 2026 from the release notes; the rest still describes 1.53.0.
 - **"Built"** means present in that source.
 - **"Live-checked"** is said only where a live check was run.
 - **Proposals:** a proposal here is not agreed because it is written down, and a built feature is not proven because its tests exist.
@@ -106,7 +107,7 @@ Capture, Ask MyDay, "What MyDay has noticed" and "What MyDay knows".
 ### Proposed: general Goals and shared files
 
 - **General Goals:** only Health has a Goal today. A general Goals area would connect existing records.
-- **Shared files:** not built yet (see §6).
+- **Shared files:** not built yet (see §6). *A project's and a note's own files are built (1.68.0).*
 - **The rule for both:** don't ask anyone to reorganise, and don't add navigation before a workflow needs it.
 
 ### Naming
@@ -267,7 +268,9 @@ Each tool:
 - returns record ids, so an answer can say which records it used;
 - says what was left out (private, switched off, or too much) and when the information was read.
 
-These are proposals. A tool exists only once it's built and tested.
+These are proposals. A tool exists only once it's built and tested. *Built: all six as Ask MyDay's lookups, from 1.63.0 to
+1.79.0, and a look across MyDay in 1.91.0 (`specs/ai-tools.md`); since 1.99.0 each lookup's line says what didn't go
+(private, switched off, more than the limit) and when it was read.*
 
 ### Proposed: actions
 
@@ -279,7 +282,8 @@ establishes:
 - whether saving worked;
 - what can be undone.
 
-Ask MyDay does most of this today. As actions grow, Undo should outlive the panel.
+Ask MyDay does most of this today. As actions grow, Undo should outlive the panel. *Built in 1.95.0: Undo stays until
+midnight, in + when you open it again, and keeps what you've changed since.*
 
 A model saying approval exists is not approval. Add new actions only for a defined need, each with a tested boundary.
 
@@ -346,7 +350,7 @@ These kinds don't need separate copies of the same information.
   - lesson finders in Arabic and Cybersecurity;
   - recipe search (online, TheMealDB).
 - **Next:** one search across sections, built on the same matching as project search. Then reuse it as Ask MyDay's
-  retrieval tool.
+  retrieval tool. *Built: Search everywhere (1.87.0), and Ask MyDay looks across MyDay with it (1.91.0).*
 - **Semantic search** only for a gap that keyword search shows it can't fill. Any outside index needs its own
   decision on privacy, cost, updates and deletion.
 - **General Goals** join search when they exist.
@@ -387,7 +391,8 @@ Build it for one useful workflow first, not as general infrastructure.
 
 ### Files and backups
 
-- **Not built:** automatic backups and files.
+- **Not built:** automatic backups and files. *Built since: automatic backups (1.65.0) and files in Cloudflare R2
+  (1.68.0, 10 GB from 1.69.0).*
 - **Decided (24 Oct 2026): stored files go in Cloudflare R2** (`deploy/R2.md`), including the Cybersecurity
   portfolio's images and PDFs, rather than Supabase Storage. Automatic backups come first, as in the Projects
   vision's Phase 2 order.
@@ -436,29 +441,29 @@ Sessions working in parallel agree release order and tell each other before and 
 Track decision status, building and verification separately. Keep this register as the one place for "not yet"
 items, rather than scattering them through the README. Update it with each release that changes a row.
 
-| Capability | Built now (1.55.1) | Direction or next step |
+| Capability | Built now (1.99.0) | Direction or next step |
 |---|---|---|
-| Idea-to-review path | Most steps (§1) | Close the gaps one at a time, starting with findings and their sources |
-| Task completion in one place | 1.55.1: a tick on a plan marks the task itself done, dated the plan's day; 1.59.0: a rolled task follows its copy to the next plan, and Ask's Undo keeps a tick made since | Keep one answer as new views appear |
-| Ask MyDay in context | Page slice, five reply kinds, checked proposals, one follow-up, one Undo | Read-only tools over the shared AI filter |
-| General assistant tools | Search your notes (1.63.0): read-only, automatic and shown, through the filter | "Your day" next (`specs/ai-tools.md`); actions only for a defined need |
+| Idea-to-review path | Most steps (§1); research and its findings on a project (1.77.0) | Close the gaps one at a time |
+| Task completion in one place | 1.55.1: a tick on a plan marks the task itself done, dated the plan's day; 1.59.0: a rolled task follows its copy to the next plan, and Ask's Undo keeps a tick made since; steps inside a task and "Starts after" (1.81.0) | Keep one answer as new views appear |
+| Ask MyDay in context | Page slice, six reply kinds (add, steps, answer, cannot, change, look up), checked proposals, one follow-up; steps (1.82.0); Undo until midnight, kept when the panel closes (1.95.0) | Actions only for a defined need |
+| General assistant tools | Read-only lookups, automatic and shown, through the filter: notes (1.63.0), a day (1.66.0), a project (1.70.0), open decisions (1.72.0), what you're waiting on (1.75.0), what to study next (1.79.0), across MyDay (1.91.0, in place of notes); each line says what didn't go and when it was read (1.99.0) | `specs/ai-tools.md`; a new lookup only for a defined need |
 | One "what may reach AI" filter | Built (1.61.0): `app/src/ai/reach.ts`, used by every request builder, with a leak test; Private covers every AI feature but note filing | Every future lookup goes through it (`specs/ai-tools.md`) |
-| AI quality checks | `ai-eval` scenarios, blind reviews, budgets | Required before a model or job changes |
+| AI quality checks | `ai-eval` scenarios, blind reviews, budgets; a live Arabic tutor bringing in new Arabic studied and judged "not yet" (`ai-eval/reviews/2026-10-30-arabic-tutor-quality.md`) | Required before a model or job changes |
 | Saved records | Built | Keep sources and dates; mark summaries stale |
 | Conversation memory | Not built; nothing kept | No commitment; make the case first |
 | Preferences in planning | Built, on the device | Make reconsidering one step |
 | Patterns suggesting times | Not built | Recorded as later work |
 | AI seeing confirmed preferences | Not built | Only if the person chooses |
-| Search | Notes, Tasks, one project (1.52.0), lesson finders, recipes | One search across sections |
+| Search | Search everywhere (1.87.0): one search across sections, private projects and notes only on their own pages; possessives (1.92.0); search within a project (1.52.0), lesson finders, recipes | Semantic search only for a gap keyword search can't fill |
 | Semantic search | Not built | Exploratory; separate decision |
-| Projects | Overview (1.46.0); outcome, finish line and "Where I left off" (1.48.0); waiting on (1.50.0); search (1.52.0); why this next step (1.54.0) | `projects-vision.md` Phase 2; its owner decisions open there |
+| Projects | Phase 1 (1.46.0–1.54.0); Phase 2: Study links (1.56.0, 1.58.0), Resources (1.62.0), backups and files; Phase 3 begun: Research (1.77.0), steps (1.81.0), deadlines you can trust (1.89.0), experiments and money for a business idea (1.97.0); Phase 4 begun: Needs you (1.83.0), optional sections (1.85.0) | `projects-vision.md`: the Phase 3 and 4 options not chosen yet |
 | Explore | Renderer; the Hargeisa Marketplace exploration; generated starting briefs | Sourced AI explorations need retrieval and checking first |
-| Study | Guided paths, Start/Continue (1.46.1); adaptive Arabic (1.47.0); Your focus and a calmer home (1.51.0); Arabic lesson journey (1.53.0); Cybersecurity lesson journey (1.55.0) | Adaptive rules for Cybersecurity and your own courses; Keep a word; Practise again and Progress; portfolio files; graduated help |
-| Saving, export/import, sync | Built (schema 5) | Keep going back a release safe; "delete everything" as a true wipe (decided) |
-| Automatic backups | Not built | Before files |
-| Files | Not built; decided: Cloudflare R2 (`deploy/R2.md`) | After automatic backups |
+| Study | Guided paths, Start/Continue (1.46.1); adaptive Arabic (1.47.0); Your focus and a calmer home (1.51.0); lesson journeys (1.53.0, 1.55.0); Keep a word (1.57.0); Browse (1.60.0); Practise again (1.64.0) and Progress (1.67.0); the Cybersecurity portfolio (1.71.0); Check my answer (1.74.0); the tutor in parts (1.76.0); Arabic's four skills (1.80.0); course words to B1 (1.84.0–1.93.0); voiced reading texts and checks (1.94.0, 1.96.0); written explainers (1.98.0) | Adaptive rules for Cybersecurity and your own courses; B2 course words; explainers for the rest of the course |
+| Saving, export/import, sync | Built (schema 5); Delete everything as a true wipe (1.73.0) | Keep going back a release safe |
+| Automatic backups | Built (1.65.0): a daily copy per device while MyDay is open and you're signed in | — |
+| Files | Built (1.68.0, 10 GB from 1.69.0): Cloudflare R2 (`deploy/R2.md`) | — |
 | Closed-app or scheduled work | Not built | One workflow first, with limits |
-| Outside connections | Supabase, AI provider, bank holidays, TheMealDB | Decide one at a time |
+| Outside connections | Supabase, AI provider, Cloudflare R2, bank holidays, TheMealDB | Decide one at a time |
 
 For each entry, keep:
 - the person's problem and the intended outcome;
