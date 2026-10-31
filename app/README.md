@@ -1,5 +1,10 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.117.0 — Ask MyDay: a choice tapped straight away is answered:** with 1.115.0's choices you can reply in one tap,
+often within the server's five seconds between requests, which said "Just a moment between requests — try again". Ask
+MyDay now waits those seconds out and sends your reply once more, as a look in your notes or at a day already did. No
+saved-data, sync, server or database change; going back to 1.116.0 is safe.
+
 **1.116.0 — "You've been exploring a while": compare the options:** a project in Explore or Decide for three weeks
 or more (the whole time in the board's Exploring column) now asks once on its Overview: "You've been exploring this
 for 3 weeks. Would it help to compare the strongest options and see what's still missing?" — **Compare them** or
