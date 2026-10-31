@@ -18,8 +18,10 @@
 //     transcript, links, posts and results, specs/projects-content.md; the tasks you make from them — "Post: …",
 //     "Film: …" — are ordinary tasks and go as tasks always have); who a task is waiting on (Ask MyDay's waiting lookup sends only that
 //     it waits, since and until); where a deadline's date comes from and who checked it (specs/projects-deadlines.md;
-//     a task's date goes as it always has); your name, email, preferences and patterns; Finance and Health records (each
-//     request builder simply doesn't read them).
+//     a task's date goes as it always has); your name and email; your preferences and patterns, except what you've let
+//     Ask MyDay use (v26, its "how you work": your preferences as limits and the patterns you confirmed) and, with every
+//     Ask MyDay request, how many questions it has asked to help you think and your limit for them (v27); Finance and
+//     Health records (each request builder simply doesn't read them).
 // Every request builder asks here, and tests/ai-rules.test.js feeds them all the same private data to prove none leaks.
 import { privateProjectIds } from '../data/projects';
 import type { Commitment, DateKey, MyDayData, Note, Project, TaskItem } from '../data/types';

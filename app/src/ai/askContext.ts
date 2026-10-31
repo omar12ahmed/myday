@@ -289,6 +289,7 @@ export function askPreview(c: AskContext, privateNote = false, held?: AskSlice['
   all.push({ label: 'What you typed', lines: [c.text || '(nothing yet)', ...(c.followUp ? [`and then: “${c.followUp.text}”`] : [])] });
   all.push({ label: 'When and where', lines: [`${prettyDate(c.date)}, ${c.time}`, `Page: ${PAGE_WORD[c.page]}`] });
   if (c.howYouWork?.length) { short.push('How you work'); all.push({ label: 'How you work (you let Ask MyDay use it)', lines: c.howYouWork }); }
+  if (c.thinking) all.push({ label: 'Helping you think', lines: [`Questions it has asked so far: ${c.thinking.asked}`, `Your limit before it offers something: ${c.thinking.most}`] });
   if (x.today) {
     const t = x.today;
     short.push(`Energy ${energyWord(t.energy)}`, `Free time ${freeWord(t.freeMinutes)}`, n(t.plan.length, 'task') + ' on today’s plan', n(t.dueToday.length, 'task') + ' due today');

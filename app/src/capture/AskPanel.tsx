@@ -2,7 +2,7 @@ import { ArrowRight, BookOpen, CalendarPlus, FileText, Flag, FolderKanban, ListC
 import { useEffect, useImperativeHandle, useRef, useState, type ReactNode, type Ref } from 'react';
 import { rememberAsk, undoNow } from '../ai/lastAsk';
 import { forgetConversation, keepConversation, keptConversation, type KeptLooked } from '../ai/keptConversation';
-import { addAskItems, applyAskChanges, applyAskEdit, checkAskReply, countWords, DAY_TOO_FAR, NEW_PROJECT, type AskChangeUndo, type AskChecked, type AskEdit, type AskProposal, type AskUndo } from '../ai/ask';
+import { addAskItems, applyAskChanges, applyAskEdit, checkAskReply, countWords, DAY_TOO_FAR, keepToLimit, NEW_PROJECT, type AskChangeUndo, type AskChecked, type AskEdit, type AskProposal, type AskUndo } from '../ai/ask';
 import { askContext, askPreview, askSlice, conversationOf, latestOnly } from '../ai/askContext';
 import { dayLookup, decisionsLookup, lookupLine, projectLookup, searchLookup, studyLookup, waitingLookup, type LookupMore } from '../ai/lookup';
 import { ASK_LIMITS, type AskContext, type AskLookup } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
@@ -15,7 +15,7 @@ import { LinkButton } from '../components/parts';
 import { prettyDate, todayKey } from '../data/dates';
 import { CAT_LABEL } from '../data/plan';
 import { catchUp, getSnapshot, update } from '../data/storage';
-import { recordAskSeen } from '../data/patterns/saved';
+import { ASK_QUESTIONS_MOST, recordAskSeen } from '../data/patterns/saved';
 import { toast } from '../data/toast';
 import type { Category, MyDayData } from '../data/types';
 import { startLearning, startRevision } from '../study/actions';
@@ -148,7 +148,8 @@ export function AskPanel({ data, text, focus, onClose, onActive, ref }: { data: 
     const asked = [...earlier.map(t => t.asked), message].join('\n');
     const said = earlier.map(t => ({ asked: t.asked, answered: t.answered }));
     // Helping you think (v27): how many questions it has asked in this conversation, and your limit (Your preferences).
-    const thinking = { asked: earlier.filter(t => t.question).length, most: getSnapshot().data.patterns.prefs.askQuestions ?? 5 };
+    const most = getSnapshot().data.patterns.prefs.askQuestions ?? ASK_QUESTIONS_MOST;
+    const thinking = { asked: Math.min(earlier.filter(t => t.question).length, most), most };
     // The request: the conversation before this message (the oldest left out until it fits), with this lookup.
     const build = (lk: AskLookup | undefined, fe: boolean) => { // the time now (askContext reads the clock)
       for (let budget = ASK_LIMITS.conversationChars; budget >= 1000; budget -= 1000) {
@@ -199,6 +200,7 @@ export function AskPanel({ data, text, focus, onClose, onActive, ref }: { data: 
       if (!reply.ok) { fail(reply.message, looked, false, reply.reason === 'daily' || reply.reason === 'budget'); return; }
       r = checkAskReply(reply.text, getSnapshot().data, sl, k, asked, looked.lookup, looked.hrefs);
     }
+    r = keepToLimit(r, thinking);
     if (!r || r.kind === 'lookup') { fail("The answer that came back couldn't be used — nothing was added. Try again, or put it another way.", looked, looked === prior && again); return; }
     if (r.kind === 'add' || r.kind === 'steps') { setPicked(r.items.map(i => !i.already)); setTitles(r.items.map(i => i.title)); setEdits({}); setEditing(null); }
     if (r.kind === 'change') setPicked(r.changes.map(() => true));
@@ -293,7 +295,7 @@ export function AskPanel({ data, text, focus, onClose, onActive, ref }: { data: 
       </ol>}
       {(phase.at === 'idle' || (phase.at === 'error' && !inConversation)) && <>
         <Button variant="tonal" data-action="ask-go" disabled={!text.trim()} onClick={() => { void ask(text, [], phase.at === 'error' ? phase.retry?.prior : undefined); }}><Sparkles size={18} aria-hidden="true" /> Ask MyDay</Button>
-        {(() => { const pv = askPreview(askContext(slice, text, k, opened), slice.privateNote, slice.held); return (
+        {(() => { const pv = askPreview(askContext(slice, text, k, opened, undefined, undefined, undefined, { asked: 0, most: data.patterns.prefs.askQuestions ?? ASK_QUESTIONS_MOST }), slice.privateNote, slice.held); return (
           <div className="mt-2 text-xs text-fg-2" data-s="ask-sends">
             <p className="m-0 font-semibold text-fg-3">Sent to the AI with what you type:</p>
             <ul className="list-none p-0 m-0 mt-1 flex flex-wrap gap-1.5">{pv.short.map(x => <li key={x} className="bg-surface-2 rounded-full px-2.5 py-1">{x}</li>)}</ul>
@@ -428,7 +430,7 @@ export function AskPanel({ data, text, focus, onClose, onActive, ref }: { data: 
             ? <Button variant="primary" data-action="ask-action" onClick={() => { onClose(); handOverToAdjust(text); }}>Open Help me adjust today</Button>
             : <p className="text-[15px] text-fg-2 m-0" data-s="ask-build-first">Today’s plan isn’t built yet — set your energy and tap Build my day on Today, then Help me adjust today can shape it. <LinkButton data-action="ask-today" onClick={() => { onClose(); location.hash = 'today'; }}>Go to Today</LinkButton></p>)}
           {r.changed.length > 0 && <ul className="list-none p-0 m-0 mt-2 text-xs text-fg-3" data-s="ask-changed">{r.changed.map((c, i) => <li key={i}>{c}</li>)}</ul>}
-          {r.kind === 'answer' && r.choices?.length ? <div className="flex flex-wrap gap-2 mt-3" role="group" aria-label="Choose an answer, or reply in your own words" data-s="ask-choices">
+          {r.kind === 'answer' && r.choices?.length && after.left !== 0 ? <div className="flex flex-wrap gap-2 mt-3" role="group" aria-label="Choose an answer, or reply in your own words" data-s="ask-choices">
             {r.choices.map(c => <Button key={c} inline variant="tonal" data-s="ask-choice" onClick={() => sendReply(after, '', c)}>{c}</Button>)}
           </div> : null}
           {replyBox(after, r.kind === 'add' || r.kind === 'steps' ? '(Not added.)\n' : r.kind === 'change' ? '(Not applied.)\n' : '')}

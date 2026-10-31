@@ -17,8 +17,8 @@ jobs?"), and it doesn't hand you twenty ideas:
   ("Extra income" · "Something that grows" · "A full-time business"), or your own words.
 - **It asks only what it needs, and no more than your limit:** up to 5 questions by default, changeable in Your
   preferences. Then it reflects back your thinking in your own words (what you're after, what matters, what's still
-  unknown) and offers **one** next step, only if you want it: a task, or a project idea with its one page. Never a
-  list you didn't ask for.
+  unknown) and offers **one** next step to add or leave: a task, or a project idea with its one page. Never a list you
+  didn't ask for.
 - **Say "just give me ideas"** and it does, straight away.
 - **Plain requests stay plain.** "Add a task to ring the bank" is answered at once, as now.
 - **It doesn't think for you.** It asks what *you* think matters, explains briefly why it's asking, and leaves the
@@ -40,7 +40,12 @@ A question's choices come back from the AI and are checked like the rest of a re
   - it counts thinking questions in the conversation and sends that count with your limit (`ai/askContext.ts`); today's
     kept conversation remembers which answers were questions, so carrying it on from + keeps to your limit
     (`ai/keptConversation.ts`);
-  - each choice is checked: short, plain, at most four (`ai/ask.ts`);
+  - each choice is checked: short, plain, at most four, and never with an action (`ai/ask.ts`; the server checks the
+    same);
+  - the app keeps to your limit itself: once it has asked that many, a reply's choices are left out, so it isn't
+    shown or counted as another question;
+  - after the day's last request there's no replying, so no choices to tap either;
+  - the "Sent to the AI" preview lists the count and your limit;
   - "Questions before Ask MyDay offers something" in Your preferences, 1–5, default 5, saved with your preferences
     (synced) and kept by older versions;
   - What MyDay knows says so.

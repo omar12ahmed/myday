@@ -46,7 +46,7 @@ export { aiReach } from '../app/src/ai/reach';
 // Ask MyDay's lookups: searching your notes on the device (specs/ai-tools.md §3).
 export { dayLookup, decisionsLookup, lookupLine, notesLookup, projectLookup, searchLookup, studyLookup, waitingLookup } from '../app/src/ai/lookup';
 export { courseIndex } from '../app/src/search/courseIndex';
-export { addAskItems, applyAskChanges, applyAskEdit, checkAskReply, countWords, takeBackAsk, undoAsk, undoAskChanges } from '../app/src/ai/ask';
+export { addAskItems, applyAskChanges, applyAskEdit, checkAskReply, countWords, keepToLimit, takeBackAsk, undoAsk, undoAskChanges } from '../app/src/ai/ask';
 export { forgetAsk, lastAsk, onLastAsk, rememberAsk, undoNow } from '../app/src/ai/lastAsk';
 export { forgetConversation, keepConversation, keptConversation, onKeptConversation } from '../app/src/ai/keptConversation';
 

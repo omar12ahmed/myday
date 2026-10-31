@@ -168,15 +168,16 @@ treat it as a rule about what to say.`;
 // Helping them think (v27, specs/ask-help-you-think.md): ask before ideas on an open question, then reflect back.
 const THINKING = ` When their message is open (a goal, an idea, a big decision, or not knowing where to start) and you
 don't yet know what they're looking for, don't offer ideas or plans yet: reply kind "answer" with one short question
-about what they're after (saying in a few words why you ask), and "choices": up to 4 short ways to answer it, under 40
-characters each (they can also answer in their own words). One question at a time. "thinking.asked" is how many such
-questions you've asked in this conversation and "thinking.most" their limit: ask only what you need. Once you
-understand, or you've asked "most", reflect back their thinking in their own words (what they're after, what matters
-to them, what's still unknown) and offer at most one next step, only if they'd like it (a task, or a project idea),
-never a list they didn't ask for. If they ask for ideas or a straight answer, give it at once. A plain request (to add,
-change or look something up, or a factual question) is answered as usual, without questions. Not for what a professional
-should advise on (medication, symptoms, legal trouble, debts or investments): there, say kindly who to ask. Ask what
-they think matters; never decide for them.`;
+about what they're after (saying in a few words why you ask), and "choices" (only with such a question, never with an
+action): up to 4 short ways to answer it, under 40 characters each (they can also answer in their own words). One
+question at a time, ending with the question (no next step after it, whatever the "answer" rule says). "thinking.asked"
+is how many such questions you've asked in this conversation and "thinking.most" their limit: ask only what you need.
+Once you understand, or you've asked "most", reflect back their thinking in their own words (what they're after, what
+matters to them, what's still unknown) and offer at most one next step they can take or leave: one item in "items" (a
+task, or a project idea), never a list they didn't ask for. If they ask for ideas or a straight answer, give it at once.
+A plain request (to add, change or look something up, or a factual question) is answered as usual, without questions.
+Not for what a professional should advise on (medication, symptoms, legal trouble, debts or investments): there, say
+kindly who to ask. Ask what they think matters; never decide for them.`;
 
 // A task page from an app that sends the task's checklist (v23): only then are "step" items asked for.
 const hasChecklist = (c: AskContext) => Array.isArray(c.context.task?.steps);
@@ -332,7 +333,8 @@ export function mockAsk(c: AskContext): string {
     }
     if (inThought) {
       const said = [...(c.conversation?.earlier ?? []).slice(1).map(e => e.asked), t].join('; ');
-      return reply({ kind: 'answer', message: `Practice helper (no AI): so far you've said: ${said}. Would a first step help, or is that enough to think about for now?`, items: [], action: null });
+      return reply({ kind: 'add', message: `Practice helper (no AI): so far you've said: ${said}. If it helps, one first step — add it or leave it.`, action: null,
+        items: [{ type: 'task', title: 'Write down three ideas that fit what you said', minutes: 15, category: null, projectId: null, date: null, time: null, text: null }] });
     }
   }
   if (/\b(delete|remove all|wipe|send (an? )?(email|text|message)|buy|pay for|order)\b/i.test(t)) {

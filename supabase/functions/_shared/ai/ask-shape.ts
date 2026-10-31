@@ -417,8 +417,9 @@ export function readAsk(textIn: string): AskReply | null {
   else if (obj(a) && a.type === 'start-study' && typeof a.courseId === 'string' && a.courseId) {
     action = { type: 'start-study', courseId: a.courseId, taskId: typeof a.taskId === 'string' && a.taskId ? a.taskId : null, minutes: Number.isFinite(a.minutes) ? Math.round(a.minutes as number) : 15 };
   }
-  // A question's choices (v27): on an answer only, short, plain and different from each other; any that aren't are left out.
-  const choices = raw.kind !== 'answer' || !Array.isArray(raw.choices) ? [] : [...new Set(raw.choices.filter((x): x is string => typeof x === 'string').map(x => x.trim().replace(/\s+/g, ' '))
+  // A question's choices (v27): on an answer with no action only, short, plain and different from each other; any that
+  // aren't are left out.
+  const choices = raw.kind !== 'answer' || action || !Array.isArray(raw.choices) ? [] : [...new Set(raw.choices.filter((x): x is string => typeof x === 'string').map(x => x.trim().replace(/\s+/g, ' '))
     .filter(x => x.length > 0 && x.length <= ASK_LIMITS.choiceChars))].slice(0, ASK_LIMITS.choices);
   return { kind: raw.kind as AskReply['kind'], message: (raw.message as string).trim(), items: out, action, ...(sources.length ? { sources } : {}), ...(choices.length ? { choices } : {}) };
 }

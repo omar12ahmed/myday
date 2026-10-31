@@ -2160,8 +2160,8 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('the request carries how many thinking questions it has asked and your limit, and the server accepts it', eq(tc.thinking, TH) && K.checkAskContext(tc));
     for (const [why, th] of [['a limit over 5', { asked: 0, most: 6 }], ['a limit of 0', { asked: 0, most: 0 }], ['a negative count', { asked: -1, most: 5 }], ['a field it doesn\'t know', { asked: 0, most: 5, why: 'x' }], ['not whole numbers', { asked: 0.5, most: 5 }]])
       check(`…refused: ${why}`, !K.checkAskContext({ ...tc, thinking: th }));
-    const sysT = K.buildAskMessages(tc)[0].content, sysN = K.buildAskMessages(K.askContext(ts, 'I want to start an online business', TD))[0].content;
-    check('the instructions (v27) say to ask before ideas, with choices, up to the limit, then reflect back and offer one step, never on what a professional should advise on — only when "thinking" is sent', /don't offer ideas or plans yet/.test(sysT) && /"choices": up to 4 short ways/.test(sysT) && /offer at most one next step, only if they'd like it/.test(sysT) && /If they ask for ideas or a straight answer, give it at once/.test(sysT) && /professional\s+should advise on \(medication/.test(sysT)
+    const sysT = K.buildAskMessages(tc)[0].content.replace(/\s+/g, ' '), sysN = K.buildAskMessages(K.askContext(ts, 'I want to start an online business', TD))[0].content;
+    check('the instructions (v27) say to ask before ideas, with choices, up to the limit, then reflect back and offer one step, never on what a professional should advise on — only when "thinking" is sent', /don't offer ideas or plans yet/.test(sysT) && /"choices" \(only with such a question, never with an action\): up to 4 short ways/.test(sysT) && /ending with the question \(no next step after it/.test(sysT) && /offer at most one next step they can take or leave: one item in "items"/.test(sysT) && /If they ask for ideas or a straight answer, give it at once/.test(sysT) && /professional should advise on \(medication/.test(sysT)
       && /"choices":\["…/.test(sysT) && !/thinking|"choices"/.test(sysN) && K.ASK_PROMPT_VERSION === 'myday-ask-v27');
     // Reading a reply's choices: on an answer only, trimmed, different from each other, short, at most four.
     const RA = x => K.readAsk(JSON.stringify(x));
@@ -2171,7 +2171,15 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const ca = K.checkAskReply(JSON.stringify({ kind: 'answer', message: 'Before ideas: what are you looking for?', items: [], action: null, choices: ['Extra income', 'Something that grows'] }), tw, ts, TD);
     check('the app keeps a question\'s choices for the panel to show', eq(ca.choices, ['Extra income', 'Something that grows']), ca);
     const cact = K.checkAskReply(JSON.stringify({ kind: 'answer', message: 'Let\'s plan today around your energy.', items: [], action: { type: 'adjust-today' }, choices: ['Yes', 'No'] }), tw, K.askSlice(tw, '#today', TD), TD);
-    check('…but never alongside an action (a question or an action, not both)', !cact || !('choices' in cact), cact);
+    check('…but never alongside an action (a question or an action, not both)', cact?.kind === 'answer' && cact.action?.type === 'adjust-today' && !('choices' in cact), cact);
+    check('…not even when the AI sent both: the server leaves the choices out', !('choices' in RA({ kind: 'answer', message: 'Let\'s plan today around your energy.', items: [], action: { type: 'adjust-today' }, choices: ['Yes', 'No'] })));
+    const cdrop = K.checkAskReply(JSON.stringify({ kind: 'answer', message: 'Let\'s revise a few of your cards now.', items: [], action: { type: 'start-revision', scope: 'all' }, choices: ['Yes', 'No'] }), tw, ts, TD);
+    check('…and an action the app leaves out (nothing to revise) still takes the choices with it', cdrop?.kind === 'answer' && !cdrop.action && !('choices' in cdrop), cdrop);
+    const qa = { ...ca };
+    check('your limit, kept by the app too: at or past it a reply\'s choices are left out (so it isn\'t shown or counted as a question); under it they stay', !('choices' in K.keepToLimit(qa, { asked: 2, most: 2 })) && !('choices' in K.keepToLimit(qa, { asked: 3, most: 2 }))
+      && eq(K.keepToLimit(qa, { asked: 1, most: 2 }).choices, ['Extra income', 'Something that grows']) && K.keepToLimit(null, { asked: 5, most: 1 }) === null, K.keepToLimit(qa, { asked: 2, most: 2 }));
+    const pvT = K.askPreview(tc).all.find(x => x.label === 'Helping you think');
+    check('the "Sent to the AI" preview lists the count and your limit', eq(pvT?.lines, ['Questions it has asked so far: 0', 'Your limit before it offers something: 5']), pvT);
     // The practice helper: asks first on an open goal, up to the limit, then reflects back; ideas when asked; plain requests as before.
     const M = (text, th, conv) => K.readAsk(K.mockAsk(K.askContext(ts, text, TD, undefined, undefined, undefined, conv, th)));
     const m1 = M('I want to start an online business', TH);
@@ -2180,7 +2188,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const m2 = M('Extra income', { asked: 1, most: 2 }, conv2);
     check('…a tapped choice gets the next question while under the limit', m2.choices?.length > 0, m2);
     const m3 = M('Enjoying it', { asked: 2, most: 2 }, K.conversationOf([{ asked: 'I want to start an online business', answered: m1.message }, { asked: 'Extra income', answered: m2.message }]));
-    check('…at the limit it stops asking: your thinking reflected back, one step offered', !m3.choices && /so far you've said: Extra income; Enjoying it/.test(m3.message), m3);
+    check('…at the limit it stops asking: your thinking reflected back, and one step to add or leave', !m3.choices && m3.kind === 'add' && m3.items.length === 1 && /so far you've said: Extra income; Enjoying it/.test(m3.message), m3);
     check('…"just give me ideas" gets ideas at once', /three ideas/.test(M('just give me ideas', TH).message));
     const ms = M("I don't know where to start with this", TH), my = M('Should I quit? Just tell me yes or no', TH);
     check('…"I don\'t know where to start" is asked which part is hardest to begin, and "yes or no" is answered at once without choosing for them', /hardest to begin/.test(ms.message) && ms.choices?.includes('It feels too big') && !my.choices && /yours to decide/.test(my.message), [ms, my]);

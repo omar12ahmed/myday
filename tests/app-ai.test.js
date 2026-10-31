@@ -44,7 +44,9 @@ const SEED = `s => {
     return D;
   }
   const open = async (D, url) => { await D.open(url + '#today'); await D.until(`document.querySelector('#app')`); };
-  const seeded = async (D, url) => { await open(D, url); await D.setData(SEED); await D.until(`document.querySelector('[data-action=evening]')`); };
+  // (If today's plan doesn't appear, say what the page showed instead, so a slow start-up can be told from a real fault.)
+  const pageNow = D => D.ev(`location.hash + ' | ' + (document.querySelector('#app')?.innerText ?? '(no #app)').replace(/\\s+/g, ' ').slice(0, 240)`).catch(e => `(page not reachable: ${e.message.slice(0, 80)})`);
+  const seeded = async (D, url) => { await open(D, url); await D.setData(SEED); if (!(await D.until(`document.querySelector('[data-action=evening]')`, 20000))) console.log(`HARNESS: today's plan didn't appear after 20 s: ${await pageNow(D)}`); };
   const ask = async (D, note = '') => {
     if (!(await D.exists('#aiCard'))) { await D.click('[data-action=ai-open]'); await D.until(`document.getElementById('aiCard')`); }
     if (!(await D.exists('#aiNote'))) { await D.click('[data-action=ai-retry], [data-action=ai-again]'); await D.until(`document.getElementById('aiNote')`); }
@@ -66,7 +68,7 @@ const SEED = `s => {
   await seeded(mock, MOCK);
   // (Only calls to the AI function count: another tab's background sync also reaches the stand-in, and is not what these checks are about.)
   const logBefore = aiCalls().length;
-  await mock.until(`!!document.querySelector('[data-action=ai-open]')`, 10000); // (the plan's AI button can arrive a moment after Today, under load)
+  if (!(await mock.until(`!!document.querySelector('[data-action=ai-open]')`, 10000))) console.log(`HARNESS: no "Help me adjust today" after 10 s: ${await pageNow(mock)}`); // (the plan's AI button can arrive a moment after Today, under load)
   check('"Help me adjust today" is on the plan, as a secondary action', await mock.ev(`(() => { const b = document.querySelector('[data-action=ai-open]'); return !!b && b.dataset.variant !== 'primary'; })()`));
   await mock.click('[data-action=ai-open]'); await mock.until(`document.getElementById('aiNote')`);
   check('it explains it\'s practice mode and nothing is sent anywhere', (await mock.text('#aiCard')).includes('Practice mode') && (await mock.text('#aiCard')).includes('Nothing is sent anywhere'));
@@ -628,6 +630,8 @@ const SEED = `s => {
     await pickQ(2); await sleep(300);
     await mock.ev(`location.hash = 'today'`); await sleep(300);
     await openAsk(mock, 'today', 'I want to start an online business');
+    await mock.ev(`document.querySelector('[data-s=ask-sends-all] summary').click()`); await sleep(150);
+    check('the "Sent to the AI" preview, expanded, lists the count of questions so far and your limit', (await mock.text('[data-s=ask-sends-all]')).includes('Questions it has asked so far: 0') && (await mock.text('[data-s=ask-sends-all]')).includes('Your limit before it offers something: 2'), await mock.text('[data-s=ask-sends-all]'));
     await askGo(mock);
     check('an open goal ("I want to start an online business") is answered with a question, "what are you looking for", not ideas', (await mock.text('[data-s=ask-message]')).includes('what are you looking for'), await mock.text('[data-s=ask-message]'));
     check('…with exactly three choice buttons, in order, in a group labelled "Choose an answer, or reply in your own words"', eq(await choicesNow(), ['Extra income', 'Something that grows', 'A full-time business']) && (await mock.ev(`document.querySelector('[data-s=ask-choices]').getAttribute('aria-label')`)) === 'Choose an answer, or reply in your own words' && (await mock.ev(`document.querySelector('[data-s=ask-choices]').getAttribute('role')`)) === 'group', await choicesNow());
@@ -643,7 +647,8 @@ const SEED = `s => {
     await mock.click('[data-action=ask-carry-on]'); await sleep(250);
     await mock.type('[data-s=ask-more]', 'Enjoying it'); await mock.click('[data-action=ask-again]');
     await mock.until(`document.querySelector('[data-s=ask-panel]')?.dataset.phase === 'shown' && !!document.querySelector('[data-s=ask-now]')?.textContent.includes('Enjoying it')`, 10000); await sleep(150);
-    check('after Carry on, the earlier questions still count: at the limit of 2 it sums up "so far you\'ve said: Extra income; Enjoying it", with no choices', (await mock.text('[data-s=ask-message]')).includes("so far you've said: Extra income; Enjoying it") && !(await mock.exists('[data-s=ask-choice]')) && !(await mock.exists('[data-s=ask-choices]')), await mock.text('[data-s=ask-message]'));
+    check('after Carry on, the earlier questions still count: at the limit of 2 it sums up "so far you\'ve said: Extra income; Enjoying it", with no choices, and one step to add or leave', (await mock.text('[data-s=ask-message]')).includes("so far you've said: Extra income; Enjoying it") && !(await mock.exists('[data-s=ask-choice]')) && !(await mock.exists('[data-s=ask-choices]'))
+      && (await mock.ev(`document.querySelectorAll('[data-s=ask-item]').length`)) === 1 && await mock.exists('[data-action=ask-add]'), await mock.text('[data-s=ask-message]'));
     await mock.click('[data-action=ask-dismiss]'); await sleep(150);
     await closeSheet(mock); await sleep(200);
     await openAsk(mock, 'today', 'I want to start an online business');
@@ -731,6 +736,12 @@ const SEED = `s => {
       check('tapping one sends it as the reply with thinking.asked 1, and the conversation so far, the question with the choices it offered', sentC2.text === 'Extra income' && eq(sentC2.thinking, { asked: 1, most: 5 }) && sentC2.conversation?.earlier.length === 1 && sentC2.conversation.earlier[0].asked === 'I want to start an online business'
         && sentC2.conversation.earlier[0].answered.endsWith('\n(choices: Extra income · Something that grows · A full-time business)'), sentC2);
       await D.click('[data-action=ask-dismiss]'); await sleep(150);
+      await closeSheet(D); await sleep(150);
+      // After the day's last request there's no replying, so no choices to tap either.
+      setAi({ AI_DAILY_LIMIT: String(await usedD() + 1) });
+      await openAsk(D, 'today', 'I want to start an online business'); await askGo(D);
+      check('…and after the day\'s last request, a question shows no choices to tap (no replying until tomorrow)', !(await D.exists('[data-s=ask-choice]')) && (await D.text('[data-s=ask-limit]')).includes('back tomorrow'), await D.text('[data-s=ask-panel]'));
+      setAi({ AI_DAILY_LIMIT: '50' });
       await closeSheet(D); await sleep(150);
     }
 

@@ -134,6 +134,7 @@ export function forgetLearned(d: PatternsData): boolean {
 // How many questions Ask MyDay may ask to help you think before it offers something (1–5); null goes back to the usual 5.
 export const ASK_QUESTIONS_MOST = 5;
 export function setAskQuestions(d: PatternsData, n: number | null): boolean {
+  if (n !== null && !Number.isFinite(n)) return false;
   const v = n === null || n === ASK_QUESTIONS_MOST ? undefined : Math.min(ASK_QUESTIONS_MOST, Math.max(1, Math.round(n)));
   if (d.prefs.askQuestions === v) return false;
   if (v === undefined) delete d.prefs.askQuestions; else d.prefs.askQuestions = v;

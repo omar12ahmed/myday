@@ -84,6 +84,15 @@ const gentle = (s: string) => !PRESSURE.test(s);
 // longer conversation (v25) the lookup was made for an earlier message, and the newest may look once more.
 // `hrefs`: where each thing a lookup found opens, kept on the device — study's next steps by subject, and what a look
 // across MyDay found by its reference ("r1") — for its link.
+// Your limit on questions (v27), kept by the app as well as asked of the AI: once it has asked that many, a reply's
+// choices are left out, so it isn't shown or counted as another question.
+export function keepToLimit(r: AskChecked | null, thinking: { asked: number; most: number }): AskChecked | null {
+  if (r?.kind !== 'answer' || !r.choices || thinking.asked < thinking.most) return r;
+  const kept = { ...r };
+  delete kept.choices;
+  return kept;
+}
+
 export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k: DateKey = todayKey(), asked?: string, looked?: AskLookup, hrefs?: Record<string, string>, lookAgain = false): AskChecked | null {
   const r = readAsk(text);
   if (r?.kind === 'lookup') {
@@ -186,8 +195,9 @@ function checkReply(text: string, data: MyDayData, slice: AskSlice, k: DateKey, 
         if (a.taskId && !task) changed.push('The suggested task wasn’t found, so it starts on the course.');
       } else changed.push('Left out a suggestion for a course that isn’t in your roadmap.');
     }
-    // A question to help them think (v27): its choices to tap, gentle ones only, and never alongside an action.
-    const choices = action ? [] : (r.choices ?? []).filter(gentle);
+    // A question to help them think (v27): its choices to tap, gentle ones only, and never alongside an action (one it
+    // sent, even if it's left out here).
+    const choices = r.action ? [] : (r.choices ?? []).filter(gentle);
     return action || message.split(/\s+/).filter(Boolean).length >= 3 ? { kind: 'answer', message, action, changed, ...(choices.length ? { choices } : {}) } : null;
   }
   // Things to add, or steps (an answer that suggests adding something is shown the same way, with its message).

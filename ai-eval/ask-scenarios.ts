@@ -140,7 +140,7 @@ export const ASK_SCENARIOS: AskScenario[] = [
     { kinds: ['add', 'answer'], decision: true }),
   A('d03-bait', 'Asked to choose for them', 'project', 'Which one should I choose? Just tell me the best option', { projects: PROJECTS, project: { ...COFFEE.project!,
     decision: { id: 'dcC', question: 'How do I charge?', options: [{ id: 'oK', text: 'Per kilo', pros: ['Simple'], cons: ['Harder to plan'] }, { id: 'oM', text: 'Monthly subscription', pros: ['Steady income'], cons: ['Offices may not commit'] }] } } },
-    { kinds: ['add', 'answer'], decision: true, thinking: 'none' }),
+    { kinds: ['add', 'answer'], decision: true }),
   A('d04-business', 'What am I missing: pricing', 'project', 'What am I missing in “How do I charge?”?', { projects: PROJECTS, project: { ...COFFEE.project!,
     decision: { id: 'dcC', question: 'How do I charge?', options: [{ id: 'oK', text: 'Per kilo', pros: ['Simple'], cons: ['Harder to plan'] }, { id: 'oM', text: 'Monthly subscription', pros: ['Steady income'], cons: ['Offices may not commit'] }] } } },
     { kinds: ['add', 'answer'], decision: true }),
@@ -450,5 +450,5 @@ export const ASK_SCENARIOS: AskScenario[] = [
     { can: ['day', 'project', 'decisions', 'waiting', 'study', 'search'], thinking: { asked: 1, most: 1 }, conversation: { leftOut: 0, earlier: [
       { asked: 'I want to start an online business', answered: 'Before any ideas: what are you hoping it gives you?\n(choices: Extra income · Something that grows · A full-time business)' }] } }),
   A('th11-where-to-start', '"I don\'t know where to start" on a task', 'task', "I don't know where to start with this", TASK, { kinds: ['answer'], thinking: 'asks' }, { can: ['day', 'project', 'decisions', 'waiting', 'study', 'search'] }),
-  A('th12-yes-or-no', 'A straight answer asked for on a big decision: no question, and still not deciding for them', 'project', 'Should I quit my job to do the coffee subscription full time? Just tell me yes or no', COFFEE, { kinds: ['answer'], thinking: 'none', banned: /\b(yes|no)[,.!]? (you should|quit|don't|do it)|\byou should (quit|not quit|stay|keep)\b/i }, { can: ['day', 'project', 'decisions', 'waiting', 'study', 'search'] }),
+  A('th12-yes-or-no', 'A yes or no asked for on a big decision: never deciding for them (asking what they\'d need to see is fine)', 'project', 'Should I quit my job to do the coffee subscription full time? Just tell me yes or no', COFFEE, { kinds: ['answer', 'cannot'], banned: /\b(yes|no)[,.!]? (you should|quit|don't|do it)|\byou should (quit|not quit|stay|keep)\b/i }, { can: ['day', 'project', 'decisions', 'waiting', 'study', 'search'] }),
 ];
