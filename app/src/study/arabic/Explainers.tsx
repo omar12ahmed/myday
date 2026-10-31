@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { askExplainer, takeExplainer, useExplainers, type Explainer } from './explainerData';
+import { askExplainer, findExplainer, takeExplainer, useExplainers, type Explainer, type Explainers } from './explainerData';
 import { Ar } from './Ar';
 import { MixedVoiceLabel, PlayButton } from './Listen';
 import { WordNote } from './WordNote';
@@ -25,20 +25,23 @@ function openHere(id: string) {
   return true;
 }
 
-// Under a course word: a link to the explainer for it. On its lesson's page it opens there; elsewhere it opens the
-// lesson at its Understand step, with the explainer open.
+// A link to an explainer: on its lesson's page it opens there; elsewhere it opens the lesson at its Understand step,
+// with the explainer open.
+const follow = (lessonId: string, id: string) => (ev: React.MouseEvent) => {
+  if (ev.button !== 0 || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
+  if (openHere(id)) { ev.preventDefault(); return; }
+  askStep(lessonId, 'understand');
+  askExplainer(lessonId, id);
+};
+
+// Under a course word: a link to the explainer for it.
 // Its accessible name adds the word, so a list of these links can be told apart.
 export function ExplainerLink({ found, verb, word }: { found: { lessonId: string; e: Explainer } | null; verb: boolean; word: string }) {
   if (!found) return null;
   const { lessonId, e } = found, label = `${verb ? 'How this verb works' : 'How it works'}, step by step`;
   return <p className="m-0"><InlineLink href={'#study/arabic/' + lessonId} data-ar-explainer-link={e.id} aria-label={`${label}: ${word}`}
     className="inline-flex items-center min-h-11 text-primary font-semibold underline-offset-2 hover:underline"
-    onClick={ev => {
-      if (ev.button !== 0 || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
-      if (openHere(e.id)) { ev.preventDefault(); return; }
-      askStep(lessonId, 'understand');
-      askExplainer(lessonId, e.id);
-    }}>{label}</InlineLink></p>;
+    onClick={follow(lessonId, e.id)}>{label}</InlineLink></p>;
 }
 
 // A lesson's explainers, in its Understand step. An explainer a link asked for is taken as the page opens (like the
@@ -56,8 +59,8 @@ export function LessonExplainers({ lessonId, ready }: { lessonId: string; ready:
   if (!list.length) return null;
   return <section className="mt-5" data-ar-explainers={list.length} aria-labelledby={`ar-explainers-${lessonId}`}>
     <h4 id={`ar-explainers-${lessonId}`} className="mb-1">How it works</h4>
-    <p className="text-sm text-fg-2 mt-0 mb-2">Each one takes a family of forms step by step, with three questions to test yourself at the end. Nothing here is saved.</p>
-    {list.map(e => <ExplainerCard key={e.id} e={e} />)}
+    <p className="text-sm text-fg-2 mt-0 mb-2">Each one takes a family of forms step by step, with three questions to test yourself at the end (a wrong answer gets a second go). Nothing here is saved.</p>
+    {list.map(e => <ExplainerCard key={e.id} e={e} book={b} />)}
   </section>;
 }
 
@@ -65,8 +68,9 @@ const H = ({ children }: { children: string }) => <h6 className="text-[15px] fon
 // The voice, where a clip has been listened to (only then does a play button show), for the forms, the sentences and
 // the Arabic in the steps (the owner's choice, 30 October 2026). The word-by-word pieces, the "why" and the questions
 // stay silent.
-function ExplainerCard({ e }: { e: Explainer }) {
+function ExplainerCard({ e, book }: { e: Explainer; book: Explainers | null }) {
   const voice = e.id;
+  const leads = (e.leads_to ?? []).map(l => ({ ...l, to: findExplainer(book, l.id) })).filter(l => l.to);
   return <details id={anchor(e.id)} data-ar-explainer={e.id} className="mt-3 rounded-tile border border-outline bg-surface px-4 py-2 scroll-mt-20 lg:scroll-mt-[160px]">
     <summary className="cursor-pointer min-h-11 py-2 font-semibold text-primary"><h5 className="inline m-0 text-[length:inherit] font-semibold"><WordNote text={e.title_en} /></h5></summary>
     <p className="text-sm text-fg-2 mt-1 mb-0">{e.family_en}{e.root_ar && <>. Root: <Root f={{ root_ar: e.root_ar, root_reading: e.root_reading ?? '' }} /></>}</p>
@@ -106,33 +110,48 @@ function ExplainerCard({ e }: { e: Explainer }) {
 
     <H>Test yourself</H>
     <ol className="list-none p-0 m-0 grid gap-4">{e.selftest.map((q, i) => <SelfTest key={i} q={q} n={i + 1} />)}</ol>
+
+    {leads.length > 0 && <>
+      <H>Where this leads</H>
+      <ul className="list-none p-0 m-0 grid gap-2" data-ar-explainer-leads="">{leads.map(l => <li key={l.id} className="leading-relaxed" data-ar-explainer-lead={l.id}>
+        <InlineLink href={'#study/arabic/' + l.to!.lessonId} data-ar-explainer-lead-link={l.id} className="text-primary font-semibold underline-offset-2 hover:underline"
+          onClick={follow(l.to!.lessonId, l.id)}><WordNote text={l.to!.e.title_en} /></InlineLink>
+        <span className="block text-[15px] text-fg-2"><WordNote text={l.en} /></span>
+      </li>)}</ul>
+    </>}
     <MixedVoiceLabel texts={[...e.table.map(r => r.ar), ...e.examples.map(x => x.ar), ...e.steps]} />
   </details>;
 }
 
-// One question: tap a choice and its answer shows, with why (focus moves there, as the choices stop being buttons).
-// Kept only while the page is open.
+// One question: tap a choice. A first wrong choice gets a hint and another go (help before the answer, the owner's
+// choice, 31 October 2026); a right choice, or a second wrong one, shows the answer with why. Focus moves to what
+// appears. Kept only while the page is open.
 const onePiece = (s: string) => { const r = arabicRuns(s); return r.length === 1 && s.replace(r[0].text, '').replace(/[.!?]/g, '').trim() === ''; };
 function Choice({ text }: { text: string }) {
   return onePiece(text) ? <Ar className="text-[22px]">{text}</Ar> : <WordNote text={text} />;
 }
 function SelfTest({ q, n }: { q: Explainer['selftest'][number]; n: number }) {
-  const [chosen, setChosen] = useState<string | null>(null);
-  const why = useRef<HTMLParagraphElement>(null);
-  useEffect(() => { if (chosen !== null) why.current?.focus(); }, [chosen]);
-  const right = chosen === q.answer;
-  return <li data-ar-explainer-q={n} data-state={chosen === null ? 'open' : right ? 'right' : 'wrong'}>
+  const [tried, setTried] = useState<string[]>([]);
+  const last = tried.at(-1) ?? null, right = last === q.answer, done = right || tried.length >= 2;
+  const said = useRef<HTMLParagraphElement>(null);
+  useEffect(() => { if (tried.length) said.current?.focus(); }, [tried.length]);
+  const state = !tried.length ? 'open' : right ? 'right' : done ? 'wrong' : 'retry';
+  const note = 'text-[15px] mt-2 mb-0 focus:outline-2 focus:outline-primary focus:outline-offset-4 rounded-sm';
+  return <li data-ar-explainer-q={n} data-state={state}>
     <p className="mt-0 mb-2"><span className="font-semibold">{n}. </span><WordNote text={q.q_en} /></p>
     <div className="grid gap-2">{q.choices.map(c => {
-      if (chosen === null) return <button key={c} type="button" data-action="ar-explainer-choose" onClick={() => setChosen(c)}
+      const isRight = c === q.answer, mine = tried.includes(c);
+      if (!done && !mine) return <button key={c} type="button" data-action="ar-explainer-choose" onClick={() => setTried(t => [...t, c])}
         className="block w-full text-left min-h-11 px-4 py-2 rounded-tile bg-surface-2 text-fg border border-outline-strong font-medium cursor-pointer hover:shadow-raised active:scale-[.99] transition-[box-shadow,transform]"><Choice text={c} /></button>;
-      const isRight = c === q.answer, mine = c === chosen;
-      return <div key={c} data-ar-explainer-choice={isRight ? 'right' : mine ? 'wrong' : 'other'}
-        className={`block w-full min-h-11 px-4 py-2 rounded-tile ${isRight ? 'border-2 border-primary bg-primary-container text-on-primary-container font-[650]' : `bg-surface-2 text-fg border border-outline-strong font-medium${mine ? ' border-dashed' : ''}`}`}>
-        {isRight ? '✓ ' : mine ? '✗ ' : ''}<Choice text={c} />{mine && <span className="text-sm opacity-80 font-normal"> (your choice)</span>}
+      const shownRight = done && isRight;
+      return <div key={c} data-ar-explainer-choice={shownRight ? 'right' : mine ? 'wrong' : 'other'}
+        className={`block w-full min-h-11 px-4 py-2 rounded-tile ${shownRight ? 'border-2 border-primary bg-primary-container text-on-primary-container font-[650]' : `bg-surface-2 text-fg border border-outline-strong font-medium${mine ? ' border-dashed' : ''}`}`}>
+        {shownRight ? '✓ ' : mine ? '✗ ' : ''}<Choice text={c} />{mine && <span className="text-sm opacity-80 font-normal"> (your choice)</span>}
       </div>;
     })}</div>
-    {chosen !== null && <p ref={why} tabIndex={-1} className="text-[15px] mt-2 mb-0 focus:outline-2 focus:outline-primary focus:outline-offset-4 rounded-sm" data-ar-explainer-why="">
+    {state === 'retry' && <p ref={said} tabIndex={-1} className={note} data-ar-explainer-hint="">
+      <span className="font-semibold">Not quite. </span>{q.hint_en ? <><WordNote text={q.hint_en} /> </> : null}Have another go.</p>}
+    {done && <p ref={said} tabIndex={-1} className={note} data-ar-explainer-why="">
       <span className="font-semibold">{right ? 'Right. ' : 'Not quite. '}</span><WordNote text={q.why_en} /></p>}
   </li>;
 }

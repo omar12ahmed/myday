@@ -60,7 +60,7 @@ const WV = 'study/arabic/lesson.arabic-weak-verbs', SAY = 'details[data-ar-expla
   check('the Say card opens with its 10-row table, 3 sentences and 3 questions', await mac.ev(`(() => { const d = document.querySelector('${SAY}'); return d.querySelectorAll('[data-ar-explainer-row]').length === 10 && d.querySelectorAll('[data-ar-explainer-sentence]').length === 3 && d.querySelectorAll('[data-ar-explainer-q]').length === 3; })()`));
   await mac.click(`${SAY} [data-ar-explainer-q="1"] [data-action="ar-explainer-choose"]:nth-of-type(2)`); await D.sleep(200);
   await mac.click(`${SAY} [data-ar-explainer-q="2"] [data-action="ar-explainer-choose"]:nth-of-type(1)`); await D.sleep(300);
-  check('a wrong choice says "Not quite." and a right one "Right."', await mac.ev(`(() => { const q = n => document.querySelector('${SAY} [data-ar-explainer-q="' + n + '"]'); return q(1).dataset.state === 'wrong' && q(1).querySelector('[data-ar-explainer-why]').textContent.startsWith('Not quite.') && q(2).dataset.state === 'right' && q(2).querySelector('[data-ar-explainer-why]').textContent.startsWith('Right.'); })()`));
+  check('a first wrong choice gives another go ("Not quite." hint) and a right choice says "Right."', await mac.ev(`(() => { const q = n => document.querySelector('${SAY} [data-ar-explainer-q="' + n + '"]'); return q(1).dataset.state === 'retry' && q(1).querySelector('[data-ar-explainer-hint]').textContent.startsWith('Not quite.') && q(2).dataset.state === 'right' && q(2).querySelector('[data-ar-explainer-why]').textContent.startsWith('Right.'); })()`));
 
   // Module 15 (1.105.0): the إِنَّ and كَانَ lesson has its two cards, and a table label's Arabic is shown as Arabic.
   await mac.open(BASE + '#study/arabic/lesson.arabic-inna-kana');

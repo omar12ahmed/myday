@@ -579,16 +579,37 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   check('opening the Say explainer shows 10 table rows, 5 steps, 3 sentences and 3 questions', sayCounts.rows === 10 && sayCounts.steps === 5 && sayCounts.sentences === 3 && sayCounts.qs === 3, sayCounts);
   check('…and its table\'s Arabic is marked as Arabic, right to left', sayCounts.arN > 0 && sayCounts.arOk, sayCounts);
   const exQ1 = `${sayEx} [data-ar-explainer-q="1"]`, exQ2 = `${sayEx} [data-ar-explainer-q="2"]`;
+  const exQ3 = `${sayEx} [data-ar-explainer-q="3"]`;
+  const qInfo = sel => ev(`(() => { const q = document.querySelector('${sel}'), w = q.querySelector('[data-ar-explainer-why]'), h = q.querySelector('[data-ar-explainer-hint]'); return { state: q.dataset.state, right: q.querySelector('[data-ar-explainer-choice="right"]')?.textContent, wrong: [...q.querySelectorAll('[data-ar-explainer-choice="wrong"]')].map(e => e.textContent), buttons: q.querySelectorAll('button[data-action="ar-explainer-choose"]').length, hint: h?.textContent, hintFocused: !!h && document.activeElement === h, why: w?.textContent, whyFocused: !!w && document.activeElement === w }; })()`);
   await click(`${exQ1} [data-action="ar-explainer-choose"]:nth-of-type(2)`); await sleep(300);
-  const focusedWhy = await ev(`(() => { const w = document.querySelector('${exQ1} [data-ar-explainer-why]'); return !!w && document.activeElement === w; })()`);
+  const retryInfo = await qInfo(exQ1);
+  check('a first wrong choice on question 1 gives another go: its state is "retry", the choice is marked "(your choice)", and the other two stay buttons', retryInfo.state === 'retry' && retryInfo.wrong.length === 1 && retryInfo.wrong[0].includes('(your choice)') && retryInfo.buttons === 2 && !retryInfo.right, retryInfo);
+  check('…a hint appears and takes focus, reading "Not quite. Have another go." (no question has a hint of its own yet)', retryInfo.hint === 'Not quite. Have another go.' && retryInfo.hintFocused, retryInfo);
+  check('…and the answer isn\'t shown yet: there is no explanation', retryInfo.why === undefined, retryInfo);
+  await click(`${exQ1} [data-action="ar-explainer-choose"]:nth-of-type(1)`); await sleep(300);
+  const focusedWhy = (await qInfo(exQ1)).whyFocused;
   await click(`${exQ2} [data-action="ar-explainer-choose"]:nth-of-type(1)`); await sleep(300);
+  await click(`${exQ3} [data-action="ar-explainer-choose"]:nth-of-type(2)`); await sleep(300);
+  const q3Retry = await qInfo(exQ3);
+  await click(`${exQ3} [data-action="ar-explainer-choose"]:nth-of-type(2)`); await sleep(300);
   const savedAfter = await ev(`JSON.stringify(Object.keys(localStorage).filter(k => k.startsWith('myday.')).sort().map(k => [k, localStorage.getItem(k)]))`);
   check('choosing answers in the questions saves nothing: every myday. key in this browser is identical before and after', savedAfter === savedBefore, [savedBefore && savedBefore.length, savedAfter && savedAfter.length]);
-  const wrongInfo = await ev(`(() => { const q = document.querySelector('${exQ1}'), w = q.querySelector('[data-ar-explainer-why]'); return { state: q.dataset.state, right: q.querySelector('[data-ar-explainer-choice="right"]')?.textContent, wrong: q.querySelector('[data-ar-explainer-choice="wrong"]')?.textContent, why: w?.textContent, focused: !!w && document.activeElement === w }; })()`);
-  check('a wrong choice marks question 1 wrong, shows قُلْ as the right one, labels "(your choice)" and says "Not quite."', wrongInfo.state === 'wrong' && wrongInfo.right.includes('قُلْ') && wrongInfo.wrong.includes('(your choice)') && (wrongInfo.why || '').startsWith('Not quite.'), wrongInfo);
-  check('…and focus moves to its explanation', focusedWhy, wrongInfo);
-  const rightInfo = await ev(`(() => { const q = document.querySelector('${exQ2}'); return { state: q.dataset.state, why: q.querySelector('[data-ar-explainer-why]')?.textContent }; })()`);
-  check('a right choice marks question 2 right and its explanation starts "Right."', rightInfo.state === 'right' && (rightInfo.why || '').startsWith('Right.'), rightInfo);
+  const wrongInfo = await qInfo(exQ1);
+  check('then a right choice on question 1 marks it right, shows قُلْ as the right one, keeps the first wrong choice marked "(your choice)" and says "Right."', wrongInfo.state === 'right' && wrongInfo.right.includes('قُلْ') && wrongInfo.wrong.length === 1 && wrongInfo.wrong[0].includes('(your choice)') && (wrongInfo.why || '').startsWith('Right.'), wrongInfo);
+  check('…the hint is gone, focus moves to the explanation, and no buttons are left', wrongInfo.hint === undefined && focusedWhy && wrongInfo.buttons === 0, wrongInfo);
+  const rightInfo = await qInfo(exQ2);
+  check('a right first choice marks question 2 right and its explanation starts "Right."', rightInfo.state === 'right' && (rightInfo.why || '').startsWith('Right.') && rightInfo.hint === undefined, rightInfo);
+  const twoWrong = await qInfo(exQ3);
+  check('a first wrong choice on question 3 is "retry" with its hint, and no explanation yet', q3Retry.state === 'retry' && q3Retry.hint === 'Not quite. Have another go.' && q3Retry.why === undefined, q3Retry);
+  check('a second wrong choice marks question 3 wrong, shows the right answer, marks both tried choices "(your choice)", leaves no buttons and says "Not quite."', twoWrong.state === 'wrong' && !!twoWrong.right && twoWrong.right.includes('After') && twoWrong.wrong.length === 2 && twoWrong.wrong.every(t => t.includes('(your choice)')) && twoWrong.buttons === 0 && (twoWrong.why || '').startsWith('Not quite.'), twoWrong);
+  check('…the hint is gone and focus moves to the explanation', twoWrong.hint === undefined && twoWrong.whyFocused, twoWrong);
+  check('the explainers\' intro says "(a wrong answer gets a second go)"', (await ev(`document.querySelector('#ar-step-understand [data-ar-explainers="5"]')?.textContent`) || '').includes('(a wrong answer gets a second go)'), await ev(`document.querySelector('#ar-step-understand [data-ar-explainers="5"]')?.textContent.slice(0, 300)`));
+  // Where this leads: the Say card has one, the Walk card none.
+  const leadInfo = await ev(`(() => { const d = document.querySelector('${sayEx}'), ul = d.querySelector('ul[data-ar-explainer-leads]'), li = [...(ul?.querySelectorAll('li[data-ar-explainer-lead]') || [])], a = d.querySelector('[data-ar-explainer-lead-link="explainer.arabic-reporting"]'); return { h6: [...d.querySelectorAll('h6')].map(h => h.textContent), n: li.length, id: li[0]?.dataset.arExplainerLead, link: a?.textContent, href: a?.getAttribute('href'), inItem: !!a && li[0]?.contains(a), line: li[0]?.textContent }; })()`);
+  check('the Say card has "Where this leads" with one entry, explainer.arabic-reporting, whose link reads the title of the target card (with its readings) and goes to #study/arabic/lesson.arabic-reported-information', leadInfo.h6.includes('Where this leads') && leadInfo.n === 1 && leadInfo.id === 'explainer.arabic-reporting' && leadInfo.link === 'Saying who said it: قَالَ إِنَّ (qāla inna) and ذَكَرَ أَنَّ (dhakara anna)' && leadInfo.href === '#study/arabic/lesson.arabic-reported-information' && leadInfo.inItem, leadInfo);
+  check('…and its entry has the line saying how it builds on Say under the link', (leadInfo.line || '').length > (leadInfo.link || '').length, leadInfo);
+  const walkLeads = await ev(`(() => { const d = document.querySelector('details[data-ar-explainer="explainer.arabic-walk"]'); return { card: !!d, leads: !!d?.querySelector('[data-ar-explainer-leads]') }; })()`);
+  check('the Walk card has no "Where this leads" list', walkLeads.card && !walkLeads.leads, walkLeads);
   // The explainers' voice, from the clips listened to: forms, sentences and the Arabic in the steps (not the pieces, questions or why).
   const sayVoice = await ev(`(() => { const d = document.querySelector('${sayEx}'), btns = e => [...e.querySelectorAll('[data-action="ar-play"]')].map(b => b.getAttribute('data-ar-clip'));
     return { rows: [...d.querySelectorAll('[data-ar-explainer-row]')].map(r => btns(r)), sentences: [...d.querySelectorAll('[data-ar-explainer-sentence]')].map(r => btns(r.firstElementChild)), words: [...d.querySelectorAll('[data-ar-explainer-sentence] ul')].map(u => btns(u).length),
@@ -602,6 +623,17 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   check('…and one voice label shows for the explainer', sayVoice.labels === 1 && sayVoice.all === 10 + 3 + 14, sayVoice);
   await click('[data-action="ar-step"][data-v="check"]'); await sleep(400);
   check('while you check yourself, the explainers fold away with the explanation', await exists('[data-ar-folded]') && !(await exists('[data-ar-explainers]')));
+
+  await fresh(wvHash); await wait(exSel, 5000);
+  await ev(`document.querySelector('${sayEx}').open = true`); await sleep(300);
+  await click('[data-ar-explainer-lead-link="explainer.arabic-reporting"]');
+  let lead = null;
+  for (let t = 0; t < 3000; t += 100) {
+    lead = await ev(`({ hash: location.hash, open: !!document.querySelector('details[data-ar-explainer="explainer.arabic-reporting"]')?.open })`);
+    if (lead.hash === '#study/arabic/lesson.arabic-reported-information' && lead.open) break;
+    await sleep(100);
+  }
+  check('clicking the Say card\'s link opens the reported information lesson with the Saying who said it card open', lead.hash === '#study/arabic/lesson.arabic-reported-information' && lead.open, lead);
 
   await fresh('study/arabic/vocabulary'); await wait('[data-ar-course-words]', 5000);
   const linkText = id => ev(`document.querySelector('[data-ar-word="${id}"] [data-ar-explainer-link]')?.textContent`);

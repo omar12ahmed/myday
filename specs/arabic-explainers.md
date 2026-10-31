@@ -110,8 +110,9 @@ Explainers are kept by lesson id, and each has:
 - `steps`: English text with Arabic pieces in it;
 - `examples`: `{ar, en, words: [{ar, en}]}`;
 - `why`: `{q_en, a_en}`;
-- `selftest`: three questions, each `{q_en, choices, answer, why_en}`;
-- `phrases_ar`: any phrase of two or more words that the English uses outside the table and the sentences.
+- `selftest`: three questions, each `{q_en, choices, answer, why_en}`, with an optional `hint_en` (§7);
+- `phrases_ar`: any phrase of two or more words that the English uses outside the table and the sentences;
+- `leads_to`: optional, one or two `{id, en}`: a card in a later lesson that builds on this one, and how (§7).
 
 Only Arabic is stored, never a transliteration. The file is MyDay's own; the curriculum package is untouched.
 
@@ -137,3 +138,23 @@ loads only its module's explainers.
    work and planned with myday-5a, because it changes readings across the whole course.
 5. **The self-test:** nothing is saved and there are no scores; the answers show on request. This is the default,
    because it needs no saved-data change.
+
+**Skills lessons (modules 8 and 13):** each gets a card on the language its task uses (signs, conversation words, a
+short profile, a notice, sorting something out), in the same shape, rather than a card on technique. The portfolio
+lessons get one too, at the owner's request (31 October 2026): the words for talking about your learning and level.
+
+## 7. Where this leads, and a second go (owner, 31 October 2026)
+
+From the owner's direction for how MyDay should think (`myday-vision.md` §1): level 5, showing how a lesson fits the
+larger path, and level 6, building the learner's own ability (a hint before an answer). The owner chose these two of
+four proposed increments; "help that fades" (which would save state) and "explain it back" were not chosen.
+
+1. **Where this leads.** A card can end with one or two links to a card in a later lesson that builds on it, each with
+   a line saying how ("How a number changes the noun after it."). The link opens that lesson at Understand with the
+   card open, as a course word's link does. The validator checks that the target exists and is in a later lesson of
+   the course; the lines are checked like other English with Arabic in it, and never voiced. Nothing is saved.
+2. **A second go.** A first wrong choice in the self-test no longer shows the answer: it says "Not quite.", gives the
+   question's hint if it has one, and asks for another go, with the wrong choice marked and focus on the hint. A right
+   choice, or a second wrong one, shows the answer with its explanation as before. Hints are optional and can be
+   added question by question; until then the card simply asks for another go. Still nothing saved, no score.
+

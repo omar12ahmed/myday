@@ -447,6 +447,17 @@ check('vowelled and unvowelled versions are both kept where the package has them
   badExp('jussive-alone', f => { f.lessons['lesson.arabic-weak-verbs'][3].table.push({ form_en: 'after lam: he', ar: 'يَدْعُ', en: 'he didn\'t invite' }); }, 'gives away the lesson check', 'the check\'s answer form on its own, without لَمْ, as a table row');
   badExp('linked-check', f => { const be = f.lessons['lesson.arabic-weak-verbs'][1]; be.steps[0] += ' Compare هُمْ لَنْ يَدْرُسُوا here.'; be.phrases_ar.push('هُمْ لَنْ يَدْرُسُوا'); }, 'gives away the lesson check', 'the answer to the check of a lesson whose word links here (verb moods, through لَمْ يَكُنْ)');
   badExp('linked-twice', f => { f.lessons['lesson.arabic-weak-verbs'][1].course_words.push('lexeme.arabic-weak-verbs-1'); }, 'already links to', 'a course word linked to two explainers');
+  const leadOf = (f, lesson, id) => f.lessons[lesson].find(e => e.id === id);
+  badExp('lead-unknown', f => { sayOf(f).leads_to = [{ id: 'explainer.arabic-nope', en: 'It builds on this.' }]; }, "isn't an explainer", 'a "Where this leads" entry pointing at an explainer that doesn\'t exist');
+  badExp('lead-earlier', f => { leadOf(f, 'lesson.arabic-past-suffixes', 'explainer.arabic-past-endings').leads_to = [{ id: 'explainer.arabic-you-man-woman', en: 'It builds on this.' }]; }, 'must be in a later lesson', 'a "Where this leads" entry pointing at an explainer in an earlier lesson (past endings to you, man and woman)');
+  badExp('lead-same-lesson', f => { sayOf(f).leads_to = [{ id: 'explainer.arabic-be', en: 'It builds on this.' }]; }, 'must be in a later lesson', 'a "Where this leads" entry pointing at an explainer in the same lesson');
+  badExp('lead-self', f => { sayOf(f).leads_to = [{ id: 'explainer.arabic-say', en: 'It builds on this.' }]; }, 'not itself', 'a "Where this leads" entry pointing at the card itself');
+  badExp('lead-three', f => { sayOf(f).leads_to = ['explainer.arabic-reporting', 'explainer.arabic-take', 'explainer.arabic-inna-sisters'].map(id => ({ id, en: 'It builds on this.' })); }, 'leads_to lists one or two later explainers', 'three "Where this leads" entries');
+  badExp('lead-empty', f => { sayOf(f).leads_to = []; }, 'leads_to lists one or two later explainers', 'an empty "Where this leads" list');
+  badExp('lead-field', f => { sayOf(f).leads_to[0].why = 'Extra.'; }, 'unknown field', 'an unknown field in a "Where this leads" entry');
+  badExp('lead-no-en', f => { delete sayOf(f).leads_to[0].en; }, 'say how it builds on this one', 'a "Where this leads" entry without its English line');
+  badExp('hint-vowel', f => { sayOf(f).selftest[0].hint_en = 'Think of قل here.'; }, 'is not fully vowelled', 'a self-test hint holding unvowelled Arabic');
+  check('the real explainers file reports how many cards lead on to a later explainer: 50', realExp.out.includes('; 50 lead on to a later explainer.'), realExp.out);
   fs.rmSync(expTemp, { recursive: true, force: true });
   fs.rmSync(tmp, { recursive: true, force: true });
   console.log(`\n${pass} passed, ${fail} failed`);

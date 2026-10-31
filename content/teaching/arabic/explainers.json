@@ -158,7 +158,14 @@
     ],
     "phrases_ar": [
      "يَقُولُ الْحَقَّ",
-     "لَمْ يَكْتُبْ"
+     "لَمْ يَكْتُبْ",
+     "قَالَ إِنَّ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-reporting",
+      "en": "قَالَ in reporting: قَالَ إِنَّ."
+     }
     ]
    },
    {
@@ -331,7 +338,14 @@
     "phrases_ar": [
      "يُوسُفُ مُعَلِّمٌ",
      "كَانَ يُوسُفُ مُعَلِّمًا",
-     "أُرِيدُ أَنْ أَكُونَ طَبِيبًا"
+     "أُرِيدُ أَنْ أَكُونَ طَبِيبًا",
+     "مَا زَالَ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-kana-sisters",
+      "en": "كَانَ's sisters: أَصْبَحَ, لَيْسَ, مَا زَالَ."
+     }
     ]
    },
    {
@@ -1991,6 +2005,12 @@
      "أُرِيدُ أَنْ أَنَامَ",
      "إِنَّ الْعِلْمَ نُورٌ",
      "قَالَتْ إِنَّهَا مَشْغُولَةٌ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-reporting",
+      "en": "إِنَّ after قَالَ, and أَنَّ after other reporting verbs."
+     }
     ]
    },
    {
@@ -3196,6 +3216,12 @@
     ],
     "phrases_ar": [
      "أَنَا بِخَيْرٍ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-present-i-you-he-she",
+      "en": "Verbs split for a man or a woman too: تَكْتُبُ, تَكْتُبِينَ."
+     }
     ]
    },
    {
@@ -3373,6 +3399,12 @@
       "answer": "عَفْوًا",
       "why_en": "عَفْوًا is \"you're welcome\". It's also \"excuse me\" or \"sorry\"."
      }
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-conversation-words",
+      "en": "After hello: short words that keep a conversation going."
+     }
     ]
    }
   ],
@@ -3530,6 +3562,12 @@
      "الْكِتَابُ جَدِيدٌ",
      "الْقَلَمُ صَغِيرٌ",
      "أَنْتَ مَشْغُولٌ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-kana-past",
+      "en": "كَانَ puts these sentences into the past."
+     }
     ]
    }
   ],
@@ -3689,6 +3727,12 @@
      "أَيْنَ الْبَيْتُ؟",
      "هَلْ تَدْرُسُ؟",
      "هَلْ أَنْتِ مَشْغُولَةٌ؟"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-past-questions",
+      "en": "The same question words with past verbs."
+     }
     ]
    }
   ],
@@ -3857,6 +3901,12 @@
      "مِنْ أَيْنَ أَنْتِ؟",
      "مِنْ أَيْنَ",
      "أَيْنَ أَنْتِ؟"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-objects-prepositions",
+      "en": "Which small word a verb takes after it."
+     }
     ]
    },
    {
@@ -4030,6 +4080,12 @@
     "phrases_ar": [
      "هُوَ مِصْرِيٌّ وَهِيَ لُبْنَانِيَّةٌ",
      "الطَّالِبُ الْعِرَاقِيُّ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-describing-words",
+      "en": "Describing words come after their noun and match it."
+     }
     ]
    }
   ],
@@ -4205,6 +4261,12 @@
     "phrases_ar": [
      "مِنْ فَضْلِكَ",
      "مِنْ فَضْلِكِ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-negation",
+      "en": "Why it's لَمْ أَفْهَمْ, with a present verb, for \"I didn't understand\"."
+     }
     ]
    }
   ],
@@ -4371,6 +4433,12 @@
     ],
     "phrases_ar": [
      "الشَّمْسُ كَبِيرَةٌ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-describing-words",
+      "en": "Describing words take ـَة to match a feminine noun."
+     }
     ]
    },
    {
@@ -4513,6 +4581,12 @@
       ],
       "answer": "a shadda on the next letter",
       "why_en": "The shadda doubles the sun letter in place of the ل. A sukūn on the ل means it is said."
+     }
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-taking-words-apart",
+      "en": "الْـ is one of several pieces written joined to a word."
      }
     ]
    }
@@ -4668,6 +4742,12 @@
      "الْغُرْفَةُ كَبِيرَةٌ",
      "الْغُرْفَةُ الْكَبِيرَةُ",
      "الْوَلَدُ سَعِيدٌ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-noun-chains",
+      "en": "Where a describing word goes after a chain of nouns."
+     }
     ]
    }
   ],
@@ -4830,6 +4910,12 @@
      "هَذِهِ كُتُبٌ",
      "الْبُيُوتُ قَدِيمَةٌ",
      "هُمْ طُلَّابٌ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-two-and-plurals",
+      "en": "The form for exactly two, and the plurals made with an ending."
+     }
     ]
    }
   ],
@@ -5140,6 +5226,12 @@
     ],
     "phrases_ar": [
      "بَيْتُ الْمُعَلِّمِ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-noun-chains",
+      "en": "Chains of more than two nouns."
+     }
     ]
    }
   ],
@@ -5291,6 +5383,12 @@
     "phrases_ar": [
      "أَنْتِ تَكْتُبِينَ",
      "أَكْتُبُ رِسَالَةً الْآنَ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-present-we-you-they",
+      "en": "The same verbs for groups: نَكْتُبُ, يَكْتُبُونَ."
+     }
     ]
    }
   ],
@@ -5442,6 +5540,12 @@
     ],
     "phrases_ar": [
      "هُنَّ يَكْتُبْنَ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-future",
+      "en": "Put سَـ in front of these same forms for the future."
+     }
     ]
    }
   ],
@@ -5597,6 +5701,12 @@
     "phrases_ar": [
      "أَقْرَأُ كِتَابًا فِي الْمَكْتَبَةِ",
      "هَذَا كِتَابٌ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-case-endings",
+      "en": "The -u, -a and -i endings, and what each is called."
+     }
     ]
    },
    {
@@ -5750,6 +5860,12 @@
     ],
     "phrases_ar": [
      "هَذَا قَلَمٌ جَدِيدٌ، أُحِبُّهُ كَثِيرًا"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-one-ending-three-jobs",
+      "en": "The same endings on nouns and after small words."
+     }
     ]
    }
   ],
@@ -5919,7 +6035,14 @@
      "عِنْدِي سُؤَالٌ",
      "أُحِبُّ الْقَهْوَةَ",
      "أَحْتَاجُ إِلَى مُسَاعَدَةٍ",
-     "أُرِيدُ قَهْوَةً"
+     "أُرِيدُ قَهْوَةً",
+     "أُرِيدُ أَنْ أَنَامَ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-want-can-must",
+      "en": "أُرِيدُ with a verb: أُرِيدُ أَنْ أَنَامَ."
+     }
     ]
    }
   ],
@@ -6085,6 +6208,12 @@
      "أَدْرُسُ ثُمَّ أَنَامُ",
      "أَسْتَيْقِظُ، ثُمَّ أَشْرَبُ الْقَهْوَةَ، وَأَذْهَبُ إِلَى الْعَمَلِ",
      "كُلَّ مَسَاءٍ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-story-order",
+      "en": "Ordering events in the past."
+     }
     ]
    }
   ],
@@ -6274,6 +6403,12 @@
      "أَيْنَ هَذَا؟",
      "مَا هَذَا؟",
      "بِخَمْسَةِ جُنَيْهَاتٍ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-three-to-ten",
+      "en": "How a number changes the noun after it."
+     }
     ]
    }
   ],
@@ -6450,6 +6585,12 @@
      "فِي السَّاعَةِ الثَّانِيَةَ عَشْرَةَ",
      "بَعْدَ الظُّهْرِ",
      "خَمْسُ سَاعَاتٍ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-making-plans",
+      "en": "Suggesting a day to meet, and confirming it."
+     }
     ]
    },
    {
@@ -6610,6 +6751,12 @@
      "يَوْمَ السَّبْتِ",
      "يَوْمَ الِاثْنَيْنِ",
      "كُلَّ يَوْمِ خَمِيسٍ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-making-plans",
+      "en": "Suggesting a day to meet, and confirming it."
+     }
     ]
    }
   ],
@@ -6775,6 +6922,12 @@
     ],
     "phrases_ar": [
      "الْبَيْتُ خَلْفَ الْحَدِيقَةِ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-commands",
+      "en": "How commands like اِذْهَبْ are made, and \"don't\"."
+     }
     ]
    }
   ],
@@ -6951,7 +7104,14 @@
      "مِنْ فَضْلِكَ",
      "لَيْسَ عِنْدَنَا",
      "الْخُبْزُ رَخِيصٌ",
-     "الْقَهْوَةُ رَخِيصَةٌ"
+     "الْقَهْوَةُ رَخِيصَةٌ",
+     "أَكْبَرُ مِنْ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-comparing",
+      "en": "Comparing two things: أَكْبَرُ مِنْ, bigger than."
+     }
     ]
    }
   ],
@@ -7107,6 +7267,12 @@
     "phrases_ar": [
      "لَا أَسْتَطِيعُ",
      "أَنْتِ مُتَأَخِّرَةٌ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-negation",
+      "en": "لَا, and the other words for \"not\"."
+     }
     ]
    }
   ],
@@ -7280,7 +7446,13 @@
       "why_en": "Mark what you're not sure of. A guess from what seems likely isn't what you heard."
      }
     ],
-    "phrases_ar": []
+    "phrases_ar": [],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-following-an-account",
+      "en": "Following a longer account you hear."
+     }
+    ]
    }
   ],
   "lesson.arabic-a1-reading": [
@@ -7441,6 +7613,12 @@
     ],
     "phrases_ar": [
      "الْمَكْتَبُ مُغْلَقٌ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-roots-patterns",
+      "en": "Why مَدْخَل and دَخَلَ look alike: roots and patterns."
+     }
     ]
    }
   ],
@@ -7619,6 +7797,12 @@
     "phrases_ar": [
      "أَنَا مِنْ تُونِسَ، وَأَنْتَ؟",
      "وَأَنْتَ أَيْضًا"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-sorting-it-out",
+      "en": "A conversation with a goal: sorting something out."
+     }
     ]
    }
   ],
@@ -7781,6 +7965,12 @@
     "phrases_ar": [
      "عِشْرُونَ سَنَةً",
      "أَنْتِ مُتَزَوِّجَةٌ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-short-paragraph",
+      "en": "Linking sentences with a reason and a result."
+     }
     ]
    }
   ],
@@ -7948,7 +8138,17 @@
       "why_en": "To a woman, \"you\" ends in ـْتِ. شَرِبْتَ is to a man, and شَرِبْتُ \"I drank\"."
      }
     ],
-    "phrases_ar": []
+    "phrases_ar": [],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-past-questions",
+      "en": "Asking about the past."
+     },
+     {
+      "id": "explainer.arabic-say",
+      "en": "Past verbs with a long ā in the middle, and where it goes: قَالَ, قُلْتُ."
+     }
+    ]
    }
   ],
   "lesson.arabic-past-questions": [
@@ -8114,6 +8314,12 @@
      "ذَهَبْتُ أَمْسِ",
      "مَتَى حَدَثَ؟",
      "أَيْنَ حَدَثَ؟"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-negation",
+      "en": "Saying what didn't happen, with لَمْ."
+     }
     ]
    }
   ],
@@ -8291,7 +8497,14 @@
      "كَانَ الشَّارِعُ هَادِئًا",
      "كُنْتُ أَعْمَلُ فِي مَطْعَمٍ",
      "كَانَ مُتْعَبًا",
-     "كُنْتُ أَعْمَلُ"
+     "كُنْتُ أَعْمَلُ",
+     "مَا زَالَ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-kana-sisters",
+      "en": "كَانَ's sisters: أَصْبَحَ, لَيْسَ, مَا زَالَ."
+     }
     ]
    }
   ],
@@ -8463,6 +8676,12 @@
     "phrases_ar": [
      "عِنْدَمَا وَصَلْتُ، كَانَ الْبَابُ مُغْلَقًا",
      "بَقِيتُ فِي الْبَيْتِ لِأَنَّ الْجَوَّ كَانَ بَارِدًا"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-why-what-for",
+      "en": "More words for reasons and purposes."
+     }
     ]
    }
   ],
@@ -8663,6 +8882,12 @@
      "ذَهَبَ سَامِي",
      "سَامِي ذَهَبَ",
      "ذَهَبَتْ لَيْلَى إِلَى السُّوقِ وَاشْتَرَتْ خُبْزًا"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-reporting",
+      "en": "Reporting what someone said."
+     }
     ]
    }
   ],
@@ -8831,6 +9056,12 @@
     ],
     "phrases_ar": [
      "اِسْتِمَاعِي ضَعِيفٌ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-level-and-next-step",
+      "en": "Describing your level, and your next step."
+     }
     ]
    }
   ],
@@ -9012,6 +9243,12 @@
      "سَأُسَافِرُ الْأُسْبُوعَ الْقَادِمَ",
      "أُرِيدُ أَنْ أُسَافِرَ",
      "كُلَّ أُسْبُوعٍ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-if-when",
+      "en": "Plans that depend on something: إِذَا and إِنْ."
+     }
     ]
    }
   ],
@@ -9185,7 +9422,14 @@
      "لَنْ تُسَافِرُوا",
      "الْمَطْعَمُ مَفْتُوحٌ",
      "الْبَيْتُ كَبِيرٌ",
-     "لَيْسَ مُتْعَبًا"
+     "لَيْسَ مُتْعَبًا",
+     "لَمْ يَكُنْ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-be",
+      "en": "لَمْ with كَانَ: لَمْ يَكُنْ."
+     }
     ]
    }
   ],
@@ -9355,7 +9599,14 @@
     "phrases_ar": [
      "مِنْ فَضْلِكَ",
      "هَلْ يُمْكِنُ أَنْ تَفْتَحَ الْبَابَ؟",
-     "لَا تَنْتَظِرُ"
+     "لَا تَنْتَظِرُ",
+     "هَلْ يُمْكِنُ أَنْ تَفْتَحَ؟"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-want-can-must",
+      "en": "Asking instead of telling: هَلْ يُمْكِنُ أَنْ تَفْتَحَ؟"
+     }
     ]
    }
   ],
@@ -9534,6 +9785,12 @@
      "يَجِبُ أَنْ تَنَامِي",
      "أَنْ تَنَامُوا",
      "هَلْ يُمْكِنُ أَنْ أَجْلِسَ هُنَا؟"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-why-what-for",
+      "en": "The -a ending after لِكَيْ, \"so that\", too."
+     }
     ]
    }
   ],
@@ -9724,6 +9981,12 @@
      "هَلْ نَلْتَقِي غَدًا؟",
      "بَدَلًا مِنْ",
      "إِذَنْ نَلْتَقِي يَوْمَ السَّبْتِ فِي الْمَقْهَى"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-sorting-it-out",
+      "en": "Sorting something out, and checking what was meant."
+     }
     ]
    }
   ],
@@ -9893,6 +10156,12 @@
     ],
     "phrases_ar": [
      "هُوَ مَعِي"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-taking-words-apart",
+      "en": "Taking the endings off to look a word up."
+     }
     ]
    }
   ],
@@ -10060,6 +10329,12 @@
      "شَرِبَ وَلَدٌ حَلِيبًا",
      "مَفْعُولٌ بِهِ",
      "حَرْفُ جَرٍّ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-inna-sisters",
+      "en": "إِنَّ, which turns the -u of a subject into -a."
+     }
     ]
    }
   ],
@@ -10397,6 +10672,12 @@
      "اِشْتَرَيْتُ قَلَمَيْنِ",
      "رَأَيْتُ الطَّالِبَاتِ",
      "بَيْتَانِ قَدِيمَانِ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-three-to-ten",
+      "en": "Three to ten with a noun."
+     }
     ]
    }
   ],
@@ -10882,7 +11163,17 @@
       "why_en": "عِلْم is knowledge, and عَالَم the world. A root is a family, not a meaning."
      }
     ],
-    "phrases_ar": []
+    "phrases_ar": [],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-doer-done-action",
+      "en": "The doer, the done-to and the action, from one root."
+     },
+     {
+      "id": "explainer.arabic-know-teach-learn",
+      "en": "One root, three verbs: عَلِمَ, عَلَّمَ, تَعَلَّمَ."
+     }
+    ]
    }
   ],
   "lesson.arabic-clitic-segmentation": [
@@ -11043,7 +11334,13 @@
       "why_en": "لِـ before الْـ drops the alif, and the noun ends in -i."
      }
     ],
-    "phrases_ar": []
+    "phrases_ar": [],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-using-a-dictionary",
+      "en": "Finding the word once it's taken apart."
+     }
+    ]
    }
   ],
   "lesson.arabic-dictionary-method": [
@@ -11206,7 +11503,13 @@
       "why_en": "Try each sense in the sentence, and keep the one whose meaning and grammar fit."
      }
     ],
-    "phrases_ar": []
+    "phrases_ar": [],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-word-records",
+      "en": "Recording a word you looked up so you can use it."
+     }
+    ]
    }
   ],
   "lesson.arabic-participles-masdar": [
@@ -11383,6 +11686,12 @@
     ],
     "phrases_ar": [
      "هُوَ سَاكِنٌ فِي الْقَاهِرَةِ"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-know-teach-learn",
+      "en": "The doer and the action for longer verbs: مُعَلِّم, تَعْلِيم."
+     }
     ]
    }
   ],
@@ -12299,6 +12608,12 @@
      "كُنْتُ مُتْعَبًا، لِذَلِكَ نِمْتُ مُبَكِّرًا",
      "لِأَنَّ الطَّقْسَ",
      "لِذَلِكَ كُنْتُ مُتْعَبًا"
+    ],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-but-although",
+      "en": "More ways to link ideas: but, although, whereas."
+     }
     ]
    }
   ],

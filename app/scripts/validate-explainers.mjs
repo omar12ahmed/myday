@@ -112,9 +112,11 @@ const contains = (run, secret) => {
 
 const lessonIds = new Set(course.lessons.map(l => l.id));
 const allWords = new Set(Object.values(courseWords).flatMap(l => l.words.map(w => w.id)));
-const ENTRY = ['id', 'title_en', 'family_en', 'root_ar', 'root_reading', 'course_words', 'table', 'steps', 'examples', 'why', 'selftest', 'phrases_ar'];
+const ENTRY = ['id', 'title_en', 'family_en', 'root_ar', 'root_reading', 'course_words', 'table', 'steps', 'examples', 'why', 'selftest', 'phrases_ar', 'leads_to'];
+// The course's own order, for "where this leads": a later lesson.
+const lessonAt = new Map(course.lessons.map((l, i) => [l.id, i]));
 const only = (where, o, allowed) => { if (o && typeof o === 'object') for (const k of Object.keys(o)) if (!allowed.includes(k)) fail(where, `unknown field ${k}`); };
-const ids = new Set(), voiced = new Set(), shown = new Set(), linked = new Map();
+const ids = new Set(), voiced = new Set(), shown = new Set(), linked = new Map(), home = new Map(), leads = [];
 let count = 0;
 if (!file || typeof file.lessons !== 'object') fail('the file', 'no lessons');
 for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
@@ -126,7 +128,7 @@ for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
     for (const k of Object.keys(e)) if (!ENTRY.includes(k)) fail(at, `unknown field ${k}`);
     if (!/^explainer\.arabic-[a-z0-9-]{1,40}$/.test(e.id ?? '')) fail(at, 'an id is explainer.arabic- and a short name');
     if (ids.has(e.id)) fail(at, 'id used twice');
-    ids.add(e.id);
+    ids.add(e.id); home.set(e.id, lessonId);
     // A root is optional (a topic such as case endings has none), but comes with its reading.
     if (e.root_ar !== undefined || e.root_reading !== undefined) {
       if (!ROOT_FORM.test(e.root_ar ?? '')) fail(at, 'the root is written like ك-ت-ب');
@@ -143,10 +145,22 @@ for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
     const mixed = [['title', e.title_en], ['family', e.family_en], ...(e.steps ?? []).map((s, i) => [`step ${i + 1}`, s]),
       ['why question', e.why?.q_en], ['why answer', e.why?.a_en],
       ...(e.selftest ?? []).flatMap((q, i) => [[`self-test ${i + 1} question`, q.q_en], [`self-test ${i + 1} explanation`, q.why_en],
+        ...(q.hint_en === undefined ? [] : [[`self-test ${i + 1} hint`, q.hint_en]]),
         ...(q.choices ?? []).filter(c => typeof c === 'string' && !onePiece(c)).map(c => [`self-test ${i + 1} choice`, c])])];
     for (const [where, s] of mixed) if (!text(s)) fail(`${at}, ${where}`, 'missing');
     // A table row's form and a word's gloss may name Arabic too ("-a after أَنَّ"): checked like the rest, never voiced.
     const labels = [];
+    // Where this leads: one or two later explainers, each with a line saying how it builds on this one (checked after
+    // every explainer is read, since it may be further on).
+    if (e.leads_to !== undefined) {
+      if (!Array.isArray(e.leads_to) || e.leads_to.length < 1 || e.leads_to.length > 2) fail(at, 'leads_to lists one or two later explainers');
+      else e.leads_to.forEach((l, i) => {
+        only(`${at}, leads to ${i + 1}`, l, ['id', 'en']);
+        if (!text(l?.en)) fail(`${at}, leads to ${i + 1}`, 'say how it builds on this one'); else labels.push([`leads to ${i + 1}`, l.en]);
+        if (e.leads_to.findIndex(m => m?.id === l?.id) !== i) fail(`${at}, leads to ${i + 1}`, `${l?.id} is listed twice`);
+        leads.push({ at, from: lessonId, self: e.id, to: l?.id, i });
+      });
+    }
     // Table: one Arabic piece per row, English around it.
     if (!Array.isArray(e.table) || e.table.length < 4 || e.table.length > 12) fail(at, 'the table has 4 to 12 rows');
     const forms = new Set();
@@ -186,7 +200,7 @@ for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
     if (!Array.isArray(e.selftest) || e.selftest.length !== 3) fail(at, 'three self-test questions');
     (e.selftest ?? []).forEach((q, i) => {
       const where = `${at}, self-test ${i + 1}`;
-      only(where, q, ['q_en', 'choices', 'answer', 'why_en']);
+      only(where, q, ['q_en', 'choices', 'answer', 'why_en', 'hint_en']);
       if (!Array.isArray(q.choices) || q.choices.length < 2 || q.choices.length > 4 || new Set(q.choices).size !== q.choices.length) fail(where, 'two to four different choices');
       else if (!q.choices.includes(q.answer)) fail(where, 'the answer must be one of the choices');
       for (const c of q.choices ?? []) if (text(c) && onePiece(c)) {
@@ -217,6 +231,13 @@ for (const [lessonId, list] of Object.entries(file.lessons ?? {})) {
   }
 }
 
+// Each "where this leads" names an explainer in a later lesson of the course.
+for (const { at, from, self, to, i } of leads) {
+  if (to === self) fail(`${at}, leads to ${i + 1}`, 'not itself');
+  else if (!home.has(to)) fail(`${at}, leads to ${i + 1}`, `${to} isn't an explainer`);
+  else if (!(lessonAt.get(home.get(to)) > lessonAt.get(from))) fail(`${at}, leads to ${i + 1}`, `${to} must be in a later lesson`);
+}
+
 if (withReadings && !problems.length) {
   const { bundle } = await import(new URL('../../ai-eval/build.mjs', import.meta.url).href);
   const dir = mkdtempSync(path.join(tmpdir(), 'myday-explainers-'));
@@ -234,4 +255,4 @@ if (problems.length) {
   console.error(`Arabic explainers: ${problems.length} problem${problems.length === 1 ? '' : 's'}\n- ${problems.join('\n- ')}`);
   process.exit(1);
 }
-console.log(`Arabic explainers: ${count} explainers in ${Object.keys(file.lessons).length} lessons, ${voiced.size} Arabic pieces, all fully vowelled and apart; no lesson check's answer given away.`);
+console.log(`Arabic explainers: ${count} explainers in ${Object.keys(file.lessons).length} lessons, ${voiced.size} Arabic pieces, all fully vowelled and apart; no lesson check's answer given away${leads.length ? `; ${new Set(leads.map(l => l.self)).size} lead on to a later explainer` : ''}.`);

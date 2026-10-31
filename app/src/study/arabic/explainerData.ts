@@ -8,7 +8,10 @@ export interface Explainer {
   steps: string[];
   examples: { ar: string; en: string; words: { ar: string; en: string }[] }[];
   why: { q_en: string; a_en: string };
-  selftest: { q_en: string; choices: string[]; answer: string; why_en: string }[];
+  // A hint shown after a first wrong choice, before the answer (optional: without one, the card asks for another go).
+  selftest: { q_en: string; choices: string[]; answer: string; why_en: string; hint_en?: string }[];
+  // Where this leads: a later explainer that builds on this one, and how (the owner's choice, 31 October 2026).
+  leads_to?: { id: string; en: string }[];
 }
 export type Explainers = Record<string, Explainer[]>; // by lesson id
 let book: Promise<Explainers> | null = null;
@@ -25,6 +28,11 @@ export function useExplainers(): Explainers | null {
   }, []);
   return b;
 }
+// An explainer by its id, with the lesson it's in.
+export const findExplainer = (b: Explainers | null, id: string) => {
+  for (const [lessonId, list] of Object.entries(b ?? {})) for (const e of list) if (e.id === id) return { lessonId, e };
+  return null;
+};
 // The explainer for a course word, with the lesson it's in.
 export const explainerFor = (b: Explainers | null, wordId: string) => {
   for (const [lessonId, list] of Object.entries(b ?? {})) for (const e of list) if (e.course_words?.includes(wordId)) return { lessonId, e };
