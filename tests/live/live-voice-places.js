@@ -35,9 +35,18 @@ const learning = async d => { const x = await d.data(); return canon({ arabic: x
 const clips = (d, sel) => d.ev(`[...document.querySelectorAll(${JSON.stringify(sel + ' [data-action="ar-play"]')})].map(b => b.getAttribute('data-ar-clip'))`);
 // Opens a page of the course, once more if a chunk stalls.
 const openAt = async (d, hash, ready) => { await d.open(BASE + '#' + hash); if (await d.until(ready, 60000)) return true; await d.open(BASE + '#' + hash); return d.until(ready, 60000); };
-// Presses a play button and waits for it to play (its first play fetches the clip from the site).
-const plays = async (d, name) => { await d.click(`[data-ar-clip="${name}"]`); const ok = await d.until(`document.querySelector('[data-ar-clip="${name}"]')?.dataset.state === 'playing'`, 20000);
-  if (ok) await d.click(`[data-ar-clip="${name}"]`); return ok; };
+// Presses a play button with a real mouse click (a script's click isn't a user gesture, so the browser won't start
+// audio for it) and waits for it to play, its first play fetching the clip from the site. Gives true, or the state it
+// stopped at.
+const realClick = async (d, sel) => {
+  const at = await d.ev(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); el.scrollIntoView({ block: 'center' }); const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
+  for (const type of ['mousePressed', 'mouseReleased']) await d.send('Input.dispatchMouseEvent', { type, x: at.x, y: at.y, button: 'left', clickCount: 1 });
+};
+const plays = async (d, name) => {
+  const sel = `[data-ar-clip="${name}"]`; await realClick(d, sel);
+  if (await d.until(`document.querySelector(${JSON.stringify(sel)})?.dataset.state === 'playing'`, 20000)) { await realClick(d, sel); return true; }
+  return d.ev(`document.querySelector(${JSON.stringify(sel)})?.dataset.state`);
+};
 const SQ = 'lesson.arabic-simple-questions', NEG = 'lesson.arabic-negation-system', WV = 'lesson.arabic-weak-verbs', TT = 'asset.arabic-timetable';
 const SAY = 'details[data-ar-explainer="explainer.arabic-say"]';
 
@@ -58,7 +67,8 @@ const SAY = 'details[data-ar-explainer="explainer.arabic-say"]';
   const sqShown = await openAt(mac, 'study/arabic/' + SQ, `!!document.querySelector('[data-ar-key-ideas] [data-action="ar-play"]')`);
   check('a key idea has its play button and the label saying it reads MyDay’s vowelled copy', sqShown && (await clips(mac, '[data-ar-key-ideas]')).join() === SQ + ':key:0:0'
     && await mac.ev(`!!document.querySelector('[data-ar-key-ideas] + [data-ar-voice-label] [data-ar-voice-script]')`), await clips(mac, '[data-ar-key-ideas]'));
-  check('…and it plays', await plays(mac, SQ + ':key:0:0'));
+  const keyPlays = await plays(mac, SQ + ':key:0:0');
+  check('…and it plays', keyPlays === true, keyPlays);
 
   // Objectives: two voiced runs in the negation lesson's first objective.
   await openAt(mac, 'study/arabic/' + NEG, `!!document.querySelector('ul[data-ar-objectives] [data-action="ar-play"]')`);
@@ -78,13 +88,15 @@ const SAY = 'details[data-ar-explainer="explainer.arabic-say"]';
   const say = await clips(mac, SAY);
   check('the Say explainer has its 27 play buttons (10 forms, 3 sentences, 14 in its steps), none in its questions', say.length === 27 && say.filter(n => n.includes(':form:')).length === 10
     && say.filter(n => n.includes(':sentence:')).length === 3 && await mac.ev(`!document.querySelector('${SAY} [data-ar-explainer-q] [data-action="ar-play"]')`), say);
-  check('…and its first form, قَالَ, plays (made again in the current voice)', await plays(mac, 'explainer.arabic-say:form:0'));
+  const formPlays = await plays(mac, 'explainer.arabic-say:form:0');
+  check('…and its first form, قَالَ, plays (made again in the current voice)', formPlays === true, formPlays);
 
   // The timetable: 15 cells, each named apart; one plays.
   await openAt(mac, 'study/arabic/' + TT, `document.querySelectorAll('table [data-action="ar-play"]').length === 15`);
   const names = await mac.ev(`[...document.querySelectorAll('table [data-action="ar-play"]')].map(b => b.getAttribute('aria-label'))`);
   check('the timetable has a play button in each of its 15 Arabic cells, each named apart', names.length === 15 && new Set(names).size === 15, names);
-  check('…and a cell plays', await plays(mac, TT + ':row:0:place'));
+  const cellPlays = await plays(mac, TT + ':row:0:place');
+  check('…and a cell plays', cellPlays === true, cellPlays);
   await mac.send('Emulation.setDeviceMetricsOverride', { width: 320, height: 640, deviceScaleFactor: 2, mobile: true });
   await openAt(mac, 'study/arabic/' + TT, `document.querySelectorAll('table [data-action="ar-play"]').length === 15`);
   check('at 320 px the timetable doesn’t scroll sideways', await mac.ev(`document.documentElement.scrollWidth === innerWidth`), await mac.ev(`document.documentElement.scrollWidth + '/' + innerWidth`));
