@@ -1,6 +1,6 @@
 {
  "about": "Course words: an authored word list per Arabic lesson (MyDay's own, not part of the supplied package), each word with its meaning, root, an example and a short note, beside the package's starter words (listed by id under \"seed\", not repeated). Fully vowelled. Each module is checked by the owner before it ships.",
- "status": "modules 4–19: checked by the owner (reads Arabic) on 2026-10-25, after independent cross-checks, and voiced (rounds four to nine); modules 20–22 (B2): cross-checked by an independent reviewer (no errors; its suggestions applied and re-checked), checked by the owner on 2026-10-31 and voiced (round sixteen); modules 23–24 (B2): cross-checked by an independent reviewer (no errors; three repeats replaced, its suggestions applied and re-checked), waiting for the owner",
+ "status": "modules 4–19: checked by the owner (reads Arabic) on 2026-10-25, after independent cross-checks, and voiced (rounds four to nine); modules 20–24 (B2): cross-checked by an independent reviewer (no errors; its suggestions applied and re-checked), checked by the owner on 2026-10-31 and voiced (rounds sixteen and eighteen)",
  "version": "1.7",
  "lessons": {
   "lesson.arabic-greetings-address": {

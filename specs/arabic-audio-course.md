@@ -179,6 +179,9 @@ alone were still transcribed as a commoner word and were approved by ear ("all g
 Round seventeen (modules 6–7's twelve A1 explainers, released with their text): 181 clips, 110 new texts and 71 made
 again from Charon. One came back as a scripted piece's audio and was made again; هُمْ said alone was still heard as
 هُنَّ on a new take and was approved by ear ("all good").
+Round eighteen (the B2 course words, modules 23–24): 70 words, their examples and notes, 210 clips. The owner heard
+three wrong (the غ of مَغْزَى said alone, an example too quick, مُضَادّ in a note); each was put in a phrase or reworded,
+tried with the voice first, and approved ("good"). The key was deleted.
 
 **Each round works like round one.**
 - **On the Mac:**
