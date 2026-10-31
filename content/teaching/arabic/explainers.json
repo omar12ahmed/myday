@@ -3088,7 +3088,7 @@
      "\"Your\" works the same way, as an ending on the word: -ka to a man, -ki to a woman. اِسْمُكَ is \"your name\" to a man, and اِسْمُكِ to a woman.",
      "So the question changes with the person you ask: كَيْفَ حَالُكَ؟ to a man, كَيْفَ حَالُكِ؟ to a woman.",
      "Without vowel marks the two look alike, so the last vowel is what you listen for.",
-     "Words about yourself don't change: أَنَا بِخَيْرٍ, I'm well, is the same for a man or a woman."
+     "أَنَا, \"I\", is the same word for a man or a woman, and so is بِخَيْرٍ, so أَنَا بِخَيْرٍ, I'm well, doesn't change. Some other words about yourself do: طَالِب for a man, طَالِبَة for a woman."
     ],
     "examples": [
      {
@@ -3191,7 +3191,7 @@
        "Yes, a woman adds ة"
       ],
       "answer": "No, it's the same for a man or a woman",
-      "why_en": "It's about yourself, and بِخَيْرٍ doesn't change for a man or a woman."
+      "why_en": "Neither أَنَا nor بِخَيْرٍ changes for a man or a woman, so the whole phrase stays the same."
      }
     ],
     "phrases_ar": [
@@ -3755,7 +3755,7 @@
        },
        {
         "ar": "لُبْنَانَ",
-        "en": "Lebanon (it never takes -in)"
+        "en": "Lebanon (a name like this takes -a here, not -i, and never -in)"
        },
        {
         "ar": "وَأَسْكُنُ",
@@ -3803,7 +3803,7 @@
        },
        {
         "ar": "مِنَ",
-        "en": "to (literally \"from\"; مِنْ becomes مِنَ before الْـ)"
+        "en": "from (English just says \"near the house\"; مِنْ becomes مِنَ before الْـ)"
        },
        {
         "ar": "الْبَيْتِ",
@@ -4176,10 +4176,10 @@
       "choices": [
        "أَعِيدِي",
        "أَعِدْ",
-       "أَعِيدُ"
+       "أُعِيدُ"
       ],
       "answer": "أَعِيدِي",
-      "why_en": "To a woman the request ends in -ī: أَعِيدِي. أَعِدْ is to a man, and أَعِيدُ means \"I repeat\"."
+      "why_en": "To a woman the request ends in -ī: أَعِيدِي. أَعِدْ is to a man, and أُعِيدُ means \"I repeat\"."
      },
      {
       "q_en": "What does بِبُطْءٍ add to a request?",
@@ -4262,7 +4262,7 @@
       "en": "mother"
      },
      {
-      "form_en": "feminine, ending in ت",
+      "form_en": "feminine by meaning, with a ت that isn't ة",
       "ar": "بِنْت",
       "en": "girl"
      }
@@ -4270,7 +4270,7 @@
     "steps": [
      "Every Arabic noun is masculine or feminine, things as well as people: قَلَم, pen, is masculine; سَيَّارَة, car, is feminine.",
      "The usual sign of the feminine is ة at the end: طَالِب is a student who's a man, طَالِبَة a student who's a woman.",
-     "A few feminine nouns have no ة: some by meaning, like أُمّ, mother; others you simply learn, like شَمْس, sun, and أَرْض, earth.",
+     "Some feminine nouns have no ة: some by meaning, like أُمّ, mother; others you simply learn, like شَمْس, sun, and أَرْض, earth.",
      "A word describing a feminine noun takes ة too: الشَّمْسُ كَبِيرَةٌ, the sun is big.",
      "So learn each new noun with its gender, the way you learn its meaning."
     ],
@@ -4325,7 +4325,7 @@
        },
        {
         "ar": "بِنْتٌ",
-        "en": "(is) a girl (feminine, ending in ت)"
+        "en": "(is) a girl (feminine by meaning; its ت is part of the word, not ة)"
        },
        {
         "ar": "صَغِيرَةٌ",
@@ -4882,7 +4882,7 @@
      "ذَلِكَ and تِلْكَ point to something further away, in the same way.",
      "For people in the plural, use هَؤُلَاءِ (near) and أُولَئِكَ (far). Things in the plural take هَذِهِ and تِلْكَ, as they take \"she\" words.",
      "هَذَا بَيْتٌ is a sentence: this is a house. With الْـ, هَذَا الْبَيْتُ is just \"this house\", and needs more to be a sentence: هَذَا الْبَيْتُ كَبِيرٌ.",
-     "هَذَا, هَذِهِ, ذَلِكَ and هَؤُلَاءِ are said with a long ā after the first letter, which isn't written as a letter of its own."
+     "هَذَا, هَذِهِ, ذَلِكَ and هَؤُلَاءِ are said with a long ā after the first letter, which isn't written as a letter of its own. أُولَئِكَ has one too, after its ل, and its و is silent."
     ],
     "examples": [
      {
@@ -4962,14 +4962,14 @@
       "why_en": "With no الْـ on صُورَةٌ it's a sentence, and صُورَة is feminine, so هَذِهِ. هَذِهِ الصُّورَةُ is just \"this picture\"."
      },
      {
-      "q_en": "Which word points to people near you?",
+      "q_en": "Which word points to several people near you?",
       "choices": [
        "هَؤُلَاءِ",
        "أُولَئِكَ",
        "هَذِهِ"
       ],
       "answer": "هَؤُلَاءِ",
-      "why_en": "هَؤُلَاءِ is for people near you, and أُولَئِكَ for people further away. هَذِهِ is for things in the plural."
+      "why_en": "هَؤُلَاءِ is for several people near you, and أُولَئِكَ for several people further away. هَذِهِ is \"this\" for one feminine noun, or for things in the plural, not for several people."
      }
     ],
     "phrases_ar": [
@@ -5039,7 +5039,7 @@
      "To say whose something is, put the owner after the thing: كِتَابُ الطَّالِبِ is \"the book of the student\", the student's book.",
      "The first word has no الْـ and no -un ending; the second ends in -i.",
      "For \"my\", \"your\", \"his\" and so on, add an ending to the noun instead: كِتَابِي, my book; كِتَابُكَ, your book.",
-     "A word ending in ة writes it as ت when something follows, and says it as t: سَيَّارَتِي, my car; سَيَّارَةُ الْمُعَلِّمِ, the teacher's car.",
+     "A word ending in ة says it as t when something follows. If an ending is joined on, it's written ت as well: سَيَّارَتِي, my car. Before a separate word it stays ة on the page: سَيَّارَةُ الْمُعَلِّمِ, the teacher's car.",
      "The pair counts as \"the\" when the second word has الْـ: بَيْتُ الْمُعَلِّمِ already means \"the teacher's house\"."
     ],
     "examples": [
@@ -5093,7 +5093,7 @@
        },
        {
         "ar": "مِنَ",
-        "en": "to (literally \"from\")"
+        "en": "from (English just says \"near the sea\")"
        },
        {
         "ar": "الْبَحْرِ",
