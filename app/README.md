@@ -1,5 +1,17 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.116.0 — "You've been exploring a while": compare the options:** a project in Explore or Decide for three weeks
+or more (the whole time in the board's Exploring column) now asks once on its Overview: "You've been exploring this
+for 3 weeks. Would it help to compare the strongest options and see what's still missing?" — **Compare them** or
+**Not now**; it asks again only after the project moves on and comes back. **Compare the options** (also from the
+Decisions tab, "Compare side by side") puts each open decision's options side by side — their pros and cons and, with
+Research on, what you've found for and against each — and lists what's still unknown: open questions, must-be-true
+items not checked, options with no findings. Never ranked or scored; the choice stays yours. Saved data stays schema
+5: a project's optional `columnSince` (its board column and the day it entered it), which 1.115.0 keeps unread
+(checked with the actual previous release: it keeps it through its own rename and board move, and this release reads
+it as saved; a record for another column, left by an older release's move, is never used). Going back shows no ask
+and no comparison. No migration or server change; nothing new sent to AI.
+
 **1.115.0 — Ask MyDay helps you think:** level 3 of "How MyDay should think" (helping you think, rather than handing
 you answers). Ask MyDay something open — a goal, an idea or a big decision ("I want to start an online business",
 "Should I change jobs?") — and it asks before it offers ideas:
@@ -1527,6 +1539,18 @@ look and Your week's What needs you now use the same rules (`data/attention.ts`)
 board, **Board · List**: the list has one row per active project (stage, kind, next step, "3 need you"), most
 recently worked on first; the choice is kept on this device only (`myday.projects.view`).
 
+**Exploring a while; comparing the options (1.116.0; `specs/projects-exploring.md`):** a project remembers its
+board column and the day it entered it (`columnSince`, set on starting it, on a move into another column — Explore →
+Decide keeps the day — and on bringing it back from paused or finished). From 21 days in Exploring (Explore or Decide)
+an active project's Overview asks once per spell, on this device (`myday.projects.compareAsked`): "You've been
+exploring this for 3 weeks" / "deciding on this" — "Would it help to compare the strongest options and see what's
+still missing?" with Compare them and Not now. **Compare the options** (`#projects/p/<id>/compare`; the Decisions tab
+offers "Compare side by side" when an open decision has two options or more): each open decision's options side by
+side (stacked on a phone) with pros, cons and, with Research on, evidence in words ("1 for · 1 against", "Nothing
+found yet"); What's still unknown (unanswered questions, must-be-true items not checked, options with no findings),
+each opening where it lives; "choose in Decisions". Rules in `data/exploring.ts`. Never ranked, scored or picked;
+never sent to AI.
+
 **Content projects (1.114.0; `specs/projects-content.md`):** a Content project (a channel or a series) keeps its
 **ideas and videos**, one synced record each (`data/content.ts`; kind `content`), saying which project it belongs to.
 The Videos tab: the Ideas bank (newest first, Make this a video) and videos by step (Planning, Filming, Editing,
@@ -2135,6 +2159,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/areas.ts`, `src/projects/AreaBits.tsx` | Areas and the archive (1.106.0): `areas.ts` (the areas in use with their colours and counts, choosing, renaming and merging, recolouring, finishing, the archive's order); `AreaBits.tsx` (an area's dot and name, and the Area field). The filter, Areas… and the Archive are in `ProjectsScreen.tsx`, the finish form in `ProjectView.tsx`. |
 | `src/data/projectWaiting.ts`, `src/projects/ProjectWaiting.tsx` | A whole project waiting (1.109.0): `projectWaiting.ts` (set, change, stop, the check-back day, Chase it, the nudge's suggestion); `ProjectWaiting.tsx` (the Overview's card, the form, the nudge). Needs you's line is in `src/data/attention.ts`; Chase it is `src/tasks/ChaseIt.tsx`, shared with waiting tasks. |
 | `src/data/content.ts`, `src/projects/ContentView.tsx` | Content projects (1.114.0): `content.ts` (reading as written, ideas and videos, steps, options, examples, outline/shots/needs/steps and their tasks, clips, the post day and its task, posts, results, the size check); `ContentView.tsx` (the Overview's Videos card, the Videos tab, a video's page). Uploads in parts: `src/sync/files.ts` (`sendInParts`, `md5Of`, `videoFrame`) and `supabase/functions/files/` (the `mp-*` actions). |
+| `src/data/exploring.ts`, `src/projects/ExploringView.tsx` | Exploring a while (1.116.0): `exploring.ts` (three weeks in Exploring, comparing the options, what's still unknown); `ExploringView.tsx` (the Overview's ask, the compare page, the Decisions tab's link). |
 | `src/data/businessModel.ts`, `src/projects/ModelView.tsx` | The Business template (1.33.0): `businessModel.ts` (the kind of project and the one page: reading what's saved, the four answers, the list of what must be true with its limits, Find out, marking, counts); `ModelView.tsx` (the Model tab; its Overview summary is in At a glance). The Model tab's counts line is `progressLine` in `planText.ts`; Explore's brief from the one page is `fromOnePage` in `src/explore/content.ts`. |
 | `src/data/caseFile.ts`, `src/projects/CaseViews.tsx` | The Case template (1.35.0): `caseFile.ts` (reading what's saved, unknown fields kept, links to missing items let go; the timeline, evidence and issues with their limits, links, counts and the size guard); `CaseViews.tsx` (the Timeline, Evidence and Issues tabs, and "Add a deadline" in a case's Coming up; its Overview summary is in At a glance). |
 | `src/data/projectDashboard.ts`, `src/projects/AtAGlance.tsx` | The dashboards per kind (1.36.0): `projectDashboard.ts` (the next dates, the weeks, entries by month, each issue's links and Worth a look; Today's own dashboard numbers stay in `dashboard.ts`); `AtAGlance.tsx` (the At a glance card with one row per tool, its pictures and Summarise this, and the Worth a look card beside the next step). Still-open tasks are `stillOpen` in `src/data/projects.ts`. |
