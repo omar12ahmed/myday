@@ -237,6 +237,35 @@ const button = '[data-action="ar-play"]';
     await click('[data-ar-clip="' + ttId + ':row:1:activity"]');
     check('pressing a timetable cell’s play button starts that cell’s clip and no other', await until(async () => (await state()).playing === ttId + ':row:1:activity') && await count('[data-state="playing"]') === 1, await state());
     await click('[data-ar-clip="' + ttId + ':row:1:activity"]');
+
+    // A timetable's accessible names tell the cells apart by naming the day.
+    await show(ttId); await until(() => exists('[data-ar-clip^="' + ttId + ':row:"]'));
+    const ttLabels = await ev(`[...document.querySelectorAll('table [data-action="ar-play"]')].map(b => b.getAttribute('aria-label'))`);
+    const ttExpected = ttRows.flatMap(r => ['Play ' + r.day_ar, `Play ${r.activity_ar} (${r.day_ar})`, `Play ${r.place_ar} (${r.day_ar})`]);
+    check('all 15 timetable play buttons have different accessible names', ttLabels.length === 15 && new Set(ttLabels).size === 15, ttLabels);
+    check('a timetable day cell is named "Play <day>" and its activity and place cells add the day, e.g. row 1 ends "(" + day + ")"', JSON.stringify(ttLabels) === JSON.stringify(ttExpected), ttLabels);
+    check('the first row’s place reads "Play البيت (الاثنين)", from the starter materials', ttLabels[2] === `Play ${ttRows[0].place_ar} (${ttRows[0].day_ar})` && ttRows[0].place_ar === 'البيت' && ttRows[0].day_ar === 'الاثنين', ttLabels[2]);
+
+    // At phone width the page itself must not scroll sideways; the table's own scroller may.
+    await send('Emulation.setDeviceMetricsOverride', { width: 375, height: 900, deviceScaleFactor: 1, mobile: true });
+    await show(ttId); await until(() => exists('table [data-action="ar-play"]')); await sleep(150);
+    const ttFit = await ev(`(() => { const t = document.querySelector('table').closest('.overflow-x-auto'); return { page: document.scrollingElement.scrollWidth, inner: innerWidth, containerScroll: t.scrollWidth, containerClient: t.clientWidth }; })()`);
+    console.log('  info: timetable scroller at 375 px', JSON.stringify(ttFit));
+    check('at 375 px the timetable page does not scroll sideways', ttFit.page <= ttFit.inner, ttFit);
+    await send('Emulation.clearDeviceMetricsOverride');
+
+    // A practical session shows only Try and Check: Understand sits under "The rest of this lesson", which never folds,
+    // so the key ideas' voice is held there by the check too.
+    await show(sq); await until(() => exists('[data-action="ar-begin"]'));
+    await click('[data-s="ar-variant"][value="practical"]'); await click('[data-action="ar-begin"]');
+    await until(() => exists('[data-ar-session="open"]'));
+    check('a practical session shows Try, Check and Reflect, with Understand under "The rest of this lesson"', await ev(`[...document.querySelectorAll('[data-action="ar-step"]')].map(b => b.dataset.v).join()`) === 'try,check,reflect' && await exists('[data-ar-rest] [data-ar-key-ideas]'), await ev(`[...document.querySelectorAll('[data-action="ar-step"]')].map(b => b.dataset.v).join()`));
+    await click('[data-action="ar-step"][data-v="check"]'); await sleep(200);
+    await ev(`document.querySelector('[data-ar-rest] details').open = true`); await sleep(100);
+    const keyHeld = { buttons: await names('[data-ar-key-ideas]'), label: await count('[data-ar-key-ideas] + [data-ar-voice-label]') };
+    check('during the check, key ideas under "The rest of this lesson" keep their Arabic but have no play button and no voice label', keyHeld.buttons.length === 0 && keyHeld.label === 0 && (await T.text('[data-ar-rest] [data-ar-key-ideas]')).includes('مَن ما أين هل') && await exists('[data-ar-rest] [data-ar-key-ideas] bdi[lang="ar"]'), keyHeld);
+    await click('[data-action="ar-step"][data-v="try"]'); await until(async () => (await names('[data-ar-key-ideas]')).length > 0);
+    check('moving to Try brings the key idea’s play button and its voice label back', JSON.stringify(await names('[data-ar-key-ideas]')) === JSON.stringify([sq + ':key:0:0']) && await count('[data-ar-key-ideas] + [data-ar-voice-label]') === 1, await names('[data-ar-key-ideas]'));
     result = T.summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
   } finally { fs.rmSync(temp, { recursive: true, force: true }); }
   process.exit(result.fail ? 1 : 0);

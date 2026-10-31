@@ -266,8 +266,9 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
   const check = content.assessments.find(a => a.id === l.knowledge_check_id);
   const needsVoice = l.input_requirements?.modalities.some(m => m === 'listening' || m === 'speaking');
   const checkIds = check?.questions?.map(q => q.id) ?? [];
-  // While you check yourself, the objectives and tasks stay on the page but their voice waits, as the explanation
-  // folds away: a vowelled model there can give away a check's answer (قُلْتُ, لَمْ أَدْرُسْ).
+  // While you check yourself, the objectives, key ideas and tasks stay on the page but their voice waits, as the
+  // explanation folds away: a vowelled model there can give away a check's answer (قُلْتُ, لَمْ أَدْرُسْ). The key ideas
+  // need it too, as a practical or revision session keeps them open under "The rest of this lesson".
   const hold = checking && current === 'check' && !explain;
   // Where the finish card points: the path's next step (it moves on once you mark this lesson ready), never back here.
   const plan = arabicPlan(data)?.step;
@@ -289,8 +290,8 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
         {folded ? <><p className="text-[15px] text-fg-2" data-ar-folded="">The explanation is folded away while you check yourself, so the answers come from memory.</p>
             <Button inline variant="ghost" data-action="ar-explain-again" onClick={() => setExplain(true)}>Show the explanation again</Button></>
           : <>
-            <p className="text-sm text-fg-2" data-ar-key-ideas="">Key ideas: {l.key_concepts.map((k, i) => <span key={i}>{i > 0 && ' · '}<Mixed text={k} voice={`${l.id}:key:${i}`} /></span>)}</p>
-            <MixedVoiceLabel texts={l.key_concepts} />
+            <p className="text-sm text-fg-2" data-ar-key-ideas="">Key ideas: {l.key_concepts.map((k, i) => <span key={i}>{i > 0 && ' · '}<Mixed text={k} voice={hold ? undefined : `${l.id}:key:${i}`} /></span>)}</p>
+            {!hold && <MixedVoiceLabel texts={l.key_concepts} />}
             {l.example && <div className="rounded-tile bg-surface border border-outline px-4 py-3 my-3" data-ar-example="">
               <div className="flex items-start gap-2"><div className="min-w-0 flex-1"><Ar block className="text-[28px] m-0">{l.example.text_ar}</Ar></div>
                 <PlayButton text={l.example.text_ar} name={`${l.id}:example`} label="the lesson’s example" /></div>
@@ -571,8 +572,9 @@ function TextsIndex() {
 }
 
 // A timetable cell: its Arabic, with a play button where it has a voice (the button wraps under it on a narrow screen).
-function Cell({ text, name }: { text: string; name: string }) {
-  return <span className="flex flex-wrap items-center gap-x-2 gap-y-1"><Ar>{text}</Ar><PlayButton text={text} name={name} label={text} /></span>;
+// `label` names the button: a place or activity comes with its day, as البيت and المكتبة appear on several rows.
+function Cell({ text, name, label = text }: { text: string; name: string; label?: string }) {
+  return <span className="flex flex-wrap items-center gap-x-2 gap-y-1"><Ar>{text}</Ar><PlayButton text={text} name={name} label={label} /></span>;
 }
 
 function TextView({ data, asset: a }: { data: MyDayData; asset: Asset }) {
@@ -599,7 +601,7 @@ function TextView({ data, asset: a }: { data: MyDayData; asset: Asset }) {
       {prepared?.style.startsWith('word-by-word') && <p className="text-xs text-fg-2">The prepared transliteration is a word-by-word reading, generally without noun case endings. Use a recording for connected speech.</p>}
       {'rows' in a && a.rows && <div className="overflow-x-auto"><table className="w-full text-left border-collapse mt-2">
         <thead><tr className="border-b border-outline"><th className="py-2 pr-3">Day</th><th className="py-2 pr-3">Time</th><th className="py-2 pr-3">Activity</th><th className="py-2">Place</th></tr></thead>
-        <tbody>{a.rows.map((r, i) => <tr key={i} className="border-b border-outline"><td className="py-2 pr-3"><Cell text={r.day_ar} name={`${a.id}:row:${i}:day`} /></td><td className="py-2 pr-3 tabular-nums">{r.time}</td><td className="py-2 pr-3"><Cell text={r.activity_ar} name={`${a.id}:row:${i}:activity`} /></td><td className="py-2"><Cell text={r.place_ar} name={`${a.id}:row:${i}:place`} /></td></tr>)}</tbody>
+        <tbody>{a.rows.map((r, i) => <tr key={i} className="border-b border-outline"><td className="py-2 pr-3"><Cell text={r.day_ar} name={`${a.id}:row:${i}:day`} /></td><td className="py-2 pr-3 tabular-nums">{r.time}</td><td className="py-2 pr-3"><Cell text={r.activity_ar} name={`${a.id}:row:${i}:activity`} label={`${r.activity_ar} (${r.day_ar})`} /></td><td className="py-2"><Cell text={r.place_ar} name={`${a.id}:row:${i}:place`} label={`${r.place_ar} (${r.day_ar})`} /></td></tr>)}</tbody>
       </table></div>}
       {'pairs' in a && a.pairs && <ul className="list-none p-0 grid sm:grid-cols-2 gap-2 mt-2">{a.pairs.map((p, i) => <li key={i} className="rounded-tile bg-surface-2 px-3.5 py-2.5 flex items-center justify-between gap-3">
         <span><Ar className="text-[24px]">{p.a}</Ar> <span className="text-sm text-fg-2">{p.meaning_a}</span><PlayButton text={p.a} name={`${a.id}:pair:${i}:a`} label={p.a} /></span>
