@@ -1,6 +1,6 @@
 {
  "about": "Explainers: one verb family at a time, explained in short steps (MyDay's own, not part of the supplied package). Each has the family as a table, the contrast learners trip on, two or three short sentences broken down word by word, the natural \"why\" question, and a three-question self-test with answers. Only the Arabic is stored: the app shows its own transliteration. Standard Arabic only, fully vowelled, made-up names. Checked by app/scripts/validate-explainers.mjs. Proposal: specs/arabic-explainers.md.",
- "status": "modules 14 (ten), 15 (eight) and 4–5 (thirteen): each cross-checked independently, then checked by the owner's fluent checker (30 and 31 October 2026); module 14 shown in the app and voiced; module 15 voiced for 1.105.0; modules 4–5 to be voiced",
+ "status": "modules 14 (ten), 15 (eight) and 4–5 (thirteen): each cross-checked independently, checked by the owner's fluent checker (30 and 31 October 2026), voiced and listened to; module 14 shipped in 1.98.0, modules 15 and 4–5 in 1.105.0",
  "version": "1.2",
  "lessons": {
   "lesson.arabic-weak-verbs": [

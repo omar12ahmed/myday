@@ -907,8 +907,9 @@ every device; "Skip for now" keeps it.
 
 Explainers (Arabic, 1.98.0, `../specs/arabic-explainers.md`): a lesson's Understand step can have **How it
 works**, under its teaching: one closed card per family of forms or grammar topic (so far ten for module 14's weak,
-irregular and derived verbs, 1.98.0, and eight for module 15's relative words, إِنَّ and كَانَ and their sisters,
-reporting, conditions, reasons and contrast, 1.105.0). Each has a table (form, Arabic, meaning; on a phone the form
+irregular and derived verbs, 1.98.0; and, in 1.105.0, eight for module 15's relative words, إِنَّ and كَانَ and their
+sisters, reporting, conditions, reasons and contrast, and thirteen for modules 4–5's first patterns, from "you" to a
+man or a woman to plurals and possession). Each has a table (form, Arabic, meaning; on a phone the form
 sits under the meaning; a form label or a word's gloss may name Arabic, shown as Arabic and never voiced),
 short steps, two or three sentences broken down word by word, a "why" question, and three questions whose answer shows
 when you choose (focus moves to the explanation). Nothing is saved, and it folds away with the explanation while you

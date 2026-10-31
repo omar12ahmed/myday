@@ -606,7 +606,7 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   await fresh('study/arabic/vocabulary'); await wait('[data-ar-course-words]', 5000);
   const linkText = id => ev(`document.querySelector('[data-ar-word="${id}"] [data-ar-explainer-link]')?.textContent`);
   const linkCount = await count('[data-ar-explainer-link]');
-  check('Vocabulary has 40 links to explainers under course words (13 in module 14, 27 in module 15)', linkCount === 40, linkCount);
+  check('Vocabulary has 92 links to explainers under course words (52 in modules 4–5, 13 in module 14, 27 in module 15)', linkCount === 92, linkCount);
   check('a verb\'s link reads "How this verb works, step by step"', await linkText('lexeme.arabic-weak-verbs-1') === 'How this verb works, step by step', await linkText('lexeme.arabic-weak-verbs-1'));
   check('a phrase\'s link reads "How it works, step by step"', await linkText('lexeme.arabic-verb-moods-4') === 'How it works, step by step', await linkText('lexeme.arabic-verb-moods-4'));
   check('…and each link\'s accessible name adds its word, so the list of links can be told apart', await ev(`document.querySelector('[data-ar-word="lexeme.arabic-weak-verbs-1"] [data-ar-explainer-link]')?.getAttribute('aria-label')`) === 'How this verb works, step by step: قَالَ');
@@ -650,7 +650,7 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   await ev(`document.querySelector('details[data-ar-explainer="explainer.arabic-inna-sisters"]').open = true`); await sleep(300);
   const label = await ev(`(() => { const row = document.querySelector('details[data-ar-explainer="explainer.arabic-inna-sisters"] [data-ar-explainer-row="إِنَّ الْجَوَّ جَمِيلٌ"]'); const cell = row?.firstElementChild; const ar = cell?.querySelector('[lang="ar"]'); return { text: cell?.textContent, ar: ar?.textContent, dir: ar ? getComputedStyle(ar).direction : null }; })()`);
   check('module 15: the إِنَّ and كَانَ lesson has its two explainers, and a table label\'s Arabic ("with إِنَّ") is marked as Arabic, right to left', (label.text || '').startsWith('with ') && label.ar === 'إِنَّ' && label.dir === 'rtl', label);
-  await fresh('study/arabic/lesson.arabic-origin-location'); await wait('[data-ar-check]', 5000);
+  await fresh('study/arabic/lesson.arabic-past-suffixes'); await wait('[data-ar-check]', 5000);
   check('a lesson without explainers shows no "How it works" section', !(await exists('[data-ar-explainers]')));
 
   await send('Emulation.setDeviceMetricsOverride', { width: 360, height: 800, deviceScaleFactor: 2, mobile: true });
