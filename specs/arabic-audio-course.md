@@ -168,6 +168,10 @@ again from Charon so each explainer stays in one voice. Six first came back as t
 spoken the same way (لِأَنَّ and لأنّ, لَكِنَّ, لِذَلِكَ, لَوْ, الْجَوُّ جَمِيلٌ, ذَكَرَ أَنَّ) and were made again until each had its
 own; four more retakes after blind transcription. Four were still heard as a commoner phrase on every take (اِعْتَقَدَ
 أَنَّ as أَعْتَقِدُ أَنَّ, إِنْ as أَنْ, مِنْ أَجْلِ as مِنْ أَجْلِي, لَمَا) and were approved by ear ("all good"). The key was deleted.
+Round fifteen (modules 4–5's thirteen A1 explainers, released with their text): 179 clips, 87 new texts and 92 made
+again from Charon, mostly A1 starter and course words, which now play WaveNet B everywhere. Ten first came back as the
+very same audio as a scripted piece and were made again until each had its own; two retakes after blind transcription.
+عَنِ said alone was still heard as عَنِّي and was approved by ear ("all good"). The key was deleted.
 
 **Each round works like round one.**
 - **On the Mac:**
