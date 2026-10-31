@@ -2117,6 +2117,9 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     // Saved: kept when valid, a bad entry counted (never dropped silently), absent when there's nothing.
     const rep = { dropped: 0 }, np = K.normalizePatterns({ prefs: { maxMinutes: {}, maxTasks: null, askUse: true }, answers: {}, askSeen: [S({ on: HD }), { on: HD, type: 'task' }, S({ on: 'soon' }), S({ on: HD, minutes: 9999 })], later: 'kept' }, rep);
     check('saved: the switch and valid counts kept, a field from a newer MyDay kept, each bad entry counted', np.prefs.askUse === true && np.askSeen.length === 1 && rep.dropped === 3 && np.later === 'kept', [np.askSeen, rep.dropped]);
+    const asked = K.freshState().patterns; K.answerAskOffer(asked, false, HD);
+    check('asked once, in the moment: Not now is remembered and leaves it off; Yes switches it on', asked.prefs.askAsked === HD && !asked.prefs.askUse && (() => { const y = K.freshState().patterns; K.answerAskOffer(y, true, HD); return y.prefs.askUse === true && y.prefs.askAsked === HD; })());
+    check('…kept when saved (a date), dropped when it isn\'t one', K.normalizePatterns({ prefs: { maxMinutes: {}, maxTasks: null, askAsked: HD }, answers: {} }, { dropped: 0 }).prefs.askAsked === HD && !('askAsked' in K.normalizePatterns({ prefs: { maxMinutes: {}, maxTasks: null, askAsked: 'soon' }, answers: {} }, { dropped: 0 }).prefs));
     const none = K.normalizePatterns({ prefs: { maxMinutes: {}, maxTasks: null, askUse: 'yes' }, answers: {}, askSeen: [] }, { dropped: 0 });
     check('…and a device that never used it saves exactly as before (no switch, no empty list)', !('askUse' in none.prefs) && !('askSeen' in none));
   }

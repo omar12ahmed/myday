@@ -52,6 +52,55 @@ reaches Today.**
 - **Useful without AI.** MyDay builds and runs with AI switched off. AI extends it where interpretation, explanation
   or drafting genuinely helps.
 
+### How MyDay should think (the owner's direction, 31 Oct 2026)
+
+MyDay should gradually understand the person, and what's happening around them, without asking them to configure
+everything. It should help them think rather than think for them. Six levels, each with what exists now and what's
+missing:
+
+1. **Learn through interactions, not settings.** MyDay notices what the person does, and says so as an
+   observation, never an assumption ("I've noticed you finish demanding tasks more often in the afternoon. Would you
+   like me to plan similar ones later in the day?"). It uses what it noticed only once they say yes.
+   - *Today:* What MyDay has noticed (counting on the device, eight patterns, each used once confirmed). Ask MyDay
+     uses what's confirmed and learns from what you do with its suggestions (`ask-how-you-work.md`).
+   - *Missing:* patterns about **when** things get done (by time of day and kind of task, including what you keep
+     moving), and plans that follow them; MyDay offering these in the moment rather than only on their page.
+2. **Understand what's happening.** It reads the day as well as the person: energy, workload, what's due and how
+   recent days went ("Today might not be the best day for demanding work. One important task is close to its
+   deadline: let's find the smallest useful step").
+   - *Today:* energy-shaped day plans, Help me adjust today, deadlines you can trust, Needs you.
+   - *Missing:* one plain reading of the day that brings these together, with the smallest useful step.
+3. **Help the person think.** Faced with an open question ("I want to start an online business"), it clarifies what
+   they're looking for before offering ideas, then guides the thinking. It doesn't rush towards action before the
+   problem is understood.
+   - *Today:* a decision's pros and cons, "What am I missing?", a business idea's one page and what must be true.
+   - *Missing:* Ask MyDay asking first on open-ended questions, and guiding through a few steps of thinking (with
+     1.104.0's conversation).
+4. **Notice and anticipate, at the right moments.** It speaks when there's a genuine opportunity to help, never as a
+   stream of notifications. In the morning: "three things planned; given your recent workload, start with the first".
+   During a long exploration: "compare the strongest options and see what's still missing". At the end of the day:
+   "one task remains: carry it forward or reconsider it". It separates what it observed from what it assumes, and
+   looks into what's happening before it advises.
+   - *Today:* Needs you and Worth a look on projects, the evening check-in, Your week, the quiet line for something
+     newly noticed.
+   - *Missing:* a morning priority line, a project-level "you've been exploring a while" nudge, and an end-of-day
+     carry-forward that asks rather than assumes.
+5. **Understand long-term goals.** Daily activities, projects, learning, decisions and milestones relate to larger
+   ambitions. For example: learning networking, then preparing for Security+, then practical labs, then experience,
+   then applying for cybersecurity jobs. So today's networking lesson is seen as a step towards something larger, and
+   everyday work has meaning.
+   - *Today:* projects linked to learning, the Cybersecurity path and its roadmap, milestones, decisions, "Why this?"
+     for a project's next step.
+   - *Missing:* a long-term goal that ties these together, and Today saying what a task contributes to (the
+     "general Goals" proposal in §2).
+6. **Build the person's own ability, not dependence.** It explains why, offers choices, keeps decisions theirs and
+   gives less help as they grow (a hint before an answer, as the tutor already does).
+   - *Today:* decisions stay yours; the tutor's graduated help; Check my answer.
+   - *Missing:* the same principle written into each new feature's specification, and checked in its evaluation.
+
+Each level is built as small, owner-approved increments, in the usual way. Private stays private, and what's observed
+stays separate from what's confirmed (§5).
+
 ### A connected path, and where it stands
 
 The target is that someone can go from an idea to a reviewed outcome without starting again at each step. Most of

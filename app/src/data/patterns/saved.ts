@@ -51,6 +51,7 @@ export function normalizePatterns(raw: unknown, report: { dropped: number }): Pa
   if (name) out.prefs.name = name; else delete out.prefs.name;
   if (prefs.aiNotes === true) out.prefs.aiNotes = true; else delete out.prefs.aiNotes; // AI help with notes (1.15.0)
   if (prefs.askUse === true) out.prefs.askUse = true; else delete out.prefs.askUse; // Ask MyDay uses how you work (1.108.0)
+  if (isDateKey(prefs.askAsked)) out.prefs.askAsked = prefs.askAsked; else delete out.prefs.askAsked; // …and when MyDay asked you, once
   // What you did with Ask MyDay's suggestions (1.108.0): kept only when there are some, so a device that never counted
   // saves exactly as before; one that can't be read is counted, never dropped silently.
   if (Array.isArray(raw.askSeen)) {
@@ -85,6 +86,13 @@ export function setMaxTasks(d: PatternsData, value: number | null, from: string 
 }
 // What MyDay calls you ("Good morning, Sam!"). Empty removes it.
 // Let Ask MyDay use how you work (or stop it). Switching it off also forgets what it counted of Ask's suggestions.
+// MyDay asks once, the first time you say a pattern is right (the owner's choice: no setting to find); either answer is
+// remembered, so it never asks again, and the switch stays in What MyDay has noticed.
+export function answerAskOffer(d: PatternsData, yes: boolean, today = todayKey()): boolean {
+  d.prefs.askAsked = today;
+  if (yes) d.prefs.askUse = true;
+  return true;
+}
 export function setAskUse(d: PatternsData, on: boolean): boolean {
   if (!!d.prefs.askUse === on) return false;
   if (on) d.prefs.askUse = true; else { delete d.prefs.askUse; delete d.askSeen; }
@@ -95,7 +103,7 @@ export const ASK_SEEN_MAX = 200;
 export function recordAskSeen(d: PatternsData, xs: Omit<AskSeen, 'on'>[], today = todayKey()): boolean {
   if (!d.prefs.askUse || !xs.length) return false;
   const from = shift(today, -56);
-  d.askSeen = [...(d.askSeen ?? []).filter(x => x.on >= from), ...xs.map(x => ({ ...x, on: today }))].slice(-ASK_SEEN_MAX);
+  d.askSeen = [...(d.askSeen ?? []).filter(x => x.on >= from), ...xs.map((x): AskSeen => ({ ...x, on: today } as AskSeen))].slice(-ASK_SEEN_MAX);
   return true;
 }
 // Let AI help place notes in projects (or stop it). Returns false when nothing changed.

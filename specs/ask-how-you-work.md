@@ -69,3 +69,6 @@ today's plan, which Help me adjust today and Build my day already plan within it
    ones).
 2. **MyDay learns from what you do with Ask's suggestions**, as new patterns you confirm in What MyDay has noticed.
 3. **The counts are kept in your MyDay data, synced** (counts and lengths only), so every device learns together.
+4. **MyDay asks once, in the moment** (31 Oct, after the owner's note that MyDay shouldn't need configuring): the first
+   time you say a pattern is right, What MyDay has noticed asks "Shall Ask MyDay use this too?" (Yes, let it / Not
+   now). Either answer is remembered (`askAsked`), so it asks once; the switch stays there for changing your mind.

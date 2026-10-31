@@ -6,7 +6,8 @@ import { BackLink, Eyebrow, Note } from '../components/parts';
 import { Why } from '../components/Why';
 import { shortDate, todayKey } from '../data/dates';
 import { noticed, type Pattern, type Shown } from '../data/patterns/notice';
-import { answerPattern, CATEGORIES, forgetAnswer, MINUTE_CHOICES, NAME_MAX, setMaxMinutes, setMaxTasks, setName } from '../data/patterns/saved';
+import { answerAskOffer, answerPattern, CATEGORIES, forgetAnswer, MINUTE_CHOICES, NAME_MAX, setMaxMinutes, setMaxTasks, setName } from '../data/patterns/saved';
+import { AI_MODE } from '../ai/request';
 import { CAT_LABEL } from '../data/plan';
 import { update } from '../data/storage';
 import { toast } from '../data/toast';
@@ -28,6 +29,16 @@ export function NoticedScreen({ data }: { data: MyDayData }) {
       {fresh.length > 0 ? fresh.map(s => <PatternCard key={s.id} data={data} s={s} />) : (
         <Card id="noticedEmpty">
           <p className="text-[15px] text-fg-2 m-0">{confirmed.length ? 'Nothing new to show right now.' : 'Nothing to show yet. As you plan days, tick things off and do the evening check-in, MyDay starts to notice what works for you.'}</p>
+        </Card>
+      )}
+      {/* Asked once, the first time something here is confirmed: may Ask MyDay use it too? */}
+      {AI_MODE !== 'off' && confirmed.length > 0 && !data.patterns.prefs.askUse && !data.patterns.prefs.askAsked && (
+        <Card id="askOffer" data-s="ask-offer">
+          <p className="text-[15px] m-0">Shall Ask MyDay use this too? It would be sent what you’ve confirmed here (never what it’s based on), keep its suggestions to your longest tasks, and learn from what you do with them, asking you here before it uses anything new.</p>
+          <div className="flex flex-wrap gap-2 mt-3">
+            <Button inline variant="primary" data-action="ask-offer-yes" onClick={() => { if (update(d => (answerAskOffer(d.patterns, true) ? undefined : false))) toast('Ask MyDay can use how you work. You can change this below.'); }}>Yes, let it</Button>
+            <Button inline variant="ghost" data-action="ask-offer-no" onClick={() => { if (update(d => (answerAskOffer(d.patterns, false) ? undefined : false))) toast('Not now. You can switch it on below whenever you like.'); }}>Not now</Button>
+          </div>
         </Card>
       )}
       {confirmed.length > 0 && (
