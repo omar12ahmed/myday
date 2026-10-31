@@ -31,7 +31,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     `export { SECTIONS, isHidden, sectionContent, overviewSections, setHidden, hiddenWords, openOnArrival, arriving, arrived } from ${src('projectSections')};`,
     `export { setDeadline, deadlineWords, deadlineLabel, setMilestone } from ${src('tasks')};`, `export { deadlineToNote, deadlineNoted, noteDeadlineDone } from ${src('deadlines')};`,
     `export { setDone, clearDay, toggleRoll, followQueued, taskFromQueue, sendToQueue } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
-    `export * as X from ${src('experiments')};`, `export * as AR from ${src('areas')};`, `export * as PW from ${src('projectWaiting')};`, `export * as W from ${src('welcomeBack')};`, `export { lastActivity as lastActivityOf, nextStep as nextStepOf } from ${src('projects')};`, `export * as M from ${src('businessMoney')};`, `export * as R from ${src('research')};`, `export * as CT from ${src('content')};`, `export * as F from ${src('files')};`,
+    `export * as X from ${src('experiments')};`, `export * as AR from ${src('areas')};`, `export * as PW from ${src('projectWaiting')};`, `export * as EX from ${src('exploring')};`, `export * as W from ${src('welcomeBack')};`, `export { lastActivity as lastActivityOf, nextStep as nextStepOf } from ${src('projects')};`, `export * as M from ${src('businessMoney')};`, `export * as R from ${src('research')};`, `export * as CT from ${src('content')};`, `export * as F from ${src('files')};`,
   ].join('\n'));
   const K = await import(pathToFileURL(await bundle(path.join(dir, 'kit.ts'), path.join(dir, 'out'))).href);
   const OLD = '2026-10-01T09:00';
@@ -2918,6 +2918,51 @@ const clone = o => JSON.parse(JSON.stringify(o));
       K.CT.editVideo(h, 'cvU', { script: '😀'.repeat(20001) });
       check('a script is cut by character, never half an emoji', Array.from(V(h, 'cvU').script).length === 20000 && !/[\uD800-\uDBFF]$/.test(V(h, 'cvU').script), V(h, 'cvU').script.length);
     }
+  }
+
+  console.log('\n[30] "You\'ve been exploring a while", and comparing the options (specs/projects-exploring.md)');
+  {
+    const k = '2026-11-22';
+    console.log('  the day a project moved to its stage');
+    const d0 = K.freshState(), id0 = K.addProject(d0, 'Garden shed');
+    const P0 = () => d0.projects.items.find(p => p.id === id0);
+    check('a new project remembers the day it started at its stage', /^\d{4}-\d{2}-\d{2}$/.test(P0().stageOn) && P0().stageOn === K.todayKey(), P0());
+    P0().stageOn = '2026-01-01';
+    check('changing its stage remembers the day (today); the same stage again changes nothing', K.editProject(d0, id0, { stage: 'explore' }) && P0().stageOn === K.todayKey()
+      && (P0().stageOn = '2026-01-01', !K.editProject(d0, id0, { stage: 'explore' })) && P0().stageOn === '2026-01-01' && (K.editProject(d0, id0, { title: 'Garden shed (renamed)' }), P0().stageOn === '2026-01-01'), P0());
+    let r = { dropped: 0 };
+    const read = K.normalizeProjects({ items: [base('a', { stageOn: '2026-10-01' }), base('b', { stageOn: 'last week' }), base('c', { stageOn: null }), base('d')] }, r).items;
+    check('read as written: a day kept; one that isn\'t a day counted and left off; null or none simply absent', read[0].stageOn === '2026-10-01' && !('stageOn' in read[1]) && !('stageOn' in read[2]) && !('stageOn' in read[3]) && r.dropped === 1, [read.map(p => p.stageOn), r]);
+
+    console.log('  asking');
+    const ex = (x = {}) => base('pE', { stage: 'explore', stageOn: K.shift(k, -21), ...x });
+    check('in Explore 21 days: asked, "You’ve been exploring this for 3 weeks"', eq(K.EX.exploringAWhile(ex(), k), { stage: 'explore', since: K.shift(k, -21), weeks: 3 }) && K.EX.exploringWords(K.EX.exploringAWhile(ex(), k)) === 'You’ve been exploring this for 3 weeks');
+    check('…in Decide 28 days: "You’ve been deciding on this for 4 weeks"; 27 days still 3 weeks', K.EX.exploringWords(K.EX.exploringAWhile(ex({ stage: 'decide', stageOn: K.shift(k, -28) }), k)) === 'You’ve been deciding on this for 4 weeks'
+      && K.EX.exploringAWhile(ex({ stageOn: K.shift(k, -27) }), k).weeks === 3);
+    check('…not at 20 days, nor at another stage, nor paused or finished, nor with no day, nor with a day still to come (another device\'s clock)',
+      [ex({ stageOn: K.shift(k, -20) }), ex({ stage: 'act' }), ex({ stage: 'organise' }), ex({ status: 'paused' }), ex({ status: 'done' }), base('pX', { stage: 'explore' }), ex({ stageOn: K.shift(k, 3) })].every(p => K.EX.exploringAWhile(p, k) === null));
+
+    console.log('  comparing');
+    const T = '2026-10-01T09:00';
+    const opt = (id, text, x = {}) => ({ id, text, pros: [], cons: [], ...x });
+    const dec = (id, question, options, x = {}) => ({ id, question, options, chosen: null, why: '', decidedOn: null, createdAt: T, updatedAt: T, ...x });
+    const finding = (id, about) => ({ id, type: 'finding', projectId: 'pC', text: 'A finding', limits: '', on: '2026-10-02', sourceIds: [], about, createdAt: T, updatedAt: T });
+    const cmp = world(base('pC', { stage: 'decide', template: 'business', tools: ['research'], model: { problem: '', who: '', how: '', assumptions: [
+      { id: 'as1', text: 'Shops would pay', state: 'open', found: '', checkedOn: null, taskId: null, createdAt: T }, { id: 'as2', text: 'Riders exist', state: 'looks-true', found: '', checkedOn: null, taskId: null, createdAt: T }] },
+      decisions: [dec('dc1', 'Which wood?', [opt('oA', 'Larch', { pros: ['Lasts'], cons: ['Dear'] }), opt('oB', 'Pine'), opt('oC', 'Cedar')]),
+        dec('dc2', 'Which colour?', [opt('oX', 'Green'), opt('oY', 'Grey')], { chosen: 'oX', decidedOn: '2026-10-05' }), dec('dc3', 'Gravel or slabs?', [], { createdAt: '2026-10-03T09:00' })] }));
+    cmp.research.items = [finding('rf1', [{ kind: 'option', id: 'oA', stance: 'supports' }]), finding('rf2', [{ kind: 'option', id: 'oA', stance: 'contradicts' }]), finding('rf3', [{ kind: 'option', id: 'oB', stance: 'relates' }]),
+      { id: 'rq1', type: 'question', projectId: 'pC', text: 'How long does larch last?', conclusion: '', answeredOn: null, createdAt: T, updatedAt: T },
+      { id: 'rq2', type: 'question', projectId: 'pC', text: 'Is pine cheaper?', conclusion: 'Yes', answeredOn: '2026-10-04', createdAt: T, updatedAt: T }];
+    const c = K.EX.compareView(cmp, cmp.projects.items[0]);
+    check('open decisions only (newest first, as the Decisions tab), each option in the order added', eq(c.decisions.map(x => x.decision.id), ['dc3', 'dc1']) && eq(c.decisions[1].options.map(o => o.option.id), ['oA', 'oB', 'oC']), c.decisions.map(x => x.decision.id));
+    const ev = c.decisions[1].options.map(o => [o.option.id, o.evidence.supports.length, o.evidence.contradicts.length, o.evidence.relates.length, o.none]);
+    check('each option\'s evidence (for, against, related), and which have nothing found', eq(ev, [['oA', 1, 1, 0, false], ['oB', 0, 0, 1, false], ['oC', 0, 0, 0, true]]), ev);
+    check('what\'s still unknown: the unanswered question, the must-be-true item not checked, and the option with nothing found', eq(c.questions.map(q => q.id), ['rq1']) && eq(c.assumptions.map(a => a.id), ['as1']) && eq(c.unknownOptions.map(o => o.option.id), ['oC']));
+    const plain = world(base('pD', { decisions: [dec('dc9', 'Which?', [opt('o1', 'One')])] }));
+    check('a project that isn\'t a business idea has no must-be-true items; with no research, no questions', eq(K.EX.compareView(plain, plain.projects.items[0]).assumptions, []) && eq(K.EX.compareView(plain, plain.projects.items[0]).questions, []));
+    check('"Compare side by side" is offered for an open decision with two options or more — not one option, not only decided ones', K.EX.canCompare(cmp.projects.items[0]) && !K.EX.canCompare(plain.projects.items[0])
+      && !K.EX.canCompare(base('pF', { decisions: [dec('dcZ', 'Done?', [opt('o1', 'A'), opt('o2', 'B')], { chosen: 'o1', decidedOn: '2026-10-05' })] })) && !K.EX.canCompare(base('pG')));
   }
 
   fs.rmSync(dir, { recursive: true, force: true });
