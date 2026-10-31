@@ -5,15 +5,25 @@
 
 export const MB = 1024 * 1024;
 export const GB = 1024 * MB;
-export const ACCOUNT_TOTAL_BYTES = 10 * GB;         // every file of an account together (the owner's choice, 24 Oct 2026)
+export const ACCOUNT_TOTAL_BYTES = 150 * GB;        // every file of an account together (the owner's choice: 10 GB on 24 Oct, 150 GB on 31 Oct 2026)
 export const THUMB_MAX_BYTES = 200 * 1024;          // a photo's small preview
 export const KEEP_DELETED_DAYS = 30;                // Recently deleted, then gone for good
+// A file over this goes up in parts (R2's multipart upload: 5 MB to 5 GB a part, at most 10,000), each this size but the
+// last, so a 15 GB video is 240 parts and never held whole in a phone's memory (specs/projects-content.md).
+export const SINGLE_PUT_MAX = 64 * MB;
+export const PART_BYTES = 64 * MB;
+export const MAX_PARTS = 10000;
 
 export interface FileType { ext: string[]; label: string; inline: boolean; magic: (b: Uint8Array) => boolean }
 const ascii = (b: Uint8Array, at: number, s: string) => [...s].every((c, i) => b[at + i] === c.charCodeAt(0));
 const zip = (b: Uint8Array) => b[0] === 0x50 && b[1] === 0x4b && b[2] === 0x03 && b[3] === 0x04;
 // Plain text: no NUL bytes in what was read (binary files nearly always have one early on).
 const text = (b: Uint8Array) => b.length > 0 && !b.includes(0);
+// Video (specs/projects-content.md): MP4 and MOV start with an "ftyp" box (a brand that isn't HEIC's: a photo isn't a
+// video), and an older MOV with one of QuickTime's boxes; WebM with the EBML header.
+const HEIC_BRANDS = ['heic', 'heix', 'hevc', 'hevx', 'mif1', 'msf1', 'heim', 'heis'];
+const ftypVideo = (b: Uint8Array) => ascii(b, 4, 'ftyp') && !HEIC_BRANDS.some(x => ascii(b, 8, x));
+const quicktime = (b: Uint8Array) => ftypVideo(b) || ['moov', 'mdat', 'wide', 'free', 'skip', 'pnot'].some(x => ascii(b, 4, x));
 export const FILE_TYPES: Record<string, FileType> = {
   'image/jpeg': { ext: ['jpg', 'jpeg'], label: 'Photo', inline: true, magic: b => b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff },
   'image/png': { ext: ['png'], label: 'Photo', inline: true, magic: b => ascii(b, 0, '\x89PNG\r\n\x1a\n') },
@@ -25,17 +35,23 @@ export const FILE_TYPES: Record<string, FileType> = {
   'application/vnd.openxmlformats-officedocument.presentationml.presentation': { ext: ['pptx'], label: 'PowerPoint', inline: false, magic: zip },
   'text/plain': { ext: ['txt'], label: 'Text', inline: false, magic: text },
   'text/csv': { ext: ['csv'], label: 'CSV', inline: false, magic: text },
+  'video/mp4': { ext: ['mp4', 'm4v'], label: 'Video', inline: true, magic: ftypVideo },
+  'video/quicktime': { ext: ['mov'], label: 'Video', inline: true, magic: quicktime },
+  'video/webm': { ext: ['webm'], label: 'Video', inline: true, magic: b => b[0] === 0x1a && b[1] === 0x45 && b[2] === 0xdf && b[3] === 0xa3 },
 };
-const DOCS = Object.keys(FILE_TYPES);
-// The photos a browser can draw, so the only files that get a small preview.
+export const VIDEOS = ['video/mp4', 'video/quicktime', 'video/webm'];
+const DOCS = Object.keys(FILE_TYPES).filter(t => !VIDEOS.includes(t));
+// The photos a browser can draw, so the only files that get a small preview…
 export const PREVIEWABLE = ['image/jpeg', 'image/png', 'image/webp'];
+// …and videos, whose preview is a frame the device takes from them.
+export const HAS_PREVIEW = [...PREVIEWABLE, ...VIDEOS];
 export interface AreaRule { types: string[]; maxBytes: number; totalBytes?: number; summary: string }
 export const AREA_RULES: Record<string, AreaRule> = {
   project: { types: DOCS, maxBytes: 25 * MB, summary: 'Only photos, PDFs and documents (Word, Excel, PowerPoint, text, CSV), up to 25 MB each.' },
   note: { types: DOCS, maxBytes: 25 * MB, summary: 'Only photos, PDFs and documents (Word, Excel, PowerPoint, text, CSV), up to 25 MB each.' },
   portfolio: { types: ['image/png', 'image/jpeg', 'image/webp', 'application/pdf'], maxBytes: 2 * MB, totalBytes: 200 * MB, summary: 'Only PNG, JPEG, WebP and PDF, up to 2 MB each.' },
   // A Content project's videos (specs/projects-content.md): their clips and thumbnails.
-  content: { types: DOCS, maxBytes: 25 * MB, summary: 'Only photos, PDFs and documents, up to 25 MB each.' },
+  content: { types: [...DOCS, ...VIDEOS], maxBytes: 15 * GB, summary: 'Only videos (MP4, MOV, WebM), photos, PDFs and documents, up to 15 GB each.' },
 };
 export const isArea = (a: unknown): a is string => typeof a === 'string' && Object.prototype.hasOwnProperty.call(AREA_RULES, a);
 

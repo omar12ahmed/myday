@@ -123,6 +123,8 @@ function start(db, port = 0) {
   // "presigned" links to the stand-in's own /__r2/ address, which checks the signed length, MD5, type and disposition
   // as R2 is expected to (specs/files.md).
   const fileObjects = new Map(), fileLinks = new Map(), filesLog = [];
+  // R2's multipart uploads (specs/projects-content.md): upload id -> { key, headers, parts: Map(n -> { body, etag }) }.
+  const fileUploads = new Map();
   let filesHandler = null, filesConfigured = true;
   const filesFail = {}; // action -> how many more times that one files action answers 502 (to test Try again after a failed step)
   const filesStore = {
@@ -130,11 +132,30 @@ function start(db, port = 0) {
     async firstBytes(key, n) { const o = fileObjects.get(key); return new Uint8Array(o ? o.body.subarray(0, n) : []); },
     async list(prefix) { return [...fileObjects].filter(([k]) => k.startsWith(prefix)).map(([key, o]) => ({ key, size: o.size ?? o.body.length, modified: o.modified })); },
     async remove(key) { fileObjects.delete(key); },
-    async sign(method, key, headers, seconds) {
+    async sign(method, key, headers, seconds, query = {}) {
       const token = require('crypto').randomUUID().replace(/-/g, '');
-      fileLinks.set(token, { method, key, headers, until: Date.now() + seconds * 1000 });
+      fileLinks.set(token, { method, key, headers, query, until: Date.now() + seconds * 1000 });
       return `http://127.0.0.1:${server.address().port}/__r2/${token}`;
     },
+    async mpCreate(key, headers) {
+      const id = 'up' + require('crypto').randomUUID().replace(/-/g, '');
+      fileUploads.set(id, { key, headers, parts: new Map() });
+      return id;
+    },
+    async mpParts(key, uploadId) {
+      const u = fileUploads.get(uploadId);
+      if (!u || u.key !== key) return null;
+      return [...u.parts].sort((a, b) => a[0] - b[0]).map(([n, x]) => ({ n, etag: x.etag, size: x.body.length }));
+    },
+    // As R2: every part named, in order, with its ETag; all but the last at least 5 MB (InvalidPart / EntityTooSmall).
+    async mpComplete(key, uploadId, parts) {
+      const u = fileUploads.get(uploadId);
+      if (!u || u.key !== key) throw new Error('NoSuchUpload');
+      const bodies = parts.map((p, i) => { const x = u.parts.get(p.n); if (!x || x.etag.replace(/"/g, '') !== p.etag.replace(/"/g, '')) throw new Error('InvalidPart'); if (i < parts.length - 1 && x.body.length < 5 * 1024 * 1024) throw new Error('EntityTooSmall'); return x.body; });
+      fileObjects.set(key, { body: Buffer.concat(bodies), type: u.headers['Content-Type'], disposition: u.headers['Content-Disposition'], modified: new Date().toISOString() });
+      fileUploads.delete(uploadId);
+    },
+    async mpAbort(key, uploadId) { const u = fileUploads.get(uploadId); if (u && u.key === key) fileUploads.delete(uploadId); },
   };
   const server = http.createServer((req, res) => {
     const chunks = [];
@@ -175,6 +196,16 @@ function start(db, port = 0) {
     if (p.startsWith('/__r2/')) {
       const link = fileLinks.get(p.slice('/__r2/'.length)), cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Expose-Headers': 'ETag' };
       if (!link || link.until < Date.now() || link.method !== req.method) { res.writeHead(403, cors); return res.end('SignatureDoesNotMatch'); }
+      // A part of a multipart upload: its signed length and MD5 must match; its ETag is what completing it names.
+      if (req.method === 'PUT' && link.query && link.query.uploadId) {
+        const h = link.headers, md5 = require('crypto').createHash('md5').update(buf).digest('base64'), u = fileUploads.get(link.query.uploadId);
+        if (!u || u.key !== link.key) { res.writeHead(404, cors); return res.end('NoSuchUpload'); }
+        if (String(buf.length) !== h['Content-Length'] || (req.headers['content-md5'] || '') !== h['Content-MD5']) { res.writeHead(403, cors); return res.end('SignatureDoesNotMatch'); }
+        if (md5 !== h['Content-MD5']) { res.writeHead(400, cors); return res.end('BadDigest'); }
+        const etag = '"' + require('crypto').createHash('md5').update(buf).digest('hex') + '"';
+        u.parts.set(Number(link.query.partNumber), { body: Buffer.from(buf), etag });
+        res.writeHead(200, { ...cors, ETag: etag }); return res.end();
+      }
       if (req.method === 'PUT') {
         const h = link.headers, md5 = require('crypto').createHash('md5').update(buf).digest('base64');
         const same = (name, want) => (req.headers[name.toLowerCase()] || '') === want;

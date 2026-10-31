@@ -3,7 +3,7 @@
 // in Recently deleted for 30 days go for good; a file nothing lists goes to Recently deleted; an upload that won't finish
 // is settled). The rules for what may be kept are shared with the files function
 // (supabase/functions/_shared/files/rules.ts). Never sent to AI.
-import { cleanName, FILE_TYPES, looksLike, PREVIEWABLE, refusal, THUMB_MAX_BYTES, typeOfName } from '../../../supabase/functions/_shared/files/rules';
+import { cleanName, FILE_TYPES, looksLike, PART_BYTES, PREVIEWABLE, refusal, SINGLE_PUT_MAX, THUMB_MAX_BYTES, typeOfName, VIDEOS } from '../../../supabase/functions/_shared/files/rules';
 import { addFileRecord, dropAdded, dueForPurge, forgetFiles, healFiles, LISTED_AREAS, markOrphans, newFileId, setFileState, unfinished, type Owner } from '../data/files';
 import { PORTFOLIO_FILES } from '../data/cybersecurity/types';
 import { clearFileCache, forgetCached, forgetCachedExcept } from '../data/fileCache';
@@ -98,7 +98,7 @@ async function preview(file: Blob): Promise<Uint8Array | null> {
 
 // ---------- Adding ----------
 // What's happening to files being added on this device, for the cards to show ("Adding…", or why it didn't work).
-export interface Progress { name: string; state: 'adding' | 'failed'; message: string }
+export interface Progress { name: string; state: 'adding' | 'failed'; message: string; done?: number; of?: number } // done/of: parts sent, for a big file
 const progress = new Map<string, Progress>(), pending = new Map<string, { owner: Owner; file: File; area: string }>();
 const listeners = new Set<() => void>();
 export const subscribeFiles = (fn: () => void) => { listeners.add(fn); return () => { listeners.delete(fn); }; };
@@ -162,9 +162,10 @@ export async function addFiles(owner: Owner, area: string, files: File[]): Promi
   try { for (const file of files) {
     const why = await checkFile(area, file);
     if (why) { refused.push(`${cleanName(file.name)}: ${why}`); continue; }
-    const bytes = new Uint8Array(await file.arrayBuffer());
+    // (A big file is never read whole: it goes up in parts, with no hash of the whole file — specs/projects-content.md.)
+    const big = file.size > SINGLE_PUT_MAX, bytes = big ? undefined : new Uint8Array(await file.arrayBuffer());
     const id = newFileId(), type = typeOfName(file.name)!;
-    const sha256 = hex(await crypto.subtle.digest('SHA-256', bytes));
+    const sha256 = bytes ? hex(await crypto.subtle.digest('SHA-256', bytes)) : '';
     if (!update(d => (addFileRecord(d, owner, { id, name: cleanName(file.name), type, size: file.size, sha256, area }) ? undefined : false))) { refused.push(`${cleanName(file.name)}: ${owner.kind === 'portfolio' ? `a portfolio entry keeps at most ${PORTFOLIO_FILES} files` : 'a project or note keeps at most 50 files'}.`); continue; }
     pending.set(id, { owner, file, area });
     sent = true;
@@ -186,6 +187,7 @@ async function send(id: string, area: string, file: File, bytes?: Uint8Array): P
     setProgress(id, drop ? null : { name, state: 'failed', message });
     return drop ? { kept: false, refused: message } : { kept: false };
   };
+  if (file.size > SINGLE_PUT_MAX) return sendInParts(id, area, file, name, fail);
   let data: Uint8Array;
   try { data = bytes ?? new Uint8Array(await file.arrayBuffer()); } catch { return fail('That file can’t be read any more. Remove it and add it again.'); }
   const up = await call<{ url: string; headers: Record<string, string> }>('upload', { fileId: id, area, name, size: data.length, md5: base64(md5(data)) });
@@ -193,11 +195,16 @@ async function send(id: string, area: string, file: File, bytes?: Uint8Array): P
   if (up.ok && !(await put(up.data.url, up.data.headers, file))) return fail(offlineNow() ? WHY.offline : WHY.failed);
   const ok = await call<{ size: number }>('confirm', { fileId: id, area, name });
   if (!ok.ok) return fail(ok.message || WHY[ok.why as Exclude<FilesResult, 'ok'>] || WHY.failed, ok.why === 'not-allowed');
-  update(d => (setFileState(d, id, 'kept', ok.data.size) ? undefined : false));
+  return kept(id, area, file, name, ok.data.size);
+}
+// Kept: its record says so, and a photo or video gets its small preview (a video's: a frame from it).
+async function kept(id: string, area: string, file: File, name: string, size: number): Promise<Sent> {
+  update(d => (setFileState(d, id, 'kept', size) ? undefined : false));
   pending.delete(id);
   setProgress(id, null);
-  if (PREVIEWABLE.includes(typeOfName(name) ?? '')) {
-    const thumb = await preview(file);
+  const type = typeOfName(name) ?? '';
+  if (PREVIEWABLE.includes(type) || VIDEOS.includes(type)) {
+    const thumb = VIDEOS.includes(type) ? await videoFrame(file) : await preview(file);
     if (thumb) {
       const t = await call<{ url: string; headers: Record<string, string> }>('thumb', { fileId: id, area, size: thumb.length, md5: base64(md5(thumb)) });
       if (t.ok) await put(t.data.url, t.data.headers, new Blob([thumb as BlobPart], { type: 'image/webp' }));
@@ -205,8 +212,101 @@ async function send(id: string, area: string, file: File, bytes?: Uint8Array): P
   }
   return { kept: true };
 }
+
+// ---------- In parts (specs/projects-content.md) ----------
+// A file over 64 MB goes up in 64 MB parts, one read at a time (never the whole file), each on its own signed link
+// with its MD5. Where it has got to is kept on this device (`myday.files.parts`: the upload, and each part's ETag),
+// so a dropped connection, Try again, or picking the same file again after a reload carries on from there.
+const PARTS_KEY = 'myday.files.parts';
+interface Sending { uploadId: string; size: number; name: string; etags: Record<string, string> }
+const sendings = (): Record<string, Sending> => { try { const v = JSON.parse(localStorage.getItem(PARTS_KEY) || '{}'); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; } catch { return {}; } };
+function keepSending(id: string, s: Sending | null) {
+  try { const all = sendings(); if (s) all[id] = s; else delete all[id]; localStorage.setItem(PARTS_KEY, JSON.stringify(all)); } catch { /* it starts again next time */ }
+}
+// A big upload this device started and can carry on, given the same file again.
+export const carryingOn = (id: string) => !!sendings()[id];
+async function putPart(url: string, headers: Record<string, string>, body: Blob): Promise<string | null> {
+  for (let tries = 0; tries < 3; tries++) {
+    try {
+      const res = await fetch(url, { method: 'PUT', headers, body });
+      if (res.ok) return res.headers.get('ETag');
+      if (res.status === 403) return null; // its link has run out: asked for again next time
+    } catch { if (offlineNow()) return null; }
+    await new Promise(r => setTimeout(r, 1000 * (tries + 1)));
+  }
+  return null;
+}
+async function sendInParts(id: string, area: string, file: File, name: string, fail: (message: string, drop?: boolean) => Sent, again = false): Promise<Sent> {
+  const count = Math.ceil(file.size / PART_BYTES), sentWords = (n: number) => `${Math.floor((n * 100) / count)}% sent`;
+  let s: Sending | undefined = sendings()[id];
+  if (s && (s.size !== file.size || s.name !== name)) return fail('That isn’t the same file — pick the one you started with.');
+  if (s) {
+    // Carrying on: R2 says which parts it has (a part sent but not noted here counts too).
+    const l = await call<{ parts: { n: number; etag: string }[] }>('mp-list', { fileId: id, area, uploadId: s.uploadId });
+    if (!l.ok && l.why === 'not-found') { keepSending(id, null); if (!again) return sendInParts(id, area, file, name, fail, true); s = undefined; }
+    else if (!l.ok) return fail(l.message || WHY[l.why as Exclude<FilesResult, 'ok'>] || WHY.failed);
+    else { s.etags = Object.fromEntries(l.data.parts.map(p => [String(p.n), p.etag])); keepSending(id, s); }
+  }
+  if (!s) {
+    const r = await call<{ uploadId: string }>('mp-begin', { fileId: id, area, name, size: file.size });
+    if (!r.ok && r.error === 'exists') {
+      // Already all there (finished from another try): the usual check.
+      const ok = await call<{ size: number }>('confirm', { fileId: id, area, name });
+      return ok.ok ? kept(id, area, file, name, ok.data.size) : fail(ok.message || WHY.failed, ok.why === 'not-allowed');
+    }
+    if (!r.ok) return fail(r.message || WHY[r.why as Exclude<FilesResult, 'ok'>] || WHY.failed, r.why === 'not-allowed' || r.why === 'full');
+    s = { uploadId: r.data.uploadId, size: file.size, name, etags: {} };
+    keepSending(id, s);
+  }
+  const sending = s;
+  for (let n = 1; n <= count; n++) {
+    if (sending.etags[String(n)]) continue;
+    setProgress(id, { name, state: 'adding', message: sentWords(Object.keys(sending.etags).length), done: Object.keys(sending.etags).length, of: count });
+    const part = file.slice((n - 1) * PART_BYTES, Math.min(n * PART_BYTES, file.size));
+    let digest: string;
+    try { digest = base64(md5(new Uint8Array(await part.arrayBuffer()))); } catch { return fail('That file can’t be read any more. Pick it again to carry on.'); }
+    const link = await call<{ parts: { n: number; url: string; headers: Record<string, string> }[] }>('mp-parts', { fileId: id, area, uploadId: sending.uploadId, size: file.size, parts: [{ n, md5: digest }] });
+    if (!link.ok) return fail(link.message || WHY[link.why as Exclude<FilesResult, 'ok'>] || WHY.failed);
+    const etag = await putPart(link.data.parts[0].url, link.data.parts[0].headers, part);
+    if (!etag) return fail(`${offlineNow() ? 'The connection dropped' : 'It stopped'} at ${sentWords(Object.keys(sending.etags).length)}. Try again carries on from there.`);
+    sending.etags[String(n)] = etag;
+    keepSending(id, sending);
+  }
+  setProgress(id, { name, state: 'adding', message: 'Finishing…', done: count, of: count });
+  const parts = Array.from({ length: count }, (_, i) => ({ n: i + 1, etag: sending.etags[String(i + 1)] }));
+  const r = await call<{ size: number }>('mp-done', { fileId: id, area, uploadId: sending.uploadId, name, parts });
+  if (!r.ok) {
+    const drop = r.why === 'not-allowed' || r.why === 'full';
+    if (drop) keepSending(id, null);
+    return fail(r.message || WHY[r.why as Exclude<FilesResult, 'ok'>] || WHY.failed, drop);
+  }
+  keepSending(id, null);
+  return kept(id, area, file, name, r.data.size);
+}
+// A video's preview: a frame a second in (or its first), at most 320 px, as WebP; null when this browser can't.
+async function videoFrame(file: File): Promise<Uint8Array | null> {
+  const src = URL.createObjectURL(file), v = document.createElement('video');
+  try {
+    v.muted = true; v.playsInline = true; v.preload = 'metadata'; v.src = src;
+    await new Promise<void>((ok, no) => { v.onloadeddata = () => ok(); v.onerror = () => no(new Error('video')); setTimeout(() => no(new Error('slow')), 15_000); });
+    v.currentTime = Math.min(1, (v.duration || 2) / 2);
+    await new Promise<void>((ok, no) => { v.onseeked = () => ok(); setTimeout(() => no(new Error('slow')), 15_000); });
+    const scale = Math.min(1, 320 / Math.max(v.videoWidth, v.videoHeight, 1)), c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(v.videoWidth * scale)); c.height = Math.max(1, Math.round(v.videoHeight * scale));
+    c.getContext('2d')?.drawImage(v, 0, 0, c.width, c.height);
+    const blob = await new Promise<Blob | null>(ok => c.toBlob(ok, 'image/webp', 0.7));
+    const out = blob ? new Uint8Array(await blob.arrayBuffer()) : null;
+    return out && out.length <= THUMB_MAX_BYTES ? out : null;
+  } catch { return null; } finally { URL.revokeObjectURL(src); v.removeAttribute('src'); }
+}
 // Try a failed file again (while this page still has it).
 export const canRetry = (id: string) => pending.has(id);
+// After a reload, a big upload carries on once you pick the same file again (it's checked: same name and size).
+export async function carryOn(owner: Owner, id: string, area: string, file: File): Promise<Sent> {
+  if (pending.has(id)) return retry(id);
+  pending.set(id, { owner, file, area });
+  return retry(id);
+}
 export async function retry(id: string): Promise<Sent> {
   const p = pending.get(id);
   if (!p) return { kept: false };

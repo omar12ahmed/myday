@@ -58,9 +58,41 @@ function r2(): Store | null {
       const res = await aws.fetch(at(key), { method: 'DELETE' });
       if (!res.ok && res.status !== 404) throw new Error(`r2 ${res.status}`);
     },
-    async sign(method, key, headers, seconds) {
-      const signed = await aws.sign(new Request(`${at(key)}?X-Amz-Expires=${seconds}`, { method, headers }), { aws: { signQuery: true, allHeaders: true } });
+    async sign(method, key, headers, seconds, query = {}) {
+      const q = new URLSearchParams({ ...query, 'X-Amz-Expires': String(seconds) });
+      const signed = await aws.sign(new Request(`${at(key)}?${q}`, { method, headers }), { aws: { signQuery: true, allHeaders: true } });
       return signed.url.toString();
+    },
+    // R2's multipart upload, over its S3 API (specs/projects-content.md).
+    async mpCreate(key, headers) {
+      const xml = await (await ok(await aws.fetch(`${at(key)}?uploads`, { method: 'POST', headers }))).text();
+      const id = unxml(tag(xml, 'UploadId'));
+      if (!id) throw new Error('r2 no upload id');
+      return id;
+    },
+    async mpParts(key, uploadId) {
+      const out: { n: number; etag: string; size: number }[] = [];
+      let marker = '';
+      do {
+        const q = new URLSearchParams({ uploadId, 'max-parts': '1000', ...(marker ? { 'part-number-marker': marker } : {}) });
+        const res = await aws.fetch(`${at(key)}?${q}`);
+        if (res.status === 404) { await res.body?.cancel(); return null; }
+        const xml = await (await ok(res)).text();
+        for (const p of xml.match(/<Part>[\s\S]*?<\/Part>/g) ?? []) out.push({ n: Number(tag(p, 'PartNumber')), etag: unxml(tag(p, 'ETag')), size: Number(tag(p, 'Size')) || 0 });
+        marker = tag(xml, 'IsTruncated') === 'true' ? tag(xml, 'NextPartNumberMarker') : '';
+      } while (marker);
+      return out;
+    },
+    async mpComplete(key, uploadId, parts) {
+      const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      const body = `<CompleteMultipartUpload>${parts.map(p => `<Part><PartNumber>${p.n}</PartNumber><ETag>${esc(p.etag)}</ETag></Part>`).join('')}</CompleteMultipartUpload>`;
+      const res = await ok(await aws.fetch(`${at(key)}?${new URLSearchParams({ uploadId })}`, { method: 'POST', body, headers: { 'Content-Type': 'application/xml' } }));
+      const xml = await res.text();
+      if (/<Error>/.test(xml)) throw new Error('r2 complete');
+    },
+    async mpAbort(key, uploadId) {
+      const res = await aws.fetch(`${at(key)}?${new URLSearchParams({ uploadId })}`, { method: 'DELETE' });
+      if (!res.ok && res.status !== 404) throw new Error(`r2 ${res.status}`);
     },
   };
 }

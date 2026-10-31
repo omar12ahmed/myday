@@ -139,9 +139,12 @@ export const goneOn = (f: FileRecord) => (f.deletedOn ? shift(f.deletedOn, KEEP_
 // Those whose 30 days are over: their bytes can go from R2, then their records.
 export const dueForPurge = (d: MyDayData, k: DateKey = todayKey()) => d.files.items.filter(f => deleted(d, f) && f.deletedOn! <= shift(k, -KEEP_DELETED_DAYS));
 // A file still being added an hour after it started (or since an earlier day) won't finish: the device adding it was
-// closed or lost its connection. Its bytes may or may not have arrived; the tidy asks the server.
+// closed or lost its connection. Its bytes may or may not have arrived; the tidy asks the server. A big one going up in
+// parts (over 64 MB: specs/projects-content.md) can carry on for 7 days (R2 drops unfinished uploads after 7).
+const BIG = 64 * 1024 * 1024, WEEK = 7 * 24 * 60 * 60 * 1000;
 export const unfinished = (f: FileRecord, now = Date.now(), k: DateKey = todayKey()) => listedHere(f) && f.state === 'uploading'
-  && (typeof f.startedAt === 'number' ? now - f.startedAt > 60 * 60 * 1000 : f.addedOn < k);
+  && (f.size > BIG ? (typeof f.startedAt === 'number' ? now - f.startedAt > WEEK : f.addedOn < shift(k, -7))
+    : typeof f.startedAt === 'number' ? now - f.startedAt > 60 * 60 * 1000 : f.addedOn < k);
 // A file nothing lists and that isn't in Recently deleted (e.g. its place was deleted on a device that didn't know
 // files): it goes to Recently deleted from the day it's noticed, so nothing is ever lost silently. A file still being
 // added is left alone.
@@ -164,4 +167,4 @@ export function filesLeaving(d: MyDayData, from: Owner, k: DateKey = todayKey())
     if (f && listedHere(f) && !f.deletedOn && usedBy(d, id).every(o => o.kind === from.kind && o.id === from.id)) { f.deletedOn = k; f.removedFrom = from; }
   }
 }
-export const sizeLabel = (n: number) => (n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1024 / 1024).toFixed(1)} MB`);
+export const sizeLabel = (n: number) => (n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))} KB` : n < 1024 * 1024 * 1024 ? `${(n / 1024 / 1024).toFixed(1)} MB` : `${(n / 1024 / 1024 / 1024).toFixed(1)} GB`);

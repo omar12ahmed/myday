@@ -135,7 +135,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
       rec('flproj000009'),                                                                            // an ordinary orphan, for comparison
     ];
     const before = clone(d.files.items.slice(0, 4));
-    check('LISTED_AREAS is project, note and portfolio', eq(K.LISTED_AREAS, ['project', 'note', 'portfolio']));
+    check('LISTED_AREAS is project, note, portfolio and content (a Content project\'s videos)', eq(K.LISTED_AREAS, ['project', 'note', 'portfolio', 'content']));
     check('none of them is an orphan (only the project file is)', eq(K.orphans(d).map(f => f.id), ['flproj000009']));
     K.markOrphans(d, '2026-10-24'); K.healFiles(d);
     check('markOrphans and healFiles leave them exactly as they were', eq(d.files.items.slice(0, 4), before), d.files.items.slice(0, 4));
