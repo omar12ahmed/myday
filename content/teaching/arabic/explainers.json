@@ -1701,7 +1701,7 @@
      "Arabic links a noun to a sentence that describes it with a relative word, much like \"who\", \"which\" or \"that\". الَّذِي is for one man or a masculine thing, الَّتِي for one woman or a feminine thing.",
      "The relative word matches the noun: الطَّالِبُ الَّذِي, the student (a man) who; الطَّالِبَةُ الَّتِي, the student (a woman) who; الطُّلَّابُ الَّذِينَ, the students who.",
      "Things in the plural count as feminine singular, so they take الَّتِي: الْكُتُبُ الَّتِي, the books that.",
-     "A relative word follows only a definite noun: one with الْـ, a name, or a possessive. After a noun without الْـ, the describing sentence follows directly, with no relative word.",
+     "After a noun, a relative word is used only when the noun is definite: one with الْـ, a name, or a possessive. After a noun without الْـ, the describing sentence follows directly, with no relative word.",
      "When the noun is the one the action is done to, the describing sentence points back to it with a pronoun: الْمَدِينَةُ الَّتِي زُرْتُهَا, the city that I visited (literally \"that I visited it\").",
      "When the noun is the one doing the action, the verb already points back, so no extra pronoun is needed: الرَّجُلُ الَّذِي يَسْكُنُ هُنَا, the man who lives here.",
      "For two, use اللَّذَانِ and اللَّتَانِ. After a preposition, or as an object, they become اللَّذَيْنِ and اللَّتَيْنِ."
@@ -1870,7 +1870,7 @@
      }
     ],
     "steps": [
-     "A sentence such as الْجَوُّ جَمِيلٌ has a subject and a description, and both end in -u.",
+     "A sentence such as الْجَوُّ جَمِيلٌ has a subject and a description, and both end in -u (the description with tanween: -un).",
      "Put إِنَّ in front and the subject changes to -a, while the description keeps its -u: إِنَّ الْجَوَّ جَمِيلٌ.",
      "Its sisters work the same way and add their own meaning: أَنَّ, that; لَكِنَّ, but; لَعَلَّ, perhaps (hoping); كَأَنَّ, as if.",
      "إِنَّ starts a statement, or follows قَالَ. أَنَّ follows another word, usually a verb such as أَعْرِفُ, I know.",
@@ -2038,7 +2038,7 @@
      "That's the opposite of إِنَّ, which changes the subject and leaves the description alone.",
      "Each adds its own meaning: كَانَ, was; أَصْبَحَ, became; لَيْسَ, is not; مَا زَالَ, still is.",
      "Like any verb, they change for the subject: كَانَتِ الْغُرْفَةُ بَارِدَةً, the room was cold; أَصْبَحْتُ مُعَلِّمًا, I became a teacher.",
-     "مَا زَالَ looks negative (literally \"hasn't stopped\"), but it means \"still\". In the present it's لَا يَزَالُ: لَا يَزَالُ الْمَطَرُ غَزِيرًا, the rain is still heavy."
+     "مَا زَالَ looks negative and past (literally \"hasn't stopped\"), but it means \"still\", about now: مَا زَالَ الْجَوُّ بَارِدًا, the weather is still cold. The present-tense form لَا يَزَالُ means the same: لَا يَزَالُ الْمَطَرُ غَزِيرًا, the rain is still heavy."
     ],
     "examples": [
      {
@@ -2098,7 +2098,7 @@
     ],
     "why": {
      "q_en": "Why is لَيْسَ in this family, when it means \"is not\"?",
-     "a_en": "Because it works exactly like كَانَ: its subject keeps -u and its description takes -a, as in لَيْسَ الْمَطْعَمُ بَعِيدًا. It's a verb too, and changes for the person (لَسْتُ مُتْعَبًا, I'm not tired), though it has only this one form, with no present or future."
+     "a_en": "Because it works exactly like كَانَ: its subject keeps -u and its description takes -a, as in لَيْسَ الْمَطْعَمُ بَعِيدًا. It's a verb too, and changes for the person (لَسْتُ مُتْعَبًا, I'm not tired), though it has only this one tense: there is no present or future لَيْسَ."
     },
     "selftest": [
      {
@@ -2713,7 +2713,7 @@
     ],
     "steps": [
      "First decide what you mean: a reason (why it happened), a purpose (what it's for) or a result (what followed). Then choose the word.",
-     "For a reason, use لِأَنَّ before a sentence and بِسَبَبِ before a noun: تَأَخَّرْتُ لِأَنَّ الطَّرِيقَ مُزْدَحِمٌ; تَأَخَّرْتُ بِسَبَبِ الزِّحَامِ.",
+     "For a reason, use لِأَنَّ before a sentence and بِسَبَبِ before a noun: تَأَخَّرْتُ لِأَنَّ الطَّرِيقَ مُزْدَحِمٌ, I was late because the road is busy; تَأَخَّرْتُ بِسَبَبِ الزِّحَامِ, I was late because of the traffic.",
      "After لِأَنَّ the noun ends in -a, as after أَنَّ, or a pronoun joins on: لِأَنَّهُ, because he; لِأَنَّنِي, because I.",
      "For a purpose, use لِكَيْ before a verb, which then ends in -a: لِكَيْ أَصِلَ, so that I arrive. مِنْ أَجْلِ goes before a noun: مِنْ أَجْلِ أُسْرَتِي, for my family.",
      "For a result, لِذَلِكَ starts the next part: كَانَ الْمَحَلُّ مُغْلَقًا، لِذَلِكَ رَجَعْتُ, the shop was closed, so I went back."
@@ -2899,7 +2899,7 @@
      "Before a verb, use the light form لَكِنْ, without the shadda: أَرَدْتُ أَنْ أَحْضُرَ، لَكِنْ تَأَخَّرَ الْقِطَارُ, I wanted to come, but the train was late.",
      "مَعَ أَنَّ, \"although\", goes before a sentence, and its noun ends in -a, as after أَنَّ: خَرَجْنَا مَعَ أَنَّ الْجَوَّ بَارِدٌ, we went out although it was cold.",
      "رَغْمَ, \"despite\", goes before a noun in -i: ذَهَبْنَا رَغْمَ الْمَطَرِ, we went despite the rain. You'll also see بِالرَّغْمِ مِنْ.",
-     "بَيْنَمَا sets two things side by side, \"whereas\" or \"while\": أَخِي يُحِبُّ الشِّتَاءَ، بَيْنَمَا أُحِبُّ الصَّيْفَ.",
+     "بَيْنَمَا sets two things side by side, \"whereas\" or \"while\": أَخِي يُحِبُّ الشِّتَاءَ، بَيْنَمَا أُحِبُّ الصَّيْفَ, my brother loves winter, whereas I love summer.",
      "أَمَّا means \"as for\". The comment after its topic starts with فَـ: أَمَّا أَنَا فَأُفَضِّلُ الشَّايَ, as for me, I prefer tea."
     ],
     "examples": [

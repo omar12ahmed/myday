@@ -118,7 +118,10 @@ export function transliterate(text: string): Reading {
   const result = written.replace(/[ء-غف-يٱـ\u064b-\u065f\u0670]+/g, (s: string, at: number) => {
     // Joined to the word before (only spaces between) when that one ends in a vowel; a comma or full stop is a break.
     const r = word(s, end >= 0 && /^ +$/.test(written.slice(end, at)) && /[aiuāīū]$/.test(said));
-    incomplete ||= r.incomplete; note ??= r.note; end = at + s.length; said = r.text; return r.text;
+    // Tanween before a joining alif takes a helping i, and the two join: مُغْلَقٌ الْيَوْمَ is mughlaquni l-yawma.
+    const next = /^ +([اٱ][^ ]*)/.exec(written.slice(at + s.length))?.[1];
+    const text = next && /[ًٌٍ][اى]?$/.test(s) && /n$/.test(r.text) && wasl(units(next.replaceAll('ـ', '')), 0) ? r.text + 'i' : r.text;
+    incomplete ||= r.incomplete; note ??= r.note; end = at + s.length; said = text; return text;
   }).replace(/[٠-٩]/g, c => String(c.charCodeAt(0) - 0x660)).replaceAll('،', ',').replaceAll('؛', ';').replaceAll('؟', '?');
   incomplete ||= /\p{Script=Arabic}/u.test(result);
   return { text: result, incomplete, note: incomplete ? 'Incomplete vowel or script information; use the sentence context and a recording.' : note };

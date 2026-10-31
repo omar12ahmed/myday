@@ -27,8 +27,9 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
     // …but a long ā stays long, before a sukūn or a doubled letter, or after كَ (kāntu is a wrong answer on purpose).
     ['كَانْتُ', 'kāntu'], ['كِتَابْ', 'kitāb'], ['فِي الصَّبَاحْ', 'fī ṣ-ṣabāḥ'], ['أَلْمَانْيَا', 'almānyā'], ['حَارَّةٌ', 'ḥārratun'],
     ['وَاحِدٌ', 'wāḥidun'], ['وَافَقَ', 'wāfaqa'],
-    // No joining after tanween or a sukūn; a joining alif after a prefix, before a doubled letter, after the plain article.
-    ['كِتَابٌ الْيَوْمَ', 'kitābun al-yawma'], ['مِنْ الْبَيْتِ', 'min al-bayti'], ['ثُمَّ الْتَقَى', 'thumma ltaqā'], ['فِي اللَّيْلِ', 'fī l-layli'],
+    // Tanween before a joining alif takes a helping i; no joining after a sukūn; a joining alif after a prefix, before a
+    // doubled letter, after the plain article.
+    ['كِتَابٌ الْيَوْمَ', 'kitābuni l-yawma'], ['رَأَيْتُ رَجُلًا اسْمُهُ سَامِي', 'raʾaytu rajulani smuhu sāmī'], ['كِتَابٌ، الْيَوْمَ', 'kitābun, al-yawma'], ['مِنْ الْبَيْتِ', 'min al-bayti'], ['ثُمَّ الْتَقَى', 'thumma ltaqā'], ['فِي اللَّيْلِ', 'fī l-layli'],
     ['بِاسْمِ', 'bismi'], ['لِلِاسْتِخْدَامِ', 'li-l-istikhdāmi'], ['فَاسْأَلُونِي', 'fasʾalūnī'], ['وَاتَّفَقَ', 'wattafaqa'],
     ['هِيَ اتَّصَلَتْ', 'hiya ttaṣalat'], ['فِي الاسْتِخْدَامِ', 'fī l-istikhdāmi'],
     // The relative pronouns' doubled ل, a doubled ل after لِ, an authored reading after a vowel, a misspelt article.
