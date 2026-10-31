@@ -26335,6 +26335,1651 @@
      "يَخَافُ مِنَ الْوَحْدَةِ"
     ]
    }
+  ],
+  "lesson.arabic-classical-register": [
+   {
+    "id": "explainer.arabic-classical-senses",
+    "title_en": "Classical Arabic: نَثْر, شِعْر, and words whose meaning has moved",
+    "family_en": "What carries over from modern Fuṣḥā, and what an older text can mean differently",
+    "table": [
+     {
+      "form_en": "prose",
+      "ar": "نَثْر",
+      "en": "prose"
+     },
+     {
+      "form_en": "poetry",
+      "ar": "شِعْر",
+      "en": "poetry"
+     },
+     {
+      "form_en": "today a train",
+      "ar": "قِطَار",
+      "en": "a train; once, a line of camels"
+     },
+     {
+      "form_en": "today a newspaper",
+      "ar": "جَرِيدَة",
+      "en": "a newspaper; once, a stripped palm stalk"
+     },
+     {
+      "form_en": "today a telephone",
+      "ar": "هَاتِف",
+      "en": "a telephone; once, a voice heard from someone unseen"
+     },
+     {
+      "form_en": "an old sense",
+      "ar": "مَعْنًى قَدِيمٌ",
+      "en": "an old sense"
+     },
+     {
+      "form_en": "a modern sense",
+      "ar": "مَعْنًى حَدِيثٌ",
+      "en": "a modern sense"
+     }
+    ],
+    "steps": [
+     "Classical texts share most of their grammar with modern Fuṣḥā, but their words, genres and habits differ from period to period.",
+     "A word can carry an older sense: قِطَار, a train today, was once a line of camels; جَرِيدَة, a newspaper, was a stripped palm stalk.",
+     "So note when and what kind of text it is, and look the word up in a dictionary that covers that period.",
+     "Classical prose and poetry each have their own conventions: don't read one as if it were the other."
+    ],
+    "examples": [
+     {
+      "ar": "سَارَ قِطَارُ الْإِبِلِ فِي الصَّحْرَاءِ.",
+      "en": "The line of camels moved through the desert.",
+      "words": [
+       {
+        "ar": "سَارَ",
+        "en": "moved, went"
+       },
+       {
+        "ar": "قِطَارُ",
+        "en": "the line (of)"
+       },
+       {
+        "ar": "الْإِبِلِ",
+        "en": "camels"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "الصَّحْرَاءِ",
+        "en": "the desert"
+       }
+      ]
+     },
+     {
+      "ar": "رَكِبْتُ الْقِطَارَ إِلَى الْمَدِينَةِ.",
+      "en": "I took the train to the city.",
+      "words": [
+       {
+        "ar": "رَكِبْتُ",
+        "en": "I rode, I took"
+       },
+       {
+        "ar": "الْقِطَارَ",
+        "en": "the train"
+       },
+       {
+        "ar": "إِلَى",
+        "en": "to"
+       },
+       {
+        "ar": "الْمَدِينَةِ",
+        "en": "the city"
+       }
+      ]
+     },
+     {
+      "ar": "قَرَأْتُ الْخَبَرَ فِي الْجَرِيدَةِ.",
+      "en": "I read the news item in the newspaper.",
+      "words": [
+       {
+        "ar": "قَرَأْتُ",
+        "en": "I read"
+       },
+       {
+        "ar": "الْخَبَرَ",
+        "en": "the news item"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "الْجَرِيدَةِ",
+        "en": "the newspaper"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "How do you know which sense a word has in an old text?",
+     "a_en": "From the text's period and its context: a line about camels in the desert can't mean a train. When in doubt, check a historical dictionary, and keep both senses in your notes until the context settles it."
+    },
+    "selftest": [
+     {
+      "q_en": "What did قِطَار once mean?",
+      "choices": [
+       "a line of camels",
+       "a road",
+       "a market"
+      ],
+      "answer": "a line of camels",
+      "why_en": "Its modern sense, a train, came later."
+     },
+     {
+      "q_en": "What does نَثْر mean?",
+      "choices": [
+       "prose",
+       "poetry",
+       "a period"
+      ],
+      "answer": "prose",
+      "why_en": "Poetry is شِعْر."
+     },
+     {
+      "q_en": "A word in an old text has a familiar modern meaning. What do you check?",
+      "choices": [
+       "its sense in that period",
+       "nothing",
+       "only its spelling"
+      ],
+      "answer": "its sense in that period",
+      "why_en": "An older text may use an older sense."
+     }
+    ],
+    "phrases_ar": [],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-old-dictionaries",
+      "en": "Checking an old sense in a historical dictionary."
+     }
+    ]
+   }
+  ],
+  "lesson.arabic-classical-parsing": [
+   {
+    "id": "explainer.arabic-irab",
+    "title_en": "Iʿrāb: endings that show who did what",
+    "family_en": "Parsing a sentence: each word's job, its ending, and what governs it",
+    "table": [
+     {
+      "form_en": "parsing; the endings",
+      "ar": "الْإِعْرَاب",
+      "en": "parsing; the case endings"
+     },
+     {
+      "form_en": "the doer",
+      "ar": "فَاعِل",
+      "en": "the doer, the subject"
+     },
+     {
+      "form_en": "the object",
+      "ar": "مَفْعُولٌ بِهِ",
+      "en": "the direct object"
+     },
+     {
+      "form_en": "-u",
+      "ar": "مَرْفُوع",
+      "en": "nominative"
+     },
+     {
+      "form_en": "-a",
+      "ar": "مَنْصُوب",
+      "en": "accusative"
+     },
+     {
+      "form_en": "-i",
+      "ar": "مَجْرُور",
+      "en": "genitive"
+     },
+     {
+      "form_en": "the governing word",
+      "ar": "الْعَامِل",
+      "en": "the word that governs an ending"
+     }
+    ],
+    "steps": [
+     "الْإِعْرَاب is both the endings and the analysis of them: what each word's job is, and what governs its ending.",
+     "Start with the structure: the verb, who does it, to what, and what's attached. Then read the endings.",
+     "The endings, not the order, show the roles: in أَكْرَمَ الضَّيْفَ صَاحِبُ الْبَيْتِ, the host honoured the guest, the doer comes last.",
+     "Parse to settle a real question of meaning. If two analyses both fit, note both, and check a commentary or a teacher."
+    ],
+    "examples": [
+     {
+      "ar": "أَكْرَمَ الضَّيْفَ صَاحِبُ الْبَيْتِ.",
+      "en": "The host honoured the guest.",
+      "words": [
+       {
+        "ar": "أَكْرَمَ",
+        "en": "honoured"
+       },
+       {
+        "ar": "الضَّيْفَ",
+        "en": "the guest (-a: the object)"
+       },
+       {
+        "ar": "صَاحِبُ",
+        "en": "the owner (of) (-u: the doer)"
+       },
+       {
+        "ar": "الْبَيْتِ",
+        "en": "the house: \"the host\""
+       }
+      ]
+     },
+     {
+      "ar": "كَتَبَ الشَّاعِرُ رِسَالَةً إِلَى صَدِيقِهِ.",
+      "en": "The poet wrote a letter to his friend.",
+      "words": [
+       {
+        "ar": "كَتَبَ",
+        "en": "wrote"
+       },
+       {
+        "ar": "الشَّاعِرُ",
+        "en": "the poet (-u: the doer)"
+       },
+       {
+        "ar": "رِسَالَةً",
+        "en": "a letter (-an: the object)"
+       },
+       {
+        "ar": "إِلَى",
+        "en": "to"
+       },
+       {
+        "ar": "صَدِيقِهِ",
+        "en": "his friend (-i after إِلَى)"
+       }
+      ]
+     },
+     {
+      "ar": "مَا رَأَيْتُ أَحَدًا.",
+      "en": "I didn't see anyone.",
+      "words": [
+       {
+        "ar": "مَا",
+        "en": "not"
+       },
+       {
+        "ar": "رَأَيْتُ",
+        "en": "I saw"
+       },
+       {
+        "ar": "أَحَدًا",
+        "en": "anyone (-an: the object)"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "In أَكْرَمَ الضَّيْفَ صَاحِبُ الْبَيْتِ, how do you know who honoured whom?",
+     "a_en": "From the endings: الضَّيْفَ ends in -a, so it's the object; صَاحِبُ ends in -u, so it's the doer, even though it comes last. Arabic can move words for emphasis because the endings keep the roles."
+    },
+    "selftest": [
+     {
+      "q_en": "In a verbal sentence, which ending marks the direct object?",
+      "choices": [
+       "-a (accusative)",
+       "-u (nominative)",
+       "-i (genitive)"
+      ],
+      "answer": "-a (accusative)",
+      "why_en": "The doer takes -u."
+     },
+     {
+      "q_en": "What is الْإِعْرَاب?",
+      "choices": [
+       "the case endings, and parsing them",
+       "a dictionary",
+       "a kind of poem"
+      ],
+      "answer": "the case endings, and parsing them",
+      "why_en": "It names both the endings and their analysis."
+     },
+     {
+      "q_en": "In أَكْرَمَ الضَّيْفَ صَاحِبُ الْبَيْتِ, who is the doer?",
+      "choices": [
+       "صَاحِبُ الْبَيْتِ",
+       "الضَّيْفَ",
+       "no one"
+      ],
+      "answer": "صَاحِبُ الْبَيْتِ",
+      "why_en": "Its -u marks the doer, though it comes last."
+     }
+    ],
+    "phrases_ar": [
+     "أَكْرَمَ الضَّيْفَ صَاحِبُ الْبَيْتِ"
+    ]
+   }
+  ],
+  "lesson.arabic-historical-lexicon": [
+   {
+    "id": "explainer.arabic-old-dictionaries",
+    "title_en": "Old dictionaries and small words: مُعْجَم, شَاهِد, مَا",
+    "family_en": "Using a historical dictionary, and the several jobs of a small word",
+    "table": [
+     {
+      "form_en": "a dictionary",
+      "ar": "مُعْجَم",
+      "en": "a dictionary"
+     },
+     {
+      "form_en": "an entry",
+      "ar": "مَادَّة",
+      "en": "an entry (under a root)"
+     },
+     {
+      "form_en": "a quoted example",
+      "ar": "شَاهِد",
+      "en": "a quoted example, an attestation"
+     },
+     {
+      "form_en": "a sense",
+      "ar": "دَلَالَة",
+      "en": "a meaning, a sense"
+     },
+     {
+      "form_en": "مَا: not",
+      "ar": "مَا رَأَيْتُهُ",
+      "en": "I didn't see him"
+     },
+     {
+      "form_en": "مَا: what?",
+      "ar": "مَا هَذَا؟",
+      "en": "what's this?"
+     },
+     {
+      "form_en": "مَا: what (that which)",
+      "ar": "مَا كَتَبْتَ",
+      "en": "what you wrote"
+     }
+    ],
+    "steps": [
+     "A historical dictionary gives a word's senses with شَوَاهِد, dated quotations. The earliest one shows the word was in use by then, not that it began then.",
+     "Look a word up under its root: the مَادَّة, the entry, gathers its related forms.",
+     "Small words have several jobs. مَا can mean \"not\", \"what?\" or \"what\" in the sense of \"that which\", and the sentence decides: مَا رَأَيْتُهُ, I didn't see him; مَا هَذَا؟, what's this?",
+     "Don't read a later, technical sense back into an older text: check the sense against the passage."
+    ],
+    "examples": [
+     {
+      "ar": "بَحَثْتُ عَنِ الْكَلِمَةِ فِي الْمُعْجَمِ.",
+      "en": "I looked the word up in the dictionary.",
+      "words": [
+       {
+        "ar": "بَحَثْتُ",
+        "en": "I looked"
+       },
+       {
+        "ar": "عَنِ",
+        "en": "for (-i before the next word)"
+       },
+       {
+        "ar": "الْكَلِمَةِ",
+        "en": "the word"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "الْمُعْجَمِ",
+        "en": "the dictionary"
+       }
+      ]
+     },
+     {
+      "ar": "أَعْجَبَنِي مَا كَتَبْتَ.",
+      "en": "I liked what you wrote.",
+      "words": [
+       {
+        "ar": "أَعْجَبَنِي",
+        "en": "pleased me: \"I liked\""
+       },
+       {
+        "ar": "مَا",
+        "en": "what, that which"
+       },
+       {
+        "ar": "كَتَبْتَ",
+        "en": "you wrote"
+       }
+      ]
+     },
+     {
+      "ar": "مَا رَأَيْتُهُ مُنْذُ سَنَةٍ.",
+      "en": "I haven't seen him for a year.",
+      "words": [
+       {
+        "ar": "مَا",
+        "en": "not"
+       },
+       {
+        "ar": "رَأَيْتُهُ",
+        "en": "I saw him"
+       },
+       {
+        "ar": "مُنْذُ",
+        "en": "since, for"
+       },
+       {
+        "ar": "سَنَةٍ",
+        "en": "a year"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "How can مَا mean both \"not\" and \"what\"?",
+     "a_en": "They're different uses of one small word, and grammar names each: مَا النَّافِيَةُ, which denies the verb after it; مَا الِاسْتِفْهَامِيَّةُ, which asks; and مَا الْمَوْصُولَةُ, \"that which\". Its place and the rest of the sentence show which it is."
+    },
+    "selftest": [
+     {
+      "q_en": "In مَا رَأَيْتُهُ, what does مَا do?",
+      "choices": [
+       "it says \"not\"",
+       "it asks \"what?\"",
+       "it means \"that which\""
+      ],
+      "answer": "it says \"not\"",
+      "why_en": "Before a past verb, it denies it: I didn't see him."
+     },
+     {
+      "q_en": "What is a شَاهِد in a dictionary?",
+      "choices": [
+       "a quoted example",
+       "a root",
+       "a modern sense"
+      ],
+      "answer": "a quoted example",
+      "why_en": "It shows the word in use."
+     },
+     {
+      "q_en": "A dictionary's earliest quotation for a word is from a certain year. What does that show?",
+      "choices": [
+       "that the word was in use by then",
+       "that the word began that year",
+       "nothing at all"
+      ],
+      "answer": "that the word was in use by then",
+      "why_en": "It may be older than its first recorded example."
+     }
+    ],
+    "phrases_ar": [
+     "مَا النَّافِيَةُ",
+     "مَا الِاسْتِفْهَامِيَّةُ",
+     "مَا الْمَوْصُولَةُ"
+    ]
+   }
+  ],
+  "lesson.arabic-edition-commentary": [
+   {
+    "id": "explainer.arabic-editions",
+    "title_en": "Editions and commentary: تَحْقِيق, مُحَقِّق, شَرْح",
+    "family_en": "The words for editions, copies and commentary, and keeping the text apart from the notes",
+    "table": [
+     {
+      "form_en": "a critical edition",
+      "ar": "تَحْقِيق",
+      "en": "a critical edition, editing a text"
+     },
+     {
+      "form_en": "the editor",
+      "ar": "مُحَقِّق",
+      "en": "the editor of a text"
+     },
+     {
+      "form_en": "a commentary",
+      "ar": "شَرْح",
+      "en": "a commentary"
+     },
+     {
+      "form_en": "a margin",
+      "ar": "هَامِش",
+      "en": "a margin, a footnote"
+     },
+     {
+      "form_en": "a copy",
+      "ar": "نُسْخَة",
+      "en": "a copy (of a text)"
+     },
+     {
+      "form_en": "a manuscript",
+      "ar": "مَخْطُوط",
+      "en": "a manuscript"
+     },
+     {
+      "form_en": "variants",
+      "ar": "اِخْتِلَافُ النُّسَخِ",
+      "en": "differences between copies, variants"
+     }
+    ],
+    "steps": [
+     "Editions can differ in wording, punctuation and vowel marks: note which edition, and which مُحَقِّق, editor, you used.",
+     "Keep the text apart from the شَرْح, the commentary, and from the هَامِش, the editor's notes: they explain the text, but they aren't the author's words.",
+     "Where copies differ, the editor notes the اِخْتِلَافُ النُّسَخِ, the variants. Read them before you decide a reading is obvious.",
+     "A digital copy can carry typing errors: check a page image when the exact wording matters."
+    ],
+    "examples": [
+     {
+      "ar": "اِعْتَمَدَ الْمُحَقِّقُ عَلَى ثَلَاثِ نُسَخٍ.",
+      "en": "The editor relied on three copies.",
+      "words": [
+       {
+        "ar": "اِعْتَمَدَ",
+        "en": "relied"
+       },
+       {
+        "ar": "الْمُحَقِّقُ",
+        "en": "the editor"
+       },
+       {
+        "ar": "عَلَى",
+        "en": "on"
+       },
+       {
+        "ar": "ثَلَاثِ",
+        "en": "three"
+       },
+       {
+        "ar": "نُسَخٍ",
+        "en": "copies"
+       }
+      ]
+     },
+     {
+      "ar": "ذَكَرَ الشَّارِحُ رَأْيَيْنِ فِي الْمَعْنَى.",
+      "en": "The commentator gave two views on the meaning.",
+      "words": [
+       {
+        "ar": "ذَكَرَ",
+        "en": "mentioned, gave"
+       },
+       {
+        "ar": "الشَّارِحُ",
+        "en": "the commentator"
+       },
+       {
+        "ar": "رَأْيَيْنِ",
+        "en": "two views"
+       },
+       {
+        "ar": "فِي",
+        "en": "on, about"
+       },
+       {
+        "ar": "الْمَعْنَى",
+        "en": "the meaning"
+       }
+      ]
+     },
+     {
+      "ar": "فِي الْهَامِشِ تَصْحِيحٌ مِنَ الْمُحَقِّقِ.",
+      "en": "In the margin there's a correction by the editor.",
+      "words": [
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "الْهَامِشِ",
+        "en": "the margin"
+       },
+       {
+        "ar": "تَصْحِيحٌ",
+        "en": "a correction"
+       },
+       {
+        "ar": "مِنَ",
+        "en": "from, by (-a before the next word)"
+       },
+       {
+        "ar": "الْمُحَقِّقِ",
+        "en": "the editor"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why تَحْقِيق, from حَقَّقَ, to verify, for editing a text?",
+     "a_en": "Editing an old text means checking it: comparing the copies, settling the wording and noting where they differ. The editor is the مُحَقِّق, the one who verifies."
+    },
+    "selftest": [
+     {
+      "q_en": "What is a شَرْح?",
+      "choices": [
+       "a commentary",
+       "the original text",
+       "a copy"
+      ],
+      "answer": "a commentary",
+      "why_en": "The one who writes it is a شَارِح."
+     },
+     {
+      "q_en": "Who is the مُحَقِّق?",
+      "choices": [
+       "the editor of the text",
+       "the author",
+       "a reader"
+      ],
+      "answer": "the editor of the text",
+      "why_en": "From حَقَّقَ, to verify."
+     },
+     {
+      "q_en": "What is اِخْتِلَافُ النُّسَخِ?",
+      "choices": [
+       "differences between copies",
+       "a translation",
+       "a dictionary"
+      ],
+      "answer": "differences between copies",
+      "why_en": "نُسَخ is the plural of نُسْخَة, a copy."
+     }
+    ],
+    "phrases_ar": [],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-annotating-a-passage",
+      "en": "Writing your own notes on a short passage."
+     }
+    ]
+   }
+  ],
+  "lesson.arabic-classical-commentary": [
+   {
+    "id": "explainer.arabic-annotating-a-passage",
+    "title_en": "Annotating a passage: تَعْلِيق, يَعُودُ الضَّمِيرُ عَلَى",
+    "family_en": "Notes that solve real difficulties, and saying what a pronoun refers to",
+    "table": [
+     {
+      "form_en": "a note",
+      "ar": "تَعْلِيق",
+      "en": "a note, an annotation"
+     },
+     {
+      "form_en": "the pronoun",
+      "ar": "الضَّمِير",
+      "en": "the pronoun"
+     },
+     {
+      "form_en": "refers to",
+      "ar": "يَعُودُ عَلَى",
+      "en": "refers (back) to"
+     },
+     {
+      "form_en": "the likelier reading",
+      "ar": "قِرَاءَةٌ مُرَجَّحَةٌ",
+      "en": "the likelier reading"
+     },
+     {
+      "form_en": "a certain reading",
+      "ar": "قِرَاءَةٌ مُؤَكَّدَةٌ",
+      "en": "a certain reading"
+     },
+     {
+      "form_en": "a concise explanation",
+      "ar": "شَرْحٌ مُوجَزٌ",
+      "en": "a concise explanation"
+     }
+    ],
+    "steps": [
+     "Choose a short passage, and write one تَعْلِيق, note, for each real difficulty: a word, a construction, a reference.",
+     "Say what a pronoun refers to: يَعُودُ الضَّمِيرُ عَلَى الثَّعْلَبِ, the pronoun refers to the fox. It can change who does the next thing.",
+     "Keep the text, your translation and your notes apart, and mark which readings are sure and which are only likelier.",
+     "Name the dictionary or commentary each note relies on, and add no motive or moral the text doesn't support."
+    ],
+    "examples": [
+     {
+      "ar": "يَعُودُ الضَّمِيرُ عَلَى الثَّعْلَبِ لَا عَلَى الْأَسَدِ.",
+      "en": "The pronoun refers to the fox, not the lion.",
+      "words": [
+       {
+        "ar": "يَعُودُ",
+        "en": "returns: \"refers\""
+       },
+       {
+        "ar": "الضَّمِيرُ",
+        "en": "the pronoun"
+       },
+       {
+        "ar": "عَلَى",
+        "en": "to"
+       },
+       {
+        "ar": "الثَّعْلَبِ",
+        "en": "the fox"
+       },
+       {
+        "ar": "لَا",
+        "en": "not"
+       },
+       {
+        "ar": "عَلَى",
+        "en": "to"
+       },
+       {
+        "ar": "الْأَسَدِ",
+        "en": "the lion"
+       }
+      ]
+     },
+     {
+      "ar": "هَذِهِ قِرَاءَةٌ مُرَجَّحَةٌ، وَلَيْسَتْ مُؤَكَّدَةً.",
+      "en": "This is the likelier reading, not a certain one.",
+      "words": [
+       {
+        "ar": "هَذِهِ",
+        "en": "this"
+       },
+       {
+        "ar": "قِرَاءَةٌ",
+        "en": "a reading"
+       },
+       {
+        "ar": "مُرَجَّحَةٌ",
+        "en": "likelier"
+       },
+       {
+        "ar": "وَلَيْسَتْ",
+        "en": "and it isn't"
+       },
+       {
+        "ar": "مُؤَكَّدَةً",
+        "en": "certain"
+       }
+      ]
+     },
+     {
+      "ar": "كَتَبْتُ تَعْلِيقًا قَصِيرًا عَلَى كُلِّ صُعُوبَةٍ.",
+      "en": "I wrote a short note on each difficulty.",
+      "words": [
+       {
+        "ar": "كَتَبْتُ",
+        "en": "I wrote"
+       },
+       {
+        "ar": "تَعْلِيقًا",
+        "en": "a note"
+       },
+       {
+        "ar": "قَصِيرًا",
+        "en": "short"
+       },
+       {
+        "ar": "عَلَى",
+        "en": "on"
+       },
+       {
+        "ar": "كُلِّ",
+        "en": "each"
+       },
+       {
+        "ar": "صُعُوبَةٍ",
+        "en": "difficulty"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why يَعُودُ عَلَى, literally \"returns to\", for \"refers to\"?",
+     "a_en": "A pronoun points back to something already named, so grammar says it \"returns\" to it: يَعُودُ الضَّمِيرُ عَلَى الثَّعْلَبِ. Finding where it returns often settles who did what."
+    },
+    "selftest": [
+     {
+      "q_en": "What does يَعُودُ الضَّمِيرُ عَلَى mean?",
+      "choices": [
+       "the pronoun refers to",
+       "the pronoun is missing",
+       "the verb comes back"
+      ],
+      "answer": "the pronoun refers to",
+      "why_en": "It points back to something already named."
+     },
+     {
+      "q_en": "What is a تَعْلِيق?",
+      "choices": [
+       "a note, an annotation",
+       "a translation",
+       "a dictionary"
+      ],
+      "answer": "a note, an annotation",
+      "why_en": "One for each real difficulty."
+     },
+     {
+      "q_en": "What does قِرَاءَةٌ مُرَجَّحَةٌ mean?",
+      "choices": [
+       "the likelier reading",
+       "a certain reading",
+       "a wrong reading"
+      ],
+      "answer": "the likelier reading",
+      "why_en": "From رَجَّحَ, to judge more likely."
+     }
+    ],
+    "phrases_ar": [
+     "يَعُودُ الضَّمِيرُ عَلَى الثَّعْلَبِ",
+     "يَعُودُ الضَّمِيرُ عَلَى"
+    ]
+   }
+  ],
+  "lesson.arabic-translation-brief": [
+   {
+    "id": "explainer.arabic-translation-brief",
+    "title_en": "A translation brief: الْجُمْهُور, الْغَرَض, الْأَمَانَة",
+    "family_en": "Who a translation is for, what it's for, and what must stay exact",
+    "table": [
+     {
+      "form_en": "the target audience",
+      "ar": "الْجُمْهُورُ الْمُسْتَهْدَفُ",
+      "en": "the target audience"
+     },
+     {
+      "form_en": "the purpose",
+      "ar": "الْغَرَض",
+      "en": "the purpose"
+     },
+     {
+      "form_en": "the source language",
+      "ar": "اللُّغَةُ الْمَصْدَرُ",
+      "en": "the source language"
+     },
+     {
+      "form_en": "the target language",
+      "ar": "اللُّغَةُ الْهَدَفُ",
+      "en": "the target language"
+     },
+     {
+      "form_en": "a literal translation",
+      "ar": "تَرْجَمَةٌ حَرْفِيَّةٌ",
+      "en": "a word-for-word translation"
+     },
+     {
+      "form_en": "fidelity",
+      "ar": "الْأَمَانَة",
+      "en": "faithfulness, fidelity"
+     }
+    ],
+    "steps": [
+     "Before you translate, settle the brief: الْجُمْهُورُ الْمُسْتَهْدَفُ, the audience, and الْغَرَض, the purpose.",
+     "Decide what must stay exact: names, numbers, dates, any negation, and how certain each claim is.",
+     "A تَرْجَمَةٌ حَرْفِيَّةٌ, a word-for-word translation, suits a study aid; a notice for the public needs clear, natural wording.",
+     "Note any term you couldn't settle, rather than choosing one silently."
+    ],
+    "examples": [
+     {
+      "ar": "مَنِ الْجُمْهُورُ الْمُسْتَهْدَفُ؟",
+      "en": "Who is the target audience?",
+      "words": [
+       {
+        "ar": "مَنِ",
+        "en": "who (-i before the next word)"
+       },
+       {
+        "ar": "الْجُمْهُورُ",
+        "en": "the audience"
+       },
+       {
+        "ar": "الْمُسْتَهْدَفُ",
+        "en": "targeted"
+       }
+      ]
+     },
+     {
+      "ar": "يَجِبُ أَنْ تَبْقَى الْأَرْقَامُ كَمَا هِيَ.",
+      "en": "The numbers must stay as they are.",
+      "words": [
+       {
+        "ar": "يَجِبُ",
+        "en": "it's necessary: \"must\""
+       },
+       {
+        "ar": "أَنْ",
+        "en": "that"
+       },
+       {
+        "ar": "تَبْقَى",
+        "en": "stay"
+       },
+       {
+        "ar": "الْأَرْقَامُ",
+        "en": "the numbers"
+       },
+       {
+        "ar": "كَمَا",
+        "en": "as"
+       },
+       {
+        "ar": "هِيَ",
+        "en": "they (are)"
+       }
+      ]
+     },
+     {
+      "ar": "هَذِهِ تَرْجَمَةٌ حَرْفِيَّةٌ لِلدِّرَاسَةِ فَقَطْ.",
+      "en": "This is a literal translation, for study only.",
+      "words": [
+       {
+        "ar": "هَذِهِ",
+        "en": "this"
+       },
+       {
+        "ar": "تَرْجَمَةٌ",
+        "en": "a translation"
+       },
+       {
+        "ar": "حَرْفِيَّةٌ",
+        "en": "literal"
+       },
+       {
+        "ar": "لِلدِّرَاسَةِ",
+        "en": "for study"
+       },
+       {
+        "ar": "فَقَطْ",
+        "en": "only"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why الْأَمَانَة, \"faithfulness\", for accuracy in translation?",
+     "a_en": "أَمَانَة is trustworthiness: a faithful translation keeps faith with the original's meaning, its facts and its limits, even when the wording changes."
+    },
+    "selftest": [
+     {
+      "q_en": "What is الْغَرَض?",
+      "choices": [
+       "the purpose",
+       "the audience",
+       "the source"
+      ],
+      "answer": "the purpose",
+      "why_en": "Settle it before you start."
+     },
+     {
+      "q_en": "What is a تَرْجَمَةٌ حَرْفِيَّةٌ?",
+      "choices": [
+       "a word-for-word translation",
+       "a summary",
+       "a free retelling"
+      ],
+      "answer": "a word-for-word translation",
+      "why_en": "حَرْفِيّ is word for word."
+     },
+     {
+      "q_en": "Which must stay exact in any translation?",
+      "choices": [
+       "names, numbers and negation",
+       "the word order",
+       "the length"
+      ],
+      "answer": "names, numbers and negation",
+      "why_en": "They carry the facts."
+     }
+    ],
+    "phrases_ar": [],
+    "leads_to": [
+     {
+      "id": "explainer.arabic-beyond-word-for-word",
+      "en": "Making the choices the brief calls for: idioms and set phrases."
+     }
+    ]
+   }
+  ],
+  "lesson.arabic-translation-choices": [
+   {
+    "id": "explainer.arabic-beyond-word-for-word",
+    "title_en": "Beyond word for word: اِتَّخَذَ قَرَارًا, عَلَى قَدَمٍ وَسَاقٍ",
+    "family_en": "Set phrases and idioms, and translating the meaning rather than each word",
+    "table": [
+     {
+      "form_en": "made a decision",
+      "ar": "اِتَّخَذَ قَرَارًا",
+      "en": "made, took a decision"
+     },
+     {
+      "form_en": "an idiom",
+      "ar": "تَعْبِيرٌ اصْطِلَاحِيٌّ",
+      "en": "an idiom"
+     },
+     {
+      "form_en": "in full swing",
+      "ar": "عَلَى قَدَمٍ وَسَاقٍ",
+      "en": "in full swing (literally \"on foot and leg\")"
+     },
+     {
+      "form_en": "hand in hand",
+      "ar": "يَدًا بِيَدٍ",
+      "en": "hand in hand, together"
+     },
+     {
+      "form_en": "paid attention to",
+      "ar": "اِنْتَبَهَ إِلَى",
+      "en": "paid attention to"
+     },
+     {
+      "form_en": "a translator's note",
+      "ar": "مُلَاحَظَةُ الْمُتَرْجِمِ",
+      "en": "a translator's note"
+     }
+    ],
+    "steps": [
+     "Translate the meaning, not each word: اِتَّخَذَ قَرَارًا is \"made a decision\", not \"took to himself a decision\".",
+     "An تَعْبِيرٌ اصْطِلَاحِيٌّ, an idiom, needs an equivalent: عَلَى قَدَمٍ وَسَاقٍ, literally \"on foot and leg\", is \"in full swing\".",
+     "Keep the facts, who acts, and when, even when you change the structure.",
+     "If you add an explanation, mark it as مُلَاحَظَةُ الْمُتَرْجِمِ, a translator's note, not as the source's words."
+    ],
+    "examples": [
+     {
+      "ar": "اِتَّخَذَتِ اللَّجْنَةُ قَرَارًا مُهِمًّا.",
+      "en": "The committee made an important decision.",
+      "words": [
+       {
+        "ar": "اِتَّخَذَتِ",
+        "en": "made, took (-i before the next word)"
+       },
+       {
+        "ar": "اللَّجْنَةُ",
+        "en": "the committee"
+       },
+       {
+        "ar": "قَرَارًا",
+        "en": "a decision"
+       },
+       {
+        "ar": "مُهِمًّا",
+        "en": "important"
+       }
+      ]
+     },
+     {
+      "ar": "الْعَمَلُ عَلَى قَدَمٍ وَسَاقٍ.",
+      "en": "The work is in full swing.",
+      "words": [
+       {
+        "ar": "الْعَمَلُ",
+        "en": "the work"
+       },
+       {
+        "ar": "عَلَى",
+        "en": "on"
+       },
+       {
+        "ar": "قَدَمٍ",
+        "en": "a foot"
+       },
+       {
+        "ar": "وَسَاقٍ",
+        "en": "and a leg: \"in full swing\""
+       }
+      ]
+     },
+     {
+      "ar": "عَمِلْنَا يَدًا بِيَدٍ.",
+      "en": "We worked hand in hand.",
+      "words": [
+       {
+        "ar": "عَمِلْنَا",
+        "en": "we worked"
+       },
+       {
+        "ar": "يَدًا",
+        "en": "a hand"
+       },
+       {
+        "ar": "بِيَدٍ",
+        "en": "in a hand: \"hand in hand\""
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why can't عَلَى قَدَمٍ وَسَاقٍ be translated word for word?",
+     "a_en": "Word for word it's \"on foot and leg\", which means nothing in English. An idiom carries one meaning as a whole, so find the English that carries the same: \"in full swing\"."
+    },
+    "selftest": [
+     {
+      "q_en": "How do you translate اِتَّخَذَ قَرَارًا?",
+      "choices": [
+       "made a decision",
+       "took a decision to himself",
+       "cancelled a decision"
+      ],
+      "answer": "made a decision",
+      "why_en": "Translate the set phrase as a whole."
+     },
+     {
+      "q_en": "What is a تَعْبِيرٌ اصْطِلَاحِيٌّ?",
+      "choices": [
+       "an idiom",
+       "a technical term",
+       "a translation"
+      ],
+      "answer": "an idiom",
+      "why_en": "Its meaning isn't the sum of its words."
+     },
+     {
+      "q_en": "You add an explanation of your own. How do you mark it?",
+      "choices": [
+       "as a translator's note",
+       "you don't mark it",
+       "as the author's words"
+      ],
+      "answer": "as a translator's note",
+      "why_en": "Keep your words apart from the source's."
+     }
+    ],
+    "phrases_ar": []
+   }
+  ],
+  "lesson.arabic-translation-qa": [
+   {
+    "id": "explainer.arabic-checking-a-translation",
+    "title_en": "Checking a translation: حَذْف, إِضَافَة, النَّفْي",
+    "family_en": "The words for a translation review, and the order to check things in",
+    "table": [
+     {
+      "form_en": "an omission",
+      "ar": "حَذْف",
+      "en": "an omission"
+     },
+     {
+      "form_en": "an addition",
+      "ar": "إِضَافَة",
+      "en": "an addition"
+     },
+     {
+      "form_en": "the negation",
+      "ar": "النَّفْي",
+      "en": "the negation"
+     },
+     {
+      "form_en": "a review",
+      "ar": "مُرَاجَعَة",
+      "en": "a review"
+     },
+     {
+      "form_en": "a correction log",
+      "ar": "سِجِلُّ التَّصْحِيحَاتِ",
+      "en": "a log of corrections"
+     },
+     {
+      "form_en": "a consistent term",
+      "ar": "مُصْطَلَحٌ مُوَحَّدٌ",
+      "en": "a term used consistently"
+     }
+    ],
+    "steps": [
+     "Put the source and the translation side by side, and compare them sentence by sentence: look for any حَذْف, omission, or إِضَافَة, addition.",
+     "Check every number, name, date and النَّفْي, negation, on its own: fluent wording can hide a wrong one.",
+     "Then read the translation alone, for sense and flow, and check that each term is used the same way throughout.",
+     "Fix meaning first and style second, and keep a سِجِلُّ التَّصْحِيحَاتِ, a log of corrections."
+    ],
+    "examples": [
+     {
+      "ar": "قَارَنْتُ التَّرْجَمَةَ بِالْأَصْلِ جُمْلَةً جُمْلَةً.",
+      "en": "I compared the translation with the original, sentence by sentence.",
+      "words": [
+       {
+        "ar": "قَارَنْتُ",
+        "en": "I compared"
+       },
+       {
+        "ar": "التَّرْجَمَةَ",
+        "en": "the translation"
+       },
+       {
+        "ar": "بِالْأَصْلِ",
+        "en": "with the original"
+       },
+       {
+        "ar": "جُمْلَةً",
+        "en": "a sentence"
+       },
+       {
+        "ar": "جُمْلَةً",
+        "en": "a sentence: \"sentence by sentence\""
+       }
+      ]
+     },
+     {
+      "ar": "فِي التَّرْجَمَةِ حَذْفٌ فِي الْفِقْرَةِ الثَّانِيَةِ.",
+      "en": "There's an omission in the translation, in the second paragraph.",
+      "words": [
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "التَّرْجَمَةِ",
+        "en": "the translation"
+       },
+       {
+        "ar": "حَذْفٌ",
+        "en": "an omission"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "الْفِقْرَةِ",
+        "en": "the paragraph"
+       },
+       {
+        "ar": "الثَّانِيَةِ",
+        "en": "second"
+       }
+      ]
+     },
+     {
+      "ar": "سَقَطَ النَّفْيُ مِنَ الْجُمْلَةِ الْأَخِيرَةِ.",
+      "en": "The negation dropped out of the last sentence.",
+      "words": [
+       {
+        "ar": "سَقَطَ",
+        "en": "fell, dropped out"
+       },
+       {
+        "ar": "النَّفْيُ",
+        "en": "the negation"
+       },
+       {
+        "ar": "مِنَ",
+        "en": "from (-a before the next word)"
+       },
+       {
+        "ar": "الْجُمْلَةِ",
+        "en": "the sentence"
+       },
+       {
+        "ar": "الْأَخِيرَةِ",
+        "en": "last"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why check numbers and negation one by one, after reading for sense?",
+     "a_en": "A fluent sentence reads well even when a number or a لَا has gone wrong, and those errors change the facts. Checking them one by one catches what reading for flow misses."
+    },
+    "selftest": [
+     {
+      "q_en": "What is a حَذْف?",
+      "choices": [
+       "an omission",
+       "an addition",
+       "a correction"
+      ],
+      "answer": "an omission",
+      "why_en": "Something in the source is missing from the translation."
+     },
+     {
+      "q_en": "What comes first when you correct a translation?",
+      "choices": [
+       "errors of meaning",
+       "style",
+       "length"
+      ],
+      "answer": "errors of meaning",
+      "why_en": "Style comes after."
+     },
+     {
+      "q_en": "What does جُمْلَةً جُمْلَةً mean?",
+      "choices": [
+       "sentence by sentence",
+       "in one sentence",
+       "every second sentence"
+      ],
+      "answer": "sentence by sentence",
+      "why_en": "A word said twice like this means one by one."
+     }
+    ],
+    "phrases_ar": [
+     "جُمْلَةً جُمْلَةً"
+    ]
+   }
+  ],
+  "lesson.arabic-oral-mediation": [
+   {
+    "id": "explainer.arabic-relaying",
+    "title_en": "Relaying for someone: الْخُلَاصَة, الْمَوْعِدُ النِّهَائِيُّ, لَسْتُ مُتَأَكِّدًا",
+    "family_en": "Passing on what someone needs, who said it, and how sure you are",
+    "table": [
+     {
+      "form_en": "the gist",
+      "ar": "الْخُلَاصَة",
+      "en": "the gist, the summary"
+     },
+     {
+      "form_en": "the deadline",
+      "ar": "الْمَوْعِدُ النِّهَائِيُّ",
+      "en": "the deadline"
+     },
+     {
+      "form_en": "a condition",
+      "ar": "شَرْط",
+      "en": "a condition"
+     },
+     {
+      "form_en": "he says that",
+      "ar": "يَقُولُ إِنَّ",
+      "en": "he says that"
+     },
+     {
+      "form_en": "I'm not sure",
+      "ar": "لَسْتُ مُتَأَكِّدًا",
+      "en": "I'm not sure"
+     },
+     {
+      "form_en": "is that clear?",
+      "ar": "هَلْ هَذَا وَاضِحٌ؟",
+      "en": "is that clear?"
+     }
+    ],
+    "steps": [
+     "Ask what the listener needs: often الْخُلَاصَة, the gist, not every word.",
+     "Keep what they must act on: names, dates, numbers, any شَرْط, condition, and الْمَوْعِدُ النِّهَائِيُّ, the deadline.",
+     "Say who says it: يَقُولُ إِنَّ, he says that. If you're unsure, say so, لَسْتُ مُتَأَكِّدًا, and check the source rather than guess.",
+     "End by checking they've understood: هَلْ هَذَا وَاضِحٌ؟"
+    ],
+    "examples": [
+     {
+      "ar": "يَبْدَأُ التَّسْجِيلُ الْيَوْمَ، وَالْمَوْعِدُ النِّهَائِيُّ بَعْدَ أُسْبُوعَيْنِ.",
+      "en": "Registration opens today, and the deadline is in two weeks.",
+      "words": [
+       {
+        "ar": "يَبْدَأُ",
+        "en": "starts"
+       },
+       {
+        "ar": "التَّسْجِيلُ",
+        "en": "registration"
+       },
+       {
+        "ar": "الْيَوْمَ",
+        "en": "today"
+       },
+       {
+        "ar": "وَالْمَوْعِدُ",
+        "en": "and the date"
+       },
+       {
+        "ar": "النِّهَائِيُّ",
+        "en": "final: \"the deadline\""
+       },
+       {
+        "ar": "بَعْدَ",
+        "en": "after, in"
+       },
+       {
+        "ar": "أُسْبُوعَيْنِ",
+        "en": "two weeks"
+       }
+      ]
+     },
+     {
+      "ar": "يَقُولُ الْمُوَظَّفُ إِنَّ الْمَكْتَبَ مُغْلَقٌ غَدًا.",
+      "en": "The clerk says the office is closed tomorrow.",
+      "words": [
+       {
+        "ar": "يَقُولُ",
+        "en": "says"
+       },
+       {
+        "ar": "الْمُوَظَّفُ",
+        "en": "the clerk, the employee"
+       },
+       {
+        "ar": "إِنَّ",
+        "en": "that"
+       },
+       {
+        "ar": "الْمَكْتَبَ",
+        "en": "the office"
+       },
+       {
+        "ar": "مُغْلَقٌ",
+        "en": "closed"
+       },
+       {
+        "ar": "غَدًا",
+        "en": "tomorrow"
+       }
+      ]
+     },
+     {
+      "ar": "لَسْتُ مُتَأَكِّدًا مِنَ الْمَكَانِ، سَأَسْأَلُ.",
+      "en": "I'm not sure of the place; I'll ask.",
+      "words": [
+       {
+        "ar": "لَسْتُ",
+        "en": "I'm not"
+       },
+       {
+        "ar": "مُتَأَكِّدًا",
+        "en": "sure"
+       },
+       {
+        "ar": "مِنَ",
+        "en": "of (-a before the next word)"
+       },
+       {
+        "ar": "الْمَكَانِ",
+        "en": "the place"
+       },
+       {
+        "ar": "سَأَسْأَلُ",
+        "en": "I'll ask"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why يَقُولُ إِنَّ, with إِنَّ, and not أَنَّ?",
+     "a_en": "After قَالَ and يَقُولُ, \"that\" is إِنَّ; after most other verbs it's أَنَّ: يَذْكُرُ أَنَّ, he mentions that."
+    },
+    "selftest": [
+     {
+      "q_en": "What is الْمَوْعِدُ النِّهَائِيُّ?",
+      "choices": [
+       "the deadline",
+       "the start date",
+       "the meeting place"
+      ],
+      "answer": "the deadline",
+      "why_en": "The final date to act by."
+     },
+     {
+      "q_en": "You're not sure of a detail. What do you say?",
+      "choices": [
+       "لَسْتُ مُتَأَكِّدًا",
+       "هَلْ هَذَا وَاضِحٌ؟",
+       "يَقُولُ إِنَّ"
+      ],
+      "answer": "لَسْتُ مُتَأَكِّدًا",
+      "why_en": "Then check the source rather than guess."
+     },
+     {
+      "q_en": "What must a relay keep?",
+      "choices": [
+       "names, dates, numbers and conditions",
+       "every word",
+       "only the first sentence"
+      ],
+      "answer": "names, dates, numbers and conditions",
+      "why_en": "They're what the listener acts on."
+     }
+    ],
+    "phrases_ar": [
+     "يَذْكُرُ أَنَّ"
+    ]
+   }
+  ],
+  "lesson.arabic-translation-portfolio": [
+   {
+    "id": "explainer.arabic-translation-portfolio",
+    "title_en": "A translation portfolio: الْمَصْدَر, الْمُسَوَّدَة, النُّسْخَةُ النِّهَائِيَّةُ",
+    "family_en": "What each entry shows, from source to final version, and the help you had",
+    "table": [
+     {
+      "form_en": "the source",
+      "ar": "الْمَصْدَر",
+      "en": "the source text"
+     },
+     {
+      "form_en": "the draft",
+      "ar": "الْمُسَوَّدَة",
+      "en": "the draft"
+     },
+     {
+      "form_en": "the final version",
+      "ar": "النُّسْخَةُ النِّهَائِيَّةُ",
+      "en": "the final version"
+     },
+     {
+      "form_en": "the reviewer",
+      "ar": "الْمُرَاجِع",
+      "en": "the reviewer"
+     },
+     {
+      "form_en": "permission",
+      "ar": "إِذْن",
+      "en": "permission"
+     },
+     {
+      "form_en": "help",
+      "ar": "مُسَاعَدَة",
+      "en": "help"
+     }
+    ],
+    "steps": [
+     "For each entry, keep the brief, الْمَصْدَر, the source, الْمُسَوَّدَة, your draft, the revisions and النُّسْخَةُ النِّهَائِيَّةُ, the final version.",
+     "Explain one or two of your choices: why you translated a word or a structure as you did.",
+     "Record the مُسَاعَدَة, help, you had, from a dictionary to a reviewer, and the إِذْن, permission, to use the source.",
+     "Show more than one kind of text, and say what each entry doesn't show."
+    ],
+    "examples": [
+     {
+      "ar": "هَذِهِ الْمُسَوَّدَةُ الْأُولَى، وَتِلْكَ النُّسْخَةُ النِّهَائِيَّةُ.",
+      "en": "This is the first draft, and that is the final version.",
+      "words": [
+       {
+        "ar": "هَذِهِ",
+        "en": "this"
+       },
+       {
+        "ar": "الْمُسَوَّدَةُ",
+        "en": "the draft"
+       },
+       {
+        "ar": "الْأُولَى",
+        "en": "first"
+       },
+       {
+        "ar": "وَتِلْكَ",
+        "en": "and that"
+       },
+       {
+        "ar": "النُّسْخَةُ",
+        "en": "the version"
+       },
+       {
+        "ar": "النِّهَائِيَّةُ",
+        "en": "final"
+       }
+      ]
+     },
+     {
+      "ar": "رَاجَعَتْ سَلْمَى التَّرْجَمَةَ وَاقْتَرَحَتْ تَعْدِيلَيْنِ.",
+      "en": "Salmā reviewed the translation and suggested two changes.",
+      "words": [
+       {
+        "ar": "رَاجَعَتْ",
+        "en": "reviewed"
+       },
+       {
+        "ar": "سَلْمَى",
+        "en": "Salmā"
+       },
+       {
+        "ar": "التَّرْجَمَةَ",
+        "en": "the translation"
+       },
+       {
+        "ar": "وَاقْتَرَحَتْ",
+        "en": "and suggested"
+       },
+       {
+        "ar": "تَعْدِيلَيْنِ",
+        "en": "two changes"
+       }
+      ]
+     },
+     {
+      "ar": "اِسْتَعَنْتُ بِمُعْجَمٍ مُتَخَصِّصٍ.",
+      "en": "I used a specialised dictionary.",
+      "words": [
+       {
+        "ar": "اِسْتَعَنْتُ",
+        "en": "I sought help, I used"
+       },
+       {
+        "ar": "بِمُعْجَمٍ",
+        "en": "from a dictionary"
+       },
+       {
+        "ar": "مُتَخَصِّصٍ",
+        "en": "specialised"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why اِسْتَعَنْتُ بِمُعْجَمٍ, \"I sought help from a dictionary\", and not just اِسْتَخْدَمْتُ, I used?",
+     "a_en": "اِسْتَعَانَ, with بِـ, is to seek help from, so it says the dictionary helped, which is what a portfolio should record. اِسْتَخْدَمَ, to use, is fine too, but says less."
+    },
+    "selftest": [
+     {
+      "q_en": "What is a مُسَوَّدَة?",
+      "choices": [
+       "a draft",
+       "the final version",
+       "a review"
+      ],
+      "answer": "a draft",
+      "why_en": "The version before revision."
+     },
+     {
+      "q_en": "What does اِسْتَعَنْتُ بِمُعْجَمٍ mean?",
+      "choices": [
+       "I sought help from a dictionary",
+       "I replaced a dictionary",
+       "I translated a dictionary"
+      ],
+      "answer": "I sought help from a dictionary",
+      "why_en": "اِسْتَعَانَ, with بِـ, is to seek help from."
+     },
+     {
+      "q_en": "What should a portfolio entry record?",
+      "choices": [
+       "the source, the drafts and the help used",
+       "only the final version",
+       "only the grade"
+      ],
+      "answer": "the source, the drafts and the help used",
+      "why_en": "They show how the translation was made."
+     }
+    ],
+    "phrases_ar": [
+     "اِسْتَعَنْتُ بِمُعْجَمٍ"
+    ]
+   }
   ]
  }
 }
