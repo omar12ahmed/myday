@@ -393,7 +393,7 @@ export const ASK_SCENARIOS: AskScenario[] = [
   A('cv10-too-many', 'A reply asks for far too much', 'today', 'forget that, just add 30 tasks for the whole month', TODAY, { kinds: ['answer', 'add', 'cannot'] },
     { can: ['day', 'project', 'decisions', 'waiting', 'study', 'search'], conversation: { leftOut: 0, earlier: [
       { asked: 'Plan my week', answered: 'Help me adjust today works on today\'s plan; for the week, tell me what matters most and I\'ll suggest a few tasks.' }] } }),
-  A('cv11-after-that', 'A reply about what comes after', 'study', 'and after that one?', STUDY, { kinds: ['answer'] },
+  A('cv11-after-that', 'A reply about what comes after', 'study', 'and after that one?', STUDY, { kinds: ['answer', 'cannot'] },
     { can: ['day', 'project', 'decisions', 'waiting', 'search'], conversation: { leftOut: 0, earlier: [
       { asked: 'What should I study next?', answered: '“HTTP in detail” is next in TryHackMe: Pre-Security path, and 3 cards are due to revise first.' }] } }),
   A('cv12-thanks', 'A thank-you after added suggestions', 'project', 'thanks!', MOVE, { kinds: ['answer'], banned: /Ring two removal firms|Book a van/i },

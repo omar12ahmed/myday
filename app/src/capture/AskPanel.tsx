@@ -2,7 +2,7 @@ import { ArrowRight, BookOpen, CalendarPlus, FileText, Flag, FolderKanban, ListC
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { rememberAsk, undoNow } from '../ai/lastAsk';
 import { addAskItems, applyAskChanges, applyAskEdit, checkAskReply, countWords, DAY_TOO_FAR, NEW_PROJECT, type AskChangeUndo, type AskChecked, type AskEdit, type AskProposal, type AskUndo } from '../ai/ask';
-import { askContext, askPreview, askSlice, conversationOf } from '../ai/askContext';
+import { askContext, askPreview, askSlice, conversationOf, latestOnly } from '../ai/askContext';
 import { dayLookup, decisionsLookup, lookupLine, projectLookup, searchLookup, studyLookup, waitingLookup, type LookupMore } from '../ai/lookup';
 import { ASK_LIMITS, type AskContext, type AskLookup } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
 import { canAdjust, handOverToAdjust } from '../ai/handover';
@@ -53,7 +53,7 @@ type Phase =
   | { at: 'shown'; r: Shown; model: string; looked?: Looked; left?: number; leftOut: number } // leftOut: earlier exchanges not sent with it
   | { at: 'added'; undo: AskUndo; words: string; id: string; after: After } // id: how it's kept for Undo from + later (ai/lastAsk.ts)
   | { at: 'applied'; undo: AskChangeUndo; words: string; id: string; after: After }
-  | { at: 'error'; message: string; retry?: Retry }; // retry.prior: what a lookup found, so trying again doesn't look twice
+  | { at: 'error'; message: string; retry?: Retry; stop?: boolean }; // retry.prior: what a lookup found, so trying again doesn't look twice; stop: the day's (or month's) limit, so no Try again
 
 const ICON: Record<AskProposal['type'], ReactNode> = {
   task: <ListPlus size={16} aria-hidden="true" />, note: <NotebookPen size={16} aria-hidden="true" />,
@@ -100,6 +100,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
     catchUp();
     if (getSnapshot().generation === generation) return true;
     setPhase({ at: 'error', message: 'MyDay changed in another tab or on another device. Close Capture and open it again to check what will be sent.' });
+    setTurns([]); // the conversation ends with it
     return false;
   }
   // `message`: the first question, or a reply; `earlier`: the conversation before it. `prior`: the lookup behind the
@@ -109,6 +110,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
     request.current?.abort();
     const ctrl = new AbortController(); request.current = ctrl;
     setCurrent(message);
+    if (!earlier.length) setTurns([]); // a first question starts a new conversation
     setPhase({ at: 'asking' });
     // The first question goes exactly as previewed; a reply sees the page as it is now (what you added, say).
     const sl = earlier.length ? askSlice(getSnapshot().data, where, k, focus) : slice;
@@ -117,19 +119,23 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
     const said = earlier.map(t => ({ asked: t.asked, answered: t.answered }));
     // The request: the conversation before this message (the oldest left out until it fits), with this lookup.
     const build = (lk: AskLookup | undefined, fe: boolean) => { // the time now (askContext reads the clock)
-      for (let budget = ASK_LIMITS.conversationChars; ; budget -= 1000) {
+      for (let budget = ASK_LIMITS.conversationChars; budget >= 1000; budget -= 1000) {
         const conversation = conversationOf(said, fe, budget), c = askContext(sl, message, k, undefined, undefined, lk, conversation);
-        if (!conversation || budget <= 1000 || bytes(c) <= MAX_BYTES) return { c, leftOut: conversation?.leftOut ?? 0 };
+        if (!conversation || bytes(c) <= MAX_BYTES) return { c, leftOut: conversation?.leftOut ?? 0 };
       }
+      // Still too big: the latest exchange alone, then the message on its own (and the line says what was left out).
+      const one = latestOnly(said, fe), c1 = askContext(sl, message, k, undefined, undefined, lk, one);
+      if (bytes(c1) <= MAX_BYTES) return { c: c1, leftOut: one?.leftOut ?? 0 };
+      return { c: askContext(sl, message, k, undefined, undefined, lk), leftOut: said.length };
     };
-    const fail = (m: string, lk: Looked | undefined, fe: boolean) => setPhase({ at: 'error', message: m, retry: { message, earlier, ...(lk ? { prior: lk } : {}), fromEarlier: fe } });
+    const fail = (m: string, lk: Looked | undefined, fe: boolean, stop = false) => setPhase({ at: 'error', message: m, retry: { message, earlier, ...(lk ? { prior: lk } : {}), fromEarlier: fe }, ...(stop ? { stop } : {}) });
     const again = fromEarlier && !!prior; // the lookup it has was made for an earlier message, so this one may look once more
     const started = clock();
     const sent = build(prior?.lookup, again);
     let reply = await askModel(sent.c, ctrl.signal);
     if (ctrl.signal.aborted) return;
     if (!previewIsCurrent()) return;
-    if (!reply.ok) { fail(reply.message, prior, again); return; }
+    if (!reply.ok) { fail(reply.message, prior, again, reply.reason === 'daily' || reply.reason === 'budget'); return; }
     let r = checkAskReply(reply.text, getSnapshot().data, sl, k, asked, prior?.lookup, prior?.hrefs, again);
     let looked = prior, leftOut = sent.leftOut;
     if (r?.kind === 'lookup') {
@@ -146,7 +152,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
       const now = getSnapshot().data;
       const found = r.tool === 'day' ? dayLookup(now, r.query, k) : r.tool === 'project' ? projectLookup(now, r.query) : r.tool === 'decisions' ? decisionsLookup(now, r.query) : r.tool === 'waiting' ? waitingLookup(now, r.query) : r.tool === 'study' ? studyLookup(now, k)
         : searchLookup(now, r.query, courses, k);
-      if (!found) { setPhase({ at: 'error', message: r.tool === 'day' ? DAY_TOO_FAR : 'That project can’t be looked at now — it may have been finished or made private.' }); return; }
+      if (!found) { fail(r.tool === 'day' ? DAY_TOO_FAR : 'That project can’t be looked at now — it may have been finished or made private.', prior, again); return; }
       looked = { ...found, at: new Date(clock()) };
       const resent = build(looked.lookup, false);
       leftOut = resent.leftOut;
@@ -158,7 +164,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
       }
       if (ctrl.signal.aborted) return;
       if (!previewIsCurrent()) return;
-      if (!reply.ok) { fail(reply.message, looked, false); return; }
+      if (!reply.ok) { fail(reply.message, looked, false, reply.reason === 'daily' || reply.reason === 'budget'); return; }
       r = checkAskReply(reply.text, getSnapshot().data, sl, k, asked, looked.lookup, looked.hrefs);
     }
     if (!r || r.kind === 'lookup') { fail("The answer that came back couldn't be used — nothing was added. Try again, or put it another way.", looked, looked === prior && again); return; }
@@ -167,11 +173,12 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
     setMore('');
     setPhase({ at: 'shown', r, model: reply.model, ...(looked ? { looked } : {}), ...(reply.left !== undefined ? { left: reply.left } : {}), leftOut });
   }
-  // A reply to the answer shown (with what you did with it: `did`); the lookup behind that answer goes along with it.
+  // A reply to the answer shown, after a note of what you did with it (`did`: first, so cutting a long answer never loses
+  // it); the lookup behind that answer goes along with it.
   function sendReply(after: After, did: string) {
     const m = more.trim();
     if (!m) return;
-    const earlier = [...turns, { asked: current, answered: shownText(after.r) + did, ...(after.looked ? { looked: after.looked } : {}) }];
+    const earlier = [...turns, { asked: current, answered: did + shownText(after.r), ...(after.looked ? { looked: after.looked } : {}) }];
     setTurns(earlier); setMore('');
     void ask(m, earlier, after.looked, true);
   }
@@ -237,7 +244,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
       </>}
       {phase.at === 'error' && <p role="alert" className="text-[15px] bg-warn-c text-on-warn-c rounded-tile px-3 py-2 mt-2.5 mb-0">{phase.message}</p>}
       {phase.at === 'error' && inConversation && <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">
-        <Button inline variant="tonal" data-action="ask-retry" onClick={() => { const x = phase.retry!; void ask(x.message, x.earlier, x.prior, x.fromEarlier); }}>Try again</Button>
+        {!phase.stop && <Button inline variant="tonal" data-action="ask-retry" onClick={() => { const x = phase.retry!; void ask(x.message, x.earlier, x.prior, x.fromEarlier); }}>Try again</Button>}
         <LinkButton data-action="ask-dismiss" onClick={startOver}>Start over</LinkButton>
       </div>}
       {phase.at === 'asking' && <p role="status" className="text-[15px] text-fg-2 flex items-center gap-2 my-1"><span className="size-3 rounded-full bg-primary motion-safe:animate-pulse flex-none" aria-hidden="true" /> Asking MyDay…</p>}
@@ -247,7 +254,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
         <LinkButton data-action="ask-undo" onClick={() => { const r = undoNow({ kind: 'added', undo: phase.undo, id: phase.id }); toast(r.message); if (r.done) { startOver(); backToField(); } }}>Undo</LinkButton>
         <LinkButton data-action="ask-close" className="ml-auto" onClick={onClose}>Close</LinkButton>
       </div>}
-      {phase.at === 'added' && replyBox(phase.after, `\n(They added ${phase.words}.)`)}
+      {phase.at === 'added' && replyBox(phase.after, `(They added ${phase.words}.)\n`)}
       {phase.at === 'applied' && <div className="flex flex-wrap items-center gap-x-3 gap-y-1" data-s="ask-applied">
         <p className="text-[15px] m-0">Changed {phase.words}.</p>
         <LinkButton data-action="ask-undo" onClick={() => {
@@ -256,7 +263,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
         }}>Undo</LinkButton>
         <LinkButton data-action="ask-close" className="ml-auto" onClick={onClose}>Close</LinkButton>
       </div>}
-      {phase.at === 'applied' && replyBox(phase.after, `\n(They applied the change to ${phase.words}.)`)}
+      {phase.at === 'applied' && replyBox(phase.after, `(They applied the change to ${phase.words}.)\n`)}
       {phase.at === 'shown' && (() => {
         const r = phase.r, after: After = { r, ...(phase.looked ? { looked: phase.looked } : {}), ...(phase.left !== undefined ? { left: phase.left } : {}) };
         return <div aria-live="polite">
@@ -353,7 +360,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
             ? <Button variant="primary" data-action="ask-action" onClick={() => { onClose(); handOverToAdjust(text); }}>Open Help me adjust today</Button>
             : <p className="text-[15px] text-fg-2 m-0" data-s="ask-build-first">Today’s plan isn’t built yet — set your energy and tap Build my day on Today, then Help me adjust today can shape it. <LinkButton data-action="ask-today" onClick={() => { onClose(); location.hash = 'today'; }}>Go to Today</LinkButton></p>)}
           {r.changed.length > 0 && <ul className="list-none p-0 m-0 mt-2 text-xs text-fg-3" data-s="ask-changed">{r.changed.map((c, i) => <li key={i}>{c}</li>)}</ul>}
-          {replyBox(after, r.kind === 'add' || r.kind === 'steps' ? '\n(Not added.)' : r.kind === 'change' ? '\n(Not applied.)' : '')}
+          {replyBox(after, r.kind === 'add' || r.kind === 'steps' ? '(Not added.)\n' : r.kind === 'change' ? '(Not applied.)\n' : '')}
           {turns.length > 0 && r.kind !== 'add' && r.kind !== 'steps' && r.kind !== 'change' && <LinkButton data-action="ask-dismiss" onClick={startOver}>Start over</LinkButton>}
         </div>;
       })()}

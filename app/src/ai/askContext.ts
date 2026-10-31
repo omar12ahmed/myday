@@ -223,6 +223,13 @@ export function conversationOf(earlier: { asked: string; answered: string }[], l
   return { earlier: [ex[0], ...ex.slice(from)], leftOut: from - 1, ...(lookupFromEarlier ? { lookupFromEarlier: true as const } : {}) };
 }
 
+// When even that is too big for a request (a large page and lookup): the latest exchange alone, its answer cut to 600.
+export function latestOnly(earlier: { asked: string; answered: string }[], lookupFromEarlier = false): AskConversation | undefined {
+  const e = earlier.at(-1);
+  if (!e) return undefined;
+  return { earlier: [{ asked: cut(e.asked.trim(), L.textChars), answered: cut(e.answered.trim(), OLDER_ANSWER_CHARS) }], leftOut: earlier.length - 1, ...(lookupFromEarlier ? { lookupFromEarlier: true as const } : {}) };
+}
+
 export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(), now = new Date(), followUp?: { previous: string; text: string }, lookup?: AskLookup, conversation?: AskConversation): AskContext {
   return {
     version: 1, action: 'ask', date: k, weekday: parseKey(k).toLocaleDateString('en-GB', { weekday: 'long' }),

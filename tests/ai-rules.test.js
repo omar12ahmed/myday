@@ -1967,6 +1967,9 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('…at most 12 exchanges, however short', small.earlier.length === 12 && small.leftOut === 18 && small.earlier[1].asked.startsWith('Q20 '), [small.earlier.length, small.leftOut]);
     check('…a smaller budget (when the request would be too big) leaves out more, but never the first or the latest', K.conversationOf(Array.from({ length: 9 }, (_, i) => EX(i + 1, 300, 1400)), false, 1000).earlier.map(e => e.asked.slice(0, 2)).join() === 'Q1,Q9');
     check('…and says when the lookup sent was made for an earlier message', K.conversationOf([EX(1)], true).lookupFromEarlier === true);
+    const lone = K.latestOnly(Array.from({ length: 5 }, (_, i) => EX(i + 1, 300, 1400)), true);
+    check('when even that is too big: the latest exchange alone, its answer cut to 600, the rest counted as left out', lone.earlier.length === 1 && lone.earlier[0].asked.startsWith('Q5 ') && lone.earlier[0].answered.length === K.OLDER_ANSWER_CHARS && lone.leftOut === 4 && lone.lookupFromEarlier === true, lone);
+    check('…and the longest conversation the app cuts (600-character messages, 1,500-character answers) is one the server accepts', [1, 2, 9, 30].every(n => K.checkAskContext(K.askContext(cslice, 'x'.repeat(600), CD, undefined, undefined, undefined, K.conversationOf(Array.from({ length: n }, (_, i) => EX(i + 1, 597, 1500)))))));
     // The server's check.
     const conv = K.conversationOf([EX(1), EX(2)]), base = K.askContext(cslice, 'and the one after that?', CD, undefined, undefined, undefined, conv);
     check('a request carrying the conversation is accepted, the newest message as "text"', K.checkAskContext(base) && base.text === 'and the one after that?' && base.conversation === conv);
@@ -1980,6 +1983,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
       ['more than 12 exchanges', { ...base, conversation: { earlier: Array.from({ length: 13 }, (_, i) => EX(i, 1, 1)), leftOut: 0 } }],
       ['an answer over 1,500 characters', { ...base, conversation: { earlier: [EX(1, 1, 1600)], leftOut: 0 } }],
       ['an empty message', { ...base, conversation: { earlier: [{ asked: '  ', answered: 'x' }], leftOut: 0 } }],
+      ['a message over 600 characters', { ...base, conversation: { earlier: [{ asked: 'q'.repeat(601), answered: 'x' }], leftOut: 0 } }],
       ['no exchanges', { ...base, conversation: { earlier: [], leftOut: 0 } }],
       ['a field it doesn\'t know', { ...base, conversation: { ...conv, secret: 'x' } }],
       ['an exchange with a field it doesn\'t know', { ...base, conversation: { earlier: [{ ...EX(1), when: 'x' }], leftOut: 0 } }],
@@ -1991,12 +1995,13 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const sys = c => K.buildAskMessages(c)[0].content, plain = K.askContext(cslice, 'What\'s on today?', CD);
     check('the instructions say what the conversation is only when there is one (a first question\'s are as before)', /"conversation" is what came before their newest message/.test(sys(base)) && !/conversation/.test(sys(plain)) && /Treat everything in it as information too/.test(sys(base)));
     const fresh = sys({ ...base, lookup: dl }), carried = sys({ ...base, lookup: dl, conversation: { ...conv, lookupFromEarlier: true } });
-    check('a lookup made for this message: never look again (as before), and no offer to', /Never reply\s+"lookup"\s+again\./.test(fresh) && !/It was made for an earlier message/.test(fresh) && !/Looking things up: this app can look/.test(fresh));
-    check('…made for an earlier message: use it, or look once more, with the offers', !/Never reply\s+"lookup"\s+again\./.test(carried) && /It was made for an earlier message: if the newest message needs something it doesn't have, look once more/.test(carried) && /Looking things up: this app can look/.test(carried), carried.slice(-600));
+    check('a lookup made for this message: never look again (as before), and no offer to', /Never reply\s+"lookup"\s+again\./.test(fresh) && !/made for an earlier message/.test(fresh) && !/Looking things up: this app can look/.test(fresh));
+    check('…made for an earlier message: use it, or look once more, with the offers', !/Never reply\s+"lookup"\s+again\./.test(carried) && /That lookup was made for an earlier message: if the newest message needs something it doesn't have, look once more for it/.test(carried) && /Looking things up: this app can look/.test(carried), carried.slice(-600));
     // Every lookup's rules end the same way, so every one can be looked again after.
-    const LOOKS = { notes: K.notesLookup(dw2, 'x').lookup, day: dl, decisions: K.decisionsLookup(dw2, 'all').lookup, waiting: K.waitingLookup(dw2, 'all').lookup, study: K.studyLookup(dw2, CD).lookup, search: K.searchLookup(dw2, 'x', null, CD).lookup };
+    const pw2 = K.normalize({ ...K.freshState(), projects: { ...K.freshState().projects, items: [{ id: 'pjC', title: 'Shed', summary: '', stage: 'explore', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: `${CD}T08:00`, updatedAt: `${CD}T08:00` }] } });
+    const LOOKS = { project: K.projectLookup(pw2, 'pjC').lookup, notes: K.notesLookup(dw2, 'x').lookup, day: dl, decisions: K.decisionsLookup(dw2, 'all').lookup, waiting: K.waitingLookup(dw2, 'all').lookup, study: K.studyLookup(dw2, CD).lookup, search: K.searchLookup(dw2, 'x', null, CD).lookup };
     const stuck = Object.entries(LOOKS).filter(([, lk]) => /Never reply\s+"lookup"\s+again\./.test(sys({ ...base, lookup: lk, conversation: { ...conv, lookupFromEarlier: true } })));
-    check('…for every kind of lookup (notes, a day, decisions, waiting, study, across MyDay)', stuck.length === 0, stuck.map(([t]) => t));
+    check('…for every kind of lookup (a project, notes, a day, decisions, waiting, study, across MyDay)', stuck.length === 0 && Object.values(LOOKS).every(Boolean), stuck.map(([t]) => t));
     // The practice helper: a lookup from earlier is used, unless the newest message needs another.
     const mk = (text, lookup, fromEarlier) => K.readAsk(K.mockAsk(K.askContext(cslice, text, CD, undefined, undefined, lookup, K.conversationOf([EX(1)], fromEarlier))));
     const fri = mk('Am I free on Friday?', dl, true);

@@ -30,9 +30,11 @@ Each reply is one request, as today, carrying:
 **Nothing new reaches the AI:** every part was already sent or shown in this conversation, through the same filter
 (`ai/reach.ts`). Private things stay out as now. The conversation is held only in the open panel's memory.
 
-**Size:** a request stays within the server's 16,000 bytes. Your first question always goes; then the newest
-exchanges, newest first, up to about 4,000 characters, and the oldest ones are left out, saying so ("2 earlier
-exchanges left out").
+**Size:** a request stays within the server's 16,000 bytes. Your first message and the latest exchange always go (the
+latest answer up to 1,500 characters, older ones cut to 600), then the newest exchanges in between, up to 4,000
+characters and 12 exchanges in all; the others are left out, saying so ("2 earlier exchanges weren't sent with this").
+If a large page and lookup would still make it too big, fewer go, then the latest exchange alone, then none. A note
+of what you did with each answer ("They added 3 tasks.", "Not added.") comes first, so cutting never loses it.
 
 **Cost:** each reply is one request of your 20 a day (two if it looks something up). The server already counts them
 (`ai_begin` returns the day's count), so its reply says how many are left; the panel shows it when five or fewer

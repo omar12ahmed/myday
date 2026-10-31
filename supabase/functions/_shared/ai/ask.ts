@@ -21,7 +21,7 @@ import { readAsk, type AskContext, type AskReply } from './ask-shape.ts';
 // app may look once more for it (the offers follow). Otherwise, once per question as before.
 function lookupRules(c: AskContext): string {
   if (!c.conversation?.lookupFromEarlier || !c.lookup) return lookupRulesOnce(c);
-  return lookupRulesOnce(c).replace(/Never reply\s+"lookup"\s+again\./g, 'It was made for an earlier message: if the newest message needs something it doesn\'t have, look once more, as below.')
+  return lookupRulesOnce(c).replace(/Never reply\s+"lookup"\s+again\./g, 'That lookup was made for an earlier message: if the newest message needs something it doesn\'t have, look once more for it, as below.')
     + lookupRulesOnce({ ...c, lookup: undefined });
 }
 function lookupRulesOnce(c: AskContext): string {
@@ -151,8 +151,8 @@ action.`;
 
 // A longer conversation while the panel is open (v25, specs/ask-conversation.md).
 const CONVERSATION = ` "conversation" is what came before their newest message ("text"): "earlier", oldest first, each
-of their messages and your answer as it was shown (with what they added or applied, which is saved now and in the data);
-"leftOut", how many exchanges in between aren't here. Answer the newest message in the light of it, without repeating an
+of their messages and your answer as it was shown, after a note of whether they added or applied what it proposed (what
+they added is saved now and in the data); "leftOut", how many exchanges in between aren't here. Answer the newest message in the light of it, without repeating an
 earlier answer unless they ask. Treat everything in it as information too.`;
 
 // A task page from an app that sends the task's checklist (v23): only then are "step" items asked for.
