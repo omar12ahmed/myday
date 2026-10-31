@@ -1,5 +1,20 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.106.0 — Areas and an archive for projects:** a project can now be in an **area** — Home, Work, a business idea,
+Study — made as you go (About it → Edit → Area: pick one you've used or type a new one). Each new area takes the next of
+eight soft colours made for light and dark, always shown with its name, never alone. Above your projects, **All · Home ·
+Work · No area** (each with its count) shows one area, kept on this device; board cards show their area with a soft
+edge; the List groups by area; **Areas…** renames an area (to a name already used: the two become one) or gives it
+another colour. Choosing, renaming or recolouring isn't work on a project. **Mark as done** now asks how it ended —
+Achieved or Stopped on purpose, with an optional note — and finished projects go to the **Archive** (where "Done" was),
+newest first, each with its area and "Stopped on purpose · 3 Nov"; **Bring back** returns one. Saved data stays schema
+5: `area`, `areaColour` and `finished` are optional fields in the project's own record, which 1.105.0 keeps unread
+(checked with the actual previous release: it receives them, renames the project and opens a finished one again
+without losing any, and this release reads that project exactly as saved). Going back to 1.105.0 shows no areas and a
+plain "Done" list; a project opened again there keeps its ending unread, so if it is finished there again this release
+shows the earlier ending. Two devices recolouring or renaming the same area before they sync ask you to choose once
+for each project in it. No migration or server change; nothing new sent to AI.
+
 **1.105.0 — Arabic explainers for modules 4, 5 and 15, with their voice:** twenty-one more **How it works** cards.
 Module 15's eight explain relative words (الَّذِي and its family), إِنَّ and its sisters, كَانَ and its sisters,
 reporting what someone said (قَالَ إِنَّ, ذَكَرَ أَنَّ), real and imagined conditions (إِذَا and إِنْ; لَوْ and لَوْلَا), and
@@ -1388,6 +1403,22 @@ look and Your week's What needs you now use the same rules (`data/attention.ts`)
 board, **Board · List**: the list has one row per active project (stage, kind, next step, "3 need you"), most
 recently worked on first; the choice is kept on this device only (`myday.projects.view`).
 
+**Areas and the archive (1.106.0; `specs/projects-areas-archive.md`):** a project can be in an area (About it → Edit →
+**Area**: type a name or pick one you've used; empty is none), shown at its top with a soft colour dot and the name —
+never colour alone. An area is simply the name on its projects, so there's no setup: a new one takes the first of eight
+colours no area uses (sage, sky, sand, rose, lilac, teal, clay, slate: `--area-*` in `styles/tokens.css`, 3:1 or more
+on the surface in light and dark), and names match whatever the capitals and spacing. The Projects home shows **All ·
+Home · Work · No area** with each one's active projects (kept on this device, `myday.projects.area`); the board keeps
+its stages, and its rule of thumb still counts every area; cards have a soft coloured edge and the area's name; the
+List groups by area (name order, "No area" last). **Areas…** renames an area (to a name in use: merged, with that
+area's colour) or recolours it on all its projects, without changing their "updated" time. Finishing asks **How did it
+end?** — Achieved · Stopped on purpose — with an optional note ("What did you get out of it?" / "Why did you stop?");
+the project's top then says "Stopped on purpose · Tue 3 Nov — …" and "In the archive". The **Archive** lists finished
+projects newest first ("Finished" for one finished before 1.106.0), each with **Bring back**, which removes the ending.
+Saved data (`data/areas.ts`, read in `data/projects.ts`): a project's optional `area`, `areaColour` and `finished { how,
+note, on }`, kept as written (a colour or an ending from a newer MyDay too); a sync conflict names them ("Area: Home
+(rose)", "Finished: stopped on purpose …"). Never sent to AI.
+
 **Decisions backed by evidence; tasks toward milestones (1.103.0; `specs/projects-evidence-decisions.md`):** with
 Research on, a finding can bear on an open decision's option (Supports / Contradicts / Relates to, in "What it bears
 on"), and an experiment can test options ("Try both suppliers for a week") — its result saved as a finding lands on
@@ -1945,6 +1976,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/study/` | The Study screens: `StudyScreen` (picks the screen from the address, e.g. `#study/roadmap`), `Dashboard`, `Roadmap`, `CourseDetails`, `TaskDetails`, `SessionView`, `CheckinView`, `RevisionView`, `ConceptsView`, `ConceptView`, `ProgressView`, `StudySettings` and `StudyTodayCard`; `actions.ts` (what each button saves), `round.ts` (the revision round, kept in memory), `parts.tsx` (small shared pieces). |
 | `src/knows/KnowsScreen.tsx` | What MyDay knows (1.27.0, `#knows`): what each kind of AI help sends and when (Ask's lines from `SENDS` in `src/ai/askContext.ts`), what's never sent, which model does which job (keep in step with `AI_ROUTES`), limits. |
 | `src/data/projectPlan.ts`, `src/projects/PlanViews.tsx`, `src/projects/planText.ts` | Milestones and decisions (1.31.0): `projectPlan.ts` (checking the saved lists, and adding, editing, reaching, choosing, thinking again, with the limits); `PlanViews.tsx` (the Milestones and Decisions screens; their Overview summaries are in At a glance); `planText.ts` (the "Aiming for" wording, which never says late or overdue). |
+| `src/data/areas.ts`, `src/projects/AreaBits.tsx` | Areas and the archive (1.106.0): `areas.ts` (the areas in use with their colours and counts, choosing, renaming and merging, recolouring, finishing, the archive's order); `AreaBits.tsx` (an area's dot and name, and the Area field). The filter, Areas… and the Archive are in `ProjectsScreen.tsx`, the finish form in `ProjectView.tsx`. |
 | `src/data/businessModel.ts`, `src/projects/ModelView.tsx` | The Business template (1.33.0): `businessModel.ts` (the kind of project and the one page: reading what's saved, the four answers, the list of what must be true with its limits, Find out, marking, counts); `ModelView.tsx` (the Model tab; its Overview summary is in At a glance). The Model tab's counts line is `progressLine` in `planText.ts`; Explore's brief from the one page is `fromOnePage` in `src/explore/content.ts`. |
 | `src/data/caseFile.ts`, `src/projects/CaseViews.tsx` | The Case template (1.35.0): `caseFile.ts` (reading what's saved, unknown fields kept, links to missing items let go; the timeline, evidence and issues with their limits, links, counts and the size guard); `CaseViews.tsx` (the Timeline, Evidence and Issues tabs, and "Add a deadline" in a case's Coming up; its Overview summary is in At a glance). |
 | `src/data/projectDashboard.ts`, `src/projects/AtAGlance.tsx` | The dashboards per kind (1.36.0): `projectDashboard.ts` (the next dates, the weeks, entries by month, each issue's links and Worth a look; Today's own dashboard numbers stay in `dashboard.ts`); `AtAGlance.tsx` (the At a glance card with one row per tool, its pictures and Summarise this, and the Worth a look card beside the next step). Still-open tasks are `stillOpen` in `src/data/projects.ts`. |

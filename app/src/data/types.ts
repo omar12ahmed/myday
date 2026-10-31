@@ -202,7 +202,7 @@ export interface Project {
   area?: string;
   areaColour?: string;
   // How it ended, once finished (status 'done'): achieved, or stopped on purpose, a note and the day. Bringing it back
-  // removes it. Absent on a project finished before 1.104 (it reads as "Finished").
+  // removes it. Absent on a project finished before 1.106 (it reads as "Finished").
   finished?: Finished;
   // Overview sections hidden on this project (optional; absent = none): 'notes', 'recently', 'learning', 'resources',
   // 'files' (specs/projects-sections.md). One from a newer MyDay is kept as it is.
