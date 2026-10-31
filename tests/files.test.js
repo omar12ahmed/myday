@@ -465,6 +465,19 @@ const MB = 1024 * 1024;
     check('mp-done after a wipe is refused too (409), and mp-list and mp-abort need no header', (await done({ uploadId: j.uploadId, parts: [E1] }, { over: wipedNow })).status === 409 && (await vid('mp-list', { uploadId: j.uploadId }, { over: wipedNow })).status === 200 && (await vid('mp-abort', { uploadId: j.uploadId }, { over: wipedNow })).status === 200);
     check('an account never wiped needs no header for the parts either', (await begin({}, { over: { epochOf: async () => 0 } })).status === 200);
     check('the log lines of all this hold no ids, names or links', logs.every(l => /^files [a-z-]+ \d{3} \d+ms$/.test(l)), logs.filter(l => !/^files [a-z-]+ \d{3} \d+ms$/.test(l)));
+
+    console.log('  unfinished uploads');
+    reset();
+    const first = (await json(await begin())).uploadId;
+    const again = (await json(await begin())).uploadId;
+    // (The fake store numbers uploads by how many are open, so the new one may reuse the dropped one's id.)
+    check('starting the same file again drops its own earlier unfinished upload: one stays open, not two', !!first && !!again && store.uploads.size === 1 && store.uploads.has(again), [...store.uploads.keys()]);
+    for (let i = 3; i <= 12; i++) await post({ action: 'mp-begin', fileId: `flvideo1${String(i).padStart(2, '0')}`, area: 'content', name: 'Market day.mp4', size: 100 * MB });
+    r = await post({ action: 'mp-begin', fileId: 'flvideo199', area: 'content', name: 'Market day.mp4', size: 100 * MB }); j = await json(r);
+    check('at most 10 big uploads unfinished at once: the 11th is refused (422) and says why', r.status === 422 && j.error === 'not-allowed' && /Too many big uploads are unfinished/.test(j.message) && !store.uploads.has('flvideo199'), [r.status, j]);
+    const otherUpload = (await json(await begin({ fileId: 'flvideo900' }, { token: 'h.tok-b.s' }))).uploadId;
+    r = await post({ action: 'delete-all' });
+    check('Delete everything drops every unfinished upload of the account (and none of another\'s)', r.status === 200 && ![...store.uploads.values()].some(u => u.key.startsWith(`${A}/`)) && store.uploads.has(otherUpload), [...store.uploads.values()].map(u => u.key));
   }
 
   const s = summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);

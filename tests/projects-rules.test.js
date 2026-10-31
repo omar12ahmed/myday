@@ -20,7 +20,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
   const src = p => JSON.stringify(path.join(ROOT, 'app/src/data', p));
   fs.writeFileSync(path.join(dir, 'kit.ts'), [
     `export * from ${src('projectRecords')};`, `export * from ${src('projectPlan')};`, `export * from ${src('businessModel')};`, `export * from ${src('caseFile')};`, `export { normalizeProjects, deleteProject, recently, addProject, setProjectPrivate, editProject, setLeftOff, privateProjectIds, comingUp, stillOpen } from ${src('projects')};`,
-    `export { freshState, normalize } from ${src('normalize')};`, `export { shift, shortDate } from ${src('dates')};`, `export * from ${src('projectDashboard')};`, `export * from ${src('weekReview')};`, `export { stepsForToday, nextStep, whyNext } from ${src('projects')};`,
+    `export { freshState, normalize } from ${src('normalize')};`, `export { shift, shortDate, todayKey } from ${src('dates')};`, `export * from ${src('projectDashboard')};`, `export * from ${src('weekReview')};`, `export { stepsForToday, nextStep, whyNext } from ${src('projects')};`,
     `export { normalizeStudyLinks, addStudyLink, removeStudyLink, setStudyLinkWhy, linkView, courseChoices, bookChoices, linkedFrom, tidyWhy, LINK_LIMITS } from ${src('studyLinks')};`, `export * as Cyber from ${JSON.stringify(path.join(ROOT, 'app/src/projects/learningCyber'))};`, `export { stIndex } from ${src('study/roadmap')};`,
     `export { webAddress, siteOf, resourceName, normalizeResources, addResource, editResource, removeResource, canOpen, tidyText, RESOURCE_LIMITS } from ${src('projectResources')};`,
     `export { searchProject, fold, wordsOf, matchCount, SEARCH_KIND_LABEL } from ${src('projectSearch')};`,
@@ -2880,6 +2880,44 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const tp = world(base('pjC'));
     check('a project is Content once its template is content (isContent), and not before', !K.isContent(tp.projects.items[0]) && K.setTemplate(tp, 'pjC', 'content') && tp.projects.items[0].template === 'content' && K.isContent(tp.projects.items[0]));
     check('setTemplate to content again changes nothing; back to General takes the template away, and the videos stay', (() => { tp.content.items = [vid('cvA')]; return !K.setTemplate(tp, 'pjC', 'content') && K.setTemplate(tp, 'pjC', 'general') && !('template' in tp.projects.items[0]) && !K.isContent(tp.projects.items[0]) && tp.content.items.length === 1; })());
+    console.log('  review fixes');
+    {
+      const d = cw();
+      d.content.items.push(vid('cvP', { step: 'editing', title: 'Market day' }));
+      K.CT.setPostDay(d, 'cvP', '2026-11-05');
+      const pt = d.tasks.items.find(t => t.id === V(d, 'cvP').postTaskId);
+      pt.done = true; pt.doneOn = '2026-11-05';
+      check('a video shown as Posted (its post task done) moves back to Editing: it shows Editing, and its done task and post day are let go (the task itself stays)',
+        K.CT.stepOf(d, V(d, 'cvP')) === 'posted' && K.CT.setStep(d, 'cvP', 'editing') && K.CT.stepOf(d, V(d, 'cvP')) === 'editing' && !('postTaskId' in V(d, 'cvP')) && !('postOn' in V(d, 'cvP'))
+        && d.tasks.items.some(t => t.id === pt.id) && !K.CT.setStep(d, 'cvP', 'editing'), V(d, 'cvP'));
+      // (The plan is today's, the real one, as leaveTodaysPlanIfLater reads it.)
+      const now = K.todayKey(), e = cw();
+      e.content.items.push(vid('cvQ'));
+      K.CT.setPostDay(e, 'cvQ', now);
+      const qt = e.tasks.items.find(t => t.id === V(e, 'cvQ').postTaskId);
+      qt.plannedOn = now;
+      K.CT.setPostDay(e, 'cvQ', K.shift(now, 7));
+      check('moving the post day later takes its task off today\'s plan (as a task\'s own date change does)', qt.due === K.shift(now, 7) && qt.plannedOn === null, qt);
+      const f = cw();
+      f.content.items.push(vid('cvR', { fileIds: ['flvid00001'] }));
+      f.files.items.push({ id: 'flvid00001', name: 'clip.mp4', type: 'video/mp4', size: 1000, sha256: '', area: 'content', state: 'kept', addedOn: '2026-10-01' });
+      check('a project deleted on another device (deleteProjectContent alone) still sends its videos\' uploads to Recently deleted', K.CT.deleteProjectContent(f, 'pjC') && !!f.files.items[0].deletedOn && f.files.items[0].removedFrom?.kind === 'video' && f.files.items[0].removedFrom?.id === 'cvR' && !f.content.items.length, f.files.items[0]);
+      const g = cw();
+      g.content.items.push(vid('cvS'));
+      K.CT.setPostDay(g, 'cvS', '2026-11-05');
+      const oid = K.CT.addOption(g, 'cvS', 'title', longText(200));
+      K.CT.chooseOption(g, 'cvS', oid);
+      const st = g.tasks.items.find(t => t.id === V(g, 'cvS').postTaskId);
+      check('a chosen 200-character title becomes the video\'s within 120, and renames its undone post task within a task\'s 120', V(g, 'cvS').title.length === 120 && st.title.startsWith('Post: ') && st.title.length <= 120, [V(g, 'cvS').title.length, st.title]);
+      K.CT.editVideo(g, 'cvS', { title: 'Hargeisa at dawn' });
+      check('…and editing the title renames it too', st.title === 'Post: Hargeisa at dawn', st.title);
+      const bare2 = K.CT.normalizeContent({ items: [{ id: 'cvT', projectId: 'pjC', type: 'video' }] }, { dropped: 0 }).items[0];
+      check('an item with no times at all reads the same on every device (not "now")', bare2.createdAt === '2000-01-01T00:00' && bare2.updatedAt === '2000-01-01T00:00', bare2);
+      const h = cw();
+      h.content.items.push(vid('cvU'));
+      K.CT.editVideo(h, 'cvU', { script: '😀'.repeat(20001) });
+      check('a script is cut by character, never half an emoji', Array.from(V(h, 'cvU').script).length === 20000 && !/[\uD800-\uDBFF]$/.test(V(h, 'cvU').script), V(h, 'cvU').script.length);
+    }
   }
 
   fs.rmSync(dir, { recursive: true, force: true });
