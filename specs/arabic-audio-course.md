@@ -150,7 +150,11 @@ together (24 lists), and the build allows no other change. One script error both
 shadda, which the voice duly read) was heard, corrected to صَلَاحِيَّة in both pieces, and noted in the checker's file.
 Then 126 clips were made in WaveNet B, transcribed blind (30 takes made again) and approved ("all good"). The
 objectives' and tasks' play buttons wait while you're on the Check step, as the explanation folds away: a vowelled
-model there can give away a check's answer (قُلْتُ, لَمْ أَدْرُسْ). 381 scripted pieces ship; 22 stay silent on purpose.
+model there can give away a check's answer (قُلْتُ, لَمْ أَدْرُسْ); so do the key ideas, which in a practical or revision
+session stay open under "The rest of this lesson". Like the fold, the hold follows a jump to Check (the step bar, the
+restart offer, reopening there); scrolling down to the questions doesn't start it, and "Show the explanation again"
+lifts both. Each script lists the places it was checked in (`checked_in`), so a script shown in a new place stops the
+build until it's been read there. 381 scripted pieces ship; 22 stay silent on purpose.
 Round thirteen (the explainers' "How it works", which 1.98.0 released unvoiced): each form in an explainer's table, each
 whole sentence and the Arabic in its steps, 160 texts, already fully vowelled and checked. The word-by-word pieces
 aren't voiced (they're heard in their sentence), and neither are the self-test's choices. 44 had clips in Charon from the

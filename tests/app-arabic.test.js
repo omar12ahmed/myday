@@ -589,6 +589,17 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   check('…and focus moves to its explanation', focusedWhy, wrongInfo);
   const rightInfo = await ev(`(() => { const q = document.querySelector('${exQ2}'); return { state: q.dataset.state, why: q.querySelector('[data-ar-explainer-why]')?.textContent }; })()`);
   check('a right choice marks question 2 right and its explanation starts "Right."', rightInfo.state === 'right' && (rightInfo.why || '').startsWith('Right.'), rightInfo);
+  // The explainers' voice, from the clips listened to: forms, sentences and the Arabic in the steps (not the pieces, questions or why).
+  const sayVoice = await ev(`(() => { const d = document.querySelector('${sayEx}'), btns = e => [...e.querySelectorAll('[data-action="ar-play"]')].map(b => b.getAttribute('data-ar-clip'));
+    return { rows: [...d.querySelectorAll('[data-ar-explainer-row]')].map(r => btns(r)), sentences: [...d.querySelectorAll('[data-ar-explainer-sentence]')].map(r => btns(r.firstElementChild)), words: [...d.querySelectorAll('[data-ar-explainer-sentence] ul')].map(u => btns(u).length),
+      steps: [...d.querySelectorAll('[data-ar-explainer-step]')].map(r => btns(r)), tests: [...d.querySelectorAll('[data-ar-explainer-q]')].map(q => btns(q).length), choices: [...d.querySelectorAll('[data-action="ar-explainer-choose"] [data-action="ar-play"], [data-ar-explainer-choice] [data-action="ar-play"]')].length,
+      labels: [...d.querySelectorAll('[data-ar-voice-label]')].length, all: btns(d).length }; })()`);
+  const sx = 'explainer.arabic-say';
+  check('each of the Say explainer\'s 10 table rows has one play button, named by its form number', JSON.stringify(sayVoice.rows) === JSON.stringify(Array.from({ length: 10 }, (_, i) => [`${sx}:form:${i}`])), sayVoice.rows);
+  check('…and each of its 3 sentences has one, named by its number', JSON.stringify(sayVoice.sentences) === JSON.stringify([0, 1, 2].map(i => [`${sx}:sentence:${i}`])), sayVoice.sentences);
+  check('…each of its steps has a play button for every Arabic run that has a clip (3, 4, 3, 2 and 2), named for that step', sayVoice.steps.map(b => b.length).join() === '3,4,3,2,2' && sayVoice.steps.every((b, i) => b.every(n => n.startsWith(`${sx}:step:${i}:`))), sayVoice.steps);
+  check('…but the word-by-word pieces and the self-test have no play buttons', sayVoice.words.length === 3 && sayVoice.words.every(n => n === 0) && sayVoice.tests.length === 3 && sayVoice.tests.every(n => n === 0) && sayVoice.choices === 0, sayVoice);
+  check('…and one voice label shows for the explainer', sayVoice.labels === 1 && sayVoice.all === 10 + 3 + 14, sayVoice);
   await click('[data-action="ar-step"][data-v="check"]'); await sleep(400);
   check('while you check yourself, the explainers fold away with the explanation', await exists('[data-ar-folded]') && !(await exists('[data-ar-explainers]')));
 

@@ -187,6 +187,56 @@ const button = '[data-action="ar-play"]';
     await show('lesson.arabic-requests-imperatives'); await until(() => exists(impQ));
     await click(impQ + ' [data-action="ar-reveal"]');
     check('a piece left without a voice on purpose (لا تكتب) stays silent beside its voiced neighbours', await until(() => exists(impQ + ' [aria-label="Play لا تكتبون"]')) && !(await exists(impQ + ' [aria-label="Play لا تكتب"]')) && (await T.text(impQ)).includes('can be either'), { buttons: await ev(`[...document.querySelectorAll('[data-ar-question="assessment.arabic-requests-imperatives-check.q1"] [aria-label^="Play "]')].map(b => b.getAttribute('aria-label'))`), text: (await T.text(impQ)).slice(0, 300) });
+
+    // Round twelve: the lesson's key ideas, objectives, task and challenge have a voice where a clip has been listened to,
+    // held back while the learner checks themselves (as the explanation folds away) and back once they ask or move on.
+    const names = sel => ev(`[...document.querySelectorAll(${JSON.stringify(sel + ' [data-action="ar-play"]')})].map(b => b.getAttribute('data-ar-clip'))`);
+    const sq = 'lesson.arabic-simple-questions';
+    await show(sq); await until(() => exists('[data-ar-key-ideas]'));
+    check('a key idea with a listened-to clip has a play button named for its lesson, concept and run', JSON.stringify(await names('[data-ar-key-ideas]')) === JSON.stringify([sq + ':key:0:0']) && (await T.text('[data-ar-key-ideas] bdi[lang="ar"]')).includes('مَن ما أين هل'), await names('[data-ar-key-ideas]'));
+    check('the key ideas are followed by a voice label that says unmarked Arabic reads MyDay’s vowelled copy', await ev(`(() => { const l = document.querySelector('[data-ar-key-ideas]').nextElementSibling; return !!l && l.hasAttribute('data-ar-voice-label') && !!l.querySelector('[data-ar-voice-script]'); })()`));
+    const neg = 'lesson.arabic-negation-system';
+    await show(neg); await until(() => exists('[data-ar-objectives]'));
+    check('a lesson objective with Arabic that has a clip shows a play button for each voiced run, named by lesson, objective and run', JSON.stringify(await names('ul[data-ar-objectives]')) === JSON.stringify([neg + ':objective:0:27', neg + ':objective:0:43']), await names('ul[data-ar-objectives]'));
+    check('the objectives’ Arabic sits in isolated Arabic text and a voice label follows the list', await ev(`(() => { const u = document.querySelector('ul[data-ar-objectives]'); return u.querySelectorAll('bdi[lang="ar"]').length >= 2 && u.nextElementSibling?.hasAttribute('data-ar-voice-label'); })()`));
+    await click('ul[data-ar-objectives] [data-ar-clip="' + neg + ':objective:0:27"]');
+    check('pressing an objective’s play button starts that clip only', await until(async () => (await state()).playing === neg + ':objective:0:27') && await count('[data-state="playing"]') === 1, await state());
+    await click('ul[data-ar-objectives] [data-ar-clip="' + neg + ':objective:0:27"]');
+
+    const wv = 'lesson.arabic-weak-verbs', wvTask = 'exercise.arabic-weak-verbs';
+    await show(wv); await until(() => exists('[data-ar-task]'));
+    const taskNames = [9, 22, 89, 97].map(i => wvTask + ':instruction:' + i);
+    check('the practical task’s instruction has a play button for each of its four voiced runs, in order', JSON.stringify(await names('[data-ar-task]')) === JSON.stringify(taskNames), await names('[data-ar-task]'));
+    const labelsInTry = await ev(`document.querySelectorAll('#ar-step-try [data-ar-task] [data-ar-voice-label], #ar-step-try [data-ar-challenge] [data-ar-voice-label], [data-ar-challenge] + [data-ar-voice-label]').length`);
+    check('one voice label follows the task and challenge, not one for each block', labelsInTry === 1 && await ev(`!!document.querySelector('[data-ar-challenge] + [data-ar-voice-label]')`), labelsInTry);
+
+    const held = async () => ({ obj: await names('ul[data-ar-objectives]'), task: await names('[data-ar-task]'), chal: await names('[data-ar-challenge]'), labels: await ev(`document.querySelectorAll('ul[data-ar-objectives] + [data-ar-voice-label], [data-ar-challenge] + [data-ar-voice-label]').length`) });
+    const nothingHeld = h => h.obj.length === 0 && h.task.length === 0 && h.chal.length === 0 && h.labels === 0;
+    await click('[data-action="ar-step"][data-v="check"]'); await until(() => exists('[data-ar-folded]'));
+    const duringCheck = await held();
+    check('while the learner checks themselves the objectives and tasks show no play buttons and no voice labels, but their text stays', nothingHeld(duringCheck) && (await T.text('ul[data-ar-objectives]')).length > 0 && (await T.text('[data-ar-task]')).includes('قال، زار') && await exists('[data-ar-task] bdi[lang="ar"]'), duringCheck);
+    check('the key ideas are folded away during the check', await exists('[data-ar-folded]') && !(await exists('[data-ar-key-ideas]')));
+    await click('[data-action="ar-explain-again"]'); await until(() => exists('[data-ar-key-ideas]'));
+    const afterAgain = await held();
+    check('"Show the explanation again" brings the task and challenge play buttons back', JSON.stringify(afterAgain.task) === JSON.stringify(taskNames) && afterAgain.labels === 1, afterAgain);
+    await click('[data-action="ar-step"][data-v="try"]'); await until(async () => (await names('[data-ar-task]')).length > 0);
+    check('moving to the Try step brings the task buttons and the voice label back', JSON.stringify(await names('[data-ar-task]')) === JSON.stringify(taskNames) && await exists('[data-ar-challenge] + [data-ar-voice-label]') && await exists('[data-ar-key-ideas]'), await held());
+    await show(neg); await until(() => exists('[data-ar-objectives]'));
+    await click('[data-action="ar-step"][data-v="check"]'); await until(() => exists('[data-ar-folded]'));
+    check('the held objectives lose their play buttons and label but keep their Arabic', (await names('ul[data-ar-objectives]')).length === 0 && !(await exists('ul[data-ar-objectives] + [data-ar-voice-label]')) && (await T.text('ul[data-ar-objectives]')).includes('لا ما لم لن'));
+    await click('[data-action="ar-step"][data-v="try"]'); await until(async () => (await names('ul[data-ar-objectives]')).length > 0);
+    check('moving to Try brings the objectives’ play buttons and label back', (await names('ul[data-ar-objectives]')).length === 2 && await exists('ul[data-ar-objectives] + [data-ar-voice-label]'));
+
+    // The timetable's text view: every Arabic cell plays, the time column does not.
+    const ttId = 'asset.arabic-timetable', ttRows = json('content/arabic-fusha/MyDay_Arabic_Starter_Materials.json').assets.find(a => a.id === ttId).rows;
+    await show(ttId); await until(() => exists('[data-ar-clip^="' + ttId + ':row:"]'));
+    const ttWant = ttRows.flatMap((r, i) => ['day', 'activity', 'place'].map(k => `${ttId}:row:${i}:${k}`));
+    check('the timetable has a play button in each of its 15 Arabic cells (five rows of day, activity and place), named by row and column', ttRows.length === 5 && JSON.stringify(await names('table')) === JSON.stringify(ttWant), await names('table'));
+    check('the time column has no play buttons', await ev(`[...document.querySelectorAll('table tbody tr')].every(tr => tr.children[1].querySelectorAll('button').length === 0 && tr.children[1].textContent.trim().length > 0)`));
+    check('the timetable shows the voice label and not "No recording included"', await exists('[data-ar-voice-label]') && !(await T.text('#fixture')).includes('No recording included'));
+    await click('[data-ar-clip="' + ttId + ':row:1:activity"]');
+    check('pressing a timetable cell’s play button starts that cell’s clip and no other', await until(async () => (await state()).playing === ttId + ':row:1:activity') && await count('[data-state="playing"]') === 1, await state());
+    await click('[data-ar-clip="' + ttId + ':row:1:activity"]');
     result = T.summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
   } finally { fs.rmSync(temp, { recursive: true, force: true }); }
   process.exit(result.fail ? 1 : 0);
