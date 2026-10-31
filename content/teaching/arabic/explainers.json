@@ -23625,7 +23625,7 @@
      }
     ],
     "steps": [
-     "Listen first without the النَّصّ, the text, and note only what you really heard. A gap is better than a guess.",
+     "Listen first without النَّصّ, the text, and note only what you really heard. A gap is better than a guess.",
      "Listen مَرَّةً ثَانِيَةً, a second time, for one thing only: a name, a number or a place.",
      "Then read the text, and replay the part you missed.",
      "Hear before you copy: notice where one word ends and the next begins before you try to say it."
@@ -23918,7 +23918,7 @@
      "Six sounds come from the throat, and each is its own letter. ء is a short catch, like the break in uh-oh; ه is a light h.",
      "ح is a strong h from deep in the throat, breathy, with no scrape: حُلْو, sweet.",
      "ع is made in the same place, squeezed and with voice. It's a consonant, so never leave it out: عَلَم, a flag, isn't أَلَم, pain.",
-     "خ is rough, like ch in Scottish loch. غ is the same with your voice on, like a soft gargle: خَيْر, good; غَيْر, other than.",
+     "خ is rough, like ch in Scottish loch, made at the very back of the mouth. غ is the same with your voice on, like a soft gargle: خَيْر, good; غَيْر, other than.",
      "Work gently, one pair at a time, with a model. These sounds shouldn't strain your throat."
     ],
     "examples": [
@@ -24041,9 +24041,9 @@
       "en": "molars, back teeth"
      },
      {
-      "form_en": "ذ: light",
-      "ar": "ذِلّ",
-      "en": "humiliation"
+      "form_en": "ذ: light (in another word)",
+      "ar": "ذِرَاع",
+      "en": "an arm"
      },
      {
       "form_en": "ظ: heavy",
@@ -24134,11 +24134,11 @@
       "q_en": "What does ظِلّ mean?",
       "choices": [
        "shade, shadow",
-       "humiliation",
+       "an arm",
        "mud"
       ],
       "answer": "shade, shadow",
-      "why_en": "With the light ذ, the word is humiliation."
+      "why_en": "ظ is the heavy partner of ذ."
      }
     ],
     "phrases_ar": []
@@ -24180,9 +24180,9 @@
      }
     ],
     "steps": [
-     "ق is made further back than ك, where the back of the tongue meets the uvula, the soft flap at the back of the mouth. شَكّ is doubt; شَقّ, a crack.",
+     "ق is made further back than ك, where the back of the tongue meets the uvula, the small soft piece that hangs down at the back of the mouth. شَكّ is doubt; شَقّ, a crack.",
      "Many dialects say ق as a hamza or as g. Fuṣḥā keeps ق: قَهْوَة, coffee.",
-     "ث is th as in think, and ذ is th as in this: ثَلَاثَة, three; ذَهَب, gold. Everyday speech often turns them into t, s, d or z; Fuṣḥā keeps the th.",
+     "ث is th as in think, and ذ is th as in this: ثَلَاثَة, three; ذَهَب, gold. Everyday speech often turns ث into t or s, and ذ into d or z; Fuṣḥā keeps the th.",
      "ظ is the heavy partner of ذ: ظُهْر, noon."
     ],
     "examples": [
@@ -24454,7 +24454,7 @@
       "en": "a city"
      },
      {
-      "form_en": "a question",
+      "form_en": "a question with a question word",
       "ar": "كَيْفَ حَالُكَ؟",
       "en": "how are you? (to a man)"
      },
@@ -24468,7 +24468,7 @@
      "Say words that belong together in one breath, and don't stop inside a group: هَذَا قَلَمٌ جَدِيدٌ, this is a new pen.",
      "At a stop, the last word usually drops its short ending: قَلَمٌ in the flow, قَلَم at a stop.",
      "At a stop, ة is said as a light -ah: مَدِينَة. In the flow its t is heard: مَدِينَةٌ.",
-     "A yes-or-no question rises at the end: هَلْ هَذَا قَلَمُكَ؟"
+     "A yes-or-no question rises at the end: هَلْ هَذَا قَلَمُكَ؟ One with a question word, like كَيْفَ, usually doesn't."
     ],
     "examples": [
      {
@@ -24504,20 +24504,16 @@
       ]
      },
      {
-      "ar": "أَنَا بِخَيْرٍ، شُكْرًا.",
-      "en": "I'm fine, thank you.",
+      "ar": "الْبَيْتُ كَبِيرٌ.",
+      "en": "The house is big.",
       "words": [
        {
-        "ar": "أَنَا",
-        "en": "I"
+        "ar": "الْبَيْتُ",
+        "en": "the house"
        },
        {
-        "ar": "بِخَيْرٍ",
-        "en": "well, fine"
-       },
-       {
-        "ar": "شُكْرًا",
-        "en": "thank you"
+        "ar": "كَبِيرٌ",
+        "en": "big"
        }
       ]
      }
