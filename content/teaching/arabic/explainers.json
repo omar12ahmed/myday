@@ -10725,6 +10725,1764 @@
      "بَقِيتُ أَرْبَعَةَ أَيَّامٍ"
     ]
    }
+  ],
+  "lesson.arabic-root-pattern": [
+   {
+    "id": "explainer.arabic-roots-patterns",
+    "title_en": "Roots and patterns: دَرْس, مَدْرَسَة, مُدَرِّس",
+    "family_en": "Three root letters carry an idea; a pattern around them adds a role",
+    "root_ar": "د-ر-س",
+    "root_reading": "d-r-s",
+    "course_words": [
+     "lexeme.arabic-root-pattern-1",
+     "lexeme.arabic-root-pattern-2",
+     "lexeme.arabic-root-pattern-5",
+     "lexeme.arabic-root-pattern-6",
+     "lexeme.arabic-root-pattern-7"
+    ],
+    "table": [
+     {
+      "form_en": "he studied",
+      "ar": "دَرَسَ",
+      "en": "he studied"
+     },
+     {
+      "form_en": "a lesson",
+      "ar": "دَرْس",
+      "en": "a lesson"
+     },
+     {
+      "form_en": "a place: مَفْعَلَة",
+      "ar": "مَدْرَسَة",
+      "en": "a school"
+     },
+     {
+      "form_en": "a person: from دَرَّسَ, to teach",
+      "ar": "مُدَرِّس",
+      "en": "a teacher"
+     },
+     {
+      "form_en": "the activity",
+      "ar": "دِرَاسَة",
+      "en": "study, studying"
+     },
+     {
+      "form_en": "done to: مَفْعُول",
+      "ar": "مَدْرُوس",
+      "en": "studied, carefully thought out"
+     }
+    ],
+    "steps": [
+     "Most Arabic words are built on a root: usually three letters that carry a general idea. د-ر-س is about studying.",
+     "A pattern of vowels and extra letters goes around the root and adds a role. Patterns are named with ف-ع-ل as a stand-in root: مَفْعَلَة often makes a place, so د-ر-س gives مَدْرَسَة, a school.",
+     "Not every letter belongs to the root: in مَدْرَسَة, the مَـ and the ـَة come from the pattern.",
+     "A shared root isn't a shared meaning. عِلْم, knowledge, and عَالَم, the world, both come from ع-ل-م. Check each word in its sentence or in a dictionary."
+    ],
+    "examples": [
+     {
+      "ar": "يَدْرُسُ أَخِي فِي مَدْرَسَةٍ قَرِيبَةٍ.",
+      "en": "My brother studies at a nearby school.",
+      "words": [
+       {
+        "ar": "يَدْرُسُ",
+        "en": "studies (د-ر-س)"
+       },
+       {
+        "ar": "أَخِي",
+        "en": "my brother"
+       },
+       {
+        "ar": "فِي",
+        "en": "at"
+       },
+       {
+        "ar": "مَدْرَسَةٍ",
+        "en": "a school (د-ر-س, a place)"
+       },
+       {
+        "ar": "قَرِيبَةٍ",
+        "en": "nearby"
+       }
+      ]
+     },
+     {
+      "ar": "الْمُدَرِّسُ يَشْرَحُ الدَّرْسَ.",
+      "en": "The teacher is explaining the lesson.",
+      "words": [
+       {
+        "ar": "الْمُدَرِّسُ",
+        "en": "the teacher (د-ر-س)"
+       },
+       {
+        "ar": "يَشْرَحُ",
+        "en": "explains"
+       },
+       {
+        "ar": "الدَّرْسَ",
+        "en": "the lesson (د-ر-س)"
+       }
+      ]
+     },
+     {
+      "ar": "دَرَسْتُ الْعُلُومَ فِي الْجَامِعَةِ.",
+      "en": "I studied science at university.",
+      "words": [
+       {
+        "ar": "دَرَسْتُ",
+        "en": "I studied"
+       },
+       {
+        "ar": "الْعُلُومَ",
+        "en": "science, the sciences (plural of عِلْم)"
+       },
+       {
+        "ar": "فِي",
+        "en": "at"
+       },
+       {
+        "ar": "الْجَامِعَةِ",
+        "en": "university"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why doesn't عَالَم, the world, mean something about knowledge, when it shares ع-ل-م with عِلْم?",
+     "a_en": "A root gives you a family, not a definition. Words drift apart over time, and each one has its own meaning. The root helps you remember a word and look it up; the sentence and the dictionary tell you what it means."
+    },
+    "selftest": [
+     {
+      "q_en": "Which root do دَرْس, مَدْرَسَة and مُدَرِّس share?",
+      "choices": [
+       "د-ر-س",
+       "م-د-ر",
+       "ر-س-م"
+      ],
+      "answer": "د-ر-س",
+      "why_en": "The مَـ and مُـ come from the patterns. The three letters in all of them are د-ر-س."
+     },
+     {
+      "q_en": "What does the pattern of مَدْرَسَة often show?",
+      "choices": [
+       "a place",
+       "a person who does something",
+       "something that was done"
+      ],
+      "answer": "a place",
+      "why_en": "مَفْعَلَة often names a place. A person is often فَاعِل, and something done to is مَفْعُول."
+     },
+     {
+      "q_en": "عِلْم and عَالَم share a root. Do they mean the same?",
+      "choices": [
+       "no: each word has its own meaning",
+       "yes: the same root, the same meaning",
+       "only in the plural"
+      ],
+      "answer": "no: each word has its own meaning",
+      "why_en": "عِلْم is knowledge, and عَالَم the world. A root is a family, not a meaning."
+     }
+    ],
+    "phrases_ar": []
+   }
+  ],
+  "lesson.arabic-clitic-segmentation": [
+   {
+    "id": "explainer.arabic-taking-words-apart",
+    "title_en": "Taking a word apart: وَ, بِـ, الْـ and ـهُ",
+    "family_en": "Short words joined to the front and endings joined to the back",
+    "course_words": [
+     "lexeme.arabic-clitic-segmentation-1",
+     "lexeme.arabic-clitic-segmentation-2",
+     "lexeme.arabic-clitic-segmentation-3",
+     "lexeme.arabic-clitic-segmentation-4",
+     "lexeme.arabic-clitic-segmentation-5",
+     "lexeme.arabic-clitic-segmentation-6",
+     "lexeme.arabic-clitic-segmentation-7"
+    ],
+    "table": [
+     {
+      "form_en": "وَ + بَيْت + ـهُ",
+      "ar": "وَبَيْتُهُ",
+      "en": "and his house"
+     },
+     {
+      "form_en": "بِـ + الْـ + سَيَّارَة",
+      "ar": "بِالسَّيَّارَةِ",
+      "en": "by car"
+     },
+     {
+      "form_en": "لِـ + الْـ + مَدْرَسَة",
+      "ar": "لِلْمَدْرَسَةِ",
+      "en": "for the school, to the school"
+     },
+     {
+      "form_en": "كَـ + الْـ + بَيْت",
+      "ar": "كَالْبَيْتِ",
+      "en": "like the house"
+     },
+     {
+      "form_en": "فَـ + ذَهَبْتُ",
+      "ar": "فَذَهَبْتُ",
+      "en": "so I went"
+     },
+     {
+      "form_en": "و is a root letter here",
+      "ar": "وَصَلَ",
+      "en": "he arrived"
+     },
+     {
+      "form_en": "ب is a root letter here",
+      "ar": "بَحَثَ",
+      "en": "he searched"
+     }
+    ],
+    "steps": [
+     "Some short words are written joined to the next word: وَ, and; فَ, so; بِـ, with or by; لِـ, for; كَـ, like; and الْـ, the. Endings like ـهُ join at the back.",
+     "To look a word up, peel these off first: وَبَيْتُهُ is وَ, and, then بَيْت, house, then ـهُ, his.",
+     "لِـ before الْـ drops the alif: لِـ with الْمَدْرَسَة is written لِلْمَدْرَسَةِ.",
+     "Be careful: a و or ب at the start may belong to the word itself. In وَصَلَ, he arrived, and بَحَثَ, he searched, they're root letters.",
+     "If two ways of splitting both look possible, let the sentence decide, and check in a dictionary."
+    ],
+    "examples": [
+     {
+      "ar": "ذَهَبْتُ إِلَى السُّوقِ بِالسَّيَّارَةِ.",
+      "en": "I went to the market by car.",
+      "words": [
+       {
+        "ar": "ذَهَبْتُ",
+        "en": "I went"
+       },
+       {
+        "ar": "إِلَى",
+        "en": "to"
+       },
+       {
+        "ar": "السُّوقِ",
+        "en": "the market"
+       },
+       {
+        "ar": "بِالسَّيَّارَةِ",
+        "en": "by car (بِـ + الْـ + سَيَّارَة)"
+       }
+      ]
+     },
+     {
+      "ar": "وَصَلَ أَخِي فَذَهَبْنَا مَعًا.",
+      "en": "My brother arrived, so we went together.",
+      "words": [
+       {
+        "ar": "وَصَلَ",
+        "en": "arrived (و is a root letter)"
+       },
+       {
+        "ar": "أَخِي",
+        "en": "my brother"
+       },
+       {
+        "ar": "فَذَهَبْنَا",
+        "en": "so we went (فَـ + ذَهَبْنَا)"
+       },
+       {
+        "ar": "مَعًا",
+        "en": "together"
+       }
+      ]
+     },
+     {
+      "ar": "هَذِهِ الْهَدِيَّةُ لِلْمُعَلِّمَةِ.",
+      "en": "This present is for the teacher.",
+      "words": [
+       {
+        "ar": "هَذِهِ",
+        "en": "this"
+       },
+       {
+        "ar": "الْهَدِيَّةُ",
+        "en": "the present"
+       },
+       {
+        "ar": "لِلْمُعَلِّمَةِ",
+        "en": "for the teacher (لِـ + الْـ + مُعَلِّمَة)"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why does لِلْمَدْرَسَةِ have no alif, when الْمَدْرَسَة has one?",
+     "a_en": "When لِـ comes before الْـ, the alif is dropped in writing, so the two لs sit together: لِلْمَدْرَسَةِ. With بِـ or وَ, the alif stays: بِالْمَدْرَسَةِ."
+    },
+    "selftest": [
+     {
+      "q_en": "How do you split وَسَيَّارَتُهُ?",
+      "choices": [
+       "وَ + سَيَّارَة + ـهُ",
+       "وَسَ + يَّارَة + ـهُ",
+       "وَسَيَّارَة + ـتُهُ"
+      ],
+      "answer": "وَ + سَيَّارَة + ـهُ",
+      "why_en": "وَ, and; سَيَّارَة, car, with its ة written ت before the ending; ـهُ, his."
+     },
+     {
+      "q_en": "In وَصَلَ, he arrived, what is the و?",
+      "choices": [
+       "a root letter",
+       "وَ, and",
+       "a pronoun"
+      ],
+      "answer": "a root letter",
+      "why_en": "The verb is و-ص-ل, to arrive, so the و is part of it."
+     },
+     {
+      "q_en": "Which is \"for the house\"?",
+      "choices": [
+       "لِلْبَيْتِ",
+       "لِالْبَيْتِ",
+       "لِلْبَيْتُ"
+      ],
+      "answer": "لِلْبَيْتِ",
+      "why_en": "لِـ before الْـ drops the alif, and the noun ends in -i."
+     }
+    ],
+    "phrases_ar": []
+   }
+  ],
+  "lesson.arabic-dictionary-method": [
+   {
+    "id": "explainer.arabic-using-a-dictionary",
+    "title_en": "Using a dictionary: by root or by spelling, and the right sense",
+    "family_en": "How to find a word, and how to choose the meaning that fits",
+    "course_words": [
+     "lexeme.arabic-dictionary-method-1",
+     "lexeme.arabic-dictionary-method-3",
+     "lexeme.arabic-dictionary-method-4",
+     "lexeme.arabic-dictionary-method-5",
+     "lexeme.arabic-dictionary-method-6",
+     "lexeme.arabic-dictionary-method-7"
+    ],
+    "table": [
+     {
+      "form_en": "dictionary",
+      "ar": "قَامُوس",
+      "en": "a dictionary"
+     },
+     {
+      "form_en": "singular",
+      "ar": "مُفْرَد",
+      "en": "singular"
+     },
+     {
+      "form_en": "plural",
+      "ar": "جَمْع",
+      "en": "plural"
+     },
+     {
+      "form_en": "context",
+      "ar": "سِيَاق",
+      "en": "context"
+     },
+     {
+      "form_en": "translation",
+      "ar": "تَرْجَمَة",
+      "en": "translation"
+     },
+     {
+      "form_en": "one word, two senses",
+      "ar": "حَرْف",
+      "en": "a letter; a small grammar word"
+     }
+    ],
+    "steps": [
+     "Some Arabic dictionaries list words by spelling, like an English one. Others list them by root: to find مَدْرَسَة, you look under د-ر-س. The first pages tell you which.",
+     "To find the root, take off any joined words and endings, then the pattern's extra letters: الْمَدَارِسُ is الْـ with مَدَارِس, the plural of مَدْرَسَة, root د-ر-س.",
+     "An entry gives more than a meaning: the plural of a noun, the present of a verb, and examples. Note the ones you need.",
+     "Many words have several senses. Start from the sentence, try a sense, and keep it only if it fits: حَرْف is a letter in a word about spelling, and a small grammar word like فِي in a grammar book.",
+     "A translation app can suggest a meaning, but check it the same way."
+    ],
+    "examples": [
+     {
+      "ar": "بَحَثْتُ عَنِ الْكَلِمَةِ فِي الْقَامُوسِ.",
+      "en": "I looked the word up in the dictionary.",
+      "words": [
+       {
+        "ar": "بَحَثْتُ",
+        "en": "I searched"
+       },
+       {
+        "ar": "عَنِ",
+        "en": "for"
+       },
+       {
+        "ar": "الْكَلِمَةِ",
+        "en": "the word"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "الْقَامُوسِ",
+        "en": "the dictionary"
+       }
+      ]
+     },
+     {
+      "ar": "جَمْعُ كَلِمَةٍ كَلِمَاتٌ.",
+      "en": "The plural of \"word\" is \"words\".",
+      "words": [
+       {
+        "ar": "جَمْعُ",
+        "en": "the plural (of)"
+       },
+       {
+        "ar": "كَلِمَةٍ",
+        "en": "a word"
+       },
+       {
+        "ar": "كَلِمَاتٌ",
+        "en": "words"
+       }
+      ]
+     },
+     {
+      "ar": "فِي هَذِهِ الْكَلِمَةِ أَرْبَعَةُ أَحْرُفٍ.",
+      "en": "There are four letters in this word.",
+      "words": [
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "هَذِهِ",
+        "en": "this"
+       },
+       {
+        "ar": "الْكَلِمَةِ",
+        "en": "word"
+       },
+       {
+        "ar": "أَرْبَعَةُ",
+        "en": "four"
+       },
+       {
+        "ar": "أَحْرُفٍ",
+        "en": "letters (a plural of حَرْف)"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why look under د-ر-س to find مَدْرَسَة, and not under م?",
+     "a_en": "In a root dictionary, a whole family is listed together under its root letters. The م of مَدْرَسَة belongs to the pattern, not the root, so the word sits under د-ر-س with دَرَسَ and دَرْس."
+    },
+    "selftest": [
+     {
+      "q_en": "In a root dictionary, where do you find مَدْرَسَة?",
+      "choices": [
+       "under د-ر-س",
+       "under م-د-ر",
+       "under م"
+      ],
+      "answer": "under د-ر-س",
+      "why_en": "The مَـ and ـَة come from the pattern; the root is د-ر-س."
+     },
+     {
+      "q_en": "What is the Arabic grammar word for \"plural\"?",
+      "choices": [
+       "جَمْع",
+       "مُفْرَد",
+       "سِيَاق"
+      ],
+      "answer": "جَمْع",
+      "why_en": "مُفْرَد is \"singular\", and سِيَاق \"context\"."
+     },
+     {
+      "q_en": "A dictionary gives three senses. Which do you choose?",
+      "choices": [
+       "the one that fits the sentence",
+       "the first one listed",
+       "the shortest one"
+      ],
+      "answer": "the one that fits the sentence",
+      "why_en": "Try each sense in the sentence, and keep the one whose meaning and grammar fit."
+     }
+    ],
+    "phrases_ar": []
+   }
+  ],
+  "lesson.arabic-participles-masdar": [
+   {
+    "id": "explainer.arabic-doer-done-action",
+    "title_en": "The doer, the done-to and the action: قَارِئ, مَقْرُوء, قِرَاءَة",
+    "family_en": "Three kinds of word made from one verb",
+    "course_words": [
+     "lexeme.arabic-participles-masdar-1",
+     "lexeme.arabic-participles-masdar-2",
+     "lexeme.arabic-participles-masdar-3",
+     "lexeme.arabic-participles-masdar-4",
+     "lexeme.arabic-participles-masdar-5",
+     "lexeme.arabic-participles-masdar-6",
+     "lexeme.arabic-participles-masdar-7",
+     "lexeme.arabic-participles-masdar-9"
+    ],
+    "table": [
+     {
+      "form_en": "the doer, from قَرَأَ",
+      "ar": "قَارِئ",
+      "en": "a reader"
+     },
+     {
+      "form_en": "done to, from قَرَأَ",
+      "ar": "مَقْرُوء",
+      "en": "read, readable"
+     },
+     {
+      "form_en": "the action, from قَرَأَ",
+      "ar": "قِرَاءَة",
+      "en": "reading"
+     },
+     {
+      "form_en": "the doer, from لَعِبَ",
+      "ar": "لَاعِب",
+      "en": "a player"
+     },
+     {
+      "form_en": "done to, from عَرَفَ",
+      "ar": "مَعْرُوف",
+      "en": "known, well known"
+     },
+     {
+      "form_en": "the doer, from سَكَنَ",
+      "ar": "سَاكِن",
+      "en": "living (in a place); a resident"
+     },
+     {
+      "form_en": "the action, from ذَهَبَ",
+      "ar": "ذَهَاب",
+      "en": "going"
+     },
+     {
+      "form_en": "the action, from دَرَسَ",
+      "ar": "دِرَاسَة",
+      "en": "studying, study"
+     }
+    ],
+    "steps": [
+     "From one verb, Arabic makes three useful kinds of word: the doer, the one it's done to, and the action itself.",
+     "The doer follows the pattern فَاعِل: قَرَأَ, he read; قَارِئ, a reader. It can name a person, like لَاعِب, a player, or describe one: هُوَ سَاكِنٌ فِي الْقَاهِرَةِ, he lives in Cairo.",
+     "The done-to follows مَفْعُول: مَقْرُوء, read; مَعْرُوف, known.",
+     "The action is the مَصْدَر, the verbal noun: قِرَاءَة, reading; ذَهَاب, going. Its pattern changes from verb to verb, so learn it with the verb.",
+     "These are words, not tenses: قَارِئ can be \"a reader\" or \"reading\", depending on the sentence."
+    ],
+    "examples": [
+     {
+      "ar": "أُحِبُّ قِرَاءَةَ الْقِصَصِ.",
+      "en": "I love reading stories.",
+      "words": [
+       {
+        "ar": "أُحِبُّ",
+        "en": "I love"
+       },
+       {
+        "ar": "قِرَاءَةَ",
+        "en": "reading (the action)"
+       },
+       {
+        "ar": "الْقِصَصِ",
+        "en": "stories"
+       }
+      ]
+     },
+     {
+      "ar": "هَذَا الْمَطْعَمُ مَعْرُوفٌ فِي الْمَدِينَةِ.",
+      "en": "This restaurant is well known in the town.",
+      "words": [
+       {
+        "ar": "هَذَا",
+        "en": "this"
+       },
+       {
+        "ar": "الْمَطْعَمُ",
+        "en": "restaurant"
+       },
+       {
+        "ar": "مَعْرُوفٌ",
+        "en": "known (done to, from عَرَفَ)"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "الْمَدِينَةِ",
+        "en": "the town"
+       }
+      ]
+     },
+     {
+      "ar": "ذَهَابِي إِلَى الْعَمَلِ يَأْخُذُ سَاعَةً.",
+      "en": "Getting to work takes me an hour.",
+      "words": [
+       {
+        "ar": "ذَهَابِي",
+        "en": "my going (the action)"
+       },
+       {
+        "ar": "إِلَى",
+        "en": "to"
+       },
+       {
+        "ar": "الْعَمَلِ",
+        "en": "work"
+       },
+       {
+        "ar": "يَأْخُذُ",
+        "en": "takes"
+       },
+       {
+        "ar": "سَاعَةً",
+        "en": "an hour"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why is the action قِرَاءَة for قَرَأَ, but ذَهَاب for ذَهَبَ?",
+     "a_en": "The doer and done-to patterns are regular for verbs like these, but the verbal noun has many patterns, and each verb has its own. Learn it with the verb: قَرَأَ, قِرَاءَة; ذَهَبَ, ذَهَاب."
+    },
+    "selftest": [
+     {
+      "q_en": "Which word means \"a player\"?",
+      "choices": [
+       "لَاعِب",
+       "مَلْعُوب",
+       "لَعِب"
+      ],
+      "answer": "لَاعِب",
+      "why_en": "The doer follows فَاعِل. لَعِب is the action, playing."
+     },
+     {
+      "q_en": "What does مَعْرُوف mean?",
+      "choices": [
+       "known",
+       "a person who knows",
+       "knowing"
+      ],
+      "answer": "known",
+      "why_en": "مَفْعُول is the done-to pattern: known."
+     },
+     {
+      "q_en": "Which is the action, the مَصْدَر, of دَرَسَ?",
+      "choices": [
+       "دِرَاسَة",
+       "دَارِس",
+       "مَدْرُوس"
+      ],
+      "answer": "دِرَاسَة",
+      "why_en": "دِرَاسَة is studying. دَارِس is someone who studies, and مَدْرُوس \"studied\"."
+     }
+    ],
+    "phrases_ar": [
+     "هُوَ سَاكِنٌ فِي الْقَاهِرَةِ"
+    ]
+   }
+  ],
+  "lesson.arabic-vocabulary-records": [
+   {
+    "id": "explainer.arabic-word-records",
+    "title_en": "Recording a word so you can use it",
+    "family_en": "Past and present for a verb, plural for a noun, and a phrase for both",
+    "course_words": [
+     "lexeme.arabic-vocabulary-records-1",
+     "lexeme.arabic-vocabulary-records-2",
+     "lexeme.arabic-vocabulary-records-3",
+     "lexeme.arabic-vocabulary-records-4",
+     "lexeme.arabic-vocabulary-records-5",
+     "lexeme.arabic-vocabulary-records-6",
+     "lexeme.arabic-vocabulary-records-7"
+    ],
+    "table": [
+     {
+      "form_en": "a verb's past",
+      "ar": "شَرِبَ",
+      "en": "he drank"
+     },
+     {
+      "form_en": "its present",
+      "ar": "يَشْرَبُ",
+      "en": "he drinks"
+     },
+     {
+      "form_en": "a phrase with it",
+      "ar": "أَشْرَبُ الشَّايَ صَبَاحًا",
+      "en": "I drink tea in the morning"
+     },
+     {
+      "form_en": "a noun's singular",
+      "ar": "بَيْت",
+      "en": "a house"
+     },
+     {
+      "form_en": "its plural",
+      "ar": "بُيُوت",
+      "en": "houses"
+     },
+     {
+      "form_en": "a phrase with it",
+      "ar": "بَيْتٌ كَبِيرٌ",
+      "en": "a big house"
+     },
+     {
+      "form_en": "vocabulary",
+      "ar": "مُفْرَدَات",
+      "en": "vocabulary, words"
+     },
+     {
+      "form_en": "pronunciation",
+      "ar": "نُطْق",
+      "en": "pronunciation"
+     }
+    ],
+    "steps": [
+     "A word on its own is easy to recognise and hard to use. Record it in a short phrase you might say: أَشْرَبُ الشَّايَ صَبَاحًا.",
+     "For a verb, note the past and the present together, شَرِبَ / يَشْرَبُ: the present's middle vowel can't be guessed.",
+     "For a noun, note the plural, since most plurals can't be guessed either: بَيْت, بُيُوت.",
+     "Add how it sounds, and where you met it, so that an old or rare sense doesn't pass for everyday Arabic.",
+     "Review by recalling, not rereading: cover the Arabic, say it from the English, then use it in a new sentence."
+    ],
+    "examples": [
+     {
+      "ar": "أَحْفَظُ عَشْرَ كَلِمَاتٍ يَوْمِيًّا.",
+      "en": "I learn ten words by heart every day.",
+      "words": [
+       {
+        "ar": "أَحْفَظُ",
+        "en": "I learn by heart"
+       },
+       {
+        "ar": "عَشْرَ",
+        "en": "ten (no ـَة: كَلِمَة is feminine)"
+       },
+       {
+        "ar": "كَلِمَاتٍ",
+        "en": "words"
+       },
+       {
+        "ar": "يَوْمِيًّا",
+        "en": "every day"
+       }
+      ]
+     },
+     {
+      "ar": "أَتَذَكَّرُ الْكَلِمَةَ، لَكِنْ أَنْسَى جَمْعَهَا.",
+      "en": "I remember the word, but I forget its plural.",
+      "words": [
+       {
+        "ar": "أَتَذَكَّرُ",
+        "en": "I remember"
+       },
+       {
+        "ar": "الْكَلِمَةَ",
+        "en": "the word"
+       },
+       {
+        "ar": "لَكِنْ",
+        "en": "but"
+       },
+       {
+        "ar": "أَنْسَى",
+        "en": "I forget"
+       },
+       {
+        "ar": "جَمْعَهَا",
+        "en": "its plural"
+       }
+      ]
+     },
+     {
+      "ar": "أَكْتُبُ كُلَّ كَلِمَةٍ جَدِيدَةٍ عَلَى بِطَاقَةٍ.",
+      "en": "I write each new word on a card.",
+      "words": [
+       {
+        "ar": "أَكْتُبُ",
+        "en": "I write"
+       },
+       {
+        "ar": "كُلَّ",
+        "en": "each"
+       },
+       {
+        "ar": "كَلِمَةٍ",
+        "en": "word"
+       },
+       {
+        "ar": "جَدِيدَةٍ",
+        "en": "new"
+       },
+       {
+        "ar": "عَلَى",
+        "en": "on"
+       },
+       {
+        "ar": "بِطَاقَةٍ",
+        "en": "a card"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why note يَشْرَبُ as well as شَرِبَ?",
+     "a_en": "The present's middle vowel changes from verb to verb: شَرِبَ, يَشْرَبُ; جَلَسَ, يَجْلِسُ; دَخَلَ, يَدْخُلُ. It can't be worked out from the past, so it's part of learning the verb."
+    },
+    "selftest": [
+     {
+      "q_en": "What makes a verb record most useful?",
+      "choices": [
+       "the past, the present and a phrase",
+       "the English word only",
+       "the past form only"
+      ],
+      "answer": "the past, the present and a phrase",
+      "why_en": "The present can't be guessed from the past, and a phrase shows how to use the verb."
+     },
+     {
+      "q_en": "What does أَنْسَى mean?",
+      "choices": [
+       "I forget",
+       "I remember",
+       "I learn by heart"
+      ],
+      "answer": "I forget",
+      "why_en": "\"I remember\" is أَتَذَكَّرُ, and \"I learn by heart\" أَحْفَظُ."
+     },
+     {
+      "q_en": "What is نُطْق?",
+      "choices": [
+       "pronunciation",
+       "a card",
+       "vocabulary"
+      ],
+      "answer": "pronunciation",
+      "why_en": "\"A card\" is بِطَاقَة, and \"vocabulary\" مُفْرَدَات."
+     }
+    ],
+    "phrases_ar": []
+   }
+  ],
+  "lesson.arabic-a2-listening": [
+   {
+    "id": "explainer.arabic-following-an-account",
+    "title_en": "Following an account you hear: رِحْلَة, زِيَارَة, عَوْدَة",
+    "family_en": "Events named as nouns, and the words that put them in order",
+    "course_words": [
+     "lexeme.arabic-a2-listening-1",
+     "lexeme.arabic-a2-listening-2",
+     "lexeme.arabic-a2-listening-3",
+     "lexeme.arabic-a2-listening-4",
+     "lexeme.arabic-a2-listening-5"
+    ],
+    "table": [
+     {
+      "form_en": "a trip",
+      "ar": "رِحْلَة",
+      "en": "a trip"
+     },
+     {
+      "form_en": "a visit, from زَارَ",
+      "ar": "زِيَارَة",
+      "en": "a visit"
+     },
+     {
+      "form_en": "coming back, from عَادَ",
+      "ar": "عَوْدَة",
+      "en": "the return"
+     },
+     {
+      "form_en": "instructions",
+      "ar": "تَعْلِيمَات",
+      "en": "instructions"
+     },
+     {
+      "form_en": "a note",
+      "ar": "مُلَاحَظَة",
+      "en": "a note, a remark"
+     },
+     {
+      "form_en": "before the trip",
+      "ar": "قَبْلَ الرِّحْلَةِ",
+      "en": "before the trip"
+     },
+     {
+      "form_en": "after coming back",
+      "ar": "بَعْدَ الْعَوْدَةِ",
+      "en": "after the return"
+     }
+    ],
+    "steps": [
+     "An account often names events as nouns: رِحْلَة, a trip; زِيَارَة, a visit; عَوْدَة, the return. Listen for them to build a timeline.",
+     "Then listen for the words that order them: قَبْلَ, بَعْدَ, ثُمَّ and عِنْدَمَا.",
+     "Listen closely for لَمْ, لَنْ and لَيْسَ: لَمْ نَزُرْ is \"we didn't visit\", the opposite of زُرْنَا.",
+     "Listen once for the gist, then again for the details you need. One unknown word rarely breaks the whole timeline."
+    ],
+    "examples": [
+     {
+      "ar": "كَانَتِ الرِّحْلَةُ طَوِيلَةً وَمُمْتِعَةً.",
+      "en": "The trip was long and enjoyable.",
+      "words": [
+       {
+        "ar": "كَانَتِ",
+        "en": "was"
+       },
+       {
+        "ar": "الرِّحْلَةُ",
+        "en": "the trip"
+       },
+       {
+        "ar": "طَوِيلَةً",
+        "en": "long"
+       },
+       {
+        "ar": "وَمُمْتِعَةً",
+        "en": "and enjoyable"
+       }
+      ]
+     },
+     {
+      "ar": "بَعْدَ زِيَارَةِ الْمَتْحَفِ، أَكَلْنَا فِي مَطْعَمٍ.",
+      "en": "After visiting the museum, we ate in a restaurant.",
+      "words": [
+       {
+        "ar": "بَعْدَ",
+        "en": "after"
+       },
+       {
+        "ar": "زِيَارَةِ",
+        "en": "the visit (of)"
+       },
+       {
+        "ar": "الْمَتْحَفِ",
+        "en": "the museum"
+       },
+       {
+        "ar": "أَكَلْنَا",
+        "en": "we ate"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "مَطْعَمٍ",
+        "en": "a restaurant"
+       }
+      ]
+     },
+     {
+      "ar": "لَمْ نَزُرِ الْقَلْعَةَ بِسَبَبِ الْمَطَرِ.",
+      "en": "We didn't visit the castle because of the rain.",
+      "words": [
+       {
+        "ar": "لَمْ",
+        "en": "didn't"
+       },
+       {
+        "ar": "نَزُرِ",
+        "en": "we visit (after لَمْ)"
+       },
+       {
+        "ar": "الْقَلْعَةَ",
+        "en": "the castle"
+       },
+       {
+        "ar": "بِسَبَبِ",
+        "en": "because of"
+       },
+       {
+        "ar": "الْمَطَرِ",
+        "en": "the rain"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why بَعْدَ زِيَارَةِ الْمَتْحَفِ, with a noun, where English says \"after visiting\"?",
+     "a_en": "Arabic often names an action as a noun, especially after words like قَبْلَ and بَعْدَ: بَعْدَ زِيَارَةِ الْمَتْحَفِ is literally \"after the visit of the museum\"."
+    },
+    "selftest": [
+     {
+      "q_en": "What does عَوْدَة mean?",
+      "choices": [
+       "the return, coming back",
+       "a trip",
+       "a visit"
+      ],
+      "answer": "the return, coming back",
+      "why_en": "رِحْلَة is a trip, and زِيَارَة a visit."
+     },
+     {
+      "q_en": "You hear لَمْ نَزُرِ الْقَلْعَةَ. Did they visit the castle?",
+      "choices": [
+       "no",
+       "yes",
+       "we aren't told"
+      ],
+      "answer": "no",
+      "why_en": "لَمْ makes it \"didn't\": we didn't visit the castle."
+     },
+     {
+      "q_en": "Which word puts events in order?",
+      "choices": [
+       "بَعْدَ",
+       "رِحْلَة",
+       "مُلَاحَظَة"
+      ],
+      "answer": "بَعْدَ",
+      "why_en": "بَعْدَ is \"after\". رِحْلَة is a trip, and مُلَاحَظَة a note."
+     }
+    ],
+    "phrases_ar": [
+     "لَمْ نَزُرْ",
+     "بَعْدَ زِيَارَةِ الْمَتْحَفِ",
+     "لَمْ نَزُرِ الْقَلْعَةَ"
+    ]
+   }
+  ],
+  "lesson.arabic-a2-reading": [
+   {
+    "id": "explainer.arabic-reading-a-notice",
+    "title_en": "Reading a notice: إِعْلَان, دَوْرَة, تَسْجِيل",
+    "family_en": "Its purpose first, then the details you have to act on",
+    "course_words": [
+     "lexeme.arabic-a2-reading-4",
+     "lexeme.arabic-a2-reading-5",
+     "lexeme.arabic-a2-reading-6"
+    ],
+    "table": [
+     {
+      "form_en": "a notice",
+      "ar": "إِعْلَان",
+      "en": "a notice, an announcement"
+     },
+     {
+      "form_en": "a course",
+      "ar": "دَوْرَة",
+      "en": "a course"
+     },
+     {
+      "form_en": "registration",
+      "ar": "تَسْجِيل",
+      "en": "registration"
+     },
+     {
+      "form_en": "it starts",
+      "ar": "تَبْدَأُ الدَّوْرَةُ",
+      "en": "the course starts"
+     },
+     {
+      "form_en": "the deadline",
+      "ar": "آخِرُ مَوْعِدٍ لِلتَّسْجِيلِ",
+      "en": "the last day to register"
+     },
+     {
+      "form_en": "free",
+      "ar": "مَجَّانِيّ",
+      "en": "free of charge"
+     }
+    ],
+    "steps": [
+     "Read a notice for its purpose first: what is it about, and what does it want you to do?",
+     "Then find the details you have to act on: the day, the time, the place, the price and any deadline.",
+     "Keep the details apart: the day a course starts isn't the last day to register.",
+     "If something isn't in the notice, such as a price, don't fill it in: write \"not stated\"."
+    ],
+    "examples": [
+     {
+      "ar": "تَبْدَأُ دَوْرَةُ الطَّبْخِ يَوْمَ الِاثْنَيْنِ.",
+      "en": "The cooking course starts on Monday.",
+      "words": [
+       {
+        "ar": "تَبْدَأُ",
+        "en": "starts (تَـ: دَوْرَة is feminine)"
+       },
+       {
+        "ar": "دَوْرَةُ",
+        "en": "the course (of)"
+       },
+       {
+        "ar": "الطَّبْخِ",
+        "en": "cooking"
+       },
+       {
+        "ar": "يَوْمَ",
+        "en": "on (the day of)"
+       },
+       {
+        "ar": "الِاثْنَيْنِ",
+        "en": "Monday"
+       }
+      ]
+     },
+     {
+      "ar": "التَّسْجِيلُ مَجَّانِيٌّ حَتَّى نِهَايَةِ الشَّهْرِ.",
+      "en": "Registration is free until the end of the month.",
+      "words": [
+       {
+        "ar": "التَّسْجِيلُ",
+        "en": "registration"
+       },
+       {
+        "ar": "مَجَّانِيٌّ",
+        "en": "free"
+       },
+       {
+        "ar": "حَتَّى",
+        "en": "until"
+       },
+       {
+        "ar": "نِهَايَةِ",
+        "en": "the end (of)"
+       },
+       {
+        "ar": "الشَّهْرِ",
+        "en": "the month"
+       }
+      ]
+     },
+     {
+      "ar": "اِتَّصِلْ بِنَا لِلْمَزِيدِ مِنَ الْمَعْلُومَاتِ.",
+      "en": "Contact us for more information.",
+      "words": [
+       {
+        "ar": "اِتَّصِلْ",
+        "en": "contact (to a man)"
+       },
+       {
+        "ar": "بِنَا",
+        "en": "us"
+       },
+       {
+        "ar": "لِلْمَزِيدِ",
+        "en": "for more"
+       },
+       {
+        "ar": "مِنَ",
+        "en": "of"
+       },
+       {
+        "ar": "الْمَعْلُومَاتِ",
+        "en": "information"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why does تَبْدَأُ start with تَـ, when the notice isn't talking to \"you\"?",
+     "a_en": "دَوْرَة is feminine, so the verb takes the \"she\" form, which starts with تَـ: تَبْدَأُ الدَّوْرَةُ. A masculine noun takes يَـ: يَبْدَأُ الدَّرْسُ, the lesson starts."
+    },
+    "selftest": [
+     {
+      "q_en": "A notice says تَبْدَأُ الدَّوْرَةُ يَوْمَ الْأَحَدِ. What does it tell you?",
+      "choices": [
+       "the course starts on Sunday",
+       "the course ends on Sunday",
+       "registration closes on Sunday"
+      ],
+      "answer": "the course starts on Sunday",
+      "why_en": "تَبْدَأُ is \"starts\". It says nothing about the end or registration."
+     },
+     {
+      "q_en": "What is تَسْجِيل?",
+      "choices": [
+       "registration",
+       "a course",
+       "a notice"
+      ],
+      "answer": "registration",
+      "why_en": "دَوْرَة is a course, and إِعْلَان a notice."
+     },
+     {
+      "q_en": "The notice gives no price. What do you write?",
+      "choices": [
+       "not stated",
+       "free",
+       "the usual price"
+      ],
+      "answer": "not stated",
+      "why_en": "Answer from the notice only, and say when something isn't there."
+     }
+    ],
+    "phrases_ar": [
+     "يَبْدَأُ الدَّرْسُ",
+     "تَبْدَأُ الدَّوْرَةُ يَوْمَ الْأَحَدِ"
+    ]
+   }
+  ],
+  "lesson.arabic-a2-interaction": [
+   {
+    "id": "explainer.arabic-sorting-it-out",
+    "title_en": "Sorting something out: مُشْكِلَة, حَلّ, هَلْ يُنَاسِبُكَ؟",
+    "family_en": "Naming a problem, asking what's possible, checking, and agreeing",
+    "course_words": [
+     "lexeme.arabic-a2-interaction-1",
+     "lexeme.arabic-a2-interaction-2",
+     "lexeme.arabic-a2-interaction-3",
+     "lexeme.arabic-a2-interaction-4",
+     "lexeme.arabic-a2-interaction-5",
+     "lexeme.arabic-a2-interaction-6"
+    ],
+    "table": [
+     {
+      "form_en": "there's a problem",
+      "ar": "عِنْدِي مُشْكِلَةٌ فِي الْحَجْزِ",
+      "en": "I have a problem with my booking"
+     },
+     {
+      "form_en": "is it possible?",
+      "ar": "هَلْ مِنَ الْمُمْكِنِ تَغْيِيرُ الْغُرْفَةِ؟",
+      "en": "Is it possible to change the room?"
+     },
+     {
+      "form_en": "does it suit you? (to a man)",
+      "ar": "هَلْ يُنَاسِبُكَ هَذَا؟",
+      "en": "Does this suit you?"
+     },
+     {
+      "form_en": "does it suit you? (to a woman)",
+      "ar": "هَلْ يُنَاسِبُكِ هَذَا؟",
+      "en": "Does this suit you?"
+     },
+     {
+      "form_en": "checking",
+      "ar": "هَلْ تَعْنِي غُرْفَةً أُخْرَى؟",
+      "en": "Do you mean another room?"
+     },
+     {
+      "form_en": "a solution",
+      "ar": "هَذَا حَلٌّ جَيِّدٌ",
+      "en": "That's a good solution"
+     }
+    ],
+    "steps": [
+     "A routine exchange has a goal: ask for what you need, listen to the answer, check it, and agree.",
+     "Name the problem simply: عِنْدِي مُشْكِلَةٌ فِي الْحَجْزِ, I have a problem with my booking.",
+     "Ask what's possible with هَلْ مِنَ الْمُمْكِنِ, is it possible, and a noun for the action: هَلْ مِنَ الْمُمْكِنِ تَغْيِيرُ الْغُرْفَةِ؟",
+     "Ask if something suits them with يُنَاسِبُ, it suits, and \"you\" as an ending: هَلْ يُنَاسِبُكَ الْمَوْعِدُ؟, does the time suit you?",
+     "If you're not sure, check with هَلْ تَعْنِي, do you mean, and say the result again at the end."
+    ],
+    "examples": [
+     {
+      "ar": "أُرِيدُ أَنْ أُغَيِّرَ الْحَجْزَ إِلَى يَوْمِ الْجُمُعَةِ.",
+      "en": "I'd like to change the booking to Friday.",
+      "words": [
+       {
+        "ar": "أُرِيدُ",
+        "en": "I want"
+       },
+       {
+        "ar": "أَنْ",
+        "en": "to"
+       },
+       {
+        "ar": "أُغَيِّرَ",
+        "en": "change"
+       },
+       {
+        "ar": "الْحَجْزَ",
+        "en": "the booking"
+       },
+       {
+        "ar": "إِلَى",
+        "en": "to"
+       },
+       {
+        "ar": "يَوْمِ",
+        "en": "the day (of)"
+       },
+       {
+        "ar": "الْجُمُعَةِ",
+        "en": "Friday"
+       }
+      ]
+     },
+     {
+      "ar": "الْغُرْفَةُ صَغِيرَةٌ جِدًّا، هَلْ عِنْدَكُمْ غُرْفَةٌ أَكْبَرُ؟",
+      "en": "The room is very small; have you got a bigger room?",
+      "words": [
+       {
+        "ar": "الْغُرْفَةُ",
+        "en": "the room"
+       },
+       {
+        "ar": "صَغِيرَةٌ",
+        "en": "small"
+       },
+       {
+        "ar": "جِدًّا",
+        "en": "very"
+       },
+       {
+        "ar": "هَلْ",
+        "en": "(starts a yes/no question)"
+       },
+       {
+        "ar": "عِنْدَكُمْ",
+        "en": "you have (to a group, or a business)"
+       },
+       {
+        "ar": "غُرْفَةٌ",
+        "en": "a room"
+       },
+       {
+        "ar": "أَكْبَرُ",
+        "en": "bigger"
+       }
+      ]
+     },
+     {
+      "ar": "هَذَا مُمْكِنٌ، وَهَذَا حَلٌّ جَيِّدٌ.",
+      "en": "That's possible, and it's a good solution.",
+      "words": [
+       {
+        "ar": "هَذَا",
+        "en": "this, that"
+       },
+       {
+        "ar": "مُمْكِنٌ",
+        "en": "possible"
+       },
+       {
+        "ar": "وَهَذَا",
+        "en": "and this"
+       },
+       {
+        "ar": "حَلٌّ",
+        "en": "a solution"
+       },
+       {
+        "ar": "جَيِّدٌ",
+        "en": "good"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why أَكْبَرُ, with no -un, in غُرْفَةٌ أَكْبَرُ?",
+     "a_en": "Words on the أَفْعَل pattern, like أَكْبَر, never take -un, even without الْـ: غُرْفَةٌ أَكْبَرُ, a bigger room. They're one of a few kinds of word that end in a plain -u."
+    },
+    "selftest": [
+     {
+      "q_en": "How do you ask a woman \"Does this suit you?\"",
+      "choices": [
+       "هَلْ يُنَاسِبُكِ هَذَا؟",
+       "هَلْ يُنَاسِبُكَ هَذَا؟",
+       "هَلْ تُنَاسِبِينَ هَذَا؟"
+      ],
+      "answer": "هَلْ يُنَاسِبُكِ هَذَا؟",
+      "why_en": "To a woman, \"you\" is ـكِ. The verb matches هَذَا, so it stays يُنَاسِبُ."
+     },
+     {
+      "q_en": "What does حَلّ mean?",
+      "choices": [
+       "a solution",
+       "a problem",
+       "a booking"
+      ],
+      "answer": "a solution",
+      "why_en": "مُشْكِلَة is a problem, and حَجْز a booking."
+     },
+     {
+      "q_en": "You're not sure what the receptionist meant. What do you say?",
+      "choices": [
+       "هَلْ تَعْنِي غُرْفَةً أُخْرَى؟",
+       "شُكْرًا، إِلَى اللِّقَاءِ",
+       "أَنَا مُوَافِقٌ"
+      ],
+      "answer": "هَلْ تَعْنِي غُرْفَةً أُخْرَى؟",
+      "why_en": "هَلْ تَعْنِي, do you mean, checks before you agree."
+     }
+    ],
+    "phrases_ar": [
+     "هَلْ يُنَاسِبُكَ؟",
+     "هَلْ مِنَ الْمُمْكِنِ",
+     "هَلْ يُنَاسِبُكَ الْمَوْعِدُ؟",
+     "هَلْ تَعْنِي",
+     "غُرْفَةٌ أَكْبَرُ"
+    ]
+   }
+  ],
+  "lesson.arabic-a2-composition": [
+   {
+    "id": "explainer.arabic-short-paragraph",
+    "title_en": "Writing a short paragraph: time, reason and result",
+    "family_en": "Words that keep the time clear and link a reason to its result",
+    "course_words": [
+     "lexeme.arabic-a2-composition-1",
+     "lexeme.arabic-a2-composition-2",
+     "lexeme.arabic-a2-composition-3",
+     "lexeme.arabic-a2-composition-4",
+     "lexeme.arabic-a2-composition-5",
+     "lexeme.arabic-a2-composition-6"
+    ],
+    "table": [
+     {
+      "form_en": "because I",
+      "ar": "لِأَنَّنِي",
+      "en": "because I"
+     },
+     {
+      "form_en": "a reason",
+      "ar": "سَبَب",
+      "en": "a reason"
+     },
+     {
+      "form_en": "a result",
+      "ar": "نَتِيجَة",
+      "en": "a result"
+     },
+     {
+      "form_en": "so, as a result",
+      "ar": "لِذَلِكَ",
+      "en": "so, therefore"
+     },
+     {
+      "form_en": "for example",
+      "ar": "مَثَلًا",
+      "en": "for example"
+     },
+     {
+      "form_en": "a paragraph",
+      "ar": "فِقْرَة",
+      "en": "a paragraph"
+     },
+     {
+      "form_en": "I revise",
+      "ar": "أُرَاجِعُ",
+      "en": "I revise, I check over"
+     }
+    ],
+    "steps": [
+     "A good short paragraph keeps the time, the people and the reasons clear.",
+     "Mark the time when it changes: أَمْسِ with a past verb, غَدًا with سَـ and a present verb.",
+     "Give a reason with لِأَنَّ, because. Before an ending it joins up: لِأَنَّنِي, because I; لِأَنَّهُ, because he.",
+     "Give the result with لِذَلِكَ, so: كُنْتُ مُتْعَبًا، لِذَلِكَ نِمْتُ مُبَكِّرًا, I was tired, so I went to bed early.",
+     "Revise the meaning first: is the time clear, and who is \"he\"? Then check the grammar."
+    ],
+    "examples": [
+     {
+      "ar": "لَمْ أَخْرُجْ أَمْسِ لِأَنَّنِي كُنْتُ مَرِيضًا.",
+      "en": "I didn't go out yesterday because I was ill.",
+      "words": [
+       {
+        "ar": "لَمْ",
+        "en": "didn't"
+       },
+       {
+        "ar": "أَخْرُجْ",
+        "en": "I go out"
+       },
+       {
+        "ar": "أَمْسِ",
+        "en": "yesterday"
+       },
+       {
+        "ar": "لِأَنَّنِي",
+        "en": "because I"
+       },
+       {
+        "ar": "كُنْتُ",
+        "en": "was"
+       },
+       {
+        "ar": "مَرِيضًا",
+        "en": "ill"
+       }
+      ]
+     },
+     {
+      "ar": "كَانَ الطَّقْسُ سَيِّئًا، لِذَلِكَ بَقِينَا فِي الْبَيْتِ.",
+      "en": "The weather was bad, so we stayed at home.",
+      "words": [
+       {
+        "ar": "كَانَ",
+        "en": "was"
+       },
+       {
+        "ar": "الطَّقْسُ",
+        "en": "the weather"
+       },
+       {
+        "ar": "سَيِّئًا",
+        "en": "bad"
+       },
+       {
+        "ar": "لِذَلِكَ",
+        "en": "so"
+       },
+       {
+        "ar": "بَقِينَا",
+        "en": "we stayed"
+       },
+       {
+        "ar": "فِي",
+        "en": "in, at"
+       },
+       {
+        "ar": "الْبَيْتِ",
+        "en": "home"
+       }
+      ]
+     },
+     {
+      "ar": "سَأُرَاجِعُ الْفِقْرَةَ غَدًا، ثُمَّ أُرْسِلُهَا.",
+      "en": "I'll revise the paragraph tomorrow, then send it.",
+      "words": [
+       {
+        "ar": "سَأُرَاجِعُ",
+        "en": "I'll revise"
+       },
+       {
+        "ar": "الْفِقْرَةَ",
+        "en": "the paragraph"
+       },
+       {
+        "ar": "غَدًا",
+        "en": "tomorrow"
+       },
+       {
+        "ar": "ثُمَّ",
+        "en": "then"
+       },
+       {
+        "ar": "أُرْسِلُهَا",
+        "en": "I send it"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why لِأَنَّنِي and لِأَنَّهُ, but لِأَنَّ الطَّقْسَ?",
+     "a_en": "لِأَنَّ is followed either by a noun ending in -a, لِأَنَّ الطَّقْسَ, or by a pronoun ending joined to it: لِأَنَّهُ, because he; لِأَنَّنِي, because I (also written لِأَنِّي)."
+    },
+    "selftest": [
+     {
+      "q_en": "Which word gives a result?",
+      "choices": [
+       "لِذَلِكَ",
+       "لِأَنَّ",
+       "مَثَلًا"
+      ],
+      "answer": "لِذَلِكَ",
+      "why_en": "لِذَلِكَ is \"so\". لِأَنَّ gives a reason, and مَثَلًا is \"for example\"."
+     },
+     {
+      "q_en": "Which says \"because I was tired\"?",
+      "choices": [
+       "لِأَنَّنِي كُنْتُ مُتْعَبًا",
+       "لِأَنَّ كُنْتُ مُتْعَبًا",
+       "لِذَلِكَ كُنْتُ مُتْعَبًا"
+      ],
+      "answer": "لِأَنَّنِي كُنْتُ مُتْعَبًا",
+      "why_en": "لِأَنَّ needs a noun or an ending before the verb. لِذَلِكَ كُنْتُ مُتْعَبًا is \"so I was tired\"."
+     },
+     {
+      "q_en": "When you revise, what comes first?",
+      "choices": [
+       "whether the meaning is clear",
+       "the handwriting",
+       "making it longer"
+      ],
+      "answer": "whether the meaning is clear",
+      "why_en": "Fix what hides the time or who's who first, then the grammar."
+     }
+    ],
+    "phrases_ar": [
+     "كُنْتُ مُتْعَبًا، لِذَلِكَ نِمْتُ مُبَكِّرًا",
+     "لِأَنَّ الطَّقْسَ",
+     "لِذَلِكَ كُنْتُ مُتْعَبًا"
+    ]
+   }
+  ],
+  "lesson.arabic-a2-portfolio": [
+   {
+    "id": "explainer.arabic-level-and-next-step",
+    "title_en": "Describing your level and your next step: مُسْتَوَايَ, أَحْيَانًا",
+    "family_en": "Saying what you can do, how often, and what comes next",
+    "course_words": [
+     "lexeme.arabic-a2-portfolio-1",
+     "lexeme.arabic-a2-portfolio-2",
+     "lexeme.arabic-a2-portfolio-3",
+     "lexeme.arabic-a2-portfolio-4",
+     "lexeme.arabic-a2-portfolio-5"
+    ],
+    "table": [
+     {
+      "form_en": "my level",
+      "ar": "مُسْتَوَايَ جَيِّدٌ فِي الْقِرَاءَةِ",
+      "en": "My reading is at a good level"
+     },
+     {
+      "form_en": "sometimes",
+      "ar": "أَحْيَانًا أَحْتَاجُ إِلَى الْقَامُوسِ",
+      "en": "Sometimes I need the dictionary"
+     },
+     {
+      "form_en": "the next step",
+      "ar": "الْخُطْوَةُ التَّالِيَةُ",
+      "en": "the next step"
+     },
+     {
+      "form_en": "an interest",
+      "ar": "عِنْدِي اهْتِمَامٌ بِالْأَخْبَارِ",
+      "en": "I'm interested in the news"
+     },
+     {
+      "form_en": "the date",
+      "ar": "تَارِيخُ الْيَوْمِ",
+      "en": "today's date"
+     }
+    ],
+    "steps": [
+     "To describe your level, say what you can do and with what help: أَفْهَمُ الْأَخْبَارَ الْقَصِيرَةَ بِمُسَاعَدَةِ الْقَامُوسِ, I understand short news with the help of a dictionary.",
+     "مُسْتَوَى, level, ends in a long ā written ى. Before \"my\" it becomes مُسْتَوَايَ.",
+     "أَحْيَانًا, sometimes, and دَائِمًا, always, say how often.",
+     "Then name one next step: الْخُطْوَةُ التَّالِيَةُ الِاسْتِمَاعُ, the next step is listening."
+    ],
+    "examples": [
+     {
+      "ar": "أَحْيَانًا لَا أَفْهَمُ الْأَرْقَامَ فِي الْأَخْبَارِ.",
+      "en": "Sometimes I don't understand the numbers in the news.",
+      "words": [
+       {
+        "ar": "أَحْيَانًا",
+        "en": "sometimes"
+       },
+       {
+        "ar": "لَا",
+        "en": "not"
+       },
+       {
+        "ar": "أَفْهَمُ",
+        "en": "I understand"
+       },
+       {
+        "ar": "الْأَرْقَامَ",
+        "en": "the numbers"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "الْأَخْبَارِ",
+        "en": "the news"
+       }
+      ]
+     },
+     {
+      "ar": "مُسْتَوَايَ فِي الْكِتَابَةِ أَحْسَنُ مِنْ مُسْتَوَايَ فِي الِاسْتِمَاعِ.",
+      "en": "My writing is at a better level than my listening.",
+      "words": [
+       {
+        "ar": "مُسْتَوَايَ",
+        "en": "my level"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "الْكِتَابَةِ",
+        "en": "writing"
+       },
+       {
+        "ar": "أَحْسَنُ",
+        "en": "better"
+       },
+       {
+        "ar": "مِنْ",
+        "en": "than"
+       },
+       {
+        "ar": "مُسْتَوَايَ",
+        "en": "my level"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "الِاسْتِمَاعِ",
+        "en": "listening"
+       }
+      ]
+     },
+     {
+      "ar": "سَأُرَاجِعُ تَقَدُّمِي فِي نِهَايَةِ الشَّهْرِ.",
+      "en": "I'll review my progress at the end of the month.",
+      "words": [
+       {
+        "ar": "سَأُرَاجِعُ",
+        "en": "I'll review"
+       },
+       {
+        "ar": "تَقَدُّمِي",
+        "en": "my progress"
+       },
+       {
+        "ar": "فِي",
+        "en": "at"
+       },
+       {
+        "ar": "نِهَايَةِ",
+        "en": "the end (of)"
+       },
+       {
+        "ar": "الشَّهْرِ",
+        "en": "the month"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why مُسْتَوَايَ, with an alif and ـيَ, and not مُسْتَوَى with ـِي?",
+     "a_en": "\"My\" can't follow a long ā as plain ـِي, so it becomes ـيَ, and the ى is written as an alif: مُسْتَوَى, مُسْتَوَايَ."
+    },
+    "selftest": [
+     {
+      "q_en": "What does أَحْيَانًا mean?",
+      "choices": [
+       "sometimes",
+       "always",
+       "never"
+      ],
+      "answer": "sometimes",
+      "why_en": "\"Always\" is دَائِمًا."
+     },
+     {
+      "q_en": "How do you say \"my level\"?",
+      "choices": [
+       "مُسْتَوَايَ",
+       "مُسْتَوَى",
+       "مُسْتَوِيِي"
+      ],
+      "answer": "مُسْتَوَايَ",
+      "why_en": "After a long ā, \"my\" is ـيَ, and the ى becomes an alif."
+     },
+     {
+      "q_en": "Your listening is weaker than your reading. What's a good next step?",
+      "choices": [
+       "short listening tasks",
+       "more reading only",
+       "a new level label"
+      ],
+      "answer": "short listening tasks",
+      "why_en": "Pick the next step from the weaker skill, and keep the rest going."
+     }
+    ],
+    "phrases_ar": [
+     "أَفْهَمُ الْأَخْبَارَ الْقَصِيرَةَ بِمُسَاعَدَةِ الْقَامُوسِ",
+     "الْخُطْوَةُ التَّالِيَةُ الِاسْتِمَاعُ"
+    ]
+   }
   ]
  }
 }
