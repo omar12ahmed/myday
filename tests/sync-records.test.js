@@ -393,6 +393,11 @@ const clone = o => JSON.parse(JSON.stringify(o));
       ended({ how: 'stopped', note: 'Too costly', on: '2026-10-30' }).includes('Area: Home (rose)') && ended({ how: 'stopped', note: 'Too costly', on: '2026-10-30' }).includes(`Finished: stopped on purpose ${R.shortDate('2026-10-30')} — Too costly`)
       && ended({ how: 'achieved', note: '', on: null }).includes('Finished: achieved') && ended({ how: 'paused', note: '', on: null }, {}).includes('Finished: paused') && !ended({ how: 'paused', note: '', on: null }, {}).some(l => /^Area/.test(l))
       && !R.recordLines(pj, pv).some(l => /^Area|^Finished/.test(l)), [ended({ how: 'stopped', note: 'Too costly', on: '2026-10-30' }), ended({ how: 'achieved', note: '', on: null })]);
+    // …and whom it's waiting on (specs/projects-project-waiting.md), likewise.
+    const waits = waiting => R.recordLines(pj, { ...pv, value: { ...pv.value, waiting } });
+    check('…whom it\'s waiting on, since when, the check-back day and whether it\'s chased ("Waiting on Priya since … · check back … · chased"; just whom and since without them)',
+      waits({ on: 'Priya', since: '2026-10-20', until: '2026-11-04', chaseTaskId: 'tkC' }).includes(`Waiting on Priya since ${R.shortDate('2026-10-20')} · check back ${R.shortDate('2026-11-04')} · chased`)
+      && waits({ on: 'Priya', since: '2026-10-20' }).includes(`Waiting on Priya since ${R.shortDate('2026-10-20')}`) && !R.recordLines(pj, pv).some(l => /^Waiting/.test(l)), waits({ on: 'Priya', since: '2026-10-20', until: '2026-11-04', chaseTaskId: 'tkC' }));
   } else check('(test setup: a project record to show the lines of)', false, [...recs.keys()].slice(0, 20));
 
   fs.rmSync(dir, { recursive: true, force: true });
