@@ -29,7 +29,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
     `export { linkTask, heldBack } from ${src('projects')};`,
     `export { needsYou, GROUP_LABEL as NEED_GROUP_LABEL } from ${src('attention')};`,
     `export { SECTIONS, isHidden, sectionContent, overviewSections, setHidden, hiddenWords, openOnArrival, arriving, arrived } from ${src('projectSections')};`,
-    `export { setDeadline, deadlineWords, deadlineLabel } from ${src('tasks')};`, `export { deadlineToNote, deadlineNoted, noteDeadlineDone } from ${src('deadlines')};`,
+    `export { setDeadline, deadlineWords, deadlineLabel, setMilestone } from ${src('tasks')};`, `export { deadlineToNote, deadlineNoted, noteDeadlineDone } from ${src('deadlines')};`,
     `export { setDone, clearDay, toggleRoll, followQueued, taskFromQueue, sendToQueue } from ${src('plan')};`, `export { doneOn as doneOnDay } from ${src('dashboard')};`,
     `export * as X from ${src('experiments')};`, `export * as W from ${src('welcomeBack')};`, `export { lastActivity as lastActivityOf, nextStep as nextStepOf } from ${src('projects')};`, `export * as M from ${src('businessMoney')};`, `export * as R from ${src('research')};`,
   ].join('\n'));
@@ -2443,6 +2443,70 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const bz = K.W.welcomeBack(wbz, wbz.projects.items[0], k)?.meanwhile ?? [];
     check('on a business idea: "“Test: y” is done — what happened?" (to its Model tab) and "A Find out task is done — what did you find?"', bz.some(m => m.text === '“Test: y” is done — what happened?' && m.href === '#projects/p/pjZ/model')
       && bz.some(m => m.text === 'A Find out task is done — what did you find?' && m.href === '#projects/p/pjZ/model'), bz);
+  }
+
+  console.log('\n[26] Decisions backed by evidence, and tasks toward milestones (specs/projects-evidence-decisions.md)');
+  {
+    const k = '2026-11-02';
+    const OPT = (id, text) => ({ id, text, pros: [], cons: [] });
+    const DEC = (id, question, options, x = {}) => ({ id, question, options, chosen: null, why: '', decidedOn: null, createdAt: OLD, updatedAt: OLD, ...x });
+    const w = world(base('pjE', { title: 'Garden shed', tools: ['research'], milestones: [{ id: 'm1', title: 'Base laid', aim: null, reachedOn: null, createdAt: OLD }, { id: 'm2', title: 'Walls up', aim: null, reachedOn: null, createdAt: OLD }],
+      decisions: [DEC('d1', 'Larch or pine?', [OPT('oL', 'Larch'), OPT('oP', 'Pine')]), DEC('d2', 'Which supplier?', [OPT('oA', 'Abdi'), OPT('oB', 'Hodan')], { chosen: 'oA', decidedOn: '2026-10-30' })] }),
+      base('pjO', { title: 'Other', decisions: [DEC('dX', 'Elsewhere?', [OPT('oX', 'There')])] }));
+    w.tasks.items = []; w.research = { items: [] };
+    const P = id => w.projects.items.find(p => p.id === id), D1 = () => P('pjE').decisions.find(x => x.id === 'd1'), F = id => w.research.items.find(x => x.id === id);
+
+    console.log('  findings about an option');
+    const f1 = K.R.addFinding(w, 'pjE', { text: 'Larch lasts 25 years', about: [{ kind: 'option', id: 'oL', stance: 'supports' }, { kind: 'option', id: 'oX', stance: 'supports' }, { kind: 'option', id: 'nope', stance: 'supports' }] }).id;
+    check('a finding can bear on this project\'s option — never another project\'s, nor one that isn\'t there', eq(F(f1).about, [{ kind: 'option', id: 'oL', stance: 'supports' }]), F(f1).about);
+    K.R.addFinding(w, 'pjE', { text: 'A neighbour\'s larch shed is fine', about: [{ kind: 'option', id: 'oL', stance: 'supports' }] });
+    const f3 = K.R.addFinding(w, 'pjE', { text: 'Larch costs twice as much', about: [{ kind: 'option', id: 'oL', stance: 'contradicts' }, { kind: 'option', id: 'oP', stance: 'relates' }] }).id;
+    const eL = K.R.findingsAbout(w, 'pjE', 'option', 'oL');
+    check('an option\'s evidence: "3 findings: 2 for · 1 against"; as counts, 2 for and 1 against; "2 findings for, 1 against"', K.R.optionEvidenceLine(eL) === '3 findings: 2 for · 1 against' && K.R.optionEvidenceCounts(K.R.findingsAbout(w, 'pjE', 'option', 'oP')) === '1 related'
+      && eq(K.R.optionEvidence(w, 'pjE', 'oL'), { for: 2, against: 1 }) && K.R.evidenceWords({ for: 2, against: 1 }) === '2 findings for, 1 against' && K.R.evidenceWords({ for: 0, against: 0 }) === '');
+    check('editing a finding keeps its option (and a newer MyDay\'s kind beside it)', (F(f3).about.push({ kind: 'risk', id: 'r1', stance: 'supports' }), K.R.editFinding(w, f3, { text: 'Larch costs about twice as much', about: F(f3).about.filter(a => a.kind !== 'risk') }))
+      && eq(F(f3).about.map(a => a.kind), ['option', 'option', 'risk']));
+
+    console.log('  experiments testing options');
+    check('an experiment can test an open decision\'s options (a decided one\'s aren\'t offered)', eq(K.X.testChoices(w, P('pjE')).filter(t => t.kind === 'option').map(t => t.id), ['oL', 'oP'])
+      && K.X.testChoices(w, P('pjE')).find(t => t.id === 'oL').text === 'Larch — Larch or pine?');
+    const ex = K.X.addExperiment(w, 'pjE', { title: 'Try both woods', tests: [{ kind: 'option', id: 'oL' }, { kind: 'option', id: 'oP' }, { kind: 'option', id: 'oX' }] }).id;
+    check('…it keeps only this project\'s options, and names them', eq(F(ex).tests, [{ kind: 'option', id: 'oL' }, { kind: 'option', id: 'oP' }]) && K.X.testedThings(w, F(ex)).map(t => t.text).join('; ') === 'Larch — Larch or pine?; Pine — Larch or pine?');
+    K.X.recordResult(w, ex, 'Pine warped in a month', '', k);
+    const fx = K.X.saveAsFinding(w, ex, { 'option:oP': 'contradicts' }).id;
+    check('its result saved as a finding lands on those options, as you said', eq(F(fx).about, [{ kind: 'option', id: 'oL', stance: 'relates' }, { kind: 'option', id: 'oP', stance: 'contradicts' }]));
+
+    console.log('  choosing keeps the evidence');
+    check('choosing Larch keeps what the evidence said about it then (2 for, 1 against)', K.decide(w, 'pjE', 'd1', 'oL', 'Lasts', k) === true && eq(D1().chosenEvidence, { for: 2, against: 1 }), D1());
+    check('…"think again" moves it into the previous choice, with its evidence, and the open decision has none', K.thinkAgain(w, 'pjE', 'd1') === true && !('chosenEvidence' in D1()) && eq(D1().history.at(-1).evidence, { for: 2, against: 1 }) && D1().history.at(-1).text === 'Larch');
+    check('…choosing Pine keeps its own (the experiment\'s finding went against it: 0 for, 1 against)', K.decide(w, 'pjE', 'd1', 'oP', '', k) === true && D1().chosen === 'oP' && eq(D1().chosenEvidence, { for: 0, against: 1 }) && eq(D1().history.map(h => h.evidence ?? null), [{ for: 2, against: 1 }]));
+    const D2 = () => P('pjE').decisions.find(x => x.id === 'd2');
+    check('…choosing an option with no evidence keeps none, and the previous choice had none either', K.decide(w, 'pjE', 'd2', 'oB', '', k) === true && !('chosenEvidence' in D2()) && !('evidence' in D2().history.at(-1)));
+    const read = K.normalizeDecisions([DEC('dR', 'q', [OPT('o1', 'a')], { chosen: 'o1', decidedOn: k, chosenEvidence: { for: 3, against: 0, futureBit: 1 }, history: [{ id: 'h1', text: 'b', on: k, why: '', evidence: { for: 'x', against: 1 } }] }),
+      DEC('dS', 'q', [OPT('o1', 'a')], { chosenEvidence: { for: 1, against: 0 } })], { dropped: 0 });
+    check('reading: a choice\'s evidence kept (a newer MyDay\'s field too); unreadable counts left off; an open decision keeps none', eq(read[0].chosenEvidence, { for: 3, against: 0, futureBit: 1 }) && !('evidence' in read[0].history[0]) && !('chosenEvidence' in read[1]));
+
+    console.log('  removing options and decisions');
+    K.removeOption(w, 'pjE', 'd1', 'oL');
+    check('removing an option takes it out of the findings and experiments that pointed at it (they keep the rest)', !w.research.items.some(x => (x.about ?? x.tests ?? []).some(a => a.kind === 'option' && a.id === 'oL'))
+      && F(f3).about.some(a => a.id === 'oP') && F(ex).tests.some(t => t.id === 'oP'));
+    K.removeDecision(w, 'pjE', 'd1');
+    check('…and removing the decision takes out all its options', !w.research.items.some(x => (x.about ?? x.tests ?? []).some(a => a.kind === 'option')) && F(f1) && F(ex));
+
+    console.log('  tasks toward a milestone');
+    const TK = (id, title, x = {}) => ({ id, title, listId: '', category: 'admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: OLD, postponed: 0, blockers: [], letGoOn: null, projectId: 'pjE', ...x });
+    w.tasks.items = [TK('t1', 'Level the ground', { done: true, doneOn: k }), TK('t2', 'Pour the slab'), TK('t3', 'Let go one', { letGoOn: k }), TK('t4', 'Elsewhere', { projectId: 'pjO' }), TK('t5', 'Frame')];
+    check('a task can be toward one of its project\'s milestones — never another project\'s, nor one that isn\'t there; the same again changes nothing', K.setMilestone(w, 't1', 'm1') && K.setMilestone(w, 't2', 'm1') && K.setMilestone(w, 't3', 'm1')
+      && !K.setMilestone(w, 't4', 'm1') && !K.setMilestone(w, 't5', 'nope') && !K.setMilestone(w, 't1', 'm1') && w.tasks.items.find(t => t.id === 't1').milestoneId === 'm1');
+    let mt = K.milestoneTasks(w, P('pjE'), 'm1');
+    check('the milestone: its tasks (not one let go) — "1 of 2 done"', eq(mt.all.map(t => t.id), ['t1', 't2']) && eq(mt.done.map(t => t.id), ['t1']));
+    w.tasks.items.find(t => t.id === 't1').projectId = 'pjO';
+    check('…a task moved to another project no longer counts', eq(K.milestoneTasks(w, P('pjE'), 'm1').all.map(t => t.id), ['t2']));
+    K.removeMilestone(w, 'pjE', 'm1');
+    check('…a milestone removed counts nothing (its tasks keep the id, unseen)', K.milestoneTasks(w, P('pjE'), 'm1').all.length === 0 && w.tasks.items.find(t => t.id === 't2').milestoneId === 'm1');
+    check('"none" takes it off', K.setMilestone(w, 't2', null) && !('milestoneId' in w.tasks.items.find(t => t.id === 't2')));
+    const rt = K.normalizeTasks({ lists: [], items: [TK('a', 'x', { milestoneId: 'm9' }), TK('b', 'x', { milestoneId: 5 }), TK('c', 'x', { milestoneId: '' })] }, { dropped: 0 }).items;
+    check('reading a task: its milestone kept as written; one that isn\'t an id left off', rt[0].milestoneId === 'm9' && !('milestoneId' in rt[1]) && !('milestoneId' in rt[2]));
   }
 
   fs.rmSync(dir, { recursive: true, force: true });
