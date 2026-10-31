@@ -1,5 +1,26 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.111.0 — Ask MyDay learns how you work, and you can see and delete what it believes:** What MyDay has noticed can
+now let Ask MyDay use what you've confirmed there. The first time you say a pattern is right, it asks once: "Shall
+Ask MyDay use this too?" (or use the switch). Then:
+- **Your longest tasks:** Ask's suggestions are kept to your longest task for each list ("20 min, as you prefer").
+- **Your patterns:** its advice takes the patterns you said are right into account, in MyDay's own words and no more
+  strongly than written.
+- **It learns from what you do:** MyDay counts what you do with Ask's suggestions (added, shortened, renamed, not
+  added; never their words). Once there's enough, it offers a pattern such as "You shorten Ask MyDay's learning tasks
+  to about 20 min" for you to confirm.
+
+It also doubts, forgets and lets go:
+- **Doubt:** a confirmed pattern that has faded, or now says something else, is held back and shown as such.
+- **Forget:** counts are kept for 8 weeks.
+- **See and delete:** the card lists exactly what's sent, what's held back and what it counted. "Forget what it
+  counted" and "Forget everything it has learned" (your answers and its counts; your preferences stay) delete them.
+
+The server's instructions are `myday-ask-v26`, deployed first. Every Ask request is now told to quote titles with curly
+quotes, and an answer cut short by a straight quote is refused rather than shown broken. Evaluated live
+(`../ai-eval/reviews/2026-10-31-ask-how-you-work-quality.md`). The vision now records the owner's direction for how
+MyDay should think, and its safeguards (`../specs/myday-vision.md` §1). Saved data: the switch, your answer and the
+counts sit with your preferences (synced), and older versions keep them untouched; going back to 1.110.0 is safe.
 **1.110.0 — Words for Arabic modules 20–24, core B2:** news and public information: headlines, reporting verbs,
 figures and comparisons, interviews and a balanced digest (module 20); argument: claims and evidence, hedging,
 implication, counterarguments and debate (module 21); grammar for precise reading: word order and agreement, ḥāl and
