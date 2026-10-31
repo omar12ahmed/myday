@@ -43,7 +43,8 @@ const sentAsk = d => d.events.filter(e => e.method === 'Network.requestWillBeSen
   const pv = await mac.text('[data-s=ask-sends-all]');
   check('+ lists what goes with it: the questions asked so far (0) and your limit (2)', pv.includes('Questions it has asked so far: 0') && pv.includes('Your limit before it offers something: 2'), pv.slice(-200));
   await mac.click('[data-action=ask-go]');
-  check('Ask MyDay answers the open question', await shown(mac) && (await mac.ev(`document.querySelector('[data-s=ask-panel]').dataset.phase`)) === 'shown', await mac.text('[data-s=ask-panel]'));
+  const panelNow = async () => ({ phase: await mac.ev(`document.querySelector('[data-s=ask-panel]')?.dataset.phase`), end: (await mac.text('[data-s=ask-panel]')).slice(-260) });
+  check('Ask MyDay answers the open question', await shown(mac) && (await mac.ev(`document.querySelector('[data-s=ask-panel]').dataset.phase`)) === 'shown', await panelNow());
   const first = sentAsk(mac).slice(-1)[0];
   check('…and the request carried "thinking": nothing asked yet, your limit of 2', JSON.stringify(first?.thinking) === JSON.stringify({ asked: 0, most: 2 }), first?.thinking);
   const choices = await mac.ev(`[...document.querySelectorAll('[data-s=ask-choice]')].map(b => b.textContent.trim())`);
@@ -52,7 +53,7 @@ const sentAsk = d => d.events.filter(e => e.method === 'Network.requestWillBeSen
     check('its choices are 1 to 4 buttons, with the reply box saying "Or in your own words…"', choices.length <= 4 && (await mac.ev(`document.querySelector('[data-s=ask-more]').placeholder`)) === 'Or in your own words…');
     await mac.ev(`document.querySelector('[data-s=ask-choice]').click()`);
     await mac.until(`!!document.querySelector('[data-s=ask-now]')?.textContent.includes(${JSON.stringify(choices[0])})`, 15000);
-    check('tapping one sends it as your reply, and it is answered', await shown(mac) && (await mac.ev(`document.querySelector('[data-s=ask-panel]').dataset.phase`)) === 'shown', await mac.text('[data-s=ask-panel]'));
+    check('tapping one sends it as your reply, and it is answered', await shown(mac) && (await mac.ev(`document.querySelector('[data-s=ask-panel]').dataset.phase`)) === 'shown', await panelNow());
     const second = sentAsk(mac).slice(-1)[0];
     check('…the request carried the count (1 of 2) and the conversation, with the choices it offered', second?.text === choices[0] && JSON.stringify(second.thinking) === JSON.stringify({ asked: 1, most: 2 })
       && second.conversation?.earlier.length === 1 && second.conversation.earlier[0].answered.includes('(choices: '), second && { text: second.text, thinking: second.thinking, conversation: second.conversation });
