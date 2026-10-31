@@ -3251,6 +3251,162 @@ const choices = () => ev(`[...document.querySelectorAll('#captureChoices [data-a
   check('…and every colour button is at least 44 px tall', ar_colH.length >= 8 && ar_colH.every(h => h >= 44), ar_colH);
   await T.send('Emulation.clearDeviceMetricsOverride');
 
+  console.log('\n[53] A whole project waiting');
+  const pwDay = d => new Date(2026, 9, d).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }); // (the app's own style: "Mon 19 Oct")
+  const pwTk = (id, title, projectId, extra = {}) => ({ id, title, listId: '', category: 'Admin', minutes: 15, due: null, time: null, notes: '', done: false, doneOn: null, plannedOn: null, planUid: null, createdAt: '2026-09-20T09:00', postponed: 0, blockers: [], letGoOn: null, projectId, ...extra });
+  const pwSeedTasks = list => editStorage(`s => { s.tasks.items.push(...${JSON.stringify(list)}); }`);
+  const pwOpen = async (id, m, d = 15) => { await go(`projects/p/${id}`, 2026, 10, d, 12, m); await until(`!!document.getElementById('projectManage')`); await sleep(150); };
+  const pwFresh = async () => { await go('projects', 2026, 10, 15, 12, 0); await reset(); await go('projects', 2026, 10, 15, 12, 0); };
+  const pwOld = { createdAt: '2026-09-10T09:00', updatedAt: '2026-09-15T09:00' };
+  const pwToast = s => until(`document.getElementById('toast').textContent.includes(${JSON.stringify(s)})`);
+  const pwFocus = id => until(`document.activeElement && document.activeElement.id === '${id}'`);
+  const pwKey = async key => { await T.send('Input.dispatchKeyEvent', { type: 'keyDown', key, code: key, windowsVirtualKeyCode: 13, text: '\r' }); await T.send('Input.dispatchKeyEvent', { type: 'keyUp', key, code: key, windowsVirtualKeyCode: 13 }); };
+  const pwWaiting = async id => (await pAt(id)).waiting;
+  await pwFresh();
+  await seed([pjObj('pwA', 'Pay for the garden wall', 'organise')]);
+
+  console.log('  Setting it from Manage');
+  await pwOpen('pwA', 1);
+  check('a project that is not waiting offers "Waiting on someone?" in its Manage card', (await exists('#projectManage [data-action=project-wait]')) && (await text('#projectWaitBtn')).includes('Waiting on someone?'), await text('#projectManage'));
+  await click('[data-action=project-wait]'); await until(`!!document.querySelector('[data-s=project-wait-form]')`);
+  check('choosing it shows the form with "Who or what" focused and a check-back date', (await pwFocus('pWaitOn')) && (await exists('#pWaitUntil')) && (await ev(`document.getElementById('pWaitUntil').type`)) === 'date', await ev(`document.activeElement.outerHTML.slice(0, 100)`));
+  check('"Mark as waiting" is there and is disabled while the name is empty', (await text('[data-action=pwait-save]')).trim() === 'Mark as waiting' && await ev(`document.querySelector('[data-action=pwait-save]').disabled`));
+  await click('[data-action=pwait-cancel]'); await until(`!document.querySelector('[data-s=project-wait-form]')`);
+  check('Cancel saves nothing and puts focus back on "Waiting on someone?"', !(await pwWaiting('pwA')) && (await pwFocus('projectWaitBtn')), [await pwWaiting('pwA'), await ev(`document.activeElement.outerHTML.slice(0, 100)`)]);
+  await click('[data-action=project-wait]'); await until(`!!document.getElementById('pWaitOn')`);
+  await type('#pWaitOn', 'Priya');
+  check('typing a name enables "Mark as waiting"', await until(`!document.querySelector('[data-action=pwait-save]').disabled`));
+  await type('#pWaitUntil', '2026-10-19'); await click('[data-action=pwait-save]');
+  await until(`!!JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === 'pwA').waiting`);
+  let pw = await pAt('pwA');
+  check('saving makes the project wait on Priya since today, to check back on 19 October', eq(pw.waiting, { on: 'Priya', since: '2026-10-15', until: '2026-10-19' }), pw.waiting);
+  check('…without changing the project\'s updated time', pw.updatedAt === '2026-10-10T09:00', pw.updatedAt);
+  check('…and says "Waiting on Priya. MyDay won’t call it quiet while you wait."', await pwToast('Waiting on Priya. MyDay won’t call it quiet while you wait.'), await toast());
+  check('…focus moves to the Waiting heading', await pwFocus('projectWaitingH'), await ev(`document.activeElement.outerHTML.slice(0, 100)`));
+  check('…and the Manage card no longer offers to wait', !(await exists('#projectManage [data-action=project-wait]')));
+
+  console.log('  The Overview card');
+  check('the Waiting card comes before the Next step card', await ev(`!!(document.getElementById('projectWaiting').compareDocumentPosition(document.getElementById('projectNext')) & Node.DOCUMENT_POSITION_FOLLOWING)`));
+  const pwLine = await text('[data-s=project-waiting-line]');
+  check('it reads "Waiting on Priya since <today> · check back <19 October>"', pwLine.includes('Waiting on Priya since ' + pwDay(15)) && pwLine.includes('check back ' + pwDay(19)), [pwLine, pwDay(15), pwDay(19)]);
+  await pwOpen('pwA', 5, 16);
+  await click('[data-action=pwait-change]'); await until(`!!document.getElementById('pWaitOn')`);
+  check('Change opens the form filled in with Priya and the check-back day', (await ev(`document.getElementById('pWaitOn').value`)) === 'Priya' && (await ev(`document.getElementById('pWaitUntil').value`)) === '2026-10-19');
+  await type('#pWaitUntil', '2026-10-21'); await click('[data-action=pwait-save]');
+  await until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === 'pwA').waiting.until === '2026-10-21'`);
+  check('saving a new day keeps the first "since" day and says "Saved."', eq(await pwWaiting('pwA'), { on: 'Priya', since: '2026-10-15', until: '2026-10-21' }) && (await pwToast('Saved.')), [await pwWaiting('pwA'), await toast()]);
+  const pwTasks0 = (await data()).tasks.items.length;
+  await click('#projectWaiting [data-action=chase]'); await until(`!!document.querySelector('[data-s=chase-when-choice][data-id=tomorrow]')`);
+  await click('[data-s=chase-when-choice][data-id=tomorrow]'); await click('[data-action=chase-add]');
+  await until(`JSON.parse(localStorage.getItem('${KEY}')).tasks.items.length > ${pwTasks0}`);
+  const pwCh = (await data()).tasks.items.filter(t => t.title === 'Chase: Pay for the garden wall');
+  check('Chase it, Tomorrow adds one 5-minute task "Chase: Pay for the garden wall" in the project, due tomorrow', pwCh.length === 1 && pwCh[0].minutes === 5 && pwCh[0].projectId === 'pwA' && pwCh[0].due === '2026-10-17', pwCh);
+  check('…the wait remembers that task', (await pwWaiting('pwA')).chaseTaskId === pwCh[0].id, await pwWaiting('pwA'));
+  check('…and the card says a task to chase it is in this project\'s tasks', await until(`!!document.querySelector('#projectWaiting [data-s=chase-added]')`) && (await text('#projectWaiting [data-s=chase-added]')).includes('A task to chase it is in this project’s tasks.'), await text('#projectWaiting'));
+  await click('[data-action=pwait-done]'); await until(`!document.getElementById('projectWaiting')`);
+  check('"No longer waiting" says "No longer waiting." and the project saves no wait', (await pwToast('No longer waiting.')) && !('waiting' in (await pAt('pwA'))), [await toast(), await pAt('pwA')]);
+  check('…and the Waiting card is gone', !(await exists('#projectWaiting')));
+
+  console.log('  The Projects home');
+  await pwFresh();
+  await seed([pjObj('pwH1', 'Wait: kitchen quote', 'organise', { ...pwOld, waiting: { on: 'Priya', since: '2026-10-01', until: '2026-10-22' } }),
+    pjObj('pwH2', 'Wait: visa letter', 'organise', { ...pwOld, waiting: { on: 'Priya', since: '2026-10-01', until: null } }),
+    pjObj('pwH3', 'Quiet: old drawer idea', 'organise', pwOld)]);
+  await go('projects', 2026, 10, 15, 12, 5); await until(`!!document.querySelector('.project-card[data-id=pwH1]')`);
+  const pwCard = (id, s) => `.project-card[data-id=${id}] ${s}`;
+  check('a waiting project\'s board card says "Waiting on Priya · check back …"', (await text(pwCard('pwH1', '[data-s=project-waiting]'))).trim() === 'Waiting on Priya · check back ' + pwDay(22), await text(pwCard('pwH1', '[data-s=project-waiting]')));
+  check('with no check-back day it says just "Waiting on Priya"', (await text(pwCard('pwH2', '[data-s=project-waiting]'))).trim() === 'Waiting on Priya', await text(pwCard('pwH2', '[data-s=project-waiting]')));
+  check('a waiting project is not called Away, however long since it was worked on', !(await exists(pwCard('pwH1', '[data-s=project-away]'))) && !(await exists(pwCard('pwH2', '[data-s=project-away]'))));
+  check('…while a project seeded the same way that is not waiting still shows Away', (await exists(pwCard('pwH3', '[data-s=project-away]'))) && !(await exists(pwCard('pwH3', '[data-s=project-waiting]'))), await text(pwCard('pwH3', '')));
+  await click('[data-action=projects-view][data-id=list]'); await until(`!!document.querySelector('[data-s=project-row][data-id=pwH1]')`);
+  const pwRow = await text('[data-s=project-row][data-id=pwH1]'), pwRow3 = await text('[data-s=project-row][data-id=pwH3]');
+  check('in the List its row says "Waiting on Priya" and not Away', pwRow.includes('Waiting on Priya') && !pwRow.includes('Away'), pwRow);
+  check('…while the row of the project that is not waiting says Away', pwRow3.includes('Away') && !pwRow3.includes('Waiting on'), pwRow3);
+
+  console.log('  Needs you');
+  await pwFresh();
+  await seed([pjObj('pwN1', 'Chase: roof repair', 'organise', { waiting: { on: 'Priya', since: '2026-10-01', until: '2026-10-13' } }),
+    pjObj('pwN2', 'Wait: bathroom tiles', 'organise', { waiting: { on: 'Sam', since: '2026-10-01', until: '2026-10-20' } })]);
+  await go('projects', 2026, 10, 15, 12, 5); await until(`!!document.querySelector('[data-s=need]')`);
+  const pwNeed = '[data-s=need][data-id="pwait:pwN1"]';
+  const pwNt = await text(pwNeed);
+  check('a project whose check-back day was two days ago has a Needs you line, for waiting, saying it is still waiting and when check back was', (await exists(pwNeed)) && (await ev(`document.querySelector('${pwNeed}').dataset.reason`)) === 'waiting' && pwNt.includes('Still waiting on Priya') && pwNt.includes('check back was ' + pwDay(13)) && pwNt.includes('Chase: roof repair'), pwNt);
+  check('…its link goes to the project', (await ev(`document.querySelector('${pwNeed} [data-s=need-link]').getAttribute('href')`)) === '#projects/p/pwN1');
+  check('…and it has a Chase it button', await exists(pwNeed + ' [data-action=chase]'));
+  await click(pwNeed + ' [data-action=chase]'); await until(`!!document.querySelector('${pwNeed} [data-action=chase-add]')`);
+  await click(pwNeed + ' [data-action=chase-add]');
+  await until(`!!document.querySelector('${pwNeed} [data-s=chase-added]')`);
+  const pwNch = (await data()).tasks.items.find(t => t.title === 'Chase: Chase: roof repair');
+  check('adding the chase task there (today) shows that a task to chase it is in the project\'s tasks', pwNch && pwNch.due === '2026-10-15' && pwNch.projectId === 'pwN1' && (await text(pwNeed + ' [data-s=chase-added]')).includes('A task to chase it is in this project’s tasks.'), [pwNch, await text(pwNeed)]);
+  check('a waiting project whose check-back day is still ahead has no such line', !(await exists('[data-s=need][data-id="pwait:pwN2"]')), await ev(`[...document.querySelectorAll('[data-s=need]')].map(n => n.dataset.id)`));
+
+  console.log('  The nudge');
+  await pwFresh();
+  const pwW = (on, until) => ({ on, since: '2026-10-10', until });
+  await seed([pjObj('pwO1', 'Build the extension', 'organise'), pjObj('pwO2', 'Fit the new boiler', 'organise')]);
+  await pwSeedTasks([pwTk('tkO1', 'Get the plans signed off', 'pwO1', { waiting: pwW('The builder', '2026-10-22') }), pwTk('tkO2', 'Agree the start date', 'pwO1', { waiting: pwW('The builder', '2026-10-20') }),
+    pwTk('tkO3', 'Get the boiler quote', 'pwO2', { waiting: pwW('The plumber', null) })]);
+  await pwOpen('pwO1', 1);
+  await until(`!!document.querySelector('#projectNext [data-s=pwait-offer]')`);
+  check('a project whose open tasks are all waiting offers "Everything here is waiting — mark the project as waiting?"', (await text('#projectNext [data-s=pwait-offer]')).includes('Everything here is waiting — mark the project as waiting?'), await text('#projectNext'));
+  await click('[data-action=pwait-offer-yes]'); await until(`!!document.getElementById('pOfferOn')`);
+  check('"Mark as waiting" opens the form with The builder and the earliest expected day', (await ev(`document.getElementById('pOfferOn').value`)) === 'The builder' && (await ev(`document.getElementById('pOfferUntil').value`)) === '2026-10-20', [await ev(`document.getElementById('pOfferOn').value`), await ev(`document.getElementById('pOfferUntil').value`)]);
+  await click('[data-action=pwait-save]'); await until(`!!JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === 'pwO1').waiting`);
+  check('saving it makes the project wait on The builder, to check back on 20 October', eq(await pwWaiting('pwO1'), { on: 'The builder', since: '2026-10-15', until: '2026-10-20' }), await pwWaiting('pwO1'));
+  await pwOpen('pwO2', 3);
+  await until(`!!document.querySelector('[data-action=pwait-offer-no]')`);
+  await click('[data-action=pwait-offer-no]'); await until(`!document.querySelector('[data-s=pwait-offer]')`);
+  check('"Not now" hides the offer and remembers it for this project on this device', (await ev(`Object.keys(JSON.parse(localStorage.getItem('myday.projects.waitOffer') || '{}'))`)).includes('pwO2'), await ev(`localStorage.getItem('myday.projects.waitOffer')`));
+  await pwOpen('pwO2', 4);
+  check('…and after a reload the offer stays hidden', !(await exists('[data-s=pwait-offer]')) && (await exists('#projectNext')));
+  await pwSeedTasks([pwTk('tkO4', 'Choose the boiler colour', 'pwO2')]);
+  await pwOpen('pwO2', 5);
+  check('adding another task that is not waiting leaves no offer', !(await exists('[data-s=pwait-offer]')));
+  await editStorage(`s => { s.tasks.items.find(t => t.id === 'tkO4').waiting = ${JSON.stringify(pwW('The plumber', null))}; }`);
+  await pwOpen('pwO2', 6);
+  check('…and once that one is waiting too, the set has changed and the offer comes back', await until(`!!document.querySelector('#projectNext [data-s=pwait-offer]')`));
+  await pwSeedTasks([pwTk('tkO5', 'Hear back about the permit', 'pwO3', { waiting: pwW('The council', '2026-10-10') })]);
+  await seed([pjObj('pwO3', 'Get the permit', 'organise')]);
+  await pwOpen('pwO3', 7);
+  await until(`!!document.querySelector('[data-action=pwait-offer-yes]')`); await click('[data-action=pwait-offer-yes]'); await until(`!!document.getElementById('pOfferOn')`);
+  check('when the waiting task\'s expected day has already passed, the nudge fills in whom but leaves the day empty', (await ev(`document.getElementById('pOfferOn').value`)) === 'The council' && (await ev(`document.getElementById('pOfferUntil').value`)) === '', [await ev(`document.getElementById('pOfferOn').value`), await ev(`document.getElementById('pOfferUntil').value`)]);
+  await seed([pjObj('pwO4', 'Order the windows', 'organise', { waiting: { on: 'The glazier', since: '2026-10-10', until: null } })]);
+  await pwSeedTasks([pwTk('tkO6', 'Wait for the glazier\'s quote', 'pwO4', { waiting: pwW('The glazier', '2026-10-22') })]);
+  await pwOpen('pwO4', 8);
+  await click('[data-action=pwait-done]'); await until(`!document.getElementById('projectWaiting')`); await sleep(400);
+  check('after "No longer waiting" on a project whose tasks are all waiting, the nudge does not appear straight away', !(await exists('[data-s=pwait-offer]')) && !('waiting' in (await pAt('pwO4'))), await text('#projectNext'));
+
+  console.log('  Finishing');
+  await pwFresh();
+  await seed([pjObj('pwF', 'Wait: finished one', 'organise', { waiting: { on: 'Priya', since: '2026-10-10', until: null } })]);
+  await pwOpen('pwF', 1);
+  await click('[data-action=project-finish]'); await until(`!!document.querySelector('[data-action=finish-save]')`);
+  await click('[data-action=finish-save]'); await until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === 'pwF').status === 'done'`);
+  check('finishing a waiting project removes its wait', !('waiting' in (await pAt('pwF'))) && (await pAt('pwF')).status === 'done', await pAt('pwF'));
+
+  console.log('  On a phone');
+  await pwFresh();
+  await seed([pjObj('pwP', 'A project with a rather long name that has to wrap on a phone, while it waits', 'organise', { ...pwOld, waiting: { on: 'A very long-named contractor from the council planning office', since: '2026-10-01', until: '2026-10-13' } }),
+    pjObj('pwQ', 'Everything is waiting here', 'organise')]);
+  await pwSeedTasks([pwTk('tkQ1', 'Wait for the quote', 'pwQ', { waiting: pwW('The builder', '2026-10-22') })]);
+  await T.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 800, deviceScaleFactor: 2, mobile: true });
+  const pwHeights = sel => ev(`[...document.querySelectorAll(${JSON.stringify(sel)})].filter(b => b.getBoundingClientRect().height > 0).map(b => Math.round(b.getBoundingClientRect().height))`);
+  await pwOpen('pwP', 1); await sleep(300);
+  check('phone 390 px: a waiting project\'s Overview does not scroll sideways', (await ev('document.documentElement.scrollWidth')) <= 390, await ev('document.documentElement.scrollWidth'));
+  const pwH1 = await pwHeights('#projectWaiting button');
+  check('…and No longer waiting, Change and Chase it are each at least 44 px tall', pwH1.length === 3 && pwH1.every(h => h >= 44), pwH1);
+  await pwOpen('pwQ', 2); await sleep(300);
+  const pwH2 = await pwHeights('#projectWaitBtn, [data-action^=pwait-offer]');
+  check('…as are "Waiting on someone?" and the two buttons of the nudge', pwH2.length === 3 && pwH2.every(h => h >= 44), pwH2);
+  await click('[data-action=pwait-offer-yes]'); await until(`!!document.getElementById('pOfferOn')`); await sleep(200);
+  const pwH3 = await pwHeights('[data-s=project-wait-form] button');
+  check('…and so are the form\'s two buttons, with no sideways scroll', pwH3.length === 2 && pwH3.every(h => h >= 44) && (await ev('document.documentElement.scrollWidth')) <= 390, [pwH3, await ev('document.documentElement.scrollWidth')]);
+  await go('projects', 2026, 10, 15, 12, 3); await until(`!!document.querySelector('.project-card[data-id=pwP] [data-s=project-waiting]')`); await sleep(300);
+  check('phone 390 px: the Projects home with a waiting card does not scroll sideways', (await ev('document.documentElement.scrollWidth')) <= 390, await ev('document.documentElement.scrollWidth'));
+  const pwH4 = await pwHeights('[data-s=need] [data-action=chase]');
+  check('…and the Chase it button in Needs you is at least 44 px tall', pwH4.length === 1 && pwH4[0] >= 44, pwH4);
+  await T.send('Emulation.clearDeviceMetricsOverride');
+
   const errs = T.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => e.params.exceptionDetails.exception && e.params.exceptionDetails.exception.description);
   check('no uncaught JavaScript errors', errs.length === 0, errs.slice(0, 3));
   const sm = T.summary(); console.log(`\n${sm.pass} passed, ${sm.fail} failed`); process.exit(sm.fail ? 1 : 0);
