@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { Fragment, useContext, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { BookOpen, Check, FlaskConical, Languages, Library, NotebookPen, RotateCcw, VolumeOff } from 'lucide-react';
 import '@fontsource-variable/noto-naskh-arabic';
 import { Button } from '../../components/Button';
@@ -30,6 +30,7 @@ import { MixedVoiceLabel, PlayButton, VoiceLabel, VoiceNote } from './Listen';
 import { clipFor, hasReadingVoice, hasVoice, subscribe, voiceState } from './voice';
 import { ReadingVoice } from './ReadingVoice';
 import { Pronunciation, PronunciationControls } from './Pronunciation';
+import { PronunciationContext } from './pronunciationContext';
 import { TeachingMaterial, TeachingRead, TeachingTry, TeachingWaiting } from '../teaching/TeachingLesson';
 import { loadTeaching, useTeaching } from '../teaching/useTeaching';
 import { CheckMyAnswer } from '../CheckMyAnswer';
@@ -853,17 +854,20 @@ function useTakeOut() {
 // One word: the Arabic, its meaning (a course word's root too), its example, each with its voice; a course word's note
 // and the explainer for it, if there is one; where it stands in revision, and adding it, practising writing it, or
 // taking it out. A word you know well (wordKnown) asks you to read it aloud first: its voice and reading wait for
-// "Read it aloud, then check", unless "Always show the help" is on; its example keeps its voice.
+// "Read it aloud, then check" (only when it has one of them to hold back), unless "Always show the help" is on; its
+// example keeps its voice. Each row listens only to that switch, not to the playing state.
 function WordRow({ data, w, takeOut, explainer = null }: { data: MyDayData; w: AnyWord; takeOut: (w: AnyWord) => void; explainer?: { lessonId: string; e: Explainer } | null }) {
   const recognise = cardState(data, wordCard(w.id, 'recognise')), write = cardState(data, wordCard(w.id, 'write')), fam = familyOf(w.id);
   const course = isCourseWord(w) ? w : null;
-  const { alwaysHelp } = useSyncExternalStore(subscribe, voiceState);
+  const alwaysHelp = useSyncExternalStore(subscribe, () => voiceState().alwaysHelp);
+  const { enabled: readings } = useContext(PronunciationContext);
   const [checked, setChecked] = useState(false);
-  const ask = !alwaysHelp && !checked && wordKnown(data, w.id);
-  const check = () => { setChecked(true); requestAnimationFrame(() => document.querySelector<HTMLElement>(`[data-ar-clip="${w.id}:word"]`)?.focus()); };
-  return <li data-ar-word={w.id} tabIndex={-1} data-in={recognise || write ? 'yes' : 'no'} className="py-3 grid gap-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-4 items-baseline focus:outline-2 focus:outline-primary focus:outline-offset-4 rounded-sm">
+  const row = useRef<HTMLLIElement>(null);
+  const ask = !alwaysHelp && !checked && (!!clipFor(w.form_ar) || readings) && wordKnown(data, w.id, todayKey());
+  const check = () => { setChecked(true); requestAnimationFrame(() => (row.current?.querySelector<HTMLElement>(`[data-ar-clip="${w.id}:word"]`) ?? row.current)?.focus()); };
+  return <li ref={row} data-ar-word={w.id} tabIndex={-1} data-in={recognise || write ? 'yes' : 'no'} className="py-3 grid gap-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-4 items-baseline focus:outline-2 focus:outline-primary focus:outline-offset-4 rounded-sm">
     <div className="flex items-start gap-2"><div className="min-w-0 flex-1"><Ar block showReading={!ask} className="text-[26px] font-medium m-0">{w.form_ar}</Ar><p className="text-sm text-fg-2 m-0">{w.meaning_en} · {w.part_of_speech.replace('_', ' ')}</p>
-      {ask && <Button inline variant="ghost" data-action="ar-word-check" aria-label={`Read ${w.form_ar} aloud, then check`} onClick={check}>Read it aloud, then check</Button>}
+      {ask && <Button inline variant="ghost" data-action="ar-word-check" onClick={check}>Read it aloud, then check</Button>}
       {fam && <p className="text-xs text-fg-2 m-0 mt-1" data-ar-family-badge={fam.id}><span className="inline-flex items-center gap-1 rounded-full bg-surface-2 border border-outline px-2 py-0.5"><Root f={fam} reading={false} /> family</span></p>}
       {course?.root_ar && <p className="text-xs text-fg-2 m-0 mt-1" data-ar-root={course.root_ar}>Root: <Root f={{ root_ar: course.root_ar, root_reading: course.root_reading ?? '' }} /></p>}</div>
       {!ask && <PlayButton text={w.form_ar} name={`${w.id}:word`} label={w.form_ar} />}</div>

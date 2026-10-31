@@ -388,6 +388,36 @@ check('vowelled and unvowelled versions are both kept where the package has them
   const allRound = A.roundIds(mixed, '2026-10-10', 'all', 5);
   check('in the all-subjects round too: one lesson to practise again, and a concept never revised waits behind what\'s due', allRound.filter(id => id.endsWith(':practise')).length === 1 && !allRound.includes('cpNever')
     && A.roundIds(mixed, '2026-10-10', 'all', 9).at(-1) === 'cpNever');
+  console.log('\n[K] A word you know: graduated help (wordKnown)');
+  const KW = 'lexeme.arabic-greetings-address-1', KR = A.wordCard(KW, 'recognise'), KWR = A.wordCard(KW, 'write');
+  const KD = '2026-10-30', kd = () => ({ ...stub(), study: { reviews: [], concepts: [], sessions: [] } }), withCard = (dd2, id, interval, due = '2026-11-15') => dd2.arabic.cards.push({ id, addedOn: '2026-10-01', review: { reps: 3, interval, lapses: 0, due } });
+  check('a word with no card in revision isn\'t known', A.wordKnown(kd(), KW, KD) === false && A.KNOWN_AFTER_DAYS === 7);
+  const k6 = kd(); withCard(k6, KR, 6); review(k6, KR, '2026-10-20', 'right');
+  check('a word recalled on your own but due again in only 6 days isn\'t known yet', A.understanding(k6.study, { id: KR }) === 'recalled' && A.wordKnown(k6, KW, KD) === false);
+  const k7 = kd(); withCard(k7, KR, 7); review(k7, KR, '2026-10-20', 'right');
+  check('a word whose last answer was right on your own, with its next review 7 days or more away, is known', A.wordKnown(k7, KW, KD) === true);
+  const k30 = kd(); withCard(k30, KR, 30); review(k30, KR, '2026-10-20', 'right');
+  check('…and stays known with a longer gap', A.wordKnown(k30, KW, KD) === true);
+  const kh = kd(); withCard(kh, KR, 10); review(kh, KR, '2026-10-20', 'right', 'hint', 'good');
+  check('a word recalled only with a hint isn\'t known, however long its gap', A.wordKnown(kh, KW, KD) === false);
+  const kn = kd(); withCard(kn, KR, 10);
+  check('a word with a long gap but no answer in your history isn\'t known', A.wordKnown(kn, KW, KD) === false);
+  review(k7, KR, '2026-10-28', 'wrong', 'own', 'again'); k7.arabic.cards[0].review.interval = 7;
+  check('a later wrong answer means it slipped: no longer known, even if the card still shows a long gap', A.wordKnown(k7, KW, KD) === false);
+  review(k7, KR, '2026-10-29', 'right');
+  check('…and recalling it on your own again makes it known once more', A.wordKnown(k7, KW, KD) === true);
+  const kw2 = kd(); withCard(kw2, KWR, 30); review(kw2, KWR, '2026-10-20', 'right');
+  check('a word known only by its write card isn\'t known: only the recognise card counts', A.wordKnown(kw2, KW, KD) === false);
+  const kw3 = kd(); withCard(kw3, KWR, 30); review(kw3, KWR, '2026-10-20', 'right'); withCard(kw3, KR, 3); review(kw3, KR, '2026-10-20', 'right');
+  check('…and a strong write card doesn\'t lift a recognise card with a short gap', A.wordKnown(kw3, KW, KD) === false);
+
+  const kdue = kd(); withCard(kdue, KR, 10, KD); review(kdue, KR, '2026-10-20', 'right');
+  check('a word recalled on your own with a long gap but due today isn\'t known: it\'s time to see it again', A.wordKnown(kdue, KW, KD) === false && A.wordKnown(kdue, KW, '2026-10-29') === true);
+  const kover = kd(); withCard(kover, KR, 10, '2026-10-25'); review(kover, KR, '2026-10-20', 'right');
+  check('…nor is one that is overdue', A.wordKnown(kover, KW, KD) === false);
+  const knext = kd(); withCard(knext, KR, 10, '2026-10-31'); review(knext, KR, '2026-10-20', 'right');
+  check('…while one due tomorrow still is known', A.wordKnown(knext, KW, KD) === true);
+
   console.log('\n[E] Explainers: the authored file, its checks and the build');
   const expPath = path.join(ROOT, 'content/teaching/arabic/explainers.json');
   const runExp = (file, extra = []) => { try { return { code: 0, out: execFileSync('node', [path.join(ROOT, 'app/scripts/validate-explainers.mjs'), ...(file ? [file] : []), ...extra], { stdio: 'pipe' }).toString() }; } catch (e) { return { code: e.status || 1, out: `${e.stdout || ''}${e.stderr || ''}` }; } };

@@ -49,7 +49,7 @@ export function VoiceNote() {
       <Switch on={slower} onChange={setSlower} data-action="ar-slower">Slower</Switch>
       <span className="text-sm text-fg-2">Three-quarter speed, same voice. Remembered on this device.</span>
     </div>
-    <p className="text-sm text-fg-2 mt-2.5 mb-0 pl-[26px]" data-ar-known-help="">Words you know well ask you to read them aloud first: you recalled them on your own, and they're not due for a week or more. Tap “Read it aloud, then check” to hear them and see the reading.</p>
+    <p className="text-sm text-fg-2 mt-2.5 mb-0 pl-[26px]" data-ar-known-help="">Words you know well ask you to read them aloud first: you recalled them on your own, they now come back a week or more apart, and they aren’t due yet. Tap “Read it aloud, then check” to hear them and see the reading.</p>
     <div className="mt-2 pl-[26px] flex flex-wrap items-center gap-x-3 gap-y-1">
       <Switch on={alwaysHelp} onChange={setAlwaysHelp} data-action="ar-always-help">Always show the help</Switch>
       <span className="text-sm text-fg-2">Every word's voice and reading straight away. Remembered on this device.</span>

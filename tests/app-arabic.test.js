@@ -668,5 +668,69 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   check('…its "Form" column is hidden, and each row\'s meaning cell shows its form instead, e.g. "past: I" for مَشَيْتُ', narrow.th === 'Form' && narrow.thDisplay === 'none' && narrow.labShown && (narrow.rowCell || '').includes('past: I'), narrow);
   await send('Emulation.clearDeviceMetricsOverride');
 
+  console.log('\n[16] Graduated help: a word you know asks you to read it aloud first');
+  // Four greetings words: 1 known (recalled on your own, next review in 10 days), 2 recalled but only 6 days out, 3 last answered wrong, 4 not in revision.
+  const KN = gaIds(1), SIX = gaIds(2), SLIP = gaIds(3), NONE = gaIds(4);
+  const answerOf = (id, outcome, support, rating, n) => ({ id: 'rvk' + n, conceptId: id + ':recognise', title: 't', date: '2026-10-10', at: '2026-10-10T09:00', kind: 'written', outcome, graded: 'self', chosen: null, support, rating, gap: 1, due: '2026-10-10' });
+  const cardAt = (id, interval) => ({ id: id + ':recognise', addedOn: '2026-10-01', review: { reps: 3, interval, lapses: 0, due: '2026-10-21' } });
+  await fresh(gaHash); await wait('[data-ar-lesson-words]', 5000);
+  await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); d.arabic.cards = ${JSON.stringify([cardAt(KN, 10), cardAt(SIX, 6), cardAt(SLIP, 10)])}; d.study.reviews = ${JSON.stringify([answerOf(KN, 'right', 'own', 'good', 1), answerOf(SIX, 'right', 'own', 'good', 2), answerOf(SLIP, 'wrong', 'own', 'again', 3)])}; localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`);
+  await go(gaHash); await wait('[data-ar-lesson-words]', 5000);
+  await ev(`document.querySelector('[data-ar-lesson-words]').open = true`); await sleep(300);
+  const row = id => `[data-ar-word="${id}"]`;
+  // the word's own reading, straight after its Arabic (its root has a reading of its own, which stays)
+  const wordReading = id => count(`${row(id)} > div:first-child p[lang="ar"] + [data-ar-transliteration]`);
+  check('a known word in the lesson\'s word list shows "Read it aloud, then check" instead of its word play button', await exists(`${row(KN)} [data-action="ar-word-check"]`) && !(await exists(`[data-ar-clip="${KN}:word"]`)) && await T.text(`${row(KN)} [data-action="ar-word-check"]`) === 'Read it aloud, then check', await T.text(row(KN)));
+  check('…whose accessible name is exactly its visible text, with no aria-label of its own', await ev(`(() => { const b = document.querySelector('${row(KN)} [data-action="ar-word-check"]'); return !!b && !b.hasAttribute('aria-label') && b.textContent === 'Read it aloud, then check'; })()`));
+  check('…its Arabic shows no reading, while a word not in revision (same page, readings on) does', await wordReading(KN) === 0 && await wordReading(NONE) === 1, [await wordReading(KN), await wordReading(NONE)]);
+  check('…and its example still has its play button', await exists(`[data-ar-clip="${KN}:example"]`));
+  check('a word recalled but only 6 days out, a word whose last answer was wrong and a word not in revision keep their play button and have no check button', await ev(`${JSON.stringify([SIX, SLIP, NONE])}.every(id => !!document.querySelector('[data-ar-clip="' + id + ':word"]') && !document.querySelector('[data-ar-word="' + id + '"] [data-action="ar-word-check"]'))`));
+  const dataBeforeCheck = await ev(`localStorage.getItem('myday.data.v4')`);
+  await click(`${row(KN)} [data-action="ar-word-check"]`); await sleep(400);
+  check('pressing the check button shows the word\'s play button and its reading, and takes the check button away', await exists(`[data-ar-clip="${KN}:word"]`) && await wordReading(KN) === 1 && !(await exists(`${row(KN)} [data-action="ar-word-check"]`)));
+  check('…and moves focus to that play button', await ev(`document.activeElement?.getAttribute('data-ar-clip')`) === `${KN}:word`, await ev(`document.activeElement?.outerHTML.slice(0, 120)`));
+  check('…without changing your saved MyDay', await ev(`localStorage.getItem('myday.data.v4')`) === dataBeforeCheck);
+
+  await go('study/arabic/vocabulary'); await wait('[data-ar-course-words]', 5000);
+  check('in Vocabulary\'s words from the lessons, the known word asks again (pressing check lasts only until the page is left)', await exists(`${row(KN)} [data-action="ar-word-check"]`) && !(await exists(`[data-ar-clip="${KN}:word"]`)));
+  check('Vocabulary\'s voice note has "Always show the help", off to begin with, with its explanation line', await exists('[data-ar-voice] [data-action="ar-always-help"]') && await exists('[data-ar-known-help]') && await ev(`localStorage.getItem('myday.arabic.alwayshelp')`) === null && await ev(`document.querySelector('[data-action="ar-always-help"]').closest('[data-ar-voice]') !== null`));
+  const dataBeforeSwitch = await ev(`localStorage.getItem('myday.data.v4')`);
+  await click('[data-action="ar-always-help"]'); await sleep(400);
+  check('switching it on shows the known word\'s play button and reading straight away', await exists(`[data-ar-clip="${KN}:word"]`) && !(await exists(`${row(KN)} [data-action="ar-word-check"]`)) && await wordReading(KN) === 1, [await wordReading(KN)]);
+  check('…it is remembered on this device as "yes", and your MyDay data is unchanged', await ev(`localStorage.getItem('myday.arabic.alwayshelp')`) === 'yes' && await ev(`localStorage.getItem('myday.data.v4')`) === dataBeforeSwitch);
+  await go('study/arabic/vocabulary'); await wait('[data-ar-course-words]', 5000);
+  check('after a reload the help is still shown for the known word', await exists(`[data-ar-clip="${KN}:word"]`) && !(await exists(`${row(KN)} [data-action="ar-word-check"]`)) && await ev(`localStorage.getItem('myday.arabic.alwayshelp')`) === 'yes');
+  await go(gaHash); await wait('[data-ar-lesson-words]', 5000);
+  await ev(`document.querySelector('[data-ar-lesson-words]').open = true`); await sleep(300);
+  check('…in the lesson\'s word list too', await exists(`[data-ar-clip="${KN}:word"]`) && !(await exists(`${row(KN)} [data-action="ar-word-check"]`)));
+  await go('study/arabic/vocabulary'); await wait('[data-ar-course-words]', 5000);
+  await click('[data-action="ar-always-help"]'); await sleep(400);
+  check('switching it off again makes the known word ask again, with no reading, and remembers "no"', await exists(`${row(KN)} [data-action="ar-word-check"]`) && !(await exists(`[data-ar-clip="${KN}:word"]`)) && await wordReading(KN) === 0 && await ev(`localStorage.getItem('myday.arabic.alwayshelp')`) === 'no' && await ev(`localStorage.getItem('myday.data.v4')`) === dataBeforeSwitch);
+  // A word with no clip (the particle وَ): with readings on there is a reading to hold back, so it asks, and focus goes to its row.
+  const NOCLIP = 'lexeme.arabic-nominal-sentences-9', nomHash = 'study/arabic/lesson.arabic-nominal-sentences';
+  await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); d.arabic.cards.push(${JSON.stringify(cardAt(NOCLIP, 10))}); d.study.reviews.push(${JSON.stringify(answerOf(NOCLIP, 'right', 'own', 'good', 5))}); localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`);
+  await go(nomHash); await wait('[data-ar-lesson-words]', 5000);
+  await ev(`document.querySelector('[data-ar-lesson-words]').open = true`); await sleep(300);
+  check('a known word with no listened-to clip, readings on, asks (it has a reading to hold back) and has no word play button either way', await exists(`${row(NOCLIP)} [data-action="ar-word-check"]`) && !(await exists(`[data-ar-clip="${NOCLIP}:word"]`)));
+  await click(`${row(NOCLIP)} [data-action="ar-word-check"]`); await sleep(400);
+  check('…pressing check shows its reading and moves focus to its row, since there is no play button', await wordReading(NOCLIP) === 1 && !(await exists(`${row(NOCLIP)} [data-action="ar-word-check"]`)) && await ev(`document.activeElement === document.querySelector('li[data-ar-word="${NOCLIP}"]')`), await ev(`document.activeElement?.outerHTML.slice(0, 100)`));
+  await ev(`localStorage.setItem('myday.arabic.transliteration', 'hidden')`);
+  await go(nomHash); await wait('[data-ar-lesson-words]', 5000);
+  await ev(`document.querySelector('[data-ar-lesson-words]').open = true`); await sleep(300);
+  check('with readings off, a known word with no clip shows no check button at all (nothing to hold back)', !(await exists(`${row(NOCLIP)} [data-action="ar-word-check"]`)) && await count(`${row(NOCLIP)} [data-ar-transliteration]`) === 0);
+  await go(gaHash); await wait('[data-ar-lesson-words]', 5000);
+  await ev(`document.querySelector('[data-ar-lesson-words]').open = true`); await sleep(300);
+  check('…while with readings off a known word that has a clip still asks, its play button waiting', await exists(`${row(KN)} [data-action="ar-word-check"]`) && !(await exists(`[data-ar-clip="${KN}:word"]`)));
+  await ev(`localStorage.removeItem('myday.arabic.transliteration')`);
+  const STARTER = 'lexeme.arabic-seed-001';
+  await ev(`(() => { const d = JSON.parse(localStorage.getItem('myday.data.v4')); d.arabic.cards.push(${JSON.stringify(cardAt(STARTER, 10))}); d.study.reviews.push(${JSON.stringify(answerOf(STARTER, 'right', 'own', 'good', 4))}); localStorage.setItem('myday.data.v4', JSON.stringify(d)); })()`);
+  await go('study/arabic/vocabulary'); await wait('[data-ar-vocabulary]', 5000);
+  check('a known starter word in Vocabulary\'s starter list asks too, while the next starter word keeps its play button', await exists(`[data-ar-vocabulary] ${row(STARTER)} [data-action="ar-word-check"]`) && !(await exists(`[data-ar-clip="${STARTER}:word"]`)) && await exists('[data-ar-clip="lexeme.arabic-seed-002:word"]') && await exists(`[data-ar-clip="${STARTER}:example"]`));
+  await send('Emulation.setDeviceMetricsOverride', { width: 360, height: 800, deviceScaleFactor: 2, mobile: true });
+  await go(gaHash); await wait('[data-ar-lesson-words]', 5000);
+  await ev(`document.querySelector('[data-ar-lesson-words]').open = true`); await sleep(400);
+  check('at 360 px a known word\'s row, with its check button, doesn\'t scroll sideways', await exists(`${row(KN)} [data-action="ar-word-check"]`) && await ev('document.documentElement.scrollWidth === innerWidth') && await ev(`(() => { const r = document.querySelector('${row(KN)}').getBoundingClientRect(); return r.right <= innerWidth && document.querySelector('${row(KN)} [data-action="ar-word-check"]').getBoundingClientRect().right <= innerWidth; })()`), await ev('[document.documentElement.scrollWidth, innerWidth]'));
+  await send('Emulation.clearDeviceMetricsOverride');
+
   const s = T.summary(); console.log(`\n${s.pass} passed, ${s.fail} failed`); process.exit(s.fail ? 1 : 0);
 })().catch(e => { console.error('HARNESS', e); process.exit(1); });
