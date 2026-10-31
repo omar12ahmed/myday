@@ -1,6 +1,6 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
-**1.113.0 — Content projects: plan, make and post your videos:** a new kind of project, **Content**, for a channel or
+**1.114.0 — Content projects: plan, make and post your videos:** a new kind of project, **Content**, for a channel or
 a series. Its **Videos** tab keeps an **Ideas** bank (rough ideas; **Make this a video** when you're ready; also from
 Capture: "Keep as a video idea — <channel>") and your videos by step — Planning · Filming · Editing · Posted. A video's
 page puts **planning first**: the idea and its hook; **options still open** (titles, hooks, angles and thumbnail ideas
@@ -11,10 +11,10 @@ where it went up) and **results** you type in, with what worked and what didn't.
 moment or span) or **uploads**: videos (MP4, MOV, WebM) up to **15 GB each**, played in MyDay; a big one goes up in
 64 MB parts and carries on after a dropped connection or a reload. Every account now has **150 GB** for its files (10 GB
 before). Saved data stays schema 5: a new section `content`, synced as a new kind `content` (migration
-20261031200000_sync_content.sql, applied first), which 1.112.0 keeps unread and its sync ignores (checked with the
+20261031200000_sync_content.sql, applied first), which 1.113.0 keeps unread and its sync ignores (checked with the
 actual previous release: it keeps the project's kind through its own edits, leaves the videos untouched, and deleting
 the project there takes them with it here). The `files` function gains the part-by-part upload (deployed first; the
-published 1.112.0 keeps working with it). Going back to 1.112.0 hides Content projects (their videos stay in your
+published 1.113.0 keeps working with it). Going back to 1.113.0 hides Content projects (their videos stay in your
 account) and its Files cards don't touch a video's uploads. Nothing of a Content project's ideas and videos is sent
 to AI; the tasks you make from them are ordinary tasks.
 
@@ -1509,7 +1509,7 @@ look and Your week's What needs you now use the same rules (`data/attention.ts`)
 board, **Board · List**: the list has one row per active project (stage, kind, next step, "3 need you"), most
 recently worked on first; the choice is kept on this device only (`myday.projects.view`).
 
-**Content projects (1.113.0; `specs/projects-content.md`):** a Content project (a channel or a series) keeps its
+**Content projects (1.114.0; `specs/projects-content.md`):** a Content project (a channel or a series) keeps its
 **ideas and videos**, one synced record each (`data/content.ts`; kind `content`), saying which project it belongs to.
 The Videos tab: the Ideas bank (newest first, Make this a video) and videos by step (Planning, Filming, Editing,
 Posted; a step from a newer MyDay under Other), each row with its post day and what's still open ("3 titles, none
@@ -2116,7 +2116,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/data/projectPlan.ts`, `src/projects/PlanViews.tsx`, `src/projects/planText.ts` | Milestones and decisions (1.31.0): `projectPlan.ts` (checking the saved lists, and adding, editing, reaching, choosing, thinking again, with the limits); `PlanViews.tsx` (the Milestones and Decisions screens; their Overview summaries are in At a glance); `planText.ts` (the "Aiming for" wording, which never says late or overdue). |
 | `src/data/areas.ts`, `src/projects/AreaBits.tsx` | Areas and the archive (1.106.0): `areas.ts` (the areas in use with their colours and counts, choosing, renaming and merging, recolouring, finishing, the archive's order); `AreaBits.tsx` (an area's dot and name, and the Area field). The filter, Areas… and the Archive are in `ProjectsScreen.tsx`, the finish form in `ProjectView.tsx`. |
 | `src/data/projectWaiting.ts`, `src/projects/ProjectWaiting.tsx` | A whole project waiting (1.109.0): `projectWaiting.ts` (set, change, stop, the check-back day, Chase it, the nudge's suggestion); `ProjectWaiting.tsx` (the Overview's card, the form, the nudge). Needs you's line is in `src/data/attention.ts`; Chase it is `src/tasks/ChaseIt.tsx`, shared with waiting tasks. |
-| `src/data/content.ts`, `src/projects/ContentView.tsx` | Content projects (1.113.0): `content.ts` (reading as written, ideas and videos, steps, options, examples, outline/shots/needs/steps and their tasks, clips, the post day and its task, posts, results, the size check); `ContentView.tsx` (the Overview's Videos card, the Videos tab, a video's page). Uploads in parts: `src/sync/files.ts` (`sendInParts`, `md5Of`, `videoFrame`) and `supabase/functions/files/` (the `mp-*` actions). |
+| `src/data/content.ts`, `src/projects/ContentView.tsx` | Content projects (1.114.0): `content.ts` (reading as written, ideas and videos, steps, options, examples, outline/shots/needs/steps and their tasks, clips, the post day and its task, posts, results, the size check); `ContentView.tsx` (the Overview's Videos card, the Videos tab, a video's page). Uploads in parts: `src/sync/files.ts` (`sendInParts`, `md5Of`, `videoFrame`) and `supabase/functions/files/` (the `mp-*` actions). |
 | `src/data/businessModel.ts`, `src/projects/ModelView.tsx` | The Business template (1.33.0): `businessModel.ts` (the kind of project and the one page: reading what's saved, the four answers, the list of what must be true with its limits, Find out, marking, counts); `ModelView.tsx` (the Model tab; its Overview summary is in At a glance). The Model tab's counts line is `progressLine` in `planText.ts`; Explore's brief from the one page is `fromOnePage` in `src/explore/content.ts`. |
 | `src/data/caseFile.ts`, `src/projects/CaseViews.tsx` | The Case template (1.35.0): `caseFile.ts` (reading what's saved, unknown fields kept, links to missing items let go; the timeline, evidence and issues with their limits, links, counts and the size guard); `CaseViews.tsx` (the Timeline, Evidence and Issues tabs, and "Add a deadline" in a case's Coming up; its Overview summary is in At a glance). |
 | `src/data/projectDashboard.ts`, `src/projects/AtAGlance.tsx` | The dashboards per kind (1.36.0): `projectDashboard.ts` (the next dates, the weeks, entries by month, each issue's links and Worth a look; Today's own dashboard numbers stay in `dashboard.ts`); `AtAGlance.tsx` (the At a glance card with one row per tool, its pictures and Summarise this, and the Worth a look card beside the next step). Still-open tasks are `stillOpen` in `src/data/projects.ts`. |
