@@ -19,6 +19,12 @@ the photo it's about. Today they live elsewhere, and MyDay can only describe the
 one identity each, which projects (and later notes, tasks and the portfolio) refer to, with clear deletion and
 recovery, kept privately in R2.
 
+> **Later (31 October 2026, `specs/projects-content.md`):** a Content project's videos keep **videos** (MP4, MOV, WebM)
+> as well as photos and documents, **up to 15 GB each**, in a new area `content`; every account has **150 GB** in all
+> (the owner's choice; R2 charges past its free 10 GB). A file over 64 MB goes up **in 64 MB parts** (R2's multipart
+> upload: `mp-begin`, `mp-parts`, `mp-list`, `mp-done`, `mp-abort`), read one part at a time and carried on after a
+> drop; a video plays in MyDay on a 6-hour link, with a frame from it as its preview. The rest of this spec stands.
+
 ## 2. The owner's decisions (24 October 2026)
 
 1. **Projects and notes** can have files in this first release.
