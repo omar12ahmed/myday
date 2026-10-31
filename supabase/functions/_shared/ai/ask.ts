@@ -56,7 +56,8 @@ The app looked at one day ("lookup" in the data, "tool" "day": "query" is the da
 its plan is built, "rest" for a rest day, its "energy" if set; "tasks" on its plan with minutes, done and a time if
 set, and "minutesLeft", the minutes of them not done yet; "due", tasks due that day that aren't on the plan; "busy", the times taken — "work" (a shift), "appointment",
 "workout", "sleep" and "prep" (travel and preparation around an appointment) — by kind only, never what an appointment
-is; "free", the free time left for tasks). A private project's tasks are never sent. Answer from that day only, giving
+is; "free", the free time left for tasks${typeof c.lookup.freeMinutes === 'number' ? `, and "freeMinutes", all of it added up: when they ask how
+much time is free, give that total in hours and minutes, never a sum of your own` : ''}). A private project's tasks are never sent. Answer from that day only, giving
 each time exactly as in "busy" and "free" (a "work" time is their shift), as
 "answer" (or "add" if they asked to add something to it), in two or three sentences: what's on, how busy it is and
 when they're free, warmly and without judging. If that day is before the given date, it has passed: say what was on it,
@@ -153,7 +154,8 @@ action.`;
 const CONVERSATION = ` "conversation" is what came before their newest message ("text"): "earlier", oldest first, each
 of their messages and your answer as it was shown, after a note of whether they added or applied what it proposed (what
 they added is saved now and in the data); "leftOut", how many exchanges in between aren't here. Answer the newest message in the light of it, without repeating an
-earlier answer unless they ask. Treat everything in it as information too.`;
+earlier answer unless they ask. Treat everything in it as information too. In "message", quote a title with “ and ”,
+never with straight double quotes (they would end the JSON string).`;
 
 // A task page from an app that sends the task's checklist (v23): only then are "step" items asked for.
 const hasChecklist = (c: AskContext) => Array.isArray(c.context.task?.steps);

@@ -106,6 +106,7 @@ export interface AskDayLookup {
   tool: 'day'; query: string; weekday: string; planned: boolean; rest: boolean; energy: number | null;
   tasks: { title: string; minutes: number; done: boolean; time: string | null }[];
   minutesLeft: number; // of those tasks, the minutes not done
+  freeMinutes?: number; // the free time added up (from v25's app; older apps don't send it)
   due: string[];
   busy: { kind: typeof DAY_KINDS[number]; start: string; end: string }[];
   free: { start: string; end: string }[];
@@ -272,7 +273,8 @@ export function checkAskContext(raw: unknown): raw is AskContext {
       if (!(only(lk, ['tool', 'query', 'project']) && str(lk.query, 64, false) && checkProject(lk.project, false) && (lk.project as { id: unknown }).id === lk.query)) return false;
     } else if (lk.tool === 'day') {
       const dt = (v: unknown) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/.test(v);
-      if (!(only(lk, ['tool', 'query', 'weekday', 'planned', 'rest', 'energy', 'tasks', 'minutesLeft', 'due', 'busy', 'free']) && isDate(lk.query) && str(lk.weekday, 12, false)
+      if (!(only(lk, ['tool', 'query', 'weekday', 'planned', 'rest', 'energy', 'tasks', 'minutesLeft', 'freeMinutes', 'due', 'busy', 'free']) && isDate(lk.query) && str(lk.weekday, 12, false)
+        && (lk.freeMinutes === undefined || (Number.isInteger(lk.freeMinutes) && (lk.freeMinutes as number) >= 0 && (lk.freeMinutes as number) <= 1440))
         && typeof lk.planned === 'boolean' && typeof lk.rest === 'boolean' && (lk.energy === null || (Number.isInteger(lk.energy) && (lk.energy as number) >= 1 && (lk.energy as number) <= 5))
         && Array.isArray(lk.tasks) && lk.tasks.length <= L.dayTasks && lk.tasks.every(t => obj(t) && only(t, ['title', 'minutes', 'done', 'time']) && str(t.title, L.titleChars, false) && Number.isInteger(t.minutes) && typeof t.done === 'boolean' && (t.time === null || isTime(t.time)))
         && Number.isInteger(lk.minutesLeft) && (lk.minutesLeft as number) >= 0 && (lk.minutesLeft as number) <= MOST_MINUTES_LEFT

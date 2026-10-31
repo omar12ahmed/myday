@@ -5,7 +5,7 @@
 // otherwise only titles. Private notes, and notes in a private project, are never sent — not even how many matched: that
 // count (`leftOut`) stays on this device, for the panel's "1 private note left out".
 import { ASK_LIMITS as L, DAY_KINDS, type AskDayLookup, type AskDecisionsLookup, type AskLookup, type AskNotesLookup, type AskProjectLookup, type AskSearchLookup, type AskStudyLookup, type AskWaitingLookup, type SEARCH_KINDS, type SEARCH_STATES } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
-import { parseKey, prettyDate, shift, shortDate, todayKey } from '../data/dates';
+import { parseKey, prettyDate, shift, shortDate, timeToMin, todayKey } from '../data/dates';
 import { lessonHref } from '../data/cybersecurity/types';
 import type { CourseIndex } from '../data/searchAll';
 import { noteName } from '../data/notes';
@@ -141,6 +141,7 @@ export function dayLookup(data: MyDayData, day: DateKey, today: DateKey = todayK
       due: due.slice(0, L.dayTasks).map(t => cut(t.title, L.titleChars)),
       busy: pc.busy.filter(b => (DAY_KINDS as readonly string[]).includes(b.kind)).slice(0, L.dayBusy).map(b => ({ kind: b.kind as AskDayLookup['busy'][number]['kind'], start: b.start, end: b.end })),
       free: pc.free.slice(0, L.dayFree),
+      freeMinutes: Math.min(1440, pc.free.reduce((m, f) => m + Math.max(0, timeToMin(f.end) - timeToMin(f.start)), 0)), // added up here: the model's own sums were wrong (v25)
     },
     leftOut: plan.filter(t => held.has(t.uid)).length + dueAll.length - due.length,
     more: { tasks: sendable.length, due: due.length, busy: pc.busy.filter(b => (DAY_KINDS as readonly string[]).includes(b.kind)).length },

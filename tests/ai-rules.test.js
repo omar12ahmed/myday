@@ -1659,6 +1659,10 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('…a day further off than two months, or more than a week ago, isn\'t looked at', K.dayLookup(dw, '2027-01-12', LD) === null && K.dayLookup(dw, '2026-11-02', LD) === null && !!K.dayLookup(dw, '2026-11-03', LD));
     const dline = K.lookupLine(dr.lookup, dr.leftOut);
     check('what the panel says: the day, what\'s planned and due, and the private tasks left out', /^Looked at Thursday,? (12 November|November 12): one task planned, 1 due, /.test(dline) && dline.endsWith('— 2 private tasks left out.'), dline); // Node's own date wording; the app uses en-GB
+    check('…and its free time added up here (v25: the model\'s own sums were wrong)', dr.lookup.freeMinutes === dr.lookup.free.reduce((m, f) => m + (Number(f.end.slice(0, 2)) * 60 + Number(f.end.slice(3)) - Number(f.start.slice(0, 2)) * 60 - Number(f.start.slice(3))), 0) && dr.lookup.freeMinutes > 0, [dr.lookup.freeMinutes, dr.lookup.free]);
+    const { freeMinutes: _fm, ...oldDay } = dr.lookup, dayAsk = lk => K.askContext(lslice, 'Am I free on Thursday?', LD, undefined, undefined, lk);
+    check('…which the server accepts, and also a day from an older app without it; never a negative or over a day', K.checkAskContext(dayAsk(dr.lookup)) && K.checkAskContext(dayAsk(oldDay)) && !K.checkAskContext(dayAsk({ ...dr.lookup, freeMinutes: -1 })) && !K.checkAskContext(dayAsk({ ...dr.lookup, freeMinutes: 1441 })) && !K.checkAskContext(dayAsk({ ...dr.lookup, freeMinutes: 2.5 })));
+    check('…and the instructions point to the total only when it\'s there', /"freeMinutes", all of it added up/.test(K.buildAskMessages(dayAsk(dr.lookup))[0].content) && !/freeMinutes/.test(K.buildAskMessages(dayAsk(oldDay))[0].content));
     const dat = K.lookupLine(dr.lookup, dr.leftOut, undefined, { more: dr.more, at: new Date(2026, 10, 12, 9, 5) });
     check('…and the time it was read after it (an answer to a follow-up, or a second try, uses what was read the first time)', dat === `${dline} Checked at 09:05.`, dat);
     const dmany = K.normalize({ ...lw, days: { [DD]: { energy: 4, rest: false, builtAt: `${DD}T08:00`, checkedIn: false, tasks: Array.from({ length: 23 }, (_, i) => PT2('pM' + i, 'Batch ' + i, 10, null)) } },
@@ -2007,6 +2011,9 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const fri = mk('Am I free on Friday?', dl, true);
     check('practice helper: "Am I free on Friday?" after a look at another day looks at Friday', fri?.kind === 'lookup' && fri.lookup.tool === 'day' && fri.lookup.query === '2026-11-13', fri);
     check('…but "thanks, and how much is free?" answers from the day it has', mk('thanks, and how much is free?', dl, true)?.kind === 'answer');
+    const ANS = (kind, message, items = []) => JSON.stringify({ kind, message, items, action: null });
+    check('an answer that stops where what it introduced should follow ("I can only see one step ahead:") isn\'t usable', K.checkAskReply(ANS('answer', 'I can only see one step ahead: '), dw2, cslice, CD) === null);
+    check('…but things to add introduced with a colon are mended as before', K.checkAskReply(ANS('add', 'Here are two tasks:', [{ type: 'task', title: 'Ring the bank', minutes: 15, category: 'admin' }, { type: 'task', title: 'Post the form', minutes: 10, category: 'admin' }]), dw2, cslice, CD)?.message === 'Here are two tasks.');
     // The app's check of a reply: one more lookup only for a lookup from earlier.
     const LK = JSON.stringify({ kind: 'lookup', message: 'Looking at that day.', lookup: { tool: 'day', query: '2026-11-13' } });
     check('a reply asking to look again is refused when the lookup was made for this message…', K.checkAskReply(LK, dw2, cslice, CD, 'x', dl) === null);

@@ -1056,8 +1056,11 @@ The app checks it all against your data (`src/ai/ask.ts`: real ids only, days fr
 a day and a time, 5–120 minutes, gentle wording, anything already on your lists or today's plan left unticked) and
 shows cards to tick, rename and edit — a day and time, the length and list, a note's text — checked by the same rules
 (`src/capture/AskPanel.tsx`); Add saves them at once through the same rules as Capture,
-with one step of Undo. One follow-up ("Not quite? …") at most; nothing of the conversation is kept. Evaluated on 40
-synthetic requests (`../ai-eval/reviews/2026-10-17-ask-quality.md`). Shown only when the app is built with AI help.
+with one step of Undo. A conversation goes on while the panel is open, until the day's requests run out
+(`../specs/ask-conversation.md`, instructions `myday-ask-v25`): each reply sends what came before (your messages and its
+answers as shown, each after a note of what you did with it; the oldest left out when it's long) and may look
+something up once; nothing of it is kept after the panel closes. Evaluated on 40 synthetic requests
+(`../ai-eval/reviews/2026-10-17-ask-quality.md`) and 12 conversations (`../ai-eval/reviews/2026-10-31-ask-conversation-quality.md`). Shown only when the app is built with AI help.
 
 **Looking in your notes** (`specs/ai-tools.md` §3, step 2; instructions `myday-ask-v17`): when a question needs your
 notes ("what did I write about the bike rack?"), Ask MyDay replies "look up" with a few words; the app searches on the
@@ -1066,7 +1069,7 @@ the privacy filter (`src/ai/reach.ts`), then asks once more with up to 8 notes �
 (only with AI help with notes on) — and how many matched. Never a private note or a note in a private project, not even
 how many of those matched: that count stays on the device for the panel's "Looked in your notes for “…”: … — 1 private
 note left out". The answer names the notes it used (`sources`, only ones found), shown as links. One lookup per
-question (the follow-up reuses it); the second request counts towards the day's limit. The request says the app can
+question or reply (a reply reuses the last one unless it needs another); the second request counts towards the day's limit. The request says the app can
 look things up (`can`), so the server's instructions offer a lookup only to an app that can. Evaluated with
 `ai-eval/ask-scenarios.ts` (l01–l13).
 
