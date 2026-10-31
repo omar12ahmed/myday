@@ -19,7 +19,7 @@ import { discardTicks, practiceCardId, practiceCards, practiceOf, tickStep, tick
 import { looksReady, MODE_LABEL, modeOf, STATE_LABEL, STEP_LABEL, type JourneyStep, type LessonState, type Mode, type StepKind } from '../../data/study/mastery';
 import { OUTCOME, SUPPORT } from '../../data/study/common';
 import type { Outcome, Support } from '../../data/types';
-import { arabicPlan, arabicState, checksOf, journeyFor, lessonLength, lessonSteps, moduleProgress, warmUpFrom, type ArabicPlan, type Place } from './plan';
+import { arabicPlan, arabicRoute, arabicState, checksOf, journeyFor, lessonLength, lessonSteps, moduleProgress, stepTowards, warmUpFrom, type ArabicPlan, type ArabicRoute, type Place } from './plan';
 import { startRevision } from '../actions';
 import { BackLink, Choice, Choices, Eyebrow, ExternalLink, InlineLink } from '../parts';
 import { Lines, LinkButton } from '../cybersecurity/parts';
@@ -87,7 +87,7 @@ const PLACE: Record<Place, string> = { unexplored: 'Unexplored', exploring: 'Exp
 function MapView({ data }: { data: MyDayData }) {
   const [search, setSearch] = useState('');
   const path = paths.get(data.arabic.pathId) ?? corePath;
-  const plan = arabicPlan(data), started = data.arabic.attempts.length > 0;
+  const plan = arabicPlan(data), started = data.arabic.attempts.length > 0, route = arabicRoute(data);
   const match = (m: (typeof moduleList)[number]) => !search || [m.name, m.purpose, ...m.lesson_ids.map(l => lessonIndex[l].title)].join(' ').toLowerCase().includes(search.toLowerCase());
   const core = moduleList.filter(m => m.path_class === 'core' && match(m)), extensions = moduleList.filter(m => m.path_class !== 'core' && match(m));
   const tile = (m: (typeof moduleList)[number]) => <ModuleTile key={m.id} m={m} progress={moduleProgress(data, m.lesson_ids)} inPath={path.required_module_ids.includes(m.id)} />;
@@ -98,7 +98,7 @@ function MapView({ data }: { data: MyDayData }) {
       <Ar block className="text-[26px] text-fg-2 mt-0">العربية الفصحى</Ar>
       <p>Modern Standard Arabic, one small session at a time: script and sounds first, then sentences, reading, listening and writing.</p>
       <p className="text-sm text-fg-2 flex gap-2 items-start"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />{hasVoice ? 'The starter words, lesson examples and some teaching and reading texts have a synthesised voice to copy. Look for a play button; some Arabic has no recording. ' : 'No recordings are included yet. '}For listening and speaking, use a verified recording or a fluent speaker; typed work never stands in for them.</p>
-      {plan && <NextStep plan={plan} started={started} />}
+      {plan && <NextStep plan={plan} started={started} towards={stepTowards(data, plan.step.lessonId, route)} />}
     </Card>
     <ReadyOffer data={data} />
     <RevisionGlance data={data} />
@@ -107,6 +107,7 @@ function MapView({ data }: { data: MyDayData }) {
         {[...paths.values()].map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
       </Select></Field>
       <p className="text-sm text-fg-2">{path.required_module_ids.length} modules · about {path.estimated_hours.minimum}–{path.estimated_hours.maximum} hours from the start, including revision. Levels are design targets, not certificates.</p>
+      <RouteView route={route} />
       <Field label="Find a module or lesson" htmlFor="arSearch"><TextInput id="arSearch" type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="e.g. script, past tense, reading" /></Field>
     </Card>
     {STAGES.map(stage => {
@@ -130,7 +131,29 @@ function MapView({ data }: { data: MyDayData }) {
 const STEP_EYEBROW: Record<Exclude<StepKind, 'lesson'>, string> = {
   resume: 'Pick up where you left off', revisit: 'Worth revisiting first', revise: 'Revision first', complete: 'Your path is ready to move on',
 };
-function NextStep({ plan, started }: { plan: ArabicPlan; started: boolean }) {
+// "Your route" (plan.ts arabicRoute, specs/arabic-route.md): your goal's stages in order, each with how many lessons
+// are ready and what you'll be able to do at its end; where you are is open, the others fold.
+const ROUTE_STATE = { done: 'Done', here: 'You are here', ahead: 'Ahead' } as const;
+function RouteView({ route }: { route: ArabicRoute }) {
+  return <section aria-labelledby="ar-route" className="mt-4 mb-4" data-ar-route={route.goalId}>
+    <h3 id="ar-route" className="mt-0 mb-2">Your route</h3>
+    <ol className="list-none p-0 m-0 grid gap-2">{route.stages.map(st => <li key={st.key} data-ar-route-stage={st.key} data-state={st.state}
+      className={`rounded-tile border px-3.5 py-2.5 ${st.state === 'here' ? 'border-primary bg-surface' : 'border-outline'}`}>
+      <p className="m-0 font-semibold">{st.label}</p>
+      <p className="m-0 text-sm text-fg-2">{ROUTE_STATE[st.state]} · {st.done} of {st.lessons} lessons ready</p>
+      {st.state === 'here' ? <><p className="text-sm m-0 mt-1.5">By the end of it:</p><ul className="list-disc pl-5 text-sm m-0">{st.can.map((c, i) => <li key={i}>{c}</li>)}</ul></>
+        : <details><summary className="cursor-pointer min-h-11 py-2 text-primary text-sm font-semibold">What you’ll be able to do</summary>
+          <ul className="list-disc pl-5 text-sm m-0">{st.can.map((c, i) => <li key={i}>{c}</li>)}</ul></details>}
+    </li>)}</ol>
+    <p className="text-xs text-fg-2 mt-2 mb-0">From the course’s own milestones. Levels are design targets, not certificates.</p>
+  </section>;
+}
+// "A step towards …": where a lesson sits on the route to your goal (nothing when it isn't on it).
+function Towards({ t }: { t: ReturnType<typeof stepTowards> }) {
+  return t && <p className="text-sm text-fg-2 m-0 mt-1" data-ar-towards="">A step towards “{t.goal}”: stage {t.at} of {t.of}, {t.stage}</p>;
+}
+
+function NextStep({ plan, started, towards }: { plan: ArabicPlan; started: boolean; towards: ReturnType<typeof stepTowards> }) {
   const { step, reason, length } = plan, title = lessonIndex[step.lessonId].title;
   const eyebrow = step.kind === 'lesson' ? (started ? 'Your next small step' : 'Your first small step')
     : step.kind === 'complete' && step.waiting ? (step.waiting === 1 ? 'One lesson needs revision' : `${step.waiting} lessons need revision`) : STEP_EYEBROW[step.kind];
@@ -138,6 +161,7 @@ function NextStep({ plan, started }: { plan: ArabicPlan; started: boolean }) {
   return <div className="rounded-tile bg-surface p-4 border border-outline mt-4" data-ar-next={step.kind}>
     <Eyebrow>{eyebrow}</Eyebrow>
     <h3>{revise ? 'Revise Arabic' : title}</h3>
+    {!revise && <Towards t={towards} />}
     <p className="text-sm text-fg-2">{revise ? `${step.due} ready now, then: ${title}` : step.kind === 'resume' ? 'A session on this lesson is still open.' : `${STATE_LABEL[step.state]} · ${MODE_LABEL[modeOf(length.variant)]} · about ${length.minutes} min suits today`}</p>
     <details className="mb-3" data-ar-why=""><summary className="cursor-pointer min-h-11 py-2 text-primary font-semibold">Why this?</summary>
       <p className="text-sm text-fg-2 mt-0">{reason}</p>
@@ -345,6 +369,7 @@ function LessonView({ data, id }: { data: MyDayData; id: string }) {
       <BackLink to={'study/arabic/' + l.module_id} label={modules.get(l.module_id)!.name} />
       <Eyebrow>Lesson · {l.estimated_duration_minutes.standard} min · {l.stage_target}{l.optional ? ' · optional' : ''}</Eyebrow>
       <h2>{l.title}</h2>
+      <Towards t={stepTowards(data, l.id)} />
       <LessonPlace data={data} lessonId={l.id} checks={checkIds} />
       <ul className="list-disc pl-5 space-y-2 text-[15px]" data-ar-objectives="">{l.learning_objectives.map((o, i) => <li key={i}><Mixed text={o} voice={hold ? undefined : `${l.id}:objective:${i}`} /></li>)}</ul>
       {!hold && <MixedVoiceLabel texts={l.learning_objectives} />}
