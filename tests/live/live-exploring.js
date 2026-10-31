@@ -96,11 +96,13 @@ const projectOf = async (d, id) => (await d.data()).projects.items.find(p => p.i
   await mac.open(BASE + `#projects/p/${pid}`); await mac.until(`!!document.getElementById('projectTitle')`, 10000); await D.sleep(500);
   check('mac: back on the Overview it isn\'t asked again, after a reload too', !(await mac.exists('#projectExploring')) && (await mac.open(BASE + `#projects/p/${pid}`), await D.sleep(800), !(await mac.exists('#projectExploring'))));
 
-  // Tidy: the project (its research goes with it), everywhere.
+  // Tidy: the project (its research goes with it), everywhere. (A deletion marker holds no data, so the research is
+  // found by its ids, taken first.)
+  const researchIds = (await mac.data()).research.items.filter(x => x.projectId === pid).map(x => x.id);
   await deleteProject(pid);
   check('tidy: the project is gone on the Mac and saved', !(await mac.data()).projects.items.some(p => p.id === pid) && await synced(mac));
-  const left = (await pullAll(who)).filter(r => (r.kind === 'project' && r.record_id === pid) || (r.kind === 'research' && r.data?.projectId === pid));
-  check('tidy: in the account they are deletion markers', left.length >= 2 && left.every(r => r.deleted), left.map(r => [r.kind, r.deleted]));
+  const left = (await pullAll(who)).filter(r => (r.kind === 'project' && r.record_id === pid) || (r.kind === 'research' && researchIds.includes(r.record_id)));
+  check('tidy: in the account the project and its finding are deletion markers', researchIds.length >= 1 && left.length === 1 + researchIds.length && left.every(r => r.deleted), left.map(r => [r.kind, r.deleted]));
   const errs = mac.events.filter(e => e.method === 'Runtime.exceptionThrown').map(e => (e.params.exceptionDetails?.exception?.description || e.params.exceptionDetails?.text || '').slice(0, 120));
   check('no page errors', !errs.length, errs);
   console.log(`${pass} passed, ${fail} failed`); process.exit(fail ? 1 : 0);
