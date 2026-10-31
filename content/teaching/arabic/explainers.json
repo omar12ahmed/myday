@@ -20297,6 +20297,979 @@
     ],
     "phrases_ar": []
    }
+  ],
+  "lesson.arabic-b2-listening-reading": [
+   {
+    "id": "explainer.arabic-following-long-texts",
+    "title_en": "Following a long text or talk: its point, its asides, its reservations",
+    "family_en": "Telling narration from judgement, and keeping the limits a writer puts on a claim",
+    "course_words": [
+     "lexeme.arabic-b2-listening-reading-1",
+     "lexeme.arabic-b2-listening-reading-2",
+     "lexeme.arabic-b2-listening-reading-3",
+     "lexeme.arabic-b2-listening-reading-4",
+     "lexeme.arabic-b2-listening-reading-5",
+     "lexeme.arabic-b2-listening-reading-6",
+     "lexeme.arabic-b2-listening-reading-7"
+    ],
+    "table": [
+     {
+      "form_en": "the point",
+      "ar": "مَغْزَى الْكَلَامِ",
+      "en": "the point of what's said"
+     },
+     {
+      "form_en": "an aside",
+      "ar": "اِسْتِطْرَاد",
+      "en": "a digression, an aside"
+     },
+     {
+      "form_en": "a transcript",
+      "ar": "تَفْرِيغ",
+      "en": "a transcript (of a recording)"
+     },
+     {
+      "form_en": "a reservation",
+      "ar": "تَحَفُّظ",
+      "en": "a reservation, a qualification"
+     },
+     {
+      "form_en": "telling events",
+      "ar": "سَرْد",
+      "en": "narration"
+     },
+     {
+      "form_en": "a judgement",
+      "ar": "حُكْم",
+      "en": "a judgement, a verdict"
+     },
+     {
+      "form_en": "complex",
+      "ar": "نَصٌّ مُعَقَّدٌ",
+      "en": "a complex text"
+     }
+    ],
+    "steps": [
+     "A long text mixes kinds of passage: سَرْد, telling what happened; description; and حُكْم, the writer's judgement. Notice which is which as you go.",
+     "Find مَغْزَى الْكَلَامِ, the point, and don't mistake an اِسْتِطْرَاد, an aside, for it.",
+     "Keep every تَحَفُّظ, every reservation: words like إِلَى حَدٍّ مَا, to some extent, or فِي بَعْضِ الْحَالَاتِ, in some cases, limit the claim.",
+     "Listen first without the تَفْرِيغ, the transcript; use it afterwards to check, and note that you did."
+    ],
+    "examples": [
+     {
+      "ar": "يَسْرُدُ الْكَاتِبُ أَحْدَاثَ الرِّحْلَةِ، ثُمَّ يُصْدِرُ حُكْمَهُ عَلَيْهَا.",
+      "en": "The writer narrates the events of the trip, then gives his judgement on it.",
+      "words": [
+       {
+        "ar": "يَسْرُدُ",
+        "en": "narrates"
+       },
+       {
+        "ar": "الْكَاتِبُ",
+        "en": "the writer"
+       },
+       {
+        "ar": "أَحْدَاثَ",
+        "en": "the events (of)"
+       },
+       {
+        "ar": "الرِّحْلَةِ",
+        "en": "the trip"
+       },
+       {
+        "ar": "ثُمَّ",
+        "en": "then"
+       },
+       {
+        "ar": "يُصْدِرُ",
+        "en": "issues, gives"
+       },
+       {
+        "ar": "حُكْمَهُ",
+        "en": "his judgement"
+       },
+       {
+        "ar": "عَلَيْهَا",
+        "en": "on it"
+       }
+      ]
+     },
+     {
+      "ar": "وَهَذَا اسْتِطْرَادٌ لَا عَلَاقَةَ لَهُ بِالْمَوْضُوعِ.",
+      "en": "And this is an aside with nothing to do with the topic.",
+      "words": [
+       {
+        "ar": "وَهَذَا",
+        "en": "and this"
+       },
+       {
+        "ar": "اسْتِطْرَادٌ",
+        "en": "an aside"
+       },
+       {
+        "ar": "لَا",
+        "en": "no"
+       },
+       {
+        "ar": "عَلَاقَةَ",
+        "en": "connection (at all)"
+       },
+       {
+        "ar": "لَهُ",
+        "en": "to it"
+       },
+       {
+        "ar": "بِالْمَوْضُوعِ",
+        "en": "with the topic"
+       }
+      ]
+     },
+     {
+      "ar": "يُوَافِقُ الْمُتَحَدِّثُ عَلَى الْفِكْرَةِ مَعَ بَعْضِ التَّحَفُّظَاتِ.",
+      "en": "The speaker agrees with the idea, with some reservations.",
+      "words": [
+       {
+        "ar": "يُوَافِقُ",
+        "en": "agrees"
+       },
+       {
+        "ar": "الْمُتَحَدِّثُ",
+        "en": "the speaker"
+       },
+       {
+        "ar": "عَلَى",
+        "en": "with"
+       },
+       {
+        "ar": "الْفِكْرَةِ",
+        "en": "the idea"
+       },
+       {
+        "ar": "مَعَ",
+        "en": "with"
+       },
+       {
+        "ar": "بَعْضِ",
+        "en": "some"
+       },
+       {
+        "ar": "التَّحَفُّظَاتِ",
+        "en": "reservations"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "What's the difference between سَرْد and حُكْم?",
+     "a_en": "سَرْد tells what happened, in order; حُكْم is the writer's view of it. A summary keeps them apart: what the text reports, and what the writer thinks of it."
+    },
+    "selftest": [
+     {
+      "q_en": "What is مَغْزَى الْكَلَامِ?",
+      "choices": [
+       "the point of what's said",
+       "an aside",
+       "a transcript"
+      ],
+      "answer": "the point of what's said",
+      "why_en": "An aside is اِسْتِطْرَاد."
+     },
+     {
+      "q_en": "What is the تَفْرِيغ of a recording?",
+      "choices": [
+       "a transcript",
+       "a summary",
+       "a translation"
+      ],
+      "answer": "a transcript",
+      "why_en": "It's the recording written out word for word."
+     },
+     {
+      "q_en": "What does مَعَ بَعْضِ التَّحَفُّظَاتِ add to \"he agrees\"?",
+      "choices": [
+       "some reservations",
+       "strong agreement",
+       "a new topic"
+      ],
+      "answer": "some reservations",
+      "why_en": "It limits the agreement; keep it in a summary."
+     }
+    ],
+    "phrases_ar": [
+     "إِلَى حَدٍّ مَا",
+     "فِي بَعْضِ الْحَالَاتِ",
+     "مَعَ بَعْضِ التَّحَفُّظَاتِ"
+    ]
+   }
+  ],
+  "lesson.arabic-b2-unseen-output": [
+   {
+    "id": "explainer.arabic-unseen-task",
+    "title_en": "An unseen task: reading its conditions, and speaking off the cuff",
+    "family_en": "The words for a task's limits, and how to plan fast for a prompt you haven't seen",
+    "course_words": [
+     "lexeme.arabic-b2-unseen-output-1",
+     "lexeme.arabic-b2-unseen-output-2",
+     "lexeme.arabic-b2-unseen-output-3",
+     "lexeme.arabic-b2-unseen-output-4",
+     "lexeme.arabic-b2-unseen-output-5",
+     "lexeme.arabic-b2-unseen-output-6",
+     "lexeme.arabic-b2-unseen-output-7"
+    ],
+    "table": [
+     {
+      "form_en": "off the cuff",
+      "ar": "اِرْتِجَالًا",
+      "en": "off the cuff, without preparation"
+     },
+     {
+      "form_en": "familiar",
+      "ar": "مَوْضُوعٌ مَأْلُوفٌ",
+      "en": "a familiar topic"
+     },
+     {
+      "form_en": "a limit",
+      "ar": "حَدٌّ أَقْصَى",
+      "en": "a maximum"
+     },
+     {
+      "form_en": "the length",
+      "ar": "عَدَدُ الْكَلِمَاتِ",
+      "en": "the word count"
+     },
+     {
+      "form_en": "expected",
+      "ar": "الْمُدَّةُ الْمُتَوَقَّعَةُ",
+      "en": "the expected length of time"
+     },
+     {
+      "form_en": "a version",
+      "ar": "النُّسْخَةُ الْأُولَى",
+      "en": "the first version"
+     },
+     {
+      "form_en": "a change",
+      "ar": "تَعْدِيل",
+      "en": "a revision, a change"
+     }
+    ],
+    "steps": [
+     "An unseen task tests what you can do with a new prompt. Read its conditions first: عَدَدُ الْكَلِمَاتِ, the word count; any حَدٌّ أَقْصَى, maximum; the time allowed.",
+     "Plan quickly: name your audience, take a position, answer one counterargument, and limit any claim you can't support.",
+     "Expect follow-up questions you haven't seen, and answer them اِرْتِجَالًا, off the cuff.",
+     "Keep النُّسْخَةُ الْأُولَى, the first version, as it was, and label each later تَعْدِيل, revision, with the help you had."
+    ],
+    "examples": [
+     {
+      "ar": "لَا يَزِيدُ النَّصُّ عَلَى ثَلَاثِمِئَةِ كَلِمَةٍ.",
+      "en": "The text is no more than three hundred words.",
+      "words": [
+       {
+        "ar": "لَا",
+        "en": "not"
+       },
+       {
+        "ar": "يَزِيدُ",
+        "en": "goes over"
+       },
+       {
+        "ar": "النَّصُّ",
+        "en": "the text"
+       },
+       {
+        "ar": "عَلَى",
+        "en": "(beyond)"
+       },
+       {
+        "ar": "ثَلَاثِمِئَةِ",
+        "en": "three hundred"
+       },
+       {
+        "ar": "كَلِمَةٍ",
+        "en": "words (singular, -in)"
+       }
+      ]
+     },
+     {
+      "ar": "تَكَلَّمَتْ سَلْمَى ارْتِجَالًا لِمُدَّةِ خَمْسِ دَقَائِقَ.",
+      "en": "Salmā spoke off the cuff for five minutes.",
+      "words": [
+       {
+        "ar": "تَكَلَّمَتْ",
+        "en": "spoke"
+       },
+       {
+        "ar": "سَلْمَى",
+        "en": "Salmā"
+       },
+       {
+        "ar": "ارْتِجَالًا",
+        "en": "off the cuff"
+       },
+       {
+        "ar": "لِمُدَّةِ",
+        "en": "for the length (of)"
+       },
+       {
+        "ar": "خَمْسِ",
+        "en": "five"
+       },
+       {
+        "ar": "دَقَائِقَ",
+        "en": "minutes"
+       }
+      ]
+     },
+     {
+      "ar": "أَرْسَلْتُ النُّسْخَةَ الْأُولَى قَبْلَ أَيِّ تَعْدِيلٍ.",
+      "en": "I sent the first version before any revision.",
+      "words": [
+       {
+        "ar": "أَرْسَلْتُ",
+        "en": "I sent"
+       },
+       {
+        "ar": "النُّسْخَةَ",
+        "en": "the version"
+       },
+       {
+        "ar": "الْأُولَى",
+        "en": "first"
+       },
+       {
+        "ar": "قَبْلَ",
+        "en": "before"
+       },
+       {
+        "ar": "أَيِّ",
+        "en": "any"
+       },
+       {
+        "ar": "تَعْدِيلٍ",
+        "en": "revision"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why ثَلَاثِمِئَةِ كَلِمَةٍ, with كَلِمَة singular?",
+     "a_en": "After مِئَة, and after three hundred, four hundred and the rest, the noun is singular and ends in -i, as after أَلْف: ثَلَاثُمِئَةِ كَلِمَةٍ, three hundred words."
+    },
+    "selftest": [
+     {
+      "q_en": "What does اِرْتِجَالًا mean?",
+      "choices": [
+       "off the cuff, without preparation",
+       "from memory",
+       "slowly"
+      ],
+      "answer": "off the cuff, without preparation",
+      "why_en": "Answering live questions means speaking this way."
+     },
+     {
+      "q_en": "What is عَدَدُ الْكَلِمَاتِ?",
+      "choices": [
+       "the word count",
+       "the time allowed",
+       "the title"
+      ],
+      "answer": "the word count",
+      "why_en": "It's one of the conditions to read first."
+     },
+     {
+      "q_en": "Which is right for \"five hundred words\"?",
+      "choices": [
+       "خَمْسُمِئَةِ كَلِمَةٍ",
+       "خَمْسُمِئَةِ كَلِمَاتٍ",
+       "خَمْسُمِئَةِ كَلِمَةً"
+      ],
+      "answer": "خَمْسُمِئَةِ كَلِمَةٍ",
+      "why_en": "After the hundreds, the noun is singular and ends in -i."
+     }
+    ],
+    "phrases_ar": [
+     "ثَلَاثِمِئَةِ كَلِمَةٍ",
+     "ثَلَاثُمِئَةِ كَلِمَةٍ"
+    ]
+   }
+  ],
+  "lesson.arabic-portfolio-audit": [
+   {
+    "id": "explainer.arabic-evidence-of-ability",
+    "title_en": "Claims about your ability, with evidence: عَيِّنَة, قُدْرَة",
+    "family_en": "Matching what you say you can do to dated, varied samples",
+    "course_words": [
+     "lexeme.arabic-portfolio-audit-1",
+     "lexeme.arabic-portfolio-audit-2",
+     "lexeme.arabic-portfolio-audit-3",
+     "lexeme.arabic-portfolio-audit-4",
+     "lexeme.arabic-portfolio-audit-5",
+     "lexeme.arabic-portfolio-audit-6",
+     "lexeme.arabic-portfolio-audit-7"
+    ],
+    "table": [
+     {
+      "form_en": "an achievement",
+      "ar": "إِنْجَاز",
+      "en": "an achievement"
+     },
+     {
+      "form_en": "a sample",
+      "ar": "عَيِّنَة",
+      "en": "a sample"
+     },
+     {
+      "form_en": "an ability",
+      "ar": "قُدْرَة",
+      "en": "an ability"
+     },
+     {
+      "form_en": "an assessor",
+      "ar": "مُقَيِّم",
+      "en": "an assessor"
+     },
+     {
+      "form_en": "a certificate",
+      "ar": "شَهَادَة",
+      "en": "a certificate"
+     },
+     {
+      "form_en": "a CV",
+      "ar": "سِيرَةٌ ذَاتِيَّةٌ",
+      "en": "a CV"
+     },
+     {
+      "form_en": "varied",
+      "ar": "عَيِّنَاتٌ مُتَنَوِّعَةٌ",
+      "en": "varied samples"
+     }
+    ],
+    "steps": [
+     "Say exactly what you can do: أَسْتَطِيعُ فَهْمَ نَشَرَاتِ الْأَخْبَارِ الْقَصِيرَةِ بِدُونِ تَرْجَمَةٍ, I can understand short news bulletins without translation.",
+     "Back each claim with an عَيِّنَة, a sample: the task, its date, and the help you had.",
+     "Check that the samples are recent and مُتَنَوِّعَة, varied, and that some were done on your own.",
+     "A revised translation, a practised talk and an unseen listening task show different abilities: say which is which."
+    ],
+    "examples": [
+     {
+      "ar": "أَضَفْتُ إِلَى مِلَفِّي عَيِّنَةً مِنْ كِتَابَتِي الْأَخِيرَةِ.",
+      "en": "I added a sample of my recent writing to my file.",
+      "words": [
+       {
+        "ar": "أَضَفْتُ",
+        "en": "I added"
+       },
+       {
+        "ar": "إِلَى",
+        "en": "to"
+       },
+       {
+        "ar": "مِلَفِّي",
+        "en": "my file"
+       },
+       {
+        "ar": "عَيِّنَةً",
+        "en": "a sample"
+       },
+       {
+        "ar": "مِنْ",
+        "en": "of"
+       },
+       {
+        "ar": "كِتَابَتِي",
+        "en": "my writing"
+       },
+       {
+        "ar": "الْأَخِيرَةِ",
+        "en": "latest"
+       }
+      ]
+     },
+     {
+      "ar": "تُظْهِرُ هَذِهِ الْعَيِّنَةُ قُدْرَتِي عَلَى الْمُنَاقَشَةِ.",
+      "en": "This sample shows my ability to discuss.",
+      "words": [
+       {
+        "ar": "تُظْهِرُ",
+        "en": "shows"
+       },
+       {
+        "ar": "هَذِهِ",
+        "en": "this"
+       },
+       {
+        "ar": "الْعَيِّنَةُ",
+        "en": "sample"
+       },
+       {
+        "ar": "قُدْرَتِي",
+        "en": "my ability"
+       },
+       {
+        "ar": "عَلَى",
+        "en": "to (with قُدْرَة)"
+       },
+       {
+        "ar": "الْمُنَاقَشَةِ",
+        "en": "discussing"
+       }
+      ]
+     },
+     {
+      "ar": "وَصَفْتُ مُسْتَوَايَ بِدِقَّةٍ فِي سِيرَتِي الذَّاتِيَّةِ.",
+      "en": "I described my level accurately in my CV.",
+      "words": [
+       {
+        "ar": "وَصَفْتُ",
+        "en": "I described"
+       },
+       {
+        "ar": "مُسْتَوَايَ",
+        "en": "my level"
+       },
+       {
+        "ar": "بِدِقَّةٍ",
+        "en": "accurately"
+       },
+       {
+        "ar": "فِي",
+        "en": "in"
+       },
+       {
+        "ar": "سِيرَتِي",
+        "en": "my CV"
+       },
+       {
+        "ar": "الذَّاتِيَّةِ",
+        "en": "(own: \"CV\")"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why قُدْرَتِي عَلَى الْمُنَاقَشَةِ, with عَلَى?",
+     "a_en": "قُدْرَة, ability, takes عَلَى, like قَادِر, able: قُدْرَتِي عَلَى الْمُنَاقَشَةِ, my ability to discuss. The action after it is a verbal noun."
+    },
+    "selftest": [
+     {
+      "q_en": "What is an عَيِّنَة?",
+      "choices": [
+       "a sample",
+       "an assessor",
+       "a certificate"
+      ],
+      "answer": "a sample",
+      "why_en": "An assessor is مُقَيِّم, and a certificate شَهَادَة."
+     },
+     {
+      "q_en": "What is a سِيرَةٌ ذَاتِيَّةٌ?",
+      "choices": [
+       "a CV",
+       "a certificate",
+       "an achievement"
+      ],
+      "answer": "a CV",
+      "why_en": "Literally \"one's own life story\"."
+     },
+     {
+      "q_en": "How do you say \"my ability to write\"?",
+      "choices": [
+       "قُدْرَتِي عَلَى الْكِتَابَةِ",
+       "قُدْرَتِي الْكِتَابَةَ",
+       "قُدْرَتِي إِلَى الْكِتَابَةِ"
+      ],
+      "answer": "قُدْرَتِي عَلَى الْكِتَابَةِ",
+      "why_en": "قُدْرَة takes عَلَى and a verbal noun."
+     }
+    ],
+    "phrases_ar": [
+     "أَسْتَطِيعُ فَهْمَ نَشَرَاتِ الْأَخْبَارِ الْقَصِيرَةِ بِدُونِ تَرْجَمَةٍ",
+     "قُدْرَتِي عَلَى الْمُنَاقَشَةِ"
+    ]
+   }
+  ],
+  "lesson.arabic-external-assessment": [
+   {
+    "id": "explainer.arabic-outside-feedback",
+    "title_en": "Feedback from outside: تَغْذِيَةٌ رَاجِعَةٌ, اِمْتِحَانٌ رَسْمِيٌّ",
+    "family_en": "The words for tutors, exams and fees, and what each kind of assessment shows",
+    "course_words": [
+     "lexeme.arabic-external-assessment-1",
+     "lexeme.arabic-external-assessment-2",
+     "lexeme.arabic-external-assessment-3",
+     "lexeme.arabic-external-assessment-4",
+     "lexeme.arabic-external-assessment-5",
+     "lexeme.arabic-external-assessment-6",
+     "lexeme.arabic-external-assessment-7"
+    ],
+    "table": [
+     {
+      "form_en": "feedback",
+      "ar": "تَغْذِيَةٌ رَاجِعَةٌ",
+      "en": "feedback"
+     },
+     {
+      "form_en": "an assessment",
+      "ar": "تَقْيِيم",
+      "en": "an assessment"
+     },
+     {
+      "form_en": "an official exam",
+      "ar": "اِمْتِحَانٌ رَسْمِيٌّ",
+      "en": "an official exam"
+     },
+     {
+      "form_en": "accredited",
+      "ar": "شَهَادَةٌ مُعْتَمَدَةٌ",
+      "en": "an accredited certificate"
+     },
+     {
+      "form_en": "fees",
+      "ar": "رُسُومُ التَّسْجِيلِ",
+      "en": "registration fees"
+     },
+     {
+      "form_en": "a private tutor",
+      "ar": "مُدَرِّسٌ خُصُوصِيٌّ",
+      "en": "a private tutor"
+     },
+     {
+      "form_en": "spoken",
+      "ar": "اِخْتِبَارٌ شَفَوِيٌّ",
+      "en": "a spoken test"
+     }
+    ],
+    "steps": [
+     "Outside feedback catches what self-study misses. Decide what you need first: a tutor's تَغْذِيَةٌ رَاجِعَةٌ, a fresh sample marked by someone else, or an اِمْتِحَانٌ رَسْمِيٌّ, an official exam.",
+     "Before paying any رُسُوم, fees, check which skills and which kind of Arabic the service assesses.",
+     "A مُدَرِّسٌ خُصُوصِيٌّ, a private tutor, can ask you follow-up questions; a written test can't.",
+     "A result covers what was tested, and no more."
+    ],
+    "examples": [
+     {
+      "ar": "حَصَلْتُ عَلَى تَغْذِيَةٍ رَاجِعَةٍ مُفِيدَةٍ مِنْ مُدَرِّسِي.",
+      "en": "I got useful feedback from my tutor.",
+      "words": [
+       {
+        "ar": "حَصَلْتُ",
+        "en": "I got"
+       },
+       {
+        "ar": "عَلَى",
+        "en": "(with حَصَلَ)"
+       },
+       {
+        "ar": "تَغْذِيَةٍ",
+        "en": "feeding"
+       },
+       {
+        "ar": "رَاجِعَةٍ",
+        "en": "coming back: \"feedback\""
+       },
+       {
+        "ar": "مُفِيدَةٍ",
+        "en": "useful"
+       },
+       {
+        "ar": "مِنْ",
+        "en": "from"
+       },
+       {
+        "ar": "مُدَرِّسِي",
+        "en": "my tutor"
+       }
+      ]
+     },
+     {
+      "ar": "يُقَيِّمُ هَذَا الِامْتِحَانُ الْقِرَاءَةَ وَالْكِتَابَةَ فَقَطْ.",
+      "en": "This exam assesses reading and writing only.",
+      "words": [
+       {
+        "ar": "يُقَيِّمُ",
+        "en": "assesses"
+       },
+       {
+        "ar": "هَذَا",
+        "en": "this"
+       },
+       {
+        "ar": "الِامْتِحَانُ",
+        "en": "exam"
+       },
+       {
+        "ar": "الْقِرَاءَةَ",
+        "en": "reading"
+       },
+       {
+        "ar": "وَالْكِتَابَةَ",
+        "en": "and writing"
+       },
+       {
+        "ar": "فَقَطْ",
+        "en": "only"
+       }
+      ]
+     },
+     {
+      "ar": "هَلْ هَذِهِ الشَّهَادَةُ مُعْتَمَدَةٌ؟",
+      "en": "Is this certificate accredited?",
+      "words": [
+       {
+        "ar": "هَلْ",
+        "en": "(starts a yes/no question)"
+       },
+       {
+        "ar": "هَذِهِ",
+        "en": "this"
+       },
+       {
+        "ar": "الشَّهَادَةُ",
+        "en": "certificate"
+       },
+       {
+        "ar": "مُعْتَمَدَةٌ",
+        "en": "accredited"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why تَغْذِيَةٌ رَاجِعَةٌ, literally \"returning nourishment\", for feedback?",
+     "a_en": "It's a word-for-word rendering of the English: تَغْذِيَة, feeding, and رَاجِعَة, coming back. The phrase is fixed, and both words take their endings together: حَصَلْتُ عَلَى تَغْذِيَةٍ رَاجِعَةٍ."
+    },
+    "selftest": [
+     {
+      "q_en": "What is a مُدَرِّسٌ خُصُوصِيٌّ?",
+      "choices": [
+       "a private tutor",
+       "an examiner",
+       "a classmate"
+      ],
+      "answer": "a private tutor",
+      "why_en": "خُصُوصِيّ is private, personal."
+     },
+     {
+      "q_en": "What does مُعْتَمَد mean for a certificate?",
+      "choices": [
+       "accredited, officially recognised",
+       "expensive",
+       "online"
+      ],
+      "answer": "accredited, officially recognised",
+      "why_en": "From اِعْتَمَدَ, to approve, to rely on."
+     },
+     {
+      "q_en": "What are رُسُوم?",
+      "choices": [
+       "fees",
+       "results",
+       "rules"
+      ],
+      "answer": "fees",
+      "why_en": "رُسُومُ التَّسْجِيلِ are registration fees."
+     }
+    ],
+    "phrases_ar": [
+     "حَصَلْتُ عَلَى تَغْذِيَةٍ رَاجِعَةٍ"
+    ]
+   }
+  ],
+  "lesson.arabic-lifelong-plan": [
+   {
+    "id": "explainer.arabic-keeping-it-going",
+    "title_en": "Keeping your Arabic going: مَجَال, حَافَظَ عَلَى, دَوْرِيًّا",
+    "family_en": "A field to grow in, the common skills to keep up, and a pace you can sustain",
+    "course_words": [
+     "lexeme.arabic-lifelong-plan-1",
+     "lexeme.arabic-lifelong-plan-2",
+     "lexeme.arabic-lifelong-plan-3",
+     "lexeme.arabic-lifelong-plan-4",
+     "lexeme.arabic-lifelong-plan-5",
+     "lexeme.arabic-lifelong-plan-6",
+     "lexeme.arabic-lifelong-plan-7"
+    ],
+    "table": [
+     {
+      "form_en": "ongoing",
+      "ar": "تَعَلُّمٌ مُسْتَمِرٌّ",
+      "en": "ongoing learning"
+     },
+     {
+      "form_en": "a field",
+      "ar": "مَجَال",
+      "en": "a field, an area"
+     },
+     {
+      "form_en": "keeping up",
+      "ar": "حَافَظَ عَلَى",
+      "en": "he kept up, he maintained"
+     },
+     {
+      "form_en": "regularly",
+      "ar": "دَوْرِيًّا",
+      "en": "regularly, periodically"
+     },
+     {
+      "form_en": "the workload",
+      "ar": "عِبْءُ الْعَمَلِ",
+      "en": "the workload"
+     },
+     {
+      "form_en": "a break",
+      "ar": "اِنْقِطَاع",
+      "en": "a break, a gap"
+     },
+     {
+      "form_en": "in the long run",
+      "ar": "عَلَى الْمَدَى الْبَعِيدِ",
+      "en": "in the long run"
+     }
+    ],
+    "steps": [
+     "Pick a مَجَال, a field, because it serves a real purpose, and keep up general reading, listening, speaking and writing alongside it.",
+     "حَافَظَ عَلَى, to keep up, takes عَلَى: أُحَافِظُ عَلَى الْقِرَاءَةِ الْيَوْمِيَّةِ, I keep up daily reading.",
+     "Test yourself دَوْرِيًّا, regularly, on something unfamiliar, and keep getting feedback.",
+     "Fit the عِبْءُ الْعَمَلِ, the workload, to your time and energy. After a اِنْقِطَاع, a break, check where you are and refresh what you need."
+    ],
+    "examples": [
+     {
+      "ar": "أُحَافِظُ عَلَى الْقِرَاءَةِ الْأَدَبِيَّةِ إِلَى جَانِبِ تَخَصُّصِي.",
+      "en": "I keep up literary reading alongside my specialism.",
+      "words": [
+       {
+        "ar": "أُحَافِظُ",
+        "en": "I keep up"
+       },
+       {
+        "ar": "عَلَى",
+        "en": "(with حَافَظَ)"
+       },
+       {
+        "ar": "الْقِرَاءَةِ",
+        "en": "reading"
+       },
+       {
+        "ar": "الْأَدَبِيَّةِ",
+        "en": "literary"
+       },
+       {
+        "ar": "إِلَى",
+        "en": "to"
+       },
+       {
+        "ar": "جَانِبِ",
+        "en": "the side (of): \"alongside\""
+       },
+       {
+        "ar": "تَخَصُّصِي",
+        "en": "my specialism"
+       }
+      ]
+     },
+     {
+      "ar": "بَعْدَ انْقِطَاعٍ طَوِيلٍ، رَاجَعْتُ الْأَسَاسِيَّاتِ.",
+      "en": "After a long break, I revised the basics.",
+      "words": [
+       {
+        "ar": "بَعْدَ",
+        "en": "after"
+       },
+       {
+        "ar": "انْقِطَاعٍ",
+        "en": "a break"
+       },
+       {
+        "ar": "طَوِيلٍ",
+        "en": "long"
+       },
+       {
+        "ar": "رَاجَعْتُ",
+        "en": "I revised"
+       },
+       {
+        "ar": "الْأَسَاسِيَّاتِ",
+        "en": "the basics"
+       }
+      ]
+     },
+     {
+      "ar": "هَدَفِي عَلَى الْمَدَى الْبَعِيدِ قِرَاءَةُ الصُّحُفِ بِسُهُولَةٍ.",
+      "en": "My long-term goal is reading newspapers with ease.",
+      "words": [
+       {
+        "ar": "هَدَفِي",
+        "en": "my goal"
+       },
+       {
+        "ar": "عَلَى",
+        "en": "on"
+       },
+       {
+        "ar": "الْمَدَى",
+        "en": "the range"
+       },
+       {
+        "ar": "الْبَعِيدِ",
+        "en": "far: \"in the long run\""
+       },
+       {
+        "ar": "قِرَاءَةُ",
+        "en": "reading"
+       },
+       {
+        "ar": "الصُّحُفِ",
+        "en": "newspapers"
+       },
+       {
+        "ar": "بِسُهُولَةٍ",
+        "en": "with ease"
+       }
+      ]
+     }
+    ],
+    "why": {
+     "q_en": "Why أُحَافِظُ عَلَى الْقِرَاءَةِ, and not أُحَافِظُ الْقِرَاءَةَ?",
+     "a_en": "حَافَظَ, to keep up or preserve, takes عَلَى before what you keep: أُحَافِظُ عَلَى الْقِرَاءَةِ. Learn it with its partner, as with اِعْتَمَدَ عَلَى, to depend on."
+    },
+    "selftest": [
+     {
+      "q_en": "What does دَوْرِيًّا mean?",
+      "choices": [
+       "regularly, periodically",
+       "rarely",
+       "only once"
+      ],
+      "answer": "regularly, periodically",
+      "why_en": "From دَوْر, a turn or a cycle."
+     },
+     {
+      "q_en": "What is عِبْءُ الْعَمَلِ?",
+      "choices": [
+       "the workload",
+       "a break",
+       "a field"
+      ],
+      "answer": "the workload",
+      "why_en": "عِبْء is a load, a burden."
+     },
+     {
+      "q_en": "Which is right for \"I keep up my listening\"?",
+      "choices": [
+       "أُحَافِظُ عَلَى الِاسْتِمَاعِ",
+       "أُحَافِظُ الِاسْتِمَاعَ",
+       "أُحَافِظُ فِي الِاسْتِمَاعِ"
+      ],
+      "answer": "أُحَافِظُ عَلَى الِاسْتِمَاعِ",
+      "why_en": "حَافَظَ takes عَلَى."
+     }
+    ],
+    "phrases_ar": [
+     "أُحَافِظُ عَلَى الْقِرَاءَةِ الْيَوْمِيَّةِ",
+     "أُحَافِظُ عَلَى الْقِرَاءَةِ",
+     "أُحَافِظُ الْقِرَاءَةَ",
+     "اِعْتَمَدَ عَلَى"
+    ]
+   }
   ]
  }
 }
