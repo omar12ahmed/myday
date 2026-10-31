@@ -2,7 +2,7 @@
 // devices (a Mac and a 320 px phone): a made-up project is marked as waiting from Manage, checking back today. The live
 // database holds the wait exactly, without a change to the project's "updated" time; the phone receives it (the card
 // says "Waiting on …", Needs you says "Still waiting on …" · "check back today") and chases it from Needs you, which
-// adds "Chase: <project>" for today; the Mac receives the chase task and says Got it, which reaches the phone (no wait).
+// adds "Chase: <project>" for today; the Mac receives the chase task and says No longer waiting, which reaches the phone.
 // Then the project and its chase task are deleted everywhere. Never prints account details. Writes to the live
 // database: only with the owner's yes.
 const path = require('path');
@@ -95,12 +95,12 @@ const todayIn = d => d.ev(`(() => { const t = new Date(); return t.getFullYear()
   const cid = (await projectOf(phone, pid)).waiting?.chaseTaskId, ctask = (await phone.data()).tasks.items.find(t => t.id === cid);
   check('phone: the chase task is in the project, 5 minutes, due today', !!ctask && ctask.title === CHASE && ctask.projectId === pid && ctask.minutes === 5 && ctask.due === today, ctask);
 
-  // Mac: receives the chase; Got it.
+  // Mac: receives the chase; No longer waiting.
   await mac.open(BASE + `#projects/p/${pid}`); await synced(mac);
   check('mac: receives the chase task and the wait pointing at it', await mac.until(`(() => { const d = JSON.parse(localStorage.getItem('${KEY}')); const p = d.projects.items.find(p => p.id === '${pid}'); return p?.waiting?.chaseTaskId === '${cid}' && d.tasks.items.some(t => t.id === '${cid}'); })()`, 30000)
     && await mac.until(`!!document.querySelector('#projectWaiting [data-s=chase-added]')`, 10000));
   await mac.click('[data-action=pwait-done]');
-  check('mac: Got it — no longer waiting, and saved', await toast(mac, 'No longer waiting.') && !('waiting' in (await projectOf(mac, pid))) && !(await mac.exists('#projectWaiting')) && await synced(mac));
+  check('mac: "No longer waiting" — the wait is gone, and saved', await toast(mac, 'No longer waiting.') && !('waiting' in (await projectOf(mac, pid))) && !(await mac.exists('#projectWaiting')) && await synced(mac));
   await phone.open(BASE + '#projects'); await synced(phone);
   check('phone: receives it — the card has no wait and Needs you no line', await phone.until(`!JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === '${pid}')?.waiting && !document.querySelector('${need}') && !document.querySelector('.project-card[data-id="${pid}"] [data-s=project-waiting]')`, 30000));
 

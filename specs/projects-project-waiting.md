@@ -32,12 +32,13 @@ can't do, or slips out of mind entirely.
   says "Waiting on Priya. MyDay won’t call it quiet while you wait."
 - **While it waits:** the Overview starts with **Waiting on someone or something** — "Waiting on Priya since Tue 20 Oct
   · check back Wed 4 Nov", "While it waits, MyDay won’t call it quiet or nudge you about it. Its tasks work as usual."
-  — with **Got it** (no longer waiting), **Change**, and **Chase it**.
+  — with **No longer waiting**, **Change**, and **Chase it**. (A task's wait says "Got it"; here Welcome back's "Got it",
+  which only puts that card away, can be just above, so the button says what it does.)
 - **The nudge:** when the project has open tasks and every one is waiting (and the project isn't), the Next step card
   adds "Everything here is waiting — mark the project as waiting?" with **Mark as waiting** (the form, filled in with
   whom the tasks wait on if it's the same for all, whatever the capitals, and the earliest expected day still to come)
   and **Not now**. It's offered once on this device for that set of waiting tasks (`myday.projects.waitOffer`); a task
-  starting or stopping waiting can bring it back. "Got it" on the project's wait counts as an answer too.
+  starting or stopping waiting can bring it back. "No longer waiting" on the project's wait counts as an answer too.
 - **Projects home:** the card and the List row say "Waiting on Priya · check back Wed 4 Nov" (or "Waiting on Priya"),
   in place of "Away 3 weeks".
 - **Needs you:** from the check-back day, on an active project: "Still waiting on Priya" · "check back today" /

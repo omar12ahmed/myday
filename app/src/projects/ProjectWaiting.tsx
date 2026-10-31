@@ -16,7 +16,8 @@ import { ChaseIt } from '../tasks/ChaseIt';
 // (Focus goes to the first of these that's there.)
 const focusSoon = (...ids: string[]) => requestAnimationFrame(() => ids.map(id => document.getElementById(id)).find(Boolean)?.focus());
 
-// While it waits: whom, since when and the day to check back, with Got it, Change and Chase it.
+// While it waits: whom, since when and the day to check back, with No longer waiting, Change and Chase it. (Not "Got it"
+// as on a task: Welcome back's "Got it", which only puts that card away, can sit just above it.)
 export function ProjectWaitingCard({ data, p }: { data: MyDayData; p: Project }) {
   const [editing, setEditing] = useState(false);
   if (!isProjectWaiting(p)) return null;
@@ -34,7 +35,7 @@ export function ProjectWaitingCard({ data, p }: { data: MyDayData; p: Project })
           <p className="text-[15px] m-0 mt-2 break-words" data-s="project-waiting-line">Waiting on {w.on} since {shortDate(w.since)}{w.until ? ` · check back ${shortDate(w.until)}` : ''}</p>
           <p className="text-sm text-fg-2 m-0 mt-1">While it waits, MyDay won’t call it quiet or nudge you about it. Its tasks work as usual.</p>
           <div className="flex flex-wrap gap-2.5 mt-3">
-            <Button inline variant="primary" data-action="pwait-done" onClick={done}>Got it</Button>
+            <Button inline variant="primary" data-action="pwait-done" onClick={done}>No longer waiting</Button>
             <Button inline variant="ghost" data-action="pwait-change" onClick={() => setEditing(true)}>Change</Button>
             <ChaseIt data={data} p={p} />
           </div>

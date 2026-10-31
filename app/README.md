@@ -3,7 +3,7 @@
 **1.108.0 — A whole project can wait:** when a project can't move until someone gets back to you, mark it **waiting**
 (its page: Manage → "Waiting on someone?"): whom or what, and a day to check back if you like. It stays on the board,
 its card saying "Waiting on Priya · check back Wed 4 Nov" instead of "Away 3 weeks", and Your week no longer calls it
-quiet. Its Overview starts with the wait (Got it · Change · Chase it). From the check-back day, Needs you says "Still
+quiet. Its Overview starts with the wait (No longer waiting · Change · Chase it). From the check-back day, Needs you says "Still
 waiting on Priya — check back was Wed 4 Nov" with **Chase it**, which adds one 5-minute "Chase: <project>" task. When
 every open task in a project is waiting, its Next step card offers once to mark the whole project as waiting.
 Finishing a project ends its wait. Saved data stays schema 5: `waiting` is an optional field in the project's own
@@ -1441,7 +1441,7 @@ recently worked on first; the choice is kept on this device only (`myday.project
 **A whole project waiting (1.108.0; `specs/projects-project-waiting.md`):** a project can wait on someone or
 something as a whole (Manage → **Waiting on someone?**: whom or what, up to 120 characters, and "Check back on
 (optional)"), as a task can (1.50.0). While it waits its Overview starts with the wait — "Waiting on Priya since Tue 20
-Oct · check back Wed 4 Nov", **Got it**, **Change**, **Chase it** — its board card and List row say "Waiting on Priya
+Oct · check back Wed 4 Nov", **No longer waiting**, **Change**, **Chase it** — its board card and List row say "Waiting on Priya
 · check back …" in place of "Away", and Your week doesn't call it quiet; its tasks work as usual. From the check-back
 day, on an active project, Needs you's Waiting group says "Still waiting on Priya" · "check back was …" with Chase it
 (one 5-minute "Chase: <project>" task, once per wait). When every open task is waiting and the project isn't, the Next
