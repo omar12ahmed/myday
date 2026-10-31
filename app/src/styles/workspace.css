@@ -146,6 +146,7 @@
   .nav-utilities { display: grid; margin-top: auto; }
   .nav-shortcuts a, .nav-utilities a { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 12px; text-decoration: none; color: var(--text-2); font-size: 13px; line-height: 1.45; border-radius: 6px; }
   .nav-shortcuts a:hover, .nav-utilities a:hover { background: var(--surface-2); color: var(--text); }
+  .nav-utilities a[aria-current="page"] { background: var(--surface-2); color: var(--text); font-weight: 600; }
   .nav-shortcuts svg, .nav-utilities svg { flex: none; stroke-width: 1.5; }
   .nav-utilities p { margin: 18px 12px 0; font-size: 12px; color: var(--text-3); }
   .capture-btn { position: static; width: auto; height: 44px; padding-inline: 16px; border-radius: 6px; box-shadow: none; }

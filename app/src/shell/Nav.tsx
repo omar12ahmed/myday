@@ -1,8 +1,10 @@
 import { SECTIONS, type SectionId } from './sections';
 import { Lightbulb, ListTodo, NotebookPen, ShieldCheck } from 'lucide-react';
 
-// Phones: a bar along the bottom. Wide screens: a rail down the left side, with MyDay's name at the top.
-export function Nav({ current }: { current: SectionId }) {
+// Phones: a bar along the bottom. Wide screens: a rail down the left side, with MyDay's name at the top. `current`: the
+// section you're in, or null on a page of its own (Search, your account, What MyDay knows…), which marks no section —
+// only its own link, where the menu has one.
+export function Nav({ current }: { current: SectionId | 'noticed' | 'knows' | null }) {
   return (
     <nav id="nav" aria-label="Sections" className="nav">
       {/* Wide screens: MyDay's name and icon at the top of the side menu. */}
@@ -28,8 +30,8 @@ export function Nav({ current }: { current: SectionId }) {
         <a href="#projects/notes"><NotebookPen size={18} aria-hidden="true" />Your notes</a>
       </div>
       <div className="nav-utilities">
-        <a href="#noticed"><Lightbulb size={18} aria-hidden="true" />What MyDay has noticed</a>
-        <a href="#knows"><ShieldCheck size={18} aria-hidden="true" />What MyDay knows</a>
+        <a href="#noticed" aria-current={current === 'noticed' ? 'page' : undefined}><Lightbulb size={18} aria-hidden="true" />What MyDay has noticed</a>
+        <a href="#knows" aria-current={current === 'knows' ? 'page' : undefined}><ShieldCheck size={18} aria-hidden="true" />What MyDay knows</a>
         <p>One step at a time.</p>
       </div>
     </nav>

@@ -960,7 +960,7 @@ const SEED = `s => {
     await seeded(mock, MOCK); await mock.setData(lkSeed); await mock.until(`document.querySelector('#app')`);
     const pm = await runLk(mock);
     check('the preview says it may look across MyDay if needed (v24: in place of your notes)', pm.prev.includes('If needed, a look across MyDay'), pm.prev);
-    check('practice mode: it looks across MyDay, and says so above the answer — one thing found, the two private ones only counted here', pm.phase === 'shown' && pm.looked === 'Looked across MyDay for “bike rack”: one thing — 2 private things left out.', pm.looked);
+    check('practice mode: it looks across MyDay, and says so above the answer — one thing found, the two private ones only counted here, and when it was read', pm.phase === 'shown' && /^Looked across MyDay for “bike rack”: one thing — 2 private things left out\. Checked at \d\d:\d\d\.$/.test(pm.looked), pm.looked);
     check('…and the answer links the note it used', eq(pm.sources, ['Shed sizes|#projects/notes/nLkRack']), pm.sources);
     await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
     const pdy = await runLk(mock, 'Am I free on Thursday?');

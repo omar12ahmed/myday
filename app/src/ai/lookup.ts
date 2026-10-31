@@ -11,6 +11,7 @@ import type { CourseIndex } from '../data/searchAll';
 import { noteName } from '../data/notes';
 import { excerptOf, fold, wordsOf } from '../data/projectSearch';
 import { isDone, onTodaysPlan } from '../data/tasks';
+import { projectNotes, projectTasks } from '../data/projects';
 import type { DateKey, MyDayData, Note } from '../data/types';
 import { isBusiness } from '../data/businessModel';
 import { dueIds } from '../data/study/queue';
@@ -20,6 +21,11 @@ import { buildContext } from './context';
 import { aiReach } from './reach';
 
 const cut = (s: string, n: number) => (s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s);
+
+// What a lookup couldn't send, counted on this device for the panel's line only (never sent): how many there were when
+// more than the limit allowed, the notes that went by title only (of those whose titles went), and the courses when
+// they couldn't be loaded.
+export type LookupMore = { tasks?: number; done?: number; due?: number; notes?: number; titleOnly?: number; titlesOnly?: boolean; noCourses?: boolean };
 
 export function notesLookup(data: MyDayData, query: string): { lookup: AskNotesLookup; leftOut: number } {
   const reach = aiReach(data), withText = !!data.patterns.prefs.aiNotes;
@@ -55,7 +61,7 @@ export function notesLookup(data: MyDayData, query: string): { lookup: AskNotesL
 // matched — for the panel's "2 private things left out" only, never sent.
 type SearchKind = typeof SEARCH_KINDS[number];
 type SearchState = typeof SEARCH_STATES[number];
-export function searchLookup(data: MyDayData, query: string, courses: CourseIndex | null, today: DateKey = todayKey()): { lookup: AskSearchLookup; leftOut: number; hrefs: Record<string, string> } {
+export function searchLookup(data: MyDayData, query: string, courses: CourseIndex | null, today: DateKey = todayKey()): { lookup: AskSearchLookup; leftOut: number; hrefs: Record<string, string>; more: LookupMore } {
   const reach = aiReach(data), withText = !!data.patterns.prefs.aiNotes;
   const q = cut(query.trim().replace(/\s+/g, ' '), L.lookupQueryChars), words = wordsOf(q);
   const has = (texts: (string | null | undefined)[]) => { const hay = fold(texts.filter(Boolean).join('\n')); return words.length > 0 && words.every(w => hay.includes(w)); };
@@ -114,19 +120,19 @@ export function searchLookup(data: MyDayData, query: string, courses: CourseInde
   const sorted = hits.map((h, i) => [h, i] as const).sort((a, b) => section(a[0].kind) - section(b[0].kind) || a[0].rank - b[0].rank || a[1] - b[1]).map(([h]) => h);
   const shown = sorted.slice(0, L.lookupSearch), hrefs: Record<string, string> = {};
   const found = shown.map((h, i) => { const ref = `r${i + 1}`; hrefs[ref] = h.href; return { ref, kind: h.kind, title: cut(h.title, L.titleChars), where: h.where ? cut(h.where, L.searchWhereChars) : null, state: h.state }; });
-  return { lookup: { tool: 'search', query: q, found, total: hits.length, titlesOnly: !withText }, leftOut: held.size, hrefs };
+  return { lookup: { tool: 'search', query: q, found, total: hits.length, titlesOnly: !withText }, leftOut: held.size, hrefs, more: courses ? {} : { noCourses: true } };
 }
 
 // "Your day" (v18): one day as the app sees it — from a week ago to two months ahead (null outside that). Its plan, with
 // a private project's tasks left out (counted here only), tasks due that day not on the plan, busy times by kind only
 // (never an appointment's name), free time and energy: the same rules as Help me adjust today and Ask's Today page.
 export const DAY_BACK = 7, DAY_AHEAD = 60;
-export function dayLookup(data: MyDayData, day: DateKey, today: DateKey = todayKey()): { lookup: AskDayLookup; leftOut: number } | null {
+export function dayLookup(data: MyDayData, day: DateKey, today: DateKey = todayKey()): { lookup: AskDayLookup; leftOut: number; more: LookupMore } | null {
   if (day < shift(today, -DAY_BACK) || day > shift(today, DAY_AHEAD)) return null;
   const reach = aiReach(data), held = reach.heldOnPlan(day), d = data.days[day], pc = buildContext(data, day, '');
   const plan = d?.tasks ?? [], dueAll = data.tasks.items.filter(t => t.due === day && !t.done && !t.letGoOn && !onTodaysPlan(data, t, day));
   const due = dueAll.filter(reach.task);
-  const tasks = plan.filter(t => !held.has(t.uid)).slice(0, L.dayTasks).map(t => ({ title: cut(t.title, L.titleChars), minutes: t.minutes, done: t.done, time: t.scheduledStart ? t.scheduledStart.slice(11, 16) : null }));
+  const sendable = plan.filter(t => !held.has(t.uid)), tasks = sendable.slice(0, L.dayTasks).map(t => ({ title: cut(t.title, L.titleChars), minutes: t.minutes, done: t.done, time: t.scheduledStart ? t.scheduledStart.slice(11, 16) : null }));
   return {
     lookup: {
       tool: 'day', query: day, weekday: parseKey(day).toLocaleDateString('en-GB', { weekday: 'long' }),
@@ -137,17 +143,20 @@ export function dayLookup(data: MyDayData, day: DateKey, today: DateKey = todayK
       free: pc.free.slice(0, L.dayFree),
     },
     leftOut: plan.filter(t => held.has(t.uid)).length + dueAll.length - due.length,
+    more: { tasks: sendable.length, due: due.length },
   };
 }
 
 // "A project's context" (v19): one of your open projects you asked about by name, exactly as its own page sends it
 // (projectSlice). Null for a private project, a finished one or one that isn't there; its private notes are counted
-// here only.
-export function projectLookup(data: MyDayData, id: string): { lookup: AskProjectLookup; leftOut: number } | null {
+// here only, and so is what didn't fit (`more`).
+export function projectLookup(data: MyDayData, id: string): { lookup: AskProjectLookup; leftOut: number; more: LookupMore } | null {
   const p = data.projects.items.find(x => x.id === id);
   if (!p || p.status === 'done' || !aiReach(data).project(p)) return null;
-  const { project, heldNotes } = projectSlice(data, p);
-  return { lookup: { tool: 'project', query: p.id, project }, leftOut: heldNotes };
+  const { project, heldNotes, textNotes } = projectSlice(data, p), { open, done } = projectTasks(data, p);
+  const notes = projectNotes(data, p).length - heldNotes, withText = !!data.patterns.prefs.aiNotes;
+  return { lookup: { tool: 'project', query: p.id, project }, leftOut: heldNotes,
+    more: { tasks: open.length + done.length, done: done.length, notes, ...(withText ? { titleOnly: Math.max(0, Math.min(notes, L.list) - textNotes) } : { titlesOnly: notes > 0 }) } };
 }
 
 // "Open decisions" (v20): the decisions with nothing chosen yet, oldest first, across your open projects ("all") or in
@@ -217,11 +226,19 @@ export function studyLookup(data: MyDayData, today: DateKey = todayKey()): { loo
 }
 
 // What the panel says above the answer: "Looked in your notes for “van hire”: 3 notes — 1 private note left out." or
-// "Looked at Thursday 30 October: 2 tasks planned, 1 due, 3 busy times — 1 private task left out."
-export function lookupLine(l: AskLookup, held: number, projectTitle?: string): string {
+// "Looked at Thursday 30 October: 2 tasks planned, 1 due, 3 busy times — 1 private task left out. Checked at 10:42."
+// Everything that didn't go is said: private things, what a setting kept back, what was more than the limit allowed
+// (`more`), and when it was read (`at`: an answer to a follow-up, or a second try, uses what was read the first time).
+export function lookupLine(l: AskLookup, held: number, projectTitle?: string, { more = {}, at }: { more?: LookupMore; at?: Date } = {}): string {
+  const line = sayLookup(l, held, projectTitle, more);
+  return at ? `${line} Checked at ${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}.` : line;
+}
+function sayLookup(l: AskLookup, held: number, projectTitle: string | undefined, more: LookupMore): string {
+  const count = (n: number, one: string, many: string) => (n === 1 ? one : `${n} ${many}`);
   if (l.tool === 'day') {
-    const parts = [l.rest ? 'a rest day' : l.planned ? `${l.tasks.length === 1 ? 'one task' : `${l.tasks.length} tasks`} planned` : 'no plan yet',
-      ...(l.due.length ? [`${l.due.length} due`] : []), l.busy.length ? `${l.busy.length === 1 ? 'one busy time' : `${l.busy.length} busy times`}` : 'nothing booked'];
+    const nt = Math.max(more.tasks ?? 0, l.tasks.length), nd = Math.max(more.due ?? 0, l.due.length);
+    const parts = [l.rest ? 'a rest day' : l.planned ? `${count(nt, 'one task', 'tasks')} planned${nt > l.tasks.length ? ` (the first ${l.tasks.length} sent)` : ''}` : 'no plan yet',
+      ...(nd ? [`${nd} due${nd > l.due.length ? ` (${l.due.length} sent)` : ''}`] : []), l.busy.length ? `${l.busy.length === 1 ? 'one busy time' : `${l.busy.length} busy times`}` : 'nothing booked'];
     return `Looked at ${prettyDate(l.query)}: ${parts.join(', ')}${held ? ` — ${held === 1 ? 'one private task' : `${held} private tasks`} left out` : ''}.`;
   }
   if (l.tool === 'study') {
@@ -231,23 +248,28 @@ export function lookupLine(l: AskLookup, held: number, projectTitle?: string): s
   }
   if (l.tool === 'waiting') {
     const where = l.query === 'all' ? 'what you’re waiting on' : `what you’re waiting on in “${l.tasks[0]?.project ?? projectTitle ?? 'that project'}”`;
-    return `Looked at ${where}: ${l.found ? (l.found === 1 ? 'one task' : `${l.found} tasks`) : 'nothing waiting'}${held ? ` — ${held === 1 ? 'one in a private project' : `${held} in private projects`} left out` : ''}.`;
+    return `Looked at ${where}: ${l.found ? `${count(l.found, 'one task', 'tasks')}${l.found > l.tasks.length ? ` (the oldest ${l.tasks.length} sent)` : ''}` : 'nothing waiting'}${held ? ` — ${held === 1 ? 'one in a private project' : `${held} in private projects`} left out` : ''}.`;
   }
   if (l.tool === 'decisions') {
     const n = l.found.decisions, b = l.found.mustBeTrue, where = l.query === 'all' ? 'your open decisions' : `the open decisions in “${l.decisions[0]?.project ?? l.mustBeTrue[0]?.project ?? projectTitle ?? 'that project'}”`;
-    const parts = [n ? (n === 1 ? 'one decision' : `${n} decisions`) : 'no decisions open', ...(b ? [b === 1 ? 'one thing to check' : `${b} things to check`] : [])];
+    const parts = [n ? `${count(n, 'one decision', 'decisions')}${n > l.decisions.length ? ` (the oldest ${l.decisions.length} sent)` : ''}` : 'no decisions open',
+      ...(b ? [`${count(b, 'one thing to check', 'things to check')}${b > l.mustBeTrue.length ? ` (the oldest ${l.mustBeTrue.length} sent)` : ''}`] : [])];
     return `Looked at ${where}: ${parts.join(', ')}${held ? ` — ${held === 1 ? 'one in a private project' : `${held} in private projects`} left out` : ''}.`;
   }
   if (l.tool === 'project') {
-    const t = l.project.tasks, done = t.filter(x => x.done).length, m = l.project.milestones?.length ?? 0, n = l.project.notes.length;
-    const parts = [t.length ? `${t.length === 1 ? 'one task' : `${t.length} tasks`}${done ? ` (${done} done)` : ''}` : 'no tasks yet',
-      ...(m ? [m === 1 ? 'one milestone' : `${m} milestones`] : []), ...(n ? [n === 1 ? 'one note' : `${n} notes`] : [])];
-    return `Looked at your project “${l.project.title}”: ${parts.join(', ')}${held ? ` — ${held === 1 ? 'one private note' : `${held} private notes`} left out` : ''}.`;
+    const t = l.project.tasks, m = l.project.milestones?.length ?? 0, n = l.project.notes.length;
+    const nt = Math.max(more.tasks ?? 0, t.length), done = more.tasks !== undefined ? more.done ?? 0 : t.filter(x => x.done).length, nn = Math.max(more.notes ?? 0, n);
+    const parts = [nt ? `${count(nt, 'one task', 'tasks')}${done || nt > t.length ? ` (${[done ? `${done} done` : '', nt > t.length ? `${t.length} sent, open ones first` : ''].filter(Boolean).join('; ')})` : ''}` : 'no tasks yet',
+      ...(m ? [m === 1 ? 'one milestone' : `${m} milestones`] : []), ...(nn ? [`${count(nn, 'one note', 'notes')}${nn > n ? ` (the newest ${n} sent)` : ''}`] : [])];
+    const extra = [held ? `${held === 1 ? 'one private note' : `${held} private notes`} left out` : '',
+      more.titleOnly ? `${count(more.titleOnly, 'one note', 'notes')} by title only, as there was too much text` : '', more.titlesOnly ? 'notes by title only, as AI help with notes is off' : ''].filter(Boolean);
+    return `Looked at your project “${l.project.title}”: ${parts.join(', ')}${extra.length ? ` — ${extra.join('; ')}` : ''}.`;
   }
   if (l.tool === 'search') {
     const n = l.total;
     const found = n ? `${n === 1 ? 'one thing' : `${n} things`}${n > l.found.length ? ` (the first ${l.found.length} sent)` : ''}` : held ? 'none that could be sent' : 'nothing matched';
-    const extra = [held ? `${held === 1 ? 'one private thing' : `${held} private things`} left out` : '', l.titlesOnly ? 'notes by title only, as AI help with notes is off' : ''].filter(Boolean);
+    const extra = [held ? `${held === 1 ? 'one private thing' : `${held} private things`} left out` : '', l.titlesOnly ? 'notes by title only, as AI help with notes is off' : '',
+      more.noCourses ? 'the courses’ lessons and words couldn’t be searched just now' : ''].filter(Boolean);
     return `Looked across MyDay for “${l.query}”: ${found}${extra.length ? ` — ${extra.join('; ')}` : ''}.`;
   }
   const n = l.found;

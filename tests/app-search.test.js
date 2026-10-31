@@ -75,7 +75,12 @@ const WORD = 'lantern';
   await click('[data-action=search-open]');
   check('clicking it goes to #search', await until(`location.hash === '#search'`), await hash());
   check('the header says "Search"', (await text('#screenName')).trim() === 'Search', await text('#screenName'));
+  check('the side menu marks no section as the current page (it used to mark Today); the Search button is marked instead', (await ev(`document.querySelectorAll('#nav [aria-current=page]').length`)) === 0
+    && (await ev(`document.querySelector('[data-action=search-open]').getAttribute('aria-current')`)) === 'page', await ev(`[...document.querySelectorAll('#nav [aria-current=page]')].map(a => a.textContent)`));
   check('the search field is focused', await until(`document.activeElement && document.activeElement.id === 'searchAll'`), await active());
+
+  await go('knows');
+  check('…and on What MyDay knows, only its own link in the menu is marked', eq(await ev(`[...document.querySelectorAll('#nav [aria-current=page]')].map(a => a.textContent.trim())`), ['What MyDay knows']), await ev(`[...document.querySelectorAll('#nav [aria-current=page]')].map(a => a.textContent)`));
 
   console.log('\n[2] The / key');
   await go('today');

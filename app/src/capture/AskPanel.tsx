@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { rememberAsk, undoNow } from '../ai/lastAsk';
 import { addAskItems, applyAskChanges, applyAskEdit, checkAskReply, countWords, DAY_TOO_FAR, NEW_PROJECT, type AskChangeUndo, type AskChecked, type AskEdit, type AskProposal, type AskUndo } from '../ai/ask';
 import { askContext, askPreview, askSlice } from '../ai/askContext';
-import { dayLookup, decisionsLookup, lookupLine, projectLookup, searchLookup, studyLookup, waitingLookup } from '../ai/lookup';
+import { dayLookup, decisionsLookup, lookupLine, projectLookup, searchLookup, studyLookup, waitingLookup, type LookupMore } from '../ai/lookup';
 import type { AskLookup } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
 import { canAdjust, handOverToAdjust } from '../ai/handover';
 import type { AskFocus } from './openCapture';
@@ -24,7 +24,7 @@ import { startLearning, startRevision } from '../study/actions';
 // things to add (tick, rename, Add — one step of Undo), steps, changes to what's already saved (before → after, tick,
 // Apply — Undo puts the old values back), a short answer with at most one action, or "can't do that here". One follow-up at most; nothing is kept of the conversation.
 // A lookup (ai/lookup.ts): what was sent, and how many private things matched (that count stays here).
-type Looked = { lookup: AskLookup; leftOut: number; hrefs?: Record<string, string> }; // hrefs: where what it found opens (study's next steps, a look across MyDay's finds): the device's own
+type Looked = { lookup: AskLookup; leftOut: number; hrefs?: Record<string, string>; more?: LookupMore; at?: Date }; // more and at: what didn't go, and when it was read, for its line; hrefs: where what it found opens (study's next steps, a look across MyDay's finds): the device's own
 type Shown = Exclude<AskChecked, { kind: 'lookup' }>;
 // MyDay's server keeps a few seconds between requests (AI_MIN_SECONDS_BETWEEN, 5 by default), so a lookup's second
 // request waits out the rest of them — and once more if the server still says it's too soon.
@@ -117,7 +117,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
       const found = r.tool === 'day' ? dayLookup(now, r.query, k) : r.tool === 'project' ? projectLookup(now, r.query) : r.tool === 'decisions' ? decisionsLookup(now, r.query) : r.tool === 'waiting' ? waitingLookup(now, r.query) : r.tool === 'study' ? studyLookup(now, k)
         : searchLookup(now, r.query, courses, k);
       if (!found) { setPhase({ at: 'error', message: r.tool === 'day' ? DAY_TOO_FAR : 'That project can’t be looked at now — it may have been finished or made private.' }); return; }
-      looked = found;
+      looked = { ...found, at: new Date() };
       const again = () => askModel(askContext(slice, text, k, undefined, followUp, looked!.lookup), ctrl.signal);
       reply = await again();
       if (!reply.ok && reply.reason === 'too-fast') {
@@ -196,7 +196,7 @@ export function AskPanel({ data, text, focus, onClose }: { data: MyDayData; text
         const r = phase.r;
         return <div aria-live="polite">
           <p className="text-xs font-semibold text-fg-3 m-0 flex items-center gap-1.5"><Sparkles size={14} aria-hidden="true" /> {label(phase.model)}</p>
-          {phase.looked && <p className="text-[13px] text-fg-2 m-0 mt-1" data-s="ask-looked">{lookupLine(phase.looked.lookup, phase.looked.leftOut, getSnapshot().data.projects.items.find(p => p.id === phase.looked!.lookup.query)?.title)}
+          {phase.looked && <p className="text-[13px] text-fg-2 m-0 mt-1" data-s="ask-looked">{lookupLine(phase.looked.lookup, phase.looked.leftOut, getSnapshot().data.projects.items.find(p => p.id === phase.looked!.lookup.query)?.title, { more: phase.looked.more, at: phase.looked.at })}
             {phase.looked.lookup.tool === 'project' && <> <a className="text-primary underline inline-flex items-center min-h-11 -my-3" href={`#projects/p/${encodeURIComponent(phase.looked.lookup.query)}`} onClick={onClose} data-s="ask-project">Open the project</a></>}</p>}
           {r.message && <p className="text-[15px] mt-1.5 mb-2 whitespace-pre-wrap" data-s="ask-message">{r.message}</p>}
           {(r.kind === 'answer' || r.kind === 'add' || r.kind === 'steps') && r.sources?.length ? (

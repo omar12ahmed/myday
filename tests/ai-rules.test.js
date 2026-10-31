@@ -1659,6 +1659,13 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('…a day further off than two months, or more than a week ago, isn\'t looked at', K.dayLookup(dw, '2027-01-12', LD) === null && K.dayLookup(dw, '2026-11-02', LD) === null && !!K.dayLookup(dw, '2026-11-03', LD));
     const dline = K.lookupLine(dr.lookup, dr.leftOut);
     check('what the panel says: the day, what\'s planned and due, and the private tasks left out', /^Looked at Thursday,? (12 November|November 12): one task planned, 1 due, /.test(dline) && dline.endsWith('— 2 private tasks left out.'), dline); // Node's own date wording; the app uses en-GB
+    const dat = K.lookupLine(dr.lookup, dr.leftOut, undefined, { more: dr.more, at: new Date(2026, 10, 12, 9, 5) });
+    check('…and the time it was read after it (an answer to a follow-up, or a second try, uses what was read the first time)', dat === `${dline} Checked at 09:05.`, dat);
+    const dmany = K.normalize({ ...lw, days: { [DD]: { energy: 4, rest: false, builtAt: `${DD}T08:00`, checkedIn: false, tasks: Array.from({ length: 23 }, (_, i) => PT2('pM' + i, 'Batch ' + i, 10, null)) } },
+      tasks: { ...lw.tasks, items: Array.from({ length: 21 }, (_, i) => TI2('tkDM' + i, 'Due ' + i, { due: DD })) } });
+    const dmr = K.dayLookup(dmany, DD, LD), dmline = K.lookupLine(dmr.lookup, dmr.leftOut, undefined, { more: dmr.more });
+    check('more planned or due than the limit: the first 20 of each sent, and the line says how many there were', dmr.lookup.tasks.length === 20 && dmr.lookup.due.length === 20 && dmline.includes(': 23 tasks planned (the first 20 sent), 21 due (20 sent), ')
+      && !('more' in dmr.lookup), dmline);
     check('the server\'s check accepts a request carrying the day', K.checkAskContext(K.askContext(lslice, 'Am I free on Thursday?', LD, undefined, undefined, dr.lookup)));
     const DLK = q => JSON.stringify({ kind: 'lookup', message: 'Looking at that day.', lookup: { tool: 'day', query: q } });
     check('a day lookup reply is taken as one', eq(K.checkAskReply(DLK(DD), dw, lslice, LD), { kind: 'lookup', tool: 'day', query: DD }));
@@ -1688,6 +1695,16 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('…never a private project, a finished one or one that isn\'t there', K.projectLookup(pw, 'pjHid') === null && K.projectLookup(pw, 'pjOld') === null && K.projectLookup(pw, 'pjNope') === null);
     const pline = K.lookupLine(pr.lookup, pr.leftOut);
     check('what the panel says: the project, its tasks, milestones and notes, and the private note left out', pline === 'Looked at your project “Garden shed”: 2 tasks (1 done), one milestone, one note — one private note left out.', pline);
+    const pmline = (d, id = 'pjShed') => { const x = K.projectLookup(d, id); return K.lookupLine(x.lookup, x.leftOut, undefined, { more: x.more }); };
+    check('…and with what didn\'t go counted: the same line, as nothing more was held back', pmline(pw) === pline, pmline(pw));
+    const pbig = K.normalize({ ...lw, tasks: { ...lw.tasks, items: Array.from({ length: 23 }, (_, i) => TI2('tkP' + i, 'Shed job ' + i, { projectId: 'pjShed', ...(i < 3 ? { done: true, doneOn: '2026-11-09' } : {}) })) },
+      notes: { ...lw.notes, items: Array.from({ length: 22 }, (_, i) => LN('nP' + i, 'Shed note ' + i, 'x'.repeat(400), { projectId: 'pjShed', updatedAt: `2026-11-${String(i + 1).padStart(2, '0')}T08:00` })) } });
+    pbig.patterns.prefs.aiNotes = true;
+    const pb = K.projectLookup(pbig, 'pjShed');
+    check('more tasks and notes than the limit, and more notes\' text than fits: the line says how many there were, what was sent, and the notes that went by title only', pmline(pbig) === 'Looked at your project “Garden shed”: 23 tasks (3 done; 20 sent, open ones first), 22 notes (the newest 20 sent) — 13 notes by title only, as there was too much text.'
+      && pb.lookup.project.tasks.length === 20 && pb.lookup.project.notes.length === 20 && pb.lookup.project.notesText.split('\n').length === 7 && !('more' in pb.lookup), pmline(pbig));
+    pbig.patterns.prefs.aiNotes = false;
+    check('…and with AI help with notes off, notes by title only, saying why', pmline(pbig).endsWith('22 notes (the newest 20 sent) — notes by title only, as AI help with notes is off.') && !('notesText' in K.projectLookup(pbig, 'pjShed').lookup.project), pmline(pbig));
     const tslice = K.askSlice(pw, '#today', LD), pq = 'What\'s next on the garden shed?';
     check('the server\'s check accepts a request carrying the project', K.checkAskContext(K.askContext(tslice, pq, LD, undefined, undefined, pr.lookup)));
     const PLK = q => JSON.stringify({ kind: 'lookup', message: 'Looking at that project.', lookup: { tool: 'project', query: q } });
@@ -1733,6 +1750,8 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
       && K.decisionsLookup(zw, 'pjHid') === null && K.decisionsLookup(zw, 'pjOld') === null && K.decisionsLookup(zw, 'pjNope') === null);
     const zline = K.lookupLine(zl.lookup, zl.leftOut);
     check('what the panel says: how many decisions and things to check, and the private one left out', zline === 'Looked at your open decisions: 2 decisions, one thing to check — one in a private project left out.', zline);
+    const zmore = K.lookupLine({ ...zl.lookup, found: { decisions: 11, mustBeTrue: 9 } }, 0);
+    check('…and when more were found than sent, which ones went', zmore === 'Looked at your open decisions: 11 decisions (the oldest 2 sent), 9 things to check (the oldest 1 sent).', zmore);
     const zslice = K.askSlice(zw, '#today', LD), zq = 'Which decisions am I putting off?';
     check('the server\'s check accepts a request carrying them', K.checkAskContext(K.askContext(zslice, zq, LD, undefined, undefined, zl.lookup)));
     const ZLK = q => JSON.stringify({ kind: 'lookup', message: 'Looking at your open decisions.', lookup: { tool: 'decisions', query: q } });
@@ -1771,6 +1790,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('…never who or what it waits on, never a private project\'s or a finished task (the private one counted here only)', !/WHO-|Hidden wait|Finished wait/.test(ws) && wl.leftOut === 1 && !('leftOut' in wl.lookup), [ws.slice(0, 200), wl.leftOut]);
     check('…one project by its id; never a private or missing one', eq(K.waitingLookup(ww, 'pjShed').lookup.tasks.map(t => t.id), ['tkW1']) && K.waitingLookup(ww, 'pjHid') === null && K.waitingLookup(ww, 'pjNope') === null);
     check('what the panel says: how many, and the private one left out', K.lookupLine(wl.lookup, wl.leftOut) === 'Looked at what you’re waiting on: 2 tasks — one in a private project left out.', K.lookupLine(wl.lookup, wl.leftOut));
+    check('…and when more were found than sent, which ones went', K.lookupLine({ ...wl.lookup, found: 11 }, 0) === 'Looked at what you’re waiting on: 11 tasks (the oldest 2 sent).', K.lookupLine({ ...wl.lookup, found: 11 }, 0));
     const wslice = K.askSlice(ww, '#today', LD), wq = 'What am I waiting on?';
     check('the server\'s check accepts a request carrying them', K.checkAskContext(K.askContext(wslice, wq, LD, undefined, undefined, wl.lookup)));
     const WLK = q => JSON.stringify({ kind: 'lookup', message: 'Looking at what you’re waiting on.', lookup: { tool: 'waiting', query: q } });
@@ -1901,6 +1921,9 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('at most 12 go, and "total" says how many matched', ml.lookup.found.length === 12 && ml.lookup.total === 20 && Object.keys(ml.hrefs).length === 12);
     check('what the panel says above the answer', K.lookupLine(el.lookup, el.leftOut) === `Looked across MyDay for “electrician”: ${el.lookup.total} things — 5 private things left out; notes by title only, as AI help with notes is off.` && K.lookupLine(ml.lookup, 0) === 'Looked across MyDay for “batch job”: 20 things (the first 12 sent) — notes by title only, as AI help with notes is off.'
       && K.lookupLine(look('zebra', on).lookup, 0) === 'Looked across MyDay for “zebra”: nothing matched.' && K.lookupLine(hush.lookup, 4) === 'Looked across MyDay for “hush”: none that could be sent — 4 private things left out; notes by title only, as AI help with notes is off.', [K.lookupLine(el.lookup, el.leftOut), K.lookupLine(hush.lookup, 4)]);
+    const nocourses = K.searchLookup(on, 'zebra', null, SD), ncline = K.lookupLine(nocourses.lookup, nocourses.leftOut, undefined, { more: nocourses.more });
+    check('…and when the courses couldn\'t be loaded, it says they weren\'t searched (with them, nothing more is said)', ncline === 'Looked across MyDay for “zebra”: nothing matched — the courses’ lessons and words couldn’t be searched just now.'
+      && K.lookupLine(look('zebra', on).lookup, 0, undefined, { more: look('zebra', on).more }) === 'Looked across MyDay for “zebra”: nothing matched.', ncline);
     const d = world(), sl = K.askSlice(d, '#today', SD), Q = 'Where did I put the electrician\'s number?';
     const c1 = K.askContext(sl, Q, SD), c2 = K.askContext(sl, Q, SD, undefined, undefined, el.lookup);
     check('the request offers it (not your notes) and the server\'s check takes both requests', c1.can.includes('search') && !c1.can.includes('notes') && K.checkAskContext(c1) && K.checkAskContext(c2));

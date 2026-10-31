@@ -226,7 +226,7 @@ function Shell() {
           </div>
         </div>
       </header>}
-      {!immersive && !blocked && !gate && <Nav current={barSection(section)} />}
+      {!immersive && !blocked && !gate && <Nav current={hash.startsWith('#noticed') ? 'noticed' : hash.startsWith('#knows') ? 'knows' : /^#(?:search|backups|review|sync|delete-everything)/.test(hash) ? null : barSection(section)} />}
       <main id="app" tabIndex={-1} className={immersive ? 'explore-main focus:outline-none' : 'workspace-main focus:outline-none'}>
         {!blocked && !gate && <WipedNotice />}
         {loadIssue && !blocked && (

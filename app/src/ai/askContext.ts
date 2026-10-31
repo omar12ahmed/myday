@@ -185,12 +185,13 @@ export function askSlice(data: MyDayData, hash: string, k: DateKey = todayKey(),
 // milestones (titles, reached or not, the date aimed for) and note titles, their text only with AI help with notes on;
 // never a private note of it (`heldNotes`, how many, stays on this device). Never its outcome, what counts as finished or
 // where you left off.
-export function projectSlice(data: MyDayData, p: Project): { project: NonNullable<AskPageContext['project']>; heldNotes: number } {
+// `textNotes`: how many notes' text went (the newest first, as long as it fits), for a lookup's line.
+export function projectSlice(data: MyDayData, p: Project): { project: NonNullable<AskPageContext['project']>; heldNotes: number; textNotes: number } {
   const all = projectNotes(data, p), notes = all.filter(aiReach(data).note), withText = !!data.patterns.prefs.aiNotes;
   let budget = L.projectSteps;
-  let text = '';
-  if (withText) for (const n of notes) { const add = `${noteName(n)}: ${n.text.trim()}\n`; if (text.length + add.length > L.projectNotesChars) break; text += add; }
-  return { heldNotes: all.length - notes.length, project: { id: p.id, title: cut(p.title, L.titleChars), summary: cut(p.summary, L.summaryChars), stage: p.stage,
+  let text = '', textNotes = 0;
+  if (withText) for (const n of notes) { const add = `${noteName(n)}: ${n.text.trim()}\n`; if (text.length + add.length > L.projectNotesChars) break; text += add; textNotes++; }
+  return { heldNotes: all.length - notes.length, textNotes, project: { id: p.id, title: cut(p.title, L.titleChars), summary: cut(p.summary, L.summaryChars), stage: p.stage,
     // Each task's checklist (its steps' words, in order: at most 10 a task and 40 in all, with stepsTotal when more) and
     // the project's open tasks it starts after, by title (v23, the owner's choice).
     tasks: (({ open, done }) => [...open, ...done])(projectTasks(data, p)).slice(0, L.list).map(t => {
