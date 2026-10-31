@@ -1,14 +1,14 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
-**1.108.0 — A whole project can wait:** when a project can't move until someone gets back to you, mark it **waiting**
+**1.109.0 — A whole project can wait:** when a project can't move until someone gets back to you, mark it **waiting**
 (its page: Manage → "Waiting on someone?"): whom or what, and a day to check back if you like. It stays on the board,
 its card saying "Waiting on Priya · check back Wed 4 Nov" instead of "Away 3 weeks", and Your week no longer calls it
 quiet. Its Overview starts with the wait (No longer waiting · Change · Chase it). From the check-back day, Needs you says "Still
 waiting on Priya — check back was Wed 4 Nov" with **Chase it**, which adds one 5-minute "Chase: <project>" task. When
 every open task in a project is waiting, its Next step card offers once to mark the whole project as waiting.
 Finishing a project ends its wait. Saved data stays schema 5: `waiting` is an optional field in the project's own
-record, which 1.107.0 keeps unread (checked with the actual previous release: it receives it, renames the project and
-marks it done without losing it, and this release reads both exactly as saved). Going back to 1.107.0 shows no wait;
+record, which 1.108.0 keeps unread (checked with the actual previous release: it receives it, renames the project and
+marks it done without losing it, and this release reads both exactly as saved). Going back to 1.108.0 shows no wait;
 a project marked done there keeps its wait unread, which this release ignores and drops if you bring the project back.
 No migration or server change; whom you're waiting on is never sent to AI.
 
@@ -1438,7 +1438,7 @@ look and Your week's What needs you now use the same rules (`data/attention.ts`)
 board, **Board · List**: the list has one row per active project (stage, kind, next step, "3 need you"), most
 recently worked on first; the choice is kept on this device only (`myday.projects.view`).
 
-**A whole project waiting (1.108.0; `specs/projects-project-waiting.md`):** a project can wait on someone or
+**A whole project waiting (1.109.0; `specs/projects-project-waiting.md`):** a project can wait on someone or
 something as a whole (Manage → **Waiting on someone?**: whom or what, up to 120 characters, and "Check back on
 (optional)"), as a task can (1.50.0). While it waits its Overview starts with the wait — "Waiting on Priya since Tue 20
 Oct · check back Wed 4 Nov", **No longer waiting**, **Change**, **Chase it** — its board card and List row say "Waiting on Priya
@@ -2026,7 +2026,7 @@ unread (from 1.23.0's `index.html`); synced with your account as one record (`da
 | `src/knows/KnowsScreen.tsx` | What MyDay knows (1.27.0, `#knows`): what each kind of AI help sends and when (Ask's lines from `SENDS` in `src/ai/askContext.ts`), what's never sent, which model does which job (keep in step with `AI_ROUTES`), limits. |
 | `src/data/projectPlan.ts`, `src/projects/PlanViews.tsx`, `src/projects/planText.ts` | Milestones and decisions (1.31.0): `projectPlan.ts` (checking the saved lists, and adding, editing, reaching, choosing, thinking again, with the limits); `PlanViews.tsx` (the Milestones and Decisions screens; their Overview summaries are in At a glance); `planText.ts` (the "Aiming for" wording, which never says late or overdue). |
 | `src/data/areas.ts`, `src/projects/AreaBits.tsx` | Areas and the archive (1.106.0): `areas.ts` (the areas in use with their colours and counts, choosing, renaming and merging, recolouring, finishing, the archive's order); `AreaBits.tsx` (an area's dot and name, and the Area field). The filter, Areas… and the Archive are in `ProjectsScreen.tsx`, the finish form in `ProjectView.tsx`. |
-| `src/data/projectWaiting.ts`, `src/projects/ProjectWaiting.tsx` | A whole project waiting (1.108.0): `projectWaiting.ts` (set, change, stop, the check-back day, Chase it, the nudge's suggestion); `ProjectWaiting.tsx` (the Overview's card, the form, the nudge). Needs you's line is in `src/data/attention.ts`; Chase it is `src/tasks/ChaseIt.tsx`, shared with waiting tasks. |
+| `src/data/projectWaiting.ts`, `src/projects/ProjectWaiting.tsx` | A whole project waiting (1.109.0): `projectWaiting.ts` (set, change, stop, the check-back day, Chase it, the nudge's suggestion); `ProjectWaiting.tsx` (the Overview's card, the form, the nudge). Needs you's line is in `src/data/attention.ts`; Chase it is `src/tasks/ChaseIt.tsx`, shared with waiting tasks. |
 | `src/data/businessModel.ts`, `src/projects/ModelView.tsx` | The Business template (1.33.0): `businessModel.ts` (the kind of project and the one page: reading what's saved, the four answers, the list of what must be true with its limits, Find out, marking, counts); `ModelView.tsx` (the Model tab; its Overview summary is in At a glance). The Model tab's counts line is `progressLine` in `planText.ts`; Explore's brief from the one page is `fromOnePage` in `src/explore/content.ts`. |
 | `src/data/caseFile.ts`, `src/projects/CaseViews.tsx` | The Case template (1.35.0): `caseFile.ts` (reading what's saved, unknown fields kept, links to missing items let go; the timeline, evidence and issues with their limits, links, counts and the size guard); `CaseViews.tsx` (the Timeline, Evidence and Issues tabs, and "Add a deadline" in a case's Coming up; its Overview summary is in At a glance). |
 | `src/data/projectDashboard.ts`, `src/projects/AtAGlance.tsx` | The dashboards per kind (1.36.0): `projectDashboard.ts` (the next dates, the weeks, entries by month, each issue's links and Worth a look; Today's own dashboard numbers stay in `dashboard.ts`); `AtAGlance.tsx` (the At a glance card with one row per tool, its pictures and Summarise this, and the Worth a look card beside the next step). Still-open tasks are `stillOpen` in `src/data/projects.ts`. |
