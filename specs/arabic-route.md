@@ -15,21 +15,31 @@ translation, technology and cybersecurity, academic and professional). This adds
 1. **"Your route"** on the map, under "Your goal": the goal's stages in course order (`arabicRoute`,
    `app/src/study/arabic/plan.ts`). A stage is the goal's modules at one core level (Start, A1, A2, B1, B2), or its
    branch modules. Each stage shows:
-   - its name, from the course's own path names (for example "A2 · Connected everyday Fuṣḥā"), or the goal's name for
-     the branch;
-   - whether it's done (every lesson in it ready to move on or holding), where you are (the first one that isn't), or
-     ahead, and how many of its lessons are ready;
-   - what you'll be able to do at its end: the course's milestone sample tasks for A1 to B2 (one line each for
-     listening, reading, speaking and writing), and its modules' purposes for Start and for a branch. Where you are is
-     open; the others fold.
-2. **"A step towards …"** under a lesson's title (`stepTowards`): "A step towards “Literary Arabic, stories and style”:
-   stage 3 of 6, A2 · Connected everyday Fuṣḥā". A lesson that isn't on the route to your goal shows no line.
-3. **The same line on the map's next-step card**, under the lesson's title (not when the step is a revision round).
-4. **On Study home's Arabic card:** "Your next lesson is a step towards “…”: stage 3 of 6, …" (the next lesson from the
-   same plan as the map; `learningGlance`), with **Hide**. Hiding says how to bring it back; **"Show it on Study home"**
-   under "Your route" on the map brings it back (or hides it). The choice is remembered on this device only
+   - its name: the course's own path name when the stage is whole (for example "A2 · Connected everyday Fuṣḥā"), its
+     modules' names when the goal takes only part of a level (a branch after B1 takes one B2 module), or the goal's
+     name for the branch;
+   - how many of its lessons are ready, and how many need revision. A core stage counts its required lessons, like your
+     path; a branch's lessons are all optional in the course, so the branch counts them all (and says so);
+   - where you are: **the stage of your next step** (the same plan as the map's next-step card); a stage before it
+     that isn't all ready is **behind you**; one that's all ready is **done**; the rest are **ahead**. When your core
+     path is all ready, where you are is the first stage that isn't (for a specialist goal, its branch). A stage with no
+     lessons is never shown as done;
+   - what you'll be able to do at its end: the course's milestone sample tasks (one line each for listening, reading,
+     speaking and writing) when that milestone's closing module is on your goal, the same rule Progress uses; otherwise
+     its modules' purposes. Where you are is open; the others fold, each fold naming its stage for screen readers.
+2. **"A step towards …"** under a lesson's title (`stepTowards`, from the course alone, so it's cheap):
+   "A step towards “Literary Arabic, stories and style”: stage 3 of 6, A2 · Connected everyday Fuṣḥā"; for a branch
+   lesson, "…, the goal's own stage (6 of 6)"; for a one-stage goal, just "A step towards “…”". A lesson that isn't on
+   the route to your goal shows no line.
+3. **The same line on the map's next-step card**, under the lesson's title: not for a revision round, and not when
+   your path is all ready (the step then points back at the first lesson).
+4. **On Study home's Arabic card:** "Your next lesson is a step towards …" (the next lesson from the same plan as the
+   map, with the same exceptions; `learningGlance`), with **Hide**. Hiding moves focus to a message that stays in place
+   ("Hidden here. To show it again: Arabic, under Your route."); **"Show the next step's goal on Study home"** under
+   "Your route" on the map brings it back (or hides it). The choice is remembered on this device only
    (`myday.arabic.towardshome`, `towards.ts`), like Slower; it's not part of your data. Today's Study card, which shares
-   the same options, doesn't show it (option 3).
+   the same options, doesn't show it (option 3), and nothing about it reaches Ask MyDay (`learningGlance` is Study
+   home's alone).
 
 ## What it doesn't touch
 

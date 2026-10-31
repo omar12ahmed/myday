@@ -20,7 +20,7 @@ import { discardTicks, practiceCardId, practiceCards, practiceOf, tickStep, tick
 import { looksReady, MODE_LABEL, modeOf, STATE_LABEL, STEP_LABEL, type JourneyStep, type LessonState, type Mode, type StepKind } from '../../data/study/mastery';
 import { OUTCOME, SUPPORT } from '../../data/study/common';
 import type { Outcome, Support } from '../../data/types';
-import { arabicPlan, arabicRoute, arabicState, checksOf, journeyFor, lessonLength, lessonSteps, moduleProgress, stepTowards, warmUpFrom, type ArabicPlan, type ArabicRoute, type Place } from './plan';
+import { arabicPlan, arabicRoute, arabicState, checksOf, journeyFor, lessonLength, lessonSteps, moduleProgress, stepTowards, towardsText, warmUpFrom, type ArabicPlan, type ArabicRoute, type Place, type Towards as TowardsLine } from './plan';
 import { startRevision } from '../actions';
 import { BackLink, Choice, Choices, Eyebrow, ExternalLink, InlineLink } from '../parts';
 import { Lines, LinkButton } from '../cybersecurity/parts';
@@ -89,7 +89,7 @@ const PLACE: Record<Place, string> = { unexplored: 'Unexplored', exploring: 'Exp
 function MapView({ data }: { data: MyDayData }) {
   const [search, setSearch] = useState('');
   const path = paths.get(data.arabic.pathId) ?? corePath;
-  const plan = arabicPlan(data), started = data.arabic.attempts.length > 0, route = arabicRoute(data);
+  const plan = arabicPlan(data), started = data.arabic.attempts.length > 0, route = arabicRoute(data, plan);
   const match = (m: (typeof moduleList)[number]) => !search || [m.name, m.purpose, ...m.lesson_ids.map(l => lessonIndex[l].title)].join(' ').toLowerCase().includes(search.toLowerCase());
   const core = moduleList.filter(m => m.path_class === 'core' && match(m)), extensions = moduleList.filter(m => m.path_class !== 'core' && match(m));
   const tile = (m: (typeof moduleList)[number]) => <ModuleTile key={m.id} m={m} progress={moduleProgress(data, m.lesson_ids)} inPath={path.required_module_ids.includes(m.id)} />;
@@ -100,7 +100,7 @@ function MapView({ data }: { data: MyDayData }) {
       <Ar block className="text-[26px] text-fg-2 mt-0">العربية الفصحى</Ar>
       <p>Modern Standard Arabic, one small session at a time: script and sounds first, then sentences, reading, listening and writing.</p>
       <p className="text-sm text-fg-2 flex gap-2 items-start"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />{hasVoice ? 'The starter words, lesson examples and some teaching and reading texts have a synthesised voice to copy. Look for a play button; some Arabic has no recording. ' : 'No recordings are included yet. '}For listening and speaking, use a verified recording or a fluent speaker; typed work never stands in for them.</p>
-      {plan && <NextStep plan={plan} started={started} towards={stepTowards(data, plan.step.lessonId, route)} />}
+      {plan && <NextStep plan={plan} started={started} towards={plan.step.kind === 'complete' ? null : stepTowards(data, plan.step.lessonId)} />}
     </Card>
     <ReadyOffer data={data} />
     <RevisionGlance data={data} />
@@ -134,17 +134,17 @@ const STEP_EYEBROW: Record<Exclude<StepKind, 'lesson'>, string> = {
   resume: 'Pick up where you left off', revisit: 'Worth revisiting first', revise: 'Revision first', complete: 'Your path is ready to move on',
 };
 // "Your route" (plan.ts arabicRoute, specs/arabic-route.md): your goal's stages in order, each with how many lessons
-// are ready and what you'll be able to do at its end; where you are is open, the others fold.
-const ROUTE_STATE = { done: 'Done', here: 'You are here', ahead: 'Ahead' } as const;
+// are ready (and need revision) and what you'll be able to do at its end; where you are is open, the others fold.
+const ROUTE_STATE: Record<ArabicRoute['stages'][number]['state'], string> = { done: 'Done', here: 'You are here', behind: 'Behind you', ahead: 'Ahead' };
 function RouteView({ route }: { route: ArabicRoute }) {
   return <section aria-labelledby="ar-route" className="mt-4 mb-4" data-ar-route={route.goalId}>
     <h3 id="ar-route" className="mt-0 mb-2">Your route</h3>
-    <ol className="list-none p-0 m-0 grid gap-2">{route.stages.map(st => <li key={st.key} data-ar-route-stage={st.key} data-state={st.state}
+    <ol role="list" className="list-none p-0 m-0 grid gap-2">{route.stages.map(st => <li key={st.key} data-ar-route-stage={st.key} data-state={st.state} aria-current={st.state === 'here' ? 'step' : undefined}
       className={`rounded-tile border px-3.5 py-2.5 ${st.state === 'here' ? 'border-primary bg-surface' : 'border-outline'}`}>
       <p className="m-0 font-semibold">{st.label}</p>
-      <p className="m-0 text-sm text-fg-2">{ROUTE_STATE[st.state]} · {st.done} of {st.lessons} lessons ready</p>
+      <p className="m-0 text-sm text-fg-2">{ROUTE_STATE[st.state]} · {st.done} of {st.lessons} lessons ready{st.needs > 0 ? ` · ${st.needs} to revise` : ''}{st.key === 'branch' ? ' (optional lessons in the course)' : ''}</p>
       {st.state === 'here' ? <><p className="text-sm m-0 mt-1.5">By the end of it:</p><ul className="list-disc pl-5 text-sm m-0">{st.can.map((c, i) => <li key={i}>{c}</li>)}</ul></>
-        : <details><summary className="cursor-pointer min-h-11 py-2 text-primary text-sm font-semibold">What you’ll be able to do</summary>
+        : <details><summary className="cursor-pointer min-h-11 py-2 text-primary text-sm font-semibold">What you’ll be able to do<span className="sr-only"> after {st.label}</span></summary>
           <ul className="list-disc pl-5 text-sm m-0">{st.can.map((c, i) => <li key={i}>{c}</li>)}</ul></details>}
     </li>)}</ol>
     <p className="text-xs text-fg-2 mt-2 mb-0">From the course’s own milestones. Levels are design targets, not certificates.</p>
@@ -156,16 +156,16 @@ function RouteView({ route }: { route: ArabicRoute }) {
 function ShowOnHome() {
   const [on, setOn] = useState(towardsOnHome);
   return <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-    <Switch on={on} onChange={v => { setTowardsOnHome(v); setOn(v); }} data-action="ar-towards-home">Show it on Study home</Switch>
-    <span className="text-sm text-fg-2">Your next lesson’s step, on Study’s Arabic card. Remembered on this device.</span>
+    <Switch on={on} onChange={v => { setTowardsOnHome(v); setOn(v); }} data-action="ar-towards-home" aria-describedby="ar-towards-home-note">Show the next step’s goal on Study home</Switch>
+    <span id="ar-towards-home-note" className="text-sm text-fg-2">On Study’s Arabic card. Remembered on this device.</span>
   </div>;
 }
 // "A step towards …": where a lesson sits on the route to your goal (nothing when it isn't on it).
-function Towards({ t }: { t: ReturnType<typeof stepTowards> }) {
-  return t && <p className="text-sm text-fg-2 m-0 mt-1" data-ar-towards="">A step towards “{t.goal}”: stage {t.at} of {t.of}, {t.stage}</p>;
+function Towards({ t }: { t: TowardsLine | null }) {
+  return t && <p className="text-sm text-fg-2 m-0 mt-1" data-ar-towards="">{towardsText(t)}</p>;
 }
 
-function NextStep({ plan, started, towards }: { plan: ArabicPlan; started: boolean; towards: ReturnType<typeof stepTowards> }) {
+function NextStep({ plan, started, towards }: { plan: ArabicPlan; started: boolean; towards: TowardsLine | null }) {
   const { step, reason, length } = plan, title = lessonIndex[step.lessonId].title;
   const eyebrow = step.kind === 'lesson' ? (started ? 'Your next small step' : 'Your first small step')
     : step.kind === 'complete' && step.waiting ? (step.waiting === 1 ? 'One lesson needs revision' : `${step.waiting} lessons need revision`) : STEP_EYEBROW[step.kind];

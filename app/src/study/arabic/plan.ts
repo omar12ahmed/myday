@@ -126,42 +126,60 @@ export function arabicProgress(d: MyDayData): ArabicProgress {
 
 // ---------- Your route (specs/arabic-route.md) ----------
 // "Your goal" (d.arabic.pathId, chosen on the map) as a route of stages in course order: script and sounds, then each
-// core level, then a specialist branch, as far as the goal goes. Each stage has what you'll be able to do at its end
-// (the course's milestone sample tasks for A1–B2; its modules' purposes for script and sounds and for a branch), how
-// many of its lessons are ready, and whether it's done, where you are, or ahead. Read-only, worked out on the device,
-// nothing saved: a general Goal can point at the path by its id and call this.
-export type RouteState = 'done' | 'here' | 'ahead';
-export interface RouteStage { key: string; label: string; lessons: number; done: number; state: RouteState; can: string[] }
+// core level, then a specialist branch, as far as the goal goes. Each stage says what you'll be able to do at its end:
+// the course's milestone sample tasks when that milestone's closing module is on your goal (as Progress counts it),
+// otherwise its modules' purposes. A branch's lessons are all optional in the course, so the branch counts them; a core
+// stage counts its required lessons, like your path. Where you are is the stage of your next step; a stage before it
+// that isn't all ready is behind you (with how many need revision). Read-only, worked out on the device, nothing saved:
+// a general Goal can point at the path by its id and call this.
+export type RouteState = 'done' | 'here' | 'behind' | 'ahead';
+export interface RouteStage { key: string; label: string; lessons: number; done: number; needs: number; state: RouteState; can: string[] }
 export interface ArabicRoute { goalId: string; goal: string; stages: RouteStage[] }
+export interface Towards { goal: string; stage: string; at: number; of: number; branch: boolean }
+type Module = (typeof moduleList)[number];
 const STAGE_PATH: Record<string, string> = { 'Pre-A1': 'path.arabic-start', A1: 'path.arabic-a1', A2: 'path.arabic-a2', B1: 'path.arabic-b1', B2: 'path.arabic-core-b2' };
 const SKILL_NAME: Record<string, string> = { listening: 'Listening', reading: 'Reading', speaking: 'Speaking', writing: 'Writing' };
-export function arabicRoute(d: MyDayData): ArabicRoute {
-  const goal = paths.get(d.arabic.pathId) ?? corePath, required = new Set(goal.required_module_ids);
-  const mods = moduleList.filter(m => required.has(m.id)).sort((a, b) => a.sequence - b.sequence);
-  const groups = new Map<string, typeof mods>();
-  for (const m of mods) { const key = m.path_class === 'core' ? m.stage_target : 'branch'; groups.set(key, [...(groups.get(key) ?? []), m]); }
-  let reached = false;
-  const stages = [...groups.entries()].map(([key, list]): RouteStage => {
-    const lessons = list.flatMap(m => m.lesson_ids.filter(id => !lessonIndex[id].optional));
-    const done = lessons.filter(id => isDone(arabicState(d, id))).length;
-    const milestone = milestones.find(m => m.stage_target === key);
-    const can = milestone ? Object.entries(milestone.sample_tasks as Record<string, string>).map(([skill, task]) => `${SKILL_NAME[skill] ?? skill}: ${task}`) : list.map(m => m.purpose);
-    const named = paths.get(STAGE_PATH[key] ?? '')?.name.replace(/: [A-Z0-9-]+ target$/, '');
-    const label = key === 'branch' ? goal.name : `${key === 'Pre-A1' ? 'Start' : key} · ${named ?? list[0].name}`;
-    const state: RouteState = done === lessons.length ? 'done' : reached ? 'ahead' : 'here';
-    if (state === 'here') reached = true;
-    return { key, label, lessons: lessons.length, done, state, can };
+const goalOf = (d: MyDayData) => paths.get(d.arabic.pathId) ?? corePath;
+const stageKey = (m: Module) => (m.path_class === 'core' ? m.stage_target : 'branch');
+// The goal's stages, from the course alone (no lesson states), kept per goal: the course doesn't change while it runs.
+const shapes = new Map<string, { key: string; label: string; can: string[]; lessons: string[] }[]>();
+function routeShape(goal: ReturnType<typeof goalOf>) {
+  const known = shapes.get(goal.id);
+  if (known) return known;
+  const required = new Set(goal.required_module_ids), groups = new Map<string, Module[]>();
+  for (const m of [...moduleList].filter(x => required.has(x.id)).sort((x, y) => x.sequence - y.sequence)) groups.set(stageKey(m), [...(groups.get(stageKey(m)) ?? []), m]);
+  const shape = [...groups.entries()].map(([key, list]) => {
+    const milestone = milestones.find(m => m.stage_target === key), closes = milestone && moduleList.find(x => x.assessment_id === milestone.assessment_id);
+    const whole = !!milestone && !!closes && required.has(closes.id);
+    const named = (key === 'Pre-A1' || whole) ? paths.get(STAGE_PATH[key] ?? '')?.name.replace(/: [A-Z0-9-]+ target$/, '') : undefined;
+    const label = key === 'branch' ? goal.name : `${key === 'Pre-A1' ? 'Start' : key} · ${named ?? list.map(m => m.name).join('; ')}`;
+    const can = whole ? Object.entries(milestone!.sample_tasks as Record<string, string>).map(([skill, task]) => `${SKILL_NAME[skill] ?? skill}: ${task}`) : list.map(m => m.purpose);
+    return { key, label, can, lessons: list.flatMap(m => m.lesson_ids.filter(id => key === 'branch' || !lessonIndex[id].optional)) };
   });
+  shapes.set(goal.id, shape);
+  return shape;
+}
+export function arabicRoute(d: MyDayData, plan: ArabicPlan | null = arabicPlan(d)): ArabicRoute {
+  const goal = goalOf(d), shape = routeShape(goal);
+  const counted = shape.map(s => { const st = s.lessons.map(id => arabicState(d, id)); return { ...s, lessons: s.lessons.length, done: st.filter(isDone).length, needs: st.filter(x => x === 'needs-revision').length }; });
+  const next = plan && plan.step.kind !== 'complete' ? lessonIndex[plan.step.lessonId] : null;
+  const nextModule = next && moduleList.find(m => m.id === next.module_id);
+  let here = nextModule ? counted.findIndex(s => s.key === stageKey(nextModule)) : -1;
+  if (here < 0) here = counted.findIndex(s => s.lessons === 0 || s.done < s.lessons);
+  const stages = counted.map((s, i): RouteStage => ({ ...s, state: i === here ? 'here' : s.lessons > 0 && s.done === s.lessons ? 'done' : here >= 0 && i < here ? 'behind' : 'ahead' }));
   return { goalId: goal.id, goal: goal.name, stages };
 }
-// Where a lesson sits on your route, for "A step towards …": its stage and the stage's place (1-based), or null when
-// the lesson isn't on the route to your goal.
-export function stepTowards(d: MyDayData, lessonId: string, route: ArabicRoute = arabicRoute(d)): { goal: string; stage: string; at: number; of: number } | null {
-  const lesson = lessonIndex[lessonId], m = lesson && moduleList.find(x => x.id === lesson.module_id);
-  if (!m || !(paths.get(d.arabic.pathId) ?? corePath).required_module_ids.includes(m.id)) return null;
-  const key = m.path_class === 'core' ? m.stage_target : 'branch', i = route.stages.findIndex(s => s.key === key);
-  return i < 0 ? null : { goal: route.goal, stage: route.stages[i].label, at: i + 1, of: route.stages.length };
+// Where a lesson sits on your route, for "A step towards …", from the course alone; null when the lesson isn't on the
+// route to your goal.
+export function stepTowards(d: MyDayData, lessonId: string): Towards | null {
+  const goal = goalOf(d), lesson = lessonIndex[lessonId], m = lesson && moduleList.find(x => x.id === lesson.module_id);
+  if (!m || !goal.required_module_ids.includes(m.id)) return null;
+  const shape = routeShape(goal), i = shape.findIndex(s => s.key === stageKey(m));
+  return i < 0 ? null : { goal: goal.name, stage: shape[i].label, at: i + 1, of: shape.length, branch: shape[i].key === 'branch' };
 }
+export const towardsText = (t: Towards) => t.of === 1 ? `A step towards “${t.goal}”`
+  : t.branch ? `A step towards “${t.goal}”, the goal’s own stage (${t.at} of ${t.of})`
+  : `A step towards “${t.goal}”: stage ${t.at} of ${t.of}, ${t.stage}`;
 
 // ---------- The four skills ----------
 // Reading, writing, listening and speaking, each in words and counts (never a percentage, a score or a level): the
