@@ -19,6 +19,8 @@ import { update } from '../data/storage';
 import { toast } from '../data/toast';
 import type { DateKey, Decision, DecisionOption, Milestone, MyDayData, Project } from '../data/types';
 import { aimText, tabHref } from './planText';
+import { canCompare } from '../data/exploring';
+import { CompareLink } from './ExploringView';
 
 // A project's Milestones and Decisions tabs (1.31.0); their summaries are in At a glance. The rules are in
 // data/projectPlan.ts; this is only how they look and what the buttons do. No scores, no "late": dates are guidance.
@@ -139,6 +141,7 @@ export function DecisionsView({ data, p }: { data: MyDayData; p: Project }) {
       <Card aria-labelledby="pjDcH" id="projectDecisions">
         <h2 id="pjDcH" className="flex items-center gap-2"><Scale size={22} aria-hidden="true" className="text-primary" /> Decisions</h2>
         <p className="text-[15px] text-fg-2 m-0" data-s="dc-hint">Two or three options are plenty. Pros and cons, no scores — choose when it feels clear enough; it can change later.</p>
+        {canCompare(p) && <CompareLink p={p} />}
         {full ? <p className="text-[15px] text-fg-2 mb-0 mt-3" data-s="dc-full">That's 12 decisions — plenty for one project. Remove one to add another.</p> : (
           <form className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 items-end mt-4" onSubmit={e => { e.preventDefault(); add(); }} id="dcAddForm">
             <Field label="Add a decision" htmlFor="dcNew"><TextInput id="dcNew" value={q} maxLength={PLAN_LIMITS.question} placeholder="e.g. Which area?" onChange={e => setQ(e.target.value)} /></Field>

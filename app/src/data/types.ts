@@ -157,6 +157,8 @@ export interface Project {
   title: string;
   summary: string;            // what it is and why it matters, in your words
   stage: ProjectStage;
+  // The day it moved to this stage (specs/projects-exploring.md; optional; absent on a project from before 1.115).
+  stageOn?: DateKey;
   status: ProjectStatus;
   nextTaskId: string | null;  // the one next step (a task); none chosen → the first task still to do
   commitmentIds: string[];    // Calendar appointments that belong to it (listed here, so the Calendar's own records —

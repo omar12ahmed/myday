@@ -114,6 +114,8 @@ export function normalizeProjects(raw: unknown, report: { dropped: number }): Pr
     } else { if (f !== undefined && f !== null) report.dropped++; delete item.finished; }
     // Waiting on someone or something (specs/projects-project-waiting.md), likewise as written: kept when it says whom
     // and since when; a check-back day that isn't one is counted and left off.
+    // The day it moved to its stage (specs/projects-exploring.md), as written; one that isn't a day is counted.
+    if (p.stageOn !== undefined && !isDateKey(p.stageOn)) { if (p.stageOn !== null) report.dropped++; delete item.stageOn; }
     const w = p.waiting, blankWait = w === null || (isObj(w) && typeof w.on === 'string' && !w.on.trim());
     if (isObj(w) && typeof w.on === 'string' && w.on.trim() && isDateKey(w.since)) {
       const wait: ProjectWaiting = { ...w, on: w.on.slice(0, PROJECT_LIMITS.waitingOn), since: w.since };
@@ -132,7 +134,7 @@ export function addProject(d: MyDayData, title: string, summary = '', stage: Pro
   const t = title.trim().slice(0, PROJECT_LIMITS.title);
   if (!t || d.projects.items.length >= PROJECT_LIMITS.projects) return null;
   const id = 'pj' + uid(), now = localStamp();
-  d.projects.items.unshift({ id, title: t, summary: summary.trim().slice(0, PROJECT_LIMITS.summary), stage, status: 'active', nextTaskId: null, commitmentIds: [], createdAt: now, updatedAt: now });
+  d.projects.items.unshift({ id, title: t, summary: summary.trim().slice(0, PROJECT_LIMITS.summary), stage, stageOn: now.slice(0, 10), status: 'active', nextTaskId: null, commitmentIds: [], createdAt: now, updatedAt: now });
   return id;
 }
 
@@ -147,7 +149,7 @@ export function editProject(d: MyDayData, id: string, patch: Partial<Pick<Projec
   let changed = false;
   if (patch.title !== undefined) { const t = patch.title.trim().slice(0, PROJECT_LIMITS.title); if (t && t !== p.title) { p.title = t; changed = true; } }
   if (patch.summary !== undefined) { const s = patch.summary.slice(0, PROJECT_LIMITS.summary); if (s !== p.summary) { p.summary = s; changed = true; } }
-  if (patch.stage && STAGE_IDS.includes(patch.stage) && patch.stage !== p.stage) { p.stage = patch.stage; changed = true; }
+  if (patch.stage && STAGE_IDS.includes(patch.stage) && patch.stage !== p.stage) { p.stage = patch.stage; p.stageOn = todayKey(); changed = true; } // (the day it moved: specs/projects-exploring.md)
   if (patch.status && STATUSES.includes(patch.status) && patch.status !== p.status) {
     const was = p.status;
     p.status = patch.status; changed = true;

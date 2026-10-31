@@ -43,12 +43,13 @@ import { SearchResults } from './SearchResults';
 import { tabHref } from './planText';
 import { ProjectWaitForm, ProjectWaitingCard, WaitOfferLine } from './ProjectWaiting';
 import { ContentCard, VideosView } from './ContentView';
+import { CompareView, ExploringCard } from './ExploringView';
 
 // One project (#projects/p/<id>). Its Overview answers "what can I do next, and does anything need me?" first: the
 // one next step beside Worth a look, then At a glance (each tool's summary, once), what it is and where it is on the
 // progression, and everything that belongs to it — tasks and notes on the left on wide screens; what's coming up
 // (including tasks still open after their date), what happened recently and its status on the right.
-export type ProjectTab = 'overview' | 'model' | 'money' | 'milestones' | 'decisions' | 'timeline' | 'evidence' | 'issues' | 'research' | 'videos';
+export type ProjectTab = 'overview' | 'model' | 'money' | 'milestones' | 'decisions' | 'timeline' | 'evidence' | 'issues' | 'research' | 'videos' | 'compare';
 const CASE_TABS: ProjectTab[] = ['timeline', 'evidence', 'issues'];
 export function ProjectView({ data, id, tab: asked = 'overview', sub }: { data: MyDayData; id: string; tab?: ProjectTab; sub?: string }) {
   useEffect(() => { restoreExploreEntry(id); }, [id]);
@@ -79,9 +80,10 @@ export function ProjectView({ data, id, tab: asked = 'overview', sub }: { data: 
       {query.trim() && <SearchResults p={p} hits={hits} query={query} onClear={clear} onPick={pick} />}
       {/* The tab stays as it was while results show (hidden), so nothing you were typing there is lost. */}
       <div hidden={!!query.trim()} data-s="project-tab">
-      {tab === 'videos' && isContent(p) ? <VideosView data={data} p={p} videoId={sub} /> : tab === 'research' ? <ResearchView data={data} p={p} /> : tab === 'timeline' ? <TimelineView p={p} /> : tab === 'evidence' ? <EvidenceView p={p} /> : tab === 'issues' ? <IssuesView p={p} />
+      {tab === 'compare' ? <CompareView data={data} p={p} /> : tab === 'videos' && isContent(p) ? <VideosView data={data} p={p} videoId={sub} /> : tab === 'research' ? <ResearchView data={data} p={p} /> : tab === 'timeline' ? <TimelineView p={p} /> : tab === 'evidence' ? <EvidenceView p={p} /> : tab === 'issues' ? <IssuesView p={p} />
         : tab === 'model' ? <ModelView data={data} p={p} /> : tab === 'money' ? <MoneyView p={p} /> : tab === 'milestones' ? <MilestonesView data={data} p={p} /> : tab === 'decisions' ? <DecisionsView data={data} p={p} /> : <>
       <WelcomeOrLeftOff data={data} p={p} />
+      <ExploringCard p={p} />
       <ProjectWaitingCard data={data} p={p} />
       <OverviewTop data={data} p={p} />
       {isContent(p) && <ContentCard data={data} p={p} />}
