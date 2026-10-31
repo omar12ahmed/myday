@@ -659,6 +659,37 @@ async function signIn(d, url) {
     await now.returnToApp();
     check('back on this release: the preference arrived, and Ask MyDay still uses how you work, with the counts as they were', await now.until(`JSON.parse(localStorage.getItem('${KEY}')).patterns.prefs.maxMinutes?.admin?.value === 20`, 20000)
       && (await now.data()).patterns.prefs.askUse === true && same((await now.data()).patterns.askSeen, howSeen) && await synced(now), (await now.data()).patterns);
+
+    console.log('\n[24] A Content project\'s ideas and videos pass by the previous release untouched (specs/projects-content.md)');
+    const knowsContent = builtText.includes('idea-make');
+    console.log(`The previous release ${knowsContent ? 'knows' : 'doesn’t know'} Content projects.`);
+    const PCT = 'pjContentBack';
+    const ctIdea = { id: 'cvIdeaBack', type: 'video', projectId: PCT, step: 'idea', title: 'Tea sellers at dawn (made up)', notes: 'A short', createdAt: stamp, updatedAt: stamp };
+    const ctVideo = { id: 'cvVideoBack', type: 'video', projectId: PCT, step: 'planning', title: 'Market morning (made up)', hook: 'At 5 a.m. the gate opens',
+      options: [{ id: 'coBack1', kind: 'title', text: 'Market morning (made up)', chosen: true }, { id: 'coBack2', kind: 'hook', text: 'A newer kind', futureBit: 1 }],
+      transcript: 'Line one\nLine two', createdAt: stamp, updatedAt: stamp, futureBit: { keep: ['content', 1] } };
+    const ctOf = async id => (await record('content', id))?.data;
+    await now.returnToApp();
+    await now.setData(`s => { s.projects.items.push({ id: '${PCT}', title: 'Street stories (made up)', summary: '', stage: 'act', status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}', template: 'content' });
+      s.content = s.content || { items: [] }; s.content.items.push(${JSON.stringify(ctIdea)}, ${JSON.stringify(ctVideo)}); }`);
+    check('this release sends each idea and video as its own content record, exactly', await eventually(async () => same(await ctOf('cvIdeaBack'), ctIdea) && same(await ctOf('cvVideoBack'), ctVideo)) && await synced(now), [await ctOf('cvIdeaBack'), await ctOf('cvVideoBack')]);
+    const ctVersions = async () => [(await record('content', 'cvIdeaBack'))?.version, (await record('content', 'cvVideoBack'))?.version];
+    const ctBefore = await ctVersions();
+    await before.returnToApp();
+    check('the previous release syncs normally and receives the project, its kind kept', await synced(before) && await before.until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === '${PCT}')?.template === 'content'`, 20000));
+    await before.open(BEFORE + `#projects/p/${PCT}`); await before.until(`!!document.querySelector('[data-action=project-edit]')`, 15000);
+    await before.click('[data-action=project-edit]'); await before.until(`!!document.querySelector('#projectTitleInput')`, 5000);
+    await before.type('#projectTitleInput', 'Street stories (renamed)');
+    check('a rename on the previous release reaches the account with the kind kept, and the ideas and videos untouched (same versions)', await eventually(async () => (await record('project', PCT))?.data?.value?.title === 'Street stories (renamed)'
+      && (await record('project', PCT))?.data?.value?.template === 'content') && await synced(before) && same(await ctVersions(), ctBefore) && same(await ctOf('cvVideoBack'), ctVideo), await ctVersions());
+    // Deleting the project on the previous release: this release takes its ideas and videos with it, and the account
+    // gets their deletions from here.
+    await before.open(BEFORE + `#projects/p/${PCT}`); await before.until(`!!document.querySelector('[data-action=project-delete]')`, 15000);
+    await before.click('[data-action=project-delete]'); await before.until(`!!document.querySelector('[data-action=dialog-confirm]')`, 5000); await before.click('[data-action=dialog-confirm]');
+    check('deleting the project on the previous release reaches the account', await eventually(async () => !!(await record('project', PCT))?.deleted) && await synced(before));
+    await now.returnToApp();
+    check('back on this release: the project goes, its ideas and videos with it, and the account holds their deletions', await now.until(`!JSON.parse(localStorage.getItem('${KEY}')).projects.items.some(p => p.id === '${PCT}') && !(JSON.parse(localStorage.getItem('${KEY}')).content?.items || []).some(x => x.projectId === '${PCT}')`, 30000)
+      && await eventually(async () => !!(await record('content', 'cvIdeaBack'))?.deleted && !!(await record('content', 'cvVideoBack'))?.deleted, 20000) && await synced(now) && (await now.status()) === 'synced', { status: await now.status() });
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {
