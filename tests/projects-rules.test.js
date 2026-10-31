@@ -2923,24 +2923,33 @@ const clone = o => JSON.parse(JSON.stringify(o));
   console.log('\n[30] "You\'ve been exploring a while", and comparing the options (specs/projects-exploring.md)');
   {
     const k = '2026-11-22';
-    console.log('  the day a project moved to its stage');
+    console.log('  the day a project entered its board column');
     const d0 = K.freshState(), id0 = K.addProject(d0, 'Garden shed');
-    const P0 = () => d0.projects.items.find(p => p.id === id0);
-    check('a new project remembers the day it started at its stage', /^\d{4}-\d{2}-\d{2}$/.test(P0().stageOn) && P0().stageOn === K.todayKey(), P0());
-    P0().stageOn = '2026-01-01';
-    check('changing its stage remembers the day (today); the same stage again changes nothing', K.editProject(d0, id0, { stage: 'explore' }) && P0().stageOn === K.todayKey()
-      && (P0().stageOn = '2026-01-01', !K.editProject(d0, id0, { stage: 'explore' })) && P0().stageOn === '2026-01-01' && (K.editProject(d0, id0, { title: 'Garden shed (renamed)' }), P0().stageOn === '2026-01-01'), P0());
+    const P0 = () => d0.projects.items.find(p => p.id === id0), now = K.todayKey();
+    check('a new project remembers its column (Ideas, for Capture) and the day', eq(P0().columnSince, { column: 'ideas', on: now }), P0().columnSince);
+    P0().columnSince = { column: 'ideas', on: '2026-01-01' };
+    check('moving into a new column starts its day; the same stage again or a rename changes nothing', K.editProject(d0, id0, { stage: 'explore' }) && eq(P0().columnSince, { column: 'exploring', on: now })
+      && (P0().columnSince.on = '2026-01-01', !K.editProject(d0, id0, { stage: 'explore' })) && P0().columnSince.on === '2026-01-01' && (K.editProject(d0, id0, { title: 'Garden shed (renamed)' }), P0().columnSince.on === '2026-01-01'), P0().columnSince);
+    check('Explore → Decide stays in Exploring: its day goes on (the whole exploration counts)', K.editProject(d0, id0, { stage: 'decide' }) && eq(P0().columnSince, { column: 'exploring', on: '2026-01-01' }), P0().columnSince);
+    P0().columnSince = { column: 'ideas', on: '2026-01-01' }; P0().stage = 'explore';
+    check('a record for another column (an older release moved the stage) is replaced on the next stage change here', K.editProject(d0, id0, { stage: 'decide' }) && eq(P0().columnSince, { column: 'exploring', on: now }), P0().columnSince);
+    P0().columnSince.on = '2026-01-01';
+    check('brought back from paused (or finished), its day starts again — time set aside isn\'t time exploring', K.editProject(d0, id0, { status: 'paused' }) && P0().columnSince.on === '2026-01-01'
+      && K.editProject(d0, id0, { status: 'active' }) && eq(P0().columnSince, { column: 'exploring', on: now }), P0().columnSince);
     let r = { dropped: 0 };
-    const read = K.normalizeProjects({ items: [base('a', { stageOn: '2026-10-01' }), base('b', { stageOn: 'last week' }), base('c', { stageOn: null }), base('d')] }, r).items;
-    check('read as written: a day kept; one that isn\'t a day counted and left off; null or none simply absent', read[0].stageOn === '2026-10-01' && !('stageOn' in read[1]) && !('stageOn' in read[2]) && !('stageOn' in read[3]) && r.dropped === 1, [read.map(p => p.stageOn), r]);
+    const read = K.normalizeProjects({ items: [base('a', { columnSince: { column: 'exploring', on: '2026-10-01', futureBit: 1 } }), base('b', { columnSince: { column: 'exploring', on: 'last week' } }), base('c', { columnSince: '2026-10-01' }),
+      base('d', { columnSince: null }), base('e')] }, r).items;
+    check('read as written (a newer MyDay\'s key kept); one without a column and a day counted and left off; null or none simply absent', eq(read[0].columnSince, { column: 'exploring', on: '2026-10-01', futureBit: 1 })
+      && ['b', 'c', 'd', 'e'].every(id => !('columnSince' in read.find(p => p.id === id))) && r.dropped === 2, [read.map(p => p.columnSince), r]);
 
     console.log('  asking');
-    const ex = (x = {}) => base('pE', { stage: 'explore', stageOn: K.shift(k, -21), ...x });
+    const ex = (x = {}) => base('pE', { stage: 'explore', columnSince: { column: 'exploring', on: K.shift(k, -21) }, ...x });
     check('in Explore 21 days: asked, "You’ve been exploring this for 3 weeks"', eq(K.EX.exploringAWhile(ex(), k), { stage: 'explore', since: K.shift(k, -21), weeks: 3 }) && K.EX.exploringWords(K.EX.exploringAWhile(ex(), k)) === 'You’ve been exploring this for 3 weeks');
-    check('…in Decide 28 days: "You’ve been deciding on this for 4 weeks"; 27 days still 3 weeks', K.EX.exploringWords(K.EX.exploringAWhile(ex({ stage: 'decide', stageOn: K.shift(k, -28) }), k)) === 'You’ve been deciding on this for 4 weeks'
-      && K.EX.exploringAWhile(ex({ stageOn: K.shift(k, -27) }), k).weeks === 3);
-    check('…not at 20 days, nor at another stage, nor paused or finished, nor with no day, nor with a day still to come (another device\'s clock)',
-      [ex({ stageOn: K.shift(k, -20) }), ex({ stage: 'act' }), ex({ stage: 'organise' }), ex({ status: 'paused' }), ex({ status: 'done' }), base('pX', { stage: 'explore' }), ex({ stageOn: K.shift(k, 3) })].every(p => K.EX.exploringAWhile(p, k) === null));
+    check('…in Decide, 28 days in the column: "You’ve been deciding on this for 4 weeks"; 27 days still 3 weeks', K.EX.exploringWords(K.EX.exploringAWhile(ex({ stage: 'decide', columnSince: { column: 'exploring', on: K.shift(k, -28) } }), k)) === 'You’ve been deciding on this for 4 weeks'
+      && K.EX.exploringAWhile(ex({ columnSince: { column: 'exploring', on: K.shift(k, -27) } }), k).weeks === 3);
+    check('…not at 20 days, nor at another stage, nor paused or finished, nor with no record, nor a day still to come, nor a record for another column (an older release\'s move)',
+      [ex({ columnSince: { column: 'exploring', on: K.shift(k, -20) } }), ex({ stage: 'act' }), ex({ stage: 'organise' }), ex({ status: 'paused' }), ex({ status: 'done' }), base('pX', { stage: 'explore' }),
+        ex({ columnSince: { column: 'exploring', on: K.shift(k, 3) } }), ex({ columnSince: { column: 'ideas', on: K.shift(k, -60) } })].every(p => K.EX.exploringAWhile(p, k) === null));
 
     console.log('  comparing');
     const T = '2026-10-01T09:00';
@@ -2959,6 +2968,9 @@ const clone = o => JSON.parse(JSON.stringify(o));
     const ev = c.decisions[1].options.map(o => [o.option.id, o.evidence.supports.length, o.evidence.contradicts.length, o.evidence.relates.length, o.none]);
     check('each option\'s evidence (for, against, related), and which have nothing found', eq(ev, [['oA', 1, 1, 0, false], ['oB', 0, 0, 1, false], ['oC', 0, 0, 0, true]]), ev);
     check('what\'s still unknown: the unanswered question, the must-be-true item not checked, and the option with nothing found', eq(c.questions.map(q => q.id), ['rq1']) && eq(c.assumptions.map(a => a.id), ['as1']) && eq(c.unknownOptions.map(o => o.option.id), ['oC']));
+    const off = { ...cmp.projects.items[0], tools: [] }, cOff = K.EX.compareView(cmp, off);
+    check('with Research switched off: no evidence counted, no questions, no "nothing found" options (a business idea\'s must-be-true items still show)', !cOff.research && cOff.decisions[1].options.every(o => !o.none && !o.evidence.supports.length && !o.evidence.contradicts.length && !o.evidence.relates.length)
+      && eq(cOff.questions, []) && eq(cOff.unknownOptions, []) && eq(cOff.assumptions.map(a => a.id), ['as1']), cOff);
     const plain = world(base('pD', { decisions: [dec('dc9', 'Which?', [opt('o1', 'One')])] }));
     check('a project that isn\'t a business idea has no must-be-true items; with no research, no questions', eq(K.EX.compareView(plain, plain.projects.items[0]).assumptions, []) && eq(K.EX.compareView(plain, plain.projects.items[0]).questions, []));
     check('"Compare side by side" is offered for an open decision with two options or more — not one option, not only decided ones', K.EX.canCompare(cmp.projects.items[0]) && !K.EX.canCompare(plain.projects.items[0])

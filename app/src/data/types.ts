@@ -157,8 +157,10 @@ export interface Project {
   title: string;
   summary: string;            // what it is and why it matters, in your words
   stage: ProjectStage;
-  // The day it moved to this stage (specs/projects-exploring.md; optional; absent on a project from before 1.115).
-  stageOn?: DateKey;
+  // The board column it's in (ideas, exploring, doing) and the day it entered it (specs/projects-exploring.md;
+  // optional; absent on a project from before 1.115). One whose column isn't the project's (left by an older release
+  // that moved its stage) isn't used.
+  columnSince?: { column: string; on: DateKey; [other: string]: unknown };
   status: ProjectStatus;
   nextTaskId: string | null;  // the one next step (a task); none chosen → the first task still to do
   commitmentIds: string[];    // Calendar appointments that belong to it (listed here, so the Calendar's own records —

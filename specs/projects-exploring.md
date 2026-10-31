@@ -16,6 +16,8 @@ says how long it has been.
 ## 2. The owner's decisions (31 October 2026)
 
 1. **Remember the day a project changes step** (a new optional field; older versions keep it). Not inferred.
+   Later the same day: **the 3 weeks count the whole time in Explore and Decide** (the board's Exploring column), not
+   restarting at Decide.
 2. **After 3 weeks in Explore or Decide, its Overview asks once:** "You've been exploring this for 3 weeks. Would it
    help to compare the strongest options and see what's still missing?"
 3. **Yes opens a side-by-side of the options** — the open decision's options with their evidence — plus what's still
@@ -23,32 +25,37 @@ says how long it has been.
 
 ## 3. What you see
 
-- **On the Overview,** for an active project in Explore or Decide for 21 days or more: "You've been exploring this
+- **On the Overview,** for an active project that entered Exploring (Explore, then Decide) 21 days or more ago: "You've been exploring this
   for 3 weeks" (or "deciding on this") — "Would it help to compare the strongest options and see what's still
   missing?" — with **Compare them** and **Not now**. Either answers it: it isn't asked again until the project moves
   step and stays three weeks again (kept on this device, `myday.projects.compareAsked`). Never a stream: one card,
-  once.
+  once. Time paused or finished doesn't count: bringing a project back starts its day again.
 - **Compare the options** (`#projects/p/<id>/compare`; also from the Decisions tab, "Compare side by side", whenever
   an open decision has two options or more):
   - each open decision's question, with its options **side by side** (stacked on a phone): the option, its pros and
-    cons, and its evidence in words ("2 findings for · 1 against · 1 related", or "Nothing found yet"). In the order
-    you added them — never ranked, scored or picked;
-  - **What's still unknown:** research questions not answered yet, a business idea's must-be-true items not checked
-    yet, and options with no evidence either way — each opening where it lives;
+    cons, and — with Research on — its evidence in words ("2 findings for · 1 against · 1 related", or "Nothing found
+    yet"). In the order you added them — never ranked, scored or picked;
+  - **What's still unknown:** with Research on, research questions not answered yet and options with no findings
+    ("No findings yet about …"); a business idea's must-be-true items not checked yet — each opening where it lives;
+  - the Decisions tab shows as the current one (a case, with no Decisions tab: Overview);
   - "When you're ready, choose in Decisions" (the decision stays yours), and back to the Overview.
   - With no open decision: "There's no open decision yet — what are you choosing between?", opening Decisions.
 - How long a project has been at its step shows nowhere else; no count of days is said, only weeks, and only here.
 
 ## 4. How it works
 
-- **Saved data (schema stays 5):** an optional `stageOn` (a day) on the project — set when it's started and whenever
-  its stage changes (`addProject`, `editProject`, so the board's moves too). Kept by 1.114.0 (its project reader
-  spreads unknown fields; the AGENTS.md exception, proved with the previous release). Read as written; one that isn't
-  a day is counted and left off. A project from before has none, so it isn't asked about until it next changes step.
-- **Rules** in `data/exploring.ts`: `exploringAWhile` (active, Explore or Decide, `stageOn` 21 or more days ago: the
-  stage, since when, whole weeks) and `compareView` (open decisions with each option's evidence from
-  `findingsAbout`; open questions; unchecked must-be-true items; options with no evidence).
-- **AI:** nothing new is sent (Ask's project slices name their fields; `stageOn` isn't one).
+- **Saved data (schema stays 5):** an optional `columnSince: { column, on }` on the project — its board column
+  (ideas, exploring, doing) and the day it entered it: set when it's started, when its stage moves it into another
+  column (Explore → Decide keeps the day), and when it's brought back from paused or finished (`addProject`,
+  `editProject`, so the board's moves too). Kept by 1.114.0 (its project reader spreads unknown fields; the AGENTS.md
+  exception, proved with the previous release). Saying which column it's for matters: 1.114.0 changes a stage without
+  knowing, so a record whose column isn't the project's is ignored (not asked about) until its next move here. Read as
+  written (a newer MyDay's keys kept); one without a column and a day is counted and left off. A project from before has
+  none, so it isn't asked about until it next changes column.
+- **Rules** in `data/exploring.ts`: `exploringAWhile` (active, Explore or Decide, its Exploring record 21 or more days
+  old: the stage, since when, whole weeks) and `compareView` (open decisions with each option's evidence from
+  `findingsAbout` while Research is on; open questions; unchecked must-be-true items; options with no findings).
+- **AI:** nothing new is sent (Ask's project slices name their fields; `columnSince` isn't one).
 
 ## 5. Checks
 

@@ -690,6 +690,34 @@ async function signIn(d, url) {
     await now.returnToApp();
     check('back on this release: the project goes, its ideas and videos with it, and the account holds their deletions', await now.until(`!JSON.parse(localStorage.getItem('${KEY}')).projects.items.some(p => p.id === '${PCT}') && !(JSON.parse(localStorage.getItem('${KEY}')).content?.items || []).some(x => x.projectId === '${PCT}')`, 30000)
       && await eventually(async () => !!(await record('content', 'cvIdeaBack'))?.deleted && !!(await record('content', 'cvVideoBack'))?.deleted, 20000) && await synced(now) && (await now.status()) === 'synced', { status: await now.status() });
+
+    console.log('\n[25] The day a project entered its board column passes through the previous release unchanged (specs/projects-exploring.md)');
+    const knowsStageDay = builtText.includes('columnSince');
+    console.log(`The previous release ${knowsStageDay ? 'knows' : 'doesn’t know'} the column\'s day.`);
+    const shiftDay = (day, n) => { const t = new Date(day + 'T00:00:00Z'); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); };
+    const PSD = 'pjStageBack', SINCE = shiftDay(today, -30);
+    await now.returnToApp();
+    const COL = { column: 'exploring', on: SINCE };
+    await now.setData(`s => { s.projects.items.push({ id: '${PSD}', title: 'Kiln choice (made up)', summary: '', stage: 'explore', columnSince: ${JSON.stringify(COL)}, status: 'active', nextTaskId: null, commitmentIds: [], createdAt: '${stamp}', updatedAt: '${stamp}' }); }`);
+    check('this release sends the column\'s day in the project\'s record', await eventually(async () => same((await pjOf(PSD))?.columnSince, COL)) && await synced(now), await pjOf(PSD));
+    await before.returnToApp();
+    check('the previous release receives it, kept in its saved data', await synced(before) && await before.until(`JSON.parse(localStorage.getItem('${KEY}')).projects.items.find(p => p.id === '${PSD}')?.columnSince?.on === '${SINCE}'`, 20000));
+    await before.open(BEFORE + `#projects/p/${PSD}`); await before.until(`!!document.querySelector('[data-action=project-edit]')`, 15000);
+    await before.click('[data-action=project-edit]'); await before.until(`!!document.querySelector('#projectTitleInput')`, 5000);
+    await before.type('#projectTitleInput', 'Kiln choice (renamed)');
+    check('a rename on the previous release reaches the account with the column\'s day as it was', await eventually(async () => (await pjOf(PSD))?.title === 'Kiln choice (renamed)' && same((await pjOf(PSD))?.columnSince, COL)) && await synced(before), await pjOf(PSD));
+    // Its board move (Exploring → Doing): a release from before leaves the Exploring record with the new stage (so it no
+    // longer matches the project's column, and isn't used); one that knows it starts Doing today. Either way this
+    // release reads it as saved and doesn't ask.
+    await before.open(BEFORE + '#projects'); await before.until(`!!document.querySelector('.project-card[data-id="${PSD}"] [data-action=project-on]')`, 15000);
+    await before.click(`.project-card[data-id="${PSD}"] [data-action=project-on]`);
+    check(`a board move on the previous release reaches the account: at Act, the column's record ${knowsStageDay ? 'for Doing, today' : 'left as it was'}`, await eventually(async () => (await pjOf(PSD))?.stage === 'act'
+      && same((await pjOf(PSD))?.columnSince, knowsStageDay ? { column: 'doing', on: today } : COL)) && await synced(before), await pjOf(PSD));
+    const movedThere = (await before.data()).projects.items.find(p => p.id === PSD);
+    await now.returnToApp();
+    await now.open(NOW + `#projects/p/${PSD}`);
+    check('back on this release: the project at Act, read exactly as the previous release saved it, and not asked about', await now.until(`(document.querySelector('#projectTitle')?.textContent || '') === 'Kiln choice (renamed)'`, 30000)
+      && same((await now.data()).projects.items.find(p => p.id === PSD), movedThere) && !(await now.exists('#projectExploring')) && await synced(now) && (await now.status()) === 'synced', await now.text('#projectTop'));
     const result = summary(); console.log(`\n${result.pass} passed, ${result.fail} failed`);
     process.exitCode = result.fail ? 1 : 0;
   } finally {

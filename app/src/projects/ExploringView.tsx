@@ -47,7 +47,7 @@ export function CompareView({ data, p }: { data: MyDayData; p: Project }) {
   const decisions = tabHref(p, 'decisions'), research = hasResearch(p) ? tabHref(p, 'research') : decisions, model = tabHref(p, 'model');
   return (
     <div className="grid gap-3" data-s="compare">
-      <BackLink to={`projects/p/${p.id}`} label="Overview" />
+      <BackLink to={`projects/p/${enc(p.id)}`} label="Overview" />
       <Card aria-labelledby="compareH">
         <h2 id="compareH" tabIndex={-1} className="m-0">Compare the options</h2>
         <p className="m-0 mt-1 text-[15px] text-fg-2">Side by side, in the order you added them — what each has going for it, and what you’ve found. The choice stays yours.</p>
@@ -66,7 +66,7 @@ export function CompareView({ data, p }: { data: MyDayData; p: Project }) {
               {options.map(({ option, evidence, none }) => (
                 <li key={option.id} className="rounded-tile border border-outline bg-surface-2 p-3 min-w-0" data-s="compare-option" data-id={option.id}>
                   <p className="m-0 font-semibold break-words">{option.text}</p>
-                  <p className="m-0 mt-1 text-sm text-fg-2" data-s="compare-evidence">{none ? 'Nothing found yet' : optionEvidenceCounts(evidence)}</p>
+                  {c.research && <p className="m-0 mt-1 text-sm text-fg-2" data-s="compare-evidence">{none ? 'Nothing found yet' : optionEvidenceCounts(evidence)}</p>}
                   {option.pros.length > 0 && <><p className="m-0 mt-2 text-sm font-semibold">For it</p><ul className="m-0 pl-5 text-[15px]">{option.pros.map((x, i) => <li key={i} className="break-words">{x}</li>)}</ul></>}
                   {option.cons.length > 0 && <><p className="m-0 mt-2 text-sm font-semibold">Against it</p><ul className="m-0 pl-5 text-[15px]">{option.cons.map((x, i) => <li key={i} className="break-words">{x}</li>)}</ul></>}
                 </li>
@@ -77,11 +77,11 @@ export function CompareView({ data, p }: { data: MyDayData; p: Project }) {
       ))}
       <Card aria-labelledby="unknownH" data-s="compare-unknown">
         <h3 id="unknownH" className="m-0">What’s still unknown</h3>
-        {!c.questions.length && !c.assumptions.length && !c.unknownOptions.length ? <p className="m-0 mt-2 text-[15px] text-fg-2">Nothing open that MyDay can see — every question answered, every option with something found.</p> : (
+        {!c.questions.length && !c.assumptions.length && !c.unknownOptions.length ? <p className="m-0 mt-2 text-[15px] text-fg-2">{c.research ? 'Nothing open that MyDay can see — every question answered, every option with something found.' : 'Nothing open that MyDay can see.'}</p> : (
           <ul className="list-none p-0 m-0 mt-2">
             {c.questions.map(q => <li key={q.id} className="border-t border-outline first:border-t-0" data-s="unknown" data-kind="question"><a href={research} className="block min-h-11 py-2 text-fg no-underline hover:underline underline-offset-4 break-words"><span className="text-sm text-fg-2">Question · </span>{q.text}</a></li>)}
             {c.assumptions.map(a => <li key={a.id} className="border-t border-outline first:border-t-0" data-s="unknown" data-kind="assumption"><a href={model} className="block min-h-11 py-2 text-fg no-underline hover:underline underline-offset-4 break-words"><span className="text-sm text-fg-2">Not checked yet · </span>{a.text}</a></li>)}
-            {c.unknownOptions.map(o => <li key={o.option.id} className="border-t border-outline first:border-t-0" data-s="unknown" data-kind="option"><a href={research} className="block min-h-11 py-2 text-fg no-underline hover:underline underline-offset-4 break-words"><span className="text-sm text-fg-2">Nothing found yet about · </span>{o.option.text}</a></li>)}
+            {c.unknownOptions.map(o => <li key={o.option.id} className="border-t border-outline first:border-t-0" data-s="unknown" data-kind="option"><a href={research} className="block min-h-11 py-2 text-fg no-underline hover:underline underline-offset-4 break-words"><span className="text-sm text-fg-2">No findings yet about </span>{o.option.text}</a></li>)}
           </ul>
         )}
       </Card>

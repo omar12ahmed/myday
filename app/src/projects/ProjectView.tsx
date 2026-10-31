@@ -184,8 +184,9 @@ function ProjectTop({ data, p, tab, query, onQuery, status }: { data: MyDayData;
           onChange={on => { if (update(d => (setProjectPrivate(d, p.id, on) ? undefined : false))) toast(on ? 'Private — Ask MyDay won’t send anything of this project.' : 'No longer private.'); }}>Private</Switch>
       </div>
       {p.private && <p className="text-sm text-fg-2 m-0 mt-2" data-s="project-private-hint">Ask MyDay sends nothing of this project. AI help with notes can still suggest it as a place for a note (its name and summary only).</p>}
+      {/* Comparing the options (specs/projects-exploring.md) belongs to Decisions (a case has none: Overview). */}
       <nav className="seg flex gap-1.5 mt-3" role="tablist" aria-label="Project sections" data-s="project-tabs">
-        <a className={tabClass(tab === 'overview')} href={`#projects/p/${encodeURIComponent(p.id)}`} role="tab" aria-selected={tab === 'overview'} data-tab="overview">Overview</a>
+        <a className={tabClass(tab === 'overview' || (tab === 'compare' && isCase(p)))} href={`#projects/p/${encodeURIComponent(p.id)}`} role="tab" aria-selected={tab === 'overview' || (tab === 'compare' && isCase(p))} data-tab="overview">Overview</a>
         {isBusiness(p) && <>
           <a className={tabClass(tab === 'model')} href={tabHref(p, 'model')} role="tab" aria-selected={tab === 'model'} data-tab="model">Model</a>
           <a className={tabClass(tab === 'money')} href={tabHref(p, 'money')} role="tab" aria-selected={tab === 'money'} data-tab="money">Money</a>
@@ -197,7 +198,7 @@ function ProjectTop({ data, p, tab, query, onQuery, status }: { data: MyDayData;
           <a className={tabClass(tab === 'issues')} href={tabHref(p, 'issues')} role="tab" aria-selected={tab === 'issues'} data-tab="issues">Issues</a>
         </> : <>
           <a className={tabClass(tab === 'milestones')} href={tabHref(p, 'milestones')} role="tab" aria-selected={tab === 'milestones'} data-tab="milestones">Milestones</a>
-          <a className={tabClass(tab === 'decisions')} href={tabHref(p, 'decisions')} role="tab" aria-selected={tab === 'decisions'} data-tab="decisions">Decisions</a>
+          <a className={tabClass(tab === 'decisions' || tab === 'compare')} href={tabHref(p, 'decisions')} role="tab" aria-selected={tab === 'decisions' || tab === 'compare'} data-tab="decisions">Decisions</a>
         </>}
         {/* A Content project's videos (specs/projects-content.md). */}
         {isContent(p) && <a className={tabClass(tab === 'videos')} href={tabHref(p, 'videos')} role="tab" aria-selected={tab === 'videos'} data-tab="videos">Videos</a>}
