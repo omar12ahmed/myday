@@ -1,12 +1,10 @@
 # Proposal: Arabic explainers ("How this works")
 
-**Status:** decided by the owner on 30 October 2026 (§6). Built as in §2. Module 14 (ten) shipped in 1.98.0 and was
-voiced in 1.102.0; module 15 (eight) and modules 4–5 (thirteen) ship with their voice in 1.105.0. Modules 6–7 (twelve)
-are cross-checked and checked by the owner's checker (31 October), to be voiced. Modules 8–9 (nine) are cross-checked and with
-the owner's checker. Module 8's skills lessons get a card on the language their task uses, the portfolio
-lesson included (the owner's choice). Modules 10–11 (eleven) are cross-checked and with the owner's checker. Modules 12–13 (ten) too; with them, modules 4 to 15 all
-have explainers. Modules 16–17 and 18–19 (ten each, B1 skills lessons) 20–21 and 22–23 (ten each, B2) are cross-checked and with the owner's checker. Each batch: drafted, validated, cross-checked independently (fixes re-checked), checked by the owner's
-checker, voiced and listened to, then released.
+**Status:** decided by the owner on 30 October 2026 (§6). Built as in §2. Live with their voice: module 14 (1.98.0,
+voiced in 1.102.0), module 15 and modules 4–5 (1.105.0), modules 6–7 (1.108.0). Modules 8–13 (with the A1 portfolio
+card) and 16–23, 71 more, and the "where this leads" lines (§7): cross-checked independently and approved by the
+owner's checker (31 October 2026), to be voiced. Each batch: drafted, validated, cross-checked independently (fixes
+re-checked), checked by the owner's checker, voiced and listened to, then released.
 **Content:** `content/teaching/arabic/explainers.json`. **Check:** `app/scripts/validate-explainers.mjs`.
 **Related:** `specs/arabic-audio-course.md` (the voice), `specs/study-home-and-lessons.md` (lesson steps, course words).
 
