@@ -35,9 +35,9 @@ can't do, or slips out of mind entirely.
   — with **Got it** (no longer waiting), **Change**, and **Chase it**.
 - **The nudge:** when the project has open tasks and every one is waiting (and the project isn't), the Next step card
   adds "Everything here is waiting — mark the project as waiting?" with **Mark as waiting** (the form, filled in with
-  whom the tasks wait on if it's the same for all, and the earliest expected day) and **Not now**. It's offered once on
-  this device for that set of waiting tasks (`myday.projects.waitOffer`); a task starting or stopping waiting can
-  bring it back.
+  whom the tasks wait on if it's the same for all, whatever the capitals, and the earliest expected day still to come)
+  and **Not now**. It's offered once on this device for that set of waiting tasks (`myday.projects.waitOffer`); a task
+  starting or stopping waiting can bring it back. "Got it" on the project's wait counts as an answer too.
 - **Projects home:** the card and the List row say "Waiting on Priya · check back Wed 4 Nov" (or "Waiting on Priya"),
   in place of "Away 3 weeks".
 - **Needs you:** from the check-back day, on an active project: "Still waiting on Priya" · "check back today" /
@@ -48,6 +48,7 @@ can't do, or slips out of mind entirely.
 - **Chase it** asks when (Today, Tomorrow, a day you pick, No date) and adds "Chase: Garden shed" (5 min) to the
   project's tasks — once per wait, until that task is done or let go. The title doesn't name whom you're waiting on.
 - **Finishing** the project ends its wait; **Pause for now** keeps it (a paused project isn't in Needs you anyway).
+  Bringing a finished project back ends a wait an older release's "Mark as done" left on it.
 - Search finds a project by whom it's waiting on, as it does a task.
 
 ## 4. How it works
