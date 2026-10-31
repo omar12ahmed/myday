@@ -91,7 +91,8 @@ export function learningGlance(data: MyDayData): LearningGlance {
       needs: states.filter(([, s]) => s === 'needs-revision').map(([id]) => ({ id, title: lessonIndex[id].title })),
       open: open ? { id: open.lessonId, title: lessonIndex[open.lessonId].title } : null,
       // What Arabic's next lesson is a step towards, for Study home's Arabic card (specs/arabic-route.md).
-      // Not for a revision round, or a path that's all ready (its step then points back at the first lesson), as on the map.
+      // Not for a revision round, or a path that's all ready (its step then points back at the first lesson); the map's
+      // next-step card follows the same rule.
       towards: (() => { const o = options.find(x => x.subject === 'arabic'); return o?.lessonId && !o.revise && (!o.allComplete || o.resume) ? stepTowards(data, o.lessonId) : null; })(),
     },
     cyber: (() => { const g = cyberGlance(data); return { done: g.done, total: g.path, needs: g.needs.map(n => ({ id: n.id, title: n.title })) }; })(),

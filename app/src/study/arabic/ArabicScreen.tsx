@@ -100,7 +100,7 @@ function MapView({ data }: { data: MyDayData }) {
       <Ar block className="text-[26px] text-fg-2 mt-0">العربية الفصحى</Ar>
       <p>Modern Standard Arabic, one small session at a time: script and sounds first, then sentences, reading, listening and writing.</p>
       <p className="text-sm text-fg-2 flex gap-2 items-start"><VolumeOff size={18} className="flex-none mt-0.5" aria-hidden="true" />{hasVoice ? 'The starter words, lesson examples and some teaching and reading texts have a synthesised voice to copy. Look for a play button; some Arabic has no recording. ' : 'No recordings are included yet. '}For listening and speaking, use a verified recording or a fluent speaker; typed work never stands in for them.</p>
-      {plan && <NextStep plan={plan} started={started} towards={plan.step.kind === 'complete' ? null : stepTowards(data, plan.step.lessonId)} />}
+      {plan && <NextStep plan={plan} started={started} towards={plan.complete && plan.step.kind !== 'resume' ? null : stepTowards(data, plan.step.lessonId)} />}
     </Card>
     <ReadyOffer data={data} />
     <RevisionGlance data={data} />
@@ -135,7 +135,7 @@ const STEP_EYEBROW: Record<Exclude<StepKind, 'lesson'>, string> = {
 };
 // "Your route" (plan.ts arabicRoute, specs/arabic-route.md): your goal's stages in order, each with how many lessons
 // are ready (and need revision) and what you'll be able to do at its end; where you are is open, the others fold.
-const ROUTE_STATE: Record<ArabicRoute['stages'][number]['state'], string> = { done: 'Done', here: 'You are here', behind: 'Behind you', ahead: 'Ahead' };
+const ROUTE_STATE: Record<ArabicRoute['stages'][number]['state'], string> = { done: 'Done', here: 'You are here', behind: 'Earlier, not finished', ahead: 'Ahead' };
 function RouteView({ route }: { route: ArabicRoute }) {
   return <section aria-labelledby="ar-route" className="mt-4 mb-4" data-ar-route={route.goalId}>
     <h3 id="ar-route" className="mt-0 mb-2">Your route</h3>
