@@ -504,8 +504,23 @@ const SEED = `s => {
     await openAsk(mock, 'today', 'call the bank, renew passport and email Sam');
     await askGo(mock);
     await mock.type('[data-s=ask-more]', 'and they are all for this week'); await mock.click('[data-action=ask-again]');
-    await mock.until(`document.querySelector('[data-s=ask-panel]')?.dataset.phase === 'shown'`, 10000); await sleep(150);
-    check('one follow-up ("Not quite…"), then no more', (await mock.ev(`document.querySelector('[data-s=ask-panel]').dataset.phase`)) === 'shown' && !(await mock.exists('[data-s=ask-more]')));
+    await mock.until(`document.querySelector('[data-s=ask-panel]')?.dataset.phase === 'shown' && !!document.querySelector('[data-s=ask-now]')`, 10000); await sleep(150);
+    const thread = () => mock.ev(`[...document.querySelectorAll('[data-s=ask-turn] summary')].map(s => s.textContent.trim())`);
+    check('a reply is answered with the conversation above it: the first question folded to one line, the reply below (v25)', eq(await thread(), ['You: call the bank, renew passport and email Sam']) && (await mock.text('[data-s=ask-now]')) === 'You: and they are all for this week', [await thread(), await mock.text('[data-s=ask-now]')]);
+    check('…and you can go on replying (no limit of its own; practice mode shows no count)', await mock.exists('[data-s=ask-more]') && !(await mock.exists('[data-s=ask-left]')));
+    await mock.type('[data-s=ask-more]', 'make them all short'); await mock.click('[data-action=ask-again]');
+    await mock.until(`document.querySelector('[data-s=ask-panel]')?.dataset.phase === 'shown' && document.querySelector('[data-s=ask-now]')?.textContent.includes('make them all short')`, 10000); await sleep(150);
+    check('…a third message: two earlier exchanges folded, the newest answered in full, and still a reply box', (await thread()).length === 2 && await mock.exists('[data-s=ask-message]') && await mock.exists('[data-s=ask-more]'), await thread());
+    await mock.ev(`document.querySelector('[data-s=ask-turn]').open = true`); await sleep(100);
+    check('…an earlier exchange opens to its answer as it was shown, with "(Not added.)" when its suggestions weren\'t added', (await mock.text('[data-s=ask-turn]')).includes('(Not added.)'), await mock.text('[data-s=ask-turn]'));
+    await mock.click('[data-action=ask-dismiss]'); await sleep(150);
+    check('Dismiss starts over: the conversation is forgotten', (await mock.ev(`document.querySelector('[data-s=ask-panel]').dataset.phase`)) === 'idle' && !(await mock.exists('[data-s=ask-thread]')));
+    await askGo(mock);
+    await mock.type('[data-s=ask-more]', 'and they are all for this week'); await mock.click('[data-action=ask-again]');
+    await mock.until(`!!document.querySelector('[data-s=ask-now]') && document.querySelector('[data-s=ask-panel]')?.dataset.phase === 'shown'`, 10000);
+    await closeSheet(mock); await sleep(200);
+    await openAsk(mock, 'today', 'call the bank, renew passport and email Sam');
+    check('…and so does closing the panel: opened again, there\'s no conversation', (await mock.ev(`document.querySelector('[data-s=ask-panel]').dataset.phase`)) === 'idle' && !(await mock.exists('[data-s=ask-thread]')));
     await closeSheet(mock); await sleep(200);
     await openAsk(mock, 'today', 'delete all my tasks');
     await askGo(mock);
@@ -532,6 +547,21 @@ const SEED = `s => {
     check('with an account: the server accepts the app\'s request and answers (labelled with the model)', phaseD === 'shown' && (await D.text('[data-s=ask-panel]')).includes('AI-written by Main model'), [phaseD, await D.text('[data-s=ask-panel]')]);
     check('…it sent what you typed, the date, the page and that page\'s slice, and that it can look in your notes — no private note, nothing else', !!sentA && JSON.stringify(Object.keys(sentA.body.context).sort()) === JSON.stringify(['action', 'can', 'context', 'date', 'page', 'text', 'time', 'version', 'weekday'])
       && JSON.stringify(Object.keys(sentA.body.context.context).sort()) === JSON.stringify(['project', 'projects']) && !JSON.stringify(sentA.body).includes('private worry'), sentA && Object.keys(sentA.body.context));
+    // A conversation through the server (v25): a reply sends what came before it; the server says how many requests are left.
+    const usedD = async () => (await S.owner(db, 'select requests from public.ai_usage where user_id = $1', [userA])).rows[0].requests;
+    setAi({ AI_DAILY_LIMIT: String(await usedD() + 4) });
+    await D.type('[data-s=ask-more]', 'and make the first one shorter'); await D.click('[data-action=ask-again]');
+    await D.until(`document.querySelector('[data-s=ask-panel]')?.dataset.phase === 'shown' && !!document.querySelector('[data-s=ask-now]')`, 15000);
+    const sentR = aiCalls().slice(-1)[0].body.context;
+    check('a reply goes through the server with the conversation so far — the first question and its answer as shown — and the reply as the newest message (never the old single follow-up)',
+      sentR.text === 'and make the first one shorter' && sentR.conversation?.earlier.length === 1 && sentR.conversation.earlier[0].asked === 'Break this into smaller steps' && sentR.conversation.earlier[0].answered.length > 20
+      && sentR.conversation.leftOut === 0 && !('followUp' in sentR) && !JSON.stringify(sentR).includes('private worry'), sentR.conversation);
+    check('…and with five or fewer left today, the panel says how many, as the server counted them', (await D.text('[data-s=ask-left]')).startsWith('3 requests left today'), await D.text('[data-s=ask-left]'));
+    setAi({ AI_DAILY_LIMIT: String(await usedD() + 1) });
+    await D.type('[data-s=ask-more]', 'thanks'); await D.click('[data-action=ask-again]');
+    await D.until(`document.querySelector('[data-s=ask-panel]')?.dataset.phase === 'shown' && !!document.querySelector('[data-s=ask-now]')?.textContent.includes('thanks')`, 15000);
+    check('…and after the day\'s last one, no reply box: it says Ask MyDay is back tomorrow', !(await D.exists('[data-s=ask-more]')) && (await D.text('[data-s=ask-limit]')).includes('back tomorrow'), await D.text('[data-s=ask-panel]'));
+    setAi({ AI_DAILY_LIMIT: '50' });
     await closeSheet(D);
     await openAsk(D, 'projects/p/pjAsk', 'Break this into smaller steps');
     const beforePrivacyCalls = aiCalls().length;
@@ -965,9 +995,13 @@ const SEED = `s => {
     // The clock moves on 7 minutes: a follow-up answers from what was read the first time, and its line still says when.
     await mock.ev(`(() => { const D0 = Date; class D7 extends D0 { constructor(...a) { if (a.length) super(...a); else super(D0.now() + 420000); } static now() { return D0.now() + 420000; } } window.Date = D7; })()`);
     await mock.type('[data-s=ask-more]', 'and what did it cost?'); await mock.click('[data-action=ask-again]');
-    await mock.until(`document.querySelector('[data-s=ask-panel]')?.dataset.phase === 'shown' && !document.querySelector('[data-s=ask-more]')`, 25000);
+    await mock.until(`document.querySelector('[data-s=ask-panel]')?.dataset.phase === 'shown' && !!document.querySelector('[data-s=ask-now]')?.textContent.includes('what did it cost')`, 25000);
     const pmf = await mock.text('[data-s=ask-looked]');
-    check('a follow-up 7 minutes later uses what was read the first time, and its line keeps that time', pmf === pm.looked, [pmf, pm.looked]);
+    check('a reply 7 minutes later uses what was read the first time, and its line keeps that time', pmf === pm.looked, [pmf, pm.looked]);
+    await mock.type('[data-s=ask-more]', 'Am I free on Thursday?'); await mock.click('[data-action=ask-again]');
+    await mock.until(`document.querySelector('[data-s=ask-panel]')?.dataset.phase === 'shown' && !!document.querySelector('[data-s=ask-now]')?.textContent.includes('Thursday')`, 25000);
+    const pmd = await mock.text('[data-s=ask-looked]');
+    check('…and a reply about something else looks again (once per reply): its own line, read now', /^Looked at Thursday \d{1,2} \w+: /.test(pmd) && pmd.slice(-6) !== pm.looked.slice(-6), [pmd, pm.looked]);
     await mock.ev(`document.querySelector('[data-action=capture-cancel]')?.click()`); await sleep(200);
     const pdy = await runLk(mock, 'Am I free on Thursday?');
     check('practice mode: "Am I free on Thursday?" looks at that day and says so above the answer', pdy.phase === 'shown' && /^Looked at Thursday \d{1,2} \w+: /.test(pdy.looked) && pdy.sources.length === 0, [pdy.looked, pdy.error]);

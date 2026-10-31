@@ -77,15 +77,16 @@ const guessCategory = (t: string): Category => (/\b(study|revise|read|learn|cour
 const gentle = (s: string) => !PRESSURE.test(s);
 
 // Checks a reply against your data. Returns null when nothing in it can be used.
-// `asked` is what you typed (and your follow-up): a change only touches a task's length, list or title when it asks for that.
+// `asked` is what you typed (and your replies, in a conversation): a change only touches a task's length, list or title when it asks for that.
 // A reply checked against your data. `looked` is what a lookup found, when this is the answer after one: then the notes it
-// says it used must be among them, and it may not ask to look again (one lookup per question).
+// says it used must be among them, and it may not ask to look again (one lookup per question) — unless `lookAgain`: in a
+// longer conversation (v25) the lookup was made for an earlier message, and the newest may look once more.
 // `hrefs`: where each thing a lookup found opens, kept on the device — study's next steps by subject, and what a look
 // across MyDay found by its reference ("r1") — for its link.
-export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k: DateKey = todayKey(), asked?: string, looked?: AskLookup, hrefs?: Record<string, string>): AskChecked | null {
+export function checkAskReply(text: string, data: MyDayData, slice: AskSlice, k: DateKey = todayKey(), asked?: string, looked?: AskLookup, hrefs?: Record<string, string>, lookAgain = false): AskChecked | null {
   const r = readAsk(text);
   if (r?.kind === 'lookup') {
-    if (looked || !r.lookup) return null;
+    if ((looked && !lookAgain) || !r.lookup) return null;
     // A project only by the id of one of the open projects it was given (never a private one: they aren't given).
     if (r.lookup.tool === 'project' && !slice.context.projects?.some(p => p.id === r.lookup!.query)) return null;
     // Open decisions: all of them, or one of the open projects it was given.

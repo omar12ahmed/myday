@@ -229,7 +229,7 @@ export function studyLookup(data: MyDayData, today: DateKey = todayKey()): { loo
 // What the panel says above the answer: "Looked in your notes for “van hire”: 3 notes — 1 private note left out." or
 // "Looked at Thursday 30 October: 2 tasks planned, 1 due, 3 busy times — 1 private task left out. Checked at 10:42."
 // What didn't go is said: private things, what a setting kept back, what was more than the limit allowed (`more`),
-// and when it was read (`at`: an answer to a follow-up, or a second try, uses what was read the first time).
+// and when it was read (`at`: a reply that uses it, or a second try, keeps when it was read).
 export function lookupLine(l: AskLookup, held: number, projectTitle?: string, { more = {}, at }: { more?: LookupMore; at?: Date } = {}): string {
   const line = sayLookup(l, held, projectTitle, more);
   return at ? `${line} Checked at ${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}.` : line;

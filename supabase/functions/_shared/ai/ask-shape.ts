@@ -5,6 +5,8 @@ export const ASK_LIMITS = {
   textChars: 600,          // what you typed
   followUpChars: 300,      // one "Not quite: …"
   previousChars: 1500,     // the answer you're following up on, as it was shown
+  // A longer conversation (v25): what came before the newest message, oldest first, at most this much in all.
+  conversationChars: 4000, conversationTurns: 12, conversationLeftOut: 500,
   list: 20,                // items in any list of the page's context (tasks, projects, notes, appointments)
   titleChars: 120,         // any title sent or proposed
   summaryChars: 600,       // a project's summary
@@ -80,10 +82,16 @@ export interface AskContext {
   page: AskPage;
   text: string;      // what you typed
   followUp?: { previous: string; text: string }; // one follow-up: the answer as it was shown, and what you added
+  conversation?: AskConversation;                  // v25: what came before the newest message (never with followUp)
   context: AskPageContext;
   can?: typeof ASK_TOOLS[number][];                // what this app can look up for an answer (absent: nothing)
   lookup?: AskLookup;                              // what it found, the second time round (one lookup per question)
 }
+// A longer conversation while Ask MyDay's panel is open (v25, specs/ask-conversation.md): "text" is the newest message;
+// "earlier" is what came before, oldest first — each message as typed and the answer as it was shown: the first always,
+// then the newest that fit; "leftOut", how many exchanges in between were left out; "lookupFromEarlier", that the
+// lookup sent was made for an earlier message, so the newest may look once more. Older apps send one "followUp" instead.
+export interface AskConversation { earlier: { asked: string; answered: string }[]; leftOut: number; lookupFromEarlier?: true }
 // What a lookup found, on the device and through the privacy rules (app/src/ai/lookup.ts): the words searched, up to 8
 // notes that may reach AI (title, its project's name, a short snippet only with "AI help with notes" on), how many such
 // notes matched in all, and whether only titles were searched. Nothing about private notes — not even how many matched.
@@ -222,7 +230,7 @@ function checkProject(p: unknown, focus: boolean): boolean {
 export function checkAskContext(raw: unknown): raw is AskContext {
   if (!obj(raw)) return false;
   const L = ASK_LIMITS, c = raw;
-  if (!only(c, ['version', 'action', 'date', 'weekday', 'time', 'page', 'text', 'followUp', 'context', 'can', 'lookup'])) return false;
+  if (!only(c, ['version', 'action', 'date', 'weekday', 'time', 'page', 'text', 'followUp', 'conversation', 'context', 'can', 'lookup'])) return false;
   if (c.can !== undefined && !(Array.isArray(c.can) && c.can.length <= ASK_TOOLS.length && c.can.every(t => ASK_TOOLS.includes(t as typeof ASK_TOOLS[number])))) return false;
   if (c.lookup !== undefined) {
     const lk = c.lookup, n = (v: unknown) => Number.isInteger(v) && (v as number) >= 0 && (v as number) <= 100000;
@@ -277,6 +285,14 @@ export function checkAskContext(raw: unknown): raw is AskContext {
   if (c.version !== 1 || c.action !== 'ask' || !isDate(c.date) || !str(c.weekday, 12, false) || !isTime(c.time)) return false;
   if (!ASK_PAGES.includes(c.page as AskPage) || !str(c.text, L.textChars, false)) return false;
   if (c.followUp !== undefined && !(obj(c.followUp) && only(c.followUp, ['previous', 'text']) && str(c.followUp.previous, L.previousChars) && str(c.followUp.text, L.followUpChars, false))) return false;
+  if (c.conversation !== undefined) {
+    const v = c.conversation;
+    if (c.followUp !== undefined || !(obj(v) && only(v, ['earlier', 'leftOut', 'lookupFromEarlier']) && Array.isArray(v.earlier) && v.earlier.length >= 1 && v.earlier.length <= L.conversationTurns
+      && v.earlier.every(e => obj(e) && only(e, ['asked', 'answered']) && str(e.asked, L.textChars, false) && str(e.answered, L.previousChars))
+      && v.earlier.reduce((m, e) => m + (e.asked as string).length + (e.answered as string).length, 0) <= L.conversationChars
+      && Number.isInteger(v.leftOut) && (v.leftOut as number) >= 0 && (v.leftOut as number) <= L.conversationLeftOut
+      && (v.lookupFromEarlier === undefined || (v.lookupFromEarlier === true && c.lookup !== undefined)))) return false;
+  }
   if (!obj(c.context)) return false;
   const x = c.context;
   if (!only(x, ['projects', 'today', 'study', 'project', 'note', 'task', 'calendar', 'course', 'review'])) return false;

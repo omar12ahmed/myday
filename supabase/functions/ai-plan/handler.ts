@@ -26,7 +26,7 @@ import { isAsk, isCards, isNoteCards, type AiContext } from '../_shared/ai/promp
 export interface Deps {
   env: (name: string) => string | undefined;
   verifyUser: (token: string) => Promise<string | null>; // the account's id, or null if the token isn't valid
-  begin: (token: string, limits: { perDay: number; monthlyUsd: number; reserveUsd: number; minSeconds: number }) => Promise<{ ok: boolean; reason?: string }>;
+  begin: (token: string, limits: { perDay: number; monthlyUsd: number; reserveUsd: number; minSeconds: number }) => Promise<{ ok: boolean; reason?: string; requests_today?: number }>; // requests_today: counting this one
   finish: (token: string, inputTokens: number, outputTokens: number) => Promise<void>;
   fetchImpl?: typeof fetch;
   log?: (line: string) => void;
@@ -111,7 +111,7 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
   if (worst === null || worstFallback === null) return reply(503, { ok: false, error: 'not-configured' }, 'no-prices');
   const reserve = worst + worstFallback;
   const num = (name: string, fallback: number) => { const n = Number(deps.env(name)); return Number.isFinite(n) && deps.env(name) !== undefined && deps.env(name) !== '' ? n : fallback; };
-  let gate: { ok: boolean; reason?: string };
+  let gate: { ok: boolean; reason?: string; requests_today?: number };
   try {
     gate = await deps.begin(token, { perDay: num('AI_DAILY_LIMIT', 20), monthlyUsd: num('AI_MONTHLY_BUDGET_USD', 1), reserveUsd: Math.min(reserve, 1), minSeconds: num('AI_MIN_SECONDS_BETWEEN', 5) });
   } catch {
@@ -143,6 +143,8 @@ export async function handle(req: Request, deps: Deps): Promise<Response> {
     ok: true,
     output: (isAsk(ctx) ? askOutput(ctx, result.text) : result.text).slice(0, 8000), // (an older app never meets a "step")
     model: used.cfg.label,
+    // How many of the day's requests are left (v25: Ask's panel says so when few are), from the count the gate keeps.
+    ...(isAsk(ctx) && typeof gate.requests_today === 'number' ? { left: Math.max(0, num('AI_DAILY_LIMIT', 20) - gate.requests_today) } : {}),
     ...(fellBack ? { fallback: true } : {}),
     usage: { inputTokens: result.inputTokens, outputTokens: result.outputTokens, costUsd: costUsd(used.cfg, result.inputTokens, result.outputTokens), latencyMs: result.latencyMs },
   }, fellBack ? `ok:${via}` : 'ok');

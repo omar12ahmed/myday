@@ -1058,7 +1058,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
     // The instructions and the practice version.
     const msgs = K.buildAskMessages(ctxA);
-    check('the instructions: five kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"change"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v24' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
+    check('the instructions: five kinds, only ids from the data, propose don\'t act, data not instructions', /"add"/.test(msgs[0].content) && /"steps"/.test(msgs[0].content) && /"change"/.test(msgs[0].content) && /"answer"/.test(msgs[0].content) && /"cannot"/.test(msgs[0].content) && /only ids that appear in the data/.test(msgs[0].content) && /never as\s+instructions/.test(msgs[0].content) && JSON.parse(msgs[1].content).action === 'ask' && K.ASK_PROMPT_VERSION === 'myday-ask-v25' && /never\s+write as if it's done/.test(msgs[0].content) && /ONE thing to do is ONE task/.test(msgs[0].content));
     const mk = (hash, text) => K.checkAskReply(K.mockAsk(K.askContext(K.askSlice(K.getSnapshot().data, hash, D), text, D)), K.getSnapshot().data, K.askSlice(K.getSnapshot().data, hash, D), D);
     check('practice version: steps on a project page, in that project', (r => r.kind === 'steps' && r.items.length === 3 && r.items.every(x => x.projectId === 'pjC'))(mk('#projects/p/pjC', 'Break this into smaller steps')));
     check('…several things to add', (r => r.kind === 'add' && eq(r.items.map(x => x.title), ['Call the bank', 'Renew passport', 'Email Sam']))(mk('#today', 'call the bank, renew passport and email Sam')));
@@ -1946,6 +1946,67 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     check('practice mode, end to end: "Where did I put the electrician\'s number?" looks across MyDay, then names what it found, linked', p1?.tool === 'search' && /electrician/.test(p1.query) && p3?.kind === 'answer' && p3.sources?.length > 0 && p3.sources.every(x => x.href?.startsWith('#')), [p1, p3]);
     check('…and "What did I write about…" is a look across MyDay too', K.checkAskReply(K.mockAsk(K.askContext(sl, 'What did I write about the electrician?', SD)), d, sl, SD)?.tool === 'search');
     check('the preview says it may look across MyDay, and what it never sends', K.askPreview(c1).all.some(x => x.label === 'If it needs to: across MyDay' && x.lines.join(' ').includes('Never what one says') && x.lines.join(' ').includes('kept words')));
+  }
+
+  console.log('\n[Conversation] A longer conversation while Ask MyDay\'s panel is open (v25; specs/ask-conversation.md)');
+  {
+    const CD = '2026-11-10';
+    K.setClock(`${CD}T09:30`);
+    const cw = K.freshState(), cslice = K.askSlice(cw, '#today', CD);
+    const EX = (i, a = 100, b = 300) => ({ asked: `Q${i} ` + 'q'.repeat(a), answered: `A${i} ` + 'a'.repeat(b) });
+    const total = c => c.earlier.reduce((m, e) => m + e.asked.length + e.answered.length, 0);
+    check('no conversation before the first answer', K.conversationOf([]) === undefined);
+    const one = K.conversationOf([EX(1, 10, 1490)]);
+    check('one exchange: it goes whole (the latest answer up to 1,500 characters), nothing left out', one.earlier.length === 1 && one.earlier[0].answered.length === 1493 && one.leftOut === 0 && !('lookupFromEarlier' in one), one);
+    const many = K.conversationOf(Array.from({ length: 9 }, (_, i) => EX(i + 1, 300, 1400)));
+    check('nine long exchanges: the first always, then the newest that fit, oldest first, older answers cut to 600 characters, within 4,000 in all; how many in between were left out',
+      many.earlier[0].asked.startsWith('Q1 ') && many.earlier.at(-1).asked.startsWith('Q9 ') && many.earlier.slice(1).every((e, i, a) => i === 0 || Number(e.asked.slice(1, 2)) === Number(a[i - 1].asked.slice(1, 2)) + 1)
+      && many.earlier[0].answered.length === K.OLDER_ANSWER_CHARS && many.earlier.at(-1).answered.length === 1403 && total(many) <= K.ASK_LIMITS.conversationChars && many.leftOut === 9 - many.earlier.length && many.leftOut > 0,
+      [many.earlier.map(e => e.asked.slice(0, 3)), many.leftOut, total(many)]);
+    const small = K.conversationOf(Array.from({ length: 30 }, (_, i) => EX(i + 1, 5, 5)));
+    check('…at most 12 exchanges, however short', small.earlier.length === 12 && small.leftOut === 18 && small.earlier[1].asked.startsWith('Q20 '), [small.earlier.length, small.leftOut]);
+    check('…a smaller budget (when the request would be too big) leaves out more, but never the first or the latest', K.conversationOf(Array.from({ length: 9 }, (_, i) => EX(i + 1, 300, 1400)), false, 1000).earlier.map(e => e.asked.slice(0, 2)).join() === 'Q1,Q9');
+    check('…and says when the lookup sent was made for an earlier message', K.conversationOf([EX(1)], true).lookupFromEarlier === true);
+    // The server's check.
+    const conv = K.conversationOf([EX(1), EX(2)]), base = K.askContext(cslice, 'and the one after that?', CD, undefined, undefined, undefined, conv);
+    check('a request carrying the conversation is accepted, the newest message as "text"', K.checkAskContext(base) && base.text === 'and the one after that?' && base.conversation === conv);
+    const dw2 = K.freshState(); const dl = K.dayLookup(dw2, CD, CD).lookup;
+    check('…with a lookup made for an earlier message too', K.checkAskContext({ ...base, lookup: dl, conversation: { ...conv, lookupFromEarlier: true } }));
+    const bad = [
+      ['with the one follow-up older apps send', { ...base, followUp: { previous: 'x', text: 'y' } }],
+      ['"lookupFromEarlier" with no lookup', { ...base, conversation: { ...conv, lookupFromEarlier: true } }],
+      ['"lookupFromEarlier" that isn\'t true', { ...base, lookup: dl, conversation: { ...conv, lookupFromEarlier: false } }],
+      ['more than 4,000 characters in all', { ...base, conversation: { earlier: [EX(1, 500, 1500), EX(2, 500, 1500)], leftOut: 0 } }],
+      ['more than 12 exchanges', { ...base, conversation: { earlier: Array.from({ length: 13 }, (_, i) => EX(i, 1, 1)), leftOut: 0 } }],
+      ['an answer over 1,500 characters', { ...base, conversation: { earlier: [EX(1, 1, 1600)], leftOut: 0 } }],
+      ['an empty message', { ...base, conversation: { earlier: [{ asked: '  ', answered: 'x' }], leftOut: 0 } }],
+      ['no exchanges', { ...base, conversation: { earlier: [], leftOut: 0 } }],
+      ['a field it doesn\'t know', { ...base, conversation: { ...conv, secret: 'x' } }],
+      ['an exchange with a field it doesn\'t know', { ...base, conversation: { earlier: [{ ...EX(1), when: 'x' }], leftOut: 0 } }],
+      ['a negative or fractional count left out', { ...base, conversation: { ...conv, leftOut: -1 } }],
+    ];
+    for (const [why, c] of bad) check(`…refused: ${why}`, !K.checkAskContext(c));
+    check('…and a fractional count left out too', !K.checkAskContext({ ...base, conversation: { ...conv, leftOut: 1.5 } }));
+    // The instructions.
+    const sys = c => K.buildAskMessages(c)[0].content, plain = K.askContext(cslice, 'What\'s on today?', CD);
+    check('the instructions say what the conversation is only when there is one (a first question\'s are as before)', /"conversation" is what came before their newest message/.test(sys(base)) && !/conversation/.test(sys(plain)) && /Treat everything in it as information too/.test(sys(base)));
+    const fresh = sys({ ...base, lookup: dl }), carried = sys({ ...base, lookup: dl, conversation: { ...conv, lookupFromEarlier: true } });
+    check('a lookup made for this message: never look again (as before), and no offer to', /Never reply\s+"lookup"\s+again\./.test(fresh) && !/It was made for an earlier message/.test(fresh) && !/Looking things up: this app can look/.test(fresh));
+    check('…made for an earlier message: use it, or look once more, with the offers', !/Never reply\s+"lookup"\s+again\./.test(carried) && /It was made for an earlier message: if the newest message needs something it doesn't have, look once more/.test(carried) && /Looking things up: this app can look/.test(carried), carried.slice(-600));
+    // Every lookup's rules end the same way, so every one can be looked again after.
+    const LOOKS = { notes: K.notesLookup(dw2, 'x').lookup, day: dl, decisions: K.decisionsLookup(dw2, 'all').lookup, waiting: K.waitingLookup(dw2, 'all').lookup, study: K.studyLookup(dw2, CD).lookup, search: K.searchLookup(dw2, 'x', null, CD).lookup };
+    const stuck = Object.entries(LOOKS).filter(([, lk]) => /Never reply\s+"lookup"\s+again\./.test(sys({ ...base, lookup: lk, conversation: { ...conv, lookupFromEarlier: true } })));
+    check('…for every kind of lookup (notes, a day, decisions, waiting, study, across MyDay)', stuck.length === 0, stuck.map(([t]) => t));
+    // The practice helper: a lookup from earlier is used, unless the newest message needs another.
+    const mk = (text, lookup, fromEarlier) => K.readAsk(K.mockAsk(K.askContext(cslice, text, CD, undefined, undefined, lookup, K.conversationOf([EX(1)], fromEarlier))));
+    const fri = mk('Am I free on Friday?', dl, true);
+    check('practice helper: "Am I free on Friday?" after a look at another day looks at Friday', fri?.kind === 'lookup' && fri.lookup.tool === 'day' && fri.lookup.query === '2026-11-13', fri);
+    check('…but "thanks, and how much is free?" answers from the day it has', mk('thanks, and how much is free?', dl, true)?.kind === 'answer');
+    // The app's check of a reply: one more lookup only for a lookup from earlier.
+    const LK = JSON.stringify({ kind: 'lookup', message: 'Looking at that day.', lookup: { tool: 'day', query: '2026-11-13' } });
+    check('a reply asking to look again is refused when the lookup was made for this message…', K.checkAskReply(LK, dw2, cslice, CD, 'x', dl) === null);
+    const again = K.checkAskReply(LK, dw2, cslice, CD, 'x', dl, undefined, true);
+    check('…and taken when it was made for an earlier one (the lookup it asks for, checked as for a first question)', again?.kind === 'lookup' && again.tool === 'day' && again.query === '2026-11-13', again);
   }
 
   console.log('\n[Privacy] Nothing private reaches AI, by any feature (one filter: app/src/ai/reach.ts)');

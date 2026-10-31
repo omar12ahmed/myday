@@ -2,7 +2,7 @@
 // page's name and that page's small slice of your data — the same slice the "Sends:" line describes before you tap.
 // Never a private note; Finance and Health send only the page's name; a project's notes' text only with "AI help with
 // notes" switched on. A business idea's one page only from its Model tab (1.34.0).
-import { ASK_LIMITS as L, ASK_TOOLS, type AskContext, type AskLookup, type AskPage, type AskPageContext } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
+import { ASK_LIMITS as L, ASK_TOOLS, type AskContext, type AskConversation, type AskLookup, type AskPage, type AskPageContext } from '../../../supabase/functions/_shared/ai/ask-shape.ts';
 import { parseKey, prettyDate, shift, todayKey } from '../data/dates';
 import { focusProjects, whatMoved, whatsWaiting } from '../data/weekReview';
 import { noteName } from '../data/notes';
@@ -207,7 +207,23 @@ export function projectSlice(data: MyDayData, p: Project): { project: NonNullabl
 // What this app can look at when an answer needs it (`can`: across MyDay, a day, a project, open decisions, what you're
 // waiting on, what to study next); the second time round, `lookup` is what it found (ai/lookup.ts, through the privacy
 // rules). One lookup per question.
-export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(), now = new Date(), followUp?: { previous: string; text: string }, lookup?: AskLookup): AskContext {
+// A longer conversation (v25, specs/ask-conversation.md): what came before the newest message, oldest first — the first
+// and the latest exchange always (the latest answer up to 1,500 characters, older ones cut to 600: at most 3,300
+// together), then the newest of those in between that fit within `budget`, and how many in between were left out. `lookupFromEarlier`: the lookup sent with it was made for an earlier
+// message (so the newest may look once more).
+export const OLDER_ANSWER_CHARS = 600;
+export function conversationOf(earlier: { asked: string; answered: string }[], lookupFromEarlier = false, budget: number = L.conversationChars): AskConversation | undefined {
+  if (!earlier.length) return undefined;
+  const last = earlier.length - 1;
+  const ex = earlier.map((e, i) => ({ asked: cut(e.asked.trim(), L.textChars), answered: cut(e.answered.trim(), i === last ? L.previousChars : OLDER_ANSWER_CHARS) }));
+  const size = (e: { asked: string; answered: string }) => e.asked.length + e.answered.length;
+  if (!last) return { earlier: ex, leftOut: 0, ...(lookupFromEarlier ? { lookupFromEarlier: true as const } : {}) };
+  let total = size(ex[0]) + size(ex[last]), from = last;
+  for (let i = last - 1; i > 0 && i > earlier.length - L.conversationTurns && total + size(ex[i]) <= budget; i--) { total += size(ex[i]); from = i; }
+  return { earlier: [ex[0], ...ex.slice(from)], leftOut: from - 1, ...(lookupFromEarlier ? { lookupFromEarlier: true as const } : {}) };
+}
+
+export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(), now = new Date(), followUp?: { previous: string; text: string }, lookup?: AskLookup, conversation?: AskConversation): AskContext {
   return {
     version: 1, action: 'ask', date: k, weekday: parseKey(k).toLocaleDateString('en-GB', { weekday: 'long' }),
     time: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
@@ -220,6 +236,7 @@ export function askContext(slice: AskSlice, text: string, k: DateKey = todayKey(
     // Across MyDay (v24) stands in for "in your notes": it finds notes too, with the same rules.
     can: [...ASK_TOOLS].filter(t => t === 'notes' ? false : t === 'project' ? !!slice.context.projects?.length : t === 'decisions' || t === 'waiting' ? slice.page !== 'finance' && slice.page !== 'health'
       : t === 'study' ? !slice.context.study && !slice.context.course : true), ...(lookup ? { lookup } : {}),
+    ...(conversation ? { conversation } : {}),
   };
 }
 

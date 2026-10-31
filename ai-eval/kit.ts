@@ -38,7 +38,7 @@ export { CARDS_CHECK_PROMPT_VERSION, CARDS_LIMITS, CARDS_PROMPT_VERSION, checkCa
 
 // Ask MyDay (the AI design's step 1): the shared shape and instructions, and the app's side (page slice, checks, adding).
 export { ASK_LIMITS, ASK_PROMPT_VERSION, buildAskMessages, checkAskContext, mockAsk, readAsk, type AskContext } from '../supabase/functions/_shared/ai/ask.ts';
-export { askContext, askPage, askPreview, askSlice, sendsFor } from '../app/src/ai/askContext';
+export { askContext, askPage, askPreview, askSlice, conversationOf, OLDER_ANSWER_CHARS, sendsFor } from '../app/src/ai/askContext';
 // What of your MyDay may reach AI help: the privacy rules every request follows (one place).
 export { aiReach } from '../app/src/ai/reach';
 // Ask MyDay's lookups: searching your notes on the device (specs/ai-tools.md §3).

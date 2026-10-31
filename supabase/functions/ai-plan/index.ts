@@ -27,7 +27,7 @@ Deno.serve(req => handle(req, {
   begin: async (token, l) => {
     const { data, error } = await asUser(token).rpc('ai_begin', { per_day: l.perDay, monthly_usd: l.monthlyUsd, reserve_usd: l.reserveUsd, min_seconds: l.minSeconds });
     if (error) throw new Error('limits');
-    return data as { ok: boolean; reason?: string };
+    return data as { ok: boolean; reason?: string; requests_today?: number };
   },
   finish: async (token, inputTokens, outputTokens) => {
     await asUser(token).rpc('ai_finish', { input_tokens: inputTokens, output_tokens: outputTokens });

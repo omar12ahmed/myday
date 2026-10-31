@@ -13,7 +13,7 @@ export const AI_MODE: AiMode = wanted === 'mock' ? 'mock' : wanted === 'edge' &&
 const MOCK_VARIANT = String(import.meta.env.VITE_AI_MOCK || 'good');
 
 export type AiReply =
-  | { ok: true; text: string; model: string; checker?: string } // checker: the second model, for revision cards
+  | { ok: true; text: string; model: string; checker?: string; left?: number } // checker: the second model, for revision cards; left: Ask's requests left today
   | { ok: false; reason: 'signed-out' | 'daily' | 'budget' | 'too-fast' | 'not-set-up' | 'unavailable' | 'offline'; message: string };
 
 type Reason = Exclude<AiReply, { ok: true }>['reason'];
@@ -102,9 +102,10 @@ export async function askModel(ctx: AiContext, signal?: AbortSignal): Promise<Ai
       body: JSON.stringify({ context: ctx }),
       signal: ctrl.signal,
     });
-    let body: { ok?: boolean; output?: string; model?: string; checker?: string; error?: string; reason?: string } = {};
+    let body: { ok?: boolean; output?: string; model?: string; checker?: string; left?: unknown; error?: string; reason?: string } = {};
     try { body = await res.json(); } catch { /* handled below */ }
-    if (res.ok && body.ok && typeof body.output === 'string') return { ok: true, text: body.output, model: body.model || 'AI', ...(typeof body.checker === 'string' ? { checker: body.checker } : {}) };
+    if (res.ok && body.ok && typeof body.output === 'string') return { ok: true, text: body.output, model: body.model || 'AI', ...(typeof body.checker === 'string' ? { checker: body.checker } : {}),
+      ...(Number.isInteger(body.left) && (body.left as number) >= 0 ? { left: body.left as number } : {}) };
     if (res.status === 401) return fail('signed-out');
     if (res.status === 429) return fail(body.reason === 'daily' ? 'daily' : body.reason === 'budget' ? 'budget' : 'too-fast');
     if (res.status === 404 || body.error === 'not-configured' || body.error === 'no-checker') return fail('not-set-up'); // no-checker: revision cards need a second model
