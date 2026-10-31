@@ -19,7 +19,7 @@ const check = (label, ok) => { console.log(`  ${ok ? 'PASS' : 'FAIL'} ${label}`)
     ['شُكْرًا', 'shukran'], ['شُكْراً', 'shukran'], ['مَاءً', 'māʾan'], ['سُؤَال', 'suʾāl'],
     ['رَسَائِل', 'rasāʾil'], ['إِلَى', 'ilā'], ['آمَنَ', 'āmana'], ['قُلْتُ', 'qultu'],
     ['يَدْعُو', 'yadʿū'], ['يَدْرُسُوا', 'yadrusū'], ['دَعَوْا', 'daʿaw'], ['مَشَوْا', 'mashaw'], ['عَفْوًا', 'ʿafwan'],
-    // A joining alif after a vowel is silent, the article's too; after a comma it's said again (1.99.0).
+    // A joining alif after a vowel is silent, the article's too; after a comma it's said again.
     ['قُلِ الْحَقَّ', 'quli l-ḥaqqa'], ['فِي الْبَيْتِ', 'fī l-bayti'], ['عَنِ الطَّرِيقِ', 'ʿani ṭ-ṭarīqi'],
     ['الَّتِي اشْتَرَيْتُهَا', 'allatī shtaraytuhā'], ['مَا اسْمُ الْمَكَانِ؟', 'mā smu l-makāni?'], ['وَاسْتَخْدَمَ', 'wastakhdama'],
     ['أَنَّ الِامْتِحَانَ', 'anna l-imtiḥāna'], ['بِٱلنَّجَاحِ', 'bi-n-najāḥi'], ['بِٱلْقَلَمِ', 'bi-l-qalami'], ['فِي ٱلْبَيْتِ', 'fī l-bayti'],
