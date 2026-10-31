@@ -650,7 +650,7 @@ const wait = async (sel, ms = 3000) => { for (let t = 0; t < ms; t += 100) { if 
   await fresh('study/arabic/vocabulary'); await wait('[data-ar-course-words]', 5000);
   const linkText = id => ev(`document.querySelector('[data-ar-word="${id}"] [data-ar-explainer-link]')?.textContent`);
   const linkCount = await count('[data-ar-explainer-link]');
-  check('Vocabulary has 640 links to explainers under course words (52 in modules 4–5, 55 in modules 6–7, 57 in modules 8–9, 71 in modules 10–11, 58 in modules 12–13, 13 in module 14, 27 in module 15, 68 in modules 16–17, 65 in modules 18–19, 70 in modules 20–21, 69 in modules 22–23, 35 in module 24)', linkCount === 640, linkCount);
+  check('Vocabulary has 651 links to explainers under course words (52 in modules 4–5, 55 in modules 6–7, 57 in modules 8–9, 71 in modules 10–11, 58 in modules 12–13, 24 in module 14, 27 in module 15, 68 in modules 16–17, 65 in modules 18–19, 70 in modules 20–21, 69 in modules 22–23, 35 in module 24)', linkCount === 651, linkCount);
   check('…for which it loads only the explainers\' index, no module\'s explainers', await exChunks() === 'index', await exChunks());
   check('a verb\'s link reads "How this verb works, step by step"', await linkText('lexeme.arabic-weak-verbs-1') === 'How this verb works, step by step', await linkText('lexeme.arabic-weak-verbs-1'));
   check('a phrase\'s link reads "How it works, step by step"', await linkText('lexeme.arabic-verb-moods-4') === 'How it works, step by step', await linkText('lexeme.arabic-verb-moods-4'));

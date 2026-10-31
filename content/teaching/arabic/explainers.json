@@ -1907,10 +1907,10 @@
      }
     ],
     "steps": [
-     "Five present forms end in نَ after a long vowel: يَكْتُبُونَ, they write; تَكْتُبُونَ, you all write; تَكْتُبِينَ, you write (to a woman); يَكْتُبَانِ and تَكْتُبَانِ, the two of them, the two of you. Grammar calls them the five verbs.",
-     "They show the mood with that نَ, not with a vowel: plain, it stays; after لَنْ, لَمْ, أَنْ and لَا meaning \"don't\", it goes.",
+     "Five present forms end in a nūn after a long vowel: يَكْتُبُونَ, they write; تَكْتُبُونَ, you all write; تَكْتُبِينَ, you write (to a woman); يَكْتُبَانِ and تَكْتُبَانِ, the two of them, the two of you. Grammar calls them the five verbs.",
+     "They show the mood with that nūn, not with a vowel: plain, it stays; after لَنْ, لَمْ, أَنْ and لَا meaning \"don't\", it goes.",
      "When ـُونَ loses its نَ, an alif is written after the wāw and not said, as in the past كَتَبُوا: لَمْ يَكْتُبُوا.",
-     "A verb with a long vowel shortens it in the jussive. At the end, the long vowel's letter goes: تَنْسَى, you forget, becomes لَا تَنْسَ, don't forget. Inside, the vowel gets short before the sukūn: يَقُولُ becomes لَمْ يَقُلْ, as يَكُونُ becomes لَمْ يَكُنْ."
+     "A verb with a long vowel shortens it in the jussive. At the end, the long vowel's letter goes: تَنْسَى, you forget, becomes لَا تَنْسَ, don't forget. Inside, the vowel gets short before the sukūn: يَقُولُ becomes لَمْ يَقُلْ, as يَكُونُ becomes لَمْ يَكُنْ. After لَنْ nothing shortens: لَنْ يَقُولَ, he won't say."
     ],
     "examples": [
      {
@@ -1990,7 +1990,7 @@
     ],
     "why": {
      "q_en": "لَنْ يَكْتُبُوا and لَمْ يَكْتُبُوا look the same. How do you tell them apart?",
-     "a_en": "By the small word before them. For the five verbs, the subjunctive and the jussive both drop the نَ, so the verb alone can't show \"won't\" or \"didn't\": لَنْ looks ahead, لَمْ looks back."
+     "a_en": "By the small word before them. For the five verbs, the subjunctive and the jussive both drop the nūn, so the verb alone can't show \"won't\" or \"didn't\": لَنْ looks ahead, لَمْ looks back."
     },
     "selftest": [
      {
@@ -2025,7 +2025,8 @@
      }
     ],
     "phrases_ar": [
-     "لَمْ يَكُنْ"
+     "لَمْ يَكُنْ",
+     "لَنْ يَقُولَ"
     ]
    }
   ],
@@ -2094,7 +2095,7 @@
      "In the past it has u on the first letter and i before the last: فَتَحَ, he opened, becomes فُتِحَ, it was opened.",
      "In the present it has u on the prefix and a before the last letter: يَفْتَحُ, he opens, becomes يُفْتَحُ, it is opened.",
      "Derived forms work the same way: أَرْسَلَ, he sent, becomes أُرْسِلَ, it was sent. In the present the prefix already has u, so only the vowel before the last letter changes: يُرْسِلُ, he sends, becomes يُرْسَلُ, it is sent.",
-     "The endings for who stay as in the active: فُتِحَتْ, it (feminine) was opened; وُلِدْتُ, I was born."
+     "The endings that show who stay as in the active: فُتِحَتْ, it (feminine) was opened; وُلِدْتُ, I was born."
     ],
     "examples": [
      {
@@ -2339,7 +2340,7 @@
        "سَرَقَتِ السَّيَّارَةُ"
       ],
       "answer": "سُرِقَتِ السَّيَّارَةُ",
-      "why_en": "Passive vowels, -at for a feminine noun, and the car with -u in the doer's place. With a then a, it would mean the car stole."
+      "why_en": "Passive vowels, -at for a feminine noun, and the car in the doer's place. With a then a, it would mean the car stole."
      },
      {
       "q_en": "In the passive, which ending does the noun in the doer's place take?",
