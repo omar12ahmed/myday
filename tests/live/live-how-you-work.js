@@ -31,7 +31,7 @@ const shown = (d, ms = 60000) => d.until(`['shown', 'error'].includes(document.q
   await go('noticed');
   check('What MyDay has noticed has "Let Ask MyDay use how you work"', await mac.until(`!!document.querySelector('[data-action=ask-use]')`, 20000));
   if ((await mac.ev(`document.querySelector('[data-action=ask-use]').getAttribute('aria-checked')`)) === 'true') { await mac.click('[data-action=ask-use]'); await D.sleep(400); }
-  await mac.ev(`(() => { const s = document.getElementById('prefMin-admin'); const set = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set; set.call(s, '15'); s.dispatchEvent(new Event('change', { bubbles: true })); })()`); await D.sleep(400);
+  await mac.type('#prefMin-admin', '15'); await D.sleep(400);
   await mac.click('[data-action=ask-use]'); await mac.until(`!!document.querySelector('[data-s=ask-use-lines]')`, 10000);
   check('switched on: the card lists what Ask MyDay would be sent (your longest admin task)', (await mac.text('[data-s=ask-use-lines]')).includes('Admin tasks: 15 min at most'), await mac.text('#askUse'));
   check('…and what it has counted (nothing yet, never words)', /What it has counted of its suggestions: nothing yet/.test(await mac.text('[data-s=ask-use-seen]')), await mac.text('[data-s=ask-use-seen]'));
@@ -43,7 +43,7 @@ const shown = (d, ms = 60000) => d.until(`['shown', 'error'].includes(document.q
   await go('noticed');
   await mac.until(`!!document.querySelector('[data-action=ask-use]')`, 10000);
   await mac.click('[data-action=ask-use]'); await D.sleep(400);
-  await mac.ev(`(() => { const s = document.getElementById('prefMin-admin'); const set = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set; set.call(s, ''); s.dispatchEvent(new Event('change', { bubbles: true })); })()`); await D.sleep(400);
+  await mac.type('#prefMin-admin', ''); await D.sleep(400);
   await synced(mac);
   const after = await mac.ev(`JSON.parse(localStorage.getItem('myday.data.v4')).patterns`);
   check('switched off again: nothing more is sent, counts forgotten, your preference back as it was', !after.prefs.askUse && !('askSeen' in after) && !!after.prefs.askAsked
