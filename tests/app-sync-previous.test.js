@@ -643,22 +643,22 @@ async function signIn(d, url) {
     check('…both read exactly as the previous release saved them (loading rewrote nothing), and this release is in step', same((await now.data()).projects.items.find(p => p.id === PWN), finishedThere) && same((await now.data()).projects.items.find(p => p.id === PWB), renamedThere)
       && await synced(now) && (await now.status()) === 'synced', { status: await now.status() });
 
-    console.log('\n[23] How you work (Ask MyDay) passes through the previous release unchanged (specs/ask-how-you-work.md)');
+    console.log('\n[23] How you work (Ask MyDay), and its question limit (v27), pass through the previous release unchanged (specs/ask-how-you-work.md, ask-help-you-think.md)');
     const howSeen = [{ on: today, type: 'task', category: 'learning', proposed: 30, minutes: 15, added: true, renamed: false }];
     const patOf = async () => (await record('patterns', 'patterns'))?.data;
     await now.returnToApp();
-    await now.setData(`s => { s.patterns.prefs.askUse = true; s.patterns.prefs.askAsked = '${today}'; s.patterns.askSeen = ${JSON.stringify(howSeen)}; }`);
-    check('this release sends the switch, your answer about Ask and the counts in the patterns record', await eventually(async () => { const r = await patOf(); return r?.prefs?.askUse === true && r?.prefs?.askAsked === today && same(r?.askSeen, howSeen); }), await patOf());
+    await now.setData(`s => { s.patterns.prefs.askUse = true; s.patterns.prefs.askAsked = '${today}'; s.patterns.prefs.askQuestions = 3; s.patterns.askSeen = ${JSON.stringify(howSeen)}; }`);
+    check('this release sends the switch, your answer about Ask, the counts and your question limit in the patterns record', await eventually(async () => { const r = await patOf(); return r?.prefs?.askUse === true && r?.prefs?.askAsked === today && r?.prefs?.askQuestions === 3 && same(r?.askSeen, howSeen); }), await patOf());
     await before.returnToApp();
     check('the previous release syncs normally and holds them exactly in its saved data', await synced(before) && await before.until(`JSON.parse(localStorage.getItem('${KEY}')).patterns.prefs.askUse === true`, 20000)
-      && same((await before.data()).patterns.askSeen, howSeen) && (await before.data()).patterns.prefs.askAsked === today, (await before.data()).patterns);
+      && same((await before.data()).patterns.askSeen, howSeen) && (await before.data()).patterns.prefs.askAsked === today && (await before.data()).patterns.prefs.askQuestions === 3, (await before.data()).patterns);
     await before.open(BEFORE + '#noticed');
     if (!(await before.until(`!!document.getElementById('prefMin-admin')`, 30000))) console.log('  (the previous release is at', await before.ev('location.hash'), JSON.stringify((await before.ev('document.body.innerText')).slice(0, 200)), ')');
     await before.ev(`(() => { const el = document.getElementById('prefMin-admin'); if (!el) return false; Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set.call(el, '20'); el.dispatchEvent(new Event('change', { bubbles: true })); return true; })()`);
-    check('a preference changed on the previous release reaches the account with the switch, your answer and the counts as they were', await eventually(async () => { const r = await patOf(); return r?.prefs?.maxMinutes?.admin?.value === 20 && r?.prefs?.askUse === true && r?.prefs?.askAsked === today && same(r?.askSeen, howSeen); }) && await synced(before), await patOf());
+    check('a preference changed on the previous release reaches the account with the switch, your answer and the counts as they were', await eventually(async () => { const r = await patOf(); return r?.prefs?.maxMinutes?.admin?.value === 20 && r?.prefs?.askUse === true && r?.prefs?.askAsked === today && r?.prefs?.askQuestions === 3 && same(r?.askSeen, howSeen); }) && await synced(before), await patOf());
     await now.returnToApp();
     check('back on this release: the preference arrived, and Ask MyDay still uses how you work, with the counts as they were', await now.until(`JSON.parse(localStorage.getItem('${KEY}')).patterns.prefs.maxMinutes?.admin?.value === 20`, 20000)
-      && (await now.data()).patterns.prefs.askUse === true && same((await now.data()).patterns.askSeen, howSeen) && await synced(now), (await now.data()).patterns);
+      && (await now.data()).patterns.prefs.askUse === true && (await now.data()).patterns.prefs.askQuestions === 3 && same((await now.data()).patterns.askSeen, howSeen) && await synced(now), (await now.data()).patterns);
 
     console.log('\n[24] A Content project\'s ideas and videos pass by the previous release untouched (specs/projects-content.md)');
     const knowsContent = builtText.includes('idea-make');
