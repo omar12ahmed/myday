@@ -1,7 +1,8 @@
 # Ask MyDay: a longer conversation while the panel is open
 
-**Status:** agreed (31 Oct 2026): the owner's decisions are in §5. Being built; not switched on until the evaluation
-in §4 and the owner's go-ahead. It follows the owner's choice
+**Status:** built and evaluated (`ai-eval/reviews/2026-10-31-ask-conversation-quality.md`), with the owner's go-ahead
+(31 Oct 2026; decisions in §5). The server's instructions `myday-ask-v25` were deployed first (ai-plan, Supabase version
+35); the app is release 1.104.0. Day lookups now also send the free time added up (`freeMinutes`). It follows the owner's choice
 of "Longer Ask conversations" among the vision's bigger ideas (`myday-vision.md` §8, "Conversation memory"): a
 conversation that goes on while Ask MyDay's panel is open and is forgotten when it closes. Remembering a conversation
 after the panel closes is a separate decision for later, and nothing here prepares for it.

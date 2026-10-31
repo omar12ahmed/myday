@@ -1,5 +1,15 @@
 # MyDay — new version (React + Vite + Tailwind + TypeScript)
 
+**1.104.0 — Ask MyDay keeps the conversation going:** after Ask MyDay answers, you can reply while its panel is open,
+for as long as the day's AI requests last: "only the first two", "move it to Friday", "what about Friday?". Each
+reply is answered knowing the conversation so far, which shows above the newest answer, one line for each exchange
+(tap one to read it again). A reply can look something up once (another day, something else to find); otherwise the
+look from before goes with it. A note of what you did with each answer goes too ("They added 3 tasks.", "Not
+added."), so nothing is suggested twice. When five or fewer requests are left today, the panel says how many; at none,
+it says Ask MyDay is back tomorrow. Closing the panel forgets the conversation: nothing of it is kept. Also, when Ask
+looks at a day, MyDay adds up its free time itself (the AI's own sums were sometimes wrong). The server's instructions
+are `myday-ask-v25`, deployed first; evaluated on 12 conversations (`../ai-eval/reviews/2026-10-31-ask-conversation-quality.md`).
+No saved-data or sync change; going back to 1.103.0 is safe (its single follow-up still works with the new server).
 **1.103.0 — Decisions backed by evidence; tasks toward milestones:** with Research on, a finding can now bear on an
 open decision's option (Supports / Contradicts / Relates to), and an experiment can test options — its result saved as
 a finding lands on them. Each option shows its evidence ("3 findings: 2 for · 1 against", opening Research); choosing
