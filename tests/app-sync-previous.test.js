@@ -652,8 +652,9 @@ async function signIn(d, url) {
     await before.returnToApp();
     check('the previous release syncs normally and holds them exactly in its saved data', await synced(before) && await before.until(`JSON.parse(localStorage.getItem('${KEY}')).patterns.prefs.askUse === true`, 20000)
       && same((await before.data()).patterns.askSeen, howSeen) && (await before.data()).patterns.prefs.askAsked === today, (await before.data()).patterns);
-    await before.open(BEFORE + '#noticed'); await before.until(`!!document.getElementById('prefMin-admin')`, 15000);
-    await before.type('#prefMin-admin', '20');
+    await before.open(BEFORE + '#noticed');
+    if (!(await before.until(`!!document.getElementById('prefMin-admin')`, 30000))) console.log('  (the previous release is at', await before.ev('location.hash'), JSON.stringify((await before.ev('document.body.innerText')).slice(0, 200)), ')');
+    await before.ev(`(() => { const el = document.getElementById('prefMin-admin'); if (!el) return false; Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set.call(el, '20'); el.dispatchEvent(new Event('change', { bubbles: true })); return true; })()`);
     check('a preference changed on the previous release reaches the account with the switch, your answer and the counts as they were', await eventually(async () => { const r = await patOf(); return r?.prefs?.maxMinutes?.admin?.value === 20 && r?.prefs?.askUse === true && r?.prefs?.askAsked === today && same(r?.askSeen, howSeen); }) && await synced(before), await patOf());
     await now.returnToApp();
     check('back on this release: the preference arrived, and Ask MyDay still uses how you work, with the counts as they were', await now.until(`JSON.parse(localStorage.getItem('${KEY}')).patterns.prefs.maxMinutes?.admin?.value === 20`, 20000)
