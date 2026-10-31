@@ -1306,6 +1306,19 @@ look and Your week's What needs you now use the same rules (`data/attention.ts`)
 board, **Board · List**: the list has one row per active project (stage, kind, next step, "3 need you"), most
 recently worked on first; the choice is kept on this device only (`myday.projects.view`).
 
+**Welcome back after a break (unreleased; `specs/projects-welcome-back.md`):** opening a project after 7 days or
+more with no work on it (not a finished one), its Overview starts with **Welcome back**: how long you've been away and
+the day you last worked on it; what you did last (each with its day); what came up while you were away — what's today
+or tomorrow first, then dates that came and went and are still open, waits now due, later dates this week, decisions
+open a while, Test and Find out tasks done with nothing recorded — each task once and one tap away (at most six, then
+"and N more"); your "Where I left off" note, or "Leave yourself one for next time?"; and the next step with Add to
+today. It stays for the visit as you work through it; **Got it** puts it away on this device until the next break
+(`myday.projects.welcomed`, each project's last-activity stamp; not your data, not synced). The Projects home says
+"Away 3 weeks" on the project's card and list row. Worked out from what's saved (`data/welcomeBack.ts`; "what you did
+last" is Recently's list, never a full history); "last worked on" now counts a task done (also only on a day's plan)
+or let go and research changes too, which also orders Projects and Today's "From your projects". Nothing new saved or
+synced; nothing sent to AI.
+
 **Experiments and money for a business idea (1.97.0; `specs/projects-business-tools.md`):** each thing that must
 be true on a business idea's one page can have **experiments** (also on any project with Research, testing its
 questions): what you'll try, how, and what result would change your mind. **Start it**, **Add a task to run it**
