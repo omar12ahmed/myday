@@ -3,7 +3,9 @@
 //   an appointment on the Calendar, like one added there (30 minutes unless an end time was given)
 //   a task        to Tasks (on Today), with the date and time it mentions (a task due today then shows on Today)
 //   a project     from an idea (see CaptureSheet)
+//   a video idea  in a Content project's Ideas (specs/projects-content.md)
 import { keyOf, pad } from '../data/dates';
+import { addIdea } from '../data/content';
 import { addNote } from '../data/notes';
 import { addProject, linkAppointment, projectFromText } from '../data/projects';
 import { connect } from '../data/understand';
@@ -52,6 +54,13 @@ export function addCapturedTask(title: string, category: Category, date: DateKey
 }
 
 // A new project from what you typed: the first line is its name, the rest what it's about. Returns its id.
+// A video idea in a Content project: its first line is the idea, the rest a line about it. The idea's id, or null.
+export function saveVideoIdea(text: string, projectId: string): string | null {
+  const { title, summary } = projectFromText(text);
+  let id: string | null = null;
+  const r = updateSaved(d => { id = addIdea(d, projectId, title, summary); if (!id) return false; });
+  return r === 'saved' ? id : null;
+}
 export function startProject(text: string): string | null {
   const { title, summary } = projectFromText(text);
   let id: string | null = null;

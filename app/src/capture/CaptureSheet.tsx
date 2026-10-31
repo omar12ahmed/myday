@@ -1,4 +1,4 @@
-import { CalendarPlus, FolderKanban, ListPlus, NotebookPen, Plus, Sparkles, User } from 'lucide-react';
+import { CalendarPlus, Clapperboard, FolderKanban, ListPlus, NotebookPen, Plus, Sparkles, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '../components/Button';
 import { CategoryChip } from '../components/CategoryChip';
@@ -6,11 +6,13 @@ import { Field, TextArea } from '../components/Field';
 import { Note } from '../components/parts';
 import { prettyDate } from '../data/dates';
 import { categoryName } from '../data/notes';
+import { isContent } from '../data/businessModel';
+import { projectsInOrder } from '../data/projects';
 import { CAT_LABEL } from '../data/plan';
 import { toast } from '../data/toast';
 import type { Category, MyDayData } from '../data/types';
 import { loadLibs, parseCapture, type Capture, type CaptureLibs } from './parse';
-import { addAppointment, addCapturedTask, appointmentEnd, saveNote, startProject } from './save';
+import { addAppointment, addCapturedTask, appointmentEnd, saveNote, saveVideoIdea, startProject } from './save';
 import { AskPanel, type AskPanelHandle } from './AskPanel';
 import { KeptConversationLine } from './KeptConversationLine';
 import { LastAskLine } from './LastAskLine';
@@ -81,6 +83,9 @@ export function CaptureSheet({ data, initialText = '', focus, onClose }: { data:
   if (c && c.collection && (c.kind === 'note' || c.kind === 'idea')) options.push({ key: 'collection', label: `Save in ${categoryName(data.notes, c.collection)}`, icon: <Sparkles size={18} aria-hidden="true" />, run: note });
   options.push({ key: 'note', label: 'Save to Notes inbox', icon: <NotebookPen size={18} aria-hidden="true" />, run: inboxNote });
   if (c && (c.kind === 'idea' || c.kind === 'note')) options.push({ key: 'project', label: 'Start a project from this', icon: <FolderKanban size={18} aria-hidden="true" />, run: project });
+  // A video idea for one of your Content projects (specs/projects-content.md): the three you worked on most recently.
+  if (c) for (const p of projectsInOrder(data, 'active').filter(isContent).slice(0, 3)) options.push({ key: `video-${p.id}`, label: `Keep as a video idea — ${p.title}`, icon: <Clapperboard size={18} aria-hidden="true" />,
+    run: () => done(!!saveVideoIdea(text, p.id), `Kept in “${p.title}”’s ideas.`) });
   const first = !c ? 'note' : c.kind === 'appointment' ? 'calendar' : c.kind === 'task' ? 'task' : c.kind === 'idea' ? 'project' : c.collection ? 'collection' : 'note';
   const ordered = [...options.filter(o => o.key === first), ...options.filter(o => o.key !== first)];
 
